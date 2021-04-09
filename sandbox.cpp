@@ -3,7 +3,8 @@
 #include <vector>
 #include <typeinfo>
 
-#include "thread_pool.hpp"
+#include <thread_pool.hpp>
+#include <task_graph.hpp>
 
 int main(int argc, char** argv) {
 
@@ -11,7 +12,8 @@ int main(int argc, char** argv) {
 
   std::vector<char*> cli_args(argv, argv + argc);
 
-  thread_pool pool;
+  tp::thread_pool pool;
+  tg::task_graph graph;
 
   auto result = pool.enqueue([](int data){ return data; }, 12);
 

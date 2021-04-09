@@ -6,6 +6,9 @@ endif()
 
 project(sandbox CXX)
 
+add_subdirectory(thread_pool)
+add_subdirectory(task_graph)
+
 add_executable(${PROJECT_NAME})
 
 target_sources(
@@ -17,8 +20,7 @@ target_sources(
 target_link_libraries(
   ${PROJECT_NAME}
   PUBLIC
-    tbb
-    pthread 
+    task_graph::task_graph
 )
 
 target_compile_features(
