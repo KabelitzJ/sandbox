@@ -14,6 +14,13 @@ target_sources(
     sandbox.cpp
 )
 
+target_link_libraries(
+  ${PROJECT_NAME}
+  PUBLIC
+    tbb
+    pthread 
+)
+
 target_compile_features(
   ${PROJECT_NAME} 
   PRIVATE 
