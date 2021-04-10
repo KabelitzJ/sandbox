@@ -11,6 +11,11 @@
 
 namespace tg {
 
+/**
+ * @class uuid
+ * 
+ * @brief https://de.wikipedia.org/wiki/Universally_Unique_Identifier
+ */
 class uuid {
 
 public:
@@ -22,32 +27,156 @@ public:
   using size_type       = std::size_t;
   using difference_type = std::ptrdiff_t;
 
+  /**
+   * @brief Construct a new uuid object
+   */
   uuid();
+
+  /**
+   * @brief Create a copy of a uuid object
+   */
   uuid(const uuid&) = default;
+
+  /**
+   * @brief Move a uuid object
+   */
   uuid(uuid&&) = default;
+
+  /**
+   * @brief Destroy the uuid object
+   */
   ~uuid() = default;
 
+  /**
+   * @brief Copy values from a uuid object into this uuid object
+   * 
+   * @return uuid& 
+   */
   uuid& operator=(const uuid&) = default;
+
+  /**
+   * @brief Move values from a uuid object into this uuid object
+   * 
+   * @return uuid& 
+   */
   uuid& operator=(uuid&&) = default;
 
+  /**
+   * @brief Size of a uuid
+   * 
+   * @return size_type 
+   */
   static size_type size();
 
+  /**
+   * @brief Beginning of the uuid data
+   * 
+   * @return iterator 
+   */
   iterator begin(); 
+
+  /**
+   * @brief Beginning of the uuid data
+   * 
+   * @return const_iterator 
+   */
   const_iterator begin() const; 
-  iterator end(); 
+
+  /**
+   * @brief End of the uuid data
+   * 
+   * @return iterator 
+   */
+  iterator end();
+
+  /**
+   * @brief End of the uuid data
+   * 
+   * @return const_iterator 
+   */
   const_iterator end() const; 
 
+  /**
+   * @brief Checks is if every value of the uuid data is zero
+   * 
+   * @return true When every value is zero
+   * @return false When atleast one value is none-zero
+   */
   bool is_nil() const;
+
+  /**
+   * @brief Swaps the given object with this
+   * 
+   * @param rhs 
+   */
   void swap(uuid& rhs);
+
+  /**
+   * @brief Calculate the hash value of the uuid object
+   * 
+   * @return std::size_t
+   */
   std::size_t hash_value() const;
 
+  /**
+   * @brief Equality comparision
+   * 
+   * @param rhs 
+   * @return true 
+   * @return false 
+   */
   bool operator==(const uuid& rhs) const;
+
+  /**
+   * @brief Inequality comparision
+   * 
+   * @param rhs 
+   * @return true 
+   * @return false 
+   */
   bool operator!=(const uuid& rhs) const;
+
+  /**
+   * @brief Less-that comparision
+   * 
+   * @param rhs 
+   * @return true 
+   * @return false 
+   */
   bool operator<(const uuid& rhs) const;
+
+  /**
+   * @brief Greater-than comparision
+   * 
+   * @param rhs 
+   * @return true 
+   * @return false 
+   */
   bool operator>(const uuid& rhs) const;
-  bool operator>=(const uuid& rhs) const;
+
+  /**
+   * @brief Less- or equal-than comparision
+   * 
+   * @param rhs 
+   * @return true 
+   * @return false 
+   */
   bool operator<=(const uuid& rhs) const; 
 
+  /**
+   * @brief Greater- or equal-than comparision
+   * 
+   * @param rhs 
+   * @return true 
+   * @return false 
+   */
+  bool operator>=(const uuid& rhs) const;
+
+  /**
+   * @brief String representation of the uuid object
+   * 
+   * @return std::string 
+   */
   std::string to_string() const;
 
 private:
@@ -148,12 +277,12 @@ inline bool uuid::operator>(const uuid& rhs) const {
   return std::memcmp(_data, rhs._data, sizeof(_data)) > 0;
 }
 
-inline bool uuid::operator>=(const uuid& rhs) const {
-  return std::memcmp(_data, rhs._data, sizeof(_data)) >= 0;
-}
-
 inline bool uuid::operator<=(const uuid& rhs) const {
   return std::memcmp(_data, rhs._data, sizeof(_data)) <= 0;
+}
+
+inline bool uuid::operator>=(const uuid& rhs) const {
+  return std::memcmp(_data, rhs._data, sizeof(_data)) >= 0;
 }
 
 inline std::string uuid::to_string() const {
@@ -189,7 +318,7 @@ inline void swap(uuid& lhs, uuid& rhs) {
   lhs.swap(rhs);
 }
 
-inline std::ostream& operator << (std::ostream& os, const uuid& rhs) {
+inline std::ostream& operator<<(std::ostream& os, const uuid& rhs) {
   return os << rhs.to_string();
 }
 
