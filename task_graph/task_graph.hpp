@@ -4,6 +4,7 @@
 #include <functional>
 
 #include "basic_task_graph.hpp"
+#include "uuid.hpp"
 
 namespace tg {
 

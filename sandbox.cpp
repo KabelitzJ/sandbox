@@ -19,5 +19,9 @@ int main(int argc, char** argv) {
 
   std::cout << "result: " << result.get() << '\n';
 
+  tg::uuid id;
+
+  std::cout << id << std::endl;
+
   return EXIT_SUCCESS;
 }
