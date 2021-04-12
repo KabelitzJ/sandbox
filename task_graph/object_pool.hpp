@@ -8,22 +8,65 @@
 
 namespace tg {
 
-
+/**
+ * @class object_pool 
+ *
+ * @brief Caches objects to avoid frequent allocations and deallocations
+ * 
+ * @tparam T Type of objects this pool holds
+ */
 template<typename T>
 class object_pool {
 
 public:
+  /**
+   * @brief Construct a new object pool object
+   * 
+   * @param initial_size Amount of instances that should be allocated on creation
+   */
   explicit object_pool(std::size_t initial_size = 1048u);
 
+  /**
+   * @brief Construct a new object pool object
+   * 
+   */
   object_pool(const object_pool&) = delete;
 
+  /**
+   * @brief Construct a new object pool object
+   * 
+   */
   object_pool(object_pool&&) = delete;
 
+  /**
+   * @brief Destroy the object pool object
+   * 
+   */
   ~object_pool();
 
+  /**
+   * @brief 
+   * 
+   * @return object_pool& 
+   */
   object_pool& operator=(const object_pool&) = delete;
+
+  /**
+   * @brief 
+   * 
+   * @return object_pool& 
+   */
   object_pool& operator=(object_pool&&) = delete;
 
+  /**
+   * @brief Provides a std::unique_ptr to a instance of T with a custom 
+   * deleter that puts the memory back in the pool on destruction
+   * 
+   * @tparam Args 
+   * 
+   * @param args Arguments that are needed to create an instance of @c T
+   * @return std::unique_ptr<T, std::function<void(T*)>> 
+   */
   template<typename... Args>
   std::unique_ptr<T, std::function<void(T*)>> request(Args&&... args);
 
