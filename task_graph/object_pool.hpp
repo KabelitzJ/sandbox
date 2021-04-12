@@ -78,7 +78,7 @@ private:
 template<typename T>
 object_pool<T>::object_pool(std::size_t initial_size) : _object_pool() {
   for (std::size_t i = 0; i < initial_size; ++i) {
-    T* object = reinterpret_cast<T*>(::operator new(sizeof(T)));
+    T* object = static_cast<T*>(::operator new(sizeof(T)));
     _object_pool.push_back(object);
   }
 }
@@ -98,8 +98,10 @@ std::unique_ptr<T, std::function<void(T*)>> object_pool<T>::request(Args&&... ar
   T* object = nullptr;
 
   if (!_object_pool.empty()) {
-    object = new(_object_pool.front()) T(std::forward<Args>(args)...);
+    T* pool_object = _object_pool.front();
     _object_pool.pop_front();
+
+    object = new(pool_object) T(std::forward<Args>(args)...);
   } else {
     object = new T(std::forward<Args>(args)...);
   }
