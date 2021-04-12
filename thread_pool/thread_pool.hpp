@@ -23,22 +23,51 @@
 namespace tp {
 
 /**
+ * @class thread_pool
+ * 
  * @brief Holds a vector of worker threads that are trying to fetch and execut tasks from a task queue
  */
 class thread_pool {
+  
 public:
   /**
    * @brief Constructs a new thread_pool object
    * 
    * @param worker_count The amount of worker threads (default is the value of 'std::thread::hardware_concurrency()')
    */
-  thread_pool(std::size_t worker_count = std::thread::hardware_concurrency());
+  explicit thread_pool(std::size_t worker_count = std::thread::hardware_concurrency());
+
+  /**
+   * @brief Construct a new thread pool object
+   * 
+   */
+  thread_pool(const thread_pool&) = delete;
+
+  /**
+   * @brief Construct a new thread pool object
+   * 
+   */
+  thread_pool(thread_pool&&) = delete;
 
   /**
    * @brief Destroys the thread_pool object
    * 
    */
   ~thread_pool();
+
+  /** 
+   * @brief 
+   * 
+   * @return thread_pool& 
+   */
+  thread_pool& operator=(const thread_pool&) = delete;
+
+  /**
+   * @brief 
+   * 
+   * @return thread_pool& 
+   */
+  thread_pool& operator=(thread_pool&&) = delete;
 
   /**
    * @brief Places a task into the task queue to be executed by the next available worker thread

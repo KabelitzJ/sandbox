@@ -5,6 +5,7 @@
 
 #include "basic_task_graph.hpp"
 #include "uuid.hpp"
+#include "object_pool.hpp"
 
 namespace tg {
 
