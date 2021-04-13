@@ -7,7 +7,7 @@ endif()
 project(sandbox CXX)
 
 add_subdirectory(thread_pool)
-add_subdirectory(task_graph)
+add_subdirectory(object_pool)
 
 add_executable(${PROJECT_NAME})
 
@@ -20,7 +20,8 @@ target_sources(
 target_link_libraries(
   ${PROJECT_NAME}
   PUBLIC
-    task_graph::task_graph
+    thread_pool::thread_pool
+    object_pool::object_pool
 )
 
 target_compile_features(

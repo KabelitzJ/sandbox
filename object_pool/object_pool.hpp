@@ -1,12 +1,12 @@
-#ifndef TASK_GRAPH_OBJECT_POOL_HPP_
-#define TASK_GRAPH_OBJECT_POOL_HPP_
+#ifndef SANDBOX_OBJECT_POOL_HPP_
+#define SANDBOX_OBJECT_POOL_HPP_
 
 #include <memory>
 #include <functional>
 #include <deque>
 #include <algorithm>
 
-namespace tg {
+namespace sbx {
 
 /**
  * @class object_pool 
@@ -19,6 +19,8 @@ template<typename T>
 class object_pool {
 
 public:
+  using pointer = std::unique_ptr<T, std::function<void(T*)>>;
+
   /**
    * @brief Construct a new object pool object
    * 
@@ -68,7 +70,7 @@ public:
    * @return std::unique_ptr<T, std::function<void(T*)>> 
    */
   template<typename... Args>
-  std::unique_ptr<T, std::function<void(T*)>> request(Args&&... args);
+  pointer request(Args&&... args);
 
 private:
   std::deque<T*> _object_pool; // is deque the best container?
@@ -94,7 +96,7 @@ object_pool<T>::~object_pool() {
 
 template<typename T>
 template<typename... Args>
-std::unique_ptr<T, std::function<void(T*)>> object_pool<T>::request(Args&&... args) {
+typename object_pool<T>::pointer object_pool<T>::request(Args&&... args) {
   T* object = nullptr;
 
   if (!_object_pool.empty()) {
@@ -114,6 +116,6 @@ std::unique_ptr<T, std::function<void(T*)>> object_pool<T>::request(Args&&... ar
   return object_pointer;
 }
 
-} // namespace tg
+} // namespace sbx
 
-#endif // TASK_GRAPH_OBJECT_POOL_HPP_
+#endif // SANDBOX_OBJECT_POOL_HPP_

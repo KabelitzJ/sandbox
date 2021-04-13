@@ -4,7 +4,7 @@
 #include <typeinfo>
 
 #include <thread_pool.hpp>
-#include <task_graph.hpp>
+#include <object_pool.hpp>
 
 class foo {
 
@@ -28,18 +28,17 @@ int main(int argc, char** argv) {
 
   std::vector<char*> cli_args(argv, argv + argc);
 
-  tp::thread_pool pool;
+  sbx::thread_pool pool;
 
   auto result = pool.enqueue([](int data){ return data; }, 12);
 
   std::cout << "result: " << result.get() << '\n';
 
-  tg::task_graph graph;
-  tg::object_pool<foo> object_pool(2);
+  sbx::object_pool<foo> object_pool(2);
 
-  auto object1 = object_pool.request(12);
-  auto object2 = object_pool.request(2);
-  auto object3 = object_pool.request(31);
+  sbx::object_pool<foo>::pointer object1 = object_pool.request(12);
+  sbx::object_pool<foo>::pointer object2 = object_pool.request(2);
+  sbx::object_pool<foo>::pointer object3 = object_pool.request(31);
 
   return EXIT_SUCCESS;
 }

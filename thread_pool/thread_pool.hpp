@@ -1,5 +1,5 @@
-#ifndef THREAD_POOL_HPP_
-#define THREAD_POOL_HPP_
+#ifndef SANDBOX_THREAD_POOL_HPP_
+#define SANDBOX_THREAD_POOL_HPP_
 
 /**
  * @file thread_pool.hpp
@@ -20,7 +20,7 @@
 #include <thread>
 #include <vector>
 
-namespace tp {
+namespace sbx {
 
 /**
  * @class thread_pool
@@ -156,6 +156,6 @@ inline thread_pool::~thread_pool() {
   }
 }
 
-} // namespace tp
+} // namespace sbx
 
-#endif // THREAD_POOL_HPP_
+#endif // SANDBOX_THREAD_POOL_HPP_
