@@ -90,7 +90,7 @@ object_pool<T>::~object_pool() {
   while (!_object_pool.empty()) {
     T* object = _object_pool.front();
     _object_pool.pop_front();
-    ::operator delete(object);
+    ::operator delete(static_cast<void*>(object));
   }
 }
 
