@@ -24,6 +24,15 @@ target_link_libraries(
     object_pool::object_pool
 )
 
+if (UNIX) 
+  target_link_libraries(
+    ${PROJECT_NAME}
+    PUBLIC
+      pthread
+      tbb
+  )
+endif()
+
 target_compile_features(
   ${PROJECT_NAME} 
   PRIVATE 

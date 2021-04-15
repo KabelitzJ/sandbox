@@ -59,6 +59,8 @@
     "xtr1common": "cpp",
     "xutility": "cpp",
     "cinttypes": "cpp",
-    "random": "cpp"
+    "random": "cpp",
+    "array": "cpp",
+    "string_view": "cpp"
   }
 }
