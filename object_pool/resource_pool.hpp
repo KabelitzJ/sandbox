@@ -37,6 +37,7 @@ public:
 
 private:
   pointer _pop_front();
+  
   void _allocate_n(size_type n);
 
   void _release(pointer resource);
