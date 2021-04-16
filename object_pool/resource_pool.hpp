@@ -14,9 +14,10 @@ class resource_pool {
 
 public:
   using pointer = T*;
+  using size_type = std::size_t;
   using handle = resource_handle<T>;
 
-  resource_pool(std::size_t initial_size = 1024);
+  resource_pool(size_type initial_size = 1024);
   resource_pool(const resource_pool<T>&) = delete;
   resource_pool(resource_pool<T>&&) = delete;
   ~resource_pool();
@@ -25,11 +26,20 @@ public:
   resource_pool<T> operator=(resource_pool<T>&&) = delete;
 
   template<typename... Args>
-  [[nodiscard]] handle acquire(Args&&... args);
+  [[nodiscard]] handle acquire_handle(Args&&... args);
+
+  template <typename... Args>
+  [[nodiscard]] pointer create(Args&&... args);
+
+  void destroy(pointer resource);
 
 private:
+  pointer _pop_front();
+  void _allocate_n(size_type n);
+
   void _release(pointer resource);
 
+  size_type _capacity;
   std::unordered_map<pointer, std::function<void()>> _invalidation_callbacks;
   std::deque<pointer> _resources;
 
@@ -39,23 +49,19 @@ private:
 }; // class resource_pool
 
 template<typename T>
-resource_pool<T>::resource_pool(std::size_t initial_size) : _invalidation_callbacks(), _resources() {
-  for (std::size_t i = 0; i < initial_size; ++i) {
-    pointer resource = static_cast<pointer>(::operator new(sizeof(T)));
-    _resources.push_back(resource);
-  }
+resource_pool<T>::resource_pool(size_type initial_size) : _capacity(initial_size), _invalidation_callbacks(), _resources() {
+  _allocate_n(initial_size);
 }
 
 template<typename T>
 resource_pool<T>::~resource_pool() {
-  while (!_resources.empty()) {
-    pointer resource = _resources.front();
-    _resources.pop_front();
-
+  for (auto* resource : _resources) {
     _invalidation_callbacks.erase(resource);
 
     ::operator delete(static_cast<void*>(resource));
   }
+
+  _resources.clear();
 
   for (auto& [id, callback] : _invalidation_callbacks) {
     callback();
@@ -64,19 +70,8 @@ resource_pool<T>::~resource_pool() {
 
 template<typename T>
 template<typename... Args>
-[[nodiscard]] resource_handle<T> resource_pool<T>::acquire(Args&&... args) {
-  pointer resource = nullptr;
-
-  if (!_resources.empty()) {
-    resource = _resources.front();
-    _resources.pop_front();
-
-    resource = new(resource) T(std::forward<Args>(args)...);
-  }
-
-  if (!resource) {
-    resource = new T(std::forward<Args>(args)...);
-  }
+resource_handle<T> resource_pool<T>::acquire_handle(Args&&... args) {
+  pointer resource = create(std::forward<Args>(args)...);
 
   resource_handle<T> handle(this, resource);
 
@@ -85,10 +80,44 @@ template<typename... Args>
   return handle;
 }
 
-template<typename T>
-void resource_pool<T>::_release(pointer resource) {
+template <typename T>
+template <typename... Args>
+typename resource_pool<T>::pointer resource_pool<T>::create(Args&&... args) {
+  pointer resource = _pop_front();
+
+  return new(resource) T(std::forward<Args>(args)...);
+}
+
+template <typename T>
+void resource_pool<T>::destroy(pointer resource) {
   resource->~T();
   _resources.push_back(resource);
+}
+
+template <typename T>
+typename resource_pool<T>::pointer resource_pool<T>::_pop_front() {
+  if (_resources.empty()) {
+    _allocate_n(_capacity);
+    _capacity *= 2;
+  }
+
+  T* resource = _resources.front();
+  _resources.pop_front();
+
+  return resource;
+}
+
+template <typename T>
+void resource_pool<T>::_allocate_n(size_type n) {
+  for (size_type i = 0; i < n; ++i) {
+    T* resource = static_cast<pointer>(::operator new(sizeof(T)));
+    _resources.push_back(resource);
+  }
+}
+
+template<typename T>
+void resource_pool<T>::_release(pointer resource) {
+  destroy(resource);
 
   _invalidation_callbacks.erase(resource);
 }
