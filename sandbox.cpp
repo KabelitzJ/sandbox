@@ -44,8 +44,11 @@ int main(int argc, char** argv) {
   sbx::resource_pool<foo> rpool(64);
 
   sbx::resource_pool<foo>::handle item1 = rpool.acquire_handle(13);
+  sbx::resource_pool<foo>::pointer item2 = rpool.create(33);
 
   std::cout << item1->data() << std::endl;
+
+  rpool.destroy(item2);
 
   return EXIT_SUCCESS;
 }

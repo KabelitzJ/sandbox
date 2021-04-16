@@ -13,9 +13,11 @@ template<typename T>
 class resource_pool {
 
 public:
-  using pointer = T*;
+  using value_type = T;
+  using pointer = value_type*;
+  using const_pointer = const pointer;
   using size_type = std::size_t;
-  using handle = resource_handle<T>;
+  using handle = resource_handle<value_type>;
 
   resource_pool(size_type initial_size = 1024);
   resource_pool(const resource_pool<T>&) = delete;
@@ -59,6 +61,7 @@ resource_pool<T>::~resource_pool() {
     _invalidation_callbacks.erase(resource);
 
     ::operator delete(static_cast<void*>(resource));
+    resource = nullptr;
   }
 
   _resources.clear();
@@ -101,7 +104,7 @@ typename resource_pool<T>::pointer resource_pool<T>::_pop_front() {
     _capacity *= 2;
   }
 
-  T* resource = _resources.front();
+  pointer resource = _resources.front();
   _resources.pop_front();
 
   return resource;
@@ -110,7 +113,7 @@ typename resource_pool<T>::pointer resource_pool<T>::_pop_front() {
 template <typename T>
 void resource_pool<T>::_allocate_n(size_type n) {
   for (size_type i = 0; i < n; ++i) {
-    T* resource = static_cast<pointer>(::operator new(sizeof(T)));
+    pointer resource = static_cast<pointer>(::operator new(sizeof(T)));
     _resources.push_back(resource);
   }
 }

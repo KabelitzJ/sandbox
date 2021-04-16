@@ -49,7 +49,7 @@ resource_handle<T>::~resource_handle() {
     _resource = nullptr;
   } else {
     _resource->~T();
-    ::operator delete(_resource);
+    ::operator delete(static_cast<void*>(_resource));
     _resource = nullptr;
   }
 }
