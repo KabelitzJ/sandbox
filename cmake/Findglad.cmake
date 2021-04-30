@@ -9,7 +9,6 @@ find_package_handle_standard_args(
   REQUIRED_VARS
     glad_LIBRARY
     glad_INCLUDE_DIR
-  VERSION_VAR glad_VERSION
 )
 
 if(glad_FOUND AND NOT TARGET glad::glad)

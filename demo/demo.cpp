@@ -3,6 +3,7 @@
 #include <cstdlib>
 
 #include <core/core.hpp>
+#include <core/file_utils.hpp>
 
 int main(int argc, char** argv) {
 
@@ -10,7 +11,11 @@ int main(int argc, char** argv) {
 
   std::cout << "Hello, demo!\n";
 
-  std::cout << "31 + 44 = " << sbx::add(31, 44) << "\n";
+  sbx::initialize();
+
+  sbx::run();
+  
+  sbx::terminate();
 
   return EXIT_SUCCESS;
 }

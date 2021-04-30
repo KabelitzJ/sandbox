@@ -1,9 +1,16 @@
 #ifndef SBX_CORE_HPP_
 #define SBX_CORE_HPP_
 
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+
 namespace sbx {
 
-int add(int a, int b);
+void initialize();
+
+void run();
+
+void terminate();
 
 } // namespace sbx
 

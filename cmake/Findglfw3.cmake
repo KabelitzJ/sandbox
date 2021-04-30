@@ -9,7 +9,6 @@ find_package_handle_standard_args(
   REQUIRED_VARS
     glfw3_LIBRARY
     glfw3_INCLUDE_DIR
-  VERSION_VAR glfw3_VERSION
 )
 
 if(glfw3_FOUND AND NOT TARGET glfw3::glfw3)
