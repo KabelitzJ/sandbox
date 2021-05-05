@@ -12,10 +12,11 @@ find_package_handle_standard_args(
 )
 
 if(glad_FOUND AND NOT TARGET glad::glad)
-  add_library(glad::glad UNKNOWN IMPORTED)
-  set_target_properties(glad::glad PROPERTIES
-    IMPORTED_LOCATION "${glad_LIBRARY}"
-    INTERFACE_COMPILE_OPTIONS "${PC_glad_CFLAGS_OTHER}"
-    INTERFACE_INCLUDE_DIRECTORIES "${glad_INCLUDE_DIR}"
+  add_library(glad::glad STATIC IMPORTED)
+  set_target_properties(
+    glad::glad 
+    PROPERTIES
+      IMPORTED_LOCATION "${glad_LIBRARY}"
+      INTERFACE_INCLUDE_DIRECTORIES "${glad_INCLUDE_DIR}"
   )
 endif()

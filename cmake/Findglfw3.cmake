@@ -12,10 +12,11 @@ find_package_handle_standard_args(
 )
 
 if(glfw3_FOUND AND NOT TARGET glfw3::glfw3)
-  add_library(glfw3::glfw3 UNKNOWN IMPORTED)
-  set_target_properties(glfw3::glfw3 PROPERTIES
-    IMPORTED_LOCATION "${glfw3_LIBRARY}"
-    INTERFACE_COMPILE_OPTIONS "${PC_glfw3_CFLAGS_OTHER}"
-    INTERFACE_INCLUDE_DIRECTORIES "${glfw3_INCLUDE_DIR}"
+  add_library(glfw3::glfw3 STATIC IMPORTED)
+  set_target_properties(
+    glfw3::glfw3 
+    PROPERTIES
+      IMPORTED_LOCATION "${glfw3_LIBRARY}"
+      INTERFACE_INCLUDE_DIRECTORIES "${glfw3_INCLUDE_DIR}"
   )
 endif()

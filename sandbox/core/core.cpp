@@ -9,6 +9,16 @@
 
 namespace sbx {
 
+struct window_dimensions {
+
+  window_dimensions(std::uint32_t initial_width, std::uint32_t initial_height) : width(initial_width), height(initial_height) {}
+  ~window_dimensions() = default;
+
+  std::uint32_t width;
+  std::uint32_t height;
+};
+
+window_dimensions* _dimension;
 static GLFWwindow* _handle = nullptr;
 static GLuint _default_shader_program = 0;
 static shader* _default_shader;
@@ -25,7 +35,9 @@ void initialize() {
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-  _handle = glfwCreateWindow(960, 720, "core", nullptr, nullptr);
+  _dimension = new window_dimensions(960, 720);
+
+  _handle = glfwCreateWindow(_dimension->width, _dimension->height, "Sandbox", nullptr, nullptr);
 
   glfwMakeContextCurrent(_handle);
 
@@ -38,6 +50,8 @@ void initialize() {
   glClearColor(1.0f, 0.5f, 0.125f, 1.0f);
 
   initialize_window_callbacks();
+
+  glfwSetWindowUserPointer(_handle, static_cast<void*>(_dimension));
 
   _default_shader = new shader("resources/shaders/default_vertex.glsl", "resources/shaders/default_fragment.glsl");
 }
@@ -77,6 +91,7 @@ void run() {
 }
 
 void terminate() {
+  delete _dimension;
   delete _default_shader;
   glfwMakeContextCurrent(nullptr);
   glfwDestroyWindow(_handle);
@@ -92,6 +107,13 @@ void initialize_glfw_callbacks() {
 void initialize_window_callbacks() {
   glfwSetWindowSizeCallback(_handle, [](GLFWwindow* window, int width, int height){
     glViewport(0, 0, width, height);
+
+    window_dimensions* dimensions = static_cast<window_dimensions*>(glfwGetWindowUserPointer(window));
+
+    if (dimensions) {
+      dimensions->width = width;
+      dimensions->height = height;
+    }
   });
 }
 

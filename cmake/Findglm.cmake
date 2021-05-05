@@ -10,9 +10,10 @@ find_package_handle_standard_args(
 )
 
 if(glm_FOUND AND NOT TARGET glm::glm)
-  add_library(glm::glm UNKNOWN IMPORTED)
-  set_target_properties(glm::glm PROPERTIES
-    INTERFACE_COMPILE_OPTIONS "${PC_glm_CFLAGS_OTHER}"
-    INTERFACE_INCLUDE_DIRECTORIES "${glm_INCLUDE_DIR}"
+  add_library(glm::glm INTERFACE IMPORTED)
+  set_target_properties(
+    glm::glm 
+    PROPERTIES
+      INTERFACE_INCLUDE_DIRECTORIES "${glm_INCLUDE_DIR}"
   )
 endif()
