@@ -12,6 +12,7 @@ target_sources(
   PRIVATE
     core.cpp
     file_utils.cpp
+    shader.cpp
 )
 
 target_include_directories(

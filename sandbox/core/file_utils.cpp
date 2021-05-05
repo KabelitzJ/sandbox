@@ -3,13 +3,14 @@
 #include <fstream>
 #include <exception>
 #include <sstream>
+#include <filesystem>
 
 namespace sbx {
 
-std::string read_file_contents(const std::string& file_path) {
+std::string read_file_contents(const std::filesystem::path& file_path) {
   std::ifstream ifs(file_path, std::ios::binary);
 
-  if (!ifs) {
+  if (!ifs.is_open()) {
     std::stringstream ss;
 
     ss << "Could not open file: '" << file_path << "'!\n";
@@ -20,7 +21,10 @@ std::string read_file_contents(const std::string& file_path) {
   std::string file_contents;
 
   ifs.seekg(0, std::ios::end);
-  file_contents.resize(ifs.tellg());
+
+  std::uintmax_t size = std::filesystem::file_size(file_path);
+  file_contents.resize(size);
+
   ifs.seekg(0, std::ios::beg);
   ifs.read(file_contents.data(), file_contents.size());
   ifs.close();
