@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+#include <chrono>
 
 #include "shader.hpp"
 
@@ -42,7 +43,24 @@ void initialize() {
 }
 
 void run() {
+  std::chrono::nanoseconds frame_time(0);
+  std::uint32_t frames = 0;
+  std::chrono::high_resolution_clock::time_point last_time = std::chrono::high_resolution_clock::now();
+
   while (!glfwWindowShouldClose(_handle)) {
+    std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
+    std::chrono::nanoseconds passed_time = std::chrono::duration_cast<std::chrono::nanoseconds>(now - last_time);
+    last_time = now;
+
+    frame_time += passed_time;
+
+    if (frame_time >= std::chrono::seconds(1)) {
+      std::cout << "FPS: " << frames << "\n";
+
+      frame_time = std::chrono::nanoseconds(0);
+      frames = 0;
+    }
+
     glfwPollEvents();
 
     _default_shader->bind();
@@ -51,6 +69,8 @@ void run() {
     glUseProgram(_default_shader_program);
 
     glfwSwapBuffers(_handle);
+
+    frames++;
 
     _default_shader->unbind();
   }
