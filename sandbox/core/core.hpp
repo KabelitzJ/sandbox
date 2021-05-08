@@ -6,7 +6,7 @@
 
 namespace sbx {
 
-void initialize();
+bool initialize();
 
 void run();
 

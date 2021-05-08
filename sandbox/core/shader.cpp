@@ -22,6 +22,10 @@ void shader::unbind() const {
   glUseProgram(0);
 }
 
+GLuint shader::id() const {
+  return _id;
+}
+
 void shader::_initialize(const std::filesystem::path& vertex_code, const std::filesystem::path& fragment_code) {
   std::string vertex_source = read_file_contents(vertex_code);
   std::string fragment_source = read_file_contents(fragment_code);
@@ -43,7 +47,7 @@ void shader::_initialize(const std::filesystem::path& vertex_code, const std::fi
 
     std::stringstream ss;
 
-    ss << "Could not compile vertex shader from file: '" << vertex_code << "'!\n" 
+    ss << "[Error] Could not compile vertex shader from file: '" << vertex_code << "'!\n" 
        << "Log: " << info_log << "\n";
 
     throw std::runtime_error(ss.str());
@@ -60,7 +64,7 @@ void shader::_initialize(const std::filesystem::path& vertex_code, const std::fi
 
     std::stringstream ss;
 
-    ss << "Could not compile fragment shader from file: '" << fragment_code << "'!\n" 
+    ss << "[Error] Could not compile fragment shader from file: '" << fragment_code << "'!\n" 
        << "Log: " << info_log << "\n";
 
     throw std::runtime_error(ss.str());
@@ -78,7 +82,7 @@ void shader::_initialize(const std::filesystem::path& vertex_code, const std::fi
 
     std::stringstream ss;
 
-    ss << "Could not link shader program!\n"
+    ss << "[Error] Could not link shader program!\n"
        << "Log: " << info_log << "\n";
     
     throw std::runtime_error(ss.str());

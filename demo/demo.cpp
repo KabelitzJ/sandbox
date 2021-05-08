@@ -11,7 +11,9 @@ int main(int argc, char** argv) {
 
   std::cout << "Hello, demo!\n";
 
-  sbx::initialize();
+  if (!sbx::initialize()) {
+    return EXIT_FAILURE;
+  }
 
   sbx::run();
   

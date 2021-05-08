@@ -16,6 +16,8 @@ public:
   void bind() const;
   void unbind() const;
 
+  GLuint id() const;
+
 private:
   void _initialize(const std::filesystem::path& vertex_code, const std::filesystem::path& fragment_code);
   void _terminate();

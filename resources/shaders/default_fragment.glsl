@@ -1,9 +1,11 @@
 #version 330 core
 
-in vec3 vertex_color;
+in vec4 vertex_color;
 
-out vec4 fragment_color;  
+uniform vec4 uni_color;
+
+out vec4 fragment_color;
   
 void main() {
-  fragment_color = vec4(vertex_color, 1.0);
+  fragment_color = uni_color;
 }
