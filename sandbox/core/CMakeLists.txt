@@ -13,7 +13,7 @@ target_sources(
     core.cpp
     file_utils.cpp
     shader.cpp
-    mash_loader.cpp
+    model_loader.cpp
 )
 
 target_include_directories(

@@ -9,17 +9,19 @@
 #include <unordered_map>
 #include <ctime>
 
-#include <glm/vec3.hpp>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #include "shader.hpp"
-#include "mesh_loader.hpp"
+#include "model_loader.hpp"
 
 namespace sbx {
 
 static GLFWwindow* _context = nullptr;
 static bool _draw_wireframe = false;
 static shader* _default_shader = nullptr;
-static basic_mesh _default_mesh;
+static basic_model _default_model;
 static GLuint _vao = 0;
 static GLuint _vbo = 0;
 static GLuint _ebo = 0;
@@ -62,24 +64,27 @@ bool initialize() {
 
   _default_shader = new shader("resources/shaders/default_vertex.glsl", "resources/shaders/default_fragment.glsl");
 
-  _default_mesh = load_basic_mesh("resources/meshes/basic_square.mesh");
+  _default_model = load_basic_model("resources/models/cube.obj");
+
+  glEnable(GL_DEPTH_TEST);
+  glDepthFunc(GL_LESS);
 
   glGenVertexArrays(1, &_vao);
   glBindVertexArray(_vao);
 
   glGenBuffers(1, &_vbo);
   glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * _default_mesh.vertices.size(), _default_mesh.vertices.data(), GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * _default_model.vertices.size(), _default_model.vertices.data(), GL_STATIC_DRAW);
   // position
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)(0));
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (void*)(0));
   glEnableVertexAttribArray(0);
   // color
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)(3 * sizeof(float)));
-  glEnableVertexAttribArray(1);
+  // glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
+  // glEnableVertexAttribArray(1);
 
   glGenBuffers(1, &_ebo);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * _default_mesh.indices.size(), _default_mesh.indices.data(), GL_STATIC_DRAW); 
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * _default_model.indices.size(), _default_model.indices.data(), GL_STATIC_DRAW); 
 
   glBindVertexArray(0);
   glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -95,6 +100,10 @@ void run() {
   std::uint32_t frames = 0;
   std::chrono::high_resolution_clock::time_point last_time = std::chrono::high_resolution_clock::now();
 
+  glm::mat4 model = glm::mat4(1.0f);
+  glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -3.0f));
+  glm::mat4 projection = glm::mat4(1.0f);
+
   while (!glfwWindowShouldClose(_context)) {
     std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
     std::chrono::nanoseconds passed_time = std::chrono::duration_cast<std::chrono::nanoseconds>(now - last_time);
@@ -109,21 +118,37 @@ void run() {
       frames = 0;
     }
 
+    float time_value = std::chrono::duration_cast<std::chrono::duration<float>>(passed_time).count();
+    model = glm::rotate(model, time_value * glm::radians(50.0f), glm::vec3(1.0f, 0.5f, 0.0f));
+
+    int width, height;
+    glfwGetWindowSize(_context, &width, &height);
+    float aspect = static_cast<float>(width) / static_cast<float>(height);
+    projection = glm::perspective(glm::radians(45.0f), aspect, 0.1f, 100.0f);
+
+    GLint model_matrix_location = _get_uniform_location("uni_model");
+    glUniformMatrix4fv(model_matrix_location, 1, GL_FALSE, glm::value_ptr(model));
+
+    GLint view_matrix_location = _get_uniform_location("uni_view");
+    glUniformMatrix4fv(view_matrix_location, 1, GL_FALSE, glm::value_ptr(view));
+
+    GLint projection_matrix_location = _get_uniform_location("uni_projection");
+    glUniformMatrix4fv(projection_matrix_location, 1, GL_FALSE, glm::value_ptr(projection));
+
     glClearColor(_clear_color.r, _clear_color.g, _clear_color.b, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glPolygonMode(GL_FRONT_AND_BACK, _draw_wireframe ? GL_LINE : GL_FILL);
 
     _default_shader->bind();
 
-    GLint uniform = _get_uniform_location("uni_color");
-
-    glUniform4f(uniform, _uniform_color.r, _uniform_color.g, _uniform_color.b, 1.0f);
+    GLint color_location = _get_uniform_location("uni_color");
+    glUniform4f(color_location, _uniform_color.r, _uniform_color.g, _uniform_color.b, 1.0f);
 
     glBindVertexArray(_vao);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
 
-    glDrawElements(GL_TRIANGLES, _default_mesh.indices.size(), GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, _default_model.indices.size(), GL_UNSIGNED_INT, 0);
 
     glBindVertexArray(0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);

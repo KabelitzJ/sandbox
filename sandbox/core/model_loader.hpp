@@ -8,12 +8,12 @@
 
 namespace sbx {
 
-struct basic_mesh {
+struct basic_model {
   std::vector<GLfloat> vertices;
   std::vector<GLuint> indices;
 };
 
-basic_mesh load_basic_mesh(const std::filesystem::path& path);
+basic_model load_basic_model(const std::filesystem::path& path);
 
 } // namespace sbx
 
