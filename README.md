@@ -7,3 +7,4 @@ A playground project for learning and experimenting with opengl
 - glfw3
 - glad
 - glm
+- stb (stb_image)
