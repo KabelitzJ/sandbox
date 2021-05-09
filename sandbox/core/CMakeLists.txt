@@ -3,6 +3,7 @@ project(core CXX)
 find_package(glad REQUIRED)
 find_package(glfw3 REQUIRED)
 find_package(glm REQUIRED)
+find_package(stb REQUIRED)
 
 add_library(${PROJECT_NAME} SHARED)
 add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
@@ -30,6 +31,7 @@ target_link_libraries(
     glad::glad
     glfw3::glfw3
     glm::glm
+    stb::stb
 )
 
 target_compile_features(
