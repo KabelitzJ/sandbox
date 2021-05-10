@@ -5,11 +5,19 @@
 #include <filesystem>
 
 #include <glad/glad.h>
+#include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
 
 namespace sbx {
 
+struct vertex {
+  glm::vec3 position;
+  glm::vec2 uv;
+  glm::vec3 normal;
+};
+
 struct basic_model {
-  std::vector<GLfloat> vertices;
+  std::vector<vertex> vertices;
   std::vector<GLuint> indices;
 };
 
