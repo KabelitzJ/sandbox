@@ -2,6 +2,7 @@
 #define SBX_CORE_SHADER_HPP_
 
 #include <filesystem>
+#include <string>
 
 #include <glad/glad.h>
 
@@ -19,8 +20,8 @@ public:
   GLuint id() const;
 
 private:
+  std::string _read_file(const std::filesystem::path& path);
   void _initialize(const std::filesystem::path& vertex_code, const std::filesystem::path& fragment_code);
-  void _terminate();
 
   GLuint _id;
 

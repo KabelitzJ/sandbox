@@ -3,7 +3,6 @@
 #include <cstdlib>
 
 #include <core/core.hpp>
-#include <core/file_utils.hpp>
 
 int main(int argc, char** argv) {
 

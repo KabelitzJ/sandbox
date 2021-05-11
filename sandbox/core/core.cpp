@@ -17,14 +17,14 @@
 #include <stb/stb_image.h>
 
 #include "shader.hpp"
-#include "model_loader.hpp"
+#include "mesh.hpp"
 
 namespace sbx {
 
 static GLFWwindow* _context = nullptr;
 static bool _draw_wireframe = false;
 static shader* _default_shader = nullptr;
-static basic_model _default_model;
+static mesh* _default_mesh = nullptr;
 static const std::vector<std::string> _texture_paths({
   "resources/textures/brick_wall.jpg",
   "resources/textures/cobble_wall.jpg",
@@ -34,9 +34,6 @@ static const std::vector<std::string> _texture_paths({
   "resources/textures/wooden_planks.jpg",
 });
 static std::vector<GLuint> _textures;
-static GLuint _vao = 0;
-static GLuint _vbo = 0;
-static GLuint _ebo = 0;
 static std::unordered_map<std::string, GLint> _uniform_map;
 static constexpr glm::vec3 _clear_color({ 0.33f, 0.45f, 0.50f });
 static unsigned int _texture_index = 2;
@@ -68,10 +65,15 @@ bool initialize() {
 
   const GLFWvidmode* video_mode = glfwGetVideoMode(primary_monitor);
 
-  const int width = video_mode->width;
-  const int height = video_mode->height;
+  const int width = video_mode->width / 2;
+  const int height = video_mode->height / 2;
 
-  _context = glfwCreateWindow(width, height, "Sandbox", primary_monitor, nullptr);
+  _context = glfwCreateWindow(width, height, "Sandbox", nullptr, nullptr);
+
+  const int win_pos_x = (video_mode->width / 2) - (width / 2);
+  const int win_pos_y = (video_mode->height / 2) - (height / 2);
+
+  glfwSetWindowPos(_context, win_pos_x, win_pos_y);
 
   glfwMakeContextCurrent(_context);
 
@@ -90,7 +92,7 @@ bool initialize() {
   _default_shader = new shader("resources/shaders/default_vertex.glsl", "resources/shaders/default_fragment.glsl");
   _default_shader->bind();
 
-  _default_model = load_basic_model("resources/models/monke.obj");
+  _default_mesh = new mesh("resources/models/monke.obj");
 
   for (std::size_t i = 0; i < _texture_paths.size(); ++i) {
 
@@ -127,27 +129,6 @@ bool initialize() {
   glEnable(GL_DEPTH_TEST);
   glDepthFunc(GL_LESS);
 
-  glGenVertexArrays(1, &_vao);
-  glBindVertexArray(_vao);
-
-  glGenBuffers(1, &_vbo);
-  glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(vertex) * _default_model.vertices.size(), _default_model.vertices.data(), GL_STATIC_DRAW);
-
-  // position
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)(0));
-  glEnableVertexAttribArray(0);
-  // uv
-  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)(offsetof(vertex, uv)));
-  glEnableVertexAttribArray(1);
-  // normal
-  glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)(offsetof(vertex, normal)));
-  glEnableVertexAttribArray(2);
-
-  glGenBuffers(1, &_ebo);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * _default_model.indices.size(), _default_model.indices.data(), GL_STATIC_DRAW); 
-
   GLint texture_location = _get_uniform_location("uni_texture");
   glUniform1i(texture_location, _texture_index);
 
@@ -155,9 +136,6 @@ bool initialize() {
   glUniform4f(color_location, 1.0f, 1.0f, 1.0f, 1.0f);
 
   glBindTexture(GL_TEXTURE_2D, 0);
-  glBindVertexArray(0);
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
   _default_shader->unbind();
 
   std::srand(std::time(nullptr));
@@ -213,9 +191,8 @@ void run() {
     glUniformMatrix4fv(projection_matrix_location, 1, GL_FALSE, glm::value_ptr(projection));
 
     glBindTexture(GL_TEXTURE_2D, _textures[1]);
-    glBindVertexArray(_vao);
-
-    glDrawElements(GL_TRIANGLES, _default_model.indices.size(), GL_UNSIGNED_INT, 0);
+    
+    _default_mesh->draw(*_default_shader);
 
     glfwSwapBuffers(_context);
 
@@ -228,11 +205,8 @@ void run() {
 }
 
 void terminate() {
-  glDeleteVertexArrays(1, &_vao);
-  glDeleteBuffers(1, &_vbo);
-  glDeleteBuffers(1, &_ebo);
-  
   delete _default_shader;
+  delete _default_mesh;
 
   glfwMakeContextCurrent(nullptr);
   glfwDestroyWindow(_context);
@@ -282,7 +256,7 @@ void _initialize_window_callbacks() {
     // next texture
     if (key == GLFW_KEY_ENTER && action == GLFW_PRESS) {
       _default_shader->bind();
-      _texture_index = ++_texture_index % _textures.size();
+      _texture_index = (_texture_index + 1) % _textures.size();
       GLint texture_location = _get_uniform_location("uni_texture");
       glUniform1i(texture_location, _texture_index);
       _default_shader->unbind();

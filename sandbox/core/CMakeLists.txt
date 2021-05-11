@@ -12,9 +12,8 @@ target_sources(
   ${PROJECT_NAME}
   PRIVATE
     core.cpp
-    file_utils.cpp
     shader.cpp
-    model_loader.cpp
+    mesh.cpp
 )
 
 target_include_directories(

@@ -1,15 +1,33 @@
-#include "model_loader.hpp"
+#include "mesh.hpp"
 
-#include <array>
 #include <fstream>
-#include <iostream>
 #include <sstream>
-#include <tuple>
 #include <unordered_map>
+#include <array>
 
 namespace sbx {
 
-basic_model load_basic_model(const std::filesystem::path& path) {
+mesh::mesh(const std::filesystem::path& path) : _vao(0), _vbo(0), _ebo(0), _vertices(), _indices() {
+  _load_from_obj(path);
+  _initialize();
+}
+
+mesh::~mesh() {
+  glDeleteVertexArrays(1, &_vao);
+  glDeleteBuffers(1, &_vbo);
+  glDeleteBuffers(1, &_ebo);
+}
+
+void mesh::draw(const shader& shader) {
+  shader.bind();
+
+  glBindVertexArray(_vao);
+  glDrawElements(GL_TRIANGLES, _indices.size(), GL_UNSIGNED_INT, 0);
+
+  shader.unbind();
+}
+
+void mesh::_load_from_obj(const std::filesystem::path& path) {
   std::ifstream file_stream(path);
 
   if (!file_stream.is_open()) {
@@ -20,7 +38,6 @@ basic_model load_basic_model(const std::filesystem::path& path) {
     throw std::runtime_error(ss.str());
   }
 
-  basic_model model;
   std::string line;
   std::istringstream line_stream;
 
@@ -89,16 +106,41 @@ basic_model load_basic_model(const std::filesystem::path& path) {
 
           vertex_map.emplace(key, index);
 
-          model.vertices.push_back(temp_vertex);
-          model.indices.push_back(index);
+          _vertices.push_back(temp_vertex);
+          _indices.push_back(index);
         } else {
-          model.indices.push_back(itr->second);
+          _indices.push_back(itr->second);
         }
       }
     }
   }
+}
 
-  return model;
+void mesh::_initialize() {
+  glGenVertexArrays(1, &_vao);
+  glBindVertexArray(_vao);
+
+  glGenBuffers(1, &_vbo);
+  glBindBuffer(GL_ARRAY_BUFFER, _vbo);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(vertex) * _vertices.size(), _vertices.data(), GL_STATIC_DRAW);
+
+  // position
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)(0));
+  glEnableVertexAttribArray(0);
+  // uv
+  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)(offsetof(vertex, uv)));
+  glEnableVertexAttribArray(1);
+  // normal
+  glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)(offsetof(vertex, normal)));
+  glEnableVertexAttribArray(2);
+
+  glGenBuffers(1, &_ebo);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * _indices.size(), _indices.data(), GL_STATIC_DRAW); 
+
+  glBindVertexArray(0);
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 } // namespace sbx
