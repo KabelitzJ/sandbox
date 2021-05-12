@@ -37,9 +37,16 @@ static std::vector<GLuint> _textures;
 static std::unordered_map<std::string, GLint> _uniform_map;
 static constexpr glm::vec3 _clear_color({ 0.33f, 0.45f, 0.50f });
 static unsigned int _texture_index = 2;
+static glm::mat4 _model = glm::mat4(1.0f);
+static glm::mat4 _view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -5.0f));
+static glm::mat4 _projection = glm::mat4(1.0f);
+static glm::vec3 _camera_position(0.0f, 0.0f, 0.0f);
+static glm::vec3 _camera_target(0.0f, 0.0f, -1.0f);
+static constexpr glm::vec3 _up(0.0f, 1.0f, 0.0f);
+static float _camera_speed = 0.005f;
 
 static void _initialize_glfw_callbacks();
-static void _initialize_window_callbacks();
+static void _process_input();
 static GLint _get_uniform_location(const std::string& uniform_name);
 
 bool initialize() {
@@ -86,8 +93,6 @@ bool initialize() {
   glfwSwapInterval(0);
 
   glViewport(0, 0, width, height);
-
-  _initialize_window_callbacks();
 
   _default_shader = new shader("resources/shaders/default_vertex.glsl", "resources/shaders/default_fragment.glsl");
   _default_shader->bind();
@@ -148,14 +153,12 @@ void run() {
   std::uint32_t frames = 0;
   std::chrono::high_resolution_clock::time_point last_time = std::chrono::high_resolution_clock::now();
 
-  glm::mat4 model = glm::mat4(1.0f);
-  glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -5.0f));
-  glm::mat4 projection = glm::mat4(1.0f);
-
   while (!glfwWindowShouldClose(_context)) {
     std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
     std::chrono::nanoseconds passed_time = std::chrono::duration_cast<std::chrono::nanoseconds>(now - last_time);
     last_time = now;
+
+    _process_input();
 
     frame_time += passed_time;
 
@@ -166,13 +169,16 @@ void run() {
       frames = 0;
     }
 
-    float time_value = std::chrono::duration_cast<std::chrono::duration<float>>(passed_time).count();
-    model = glm::rotate(model, time_value * glm::radians(50.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    const float time_value = std::chrono::duration_cast<std::chrono::duration<float>>(passed_time).count();
+
+    _view = glm::lookAt(_camera_position, _camera_position + _camera_target, _up);
+
+    _model = glm::rotate(_model, time_value * glm::radians(50.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
     int width, height;
     glfwGetWindowSize(_context, &width, &height);
     float aspect = static_cast<float>(width) / static_cast<float>(height);
-    projection = glm::perspective(glm::radians(45.0f), aspect, 0.1f, 100.0f);
+    _projection = glm::perspective(glm::radians(45.0f), aspect, 0.1f, 100.0f);
 
     glClearColor(_clear_color.r, _clear_color.g, _clear_color.b, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -182,13 +188,13 @@ void run() {
     _default_shader->bind();
 
     GLint model_matrix_location = _get_uniform_location("uni_model");
-    glUniformMatrix4fv(model_matrix_location, 1, GL_FALSE, glm::value_ptr(model));
+    glUniformMatrix4fv(model_matrix_location, 1, GL_FALSE, glm::value_ptr(_model));
 
     GLint view_matrix_location = _get_uniform_location("uni_view");
-    glUniformMatrix4fv(view_matrix_location, 1, GL_FALSE, glm::value_ptr(view));
+    glUniformMatrix4fv(view_matrix_location, 1, GL_FALSE, glm::value_ptr(_view));
 
     GLint projection_matrix_location = _get_uniform_location("uni_projection");
-    glUniformMatrix4fv(projection_matrix_location, 1, GL_FALSE, glm::value_ptr(projection));
+    glUniformMatrix4fv(projection_matrix_location, 1, GL_FALSE, glm::value_ptr(_projection));
 
     glBindTexture(GL_TEXTURE_2D, _textures[1]);
     
@@ -217,6 +223,57 @@ void _initialize_glfw_callbacks() {
   glfwSetErrorCallback([](int error_code, const char* description){
     std::cout << "[Error: " << error_code << "] " << description << "\n";
   });
+}
+
+void _process_input() {
+  if (glfwGetKey(_context, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+    glfwSetWindowShouldClose(_context, true);
+  }
+  // toggle wireframe mode
+  if (glfwGetKey(_context, GLFW_KEY_T) == GLFW_PRESS) {
+    _draw_wireframe = !_draw_wireframe;
+  }
+  // randomize new uniform color
+  if (glfwGetKey(_context, GLFW_KEY_SPACE) == GLFW_PRESS || glfwGetKey(_context, GLFW_KEY_SPACE) == GLFW_REPEAT) {
+    glm::vec3 color;
+
+    color.r = (static_cast<float>(std::rand() % 255) / 255);
+    color.g = (static_cast<float>(std::rand() % 255) / 255);
+    color.b = (static_cast<float>(std::rand() % 255) / 255);
+
+    _default_shader->bind();
+    GLint color_location = _get_uniform_location("uni_color");
+    glUniform4f(color_location, color.r, color.g, color.b, 1.0f);
+    _default_shader->unbind();
+  }
+  // reset uniform color
+  if (glfwGetKey(_context, GLFW_KEY_R) == GLFW_PRESS) {
+    _default_shader->bind();
+    GLint color_location = _get_uniform_location("uni_color");
+    glUniform4f(color_location, 1.0f, 1.0f, 1.0f, 1.0f);
+    _default_shader->unbind();
+  }
+  // next texture
+  if (glfwGetKey(_context, GLFW_KEY_ENTER) == GLFW_PRESS || glfwGetKey(_context, GLFW_KEY_ENTER) == GLFW_REPEAT) {
+    _default_shader->bind();
+    _texture_index = (_texture_index + 1) % _textures.size();
+    GLint texture_location = _get_uniform_location("uni_texture");
+    glUniform1i(texture_location, _texture_index);
+    _default_shader->unbind();
+  }
+  // camera
+  if (glfwGetKey(_context, GLFW_KEY_W) == GLFW_PRESS) {
+    _camera_position += _camera_target * _camera_speed;
+  }
+  if (glfwGetKey(_context, GLFW_KEY_S) == GLFW_PRESS) {
+    _camera_position -= _camera_target * _camera_speed;
+  }
+  if (glfwGetKey(_context, GLFW_KEY_A) == GLFW_PRESS) {
+    _camera_position -= glm::normalize(glm::cross(_camera_target, _up)) * _camera_speed;
+  }
+  if (glfwGetKey(_context, GLFW_KEY_D) == GLFW_PRESS) {
+    _camera_position += glm::normalize(glm::cross(_camera_target, _up)) * _camera_speed;
+  }
 }
 
 void _initialize_window_callbacks() {
@@ -254,12 +311,25 @@ void _initialize_window_callbacks() {
       _default_shader->unbind();
     }
     // next texture
-    if (key == GLFW_KEY_ENTER && action == GLFW_PRESS) {
+    if (key == GLFW_KEY_ENTER && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
       _default_shader->bind();
       _texture_index = (_texture_index + 1) % _textures.size();
       GLint texture_location = _get_uniform_location("uni_texture");
       glUniform1i(texture_location, _texture_index);
       _default_shader->unbind();
+    }
+    // camera
+    if (key == GLFW_KEY_W && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
+      _camera_position += _camera_target * _camera_speed;
+    }
+    if (key == GLFW_KEY_S && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
+      _camera_position -= _camera_target * _camera_speed;
+    }
+    if (key == GLFW_KEY_A && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
+      _camera_position -= glm::normalize(glm::cross(_camera_target, _up)) * _camera_speed;
+    }
+    if (key == GLFW_KEY_D && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
+      _camera_position += glm::normalize(glm::cross(_camera_target, _up)) * _camera_speed;
     }
   });
 }
