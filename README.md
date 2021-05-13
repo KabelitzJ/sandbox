@@ -1,6 +1,6 @@
 # Sandbox
  
-A playground project for learning and experimenting with opengl
+A playground project for learning and experimenting with opengl 3.3 and c++ 17
 
 ## External libraries
 
@@ -9,6 +9,6 @@ A playground project for learning and experimenting with opengl
 - glm
 - stb (stb_image)
 
-## Textured model loading and transformation
+## Model loading and texturing
 
 <img src="./images/monke_rotate.gif" alt="am monke :D"/>

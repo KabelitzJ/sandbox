@@ -7,42 +7,37 @@
 #include <sstream>
 #include <string>
 #include <unordered_map>
+#include <filesystem>
 #include <ctime>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb/stb_image.h>
-
 #include "shader.hpp"
 #include "mesh.hpp"
+#include "texture.hpp"
 
 namespace sbx {
 
 static GLFWwindow* _context = nullptr;
 static bool _draw_wireframe = false;
+
 static shader* _default_shader = nullptr;
-static mesh* _default_mesh = nullptr;
-static const std::vector<std::string> _texture_paths({
-  "resources/textures/brick_wall.jpg",
-  "resources/textures/cobble_wall.jpg",
-  "resources/textures/lava.jpg",
-  "resources/textures/wooden_box_komisch.jpg",
-  "resources/textures/wooden_box.jpg",
-  "resources/textures/wooden_planks.jpg",
-});
-static std::vector<GLuint> _textures;
+static mesh* _monke_mesh = nullptr;
+static mesh* _floor_mesh = nullptr;
+static const std::filesystem::path _texture_dir("resources/textures");
+static std::vector<texture*> _textures;
 static std::unordered_map<std::string, GLint> _uniform_map;
 static constexpr glm::vec3 _clear_color({ 0.33f, 0.45f, 0.50f });
-static unsigned int _texture_index = 2;
+
 static glm::mat4 _model = glm::mat4(1.0f);
 static glm::mat4 _view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -5.0f));
 static glm::mat4 _projection = glm::mat4(1.0f);
 static glm::vec3 _camera_position(0.0f, 0.0f, 4.0f);
 static glm::vec3 _camera_target(0.0f, 0.0f, -1.0f);
 static constexpr glm::vec3 _up(0.0f, 1.0f, 0.0f);
+
 static constexpr float _camera_speed = 0.005f;
 static constexpr float _camera_sensitivity = 0.4f;
 static glm::vec2 _last_cursor_position(0.0f, 0.0f);
@@ -56,7 +51,6 @@ static float _fov = 45.0f;
 static void _initialize_glfw_callbacks();
 static void _initialize_window_callbacks();
 static void _process_input();
-static GLint _get_uniform_location(const std::string& uniform_name);
 
 bool initialize() {
   _initialize_glfw_callbacks();
@@ -116,48 +110,17 @@ bool initialize() {
   _default_shader = new shader("resources/shaders/default_vertex.glsl", "resources/shaders/default_fragment.glsl");
   _default_shader->bind();
 
-  _default_mesh = new mesh("resources/models/monke.obj");
+  _monke_mesh = new mesh("resources/models/monke.obj");
+  _floor_mesh = new mesh("resources/models/floor.obj");
 
-  for (std::size_t i = 0; i < _texture_paths.size(); ++i) {
-
-    GLuint id;
-
-    glGenTextures(1, &id);
-
-    _textures.push_back(id);
-
-    glActiveTexture(GL_TEXTURE0 + i);
-    glBindTexture(GL_TEXTURE_2D, id);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    int width, height, nrChannels;
-    unsigned char* texture_data = stbi_load(_texture_paths[i].c_str(), &width, &height, &nrChannels, 0);
-
-    if (!texture_data) {
-      std::cout << "[Error] Could not load default texture!\n";
-
-      return false;
-    }
-
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, texture_data);
-    glGenerateMipmap(GL_TEXTURE_2D);
-
-    stbi_image_free(texture_data);
-
+  for (const auto& file : std::filesystem::directory_iterator(_texture_dir)) {
+    _textures.push_back(new texture(file.path()));
   }
 
   glEnable(GL_DEPTH_TEST);
   glDepthFunc(GL_LESS);
 
-  GLint texture_location = _get_uniform_location("uni_texture");
-  glUniform1i(texture_location, _texture_index);
-
-  GLint color_location = _get_uniform_location("uni_color");
-  glUniform4f(color_location, 1.0f, 1.0f, 1.0f, 1.0f);
+  _default_shader->set_uniform_4f("uni_color", { 1.0f, 1.0f, 1.0f, 1.0f });
 
   glBindTexture(GL_TEXTURE_2D, 0);
   _default_shader->unbind();
@@ -208,18 +171,17 @@ void run() {
 
     _default_shader->bind();
 
-    GLint model_matrix_location = _get_uniform_location("uni_model");
-    glUniformMatrix4fv(model_matrix_location, 1, GL_FALSE, glm::value_ptr(_model));
+    _default_shader->set_uniform_matrix_4fv("uni_model", _model);
+    _default_shader->set_uniform_matrix_4fv("uni_view", _view);
+    _default_shader->set_uniform_matrix_4fv("uni_projection", _projection);
 
-    GLint view_matrix_location = _get_uniform_location("uni_view");
-    glUniformMatrix4fv(view_matrix_location, 1, GL_FALSE, glm::value_ptr(_view));
+    unsigned int i = 0;
 
-    GLint projection_matrix_location = _get_uniform_location("uni_projection");
-    glUniformMatrix4fv(projection_matrix_location, 1, GL_FALSE, glm::value_ptr(_projection));
-
-    glBindTexture(GL_TEXTURE_2D, _textures[1]);
+    _default_shader->set_uniform_1i("uni_texture", _textures[i]->id());
+    glActiveTexture(GL_TEXTURE0 + i);
+    _textures[i]->bind();
     
-    _default_mesh->draw(*_default_shader);
+    _floor_mesh->draw(*_default_shader);
 
     glfwSwapBuffers(_context);
 
@@ -233,7 +195,14 @@ void run() {
 
 void terminate() {
   delete _default_shader;
-  delete _default_mesh;
+  delete _monke_mesh;
+  delete _floor_mesh;
+
+  for (texture* texture : _textures) {
+    delete texture;
+  }
+
+  _textures.clear();
 
   glfwMakeContextCurrent(nullptr);
   glfwDestroyWindow(_context);
@@ -269,23 +238,13 @@ void _initialize_window_callbacks() {
       color.b = (static_cast<float>(std::rand() % 255) / 255);
 
       _default_shader->bind();
-      GLint color_location = _get_uniform_location("uni_color");
-      glUniform4f(color_location, color.r, color.g, color.b, 1.0f);
+      _default_shader->set_uniform_4f("uni_color", { color.r, color.g, color.b, 1.0f });
       _default_shader->unbind();
     }
     // reset uniform color
     if (key == GLFW_KEY_R && action == GLFW_PRESS) {
       _default_shader->bind();
-      GLint color_location = _get_uniform_location("uni_color");
-      glUniform4f(color_location, 1.0f, 1.0f, 1.0f, 1.0f);
-      _default_shader->unbind();
-    }
-    // next texture
-    if (key == GLFW_KEY_ENTER && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-      _default_shader->bind();
-      _texture_index = (_texture_index + 1) % _textures.size();
-      GLint texture_location = _get_uniform_location("uni_texture");
-      glUniform1i(texture_location, _texture_index);
+      _default_shader->set_uniform_4f("uni_color", { 1.0f, 1.0f, 1.0f, 1.0f });
       _default_shader->unbind();
     }
   });
@@ -343,20 +302,12 @@ void _process_input() {
   if (glfwGetKey(_context, GLFW_KEY_D) == GLFW_PRESS) {
     _camera_position += glm::normalize(glm::cross(_camera_target, _up)) * _camera_speed;
   }
-}
-
-static GLint _get_uniform_location(const std::string& uniform_name) {
-  auto uniform = _uniform_map.find(uniform_name);
-
-  if (uniform != _uniform_map.end()) {
-    return uniform->second;
+  if (glfwGetKey(_context, GLFW_KEY_Q) == GLFW_PRESS) {
+    _camera_position += _up * _camera_speed;
   }
-
-  GLint location = glGetUniformLocation(_default_shader->id(), uniform_name.c_str());
-
-  _uniform_map.emplace(uniform_name, location);
-
-  return location;
+  if (glfwGetKey(_context, GLFW_KEY_E) == GLFW_PRESS) {
+    _camera_position -= _up * _camera_speed;
+  }
 }
 
 } // namespace sbx

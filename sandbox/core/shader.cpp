@@ -3,9 +3,11 @@
 #include <sstream>
 #include <fstream>
 
+#include <glm/gtc/type_ptr.hpp>
+
 namespace sbx {
 
-shader::shader(const std::filesystem::path& vertex_code, const std::filesystem::path& fragment_code) : _id(0) {
+shader::shader(const std::filesystem::path& vertex_code, const std::filesystem::path& fragment_code) : _id(0), _uniform_map() {
   _initialize(vertex_code, fragment_code);
 }
 
@@ -24,6 +26,21 @@ void shader::unbind() const {
 
 GLuint shader::id() const {
   return _id;
+}
+
+void shader::set_uniform_1i(const std::string& name, GLint value) {
+  GLuint location = _get_uniform_location(name);
+  glUniform1i(location, value);
+}
+
+void shader::set_uniform_4f(const std::string& name, const glm::vec4& value) {
+  GLuint location = _get_uniform_location(name);
+  glUniform4f(location, value.x, value.y, value.z, value.w);
+}
+
+void shader::set_uniform_matrix_4fv(const std::string& name, const glm::mat4& value) {
+  GLuint location = _get_uniform_location(name);
+  glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(value));
 }
 
 std::string shader::_read_file(const std::filesystem::path& path) {
@@ -111,6 +128,20 @@ void shader::_initialize(const std::filesystem::path& vertex_code, const std::fi
 
   glDeleteShader(vertex_shader);
   glDeleteShader(fragment_shader);
+}
+
+GLint shader::_get_uniform_location(const std::string& uniform_name) {
+  auto uniform = _uniform_map.find(uniform_name);
+
+  if (uniform != _uniform_map.end()) {
+    return uniform->second;
+  }
+
+  GLint location = glGetUniformLocation(_id, uniform_name.c_str());
+
+  _uniform_map.emplace(uniform_name, location);
+
+  return location;
 }
 
 } // namespace sbx
