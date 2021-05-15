@@ -21,9 +21,10 @@ public:
 private:
   void _initialize(const std::filesystem::path& path);
 
-  static unsigned int _texture_count;
+  static unsigned int _texture_unit_counter;
 
   GLuint _id;
+  unsigned int _texture_unit;
 
 }; // class texture
 

@@ -7,9 +7,9 @@
 
 namespace sbx {
 
-unsigned int texture::_texture_count = 0;
+unsigned int texture::_texture_unit_counter = 0;
 
-texture::texture(const std::filesystem::path& path) : _id(0) {
+texture::texture(const std::filesystem::path& path) : _id(0), _texture_unit(0) {
   _initialize(path);
 }
 
@@ -18,10 +18,12 @@ texture::~texture() {
 }
 
 void texture::bind() const {
+  glActiveTexture(GL_TEXTURE0 + _texture_unit);
   glBindTexture(GL_TEXTURE_2D, _id);
 }
 
 void texture::unbind() const {
+  glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, 0);
 }
 
@@ -30,7 +32,7 @@ GLuint texture::id() const {
 }
 
 void texture::_initialize(const std::filesystem::path& path) {
-  if (_texture_count == 31) {
+  if (_texture_unit_counter == 31) {
     std::ostringstream ss;
 
     ss << "[Error] Max 32 textures are supported!\n";
@@ -40,8 +42,9 @@ void texture::_initialize(const std::filesystem::path& path) {
 
   glGenTextures(1, &_id);
 
-  glActiveTexture(GL_TEXTURE0 + _texture_count);
-  ++_texture_count;
+  _texture_unit = _texture_unit_counter++;
+
+  glActiveTexture(GL_TEXTURE0 + _texture_unit);
 
   glBindTexture(GL_TEXTURE_2D, _id);
 

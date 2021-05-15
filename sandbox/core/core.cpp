@@ -28,7 +28,7 @@ static mesh* _monke_mesh = nullptr;
 static mesh* _floor_mesh = nullptr;
 static const std::filesystem::path _texture_dir("resources/textures");
 static std::vector<texture*> _textures;
-static std::unordered_map<std::string, GLint> _uniform_map;
+static unsigned int _active_texture_index = 0;
 static constexpr glm::vec3 _clear_color({ 0.33f, 0.45f, 0.50f });
 
 static glm::mat4 _model = glm::mat4(1.0f);
@@ -175,13 +175,10 @@ void run() {
     _default_shader->set_uniform_matrix_4fv("uni_view", _view);
     _default_shader->set_uniform_matrix_4fv("uni_projection", _projection);
 
-    unsigned int i = 0;
-
-    _default_shader->set_uniform_1i("uni_texture", _textures[i]->id());
-    glActiveTexture(GL_TEXTURE0 + i);
-    _textures[i]->bind();
+    _default_shader->set_uniform_1i("uni_texture", _active_texture_index);
+    _textures[_active_texture_index]->bind();
     
-    _floor_mesh->draw(*_default_shader);
+    _monke_mesh->draw(*_default_shader);
 
     glfwSwapBuffers(_context);
 
@@ -246,6 +243,10 @@ void _initialize_window_callbacks() {
       _default_shader->bind();
       _default_shader->set_uniform_4f("uni_color", { 1.0f, 1.0f, 1.0f, 1.0f });
       _default_shader->unbind();
+    }
+    // switch texture
+    if (key == GLFW_KEY_ENTER && action == GLFW_PRESS) {
+      _active_texture_index = (++_active_texture_index % _textures.size());
     }
   });
 
