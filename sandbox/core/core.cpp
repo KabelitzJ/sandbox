@@ -26,6 +26,7 @@ static bool _draw_wireframe = false;
 static shader* _default_shader = nullptr;
 static mesh* _monke_mesh = nullptr;
 static mesh* _floor_mesh = nullptr;
+static mesh* _cube_mesh = nullptr;
 static const std::filesystem::path _texture_dir("resources/textures");
 static std::vector<texture*> _textures;
 static unsigned int _active_texture_index = 0;
@@ -112,6 +113,7 @@ bool initialize() {
 
   _monke_mesh = new mesh("resources/models/monke.obj");
   _floor_mesh = new mesh("resources/models/floor.obj");
+  _cube_mesh = new mesh("resources/models/cube.obj");
 
   for (const auto& file : std::filesystem::directory_iterator(_texture_dir)) {
     _textures.push_back(new texture(file.path()));
@@ -178,7 +180,7 @@ void run() {
     _default_shader->set_uniform_1i("uni_texture", _active_texture_index);
     _textures[_active_texture_index]->bind();
     
-    _monke_mesh->draw(*_default_shader);
+    _cube_mesh->draw(*_default_shader);
 
     glfwSwapBuffers(_context);
 
@@ -194,6 +196,7 @@ void terminate() {
   delete _default_shader;
   delete _monke_mesh;
   delete _floor_mesh;
+  delete _cube_mesh;
 
   for (texture* texture : _textures) {
     delete texture;

@@ -15,6 +15,8 @@ target_sources(
     shader.cpp
     mesh.cpp
     texture.cpp
+    camera.cpp
+    perspective_camera.cpp
 )
 
 target_include_directories(
