@@ -2,6 +2,8 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 
+#include "constants.hpp"
+
 namespace sbx {
 
 camera::camera(const glm::vec3& position, const glm::vec3& direction, float field_of_view, float pitch, float yaw)
@@ -14,11 +16,19 @@ camera::camera(const glm::vec3& position, const glm::vec3& direction, float fiel
 }
 
 glm::mat4 camera::view() const {
-  return glm::lookAt(_position, _position + _direction, _UP);
+  return glm::lookAt(_position, _position + _direction, VECTOR_UP);
 }
 
 float camera::field_of_view() const {
   return _field_of_view;
+}
+
+void camera::on_key_event(key_event* event) {
+
+}
+
+void camera::on_mouse_event(mouse_event* event) {
+  
 }
 
 } // namespace sbx

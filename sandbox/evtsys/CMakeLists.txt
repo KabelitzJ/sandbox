@@ -1,9 +1,6 @@
-project(core CXX)
+project(evtsys CXX)
 
-find_package(glad REQUIRED)
 find_package(glfw3 REQUIRED)
-find_package(glm REQUIRED)
-find_package(stb REQUIRED)
 
 add_library(${PROJECT_NAME} SHARED)
 add_library(${CMAKE_PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
@@ -11,12 +8,8 @@ add_library(${CMAKE_PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 target_sources(
   ${PROJECT_NAME}
   PRIVATE
-    core.cpp
-    shader.cpp
-    mesh.cpp
-    texture.cpp
-    camera.cpp
-    perspective_camera.cpp
+    window_event.cpp
+    event_queue.cpp
 )
 
 target_include_directories(
@@ -30,11 +23,7 @@ target_include_directories(
 target_link_libraries(
   ${PROJECT_NAME}
   PUBLIC
-    sbx::evtsys
-    glad::glad
     glfw3::glfw3
-    glm::glm
-    stb::stb
 )
 
 target_compile_features(

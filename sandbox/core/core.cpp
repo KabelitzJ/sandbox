@@ -14,13 +14,18 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include <evtsys/event_queue.hpp>
+
 #include "shader.hpp"
 #include "mesh.hpp"
 #include "texture.hpp"
+#include "perspective_camer.hpp"
 
 namespace sbx {
 
 static GLFWwindow* _context = nullptr;
+static event_queue* _event_queue;
+static camera* _camera;
 static bool _draw_wireframe = false;
 
 static shader* _default_shader = nullptr;
@@ -87,6 +92,15 @@ bool initialize() {
     return false;
   }
 
+  _event_queue = new event_queue(_context);
+
+  float aspect = static_cast<float>(width) / static_cast<float>(height);
+
+  _camera = new perspective_camera({0.0f, 0.0f, 4.0f}, {0.0f, 0.0f, -1.0f}, 45.0f, aspect, 0.1f, 100.0f);
+
+  _event_queue->register_key_event_listener(_camera);
+  _event_queue->register_mouse_event_listener(_camera);
+
   _initialize_window_callbacks();
 
   const int win_pos_x = (video_mode->width / 2) - (width / 2);
@@ -144,7 +158,9 @@ void run() {
     std::chrono::nanoseconds passed_time = std::chrono::duration_cast<std::chrono::nanoseconds>(now - last_time);
     last_time = now;
 
-    _process_input();
+    // _process_input();
+
+    _event_queue->poll_events();
 
     frame_time += passed_time;
 
@@ -188,7 +204,7 @@ void run() {
 
     frames++;
 
-    glfwPollEvents();
+    // glfwPollEvents();
   }
 }
 
@@ -203,6 +219,8 @@ void terminate() {
   }
 
   _textures.clear();
+
+  delete _event_queue;
 
   glfwMakeContextCurrent(nullptr);
   glfwDestroyWindow(_context);
@@ -249,7 +267,7 @@ void _initialize_window_callbacks() {
     }
     // switch texture
     if (key == GLFW_KEY_ENTER && action == GLFW_PRESS) {
-      _active_texture_index = (++_active_texture_index % _textures.size());
+      _active_texture_index = (_active_texture_index + 1) % _textures.size();
     }
   });
 

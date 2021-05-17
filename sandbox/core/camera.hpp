@@ -4,9 +4,12 @@
 #include <glm/vec3.hpp>
 #include <glm/mat4x4.hpp>
 
+#include <evtsys/key_event_listener.hpp>
+#include <evtsys/mouse_event_listener.hpp>
+
 namespace sbx {
 
-class camera {
+class camera : public key_event_listener, public mouse_event_listener {
 
 public:
   camera(const glm::vec3& position, const glm::vec3& direction, float field_of_view, float pitch = 0.0f, float yaw = 0.0f);
@@ -20,7 +23,8 @@ protected:
   float field_of_view() const;
 
 private:
-  static constexpr glm::vec3 _UP = glm::vec3(0.0f, 1.0f, 0.0f);
+  void on_key_event(key_event* event) override;
+  void on_mouse_event(mouse_event* event) override;
 
   glm::vec3 _position;
   glm::vec3 _direction;
