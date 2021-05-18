@@ -10,6 +10,7 @@ target_sources(
   PRIVATE
     event.cpp
     window_event.cpp
+    key_event.cpp
     event_queue.cpp
 )
 

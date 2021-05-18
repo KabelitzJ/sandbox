@@ -92,6 +92,22 @@ bool initialize() {
     return false;
   }
 
+  glfwMakeContextCurrent(_context);
+
+  if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+    std::cout << "[Error] Could not load gl bindings (glad)!\n";
+
+    return false;
+  }
+
+  const int win_pos_x = (video_mode->width / 2) - (width / 2);
+  const int win_pos_y = (video_mode->height / 2) - (height / 2);
+  glfwSetWindowPos(_context, win_pos_x, win_pos_y);
+  glfwSetInputMode(_context, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+  glfwSwapInterval(0);
+  glfwFocusWindow(_context);
+
+
   _event_queue = new event_queue(_context);
 
   float aspect = static_cast<float>(width) / static_cast<float>(height);
@@ -102,22 +118,7 @@ bool initialize() {
 
   _initialize_window_callbacks();
 
-  const int win_pos_x = (video_mode->width / 2) - (width / 2);
-  const int win_pos_y = (video_mode->height / 2) - (height / 2);
-
-  glfwSetWindowPos(_context, win_pos_x, win_pos_y);
   _last_cursor_position = glm::vec2(width / 2, height / 2);
-
-  glfwMakeContextCurrent(_context);
-
-  if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-    std::cout << "[Error] Could not load gl bindings (glad)!\n";
-
-    return false;
-  }
-
-  glfwSetInputMode(_context, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-  glfwSwapInterval(0);
 
   glViewport(0, 0, width, height);
 
@@ -141,8 +142,6 @@ bool initialize() {
   _default_shader->unbind();
 
   std::srand(std::time(nullptr));
-
-  glfwFocusWindow(_context);
 
   return true;
 }

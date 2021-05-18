@@ -2,6 +2,7 @@
 
 #include <stdexcept>
 
+#include "key_event.hpp"
 #include "window_event.hpp"
 
 namespace sbx {
@@ -15,7 +16,7 @@ event_queue::event_queue(GLFWwindow* context)
   if (glfwGetWindowUserPointer(_context)) {
     throw std::runtime_error("[Error] Context already has an event queue attached!\n");
   }
-  glfwSetWindowUserPointer(_context, this);
+  glfwSetWindowUserPointer(_context, static_cast<void*>(&_queue));
   bind();
 }
 
@@ -34,15 +35,15 @@ void event_queue::poll_events() {
       for (auto* listener : _keyboard_event_listeners) {
         switch (base_event->type()) {
           case event_type::KEY_PRESSED: {
-            listener->on_key_pressed(1);
+            listener->on_key_pressed(key_code::SPACE);
             break;
           }
           case event_type::KEY_REPEATED: {
-            listener->on_key_repeated(1);
+            listener->on_key_repeated(key_code::SPACE);
             break;
           }
           case event_type::KEY_RELEASED: {
-            listener->on_key_released(1);
+            listener->on_key_released(key_code::SPACE);
             break;
           }
         }
@@ -53,50 +54,74 @@ void event_queue::poll_events() {
   }
 }
 
+void event_queue::key_callback(GLFWwindow* window, int key,int scancode, int action, int mods) {
+  std::queue<event*> queue = *static_cast<std::queue<event*>*>(glfwGetWindowUserPointer(window));
+
+  event* event = nullptr;
+
+  switch (action) {
+    case GLFW_PRESS: {
+      event = new key_pressed_event(static_cast<key_code>(key));
+      break;
+    }
+    case GLFW_REPEAT: {
+      event = new key_repeated_event(static_cast<key_code>(key));
+      break;
+    }
+    case GLFW_RELEASE: {
+      event = new key_released_event(static_cast<key_code>(key));
+      break;
+    }
+  }
+
+  queue.push(event);
+}
+
 void event_queue::window_moved_callback(GLFWwindow* window, int x, int y) {
-  event_queue queue = *static_cast<event_queue*>(glfwGetWindowUserPointer(window));
+  std::queue<event*> queue = *static_cast<std::queue<event*>*>(glfwGetWindowUserPointer(window));
 
   event* event = new window_moved_event(x, y);
 
-  queue._queue.push(event);
+  queue.push(event);
 }
 
 void event_queue::window_resized_callback(GLFWwindow* window, int width, int height) {
-  event_queue queue = *static_cast<event_queue*>(glfwGetWindowUserPointer(window));
+  std::queue<event*> queue = *static_cast<std::queue<event*>*>(glfwGetWindowUserPointer(window));
 
   event* event = new window_resized_event(width, height);
 
-  queue._queue.push(event);
+  queue.push(event);
 }
 
 void event_queue::window_closed_callback(GLFWwindow* window) {
-  event_queue queue = *static_cast<event_queue*>(glfwGetWindowUserPointer(window));
+  std::queue<event*> queue = *static_cast<std::queue<event*>*>(glfwGetWindowUserPointer(window));
 
   event* event = new window_closed_event();
 
-  queue._queue.push(event);
+  queue.push(event);
 }
 
 void event_queue::window_refreshed_callback(GLFWwindow* window) {
-  event_queue queue = *static_cast<event_queue*>(glfwGetWindowUserPointer(window));
+  std::queue<event*> queue = *static_cast<std::queue<event*>*>(glfwGetWindowUserPointer(window));
 
   event* event = new window_refreshed_event();
 
-  queue._queue.push(event);
+  queue.push(event);
 }
 
 void event_queue::framebuffer_resized_callback(GLFWwindow* window, int width, int height) {
-  event_queue queue = *static_cast<event_queue*>(glfwGetWindowUserPointer(window));
+  std::queue<event*> queue = *static_cast<std::queue<event*>*>(glfwGetWindowUserPointer(window));
 
   event* event = new framebuffer_resized_event(width, height);
 
-  queue._queue.push(event);
+  queue.push(event);
 }
 
 void event_queue::bind() {
   // KEY_PRESSED    
   // KEY_REPEATED       
-  // KEY_RELEASED    
+  // KEY_RELEASED
+  glfwSetKeyCallback(_context, &event_queue::key_callback);
 
   // BUTTON_PRESSED     
   // BUTTON_RELEASED    

@@ -12,7 +12,7 @@ namespace sbx {
 class camera : public key_event_listener, public mouse_event_listener {
 
 public:
-  camera(const glm::vec3& position, const glm::vec3& direction, float field_of_view, float pitch = 0.0f, float yaw = 0.0f);
+  camera(const glm::vec3& position, const glm::vec3& direction, float speed, float field_of_view, float pitch = 0.0f, float yaw = 0.0f);
   virtual ~camera() = default;
 
   virtual glm::mat4 projection() const = 0;
@@ -23,13 +23,14 @@ protected:
   float field_of_view() const;
 
 private:
-  void on_key_pressed(int key_code) override;
-  void on_key_released(int key_code) override;
+  void on_key_pressed(key_code code) override;
+  void on_key_released(key_code code) override;
 
   void on_mouse_event(mouse_event* event) override;
 
   glm::vec3 _position;
   glm::vec3 _direction;
+  float _speed;
   float _field_of_view;
   float _pitch;
   float _yaw;

@@ -30,6 +30,7 @@ private:
   static void window_closed_callback(GLFWwindow* window);
   static void window_refreshed_callback(GLFWwindow* window);
   static void framebuffer_resized_callback(GLFWwindow* window, int width, int height);
+  static void key_callback(GLFWwindow* window, int key,int scancode, int action, int mods);
 
   void bind();
 
