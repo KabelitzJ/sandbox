@@ -11,7 +11,9 @@ public:
   key_event_listener() = default;
   virtual ~key_event_listener() = default;
 
-  virtual void on_key_event(key_event* event) = 0;
+  virtual void on_key_pressed(int key_code) {}
+  virtual void on_key_repeated(int key_code) {}
+  virtual void on_key_released(int key_code) {}
 
 }; // class key_event_listener
 

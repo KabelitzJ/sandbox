@@ -98,8 +98,7 @@ bool initialize() {
 
   _camera = new perspective_camera({0.0f, 0.0f, 4.0f}, {0.0f, 0.0f, -1.0f}, 45.0f, aspect, 0.1f, 100.0f);
 
-  _event_queue->register_key_event_listener(_camera);
-  _event_queue->register_mouse_event_listener(_camera);
+  _event_queue->register_listener(_camera);
 
   _initialize_window_callbacks();
 

@@ -23,7 +23,9 @@ protected:
   float field_of_view() const;
 
 private:
-  void on_key_event(key_event* event) override;
+  void on_key_pressed(int key_code) override;
+  void on_key_released(int key_code) override;
+
   void on_mouse_event(mouse_event* event) override;
 
   glm::vec3 _position;

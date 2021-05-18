@@ -23,7 +23,11 @@ float camera::field_of_view() const {
   return _field_of_view;
 }
 
-void camera::on_key_event(key_event* event) {
+void camera::on_key_pressed(int key_code) {
+
+}
+
+void camera::on_key_released(int key_code) {
 
 }
 

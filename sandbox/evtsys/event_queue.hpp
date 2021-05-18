@@ -21,25 +21,40 @@ public:
 
   void poll_events();
 
-  void register_window_event_listener(window_event_listener* listener);
-  void register_key_event_listener(key_event_listener* listener);
-  void register_mouse_event_listener(mouse_event_listener* listener);
+  template<typename Listener>
+  void register_listener(Listener* listener);
 
 private:
-  static void window_position_callback(GLFWwindow* window, int x, int y);
-  static void window_size_callback(GLFWwindow* window, int width, int height);
-  static void window_close_callback(GLFWwindow* window);
-  static void window_framebuffer_size_callback(GLFWwindow* window, int width, int height);
+  static void window_moved_callback(GLFWwindow* window, int x, int y);
+  static void window_resized_callback(GLFWwindow* window, int width, int height);
+  static void window_closed_callback(GLFWwindow* window);
+  static void window_refreshed_callback(GLFWwindow* window);
+  static void framebuffer_resized_callback(GLFWwindow* window, int width, int height);
 
   void bind();
 
   GLFWwindow* _context;
   std::queue<event*> _queue;
   std::vector<window_event_listener*> _window_event_listeners;
-  std::vector<key_event_listener*> _key_event_listeners;
+  std::vector<key_event_listener*> _keyboard_event_listeners;
   std::vector<mouse_event_listener*> _mouse_event_listeners;
 
 }; // class event_queue
+
+template<typename Listener>
+inline void event_queue::register_listener(Listener* listener) {
+  if constexpr (std::is_base_of_v<window_event_listener, Listener>) {
+    _window_event_listeners.push_back(listener);
+  }
+
+  if constexpr (std::is_base_of_v<key_event_listener, Listener>) {
+    _keyboard_event_listeners.push_back(listener);
+  }
+
+  if constexpr (std::is_base_of_v<mouse_event_listener, Listener>) {
+    _mouse_event_listeners.push_back(listener);
+  }
+}
 
 } // namespace sbx
 

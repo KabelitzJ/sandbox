@@ -8,6 +8,7 @@ add_library(${CMAKE_PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 target_sources(
   ${PROJECT_NAME}
   PRIVATE
+    event.cpp
     window_event.cpp
     event_queue.cpp
 )

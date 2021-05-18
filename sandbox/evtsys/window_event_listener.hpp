@@ -12,7 +12,6 @@ public:
   virtual ~window_event_listener() = default;
 
 private:
-  virtual void on_window_event(window_event* event) = 0;
 
   friend class event_queue;
 
