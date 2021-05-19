@@ -17,6 +17,7 @@
 #include "shader.hpp"
 #include "mesh.hpp"
 #include "texture.hpp"
+#include "perspective_camera.hpp"
 
 namespace sbx {
 
