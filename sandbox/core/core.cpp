@@ -19,14 +19,14 @@
 #include "shader.hpp"
 #include "mesh.hpp"
 #include "texture.hpp"
-#include "perspective_camer.hpp"
+#include "perspective_camera.hpp"
 
 namespace sbx {
 
 static GLFWwindow* _context = nullptr;
 static event_queue* _event_queue;
-static camera* _camera;
 static bool _draw_wireframe = false;
+static camera* _camera = nullptr;
 
 static shader* _default_shader = nullptr;
 static mesh* _monke_mesh = nullptr;
@@ -121,6 +121,9 @@ bool initialize() {
   _last_cursor_position = glm::vec2(width / 2, height / 2);
 
   glViewport(0, 0, width, height);
+
+  float aspect_ratio = static_cast<float>(width) / static_cast<float>(height);
+  _camera = new perspective_camera({0.0f, 0.0f, 0.0f}, {0.0f, -1.0f, 0.0f}, 45.0f, aspect_ratio, 0.001f, 100.0f);
 
   _default_shader = new shader("resources/shaders/default_vertex.glsl", "resources/shaders/default_fragment.glsl");
   _default_shader->bind();
