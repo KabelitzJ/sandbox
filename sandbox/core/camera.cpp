@@ -31,9 +31,9 @@ float camera::field_of_view() const {
 }
 
 void camera::register_event_callbacks(event_queue& queue) {
-  queue.subscribe<key_pressed_event>(std::bind(&camera::on_key_pressed, this, std::placeholders::_1));
-  queue.subscribe<key_repeated_event>(std::bind(&camera::on_key_repeated, this, std::placeholders::_1));
-  queue.subscribe<mouse_moved_event>(std::bind(&camera::on_mouse_moved, this, std::placeholders::_1));
+  queue.subscribe<key_pressed_event>([this](key_pressed_event& event){ on_key_pressed(event); });
+  queue.subscribe<key_repeated_event>([this](key_repeated_event& event){ on_key_repeated(event); });
+  queue.subscribe<mouse_moved_event>([this](mouse_moved_event& event){ on_mouse_moved(event); });
 }
 
 void camera::on_key_pressed(key_pressed_event& event) {
