@@ -22,11 +22,13 @@
 #include "mesh.hpp"
 #include "texture.hpp"
 #include "perspective_camera.hpp"
+#include "input_manager.hpp"
 
 namespace sbx {
 
 static GLFWwindow* _context = nullptr;
-static event_queue* _event_queue;
+static event_queue* _event_queue = nullptr;
+static input_manager* _input = nullptr;
 static bool _draw_wireframe = false;
 static camera* _camera = nullptr;
 
@@ -46,7 +48,7 @@ static glm::vec3 _camera_position(0.0f, 0.0f, 4.0f);
 static glm::vec3 _camera_direction(0.0f, 0.0f, -1.0f);
 static constexpr glm::vec3 _up(0.0f, 1.0f, 0.0f);
 
-static constexpr float _camera_speed = 0.25f;
+static constexpr float _camera_speed = 0.005f;
 static constexpr float _camera_sensitivity = 0.4f;
 static float _camera_pitch = 0.0f;
 static float _camera_yaw = -90.0f;
@@ -110,10 +112,11 @@ bool initialize() {
     }
   });
 
+  _input = new input_manager(*_event_queue);
+
   float aspect = static_cast<float>(width) / static_cast<float>(height);
 
   _camera = new perspective_camera(_camera_position, _camera_direction, _camera_speed, _fov, aspect, 0.1f, 100.0f, _camera_pitch, _camera_yaw);
-  _event_queue->register_listener(*_camera);
 
   glViewport(0, 0, width, height);
 
@@ -164,6 +167,8 @@ void run() {
 
     _event_queue->poll();
 
+    _camera->update(*_input);
+
     _view = _camera->view();
 
     _model = glm::rotate(_model, time_value * glm::radians(50.0f), glm::vec3(0.0f, 1.0f, 0.0f));
@@ -206,6 +211,7 @@ void terminate() {
 
   _textures.clear();
 
+  delete _input;
   delete _event_queue;
 
   glfwMakeContextCurrent(nullptr);

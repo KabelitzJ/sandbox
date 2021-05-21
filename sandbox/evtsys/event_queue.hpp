@@ -22,30 +22,22 @@ public:
 
   void poll();
 
-  template<typename Listener>
-  void register_listener(Listener& listener);
-
   template<typename EventType, typename Callback>
   void subscribe(Callback&& subscriber);
 
 private:
 
   template<typename EventType, typename... Args>
-  void push(Args&&... args);
+  void _push(Args&&... args);
 
-  void bind_callbacks();
-  void unbind_callbacks();
+  void _bind_callbacks();
+  void _unbind_callbacks();
 
   GLFWwindow* _context;
   std::queue<std::pair<std::type_index, std::unique_ptr<event>>> _queue;
   std::unordered_map<std::type_index, std::vector<std::function<void(event&)>>> _subscribers;
 
 }; // class event_queue
-
-template<typename Listener>
-void event_queue::register_listener(Listener& listener) {
-  listener.register_event_callbacks(*this);
-}
 
 template<typename EventType, typename Callback>
 inline void event_queue::subscribe(Callback&& subscriber) {
@@ -56,7 +48,7 @@ inline void event_queue::subscribe(Callback&& subscriber) {
 }
 
 template<typename EventType, typename... Args>
-inline void event_queue::push(Args&&... args) {
+inline void event_queue::_push(Args&&... args) {
   std::type_index type = std::type_index(typeid(EventType));
   auto event = std::make_unique<EventType>(std::forward<Args>(args)...);
 

@@ -12,11 +12,11 @@ event_queue::event_queue(GLFWwindow* context)
 : _context(context),
   _queue(),
   _subscribers() {
-  bind_callbacks();
+  _bind_callbacks();
 }
 
 event_queue::~event_queue() {
-  unbind_callbacks();
+  _unbind_callbacks();
 }
 
 void event_queue::poll() {
@@ -32,7 +32,7 @@ void event_queue::poll() {
   }
 }
 
-void event_queue::bind_callbacks() {
+void event_queue::_bind_callbacks() {
   glfwSetWindowUserPointer(_context, this);
 
   glfwSetKeyCallback(_context, [](GLFWwindow* window, int key, int, int action, int) {
@@ -40,15 +40,15 @@ void event_queue::bind_callbacks() {
 
     switch (action) {
       case GLFW_PRESS: {
-        queue->push<key_pressed_event>(static_cast<key_code>(key));
+        queue->_push<key_pressed_event>(static_cast<key_code>(key));
         break;
       }
       case GLFW_REPEAT: {
-        queue->push<key_repeated_event>(static_cast<key_code>(key));
+        queue->_push<key_repeated_event>(static_cast<key_code>(key));
         break;
       }
       case GLFW_RELEASE: {
-        queue->push<key_released_event>(static_cast<key_code>(key));
+        queue->_push<key_released_event>(static_cast<key_code>(key));
         break;
       }
     };
@@ -61,11 +61,11 @@ void event_queue::bind_callbacks() {
   glfwSetCursorPosCallback(_context, [](GLFWwindow* window, double xpos, double ypos){
     event_queue* queue = static_cast<event_queue*>(glfwGetWindowUserPointer(window));
 
-    queue->push<mouse_moved_event>(static_cast<float>(xpos), static_cast<float>(ypos));
+    queue->_push<mouse_moved_event>(static_cast<float>(xpos), static_cast<float>(ypos));
   });
 }
 
-void event_queue::unbind_callbacks() {
+void event_queue::_unbind_callbacks() {
   glfwSetKeyCallback(_context, nullptr);
 
   glfwSetWindowUserPointer(_context, nullptr);

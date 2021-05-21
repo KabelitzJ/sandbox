@@ -16,8 +16,6 @@ public:
   glm::mat4 projection() const override;
 
 private:
-  void register_event_callbacks(event_queue& queue) override;
-
   void on_framebuffer_resize(framebuffer_resized_event& event);
 
   float _aspect_ratio;

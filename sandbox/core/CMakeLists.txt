@@ -17,6 +17,7 @@ target_sources(
     texture.cpp
     camera.cpp
     perspective_camera.cpp
+    input_manager.cpp
 )
 
 target_include_directories(

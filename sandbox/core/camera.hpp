@@ -4,13 +4,14 @@
 #include <glm/vec3.hpp>
 #include <glm/mat4x4.hpp>
 
-#include <evtsys/event_listener.hpp>
 #include <evtsys/key_event.hpp>
 #include <evtsys/mouse_event.hpp>
 
+#include "input_manager.hpp"
+
 namespace sbx {
 
-class camera : public event_listener {
+class camera  {
 
 public:
   camera(const glm::vec3& position, const glm::vec3& direction, float speed, float field_of_view, float pitch = 0.0f, float yaw = 0.0f);
@@ -20,15 +21,14 @@ public:
 
   glm::mat4 view() const;
 
-protected:
-  void register_event_callbacks(event_queue& queue) override;
+  void update(const input_manager& input);
 
+protected:
   float field_of_view() const;
 
 private:
-  void on_key_pressed(key_pressed_event& event);
-  void on_key_repeated(key_repeated_event& event);
-  void on_mouse_moved(mouse_moved_event& event);
+  void _update_position(const input_manager& input);
+  void _update_direction(const input_manager& input);
 
   bool _is_first_cursor_movement;
   float _sensitivity;

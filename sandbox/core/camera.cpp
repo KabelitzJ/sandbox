@@ -26,57 +26,49 @@ glm::mat4 camera::view() const {
   return foo;
 }
 
+void camera::update(const input_manager& input) {
+  _update_position(input);
+  _update_direction(input);
+}
+
 float camera::field_of_view() const {
   return _field_of_view;
 }
 
-void camera::register_event_callbacks(event_queue& queue) {
-  queue.subscribe<key_pressed_event>([this](key_pressed_event& event){ on_key_pressed(event); });
-  queue.subscribe<key_repeated_event>([this](key_repeated_event& event){ on_key_repeated(event); });
-  queue.subscribe<mouse_moved_event>([this](mouse_moved_event& event){ on_mouse_moved(event); });
-}
-
-void camera::on_key_pressed(key_pressed_event& event) {
-  const key_code code = event.code();
-
-  if (code == key_code::W) {
+void camera::_update_position(const input_manager& input) {
+  if (input.is_key_pressed(key_code::W)) {
     _position += _direction * _speed;
   }
-  if (code == key_code::S) {
+  if (input.is_key_pressed(key_code::S)) {
     _position -= _direction * _speed;
   }
-  if (code == key_code::A) {
+  if (input.is_key_pressed(key_code::A)) {
     _position -= glm::normalize(glm::cross(_direction, VECTOR_UP)) * _speed;
   }
-  if (code == key_code::D) {
+  if (input.is_key_pressed(key_code::D)) {
     _position += glm::normalize(glm::cross(_direction, VECTOR_UP)) * _speed;
   }
-  if (code == key_code::Q) {
+  if (input.is_key_pressed(key_code::Q)) {
     _position -= VECTOR_UP * _speed;
   }
-  if (code == key_code::E) {
+  if (input.is_key_pressed(key_code::E)) {
     _position += VECTOR_UP * _speed;
   }
 }
 
-void camera::on_key_repeated(key_repeated_event& event) {
-  key_pressed_event temp_event(event.code());
-  on_key_pressed(temp_event);
-}
+void camera::_update_direction(const input_manager& input) {
+  const glm::vec2& mouse_position = input.mouse_position();
 
-void camera::on_mouse_moved(mouse_moved_event& event) {
-  const float xpos = event.x();
-  const float ypos = event.y();
-
-  if (_is_first_cursor_movement) {
-    _last_cursor_position = glm::vec2(xpos, ypos);
+  // check here if mouse has been moved at all
+  if (_is_first_cursor_movement && (mouse_position.x != 0.0f || mouse_position.y != 0.0f)) {
+    _last_cursor_position = mouse_position;
     _is_first_cursor_movement = false;
   }
 
-  glm::vec2 cursor_offset(xpos - _last_cursor_position.x, _last_cursor_position.y - ypos);
+  glm::vec2 cursor_offset(mouse_position.x - _last_cursor_position.x, _last_cursor_position.y - mouse_position.y);
   cursor_offset *= _sensitivity;
 
-  _last_cursor_position = glm::vec2(xpos, ypos);
+  _last_cursor_position = glm::vec2(mouse_position.x, mouse_position.y);
 
   _yaw += cursor_offset.x;
   _pitch += cursor_offset.y;
@@ -94,5 +86,6 @@ void camera::on_mouse_moved(mouse_moved_event& event) {
   direction.z = sin(glm::radians(_yaw)) * cos(glm::radians(_pitch));
   _direction = glm::normalize(direction);
 }
+
 
 } // namespace sbx
