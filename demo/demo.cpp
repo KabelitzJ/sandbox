@@ -3,6 +3,8 @@
 #include <cstdlib>
 
 #include <core/core.hpp>
+#include <evtsys/event_queue.hpp>
+#include <evtsys/event.hpp>
 
 int main(int argc, char** argv) {
 

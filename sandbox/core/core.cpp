@@ -15,6 +15,8 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include <evtsys/event_queue.hpp>
+#include <evtsys/key_event.hpp>
+#include <evtsys/window_event.hpp>
 
 #include "shader.hpp"
 #include "mesh.hpp"
@@ -41,22 +43,16 @@ static glm::mat4 _model = glm::mat4(1.0f);
 static glm::mat4 _view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -5.0f));
 static glm::mat4 _projection = glm::mat4(1.0f);
 static glm::vec3 _camera_position(0.0f, 0.0f, 4.0f);
-static glm::vec3 _camera_target(0.0f, 0.0f, -1.0f);
+static glm::vec3 _camera_direction(0.0f, 0.0f, -1.0f);
 static constexpr glm::vec3 _up(0.0f, 1.0f, 0.0f);
 
-static constexpr float _camera_speed = 0.005f;
+static constexpr float _camera_speed = 0.25f;
 static constexpr float _camera_sensitivity = 0.4f;
-static glm::vec2 _last_cursor_position(0.0f, 0.0f);
 static float _camera_pitch = 0.0f;
 static float _camera_yaw = -90.0f;
-static bool _is_first_cursor_movement = true;
-static glm::vec2 _scroll_offset(0.0f, 0.0f);
-static constexpr float _scroll_sensitivity = 3.0f;
 static float _fov = 45.0f;
 
 static void _initialize_glfw_callbacks();
-static void _initialize_window_callbacks();
-static void _process_input();
 
 bool initialize() {
   _initialize_glfw_callbacks();
@@ -107,23 +103,19 @@ bool initialize() {
   glfwSwapInterval(0);
   glfwFocusWindow(_context);
 
-
   _event_queue = new event_queue(_context);
+  _event_queue->subscribe<key_pressed_event>([](key_pressed_event& event){
+    if (event.code() == key_code::ESCAPE) {
+      glfwSetWindowShouldClose(_context, true);
+    }
+  });
 
   float aspect = static_cast<float>(width) / static_cast<float>(height);
 
-  _camera = new perspective_camera({0.0f, 0.0f, 4.0f}, {0.0f, 0.0f, -1.0f}, 45.0f, aspect, 0.1f, 100.0f);
-
-  _event_queue->register_listener(_camera);
-
-  _initialize_window_callbacks();
-
-  _last_cursor_position = glm::vec2(width / 2, height / 2);
+  _camera = new perspective_camera(_camera_position, _camera_direction, _camera_speed, _fov, aspect, 0.1f, 100.0f, _camera_pitch, _camera_yaw);
+  _event_queue->register_listener(*_camera);
 
   glViewport(0, 0, width, height);
-
-  float aspect_ratio = static_cast<float>(width) / static_cast<float>(height);
-  _camera = new perspective_camera({0.0f, 0.0f, 0.0f}, {0.0f, -1.0f, 0.0f}, 45.0f, aspect_ratio, 0.001f, 100.0f);
 
   _default_shader = new shader("resources/shaders/default_vertex.glsl", "resources/shaders/default_fragment.glsl");
   _default_shader->bind();
@@ -159,10 +151,6 @@ void run() {
     std::chrono::nanoseconds passed_time = std::chrono::duration_cast<std::chrono::nanoseconds>(now - last_time);
     last_time = now;
 
-    // _process_input();
-
-    _event_queue->poll_events();
-
     frame_time += passed_time;
 
     if (frame_time >= std::chrono::seconds(1)) {
@@ -174,14 +162,13 @@ void run() {
 
     const float time_value = std::chrono::duration_cast<std::chrono::duration<float>>(passed_time).count();
 
-    _view = glm::lookAt(_camera_position, _camera_position + _camera_target, _up);
+    _event_queue->poll();
+
+    _view = _camera->view();
 
     _model = glm::rotate(_model, time_value * glm::radians(50.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
-    int width, height;
-    glfwGetWindowSize(_context, &width, &height);
-    float aspect = static_cast<float>(width) / static_cast<float>(height);
-    _projection = glm::perspective(glm::radians(_fov), aspect, 0.1f, 100.0f);
+    _projection = _camera->projection();
 
     glClearColor(_clear_color.r, _clear_color.g, _clear_color.b, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -204,8 +191,6 @@ void run() {
     _default_shader->unbind();
 
     frames++;
-
-    // glfwPollEvents();
   }
 }
 
@@ -234,103 +219,103 @@ void _initialize_glfw_callbacks() {
   });
 }
 
-void _initialize_window_callbacks() {
-  glfwSetFramebufferSizeCallback(_context, [](GLFWwindow* window, int width, int height){
-    glViewport(0, 0, width, height);
-  });
+// void _initialize_window_callbacks() {
+//   glfwSetFramebufferSizeCallback(_context, [](GLFWwindow* window, int width, int height){
+//     glViewport(0, 0, width, height);
+//   });
 
-  glfwSetKeyCallback(_context, [](GLFWwindow* window, int key, int scancode, int action, int mods){
-    // close window
-    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
-      glfwSetWindowShouldClose(_context, true);
-    }
-    // toggle wireframe mode
-    if (key == GLFW_KEY_T && action == GLFW_PRESS) {
-      _draw_wireframe = !_draw_wireframe;
-    }
-    // randomize new uniform color
-    if (key == GLFW_KEY_SPACE && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-      glm::vec3 color;
+//   glfwSetKeyCallback(_context, [](GLFWwindow* window, int key, int scancode, int action, int mods){
+//     // close window
+//     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
+//       glfwSetWindowShouldClose(_context, true);
+//     }
+//     // toggle wireframe mode
+//     if (key == GLFW_KEY_T && action == GLFW_PRESS) {
+//       _draw_wireframe = !_draw_wireframe;
+//     }
+//     // randomize new uniform color
+//     if (key == GLFW_KEY_SPACE && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
+//       glm::vec3 color;
 
-      color.r = (static_cast<float>(std::rand() % 255) / 255);
-      color.g = (static_cast<float>(std::rand() % 255) / 255);
-      color.b = (static_cast<float>(std::rand() % 255) / 255);
+//       color.r = (static_cast<float>(std::rand() % 255) / 255);
+//       color.g = (static_cast<float>(std::rand() % 255) / 255);
+//       color.b = (static_cast<float>(std::rand() % 255) / 255);
 
-      _default_shader->bind();
-      _default_shader->set_uniform_4f("uni_color", { color.r, color.g, color.b, 1.0f });
-      _default_shader->unbind();
-    }
-    // reset uniform color
-    if (key == GLFW_KEY_R && action == GLFW_PRESS) {
-      _default_shader->bind();
-      _default_shader->set_uniform_4f("uni_color", { 1.0f, 1.0f, 1.0f, 1.0f });
-      _default_shader->unbind();
-    }
-    // switch texture
-    if (key == GLFW_KEY_ENTER && action == GLFW_PRESS) {
-      _active_texture_index = (_active_texture_index + 1) % _textures.size();
-    }
-  });
+//       _default_shader->bind();
+//       _default_shader->set_uniform_4f("uni_color", { color.r, color.g, color.b, 1.0f });
+//       _default_shader->unbind();
+//     }
+//     // reset uniform color
+//     if (key == GLFW_KEY_R && action == GLFW_PRESS) {
+//       _default_shader->bind();
+//       _default_shader->set_uniform_4f("uni_color", { 1.0f, 1.0f, 1.0f, 1.0f });
+//       _default_shader->unbind();
+//     }
+//     // switch texture
+//     if (key == GLFW_KEY_ENTER && action == GLFW_PRESS) {
+//       _active_texture_index = (_active_texture_index + 1) % _textures.size();
+//     }
+//   });
 
-  glfwSetCursorPosCallback(_context, [](GLFWwindow* window, double xpos, double ypos){
-    if (_is_first_cursor_movement) {
-      _last_cursor_position = glm::vec2(xpos, ypos);
-      _is_first_cursor_movement = false;
-    }
+//   glfwSetCursorPosCallback(_context, [](GLFWwindow* window, double xpos, double ypos){
+//     if (_is_first_cursor_movement) {
+//       _last_cursor_position = glm::vec2(xpos, ypos);
+//       _is_first_cursor_movement = false;
+//     }
 
-    glm::vec2 cursor_offset(xpos - _last_cursor_position.x, _last_cursor_position.y - ypos);
-    cursor_offset *= _camera_sensitivity;
+//     glm::vec2 cursor_offset(xpos - _last_cursor_position.x, _last_cursor_position.y - ypos);
+//     cursor_offset *= _camera_sensitivity;
 
-    _last_cursor_position = glm::vec2(xpos, ypos);
+//     _last_cursor_position = glm::vec2(xpos, ypos);
 
-    _camera_yaw += cursor_offset.x;
-    _camera_pitch += cursor_offset.y;
+//     _camera_yaw += cursor_offset.x;
+//     _camera_pitch += cursor_offset.y;
 
-    if(_camera_pitch > 89.0f) {
-      _camera_pitch =  89.0f;
-    }
-    if(_camera_pitch < -89.0f) {
-      _camera_pitch = -89.0f;
-    }
+//     if(_camera_pitch > 89.0f) {
+//       _camera_pitch =  89.0f;
+//     }
+//     if(_camera_pitch < -89.0f) {
+//       _camera_pitch = -89.0f;
+//     }
 
-    glm::vec3 direction;
-    direction.x = cos(glm::radians(_camera_yaw)) * cos(glm::radians(_camera_pitch));
-    direction.y = sin(glm::radians(_camera_pitch));
-    direction.z = sin(glm::radians(_camera_yaw)) * cos(glm::radians(_camera_pitch));
-    _camera_target = glm::normalize(direction);
-  });
+//     glm::vec3 direction;
+//     direction.x = cos(glm::radians(_camera_yaw)) * cos(glm::radians(_camera_pitch));
+//     direction.y = sin(glm::radians(_camera_pitch));
+//     direction.z = sin(glm::radians(_camera_yaw)) * cos(glm::radians(_camera_pitch));
+//     _camera_target = glm::normalize(direction);
+//   });
 
-  glfwSetScrollCallback(_context, [](GLFWwindow* window, double xoffset, double yoffset){
-    _fov -= static_cast<float>(yoffset) * _scroll_sensitivity;
+//   glfwSetScrollCallback(_context, [](GLFWwindow* window, double xoffset, double yoffset){
+//     _fov -= static_cast<float>(yoffset) * _scroll_sensitivity;
 
-    if (_fov < 1.0f) {
-      _fov = 1.0f;
-    }
-    if (_fov > 45.0f) {
-      _fov = 45.0f;
-    }
-  });
-}
+//     if (_fov < 1.0f) {
+//       _fov = 1.0f;
+//     }
+//     if (_fov > 45.0f) {
+//       _fov = 45.0f;
+//     }
+//   });
+// }
 
-void _process_input() {
-  if (glfwGetKey(_context, GLFW_KEY_W) == GLFW_PRESS) {
-    _camera_position += _camera_target * _camera_speed;
-  }
-  if (glfwGetKey(_context, GLFW_KEY_S) == GLFW_PRESS) {
-    _camera_position -= _camera_target * _camera_speed;
-  }
-  if (glfwGetKey(_context, GLFW_KEY_A) == GLFW_PRESS) {
-    _camera_position -= glm::normalize(glm::cross(_camera_target, _up)) * _camera_speed;
-  }
-  if (glfwGetKey(_context, GLFW_KEY_D) == GLFW_PRESS) {
-    _camera_position += glm::normalize(glm::cross(_camera_target, _up)) * _camera_speed;
-  }
-  if (glfwGetKey(_context, GLFW_KEY_Q) == GLFW_PRESS) {
-    _camera_position += _up * _camera_speed;
-  }
-  if (glfwGetKey(_context, GLFW_KEY_E) == GLFW_PRESS) {
-    _camera_position -= _up * _camera_speed;
-  }
-}
+// void _process_input() {
+//   if (glfwGetKey(_context, GLFW_KEY_W) == GLFW_PRESS) {
+//     _camera_position += _camera_target * _camera_speed;
+//   }
+//   if (glfwGetKey(_context, GLFW_KEY_S) == GLFW_PRESS) {
+//     _camera_position -= _camera_target * _camera_speed;
+//   }
+//   if (glfwGetKey(_context, GLFW_KEY_A) == GLFW_PRESS) {
+//     _camera_position -= glm::normalize(glm::cross(_camera_target, _up)) * _camera_speed;
+//   }
+//   if (glfwGetKey(_context, GLFW_KEY_D) == GLFW_PRESS) {
+//     _camera_position += glm::normalize(glm::cross(_camera_target, _up)) * _camera_speed;
+//   }
+//   if (glfwGetKey(_context, GLFW_KEY_Q) == GLFW_PRESS) {
+//     _camera_position += _up * _camera_speed;
+//   }
+//   if (glfwGetKey(_context, GLFW_KEY_E) == GLFW_PRESS) {
+//     _camera_position -= _up * _camera_speed;
+//   }
+// }
 
 } // namespace sbx

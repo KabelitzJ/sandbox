@@ -1,15 +1,16 @@
 #ifndef SBX_CORE_EVENT_QUEUE_HPP_
 #define SBX_CORE_EVENT_QUEUE_HPP_
 
-#include <queue>
+#include <functional>
+#include <typeindex>
+#include <unordered_map>
 #include <vector>
+#include <queue>
+#include <memory>
 
 #include <GLFW/glfw3.h>
 
 #include "event.hpp"
-#include "window_event_listener.hpp"
-#include "key_event_listener.hpp"
-#include "mouse_event_listener.hpp"
 
 namespace sbx {
 
@@ -19,38 +20,47 @@ public:
   event_queue(GLFWwindow* context);
   ~event_queue();
 
-  void poll_events();
+  void poll();
 
   template<typename Listener>
-  void register_listener(Listener* listener);
+  void register_listener(Listener& listener);
+
+  template<typename EventType, typename Callback>
+  void subscribe(Callback&& subscriber);
 
 private:
-  void bind();
-  void unbind();
+
+  template<typename EventType, typename... Args>
+  void push(Args&&... args);
+
+  void bind_callbacks();
+  void unbind_callbacks();
 
   GLFWwindow* _context;
-  std::queue<event*> _queue;
-  std::vector<window_event_listener*> _window_event_listeners;
-  std::vector<key_event_listener*> _keyboard_event_listeners;
-  std::vector<mouse_event_listener*> _mouse_event_listeners;
+  std::queue<std::pair<std::type_index, std::unique_ptr<event>>> _queue;
+  std::unordered_map<std::type_index, std::vector<std::function<void(event&)>>> _subscribers;
 
 }; // class event_queue
 
-
-
 template<typename Listener>
-inline void event_queue::register_listener(Listener* listener) {
-  if constexpr (std::is_base_of_v<window_event_listener, Listener>) {
-    _window_event_listeners.push_back(listener);
-  }
+void event_queue::register_listener(Listener& listener) {
+  listener.register_event_callbacks(*this);
+}
 
-  if constexpr (std::is_base_of_v<key_event_listener, Listener>) {
-    _keyboard_event_listeners.push_back(listener);
-  }
+template<typename EventType, typename Callback>
+inline void event_queue::subscribe(Callback&& subscriber) {
+  std::type_index type = std::type_index(typeid(EventType));
+  _subscribers[type].push_back([subscriber](event& e){
+    std::invoke(subscriber, static_cast<EventType&>(e));
+  });
+}
 
-  if constexpr (std::is_base_of_v<mouse_event_listener, Listener>) {
-    _mouse_event_listeners.push_back(listener);
-  }
+template<typename EventType, typename... Args>
+inline void event_queue::push(Args&&... args) {
+  std::type_index type = std::type_index(typeid(EventType));
+  auto event = std::make_unique<EventType>(std::forward<Args>(args)...);
+
+  _queue.emplace(type, std::move(event));
 }
 
 } // namespace sbx

@@ -12,6 +12,7 @@ target_sources(
     window_event.cpp
     key_event.cpp
     event_queue.cpp
+    mouse_event.cpp
 )
 
 target_include_directories(
