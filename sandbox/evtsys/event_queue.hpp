@@ -25,14 +25,8 @@ public:
   void register_listener(Listener* listener);
 
 private:
-  static void window_moved_callback(GLFWwindow* window, int x, int y);
-  static void window_resized_callback(GLFWwindow* window, int width, int height);
-  static void window_closed_callback(GLFWwindow* window);
-  static void window_refreshed_callback(GLFWwindow* window);
-  static void framebuffer_resized_callback(GLFWwindow* window, int width, int height);
-  static void key_callback(GLFWwindow* window, int key,int scancode, int action, int mods);
-
   void bind();
+  void unbind();
 
   GLFWwindow* _context;
   std::queue<event*> _queue;
@@ -41,6 +35,8 @@ private:
   std::vector<mouse_event_listener*> _mouse_event_listeners;
 
 }; // class event_queue
+
+
 
 template<typename Listener>
 inline void event_queue::register_listener(Listener* listener) {
