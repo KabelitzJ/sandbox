@@ -37,6 +37,7 @@ if(glfw3_FOUND AND NOT TARGET glfw3::glfw3)
       INTERFACE
         pthread
         X11
+        dl
     )
   endif()
 
