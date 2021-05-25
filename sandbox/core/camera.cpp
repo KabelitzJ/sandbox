@@ -57,6 +57,12 @@ void camera::_update_position(const input_manager& input) {
 }
 
 void camera::_update_direction(const input_manager& input) {
+  // center the view to the origin
+  if (input.is_key_pressed(key_code::SPACE)) {
+    _direction = glm::vec3(0.0f, 0.0f, 0.0f) - _position;
+    return;
+  }
+
   const glm::vec2& mouse_position = input.mouse_position();
 
   // check here if mouse has been moved at all

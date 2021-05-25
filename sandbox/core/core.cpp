@@ -40,6 +40,7 @@ static shader* _lighting_source_shader = nullptr;
 static mesh* _monke_mesh = nullptr;
 static mesh* _floor_mesh = nullptr;
 static mesh* _cube_mesh = nullptr;
+static mesh* _sphere_mesh = nullptr;
 static std::unordered_map<std::string, texture*> _texture_atlas;
 // static constexpr glm::vec3 _clear_color({ 0.33f, 0.45f, 0.50f });
 static constexpr glm::vec3 _clear_color({ 0.20f, 0.20f, 0.20f });
@@ -48,7 +49,7 @@ static glm::vec3 _camera_position(0.0f, 0.0f, 10.0f);
 static glm::vec3 _camera_direction(0.0f, 0.0f, -1.0f);
 static constexpr glm::vec3 _up(0.0f, 1.0f, 0.0f);
 
-static constexpr float _camera_speed = 0.005f;
+static constexpr float _camera_speed = 0.05f;
 static constexpr float _camera_sensitivity = 0.4f;
 static float _camera_pitch = 0.0f;
 static float _camera_yaw = -90.0f;
@@ -136,6 +137,7 @@ bool initialize() {
   _monke_mesh = new mesh("resources/models/monke.obj");
   _floor_mesh = new mesh("resources/models/floor.obj");
   _cube_mesh = new mesh("resources/models/cube.obj");
+  _sphere_mesh = new mesh("resources/models/sphere.obj");
 
   _texture_atlas.emplace("blank", new texture("resources/textures/blank.jpg"));
   _texture_atlas.emplace("brick_wall", new texture("resources/textures/brick_wall.jpg"));
@@ -143,13 +145,25 @@ bool initialize() {
   _texture_atlas.emplace("lava", new texture("resources/textures/lava.jpg"));
   _texture_atlas.emplace("wooden_planks", new texture("resources/textures/wooden_planks.jpg"));
 
+  // This one is the light source
   _objects.push_back(new object(
-    *_cube_mesh,
+    *_sphere_mesh,
     *_texture_atlas["blank"],
     {
       glm::vec3(0.0f, 0.0f, 0.0f),
       glm::vec3(0.0f, 0.0f, 0.0f),
-      glm::vec3(0.5f, 0.5f, 0.5f),
+      glm::vec3(0.25f, 0.25f, 0.25f),
+    }
+  ));
+
+  // this one is the floor
+  _objects.push_back(new object(
+    *_floor_mesh,
+    *_texture_atlas["blank"],
+    {
+      glm::vec3(0.0f, -3.0f, 0.0f),
+      glm::vec3(0.0f, 0.0f, 0.0f),
+      glm::vec3(1.0f, 0.5f, 1.0f),
     }
   ));
 
@@ -247,27 +261,36 @@ void run() {
     // draw rest of the objects
     _lighting_scene_shader->bind();
 
+    object* floor = _objects[1];
+
+    glm::mat4 model = floor->model();
+    glm::mat3 normal = glm::transpose(glm::inverse(model));
+
     _lighting_scene_shader->set_uniform_matrix_4fv("uni_view_matrix", view);
     _lighting_scene_shader->set_uniform_matrix_4fv("uni_projection_matrix", projection);
+    _lighting_scene_shader->set_uniform_matrix_4fv("uni_model_matrix", model);
+    _lighting_scene_shader->set_uniform_matrix_3fv("uni_normal_matrix", normal);
+
+    floor->draw(*_lighting_scene_shader);
 
     std::size_t object_count = _objects.size();
-    for (std::size_t i = 1; i < object_count; ++i) {
+    for (std::size_t i = 2; i < object_count; ++i) {
       object* temp_object = _objects[i];
 
       glm::vec3 rotation(1.0f, 1.0f, 1.0f);
 
-      if (i == 1) {
+      if (i == 2) {
         rotation *= glm::vec3(1.0f, 0.0f, 0.0f);
-      } else if (i == 2) {
-        rotation *= glm::vec3(0.0f, 1.0f, 0.0f);
       } else if (i == 3) {
+        rotation *= glm::vec3(0.0f, 1.0f, 0.0f);
+      } else if (i == 4) {
         rotation *= glm::vec3(0.0f, 0.0f, 1.0f);
       }
 
       temp_object->rotate(rotation, 50 * time_value);
 
-      glm::mat4 model = temp_object->model();
-      glm::mat3 normal = glm::transpose(glm::inverse(model));
+      model = temp_object->model();
+      normal = glm::transpose(glm::inverse(model));
 
       _lighting_scene_shader->set_uniform_matrix_4fv("uni_model_matrix", model);
       _lighting_scene_shader->set_uniform_matrix_3fv("uni_normal_matrix", normal);
@@ -291,6 +314,7 @@ void terminate() {
   delete _monke_mesh;
   delete _floor_mesh;
   delete _cube_mesh;
+  delete _sphere_mesh;
 
   for (auto [name, texture] : _texture_atlas) {
     delete texture;
