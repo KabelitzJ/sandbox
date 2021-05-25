@@ -236,9 +236,9 @@ void run() {
 
     object* light_source = _objects[0];
 
-    _lighting_source_shader->set_uniform_matrix_4fv("uni_view", view);
-    _lighting_source_shader->set_uniform_matrix_4fv("uni_projection", projection);
-    _lighting_source_shader->set_uniform_matrix_4fv("uni_model", light_source->model());
+    _lighting_source_shader->set_uniform_matrix_4fv("uni_view_matrix", view);
+    _lighting_source_shader->set_uniform_matrix_4fv("uni_projection_matrix", projection);
+    _lighting_source_shader->set_uniform_matrix_4fv("uni_model_matrix", light_source->model());
 
     light_source->draw(*_lighting_source_shader);
 
@@ -247,13 +247,15 @@ void run() {
     // draw rest of the objects
     _lighting_scene_shader->bind();
 
-    _lighting_scene_shader->set_uniform_matrix_4fv("uni_view", view);
-    _lighting_scene_shader->set_uniform_matrix_4fv("uni_projection", projection);
+    _lighting_scene_shader->set_uniform_matrix_4fv("uni_view_matrix", view);
+    _lighting_scene_shader->set_uniform_matrix_4fv("uni_projection_matrix", projection);
 
     std::size_t object_count = _objects.size();
     for (std::size_t i = 1; i < object_count; ++i) {
       object* temp_object = _objects[i];
+
       glm::vec3 rotation(1.0f, 1.0f, 1.0f);
+
       if (i == 1) {
         rotation *= glm::vec3(1.0f, 0.0f, 0.0f);
       } else if (i == 2) {
@@ -261,9 +263,14 @@ void run() {
       } else if (i == 3) {
         rotation *= glm::vec3(0.0f, 0.0f, 1.0f);
       }
+
       temp_object->rotate(rotation, 50 * time_value);
 
-      _lighting_scene_shader->set_uniform_matrix_4fv("uni_model", temp_object->model());
+      glm::mat4 model = temp_object->model();
+      glm::mat3 normal = glm::transpose(glm::inverse(model));
+
+      _lighting_scene_shader->set_uniform_matrix_4fv("uni_model_matrix", model);
+      _lighting_scene_shader->set_uniform_matrix_3fv("uni_normal_matrix", normal);
       
       temp_object->draw(*_lighting_scene_shader);
     }

@@ -67,7 +67,7 @@ void mesh::_load_from_obj(const std::filesystem::path& path) {
 
       line_stream >> normal.x >> normal.y >> normal.z;
 
-      temp_normals.push_back(normal);
+      temp_normals.push_back(glm::normalize(normal));
     } else if (token == "vt") {
       glm::vec2 uv;
 
@@ -101,7 +101,7 @@ void mesh::_load_from_obj(const std::filesystem::path& path) {
 
           temp_vertex.position = temp_positions[position_index - 1];
           temp_vertex.uv = temp_uvs[uv_index - 1];
-          temp_vertex.normal = glm::normalize(temp_normals[normal_index - 1]);
+          temp_vertex.normal = temp_normals[normal_index - 1];
 
           const GLuint index = next_index++;
 

@@ -8,6 +8,7 @@
 #include <glad/glad.h>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
+#include <glm/mat3x3.hpp>
 #include <glm/mat4x4.hpp>
 
 namespace sbx {
@@ -26,6 +27,7 @@ public:
   void set_uniform_1i(const std::string& name, GLint value);
   void set_uniform_3f(const std::string& name, const glm::vec3& value);
   void set_uniform_4f(const std::string& name, const glm::vec4& value);
+  void set_uniform_matrix_3fv(const std::string& name, const glm::mat3& value);
   void set_uniform_matrix_4fv(const std::string& name, const glm::mat4& value);
 
 private:
