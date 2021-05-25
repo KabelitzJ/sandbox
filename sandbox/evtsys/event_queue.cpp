@@ -67,6 +67,7 @@ void event_queue::_bind_callbacks() {
 
 void event_queue::_unbind_callbacks() {
   glfwSetKeyCallback(_context, nullptr);
+  glfwSetCursorPosCallback(_context, nullptr);
 
   glfwSetWindowUserPointer(_context, nullptr);
 }

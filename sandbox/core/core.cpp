@@ -37,10 +37,7 @@ static std::vector<object*> _objects;
 static shader* _default_shader = nullptr;
 static shader* _lighting_scene_shader = nullptr;
 static shader* _lighting_source_shader = nullptr;
-static mesh* _monke_mesh = nullptr;
-static mesh* _floor_mesh = nullptr;
-static mesh* _cube_mesh = nullptr;
-static mesh* _sphere_mesh = nullptr;
+static std::unordered_map<std::string, mesh*> _mesh_atlas;
 static std::unordered_map<std::string, texture*> _texture_atlas;
 // static constexpr glm::vec3 _clear_color({ 0.33f, 0.45f, 0.50f });
 static constexpr glm::vec3 _clear_color({ 0.20f, 0.20f, 0.20f });
@@ -49,7 +46,7 @@ static glm::vec3 _camera_position(0.0f, 0.0f, 10.0f);
 static glm::vec3 _camera_direction(0.0f, 0.0f, -1.0f);
 static constexpr glm::vec3 _up(0.0f, 1.0f, 0.0f);
 
-static constexpr float _camera_speed = 0.05f;
+static constexpr float _camera_speed = 10.0f;
 static constexpr float _camera_sensitivity = 0.4f;
 static float _camera_pitch = 0.0f;
 static float _camera_yaw = -90.0f;
@@ -131,13 +128,19 @@ bool initialize() {
 
   _lighting_scene_shader->set_uniform_3f("uni_light_position", { 0.0f, 0.0f, 0.0f }); // change when light source moves
   _lighting_scene_shader->set_uniform_3f("uni_light_color", { 1.0f, 1.0f, 1.0f });
-  _lighting_scene_shader->set_uniform_3f("uni_object_color", { 1.0f, 0.5f, 0.31f });
+  _lighting_scene_shader->set_uniform_3f("uni_object_color", { 1.0f, 1.0f, 1.0f });
   // _default_shader->bind();
 
-  _monke_mesh = new mesh("resources/models/monke.obj");
-  _floor_mesh = new mesh("resources/models/floor.obj");
-  _cube_mesh = new mesh("resources/models/cube.obj");
-  _sphere_mesh = new mesh("resources/models/sphere.obj");
+
+  _mesh_atlas.emplace("big_f", new mesh("resources/models/big_f.obj"));
+  _mesh_atlas.emplace("cone", new mesh("resources/models/cone.obj"));
+  _mesh_atlas.emplace("cube", new mesh("resources/models/cube.obj"));
+  _mesh_atlas.emplace("cylinder", new mesh("resources/models/cylinder.obj"));
+  _mesh_atlas.emplace("floor", new mesh("resources/models/floor.obj"));
+  _mesh_atlas.emplace("monke", new mesh("resources/models/monke.obj"));
+  _mesh_atlas.emplace("plane", new mesh("resources/models/plane.obj"));
+  _mesh_atlas.emplace("sphere", new mesh("resources/models/sphere.obj"));
+  _mesh_atlas.emplace("torus", new mesh("resources/models/torus.obj"));
 
   _texture_atlas.emplace("blank", new texture("resources/textures/blank.jpg"));
   _texture_atlas.emplace("brick_wall", new texture("resources/textures/brick_wall.jpg"));
@@ -147,7 +150,7 @@ bool initialize() {
 
   // This one is the light source
   _objects.push_back(new object(
-    *_sphere_mesh,
+    *_mesh_atlas["sphere"],
     *_texture_atlas["blank"],
     {
       glm::vec3(0.0f, 0.0f, 0.0f),
@@ -158,7 +161,7 @@ bool initialize() {
 
   // this one is the floor
   _objects.push_back(new object(
-    *_floor_mesh,
+    *_mesh_atlas["plane"],
     *_texture_atlas["blank"],
     {
       glm::vec3(0.0f, -3.0f, 0.0f),
@@ -168,7 +171,7 @@ bool initialize() {
   ));
 
   _objects.push_back(new object(
-    *_cube_mesh,
+    *_mesh_atlas["torus"],
     *_texture_atlas["lava"],
     {
       glm::vec3(5.0f, 2.0f, 0.0f),
@@ -178,7 +181,7 @@ bool initialize() {
   ));
 
   _objects.push_back(new object(
-    *_monke_mesh,
+    *_mesh_atlas["monke"],
     *_texture_atlas["wooden_planks"],
     {
       glm::vec3(-3.0f, 0.0f, 1.0f),
@@ -188,7 +191,7 @@ bool initialize() {
   ));
 
   _objects.push_back(new object(
-    *_cube_mesh,
+    *_mesh_atlas["cube"],
     *_texture_atlas["cobble_wall"],
     {
       glm::vec3(3.0f, 0.0f, -3.0f),
@@ -230,7 +233,7 @@ void run() {
       frames = 0;
     }
 
-    const float time_value = std::chrono::duration_cast<std::chrono::duration<float>>(passed_time).count();
+    const float delta_time = std::chrono::duration_cast<std::chrono::duration<float>>(passed_time).count();
 
     glClearColor(_clear_color.r, _clear_color.g, _clear_color.b, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -239,7 +242,7 @@ void run() {
 
     _event_queue->poll();
 
-    _camera->update(*_input);
+    _camera->update(*_input, delta_time);
 
     // cache camera matrices
     glm::mat4 view = _camera->view();
@@ -277,17 +280,13 @@ void run() {
     for (std::size_t i = 2; i < object_count; ++i) {
       object* temp_object = _objects[i];
 
-      glm::vec3 rotation(1.0f, 1.0f, 1.0f);
-
       if (i == 2) {
-        rotation *= glm::vec3(1.0f, 0.0f, 0.0f);
+        temp_object->rotate(glm::vec3(1.0f, 0.0f, 0.0f), 50 * delta_time);
       } else if (i == 3) {
-        rotation *= glm::vec3(0.0f, 1.0f, 0.0f);
+        temp_object->rotate(glm::vec3(0.0f, 1.0f, 0.0f), 50 * delta_time);
       } else if (i == 4) {
-        rotation *= glm::vec3(0.0f, 0.0f, 1.0f);
+        temp_object->rotate(glm::vec3(0.0f, 0.0f, 1.0f), 50 * delta_time);
       }
-
-      temp_object->rotate(rotation, 50 * time_value);
 
       model = temp_object->model();
       normal = glm::transpose(glm::inverse(model));
@@ -311,10 +310,11 @@ void terminate() {
   delete _lighting_scene_shader;
   delete _lighting_source_shader;
 
-  delete _monke_mesh;
-  delete _floor_mesh;
-  delete _cube_mesh;
-  delete _sphere_mesh;
+  for (auto [name, mesh] : _mesh_atlas) {
+    delete mesh;
+  }
+
+  _mesh_atlas.clear();
 
   for (auto [name, texture] : _texture_atlas) {
     delete texture;

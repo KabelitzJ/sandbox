@@ -21,13 +21,13 @@ public:
 
   glm::mat4 view() const;
 
-  void update(const input_manager& input);
+  void update(const input_manager& input, float delta_time);
 
 protected:
   float field_of_view() const;
 
 private:
-  void _update_position(const input_manager& input);
+  void _update_position(const input_manager& input, float delta_time);
   void _update_direction(const input_manager& input);
 
   bool _is_first_cursor_movement;
@@ -39,9 +39,6 @@ private:
   float _field_of_view;
   float _pitch;
   float _yaw;
-
-  friend class event_queue;
-  friend class event_listener;
 
 }; // class camera
 

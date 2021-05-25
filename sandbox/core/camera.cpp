@@ -22,12 +22,11 @@ camera::camera(const glm::vec3& position, const glm::vec3& direction, float spee
 }
 
 glm::mat4 camera::view() const {
-  auto foo = glm::lookAt(_position, _position + _direction, VECTOR_UP);
-  return foo;
+  return glm::lookAt(_position, _position + _direction, VECTOR_UP);
 }
 
-void camera::update(const input_manager& input) {
-  _update_position(input);
+void camera::update(const input_manager& input, float delta_time) {
+  _update_position(input, delta_time);
   _update_direction(input);
 }
 
@@ -35,24 +34,24 @@ float camera::field_of_view() const {
   return _field_of_view;
 }
 
-void camera::_update_position(const input_manager& input) {
+void camera::_update_position(const input_manager& input, float delta_time) {
   if (input.is_key_pressed(key_code::W)) {
-    _position += _direction * _speed;
+    _position += _direction * _speed * delta_time;
   }
   if (input.is_key_pressed(key_code::S)) {
-    _position -= _direction * _speed;
+    _position -= _direction * _speed * delta_time;
   }
   if (input.is_key_pressed(key_code::A)) {
-    _position -= glm::normalize(glm::cross(_direction, VECTOR_UP)) * _speed;
+    _position -= glm::normalize(glm::cross(_direction, VECTOR_UP)) * _speed * delta_time;
   }
   if (input.is_key_pressed(key_code::D)) {
-    _position += glm::normalize(glm::cross(_direction, VECTOR_UP)) * _speed;
+    _position += glm::normalize(glm::cross(_direction, VECTOR_UP)) * _speed * delta_time;
   }
   if (input.is_key_pressed(key_code::Q)) {
-    _position -= VECTOR_UP * _speed;
+    _position -= VECTOR_UP * _speed * delta_time;
   }
   if (input.is_key_pressed(key_code::E)) {
-    _position += VECTOR_UP * _speed;
+    _position += VECTOR_UP * _speed * delta_time;
   }
 }
 
