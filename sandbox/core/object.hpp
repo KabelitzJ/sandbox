@@ -30,8 +30,8 @@ public:
   }
 
   void draw(shader& shader) {
-    shader.set_uniform_1i("uni_texture", _texture.unit());
     _texture.bind();
+    shader.set_uniform_1i("uni_texture", _texture.unit());
 
     _mesh.draw(/*shader*/);
   }
