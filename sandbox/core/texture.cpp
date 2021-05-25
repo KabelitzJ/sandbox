@@ -31,6 +31,10 @@ GLuint texture::id() const {
   return _id;
 }
 
+unsigned int texture::unit() const {
+  return _texture_unit;
+}
+
 void texture::_initialize(const std::filesystem::path& path) {
   if (_texture_unit_counter == 31) {
     std::ostringstream ss;

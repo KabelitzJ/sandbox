@@ -18,13 +18,14 @@ mesh::~mesh() {
   glDeleteBuffers(1, &_ebo);
 }
 
-void mesh::draw(const shader& shader) {
-  shader.bind();
+void mesh::draw(/*const shader& shader*/) {
+  // shader.bind();
 
   glBindVertexArray(_vao);
   glDrawElements(GL_TRIANGLES, _indices.size(), GL_UNSIGNED_INT, 0);
+  glBindVertexArray(0);
 
-  shader.unbind();
+  // shader.unbind();
 }
 
 void mesh::_load_from_obj(const std::filesystem::path& path) {

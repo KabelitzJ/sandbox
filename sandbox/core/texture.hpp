@@ -17,6 +17,7 @@ public:
   void unbind() const;
 
   GLuint id() const;
+  unsigned int unit() const;
 
 private:
   void _initialize(const std::filesystem::path& path);

@@ -18,7 +18,7 @@ public:
   mesh(const std::filesystem::path& path);
   ~mesh();
 
-  void draw(const shader& shader);
+  void draw(/*const shader& shader*/);
 
 private:
   struct vertex {

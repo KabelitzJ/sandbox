@@ -23,6 +23,7 @@
 #include "texture.hpp"
 #include "perspective_camera.hpp"
 #include "input_manager.hpp"
+#include "object.hpp"
 
 namespace sbx {
 
@@ -31,6 +32,7 @@ static event_queue* _event_queue = nullptr;
 static input_manager* _input = nullptr;
 static bool _draw_wireframe = false;
 static camera* _camera = nullptr;
+static std::vector<object*> _objects;
 
 static shader* _default_shader = nullptr;
 static mesh* _monke_mesh = nullptr;
@@ -38,13 +40,9 @@ static mesh* _floor_mesh = nullptr;
 static mesh* _cube_mesh = nullptr;
 static const std::filesystem::path _texture_dir("resources/textures");
 static std::vector<texture*> _textures;
-static unsigned int _active_texture_index = 0;
 static constexpr glm::vec3 _clear_color({ 0.33f, 0.45f, 0.50f });
 
-static glm::mat4 _model = glm::mat4(1.0f);
-static glm::mat4 _view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -5.0f));
-static glm::mat4 _projection = glm::mat4(1.0f);
-static glm::vec3 _camera_position(0.0f, 0.0f, 4.0f);
+static glm::vec3 _camera_position(0.0f, 0.0f, 10.0f);
 static glm::vec3 _camera_direction(0.0f, 0.0f, -1.0f);
 static constexpr glm::vec3 _up(0.0f, 1.0f, 0.0f);
 
@@ -111,6 +109,11 @@ bool initialize() {
       glfwSetWindowShouldClose(_context, true);
     }
   });
+  _event_queue->subscribe<key_pressed_event>([](key_pressed_event& event){
+    if (event.code() == key_code::ENTER) {
+      _draw_wireframe = !_draw_wireframe;
+    }
+  });
 
   _input = new input_manager(*_event_queue);
 
@@ -130,6 +133,36 @@ bool initialize() {
   for (const auto& file : std::filesystem::directory_iterator(_texture_dir)) {
     _textures.push_back(new texture(file.path()));
   }
+
+  _objects.push_back(new object(
+    *_cube_mesh,
+    *_textures[0],
+    {
+      glm::vec3(2.0f, 2.0f, 0.0f),
+      glm::vec3(25.0f, 0.0f, 0.0f),
+      glm::vec3(1.0f, 1.0f, 1.0f),
+    }
+  ));
+
+  _objects.push_back(new object(
+    *_cube_mesh,
+    *_textures[1],
+    {
+      glm::vec3(1.0f, 0.0f, 0.0f),
+      glm::vec3(0.0f, 0.0f, 25.0f),
+      glm::vec3(1.0f, 1.0f, 1.0f),
+    }
+  ));
+
+  _objects.push_back(new object(
+    *_monke_mesh,
+    *_textures[2],
+    {
+      glm::vec3(-3.0f, 0.0f, 1.0f),
+      glm::vec3(0.0f, 25.0f, 0.0f),
+      glm::vec3(1.0f, 1.0f, 1.0f),
+    }
+  ));
 
   glEnable(GL_DEPTH_TEST);
   glDepthFunc(GL_LESS);
@@ -165,31 +198,25 @@ void run() {
 
     const float time_value = std::chrono::duration_cast<std::chrono::duration<float>>(passed_time).count();
 
-    _event_queue->poll();
-
-    _camera->update(*_input);
-
-    _view = _camera->view();
-
-    _model = glm::rotate(_model, time_value * glm::radians(50.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-
-    _projection = _camera->projection();
-
     glClearColor(_clear_color.r, _clear_color.g, _clear_color.b, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glPolygonMode(GL_FRONT_AND_BACK, _draw_wireframe ? GL_LINE : GL_FILL);
 
+    _event_queue->poll();
+
+    _camera->update(*_input);
+
     _default_shader->bind();
 
-    _default_shader->set_uniform_matrix_4fv("uni_model", _model);
-    _default_shader->set_uniform_matrix_4fv("uni_view", _view);
-    _default_shader->set_uniform_matrix_4fv("uni_projection", _projection);
+    _default_shader->set_uniform_matrix_4fv("uni_view", _camera->view());
+    _default_shader->set_uniform_matrix_4fv("uni_projection", _camera->projection());
 
-    _default_shader->set_uniform_1i("uni_texture", _active_texture_index);
-    _textures[_active_texture_index]->bind();
-    
-    _cube_mesh->draw(*_default_shader);
+    for (object* object : _objects) {
+      _default_shader->set_uniform_matrix_4fv("uni_model", object->model());
+      
+      object->draw(*_default_shader);
+    }
 
     glfwSwapBuffers(_context);
 
@@ -201,12 +228,17 @@ void run() {
 
 void terminate() {
   delete _default_shader;
+
   delete _monke_mesh;
   delete _floor_mesh;
   delete _cube_mesh;
 
   for (texture* texture : _textures) {
     delete texture;
+  }
+
+  for (object* object : _objects) {
+    delete object;
   }
 
   _textures.clear();
