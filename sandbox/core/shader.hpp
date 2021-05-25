@@ -6,6 +6,7 @@
 #include <unordered_map>
 
 #include <glad/glad.h>
+#include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 #include <glm/mat4x4.hpp>
 
@@ -23,6 +24,7 @@ public:
   GLuint id() const;
 
   void set_uniform_1i(const std::string& name, GLint value);
+  void set_uniform_3f(const std::string& name, const glm::vec3& value);
   void set_uniform_4f(const std::string& name, const glm::vec4& value);
   void set_uniform_matrix_4fv(const std::string& name, const glm::mat4& value);
 

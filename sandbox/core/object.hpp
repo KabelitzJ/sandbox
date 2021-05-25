@@ -14,19 +14,17 @@ namespace sbx {
 class object {
 
 public:
-  object(const mesh& mesh, const texture& texture, const transform& transform) : _mesh(mesh), _texture(texture), _transform(transform) {}
+  object(const mesh& mesh, const texture& texture, const transform& transform) : _mesh(mesh), _texture(texture), _model(1.0f) {
+    _initialize_model(transform);
+  }
   ~object() = default;
 
   glm::mat4 model() const {
-    glm::mat4 model(1.0f);
+    return _model;
+  }
 
-    model = glm::translate(model, _transform.position);
-    model = glm::rotate(model, glm::radians(_transform.rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-    model = glm::rotate(model, glm::radians(_transform.rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-    model = glm::rotate(model, glm::radians(_transform.rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
-    model = glm::scale(model, _transform.scale);
-
-    return model;
+  void rotate(const glm::vec3& rotation, float angle) {
+    _model = glm::rotate(_model, glm::radians(angle), rotation);
   }
 
   void draw(shader& shader) {
@@ -37,9 +35,17 @@ public:
   }
 
 private:
+  void _initialize_model(const transform& transform) {
+    _model = glm::translate(_model, transform.position);
+    _model = glm::rotate(_model, glm::radians(transform.rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+    _model = glm::rotate(_model, glm::radians(transform.rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+    _model = glm::rotate(_model, glm::radians(transform.rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+    _model = glm::scale(_model, transform.scale);
+  }
+
   mesh _mesh;
   texture _texture;
-  transform _transform;
+  glm::mat4 _model;
 
 }; // class object
 

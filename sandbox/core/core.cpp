@@ -35,12 +35,14 @@ static camera* _camera = nullptr;
 static std::vector<object*> _objects;
 
 static shader* _default_shader = nullptr;
+static shader* _lighting_scene_shader = nullptr;
+static shader* _lighting_source_shader = nullptr;
 static mesh* _monke_mesh = nullptr;
 static mesh* _floor_mesh = nullptr;
 static mesh* _cube_mesh = nullptr;
-static const std::filesystem::path _texture_dir("resources/textures");
-static std::vector<texture*> _textures;
-static constexpr glm::vec3 _clear_color({ 0.33f, 0.45f, 0.50f });
+static std::unordered_map<std::string, texture*> _texture_atlas;
+// static constexpr glm::vec3 _clear_color({ 0.33f, 0.45f, 0.50f });
+static constexpr glm::vec3 _clear_color({ 0.20f, 0.20f, 0.20f });
 
 static glm::vec3 _camera_position(0.0f, 0.0f, 10.0f);
 static glm::vec3 _camera_direction(0.0f, 0.0f, -1.0f);
@@ -77,10 +79,10 @@ bool initialize() {
 
   const GLFWvidmode* video_mode = glfwGetVideoMode(primary_monitor);
 
-  const int width = video_mode->width / 2;
-  const int height = video_mode->height / 2;
+  const int width = video_mode->width;
+  const int height = video_mode->height;
 
-  _context = glfwCreateWindow(width, height, "Sandbox", nullptr, nullptr);
+  _context = glfwCreateWindow(width, height, "Sandbox", primary_monitor, nullptr);
 
   if (!_context) {
     std::cout << "[Error] Glfw could not create a window!\n";
@@ -96,9 +98,6 @@ bool initialize() {
     return false;
   }
 
-  const int win_pos_x = (video_mode->width / 2) - (width / 2);
-  const int win_pos_y = (video_mode->height / 2) - (height / 2);
-  glfwSetWindowPos(_context, win_pos_x, win_pos_y);
   glfwSetInputMode(_context, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
   glfwSwapInterval(0);
   glfwFocusWindow(_context);
@@ -124,42 +123,62 @@ bool initialize() {
   glViewport(0, 0, width, height);
 
   _default_shader = new shader("resources/shaders/default_vertex.glsl", "resources/shaders/default_fragment.glsl");
-  _default_shader->bind();
+  _lighting_scene_shader = new shader("resources/shaders/lighting_scene_vertex.glsl", "resources/shaders/lighting_scene_fragment.glsl");
+  _lighting_source_shader = new shader("resources/shaders/lighting_source_vertex.glsl", "resources/shaders/lighting_source_fragment.glsl");
+
+  _lighting_scene_shader->bind();
+
+  _lighting_scene_shader->set_uniform_3f("uni_light_position", { 0.0f, 0.0f, 0.0f }); // change when light source moves
+  _lighting_scene_shader->set_uniform_3f("uni_light_color", { 1.0f, 1.0f, 1.0f });
+  _lighting_scene_shader->set_uniform_3f("uni_object_color", { 1.0f, 0.5f, 0.31f });
+  // _default_shader->bind();
 
   _monke_mesh = new mesh("resources/models/monke.obj");
   _floor_mesh = new mesh("resources/models/floor.obj");
   _cube_mesh = new mesh("resources/models/cube.obj");
 
-  for (const auto& file : std::filesystem::directory_iterator(_texture_dir)) {
-    _textures.push_back(new texture(file.path()));
-  }
+  _texture_atlas.emplace("blank", new texture("resources/textures/blank.jpg"));
+  _texture_atlas.emplace("brick_wall", new texture("resources/textures/brick_wall.jpg"));
+  _texture_atlas.emplace("cobble_wall", new texture("resources/textures/cobble_wall.jpg"));
+  _texture_atlas.emplace("lava", new texture("resources/textures/lava.jpg"));
+  _texture_atlas.emplace("wooden_planks", new texture("resources/textures/wooden_planks.jpg"));
 
   _objects.push_back(new object(
     *_cube_mesh,
-    *_textures[0],
+    *_texture_atlas["blank"],
     {
-      glm::vec3(2.0f, 2.0f, 0.0f),
-      glm::vec3(25.0f, 0.0f, 0.0f),
-      glm::vec3(1.0f, 1.0f, 1.0f),
+      glm::vec3(0.0f, 0.0f, 0.0f),
+      glm::vec3(0.0f, 0.0f, 0.0f),
+      glm::vec3(0.5f, 0.5f, 0.5f),
     }
   ));
 
   _objects.push_back(new object(
     *_cube_mesh,
-    *_textures[1],
+    *_texture_atlas["lava"],
     {
-      glm::vec3(1.0f, 0.0f, 0.0f),
-      glm::vec3(0.0f, 0.0f, 25.0f),
+      glm::vec3(5.0f, 2.0f, 0.0f),
+      glm::vec3(45.0f, 0.0f, 0.0f),
       glm::vec3(1.0f, 1.0f, 1.0f),
     }
   ));
 
   _objects.push_back(new object(
     *_monke_mesh,
-    *_textures[2],
+    *_texture_atlas["wooden_planks"],
     {
       glm::vec3(-3.0f, 0.0f, 1.0f),
-      glm::vec3(0.0f, 25.0f, 0.0f),
+      glm::vec3(0.0f, 45.0f, 0.0f),
+      glm::vec3(1.0f, 1.0f, 1.0f),
+    }
+  ));
+
+  _objects.push_back(new object(
+    *_cube_mesh,
+    *_texture_atlas["cobble_wall"],
+    {
+      glm::vec3(3.0f, 0.0f, -3.0f),
+      glm::vec3(0.0f, 0.0f, 45.0f),
       glm::vec3(1.0f, 1.0f, 1.0f),
     }
   ));
@@ -167,10 +186,11 @@ bool initialize() {
   glEnable(GL_DEPTH_TEST);
   glDepthFunc(GL_LESS);
 
-  _default_shader->set_uniform_4f("uni_color", { 1.0f, 1.0f, 1.0f, 1.0f });
+  // _default_shader->set_uniform_4f("uni_color", { 1.0f, 1.0f, 1.0f, 1.0f });
 
-  glBindTexture(GL_TEXTURE_2D, 0);
-  _default_shader->unbind();
+  // (can this be deleted??) glBindTexture(GL_TEXTURE_2D, 0);
+  // _default_shader->unbind();
+  _lighting_scene_shader->unbind();
 
   std::srand(std::time(nullptr));
 
@@ -207,20 +227,50 @@ void run() {
 
     _camera->update(*_input);
 
-    _default_shader->bind();
+    // cache camera matrices
+    glm::mat4 view = _camera->view();
+    glm::mat4 projection = _camera->projection();
 
-    _default_shader->set_uniform_matrix_4fv("uni_view", _camera->view());
-    _default_shader->set_uniform_matrix_4fv("uni_projection", _camera->projection());
+    // draw light source (always first object)
+    _lighting_source_shader->bind();
 
-    for (object* object : _objects) {
-      _default_shader->set_uniform_matrix_4fv("uni_model", object->model());
+    object* light_source = _objects[0];
+
+    _lighting_source_shader->set_uniform_matrix_4fv("uni_view", view);
+    _lighting_source_shader->set_uniform_matrix_4fv("uni_projection", projection);
+    _lighting_source_shader->set_uniform_matrix_4fv("uni_model", light_source->model());
+
+    light_source->draw(*_lighting_source_shader);
+
+    _lighting_source_shader->unbind();
+
+    // draw rest of the objects
+    _lighting_scene_shader->bind();
+
+    _lighting_scene_shader->set_uniform_matrix_4fv("uni_view", view);
+    _lighting_scene_shader->set_uniform_matrix_4fv("uni_projection", projection);
+
+    std::size_t object_count = _objects.size();
+    for (std::size_t i = 1; i < object_count; ++i) {
+      object* temp_object = _objects[i];
+      glm::vec3 rotation(1.0f, 1.0f, 1.0f);
+      if (i == 1) {
+        rotation *= glm::vec3(1.0f, 0.0f, 0.0f);
+      } else if (i == 2) {
+        rotation *= glm::vec3(0.0f, 1.0f, 0.0f);
+      } else if (i == 3) {
+        rotation *= glm::vec3(0.0f, 0.0f, 1.0f);
+      }
+      temp_object->rotate(rotation, 50 * time_value);
+
+      _lighting_scene_shader->set_uniform_matrix_4fv("uni_model", temp_object->model());
       
-      object->draw(*_default_shader);
+      temp_object->draw(*_lighting_scene_shader);
     }
 
-    glfwSwapBuffers(_context);
+    _lighting_scene_shader->unbind();
 
-    _default_shader->unbind();
+    glfwSwapBuffers(_context);
 
     frames++;
   }
@@ -228,20 +278,24 @@ void run() {
 
 void terminate() {
   delete _default_shader;
+  delete _lighting_scene_shader;
+  delete _lighting_source_shader;
 
   delete _monke_mesh;
   delete _floor_mesh;
   delete _cube_mesh;
 
-  for (texture* texture : _textures) {
+  for (auto [name, texture] : _texture_atlas) {
     delete texture;
   }
+
+  _texture_atlas.clear();
 
   for (object* object : _objects) {
     delete object;
   }
 
-  _textures.clear();
+  _objects.clear();
 
   delete _input;
   delete _event_queue;

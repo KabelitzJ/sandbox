@@ -33,6 +33,11 @@ void shader::set_uniform_1i(const std::string& name, GLint value) {
   glUniform1i(location, value);
 }
 
+void shader::set_uniform_3f(const std::string& name, const glm::vec3& value) {
+  GLuint location = _get_uniform_location(name);
+  glUniform3f(location, value.x, value.y, value.z);
+}
+
 void shader::set_uniform_4f(const std::string& name, const glm::vec4& value) {
   GLuint location = _get_uniform_location(name);
   glUniform4f(location, value.x, value.y, value.z, value.w);

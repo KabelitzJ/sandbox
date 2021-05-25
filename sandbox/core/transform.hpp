@@ -11,7 +11,6 @@ struct transform {
   glm::vec3 scale;
 }; // struct transform
 
-
 } // namespace sbx
 
 #endif // SBX_CORE_TRANSFORM_HPP_
