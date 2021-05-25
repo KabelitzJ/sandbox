@@ -78,17 +78,13 @@ void camera::_update_direction(const input_manager& input) {
   _yaw += cursor_offset.x;
   _pitch += cursor_offset.y;
 
-  if(_pitch > 89.0f) {
-    _pitch =  89.0f;
-  }
-  if(_pitch < -89.0f) {
-    _pitch = -89.0f;
-  }
+  // Make sure the camera cant "roll over"
+  _pitch = glm::clamp(_pitch, -89.0f, 89.0f);
 
   glm::vec3 direction;
-  direction.x = cos(glm::radians(_yaw)) * cos(glm::radians(_pitch));
-  direction.y = sin(glm::radians(_pitch));
-  direction.z = sin(glm::radians(_yaw)) * cos(glm::radians(_pitch));
+  direction.x = glm::cos(glm::radians(_yaw)) * glm::cos(glm::radians(_pitch));
+  direction.y = glm::sin(glm::radians(_pitch));
+  direction.z = glm::sin(glm::radians(_yaw)) * glm::cos(glm::radians(_pitch));
   _direction = glm::normalize(direction);
 }
 
