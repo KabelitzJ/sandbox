@@ -144,6 +144,7 @@ bool initialize() {
   _mesh_atlas.emplace("sphere", new mesh("resources/models/sphere.obj"));
   _mesh_atlas.emplace("torus", new mesh("resources/models/torus.obj"));
   _mesh_atlas.emplace("wooden_box", new mesh("resources/models/wooden_box.obj"));
+  _mesh_atlas.emplace("smg", new mesh("resources/models/smg.obj"));
 
   _texture_atlas.emplace("blank", new texture("resources/textures/blank.jpg"));
   _texture_atlas.emplace("brick_wall", new texture("resources/textures/brick_wall.jpg"));
@@ -152,6 +153,7 @@ bool initialize() {
   _texture_atlas.emplace("wooden_planks", new texture("resources/textures/wooden_planks.jpg"));
   _texture_atlas.emplace("barrel", new texture("resources/textures/barrel_DIF.jpg"));
   _texture_atlas.emplace("wooden_box", new texture("resources/textures/wooden_box.png"));
+  _texture_atlas.emplace("smg", new texture("resources/textures/smg.tga"));
 
   // This one is the light source
   _objects.push_back(new object(
@@ -222,6 +224,16 @@ bool initialize() {
       glm::vec3(-3.0f, 0.0f, -3.0f),
       glm::vec3(0.0f, 45.0f, 0.0f),
       glm::vec3(1.0f, 1.0f, 1.0f),
+    }
+  ));
+
+  _objects.push_back(new object(
+    *_mesh_atlas["smg"],
+    *_texture_atlas["smg"],
+    {
+      glm::vec3(0.0f, 5.0f, -3.0f),
+      glm::vec3(0.0f, 90.0f, 0.0f),
+      glm::vec3(0.4f, 0.4f, 0.4f),
     }
   ));
 
