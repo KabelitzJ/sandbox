@@ -66,7 +66,7 @@ void texture::_initialize(const std::filesystem::path& path) {
   if (!texture_data) {
     std::ostringstream ss;
 
-    ss << "[Error] Could not read texture from file: '" << path << "'!\n";
+    ss << "[Error] Could not read texture from file: " << path << "!\n";
 
     throw std::runtime_error(ss.str());
   }

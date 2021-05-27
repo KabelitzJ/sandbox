@@ -97,7 +97,7 @@ bool initialize() {
   }
 
   glfwSetInputMode(_context, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-  glfwSwapInterval(0);
+  glfwSwapInterval(1);
   glfwFocusWindow(_context);
 
   _event_queue = new event_queue(_context);
@@ -132,21 +132,26 @@ bool initialize() {
   // _default_shader->bind();
 
 
+  _mesh_atlas.emplace("barrel", new mesh("resources/models/barrel.obj"));
   _mesh_atlas.emplace("big_f", new mesh("resources/models/big_f.obj"));
   _mesh_atlas.emplace("cone", new mesh("resources/models/cone.obj"));
   _mesh_atlas.emplace("cube", new mesh("resources/models/cube.obj"));
   _mesh_atlas.emplace("cylinder", new mesh("resources/models/cylinder.obj"));
   _mesh_atlas.emplace("floor", new mesh("resources/models/floor.obj"));
+  _mesh_atlas.emplace("male", new mesh("resources/models/male.obj"));
   _mesh_atlas.emplace("monke", new mesh("resources/models/monke.obj"));
   _mesh_atlas.emplace("plane", new mesh("resources/models/plane.obj"));
   _mesh_atlas.emplace("sphere", new mesh("resources/models/sphere.obj"));
   _mesh_atlas.emplace("torus", new mesh("resources/models/torus.obj"));
+  _mesh_atlas.emplace("wooden_box", new mesh("resources/models/wooden_box.obj"));
 
   _texture_atlas.emplace("blank", new texture("resources/textures/blank.jpg"));
   _texture_atlas.emplace("brick_wall", new texture("resources/textures/brick_wall.jpg"));
   _texture_atlas.emplace("cobble_wall", new texture("resources/textures/cobble_wall.jpg"));
   _texture_atlas.emplace("lava", new texture("resources/textures/lava.jpg"));
   _texture_atlas.emplace("wooden_planks", new texture("resources/textures/wooden_planks.jpg"));
+  _texture_atlas.emplace("barrel", new texture("resources/textures/barrel_DIF.jpg"));
+  _texture_atlas.emplace("wooden_box", new texture("resources/textures/wooden_box.png"));
 
   // This one is the light source
   _objects.push_back(new object(
@@ -196,6 +201,26 @@ bool initialize() {
     {
       glm::vec3(3.0f, 0.0f, -3.0f),
       glm::vec3(0.0f, 0.0f, 45.0f),
+      glm::vec3(1.0f, 1.0f, 1.0f),
+    }
+  ));
+
+  _objects.push_back(new object(
+    *_mesh_atlas["barrel"],
+    *_texture_atlas["barrel"],
+    {
+      glm::vec3(0.0f, 0.0f, -3.0f),
+      glm::vec3(0.0f, 0.0f, 0.0f),
+      glm::vec3(1.0f, 1.0f, 1.0f),
+    }
+  ));
+
+  _objects.push_back(new object(
+    *_mesh_atlas["wooden_box"],
+    *_texture_atlas["wooden_box"],
+    {
+      glm::vec3(-3.0f, 0.0f, -3.0f),
+      glm::vec3(0.0f, 45.0f, 0.0f),
       glm::vec3(1.0f, 1.0f, 1.0f),
     }
   ));
