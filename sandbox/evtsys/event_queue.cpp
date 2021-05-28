@@ -54,6 +54,21 @@ void event_queue::_bind_callbacks() {
     };
   });
 
+  glfwSetMouseButtonCallback(_context, [](GLFWwindow* window, int button ,int action ,int){
+    event_queue* queue = static_cast<event_queue*>(glfwGetWindowUserPointer(window));
+
+    switch (action) {
+      case GLFW_PRESS: {
+        queue->_push<mouse_button_pressed_event>(static_cast<mouse_button>(button));
+        break;
+      }
+      case GLFW_RELEASE: {
+        queue->_push<mouse_button_released_event>(static_cast<mouse_button>(button));
+        break;
+      }
+    }
+  });
+
   if (glfwRawMouseMotionSupported()) {
     glfwSetInputMode(_context, GLFW_RAW_MOUSE_MOTION, true);
   }
@@ -68,6 +83,7 @@ void event_queue::_bind_callbacks() {
 void event_queue::_unbind_callbacks() {
   glfwSetKeyCallback(_context, nullptr);
   glfwSetCursorPosCallback(_context, nullptr);
+  glfwSetMouseButtonCallback(_context, nullptr);
 
   glfwSetWindowUserPointer(_context, nullptr);
 }

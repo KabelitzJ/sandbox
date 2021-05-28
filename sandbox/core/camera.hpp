@@ -21,6 +21,8 @@ public:
 
   glm::mat4 view() const;
 
+  glm::vec3 position() const;
+
   void update(const input_manager& input, float delta_time);
 
 protected:

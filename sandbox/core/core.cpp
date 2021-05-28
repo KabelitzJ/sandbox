@@ -9,6 +9,8 @@
 #include <unordered_map>
 #include <filesystem>
 #include <ctime>
+#include <thread>
+#include <future>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -53,6 +55,9 @@ static float _camera_yaw = -90.0f;
 static float _fov = 45.0f;
 
 static void _initialize_glfw_callbacks();
+
+template<typename T, typename... Args>
+static T* _load_async(Args&&... args);
 
 bool initialize() {
   _initialize_glfw_callbacks();
@@ -121,39 +126,49 @@ bool initialize() {
   glViewport(0, 0, width, height);
 
   _default_shader = new shader("resources/shaders/default_vertex.glsl", "resources/shaders/default_fragment.glsl");
-  _lighting_scene_shader = new shader("resources/shaders/lighting_scene_vertex.glsl", "resources/shaders/lighting_scene_fragment.glsl");
   _lighting_source_shader = new shader("resources/shaders/lighting_source_vertex.glsl", "resources/shaders/lighting_source_fragment.glsl");
+  _lighting_scene_shader = new shader("resources/shaders/lighting_scene_vertex.glsl", "resources/shaders/lighting_scene_fragment.glsl");
 
   _lighting_scene_shader->bind();
 
-  _lighting_scene_shader->set_uniform_3f("uni_light_position", { 0.0f, 0.0f, 0.0f }); // change when light source moves
-  _lighting_scene_shader->set_uniform_3f("uni_light_color", { 1.0f, 1.0f, 1.0f });
-  _lighting_scene_shader->set_uniform_3f("uni_object_color", { 1.0f, 1.0f, 1.0f });
-  // _default_shader->bind();
+  /* Setting up static shader uniforms */
+  _lighting_scene_shader->set_uniform_3f("uni_material.ambient", { 1.0f, 0.5f, 0.31f });
+  _lighting_scene_shader->set_uniform_3f("uni_material.diffuse", { 1.0f, 0.5f, 0.31f });
+  _lighting_scene_shader->set_uniform_3f("uni_material.specular", { 0.5f, 0.5f, 0.5f });
+  _lighting_scene_shader->set_uniform_1f("uni_material.shininess", 32.0f);
+  _lighting_scene_shader->set_uniform_3f("uni_light.position", { 0.0f, 0.0f, 0.0f });
+  _lighting_scene_shader->set_uniform_3f("uni_light.ambient", { 0.2f, 0.2f, 0.2f });
+  _lighting_scene_shader->set_uniform_3f("uni_light.diffuse", { 0.5f, 0.5f, 0.5f });
+  _lighting_scene_shader->set_uniform_3f("uni_light.specular", { 1.0f, 1.0f, 1.0f });
 
+  /* loading meshes */
+  _mesh_atlas.emplace("barrel", _load_async<mesh>("resources/models/barrel.obj"));
+  _mesh_atlas.emplace("big_f", _load_async<mesh>("resources/models/big_f.obj"));
+  _mesh_atlas.emplace("cone", _load_async<mesh>("resources/models/cone.obj"));
+  _mesh_atlas.emplace("cube", _load_async<mesh>("resources/models/cube.obj"));
+  _mesh_atlas.emplace("cylinder", _load_async<mesh>("resources/models/cylinder.obj"));
+  _mesh_atlas.emplace("floor", _load_async<mesh>("resources/models/floor.obj"));
+  _mesh_atlas.emplace("male", _load_async<mesh>("resources/models/male.obj"));
+  _mesh_atlas.emplace("monke", _load_async<mesh>("resources/models/monke.obj"));
+  _mesh_atlas.emplace("plane", _load_async<mesh>("resources/models/plane.obj"));
+  _mesh_atlas.emplace("sphere", _load_async<mesh>("resources/models/sphere.obj"));
+  _mesh_atlas.emplace("torus", _load_async<mesh>("resources/models/torus.obj"));
+  _mesh_atlas.emplace("wooden_box", _load_async<mesh>("resources/models/wooden_box.obj"));
+  _mesh_atlas.emplace("smg", _load_async<mesh>("resources/models/smg.obj"));
 
-  _mesh_atlas.emplace("barrel", new mesh("resources/models/barrel.obj"));
-  _mesh_atlas.emplace("big_f", new mesh("resources/models/big_f.obj"));
-  _mesh_atlas.emplace("cone", new mesh("resources/models/cone.obj"));
-  _mesh_atlas.emplace("cube", new mesh("resources/models/cube.obj"));
-  _mesh_atlas.emplace("cylinder", new mesh("resources/models/cylinder.obj"));
-  _mesh_atlas.emplace("floor", new mesh("resources/models/floor.obj"));
-  _mesh_atlas.emplace("male", new mesh("resources/models/male.obj"));
-  _mesh_atlas.emplace("monke", new mesh("resources/models/monke.obj"));
-  _mesh_atlas.emplace("plane", new mesh("resources/models/plane.obj"));
-  _mesh_atlas.emplace("sphere", new mesh("resources/models/sphere.obj"));
-  _mesh_atlas.emplace("torus", new mesh("resources/models/torus.obj"));
-  _mesh_atlas.emplace("wooden_box", new mesh("resources/models/wooden_box.obj"));
-  _mesh_atlas.emplace("smg", new mesh("resources/models/smg.obj"));
-
-  _texture_atlas.emplace("blank", new texture("resources/textures/blank.jpg"));
-  _texture_atlas.emplace("brick_wall", new texture("resources/textures/brick_wall.jpg"));
-  _texture_atlas.emplace("cobble_wall", new texture("resources/textures/cobble_wall.jpg"));
-  _texture_atlas.emplace("lava", new texture("resources/textures/lava.jpg"));
-  _texture_atlas.emplace("wooden_planks", new texture("resources/textures/wooden_planks.jpg"));
-  _texture_atlas.emplace("barrel", new texture("resources/textures/barrel_DIF.jpg"));
-  _texture_atlas.emplace("wooden_box", new texture("resources/textures/wooden_box.png"));
-  _texture_atlas.emplace("smg", new texture("resources/textures/smg.tga"));
+  /* loading textures */
+  _texture_atlas.emplace("blank", _load_async<texture>("resources/textures/blank.jpg"));
+  _texture_atlas.emplace("brick_wall", _load_async<texture>("resources/textures/brick_wall.jpg"));
+  _texture_atlas.emplace("cobble_wall", _load_async<texture>("resources/textures/cobble_wall.jpg"));
+  _texture_atlas.emplace("lava", _load_async<texture>("resources/textures/lava.jpg"));
+  _texture_atlas.emplace("wooden_planks", _load_async<texture>("resources/textures/wooden_planks.jpg"));
+  _texture_atlas.emplace("barrel", _load_async<texture>("resources/textures/barrel_DIF.jpg"));
+  _texture_atlas.emplace("wooden_box", _load_async<texture>("resources/textures/wooden_box.png"));
+  _texture_atlas.emplace("smg_D", _load_async<texture>("resources/textures/smg/D.png"));
+  _texture_atlas.emplace("smg_G", _load_async<texture>("resources/textures/smg/G.png"));
+  _texture_atlas.emplace("smg_N", _load_async<texture>("resources/textures/smg/N.png"));
+  _texture_atlas.emplace("smg_S", _load_async<texture>("resources/textures/smg/S.png"));
+  _texture_atlas.emplace("wooden_box_steel_border", _load_async<texture>("resources/textures/wooden_box_steel_border.png"));
 
   // This one is the light source
   _objects.push_back(new object(
@@ -199,7 +214,7 @@ bool initialize() {
 
   _objects.push_back(new object(
     *_mesh_atlas["cube"],
-    *_texture_atlas["cobble_wall"],
+    *_texture_atlas["wooden_box_steel_border"],
     {
       glm::vec3(3.0f, 0.0f, -3.0f),
       glm::vec3(0.0f, 0.0f, 45.0f),
@@ -227,9 +242,13 @@ bool initialize() {
     }
   ));
 
+  // smg_D
+  // smg_G
+  // smg_N
+  // smg_S
   _objects.push_back(new object(
     *_mesh_atlas["smg"],
-    *_texture_atlas["smg"],
+    *_texture_atlas["smg_D"],
     {
       glm::vec3(0.0f, 5.0f, -3.0f),
       glm::vec3(0.0f, 90.0f, 0.0f),
@@ -300,6 +319,8 @@ void run() {
 
     // draw rest of the objects
     _lighting_scene_shader->bind();
+
+    _lighting_scene_shader->set_uniform_3f("uni_view_position", _camera->position());
 
     object* floor = _objects[1];
 
@@ -377,6 +398,12 @@ void _initialize_glfw_callbacks() {
   glfwSetErrorCallback([](int error_code, const char* description){
     std::cout << "[Error: " << error_code << "] " << description << "\n";
   });
+}
+
+// Not actually async at the time
+template<typename T, typename... Args>
+T* _load_async(Args&&... args) {
+  return new T(std::forward<Args>(args)...);
 }
 
 // void _initialize_window_callbacks() {

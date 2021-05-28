@@ -1,8 +1,10 @@
 #ifndef SBX_CORE_OBJECT_HPP_
 #define SBX_CORE_OBJECT_HPP_
 
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/mat4x4.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/matrix_decompose.hpp>
 
 #include "mesh.hpp"
 #include "texture.hpp"

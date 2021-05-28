@@ -1,6 +1,7 @@
 #include "texture.hpp"
 
 #include <sstream>
+#include <iostream>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb/stb_image.h>
@@ -61,7 +62,7 @@ void texture::_initialize(const std::filesystem::path& path) {
   int height;
   int channel_count;
   stbi_set_flip_vertically_on_load(true);
-  unsigned char* texture_data = stbi_load(path.string().c_str(), &width, &height, &channel_count, 0);
+  unsigned char* texture_data = stbi_load(path.string().c_str(), &width, &height, &channel_count, STBI_rgb_alpha);
 
   if (!texture_data) {
     std::ostringstream ss;
@@ -71,7 +72,10 @@ void texture::_initialize(const std::filesystem::path& path) {
     throw std::runtime_error(ss.str());
   }
 
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, texture_data);
+  GLint internalformat = GL_RGBA;
+  GLenum format = GL_RGBA;
+
+  glTexImage2D(GL_TEXTURE_2D, 0, internalformat, width, height, 0, format, GL_UNSIGNED_BYTE, texture_data);
   glGenerateMipmap(GL_TEXTURE_2D);
 
   stbi_image_free(texture_data);

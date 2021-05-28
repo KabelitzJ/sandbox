@@ -24,7 +24,9 @@ public:
 
   GLuint id() const;
 
+
   void set_uniform_1i(const std::string& name, GLint value);
+  void set_uniform_1f(const std::string& name, GLfloat value);
   void set_uniform_3f(const std::string& name, const glm::vec3& value);
   void set_uniform_4f(const std::string& name, const glm::vec4& value);
   void set_uniform_matrix_3fv(const std::string& name, const glm::mat3& value);

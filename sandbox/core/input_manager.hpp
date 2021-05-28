@@ -20,6 +20,7 @@ public:
   ~input_manager();
 
   bool is_key_pressed(key_code key) const;
+  bool is_mouse_button_pressed(mouse_button button) const;
   const glm::vec2& mouse_position() const;
 
 private:
@@ -29,6 +30,8 @@ private:
   void _on_key_repeated_event(key_repeated_event& event);
   void _on_key_released_event(key_released_event& event);
   void _on_mouse_moved_event(mouse_moved_event& event);
+  void _on_mouse_button_pressed_event(mouse_button_pressed_event& event);
+  void _on_mouse_button_released_event(mouse_button_released_event& event);
 
   event_queue& _event_queue;
   std::unordered_map<key_code, bool> _key_states;

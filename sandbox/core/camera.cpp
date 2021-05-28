@@ -25,6 +25,10 @@ glm::mat4 camera::view() const {
   return glm::lookAt(_position, _position + _direction, VECTOR_UP);
 }
 
+glm::vec3 camera::position() const {
+  return _position;
+}
+
 void camera::update(const input_manager& input, float delta_time) {
   _update_position(input, delta_time);
   _update_direction(input);
@@ -57,7 +61,7 @@ void camera::_update_position(const input_manager& input, float delta_time) {
 
 void camera::_update_direction(const input_manager& input) {
   // center the view to the origin
-  if (input.is_key_pressed(key_code::SPACE)) {
+  if (input.is_mouse_button_pressed(mouse_button::RIGHT)) {
     _direction = glm::vec3(0.0f, 0.0f, 0.0f) - _position;
     return;
   }
