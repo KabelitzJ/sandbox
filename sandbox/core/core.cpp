@@ -132,9 +132,6 @@ bool initialize() {
   _lighting_scene_shader->bind();
 
   /* Setting up static shader uniforms */
-  _lighting_scene_shader->set_uniform_3f("uni_material.ambient", { 1.0f, 0.5f, 0.31f });
-  _lighting_scene_shader->set_uniform_3f("uni_material.diffuse", { 1.0f, 0.5f, 0.31f });
-  _lighting_scene_shader->set_uniform_3f("uni_material.specular", { 0.5f, 0.5f, 0.5f });
   _lighting_scene_shader->set_uniform_1f("uni_material.shininess", 32.0f);
   _lighting_scene_shader->set_uniform_3f("uni_light.position", { 0.0f, 0.0f, 0.0f });
   _lighting_scene_shader->set_uniform_3f("uni_light.ambient", { 0.2f, 0.2f, 0.2f });
@@ -158,22 +155,29 @@ bool initialize() {
 
   /* loading textures */
   _texture_atlas.emplace("blank", _load_async<texture>("resources/textures/blank.jpg"));
+  _texture_atlas.emplace("filled", _load_async<texture>("resources/textures/filled.jpg"));
   _texture_atlas.emplace("brick_wall", _load_async<texture>("resources/textures/brick_wall.jpg"));
   _texture_atlas.emplace("cobble_wall", _load_async<texture>("resources/textures/cobble_wall.jpg"));
   _texture_atlas.emplace("lava", _load_async<texture>("resources/textures/lava.jpg"));
   _texture_atlas.emplace("wooden_planks", _load_async<texture>("resources/textures/wooden_planks.jpg"));
-  _texture_atlas.emplace("barrel", _load_async<texture>("resources/textures/barrel_DIF.jpg"));
+  _texture_atlas.emplace("barrel.diffusion", _load_async<texture>("resources/textures/barrel/diffusion.png"));
+  _texture_atlas.emplace("barrel.normal", _load_async<texture>("resources/textures/barrel/normal.png"));
+  _texture_atlas.emplace("barrel.specular", _load_async<texture>("resources/textures/barrel/specular.png"));
   _texture_atlas.emplace("wooden_box", _load_async<texture>("resources/textures/wooden_box.png"));
-  _texture_atlas.emplace("smg_D", _load_async<texture>("resources/textures/smg/D.png"));
-  _texture_atlas.emplace("smg_G", _load_async<texture>("resources/textures/smg/G.png"));
-  _texture_atlas.emplace("smg_N", _load_async<texture>("resources/textures/smg/N.png"));
-  _texture_atlas.emplace("smg_S", _load_async<texture>("resources/textures/smg/S.png"));
+  _texture_atlas.emplace("smg.diffusion", _load_async<texture>("resources/textures/smg/diffusion.png"));
+  _texture_atlas.emplace("smg.G", _load_async<texture>("resources/textures/smg/G.png"));
+  _texture_atlas.emplace("smg.normal", _load_async<texture>("resources/textures/smg/normal.png"));
+  _texture_atlas.emplace("smg.specular", _load_async<texture>("resources/textures/smg/specular.png"));
   _texture_atlas.emplace("wooden_box_steel_border", _load_async<texture>("resources/textures/wooden_box_steel_border.png"));
+  _texture_atlas.emplace("wooden_box_steel_border_specular", _load_async<texture>("resources/textures/wooden_box_steel_border_specular.png"));
 
   // This one is the light source
   _objects.push_back(new object(
     *_mesh_atlas["sphere"],
-    *_texture_atlas["blank"],
+    {
+      _texture_atlas["blank"],
+      _texture_atlas["blank"],
+    },
     {
       glm::vec3(0.0f, 0.0f, 0.0f),
       glm::vec3(0.0f, 0.0f, 0.0f),
@@ -184,7 +188,10 @@ bool initialize() {
   // this one is the floor
   _objects.push_back(new object(
     *_mesh_atlas["plane"],
-    *_texture_atlas["blank"],
+    {
+      _texture_atlas["blank"],
+      _texture_atlas["filled"],
+    },
     {
       glm::vec3(0.0f, -3.0f, 0.0f),
       glm::vec3(0.0f, 0.0f, 0.0f),
@@ -194,7 +201,10 @@ bool initialize() {
 
   _objects.push_back(new object(
     *_mesh_atlas["torus"],
-    *_texture_atlas["lava"],
+    {
+      _texture_atlas["lava"],
+      _texture_atlas["blank"],
+    },
     {
       glm::vec3(5.0f, 2.0f, 0.0f),
       glm::vec3(45.0f, 0.0f, 0.0f),
@@ -204,7 +214,10 @@ bool initialize() {
 
   _objects.push_back(new object(
     *_mesh_atlas["monke"],
-    *_texture_atlas["wooden_planks"],
+    {
+      _texture_atlas["wooden_planks"],
+      _texture_atlas["blank"],
+    },
     {
       glm::vec3(-3.0f, 0.0f, 1.0f),
       glm::vec3(0.0f, 45.0f, 0.0f),
@@ -214,7 +227,10 @@ bool initialize() {
 
   _objects.push_back(new object(
     *_mesh_atlas["cube"],
-    *_texture_atlas["wooden_box_steel_border"],
+    {
+      _texture_atlas["wooden_box_steel_border"],
+      _texture_atlas["wooden_box_steel_border_specular"],
+    },
     {
       glm::vec3(3.0f, 0.0f, -3.0f),
       glm::vec3(0.0f, 0.0f, 45.0f),
@@ -224,7 +240,10 @@ bool initialize() {
 
   _objects.push_back(new object(
     *_mesh_atlas["barrel"],
-    *_texture_atlas["barrel"],
+    {
+      _texture_atlas["barrel.diffusion"],
+      _texture_atlas["barrel.specular"],
+    },
     {
       glm::vec3(0.0f, 0.0f, -3.0f),
       glm::vec3(0.0f, 0.0f, 0.0f),
@@ -234,7 +253,10 @@ bool initialize() {
 
   _objects.push_back(new object(
     *_mesh_atlas["wooden_box"],
-    *_texture_atlas["wooden_box"],
+    {
+      _texture_atlas["wooden_box"],
+      _texture_atlas["blank"],
+    },
     {
       glm::vec3(-3.0f, 0.0f, -3.0f),
       glm::vec3(0.0f, 45.0f, 0.0f),
@@ -248,7 +270,10 @@ bool initialize() {
   // smg_S
   _objects.push_back(new object(
     *_mesh_atlas["smg"],
-    *_texture_atlas["smg_D"],
+    {
+      _texture_atlas["smg.diffusion"],
+      _texture_atlas["smg.specular"],
+    },
     {
       glm::vec3(0.0f, 5.0f, -3.0f),
       glm::vec3(0.0f, 90.0f, 0.0f),

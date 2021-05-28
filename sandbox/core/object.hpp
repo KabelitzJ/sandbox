@@ -13,10 +13,15 @@
 
 namespace sbx {
 
+struct material {
+  texture* diffuse;
+  texture* specular;
+}; // struct material
+
 class object {
 
 public:
-  object(const mesh& mesh, const texture& texture, const transform& transform) : _mesh(mesh), _texture(texture), _model(1.0f) {
+  object(const mesh& mesh, const material& material, const transform& transform) : _mesh(mesh), _material(material), _model(1.0f) {
     _initialize_model(transform);
   }
   ~object() = default;
@@ -30,12 +35,17 @@ public:
   }
 
   void draw(shader& shader) {
-    _texture.bind();
-    shader.set_uniform_1i("uni_material.diffuse", _texture.unit());
+    _material.diffuse->bind();
+    shader.set_uniform_1i("uni_material.diffuse", _material.diffuse->unit());
+
+    _material.specular->bind();
+    shader.set_uniform_1i("uni_material.specular", _material.specular->unit());
+
 
     _mesh.draw(/*shader*/);
 
-    _texture.unbind();
+    _material.diffuse->unbind();
+    _material.specular->unbind();
   }
 
 private:
@@ -48,7 +58,7 @@ private:
   }
 
   mesh _mesh;
-  texture _texture;
+  material _material;
   glm::mat4 _model;
 
 }; // class object

@@ -2,7 +2,7 @@
 
 struct material {
   sampler2D diffuse;
-  vec3 specular;
+  sampler2D specular;
   float shininess;
 };
 
@@ -37,7 +37,7 @@ void main() {
   vec3 view_direction = normalize(uni_view_position - vertex_fragment_position);
   vec3 reflection_direction = reflect(-normalized_light_direction, normalized_normal);  
   float specular_value = pow(max(dot(view_direction, reflection_direction), 0.0), uni_material.shininess);
-  vec3 specular = uni_light.specular * (specular_value * uni_material.specular);
+  vec3 specular = uni_light.specular * specular_value * vec3(texture(uni_material.specular, vertex_uv));
 
   vec3 result = ambient + diffuse + specular;
 
