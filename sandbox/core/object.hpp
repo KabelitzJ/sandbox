@@ -31,9 +31,11 @@ public:
 
   void draw(shader& shader) {
     _texture.bind();
-    shader.set_uniform_1i("uni_texture", _texture.unit());
+    shader.set_uniform_1i("uni_material.diffuse", _texture.unit());
 
     _mesh.draw(/*shader*/);
+
+    _texture.unbind();
   }
 
 private:

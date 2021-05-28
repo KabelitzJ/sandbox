@@ -1,8 +1,7 @@
 #version 330 core
 
 struct material {
-  vec3 ambient;
-  vec3 diffuse;
+  sampler2D diffuse;
   vec3 specular;
   float shininess;
 };
@@ -19,7 +18,6 @@ in vec3 vertex_normal;
 in vec3 vertex_fragment_position;
 
 uniform vec3 uni_view_position;
-uniform sampler2D uni_texture;
 uniform material uni_material;
 uniform light uni_light;
 
@@ -27,13 +25,13 @@ out vec4 fragment_color;
   
 void main() {
   // ambient lighting
-  vec3 ambient = uni_light.ambient * uni_material.ambient;
+  vec3 ambient = uni_light.ambient * vec3(texture(uni_material.diffuse, vertex_uv));
 
   // diffuse lighting
   vec3 normalized_normal = normalize(vertex_normal);
   vec3 normalized_light_direction = normalize(uni_light.position - vertex_fragment_position);
   float diffuse_value = max(dot(normalized_normal, normalized_light_direction), 0.0);
-  vec3 diffuse = uni_light.diffuse * (diffuse_value * uni_material.diffuse);
+  vec3 diffuse = uni_light.diffuse * diffuse_value * vec3(texture(uni_material.diffuse, vertex_uv));
 
   // specular lighting
   vec3 view_direction = normalize(uni_view_position - vertex_fragment_position);
@@ -43,5 +41,6 @@ void main() {
 
   vec3 result = ambient + diffuse + specular;
 
-  fragment_color = texture(uni_texture, vertex_uv) * vec4(result, 1.0);
+  fragment_color = vec4(result, 1.0);
+  // fragment_color = texture(uni_texture, vertex_uv) * vec4(result, 1.0);
 }
