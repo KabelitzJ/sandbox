@@ -107,12 +107,12 @@ bool initialize() {
 
   _event_queue = new event_queue(_context);
   _event_queue->subscribe<key_pressed_event>([](key_pressed_event& event){
-    if (event.code() == key_code::ESCAPE) {
+    if (event.code == key_code::ESCAPE) {
       glfwSetWindowShouldClose(_context, true);
     }
   });
   _event_queue->subscribe<key_pressed_event>([](key_pressed_event& event){
-    if (event.code() == key_code::ENTER) {
+    if (event.code == key_code::ENTER) {
       _draw_wireframe = !_draw_wireframe;
     }
   });
@@ -165,11 +165,12 @@ bool initialize() {
   _texture_atlas.emplace("barrel.specular", _load_async<texture>("resources/textures/barrel/specular.png"));
   _texture_atlas.emplace("wooden_box", _load_async<texture>("resources/textures/wooden_box.png"));
   _texture_atlas.emplace("smg.diffusion", _load_async<texture>("resources/textures/smg/diffusion.png"));
-  _texture_atlas.emplace("smg.G", _load_async<texture>("resources/textures/smg/G.png"));
+  _texture_atlas.emplace("smg.S", _load_async<texture>("resources/textures/smg/S.png"));
   _texture_atlas.emplace("smg.normal", _load_async<texture>("resources/textures/smg/normal.png"));
   _texture_atlas.emplace("smg.specular", _load_async<texture>("resources/textures/smg/specular.png"));
   _texture_atlas.emplace("wooden_box_steel_border", _load_async<texture>("resources/textures/wooden_box_steel_border.png"));
   _texture_atlas.emplace("wooden_box_steel_border_specular", _load_async<texture>("resources/textures/wooden_box_steel_border_specular.png"));
+  _texture_atlas.emplace("random_specular", _load_async<texture>("resources/textures/random_specular.jpg"));
 
   // This one is the light source
   _objects.push_back(new object(
@@ -255,7 +256,7 @@ bool initialize() {
     *_mesh_atlas["wooden_box"],
     {
       _texture_atlas["wooden_box"],
-      _texture_atlas["blank"],
+      _texture_atlas["random_specular"],
     },
     {
       glm::vec3(-3.0f, 0.0f, -3.0f),

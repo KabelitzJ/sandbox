@@ -46,27 +46,27 @@ void input_manager::_bind_callbacks() {
 }
 
 void input_manager::_on_key_pressed_event(key_pressed_event& event) {
-  _key_states[event.code()] = true;
+  _key_states[event.code] = true;
 }
 
 void input_manager::_on_key_repeated_event(key_repeated_event& event) {
-  _key_states[event.code()] = true;
+  _key_states[event.code] = true;
 }
 
 void input_manager::_on_key_released_event(key_released_event& event) {
-  _key_states[event.code()] = false;
+  _key_states[event.code] = false;
 }
 
 void input_manager::_on_mouse_moved_event(mouse_moved_event& event) {
-  _mouse_position = { event.x(), event.y() };
+  _mouse_position = { event.x, event.y };
 }
 
 void input_manager::_on_mouse_button_pressed_event(mouse_button_pressed_event& event) {
-  _button_states[event.button()] = true;
+  _button_states[event.button] = true;
 }
 
 void input_manager::_on_mouse_button_released_event(mouse_button_released_event& event) {
-  _button_states[event.button()] = false;
+  _button_states[event.button] = false;
 }
 
 

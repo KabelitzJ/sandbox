@@ -41,6 +41,8 @@ private:
 
 template<typename EventType, typename Callback>
 inline void event_queue::subscribe(Callback&& subscriber) {
+  static_assert(std::is_invocable_r_v<void, Callback, EventType&>, "Callback needs to be invokeable with a sbx::event reference");
+
   std::type_index type = std::type_index(typeid(EventType));
   _subscribers[type].push_back([subscriber](event& e){
     std::invoke(subscriber, static_cast<EventType&>(e));
@@ -49,6 +51,9 @@ inline void event_queue::subscribe(Callback&& subscriber) {
 
 template<typename EventType, typename... Args>
 inline void event_queue::_push(Args&&... args) {
+  static_assert(std::is_base_of_v<event, EventType>, "EventType has to derive from sbx::event!");
+  static_assert(!std::is_abstract_v<EventType>, "EventType may not be abstract!");
+
   std::type_index type = std::type_index(typeid(EventType));
   auto event = std::make_unique<EventType>(std::forward<Args>(args)...);
 

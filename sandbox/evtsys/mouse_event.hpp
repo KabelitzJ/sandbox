@@ -6,50 +6,33 @@
 
 namespace sbx {
 
-class mouse_moved_event : public event {
+struct mouse_moved_event : public event {
 
-public:
-  mouse_moved_event(float x, float y);
+  mouse_moved_event(float x, float y) : x(x), y(y) {}
   ~mouse_moved_event() = default;
 
-  event_type type() const override;
-
-  float x() const;
-  float y() const;
-
-private:
-  float _x;
-  float _y;
+  float x;
+  float y;
 
 }; // class mouse_moved_event
 
-class mouse_button_pressed_event : public event {
 
-public:
-  mouse_button_pressed_event(mouse_button button);
+struct mouse_button_pressed_event : public event {
+
+  mouse_button_pressed_event(mouse_button button) : button(button) {}
   ~mouse_button_pressed_event() = default;
 
-  event_type type() const override;
-
-  mouse_button button() const;
-
-private:
-  mouse_button _button;
+  mouse_button button;
 
 }; // class mouse_button_pressed_event
 
-class mouse_button_released_event : public event {
 
-public:
-  mouse_button_released_event(mouse_button button);
+struct mouse_button_released_event : public event {
+
+  mouse_button_released_event(mouse_button button) : button(button) {}
   ~mouse_button_released_event() = default;
 
-  event_type type() const override;
-
-  mouse_button button() const;
-
-private:
-  mouse_button _button;
+  mouse_button button;
 
 }; // class mouse_button_released_event
 

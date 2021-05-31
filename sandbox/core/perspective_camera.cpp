@@ -17,7 +17,7 @@ glm::mat4 perspective_camera::projection() const {
 }
 
 void perspective_camera::on_framebuffer_resize(framebuffer_resized_event& event) {
-  _aspect_ratio = static_cast<float>(event.width()) / static_cast<float>(event.height());
+  _aspect_ratio = static_cast<float>(event.width) / static_cast<float>(event.height);
 }
 
 } // namespace sbx
