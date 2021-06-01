@@ -71,6 +71,7 @@ bool initialize() {
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+  glfwWindowHint(GLFW_SAMPLES, 4);
 
   GLFWmonitor* primary_monitor = glfwGetPrimaryMonitor();
 
@@ -253,7 +254,7 @@ bool initialize() {
   ));
 
   _objects.push_back(new object(
-    *_mesh_atlas["wooden_box"],
+    *_mesh_atlas["cube"],
     {
       _texture_atlas["wooden_box"],
       _texture_atlas["random_specular"],
@@ -284,6 +285,12 @@ bool initialize() {
 
   glEnable(GL_DEPTH_TEST);
   glDepthFunc(GL_LESS);
+  
+  glEnable(GL_MULTISAMPLE);
+
+  glEnable(GL_CULL_FACE);
+  glCullFace(GL_BACK);
+  glFrontFace(GL_CCW);
 
   // _default_shader->set_uniform_4f("uni_color", { 1.0f, 1.0f, 1.0f, 1.0f });
 
