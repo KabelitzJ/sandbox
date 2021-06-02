@@ -132,14 +132,14 @@ bool initialize() {
 
   _lighting_scene_shader->bind();
 
-  /* Setting up static shader uniforms */
+  // Setting up static shader uniforms
   _lighting_scene_shader->set_uniform_1f("uni_material.shininess", 32.0f);
   _lighting_scene_shader->set_uniform_3f("uni_light.position", { 0.0f, 0.0f, 0.0f });
   _lighting_scene_shader->set_uniform_3f("uni_light.ambient", { 0.2f, 0.2f, 0.2f });
   _lighting_scene_shader->set_uniform_3f("uni_light.diffuse", { 0.5f, 0.5f, 0.5f });
   _lighting_scene_shader->set_uniform_3f("uni_light.specular", { 1.0f, 1.0f, 1.0f });
 
-  /* loading meshes */
+  // loading meshes
   _mesh_atlas.emplace("barrel", _load_async<mesh>("resources/models/barrel.obj"));
   _mesh_atlas.emplace("big_f", _load_async<mesh>("resources/models/big_f.obj"));
   _mesh_atlas.emplace("cone", _load_async<mesh>("resources/models/cone.obj"));
@@ -154,7 +154,7 @@ bool initialize() {
   _mesh_atlas.emplace("wooden_box", _load_async<mesh>("resources/models/wooden_box.obj"));
   _mesh_atlas.emplace("smg", _load_async<mesh>("resources/models/smg.obj"));
 
-  /* loading textures */
+  // loading textures
   _texture_atlas.emplace("blank", _load_async<texture>("resources/textures/blank.jpg"));
   _texture_atlas.emplace("filled", _load_async<texture>("resources/textures/filled.jpg"));
   _texture_atlas.emplace("brick_wall", _load_async<texture>("resources/textures/brick_wall.jpg"));
@@ -266,10 +266,6 @@ bool initialize() {
     }
   ));
 
-  // smg_D
-  // smg_G
-  // smg_N
-  // smg_S
   _objects.push_back(new object(
     *_mesh_atlas["smg"],
     {
@@ -292,10 +288,6 @@ bool initialize() {
   glCullFace(GL_BACK);
   glFrontFace(GL_CCW);
 
-  // _default_shader->set_uniform_4f("uni_color", { 1.0f, 1.0f, 1.0f, 1.0f });
-
-  // (can this be deleted??) glBindTexture(GL_TEXTURE_2D, 0);
-  // _default_shader->unbind();
   _lighting_scene_shader->unbind();
 
   std::srand(std::time(nullptr));
@@ -438,104 +430,5 @@ template<typename T, typename... Args>
 T* _load_async(Args&&... args) {
   return new T(std::forward<Args>(args)...);
 }
-
-// void _initialize_window_callbacks() {
-//   glfwSetFramebufferSizeCallback(_context, [](GLFWwindow* window, int width, int height){
-//     glViewport(0, 0, width, height);
-//   });
-
-//   glfwSetKeyCallback(_context, [](GLFWwindow* window, int key, int scancode, int action, int mods){
-//     // close window
-//     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
-//       glfwSetWindowShouldClose(_context, true);
-//     }
-//     // toggle wireframe mode
-//     if (key == GLFW_KEY_T && action == GLFW_PRESS) {
-//       _draw_wireframe = !_draw_wireframe;
-//     }
-//     // randomize new uniform color
-//     if (key == GLFW_KEY_SPACE && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-//       glm::vec3 color;
-
-//       color.r = (static_cast<float>(std::rand() % 255) / 255);
-//       color.g = (static_cast<float>(std::rand() % 255) / 255);
-//       color.b = (static_cast<float>(std::rand() % 255) / 255);
-
-//       _default_shader->bind();
-//       _default_shader->set_uniform_4f("uni_color", { color.r, color.g, color.b, 1.0f });
-//       _default_shader->unbind();
-//     }
-//     // reset uniform color
-//     if (key == GLFW_KEY_R && action == GLFW_PRESS) {
-//       _default_shader->bind();
-//       _default_shader->set_uniform_4f("uni_color", { 1.0f, 1.0f, 1.0f, 1.0f });
-//       _default_shader->unbind();
-//     }
-//     // switch texture
-//     if (key == GLFW_KEY_ENTER && action == GLFW_PRESS) {
-//       _active_texture_index = (_active_texture_index + 1) % _textures.size();
-//     }
-//   });
-
-//   glfwSetCursorPosCallback(_context, [](GLFWwindow* window, double xpos, double ypos){
-//     if (_is_first_cursor_movement) {
-//       _last_cursor_position = glm::vec2(xpos, ypos);
-//       _is_first_cursor_movement = false;
-//     }
-
-//     glm::vec2 cursor_offset(xpos - _last_cursor_position.x, _last_cursor_position.y - ypos);
-//     cursor_offset *= _camera_sensitivity;
-
-//     _last_cursor_position = glm::vec2(xpos, ypos);
-
-//     _camera_yaw += cursor_offset.x;
-//     _camera_pitch += cursor_offset.y;
-
-//     if(_camera_pitch > 89.0f) {
-//       _camera_pitch =  89.0f;
-//     }
-//     if(_camera_pitch < -89.0f) {
-//       _camera_pitch = -89.0f;
-//     }
-
-//     glm::vec3 direction;
-//     direction.x = cos(glm::radians(_camera_yaw)) * cos(glm::radians(_camera_pitch));
-//     direction.y = sin(glm::radians(_camera_pitch));
-//     direction.z = sin(glm::radians(_camera_yaw)) * cos(glm::radians(_camera_pitch));
-//     _camera_target = glm::normalize(direction);
-//   });
-
-//   glfwSetScrollCallback(_context, [](GLFWwindow* window, double xoffset, double yoffset){
-//     _fov -= static_cast<float>(yoffset) * _scroll_sensitivity;
-
-//     if (_fov < 1.0f) {
-//       _fov = 1.0f;
-//     }
-//     if (_fov > 45.0f) {
-//       _fov = 45.0f;
-//     }
-//   });
-// }
-
-// void _process_input() {
-//   if (glfwGetKey(_context, GLFW_KEY_W) == GLFW_PRESS) {
-//     _camera_position += _camera_target * _camera_speed;
-//   }
-//   if (glfwGetKey(_context, GLFW_KEY_S) == GLFW_PRESS) {
-//     _camera_position -= _camera_target * _camera_speed;
-//   }
-//   if (glfwGetKey(_context, GLFW_KEY_A) == GLFW_PRESS) {
-//     _camera_position -= glm::normalize(glm::cross(_camera_target, _up)) * _camera_speed;
-//   }
-//   if (glfwGetKey(_context, GLFW_KEY_D) == GLFW_PRESS) {
-//     _camera_position += glm::normalize(glm::cross(_camera_target, _up)) * _camera_speed;
-//   }
-//   if (glfwGetKey(_context, GLFW_KEY_Q) == GLFW_PRESS) {
-//     _camera_position += _up * _camera_speed;
-//   }
-//   if (glfwGetKey(_context, GLFW_KEY_E) == GLFW_PRESS) {
-//     _camera_position -= _up * _camera_speed;
-//   }
-// }
 
 } // namespace sbx
