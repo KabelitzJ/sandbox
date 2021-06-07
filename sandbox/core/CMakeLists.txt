@@ -5,12 +5,13 @@ find_package(glfw3 REQUIRED)
 find_package(glm REQUIRED)
 find_package(stb REQUIRED)
 
-add_library(${PROJECT_NAME} SHARED)
+add_library(${PROJECT_NAME} STATIC)
 add_library(${CMAKE_PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
 target_sources(
   ${PROJECT_NAME}
   PRIVATE
+    entry_point.cpp
     core.cpp
     shader.cpp
     mesh.cpp
