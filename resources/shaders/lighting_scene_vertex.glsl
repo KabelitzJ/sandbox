@@ -9,13 +9,15 @@ uniform mat4 uni_view_matrix;
 uniform mat4 uni_projection_matrix;
 uniform mat3 uni_normal_matrix;
 
-out vec2 vertex_uv;
-out vec3 vertex_normal;
-out vec3 vertex_fragment_position;
+out VS_OUT {
+  vec2 uv;
+  vec3 normal;
+  vec3 fragment_position;
+} vs_out;
 
 void main() {
   gl_Position = uni_projection_matrix * uni_view_matrix * uni_model_matrix * vec4(position, 1.0);
-  vertex_uv = uv;
-  vertex_normal = uni_normal_matrix * normal;
-  vertex_fragment_position = vec3(uni_model_matrix * vec4(position, 1.0));
+  vs_out.uv = uv;
+  vs_out.normal = uni_normal_matrix * normal;
+  vs_out.fragment_position = vec3(uni_model_matrix * vec4(position, 1.0));
 }
