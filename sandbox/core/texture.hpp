@@ -1,13 +1,13 @@
 #ifndef SBX_CORE_TEXTURE_HPP_
 #define SBX_CORE_TEXTURE_HPP_
 
-#include <filesystem>
-
 #include <glad/glad.h>
+
+#include "base_resource.hpp"
 
 namespace sbx {
 
-class texture {
+class texture : public base_resource {
 
 public:
   texture(const std::filesystem::path& path);
@@ -20,7 +20,10 @@ public:
   unsigned int unit() const;
 
 private:
-  void _initialize(const std::filesystem::path& path);
+  texture();
+
+  base_resource_data* _load(const std::filesystem::path& path) override;
+  void _initialize(base_resource_data* resource_data) override;
 
   static unsigned int _texture_unit_counter;
 

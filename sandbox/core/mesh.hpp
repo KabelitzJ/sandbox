@@ -9,33 +9,35 @@
 #include <glm/vec3.hpp>
 
 #include "shader.hpp"
+#include "base_resource.hpp"
 
 namespace sbx {
 
-class mesh {
+class mesh : public base_resource {
 
 public:
+  struct vertex {
+    glm::vec3 position;
+    glm::vec2 uv;
+    glm::vec3 normal;
+  };
+
   mesh(const std::filesystem::path& path);
   ~mesh();
 
   void draw(/*const shader& shader*/);
 
 private:
-  struct vertex {
-    glm::vec3 position;
-    glm::vec2 uv;
-    glm::vec3 normal;
-  };  
+  mesh();
 
-  void _load_from_obj(const std::filesystem::path& path);
-  void _initialize();
+  base_resource_data* _load(const std::filesystem::path& path) override;
+  void _initialize(base_resource_data* resource_data) override;
 
   GLuint _vao;
   GLuint _vbo;
   GLuint _ebo;
 
-  std::vector<vertex> _vertices;
-  std::vector<GLuint> _indices;
+  unsigned int _indices_count;
 
 }; // class mesh
 
