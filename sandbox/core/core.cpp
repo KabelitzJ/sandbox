@@ -39,6 +39,7 @@ static std::vector<object*> _objects;
 static shader* _default_shader = nullptr;
 static shader* _lighting_scene_shader = nullptr;
 static shader* _lighting_source_shader = nullptr;
+static shader* _text_shader = nullptr;
 static std::unordered_map<std::string, mesh*> _mesh_atlas;
 static std::unordered_map<std::string, texture*> _texture_atlas;
 // static constexpr glm::vec3 _clear_color({ 0.33f, 0.45f, 0.50f });
@@ -53,6 +54,8 @@ static constexpr float _camera_sensitivity = 0.4f;
 static float _camera_pitch = 0.0f;
 static float _camera_yaw = -90.0f;
 static float _fov = 45.0f;
+
+static glm::mat4 _projection;
 
 static void _initialize_glfw_callbacks();
 
@@ -126,9 +129,12 @@ bool initialize() {
 
   glViewport(0, 0, width, height);
 
+  _projection = glm::ortho(0.0f, static_cast<float>(width), 0.0f, static_cast<float>(height));
+
   _default_shader = new shader("resources/shaders/default_vertex.glsl", "resources/shaders/default_fragment.glsl");
   _lighting_source_shader = new shader("resources/shaders/lighting_source_vertex.glsl", "resources/shaders/lighting_source_fragment.glsl");
   _lighting_scene_shader = new shader("resources/shaders/lighting_scene_vertex.glsl", "resources/shaders/lighting_scene_fragment.glsl");
+  _text_shader = new shader("resources/shaders/text_vertex.glsl", "resources/shaders/text_fragment.glsl");
 
   _lighting_scene_shader->bind();
 
@@ -295,10 +301,130 @@ bool initialize() {
   return true;
 }
 
+#include <ft2build.h>
+#include FT_FREETYPE_H
+
+struct character {
+  unsigned int id;
+  glm::vec2 size; 
+  glm::vec2 bearing;
+  unsigned int advance;
+};
+
+static std::unordered_map<char, character> _characters;
+
+void render_text(GLuint VAO, GLuint VBO, const std::string& text, float x, float y, float scale = 1.0f, glm::vec3 color = { 1.0f, 1.0f, 1.0f}) {
+  _text_shader->bind();
+  _text_shader->set_uniform_3f("color", color);
+  _text_shader->set_uniform_matrix_4fv("projection", _projection);
+  glActiveTexture(GL_TEXTURE0);
+  glBindVertexArray(VAO);
+
+  for (char c : text) {
+    character character = _characters[c];
+
+    float xpos = x + character.bearing.x * scale;
+    float ypos = y - (character.size.y - character.bearing.y) * scale;
+
+    float w = character.size.x * scale;
+    float h = character.size.y * scale;
+
+    float vertives[6][4] = {
+      { xpos,     ypos + h, 0.0f, 0.0f },
+      { xpos,     ypos,     0.0f, 1.0f },
+      { xpos + w, ypos,     1.0f, 0.0f },
+
+      { xpos,     ypos + h, 0.0f, 0.0f },
+      { xpos + w, ypos,     1.0f, 1.0f },
+      { xpos + w, ypos + h, 1.0f, 0.0f }
+    };
+
+    glBindTexture(GL_TEXTURE_2D, character.id);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertives), vertives);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    x += (character.advance >> 6) * scale;
+  }
+
+  glBindVertexArray(0);
+  glBindTexture(GL_TEXTURE_2D, 0);
+}
+
 void run() {
   std::chrono::nanoseconds frame_time(0);
   std::uint32_t frames = 0;
+  std::uint32_t last_frames = 0;
   std::chrono::high_resolution_clock::time_point last_time = std::chrono::high_resolution_clock::now();
+
+  FT_Library ft;
+
+  if (FT_Init_FreeType(&ft)) {
+    std::cout << "Could not initialize FreeType!\n";
+
+    return;
+  }
+
+  FT_Face face;
+  if (FT_New_Face(ft, "resources/fonts/FreeMono.ttf", 0, &face)) {
+    std::cout << "Could not load font!\n";
+
+    return;
+  }
+
+  FT_Set_Pixel_Sizes(face, 0, 48);
+
+  
+
+  glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+  for (unsigned char c = 0; c < 128; ++c) {
+    if (FT_Load_Char(face, c, FT_LOAD_RENDER)) {
+      std::cout << "Could not load glyph '" << c << "'!\n";
+
+      continue;
+    }
+
+    unsigned char* buffer = face->glyph->bitmap.buffer;
+    unsigned int width = face->glyph->bitmap.width;
+    unsigned int rows = face->glyph->bitmap.rows;
+    unsigned int left = face->glyph->bitmap_left;
+    unsigned int top = face->glyph->bitmap_top;
+    unsigned int advance = face->glyph->advance.x;
+
+    GLuint id;
+    glGenTextures(1, &id);
+    glBindTexture(GL_TEXTURE_2D, id);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, width, rows, 0, GL_RED, GL_UNSIGNED_BYTE, buffer);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    character character = { id, glm::vec2(width, rows), glm::vec2(left, top), advance };
+
+    _characters.insert(std::make_pair(c, character));
+  }
+
+  FT_Done_Face(face);
+  FT_Done_FreeType(ft);
+
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+  GLuint VAO, VBO;
+  glGenVertexArrays(1, &VAO);
+  glGenBuffers(1, &VBO);
+  glBindVertexArray(VAO);
+  glBindBuffer(GL_ARRAY_BUFFER, VBO);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6 * 4, nullptr, GL_DYNAMIC_DRAW);
+  glEnableVertexAttribArray(0);
+  glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
+  glBindVertexArray(0);
 
   while (!glfwWindowShouldClose(_context)) {
     std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
@@ -308,9 +434,8 @@ void run() {
     frame_time += passed_time;
 
     if (frame_time >= std::chrono::seconds(1)) {
-      std::cout << "FPS: " << frames << "\n";
-
       frame_time = std::chrono::nanoseconds(0);
+      last_frames = frames;
       frames = 0;
     }
 
@@ -382,16 +507,23 @@ void run() {
 
     _lighting_scene_shader->unbind();
 
+
+    render_text(VAO, VBO, std::to_string(last_frames), 80.0f, 1000.0f, 1.0f, { 1.0f, 0.0f, 1.0f });
+
     glfwSwapBuffers(_context);
 
     frames++;
   }
+
+  glDeleteBuffers(1, &VBO);
+  glDeleteVertexArrays(1, &VAO);
 }
 
 void terminate() {
   delete _default_shader;
   delete _lighting_scene_shader;
   delete _lighting_source_shader;
+  delete _text_shader;
 
   for (auto [name, mesh] : _mesh_atlas) {
     delete mesh;
