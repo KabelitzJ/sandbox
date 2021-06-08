@@ -106,7 +106,7 @@ bool initialize() {
   }
 
   glfwSetInputMode(_context, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-  glfwSwapInterval(1);
+  glfwSwapInterval(0);
   glfwFocusWindow(_context);
 
   _event_queue = new event_queue(_context);
@@ -332,7 +332,7 @@ void render_text(GLuint VAO, GLuint VBO, const std::string& text, float x, float
     float vertives[6][4] = {
       { xpos,     ypos + h, 0.0f, 0.0f },
       { xpos,     ypos,     0.0f, 1.0f },
-      { xpos + w, ypos,     1.0f, 0.0f },
+      { xpos + w, ypos,     1.0f, 1.0f },
 
       { xpos,     ypos + h, 0.0f, 0.0f },
       { xpos + w, ypos,     1.0f, 1.0f },
@@ -367,6 +367,9 @@ void run() {
     return;
   }
 
+  // resources/fonts/UbuntuMono-R.ttf
+  // resources/fonts/FreeMono.ttf
+
   FT_Face face;
   if (FT_New_Face(ft, "resources/fonts/FreeMono.ttf", 0, &face)) {
     std::cout << "Could not load font!\n";
@@ -375,8 +378,6 @@ void run() {
   }
 
   FT_Set_Pixel_Sizes(face, 0, 48);
-
-  
 
   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
@@ -507,6 +508,7 @@ void run() {
 
     _lighting_scene_shader->unbind();
 
+    // Draw ui layer
 
     render_text(VAO, VBO, std::to_string(last_frames), 80.0f, 1000.0f, 1.0f, { 1.0f, 0.0f, 1.0f });
 
