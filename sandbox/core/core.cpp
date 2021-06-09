@@ -285,7 +285,6 @@ bool initialize() {
     }
   ));
 
-  glEnable(GL_MULTISAMPLE);
   glEnable(GL_DEPTH_TEST);
   glDepthFunc(GL_LESS);
   
@@ -294,6 +293,9 @@ bool initialize() {
   glEnable(GL_CULL_FACE);
   glCullFace(GL_BACK);
   glFrontFace(GL_CCW);
+
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
   _lighting_scene_shader->unbind();
 
@@ -413,9 +415,6 @@ void run() {
 
   FT_Done_Face(face);
   FT_Done_FreeType(ft);
-
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
   GLuint VAO, VBO;
   glGenVertexArrays(1, &VAO);
