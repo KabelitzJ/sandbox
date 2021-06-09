@@ -10,13 +10,9 @@ int main(int argc, char** argv) {
 
   sbx::setup(cli_args);
 
-  if (!sbx::initialize()) {
-    return EXIT_FAILURE;
-  }
+  sbx::engine engine;
 
-  sbx::run();
-
-  sbx::terminate();
+  engine.start();
 
   return EXIT_SUCCESS;
 }

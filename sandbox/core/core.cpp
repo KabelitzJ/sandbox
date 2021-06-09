@@ -1,74 +1,23 @@
 #include "core.hpp"
 
-#include <array>
-#include <chrono>
-#include <iostream>
-#include <random>
-#include <sstream>
-#include <string>
-#include <unordered_map>
-#include <filesystem>
-#include <ctime>
-#include <thread>
-#include <future>
-
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-
-#include <evtsys/event_queue.hpp>
-#include <evtsys/key_event.hpp>
-#include <evtsys/window_event.hpp>
-
-#include "shader.hpp"
-#include "mesh.hpp"
-#include "texture.hpp"
-#include "perspective_camera.hpp"
-#include "input_manager.hpp"
-#include "object.hpp"
-
 namespace sbx {
 
-static GLFWwindow* _context = nullptr;
-static event_queue* _event_queue = nullptr;
-static input_manager* _input = nullptr;
-static bool _draw_wireframe = false;
-static camera* _camera = nullptr;
-static std::vector<object*> _objects;
-
-static shader* _default_shader = nullptr;
-static shader* _lighting_scene_shader = nullptr;
-static shader* _lighting_source_shader = nullptr;
-static shader* _text_shader = nullptr;
-static std::unordered_map<std::string, mesh*> _mesh_atlas;
-static std::unordered_map<std::string, texture*> _texture_atlas;
-// static constexpr glm::vec3 _clear_color({ 0.33f, 0.45f, 0.50f });
-static constexpr glm::vec3 _clear_color({ 0.20f, 0.20f, 0.20f });
-
-static glm::vec3 _camera_position(0.0f, 0.0f, 10.0f);
-static glm::vec3 _camera_direction(0.0f, 0.0f, -1.0f);
-static constexpr glm::vec3 _up(0.0f, 1.0f, 0.0f);
-
-static constexpr float _camera_speed = 10.0f;
-static constexpr float _camera_sensitivity = 0.4f;
-static float _camera_pitch = 0.0f;
-static float _camera_yaw = -90.0f;
-static float _fov = 45.0f;
-
-static glm::mat4 _projection;
-
-static void _initialize_glfw_callbacks();
-
 template<typename T, typename... Args>
-static T* _load_async(Args&&... args);
+T* _load_async(Args&&... args) {
+  return new T(std::forward<Args>(args)...);
+}
 
-bool initialize() {
-  _initialize_glfw_callbacks();
+void engine::start() {
+  _initialize();
+  _run();
+  _terminate();
+}
 
+void engine::_initialize() {
   if (!glfwInit()) {
     std::cout << "[Error] Could not initialize glfw!\n";
 
-    return false;
+    return;
   }
 
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -81,7 +30,7 @@ bool initialize() {
   if (!primary_monitor) {
     std::cout << "[Error] Glfw could not detect a monitor!\n";
 
-    return false;
+    return;
   }
 
   const GLFWvidmode* video_mode = glfwGetVideoMode(primary_monitor);
@@ -94,7 +43,7 @@ bool initialize() {
   if (!_context) {
     std::cout << "[Error] Glfw could not create a window!\n";
 
-    return false;
+    return;
   }
 
   glfwMakeContextCurrent(_context);
@@ -102,7 +51,7 @@ bool initialize() {
   if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
     std::cout << "[Error] Could not load gl bindings (glad)!\n";
 
-    return false;
+    return;
   }
 
   glfwSetInputMode(_context, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -110,12 +59,12 @@ bool initialize() {
   glfwFocusWindow(_context);
 
   _event_queue = new event_queue(_context);
-  _event_queue->subscribe<key_pressed_event>([](key_pressed_event& event){
+  _event_queue->subscribe<key_pressed_event>([this](key_pressed_event& event){
     if (event.code == key_code::ESCAPE) {
       glfwSetWindowShouldClose(_context, true);
     }
   });
-  _event_queue->subscribe<key_pressed_event>([](key_pressed_event& event){
+  _event_queue->subscribe<key_pressed_event>([this](key_pressed_event& event){
     if (event.code == key_code::ENTER) {
       _draw_wireframe = !_draw_wireframe;
     }
@@ -129,7 +78,7 @@ bool initialize() {
 
   glViewport(0, 0, width, height);
 
-  _projection = glm::ortho(0.0f, static_cast<float>(width), 0.0f, static_cast<float>(height));
+  _gui_projection = glm::ortho(0.0f, static_cast<float>(width), 0.0f, static_cast<float>(height));
 
   _default_shader = new shader("resources/shaders/default_vertex.glsl", "resources/shaders/default_fragment.glsl");
   _lighting_source_shader = new shader("resources/shaders/lighting_source_vertex.glsl", "resources/shaders/lighting_source_fragment.glsl");
@@ -300,8 +249,6 @@ bool initialize() {
   _lighting_scene_shader->unbind();
 
   std::srand(std::time(nullptr));
-
-  return true;
 }
 
 #include <ft2build.h>
@@ -316,10 +263,10 @@ struct character {
 
 static std::unordered_map<char, character> _characters;
 
-void render_text(GLuint VAO, GLuint VBO, const std::string& text, float x, float y, glm::vec3 color = { 1.0f, 1.0f, 1.0f}, float scale = 1.0f) {
+void engine::render_text(GLuint VAO, GLuint VBO, const std::string& text, float x, float y, glm::vec3 color, float scale) {
   _text_shader->bind();
   _text_shader->set_uniform_3f("color", color);
-  _text_shader->set_uniform_matrix_4fv("projection", _projection);
+  _text_shader->set_uniform_matrix_4fv("projection", _gui_projection);
   glActiveTexture(GL_TEXTURE0);
   glBindVertexArray(VAO);
 
@@ -356,7 +303,7 @@ void render_text(GLuint VAO, GLuint VBO, const std::string& text, float x, float
   glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void run() {
+void engine::_run() {
   std::chrono::nanoseconds frame_time(0);
   std::uint32_t frames = 0;
   std::uint32_t last_frames = 0;
@@ -510,7 +457,11 @@ void run() {
 
     // Draw ui layer
 
-    render_text(VAO, VBO, std::to_string(last_frames), 80.0f, 1000.0f, { 1.0f, 0.0f, 1.0f });
+    std::string fps_text = std::to_string(last_frames) + std::string(" FPS");
+
+    render_text(VAO, VBO, fps_text, 80.0f, 1000.0f, { 1.0f, 0.0f, 1.0f });
+
+    render_text(VAO, VBO, "Caitlín is the best <3", 25.0f, 25.0f, { 0.8f, 0.4f, 0.3f });
 
     glfwSwapBuffers(_context);
 
@@ -521,7 +472,7 @@ void run() {
   glDeleteVertexArrays(1, &VAO);
 }
 
-void terminate() {
+void engine::_terminate() {
   delete _default_shader;
   delete _lighting_scene_shader;
   delete _lighting_source_shader;
@@ -557,12 +508,6 @@ void _initialize_glfw_callbacks() {
   glfwSetErrorCallback([](int error_code, const char* description){
     std::cout << "[Error: " << error_code << "] " << description << "\n";
   });
-}
-
-// Not actually async at the time
-template<typename T, typename... Args>
-T* _load_async(Args&&... args) {
-  return new T(std::forward<Args>(args)...);
 }
 
 } // namespace sbx
