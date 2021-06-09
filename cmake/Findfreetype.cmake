@@ -31,14 +31,27 @@ if(freetype_FOUND AND NOT TARGET freetype::freetype)
       INTERFACE_INCLUDE_DIRECTORIES "${freetype_INCLUDE_DIR}"
   )
 
+  target_link_libraries(
+    freetype::freetype
+    INTERFACE
+      z
+      brotlidec
+  )
+
   if(${CMAKE_HOST_UNIX})
     target_link_libraries(
       freetype::freetype
       INTERFACE
         png
-        z
         harfbuzz
-        brotlidec
+    )
+  endif()
+
+  if(${CMAKE_HOST_WIN32})
+    target_link_libraries(
+      freetype::freetype
+      INTERFACE
+        bz2
     )
   endif()
 endif()
