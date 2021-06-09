@@ -316,7 +316,7 @@ struct character {
 
 static std::unordered_map<char, character> _characters;
 
-void render_text(GLuint VAO, GLuint VBO, const std::string& text, float x, float y, float scale = 1.0f, glm::vec3 color = { 1.0f, 1.0f, 1.0f}) {
+void render_text(GLuint VAO, GLuint VBO, const std::string& text, float x, float y, glm::vec3 color = { 1.0f, 1.0f, 1.0f}, float scale = 1.0f) {
   _text_shader->bind();
   _text_shader->set_uniform_3f("color", color);
   _text_shader->set_uniform_matrix_4fv("projection", _projection);
@@ -510,7 +510,7 @@ void run() {
 
     // Draw ui layer
 
-    render_text(VAO, VBO, std::to_string(last_frames), 80.0f, 1000.0f, 1.0f, { 1.0f, 0.0f, 1.0f });
+    render_text(VAO, VBO, std::to_string(last_frames), 80.0f, 1000.0f, { 1.0f, 0.0f, 1.0f });
 
     glfwSwapBuffers(_context);
 
