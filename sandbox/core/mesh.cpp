@@ -5,13 +5,22 @@
 #include <unordered_map>
 #include <array>
 
+#include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
+
 namespace sbx {
+
+struct vertex {
+  glm::vec3 position;
+  glm::vec2 uv;
+  glm::vec3 normal;
+}; // struct vertex
 
 struct mesh_data : public base_resource_data {
 
   ~mesh_data() = default;
 
-  std::vector<mesh::vertex> vertices;
+  std::vector<vertex> vertices;
   std::vector<GLuint> indices;
 };
 

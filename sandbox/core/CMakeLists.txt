@@ -20,6 +20,7 @@ target_sources(
     camera.cpp
     perspective_camera.cpp
     input_manager.cpp
+    vertex_attribute_layout.cpp
 )
 
 target_include_directories(

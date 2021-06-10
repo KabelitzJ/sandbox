@@ -5,8 +5,6 @@
 #include <vector>
 
 #include <glad/glad.h>
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
 
 #include "shader.hpp"
 #include "base_resource.hpp"
@@ -16,12 +14,6 @@ namespace sbx {
 class mesh : public base_resource {
 
 public:
-  struct vertex {
-    glm::vec3 position;
-    glm::vec2 uv;
-    glm::vec3 normal;
-  };
-
   mesh(const std::filesystem::path& path);
   ~mesh();
 
