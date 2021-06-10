@@ -14,7 +14,14 @@ namespace sbx {
 class mesh : public base_resource {
 
 public:
+  struct vertex {
+    glm::vec3 position;
+    glm::vec2 uv;
+    glm::vec3 normal;
+  }; // struct vertex
+
   mesh(const std::filesystem::path& path);
+  mesh(const std::vector<vertex>& vertices, const std::vector<GLuint>& indices);
   ~mesh();
 
   void draw(/*const shader& shader*/);

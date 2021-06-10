@@ -109,6 +109,36 @@ void engine::_initialize() {
   _mesh_atlas.emplace("wooden_box", _load_async<mesh>("resources/models/wooden_box.obj"));
   _mesh_atlas.emplace("smg", _load_async<mesh>("resources/models/smg.obj"));
 
+  std::vector<mesh::vertex> vertices;
+  std::vector<GLuint> indices;
+
+  glm::vec3 normal = glm::vec3(0.0f, 1.0f, 0.0f);
+  glm::vec3 uv = glm::vec3(0.0f, 0.0f, 0.0f);
+
+  vertices.push_back({
+    glm::vec3(1.0f, 0.0f, 0.0f),
+    normal,
+    uv
+  });
+
+  vertices.push_back({
+    glm::vec3(0.0f, 0.0f, 1.0f),
+    normal,
+    uv
+  });
+
+  vertices.push_back({
+    glm::vec3(1.0f, 0.0f, 1.0f),
+    normal,
+    uv
+  });
+
+  indices.push_back(0);
+  indices.push_back(1);
+  indices.push_back(2);
+
+  _mesh_atlas.emplace("custom", _load_async<mesh>(vertices, indices));
+
   // loading textures
   _texture_atlas.emplace("blank", _load_async<texture>("resources/textures/blank.jpg"));
   _texture_atlas.emplace("filled", _load_async<texture>("resources/textures/filled.jpg"));
@@ -150,9 +180,22 @@ void engine::_initialize() {
       _texture_atlas["filled"],
     },
     {
-      glm::vec3(0.0f, -3.0f, 0.0f),
+      glm::vec3(0.0f, -4.0f, 0.0f),
       glm::vec3(0.0f, 0.0f, 0.0f),
       glm::vec3(1.0f, 0.5f, 1.0f),
+    }
+  ));
+
+  _objects.push_back(new object(
+    *_mesh_atlas["custom"],
+    {
+      _texture_atlas["blank"],
+      _texture_atlas["blank"],
+    },
+    {
+      glm::vec3(0.0f, -2.0f, 0.0f),
+      glm::vec3(0.0f, 0.0f, 0.0f),
+      glm::vec3(1.0f, 1.0f, 1.0f),
     }
   ));
 
@@ -436,11 +479,11 @@ void engine::_run() {
     for (std::size_t i = 2; i < object_count; ++i) {
       object* temp_object = _objects[i];
 
-      if (i == 2) {
+      if (i == 3) {
         temp_object->rotate(glm::vec3(1.0f, 0.0f, 0.0f), 50 * delta_time);
-      } else if (i == 3) {
-        temp_object->rotate(glm::vec3(0.0f, 1.0f, 0.0f), 50 * delta_time);
       } else if (i == 4) {
+        temp_object->rotate(glm::vec3(0.0f, 1.0f, 0.0f), 50 * delta_time);
+      } else if (i == 5) {
         temp_object->rotate(glm::vec3(0.0f, 0.0f, 1.0f), 50 * delta_time);
       }
 

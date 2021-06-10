@@ -10,23 +10,24 @@
 
 namespace sbx {
 
-struct vertex {
-  glm::vec3 position;
-  glm::vec2 uv;
-  glm::vec3 normal;
-}; // struct vertex
-
 struct mesh_data : public base_resource_data {
 
   ~mesh_data() = default;
 
-  std::vector<vertex> vertices;
+  std::vector<mesh::vertex> vertices;
   std::vector<GLuint> indices;
 };
 
 
 mesh::mesh(const std::filesystem::path& path) : _vao(0), _vbo(0), _ebo(0), _indices_count(0) {
   base_resource_data* data = _load(path);
+  _initialize(data);
+}
+
+mesh::mesh(const std::vector<vertex>& vertices, const std::vector<GLuint>& indices) : _vao(0), _vbo(0), _ebo(0), _indices_count(0) {
+  mesh_data* data = new mesh_data();
+  data->vertices = vertices;
+  data->indices = indices;
   _initialize(data);
 }
 

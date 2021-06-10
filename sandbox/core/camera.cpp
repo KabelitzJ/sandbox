@@ -40,10 +40,10 @@ float camera::field_of_view() const {
 
 void camera::_update_position(const input_manager& input, float delta_time) {
   if (input.is_key_pressed(key_code::W)) {
-    _position += _direction * _speed * delta_time;
+    _position += glm::normalize(glm::vec3(_direction.x, 0.0f, _direction.z)) * _speed * delta_time;
   }
   if (input.is_key_pressed(key_code::S)) {
-    _position -= _direction * _speed * delta_time;
+    _position -= glm::normalize(glm::vec3(_direction.x, 0.0f, _direction.z))  * _speed * delta_time;
   }
   if (input.is_key_pressed(key_code::A)) {
     _position -= glm::normalize(glm::cross(_direction, VECTOR_UP)) * _speed * delta_time;
