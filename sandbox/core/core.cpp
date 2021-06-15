@@ -500,9 +500,19 @@ void engine::_run() {
 
     // Draw ui layer
 
+    auto cam_pos = _camera->position();
+
+    auto x_pos_text = "x: " + std::to_string(cam_pos.x);
+    auto y_pos_text = "y: " + std::to_string(cam_pos.y);
+    auto z_pos_text = "z: " + std::to_string(cam_pos.z);
+
     std::string fps_text = std::to_string(last_frames) + std::string(" FPS");
 
     render_text(VAO, VBO, fps_text, 80.0f, 1000.0f, { 1.0f, 0.0f, 1.0f });
+
+    render_text(VAO, VBO, x_pos_text, 80.0f, 950.0f, { 1.0f, 0.0f, 0.0f }, 0.5f);
+    render_text(VAO, VBO, y_pos_text, 80.0f, 920.0f, { 0.0f, 1.0f, 0.0f }, 0.5f);
+    render_text(VAO, VBO, z_pos_text, 80.0f, 890.0f, { 0.0f, 0.0f, 1.0f }, 0.5f);
 
     render_text(VAO, VBO, "Caitlín is the best <3", 25.0f, 25.0f, { 0.8f, 0.4f, 0.3f });
 
