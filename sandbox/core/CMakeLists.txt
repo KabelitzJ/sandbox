@@ -5,6 +5,7 @@ find_package(glfw3 REQUIRED)
 find_package(glm REQUIRED)
 find_package(stb REQUIRED)
 find_package(freetype REQUIRED)
+find_package(entt REQUIRED)
 
 add_library(${PROJECT_NAME} STATIC)
 add_library(${CMAKE_PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
@@ -40,6 +41,7 @@ target_link_libraries(
     glm::glm
     stb::stb
     freetype::freetype
+    entt::entt
 )
 
 target_compile_features(

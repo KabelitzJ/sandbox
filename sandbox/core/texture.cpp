@@ -19,9 +19,7 @@ struct texture_data : public base_resource_data {
 
 };
 
-unsigned int texture::_texture_unit_counter = 0;
-
-texture::texture(const std::filesystem::path& path) : _id(0), _texture_unit(0) {
+texture::texture(const std::filesystem::path& path) : _id(0), _active_unit(0) {
   base_resource_data* data = _load(path);
   _initialize(data);
 }
@@ -30,25 +28,23 @@ texture::~texture() {
   glDeleteTextures(1, &_id);
 }
 
-void texture::bind() const {
-  glActiveTexture(GL_TEXTURE0 + _texture_unit);
+void texture::bind(unsigned int unit) {
+  _active_unit = unit;
+  glActiveTexture(GL_TEXTURE0 + _active_unit);
   glBindTexture(GL_TEXTURE_2D, _id);
 }
 
-void texture::unbind() const {
-  glActiveTexture(GL_TEXTURE0);
+void texture::unbind() {
+  glActiveTexture(GL_TEXTURE0 + _active_unit);
   glBindTexture(GL_TEXTURE_2D, 0);
+  _active_unit = 0;
 }
 
 GLuint texture::id() const {
   return _id;
 }
 
-unsigned int texture::unit() const {
-  return _texture_unit;
-}
-
-texture::texture() : _id(0), _texture_unit(0) {
+texture::texture() : _id(0), _active_unit(0) {
   
 }
 
@@ -67,20 +63,9 @@ base_resource_data* texture::_load(const std::filesystem::path& path) {
 void texture::_initialize(base_resource_data* resource_data) {
   texture_data* data = static_cast<texture_data*>(resource_data);
 
-  if (_texture_unit_counter == 31) {
-    std::ostringstream ss;
-
-    ss << "[Error] Max 32 textures are supported!\n";
-
-    throw std::runtime_error(ss.str());
-  }
-
   glGenTextures(1, &_id);
 
-  _texture_unit = _texture_unit_counter++;
-
-  glActiveTexture(GL_TEXTURE0 + _texture_unit);
-
+  glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, _id);
 
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	

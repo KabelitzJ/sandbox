@@ -72,6 +72,8 @@ void engine::_initialize() {
 
   _input = new input_manager(*_event_queue);
 
+  _scene = new scene();
+
   float aspect = static_cast<float>(width) / static_cast<float>(height);
 
   _camera = new perspective_camera(_camera_position, _camera_direction, _camera_speed, _fov, aspect, 0.1f, 100.0f, _camera_pitch, _camera_yaw);
@@ -109,33 +111,50 @@ void engine::_initialize() {
   _mesh_atlas.emplace("wooden_box", _load_async<mesh>("resources/models/wooden_box.obj"));
   _mesh_atlas.emplace("smg", _load_async<mesh>("resources/models/smg.obj"));
 
+  std::srand(std::time(nullptr));
+
+  const int size = 20;
+  const int vertex_count = 20;
+
   std::vector<mesh::vertex> vertices;
   std::vector<GLuint> indices;
 
-  glm::vec3 normal = glm::vec3(0.0f, 1.0f, 0.0f);
-  glm::vec3 uv = glm::vec3(0.0f, 0.0f, 0.0f);
+  std::vector<glm::vec3> positions;
+  std::vector<glm::vec2> uvs;
+  std::vector<glm::vec3> normals;  
 
-  vertices.push_back({
-    glm::vec3(1.0f, 0.0f, 0.0f),
-    normal,
-    uv
-  });
+  for (int y = 0; y < vertex_count; ++y) {
+    for (int x = 0; x < vertex_count; ++x) {
+      const float position_x = -static_cast<float>(y) / (static_cast<float>(vertex_count) - 1.0f) * size;
+      const float position_y = 0.0f;
+      const float position_z = -static_cast<float>(x) / (static_cast<float>(vertex_count) - 1.0f) * size;
+      const glm::vec3 position(position_x, position_y, position_z);
 
-  vertices.push_back({
-    glm::vec3(0.0f, 0.0f, 1.0f),
-    normal,
-    uv
-  });
+      const float uv_x = static_cast<float>(y) / (static_cast<float>(vertex_count) - 1.0f);
+      const float uv_y = static_cast<float>(x) / (static_cast<float>(vertex_count) - 1.0f);
+      const glm::vec2 uv(uv_x, uv_y);
 
-  vertices.push_back({
-    glm::vec3(1.0f, 0.0f, 1.0f),
-    normal,
-    uv
-  });
+      const glm::vec3 normal(0.0f, 1.0f, 0.0f);
 
-  indices.push_back(0);
-  indices.push_back(1);
-  indices.push_back(2);
+      vertices.push_back({ position, uv, normal });
+    }
+  }
+
+  for (int y = 0; y < vertex_count - 1; ++y) {
+    for (int x = 0; x < vertex_count - 1; ++x) {
+      const int top_left = y * vertex_count + x;
+      const int top_right = top_left + 1;
+      const int bottom_left = (y + 1) * vertex_count + x;
+      const int bottom_right = bottom_left + 1;
+
+      indices.push_back(top_left);
+      indices.push_back(top_right);
+      indices.push_back(bottom_left);
+      indices.push_back(top_right);
+      indices.push_back(bottom_right);
+      indices.push_back(bottom_left);
+    }
+  }
 
   _mesh_atlas.emplace("custom", _load_async<mesh>(vertices, indices));
 
@@ -144,7 +163,8 @@ void engine::_initialize() {
   _texture_atlas.emplace("filled", _load_async<texture>("resources/textures/filled.jpg"));
   _texture_atlas.emplace("brick_wall", _load_async<texture>("resources/textures/brick_wall.jpg"));
   _texture_atlas.emplace("cobble_wall", _load_async<texture>("resources/textures/cobble_wall.jpg"));
-  _texture_atlas.emplace("lava", _load_async<texture>("resources/textures/lava.jpg"));
+  _texture_atlas.emplace("lava_diffusion", _load_async<texture>("resources/textures/lava_diffusion.jpg"));
+  _texture_atlas.emplace("lava_specular", _load_async<texture>("resources/textures/lava_specular.jpg"));
   _texture_atlas.emplace("wooden_planks", _load_async<texture>("resources/textures/wooden_planks.jpg"));
   _texture_atlas.emplace("barrel.diffusion", _load_async<texture>("resources/textures/barrel/diffusion.png"));
   _texture_atlas.emplace("barrel.normal", _load_async<texture>("resources/textures/barrel/normal.png"));
@@ -174,36 +194,23 @@ void engine::_initialize() {
 
   // this one is the floor
   _objects.push_back(new object(
-    *_mesh_atlas["plane"],
+    *_mesh_atlas["custom"],
     {
-      _texture_atlas["blank"],
-      _texture_atlas["filled"],
+      _texture_atlas["lava_diffusion"],
+      _texture_atlas["lava_specular"],
     },
     {
-      glm::vec3(0.0f, -4.0f, 0.0f),
+      glm::vec3(10.0f, -4.0f, 10.0f),
       glm::vec3(0.0f, 0.0f, 0.0f),
       glm::vec3(1.0f, 0.5f, 1.0f),
     }
   ));
 
   _objects.push_back(new object(
-    *_mesh_atlas["custom"],
-    {
-      _texture_atlas["blank"],
-      _texture_atlas["blank"],
-    },
-    {
-      glm::vec3(0.0f, -2.0f, 0.0f),
-      glm::vec3(0.0f, 0.0f, 0.0f),
-      glm::vec3(1.0f, 1.0f, 1.0f),
-    }
-  ));
-
-  _objects.push_back(new object(
     *_mesh_atlas["torus"],
     {
-      _texture_atlas["lava"],
-      _texture_atlas["blank"],
+      _texture_atlas["lava_diffusion"],
+      _texture_atlas["lava_specular"],
     },
     {
       glm::vec3(5.0f, 2.0f, 0.0f),
@@ -290,8 +297,6 @@ void engine::_initialize() {
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
   _lighting_scene_shader->unbind();
-
-  std::srand(std::time(nullptr));
 }
 
 #include <ft2build.h>
@@ -344,6 +349,8 @@ void engine::render_text(GLuint VAO, GLuint VBO, const std::string& text, float 
 
   glBindVertexArray(0);
   glBindTexture(GL_TEXTURE_2D, 0);
+
+  _text_shader->unbind();
 }
 
 void engine::_run() {
@@ -479,11 +486,11 @@ void engine::_run() {
     for (std::size_t i = 2; i < object_count; ++i) {
       object* temp_object = _objects[i];
 
-      if (i == 3) {
+      if (i == 2) {
         temp_object->rotate(glm::vec3(1.0f, 0.0f, 0.0f), 50 * delta_time);
-      } else if (i == 4) {
+      } else if (i == 3) {
         temp_object->rotate(glm::vec3(0.0f, 1.0f, 0.0f), 50 * delta_time);
-      } else if (i == 5) {
+      } else if (i == 4) {
         temp_object->rotate(glm::vec3(0.0f, 0.0f, 1.0f), 50 * delta_time);
       }
 
@@ -500,19 +507,25 @@ void engine::_run() {
 
     // Draw ui layer
 
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
     auto cam_pos = _camera->position();
 
     auto x_pos_text = "x: " + std::to_string(cam_pos.x);
     auto y_pos_text = "y: " + std::to_string(cam_pos.y);
     auto z_pos_text = "z: " + std::to_string(cam_pos.z);
 
-    std::string fps_text = std::to_string(last_frames) + std::string(" FPS");
+    const auto fps_text = std::string("fps:       ") + std::to_string(last_frames);
+    const auto delta_time_text = std::string("delta:     ") + std::to_string(delta_time);
+    const auto wireframe_text = std::string("wireframe: ") + (_draw_wireframe ? std::string("on") : std::string("off"));
 
-    render_text(VAO, VBO, fps_text, 80.0f, 1000.0f, { 1.0f, 0.0f, 1.0f });
+    render_text(VAO, VBO, fps_text, 80.0f, 1000.0f, { 1.0f, 0.0f, 1.0f }, 0.5f);
+    render_text(VAO, VBO, delta_time_text, 80.0f, 970.0f, { 1.0f, 0.0f, 1.0f }, 0.5f);
+    render_text(VAO, VBO, wireframe_text, 80.0f, 940.0f, { 1.0f, 0.0f, 1.0f }, 0.5f);
 
-    render_text(VAO, VBO, x_pos_text, 80.0f, 950.0f, { 1.0f, 0.0f, 0.0f }, 0.5f);
-    render_text(VAO, VBO, y_pos_text, 80.0f, 920.0f, { 0.0f, 1.0f, 0.0f }, 0.5f);
-    render_text(VAO, VBO, z_pos_text, 80.0f, 890.0f, { 0.0f, 0.0f, 1.0f }, 0.5f);
+    render_text(VAO, VBO, x_pos_text, 80.0f, 880.0f, { 1.0f, 0.0f, 0.0f }, 0.5f);
+    render_text(VAO, VBO, y_pos_text, 80.0f, 850.0f, { 0.0f, 1.0f, 0.0f }, 0.5f);
+    render_text(VAO, VBO, z_pos_text, 80.0f, 820.0f, { 0.0f, 0.0f, 1.0f }, 0.5f);
 
     render_text(VAO, VBO, "Caitlín is the best <3", 25.0f, 25.0f, { 0.8f, 0.4f, 0.3f });
 
@@ -550,6 +563,7 @@ void engine::_terminate() {
   _objects.clear();
 
   delete _input;
+  delete _scene;
   delete _event_queue;
 
   glfwMakeContextCurrent(nullptr);

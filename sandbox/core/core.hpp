@@ -30,6 +30,7 @@
 #include "perspective_camera.hpp"
 #include "input_manager.hpp"
 #include "object.hpp"
+#include "scene.hpp"
 
 namespace sbx {
 
@@ -73,6 +74,7 @@ private:
   float _camera_yaw = -90.0f;
   float _fov = 45.0f;
   glm::mat4 _gui_projection = glm::mat4(1.0f);
+  scene* _scene;
 
 }; // class engine
 

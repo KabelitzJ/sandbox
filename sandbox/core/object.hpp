@@ -35,11 +35,11 @@ public:
   }
 
   void draw(shader& shader) {
-    _material.diffuse->bind();
-    shader.set_uniform_1i("uni_material.diffuse", _material.diffuse->unit());
+    _material.diffuse->bind(0);
+    shader.set_uniform_1i("uni_material.diffuse", 0);
 
-    _material.specular->bind();
-    shader.set_uniform_1i("uni_material.specular", _material.specular->unit());
+    _material.specular->bind(1);
+    shader.set_uniform_1i("uni_material.specular", 0);
 
 
     _mesh.draw(/*shader*/);

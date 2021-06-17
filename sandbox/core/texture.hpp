@@ -13,11 +13,10 @@ public:
   texture(const std::filesystem::path& path);
   ~texture();
 
-  void bind() const;
-  void unbind() const;
+  void bind(unsigned int unit);
+  void unbind();
 
   GLuint id() const;
-  unsigned int unit() const;
 
 private:
   texture();
@@ -25,10 +24,8 @@ private:
   base_resource_data* _load(const std::filesystem::path& path) override;
   void _initialize(base_resource_data* resource_data) override;
 
-  static unsigned int _texture_unit_counter;
-
   GLuint _id;
-  unsigned int _texture_unit;
+  unsigned int _active_unit;
 
 }; // class texture
 
