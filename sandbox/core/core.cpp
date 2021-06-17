@@ -113,15 +113,15 @@ void engine::_initialize() {
 
   std::srand(std::time(nullptr));
 
-  const int size = 20;
-  const int vertex_count = 20;
+  const int size = 200;
+  const int vertex_count = 200;
 
   std::vector<mesh::vertex> vertices;
   std::vector<GLuint> indices;
 
   std::vector<glm::vec3> positions;
   std::vector<glm::vec2> uvs;
-  std::vector<glm::vec3> normals;  
+  std::vector<glm::vec3> normals;
 
   for (int y = 0; y < vertex_count; ++y) {
     for (int x = 0; x < vertex_count; ++x) {
@@ -200,7 +200,7 @@ void engine::_initialize() {
       _texture_atlas["lava_specular"],
     },
     {
-      glm::vec3(10.0f, -4.0f, 10.0f),
+      glm::vec3(100.0f, -4.0f, 100.0f),
       glm::vec3(0.0f, 0.0f, 0.0f),
       glm::vec3(1.0f, 0.5f, 1.0f),
     }
