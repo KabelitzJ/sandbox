@@ -39,17 +39,19 @@ float camera::field_of_view() const {
 }
 
 void camera::_update_position(const input_manager& input, float delta_time) {
+  const auto speed = input.is_key_pressed(key_code::LEFT_SHIFT) ? _speed * 2.0f : _speed;
+
   if (input.is_key_pressed(key_code::W)) {
-    _position += glm::normalize(glm::vec3(_direction.x, 0.0f, _direction.z)) * _speed * delta_time;
+    _position += glm::normalize(glm::vec3(_direction.x, 0.0f, _direction.z)) * speed * delta_time;
   }
   if (input.is_key_pressed(key_code::S)) {
-    _position -= glm::normalize(glm::vec3(_direction.x, 0.0f, _direction.z))  * _speed * delta_time;
+    _position -= glm::normalize(glm::vec3(_direction.x, 0.0f, _direction.z))  * speed * delta_time;
   }
   if (input.is_key_pressed(key_code::A)) {
-    _position -= glm::normalize(glm::cross(_direction, VECTOR_UP)) * _speed * delta_time;
+    _position -= glm::normalize(glm::cross(_direction, VECTOR_UP)) * speed * delta_time;
   }
   if (input.is_key_pressed(key_code::D)) {
-    _position += glm::normalize(glm::cross(_direction, VECTOR_UP)) * _speed * delta_time;
+    _position += glm::normalize(glm::cross(_direction, VECTOR_UP)) * speed * delta_time;
   }
   if (input.is_key_pressed(key_code::Q)) {
     _position -= VECTOR_UP * _speed * delta_time;
