@@ -76,7 +76,7 @@ void engine::_initialize() {
 
   float aspect = static_cast<float>(width) / static_cast<float>(height);
 
-  _camera = new perspective_camera(_camera_position, _camera_direction, _camera_speed, _fov, aspect, 0.1f, 100.0f, _camera_pitch, _camera_yaw);
+  _camera = new perspective_camera(_camera_position, _camera_direction, _camera_speed, _fov, aspect, 0.1f, 1000.0f, _camera_pitch, _camera_yaw);
 
   glViewport(0, 0, width, height);
 
