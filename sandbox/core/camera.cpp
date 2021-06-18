@@ -22,7 +22,7 @@ camera::camera(const glm::vec3& position, const glm::vec3& direction, float spee
 }
 
 glm::mat4 camera::view() const {
-  return glm::lookAt(_position, _position + _direction, VECTOR_UP);
+  return glm::lookAt(_position, _position + _direction, UP);
 }
 
 glm::vec3 camera::position() const {
@@ -48,16 +48,16 @@ void camera::_update_position(const input_manager& input, float delta_time) {
     _position -= glm::normalize(glm::vec3(_direction.x, 0.0f, _direction.z))  * speed * delta_time;
   }
   if (input.is_key_pressed(key_code::A)) {
-    _position -= glm::normalize(glm::cross(_direction, VECTOR_UP)) * speed * delta_time;
+    _position -= glm::normalize(glm::cross(_direction, UP)) * speed * delta_time;
   }
   if (input.is_key_pressed(key_code::D)) {
-    _position += glm::normalize(glm::cross(_direction, VECTOR_UP)) * speed * delta_time;
+    _position += glm::normalize(glm::cross(_direction, UP)) * speed * delta_time;
   }
   if (input.is_key_pressed(key_code::Q)) {
-    _position -= VECTOR_UP * _speed * delta_time;
+    _position -= UP * _speed * delta_time;
   }
   if (input.is_key_pressed(key_code::E)) {
-    _position += VECTOR_UP * _speed * delta_time;
+    _position += UP * _speed * delta_time;
   }
 }
 
