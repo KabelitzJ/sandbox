@@ -23,6 +23,7 @@ target_sources(
     input_manager.cpp
     vertex_attribute_layout.cpp
     scene.cpp
+    basic_context.cpp
 )
 
 target_include_directories(
