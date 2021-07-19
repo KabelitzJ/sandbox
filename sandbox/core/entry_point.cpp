@@ -2,17 +2,11 @@
 
 #include <cstdlib>
 
-#include <core/core.hpp>
-
 int main(int argc, char** argv) {
 
-  std::vector<std::string> cli_args(argv, argv + argc);
+  const auto cli_args = std::vector<std::string_view>{argv, argv + argc};
 
   sbx::setup(cli_args);
-
-  sbx::engine engine;
-
-  engine.start();
 
   return EXIT_SUCCESS;
 }
