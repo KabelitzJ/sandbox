@@ -1,12 +1,6 @@
-#ifndef SBX_CORE_HPP_
-#define SBX_CORE_HPP_
+#ifndef SBX_ASYNC_HPP_
+#define SBX_ASYNC_HPP_
 
 #include "synced_queue.hpp"
 
-namespace sbx::async {
-
-
-
-} // namespace sbx::async
-
-#endif // SBX_CORE_HPP_
+#endif // SBX_ASYNC_HPP_

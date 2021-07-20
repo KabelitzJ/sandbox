@@ -8,7 +8,7 @@ int main(int argc, char** argv) {
 
   const auto cli_args = std::vector<std::string_view>{argv, argv + argc};
 
-  sbx::core::setup(cli_args);
+  sbx::setup(cli_args);
 
   return EXIT_SUCCESS;
 }

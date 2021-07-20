@@ -4,7 +4,7 @@
 #include <vector>
 #include <string_view>
 
-namespace sbx::core {
+namespace sbx {
 
 /**
  * @brief Will be used as custom setup.
@@ -13,6 +13,6 @@ namespace sbx::core {
  */
 extern void setup(const std::vector<std::string_view>& cli_args);
 
-} // namespace sbx::core
+} // namespace sbx
 
 #endif // SBX_CORE_ENTRY_POINT_HPP_

@@ -4,7 +4,7 @@
 #include <queue>
 #include <mutex>
 
-namespace sbx::async {
+namespace sbx {
 
 /**
  * @brief A synchronized wrapper around a std::queue
@@ -115,6 +115,6 @@ private:
 
 }; // class synced_queue
 
-} // namespace sbx::async
+} // namespace sbx
 
 #endif // SBX_ASYNC_SYNCED_QUEUE_HPP_
