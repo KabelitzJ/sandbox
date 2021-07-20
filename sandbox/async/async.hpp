@@ -3,4 +3,10 @@
 
 #include "synced_queue.hpp"
 
+namespace sbx::async {
+
+
+
+} // namespace sbx::async
+
 #endif // SBX_CORE_HPP_
