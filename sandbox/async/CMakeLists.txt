@@ -1,24 +1,11 @@
-project(core CXX)
-
-find_package(glad REQUIRED)
-find_package(glfw3 REQUIRED)
-find_package(glm REQUIRED)
-find_package(stb REQUIRED)
-find_package(freetype REQUIRED)
-find_package(entt REQUIRED)
+project(async CXX)
 
 add_library(${PROJECT_NAME} STATIC)
-
-add_dependencies(
-  ${PROJECT_NAME}
-    sbx::async
-)
 
 target_sources(
   ${PROJECT_NAME}
   PRIVATE
-    core.cpp
-    entry_point.cpp
+    async.cpp
 )
 
 target_include_directories(
@@ -27,18 +14,6 @@ target_include_directories(
     "${CMAKE_CURRENT_SOURCE_DIR}"
   PUBLIC
     "${CMAKE_CURRENT_SOURCE_DIR}/.."
-)
-
-target_link_libraries(
-  ${PROJECT_NAME}
-  PUBLIC
-    sbx::async
-    glad::glad
-    glfw3::glfw3
-    glm::glm
-    stb::stb
-    freetype::freetype
-    entt::entt
 )
 
 target_compile_features(

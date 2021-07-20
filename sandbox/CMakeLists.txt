@@ -1,7 +1,11 @@
 add_library(${CMAKE_PROJECT_NAME} INTERFACE)
 add_library(${CMAKE_PROJECT_NAME}::${CMAKE_PROJECT_NAME} ALIAS ${CMAKE_PROJECT_NAME})
 
-set(SBX_MODULES core)
+set(
+  SBX_MODULES 
+    async
+    core
+)
 
 foreach(module ${SBX_MODULES})
   add_subdirectory(${module})
