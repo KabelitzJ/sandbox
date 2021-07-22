@@ -8,21 +8,17 @@ find_package(freetype REQUIRED)
 find_package(entt REQUIRED)
 
 add_library(${PROJECT_NAME} STATIC)
-add_library(${CMAKE_PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
+
+add_dependencies(
+  ${PROJECT_NAME}
+    sbx::async
+)
 
 target_sources(
   ${PROJECT_NAME}
   PRIVATE
-    entry_point.cpp
     core.cpp
-    shader.cpp
-    mesh.cpp
-    texture.cpp
-    camera.cpp
-    perspective_camera.cpp
-    input_manager.cpp
-    vertex_attribute_layout.cpp
-    scene.cpp
+    entry_point.cpp
 )
 
 target_include_directories(
@@ -36,7 +32,7 @@ target_include_directories(
 target_link_libraries(
   ${PROJECT_NAME}
   PUBLIC
-    sbx::evtsys
+    sbx::async
     glad::glad
     glfw3::glfw3
     glm::glm
@@ -55,13 +51,13 @@ target_compile_options(
   ${PROJECT_NAME}
   PRIVATE
     $<$<CXX_COMPILER_ID:GNU>:
-      -Wall
+      -Wall 
       -Wextra
       -Wshadow
       -Wnon-virtual-dtor
       -Wold-style-cast
       -Wcast-align
-      -Wunuses
+      -Wunused
       -Woverloaded-virtual
       -Wpedantic
       -Wconversion

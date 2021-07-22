@@ -1,14 +1,11 @@
-project(evtsys CXX)
-
-find_package(glfw3 REQUIRED)
+project(async CXX)
 
 add_library(${PROJECT_NAME} STATIC)
-add_library(${CMAKE_PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
 target_sources(
   ${PROJECT_NAME}
   PRIVATE
-    event_queue.cpp
+    async.cpp
 )
 
 target_include_directories(
@@ -17,12 +14,6 @@ target_include_directories(
     "${CMAKE_CURRENT_SOURCE_DIR}"
   PUBLIC
     "${CMAKE_CURRENT_SOURCE_DIR}/.."
-)
-
-target_link_libraries(
-  ${PROJECT_NAME}
-  PUBLIC
-    glfw3::glfw3
 )
 
 target_compile_features(
@@ -34,7 +25,26 @@ target_compile_features(
 target_compile_options(
   ${PROJECT_NAME}
   PRIVATE
-    $<$<CXX_COMPILER_ID:GNU>:-Wall -Wextra -Wpedantic>
+    $<$<CXX_COMPILER_ID:GNU>:
+      -Wall 
+      -Wextra
+      -Wshadow
+      -Wnon-virtual-dtor
+      -Wold-style-cast
+      -Wcast-align
+      -Wunused
+      -Woverloaded-virtual
+      -Wpedantic
+      -Wconversion
+      -Wsign-conversion
+      -Wnull-dereference
+      -Wdouble-promotion
+      -Wformat=2
+      -Wduplicated-cond
+      -Wduplicated-branches
+      -Wlogical-op
+      -Wuseless-cast
+    >
 )
 
 set_target_properties(

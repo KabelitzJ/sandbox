@@ -2,7 +2,7 @@
 #define SBX_CORE_ENTRY_POINT_HPP_
 
 #include <vector>
-#include <string>
+#include <string_view>
 
 namespace sbx {
 
@@ -11,7 +11,7 @@ namespace sbx {
  * 
  * @param cli_args Command line arguments that are passed to the executable
  */
-extern void setup(const std::vector<std::string>& cli_args);
+extern void setup(const std::vector<std::string_view>& cli_args);
 
 } // namespace sbx
 
