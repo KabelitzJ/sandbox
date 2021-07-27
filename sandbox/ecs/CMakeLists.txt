@@ -1,14 +1,12 @@
-project(core CXX)
+project(ecs CXX)
 
 add_library(${PROJECT_NAME} STATIC)
 
 target_sources(
   ${PROJECT_NAME}
   PRIVATE
-    entry_point.cpp
-    engine.cpp
-    module.cpp
-    system.cpp
+    ecs.cpp
+    entity.cpp
 )
 
 target_include_directories(
