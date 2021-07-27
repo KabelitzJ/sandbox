@@ -2,13 +2,20 @@
 
 #include <cstdlib>
 
-#include "core.hpp"
+#include "engine.hpp"
+#include "module.hpp"
 
 int main(int argc, char** argv) {
 
   const auto cli_args = std::vector<std::string_view>{argv, argv + argc};
 
-  sbx::setup(cli_args);
+  auto engine = sbx::engine{};
+
+  sbx::setup(engine);
+
+  engine.initialize();
+
+  engine.start();
 
   return EXIT_SUCCESS;
 }

@@ -1,7 +1,41 @@
 #include <iostream>
 
-#include <core/entry_point.hpp>
+#include <core/core.hpp>
 
-void sbx::setup(const std::vector<std::string_view>& cli_args) {
-  std::cout << "Hello from " << cli_args[0] << "!\n";
+class my_system final : public sbx::system {
+
+public:
+  my_system() {
+
+  }
+
+  ~my_system() {
+
+  }
+
+  void initialize() override {
+
+  }
+
+};
+
+class my_module final : public sbx::module {
+
+public:
+  my_module() {
+
+  }
+
+  ~my_module() {
+
+  }
+
+  void initialize() override {
+    add_system<my_system>();
+  }
+
+};
+
+void sbx::setup(sbx::engine& engine) {
+  engine.add_module<my_module>();
 }
