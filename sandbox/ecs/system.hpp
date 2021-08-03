@@ -1,5 +1,5 @@
-#ifndef SBX_CORE_SYSTEM_HPP_
-#define SBX_CORE_SYSTEM_HPP_
+#ifndef SBX_ECS_SYSTEM_HPP_
+#define SBX_ECS_SYSTEM_HPP_
 
 namespace sbx {
 
@@ -15,4 +15,4 @@ public:
 
 } // namespace sbx
 
-#endif // SBX_CORE_SYSTEM_HPP_
+#endif // SBX_ECS_SYSTEM_HPP_

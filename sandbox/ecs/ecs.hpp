@@ -3,7 +3,8 @@
 
 namespace sbx {
 
-
+#include "system.hpp"
+#include "entity.hpp"
 
 } // namespace sbx
 

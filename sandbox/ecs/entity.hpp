@@ -1,8 +1,9 @@
 #ifndef SBX_ECS_ENTITY_HPP_
 #define SBX_ECS_ENTITY_HPP_
 
-#include <bitset>
 #include <cinttypes>
+#include <typeindex>
+#include <unordered_map>
 
 namespace sbx {
 
@@ -18,7 +19,6 @@ public:
 
 private:
   std::uint32_t _id;
-  std::bitset<32> _component_mask; // TODO: think of something not hard coded
 
 }; // class entity
 

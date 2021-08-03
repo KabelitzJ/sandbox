@@ -4,7 +4,7 @@
 #include <vector>
 #include <memory>
 
-#include "system.hpp"
+#include <ecs/system.hpp>
 
 namespace sbx {
 

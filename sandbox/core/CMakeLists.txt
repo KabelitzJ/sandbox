@@ -8,7 +8,6 @@ target_sources(
     entry_point.cpp
     engine.cpp
     module.cpp
-    system.cpp
 )
 
 target_include_directories(

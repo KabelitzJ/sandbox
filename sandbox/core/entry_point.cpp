@@ -1,6 +1,7 @@
 #include "entry_point.hpp"
 
 #include <cstdlib>
+#include <string_view>
 
 #include "engine.hpp"
 #include "module.hpp"
