@@ -2,7 +2,9 @@
 
 namespace sbx {
 
-module::module() {
+module::module()
+: _registry(nullptr),
+  _systems() {
 
 }
 

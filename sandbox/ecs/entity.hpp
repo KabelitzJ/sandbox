@@ -2,20 +2,21 @@
 #define SBX_ECS_ENTITY_HPP_
 
 #include <cinttypes>
-#include <typeindex>
-#include <unordered_map>
 
 namespace sbx {
 
 class entity {
 
 public:
+  explicit entity(std::uint32_t id);
   entity(std::uint16_t index, std::uint16_t version);
   ~entity() = default;
 
   std::uint32_t id() const;
   std::uint16_t index() const;
   std::uint16_t version() const;
+
+  operator std::uint32_t() const;
 
 private:
   std::uint32_t _id;

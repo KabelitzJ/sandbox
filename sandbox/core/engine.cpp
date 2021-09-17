@@ -3,7 +3,9 @@
 namespace sbx {
 
 engine::engine()
-: _modules() {
+: _registry(std::make_unique<registry>()),
+  _modules() {
+
 
 }
 
@@ -17,8 +19,8 @@ void engine::start() {
 
 void engine::initialize() {
   for (auto& module : _modules) {
-    module->_initialize();
     module->initialize();
+    module->_initialize();
   }
 }
 

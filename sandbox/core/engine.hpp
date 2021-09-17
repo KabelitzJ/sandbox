@@ -4,6 +4,8 @@
 #include <vector>
 #include <memory>
 
+#include <ecs/registry.hpp>
+
 #include "module.hpp"
 
 namespace sbx {
@@ -22,6 +24,7 @@ public:
   void add_module(Args&&... args);
 
 private:
+  std::unique_ptr<registry> _registry;
   std::vector<std::unique_ptr<module>> _modules;
 
 }; // class engine
@@ -32,6 +35,7 @@ void engine::add_module(Args&&... args) {
   static_assert(!std::is_abstract_v<Module>);
 
   auto module = std::make_unique<Module>(std::forward<Args>(args)...);
+  module->_registry = _registry.get();
 
   _modules.push_back(std::move(module));
 }

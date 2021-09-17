@@ -3,6 +3,7 @@
 
 namespace sbx {
 
+#include "registry.hpp"
 #include "system.hpp"
 #include "entity.hpp"
 

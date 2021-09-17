@@ -4,6 +4,7 @@
 #include <vector>
 #include <memory>
 
+#include <ecs/registry.hpp>
 #include <ecs/system.hpp>
 
 namespace sbx {
@@ -20,6 +21,8 @@ protected:
   template<typename System, typename... Args>
   void add_system(Args&&... args);
 
+  registry* _registry;
+  
 private:
   void _initialize();
 
@@ -35,6 +38,7 @@ inline void module::add_system(Args&&... args) {
   static_assert(!std::is_abstract_v<System>);
 
   auto system = std::make_unique<System>(std::forward<Args>(args)...);
+  system->_registry = _registry;
 
   _systems.push_back(std::move(system));
 }

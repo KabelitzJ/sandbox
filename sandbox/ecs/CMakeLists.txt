@@ -7,6 +7,7 @@ target_sources(
   PRIVATE
     entity.cpp
     system.cpp
+    registry.cpp
 )
 
 target_include_directories(
@@ -15,6 +16,12 @@ target_include_directories(
     "${CMAKE_CURRENT_SOURCE_DIR}"
   PUBLIC
     "${CMAKE_CURRENT_SOURCE_DIR}/.."
+)
+
+target_link_libraries(
+  ${PROJECT_NAME}
+  PUBLIC
+    sbx::util 
 )
 
 target_compile_features(

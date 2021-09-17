@@ -1,13 +1,11 @@
-project(core CXX)
+project(util CXX)
 
 add_library(${PROJECT_NAME} STATIC)
 
 target_sources(
   ${PROJECT_NAME}
   PRIVATE
-    entry_point.cpp
-    engine.cpp
-    module.cpp
+    fixed_object_pool.cpp
 )
 
 target_include_directories(
@@ -16,13 +14,6 @@ target_include_directories(
     "${CMAKE_CURRENT_SOURCE_DIR}"
   PUBLIC
     "${CMAKE_CURRENT_SOURCE_DIR}/.."
-)
-
-target_link_libraries(
-  ${PROJECT_NAME}
-  PUBLIC
-    sbx::ecs
-    sbx::gfx
 )
 
 target_compile_features(

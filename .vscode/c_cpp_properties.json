@@ -5,7 +5,7 @@
       "intelliSenseMode": "gcc-x64",
       "includePath": ["${workspaceFolder}/**"],
       "cppStandard": "c++17",
-      "compilerPath": "D:\\Programme\\msys64\\mingw64\bin\\g++.exe",
+      "compilerPath": "D:\\Programme\\msys64\\mingw64\\bin\\g++.exe",
       "compileCommands": "${workspaceFolder}/build/compile_commands.json",
       "browse":{
         "path": ["${workspaceFolder}/**"],

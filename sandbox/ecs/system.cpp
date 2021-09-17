@@ -2,7 +2,8 @@
 
 namespace sbx {
 
-system::system() {
+system::system()
+: _registry(nullptr) {
 
 }
 
