@@ -1,12 +1,11 @@
 {
   "configurations": [
     {
-      "name": "Unix",
-      "intelliSenseMode": "gcc-x64",
+      "name": "Clang",
+      "intelliSenseMode": "clang-x64",
       "includePath": ["${workspaceFolder}/**"],
       "cppStandard": "c++17",
-      "compilerPath": "D:\\Programme\\msys64\\mingw64\\bin\\g++.exe",
-      "compileCommands": "${workspaceFolder}/build/compile_commands.json",
+      "compilerPath": "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\Llvm\\bin\\\\clang++.exe",
       "browse":{
         "path": ["${workspaceFolder}/**"],
         "limitSymbolsToIncludedHeaders": true,

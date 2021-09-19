@@ -5,7 +5,7 @@ add_library(${PROJECT_NAME} STATIC)
 target_sources(
   ${PROJECT_NAME}
   PRIVATE
-    fixed_object_pool.cpp
+    sparse_set.cpp
 )
 
 target_include_directories(

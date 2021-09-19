@@ -3,10 +3,7 @@
 namespace sbx {
 
 registry::registry()
-: _component_id_counter(0),
-  _entities(),
-  _component_pools(),
-  _component_masks() {
+: _component_id_counter(0) {
     
 }
 
@@ -15,10 +12,7 @@ registry::~registry() {
 }
 
 entity registry::create_entity() {
-  const auto entity = _entities.emplace_back(_entities.size(), 0);
-  _component_masks.emplace_back();
-  
-  return entity;
+  return entity{0, 0};
 }
 
 void registry::destoy_entity(const entity& entity) {

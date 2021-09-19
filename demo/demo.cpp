@@ -14,8 +14,6 @@ struct velocity {
   float z;
 };
 
-struct model {};
-
 class my_system final : public sbx::system {
 
 public:
@@ -46,13 +44,6 @@ public:
 
   void initialize() override {
     add_system<my_system>();
-
-    const auto player = _registry->create_entity();
-
-    _registry->add_component<prosition>(player, 0.0f, 0.0f, 0.0f);
-    _registry->add_component<velocity>(player, 1.0f, 0.0f, 0.0f);
-
-    std::cout << std::boolalpha << _registry->has_component<model>(player) << '\n';
   }
 
 };
