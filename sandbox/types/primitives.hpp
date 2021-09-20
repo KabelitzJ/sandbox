@@ -2,7 +2,6 @@
 #define SBX_TYPES_PRIMITIVES_HPP_
 
 #include <cinttypes>
-#include <limits>
 
 namespace sbx {
 
@@ -21,9 +20,6 @@ using uintmax = std::uintmax_t;
 using byte = uint8;
 
 using size_type = std::size_t;
-using index_type = std::size_t;
-
-constexpr index_type INVALID_INDEX = std::numeric_limits<index_type>::max();
 
 using float32 = float;
 using float64 = double;

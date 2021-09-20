@@ -1,15 +1,14 @@
 {
   "configurations": [
     {
-      "name": "Clang",
-      "intelliSenseMode": "clang-x64",
+      "name": "Unix",
+      "intelliSenseMode": "linux-gcc-x64",
       "includePath": ["${workspaceFolder}/**"],
       "cppStandard": "c++17",
-      "compilerPath": "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\Llvm\\bin\\\\clang++.exe",
+      "compilerPath": "/usr/bin/g++",
       "browse":{
         "path": ["${workspaceFolder}/**"],
-        "limitSymbolsToIncludedHeaders": true,
-        "databaseFilename": ""
+        "limitSymbolsToIncludedHeaders": true
       }
     }
   ],

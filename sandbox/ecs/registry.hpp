@@ -44,10 +44,14 @@ inline void registry::add_component(const entity& entity, Args&&... args) {
   const auto component_id = _component_id<Component>();
 
   if (component_id >= _components.size()) {
-    _components.push_back(std::make_unique<component_container<Component>());
+    _components.push_back(std::make_unique<component_container<Component>>());
   }
 
-  auto container = _component[component_id];
+  auto container = _components[component_id];
+
+  auto [id, component] = container.emplace(std::forward<Args>(args)...);
+
+  
 }
 
 template<typename Component>

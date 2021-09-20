@@ -2,29 +2,29 @@
 
 namespace sbx {
 
-entity::entity(std::uint32_t id)
+entity::entity(uint32 id)
 : _id(id) {
   
 }
 
-entity::entity(std::uint16_t index, std::uint16_t version)
-: _id(static_cast<std::uint32_t>(index << 16) | static_cast<std::uint32_t>(version)) {
+entity::entity(uint16 index, uint16 version)
+: _id(static_cast<uint32>(index << 16) | static_cast<uint32>(version)) {
 
 }
 
-std::uint32_t entity::id() const {
+uint32 entity::id() const {
   return _id;
 }
 
-std::uint16_t entity::index() const {
-  return static_cast<std::uint16_t>(_id >> 16);
+uint16 entity::index() const {
+  return static_cast<uint16>(_id >> 16);
 }
 
-std::uint16_t entity::version() const {
-  return static_cast<std::uint16_t>(_id);
+uint16 entity::version() const {
+  return static_cast<uint16>(_id);
 }
 
-entity::operator std::uint32_t() const {
+entity::operator uint32() const {
   return _id;
 }
 

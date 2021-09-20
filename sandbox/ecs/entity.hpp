@@ -1,25 +1,25 @@
 #ifndef SBX_ECS_ENTITY_HPP_
 #define SBX_ECS_ENTITY_HPP_
 
-#include <cinttypes>
+#include <types/primitives.hpp>
 
 namespace sbx {
 
 class entity {
 
 public:
-  explicit entity(std::uint32_t id);
-  entity(std::uint16_t index, std::uint16_t version);
+  explicit entity(uint32 id);
+  entity(uint16 index, uint16 version);
   ~entity() = default;
 
-  std::uint32_t id() const;
-  std::uint16_t index() const;
-  std::uint16_t version() const;
+  uint32 id() const;
+  uint16 index() const;
+  uint16 version() const;
 
-  operator std::uint32_t() const;
+  operator uint32() const;
 
 private:
-  std::uint32_t _id;
+  uint32 _id;
 
 }; // class entity
 
