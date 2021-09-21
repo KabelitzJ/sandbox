@@ -2,6 +2,7 @@
 #define SBX_ECS_ENTITY_HPP_
 
 #include <types/primitives.hpp>
+#include <types/basic_traits.hpp>
 
 namespace sbx {
 
@@ -22,6 +23,10 @@ private:
   uint32 _id;
 
 }; // class entity
+
+
+template<>
+struct is_index<entity> : std::true_type {};
 
 } // namespace sbx
 

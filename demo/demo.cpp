@@ -44,6 +44,9 @@ public:
 
   void initialize() override {
     add_system<my_system>();
+    const auto e = _registry->create_entity();
+
+    _registry->add_component<prosition>(e, 1.0f, 2.0f, 3.0f);
   }
 
 };
