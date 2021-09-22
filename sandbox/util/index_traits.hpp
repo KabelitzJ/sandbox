@@ -2,6 +2,7 @@
 #define SBX_UTIL_INDEX_TRAITS_HPP_
 
 #include <type_traits>
+#include <limits>
 
 namespace sbx {
 
@@ -12,7 +13,7 @@ template<typename T>
 inline constexpr auto is_unsigned_integral_v = is_unsigned_integral<T>::value;
 
 template<typename, typename = void>
-struct index_type {};
+struct index_type;
 
 template<typename T>
 struct index_type<T, std::enable_if_t<is_unsigned_integral_v<T>>> {
@@ -38,6 +39,15 @@ template<typename T>
 inline index_type_t<T> to_index(T value) {
   return static_cast<index_type_t<T>>(value);
 }
+
+template<typename, typename = void>
+struct invalid_index;
+
+template<typename T>
+struct invalid_index<T, std::enable_if_t<is_index_type_v<T>>> : std::integral_constant<T, std::numeric_limits<T>::max()> {};
+
+template<typename T>
+inline constexpr auto invalid_index_v = invalid_index<T>::value;
 
 } // namespace sbx
 

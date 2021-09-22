@@ -15,7 +15,7 @@ entity registry::create_entity() {
   return entity{0};
 }
 
-void registry::destoy_entity(const entity& entity) {
+void registry::destoy_entity(entity entity) {
   (void)entity;
 }
 

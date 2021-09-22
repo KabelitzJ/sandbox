@@ -28,6 +28,11 @@ public:
   sparse_set() = default;
   ~sparse_set() = default;
 
+  template<typename... Args>
+  value_type& emplace_at(id_type id, Args&&... args);
+
+  bool has(id_type id) const;
+
   size_type size() const;
 
   void reserve(id_type size);
@@ -39,12 +44,25 @@ public:
   const_iterator end() const;
 
 private:
+  static constexpr auto _invalid_index = invalid_index_v<id_type>;
+
   std::vector<id_type> _id_to_index;
   std::vector<id_type> _index_to_id;
   std::vector<value_type> _objects;
   std::vector<id_type> _free_ids;
 
 }; // class sparse_set
+
+template<typename Id, typename Value>
+template<typename... Args>
+inline auto sparse_set<Id, Value>::emplace_at(id_type id, Args&&... args) -> value_type& {
+  
+}
+
+template<typename Id, typename Value>
+inline auto sparse_set<Id, Value>::has(id_type id) const -> bool {
+  return id < _id_to_index.size() && _id_to_index.at(to_index(id)) != invalid_index_v<index_type>;
+}
 
 template<typename Id, typename Value>
 inline size_type sparse_set<Id, Value>::size() const {

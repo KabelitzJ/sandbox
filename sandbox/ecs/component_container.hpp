@@ -20,13 +20,24 @@ template<typename Component>
 class component_container : public basic_component_container {
 
 public:
+  using component_type = Component;
+
   component_container() = default;
   ~component_container() = default;
 
+  template<typename... Args>
+  component_type& emplace_at(entity entity, Args&&... args);
+
 private:
-  sparse_set<entity, Component> _components;
+  sparse_set<entity, component_type> _components;
 
 };
+
+template<typename Component>
+template<typename... Args>
+inline auto component_container<Component>::emplace_at(entity entity, Args&&... args) -> component_type& {
+  return _components.emplace_at(entity, std::forward<Args>(args)...);
+}
 
 } // namespace sbx
 

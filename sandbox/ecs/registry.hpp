@@ -24,10 +24,13 @@ public:
 
   [[nodiscard]] entity create_entity();
   
-  void destoy_entity(const entity& entity);
+  void destoy_entity(entity entity);
 
   template<typename Component, typename... Args>
-  void add_component(const entity& entity, Args&&... args);
+  Component& add_component(entity entity, Args&&... args);
+
+  template<typename Component>
+  void remove_component(entity entity);
 
 private:
   template<typename Component>
@@ -35,19 +38,21 @@ private:
 
   id_type _component_id_counter;
 
-  std::vector<std::unique_ptr<basic_component_container>> _components;
+  std::vector<std::unique_ptr<basic_component_container>> _containers;
 }; // class registry
 
 
 template<typename Component, typename... Args>
-inline void registry::add_component(const entity& entity, Args&&... args) {
+inline Component& registry::add_component(entity entity, Args&&... args) {
   const auto component_id = _component_id<Component>();
 
-  if (component_id >= _components.size()) {
-    _components.push_back(std::make_unique<component_container<Component>>());
+  if (component_id >= _containers.size()) {
+    _containers.resize(component_id - 1);
   }
 
-  (void)entity;
+  auto container = *static_cast<component_container<Component>*>(_containers.at(component_id).get());
+
+  return container.emplace_at(entity, std::forward<Args>(args)...);
 }
 
 template<typename Component>
