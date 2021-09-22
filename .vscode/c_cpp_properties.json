@@ -5,7 +5,7 @@
       "intelliSenseMode": "linux-gcc-x64",
       "includePath": ["${workspaceFolder}/**"],
       "cppStandard": "c++17",
-      "compilerPath": "/usr/bin/g++",
+      "compilerPath": "D:\\Programme\\msys64\\mingw64\\bin\\g++.exe",
       "browse":{
         "path": ["${workspaceFolder}/**"],
         "limitSymbolsToIncludedHeaders": true

@@ -23,24 +23,10 @@ public:
   component_container() = default;
   ~component_container() = default;
 
-  Component& operator[](const entity& entity);
-  const Component& operator[](const entity& entity) const;
-
 private:
   sparse_set<entity, Component> _components;
 
 };
-
-
-template<typename Component>
-Component& component_container<Component>::operator[](const entity& entity) {
-  return _components[entity];
-}
-
-template<typename Component>
-const Component& component_container<Component>::operator[](const entity& entity) const {
-  return _components[entity];
-}
 
 } // namespace sbx
 

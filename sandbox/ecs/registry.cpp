@@ -12,7 +12,7 @@ registry::~registry() {
 }
 
 entity registry::create_entity() {
-  return entity{0, 0};
+  return entity{0};
 }
 
 void registry::destoy_entity(const entity& entity) {

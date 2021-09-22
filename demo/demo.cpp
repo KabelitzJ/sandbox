@@ -2,7 +2,7 @@
 
 #include <core/core.hpp>
 
-struct prosition {
+struct position {
   float x;
   float y;
   float z;
@@ -26,7 +26,10 @@ public:
   }
 
   void initialize() override {
+    const auto player = _registry->create_entity();
 
+    _registry->add_component<position>(player, 0.0f, 0.0f, 0.0f);
+    _registry->add_component<velocity>(player, -1.0f, 0.0f, 0.0f);
   }
 
 };

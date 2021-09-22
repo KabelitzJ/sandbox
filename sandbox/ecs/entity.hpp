@@ -5,23 +5,26 @@
 
 namespace sbx {
 
-class entity {
+// (TODO) KAJ 22.09.2021 19.01 Find concept for entity representation
+// class entity {
 
-public:
-  explicit entity(uint32 id);
-  entity(uint16 index, uint16 version);
-  ~entity() = default;
+// public:
+//   explicit entity(uint32 id);
+//   entity(uint16 index, uint16 version);
+//   ~entity() = default;
 
-  uint32 id() const;
-  uint16 index() const;
-  uint16 version() const;
+//   uint32 id() const;
+//   uint16 index() const;
+//   uint16 version() const;
 
-  operator uint32() const;
+//   operator uint32() const;
 
-private:
-  uint32 _id;
+// private:
+//   uint32 _id;
 
-}; // class entity
+// }; // class entity
+
+enum class entity : uint32 {};
 
 } // namespace sbx
 
