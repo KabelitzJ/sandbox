@@ -1,5 +1,7 @@
 #include "registry.hpp"
 
+#include <cassert>
+
 namespace sbx {
 
 registry::registry()

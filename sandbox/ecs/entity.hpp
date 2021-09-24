@@ -1,6 +1,8 @@
 #ifndef SBX_ECS_ENTITY_HPP_
 #define SBX_ECS_ENTITY_HPP_
 
+#include <type_traits>
+
 #include <types/primitives.hpp>
 
 namespace sbx {

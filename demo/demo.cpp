@@ -28,8 +28,11 @@ public:
   void initialize() override {
     const auto player = _registry->create_entity();
 
-    _registry->add_component<position>(player, 0.0f, 0.0f, 0.0f);
-    _registry->add_component<velocity>(player, -1.0f, 0.0f, 0.0f);
+    _registry->assign_component<position>(player, 0.0f, 0.0f, 0.0f);
+    _registry->assign_component<velocity>(player, -1.0f, 0.0f, 0.0f);
+
+    _registry->remove_component<position>(player);
+    _registry->assign_component<position>(player, 1.0f, 0.0f, 1.0f);
   }
 
 };

@@ -2,6 +2,7 @@
 #define SBX_TYPES_PRIMITIVES_HPP_
 
 #include <cinttypes>
+#include <cstddef>
 
 namespace sbx {
 

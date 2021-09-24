@@ -1,9 +1,8 @@
 #ifndef SBX_ECS_COMPONENT_CONTAINER_HPP_
 #define SBX_ECS_COMPONENT_CONTAINER_HPP_
 
-#include <util/sparse_set.hpp>
-
 #include "entity.hpp"
+#include "sparse_set.hpp"
 
 namespace sbx {
 
@@ -23,10 +22,27 @@ public:
   component_container() = default;
   ~component_container() = default;
 
+  template<typename... Args>
+  void assign(const entity entity, Args&&... args);
+
+  void remove(const entity entity);
+
 private:
   sparse_set<entity, Component> _components;
 
 };
+
+
+template<typename Component>
+template<typename... Args>
+void component_container<Component>::assign(const entity entity, Args&&... args) {
+  _components.assign(entity, std::forward<Args>(args)...);
+}
+
+template<typename Component>
+void component_container<Component>::remove(const entity entity) {
+  _components.remove(entity);
+}
 
 } // namespace sbx
 
