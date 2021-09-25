@@ -45,7 +45,7 @@ inline void registry::assign_component(const entity entity, Args&&... args) {
   const auto component_id = _component_id<Component>();
 
   if (component_id >= _components.size()) {
-    _components.resize(component_id - 1);
+    _components.resize(component_id + 1);
   }
 
   auto& basic_container = _components.at(component_id);
@@ -54,9 +54,10 @@ inline void registry::assign_component(const entity entity, Args&&... args) {
     basic_container.reset(new component_container<Component>{});
   }
 
-  auto container = *static_cast<component_container<Component>*>(basic_container.get());
+  // [NOTE] KAJ 2021-09-24 17:40: Cant cast to template class
+  // auto container = *static_cast<component_container<Component>*>(basic_container.get());
 
-  container.assign(entity, std::forward<Args>(args)...);
+  // container.assign(entity, std::forward<Args>(args)...);
 }
 
 template<typename Component>

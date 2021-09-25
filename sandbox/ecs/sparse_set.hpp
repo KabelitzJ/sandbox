@@ -39,7 +39,7 @@ void sparse_set<Entity, Component>::assign(const entity_type entity, Args&&... a
   const auto position = entity_traits<entity_type>::to_integral(entity);
 
   if (position >= _entity_indices.size()) {
-    _entity_indices.resize(position - 1, entity_traits<entity_type>::to_integral(null_entity));
+    _entity_indices.resize(position + 1, entity_traits<entity_type>::to_integral(null_entity));
   }
 
   _entity_indices.at(position) = next;
@@ -71,7 +71,8 @@ template<typename Entity, typename Component>
 bool sparse_set<Entity, Component>::contains(const entity_type entity) const noexcept {
   const auto position = entity_traits<Entity>::to_integral(entity);
 
-  return position < _entity_indices.size() && _entity_indices.at(position) != entity_traits<entity_type>::to_integral(null_entity);
+  const auto a = position < _entity_indices.size() && _entity_indices.at(position) != entity_traits<entity_type>::to_integral(null_entity);
+  return a;
 }
 
 } // namespace sbx
