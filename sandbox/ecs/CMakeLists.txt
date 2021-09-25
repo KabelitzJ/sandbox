@@ -22,7 +22,6 @@ target_link_libraries(
   ${PROJECT_NAME}
   PUBLIC
     sbx::types
-    sbx::util 
 )
 
 target_compile_features(

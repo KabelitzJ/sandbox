@@ -7,8 +7,6 @@
 #include <bitset>
 #include <memory>
 
-#include <util/sparse_set.hpp>
-
 #include "entity.hpp"
 #include "component_container.hpp"
 
@@ -27,10 +25,10 @@ public:
   void destoy_entity(entity entity);
 
   template<typename Component, typename... Args>
-  Component& add_component(entity entity, Args&&... args);
+  void assign_component(const entity entity, Args&&... args);
 
   template<typename Component>
-  void remove_component(entity entity);
+  void remove_component(const entity entity);
 
 private:
   template<typename Component>
@@ -43,16 +41,36 @@ private:
 
 
 template<typename Component, typename... Args>
-inline Component& registry::add_component(entity entity, Args&&... args) {
+inline void registry::assign_component(const entity entity, Args&&... args) {
   const auto component_id = _component_id<Component>();
 
-  if (component_id >= _containers.size()) {
-    _containers.resize(component_id - 1);
+  if (component_id >= _components.size()) {
+    _components.resize(component_id + 1);
   }
 
-  auto container = *static_cast<component_container<Component>*>(_containers.at(component_id).get());
+  auto& basic_container = _components.at(component_id);
 
-  return container.emplace_at(entity, std::forward<Args>(args)...);
+  if (!basic_container.get()) {
+    basic_container.reset(new component_container<Component>{});
+  }
+
+  // [NOTE] KAJ 2021-09-24 17:40: Cant cast to template class
+  // auto container = *static_cast<component_container<Component>*>(basic_container.get());
+
+  // container.assign(entity, std::forward<Args>(args)...);
+}
+
+template<typename Component>
+void registry::remove_component(const entity entity) {
+  const auto component_id = _component_id<Component>();
+
+  if (component_id >= _components.size()) {
+    return;
+  }
+
+  auto container = *static_cast<component_container<Component>*>(_components.at(component_id).get());
+
+  container.remove(entity);
 }
 
 template<typename Component>
