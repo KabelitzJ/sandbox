@@ -4,8 +4,7 @@
 
 namespace sbx {
 
-registry::registry()
-: _component_id_counter(0) {
+registry::registry() {
     
 }
 

@@ -9,6 +9,7 @@
 
 #include "entity.hpp"
 #include "component_container.hpp"
+#include "type_index.hpp"
 
 namespace sbx {
 
@@ -31,18 +32,14 @@ public:
   void remove_component(const entity entity);
 
 private:
-  template<typename Component>
-  id_type _component_id();
+  std::vector<std::unique_ptr<basic_component_container>> _components;
 
-  id_type _component_id_counter;
-
-  std::vector<std::unique_ptr<basic_component_container>> _containers;
 }; // class registry
 
 
 template<typename Component, typename... Args>
 inline void registry::assign_component(const entity entity, Args&&... args) {
-  const auto component_id = _component_id<Component>();
+  const auto component_id = type_index<Component>::value();
 
   if (component_id >= _components.size()) {
     _components.resize(component_id + 1);
@@ -62,7 +59,7 @@ inline void registry::assign_component(const entity entity, Args&&... args) {
 
 template<typename Component>
 void registry::remove_component(const entity entity) {
-  const auto component_id = _component_id<Component>();
+  const auto component_id = type_index<Component>::value();
 
   if (component_id >= _components.size()) {
     return;
@@ -71,13 +68,6 @@ void registry::remove_component(const entity entity) {
   auto container = *static_cast<component_container<Component>*>(_components.at(component_id).get());
 
   container.remove(entity);
-}
-
-template<typename Component>
-inline registry::id_type registry::_component_id() {
-  static id_type id = _component_id_counter++;
-
-  return id;
 }
 
 } // namespace sbx
