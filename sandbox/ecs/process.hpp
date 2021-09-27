@@ -8,16 +8,16 @@
 namespace sbx {
  
 template<typename Derived, typename Delta>
-class process {
+class basic_process {
 
 public:
 
   using delta_type = Delta;
 
-  process() = default;
+  basic_process() = default;
 
-  virtual ~process() {
-    static_assert(std::is_base_of_v<process, Derived>, "Incorrect use of the class template");
+  virtual ~basic_process() {
+    static_assert(std::is_base_of_v<basic_process, Derived>, "Incorrect use of the class template");
   }
 
   bool is_alive() const noexcept {
@@ -127,11 +127,11 @@ private:
 
   state current_state{state::UNINITIALIZED};
 
-}; // class process
+}; // class basic_process
 
 
 template<typename Function, typename Delta>
-class process_adaptor : process<process_adaptor<Function, Delta>, Delta>, private Function {
+class process_adaptor : basic_process<process_adaptor<Function, Delta>, Delta>, private Function {
 
 public:
 
