@@ -8,11 +8,25 @@
 
 namespace sbx {
 
-// [NOTE] KAJ 2021-09-26 15:08: Figure out why sequence is incomplete when its a template
-struct sequence {
+/**
+ * @brief A integer sequence with an incrementing value
+ *
+ * Primary template is left undefined on purpose
+ */
+template<typename, typename = void>
+struct sequence;
 
-  [[nodiscard]] static uint32 next() noexcept {
-    static auto value = uint32{};
+
+/**
+ * @brief A integer sequence with an incrementing value
+ *
+ * @tparam Type Iteger type of the sequence
+ */
+template<typename Type>
+struct sequence<Type, std::enable_if_t<std::is_integral_v<Type>>> {
+
+  [[nodiscard]] static Type next() noexcept {
+    static auto value = Type{0};
 
     return value++;
   }
@@ -20,11 +34,27 @@ struct sequence {
 }; // struct sequence
 
 
+/**
+ * @brief A integer sequence with an atomically incrementing value
+ *
+ * @tparam Type Iteger type of the sequence
+ */
+template<typename Type>
+using atomic_sequence = sequence<std::atomic<Type>>;
+
+
+/**
+ * @brief Maps any given type to a numeric identifier
+ *
+ * Indeices are not required to be the same for any given type throughout multiple program instances
+ *
+ * @tparam Type to get the index of
+ */
 template<typename Type>
 struct type_index final {
 
   [[nodiscard]] static uint32 value() noexcept {
-    static const auto value = sequence::next();
+    static const auto value = sequence<uint32>::next();
 
     return value;
   }
