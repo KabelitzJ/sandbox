@@ -6,6 +6,8 @@ namespace sbx {
 #include "registry.hpp"
 #include "system.hpp"
 #include "entity.hpp"
+#include "process.hpp"
+#include "scheduler.hpp"
 
 } // namespace sbx
 

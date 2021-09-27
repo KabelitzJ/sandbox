@@ -61,11 +61,14 @@ public:
       }
     }
 
-    handlers.erase(handlers.begin() + size, handlers.end());
+    const auto begin = typename decltype(handlers)::const_iterator{handlers.data() + size};
+    const auto end = handlers.end();
+
+    handlers.erase(begin, end);
   }
 
   void abort(const bool immediate = false) {
-    auto exec = decltype(handlers){};
+    auto exec = decltype(handlers){handlers.size()};
     exec.swap(handlers);
 
     for (auto&& handler : exec) {
@@ -84,8 +87,8 @@ private:
     using abort_fn_type = void(process_handler&, bool);
 
     instance_type instance;
-    update_fn_type* update_fn;
-    abort_fn_type* abort_fn;
+    update_fn_type* update;
+    abort_fn_type* abort;
   }; // struct process_handler
 
   template<typename Process>

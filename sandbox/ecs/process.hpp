@@ -16,9 +16,13 @@ public:
 
   basic_process() = default;
 
+  basic_process(const basic_process&) = delete;
+
   virtual ~basic_process() {
     static_assert(std::is_base_of_v<basic_process, Derived>, "Incorrect use of the class template");
   }
+
+  basic_process& operator=(const basic_process&) = delete;
 
   bool is_alive() const noexcept {
     return current_state == state::RUNNING;
@@ -40,32 +44,37 @@ public:
 
   void tick(const Delta delta) {
     switch (current_state) {
-    case state::UNINITIALIZED:
-      next(std::integral_constant<state, state::UNINITIALIZED>{});
-      current_state = state::RUNNING;
-      break;
-    case state::RUNNING:
-      next(std::integral_constant<state, state::RUNNING>{}, delta);
-      break;
-    default:
-      // suppress warnings
-      break;
+      case state::UNINITIALIZED: {
+        next(std::integral_constant<state, state::UNINITIALIZED>{});
+        current_state = state::RUNNING;
+        break;
+      }
+      case state::RUNNING: {
+        next(std::integral_constant<state, state::RUNNING>{}, delta);
+        break;
+      }
+      default: {
+        break;
+      }
     }
 
     switch(current_state) {
-    case state::SUCCEEDED:
-      next(std::integral_constant<state, state::SUCCEEDED>{});
-      break;
-    case state::FAILED:
-      next(std::integral_constant<state, state::FAILED>{});
-      break;
-    case state::ABORTED:
-      next(std::integral_constant<state, state::ABORTED>{});
-      current_state = state::FAILED;
-      break;
-    default:
-      // suppress warnings
-      break;
+      case state::SUCCEEDED: {
+        next(std::integral_constant<state, state::SUCCEEDED>{});
+        break;
+      }
+      case state::FAILED: {
+        next(std::integral_constant<state, state::FAILED>{});
+        break;
+      }
+      case state::ABORTED: {
+        next(std::integral_constant<state, state::ABORTED>{});
+        current_state = state::FAILED;
+        break;
+      }
+      default: {
+        break;
+      }
     }
   }
 
@@ -95,8 +104,8 @@ private:
 
   template<typename Target = Derived>
   auto next(std::integral_constant<state, state::UNINITIALIZED>)
-  -> decltype(std::declval<Target>().init(), void()) {
-    static_cast<Target*>(this)->init();
+  -> decltype(std::declval<Target>().initialize(), void()) {
+    static_cast<Target*>(this)->initialize();
   }
 
   template<typename Target = Derived>
@@ -131,7 +140,7 @@ private:
 
 
 template<typename Function, typename Delta>
-class process_adaptor : basic_process<process_adaptor<Function, Delta>, Delta>, private Function {
+class process_adaptor : public basic_process<process_adaptor<Function, Delta>, Delta>, private Function {
 
 public:
 

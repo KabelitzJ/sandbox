@@ -8,25 +8,6 @@
 
 namespace sbx {
 
-// (TODO) KAJ 22.09.2021 19.01 Find concept for entity representation
-// class entity {
-
-// public:
-//   explicit entity(uint32 id);
-//   entity(uint16 index, uint16 version);
-//   ~entity() = default;
-
-//   uint32 id() const;
-//   uint16 index() const;
-//   uint16 version() const;
-
-//   operator uint32() const;
-
-// private:
-//   uint32 _id;
-
-// }; // class entity
-
 template<typename, typename = void>
 struct is_entity : std::false_type {};
 
@@ -132,10 +113,6 @@ template<typename Entity>
 inline constexpr null_entity_t null_entity{};
 
 enum class entity : uint32 {};
-
-
-template<>
-struct is_index<entity> : std::true_type {};
 
 } // namespace sbx
 

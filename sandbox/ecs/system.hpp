@@ -2,6 +2,7 @@
 #define SBX_ECS_SYSTEM_HPP_
 
 #include "registry.hpp"
+#include "scheduler.hpp"
 
 namespace sbx {
 
@@ -14,7 +15,8 @@ public:
   virtual void initialize() = 0;
 
 protected:
-  registry* _registry;
+  registry* _registry{};
+  scheduler<fast_time>* _scheduler{};
 
 private:
 
