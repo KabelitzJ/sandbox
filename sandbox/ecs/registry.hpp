@@ -7,10 +7,8 @@
 #include <bitset>
 #include <memory>
 
-#include <util/sparse_set.hpp>
-
 #include "entity.hpp"
-#include "component_container.hpp"
+#include "type_index.hpp"
 
 namespace sbx {
 
@@ -24,38 +22,11 @@ public:
 
   [[nodiscard]] entity create_entity();
   
-  void destoy_entity(const entity& entity);
-
-  template<typename Component, typename... Args>
-  void add_component(const entity& entity, Args&&... args);
+  void destoy_entity(entity entity);
 
 private:
-  template<typename Component>
-  id_type _component_id();
 
-  id_type _component_id_counter;
-
-  std::vector<std::unique_ptr<basic_component_container>> _components;
 }; // class registry
-
-
-template<typename Component, typename... Args>
-inline auto registry::add_component(const entity& entity, Args&&... args) -> void {
-  const auto component_id = _component_id<Component>();
-
-  if (component_id >= _components.size()) {
-    _components.push_back(std::make_unique<component_container<Component>>());
-  }
-
-  auto& container = _components[component_id];
-}
-
-template<typename Component>
-inline auto registry::_component_id() -> id_type {
-  static id_type id = _component_id_counter++;
-
-  return id;
-}
 
 } // namespace sbx
 
