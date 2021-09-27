@@ -9,6 +9,7 @@
 
 #include "entity.hpp"
 #include "type_index.hpp"
+#include "sparse_set.hpp"
 
 namespace sbx {
 

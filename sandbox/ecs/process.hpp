@@ -25,16 +25,16 @@ public:
   basic_process& operator=(const basic_process&) = delete;
 
   bool is_alive() const noexcept {
-    return current_state == state::RUNNING;
+    return _current_state == state::running;
   }
 
   bool is_finished() const noexcept {
-    return current_state == state::SUCCEEDED || current_state == state::FAILED;
+    return _current_state == state::succeeded || _current_state == state::failed;
   }
 
   void abort(const bool immediately = false) {
     if(is_alive()) {
-      current_state = state::ABORTED;
+      _current_state = state::aborted;
 
       if(immediately) {
           tick({});
@@ -43,14 +43,14 @@ public:
   }
 
   void tick(const Delta delta) {
-    switch (current_state) {
-      case state::UNINITIALIZED: {
-        next(std::integral_constant<state, state::UNINITIALIZED>{});
-        current_state = state::RUNNING;
+    switch (_current_state) {
+      case state::uninitialized: {
+        _next(std::integral_constant<state, state::uninitialized>{});
+        _current_state = state::running;
         break;
       }
-      case state::RUNNING: {
-        next(std::integral_constant<state, state::RUNNING>{}, delta);
+      case state::running: {
+        _next(std::integral_constant<state, state::running>{}, delta);
         break;
       }
       default: {
@@ -58,22 +58,22 @@ public:
       }
     }
 
-    switch(current_state) {
-      case state::SUCCEEDED: {
-        next(std::integral_constant<state, state::SUCCEEDED>{});
+    switch(_current_state) {
+      case state::succeeded: {
+        _next(std::integral_constant<state, state::succeeded>{});
         break;
       }
-      case state::FAILED: {
-        next(std::integral_constant<state, state::FAILED>{});
+      case state::failed: {
+        _next(std::integral_constant<state, state::failed>{});
         break;
       }
-      case state::ABORTED: {
-        next(std::integral_constant<state, state::ABORTED>{});
-        current_state = state::FAILED;
+      case state::aborted: {
+        _next(std::integral_constant<state, state::aborted>{});
+        _current_state = state::failed;
         break;
       }
       default: {
-        break;
+          break;
       }
     }
   }
@@ -82,59 +82,59 @@ protected:
 
   void succeed() noexcept {
     if (is_alive()) {
-      current_state = state::SUCCEEDED;
+      _current_state = state::succeeded;
     }
   }
 
   void fail() noexcept {
     if (is_alive()) {
-      current_state = state::FAILED;
+      _current_state = state::failed;
     }
   }
 
 private:
 
   enum class state : uint32 {
-    UNINITIALIZED = 0,
-    RUNNING,
-    SUCCEEDED,
-    FAILED,
-    ABORTED
+    uninitialized = 0,
+    running,
+    succeeded,
+    failed,
+    aborted
   };
 
   template<typename Target = Derived>
-  auto next(std::integral_constant<state, state::UNINITIALIZED>)
+  auto _next(std::integral_constant<state, state::uninitialized>)
   -> decltype(std::declval<Target>().initialize(), void()) {
     static_cast<Target*>(this)->initialize();
   }
 
   template<typename Target = Derived>
-  auto next(std::integral_constant<state, state::RUNNING>, const Delta delta)
+  auto _next(std::integral_constant<state, state::running>, const Delta delta)
   -> decltype(std::declval<Target>().update(delta), void()) {
     static_cast<Target*>(this)->update(delta);
   }
 
   template<typename Target = Derived>
-  auto next(std::integral_constant<state, state::SUCCEEDED>)
+  auto _next(std::integral_constant<state, state::succeeded>)
   -> decltype(std::declval<Target>().succeeded(), void()) {
     static_cast<Target *>(this)->succeeded();
   }
 
   template<typename Target = Derived>
-  auto next(std::integral_constant<state, state::FAILED>)
+  auto _next(std::integral_constant<state, state::failed>)
   -> decltype(std::declval<Target>().failed(), void()) {
     static_cast<Target *>(this)->failed();
   }
 
   template<typename Target = Derived>
-  auto next(std::integral_constant<state, state::ABORTED>)
+  auto _next(std::integral_constant<state, state::aborted>)
   -> decltype(std::declval<Target>().aborted(), void()) {
     static_cast<Target *>(this)->aborted();
   }
 
-  void next(...) const noexcept {}
+  void _next(...) const noexcept {}
 
-  state current_state{state::UNINITIALIZED};
+  state _current_state{state::uninitialized};
 
 }; // class basic_process
 

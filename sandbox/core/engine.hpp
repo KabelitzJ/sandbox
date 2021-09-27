@@ -38,8 +38,8 @@ void engine::add_module(Args&&... args) {
 
   auto module = std::make_unique<Module>(std::forward<Args>(args)...);
   module->_registry = _registry.get();
-  module->_scheduler = _scheduler.get();
-
+  module->_scheduler = _scheduler.get(); 
+  
   _modules.push_back(std::move(module));
 }
 
