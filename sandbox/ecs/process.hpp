@@ -1,6 +1,10 @@
 #ifndef SBX_ECS_PROCESS_HPP_
 #define SBX_ECS_PROCESS_HPP_
 
+#include <type_traits>
+
+#include <types/primitives.hpp>
+
 namespace sbx {
  
 template<typename Derived, typename Delta>
@@ -123,7 +127,7 @@ private:
 
   state current_state{state::UNINITIALIZED};
 
-};
+}; // class process
 
 
 template<typename Function, typename Delta>
@@ -140,7 +144,7 @@ public:
     Function::operator()(delta, [this](){ this->succeed(); }, [this](){ this->fail(); });
   }
 
-};  
+}; // class process_adaptor
 
 } // namespace sbx
 
