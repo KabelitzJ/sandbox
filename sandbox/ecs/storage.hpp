@@ -10,7 +10,7 @@
 
 namespace sbx {
 
-template<typename Entity, typename Type, typename Allocator>
+template<typename Entity, typename Type, typename Allocator = std::allocator<Type>>
 class basic_storage : public basic_sparse_set<Entity, typename std::allocator_traits<Allocator>::template rebind_alloc<Entity>> {
   static constexpr auto packed_page_v = 1024u;
 
