@@ -4,6 +4,8 @@
 #include <type_traits>
 #include <memory>
 
+#include <util/type_traits.hpp>
+
 #include "component.hpp"
 #include "entity.hpp"
 #include "sparse_set.hpp"
