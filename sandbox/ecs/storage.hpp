@@ -87,13 +87,13 @@ public:
   value_type & emplace(const entity_type entity, Args &&... args) {
     const auto position = base_type::slot();
     auto element = alloc_pointer{_assure_at_least(position)};
-    construct(element, std::forward<Args>(args)...);
+    _construct(element, std::forward<Args>(args)...);
 
     try {
-      base_type::try_emplace(entity, nullptr);
+      base_type::try_emplace(entity);
       assert(position == base_type::index(entity));
     } catch (...) {
-      std::destroy_at(std::addressof(element_at(position)));
+      std::destroy_at(std::addressof(_element_at(position)));
       throw;
     }
 
@@ -115,8 +115,8 @@ protected:
     const auto position = base_type::index(entity);
     const auto last = base_type::size() - 1u;
 
-    auto& target = element_at(position);
-    auto& element = element_at(last);
+    auto& target = _element_at(position);
+    auto& element = _element_at(last);
 
     // support for nosy destructors
     [[maybe_unused]] auto unused = std::move(target);
@@ -129,10 +129,10 @@ protected:
   void try_emplace([[maybe_unused]] const Entity entity) override {
     if constexpr(std::is_default_constructible_v<value_type>) {
       const auto position = base_type::slot();
-      construct(_assure_at_least(position));
+      _construct(_assure_at_least(position));
 
       try {
-        base_type::try_emplace(entity, nullptr);
+        base_type::try_emplace(entity);
         assert(position == base_type::index(entity));
       } catch (...) {
         std::destroy_at(std::addressof(_element_at(position)));
