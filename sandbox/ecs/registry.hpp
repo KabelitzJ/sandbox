@@ -142,7 +142,7 @@ public:
 
 
   version_type destroy(const entity_type entity, const version_type version) {
-    assert(valid(entity));
+    assert(is_valid(entity));
 
     for(auto&& pool_data : _pools) {
         pool_data.pool && pool_data.pool->remove(entity, this);
