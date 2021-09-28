@@ -11,5 +11,10 @@ The sandbox engine a ecs-based, modular rendering engine implemented using c++17
   - copy / move constructors
   - copy / move operators
 - rendering
+  - shader
+  - mesh
+  - texture
+  - gl objects
+- processes
 - editor
 
