@@ -238,7 +238,7 @@ protected:
 
     if(_free_list == null) {
       if(_count == _reserved.second) {
-        const auto size = static_cast<size_type>(_reserved.second * growth_factor_v);
+        const auto size = static_cast<size_type>(static_cast<decltype(growth_factor_v)>(_reserved.second) * growth_factor_v);
         _resize_packed(size + !(size > _reserved.second));
       }
 

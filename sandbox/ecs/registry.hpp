@@ -107,15 +107,15 @@ public:
     return entity_traits::to_version(position < _entities.size() ? _entities[position] : tombstone);
   }
 
-  [[nodiscard]] entity_type create() {
+  [[nodiscard]] entity_type create_entity() {
     return (_free_list == null) ? _entities.emplace_back(_generate_identifier(_entities.size())) : _recycle_identifier();
   }
 
-  [[nodiscard]] entity_type create(const entity_type hint) {
+  [[nodiscard]] entity_type create_entity(const entity_type hint) {
     const auto length = _entities.size();
 
     if(hint == null || hint == tombstone) {
-      return create();
+      return create_entity();
     } else if(const auto requested = entity_traits::to_entity(hint); !(requested < length)) {
       _entities.resize(size_type(requested) + 1u, null);
 
@@ -125,7 +125,7 @@ public:
 
       return (_entities[requested] = hint);
     } else if(const auto current = entity_traits::to_entity(_entities[requested]); requested == current) {
-      return create();
+      return create_entity();
     } else {
       auto *it = &_free_list;
       
@@ -136,30 +136,30 @@ public:
     }
   }
 
-  version_type destroy(const entity_type entity) {
-    return destroy(entity, entity_traits::to_version(entity) + 1u);
+  version_type destroy_entity(const entity_type entity) {
+    return destroy_entity(entity, entity_traits::to_version(entity) + 1u);
   }
 
 
-  version_type destroy(const entity_type entity, const version_type version) {
+  version_type destroy_entity(const entity_type entity, const version_type version) {
     assert(is_valid(entity));
 
-    for(auto&& pool_data : _pools) {
-        pool_data.pool && pool_data.pool->remove(entity);
+    for(auto&& data : _pools) {
+        data.pool && data.pool->remove(entity);
     }
 
     return _release_entity(entity, version);
   }
 
   template<typename Component, typename... Args>
-  decltype(auto) emplace(const entity_type entity, Args&&... args) {
+  decltype(auto) emplace_component(const entity_type entity, Args&&... args) {
     assert(is_valid(entity));
 
     return _assure<Component>()->emplace(entity, std::forward<Args>(args)...);
   }
 
   template<typename... Component>
-  size_type remove(const entity_type entity) {
+  size_type remove_component(const entity_type entity) {
     static_assert(sizeof...(Component) > 0, "Provide one or more component types");
     assert(is_valid(entity));
 
@@ -169,8 +169,8 @@ public:
   template<typename... Component>
   void compact() {
     if constexpr(sizeof...(Component) == 0) {
-      for(auto&& pool_data: _pools) {
-        pool_data.pool && (pool_data.pool->compact(), true);
+      for(auto&& data: _pools) {
+        data.pool && (data.pool->compact(), true);
       }
     } else {
       (_assure<Component>()->compact(), ...);
@@ -190,7 +190,7 @@ public:
   }
 
   template<typename... Component>
-  [[nodiscard]] decltype(auto) get([[maybe_unused]] const entity_type entity) const {
+  [[nodiscard]] decltype(auto) get_component([[maybe_unused]] const entity_type entity) const {
     assert(is_valid(entity));
 
     if constexpr(sizeof...(Component) == 1) {
@@ -198,26 +198,26 @@ public:
       assert(component_pool);
       return component_pool->get(entity);
     } else {
-      return std::forward_as_tuple(get<Component>(entity)...);
+      return std::forward_as_tuple(get_component<Component>(entity)...);
     }
   }
 
   template<typename... Component>
-  [[nodiscard]] decltype(auto) get([[maybe_unused]] const entity_type entity) {
+  [[nodiscard]] decltype(auto) get_component([[maybe_unused]] const entity_type entity) {
     assert(is_valid(entity));
 
     if constexpr(sizeof...(Component) == 1) {
       return (const_cast<Component &>(_assure<std::remove_const_t<Component>>()->get(entity)), ...);
     } else {
-      return std::forward_as_tuple(get<Component>(entity)...);
+      return std::forward_as_tuple(get_component<Component>(entity)...);
     }
   }
 
   template<typename... Component>
   void clear() {
     if constexpr(sizeof...(Component) == 0) {
-      for(auto&& pool_data: _pools) {
-        pool_data.pool && (pool_data.pool->clear(this), true);
+      for(auto&& data: _pools) {
+        data.pool && (data.pool->clear(this), true);
       }
 
       each([this](const auto entity) { release_entity(entity, entity_traits::to_version(entity) + 1u); });
@@ -253,8 +253,8 @@ private:
       _pools.resize(size_type(index) + 1u);
     }
 
-    if(auto&& pool_data = _pools[index]; !pool_data.pool) {
-      pool_data.pool.reset(new storage_type<Component>());
+    if(auto&& data = _pools[index]; !data.pool) {
+      data.pool.reset(new storage_type<Component>());
     }
 
     return static_cast<storage_type<Component>*>(_pools[index].pool.get());

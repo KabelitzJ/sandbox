@@ -75,7 +75,9 @@ public:
     add_system<my_system>();
 
     const auto e = _registry->create_entity();
-    (void)e;
+    
+    _registry->emplace_component<velocity>(e, 0.0f, 0.0f, 0.0f);
+    _registry->emplace_component<position>(e, 0.0f, 0.0f, 0.0f);
   }
 
 };

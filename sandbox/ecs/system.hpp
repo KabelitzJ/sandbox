@@ -15,7 +15,7 @@ public:
   virtual void initialize() = 0;
 
 protected:
-  registry* _registry{};
+  basic_registry<entity>* _registry{};
   scheduler<fast_time>* _scheduler{};
 
 private:

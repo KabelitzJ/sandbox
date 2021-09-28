@@ -78,7 +78,7 @@ public:
   }
 
   [[nodiscard]] const value_type& get(const entity_type entity) const noexcept {
-    return element_at(base_type::index(entity));
+    return _element_at(base_type::index(entity));
   }
 
   [[nodiscard]] value_type& get(const entity_type entity) noexcept {

@@ -22,7 +22,7 @@ protected:
   template<typename System, typename... Args>
   void add_system(Args&&... args);
 
-  registry* _registry{};
+  basic_registry<entity>* _registry{};
   scheduler<fast_time>* _scheduler{};
   
 private:
