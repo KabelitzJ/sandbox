@@ -155,7 +155,7 @@ public:
   decltype(auto) emplace(const entity_type entity, Args&&... args) {
     assert(is_valid(entity));
 
-    return _assure<Component>()->emplace(*this, entity, std::forward<Args>(args)...);
+    return _assure<Component>()->emplace(entity, std::forward<Args>(args)...);
   }
 
   template<typename... Component>
@@ -250,10 +250,10 @@ private:
     const auto index = type_index<Component>::value();
 
     if(!(index < _pools.size())) {
-      _pools.resize(size_type(index)+1u);
+      _pools.resize(size_type(index) + 1u);
     }
 
-    if(auto &&pool_data = _pools[index]; !pool_data.pool) {
+    if(auto&& pool_data = _pools[index]; !pool_data.pool) {
       pool_data.pool.reset(new storage_type<Component>());
     }
 
@@ -291,7 +291,7 @@ private:
     return next_version;
   }
 
-  std::vector<pool_data> _pools{};
+  mutable std::vector<pool_data> _pools{};
   std::vector<entity_type> _entities{};
   entity_type _free_list{tombstone};
 
