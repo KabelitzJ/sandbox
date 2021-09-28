@@ -118,6 +118,11 @@ public:
     return entity_traits::to_version(tombstone);
   }
 
+  [[nodiscard]] size_type index(const entity_type entity) const noexcept {
+    assert(contains(entity));
+    return static_cast<size_type>(entity_traits::to_entity(_sparse_reference(entity)));
+  }
+
   // [NOTE] KAJ 2021-09-27 22:35: Element access here
 
   void erase(const entity_type entity) {
