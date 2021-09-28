@@ -16,7 +16,7 @@
 
 namespace sbx {
 
-template<typename Entity, typename Allocator>
+template<typename Entity, typename Allocator = std::allocator<Entity>>
 class basic_sparse_set {
 
   using allocator_traits = std::allocator_traits<Allocator>;
