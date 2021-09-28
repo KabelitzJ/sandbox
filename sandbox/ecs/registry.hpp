@@ -145,7 +145,7 @@ public:
     assert(is_valid(entity));
 
     for(auto&& pool_data : _pools) {
-        pool_data.pool && pool_data.pool->remove(entity, this);
+        pool_data.pool && pool_data.pool->remove(entity);
     }
 
     return _release_entity(entity, version);
@@ -163,7 +163,7 @@ public:
     static_assert(sizeof...(Component) > 0, "Provide one or more component types");
     assert(is_valid(entity));
 
-    return (_assure<Component>()->remove(entity, this) + ... + size_type{});
+    return (_assure<Component>()->remove(entity) + ... + size_type{});
   }
 
   template<typename... Component>
