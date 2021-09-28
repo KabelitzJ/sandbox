@@ -59,7 +59,7 @@ public:
   }
 
   [[nodiscard]] size_type capacity() const noexcept override {
-    return _bucket.second() * packed_page_v;
+    return _bucket.second * packed_page_v;
   }
 
   void shrink_to_fit() override {
@@ -149,55 +149,55 @@ private:
   auto _assure_at_least(const std::size_t position) {
     const auto idx = position / packed_page_v;
 
-    if(!(idx < _bucket.second())) {
+    if(!(idx < _bucket.second)) {
       const size_type size = idx + 1u;
-      alloc_ptr allocator_ptr{_bucket.first()};
+      alloc_ptr allocator_ptr{_bucket.first};
       const auto memory = alloc_ptr_traits::allocate(allocator_ptr, size);
       
-      std::uninitialized_value_construct(memory + _bucket.second(), memory + size);
+      std::uninitialized_value_construct(memory + _bucket.second, memory + size);
 
       try {
-        for(auto next = _bucket.second(); next < size; ++next) {
-          memory[next] = alloc_traits::allocate(_bucket.first(), packed_page_v);
+        for(auto next = _bucket.second; next < size; ++next) {
+          memory[next] = alloc_traits::allocate(_bucket.first, packed_page_v);
         }
       } catch(...) {
-        for(auto next = _bucket.second(); next < size && memory[next]; ++next) {
-          alloc_traits::deallocate(_bucket.first(), memory[next], packed_page_v);
+        for(auto next = _bucket.second; next < size && memory[next]; ++next) {
+          alloc_traits::deallocate(_bucket.first, memory[next], packed_page_v);
         }
 
-        std::destroy(memory + _bucket.second(), memory + size);
+        std::destroy(memory + _bucket.second, memory + size);
         alloc_ptr_traits::deallocate(allocator_ptr, memory, size);
         throw;
       }
 
       if(_packed) {
-        std::uninitialized_copy(_packed, _packed + _bucket.second(), memory);
-        std::destroy(_packed, _packed + _bucket.second());
-        alloc_ptr_traits::deallocate(allocator_ptr, _packed, _bucket.second());
+        std::uninitialized_copy(_packed, _packed + _bucket.second, memory);
+        std::destroy(_packed, _packed + _bucket.second);
+        alloc_ptr_traits::deallocate(allocator_ptr, _packed, _bucket.second);
       }
 
       _packed = memory;
-      _bucket.second() = size;
+      _bucket.second = size;
     }
 
     return _packed[idx] + fast_mod<packed_page_v>(position);
   }
 
   void _release_unused_pages() {
-    if(const auto length = base_type::size() / packed_page_v; length < _bucket.second()) {
-      auto allocator_ptr = alloc_ptr{_bucket.first()};
+    if(const auto length = base_type::size() / packed_page_v; length < _bucket.second) {
+      auto allocator_ptr = alloc_ptr{_bucket.first};
       const auto memory = alloc_ptr_traits::allocate(allocator_ptr, length);
       std::uninitialized_copy(_packed, _packed + length, memory);
 
-      for(auto position = length, last = _bucket.second(); position < last; ++position) {
-        alloc_traits::deallocate(_bucket.first(), _packed[position], packed_page_v);
+      for(auto position = length, last = _bucket.second; position < last; ++position) {
+        alloc_traits::deallocate(_bucket.first, _packed[position], packed_page_v);
       }
 
-      std::destroy(_packed, _packed + _bucket.second());
-      alloc_ptr_traits::deallocate(allocator_ptr, _packed, _bucket.second());
+      std::destroy(_packed, _packed + _bucket.second);
+      alloc_ptr_traits::deallocate(allocator_ptr, _packed, _bucket.second);
 
       _packed = memory;
-      _bucket.second() = length;
+      _bucket.second = length;
     }
   }
 
@@ -212,22 +212,22 @@ private:
         }
       }
 
-      for(auto position = size_type{}, last = _bucket.second(); position < last; ++position) {
-        alloc_traits::deallocate(_bucket.first(), _packed[position], packed_page_v);
+      for(auto position = size_type{}, last = _bucket.second; position < last; ++position) {
+        alloc_traits::deallocate(_bucket.first, _packed[position], packed_page_v);
         std::destroy_at(std::addressof(_packed[position]));
       }
 
-      auto allocator_ptr = alloc_ptr{_bucket.first()};
-      alloc_ptr_traits::deallocate(allocator_ptr, _packed, _bucket.second());
+      auto allocator_ptr = alloc_ptr{_bucket.first};
+      alloc_ptr_traits::deallocate(allocator_ptr, _packed, _bucket.second);
     }
   }
 
   template<typename... Args>
   void _construct(alloc_pointer ptr, Args &&... args) {
     if constexpr(std::is_aggregate_v<value_type>) {
-      alloc_traits::construct(_bucket.first(), to_address(ptr), Type{std::forward<Args>(args)...});
+      alloc_traits::construct(_bucket.first, to_address(ptr), Type{std::forward<Args>(args)...});
     } else {
-      alloc_traits::construct(_bucket.first(), to_address(ptr), std::forward<Args>(args)...);
+      alloc_traits::construct(_bucket.first, to_address(ptr), std::forward<Args>(args)...);
     }
   }
 
