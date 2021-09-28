@@ -19,6 +19,9 @@ namespace sbx {
 template<typename Entity, typename Allocator = std::allocator<Entity>>
 class basic_sparse_set {
 
+  static constexpr auto growth_factor_v = 1.5f;
+  static constexpr auto sparse_page_v = 4096u;
+
   using allocator_traits = std::allocator_traits<Allocator>;
 
   using alloc = typename allocator_traits::template rebind_alloc<Entity>;
@@ -59,17 +62,17 @@ public:
   }
 
   virtual void reserve(const size_type capacity) {
-    if(capacity > _reserved.second()) {
+    if(capacity > _reserved.second) {
       _resize_packed(capacity);
     }
   }
 
   [[nodiscard]] virtual size_type capacity() const noexcept {
-    return _reserved.second();
+    return _reserved.second;
   }
 
   virtual void shrink_to_fit() {
-    if(_count < _reserved.second()) {
+    if(_count < _reserved.second) {
       _resize_packed(_count);
     }
   }
@@ -205,7 +208,7 @@ protected:
 
     if(!(page < _bucket)) {
       const auto size = size_type{page + 1u};
-      const auto allocator_ptr = alloc_ptr{_reserved.first()};
+      auto allocator_ptr = alloc_ptr{_reserved.first};
       const auto memory = alloc_ptr_traits::allocate(allocator_ptr, size);
 
       std::uninitialized_value_construct(memory + _bucket, memory + size);
@@ -221,7 +224,7 @@ protected:
     }
 
     if(!_sparse[page]) {
-      _sparse[page] = alloc_traits::allocate(_reserved.first(), sparse_page_v);
+      _sparse[page] = alloc_traits::allocate(_reserved.first, sparse_page_v);
       std::uninitialized_fill(_sparse[page], _sparse[page] + sparse_page_v, null);
     }
 
@@ -229,9 +232,9 @@ protected:
     assert(entity_traits::to_version(element) == entity_traits::to_version(tombstone));
 
     if(_free_list == null) {
-      if(_count == _reserved.second()) {
-        const auto size = static_cast<size_type>(_reserved.second() * growth_factor_v);
-        _resize_packed(size + !(size > _reserved.second()));
+      if(_count == _reserved.second) {
+        const auto size = static_cast<size_type>(_reserved.second * growth_factor_v);
+        _resize_packed(size + !(size > _reserved.second));
       }
 
       element = entity_traits::combine(static_cast<typename entity_traits::entity_type>(_count), entity_traits::to_integral(entity));
@@ -261,45 +264,42 @@ private:
   }
 
   void _resize_packed(const size_type request) {
-    assert((request != _reserved.second()) && !(request < _count));
+    assert((request != _reserved.second) && !(request < _count));
 
-    const auto memory = alloc_traits::allocate(_reserved.first(), request);
+    const auto memory = alloc_traits::allocate(_reserved.first, request);
 
     std::uninitialized_fill(memory + _count, memory + request, tombstone);
 
     if (_packed) {
       std::uninitialized_copy(_packed, _packed + _count, memory);
-      std::destroy(_packed, _packed + _reserved.second());
-      alloc_traits::deallocate(_reserved.first(), _packed, _reserved.second());
+      std::destroy(_packed, _packed + _reserved.second);
+      alloc_traits::deallocate(_reserved.first, _packed, _reserved.second);
     }
 
     _packed = memory;
-    _reserved.second() = request;
+    _reserved.second = request;
   }
 
   void _release_memory() {
     if(_packed) {
-      std::destroy(_packed, _packed + _reserved.second());
-      alloc_traits::deallocate(_reserved.first(), _packed, _reserved.second());
+      std::destroy(_packed, _packed + _reserved.second);
+      alloc_traits::deallocate(_reserved.first, _packed, _reserved.second);
     }
 
     if (_sparse) {
       for (auto position = size_type{}; position < _bucket; ++position) {
         if (_sparse[position]) {
           std::destroy(_sparse[position], _sparse[position] + sparse_page_v);
-          alloc_traits::deallocate(_reserved.first(), _sparse[position], sparse_page_v);
+          alloc_traits::deallocate(_reserved.first, _sparse[position], sparse_page_v);
         }
 
         std::destroy_at(std::addressof(_sparse[position]));
       }
 
-      const auto allocator_ptr = alloc_ptr{_reserved.first()};
+      auto allocator_ptr = alloc_ptr{_reserved.first};
       alloc_ptr_traits::deallocate(allocator_ptr, _sparse, _bucket);
     }
   }
-
-  static constexpr auto growth_factor_v = 1.5f;
-  static constexpr auto sparse_page_v = 4096u;
 
   std::pair<alloc, size_type> _reserved{};
   alloc_ptr_pointer _sparse{};
