@@ -308,7 +308,6 @@ private:
   size_type _count{};
   entity_type _free_list{};
   
-
 }; // class sparse_set
 
 } // namespace sbx
