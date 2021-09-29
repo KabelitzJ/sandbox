@@ -1,0 +1,41 @@
+name: Build and test
+
+on:
+  push:
+    branches: [ development ]
+  pull_request:
+    branches: [ development ]
+
+env:
+  BUILD_TYPE: Release
+
+jobs:
+  build:
+    name: Build and test on ${{matrix.os}}
+    runs-on: ${{matrix.os}}
+    strategy:
+      matrix:
+        os: [ ubuntu-latest-g++, ubuntu-latest-clang++ ]
+        include:
+        - os: ubuntu-latest-g++
+          TARGET: ubuntu-latest
+          COMPILER: g++
+          LINKER: g++
+        - os: ubuntu-latest-clang++
+          TARGET: ubuntu-latest
+          COMPILER: clang++
+          LINKER: clang++
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build
+      run: ctest -C ${{env.BUILD_TYPE}}
+  
