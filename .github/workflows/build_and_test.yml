@@ -11,25 +11,18 @@ env:
 
 jobs:
   build:
-    name: Build and test on ${{matrix.os}}
-    runs-on: ${{matrix.os.TARGET}}
+    name: Build and test on ubuntu-latest using ${{matrix.compiler}}
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        os: [ ubuntu-latest-g++, ubuntu-latest-clang++ ]
-        include:
-        - os: ubuntu-latest-g++
-          TARGET: ubuntu-latest
-          COMPILER: g++
-          LINKER: g++
-        - os: ubuntu-latest-clang++
-          TARGET: ubuntu-latest
-          COMPILER: clang++
-          LINKER: clang++
+        compiler: [g++, clang++]
 
     steps:
     - uses: actions/checkout@v2
 
     - name: Configure CMake
+      env:
+        CXX: ${{matrix.compiler}}
       run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
 
     - name: Build
