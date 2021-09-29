@@ -66,7 +66,7 @@ private:
   }
 
   template<typename Target = Derived>
-  decltype(std::declval<Target>().update(delta), void()) _next(std::integral_constant<state, state::running>, const Delta delta) {
+  decltype(std::declval<Target>().update(Delta), void()) _next(std::integral_constant<state, state::running>, const Delta delta) {
     static_cast<Target*>(this)->update(delta);
   }
 
