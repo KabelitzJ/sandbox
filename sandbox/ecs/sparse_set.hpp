@@ -164,8 +164,7 @@ public:
     _packed{std::exchange(other._packed, alloc_pointer{})},
     _bucket{std::exchange(other._bucket, size_type{})},
     _count{std::exchange(other._count, size_type{})},
-    _free_list{std::exchange(other._free_list, tombstone)},
-    _free_list{tombstone} {}
+    _free_list{std::exchange(other._free_list, tombstone)} {}
 
   virtual ~basic_sparse_set() {
     _release_memory();
