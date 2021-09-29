@@ -14,6 +14,7 @@ namespace sbx {
   
 template<typename Traits, std::size_t PageSize>
 class storage_iterator final {
+
   using internal_traits = std::iterator_traits<typename Traits::value_type>;
   using data_pointer = typename Traits::pointer;
 
@@ -26,9 +27,11 @@ public:
 
   storage_iterator() noexcept = default;
 
-  storage_iterator(const data_pointer* ref, difference_type idx) noexcept
-  : _packed{ref},
-    _index{idx} { }
+  storage_iterator(const data_pointer* packed, difference_type index) noexcept
+  : _packed{packed},
+    _index{index} {}
+
+  ~storage_iterator() = default;
 
   storage_iterator& operator++() noexcept {
     return --_index, *this;
@@ -110,6 +113,7 @@ public:
 private:
   const data_pointer* _packed;
   difference_type _index;
+
 }; // struct storage_iterator
 
 
@@ -149,12 +153,27 @@ public:
   basic_storage()
   : base_type{},
     _bucket{allocator_type{}, size_type{}},
-    _packed{} {
-    
-  }
+    _packed{} {}
+
+  basic_storage(const basic_storage&) = delete;
+
+  basic_storage(basic_storage&& other) noexcept
+  : base_type{std::move(other)},
+    _bucket{std::move(other._bucket.first), std::exchange(other._bucket.second, size_type{})},
+    _packed{std::exchange(other._packed, alloc_ptr_pointer{})} {}
 
   ~basic_storage() override {
     _release_memory();
+  }
+
+  basic_storage& operator=(basic_storage&) = delete;
+
+  basic_storage& operator=(basic_storage&& other) noexcept {
+    _release_memory();
+    base_type::operator=(std::move(other));
+    _bucket.second = std::exchange(other._bucket.second, size_type{});
+    _packed = std::exchange(other._packed, alloc_ptr_pointer{});
+    return *this;
   }
 
   void reserve(const size_type capacity) override {
@@ -182,6 +201,56 @@ public:
     return _packed;
   }
 
+  [[nodiscard]] const_iterator cbegin() const noexcept {
+    const auto position = static_cast<typename iterator::difference_type>(base_type::size());
+    return const_iterator{std::addressof(_packed), position};
+  }
+
+  [[nodiscard]] const_iterator begin() const noexcept {
+    return cbegin();
+  }
+
+  [[nodiscard]] iterator begin() noexcept {
+    const auto position = static_cast<typename iterator::difference_type>(base_type::size());
+    return iterator{std::addressof(_packed), position};
+  }
+
+  [[nodiscard]] const_iterator cend() const noexcept {
+    return const_iterator{std::addressof(_packed), {}};
+  }
+
+  [[nodiscard]] const_iterator end() const noexcept {
+    return cend();
+  }
+
+  [[nodiscard]] iterator end() noexcept {
+    return iterator{std::addressof(_packed), {}};
+  }
+
+  [[nodiscard]] const_reverse_iterator crbegin() const noexcept {
+    return std::make_reverse_iterator(cend());
+  }
+
+  [[nodiscard]] const_reverse_iterator rbegin() const noexcept {
+    return crbegin();
+  }
+
+  [[nodiscard]] reverse_iterator rbegin() noexcept {
+    return std::make_reverse_iterator(end());
+  }
+
+  [[nodiscard]] const_reverse_iterator crend() const noexcept {
+    return std::make_reverse_iterator(cbegin());
+  }
+
+  [[nodiscard]] const_reverse_iterator rend() const noexcept {
+    return crend();
+  }
+
+  [[nodiscard]] reverse_iterator rend() noexcept {
+    return std::make_reverse_iterator(begin());
+  }
+
   [[nodiscard]] const value_type& get(const entity_type entity) const noexcept {
     return _element_at(base_type::index(entity));
   }
@@ -205,6 +274,14 @@ public:
     }
 
     return *element;
+  }
+
+  template<typename... Function>
+  value_type& patch(const entity_type entity, Function&&... function) {
+    const auto index = base_type::index(entity);
+    auto& element = _element_at(index);
+    (std::forward<Function>(function)(entity), ...);
+    return element;
   }
 
 protected:
@@ -240,7 +317,7 @@ protected:
 
       try {
         base_type::try_emplace(entity);
-        assert(position == base_type::index(entity));
+        assert(base_type::index(entity) == position);
       } catch (...) {
         std::destroy_at(std::addressof(_element_at(position)));
         throw;

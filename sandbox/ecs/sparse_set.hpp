@@ -18,7 +18,9 @@
 namespace sbx {
   
 template<typename Traits>
-struct sparse_set_iterator final {
+class sparse_set_iterator final {
+
+public:
   using value_type = typename Traits::value_type;
   using pointer = typename Traits::pointer;
   using reference = typename Traits::reference;
@@ -29,7 +31,9 @@ struct sparse_set_iterator final {
 
   sparse_set_iterator(const pointer* ref, const difference_type idx) noexcept
   : _packed{ref},
-    _index{idx} { }
+    _index{idx} {}
+
+  ~sparse_set_iterator() = default;
 
   sparse_set_iterator& operator++() noexcept {
     return --_index, *this;
@@ -111,6 +115,7 @@ struct sparse_set_iterator final {
 private:
   const pointer* _packed;
   difference_type _index;
+
 }; // struct sparse_set_iterator
 
 
@@ -149,12 +154,38 @@ public:
     _packed{},
     _bucket{},
     _count{},
-    _free_list{tombstone} {
+    _free_list{tombstone} {}
 
-  }
+  basic_sparse_set(const basic_sparse_set&) = delete;
+
+  basic_sparse_set(basic_sparse_set&& other) noexcept
+  : _reserved{std::move(other._reserved.first), std::exchange(other._reserved.second, size_type{})},
+    _sparse{std::exchange(other._sparse, alloc_ptr_pointer{})},
+    _packed{std::exchange(other._packed, alloc_pointer{})},
+    _bucket{std::exchange(other._bucket, size_type{})},
+    _count{std::exchange(other._count, size_type{})},
+    _free_list{std::exchange(other._free_list, tombstone)},
+    _free_list{tombstone} {}
 
   virtual ~basic_sparse_set() {
     _release_memory();
+  }
+
+  basic_sparse_set& operator=(const basic_sparse_set&) = delete;
+
+  basic_sparse_set& operator=(basic_sparse_set &&other) noexcept {
+    _release_memory();
+
+    assert(alloc_traits::is_always_equal::value || _reserved.first == other._reserved.first);
+
+    _reserved.second = std::exchange(other._reserved.second, size_type{});
+    _sparse = std::exchange(other._sparse, alloc_ptr_pointer{});
+    _packed = std::exchange(other._packed, alloc_pointer{});
+    _bucket = std::exchange(other._bucket, size_type{});
+    _count = std::exchange(other._count, size_type{});
+    _free_list = std::exchange(other._free_list, tombstone);
+
+    return *this;
   }
 
   [[nodiscard]] size_type slot() const noexcept {
@@ -185,7 +216,7 @@ public:
     return _count;
   }
 
-  [[nodiscard]] bool empty() const noexcept {
+  [[nodiscard]] bool is_empty() const noexcept {
     return (_count == size_type{0u});
   }
 
@@ -193,7 +224,26 @@ public:
     return _packed;
   }
 
-  // [NOTE] KAJ 2021-09-27 22:21: Add iterators here
+  [[nodiscard]] iterator begin() const noexcept {
+    const auto position = static_cast<typename iterator::difference_type>(_count);
+    return iterator{std::addressof(_packed), position};
+  }
+
+  [[nodiscard]] iterator end() const noexcept {
+    return iterator{std::addressof(_packed), {}};
+  }
+
+  [[nodiscard]] reverse_iterator rbegin() const noexcept {
+    return std::make_reverse_iterator(end());
+  }
+
+  [[nodiscard]] reverse_iterator rend() const noexcept {
+    return std::make_reverse_iterator(begin());
+  }
+
+  [[nodiscard]] iterator find(const entity_type entity) const noexcept {
+    return contains(entity) ? --(end() - index(entity)) : end();
+  }
 
   [[nodiscard]] bool contains(const entity_type entity) const noexcept {
     if(auto element = _sparse_pointer(entity); element) {
@@ -204,11 +254,6 @@ public:
 
     return false;
   }
-
-  // [NOTE] KAJ 2021-09-27 22:34: Wait for iterator implementation
-  // [[nodiscard]] iterator find(const entity_type entity) const noexcept {
-  //   return contains(entity) ? --(end() - index(entity)) : end();
-  // }
 
   [[nodiscard]] version_type current_version(const entity_type entity) const {
     if(auto element = _sparse_pointer(entity); element) {
@@ -223,13 +268,36 @@ public:
     return static_cast<size_type>(entity_traits::to_entity(_sparse_reference(entity)));
   }
 
-  // [NOTE] KAJ 2021-09-27 22:35: Element access here
+  [[nodiscard]] entity_type at(const size_type position) const noexcept {
+    return position < _count ? _packed[position] : null;
+  }
+
+  [[nodiscard]] entity_type operator[](const size_type position) const noexcept {
+    assert(position < _count);
+    return _packed[position];
+  }
+
+  void emplace(const entity_type entity) {
+    try_emplace(entity);
+    assert(contains(entity));
+  }
+
+  template<typename Iterator>
+  void insert(Iterator first, Iterator last) {
+    for(; first != last && _free_list != null; ++first) {
+      emplace(*first);
+    }
+
+    reserve(_count + std::distance(first, last));
+
+    for(; first != last; ++first) {
+      emplace(*first);
+    }
+  }
 
   void erase(const entity_type entity) {
     assert(contains(entity));
-
     swap_and_pop(entity);
-
     assert(!contains(entity));
   }
 
@@ -278,10 +346,11 @@ public:
     _count = next;
   }
 
-  // [NOTE] KAJ 2021-09-27 22:52: Wait for iterator implementation
-  // void clear() {
-  //
-  // }
+  void clear() {
+    for(auto&& entity: *this) {
+      remove(entity);
+    }
+  }
 
 protected:
 
@@ -290,19 +359,19 @@ protected:
   virtual void move_and_pop(const std::size_t, const std::size_t) {}
 
   virtual void swap_and_pop(const Entity entity) {
-    auto& ref = _sparse_reference(entity);
-    const auto position = static_cast<size_type>(entity_traits::to_entity(ref));
+    auto& reference = _sparse_reference(entity);
+    const auto position = static_cast<size_type>(entity_traits::to_entity(reference));
 
     assert(_packed[position] == entity);
 
     auto& last = _packed[--_count];
 
     _packed[position] = last;
-    auto& elem = _sparse_reference(last);
-    elem = entity_traits::combine(entity_traits::to_integral(ref), entity_traits::to_integral(elem));
+    auto& element = _sparse_reference(last);
+    element = entity_traits::combine(entity_traits::to_integral(reference), entity_traits::to_integral(element));
     
     
-    ref = null;
+    reference = null;
     
     assert((last = tombstone, true));
   }

@@ -3,12 +3,16 @@
 
 #include <vector>
 #include <memory>
+#include <algorithm>
+
+#include <util/type_traits.hpp>
 
 #include "entity.hpp"
 #include "type_index.hpp"
 #include "sparse_set.hpp"
 #include "component.hpp"
 #include "storage.hpp"
+
 
 namespace sbx {
 
@@ -37,6 +41,14 @@ public:
 
   basic_registry() = default;
 
+  basic_registry(const basic_registry&) = delete;
+
+  basic_registry(basic_registry&&) = default;
+
+  basic_registry& operator=(const basic_registry&) = delete;
+
+  basic_registry& operator=(basic_registry&& ) = default;
+
   template<typename Component>
   void prepare() {
     static_cast<void>(_assure<Component>());
@@ -63,12 +75,12 @@ public:
     return size;
   }
 
-  template<typename... Component>
-  void reserve(const size_type cap) {
-    if constexpr(sizeof...(Component) == 0) {
-      _entities.reserve(cap);
+  template<typename... Components>
+  void reserve(const size_type capacity) {
+    if constexpr(sizeof...(Components) == 0) {
+      _entities.reserve(capacity);
     } else {
-      (_assure<Component>()->reserve(cap), ...);
+      (_assure<Components>()->reserve(capacity), ...);
     }
   }
 
@@ -82,17 +94,17 @@ public:
     return _entities.capacity();
   }
 
-  template<typename... Component>
+  template<typename... Components>
   void shrink_to_fit() {
-    (_assure<Component>()->shrink_to_fit(), ...);
+    (_assure<Components>()->shrink_to_fit(), ...);
   }
 
-  template<typename... Component>
-  [[nodiscard]] bool empty() const {
-    if constexpr(sizeof...(Component) == 0) {
+  template<typename... Components>
+  [[nodiscard]] bool is_empty() const {
+    if constexpr(sizeof...(Components) == 0) {
       return !alive();
     } else {
-      return [](const auto* ... component_pool) { return ((!component_pool || component_pool->empty()) && ...); }(_pool_if_exists<Component>()...);
+      return [](const auto* ... component_pool) { return ((!component_pool || component_pool->is_empty()) && ...); }(_pool_if_exists<Components>()...);
     }
   }
 
@@ -141,19 +153,47 @@ public:
     }
   }
 
+  template<typename Iterator>
+  void create_entity(Iterator first, Iterator last) {
+    for(; _free_list != null && first != last; ++first) {
+      *first = _recycle_identifier();
+    }
+
+    const auto length = _entities.size();
+    _entities.resize(length + std::distance(first, last), null);
+
+    for(auto position = length; first != last; ++first, ++position) {
+      *first = _entities[position] = _generate_identifier(position);
+    }
+  }
+
   version_type destroy_entity(const entity_type entity) {
     return destroy_entity(entity, entity_traits::to_version(entity) + 1u);
   }
-
 
   version_type destroy_entity(const entity_type entity, const version_type version) {
     assert(is_valid(entity));
 
     for(auto&& data : _pools) {
-        data.pool && data.pool->remove(entity);
+      data.pool && data.pool->remove(entity);
     }
 
     return _release_entity(entity, version);
+  }
+
+  template<typename Iterator>
+  void destroy_entity(Iterator first, Iterator last) {
+    if constexpr(is_iterator_type_v<typename basic_common_type::iterator, Iterator>) {
+      for(; first != last; ++first) {
+        destroy_entity(*first, entity_traits::to_version(*first) + 1u);
+      }
+    } else {
+      for(auto&& data: _pools) {
+        data.pool && data.pool->remove(first, last);
+      }
+
+      release(first, last);
+    }
   }
 
   template<typename Component, typename... Args>
@@ -163,71 +203,171 @@ public:
     return _assure<Component>()->emplace(entity, std::forward<Args>(args)...);
   }
 
-  template<typename... Component>
-  size_type remove_component(const entity_type entity) {
-    static_assert(sizeof...(Component) > 0, "Provide one or more component types");
-    assert(is_valid(entity));
+  template<typename Component, typename Iterator>
+  void insert_component(Iterator first, Iterator last, const Component& value = {}) {
+    assert(std::all_of(first, last, [this](const auto entity) { return is_valid(entity); }));
 
-    return (_assure<Component>()->remove(entity) + ... + size_type{});
+    _assure<Component>()->insert(first, last, value);
   }
 
-  template<typename... Component>
+  template<typename Component, typename... Args>
+  decltype(auto) emplace_or_replace_component(const entity_type entity, Args&&... args) {
+    assert(is_valid(entity));
+
+    auto* component_pool = _assure<Component>();
+
+    return component_pool->contains(entity)
+      ? component_pool->patch(entity, [&args...](auto&... current) { ((current = Component{std::forward<Args>(args)...}), ...); })
+      : component_pool->emplace(entity, std::forward<Args>(args)...);
+  }
+
+  template<typename Component, typename... Functions>
+  decltype(auto) patch_component(const entity_type entity, Functions&&... functions) {
+    assert(is_valid(entity));
+
+    return _assure<Component>()->patch(entity, std::forward<Functions>(functions)...);
+  }
+
+  template<typename Component, typename... Args>
+  decltype(auto) replace_component(const entity_type entity, Args&&... args) {
+    return _assure<Component>()->patch(entity, [&args...](auto &... current) { ((current = Component{std::forward<Args>(args)...}), ...); });
+  }
+
+  template<typename... Components>
+  size_type remove_component(const entity_type entity) {
+    static_assert(sizeof...(Components) > 0, "Provide one or more component types");
+    assert(is_valid(entity));
+
+    return (_assure<Components>()->remove(entity) + ... + size_type{});
+  }
+
+  template<typename... Components, typename Iterator>
+  size_type remove_component(Iterator first, Iterator last) {
+    static_assert(sizeof...(Components) > 0, "Provide one or more component types");
+
+    const auto component_pools = std::make_tuple(_assure<Components>()...);
+    auto count = size_type{};
+
+    for(; first != last; ++first) {
+      const auto entity = *first;
+      assert(is_valid(entity));
+      count += (std::get<storage_type<Components>*>(component_pools)->remove(entity) + ...);
+    }
+
+    return count;
+  }
+
+  template<typename... Components>
+  void erase_component(const entity_type entity) {
+    assert(valid(entity));
+    static_assert(sizeof...(Components) > 0, "Provide one or more component types");
+
+    (_assure<Components>()->erase(entity), ...);
+  }
+
+  template<typename... Components, typename Iterator>
+  void erase_component(Iterator first, Iterator last) {
+    static_assert(sizeof...(Components) > 0, "Provide one or more component types");
+
+    const auto component_pool = std::make_tuple(_assure<Components>()...);
+
+    for(; first != last; ++first) {
+      const auto entity = *first;
+      assert(is_valid(entity));
+      (std::get<storage_type<Components>*>(component_pool)->erase(entity), ...);
+    }
+  }
+
+  template<typename... Components>
   void compact() {
-    if constexpr(sizeof...(Component) == 0) {
+    if constexpr(sizeof...(Components) == 0) {
       for(auto&& data: _pools) {
         data.pool && (data.pool->compact(), true);
       }
     } else {
-      (_assure<Component>()->compact(), ...);
+      (_assure<Components>()->compact(), ...);
     }
   }
 
-  template<typename... Component>
+  template<typename... Components>
   [[nodiscard]] bool all_of(const entity_type entity) const {
     assert(is_valid(entity));
-    return [entity](const auto* ... component_pool) { return ((component_pool && component_pool->contains(entity)) && ...); }(_pool_if_exists<Component>()...);
+    return [entity](const auto* ... component_pool) { return ((component_pool && component_pool->contains(entity)) && ...); }(_pool_if_exists<Components>()...);
   }
 
-  template<typename... Component>
+  template<typename... Components>
   [[nodiscard]] bool any_of(const entity_type entity) const {
     assert(is_valid(entity));
-    return [entity](const auto* ... component_pool) { return !((!component_pool || !component_pool->contains(entity)) && ...); }(_pool_if_exists<Component>()...);
+    return [entity](const auto* ... component_pool) { return !((!component_pool || !component_pool->contains(entity)) && ...); }(_pool_if_exists<Components>()...);
   }
 
-  template<typename... Component>
+  template<typename... Components>
   [[nodiscard]] decltype(auto) get_component([[maybe_unused]] const entity_type entity) const {
     assert(is_valid(entity));
 
-    if constexpr(sizeof...(Component) == 1) {
-      const auto* component_pool = _pool_if_exists<std::remove_const_t<Component>...>();
+    if constexpr(sizeof...(Components) == 1) {
+      const auto* component_pool = _pool_if_exists<std::remove_const_t<Components>...>();
       assert(component_pool);
       return component_pool->get(entity);
     } else {
-      return std::forward_as_tuple(get_component<Component>(entity)...);
+      return std::forward_as_tuple(get_component<Components>(entity)...);
     }
   }
 
-  template<typename... Component>
+  template<typename... Components>
   [[nodiscard]] decltype(auto) get_component([[maybe_unused]] const entity_type entity) {
     assert(is_valid(entity));
 
-    if constexpr(sizeof...(Component) == 1) {
-      return (const_cast<Component &>(_assure<std::remove_const_t<Component>>()->get(entity)), ...);
+    if constexpr(sizeof...(Components) == 1) {
+      return (const_cast<Components&>(_assure<std::remove_const_t<Components>>()->get(entity)), ...);
     } else {
-      return std::forward_as_tuple(get_component<Component>(entity)...);
+      return std::forward_as_tuple(get_component<Components>(entity)...);
     }
   }
 
-  template<typename... Component>
+  template<typename Component, typename... Args>
+  [[nodiscard]] decltype(auto) get_or_emplace(const entity_type entity, Args&&... args) {
+    assert(is_valid(entity));
+
+    auto* component_pool = _assure<Component>();
+
+    return component_pool->contains(entity) ? component_pool->get(entity) : component_pool->emplace(entity, std::forward<Args>(args)...);
+  }
+
+  template<typename... Components>
+  [[nodiscard]] auto try_get([[maybe_unused]] const entity_type entity) const {
+    assert(is_valid(entity));
+
+    if constexpr(sizeof...(Components) == 1) {
+      const auto *component_pool = _pool_if_exists<std::remove_const_t<Components>...>();
+
+      return (component_pool && component_pool->contains(entity)) ? &component_pool->get(entity) : nullptr;
+    } else {
+        return std::make_tuple(try_get<Components>(entity)...);
+    }
+  }
+
+  template<typename... Components>
+  [[nodiscard]] auto try_get([[maybe_unused]] const entity_type entity) {
+    assert(is_valid(entity));
+
+    if constexpr(sizeof...(Components) == 1) {
+      return (const_cast<Components*>(std::as_const(*this).template try_get<Components>(entity)), ...);
+    } else {
+      return std::make_tuple(try_get<Components>(entity)...);
+    }
+  }
+
+  template<typename... Components>
   void clear() {
-    if constexpr(sizeof...(Component) == 0) {
+    if constexpr(sizeof...(Components) == 0) {
       for(auto&& data: _pools) {
         data.pool && (data.pool->clear(this), true);
       }
 
       each([this](const auto entity) { release_entity(entity, entity_traits::to_version(entity) + 1u); });
     } else {
-      (_assure<Component>()->clear(this), ...);
+      (_assure<Components>()->clear(this), ...);
     }
   }
 
@@ -296,6 +436,7 @@ private:
     return next_version;
   }
 
+  // [NOTE] KAJ 2021-09-29 23:55: Check if mutable is the right thing here
   mutable std::vector<pool_data> _pools{};
   std::vector<entity_type> _entities{};
   entity_type _free_list{tombstone};
