@@ -1,7 +1,7 @@
 namespace sbx {
 
 template<typename Derived, typename Delta>
-inline void basic_process<Derived, Delta>::abort(const bool immediately = false) {
+inline void basic_process<Derived, Delta>::abort(const bool immediately) {
   if(is_alive()) {
     _current_state = state::aborted;
 
