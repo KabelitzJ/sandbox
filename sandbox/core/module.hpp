@@ -6,6 +6,7 @@
 
 #include <ecs/registry.hpp>
 #include <ecs/system.hpp>
+#include <ecs/scheduler.hpp>
 
 namespace sbx {
 
@@ -21,12 +22,13 @@ protected:
   template<typename System, typename... Args>
   void add_system(Args&&... args);
 
-  registry* _registry;
+  basic_registry<entity>* _registry{};
+  scheduler<fast_time>* _scheduler{};
   
 private:
   void _initialize();
 
-  std::vector<std::unique_ptr<system>> _systems;
+  std::vector<std::unique_ptr<system>> _systems{};
 
   friend class engine;
 
@@ -39,6 +41,7 @@ inline void module::add_system(Args&&... args) {
 
   auto system = std::make_unique<System>(std::forward<Args>(args)...);
   system->_registry = _registry;
+  system->_scheduler = _scheduler;
 
   _systems.push_back(std::move(system));
 }

@@ -7,39 +7,14 @@
 
 namespace sbx {
 
-// (TODO) KAJ 22.09.2021 19.01 Find concept for entity representation
-// class entity {
-
-// public:
-//   explicit entity(uint32 id);
-//   entity(uint16 index, uint16 version);
-//   ~entity() = default;
-
-//   uint32 id() const;
-//   uint16 index() const;
-//   uint16 version() const;
-
-//   operator uint32() const;
-
-// private:
-//   uint32 _id;
-
-// }; // class entity
-
 template<typename, typename = void>
 struct is_entity : std::false_type {};
 
 template<typename Type>
-struct is_entity<
-  Type, 
-  std::enable_if_t<std::is_same_v<Type, uint32>>    
-> : std::true_type {};
+struct is_entity<Type, std::enable_if_t<std::is_same_v<Type, uint32>>> : std::true_type {};
 
 template <typename Type>
-struct is_entity<
-  Type,
-  std::enable_if_t<std::is_enum_v<Type>>
-> : is_entity<std::underlying_type_t<Type>> {};
+struct is_entity<Type, std::enable_if_t<std::is_enum_v<Type>>> : is_entity<std::underlying_type_t<Type>> {};
 
 template<typename Type>
 inline constexpr auto is_entity_v = is_entity<Type>::value;
@@ -89,19 +64,19 @@ template<typename Entity>
   return entity_traits<Entity>::to_integral(entity);
 }
 
-struct null_entity_t {
+struct null_t {
 
   template<typename Entity>
   [[nodiscard]] constexpr operator Entity() const noexcept {
-    using traits = entity_traits<Entity>;
-    return traits::combine(traits::reserved, traits::reserved);
+    using entity_traits = sbx::entity_traits<Entity>;
+    return entity_traits::combine(entity_traits::reserved, entity_traits::reserved);
   }
 
-  [[nodiscard]] constexpr bool operator==([[maybe_unused]] const null_entity_t other) const noexcept {
+  [[nodiscard]] constexpr bool operator==([[maybe_unused]] const null_t other) const noexcept {
     return true;
   }
 
-  [[nodiscard]] constexpr bool operator!=([[maybe_unused]] const null_entity_t other) const noexcept {
+  [[nodiscard]] constexpr bool operator!=([[maybe_unused]] const null_t other) const noexcept {
     return false;
   }
 
@@ -116,19 +91,67 @@ struct null_entity_t {
     return !(entity == *this);
   }
 
-};
+}; // struct null_entity_t
+
 
 template<typename Entity>
-[[nodiscard]] constexpr bool operator==(const Entity entity, const null_entity_t other) noexcept {
+[[nodiscard]] constexpr bool operator==(const Entity entity, const null_t other) noexcept {
   return other.operator==(entity);
 }
 
 template<typename Entity>
-[[nodiscard]] constexpr bool operator!=(const Entity entity, const null_entity_t other) noexcept {
+[[nodiscard]] constexpr bool operator!=(const Entity entity, const null_t other) noexcept {
   return !(other == entity);
 }
 
-inline constexpr null_entity_t null_entity{};
+
+inline constexpr null_t null{};
+
+
+struct tombstone_t {
+
+  template<typename Entity>
+  [[nodiscard]] constexpr operator Entity() const noexcept {
+    using entity_traits = sbx::entity_traits<Entity>;
+    return entity_traits::combine(entity_traits::reserved, entity_traits::reserved);
+  }
+
+  [[nodiscard]] constexpr bool operator==([[maybe_unused]] const tombstone_t other) const noexcept {
+    return true;
+  }
+
+  
+  [[nodiscard]] constexpr bool operator!=([[maybe_unused]] const tombstone_t other) const noexcept {
+    return false;
+  }
+
+  template<typename Entity>
+  [[nodiscard]] constexpr bool operator==(const Entity entity) const noexcept {
+    using entity_traits = sbx::entity_traits<Entity>;
+    return entity_traits::to_version(entity) == entity_traits::to_version(*this);
+  }
+
+  template<typename Entity>
+  [[nodiscard]] constexpr bool operator!=(const Entity entity) const noexcept {
+    return !(entity == *this);
+  }
+
+}; // struct tombstone_t
+
+
+template<typename Entity>
+[[nodiscard]] constexpr bool operator==(const Entity entity, const tombstone_t other) noexcept {
+  return other.operator==(entity);
+}
+
+template<typename Entity>
+[[nodiscard]] constexpr bool operator!=(const Entity entity, const tombstone_t other) noexcept {
+  return !(other == entity);
+}
+
+
+inline constexpr tombstone_t tombstone{};
+
 
 enum class entity : uint32 {};
 

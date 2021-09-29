@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include <core/core.hpp>
+#include <ecs/process.hpp>
 
 struct position {
   float x;
@@ -12,6 +13,30 @@ struct velocity {
   float x;
   float y;
   float z;
+};
+
+class my_process final : public sbx::basic_process<my_process, sbx::fast_time> {
+
+public:
+  my_process() = default;
+  ~my_process() = default;
+
+  void initialize() {
+
+  }
+
+  void update(const sbx::fast_time delta) {
+    std::cout << "update(" << delta << ")\n";
+  }
+
+  void succeeded() {
+
+  }
+
+  void failed() {
+
+  }
+
 };
 
 class my_system final : public sbx::system {
@@ -26,6 +51,8 @@ public:
   }
 
   void initialize() override {
+    _scheduler->attach<my_process>();
+
     const auto player = _registry->create_entity();
 
     (void) player;
@@ -46,6 +73,11 @@ public:
 
   void initialize() override {
     add_system<my_system>();
+
+    const auto e = _registry->create_entity();
+    
+    _registry->emplace_component<velocity>(e, 0.0f, 0.0f, 0.0f);
+    _registry->emplace_component<position>(e, 0.0f, 0.0f, 0.0f);
   }
 
 };
