@@ -32,51 +32,9 @@ public:
     return _current_state == state::succeeded || _current_state == state::failed;
   }
 
-  void abort(const bool immediately = false) {
-    if(is_alive()) {
-      _current_state = state::aborted;
+  void abort(const bool immediately = false);
 
-      if(immediately) {
-          tick({});
-      }
-    }
-  }
-
-  void tick(const Delta delta) {
-    switch (_current_state) {
-      case state::uninitialized: {
-        _next(std::integral_constant<state, state::uninitialized>{});
-        _current_state = state::running;
-        break;
-      }
-      case state::running: {
-        _next(std::integral_constant<state, state::running>{}, delta);
-        break;
-      }
-      default: {
-        break;
-      }
-    }
-
-    switch(_current_state) {
-      case state::succeeded: {
-        _next(std::integral_constant<state, state::succeeded>{});
-        break;
-      }
-      case state::failed: {
-        _next(std::integral_constant<state, state::failed>{});
-        break;
-      }
-      case state::aborted: {
-        _next(std::integral_constant<state, state::aborted>{});
-        _current_state = state::failed;
-        break;
-      }
-      default: {
-          break;
-      }
-    }
-  }
+  void tick(const Delta delta);
 
 protected:
 
@@ -103,32 +61,27 @@ private:
   };
 
   template<typename Target = Derived>
-  auto _next(std::integral_constant<state, state::uninitialized>)
-  -> decltype(std::declval<Target>().initialize(), void()) {
+  decltype(std::declval<Target>().initialize(), void()) _next(std::integral_constant<state, state::uninitialized>) {
     static_cast<Target*>(this)->initialize();
   }
 
   template<typename Target = Derived>
-  auto _next(std::integral_constant<state, state::running>, const Delta delta)
-  -> decltype(std::declval<Target>().update(delta), void()) {
+  decltype(std::declval<Target>().update(delta), void()) _next(std::integral_constant<state, state::running>, const Delta delta) {
     static_cast<Target*>(this)->update(delta);
   }
 
   template<typename Target = Derived>
-  auto _next(std::integral_constant<state, state::succeeded>)
-  -> decltype(std::declval<Target>().succeeded(), void()) {
+  decltype(std::declval<Target>().succeeded(), void()) _next(std::integral_constant<state, state::succeeded>) {
     static_cast<Target *>(this)->succeeded();
   }
 
   template<typename Target = Derived>
-  auto _next(std::integral_constant<state, state::failed>)
-  -> decltype(std::declval<Target>().failed(), void()) {
+  decltype(std::declval<Target>().failed(), void()) _next(std::integral_constant<state, state::failed>) {
     static_cast<Target *>(this)->failed();
   }
 
   template<typename Target = Derived>
-  auto _next(std::integral_constant<state, state::aborted>)
-  -> decltype(std::declval<Target>().aborted(), void()) {
+  decltype(std::declval<Target>().aborted(), void()) _next(std::integral_constant<state, state::aborted>) {
     static_cast<Target *>(this)->aborted();
   }
 
@@ -156,5 +109,7 @@ public:
 }; // class process_adaptor
 
 } // namespace sbx
+
+#include "process.inl"
 
 #endif // SBX_ECS_PROCESS_HPP_
