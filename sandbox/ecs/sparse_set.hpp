@@ -43,7 +43,7 @@ public:
   using size_type = std::size_t;
   using version_type = typename entity_traits::version_type;
   using pointer = alloc_const_pointer;
-  using iterator = internal::sparse_set_iterator<std::iterator_traits<pointer>>;
+  using iterator = sparse_set_iterator<std::iterator_traits<pointer>>;
   using reverse_iterator = std::reverse_iterator<iterator>;
 
   basic_sparse_set(const allocator_type& allocator = {})
