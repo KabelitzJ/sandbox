@@ -11,6 +11,107 @@
 #include "sparse_set.hpp"
 
 namespace sbx {
+  
+template<typename Traits, std::size_t PageSize>
+class storage_iterator final {
+  using internal_traits = std::iterator_traits<typename Traits::value_type>;
+  using data_pointer = typename Traits::pointer;
+
+public:
+  using difference_type = typename internal_traits::difference_type;
+  using value_type = typename internal_traits::value_type;
+  using pointer = typename internal_traits::pointer;
+  using reference = typename internal_traits::reference;
+  using iterator_category = std::random_access_iterator_tag;
+
+  storage_iterator() noexcept = default;
+
+  storage_iterator(const data_pointer* ref, difference_type idx) noexcept
+  : _packed{ref},
+    _index{idx} { }
+
+  storage_iterator& operator++() noexcept {
+    return --_index, *this;
+  }
+
+  storage_iterator operator++(int) noexcept {
+    storage_iterator original = *this;
+    return ++(*this), original;
+  }
+
+  storage_iterator& operator--() noexcept {
+    return ++_index, *this;
+  }
+
+  storage_iterator operator--(int) noexcept {
+    storage_iterator original = *this;
+    return operator--(), original;
+  }
+
+  storage_iterator& operator+=(const difference_type value) noexcept {
+    _index -= value;
+    return *this;
+  }
+
+  storage_iterator operator+(const difference_type value) const noexcept {
+    storage_iterator copy = *this;
+    return (copy += value);
+  }
+
+  storage_iterator& operator-=(const difference_type value) noexcept {
+    return (*this += -value);
+  }
+
+  storage_iterator operator-(const difference_type value) const noexcept {
+    return (*this + -value);
+  }
+
+  difference_type operator-(const storage_iterator& other) const noexcept {
+      return other._index - _index;
+  }
+
+  [[nodiscard]] reference operator[](const difference_type value) const noexcept {
+    return *operator+(value);
+  }
+
+  [[nodiscard]] bool operator==(const storage_iterator& other) const noexcept {
+    return other._index == _index;
+  }
+
+  [[nodiscard]] bool operator!=(const storage_iterator& other) const noexcept {
+    return !(*this == other);
+  }
+
+  [[nodiscard]] bool operator<(const storage_iterator& other) const noexcept {
+    return _index > other._index;
+  }
+
+  [[nodiscard]] bool operator>(const storage_iterator& other) const noexcept {
+    return _index < other._index;
+  }
+
+  [[nodiscard]] bool operator<=(const storage_iterator& other) const noexcept {
+    return !(*this > other);
+  }
+
+  [[nodiscard]] bool operator>=(const storage_iterator& other) const noexcept {
+    return !(*this < other);
+  }
+
+  [[nodiscard]] pointer operator->() const noexcept {
+    const auto position = _index - 1;
+    return (*_packed)[position / PageSize] + fast_mod<PageSize>(position);
+  }
+
+  [[nodiscard]] reference operator*() const noexcept {
+    return *operator->();
+  }
+
+private:
+  const data_pointer* _packed;
+  difference_type _index;
+}; // struct storage_iterator
+
 
 template<typename Entity, typename Type, typename Allocator = std::allocator<Type>>
 class basic_storage : public basic_sparse_set<Entity, typename std::allocator_traits<Allocator>::template rebind_alloc<Entity>> {
@@ -40,6 +141,10 @@ public:
   using size_type = std::size_t;
   using pointer = alloc_ptr_pointer;
   using const_pointer = alloc_ptr_const_pointer;
+  using iterator = storage_iterator<std::iterator_traits<pointer>, packed_page_v>;
+  using const_iterator = storage_iterator<std::iterator_traits<const_pointer>, packed_page_v>;
+  using reverse_iterator = std::reverse_iterator<iterator>;
+  using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
   basic_storage()
   : base_type{},
