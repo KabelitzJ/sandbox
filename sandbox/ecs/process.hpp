@@ -61,27 +61,27 @@ private:
   };
 
   template<typename Target = Derived>
-  decltype(std::declval<Target>().initialize(), void()) _next(std::integral_constant<state, state::uninitialized>) {
+  auto _next(std::integral_constant<state, state::uninitialized>) -> decltype(std::declval<Target>().initialize(), void()) {
     static_cast<Target*>(this)->initialize();
   }
 
   template<typename Target = Derived>
-  decltype(std::declval<Target>().update(Delta), void()) _next(std::integral_constant<state, state::running>, const Delta delta) {
+  auto _next(std::integral_constant<state, state::running>, const Delta delta) -> decltype(std::declval<Target>().update(delta), void()) {
     static_cast<Target*>(this)->update(delta);
   }
 
   template<typename Target = Derived>
-  decltype(std::declval<Target>().succeeded(), void()) _next(std::integral_constant<state, state::succeeded>) {
+  auto _next(std::integral_constant<state, state::succeeded>) -> decltype(std::declval<Target>().succeeded(), void()) {
     static_cast<Target *>(this)->succeeded();
   }
 
   template<typename Target = Derived>
-  decltype(std::declval<Target>().failed(), void()) _next(std::integral_constant<state, state::failed>) {
+  auto _next(std::integral_constant<state, state::failed>) -> decltype(std::declval<Target>().failed(), void()) {
     static_cast<Target *>(this)->failed();
   }
 
   template<typename Target = Derived>
-  decltype(std::declval<Target>().aborted(), void()) _next(std::integral_constant<state, state::aborted>) {
+  auto _next(std::integral_constant<state, state::aborted>) -> decltype(std::declval<Target>().aborted(), void()) {
     static_cast<Target *>(this)->aborted();
   }
 
