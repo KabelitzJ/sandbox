@@ -32,9 +32,51 @@ public:
     return _current_state == state::succeeded || _current_state == state::failed;
   }
 
-  void abort(const bool immediately = false);
+  void abort(const bool immediately = false) {
+    if(is_alive()) {
+      _current_state = state::aborted;
 
-  void tick(const Delta delta);
+      if(immediately) {
+        tick({});
+      }
+    }
+  }
+
+  void tick(const Delta delta) {
+    switch (_current_state) {
+      case state::uninitialized: {
+        _next(std::integral_constant<state, state::uninitialized>{});
+        _current_state = state::running;
+        break;
+      }
+      case state::running: {
+        _next(std::integral_constant<state, state::running>{}, delta);
+        break;
+      }
+      default: {
+        break;
+      }
+    }
+
+    switch(_current_state) {
+      case state::succeeded: {
+        _next(std::integral_constant<state, state::succeeded>{});
+        break;
+      }
+      case state::failed: {
+        _next(std::integral_constant<state, state::failed>{});
+        break;
+      }
+      case state::aborted: {
+        _next(std::integral_constant<state, state::aborted>{});
+        _current_state = state::failed;
+        break;
+      }
+      default: {
+          break;
+      }
+    }
+  }
 
 protected:
 
@@ -109,7 +151,5 @@ public:
 }; // class process_adaptor
 
 } // namespace sbx
-
-#include "process.inl"
 
 #endif // SBX_ECS_PROCESS_HPP_
