@@ -16,6 +16,103 @@
 #include "entity.hpp"
 
 namespace sbx {
+  
+template<typename Traits>
+struct sparse_set_iterator final {
+  using value_type = typename Traits::value_type;
+  using pointer = typename Traits::pointer;
+  using reference = typename Traits::reference;
+  using difference_type = typename Traits::difference_type;
+  using iterator_category = std::random_access_iterator_tag;
+
+  sparse_set_iterator() noexcept = default;
+
+  sparse_set_iterator(const pointer* ref, const difference_type idx) noexcept
+  : _packed{ref},
+    _index{idx} { }
+
+  sparse_set_iterator& operator++() noexcept {
+    return --_index, *this;
+  }
+
+  sparse_set_iterator operator++(int) noexcept {
+    sparse_set_iterator original = *this;
+    return ++(*this), original;
+  }
+
+  sparse_set_iterator& operator--() noexcept {
+    return ++_index, *this;
+  }
+
+  sparse_set_iterator operator--(int) noexcept {
+    sparse_set_iterator original = *this;
+    return operator--(), original;
+  }
+
+  sparse_set_iterator& operator+=(const difference_type value) noexcept {
+    _index -= value;
+    return *this;
+  }
+
+  sparse_set_iterator operator+(const difference_type value) const noexcept {
+    sparse_set_iterator copy = *this;
+    return (copy += value);
+  }
+
+  sparse_set_iterator& operator-=(const difference_type value) noexcept {
+    return (*this += -value);
+  }
+
+  sparse_set_iterator operator-(const difference_type value) const noexcept {
+    return (*this + -value);
+  }
+
+  difference_type operator-(const sparse_set_iterator& other) const noexcept {
+    return other._index - _index;
+  }
+
+  [[nodiscard]] reference operator[](const difference_type value) const {
+    return *operator+(value);
+  }
+
+  [[nodiscard]] bool operator==(const sparse_set_iterator& other) const noexcept {
+    return other._index == _index;
+  }
+
+  [[nodiscard]] bool operator!=(const sparse_set_iterator& other) const noexcept {
+    return !(*this == other);
+  }
+
+  [[nodiscard]] bool operator<(const sparse_set_iterator& other) const noexcept {
+    return _index > other._index;
+  }
+
+  [[nodiscard]] bool operator>(const sparse_set_iterator& other) const noexcept {
+    return _index < other._index;
+  }
+
+  [[nodiscard]] bool operator<=(const sparse_set_iterator& other) const noexcept {
+    return !(*this > other);
+  }
+
+  [[nodiscard]] bool operator>=(const sparse_set_iterator& other) const noexcept {
+    return !(*this < other);
+  }
+
+  [[nodiscard]] pointer operator->() const {
+    const auto position = _index - 1;
+    return (*_packed) + position;
+  }
+
+  [[nodiscard]] reference operator*() const {
+    return *operator->();
+  }
+
+private:
+  const pointer* _packed;
+  difference_type _index;
+}; // struct sparse_set_iterator
+
 
 template<typename Entity, typename Allocator = std::allocator<Entity>>
 class basic_sparse_set {
@@ -317,103 +414,6 @@ private:
   entity_type _free_list{};
   
 }; // class sparse_set
-
-
-template<typename Traits>
-struct sparse_set_iterator final {
-  using value_type = typename Traits::value_type;
-  using pointer = typename Traits::pointer;
-  using reference = typename Traits::reference;
-  using difference_type = typename Traits::difference_type;
-  using iterator_category = std::random_access_iterator_tag;
-
-  sparse_set_iterator() noexcept = default;
-
-  sparse_set_iterator(const pointer* ref, const difference_type idx) noexcept
-  : _packed{ref},
-    _index{idx} { }
-
-  sparse_set_iterator& operator++() noexcept {
-    return --_index, *this;
-  }
-
-  sparse_set_iterator operator++(int) noexcept {
-    sparse_set_iterator original = *this;
-    return ++(*this), original;
-  }
-
-  sparse_set_iterator& operator--() noexcept {
-    return ++_index, *this;
-  }
-
-  sparse_set_iterator operator--(int) noexcept {
-    sparse_set_iterator original = *this;
-    return operator--(), original;
-  }
-
-  sparse_set_iterator& operator+=(const difference_type value) noexcept {
-    _index -= value;
-    return *this;
-  }
-
-  sparse_set_iterator operator+(const difference_type value) const noexcept {
-    sparse_set_iterator copy = *this;
-    return (copy += value);
-  }
-
-  sparse_set_iterator& operator-=(const difference_type value) noexcept {
-    return (*this += -value);
-  }
-
-  sparse_set_iterator operator-(const difference_type value) const noexcept {
-    return (*this + -value);
-  }
-
-  difference_type operator-(const sparse_set_iterator& other) const noexcept {
-    return other._index - _index;
-  }
-
-  [[nodiscard]] reference operator[](const difference_type value) const {
-    return *operator+(value);
-  }
-
-  [[nodiscard]] bool operator==(const sparse_set_iterator& other) const noexcept {
-    return other._index == _index;
-  }
-
-  [[nodiscard]] bool operator!=(const sparse_set_iterator& other) const noexcept {
-    return !(*this == other);
-  }
-
-  [[nodiscard]] bool operator<(const sparse_set_iterator& other) const noexcept {
-    return _index > other._index;
-  }
-
-  [[nodiscard]] bool operator>(const sparse_set_iterator& other) const noexcept {
-    return _index < other._index;
-  }
-
-  [[nodiscard]] bool operator<=(const sparse_set_iterator& other) const noexcept {
-    return !(*this > other);
-  }
-
-  [[nodiscard]] bool operator>=(const sparse_set_iterator& other) const noexcept {
-    return !(*this < other);
-  }
-
-  [[nodiscard]] pointer operator->() const {
-    const auto position = _index - 1;
-    return (*_packed) + position;
-  }
-
-  [[nodiscard]] reference operator*() const {
-    return *operator->();
-  }
-
-private:
-  const pointer* _packed;
-  difference_type _index;
-}; // struct sparse_set_iterator
 
 } // namespace sbx
 
