@@ -5,8 +5,8 @@
 namespace sbx {
 
 engine::engine()
-: _registry{std::make_unique<basic_registry<entity>>()},
-  _scheduler{std::make_unique<scheduler<fast_time>>()},
+: _registry{std::make_unique<registry>()},
+  _scheduler{std::make_unique<scheduler>()},
   _modules{} {
 
 

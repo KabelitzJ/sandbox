@@ -1,5 +1,5 @@
-#ifndef SBX_ECS_SCHEDULER_HPP_
-#define SBX_ECS_SCHEDULER_HPP_
+#ifndef SBX_ECS_BASIC_SCHEDULER_HPP_
+#define SBX_ECS_BASIC_SCHEDULER_HPP_
 
 #include <memory>
 #include <vector>
@@ -7,9 +7,14 @@
 #include "process.hpp"
 
 namespace sbx {
+
+template<typename Delta>
+class basic_scheduler;
+
+using scheduler = basic_scheduler<fast_time>;
   
 template<typename Delta>
-class scheduler {
+class basic_scheduler {
 
   struct process_handler {
     using instance_type = std::unique_ptr<void, void(*)(void*)>;
@@ -26,8 +31,8 @@ public:
   using size_type = std::size_t;
   using delta_type = Delta;
 
-  scheduler() = default;
-  ~scheduler() = default;
+  basic_scheduler() = default;
+  ~basic_scheduler() = default;
 
   [[nodiscard]] size_type size() const noexcept {
     return _handlers.size();
@@ -45,8 +50,8 @@ public:
   void attach(Args&&... args) {
     static_assert(std::is_base_of_v<basic_process<Process, delta_type>, Process>, "Invalid process type");
     
-    auto process = typename process_handler::instance_type{new Process{std::forward<Args>(args)...}, &scheduler::_deleter<Process>};
-    auto handler = process_handler{std::move(process), &scheduler::_update<Process>, &scheduler::_abort<Process>};
+    auto process = typename process_handler::instance_type{new Process{std::forward<Args>(args)...}, &basic_scheduler::_deleter<Process>};
+    auto handler = process_handler{std::move(process), &basic_scheduler::_update<Process>, &basic_scheduler::_abort<Process>};
   
     handler.update(handler, delta_type{});
 
@@ -109,8 +114,8 @@ private:
 
   std::vector<process_handler> _handlers{};
 
-}; // class scheduler
+}; // class basic_scheduler
   
 } // namespace sbx
 
-#endif // SBX_ECS_SCHEDULER_HPP_
+#endif // SBX_ECS_BASIC_SCHEDULER_HPP_

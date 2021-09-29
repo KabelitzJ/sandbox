@@ -25,8 +25,8 @@ public:
   void add_module(Args&&... args);
 
 private:
-  std::unique_ptr<basic_registry<entity>> _registry{};
-  std::unique_ptr<scheduler<fast_time>> _scheduler{};
+  std::unique_ptr<registry> _registry{};
+  std::unique_ptr<scheduler> _scheduler{};
   std::vector<std::unique_ptr<module>> _modules{};
 
 }; // class engine

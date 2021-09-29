@@ -13,6 +13,11 @@
 namespace sbx {
 
 template<typename Entity>
+class basic_registry;
+
+using registry = basic_registry<entity>;
+
+template<typename Entity>
 class basic_registry {
 
   using entity_traits = sbx::entity_traits<Entity>;

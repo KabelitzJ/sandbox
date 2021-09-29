@@ -22,8 +22,8 @@ protected:
   template<typename System, typename... Args>
   void add_system(Args&&... args);
 
-  basic_registry<entity>* _registry{};
-  scheduler<fast_time>* _scheduler{};
+  registry* _registry{};
+  scheduler* _scheduler{};
   
 private:
   void _initialize();
