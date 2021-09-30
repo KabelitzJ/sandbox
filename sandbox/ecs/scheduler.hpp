@@ -66,18 +66,12 @@ public:
   }
 
   void update(const delta_type delta) {
-    auto size = _handlers.size();
-
-    for(auto itr = _handlers.rbegin(); itr != _handlers.rend(); ++itr) {
-      auto& handler = *itr;
-
-      if(const auto dead = handler.update(handler, delta); dead) {
-        std::swap(handler, _handlers.at(--size));
-      }
-    }
-
-    // [NOTE] KAJ 2021-09-27 22:18: Find a more elegant solution
-    _handlers.erase(_handlers.begin() + static_cast<std::make_signed_t<decltype(size)>>(size), _handlers.end());
+    _handlers.erase(
+      std::remove_if(_handlers.begin(), _handlers.end(),
+        [&](auto& handler){ return handler.update(handler, delta); }
+      ),
+      _handlers.end()
+    );
   }
 
   void abort(const bool immediate = false) {
