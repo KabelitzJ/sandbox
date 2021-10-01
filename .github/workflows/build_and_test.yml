@@ -27,7 +27,7 @@ jobs:
       run: apt-get upgrade -y
 
     - name: Install build essentials
-      run: apt-get install build-essential 
+      run: apt-get install -y build-essential libxrandr-dev
 
     - name: Configure CMake
       env:
