@@ -1,9 +1,19 @@
 #include <gtest/gtest.h>
 
-bool test() {
-  return true;
+#include <ecs/storage.hpp>
+
+TEST(Storage, InitialState) {
+  using storage = sbx::basic_storage<unsigned int, int>;
+
+  auto instance = storage{};
+
+  EXPECT_EQ(0, instance.size());
+  EXPECT_EQ(0, instance.capacity());
+  EXPECT_TRUE(instance.is_empty());
 }
 
 int main(int, char**) {
-  return test() ? 0 : 1;
+  testing::InitGoogleTest();
+
+  return RUN_ALL_TESTS();
 }

@@ -20,6 +20,9 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
+    - name: Install dependencies
+      run: conan install . --install-folder build --build missing
+
     - name: Update
       run: sudo apt-get update -y
 
