@@ -1,3 +1,5 @@
+#include <gtest/gtest.h>
+
 bool test() {
   return true;
 }

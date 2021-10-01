@@ -1,5 +1,7 @@
 enable_testing()
 
+find_package(gtest REQUIRED)
+
 project(sbx_test CXX)
 
 add_executable(${PROJECT_NAME})
@@ -24,6 +26,7 @@ target_link_libraries(
   ${PROJECT_NAME}
   PUBLIC
     sbx::sbx
+    GTest::gtest
 )
 
 target_compile_features(
@@ -60,7 +63,7 @@ target_compile_options(
 set_target_properties(
   ${PROJECT_NAME}
   PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/$<$<CONFIG:Debug>:debug>$<$<CONFIG:Release>:release>/tests"
-    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib/$<$<CONFIG:Debug>:debug>$<$<CONFIG:Release>:release>/tests"
-    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib/$<$<CONFIG:Debug>:debug>$<$<CONFIG:Release>:release>/tests"
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/tests"
+    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib/tests"
+    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib/tests"
 )
