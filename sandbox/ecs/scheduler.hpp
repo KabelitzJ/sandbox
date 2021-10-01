@@ -38,7 +38,7 @@ public:
     return _handlers.size();
   }
 
-  [[nodiscard]] bool empty() const noexcept {
+  [[nodiscard]] bool is_empty() const noexcept {
     return _handlers.empty();
   }
 
@@ -67,9 +67,9 @@ public:
 
   void update(const delta_type delta) {
     _handlers.erase(
-      std::remove_if(_handlers.begin(), _handlers.end(),
-        [&](auto& handler){ return handler.update(handler, delta); }
-      ),
+      std::remove_if(_handlers.begin(), _handlers.end(), [&](auto& hander){
+        return hander.update(hander, delta);
+      }),
       _handlers.end()
     );
   }
@@ -88,6 +88,15 @@ public:
 
 private:
 
+  /**
+   * @brief 
+   * 
+   * @tparam Process 
+   * @param handler 
+   * @param delta 
+   * @return true When the process has either succeeded or been aborted
+   * @return false When the process is still running
+   */
   template<typename Process>
   [[nodiscard]] static bool _update(process_handler& handler, const delta_type delta) {
     auto* process = static_cast<Process*>(handler.instance.get());

@@ -18,11 +18,15 @@ public:
 
   basic_process(const basic_process&) = delete;
 
+  basic_process(basic_process&&) = default;
+
   virtual ~basic_process() {
     static_assert(std::is_base_of_v<basic_process, Derived>, "Incorrect use of the class template");
   }
 
   basic_process& operator=(const basic_process&) = delete;
+
+  basic_process& operator=(basic_process&&) = default;
 
   bool is_alive() const noexcept {
     return _current_state == state::running;

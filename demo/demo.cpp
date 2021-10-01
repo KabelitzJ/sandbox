@@ -15,6 +15,11 @@ struct velocity {
   float z;
 };
 
+#include <sstream>
+
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+
 class my_process final : public sbx::basic_process<my_process, sbx::fast_time> {
 
 public:
@@ -22,20 +27,58 @@ public:
   ~my_process() = default;
 
   void initialize() {
+    std::cout << "init\n";
 
+    glfwInit();
+
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+    _handle = glfwCreateWindow(960, 720, "Test [Delta: 0]", nullptr, nullptr);
+
+    glfwMakeContextCurrent(_handle);
+
+    gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress));
+
+    glfwSwapInterval(0);
   }
 
   void update(const sbx::fast_time delta) {
-    std::cout << "update(" << delta << ")\n";
+    glfwPollEvents();
+
+    if (glfwGetKey(_handle, GLFW_KEY_ESCAPE)) {
+      glfwSetWindowShouldClose(_handle, true);
+    }
+
+    if (glfwWindowShouldClose(_handle)) {
+      succeed();
+    }
+
+    auto title = std::stringstream{};
+
+    title << "Test [Delta: " << delta << "]";
+
+    glfwSetWindowTitle(_handle, title.str().c_str());
+
+    glfwSwapBuffers(_handle);
   }
 
   void succeeded() {
-
+    _exit();
   }
 
   void failed() {
-
+    _exit();
   }
+
+private:
+  void _exit() {
+    glfwDestroyWindow(_handle);
+    glfwTerminate();
+  }
+
+  GLFWwindow* _handle{nullptr};
 
 };
 

@@ -1,5 +1,8 @@
 project(demo CXX)
 
+find_package(glad)
+find_package(glfw3)
+
 add_executable(${PROJECT_NAME})
 
 target_sources(
@@ -12,6 +15,8 @@ target_link_libraries(
   ${PROJECT_NAME}
   PUBLIC
     sbx::sbx
+    glad::glad
+    glfw::glfw
 )
 
 target_compile_features(
