@@ -20,6 +20,15 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
+    - name: Update
+      run: apt-get update -y
+
+    - name: Upgrade
+      run: apt-get upgrade -y
+
+    - name: Install build essentials
+      run: apt-get install build-essential 
+
     - name: Configure CMake
       env:
         CXX: ${{matrix.compiler}}
