@@ -20,19 +20,19 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
+    - name: Update
+      run: |
+        sudo apt-get update -y
+        sudo apt-get upgrade -y
+
+    - name: Install build essentials
+      run: sudo apt-get install -y build-essential xorg-dev sudo apt-get upgrade -y
+
     - name: Install dependencies
       run: |
         pip install conan
         conan install . --install-folder build --build missing
 
-    - name: Update
-      run: sudo apt-get update -y
-
-    - name: Upgrade
-      run: sudo apt-get upgrade -y
-
-    - name: Install build essentials
-      run: sudo apt-get install -y build-essential xorg-dev
 
     - name: Configure CMake
       env:
@@ -43,6 +43,5 @@ jobs:
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
 
     - name: Test
-      working-directory: ${{github.workspace}}/build
-      run: ctest -C ${{env.BUILD_TYPE}}
+      run: ./build/bin/tests/sbx_tests
   

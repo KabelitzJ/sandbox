@@ -2,7 +2,7 @@ enable_testing()
 
 find_package(gtest REQUIRED)
 
-project(sbx_test CXX)
+project(sbx_tests CXX)
 
 add_executable(${PROJECT_NAME})
 
