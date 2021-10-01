@@ -10,6 +10,9 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
 
 project(sbx CXX)
 
+# Build dependencies
+add_subdirectory(dependencies)
+
 # Build main library
 add_subdirectory(sandbox)
 
@@ -21,7 +24,7 @@ if (SBX_BUILD_DEMO)
 endif()
 
 # Build unit tests
-option(SBX_BUILD_TESTS "Enable building unit tests." On)
+option(SBX_BUILD_TESTS "Enable building unit tests." OFF)
 
 if (SBX_BUILD_TESTS)
   enable_testing()
