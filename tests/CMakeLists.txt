@@ -1,6 +1,6 @@
 enable_testing()
 
-find_package(gtest REQUIRED)
+find_package(GTest REQUIRED)
 
 project(sbx_tests CXX)
 
