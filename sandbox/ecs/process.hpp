@@ -6,6 +6,12 @@
 #include <types/primitives.hpp>
 
 namespace sbx {
+
+template<typename, typename>
+class basic_process;
+
+template<typename Derived, typename Delta = fast_time>
+using process = basic_process<Derived, Delta>;
  
 template<typename Derived, typename Delta>
 class basic_process {

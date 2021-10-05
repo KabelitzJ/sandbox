@@ -8,7 +8,7 @@
 
 namespace sbx {
 
-template<typename Delta>
+template<typename>
 class basic_scheduler;
 
 using scheduler = basic_scheduler<fast_time>;

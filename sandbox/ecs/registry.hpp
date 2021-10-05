@@ -16,7 +16,7 @@
 
 namespace sbx {
 
-template<typename Entity>
+template<typename>
 class basic_registry;
 
 using registry = basic_registry<entity>;

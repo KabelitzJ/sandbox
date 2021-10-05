@@ -20,7 +20,7 @@ struct velocity {
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-class my_process final : public sbx::basic_process<my_process, sbx::fast_time> {
+class my_process final : public sbx::process<my_process> {
 
 public:
   my_process() = default;
@@ -76,6 +76,8 @@ private:
   void _exit() {
     glfwDestroyWindow(_handle);
     glfwTerminate();
+
+    std::cout << "exit\n";
   }
 
   GLFWwindow* _handle{nullptr};
