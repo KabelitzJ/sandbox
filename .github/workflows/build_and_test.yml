@@ -35,10 +35,10 @@ jobs:
     - name: Configure CMake
       env:
         CXX: ${{matrix.compiler}}
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DSBX_BUILD_TESTS=True
 
     - name: Build
-      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} -DSBX_BUILD_TESTS=True
+      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
 
     - name: Test
       run: ${{github.workspace}}/build/bin/tests/sbx_tests
