@@ -19,7 +19,6 @@ protected:
   scheduler* _scheduler{};
 
 private:
-
   friend class module;
 
 }; // class system

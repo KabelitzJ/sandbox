@@ -5,14 +5,14 @@
 #include <memory>
 #include <algorithm>
 
-#include <util/type_traits.hpp>
+#include <types/type_traits.hpp>
 
 #include "entity.hpp"
 #include "type_index.hpp"
 #include "sparse_set.hpp"
 #include "component.hpp"
 #include "storage.hpp"
-
+#include "view.hpp"
 
 namespace sbx {
 
@@ -22,7 +22,7 @@ class basic_registry;
 using registry = basic_registry<entity>;
 
 template<typename Entity>
-class basic_registry {
+class basic_registry final {
 
   using entity_traits = sbx::entity_traits<Entity>;
   using basic_common_type = basic_sparse_set<Entity>;

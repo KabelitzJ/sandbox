@@ -4,7 +4,7 @@
 #include <type_traits>
 #include <memory>
 
-#include <util/type_traits.hpp>
+#include <types/type_traits.hpp>
 
 #include "component.hpp"
 #include "entity.hpp"
@@ -117,7 +117,7 @@ private:
 }; // struct storage_iterator
 
 
-template<typename Entity, typename Type, typename Allocator = std::allocator<Type>>
+template<typename Entity, typename Type, typename Allocator = std::allocator<Type>, typename = void>
 class basic_storage : public basic_sparse_set<Entity, typename std::allocator_traits<Allocator>::template rebind_alloc<Entity>> {
   static constexpr auto packed_page_v = 1024u;
 
@@ -251,12 +251,20 @@ public:
     return std::make_reverse_iterator(begin());
   }
 
-  [[nodiscard]] const value_type& get(const entity_type entity) const noexcept {
+  [[nodiscard]] value_type& get(const entity_type entity) noexcept {
     return _element_at(base_type::index(entity));
   }
 
-  [[nodiscard]] value_type& get(const entity_type entity) noexcept {
-    return const_cast<value_type&>(std::as_const(*this).get(entity));
+  [[nodiscard]] const value_type& get(const entity_type entity) const noexcept {
+    return get(entity);
+  }
+
+  [[nodiscard]] std::tuple<const value_type&> get_as_tuple(const entity_type entity) const noexcept {
+    return std::forward_as_tuple(get(entity));
+  }
+
+  [[nodiscard]] std::tuple<value_type&> get_as_tuple(const entity_type entity) noexcept {
+    return std::forward_as_tuple(get(entity));
   }
 
   template<typename... Args>
@@ -419,6 +427,66 @@ private:
   alloc_ptr_pointer _packed;
 
 }; // class basic_storage
+
+
+template<typename Entity, typename Type, typename Allocator>
+class basic_storage<Entity, Type, Allocator, std::enable_if_t<ignore_as_empty_v<Type>>>
+  : public basic_sparse_set<Entity, typename std::allocator_traits<Allocator>::template rebind_alloc<Entity>> {
+
+  using allocator_traits = std::allocator_traits<Allocator>;
+  using component_traits = sbx::component_traits<Type>;
+
+public:
+  using base_type = basic_sparse_set<Entity, typename allocator_traits::template rebind_alloc<Entity>>;
+  using allocator_type = Allocator;
+  using value_type = Type;
+  using entity_type = Entity;
+  using size_type = std::size_t;
+
+  basic_storage()
+  : base_type{} { }
+
+  basic_storage(basic_storage&&) noexcept = default;
+
+  basic_storage& operator=(const basic_storage&&) noexcept = default;
+
+  void get([[maybe_unused]] entity_type entity) const noexcept {
+    assert(base_type::contains(entity));
+  }
+
+  [[nodiscard]] std::tuple<> get_as_tuple([[maybe_unused]] const entity_type entity) const noexcept {
+    assert(base_type::contains(entity));
+    return std::tuple{};
+  }
+
+  template<typename... Args>
+  void emplace(const entity_type entity, Args&&... args) {
+    [[maybe_unused]] const auto element = value_type{std::forward<Args>(args)...};
+    base_type::try_emplace(entity);
+  }
+
+  template<typename... Functions>
+  void patch([[maybe_unused]] const entity_type entity, Functions&&... functions) {
+    assert(base_type::contains(entity));
+    (std::forward<Functions>(functions)(), ...);
+  }
+
+  template<typename Iterator, typename... Args>
+  void insert(Iterator first, Iterator last, Args&&...) {
+    for(const auto size = base_type::size(); first != last && base_type::slot() != size; ++first) {
+      emplace(*first);
+    }
+
+    base_type::reserve(base_type::size() + std::distance(first, last));
+
+    for(; first != last; ++first) {
+      emplace(*first);
+    }
+  }
+
+private:
+
+};
 
 } // namespace sbx
 

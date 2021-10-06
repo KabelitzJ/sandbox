@@ -14,7 +14,7 @@ class basic_scheduler;
 using scheduler = basic_scheduler<fast_time>;
   
 template<typename Delta>
-class basic_scheduler {
+class basic_scheduler final {
 
   struct process_handler {
     using instance_type = std::unique_ptr<void, void(*)(void*)>;

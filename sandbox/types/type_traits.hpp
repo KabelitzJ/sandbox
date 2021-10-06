@@ -62,11 +62,11 @@ using type_list_element_t = typename type_list_element<Index, List>::type;
 
 
 template<typename Type>
-[[nodiscard]] constexpr auto to_address(Type &&ptr) noexcept {
+[[nodiscard]] constexpr auto to_address(Type&& pointer) noexcept {
   if constexpr(std::is_pointer_v<std::remove_const_t<std::remove_reference_t<Type>>>) {
-    return ptr;
+    return pointer;
   } else {
-    return to_address(std::forward<Type>(ptr).operator->());
+    return to_address(std::forward<Type>(pointer).operator->());
   }
 }
     
