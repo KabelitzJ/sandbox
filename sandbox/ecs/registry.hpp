@@ -188,7 +188,7 @@ public:
         destroy_entity(*first, entity_traits::to_version(*first) + 1u);
       }
     } else {
-      for(auto&& data: _pools) {
+      for(auto&& data : _pools) {
         data.pool && data.pool->remove(first, last);
       }
 
@@ -281,7 +281,7 @@ public:
   template<typename... Components>
   void compact() {
     if constexpr(sizeof...(Components) == 0) {
-      for(auto&& data: _pools) {
+      for(auto&& data : _pools) {
         data.pool && (data.pool->compact(), true);
       }
     } else {
@@ -361,7 +361,7 @@ public:
   template<typename... Components>
   void clear() {
     if constexpr(sizeof...(Components) == 0) {
-      for(auto&& data: _pools) {
+      for(auto&& data : _pools) {
         data.pool && (data.pool->clear(this), true);
       }
 

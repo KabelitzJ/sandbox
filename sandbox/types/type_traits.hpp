@@ -60,15 +60,26 @@ struct type_list_element<0u, type_list<Type, Others...>> {
 template<std::size_t Index, typename List>
 using type_list_element_t = typename type_list_element<Index, List>::type;
 
+template<typename, typename>
+struct is_applicable: std::false_type {};
 
-template<typename Type>
-[[nodiscard]] constexpr auto to_address(Type&& pointer) noexcept {
-  if constexpr(std::is_pointer_v<std::remove_const_t<std::remove_reference_t<Type>>>) {
-    return pointer;
-  } else {
-    return to_address(std::forward<Type>(pointer).operator->());
-  }
-}
+template<typename Function, template<typename...> class Tuple, typename... Args>
+struct is_applicable<Function, Tuple<Args...>>: std::is_invocable<Function, Args...> {};
+
+template<typename Function, template<typename...> class Tuple, typename... Args>
+struct is_applicable<Function, const Tuple<Args...>>: std::is_invocable<Function, Args...> {};
+
+template<typename Function, typename... Args>
+inline constexpr bool is_applicable_v = is_applicable<Function, Args...>::value;
+
+template<typename, typename, typename>
+struct is_applicable_r: std::false_type {};
+
+template<typename Return, typename Function, typename... Args>
+struct is_applicable_r<Return, Function, std::tuple<Args...>>: std::is_invocable_r<Return, Function, Args...> {};
+
+template<typename Return, typename Function, typename... Args>
+inline constexpr bool is_applicable_r_v = is_applicable_r<Return, Function, Args...>::value;
     
 } // namespace sbx
 

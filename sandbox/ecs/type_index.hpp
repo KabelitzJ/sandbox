@@ -20,7 +20,7 @@ struct sequence;
 /**
  * @brief A integer sequence with an incrementing value
  *
- * @tparam Type Iteger type of the sequence
+ * @tparam Type Integer type of the sequence
  */
 template<typename Type>
 struct sequence<Type, std::enable_if_t<std::is_integral_v<Type>>> {
@@ -37,7 +37,7 @@ struct sequence<Type, std::enable_if_t<std::is_integral_v<Type>>> {
 /**
  * @brief A integer sequence with an atomically incrementing value
  *
- * @tparam Type Iteger type of the sequence
+ * @tparam Type Integer type of the sequence
  */
 template<typename Type>
 using atomic_sequence = sequence<std::atomic<Type>>;
@@ -46,7 +46,7 @@ using atomic_sequence = sequence<std::atomic<Type>>;
 /**
  * @brief Maps any given type to a numeric identifier
  *
- * Indeices are not required to be the same for any given type throughout multiple program instances
+ * Indices are not required to be the same for any given type throughout multiple program instances
  *
  * @tparam Type to get the index of
  */

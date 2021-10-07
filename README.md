@@ -6,8 +6,9 @@ The sandbox engine a ecs-based, modular rendering engine implemented using c++17
 
 # Content
 
-- [todos](#todos)
-- [build](#build)
+- [TODOs](#todos)
+- [Build](#build)
+- [License](#license)
 
 # TODOs
 
@@ -60,3 +61,6 @@ If you build the tests you can run them by running
 ```
 ./build/tests/sbx_test.exe
 ```
+
+# License
+This project is published under the [MIT License](LICENSE).
