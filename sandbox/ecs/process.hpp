@@ -52,7 +52,7 @@ public:
     }
   }
 
-  void tick(const Delta delta) {
+  void tick(const Delta delta_time) {
     switch (_current_state) {
       case state::uninitialized: {
         _next(std::integral_constant<state, state::uninitialized>{});
@@ -60,7 +60,7 @@ public:
         break;
       }
       case state::running: {
-        _next(std::integral_constant<state, state::running>{}, delta);
+        _next(std::integral_constant<state, state::running>{}, delta_time);
         break;
       }
       default: {
@@ -118,8 +118,8 @@ private:
   }
 
   template<typename Target = Derived>
-  auto _next(std::integral_constant<state, state::running>, const Delta delta) -> decltype(std::declval<Target>().update(delta), void()) {
-    static_cast<Target*>(this)->update(delta);
+  auto _next(std::integral_constant<state, state::running>, const Delta delta_time) -> decltype(std::declval<Target>().update(delta_time), void()) {
+    static_cast<Target*>(this)->update(delta_time);
   }
 
   template<typename Target = Derived>
@@ -154,8 +154,8 @@ public:
 
   }
 
-  void update(const Delta delta) {
-    Function::operator()(delta, [this](){ this->succeed(); }, [this](){ this->fail(); });
+  void update(const Delta delta_time) {
+    Function::operator()(delta_time, [this](){ this->succeed(); }, [this](){ this->fail(); });
   }
 
 }; // class process_adaptor

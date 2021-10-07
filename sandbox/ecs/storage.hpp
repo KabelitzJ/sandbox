@@ -102,7 +102,7 @@ public:
   }
 
   [[nodiscard]] pointer operator->() const noexcept {
-    const auto position = _index - 1;
+    const auto position = static_cast<std::size_t>(_index) - 1;
     return (*_packed)[position / PageSize] + fast_mod<PageSize>(position);
   }
 

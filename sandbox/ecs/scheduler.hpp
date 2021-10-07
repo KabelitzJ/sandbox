@@ -65,10 +65,10 @@ public:
     attach<Process>(std::forward<Function>(function));
   }
 
-  void update(const delta_type delta) {
+  void update(const delta_type delta_time) {
     _handlers.erase(
       std::remove_if(_handlers.begin(), _handlers.end(), [&](auto& hander){
-        return hander.update(hander, delta);
+        return hander.update(hander, delta_time);
       }),
       _handlers.end()
     );
@@ -93,14 +93,14 @@ private:
    * 
    * @tparam Process 
    * @param handler 
-   * @param delta 
+   * @param delta_time 
    * @return true When the process has either succeeded or been aborted
    * @return false When the process is still running
    */
   template<typename Process>
-  [[nodiscard]] static bool _update(process_handler& handler, const delta_type delta) {
+  [[nodiscard]] static bool _update(process_handler& handler, const delta_type delta_time) {
     auto* process = static_cast<Process*>(handler.instance.get());
-    process->tick(delta);
+    process->tick(delta_time);
 
     return process->is_finished();
   }

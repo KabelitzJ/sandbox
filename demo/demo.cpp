@@ -2,18 +2,41 @@
 
 #include <core/core.hpp>
 #include <ecs/process.hpp>
-
-struct position {
-  float x;
-  float y;
-  float z;
-};
+#include <ecs/entity.hpp>
 
 struct velocity {
   float x;
   float y;
   float z;
 };
+
+struct position {
+  float x;
+  float y;
+  float z;
+
+  position& operator+=(const velocity& velocity) {
+    x += velocity.x;
+    y += velocity.y;
+    z += velocity.z;
+
+    return *this;
+  }
+};
+
+position operator+(position position, const velocity& velocity) {
+  position += velocity;
+
+  return position;
+}
+
+std::ostream& operator<<(std::ostream& os, const position& position) {
+  return os << "[" << position.x << ", " << position.y << ", " << position.z << "]";
+}
+
+velocity operator*(const velocity& velocity, const float scalar) {
+  return {velocity.x * scalar, velocity.y * scalar, velocity.z * scalar};
+}
 
 #include <sstream>
 
@@ -23,7 +46,11 @@ struct velocity {
 class my_process final : public sbx::process<my_process> {
 
 public:
-  my_process() = default;
+  my_process(sbx::registry& registry)
+  : _handle{nullptr},
+    _registry{&registry},
+    _player{sbx::null} { }
+    
   ~my_process() = default;
 
   void initialize() {
@@ -42,9 +69,14 @@ public:
     gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress));
 
     glfwSwapInterval(0);
+
+    _player = _registry->create_entity();
+
+    _registry->emplace_component<position>(_player, 0.0f, 0.0f, 0.0f);
+    _registry->emplace_component<velocity>(_player, -0.4f, 1.0f, 0.0f);
   }
 
-  void update(const sbx::fast_time delta) {
+  void update(const sbx::fast_time delta_time) {
     glfwPollEvents();
 
     if (glfwGetKey(_handle, GLFW_KEY_ESCAPE)) {
@@ -57,9 +89,16 @@ public:
 
     auto title = std::stringstream{};
 
-    title << "Test [Delta: " << delta << "]";
+    title << "Test [Delta: " << delta_time << "]";
 
     glfwSetWindowTitle(_handle, title.str().c_str());
+
+    auto view = _registry->view<position, velocity>();
+
+    for (auto entity : view) {
+      [[maybe_unused]] auto& pos = view.get<position>(entity);
+      [[maybe_unused]] auto& vel = view.get<velocity>(entity);
+    }
 
     glfwSwapBuffers(_handle);
   }
@@ -81,6 +120,8 @@ private:
   }
 
   GLFWwindow* _handle{nullptr};
+  sbx::registry* _registry{nullptr};
+  sbx::entity _player{sbx::null};
 
 };
 
@@ -96,11 +137,7 @@ public:
   }
 
   void initialize() override {
-    _scheduler->attach<my_process>();
-
-    const auto player = _registry->create_entity();
-
-    (void) player;
+    _scheduler->attach<my_process>(*_registry);
   }
 
 };

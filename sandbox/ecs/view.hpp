@@ -138,7 +138,7 @@ class basic_view<Entity, type_list<Components...>> {
 
     private:
       Iterator _iterator;
-      basic_view* _view;
+      const basic_view* _view;
 
     };
 
@@ -166,7 +166,7 @@ public:
     }
 
   private:
-    basic_view _view;
+    const basic_view _view;
 
   };
 
@@ -263,13 +263,13 @@ public:
 
   template<typename Component, typename Function>
   void each(Function function) const {
-    for(const auto current : iterable_storage<Entity, Component>{*std::get<storage_type<Component> *>(_pools)}) {
+    for(const auto current: iterable_storage<Entity, Component>{*std::get<storage_type<Component> *>(_pools)}) {
       if((is_multi_type_v || (std::get<0>(current) != tombstone))
-        && ((std::is_same_v<Component, Components> || std::get<storage_type<Components>*>(_pools)->contains(std::get<0>(current))) && ...)) {
+        && ((std::is_same_v<Component, Components> || std::get<storage_type<Components> *>(_pools)->contains(std::get<0>(current))) && ...)) {
         if constexpr(is_applicable_v<Function, decltype(std::tuple_cat(std::tuple<entity_type>{}, std::declval<basic_view>().get({})))>) {
-            std::apply(function, std::tuple_cat(std::make_tuple(std::get<0>(current)), _dispatch_get<Component, Components>(current)...));
+          std::apply(function, std::tuple_cat(std::make_tuple(std::get<0>(current)), _dispatch_get<Component, Components>(current)...));
         } else {
-            std::apply(function, std::tuple_cat(_dispatch_get<Component, Components>(current)...));
+          std::apply(function, std::tuple_cat(_dispatch_get<Component, Components>(current)...));
         }
       }
     }
@@ -311,9 +311,11 @@ private:
     }
   }
 
+  template<typename, typename, typename>
+  friend class basic_view;
 
   std::tuple<storage_type<Components>*...> _pools{};
-  basic_common_type* _view{};
+  const basic_common_type* _view{};
 
 };
 
@@ -437,6 +439,9 @@ public:
   }
 
 private:
+  template<typename, typename, typename>
+  friend class basic_view;
+
   std::tuple<storage_type*> _pools{};
 
 };

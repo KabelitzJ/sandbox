@@ -32,11 +32,11 @@ void engine::start() {
   while (!_scheduler->is_empty()) {
     const auto now = clock::now();
 
-    const auto delta = std::chrono::duration_cast<duration>(now - last_time).count();
+    const auto delta_time = std::chrono::duration_cast<duration>(now - last_time).count();
 
     last_time = now;
 
-    _scheduler->update(delta);
+    _scheduler->update(delta_time);
   }
 }
 

@@ -230,7 +230,7 @@ public:
 
   template<typename Component, typename... Args>
   decltype(auto) replace_component(const entity_type entity, Args&&... args) {
-    return _assure<Component>()->patch(entity, [&args...](auto &... current) { ((current = Component{std::forward<Args>(args)...}), ...); });
+    return _assure<Component>()->patch(entity, [&args...](auto&... current) { ((current = Component{std::forward<Args>(args)...}), ...); });
   }
 
   template<typename... Components>
@@ -386,7 +386,17 @@ public:
     }
   }
 
-  // [Note] KAJ 28.09.2021 13:04: Add view functionalities
+  template<typename... Components>
+  [[nodiscard]] basic_view<Entity, type_list<std::add_const_t<Components>...>> view() const {
+    static_assert(sizeof...(Components) > 0, "view must have atleast one component");
+    return {*_assure<std::remove_const_t<Components>>()...};
+  }
+
+  template<typename... Components>
+  [[nodiscard]] basic_view<Entity, type_list<Components...>> view() {
+    static_assert(sizeof...(Components) > 0, "view must have atleast one component");
+    return {*_assure<std::remove_const_t<Components>>()...,};
+  }
 
 private:
   template<typename Component>
