@@ -4,8 +4,6 @@
 #include <vector>
 #include <memory>
 
-#include <ecs/registry.hpp>
-#include <ecs/system.hpp>
 #include <ecs/scheduler.hpp>
 
 namespace sbx {
@@ -18,33 +16,23 @@ public:
 
   virtual void initialize() = 0;
 
+  virtual void terminate() = 0;
+
 protected:
   template<typename System, typename... Args>
-  void add_system(Args&&... args);
+  void add_system(Args&&... args) {
+    static_assert(std::is_base_of_v<basic_system<System, fast_time>, System>);
+    static_assert(!std::is_abstract_v<System>);
 
-  registry* _registry{};
-  scheduler* _scheduler{};
+    _scheduler->attach<System>(std::forward<Args>(args)...);
+  }
+
+  static scheduler* _scheduler;
   
 private:
-  void _initialize();
-
-  std::vector<std::unique_ptr<system>> _systems{};
-
   friend class engine;
 
 }; // class module
-
-template<typename System, typename... Args>
-inline void module::add_system(Args&&... args) {
-  static_assert(std::is_base_of_v<system, System>);
-  static_assert(!std::is_abstract_v<System>);
-
-  auto system = std::make_unique<System>(std::forward<Args>(args)...);
-  system->_registry = _registry;
-  system->_scheduler = _scheduler;
-
-  _systems.push_back(std::move(system));
-}
 
 } // namespace sbx
 

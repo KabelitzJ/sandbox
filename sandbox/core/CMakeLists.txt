@@ -23,6 +23,7 @@ target_link_libraries(
   PUBLIC
     sbx::ecs
     sbx::gfx
+    sbx::types
 )
 
 target_compile_features(

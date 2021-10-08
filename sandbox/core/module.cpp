@@ -2,16 +2,11 @@
 
 namespace sbx {
 
-module::module()
-: _registry(nullptr),
-  _systems() {
+scheduler* module::_scheduler{};
+
+module::module() {
 
 }
 
-void module::_initialize() {
-  for (auto& system : _systems) {
-    system->initialize();
-  }
-}
 
 } // namespace sbx

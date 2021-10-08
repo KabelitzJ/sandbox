@@ -5,8 +5,7 @@ add_library(${PROJECT_NAME} STATIC)
 target_sources(
   ${PROJECT_NAME}
   PRIVATE
-    system.cpp
-    registry.cpp
+    ecs.cpp
 )
 
 target_include_directories(
@@ -21,6 +20,7 @@ target_link_libraries(
   ${PROJECT_NAME}
   PUBLIC
     sbx::types
+    sbx::util
 )
 
 target_compile_features(
