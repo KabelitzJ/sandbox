@@ -43,6 +43,30 @@ velocity operator*(const velocity& velocity, const float scalar) {
 
 class my_module final : public sbx::module {
 
+  class my_system : public sbx::system<my_system> {
+
+  public:
+    my_system() = default;
+    ~my_system() = default;
+
+    void initialize() {
+
+    }
+
+    void update([[maybe_unused]] const sbx::fast_time delta_time) {
+
+    }
+
+    void finished() {
+
+    }
+
+    void aborted() {
+
+    }
+
+  }; // class my_system
+
 public:
   my_module() {
 
@@ -53,7 +77,9 @@ public:
   }
 
   void initialize() override {
-    _scheduler->attach([this]([[maybe_unused]] auto delta_time, [[maybe_unused]] auto finish){
+    _scheduler->attach<my_system>();
+
+    _scheduler->attach([this]([[maybe_unused]] const auto delta_time, [[maybe_unused]] auto finish){
 
     });
   }

@@ -92,9 +92,8 @@ protected:
 
 private:
   template<typename Target = Derived>
-  auto _next(std::integral_constant<state, state::uninitialized>)
-      -> decltype(std::declval<Target>().init(), void()) {
-      static_cast<Target*>(this)->init();
+  auto _next(std::integral_constant<state, state::uninitialized>) -> decltype(std::declval<Target>().initialize(), void()) {
+      static_cast<Target*>(this)->initialize();
   }
 
   template<typename Target = Derived>
