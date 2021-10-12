@@ -8,6 +8,7 @@ namespace sbx {
 
 engine::engine()
 : _scheduler{std::make_unique<scheduler>()},
+  _event_queue{std::make_unique<event_queue>()},
   _modules{} { }
 
 engine::~engine() {
@@ -15,7 +16,8 @@ engine::~engine() {
 }
 
 void engine::initialize() {
-  module::_scheduler = _scheduler.get();
+  module::scheduler = _scheduler.get();
+  module::event_queue = _event_queue.get();
 
   for (auto& module : _modules) {
     module->initialize();
@@ -24,7 +26,8 @@ void engine::initialize() {
 
 void engine::start() {
   using clock = std::chrono::steady_clock;
-  using duration = std::chrono::duration<fast_time>;
+  // [NOTE] KAJ 2021-10-12 18:43: Maybe dont trust that scheduler uses fast_time aswell
+  using duration = std::chrono::duration<time>;
 
   auto last_time = clock::now();
 
@@ -36,6 +39,7 @@ void engine::start() {
     last_time = now;
 
     _scheduler->update(delta_time);
+    _event_queue->pop_all();
   }
 }
 

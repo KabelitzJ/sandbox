@@ -5,6 +5,7 @@
 #include <memory>
 
 #include <ecs/scheduler.hpp>
+#include <ecs/event_queue.hpp>
 
 namespace sbx {
 
@@ -24,10 +25,11 @@ protected:
     static_assert(std::is_base_of_v<basic_system<System, fast_time>, System>);
     static_assert(!std::is_abstract_v<System>);
 
-    _scheduler->attach<System>(std::forward<Args>(args)...);
+    scheduler->attach<System>(std::forward<Args>(args)...);
   }
 
-  static scheduler* _scheduler;
+  static scheduler* scheduler;
+  static event_queue* event_queue;
   
 private:
   friend class engine;

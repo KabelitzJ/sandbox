@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <type_traits>
 #include <vector>
+#include <iostream>
 
 #include <types/primitives.hpp>
 
@@ -16,7 +17,7 @@ namespace sbx {
 template<typename Delta>
 class basic_scheduler;
 
-using scheduler = basic_scheduler<fast_time>;
+using scheduler = basic_scheduler<time>;
 
 template<typename Delta>
 class basic_scheduler {
@@ -67,7 +68,8 @@ public:
   void attach(Args&&... args) {
     static_assert(std::is_base_of_v<basic_system<System, delta_type>, System>, "Invalid system type");
 
-    auto system = typename system_handle::instance_type{new System{std::forward<Args>(args)...}, &basic_scheduler::_deleter<System>};
+    auto system = typename system_handle::instance_type{new System{std::forward<Args>(args)...}, [](auto* ptr){ delete static_cast<System*>(ptr); }};
+
     auto handle = system_handle{std::move(system), &basic_scheduler::_update<System>, &basic_scheduler::_abort<System>};
 
     handle.update(handle, delta_type{});
@@ -105,7 +107,7 @@ public:
 
 private:
   template<typename System>
-  [[nodiscard]] static bool _update(system_handle& handle, const Delta delta_time) {
+  [[nodiscard]] static bool _update(system_handle& handle, const delta_type delta_time) {
     auto* system = static_cast<System*>(handle.instance.get());
     system->tick(delta_time);
 
@@ -116,12 +118,6 @@ private:
   static void _abort(system_handle& handle, const bool immediately) {
     static_cast<System*>(handle.instance.get())->abort(immediately);
   }
-
-  template<typename System>
-  static void _deleter(void* system) {
-    delete static_cast<System*>(system);
-  }
-
 
   std::vector<system_handle> _handlers{};
 

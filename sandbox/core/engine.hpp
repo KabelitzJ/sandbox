@@ -5,6 +5,7 @@
 #include <memory>
 
 #include <ecs/scheduler.hpp>
+#include <ecs/event_queue.hpp>
 
 #include "module.hpp"
 
@@ -28,13 +29,13 @@ public:
     static_assert(!std::is_abstract_v<Module>);
 
     auto module = std::make_unique<Module>(std::forward<Args>(args)...);
-    module->_scheduler = _scheduler.get(); 
     
     _modules.push_back(std::move(module));
   }
 
 private:
   std::unique_ptr<scheduler> _scheduler{};
+  std::unique_ptr<event_queue> _event_queue{};
   std::vector<std::unique_ptr<module>> _modules{};
 
 }; // class engine
