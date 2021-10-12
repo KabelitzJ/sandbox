@@ -23,7 +23,7 @@ struct sequence;
  * @tparam Type Integer type of the sequence
  */
 template<typename Type>
-struct sequence<Type, std::enable_if_t<std::is_integral_v<Type>>> {
+struct sequence<Type, std::enable_if_t<std::is_unsigned_v<Type>>> {
 
   [[nodiscard]] static Type next() noexcept {
     static auto value = Type{0};
