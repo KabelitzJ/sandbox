@@ -61,7 +61,7 @@ class my_module final : public sbx::module {
       _event_queue->emplace<initialize_event>();
     }
 
-    void update([[maybe_unused]] const sbx::time delta_time) {
+    void update(const sbx::time delta_time) {
       _counter += delta_time;
 
       _event_queue->emplace<sbx::time>(_counter);
