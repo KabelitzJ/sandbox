@@ -1,38 +1,55 @@
-#ifndef SBX_ECS_BASIC_SCHEDULER_HPP_
-#define SBX_ECS_BASIC_SCHEDULER_HPP_
+#ifndef SBX_ECS_SCHEDULER_HPP_
+#define SBX_ECS_SCHEDULER_HPP_
 
 #include <memory>
+#include <utility>
+#include <algorithm>
+#include <type_traits>
 #include <vector>
 
-#include "process.hpp"
+#include <types/primitives.hpp>
+
+#include "system.hpp"
 
 namespace sbx {
 
-template<typename>
+template<typename Delta>
 class basic_scheduler;
 
 using scheduler = basic_scheduler<fast_time>;
-  
-template<typename Delta>
-class basic_scheduler final {
 
-  struct process_handler {
+template<typename Delta>
+class basic_scheduler {
+
+  struct system_handle {
     using instance_type = std::unique_ptr<void, void(*)(void*)>;
-    using update_fn_type = bool(process_handler&, const Delta);
-    using abort_fn_type = void(process_handler&, bool);
+    using update_fn_type = bool(system_handle&, Delta);
+    using abort_fn_type = void(system_handle&, const bool);
 
     instance_type instance;
     update_fn_type* update;
     abort_fn_type* abort;
-  }; // struct process_handler
+  }; // struct system_handle
 
 public:
-
-  using size_type = std::size_t;
   using delta_type = Delta;
+  using size_type = std::size_t;
 
-  basic_scheduler() = default;
-  ~basic_scheduler() = default;
+  basic_scheduler()
+  : _handlers{} { }
+
+  basic_scheduler(const basic_scheduler&) = delete;
+
+  basic_scheduler(basic_scheduler&&) = default;
+
+  basic_scheduler& operator=(const basic_scheduler&) = delete;
+
+  basic_scheduler& operator=(basic_scheduler&&) = default;
+
+  ~basic_scheduler() {
+    abort(true);
+    clear();
+  }
 
   [[nodiscard]] size_type size() const noexcept {
     return _handlers.size();
@@ -46,79 +63,70 @@ public:
     _handlers.clear();
   }
 
-  template<typename Process, typename... Args>
+  template<typename System, typename... Args>
   void attach(Args&&... args) {
-    static_assert(std::is_base_of_v<basic_process<Process, delta_type>, Process>, "Invalid process type");
-    
-    auto process = typename process_handler::instance_type{new Process{std::forward<Args>(args)...}, &basic_scheduler::_deleter<Process>};
-    auto handler = process_handler{std::move(process), &basic_scheduler::_update<Process>, &basic_scheduler::_abort<Process>};
-  
-    handler.update(handler, delta_type{});
+    static_assert(std::is_base_of_v<basic_system<System, delta_type>, System>, "Invalid system type");
 
-    _handlers.push_back(std::move(handler));
+    auto system = typename system_handle::instance_type{new System{std::forward<Args>(args)...}, &basic_scheduler::_deleter<System>};
+    auto handle = system_handle{std::move(system), &basic_scheduler::_update<System>, &basic_scheduler::_abort<System>};
+
+    handle.update(handle, delta_type{});
+
+    _handlers.emplace_back(std::move(handle));
   }
 
   template<typename Function>
   void attach(Function&& function) {
-    using Process = process_adaptor<std::decay_t<Function>, delta_type>;
-    
-    attach<Process>(std::forward<Function>(function));
+    attach<system_adaptor<std::decay_t<Function>, delta_type>>(std::forward<Function>(function));
   }
 
   void update(const delta_type delta_time) {
     _handlers.erase(
-      std::remove_if(_handlers.begin(), _handlers.end(), [&](auto& hander){
-        return hander.update(hander, delta_time);
-      }),
+      std::remove_if(
+        _handlers.begin(),
+        _handlers.end(),
+        [&](auto& handle){ return handle.update(handle, delta_time); }
+      ),
       _handlers.end()
     );
   }
 
-  void abort(const bool immediate = false) {
-    auto exec = decltype(_handlers){_handlers.size()};
-    exec.swap(_handlers);
+  void abort(const bool immediately = false) {
+    auto executors = decltype(_handlers){};
+    executors.swap(_handlers);
 
-    for (auto&& handler : exec) {
-      handler.abort(handler, immediate);
+    for (auto&& handle : executors) {
+      handle.abort(handle, immediately);
     }
 
-    std::move(_handlers.begin(), _handlers.end(), std::back_inserter(exec));
-    _handlers.swap(exec);
+    std::move(_handlers.begin(), _handlers.end(), std::back_inserter(executors));
+    _handlers.swap(executors);
   }
 
 private:
+  template<typename System>
+  [[nodiscard]] static bool _update(system_handle& handle, const Delta delta_time) {
+    auto* system = static_cast<System*>(handle.instance.get());
+    system->tick(delta_time);
 
-  /**
-   * @brief 
-   * 
-   * @tparam Process 
-   * @param handler 
-   * @param delta_time 
-   * @return true When the process has either succeeded or been aborted
-   * @return false When the process is still running
-   */
-  template<typename Process>
-  [[nodiscard]] static bool _update(process_handler& handler, const delta_type delta_time) {
-    auto* process = static_cast<Process*>(handler.instance.get());
-    process->tick(delta_time);
-
-    return process->is_finished();
+    return system->is_finished();
   }
 
-  template<typename Process>
-  static void _abort(process_handler& handler, const bool immediate) {
-    static_cast<Process*>(handler.instance.get())->abort(immediate);
+  template<typename System>
+  static void _abort(system_handle& handle, const bool immediately) {
+    static_cast<System*>(handle.instance.get())->abort(immediately);
   }
 
-  template<typename Process>
-  static void _deleter(void* process) {
-    delete static_cast<Process*>(process);
+  template<typename System>
+  static void _deleter(void* system) {
+    delete static_cast<System*>(system);
   }
 
-  std::vector<process_handler> _handlers{};
+
+  std::vector<system_handle> _handlers{};
 
 }; // class basic_scheduler
-  
+
 } // namespace sbx
 
-#endif // SBX_ECS_BASIC_SCHEDULER_HPP_
+#endif // SBX_ECS_SCHEDULER_HPP_

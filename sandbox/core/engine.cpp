@@ -2,24 +2,23 @@
 
 #include <chrono>
 
+#include <types/primitives.hpp>
+
 namespace sbx {
 
 engine::engine()
-: _registry{std::make_unique<registry>()},
-  _scheduler{std::make_unique<scheduler>()},
-  _modules{} {
-
-
-}
+: _scheduler{std::make_unique<scheduler>()},
+  _modules{} { }
 
 engine::~engine() {
 
 }
 
 void engine::initialize() {
+  module::_scheduler = _scheduler.get();
+
   for (auto& module : _modules) {
     module->initialize();
-    module->_initialize();
   }
 }
 
