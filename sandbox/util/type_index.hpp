@@ -46,7 +46,8 @@ using atomic_sequence = sequence<std::atomic<Type>>;
 /**
  * @brief Maps any given type to an unsigned 32 bit identifier
  *
- * @warning Indices are not required to be the same for any given type throughout multiple program instances
+ * @warning Indices are not required to be the same for any given type throughout multiple program instances.
+ * Type aliases (e.g. unsigned int and std::uint32_t) result in the same identifier.
  *
  * @tparam Type to get the index of
  */
