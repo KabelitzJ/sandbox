@@ -18,5 +18,7 @@ int main(int argc, char** argv) {
 
   engine.start();
 
+  engine.terminate();
+
   return EXIT_SUCCESS;
 }

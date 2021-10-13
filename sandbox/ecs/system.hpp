@@ -19,16 +19,17 @@ class basic_system {
 
   enum class state : uint8 {
     uninitialized = 0,
-    running,
-    finished,
-    aborted
+    running = 1,
+    finished = 2,
+    aborted = 3
   }; // enum class state
 
 public:
 
   using delta_type = Delta;
 
-  basic_system() = default;
+  basic_system()
+  : _current_state{state::uninitialized} { };
 
   virtual ~basic_system() {
     static_assert(std::is_base_of_v<basic_system, Derived>, "Incorrect use of class template");

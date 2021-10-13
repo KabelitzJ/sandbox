@@ -64,7 +64,10 @@ public:
     constexpr auto id = type_id<Event>{};
 
     _listeners[id].emplace_back(
-      [&listener](auto&& handle){ std::invoke(listener, *static_cast<Event*>(handle.get())); }
+      // [NOTE] KAJ 2021-10-13 21:35: Move capture is very important. Otherwise the listener inside the lambda will be a copy of the original
+      [listener = std::move(listener)](auto&& handle){ 
+        std::invoke(listener, std::as_const(*static_cast<Event*>(handle.get())));
+      }
     );
   }
 
@@ -83,7 +86,7 @@ public:
 
     constexpr auto id = type_id<Event>{};
 
-    auto handle = event_handle{new Event{std::forward<Args>(args)...}, [](auto* ptr){ delete static_cast<Event*>(ptr); }};
+    auto handle = event_handle{new Event{std::forward<Args>(args)...}, _deleter<Event>};
 
     _queue.emplace(id, std::move(handle));
   }
@@ -103,12 +106,17 @@ public:
       }
 
       for (auto& listener : _listeners[id]) {
-        listener(std::move(handle));
+        std::invoke(listener, std::move(handle));
       }
     }
   }
 
 private:
+  template<typename Event>
+  static void _deleter(void* event) {
+    delete static_cast<Event*>(event);
+  }
+
   std::unordered_map<uint32, std::vector<std::function<void(event_handle&&)>>> _listeners{};
   std::queue<std::pair<uint32, event_handle>> _queue{};
 
