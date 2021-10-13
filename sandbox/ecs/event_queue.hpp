@@ -85,7 +85,7 @@ public:
 
     auto handle = event_handle{new Event{std::forward<Args>(args)...}, [](auto* ptr){ delete static_cast<Event*>(ptr); }};
 
-    _event_queue.emplace(id, std::move(handle));
+    _queue.emplace(id, std::move(handle));
   }
 
   /**
@@ -94,8 +94,8 @@ public:
    */
   void pop_all() {
     while (!_event_queue.empty()) {
-      auto [id, handle] = std::move(_event_queue.front());
-      _event_queue.pop();
+      auto [id, handle] = std::move(_queue.front());
+      _queue.pop();
 
       if (_listeners.find(id) == _listeners.end()) {
         // No listeners for this event type
@@ -110,7 +110,7 @@ public:
 
 private:
   std::unordered_map<uint32, std::vector<std::function<void(event_handle&&)>>> _listeners{};
-  std::queue<std::pair<uint32, event_handle>> _event_queue{};
+  std::queue<std::pair<uint32, event_handle>> _queue{};
 
 }; // class event_queue
 
