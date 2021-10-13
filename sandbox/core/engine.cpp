@@ -42,7 +42,7 @@ void engine::start() {
   }
 }
   
-void engine::initialize() {
+void engine::terminate() {
   // [NOTE] KAJ 2021-10-12 18:43: Maybe terminate modules in reverse order
   for (auto& module : _modules) {
     module->terminate();
