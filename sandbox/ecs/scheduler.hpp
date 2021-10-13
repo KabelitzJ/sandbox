@@ -66,6 +66,8 @@ public:
 
   template<typename System, typename... Args>
   void attach(Args&&... args) {
+    static_assert(!std::is_abstract_v<System>, "System can not be abstract");
+    static_assert(std::is_constructable_v<System, Args...>, "System must be constructable by given arguments");
     static_assert(std::is_base_of_v<basic_system<System, delta_type>, System>, "Invalid system type");
 
     auto system = typename system_handle::instance_type{new System{std::forward<Args>(args)...}, [](auto* ptr){ delete static_cast<System*>(ptr); }};
@@ -79,6 +81,7 @@ public:
 
   template<typename Function>
   void attach(Function&& function) {
+    // [Note] KAJ 13.10.2021 10:23: Assert that function has the right signature
     attach<system_adaptor<std::decay_t<Function>, delta_type>>(std::forward<Function>(function));
   }
 
