@@ -42,5 +42,11 @@ void engine::start() {
     _event_queue->pop_all();
   }
 }
+  
+void engine::initialize() {
+  for (auto& module : _modules) {
+    module->terminate();
+  }
+}
 
 } // namespace sbx
