@@ -93,7 +93,7 @@ public:
    * When no listener for a given event exists, nothing happens for that event.
    */
   void pop_all() {
-    while (!_event_queue.empty()) {
+    while (!_queue.empty()) {
       auto [id, handle] = std::move(_queue.front());
       _queue.pop();
 
