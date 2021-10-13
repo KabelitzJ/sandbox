@@ -103,18 +103,18 @@ public:
   }
 
   void initialize() override {
-    _scheduler->attach<my_system>(_event_queue);
+    scheduler->attach<my_system>(event_queue);
 
     // [NOTE] KAJ 2021-10-12 18:50: Instant finish here, otherwise it will keep the engine alive
-    _scheduler->attach([this]([[maybe_unused]] const auto delta_time, [[maybe_unused]] auto finish){
+    scheduler->attach([this]([[maybe_unused]] const auto delta_time, [[maybe_unused]] auto finish){
       finish();
     });
 
-    _event_queue->add_listener<initialize_event>([]([[maybe_unused]] const auto& event){
+    event_queue->add_listener<initialize_event>([]([[maybe_unused]] const auto& event){
       std::cout << "initialized\n";
     });
 
-    _event_queue->add_listener<terminate_event>([]([[maybe_unused]] const auto& event){
+    event_queue->add_listener<terminate_event>([]([[maybe_unused]] const auto& event){
       std::cout << "terminated\n";
     });
   }
