@@ -49,7 +49,6 @@ cmake . -B build -G "<generator>" -DCMAKE_BUILD_TYPE=<config> -DSBX_BUILD_DEMO=<
 
 Where
 
-
 | Tag           | Description                                                                  | Example value                   |
 | ------------- | ---------------------------------------------------------------------------- | ------------------------------- |
 | `generator`   | Generator used to build the project                                          | `MinGW Makefiles`, `Unix Makefiles`<br>([available cmake generators](https://cmake.org/cmake/help/latest/manual/cmake-generators.7.html))|
@@ -57,7 +56,6 @@ Where
 | `demo`        | Should the demo executable be build                                          | `True` or `False`               |
 | `tests`       | Should the tests be build                                                    | `True` or `False`               |
 | `docs`        | Should the documentation files be generated                                  | `True` or `False`               |
-
 
 If you build the tests you can run them by running
 
