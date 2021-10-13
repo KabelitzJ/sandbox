@@ -7,6 +7,7 @@
 #include <type_traits>
 #include <vector>
 #include <iostream>
+#include <chrono>
 
 #include <types/primitives.hpp>
 
@@ -35,6 +36,7 @@ class basic_scheduler {
 public:
   using delta_type = Delta;
   using size_type = std::size_t;
+  using duration_type = std::chrono::duration<delta_type>;
 
   basic_scheduler()
   : _handlers{} { }
