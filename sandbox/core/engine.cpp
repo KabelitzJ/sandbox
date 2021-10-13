@@ -26,8 +26,7 @@ void engine::initialize() {
 
 void engine::start() {
   using clock = std::chrono::steady_clock;
-  // [NOTE] KAJ 2021-10-12 18:43: Maybe dont trust that scheduler uses fast_time aswell
-  using duration = std::chrono::duration<time>;
+  using duration = typename scheduler::duration_type;
 
   auto last_time = clock::now();
 
@@ -44,6 +43,7 @@ void engine::start() {
 }
   
 void engine::initialize() {
+  // [NOTE] KAJ 2021-10-12 18:43: Maybe terminate modules in reverse order
   for (auto& module : _modules) {
     module->terminate();
   }
