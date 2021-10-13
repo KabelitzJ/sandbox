@@ -64,7 +64,7 @@ public:
     constexpr auto id = type_id<Event>{};
 
     _listeners[id].emplace_back(
-      [&listener](auto&& event){ std::invoke(listener, *static_cast<Event*>(event)); }
+      [&listener](auto&& handle){ std::invoke(listener, *static_cast<Event*>(handle.get())); }
     );
   }
 
