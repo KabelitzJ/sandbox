@@ -11,7 +11,7 @@
 #include <types/primitives.hpp>
 
 #include <util/memory.hpp>
-#include <util/type_index.hpp>
+#include <util/type_id.hpp>
 
 namespace sbx {
 
@@ -24,17 +24,24 @@ namespace sbx {
  */
 class event_queue {
 
-  /**
-   * @brief A simple wrapper around a generic event instance
-   */
-  struct event_handle {
-    using instance_type = std::unique_ptr<void, void(*)(void*)>;
-
-    instance_type instance;
-  }; // struct event_handle
+  using event_handle = std::unique_ptr<void, void(*)(void*)>;
 
 public:
 
+  event_queue()
+  : _listeners{},
+    _queue{} { }
+
+  event_queue(const event_queue&) = delete;
+
+  event_queue(event_queue&&) = default;
+
+  event_queue& operator=(const event_queue&) = delete;
+
+  event_queue& operator=(event_queue&&) = default;
+
+  ~event_queue() = default;
+  
   /**
    * @brief Adds a new listener for the given event type
    * 
@@ -51,12 +58,13 @@ public:
    */
   template<typename Event, typename Listener>
   void add_listener(Listener&& listener) {
+    static_assert(!std::is_abstract_v<Event>, "An event can not be abstract");
     static_assert(std::is_invocable_r_v<void, Listener, const Event&>, "Wrong signature for listener");
 
-    constexpr auto id = type_index<Event>{};
+    constexpr auto id = type_id<Event>{};
 
     _listeners[id].emplace_back(
-      [&listener](void* event){ std::invoke(listener, *static_cast<Event*>(event)); }
+      [&listener](auto&& event){ std::invoke(listener, *static_cast<Event*>(event)); }
     );
   }
 
@@ -73,11 +81,9 @@ public:
     static_assert(!std::is_abstract_v<Event>, "An event can not be abstract");
     static_assert(std::is_constructible_v<Event, Args...>, "Can not construct event from given arguments");
 
-    constexpr auto id = type_index<Event>{};
+    constexpr auto id = type_id<Event>{};
 
-    auto event = typename event_handle::instance_type{new Event{std::forward<Args>(args)...}, [](auto* ptr){ delete static_cast<Event*>(ptr); }};
-
-    auto handle = event_handle{std::move(event)};
+    auto handle = event_handle{new Event{std::forward<Args>(args)...}, [](auto* ptr){ delete static_cast<Event*>(ptr); }};
 
     _event_queue.emplace(id, std::move(handle));
   }
@@ -97,13 +103,13 @@ public:
       }
 
       for (auto& listener : _listeners[id]) {
-        listener(handle.instance.get());
+        listener(std::move(handle));
       }
     }
   }
 
 private:
-  std::unordered_map<uint32, std::vector<std::function<void(void*)>>> _listeners{};
+  std::unordered_map<uint32, std::vector<std::function<void(event_handle&&)>>> _listeners{};
   std::queue<std::pair<uint32, event_handle>> _event_queue{};
 
 }; // class event_queue
