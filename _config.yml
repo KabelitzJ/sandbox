@@ -2,5 +2,3 @@ name: Sandbox
 description: Sandbox game engine
 url: https://kabelitzj.github.io/sandbox/
 theme: jekyll-theme-slate
-markdown: GFM
-highlighter: rouge
