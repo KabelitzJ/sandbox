@@ -28,8 +28,8 @@ protected:
     scheduler->attach<System>(std::forward<Args>(args)...);
   }
 
-  static scheduler* _scheduler;
-  static event_queue* _event_queue;
+  static ::sbx::scheduler* scheduler;
+  static ::sbx::event_queue* event_queue;
   
 private:
   friend class engine;
