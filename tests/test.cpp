@@ -1,9 +1,6 @@
 #include <gtest/gtest.h>
 
-
-TEST(Storage, InitialState) {
-  EXPECT_EQ(0, 0);
-}
+#include "ecs/event_queue_test.hpp"
 
 int main(int, char**) {
   testing::InitGoogleTest();
