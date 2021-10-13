@@ -21,7 +21,7 @@ public:
 
 protected:
   template<typename System, typename... Args>
-  void add_system(Args&&... args) {
+  void _add_system(Args&&... args) {
     static_assert(std::is_base_of_v<basic_system<System, fast_time>, System>);
     static_assert(!std::is_abstract_v<System>);
 
