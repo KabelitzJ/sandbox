@@ -16,8 +16,8 @@ engine::~engine() {
 }
 
 void engine::initialize() {
-  module::scheduler = _scheduler.get();
-  module::event_queue = _event_queue.get();
+  module::_scheduler = _scheduler.get();
+  module::_event_queue = _event_queue.get();
 
   for (auto& module : _modules) {
     module->initialize();
