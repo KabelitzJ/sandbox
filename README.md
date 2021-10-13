@@ -48,6 +48,7 @@ cmake . -B build -G "<generator>" -DCMAKE_BUILD_TYPE=<config> -DSBX_BUILD_DEMO=<
 ```
 
 Where
+
 | Tag           | Description                                                                  | Example value                   |
 | ------------- | ---------------------------------------------------------------------------- | ------------------------------- |
 | `generator`   | Generator used to build the project                                          | `MinGW Makefiles`, `Unix Makefiles`<br>([available cmake generators](https://cmake.org/cmake/help/latest/manual/cmake-generators.7.html))|
@@ -63,4 +64,5 @@ If you build the tests you can run them by running
 ```
 
 # License
+
 This project is published under the [MIT License](LICENSE).
