@@ -12,7 +12,7 @@ namespace sbx {
 class module {
 
 public:
-  module();
+  module() = default;
   virtual ~module() = default;
 
   virtual void initialize() = 0;
