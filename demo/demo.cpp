@@ -50,7 +50,9 @@ class my_module final : public sbx::module {
     public:
       my_other_system(sbx::event_queue* event_queue)
       : _event_queue{event_queue},
-        _handle{nullptr} { }
+        _handle{nullptr},
+        _frame_counter{0},
+        _timer{0.0f} { }
 
       ~my_other_system() = default;
 
@@ -61,7 +63,18 @@ class my_module final : public sbx::module {
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-        _handle = glfwCreateWindow(100, 100, "Window [delta: ]", nullptr, nullptr);
+        auto* monitor = glfwGetPrimaryMonitor();
+
+        const auto* video_mode = glfwGetVideoMode(monitor);
+
+        const auto width = video_mode->width / 2;
+        const auto height = video_mode->height / 2;
+        const auto x = video_mode->width / 2 - width / 2;
+        const auto y = video_mode->height / 2 - height / 2;
+
+        _handle = glfwCreateWindow(width, height, "Window [fps: 0]", nullptr, nullptr);
+
+        glfwSetWindowPos(_handle, x, y);
 
         glfwMakeContextCurrent(_handle);
 
@@ -70,6 +83,10 @@ class my_module final : public sbx::module {
         glClearColor(0.7f, 0.3f, 0.4f, 1.0f);
 
         glfwSwapInterval(0);
+
+        glfwSetFramebufferSizeCallback(_handle, [](auto*, auto buffer_width, auto buffer_height){
+          glViewport(0, 0, buffer_width, buffer_height);
+        });
       }
 
       void update(const sbx::time delta_time) {
@@ -85,13 +102,23 @@ class my_module final : public sbx::module {
           return;
         }
 
-        auto ss = std::stringstream{};
-        ss << "Window [delta: " << delta_time << "]";
+        _timer += delta_time;
 
-        glfwSetWindowTitle(_handle, ss.str().c_str());
+        if (_timer >= sbx::time{1.0f}) {
+          auto ss = std::stringstream{};
+          ss << "Window [fps: " << _frame_counter << "]";
+
+          glfwSetWindowTitle(_handle, ss.str().c_str());
+
+          _timer = 0.0f;
+          _frame_counter = 0;
+        }
+
 
         glClear(GL_COLOR_BUFFER_BIT);
         glfwSwapBuffers(_handle);
+
+        ++_frame_counter;
       }
 
       void finished() {
@@ -106,6 +133,8 @@ class my_module final : public sbx::module {
     private:
       sbx::event_queue* _event_queue{};
       GLFWwindow* _handle;
+      sbx::uint32 _frame_counter{};
+      sbx::time _timer{};
   };
 
   class my_system : public sbx::system<my_system> {
