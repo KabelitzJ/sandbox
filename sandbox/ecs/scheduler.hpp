@@ -7,6 +7,7 @@
 #include <type_traits>
 #include <vector>
 #include <iostream>
+#include <chrono>
 
 #include <types/primitives.hpp>
 
@@ -35,6 +36,7 @@ class basic_scheduler {
 public:
   using delta_type = Delta;
   using size_type = std::size_t;
+  using duration_type = std::chrono::duration<delta_type>;
 
   basic_scheduler()
   : _handlers{} { }
@@ -66,9 +68,11 @@ public:
 
   template<typename System, typename... Args>
   void attach(Args&&... args) {
+    static_assert(!std::is_abstract_v<System>, "System can not be abstract");
+    static_assert(std::is_constructible_v<System, Args...>, "System must be constructable by given arguments");
     static_assert(std::is_base_of_v<basic_system<System, delta_type>, System>, "Invalid system type");
 
-    auto system = typename system_handle::instance_type{new System{std::forward<Args>(args)...}, [](auto* ptr){ delete static_cast<System*>(ptr); }};
+    auto system = typename system_handle::instance_type{new System{std::forward<Args>(args)...}, _deleter<System>};
 
     auto handle = system_handle{std::move(system), &basic_scheduler::_update<System>, &basic_scheduler::_abort<System>};
 
@@ -79,6 +83,7 @@ public:
 
   template<typename Function>
   void attach(Function&& function) {
+    // [NOTE] KAJ 13.10.2021 10:23: Assert that function has the right signature
     attach<system_adaptor<std::decay_t<Function>, delta_type>>(std::forward<Function>(function));
   }
 
@@ -87,7 +92,10 @@ public:
       std::remove_if(
         _handlers.begin(),
         _handlers.end(),
-        [&](auto& handle){ return handle.update(handle, delta_time); }
+        [&](auto& handle){ 
+          const auto foo = handle.update(handle, delta_time); 
+          return foo;
+        }
       ),
       _handlers.end()
     );
@@ -117,6 +125,11 @@ private:
   template<typename System>
   static void _abort(system_handle& handle, const bool immediately) {
     static_cast<System*>(handle.instance.get())->abort(immediately);
+  }
+
+  template<typename System>
+  static void _deleter(void* system) {
+    delete static_cast<System*>(system);
   }
 
   std::vector<system_handle> _handlers{};

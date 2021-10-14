@@ -2,12 +2,7 @@
 
 namespace sbx {
 
-scheduler* module::scheduler{nullptr};
-event_queue* module::event_queue{nullptr};
-
-module::module() {
-
-}
-
+scheduler* module::_scheduler{nullptr};
+event_queue* module::_event_queue{nullptr};
 
 } // namespace sbx

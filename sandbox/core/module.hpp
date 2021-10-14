@@ -12,7 +12,7 @@ namespace sbx {
 class module {
 
 public:
-  module();
+  module() = default;
   virtual ~module() = default;
 
   virtual void initialize() = 0;
@@ -20,20 +20,12 @@ public:
   virtual void terminate() = 0;
 
 protected:
-  template<typename System, typename... Args>
-  void add_system(Args&&... args) {
-    static_assert(std::is_base_of_v<basic_system<System, fast_time>, System>);
-    static_assert(!std::is_abstract_v<System>);
-
-    scheduler->attach<System>(std::forward<Args>(args)...);
-  }
-
-  static scheduler* scheduler;
-  static event_queue* event_queue;
+  static scheduler* _scheduler;
+  static event_queue* _event_queue;
   
 private:
   friend class engine;
-
+  
 }; // class module
 
 } // namespace sbx

@@ -36,15 +36,43 @@ velocity operator*(const velocity& velocity, const float scalar) {
   return {velocity.x * scalar, velocity.y * scalar, velocity.z * scalar};
 }
 
-#include <sstream>
-
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-
-struct initialize_event { };
-struct terminate_event { };
-
 class my_module final : public sbx::module {
+
+  class my_other_system : public sbx::system<my_other_system> {
+
+    public:
+      my_other_system(sbx::event_queue* event_queue)
+      : _event_queue{event_queue},
+        _counter{0.0f} { }
+
+      ~my_other_system() = default;
+
+      void initialize() {
+        _event_queue->add_listener<sbx::time>([this](const auto& event){
+          _counter += event;
+
+          if (_counter >= sbx::time{1}) {
+            finish();
+          }
+        });
+      }
+
+      void update([[maybe_unused]] const sbx::time delta_time) {
+        
+      }
+
+      void finished() {
+        
+      }
+
+      void aborted() {
+        
+      }
+
+    private:
+      sbx::event_queue* _event_queue{};
+      sbx::time _counter{};
+  };
 
   class my_system : public sbx::system<my_system> {
 
@@ -56,9 +84,7 @@ class my_module final : public sbx::module {
     ~my_system() = default;
 
     void initialize() {
-      _event_queue->add_listener<sbx::time>([this](const auto& event){ _updated(event); });
 
-      _event_queue->emplace<initialize_event>();
     }
 
     void update(const sbx::time delta_time) {
@@ -72,15 +98,11 @@ class my_module final : public sbx::module {
     }
 
     void finished() {
-      terminate();
+      
     }
 
     void aborted() {
-      terminate();
-    }
-
-    void terminate() {
-      _event_queue->emplace<terminate_event>();
+      
     }
 
   private:
@@ -103,20 +125,8 @@ public:
   }
 
   void initialize() override {
-    scheduler->attach<my_system>(event_queue);
-
-    // [NOTE] KAJ 2021-10-12 18:50: Instant finish here, otherwise it will keep the engine alive
-    scheduler->attach([this]([[maybe_unused]] const auto delta_time, [[maybe_unused]] auto finish){
-      finish();
-    });
-
-    event_queue->add_listener<initialize_event>([]([[maybe_unused]] const auto& event){
-      std::cout << "initialized\n";
-    });
-
-    event_queue->add_listener<terminate_event>([]([[maybe_unused]] const auto& event){
-      std::cout << "terminated\n";
-    });
+    _scheduler->attach<my_system>(_event_queue);
+    _scheduler->attach<my_other_system>(_event_queue);
   }
 
   void terminate() override {

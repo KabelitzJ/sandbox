@@ -25,6 +25,8 @@ struct sequence;
 template<typename Type>
 struct sequence<Type, std::enable_if_t<std::is_unsigned_v<Type>>> {
 
+  using type = Type;
+
   [[nodiscard]] static Type next() noexcept {
     static auto value = Type{0};
 
@@ -32,16 +34,6 @@ struct sequence<Type, std::enable_if_t<std::is_unsigned_v<Type>>> {
   }
 
 }; // struct sequence
-
-
-/**
- * @brief A integer sequence with an atomically incrementing value
- *
- * @tparam Type Integer type of the sequence
- */
-template<typename Type>
-using atomic_sequence = sequence<std::atomic<Type>>;
-
 
 /**
  * @brief Maps any given type to an unsigned 32 bit identifier
@@ -51,16 +43,19 @@ using atomic_sequence = sequence<std::atomic<Type>>;
  *
  * @tparam Type to get the index of
  */
-template<typename Type>
-struct type_index final {
+template<typename Type, typename Id = uint32, typename Sequence = sequence<Id>>
+struct type_id final {
 
-  [[nodiscard]] static uint32 value() noexcept {
-    static const auto value = sequence<uint32>::next();
+  using type = Type;
+  using id_type = Id;
+
+  [[nodiscard]] static Id value() noexcept {
+    static const auto value = Sequence::next();
 
     return value;
   }
 
-  [[nodiscard]] constexpr operator uint32() const noexcept {
+  [[nodiscard]] constexpr operator Id() const noexcept {
     return value();
   }
 

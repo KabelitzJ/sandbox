@@ -11,7 +11,7 @@
 #include <types/primitives.hpp>
 
 #include <util/memory.hpp>
-#include <util/type_index.hpp>
+#include <util/type_id.hpp>
 
 namespace sbx {
 
@@ -24,17 +24,24 @@ namespace sbx {
  */
 class event_queue {
 
-  /**
-   * @brief A simple wrapper around a generic event instance
-   */
-  struct event_handle {
-    using instance_type = std::unique_ptr<void, void(*)(void*)>;
-
-    instance_type instance;
-  }; // struct event_handle
+  using event_handle = std::unique_ptr<void, void(*)(void*)>;
 
 public:
 
+  event_queue()
+  : _listeners{},
+    _queue{} { }
+
+  event_queue(const event_queue&) = delete;
+
+  event_queue(event_queue&&) = default;
+
+  event_queue& operator=(const event_queue&) = delete;
+
+  event_queue& operator=(event_queue&&) = default;
+
+  ~event_queue() = default;
+  
   /**
    * @brief Adds a new listener for the given event type
    * 
@@ -51,12 +58,16 @@ public:
    */
   template<typename Event, typename Listener>
   void add_listener(Listener&& listener) {
+    static_assert(!std::is_abstract_v<Event>, "An event can not be abstract");
     static_assert(std::is_invocable_r_v<void, Listener, const Event&>, "Wrong signature for listener");
 
-    constexpr auto id = type_index<Event>{};
+    constexpr auto id = type_id<Event>{};
 
     _listeners[id].emplace_back(
-      [&listener](void* event){ std::invoke(listener, *static_cast<Event*>(event)); }
+      // [NOTE] KAJ 2021-10-13 21:35: Move capture is very important. Otherwise the listener inside the lambda will be a copy of the original
+      [listener = std::move(listener)](auto&& handle){ 
+        std::invoke(listener, std::as_const(*static_cast<Event*>(handle.get())));
+      }
     );
   }
 
@@ -73,13 +84,11 @@ public:
     static_assert(!std::is_abstract_v<Event>, "An event can not be abstract");
     static_assert(std::is_constructible_v<Event, Args...>, "Can not construct event from given arguments");
 
-    constexpr auto id = type_index<Event>{};
+    constexpr auto id = type_id<Event>{};
 
-    auto event = typename event_handle::instance_type{new Event{std::forward<Args>(args)...}, [](auto* ptr){ delete static_cast<Event*>(ptr); }};
+    auto handle = event_handle{new Event{std::forward<Args>(args)...}, _deleter<Event>};
 
-    auto handle = event_handle{std::move(event)};
-
-    _event_queue.emplace(id, std::move(handle));
+    _queue.emplace(id, std::move(handle));
   }
 
   /**
@@ -87,9 +96,9 @@ public:
    * When no listener for a given event exists, nothing happens for that event.
    */
   void pop_all() {
-    while (!_event_queue.empty()) {
-      auto [id, handle] = std::move(_event_queue.front());
-      _event_queue.pop();
+    while (!_queue.empty()) {
+      auto [id, handle] = std::move(_queue.front());
+      _queue.pop();
 
       if (_listeners.find(id) == _listeners.end()) {
         // No listeners for this event type
@@ -97,14 +106,19 @@ public:
       }
 
       for (auto& listener : _listeners[id]) {
-        listener(handle.instance.get());
+        std::invoke(listener, std::move(handle));
       }
     }
   }
 
 private:
-  std::unordered_map<uint32, std::vector<std::function<void(void*)>>> _listeners{};
-  std::queue<std::pair<uint32, event_handle>> _event_queue{};
+  template<typename Event>
+  static void _deleter(void* event) {
+    delete static_cast<Event*>(event);
+  }
+
+  std::unordered_map<uint32, std::vector<std::function<void(event_handle&&)>>> _listeners{};
+  std::queue<std::pair<uint32, event_handle>> _queue{};
 
 }; // class event_queue
 
