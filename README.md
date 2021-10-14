@@ -8,6 +8,7 @@ The sandbox engine a ecs-based, modular rendering engine implemented using c++17
 
 - [TODOs](#todos)
 - [Build](#build)
+- [Using sbx](#using-sbx)
 - [License](#license)
 
 # TODOs
@@ -35,13 +36,13 @@ mkdir build
 ```
 
 Then you'll need to install and build (if not already in your local conan repository) the external dependencies.
-For this you need conan installed and run the following commands in the root directory
+For this you need [conan installed](https://docs.conan.io/en/latest/installation.html#install-with-pip-recommended) and run the following commands in the root directory
 
 ```
 conan install . --install-folder build/ --build missing
 ```
 
-After that you can generate the cmake build files with
+After that you can generate the [cmake](https://cmake.org/download/) build files with
 
 ```
 cmake . -B build -G "<generator>" -DCMAKE_BUILD_TYPE=<config> -DSBX_BUILD_DEMO=<demo> -DSBX_BUILD_TESTS=<tests> -DSBX_GENERATE_DOCS=<docs>
@@ -61,6 +62,58 @@ If you build the tests you can run them by running
 
 ```
 ./build/tests/sbx_test.exe
+```
+
+# Using sbx
+
+The modularity of sbx allows you quickly set up a running example. For a deeper dive into the available functionalities you can
+check out the `demo/` directive of the [wiki page](https://github.com/KabelitzJ/sandbox/wiki).
+
+To start using sbx you'll need to include
+
+```c++
+#include <core/core.hpp>
+```
+
+inside one of you `.cpp` files. You then need to define the entry point for sbx.
+
+```c++
+void sbx::setup(sbx::engine& engine) {
+
+}
+```
+
+Sbx defines the `void main(int, char**)` method for you so _DO NOT_ define it yourself.
+
+Inside this entry point you can add your custom modules to the engine.
+Start by creating your own module that inherits from `sbx::module` and define the tree lifecycle methods.
+
+```c++
+class my_module final : public sbx::module {
+
+public:
+  // data can be passed via the constructor
+  my_module(const some_data_object& data) : _data{data} { }
+  ~my_module() { }
+
+  void initialize() override { }
+
+  void update(const sbx::time delta_time) override { }
+
+  void terminate() override { }
+
+private:
+  // Any local state for that module can be declared here
+  some_data_object& _data{};
+
+};
+```
+
+After that you can add your module to the engine inside the entry point.
+
+```c++
+// Arguments will be used to instantiate a new instance of my_module
+engine.add_module<my_module>(some_data_instance);
 ```
 
 # License
