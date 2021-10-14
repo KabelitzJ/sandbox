@@ -36,6 +36,13 @@ velocity operator*(const velocity& velocity, const float scalar) {
   return {velocity.x * scalar, velocity.y * scalar, velocity.z * scalar};
 }
 
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+
+#include <sstream>
+
+struct on_window_closed { };
+
 class my_module final : public sbx::module {
 
   class my_other_system : public sbx::system<my_other_system> {
@@ -43,26 +50,53 @@ class my_module final : public sbx::module {
     public:
       my_other_system(sbx::event_queue* event_queue)
       : _event_queue{event_queue},
-        _counter{0.0f} { }
+        _handle{nullptr} { }
 
       ~my_other_system() = default;
 
       void initialize() {
-        _event_queue->add_listener<sbx::time>([this](const auto& event){
-          _counter += event;
+        glfwInit();
 
-          if (_counter >= sbx::time{1}) {
-            finish();
-          }
-        });
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+        _handle = glfwCreateWindow(100, 100, "Window [delta: ]", nullptr, nullptr);
+
+        glfwMakeContextCurrent(_handle);
+
+        gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress));
+
+        glClearColor(0.7f, 0.3f, 0.4f, 1.0f);
+
+        glfwSwapInterval(0);
       }
 
-      void update([[maybe_unused]] const sbx::time delta_time) {
-        
+      void update(const sbx::time delta_time) {
+        glfwPollEvents();
+
+        if (glfwGetKey(_handle, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+          glfwSetWindowShouldClose(_handle, true);
+        }
+
+        if (glfwWindowShouldClose(_handle)) {
+          _event_queue->emplace<on_window_closed>();
+          finish();
+          return;
+        }
+
+        auto ss = std::stringstream{};
+        ss << "Window [delta: " << delta_time << "]";
+
+        glfwSetWindowTitle(_handle, ss.str().c_str());
+
+        glClear(GL_COLOR_BUFFER_BIT);
+        glfwSwapBuffers(_handle);
       }
 
       void finished() {
-        
+        glfwDestroyWindow(_handle);
+        glfwTerminate();
       }
 
       void aborted() {
@@ -71,30 +105,25 @@ class my_module final : public sbx::module {
 
     private:
       sbx::event_queue* _event_queue{};
-      sbx::time _counter{};
+      GLFWwindow* _handle;
   };
 
   class my_system : public sbx::system<my_system> {
 
   public:
     my_system(sbx::event_queue* event_queue)
-    : _event_queue{event_queue},
-      _counter{0.0f} { }
+    : _event_queue{event_queue} { }
 
     ~my_system() = default;
 
     void initialize() {
-
+      _event_queue->add_listener<on_window_closed>([this](const auto&){
+        finish();
+      });
     }
 
-    void update(const sbx::time delta_time) {
-      _counter += delta_time;
+    void update([[maybe_unused]]const sbx::time delta_time) {
 
-      _event_queue->emplace<sbx::time>(_counter);
-
-      if (_counter >= sbx::time{1}) {
-        finish();
-      }
     }
 
     void finished() {
@@ -106,12 +135,7 @@ class my_module final : public sbx::module {
     }
 
   private:
-    void _updated(const sbx::time& event) {
-      std::cout << event << '\n';
-    }
-
     sbx::event_queue* _event_queue{};
-    sbx::time _counter{};
 
   }; // class my_system
 
