@@ -2,8 +2,8 @@
 #define SBX_ECS_EVENT_QUEUE_HPP_
 
 #include <functional>
+#include <iterator>
 #include <memory>
-#include <queue>
 #include <type_traits>
 #include <unordered_map>
 #include <vector>
@@ -80,7 +80,7 @@ public:
    * @param args Arguments for event creation
    */
   template<typename Event, typename... Args>
-  void emplace(Args&&... args) {
+  void emplace_back(Args&&... args) {
     static_assert(!std::is_abstract_v<Event>, "An event can not be abstract");
     static_assert(std::is_constructible_v<Event, Args...>, "Can not construct event from given arguments");
 
@@ -88,7 +88,7 @@ public:
 
     auto handle = event_handle{new Event{std::forward<Args>(args)...}, _deleter<Event>};
 
-    _queue.emplace(id, std::move(handle));
+    _queue.emplace_back(id, std::move(handle));
   }
 
   /**
@@ -96,19 +96,21 @@ public:
    * When no listener for a given event exists, nothing happens for that event.
    */
   void pop_all() {
-    while (!_queue.empty()) {
-      auto [id, handle] = std::move(_queue.front());
-      _queue.pop();
+    for (auto& pair : _queue) {
+      auto [id, handle] = std::move(pair);
 
       if (_listeners.find(id) == _listeners.end()) {
-        // No listeners for this event type
-        return;
+        // There is no listener registered for this event
+        continue;
       }
 
       for (auto& listener : _listeners[id]) {
         std::invoke(listener, std::move(handle));
       }
     }
+
+    // Remove all moved-from entries
+    _queue.clear();
   }
 
 private:
@@ -118,7 +120,7 @@ private:
   }
 
   std::unordered_map<uint32, std::vector<std::function<void(event_handle&&)>>> _listeners{};
-  std::queue<std::pair<uint32, event_handle>> _queue{};
+  std::vector<std::pair<uint32, event_handle>> _queue{};
 
 }; // class event_queue
 

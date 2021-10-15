@@ -97,7 +97,7 @@ class my_module final : public sbx::module {
         }
 
         if (glfwWindowShouldClose(_handle)) {
-          _event_queue->emplace<on_window_closed>();
+          _event_queue->emplace_back<on_window_closed>();
           finish();
           return;
         }

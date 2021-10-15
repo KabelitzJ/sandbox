@@ -1,6 +1,6 @@
 # Sandbox
 
-The sandbox engine a ecs-based, modular rendering engine implemented using c++17 features.
+The sandbox engine a light-weight, ecs-based, modular rendering engine implemented using c++17 features.
 
 ![Build and test](https://github.com/KabelitzJ/sandbox/actions/workflows/build_and_test.yml/badge.svg?branch=development)
 
