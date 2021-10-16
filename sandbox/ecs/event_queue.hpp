@@ -96,9 +96,7 @@ public:
    * When no listener for a given event exists, nothing happens for that event.
    */
   void pop_all() {
-    for (auto& pair : _queue) {
-      const auto [id, handle] = std::move(pair);
-
+    for (auto& [id, handle] : _queue) {
       if (_listeners.find(id) == _listeners.end()) {
         // There is no listener registered for this event
         continue;
@@ -109,7 +107,7 @@ public:
       }
     }
 
-    // Remove all moved-from entries
+    // All events have been handled - remove them
     _queue.clear();
   }
 
