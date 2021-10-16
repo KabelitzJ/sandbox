@@ -65,8 +65,8 @@ public:
 
     _listeners[id].emplace_back(
       // [NOTE] KAJ 2021-10-13 21:35: Move capture is very important. Otherwise the listener inside the lambda will be a copy of the original
-      [listener = std::move(listener)](auto&& handle){ 
-        std::invoke(listener, std::as_const(*static_cast<Event*>(handle.get())));
+      [listener = std::move(listener)](const auto& handle){ 
+        std::invoke(listener, *static_cast<const Event*>(handle.get()));
       }
     );
   }
@@ -97,7 +97,7 @@ public:
    */
   void pop_all() {
     for (auto& pair : _queue) {
-      auto [id, handle] = std::move(pair);
+      const auto [id, handle] = std::move(pair);
 
       if (_listeners.find(id) == _listeners.end()) {
         // There is no listener registered for this event
@@ -105,7 +105,7 @@ public:
       }
 
       for (auto& listener : _listeners[id]) {
-        std::invoke(listener, std::move(handle));
+        std::invoke(listener, handle);
       }
     }
 
@@ -119,7 +119,7 @@ private:
     delete static_cast<Event*>(event);
   }
 
-  std::unordered_map<uint32, std::vector<std::function<void(event_handle&&)>>> _listeners{};
+  std::unordered_map<uint32, std::vector<std::function<void(const event_handle&)>>> _listeners{};
   std::vector<std::pair<uint32, event_handle>> _queue{};
 
 }; // class event_queue
