@@ -16,7 +16,7 @@ struct entity_traits<Entity, std::enable_if_t<std::is_enum_v<Entity>>> : entity_
 template<>
 struct entity_traits<uint32> {
 
-  using value_type = Type;
+  using value_type = uint32;
 
   using entity_type = uint32;
   using version_type = uint16;
