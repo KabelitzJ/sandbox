@@ -8,15 +8,24 @@
 namespace sbx {
 
 template<typename, typename = void>
+struct is_entity_type : std::false_type { };
+
+template<typename Entity>
+struct is_entity_type<Entity, std::enable_if_t<std::is_same_v<Entity, uint32>>> : std::true_type { };
+
+template<typename Entity>
+struct is_entity_type<Entity, std::enable_if_t<std::is_enum_v<Entity>>> : is_entity_type<Entity, std::underlying_type_t<Entity>> { };
+
+template<typename Entity>
+inline constexpr auto is_entity_type_v = is_entity_type<Entity>::value;
+
+template<typename, typename = void>
 struct entity_traits;
 
 template<typename Entity>
-struct entity_traits<Entity, std::enable_if_t<std::is_enum_v<Entity>>> : entity_traits<std::underlying_type_t<Entity>> {};
+struct entity_traits<Entity, std::enable_if_t<is_entity_type_v<Entity>>> {
 
-template<>
-struct entity_traits<uint32> {
-
-  using value_type = uint32;
+  using value_type = Entity;
 
   using entity_type = uint32;
   using version_type = uint16;
