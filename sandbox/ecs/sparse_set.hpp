@@ -111,8 +111,8 @@ struct sparse_set_iterator final {
   }
 
 private:
-  const container_type& _container;
-  difference_type _index;
+  const container_type& _container{};
+  difference_type _index{};
 };
 
 
@@ -263,7 +263,7 @@ public:
   }
 
   void emplace(const entity_type entity) {
-    try_emplace(entity);
+    _try_emplace(entity);
     assert(contains(entity));
   }
 
@@ -316,7 +316,7 @@ protected:
     _packed.pop_back();
   }
 
-  virtual void try_emplace(const entity_type entity) {
+  virtual void _try_emplace(const entity_type entity) {
     const auto position = static_cast<size_type>(entity_traits::to_entity(entity));
     const auto page = position / sparse_page_v;
 
@@ -369,9 +369,9 @@ private:
     }
   }
 
-  sparse_container_type _sparse;
-  packed_container_type _packed;
-  entity_type _free_list;
+  sparse_container_type _sparse{};
+  packed_container_type _packed{};
+  entity_type _free_list{};
 
 };
   
