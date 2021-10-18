@@ -108,7 +108,7 @@ template<typename Entity>
 
 inline constexpr null_entity_t null_entity{};
 
-struct tombstone_t {
+struct tombstone_entity_t {
 
   template<typename Entity>
   [[nodiscard]] constexpr operator Entity() const noexcept {
@@ -116,12 +116,12 @@ struct tombstone_t {
     return entity_traits::combine(entity_traits::reserved, entity_traits::reserved);
   }
 
-  [[nodiscard]] constexpr bool operator==([[maybe_unused]] const tombstone_t other) const noexcept {
+  [[nodiscard]] constexpr bool operator==([[maybe_unused]] const tombstone_entity_t other) const noexcept {
     return true;
   }
 
   
-  [[nodiscard]] constexpr bool operator!=([[maybe_unused]] const tombstone_t other) const noexcept {
+  [[nodiscard]] constexpr bool operator!=([[maybe_unused]] const tombstone_entity_t other) const noexcept {
     return false;
   }
 
@@ -140,16 +140,16 @@ struct tombstone_t {
 
 
 template<typename Entity>
-[[nodiscard]] constexpr bool operator==(const Entity entity, const tombstone_t other) noexcept {
+[[nodiscard]] constexpr bool operator==(const Entity entity, const tombstone_entity_t other) noexcept {
   return other.operator==(entity);
 }
 
 template<typename Entity>
-[[nodiscard]] constexpr bool operator!=(const Entity entity, const tombstone_t other) noexcept {
+[[nodiscard]] constexpr bool operator!=(const Entity entity, const tombstone_entity_t other) noexcept {
   return !(other == entity);
 }
 
-inline constexpr tombstone_t tombstone{};
+inline constexpr tombstone_entity_t tombstone_entity{};
 
 } // namespace sbx
 
