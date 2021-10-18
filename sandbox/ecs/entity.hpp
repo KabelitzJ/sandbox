@@ -8,22 +8,13 @@
 namespace sbx {
 
 template<typename, typename = void>
-struct is_entity : std::false_type { };
-
-template<typename Type>
-struct is_entity<Type, std::enable_if_t<std::is_same_v<Type, uint32>>> : std::true_type { };
-
-template <typename Type>
-struct is_entity<Type, std::enable_if_t<std::is_enum_v<Type>>> : is_entity<std::underlying_type_t<Type>> { };
-
-template<typename Type>
-inline constexpr auto is_entity_v = is_entity<Type>::value;
-
-template<typename, typename = void>
 struct entity_traits;
 
-template<typename Type>
-struct entity_traits<Type, std::enable_if_t<is_entity_v<Type>>> {
+template<typename Entity>
+struct entity_traits<Entity, std::enable_if_t<std::is_enum_v<Entity>>> : entity_traits<std::underlying_type_t<Entity>> {};
+
+template<>
+struct entity_traits<uint32> {
 
   using value_type = Type;
 
@@ -60,11 +51,23 @@ struct entity_traits<Type, std::enable_if_t<is_entity_v<Type>>> {
 };
 
 template<typename Entity>
-[[nodiscard]] constexpr auto to_integral(const Entity entity) noexcept {
-  return entity_traits<Entity>::to_integral(entity);
+[[nodiscard]] constexpr typename entity_traits<Entity>::entity_type to_integral(const Entity value) noexcept {
+  return entity_traits<Entity>::to_integral(value);
 }
 
+template<typename Entity>
+[[nodiscard]] constexpr typename entity_traits<Entity>::entity_type to_entity(const Entity value) noexcept {
+  return entity_traits<Entity>::to_entity(value);
+}
+
+template<typename Entity>
+[[nodiscard]] constexpr typename entity_traits<Entity>::version_type to_version(const Entity value) noexcept {
+  return entity_traits<Entity>::to_version(value);
+}
+
+
 enum class entity : uint32 { };
+
 
 struct null_entity_t {
 
@@ -95,7 +98,6 @@ struct null_entity_t {
 
 }; // struct null_entity_t
 
-
 template<typename Entity>
 [[nodiscard]] constexpr bool operator==(const Entity entity, const null_entity_t other) noexcept {
   return other.operator==(entity);
@@ -107,6 +109,7 @@ template<typename Entity>
 }
 
 inline constexpr null_entity_t null_entity{};
+
 
 struct tombstone_entity_t {
 
@@ -137,7 +140,6 @@ struct tombstone_entity_t {
   }
 
 }; // struct tombstone_t
-
 
 template<typename Entity>
 [[nodiscard]] constexpr bool operator==(const Entity entity, const tombstone_entity_t other) noexcept {
