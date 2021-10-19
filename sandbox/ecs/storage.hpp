@@ -184,6 +184,16 @@ private:
 
 }; // class basic_storage
 
+template<typename Entity, typename Type, typename Allocator>
+class basic_storage<Entity, Type, Allocator, std::enable_if_t<ignore_as_empty_v<Type>>> 
+: public basic_sparse_set<Entity, typename std::allocator_traits<Allocator>::template rebind_alloc<Entity>> {
+
+public:
+
+private:
+
+}; // class basic_storage
+
 } // namespace sbx
 
 #endif // SBX_ECS_STORAGE_HPP_
