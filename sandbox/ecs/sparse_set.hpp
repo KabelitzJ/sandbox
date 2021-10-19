@@ -129,7 +129,7 @@ class basic_sparse_set {
   using alloc = typename allocator_traits::template rebind_alloc<Entity>;
   using alloc_traits = typename std::allocator_traits<alloc>;
 
-  using entity_traits = sbx::entity_traits<Entity>;
+  using entity_traits = entity_traits<Entity>;
 
   using sparse_container_type = std::vector<typename alloc_traits::pointer, typename alloc_traits::template rebind_alloc<typename alloc_traits::pointer>>;
   using packed_container_type = std::vector<Entity, alloc>;
@@ -164,6 +164,8 @@ public:
   basic_sparse_set& operator=(const basic_sparse_set&) = delete;
 
   basic_sparse_set& operator=(basic_sparse_set&& other) noexcept {
+    assert(alloc_traits::is_always_equal::value || _packed.get_allocator() == other._packed.get_allocator());
+
     _release_sparse_pages();
 
     _sparse = std::move(other._sparse);
