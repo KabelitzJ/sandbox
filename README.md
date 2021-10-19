@@ -113,7 +113,9 @@ After that you can add your module to the engine inside the entry point.
 
 ```c++
 // Arguments will be used to instantiate a new instance of my_module
-engine.add_module<my_module>(some_data_instance);
+void sbx::setup(sbx::engine& engine) {
+  engine.add_module<my_module>(some_data_instance);
+}
 ```
 
 # License
