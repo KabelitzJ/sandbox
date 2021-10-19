@@ -66,7 +66,7 @@ public:
     _listeners[id].emplace_back(
       // [NOTE] KAJ 2021-10-13 21:35: Move capture is very important. Otherwise the listener inside the lambda will be a copy of the original
       [listener = std::move(listener)](const auto& handle){ 
-        std::invoke(listener, *static_cast<const Event*>(handle.get()));
+        std::invoke(listener, *static_cast<Event*>(handle.get()));
       }
     );
   }
