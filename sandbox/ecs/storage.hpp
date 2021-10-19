@@ -194,6 +194,11 @@ private:
 
 }; // class basic_storage
 
+template<typename Entity, typename Type, typename = void>
+struct storage_traits {
+  using storage_type = basic_storage<Entity, Type>;
+};
+
 } // namespace sbx
 
 #endif // SBX_ECS_STORAGE_HPP_
