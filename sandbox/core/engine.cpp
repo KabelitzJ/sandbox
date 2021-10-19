@@ -7,7 +7,8 @@
 namespace sbx {
 
 engine::engine()
-: _scheduler{std::make_unique<scheduler>()},
+: _registry{std::make_unique<registry>()},
+  _scheduler{std::make_unique<scheduler>()},
   _event_queue{std::make_unique<event_queue>()},
   _modules{} { }
 
@@ -16,6 +17,7 @@ engine::~engine() {
 }
 
 void engine::initialize() {
+  module::_registry = _registry.get();
   module::_scheduler = _scheduler.get();
   module::_event_queue = _event_queue.get();
 

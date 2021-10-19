@@ -4,6 +4,7 @@
 #include <vector>
 #include <memory>
 
+#include <ecs/registry.hpp>
 #include <ecs/scheduler.hpp>
 #include <ecs/event_queue.hpp>
 
@@ -34,6 +35,7 @@ public:
   }
 
 private:
+  std::unique_ptr<registry> _registry{};
   std::unique_ptr<scheduler> _scheduler{};
   std::unique_ptr<event_queue> _event_queue{};
   std::vector<std::unique_ptr<module>> _modules{};

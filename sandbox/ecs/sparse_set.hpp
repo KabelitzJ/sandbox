@@ -35,7 +35,7 @@ struct sparse_set_iterator final {
     return --_index, *this;
   }
 
-  sparse_set_iterator operator++(const difference_type) noexcept {
+  sparse_set_iterator operator++(int) noexcept {
     const auto original = *this;
     return ++(*this), original;
   }
@@ -44,7 +44,7 @@ struct sparse_set_iterator final {
     return ++_index, *this;
   }
 
-  sparse_set_iterator operator--(const difference_type) noexcept {
+  sparse_set_iterator operator--(int) noexcept {
     const auto original = *this;
     return --(*this), original;
   }
@@ -118,6 +118,9 @@ private:
 
 template<typename Entity, typename = std::allocator<Entity>>
 class basic_sparse_set;
+
+
+using sparse_set = basic_sparse_set<entity>;
 
 
 template<typename Entity, typename Allocator>

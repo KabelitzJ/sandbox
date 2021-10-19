@@ -127,6 +127,10 @@ template<typename, typename Type, typename = std::allocator<Type>, typename = vo
 class basic_storage;
 
 
+template<typename... Args>
+using storage = basic_storage<entity, Args...>;
+
+
 template<typename Entity, typename Type, typename Allocator, typename>
 class basic_storage {
 

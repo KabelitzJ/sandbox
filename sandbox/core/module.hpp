@@ -4,6 +4,7 @@
 #include <vector>
 #include <memory>
 
+#include <ecs/registry.hpp>
 #include <ecs/scheduler.hpp>
 #include <ecs/event_queue.hpp>
 
@@ -20,6 +21,7 @@ public:
   virtual void terminate() = 0;
 
 protected:
+  static registry* _registry;
   static scheduler* _scheduler;
   static event_queue* _event_queue;
   

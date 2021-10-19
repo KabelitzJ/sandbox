@@ -5,6 +5,6 @@
 #include "scheduler.hpp"
 #include "entity.hpp"
 #include "event_queue.hpp"
-#include "storage.hpp"
+#include "registry.hpp"
 
 #endif // SBX_ECS_HPP_

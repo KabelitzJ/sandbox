@@ -3,17 +3,17 @@
 
 namespace sbx {
 
-template<typename From, typename To>
+template<typename To, typename From>
 struct constness_as {
     using type = std::remove_const_t<To>;
 };
 
-template<typename From, typename To>
-struct constness_as<const From, To> {
+template<typename To, typename From>
+struct constness_as<To, const From> {
     using type = std::add_const_t<To>;
 };
   
-template<typename From, typename To>
+template<typename To, typename From>
 using constness_as_t = typename constness_as<From, To>::type;
 
 

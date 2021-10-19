@@ -7,54 +7,63 @@
 
 namespace sbx {
 
-template<typename, typename = void>
-struct is_entity_type : std::false_type { };
+enum class entity : uint32 { };
 
-template<typename Entity>
-struct is_entity_type<Entity, std::enable_if_t<std::is_same_v<Entity, uint32>>> : std::true_type { };
-
-template<typename Entity>
-struct is_entity_type<Entity, std::enable_if_t<std::is_enum_v<Entity>>> : is_entity_type<Entity, std::underlying_type_t<Entity>> { };
-
-template<typename Entity>
-inline constexpr auto is_entity_type_v = is_entity_type<Entity>::value;
 
 template<typename, typename = void>
-struct entity_traits;
+struct basic_entity_traits;
 
 template<typename Entity>
-struct entity_traits<Entity, std::enable_if_t<is_entity_type_v<Entity>>> {
+struct basic_entity_traits<Entity, std::enable_if_t<std::is_enum_v<Entity>>>
+: basic_entity_traits<std::underlying_type<Entity>> { };
 
-  using value_type = Entity;
-
+template<typename Entity>
+struct basic_entity_traits<Entity, std::enable_if_t<std::is_same_v<Entity, uint32>>>
+: basic_entity_traits<Entity> {
+  
   using entity_type = uint32;
   using version_type = uint16;
 
-  static constexpr auto entity_mask = entity_type{0xFFFFF};
-  static constexpr auto version_mask = entity_type{0xFFF};
-  static constexpr auto entity_shift = std::size_t{20u};
-  static constexpr auto reserved = entity_mask | (version_mask << entity_shift);
+  static constexpr entity_type entity_mask = 0xFFFFF;
+  static constexpr entity_type version_mask = 0xFFF;
+  static constexpr std::size_t entity_shift = 20u;
+
+};
+
+template<typename Entity>
+class entity_traits {
+
+  using basic_traits = basic_entity_traits<Entity>;
+
+public:
+
+  using value_type = Entity;
+
+  using entity_type = typename basic_traits::entity_type;
+  using version_type = typename basic_traits::version_type;
+
+  static constexpr auto reserved = basic_traits::entity_mask | (basic_traits::version_mask << basic_traits::entity_shift);
 
   [[nodiscard]] static constexpr entity_type to_integral(const value_type value) noexcept {
     return static_cast<entity_type>(value);
   }
 
   [[nodiscard]] static constexpr entity_type to_entity(const value_type value) noexcept {
-    return (to_integral(value) & entity_mask);
+    return (to_integral(value) & basic_traits::entity_mask);
   }
 
   [[nodiscard]] static constexpr version_type to_version(const value_type value) noexcept {
-    constexpr auto mask = (version_mask << entity_shift);
-    return ((to_integral(value) & mask) >> entity_shift);
+    constexpr auto mask = (basic_traits::version_mask << basic_traits::entity_shift);
+    return ((to_integral(value) & mask) >> basic_traits::entity_shift);
   }
 
   [[nodiscard]] static constexpr value_type construct(const entity_type entity, const version_type version) noexcept {
-    return value_type{(entity & entity_mask) | (static_cast<entity_type>(version) << entity_shift)};
+    return value_type{(entity & basic_traits::entity_mask) | (static_cast<entity_type>(version) << basic_traits::entity_shift)};
   }
 
   [[nodiscard]] static constexpr value_type combine(const entity_type lhs, const entity_type rhs) noexcept {
-    constexpr auto mask = (version_mask << entity_shift);
-    return value_type{(lhs & entity_mask) | (rhs & mask)};
+    constexpr auto mask = (basic_traits::version_mask << basic_traits::entity_shift);
+    return value_type{(lhs & basic_traits::entity_mask) | (rhs & mask)};
   }
 
 };
@@ -73,9 +82,6 @@ template<typename Entity>
 [[nodiscard]] constexpr typename entity_traits<Entity>::version_type to_version(const Entity value) noexcept {
   return entity_traits<Entity>::to_version(value);
 }
-
-
-enum class entity : uint32 { };
 
 
 struct null_entity_t {
