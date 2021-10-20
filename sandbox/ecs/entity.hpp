@@ -7,38 +7,37 @@
 
 namespace sbx {
 
-enum class entity : uint32 { };
-
-
 template<typename, typename = void>
 struct basic_entity_traits;
 
-template<typename Entity>
-struct basic_entity_traits<Entity, std::enable_if_t<std::is_enum_v<Entity>>>
-: basic_entity_traits<std::underlying_type<Entity>> { };
+template<typename Type>
+struct basic_entity_traits<Type, std::enable_if_t<std::is_enum_v<Type>>>
+: basic_entity_traits<std::underlying_type_t<Type>> { };
 
-template<typename Entity>
-struct basic_entity_traits<Entity, std::enable_if_t<std::is_same_v<Entity, uint32>>>
-: basic_entity_traits<Entity> {
-  
+template<typename Type>
+struct basic_entity_traits<Type, std::enable_if_t<std::is_class_v<Type>>>
+: basic_entity_traits<typename Type::entity_type> { };
+
+template<>
+struct basic_entity_traits<uint32> {
+
   using entity_type = uint32;
   using version_type = uint16;
 
-  static constexpr entity_type entity_mask = 0xFFFFF;
-  static constexpr entity_type version_mask = 0xFFF;
-  static constexpr std::size_t entity_shift = 20u;
+  static constexpr auto entity_mask = entity_type{0xFFFFF};
+  static constexpr auto version_mask = entity_type{0xFFF};
+  static constexpr auto entity_shift = std::size_t{20u};
 
 };
 
-template<typename Entity>
+template<typename Type>
 class entity_traits {
 
-  using basic_traits = basic_entity_traits<Entity>;
+  using basic_traits = basic_entity_traits<Type>;
 
 public:
 
-  using value_type = Entity;
-
+  using value_type = Type;
   using entity_type = typename basic_traits::entity_type;
   using version_type = typename basic_traits::version_type;
 
@@ -83,6 +82,7 @@ template<typename Entity>
   return entity_traits<Entity>::to_version(value);
 }
 
+enum class entity : uint32 { };
 
 struct null_entity_t {
 
