@@ -27,7 +27,19 @@ The sandbox engine a light-weight, ecs-based, modular rendering engine implement
 
 # :gear: Build
 
-First you should make a separate folder for the generated build files
+Start by cloning the repository
+
+```bash
+git clone https://github.com/KabelitzJ/sandbox.git
+```
+
+and moving into the created folder.
+
+```bash
+cd sandbox
+```
+
+You should make a separate folder for the generated build files.
 
 ```bash
 mkdir build
