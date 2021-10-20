@@ -326,7 +326,7 @@ protected:
     const auto page = position / sparse_page_v;
 
     if (page >= _sparse.size()) {
-      _sparse.reserve(page + 1u, nullptr);
+      _sparse.resize(page + 1u, nullptr);
     }
 
     if (!_sparse[page]) {
