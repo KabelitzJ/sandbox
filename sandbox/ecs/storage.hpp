@@ -140,8 +140,8 @@ class basic_storage {
   using alloc = typename allocator_traits::template rebind_alloc<Type>;
   using alloc_traits = typename std::allocator_traits<alloc>;
 
-  using entity_traits = entity_traits<Entity>;
-  using component_traits = component_traits<Type>;
+  using entity_traits = sbx::entity_traits<Entity>;
+  using component_traits = sbx::component_traits<Type>;
   using underlying_type = basic_sparse_set<Entity, typename allocator_traits::template rebind_alloc<Entity>>;
   using container_type = std::vector<typename alloc_traits::pointer, typename alloc_traits::template rebind_alloc<typename alloc_traits::pointer>>;
 
