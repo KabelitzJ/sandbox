@@ -132,7 +132,7 @@ class basic_sparse_set {
   using alloc = typename allocator_traits::template rebind_alloc<Entity>;
   using alloc_traits = typename std::allocator_traits<alloc>;
 
-  using entity_traits = entity_traits<Entity>;
+  using entity_traits = sbx::entity_traits<Entity>;
 
   using sparse_container_type = std::vector<typename alloc_traits::pointer, typename alloc_traits::template rebind_alloc<typename alloc_traits::pointer>>;
   using packed_container_type = std::vector<Entity, alloc>;
