@@ -21,7 +21,7 @@ void engine::initialize() {
   module::_scheduler = _scheduler.get();
   module::_event_queue = _event_queue.get();
 
-  for (auto& module : _modules) {
+  for (auto& [id, module] : _modules) {
     module->initialize();
   }
 }
@@ -46,7 +46,7 @@ void engine::start() {
   
 void engine::terminate() {
   // [NOTE] KAJ 2021-10-12 18:43: Maybe terminate modules in reverse order
-  for (auto& module : _modules) {
+  for (auto& [id, module] : _modules) {
     module->terminate();
   }
 }
