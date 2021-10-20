@@ -430,7 +430,7 @@ class basic_storage<Entity, Type, Allocator, std::enable_if_t<ignore_as_empty_v<
 : public basic_sparse_set<Entity, typename std::allocator_traits<Allocator>::template rebind_alloc<Entity>> {
 
   using allocator_traits = std::allocator_traits<Allocator>;
-  using component_traits = component_traits<Type>;
+  using component_traits = sbx::component_traits<Type>;
 
 public:
 
