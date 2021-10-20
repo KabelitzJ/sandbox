@@ -19,13 +19,13 @@ template<typename>
 class basic_registry;
 
 
-using registry = basic_registry<uint32>;
+using registry = basic_registry<entity>;
 
 
 template<typename Entity>
 class basic_registry {
 
-  using entity_traits = entity_traits<Entity>;
+  using entity_traits = sbx::entity_traits<Entity>;
   using basic_common_type = basic_sparse_set<Entity>;
 
   template<typename Component>
