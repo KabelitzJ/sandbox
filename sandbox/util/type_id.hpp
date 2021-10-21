@@ -25,8 +25,6 @@ struct sequence;
 template<typename Type>
 struct sequence<Type, std::enable_if_t<std::is_unsigned_v<Type>>> {
 
-  using type = Type;
-
   [[nodiscard]] static Type next() noexcept {
     static auto value = Type{0};
 
@@ -45,9 +43,6 @@ struct sequence<Type, std::enable_if_t<std::is_unsigned_v<Type>>> {
  */
 template<typename Type, typename Id = uint32, typename Sequence = sequence<Id>>
 struct type_id final {
-
-  using type = Type;
-  using id_type = Id;
 
   [[nodiscard]] static Id value() noexcept {
     static const auto value = Sequence::next();
