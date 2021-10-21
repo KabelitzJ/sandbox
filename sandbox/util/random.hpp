@@ -15,8 +15,8 @@ struct random {
   static Type next(const Type min = std::numeric_limits<Type>::min(), const Type max = std::numeric_limits<Type>::max()) {
     static_assert(std::is_arithmetic_v<Type>, "Type must be an arithmetic type");
 
-    static std::random_device seed;
-    static std::mt19937_64 engine;
+    static std::random_device seed{};
+    static std::mt19937_64 engine{seed()};
 
     if constexpr (std::is_floating_point_v<Type>) {
       static std::uniform_real_distribution<Type> distribution{min, max};
