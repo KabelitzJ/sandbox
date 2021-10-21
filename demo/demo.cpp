@@ -1,6 +1,11 @@
 #include <iostream>
+#include <sstream>
+
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
 
 #include <core/core.hpp>
+#include <util/random.hpp>
 
 struct velocity {
   float x;
@@ -35,11 +40,6 @@ std::ostream& operator<<(std::ostream& os, const position& position) {
 velocity operator*(const velocity& velocity, const float scalar) {
   return {velocity.x * scalar, velocity.y * scalar, velocity.z * scalar};
 }
-
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-
-#include <sstream>
 
 struct on_window_closed { };
 
@@ -142,7 +142,8 @@ class my_module final : public sbx::module {
   public:
     my_system(sbx::event_queue* event_queue, sbx::registry* registry)
     : _registry{registry},
-      _event_queue{event_queue} { }
+      _event_queue{event_queue},
+      _entities{} { }
 
     ~my_system() = default;
 
@@ -151,17 +152,31 @@ class my_module final : public sbx::module {
         finish();
       });
 
-      _player = _registry->create_entity();
-      _registry->emplace_component<position>(_player, 0.0f, 0.0f, 0.0f);
-      _registry->emplace_component<velocity>(_player, 1.0f, 0.0f, 0.0f);
+      for (auto i = std::size_t{0u}; i < 100; ++i) {
+        const auto pos = position{
+          sbx::random::next<sbx::float32>(-10.0f, 10.0f),
+          0.0f,
+          sbx::random::next<sbx::float32>(-10.0f, 10.0f)
+        };
+
+        const auto vel = velocity{
+          sbx::random::next<sbx::float32>(-1.0f, 1.0f),
+          0.0f,
+          sbx::random::next<sbx::float32>(-1.0f, 1.0f)
+        };
+
+        _entities.push_back(_registry->create_entity());
+        _registry->emplace_component<position>(_entities[i], pos);
+        _registry->emplace_component<velocity>(_entities[i], vel);
+      }
     }
 
-    void update([[maybe_unused]]const sbx::time delta_time) {
-      auto& v = _registry->get_component<velocity>(_player);
+    void update(const sbx::time delta_time) {
+      for (auto& entity : _entities) {
+        auto& v = _registry->get_component<velocity>(entity);
 
-      auto& p = _registry->patch_component<position>(_player, [&v, &delta_time](auto& pp) { pp += v * delta_time; });
-      
-      std::cout << "(" << p.x << ", " << p.y << ", " << p.z << ")\n";
+        _registry->patch_component<position>(entity, [&v, &delta_time](auto& pp) { pp += v * delta_time; });
+      }
     }
 
     void finished() {
@@ -175,7 +190,7 @@ class my_module final : public sbx::module {
   private:
     sbx::registry* _registry{};
     sbx::event_queue* _event_queue{};
-    sbx::entity _player{sbx::null_entity};
+    std::vector<sbx::entity> _entities{};
 
   }; // class my_system
 
