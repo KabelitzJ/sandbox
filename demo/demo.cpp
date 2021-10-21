@@ -140,8 +140,9 @@ class my_module final : public sbx::module {
   class my_system : public sbx::system<my_system> {
 
   public:
-    my_system(sbx::event_queue* event_queue)
-    : _event_queue{event_queue} { }
+    my_system(sbx::event_queue* event_queue, sbx::registry* registry)
+    : _registry{registry},
+      _event_queue{event_queue} { }
 
     ~my_system() = default;
 
@@ -149,10 +150,18 @@ class my_module final : public sbx::module {
       _event_queue->add_listener<on_window_closed>([this](const auto&){
         finish();
       });
+
+      _player = _registry->create_entity();
+      _registry->emplace_component<position>(_player, 0.0f, 0.0f, 0.0f);
+      _registry->emplace_component<velocity>(_player, 1.0f, 0.0f, 0.0f);
     }
 
     void update([[maybe_unused]]const sbx::time delta_time) {
+      auto& v = _registry->get_component<velocity>(_player);
 
+      auto& p = _registry->patch_component<position>(_player, [&v, &delta_time](auto& pp) { pp += v * delta_time; });
+      
+      std::cout << "(" << p.x << ", " << p.y << ", " << p.z << ")\n";
     }
 
     void finished() {
@@ -164,7 +173,9 @@ class my_module final : public sbx::module {
     }
 
   private:
+    sbx::registry* _registry{};
     sbx::event_queue* _event_queue{};
+    sbx::entity _player{sbx::null_entity};
 
   }; // class my_system
 
@@ -178,7 +189,7 @@ public:
   }
 
   void initialize() override {
-    _scheduler->attach<my_system>(_event_queue);
+    _scheduler->attach<my_system>(_event_queue, _registry);
     _scheduler->attach<my_other_system>(_event_queue);
   }
 

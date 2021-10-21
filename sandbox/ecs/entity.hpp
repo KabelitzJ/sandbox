@@ -82,8 +82,14 @@ template<typename Entity>
   return entity_traits<Entity>::to_version(value);
 }
 
+/**
+ * @brief Default entity type
+ */
 enum class entity : uint32 { };
 
+/**
+ * @brief Null representation of an entity
+ */
 struct null_entity_t {
 
   template<typename Entity>
@@ -125,7 +131,9 @@ template<typename Entity>
 
 inline constexpr null_entity_t null_entity{};
 
-
+/**
+ * @brief Placeholder entity
+ */
 struct tombstone_entity_t {
 
   template<typename Entity>

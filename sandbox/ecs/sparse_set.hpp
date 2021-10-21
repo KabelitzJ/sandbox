@@ -251,7 +251,7 @@ public:
   }
 
   [[nodiscard]] version_type current_version(const entity_type entity) const {
-    if(auto element = sparse_ptr(entity); element) {
+    if (auto element = sparse_ptr(entity); element) {
       return entity_traits::to_version(*element);
     }
 
@@ -280,7 +280,7 @@ public:
 
     reserve(_packed.size() + std::distance(first, last));
 
-    for(; first != last; ++first) {
+    for (; first != last; ++first) {
       emplace(*first);
     }
   }
@@ -293,7 +293,7 @@ public:
 
   template<typename Iterator>
   void erase(Iterator first, Iterator last) {
-    for(; first != last; ++first) {
+    for (; first != last; ++first) {
       erase(*first);
     }
   }
@@ -366,7 +366,7 @@ private:
     auto page_allocator = _packed.get_allocator();
 
     for (auto&& page: _sparse) {
-      if(page != nullptr) {
+      if (page != nullptr) {
         std::destroy(page, page + sparse_page_v);
         alloc_traits::deallocate(page_allocator, page, sparse_page_v);
         page = nullptr;

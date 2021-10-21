@@ -18,7 +18,7 @@ template<std::size_t Value>
 
 template<typename Type>
 [[nodiscard]] constexpr auto to_address(Type&& pointer) noexcept {
-  if constexpr(std::is_pointer_v<std::remove_const_t<std::remove_reference_t<Type>>>) {
+  if constexpr (std::is_pointer_v<std::remove_const_t<std::remove_reference_t<Type>>>) {
     return pointer;
   } else {
     return to_address(std::forward<Type>(pointer).operator->());

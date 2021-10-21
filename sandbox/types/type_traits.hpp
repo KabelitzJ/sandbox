@@ -14,7 +14,7 @@ struct constness_as<To, const From> {
 };
   
 template<typename To, typename From>
-using constness_as_t = typename constness_as<From, To>::type;
+using constness_as_t = typename constness_as<To, From>::type;
 
 
 template<typename Type, typename = void>

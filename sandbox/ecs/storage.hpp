@@ -132,7 +132,8 @@ using storage = basic_storage<entity, Args...>;
 
 
 template<typename Entity, typename Type, typename Allocator, typename>
-class basic_storage {
+class basic_storage
+: public basic_sparse_set<Entity, typename std::allocator_traits<Allocator>::template rebind_alloc<Entity>> {
 
   static constexpr auto packed_page_v = 1024;
 
@@ -283,12 +284,12 @@ public:
 
   template<typename... Args>
   value_type& emplace(const entity_type entity, Args&&... args) {
-    const auto position = base_type::slot();
-    auto element = assure_at_least(position);
+    const auto position = base_type::next_slot();
+    auto element = _assure_at_least(position);
 
-    construct(element, std::forward<Args>(args)...);
+    _construct(element, std::forward<Args>(args)...);
 
-    base_type::try_emplace(entity, nullptr);
+    base_type::_try_emplace(entity);
     assert(position == base_type::index(entity));
 
     return *element;
@@ -296,8 +297,10 @@ public:
 
   template<typename... Functions>
   value_type& patch(const entity_type entity, Functions&&... functions) {
+    static_assert(std::is_invocable_r_v<void, Functions..., value_type&>, "Function has wrong signature");
+
     const auto index = base_type::index(entity);
-    auto& element = element_at(index);
+    auto& element = _element_at(index);
 
     (std::forward<Functions>(functions)(element), ...);
 
@@ -320,8 +323,8 @@ protected:
     const auto position = base_type::index(entity);
     const auto last = base_type::size() - 1u;
 
-    auto& target = element_at(position);
-    auto& element = element_at(last);
+    auto& target = _element_at(position);
+    auto& element = _element_at(last);
 
     [[maybe_unused]] auto unused = std::move(target);
     target = std::move(element);
@@ -332,8 +335,8 @@ protected:
 
   void _try_emplace([[maybe_unused]] const Entity entity) override {
     if constexpr (std::is_default_constructible_v<value_type>) {
-      const auto position = base_type::slot();
-      construct(_assure_at_least(position));
+      const auto position = base_type::next_slot();
+      _construct(_assure_at_least(position));
 
       base_type::_try_emplace(entity);
       assert(position == base_type::index(entity));
@@ -359,8 +362,9 @@ private:
         container[current] = alloc_traits::allocate(page_allocator, packed_page_v);
       }
       
-      return container[index] + fast_mod<packed_page_v>(position);
     }
+
+    return container[index] + fast_mod<packed_page_v>(position);
   }
 
   void _release_unused_pages() {
@@ -398,7 +402,7 @@ private:
   void _construct(typename alloc_traits::pointer location, Args&&... args) {
     auto& page_allocator = _packed.second;
 
-    if constexpr(std::is_aggregate_v<value_type>) {
+    if constexpr (std::is_aggregate_v<value_type>) {
       alloc_traits::construct(page_allocator, to_address(location), Type{std::forward<Args>(args)...});
     } else {
       alloc_traits::construct(page_allocator, to_address(location), std::forward<Args>(args)...);
@@ -407,7 +411,7 @@ private:
 
   template<typename Iterator, typename Generator>
   void _consume_range(Iterator first, Iterator last, Generator generator) {
-    for (const auto size = base_type::size(); first != last && base_type::slot() != size; ++first) {
+    for (const auto size = base_type::size(); first != last && base_type::next_slot() != size; ++first) {
       emplace(*first, generator());
     }
 
@@ -475,13 +479,14 @@ public:
 
   template<typename... Functions>
   void patch([[maybe_unused]] const entity_type entity, Functions&&... functions) {
+    static_assert(std::is_invocable_r_v<void, Functions..., const value_type&>, "Function has wrong signature");
     assert(base_type::contains(entity));
     (std::forward<Functions>(functions)(), ...);
   }
 
   template<typename Iterator, typename... Args>
   void insert(Iterator first, Iterator last, Args&&...) {
-    for (const auto size = base_type::size(); first != last && base_type::slot() != size; ++first) {
+    for (const auto size = base_type::size(); first != last && base_type::next_slot() != size; ++first) {
       emplace(*first);
     }
 
