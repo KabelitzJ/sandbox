@@ -68,7 +68,7 @@ public:
     _filter{},
     _view{} { }
 
-  basic_view(storage_type<Components>&... components, const storage_type<Excludes>&... excludes) ENTT_NOEXCEPT
+  basic_view(storage_type<Components>&... components, const storage_type<Excludes>&... excludes) noexcept
   : _pools{&components...},
     _filter{&excludes...},
     _view{_candidate()} { }
