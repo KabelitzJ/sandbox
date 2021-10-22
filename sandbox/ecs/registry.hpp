@@ -10,9 +10,10 @@
 
 #include <util/type_id.hpp>
 
-#include "entity.hpp"
 #include "component.hpp"
+#include "entity.hpp"
 #include "storage.hpp"
+#include "view.hpp"
 
 namespace sbx {
 
@@ -402,9 +403,20 @@ public:
     return std::none_of(_pools.cbegin(), _pools.cend(), [entity](auto& pool) { return pool && pool->contains(entity); });
   }
 
-protected:
+  template<typename... Components, typename... Excludes>
+  [[nodiscard]] basic_view<entity_type, get_t<std::add_const_t<Components>...>, exclude_t<Excludes...>> view(exclude_t<Excludes...> = {}) const {
+    static_assert(sizeof...(Components) > 0, "Exclusion-only views are not supported");
+    return {*_assure<std::remove_const_t<Components>>()..., *_assure<Excludes>()...};
+  }
+
+  template<typename... Components, typename... Excludes>
+  [[nodiscard]] basic_view<entity_type, get_t<Components...>, exclude_t<Excludes...>> view(exclude_t<Excludes...> = {}) {
+    static_assert(sizeof...(Components) > 0, "Exclusion-only views are not supported");
+    return {*_assure<std::remove_const_t<Components>>()..., *_assure<Excludes>()...};
+  }
 
 private:
+
   template<typename Component>
   [[nodiscard]] storage_type<Component>* _assure() const {
     static_assert(std::is_same_v<Component, std::decay_t<Component>>, "Non-decayed types not allowed");
