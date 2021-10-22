@@ -3,6 +3,7 @@
 
 #include <array>
 #include <tuple>
+#include <algorithm>
 
 #include <types/type_traits.hpp>
 
@@ -26,8 +27,9 @@ template<typename... Type>
 inline constexpr get_t<Type...> get{};
 
 
-template<typename, typename, typename, typename>
-class basic_view;
+// [NOTE] KAJ 2021-10-22 14:21: Maybe unused
+// template<typename, typename, typename, typename>
+// class basic_view;
 
 template<typename, typename, typename, typename = void>
 class basic_view;
@@ -36,6 +38,13 @@ template<typename Get, typename Exclude = exclude_t<>>
 using view = basic_view<entity, Get, Exclude>;
 
 
+/**
+ * @brief Multi component view into a registry
+ *
+ * @tparam Entity Entity type of the registry
+ * @tparam Components List of component types that should be in the view
+ * @tparam Excludes List of component types that should not be in the view
+ */
 template<typename Entity, typename... Components, typename... Excludes>
 class basic_view<Entity, get_t<Components...>, exclude_t<Excludes...>> {
 
@@ -54,18 +63,48 @@ public:
   template<typename Component>
   using storage_type = constness_as_t<typename storage_traits<Entity, std::remove_const_t<Component>>::storage_type, Component>;
 
+  basic_view() noexcept
+  : _pools{},
+    _filter{},
+    _view{} { }
+
+  basic_view(storage_type<Components>&... components, const storage_type<Excludes>&... excludes) ENTT_NOEXCEPT
+  : _pools{&components...},
+    _filter{&excludes...},
+    _view{_candidate()} { }
+
+  basic_view(const basic_view&) = delete;
+
+  basic_view(basic_view&&) = default;
+
+  basic_view& operator=(const basic_view&) = delete;
+
+  basic_view& operator=(basic_view&&) = default;
+
 private:
+
+  [[nodiscard]] const auto* _candidate() const noexcept {
+    return std::min({static_cast<const basic_common_type*>(std::get<storage_type<Components>*>(_pools))...}, [](const auto* lhs, const auto* rhs) {
+      return lhs->size() < rhs->size();
+    });
+  }
 
   template<typename, typename, typename, typename>
   friend class basic_view;
 
-  std::tuple<storage_type<Components>*...> _pools;
-  std::array<const basic_common_type*, sizeof...(Excludes)> _filter;
-  const basic_common_type* _view;
+  std::tuple<storage_type<Components>*...> _pools{};
+  std::array<const basic_common_type*, sizeof...(Excludes)> _filter{};
+  const basic_common_type* _view{};
 
 }; // class basic_view
 
 
+/**
+ * @brief Single component view into a registry
+ *
+ * @tparam Entity Entity type of the registry
+ * @tparam Component component type that should be in the view
+ */
 template<typename Entity, typename Component>
 class basic_view<Entity, get_t<Component>, exclude_t<>, std::void_t<std::enable_if_t<!in_place_delete_v<std::remove_const_t<Component>>>>> {
 
@@ -80,13 +119,29 @@ public:
   // using iterable_view = internal::iterable_storage<Entity, Component>;
   using storage_type = constness_as_t<typename storage_traits<Entity, std::remove_const_t<Component>>::storage_type, Component>;
 
+  basic_view() noexcept
+  : _pools{},
+    _filter{} { }
+
+  basic_view(storage_type& pools) noexcept
+  : _pools{&pools},
+    _filter{} { }
+
+  basic_view(const basic_view&) = delete;
+
+  basic_view(basic_view&&) = default;
+
+  basic_view& operator=(const basic_view&) = delete;
+
+  basic_view& operator=(basic_view&&) = default;
+
 private:
 
   template<typename, typename, typename, typename>
   friend class basic_view;
 
-  std::tuple<storage_type*> _pools;
-  std::tuple<> _filter;
+  std::tuple<storage_type*> _pools{};
+  std::tuple<> _filter{};
 
 }; // class basic_view
 
