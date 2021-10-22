@@ -172,6 +172,8 @@ class my_module final : public sbx::module {
     }
 
     void update(const sbx::time delta_time) {
+      auto view = _registry->view<position, const velocity>();
+
       for (auto& entity : _entities) {
         auto& v = _registry->get_component<velocity>(entity);
 
