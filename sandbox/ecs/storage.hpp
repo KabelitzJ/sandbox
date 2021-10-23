@@ -208,11 +208,11 @@ public:
     _release_unused_pages();
   }
 
-  [[nodiscard]] const_pointer data() const noexcept {
+  [[nodiscard]] const_pointer raw() const noexcept {
     return _packed.first.data();
   }
 
-  [[nodiscard]] pointer data() noexcept {
+  [[nodiscard]] pointer raw() noexcept {
     return _packed.first.data();
   }
 

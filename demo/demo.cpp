@@ -142,8 +142,7 @@ class my_module final : public sbx::module {
   public:
     my_system(sbx::event_queue* event_queue, sbx::registry* registry)
     : _registry{registry},
-      _event_queue{event_queue},
-      _entities{} { }
+      _event_queue{event_queue} { }
 
     ~my_system() = default;
 
@@ -165,21 +164,20 @@ class my_module final : public sbx::module {
           sbx::random::next<sbx::float32>(-1.0f, 1.0f)
         };
 
-        _entities.push_back(_registry->create_entity());
-        _registry->emplace_component<position>(_entities[i], pos);
-        _registry->emplace_component<velocity>(_entities[i], vel);
+        auto entity = _registry->create_entity();
+
+        _registry->emplace_component<position>(entity, pos);
+        _registry->emplace_component<velocity>(entity, vel);
       }
     }
 
     void update(const sbx::time delta_time) {
       auto view = _registry->view<position, const velocity>();
 
-      static_cast<void>(view);
+      for (auto entity : view) {
+        auto [position, velocity] = view.get(entity);
 
-      for (auto& entity : _entities) {
-        auto& v = _registry->get_component<velocity>(entity);
-
-        _registry->patch_component<position>(entity, [&v, &delta_time](auto& pp) { pp += v * delta_time; });
+        position += velocity * delta_time;
       }
     }
 
@@ -194,7 +192,6 @@ class my_module final : public sbx::module {
   private:
     sbx::registry* _registry{};
     sbx::event_queue* _event_queue{};
-    std::vector<sbx::entity> _entities{};
 
   }; // class my_system
 
