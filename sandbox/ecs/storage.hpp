@@ -4,7 +4,7 @@
 #include <iterator>
 #include <type_traits>
 
-#include <util/memory.hpp>
+#include <utils/memory.hpp>
 
 #include "component.hpp"
 #include "sparse_set.hpp"

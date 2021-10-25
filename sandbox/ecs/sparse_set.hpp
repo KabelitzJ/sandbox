@@ -10,7 +10,7 @@
 
 #include <types/primitives.hpp>
 
-#include <util/memory.hpp>
+#include <utils/memory.hpp>
 
 #include "entity.hpp"
 

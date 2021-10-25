@@ -10,8 +10,8 @@
 
 #include <types/primitives.hpp>
 
-#include <util/memory.hpp>
-#include <util/type_id.hpp>
+#include <utils/memory.hpp>
+#include <utils/type_id.hpp>
 
 namespace sbx {
 

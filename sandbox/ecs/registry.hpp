@@ -8,7 +8,7 @@
 
 #include <types/type_traits.hpp>
 
-#include <util/type_id.hpp>
+#include <utils/type_id.hpp>
 
 #include "component.hpp"
 #include "entity.hpp"

@@ -6,7 +6,7 @@
 
 #include <types/primitives.hpp>
 
-#include <util/type_id.hpp>
+#include <utils/type_id.hpp>
 
 #include <ecs/registry.hpp>
 
