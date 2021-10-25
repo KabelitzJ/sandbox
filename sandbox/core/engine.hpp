@@ -9,9 +9,9 @@
 #include <util/type_id.hpp>
 
 #include <ecs/registry.hpp>
-#include <ecs/scheduler.hpp>
-#include <ecs/event_queue.hpp>
 
+#include "scheduler.hpp"
+#include "event_queue.hpp"
 #include "module.hpp"
 
 namespace sbx {
