@@ -101,6 +101,8 @@ struct scroll_event {
 
 };
 
+struct toggle_mouse_visibility_event { };
+
 } // namespace sbx
 
 #endif // SBX_APPLICATION_EVENTS_HPP_
