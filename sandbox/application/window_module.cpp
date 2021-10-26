@@ -32,9 +32,9 @@ void window_module::initialize()  {
 
   _event_queue->add_listener<toggle_mouse_visibility_event>([this](const auto&){
     if (glfwGetInputMode(_handle, GLFW_CURSOR) == GLFW_CURSOR_NORMAL) {
-      glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+      glfwSetInputMode(_handle, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     } else {
-      glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+      glfwSetInputMode(_handle, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
     }
   });
 

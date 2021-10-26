@@ -92,7 +92,7 @@ struct mouse_moved_event {
 
 struct scroll_event {
 
-  mouse_moved_event(float32 _x, float32 _y)
+  scroll_event(float32 _x, float32 _y)
   : x{_x},
     y{_y} { }
 
