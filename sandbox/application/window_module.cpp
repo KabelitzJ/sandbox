@@ -1,6 +1,7 @@
 #include "window_module.hpp"
 
 #include "events.hpp"
+#include "update_system.hpp"
 #include "input_system.hpp"
 
 namespace sbx {
@@ -12,7 +13,6 @@ window_module::~window_module() { }
 
 void window_module::initialize()  {
   glfwInit();
-
 
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
@@ -26,23 +26,19 @@ void window_module::initialize()  {
 
   gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress));
 
-  _event_queue->add_listener<key_event>([this](const auto& event){
-    if (event.key == GLFW_KEY_ESCAPE && event.action == GLFW_PRESS) {
-      glfwSetWindowShouldClose(_handle, true);
+  if (glfwRawMouseMotionSupported()) {
+    glfwSetInputMode(_handle, GLFW_RAW_MOUSE_MOTION, true);
+  }
+
+  _event_queue->add_listener<toggle_mouse_visibility_event>([this](const auto&){
+    if (glfwGetInputMode(_handle, GLFW_CURSOR) == GLFW_CURSOR_NORMAL) {
+      glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    } else {
+      glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
     }
   });
 
-  _scheduler->attach([this](const auto, auto finish){
-    if (glfwWindowShouldClose(_handle)) {
-      _event_queue->emplace_back<window_closed_event>();
-      finish();
-      return;
-    }
-
-    glfwSwapBuffers(_handle);
-    glfwPollEvents();
-  });
-
+  _scheduler->attach<update_system>(_event_queue, _handle);
   _scheduler->attach<input_system>(_event_queue, _handle);
 }
 

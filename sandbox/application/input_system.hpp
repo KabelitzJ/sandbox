@@ -16,7 +16,7 @@ public:
   ~input_system() = default;
 
   void initialize();
-  void update(const time);
+  void update(const time delta_time);
   void finished();
   void aborted();
 
