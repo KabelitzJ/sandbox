@@ -1,5 +1,7 @@
 #include "update_system.hpp"
 
+#include "events.hpp"
+
 namespace sbx {
 
 update_system::update_system(event_queue* event_queue, GLFWwindow* handle)
