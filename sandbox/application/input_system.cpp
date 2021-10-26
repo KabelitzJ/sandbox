@@ -36,11 +36,11 @@ void input_system::initialize() {
     auto* queue = static_cast<event_queue*>(glfwGetWindowUserPointer(window));
 
     if (action == GLFW_PRESS) {
-      queue->emplace_back<mouse_button_pressed_event>(button, scancode, mods);
+      queue->emplace_back<mouse_button_pressed_event>(button, mods);
     } else if (action == GLFW_RELEASE) {
-      queue->emplace_back<mouse_button_released_event>(button, scancode, mods);
+      queue->emplace_back<mouse_button_released_event>(button, mods);
     } else if (action == GLFW_REPEAT) {
-      queue->emplace_back<mouse_button_repeated_event>(button, scancode, mods);
+      queue->emplace_back<mouse_button_repeated_event>(button, mods);
     }
   });
 
@@ -50,7 +50,7 @@ void input_system::initialize() {
     queue->emplace_back<mouse_moved_event>(static_cast<float32>(x_position), static_cast<float32>(y_position));
   });
 
-  glfwSetScrollCallback(_handle, [auto* window, auto x_offset, auto y_offset]{
+  glfwSetScrollCallback(_handle, [](auto* window, auto x_offset, auto y_offset){
     auto* queue = static_cast<event_queue*>(glfwGetWindowUserPointer(window));
 
     queue->emplace_back<scroll_event>(static_cast<float32>(x_offset), static_cast<float32>(y_offset));

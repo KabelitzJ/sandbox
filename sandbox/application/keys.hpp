@@ -5,8 +5,6 @@
 
 #include <types/primitives.hpp>
 
-#include <utils/enum.hpp>
-
 namespace sbx {
 
 enum class key_state : uint8 {
@@ -14,9 +12,6 @@ enum class key_state : uint8 {
   released = GLFW_RELEASE,
   repeated = GLFW_REPEAT
 }; // enum class key_state
-
-template<>
-struct is_implicit_enum_class<key_state> : std::true_type { };
 
 } // namespace sbx
 
