@@ -6,17 +6,17 @@ The sandbox engine a light-weight, ecs-based, modular rendering engine implement
 
 # Content
 
-- [:memo: TODOs](#memo-todos)
+- [:memo: Roadmap](#memo-roadmap)
 - [:gear: Build](#gear-build)
 - [:computer: Using sbx](#computer-using-sbx)
 - [:page_facing_up: License](#page_facing_up-license)
 
-# :memo: TODOs
+# :memo: Roadmap
 
-- ecs
-  - views
-  - registry
-  - component container
+- application
+  - window creation
+  - input handling
+  - logging
 - rendering
   - shader
   - mesh
