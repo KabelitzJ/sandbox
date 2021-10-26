@@ -12,10 +12,6 @@ input_system::input_system(event_queue* event_queue, GLFWwindow* handle)
   _handle{handle} { }
 
 void input_system::initialize() {
-  // [NOTE] KAJ 2021-10-26 10:46: This is debug code and can be removed
-  auto v = uint8{key_state::pressed};
-  static_cast<void>(v);
-
   _event_queue->add_listener<window_closed_event>([this](const auto){
     finish();
   });
