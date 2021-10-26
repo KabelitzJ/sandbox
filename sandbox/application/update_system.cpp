@@ -6,7 +6,7 @@ update_system::update_system(event_queue* event_queue, GLFWwindow* handle)
 : _event_queue{event_queue},
   _handle{handle} { }
 
-void input_system::initialize() {
+void update_system::initialize() {
 
 }
 
