@@ -10,7 +10,7 @@ void input_system::initialize() {
 
 }
 
-void input_system::update([[maybe_unused]] const time delta_time) {
+void update_system::update([[maybe_unused]] const time delta_time) {
   if (glfwWindowShouldClose(_handle)) {
     _event_queue->emplace_back<window_closed_event>();
     finish();
@@ -21,11 +21,11 @@ void input_system::update([[maybe_unused]] const time delta_time) {
   glfwPollEvents();
 }
 
-void input_system::finished() {
+void update_system::finished() {
 
 }
 
-void input_system::aborted() {
+void update_system::aborted() {
 
 }
 
