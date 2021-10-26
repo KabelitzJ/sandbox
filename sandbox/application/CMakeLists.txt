@@ -11,6 +11,7 @@ target_sources(
     application.cpp
     window_module.cpp
     input_system.cpp
+    update_system.cpp
 )
 
 target_include_directories(
