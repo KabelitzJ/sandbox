@@ -8,6 +8,7 @@
 
 #include "scheduler.hpp"
 #include "event_queue.hpp"
+#include "logger.hpp"
 
 namespace sbx {
 
@@ -30,6 +31,7 @@ protected:
   static registry* _registry;
   static scheduler* _scheduler;
   static event_queue* _event_queue;
+  static logger* _logger;
   
 private:
   friend class engine;

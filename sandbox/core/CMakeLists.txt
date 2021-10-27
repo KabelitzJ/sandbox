@@ -1,5 +1,7 @@
 project(core CXX)
 
+find_package(spdlog REQUIRED)
+
 add_library(${PROJECT_NAME} STATIC)
 
 target_sources(
@@ -24,6 +26,7 @@ target_link_libraries(
     sbx::ecs
     sbx::gfx
     sbx::types
+    spdlog::spdlog
 )
 
 target_compile_features(

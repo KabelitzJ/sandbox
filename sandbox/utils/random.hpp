@@ -11,7 +11,7 @@ namespace sbx {
 
 struct random {
 
-  template <typename Type>
+  template<typename Type>
   static Type next(const Type min = std::numeric_limits<Type>::min(), const Type max = std::numeric_limits<Type>::max()) {
     static_assert(std::is_arithmetic_v<Type>, "Type must be an arithmetic type");
 
