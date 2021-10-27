@@ -63,7 +63,7 @@ public:
 
   template<typename Function>
   void attach(Function&& function) {
-    // [NOTE] KAJ 13.10.2021 10:23: Assert that function has the right signature
+    static_assert(std::is_invocable_r_v<void, Function, const time, void(*)(void)>, "Function has wrong signature");
     attach<system_adaptor<std::decay_t<Function>>>(std::forward<Function>(function));
   }
 

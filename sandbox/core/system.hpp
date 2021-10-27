@@ -81,9 +81,15 @@ public:
   system_adaptor(Args&&... args)
   : Function{std::forward<Args>(args)...} { }
 
+  void initialize() override { }
+
   void update(const time delta_time) override {
     Function::operator()(delta_time, [this](){ this->finish(); });
-  } 
+  }
+
+  void finished() override { }
+
+  void aborted() override { }
 
 }; // class system_adaptor
 
