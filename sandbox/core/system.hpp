@@ -37,6 +37,7 @@ public:
 
   void abort() {
     if (is_alive()) {
+      aborted();
       _current_state = state::aborted;
     }
   }
@@ -53,6 +54,7 @@ protected:
 
   void finish() noexcept {
     if (is_alive()) {
+      finished();
       _current_state = state::finished;
     }
   }
@@ -63,8 +65,13 @@ private:
 
   void _initialize() {
     initialize();
-
     _current_state = state::running;
+  }
+
+  void _update(const time delta_time) {
+    if (is_alive()) {
+      update(delta_time);
+    }
   }
 
   state _current_state{state::uninitialized};
@@ -84,7 +91,7 @@ public:
   void initialize() override { }
 
   void update(const time delta_time) override {
-    Function::operator()(delta_time, [this](){ this->finish(); });
+    Function::operator()(delta_time, [this](){ finish(); });
   }
 
   void finished() override { }

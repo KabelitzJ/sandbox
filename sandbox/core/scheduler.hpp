@@ -18,7 +18,6 @@ namespace sbx {
 class scheduler {
 
 public:
-  using size_type = std::size_t;
 
   scheduler()
   : _systems{} { }
@@ -34,10 +33,6 @@ public:
   ~scheduler() {
     abort();
     clear();
-  }
-
-  [[nodiscard]] size_type size() const noexcept {
-    return _systems.size();
   }
 
   [[nodiscard]] bool is_empty() const noexcept {
@@ -73,7 +68,7 @@ public:
         _systems.begin(),
         _systems.end(),
         [&](auto& system){ 
-          system->update(delta_time);
+          system->_update(delta_time);
           return system->is_finished();
         }
       ),
