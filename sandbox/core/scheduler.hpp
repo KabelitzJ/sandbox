@@ -72,9 +72,9 @@ public:
     static_assert(std::is_constructible_v<System, Args...>, "System must be constructable by given arguments");
     static_assert(std::is_base_of_v<basic_system<System, delta_type>, System>, "Invalid system type");
 
-    auto system = typename system_handle::instance_type{new System{std::forward<Args>(args)...}, _deleter<System>};
+    auto system = typename system_handle::instance_type{new System{std::forward<Args>(args)...}, _system_deleter<System>};
 
-    auto handle = system_handle{std::move(system), &basic_scheduler::_update<System>, &basic_scheduler::_abort<System>};
+    auto handle = system_handle{std::move(system), &basic_scheduler::_update_system<System>, &basic_scheduler::_abort_system<System>};
 
     handle.update(handle, delta_type{});
 
@@ -93,8 +93,7 @@ public:
         _handlers.begin(),
         _handlers.end(),
         [&](auto& handle){ 
-          const auto foo = handle.update(handle, delta_time); 
-          return foo;
+          return handle.update(handle, delta_time);
         }
       ),
       _handlers.end()
@@ -105,7 +104,7 @@ public:
     auto executors = decltype(_handlers){};
     executors.swap(_handlers);
 
-    for (auto&& handle : executors) {
+    for (auto& handle : executors) {
       handle.abort(handle, immediately);
     }
 
@@ -115,7 +114,7 @@ public:
 
 private:
   template<typename System>
-  [[nodiscard]] static bool _update(system_handle& handle, const delta_type delta_time) {
+  [[nodiscard]] static bool _update_system(system_handle& handle, const delta_type delta_time) {
     auto* system = static_cast<System*>(handle.instance.get());
     system->tick(delta_time);
 
@@ -123,12 +122,12 @@ private:
   }
 
   template<typename System>
-  static void _abort(system_handle& handle, const bool immediately) {
+  static void _abort_system(system_handle& handle, const bool immediately) {
     static_cast<System*>(handle.instance.get())->abort(immediately);
   }
 
   template<typename System>
-  static void _deleter(void* system) {
+  static void _system_deleter(void* system) {
     delete static_cast<System*>(system);
   }
 
