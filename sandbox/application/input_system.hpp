@@ -8,17 +8,17 @@
 
 namespace sbx {
 
-class input_system : public system<input_system> {
+class input_system final : public system {
 
 public:
 
   input_system(event_queue* event_queue, GLFWwindow* handle);
   ~input_system() = default;
 
-  void initialize();
-  void update(const time delta_time);
-  void finished();
-  void aborted();
+  void initialize() override;
+  void update(const time delta_time) override;
+  void finished() override;
+  void aborted() override;
 
 private:
 

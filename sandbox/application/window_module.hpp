@@ -8,7 +8,7 @@
 
 namespace sbx {
 
-class window_module : public module {
+class window_module final : public module {
 
 public:
 

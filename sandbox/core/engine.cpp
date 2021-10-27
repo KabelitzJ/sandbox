@@ -28,7 +28,7 @@ void engine::initialize() {
 
 void engine::start() {
   using clock = std::chrono::steady_clock;
-  using duration = typename scheduler::duration_type;
+  using duration = std::chrono::duration<time>;
 
   auto last_time = clock::now();
 

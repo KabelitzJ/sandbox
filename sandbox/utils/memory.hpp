@@ -25,13 +25,6 @@ template<typename Type>
   }
 }
 
-template<typename Type>
-struct template_deleter {
-  void operator()(void* ptr) {
-    delete static_cast<Type*>(ptr);
-  }
-};
-
 } // namespace sbx
 
 #endif // SBX_UTIL_MEMORY_HPP_

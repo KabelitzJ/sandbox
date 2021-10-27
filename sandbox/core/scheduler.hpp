@@ -15,123 +15,81 @@
 
 namespace sbx {
 
-template<typename Delta>
-class basic_scheduler;
-
-using scheduler = basic_scheduler<time>;
-
-template<typename Delta>
-class basic_scheduler {
-
-  struct system_handle {
-    using instance_type = std::unique_ptr<void, void(*)(void*)>;
-    using update_fn_type = bool(system_handle&, Delta);
-    using abort_fn_type = void(system_handle&, const bool);
-
-    instance_type instance;
-    update_fn_type* update;
-    abort_fn_type* abort;
-  }; // struct system_handle
+class scheduler {
 
 public:
-  using delta_type = Delta;
   using size_type = std::size_t;
-  using duration_type = std::chrono::duration<delta_type>;
 
-  basic_scheduler()
-  : _handlers{} { }
+  scheduler()
+  : _systems{} { }
 
-  basic_scheduler(const basic_scheduler&) = delete;
+  scheduler(const scheduler&) = delete;
 
-  basic_scheduler(basic_scheduler&&) = default;
+  scheduler(scheduler&&) = default;
 
-  basic_scheduler& operator=(const basic_scheduler&) = delete;
+  scheduler& operator=(const scheduler&) = delete;
 
-  basic_scheduler& operator=(basic_scheduler&&) = default;
+  scheduler& operator=(scheduler&&) = default;
 
-  ~basic_scheduler() {
-    abort(true);
+  ~scheduler() {
+    abort();
     clear();
   }
 
   [[nodiscard]] size_type size() const noexcept {
-    return _handlers.size();
+    return _systems.size();
   }
 
   [[nodiscard]] bool is_empty() const noexcept {
-    return _handlers.empty();
+    return _systems.empty();
   }
 
   void clear() {
-    _handlers.clear();
+    _systems.clear();
   }
 
   template<typename System, typename... Args>
   void attach(Args&&... args) {
     static_assert(!std::is_abstract_v<System>, "System can not be abstract");
     static_assert(std::is_constructible_v<System, Args...>, "System must be constructable by given arguments");
-    static_assert(std::is_base_of_v<basic_system<System, delta_type>, System>, "Invalid system type");
+    static_assert(std::is_base_of_v<system, System>, "Invalid system type");
 
-    auto system = typename system_handle::instance_type{new System{std::forward<Args>(args)...}, _system_deleter<System>};
+    auto system = std::make_unique<System>(std::forward<Args>(args)...);
 
-    auto handle = system_handle{std::move(system), &basic_scheduler::_update_system<System>, &basic_scheduler::_abort_system<System>};
+    system->_initialize();
 
-    handle.update(handle, delta_type{});
-
-    _handlers.emplace_back(std::move(handle));
+    _systems.emplace_back(std::move(system));
   }
 
   template<typename Function>
   void attach(Function&& function) {
     // [NOTE] KAJ 13.10.2021 10:23: Assert that function has the right signature
-    attach<system_adaptor<std::decay_t<Function>, delta_type>>(std::forward<Function>(function));
+    attach<system_adaptor<std::decay_t<Function>>>(std::forward<Function>(function));
   }
 
-  void update(const delta_type delta_time) {
-    _handlers.erase(
+  void update(const time delta_time) {
+    _systems.erase(
       std::remove_if(
-        _handlers.begin(),
-        _handlers.end(),
-        [&](auto& handle){ 
-          return handle.update(handle, delta_time);
+        _systems.begin(),
+        _systems.end(),
+        [&](auto& system){ 
+          system->update(delta_time);
+          return system->is_finished();
         }
       ),
-      _handlers.end()
+      _systems.end()
     );
   }
 
-  void abort(const bool immediately = false) {
-    auto executors = decltype(_handlers){};
-    executors.swap(_handlers);
-
-    for (auto& handle : executors) {
-      handle.abort(handle, immediately);
+  void abort() {
+    for (auto& system : _systems) {
+      system->abort();
     }
-
-    std::move(_handlers.begin(), _handlers.end(), std::back_inserter(executors));
-    _handlers.swap(executors);
   }
 
 private:
-  template<typename System>
-  [[nodiscard]] static bool _update_system(system_handle& handle, const delta_type delta_time) {
-    auto* system = static_cast<System*>(handle.instance.get());
-    system->tick(delta_time);
 
-    return system->is_finished();
-  }
-
-  template<typename System>
-  static void _abort_system(system_handle& handle, const bool immediately) {
-    static_cast<System*>(handle.instance.get())->abort(immediately);
-  }
-
-  template<typename System>
-  static void _system_deleter(void* system) {
-    delete static_cast<System*>(system);
-  }
-
-  std::vector<system_handle> _handlers{};
+  std::vector<std::unique_ptr<system>> _systems{};
 
 }; // class basic_scheduler
 

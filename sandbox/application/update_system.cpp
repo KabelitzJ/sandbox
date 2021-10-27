@@ -9,16 +9,12 @@ update_system::update_system(event_queue* event_queue, GLFWwindow* handle)
   _handle{handle} { }
 
 void update_system::initialize() {
-
+  _event_queue->add_listener<window_closed_event>([this](const auto&){
+    finish();
+  });
 }
 
 void update_system::update([[maybe_unused]] const time delta_time) {
-  if (glfwWindowShouldClose(_handle)) {
-    _event_queue->emplace_back<window_closed_event>();
-    finish();
-    return;
-  }
-
   glfwSwapBuffers(_handle);
   glfwPollEvents();
 }

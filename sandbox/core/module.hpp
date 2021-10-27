@@ -11,15 +11,20 @@
 
 namespace sbx {
 
-class module {
+struct module_base {
+
+  virtual ~module_base() = default;
+
+  virtual void initialize() = 0;
+  virtual void terminate() = 0;  
+
+}; // struct module_base
+
+class module : public module_base {
 
 public:
   module() = default;
   virtual ~module() = default;
-
-  virtual void initialize() = 0;
-
-  virtual void terminate() = 0;
 
 protected:
   static registry* _registry;

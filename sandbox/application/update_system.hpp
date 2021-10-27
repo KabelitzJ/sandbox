@@ -8,17 +8,17 @@
 
 namespace sbx {
 
-class update_system : public system<update_system> {
+class update_system final : public system {
 
 public:
 
   update_system(event_queue* event_queue, GLFWwindow* handle);
   ~update_system() = default;
 
-  void initialize();
-  void update(const time delta_time);
-  void finished();
-  void aborted();
+  void initialize() override;
+  void update(const time delta_time) override;
+  void finished() override;
+  void aborted() override;
 
 private:
 

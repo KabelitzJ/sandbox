@@ -86,7 +86,11 @@ public:
 
     constexpr auto id = type_id<Event>{};
 
-    auto handle = event_handle{new Event{std::forward<Args>(args)...}, _deleter<Event>};
+    auto deleter = [](auto* event){
+      delete static_cast<Event*>(event);
+    };
+
+    auto handle = event_handle{new Event{std::forward<Args>(args)...}, std::move(deleter)};
 
     _queue.emplace_back(id, std::move(handle));
   }
@@ -112,10 +116,6 @@ public:
   }
 
 private:
-  template<typename Event>
-  static void _deleter(void* event) {
-    delete static_cast<Event*>(event);
-  }
 
   std::unordered_map<uint32, std::vector<std::function<void(const event_handle&)>>> _listeners{};
   std::vector<std::pair<uint32, event_handle>> _queue{};

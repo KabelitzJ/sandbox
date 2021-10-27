@@ -27,10 +27,7 @@ using float64 = double;
 
 using cstring = const char*;
 
-using fast_time = float32;
-using precise_time = float64;
-
-using time = fast_time;
+using time = float32;
 
 } // namespace sbx
 
