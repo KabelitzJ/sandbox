@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include <ecs/event_queue.hpp>
+#include <core/event_queue.hpp>
 
 TEST(ecs_event_queue, initial_state) {
   auto event_queue = sbx::event_queue{};
