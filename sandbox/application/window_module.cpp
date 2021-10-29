@@ -2,10 +2,11 @@
 
 #include <sstream>
 
-#include "events.hpp"
+#include <core/events.hpp>
+#include <core/key.hpp>
+
 #include "update_system.hpp"
 #include "input_system.hpp"
-#include "input_codes.hpp"
 
 namespace sbx {
 
@@ -13,7 +14,12 @@ window_module::window_module()
 : _handle(nullptr) { }
 
 void window_module::initialize()  {
-  glfwInit();
+  _logger->info("Initializing window module...");
+
+  if (!glfwInit()) {
+    _logger->critical("Could not initialite GLFW3");
+    return;
+  }
 
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
@@ -21,11 +27,14 @@ void window_module::initialize()  {
 
   _handle = glfwCreateWindow(960, 720, "Sandbox [FPS: 0]", nullptr, nullptr);
 
+  if (!_handle) {
+    _logger->critical("Could not create window");
+    return;
+  }
+
   glfwSetWindowUserPointer(_handle, _event_queue);
 
   glfwMakeContextCurrent(_handle);
-
-  gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress));
 
   if (glfwRawMouseMotionSupported()) {
     glfwSetInputMode(_handle, GLFW_RAW_MOUSE_MOTION, true);
@@ -54,6 +63,8 @@ void window_module::initialize()  {
 void window_module::terminate() {
   glfwDestroyWindow(_handle);
   glfwTerminate();
+
+  _logger->info("Terminating window module...");
 }
 
 } // namespace sbx

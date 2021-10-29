@@ -1,16 +1,18 @@
-project(application CXX)
+project(rendering CXX)
 
+find_package(glad REQUIRED)
 find_package(glfw3 REQUIRED)
+find_package(glm REQUIRED)
+find_package(stb REQUIRED)
 
 add_library(${PROJECT_NAME} STATIC)
 
 target_sources(
   ${PROJECT_NAME}
   PRIVATE
-    application.cpp
-    window_module.cpp
-    input_system.cpp
-    update_system.cpp
+    rendering.cpp
+    rendering_module.cpp
+    render_system.cpp
 )
 
 target_include_directories(
@@ -24,10 +26,13 @@ target_include_directories(
 target_link_libraries(
   ${PROJECT_NAME}
   PUBLIC
+    glad::glad
+    glfw::glfw
+    glm::glm
+    stb::stb
     sbx::core
     sbx::utils
     sbx::types
-    glfw::glfw
 )
 
 target_compile_features(

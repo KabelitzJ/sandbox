@@ -1,6 +1,6 @@
 #include "update_system.hpp"
 
-#include "events.hpp"
+#include <core/events.hpp>
 
 namespace sbx {
 

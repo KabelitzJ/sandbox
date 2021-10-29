@@ -1,30 +1,11 @@
-#ifndef SBX_APPLICATION_INPUT_CODES_HPP_
-#define SBX_APPLICATION_INPUT_CODES_HPP_
-
-#include <type_traits>
+#ifndef SBX_CORE_KEY_HPP_
+#define SBX_CORE_KEY_HPP_
 
 #include <GLFW/glfw3.h>
 
 #include <types/primitives.hpp>
 
 namespace sbx {
-
-enum class key_state : uint8 {
-  pressed   = GLFW_PRESS,
-  released  = GLFW_RELEASE,
-  repeated  = GLFW_REPEAT
-}; // enum class key_state
-
-enum class modification_flag : uint8_t {
-  shift     = GLFW_MOD_SHIFT,
-  control   = GLFW_MOD_CONTROL,
-  alt       = GLFW_MOD_ALT,
-  super     = GLFW_MOD_SUPER,
-  caps_lock = GLFW_MOD_CAPS_LOCK,
-  num_lock  = GLFW_MOD_NUM_LOCK
-}; // enum class modification_flag
-
-using key_modifiers = uint8;
 
 enum class key : uint16 {
   space         = GLFW_KEY_SPACE,
@@ -149,20 +130,6 @@ enum class key : uint16 {
   menu          = GLFW_KEY_MENU
 }; // enum class key
 
-enum class mouse_button : uint8_t {
-  one     = GLFW_MOUSE_BUTTON_1,
-  two     = GLFW_MOUSE_BUTTON_2,
-  three   = GLFW_MOUSE_BUTTON_3,
-  four    = GLFW_MOUSE_BUTTON_4,
-  five    = GLFW_MOUSE_BUTTON_5,
-  six     = GLFW_MOUSE_BUTTON_6,
-  seven   = GLFW_MOUSE_BUTTON_7,
-  eight   = GLFW_MOUSE_BUTTON_8,
-  left    = GLFW_MOUSE_BUTTON_LEFT,
-  right   = GLFW_MOUSE_BUTTON_RIGHT,
-  middle  = GLFW_MOUSE_BUTTON_MIDDLE,
-}; // enum class mouse_buttons
-
 } // namespace sbx
 
-#endif // SBX_APPLICATION_INPUT_CODES_HPP_
+#endif // SBX_CORE_KEY_HPP_

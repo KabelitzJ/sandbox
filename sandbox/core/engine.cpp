@@ -4,6 +4,8 @@
 
 #include <types/primitives.hpp>
 
+#include <utils/reverse_adaptor.hpp>
+
 #include "logger.hpp"
 
 namespace sbx {
@@ -25,17 +27,17 @@ void engine::initialize() {
   module::_event_queue = _event_queue.get();
   module::_logger = _logger.get();
 
-  _logger->info("initializing modules...");
+  _logger->info("Initializing modules...");
 
-  for (auto& [id, module] : _modules) {
+  for (auto& module : _modules) {
     module->initialize();
   }
 
-  _logger->info("finished initializing modules");
+  _logger->info("Finished initializing modules");
 }
 
 void engine::start() {
-  _logger->info("starting main loop");
+  _logger->info("Started main loop");
 
   using clock = std::chrono::steady_clock;
   using duration = std::chrono::duration<time>;
@@ -53,18 +55,18 @@ void engine::start() {
     _event_queue->pop_all();
   }
 
-  _logger->info("ended main loop");
+  _logger->info("Ended main loop");
 }
   
 void engine::terminate() {
-  _logger->info("terminating modules...");
+  _logger->info("Terminating modules...");
 
   // [NOTE] KAJ 2021-10-12 18:43: Maybe terminate modules in reverse order
-  for (auto& [id, module] : _modules) {
+  for (auto& module : reverse_adaptor{_modules}) {
     module->terminate();
   }
 
-  _logger->info("finished terminating modules");
+  _logger->info("Finished terminating modules");
 }
 
 } // namespace sbx

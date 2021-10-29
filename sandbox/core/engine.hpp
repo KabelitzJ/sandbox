@@ -1,8 +1,8 @@
 #ifndef SBX_CORE_ENGINE_HPP_
 #define SBX_CORE_ENGINE_HPP_
 
-#include <unordered_map>
 #include <memory>
+#include <vector>
 
 #include <types/primitives.hpp>
 
@@ -33,12 +33,10 @@ public:
   void add_module(Args&&... args) {
     static_assert(std::is_base_of_v<module, Module>);
     static_assert(!std::is_abstract_v<Module>);
-    
-    constexpr auto id = type_id<Module>{};
 
     auto module = std::make_unique<Module>(std::forward<Args>(args)...);
-    
-    _modules.emplace(id, std::move(module));
+
+    _modules.emplace_back(std::move(module));
   }
 
 private:
@@ -46,7 +44,7 @@ private:
   std::unique_ptr<scheduler> _scheduler{};
   std::unique_ptr<event_queue> _event_queue{};
   std::unique_ptr<logger> _logger{};
-  std::unordered_map<uint32, std::unique_ptr<module>> _modules{};
+  std::vector<std::unique_ptr<module>> _modules{};
 
 }; // class engine
 

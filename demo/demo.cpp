@@ -2,6 +2,7 @@
 
 #include <core/entry_point.hpp>
 #include <application/window_module.hpp>
+#include <rendering/rendering_module.hpp>
 
 struct velocity {
   float x;
@@ -38,6 +39,6 @@ velocity operator*(const velocity& velocity, const float scalar) {
 }
 
 void sbx::setup(sbx::engine& engine) {
-  // engine.add_module<my_module>();
   engine.add_module<sbx::window_module>();
+  engine.add_module<sbx::rendering_module>();
 }

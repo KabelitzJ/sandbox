@@ -1,7 +1,6 @@
 #ifndef SBX_APPLICATION_WINDOW_MODULE_HPP_
 #define SBX_APPLICATION_WINDOW_MODULE_HPP_
 
-#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
 #include <core/module.hpp>

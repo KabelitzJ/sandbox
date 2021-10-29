@@ -8,7 +8,7 @@ set(
     ecs
     core
     application
-    gfx
+    rendering
 )
 
 foreach(module ${SBX_MODULES})

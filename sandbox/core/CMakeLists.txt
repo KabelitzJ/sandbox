@@ -24,7 +24,6 @@ target_link_libraries(
   ${PROJECT_NAME}
   PUBLIC
     sbx::ecs
-    sbx::gfx
     sbx::types
     spdlog::spdlog
 )
