@@ -56,6 +56,12 @@ void input_system::initialize() {
 
     queue->emplace_back<scroll_event>(static_cast<float32>(x_offset), static_cast<float32>(y_offset));
   });
+
+  glfwSetFramebufferSizeCallback(_handle, [](auto* window, auto width, auto height){
+    auto* queue = static_cast<event_queue*>(glfwGetWindowUserPointer(window));
+
+    queue->emplace_back<window_resized_event>(width, height);
+  });
 }
 
 void input_system::update([[maybe_unused]] const time delta_time) {

@@ -9,6 +9,19 @@ namespace sbx {
 
 struct window_closed_event { };
 
+struct window_resized_event {
+
+  window_resized_event(int32 _width, int32 _height)
+  : width{_width},
+    height{_height} { }
+
+  int32 width{};
+  int32 height{};
+
+};
+
+
+
 struct key_pressed_event {
 
   key_pressed_event(key _key, int32 _scancode, key_modifiers _mods)
