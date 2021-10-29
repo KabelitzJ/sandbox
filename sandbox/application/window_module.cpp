@@ -1,15 +1,16 @@
 #include "window_module.hpp"
 
+#include <sstream>
+
 #include "events.hpp"
 #include "update_system.hpp"
 #include "input_system.hpp"
+#include "input_codes.hpp"
 
 namespace sbx {
 
 window_module::window_module()
 : _handle(nullptr) { }
-
-window_module::~window_module() { }
 
 void window_module::initialize()  {
   glfwInit();
@@ -18,7 +19,7 @@ void window_module::initialize()  {
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-  _handle = glfwCreateWindow(960, 720, "Window", nullptr, nullptr);
+  _handle = glfwCreateWindow(960, 720, "Sandbox [FPS: 0]", nullptr, nullptr);
 
   glfwSetWindowUserPointer(_handle, _event_queue);
 
@@ -36,6 +37,14 @@ void window_module::initialize()  {
     } else {
       glfwSetInputMode(_handle, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
     }
+  });
+
+  _event_queue->add_listener<fps_updated_event>([this](const auto& event){
+    auto title = std::stringstream{};
+
+    title << "Sandbox [FPS: " << event.fps << "]";
+
+    glfwSetWindowTitle(_handle, title.str().c_str());
   });
 
   _scheduler->attach<update_system>(_event_queue, _handle);

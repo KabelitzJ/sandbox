@@ -24,6 +24,8 @@ private:
 
   event_queue* _event_queue{};
   GLFWwindow* _handle{};
+  uint32 _frame_counter{};
+  time _timer{};
 
 }; // class update_system
 

@@ -3,7 +3,7 @@
 #include <types/primitives.hpp>
 
 #include "events.hpp"
-#include "keys.hpp"
+#include "input_codes.hpp"
 
 namespace sbx {
 
@@ -21,15 +21,15 @@ void input_system::initialize() {
     queue->emplace_back<window_closed_event>();
   });
 
-  glfwSetKeyCallback(_handle, [](auto* window, auto key, auto scancode, auto action, auto mods){
+  glfwSetKeyCallback(_handle, [](auto* window, auto keycode, auto scancode, auto action, auto mods){
     auto* queue = static_cast<event_queue*>(glfwGetWindowUserPointer(window));
 
     if (action == GLFW_PRESS) {
-      queue->emplace_back<key_pressed_event>(key, scancode, mods);
+      queue->emplace_back<key_pressed_event>(static_cast<key>(keycode), scancode, static_cast<key_modifiers>(mods));
     } else if (action == GLFW_RELEASE) {
-      queue->emplace_back<key_released_event>(key, scancode, mods);
+      queue->emplace_back<key_released_event>(static_cast<key>(keycode), scancode, static_cast<key_modifiers>(mods));
     } else if (action == GLFW_REPEAT) {
-      queue->emplace_back<key_repeated_event>(key, scancode, mods);
+      queue->emplace_back<key_repeated_event>(static_cast<key>(keycode), scancode, static_cast<key_modifiers>(mods));
     }
   });
 
@@ -37,11 +37,11 @@ void input_system::initialize() {
     auto* queue = static_cast<event_queue*>(glfwGetWindowUserPointer(window));
 
     if (action == GLFW_PRESS) {
-      queue->emplace_back<mouse_button_pressed_event>(button, mods);
+      queue->emplace_back<mouse_button_pressed_event>(static_cast<mouse_button>(button), static_cast<key_modifiers>(mods));
     } else if (action == GLFW_RELEASE) {
-      queue->emplace_back<mouse_button_released_event>(button, mods);
+      queue->emplace_back<mouse_button_released_event>(static_cast<mouse_button>(button), static_cast<key_modifiers>(mods));
     } else if (action == GLFW_REPEAT) {
-      queue->emplace_back<mouse_button_repeated_event>(button, mods);
+      queue->emplace_back<mouse_button_repeated_event>(static_cast<mouse_button>(button), static_cast<key_modifiers>(mods));
     }
   });
 
