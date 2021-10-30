@@ -6,18 +6,6 @@
 
 namespace sbx {
 
-template<typename Container, typename = void>
-struct is_iterable : std::false_type { };
-
-template<typename Container>
-struct is_iterable<Container, std::void_t<
-  decltype(std::begin(std::declval<Container>())),
-  decltype(std::end(std::declval<Container>()))
->> : std::true_type { };
-
-template<typename Container>
-constexpr auto is_iterable_v = is_iterable<Container>::value;
-
 template<typename Container>
 class reverse_adaptor {
 

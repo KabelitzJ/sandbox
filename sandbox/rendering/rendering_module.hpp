@@ -17,6 +17,8 @@ public:
 
 private:
 
+  void _log_context_info() const;
+
 };
 
 } // namespace sbx

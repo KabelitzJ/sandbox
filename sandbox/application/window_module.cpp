@@ -36,6 +36,8 @@ void window_module::initialize()  {
 
   glfwMakeContextCurrent(_handle);
 
+  glfwSwapInterval(0);
+
   if (glfwRawMouseMotionSupported()) {
     glfwSetInputMode(_handle, GLFW_RAW_MOUSE_MOTION, true);
   }
