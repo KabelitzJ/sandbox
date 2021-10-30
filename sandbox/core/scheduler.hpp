@@ -44,7 +44,7 @@ public:
   }
 
   template<typename System, typename... Args>
-  void attach(Args&&... args) {
+  void add_system(Args&&... args) {
     static_assert(!std::is_abstract_v<System>, "System can not be abstract");
     static_assert(std::is_constructible_v<System, Args...>, "System must be constructable by given arguments");
     static_assert(std::is_base_of_v<system, System>, "Invalid system type");
@@ -57,9 +57,9 @@ public:
   }
 
   template<typename Function>
-  void attach(Function&& function) {
+  void add_system(Function&& function) {
     static_assert(std::is_invocable_r_v<void, Function, const time, void(*)(void)>, "Function has wrong signature");
-    attach<system_adaptor<std::decay_t<Function>>>(std::forward<Function>(function));
+    add_system<system_adaptor<std::decay_t<Function>>>(std::forward<Function>(function));
   }
 
   void update(const time delta_time) {

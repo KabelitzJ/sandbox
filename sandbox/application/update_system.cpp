@@ -17,19 +17,19 @@ void update_system::initialize() {
 }
 
 void update_system::update([[maybe_unused]] const time delta_time) {
+  glfwSwapBuffers(_handle);
+  glfwPollEvents();
+  
   _timer += delta_time;
 
   if (_timer >= time{1}) {
-    _event_queue->emplace_back<fps_updated_event>(_frame_counter);
+    _event_queue->dispatch_event<fps_updated_event>(_frame_counter);
 
     _timer = 0.0f;
     _frame_counter = 0u;
   }
 
   ++_frame_counter;
-
-  glfwSwapBuffers(_handle);
-  glfwPollEvents();
 }
 
 void update_system::finished() {

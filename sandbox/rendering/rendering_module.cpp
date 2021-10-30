@@ -23,7 +23,9 @@ void rendering_module::initialize() {
 
   _log_context_info();
 
-  _scheduler->attach<render_system>(_event_queue);
+  glClearColor(0.95f, 0.5f, 0.43f, 1.0f);
+  
+  _scheduler->add_system<render_system>(_event_queue);
 }
 
 void rendering_module::terminate() {

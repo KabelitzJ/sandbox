@@ -58,8 +58,8 @@ void window_module::initialize()  {
     glfwSetWindowTitle(_handle, title.str().c_str());
   });
 
-  _scheduler->attach<update_system>(_event_queue, _handle);
-  _scheduler->attach<input_system>(_event_queue, _handle);
+  _scheduler->add_system<update_system>(_event_queue, _handle);
+  _scheduler->add_system<input_system>(_event_queue, _handle);
 }
 
 void window_module::terminate() {
