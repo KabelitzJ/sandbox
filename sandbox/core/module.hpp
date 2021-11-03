@@ -4,8 +4,7 @@
 #include <vector>
 #include <memory>
 
-#include <ecs/registry.hpp>
-
+#include "scene.hpp"
 #include "scheduler.hpp"
 #include "event_queue.hpp"
 #include "logger.hpp"
