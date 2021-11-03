@@ -28,7 +28,7 @@ public:
   virtual ~module() = default;
 
 protected:
-  static registry* _registry;
+  static scene* _scene;
   static scheduler* _scheduler;
   static event_queue* _event_queue;
   static logger* _logger;

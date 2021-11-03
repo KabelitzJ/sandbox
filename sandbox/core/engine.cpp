@@ -11,7 +11,7 @@
 namespace sbx {
 
 engine::engine()
-: _registry{std::make_unique<registry>()},
+: _scene{std::make_unique<scene>()},
   _scheduler{std::make_unique<scheduler>()},
   _event_queue{std::make_unique<event_queue>()},
   _logger{std::make_unique<logger>()},
@@ -22,7 +22,7 @@ engine::~engine() {
 }
 
 void engine::initialize() {
-  module::_registry = _registry.get();
+  module::_scene = _scene.get();
   module::_scheduler = _scheduler.get();
   module::_event_queue = _event_queue.get();
   module::_logger = _logger.get();
@@ -44,6 +44,8 @@ void engine::start() {
 
   auto last_time = clock::now();
 
+  // [TODO] KAJ 2021-11-03 15:29 - Find way to shut down all systems on window closed, without every system needing to subscribe to that event
+
   while (!_scheduler->is_empty()) {
     const auto now = clock::now();
 
@@ -61,7 +63,6 @@ void engine::start() {
 void engine::terminate() {
   _logger->info("Terminating modules...");
 
-  // [NOTE] KAJ 2021-10-12 18:43: Maybe terminate modules in reverse order
   for (auto& module : reverse_adaptor{_modules}) {
     module->terminate();
   }

@@ -251,14 +251,15 @@ public:
   }
 
   template<typename... Components>
-  size_type remove_component(const entity_type entity) {
+  size_type remove_components(const entity_type entity) {
     assert(is_valid(entity));
     static_assert(sizeof...(Components) > 0, "Provide one or more component types");
+    // [NOTE] KAJ 2021-11-03 13:51 - Maybe remove counter??
     return (_assure<Components>()->remove(entity) + ... + size_type{});
   }
 
   template<typename... Components, typename Iterator>
-  size_type remove_component(Iterator first, Iterator last) {
+  size_type remove_components(Iterator first, Iterator last) {
     static_assert(sizeof...(Components) > 0, "Provide one or more component types");
     const auto pools = std::make_tuple(_assure<Components>()...);
     auto count = size_type{};
@@ -273,14 +274,14 @@ public:
   }
 
   template<typename... Components>
-  void erase_component(const entity_type entity) {
+  void erase_components(const entity_type entity) {
     assert(is_valid(entity));
     static_assert(sizeof...(Components) > 0, "Provide one or more component types");
     (_assure<Components>()->erase(entity), ...);
   }
 
   template<typename... Components, typename Iterator>
-  void erase_component(Iterator first, Iterator last) {
+  void erase_components(Iterator first, Iterator last) {
     static_assert(sizeof...(Components) > 0, "Provide one or more component types");
     const auto pools = std::make_tuple(_assure<Components>()...);
 
@@ -317,7 +318,7 @@ public:
   }
 
   template<typename... Components>
-  [[nodiscard]] decltype(auto) get_component([[maybe_unused]] const entity_type entity) const {
+  [[nodiscard]] decltype(auto) get_components([[maybe_unused]] const entity_type entity) const {
     assert(is_valid(entity));
 
     if constexpr (sizeof...(Components) == 1) {
@@ -325,48 +326,48 @@ public:
       assert(pool);
       return pool->get(entity);
     } else {
-      return std::forward_as_tuple(get_component<Components>(entity)...);
+      return std::forward_as_tuple(get_components<Components>(entity)...);
     }
   }
 
   template<typename... Components>
-  [[nodiscard]] decltype(auto) get_component([[maybe_unused]] const entity_type entity) {
+  [[nodiscard]] decltype(auto) get_components([[maybe_unused]] const entity_type entity) {
     assert(is_valid(entity));
 
     if constexpr (sizeof...(Components) == 1) {
       return (const_cast<Components&>(_assure<std::remove_const_t<Components>>()->get(entity)), ...);
     } else {
-      return std::forward_as_tuple(get_component<Components>(entity)...);
+      return std::forward_as_tuple(get_components<Components>(entity)...);
     }
   }
 
   template<typename Component, typename... Args>
-  [[nodiscard]] decltype(auto) get_or_emplace_component(const entity_type entity, Args&&... args) {
+  [[nodiscard]] decltype(auto) get_or_emplace_components(const entity_type entity, Args&&... args) {
     assert(is_valid(entity));
     auto* pool = _assure<Component>();
     return pool->contains(entity) ? pool->get(entity) : pool->emplace(entity, std::forward<Args>(args)...);
   }
 
   template<typename... Components>
-  [[nodiscard]] auto try_get_component([[maybe_unused]] const entity_type entity) const {
+  [[nodiscard]] auto try_get_components([[maybe_unused]] const entity_type entity) const {
     assert(is_valid(entity));
 
     if constexpr (sizeof...(Components) == 1) {
       const auto* pool = _pool_if_exists<std::remove_const_t<Components>...>();
       return (pool && pool->contains(entity)) ? &pool->get(entity) : nullptr;
     } else {
-      return std::make_tuple(try_get_component<Components>(entity)...);
+      return std::make_tuple(try_get_components<Components>(entity)...);
     }
   }
 
   template<typename... Components>
-  [[nodiscard]] auto try_get_component([[maybe_unused]] const entity_type entity) {
+  [[nodiscard]] auto try_get_components([[maybe_unused]] const entity_type entity) {
     assert(is_valid(entity));
 
     if constexpr (sizeof...(Components) == 1) {
-      return (const_cast<Components*>(std::as_const(*this).template try_get_component<Components>(entity)), ...);
+      return (const_cast<Components*>(std::as_const(*this).template try_get_components<Components>(entity)), ...);
     } else {
-      return std::make_tuple(try_get_component<Components>(entity)...);
+      return std::make_tuple(try_get_components<Components>(entity)...);
     }
   }
 

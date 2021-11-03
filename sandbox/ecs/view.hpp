@@ -113,15 +113,11 @@ private:
 };
 
 
-// [NOTE] KAJ 2021-10-22 14:21: Maybe unused
-// template<typename, typename, typename, typename>
-// class basic_view;
-
 template<typename, typename, typename, typename = void>
 class basic_view;
 
-template<typename Get, typename Exclude = exclude_t<>>
-using _view = basic_view<entity, Get, Exclude>;
+template<typename... Components, typename... Excludes>
+using view = basic_view<entity, get_t<Components...>, exclude_t<Excludes...>>;
 
 
 /**

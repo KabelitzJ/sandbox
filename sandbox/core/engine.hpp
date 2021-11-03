@@ -8,8 +8,7 @@
 
 #include <utils/type_id.hpp>
 
-#include <ecs/registry.hpp>
-
+#include "scene.hpp"
 #include "scheduler.hpp"
 #include "event_queue.hpp"
 #include "module.hpp"
@@ -40,7 +39,7 @@ public:
   }
 
 private:
-  std::unique_ptr<registry> _registry{};
+  std::unique_ptr<scene> _scene{};
   std::unique_ptr<scheduler> _scheduler{};
   std::unique_ptr<event_queue> _event_queue{};
   std::unique_ptr<logger> _logger{};

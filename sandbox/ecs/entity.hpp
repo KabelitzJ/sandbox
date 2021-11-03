@@ -14,10 +14,6 @@ template<typename Type>
 struct basic_entity_traits<Type, std::enable_if_t<std::is_enum_v<Type>>>
 : basic_entity_traits<std::underlying_type_t<Type>> { };
 
-template<typename Type>
-struct basic_entity_traits<Type, std::enable_if_t<std::is_class_v<Type>>>
-: basic_entity_traits<typename Type::entity_type> { };
-
 template<>
 struct basic_entity_traits<uint32> {
 

@@ -10,6 +10,7 @@ target_sources(
     entry_point.cpp
     engine.cpp
     module.cpp
+    scene.cpp
 )
 
 target_include_directories(
