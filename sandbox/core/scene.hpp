@@ -42,12 +42,12 @@ public:
   }
 
   template<typename... Components>
-  decltype(auto) get_components(const entity entity) {
+  decltype(auto) get_components(const entity entity) const {
     return _registry.get_components<Components...>(entity);
   }
 
   template<typename... Components>
-  decltype(auto) get_components(const entity entity) const {
+  decltype(auto) get_components(const entity entity) {
     return _registry.get_components<Components...>(entity);
   }
 
@@ -62,12 +62,12 @@ public:
   }
 
   template<typename... Components, typename... Excludes>
-  view<Components..., Excludes...> create_view(exclude_t<Excludes...> = {}) {
+  [[nodiscard]] basic_view<entity_type, get_t<std::add_const_t<Components>...>, exclude_t<Excludes...>> create_view(exclude_t<Excludes...> = {}) const {
     return _registry.view<Components..., Excludes...>();
   }
 
   template<typename... Components, typename... Excludes>
-  view<Components..., Excludes...> create_view(exclude_t<Excludes...> = {}) const {
+  [[nodiscard]] basic_view<entity_type, get_t<Components...>, exclude_t<Excludes...>> create_view(exclude_t<Excludes...> = {}) {
     return _registry.view<Components..., Excludes...>();
   }
 

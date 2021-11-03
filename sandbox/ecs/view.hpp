@@ -116,8 +116,9 @@ private:
 template<typename, typename, typename, typename = void>
 class basic_view;
 
-template<typename... Components, typename... Excludes>
-using view = basic_view<entity, get_t<Components...>, exclude_t<Excludes...>>;
+
+template<typename Component, typename Exclude = exclude_t<>>
+using view = basic_view<entity, Component, Exclude>;
 
 
 /**
