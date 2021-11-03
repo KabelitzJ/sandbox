@@ -298,6 +298,10 @@ public:
     }
   }
 
+  bool remove(const entity_type entity) {
+    return contains(entt) && (erase(entt), true);
+  }
+
   void clear() {
     for (auto& entity : this) {
       erase(entity);

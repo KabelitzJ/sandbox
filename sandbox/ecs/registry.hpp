@@ -375,7 +375,7 @@ public:
   void clear() {
     if constexpr (sizeof...(Components) == 0) {
       for (auto& pool : _pools) {
-        pool && pool->clear(this);
+        pool && pool->clear();
       }
 
       each([this](const auto entity) { _release_entity(entity, entity_traits::to_version(entity) + 1u); });
