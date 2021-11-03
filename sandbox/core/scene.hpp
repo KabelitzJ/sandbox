@@ -8,12 +8,6 @@
 
 namespace sbx {
 
-struct relationship {
-  entity parent{null_entity};
-  // [TODO] KAJ 2021-11-03 12:16 - Figure out if std::unordered_set gives a perfromance hit here
-  std::unordered_set<entity> children{};
-}; // struct relationship
-
 class scene {
 
 public:

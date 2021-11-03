@@ -4,6 +4,12 @@
 
 namespace sbx {
 
+struct relationship {
+  entity parent{null_entity};
+  // [TODO] KAJ 2021-11-03 12:16 - Figure out if std::unordered_set gives a perfromance hit here
+  std::unordered_set<entity> children{};
+}; // struct relationship
+
 scene::scene() 
 : _registry{},
   _root{_registry.create_entity()} {
@@ -16,13 +22,9 @@ scene::~scene() {
 }
 
 entity scene::create_entity(const entity parent) {
-  if (parent == null_entity) {
-    parent = _root;
-  }
-
   auto entity = _registry.create_entity();
 
-  auto& parent_relationship = _registry.get_components<relationship>(parent);
+  auto& parent_relationship = parent != null_entity ? _registry.get_components<relationship>(parent) : _registry.get_components<relationship>(_root);
 
   // [NOTE] KAJ 2021-11-03 13:26 - Should never happen... But better be save
   assert(parent_relationship.children.find(entity) == parent_relationship.children.cend());

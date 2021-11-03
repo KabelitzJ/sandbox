@@ -5,15 +5,15 @@
 #include <rendering/rendering_module.hpp>
 
 struct velocity {
-  float x;
-  float y;
-  float z;
+  float x{};
+  float y{};
+  float z{};
 };
 
 struct position {
-  float x;
-  float y;
-  float z;
+  float x{};
+  float y{};
+  float z{};
 
   position& operator+=(const velocity& velocity) {
     x += velocity.x;
