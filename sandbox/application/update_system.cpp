@@ -11,9 +11,7 @@ update_system::update_system(event_queue* event_queue, GLFWwindow* handle)
   _timer{0.0f} { }
 
 void update_system::initialize() {
-  _event_queue->add_listener<window_closed_event>([this](const auto&){
-    finish();
-  });
+
 }
 
 void update_system::update([[maybe_unused]] const time delta_time) {
@@ -32,11 +30,7 @@ void update_system::update([[maybe_unused]] const time delta_time) {
   ++_frame_counter;
 }
 
-void update_system::finished() {
-
-}
-
-void update_system::aborted() {
+void update_system::terminate() {
 
 }
 

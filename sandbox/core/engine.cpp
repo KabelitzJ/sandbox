@@ -7,6 +7,7 @@
 #include <utils/reverse_adaptor.hpp>
 
 #include "logger.hpp"
+#include "events.hpp"
 
 namespace sbx {
 
@@ -39,12 +40,15 @@ void engine::initialize() {
 void engine::start() {
   _logger->info("Started main loop");
 
+  _event_queue->add_listener<application_shutdown_event>([this](const auto& event){
+    _logger->info("Application shutdown (origin: {})", event.origin);
+    _scheduler->terminate();
+  });
+
   using clock = std::chrono::steady_clock;
   using duration = std::chrono::duration<time>;
 
   auto last_time = clock::now();
-
-  // [TODO] KAJ 2021-11-03 15:29 - Find way to shut down all systems on window closed, without every system needing to subscribe to that event
 
   while (!_scheduler->is_empty()) {
     const auto now = clock::now();

@@ -17,8 +17,7 @@ public:
 
   void initialize() override;
   void update(const time delta_time) override;
-  void finished() override;
-  void aborted() override;
+  void terminate() override;
 
 private:
 

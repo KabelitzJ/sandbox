@@ -1,6 +1,7 @@
 project(core CXX)
 
 find_package(spdlog REQUIRED)
+find_package(glfw3 REQUIRED)
 
 add_library(${PROJECT_NAME} STATIC)
 
@@ -27,6 +28,7 @@ target_link_libraries(
     sbx::ecs
     sbx::types
     spdlog::spdlog
+    glfw::glfw
 )
 
 target_compile_features(

@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include <core/entry_point.hpp>
+#include <core/events.hpp>
 #include <application/window_module.hpp>
 #include <rendering/rendering_module.hpp>
 
@@ -51,32 +52,26 @@ class demo_module final : public sbx::module {
     ~demo_system() = default;
 
     void initialize() override {
-      _event_queue->add_listener<window_closed_event>([this](const auto&){
-        finish();
-      });
+
     }
 
     void update(sbx::time delta_time) override {
-      auto view = _scene.create_view<position, const velocity>();
+      auto view = _scene->create_view<position, const velocity>();
 
       for (auto entity : view) {
-        auto& [position, velocity] = view.get(entity);
+        auto [position, velocity] = view.get(entity);
 
         position += velocity * delta_time;
       }
     }
 
-    void finished() override {
-
-    }
-
-    void aborted() override {
-
+    void terminate() override {
+      
     }
 
   private:
 
-    sbx::event_queue* _event_queue{}
+    sbx::event_queue* _event_queue{};
     sbx::scene* _scene{};
 
   };
@@ -87,9 +82,9 @@ public:
   ~demo_module() = default;
 
   void initialize() override {
-    const auto player = _scene.create_entity();
-    _scene.emplace_component<position>(player, 0.0f, 0.0f);
-    _scene.emplace_component<velocity>(player, 0.5f, 0.5f);
+    const auto player = _scene->create_entity();
+    _scene->emplace_component<position>(player, 0.0f, 0.0f);
+    _scene->emplace_component<velocity>(player, 0.5f, 0.5f);
   }
 
   void terminate() override {

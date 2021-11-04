@@ -299,11 +299,11 @@ public:
   }
 
   bool remove(const entity_type entity) {
-    return contains(entt) && (erase(entt), true);
+    return contains(entity) && (erase(entity), true);
   }
 
   void clear() {
-    for (auto& entity : this) {
+    for (auto& entity : *this) {
       erase(entity);
     }
   }

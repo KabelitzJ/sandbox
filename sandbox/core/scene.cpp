@@ -13,7 +13,7 @@ struct relationship {
 scene::scene() 
 : _registry{},
   _root{_registry.create_entity()} {
-  _registry.emplace_component<relationship>(entity);
+  _registry.emplace_component<relationship>(_root);
 }
 
 scene::~scene() {

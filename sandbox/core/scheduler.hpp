@@ -31,7 +31,7 @@ public:
   scheduler& operator=(scheduler&&) = default;
 
   ~scheduler() {
-    abort();
+    terminate();
     clear();
   }
 
@@ -69,17 +69,19 @@ public:
         _systems.end(),
         [&](auto& system){ 
           system->_update(delta_time);
-          return system->is_finished();
+          return !system->is_running();
         }
       ),
       _systems.end()
     );
   }
 
-  void abort() {
+  void terminate() {
     for (auto& system : _systems) {
-      system->abort();
+      system->_terminate();
     }
+
+    clear();
   }
 
 private:

@@ -82,7 +82,7 @@ public:
   template<typename Event, typename... Args>
   void dispatch_event(Args&&... args) {
     static_assert(!std::is_abstract_v<Event>, "An event can not be abstract");
-    static_assert(std::is_constructible_v<Event, Args...>, "Can not construct event from given arguments");
+    static_assert(std::is_constructible_v<Event, Args...> || std::is_aggregate_v<Event>, "Can not construct event from given arguments");
 
     constexpr auto id = type_id<Event>{};
 

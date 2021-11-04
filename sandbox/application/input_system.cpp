@@ -14,13 +14,9 @@ input_system::input_system(event_queue* event_queue, GLFWwindow* handle)
   _handle{handle} { }
 
 void input_system::initialize() {
-  _event_queue->add_listener<window_closed_event>([this](const auto&){
-    finish();
-  });
-
   glfwSetWindowCloseCallback(_handle, [](auto* window){
     auto* queue = static_cast<event_queue*>(glfwGetWindowUserPointer(window));
-    queue->dispatch_event<window_closed_event>();
+    queue->dispatch_event<application_shutdown_event>("window close callback");
   });
 
   glfwSetKeyCallback(_handle, [](auto* window, auto keycode, auto scancode, auto action, auto mods){
@@ -70,11 +66,7 @@ void input_system::update([[maybe_unused]] const time delta_time) {
 
 }
 
-void input_system::finished() {
-
-}
-
-void input_system::aborted() {
+void input_system::terminate() {
 
 }
 

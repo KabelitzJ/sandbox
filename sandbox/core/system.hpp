@@ -15,8 +15,7 @@ struct system_base {
 
   virtual void initialize() = 0;
   virtual void update(const time delta_time) = 0;
-  virtual void finished() = 0;
-  virtual void aborted() = 0;
+  virtual void terminate() = 0;
 
 }; // struct system_base
 
@@ -24,9 +23,8 @@ class system : public system_base {
 
   enum class state : uint8 {
     uninitialized = 0,
-    running = 1,
-    finished = 2,
-    aborted = 3
+    running       = 2,
+    finished    = 3
   }; // enum class state
 
 public:
@@ -36,28 +34,14 @@ public:
 
   virtual ~system() = default;
 
-  void abort() {
-    if (is_alive()) {
-      aborted();
-      _current_state = state::aborted;
-    }
-  }
-
-  [[nodiscard]] bool is_finished() const noexcept {
-    return _current_state == state::finished || _current_state == state::aborted;
-  }
-
-  [[nodiscard]] bool is_alive() const noexcept {
+  [[nodiscard]] bool is_running() const noexcept {
     return _current_state == state::running;
   }
 
 protected:
 
-  void finish() noexcept {
-    if (is_alive()) {
-      finished();
-      _current_state = state::finished;
-    }
+  void exit() noexcept {
+    _terminate();
   }
 
 private:
@@ -70,8 +54,15 @@ private:
   }
 
   void _update(const time delta_time) {
-    if (is_alive()) {
+    if (is_running()) {
       update(delta_time);
+    }
+  }
+
+  void _terminate() {
+    if (is_running()) {
+      terminate();
+      _current_state = state::finished;
     }
   }
 
@@ -92,7 +83,7 @@ public:
   void initialize() override { }
 
   void update(const time delta_time) override {
-    Function::operator()(delta_time, [this](){ finish(); });
+    Function::operator()(delta_time, [this](){ exit(); });
   }
 
   void finished() override { }

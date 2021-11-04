@@ -375,7 +375,7 @@ public:
   void clear() {
     if constexpr (sizeof...(Components) == 0) {
       for (auto& pool : _pools) {
-        pool && pool->clear();
+        pool->clear();
       }
 
       each([this](const auto entity) { _release_entity(entity, entity_traits::to_version(entity) + 1u); });
@@ -459,7 +459,8 @@ private:
   }
 
   auto _release_entity(const Entity entity, const typename entity_traits::version_type version) {
-    const typename entity_traits::version_type new_version = version + (version == entity_traits::to_version(tombstone_entity));
+    // const typename entity_traits::version_type new_version = version + (version == entity_traits::to_version(tombstone_entity));
+    const auto new_version = static_cast<version_type>(version + (version == entity_traits::to_version(tombstone_entity)));
 
     _entities[entity_traits::to_entity(entity)] = entity_traits::construct(entity_traits::to_integral(_free_list), new_version);
     _free_list = entity_traits::combine(entity_traits::to_integral(entity), tombstone_entity);
