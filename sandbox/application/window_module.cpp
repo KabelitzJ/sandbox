@@ -59,7 +59,7 @@ void window_module::initialize()  {
   });
 
   _event_queue->add_listener<key_pressed_event>([this](const auto& event){
-    if (event.key == key::escape) {
+    if (event.keycode == key::escape) {
       // [TODO] KAJ 2021-11-04 14:14 - Figure out why this does not ent the application
       _event_queue->dispatch_event<application_shutdown_event>("escape key pressed");
     }

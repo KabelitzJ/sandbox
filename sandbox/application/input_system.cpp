@@ -23,11 +23,11 @@ void input_system::initialize() {
     auto* queue = static_cast<event_queue*>(glfwGetWindowUserPointer(window));
 
     if (action == GLFW_PRESS) {
-      queue->dispatch_event<key_pressed_event>(static_cast<key>(keycode), scancode, static_cast<key_modifiers>(mods));
+      queue->dispatch_event<key_pressed_event>(static_cast<key>(keycode), scancode, static_cast<modifiers>(mods));
     } else if (action == GLFW_RELEASE) {
-      queue->dispatch_event<key_released_event>(static_cast<key>(keycode), scancode, static_cast<key_modifiers>(mods));
+      queue->dispatch_event<key_released_event>(static_cast<key>(keycode), scancode, static_cast<modifiers>(mods));
     } else if (action == GLFW_REPEAT) {
-      queue->dispatch_event<key_repeated_event>(static_cast<key>(keycode), scancode, static_cast<key_modifiers>(mods));
+      queue->dispatch_event<key_repeated_event>(static_cast<key>(keycode), scancode, static_cast<modifiers>(mods));
     }
   });
 
@@ -35,11 +35,11 @@ void input_system::initialize() {
     auto* queue = static_cast<event_queue*>(glfwGetWindowUserPointer(window));
 
     if (action == GLFW_PRESS) {
-      queue->dispatch_event<mouse_button_pressed_event>(static_cast<mouse_button>(button), static_cast<key_modifiers>(mods));
+      queue->dispatch_event<mouse_button_pressed_event>(static_cast<mouse_button>(button), static_cast<modifiers>(mods));
     } else if (action == GLFW_RELEASE) {
-      queue->dispatch_event<mouse_button_released_event>(static_cast<mouse_button>(button), static_cast<key_modifiers>(mods));
+      queue->dispatch_event<mouse_button_released_event>(static_cast<mouse_button>(button), static_cast<modifiers>(mods));
     } else if (action == GLFW_REPEAT) {
-      queue->dispatch_event<mouse_button_repeated_event>(static_cast<mouse_button>(button), static_cast<key_modifiers>(mods));
+      queue->dispatch_event<mouse_button_repeated_event>(static_cast<mouse_button>(button), static_cast<modifiers>(mods));
     }
   });
 

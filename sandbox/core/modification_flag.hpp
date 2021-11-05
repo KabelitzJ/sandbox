@@ -16,7 +16,7 @@ enum class modification_flag : uint8_t {
   num_lock  = GLFW_MOD_NUM_LOCK
 }; // enum class modification_flag
 
-using key_modifiers = uint8;
+using modifiers = uint8;
 
 } // namespace sbx
 

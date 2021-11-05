@@ -23,36 +23,36 @@ struct window_resized_event {
 
 
 struct key_pressed_event {
-  key key{};
+  key keycode{};
   int32 scancode{};
-  key_modifiers mods{};
+  modifiers mods{};
 };
 
 struct key_released_event {
-  key key{};
+  key keycode{};
   int32 scancode{};
-  key_modifiers mods{};
+  modifiers mods{};
 };
 
 struct key_repeated_event {
-  key key{};
+  key keycode{};
   int32 scancode{};
-  key_modifiers mods{};
+  modifiers mods{};
 };
 
 struct mouse_button_pressed_event {
   mouse_button button{};
-  key_modifiers mods{};
+  modifiers mods{};
 };
 
 struct mouse_button_released_event {
   mouse_button button{};
-  key_modifiers mods{};
+  modifiers mods{};
 };
 
 struct mouse_button_repeated_event {
   mouse_button button{};
-  key_modifiers mods{};
+  modifiers mods{};
 };
 
 struct mouse_moved_event {
