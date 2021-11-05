@@ -27,7 +27,7 @@ struct sparse_set_iterator final {
 
   sparse_set_iterator() noexcept = default;
 
-  sparse_set_iterator(const container_type& container, const difference_type index) noexcept
+  sparse_set_iterator(const container_type* container, const difference_type index) noexcept
   : _container{container},
     _index{index} { }
 
@@ -103,7 +103,7 @@ struct sparse_set_iterator final {
 
   [[nodiscard]] pointer operator->() const {
     const auto position = _index - 1;
-    return _container.data() + position;
+    return _container->data() + position;
   }
 
   [[nodiscard]] reference operator*() const {
@@ -111,7 +111,7 @@ struct sparse_set_iterator final {
   }
 
 private:
-  const container_type& _container{};
+  const container_type* _container{};
   difference_type _index{};
 };
 
@@ -216,11 +216,11 @@ public:
 
   [[nodiscard]] iterator begin() const noexcept {
     const auto position = static_cast<difference_type>(_packed.size());
-    return iterator{_packed, position};
+    return iterator{&_packed, position};
   }
 
   [[nodiscard]] iterator end() const noexcept {
-    return iterator{_packed, difference_type{}};
+    return iterator{&_packed, difference_type{}};
   }
 
   [[nodiscard]] reverse_iterator rbegin() const noexcept {
@@ -304,7 +304,7 @@ public:
 
   void clear() {
     for (auto& entity : *this) {
-      erase(entity);
+      remove(entity);
     }
   }
 
