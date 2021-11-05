@@ -13,6 +13,7 @@ target_sources(
     rendering.cpp
     rendering_module.cpp
     render_system.cpp
+    shader.cpp
 )
 
 target_include_directories(
@@ -39,6 +40,12 @@ target_compile_features(
   ${PROJECT_NAME}
   PRIVATE 
     cxx_std_17
+)
+
+target_compile_definitions(
+  ${PROJECT_NAME}
+  PRIVATE
+    GLFW_INCLUDE_NONE
 )
 
 target_compile_options(

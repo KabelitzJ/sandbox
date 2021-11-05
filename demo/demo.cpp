@@ -41,7 +41,7 @@ velocity operator*(const velocity& velocity, const float scalar) {
 
 class demo_module final : public sbx::module {
 
-  class demo_system : public sbx::system {
+  class demo_system final : public sbx::system {
 
   public:
 
@@ -98,4 +98,5 @@ private:
 void sbx::setup(sbx::engine& engine) {
   engine.add_module<sbx::window_module>();
   engine.add_module<sbx::rendering_module>();
+  engine.add_module<demo_module>();
 }

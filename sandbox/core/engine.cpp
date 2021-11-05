@@ -67,7 +67,7 @@ void engine::start() {
 void engine::terminate() {
   _logger->info("Terminating modules...");
 
-  for (auto& module : reverse_adaptor{_modules}) {
+  for (auto& module : _modules) {
     module->terminate();
   }
 
