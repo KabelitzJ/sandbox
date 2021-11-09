@@ -9,6 +9,7 @@ set(
     core
     application
     rendering
+    physics
 )
 
 foreach(module ${SBX_MODULES})
