@@ -7,7 +7,7 @@
 
 #include <core/key.hpp>
 #include <core/mouse_button.hpp>
-#include <core/modification_flag.hpp>
+#include <core/input_modifiers.hpp>
 
 namespace sbx {
 
