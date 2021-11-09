@@ -1,16 +1,20 @@
-#version 330 core
+#version 460 core
 
 layout (location = 0) in vec3 position;
 layout (location = 1) in vec2 uv;
 layout (location = 2) in vec3 normal;
 
-uniform mat4 uni_model_matrix;
-uniform mat4 uni_view_matrix;
-uniform mat4 uni_projection_matrix;
+uniform vertex_uniforms {
+  mat4 model_matrix;
+  mat4 view_matrix;
+  mat4 projection_matrix;
+} uniforms;
 
-out vec2 vertex_uv;
+out vertex_data {
+  vec2 uv;
+} out_data;
 
 void main() {
-  gl_Position = uni_projection_matrix * uni_view_matrix * uni_model_matrix * vec4(position, 1.0);
-  vertex_uv = uv;
+  gl_Position = uniforms.projection_matrix * uniforms.view_matrix * uniforms.model_matrix * vec4(position, 1.0);
+  out_data.uv = uv;
 }

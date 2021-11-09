@@ -15,6 +15,7 @@ engine::engine()
 : _scene{std::make_unique<scene>()},
   _scheduler{std::make_unique<scheduler>()},
   _event_queue{std::make_unique<event_queue>()},
+  _resource_cache{std::make_unique<resource_cache>()},
   _modules{} { }
 
 engine::~engine() {
@@ -27,6 +28,7 @@ void engine::initialize() {
   module::_scene = _scene.get();
   module::_scheduler = _scheduler.get();
   module::_event_queue = _event_queue.get();
+  module::_resource_cache = _resource_cache.get();
 
   logger::info("Initializing modules...");
 

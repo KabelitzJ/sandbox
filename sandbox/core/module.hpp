@@ -7,7 +7,7 @@
 #include "scene.hpp"
 #include "scheduler.hpp"
 #include "event_queue.hpp"
-#include "logger.hpp"
+#include "resource_cache.hpp"
 
 namespace sbx {
 
@@ -26,6 +26,7 @@ protected:
   inline static scene* _scene{nullptr};
   inline static scheduler* _scheduler{nullptr};
   inline static event_queue* _event_queue{nullptr};
+  inline static resource_cache* _resource_cache{nullptr};
   
 private:
 

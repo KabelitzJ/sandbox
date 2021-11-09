@@ -16,6 +16,12 @@ target_include_directories(
     "${CMAKE_CURRENT_SOURCE_DIR}/.."
 )
 
+target_link_libraries(
+  ${PROJECT_NAME}
+  PUBLIC
+    sbx::types
+)
+
 target_compile_features(
   ${PROJECT_NAME}
   PRIVATE 

@@ -9,6 +9,7 @@
 #include <rendering/shader.hpp>
 
 #include <physics/physics_module.hpp>
+#include <physics/rigidbody.hpp>
 
 class demo_module final : public sbx::module {
 
@@ -16,30 +17,35 @@ class demo_module final : public sbx::module {
 
   public:
 
-    demo_system(sbx::event_queue* event_queue, sbx::scene* scene)
+    demo_system(sbx::event_queue* event_queue, sbx::scene* scene, sbx::resource_cache* resource_cache)
     : _event_queue{event_queue},
       _scene{scene},
-      _default_shader{nullptr} { }
+      _resource_cache{resource_cache} { }
 
     ~demo_system() = default;
 
     void initialize() override {
-      _default_shader = new sbx::shader("resources/shaders/default/vertex.glsl", "resources/shaders/default/fragment.glsl");
+      
     }
 
     void update(sbx::time delta_time) override {
+      static_cast<void>(delta_time);
+      auto shader = _resource_cache->get<sbx::shader>("default_shader");
 
+      shader->bind();
+
+      shader->unbind();
     }
 
     void terminate() override {
-      delete _default_shader;
+      
     }
 
   private:
 
     sbx::event_queue* _event_queue{};
     sbx::scene* _scene{};
-    sbx::shader* _default_shader{};
+    sbx::resource_cache* _resource_cache{};
 
   };
 
@@ -50,8 +56,15 @@ public:
 
   void initialize() override {
     const auto player = _scene->create_entity();
+    _scene->emplace_component<sbx::rigidbody>(player, glm::vec3{0, 0, 0}, 5.0f);
 
-    _scheduler->add_system<demo_system>(_event_queue, _scene);
+    _resource_cache->load<sbx::shader>(
+      "default_shader", 
+      "resources/shaders/default/vertex.glsl", 
+      "resources/shaders/default/fragment.glsl"
+    );
+
+    _scheduler->add_system<demo_system>(_event_queue, _scene, _resource_cache);
   }
 
   void terminate() override {

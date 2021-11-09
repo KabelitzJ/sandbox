@@ -16,6 +16,7 @@ target_sources(
     logger.cpp
     scene.cpp
     uuid.cpp
+    resource_cache.cpp
 )
 
 target_include_directories(

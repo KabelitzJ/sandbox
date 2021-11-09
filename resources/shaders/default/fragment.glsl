@@ -1,12 +1,16 @@
-#version 330 core
+#version 460 core
 
-in vec2 vertex_uv;
+uniform fragment_uniforms {
+  vec4 color;
+  sampler2D texture;
+} uniforms;
 
-uniform vec4 uni_color;
-uniform sampler2D uni_texture;
+in vertex_data {
+  vec2 uv;
+} in_data;
 
-out vec4 fragment_color;
-  
+out vec4 out_color;
+
 void main() {
-  fragment_color = texture(uni_texture, vertex_uv) * uni_color;
+  out_color = texture(uniforms.texture, in_data.uv) * uniforms.color;
 }

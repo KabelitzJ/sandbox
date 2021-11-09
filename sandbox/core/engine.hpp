@@ -12,6 +12,7 @@
 #include "scheduler.hpp"
 #include "event_queue.hpp"
 #include "module.hpp"
+#include "resource_cache.hpp"
 
 namespace sbx {
 
@@ -41,6 +42,7 @@ private:
   std::unique_ptr<scene> _scene{};
   std::unique_ptr<scheduler> _scheduler{};
   std::unique_ptr<event_queue> _event_queue{};
+  std::unique_ptr<resource_cache> _resource_cache{};
   std::vector<std::unique_ptr<module>> _modules{};
 
 }; // class engine
