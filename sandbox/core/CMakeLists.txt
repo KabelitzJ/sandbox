@@ -13,6 +13,7 @@ target_sources(
     engine.cpp
     module.cpp
     scene.cpp
+    uuid.cpp
 )
 
 target_include_directories(
