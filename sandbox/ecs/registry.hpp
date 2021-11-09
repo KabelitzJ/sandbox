@@ -189,7 +189,7 @@ public:
   }
 
   version_type destroy_entity(const entity_type entity) {
-    return destroy_entity(entity, entity_traits::to_version(entity) + 1u);
+    return destroy_entity(entity, entity_traits::to_version(entity) + version_type{1});
   }
 
   version_type destroy_entity(const entity_type entity, const version_type version) {
@@ -378,7 +378,7 @@ public:
         pool && (pool->clear(), true);
       }
 
-      each([this](const auto entity) { _release_entity(entity, entity_traits::to_version(entity) + 1u); });
+      each([this](const auto entity) { _release_entity(entity, entity_traits::to_version(entity) + version_type{1}); });
     } else {
       (_assure<Components>()->clear(), ...);
     }
