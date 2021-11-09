@@ -13,42 +13,47 @@ class logger {
 
 public:
 
-  logger() {
-    spdlog::set_level(spdlog::level::trace);
-    spdlog::set_pattern("%^%Y-%m-%d %H:%M:%S:%e [%=8l] - %v%$");
-  };
+  logger() = default;
 
   ~logger() = default;
 
   template<typename... Args>
-  void trace(std::string_view message, Args&&... args) {
-    spdlog::trace(message, std::forward<Args>(args)...);
+  static void trace(std::string_view message, Args&&... args) {
+    _logger->trace(message, std::forward<Args>(args)...);
   }
 
   template<typename... Args>
-  void debug(std::string_view message, Args&&... args) {
-    spdlog::debug(message, std::forward<Args>(args)...);
+  static void debug(std::string_view message, Args&&... args) {
+    _logger->debug(message, std::forward<Args>(args)...);
   }
 
   template<typename... Args>
-  void info(std::string_view message, Args&&... args) {
-    spdlog::info(message, std::forward<Args>(args)...);
+  static void info(std::string_view message, Args&&... args) {
+    _logger->info(message, std::forward<Args>(args)...);
   }
 
   template<typename... Args>
-  void warn(std::string_view message, Args&&... args) {
-    spdlog::warn(message, std::forward<Args>(args)...);
+  static void warn(std::string_view message, Args&&... args) {
+    _logger->warn(message, std::forward<Args>(args)...);
   }
 
   template<typename... Args>
-  void error(std::string_view message, Args&&... args) {
-    spdlog::error(message, std::forward<Args>(args)...);
+  static void error(std::string_view message, Args&&... args) {
+    _logger->error(message, std::forward<Args>(args)...);
   }
 
   template<typename... Args>
-  void critical(std::string_view message, Args&&... args) {
-    spdlog::critical(message, std::forward<Args>(args)...);
+  static void critical(std::string_view message, Args&&... args) {
+    _logger->critical(message, std::forward<Args>(args)...);
   }
+
+private:
+
+  static void _initialize();
+
+  static std::make_shared<spdlog::logger> _logger{};
+
+  friend class engine;
 
 }; // class logger
 

@@ -15,7 +15,6 @@ engine::engine()
 : _scene{std::make_unique<scene>()},
   _scheduler{std::make_unique<scheduler>()},
   _event_queue{std::make_unique<event_queue>()},
-  _logger{std::make_unique<logger>()},
   _modules{} { }
 
 engine::~engine() {
@@ -23,25 +22,26 @@ engine::~engine() {
 }
 
 void engine::initialize() {
+  logger::_initialize();
+
   module::_scene = _scene.get();
   module::_scheduler = _scheduler.get();
   module::_event_queue = _event_queue.get();
-  module::_logger = _logger.get();
 
-  _logger->info("Initializing modules...");
+  logger::info("Initializing modules...");
 
   for (auto& module : _modules) {
     module->initialize();
   }
 
-  _logger->info("Finished initializing modules");
+  logger::info("Finished initializing modules");
 }
 
 void engine::start() {
-  _logger->info("Started main loop");
+  logger::info("Started main loop");
 
   _event_queue->add_listener<application_shutdown_event>([this](const auto& event){
-    _logger->info("Application shutdown (origin: {})", event.origin);
+    logger::info("Application shutdown (origin: {})", event.origin);
     _scheduler->terminate();
   });
 
@@ -61,17 +61,17 @@ void engine::start() {
     _event_queue->pop_all();
   }
 
-  _logger->info("Ended main loop");
+  logger::info("Ended main loop");
 }
   
 void engine::terminate() {
-  _logger->info("Terminating modules...");
+  logger::info("Terminating modules...");
 
   for (auto& module : _modules) {
     module->terminate();
   }
 
-  _logger->info("Finished terminating modules");
+  logger::info("Finished terminating modules");
 }
 
 } // namespace sbx

@@ -12,7 +12,6 @@
 #include "scheduler.hpp"
 #include "event_queue.hpp"
 #include "module.hpp"
-#include "logger.hpp"
 
 namespace sbx {
 
@@ -42,7 +41,6 @@ private:
   std::unique_ptr<scene> _scene{};
   std::unique_ptr<scheduler> _scheduler{};
   std::unique_ptr<event_queue> _event_queue{};
-  std::unique_ptr<logger> _logger{};
   std::vector<std::unique_ptr<module>> _modules{};
 
 }; // class engine

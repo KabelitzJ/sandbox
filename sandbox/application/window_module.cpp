@@ -4,6 +4,7 @@
 
 #include <core/events.hpp>
 #include <core/key.hpp>
+#include <core/logger.hpp>
 
 #include "update_system.hpp"
 #include "input_system.hpp"
@@ -14,10 +15,10 @@ window_module::window_module()
 : _handle(nullptr) { }
 
 void window_module::initialize()  {
-  _logger->info("Initializing window module...");
+  logger::info("Initializing window module...");
 
   if (!glfwInit()) {
-    _logger->critical("Could not initialite GLFW3");
+    logger::critical("Could not initialite GLFW3");
     return;
   }
 
@@ -28,7 +29,7 @@ void window_module::initialize()  {
   _handle = glfwCreateWindow(960, 720, "Sandbox [FPS: 0]", nullptr, nullptr);
 
   if (!_handle) {
-    _logger->critical("Could not create window");
+    logger::critical("Could not create window");
     return;
   }
 
@@ -73,7 +74,7 @@ void window_module::terminate() {
   glfwDestroyWindow(_handle);
   glfwTerminate();
 
-  _logger->info("Terminating window module...");
+  logger::info("Terminating window module...");
 }
 
 } // namespace sbx
