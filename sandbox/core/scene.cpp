@@ -2,6 +2,9 @@
 
 #include <cassert>
 
+#include "transform.hpp"
+#include "uuid.hpp"
+
 namespace sbx {
 
 struct relationship {
@@ -34,6 +37,10 @@ entity scene::create_entity(const entity parent) {
   current_relationship.parent = parent;
 
   parent_relationship.children.insert(entity);
+
+  _registry.emplace_component<transform>(entity);
+
+  _registry.emplace_component<uuid>(entity);
 
   return entity;
 }

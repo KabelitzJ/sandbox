@@ -1,7 +1,5 @@
-project(core CXX)
+project(physics CXX)
 
-find_package(spdlog REQUIRED)
-find_package(glfw3 REQUIRED)
 find_package(glm REQUIRED)
 
 add_library(${PROJECT_NAME} STATIC)
@@ -9,10 +7,8 @@ add_library(${PROJECT_NAME} STATIC)
 target_sources(
   ${PROJECT_NAME}
   PRIVATE
-    entry_point.cpp
-    engine.cpp
-    module.cpp
-    scene.cpp
+    physics_module.cpp
+    gravity_system.cpp
 )
 
 target_include_directories(
@@ -26,23 +22,16 @@ target_include_directories(
 target_link_libraries(
   ${PROJECT_NAME}
   PUBLIC
-    sbx::ecs
-    sbx::types
-    spdlog::spdlog
-    glfw::glfw
     glm::glm
+    sbx::core
+    sbx::utils
+    sbx::types
 )
 
 target_compile_features(
   ${PROJECT_NAME}
   PRIVATE 
     cxx_std_17
-)
-
-target_compile_definitions(
-  ${PROJECT_NAME}
-  PRIVATE
-    GLFW_INCLUDE_NONE
 )
 
 target_compile_options(

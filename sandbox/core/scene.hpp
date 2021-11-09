@@ -25,8 +25,7 @@ public:
 
   scene& operator=(scene&&) = default;
 
-  // [TODO] KAJ 2021-11-03 10:39 - Figure out how to give entities names and query an entity by name
-  entity create_entity(/* const std::string& name, */ const entity parent = null_entity);
+  entity create_entity(const entity parent = null_entity);
 
   void destroy_entity(const entity entity);
 
@@ -56,12 +55,12 @@ public:
   }
 
   template<typename... Components, typename... Excludes>
-  [[nodiscard]] basic_view<entity, get_t<std::add_const_t<Components>...>, exclude_t<Excludes...>> create_view(exclude_t<Excludes...> = {}) const {
+  [[nodiscard]] decltype(auto) create_view(exclude_t<Excludes...> = {}) const {
     return _registry.view<Components..., Excludes...>();
   }
 
   template<typename... Components, typename... Excludes>
-  [[nodiscard]] basic_view<entity, get_t<Components...>, exclude_t<Excludes...>> create_view(exclude_t<Excludes...> = {}) {
+  [[nodiscard]] decltype(auto) create_view(exclude_t<Excludes...> = {}) {
     return _registry.view<Components..., Excludes...>();
   }
 

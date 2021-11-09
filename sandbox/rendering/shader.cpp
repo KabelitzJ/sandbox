@@ -24,7 +24,7 @@ void shader::_load(const std::string& vertex_path, const std::string& fragment_p
   const auto vertex_source = read_file(vertex_path).c_str();
   const auto fragment_source = read_file(fragment_path).c_str();
 
-  // [NOTE] KAJ 2021-11-05 12:23 - Figure out how we could add logging here? Maybe redesign resource loading?
+  // [NOTE] KAJ 2021-11-05 12:23 - Figure out how we could add logging here? Maybe redesign resource loading? Or static logger?
 
   glShaderSource(vertex_shader, 1, &vertex_source, nullptr);
   glCompileShader(vertex_shader);

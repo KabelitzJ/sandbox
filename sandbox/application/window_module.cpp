@@ -65,8 +65,8 @@ void window_module::initialize()  {
     }
   });
 
-  _scheduler->add_system<update_system>(_event_queue, _handle);
   _scheduler->add_system<input_system>(_event_queue, _handle);
+  _scheduler->add_system<update_system>(_event_queue, _handle);
 }
 
 void window_module::terminate() {
