@@ -9,33 +9,21 @@
 
 namespace sbx {
 
-struct system_base {
+class system {
 
-  virtual ~system_base() = default;
+public:
+
+  system()
+  : _is_running{false} { };
+
+  virtual ~system() = default;
 
   virtual void initialize() = 0;
   virtual void update(const time delta_time) = 0;
   virtual void terminate() = 0;
 
-}; // struct system_base
-
-class system : public system_base {
-
-  enum class state : uint8 {
-    uninitialized = 0,
-    running       = 2,
-    finished    = 3
-  }; // enum class state
-
-public:
-
-  system()
-  : _current_state{state::uninitialized} { };
-
-  virtual ~system() = default;
-
   [[nodiscard]] bool is_running() const noexcept {
-    return _current_state == state::running;
+    return _is_running;
   }
 
 protected:
@@ -50,7 +38,7 @@ private:
 
   void _initialize() {
     initialize();
-    _current_state = state::running;
+    _is_running = true;
   }
 
   void _update(const time delta_time) {
@@ -62,11 +50,11 @@ private:
   void _terminate() {
     if (is_running()) {
       terminate();
-      _current_state = state::finished;
+      _is_running = false
     }
   }
 
-  state _current_state{state::uninitialized};
+  bool _is_running{false};
 
 }; // class system
 
@@ -86,9 +74,7 @@ public:
     Function::operator()(delta_time, [this](){ exit(); });
   }
 
-  void finished() override { }
-
-  void aborted() override { }
+  void terminate() override { }
 
 }; // class system_adaptor
 

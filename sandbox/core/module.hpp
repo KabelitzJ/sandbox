@@ -11,27 +11,24 @@
 
 namespace sbx {
 
-struct module_base {
+class module {
 
-  virtual ~module_base() = default;
+public:
+
+  module() = default;
+  virtual ~module() = default;
 
   virtual void initialize() = 0;
   virtual void terminate() = 0;  
 
-}; // struct module_base
-
-class module : public module_base {
-
-public:
-  module() = default;
-  virtual ~module() = default;
-
 protected:
-  static scene* _scene;
-  static scheduler* _scheduler;
-  static event_queue* _event_queue;
+
+  inline static scene* _scene{nullptr};
+  inline static scheduler* _scheduler{nullptr};
+  inline static event_queue* _event_queue{nullptr};
   
 private:
+
   friend class engine;
   
 }; // class module
