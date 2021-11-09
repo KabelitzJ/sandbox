@@ -13,18 +13,14 @@ class system {
 
 public:
 
-  system()
-  : _is_running{false} { };
-
+  system();
   virtual ~system() = default;
 
   virtual void initialize() = 0;
   virtual void update(const time delta_time) = 0;
   virtual void terminate() = 0;
 
-  [[nodiscard]] bool is_running() const noexcept {
-    return _is_running;
-  }
+  [[nodiscard]] bool is_running() const noexcept;
 
 protected:
 
@@ -36,23 +32,9 @@ private:
 
   friend class scheduler;
 
-  void _initialize() {
-    initialize();
-    _is_running = true;
-  }
-
-  void _update(const time delta_time) {
-    if (is_running()) {
-      update(delta_time);
-    }
-  }
-
-  void _terminate() {
-    if (is_running()) {
-      terminate();
-      _is_running = false
-    }
-  }
+  void _initialize();
+  void _update(const time delta_time);
+  void _terminate();
 
   bool _is_running{false};
 
