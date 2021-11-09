@@ -2,6 +2,7 @@
 #define SBX_PHYSICS_GRAVITY_SYSTEM_HPP_
 
 #include <core/system.hpp>
+#include <core/scene.hpp>
 
 namespace sbx {
 

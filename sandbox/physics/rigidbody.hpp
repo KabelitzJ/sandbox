@@ -8,7 +8,7 @@
 namespace sbx {
 
 struct rigidbody {
-  glm::vec3 velocity{}
+  glm::vec3 velocity{};
   float32 mass{};
 }; // struct rigidbody
 
