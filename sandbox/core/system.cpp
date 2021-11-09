@@ -3,7 +3,7 @@
 namespace sbx {
 
 system::system()
-: _is_running{false} { };
+: _is_running{false} { }
 
 [[nodiscard]] bool system::is_running() const noexcept {
   return _is_running;

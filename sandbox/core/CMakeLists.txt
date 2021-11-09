@@ -12,6 +12,8 @@ target_sources(
     entry_point.cpp
     engine.cpp
     module.cpp
+    system.cpp
+    logger.cpp
     scene.cpp
     uuid.cpp
 )
