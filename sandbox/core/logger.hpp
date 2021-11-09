@@ -51,7 +51,7 @@ private:
 
   static void _initialize();
 
-  static std::make_shared<spdlog::logger> _logger{};
+  static std::shared_ptr<spdlog::logger> _logger{};
 
   friend class engine;
 

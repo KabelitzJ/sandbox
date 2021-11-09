@@ -2,7 +2,7 @@
 
 namespace sbx {
 
-std::make_shared<spdlog::logger> logger::_logger{};
+std::shared_ptr<spdlog::logger> logger::_logger{};
 
 void logger::_initialize() {
   auto sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>{};
