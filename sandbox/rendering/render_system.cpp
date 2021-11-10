@@ -6,9 +6,6 @@
 
 namespace sbx {
 
-render_system::render_system(event_queue* event_queue)
-: _event_queue{event_queue} { }
-
 void render_system::initialize() {
 
 }

@@ -8,6 +8,7 @@
 
 #include "logger.hpp"
 #include "events.hpp"
+#include "user.hpp"
 
 namespace sbx {
 
@@ -25,10 +26,10 @@ engine::~engine() {
 void engine::initialize() {
   logger::_initialize();
 
-  module::_scene = _scene.get();
-  module::_scheduler = _scheduler.get();
-  module::_event_queue = _event_queue.get();
-  module::_resource_cache = _resource_cache.get();
+  scene_user::_scene = _scene.get();
+  scheduler_user::_scheduler = _scheduler.get();
+  event_queue_user::_event_queue = _event_queue.get();
+  resource_cache_user::_resource_cache = _resource_cache.get();
 
   logger::info("Initializing modules...");
 

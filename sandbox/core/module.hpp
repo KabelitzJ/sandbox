@@ -3,15 +3,13 @@
 
 #include <vector>
 #include <memory>
+#include <string>
 
-#include "scene.hpp"
-#include "scheduler.hpp"
-#include "event_queue.hpp"
-#include "resource_cache.hpp"
+#include "user.hpp"
 
 namespace sbx {
 
-class module {
+class module : public event_queue_user, public resource_cache_user, public scene_user, public scheduler_user {
 
 public:
 
@@ -20,17 +18,6 @@ public:
 
   virtual void initialize() = 0;
   virtual void terminate() = 0;  
-
-protected:
-
-  inline static scene* _scene{nullptr};
-  inline static scheduler* _scheduler{nullptr};
-  inline static event_queue* _event_queue{nullptr};
-  inline static resource_cache* _resource_cache{nullptr};
-  
-private:
-
-  friend class engine;
   
 }; // class module
 

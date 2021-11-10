@@ -9,9 +9,8 @@
 
 namespace sbx {
 
-input_system::input_system(event_queue* event_queue, GLFWwindow* handle)
-: _event_queue{event_queue},
-  _handle{handle} { }
+input_system::input_system(GLFWwindow* handle)
+: _handle{handle} { }
 
 void input_system::initialize() {
   glfwSetWindowCloseCallback(_handle, [](auto* window){

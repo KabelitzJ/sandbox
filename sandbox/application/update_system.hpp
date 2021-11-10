@@ -12,7 +12,7 @@ class update_system final : public system {
 
 public:
 
-  update_system(event_queue* event_queue, GLFWwindow* handle);
+  update_system(GLFWwindow* handle);
   ~update_system() = default;
 
   void initialize() override;
@@ -21,7 +21,6 @@ public:
 
 private:
 
-  event_queue* _event_queue{};
   GLFWwindow* _handle{};
   uint32 _frame_counter{};
   time _timer{};

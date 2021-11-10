@@ -7,9 +7,11 @@
 
 #include <types/primitives.hpp>
 
+#include "user.hpp"
+
 namespace sbx {
 
-class system {
+class system : public event_queue_user, public resource_cache_user, public scene_user {
 
 public:
 
@@ -31,6 +33,7 @@ protected:
 private:
 
   friend class scheduler;
+  friend class engine;
 
   void _initialize();
   void _update(const time delta_time);

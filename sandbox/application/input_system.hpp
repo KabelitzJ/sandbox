@@ -12,7 +12,7 @@ class input_system final : public system {
 
 public:
 
-  input_system(event_queue* event_queue, GLFWwindow* handle);
+  input_system(GLFWwindow* handle);
   ~input_system() = default;
 
   void initialize() override;
@@ -21,7 +21,6 @@ public:
 
 private:
 
-  event_queue* _event_queue{};
   GLFWwindow* _handle{};
 
 }; // class input_system

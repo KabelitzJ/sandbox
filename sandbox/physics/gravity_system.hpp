@@ -10,7 +10,7 @@ class gravity_system final : public system {
 
 public:
 
-  gravity_system(scene* scene);
+  gravity_system() = default;
   ~gravity_system() = default;
 
   void initialize() override;

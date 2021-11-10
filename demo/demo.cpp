@@ -17,7 +17,7 @@ class demo_module final : public sbx::module {
 
   public:
 
-    demo_system(sbx::event_queue* event_queue, sbx::scene* scene, sbx::resource_cache* resource_cache)
+    demo_system(sbx::event_queue* event_queue, sbx::scene* scene)
     : _event_queue{event_queue},
       _scene{scene},
       _resource_cache{resource_cache} { }
@@ -30,11 +30,6 @@ class demo_module final : public sbx::module {
 
     void update(sbx::time delta_time) override {
       static_cast<void>(delta_time);
-      auto shader = _resource_cache->get<sbx::shader>("default_shader");
-
-      shader->bind();
-
-      shader->unbind();
     }
 
     void terminate() override {
@@ -45,7 +40,6 @@ class demo_module final : public sbx::module {
 
     sbx::event_queue* _event_queue{};
     sbx::scene* _scene{};
-    sbx::resource_cache* _resource_cache{};
 
   };
 
@@ -55,16 +49,16 @@ public:
   ~demo_module() = default;
 
   void initialize() override {
-    const auto player = _scene->create_entity();
-    _scene->emplace_component<sbx::rigidbody>(player, glm::vec3{0, 0, 0}, 5.0f);
+    const auto player = create_entity();
+    emplace_component<sbx::rigidbody>(player, glm::vec3{0, 0, 0}, 5.0f);
 
-    _resource_cache->load<sbx::shader>(
+    load_resource<sbx::shader>(
       "default_shader", 
       "resources/shaders/default/vertex.glsl", 
       "resources/shaders/default/fragment.glsl"
     );
 
-    _scheduler->add_system<demo_system>(_event_queue, _scene, _resource_cache);
+    add_system<demo_system>(_event_queue, _scene);
   }
 
   void terminate() override {

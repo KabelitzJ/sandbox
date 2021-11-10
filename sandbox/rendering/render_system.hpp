@@ -10,7 +10,7 @@ class render_system final : public system {
 
 public:
 
-  render_system(event_queue* event_queue);
+  render_system() = default;
   ~render_system() = default;
 
   void initialize() override;
@@ -18,8 +18,6 @@ public:
   void terminate() override;
 
 private:
-
-  event_queue* _event_queue{};
 
 }; // class render_system
 

@@ -50,7 +50,7 @@ public:
   }
 
   template<typename... Components>
-  bool has_components(const entity entity) const {
+  [[nodiscard]] bool has_components(const entity entity) const {
     return _registry.has_all_of<Components...>(entity);
   }
 

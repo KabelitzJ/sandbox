@@ -7,15 +7,12 @@
 
 namespace sbx {
 
-gravity_system::gravity_system(scene* scene)
-: _scene{scene} { }
-
 void gravity_system::initialize() {
 
 }
 
 void gravity_system::update(const time delta_time) {
-  auto view = _scene->create_view<transform, rigidbody>();
+  auto view = create_view<transform, rigidbody>();
 
   for (const auto entity : view) {
     auto [transform, rigidbody] = view.get(entity);

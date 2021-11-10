@@ -33,7 +33,7 @@ void window_module::initialize()  {
     return;
   }
 
-  glfwSetWindowUserPointer(_handle, _event_queue);
+  glfwSetWindowUserPointer(_handle, get_event_queue());
 
   glfwMakeContextCurrent(_handle);
 
@@ -43,7 +43,7 @@ void window_module::initialize()  {
     glfwSetInputMode(_handle, GLFW_RAW_MOUSE_MOTION, true);
   }
 
-  _event_queue->add_listener<toggle_mouse_visibility_event>([this](const auto&){
+  add_listener<toggle_mouse_visibility_event>([this](const auto&){
     if (glfwGetInputMode(_handle, GLFW_CURSOR) == GLFW_CURSOR_NORMAL) {
       glfwSetInputMode(_handle, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     } else {
@@ -51,7 +51,7 @@ void window_module::initialize()  {
     }
   });
 
-  _event_queue->add_listener<fps_updated_event>([this](const auto& event){
+  add_listener<fps_updated_event>([this](const auto& event){
     auto title = std::stringstream{};
 
     title << "Sandbox [FPS: " << event.fps << "]";
@@ -59,15 +59,15 @@ void window_module::initialize()  {
     glfwSetWindowTitle(_handle, title.str().c_str());
   });
 
-  _event_queue->add_listener<key_pressed_event>([this](const auto& event){
+  add_listener<key_pressed_event>([this](const auto& event){
     if (event.keycode == key::escape) {
       // [TODO] KAJ 2021-11-04 14:14 - Figure out why this does not ent the application
-      _event_queue->dispatch_event<application_shutdown_event>("escape key pressed");
+      dispatch_event<application_shutdown_event>("escape key pressed");
     }
   });
 
-  _scheduler->add_system<input_system>(_event_queue, _handle);
-  _scheduler->add_system<update_system>(_event_queue, _handle);
+  add_system<input_system>(_event_queue, _handle);
+  add_system<update_system>(_event_queue, _handle);
 }
 
 void window_module::terminate() {
