@@ -26,12 +26,28 @@ void window_module::initialize()  {
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-  _handle = glfwCreateWindow(960, 720, "Sandbox [FPS: 0]", nullptr, nullptr);
+  auto width = 0;
+  auto height = 0;
+
+  auto monitor = glfwGetPrimaryMonitor();
+
+  if (monitor) {
+    const auto mode = glfwGetVideoMode(monitor);
+    width = mode->width;
+    height = mode->height;
+  } else {
+    width = 1280;
+    height = 720;
+  }
+
+  _handle = glfwCreateWindow(width, height, "Sandbox [FPS: 0]", monitor, nullptr);
 
   if (!_handle) {
     logger::critical("Could not create window");
     return;
   }
+
+  dispatch_event<window_resized_event>(width, height);
 
   glfwSetWindowUserPointer(_handle, get_event_queue());
 
@@ -57,13 +73,6 @@ void window_module::initialize()  {
     title << "Sandbox [FPS: " << event.fps << "]";
 
     glfwSetWindowTitle(_handle, title.str().c_str());
-  });
-
-  add_listener<key_pressed_event>([this](const auto& event){
-    if (event.keycode == key::escape) {
-      // [TODO] KAJ 2021-11-04 14:14 - Figure out why this does not ent the application
-      dispatch_event<application_shutdown_event>("escape key pressed");
-    }
   });
 
   add_system<input_system>(_handle);

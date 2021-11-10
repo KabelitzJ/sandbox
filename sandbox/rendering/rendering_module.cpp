@@ -6,6 +6,7 @@
 #include <GLFW/glfw3.h>
 
 #include <core/logger.hpp>
+#include <core/events.hpp>
 
 #include "render_system.hpp"
 
@@ -26,6 +27,10 @@ void rendering_module::initialize() {
   _log_context_info();
 
   glClearColor(0.95f, 0.5f, 0.43f, 1.0f);
+
+  add_listener<window_resized_event>([this](const auto& e) {
+    glViewport(0, 0, e.width, e.height);
+  });
   
   add_system<render_system>();
 }
