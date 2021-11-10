@@ -71,8 +71,10 @@ void engine::start() {
 void engine::terminate() {
   logger::info("Terminating modules...");
 
-  for (auto& module : _modules) {
-    module->terminate();
+  // [TODO] KAJ 2021-11-10 19:41 - Reversed range based for loop??
+
+  for (auto it = _modules.rbegin(); it != _modules.rend(); ++it) {
+    (*it)->terminate();
   }
 
   logger::info("Finished terminating modules");
