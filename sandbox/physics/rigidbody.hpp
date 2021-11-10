@@ -10,6 +10,7 @@ namespace sbx {
 struct rigidbody {
   glm::vec3 velocity{};
   float32 mass{};
+  bool is_static{};
 }; // struct rigidbody
 
 } // namespace sbx

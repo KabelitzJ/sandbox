@@ -2,6 +2,8 @@
 
 #include <core/entry_point.hpp>
 #include <core/events.hpp>
+#include <core/logger.hpp>
+#include <core/transform.hpp>
 
 #include <application/window_module.hpp>
 
@@ -22,7 +24,7 @@ class demo_module final : public sbx::module {
 
     void initialize() override {
       const auto player = create_entity();
-      emplace_component<sbx::rigidbody>(player, glm::vec3{0, 0, 0}, 5.0f);
+      emplace_component<sbx::rigidbody>(player, glm::vec3{0, 0, 0}, 10.0f, false);
 
       load_resource<sbx::shader>(
         "default_shader", 
@@ -33,6 +35,14 @@ class demo_module final : public sbx::module {
 
     void update(sbx::time delta_time) override {
       static_cast<void>(delta_time);
+
+      auto view = create_view<sbx::transform, sbx::rigidbody>();
+
+      for (const auto entity : view) {
+        auto [transform, rigidbody] = view.get(entity);
+
+        sbx::logger::debug("x: {}, y: {}, z{}", transform.position.x, transform.position.y, transform.position.z);
+      }
     }
 
     void terminate() override {
