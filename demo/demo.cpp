@@ -17,15 +17,18 @@ class demo_module final : public sbx::module {
 
   public:
 
-    demo_system(sbx::event_queue* event_queue, sbx::scene* scene)
-    : _event_queue{event_queue},
-      _scene{scene},
-      _resource_cache{resource_cache} { }
-
+    demo_system() = default;
     ~demo_system() = default;
 
     void initialize() override {
-      
+      const auto player = create_entity();
+      emplace_component<sbx::rigidbody>(player, glm::vec3{0, 0, 0}, 5.0f);
+
+      load_resource<sbx::shader>(
+        "default_shader", 
+        "resources/shaders/default/vertex.glsl", 
+        "resources/shaders/default/fragment.glsl"
+      );
     }
 
     void update(sbx::time delta_time) override {
@@ -36,11 +39,6 @@ class demo_module final : public sbx::module {
       
     }
 
-  private:
-
-    sbx::event_queue* _event_queue{};
-    sbx::scene* _scene{};
-
   };
 
 public:
@@ -49,16 +47,7 @@ public:
   ~demo_module() = default;
 
   void initialize() override {
-    const auto player = create_entity();
-    emplace_component<sbx::rigidbody>(player, glm::vec3{0, 0, 0}, 5.0f);
-
-    load_resource<sbx::shader>(
-      "default_shader", 
-      "resources/shaders/default/vertex.glsl", 
-      "resources/shaders/default/fragment.glsl"
-    );
-
-    add_system<demo_system>(_event_queue, _scene);
+    add_system<demo_system>();
   }
 
   void terminate() override {

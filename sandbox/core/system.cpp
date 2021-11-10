@@ -9,6 +9,16 @@ system::system()
   return _is_running;
 }
 
+entity system::create_entity(const entity parent) {
+  assert(_scene); // Scene is uninitialized
+  return _scene->create_entity(parent);
+}
+
+void system::destroy_entity(const entity entity) {
+  assert(_scene); // Scene is uninitialized
+  _scene->destroy_entity(entity);
+}
+
 void system::_initialize() {
   initialize();
   _is_running = true;

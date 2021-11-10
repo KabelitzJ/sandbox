@@ -66,8 +66,8 @@ void window_module::initialize()  {
     }
   });
 
-  add_system<input_system>(_event_queue, _handle);
-  add_system<update_system>(_event_queue, _handle);
+  add_system<input_system>(_handle);
+  add_system<update_system>(_handle);
 }
 
 void window_module::terminate() {
