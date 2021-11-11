@@ -37,14 +37,6 @@ class demo_module final : public sbx::module {
 
     void update(sbx::time delta_time) override {
       static_cast<void>(delta_time);
-
-      auto view = create_view<sbx::transform, sbx::rigidbody>();
-
-      for (const auto entity : view) {
-        auto [transform, rigidbody] = view.get(entity);
-
-        sbx::logger::debug("x: {}, y: {}, z{}", transform.position.x, transform.position.y, transform.position.z);
-      }
     }
 
     void terminate() override {

@@ -17,8 +17,6 @@ rendering_module::rendering_module() {
 }
 
 void rendering_module::initialize() {
-  logger::info("Initializing rendering module...");
-
   if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress))) {
     logger::critical("Could not initialize glad");
     return;
@@ -31,12 +29,16 @@ void rendering_module::initialize() {
   add_listener<window_resized_event>([this](const auto& e) {
     glViewport(0, 0, e.width, e.height);
   });
+
+  add_listener<clear_color_changed_event>([this](const auto& e) {
+    glClearColor(e.color.r, e.color.g, e.color.b, e.color.a);
+  });
   
   add_system<render_system>();
 }
 
 void rendering_module::terminate() {
-  logger::info("Terminating rendering module...");
+  
 }
 
 void rendering_module::_log_context_info() const {

@@ -44,6 +44,7 @@ private:
   std::unique_ptr<event_queue> _event_queue{};
   std::unique_ptr<resource_cache> _resource_cache{};
   std::vector<std::unique_ptr<module>> _modules{};
+  bool _has_focus{};
 
 }; // class engine
 

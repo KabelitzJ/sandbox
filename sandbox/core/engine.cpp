@@ -16,7 +16,8 @@ engine::engine()
   _scheduler{std::make_unique<scheduler>()},
   _event_queue{std::make_unique<event_queue>()},
   _resource_cache{std::make_unique<resource_cache>()},
-  _modules{} { }
+  _modules{},
+  _has_focus{false} { }
 
 engine::~engine() {
   
@@ -32,6 +33,15 @@ void engine::initialize() {
   system::_event_queue = _event_queue.get();
   system::_resource_cache = _resource_cache.get();
 
+  _event_queue->add_listener<window_closed_event>([this](const auto& event){
+    logger::info("Application shutdown (reason: {})", event.reason);
+    _scheduler->terminate();
+  });
+
+  _event_queue->add_listener<window_focused_event>([this](const auto& event){
+    _has_focus = event.has_focus;
+  });
+
   logger::info("Initializing modules...");
 
   for (auto& module : _modules) {
@@ -44,11 +54,6 @@ void engine::initialize() {
 void engine::start() {
   logger::info("Started main loop");
 
-  _event_queue->add_listener<application_shutdown_event>([this](const auto& event){
-    logger::info("Application shutdown (origin: {})", event.origin);
-    _scheduler->terminate();
-  });
-
   using clock = std::chrono::steady_clock;
   using duration = std::chrono::duration<time>;
 
@@ -56,10 +61,11 @@ void engine::start() {
 
   while (!_scheduler->is_empty()) {
     const auto now = clock::now();
-
     const auto delta_time = std::chrono::duration_cast<duration>(now - last_time).count();
-
     last_time = now;
+
+    // [TODO] KAJ 2021-11-11 21:39 - Figure out how to just update the update_system when window has lost focus
+    //                               (needed because of glfwPollEvents)
 
     _scheduler->update(delta_time);
     _event_queue->pop_all();

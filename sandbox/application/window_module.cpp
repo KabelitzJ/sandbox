@@ -15,8 +15,6 @@ window_module::window_module()
 : _handle(nullptr) { }
 
 void window_module::initialize()  {
-  logger::info("Initializing window module...");
-
   if (!glfwInit()) {
     logger::critical("Could not initialite GLFW3");
     return;
@@ -55,6 +53,8 @@ void window_module::initialize()  {
 
   glfwSwapInterval(1);
 
+  glfwRequestWindowAttention(_handle);
+
   if (glfwRawMouseMotionSupported()) {
     glfwSetInputMode(_handle, GLFW_RAW_MOUSE_MOTION, true);
   }
@@ -82,8 +82,6 @@ void window_module::initialize()  {
 void window_module::terminate() {
   glfwDestroyWindow(_handle);
   glfwTerminate();
-
-  logger::info("Terminating window module...");
 }
 
 } // namespace sbx

@@ -15,7 +15,8 @@ input_system::input_system(GLFWwindow* handle)
 void input_system::initialize() {
   glfwSetWindowCloseCallback(_handle, [](auto* window){
     auto* queue = static_cast<event_queue*>(glfwGetWindowUserPointer(window));
-    queue->dispatch_event<application_shutdown_event>("window close callback");
+
+    queue->dispatch_event<window_closed_event>("window close callback");
   });
 
   glfwSetKeyCallback(_handle, [](auto* window, auto keycode, auto scancode, auto action, auto mods){
@@ -58,6 +59,12 @@ void input_system::initialize() {
     auto* queue = static_cast<event_queue*>(glfwGetWindowUserPointer(window));
 
     queue->dispatch_event<window_resized_event>(width, height);
+  });
+
+  glfwSetWindowFocusCallback(_handle, [](auto* window, auto focused){
+    auto* queue = static_cast<event_queue*>(glfwGetWindowUserPointer(window));
+
+    queue->dispatch_event<window_focused_event>(focused == GLFW_TRUE);
   });
 }
 

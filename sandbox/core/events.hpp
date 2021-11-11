@@ -4,6 +4,7 @@
 #include <string_view>
 
 #include <types/primitives.hpp>
+#include <types/color.hpp>
 
 #include <core/key.hpp>
 #include <core/mouse_button.hpp>
@@ -11,16 +12,18 @@
 
 namespace sbx {
 
-struct application_shutdown_event {
-  std::string_view origin{};
-};
-
 struct window_resized_event {
   int32 width{};
   int32 height{};
 };
 
+struct window_closed_event {
+  std::string_view reason{};
+};
 
+struct window_focused_event {
+  bool has_focus{};
+};
 
 struct key_pressed_event {
   key keycode{};
@@ -69,6 +72,10 @@ struct toggle_mouse_visibility_event { };
 
 struct fps_updated_event {
   uint32 fps{};
+};
+
+struct clear_color_changed_event {
+  color color{};
 };
 
 } // namespace sbx

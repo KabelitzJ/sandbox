@@ -9,28 +9,28 @@
 namespace sbx {
 
 shader::shader(const std::string& vertex_path, const std::string& fragment_path)
-: _id(0),
+: _program_id(0),
   _uniform_locations{} {
   _load(vertex_path, fragment_path);
 }
 
 shader::~shader() {
-  glDeleteProgram(_id);
+  glDeleteProgram(_program_id);
 }
 
 void shader::bind() const {
-  glUseProgram(_id);
+  glUseProgram(_program_id);
 }
 
 void shader::unbind() const {
   glUseProgram(0);
 }
 
-void shader::set_int32(const std::string& name, int value) {
+void shader::set_int32(const std::string& name, int32 value) {
   glUniform1i(_get_uniform_location(name), value);
 }
 
-void shader::set_float32(const std::string& name, float value) {
+void shader::set_float32(const std::string& name, float32 value) {
   glUniform1f(_get_uniform_location(name), value);
 }
 
@@ -78,23 +78,23 @@ void shader::_load(const std::string& vertex_path, const std::string& fragment_p
     assert(false); // Vertex shader compilation failed 
   }
 
-  _id = glCreateProgram();
+  _program_id = glCreateProgram();
 
-  glAttachShader(_id, vertex_shader);
-  glAttachShader(_id, fragment_shader);
+  glAttachShader(_program_id, vertex_shader);
+  glAttachShader(_program_id, fragment_shader);
 
-  glLinkProgram(_id);
+  glLinkProgram(_program_id);
 
-  glDetachShader(_id, vertex_shader);
-  glDetachShader(_id, fragment_shader);
+  glDetachShader(_program_id, vertex_shader);
+  glDetachShader(_program_id, fragment_shader);
 
   glDeleteShader(vertex_shader);
   glDeleteShader(fragment_shader);
 }
 
-int32 shader::_get_uniform_location(const std::string& name) {
+gl_uniform_location shader::_get_uniform_location(const std::string& name) {
   if (_uniform_locations.find(name) == _uniform_locations.cend()) {
-    _uniform_locations.emplace(name, glGetUniformLocation(_id, name.c_str()));
+    _uniform_locations.emplace(name, glGetUniformLocation(_program_id, name.c_str()));
   }
 
   return _uniform_locations.at(name);

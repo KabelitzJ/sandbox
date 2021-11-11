@@ -2,7 +2,10 @@
 #define SBX_RENDERING_RENDER_SYSTEM_HPP_
 
 #include <core/system.hpp>
-#include <core/event_queue.hpp>
+#include <core/transform.hpp>
+
+#include "model.hpp"
+#include "render_batch.hpp"
 
 namespace sbx {
 
@@ -10,14 +13,20 @@ class render_system final : public system {
 
 public:
 
-  render_system() = default;
+  render_system();
   ~render_system() = default;
 
   void initialize() override;
-  void update(time delta_time) override;
+  void update(const time delta_time) override;
   void terminate() override;
 
 private:
+
+  void _add_to_batch(const model& model, const transform& transform);
+  void _flush_batch();
+  void _reset_batch();
+
+  render_batch _batch{};
 
 }; // class render_system
 

@@ -5,6 +5,7 @@
 #include <unordered_map>
 
 #include <types/primitives.hpp>
+#include <types/gl.hpp>
 
 namespace sbx {
 
@@ -17,17 +18,17 @@ public:
   void bind() const;
   void unbind() const;
 
-  void set_int32(const std::string& name, int value);
-  void set_float32(const std::string& name, float value);
+  void set_int32(const std::string& name, int32 value);
+  void set_float32(const std::string& name, float32 value);
 
 private:
 
   void _load(const std::string& vertex_path, const std::string& fragment_path);
 
-  int32 _get_uniform_location(const std::string& name);
+  gl_uniform_location _get_uniform_location(const std::string& name);
 
-  uint32 _id{};
-  std::unordered_map<std::string, int32> _uniform_locations{};
+  gl_program _program_id{};
+  std::unordered_map<std::string, gl_uniform_location> _uniform_locations{};
 
 };
 
