@@ -13,6 +13,8 @@
 #include <physics/physics_module.hpp>
 #include <physics/rigidbody.hpp>
 
+#include <types/vector.hpp>
+
 class demo_module final : public sbx::module {
 
   class demo_system final : public sbx::system {
@@ -24,7 +26,7 @@ class demo_module final : public sbx::module {
 
     void initialize() override {
       const auto player = create_entity();
-      emplace_component<sbx::rigidbody>(player, glm::vec3{0, 0, 0}, 10.0f, false);
+      emplace_component<sbx::rigidbody>(player, sbx::vector3{0, 0, 0}, 10.0f, false);
 
       load_resource<sbx::shader>(
         "default_shader", 

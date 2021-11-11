@@ -1,15 +1,16 @@
 #ifndef SBX_CORE_TRANSFORM_HPP_
 #define SBX_CORE_TRANSFORM_HPP_
 
-#include <glm/vec3.hpp>
 #include <glm/gtc/quaternion.hpp>
+
+#include <types/vector.hpp>
 
 namespace sbx {
 
 struct transform {
-  glm::vec3 position{};
+  vector3 position{};
   glm::quat rotation{};
-  glm::vec3 scale{};
+  vector3 scale{};
 }; // struct transform
 
 } // namespace sbx

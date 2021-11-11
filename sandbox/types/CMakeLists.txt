@@ -1,5 +1,7 @@
 project(types CXX)
 
+find_package(glm REQUIRED)
+
 add_library(${PROJECT_NAME} STATIC)
 
 target_sources(
@@ -14,6 +16,12 @@ target_include_directories(
     "${CMAKE_CURRENT_SOURCE_DIR}"
   PUBLIC
     "${CMAKE_CURRENT_SOURCE_DIR}/.."
+)
+
+target_link_libraries(
+  ${PROJECT_NAME}
+  PRIVATE
+    glm::glm
 )
 
 target_compile_features(

@@ -4,6 +4,8 @@
 
 #include <core/events.hpp>
 
+#include "mesh.hpp"
+
 namespace sbx {
 
 void render_system::initialize() {
