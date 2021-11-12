@@ -45,7 +45,9 @@ void render_system::update([[maybe_unused]] const time delta_time) {
   for (const auto entity : view) {
     auto [model, transform] = view.get(entity);
     
-    _add_to_batch(model, transform);
+    for (const auto& mesh : model.meshes()) {
+      _add_to_batch(mesh, transform);
+    }
   }
 }
 
@@ -53,8 +55,8 @@ void render_system::terminate() {
   
 }
 
-void render_system::_add_to_batch(const model& model, const transform& transform) {
-  static_cast<void>(model);
+void render_system::_add_to_batch(const mesh& mesh, const transform& transform) {
+  static_cast<void>(mesh);
   static_cast<void>(transform);
 }
 

@@ -15,6 +15,8 @@ public:
   model(const std::string& path);
   ~model() = default;
 
+  const std::vector<mesh>& meshes() const;
+
 private:
 
   void _load(const std::string& path);

@@ -16,10 +16,10 @@ namespace sbx {
 struct render_batch {
 
   // [TODO] KAJ 2021-11-11 20:54 - Tweak batch size
-  static constexpr auto max_element_count   = std::size_t{1000u};
+  static constexpr auto max_element_count = std::size_t{1000u};
   static constexpr auto max_vertex_count  = std::size_t{max_element_count * 3u};
   static constexpr auto max_index_count   = std::size_t{max_element_count * 3u};
-  static constexpr auto max_texture_count   = std::size_t{16u};
+  static constexpr auto max_texture_count = std::size_t{16u};
 
   gl_buffer vertex_array{0};
   gl_buffer vertex_buffer{0};

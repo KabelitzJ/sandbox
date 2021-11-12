@@ -4,7 +4,7 @@
 #include <core/system.hpp>
 #include <core/transform.hpp>
 
-#include "model.hpp"
+#include "mesh.hpp"
 #include "render_batch.hpp"
 
 namespace sbx {
@@ -22,7 +22,7 @@ public:
 
 private:
 
-  void _add_to_batch(const model& model, const transform& transform);
+  void _add_to_batch(const mesh& mesh, const transform& transform);
   void _flush_batch();
   void _reset_batch();
 
