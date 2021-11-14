@@ -2,7 +2,7 @@
 #define SBX_RENDERING_RENDER_SYSTEM_HPP_
 
 #include <core/system.hpp>
-#include <core/transform.hpp>
+#include <types/transform.hpp>
 
 #include "mesh.hpp"
 #include "render_batch.hpp"

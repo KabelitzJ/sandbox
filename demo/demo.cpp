@@ -3,12 +3,15 @@
 #include <core/entry_point.hpp>
 #include <core/events.hpp>
 #include <core/logger.hpp>
-#include <core/transform.hpp>
+#include <types/transform.hpp>
+#include <core/camera.hpp>
 
 #include <application/window_module.hpp>
 
 #include <rendering/rendering_module.hpp>
 #include <rendering/shader.hpp>
+#include <rendering/mesh.hpp>
+#include <rendering/model.hpp>
 
 #include <physics/physics_module.hpp>
 #include <physics/rigidbody.hpp>
@@ -25,13 +28,25 @@ class demo_module final : public sbx::module {
     ~demo_system() = default;
 
     void initialize() override {
-      const auto player = create_entity();
-      emplace_component<sbx::rigidbody>(player, sbx::vector3{0, 0, 0}, 10.0f, false);
-
       load_resource<sbx::shader>(
         "default_shader", 
         "resources/shaders/default/vertex.glsl", 
         "resources/shaders/default/fragment.glsl"
+      );
+
+      load_resource<sbx::mesh>(
+        "cube", 
+        "resources/models/cube.obj"
+      );
+
+      const auto player = create_entity();
+      emplace_component<sbx::rigidbody>(player, sbx::vector3{0, 0, 0}, 10.0f, false);
+      emplace_component<sbx::model>(player, "cube", "default_shader");
+
+      const auto camera = create_entity();
+      emplace_component<sbx::camera>(
+        camera, 
+        true  
       );
     }
 

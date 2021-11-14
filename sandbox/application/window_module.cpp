@@ -27,18 +27,18 @@ void window_module::initialize()  {
   auto width = 0;
   auto height = 0;
 
-  auto monitor = glfwGetPrimaryMonitor();
+  // auto monitor = glfwGetPrimaryMonitor();
 
-  if (monitor) {
-    const auto mode = glfwGetVideoMode(monitor);
-    width = mode->width;
-    height = mode->height;
-  } else {
-    width = 1280;
-    height = 720;
-  }
+  // if (monitor) {
+  //   const auto mode = glfwGetVideoMode(monitor);
+  //   width = mode->width;
+  //   height = mode->height;
+  // } else {
+  //   width = 1280;
+  //   height = 720;
+  // }
 
-  _handle = glfwCreateWindow(width, height, "Sandbox [FPS: 0]", monitor, nullptr);
+  _handle = glfwCreateWindow(960, 720, "Sandbox [FPS: 0]", nullptr, nullptr);
 
   if (!_handle) {
     logger::critical("Could not create window");

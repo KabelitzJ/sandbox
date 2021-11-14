@@ -34,6 +34,26 @@ void shader::set_float32(const std::string& name, float32 value) {
   glUniform1f(_get_uniform_location(name), value);
 }
 
+void shader::set_vector2(const std::string& name, const vector2& value) {
+  glUniform2fv(_get_uniform_location(name), 1, value_ptr(value));
+}
+
+void shader::set_vector3(const std::string& name, const vector3& value) {
+  glUniform3fv(_get_uniform_location(name), 1, value_ptr(value));
+}
+
+void shader::set_vector4(const std::string& name, const vector4& value) {
+  glUniform4fv(_get_uniform_location(name), 1, value_ptr(value));
+}
+
+void shader::set_matrix3x3(const std::string& name, const matrix3x3& value) {
+  glUniformMatrix3fv(_get_uniform_location(name), 1, GL_FALSE, value_ptr(value));
+}
+
+void shader::set_matrix4x4(const std::string& name, const matrix4x4& value) {
+  glUniformMatrix4fv(_get_uniform_location(name), 1, GL_FALSE, value_ptr(value));
+}
+
 void shader::_load(const std::string& vertex_path, const std::string& fragment_path) {
   const auto vertex_shader = glCreateShader(GL_VERTEX_SHADER);
   const auto fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -97,7 +117,7 @@ gl_uniform_location shader::_get_uniform_location(const std::string& name) {
     _uniform_locations.emplace(name, glGetUniformLocation(_program_id, name.c_str()));
   }
 
-  return _uniform_locations.at(name);
+  return _uniform_locations[name];
 }
 
 } // namespace sbx

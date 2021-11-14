@@ -14,7 +14,7 @@ target_sources(
     rendering_module.cpp
     render_system.cpp
     shader.cpp
-    model.cpp
+    mesh.cpp
 )
 
 target_include_directories(

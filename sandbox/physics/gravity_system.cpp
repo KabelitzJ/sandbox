@@ -1,6 +1,6 @@
 #include "gravity_system.hpp"
 
-#include <core/transform.hpp>
+#include <types/transform.hpp>
 
 #include "rigidbody.hpp"
 #include "constants.hpp"

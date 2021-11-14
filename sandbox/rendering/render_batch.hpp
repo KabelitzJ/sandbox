@@ -25,10 +25,11 @@ struct render_batch {
   gl_buffer vertex_buffer{0};
   gl_buffer index_buffer{0};
 
+  std::array<uint32, max_index_count> indices{};
   uint32 index_count{0};
 
   std::array<mesh_vertex, max_vertex_count> vertices{};
-  std::size_t current_vertex{0};
+  std::size_t vertex_count{0};
 
 };
 

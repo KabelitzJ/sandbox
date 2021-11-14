@@ -8,6 +8,8 @@ target_sources(
   ${PROJECT_NAME}
   PRIVATE
     primitives.cpp
+    vector.cpp
+    matrix.cpp
 )
 
 target_include_directories(

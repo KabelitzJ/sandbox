@@ -10,6 +10,8 @@
 
 #include <utils/type_id.hpp>
 
+#include "logger.hpp"
+
 namespace sbx {
 
 /**
@@ -47,7 +49,7 @@ public:
       _resources_by_type.emplace(id, std::unordered_map<std::string, std::shared_ptr<void>>());
     }
 
-    auto& resources = _resources_by_type.at(id);
+    auto& resources = _resources_by_type[id];
 
     assert(resources.find(name) == resources.cend()); // Resource with same type and name already exists
 
@@ -69,11 +71,11 @@ public:
 
     assert(_resources_by_type.find(id) != _resources_by_type.cend()); // Resources of this type do not exit
 
-    auto resources = _resources_by_type.at(id);
+    auto resources = _resources_by_type[id];
 
     assert(resources.find(name) != resources.cend()); // Resource with this name does not exist
 
-    return std::static_pointer_cast<Resource>(resources.at(name));
+    return std::static_pointer_cast<Resource>(resources[name]);
   }
 
 private:

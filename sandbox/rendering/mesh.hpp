@@ -1,6 +1,7 @@
-#ifndef SBX_RENDERING_MESH_HPP_
-#define SBX_RENDERING_MESH_HPP_
+#ifndef SBX_RENDERIN_MODEL_HPP_
+#define SBX_RENDERIN_MODEL_HPP_
 
+#include <string>
 #include <vector>
 
 #include <types/primitives.hpp>
@@ -14,11 +15,27 @@ struct mesh_vertex {
   vector2 uv;
 };
 
-struct mesh {
-  std::vector<mesh_vertex> vertices;
-  std::vector<uint32> indices;
-}; // struct mesh
+class mesh {
+
+public:
+
+  mesh(const std::string& path);
+  ~mesh() = default;
+
+  const std::vector<mesh_vertex>& vertices() const;
+  const std::vector<uint32>& indices() const;
+
+private:
+
+  // [TODO] KAJ 2021-11-12 12:21 - Clear up mesh loading.
+  void _load(const std::string& path);
+
+  std::vector<mesh_vertex> _vertices{};
+  std::vector<uint32> _indices{};
+  // std::vector<texture> _textures{};
+
+}; // class model
 
 } // namespace sbx
 
-#endif // SBX_RENDERING_MESH_HPP_
+#endif // SBX_RENDERIN_MODEL_HPP_
