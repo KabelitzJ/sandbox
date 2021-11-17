@@ -112,33 +112,22 @@ void mesh::_load(const std::string& path) {
 
   auto indices_per_vertex = std::unordered_map<mesh_vertex, uint32, mesh_vertex_hash, mesh_vertex_equality>{};
 
-  logger::debug("vertives {}", vertices.size());
-  logger::debug("uvs {}", uvs.size());
-  logger::debug("normals {}", normals.size());
-
-  logger::debug("vertex_indices {}", vertex_indices.size());
-  logger::debug("uv_indices {}", uv_indices.size());
-  logger::debug("normal_indices {}", normal_indices.size());
-
-  auto index_counter = uint32{0u};
-
   for (auto i = std::size_t{0u}; i < vertex_indices.size(); ++i) {
     auto vertex_index = vertex_indices[i];
-    auto normal_index = normal_indices[i];
     auto uv_index = uv_indices[i];
+    auto normal_index = normal_indices[i];
 
     auto vertex = mesh_vertex{
       vertices[vertex_index - 1],
-      normals[normal_index - 1],
-      uvs[uv_index - 1]
+      uvs[uv_index - 1],
+      normals[normal_index - 1]
     };
 
     if (indices_per_vertex.find(vertex) == indices_per_vertex.cend()) {
-      indices_per_vertex[vertex] = index_counter++;
-      logger::debug("{}", indices_per_vertex[vertex]);
+      indices_per_vertex[vertex] = static_cast<uint32>(_vertices.size());
+      _vertices.push_back(vertex);
     }
 
-    _vertices.push_back(vertex);
     _indices.push_back(indices_per_vertex[vertex]);
   }
 
