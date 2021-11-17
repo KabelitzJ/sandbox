@@ -10,9 +10,9 @@
 namespace sbx {
 
 struct mesh_vertex {
-  vector3 position;
-  vector3 normal;
-  vector2 uv;
+  vector3 position{};
+  vector2 uv{};
+  vector3 normal{};
 };
 
 class mesh {
