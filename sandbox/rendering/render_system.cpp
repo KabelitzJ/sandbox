@@ -28,7 +28,7 @@ void render_system::initialize() {
 
   glCreateBuffers(1, &_batch.vertex_buffer);
   glBindBuffer(GL_ARRAY_BUFFER, _batch.vertex_buffer);
-  glBufferData(GL_ARRAY_BUFFER, render_batch::max_vertex_count * sizeof(mesh_vertex), nullptr, GL_DYNAMIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, render_batch::max_element_count * sizeof(mesh_vertex), nullptr, GL_DYNAMIC_DRAW);
 
   const auto size = sizeof(mesh_vertex) + sizeof(matrix4x4);
 
@@ -70,11 +70,13 @@ void render_system::initialize() {
 
   glCreateBuffers(1, &_batch.index_buffer);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _batch.index_buffer);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32), nullptr, GL_DYNAMIC_DRAW);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, render_batch::max_element_count * sizeof(uint32), nullptr, GL_DYNAMIC_DRAW);
 
   glBindBuffer(GL_ARRAY_BUFFER, 0);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
   glBindVertexArray(0);
+
+  _reset_batch();
 }
 
 void render_system::update([[maybe_unused]] const time delta_time) {
@@ -100,6 +102,8 @@ void render_system::update([[maybe_unused]] const time delta_time) {
     break;
   }
 
+  glBindVertexArray(_batch.vertex_array);
+
   auto model_view = create_view<const model, const transform>();
 
   for (const auto entity : model_view) {
@@ -110,22 +114,25 @@ void render_system::update([[maybe_unused]] const time delta_time) {
     
 
     _add_to_batch(*mesh_handle, transform);
-
-    // [TODO] KAJ 2021-11-14 12:59 - Only temporary... Remove this!
-    _flush_batch();
   }
 
   _flush_batch();
+
+  glBindVertexArray(0);
 
   shader_handle->unbind();
 }
 
 void render_system::terminate() {
-  
+  glDeleteBuffers(1, &_batch.vertex_buffer);
+  glDeleteBuffers(1, &_batch.index_buffer);
+  glDeleteVertexArrays(1, &_batch.vertex_array);
 }
 
 void render_system::_add_to_batch(const mesh& mesh, const transform& transform) {
-  if (_batch.vertex_count + mesh.vertices().size() > _batch.vertices.size()) {
+  static_cast<void>(transform);
+
+  if (_batch.index_count + mesh.indices().size() > render_batch::max_element_count) {
     _flush_batch();
   }
 
@@ -143,19 +150,17 @@ void render_system::_add_to_batch(const mesh& mesh, const transform& transform) 
 
 void render_system::_flush_batch() {
   glBindBuffer(GL_ARRAY_BUFFER, _batch.vertex_buffer);
-  const auto vertex_size = static_cast<gl_size_ptr>(_batch.vertex_count * sizeof(mesh_vertex));
+  const auto vertex_size = static_cast<gl_size_ptr>(_batch.vertex_count * sizeof(vertex_attributes));
   glBufferSubData(GL_ARRAY_BUFFER, 0, vertex_size, _batch.vertices.data());
 
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _batch.index_buffer);
   const auto index_size = static_cast<gl_size_ptr>(_batch.index_count * sizeof(uint32));
   glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, index_size, _batch.indices.data());
 
-  glBindVertexArray(_batch.vertex_array);
   glDrawElements(GL_TRIANGLES, static_cast<gl_size>(_batch.index_count), GL_UNSIGNED_INT, nullptr);
 
   glBindBuffer(GL_ARRAY_BUFFER, 0);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-  glBindVertexArray(0);
 
   _reset_batch();
 }

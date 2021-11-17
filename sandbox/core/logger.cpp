@@ -3,6 +3,7 @@
 namespace sbx {
 
 void logger::_initialize() {
+  // [TODO] KAJ 2021-10-13 21:35: Use single threaded sink
   auto sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
 
   sink->set_pattern("%^%Y-%m-%d %H:%M:%S:%e [%=8l] - %v%$");
