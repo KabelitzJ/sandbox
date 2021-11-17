@@ -4,11 +4,20 @@
 #include <array>
 
 #include <types/primitives.hpp>
+#include <types/vector.hpp>
+#include <types/matrix.hpp>
 #include <types/gl.hpp>
 
 #include "mesh.hpp"
 
 namespace sbx {
+
+struct vertex_attributes {
+  vector3 position{};
+  vector3 normal{};
+  vector2 uv{};
+  matrix4x4 model_matrix{};
+}; // vertex_attributes
 
 /**
  * @brief Represents a batch of meshes that is sent to the gpu to be rendered in a single draw call.
@@ -28,7 +37,7 @@ struct render_batch {
   std::array<uint32, max_index_count> indices{};
   uint32 index_count{0};
 
-  std::array<mesh_vertex, max_vertex_count> vertices{};
+  std::array<vertex_attributes, max_vertex_count> vertices{};
   std::size_t vertex_count{0};
 
 };

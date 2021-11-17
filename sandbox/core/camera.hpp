@@ -8,6 +8,8 @@ namespace sbx {
 
 struct camera {
   bool is_main{};
+  matrix4x4 view_matrix{};
+  matrix4x4 projection_matrix{};
 }; // struct camera
 
 } // namespace sbx

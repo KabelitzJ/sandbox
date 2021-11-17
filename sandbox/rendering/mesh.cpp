@@ -8,24 +8,34 @@
 #include <cassert>
 #include <unordered_map>
 
+#include <core/logger.hpp>
+
 #include <types/vector.hpp>
 
-template<>
-struct std::hash<sbx::mesh_vertex> {
-  std::size_t operator()(const sbx::mesh_vertex& mesh_vertex) const {
-    return std::hash<sbx::vector3>{}(mesh_vertex.position) ^
-           std::hash<sbx::vector3>{}(mesh_vertex.normal) ^
-           std::hash<sbx::vector2>{}(mesh_vertex.uv);
-  }
-}; // struct std::hash
+#include <utils/hash.hpp>
 
 namespace sbx {
 
-bool operator==(const mesh_vertex& lhs, const mesh_vertex& rhs) {
-  return lhs.position == rhs.position &&
-         lhs.normal == rhs.normal &&
-         lhs.uv == rhs.uv;
-}
+struct mesh_vertex_hash {
+  std::size_t operator()(const mesh_vertex& v) const {
+    auto vector2_hasher = std::hash<sbx::vector2>{};
+    auto vector3_hasher = std::hash<sbx::vector3>{};
+
+    auto seed = std::size_t{0u};
+
+    sbx::hash_combine(seed, vector3_hasher(v.position));
+    sbx::hash_combine(seed, vector3_hasher(v.normal));
+    sbx::hash_combine(seed, vector2_hasher(v.uv));
+
+    return seed;
+  }
+}; // struct mesh_vertex_hash
+
+struct mesh_vertex_equality {
+  bool operator()(const mesh_vertex& lhs, const mesh_vertex& rhs) const {
+    return lhs.position == rhs.position && lhs.normal == rhs.normal && lhs.uv == rhs.uv;
+  }
+}; // struct mesh_vertex_equality
 
 mesh::mesh(const std::string& path)
 : _vertices{},
@@ -81,14 +91,16 @@ void mesh::_load(const std::string& path) {
       tokens >> temp_indices[0] >> temp_indices[1] >> temp_indices[2];
 
       for (const auto& temp_index : temp_indices) {
-        auto temps = std::array<uint32, 3>{};
-        const auto matches = sscanf(temp_index.c_str(), "%u/%u/%u", &temps[0], &temps[1], &temps[2]);
+        auto vertex_index = uint32{0u};
+        auto uv_index = uint32{0u};
+        auto normal_index = uint32{0u};
+        const auto matches = sscanf(temp_index.c_str(), "%u/%u/%u", &vertex_index, &uv_index, &normal_index);
 
         assert(matches == 3); // Invalid face formatS
 
-        vertex_indices.push_back(temps[0]);
-        normal_indices.push_back(temps[1]);
-        uv_indices.push_back(temps[2]);
+        vertex_indices.push_back(vertex_index);
+        uv_indices.push_back(uv_index);
+        normal_indices.push_back(normal_index);
       }
     }
 
@@ -96,7 +108,19 @@ void mesh::_load(const std::string& path) {
     tokens.clear();
   }
 
-  auto indices_per_vertex = std::unordered_map<mesh_vertex, uint32>{};
+  file.close();
+
+  auto indices_per_vertex = std::unordered_map<mesh_vertex, uint32, mesh_vertex_hash, mesh_vertex_equality>{};
+
+  logger::debug("vertives {}", vertices.size());
+  logger::debug("uvs {}", uvs.size());
+  logger::debug("normals {}", normals.size());
+
+  logger::debug("vertex_indices {}", vertex_indices.size());
+  logger::debug("uv_indices {}", uv_indices.size());
+  logger::debug("normal_indices {}", normal_indices.size());
+
+  auto index_counter = uint32{0u};
 
   for (auto i = std::size_t{0u}; i < vertex_indices.size(); ++i) {
     auto vertex_index = vertex_indices[i];
@@ -110,12 +134,15 @@ void mesh::_load(const std::string& path) {
     };
 
     if (indices_per_vertex.find(vertex) == indices_per_vertex.cend()) {
-      indices_per_vertex[vertex] = static_cast<uint32>(_vertices.size());
-      _vertices.push_back(vertex);
+      indices_per_vertex[vertex] = index_counter++;
+      logger::debug("{}", indices_per_vertex[vertex]);
     }
 
+    _vertices.push_back(vertex);
     _indices.push_back(indices_per_vertex[vertex]);
   }
+
+  logger::debug("Loaded {} with {} vertices and {} indices", path, _vertices.size(), _indices.size());
 
 }
 

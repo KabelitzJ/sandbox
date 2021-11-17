@@ -7,6 +7,7 @@
 
 #include <core/events.hpp>
 #include <core/camera.hpp>
+#include <core/logger.hpp>
 
 #include <types/primitives.hpp>
 #include <types/matrix.hpp>
@@ -29,14 +30,43 @@ void render_system::initialize() {
   glBindBuffer(GL_ARRAY_BUFFER, _batch.vertex_buffer);
   glBufferData(GL_ARRAY_BUFFER, render_batch::max_vertex_count * sizeof(mesh_vertex), nullptr, GL_DYNAMIC_DRAW);
 
-  glEnableVertexArrayAttrib(_batch.vertex_array, 0);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(mesh_vertex), reinterpret_cast<const void*>(offsetof(mesh_vertex, position)));
+  const auto size = sizeof(mesh_vertex) + sizeof(matrix4x4);
+
+  auto offset = offsetof(mesh_vertex, position);
 
   glEnableVertexArrayAttrib(_batch.vertex_array, 0);
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(mesh_vertex), reinterpret_cast<const void*>(offsetof(mesh_vertex, normal)));
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, size, reinterpret_cast<const void*>(offset));
 
-  glEnableVertexArrayAttrib(_batch.vertex_array, 0);
-  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(mesh_vertex), reinterpret_cast<const void*>(offsetof(mesh_vertex, uv)));
+  offset = offsetof(mesh_vertex, normal);
+
+  glEnableVertexArrayAttrib(_batch.vertex_array, 1);
+  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, size, reinterpret_cast<const void*>(offset));
+
+  offset = offsetof(mesh_vertex, uv);
+
+  glEnableVertexArrayAttrib(_batch.vertex_array, 2);
+  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, size, reinterpret_cast<const void*>(offset));
+
+  offset = offsetof(mesh_vertex, uv) + sizeof(vector2);
+
+  glEnableVertexArrayAttrib(_batch.vertex_array, 3);
+  glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, size, reinterpret_cast<const void*>(offset));
+
+  offset += + sizeof(vector4);
+
+  glEnableVertexArrayAttrib(_batch.vertex_array, 4);
+  glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, size, reinterpret_cast<const void*>(offset));
+
+  offset += + sizeof(vector4);
+
+  glEnableVertexArrayAttrib(_batch.vertex_array, 5);
+  glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, size, reinterpret_cast<const void*>(offset));
+
+  offset += + sizeof(vector4);
+
+  glEnableVertexArrayAttrib(_batch.vertex_array, 6);
+  glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, size, reinterpret_cast<const void*>(offset));
+  
 
   glCreateBuffers(1, &_batch.index_buffer);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _batch.index_buffer);
@@ -62,6 +92,12 @@ void render_system::update([[maybe_unused]] const time delta_time) {
     if (!camera_component.is_main) {
       continue;
     }
+
+    shader_handle->set_matrix4x4("view_matrix", camera_component.view_matrix);
+    shader_handle->set_matrix4x4("projection_matrix", camera_component.projection_matrix);
+
+    // [NOTE] KAJ 2021-11-16 18:46 - There should ever only be one main camera.
+    break;
   }
 
   auto model_view = create_view<const model, const transform>();
@@ -71,7 +107,7 @@ void render_system::update([[maybe_unused]] const time delta_time) {
     
     auto mesh_handle = get_resource<mesh>(model.mesh_id);
 
-    shader_handle->set_matrix4x4("model_matrix", model_matrix_from_transform(transform));
+    
 
     _add_to_batch(*mesh_handle, transform);
 
@@ -89,14 +125,15 @@ void render_system::terminate() {
 }
 
 void render_system::_add_to_batch(const mesh& mesh, const transform& transform) {
-  static_cast<void>(transform);
-
   if (_batch.vertex_count + mesh.vertices().size() > _batch.vertices.size()) {
     _flush_batch();
   }
 
+  const auto model_matrix = model_matrix_from_transform(transform);
+
   for (const auto& vertex : mesh.vertices()) {
-    _batch.vertices[_batch.vertex_count++] = vertex;
+    auto attribute = vertex_attributes{vertex.position, vertex.normal, vertex.uv, model_matrix};
+    _batch.vertices[_batch.vertex_count++] = attribute;
   }
 
   for (const auto index : mesh.indices()) {
@@ -124,7 +161,7 @@ void render_system::_flush_batch() {
 }
 
 void render_system::_reset_batch() {
-  std::fill(_batch.vertices.begin(), _batch.vertices.end(), mesh_vertex{});
+  std::fill(_batch.vertices.begin(), _batch.vertices.end(), vertex_attributes{});
   _batch.vertex_count = 0u;
   std::fill(_batch.indices.begin(), _batch.indices.end(), uint32{0u});
   _batch.index_count = 0u;

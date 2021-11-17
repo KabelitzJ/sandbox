@@ -46,7 +46,9 @@ class demo_module final : public sbx::module {
       const auto camera = create_entity();
       emplace_component<sbx::camera>(
         camera, 
-        true  
+        true,
+        sbx::look_at({3.0f, 3.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, sbx::vector3_up),
+        sbx::perspective(sbx::to_radians(45.0f), 960.0f / 720.0f, 0.1f, 1000.0f)
       );
     }
 
