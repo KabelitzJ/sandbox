@@ -24,8 +24,8 @@ void window_module::initialize()  {
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-  auto width = 0;
-  auto height = 0;
+  auto width = 960;
+  auto height = 720;
 
   // auto monitor = glfwGetPrimaryMonitor();
 
@@ -33,12 +33,9 @@ void window_module::initialize()  {
   //   const auto mode = glfwGetVideoMode(monitor);
   //   width = mode->width;
   //   height = mode->height;
-  // } else {
-  //   width = 1280;
-  //   height = 720;
   // }
 
-  _handle = glfwCreateWindow(960, 720, "Sandbox [FPS: 0]", nullptr, nullptr);
+  _handle = glfwCreateWindow(width, height, "Sandbox [FPS: 0]", nullptr, nullptr);
 
   if (!_handle) {
     logger::critical("Could not create window");
@@ -58,8 +55,6 @@ void window_module::initialize()  {
   if (glfwRawMouseMotionSupported()) {
     glfwSetInputMode(_handle, GLFW_RAW_MOUSE_MOTION, true);
   }
-
-  dispatch_event<window_resized_event>(960, 720);
 
   add_listener<toggle_mouse_visibility_event>([this](const auto&){
     if (glfwGetInputMode(_handle, GLFW_CURSOR) == GLFW_CURSOR_NORMAL) {

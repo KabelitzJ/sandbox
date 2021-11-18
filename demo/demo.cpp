@@ -51,7 +51,7 @@ class demo_module final : public sbx::module {
       );
 
       const auto player = create_entity();
-      // emplace_component<sbx::rigidbody>(player, sbx::vector3{0, 0, 0}, 10.0f, false);
+      emplace_component<sbx::rigidbody>(player, sbx::vector3{0, 0, 0}, 10.0f, false);
       emplace_component<sbx::model>(player, "cube", "test_shader");
 
       const auto camera = create_entity();
