@@ -59,6 +59,8 @@ void window_module::initialize()  {
     glfwSetInputMode(_handle, GLFW_RAW_MOUSE_MOTION, true);
   }
 
+  dispatch_event<window_resized_event>(960, 720);
+
   add_listener<toggle_mouse_visibility_event>([this](const auto&){
     if (glfwGetInputMode(_handle, GLFW_CURSOR) == GLFW_CURSOR_NORMAL) {
       glfwSetInputMode(_handle, GLFW_CURSOR, GLFW_CURSOR_DISABLED);

@@ -14,6 +14,19 @@
 
 namespace sbx {
 
+/////////////////////////////////////////////////////////////////
+//
+// [TODO] KAJ 2021-11-18 11:57 - Redesign to resource key
+//
+// struct resource_key {
+//   uint32 type{};
+//   std::string name{};
+// };
+//
+//  This eliminates one indirection in the resource cache.
+//
+/////////////////////////////////////////////////////////////////
+
 /**
  * @brief Provides a global cache for resources.
  *        Resources are stored by type and can be retrieved by name.

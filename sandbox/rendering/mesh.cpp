@@ -7,6 +7,8 @@
 #include <array>
 #include <cassert>
 #include <unordered_map>
+#include <utility>
+#include <algorithm>
 
 #include <core/logger.hpp>
 
@@ -14,10 +16,9 @@
 
 #include <utils/hash.hpp>
 
-namespace sbx {
-
-struct mesh_vertex_hash {
-  std::size_t operator()(const mesh_vertex& v) const {
+template<>
+struct std::hash<sbx::mesh_vertex> {
+  std::size_t operator()(const sbx::mesh_vertex& v) const {
     auto vector2_hasher = std::hash<sbx::vector2>{};
     auto vector3_hasher = std::hash<sbx::vector3>{};
 
@@ -29,13 +30,16 @@ struct mesh_vertex_hash {
 
     return seed;
   }
-}; // struct mesh_vertex_hash
+}; // struct std::hash<mesh_vertex>
 
-struct mesh_vertex_equality {
-  bool operator()(const mesh_vertex& lhs, const mesh_vertex& rhs) const {
+template<>
+struct std::equal_to<sbx::mesh_vertex> {
+  bool operator()(const sbx::mesh_vertex& lhs, const sbx::mesh_vertex& rhs) const {
     return lhs.position == rhs.position && lhs.normal == rhs.normal && lhs.uv == rhs.uv;
   }
-}; // struct mesh_vertex_equality
+}; // struct std::equal_to<sbx::mesh_vertex>
+
+namespace sbx {
 
 mesh::mesh(const std::string& path)
 : _vertices{},
@@ -110,7 +114,7 @@ void mesh::_load(const std::string& path) {
 
   file.close();
 
-  auto indices_per_vertex = std::unordered_map<mesh_vertex, uint32, mesh_vertex_hash, mesh_vertex_equality>{};
+  auto indices_per_vertex = std::unordered_map<mesh_vertex, uint32>{};
 
   for (auto i = std::size_t{0u}; i < vertex_indices.size(); ++i) {
     auto vertex_index = vertex_indices[i];

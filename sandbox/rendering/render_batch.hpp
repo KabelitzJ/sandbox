@@ -3,42 +3,33 @@
 
 #include <array>
 
-#include <types/primitives.hpp>
+#include <types/gl.hpp>
 #include <types/vector.hpp>
 #include <types/matrix.hpp>
-#include <types/gl.hpp>
-
-#include "mesh.hpp"
 
 namespace sbx {
 
-struct vertex_attributes {
+struct vertex {
   vector3 position{};
-  vector3 normal{};
   vector2 uv{};
+  vector3 normal{};
   matrix4x4 model_matrix{};
-}; // vertex_attributes
-
-/**
- * @brief Represents a batch of meshes that is sent to the gpu to be rendered in a single draw call.
- */
-struct render_batch {
-
-  // [TODO] KAJ 2021-11-11 20:54 - Tweak batch size
-  static constexpr auto max_element_count = std::size_t{5000u};
-  static constexpr auto max_texture_count = std::size_t{16u};
-
-  gl_buffer vertex_array{0};
-  gl_buffer vertex_buffer{0};
-  gl_buffer index_buffer{0};
-
-  std::array<uint32, max_element_count> indices{};
-  std::size_t index_count{0};
-
-  std::array<vertex_attributes, max_element_count> vertices{};
-  std::size_t vertex_count{0};
-
 };
+
+struct render_batch {
+  static constexpr auto max_element_count = 5000;
+
+  gl_buffer vertex_array{};
+  gl_buffer vertex_buffer{};
+  gl_buffer index_buffer{};
+
+  std::array<gl_index, max_element_count> indices{};
+  std::size_t index_count{};
+
+  std::array<vertex, max_element_count> vertices{};
+  std::size_t vertex_count{};
+
+}; // struct render_batch
 
 } // namespace sbx
 

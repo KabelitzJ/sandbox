@@ -1,7 +1,10 @@
 #ifndef SBX_RENDERING_RENDER_SYSTEM_HPP_
 #define SBX_RENDERING_RENDER_SYSTEM_HPP_
 
+#include <array>
+
 #include <core/system.hpp>
+
 #include <types/transform.hpp>
 
 #include "mesh.hpp"
@@ -22,9 +25,9 @@ public:
 
 private:
 
+  void _reset_batch();
   void _add_to_batch(const mesh& mesh, const transform& transform);
   void _flush_batch();
-  void _reset_batch();
 
   render_batch _batch{};
 

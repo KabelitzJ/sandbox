@@ -24,7 +24,7 @@ void rendering_module::initialize() {
 
   _log_context_info();
 
-  glClearColor(0.95f, 0.5f, 0.43f, 1.0f);
+  glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
   add_listener<window_resized_event>([this](const auto& e) {
     glViewport(0, 0, e.width, e.height);

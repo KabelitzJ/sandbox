@@ -39,9 +39,14 @@ class demo_module final : public sbx::module {
         "resources/models/cube.obj"
       );
 
+      load_resource<sbx::mesh>(
+        "quad", 
+        "resources/models/quad.obj"
+      );
+
       const auto player = create_entity();
       emplace_component<sbx::rigidbody>(player, sbx::vector3{0, 0, 0}, 10.0f, false);
-      emplace_component<sbx::model>(player, "cube", "default_shader");
+      emplace_component<sbx::model>(player, "quad", "default_shader");
 
       const auto camera = create_entity();
       emplace_component<sbx::camera>(
