@@ -63,8 +63,8 @@ class demo_module final : public sbx::module {
       );
     }
 
-    void update(sbx::time delta_time) override {
-      static_cast<void>(delta_time);
+    void update([[maybe_unused]] sbx::time delta_time) override {
+
     }
 
     void terminate() override {
@@ -79,6 +79,8 @@ public:
   ~demo_module() = default;
 
   void initialize() override {
+    dispatch_event<sbx::clear_color_changed_event>(sbx::color{0.2f, 0.3f, 0.3f, 1.0f});
+
     add_system<demo_system>();
   }
 
