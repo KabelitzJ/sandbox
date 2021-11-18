@@ -13,13 +13,13 @@ matrix4x4 perspective(float32 fov, float32 aspect, float32 near, float32 far) {
 }
 
 matrix4x4 model_matrix_from_transform(const transform& transform) {
-  constexpr auto identity = glm::identity<matrix4x4>();
+  auto model_matrix = glm::identity<matrix4x4>();
 
-  const auto translation_matrix = glm::translate(identity, transform.position);
-  const auto rotation_matrix = to_rotation_matrix(transform.rotation);
-  const auto scale_matrix = glm::scale(identity, transform.scale);
+  model_matrix = glm::translate(model_matrix, transform.position);
+  model_matrix *= to_rotation_matrix(transform.rotation);
+  model_matrix = glm::scale(model_matrix, transform.scale);
 
-  return translation_matrix * rotation_matrix * scale_matrix;
+  return model_matrix;
 }
 
 matrix4x4 to_rotation_matrix(const quaternion& rotation) {

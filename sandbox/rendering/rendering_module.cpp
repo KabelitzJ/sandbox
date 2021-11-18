@@ -24,6 +24,8 @@ void rendering_module::initialize() {
 
   _log_context_info();
 
+  _setup_context_state();
+
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
   add_listener<window_resized_event>([this](const auto& e) {
@@ -53,6 +55,21 @@ void rendering_module::_log_context_info() const {
   logger::info("opengl version:\t{}", version);
   logger::info("glsl version:\t{}", glsl_version);
   logger::info("==============================================================");
+}
+
+void rendering_module::_setup_context_state() const {
+  glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
+
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+  glEnable(GL_DEPTH_TEST);
+  glDepthMask(GL_TRUE);
+  glDepthFunc(GL_LESS);
+
+  glEnable(GL_CULL_FACE);
+  glCullFace(GL_BACK);
+  glFrontFace(GL_CW);
 }
 
 } // namespace sbx

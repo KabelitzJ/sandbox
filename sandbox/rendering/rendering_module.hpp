@@ -18,6 +18,7 @@ public:
 private:
 
   void _log_context_info() const;
+  void _setup_context_state() const;
 
 };
 

@@ -8,7 +8,6 @@
 #include <types/transform.hpp>
 
 #include "mesh.hpp"
-#include "render_batch.hpp"
 
 namespace sbx {
 
@@ -24,12 +23,6 @@ public:
   void terminate() override;
 
 private:
-
-  void _reset_batch();
-  void _add_to_batch(const mesh& mesh, const transform& transform);
-  void _flush_batch();
-
-  render_batch _batch{};
 
 }; // class render_system
 
