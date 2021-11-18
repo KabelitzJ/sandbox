@@ -70,6 +70,8 @@ void rendering_module::_setup_context_state() const {
   glEnable(GL_CULL_FACE);
   glCullFace(GL_BACK);
   glFrontFace(GL_CW);
+
+  glEnable(GL_MULTISAMPLE);  
 }
 
 } // namespace sbx
