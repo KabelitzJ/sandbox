@@ -3,7 +3,7 @@
 namespace sbx {
 
 resource_cache::resource_cache()
-: _resources_by_type{} { }
+: _resources{} { }
 
 resource_cache::~resource_cache() { }
 

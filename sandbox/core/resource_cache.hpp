@@ -5,27 +5,17 @@
 #include <memory>
 #include <string>
 #include <cassert>
+#include <utility>
+#include <algorithm>
 
 #include <types/primitives.hpp>
 
 #include <utils/type_id.hpp>
 
 #include "logger.hpp"
+#include "resource_key.hpp"
 
 namespace sbx {
-
-/////////////////////////////////////////////////////////////////
-//
-// [TODO] KAJ 2021-11-18 11:57 - Redesign to resource key
-//
-// struct resource_key {
-//   uint32 type{};
-//   std::string name{};
-// };
-//
-//  This eliminates one indirection in the resource cache.
-//
-/////////////////////////////////////////////////////////////////
 
 /**
  * @brief Provides a global cache for resources.
@@ -57,16 +47,14 @@ public:
   void load(const std::string& name, Args&&... args) {
     constexpr auto id = type_id<Resource>();
 
-    // [NOTE] KAJ 2021-11-11 21:58 - Make sure we have a cache for this type
-    if (_resources_by_type.find(id) == _resources_by_type.cend()) {
-      _resources_by_type.emplace(id, std::unordered_map<std::string, std::shared_ptr<void>>());
+    const auto key = resource_key{id, name};
+
+    if (_resources.find(key) != _resources.cend()) {
+      logger::error("Resource with name '{}' and type '{}' already exists in the cache.", name, id);
+      assert(false); // Duplicate resource loaded
     }
 
-    auto& resources = _resources_by_type[id];
-
-    assert(resources.find(name) == resources.cend()); // Resource with same type and name already exists
-
-    resources.emplace(name, std::make_shared<Resource>(std::forward<Args>(args)...));
+    _resources.emplace(key, std::make_shared<Resource>(std::forward<Args>(args)...));
   }
 
   /**
@@ -79,21 +67,23 @@ public:
    */
   template<typename Resource>
   std::shared_ptr<Resource> get(const std::string& name) {
-    // [TODO] KAJ 2021-11-09 23:08 - Think about shared_ptr vs weak_ptr
     constexpr auto id = type_id<Resource>();
 
-    assert(_resources_by_type.find(id) != _resources_by_type.cend()); // Resources of this type do not exit
+    const auto key = resource_key{id, name};
 
-    auto resources = _resources_by_type[id];
+    const auto entry = _resources.find(key);
 
-    assert(resources.find(name) != resources.cend()); // Resource with this name does not exist
+    if (entry == _resources.cend()) {
+      logger::error("Resource with name '{}' and type '{}' does not exist in the cache.", name, id);
+      assert(false); // Resource not found
+    }
 
-    return std::static_pointer_cast<Resource>(resources[name]);
+    return std::static_pointer_cast<Resource>(entry->second);
   }
 
 private:
 
-  std::unordered_map<uint32, std::unordered_map<std::string, std::shared_ptr<void>>> _resources_by_type{};
+  std::unordered_map<resource_key, std::shared_ptr<void>> _resources{};
 
 }; // class resource_cache
 
