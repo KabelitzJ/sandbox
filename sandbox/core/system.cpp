@@ -9,9 +9,9 @@ system::system()
   return _is_running;
 }
 
-entity system::create_entity(const entity parent) {
+entity system::create_entity(const transform& transform, const entity parent) {
   assert(_scene); // Scene is uninitialized
-  return _scene->create_entity(parent);
+  return _scene->create_entity(transform, parent);
 }
 
 void system::destroy_entity(const entity entity) {

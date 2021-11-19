@@ -16,9 +16,13 @@ window_module::window_module()
 
 void window_module::initialize()  {
   if (!glfwInit()) {
-    logger::critical("Could not initialite GLFW3");
+    logger::error("Could not initialite GLFW3");
     return;
   }
+
+  glfwSetErrorCallback([](auto error, const auto* description) {
+    logger::error("GLFW3 error({}): {}", error, description);
+  });
 
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
@@ -39,7 +43,7 @@ void window_module::initialize()  {
   _handle = glfwCreateWindow(width, height, "Sandbox [FPS: 0]", nullptr, nullptr);
 
   if (!_handle) {
-    logger::critical("Could not create window");
+    logger::error("Could not create window");
     return;
   }
 

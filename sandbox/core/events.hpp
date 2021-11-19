@@ -3,12 +3,14 @@
 
 #include <string_view>
 
+#include <ecs/entity.hpp>
+
 #include <types/primitives.hpp>
 #include <types/color.hpp>
 
-#include <core/key.hpp>
-#include <core/mouse_button.hpp>
-#include <core/input_modifiers.hpp>
+#include "key.hpp"
+#include "mouse_button.hpp"
+#include "input_modifiers.hpp"
 
 namespace sbx {
 
@@ -77,6 +79,11 @@ struct fps_updated_event {
 struct clear_color_changed_event {
   color color{};
 };
+
+struct collision_event {
+  entity first{};
+  entity second{};
+}; // struct collision_event
 
 } // namespace sbx
 

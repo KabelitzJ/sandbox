@@ -71,12 +71,12 @@ void shader::_load(const std::string& vertex_path, const std::string& fragment_p
   glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &success);
 
   if (!success) {
-    char info_log[512];
+    auto info_log = std::array<char, 512>{};
 
     // Sometimes c apis are cursed :/
-    glGetShaderInfoLog(vertex_shader, 512, nullptr, info_log);
+    glGetShaderInfoLog(vertex_shader, info_log.size(), nullptr, info_log.data());
 
-    logger::error("Vertex shader compilation failed: {}", info_log);
+    logger::error("Vertex shader compilation failed: {}", std::string{info_log.data()});
 
     assert(false); // Vertex shader compilation failed 
   }
@@ -87,11 +87,11 @@ void shader::_load(const std::string& vertex_path, const std::string& fragment_p
   glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &success);
 
   if (!success) {
-    char info_log[512];
+    auto info_log = std::array<char, 512>{};
 
-    glGetShaderInfoLog(fragment_shader, 512, nullptr, info_log);
+    glGetShaderInfoLog(fragment_shader, info_log.size(), nullptr, info_log.data());
 
-    logger::error("Fragment shader compilation failed: {}", info_log);
+    logger::error("Fragment shader compilation failed: {}", std::string{info_log.data()});
 
     assert(false); // Vertex shader compilation failed 
   }

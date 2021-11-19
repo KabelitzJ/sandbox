@@ -24,7 +24,7 @@ scene::~scene() {
   _registry.clear();
 }
 
-entity scene::create_entity(const entity parent) {
+entity scene::create_entity(const transform& trans, const entity parent) {
   auto entity = _registry.create_entity();
 
   auto& parent_relationship = parent != null_entity ? _registry.get_components<relationship>(parent) : _registry.get_components<relationship>(_root);
@@ -38,12 +38,7 @@ entity scene::create_entity(const entity parent) {
 
   parent_relationship.children.insert(entity);
 
-  _registry.emplace_component<transform>(
-    entity, 
-    vector3{0.0f, 0.0f, 0.0f},          // position 
-    quaternion{0.0f, 0.0f, 0.0f, 0.0f}, // rotation
-    vector3{1.0f, 1.0f, 1.0f}           // scale
-  );
+  _registry.emplace_component<transform>(entity, trans);
 
   _registry.emplace_component<uuid>(entity);
 

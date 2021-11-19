@@ -8,6 +8,7 @@
 #include <string>
 
 #include <types/primitives.hpp>
+#include <types/transform.hpp>
 
 #include "resource_cache.hpp"
 #include "scene.hpp"
@@ -34,7 +35,7 @@ protected:
     _terminate();
   }
 
-  entity create_entity(const entity parent = null_entity);
+  entity create_entity(const transform& transform = transform{}, const entity parent = null_entity);
 
   void destroy_entity(const entity entity);
 

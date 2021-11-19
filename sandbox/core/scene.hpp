@@ -6,6 +6,8 @@
 #include <ecs/entity.hpp>
 #include <ecs/registry.hpp>
 
+#include <types/transform.hpp>
+
 namespace sbx {
 
 class scene {
@@ -25,7 +27,7 @@ public:
 
   scene& operator=(scene&&) = default;
 
-  entity create_entity(const entity parent = null_entity);
+  entity create_entity(const transform& transform = transform{}, const entity parent = null_entity);
 
   void destroy_entity(const entity entity);
 
