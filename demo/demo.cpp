@@ -71,7 +71,7 @@ class demo_module final : public sbx::module {
         const auto cube = create_entity();
         auto& transform_component = get_components<sbx::transform>(cube);
         transform_component.position = sbx::vector3{1.0f, 0.0f, 1.0f};
-        emplace_component<sbx::rigidbody>(cube, sbx::vector3{0, 0, 0}, 10.0f, true);
+        emplace_component<sbx::rigidbody>(cube, sbx::vector3{0.0f, 0.8f, 0.0f}, 10.0f, false);
         emplace_component<sbx::model>(cube, "cube", "test_shader");
       }
 
@@ -79,7 +79,7 @@ class demo_module final : public sbx::module {
         const auto sphere = create_entity();
         auto& transform_component = get_components<sbx::transform>(sphere);
         transform_component.position = sbx::vector3{-1.0f, 0.0f, 1.0f};
-        emplace_component<sbx::rigidbody>(sphere, sbx::vector3{0, 0, 0}, 10.0f, false);
+        emplace_component<sbx::rigidbody>(sphere, sbx::vector3{0.0f, 1.3f, 0.0f}, 10.0f, false);
         emplace_component<sbx::model>(sphere, "sphere", "test_shader");
       }
 
@@ -87,7 +87,7 @@ class demo_module final : public sbx::module {
         const auto cube = create_entity();
         auto& transform_component = get_components<sbx::transform>(cube);
         transform_component.position = sbx::vector3{1.0f, 0.0f, -1.0f};
-        emplace_component<sbx::rigidbody>(cube, sbx::vector3{0, 0, 0}, 10.0f, false);
+        emplace_component<sbx::rigidbody>(cube, sbx::vector3{0.0f, 1.0f, 0.0f}, 10.0f, false);
         emplace_component<sbx::model>(cube, "cube", "test_shader");
       }
 
@@ -95,7 +95,7 @@ class demo_module final : public sbx::module {
         const auto sphere = create_entity();
         auto& transform_component = get_components<sbx::transform>(sphere);
         transform_component.position = sbx::vector3{-1.0f, 0.0f, -1.0f};
-        emplace_component<sbx::rigidbody>(sphere, sbx::vector3{0, 0, 0}, 10.0f, false);
+        emplace_component<sbx::rigidbody>(sphere, sbx::vector3{0.0f, 1.7f, 0.0f}, 10.0f, false);
         emplace_component<sbx::model>(sphere, "sphere", "test_shader");
       }
 
