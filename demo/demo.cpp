@@ -77,13 +77,23 @@ class demo_module final : public sbx::module {
         "resources/textures/red.png"
       );
 
+      load_resource<sbx::texture>(
+        "prototype",
+        "resources/textures/prototype.png"
+      );
+
+      load_resource<sbx::texture>(
+        "placeholder",
+        "resources/textures/placeholder/albedo.png"
+      );
+
       // Creating entities
 
       const auto cube = create_entity();
       auto& cube_transform_component = get_components<sbx::transform>(cube);
       cube_transform_component.position = sbx::vector3{0.0f, 0.0f, 0.0f};
       emplace_component<sbx::rigidbody>(cube, sbx::vector3{0.0f, 0.8f, 0.0f}, 10.0f, true);
-      emplace_component<sbx::model>(cube, "cube", "test_shader", "default");
+      emplace_component<sbx::model>(cube, "cube", "test_shader", "placeholder");
 
       // Creating camera
 
