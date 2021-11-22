@@ -7,7 +7,7 @@ set(
     utils
     ecs
     core
-    application
+    window
     rendering
     physics
 )

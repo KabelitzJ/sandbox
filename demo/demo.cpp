@@ -6,12 +6,13 @@
 #include <types/transform.hpp>
 #include <core/camera.hpp>
 
-#include <application/window_module.hpp>
+#include <window/window_module.hpp>
 
 #include <rendering/rendering_module.hpp>
 #include <rendering/shader.hpp>
 #include <rendering/mesh.hpp>
 #include <rendering/model.hpp>
+#include <rendering/texture.hpp>
 
 #include <physics/physics_module.hpp>
 #include <physics/rigidbody.hpp>
@@ -65,51 +66,33 @@ class demo_module final : public sbx::module {
         "resources/models/monkey.obj"
       );
 
+      load_resource<sbx::texture>(
+        "default",
+        "resources/textures/default.png"
+      );
+
+      load_resource<sbx::texture>(
+        "red",
+        "resources/textures/red.png"
+      );
+
       // Creating entities
 
-      {
-        const auto cube = create_entity();
-        auto& transform_component = get_components<sbx::transform>(cube);
-        transform_component.position = sbx::vector3{1.0f, 0.0f, 1.0f};
-        emplace_component<sbx::rigidbody>(cube, sbx::vector3{0.0f, 0.8f, 0.0f}, 10.0f, false);
-        emplace_component<sbx::model>(cube, "cube", "test_shader");
-      }
-
-      {
-        const auto sphere = create_entity();
-        auto& transform_component = get_components<sbx::transform>(sphere);
-        transform_component.position = sbx::vector3{-1.0f, 0.0f, 1.0f};
-        emplace_component<sbx::rigidbody>(sphere, sbx::vector3{0.0f, 1.3f, 0.0f}, 10.0f, false);
-        emplace_component<sbx::model>(sphere, "sphere", "test_shader");
-      }
-
-      {
-        const auto cube = create_entity();
-        auto& transform_component = get_components<sbx::transform>(cube);
-        transform_component.position = sbx::vector3{1.0f, 0.0f, -1.0f};
-        emplace_component<sbx::rigidbody>(cube, sbx::vector3{0.0f, 1.0f, 0.0f}, 10.0f, false);
-        emplace_component<sbx::model>(cube, "cube", "test_shader");
-      }
-
-      {
-        const auto sphere = create_entity();
-        auto& transform_component = get_components<sbx::transform>(sphere);
-        transform_component.position = sbx::vector3{-1.0f, 0.0f, -1.0f};
-        emplace_component<sbx::rigidbody>(sphere, sbx::vector3{0.0f, 1.7f, 0.0f}, 10.0f, false);
-        emplace_component<sbx::model>(sphere, "sphere", "test_shader");
-      }
+      const auto cube = create_entity();
+      auto& cube_transform_component = get_components<sbx::transform>(cube);
+      cube_transform_component.position = sbx::vector3{0.0f, 0.0f, 0.0f};
+      emplace_component<sbx::rigidbody>(cube, sbx::vector3{0.0f, 0.8f, 0.0f}, 10.0f, true);
+      emplace_component<sbx::model>(cube, "cube", "test_shader", "default");
 
       // Creating camera
 
-      {
-        const auto camera = create_entity();
-        emplace_component<sbx::camera>(
-          camera, 
-          true,
-          sbx::look_at({5.0f, 5.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, sbx::vector3_up),
-          sbx::perspective(sbx::to_radians(45.0f), 960.0f / 720.0f, 0.1f, 1000.0f)
-        );
-      }
+      const auto camera = create_entity();
+      emplace_component<sbx::camera>(
+        camera, 
+        true,
+        sbx::look_at({5.0f, 7.0f, 2.0f}, {0.0f, 0.0f, 0.0f}, sbx::vector3_up),
+        sbx::perspective(sbx::to_radians(45.0f), 960.0f / 720.0f, 0.1f, 1000.0f)
+      );
     }
 
     void update([[maybe_unused]] sbx::time delta_time) override {
@@ -129,6 +112,12 @@ public:
 
   void initialize() override {
     dispatch_event<sbx::clear_color_changed_event>(sbx::color{0.2f, 0.3f, 0.3f, 1.0f});
+
+    add_listener<sbx::key_pressed_event>([this](const auto& event) {
+      if (event.keycode == sbx::key::escape) {
+        dispatch_event<sbx::window_closed_event>("Escape pressed");
+      }
+    });
 
     add_system<demo_system>();
   }

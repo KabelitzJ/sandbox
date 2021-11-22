@@ -92,7 +92,7 @@ void mesh::_load(const std::string& path) {
       uvs.push_back(uv);
     } else if (id == "f") {
       auto temp_indices = std::array<std::string, 3>{};
-      tokens >> temp_indices[0] >> temp_indices[1] >> temp_indices[2];
+      tokens >> temp_indices[2] >> temp_indices[1] >> temp_indices[0];
 
       for (const auto& temp_index : temp_indices) {
         auto vertex_index = uint32{0u};
@@ -135,7 +135,7 @@ void mesh::_load(const std::string& path) {
     _indices.push_back(indices_per_vertex[vertex]);
   }
 
-  logger::debug("Loaded {} with {} vertices and {} indices", path, _vertices.size(), _indices.size());
+  logger::debug("Loaded mesh: {} with {} vertices and {} indices", path, _vertices.size(), _indices.size());
 
 }
 

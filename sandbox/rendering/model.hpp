@@ -9,6 +9,7 @@ namespace sbx {
 struct model {
   std::string mesh_id{};
   std::string shader_id{};
+  std::string texture_id{};
 }; // struct model
 
 } // namespace sbx

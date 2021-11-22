@@ -65,13 +65,15 @@ void rendering_module::_setup_context_state() const {
 
   glEnable(GL_DEPTH_TEST);
   glDepthMask(GL_TRUE);
-  glDepthFunc(GL_LESS);
+  glDepthFunc(GL_ALWAYS);
 
   glEnable(GL_CULL_FACE);
   glCullFace(GL_BACK);
   glFrontFace(GL_CW);
 
-  glEnable(GL_MULTISAMPLE);  
+  glEnable(GL_MULTISAMPLE);
+
+  // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 }
 
 } // namespace sbx

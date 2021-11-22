@@ -15,6 +15,7 @@ target_sources(
     render_system.cpp
     shader.cpp
     mesh.cpp
+    texture.cpp
 )
 
 target_include_directories(

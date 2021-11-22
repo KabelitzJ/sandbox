@@ -102,11 +102,10 @@ public:
   void pop_all() {
     auto queue_copy = std::vector<std::pair<uint32, event_handle>>{};
 
-    // [NOTE] KAJ 2021-11-22 08:14 - Copy all current events and clear queue.
-    //                               This is the fix for a bug that occurred when you would dispatch an event in an event listener.
-    _queue.swap(queue_copy);
+    // [NOTE] KAJ 2021-11-22 16:46 - Swap here so that newly dispatched events are not lost
+    queue_copy.swap(_queue);
 
-    for (auto& [id, handle] : _queue) {
+    for (auto& [id, handle] : queue_copy) {
       if (_listeners.find(id) == _listeners.end()) {
         // There is no listener registered for this event
         continue;

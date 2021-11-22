@@ -12,9 +12,11 @@
 #include <types/vector.hpp>
 #include <types/matrix.hpp>
 #include <types/transform.hpp>
+#include <types/gl.hpp>
 
 #include "mesh.hpp"
 #include "model.hpp"
+#include "texture.hpp"
 #include "shader.hpp"
 
 namespace sbx {
@@ -77,6 +79,9 @@ void render_system::update([[maybe_unused]] const time delta_time) {
     shader_handle->set_matrix4x4("model_matrix", model_matrix_from_transform(transform));
     shader_handle->set_matrix4x4("view_matrix", look_at(vector3{4.0f, 3.0f, 3.0f}, vector3{0.0f, 0.0f, 0.0f}, vector3{0.0f, 1.0f, 0.0f}));
     shader_handle->set_matrix4x4("projection_matrix", perspective(to_radians(45.0f), 960.0f / 720.0f, 0.1f, 100.0f));
+
+    const auto texture_handle = get_resource<texture>(model.texture_id);
+    texture_handle->bind(0);
 
     glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, nullptr);
 
