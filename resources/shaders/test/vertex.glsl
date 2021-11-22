@@ -9,12 +9,10 @@ uniform mat4 view_matrix;
 uniform mat4 projection_matrix;
 
 out vertex_data {
-  vec4 color;
   vec2 uv;
 } out_data;
 
 void main() {
   gl_Position = projection_matrix * view_matrix * model_matrix * vec4(position, 1.0);
-  out_data.color = vec4(normal, 1.0);
   out_data.uv = uv;
 }

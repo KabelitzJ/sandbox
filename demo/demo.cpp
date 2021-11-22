@@ -3,7 +3,6 @@
 #include <core/entry_point.hpp>
 #include <core/events.hpp>
 #include <core/logger.hpp>
-#include <types/transform.hpp>
 #include <core/camera.hpp>
 
 #include <window/window_module.hpp>
@@ -18,6 +17,8 @@
 #include <physics/rigidbody.hpp>
 
 #include <types/vector.hpp>
+#include <types/primitives.hpp>
+#include <types/transform.hpp>
 
 class demo_module final : public sbx::module {
 
@@ -25,7 +26,7 @@ class demo_module final : public sbx::module {
 
   public:
 
-    demo_system() = default;
+    demo_system() : _angle{0.0f}, _time{0.0f} { }
     ~demo_system() = default;
 
     void initialize() override {
@@ -95,13 +96,33 @@ class demo_module final : public sbx::module {
       );
     }
 
-    void update([[maybe_unused]] sbx::time delta_time) override {
+    void update(sbx::time delta_time) override {
+      _angle += 1.0f * delta_time;
+      _time += delta_time;
 
+      if (_angle >= 360.0f) {
+        _angle = 0.0f;
+      }
+      
+      auto view = create_view<sbx::transform, sbx::model>();
+
+      for (const auto entity : view) {
+        auto [transform, model] = view.get(entity);
+
+        transform.position.y = std::sin(_time) * 0.5f;
+        transform.rotation = sbx::rotate(transform.rotation, sbx::vector3_up * _angle);
+
+      }
     }
 
     void terminate() override {
       
     }
+
+  private:
+
+    sbx::float32 _angle{};
+    sbx::time _time{};
 
   };
 

@@ -4,8 +4,6 @@
 
 #include <types/primitives.hpp>
 
-#include <utils/reverse_adaptor.hpp>
-
 #include "logger.hpp"
 #include "events.hpp"
 

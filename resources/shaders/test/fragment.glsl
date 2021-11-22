@@ -3,12 +3,11 @@
 uniform sampler2D texture;
 
 in vertex_data {
-  vec4 color;
   vec2 uv;
 } in_data;
 
 out vec4 out_color;
 
 void main() {
-  out_color =  texture(texture, in_data.uv); // * in_data.color;
+  out_color =  texture(texture, in_data.uv);
 }

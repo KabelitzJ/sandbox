@@ -1,6 +1,7 @@
 #include "input_system.hpp"
 
 #include <types/primitives.hpp>
+#include <types/vector.hpp>
 
 #include <core/events.hpp>
 #include <core/key.hpp>
@@ -46,13 +47,17 @@ void input_system::initialize() {
   glfwSetCursorPosCallback(_handle, [](auto* window, auto x_position, auto y_position){
     auto* queue = static_cast<event_queue*>(glfwGetWindowUserPointer(window));
 
-    queue->dispatch_event<mouse_moved_event>(static_cast<float32>(x_position), static_cast<float32>(y_position));
+    const auto position = vector2{static_cast<float32>(x_position), static_cast<float32>(y_position)};
+
+    queue->dispatch_event<mouse_moved_event>(position);
   });
 
   glfwSetScrollCallback(_handle, [](auto* window, auto x_offset, auto y_offset){
     auto* queue = static_cast<event_queue*>(glfwGetWindowUserPointer(window));
 
-    queue->dispatch_event<scroll_event>(static_cast<float32>(x_offset), static_cast<float32>(y_offset));
+    const auto offset = vector2{static_cast<float32>(x_offset), static_cast<float32>(y_offset)};
+
+    queue->dispatch_event<scroll_event>(offset);
   });
 
   glfwSetFramebufferSizeCallback(_handle, [](auto* window, auto width, auto height){

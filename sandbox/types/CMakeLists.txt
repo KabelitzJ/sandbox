@@ -10,6 +10,7 @@ target_sources(
     primitives.cpp
     vector.cpp
     matrix.cpp
+    quaternion.cpp
 )
 
 target_include_directories(

@@ -6,6 +6,7 @@
 #include <ecs/entity.hpp>
 
 #include <types/primitives.hpp>
+#include <types/vector.hpp>
 #include <types/color.hpp>
 
 #include "key.hpp"
@@ -61,13 +62,11 @@ struct mouse_button_repeated_event {
 };
 
 struct mouse_moved_event {
-  float32 x{};
-  float32 y{};
+  vector2 position{};
 };
 
 struct scroll_event {
-  float32 x{};
-  float32 y{};
+  vector2 offset{};
 };
 
 struct toggle_mouse_visibility_event { };
