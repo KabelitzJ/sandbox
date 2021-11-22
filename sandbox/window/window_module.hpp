@@ -1,5 +1,5 @@
-#ifndef SBX_APPLICATION_WINDOW_MODULE_HPP_
-#define SBX_APPLICATION_WINDOW_MODULE_HPP_
+#ifndef SBX_WINDOW_WINDOW_MODULE_HPP_
+#define SBX_WINDOW_WINDOW_MODULE_HPP_
 
 #include <GLFW/glfw3.h>
 
@@ -26,4 +26,4 @@ private:
 
 } // namespace sbx
 
-#endif // SBX_APPLICATION_WINDOW_MODULE_HPP_
+#endif // SBX_WINDOW_WINDOW_MODULE_HPP_

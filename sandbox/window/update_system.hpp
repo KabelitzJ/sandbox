@@ -1,5 +1,5 @@
-#ifndef SBX_APPLICATION_UPDATE_SYSTEM_HPP_
-#define SBX_APPLICATION_UPDATE_SYSTEM_HPP_
+#ifndef SBX_WINDOW_UPDATE_SYSTEM_HPP_
+#define SBX_WINDOW_UPDATE_SYSTEM_HPP_
 
 #include <GLFW/glfw3.h>
 
@@ -29,4 +29,4 @@ private:
 
 } // namespace sbx
 
-#endif // SBX_APPLICATION_UPDATE_SYSTEM_HPP_
+#endif // SBX_WINDOW_UPDATE_SYSTEM_HPP_

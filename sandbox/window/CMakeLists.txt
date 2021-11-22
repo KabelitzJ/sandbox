@@ -1,4 +1,4 @@
-project(application CXX)
+project(window CXX)
 
 find_package(glfw3 REQUIRED)
 
@@ -7,7 +7,7 @@ add_library(${PROJECT_NAME} STATIC)
 target_sources(
   ${PROJECT_NAME}
   PRIVATE
-    application.cpp
+    window.cpp
     window_module.cpp
     input_system.cpp
     update_system.cpp
