@@ -92,7 +92,7 @@ class demo_module final : public sbx::module {
         camera, 
         true,
         sbx::look_at({5.0f, 7.0f, 2.0f}, {0.0f, 0.0f, 0.0f}, sbx::vector3_up),
-        sbx::perspective(sbx::to_radians(45.0f), 960.0f / 720.0f, 0.1f, 1000.0f)
+        sbx::perspective(sbx::to_radians(45.0f), 1920.0f / 1080.0f, 0.1f, 1000.0f)
       );
     }
 

@@ -29,18 +29,20 @@ void window_module::initialize()  {
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
   glfwWindowHint(GLFW_SAMPLES, 4);
 
-  auto width = 960;
-  auto height = 720;
+  auto width = 1920;
+  auto height = 1080;
 
-  // auto monitor = glfwGetPrimaryMonitor();
+  auto monitor = glfwGetPrimaryMonitor();
 
-  // if (monitor) {
-  //   const auto mode = glfwGetVideoMode(monitor);
-  //   width = mode->width;
-  //   height = mode->height;
-  // }
+  if (monitor) {
+    const auto mode = glfwGetVideoMode(monitor);
+    width = mode->width;
+    height = mode->height;
+  }
 
-  _handle = glfwCreateWindow(width, height, "Sandbox [FPS: 0]", nullptr, nullptr);
+  _handle = glfwCreateWindow(width, height, "Sandbox [FPS: 0]", monitor, nullptr);
+
+  logger::debug("Window created with width {} height {}", width, height);
 
   if (!_handle) {
     logger::error("Could not create window");
