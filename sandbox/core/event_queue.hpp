@@ -100,6 +100,12 @@ public:
    * When no listener for a given event exists, nothing happens for that event.
    */
   void pop_all() {
+    auto queue_copy = std::vector<std::pair<uint32, event_handle>>{};
+
+    // [NOTE] KAJ 2021-11-22 08:14 - Copy all current events and clear queue.
+    //                               This is the fix for a bug that occurred when you would dispatch an event in an event listener.
+    _queue.swap(queue_copy);
+
     for (auto& [id, handle] : _queue) {
       if (_listeners.find(id) == _listeners.end()) {
         // There is no listener registered for this event
@@ -110,9 +116,6 @@ public:
         std::invoke(listener, handle);
       }
     }
-
-    // All events have been handled - remove them
-    _queue.clear();
   }
 
 private:
