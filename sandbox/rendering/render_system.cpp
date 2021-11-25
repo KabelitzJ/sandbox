@@ -36,6 +36,23 @@ struct vertex {
 
 void render_system::update([[maybe_unused]] const time delta_time) {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+  auto main_camera = entity{null_entity};
+  auto camera_view = create_view<camera>();
+
+  for (const auto entity : camera_view) {
+    auto [camera] = camera_view.get(entity);
+
+    if (camera.is_main) {
+      main_camera = entity;
+      break;
+    }
+  }
+
+  if (main_camera == null_entity) {
+    logger::error("No main camera found!");
+    exit();
+  }
   
   auto model_view = create_view<const model, const transform>();
 
@@ -76,9 +93,11 @@ void render_system::update([[maybe_unused]] const time delta_time) {
 
     shader_handle->bind();
 
+    const auto& camera_component = get_components<camera>(main_camera);
+
     shader_handle->set_matrix4x4("model_matrix", model_matrix_from_transform(transform));
-    shader_handle->set_matrix4x4("view_matrix", look_at(vector3{4.0f, 3.0f, 3.0f}, vector3{0.0f, 0.0f, 0.0f}, vector3{0.0f, 1.0f, 0.0f}));
-    shader_handle->set_matrix4x4("projection_matrix", perspective(to_radians(45.0f), 960.0f / 720.0f, 0.1f, 100.0f));
+    shader_handle->set_matrix4x4("view_matrix", camera_component.view_matrix);
+    shader_handle->set_matrix4x4("projection_matrix", camera_component.projection_matrix);
 
     const auto texture_handle = get_resource<texture>(model.texture_id);
     texture_handle->bind(0);

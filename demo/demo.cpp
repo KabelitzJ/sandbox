@@ -93,20 +93,22 @@ class demo_module final : public sbx::module {
       auto& cube_transform_component = get_components<sbx::transform>(cube);
       cube_transform_component.position = sbx::vector3{0.0f, 0.0f, 0.0f};
       add_component<sbx::rigidbody>(cube, sbx::vector3{0.0f, 0.8f, 0.0f}, 10.0f, true);
-      add_component<sbx::model>(cube, "cube", "test_shader", "placeholder");
+      add_component<sbx::model>(cube, "cube", "test_shader", "prototype");
 
       // Creating camera
 
       const auto camera = create_entity();
+      auto& camera_transform_component = get_components<sbx::transform>(camera);
+      camera_transform_component.position = sbx::vector3{5.0f, 3.0f, 5.0f};
       add_component<sbx::camera>(
         camera, 
         true,
-        sbx::look_at({5.0f, 7.0f, 2.0f}, {0.0f, 0.0f, 0.0f}, sbx::vector3_up),
-        sbx::perspective(sbx::to_radians(45.0f), 1920.0f / 1080.0f, 0.1f, 1000.0f)
+        sbx::look_at(camera_transform_component.position, sbx::vector3_zero, sbx::vector3_up),
+        sbx::perspective(sbx::to_radians(90.0f), 1920.0f / 1080.0f, 0.1f, 1000.0f)
       );
     }
 
-    void update(sbx::time delta_time) override {
+    void update(const sbx::time delta_time) override {
       _angle += 1.0f * delta_time;
       _time += delta_time;
 
@@ -119,8 +121,8 @@ class demo_module final : public sbx::module {
       for (const auto entity : view) {
         auto [transform, model] = view.get(entity);
 
-        transform.position.y = std::sin(_time) * 0.5f;
-        transform.rotation = sbx::rotate(transform.rotation, sbx::vector3_up * _angle);
+        // transform.position.y = std::sin(_time) * 0.5f;
+        // transform.rotation = sbx::rotate(transform.rotation, sbx::vector3_up * _angle);
 
       }
     }
@@ -133,6 +135,86 @@ class demo_module final : public sbx::module {
 
     sbx::float32 _angle{};
     sbx::time _time{};
+
+  };
+
+  class camera_system final : public sbx::system {
+
+  public:
+
+    camera_system(const sbx::float32 speed) 
+    : _main_camera{sbx::null_entity},
+      _movement{},
+      _speed{speed} { }
+    ~camera_system() = default;
+
+    void initialize() override {
+      auto view = create_view<sbx::camera>();
+
+      for (const auto entity : view) {
+        auto [camera] = view.get(entity);
+
+        if (camera.is_main) {
+          _main_camera = entity;
+          break;
+        }
+      }
+
+      if (_main_camera == sbx::null_entity) {
+        sbx::logger::error("No main camera found!");
+        exit();
+      }
+
+      add_listener<sbx::main_camera_changed_event>([this](const auto& event) {
+        _main_camera = event.camera;
+      });
+
+      add_listener<sbx::window_resized_event>([this](const auto& event) {
+        auto& camera = get_components<sbx::camera>(_main_camera);
+        const auto aspect_ratio = static_cast<sbx::float32>(event.width) / static_cast<sbx::float32>(event.height);
+        camera.projection_matrix = sbx::perspective(sbx::to_radians(45.0f), aspect_ratio, 0.1f, 1000.0f);
+      });
+
+      add_listener<sbx::key_pressed_event>([this](const auto& event) {
+        if (event.keycode == sbx::key::w) {
+          _movement = sbx::vector3_forward;
+        } else if (event.keycode == sbx::key::s) {
+          _movement = sbx::vector3_backward;
+        } else if (event.keycode == sbx::key::a) {
+          _movement = sbx::vector3_left;
+        } else if (event.keycode == sbx::key::d) {
+          _movement = sbx::vector3_right;
+        }
+      });
+
+      add_listener<sbx::key_released_event>([this](const auto&) {
+        _movement = sbx::vector3{};
+      });
+    }
+
+
+    void update(const sbx::time delta_time) override {
+      if (_movement == sbx::vector3{}) {
+        return;
+      }
+
+      auto [camera, transform] = get_components<sbx::camera, sbx::transform>(_main_camera);
+
+      // [TODO] KAJ 2021-11-25 22:00 - Find way to move position relative to rotation
+      // transform.position += _movement * transform.rotation * _speed * delta_time;
+
+      camera.view_matrix = sbx::look_at(transform.position, {0.0f, 0.0f, 0.0f}, sbx::vector3_up);
+    }
+
+    void terminate() override {
+
+    }
+
+  private:
+
+    sbx::entity _main_camera{sbx::null_entity};
+    sbx::vector3 _movement{};
+    sbx::float32 _speed{};
 
   };
 
@@ -151,6 +233,7 @@ public:
     });
 
     add_system<demo_system>();
+    add_system<camera_system>(2.5f);
   }
 
   void terminate() override {

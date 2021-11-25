@@ -84,6 +84,10 @@ struct collision_event {
   entity second{};
 }; // struct collision_event
 
+struct main_camera_changed_event {
+  entity camera{};
+};
+
 } // namespace sbx
 
 #endif // SBX_APPLICATION_EVENTS_HPP_

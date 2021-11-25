@@ -22,10 +22,10 @@ using vector4 = glm::vec4;
 inline constexpr auto vector3_zero  = vector3(0.0f, 0.0f, 0.0f);
 inline constexpr auto vector3_up    = vector3(0.0f, 1.0f, 0.0f); 
 inline constexpr auto vector3_down  = vector3(0.0f, -1.0f, 0.0f);
-inline constexpr auto vector3_left  = vector3(-1.0f, 0.0f, 0.0f);
 inline constexpr auto vector3_right = vector3(1.0f, 0.0f, 0.0f);
-inline constexpr auto vector3_forward = vector3(0.0f, 0.0f, 1.0f);
-inline constexpr auto vector3_backward = vector3(0.0f, 0.0f, -1.0f);
+inline constexpr auto vector3_left  = vector3(-1.0f, 0.0f, 0.0f);
+inline constexpr auto vector3_backward = vector3(0.0f, 0.0f, 1.0f);
+inline constexpr auto vector3_forward = vector3(0.0f, 0.0f, -1.0f);
 
 float32 to_radians(float32 degrees);
 
