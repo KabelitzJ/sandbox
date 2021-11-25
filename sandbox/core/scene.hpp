@@ -32,7 +32,7 @@ public:
   void destroy_entity(const entity entity);
 
   template<typename Component, typename... Args>
-  decltype(auto) emplace_component(const entity entity, Args&&... args) {
+  decltype(auto) add_component(const entity entity, Args&&... args) {
     return _registry.emplace_component<Component>(entity, std::forward<Args>(args)...);
   }
 

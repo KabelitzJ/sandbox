@@ -40,9 +40,9 @@ protected:
   void destroy_entity(const entity entity);
 
   template<typename Component, typename... Args>
-  decltype(auto) emplace_component(const entity entity, Args&&... args) {
+  decltype(auto) add_component(const entity entity, Args&&... args) {
     assert(_scene); // Scene is uninitialized
-    return _scene->emplace_component<Component>(entity, std::forward<Args>(args)...);
+    return _scene->add_component<Component>(entity, std::forward<Args>(args)...);
   }
 
   template<typename... Components>

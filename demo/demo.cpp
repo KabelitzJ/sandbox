@@ -92,13 +92,13 @@ class demo_module final : public sbx::module {
       const auto cube = create_entity();
       auto& cube_transform_component = get_components<sbx::transform>(cube);
       cube_transform_component.position = sbx::vector3{0.0f, 0.0f, 0.0f};
-      emplace_component<sbx::rigidbody>(cube, sbx::vector3{0.0f, 0.8f, 0.0f}, 10.0f, true);
-      emplace_component<sbx::model>(cube, "cube", "test_shader", "placeholder");
+      add_component<sbx::rigidbody>(cube, sbx::vector3{0.0f, 0.8f, 0.0f}, 10.0f, true);
+      add_component<sbx::model>(cube, "cube", "test_shader", "placeholder");
 
       // Creating camera
 
       const auto camera = create_entity();
-      emplace_component<sbx::camera>(
+      add_component<sbx::camera>(
         camera, 
         true,
         sbx::look_at({5.0f, 7.0f, 2.0f}, {0.0f, 0.0f, 0.0f}, sbx::vector3_up),
