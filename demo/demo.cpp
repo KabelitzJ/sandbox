@@ -198,10 +198,13 @@ class demo_module final : public sbx::module {
         return;
       }
 
+      sbx::logger::debug("movement {} {} {}", _movement.x, _movement.y, _movement.z);
+
       auto [camera, transform] = get_components<sbx::camera, sbx::transform>(_main_camera);
 
       // [TODO] KAJ 2021-11-25 22:00 - Find way to move position relative to rotation
       // transform.position += _movement * transform.rotation * _speed * delta_time;
+      transform.position += _movement * _speed * delta_time;
 
       camera.view_matrix = sbx::look_at(transform.position, {0.0f, 0.0f, 0.0f}, sbx::vector3_up);
     }
@@ -233,7 +236,7 @@ public:
     });
 
     add_system<demo_system>();
-    add_system<camera_system>(2.5f);
+    add_system<camera_system>(4.0f);
   }
 
   void terminate() override {

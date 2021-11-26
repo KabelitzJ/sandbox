@@ -42,8 +42,6 @@ void window_module::initialize()  {
 
   _handle = glfwCreateWindow(width, height, "Sandbox [FPS: 0]", monitor, nullptr);
 
-  logger::debug("Window created with width {} height {}", width, height);
-
   if (!_handle) {
     logger::error("Could not create window");
     return;

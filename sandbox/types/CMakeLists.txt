@@ -1,6 +1,7 @@
 project(types CXX)
 
 find_package(glm REQUIRED)
+find_package(spdlog REQUIRED)
 
 add_library(${PROJECT_NAME} STATIC)
 
@@ -25,6 +26,7 @@ target_link_libraries(
   ${PROJECT_NAME}
   PRIVATE
     glm::glm
+    spdlog::spdlog
 )
 
 target_compile_features(
