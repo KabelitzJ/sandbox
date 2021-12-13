@@ -47,6 +47,12 @@ void window_module::initialize()  {
     return;
   }
 
+  logger::info("======================== window info =========================");
+  logger::info("GLFW version:\t{}", glfwGetVersionString());
+  logger::info("width:\t\t{} px", width);
+  logger::info("height:\t\t{} px", height);
+  logger::info("==============================================================");
+
   dispatch_event<window_resized_event>(width, height);
 
   glfwSetWindowUserPointer(_handle, get_event_queue());
@@ -61,11 +67,11 @@ void window_module::initialize()  {
     glfwSetInputMode(_handle, GLFW_RAW_MOUSE_MOTION, true);
   }
 
-  add_listener<toggle_mouse_visibility_event>([this](const auto&){
-    if (glfwGetInputMode(_handle, GLFW_CURSOR) == GLFW_CURSOR_NORMAL) {
-      glfwSetInputMode(_handle, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    } else {
+  add_listener<set_mouse_visibility_event>([this](const auto& event){
+    if (event.is_visible) {
       glfwSetInputMode(_handle, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+    } else {
+      glfwSetInputMode(_handle, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     }
   });
 

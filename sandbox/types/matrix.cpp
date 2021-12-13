@@ -26,4 +26,12 @@ matrix4x4 to_rotation_matrix(const quaternion& rotation) {
   return glm::mat4_cast(rotation);
 }
 
+matrix4x4 inverse(const matrix4x4& matrix) {
+  return glm::inverse(matrix);
+}
+
+matrix4x4 identity() {
+  return glm::identity<matrix4x4>();
+}
+
 } // namespace sbx

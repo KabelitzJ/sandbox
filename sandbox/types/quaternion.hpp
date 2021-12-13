@@ -12,6 +12,8 @@ using quaternion = glm::quat;
 
 quaternion rotate(const quaternion& q, const vector3& v);
 
+quaternion from_points(const vector3& start, const vector3& end);
+
 } // namespace sbx
 
 #endif // SBX_TYPES_QUATERNION_HPP_

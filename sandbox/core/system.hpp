@@ -13,6 +13,7 @@
 #include "resource_cache.hpp"
 #include "scene.hpp"
 #include "event_queue.hpp"
+#include "input.hpp"
 
 namespace sbx {
 
@@ -128,6 +129,7 @@ private:
   inline static scene* _scene{nullptr};
   inline static event_queue* _event_queue{nullptr};
   inline static resource_cache* _resource_cache{nullptr};
+  inline static input* _input{nullptr};
 
   void _initialize();
   void _update(const time delta_time);

@@ -14,6 +14,7 @@ engine::engine()
   _scheduler{std::make_unique<scheduler>()},
   _event_queue{std::make_unique<event_queue>()},
   _resource_cache{std::make_unique<resource_cache>()},
+  _input{std::make_unique<input>(_event_queue.get())},
   _modules{},
   _has_focus{false} { }
 
@@ -30,6 +31,7 @@ void engine::initialize() {
   system::_scene = _scene.get();
   system::_event_queue = _event_queue.get();
   system::_resource_cache = _resource_cache.get();
+  system::_input = _input.get();
 
   _event_queue->add_listener<window_closed_event>([this](const auto& event){
     logger::info("Application shutdown (reason: {})", event.reason);
@@ -65,8 +67,8 @@ void engine::start() {
     // [TODO] KAJ 2021-11-11 21:39 - Figure out how to just update the update_system when window has lost focus
     //                               (needed because of glfwPollEvents)
 
-    _scheduler->update(delta_time);
     _event_queue->pop_all();
+    _scheduler->update(delta_time);
   }
 
   logger::info("Ended main loop");

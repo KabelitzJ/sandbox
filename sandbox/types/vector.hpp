@@ -38,6 +38,20 @@ vector3 cross(const vector3& lhs, const vector3& rhs);
 
 vector3 normalize(const vector3& vector);
 
+float32 length(const vector3& vector);
+
+float32 sin(const float32 value);
+
+float32 cos(const float32 value);
+
+float32 tan(const float32 value);
+
+float32 asin(const float32 value);
+
+float32 acos(const float32 value);
+
+float32 atan(const float32 value);
+
 } // namespace sbx
 
 #endif // SBX_TYPES_VECTOR_HPP_

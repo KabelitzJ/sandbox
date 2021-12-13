@@ -24,6 +24,10 @@ matrix4x4 model_matrix_from_transform(const transform& transform);
 
 matrix4x4 to_rotation_matrix(const quaternion& rotation);
 
+matrix4x4 inverse(const matrix4x4& matrix);
+
+matrix4x4 identity();
+
 } // namespace sbx
 
 #endif // SBX_TYPES_MATRIX_HPP_

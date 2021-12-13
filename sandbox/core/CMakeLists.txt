@@ -17,6 +17,7 @@ target_sources(
     scene.cpp
     uuid.cpp
     resource_cache.cpp
+    input.cpp
 )
 
 target_include_directories(

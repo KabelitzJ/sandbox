@@ -13,6 +13,7 @@
 #include "event_queue.hpp"
 #include "module.hpp"
 #include "resource_cache.hpp"
+#include "input.hpp"
 
 namespace sbx {
 
@@ -43,6 +44,7 @@ private:
   std::unique_ptr<scheduler> _scheduler{};
   std::unique_ptr<event_queue> _event_queue{};
   std::unique_ptr<resource_cache> _resource_cache{};
+  std::unique_ptr<input> _input{};
   std::vector<std::unique_ptr<module>> _modules{};
   bool _has_focus{};
 

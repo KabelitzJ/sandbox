@@ -69,7 +69,9 @@ struct scroll_event {
   vector2 offset{};
 };
 
-struct toggle_mouse_visibility_event { };
+struct set_mouse_visibility_event {
+  bool is_visible{};
+};
 
 struct fps_updated_event {
   uint32 fps{};
