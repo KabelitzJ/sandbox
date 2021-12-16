@@ -4,7 +4,6 @@ add_library(${CMAKE_PROJECT_NAME}::${CMAKE_PROJECT_NAME} ALIAS ${CMAKE_PROJECT_N
 set(
   SBX_MODULES
     types
-    math
     utils
     ecs
     core
