@@ -19,6 +19,26 @@ void system::destroy_entity(const entity entity) {
   _scene->destroy_entity(entity);
 }
 
+bool system::is_key_down(const key key) const {
+  assert(_input); // Input is uninitialized
+  return _input->is_key_down(key);
+}
+
+bool system::is_key_up(const key key) const {
+  assert(_input); // Input is uninitialized
+  return _input->is_key_up(key);
+}
+
+bool system::is_mouse_button_down(const mouse_button button) const {
+  assert(_input); // Input is uninitialized
+  return _input->is_mouse_button_down(button);
+}
+
+bool system::is_mouse_button_up(const mouse_button button) const {
+  assert(_input); // Input is uninitialized
+  return _input->is_mouse_button_up(button);
+}
+
 void system::_initialize() {
   initialize();
   _is_running = true;

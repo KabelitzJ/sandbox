@@ -14,6 +14,8 @@
 #include "scene.hpp"
 #include "event_queue.hpp"
 #include "input.hpp"
+#include "key.hpp"
+#include "mouse_button.hpp"
 
 namespace sbx {
 
@@ -106,6 +108,14 @@ protected:
     return _resource_cache->get<Resource>(name);
   }
 
+  bool is_key_down(const key key) const;
+
+  bool is_key_up(const key key) const;
+
+  bool is_mouse_button_down(const mouse_button button) const;
+  
+  bool is_mouse_button_up(const mouse_button button) const;
+
   scene* get_scene() noexcept {
     assert(_scene); // Scene is uninitialized
     return _scene;
@@ -119,6 +129,11 @@ protected:
   resource_cache* get_resource_cache() noexcept {
     assert(_resource_cache); // Resource cache is uninitialized
     return _resource_cache;
+  }
+
+  input* get_input() noexcept {
+    assert(_input); // Input is uninitialized
+    return _input;
   }
 
 private:
