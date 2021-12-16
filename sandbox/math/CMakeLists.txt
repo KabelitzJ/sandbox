@@ -10,6 +10,7 @@ target_sources(
   PRIVATE
     vector2.cpp
     vector3.cpp
+    vector4.cpp
 )
 
 target_include_directories(
