@@ -121,6 +121,12 @@ class demo_module final : public sbx::module {
       for (const auto entity : view) {
         auto [transform, model] = view.get(entity);
 
+        if (is_key_down(sbx::key::a)) {
+          transform.position.x -= 1.0f * delta_time;
+        } else if (is_key_down(sbx::key::d)) {
+          transform.position.x += 1.0f * delta_time;
+        }
+
         transform.position.y = std::sin(_time) * 0.75f;
         transform.rotation = sbx::rotate(transform.rotation, sbx::vector3_up * _angle);
 

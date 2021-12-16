@@ -27,19 +27,35 @@ vector2 input::mouse_position() const {
 }
 
 bool input::is_key_down(const key key) const {
-  return _key_states.at(key);
+  if (const auto state = _key_states.find(key); state != _key_states.cend()) {
+    return state->second;
+  }
+
+  return false;
 }
 
 bool input::is_key_up(const key key) const {
-  return !_key_states.at(key);
+  if (const auto state = _key_states.find(key); state != _key_states.cend()) {
+    return !state->second;
+  }
+
+  return true;
 }
 
 bool input::is_mouse_button_down(const mouse_button button) const {
-  return _mouse_button_states.at(button);
+  if (const auto state = _mouse_button_states.find(button); state != _mouse_button_states.cend()) {
+    return state->second;
+  }
+
+  return false;
 }
 
 bool input::is_mouse_button_up(const mouse_button button) const {
-  return !_mouse_button_states.at(button);
+  if (const auto state = _mouse_button_states.find(button); state != _mouse_button_states.cend()) {
+    return !state->second;
+  }
+
+  return true;
 }
 
 void input::_initialize() {
