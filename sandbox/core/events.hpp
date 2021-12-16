@@ -29,35 +29,35 @@ struct window_focused_event {
 };
 
 struct key_pressed_event {
-  key keycode{};
-  int32 scancode{};
+  key key_code{};
+  int32 scan_code{};
   modifiers mods{};
 };
 
 struct key_released_event {
-  key keycode{};
-  int32 scancode{};
+  key key_code{};
+  int32 scan_code{};
   modifiers mods{};
 };
 
 struct key_repeated_event {
-  key keycode{};
-  int32 scancode{};
+  key key_code{};
+  int32 scan_code{};
   modifiers mods{};
 };
 
 struct mouse_button_pressed_event {
-  mouse_button button{};
+  mouse_button button_code{};
   modifiers mods{};
 };
 
 struct mouse_button_released_event {
-  mouse_button button{};
+  mouse_button button_code{};
   modifiers mods{};
 };
 
 struct mouse_button_repeated_event {
-  mouse_button button{};
+  mouse_button button_code{};
   modifiers mods{};
 };
 

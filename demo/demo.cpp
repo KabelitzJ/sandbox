@@ -147,7 +147,7 @@ public:
     dispatch_event<sbx::clear_color_changed_event>(sbx::color{0.2f, 0.3f, 0.3f, 1.0f});
 
     add_listener<sbx::key_pressed_event>([this](const auto& event) {
-      if (event.keycode == sbx::key::escape) {
+      if (event.key_code == sbx::key::escape) {
         dispatch_event<sbx::window_closed_event>("Escape pressed");
       }
     });

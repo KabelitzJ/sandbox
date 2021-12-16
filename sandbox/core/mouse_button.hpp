@@ -1,6 +1,9 @@
 #ifndef SBX_CORE_MOUSE_BUTTON_HPP_
 #define SBX_CORE_MOUSE_BUTTON_HPP_
 
+#include <utility>
+
+// [TODO] KAJ 2021-12-16 19:14 - GLFW should be used by sbx::core only by sbx::window
 #include <GLFW/glfw3.h>
 
 #include <types/primitives.hpp>
@@ -22,5 +25,12 @@ enum class mouse_button : uint8_t {
 }; // enum class mouse_buttons
 
 } // namespace sbx
+
+template<>
+struct std::hash<sbx::mouse_button> {
+  std::size_t operator()(const sbx::mouse_button& button) const {
+    return static_cast<std::size_t>(button);
+  }
+};
 
 #endif // SBX_CORE_MOUSE_BUTTON_HPP_

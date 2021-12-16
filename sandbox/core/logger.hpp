@@ -49,11 +49,11 @@ public:
 
 private:
 
+  friend class engine;
+
   static void _initialize();
 
   inline static std::shared_ptr<spdlog::logger> _logger{};
-
-  friend class engine;
 
 }; // class logger
 
