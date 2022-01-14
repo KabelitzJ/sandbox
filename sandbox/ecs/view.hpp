@@ -6,6 +6,7 @@
 #include <algorithm>
 
 #include <types/type_traits.hpp>
+#include <types/type_list.hpp>
 
 #include "entity.hpp"
 #include "storage.hpp"

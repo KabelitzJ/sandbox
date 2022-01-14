@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include <types/type_traits.hpp>
+#include <types/iterator_traits.hpp>
 
 #include <utils/type_id.hpp>
 
