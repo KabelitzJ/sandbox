@@ -1,16 +1,11 @@
-project(window CXX)
-
-find_package(glfw3 REQUIRED)
+project(entry CXX)
 
 add_library(${PROJECT_NAME} STATIC)
 
 target_sources(
   ${PROJECT_NAME}
   PRIVATE
-    window.cpp
-    window_module.cpp
-    input_system.cpp
-    update_system.cpp
+    entry.cpp
 )
 
 target_include_directories(
@@ -25,21 +20,13 @@ target_link_libraries(
   ${PROJECT_NAME}
   PUBLIC
     sbx::core
-    sbx::utils
-    sbx::types
-    glfw::glfw
+    sbx::ecs
 )
 
 target_compile_features(
   ${PROJECT_NAME}
   PRIVATE 
     cxx_std_17
-)
-
-target_compile_definitions(
-  ${PROJECT_NAME}
-  PRIVATE
-    GLFW_INCLUDE_NONE
 )
 
 target_compile_options(

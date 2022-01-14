@@ -1,6 +1,0 @@
-#ifndef SBX_RENDERING_HPP_
-#define SBX_RENDERING_HPP_
-
-
-
-#endif // SBX_RENDERING_HPP_

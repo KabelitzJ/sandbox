@@ -5,11 +5,9 @@ set(
   SBX_MODULES
     types
     utils
-    ecs
     core
-    window
-    rendering
-    physics
+    ecs
+    entry
 )
 
 foreach(module ${SBX_MODULES})

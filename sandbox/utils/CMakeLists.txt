@@ -1,36 +1,28 @@
 project(utils CXX)
 
-add_library(${PROJECT_NAME} STATIC)
-
-target_sources(
-  ${PROJECT_NAME}
-  PRIVATE
-    memory.cpp
-)
+add_library(${PROJECT_NAME} INTERFACE)
 
 target_include_directories(
   ${PROJECT_NAME}
-  PRIVATE
-    "${CMAKE_CURRENT_SOURCE_DIR}"
-  PUBLIC
+  INTERFACE
     "${CMAKE_CURRENT_SOURCE_DIR}/.."
 )
 
 target_link_libraries(
   ${PROJECT_NAME}
-  PUBLIC
+  INTERFACE
     sbx::types
 )
 
 target_compile_features(
   ${PROJECT_NAME}
-  PRIVATE 
+  INTERFACE 
     cxx_std_17
 )
 
 target_compile_options(
   ${PROJECT_NAME}
-  PRIVATE
+  INTERFACE
     $<$<CXX_COMPILER_ID:GNU>:
       -Wall 
       -Wextra
