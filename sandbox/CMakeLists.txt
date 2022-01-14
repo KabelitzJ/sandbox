@@ -7,6 +7,8 @@ set(
     utils
     core
     ecs
+    engine
+    ui
     entry
 )
 

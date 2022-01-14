@@ -16,4 +16,13 @@ void logger::_initialize() {
   _logger->flush_on(spdlog::level::trace);
 }
 
+std::shared_ptr<spdlog::logger>& logger::_get_initialized_logger() {
+  if (!_is_initialized) {
+    _initialize();
+    _is_initialized = true;
+  }
+
+  return _logger;
+}
+
 } // namespace sbx

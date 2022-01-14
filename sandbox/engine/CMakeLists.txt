@@ -1,11 +1,11 @@
-project(entry CXX)
+project(engine CXX)
 
 add_library(${PROJECT_NAME} STATIC)
 
 target_sources(
   ${PROJECT_NAME}
   PRIVATE
-    entry.cpp
+    engine.cpp
 )
 
 target_include_directories(
@@ -19,8 +19,11 @@ target_include_directories(
 target_link_libraries(
   ${PROJECT_NAME}
   PUBLIC
+    sbx::utils
+    sbx::types
     sbx::core
-    sbx::engine
+    sbx::ecs
+    sbx::ui
 )
 
 target_compile_features(

@@ -1,11 +1,14 @@
-project(entry CXX)
+project(ui CXX)
+
+find_package(glfw3 REQUIRED)
 
 add_library(${PROJECT_NAME} STATIC)
 
 target_sources(
   ${PROJECT_NAME}
   PRIVATE
-    entry.cpp
+    context.cpp
+    window.cpp
 )
 
 target_include_directories(
@@ -19,8 +22,15 @@ target_include_directories(
 target_link_libraries(
   ${PROJECT_NAME}
   PUBLIC
+    sbx::types
     sbx::core
-    sbx::engine
+    glfw::glfw
+)
+
+target_compile_definitions(
+  ${PROJECT_NAME}
+  PUBLIC
+    GLFW_INCLUDE_NONE
 )
 
 target_compile_features(
