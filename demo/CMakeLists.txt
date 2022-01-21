@@ -1,8 +1,5 @@
 project(demo CXX)
 
-find_package(glad)
-find_package(glfw3)
-
 add_executable(${PROJECT_NAME})
 
 target_sources(
@@ -15,20 +12,12 @@ target_link_libraries(
   ${PROJECT_NAME}
   PUBLIC
     sbx::sbx
-    glad::glad
-    glfw::glfw
 )
 
 target_compile_features(
   ${PROJECT_NAME}
   PRIVATE 
     cxx_std_17
-)
-
-target_compile_definitions(
-  ${PROJECT_NAME}
-  PRIVATE
-    GLFW_INCLUDE_NONE
 )
 
 target_compile_options(

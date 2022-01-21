@@ -6,7 +6,7 @@ mkdir -p build
 
 # Use conan to install the dependencies
 
-conan install . -if build --build=missing
+conan install . -if build/conan --build=missing
 
 # Generate the cmake project
 

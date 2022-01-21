@@ -1,10 +1,304 @@
 #ifndef SBX_MATH_VECTOR3_HPP_
 #define SBX_MATH_VECTOR3_HPP_
 
+#include <ostream>
+#include <type_traits>
+#include <utility>
+
+#include <types/primitives.hpp>
+
 namespace sbx {
 
+/**
+ * @brief A vector in three-dimensional space.
+ *
+ * @tparam Type The type of the vectors components.
+ */
+template<typename Type>
+struct basic_vector3 {
 
+  // Vector components can only be arithmetic types.
+  static_assert(std::is_arithmetic_v<Type>, "Type must be arithmetic");
+
+  // Type aliases
+
+  /** @brief The type of the vector components. */
+  using value_type = Type;
+
+  // Static data members
+
+  /** @brief The origin of three dimensional space */
+  inline static constexpr auto origin = basic_vector3<value_type>{value_type{0}, value_type{0}, value_type{0}};
+
+  /** @brief A unit vector along the positive x-axis */
+  inline static constexpr auto right = basic_vector3<value_type>{value_type{1}, value_type{0}, value_type{0}};
+
+  /** @brief A unit vector along the negative x-axis */
+  inline static constexpr auto left = basic_vector3<value_type>{value_type{-1}, value_type{0}, value_type{0}};
+
+  /** @brief A unit vector along the positive y-axis */
+  inline static constexpr auto up = basic_vector3<value_type>{value_type{0}, value_type{1}, value_type{0}};
+
+  /** @brief A unit vector along the negative y-axis */
+  inline static constexpr auto down = basic_vector3<value_type>{value_type{0}, value_type{-1}, value_type{0}};
+
+  /** @brief A unit vector along the positive z-axis */
+  inline static constexpr auto backward = basic_vector3<value_type>{value_type{0}, value_type{0}, value_type{1}};
+
+  /** @brief A unit vector along the negative z-axis */
+  inline static constexpr auto forward = basic_vector3<value_type>{value_type{0}, value_type{0}, value_type{-1}};
+
+  // Data members
+
+  /** @brief The x-component of the vector. */
+  value_type x{};
+  /** @brief The y-component of the vector. */
+  value_type y{};
+  /** @brief The z-component of the vector. */
+  value_type z{};
+
+  // Constructors
+
+  /** @brief Constructs a vector with all components set to zero. */
+  constexpr basic_vector3() noexcept;
+
+  /**
+   * @brief Constructs a vector and assigns all components to the value.
+   * 
+   * @param value Value for all components.
+   */
+  explicit constexpr basic_vector3(const value_type value) noexcept;
+
+  /**
+   * @brief Constructs a vector and assigns all components to the values.
+   * 
+   * @param x The value for the x component.
+   * @param y The value for the y component.
+   * @param z The value for the z component.
+   */
+  constexpr basic_vector3(const value_type x, const value_type y, const value_type z) noexcept;
+
+  /** 
+   * @brief Constructs a vector and copies the components from the other vector
+   *
+   * @param other The other vector to copy the components from. 
+   */
+  constexpr basic_vector3(const basic_vector3<value_type>&) noexcept = default;
+
+  /** 
+   * @brief Constructs a vector and moves the components out of the other vector
+   *
+   * @param other The other vector to move the components from. 
+   */
+  constexpr basic_vector3(basic_vector3<value_type>&&) noexcept = default;
+
+  /** @brief Destroys the vector */
+  ~basic_vector3() noexcept = default;
+
+  // Assignment operators
+
+  /**
+   * @brief Copies the components from the other vector.
+   * 
+   * @param other The other vector to copy the components from.
+   * 
+   * @return basic_vector3<value_type>& A reference to this vector.
+   */
+  constexpr basic_vector3<value_type>& operator=(const basic_vector3<value_type>&) noexcept = default;
+
+  /**
+   * @brief Moves the components out of the other vector.
+   * 
+   * @param other The other vector to move the components from.
+   * 
+   * @return basic_vector3<value_type>& A reference to this vector.
+   */
+  constexpr basic_vector3<value_type>& operator=(basic_vector3<value_type>&&) noexcept = default;
+
+  // Unary arithmetic operators
+
+  /**
+   * @brief Negates the vector.
+   * 
+   * @return basic_vector3<value_type> A reference to this vector.
+   */
+  constexpr basic_vector3<value_type>& operator-() noexcept;
+
+  // Binary arithmetic operators
+
+  /**
+   * @brief Adds the components of the other vector to this vector.
+   * 
+   * @param other The other vector to add.
+   * 
+   * @return basic_vector3<value_type>& A reference to this vector. 
+   */
+  constexpr basic_vector3<value_type>& operator+=(const basic_vector3<value_type>& other) noexcept;
+
+  /**
+   * @brief Subtracts the components of the other vector from this vector.
+   * 
+   * @param other The other vector to subtract.
+   * 
+   * @return basic_vector3<value_type>& A reference to this vector. 
+   */
+  constexpr basic_vector3<value_type>& operator-=(const basic_vector3<value_type>& other) noexcept;
+
+  /**
+   * @brief Multiplies the components of this vector by the scalar.
+   * 
+   * @param scalar The scalar to multiply by.
+   * 
+   * @return basic_vector3<value_type>& A reference to this vector. 
+   */
+  constexpr basic_vector3<value_type>& operator*=(const value_type scalar) noexcept;
+
+  /**
+   * @brief Divides the components of this vector by the scalar.
+   * 
+   * @param scalar The scalar to divide by.
+   * 
+   * @return basic_vector3<value_type>& A reference to this vector. 
+   */
+  constexpr basic_vector3<value_type>& operator/=(const value_type scalar);
+
+  // Member functions
+
+  /**
+   * @brief Returns the length of the vector.
+   * 
+   * @return value_type The length of the vector.
+   */
+  [[nodiscard]] constexpr value_type length() const noexcept;
+
+  /** 
+   * @brief Normalizes the vector
+   * 
+   * @return basic_vector3<value_type>& A reference to this vector.
+   */
+  constexpr basic_vector3<value_type>& normalize() noexcept;
+
+  /**
+   * @brief Returns a normalized copy of the vector.
+   * 
+   * @return basic_vector3<value_type> The normalized vector.
+   */
+  [[nodiscard]] constexpr basic_vector3<value_type> normalized() const noexcept;
+
+}; // struct vector3
+
+// Free comparison operators
+
+/**
+ * @brief Compares two vectors for equality.
+ * 
+ * @tparam Type The type of the vectors components.
+ * 
+ * @param lhs The left-hand side vector.
+ * @param rhs The right-hand side vector.
+ * 
+ * @return true The vectors are equal.
+ * @return false The vectors are not equal.
+ */
+template<typename Type>
+[[nodiscard]] constexpr bool operator==(const basic_vector3<Type>& lhs, const basic_vector3<Type>& rhs) noexcept;
+
+/**
+ * @brief Compares two vectors for inequality.
+ * 
+ * @tparam Type The type of the vectors components.
+ * 
+ * @param lhs The left-hand side vector.
+ * @param rhs The right-hand side vector.
+ * 
+ * @return true The vectors are not equal.
+ * @return false The vectors are equal.
+ */
+template<typename Type>
+[[nodiscard]] constexpr bool operator!=(const basic_vector3<Type>& lhs, const basic_vector3<Type>& rhs) noexcept;
+
+// Free arithmetic operators
+
+/**
+ * @brief Adds two vectors.
+ * 
+ * @tparam Type The type of the vectors components.
+ * 
+ * @param lhs The left-hand side vector.
+ * @param rhs The right-hand side vector.
+ * 
+ * @return basic_vector3<Type> The sum of the two vectors.
+ */
+template<typename Type>
+constexpr basic_vector3<Type> operator+(basic_vector3<Type> lhs, const basic_vector3<Type>& rhs) noexcept;
+
+/**
+ * @brief Subtracts two vectors.
+ * 
+ * @tparam Type The type of the vectors components.
+ * 
+ * @param lhs The left-hand side vector.
+ * @param rhs The right-hand side vector.
+ * 
+ * @return basic_vector3<Type> The difference of the two vectors. 
+ */
+template<typename Type>
+constexpr basic_vector3<Type> operator-(basic_vector3<Type> lhs, const basic_vector3<Type>& rhs) noexcept;
+
+/**
+ * @brief Multiplies a vector by a scalar. 
+ * 
+ * @tparam Type The type of the vectors components.
+ * 
+ * @param lhs The left-hand side vector.
+ * @param rhs The right-hand side scalar.
+ * 
+ * @return basic_vector3<Type> The product of the vector and scalar. 
+ */
+template<typename Type>
+constexpr basic_vector3<Type> operator*(basic_vector3<Type> lhs, const Type rhs) noexcept;
+
+/**
+ * @brief Devides a vector by a scalar.
+ * 
+ * @tparam Type The type of the vectors components.
+ * 
+ * @param lhs The left-hand side vector.
+ * @param rhs The right-hand side scalar.
+ * 
+ * @return basic_vector3<Type> The quotient of the vector and scalar.
+ */
+template<typename Type>
+constexpr basic_vector3<Type> operator/(basic_vector3<Type> lhs, const Type rhs);
+
+// Free stream operators
+
+/**
+ * @brief Writes a vector to a output stream.
+ * 
+ * @tparam Type The type of the vectors components.
+ * 
+ * @param os The output stream to write to.
+ * @param vector The vector to write.
+ * 
+ * @return std::ostream& A Reference to the output stream.
+ */
+template<typename Type>
+constexpr std::ostream& operator<<(std::ostream& os, const basic_vector3<Type>& vector) noexcept;
+
+// Type aliases
+
+/** @brief Type alias for a three dimensional vector with 32 bit floating-point components. */
+using vector3f = basic_vector3<float32>;
+
+/** @brief Type alias for a three dimensional vector with 32 bit integer components. */
+using vector3i = basic_vector3<int32>;
+
+/** @brief Type alias for vector3f. */
+using vector3 = vector3f;
 
 } // namespace sbx
+
+#include "vector3_inl.hpp"
 
 #endif // SBX_MATH_VECTOR3_HPP_
