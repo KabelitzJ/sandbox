@@ -1,5 +1,3 @@
-#include <entry/entry.hpp>
-
-void sbx::entry() {
-
+int main() {
+  return 0;
 }
