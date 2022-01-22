@@ -10,7 +10,7 @@ conan install . -if build/conan --build=missing
 
 # Generate the cmake project
 
-cmake . -B build -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Debug
+cmake . -B build -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Debug -DSBX_BUILD_TESTS=True
 
 # Build the project
 

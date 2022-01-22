@@ -55,7 +55,7 @@ inline constexpr basic_vector3<Type>& basic_vector3<Type>::operator*=(const Type
 
 template<typename Type>
 inline constexpr basic_vector3<Type>& basic_vector3<Type>::operator/=(const Type scalar) {
-  if (scalar == Type{0}) {
+  if (scalar == value_type{0}) {
     throw std::domain_error("Division by zero");
   }
 
@@ -66,7 +66,7 @@ inline constexpr basic_vector3<Type>& basic_vector3<Type>::operator/=(const Type
 }
 
 template<typename Type>
-inline constexpr Type basic_vector3<Type>::length() const noexcept {
+inline constexpr typename basic_vector3<Type>::length_type basic_vector3<Type>::length() const noexcept {
   return std::sqrt(x * x + y * y + z * z);
 }
 
@@ -74,14 +74,14 @@ template<typename Type>
 inline constexpr basic_vector3<Type>& basic_vector3<Type>::normalize() noexcept {
   const auto magnitude = length();
 
-  if (magnitude != Type{0}) {
+  if (magnitude != length_type{0}) {
     x /= magnitude;
     y /= magnitude;
     z /= magnitude;
   } else {
-    x = Type{0};
-    y = Type{0};
-    z = Type{0};
+    x = value_type{0};
+    y = value_type{0};
+    z = value_type{0};
   }
 
   return *this;
@@ -91,7 +91,7 @@ template<typename Type>
 inline constexpr basic_vector3<Type> basic_vector3<Type>::normalized() const noexcept {
   const auto magnitude = length();
 
-  if (magnitude != Type{0}) {
+  if (magnitude != length_type{0}) {
     return basic_vector3<Type>{x / magnitude, y / magnitude, z / magnitude};
   } else {
     return basic_vector3<Type>{};

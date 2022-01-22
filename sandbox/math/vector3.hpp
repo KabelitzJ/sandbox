@@ -25,6 +25,9 @@ struct basic_vector3 {
   /** @brief The type of the vector components. */
   using value_type = Type;
 
+  /** @brief The that can describe the length of the vector */
+  using length_type = float32;
+
   // Static data members
 
   /** @brief The origin of three dimensional space */
@@ -169,7 +172,7 @@ struct basic_vector3 {
    * 
    * @return value_type The length of the vector.
    */
-  [[nodiscard]] constexpr value_type length() const noexcept;
+  [[nodiscard]] constexpr length_type length() const noexcept;
 
   /** 
    * @brief Normalizes the vector
