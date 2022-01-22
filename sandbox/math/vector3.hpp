@@ -28,25 +28,25 @@ struct basic_vector3 {
   // Static data members
 
   /** @brief The origin of three dimensional space */
-  inline static constexpr auto origin = basic_vector3<value_type>{value_type{0}, value_type{0}, value_type{0}};
+  inline static constexpr basic_vector3<value_type> origin{value_type{0}, value_type{0}, value_type{0}};
 
   /** @brief A unit vector along the positive x-axis */
-  inline static constexpr auto right = basic_vector3<value_type>{value_type{1}, value_type{0}, value_type{0}};
+  inline static constexpr basic_vector3<value_type> right{value_type{1}, value_type{0}, value_type{0}};
 
   /** @brief A unit vector along the negative x-axis */
-  inline static constexpr auto left = basic_vector3<value_type>{value_type{-1}, value_type{0}, value_type{0}};
+  inline static constexpr basic_vector3<value_type> left{value_type{-1}, value_type{0}, value_type{0}};
 
   /** @brief A unit vector along the positive y-axis */
-  inline static constexpr auto up = basic_vector3<value_type>{value_type{0}, value_type{1}, value_type{0}};
+  inline static constexpr basic_vector3<value_type> up{value_type{0}, value_type{1}, value_type{0}};
 
   /** @brief A unit vector along the negative y-axis */
-  inline static constexpr auto down = basic_vector3<value_type>{value_type{0}, value_type{-1}, value_type{0}};
+  inline static constexpr basic_vector3<value_type> down{value_type{0}, value_type{-1}, value_type{0}};
 
   /** @brief A unit vector along the positive z-axis */
-  inline static constexpr auto backward = basic_vector3<value_type>{value_type{0}, value_type{0}, value_type{1}};
+  inline static constexpr basic_vector3<value_type> backward{value_type{0}, value_type{0}, value_type{1}};
 
   /** @brief A unit vector along the negative z-axis */
-  inline static constexpr auto forward = basic_vector3<value_type>{value_type{0}, value_type{0}, value_type{-1}};
+  inline static constexpr basic_vector3<value_type> forward{value_type{0}, value_type{0}, value_type{-1}};
 
   // Data members
 
