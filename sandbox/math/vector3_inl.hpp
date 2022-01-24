@@ -20,12 +20,60 @@ inline constexpr basic_vector3<Type>::basic_vector3(const value_type _x, const v
   y{_y},
   z{_z} { }
 
+template<typename Type>
+template<typename From>
+inline constexpr basic_vector3<Type>::basic_vector3(const basic_vector3<From>& other) noexcept
+: x{static_cast<value_type>(other.x)},
+  y{static_cast<value_type>(other.y)},
+  z{static_cast<value_type>(other.z)} {
+  // Casted from type must be an arithmetic types.
+  static_assert(std::is_arithmetic_v<From>, "Casted from type must be arithmetic");
+}
+
+template<typename Type>
+inline constexpr basic_vector3<Type> basic_vector3<Type>::normalized(const basic_vector3<value_type>& vector) noexcept {
+  if (const auto magnitude = vector.length(); magnitude != length_type{0}) {
+    return vector / magnitude;
+  } 
+
+  return basic_vector3<value_type>{};
+}
+
+template<typename Type>
+inline constexpr Type basic_vector3<Type>::dot(const basic_vector3<Type>& lhs, const basic_vector3<Type>& rhs) noexcept {
+  return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z;
+}
+
+template<typename Type>
+inline constexpr basic_vector3<Type> basic_vector3<Type>::cross(const basic_vector3<Type>& lhs, const basic_vector3<Type>& rhs) noexcept {
+  constexpr auto x = lhs.y * rhs.z - lhs.z * rhs.y;
+  constexpr auto y = lhs.z * rhs.x - lhs.x * rhs.z;
+  constexpr auto z = lhs.x * rhs.y - lhs.y * rhs.x;
+
+  return basic_vector3<Type>{x, y, z};
+}
+
+template<typename Type>
+template<typename From>
+constexpr basic_vector3<Type>& basic_vector3<Type>::operator=(const basic_vector3<From>& other) noexcept {
+  // Casted from type must be an arithmetic types.
+  static_assert(std::is_arithmetic_v<From>, "Casted from type must be arithmetic");
+
+  if (*this != other) {
+    x = static_cast<value_type>(other.x);
+    y = static_cast<value_type>(other.y);
+    z = static_cast<value_type>(other.z);
+  }
+
+  return *this;
+}
 
 template<typename Type>
 inline constexpr basic_vector3<Type>& basic_vector3<Type>::operator-() noexcept {
   x = -x;
   y = -y;
   z = -z;
+
   return *this;
 }
 
@@ -34,6 +82,7 @@ inline constexpr basic_vector3<Type>& basic_vector3<Type>::operator+=(const basi
   x += other.x;
   y += other.y;
   z += other.z;
+
   return *this;
 }
 
@@ -42,6 +91,7 @@ inline constexpr basic_vector3<Type>& basic_vector3<Type>::operator-=(const basi
   x -= other.x;
   y -= other.y;
   z -= other.z;
+
   return *this;
 }
 
@@ -50,6 +100,7 @@ inline constexpr basic_vector3<Type>& basic_vector3<Type>::operator*=(const Type
   x *= scalar;
   y *= scalar;
   z *= scalar;
+
   return *this;
 }
 
@@ -62,6 +113,7 @@ inline constexpr basic_vector3<Type>& basic_vector3<Type>::operator/=(const Type
   x /= scalar;
   y /= scalar;
   z /= scalar;
+
   return *this;
 }
 
@@ -71,30 +123,13 @@ inline constexpr typename basic_vector3<Type>::length_type basic_vector3<Type>::
 }
 
 template<typename Type>
-inline constexpr basic_vector3<Type>& basic_vector3<Type>::normalize() noexcept {
+inline constexpr void basic_vector3<Type>::normalize() noexcept {
   const auto magnitude = length();
 
   if (magnitude != length_type{0}) {
     x /= magnitude;
     y /= magnitude;
     z /= magnitude;
-  } else {
-    x = value_type{0};
-    y = value_type{0};
-    z = value_type{0};
-  }
-
-  return *this;
-}
-
-template<typename Type>
-inline constexpr basic_vector3<Type> basic_vector3<Type>::normalized() const noexcept {
-  const auto magnitude = length();
-
-  if (magnitude != length_type{0}) {
-    return basic_vector3<Type>{x / magnitude, y / magnitude, z / magnitude};
-  } else {
-    return basic_vector3<Type>{};
   }
 }
 
@@ -110,32 +145,27 @@ inline constexpr bool operator!=(const basic_vector3<Type>& lhs, const basic_vec
 
 template<typename Type>
 inline constexpr basic_vector3<Type> operator+(basic_vector3<Type> lhs, const basic_vector3<Type>& rhs) noexcept {
-  lhs += rhs;
-  return lhs;
+  return lhs += rhs;
 }
 
 template<typename Type>
 inline constexpr basic_vector3<Type> operator-(basic_vector3<Type> lhs, const basic_vector3<Type>& rhs) noexcept {
-  lhs -= rhs;
-  return lhs;
+  return lhs -= rhs;
 }
 
 template<typename Type>
 inline constexpr basic_vector3<Type> operator*(basic_vector3<Type> lhs, const Type rhs) noexcept {
-  lhs *= rhs;
-  return lhs;
+  return lhs *= rhs;
 }
 
 template<typename Type>
 inline constexpr basic_vector3<Type> operator/(basic_vector3<Type> lhs, const Type rhs) {
-  lhs /= rhs;
-  return lhs;
+  return lhs /= rhs;
 }
 
 template<typename Type>
-inline constexpr std::ostream& operator<<(std::ostream& os, const basic_vector3<Type>& vector) noexcept {
-  os << "(" << vector.x << ", " << vector.y << ", " << vector.z << ")";
-  return os;
+inline constexpr std::ostream& operator<<(std::ostream& output_stream, const basic_vector3<Type>& vector) noexcept {
+  return output_stream << "(" << vector.x << ", " << vector.y << ", " << vector.z << ")";
 }
 
 } // namespace sbx

@@ -1,5 +1,6 @@
 #include <iostream>
 
+#include <math/vector2.hpp>
 #include <math/vector3.hpp>
 
 int main() {

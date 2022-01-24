@@ -20,7 +20,7 @@ struct basic_vector3 {
   // Vector components can only be arithmetic types.
   static_assert(std::is_arithmetic_v<Type>, "Type must be arithmetic");
 
-  // Type aliases
+  // -- Type aliases --
 
   /** @brief The type of the vector components. */
   using value_type = Type;
@@ -28,7 +28,7 @@ struct basic_vector3 {
   /** @brief The that can describe the length of the vector */
   using length_type = float32;
 
-  // Static data members
+  // -- Static data members --
 
   /** @brief The origin of three dimensional space */
   inline static constexpr basic_vector3<value_type> origin{value_type{0}, value_type{0}, value_type{0}};
@@ -51,7 +51,7 @@ struct basic_vector3 {
   /** @brief A unit vector along the negative z-axis */
   inline static constexpr basic_vector3<value_type> forward{value_type{0}, value_type{0}, value_type{-1}};
 
-  // Data members
+  // -- Data members --
 
   /** @brief The x-component of the vector. */
   value_type x{};
@@ -60,7 +60,7 @@ struct basic_vector3 {
   /** @brief The z-component of the vector. */
   value_type z{};
 
-  // Constructors
+  // -- Constructors --
 
   /** @brief Constructs a vector with all components set to zero. */
   constexpr basic_vector3() noexcept;
@@ -88,6 +88,16 @@ struct basic_vector3 {
    */
   constexpr basic_vector3(const basic_vector3<value_type>&) noexcept = default;
 
+  /**
+   * @brief Constructs a vector and copies the components from the other vector
+   * 
+   * @tparam From The type of the other vector.
+   * 
+   * @param other The other vector to copy the components from.
+   */
+  template<typename From>
+  constexpr basic_vector3(const basic_vector3<From>& other) noexcept;
+
   /** 
    * @brief Constructs a vector and moves the components out of the other vector
    *
@@ -98,7 +108,36 @@ struct basic_vector3 {
   /** @brief Destroys the vector */
   ~basic_vector3() noexcept = default;
 
-  // Assignment operators
+  // -- Static member functions --
+
+  /**
+   * @brief Returns a normalized copy of the vector.
+   * 
+   * @return basic_vector3<value_type> The normalized vector.
+   */
+  [[nodiscard]] static constexpr basic_vector3<value_type> normalized(const basic_vector3<value_type>& vector) noexcept;
+
+  /**
+   * @brief Returns the dot product of two vectors.
+   * 
+   * @param lhs The left hand side vector.
+   * @param rhs The right hand side vector.
+   * 
+   * @return value_type The dot product.
+   */
+  [[nodiscard]] static constexpr value_type dot(const basic_vector3<value_type>& lhs, const basic_vector3<value_type>& rhs) noexcept;
+
+  /**
+   * @brief Returns the cross product of two vectors.
+   * 
+   * @param lhs The left hand side vector.
+   * @param rhs The right hand side vector.
+   * 
+   * @return basic_vector3<value_type> The cross product.
+   */
+  [[nodiscard]] static constexpr basic_vector3<value_type> cross(const basic_vector3<value_type>& lhs, const basic_vector3<value_type>& rhs) noexcept;
+
+  // -- Assignment operators --
 
   /**
    * @brief Copies the components from the other vector.
@@ -110,6 +149,18 @@ struct basic_vector3 {
   constexpr basic_vector3<value_type>& operator=(const basic_vector3<value_type>&) noexcept = default;
 
   /**
+   * @brief Copies the components from the other vector.
+   * 
+   * @tparam From The type of the other vector.
+   * 
+   * @param other The other vector to copy the components from.
+   * 
+   * @return basic_vector3<value_type>& A reference to this vector.
+   */
+  template<typename From>
+  constexpr basic_vector3<value_type>& operator=(const basic_vector3<From>& other) noexcept;
+
+  /**
    * @brief Moves the components out of the other vector.
    * 
    * @param other The other vector to move the components from.
@@ -118,7 +169,7 @@ struct basic_vector3 {
    */
   constexpr basic_vector3<value_type>& operator=(basic_vector3<value_type>&&) noexcept = default;
 
-  // Unary arithmetic operators
+  // -- Unary arithmetic operators --
 
   /**
    * @brief Negates the vector.
@@ -127,7 +178,7 @@ struct basic_vector3 {
    */
   constexpr basic_vector3<value_type>& operator-() noexcept;
 
-  // Binary arithmetic operators
+  // -- Binary arithmetic operators --
 
   /**
    * @brief Adds the components of the other vector to this vector.
@@ -161,11 +212,13 @@ struct basic_vector3 {
    * 
    * @param scalar The scalar to divide by.
    * 
+   * @throws std::domain_error If the scalar is zero.
+   * 
    * @return basic_vector3<value_type>& A reference to this vector. 
    */
   constexpr basic_vector3<value_type>& operator/=(const value_type scalar);
 
-  // Member functions
+  // -- Member functions --
 
   /**
    * @brief Returns the length of the vector.
@@ -174,19 +227,8 @@ struct basic_vector3 {
    */
   [[nodiscard]] constexpr length_type length() const noexcept;
 
-  /** 
-   * @brief Normalizes the vector
-   * 
-   * @return basic_vector3<value_type>& A reference to this vector.
-   */
-  constexpr basic_vector3<value_type>& normalize() noexcept;
-
-  /**
-   * @brief Returns a normalized copy of the vector.
-   * 
-   * @return basic_vector3<value_type> The normalized vector.
-   */
-  [[nodiscard]] constexpr basic_vector3<value_type> normalized() const noexcept;
+  /** @brief Normalizes the vector. */
+  constexpr void normalize() noexcept;
 
 }; // struct vector3
 
@@ -269,6 +311,8 @@ constexpr basic_vector3<Type> operator*(basic_vector3<Type> lhs, const Type rhs)
  * @param lhs The left-hand side vector.
  * @param rhs The right-hand side scalar.
  * 
+ * @throws std::domain_error If the scalar is zero.
+ * 
  * @return basic_vector3<Type> The quotient of the vector and scalar.
  */
 template<typename Type>
@@ -281,13 +325,13 @@ constexpr basic_vector3<Type> operator/(basic_vector3<Type> lhs, const Type rhs)
  * 
  * @tparam Type The type of the vectors components.
  * 
- * @param os The output stream to write to.
+ * @param output_stream The output stream to write to.
  * @param vector The vector to write.
  * 
  * @return std::ostream& A Reference to the output stream.
  */
 template<typename Type>
-constexpr std::ostream& operator<<(std::ostream& os, const basic_vector3<Type>& vector) noexcept;
+constexpr std::ostream& operator<<(std::ostream& output_stream, const basic_vector3<Type>& vector) noexcept;
 
 // Type aliases
 
