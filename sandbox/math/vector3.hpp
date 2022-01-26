@@ -275,7 +275,7 @@ template<typename Type>
  * @return basic_vector3<Type> The sum of the two vectors.
  */
 template<typename Type>
-constexpr basic_vector3<Type> operator+(basic_vector3<Type> lhs, const basic_vector3<Type>& rhs) noexcept;
+[[nodiscard]] constexpr basic_vector3<Type> operator+(basic_vector3<Type> lhs, const basic_vector3<Type>& rhs) noexcept;
 
 /**
  * @brief Subtracts two vectors.
@@ -288,7 +288,7 @@ constexpr basic_vector3<Type> operator+(basic_vector3<Type> lhs, const basic_vec
  * @return basic_vector3<Type> The difference of the two vectors. 
  */
 template<typename Type>
-constexpr basic_vector3<Type> operator-(basic_vector3<Type> lhs, const basic_vector3<Type>& rhs) noexcept;
+[[nodiscard]] constexpr basic_vector3<Type> operator-(basic_vector3<Type> lhs, const basic_vector3<Type>& rhs) noexcept;
 
 /**
  * @brief Multiplies a vector by a scalar. 
@@ -301,7 +301,7 @@ constexpr basic_vector3<Type> operator-(basic_vector3<Type> lhs, const basic_vec
  * @return basic_vector3<Type> The product of the vector and scalar. 
  */
 template<typename Type>
-constexpr basic_vector3<Type> operator*(basic_vector3<Type> lhs, const Type rhs) noexcept;
+[[nodiscard]] constexpr basic_vector3<Type> operator*(basic_vector3<Type> lhs, const Type rhs) noexcept;
 
 /**
  * @brief Devides a vector by a scalar.
@@ -316,7 +316,7 @@ constexpr basic_vector3<Type> operator*(basic_vector3<Type> lhs, const Type rhs)
  * @return basic_vector3<Type> The quotient of the vector and scalar.
  */
 template<typename Type>
-constexpr basic_vector3<Type> operator/(basic_vector3<Type> lhs, const Type rhs);
+[[nodiscard]] constexpr basic_vector3<Type> operator/(basic_vector3<Type> lhs, const Type rhs);
 
 // Free stream operators
 

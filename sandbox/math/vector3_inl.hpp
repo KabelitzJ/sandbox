@@ -4,9 +4,9 @@ namespace sbx {
 
 template<typename Type>
 inline constexpr basic_vector3<Type>::basic_vector3() noexcept
-: x{}, 
-  y{}, 
-  z{} { }
+: x{value_type{0}}, 
+  y{value_type{0}}, 
+  z{value_type{0}} { }
 
 template<typename Type>
 inline constexpr basic_vector3<Type>::basic_vector3(const value_type value) noexcept

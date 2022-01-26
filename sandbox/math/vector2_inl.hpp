@@ -1,5 +1,146 @@
+#include <cmath>
+
 namespace sbx {
 
+template<typename Type>
+inline constexpr basic_vector2<Type>::basic_vector2() noexcept
+: x{value_type{0}}, 
+  y{value_type{0}} { }
 
+template<typename Type>
+inline constexpr basic_vector2<Type>::basic_vector2(const Type value) noexcept
+: x{value}, 
+  y{value} { }
+
+template<typename Type>
+inline constexpr basic_vector2<Type>::basic_vector2(const Type _x, const Type _y) noexcept
+: x{_x}, 
+  y{_y} { }
+
+template<typename Type>
+template<typename From>
+inline constexpr basic_vector2<Type>::basic_vector2(const basic_vector2<From>& other) noexcept
+: x{static_cast<Type>(other.x)}, 
+  y{static_cast<Type>(other.y)} {
+  // Casted from type must be an arithmetic types.
+  static_assert(std::is_arithmetic_v<From>, "Casted from type must be arithmetic");
+}
+
+template<typename Type>
+constexpr basic_vector2<Type> basic_vector2<Type>::normalized(const basic_vector2<Type>& vector) noexcept {
+  if (const auto magnitude = vector.length(); magnitude != length_type{0}) {
+    return vector / magnitude;
+  } 
+
+  return basic_vector2<Type>{};
+}
+
+template<typename Type>
+template<typename From>
+inline constexpr basic_vector2<Type>& basic_vector2<Type>::operator=(const basic_vector2<From>& other) noexcept {
+  // Casted from type must be an arithmetic types.
+  static_assert(std::is_arithmetic_v<From>, "Casted from type must be arithmetic");
+
+  if (*this != other) {
+    x = static_cast<Type>(other.x);
+    y = static_cast<Type>(other.y);
+  }
+  
+  return *this;
+}
+
+template<typename Type>
+inline constexpr basic_vector2<Type>& basic_vector2<Type>::operator-() noexcept {
+  x = -x;
+  y = -y;
+  
+  return *this;
+}
+
+template<typename Type>
+inline constexpr basic_vector2<Type>& basic_vector2<Type>::operator+=(const basic_vector2<Type>& other) noexcept {
+  x += other.x;
+  y += other.y;
+  
+  return *this;
+}
+
+template<typename Type>
+inline constexpr basic_vector2<Type>& basic_vector2<Type>::operator-=(const basic_vector2<Type>& other) noexcept {
+  x -= other.x;
+  y -= other.y;
+  
+  return *this;
+}
+
+template<typename Type>
+inline constexpr basic_vector2<Type>& basic_vector2<Type>::operator*=(const Type scalar) noexcept {
+  x *= scalar;
+  y *= scalar;
+  
+  return *this;
+}
+
+template<typename Type>
+inline constexpr basic_vector2<Type>& basic_vector2<Type>::operator/=(const Type scalar) {
+  if (scalar == value_type{0}) {
+    throw std::domain_error("Division by zero");
+  }
+  
+  x /= scalar;
+  y /= scalar;
+  
+  return *this;
+}
+
+template<typename Type>
+inline constexpr typename basic_vector2<Type>::length_type basic_vector2<Type>::length() const noexcept {
+  return std::sqrt(x * x + y * y);
+}
+
+template<typename Type>
+inline constexpr void basic_vector2<Type>::normalize() noexcept {
+  const auto magnitude = length();
+  
+  if (magnitude != length_type{0}) {
+    x /= magnitude;
+    y /= magnitude;
+  }
+}
+
+template<typename Type>
+inline constexpr bool operator==(const basic_vector2<Type>& lhs, const basic_vector2<Type>& rhs) noexcept {
+  return lhs.x == rhs.x && lhs.y == rhs.y;
+}
+
+template<typename Type>
+inline constexpr bool operator!=(const basic_vector2<Type>& lhs, const basic_vector2<Type>& rhs) noexcept {
+  return !(lhs == rhs);
+}
+
+template<typename Type>
+inline constexpr basic_vector2<Type> operator+(basic_vector2<Type> lhs, const basic_vector2<Type>& rhs) noexcept {
+  return lhs += rhs;
+}
+
+template<typename Type> 
+inline constexpr basic_vector2<Type> operator-(basic_vector2<Type> lhs, const basic_vector2<Type>& rhs) noexcept {
+  return lhs -= rhs;
+}
+
+template<typename Type>
+inline constexpr basic_vector2<Type> operator*(basic_vector2<Type> lhs, const Type rhs) noexcept {
+  return lhs *= rhs;
+}
+
+template<typename Type>
+inline constexpr basic_vector2<Type> operator/(basic_vector2<Type> lhs, const Type rhs) noexcept {
+  return lhs /= rhs;
+}
+
+template<typename Type>
+inline constexpr std::ostream& operator<<(std::ostream& os, const basic_vector2<Type>& vector) noexcept {
+  return os << "(" << vector.x << ", " << vector.y << ")";
+}
 
 } // namespace sbx
