@@ -21,6 +21,12 @@ inline constexpr basic_vector3<Type>::basic_vector3(const value_type _x, const v
   z{_z} { }
 
 template<typename Type>
+inline constexpr basic_vector3<Type>::basic_vector3(const basic_vector2<Type>& vector, const Type _z) noexcept
+: x{vector.x},
+  y{vector.y},
+  z{_z} { }
+
+template<typename Type>
 template<typename From>
 inline constexpr basic_vector3<Type>::basic_vector3(const basic_vector3<From>& other) noexcept
 : x{static_cast<value_type>(other.x)},

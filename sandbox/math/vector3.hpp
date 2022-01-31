@@ -7,6 +7,8 @@
 
 #include <types/primitives.hpp>
 
+#include "vector2.hpp"
+
 namespace sbx {
 
 /**
@@ -80,6 +82,14 @@ struct basic_vector3 {
    * @param z The value for the z component.
    */
   constexpr basic_vector3(const value_type x, const value_type y, const value_type z) noexcept;
+
+  /**
+   * @brief Constructs a three dimensional vector from a two dimensional vector.
+   * 
+   * @param vector A vector to copy the components from.
+   * @param z The value for the z component.
+   */
+  constexpr basic_vector3(const basic_vector2<value_type>& vector, const value_type z = value_type{1}) noexcept;
 
   /** 
    * @brief Constructs a vector and copies the components from the other vector
