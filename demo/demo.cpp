@@ -12,6 +12,7 @@ int main() {
 
   vector3.normalize();
 
+  std::cout << vector3 << std::endl;
   std::cout << vector3.length() << std::endl;
 
   return 0;

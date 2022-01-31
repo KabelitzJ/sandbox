@@ -1,6 +1,7 @@
 #ifndef SBX_MATH_VECTOR2_HPP_
 #define SBX_MATH_VECTOR2_HPP_
 
+#include <fstream>
 #include <ostream>
 #include <type_traits>
 
@@ -293,6 +294,32 @@ template<typename Type>
 /**
  * @brief Writes a vector to a output stream.
  * 
+ * @tparam Type The type of the vectors components.
+ * 
+ * @param output_stream The stream to write to.
+ * @param vector The vector to write.
+ * 
+ * @return std::ostream& A reference to the stream.
+ */
+template<typename Type>
+constexpr std::ostream& operator<<(std::ostream& output_stream, const basic_vector2<Type>& vector);
+
+/**
+ * @brief Writes a vector to a file output stream.
+ * 
+ * @tparam Type The type of the vectors components.
+ * 
+ * @param output_stream The stream to write to.
+ * @param vector The vector to write.
+ * 
+ * @return std::ofstream& A reference to the stream.
+ */
+template<typename Type>
+constexpr std::ofstream& operator<<(std::ofstream& output_stream, const basic_vector2<Type>& vector);
+
+/**
+ * @brief Writes a vector to a generic output stream.
+ * 
  * @tparam OutputStream The type of the output stream.
  * @tparam Type The type of the vectors components.
  * 
@@ -302,7 +329,20 @@ template<typename Type>
  * @return OutputStream& A Reference to the output stream.
  */
 template<typename OutputStream, typename Type>
-constexpr OutputStream& operator<<(OutputStream& output_stream, const basic_vector2<Type>& vector) noexcept;
+constexpr OutputStream& operator<<(OutputStream& output_stream, const basic_vector2<Type>& vector);
+
+/**
+ * @brief Reads a vector from a file input stream.
+ * 
+ * @tparam Type The type of the vectors components.
+ * 
+ * @param input_stream The stream to read from.
+ * @param vector The vector to read into.
+ * 
+ * @return std::ifstream& A reference to the stream. 
+ */
+template<typename Type>
+constexpr std::ifstream& operator>>(std::ifstream& input_stream, basic_vector2<Type>& vector);
 
 /**
  * @brief Reads a vector from a input stream. 
@@ -316,7 +356,7 @@ constexpr OutputStream& operator<<(OutputStream& output_stream, const basic_vect
  * @return InputStream& A reference to the input stream. 
  */
 template<typename InputStream, typename Type>
-constexpr InputStream& operator>>(InputStream& input_stream, basic_vector2<Type>& vector) noexcept;
+constexpr InputStream& operator>>(InputStream& input_stream, basic_vector2<Type>& vector);
 
 // -- Type aliases --
 

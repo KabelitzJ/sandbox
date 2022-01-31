@@ -139,13 +139,31 @@ inline constexpr basic_vector2<Type> operator/(basic_vector2<Type> lhs, const Ty
   return lhs /= rhs;
 }
 
-template<typename OutputStream, typename Type>
-inline constexpr OutputStream& operator<<(OutputStream& output_stream, const basic_vector2<Type>& vector) noexcept {
+template<typename Type>
+inline constexpr std::ostream& operator<<(std::ostream& output_stream, const basic_vector2<Type>& vector) {
   return output_stream << "(" << vector.x << ", " << vector.y << ")";
 }
 
+template<typename Type>
+inline constexpr std::ofstream& operator<<(std::ofstream& output_stream, const basic_vector2<Type>& vector) {
+  // [TODO] KAJ 2022-01-31 09:48 - Find a suitable format for vectors and implement a parser for that format.
+  return output_stream;
+}
+
+template<typename OutputStream, typename Type>
+inline constexpr OutputStream& operator<<(OutputStream& output_stream, const basic_vector2<Type>& vector) {
+  // [TODO] KAJ 2022-01-31 09:48 - Find a suitable format for vectors and implement a parser for that format.
+  return output_stream;
+}
+
+template<typename Type>
+inline constexpr std::istream& operator>>(std::istream& input_stream, basic_vector2<Type>& vector) {
+  // [TODO] KAJ 2022-01-31 09:48 - Find a suitable format for vectors and implement a parser for that format.
+  return input_stream;
+}
+
 template<typename InputStream, typename Type>
-inline constexpr InputStream& operator>>(InputStream& input_stream, basic_vector2<Type>& vector) noexcept {
+inline constexpr InputStream& operator>>(InputStream& input_stream, basic_vector2<Type>& vector) {
   // [TODO] KAJ 2022-01-31 09:48 - Find a suitable format for vectors and implement a parser for that format.
   return input_stream;
 }
