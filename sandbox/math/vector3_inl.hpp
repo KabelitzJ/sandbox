@@ -163,9 +163,15 @@ inline constexpr basic_vector3<Type> operator/(basic_vector3<Type> lhs, const Ty
   return lhs /= rhs;
 }
 
-template<typename Type>
-inline constexpr std::ostream& operator<<(std::ostream& output_stream, const basic_vector3<Type>& vector) noexcept {
+template<typename OutputStream, typename Type>
+inline constexpr OutputStream& operator<<(OutputStream& output_stream, const basic_vector3<Type>& vector) noexcept {
   return output_stream << "(" << vector.x << ", " << vector.y << ", " << vector.z << ")";
+}
+
+template<typename InputStream, typename Type>
+inline constexpr InputStream& operator>>(InputStream& input_stream, basic_vector3<Type>& vector) noexcept {
+  // [TODO] KAJ 2022-01-31 09:48 - Find a suitable format for vectors and implement a parser for that format.
+  return input_stream;
 }
 
 } // namespace sbx
