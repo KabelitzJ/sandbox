@@ -1,9 +1,9 @@
 #ifndef SBX_MATH_VECTOR3_HPP_
 #define SBX_MATH_VECTOR3_HPP_
 
+#include <fstream>
 #include <ostream>
 #include <type_traits>
-#include <utility>
 
 #include <types/primitives.hpp>
 
@@ -338,10 +338,64 @@ template<typename Type>
  * @param output_stream The output stream to write to.
  * @param vector The vector to write.
  * 
- * @return std::ostream& A Reference to the output stream.
+ * @return OutputStream& A Reference to the output stream.
  */
 template<typename Type>
-constexpr std::ostream& operator<<(std::ostream& output_stream, const basic_vector3<Type>& vector) noexcept;
+constexpr std::ostream& operator<<(std::ostream& output_stream, const basic_vector3<Type>& vector);
+
+/**
+ * @brief Writes a vector to a file output stream.
+ * 
+ * @tparam Type The type of the vectors components. 
+ * 
+ * @param output_stream The output stream to write to. 
+ * @param vector The vector to write.
+ * 
+ * @return std::ofstream& A reference to the output stream.
+ */
+template<typename Type>
+constexpr std::ofstream& operator<<(std::ofstream& output_stream, const basic_vector3<Type>& vector);
+
+/**
+ * @brief Writes a vector to a generic output stream.
+ * 
+ * @tparam OutputStream The type of the output stream. 
+ * @tparam Type The type of the vectors components.
+ * 
+ * @param output_stream The output stream to write to. 
+ * @param vector The vector to write.
+ * 
+ * @return OutputStream& A reference to the output stream.
+ */
+template<typename OutputStream, typename Type>
+constexpr OutputStream& operator<<(OutputStream& output_stream, const basic_vector3<Type>& vector);
+
+/**
+ * @brief Reads a vector from a file input stream.
+ * 
+ * @tparam Type The type of the vectors components. 
+ * 
+ * @param input_stream The input stream to read from.
+ * @param vector The vector to read into.
+ * 
+ * @return std::istream& A reference to the input stream. 
+ */
+template<typename Type>
+constexpr std::istream& operator>>(std::istream& input_stream, basic_vector3<Type>& vector);
+
+/**
+ * @brief Reads a vector from a generic input stream.
+ * 
+ * @tparam InputStream The type of the input stream.
+ * @tparam Type The type of the vectors components.
+ * 
+ * @param input_stream The input stream to read from.
+ * @param vector The vector to read into.
+ * 
+ * @return InputStream& A reference to the input stream.
+ */
+template<typename InputStream, typename Type>
+constexpr InputStream& operator>>(InputStream& input_stream, basic_vector3<Type>& vector);
 
 // Type aliases
 
