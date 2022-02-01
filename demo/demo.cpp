@@ -13,6 +13,10 @@ int main() {
 
   vector3.normalize();
 
+  auto v4 = sbx::vector4{1.0f, 2.0f, 3.0f, 4.0f};
+
+  auto v5 = sbx::vector4::normalized(v4);
+
   std::cout << vector3 << std::endl;
   std::cout << vector3.length() << std::endl;
 

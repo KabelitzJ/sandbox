@@ -1,3 +1,4 @@
+#include <cassert>
 #include <cmath>
 #include <string>
 
@@ -39,11 +40,8 @@ inline constexpr basic_vector3<Type>::basic_vector3(const basic_vector3<From>& o
 
 template<typename Type>
 inline constexpr basic_vector3<Type> basic_vector3<Type>::normalized(const basic_vector3<value_type>& vector) noexcept {
-  if (const auto magnitude = vector.length(); magnitude != length_type{0}) {
-    return vector / magnitude;
-  } 
-
-  return basic_vector3<value_type>{};
+  const auto length = vector.length();
+  return length == value_type{0} ? basic_vector3<Type>{} : vector / length;
 }
 
 template<typename Type>
@@ -125,6 +123,42 @@ inline constexpr basic_vector3<Type>& basic_vector3<Type>::operator/=(const Type
 }
 
 template<typename Type>
+constexpr basic_vector3<Type>::reference basic_vector3<Type>::operator[](const index_type index) noexcept {
+  assert(index < 3);
+
+  switch (index) {
+    default:
+    case 0: {
+      return x;
+    }
+    case 1: {
+      return y;
+    }
+    case 2: {
+      return z;
+    }
+  }
+}
+
+template<typename Type>
+constexpr basic_vector3<Type>::const_reference basic_vector3<Type>::operator[](const index_type index) const noexcept {
+  assert(index < 3);
+
+  switch (index) {
+    default:
+    case 0: {
+      return x;
+    }
+    case 1: {
+      return y;
+    }
+    case 2: {
+      return z;
+    }
+  }
+}
+
+template<typename Type>
 inline constexpr typename basic_vector3<Type>::length_type basic_vector3<Type>::length() const noexcept {
   return std::sqrt(x * x + y * y + z * z);
 }
@@ -138,6 +172,16 @@ inline constexpr void basic_vector3<Type>::normalize() noexcept {
     y /= magnitude;
     z /= magnitude;
   }
+}
+
+template<typename Type>
+constexpr basic_vector3<Type>::pointer basic_vector3<Type>::data() noexcept {
+  return &x;
+}
+
+template<typename Type>
+constexpr basic_vector3<Type>::const_pointer basic_vector3<Type>::data() const noexcept {
+  return &x;
 }
 
 template<typename Type>
