@@ -2,7 +2,7 @@
 
 #include <math/vector2.hpp>
 #include <math/vector3.hpp>
-// #include <math/vector4.hpp>
+#include <math/vector4.hpp>
 
 int main() {
 
@@ -11,7 +11,7 @@ int main() {
 
   auto vector3 = vector1 + vector2 * 2.0f + sbx::vector3::forward;
 
-  const auto data = vector1.data();
+  const auto* data = vector1.data();
 
   std::cout << data[0] << std::endl;
   std::cout << data[1] << std::endl;

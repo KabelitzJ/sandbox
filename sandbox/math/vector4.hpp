@@ -22,8 +22,23 @@ struct basic_vector4 {
   /** @brief The type of the vector components. */
   using value_type = Type;
 
-  /** @brief The that can describe the length of the vector */
+  /** @brief The reference type of the vector components. */
+  using reference = Type&;
+
+  /** @brief The const reference type of the vector components. */
+  using const_reference = const Type&;
+
+  /** @brief The pointer type of the vector components. */
+  using pointer = Type*;
+
+  /** @brief The const pointer type of the vector components. */
+  using const_pointer = const Type*;
+
+  /** @brief The type that can describe the length of the vector */
   using length_type = float32;
+
+  /** @brief The type that can index compotents */
+  using index_type = std::size_t; 
 
   // -- Static data members --
 
@@ -188,6 +203,26 @@ struct basic_vector4 {
    */
   constexpr basic_vector4<value_type>& operator/=(const value_type scalar);
 
+  // -- Access operators --
+
+  /**
+   * @brief Returns the component at the specified index.
+   * 
+   * @param index The index of the component.
+   * 
+   * @return reference A reference to the component. 
+   */
+  [[nodiscard]] constexpr reference operator[](const index_type index) noexcept;
+
+  /**
+   * @brief Returns the component at the specified index.
+   * 
+   * @param index The index of the component. 
+   * 
+   * @return const_reference A const reference to the component.
+   */
+  [[nodiscard]] constexpr const_reference operator[](const index_type index) const noexcept;
+
   // -- Member functions --
 
   /**
@@ -199,6 +234,20 @@ struct basic_vector4 {
 
   /** @brief Normalizes the vector. */
   constexpr void normalize() noexcept;
+
+  /**
+   * @brief Return a pointer to the first component of the vector.
+   *
+   * @return pointer A pointer to the first component of the vector. 
+   */
+  [[nodiscard]] constexpr pointer data() noexcept;
+
+  /**
+   * @brief Return a pointer to the first component of the vector.
+   * 
+   * @return const_pointer A pointer to the first component of the vector.
+   */
+  [[nodiscard]] constexpr const_pointer data() const noexcept;
 
 }; // struct basic_vector4
 

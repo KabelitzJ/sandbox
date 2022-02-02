@@ -223,7 +223,6 @@ struct basic_vector3 {
    * @return basic_vector3<value_type>& A reference to this vector. 
    */
   constexpr basic_vector3<value_type>& operator-=(const basic_vector3<value_type>& other) noexcept;
-
   /**
    * @brief Multiplies the components of this vector by the scalar.
    * 

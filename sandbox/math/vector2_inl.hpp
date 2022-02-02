@@ -1,3 +1,4 @@
+#include <cassert>
 #include <cmath>
 #include <string>
 
@@ -95,6 +96,36 @@ inline constexpr basic_vector2<Type>& basic_vector2<Type>::operator/=(const Type
 }
 
 template<typename Type>
+inline constexpr typename basic_vector2<Type>::reference basic_vector2<Type>::operator[](const index_type index) noexcept {
+  assert(index < 2);
+
+  switch (index) {
+    default:
+    case 0: {
+      return x;
+    }
+    case 1: {
+      return y;
+    }
+  }
+}
+
+template<typename Type>
+inline constexpr typename basic_vector2<Type>::const_reference basic_vector2<Type>::operator[](const index_type index) const noexcept {
+  assert(index < 2);
+
+  switch (index) {
+    default:
+    case 0: {
+      return x;
+    }
+    case 1: {
+      return y;
+    }
+  }
+}
+
+template<typename Type>
 inline constexpr typename basic_vector2<Type>::length_type basic_vector2<Type>::length() const noexcept {
   return std::sqrt(x * x + y * y);
 }
@@ -107,6 +138,16 @@ inline constexpr void basic_vector2<Type>::normalize() noexcept {
     x /= magnitude;
     y /= magnitude;
   }
+}
+
+template<typename Type>
+inline constexpr typename basic_vector2<Type>::pointer basic_vector2<Type>::data() noexcept {
+  return &x;
+}
+
+template<typename Type>
+inline constexpr typename basic_vector2<Type>::const_pointer basic_vector2<Type>::data() const noexcept {
+  return &x;
 }
 
 template<typename Type>
