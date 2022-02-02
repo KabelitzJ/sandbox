@@ -29,16 +29,16 @@ struct basic_vector3 {
   using value_type = Type;
 
   /** @brief The reference type of the vector components. */
-  using reference = Type&;
+  using reference = value_type&;
 
   /** @brief The const reference type of the vector components. */
-  using const_reference = const Type&;
+  using const_reference = const value_type&;
 
   /** @brief The pointer type of the vector components. */
-  using pointer = Type*;
+  using pointer = value_type*;
 
   /** @brief The const pointer type of the vector components. */
-  using const_pointer = const Type*;
+  using const_pointer = const value_type*;
 
   /** @brief The type that can describe the length of the vector */
   using length_type = float32;
@@ -275,6 +275,8 @@ struct basic_vector3 {
   /** @brief Normalizes the vector. */
   constexpr void normalize() noexcept;
 
+  // -- Data access --
+
   /**
    * @brief Return a pointer to the first component of the vector.
    *
@@ -291,7 +293,7 @@ struct basic_vector3 {
 
 }; // struct vector3
 
-// Free comparison operators
+// -- Free comparison operators --
 
 /**
  * @brief Compares two vectors for equality.
@@ -321,7 +323,7 @@ template<typename Type>
 template<typename Type>
 [[nodiscard]] constexpr bool operator!=(const basic_vector3<Type>& lhs, const basic_vector3<Type>& rhs) noexcept;
 
-// Free arithmetic operators
+// -- Free arithmetic operators --
 
 /**
  * @brief Adds two vectors.
@@ -377,7 +379,7 @@ template<typename Type>
 template<typename Type>
 [[nodiscard]] constexpr basic_vector3<Type> operator/(basic_vector3<Type> lhs, const Type rhs);
 
-// Free stream operators
+// -- Free stream operators --
 
 /**
  * @brief Writes a vector to a output stream.
@@ -446,7 +448,7 @@ constexpr std::istream& operator>>(std::istream& input_stream, basic_vector3<Typ
 template<typename InputStream, typename Type>
 constexpr InputStream& operator>>(InputStream& input_stream, basic_vector3<Type>& vector);
 
-// Type aliases
+// -- Type aliases --
 
 /** @brief Type alias for a three dimensional vector with 32 bit floating-point components. */
 using vector3f = basic_vector3<float32>;
@@ -459,6 +461,6 @@ using vector3 = vector3f;
 
 } // namespace sbx
 
-#include "vector3_inl.hpp"
+#include "vector3.inl"
 
 #endif // SBX_MATH_VECTOR3_HPP_

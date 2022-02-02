@@ -26,16 +26,16 @@ struct basic_vector2 {
   using value_type = Type;
 
   /** @brief The reference type of the vector components. */
-  using reference = Type&;
+  using reference = value_type&;
 
   /** @brief The const reference type of the vector components. */
-  using const_reference = const Type&;
+  using const_reference = const value_type&;
 
   /** @brief The pointer type of the vector components. */
-  using pointer = Type*;
+  using pointer = value_type*;
 
   /** @brief The const pointer type of the vector components. */
-  using const_pointer = const Type*;
+  using const_pointer = const value_type*;
 
   /** @brief The type that can describe the length of the vector */
   using length_type = float32;
@@ -236,6 +236,8 @@ struct basic_vector2 {
   /** @brief Normalizes the vector. */
   constexpr void normalize() noexcept;
 
+  // -- Data access --
+
   /**
    * @brief Return a pointer to the first component of the vector.
    *
@@ -252,7 +254,7 @@ struct basic_vector2 {
 
 }; // struct basic_vector2
 
-// Free comparison operators
+// -- Free comparison operators --
 
 /**
  * @brief Compares two vectors for equality.
@@ -282,7 +284,7 @@ template<typename Type>
 template<typename Type>
 [[nodiscard]] constexpr bool operator!=(const basic_vector2<Type>& lhs, const basic_vector2<Type>& rhs) noexcept;
 
-// Free arithmetic operators
+// -- Free arithmetic operators --
 
 /**
  * @brief Adds two vectors.
@@ -338,7 +340,7 @@ template<typename Type>
 template<typename Type>
 [[nodiscard]] constexpr basic_vector2<Type> operator/(basic_vector2<Type> lhs, const Type rhs) noexcept;
 
-// Free stream operators
+// -- Free stream operators --
 
 /**
  * @brief Writes a vector to a output stream.
@@ -420,6 +422,6 @@ using vector2 = vector2f;
 
 } // namespace sbx
 
-#include "vector2_inl.hpp"
+#include "vector2.inl"
 
 #endif // SBX_MATH_VECTOR2_HPP_

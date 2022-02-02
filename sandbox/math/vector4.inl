@@ -1,5 +1,6 @@
 #include <cassert>
 #include <cmath>
+#include <iomanip>
 #include <string>
 
 namespace sbx {
@@ -220,9 +221,16 @@ inline constexpr basic_vector4<Type> operator*(const Type lhs, const basic_vecto
 
 template<typename Type>
 inline constexpr std::ostream& operator<<(std::ostream& output_stream, const basic_vector4<Type>& vector) {
+  auto default_state = std::ios{nullptr};
+  default_state.copyfmt(output_stream);
+
+  output_stream << std::setprecision(3) << std::fixed;
+
   output_stream << "(" << vector.x << ", " << vector.y << ", " << vector.z << ", " << vector.w << ")";
 
-  return output_stream;
+  output_stream.copyfmt(default_state);
+
+  return output_stream; 
 }
 
 template<typename Type>

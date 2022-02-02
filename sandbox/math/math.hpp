@@ -5,4 +5,6 @@
 #include "vector3.hpp"
 #include "vector4.hpp"
 
+#include "matrix4x4.hpp"
+
 #endif // SBX_MATH_HPP_
