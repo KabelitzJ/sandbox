@@ -30,11 +30,8 @@ inline constexpr basic_vector2<Type>::basic_vector2(const basic_vector2<From>& o
 
 template<typename Type>
 constexpr basic_vector2<Type> basic_vector2<Type>::normalized(const basic_vector2<Type>& vector) noexcept {
-  if (const auto magnitude = vector.length(); magnitude != length_type{0}) {
-    return vector / magnitude;
-  } 
-
-  return basic_vector2<Type>{};
+  const auto length = vector.length();
+  return length == value_type{0} ? basic_vector2<Type>{} : vector / length;
 }
 
 template<typename Type>
@@ -132,11 +129,11 @@ inline constexpr typename basic_vector2<Type>::length_type basic_vector2<Type>::
 
 template<typename Type>
 inline constexpr void basic_vector2<Type>::normalize() noexcept {
-  const auto magnitude = length();
+  const auto length = this->length();
   
-  if (magnitude != length_type{0}) {
-    x /= magnitude;
-    y /= magnitude;
+  if (length != length_type{0}) {
+    x /= length;
+    y /= length;
   }
 }
 

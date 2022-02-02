@@ -165,12 +165,12 @@ inline constexpr typename basic_vector3<Type>::length_type basic_vector3<Type>::
 
 template<typename Type>
 inline constexpr void basic_vector3<Type>::normalize() noexcept {
-  const auto magnitude = length();
+  const auto length = this->length();
 
-  if (magnitude != length_type{0}) {
-    x /= magnitude;
-    y /= magnitude;
-    z /= magnitude;
+  if (length != length_type{0}) {
+    x /= length;
+    y /= length;
+    z /= length;
   }
 }
 
