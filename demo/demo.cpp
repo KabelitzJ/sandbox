@@ -14,7 +14,7 @@ int main() {
   std::cout << vector3 << std::endl;
   std::cout << vector3.length() << std::endl;
 
-  auto m = sbx::matrix4x4::identity();
+  auto m = sbx::matrix4x4::identity;
 
   m[1][3] = 2.0f;
 

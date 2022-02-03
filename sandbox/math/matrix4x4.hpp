@@ -46,6 +46,24 @@ struct basic_matrix4x4 {
   /** @brief The const reference type of the matrix columns. */
   using const_column_type_reference = const column_type&;
 
+  // -- Static data members --
+
+  /** @brief The identity matrix. */
+  inline static constexpr basic_matrix4x4<value_type> identity{
+    value_type{1}, value_type{0}, value_type{0}, value_type{0},
+    value_type{0}, value_type{1}, value_type{0}, value_type{0},
+    value_type{0}, value_type{0}, value_type{1}, value_type{0},
+    value_type{0}, value_type{0}, value_type{0}, value_type{1}
+  };
+
+  /** @brief A Matrix with all components set to zero. */
+  inline static constexpr basic_matrix4x4<value_type> zero{
+    value_type{0}, value_type{0}, value_type{0}, value_type{0},
+    value_type{0}, value_type{0}, value_type{0}, value_type{0},
+    value_type{0}, value_type{0}, value_type{0}, value_type{0},
+    value_type{0}, value_type{0}, value_type{0}, value_type{0}
+  };
+
   // -- Constructors --
 
   /** @brief Constructs a matrix with all components set to zero. */
@@ -59,23 +77,101 @@ struct basic_matrix4x4 {
   explicit constexpr basic_matrix4x4(const std::array<column_type, 4>& columns) noexcept;
 
   /**
-   * @brief Constructs a matrix with the given values
-   * 
-   * @param values The values of the matrix.
+   * @brief Constructs a matrix with the given columns.
+
+   * @param column_0 The first column of the matrix. 
+   * @param column_1 The second column of the matrix.
+   * @param column_2 The third column of the matrix. 
+   * @param column_3 The fourth column of the matrix.
    */
-  explicit constexpr basic_matrix4x4(std::initializer_list<value_type> values) noexcept;
+  constexpr basic_matrix4x4(
+    const column_type& column_0,
+    const column_type& column_1,
+    const column_type& column_2,
+    const column_type& column_3
+  ) noexcept;
+
+  /**
+   * @brief Constructs a matrix with the given values. 
+   * 
+   * @param x1 The x value of the first column.
+   * @param y1 The y value of the first column.
+   * @param z1 The z value of the first column.
+   * @param w1 The w value of the first column.
+   * @param x2 The x value of the second column.
+   * @param y2 The y value of the second column.
+   * @param z2 The z value of the second column.
+   * @param w2 The w value of the second column.
+   * @param x3 The x value of the third column.
+   * @param y3 The y value of the third column.
+   * @param z3 The z value of the third column.
+   * @param w3 The w value of the third column.
+   * @param x4 The x value of the fourth column.
+   * @param y4 The y value of the fourth column.
+   * @param z4 The z value of the fourth column.
+   * @param w4 The w value of the fourth column.
+   */
+  constexpr basic_matrix4x4(
+    const value_type x1, const value_type y1, const value_type z1, const value_type w1,
+    const value_type x2, const value_type y2, const value_type z2, const value_type w2,
+    const value_type x3, const value_type y3, const value_type z3, const value_type w3,
+    const value_type x4, const value_type y4, const value_type z4, const value_type w4
+  ) noexcept;
+
+  /**
+   * @brief Copies the values of the given matrix.
+   * 
+   * @param other The matrix to copy.
+   */
+  constexpr basic_matrix4x4(const basic_matrix4x4<value_type>& other) noexcept = default;
+
+  /**
+   * @brief Copies the values of the given matrix.
+   * 
+   * @param other The matrix to copy.
+   */
+  template<typename From>
+  explicit constexpr basic_matrix4x4(const basic_matrix4x4<From>& other) noexcept;
+
+  /**
+   * @brief Moves the values out of the given matrix.
+   * 
+   * @param other The matrix to move from.
+   */
+  constexpr basic_matrix4x4(basic_matrix4x4<value_type>&& other) noexcept = default;
 
   /** @brief Destroys the matrix */
   ~basic_matrix4x4() noexcept = default;
 
-  // -- Static member functions --
+  // -- Assignment operators --
 
   /**
-   * @brief Generates a new identity matrix.
+   * @brief Copies the values of the given matrix.
    * 
-   * @return basic_matrix4x4<Type> The identity matrix. 
+   * @param other The matrix to copy.
+   * 
+   * @return basic_matrix4x4<value_type>& Reference to this matrix.
    */
-  [[nodiscard]] static constexpr basic_matrix4x4<value_type> identity() noexcept;
+  constexpr basic_matrix4x4<value_type>& operator=(const basic_matrix4x4<value_type>& other) noexcept = default;
+
+  /**
+   * @brief Copies the values of the given matrix.
+   *
+   * @param other The matrix to copy. 
+   * 
+   * @return basic_matrix4x4<value_type>& Reference to this matrix.
+   */
+  template<typename From>
+  constexpr basic_matrix4x4<value_type>& operator=(const basic_matrix4x4<From>& other) noexcept;
+
+  /**
+   * @brief Moves the values out of the given matrix.
+   *
+   * @param other The matrix to move from. 
+   * 
+   * @return basic_matrix4x4<value_type>& Reference to this matrix.
+   */
+  constexpr basic_matrix4x4<value_type>& operator=(basic_matrix4x4<value_type>&& other) noexcept = default;
 
   // -- Access operators --
 

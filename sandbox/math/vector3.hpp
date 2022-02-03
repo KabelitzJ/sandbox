@@ -48,8 +48,8 @@ struct basic_vector3 {
 
   // -- Static data members --
 
-  /** @brief The origin of three dimensional space */
-  inline static constexpr basic_vector3<value_type> origin{value_type{0}, value_type{0}, value_type{0}};
+  /** @brief A vector with all components set to zero. */
+  inline static constexpr basic_vector3<value_type> zero{value_type{0}, value_type{0}, value_type{0}};
 
   /** @brief A unit vector along the positive x-axis */
   inline static constexpr basic_vector3<value_type> right{value_type{1}, value_type{0}, value_type{0}};
@@ -112,7 +112,7 @@ struct basic_vector3 {
    *
    * @param other The other vector to copy the components from. 
    */
-  constexpr basic_vector3(const basic_vector3<value_type>&) noexcept = default;
+  constexpr basic_vector3(const basic_vector3<value_type>& other) noexcept = default;
 
   /**
    * @brief Constructs a vector and copies the components from the other vector
@@ -122,14 +122,14 @@ struct basic_vector3 {
    * @param other The other vector to copy the components from.
    */
   template<typename From>
-  constexpr basic_vector3(const basic_vector3<From>& other) noexcept;
+  explicit constexpr basic_vector3(const basic_vector3<From>& other) noexcept;
 
   /** 
    * @brief Constructs a vector and moves the components out of the other vector
    *
    * @param other The other vector to move the components from. 
    */
-  constexpr basic_vector3(basic_vector3<value_type>&&) noexcept = default;
+  constexpr basic_vector3(basic_vector3<value_type>&& other) noexcept = default;
 
   /** @brief Destroys the vector */
   ~basic_vector3() noexcept = default;
@@ -172,7 +172,7 @@ struct basic_vector3 {
    * 
    * @return basic_vector3<value_type>& A reference to this vector.
    */
-  constexpr basic_vector3<value_type>& operator=(const basic_vector3<value_type>&) noexcept = default;
+  constexpr basic_vector3<value_type>& operator=(const basic_vector3<value_type>& other) noexcept = default;
 
   /**
    * @brief Copies the components from the other vector.
@@ -193,7 +193,7 @@ struct basic_vector3 {
    * 
    * @return basic_vector3<value_type>& A reference to this vector.
    */
-  constexpr basic_vector3<value_type>& operator=(basic_vector3<value_type>&&) noexcept = default;
+  constexpr basic_vector3<value_type>& operator=(basic_vector3<value_type>&& other) noexcept = default;
 
   // -- Unary arithmetic operators --
 

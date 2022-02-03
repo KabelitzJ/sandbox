@@ -6,37 +6,63 @@ namespace sbx {
 
 template<typename Type>
 inline constexpr basic_matrix4x4<Type>::basic_matrix4x4() noexcept
-: _columns{} { }
+: _columns{column_type{0}, column_type{0}, column_type{0}, column_type{0}} { }
 
 template<typename Type>
 inline constexpr basic_matrix4x4<Type>::basic_matrix4x4(const std::array<column_type, 4>& columns) noexcept
 : _columns{columns} { }
 
 template<typename Type>
-inline constexpr basic_matrix4x4<Type>::basic_matrix4x4(std::initializer_list<value_type> values) noexcept
-: _columns{} {
-  assert(values.size() == 16);
+inline constexpr basic_matrix4x4<Type>::basic_matrix4x4(
+  const column_type& column_0,
+  const column_type& column_1,
+  const column_type& column_2,
+  const column_type& column_3
+) noexcept
+: _columns{column_0, column_1, column_2, column_3} { }
 
-  std::copy_n(values.begin(), 16, data());
+template<typename Type>
+inline constexpr basic_matrix4x4<Type>::basic_matrix4x4(
+  const value_type x1, const value_type y1, const value_type z1, const value_type w1,
+  const value_type x2, const value_type y2, const value_type z2, const value_type w2,
+  const value_type x3, const value_type y3, const value_type z3, const value_type w3,
+  const value_type x4, const value_type y4, const value_type z4, const value_type w4
+) noexcept
+: _columns{column_type{x1, y1, z1, w1}, column_type{x2, y2, z2, w2}, column_type{x3, y3, z3, w3}, column_type{x4, y4, z4, w4}} { }
+
+template<typename Type>
+template<typename From>
+inline constexpr basic_matrix4x4<Type>::basic_matrix4x4(const basic_matrix4x4<From>& other) noexcept
+: _columns{column_type{other[0]}, column_type{other[1]}, column_type{other[2]}, column_type{other[3]}} {
+  // Casted from type must be an arithmetic types.
+  static_assert(std::is_arithmetic_v<From>, "Casted from type must be arithmetic");
 }
 
 template<typename Type>
-inline constexpr basic_matrix4x4<Type> basic_matrix4x4<Type>::identity() noexcept {
-  return basic_matrix4x4<Type>{
-    1, 0, 0, 0,
-    0, 1, 0, 0,
-    0, 0, 1, 0,
-    0, 0, 0, 1
-  };
+template<typename From>
+inline constexpr basic_matrix4x4<Type>& basic_matrix4x4<Type>::operator=(const basic_matrix4x4<From>& other) noexcept {
+  // Casted from type must be an arithmetic types.
+  static_assert(std::is_arithmetic_v<From>, "Casted from type must be arithmetic");
+
+  if (*this != other) {
+    _columns[0] = column_type{other[0]};
+    _columns[1] = column_type{other[1]};
+    _columns[2] = column_type{other[2]};
+    _columns[3] = column_type{other[3]};
+  }
+
+  return *this;
 }
 
 template<typename Type>
 inline constexpr typename basic_matrix4x4<Type>::column_type_reference basic_matrix4x4<Type>::operator[](const index_type index) noexcept {
+  assert(index < 4);
   return _columns[index];
 }
 
 template<typename Type>
 inline constexpr typename basic_matrix4x4<Type>::const_column_type_reference basic_matrix4x4<Type>::operator[](const index_type index) const noexcept {
+  assert(index < 4);
   return _columns[index];
 }
 

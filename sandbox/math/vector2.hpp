@@ -92,7 +92,7 @@ struct basic_vector2 {
    *
    * @param other The other vector to copy the components from. 
    */
-  constexpr basic_vector2(const basic_vector2<value_type>&) noexcept = default;
+  constexpr basic_vector2(const basic_vector2<value_type>& other) noexcept = default;
 
   /**
    * @brief Constructs a vector and copies the components from the other vector
@@ -102,14 +102,14 @@ struct basic_vector2 {
    * @param other The other vector to copy the components from.
    */
   template<typename From>
-  constexpr basic_vector2(const basic_vector2<From>& other) noexcept;
+  explicit constexpr basic_vector2(const basic_vector2<From>& other) noexcept;
 
   /** 
    * @brief Constructs a vector and moves the components out of the other vector
    *
    * @param other The other vector to move the components from. 
    */
-  constexpr basic_vector2(basic_vector2<value_type>&&) noexcept = default;
+  constexpr basic_vector2(basic_vector2<value_type>&& other) noexcept = default;
 
   /** @brief Destroys the vector */
   ~basic_vector2() noexcept = default;
@@ -132,7 +132,7 @@ struct basic_vector2 {
    * 
    * @return basic_vector2<value_type>& A reference to this vector.
    */
-  constexpr basic_vector2<value_type>& operator=(const basic_vector2<value_type>&) noexcept = default;
+  constexpr basic_vector2<value_type>& operator=(const basic_vector2<value_type>& other) noexcept = default;
 
   /**
    * @brief Copies the components from the other vector.
@@ -153,7 +153,7 @@ struct basic_vector2 {
    * 
    * @return basic_vector2<value_type>& A reference to this vector.
    */
-  constexpr basic_vector2<value_type>& operator=(basic_vector2<value_type>&&) noexcept = default;
+  constexpr basic_vector2<value_type>& operator=(basic_vector2<value_type>&& other) noexcept = default;
 
   // -- Unary arithmetic operators --
 
