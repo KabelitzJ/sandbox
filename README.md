@@ -1,130 +1,24 @@
 # Sandbox
 
-The sandbox engine a light-weight, ecs-based, modular rendering engine implemented using c++17 features.
+**! The sandbox engine is still under heavy construction !**  
+It is my attempt to learn about the core functionalities of a game engine and how to implement them.
 
 # Content
 
 - [:memo: Roadmap](#memo-roadmap)
-- [:gear: Build](#gear-build)
-- [:computer: Using sbx](#computer-using-sbx)
 - [:page_facing_up: License](#page_facing_up-license)
 
 # :memo: Roadmap
 
-- application
-  - window creation
-  - input handling
-  - logging
-- rendering
-  - shader
-  - mesh
-  - texture
-  - gl objects
-- processes
+- maths
+  - vectors
+  - matrices
+  - quaterions
+- task sceduling
+- system management
+  - rendering
+  - physics
 - editor
-
-# :gear: Build
-
-Start by cloning the repository
-
-```bash
-git clone https://github.com/KabelitzJ/sandbox.git
-```
-
-and moving into the created folder.
-
-```bash
-cd sandbox
-```
-
-You should make a separate folder for the generated build files.
-
-```bash
-mkdir build
-```
-
-Then you'll need to install and build (if not already in your local conan repository) the external dependencies.
-For this you need [conan installed](https://docs.conan.io/en/latest/installation.html#install-with-pip-recommended) and run the following commands in the root directory
-
-```bash
-conan install . --install-folder build/ --build missing
-```
-
-After that you can generate the [cmake](https://cmake.org/download/) build files with
-
-```bash
-cmake . -B build -G "<generator>" -DCMAKE_BUILD_TYPE=<config> -DSBX_BUILD_DEMO=<demo> -DSBX_BUILD_TESTS=<tests> -DSBX_GENERATE_DOCS=<docs>
-```
-
-Where
-
-| Tag           | Description                                                                  | Example value                   | Default value |
-| ------------- | ---------------------------------------------------------------------------- | ------------------------------- | ------------- |
-| `generator`   | Generator used to build the project                                          | `MinGW Makefiles`, `Unix Makefiles`<br>([available cmake generators](https://cmake.org/cmake/help/latest/manual/cmake-generators.7.html))| Platform dependent |
-| `config`      | Guild configuration                                                          | `Debug`, `Release`<br>([available cmake configurations](https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html#variable:CMAKE_BUILD_TYPE))| `Release` |
-| `demo`        | Should the demo executable be build                                          | `True` or `False`               | `False`       |
-| `tests`       | Should the tests be build                                                    | `True` or `False`               | `False`       |
-| `docs`        | Should the documentation files be generated                                  | `True` or `False`               | `False`       |
-
-If you build the tests you can run them by running
-
-```bash
-./build/tests/sbx_test.exe
-```
-
-# :computer: Using sbx
-
-The modularity of sbx allows you quickly set up a running example. For a deeper dive into the available functionalities you can
-check out the `demo/` directive of the [wiki page](https://github.com/KabelitzJ/sandbox/wiki).
-
-To start using sbx you'll need to include
-
-```cpp
-#include <core/core.hpp>
-```
-
-inside one of you `.cpp` files. You then need to define the entry point for sbx.
-
-```cpp
-void sbx::setup(sbx::engine& engine) {
-
-}
-```
-
-Sbx defines the `void main(int, char**)` method for you so :warning: _DO NOT_ :warning: define it yourself.
-
-Inside this entry point you can add your custom modules to the engine.
-Start by creating your own module that inherits from `sbx::module` and define the tree lifecycle methods.
-
-```cpp
-class my_module final : public sbx::module {
-
-public:
-  // data can be passed via the constructor
-  my_module(const some_data_object& data) : _data{data} { }
-  ~my_module() { }
-
-  void initialize() override { }
-
-  void update(const sbx::time delta_time) override { }
-
-  void terminate() override { }
-
-private:
-  // Any local state for that module can be declared here
-  some_data_object& _data{};
-
-};
-```
-
-After that you can add your module to the engine inside the entry point.
-
-```cpp
-void sbx::setup(sbx::engine& engine) {
-  // Arguments will be used to instantiate a new instance of my_module
-  engine.add_module<my_module>(some_data_instance);
-}
-```
 
 # :page_facing_up: License
 
