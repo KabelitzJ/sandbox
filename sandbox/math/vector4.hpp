@@ -82,7 +82,7 @@ struct basic_vector4 {
    * @brief Uses a three dimensional vector and a w-component to construct a four dimensional vector.
    * 
    * @param vector Three dimensional vector.
-   * @param w The value for the w component.
+   * @param w The value for the w component. (Default: 1)
    */
   constexpr basic_vector4(const basic_vector3<value_type>& vector, const value_type w = value_type{1}) noexcept;
 

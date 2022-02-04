@@ -200,23 +200,23 @@ inline constexpr bool operator!=(const basic_vector4<Type>& lhs, const basic_vec
 }
 
 template<typename Type>
-inline constexpr basic_vector4<Type> operator+(const basic_vector4<Type>& lhs, const basic_vector4<Type>& rhs) noexcept {
+inline constexpr basic_vector4<Type> operator+(basic_vector4<Type> lhs, const basic_vector4<Type>& rhs) noexcept {
   return lhs += rhs;
 }
 
 template<typename Type>
-inline constexpr basic_vector4<Type> operator-(const basic_vector4<Type>& lhs, const basic_vector4<Type>& rhs) noexcept {
+inline constexpr basic_vector4<Type> operator-(basic_vector4<Type> lhs, const basic_vector4<Type>& rhs) noexcept {
   return lhs -= rhs;
 }
 
 template<typename Type>
-inline constexpr basic_vector4<Type> operator*(const basic_vector4<Type>& lhs, const Type rhs) noexcept {
+inline constexpr basic_vector4<Type> operator*(basic_vector4<Type> lhs, const Type rhs) noexcept {
   return lhs *= rhs;
 }
 
 template<typename Type>
-inline constexpr basic_vector4<Type> operator*(const Type lhs, const basic_vector4<Type>& rhs) {
-  return rhs *= lhs;
+inline constexpr basic_vector4<Type> operator/(basic_vector4<Type> lhs, const Type rhs) {
+  return rhs /= lhs;
 }
 
 template<typename Type>

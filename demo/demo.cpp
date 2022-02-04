@@ -4,21 +4,12 @@
 
 int main() {
 
-  auto vector1 = sbx::vector3{1.0f, 2.0f, 3.0f};
-  auto vector2 = sbx::vector3{3.0f, 2.0f, 1.0f};
+  auto vector = sbx::vector3{1.0f, 2.0f, 3.0f};
+  auto matrix = sbx::matrix4x4::identity;
 
-  auto vector3 = vector1 + vector2 * 2.0f + sbx::vector3::forward;
+  auto result = matrix * sbx::vector4{vector};
 
-  vector3.normalize();
-
-  std::cout << vector3 << std::endl;
-  std::cout << vector3.length() << std::endl;
-
-  auto m = sbx::matrix4x4::identity;
-
-  m[1][3] = 2.0f;
-
-  std::cout << m << std::endl;
+  std::cout << result << std::endl;
 
   return 0;
 }

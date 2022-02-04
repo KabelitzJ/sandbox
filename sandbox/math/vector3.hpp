@@ -103,7 +103,7 @@ struct basic_vector3 {
    * @brief Constructs a three dimensional vector from a two dimensional vector.
    * 
    * @param vector A vector to copy the components from.
-   * @param z The value for the z component.
+   * @param z The value for the z component. (Default: 1)
    */
   constexpr basic_vector3(const basic_vector2<value_type>& vector, const value_type z = value_type{1}) noexcept;
 
