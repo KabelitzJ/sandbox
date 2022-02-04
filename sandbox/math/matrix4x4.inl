@@ -77,33 +77,43 @@ inline constexpr typename basic_matrix4x4<Type>::const_pointer basic_matrix4x4<T
 }
 
 template<typename Type>
-inline constexpr basic_vector4<Type> operator*(basic_matrix4x4<Type> lhs, const basic_vector4<Type>& rhs) noexcept {
-  return basic_vector4<Type>{
-    typename basic_vector4<Type>::value_type{lhs[0][0] * rhs[0] + lhs[1][0] * rhs[1] + lhs[2][0] * rhs[2] + lhs[3][0] * rhs[3]},
-    typename basic_vector4<Type>::value_type{lhs[0][1] * rhs[0] + lhs[1][1] * rhs[1] + lhs[2][1] * rhs[2] + lhs[3][1] * rhs[3]},
-    typename basic_vector4<Type>::value_type{lhs[0][2] * rhs[0] + lhs[1][2] * rhs[1] + lhs[2][2] * rhs[2] + lhs[3][2] * rhs[3]},
-    typename basic_vector4<Type>::value_type{lhs[0][3] * rhs[0] + lhs[1][3] * rhs[1] + lhs[2][3] * rhs[2] + lhs[3][3] * rhs[3]}
-  };
+inline constexpr bool operator==(const basic_matrix4x4<Type>& lhs, const basic_matrix4x4<Type>& rhs) noexcept {
+  return lhs[0] == rhs[0] && lhs[1] == rhs[1] && lhs[2] == rhs[2] && lhs[3] == rhs[3];
 }
 
 template<typename Type>
-inline constexpr basic_vector4<Type> operator*(basic_vector4<Type> lhs, const basic_matrix4x4<Type>& rhs) noexcept {
-  return basic_vector4<Type>{
-    typename basic_vector4<Type>::value_type{rhs[0][0] * lhs[0] + rhs[0][1] * lhs[1] + rhs[0][2] * lhs[2] + rhs[0][3] * lhs[3]},
-    typename basic_vector4<Type>::value_type{rhs[1][0] * lhs[0] + rhs[1][1] * lhs[1] + rhs[1][2] * lhs[2] + rhs[1][3] * lhs[3]},
-    typename basic_vector4<Type>::value_type{rhs[2][0] * lhs[0] + rhs[2][1] * lhs[1] + rhs[2][2] * lhs[2] + rhs[2][3] * lhs[3]},
-    typename basic_vector4<Type>::value_type{rhs[3][0] * lhs[0] + rhs[3][1] * lhs[1] + rhs[3][2] * lhs[2] + rhs[3][3] * lhs[3]}
-  };
+inline constexpr bool operator!=(const basic_matrix4x4<Type>& lhs, const basic_matrix4x4<Type>& rhs) noexcept {
+  return !(lhs == rhs);
+}
+
+template<typename Type>
+inline constexpr basic_vector4<Type> operator*(basic_matrix4x4<Type> lhs, const basic_vector4<Type>& rhs) noexcept {
+  // [NOTE] KAJ 2022-02-04 23:42 - This might become a performance bottleneck in the future. But most matrix multiplications are going to happen on the GPU anyways.
+  auto result = basic_vector4<Type>{};
+
+  for (auto column = typename basic_matrix4x4<Type>::index_type{0}; column < 4; ++column) {
+    for (auto i = typename basic_vector4<Type>::index_type{0}; i < 4; ++i) {
+      result[column] += lhs[column][i] * rhs[i];
+    }
+  }
+
+  return result;
 }
 
 template<typename Type>
 inline constexpr basic_matrix4x4<Type> operator*(basic_matrix4x4<Type> lhs, const basic_matrix4x4<Type>& rhs) noexcept {
-  return basic_matrix4x4<Type> {
-    typename basic_matrix4x4<Type>::column_type{lhs[0] * rhs[0][0] + lhs[1] * rhs[0][1] + lhs[2] * rhs[0][2] + lhs[3] * rhs[0][3]},
-    typename basic_matrix4x4<Type>::column_type{lhs[0] * rhs[1][0] + lhs[1] * rhs[1][1] + lhs[2] * rhs[1][2] + lhs[3] * rhs[1][3]},
-    typename basic_matrix4x4<Type>::column_type{lhs[0] * rhs[2][0] + lhs[1] * rhs[2][1] + lhs[2] * rhs[2][2] + lhs[3] * rhs[2][3]},
-    typename basic_matrix4x4<Type>::column_type{lhs[0] * rhs[3][0] + lhs[1] * rhs[3][1] + lhs[2] * rhs[3][2] + lhs[3] * rhs[3][3]}
-  };
+  // [NOTE] KAJ 2022-02-04 23:42 - This might become a performance bottleneck in the future. But most matrix multiplications are going to happen on the GPU anyways.
+  auto result = basic_matrix4x4<Type>{};
+
+  for (auto row = typename basic_matrix4x4<Type>::index_type{0}; row < 4; ++row) {
+    for (auto column = typename basic_matrix4x4<Type>::index_type{0}; column < 4; ++column) {
+      for (auto i = typename basic_matrix4x4<Type>::index_type{0}; i < 4; ++i) {
+        result[row][column] += lhs[row][i] * rhs[i][column];
+      }
+    }
+  }
+
+  return result;
 }
 
 template<typename Type>

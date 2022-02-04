@@ -217,13 +217,18 @@ private:
 
 }; // struct 
 
+// -- Free comparison operators --
+
+template<typename Type>
+[[nodiscard]] constexpr bool operator==(const basic_matrix4x4<Type>& lhs, const basic_matrix4x4<Type>& rhs) noexcept;
+
+template<typename Type>
+[[nodiscard]] constexpr bool operator!=(const basic_matrix4x4<Type>& lhs, const basic_matrix4x4<Type>& rhs) noexcept;
+
 // -- Free arythmetic operators --
 
 template<typename Type>
 [[nodiscard]] constexpr basic_vector4<Type> operator*(basic_matrix4x4<Type> lhs, const basic_vector4<Type>& rhs) noexcept;
-
-template<typename Type>
-[[nodiscard]] constexpr basic_vector4<Type> operator*(basic_vector4<Type> lhs, const basic_matrix4x4<Type>& rhs) noexcept;
 
 template<typename Type>
 [[nodiscard]] constexpr basic_matrix4x4<Type> operator*(basic_matrix4x4<Type> lhs, const basic_matrix4x4<Type>& rhs) noexcept;
