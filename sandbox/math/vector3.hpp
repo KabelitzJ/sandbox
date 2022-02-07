@@ -105,7 +105,7 @@ struct basic_vector3 {
    * @param vector A vector to copy the components from.
    * @param z The value for the z component. (Default: 1)
    */
-  constexpr basic_vector3(const basic_vector2<value_type>& vector, const value_type z = value_type{1}) noexcept;
+  explicit constexpr basic_vector3(const basic_vector2<value_type>& vector, const value_type z = value_type{1}) noexcept;
 
   /** 
    * @brief Constructs a vector and copies the components from the other vector

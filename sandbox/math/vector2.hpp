@@ -46,7 +46,7 @@ struct basic_vector2 {
   // -- Static data members --
 
   /** @brief The origin of two-dimensional space */
-  inline static constexpr basic_vector2<value_type> origin{value_type{0}, value_type{0}};
+  inline static constexpr basic_vector2<value_type> zero{value_type{0}, value_type{0}};
 
   /** @brief A unit vector along the positive x-axis */
   inline static constexpr basic_vector2<value_type> right{value_type{1}, value_type{0}};

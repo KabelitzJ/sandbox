@@ -43,7 +43,7 @@ struct basic_vector4 {
   // -- Static data members --
 
   /** @brief The origin of three dimensional space */
-  inline static constexpr basic_vector4<value_type> origin{value_type{0}, value_type{0}, value_type{0}, value_type{0}};
+  inline static constexpr basic_vector4<value_type> zero{value_type{0}, value_type{0}, value_type{0}, value_type{0}};
 
   // -- Data members --
 
@@ -84,7 +84,7 @@ struct basic_vector4 {
    * @param vector Three dimensional vector.
    * @param w The value for the w component. (Default: 1)
    */
-  constexpr basic_vector4(const basic_vector3<value_type>& vector, const value_type w = value_type{1}) noexcept;
+  explicit constexpr basic_vector4(const basic_vector3<value_type>& vector, const value_type w = value_type{1}) noexcept;
 
   /** 
    * @brief Constructs a vector and copies the components from the other vector

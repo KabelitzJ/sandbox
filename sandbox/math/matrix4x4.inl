@@ -14,21 +14,21 @@ inline constexpr basic_matrix4x4<Type>::basic_matrix4x4(const std::array<column_
 
 template<typename Type>
 inline constexpr basic_matrix4x4<Type>::basic_matrix4x4(
-  const column_type& column_0,
-  const column_type& column_1,
-  const column_type& column_2,
-  const column_type& column_3
+  const column_type& column0,
+  const column_type& column1,
+  const column_type& column2,
+  const column_type& column3
 ) noexcept
-: _columns{column_0, column_1, column_2, column_3} { }
+: _columns{column0, column1, column2, column3} { }
 
 template<typename Type>
 inline constexpr basic_matrix4x4<Type>::basic_matrix4x4(
+  const value_type x0, const value_type y0, const value_type z0, const value_type w0,
   const value_type x1, const value_type y1, const value_type z1, const value_type w1,
   const value_type x2, const value_type y2, const value_type z2, const value_type w2,
-  const value_type x3, const value_type y3, const value_type z3, const value_type w3,
-  const value_type x4, const value_type y4, const value_type z4, const value_type w4
+  const value_type x3, const value_type y3, const value_type z3, const value_type w3
 ) noexcept
-: _columns{column_type{x1, y1, z1, w1}, column_type{x2, y2, z2, w2}, column_type{x3, y3, z3, w3}, column_type{x4, y4, z4, w4}} { }
+: _columns{column_type{x0, y0, z0, w0}, column_type{x1, y1, z1, w1}, column_type{x2, y2, z2, w2}, column_type{x3, y3, z3, w3}} { }
 
 template<typename Type>
 template<typename From>
