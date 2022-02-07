@@ -56,15 +56,15 @@ TEST(sbx_math_matrix_4x4, matrix_matrix_multiplication) {
 
 TEST(sbx_math_matrix_4x4, matrix_vector_multiplication) {
   const auto matrix = sbx::matrix4x4{
-    3.0f, 2.0f, 1.0f, 0.0f,
-    1.0f, 0.0f, 2.0f, 0.0f,
-    0.0f, 0.0f, 0.0f, 0.0f,
-    0.0f, 0.0f, 0.0f, 0.0f
+    1.0f, 0.0f, 3.0f, 0.0f,
+    0.0f, 0.0f, 2.0f, 3.0f,
+    4.0f, 1.0f, 0.0f, 2.0f,
+    0.0f, 3.0f, 4.0f, 0.0f
   };
 
-  const auto vector = sbx::vector4{1.0f, 0.0f, 4.0f, 0.0f};
+  const auto vector = sbx::vector4{1.0f, 2.0f, 3.0f, 4.0f};
 
-  const auto expexted_result = sbx::vector4{7.0f, 9.0f, 0.0f, 0.0f};
+  const auto expexted_result = sbx::vector4{10.0f, 18.0f, 14.0f, 18.0f};
 
   const auto result = matrix * vector;
 
