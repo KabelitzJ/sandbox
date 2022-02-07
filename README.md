@@ -1,6 +1,6 @@
 # Sandbox
 
-**! The sandbox engine is still under heavy construction !**  
+**! The sandbox engine is still under heavy development !**  
 It is my attempt to learn about the core functionalities of a game engine and how to implement them.
 
 # Content
@@ -14,6 +14,7 @@ It is my attempt to learn about the core functionalities of a game engine and ho
   - vectors
   - matrices
   - quaterions
+- data serialization
 - task sceduling
 - system management
   - rendering
