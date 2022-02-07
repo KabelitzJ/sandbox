@@ -55,6 +55,36 @@ inline constexpr basic_matrix4x4<Type>& basic_matrix4x4<Type>::operator=(const b
 }
 
 template<typename Type>
+inline constexpr basic_matrix4x4<Type>& basic_matrix4x4<Type>::operator+=(const basic_matrix4x4<Type>& other) noexcept {
+  _columns[0] += other[0];
+  _columns[1] += other[1];
+  _columns[2] += other[2];
+  _columns[3] += other[3];
+
+  return *this;
+}
+
+template<typename Type>
+inline constexpr basic_matrix4x4<Type>& basic_matrix4x4<Type>::operator-=(const basic_matrix4x4<Type>& other) noexcept {
+  _columns[0] -= other[0];
+  _columns[1] -= other[1];
+  _columns[2] -= other[2];
+  _columns[3] -= other[3];
+
+  return *this;
+}
+
+template<typename Type>
+inline constexpr basic_matrix4x4<Type>& basic_matrix4x4<Type>::operator*=(const Type scalar) noexcept {
+  _columns[0] *= scalar;
+  _columns[1] *= scalar;
+  _columns[2] *= scalar;
+  _columns[3] *= scalar;
+
+  return *this;
+}
+
+template<typename Type>
 inline constexpr typename basic_matrix4x4<Type>::column_type_reference basic_matrix4x4<Type>::operator[](const index_type index) noexcept {
   assert(index < 4);
   return _columns[index];
@@ -84,6 +114,21 @@ inline constexpr bool operator==(const basic_matrix4x4<Type>& lhs, const basic_m
 template<typename Type>
 inline constexpr bool operator!=(const basic_matrix4x4<Type>& lhs, const basic_matrix4x4<Type>& rhs) noexcept {
   return !(lhs == rhs);
+}
+
+template<typename Type>
+inline constexpr basic_matrix4x4<Type> operator+(const basic_matrix4x4<Type>& lhs, const basic_matrix4x4<Type>& rhs) noexcept {
+  return lhs += rhs;
+}
+
+template<typename Type>
+inline constexpr basic_matrix4x4<Type> operator-(const basic_matrix4x4<Type>& lhs, const basic_matrix4x4<Type>& rhs) noexcept {
+  return lhs -= rhs;
+}
+
+template<typename Type>
+inline constexpr basic_matrix4x4<Type> operator*(const basic_matrix4x4<Type>& lhs, const Type rhs) noexcept {
+  return lhs *= rhs;
 }
 
 template<typename Type>

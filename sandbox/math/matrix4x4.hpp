@@ -173,6 +173,35 @@ struct basic_matrix4x4 {
    */
   constexpr basic_matrix4x4<value_type>& operator=(basic_matrix4x4<value_type>&& other) noexcept = default;
 
+  // -- Binary arithmetic operators --
+
+  /**
+   * @brief Adds the given matrix to this matrix.
+   *
+   * @param other The matrix to add. 
+   * 
+   * @return basic_matrix4x4<value_type>& Reference to this matrix.
+   */
+  constexpr basic_matrix4x4<value_type>& operator+=(const basic_matrix4x4<value_type>& other) noexcept;
+
+  /**
+   * @brief Subtracts the given matrix from this matrix.
+   *
+   * @param other The matrix to subtract. 
+   * 
+   * @return basic_matrix4x4<value_type>& Reference to this matrix.
+   */
+  constexpr basic_matrix4x4<value_type>& operator-=(const basic_matrix4x4<value_type>& other) noexcept;
+
+  /**
+   * @brief Multiplies this matrix by the given scalar.
+   *
+   * @param scalar The scalar to multiply by. 
+   *
+   * @return basic_matrix4x4<value_type>& Reference to this matrix. 
+   */
+  constexpr basic_matrix4x4<value_type>& operator*=(const value_type scalar) noexcept;
+
   // -- Access operators --
 
   /**
@@ -226,6 +255,15 @@ template<typename Type>
 [[nodiscard]] constexpr bool operator!=(const basic_matrix4x4<Type>& lhs, const basic_matrix4x4<Type>& rhs) noexcept;
 
 // -- Free arythmetic operators --
+
+template<typename Type>
+[[nodiscard]] constexpr basic_matrix4x4<Type> operator+(const basic_matrix4x4<Type>& lhs, const basic_matrix4x4<Type>& rhs) noexcept;
+
+template<typename Type>
+[[nodiscard]] constexpr basic_matrix4x4<Type> operator-(const basic_matrix4x4<Type>& lhs, const basic_matrix4x4<Type>& rhs) noexcept;
+
+template<typename Type>
+[[nodiscard]] constexpr basic_matrix4x4<Type> operator*(const basic_matrix4x4<Type>& lhs, const Type rhs) noexcept;
 
 template<typename Type>
 [[nodiscard]] constexpr basic_vector4<Type> operator*(basic_matrix4x4<Type> lhs, const basic_vector4<Type>& rhs) noexcept;
