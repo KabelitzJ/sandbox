@@ -18,19 +18,6 @@ using uint64 = std::uint64_t;
 using float32 = float;
 using float64 = double;
 
-static_assert(sizeof(int8) == 1, "Target platform does not support 8 bit signed integer numbers")
-static_assert(sizeof(int16) == 2, "Target platform does not support 16 bit signed integer numbers")
-static_assert(sizeof(int32) == 4, "Target platform does not support 32 bit signed integer numbers")
-static_assert(sizeof(int64) == 8, "Target platform does not support 64 bit signed integer numbers")
-
-static_assert(sizeof(uint8) == 1, "Target platform does not support 8 bit unsigned integer numbers")
-static_assert(sizeof(uint16) == 2, "Target platform does not support 16 bit unsigned integer numbers")
-static_assert(sizeof(uint32) == 4, "Target platform does not support 32 bit unsigned integer numbers")
-static_assert(sizeof(uint64) == 8, "Target platform does not support 64 bit unsigned integer numbers")
-
-static_assert(sizeof(float32) == 4, "Target platform does not support 32 bit floating-point numbers");
-static_assert(sizeof(float64) == 8, "Target platform does not support 64 bit floating-point numbers");
-
 } // namespace sbx
 
 #endif // SBX_TYPES_PRIMITIVES_HPP_
