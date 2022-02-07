@@ -7,4 +7,6 @@
 
 #include "matrix4x4.hpp"
 
+#include "quaternion.hpp"
+
 #endif // SBX_MATH_HPP_

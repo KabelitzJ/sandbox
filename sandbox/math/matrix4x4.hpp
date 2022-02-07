@@ -7,6 +7,8 @@
 #include <ostream>
 #include <type_traits>
 
+#include <types/primitives.hpp>
+
 #include "vector4.hpp"
 
 namespace sbx {

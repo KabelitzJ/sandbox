@@ -47,13 +47,13 @@ struct basic_vector4 {
 
   // -- Data members --
 
-  /** @brief The x-component of the vector. */
+  /** @brief The x-component. */
   value_type x{};
-  /** @brief The y-component of the vector. */
+  /** @brief The y-component. */
   value_type y{};
-  /** @brief The z-component of the vector. */
+  /** @brief The z-component. */
   value_type z{};
-  /** @brief The w-component of the vector. */
+  /** @brief The w-component. */
   value_type w{};
 
   // -- Constructors --
@@ -116,7 +116,7 @@ struct basic_vector4 {
   // -- Static member functions --
 
   /**
-   * @brief Returns a normalized copy of the vector.
+   * @brief Returns a normalized copy.
    * 
    * @return basic_vector4<value_type> The normalized vector.
    */
@@ -226,9 +226,9 @@ struct basic_vector4 {
   // -- Member functions --
 
   /**
-   * @brief Returns the length of the vector.
+   * @brief Returns the length.
    * 
-   * @return value_type The length of the vector.
+   * @return value_type The length.
    */
   [[nodiscard]] constexpr length_type length() const noexcept;
 
@@ -238,16 +238,16 @@ struct basic_vector4 {
   // -- Data access --
 
   /**
-   * @brief Return a pointer to the first component of the vector.
+   * @brief Return a pointer to the first component.
    *
-   * @return pointer A pointer to the first component of the vector. 
+   * @return pointer A pointer to the first component. 
    */
   [[nodiscard]] constexpr pointer data() noexcept;
 
   /**
-   * @brief Return a pointer to the first component of the vector.
+   * @brief Return a pointer to the first component.
    * 
-   * @return const_pointer A pointer to the first component of the vector.
+   * @return const_pointer A pointer to the first component.
    */
   [[nodiscard]] constexpr const_pointer data() const noexcept;
 
