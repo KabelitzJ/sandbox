@@ -3,9 +3,12 @@
 
 #include <array>
 #include <cstddef>
+#include <concepts>
 #include <fstream>
 #include <ostream>
 #include <type_traits>
+
+#include <meta/concepts.hpp>
 
 #include <types/primitives.hpp>
 
@@ -14,10 +17,8 @@
 namespace sbx {
 
 template<typename Type>
+requires arithmetic<Type>
 struct basic_matrix4x4 {
-
-  // Matrix components must be arithmetic types.
-  static_assert(std::is_arithmetic_v<Type>, "Type must be arithmetic");
 
   // -- Type aliases --
 
@@ -133,6 +134,7 @@ struct basic_matrix4x4 {
    * @param other The matrix to copy.
    */
   template<typename From>
+  requires arithmetic<From> && std::convertible_to<From, value_type>
   explicit constexpr basic_matrix4x4(const basic_matrix4x4<From>& other) noexcept;
 
   /**
@@ -164,6 +166,7 @@ struct basic_matrix4x4 {
    * @return basic_matrix4x4<value_type>& Reference to this matrix.
    */
   template<typename From>
+  requires arithmetic<From> && std::convertible_to<From, value_type>
   constexpr basic_matrix4x4<value_type>& operator=(const basic_matrix4x4<From>& other) noexcept;
 
   /**

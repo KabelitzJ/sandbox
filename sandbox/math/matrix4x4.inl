@@ -32,18 +32,14 @@ inline constexpr basic_matrix4x4<Type>::basic_matrix4x4(
 
 template<typename Type>
 template<typename From>
+requires arithmetic<From> && std::convertible_to<From, Type>
 inline constexpr basic_matrix4x4<Type>::basic_matrix4x4(const basic_matrix4x4<From>& other) noexcept
-: _columns{column_type{other[0]}, column_type{other[1]}, column_type{other[2]}, column_type{other[3]}} {
-  // Casted from type must be an arithmetic types.
-  static_assert(std::is_arithmetic_v<From>, "Casted from type must be arithmetic");
-}
+: _columns{column_type{other[0]}, column_type{other[1]}, column_type{other[2]}, column_type{other[3]}} { }
 
 template<typename Type>
 template<typename From>
+requires arithmetic<From> && std::convertible_to<From, Type>
 inline constexpr basic_matrix4x4<Type>& basic_matrix4x4<Type>::operator=(const basic_matrix4x4<From>& other) noexcept {
-  // Casted from type must be an arithmetic types.
-  static_assert(std::is_arithmetic_v<From>, "Casted from type must be arithmetic");
-
   if (*this != other) {
     _columns[0] = column_type{other[0]};
     _columns[1] = column_type{other[1]};

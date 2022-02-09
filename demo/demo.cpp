@@ -22,9 +22,7 @@ int main() {
 
   auto equal = angle == angle2;
 
-  std::cout << "equal: <" << equal << ">" << std::endl;
-
-  std::cout << "Test" << std::endl;
+  std::cout << "equal: " << equal << std::endl;
 
   return 0;
 }

@@ -1,9 +1,13 @@
 #ifndef SBX_MATH_VECTOR2_HPP_
 #define SBX_MATH_VECTOR2_HPP_
 
+#include <cstddef>
+#include <concepts>
 #include <fstream>
 #include <ostream>
 #include <type_traits>
+
+#include <meta/concepts.hpp>
 
 #include <types/primitives.hpp>
 
@@ -15,10 +19,8 @@ namespace sbx {
  * @tparam Type The type of the vectors components.
  */
 template<typename Type>
+requires arithmetic<Type>
 struct basic_vector2 {
-
-  // Vector components can only be arithmetic types.
-  static_assert(std::is_arithmetic_v<Type>, "Type must be arithmetic");
 
   // -- Type aliases --
 
@@ -102,6 +104,7 @@ struct basic_vector2 {
    * @param other The other vector to copy the components from.
    */
   template<typename From>
+  requires arithmetic<From> && std::convertible_to<From, value_type>
   explicit constexpr basic_vector2(const basic_vector2<From>& other) noexcept;
 
   /** 
@@ -144,6 +147,7 @@ struct basic_vector2 {
    * @return basic_vector2<value_type>& A reference to this vector.
    */
   template<typename From>
+  requires arithmetic<From> && std::convertible_to<From, value_type>
   constexpr basic_vector2<value_type>& operator=(const basic_vector2<From>& other) noexcept;
 
   /**

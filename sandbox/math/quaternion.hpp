@@ -1,21 +1,21 @@
 #ifndef SBX_MATH_QUATERNION_HPP_
 #define SBX_MATH_QUATERNION_HPP_
 
-#include <array>
 #include <cstddef>
+#include <concepts>
 #include <fstream>
 #include <ostream>
 #include <type_traits>
+
+#include <meta/concepts.hpp>
 
 #include <types/primitives.hpp>
 
 namespace sbx {
 
 template<typename Type>
+requires arithmetic<Type>
 struct basic_quaternion {
-
-  // Matrix components must be arithmetic types.
-  static_assert(std::is_arithmetic_v<Type>, "Type must be arithmetic");
 
   // -- Type aliases --
 

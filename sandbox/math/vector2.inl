@@ -22,12 +22,10 @@ inline constexpr basic_vector2<Type>::basic_vector2(const Type _x, const Type _y
 
 template<typename Type>
 template<typename From>
+requires arithmetic<From> && std::convertible_to<From, Type>
 inline constexpr basic_vector2<Type>::basic_vector2(const basic_vector2<From>& other) noexcept
 : x{static_cast<Type>(other.x)}, 
-  y{static_cast<Type>(other.y)} {
-  // Casted from type must be an arithmetic types.
-  static_assert(std::is_arithmetic_v<From>, "Casted from type must be arithmetic");
-}
+  y{static_cast<Type>(other.y)} { }
 
 template<typename Type>
 constexpr basic_vector2<Type> basic_vector2<Type>::normalized(const basic_vector2<Type>& vector) noexcept {
@@ -37,10 +35,8 @@ constexpr basic_vector2<Type> basic_vector2<Type>::normalized(const basic_vector
 
 template<typename Type>
 template<typename From>
+requires arithmetic<From> && std::convertible_to<From, Type>
 inline constexpr basic_vector2<Type>& basic_vector2<Type>::operator=(const basic_vector2<From>& other) noexcept {
-  // Casted from type must be an arithmetic types.
-  static_assert(std::is_arithmetic_v<From>, "Casted from type must be arithmetic");
-
   if (*this != other) {
     x = static_cast<Type>(other.x);
     y = static_cast<Type>(other.y);

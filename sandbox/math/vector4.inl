@@ -35,14 +35,12 @@ inline constexpr basic_vector4<Type>::basic_vector4(const basic_vector3<Type>& v
 
 template<typename Type>
 template<typename From>
+requires arithmetic<From> && std::convertible_to<From, Type>
 inline constexpr basic_vector4<Type>::basic_vector4(const basic_vector4<From>& other) noexcept
 : x{static_cast<value_type>(other.x)},
   y{static_cast<value_type>(other.y)},
   z{static_cast<value_type>(other.z)},
-  w{static_cast<value_type>(other.w)} {
-  // Casted from type must be an arithmetic types.
-  static_assert(std::is_arithmetic_v<From>, "Casted from type must be arithmetic");
-}
+  w{static_cast<value_type>(other.w)} { }
 
 template<typename Type>
 inline constexpr basic_vector4<Type> basic_vector4<Type>::normalized(const basic_vector4<Type>& vector) noexcept {
@@ -52,10 +50,8 @@ inline constexpr basic_vector4<Type> basic_vector4<Type>::normalized(const basic
 
 template<typename Type>
 template<typename From>
+requires arithmetic<From> && std::convertible_to<From, Type>
 inline constexpr basic_vector4<Type>& basic_vector4<Type>::operator=(const basic_vector4<From>& other) noexcept {
-  // Casted from type must be an arithmetic types.
-  static_assert(std::is_arithmetic_v<From>, "Casted from type must be arithmetic");
-
   if (*this != other) {
     x = static_cast<value_type>(other.x);
     y = static_cast<value_type>(other.y);
