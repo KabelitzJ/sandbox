@@ -11,20 +11,36 @@
 
 namespace sbx {
 
+/**
+ * @brief A class representing an angle in degrees.
+ * 
+ * @tparam Type The underlying type of the angle.
+ */
 template<typename Type>
 requires std::floating_point<Type>
 class degrees {
 
 public:
 
+  /** The underlying type of the angle. */
   using value_type = Type;
 
-  explicit constexpr degrees(const value_type value) : _value{value} {}
+  /**
+   * @brief Constructs a new degrees object.
+   *
+   * @param value The value of the angle in degrees.
+   */
+  explicit constexpr degrees(const value_type value);
+
+  /** @brief Destroys the degrees object. */
   ~degrees() noexcept = default;
 
-  constexpr operator value_type() const noexcept {
-    return _value;
-  } 
+  /**
+   * @brief Converts the degrees object to its underlying type.
+   *
+   * @return value_type The underlying type of the degrees object.
+   */
+  constexpr operator value_type() const noexcept;
 
 private:
 
@@ -32,10 +48,26 @@ private:
 
 };
 
+/**
+ * @brief Compares two degrees objects for equality.   
+ * 
+ * @param lhs The left hand side of the comparison.
+ * @param rhs The right hand side of the comparison.
+ * 
+ * @return bool True if the two degrees objects are equal, false otherwise.
+ */
 template<typename Type>
 requires std::floating_point<Type>
 constexpr bool operator==(const degrees<Type>& lhs, const degrees<Type>& rhs) noexcept;
 
+/**
+ * @brief Compares two degrees objects
+ *
+ * @param lhs The left hand side of the comparison.
+ * @param rhs The right hand side of the comparison.
+ *
+ * @return std::strong_ordering The comparison result.
+ */
 template<typename Type>
 requires std::floating_point<Type>  
 constexpr std::strong_ordering operator<=>(const degrees<Type>& lhs, const degrees<Type>& rhs) noexcept;
@@ -48,12 +80,10 @@ public:
 
   using value_type = Type;
 
-  explicit constexpr radians(const value_type value) : _value{value} {}
+  explicit constexpr radians(const value_type value);
   ~radians() noexcept = default;
 
-  constexpr operator value_type() const noexcept {
-    return _value;
-  } 
+  constexpr operator value_type() const noexcept;
 
 private:
 
@@ -77,17 +107,13 @@ public:
 
   using value_type = Type;
 
-  constexpr angle(const degrees<value_type>& degrees) noexcept : _degrees{degrees} { }
-  constexpr angle(const radians<value_type>& radians) noexcept : _degrees{radians * value_type{180.0} / pi_v<value_type>} { }
+  constexpr angle(const degrees<value_type>& degrees) noexcept;
+  constexpr angle(const radians<value_type>& radians) noexcept;
   ~angle() noexcept = default;
 
-  constexpr degrees<value_type> to_degrees() const noexcept {
-    return degrees<value_type>{_degrees};
-  }
+  constexpr degrees<value_type> to_degrees() const noexcept;
 
-  constexpr radians<value_type> to_radians() const noexcept {
-    return radians<value_type>{_degrees * pi_v<value_type> / value_type{180.0}};
-  }
+  constexpr radians<value_type> to_radians() const noexcept;
 
 private:
 

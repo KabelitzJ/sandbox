@@ -1,38 +1,74 @@
 namespace sbx {
 
 template<typename Type>
+inline constexpr degrees<Type>::degrees(const value_type value)
+: _value{value} { }
+
+template<typename Type>
+inline constexpr degrees<Type>::operator Type() const noexcept {
+  return _value;
+}
+
+template<typename Type>
 requires std::floating_point<Type>
-constexpr bool operator==(const degrees<Type>& lhs, const degrees<Type>& rhs) noexcept {
+inline constexpr bool operator==(const degrees<Type>& lhs, const degrees<Type>& rhs) noexcept {
   return static_cast<Type>(lhs) == static_cast<Type>(rhs);
 }
 
 template<typename Type>
 requires std::floating_point<Type>  
-constexpr std::strong_ordering operator<=>(const degrees<Type>& lhs, const degrees<Type>& rhs) noexcept {
+inline constexpr std::strong_ordering operator<=>(const degrees<Type>& lhs, const degrees<Type>& rhs) noexcept {
   return static_cast<Type>(lhs) <=> static_cast<Type>(rhs);
 }
 
 template<typename Type>
+inline constexpr radians<Type>::radians(const value_type value)
+: _value{value} { }
+
+template<typename Type>
+inline constexpr radians<Type>::operator Type() const noexcept {
+  return _value;
+}
+
+template<typename Type>
 requires std::floating_point<Type>
-constexpr bool operator==(const radians<Type>& lhs, const radians<Type>& rhs) noexcept {
+inline constexpr bool operator==(const radians<Type>& lhs, const radians<Type>& rhs) noexcept {
   return static_cast<Type>(lhs) == static_cast<Type>(rhs);
 }
 
 template<typename Type>
 requires std::floating_point<Type>  
-constexpr std::strong_ordering operator<=>(const radians<Type>& lhs, const radians<Type>& rhs) noexcept {
+inline constexpr std::strong_ordering operator<=>(const radians<Type>& lhs, const radians<Type>& rhs) noexcept {
   return static_cast<Type>(lhs) <=> static_cast<Type>(rhs);
 }
 
 template<typename Type>
+inline constexpr angle<Type>::angle(const degrees<value_type>& degrees) noexcept
+: _degrees{degrees} { }
+
+template<typename Type>
+inline constexpr angle<Type>::angle(const radians<value_type>& radians) noexcept
+: _degrees{radians * value_type{180} / pi_v<value_type>} { }
+
+template<typename Type>
+inline constexpr degrees<Type> angle<Type>::to_degrees() const noexcept {
+  return degrees<value_type>{_degrees};
+}
+
+template<typename Type>
+inline constexpr radians<Type> angle<Type>::to_radians() const noexcept {
+  return radians<value_type>{_degrees * pi_v<value_type> / value_type{180.0}};
+}
+
+template<typename Type>
 requires std::floating_point<Type>
-constexpr bool operator==(const angle<Type>& lhs, const angle<Type>& rhs) noexcept {
+inline constexpr bool operator==(const angle<Type>& lhs, const angle<Type>& rhs) noexcept {
   return lhs.to_degrees() == rhs.to_degrees();
 }
 
 template<typename Type>
 requires std::floating_point<Type>  
-constexpr std::strong_ordering operator<=>(const angle<Type>& lhs, const angle<Type>& rhs) noexcept {
+inline constexpr std::strong_ordering operator<=>(const angle<Type>& lhs, const angle<Type>& rhs) noexcept {
   return lhs.to_degrees() <=> rhs.to_degrees();
 }
 
