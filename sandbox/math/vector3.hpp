@@ -6,6 +6,8 @@
 #include <ostream>
 #include <type_traits>
 
+#include <meta/type_guards.hpp>
+
 #include <types/primitives.hpp>
 
 #include "vector2.hpp"
@@ -17,11 +19,8 @@ namespace sbx {
  *
  * @tparam Type The type of the vectors components.
  */
-template<typename Type>
+template<typename Type, IS_ARITHMETIC(Type)>
 struct basic_vector3 {
-
-  // Vector components can only be arithmetic types.
-  static_assert(std::is_arithmetic_v<Type>, "Type must be arithmetic");
 
   // -- Type aliases --
 
@@ -121,7 +120,7 @@ struct basic_vector3 {
    * 
    * @param other The other vector to copy the components from.
    */
-  template<typename From>
+  template<typename From, IS_ARITHMETIC(Type)>
   explicit constexpr basic_vector3(const basic_vector3<From>& other) noexcept;
 
   /** 
@@ -183,7 +182,7 @@ struct basic_vector3 {
    * 
    * @return basic_vector3<value_type>& A reference to this vector.
    */
-  template<typename From>
+  template<typename From, IS_ARITHMETIC(Type)>
   constexpr basic_vector3<value_type>& operator=(const basic_vector3<From>& other) noexcept;
 
   /**
