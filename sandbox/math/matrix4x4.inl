@@ -160,10 +160,10 @@ inline constexpr basic_matrix4x4<Type> operator*(basic_matrix4x4<Type> lhs, cons
   // [NOTE] KAJ 2022-02-04 23:42 - This might become a performance bottleneck in the future. But most matrix multiplications are going to happen on the GPU anyways.
   auto result = basic_matrix4x4<Type>{};
 
-  for (auto row = typename basic_matrix4x4<Type>::index_type{0}; row < 4; ++row) {
-    for (auto column = typename basic_matrix4x4<Type>::index_type{0}; column < 4; ++column) {
+  for (auto column = typename basic_matrix4x4<Type>::index_type{0}; column < 4; ++column) {
+    for (auto row = typename basic_matrix4x4<Type>::index_type{0}; row < 4; ++row) {
       for (auto i = typename basic_matrix4x4<Type>::index_type{0}; i < 4; ++i) {
-        result[row][column] += lhs[row][i] * rhs[i][column];
+        result[column][row] += lhs[column][i] * rhs[i][row];
       }
     }
   }

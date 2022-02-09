@@ -42,16 +42,40 @@ TEST(sbx_math_matrix_4x4, matrix_matrix_multiplication) {
     0.0f, 0.0f, 0.0f, 0.0f
   };
 
-  const auto expexted_result = sbx::matrix4x4{
+  const auto matrix3 = sbx::matrix4x4{
+    5.0f, 8.0f, 4.0f, 2.0f,
+    9.0f, 0.0f, 4.0f, 0.0f,
+    2.0f, 5.0f, 5.0f, 1.0f,
+    3.0f, 3.0f, 1.0f, 7.0f
+  };
+
+  const auto matrix4 = sbx::matrix4x4{
+    6.0f, 3.0f, 4.0f, 7.0f,
+    6.0f, 9.0f, 8.0f, 1.0f,
+    2.0f, 0.0f, 2.0f, 2.0f,
+    9.0f, 2.0f, 4.0f, 3.0f
+  };
+
+  const auto expexted_result1 = sbx::matrix4x4{
     7.0f, 8.0f, 0.0f, 0.0f,
     9.0f, 2.0f, 0.0f, 0.0f,
     0.0f, 0.0f, 0.0f, 0.0f,
     0.0f, 0.0f, 0.0f, 0.0f
   };
 
-  const auto result = matrix1 * matrix2;
+  const auto expexted_result2 = sbx::matrix4x4{
+    104.0f, 91.0f, 100.0f, 57.0f,
+    62.0f,  27.0f, 44.0f,  71.0f,
+    61.0f,  53.0f, 62.0f,  32.0f,
+    101.0f, 50.0f, 66.0f,  47.0f
+  };
 
-  EXPECT_EQ(result, expexted_result);
+  const auto result1 = matrix1 * matrix2;
+
+  const auto result2 = matrix3 * matrix4;
+
+  EXPECT_EQ(result1, expexted_result1);
+  EXPECT_EQ(result2, expexted_result2);
 }
 
 TEST(sbx_math_matrix_4x4, matrix_vector_multiplication) {
