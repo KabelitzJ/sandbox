@@ -2,11 +2,12 @@
 #define SBX_MATH_VECTOR3_HPP_
 
 #include <cstddef>
+#include <concepts>
 #include <fstream>
 #include <ostream>
 #include <type_traits>
 
-#include <meta/type_guards.hpp>
+#include <meta/concepts.hpp>
 
 #include <types/primitives.hpp>
 
@@ -19,7 +20,8 @@ namespace sbx {
  *
  * @tparam Type The type of the vectors components.
  */
-template<typename Type, IS_ARITHMETIC(Type)>
+template<typename Type>
+requires arithmetic<Type>
 struct basic_vector3 {
 
   // -- Type aliases --
@@ -120,7 +122,8 @@ struct basic_vector3 {
    * 
    * @param other The other vector to copy the components from.
    */
-  template<typename From, IS_ARITHMETIC(Type)>
+  template<typename From>
+  requires arithmetic<From> && std::convertible_to<From, value_type>
   explicit constexpr basic_vector3(const basic_vector3<From>& other) noexcept;
 
   /** 
@@ -182,7 +185,8 @@ struct basic_vector3 {
    * 
    * @return basic_vector3<value_type>& A reference to this vector.
    */
-  template<typename From, IS_ARITHMETIC(Type)>
+  template<typename From>
+  requires arithmetic<From> && std::convertible_to<From, value_type>
   constexpr basic_vector3<value_type>& operator=(const basic_vector3<From>& other) noexcept;
 
   /**
@@ -308,20 +312,6 @@ struct basic_vector3 {
 template<typename Type>
 [[nodiscard]] constexpr bool operator==(const basic_vector3<Type>& lhs, const basic_vector3<Type>& rhs) noexcept;
 
-/**
- * @brief Compares two vectors for inequality.
- * 
- * @tparam Type The type of the vectors components.
- * 
- * @param lhs The left-hand side vector.
- * @param rhs The right-hand side vector.
- * 
- * @return true The vectors are not equal.
- * @return false The vectors are equal.
- */
-template<typename Type>
-[[nodiscard]] constexpr bool operator!=(const basic_vector3<Type>& lhs, const basic_vector3<Type>& rhs) noexcept;
-
 // -- Free arithmetic operators --
 
 /**
@@ -418,6 +408,7 @@ constexpr std::ofstream& operator<<(std::ofstream& output_stream, const basic_ve
  * @return OutputStream& A reference to the output stream.
  */
 template<typename OutputStream, typename Type>
+requires output_stream<OutputStream, Type>
 constexpr OutputStream& operator<<(OutputStream& output_stream, const basic_vector3<Type>& vector);
 
 /**
@@ -445,6 +436,7 @@ constexpr std::istream& operator>>(std::istream& input_stream, basic_vector3<Typ
  * @return InputStream& A reference to the input stream.
  */
 template<typename InputStream, typename Type>
+requires input_stream<InputStream, Type>
 constexpr InputStream& operator>>(InputStream& input_stream, basic_vector3<Type>& vector);
 
 // -- Type aliases --

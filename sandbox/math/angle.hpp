@@ -1,13 +1,18 @@
 #ifndef SBX_MATH_ANGLE_HPP_
 #define SBX_MATH_ANGLE_HPP_
 
-#include <meta/type_guards.hpp>
+#include <concepts>
+
+#include <types/primitives.hpp>
 
 #include "constants.hpp"
 
+// [TODO] KAJ 2022-02-09 11:59 - Clean this file up and add functionalities (e.g. comparison operators) to degree, radian, and angle classes
+
 namespace sbx {
 
-template<typename Type, IS_FLOATING_POINT(Type)>
+template<typename Type>
+requires std::floating_point<Type>
 class degrees {
 
 public:
@@ -27,7 +32,16 @@ private:
 
 };
 
-template<typename Type, IS_FLOATING_POINT(Type)>
+template<typename Type>
+requires std::floating_point<Type>
+constexpr bool operator==(const degrees<Type>& lhs, const degrees<Type>& rhs) noexcept;
+
+template<typename Type>
+requires std::floating_point<Type>  
+constexpr std::strong_ordering operator<=>(const degrees<Type>& lhs, const degrees<Type>& rhs) noexcept;
+
+template<typename Type>
+requires std::floating_point<Type>
 class radians {
 
 public:
@@ -47,7 +61,16 @@ private:
 
 };
 
-template<typename Type, IS_FLOATING_POINT(Type)>
+template<typename Type>
+requires std::floating_point<Type>
+constexpr bool operator==(const radians<Type>& lhs, const radians<Type>& rhs) noexcept;
+
+template<typename Type>
+requires std::floating_point<Type>
+constexpr std::strong_ordering operator<=>(const radians<Type>& lhs, const radians<Type>& rhs) noexcept;
+
+template<typename Type>
+requires std::floating_point<Type>
 class angle {
 
 public:
@@ -72,14 +95,22 @@ private:
 
 };
 
+template<typename Type>
+requires std::floating_point<Type>
+constexpr bool operator==(const angle<Type>& lhs, const angle<Type>& rhs) noexcept;
+
+template<typename Type>
+requires std::floating_point<Type>
+constexpr std::strong_ordering operator<=>(const angle<Type>& lhs, const angle<Type>& rhs) noexcept;
+
 namespace literals {
 
-inline constexpr angle<float> operator""_degrees(const long double d) {
-  return angle<float>{degrees<float>{static_cast<float>(d)}};
+inline constexpr degrees<float> operator""_degrees(const long double d) {
+  return degrees<float>{static_cast<float>(d)};
 }
 
-inline constexpr angle<float> operator""_radians(const long double r) {
-  return angle<float>{radians<float>{static_cast<float>(r)}};
+inline constexpr radians<float> operator""_radians(const long double r) {
+  return radians<float>{static_cast<float>(r)};
 }
 
 } // namespace literals

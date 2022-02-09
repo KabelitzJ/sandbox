@@ -10,7 +10,7 @@ target_include_directories(
 
 target_link_libraries(
   ${PROJECT_NAME}
-  INTERFACE
+  INTERFACE 
     sbx::meta
     sbx::types
 )
@@ -18,7 +18,7 @@ target_link_libraries(
 target_compile_features(
   ${PROJECT_NAME}
   INTERFACE 
-    cxx_std_17
+    cxx_std_20
 )
 
 target_compile_options(
