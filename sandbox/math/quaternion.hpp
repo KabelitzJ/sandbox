@@ -13,8 +13,7 @@
 
 namespace sbx {
 
-template<typename Type>
-requires arithmetic<Type>
+template<arithmetic Type>
 struct basic_quaternion {
 
   // -- Type aliases --
