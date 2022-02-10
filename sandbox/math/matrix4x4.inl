@@ -136,11 +136,29 @@ inline constexpr basic_vector4<Type> operator*(basic_matrix4x4<Type> lhs, const 
   //   lhs[0][3] * rhs[0] + lhs[1][3] * rhs[1] + lhs[2][3] * rhs[2] + lhs[3][3] * rhs[3]
   // };
 
+  // using column_type = typename basic_matrix4x4<Type>::column_type;
+
+  // const auto mov0 = column_type{rhs[0]};
+  // const auto mov1 = column_type{rhs[1]};
+  // const auto mul0 = column_type{lhs[0] * mov0};
+  // const auto mul1 = column_type{lhs[1] * mov1};
+  // const auto add0 = column_type{mul0 + mul1};
+  // const auto mov2 = column_type{rhs[2]};
+  // const auto mov3 = column_type{rhs[3]};
+  // const auto mul2 = column_type{lhs[2] * mov2};
+  // const auto mul3 = column_type{lhs[3] * mov3};
+  // const auto add1 = column_type{mul2 + mul3};
+  // const auto add2 = column_type{add0 + add1};
+
+  // return add2;
+
+  using index_type = typename basic_matrix4x4<Type>::index_type;
+
   // [NOTE] KAJ 2022-02-04 23:42 - This might become a performance bottleneck in the future. But most matrix multiplications are going to happen on the GPU anyways.
   auto result = basic_vector4<Type>{};
 
-  for (auto column = typename basic_matrix4x4<Type>::index_type{0}; column < 4; ++column) {
-    for (auto i = typename basic_vector4<Type>::index_type{0}; i < 4; ++i) {
+  for (auto column = index_type{0}; column < 4; ++column) {
+    for (auto i = index_type{0}; i < 4; ++i) {
       result[column] += lhs[column][i] * rhs[i];
     }
   }
@@ -157,12 +175,33 @@ inline constexpr basic_matrix4x4<Type> operator*(basic_matrix4x4<Type> lhs, cons
   //   lhs[0] * rhs[3][0] + lhs[1] * rhs[3][1] + lhs[2] * rhs[3][2] + lhs[3] * rhs[3][3]
   // };
 
+  // using column_type = typename basic_matrix4x4<Type>::column_type;
+
+  // const auto lhs0 = column_type{lhs[0]};
+  // const auto lhs1 = column_type{lhs[1]};
+  // const auto lhs2 = column_type{lhs[2]};
+  // const auto lhs3 = column_type{lhs[3]};
+
+  // const auto rhs0 = column_type{rhs[0]};
+  // const auto rhs1 = column_type{rhs[1]};
+  // const auto rhs2 = column_type{rhs[2]};
+  // const auto rhs3 = column_type{rhs[3]};
+
+  // auto result = basic_matrix4x4<Type>{};
+  // result[0] = lhs0 * rhs0[0] + lhs1 * rhs0[1] + lhs2 * rhs0[2] + lhs3 * rhs0[3];
+  // result[1] = lhs0 * rhs1[0] + lhs1 * rhs1[1] + lhs2 * rhs1[2] + lhs3 * rhs1[3];
+  // result[2] = lhs0 * rhs2[0] + lhs1 * rhs2[1] + lhs2 * rhs2[2] + lhs3 * rhs2[3];
+  // result[3] = lhs0 * rhs3[0] + lhs1 * rhs3[1] + lhs2 * rhs3[2] + lhs3 * rhs3[3];
+  // return result;
+
+  using index_type = typename basic_matrix4x4<Type>::index_type;
+
   // [NOTE] KAJ 2022-02-04 23:42 - This might become a performance bottleneck in the future. But most matrix multiplications are going to happen on the GPU anyways.
   auto result = basic_matrix4x4<Type>{};
 
-  for (auto column = typename basic_matrix4x4<Type>::index_type{0}; column < 4; ++column) {
-    for (auto row = typename basic_matrix4x4<Type>::index_type{0}; row < 4; ++row) {
-      for (auto i = typename basic_matrix4x4<Type>::index_type{0}; i < 4; ++i) {
+  for (auto column = index_type{0}; column < 4; ++column) {
+    for (auto row = index_type{0}; row < 4; ++row) {
+      for (auto i = index_type{0}; i < 4; ++i) {
         result[column][row] += lhs[column][i] * rhs[i][row];
       }
     }
@@ -173,15 +212,17 @@ inline constexpr basic_matrix4x4<Type> operator*(basic_matrix4x4<Type> lhs, cons
 
 template<typename Type>
 inline constexpr std::ostream& operator<<(std::ostream& output_stream, const basic_matrix4x4<Type>& matrix) noexcept {
+  using index_type = typename basic_matrix4x4<Type>::index_type;
+
   auto default_state = std::ios{nullptr};
   default_state.copyfmt(output_stream);
 
   output_stream << std::setprecision(4) << std::fixed;
 
-  for (auto row = typename basic_matrix4x4<Type>::index_type{0}; row < 4; ++row) {
+  for (auto row = index_type{0}; row < 4; ++row) {
     output_stream << "| ";
 
-    for (auto column = typename basic_matrix4x4<Type>::index_type{0}; column < 4; ++column) {
+    for (auto column = index_type{0}; column < 4; ++column) {
       output_stream << matrix[column][row] << ' ';
     }
 
