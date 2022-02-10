@@ -21,7 +21,7 @@ inline constexpr basic_vector2<Type>::basic_vector2(const Type _x, const Type _y
   y{_y} { }
 
 template<arithmetic Type>
-template<typename Other>
+template<arithmetic Other>
 inline constexpr basic_vector2<Type>::basic_vector2(const basic_vector2<Other>& other) noexcept
 : x{static_cast<Type>(other.x)}, 
   y{static_cast<Type>(other.y)} { }
@@ -33,7 +33,7 @@ constexpr basic_vector2<Type> basic_vector2<Type>::normalized(const basic_vector
 }
 
 template<arithmetic Type>
-template<typename Other>
+template<arithmetic Other>
 inline constexpr basic_vector2<Type>& basic_vector2<Type>::operator=(const basic_vector2<Other>& other) noexcept {
   if (*this != other) {
     x = static_cast<Type>(other.x);
@@ -192,7 +192,8 @@ inline constexpr std::ofstream& operator<<(std::ofstream& output_stream, const b
   return output_stream;
 }
 
-template<output_stream OutputStream, arithmetic Type>
+template<typename OutputStream, typename Type>
+requires arithmetic<Type> && output_stream<OutputStream, Type>
 inline constexpr OutputStream& operator<<(OutputStream& output_stream, const basic_vector2<Type>& vector) {
   // [TODO] KAJ 2022-01-31 09:48 - Find a suitable format for vectors and implement a parser for that format.
   return output_stream;
@@ -204,7 +205,8 @@ inline constexpr std::istream& operator>>(std::istream& input_stream, basic_vect
   return input_stream;
 }
 
-template<input_stream InputStream, arithmetic Type>
+template<typename InputStream, typename Type>
+requires arithmetic<Type> && input_stream<InputStream, Type>
 inline constexpr InputStream& operator>>(InputStream& input_stream, basic_vector2<Type>& vector) {
   // [TODO] KAJ 2022-01-31 09:48 - Find a suitable format for vectors and implement a parser for that format.
   return input_stream;

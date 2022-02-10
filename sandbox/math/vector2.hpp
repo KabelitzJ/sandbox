@@ -380,7 +380,8 @@ constexpr std::ofstream& operator<<(std::ofstream& output_stream, const basic_ve
  * 
  * @return OutputStream& A Reference to the output stream.
  */
-template<output_stream OutputStream, arithmetic Type>
+template<typename OutputStream, typename Type>
+requires arithmetic<Type> && output_stream<OutputStream, Type>
 constexpr OutputStream& operator<<(OutputStream& output_stream, const basic_vector2<Type>& vector);
 
 /**
@@ -407,7 +408,8 @@ constexpr std::ifstream& operator>>(std::ifstream& input_stream, basic_vector2<T
  * 
  * @return InputStream& A reference to the input stream. 
  */
-template<input_stream InputStream, arithmetic Type>
+template<typename InputStream, typename Type>
+requires arithmetic<Type> && input_stream<InputStream, Type>
 constexpr InputStream& operator>>(InputStream& input_stream, basic_vector2<Type>& vector);
 
 // -- Type aliases --

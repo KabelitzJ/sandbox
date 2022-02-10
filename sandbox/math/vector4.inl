@@ -234,7 +234,8 @@ inline constexpr std::ofstream& operator<<(std::ofstream& output_stream, const b
 }
 
 
-template<output_stream OutputStream, arithmetic Type>
+template<typename OutputStream, typename Type>
+requires arithmetic<Type> && output_stream<OutputStream, Type>
 inline constexpr OutputStream& operator<<(OutputStream& output_stream, const basic_vector4<Type>& vector) {
   // [TODO] KAJ 2022-01-31 09:48 - Find a suitable format for vectors and implement a parser for that format.
   return output_stream;
@@ -247,7 +248,8 @@ inline constexpr std::ifstream& operator>>(std::ifstream& input_stream, basic_ve
 }
 
 
-template<input_stream InputStream, arithmetic Type>
+template<typename InputStream, typename Type>
+requires arithmetic<Type> && input_stream<InputStream, Type>
 inline constexpr InputStream& operator>>(InputStream& input_stream, basic_vector4<Type>& vector) {
   // [TODO] KAJ 2022-01-31 09:48 - Find a suitable format for vectors and implement a parser for that format.
   return input_stream;
