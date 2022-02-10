@@ -4,15 +4,15 @@
 
 namespace sbx {
 
-template<typename Type>
+template<arithmetic Type>
 inline constexpr basic_matrix4x4<Type>::basic_matrix4x4() noexcept
 : _columns{column_type{0}, column_type{0}, column_type{0}, column_type{0}} { }
 
-template<typename Type>
+template<arithmetic Type>
 inline constexpr basic_matrix4x4<Type>::basic_matrix4x4(const std::array<column_type, 4>& columns) noexcept
 : _columns{columns} { }
 
-template<typename Type>
+template<arithmetic Type>
 inline constexpr basic_matrix4x4<Type>::basic_matrix4x4(
   const column_type& column0,
   const column_type& column1,
@@ -21,7 +21,7 @@ inline constexpr basic_matrix4x4<Type>::basic_matrix4x4(
 ) noexcept
 : _columns{column0, column1, column2, column3} { }
 
-template<typename Type>
+template<arithmetic Type>
 inline constexpr basic_matrix4x4<Type>::basic_matrix4x4(
   const value_type x0, const value_type y0, const value_type z0, const value_type w0,
   const value_type x1, const value_type y1, const value_type z1, const value_type w1,
@@ -30,15 +30,13 @@ inline constexpr basic_matrix4x4<Type>::basic_matrix4x4(
 ) noexcept
 : _columns{column_type{x0, y0, z0, w0}, column_type{x1, y1, z1, w1}, column_type{x2, y2, z2, w2}, column_type{x3, y3, z3, w3}} { }
 
-template<typename Type>
-template<typename From>
-requires arithmetic<From> && std::convertible_to<From, Type>
+template<arithmetic Type>
+template<arithmetic From>
 inline constexpr basic_matrix4x4<Type>::basic_matrix4x4(const basic_matrix4x4<From>& other) noexcept
 : _columns{column_type{other[0]}, column_type{other[1]}, column_type{other[2]}, column_type{other[3]}} { }
 
-template<typename Type>
-template<typename From>
-requires arithmetic<From> && std::convertible_to<From, Type>
+template<arithmetic Type>
+template<arithmetic From>
 inline constexpr basic_matrix4x4<Type>& basic_matrix4x4<Type>::operator=(const basic_matrix4x4<From>& other) noexcept {
   if (*this != other) {
     _columns[0] = column_type{other[0]};
@@ -50,7 +48,7 @@ inline constexpr basic_matrix4x4<Type>& basic_matrix4x4<Type>::operator=(const b
   return *this;
 }
 
-template<typename Type>
+template<arithmetic Type>
 inline constexpr basic_matrix4x4<Type>& basic_matrix4x4<Type>::operator+=(const basic_matrix4x4<Type>& other) noexcept {
   _columns[0] += other[0];
   _columns[1] += other[1];
@@ -60,7 +58,7 @@ inline constexpr basic_matrix4x4<Type>& basic_matrix4x4<Type>::operator+=(const 
   return *this;
 }
 
-template<typename Type>
+template<arithmetic Type>
 inline constexpr basic_matrix4x4<Type>& basic_matrix4x4<Type>::operator-=(const basic_matrix4x4<Type>& other) noexcept {
   _columns[0] -= other[0];
   _columns[1] -= other[1];
@@ -70,7 +68,7 @@ inline constexpr basic_matrix4x4<Type>& basic_matrix4x4<Type>::operator-=(const 
   return *this;
 }
 
-template<typename Type>
+template<arithmetic Type>
 inline constexpr basic_matrix4x4<Type>& basic_matrix4x4<Type>::operator*=(const Type scalar) noexcept {
   _columns[0] *= scalar;
   _columns[1] *= scalar;
@@ -80,54 +78,54 @@ inline constexpr basic_matrix4x4<Type>& basic_matrix4x4<Type>::operator*=(const 
   return *this;
 }
 
-template<typename Type>
+template<arithmetic Type>
 inline constexpr typename basic_matrix4x4<Type>::column_type_reference basic_matrix4x4<Type>::operator[](const index_type index) noexcept {
   assert(index < 4);
   return _columns[index];
 }
 
-template<typename Type>
+template<arithmetic Type>
 inline constexpr typename basic_matrix4x4<Type>::const_column_type_reference basic_matrix4x4<Type>::operator[](const index_type index) const noexcept {
   assert(index < 4);
   return _columns[index];
 }
 
-template<typename Type>
+template<arithmetic Type>
 inline constexpr typename basic_matrix4x4<Type>::pointer basic_matrix4x4<Type>::data() noexcept {
   return &_columns[0].x;
 }
 
-template<typename Type>
+template<arithmetic Type>
 inline constexpr typename basic_matrix4x4<Type>::const_pointer basic_matrix4x4<Type>::data() const noexcept {
   return &_columns[0].x;
 }
 
-template<typename Type>
+template<arithmetic Type>
 inline constexpr bool operator==(const basic_matrix4x4<Type>& lhs, const basic_matrix4x4<Type>& rhs) noexcept {
   return lhs[0] == rhs[0] && lhs[1] == rhs[1] && lhs[2] == rhs[2] && lhs[3] == rhs[3];
 }
 
-template<typename Type>
+template<arithmetic Type>
 inline constexpr bool operator!=(const basic_matrix4x4<Type>& lhs, const basic_matrix4x4<Type>& rhs) noexcept {
   return !(lhs == rhs);
 }
 
-template<typename Type>
+template<arithmetic Type>
 inline constexpr basic_matrix4x4<Type> operator+(const basic_matrix4x4<Type>& lhs, const basic_matrix4x4<Type>& rhs) noexcept {
   return lhs += rhs;
 }
 
-template<typename Type>
+template<arithmetic Type>
 inline constexpr basic_matrix4x4<Type> operator-(const basic_matrix4x4<Type>& lhs, const basic_matrix4x4<Type>& rhs) noexcept {
   return lhs -= rhs;
 }
 
-template<typename Type>
+template<arithmetic Type>
 inline constexpr basic_matrix4x4<Type> operator*(const basic_matrix4x4<Type>& lhs, const Type rhs) noexcept {
   return lhs *= rhs;
 }
 
-template<typename Type>
+template<arithmetic Type>
 inline constexpr basic_vector4<Type> operator*(basic_matrix4x4<Type> lhs, const basic_vector4<Type>& rhs) noexcept {
   using index_type = typename basic_matrix4x4<Type>::index_type;
 
@@ -143,7 +141,7 @@ inline constexpr basic_vector4<Type> operator*(basic_matrix4x4<Type> lhs, const 
   return result;
 }
 
-template<typename Type>
+template<arithmetic Type>
 inline constexpr basic_matrix4x4<Type> operator*(basic_matrix4x4<Type> lhs, const basic_matrix4x4<Type>& rhs) noexcept {
   using index_type = typename basic_matrix4x4<Type>::index_type;
 
@@ -161,7 +159,7 @@ inline constexpr basic_matrix4x4<Type> operator*(basic_matrix4x4<Type> lhs, cons
   return result;
 }
 
-template<typename Type>
+template<arithmetic Type>
 inline constexpr std::ostream& operator<<(std::ostream& output_stream, const basic_matrix4x4<Type>& matrix) noexcept {
   using index_type = typename basic_matrix4x4<Type>::index_type;
 

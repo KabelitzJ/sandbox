@@ -12,8 +12,7 @@ namespace sbx {
  * 
  * @tparam Type The type of floating-point type
  */
-template<typename Type>
-requires std::floating_point<Type>
+template<std::floating_point Type>
 inline constexpr auto pi_v = Type{3.14159265358979323851};
 
 inline constexpr auto pi = pi_v<float32>;

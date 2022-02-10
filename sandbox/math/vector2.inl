@@ -22,7 +22,6 @@ inline constexpr basic_vector2<Type>::basic_vector2(const Type _x, const Type _y
 
 template<arithmetic Type>
 template<typename Other>
-requires std::convertible_to<Other, Type>
 inline constexpr basic_vector2<Type>::basic_vector2(const basic_vector2<Other>& other) noexcept
 : x{static_cast<Type>(other.x)}, 
   y{static_cast<Type>(other.y)} { }
@@ -35,7 +34,6 @@ constexpr basic_vector2<Type> basic_vector2<Type>::normalized(const basic_vector
 
 template<arithmetic Type>
 template<typename Other>
-requires std::convertible_to<Other, Type>
 inline constexpr basic_vector2<Type>& basic_vector2<Type>::operator=(const basic_vector2<Other>& other) noexcept {
   if (*this != other) {
     x = static_cast<Type>(other.x);

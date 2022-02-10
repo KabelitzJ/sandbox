@@ -103,7 +103,6 @@ struct basic_vector2 {
    * @param other The other vector to copy the components from.
    */
   template<arithmetic Other>
-  requires std::convertible_to<Other, value_type>
   explicit constexpr basic_vector2(const basic_vector2<Other>& other) noexcept;
 
   /** 
@@ -146,7 +145,6 @@ struct basic_vector2 {
    * @return basic_vector2<value_type>& A reference to this vector.
    */
   template<arithmetic Other>
-  requires std::convertible_to<Other, value_type>
   constexpr basic_vector2<value_type>& operator=(const basic_vector2<Other>& other) noexcept;
 
   /**

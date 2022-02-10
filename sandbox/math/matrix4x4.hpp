@@ -16,8 +16,7 @@
 
 namespace sbx {
 
-template<typename Type>
-requires arithmetic<Type>
+template<arithmetic Type>
 struct basic_matrix4x4 {
 
   // -- Type aliases --
@@ -133,8 +132,7 @@ struct basic_matrix4x4 {
    * 
    * @param other The matrix to copy.
    */
-  template<typename From>
-  requires arithmetic<From> && std::convertible_to<From, value_type>
+  template<arithmetic From>
   explicit constexpr basic_matrix4x4(const basic_matrix4x4<From>& other) noexcept;
 
   /**
@@ -165,8 +163,7 @@ struct basic_matrix4x4 {
    * 
    * @return basic_matrix4x4<value_type>& Reference to this matrix.
    */
-  template<typename From>
-  requires arithmetic<From> && std::convertible_to<From, value_type>
+  template<arithmetic From>
   constexpr basic_matrix4x4<value_type>& operator=(const basic_matrix4x4<From>& other) noexcept;
 
   /**
@@ -253,32 +250,32 @@ private:
 
 // -- Free comparison operators --
 
-template<typename Type>
+template<arithmetic Type>
 [[nodiscard]] constexpr bool operator==(const basic_matrix4x4<Type>& lhs, const basic_matrix4x4<Type>& rhs) noexcept;
 
-template<typename Type>
+template<arithmetic Type>
 [[nodiscard]] constexpr bool operator!=(const basic_matrix4x4<Type>& lhs, const basic_matrix4x4<Type>& rhs) noexcept;
 
 // -- Free arythmetic operators --
 
-template<typename Type>
+template<arithmetic Type>
 [[nodiscard]] constexpr basic_matrix4x4<Type> operator+(const basic_matrix4x4<Type>& lhs, const basic_matrix4x4<Type>& rhs) noexcept;
 
-template<typename Type>
+template<arithmetic Type>
 [[nodiscard]] constexpr basic_matrix4x4<Type> operator-(const basic_matrix4x4<Type>& lhs, const basic_matrix4x4<Type>& rhs) noexcept;
 
-template<typename Type>
+template<arithmetic Type>
 [[nodiscard]] constexpr basic_matrix4x4<Type> operator*(const basic_matrix4x4<Type>& lhs, const Type rhs) noexcept;
 
-template<typename Type>
+template<arithmetic Type>
 [[nodiscard]] constexpr basic_vector4<Type> operator*(basic_matrix4x4<Type> lhs, const basic_vector4<Type>& rhs) noexcept;
 
-template<typename Type>
+template<arithmetic Type>
 [[nodiscard]] constexpr basic_matrix4x4<Type> operator*(basic_matrix4x4<Type> lhs, const basic_matrix4x4<Type>& rhs) noexcept;
 
 // -- Free stream operators --
 
-template<typename Type>
+template<arithmetic Type>
 constexpr std::ostream& operator<<(std::ostream& output_stream, const basic_matrix4x4<Type>& matrix) noexcept;
 
 // -- Type aliases --

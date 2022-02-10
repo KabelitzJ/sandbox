@@ -5,52 +5,50 @@
 
 namespace sbx {
 
-template<typename Type>
+template<arithmetic Type>
 inline constexpr basic_vector4<Type>::basic_vector4() noexcept
 : x{value_type{0}},
   y{value_type{0}},
   z{value_type{0}},
   w{value_type{0}} { }
 
-template<typename Type>
+template<arithmetic Type>
 inline constexpr basic_vector4<Type>::basic_vector4(const value_type value) noexcept
 : x{value},
   y{value},
   z{value},
   w{value} { }
 
-template<typename Type>
+template<arithmetic Type>
 inline constexpr basic_vector4<Type>::basic_vector4(const value_type _x, const value_type _y, const value_type _z, const value_type _w) noexcept
 : x{_x},
   y{_y},
   z{_z},
   w{_w} { }
 
-template<typename Type>
+template<arithmetic Type>
 inline constexpr basic_vector4<Type>::basic_vector4(const basic_vector3<Type>& vector, const value_type _w) noexcept
 : x{vector.x},
   y{vector.y},
   z{vector.z},
   w{_w} { }
 
-template<typename Type>
-template<typename From>
-requires arithmetic<From> && std::convertible_to<From, Type>
+template<arithmetic Type>
+template<arithmetic From>
 inline constexpr basic_vector4<Type>::basic_vector4(const basic_vector4<From>& other) noexcept
 : x{static_cast<value_type>(other.x)},
   y{static_cast<value_type>(other.y)},
   z{static_cast<value_type>(other.z)},
   w{static_cast<value_type>(other.w)} { }
 
-template<typename Type>
+template<arithmetic Type>
 inline constexpr basic_vector4<Type> basic_vector4<Type>::normalized(const basic_vector4<Type>& vector) noexcept {
   const auto length = vector.length();
   return length == value_type{0} ? basic_vector4<Type>{} : vector / length;
 }
 
-template<typename Type>
-template<typename From>
-requires arithmetic<From> && std::convertible_to<From, Type>
+template<arithmetic Type>
+template<arithmetic From>
 inline constexpr basic_vector4<Type>& basic_vector4<Type>::operator=(const basic_vector4<From>& other) noexcept {
   if (*this != other) {
     x = static_cast<value_type>(other.x);
@@ -62,7 +60,7 @@ inline constexpr basic_vector4<Type>& basic_vector4<Type>::operator=(const basic
   return *this;
 }
 
-template<typename Type>
+template<arithmetic Type>
 inline constexpr basic_vector4<Type>& basic_vector4<Type>::operator-() noexcept {
   x = -x;
   y = -y;
@@ -72,7 +70,7 @@ inline constexpr basic_vector4<Type>& basic_vector4<Type>::operator-() noexcept 
   return *this;
 }
 
-template<typename Type>
+template<arithmetic Type>
 inline constexpr basic_vector4<Type>& basic_vector4<Type>::operator+=(const basic_vector4<Type>& other) noexcept {
   x += other.x;
   y += other.y;
@@ -82,7 +80,7 @@ inline constexpr basic_vector4<Type>& basic_vector4<Type>::operator+=(const basi
   return *this;
 }
 
-template<typename Type>
+template<arithmetic Type>
 inline constexpr basic_vector4<Type>& basic_vector4<Type>::operator-=(const basic_vector4<Type>& other) noexcept {
   x -= other.x;
   y -= other.y;
@@ -92,7 +90,7 @@ inline constexpr basic_vector4<Type>& basic_vector4<Type>::operator-=(const basi
   return *this;
 }
 
-template<typename Type>
+template<arithmetic Type>
 inline constexpr basic_vector4<Type>& basic_vector4<Type>::operator*=(const Type scalar) noexcept {
   x *= scalar;
   y *= scalar;
@@ -102,7 +100,7 @@ inline constexpr basic_vector4<Type>& basic_vector4<Type>::operator*=(const Type
   return *this;
 }
 
-template<typename Type>
+template<arithmetic Type>
 inline constexpr basic_vector4<Type>& basic_vector4<Type>::operator/=(const Type scalar) {
   if (scalar == value_type{0}) {
     throw std::domain_error("Division by zero");
@@ -116,7 +114,7 @@ inline constexpr basic_vector4<Type>& basic_vector4<Type>::operator/=(const Type
   return *this;
 }
 
-template<typename Type>
+template<arithmetic Type>
 inline constexpr typename basic_vector4<Type>::reference basic_vector4<Type>::operator[](const index_type index) noexcept {
   assert(index < 4);
 
@@ -137,7 +135,7 @@ inline constexpr typename basic_vector4<Type>::reference basic_vector4<Type>::op
   }
 }
 
-template<typename Type>
+template<arithmetic Type>
 inline constexpr typename basic_vector4<Type>::const_reference basic_vector4<Type>::operator[](const index_type index) const noexcept {
   assert(index < 4);
 
@@ -158,12 +156,12 @@ inline constexpr typename basic_vector4<Type>::const_reference basic_vector4<Typ
   }
 }
 
-template<typename Type>
+template<arithmetic Type>
 inline constexpr typename basic_vector4<Type>::length_type basic_vector4<Type>::length() const noexcept {
   return std::sqrt(x * x + y * y + z * z + w * w);
 }
 
-template<typename Type>
+template<arithmetic Type>
 inline constexpr void basic_vector4<Type>::normalize() noexcept {
   const auto length = this->length();
 
@@ -175,47 +173,47 @@ inline constexpr void basic_vector4<Type>::normalize() noexcept {
   }
 }
 
-template<typename Type>
+template<arithmetic Type>
 inline constexpr typename basic_vector4<Type>::pointer basic_vector4<Type>::data() noexcept {
   return &x;
 }
 
-template<typename Type>
+template<arithmetic Type>
 inline constexpr typename basic_vector4<Type>::const_pointer basic_vector4<Type>::data() const noexcept {
   return &x;
 }
 
-template<typename Type>
+template<arithmetic Type>
 inline constexpr bool operator==(const basic_vector4<Type>& lhs, const basic_vector4<Type>& rhs) noexcept {
   return lhs.x == rhs.x && lhs.y == rhs.y && lhs.z == rhs.z && lhs.w == rhs.w;
 }
 
-template<typename Type>
+template<arithmetic Type>
 inline constexpr bool operator!=(const basic_vector4<Type>& lhs, const basic_vector4<Type>& rhs) noexcept {
   return !(lhs == rhs);
 }
 
-template<typename Type>
+template<arithmetic Type>
 inline constexpr basic_vector4<Type> operator+(basic_vector4<Type> lhs, const basic_vector4<Type>& rhs) noexcept {
   return lhs += rhs;
 }
 
-template<typename Type>
+template<arithmetic Type>
 inline constexpr basic_vector4<Type> operator-(basic_vector4<Type> lhs, const basic_vector4<Type>& rhs) noexcept {
   return lhs -= rhs;
 }
 
-template<typename Type>
+template<arithmetic Type>
 inline constexpr basic_vector4<Type> operator*(basic_vector4<Type> lhs, const Type rhs) noexcept {
   return lhs *= rhs;
 }
 
-template<typename Type>
+template<arithmetic Type>
 inline constexpr basic_vector4<Type> operator/(basic_vector4<Type> lhs, const Type rhs) {
   return rhs /= lhs;
 }
 
-template<typename Type>
+template<arithmetic Type>
 inline constexpr std::ostream& operator<<(std::ostream& output_stream, const basic_vector4<Type>& vector) {
   auto default_state = std::ios{nullptr};
   default_state.copyfmt(output_stream);
@@ -229,27 +227,27 @@ inline constexpr std::ostream& operator<<(std::ostream& output_stream, const bas
   return output_stream; 
 }
 
-template<typename Type>
+template<arithmetic Type>
 inline constexpr std::ofstream& operator<<(std::ofstream& output_stream, const basic_vector4<Type>& vector) {
   // [TODO] KAJ 2022-01-31 09:48 - Find a suitable format for vectors and implement a parser for that format.
   return output_stream;
 }
 
 
-template<typename OutputStream, typename Type>
+template<output_stream OutputStream, arithmetic Type>
 inline constexpr OutputStream& operator<<(OutputStream& output_stream, const basic_vector4<Type>& vector) {
   // [TODO] KAJ 2022-01-31 09:48 - Find a suitable format for vectors and implement a parser for that format.
   return output_stream;
 }
 
-template<typename Type>
+template<arithmetic Type>
 inline constexpr std::ifstream& operator>>(std::ifstream& input_stream, basic_vector4<Type>& vector) {
   // [TODO] KAJ 2022-01-31 09:48 - Find a suitable format for vectors and implement a parser for that format.
   return input_stream;
 }
 
 
-template<typename InputStream, typename Type>
+template<input_stream InputStream, arithmetic Type>
 inline constexpr InputStream& operator>>(InputStream& input_stream, basic_vector4<Type>& vector) {
   // [TODO] KAJ 2022-01-31 09:48 - Find a suitable format for vectors and implement a parser for that format.
   return input_stream;

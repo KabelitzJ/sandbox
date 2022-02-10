@@ -16,8 +16,7 @@ namespace sbx {
  * 
  * @tparam Type The underlying type of the angle.
  */
-template<typename Type>
-requires std::floating_point<Type>
+template<std::floating_point Type>
 class degrees {
 
 public:
@@ -56,8 +55,7 @@ private:
  * 
  * @return bool True if the two degrees objects are equal, false otherwise.
  */
-template<typename Type>
-requires std::floating_point<Type>
+template<std::floating_point Type>
 constexpr bool operator==(const degrees<Type>& lhs, const degrees<Type>& rhs) noexcept;
 
 /**
@@ -68,12 +66,10 @@ constexpr bool operator==(const degrees<Type>& lhs, const degrees<Type>& rhs) no
  *
  * @return std::strong_ordering The comparison result.
  */
-template<typename Type>
-requires std::floating_point<Type>  
+template<std::floating_point Type>
 constexpr std::strong_ordering operator<=>(const degrees<Type>& lhs, const degrees<Type>& rhs) noexcept;
 
-template<typename Type>
-requires std::floating_point<Type>
+template<std::floating_point Type>
 class radians {
 
 public:
@@ -91,16 +87,13 @@ private:
 
 };
 
-template<typename Type>
-requires std::floating_point<Type>
+template<std::floating_point Type>
 constexpr bool operator==(const radians<Type>& lhs, const radians<Type>& rhs) noexcept;
 
-template<typename Type>
-requires std::floating_point<Type>
+template<std::floating_point Type>
 constexpr std::strong_ordering operator<=>(const radians<Type>& lhs, const radians<Type>& rhs) noexcept;
 
-template<typename Type>
-requires std::floating_point<Type>
+template<std::floating_point Type>
 class angle {
 
 public:
@@ -121,12 +114,10 @@ private:
 
 };
 
-template<typename Type>
-requires std::floating_point<Type>
+template<std::floating_point Type>
 constexpr bool operator==(const angle<Type>& lhs, const angle<Type>& rhs) noexcept;
 
-template<typename Type>
-requires std::floating_point<Type>
+template<std::floating_point Type>
 constexpr std::strong_ordering operator<=>(const angle<Type>& lhs, const angle<Type>& rhs) noexcept;
 
 namespace literals {

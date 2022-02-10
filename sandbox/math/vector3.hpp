@@ -20,8 +20,7 @@ namespace sbx {
  *
  * @tparam Type The type of the vectors components.
  */
-template<typename Type>
-requires arithmetic<Type>
+template<arithmetic Type>
 struct basic_vector3 {
 
   // -- Type aliases --
@@ -118,13 +117,12 @@ struct basic_vector3 {
   /**
    * @brief Constructs a vector and copies the components from the other vector
    * 
-   * @tparam From The type of the other vector.
+   * @tparam Other The type of the other vector.
    * 
    * @param other The other vector to copy the components from.
    */
-  template<typename From>
-  requires arithmetic<From> && std::convertible_to<From, value_type>
-  explicit constexpr basic_vector3(const basic_vector3<From>& other) noexcept;
+  template<arithmetic Other>
+  explicit constexpr basic_vector3(const basic_vector3<Other>& other) noexcept;
 
   /** 
    * @brief Constructs a vector and moves the components out of the other vector
@@ -179,15 +177,14 @@ struct basic_vector3 {
   /**
    * @brief Copies the components from the other vector.
    * 
-   * @tparam From The type of the other vector.
+   * @tparam Other The type of the other vector.
    * 
    * @param other The other vector to copy the components from.
    * 
    * @return basic_vector3<value_type>& A reference to this vector.
    */
-  template<typename From>
-  requires arithmetic<From> && std::convertible_to<From, value_type>
-  constexpr basic_vector3<value_type>& operator=(const basic_vector3<From>& other) noexcept;
+  template<arithmetic Other>
+  constexpr basic_vector3<value_type>& operator=(const basic_vector3<Other>& other) noexcept;
 
   /**
    * @brief Moves the components out of the other vector.
@@ -309,7 +306,7 @@ struct basic_vector3 {
  * @return true The vectors are equal.
  * @return false The vectors are not equal.
  */
-template<typename Type>
+template<arithmetic Type>
 [[nodiscard]] constexpr bool operator==(const basic_vector3<Type>& lhs, const basic_vector3<Type>& rhs) noexcept;
 
 // -- Free arithmetic operators --
@@ -324,7 +321,7 @@ template<typename Type>
  * 
  * @return basic_vector3<Type> The sum of the two vectors.
  */
-template<typename Type>
+template<arithmetic Type>
 [[nodiscard]] constexpr basic_vector3<Type> operator+(basic_vector3<Type> lhs, const basic_vector3<Type>& rhs) noexcept;
 
 /**
@@ -337,7 +334,7 @@ template<typename Type>
  * 
  * @return basic_vector3<Type> The difference of the two vectors. 
  */
-template<typename Type>
+template<arithmetic Type>
 [[nodiscard]] constexpr basic_vector3<Type> operator-(basic_vector3<Type> lhs, const basic_vector3<Type>& rhs) noexcept;
 
 /**
@@ -350,7 +347,7 @@ template<typename Type>
  * 
  * @return basic_vector3<Type> The product of the vector and scalar. 
  */
-template<typename Type>
+template<arithmetic Type>
 [[nodiscard]] constexpr basic_vector3<Type> operator*(basic_vector3<Type> lhs, const Type rhs) noexcept;
 
 /**
@@ -365,7 +362,7 @@ template<typename Type>
  * 
  * @return basic_vector3<Type> The quotient of the vector and scalar.
  */
-template<typename Type>
+template<arithmetic Type>
 [[nodiscard]] constexpr basic_vector3<Type> operator/(basic_vector3<Type> lhs, const Type rhs);
 
 // -- Free stream operators --
@@ -380,7 +377,7 @@ template<typename Type>
  * 
  * @return OutputStream& A Reference to the output stream.
  */
-template<typename Type>
+template<arithmetic Type>
 constexpr std::ostream& operator<<(std::ostream& output_stream, const basic_vector3<Type>& vector);
 
 /**
@@ -393,7 +390,7 @@ constexpr std::ostream& operator<<(std::ostream& output_stream, const basic_vect
  * 
  * @return std::ofstream& A reference to the output stream.
  */
-template<typename Type>
+template<arithmetic Type>
 constexpr std::ofstream& operator<<(std::ofstream& output_stream, const basic_vector3<Type>& vector);
 
 /**
@@ -407,8 +404,7 @@ constexpr std::ofstream& operator<<(std::ofstream& output_stream, const basic_ve
  * 
  * @return OutputStream& A reference to the output stream.
  */
-template<typename OutputStream, typename Type>
-requires output_stream<OutputStream, Type>
+template<output_stream OutputStream, arithmetic Type>
 constexpr OutputStream& operator<<(OutputStream& output_stream, const basic_vector3<Type>& vector);
 
 /**
@@ -421,7 +417,7 @@ constexpr OutputStream& operator<<(OutputStream& output_stream, const basic_vect
  * 
  * @return std::istream& A reference to the input stream. 
  */
-template<typename Type>
+template<arithmetic Type>
 constexpr std::istream& operator>>(std::istream& input_stream, basic_vector3<Type>& vector);
 
 /**
@@ -435,8 +431,7 @@ constexpr std::istream& operator>>(std::istream& input_stream, basic_vector3<Typ
  * 
  * @return InputStream& A reference to the input stream.
  */
-template<typename InputStream, typename Type>
-requires input_stream<InputStream, Type>
+template<input_stream InputStream, arithmetic Type>
 constexpr InputStream& operator>>(InputStream& input_stream, basic_vector3<Type>& vector);
 
 // -- Type aliases --
