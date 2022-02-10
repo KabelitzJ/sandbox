@@ -129,29 +129,6 @@ inline constexpr basic_matrix4x4<Type> operator*(const basic_matrix4x4<Type>& lh
 
 template<typename Type>
 inline constexpr basic_vector4<Type> operator*(basic_matrix4x4<Type> lhs, const basic_vector4<Type>& rhs) noexcept {
-  // return basic_vector4<Type>{
-  //   lhs[0][0] * rhs[0] + lhs[1][0] * rhs[1] + lhs[2][0] * rhs[2] + lhs[3][0] * rhs[3],
-  //   lhs[0][1] * rhs[0] + lhs[1][1] * rhs[1] + lhs[2][1] * rhs[2] + lhs[3][1] * rhs[3],
-  //   lhs[0][2] * rhs[0] + lhs[1][2] * rhs[1] + lhs[2][2] * rhs[2] + lhs[3][2] * rhs[3],
-  //   lhs[0][3] * rhs[0] + lhs[1][3] * rhs[1] + lhs[2][3] * rhs[2] + lhs[3][3] * rhs[3]
-  // };
-
-  // using column_type = typename basic_matrix4x4<Type>::column_type;
-
-  // const auto mov0 = column_type{rhs[0]};
-  // const auto mov1 = column_type{rhs[1]};
-  // const auto mul0 = column_type{lhs[0] * mov0};
-  // const auto mul1 = column_type{lhs[1] * mov1};
-  // const auto add0 = column_type{mul0 + mul1};
-  // const auto mov2 = column_type{rhs[2]};
-  // const auto mov3 = column_type{rhs[3]};
-  // const auto mul2 = column_type{lhs[2] * mov2};
-  // const auto mul3 = column_type{lhs[3] * mov3};
-  // const auto add1 = column_type{mul2 + mul3};
-  // const auto add2 = column_type{add0 + add1};
-
-  // return add2;
-
   using index_type = typename basic_matrix4x4<Type>::index_type;
 
   // [NOTE] KAJ 2022-02-04 23:42 - This might become a performance bottleneck in the future. But most matrix multiplications are going to happen on the GPU anyways.
@@ -168,32 +145,6 @@ inline constexpr basic_vector4<Type> operator*(basic_matrix4x4<Type> lhs, const 
 
 template<typename Type>
 inline constexpr basic_matrix4x4<Type> operator*(basic_matrix4x4<Type> lhs, const basic_matrix4x4<Type>& rhs) noexcept {
-  // return basic_matrix4x4<Type>{
-  //   lhs[0] * rhs[0][0] + lhs[1] * rhs[0][1] + lhs[2] * rhs[0][2] + lhs[3] * rhs[0][3],
-  //   lhs[0] * rhs[1][0] + lhs[1] * rhs[1][1] + lhs[2] * rhs[1][2] + lhs[3] * rhs[1][3],
-  //   lhs[0] * rhs[2][0] + lhs[1] * rhs[2][1] + lhs[2] * rhs[2][2] + lhs[3] * rhs[2][3],
-  //   lhs[0] * rhs[3][0] + lhs[1] * rhs[3][1] + lhs[2] * rhs[3][2] + lhs[3] * rhs[3][3]
-  // };
-
-  // using column_type = typename basic_matrix4x4<Type>::column_type;
-
-  // const auto lhs0 = column_type{lhs[0]};
-  // const auto lhs1 = column_type{lhs[1]};
-  // const auto lhs2 = column_type{lhs[2]};
-  // const auto lhs3 = column_type{lhs[3]};
-
-  // const auto rhs0 = column_type{rhs[0]};
-  // const auto rhs1 = column_type{rhs[1]};
-  // const auto rhs2 = column_type{rhs[2]};
-  // const auto rhs3 = column_type{rhs[3]};
-
-  // auto result = basic_matrix4x4<Type>{};
-  // result[0] = lhs0 * rhs0[0] + lhs1 * rhs0[1] + lhs2 * rhs0[2] + lhs3 * rhs0[3];
-  // result[1] = lhs0 * rhs1[0] + lhs1 * rhs1[1] + lhs2 * rhs1[2] + lhs3 * rhs1[3];
-  // result[2] = lhs0 * rhs2[0] + lhs1 * rhs2[1] + lhs2 * rhs2[2] + lhs3 * rhs2[3];
-  // result[3] = lhs0 * rhs3[0] + lhs1 * rhs3[1] + lhs2 * rhs3[2] + lhs3 * rhs3[3];
-  // return result;
-
   using index_type = typename basic_matrix4x4<Type>::index_type;
 
   // [NOTE] KAJ 2022-02-04 23:42 - This might become a performance bottleneck in the future. But most matrix multiplications are going to happen on the GPU anyways.
