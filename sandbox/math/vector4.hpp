@@ -194,6 +194,15 @@ struct basic_vector4 {
   constexpr basic_vector4<value_type>& operator*=(const value_type scalar) noexcept;
 
   /**
+   * @brief Multiplies the components of this vector by the vector.
+   * 
+   * @param other The vector to multiply by.
+   * 
+   * @return basic_vector4<value_type>& A reference to this vector.
+   */
+  constexpr basic_vector4<value_type>& operator*=(const basic_vector4<value_type>& other) noexcept;
+
+  /**
    * @brief Divides the components of this vector by the scalar.
    * 
    * @param scalar The scalar to divide by.
@@ -203,6 +212,15 @@ struct basic_vector4 {
    * @return basic_vector4<value_type>& A reference to this vector. 
    */
   constexpr basic_vector4<value_type>& operator/=(const value_type scalar);
+
+  /**
+   * @brief Divides the components of this vector by the vector.
+   * 
+   * @param other The vector to divide by.
+   * 
+   * @return basic_vector4<value_type>& A reference to this vector. 
+   */
+  constexpr basic_vector4<value_type>& operator/=(const basic_vector4<value_type>& other);
 
   // -- Access operators --
 
@@ -326,6 +344,19 @@ template<arithmetic Type>
 [[nodiscard]] constexpr basic_vector4<Type> operator*(basic_vector4<Type> lhs, const Type rhs) noexcept;
 
 /**
+ * @brief Multiplies a vector by a vector.
+ * 
+ * @tparam Type The type of the vectors components.
+ * 
+ * @param lhs The left-hand side vector. 
+ * @param rhs The right-hand side vector.
+ * 
+ * @return basic_vector4<Type> The product of the two vectors. 
+ */
+template<arithmetic Type>
+[[nodiscard]] constexpr basic_vector4<Type> operator*(basic_vector4<Type> lhs , const basic_vector4<Type>& rhs) noexcept;
+
+/**
  * @brief Devides a vector by a scalar.
  * 
  * @tparam Type The type of the vectors components.
@@ -339,6 +370,19 @@ template<arithmetic Type>
  */
 template<arithmetic Type>
 [[nodiscard]] constexpr basic_vector4<Type> operator/(basic_vector4<Type> lhs, const Type rhs);
+
+/**
+ * @brief Devides a vector by a vector.
+ * 
+ * @tparam Type The type of the vectors components.
+ * 
+ * @param lhs The left-hand side vector. 
+ * @param rhs The right-hand side vector.
+ * 
+ * @return basic_vector4<Type> The quotient of the two vectors. 
+ */
+template<arithmetic Type>
+[[nodiscard]] constexpr basic_vector4<Type> operator/(basic_vector4<Type> lhs, const basic_vector4<Type>& rhs);
 
 // -- Free stream operators --
 

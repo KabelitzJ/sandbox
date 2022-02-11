@@ -13,21 +13,21 @@ inline constexpr basic_vector4<Type>::basic_vector4() noexcept
   w{value_type{0}} { }
 
 template<arithmetic Type>
-inline constexpr basic_vector4<Type>::basic_vector4(const value_type value) noexcept
+inline constexpr basic_vector4<Type>::basic_vector4(const Type value) noexcept
 : x{value},
   y{value},
   z{value},
   w{value} { }
 
 template<arithmetic Type>
-inline constexpr basic_vector4<Type>::basic_vector4(const value_type _x, const value_type _y, const value_type _z, const value_type _w) noexcept
+inline constexpr basic_vector4<Type>::basic_vector4(const Type _x, const Type _y, const Type _z, const Type _w) noexcept
 : x{_x},
   y{_y},
   z{_z},
   w{_w} { }
 
 template<arithmetic Type>
-inline constexpr basic_vector4<Type>::basic_vector4(const basic_vector3<Type>& vector, const value_type _w) noexcept
+inline constexpr basic_vector4<Type>::basic_vector4(const basic_vector3<Type>& vector, const Type _w) noexcept
 : x{vector.x},
   y{vector.y},
   z{vector.z},
@@ -101,6 +101,16 @@ inline constexpr basic_vector4<Type>& basic_vector4<Type>::operator*=(const Type
 }
 
 template<arithmetic Type>
+inline constexpr basic_vector4<Type>& basic_vector4<Type>::operator*=(const basic_vector4<Type>& other) noexcept {
+  x *= other.x;
+  y *= other.y;
+  z *= other.z;
+  w *= other.w;
+
+  return *this;
+}
+
+template<arithmetic Type>
 inline constexpr basic_vector4<Type>& basic_vector4<Type>::operator/=(const Type scalar) {
   if (scalar == value_type{0}) {
     throw std::domain_error("Division by zero");
@@ -110,6 +120,20 @@ inline constexpr basic_vector4<Type>& basic_vector4<Type>::operator/=(const Type
   y /= scalar;
   z /= scalar;
   w /= scalar;
+
+  return *this;
+}
+
+template<arithmetic Type>
+inline constexpr basic_vector4<Type>& basic_vector4<Type>::operator/=(const basic_vector4<Type>& other) {
+  if (other.x == value_type{0} || other.y == value_type{0} || other.z == value_type{0} || other.w == value_type{0}) {
+    throw std::domain_error("Division by zero");
+  }
+
+  x /= other.x;
+  y /= other.y;
+  z /= other.z;
+  w /= other.w;
 
   return *this;
 }
@@ -209,8 +233,18 @@ inline constexpr basic_vector4<Type> operator*(basic_vector4<Type> lhs, const Ty
 }
 
 template<arithmetic Type>
+inline constexpr basic_vector4<Type> operator*(basic_vector4<Type> lhs, const basic_vector4<Type>& rhs) noexcept {
+  return lhs *= rhs;
+}
+
+template<arithmetic Type>
 inline constexpr basic_vector4<Type> operator/(basic_vector4<Type> lhs, const Type rhs) {
-  return rhs /= lhs;
+  return lhs /= rhs;
+}
+
+template<arithmetic Type>
+inline constexpr basic_vector4<Type> operator/(basic_vector4<Type> lhs, const basic_vector4<Type>& rhs) {
+  return lhs /= rhs;
 }
 
 template<arithmetic Type>

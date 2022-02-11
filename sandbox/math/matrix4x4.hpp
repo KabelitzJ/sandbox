@@ -246,6 +246,14 @@ struct basic_matrix4x4 {
    */
   [[nodiscard]] constexpr const_pointer data() const noexcept;
 
+  // -- Member functions --
+
+  /** @brief Transposes the matrix. */
+  constexpr void transpose() noexcept;
+
+  /** @brief Inverts the matrix. */
+  constexpr void inverse() noexcept;
+
 private:
 
   // -- Data members --
@@ -262,13 +270,13 @@ template<arithmetic Type>
 // -- Free arithmetic operators --
 
 template<arithmetic Type>
-[[nodiscard]] constexpr basic_matrix4x4<Type> operator+(const basic_matrix4x4<Type>& lhs, const basic_matrix4x4<Type>& rhs) noexcept;
+[[nodiscard]] constexpr basic_matrix4x4<Type> operator+(basic_matrix4x4<Type> lhs, const basic_matrix4x4<Type>& rhs) noexcept;
 
 template<arithmetic Type>
-[[nodiscard]] constexpr basic_matrix4x4<Type> operator-(const basic_matrix4x4<Type>& lhs, const basic_matrix4x4<Type>& rhs) noexcept;
+[[nodiscard]] constexpr basic_matrix4x4<Type> operator-(basic_matrix4x4<Type> lhs, const basic_matrix4x4<Type>& rhs) noexcept;
 
 template<arithmetic Type>
-[[nodiscard]] constexpr basic_matrix4x4<Type> operator*(const basic_matrix4x4<Type>& lhs, const Type rhs) noexcept;
+[[nodiscard]] constexpr basic_matrix4x4<Type> operator*(basic_matrix4x4<Type> lhs, const Type rhs) noexcept;
 
 template<arithmetic Type>
 [[nodiscard]] constexpr basic_vector4<Type> operator*(basic_matrix4x4<Type> lhs, const basic_vector4<Type>& rhs) noexcept;

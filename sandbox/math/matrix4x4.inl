@@ -100,10 +100,10 @@ inline constexpr basic_matrix4x4<Type> basic_matrix4x4<Type>::inverse(const basi
   const auto vec2 = basic_vector4<value_type>{matrix[1][2], matrix[0][2], matrix[0][2], matrix[0][2]};
   const auto vec3 = basic_vector4<value_type>{matrix[1][3], matrix[0][3], matrix[0][3], matrix[0][3]};
 
-  const auto inv0 = basic_vector4<value_type>{vec1 * fac0 - vec2 * fac1 + vec3 * fac2};
-  const auto inv1 = basic_vector4<value_type>{vec0 * fac0 - vec2 * fac3 + vec3 * fac4};
-  const auto inv2 = basic_vector4<value_type>{vec0 * fac1 - vec1 * fac3 + vec3 * fac5};
-  const auto inv3 = basic_vector4<value_type>{vec0 * fac2 - vec1 * fac4 + vec2 * fac5};
+  const auto inv0 = vec1 * fac0 - vec2 * fac1 + vec3 * fac2;
+  const auto inv1 = vec0 * fac0 - vec2 * fac3 + vec3 * fac4;
+  const auto inv2 = vec0 * fac1 - vec1 * fac3 + vec3 * fac5;
+  const auto inv3 = vec0 * fac2 - vec1 * fac4 + vec2 * fac5;
 
   const auto sign0 = basic_vector4<value_type>{+1, -1, +1, -1};
   const auto sign1 = basic_vector4<value_type>{-1, +1, -1, +1};
@@ -116,6 +116,8 @@ inline constexpr basic_matrix4x4<Type> basic_matrix4x4<Type>::inverse(const basi
   
   // I dont know why those parantheses are needed here... But im too scared to remove them
   const auto dot1 = value_type{(dot0.x + dot0.y) + (dot0.z + dot0.w)};
+
+  assert(dot1 != value_type{0});
 
   const auto one_over_determinant = value_type{1} / dot1;
 
@@ -188,22 +190,32 @@ inline constexpr typename basic_matrix4x4<Type>::const_pointer basic_matrix4x4<T
 }
 
 template<arithmetic Type>
+constexpr void basic_matrix4x4<Type>::transpose() noexcept {
+  *this = transpose(*this);
+}
+
+template<arithmetic Type>
+constexpr void basic_matrix4x4<Type>::inverse() noexcept {
+  *this = inverse(*this);
+}
+
+template<arithmetic Type>
 inline constexpr bool operator==(const basic_matrix4x4<Type>& lhs, const basic_matrix4x4<Type>& rhs) noexcept {
   return lhs[0] == rhs[0] && lhs[1] == rhs[1] && lhs[2] == rhs[2] && lhs[3] == rhs[3];
 }
 
 template<arithmetic Type>
-inline constexpr basic_matrix4x4<Type> operator+(const basic_matrix4x4<Type>& lhs, const basic_matrix4x4<Type>& rhs) noexcept {
+inline constexpr basic_matrix4x4<Type> operator+(basic_matrix4x4<Type> lhs, const basic_matrix4x4<Type>& rhs) noexcept {
   return lhs += rhs;
 }
 
 template<arithmetic Type>
-inline constexpr basic_matrix4x4<Type> operator-(const basic_matrix4x4<Type>& lhs, const basic_matrix4x4<Type>& rhs) noexcept {
+inline constexpr basic_matrix4x4<Type> operator-(basic_matrix4x4<Type> lhs, const basic_matrix4x4<Type>& rhs) noexcept {
   return lhs -= rhs;
 }
 
 template<arithmetic Type>
-inline constexpr basic_matrix4x4<Type> operator*(const basic_matrix4x4<Type>& lhs, const Type rhs) noexcept {
+inline constexpr basic_matrix4x4<Type> operator*(basic_matrix4x4<Type> lhs, const Type rhs) noexcept {
   return lhs *= rhs;
 }
 
@@ -250,10 +262,10 @@ inline constexpr std::ostream& operator<<(std::ostream& output_stream, const bas
 
   output_stream << std::setprecision(4) << std::fixed;
 
-  for (auto row = index_type{0}; row < 4; ++row) {
+  for (auto column = index_type{0}; column < 4; ++column) {
     output_stream << "| ";
 
-    for (auto column = index_type{0}; column < 4; ++column) {
+    for (auto row = index_type{0}; row < 4; ++row) {
       output_stream << matrix[column][row] << ' ';
     }
 
