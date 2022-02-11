@@ -11,9 +11,19 @@
 
 #include <types/primitives.hpp>
 
+#include "angle.hpp"
+#include "vector3.hpp"
+#include "vector4.hpp"
+#include "matrix4x4.hpp"
+
 namespace sbx {
 
-template<arithmetic Type>
+/**
+ * @brief A quaternion that represents a rotation.
+ * 
+ * @tparam Type The type of the quaternion components.
+ */
+template<std::floating_point Type>
 struct basic_quaternion {
 
   // -- Type aliases --
@@ -52,10 +62,30 @@ struct basic_quaternion {
   /** @brief Constructs a quaternion with all components set to zero. */
   constexpr basic_quaternion() noexcept;
 
-  /** @brief Destorys the quaternion. */
+  constexpr basic_quaternion(const value_type x, const value_type y, const value_type z, const value_type w) noexcept;
+
+  constexpr basic_quaternion(const basic_vector3<value_type>& axis, const angle<value_type>& angle) noexcept;
+
+  constexpr basic_quaternion(const basic_vector3<value_type>& euler_angles) noexcept;
+
+  constexpr basic_quaternion(const basic_quaternion&) noexcept = default;
+
+  template<std::floating_point Other>
+  constexpr basic_quaternion(const basic_quaternion<Other>& other) noexcept;
+
+  constexpr basic_quaternion(basic_quaternion&&) noexcept = default;
+
+  /** @brief Destroys the quaternion. */
   ~basic_quaternion() noexcept = default;
 
   // -- Assignment operators --
+
+  constexpr basic_quaternion& operator=(const basic_quaternion&) noexcept = default;
+
+  template<std::floating_point Other>
+  constexpr basic_quaternion& operator=(const basic_quaternion<Other>& other) noexcept;
+
+  constexpr basic_quaternion& operator=(basic_quaternion&&) noexcept = default;
 
   // -- Access operators --
 
@@ -95,12 +125,17 @@ struct basic_quaternion {
 
 }; // class quaternion
 
+// -- Free comparison operators --
+
+template<std::floating_point Type>
+[[nodiscard]] constexpr bool operator==(const basic_quaternion<Type>& lhs, const basic_quaternion<Type>& rhs) noexcept;
+
 // -- Type aliases --
 
 /** @brief Type alias for a quaternion with 32 bit floating-point components. */
 using quaternionf = basic_quaternion<float32>;
 
-/** @brief Type alias for quaterionf */
+/** @brief Type alias for quaternionf */
 using quaternion = quaternionf;
 
 } // namespace sbx

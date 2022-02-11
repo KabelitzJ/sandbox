@@ -1,6 +1,69 @@
 #include <cassert>
+#include <cmath>
 
 namespace sbx {
+
+template<std::floating_point Type>
+inline constexpr basic_quaternion<Type>::basic_quaternion() noexcept
+: x{value_type{0}}, 
+  y{value_type{0}},
+  z{value_type{0}}, 
+  w{value_type{0}} { }
+
+template<std::floating_point Type>
+inline constexpr basic_quaternion<Type>::basic_quaternion(const Type _x, const Type _y, const Type _z, const Type _w) noexcept
+: x{_x},
+  y{_y},
+  z{_z},
+  w{_w} { }
+
+template<std::floating_point Type>
+constexpr basic_quaternion<Type>::basic_quaternion(const basic_vector3<Type>& axis, const angle<Type>& angle) noexcept
+: x{axis.x},
+  y{axis.y},
+  z{axis.z},
+  w{angle.to_degrees()} { }
+
+template<std::floating_point Type>
+inline constexpr basic_quaternion<Type>::basic_quaternion(const basic_vector3<Type>& euler_angles) noexcept {
+  const auto cosign = basic_vector3<value_type>{
+    std::cos(euler_angles.x * value_type{0.5}),
+    std::cos(euler_angles.y * value_type{0.5}),
+    std::cos(euler_angles.z * value_type{0.5})
+  };
+
+  const auto sign = basic_vector3<value_type>{
+    std::sin(euler_angles.x * value_type{0.5}),
+    std::sin(euler_angles.y * value_type{0.5}),
+    std::sin(euler_angles.z * value_type{0.5})
+  };
+
+  x = sign.x * cosign.y * cosign.z - cosign.x * sign.y * sign.z;
+  y = cosign.x * sign.y * cosign.z + sign.x * cosign.y * sign.z;
+  z = cosign.x * cosign.y * sign.z - sign.x * sign.y * cosign.z;
+  w = cosign.x * cosign.y * cosign.z + sign.x * sign.y * sign.z;
+}
+
+template<std::floating_point Type>
+template<std::floating_point Other>
+inline constexpr basic_quaternion<Type>::basic_quaternion(const basic_quaternion<Other>& other) noexcept
+: x{static_cast<value_type>(other.x)},
+  y{static_cast<value_type>(other.y)},
+  z{static_cast<value_type>(other.z)},
+  w{static_cast<value_type>(other.w)} { }
+
+template<std::floating_point Type>
+template<std::floating_point Other>
+inline constexpr basic_quaternion<Type>& basic_quaternion<Type>::operator=(const basic_quaternion<Other>& other) noexcept {
+  if (*this != other) {
+    x = static_cast<value_type>(other.x);
+    y = static_cast<value_type>(other.y);
+    z = static_cast<value_type>(other.z);
+    w = static_cast<value_type>(other.w);
+  }
+
+  return *this;
+}
 
 template<typename Type>
 inline constexpr typename basic_quaternion<Type>::reference basic_quaternion<Type>::operator[](index_type index) noexcept {
@@ -54,5 +117,9 @@ inline constexpr typename basic_quaternion<Type>::const_pointer basic_quaternion
   return &x;
 }
 
+template<std::floating_point Type>
+inline constexpr bool operator==(const basic_quaternion<Type>& lhs, const basic_quaternion<Type>& rhs) noexcept {
+  return lhs.x == rhs.x && lhs.y == rhs.y && lhs.z == rhs.z && lhs.w == rhs.w;
+}
 
 } // namespace sbx

@@ -16,6 +16,11 @@
 
 namespace sbx {
 
+/**
+ * @brief A 4 by 4 matrix.
+ * 
+ * @tparam Type The type of the matrix components.
+ */
 template<arithmetic Type>
 struct basic_matrix4x4 {
 

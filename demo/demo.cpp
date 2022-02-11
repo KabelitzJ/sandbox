@@ -11,5 +11,9 @@ int main() {
 
   std::cout << result << std::endl;
 
+  using namespace sbx::literals;
+
+  const auto q = sbx::quaternion{sbx::vector3::up, 90.0_degrees};
+
   return 0;
 }
