@@ -145,6 +145,12 @@ struct basic_matrix4x4 {
   /** @brief Destroys the matrix */
   ~basic_matrix4x4() noexcept = default;
 
+  // -- Static member functions --
+
+  [[nodiscard]] constexpr static basic_matrix4x4<value_type> transpose(const basic_matrix4x4<value_type>& matrix) noexcept;
+
+  [[nodiscard]] constexpr static basic_matrix4x4<value_type> inverse(const basic_matrix4x4<value_type>& matrix) noexcept;
+
   // -- Assignment operators --
 
   /**
@@ -253,10 +259,7 @@ private:
 template<arithmetic Type>
 [[nodiscard]] constexpr bool operator==(const basic_matrix4x4<Type>& lhs, const basic_matrix4x4<Type>& rhs) noexcept;
 
-template<arithmetic Type>
-[[nodiscard]] constexpr bool operator!=(const basic_matrix4x4<Type>& lhs, const basic_matrix4x4<Type>& rhs) noexcept;
-
-// -- Free arythmetic operators --
+// -- Free arithmetic operators --
 
 template<arithmetic Type>
 [[nodiscard]] constexpr basic_matrix4x4<Type> operator+(const basic_matrix4x4<Type>& lhs, const basic_matrix4x4<Type>& rhs) noexcept;
