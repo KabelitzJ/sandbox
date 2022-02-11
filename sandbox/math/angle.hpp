@@ -12,7 +12,7 @@
 namespace sbx {
 
 /**
- * @brief A class representing an angle in degrees.
+ * @brief Represents an angle in degrees.
  * 
  * @tparam Type The underlying type of the angle.
  */
@@ -25,7 +25,7 @@ public:
   using value_type = Type;
 
   /**
-   * @brief Constructs a new degrees object.
+   * @brief Constructs a new degrees object with the given value.
    *
    * @param value The value of the angle in degrees.
    */
@@ -56,7 +56,7 @@ private:
  * @return bool True if the two degrees objects are equal, false otherwise.
  */
 template<std::floating_point Type>
-constexpr bool operator==(const degrees<Type>& lhs, const degrees<Type>& rhs) noexcept;
+[[nodiscard]] constexpr bool operator==(const degrees<Type>& lhs, const degrees<Type>& rhs) noexcept;
 
 /**
  * @brief Compares two degrees objects
@@ -67,18 +67,37 @@ constexpr bool operator==(const degrees<Type>& lhs, const degrees<Type>& rhs) no
  * @return std::strong_ordering The comparison result.
  */
 template<std::floating_point Type>
-constexpr std::strong_ordering operator<=>(const degrees<Type>& lhs, const degrees<Type>& rhs) noexcept;
+[[nodiscard]] constexpr std::strong_ordering operator<=>(const degrees<Type>& lhs, const degrees<Type>& rhs) noexcept;
 
+
+/**
+ * @brief Represents an angle in radians.
+ * 
+ * @tparam Type The underlying type of the angle.
+ */
 template<std::floating_point Type>
 class radians {
 
 public:
 
+  /** @brief The underlying type of the angle. */
   using value_type = Type;
 
+  /**
+   * @brief Constructs a new radians object with the given value.
+   * 
+   * @param value The value of the angle in radians.
+   */
   explicit constexpr radians(const value_type value);
+
+  /** @brief Destroys the radians object. */
   ~radians() noexcept = default;
 
+  /**
+   * @brief Converts the radians object to its underlying type.
+   * 
+   * @return value_type The value of the radians object.
+   */
   constexpr operator value_type() const noexcept;
 
 private:
@@ -87,25 +106,73 @@ private:
 
 };
 
+/**
+ * @brief Compares two radians objects for equality.
+ * 
+ * @tparam Type The underlying type of the angle.
+ * 
+ * @param lhs The left hand side of the comparison.
+ * @param rhs The right hand side of the comparison.
+ * @return bool True if the two radians objects are equal, false otherwise. 
+ */
 template<std::floating_point Type>
-constexpr bool operator==(const radians<Type>& lhs, const radians<Type>& rhs) noexcept;
+[[nodiscard]] constexpr bool operator==(const radians<Type>& lhs, const radians<Type>& rhs) noexcept;
 
+/**
+ * @brief Compares two radians objects.
+ * 
+ * @tparam Type The underlying type of the angle.
+ * 
+ * @param lhs The left hand side of the comparison.
+ * @param rhs The right hand side of the comparison.
+ * 
+ * @return std::strong_ordering The comparison result.
+ */
 template<std::floating_point Type>
-constexpr std::strong_ordering operator<=>(const radians<Type>& lhs, const radians<Type>& rhs) noexcept;
+[[nodiscard]] constexpr std::strong_ordering operator<=>(const radians<Type>& lhs, const radians<Type>& rhs) noexcept;
 
+/**
+ * @brief Represents an angle.
+ * 
+ * @tparam Type The underlying type of the angle.
+ */
 template<std::floating_point Type>
 class angle {
 
 public:
 
+  /** @brief The underlying type of the angle. */
   using value_type = Type;
 
+  /**
+   * @brief Constructs a new angle object with degrees.
+   * 
+   * @param degrees The value of the angle in degrees.
+   */
   constexpr angle(const degrees<value_type>& degrees) noexcept;
+
+  /**
+   * @brief Constructs a new angle object with radians.
+   * 
+   * @param radians The value of the angle.
+   */
   constexpr angle(const radians<value_type>& radians) noexcept;
+
+  /** @brief Destroys the angle object. */
   ~angle() noexcept = default;
 
+  /**
+   * @brief Converts the angle to degrees.
+   * 
+   * @return degrees<value_type> The value of the angle in degrees. 
+   */
   constexpr degrees<value_type> to_degrees() const noexcept;
 
+  /**
+   * @brief Converts the angle to radians.
+   * 
+   * @return radians<value_type> The value of the angle in radians. 
+   */
   constexpr radians<value_type> to_radians() const noexcept;
 
 private:
@@ -114,21 +181,51 @@ private:
 
 };
 
+/**
+ * @brief Compares two angles for equality.
+ * 
+ * @tparam Type The underlying type of the angle.
+ * 
+ * @param lhs The left hand side of the comparison.
+ * @param rhs The right hand side of the comparison.
+ * 
+ * @return bool True if the two angles are equal, false otherwise. 
+ */
 template<std::floating_point Type>
-constexpr bool operator==(const angle<Type>& lhs, const angle<Type>& rhs) noexcept;
+[[nodiscard]] constexpr bool operator==(const angle<Type>& lhs, const angle<Type>& rhs) noexcept;
 
+/**
+ * @brief Compares two angles.
+ * 
+ * @tparam Type The underlying type of the angle.
+ * 
+ * @param lhs The left hand side of the comparison.
+ * @param rhs The right hand side of the comparison.
+ * 
+ * @return std::strong_ordering The comparison result.
+ */
 template<std::floating_point Type>
-constexpr std::strong_ordering operator<=>(const angle<Type>& lhs, const angle<Type>& rhs) noexcept;
+[[nodiscard]] constexpr std::strong_ordering operator<=>(const angle<Type>& lhs, const angle<Type>& rhs) noexcept;
 
 namespace literals {
 
-inline constexpr degrees<float> operator""_degrees(const long double d) {
-  return degrees<float>{static_cast<float>(d)};
-}
+/**
+ * @brief Creates a new degrees object from a floating point literal.
+ * 
+ * @param degrees The value of the degrees object.
+ * 
+ * @return degrees<float> The degrees object that represents the given value. 
+ */
+constexpr degrees<float32> operator""_degrees(const long double degrees);
 
-inline constexpr radians<float> operator""_radians(const long double r) {
-  return radians<float>{static_cast<float>(r)};
-}
+/**
+ * @brief Creates a new radians object from a floating point literal.
+ * 
+ * @param radians The value of the radians object.
+ *  
+ * @return radians<float> The radians object that represents the given value.
+ */
+constexpr radians<float32> operator""_radians(const long double radians);
 
 } // namespace literals
 

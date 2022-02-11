@@ -66,4 +66,16 @@ inline constexpr std::strong_ordering operator<=>(const angle<Type>& lhs, const 
   return lhs.to_degrees() <=> rhs.to_degrees();
 }
 
+namespace literals {
+
+inline constexpr degrees<float32> operator""_degrees(const long double d) {
+  return degrees<float32>{static_cast<float>(d)};
+}
+
+inline constexpr radians<float32> operator""_radians(const long double r) {
+  return radians<float32>{static_cast<float>(r)};
+}
+
+} // namespace literals
+
 } // namespace sbx
