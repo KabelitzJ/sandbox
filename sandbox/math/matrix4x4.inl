@@ -114,6 +114,7 @@ inline constexpr basic_matrix4x4<Type> basic_matrix4x4<Type>::inverse(const basi
 
   const auto dot0 = matrix[0] * row0;
   
+  // I dont know why those parantheses are needed here... But im too scared to remove them
   const auto dot1 = value_type{(dot0.x + dot0.y) + (dot0.z + dot0.w)};
 
   const auto one_over_determinant = value_type{1} / dot1;
