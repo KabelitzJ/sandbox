@@ -2,6 +2,8 @@
 
 #include <math/math.hpp>
 
+#include <ecs/ecs.hpp>
+
 int main() {
 
   auto vector = sbx::vector3{1.0f, 2.0f, 3.0f};

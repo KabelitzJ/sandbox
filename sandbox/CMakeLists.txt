@@ -6,6 +6,7 @@ set(
     meta
     types
     math
+    ecs
 )
 
 foreach(module ${SBX_MODULES})
