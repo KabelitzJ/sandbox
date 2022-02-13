@@ -15,9 +15,7 @@ inline entity<Type>::~entity() noexcept {
 
 template<std::unsigned_integral Type>
 inline constexpr entity<Type>& entity<Type>::operator=(entity<Type>&& other) noexcept {
-  if (*this != other) {
-    _id = other._id;
-  }
+  _id = other._id;
 
   return *this;
 }

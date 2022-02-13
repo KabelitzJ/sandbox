@@ -35,11 +35,9 @@ constexpr basic_vector2<Type> basic_vector2<Type>::normalized(const basic_vector
 template<arithmetic Type>
 template<arithmetic Other>
 inline constexpr basic_vector2<Type>& basic_vector2<Type>::operator=(const basic_vector2<Other>& other) noexcept {
-  if (*this != other) {
-    x = static_cast<Type>(other.x);
-    y = static_cast<Type>(other.y);
-  }
-  
+  x = static_cast<Type>(other.x);
+  y = static_cast<Type>(other.y);
+
   return *this;
 }
 

@@ -17,5 +17,7 @@ int main() {
 
   const auto q = sbx::quaternion{sbx::vector3::up, 90.0_degrees};
 
+  auto r = sbx::registry{};
+
   return 0;
 }

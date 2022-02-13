@@ -50,12 +50,10 @@ inline constexpr basic_vector4<Type> basic_vector4<Type>::normalized(const basic
 template<arithmetic Type>
 template<arithmetic From>
 inline constexpr basic_vector4<Type>& basic_vector4<Type>::operator=(const basic_vector4<From>& other) noexcept {
-  if (*this != other) {
-    x = static_cast<value_type>(other.x);
-    y = static_cast<value_type>(other.y);
-    z = static_cast<value_type>(other.z);
-    w = static_cast<value_type>(other.w);
-  }
+  x = static_cast<value_type>(other.x);
+  y = static_cast<value_type>(other.y);
+  z = static_cast<value_type>(other.z);
+  w = static_cast<value_type>(other.w);
 
   return *this;
 }

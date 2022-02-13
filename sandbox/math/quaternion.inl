@@ -55,12 +55,10 @@ inline constexpr basic_quaternion<Type>::basic_quaternion(const basic_quaternion
 template<std::floating_point Type>
 template<std::floating_point Other>
 inline constexpr basic_quaternion<Type>& basic_quaternion<Type>::operator=(const basic_quaternion<Other>& other) noexcept {
-  if (*this != other) {
-    x = static_cast<value_type>(other.x);
-    y = static_cast<value_type>(other.y);
-    z = static_cast<value_type>(other.z);
-    w = static_cast<value_type>(other.w);
-  }
+  x = static_cast<value_type>(other.x);
+  y = static_cast<value_type>(other.y);
+  z = static_cast<value_type>(other.z);
+  w = static_cast<value_type>(other.w);
 
   return *this;
 }

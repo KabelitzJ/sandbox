@@ -59,11 +59,9 @@ inline constexpr basic_vector3<Type> basic_vector3<Type>::cross(const basic_vect
 template<arithmetic Type>
 template<arithmetic Other>
 constexpr basic_vector3<Type>& basic_vector3<Type>::operator=(const basic_vector3<Other>& other) noexcept {
-  if (*this != other) {
-    x = static_cast<value_type>(other.x);
-    y = static_cast<value_type>(other.y);
-    z = static_cast<value_type>(other.z);
-  }
+  x = static_cast<value_type>(other.x);
+  y = static_cast<value_type>(other.y);
+  z = static_cast<value_type>(other.z);
 
   return *this;
 }

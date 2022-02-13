@@ -127,12 +127,10 @@ inline constexpr basic_matrix4x4<Type> basic_matrix4x4<Type>::inverse(const basi
 template<arithmetic Type>
 template<arithmetic From>
 inline constexpr basic_matrix4x4<Type>& basic_matrix4x4<Type>::operator=(const basic_matrix4x4<From>& other) noexcept {
-  if (*this != other) {
-    _columns[0] = column_type{other[0]};
-    _columns[1] = column_type{other[1]};
-    _columns[2] = column_type{other[2]};
-    _columns[3] = column_type{other[3]};
-  }
+  _columns[0] = column_type{other[0]};
+  _columns[1] = column_type{other[1]};
+  _columns[2] = column_type{other[2]};
+  _columns[3] = column_type{other[3]};
 
   return *this;
 }
