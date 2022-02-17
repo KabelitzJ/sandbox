@@ -2,6 +2,8 @@
 #define SBX_ECS_REGISTRY_HPP_
 
 #include <concepts>
+#include <vector>
+#include <queue>
 
 #include <types/primitives.hpp>
 

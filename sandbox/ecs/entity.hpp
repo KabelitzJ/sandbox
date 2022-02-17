@@ -1,40 +1,58 @@
 #ifndef SBX_ECS_ENTITY_HPP_
 #define SBX_ECS_ENTITY_HPP_
 
-#include <concepts>
+#include <types/primitives.hpp>
+
+#include "entity_traits.hpp"
 
 namespace sbx {
 
-template<std::unsigned_integral Type>
-class entity {
+enum class default_entity : uint32 { };
 
-public:
+struct null_entity_t {
 
-  using id_type = Type;
+  template<entity Entity>
+  [[nodiscard]] constexpr operator Entity() const noexcept {
+    using traits = entity_traits<Entity>;
+    return traits::combine(traits::reserved, traits::reserved);
+  }
 
-  constexpr entity(const entity<id_type>& other) noexcept = delete;
+}; // struct null_entity_t
 
-  constexpr entity(entity<id_type>&& other) noexcept;
+constexpr bool operator==([[maybe_unused]] const null_entity_t lhs, [[maybe_unused]] const null_entity_t rhs) noexcept {
+  return true;
+}
 
-  ~entity() noexcept;
+template<entity Entity>
+constexpr bool operator==(const Entity lhs, const null_entity_t rhs) noexcept {
+  using traits = entity_traits<Entity>;
+  return traits::to_entity(lhs) == traits::to_entity(rhs);
+}
 
-  constexpr entity<id_type>& operator=(const entity<id_type>& other) noexcept = delete;
+inline constexpr null_entity_t null_entity{};
 
-  constexpr entity<id_type>& operator=(entity<id_type>&& other) noexcept;
+struct tombstone_entity_t {
 
-private:
+  template<entity Entity>
+  [[nodiscard]] constexpr operator Entity() const noexcept {
+    using traits = entity_traits<Entity>;
+    return traits::combine(traits::reserved, traits::reserved);
+  }
 
-  constexpr entity(const id_type id) noexcept;
+}; // struct tombstone_entity_t
 
-  id_type _id{};
+constexpr bool operator==([[maybe_unused]] const tombstone_entity_t lhs, [[maybe_unused]] const tombstone_entity_t rhs) noexcept {
+  return true;
+}
 
-}; // class entity
+template<entity Entity>
+constexpr bool operator==(const Entity lhs, const tombstone_entity_t rhs) noexcept {
+  using traits = entity_traits<Entity>;
+  return traits::to_version(lhs) == traits::to_version(rhs);
+}
 
-template<std::unsigned_integral Type>
-constexpr bool operator==(const entity<Type>& lhs, const entity<Type>& rhs) noexcept;
+inline constexpr tombstone_entity_t tombstone_entity{};
 
 } // namespace sbx
-
-#include "entity.inl"
 
 #endif // SBX_ECS_ENTITY_HPP_

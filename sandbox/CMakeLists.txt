@@ -5,6 +5,7 @@ set(
   SBX_MODULES
     meta
     types
+    utils
     math
     ecs
 )

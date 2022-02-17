@@ -2,6 +2,9 @@
 #define SBX_ECS_HPP_
 
 #include "entity.hpp"
+#include "entity_traits.hpp"
+
+#include "sparse_set.hpp"
 #include "registry.hpp"
 
 #endif // SBX_ECS_HPP_
