@@ -1,12 +1,8 @@
 #include <iostream>
 
-#include <utils/type_id.hpp>
-
+#include <utils/utils.hpp>
 #include <math/math.hpp>
-
 #include <ecs/ecs.hpp>
-
-#include <ecs/entity_traits.hpp>
 
 int main() {
 
@@ -26,8 +22,6 @@ int main() {
   auto id = sbx::type_id<sbx::vector3>{};
 
   std::cout << "vector3 id: " << sbx::uint32{id} << std::endl;
-
-  auto set = sbx::sparse_set{};
 
   return 0;
 }
