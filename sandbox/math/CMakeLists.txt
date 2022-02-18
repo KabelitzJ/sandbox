@@ -11,6 +11,7 @@ target_include_directories(
 target_link_libraries(
   ${PROJECT_NAME}
   INTERFACE 
+    sbx::platform
     sbx::meta
     sbx::types
 )

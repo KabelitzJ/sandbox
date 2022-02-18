@@ -1,4 +1,4 @@
-project(ecs CXX)
+project(platform CXX)
 
 add_library(${PROJECT_NAME} INTERFACE)
 
@@ -6,15 +6,6 @@ target_include_directories(
   ${PROJECT_NAME}
   INTERFACE
     "${CMAKE_CURRENT_SOURCE_DIR}/.."
-)
-
-target_link_libraries(
-  ${PROJECT_NAME}
-  INTERFACE 
-    sbx::platform
-    sbx::meta
-    sbx::types
-    sbx::math
 )
 
 target_compile_features(

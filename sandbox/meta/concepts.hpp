@@ -11,21 +11,34 @@ template<typename Type>
 concept arithmetic = std::is_arithmetic_v<Type>;
 
 template<typename OutputStream, typename Type>
-concept output_stream = requires(OutputStream& os, const Type& value) {
+concept output_stream = requires (OutputStream& os, const Type& value) {
   { os << value } -> std::same_as<OutputStream&>;
 };
 
 template<typename InputStream, typename Type>
-concept input_stream = requires(InputStream& os, Type& value) {
+concept input_stream = requires (InputStream& os, Type& value) {
   { os >> value } -> std::same_as<InputStream&>;
 };
 
 template<typename Allocator, typename Type>
-concept allocator = requires(Allocator& allocator, Type* value) {
+concept allocator = requires (Allocator& allocator, Type* value) {
   std::same_as<typename std::allocator_traits<Allocator>::value_type, Type>;
   std::same_as<typename std::allocator_traits<Allocator>::pointer, Type*>;
   { std::allocator_traits<Allocator>::allocate(allocator, std::size_t{1}) } -> std::same_as<Type*>;
   { std::allocator_traits<Allocator>::deallocate(allocator, value, std::size_t{1}) } -> std::same_as<void>;
+};
+
+template<typename Container>
+concept container = requires (Container& container) {
+  typename Container::value_type;
+  typename Container::pointer;
+  typename Container::reference;
+  typename Container::size_type;
+  typename Container::difference_type;
+  { container.begin() } -> std::same_as<typename Container::iterator>;
+  { container.end() } -> std::same_as<typename Container::iterator>;
+  { container.size() } -> std::same_as<typename Container::size_type>;
+  { container.data() } -> std::same_as<typename Container::pointer>;
 };
 
 } // namespace sbx

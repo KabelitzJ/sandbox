@@ -27,9 +27,9 @@ struct entity_traits_32 {
   using entity_type = uint32;
   using version_type = uint16;
 
-  static constexpr auto entity_mask = entity_type{0xFFFFF};
-  static constexpr auto version_mask = version_type{0xFFF};
-  static constexpr auto entity_shift = std::size_t{20};
+  inline static constexpr auto entity_mask = entity_type{0xFFFFF};
+  inline static constexpr auto version_mask = version_type{0xFFF};
+  inline static constexpr auto entity_shift = std::size_t{20};
 
 };
 
@@ -38,9 +38,9 @@ struct entity_traits_64 {
   using entity_type = uint64;
   using version_type = uint32;
 
-  static constexpr auto entity_mask = entity_type{0xFFFFFFFF};
-  static constexpr auto version_mask = version_type{0xFFFFFFFF};
-  static constexpr auto entity_shift = std::size_t{32};
+  inline static constexpr auto entity_mask = entity_type{0xFFFFFFFF};
+  inline static constexpr auto version_mask = version_type{0xFFFFFFFF};
+  inline static constexpr auto entity_shift = std::size_t{32};
 
 };
 
