@@ -13,7 +13,7 @@
 
 namespace sbx {
 
-template<std::unsigned_integral Type, allocator<Type> Allocator, std::size_t PageSize>
+template<std::unsigned_integral Type, allocator<Type> Allocator, std::size_t PageSize, Type Placeholder>
 requires(std::has_single_bit(PageSize))
 class basic_sparse_set {
 
@@ -23,7 +23,7 @@ class basic_sparse_set {
   using packed_container_type = std::vector<typename allocator_traits::value_type, typename allocator_traits::allocator_type>;
 
   inline static constexpr auto page_size = PageSize;
-  inline static constexpr auto placeholder = std::numeric_limits<Type>::max();
+  inline static constexpr auto placeholder = Placeholder;
 
 public:
 
@@ -42,15 +42,15 @@ public:
 
   explicit basic_sparse_set(const allocator_type& allocator);
 
-  basic_sparse_set(const basic_sparse_set<Type, Allocator, PageSize>& other) = delete;
+  basic_sparse_set(const basic_sparse_set<Type, Allocator, PageSize, Placeholder>& other) = delete;
 
-  basic_sparse_set(const basic_sparse_set<Type, Allocator, PageSize>&& other) noexcept;
+  basic_sparse_set(const basic_sparse_set<Type, Allocator, PageSize, Placeholder>&& other) noexcept;
 
   virtual ~basic_sparse_set();
 
-  basic_sparse_set<Type, Allocator, PageSize>& operator=(const basic_sparse_set<Type, Allocator, PageSize>& other) = delete;
+  basic_sparse_set<Type, Allocator, PageSize, Placeholder>& operator=(const basic_sparse_set<Type, Allocator, PageSize, Placeholder>& other) = delete;
 
-  basic_sparse_set<Type, Allocator, PageSize>& operator=(const basic_sparse_set<Type, Allocator, PageSize>&& other) noexcept;
+  basic_sparse_set<Type, Allocator, PageSize, Placeholder>& operator=(const basic_sparse_set<Type, Allocator, PageSize, Placeholder>&& other) noexcept;
 
   [[nodiscard]] constexpr allocator_type get_allocator() const noexcept;
 
@@ -119,7 +119,7 @@ private:
 }; // class basic_sparse_set
 
 template<std::unsigned_integral Type>
-using sparse_set = basic_sparse_set<Type, std::allocator<Type>, std::size_t{4096}>;
+using sparse_set = basic_sparse_set<Type, std::allocator<Type>, std::size_t{4096}, std::numeric_limits<Type>::max()>;
 
 } // namespace sbx
 
