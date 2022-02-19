@@ -3,13 +3,8 @@
 namespace sbx {
 
 template<std::unsigned_integral Type>
-inline constexpr bool is_power_of_two(const Type value) noexcept {
-  return (value & (value - 1)) == 0;
-}
-
-template<std::unsigned_integral Type>
 inline constexpr Type fast_mod(const Type value, const Type modulo) noexcept {
-  SBX_ASSERT(is_power_of_two(modulo), "Value must be a power of two");
+  SBX_ASSERT(std::has_single_bit(modulo), "Modulo must be a power of 2");
   return value & (modulo - 1);
 }
 

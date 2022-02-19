@@ -1,4 +1,4 @@
-project(ecs CXX)
+project(container CXX)
 
 add_library(${PROJECT_NAME} INTERFACE)
 
@@ -14,8 +14,6 @@ target_link_libraries(
     sbx::platform
     sbx::meta
     sbx::types
-    sbx::container
-    sbx::math
 )
 
 target_compile_features(
