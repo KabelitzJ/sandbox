@@ -8,8 +8,11 @@
 struct foo { };
 
 int main() {
+  auto s = sbx::sparse_set<sbx::uint32>{};
 
-  auto foo_container = sbx::component_container<foo>{};
+  auto m = sbx::fast_mod<31, 4>();
+
+  std::cout << m << std::endl;
 
   return 0;
 }
