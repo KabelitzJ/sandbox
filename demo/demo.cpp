@@ -8,8 +8,5 @@
 struct foo { };
 
 int main() {
-
-  auto foo_container = sbx::component_container<foo>{};
-
   return 0;
 }
