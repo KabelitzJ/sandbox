@@ -7,9 +7,8 @@
 
 namespace sbx {
 
-template<std::size_t Value, std::size_t Modulo>
-requires (std::has_single_bit(Modulo))
-[[nodiscard]] constexpr std::size_t fast_mod() noexcept;
+template<std::unsigned_integral Type>
+[[nodiscard]] constexpr Type fast_modulo(const Type value, const Type modulo) noexcept;
 
 } // namespace sbx
 
