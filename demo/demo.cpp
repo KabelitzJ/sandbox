@@ -8,7 +8,5 @@
 struct foo { };
 
 int main() {
-  auto s = sbx::sparse_set<sbx::uint32>{};
-
   return 0;
 }
