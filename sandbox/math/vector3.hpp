@@ -139,9 +139,9 @@ struct basic_vector3 {
   /**
    * @brief Returns a normalized copy.
    * 
-   * @return basic_vector3<value_type> The normalized vector.
+   * @return basic_vector3 The normalized vector.
    */
-  [[nodiscard]] static constexpr basic_vector3<value_type> normalized(const basic_vector3& vector) noexcept;
+  [[nodiscard]] static constexpr basic_vector3 normalized(const basic_vector3& vector) noexcept;
 
   /**
    * @brief Returns the dot product of two vectors.
@@ -159,9 +159,9 @@ struct basic_vector3 {
    * @param lhs The left hand side vector.
    * @param rhs The right hand side vector.
    * 
-   * @return basic_vector3<value_type> The cross product.
+   * @return basic_vector3 The cross product.
    */
-  [[nodiscard]] static constexpr basic_vector3<value_type> cross(const basic_vector3& lhs, const basic_vector3& rhs) noexcept;
+  [[nodiscard]] static constexpr basic_vector3 cross(const basic_vector3& lhs, const basic_vector3& rhs) noexcept;
 
   // -- Assignment operators --
 
@@ -200,7 +200,7 @@ struct basic_vector3 {
   /**
    * @brief Negates the vector.
    * 
-   * @return basic_vector3<value_type> A reference to this vector.
+   * @return basic_vector3& A reference to this vector.
    */
   constexpr basic_vector3& operator-() noexcept;
 

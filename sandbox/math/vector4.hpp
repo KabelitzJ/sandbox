@@ -119,9 +119,9 @@ struct basic_vector4 {
   /**
    * @brief Returns a normalized copy.
    * 
-   * @return basic_vector4<value_type> The normalized vector.
+   * @return basic_vector4 The normalized vector.
    */
-  [[nodiscard]] static constexpr basic_vector4<value_type> normalized(const basic_vector4& vector) noexcept;
+  [[nodiscard]] static constexpr basic_vector4 normalized(const basic_vector4& vector) noexcept;
 
   // -- Assignment operators --
 
@@ -160,7 +160,7 @@ struct basic_vector4 {
   /**
    * @brief Negates the vector.
    * 
-   * @return basic_vector4<value_type> A reference to this vector.
+   * @return basic_vector4& A reference to this vector.
    */
   constexpr basic_vector4& operator-() noexcept;
 

@@ -152,9 +152,9 @@ struct basic_matrix4x4 {
 
   // -- Static member functions --
 
-  [[nodiscard]] constexpr static basic_matrix4x4<value_type> transpose(const basic_matrix4x4& matrix) noexcept;
+  [[nodiscard]] constexpr static basic_matrix4x4 transpose(const basic_matrix4x4& matrix) noexcept;
 
-  [[nodiscard]] constexpr static basic_matrix4x4<value_type> inverse(const basic_matrix4x4& matrix) noexcept;
+  [[nodiscard]] constexpr static basic_matrix4x4 inverse(const basic_matrix4x4& matrix) noexcept;
 
   // -- Assignment operators --
 

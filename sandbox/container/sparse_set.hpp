@@ -10,6 +10,12 @@
 
 namespace sbx {
 
+/**
+ * @brief A simple sparse set imlementation.
+ * 
+ * @tparam Type The type of the elements.
+ * @tparam Allocator The allocator type.
+ */
 template<std::unsigned_integral Type, allocator<Type> Allocator>
 class basic_sparse_set {
 
@@ -18,27 +24,57 @@ class basic_sparse_set {
 
 public:
 
+  /** @brief The type of the elements. */
   using value_type = Type;
+
+  /** @brief The allocator type. */
   using allocator_type = Allocator;
+
+  /** @brief The type that can index elements. */
   using size_type = dense_container_type::size_type;
-  using difference_type = dense_container_type::difference_type;
+
+  /** @brief The reference type of the elements. */
   using const_reference = dense_container_type::const_reference;
-  using const_pointer = dense_container_type::const_pointer;
+
+  /** @brief The constant iterator type. */
   using const_iterator = dense_container_type::const_iterator;
+
+  /** @brief The constant reverse iterator type. */
   using const_reverse_iterator = dense_container_type::const_reverse_iterator;
 
+  /** @brief Constructs an empty sparse set. */
   basic_sparse_set() = default;
 
+  /**
+   * @brief Constructs a sparse set with the given allocator.
+   *
+   * @param allocator The allocator to use. 
+   */
   explicit basic_sparse_set(const allocator_type& allocator);
 
+  /** @brief Deleted copy constructor. */
   basic_sparse_set(const basic_sparse_set& other) = delete;
 
+  /**
+   * @brief Moves the given sparse set into this one.
+   *
+   * @param other The sparse set to move from. 
+   */
   basic_sparse_set(basic_sparse_set&& other) noexcept;
 
+  /** @brief Virtual destructor. */
   virtual ~basic_sparse_set() = default;
 
+  /** @brief Deleted copy assignment operator. */
   basic_sparse_set& operator=(const basic_sparse_set& other) = delete;
 
+  /**
+   * @brief Moves the given sparse set into this one.
+   *
+   * @param other The sparse set to move from. 
+   * 
+   * @return basic_sparse_set& Reference to this sparse set.
+   */
   basic_sparse_set& operator=(basic_sparse_set&& other) noexcept;
 
   [[nodiscard]] const_iterator begin() const noexcept;
