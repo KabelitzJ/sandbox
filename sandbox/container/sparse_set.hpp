@@ -63,7 +63,7 @@ public:
   basic_sparse_set(basic_sparse_set&& other) noexcept;
 
   /** @brief Virtual destructor. */
-  virtual ~basic_sparse_set() = default;
+  ~basic_sparse_set() = default;
 
   /** @brief Deleted copy assignment operator. */
   basic_sparse_set& operator=(const basic_sparse_set& other) = delete;

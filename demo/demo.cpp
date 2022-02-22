@@ -6,7 +6,9 @@
 #include <container/container.hpp>
 #include <ecs/ecs.hpp>
 
-struct foo { };
+struct foo {
+  sbx::uint32 i{};
+};
 
 int main() {
 
@@ -19,25 +21,49 @@ int main() {
   auto q = sbx::quaternion{};
 
   auto set = sbx::sparse_set<sbx::uint32>{};
-      
-  set.insert(3);
-  set.insert(5);
-  set.insert(1);
-  set.insert(2);
-  set.insert(9);
-  set.insert(4);
-  set.insert(0);
-  set.insert(6);
-  set.insert(8);
-  set.insert(7);  
 
-  std::cout << "set.size() = " << set.size() << std::endl;
+  auto container = sbx::component_container<sbx::uint32, foo>{};
 
-  set.erase(3);
-  set.erase(5);
-  set.erase(1);
-  set.erase(1);
-  set.erase(12); 
+  container.emplace(0, sbx::uint32{32});
+  container.emplace(1, sbx::uint32{52});
+  container.emplace(2, sbx::uint32{72});
+  container.emplace(3, sbx::uint32{92});
+  container.emplace(4, sbx::uint32{112});
+  container.emplace(5, sbx::uint32{132});
+  container.emplace(6, sbx::uint32{152});
+
+
+  for (const auto& component : container) {
+    std::cout << component.i << std::endl;
+  }
+
+  std::cout << std::endl;
+
+  container.remove(0);
+  container.remove(1);
+  container.remove(2);
+  container.remove(3);
+
+  for (const auto& component : container) {
+    std::cout << component.i << std::endl;
+  }
+
+  std::cout << std::endl;
+
+  std::cout << std::boolalpha;
+
+  std::cout << "0: " << container.contains(0) << std::endl;
+  std::cout << "1: " << container.contains(1) << std::endl;
+  std::cout << "2: " << container.contains(2) << std::endl;
+  std::cout << "3: " << container.contains(3) << std::endl;
+  std::cout << "4: " << container.contains(4) << std::endl;
+  std::cout << "5: " << container.contains(5) << std::endl;
+  std::cout << "6: " << container.contains(6) << std::endl;
+  std::cout << "7: " << container.contains(7) << std::endl;
+
+  std::cout << std::noboolalpha;
+
+  auto r = sbx::registry{};
     
   return EXIT_SUCCESS;
 }
