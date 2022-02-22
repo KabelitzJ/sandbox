@@ -86,7 +86,7 @@ inline constexpr basic_vector2<Type>& basic_vector2<Type>::operator/=(const Type
 }
 
 template<arithmetic Type>
-inline constexpr typename basic_vector2<Type>::reference basic_vector2<Type>::operator[](const index_type index) noexcept {
+inline constexpr basic_vector2<Type>::reference basic_vector2<Type>::operator[](const index_type index) noexcept {
   assert(index < 2);
 
   switch (index) {
@@ -101,7 +101,7 @@ inline constexpr typename basic_vector2<Type>::reference basic_vector2<Type>::op
 }
 
 template<arithmetic Type>
-inline constexpr typename basic_vector2<Type>::const_reference basic_vector2<Type>::operator[](const index_type index) const noexcept {
+inline constexpr basic_vector2<Type>::const_reference basic_vector2<Type>::operator[](const index_type index) const noexcept {
   assert(index < 2);
 
   switch (index) {
@@ -116,7 +116,7 @@ inline constexpr typename basic_vector2<Type>::const_reference basic_vector2<Typ
 }
 
 template<arithmetic Type>
-inline constexpr typename basic_vector2<Type>::length_type basic_vector2<Type>::length() const noexcept {
+inline constexpr basic_vector2<Type>::length_type basic_vector2<Type>::length() const noexcept {
   return std::sqrt(x * x + y * y);
 }
 
@@ -131,12 +131,12 @@ inline constexpr void basic_vector2<Type>::normalize() noexcept {
 }
 
 template<arithmetic Type>
-inline constexpr typename basic_vector2<Type>::pointer basic_vector2<Type>::data() noexcept {
+inline constexpr basic_vector2<Type>::pointer basic_vector2<Type>::data() noexcept {
   return &x;
 }
 
 template<arithmetic Type>
-inline constexpr typename basic_vector2<Type>::const_pointer basic_vector2<Type>::data() const noexcept {
+inline constexpr basic_vector2<Type>::const_pointer basic_vector2<Type>::data() const noexcept {
   return &x;
 }
 

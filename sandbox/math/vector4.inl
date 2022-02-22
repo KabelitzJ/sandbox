@@ -137,7 +137,7 @@ inline constexpr basic_vector4<Type>& basic_vector4<Type>::operator/=(const basi
 }
 
 template<arithmetic Type>
-inline constexpr typename basic_vector4<Type>::reference basic_vector4<Type>::operator[](const index_type index) noexcept {
+inline constexpr basic_vector4<Type>::reference basic_vector4<Type>::operator[](const index_type index) noexcept {
   assert(index < 4);
 
   switch (index) {
@@ -158,7 +158,7 @@ inline constexpr typename basic_vector4<Type>::reference basic_vector4<Type>::op
 }
 
 template<arithmetic Type>
-inline constexpr typename basic_vector4<Type>::const_reference basic_vector4<Type>::operator[](const index_type index) const noexcept {
+inline constexpr basic_vector4<Type>::const_reference basic_vector4<Type>::operator[](const index_type index) const noexcept {
   assert(index < 4);
 
   switch (index) {
@@ -179,7 +179,7 @@ inline constexpr typename basic_vector4<Type>::const_reference basic_vector4<Typ
 }
 
 template<arithmetic Type>
-inline constexpr typename basic_vector4<Type>::length_type basic_vector4<Type>::length() const noexcept {
+inline constexpr basic_vector4<Type>::length_type basic_vector4<Type>::length() const noexcept {
   return std::sqrt(x * x + y * y + z * z + w * w);
 }
 
@@ -196,12 +196,12 @@ inline constexpr void basic_vector4<Type>::normalize() noexcept {
 }
 
 template<arithmetic Type>
-inline constexpr typename basic_vector4<Type>::pointer basic_vector4<Type>::data() noexcept {
+inline constexpr basic_vector4<Type>::pointer basic_vector4<Type>::data() noexcept {
   return &x;
 }
 
 template<arithmetic Type>
-inline constexpr typename basic_vector4<Type>::const_pointer basic_vector4<Type>::data() const noexcept {
+inline constexpr basic_vector4<Type>::const_pointer basic_vector4<Type>::data() const noexcept {
   return &x;
 }
 

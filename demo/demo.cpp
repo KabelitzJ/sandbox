@@ -8,5 +8,12 @@
 struct foo { };
 
 int main() {
+
+  auto set = sbx::sparse_set<sbx::uint32>{};
+      
+  for (const auto& i : set) {    
+
+  }
+    
   return 0;
 }

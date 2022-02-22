@@ -166,24 +166,24 @@ inline constexpr basic_matrix4x4<Type>& basic_matrix4x4<Type>::operator*=(const 
 }
 
 template<arithmetic Type>
-inline constexpr typename basic_matrix4x4<Type>::column_type_reference basic_matrix4x4<Type>::operator[](const index_type index) noexcept {
+inline constexpr basic_matrix4x4<Type>::column_type_reference basic_matrix4x4<Type>::operator[](const index_type index) noexcept {
   assert(index < 4);
   return _columns[index];
 }
 
 template<arithmetic Type>
-inline constexpr typename basic_matrix4x4<Type>::const_column_type_reference basic_matrix4x4<Type>::operator[](const index_type index) const noexcept {
+inline constexpr basic_matrix4x4<Type>::const_column_type_reference basic_matrix4x4<Type>::operator[](const index_type index) const noexcept {
   assert(index < 4);
   return _columns[index];
 }
 
 template<arithmetic Type>
-inline constexpr typename basic_matrix4x4<Type>::pointer basic_matrix4x4<Type>::data() noexcept {
+inline constexpr basic_matrix4x4<Type>::pointer basic_matrix4x4<Type>::data() noexcept {
   return &_columns[0].x;
 }
 
 template<arithmetic Type>
-inline constexpr typename basic_matrix4x4<Type>::const_pointer basic_matrix4x4<Type>::data() const noexcept {
+inline constexpr basic_matrix4x4<Type>::const_pointer basic_matrix4x4<Type>::data() const noexcept {
   return &_columns[0].x;
 }
 
@@ -219,7 +219,7 @@ inline constexpr basic_matrix4x4<Type> operator*(basic_matrix4x4<Type> lhs, cons
 
 template<arithmetic Type>
 inline constexpr basic_vector4<Type> operator*(basic_matrix4x4<Type> lhs, const basic_vector4<Type>& rhs) noexcept {
-  using index_type = typename basic_matrix4x4<Type>::index_type;
+  using index_type = basic_matrix4x4<Type>::index_type;
 
   // [NOTE] KAJ 2022-02-04 23:42 - This might become a performance bottleneck in the future. But most matrix multiplications are going to happen on the GPU anyways.
   auto result = basic_vector4<Type>{};
@@ -235,7 +235,7 @@ inline constexpr basic_vector4<Type> operator*(basic_matrix4x4<Type> lhs, const 
 
 template<arithmetic Type>
 inline constexpr basic_matrix4x4<Type> operator*(basic_matrix4x4<Type> lhs, const basic_matrix4x4<Type>& rhs) noexcept {
-  using index_type = typename basic_matrix4x4<Type>::index_type;
+  using index_type = basic_matrix4x4<Type>::index_type;
 
   // [NOTE] KAJ 2022-02-04 23:42 - This might become a performance bottleneck in the future. But most matrix multiplications are going to happen on the GPU anyways.
   auto result = basic_matrix4x4<Type>{};
@@ -253,7 +253,7 @@ inline constexpr basic_matrix4x4<Type> operator*(basic_matrix4x4<Type> lhs, cons
 
 template<arithmetic Type>
 inline constexpr std::ostream& operator<<(std::ostream& output_stream, const basic_matrix4x4<Type>& matrix) noexcept {
-  using index_type = typename basic_matrix4x4<Type>::index_type;
+  using index_type = basic_matrix4x4<Type>::index_type;
 
   auto default_state = std::ios{nullptr};
   default_state.copyfmt(output_stream);
