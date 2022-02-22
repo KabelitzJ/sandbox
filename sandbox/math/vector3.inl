@@ -37,18 +37,18 @@ inline constexpr basic_vector3<Type>::basic_vector3(const basic_vector3<Other>& 
   z{static_cast<value_type>(other.z)} { }
 
 template<arithmetic Type>
-inline constexpr basic_vector3<Type> basic_vector3<Type>::normalized(const basic_vector3<value_type>& vector) noexcept {
+inline constexpr basic_vector3<Type> basic_vector3<Type>::normalized(const basic_vector3& vector) noexcept {
   const auto length = vector.length();
   return length == value_type{0} ? basic_vector3<Type>{} : vector / length;
 }
 
 template<arithmetic Type>
-inline constexpr Type basic_vector3<Type>::dot(const basic_vector3<Type>& lhs, const basic_vector3<Type>& rhs) noexcept {
+inline constexpr Type basic_vector3<Type>::dot(const basic_vector3& lhs, const basic_vector3& rhs) noexcept {
   return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z;
 }
 
 template<arithmetic Type>
-inline constexpr basic_vector3<Type> basic_vector3<Type>::cross(const basic_vector3<Type>& lhs, const basic_vector3<Type>& rhs) noexcept {
+inline constexpr basic_vector3<Type> basic_vector3<Type>::cross(const basic_vector3& lhs, const basic_vector3& rhs) noexcept {
   constexpr auto x = lhs.y * rhs.z - lhs.z * rhs.y;
   constexpr auto y = lhs.z * rhs.x - lhs.x * rhs.z;
   constexpr auto z = lhs.x * rhs.y - lhs.y * rhs.x;

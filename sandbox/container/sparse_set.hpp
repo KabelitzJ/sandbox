@@ -4,6 +4,7 @@
 #include <concepts>
 #include <vector>
 #include <memory>
+#include <optional>
 
 #include <meta/concepts.hpp>
 
@@ -24,6 +25,7 @@ public:
   using const_reference = dense_container_type::const_reference;
   using const_pointer = dense_container_type::const_pointer;
   using const_iterator = dense_container_type::const_iterator;
+  using const_reverse_iterator = dense_container_type::const_reverse_iterator;
 
   basic_sparse_set() = default;
 
@@ -39,13 +41,39 @@ public:
 
   basic_sparse_set& operator=(basic_sparse_set&& other) noexcept;
 
-  const_iterator begin() const noexcept;
+  [[nodiscard]] const_iterator begin() const noexcept;
 
-  const_iterator cbegin() const noexcept;
+  [[nodiscard]] const_iterator cbegin() const noexcept;
 
-  const_iterator end() const noexcept;
+  [[nodiscard]] const_iterator end() const noexcept;
 
-  const_iterator cend() const noexcept;
+  [[nodiscard]] const_iterator cend() const noexcept;
+
+  [[nodiscard]] const_reverse_iterator rbegin() const noexcept;
+
+  [[nodiscard]] const_reverse_iterator crbegin() const noexcept;
+
+  [[nodiscard]] const_reverse_iterator rend() const noexcept;
+
+  [[nodiscard]] const_reverse_iterator crend() const noexcept;
+
+  [[nodiscard]] size_type size() const noexcept;
+
+  [[nodiscard]] bool empty() const noexcept;
+
+  [[nodiscard]] const_iterator find(const value_type& value) const noexcept;
+
+  [[nodiscard]] bool contains(const value_type& value) const noexcept;
+
+  const_iterator insert(const value_type& value);
+
+  void erase(const value_type& value);
+
+  void clear() noexcept;
+
+  [[nodiscard]] const_reference operator[](const size_type& index) const noexcept;
+
+  [[nodiscard]] const_reference at(const size_type& index) const;
 
 private:
 

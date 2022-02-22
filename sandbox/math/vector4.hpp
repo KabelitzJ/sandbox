@@ -44,7 +44,7 @@ struct basic_vector4 {
   // -- Static data members --
 
   /** @brief The origin of three dimensional space */
-  inline static constexpr basic_vector4<value_type> zero{value_type{0}, value_type{0}, value_type{0}, value_type{0}};
+  inline static constexpr basic_vector4 zero{value_type{0}, value_type{0}, value_type{0}, value_type{0}};
 
   // -- Data members --
 
@@ -92,7 +92,7 @@ struct basic_vector4 {
    *
    * @param other The other vector to copy the components from. 
    */
-  constexpr basic_vector4(const basic_vector4<value_type>& other) noexcept = default;
+  constexpr basic_vector4(const basic_vector4& other) noexcept = default;
 
   /**
    * @brief Constructs a vector and copies the components from the other vector
@@ -109,7 +109,7 @@ struct basic_vector4 {
    *
    * @param other The other vector to move the components from. 
    */
-  constexpr basic_vector4(basic_vector4<value_type>&& other) noexcept = default;
+  constexpr basic_vector4(basic_vector4&& other) noexcept = default;
 
   /** @brief Destroys the vector */
   ~basic_vector4() noexcept = default;
@@ -121,7 +121,7 @@ struct basic_vector4 {
    * 
    * @return basic_vector4<value_type> The normalized vector.
    */
-  [[nodiscard]] static constexpr basic_vector4<value_type> normalized(const basic_vector4<value_type>& vector) noexcept;
+  [[nodiscard]] static constexpr basic_vector4<value_type> normalized(const basic_vector4& vector) noexcept;
 
   // -- Assignment operators --
 
@@ -130,9 +130,9 @@ struct basic_vector4 {
    * 
    * @param other The other vector to copy the components from.
    * 
-   * @return basic_vector4<value_type>& A reference to this vector.
+   * @return basic_vector4& A reference to this vector.
    */
-  constexpr basic_vector4<value_type>& operator=(const basic_vector4<value_type>& other) noexcept = default;
+  constexpr basic_vector4& operator=(const basic_vector4& other) noexcept = default;
 
   /**
    * @brief Copies the components from the other vector.
@@ -141,19 +141,19 @@ struct basic_vector4 {
    * 
    * @param other The other vector to copy the components from.
    * 
-   * @return basic_vector4<value_type>& A reference to this vector.
+   * @return basic_vector4& A reference to this vector.
    */
   template<arithmetic Other>
-  constexpr basic_vector4<value_type>& operator=(const basic_vector4<Other>& other) noexcept;
+  constexpr basic_vector4& operator=(const basic_vector4<Other>& other) noexcept;
 
   /**
    * @brief Moves the components out of the other vector.
    * 
    * @param other The other vector to move the components from.
    * 
-   * @return basic_vector4<value_type>& A reference to this vector.
+   * @return basic_vector4& A reference to this vector.
    */
-  constexpr basic_vector4<value_type>& operator=(basic_vector4<value_type>&& other) noexcept = default;
+  constexpr basic_vector4& operator=(basic_vector4&& other) noexcept = default;
 
   // -- Unary arithmetic operators --
 
@@ -162,7 +162,7 @@ struct basic_vector4 {
    * 
    * @return basic_vector4<value_type> A reference to this vector.
    */
-  constexpr basic_vector4<value_type>& operator-() noexcept;
+  constexpr basic_vector4& operator-() noexcept;
 
   // -- Binary arithmetic operators --
 
@@ -171,36 +171,36 @@ struct basic_vector4 {
    * 
    * @param other The other vector to add.
    * 
-   * @return basic_vector4<value_type>& A reference to this vector. 
+   * @return basic_vector4& A reference to this vector. 
    */
-  constexpr basic_vector4<value_type>& operator+=(const basic_vector4<value_type>& other) noexcept;
+  constexpr basic_vector4& operator+=(const basic_vector4& other) noexcept;
 
   /**
    * @brief Subtracts the components of the other vector from this vector.
    * 
    * @param other The other vector to subtract.
    * 
-   * @return basic_vector4<value_type>& A reference to this vector. 
+   * @return basic_vector4& A reference to this vector. 
    */
-  constexpr basic_vector4<value_type>& operator-=(const basic_vector4<value_type>& other) noexcept;
+  constexpr basic_vector4& operator-=(const basic_vector4& other) noexcept;
 
   /**
    * @brief Multiplies the components of this vector by the scalar.
    * 
    * @param scalar The scalar to multiply by.
    * 
-   * @return basic_vector4<value_type>& A reference to this vector. 
+   * @return basic_vector4& A reference to this vector. 
    */
-  constexpr basic_vector4<value_type>& operator*=(const value_type scalar) noexcept;
+  constexpr basic_vector4& operator*=(const value_type scalar) noexcept;
 
   /**
    * @brief Multiplies the components of this vector by the vector.
    * 
    * @param other The vector to multiply by.
    * 
-   * @return basic_vector4<value_type>& A reference to this vector.
+   * @return basic_vector4& A reference to this vector.
    */
-  constexpr basic_vector4<value_type>& operator*=(const basic_vector4<value_type>& other) noexcept;
+  constexpr basic_vector4& operator*=(const basic_vector4& other) noexcept;
 
   /**
    * @brief Divides the components of this vector by the scalar.
@@ -209,18 +209,18 @@ struct basic_vector4 {
    * 
    * @throws std::domain_error If the scalar is zero.
    * 
-   * @return basic_vector4<value_type>& A reference to this vector. 
+   * @return basic_vector4& A reference to this vector. 
    */
-  constexpr basic_vector4<value_type>& operator/=(const value_type scalar);
+  constexpr basic_vector4& operator/=(const value_type scalar);
 
   /**
    * @brief Divides the components of this vector by the vector.
    * 
    * @param other The vector to divide by.
    * 
-   * @return basic_vector4<value_type>& A reference to this vector. 
+   * @return basic_vector4& A reference to this vector. 
    */
-  constexpr basic_vector4<value_type>& operator/=(const basic_vector4<value_type>& other);
+  constexpr basic_vector4& operator/=(const basic_vector4& other);
 
   // -- Access operators --
 

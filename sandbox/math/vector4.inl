@@ -42,7 +42,7 @@ inline constexpr basic_vector4<Type>::basic_vector4(const basic_vector4<From>& o
   w{static_cast<value_type>(other.w)} { }
 
 template<arithmetic Type>
-inline constexpr basic_vector4<Type> basic_vector4<Type>::normalized(const basic_vector4<Type>& vector) noexcept {
+inline constexpr basic_vector4<Type> basic_vector4<Type>::normalized(const basic_vector4& vector) noexcept {
   const auto length = vector.length();
   return length == value_type{0} ? basic_vector4<Type>{} : vector / length;
 }

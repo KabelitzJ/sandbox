@@ -64,7 +64,7 @@ inline constexpr basic_quaternion<Type>& basic_quaternion<Type>::operator=(const
 }
 
 template<typename Type>
-inline constexpr basic_quaternion<Type>::reference basic_quaternion<Type>::operator[](index_type index) noexcept {
+inline constexpr basic_quaternion<Type>::reference basic_quaternion<Type>::operator[](const index_type index) noexcept {
   assert(index < 4);
 
   switch (index) {
@@ -85,7 +85,7 @@ inline constexpr basic_quaternion<Type>::reference basic_quaternion<Type>::opera
 }
 
 template<typename Type>
-inline constexpr basic_quaternion<Type>::const_reference basic_quaternion<Type>::operator[](index_type index) const noexcept {
+inline constexpr basic_quaternion<Type>::const_reference basic_quaternion<Type>::operator[](const index_type index) const noexcept {
   assert(index < 4);
 
   switch (index) {

@@ -39,11 +39,11 @@ inline constexpr std::strong_ordering operator<=>(const radians<Type>& lhs, cons
 }
 
 template<std::floating_point Type>
-inline constexpr angle<Type>::angle(const degrees<value_type>& degrees) noexcept
+inline constexpr angle<Type>::angle(const degrees<Type>& degrees) noexcept
 : _degrees{degrees} { }
 
 template<std::floating_point Type>
-inline constexpr angle<Type>::angle(const radians<value_type>& radians) noexcept
+inline constexpr angle<Type>::angle(const radians<Type>& radians) noexcept
 : _degrees{radians * value_type{180} / pi_v<value_type>} { }
 
 template<std::floating_point Type>

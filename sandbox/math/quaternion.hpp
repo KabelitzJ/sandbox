@@ -96,7 +96,7 @@ struct basic_quaternion {
    * 
    * @return reference The component at the given index.
    */
-  [[nodiscard]] constexpr reference operator[](index_type index) noexcept;
+  [[nodiscard]] constexpr reference operator[](const index_type index) noexcept;
 
   /**
    * @brief Returns the component at the given index.
@@ -105,7 +105,7 @@ struct basic_quaternion {
    * 
    * @return reference The component at the given index.
    */
-  [[nodiscard]] constexpr const_reference operator[](index_type index) const noexcept;
+  [[nodiscard]] constexpr const_reference operator[](const index_type index) const noexcept;
 
   // -- Data access --
 

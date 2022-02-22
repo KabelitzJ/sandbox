@@ -27,7 +27,7 @@ inline constexpr basic_vector2<Type>::basic_vector2(const basic_vector2<Other>& 
   y{static_cast<Type>(other.y)} { }
 
 template<arithmetic Type>
-constexpr basic_vector2<Type> basic_vector2<Type>::normalized(const basic_vector2<Type>& vector) noexcept {
+constexpr basic_vector2<Type> basic_vector2<Type>::normalized(const basic_vector2& vector) noexcept {
   const auto length = vector.length();
   return length == value_type{0} ? basic_vector2<Type>{} : vector / length;
 }
@@ -50,7 +50,7 @@ inline constexpr basic_vector2<Type>& basic_vector2<Type>::operator-() noexcept 
 }
 
 template<arithmetic Type>
-inline constexpr basic_vector2<Type>& basic_vector2<Type>::operator+=(const basic_vector2<Type>& other) noexcept {
+inline constexpr basic_vector2<Type>& basic_vector2<Type>::operator+=(const basic_vector2& other) noexcept {
   x += other.x;
   y += other.y;
   
@@ -58,7 +58,7 @@ inline constexpr basic_vector2<Type>& basic_vector2<Type>::operator+=(const basi
 }
 
 template<arithmetic Type>
-inline constexpr basic_vector2<Type>& basic_vector2<Type>::operator-=(const basic_vector2<Type>& other) noexcept {
+inline constexpr basic_vector2<Type>& basic_vector2<Type>::operator-=(const basic_vector2& other) noexcept {
   x -= other.x;
   y -= other.y;
   

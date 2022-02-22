@@ -36,7 +36,7 @@ inline constexpr basic_matrix4x4<Type>::basic_matrix4x4(const basic_matrix4x4<Fr
 : _columns{column_type{other[0]}, column_type{other[1]}, column_type{other[2]}, column_type{other[3]}} { }
 
 template<arithmetic Type>
-inline constexpr basic_matrix4x4<Type> basic_matrix4x4<Type>::transpose(const basic_matrix4x4<value_type>& matrix) noexcept {
+inline constexpr basic_matrix4x4<Type> basic_matrix4x4<Type>::transpose(const basic_matrix4x4& matrix) noexcept {
   auto result = basic_matrix4x4<value_type>{};
 
   result[0][0] = matrix[0][0];
@@ -63,7 +63,7 @@ inline constexpr basic_matrix4x4<Type> basic_matrix4x4<Type>::transpose(const ba
 }
 
 template<arithmetic Type>
-inline constexpr basic_matrix4x4<Type> basic_matrix4x4<Type>::inverse(const basic_matrix4x4<value_type>& matrix) noexcept {
+inline constexpr basic_matrix4x4<Type> basic_matrix4x4<Type>::inverse(const basic_matrix4x4& matrix) noexcept {
   const auto coef00 = matrix[2][2] * matrix[3][3] - matrix[3][2] * matrix[2][3];
   const auto coef02 = matrix[1][2] * matrix[3][3] - matrix[3][2] * matrix[1][3];
   const auto coef03 = matrix[1][2] * matrix[2][3] - matrix[2][2] * matrix[1][3];

@@ -56,7 +56,7 @@ struct basic_matrix4x4 {
   // -- Static data members --
 
   /** @brief The identity matrix. */
-  inline static constexpr basic_matrix4x4<value_type> identity{
+  inline static constexpr basic_matrix4x4 identity{
     value_type{1}, value_type{0}, value_type{0}, value_type{0},
     value_type{0}, value_type{1}, value_type{0}, value_type{0},
     value_type{0}, value_type{0}, value_type{1}, value_type{0},
@@ -64,7 +64,7 @@ struct basic_matrix4x4 {
   };
 
   /** @brief A Matrix with all components set to zero. */
-  inline static constexpr basic_matrix4x4<value_type> zero{
+  inline static constexpr basic_matrix4x4 zero{
     value_type{0}, value_type{0}, value_type{0}, value_type{0},
     value_type{0}, value_type{0}, value_type{0}, value_type{0},
     value_type{0}, value_type{0}, value_type{0}, value_type{0},
@@ -130,7 +130,7 @@ struct basic_matrix4x4 {
    * 
    * @param other The matrix to copy.
    */
-  constexpr basic_matrix4x4(const basic_matrix4x4<value_type>& other) noexcept = default;
+  constexpr basic_matrix4x4(const basic_matrix4x4& other) noexcept = default;
 
   /**
    * @brief Copies the values of the given matrix.
@@ -145,16 +145,16 @@ struct basic_matrix4x4 {
    * 
    * @param other The matrix to move from.
    */
-  constexpr basic_matrix4x4(basic_matrix4x4<value_type>&& other) noexcept = default;
+  constexpr basic_matrix4x4(basic_matrix4x4&& other) noexcept = default;
 
   /** @brief Destroys the matrix */
   ~basic_matrix4x4() noexcept = default;
 
   // -- Static member functions --
 
-  [[nodiscard]] constexpr static basic_matrix4x4<value_type> transpose(const basic_matrix4x4<value_type>& matrix) noexcept;
+  [[nodiscard]] constexpr static basic_matrix4x4<value_type> transpose(const basic_matrix4x4& matrix) noexcept;
 
-  [[nodiscard]] constexpr static basic_matrix4x4<value_type> inverse(const basic_matrix4x4<value_type>& matrix) noexcept;
+  [[nodiscard]] constexpr static basic_matrix4x4<value_type> inverse(const basic_matrix4x4& matrix) noexcept;
 
   // -- Assignment operators --
 
@@ -163,28 +163,28 @@ struct basic_matrix4x4 {
    * 
    * @param other The matrix to copy.
    * 
-   * @return basic_matrix4x4<value_type>& Reference to this matrix.
+   * @return basic_matrix4x4& Reference to this matrix.
    */
-  constexpr basic_matrix4x4<value_type>& operator=(const basic_matrix4x4<value_type>& other) noexcept = default;
+  constexpr basic_matrix4x4& operator=(const basic_matrix4x4& other) noexcept = default;
 
   /**
    * @brief Copies the values of the given matrix.
    *
    * @param other The matrix to copy. 
    * 
-   * @return basic_matrix4x4<value_type>& Reference to this matrix.
+   * @return basic_matrix4x4& Reference to this matrix.
    */
   template<arithmetic From>
-  constexpr basic_matrix4x4<value_type>& operator=(const basic_matrix4x4<From>& other) noexcept;
+  constexpr basic_matrix4x4& operator=(const basic_matrix4x4<From>& other) noexcept;
 
   /**
    * @brief Moves the values out of the given matrix.
    *
    * @param other The matrix to move from. 
    * 
-   * @return basic_matrix4x4<value_type>& Reference to this matrix.
+   * @return basic_matrix4x4& Reference to this matrix.
    */
-  constexpr basic_matrix4x4<value_type>& operator=(basic_matrix4x4<value_type>&& other) noexcept = default;
+  constexpr basic_matrix4x4& operator=(basic_matrix4x4&& other) noexcept = default;
 
   // -- Binary arithmetic operators --
 
@@ -193,27 +193,27 @@ struct basic_matrix4x4 {
    *
    * @param other The matrix to add. 
    * 
-   * @return basic_matrix4x4<value_type>& Reference to this matrix.
+   * @return basic_matrix4x4& Reference to this matrix.
    */
-  constexpr basic_matrix4x4<value_type>& operator+=(const basic_matrix4x4<value_type>& other) noexcept;
+  constexpr basic_matrix4x4& operator+=(const basic_matrix4x4& other) noexcept;
 
   /**
    * @brief Subtracts the given matrix from this matrix.
    *
    * @param other The matrix to subtract. 
    * 
-   * @return basic_matrix4x4<value_type>& Reference to this matrix.
+   * @return basic_matrix4x4& Reference to this matrix.
    */
-  constexpr basic_matrix4x4<value_type>& operator-=(const basic_matrix4x4<value_type>& other) noexcept;
+  constexpr basic_matrix4x4& operator-=(const basic_matrix4x4& other) noexcept;
 
   /**
    * @brief Multiplies this matrix by the given scalar.
    *
    * @param scalar The scalar to multiply by. 
    *
-   * @return basic_matrix4x4<value_type>& Reference to this matrix. 
+   * @return basic_matrix4x4& Reference to this matrix. 
    */
-  constexpr basic_matrix4x4<value_type>& operator*=(const value_type scalar) noexcept;
+  constexpr basic_matrix4x4& operator*=(const value_type scalar) noexcept;
 
   // -- Access operators --
 
