@@ -10,10 +10,13 @@
 namespace sbx {
 
 template<typename Component>
-concept component = std::is_default_constructible_v<Component> && std::is_copy_assignable_v<Component>;
+concept component = 
+  std::is_default_constructible_v<Component> && 
+  std::is_copy_assignable_v<Component> && 
+  std::is_same_v<Component, std::decay_t<Component>>;
 
 template<typename Entity, component Component, allocator<Component> Allocator>
-class basic_component_container : basic_sparse_set<Entity, typename std::allocator_traits<Allocator>::rebind_alloc<Entity>> {
+class basic_component_container : public basic_sparse_set<Entity, typename std::allocator_traits<Allocator>::rebind_alloc<Entity>> {
 
   using allocator_traits = std::allocator_traits<Allocator>;
 

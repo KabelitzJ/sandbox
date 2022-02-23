@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include <vector>
 #include <queue>
+#include <optional>
 
 #include <container/sparse_set.hpp>
 
@@ -21,10 +22,12 @@ namespace sbx {
 template<typename Entity, allocator<Entity> Allocator>
 class basic_registry {
 
-  using basic_common_container = basic_sparse_set<Entity, Allocator>;
+  using allocator_traits = std::allocator_traits<Allocator>;
+
+  using common_container_type = basic_sparse_set<Entity, Allocator>;
   
   template<typename Component>
-  using component_container = basic_component_container<Entity, Component, Allocator>;  
+  using component_container_type = basic_component_container<Entity, Component, typename allocator_traits::rebind_alloc<Component>>;  
 
 public:
 
@@ -38,7 +41,7 @@ public:
 
 private:
 
-  std::unordered_map<uint32, std::unique_ptr<basic_common_container>> _component_pools{};
+  std::unordered_map<uint32, std::unique_ptr<common_container_type>> _component_containers{};
   std::vector<entity_type> _entities{};
   std::queue<entity_type> _free_list{};
 

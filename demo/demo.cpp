@@ -64,6 +64,10 @@ int main() {
   std::cout << std::noboolalpha;
 
   auto r = sbx::registry{};
+
+  auto& f = r.add_component<foo>(0, sbx::uint32{32});
+
+  f.i = 42;
     
   return EXIT_SUCCESS;
 }
