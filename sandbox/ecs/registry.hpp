@@ -34,6 +34,7 @@ public:
   using entity_type = Entity;
 
   template<component Component, typename... Args>
+  requires (std::is_constructible_v<Component, Args...>)
   Component& add_component(const entity_type entity, Args&&... args);
 
   template<component Component>
