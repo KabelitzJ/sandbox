@@ -19,6 +19,8 @@ int main() {
   auto m4 = sbx::matrix4x4::zero;
 
   auto quaterion = sbx::quaternion{};
+
+  auto set = sbx::sparse_set<unsigned int, std::size_t{256}>{};
     
   return EXIT_SUCCESS;
 }

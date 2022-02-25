@@ -8,7 +8,7 @@
 namespace sbx {
 
 template<std::unsigned_integral Type>
-[[nodiscard]] constexpr Type fast_modulo(const Type value, const Type modulo) noexcept;
+[[nodiscard]] constexpr Type fast_mod(const Type value, const Type modulo) noexcept;
 
 } // namespace sbx
 
