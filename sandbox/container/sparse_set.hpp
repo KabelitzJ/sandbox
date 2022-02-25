@@ -64,7 +64,7 @@ std::strong_ordering operator<=>(const sparse_set_iterator<Container>& lhs, cons
 
 } // namespace detail
 
-template<std::unsigned_integral Type, allocator<Type> Allocator, std::size_t PageSize>
+template<std::unsigned_integral Type, allocator<Type> Allocator>
 class basic_sparse_set {
 
   using allocator_traits = std::allocator_traits<Allocator>;
@@ -75,8 +75,7 @@ class basic_sparse_set {
   using reference = dense_container_type::reference;
   using pointer = dense_container_type::pointer;
 
-  inline static constexpr auto page_size = PageSize;
-  inline static constexpr auto placeholder = std::numeric_limits<Type>::max();
+  inline static constexpr auto page_size = std::size_t{1024};
 
 public:
 
@@ -93,15 +92,15 @@ public:
 
   explicit basic_sparse_set(const allocator_type& allocator);
 
-  basic_sparse_set(const basic_sparse_set&) = delete;
+  basic_sparse_set(const basic_sparse_set& other) = delete;
 
-  basic_sparse_set(basic_sparse_set&&) noexcept;
+  basic_sparse_set(basic_sparse_set&& other) noexcept;
 
   virtual ~basic_sparse_set();
 
-  basic_sparse_set& operator=(const basic_sparse_set&) = delete;
+  basic_sparse_set& operator=(const basic_sparse_set& other) = delete;
 
-  basic_sparse_set& operator=(basic_sparse_set&&) noexcept;
+  basic_sparse_set& operator=(basic_sparse_set&& other) noexcept;
 
   [[nodiscard]] size_type size() const noexcept;
 
@@ -133,6 +132,8 @@ public:
 
 protected:
 
+  inline static constexpr auto placeholder = std::numeric_limits<Type>::max();
+
   virtual void _swap_and_pop(const_iterator first, const_iterator last);
 
   virtual const_iterator _try_insert(const value_type value);
@@ -153,8 +154,8 @@ private:
 
 }; // class basic_sparse_set
 
-template<std::unsigned_integral Type, std::size_t PageSize>
-using sparse_set = basic_sparse_set<Type, std::allocator<Type>, PageSize>;
+template<std::unsigned_integral Type>
+using sparse_set = basic_sparse_set<Type, std::allocator<Type>>;
 
 } // namespace s
 

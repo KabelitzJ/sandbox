@@ -20,7 +20,7 @@ int main() {
 
   auto quaterion = sbx::quaternion{};
 
-  auto set = sbx::sparse_set<unsigned int, std::size_t{256}>{};
+  auto storage = sbx::storage<sbx::entity_id, foo>{};
     
   return EXIT_SUCCESS;
 }
