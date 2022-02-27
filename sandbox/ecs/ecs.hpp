@@ -2,6 +2,6 @@
 #define SBX_ECS_HPP_
 
 #include "entity_traits.hpp"
-#include "storage.hpp"
+#include "component_storage.hpp"
 
 #endif // SBX_ECS_HPP_

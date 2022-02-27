@@ -15,7 +15,6 @@ target_link_libraries(
     sbx::meta
     sbx::types
     sbx::utils
-    sbx::container
     sbx::math
 )
 

@@ -1,5 +1,5 @@
-#ifndef SBX_CONTAINER_SPARSE_SET_HPP_
-#define SBX_CONTAINER_SPARSE_SET_HPP_
+#ifndef SBX_ECS_ENTITY_SET_HPP_
+#define SBX_ECS_ENTITY_SET_HPP_
 
 #include <concepts>
 #include <limits>
@@ -13,7 +13,7 @@ namespace sbx {
 namespace detail {
 
 template<container Container>
-struct sparse_set_iterator {
+struct entity_set_iterator {
 
   using container_type = Container;
   using value_type = container_type::value_type;
@@ -23,25 +23,25 @@ struct sparse_set_iterator {
   using pointer = container_type::pointer;
   using iterator_category = std::bidirectional_iterator_tag;
 
-  sparse_set_iterator(const container_type& container, const difference_type offset) noexcept;
+  entity_set_iterator(const container_type& container, const difference_type offset) noexcept;
 
-  ~sparse_set_iterator() = default;
+  ~entity_set_iterator() = default;
 
-  sparse_set_iterator& operator++() noexcept;
+  entity_set_iterator& operator++() noexcept;
 
-  sparse_set_iterator operator++(int) noexcept;
+  entity_set_iterator operator++(int) noexcept;
 
-  sparse_set_iterator& operator--() noexcept;
+  entity_set_iterator& operator--() noexcept;
 
-  sparse_set_iterator operator--(int) noexcept;
+  entity_set_iterator operator--(int) noexcept;
 
-  sparse_set_iterator& operator+=(const difference_type offset) noexcept;
+  entity_set_iterator& operator+=(const difference_type offset) noexcept;
 
-  sparse_set_iterator operator+(const difference_type offset) const noexcept;
+  entity_set_iterator operator+(const difference_type offset) const noexcept;
 
-  sparse_set_iterator& operator-=(const difference_type offset) noexcept;
+  entity_set_iterator& operator-=(const difference_type offset) noexcept;
 
-  sparse_set_iterator operator-(const difference_type offset) const noexcept;
+  entity_set_iterator operator-(const difference_type offset) const noexcept;
 
   [[nodiscard]] reference operator*() const;
 
@@ -54,18 +54,18 @@ private:
   const container_type* _container{};
   difference_type _offset{};
 
-}; // struct sparse_set_iterator
+}; // struct entity_set_iterator
 
 template<container Container>
-bool operator==(const sparse_set_iterator<Container>& lhs, const sparse_set_iterator<Container>& rhs) noexcept;
+bool operator==(const entity_set_iterator<Container>& lhs, const entity_set_iterator<Container>& rhs) noexcept;
 
 template<container Container>
-std::strong_ordering operator<=>(const sparse_set_iterator<Container>& lhs, const sparse_set_iterator<Container>& rhs) noexcept;
+std::strong_ordering operator<=>(const entity_set_iterator<Container>& lhs, const entity_set_iterator<Container>& rhs) noexcept;
 
 } // namespace detail
 
 template<std::unsigned_integral Type, allocator<Type> Allocator>
-class basic_sparse_set {
+class basic_entity_set {
 
   using allocator_traits = std::allocator_traits<Allocator>;
 
@@ -85,22 +85,22 @@ public:
   using difference_type = dense_container_type::difference_type;
   using const_reference = dense_container_type::const_reference;
   using const_pointer = dense_container_type::const_pointer;
-  using const_iterator = detail::sparse_set_iterator<dense_container_type>;
+  using const_iterator = detail::entity_set_iterator<dense_container_type>;
   using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
-  basic_sparse_set();
+  basic_entity_set();
 
-  explicit basic_sparse_set(const allocator_type& allocator);
+  explicit basic_entity_set(const allocator_type& allocator);
 
-  basic_sparse_set(const basic_sparse_set& other) = delete;
+  basic_entity_set(const basic_entity_set& other) = delete;
 
-  basic_sparse_set(basic_sparse_set&& other) noexcept;
+  basic_entity_set(basic_entity_set&& other) noexcept;
 
-  virtual ~basic_sparse_set();
+  virtual ~basic_entity_set();
 
-  basic_sparse_set& operator=(const basic_sparse_set& other) = delete;
+  basic_entity_set& operator=(const basic_entity_set& other) = delete;
 
-  basic_sparse_set& operator=(basic_sparse_set&& other) noexcept;
+  basic_entity_set& operator=(basic_entity_set&& other) noexcept;
 
   [[nodiscard]] size_type size() const noexcept;
 
@@ -152,13 +152,13 @@ private:
   dense_container_type _dense{};
   value_type _free_list{};
 
-}; // class basic_sparse_set
+}; // class basic_entity_set
 
 template<std::unsigned_integral Type>
-using sparse_set = basic_sparse_set<Type, std::allocator<Type>>;
+using entity_set = basic_entity_set<Type, std::allocator<Type>>;
 
 } // namespace s
 
-#include "sparse_set.inl"
+#include "entity_set.inl"
 
-#endif // SBX_CONTAINER_SPARSE_SET_HPP_
+#endif // SBX_ECS_ENTITY_SET_HPP_

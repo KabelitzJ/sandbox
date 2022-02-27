@@ -4,11 +4,10 @@
 #include <vector>
 #include <type_traits>
 
-#include <container/sparse_set.hpp>
-
 #include <meta/concepts.hpp>
 
 #include "entity_traits.hpp"
+#include "entity_set.hpp"
 
 namespace sbx {
 
@@ -16,12 +15,12 @@ template<typename Type>
 concept component = !std::is_abstract_v<Type>;
 
 template<entity Entity, component Component, allocator<Component> Allocator>
-class basic_storage : public basic_sparse_set<typename entity_traits<Entity>::entity_type, typename std::allocator_traits<Allocator>::rebind_alloc<typename entity_traits<Entity>::entity_type>> {
+class basic_component_storage : public basic_entity_set<typename entity_traits<Entity>::entity_type, typename std::allocator_traits<Allocator>::rebind_alloc<typename entity_traits<Entity>::entity_type>> {
 
   using allocator_traits = std::allocator_traits<Allocator>;
   using entity_traits = entity_traits<Entity>;
 
-  using base_type = basic_sparse_set<typename entity_traits::entity_type, typename allocator_traits::rebind_alloc<typename entity_traits::entity_type>>;
+  using base_type = basic_entity_set<typename entity_traits::entity_type, typename allocator_traits::rebind_alloc<typename entity_traits::entity_type>>;
 
   using dense_container_type = std::vector<typename allocator_traits::pointer, typename allocator_traits::rebind_alloc<typename allocator_traits::pointer>>;
 
@@ -39,19 +38,19 @@ public:
   using reference = Component&;
   using const_reference = const Component&;
 
-  basic_storage();
+  basic_component_storage();
 
-  explicit basic_storage(const allocator_type& allocator);
+  explicit basic_component_storage(const allocator_type& allocator);
 
-  basic_storage(const basic_storage& other) = delete;
+  basic_component_storage(const basic_component_storage& other) = delete;
 
-  basic_storage(basic_storage&& other) noexcept;
+  basic_component_storage(basic_component_storage&& other) noexcept;
 
-  ~basic_storage() override;
+  ~basic_component_storage() override;
 
-  basic_storage& operator=(const basic_storage& other) = delete;
+  basic_component_storage& operator=(const basic_component_storage& other) = delete;
 
-  basic_storage& operator=(basic_storage&& other) noexcept;
+  basic_component_storage& operator=(basic_component_storage&& other) noexcept;
 
 private:
 
@@ -68,13 +67,13 @@ private:
   allocator_type _page_allocator{};
   dense_container_type _dense{};
 
-}; // class basic_storage
+}; // class basic_component_storage
 
 template<entity Entity, component Component>
-using storage = basic_storage<Entity, Component, std::allocator<Component>>;
+using component_storage = basic_component_storage<Entity, Component, std::allocator<Component>>;
 
 } // namespace sbx
 
-#include "storage.inl"
+#include "component_storage.inl"
 
 #endif // SBX_ECS_STORAGE_HPP_
