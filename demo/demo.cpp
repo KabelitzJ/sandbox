@@ -19,7 +19,17 @@ int main() {
 
   auto quaterion = sbx::quaternion{};
 
-  auto storage = sbx::component_storage<sbx::entity_id, foo>{};
+  auto storage = sbx::component_storage<sbx::entity_t, foo>{};
+
+  storage.emplace(sbx::entity_t{0});
+
+  std::cout << storage.contains(sbx::entity_t{0}) << std::endl;
+
+  auto& f = storage.get(sbx::entity_t{0});
+
+  f.i = 4;
+
+  std::cout << storage.get(sbx::entity_t{0}).i << std::endl;
     
   return EXIT_SUCCESS;
 }

@@ -8,6 +8,8 @@
 
 #include <meta/concepts.hpp>
 
+#include "entity_traits.hpp"
+
 namespace sbx {
 
 namespace detail {
@@ -64,22 +66,24 @@ std::strong_ordering operator<=>(const entity_set_iterator<Container>& lhs, cons
 
 } // namespace detail
 
-template<std::unsigned_integral Type, allocator<Type> Allocator>
+template<entity Entity, allocator<Entity> Allocator>
 class basic_entity_set {
 
   using allocator_traits = std::allocator_traits<Allocator>;
+  using entity_traits = entity_traits<Entity>;
 
   using sparse_container_type = std::vector<typename allocator_traits::pointer, typename allocator_traits::rebind_alloc<typename allocator_traits::pointer>>;
-  using dense_container_type = std::vector<Type, Allocator>;
+  using dense_container_type = std::vector<Entity, Allocator>;
 
   using reference = dense_container_type::reference;
   using pointer = dense_container_type::pointer;
 
-  inline static constexpr auto page_size = std::size_t{1024};
+  inline static constexpr auto page_size = std::size_t{4096};
 
 public:
 
-  using value_type = Type;
+  using entity_type = Entity;
+  using version_type = entity_traits::version_type;
   using allocator_type = Allocator;
   using size_type = dense_container_type::size_type;
   using difference_type = dense_container_type::difference_type;
@@ -116,41 +120,39 @@ public:
 
   [[nodiscard]] const_iterator cend() const noexcept;
 
-  [[nodiscard]] const_iterator find(const Type value) const noexcept;
+  [[nodiscard]] const_iterator find(const entity_type entity) const noexcept;
 
-  [[nodiscard]] bool contains(const value_type value) const noexcept;
+  [[nodiscard]] bool contains(const entity_type entity) const noexcept;
 
-  [[nodiscard]] size_type index(const value_type value) const noexcept;
+  [[nodiscard]] size_type index(const entity_type entity) const noexcept;
 
   [[nodiscard]] const_reference at(const size_type index) const;
 
   [[nodiscard]] const_reference operator[](const size_type index) const noexcept;
 
-  const_iterator insert(const value_type value);
+  const_iterator insert(const entity_type entity);
 
-  void remove(const value_type value);
+  void remove(const entity_type entity);
 
 protected:
 
-  inline static constexpr auto placeholder = std::numeric_limits<Type>::max();
-
   virtual void _swap_and_pop(const_iterator first, const_iterator last);
 
-  virtual const_iterator _try_insert(const value_type value);
+  virtual const_iterator _try_insert(const entity_type entity);
 
 private:
 
-  [[nodiscard]] pointer _sparse_pointer(const value_type value) const;
+  [[nodiscard]] pointer _sparse_pointer(const entity_type entity) const;
 
-  [[nodiscard]] reference _sparse_reference(const value_type value) const;
+  [[nodiscard]] reference _sparse_reference(const entity_type entity) const;
 
-  [[nodiscard]] reference _assure_at_least(const value_type value);
+  [[nodiscard]] reference _assure_at_least(const entity_type entity);
 
   void _release_sparse_pages();
 
   sparse_container_type _sparse{};
   dense_container_type _dense{};
-  value_type _free_list{};
+  entity_type _free_list{};
 
 }; // class basic_entity_set
 

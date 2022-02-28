@@ -88,96 +88,97 @@ inline std::strong_ordering operator<=>(const entity_set_iterator<Container>& lh
 
 } // namespace detail
 
-template<std::unsigned_integral Type, allocator<Type> Allocator>
-inline basic_entity_set<Type, Allocator>::basic_entity_set()
+template<entity Entity, allocator<Entity> Allocator>
+inline basic_entity_set<Entity, Allocator>::basic_entity_set()
 : _sparse{},
   _dense{},
-  _free_list{placeholder} { }
+  _free_list{tombstone_entity} { }
 
-template<std::unsigned_integral Type, allocator<Type> Allocator>
-inline basic_entity_set<Type, Allocator>::basic_entity_set(const allocator_type& allocator)
+template<entity Entity, allocator<Entity> Allocator>
+inline basic_entity_set<Entity, Allocator>::basic_entity_set(const allocator_type& allocator)
 : _sparse{allocator},
   _dense{allocator},
-  _free_list{placeholder} { }
+  _free_list{tombstone_entity} { }
 
-template<std::unsigned_integral Type, allocator<Type> Allocator>
-inline basic_entity_set<Type, Allocator>::basic_entity_set(basic_entity_set&& other) noexcept
+template<entity Entity, allocator<Entity> Allocator>
+inline basic_entity_set<Entity, Allocator>::basic_entity_set(basic_entity_set&& other) noexcept
 : _sparse{std::move(other._sparse)},
   _dense{std::move(other._dense)},
-  _free_list{std::exchange(other._free_list, placeholder)} { }
+  _free_list{std::exchange(other._free_list, tombstone_entity)} { }
 
-template<std::unsigned_integral Type, allocator<Type> Allocator>
-inline basic_entity_set<Type, Allocator>& basic_entity_set<Type, Allocator>::operator=(basic_entity_set&& other) noexcept {
+template<entity Entity, allocator<Entity> Allocator>
+inline basic_entity_set<Entity, Allocator>& basic_entity_set<Entity, Allocator>::operator=(basic_entity_set&& other) noexcept {
   _release_sparse_pages();
 
   _sparse = std::move(other._sparse);
   _dense = std::move(other._dense);
-  _free_list = std::exchange(other._free_list, placeholder);
+  _free_list = std::exchange(other._free_list, tombstone_entity);
 
   return *this;
 }
 
-template<std::unsigned_integral Type, allocator<Type> Allocator>
-inline basic_entity_set<Type, Allocator>::~basic_entity_set() {
+template<entity Entity, allocator<Entity> Allocator>
+inline basic_entity_set<Entity, Allocator>::~basic_entity_set() {
   _release_sparse_pages();
 }
 
-template<std::unsigned_integral Type, allocator<Type> Allocator>
-inline basic_entity_set<Type, Allocator>::size_type basic_entity_set<Type, Allocator>::size() const noexcept {
+template<entity Entity, allocator<Entity> Allocator>
+inline basic_entity_set<Entity, Allocator>::size_type basic_entity_set<Entity, Allocator>::size() const noexcept {
   return _dense.size();
 }
 
-template<std::unsigned_integral Type, allocator<Type> Allocator>
-inline bool basic_entity_set<Type, Allocator>::empty() const noexcept {
+template<entity Entity, allocator<Entity> Allocator>
+inline bool basic_entity_set<Entity, Allocator>::empty() const noexcept {
   return _dense.empty();
 }
 
-template<std::unsigned_integral Type, allocator<Type> Allocator>
-inline basic_entity_set<Type, Allocator>::const_pointer basic_entity_set<Type, Allocator>::data() const noexcept {
+template<entity Entity, allocator<Entity> Allocator>
+inline basic_entity_set<Entity, Allocator>::const_pointer basic_entity_set<Entity, Allocator>::data() const noexcept {
   return _dense.data();
 }
 
-template<std::unsigned_integral Type, allocator<Type> Allocator>
-inline basic_entity_set<Type, Allocator>::const_iterator basic_entity_set<Type, Allocator>::begin() const noexcept {
+template<entity Entity, allocator<Entity> Allocator>
+inline basic_entity_set<Entity, Allocator>::const_iterator basic_entity_set<Entity, Allocator>::begin() const noexcept {
   const auto position = static_cast<difference_type>(_dense.size());
   return const_iterator{_dense, position};
 }
 
-template<std::unsigned_integral Type, allocator<Type> Allocator>
-inline basic_entity_set<Type, Allocator>::const_iterator basic_entity_set<Type, Allocator>::cbegin() const noexcept {
+template<entity Entity, allocator<Entity> Allocator>
+inline basic_entity_set<Entity, Allocator>::const_iterator basic_entity_set<Entity, Allocator>::cbegin() const noexcept {
   return begin();
 }
 
-template<std::unsigned_integral Type, allocator<Type> Allocator>
-inline basic_entity_set<Type, Allocator>::const_iterator basic_entity_set<Type, Allocator>::end() const noexcept {
+template<entity Entity, allocator<Entity> Allocator>
+inline basic_entity_set<Entity, Allocator>::const_iterator basic_entity_set<Entity, Allocator>::end() const noexcept {
   return const_iterator{_dense, difference_type{0}};
 }
 
-template<std::unsigned_integral Type, allocator<Type> Allocator>
-inline basic_entity_set<Type, Allocator>::const_iterator basic_entity_set<Type, Allocator>::cend() const noexcept {
+template<entity Entity, allocator<Entity> Allocator>
+inline basic_entity_set<Entity, Allocator>::const_iterator basic_entity_set<Entity, Allocator>::cend() const noexcept {
   return end();
 }
 
-template<std::unsigned_integral Type, allocator<Type> Allocator>
-inline basic_entity_set<Type, Allocator>::const_iterator basic_entity_set<Type, Allocator>::find(const Type value) const noexcept {
-  return contains(value) ? --(cend() - index(value)) : cend();
+template<entity Entity, allocator<Entity> Allocator>
+inline basic_entity_set<Entity, Allocator>::const_iterator basic_entity_set<Entity, Allocator>::find(const entity_type entity) const noexcept {
+  return contains(entity) ? --(cend() - index(entity)) : cend();
 }
 
-template<std::unsigned_integral Type, allocator<Type> Allocator>
-inline bool basic_entity_set<Type, Allocator>::contains(const value_type value) const noexcept {
-  const auto element = _sparse_pointer(value);
+template<entity Entity, allocator<Entity> Allocator>
+inline bool basic_entity_set<Entity, Allocator>::contains(const entity_type entity) const noexcept {
+  const auto element = _sparse_pointer(entity);
+  constexpr auto capacity = entity_traits::to_entity(null_entity);
   
-  return element && *element < _dense.size() && _dense[*element] == value;
+  return element && (((~capacity & entity_traits::to_integral(entity)) ^ entity_traits::to_integral(*element)) < capacity);
 }
 
-template<std::unsigned_integral Type, allocator<Type> Allocator>
-inline basic_entity_set<Type, Allocator>::size_type basic_entity_set<Type, Allocator>::index(const value_type value) const noexcept {
-  SBX_ASSERT(contains(value), "Value is not in the set");
-  return static_cast<size_type>(_sparse_reference(value));
+template<entity Entity, allocator<Entity> Allocator>
+inline basic_entity_set<Entity, Allocator>::size_type basic_entity_set<Entity, Allocator>::index(const entity_type entity) const noexcept {
+  SBX_ASSERT(contains(entity), "entity is not in the set");
+  return static_cast<size_type>(entity_traits::to_entity(_sparse_reference(entity)));
 }
 
-template<std::unsigned_integral Type, allocator<Type> Allocator>
-inline basic_entity_set<Type, Allocator>::const_reference basic_entity_set<Type, Allocator>::at(const size_type index) const {
+template<entity Entity, allocator<Entity> Allocator>
+inline basic_entity_set<Entity, Allocator>::const_reference basic_entity_set<Entity, Allocator>::at(const size_type index) const {
   if (index >= _dense.size()) {
     throw std::out_of_range{"Index is out of range"};
   }
@@ -185,79 +186,80 @@ inline basic_entity_set<Type, Allocator>::const_reference basic_entity_set<Type,
   return _dense[index];
 }
 
-template<std::unsigned_integral Type, allocator<Type> Allocator>
-inline basic_entity_set<Type, Allocator>::const_reference basic_entity_set<Type, Allocator>::operator[](const size_type index) const noexcept {
+template<entity Entity, allocator<Entity> Allocator>
+inline basic_entity_set<Entity, Allocator>::const_reference basic_entity_set<Entity, Allocator>::operator[](const size_type index) const noexcept {
   SBX_ASSERT(index < _dense.size(), "Index is out of range");
   return _dense[index];
 }
 
-template<std::unsigned_integral Type, allocator<Type> Allocator>
-basic_entity_set<Type, Allocator>::const_iterator basic_entity_set<Type, Allocator>::insert(const value_type value) {
-  return _try_insert(value);
+template<entity Entity, allocator<Entity> Allocator>
+basic_entity_set<Entity, Allocator>::const_iterator basic_entity_set<Entity, Allocator>::insert(const entity_type entity) {
+  return _try_insert(entity);
 }
 
-template<std::unsigned_integral Type, allocator<Type> Allocator>
-void basic_entity_set<Type, Allocator>::remove(const value_type value) {
-  if (!contains(value)) {
+template<entity Entity, allocator<Entity> Allocator>
+void basic_entity_set<Entity, Allocator>::remove(const entity_type entity) {
+  if (!contains(entity)) {
     return;
   }
 
-  const auto index = --(cend() - index(value));
+  const auto index = --(cend() - index(entity));
 
   _swap_and_pop(index, index + difference_type{1});
 }
 
-template<std::unsigned_integral Type, allocator<Type> Allocator>
-inline void basic_entity_set<Type, Allocator>::_swap_and_pop(const_iterator first, const_iterator last) {
+template<entity Entity, allocator<Entity> Allocator>
+inline void basic_entity_set<Entity, Allocator>::_swap_and_pop(const_iterator first, const_iterator last) {
   for (; first != last; ++first) {
-    _sparse_reference(_dense.back()) = static_cast<value_type>(first.index());
+    _sparse_reference(_dense.back()) = entity_traits::combine(static_cast<entity_traits::entity_type>(first.index()), entity_traits::to_integral(_dense.back()));
     const auto entry = std::exchange(_dense[first.index()], _dense.back());
 
-    _dense.back() = placeholder;
+    // Can catch some mugs here, but it's not necessary
+    SBX_ASSERT((_dense.back() = tombstone_entity, true));
 
-    _sparse_reference(entry) = placeholder;
+    _sparse_reference(entry) = null_entity;
     _dense.pop_back();
   }
 }
 
-template<std::unsigned_integral Type, allocator<Type> Allocator>
-inline basic_entity_set<Type, Allocator>::const_iterator basic_entity_set<Type, Allocator>::_try_insert(const value_type value) {
-  SBX_ASSERT(!contains(value), "Value already exists in set");
+template<entity Entity, allocator<Entity> Allocator>
+inline basic_entity_set<Entity, Allocator>::const_iterator basic_entity_set<Entity, Allocator>::_try_insert(const entity_type entity) {
+  SBX_ASSERT(!contains(entity), "entity already exists in set");
 
-  if (auto& element = _assure_at_least(value); _free_list == placeholder) {
-    element = static_cast<value_type>(_dense.size()); 
-    _dense.push_back(value);
+  if (auto& element = _assure_at_least(entity); _free_list == null_entity) {
+    element = entity_traits::combine(static_cast<entity_traits::entity_type>(_dense.size()), entity_traits::to_integral(entity));
+    _dense.push_back(entity);
 
     return begin();
   } else {
-    const auto position = static_cast<size_type>(value);
-    element = _free_list;
-    _free_list = std::exchange(_dense[position], value);
+    const auto position = static_cast<size_type>(entity_traits::to_entity(_free_list));
+    element = entity_traits::combine(entity_traits::to_integral(_free_list), entity_traits::to_integral(entity));
+    _free_list = std::exchange(_dense[position], entity);
     return --(end() - static_cast<difference_type>(position));
   }
 }
 
-template<std::unsigned_integral Type, allocator<Type> Allocator>
-inline basic_entity_set<Type, Allocator>::pointer basic_entity_set<Type, Allocator>::_sparse_pointer(const value_type value) const {
-  const auto position = static_cast<size_type>(value);
+template<entity Entity, allocator<Entity> Allocator>
+inline basic_entity_set<Entity, Allocator>::pointer basic_entity_set<Entity, Allocator>::_sparse_pointer(const entity_type entity) const {
+  const auto position = static_cast<size_type>(entity_traits::to_entity(entity));
   const auto page = position / page_size;
 
   return (page < _sparse.size() && _sparse[page]) ? (_sparse[page] + fast_mod(position, page_size)) : nullptr;
 }
 
-template<std::unsigned_integral Type, allocator<Type> Allocator>
-inline basic_entity_set<Type, Allocator>::reference basic_entity_set<Type, Allocator>::_sparse_reference(const value_type value) const {
-  SBX_ASSERT(_sparse_pointer(value), "Value is not in the set.");
+template<entity Entity, allocator<Entity> Allocator>
+inline basic_entity_set<Entity, Allocator>::reference basic_entity_set<Entity, Allocator>::_sparse_reference(const entity_type entity) const {
+  SBX_ASSERT(_sparse_pointer(entity), "entity is not in the set.");
 
-  const auto position = static_cast<size_type>(value);
+  const auto position = static_cast<size_type>(entity_traits::to_entity(entity));
   const auto page = position / page_size;
 
   return _sparse[page][fast_mod(position, page_size)];
 }
 
-template<std::unsigned_integral Type, allocator<Type> Allocator>
-inline basic_entity_set<Type, Allocator>::reference basic_entity_set<Type, Allocator>::_assure_at_least(const value_type value) {
-  const auto position = static_cast<size_type>(value);
+template<entity Entity, allocator<Entity> Allocator>
+inline basic_entity_set<Entity, Allocator>::reference basic_entity_set<Entity, Allocator>::_assure_at_least(const entity_type entity) {
+  const auto position = static_cast<size_type>(entity_traits::to_entity(entity));
   const auto page = position / page_size;
 
   if (page >= _sparse.size()) {
@@ -267,14 +269,18 @@ inline basic_entity_set<Type, Allocator>::reference basic_entity_set<Type, Alloc
   if (!_sparse[page]) {
     auto page_allocator = allocator_type{_dense.get_allocator()};
     _sparse[page] = allocator_traits::allocate(page_allocator, page_size);
-    std::uninitialized_fill_n(_sparse[page], page_size, placeholder); 
+    std::uninitialized_fill_n(_sparse[page], page_size, null_entity); 
   }
 
-  return _sparse[page][fast_mod(position, page_size)];
+  auto& element = _sparse[page][fast_mod(position, page_size)];
+
+  SBX_ASSERT(entity_traits::to_version(element) == entity_traits::to_version(tombstone_entity), "Entity not available");
+
+  return element;
 }
 
-template<std::unsigned_integral Type, allocator<Type> Allocator>
-inline void basic_entity_set<Type, Allocator>::_release_sparse_pages() {
+template<entity Entity, allocator<Entity> Allocator>
+inline void basic_entity_set<Entity, Allocator>::_release_sparse_pages() {
   auto page_allocator = allocator_type{_dense.get_allocator()};
 
   for (auto* page : _sparse) {
