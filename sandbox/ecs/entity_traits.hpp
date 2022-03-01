@@ -36,8 +36,6 @@ struct entity_traits {
 
 }; // struct entity_traits
 
-enum class entity_t : uint32 { };
-
 struct null_entity_t {
   
   template<entity Entity>

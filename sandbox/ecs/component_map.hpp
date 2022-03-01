@@ -2,6 +2,7 @@
 #define SBX_ECS_STORAGE_HPP_
 
 #include <vector>
+#include <tuple>
 #include <type_traits>
 
 #include <meta/concepts.hpp>
@@ -15,7 +16,7 @@ template<typename Type>
 concept component = !std::is_abstract_v<Type>;
 
 template<entity Entity, component Component, allocator<Component> Allocator>
-class basic_component_storage : public basic_entity_set<Entity, typename std::allocator_traits<Allocator>::rebind_alloc<Entity>> {
+class basic_component_map : public basic_entity_set<Entity, typename std::allocator_traits<Allocator>::rebind_alloc<Entity>> {
 
   using allocator_traits = std::allocator_traits<Allocator>;
   using entity_traits = entity_traits<Entity>;
@@ -39,27 +40,37 @@ public:
   using reference = value_type&;
   using const_reference = const value_type&;
 
-  basic_component_storage();
+  basic_component_map();
 
-  explicit basic_component_storage(const allocator_type& allocator);
+  explicit basic_component_map(const allocator_type& allocator);
 
-  basic_component_storage(const basic_component_storage& other) = delete;
+  basic_component_map(const basic_component_map& other) = delete;
 
-  basic_component_storage(basic_component_storage&& other) noexcept;
+  basic_component_map(basic_component_map&& other) noexcept;
 
-  ~basic_component_storage() override;
+  ~basic_component_map() override;
 
-  basic_component_storage& operator=(const basic_component_storage& other) = delete;
+  basic_component_map& operator=(const basic_component_map& other) = delete;
 
-  basic_component_storage& operator=(basic_component_storage&& other) noexcept;
+  basic_component_map& operator=(basic_component_map&& other) noexcept;
+
+  [[nodiscard]] constexpr allocator_type get_allocator() const noexcept;
+
+  [[nodiscard]] constexpr size_type size() const noexcept;
+
+  [[nodiscard]] constexpr bool empty() const noexcept;
 
   template<typename... Args>
   requires (std::is_constructible_v<Component, Args...>)
   value_type& emplace(const entity_type entity, Args&&... args);
 
-  [[nodiscard]] const value_type& get(const entity_type entity) const noexcept;
+  [[nodiscard]] const value_type& get(const entity_type entity) const;
 
-  [[nodiscard]] value_type& get(const entity_type entity) noexcept;
+  [[nodiscard]] value_type& get(const entity_type entity);
+
+  [[nodiscard]] std::tuple<const value_type&> get_as_tuple(const entity_type entity) const;
+
+  [[nodiscard]] std::tuple<value_type&> get_as_tuple(const entity_type entity);
 
 protected:
 
@@ -84,13 +95,13 @@ private:
   allocator_type _page_allocator{};
   container_type _dense{};
 
-}; // class basic_component_storage
+}; // class basic_component_map
 
 template<entity Entity, component Component>
-using component_storage = basic_component_storage<Entity, Component, std::allocator<Component>>;
+using component_map = basic_component_map<Entity, Component, std::allocator<Component>>;
 
 } // namespace sbx
 
-#include "component_storage.inl"
+#include "component_map.inl"
 
 #endif // SBX_ECS_STORAGE_HPP_

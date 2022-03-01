@@ -20,7 +20,7 @@ inline entity_set_iterator<Container>& entity_set_iterator<Container>::operator+
 template<container Container>
 inline entity_set_iterator<Container> entity_set_iterator<Container>::operator++(int) noexcept {
   const auto copy = entity_set_iterator{*this};
-  return --copy;
+  return ++copy;
 }
 
 template<container Container>
@@ -32,7 +32,7 @@ inline entity_set_iterator<Container>& entity_set_iterator<Container>::operator-
 template<container Container>
 inline entity_set_iterator<Container> entity_set_iterator<Container>::operator--(int) noexcept {
   const auto copy = entity_set_iterator{*this};
-  return ++copy;
+  return --copy;
 }
 
 template<container Container>
@@ -44,7 +44,7 @@ inline entity_set_iterator<Container>& entity_set_iterator<Container>::operator+
 template<container Container>
 inline entity_set_iterator<Container> entity_set_iterator<Container>::operator+(const difference_type offset) const noexcept {
   auto copy = entity_set_iterator{*this};
-  return copy -= offset;
+  return copy += offset;
 }
 
 template<container Container>
@@ -56,7 +56,7 @@ inline entity_set_iterator<Container>& entity_set_iterator<Container>::operator-
 template<container Container>
 inline entity_set_iterator<Container> entity_set_iterator<Container>::operator-(const difference_type offset) const noexcept {
   auto copy = entity_set_iterator{*this};
-  return copy += offset;
+  return copy -= offset;
 }
 
 template<container Container>
@@ -203,9 +203,9 @@ void basic_entity_set<Entity, Allocator>::remove(const entity_type entity) {
     return;
   }
 
-  const auto index = --(cend() - index(entity));
+  const auto entity_index = --(cend() - static_cast<difference_type>(index(entity)));
 
-  _swap_and_pop(index, index + difference_type{1});
+  _swap_and_pop(entity_index, entity_index + difference_type{1});
 }
 
 template<entity Entity, allocator<Entity> Allocator>

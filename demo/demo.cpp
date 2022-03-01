@@ -9,6 +9,8 @@ struct foo {
   sbx::uint32 i{};
 };
 
+enum class node_id : sbx::uint32 {};
+
 int main() {
 
   auto v2 = sbx::vector2::zero;
@@ -19,17 +21,23 @@ int main() {
 
   auto quaterion = sbx::quaternion{};
 
-  auto storage = sbx::component_storage<sbx::entity_t, foo>{};
+  auto storage = sbx::component_map<node_id, foo>{};
 
-  storage.emplace(sbx::entity_t{0});
+  storage.emplace(node_id{0});
 
-  std::cout << storage.contains(sbx::entity_t{0}) << std::endl;
+  std::cout << storage.contains(node_id{0}) << std::endl;
 
-  auto& f = storage.get(sbx::entity_t{0});
+  auto& f = storage.get(node_id{0});
 
   f.i = 4;
 
-  std::cout << storage.get(sbx::entity_t{0}).i << std::endl;
-    
+  std::cout << storage.get(node_id{0}).i << std::endl;
+
+  storage.remove(node_id{0});
+  storage.remove(node_id{1});
+
+  std::cout << storage.contains(node_id{0}) << std::endl;
+  std::cout << storage.contains(node_id{1}) << std::endl;
+
   return EXIT_SUCCESS;
 }
