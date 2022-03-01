@@ -132,6 +132,18 @@ public:
 
   [[nodiscard]] constexpr bool empty() const noexcept;
 
+  [[nodiscard]] iterator begin();
+
+  [[nodiscard]] const_iterator begin() const;
+
+  [[nodiscard]] const_iterator cbegin() const;
+
+  [[nodiscard]] iterator end();
+
+  [[nodiscard]] const_iterator end() const;
+
+  [[nodiscard]] const_iterator cend() const;
+
   template<typename... Args>
   requires (std::is_constructible_v<Component, Args...>)
   value_type& emplace(const entity_type entity, Args&&... args);

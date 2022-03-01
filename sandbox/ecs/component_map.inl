@@ -1,4 +1,5 @@
 #include <math/functional.hpp>
+#include <platform/assert.hpp>
 
 namespace sbx {
 
@@ -139,6 +140,38 @@ inline constexpr basic_component_map<Entity, Component, Allocator>::size_type ba
 template<entity Entity, component Component, allocator<Component> Allocator>
 inline constexpr bool basic_component_map<Entity, Component, Allocator>::empty() const noexcept {
   return base_type::empty();
+}
+
+template<entity Entity, component Component, allocator<Component> Allocator>
+inline basic_component_map<Entity, Component, Allocator>::iterator basic_component_map<Entity, Component, Allocator>::begin() {
+  const auto position = static_cast<difference_type>(base_type::size());
+  return iterator{_dense, position};
+}
+
+template<entity Entity, component Component, allocator<Component> Allocator>
+inline basic_component_map<Entity, Component, Allocator>::const_iterator basic_component_map<Entity, Component, Allocator>::begin() const {
+  return cbegin();
+}
+
+template<entity Entity, component Component, allocator<Component> Allocator>
+inline basic_component_map<Entity, Component, Allocator>::const_iterator basic_component_map<Entity, Component, Allocator>::cbegin() const {
+  const auto position = static_cast<difference_type>(base_type::size());
+  return const_iterator{_dense, position};
+}
+
+template<entity Entity, component Component, allocator<Component> Allocator>
+inline basic_component_map<Entity, Component, Allocator>::iterator basic_component_map<Entity, Component, Allocator>::end() {
+  return iterator{_dense, difference_type{0}};
+}
+
+template<entity Entity, component Component, allocator<Component> Allocator>
+inline basic_component_map<Entity, Component, Allocator>::const_iterator basic_component_map<Entity, Component, Allocator>::end() const {
+  return cend();
+}
+
+template<entity Entity, component Component, allocator<Component> Allocator>
+inline basic_component_map<Entity, Component, Allocator>::const_iterator basic_component_map<Entity, Component, Allocator>::cend() const {
+  return const_iterator{_dense, difference_type{0}};
 }
 
 template<entity Entity, component Component, allocator<Component> Allocator>

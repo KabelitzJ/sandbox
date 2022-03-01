@@ -9,7 +9,7 @@ struct foo {
   sbx::uint32 i{};
 };
 
-enum class node_id : sbx::uint32 {};
+enum class node : sbx::uint32 {};
 
 int main() {
 
@@ -21,23 +21,11 @@ int main() {
 
   auto quaterion = sbx::quaternion{};
 
-  auto storage = sbx::component_map<node_id, foo>{};
+  auto r = sbx::registry<node>{};
 
-  storage.emplace(node_id{0});
-
-  std::cout << storage.contains(node_id{0}) << std::endl;
-
-  auto& f = storage.get(node_id{0});
-
-  f.i = 4;
-
-  std::cout << storage.get(node_id{0}).i << std::endl;
-
-  storage.remove(node_id{0});
-  storage.remove(node_id{1});
-
-  std::cout << storage.contains(node_id{0}) << std::endl;
-  std::cout << storage.contains(node_id{1}) << std::endl;
+  const auto e1 = r.create_entity();
+  const auto e2 = r.create_entity();
+  const auto e3 = r.create_entity();
 
   return EXIT_SUCCESS;
 }
