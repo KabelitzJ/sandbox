@@ -31,14 +31,16 @@ concept allocator = requires (Allocator& allocator, Type* value) {
 template<typename Container>
 concept container = requires (Container& container) {
   typename Container::value_type;
-  typename Container::pointer;
-  typename Container::reference;
   typename Container::size_type;
   typename Container::difference_type;
-  { container.begin() } -> std::same_as<typename Container::iterator>;
-  { container.end() } -> std::same_as<typename Container::iterator>;
+  typename Container::pointer;
+  typename Container::reference;
+  typename Container::iterator;
+  typename Container::const_iterator;
+  { container.begin() } -> std::same_as<std::conditional_t<std::is_const_v<Container>, typename Container::const_iterator, typename Container::iterator>>;
+  { container.end() } -> std::same_as<std::conditional_t<std::is_const_v<Container>, typename Container::const_iterator, typename Container::iterator>>;
   { container.size() } -> std::same_as<typename Container::size_type>;
-  { container.data() } -> std::same_as<typename Container::pointer>;
+  { container.data() } -> std::same_as<std::conditional_t<std::is_const_v<Container>, typename Container::const_pointer, typename Container::pointer>>;
 };
 
 } // namespace sbx

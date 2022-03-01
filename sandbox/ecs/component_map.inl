@@ -2,6 +2,96 @@
 
 namespace sbx {
 
+namespace detail {
+
+template<container Container, std::size_t PageSize>
+inline component_map_iterator<Container, PageSize>::component_map_iterator(const container_type& container, const difference_type offset) noexcept
+: _container{std::addressof(container)},
+  _offset{offset} { }
+
+template<container Container, std::size_t PageSize>
+inline component_map_iterator<Container, PageSize>& component_map_iterator<Container, PageSize>::operator++() noexcept {
+  --_offset;
+  return *this;
+}
+
+template<container Container, std::size_t PageSize>
+inline component_map_iterator<Container, PageSize> component_map_iterator<Container, PageSize>::operator++(int) noexcept {
+  const auto copy = component_map_iterator{*this};
+  return ++copy;
+}
+
+template<container Container, std::size_t PageSize>
+inline component_map_iterator<Container, PageSize>& component_map_iterator<Container, PageSize>::operator--() noexcept {
+  ++_offset;
+  return *this;
+}
+
+template<container Container, std::size_t PageSize>
+inline component_map_iterator<Container, PageSize> component_map_iterator<Container, PageSize>::operator--(int) noexcept {
+  const auto copy = component_map_iterator{*this};
+  return --copy;
+}
+
+template<container Container, std::size_t PageSize>
+inline component_map_iterator<Container, PageSize>& component_map_iterator<Container, PageSize>::operator+=(const difference_type offset) noexcept {
+  _offset -= offset;
+  return *this;
+}
+
+template<container Container, std::size_t PageSize>
+inline component_map_iterator<Container, PageSize> component_map_iterator<Container, PageSize>::operator+(const difference_type offset) const noexcept {
+  const auto copy = component_map_iterator{*this};
+  return copy += offset;
+}
+
+template<container Container, std::size_t PageSize>
+inline component_map_iterator<Container, PageSize>& component_map_iterator<Container, PageSize>::operator-=(const difference_type offset) noexcept {
+  _offset += offset;
+  return *this;
+}
+
+template<container Container, std::size_t PageSize>
+inline component_map_iterator<Container, PageSize> component_map_iterator<Container, PageSize>::operator-(const difference_type offset) const noexcept {
+  const auto copy = component_map_iterator{*this};
+  return copy -= offset;
+}
+
+template<container Container, std::size_t PageSize>
+inline component_map_iterator<Container, PageSize>::reference component_map_iterator<Container, PageSize>::operator*() const {
+  const auto position = index();
+  const auto page = position / page_size;
+  const auto data = _container->data();
+
+  return data[page][fast_mod(position, page_size)];
+}
+
+template<container Container, std::size_t PageSize>
+inline component_map_iterator<Container, PageSize>::pointer component_map_iterator<Container, PageSize>::operator->() const {
+  const auto position = index();
+  const auto page = position / page_size;
+  const auto data = _container->data();
+
+  return data[page] + fast_mod(position, page_size);
+}
+
+template<container Container, std::size_t PageSize>
+inline component_map_iterator<Container, PageSize>::size_type component_map_iterator<Container, PageSize>::index() const noexcept {
+  return static_cast<size_type>(_offset) - size_type{1};
+}
+
+template<container Container, std::size_t PageSize>
+constexpr bool operator==(const component_map_iterator<Container, PageSize>& lhs, const component_map_iterator<Container, PageSize>& rhs) noexcept {
+  return lhs.index() == rhs.index();
+}
+
+template<container Container, std::size_t PageSize>
+constexpr std::strong_ordering operator<=>(const component_map_iterator<Container, PageSize>& lhs, const component_map_iterator<Container, PageSize>& rhs) noexcept {
+  return lhs.index() <=> rhs.index();
+}
+
+} // namespace detail
+
 template<entity Entity, component Component, allocator<Component> Allocator>
 inline basic_component_map<Entity, Component, Allocator>::basic_component_map()
 : base_type{},
@@ -56,11 +146,11 @@ template<typename... Args>
 requires (std::is_constructible_v<Component, Args...>)
 inline basic_component_map<Entity, Component, Allocator>::value_type& basic_component_map<Entity, Component, Allocator>::emplace(const entity_type entity, Args&&... args) {
   if constexpr (std::is_aggregate_v<value_type>) {
-    const auto iterator = _emplace_component(entity, value_type{std::forward<Args>(args)...});
-    return _element_at(static_cast<size_type>(iterator.index()));
+    const auto entry = _emplace_component(entity, value_type{std::forward<Args>(args)...});
+    return _element_at(static_cast<size_type>(entry.index()));
   } else {
-    const auto iterator = _emplace_component(entity, std::forward<Args>(args)...);
-    return _element_at(static_cast<size_type>(iterator.index()));
+    const auto entry = _emplace_component(entity, std::forward<Args>(args)...);
+    return _element_at(static_cast<size_type>(entry.index()));
   }
 }
 
@@ -133,17 +223,17 @@ template<entity Entity, component Component, allocator<Component> Allocator>
 template<typename... Args>
 requires (std::is_constructible_v<Component, Args...>)
 inline basic_component_map<Entity, Component, Allocator>::base_type::const_iterator basic_component_map<Entity, Component, Allocator>::_emplace_component(const entity_type entity, Args&&... args) {
-  const auto iterator = base_type::_try_insert(entity);
+  const auto entry = base_type::_try_insert(entity);
 
   try {
-    auto element = _assure_at_least(iterator.index());
+    auto element = _assure_at_least(entry.index());
     allocator_traits::construct(_page_allocator, element, std::forward<Args>(args)...);
   } catch(...) {
-    base_type::_swap_and_pop(iterator, iterator + difference_type{1});
+    base_type::_swap_and_pop(entry, entry + difference_type{1});
     throw;
   }
 
-  return iterator;
+  return entry;
 }
 
 template<entity Entity, component Component, allocator<Component> Allocator>

@@ -12,6 +12,74 @@
 
 namespace sbx {
 
+namespace detail {
+
+template<container Container, std::size_t PageSize>
+class component_map_iterator {
+
+  using container_type = std::remove_const_t<Container>;
+  using allocator_traits = std::allocator_traits<typename container_type::allocator_type>;
+
+  using iterator_traits = std::iterator_traits<std::conditional_t<
+    std::is_const_v<Container>,
+    typename allocator_traits::rebind_traits<typename std::pointer_traits<typename container_type::value_type>::element_type>::const_pointer,
+    typename allocator_traits::rebind_traits<typename std::pointer_traits<typename container_type::value_type>::element_type>::pointer
+  >>;
+
+  inline static constexpr auto page_size = PageSize;
+
+public:
+
+  using size_type = container_type::size_type;
+  using difference_type = iterator_traits::difference_type;
+  using value_type = iterator_traits::value_type;
+  using pointer = iterator_traits::pointer;
+  using reference = iterator_traits::reference;
+  using iterator_category = std::bidirectional_iterator_tag;
+
+  component_map_iterator(const container_type& container, const difference_type offset) noexcept;
+
+  ~component_map_iterator() = default;
+
+  component_map_iterator& operator++() noexcept;
+
+  component_map_iterator operator++(int) noexcept;
+
+  component_map_iterator& operator--() noexcept;
+
+  component_map_iterator operator--(int) noexcept;
+
+  component_map_iterator& operator+=(const difference_type offset) noexcept;
+
+  component_map_iterator operator+(const difference_type offset) const noexcept;
+
+  component_map_iterator& operator-=(const difference_type offset) noexcept;
+
+  component_map_iterator operator-(const difference_type offset) const noexcept;
+
+  [[nodiscard]] reference operator*() const;
+
+  [[nodiscard]] pointer operator->() const;
+
+  [[nodiscard]] size_type index() const noexcept;
+
+private:
+
+  friend class component_map_iterator<const Container, PageSize>;
+
+  container_type* _container{};
+  difference_type _offset{};
+
+}; // struct component_map_iterator
+
+template<container Container, std::size_t PageSize>
+constexpr bool operator==(const component_map_iterator<Container, PageSize>& lhs, const component_map_iterator<Container, PageSize>& rhs) noexcept;
+
+template<container Container, std::size_t PageSize>
+constexpr std::strong_ordering operator<=>(const component_map_iterator<Container, PageSize>& lhs, const component_map_iterator<Container, PageSize>& rhs) noexcept;
+
+} // namespace detail
+
 template<typename Type>
 concept component = !std::is_abstract_v<Type>;
 
@@ -39,6 +107,10 @@ public:
   using difference_type = container_type::difference_type;
   using reference = value_type&;
   using const_reference = const value_type&;
+  using iterator = detail::component_map_iterator<container_type, page_size>;
+  using const_iterator = detail::component_map_iterator<const container_type, page_size>;
+  using reverse_iterator = std::reverse_iterator<iterator>;
+  using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
   basic_component_map();
 

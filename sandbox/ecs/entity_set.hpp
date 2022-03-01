@@ -15,7 +15,7 @@ namespace sbx {
 namespace detail {
 
 template<container Container>
-struct entity_set_iterator {
+struct entity_set_iterator final {
 
   using container_type = Container;
   using value_type = container_type::value_type;
