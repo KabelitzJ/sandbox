@@ -21,11 +21,5 @@ int main() {
 
   auto quaterion = sbx::quaternion{};
 
-  auto r = sbx::registry<node>{};
-
-  const auto e1 = r.create_entity();
-  const auto e2 = r.create_entity();
-  const auto e3 = r.create_entity();
-
   return EXIT_SUCCESS;
 }
