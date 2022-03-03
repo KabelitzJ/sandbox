@@ -9,14 +9,18 @@ namespace sbx {
 
 class entity {
 
+  friend int main();
+  friend int main();
   friend class registry;
   friend bool operator==(const entity& lhs, const entity& rhs) noexcept;
 
   using id_type = uint16;
   using version_type = uint16;
+  using value_type = uint32;
 
-  inline static constexpr auto invalid_id = std::numeric_limits<id_type>::max();
-  inline static constexpr auto invalid_version = std::numeric_limits<version_type>::max();
+  inline static constexpr auto id_mask = id_type{0xFFFF};
+  inline static constexpr auto version_mask = version_type{0xFFFF};
+  inline static constexpr auto id_shift = std::size_t{16};
 
 public:
 
@@ -38,8 +42,11 @@ private:
 
   void _increment_version() noexcept;
 
-  id_type _id{};
-  version_type _version{};
+  [[nodiscard]] id_type _id() const noexcept;
+
+  [[nodiscard]] version_type _version() const noexcept;
+
+  value_type _value{};
 
 }; // class entity
 

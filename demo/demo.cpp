@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cstddef>
+#include <bitset>
 
 #include <utils/utils.hpp>
 #include <math/math.hpp>
@@ -22,6 +23,16 @@ int main() {
   auto quaterion = sbx::quaternion{};
 
   auto r = sbx::registry{};
+
+  auto e1 = r.create_entity();
+  auto e2 = r.create_entity();
+  auto e3 = r.create_entity();
+  auto e4 = r.create_entity();
+
+  r.destroy_entity(e1);
+  r.destroy_entity(e2);
+  r.destroy_entity(e3);
+  r.destroy_entity(e4);
 
   return EXIT_SUCCESS;
 }
