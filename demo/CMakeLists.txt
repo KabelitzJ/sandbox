@@ -16,13 +16,13 @@ target_link_libraries(
 
 target_compile_features(
   ${PROJECT_NAME}
-  PRIVATE 
+  PUBLIC 
     cxx_std_20
 )
 
 target_compile_options(
   ${PROJECT_NAME}
-  PRIVATE
+  PUBLIC
     $<$<CXX_COMPILER_ID:GNU>:
       -Wall 
       -Wextra

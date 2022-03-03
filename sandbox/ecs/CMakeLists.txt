@@ -1,16 +1,23 @@
 project(ecs CXX)
 
-add_library(${PROJECT_NAME} INTERFACE)
+add_library(${PROJECT_NAME} STATIC)
+
+target_sources(
+  ${PROJECT_NAME}
+  PRIVATE
+    entity.cpp
+    registry.cpp
+)
 
 target_include_directories(
   ${PROJECT_NAME}
-  INTERFACE
+  PUBLIC
     "${CMAKE_CURRENT_SOURCE_DIR}/.."
 )
 
 target_link_libraries(
   ${PROJECT_NAME}
-  INTERFACE 
+  PUBLIC 
     sbx::platform
     sbx::meta
     sbx::types
@@ -20,13 +27,13 @@ target_link_libraries(
 
 target_compile_features(
   ${PROJECT_NAME}
-  INTERFACE 
+  PUBLIC 
     cxx_std_20
 )
 
 target_compile_options(
   ${PROJECT_NAME}
-  INTERFACE
+  PUBLIC
     $<$<CXX_COMPILER_ID:GNU>:
       -Wall 
       -Wextra

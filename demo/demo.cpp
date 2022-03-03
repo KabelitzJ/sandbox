@@ -21,5 +21,23 @@ int main() {
 
   auto quaterion = sbx::quaternion{};
 
+  auto r = sbx::registry{};
+
+  auto e1 = r.create_entity();
+  auto e2 = r.create_entity();
+  auto e3 = r.create_entity();
+
+  std::cout << std::boolalpha << r.is_valid_entity(e1) << std::noboolalpha << std::endl;
+  std::cout << std::boolalpha << r.is_valid_entity(e2) << std::noboolalpha << std::endl;
+  std::cout << std::boolalpha << r.is_valid_entity(e3) << std::noboolalpha << std::endl;
+
+  r.destroy_entity(e1);
+
+  std::cout << std::boolalpha << r.is_valid_entity(e1) << std::noboolalpha << std::endl;
+
+  e1 = r.create_entity();
+
+  std::cout << std::boolalpha << r.is_valid_entity(e1) << std::noboolalpha << std::endl;
+
   return EXIT_SUCCESS;
 }
