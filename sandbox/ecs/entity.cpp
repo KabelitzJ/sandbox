@@ -6,37 +6,31 @@
 
 namespace sbx {
 
-const entity entity::null{entity::id_mask, entity::version_mask};
+const entity entity::null{entity::invalid_id, entity::invalid_version};
 
 entity::entity(entity&& other) noexcept
-: _value{std::exchange(other._value, null)} { }
+: _id{std::exchange(other._id, invalid_id)},
+  _version{std::exchange(other._version, invalid_version)} { }
 
 entity& entity::operator=(entity&& other) noexcept {
-  _value = std::exchange(other._value, null);
+  _id = std::exchange(other._id, invalid_id);
+  _version = std::exchange(other._version, invalid_id);
 
   return *this;
 }
 
-entity::operator value_type() const noexcept {
-  return _value;
-}
-
 entity::entity(const id_type id, const version_type version) noexcept
-: _value{static_cast<value_type>((id << id_shift) | version)} { }
+: _id{id},
+  _version{version} { }
 
 void entity::_increment_version() noexcept {
   SBX_ASSERT(*this != null, "Cannot increment version of null entity.");
-
-  const auto version = static_cast<version_type>(_version() + version_type{1});
-  _value = static_cast<value_type>(_id() | version);
+  // [NOTE] KAJ 2022-03-03 14:39 - Check if it is viable to overflow the version.
+  ++_version;
 }
 
-entity::id_type entity::_id() const noexcept {
-  return static_cast<id_type>(_value >> id_shift);
-}
-
-entity::version_type entity::_version() const noexcept {
-  return static_cast<version_type>(_value & version_mask);
+bool operator==(const entity& lhs, const entity& rhs) noexcept {
+  return lhs._id == rhs._id && lhs._version == rhs._version;
 }
 
 } // namespace sbx

@@ -26,13 +26,13 @@ entity registry::create_entity() {
 }
 
 void registry::destroy_entity(const entity& entity) {
-  const auto index = static_cast<size_type>(entity._id());
+  const auto index = static_cast<size_type>(entity._id);
   _entities[index]._increment_version();
   _free_list.push(index);
 }
 
 bool registry::is_valid_entity(const entity& entity) const noexcept {
-  const auto index = static_cast<size_type>(entity._id());
+  const auto index = static_cast<size_type>(entity._id);
   return index < _entities.size() && _entities[index] == entity;
 }
 
