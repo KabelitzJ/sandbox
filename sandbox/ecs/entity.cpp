@@ -9,10 +9,10 @@ namespace sbx {
 const entity entity::null{id_mask, version_mask};
 
 entity::entity(entity&& other) noexcept
-: _value{std::exchange(other._value, (static_cast<value_type>(id_mask << id_shift) | version_mask))} { }
+: _value{std::exchange(other._value, null._value)} { }
 
 entity& entity::operator=(entity&& other) noexcept {
-  _value = std::exchange(other._value, (static_cast<value_type>(id_mask << id_shift) | version_mask));
+  _value = std::exchange(other._value, null._value);
 
   return *this;
 }

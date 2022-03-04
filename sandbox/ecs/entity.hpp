@@ -9,8 +9,6 @@ namespace sbx {
 
 class entity {
 
-  friend int main();
-  friend int main();
   friend class registry;
   friend bool operator==(const entity& lhs, const entity& rhs) noexcept;
 
