@@ -8,6 +8,9 @@ namespace sbx {
 
 const entity entity::null{id_mask, version_mask};
 
+entity::entity() noexcept
+: _value{null._value} { }
+
 entity::entity(entity&& other) noexcept
 : _value{std::exchange(other._value, null._value)} { }
 
