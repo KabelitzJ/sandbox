@@ -26,15 +26,7 @@ int main() {
 
   auto e = r.create_entity();
 
-  auto& f = r.add_component<foo>(e, sbx::uint32{1});
-
-  std::cout << r.get_component<foo>(e).i << std::endl;
-
-  f.i = 42;
-
-  std::cout << r.get_component<foo>(e).i << std::endl;
-
-  r.create_view();
+  r.destroy_entity(e);
 
   return EXIT_SUCCESS;
 }

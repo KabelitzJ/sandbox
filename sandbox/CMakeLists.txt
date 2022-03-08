@@ -9,6 +9,7 @@ set(
     utils
     math
     ecs
+    core
 )
 
 foreach(module ${SBX_MODULES})
