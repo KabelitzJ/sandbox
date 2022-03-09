@@ -6,6 +6,9 @@
 #include <math/math.hpp>
 #include <ecs/ecs.hpp>
 
+#include "type_less_container_base.hpp"
+#include "container.hpp"
+
 struct foo {
   sbx::uint32 i{};
 };
@@ -27,6 +30,42 @@ int main() {
   auto e = r.create_entity();
 
   r.destroy_entity(e);
+
+  auto c = demo::container<foo>{};
+
+  for (auto i = 0; i < 10; ++i) {
+    c.emplace_back(i);
+  }
+
+  c.clear();
+
+  std::cout << "size: " << c.size() << std::endl;
+
+  for (auto& f : c) {
+    std::cout << f.i << std::endl;
+  }
+
+  for (auto i = 9; i >= 0; --i) {
+    c.emplace_back(i);
+  }
+
+  std::cout << "size: " << c.size() << std::endl;
+
+  for (auto& f : c) {
+    std::cout << f.i << ", ";
+  }
+
+  std::cout << std::endl;
+
+  c.remove(0);
+  c.remove(2);
+  c.remove(4);
+
+  for (auto& f : c) {
+    std::cout << f.i << ", ";
+  }
+
+  std::cout << std::endl;
 
   return EXIT_SUCCESS;
 }

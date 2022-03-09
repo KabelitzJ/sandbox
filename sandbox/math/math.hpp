@@ -2,6 +2,7 @@
 #define SBX_MATH_HPP_
 
 #include "constants.hpp"
+#include "functional.hpp"
 
 #include "vector2.hpp"
 #include "vector3.hpp"
