@@ -1,9 +1,6 @@
 #ifndef SBX_ECS_ENTITY_HPP_
 #define SBX_ECS_ENTITY_HPP_
 
-#include <bitset>
-#include <iostream>
-
 #include <types/primitives.hpp>
 
 namespace sbx {
@@ -35,11 +32,6 @@ public:
   entity& operator=(const entity& other) noexcept = default;
 
   entity& operator=(entity&& other) noexcept;
-
-  void print() {
-    const auto binary = std::bitset<32>{_value};
-    std::cout << binary << std::endl;
-  }
 
 private:
 
