@@ -20,24 +20,32 @@ entity registry::create_entity() {
     const auto index = _free_entities.front();
     _free_entities.pop();
 
-    return _entities[index];
+    return _entities[index].entity;
   }
 
   const auto id = static_cast<entity::id_type>(_entities.size());
-  _entities.push_back(entity{id, entity::version_type{0}});
 
-  return _entities.back();
+  auto data = entity_data{entity{id, entity::version_type{0}}, dynamic_bitset{}};
+
+  _entities.push_back(std::move(data));
+
+  return _entities.back().entity;
 }
 
 void registry::destroy_entity(const entity& entity) {
   const auto index = static_cast<size_type>(entity._id());
-  _entities[index]._increment_version();
+
+  auto data = _entities[index];
+
+  data.entity._increment_version();
+  data.signature.reset();
+  
   _free_entities.push(index);
 }
 
 bool registry::is_valid_entity(const entity& entity) const noexcept {
   const auto index = static_cast<size_type>(entity._id());
-  return index < _entities.size() && _entities[index] == entity;
+  return index < _entities.size() && _entities[index].entity == entity;
 }
 
 } // namespace sbx

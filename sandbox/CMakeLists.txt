@@ -8,6 +8,7 @@ set(
     types
     utils
     math
+    container
     ecs
     core
 )
