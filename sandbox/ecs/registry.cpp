@@ -31,7 +31,7 @@ entity registry::create_entity() {
 
 void registry::destroy_entity(const entity& entity) {
   const auto index = static_cast<size_type>(entity._id());
-  _entities[index]._incement_version();
+  _entities[index]._increment_version();
   _free_entities.push(index);
 }
 

@@ -43,7 +43,7 @@ private:
 
   version_type _version() const noexcept;
 
-  void _incement_version() noexcept;
+  void _increment_version() noexcept;
 
   value_type _value{};
 
