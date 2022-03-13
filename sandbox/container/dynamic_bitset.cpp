@@ -27,6 +27,15 @@ dynamic_bitset::dynamic_bitset(const dynamic_bitset& other)
   }
 }
 
+dynamic_bitset::dynamic_bitset(const std::initializer_list<size_type> values) 
+: _allocator{},
+  _buffer{nullptr},
+  _size{0} {
+  for (auto value : values) {
+    set(value);
+  }
+}
+
 dynamic_bitset::dynamic_bitset(dynamic_bitset&& other) noexcept
 : _allocator{std::move(other._allocator)},
   _buffer{other._buffer},
@@ -79,27 +88,27 @@ dynamic_bitset& dynamic_bitset::operator=(dynamic_bitset&& other) noexcept {
 }
 
 void dynamic_bitset::set(const size_type index) {
-  const auto internal_index = index / 8;
+  const auto internal_index = index / underlying_type_bit_count;
 
   if (internal_index >= _size) {
     _resize(internal_index + 1);
   }
 
   const auto byte_index = _size - 1 - internal_index;
-  const auto bit_index = index % 8;
+  const auto bit_index = index % underlying_type_bit_count;
 
   _buffer[byte_index] |= static_cast<underlying_type>(std::size_t{1} << bit_index); 
 }
 
 void dynamic_bitset::clear(const size_type index) {
-  const auto internal_index = index / 8;
+  const auto internal_index = index / underlying_type_bit_count;
 
   if (internal_index >= _size) {
     return;
   }
 
   const auto byte_index = _size - 1 - internal_index;
-  const auto bit_index = index % 8;
+  const auto bit_index = index % underlying_type_bit_count;
 
   _buffer[byte_index] &= static_cast<underlying_type>(~(std::size_t{1} << bit_index));
 
@@ -125,16 +134,16 @@ void dynamic_bitset::reset() {
 }
 
 bool dynamic_bitset::test(const size_type index) const noexcept {
-  const auto internal_index = index / 8;
+  const auto internal_index = index / underlying_type_bit_count;
 
   if (internal_index >= _size) {
     return false;
   }
 
   const auto byte_index = _size - 1 - internal_index;
-  const auto bit_index = index % 8;
+  const auto bit_index = index % underlying_type_bit_count;
 
-  return _buffer[byte_index] & static_cast<sbx::uint8>(std::size_t{1} << bit_index);
+  return _buffer[byte_index] & static_cast<underlying_type>(std::size_t{1} << bit_index);
 }
 
 bool dynamic_bitset::test(const dynamic_bitset& other) const noexcept {
@@ -143,7 +152,7 @@ bool dynamic_bitset::test(const dynamic_bitset& other) const noexcept {
   }
 
   for (auto i = size_type{0}; i < other._size; ++i) {
-    if (_buffer[i] != other._buffer[i]) {
+    if ((_buffer[i] & other._buffer[i]) != other._buffer[i]) {
       return false;
     }
   }

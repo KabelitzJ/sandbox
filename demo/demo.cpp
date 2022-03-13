@@ -1,16 +1,30 @@
 #include <iostream>
 #include <cstddef>
+#include <type_traits>
 #include <bitset>
 
 #include <math/math.hpp>
 #include <types/types.hpp>
 #include <container/container.hpp>
+#include <memory/memory.hpp>
 #include <ecs/ecs.hpp>
 
 struct transform {
   sbx::vector3 position{};
   sbx::vector3 scale{};
   sbx::quaternion rotation{};
+};
+
+struct foo {
+  sbx::uint32 f{};
+};
+
+struct bar {
+  sbx::uint32 b{};
+};
+
+struct tag {
+  std::string tag{};
 };
 
 int main() {
@@ -24,11 +38,24 @@ int main() {
 
   auto r = sbx::registry{};
 
-  auto e = r.create_entity();
-  r.add_component<transform>(e);
+  auto e1 = r.create_entity();
+  auto e2 = r.create_entity();
 
+  r.add_component<foo>(e1);
+  r.add_component<bar>(e1, 31u);
+  r.add_component<tag>(e1, "e1");
 
-  r.destroy_entity(e);
+  r.add_component<foo>(e2, 32u);
+  r.add_component<bar>(e2, 33u);
+  r.add_component<tag>(e2, "e2");
 
+  for (auto& [entity, foo, tag] : r.create_view<foo, tag>()) {
+    std::cout << "(foo) entity: " << tag.tag << " " << foo.f << std::endl;
+  }
+
+  for (auto& [entity, bar, tag] : r.create_view<bar, tag>()) {
+    std::cout << "(bar) entity: " << tag.tag << " " << bar.b << std::endl;
+  }
+  
   return EXIT_SUCCESS;
 }

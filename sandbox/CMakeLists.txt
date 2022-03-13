@@ -8,6 +8,7 @@ set(
     types
     utils
     math
+    memory
     container
     ecs
     core

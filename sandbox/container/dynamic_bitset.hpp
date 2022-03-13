@@ -5,6 +5,7 @@
 #include <concepts>
 #include <memory>
 #include <vector>
+#include <numeric>
 
 #include <meta/concepts.hpp>
 
@@ -16,10 +17,13 @@ class dynamic_bitset {
 
   friend bool operator==(const dynamic_bitset& lhs, const dynamic_bitset& rhs) noexcept;
 
-  using allocator_type = std::allocator<uint8>;
+  using underlying_type = uint32;
+
+  inline static constexpr auto underlying_type_bit_count = std::numeric_limits<underlying_type>::digits;
+
+  using allocator_type = std::allocator<underlying_type>;
   using allocator_traits = std::allocator_traits<allocator_type>;
 
-  using underlying_type = uint8;
   using buffer_type = underlying_type*;
 
 public:
@@ -31,6 +35,8 @@ public:
   dynamic_bitset(const size_type size);
 
   dynamic_bitset(const dynamic_bitset& other);
+
+  dynamic_bitset(const std::initializer_list<size_type> values);
 
   dynamic_bitset(dynamic_bitset&& other) noexcept;
 

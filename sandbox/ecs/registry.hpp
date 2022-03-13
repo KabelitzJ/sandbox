@@ -1,6 +1,7 @@
 #ifndef SBX_ECS_REGISTRY_HPP_
 #define SBX_ECS_REGISTRY_HPP_
 
+#include <iostream>
 #include <vector>
 #include <queue>
 #include <unordered_map>
@@ -9,6 +10,7 @@
 #include <container/dynamic_bitset.hpp>
 
 #include "entity.hpp"
+#include "view.hpp"
 
 namespace sbx {
 
@@ -40,79 +42,27 @@ public:
   [[nodiscard]] bool is_valid_entity(const entity& entity) const noexcept;
 
   template<typename Component, typename... Args>
-  requires (std::is_constructible_v<Component, Args...>)
-  Component& add_component(const entity& entity, Args&&... args) {
-    if (!is_valid_entity(entity)) {
-      throw std::invalid_argument("entity is invalid");
-    }
-
-    const auto id = _component_id<Component>();
-
-    auto& container = _components[id];
-
-    auto deleter = [](auto* pointer){ delete static_cast<Component*>(pointer); };
-    auto component = component_handle{new Component{std::forward<Args>(args)...}, deleter};
-
-    container.emplace(entity._value, std::move(component));
-
-    const auto index = static_cast<size_type>(entity._id());
-
-    _entities[index].signature.set(id);
-
-    return *static_cast<Component*>(container[entity].get());
-  }
+  requires (std::is_constructible_v<Component, Args...> && !std::is_const_v<Component> && std::is_same_v<std::decay_t<Component>, Component>)
+  Component& add_component(const entity& entity, Args&&... args);
 
   template<typename Component>
-  void remove_component(const entity& entity) {
-    if (!is_valid_entity(entity)) {
-      throw std::invalid_argument("entity is invalid");
-    }
-
-    const auto id = _component_id<Component>();
-
-    const auto index = static_cast<size_type>(entity._id());
-
-    _entities[index].signature.reset(id);
-
-    _components[id].erase(entity._value);
-  }
+  void remove_component(const entity& entity);
 
   template<typename Component>
-  [[nodiscard]] bool has_component(const entity& entity) const noexcept {
-    if (!is_valid_entity(entity)) {
-      return false;
-    }
-
-    const auto id = _component_id<Component>();
-
-    const auto index = static_cast<size_type>(entity._id());
-
-    return _entities[index].signature.test(id);
-  }
+  [[nodiscard]] bool has_component(const entity& entity) const;
 
   template<typename Component>
-  [[nodiscard]] Component& get_component(const entity& entity) {
-    if (!is_valid_entity(entity)) {
-      throw std::invalid_argument("entity is invalid");
-    }
+  [[nodiscard]] const Component& get_component(const entity& entity) const;
 
-    const auto id = _component_id<Component>();
+  template<typename Component>
+  [[nodiscard]] Component& get_component(const entity& entity);
 
-    const auto index = static_cast<size_type>(entity._id());
+  template<typename... Components, typename Function>
+  requires (std::is_invocable_r_v<void, Function, const entity&, Components&...>)
+  void for_all(Function&& function);
 
-    if (!_entities[index].signature.test(id)) {
-      throw std::invalid_argument("entity does not have component");
-    }
-
-    auto& container = _components[id];
-
-    return *static_cast<Component*>(container[entity].get());
-  }
-
-  template<typename... Component>
-  void for_all() {
-
-  }
+  template<typename... Components>
+  [[nodiscard]] view<Components...> create_view();
 
 private:
 
@@ -123,9 +73,11 @@ private:
 
   template<typename Component>
   static size_type _component_id() noexcept {
-    static auto id = size_type{0};
-    return id++;
+    static auto id = _current_component_id++;
+    return id;
   }
+
+  inline static auto _current_component_id = size_type{0};
 
   std::vector<entity_data> _entities{};
   std::queue<size_type> _free_entities{};
@@ -134,5 +86,7 @@ private:
 }; // class registry
 
 } // namespace sbx
+
+#include "registry.inl"
 
 #endif // SBX_ECS_REGISTRY_HPP_

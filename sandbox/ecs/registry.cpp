@@ -6,7 +6,8 @@ namespace sbx {
 
 registry::registry(registry&& other) noexcept
 : _entities{std::move(other._entities)},
-  _free_entities{std::move(other._free_entities)} { }
+  _free_entities{std::move(other._free_entities)},
+  _components{} { }
 
 registry& registry::operator=(registry&& other) noexcept {
   _entities = std::move(other._entities);
