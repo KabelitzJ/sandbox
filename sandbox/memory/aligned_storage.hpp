@@ -23,8 +23,6 @@ public:
 
   aligned_storage() = default;
 
-  aligned_storage(std::nullptr_t null) noexcept { }
-
   ~aligned_storage() = default;
 
   pointer data() noexcept {

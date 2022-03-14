@@ -11,7 +11,9 @@ namespace sbx {
 template<typename... Components>
 class view {
 
-  using container_type = std::vector<std::tuple<entity, Components&...>>;
+  friend class registry;
+
+  using container_type = std::vector<std::tuple<const entity&, Components&...>>;
 
 public:
 

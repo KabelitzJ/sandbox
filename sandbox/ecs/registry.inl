@@ -86,19 +86,19 @@ template<typename Component, typename... Args>
   requires (std::is_invocable_r_v<void, Function, const entity&, Components&...>)
   void registry::for_all(Function&& function) {
     if constexpr (sizeof...(Components) == size_type{0}) {
-      for (auto& [entity, signature] : _entities) {
+      for (const auto& [entity, signature] : _entities) {
         std::invoke(function, entity);
       }
     } else {
       const auto component_ids = std::initializer_list<size_type>{_component_id<std::remove_const_t<Components>>()...};
 
-      auto component_signature = dynamic_bitset{component_ids};
+      const auto component_signature = dynamic_bitset{component_ids};
 
       const auto component_filter = [&](const auto& entity){
         return entity.signature.test(component_signature);
       };
 
-      for (auto& [entity, signature] : _entities | std::views::filter(component_filter)) {
+      for (const auto& [entity, signature] : _entities | std::views::filter(component_filter)) {
         std::apply(std::forward<Function>(function), std::forward_as_tuple(entity, get_component<Components>(entity)...));
       }
     }
@@ -110,17 +110,19 @@ template<typename Component, typename... Args>
     if constexpr (sizeof...(Components) == size_type{0}) {
       return view<Components...>{};
     } else {
+      using view_container_type = view<Components...>::container_type;
+
       const auto component_ids = std::initializer_list<size_type>{_component_id<std::remove_const_t<Components>>()...};
 
-      auto component_signature = dynamic_bitset{component_ids};
+      const auto component_signature = dynamic_bitset{component_ids};
 
       const auto component_filter = [&](const auto& entity){
         return entity.signature.test(component_signature);
       };
 
-      auto view_entries = std::vector<std::tuple<entity, Components&...>>{};
+      auto view_entries = view_container_type{};
 
-      for (auto& [entity, signature] : _entities | std::views::filter(component_filter)) {
+      for (const auto& [entity, signature] : _entities | std::views::filter(component_filter)) {
         view_entries.emplace_back(std::forward_as_tuple(entity, get_component<Components>(entity)...));
       }
 

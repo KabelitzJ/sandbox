@@ -49,13 +49,13 @@ int main() {
   r.add_component<bar>(e2, 33u);
   r.add_component<tag>(e2, "e2");
 
-  for (auto& [entity, foo, tag] : r.create_view<foo, tag>()) {
+  for (auto& [entity, foo, tag] : r.create_view<foo, const tag>()) {
     std::cout << "(foo) entity: " << tag.tag << " " << foo.f << std::endl;
   }
 
-  for (auto& [entity, bar, tag] : r.create_view<bar, tag>()) {
+  for (auto& [entity, bar, tag] : r.create_view<bar, const tag>()) {
     std::cout << "(bar) entity: " << tag.tag << " " << bar.b << std::endl;
   }
-  
+
   return EXIT_SUCCESS;
 }
