@@ -7,8 +7,8 @@ namespace sbx {
 
 class entity {
 
+  friend class entity_set;
   friend class registry;
-  friend class sparse_set;
   friend bool operator==(const entity& lhs, const entity& rhs) noexcept;
 
   using id_type = uint32;

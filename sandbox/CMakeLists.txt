@@ -9,6 +9,7 @@ set(
     utils
     math
     memory
+    io
     container
     ecs
     core
