@@ -6,7 +6,6 @@ target_sources(
   ${PROJECT_NAME}
   PRIVATE
     entity.cpp
-    entity_set.cpp
     registry.cpp
 )
 
