@@ -9,32 +9,60 @@
 namespace sbx {
 
 template<typename... Components>
-class view {
+class view final {
 
   friend class registry;
 
-  using container_type = std::vector<std::tuple<const entity&, Components&...>>;
+  using underlying_type = std::tuple<const entity&, Components&...>;
+  using container_type = std::vector<underlying_type>;
 
 public:
 
+  using value_type = underlying_type;
+  using size_type = container_type::size_type;
   using iterator = container_type::iterator;
+  using const_iterator = container_type::const_iterator;
 
   view() = default;
 
-  view(const container_type& components)
-  : _entries{components} { }
-
   ~view() = default;
 
-  iterator begin() {
+  [[nodiscard]] iterator begin() {
     return _entries.begin();
   }
 
-  iterator end() {
+  [[nodiscard]] const_iterator begin() const {
+    return _entries.begin();
+  }
+
+  [[nodiscard]] const_iterator cbegin() const {
+    return _entries.cbegin();
+  }
+
+  [[nodiscard]] iterator end() {
     return _entries.end();
   }
 
+  [[nodiscard]] const_iterator end() const {
+    return _entries.end();
+  }
+
+  [[nodiscard]] const_iterator cend() const {
+    return _entries.cend();
+  }
+
+  [[nodiscard]] size_type size() const {
+    return _entries.size();
+  }
+
+  [[nodiscard]] bool empty() const {
+    return _entries.empty();
+  }
+
 private:
+
+  view(const container_type& components)
+  : _entries{components} { }
 
   container_type _entries{};
 

@@ -5,7 +5,7 @@
 
 namespace sbx {
 
-class entity {
+class entity final {
 
   friend class entity_set;
   friend class registry;
