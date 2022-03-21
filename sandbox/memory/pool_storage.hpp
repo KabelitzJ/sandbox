@@ -24,7 +24,7 @@ public:
 
   pointer allocate() {
     if (_free_list.empty()) {
-      _allocaate_pool();
+      _allocate_pool();
     }
 
     auto data = _free_list.back();
@@ -39,7 +39,7 @@ public:
 
 private:
 
-  void _allocaate_pool() {
+  void _allocate_pool() {
     _pools.emplace_back(std::make_unique<pool_type>(pool_size));
     _free_list.reserve(_pools.size() * pool_size);
 

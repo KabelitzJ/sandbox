@@ -1,5 +1,6 @@
 #include <ranges>
 #include <functional>
+#include <algorithm>
 
 namespace sbx {
 
@@ -90,12 +91,9 @@ void registry::for_all(Function&& function) {
       std::invoke(function, entity);
     }
   } else {
-    const auto component_ids = std::initializer_list<size_type>{_component_id<std::remove_const_t<Components>>()...};
-
-    const auto component_signature = dynamic_bitset{component_ids};
-
-    const auto component_filter = [&](const auto& entity){
-      return entity.signature.test(component_signature);
+    const auto component_filter = [&](const auto& data){
+      const auto has_components = std::initializer_list<bool>{has_component<Components>(data.entity)...};
+      return std::all_of(has_components.begin(), has_components.end(), std::identity{});
     };
 
     for (const auto& [entity, signature] : _entities | std::views::filter(component_filter)) {
@@ -112,12 +110,9 @@ view<Components...> registry::create_view() {
   } else {
     using view_container_type = view<Components...>::container_type;
 
-    const auto component_ids = std::initializer_list<size_type>{_component_id<std::remove_const_t<Components>>()...};
-
-    const auto component_signature = dynamic_bitset{component_ids};
-
-    const auto component_filter = [&](const auto& entity){
-      return entity.signature.test(component_signature);
+    const auto component_filter = [&](const auto& data){
+      const auto has_components = std::initializer_list<bool>{has_component<Components>(data.entity)...};
+      return std::all_of(has_components.begin(), has_components.end(), std::identity{});
     };
 
     auto view_entries = view_container_type{};

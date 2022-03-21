@@ -56,6 +56,6 @@ int main() {
   for (auto& [entity, bar, tag] : r.create_view<bar, const tag>()) {
     std::cout << "(bar) entity: " << tag.tag << " " << bar.b << std::endl;
   }
-
+  
   return EXIT_SUCCESS;
 }
