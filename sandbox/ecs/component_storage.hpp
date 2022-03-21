@@ -7,9 +7,26 @@
 
 #include <memory/pool_storage.hpp>
 
+#include <meta/concepts.hpp>
+
 #include "entity_set.hpp"
 
 namespace sbx {
+
+namespace detail {
+
+template<container Container>
+class component_storage_iterator final {
+
+  using container_type = Container;
+
+public:
+
+private:
+
+}; // class component_storage_iterator
+
+} // namespace detail
 
 template<standard_layout Type>
 class component_storage : public entity_set {
@@ -36,6 +53,30 @@ public:
       const auto itr = _emplace(entity, std::forward<Args>(args)...);
       return *_components[static_cast<size_type>(itr.index())].get();
     }
+  }
+
+  const value_type& operator[](const entity& entity) const {
+    return *_components[index(entity)].get();
+  }
+
+  value_type& operator[](const entity& entity) {
+    return *_components[index(entity)].get();
+  }
+
+  const value_type& get(const entity& entity) const {
+    if (!contains(entity)) {
+      throw std::runtime_error("entity does not have component");
+    }
+
+    return *_components[index(entity)].get();
+  }
+
+  value_type& get(const entity& entity) {
+    if (!contains(entity)) {
+      throw std::runtime_error("entity does not have component");
+    }
+
+    return *_components[index(entity)].get();
   }
 
 private:

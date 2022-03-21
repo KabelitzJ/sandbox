@@ -10,14 +10,13 @@
 #include <container/dynamic_bitset.hpp>
 
 #include "entity.hpp"
+#include "entity_set.hpp"
+#include "component_storage.hpp"
 #include "view.hpp"
 
 namespace sbx {
 
 class registry {
-
-  using component_handle = std::unique_ptr<void, void(*)(void*)>;
-  using component_container = std::unordered_map<entity::value_type, component_handle>;
 
 public:
 
@@ -66,22 +65,16 @@ public:
 
 private:
 
-  struct entity_data {
-    entity entity{};
-    dynamic_bitset signature{};
-  };
-
   template<typename Component>
-  static size_type _component_id() noexcept {
+  size_type _component_id() const noexcept {
     static auto id = _current_component_id++;
     return id;
   }
 
-  inline static auto _current_component_id = size_type{0};
-
-  std::vector<entity_data> _entities{};
+  std::vector<entity> _entities{};
   std::queue<size_type> _free_entities{};
-  std::unordered_map<size_type, component_container> _components{};
+  std::vector<std::unique_ptr<entity_set>> _component_containers{};
+  mutable size_type _current_component_id{};
 
 }; // class registry
 

@@ -7,11 +7,14 @@ namespace sbx {
 registry::registry(registry&& other) noexcept
 : _entities{std::move(other._entities)},
   _free_entities{std::move(other._free_entities)},
-  _components{} { }
+  _component_containers{std::move(other._component_containers)},
+  _current_component_id{std::exchange(other._current_component_id, size_type{0})} { }
 
 registry& registry::operator=(registry&& other) noexcept {
   _entities = std::move(other._entities);
   _free_entities = std::move(other._free_entities);
+  _component_containers = std::move(other._component_containers);
+  _current_component_id = std::exchange(other._current_component_id, size_type{0});
 
   return *this;
 }
@@ -21,32 +24,29 @@ entity registry::create_entity() {
     const auto index = _free_entities.front();
     _free_entities.pop();
 
-    return _entities[index].entity;
+    return _entities[index];
   }
 
   const auto id = static_cast<entity::id_type>(_entities.size());
 
-  auto data = entity_data{entity{id, entity::version_type{0}}, dynamic_bitset{}};
+  auto data = entity{id, entity::version_type{0}};
 
   _entities.push_back(std::move(data));
 
-  return _entities.back().entity;
+  return _entities.back();
 }
 
 void registry::destroy_entity(const entity& entity) {
   const auto index = static_cast<size_type>(entity._id());
 
-  auto data = _entities[index];
-
-  data.entity._increment_version();
-  data.signature.reset();
+  _entities[index]._increment_version();
   
   _free_entities.push(index);
 }
 
 bool registry::is_valid_entity(const entity& entity) const noexcept {
   const auto index = static_cast<size_type>(entity._id());
-  return index < _entities.size() && _entities[index].entity == entity;
+  return index < _entities.size() && _entities[index] == entity;
 }
 
 } // namespace sbx

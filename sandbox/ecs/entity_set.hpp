@@ -8,15 +8,18 @@
 
 #include <platform/assert.hpp>
 
+#include <meta/concepts.hpp>
+
 #include "entity.hpp"
 
 namespace sbx {
 
 namespace detail {
 
+template<container Container>
 class entity_set_iterator final {
 
-  using container_type = std::vector<entity>;
+  using container_type = Container;
 
 public:
 
@@ -95,11 +98,13 @@ private:
 
 }; // struct entity_set_iterator
 
-[[nodiscard]] bool operator==(const entity_set_iterator& lhs, const entity_set_iterator& rhs) noexcept {
+template<container Container>
+[[nodiscard]] bool operator==(const entity_set_iterator<Container>& lhs, const entity_set_iterator<Container>& rhs) noexcept {
   return lhs.index() == rhs.index();
 }
 
-[[nodiscard]] std::strong_ordering operator<=>(const entity_set_iterator& lhs, const entity_set_iterator& rhs) noexcept {
+template<container Container>
+[[nodiscard]] std::strong_ordering operator<=>(const entity_set_iterator<Container>& lhs, const entity_set_iterator<Container>& rhs) noexcept {
   return lhs.index() <=> rhs.index();
 }
 
@@ -121,7 +126,7 @@ public:
   using difference_type = dense_container_type::difference_type;
   using reference = dense_container_type::const_reference;
   using pointer = dense_container_type::const_pointer;
-  using iterator = detail::entity_set_iterator;
+  using iterator = detail::entity_set_iterator<dense_container_type>;
   using const_iterator = iterator;
   using reverse_iterator = std::reverse_iterator<iterator>;
   using const_reverse_iterator = reverse_iterator;

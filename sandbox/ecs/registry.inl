@@ -8,29 +8,22 @@ template<typename Component, typename... Args>
 requires (std::is_constructible_v<Component, Args...> && !std::is_const_v<Component> && std::is_same_v<std::decay_t<Component>, Component>)
 Component& registry::add_component(const entity& entity, Args&&... args) {
   if (has_component<Component>(entity)) {
-    return get_component<Component>(entity);
+    throw std::runtime_error("entity already has component");
   }
 
-  const auto component_id = _component_id<Component>();
-  const auto entity_value = entity._value;
+  using no_cv_component_type = std::remove_cv_t<Component>;
 
-  auto& container = _components[component_id];
+  const auto component_id = _component_id<no_cv_component_type>();
 
-  auto deleter = [](auto* pointer){ 
-    delete static_cast<Component*>(pointer); 
-  };
+  if (component_id >= _component_containers.size()) {
+    _component_containers.emplace_back(std::make_unique<component_storage<no_cv_component_type>>());
+  }
 
-  auto component = component_handle{new Component{std::forward<Args>(args)...}, deleter};
+  auto& component_container = *static_cast<component_storage<no_cv_component_type>*>(_component_containers[component_id].get());
 
-  const auto [itr, result] = container.emplace(entity_value, std::move(component));
+  auto& component = component_container.emplace(entity, std::forward<Args>(args)...);
 
-  const auto index = static_cast<size_type>(entity._id());
-
-  _entities[index].signature.set(component_id);
-
-  auto& handle = itr->second;
-
-  return *static_cast<Component*>(handle.get());
+  return static_cast<Component&>(component);
 }
 
 template<typename Component>
@@ -39,14 +32,13 @@ void registry::remove_component(const entity& entity) {
     return;
   }
 
-  const auto component_id = _component_id<std::remove_const_t<Component>>();
-  const auto entity_value = entity._value;
+  using no_cv_component_type = std::remove_cv_t<Component>;
 
-  const auto index = static_cast<size_type>(entity._id());
+  const auto component_id = _component_id<no_cv_component_type>();
 
-  _entities[index].signature.reset(component_id);
+  auto& component_container = *static_cast<component_storage<no_cv_component_type>*>(_component_containers[component_id].get());
 
-  _components[component_id].erase(entity_value);
+  component_container.erase(entity);
 }
 
 template<typename Component>
@@ -55,11 +47,17 @@ bool registry::has_component(const entity& entity) const {
     throw std::invalid_argument("entity is invalid");
   }
 
-  const auto component_id = _component_id<std::remove_const_t<Component>>();
+  using no_cv_component_type = std::remove_cv_t<Component>;
 
-  const auto index = static_cast<size_type>(entity._id());
+  const auto component_id = _component_id<no_cv_component_type>();
 
-  return _entities[index].signature.test(component_id);
+  if (component_id >= _component_containers.size()) {
+    return false;
+  }
+
+  auto& component_container = *static_cast<component_storage<no_cv_component_type>*>(_component_containers[component_id].get());
+
+  return component_container.contains(entity);
 }
 
 template<typename Component>
@@ -68,14 +66,13 @@ const Component& registry::get_component(const entity& entity) const {
     throw std::invalid_argument("entity does not have component");
   }
 
-  const auto component_id = _component_id<std::remove_const_t<Component>>();
-  const auto entity_value = entity._value;
+  using no_cv_component_type = std::remove_cv_t<Component>;
 
-  const auto& container = _components.at(component_id);
+  const auto component_id = _component_id<no_cv_component_type>();
 
-  const auto& handle = container.at(entity_value);
+  const auto& component_container = *static_cast<component_storage<no_cv_component_type>*>(_component_containers[component_id].get());
 
-  return *static_cast<const Component*>(handle.get());
+  return component_container.get(entity);
 }
 
 template<typename Component>
@@ -87,16 +84,16 @@ template<typename... Components, typename Function>
 requires (std::is_invocable_r_v<void, Function, const entity&, Components&...>)
 void registry::for_all(Function&& function) {
   if constexpr (sizeof...(Components) == size_type{0}) {
-    for (auto& [entity, signature] : _entities) {
+    for (auto& entity : _entities) {
       std::invoke(function, entity);
     }
   } else {
-    const auto component_filter = [&](const auto& data){
-      const auto has_components = std::initializer_list<bool>{has_component<Components>(data.entity)...};
+    const auto component_filter = [&](const auto& entity){
+      const auto has_components = std::initializer_list<bool>{has_component<Components>(entity)...};
       return std::all_of(has_components.begin(), has_components.end(), std::identity{});
     };
 
-    for (const auto& [entity, signature] : _entities | std::views::filter(component_filter)) {
+    for (const auto& entity : _entities | std::views::filter(component_filter)) {
       std::apply(std::forward<Function>(function), std::forward_as_tuple(entity, get_component<Components>(entity)...));
     }
   }
@@ -110,14 +107,14 @@ view<Components...> registry::create_view() {
   } else {
     using view_container_type = view<Components...>::container_type;
 
-    const auto component_filter = [&](const auto& data){
-      const auto has_components = std::initializer_list<bool>{has_component<Components>(data.entity)...};
+    const auto component_filter = [&](const auto& entity){
+      const auto has_components = std::initializer_list<bool>{has_component<Components>(entity)...};
       return std::all_of(has_components.begin(), has_components.end(), std::identity{});
     };
 
     auto view_entries = view_container_type{};
 
-    for (const auto& [entity, signature] : _entities | std::views::filter(component_filter)) {
+    for (const auto& entity : _entities | std::views::filter(component_filter)) {
       view_entries.emplace_back(std::forward_as_tuple(entity, get_component<Components>(entity)...));
     }
 
