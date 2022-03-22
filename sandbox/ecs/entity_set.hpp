@@ -179,10 +179,6 @@ public:
     return rend();
   }
 
-  void erase(const entity& entity) {
-    _swap_and_pop(entity);
-  }
-
   [[nodiscard]] bool contains(const entity& entity) const noexcept {
     if (const auto entry = _sparse.find(entity._value); entry != _sparse.cend()) {
       const auto& index = entry->second;

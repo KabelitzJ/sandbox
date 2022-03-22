@@ -40,9 +40,21 @@ public:
   using value_type = Type;
   using size_type = std::size_t;
 
+  component_storage() = default;
+
+  component_storage(const component_storage& other) = delete;
+
+  component_storage(component_storage&& other) noexcept = default;
+
+  ~component_storage() = default;
+
+  component_storage& operator=(const component_storage& other) = delete;
+
+  component_storage& operator=(component_storage&& other) noexcept = default;
+
   template<typename... Args>
   value_type& emplace(const entity& entity, Args&&... args) {
-    if (contains(entity)) {
+    if (base_type::contains(entity)) {
       throw std::runtime_error("entity already has component");
     }
 
@@ -55,6 +67,10 @@ public:
     }
   }
 
+  void erase(const entity& entity) {
+    _swap_and_pop(entity);
+  }
+
   const value_type& get(const entity& entity) const {
     if (!contains(entity)) {
       throw std::runtime_error("entity does not have component");
@@ -64,11 +80,7 @@ public:
   }
 
   value_type& get(const entity& entity) {
-    if (!contains(entity)) {
-      throw std::runtime_error("entity does not have component");
-    }
-
-    return *_components[base_type::_index(entity)].get();
+    return const_cast<value_type&>(std::as_const(*this).get(entity));
   }
 
 private:
