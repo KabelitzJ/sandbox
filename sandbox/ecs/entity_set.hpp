@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <memory>
+#include <unordered_map>
 
 #include <math/functional.hpp>
 
@@ -112,13 +113,8 @@ template<container Container>
 
 class entity_set {
 
-  using allocator_type = std::allocator<entity>;
-  using allocator_traits = std::allocator_traits<allocator_type>;
-
-  using sparse_container_type = std::vector<entity*>;
+  using sparse_container_type = std::unordered_map<entity::value_type, std::size_t>;
   using dense_container_type = std::vector<entity>;
-
-  inline static constexpr auto sparse_page_size = std::size_t{2048};
 
 public:
 
@@ -137,9 +133,7 @@ public:
 
   entity_set(entity_set&& other) noexcept = default;
 
-  virtual ~entity_set() {
-    _release_sparse_pages();
-  }
+  virtual ~entity_set() = default;
 
   entity_set& operator=(const entity_set& other) = delete;
 
@@ -185,87 +179,49 @@ public:
     return rend();
   }
 
-  iterator insert(const entity& entity) {
-    return _try_emplace(entity);
-  }
-
   void erase(const entity& entity) {
     _swap_and_pop(entity);
   }
 
-  [[nodiscard]] size_type index(const entity& entity) const noexcept {
-    SBX_ASSERT(contains(entity), "set does not contain entity");
-    return static_cast<size_type>(_sparse_element(entity)._id());
-  }
-
   [[nodiscard]] bool contains(const entity& entity) const noexcept {
-    const auto* element = _sparse_pointer(entity);
-    return element && element->_id() < _dense.size() && _dense[element->_id()] == entity; 
+    if (const auto entry = _sparse.find(entity._value); entry != _sparse.cend()) {
+      const auto& index = entry->second;
+      return index < _dense.size() && _dense[index] == entity;
+    }
+
+    return false;
   }
 
   [[nodiscard]] iterator find(const entity& entity) const noexcept {
-    return contains(entity) ? --(end() - static_cast<difference_type>(index(entity))) : end(); 
+    return contains(entity) ? --(end() - static_cast<difference_type>(_index(entity))) : end(); 
   }
 
 protected:
 
   virtual iterator _try_emplace(const entity& e) {
-    const auto id = static_cast<entity::id_type>(_dense.size());
-    _assure_sparse_element(e) = entity{id, e._version()};
+    _sparse.emplace(e._value, _dense.size());
     _dense.push_back(e);
+
     return begin();
   }
 
-  virtual void _swap_and_pop(const entity& e) {
-    const auto idx = index(e);
-    const auto id = static_cast<entity::id_type>(idx);
-    _sparse_element(_dense.back()) = entity(id, _dense.back()._version());
-    const auto temp = std::exchange(_dense[idx], _dense.back());
-    _sparse_element(temp) = entity::null;
+  virtual void _swap_and_pop(const entity& entity) {
+    const auto idx = _index(entity);
+
+    _sparse.at(_dense.back()._value) = idx;
+    const auto old_entity = std::exchange(_dense[idx], _dense.back());
+
+    _sparse.erase(old_entity._value);
     _dense.pop_back();
+  }
+
+  [[nodiscard]] size_type _index(const entity& entity) const noexcept {
+    SBX_ASSERT(contains(entity), "Set does not contain entity");
+    return _sparse.at(entity._value);
   }
 
 private:
 
-  entity& _assure_sparse_element(const entity& entity) {
-    const auto index = static_cast<std::size_t>(entity._id());
-    const auto page = index / sparse_page_size;
-
-    if (page >= _sparse.size()) {
-      _sparse.resize(page + 1, nullptr);
-    }
-
-    if (!_sparse[page]) {
-      _sparse[page] = allocator_traits::allocate(_allocator, sparse_page_size);
-      std::uninitialized_fill_n(_sparse[page], sparse_page_size, entity::null);
-    }
-
-    return _sparse[page][fast_mod(index, sparse_page_size)];
-  }
-
-  entity& _sparse_element(const entity& entity) const noexcept {
-    SBX_ASSERT(_sparse_pointer(entity), "set does not contain entity");
-    const auto index = static_cast<std::size_t>(entity._id());
-    const auto page = index / sparse_page_size;
-    return _sparse[page][fast_mod(index, sparse_page_size)];
-  }
-
-  entity* _sparse_pointer(const entity& entity) const noexcept {
-    const auto index = static_cast<std::size_t>(entity._id());
-    const auto page = index / sparse_page_size;
-    return (page < _sparse.size() && _sparse[page]) ? (_sparse[page] + fast_mod(index, sparse_page_size)) : nullptr;
-  }
-
-  void _release_sparse_pages() {
-    for (auto* page : _sparse) {
-      if (page) {
-        allocator_traits::deallocate(_allocator, page, sparse_page_size);
-        page = nullptr;
-      }
-    }
-  }
-
-  allocator_type _allocator{};
   sparse_container_type _sparse{};
   dense_container_type _dense{};
 

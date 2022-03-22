@@ -55,20 +55,12 @@ public:
     }
   }
 
-  const value_type& operator[](const entity& entity) const {
-    return *_components[index(entity)].get();
-  }
-
-  value_type& operator[](const entity& entity) {
-    return *_components[index(entity)].get();
-  }
-
   const value_type& get(const entity& entity) const {
     if (!contains(entity)) {
       throw std::runtime_error("entity does not have component");
     }
 
-    return *_components[index(entity)].get();
+    return *_components[base_type::_index(entity)].get();
   }
 
   value_type& get(const entity& entity) {
@@ -76,7 +68,7 @@ public:
       throw std::runtime_error("entity does not have component");
     }
 
-    return *_components[index(entity)].get();
+    return *_components[base_type::_index(entity)].get();
   }
 
 private:
@@ -112,7 +104,7 @@ private:
   }
 
   void _swap_and_pop(const entity& entity) override {
-    std::swap(_components.back(), _components[base_type::index(entity)]);
+    std::swap(_components.back(), _components[base_type::_index(entity)]);
 
     std::destroy_at(_components.back().get());
     _components.pop_back();

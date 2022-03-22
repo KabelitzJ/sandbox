@@ -29,7 +29,7 @@ struct tag {
 
 int main() {
 
-  std::cout << "Hello, World!" << std::endl;
+  std::cout << "Hello, Sandbox!" << std::endl;
 
   auto v2 = sbx::vector2::zero;
   auto v3 = sbx::vector3::zero;
@@ -38,23 +38,13 @@ int main() {
 
   auto r = sbx::registry{};
 
-  auto e1 = r.create_entity();
-  auto e2 = r.create_entity();
-
-  r.add_component<foo>(e1);
-  r.add_component<bar>(e1, 31u);
-  r.add_component<tag>(e1, "e1");
-
-  r.add_component<foo>(e2, 32u);
-  r.add_component<bar>(e2, 33u);
-  r.add_component<tag>(e2, "e2");
-
-  for (auto& [entity, foo, tag] : r.create_view<foo, const tag>()) {
-    std::cout << "(foo) entity: " << tag.tag << " " << foo.f << std::endl;
+  for (auto i = 0; i < 10; ++i) {
+    auto e = r.create_entity();
+    r.add_component<tag>(e, "tag" + std::to_string(i));
   }
 
-  for (auto& [entity, bar, tag] : r.create_view<bar, const tag>()) {
-    std::cout << "(bar) entity: " << tag.tag << " " << bar.b << std::endl;
+  for (const auto& [e, t] : r.create_view<const tag>()) {
+    std::cout << t.tag << ", ";
   }
   
   return EXIT_SUCCESS;
