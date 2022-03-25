@@ -21,9 +21,7 @@ Component& registry::add_component(const entity& entity, Args&&... args) {
 
   auto& component_container = *static_cast<component_storage<no_cv_component_type>*>(_component_containers[component_id].get());
 
-  auto& component = component_container.emplace(entity, std::forward<Args>(args)...);
-
-  return static_cast<Component&>(component);
+  return component_container.emplace(entity, std::forward<Args>(args)...);
 }
 
 template<typename Component>
