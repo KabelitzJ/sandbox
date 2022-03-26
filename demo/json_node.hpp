@@ -1,0 +1,126 @@
+#ifndef DEMO_JSON_NODE_HPP_
+#define DEMO_JSON_NODE_HPP_
+
+#include <memory>
+#include <variant>
+#include <string>
+#include <string_view>
+#include <unordered_map>
+#include <vector>
+
+#include <types/primitives.hpp>
+
+namespace demo {
+
+class json_node;
+
+using json_object = std::unordered_map<std::string, std::shared_ptr<json_node>>;
+using json_array = std::vector<std::shared_ptr<json_node>>;
+
+class json_node {
+
+public:
+
+  json_node()
+  : _value{},
+    _type{type::null} { }
+
+  json_node(const std::shared_ptr<json_object>& object)
+  : _value{object},
+    _type{type::object} { }
+
+  json_node(const std::shared_ptr<json_array>& array)
+  : _value{array},
+    _type{type::array} { }
+
+  json_node(const std::string& string)
+  : _value{string},
+    _type{type::string} { }
+
+  json_node(const sbx::float32 number)
+  : _value{number},
+    _type{type::number} { }
+
+  bool is_object() const noexcept {
+    return _type == type::object;
+  }
+
+  bool is_array() const noexcept {
+    return _type == type::array;
+  }
+
+  bool is_string() const noexcept {
+    return _type == type::string;
+  }
+
+  bool is_number() const noexcept {
+    return _type == type::number;
+  }
+
+  bool is_boolean() const noexcept {
+    return _type == type::boolean;
+  }
+
+  bool is_null() const noexcept {
+    return _type == type::null;
+  }
+
+  json_object& as_object() {
+    if (_type != type::object) {
+      throw std::runtime_error("json_node is not an object");
+    }
+
+    return *std::get<std::shared_ptr<json_object>>(_value).get();
+  }
+
+  json_array& as_array() {
+    if (_type != type::array) {
+      throw std::runtime_error("json_node is not an array");
+    }
+
+    return *std::get<std::shared_ptr<json_array>>(_value).get();
+  }
+
+  std::string& as_string() {
+    if (_type != type::string) {
+      throw std::runtime_error("json_node is not a string");
+    }
+
+    return std::get<std::string>(_value);
+  }
+
+  sbx::float32& as_number() {
+    if (_type != type::number) {
+      throw std::runtime_error("json_node is not a number");
+    }
+
+    return std::get<sbx::float32>(_value);
+  }
+
+  bool& as_boolean() {
+    if (_type != type::boolean) {
+      throw std::runtime_error("json_node is not a boolean");
+    }
+
+    return std::get<bool>(_value);
+  }
+
+private:
+
+  enum class type : sbx::uint8 {
+    object,
+    array,
+    string,
+    number,
+    boolean,
+    null
+  };
+
+  std::variant<std::shared_ptr<json_object>, std::shared_ptr<json_array>, std::string, sbx::float32, bool> _value{};
+  type _type{};
+
+};
+
+} // namespace demo
+
+#endif // DEMO_JSON_NODE_HPP_
