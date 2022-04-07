@@ -3,6 +3,10 @@
 #include <type_traits>
 #include <bitset>
 #include <variant>
+#include <thread>
+#include <mutex>
+#include <atomic>
+#include <future>
 
 #include <math/math.hpp>
 #include <types/types.hpp>
@@ -28,7 +32,17 @@ int main() {
 
   p.parse();
 
-  auto root = p.root();
+  std::cout << *p.root() << std::endl;
+
+  auto values = p.root()->as_array();
+
+  auto c = sbx::float32{0};
+
+  for (const auto& value : values) {
+    c += value->as_number();
+  }
+
+  std::cout << c << std::endl;
   
   return EXIT_SUCCESS;
 }

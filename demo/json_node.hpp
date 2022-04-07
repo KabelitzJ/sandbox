@@ -19,6 +19,8 @@ using json_array = std::vector<std::shared_ptr<json_node>>;
 
 class json_node {
 
+ friend std::ostream& operator<<(std::ostream& os, const json_node& node);
+
 public:
 
   json_node()
@@ -40,6 +42,12 @@ public:
   json_node(const sbx::float32 number)
   : _value{number},
     _type{type::number} { }
+
+  template<typename Type>
+  requires (std::is_same_v<Type, bool>)
+  json_node(const Type boolean)
+  : _value{boolean},
+    _type{type::boolean} { }
 
   bool is_object() const noexcept {
     return _type == type::object;
@@ -73,7 +81,23 @@ public:
     return *std::get<std::shared_ptr<json_object>>(_value).get();
   }
 
+  const json_object& as_object() const {
+    if (_type != type::object) {
+      throw std::runtime_error("json_node is not an object");
+    }
+
+    return *std::get<std::shared_ptr<json_object>>(_value).get();
+  }
+
   json_array& as_array() {
+    if (_type != type::array) {
+      throw std::runtime_error("json_node is not an array");
+    }
+
+    return *std::get<std::shared_ptr<json_array>>(_value).get();
+  }
+
+  const json_array& as_array() const {
     if (_type != type::array) {
       throw std::runtime_error("json_node is not an array");
     }
@@ -89,6 +113,14 @@ public:
     return std::get<std::string>(_value);
   }
 
+  const std::string& as_string() const {
+    if (_type != type::string) {
+      throw std::runtime_error("json_node is not a string");
+    }
+
+    return std::get<std::string>(_value);
+  }
+
   sbx::float32& as_number() {
     if (_type != type::number) {
       throw std::runtime_error("json_node is not a number");
@@ -97,7 +129,23 @@ public:
     return std::get<sbx::float32>(_value);
   }
 
+  const sbx::float32& as_number() const {
+    if (_type != type::number) {
+      throw std::runtime_error("json_node is not a number");
+    }
+
+    return std::get<sbx::float32>(_value);
+  }
+
   bool& as_boolean() {
+    if (_type != type::boolean) {
+      throw std::runtime_error("json_node is not a boolean");
+    }
+
+    return std::get<bool>(_value);
+  }
+
+  const bool& as_boolean() const {
     if (_type != type::boolean) {
       throw std::runtime_error("json_node is not a boolean");
     }
@@ -120,6 +168,71 @@ private:
   type _type{};
 
 };
+
+std::ostream& operator<<(std::ostream& os, const json_node& node) {
+  switch (node._type) {
+    case json_node::type::object: {
+      os << "{ ";
+
+      auto first = true;
+
+      for (const auto& [key, value] : node.as_object()) {
+        if (first) {
+          first = false;
+        } else {
+          os << ", ";
+        }
+
+        os << "\"" << key << "\": " << *value;
+      }
+
+      os << " }";
+
+      break;
+    }
+    case json_node::type::array: {
+      os << "[";
+
+      auto first = true;
+
+      for (const auto& value : node.as_array()) {
+        if (first) {
+          first = false;
+        } else {
+          os << ", ";
+        }
+
+        os << *value;
+      }
+
+      os << "]";
+
+      break;
+    }
+    case json_node::type::string: {
+      os << "\"" << node.as_string() << "\"";
+
+      break;
+    }
+    case json_node::type::number: {
+      os << node.as_number();
+
+      break;
+    }
+    case json_node::type::boolean: {
+      os << node.as_boolean();
+
+      break;
+    }
+    case json_node::type::null: {
+      os << "null";
+
+      break;
+    }
+  }
+
+  return os;
+}
 
 } // namespace demo
 

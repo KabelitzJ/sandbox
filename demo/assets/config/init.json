@@ -1,5 +1,9 @@
 {
-  "main": true,
-  "name": "main",
-  "version": "1.0.0"
+  "values": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ]
 }

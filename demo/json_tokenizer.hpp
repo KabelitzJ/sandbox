@@ -165,15 +165,6 @@ private:
       c = _raw[_cursor];
     }
 
-    // while (_raw[_cursor] != '\"' || _raw[_cursor] != '\'') {
-    //   if (_cursor >= _raw.size()) {
-    //     throw std::runtime_error{"Unexpected end of file"};
-    //   }
-
-    //   buffer << _raw[_cursor];
-    //   _cursor++;
-    // }
-
     ++_cursor; // skip last '"'
 
     return buffer.str();

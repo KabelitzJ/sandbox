@@ -96,20 +96,15 @@ private:
     auto object = std::make_shared<json_object>();
 
     auto is_complete = false;
-    auto node = std::make_shared<json_node>();
 
     while (!is_complete) {
-      if (!_tokenizer.has_more_tokens()) {
-        throw std::runtime_error{"Unexpected end of file"};
+      auto key_token = _tokenizer.next_token();
+
+      if (key_token.type != json_tokenizer::token_type::string) {
+        throw std::runtime_error{"Expected string"};
       }
 
-      auto token = _tokenizer.next_token();
-
-      if (token.type == json_tokenizer::token_type::object_end) {
-        break;
-      }
-
-      auto key = _parse_string(token)->as_string();
+      auto key = _parse_string(key_token)->as_string();
 
       if (_tokenizer.next_token().type != json_tokenizer::token_type::colon) {
         throw std::runtime_error{"Expected colon"};
@@ -119,27 +114,45 @@ private:
 
       switch (value_token.type) {
         case json_tokenizer::token_type::object_begin: {
-          (*object)[key] = _parse_object();
+          auto value = _parse_object();
+
+          object->insert(std::make_pair(key, value));
+
           break;
         }
         case json_tokenizer::token_type::array_begin: {
-          (*object)[key] = _parse_array();
+          auto value = _parse_array();
+
+          object->insert(std::make_pair(key, value));
+
           break;
         }
         case json_tokenizer::token_type::string: {
-          (*object)[key] = _parse_string(value_token);
+          auto value = _parse_string(value_token);
+
+          object->insert(std::make_pair(key, value));
+
           break;
         }
         case json_tokenizer::token_type::number: {
-          (*object)[key] = _parse_number(value_token);
+          auto value = _parse_number(value_token);
+
+          object->insert(std::make_pair(key, value));
+
           break;
         }
         case json_tokenizer::token_type::boolean: {
-          (*object)[key] = _parse_boolean(value_token);
+          auto value = _parse_boolean(value_token);
+
+          object->insert(std::make_pair(key, value));
+
           break;
         }
         case json_tokenizer::token_type::null: {
-          (*object)[key] = _parse_null();
+          auto value = _parse_null();
+
+          object->insert(std::make_pair(key, value));
+
           break;
         }
         default: {
@@ -147,8 +160,14 @@ private:
         }
       }
 
-      if (_tokenizer.next_token().type != json_tokenizer::token_type::comma) {
-        throw std::runtime_error{"Expected comma"};
+      auto end_token = _tokenizer.next_token();
+
+      if (end_token.type == json_tokenizer::token_type::comma) {
+        continue;
+      } else if (end_token.type == json_tokenizer::token_type::object_end) {
+        is_complete = true;
+      } else {
+        throw std::runtime_error{"Unexpected token"}; 
       }
     }
 
@@ -159,7 +178,6 @@ private:
     auto array = std::make_shared<json_array>();
 
     auto is_complete = false;
-    auto node = std::make_shared<json_node>();
 
     while (!is_complete) {
       if (!_tokenizer.has_more_tokens()) {
@@ -170,40 +188,48 @@ private:
 
       switch (token.type) {
         case json_tokenizer::token_type::object_begin: {
-          node = _parse_object();
+          auto value = _parse_object();
+          array->push_back(value);
           break;
         }
         case json_tokenizer::token_type::array_begin: {
-          node = _parse_array();
+          auto value = _parse_array();
+          array->push_back(value);
           break;
         }
         case json_tokenizer::token_type::string: {
-          node = _parse_string(token);
+          auto value = _parse_string(token);
+          array->push_back(value);
           break;
         }
         case json_tokenizer::token_type::number: {
-          node = _parse_number(token);
+          auto value = _parse_number(token);
+          array->push_back(value);
           break;
         }
         case json_tokenizer::token_type::boolean: {
-          node = _parse_boolean(token);
+          auto value = _parse_boolean(token);
+          array->push_back(value);
           break;
         }
         case json_tokenizer::token_type::null: {
-          node = _parse_null();
+          auto value = _parse_null();
+          array->push_back(value);
           break;
         }
         default: {
           throw std::runtime_error("Unexpected token");
         }
+      }
 
-        array->push_back(node);
+      auto end_token = _tokenizer.next_token();
 
-        auto next_token = _tokenizer.next_token();
-
-        if (next_token.type == json_tokenizer::token_type::array_end) {
-          is_complete = true;
-        }
+      if (end_token.type == json_tokenizer::token_type::comma) {
+        continue;
+      } else if (end_token.type == json_tokenizer::token_type::array_end) {
+        is_complete = true;
+      } else {
+        throw std::runtime_error{"Unexpected token"}; 
       }
     }
 
@@ -219,7 +245,8 @@ private:
   }
 
   std::shared_ptr<json_node> _parse_boolean(const json_tokenizer::token& token) {
-    return std::make_shared<json_node>(token.value.value() == "true");
+    const auto value = bool{token.value.value() == "true"};
+    return std::make_shared<json_node>(value);
   }
 
   std::shared_ptr<json_node> _parse_null() {
