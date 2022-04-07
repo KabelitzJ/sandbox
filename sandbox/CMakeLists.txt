@@ -12,6 +12,7 @@ set(
     io
     container
     ecs
+    async
     core
 )
 

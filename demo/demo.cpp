@@ -13,6 +13,7 @@
 #include <container/container.hpp>
 #include <memory/memory.hpp>
 #include <ecs/ecs.hpp>
+#include <async/async.hpp>
 
 #include "json_node.hpp"
 #include "json_tokenizer.hpp"
@@ -28,21 +29,29 @@ int main() {
 
   std::cout << "Hello, Sandbox!" << std::endl;
 
-  auto p = demo::json_parser{"demo/assets/config/init.json"};
+  // auto p = demo::json_parser{"demo/assets/config/init.json"};
 
-  p.parse();
+  // p.parse();
 
-  std::cout << *p.root() << std::endl;
+  // std::cout << *p.root() << std::endl;
 
-  auto values = p.root()->as_array();
+  // auto values = p.root()->as_array();
 
-  auto c = sbx::float32{0};
+  // auto c = sbx::float32{0};
 
-  for (const auto& value : values) {
-    c += value->as_number();
-  }
+  // for (const auto& value : values) {
+  //   c += value->as_number();
+  // }
 
-  std::cout << c << std::endl;
+  // std::cout << c << std::endl;
+
+  auto p = sbx::thread_pool{};
+
+  auto f1 = p.enqueue([](){
+    return 42;
+  });
+
+  std::cout << f1.get() << std::endl;
   
   return EXIT_SUCCESS;
 }
