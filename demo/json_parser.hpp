@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <string>
+#include <filesystem>
 
 #include "json_node.hpp"
 #include "json_tokenizer.hpp"
@@ -13,18 +14,15 @@ class json_parser {
 
 public:
 
-  json_parser(const std::string& file_path)
-  : _tokenizer{file_path},
-    _current{},
-    _root{} { }
+  json_parser(const std::filesystem::path& path)
+  : _tokenizer{path},
+    _current{} { }
 
   ~json_parser() = default;
 
-  std::shared_ptr<json_node> root() {
-    return _root;
-  }
+  std::shared_ptr<json_node> parse() {
+    auto root = std::shared_ptr<json_node>{};
 
-  void parse() {
     while (_tokenizer.has_more_tokens()) {
       auto token = _tokenizer.next_token();
 
@@ -32,8 +30,8 @@ public:
         case json_tokenizer::token_type::object_begin: {
           auto object = _parse_object();
 
-          if (!_root) {
-            _root = object;
+          if (!root) {
+            root = object;
           }
 
           break;
@@ -41,8 +39,8 @@ public:
         case json_tokenizer::token_type::array_begin: {
           auto array = _parse_array();
 
-          if (!_root) {
-            _root = array;
+          if (!root) {
+            root = array;
           }
 
           break;
@@ -50,8 +48,8 @@ public:
         case json_tokenizer::token_type::string: {
           auto string = _parse_string(token);
 
-          if (!_root) {
-            _root = string;
+          if (!root) {
+            root = string;
           }
 
           break;
@@ -59,8 +57,8 @@ public:
         case json_tokenizer::token_type::number: {
           auto number = _parse_number(token);
 
-          if (!_root) {
-            _root = number;
+          if (!root) {
+            root = number;
           }
 
           break;
@@ -68,8 +66,8 @@ public:
         case json_tokenizer::token_type::boolean: {
           auto boolean = _parse_boolean(token);
 
-          if (!_root) {
-            _root = boolean;
+          if (!root) {
+            root = boolean;
           }
 
           break;
@@ -77,8 +75,8 @@ public:
         case json_tokenizer::token_type::null: {
           auto null = _parse_null();
 
-          if (!_root) {
-            _root = null;
+          if (!root) {
+            root = null;
           }
 
           break;
@@ -88,6 +86,8 @@ public:
         }
       }
     }
+
+    return root;
   }
 
 private:
@@ -255,7 +255,6 @@ private:
 
   json_tokenizer _tokenizer;
   std::shared_ptr<json_node> _current{};
-  std::shared_ptr<json_node> _root{};
 
 }; // class json_parser
 

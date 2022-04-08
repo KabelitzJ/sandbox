@@ -7,6 +7,7 @@
 #include <mutex>
 #include <atomic>
 #include <future>
+#include <filesystem>
 
 #include <math/math.hpp>
 #include <types/types.hpp>
@@ -19,6 +20,7 @@
 #include "json_node.hpp"
 #include "json_tokenizer.hpp"
 #include "json_parser.hpp"
+#include "json_document.hpp"
 
 struct transform {
   sbx::vector3 position{};
@@ -30,15 +32,21 @@ int main() {
 
   std::cout << "Hello, Sandbox!" << std::endl;
 
-  auto p = demo::json_parser{"demo/assets/config/init.json"};
+  auto document = demo::json_document{"demo/assets/config/init.json"};
 
-  p.parse();
+  const auto& name = document["name"].as_string();
 
-  // std::cout << *p.root() << std::endl;
+  std::cout << "Name: " << name << std::endl;
 
-  auto first_name = p.root()->as_object()["name"]->as_object()["first"]->as_string();
+  const auto& window = document["window"];
 
-  std::cout << first_name << std::endl;
+  const auto& resolution = window["resolution"];
+
+  const auto& width = resolution["width"].as_number();
+  const auto& height = resolution["height"].as_number();
+
+  std::cout << "Width: " << width << std::endl;
+  std::cout << "Height: " << height << std::endl;
   
   return EXIT_SUCCESS;
 }

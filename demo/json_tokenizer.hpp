@@ -5,6 +5,7 @@
 #include <fstream>
 #include <sstream>
 #include <optional>
+#include <filesystem>
 
 #include <types/primitives.hpp>
 
@@ -34,10 +35,10 @@ public:
     std::optional<std::string> value{};
   }; // struct token
 
-  json_tokenizer(const std::string& file_path)
+  json_tokenizer(const std::filesystem::path& path)
   : _raw{},
     _cursor{0} {  
-    _read_file(file_path);
+    _read_file(path);
   }
 
   ~json_tokenizer() = default;
@@ -124,11 +125,11 @@ public:
 
 private:
 
-  void _read_file(const std::string& file_path) {
-    auto file_stream = std::ifstream{file_path};
+  void _read_file(const std::filesystem::path& path) {
+    auto file_stream = std::ifstream{path};
 
     if (!file_stream.is_open()) {
-      throw std::runtime_error{"Failed to open file: " + file_path};
+      throw std::runtime_error{"Failed to open file: " + path.string()};
     }
 
     auto line = std::string{};

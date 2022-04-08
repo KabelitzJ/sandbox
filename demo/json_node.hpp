@@ -23,6 +23,8 @@ class json_node {
 
 public:
 
+  using size_type = std::size_t;
+
   json_node()
   : _value{},
     _type{type::null} { }
@@ -71,6 +73,42 @@ public:
 
   bool is_null() const noexcept {
     return _type == type::null;
+  }
+
+  const demo::json_node& operator[](const std::string& key) const {
+    if (!is_object()) {
+      throw std::runtime_error{"Cannot access object member"};
+    }
+
+    auto& object = as_object();
+
+    if (auto itr = object.find(key); itr != object.cend()) {
+      return *itr->second;
+    } else {
+      throw std::runtime_error{"Object does not contain key"};
+    }
+  }
+
+  demo::json_node& operator[](const std::string& key) {
+    return const_cast<demo::json_node&>(std::as_const(*this)[key]);
+  }
+
+  const demo::json_node& operator[](const demo::json_node::size_type index) const {
+    if (!is_array()) {
+      throw std::runtime_error{"Cannot access array member"};
+    }
+
+    auto& array = as_array();
+
+    if (index >= array.size()) {
+      throw std::runtime_error{"Array does not contain index"};
+    }
+
+    return *array[index];
+  }
+
+  demo::json_node& operator[](const demo::json_node::size_type index) {
+    return const_cast<demo::json_node&>(std::as_const(*this)[index]);
   }
 
   json_object& as_object() {
