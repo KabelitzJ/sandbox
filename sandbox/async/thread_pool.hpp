@@ -41,7 +41,9 @@ public:
   template<typename Function, typename... Args>
   requires (std::is_invocable_v<Function, Args...>)
   std::future<std::invoke_result_t<Function, Args...>> enqueue(Function&& function, Args&&... args) {
-    auto promise = std::make_shared<std::promise<std::invoke_result_t<Function, Args...>>>();
+    using return_type = std::invoke_result_t<Function, Args...>;
+
+    auto promise = std::make_shared<std::promise<return_type>>();
     auto future = promise->get_future();
 
     {
@@ -49,7 +51,7 @@ public:
 
       _tasks.emplace([promise, function = std::forward<Function>(function), ...args = std::forward<Args>(args)](){
         try {
-          if constexpr (std::is_void_v<std::invoke_result_t<Function, Args...>>) {
+          if constexpr (std::is_void_v<return_type>) {
             std::invoke(function, std::forward<Args>(args)...);
             promise->set_value();
           } else {

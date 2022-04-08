@@ -8,7 +8,7 @@
 namespace sbx {
 
 template<typename Type>
-concept arithmetic = std::is_arithmetic_v<Type>;
+concept arithmetic = std::is_arithmetic_v<Type> && !std::is_same_v<Type, bool>;
 
 template<typename OutputStream, typename Type>
 concept output_stream = requires (OutputStream& os, const Type& value) {

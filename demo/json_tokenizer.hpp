@@ -173,13 +173,17 @@ private:
   std::string _read_number() {
     auto buffer = std::stringstream{};
 
-    while (_raw[_cursor] != ' ' || _raw[_cursor] != '\n') {
+    auto character = _raw[_cursor];
+
+    while (character != ' ' && character != '\n' && character != ',' && character != ']') {
       if (_cursor >= _raw.size()) {
         throw std::runtime_error{"Unexpected end of file"};
       }
 
-      buffer << _raw[_cursor];
-      _cursor++;
+      buffer << character;
+
+      ++_cursor;
+      character = _raw[_cursor];
     }
 
     return buffer.str();
