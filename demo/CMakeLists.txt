@@ -1,5 +1,8 @@
 project(demo CXX)
 
+find_package(Vulkan REQUIRED FATAL_ERROR)
+find_package(glfw3 REQUIRED FATAL_ERROR)
+
 add_executable(${PROJECT_NAME})
 
 target_sources(
@@ -12,6 +15,8 @@ target_link_libraries(
   ${PROJECT_NAME}
   PUBLIC
     sbx::sbx
+    Vulkan::Vulkan
+    glfw::glfw
 )
 
 target_compile_features(
