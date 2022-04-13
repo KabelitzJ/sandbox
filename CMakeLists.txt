@@ -1,18 +1,28 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.23 FATAL_ERROR)
 
 if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE Release)
+  set(CMAKE_BUILD_TYPE "Release")
 endif()
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_BINARY_DIR}/conan" "${CMAKE_SOURCE_DIR}/cmake/modules")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_BINARY_DIR}/conan" "${PROJECT_SOURCE_DIR}/cmake/modules")
 list(APPEND CMAKE_PREFIX_PATH "${CMAKE_BINARY_DIR}")
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-project(sbx CXX)
+project(
+  sbx
+  VERSION 0.0.1
+  LANGUAGES CXX
+)
 
-# Build main library
+include(GNUInstallDirs)
+include(CMakePackageConfigHelpers)
+
+# Build library
 add_subdirectory(sandbox)
+
+# Install library
+# TODO: Add install target
 
 # Build demo project
 option(SBX_BUILD_DEMO "Enable building the demo project." ON)

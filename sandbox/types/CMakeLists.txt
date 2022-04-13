@@ -2,10 +2,21 @@ project(types CXX)
 
 add_library(${PROJECT_NAME} INTERFACE)
 
+target_sources(
+  ${PROJECT_NAME}
+  INTERFACE
+    FILE_SET HEADERS 
+    BASE_DIRS ${PROJECT_SOURCE_DIR}/..
+    FILES 
+      primitives.hpp
+      types.hpp
+)
+
 target_include_directories(
   ${PROJECT_NAME}
   INTERFACE
-    "${CMAKE_CURRENT_SOURCE_DIR}/.."
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/..>
+    $<INSTALL_INTERFACE:include/${CMAKE_PROJECT_NAME}>
 )
 
 target_compile_features(
@@ -42,7 +53,26 @@ target_compile_options(
 set_target_properties(
   ${PROJECT_NAME}
   PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/$<$<CONFIG:Debug>:debug>$<$<CONFIG:Release>:release>"
-    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib/$<$<CONFIG:Debug>:debug>$<$<CONFIG:Release>:release>"
-    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib/$<$<CONFIG:Debug>:debug>$<$<CONFIG:Release>:release>"
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<$<CONFIG:Debug>:debug>$<$<CONFIG:Release>:release>/bin/"
+    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<$<CONFIG:Debug>:debug>$<$<CONFIG:Release>:release>/lib/"
+    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<$<CONFIG:Debug>:debug>$<$<CONFIG:Release>:release>/lib/"
+)
+
+install(
+  TARGETS ${PROJECT_NAME}
+  EXPORT ${CMAKE_PROJECT_NAME}_${PROJECT_NAME}_export
+  FILE_SET HEADERS
+    DESTINATION "include/${CMAKE_PROJECT_NAME}"
+  RUNTIME
+    DESTINATION "bin"
+  LIBRARY
+    DESTINATION "lib"
+  ARCHIVE
+    DESTINATION "lib"
+)
+
+install(
+  EXPORT ${CMAKE_PROJECT_NAME}_${PROJECT_NAME}_export
+  DESTINATION "cmake"
+  NAMESPACE ${PROJECT_NAME}::
 )

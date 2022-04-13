@@ -2,7 +2,7 @@ add_library(${CMAKE_PROJECT_NAME} INTERFACE)
 add_library(${CMAKE_PROJECT_NAME}::${CMAKE_PROJECT_NAME} ALIAS ${CMAKE_PROJECT_NAME})
 
 set(
-  SBX_MODULES
+  _MODULES
     platform
     meta
     types
@@ -16,7 +16,7 @@ set(
     core
 )
 
-foreach(module ${SBX_MODULES})
+foreach(module ${_MODULES})
   add_subdirectory(${module})
 
   add_library(${CMAKE_PROJECT_NAME}::${module} ALIAS ${module})
@@ -24,6 +24,6 @@ foreach(module ${SBX_MODULES})
   target_link_libraries(
     ${CMAKE_PROJECT_NAME}
     INTERFACE
-    ${CMAKE_PROJECT_NAME}::${module}
+      ${CMAKE_PROJECT_NAME}::${module}
   )
 endforeach()
