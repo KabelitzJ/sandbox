@@ -63,7 +63,7 @@ function(compile_shader _TARGET _SHADER)
 
   get_filename_component(_SHADER_NAME ${_SHADER} NAME)
 
-  message(STATUS "Compiling ${_SHADER_NAME}...")
+  message(STATUS "Compiling shader \'${_SHADER_NAME}\'")
 
   file(GLOB _SHADER_FILES ${_SHADER}/*.glsl)
   
@@ -75,7 +75,7 @@ function(compile_shader _TARGET _SHADER)
     make_directory(${_OUTPUT_DIR})
   endif()
 
-  set(_SHADER_TYPES "vertex;fragment")
+  set(_SHADER_TYPES "vertex;fragment;geometry;tess_control;tess_evaluation;compute")
 
   foreach(_FILE IN ITEMS ${_SHADER_FILES})
     get_filename_component(_FILE_EXTENTION ${_FILE} LAST_EXT)

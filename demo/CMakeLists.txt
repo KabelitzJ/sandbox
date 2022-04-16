@@ -59,6 +59,12 @@ target_compile_options(
     >
 )
 
+target_compile_definitions(
+  ${PROJECT_NAME}
+  PRIVATE
+    GLFW_INCLUDE_VULKAN
+)
+
 set_target_properties(
   ${PROJECT_NAME}
   PROPERTIES
