@@ -1,5 +1,5 @@
-#ifndef DEMO_JSON_TOKENIZER_HPP_
-#define DEMO_JSON_TOKENIZER_HPP_
+#ifndef SBX_IO_JSON_TOKENIZER_HPP_
+#define SBX_IO_JSON_TOKENIZER_HPP_
 
 #include <string>
 #include <fstream>
@@ -11,7 +11,7 @@
 
 #include "json_node.hpp"
 
-namespace demo {
+namespace sbx {
 
 class json_tokenizer {
 
@@ -195,6 +195,6 @@ private:
 
 }; // class json_parser
 
-} // namespace demo
+} // namespace sbx
 
-#endif // DEMO_JSON_TOKENIZER_HPP_
+#endif // SBX_IO_JSON_TOKENIZER_HPP_

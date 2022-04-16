@@ -23,11 +23,6 @@
 
 #include <GLFW/glfw3.h>
 
-#include "json_node.hpp"
-#include "json_tokenizer.hpp"
-#include "json_parser.hpp"
-#include "json_document.hpp"
-
 struct transform {
   sbx::vector3 position{};
   sbx::vector3 scale{};

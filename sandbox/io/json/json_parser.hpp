@@ -1,5 +1,5 @@
-#ifndef DEMO_JSON_PARSER_HPP_
-#define DEMO_JSON_PARSER_HPP_
+#ifndef SBX_IO_JSON_PARSER_HPP_
+#define SBX_IO_JSON_PARSER_HPP_
 
 #include <memory>
 #include <string>
@@ -8,7 +8,7 @@
 #include "json_node.hpp"
 #include "json_tokenizer.hpp"
 
-namespace demo {
+namespace sbx {
 
 class json_parser {
 
@@ -258,6 +258,6 @@ private:
 
 }; // class json_parser
 
-} // namespace demo
+} // namespace sbx
 
-#endif // DEMO_JSON_PARSER_HPP_
+#endif // SBX_IO_JSON_PARSER_HPP_

@@ -1,5 +1,5 @@
-#ifndef DEMO_JSON_NODE_HPP_
-#define DEMO_JSON_NODE_HPP_
+#ifndef SBX_IO_JSON_NODE_HPP_
+#define SBX_IO_JSON_NODE_HPP_
 
 #include <memory>
 #include <variant>
@@ -10,7 +10,7 @@
 
 #include <types/primitives.hpp>
 
-namespace demo {
+namespace sbx {
 
 class json_node;
 
@@ -75,7 +75,7 @@ public:
     return _type == type::null;
   }
 
-  const demo::json_node& operator[](const std::string& key) const {
+  const json_node& operator[](const std::string& key) const {
     if (!is_object()) {
       throw std::runtime_error{"Cannot access object member"};
     }
@@ -89,11 +89,11 @@ public:
     }
   }
 
-  demo::json_node& operator[](const std::string& key) {
-    return const_cast<demo::json_node&>(std::as_const(*this)[key]);
+  json_node& operator[](const std::string& key) {
+    return const_cast<json_node&>(std::as_const(*this)[key]);
   }
 
-  const demo::json_node& operator[](const demo::json_node::size_type index) const {
+  const json_node& operator[](const json_node::size_type index) const {
     if (!is_array()) {
       throw std::runtime_error{"Cannot access array member"};
     }
@@ -107,8 +107,8 @@ public:
     return *array[index];
   }
 
-  demo::json_node& operator[](const demo::json_node::size_type index) {
-    return const_cast<demo::json_node&>(std::as_const(*this)[index]);
+  json_node& operator[](const json_node::size_type index) {
+    return const_cast<json_node&>(std::as_const(*this)[index]);
   }
 
   json_object& as_object() {
@@ -272,6 +272,6 @@ std::ostream& operator<<(std::ostream& os, const json_node& node) {
   return os;
 }
 
-} // namespace demo
+} // namespace sbx
 
-#endif // DEMO_JSON_NODE_HPP_
+#endif // SBX_IO_JSON_NODE_HPP_
