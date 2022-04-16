@@ -1,9 +1,18 @@
+include(compile_shader)
+
+message(STATUS "${CMAKE_MODULE_PATH}")
+
 project(demo CXX)
 
 find_package(Vulkan REQUIRED FATAL_ERROR)
 find_package(glfw3 REQUIRED FATAL_ERROR)
 
 add_executable(${PROJECT_NAME})
+
+compile_shader(
+  ${PROJECT_NAME}
+  ${CMAKE_CURRENT_SOURCE_DIR}/assets/shaders/basic
+)
 
 target_sources(
   ${PROJECT_NAME}

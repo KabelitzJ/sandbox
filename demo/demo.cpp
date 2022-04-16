@@ -100,6 +100,10 @@ private:
       throw std::runtime_error("failed to create instance!");
     }
 
+    _print_available_extentions();
+  }
+
+  void _print_available_extentions() {
     auto extension_count = sbx::uint32{};
 
     vkEnumerateInstanceExtensionProperties(nullptr, &extension_count, nullptr);
