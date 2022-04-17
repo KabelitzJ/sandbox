@@ -2,10 +2,28 @@ project(io CXX)
 
 add_library(${PROJECT_NAME} INTERFACE)
 
+target_sources(
+  ${PROJECT_NAME}
+  PRIVATE
+  PUBLIC
+    FILE_SET HEADERS 
+    BASE_DIRS ${PROJECT_SOURCE_DIR}/..
+    FILES 
+      file_reader.hpp
+      io.hpp
+      json/json_document.hpp
+      json/json_node.hpp
+      json/json_parser.hpp
+      json/json_serializer.hpp
+      json/json_tokenizer.hpp
+      json/json.hpp
+)
+
 target_include_directories(
   ${PROJECT_NAME}
   INTERFACE
-    "${CMAKE_CURRENT_SOURCE_DIR}/.."
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/..>
+    $<INSTALL_INTERFACE:include/${CMAKE_PROJECT_NAME}>
 )
 
 target_link_libraries(
@@ -55,4 +73,23 @@ set_target_properties(
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<$<CONFIG:Debug>:debug>$<$<CONFIG:Release>:release>/bin/"
     LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<$<CONFIG:Debug>:debug>$<$<CONFIG:Release>:release>/lib/"
     ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<$<CONFIG:Debug>:debug>$<$<CONFIG:Release>:release>/lib/"
+)
+
+install(
+  TARGETS ${PROJECT_NAME}
+  EXPORT ${CMAKE_PROJECT_NAME}_${PROJECT_NAME}_export
+  FILE_SET HEADERS
+    DESTINATION "include/${CMAKE_PROJECT_NAME}"
+  RUNTIME
+    DESTINATION "bin"
+  LIBRARY
+    DESTINATION "lib"
+  ARCHIVE
+    DESTINATION "lib"
+)
+
+install(
+  EXPORT ${CMAKE_PROJECT_NAME}_${PROJECT_NAME}_export
+  DESTINATION "cmake"
+  NAMESPACE ${PROJECT_NAME}::
 )

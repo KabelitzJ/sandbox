@@ -103,5 +103,5 @@ function(compile_shader _TARGET _SHADER)
     list(APPEND _OUTPUT_FILES ${_OUTPUT_FILE})
   endforeach()
 
-  add_custom_target(${_SHADER_NAME} ALL DEPENDS ${_OUTPUT_FILES})
+  add_custom_target(${_SHADER_NAME}_shader ALL DEPENDS ${_OUTPUT_FILES})
 endfunction()

@@ -18,6 +18,21 @@ target_sources(
   ${PROJECT_NAME}
   PRIVATE
     demo.cpp
+  PUBLIC
+    FILE_SET HEADERS 
+    BASE_DIRS ${PROJECT_SOURCE_DIR}/..
+    FILES 
+      window.hpp
+      application.hpp
+      pipeline.hpp
+      device.hpp
+)
+
+target_include_directories(
+  ${PROJECT_NAME}
+  PUBLIC
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/..>
+    $<INSTALL_INTERFACE:include/${CMAKE_PROJECT_NAME}>
 )
 
 target_link_libraries(
