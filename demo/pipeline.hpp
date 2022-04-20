@@ -33,8 +33,6 @@ private:
       throw std::runtime_error{"Shader has not been compiled: " + path.string()};
     }
 
-    auto shader_set = std::unordered_set<std::string>{};
-
     for (const auto& entry : std::filesystem::directory_iterator{shader_binary_path}) {
       if (!entry.is_regular_file()) {
         continue;
@@ -43,8 +41,6 @@ private:
       if (!entry.path().has_extension() || entry.path().extension() != ".spv") {
         continue;
       }
-
-      shader_set.insert(entry.path().stem().string());
 
       std::cout << "Loading shader: " <<  entry.path().stem().string() << std::endl;
 

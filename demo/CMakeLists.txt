@@ -14,6 +14,14 @@ compile_shader(
   ${CMAKE_CURRENT_SOURCE_DIR}/assets/shaders/basic
 )
 
+add_dependencies(
+  ${PROJECT_NAME}
+  sbx::sbx
+  Vulkan::Vulkan
+  glfw::glfw
+  basic_shader
+)
+
 target_sources(
   ${PROJECT_NAME}
   PRIVATE
