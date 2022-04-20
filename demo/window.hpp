@@ -23,11 +23,15 @@ public:
 
   window(const window& other) = delete;
 
+  window(window&& other) noexcept = delete;
+
   ~window() {
     _terminate_glfw();
   }
 
   window& operator=(const window& other) = delete;
+
+  window& operator=(window&& other) noexcept = delete;
 
   bool should_close() const {
     return glfwWindowShouldClose(_handle);

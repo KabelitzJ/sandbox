@@ -15,8 +15,12 @@ public:
 
   device(window& window, const std::string& name)
   : _window(window),
-    _instance{VK_NULL_HANDLE} {
+    _instance{VK_NULL_HANDLE},
+    _physical_device{VK_NULL_HANDLE},
+    _logical_device{VK_NULL_HANDLE} {
     _create_instance(name);
+    _create_physical_device();
+    _create_logical_device();
   }
 
   device(const device& other) = delete;
@@ -34,27 +38,44 @@ public:
 private:
 
   void _create_instance(const std::string& name) {
-    auto app_info = VkApplicationInfo{};
-    app_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-    app_info.pApplicationName = name.c_str();
-    app_info.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-    app_info.pEngineName = "Sandbox";
-    app_info.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-    app_info.apiVersion = VK_API_VERSION_1_0;
+    const auto app_info = VkApplicationInfo{
+      .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
+      .pNext = nullptr,
+      .pApplicationName = name.c_str(),
+      .applicationVersion = VK_MAKE_VERSION(1, 0, 0),
+      .pEngineName = "No Engine",
+      .engineVersion = VK_MAKE_VERSION(1, 0, 0),
+      .apiVersion = VK_API_VERSION_1_0
+    };
 
-    auto create_info = VkInstanceCreateInfo{};
-    create_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-    create_info.pApplicationInfo = &app_info;
-    create_info.enabledExtensionCount = 0;
-    create_info.ppEnabledExtensionNames = nullptr;
+    const auto create_info = VkInstanceCreateInfo{
+      .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
+      .pNext = nullptr,
+      .flags = 0,
+      .pApplicationInfo = &app_info,
+      .enabledLayerCount = 0,
+      .ppEnabledLayerNames = nullptr,
+      .enabledExtensionCount = 0,
+      .ppEnabledExtensionNames = nullptr,
+    };
 
     if (vkCreateInstance(&create_info, nullptr, &_instance) != VK_SUCCESS) {
-      throw std::runtime_error("Failed to create instance!");
+      throw std::runtime_error("Failed to create vulkan instance!");
     }
   }
 
+  void _create_physical_device() {
+
+  }
+
+  void _create_logical_device() {
+
+  }
+
   window& _window;
-  VkInstance _instance{};
+  VkInstance _instance{VK_NULL_HANDLE};
+  VkPhysicalDevice _physical_device{VK_NULL_HANDLE};
+  VkDevice _logical_device{VK_NULL_HANDLE};
 
 }; // class device
 

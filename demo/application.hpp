@@ -13,8 +13,8 @@ class application {
 
 public:
 
-  inline static constexpr auto width = sbx::int32{800};
-  inline static constexpr auto height = sbx::int32{600};
+  inline static constexpr auto width = sbx::int32{960};
+  inline static constexpr auto height = sbx::int32{720};
 
   application(const std::string& name)
   : _window{name, width, height},
