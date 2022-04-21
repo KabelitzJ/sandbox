@@ -2,10 +2,12 @@
 #define DEMO_APPLICATION_HPP_
 
 #include <string>
+#include <memory>
 
 #include "window.hpp"
 #include "device.hpp"
 #include "pipeline.hpp"
+#include "logger.hpp"
 
 namespace demo {
 
@@ -17,7 +19,8 @@ public:
   inline static constexpr auto height = sbx::int32{720};
 
   application(const std::string& name)
-  : _window{name, width, height},
+  : _logger{std::make_unique<logger>()},
+    _window{name, width, height},
     _device{_window, name},
     _pipeline{"demo/assets/shaders/basic"} { }
 
@@ -30,6 +33,8 @@ public:
   }
 
 private:
+
+  std::unique_ptr<logger> _logger{};
 
   window _window;
   device _device;

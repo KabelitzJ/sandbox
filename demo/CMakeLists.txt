@@ -4,8 +4,9 @@ message(STATUS "${CMAKE_MODULE_PATH}")
 
 project(demo CXX)
 
-find_package(Vulkan REQUIRED FATAL_ERROR)
-find_package(glfw3 REQUIRED FATAL_ERROR)
+find_package(Vulkan REQUIRED)
+find_package(glfw3 REQUIRED)
+find_package(spdlog REQUIRED)
 
 add_executable(${PROJECT_NAME})
 
@@ -19,6 +20,7 @@ add_dependencies(
   sbx::sbx
   Vulkan::Vulkan
   glfw::glfw
+  spdlog::spdlog
   basic_shader
 )
 
@@ -30,8 +32,9 @@ target_sources(
     FILE_SET HEADERS 
     BASE_DIRS ${PROJECT_SOURCE_DIR}/..
     FILES 
-      window.hpp
       application.hpp
+      logger.hpp
+      window.hpp
       pipeline.hpp
       device.hpp
 )
@@ -49,6 +52,7 @@ target_link_libraries(
     sbx::sbx
     Vulkan::Vulkan
     glfw::glfw
+    spdlog::spdlog
 )
 
 target_compile_features(
