@@ -6,6 +6,7 @@
 #include <GLFW/glfw3.h>
 
 #include "window.hpp"
+#include "logger.hpp"
 
 namespace demo {
 
@@ -13,11 +14,12 @@ class device {
 
 public:
 
-  device(window& window, const std::string& name)
+  device(window& window, const std::string& name, logger* logger)
   : _window(window),
     _instance{VK_NULL_HANDLE},
     _physical_device{VK_NULL_HANDLE},
-    _logical_device{VK_NULL_HANDLE} {
+    _logical_device{VK_NULL_HANDLE},
+    _logger{logger} {
     _create_instance(name);
     _create_physical_device();
     _create_logical_device();
@@ -76,6 +78,8 @@ private:
   VkInstance _instance{VK_NULL_HANDLE};
   VkPhysicalDevice _physical_device{VK_NULL_HANDLE};
   VkDevice _logical_device{VK_NULL_HANDLE};
+
+  logger* _logger{};
 
 }; // class device
 

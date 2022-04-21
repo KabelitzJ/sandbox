@@ -13,7 +13,7 @@
 #include "application.hpp"
 
 int main() {
-  auto document = sbx::json_document{"demo/config/init.json"};
+  auto document = sbx::json_document{"demo/config/app.json"};
 
   const auto& name = document["name"].as_string();
 

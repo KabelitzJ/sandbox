@@ -4,8 +4,8 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE "Release")
 endif()
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_BINARY_DIR}/conan" "${CMAKE_SOURCE_DIR}/cmake/modules")
-list(APPEND CMAKE_PREFIX_PATH "${CMAKE_BINARY_DIR}/conan")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_BINARY_DIR}/extern" "${CMAKE_SOURCE_DIR}/cmake" "${CMAKE_SOURCE_DIR}/cmake/modules")
+list(APPEND CMAKE_PREFIX_PATH "${CMAKE_BINARY_DIR}/extern")
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -17,6 +17,8 @@ project(
 
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
+
+add_subdirectory(extern)
 
 # Build library
 add_subdirectory(sandbox)

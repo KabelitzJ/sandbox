@@ -1,11 +1,9 @@
 include(compile_shader)
 
-message(STATUS "${CMAKE_MODULE_PATH}")
-
 project(demo CXX)
 
 find_package(Vulkan REQUIRED)
-find_package(glfw3 REQUIRED)
+find_package(glfw REQUIRED)
 find_package(spdlog REQUIRED)
 
 add_executable(${PROJECT_NAME})
@@ -19,8 +17,8 @@ add_dependencies(
   ${PROJECT_NAME}
   sbx::sbx
   Vulkan::Vulkan
-  glfw::glfw
-  spdlog::spdlog
+  glfw
+  spdlog
   basic_shader
 )
 
@@ -51,8 +49,8 @@ target_link_libraries(
   PUBLIC
     sbx::sbx
     Vulkan::Vulkan
-    glfw::glfw
-    spdlog::spdlog
+    glfw
+    spdlog
 )
 
 target_compile_features(

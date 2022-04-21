@@ -20,9 +20,9 @@ public:
 
   application(const std::string& name)
   : _logger{std::make_unique<logger>()},
-    _window{name, width, height},
-    _device{_window, name},
-    _pipeline{"demo/assets/shaders/basic"} { }
+    _window{name, width, height, _logger.get()},
+    _device{_window, name, _logger.get()},
+    _pipeline{"demo/assets/shaders/basic", _logger.get()} { }
 
   ~application() = default;
 

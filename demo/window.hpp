@@ -7,17 +7,20 @@
 
 #include <types/primitives.hpp>
 
+#include "logger.hpp"
+
 namespace demo {
 
 class window {
 
 public:
 
-  window(const std::string& title, const sbx::int32 width, const sbx::int32 height)
+  window(const std::string& title, const sbx::int32 width, const sbx::int32 height, logger* logger)
   : _title{title},
     _width{width},
     _height{height},
-    _handle{nullptr} {
+    _handle{nullptr},
+    _logger{logger} {
     _initialize_glfw();
   }
 
@@ -61,6 +64,8 @@ private:
   sbx::int32 _width{};
   sbx::int32 _height{};
   GLFWwindow* _handle{};
+
+  logger* _logger{};
 
 }; // class window
 

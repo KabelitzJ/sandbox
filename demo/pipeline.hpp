@@ -7,13 +7,16 @@
 
 #include <io/file_reader.hpp>
 
+#include "logger.hpp"
+
 namespace demo {
 
 class pipeline {
 
 public:
 
-  pipeline(const std::filesystem::path& path) {
+  pipeline(const std::filesystem::path& path, logger* logger)
+  : _logger{logger} {
     const auto absolute_path = std::filesystem::absolute(path);
     _initialize_shaders(absolute_path);
   }
@@ -42,11 +45,13 @@ private:
         continue;
       }
 
-      std::cout << "Loading shader: " <<  entry.path().stem().string() << std::endl;
+      _logger->debug("Loading shader: {0}", entry.path().string());
 
       // const auto shader_source = sbx::get_file_contents(entry.path());
     }
   }
+
+  logger* _logger{};
 
 }; // class pipeline
 
