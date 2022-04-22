@@ -3,8 +3,6 @@ include(compile_shader)
 project(demo CXX)
 
 find_package(Vulkan REQUIRED)
-find_package(glfw REQUIRED)
-find_package(spdlog REQUIRED)
 
 add_executable(${PROJECT_NAME})
 

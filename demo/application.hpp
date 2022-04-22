@@ -8,6 +8,7 @@
 #include "device.hpp"
 #include "pipeline.hpp"
 #include "logger.hpp"
+#include "configuration.hpp"
 
 namespace demo {
 
@@ -18,27 +19,28 @@ public:
   inline static constexpr auto width = sbx::int32{960};
   inline static constexpr auto height = sbx::int32{720};
 
-  application(const std::string& name)
+  application(const std::filesystem::path& config_path)
   : _logger{std::make_unique<logger>()},
-    _window{name, width, height, _logger.get()},
-    _device{_window, name, _logger.get()},
-    _pipeline{"demo/assets/shaders/basic", _logger.get()} { }
+    _configuration{std::make_unique<configuration>(config_path, _logger.get())},
+    _window{std::make_unique<window>(_logger.get(), _configuration.get())},
+    _device{std::make_unique<device>(_logger.get(), _configuration.get(), _window.get())},
+    _pipeline{std::make_unique<pipeline>("demo/assets/shaders/basic", _logger.get())} { }
 
   ~application() = default;
 
   void run() {
-    while (!_window.should_close()) {
-      _window.poll_events();
+    while (!_window->should_close()) {
+      _window->poll_events();
     }
   }
 
 private:
 
   std::unique_ptr<logger> _logger{};
-
-  window _window;
-  device _device;
-  pipeline _pipeline;
+  std::unique_ptr<configuration> _configuration{};
+  std::unique_ptr<window> _window{};
+  std::unique_ptr<device> _device{};
+  std::unique_ptr<pipeline> _pipeline{};
 
 }; // class application
 

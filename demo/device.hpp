@@ -5,6 +5,8 @@
 
 #include <GLFW/glfw3.h>
 
+#include "validation_layers.hpp"
+#include "configuration.hpp"
 #include "window.hpp"
 #include "logger.hpp"
 
@@ -14,13 +16,14 @@ class device {
 
 public:
 
-  device(window& window, const std::string& name, logger* logger)
-  : _window(window),
+  device(logger* logger, configuration* configuration, window* window)
+  : _logger{logger},
+    _configuration{configuration},
+    _window{window},
     _instance{VK_NULL_HANDLE},
     _physical_device{VK_NULL_HANDLE},
-    _logical_device{VK_NULL_HANDLE},
-    _logger{logger} {
-    _create_instance(name);
+    _logical_device{VK_NULL_HANDLE} {
+    _create_instance();
     _create_physical_device();
     _create_logical_device();
   }
@@ -39,14 +42,18 @@ public:
 
 private:
 
-  void _create_instance(const std::string& name) {
+  void _create_instance() {
     const auto app_info = VkApplicationInfo{
       .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
       .pNext = nullptr,
-      .pApplicationName = name.c_str(),
-      .applicationVersion = VK_MAKE_VERSION(1, 0, 0),
-      .pEngineName = "No Engine",
-      .engineVersion = VK_MAKE_VERSION(1, 0, 0),
+      .pApplicationName = _configuration->get<std::string>("name").c_str(),
+      .applicationVersion = VK_MAKE_VERSION(
+        _configuration->get<sbx::uint32>("version.major"),
+        _configuration->get<sbx::uint32>("version.minor"),
+        _configuration->get<sbx::uint32>("version.patch")
+      ),
+      .pEngineName = "Sandbox Engine",
+      .engineVersion = VK_MAKE_VERSION(0, 1, 0),
       .apiVersion = VK_API_VERSION_1_0
     };
 
@@ -55,10 +62,10 @@ private:
       .pNext = nullptr,
       .flags = 0,
       .pApplicationInfo = &app_info,
-      .enabledLayerCount = 0,
-      .ppEnabledLayerNames = nullptr,
+      .enabledLayerCount = validation_layers::count(),
+      .ppEnabledLayerNames = validation_layers::names(),
       .enabledExtensionCount = 0,
-      .ppEnabledExtensionNames = nullptr,
+      .ppEnabledExtensionNames = nullptr
     };
 
     if (vkCreateInstance(&create_info, nullptr, &_instance) != VK_SUCCESS) {
@@ -74,12 +81,14 @@ private:
 
   }
 
-  window& _window;
+  logger* _logger{};
+  configuration* _configuration{};
+  window* _window{};
+
   VkInstance _instance{VK_NULL_HANDLE};
   VkPhysicalDevice _physical_device{VK_NULL_HANDLE};
   VkDevice _logical_device{VK_NULL_HANDLE};
 
-  logger* _logger{};
 
 }; // class device
 

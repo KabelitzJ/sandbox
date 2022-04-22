@@ -13,13 +13,8 @@
 #include "application.hpp"
 
 int main() {
-  auto document = sbx::json_document{"demo/config/app.json"};
-
-  const auto& name = document["name"].as_string();
-
-  auto app = demo::application{name};
-
   try {
+    auto app = demo::application{"demo/config/app.json"};
     app.run();
   } catch (const std::exception& exception) {
     std::cout << exception.what() << '\n';

@@ -45,7 +45,7 @@ private:
         continue;
       }
 
-      _logger->debug("Loading shader: {0}", entry.path().string());
+      _logger->debug("Loading shader {0}", entry.path().string());
 
       // const auto shader_source = sbx::get_file_contents(entry.path());
     }

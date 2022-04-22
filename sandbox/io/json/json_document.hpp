@@ -12,6 +12,9 @@ class json_document {
 
 public:
 
+  json_document()
+  : _root{nullptr} {}
+
   json_document(const std::filesystem::path& path)
   : _root{json_parser{path}.parse()} {}
 
