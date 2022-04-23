@@ -3,6 +3,7 @@
 
 #include <string>
 #include <memory>
+#include <iostream>
 
 #include "window.hpp"
 #include "device.hpp"
@@ -16,9 +17,6 @@ class application {
 
 public:
 
-  inline static constexpr auto width = sbx::int32{960};
-  inline static constexpr auto height = sbx::int32{720};
-
   application(const std::filesystem::path& config_path)
   : _logger{std::make_unique<logger>()},
     _configuration{std::make_unique<configuration>(config_path, _logger.get())},
@@ -27,6 +25,10 @@ public:
     _pipeline{std::make_unique<pipeline>("demo/assets/shaders/basic", _logger.get())} { }
 
   ~application() = default;
+
+  void test() {
+    _logger->info("Test");
+  }
 
   void run() {
     while (!_window->should_close()) {
