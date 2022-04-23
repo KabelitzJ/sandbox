@@ -4,8 +4,8 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE "Release")
 endif()
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_BINARY_DIR}/extern" "${CMAKE_SOURCE_DIR}/cmake" "${CMAKE_SOURCE_DIR}/cmake/modules")
-list(APPEND CMAKE_PREFIX_PATH "${CMAKE_BINARY_DIR}/extern")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_BINARY_DIR}/external" "${CMAKE_SOURCE_DIR}/cmake" "${CMAKE_SOURCE_DIR}/cmake/modules")
+list(APPEND CMAKE_PREFIX_PATH "${CMAKE_BINARY_DIR}/external")
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -15,15 +15,17 @@ project(
   LANGUAGES CXX
 )
 
-include(GNUInstallDirs)
-include(CMakePackageConfigHelpers)
 
-add_subdirectory(extern)
+add_subdirectory(external)
 
 # Build library
 add_subdirectory(sandbox)
 
 # Install library
+#
+# include(GNUInstallDirs)
+# include(CMakePackageConfigHelpers)
+#
 # TODO: Add install target
 
 # Build demo project
