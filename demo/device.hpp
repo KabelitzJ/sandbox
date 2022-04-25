@@ -233,6 +233,10 @@ private:
       return 0;
     }
 
+    if (!_check_physical_device_extentions_support(physical_device)) {
+      return 0;
+    }
+
     auto properties = VkPhysicalDeviceProperties{};
     vkGetPhysicalDeviceProperties(physical_device, &properties);
 
@@ -248,6 +252,30 @@ private:
     score += properties.limits.maxImageDimension2D;
 
     return score;
+  }
+
+  bool _check_physical_device_extentions_support(VkPhysicalDevice physical_device) {
+    auto available_extention_count = sbx::uint32{0};
+    vkEnumerateDeviceExtensionProperties(physical_device, nullptr, &available_extention_count, nullptr);
+
+    auto available_extentions = std::vector<VkExtensionProperties>{available_extention_count};
+    vkEnumerateDeviceExtensionProperties(physical_device, nullptr, &available_extention_count, available_extentions.data());
+
+    auto extentions = _device_extentions();
+
+    auto required_extentions = std::set<std::string>{extentions.begin(), extentions.end()};
+
+    for (const auto& extention : available_extentions) {
+      required_extentions.erase(extention.extensionName);
+    }
+
+    return required_extentions.empty();
+  }
+
+  std::vector<const char*> _device_extentions() {
+    return {
+      VK_KHR_SWAPCHAIN_EXTENSION_NAME
+    };
   }
 
   void _log_physical_device(VkPhysicalDevice physical_device) {
@@ -317,7 +345,6 @@ private:
       queue_create_infos.push_back(queue_create_info);
     }
 
-
     const auto device_features = VkPhysicalDeviceFeatures{};
 
     const auto create_info = VkDeviceCreateInfo{
@@ -328,8 +355,8 @@ private:
       .pQueueCreateInfos = queue_create_infos.data(),
       .enabledLayerCount = _validation_layers.count(),
       .ppEnabledLayerNames = _validation_layers.names(),
-      .enabledExtensionCount = 0,
-      .ppEnabledExtensionNames = nullptr,
+      .enabledExtensionCount = static_cast<sbx::uint32>(_device_extentions().size()),
+      .ppEnabledExtensionNames = _device_extentions().data(),
       .pEnabledFeatures = &device_features
     };
 
