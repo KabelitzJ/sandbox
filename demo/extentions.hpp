@@ -5,6 +5,8 @@
 
 #include <GLFW/glfw3.h>
 
+#include <platform/target.hpp>
+
 #include <types/primitives.hpp>
 
 namespace demo {
@@ -34,7 +36,7 @@ private:
 
     auto required_extentions = std::vector<const char*>{glfw_extentions, glfw_extentions + glfw_extention_count};
 
-#ifndef NDEBUG
+#if defined(SBX_DEBUG)
     required_extentions.reserve(required_extentions.size() + _validation_extentions.size());
     required_extentions.insert(required_extentions.end(), _validation_extentions.begin(), _validation_extentions.end());
 #endif

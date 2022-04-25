@@ -1,6 +1,10 @@
 #ifndef SBX_PLATFORM_TARGTE_HPP_
 #define SBX_PLATFORM_TARGTE_HPP_
 
+#if !defined(NDEBUG)
+  #define SBX_DEBUG
+#endif
+
 #if defined(WIN32) || defined(_WIN32)
   #define SBX_PLATFORM_WINDOWS
 #elif defined(__APPLE__)

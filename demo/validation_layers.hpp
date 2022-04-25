@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 
+#include <platform/target.hpp>
+
 #include <types/primitives.hpp>
 
 namespace demo {
@@ -17,22 +19,22 @@ public:
   ~validation_layers() = default;
 
   [[nodiscard]] sbx::uint32 count() const noexcept {
-#ifdef NDEBUG
-    return 0;
-#else
+#if defined(SBX_DEBUG)
     return static_cast<sbx::uint32>(_layers.size());
+#else
+    return 0;
 #endif
   }
 
   [[nodiscard]] const char* const* names() const {
-#ifdef NDEBUG
-    return nullptr;
-#else
+#if defined(SBX_DEBUG)
     if (!_check_support()) {
       throw std::runtime_error("Validation layers not supported");
     }
 
     return _layers.data();
+#else
+    return nullptr;
 #endif
   }
 
@@ -48,7 +50,7 @@ private:
       auto found = false;
 
       for (const auto& properties : available_layers) {
-        if (strcmp(layer_name, properties.layerName) == 0) {
+        if (std::strcmp(layer_name, properties.layerName) == 0) {
           found = true;
           break;
         }

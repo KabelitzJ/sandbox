@@ -47,8 +47,8 @@ public:
 
   template<typename Type>
   requires (std::is_same_v<Type, bool>)
-  json_node(const Type boolean)
-  : _value{boolean},
+  json_node(const Type value)
+  : _value{value},
     _type{type::boolean} { }
 
   bool is_object() const noexcept {

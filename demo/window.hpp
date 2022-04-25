@@ -46,6 +46,10 @@ public:
     glfwPollEvents();
   }
 
+  GLFWwindow* native_handle() const {
+    return _handle;
+  }
+
 private:
 
   void _initialize_glfw() {
