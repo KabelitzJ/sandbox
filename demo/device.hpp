@@ -11,6 +11,9 @@
 #if defined(SBX_PLATFORM_WINDOWS)
   #define VK_USE_PLATFORM_WIN32_KHR
   #define GLFW_EXPOSE_NATIVE_WIN32
+// #elif defined(SBX_PLATFORM_LINUX)
+//   #define VK_USE_PLATFORM_XLIB_KHR
+//   #define GLFW_EXPOSE_NATIVE_X11
 #endif
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3native.h>
@@ -118,13 +121,13 @@ private:
       
       switch (severity) {
         case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
-          log->info("[Vulkan Error] {0}", callback_data->pMessage);
+          log->info("{0}", callback_data->pMessage);
           break;
         case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
-          log->warn("[Vulkan Error] {0}", std::string{callback_data->pMessage});
+          log->warn("{0}", std::string{callback_data->pMessage});
           break;
         case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
-          log->error("[Vulkan Error] {0}", std::string{callback_data->pMessage});
+          log->error("{0}", std::string{callback_data->pMessage});
           break;
         default:
           break;
@@ -203,6 +206,10 @@ private:
       throw std::runtime_error("Failed to find GPUs with vulkan support!");
     }
 
+#if defined(SBX_DEBUG)
+    _logger->debug("Found {0} GPU(s)", physical_device_count);
+#endif
+
     auto physical_devices = std::vector<VkPhysicalDevice>(physical_device_count);
     vkEnumeratePhysicalDevices(_instance, &physical_device_count, physical_devices.data());
 
@@ -220,7 +227,9 @@ private:
     _physical_device = candidates.crbegin()->second;
 
 #if defined(SBX_DEBUG)
-    _log_physical_device(_physical_device);
+    auto properties = VkPhysicalDeviceProperties{};
+    vkGetPhysicalDeviceProperties(_physical_device, &properties);
+    _logger->debug("Selected {0}", properties.deviceName);
 #endif
   }
 
@@ -276,12 +285,6 @@ private:
     return {
       VK_KHR_SWAPCHAIN_EXTENSION_NAME
     };
-  }
-
-  void _log_physical_device(VkPhysicalDevice physical_device) {
-    auto properties = VkPhysicalDeviceProperties{};
-    vkGetPhysicalDeviceProperties(physical_device, &properties);
-    _logger->info("Selected {0}", properties.deviceName);
   }
 
   queue_family_indices _find_queue_families(VkPhysicalDevice physical_device) {
