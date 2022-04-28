@@ -33,6 +33,10 @@ target_sources(
       window.hpp
       pipeline.hpp
       device.hpp
+      instance.hpp
+      surface.hpp
+      physical_device.hpp
+      logical_device.hpp
 )
 
 target_include_directories(

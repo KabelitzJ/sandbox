@@ -11,9 +11,6 @@
 #if defined(SBX_PLATFORM_WINDOWS)
   #define VK_USE_PLATFORM_WIN32_KHR
   #define GLFW_EXPOSE_NATIVE_WIN32
-// #elif defined(SBX_PLATFORM_LINUX)
-//   #define VK_USE_PLATFORM_XLIB_KHR
-//   #define GLFW_EXPOSE_NATIVE_X11
 #endif
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3native.h>
@@ -72,7 +69,6 @@ public:
   : _logger{logger},
     _configuration{configuration},
     _window{window},
-    _validation_layers{},
     _extentions{},
     _instance{VK_NULL_HANDLE},
     _debug_massager{VK_NULL_HANDLE},
@@ -166,8 +162,8 @@ private:
 #endif
       .flags = 0,
       .pApplicationInfo = &app_info,
-      .enabledLayerCount = _validation_layers.count(),
-      .ppEnabledLayerNames = _validation_layers.names(),
+      .enabledLayerCount = validation_layers::count(),
+      .ppEnabledLayerNames = validation_layers::names(),
       .enabledExtensionCount = _extentions.count(),
       .ppEnabledExtensionNames = _extentions.names()
     };
@@ -356,8 +352,8 @@ private:
       .flags = 0,
       .queueCreateInfoCount = static_cast<sbx::uint32>(queue_create_infos.size()),
       .pQueueCreateInfos = queue_create_infos.data(),
-      .enabledLayerCount = _validation_layers.count(),
-      .ppEnabledLayerNames = _validation_layers.names(),
+      .enabledLayerCount = validation_layers::count(),
+      .ppEnabledLayerNames = validation_layers::names(),
       .enabledExtensionCount = static_cast<sbx::uint32>(_device_extentions().size()),
       .ppEnabledExtensionNames = _device_extentions().data(),
       .pEnabledFeatures = &device_features
@@ -381,7 +377,6 @@ private:
   configuration* _configuration{};
   window* _window{};
 
-  validation_layers _validation_layers{};
   extentions _extentions{};
 
   VkInstance _instance{};

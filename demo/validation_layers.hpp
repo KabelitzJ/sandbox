@@ -14,11 +14,11 @@ class validation_layers {
 
 public:
 
-  validation_layers() = default;
+  validation_layers() = delete;
 
   ~validation_layers() = default;
 
-  [[nodiscard]] sbx::uint32 count() const noexcept {
+  [[nodiscard]] static  sbx::uint32 count() noexcept {
 #if defined(SBX_DEBUG)
     return static_cast<sbx::uint32>(_layers.size());
 #else
@@ -26,10 +26,10 @@ public:
 #endif
   }
 
-  [[nodiscard]] const char* const* names() const {
+  [[nodiscard]] static const char* const* names() {
 #if defined(SBX_DEBUG)
-    if (!_check_support()) {
-      throw std::runtime_error("Validation layers not supported");
+    if (!_support_checked) {
+      _check_support();
     }
 
     return _layers.data();
@@ -40,7 +40,7 @@ public:
 
 private:
 
-  bool _check_support() const {
+  static void _check_support() {
     auto available_layer_count = sbx::uint32{0};
     vkEnumerateInstanceLayerProperties(&available_layer_count, nullptr);
     auto available_layers = std::vector<VkLayerProperties>{available_layer_count};
@@ -57,12 +57,14 @@ private:
       }
 
       if (!found) {
-        return false;
+        throw std::runtime_error("Validation layers not supported");
       }
     }
 
-    return true;
+    _support_checked = true;
   }
+
+  inline static bool _support_checked{false};
 
   inline static const std::vector<const char*> _layers{
     "VK_LAYER_KHRONOS_validation"

@@ -16,10 +16,7 @@ class logger {
 public:
 
   logger()
-  : _logger{nullptr} {
-    auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
-
-    _logger = std::make_unique<spdlog::logger>("sbx", console_sink);
+  : _logger{std::make_unique<spdlog::logger>("sbx", std::make_shared<spdlog::sinks::stdout_color_sink_mt>())} {
     _logger->set_pattern("[%Y-%m-%d %H:%M:%S %z] [%n] [%^%l%$] %v");
     _logger->set_level(spdlog::level::trace);
   }
