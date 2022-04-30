@@ -15,4 +15,14 @@
   #error "Unsupported target platform"
 #endif
 
+#if defined(__clang__)
+  #define SBX_COMPILER_CLANG
+#elif defined(__GNUC__)
+  #define SBX_COMPILER_GNUC
+#elif defined(__MSC_VER)
+  #define SBX_COMPILER_MSC
+#else
+  #define SBX_COMPILER_UNKOWN
+#endif
+
 #endif // SBX_PLATFORM_TARGTE_HPP_

@@ -1,11 +1,11 @@
-#ifndef DEMO_EVT_LISTENER_HANDLE_HPP_
-#define DEMO_EVT_LISTENER_HANDLE_HPP_
+#ifndef DEMO_SUBSCRIPTION_HPP_
+#define DEMO_SUBSCRIPTION_HPP_
 
 #include <types/primitives.hpp>
 
 namespace demo {
 
-class listener_handle {
+class subscription {
 
   friend class event_manager;
   template<typename Callback>
@@ -13,11 +13,11 @@ class listener_handle {
 
 public:
 
-  ~listener_handle() = default;
+  ~subscription() = default;
 
 private:
 
-  listener_handle(const sbx::uint32 sparse_index, const sbx::uint32 dense_index, const sbx::uint32 version, const sbx::uint32 event_id)
+  subscription(const sbx::uint32 sparse_index, const sbx::uint32 dense_index, const sbx::uint32 version, const sbx::uint32 event_id)
   : _sparse_index{sparse_index},
     _dense_index{dense_index},
     _version{version},
@@ -28,8 +28,8 @@ private:
   sbx::uint32 _version{};
   sbx::uint32 _event_id{};
 
-}; // class listener_handle
+}; // class subscription
 
 } // namespace demo
 
-#endif // DEMO_EVT_LISTENER_HANDLE_HPP_
+#endif // DEMO_SUBSCRIPTION_HPP_

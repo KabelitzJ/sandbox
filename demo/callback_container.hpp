@@ -5,10 +5,13 @@
 #include <queue>
 #include <functional>
 #include <type_traits>
+#include <typeindex>
 
 #include <types/primitives.hpp>
 
-#include "listener_handle.hpp"
+#include <utils/type_name.hpp>
+
+#include "subscription.hpp"
 
 #include "logger.hpp"
 
@@ -18,7 +21,7 @@ struct callback_container_base {
 
   virtual ~callback_container_base() = default;
 
-  virtual void remove(const listener_handle& handle) = 0;
+  virtual void remove(const subscription& handle) = 0;
 
 }; // struct callback_container_base
 
@@ -36,7 +39,6 @@ public:
   : _logger{logger},
     _event_id{event_id},
     _callbacks{},
-    _handles{},
     _sparse{},
     _dense{},
     _free_indices{} { }
@@ -45,7 +47,12 @@ public:
 
   callback_container(callback_container&& other) = delete;
 
-  ~callback_container() = default;
+  ~callback_container() {
+    if (!_callbacks.empty()) {
+      const auto type_name = sbx::type_name<Type>::value();
+      _logger->warn("{} callback(s) still registered for event type '{}'.", _callbacks.size(), type_name);
+    }
+  }
 
   callback_container& operator=(const callback_container& other) = delete;
 
@@ -53,12 +60,12 @@ public:
 
   template<typename Callback>
   requires (std::is_invocable_r_v<void, Callback, const value_type&>)
-  listener_handle add(Callback&& callback) {
+  subscription add(Callback&& callback) {
     auto sparse_index = sbx::uint32{0};
 
     if (_free_indices.empty()) {
       sparse_index = static_cast<sbx::uint32>(_callbacks.size());
-      _sparse.push_back(listener_handle{sparse_index, sparse_index, sbx::uint32{0}, _event_id});
+      _sparse.push_back(subscription{sparse_index, sparse_index, sbx::uint32{0}, _event_id});
     } else {
       sparse_index = _free_indices.front();
       _free_indices.pop();
@@ -70,7 +77,7 @@ public:
     return _sparse[sparse_index];
   }
 
-  void remove(const listener_handle& handle) override {
+  void remove(const subscription& handle) override {
     if (handle._version != _sparse[handle._sparse_index]._version) {
       _logger->warn("Attempted to remove a listener that has already been removed.");
       return;
@@ -98,9 +105,8 @@ private:
   sbx::uint32 _event_id{};
 
   std::vector<callback_type> _callbacks{};
-  std::queue<listener_handle> _handles{};
 
-  std::vector<listener_handle> _sparse{};
+  std::vector<subscription> _sparse{};
   std::vector<sbx::uint32> _dense{};
   std::queue<sbx::uint32> _free_indices{};
   

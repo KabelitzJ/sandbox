@@ -9,7 +9,7 @@
 #include <utils/type_id.hpp>
 
 #include "callback_container.hpp"
-#include "listener_handle.hpp"
+#include "subscription.hpp"
 
 #include "logger.hpp"
 
@@ -38,7 +38,7 @@ public:
 
   template<typename Event, typename Function>
   requires (std::is_invocable_r_v<void, Function, const Event&>)
-  listener_handle listen(Function&& function) {
+  subscription subscribe(Function&& function) {
     const auto event_id = _event_id<Event>();
 
     auto& container = *static_cast<callback_container<Event>*>(_callbacks[event_id].get());
@@ -48,19 +48,19 @@ public:
 
   template<typename Event, typename Instance, typename Function>
   requires (std::is_invocable_r_v<void, Function, Instance*, const Event&>)
-  listener_handle listen(Instance* instance, Function&& function) {
-    return listen<Event>([instance, function = std::move(function)](const Event& event) {
+  subscription subscribe(Instance* instance, Function&& function) {
+    return subscribe<Event>([instance, function = std::move(function)](const Event& event) {
       std::invoke(function, instance, event);
     });
   }
 
-  void remove(const listener_handle& handle) {
+  void unsubscribe(const subscription& handle) {
     _callbacks[handle._event_id]->remove(handle);
   }
 
   template<typename Event, typename... Args>
   requires (std::is_constructible_v<Event, Args...>)
-  void emit(Args&&... args) {
+  void dispatch(Args&&... args) {
     const auto event_id = _event_id<Event>();
 
     auto& container = *static_cast<callback_container<Event>*>(_callbacks[event_id].get());

@@ -32,7 +32,7 @@ target_sources(
       logger.hpp
       pipeline.hpp
       callback_container.hpp
-      listener_handle.hpp
+      subscription.hpp
       event_manager.hpp
       instance.hpp
       window.hpp

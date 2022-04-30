@@ -12,6 +12,8 @@
 
 namespace demo {
 
+struct money { int value{}; };
+
 class application {
 
 public:
@@ -30,6 +32,13 @@ public:
     // while (!_window->should_close()) {
     //   _window->poll_events();
     // }
+    const auto subscription = _event_manager->subscribe<money>([&](const auto& event){
+      _logger->info("event: {}", event.value);
+    });
+
+    _event_manager->dispatch<money>(1);
+
+    _event_manager->unsubscribe(subscription);
   }
 
 private:

@@ -11,6 +11,8 @@ target_sources(
       random.hpp
       type_id.hpp
       type_id.inl
+      type_name.hpp
+      type_name.inl
       utils.hpp
 )
 
@@ -26,6 +28,7 @@ target_link_libraries(
   INTERFACE 
     sbx::meta
     sbx::types
+    sbx::platform
 )
 
 target_compile_features(
