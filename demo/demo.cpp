@@ -13,6 +13,7 @@
 #include "application.hpp"
 
 int main() {
+
   try {
     auto app = demo::application{"demo/config/app.json"};
     app.run();

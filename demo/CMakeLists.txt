@@ -30,13 +30,9 @@ target_sources(
     FILES 
       application.hpp
       logger.hpp
-      window.hpp
       pipeline.hpp
-      device.hpp
-      instance.hpp
-      surface.hpp
-      physical_device.hpp
-      logical_device.hpp
+      evt/callback_container.hpp
+      evt/listener_handle.hpp
 )
 
 target_include_directories(
@@ -95,6 +91,7 @@ target_compile_definitions(
 set_target_properties(
   ${PROJECT_NAME}
   PROPERTIES
+    LINKER_LANGUAGE CXX
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<$<CONFIG:Debug>:debug>$<$<CONFIG:Release>:release>/bin/"
     LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<$<CONFIG:Debug>:debug>$<$<CONFIG:Release>:release>/lib/"
     ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<$<CONFIG:Debug>:debug>$<$<CONFIG:Release>:release>/lib/"
