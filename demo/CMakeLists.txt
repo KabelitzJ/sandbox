@@ -31,8 +31,16 @@ target_sources(
       application.hpp
       logger.hpp
       pipeline.hpp
-      evt/callback_container.hpp
-      evt/listener_handle.hpp
+      callback_container.hpp
+      listener_handle.hpp
+      event_manager.hpp
+      instance.hpp
+      window.hpp
+      monitor.hpp
+      physical_device.hpp
+      logical_device.hpp
+      surface.hpp
+      swapchain.hpp
 )
 
 target_include_directories(
