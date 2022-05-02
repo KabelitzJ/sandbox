@@ -55,7 +55,9 @@ public:
   }
 
   void unsubscribe(const subscription& handle) {
-    _callbacks[handle._event_id]->remove(handle);
+    if (handle._is_valid) {
+      _callbacks[handle._event_id]->remove(handle);
+    }
   }
 
   template<typename Event, typename... Args>
@@ -73,6 +75,7 @@ public:
   }
 
 private:
+
 
   template<typename Event>
   sbx::uint32 _event_id() {

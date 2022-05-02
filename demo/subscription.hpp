@@ -13,15 +13,25 @@ class subscription {
 
 public:
 
+  subscription()
+  : _is_valid{false},
+    _sparse_index{0},
+    _dense_index{0},
+    _version{0},
+    _event_id{0} { }
+
   ~subscription() = default;
 
 private:
 
   subscription(const sbx::uint32 sparse_index, const sbx::uint32 dense_index, const sbx::uint32 version, const sbx::uint32 event_id)
-  : _sparse_index{sparse_index},
+  : _is_valid{true},
+    _sparse_index{sparse_index},
     _dense_index{dense_index},
     _version{version},
     _event_id{event_id} { }
+
+  bool _is_valid{};
 
   sbx::uint32 _sparse_index{};
   sbx::uint32 _dense_index{};
