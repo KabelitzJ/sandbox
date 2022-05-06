@@ -8,6 +8,7 @@ namespace demo {
 class subscription {
 
   friend class event_manager;
+  
   template<typename Callback>
   friend class callback_container;
 

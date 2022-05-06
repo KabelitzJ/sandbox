@@ -38,7 +38,7 @@ public:
 
   template<typename Event, typename Function>
   requires (std::is_invocable_r_v<void, Function, const Event&>)
-  subscription subscribe(Function&& function) {
+  [[nodiscard]] subscription subscribe(Function&& function) {
     const auto event_id = _event_id<Event>();
 
     auto& container = *static_cast<callback_container<Event>*>(_callbacks[event_id].get());
@@ -48,15 +48,15 @@ public:
 
   template<typename Event, typename Instance, typename Function>
   requires (std::is_invocable_r_v<void, Function, Instance*, const Event&>)
-  subscription subscribe(Instance* instance, Function&& function) {
+  [[nodiscard]] subscription subscribe(Instance* instance, Function&& function) {
     return subscribe<Event>([instance, function = std::move(function)](const Event& event) {
       std::invoke(function, instance, event);
     });
   }
 
-  void unsubscribe(const subscription& handle) {
-    if (handle._is_valid) {
-      _callbacks[handle._event_id]->remove(handle);
+  void unsubscribe(const subscription& subscription) {
+    if (subscription._is_valid) {
+      _callbacks[subscription._event_id]->remove(subscription);
     }
   }
 
