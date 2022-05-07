@@ -14,9 +14,9 @@
 
 #include "time.hpp"
 #include "events.hpp"
+#include "hashed_string.hpp"
 
 namespace demo {
-
 
 class application {
 
@@ -33,6 +33,8 @@ public:
   ~application() = default;
 
   void run() {
+    using namespace demo::literals;
+
     using clock = std::chrono::high_resolution_clock;
 
     auto start = clock::now();

@@ -9,7 +9,7 @@ class subscription {
 
   friend class event_manager;
   
-  template<typename Callback>
+  template<typename>
   friend class callback_container;
 
 public:
