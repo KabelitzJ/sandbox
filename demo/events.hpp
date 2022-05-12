@@ -20,6 +20,14 @@ struct mouse_moved_event {
   sbx::int32 y{};
 }; // struct mouse_moved_event
 
+struct window_minimized_event { };
+
+struct window_maximized_event { };
+
+struct window_restored_event { };
+
+struct window_closed_event { };
+
 } // namespace demo
 
 #endif // SBX_DEMO_EVENTS_HPP_

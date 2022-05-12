@@ -1,6 +1,7 @@
 #ifndef DEMO_WINDOW_HPP_
 #define DEMO_WINDOW_HPP_
 
+#include <vulkan/vulkan.hpp>
 #include <GLFW/glfw3.h>
 
 #include <types/primitives.hpp>
@@ -38,10 +39,6 @@ public:
 
   void poll_events() {
     glfwPollEvents();
-  }
-
-  bool should_close() const {
-    return glfwWindowShouldClose(_handle);
   }
 
 private:
@@ -85,6 +82,31 @@ private:
     glfwSetCursorPosCallback(_handle, [](auto* handle, auto x, auto y) {
       auto evt_manager = static_cast<event_manager*>(glfwGetWindowUserPointer(handle));
       evt_manager->dispatch<mouse_moved_event>(static_cast<sbx::int32>(x), static_cast<sbx::int32>(y));
+    });
+
+    glfwSetWindowCloseCallback(_handle, [](auto* handle) {
+      auto evt_manager = static_cast<event_manager*>(glfwGetWindowUserPointer(handle));
+      evt_manager->dispatch<window_closed_event>();
+    });
+
+    glfwSetWindowIconifyCallback(_handle, [](auto* handle, auto iconified) {
+      auto evt_manager = static_cast<event_manager*>(glfwGetWindowUserPointer(handle));
+
+      if (iconified) {
+        evt_manager->dispatch<window_minimized_event>();
+      } else {
+        evt_manager->dispatch<window_restored_event>();
+      }
+    });
+
+    glfwSetWindowMaximizeCallback(_handle, [](auto* handle, auto maximized) {
+      auto evt_manager = static_cast<event_manager*>(glfwGetWindowUserPointer(handle));
+
+      if (maximized) {
+        evt_manager->dispatch<window_maximized_event>();
+      } else {
+        evt_manager->dispatch<window_restored_event>();
+      }
     });
   }
 

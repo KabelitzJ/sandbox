@@ -23,24 +23,62 @@ class application {
 public:
 
   application(const std::filesystem::path& config_path)
-  : _logger{std::make_unique<logger>()},
+  : _subscriptions{},
+    _is_running{false},
+    _is_paused{false},
+    _logger{std::make_unique<logger>()},
     _configuration{std::make_unique<configuration>(config_path, _logger.get())},
     _event_manager{std::make_unique<event_manager>(_logger.get())},
     _window{std::make_unique<window>(_logger.get(), _configuration.get(), _event_manager.get())},
     // _device{std::make_unique<device>(_logger.get(), _configuration.get(), _window.get())},
     _pipeline{std::make_unique<pipeline>("demo/assets/shaders/basic", _logger.get())} { }
 
-  ~application() = default;
+  ~application() {
+    for (const auto& subscription : _subscriptions) {
+      _event_manager->unsubscribe(subscription);
+    }
+  }
 
-  void run() {
+  void start() {
+    _initialize();
+    _run();
+  }
+
+private:
+
+  void _initialize() {
+    _subscriptions.emplace_back(_event_manager->subscribe<window_closed_event>([this](const auto&) {
+      _is_running = false;
+    }));
+
+    _subscriptions.emplace_back(_event_manager->subscribe<window_minimized_event>([this](const auto&) {
+      _is_paused = true;
+    }));
+
+    _subscriptions.emplace_back(_event_manager->subscribe<window_maximized_event>([this](const auto&) {
+      _is_paused = false;
+    }));
+
+    _subscriptions.emplace_back(_event_manager->subscribe<window_restored_event>([this](const auto&) {
+      _is_paused = false;
+    }));
+  }
+
+  void _run() {
     using namespace demo::literals;
 
     using clock = std::chrono::high_resolution_clock;
 
+    _is_running = true;
+
     auto start = clock::now();
 
-    while (!_window->should_close()) {
+    while (_is_running) {
       _window->poll_events();
+
+      if (_is_paused) {
+        continue;
+      }
 
       const auto now = clock::now();
       const auto delta = time{now - start};
@@ -48,7 +86,10 @@ public:
     }
   }
 
-private:
+  std::vector<subscription> _subscriptions{};
+
+  bool _is_running{};
+  bool _is_paused{};
 
   std::unique_ptr<logger> _logger{};
   std::unique_ptr<configuration> _configuration{};

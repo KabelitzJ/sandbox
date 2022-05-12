@@ -16,7 +16,7 @@ int main() {
 
   try {
     auto app = demo::application{"demo/config/app.json"};
-    app.run();
+    app.start();
   } catch (const std::exception& exception) {
     std::cout << exception.what() << '\n';
     return EXIT_FAILURE;
