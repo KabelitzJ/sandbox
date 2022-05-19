@@ -3,6 +3,9 @@
 
 #include <types/primitives.hpp>
 
+#include "key.hpp"
+#include "modifiers.hpp"
+
 namespace demo {
 
 struct window_resized_event {
@@ -33,13 +36,13 @@ struct monitor_connected_event { };
 struct monitor_disconnected_event { };
 
 struct key_pressed_event {
-  sbx::int32 key{};
-  sbx::int32 mods{};
+  key key{};
+  modifiers modifiers{};
 }; // struct key_pressed_event
 
 struct key_released_event {
-  sbx::int32 key{};
-  sbx::int32 mods{};
+  key key{};
+  modifiers modifiers{};
 }; // struct key_released_event
 
 } // namespace demo

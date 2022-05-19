@@ -16,6 +16,7 @@
 #include "time.hpp"
 #include "events.hpp"
 #include "hashed_string.hpp"
+#include "key.hpp"
 
 namespace demo {
 
@@ -66,13 +67,13 @@ private:
     }));
 
     _subscriptions.emplace_back(_event_manager->subscribe<key_pressed_event>([this](const auto& event) {
-      if (event.key == GLFW_KEY_ESCAPE) {
+      if (event.key == key::escape) {
         _is_running = false;
-      } else if (event.key == GLFW_KEY_P) {
+      } else if (event.key == key::p) {
         _is_paused = !_is_paused;
-      } else if (event.key == GLFW_KEY_F) {
+      } else if (event.key == key::f) {
         _window->set_fullscreen();
-      } else if (event.key == GLFW_KEY_R) {
+      } else if (event.key == key::r) {
         _window->set_windowed();
       }
     }));

@@ -11,6 +11,7 @@
 #include "event_manager.hpp"
 #include "monitor.hpp"
 #include "events.hpp"
+#include "key.hpp"
 
 namespace demo {
 
@@ -154,13 +155,13 @@ private:
       }
     });
 
-    glfwSetKeyCallback(_handle, [](auto* handle, auto key, [[maybe_unused]] auto scancode, auto action, auto mods) {
+    glfwSetKeyCallback(_handle, [](auto* handle, auto key_code, [[maybe_unused]] auto scancode, auto action, auto mods) {
       auto evt_manager = static_cast<event_manager*>(glfwGetWindowUserPointer(handle));
 
       if (action == GLFW_PRESS) {
-        evt_manager->dispatch<key_pressed_event>(key, mods);
+        evt_manager->dispatch<key_pressed_event>(key{key_code}, modifiers{mods});
       } else if (action == GLFW_RELEASE) {
-        evt_manager->dispatch<key_released_event>(key, mods);
+        evt_manager->dispatch<key_released_event>(key{key_code}, modifiers{mods});
       }
     });
   }

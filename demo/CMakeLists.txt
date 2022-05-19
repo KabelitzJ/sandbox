@@ -23,6 +23,8 @@ add_dependencies(
 target_sources(
   ${PROJECT_NAME}
   PRIVATE
+    key.cpp
+    button.cpp
     demo.cpp
   PUBLIC
     FILE_SET HEADERS 
@@ -41,6 +43,9 @@ target_sources(
       logical_device.hpp
       surface.hpp
       swapchain.hpp
+      key.hpp
+      button.hpp
+      modifiers.hpp
 )
 
 target_include_directories(
