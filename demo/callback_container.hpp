@@ -43,9 +43,9 @@ public:
     _dense{},
     _free_indices{} { }
 
-  callback_container(const callback_container& other) = delete;
+  callback_container(const callback_container&) = delete;
 
-  callback_container(callback_container&& other) = delete;
+  callback_container(callback_container&&) = delete;
 
   ~callback_container() {
     if (!_callbacks.empty()) {
@@ -54,9 +54,9 @@ public:
     }
   }
 
-  callback_container& operator=(const callback_container& other) = delete;
+  callback_container& operator=(const callback_container&) = delete;
 
-  callback_container& operator=(callback_container&& other) = delete;
+  callback_container& operator=(callback_container&&) = delete;
 
   template<typename Callback>
   requires (std::is_invocable_r_v<void, Callback, const value_type&>)

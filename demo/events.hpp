@@ -28,6 +28,20 @@ struct window_restored_event { };
 
 struct window_closed_event { };
 
+struct monitor_connected_event { };
+
+struct monitor_disconnected_event { };
+
+struct key_pressed_event {
+  sbx::int32 key{};
+  sbx::int32 mods{};
+}; // struct key_pressed_event
+
+struct key_released_event {
+  sbx::int32 key{};
+  sbx::int32 mods{};
+}; // struct key_released_event
+
 } // namespace demo
 
 #endif // SBX_DEMO_EVENTS_HPP_

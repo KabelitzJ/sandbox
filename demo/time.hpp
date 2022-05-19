@@ -18,11 +18,11 @@ public:
   constexpr time(const std::chrono::duration<Rep, Period>& duration)
   : _value{std::chrono::duration_cast<duration_type>(duration)} { }
 
-  time(const time& other) = default;
+  time(const time&) = default;
 
   ~time() = default;
 
-  time& operator=(const time& other) = default;
+  time& operator=(const time&) = default;
 
   constexpr operator sbx::float32() const {
     return _value.count();

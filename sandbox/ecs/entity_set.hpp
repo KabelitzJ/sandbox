@@ -129,13 +129,13 @@ public:
 
   entity_set() = default;
 
-  entity_set(const entity_set& other) = delete;
+  entity_set(const entity_set&) = delete;
 
   entity_set(entity_set&& other) noexcept = default;
 
   virtual ~entity_set() = default;
 
-  entity_set& operator=(const entity_set& other) = delete;
+  entity_set& operator=(const entity_set&) = delete;
 
   entity_set& operator=(entity_set&& other) noexcept = default;
 

@@ -9,6 +9,7 @@
 #include "logger.hpp"
 #include "configuration.hpp"
 #include "event_manager.hpp"
+#include "monitor.hpp"
 #include "window.hpp"
 #include "pipeline.hpp"
 
@@ -29,7 +30,8 @@ public:
     _logger{std::make_unique<logger>()},
     _configuration{std::make_unique<configuration>(config_path, _logger.get())},
     _event_manager{std::make_unique<event_manager>(_logger.get())},
-    _window{std::make_unique<window>(_logger.get(), _configuration.get(), _event_manager.get())},
+    _monitor{std::make_unique<monitor>(_logger.get(), _event_manager.get())},
+    _window{std::make_unique<window>(_logger.get(), _configuration.get(), _event_manager.get(), _monitor.get())},
     // _device{std::make_unique<device>(_logger.get(), _configuration.get(), _window.get())},
     _pipeline{std::make_unique<pipeline>("demo/assets/shaders/basic", _logger.get())} { }
 
@@ -62,6 +64,18 @@ private:
     _subscriptions.emplace_back(_event_manager->subscribe<window_restored_event>([this](const auto&) {
       _is_paused = false;
     }));
+
+    _subscriptions.emplace_back(_event_manager->subscribe<key_pressed_event>([this](const auto& event) {
+      if (event.key == GLFW_KEY_ESCAPE) {
+        _is_running = false;
+      } else if (event.key == GLFW_KEY_P) {
+        _is_paused = !_is_paused;
+      } else if (event.key == GLFW_KEY_F) {
+        _window->set_fullscreen();
+      } else if (event.key == GLFW_KEY_R) {
+        _window->set_windowed();
+      }
+    }));
   }
 
   void _run() {
@@ -83,6 +97,8 @@ private:
       const auto now = clock::now();
       const auto delta = time{now - start};
       start = now;
+
+      _window->swap_buffers();
     }
   }
 
@@ -94,6 +110,7 @@ private:
   std::unique_ptr<logger> _logger{};
   std::unique_ptr<configuration> _configuration{};
   std::unique_ptr<event_manager> _event_manager{};
+  std::unique_ptr<monitor> _monitor{};
   std::unique_ptr<window> _window{};
   // std::unique_ptr<device> _device{};
   std::unique_ptr<pipeline> _pipeline{};

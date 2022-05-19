@@ -26,15 +26,15 @@ public:
     _callbacks{},
     _current_event_id{} { }
 
-  event_manager(const event_manager& other) = delete;
+  event_manager(const event_manager&) = delete;
 
-  event_manager(event_manager&& other) = delete;
+  event_manager(event_manager&&) = delete;
 
   ~event_manager() = default;
 
-  event_manager& operator=(const event_manager& other) = delete;
+  event_manager& operator=(const event_manager&) = delete;
 
-  event_manager& operator=(event_manager&& other) = delete;
+  event_manager& operator=(event_manager&&) = delete;
 
   template<typename Event, typename Function>
   requires (std::is_invocable_r_v<void, Function, const Event&>)

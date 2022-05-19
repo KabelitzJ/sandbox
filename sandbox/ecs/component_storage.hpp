@@ -42,13 +42,13 @@ public:
 
   component_storage() = default;
 
-  component_storage(const component_storage& other) = delete;
+  component_storage(const component_storage&) = delete;
 
   component_storage(component_storage&& other) noexcept = default;
 
   ~component_storage() = default;
 
-  component_storage& operator=(const component_storage& other) = delete;
+  component_storage& operator=(const component_storage&) = delete;
 
   component_storage& operator=(component_storage&& other) noexcept = default;
 
