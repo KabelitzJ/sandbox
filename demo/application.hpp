@@ -42,8 +42,8 @@ public:
     _monitor{std::make_unique<monitor>(_event_manager.get())},
     _window{std::make_unique<window>(_configuration.get(), _event_manager.get(), _monitor.get())},
     _instance{std::make_unique<instance>(_logger.get(), _window.get(), _configuration.get())},
-    _physical_device{std::make_unique<physical_device>()},
-    _logical_device{std::make_unique<logical_device>()},
+    _physical_device{std::make_unique<physical_device>(_logger.get(), _instance.get())},
+    _logical_device{std::make_unique<logical_device>(_physical_device.get())},
     _surface{std::make_unique<surface>()},
     _pipeline{std::make_unique<pipeline>("demo/assets/shaders/basic")} { }
 

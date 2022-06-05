@@ -23,14 +23,26 @@ public:
     _window{window},
     _configuration{configuration},
 #if defined(SBX_DEBUG)
-    _debug_messenger{VK_NULL_HANDLE},
+    _debug_messenger{nullptr},
 #endif
-    _handle{VK_NULL_HANDLE} {
+    _handle{nullptr} {
     _initialize();
   }
 
+  instance(const instance&) = delete;
+
+  instance(instance&&) = delete;
+
   ~instance() {
     _terminate();
+  }
+
+  instance& operator=(const instance&) = delete;
+
+  instance& operator=(instance&&) = delete;
+
+  [[nodiscard]] VkInstance handle() const noexcept {
+    return _handle;
   }
 
 private:

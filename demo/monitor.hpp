@@ -59,6 +59,10 @@ private:
       throw std::runtime_error{"Failed to initialize GLFW"};
     }
 
+    if (!glfwVulkanSupported()) {
+      throw std::runtime_error{"Vulkan is not supported"};
+    }
+
     _handle = glfwGetPrimaryMonitor();
 
     if (!_handle) {
