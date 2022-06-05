@@ -10,7 +10,7 @@
       "width": 1920,
       "height": 1080
     },
-    "fullscreen": false,
+    "is_fullscreen": false,
     "v-sync": true,
     "icon": "icon.png"
   }

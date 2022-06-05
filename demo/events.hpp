@@ -4,6 +4,7 @@
 #include <types/primitives.hpp>
 
 #include "key.hpp"
+#include "button.hpp"
 #include "modifiers.hpp"
 
 namespace demo {
@@ -36,14 +37,24 @@ struct monitor_connected_event { };
 struct monitor_disconnected_event { };
 
 struct key_pressed_event {
-  key key{};
+  key key;
   modifiers modifiers{};
 }; // struct key_pressed_event
 
 struct key_released_event {
-  key key{};
+  key key;
   modifiers modifiers{};
 }; // struct key_released_event
+
+struct button_pressed_event {
+  button button;
+  modifiers modifiers{};
+}; // struct button_pressed_event
+
+struct button_released_event {
+  button button;
+  modifiers modifiers{};
+}; // struct button_released_event
 
 } // namespace demo
 

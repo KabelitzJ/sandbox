@@ -1,5 +1,7 @@
 #include "key.hpp"
 
+#include <GLFW/glfw3.h>
+
 namespace demo {
 
 const key key::unknown{GLFW_KEY_UNKNOWN};

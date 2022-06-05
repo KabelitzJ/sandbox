@@ -13,14 +13,7 @@
 #include "application.hpp"
 
 int main() {
+  auto app = demo::application{"demo/config/app.json"};
 
-  try {
-    auto app = demo::application{"demo/config/app.json"};
-    app.start();
-  } catch (const std::exception& exception) {
-    std::cout << exception.what() << '\n';
-    return EXIT_FAILURE;
-  }
-
-  return EXIT_SUCCESS;
+  return app.start();
 }

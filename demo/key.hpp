@@ -2,8 +2,7 @@
 #define DEMO_KEY_HPP_
 
 #include <type_traits>
-
-#include <GLFW/glfw3.h>
+#include <functional>
 
 #include <types/primitives.hpp>
 
@@ -13,6 +12,8 @@ class key {
 
   friend class window;
   friend class event_manager;
+
+  friend class std::hash<key>;
 
   friend constexpr bool operator==(const key& lhs, const key& rhs) noexcept;
 
@@ -140,9 +141,6 @@ public:
   static const key right_super;
   static const key menu;
 
-  key()
-  : _value{unknown._value} { }
-
   ~key() = default;
 
 private:
@@ -159,5 +157,12 @@ private:
 }
 
 } // namespace demo
+
+template<>
+struct std::hash<demo::key> {
+  [[nodiscard]] std::size_t operator()(const demo::key& key) const noexcept {
+    return std::hash<sbx::int32>{}(key._value);
+  }
+};
 
 #endif // DEMO_KEY_HPP_

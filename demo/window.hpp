@@ -1,10 +1,14 @@
 #ifndef DEMO_WINDOW_HPP_
 #define DEMO_WINDOW_HPP_
 
+#include <string>
+#include <vector>
+
 #include <vulkan/vulkan.hpp>
 #include <GLFW/glfw3.h>
 
 #include <types/primitives.hpp>
+#include <platform/target.hpp>
 
 #include "logger.hpp"
 #include "configuration.hpp"
@@ -12,16 +16,18 @@
 #include "monitor.hpp"
 #include "events.hpp"
 #include "key.hpp"
+#include "button.hpp"
 
 namespace demo {
 
 class window {
 
+  friend class instance;
+
 public:
 
-  window(logger* logger, configuration* configuration, event_manager* event_manager, monitor* monitor)
-  : _logger{logger},
-    _configuration{configuration},
+  window(configuration* configuration, event_manager* event_manager, monitor* monitor)
+  : _configuration{configuration},
     _event_manager{event_manager},
     _monitor{monitor},
     _handle{nullptr},
@@ -67,11 +73,11 @@ public:
     const auto monitor_width = _monitor->width();
     const auto monitor_height = _monitor->height();
 
-    const auto window_x = static_cast<sbx::int32>(monitor_width * 0.05);
-    const auto window_y = static_cast<sbx::int32>(monitor_height * 0.05);
+    const auto window_width = static_cast<sbx::int32>(static_cast<sbx::float32>(monitor_width) * 0.9f);
+    const auto window_height = static_cast<sbx::int32>(static_cast<sbx::float32>(monitor_height) * 0.9f);
 
-    const auto window_width = static_cast<sbx::int32>(monitor_width * 0.9);
-    const auto window_height = static_cast<sbx::int32>(monitor_height * 0.9);
+    const auto window_x = static_cast<sbx::int32>(static_cast<sbx::float32>(monitor_width) * 0.05f);
+    const auto window_y = static_cast<sbx::int32>(static_cast<sbx::float32>(monitor_height) * 0.05f);
 
     glfwSetWindowMonitor(_handle, nullptr, window_x, window_y, window_width, window_height, _monitor->refresh_rate());
 
@@ -90,6 +96,10 @@ public:
     glfwSetWindowPos(_handle, x, y);
   }
 
+  [[nodiscard]] GLFWwindow* handle() const noexcept {
+    return _handle;
+  }
+
 private:
 
   void _initialize() {
@@ -99,19 +109,23 @@ private:
     const auto name = _configuration->get<std::string>("name");
     const auto width = _configuration->get<sbx::int32>("window.resolution.width");
     const auto height = _configuration->get<sbx::int32>("window.resolution.height");
+    const auto is_fullscreen = _configuration->get<bool>("window.is_fullscreen");
 
     _handle = glfwCreateWindow(width, height, name.c_str(), nullptr, nullptr);
 
     if (!_handle) {
-      _logger->error("Failed to create window");
-      return;
+      throw std::runtime_error("Failed to create window");
     }
 
     glfwSetWindowUserPointer(_handle, _event_manager);
 
     _setup_callbacks();
 
-    set_fullscreen();
+    if (is_fullscreen) {
+      set_fullscreen();
+    } else {
+      set_windowed();
+    }
   }
 
   void _setup_callbacks() {
@@ -164,13 +178,36 @@ private:
         evt_manager->dispatch<key_released_event>(key{key_code}, modifiers{mods});
       }
     });
+
+    glfwSetMouseButtonCallback(_handle, [](auto* handle, auto button_code, auto action, auto mods) {
+      auto evt_manager = static_cast<event_manager*>(glfwGetWindowUserPointer(handle));
+
+      if (action == GLFW_PRESS) {
+        evt_manager->dispatch<button_pressed_event>(button{button_code}, modifiers{mods});
+      } else if (action == GLFW_RELEASE) {
+        evt_manager->dispatch<button_released_event>(button{button_code}, modifiers{mods});
+      }
+    });
   }
 
   void _terminate() {
     glfwDestroyWindow(_handle);
   }
 
-  logger* _logger{};
+  std::vector<const char*> _required_extensions() {
+    auto extension_count = sbx::uint32{0};
+
+    const auto glfw_extensions = glfwGetRequiredInstanceExtensions(&extension_count);
+
+    auto extensions = std::vector<const char*>{glfw_extensions, glfw_extensions + extension_count};
+
+#if defined(SBX_DEBUG)
+    extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+#endif
+
+    return extensions;
+  }
+
   configuration* _configuration{};
   event_manager* _event_manager{};
   monitor* _monitor{};

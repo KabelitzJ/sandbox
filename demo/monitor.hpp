@@ -15,9 +15,8 @@ class monitor {
 
 public:
 
-  monitor(logger* logger, event_manager* event_manager)
-  : _logger{logger},
-    _event_manager{event_manager},
+  monitor(event_manager* event_manager)
+  : _event_manager{event_manager},
     _handle{nullptr},
     _width{},
     _height{},
@@ -57,15 +56,13 @@ private:
 
   void _initialize() {
     if (!glfwInit()) {
-      _logger->error("Failed to initialize GLFW");
-      return;
+      throw std::runtime_error{"Failed to initialize GLFW"};
     }
 
     _handle = glfwGetPrimaryMonitor();
 
     if (!_handle) {
-      _logger->error("Failed to get primary monitor");
-      return;
+      throw std::runtime_error{"Failed to get primary monitor"};
     }
 
     const auto* video_mode = glfwGetVideoMode(_handle);
@@ -91,7 +88,6 @@ private:
     glfwTerminate();
   }
 
-  logger* _logger{};
   event_manager* _event_manager{};
 
   GLFWmonitor* _handle{};

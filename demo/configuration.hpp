@@ -32,10 +32,9 @@ class configuration {
 
 public:
 
-  configuration(const std::filesystem::path& path, logger* logger)
+  configuration(const std::filesystem::path& path)
   : _document{std::filesystem::absolute(path)},
-    _cache{},
-    _logger{logger} {}
+    _cache{} {}
 
   ~configuration() = default;
 
@@ -77,7 +76,6 @@ private:
 
   sbx::json_document _document{};
   std::unordered_map<std::string, sbx::json_node> _cache{};
-  logger* _logger{};
 
 }; // class configuration
 
