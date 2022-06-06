@@ -1,6 +1,9 @@
 #ifndef DEMO_LOGICAL_DEVICE_HPP_
 #define DEMO_LOGICAL_DEVICE_HPP_
 
+#include <unordered_set>
+#include <vector>
+
 #include <vulkan/vulkan.hpp>
 
 #include "physical_device.hpp"
@@ -39,22 +42,29 @@ private:
   void _initialize() {
     const auto queue_family_indices = _physical_device->_queue_family_indices;
 
-    auto queue_create_infos = std::vector<VkDeviceQueueCreateInfo>{};
+    auto unique_queue_family_indices = std::unordered_set<sbx::uint32>{
+      queue_family_indices.graphics_family.value(),
+      queue_family_indices.present_family.value()
+    };
 
     const auto queue_priority = sbx::float32{1.0f};
 
-    auto graphics_queue_create_info = VkDeviceQueueCreateInfo{
-      .sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
-      .pNext = nullptr,
-      .flags = 0,
-      .queueFamilyIndex = queue_family_indices.graphics_family.value(),
-      .queueCount = 1,
-      .pQueuePriorities = &queue_priority
-    };
+    auto queue_create_infos = std::vector<VkDeviceQueueCreateInfo>{};
 
-    queue_create_infos.push_back(graphics_queue_create_info);
+    for (const auto queue_family_index : unique_queue_family_indices) {
+      auto queue_create_info = VkDeviceQueueCreateInfo{
+        .sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
+        .pNext = nullptr,
+        .flags = 0,
+        .queueFamilyIndex = queue_family_index,
+        .queueCount = 1,
+        .pQueuePriorities = &queue_priority
+      };
 
-    const auto extensions = std::vector<const char*>{VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+      queue_create_infos.push_back(queue_create_info);
+    }
+
+    const auto extensions = _physical_device->_extensions();
 
     const auto features = VkPhysicalDeviceFeatures{};
 
@@ -76,6 +86,7 @@ private:
     }
 
     vkGetDeviceQueue(_handle, queue_family_indices.graphics_family.value(), 0, &_graphics_queue);
+    vkGetDeviceQueue(_handle, queue_family_indices.present_family.value(), 0, &_present_queue);
   }
 
   void _terminate() {
@@ -86,6 +97,7 @@ private:
 
   VkDevice _handle{};
   VkQueue _graphics_queue{};
+  VkQueue _present_queue{};
 
 }; // logical_device
 

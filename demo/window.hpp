@@ -96,6 +96,14 @@ public:
     glfwSetWindowPos(_handle, x, y);
   }
 
+  void hide() {
+    glfwHideWindow(_handle);
+  }
+
+  void show() {
+    glfwShowWindow(_handle);
+  }
+
   [[nodiscard]] GLFWwindow* handle() const noexcept {
     return _handle;
   }
@@ -105,11 +113,11 @@ private:
   void _initialize() {
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+    glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
 
     const auto name = _configuration->get<std::string>("name");
     const auto width = _configuration->get<sbx::int32>("window.resolution.width");
     const auto height = _configuration->get<sbx::int32>("window.resolution.height");
-    const auto is_fullscreen = _configuration->get<bool>("window.is_fullscreen");
 
     _handle = glfwCreateWindow(width, height, name.c_str(), nullptr, nullptr);
 
@@ -120,12 +128,6 @@ private:
     glfwSetWindowUserPointer(_handle, _event_manager);
 
     _setup_callbacks();
-
-    if (is_fullscreen) {
-      set_fullscreen();
-    } else {
-      set_windowed();
-    }
   }
 
   void _setup_callbacks() {

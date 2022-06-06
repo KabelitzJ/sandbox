@@ -18,6 +18,7 @@
 #include "physical_device.hpp"
 #include "logical_device.hpp"
 #include "surface.hpp"
+#include "swapchain.hpp"
 #include "pipeline.hpp"
 
 #include "time.hpp"
@@ -33,19 +34,21 @@ public:
 
   application(const std::filesystem::path& config_path)
   : _subscriptions{},
+    _config_path{config_path},
     _is_running{false},
     _is_paused{false},
-    _logger{std::make_unique<logger>()},
-    _configuration{std::make_unique<configuration>(config_path)},
-    _event_manager{std::make_unique<event_manager>(_logger.get())},
-    _input{std::make_unique<input>(_event_manager.get())},
-    _monitor{std::make_unique<monitor>(_event_manager.get())},
-    _window{std::make_unique<window>(_configuration.get(), _event_manager.get(), _monitor.get())},
-    _instance{std::make_unique<instance>(_logger.get(), _window.get(), _configuration.get())},
-    _physical_device{std::make_unique<physical_device>(_logger.get(), _instance.get())},
-    _logical_device{std::make_unique<logical_device>(_physical_device.get())},
-    _surface{std::make_unique<surface>()},
-    _pipeline{std::make_unique<pipeline>("demo/assets/shaders/basic")} { }
+    _logger{nullptr},
+    _configuration{nullptr},
+    _event_manager{nullptr},
+    _input{nullptr},
+    _monitor{nullptr},
+    _window{nullptr},
+    _instance{nullptr},
+    _surface{nullptr},
+    _physical_device{nullptr},
+    _logical_device{nullptr},
+    _swapchain{nullptr},
+    _pipeline{nullptr} { }
 
   ~application() {
     for (const auto& subscription : _subscriptions) {
@@ -74,6 +77,20 @@ public:
 private:
 
   void _initialize() {
+    // Set up all systems - ORDER MATTERS because of dependencies
+    _logger = std::make_unique<logger>();
+    _configuration = std::make_unique<configuration>(_config_path);
+    _event_manager = std::make_unique<event_manager>(_logger.get());
+    _input = std::make_unique<input>(_event_manager.get());
+    _monitor = std::make_unique<monitor>(_event_manager.get());
+    _window = std::make_unique<window>(_configuration.get(), _event_manager.get(), _monitor.get());
+    _instance = std::make_unique<instance>(_logger.get(), _window.get(), _configuration.get());
+    _surface = std::make_unique<surface>(_window.get(), _instance.get());
+    _physical_device = std::make_unique<physical_device>(_logger.get(), _instance.get(), _surface.get());
+    _logical_device = std::make_unique<logical_device>(_physical_device.get());
+    _swapchain = std::make_unique<swapchain>();
+    _pipeline = std::make_unique<pipeline>("demo/assets/shaders/basic");
+
     _subscriptions.emplace_back(_event_manager->subscribe<window_closed_event>([this](const auto&) {
       _is_running = false;
     }));
@@ -92,11 +109,11 @@ private:
   }
 
   void _run() {
-    using namespace demo::literals;
-
     using clock = std::chrono::high_resolution_clock;
 
     _is_running = true;
+
+    _window->show();
 
     auto start = clock::now();
 
@@ -127,6 +144,7 @@ private:
   }
 
   std::vector<subscription> _subscriptions{};
+  std::filesystem::path _config_path{};
 
   bool _is_running{};
   bool _is_paused{};
@@ -138,9 +156,10 @@ private:
   std::unique_ptr<monitor> _monitor{};
   std::unique_ptr<window> _window{};
   std::unique_ptr<instance> _instance{};
+  std::unique_ptr<surface> _surface{};
   std::unique_ptr<physical_device> _physical_device{};
   std::unique_ptr<logical_device> _logical_device{};
-  std::unique_ptr<surface> _surface{};
+  std::unique_ptr<swapchain> _swapchain{};
   std::unique_ptr<pipeline> _pipeline{};
 
 }; // class application
