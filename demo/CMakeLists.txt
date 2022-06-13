@@ -31,6 +31,7 @@ target_sources(
     BASE_DIRS ${PROJECT_SOURCE_DIR}/..
     FILES 
       application.hpp
+      enumerate.hpp
       logger.hpp
       pipeline.hpp
       callback_container.hpp

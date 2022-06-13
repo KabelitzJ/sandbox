@@ -7,8 +7,8 @@
   },
   "window": {
     "resolution": {
-      "width": 1920,
-      "height": 1080
+      "width": 1440,
+      "height": 810
     },
     "is_fullscreen": false,
     "v-sync": true,

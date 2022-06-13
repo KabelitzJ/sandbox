@@ -16,6 +16,8 @@ namespace demo {
 
 class instance {
 
+  friend class logical_device;
+
 public:
 
   instance(logger* logger, window* window, configuration* configuration)

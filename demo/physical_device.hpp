@@ -19,6 +19,7 @@ namespace demo {
 class physical_device {
 
   friend class logical_device;
+  friend class swapchain; 
 
 public:
 
@@ -77,6 +78,8 @@ private:
 
     vkEnumeratePhysicalDevices(_instance->handle(), &available_device_count, available_devices.data());
 
+    auto found_device = false;
+
     for (auto& device : available_devices) {
       const auto has_extentions_support = _has_device_extentions_support(device);
 
@@ -98,11 +101,14 @@ private:
         _swapchain_support = swapchain_support;
         _queue_family_indices = queue_families;
         _handle = device;
+
+        found_device = true;
+
         break;
       }
     }
 
-    if (!_handle) {
+    if (!found_device) {
       throw std::runtime_error("Failed to find a suitable GPU");
     }
 

@@ -6,6 +6,7 @@
 
 #include <vulkan/vulkan.hpp>
 
+#include "instance.hpp"
 #include "physical_device.hpp"
 
 namespace demo {
@@ -14,8 +15,9 @@ class logical_device {
 
 public:
 
-  logical_device(physical_device* physical_device)
-  : _physical_device{physical_device},
+  logical_device(instance* instance, physical_device* physical_device)
+  : _instance{instance},
+    _physical_device{physical_device},
     _handle{nullptr},
     _graphics_queue{nullptr} {
     _initialize();
@@ -64,6 +66,7 @@ private:
       queue_create_infos.push_back(queue_create_info);
     }
 
+    const auto layers = _instance->_layers();
     const auto extensions = _physical_device->_extensions();
 
     const auto features = VkPhysicalDeviceFeatures{};
@@ -74,8 +77,8 @@ private:
       .flags = 0,
       .queueCreateInfoCount = static_cast<sbx::uint32>(queue_create_infos.size()),
       .pQueueCreateInfos = queue_create_infos.data(),
-      .enabledLayerCount = 0,
-      .ppEnabledLayerNames = nullptr,
+      .enabledLayerCount = static_cast<sbx::uint32>(layers.size()),
+      .ppEnabledLayerNames = layers.data(),
       .enabledExtensionCount = static_cast<sbx::uint32>(extensions.size()),
       .ppEnabledExtensionNames = extensions.data(),
       .pEnabledFeatures = &features
@@ -93,6 +96,7 @@ private:
     vkDestroyDevice(_handle, nullptr);
   }
 
+  instance* _instance{};
   physical_device* _physical_device{};
 
   VkDevice _handle{};
