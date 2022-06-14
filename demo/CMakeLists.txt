@@ -47,6 +47,8 @@ target_sources(
       key.hpp
       button.hpp
       modifiers.hpp
+      render_pass.hpp
+      framebuffers.hpp
 )
 
 target_include_directories(

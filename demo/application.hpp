@@ -20,8 +20,10 @@
 #include "physical_device.hpp"
 #include "logical_device.hpp"
 #include "surface.hpp"
+#include "render_pass.hpp"
 #include "swapchain.hpp"
 #include "pipeline.hpp"
+#include "framebuffers.hpp"
 
 #include "time.hpp"
 #include "events.hpp"
@@ -55,7 +57,9 @@ public:
     _physical_device{nullptr},
     _logical_device{nullptr},
     _swapchain{nullptr},
-    _pipeline{nullptr} { }
+    _render_pass{nullptr},
+    _pipeline{nullptr},
+    _framebuffers{nullptr} { }
 
   ~application() {
     for (const auto& subscription : _subscriptions) {
@@ -110,7 +114,9 @@ private:
     _physical_device = std::make_unique<physical_device>(_logger.get(), _instance.get(), _surface.get());
     _logical_device = std::make_unique<logical_device>(_instance.get(), _physical_device.get());
     _swapchain = std::make_unique<swapchain>(_window.get(), _surface.get(), _physical_device.get(), _logical_device.get());
-    _pipeline = std::make_unique<pipeline>("demo/assets/shaders/basic");
+    _render_pass = std::make_unique<render_pass>(_logical_device.get(), _swapchain.get());
+    _pipeline = std::make_unique<pipeline>("demo/assets/shaders/basic", _logical_device.get(), _swapchain.get(), _render_pass.get());
+    _framebuffers = std::make_unique<framebuffers>(_logical_device.get(), _swapchain.get(), _render_pass.get());
 
     _subscriptions.emplace_back(_event_manager->subscribe<window_closed_event>([this](const auto&) {
       _is_running = false;
@@ -186,7 +192,9 @@ private:
   std::unique_ptr<physical_device> _physical_device{};
   std::unique_ptr<logical_device> _logical_device{};
   std::unique_ptr<swapchain> _swapchain{};
+  std::unique_ptr<render_pass> _render_pass{};
   std::unique_ptr<pipeline> _pipeline{};
+  std::unique_ptr<framebuffers> _framebuffers{};
 
 }; // class application
 

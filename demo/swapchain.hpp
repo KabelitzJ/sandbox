@@ -32,7 +32,6 @@ public:
     _handle{nullptr},
     _images{},
     _image_views{},
-    _framebuffers{},
     _format{},
     _extent{} {
     _initialize();
@@ -56,6 +55,10 @@ public:
 
   [[nodiscard]] const std::vector<VkImage>& images() const noexcept {
     return _images;
+  }
+
+  [[nodiscard]] const std::vector<VkImageView>& image_views() const noexcept {
+    return _image_views;
   }
 
   [[nodiscard]] const VkFormat& format() const noexcept {
@@ -112,7 +115,7 @@ private:
     };
 
     if (vkCreateSwapchainKHR(_logical_device->handle(), &swapchain_create_info, nullptr, &_handle) != VK_SUCCESS) {
-      throw std::runtime_error{"failed to create swapchain!"};
+      throw std::runtime_error{"Failed to create swapchain!"};
     }
 
     vkGetSwapchainImagesKHR(_logical_device->handle(), _handle, &image_count, nullptr);
@@ -148,16 +151,12 @@ private:
       };
 
       if (vkCreateImageView(_logical_device->handle(), &image_view_create_info, nullptr, &_image_views[index]) != VK_SUCCESS) {
-        throw std::runtime_error{"failed to create image view!"};
+        throw std::runtime_error{"Failed to create image view!"};
       }
     }
   }
 
   void _terminate() {
-    for (const auto& framebuffer : _framebuffers) {
-      vkDestroyFramebuffer(_logical_device->handle(), framebuffer, nullptr);
-    }
-
     for (const auto& image_view : _image_views) {
       vkDestroyImageView(_logical_device->handle(), image_view, nullptr);
     }
@@ -222,7 +221,6 @@ private:
   VkSwapchainKHR _handle{};
   std::vector<VkImage> _images{};
   std::vector<VkImageView> _image_views{};
-  std::vector<VkFramebuffer> _framebuffers{};
   VkFormat _format{};
   VkExtent2D _extent{};
 
