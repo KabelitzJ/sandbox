@@ -27,10 +27,10 @@ std::vector<detail::entry<typename container::value_type>> enumerate(const conta
   auto result = std::vector<detail::entry<typename container::value_type>>{};
   std::size_t index = 0;
 
-  std::for_each(std::begin(enumerable), std::end(enumerable), [&](const auto& value) {
+  for (const auto& value : enumerable) {
     result.emplace_back(detail::entry{value, index});
     ++index;
-  });
+  }
 
   return result;
 }

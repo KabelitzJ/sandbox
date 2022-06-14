@@ -1,5 +1,3 @@
-#!/bin/bash
-
 # Create folder for build output
 mkdir -p build
 
