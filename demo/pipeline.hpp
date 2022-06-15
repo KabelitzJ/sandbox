@@ -76,10 +76,10 @@ private:
       .pNext = nullptr,
       .flags = 0,
       .topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
-      .primitiveRestartEnable = VK_FALSE
+      .primitiveRestartEnable = false
     };
 
-    const auto swapchain_extent = _swapchain->extent();
+    const auto& swapchain_extent = _swapchain->extent();
 
     const auto viewport_create_info = VkViewport {
       .x = 0.0f,
@@ -109,12 +109,12 @@ private:
       .sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
       .pNext = nullptr,
       .flags = 0,
-      .depthClampEnable = VK_FALSE,
-      .rasterizerDiscardEnable = VK_FALSE,
+      .depthClampEnable = false,
+      .rasterizerDiscardEnable = false,
       .polygonMode = VK_POLYGON_MODE_FILL,
       .cullMode = VK_CULL_MODE_BACK_BIT,
-      .frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE,
-      .depthBiasEnable = VK_FALSE,
+      .frontFace = VK_FRONT_FACE_CLOCKWISE,
+      .depthBiasEnable = false,
       .depthBiasConstantFactor = 0.0f,
       .depthBiasClamp = 0.0f,
       .depthBiasSlopeFactor = 0.0f,
@@ -126,15 +126,15 @@ private:
       .pNext = nullptr,
       .flags = 0,
       .rasterizationSamples = VK_SAMPLE_COUNT_1_BIT,
-      .sampleShadingEnable = VK_FALSE,
-      .minSampleShading = 0.0f,
+      .sampleShadingEnable = false,
+      .minSampleShading = 1.0f,
       .pSampleMask = nullptr,
-      .alphaToCoverageEnable = VK_FALSE,
-      .alphaToOneEnable = VK_FALSE
+      .alphaToCoverageEnable = false,
+      .alphaToOneEnable = false
     };
 
     const auto color_blend_attachment_description = VkPipelineColorBlendAttachmentState {
-      .blendEnable = VK_FALSE,
+      .blendEnable = false,
       .srcColorBlendFactor = VK_BLEND_FACTOR_ONE,
       .dstColorBlendFactor = VK_BLEND_FACTOR_ZERO,
       .colorBlendOp = VK_BLEND_OP_ADD,
@@ -148,7 +148,7 @@ private:
       .sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
       .pNext = nullptr,
       .flags = 0,
-      .logicOpEnable = VK_FALSE,
+      .logicOpEnable = false,
       .logicOp = VK_LOGIC_OP_COPY,
       .attachmentCount = 1,
       .pAttachments = &color_blend_attachment_description,

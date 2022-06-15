@@ -106,7 +106,7 @@ private:
       .imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
       .imageSharingMode = indices.size() == 0 ? VK_SHARING_MODE_EXCLUSIVE : VK_SHARING_MODE_CONCURRENT,
       .queueFamilyIndexCount = static_cast<sbx::uint32>(indices.size()),
-      .pQueueFamilyIndices = indices.data(),
+      .pQueueFamilyIndices = indices.size() == 0 ? nullptr : indices.data(),
       .preTransform = swapchain_support.capabilities.currentTransform,
       .compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
       .presentMode = present_mode,

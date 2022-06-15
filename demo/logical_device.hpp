@@ -39,6 +39,14 @@ public:
     return _handle;
   }
 
+  [[nodiscard]] VkQueue graphics_queue() const noexcept {
+    return _graphics_queue;
+  }
+
+  [[nodiscard]] VkQueue present_queue() const noexcept {
+    return _present_queue;
+  }
+
 private:
 
   void _initialize() {

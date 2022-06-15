@@ -19,7 +19,8 @@ namespace demo {
 class physical_device {
 
   friend class logical_device;
-  friend class swapchain; 
+  friend class swapchain;
+  friend class command_pool;
 
 public:
 

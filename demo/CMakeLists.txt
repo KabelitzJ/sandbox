@@ -49,6 +49,10 @@ target_sources(
       modifiers.hpp
       render_pass.hpp
       framebuffers.hpp
+      command_pool.hpp
+      command_buffer.hpp
+      semaphore.hpp
+      fence.hpp
 )
 
 target_include_directories(

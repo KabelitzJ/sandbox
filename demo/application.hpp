@@ -24,6 +24,10 @@
 #include "swapchain.hpp"
 #include "pipeline.hpp"
 #include "framebuffers.hpp"
+#include "command_pool.hpp"
+#include "command_buffer.hpp"
+#include "semaphore.hpp"
+#include "fence.hpp"
 
 #include "time.hpp"
 #include "events.hpp"
@@ -59,7 +63,12 @@ public:
     _swapchain{nullptr},
     _render_pass{nullptr},
     _pipeline{nullptr},
-    _framebuffers{nullptr} { }
+    _framebuffers{nullptr},
+    _command_pool{nullptr},
+    _command_buffer{nullptr},
+    _image_available_semaphore{nullptr},
+    _render_finished_semaphore{nullptr},
+    _image_in_flight_fence{nullptr} { }
 
   ~application() {
     for (const auto& subscription : _subscriptions) {
@@ -117,6 +126,11 @@ private:
     _render_pass = std::make_unique<render_pass>(_logical_device.get(), _swapchain.get());
     _pipeline = std::make_unique<pipeline>("demo/assets/shaders/basic", _logical_device.get(), _swapchain.get(), _render_pass.get());
     _framebuffers = std::make_unique<framebuffers>(_logical_device.get(), _swapchain.get(), _render_pass.get());
+    _command_pool = std::make_unique<command_pool>(_physical_device.get(), _logical_device.get());
+    _command_buffer = std::make_unique<command_buffer>(_logical_device.get(), _command_pool.get());
+    _image_available_semaphore = std::make_unique<semaphore>(_logical_device.get());
+    _render_finished_semaphore = std::make_unique<semaphore>(_logical_device.get());
+    _image_in_flight_fence = std::make_unique<fence>(_logical_device.get(), VK_FENCE_CREATE_SIGNALED_BIT);
 
     _subscriptions.emplace_back(_event_manager->subscribe<window_closed_event>([this](const auto&) {
       _is_running = false;
@@ -157,21 +171,110 @@ private:
 
       if (_input->is_key_pressed(key::escape)) {
         _is_running = false;
-      } else if (_input->is_key_pressed(key::p)) {
-        _is_paused = !_is_paused;
-      } else if (_input->is_key_pressed(key::f)) {
-        _window->set_fullscreen();
-      } else if (_input->is_key_pressed(key::r)) {
-        _window->set_windowed();
-      } else if (_input->is_button_pressed(button::left)) {
-        _is_running = false;
       }
 
       if (_is_paused) {
         continue;
       }
 
-      _window->swap_buffers();
+      _draw_frame();
+
+      // _window->swap_buffers();
+    }
+
+    vkDeviceWaitIdle(_logical_device->handle());
+  }
+
+  void _draw_frame() {
+    const auto image_in_flight_fence_handle = _image_in_flight_fence->handle();
+    const auto image_available_semaphore_handle = _image_available_semaphore->handle();
+    const auto render_finished_semaphore_handle = _render_finished_semaphore->handle();
+    const auto command_buffer_handle = _command_buffer->handle();
+    const auto swapchain_handle = _swapchain->handle();
+
+    vkWaitForFences(_logical_device->handle(), 1, &image_in_flight_fence_handle, VK_TRUE, std::numeric_limits<sbx::uint64>::max());
+    vkResetFences(_logical_device->handle(), 1, &image_in_flight_fence_handle);
+
+    auto image_index = sbx::uint32{0};
+    vkAcquireNextImageKHR(_logical_device->handle(), _swapchain->handle(), std::numeric_limits<sbx::uint64>::max(), image_available_semaphore_handle, nullptr, &image_index);
+
+    vkResetCommandBuffer(command_buffer_handle, 0);
+
+    _record_command_buffer(image_index);
+
+    const auto waitStages = std::array<VkPipelineStageFlags, 1>{VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+
+    const auto submit_info = VkSubmitInfo{
+      .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+      .pNext = nullptr,
+      .waitSemaphoreCount = 1,
+      .pWaitSemaphores = &image_available_semaphore_handle,
+      .pWaitDstStageMask = waitStages.data(),
+      .commandBufferCount = 1,
+      .pCommandBuffers = &command_buffer_handle,
+      .signalSemaphoreCount = 1,
+      .pSignalSemaphores = &render_finished_semaphore_handle
+    }; 
+
+    if (vkQueueSubmit(_logical_device->graphics_queue(), 1, &submit_info, image_in_flight_fence_handle) != VK_SUCCESS) {
+      throw std::runtime_error("failed to submit draw command buffer");
+    }
+
+    const auto present_info = VkPresentInfoKHR{
+      .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
+      .pNext = nullptr,
+      .waitSemaphoreCount = 1,
+      .pWaitSemaphores = &render_finished_semaphore_handle,
+      .swapchainCount = 1,
+      .pSwapchains = &swapchain_handle,
+      .pImageIndices = &image_index,
+      .pResults = nullptr
+    };
+
+    vkQueuePresentKHR(_logical_device->present_queue(), &present_info);
+  }
+
+  void _record_command_buffer(const sbx::uint32 image_index) {
+    const auto command_buffer_begin_info = VkCommandBufferBeginInfo{
+      .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+      .pNext = nullptr,
+      .flags = 0,
+      .pInheritanceInfo = nullptr
+    };
+    
+    if (vkBeginCommandBuffer(_command_buffer->handle(), &command_buffer_begin_info) != VK_SUCCESS) {
+      throw std::runtime_error("Failed to begin recording command buffer");
+    }
+
+    const auto clear_color = VkClearValue{
+      .color = {
+        .float32 = { 0.0f, 0.0f, 0.0f, 1.0f }
+      }
+    };
+
+    const auto render_pass_info = VkRenderPassBeginInfo{
+      .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+      .pNext = nullptr,
+      .renderPass = _render_pass->handle(),
+      .framebuffer = (*_framebuffers.get())[image_index],
+      .renderArea = {
+        .offset = { 0, 0 },
+        .extent = _swapchain->extent()
+      },
+      .clearValueCount = 1,
+      .pClearValues = &clear_color
+    };
+
+    vkCmdBeginRenderPass(_command_buffer->handle(), &render_pass_info, VK_SUBPASS_CONTENTS_INLINE);
+
+    vkCmdBindPipeline(_command_buffer->handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, _pipeline->handle());
+
+    vkCmdDraw(_command_buffer->handle(), 3, 1, 0, 0);
+
+    vkCmdEndRenderPass(_command_buffer->handle());
+
+    if (vkEndCommandBuffer(_command_buffer->handle()) != VK_SUCCESS) {
+      throw std::runtime_error("Failed to record command buffer");
     }
   }
 
@@ -195,6 +298,11 @@ private:
   std::unique_ptr<render_pass> _render_pass{};
   std::unique_ptr<pipeline> _pipeline{};
   std::unique_ptr<framebuffers> _framebuffers{};
+  std::unique_ptr<command_pool> _command_pool{};
+  std::unique_ptr<command_buffer> _command_buffer{};
+  std::unique_ptr<semaphore> _image_available_semaphore{};
+  std::unique_ptr<semaphore> _render_finished_semaphore{};
+  std::unique_ptr<fence> _image_in_flight_fence{};
 
 }; // class application
 

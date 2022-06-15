@@ -68,6 +68,16 @@ private:
       .pPreserveAttachments = nullptr
     };
 
+    const auto subpass_dependency = VkSubpassDependency {
+      .srcSubpass = VK_SUBPASS_EXTERNAL,
+      .dstSubpass = 0,
+      .srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+      .dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+      .srcAccessMask = 0,
+      .dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+      .dependencyFlags = 0
+    };
+
     const auto render_pass_create_info = VkRenderPassCreateInfo {
       .sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
       .pNext = nullptr,
@@ -76,8 +86,8 @@ private:
       .pAttachments = &color_attachment_description,
       .subpassCount = 1,
       .pSubpasses = &subpass_description,
-      .dependencyCount = 0,
-      .pDependencies = nullptr
+      .dependencyCount = 1,
+      .pDependencies = &subpass_dependency
     };
 
     if (vkCreateRenderPass(_logical_device->handle(), &render_pass_create_info, nullptr, &_handle) != VK_SUCCESS) {
