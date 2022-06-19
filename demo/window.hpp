@@ -9,6 +9,8 @@
 
 #include <types/primitives.hpp>
 #include <platform/target.hpp>
+#include <utils/noncopyable.hpp>
+#include <utils/nonmovable.hpp>
 
 #include "logger.hpp"
 #include "configuration.hpp"
@@ -20,39 +22,30 @@
 
 namespace demo {
 
-class window {
+class window : public sbx::noncopyable, public sbx::nonmovable {
 
   friend class instance;
 
 public:
 
-  window(configuration* configuration, event_manager* event_manager, monitor* monitor)
+  window(configuration* configuration, event_manager* event_manager, monitor* monitor) 
   : _configuration{configuration},
     _event_manager{event_manager},
     _monitor{monitor},
     _handle{nullptr},
-    _is_fullscreen{false} {
+    _is_fullscreen{false},
+    _width{},
+    _height{},
+    _subscription{} {
     _initialize();
   }
-
-  window(const window&) = delete;
-
-  window(window&&) = delete;
 
   ~window() {
     _terminate();
   }
 
-  window& operator=(const window&) = delete;
-
-  window& operator=(window&&) = delete;
-
   void poll_events() {
     glfwPollEvents();
-  }
-
-  void swap_buffers() {
-    glfwSwapBuffers(_handle);
   }
 
   void set_fullscreen() {
@@ -108,6 +101,14 @@ public:
     return _handle;
   }
 
+  [[nodiscard]] sbx::int32 width() const noexcept {
+    return _width;
+  }
+
+  [[nodiscard]] sbx::int32 height() const noexcept {
+    return _height;
+  }
+
 private:
 
   void _initialize() {
@@ -125,15 +126,23 @@ private:
       throw std::runtime_error("Failed to create window");
     }
 
+    _width = width;
+    _height = height;
+
     glfwSetWindowUserPointer(_handle, _event_manager);
 
     _setup_callbacks();
+
+    _subscription = _event_manager->subscribe<framebuffer_resized_event>([this](const auto& event) {
+      _width = event.width;
+      _height = event.height;
+    });
   }
 
   void _setup_callbacks() {
-    glfwSetWindowSizeCallback(_handle, [](auto* handle, auto w, auto h) {
+    glfwSetWindowSizeCallback(_handle, [](auto* handle, auto width, auto height) {
       auto evt_manager = static_cast<event_manager*>(glfwGetWindowUserPointer(handle));
-      evt_manager->dispatch<window_resized_event>(w, h);
+      evt_manager->dispatch<window_resized_event>(width, height);
     });
 
     glfwSetWindowPosCallback(_handle, [](auto* handle, auto x, auto y) {
@@ -141,9 +150,9 @@ private:
       evt_manager->dispatch<window_moved_event>(x, y);
     });
 
-    glfwSetCursorPosCallback(_handle, [](auto* handle, auto x, auto y) {
+    glfwSetFramebufferSizeCallback(_handle, [](auto* handle, auto width, auto height) {
       auto evt_manager = static_cast<event_manager*>(glfwGetWindowUserPointer(handle));
-      evt_manager->dispatch<mouse_moved_event>(static_cast<sbx::int32>(x), static_cast<sbx::int32>(y));
+      evt_manager->dispatch<framebuffer_resized_event>(width, height);
     });
 
     glfwSetWindowCloseCallback(_handle, [](auto* handle) {
@@ -190,9 +199,20 @@ private:
         evt_manager->dispatch<button_released_event>(button{button_code}, modifiers{mods});
       }
     });
+
+    glfwSetCursorPosCallback(_handle, [](auto* handle, auto x, auto y) {
+      auto evt_manager = static_cast<event_manager*>(glfwGetWindowUserPointer(handle));
+      evt_manager->dispatch<mouse_moved_event>(static_cast<sbx::int32>(x), static_cast<sbx::int32>(y));
+    });
+
+    glfwSetScrollCallback(_handle, [](auto* handle, auto x, auto y) {
+      auto evt_manager = static_cast<event_manager*>(glfwGetWindowUserPointer(handle));
+      evt_manager->dispatch<mouse_scrolled_event>(static_cast<sbx::float32>(x), static_cast<sbx::float32>(y));
+    });
   }
 
   void _terminate() {
+    _event_manager->unsubscribe(_subscription);
     glfwDestroyWindow(_handle);
   }
 
@@ -217,6 +237,9 @@ private:
   GLFWwindow* _handle{};
 
   bool _is_fullscreen{};
+  sbx::int32 _width{};
+  sbx::int32 _height{};
+  subscription _subscription{};
 
 }; // class window
 

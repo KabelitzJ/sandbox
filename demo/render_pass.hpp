@@ -3,12 +3,15 @@
 
 #include <vulkan/vulkan.hpp>
 
+#include <utils/noncopyable.hpp>
+#include <utils/nonmovable.hpp>
+
 #include "logical_device.hpp"
 #include "swapchain.hpp"
 
 namespace demo {
 
-class render_pass {
+class render_pass : public sbx::noncopyable, public sbx::nonmovable {
 
 public:
 
@@ -19,17 +22,9 @@ public:
     _initialize();
   }
 
-  render_pass(const render_pass&) = delete;
-
-  render_pass(render_pass&&) = delete;
-
   ~render_pass() {
     _terminate();
   }
-
-  render_pass& operator=(const render_pass&) = delete;
-
-  render_pass& operator=(render_pass&&) = delete;
 
   [[nodiscard]] VkRenderPass handle() const noexcept {
     return _handle;

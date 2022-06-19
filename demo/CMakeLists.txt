@@ -38,6 +38,7 @@ target_sources(
       subscription.hpp
       event_manager.hpp
       instance.hpp
+      context.hpp
       window.hpp
       monitor.hpp
       physical_device.hpp

@@ -13,6 +13,9 @@ target_sources(
       type_id.inl
       type_name.hpp
       type_name.inl
+      noncopyable.hpp
+      nonmovable.hpp
+      enumerate.hpp
       utils.hpp
 )
 

@@ -4,12 +4,15 @@
 #include <vulkan/vulkan.hpp>
 #include <GLFW/glfw3.h>
 
+#include <utils/noncopyable.hpp>
+#include <utils/nonmovable.hpp>
+
 #include "window.hpp"
 #include "instance.hpp"
 
 namespace demo {
 
-class surface {
+class surface : public sbx::noncopyable, public sbx::nonmovable {
 
 public:
 
@@ -20,17 +23,9 @@ public:
     _initialize();
   }
 
-  surface(const surface&) = delete;
-
-  surface(surface&&) = delete;
-
   ~surface() {
     _terminate();
   }
-
-  surface& operator=(const surface&) = delete;
-
-  surface& operator=(surface&&) = delete;
 
   [[nodiscard]] VkSurfaceKHR handle() const noexcept {
     return _handle;

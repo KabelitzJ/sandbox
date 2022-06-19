@@ -6,6 +6,8 @@
 #include <vector>
 
 #include <io/json/json.hpp>
+#include <utils/noncopyable.hpp>
+#include <utils/nonmovable.hpp>
 
 #include "logger.hpp"
 
@@ -28,7 +30,7 @@ std::vector<std::string> split(const std::string& string, const std::string& del
   return result;
 }
 
-class configuration {
+class configuration : public sbx::noncopyable, public sbx::nonmovable {
 
 public:
 

@@ -6,12 +6,15 @@
 
 #include <vulkan/vulkan.hpp>
 
+#include <utils/noncopyable.hpp>
+#include <utils/nonmovable.hpp>
+
 #include "instance.hpp"
 #include "physical_device.hpp"
 
 namespace demo {
 
-class logical_device {
+class logical_device : public sbx::noncopyable, public sbx::nonmovable {
 
 public:
 
@@ -23,17 +26,9 @@ public:
     _initialize();
   }
 
-  logical_device(const logical_device&) = delete;
-
-  logical_device(logical_device&&) = delete;
-
   ~logical_device() {
     _terminate();
   }
-
-  logical_device& operator=(const logical_device&) = delete;
-
-  logical_device& operator=(logical_device&&) = delete;
 
   [[nodiscard]] VkDevice handle() const noexcept {
     return _handle;

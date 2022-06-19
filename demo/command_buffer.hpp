@@ -3,12 +3,15 @@
 
 #include <vulkan/vulkan.hpp>
 
+#include <utils/noncopyable.hpp>
+#include <utils/nonmovable.hpp>
+
 #include "logical_device.hpp"
 #include "command_pool.hpp"
 
 namespace demo {
 
-class command_buffer {
+class command_buffer : public sbx::noncopyable, public sbx::nonmovable {
 
 public:
 
@@ -19,17 +22,9 @@ public:
     _initialize();
   }
 
-  command_buffer(const command_buffer&) = delete;
-
-  command_buffer(command_buffer&&) = delete;
-
   ~command_buffer() {
     _terminate();
   }
-
-  command_buffer& operator=(const command_buffer&) = delete;
-
-  command_buffer& operator=(command_buffer&&) = delete;
 
   [[nodiscard]] VkCommandBuffer handle() const noexcept {
     return _handle;

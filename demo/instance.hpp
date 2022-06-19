@@ -7,6 +7,8 @@
 
 #include <types/primitives.hpp>
 #include <platform/target.hpp>
+#include <utils/noncopyable.hpp>
+#include <utils/nonmovable.hpp>
 
 #include "logger.hpp"
 #include "window.hpp"
@@ -14,7 +16,7 @@
 
 namespace demo {
 
-class instance {
+class instance : public sbx::noncopyable, public sbx::nonmovable {
 
   friend class logical_device;
 
@@ -31,17 +33,9 @@ public:
     _initialize();
   }
 
-  instance(const instance&) = delete;
-
-  instance(instance&&) = delete;
-
   ~instance() {
     _terminate();
   }
-
-  instance& operator=(const instance&) = delete;
-
-  instance& operator=(instance&&) = delete;
 
   [[nodiscard]] VkInstance handle() const noexcept {
     return _handle;

@@ -12,6 +12,7 @@
 #include "logger.hpp"
 #include "configuration.hpp"
 #include "event_manager.hpp"
+#include "context.hpp"
 #include "monitor.hpp"
 #include "window.hpp"
 #include "input.hpp"
@@ -38,6 +39,8 @@ namespace demo {
 
 class application {
 
+  inline static constexpr auto max_frames_in_flight = 2;
+
 public:
 
   /**
@@ -50,9 +53,10 @@ public:
     _subscriptions{},
     _is_running{false},
     _is_paused{false},
-    _logger{nullptr},
     _configuration{nullptr},
+    _logger{nullptr},
     _event_manager{nullptr},
+    _context{nullptr},
     _monitor{nullptr},
     _window{nullptr},
     _input{nullptr},
@@ -108,11 +112,12 @@ private:
     // Set up all systems - ORDER MATTERS because of dependencies
 
     // Core systems
-    _logger = std::make_unique<logger>();
     _configuration = std::make_unique<configuration>(_config_path);
+    _logger = std::make_unique<logger>(_configuration->get<std::string>("name"));
     _event_manager = std::make_unique<event_manager>(_logger.get());
 
     // Window related systems
+    _context = std::make_unique<context>();
     _monitor = std::make_unique<monitor>(_event_manager.get());
     _window = std::make_unique<window>(_configuration.get(), _event_manager.get(), _monitor.get());
     _input = std::make_unique<input>(_event_manager.get());
@@ -178,8 +183,6 @@ private:
       }
 
       _draw_frame();
-
-      // _window->swap_buffers();
     }
 
     vkDeviceWaitIdle(_logical_device->handle());
@@ -284,12 +287,15 @@ private:
   bool _is_running{};
   bool _is_paused{};
 
-  std::unique_ptr<logger> _logger{};
   std::unique_ptr<configuration> _configuration{};
+  std::unique_ptr<logger> _logger{};
   std::unique_ptr<event_manager> _event_manager{};
+
+  std::unique_ptr<context> _context{};
   std::unique_ptr<monitor> _monitor{};
   std::unique_ptr<window> _window{};
   std::unique_ptr<input> _input{};
+
   std::unique_ptr<instance> _instance{};
   std::unique_ptr<surface> _surface{};
   std::unique_ptr<physical_device> _physical_device{};

@@ -9,6 +9,8 @@
 
 #include <types/primitives.hpp>
 #include <platform/target.hpp>
+#include <utils/noncopyable.hpp>
+#include <utils/nonmovable.hpp>
 
 #include "logger.hpp"
 #include "instance.hpp"
@@ -16,7 +18,7 @@
 
 namespace demo {
 
-class physical_device {
+class physical_device : public sbx::noncopyable, public sbx::nonmovable {
 
   friend class logical_device;
   friend class swapchain;
@@ -34,15 +36,7 @@ public:
     _initialize();
   }
 
-  physical_device(const physical_device&) = delete;
-
-  physical_device(physical_device&&) = delete;
-
   ~physical_device() = default;
-
-  physical_device& operator=(const physical_device&) = delete;
-
-  physical_device& operator=(physical_device&&) = delete;
 
   [[nodiscard]] VkPhysicalDevice handle() const noexcept {
     return _handle;

@@ -8,8 +8,9 @@
 #include <vulkan/vulkan.hpp>
 
 #include <io/file_reader.hpp>
-
 #include <types/primitives.hpp>
+#include <utils/noncopyable.hpp>
+#include <utils/nonmovable.hpp>
 
 #include "logical_device.hpp"
 #include "render_pass.hpp"
@@ -18,7 +19,7 @@
 
 namespace demo {
 
-class pipeline {
+class pipeline : public sbx::noncopyable, public sbx::nonmovable {
 
 public:
 
@@ -32,17 +33,9 @@ public:
     _initialize(absolute_path);
   }
 
-  pipeline(const pipeline&) = delete;
-
-  pipeline(pipeline&&) = delete;
-
   ~pipeline() {
     _terminate();
   }
-
-  pipeline& operator=(const pipeline&) = delete;
-
-  pipeline& operator=(pipeline&&) = delete;
 
   [[nodiscard]] const VkPipelineLayout& layout() const noexcept {
     return _pipeline_layout;

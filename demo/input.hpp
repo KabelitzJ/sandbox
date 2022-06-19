@@ -5,6 +5,9 @@
 #include <vector>
 #include <iostream>
 
+#include <utils/noncopyable.hpp>
+#include <utils/nonmovable.hpp>
+
 #include "events.hpp"
 #include "event_manager.hpp"
 #include "key.hpp"
@@ -12,7 +15,7 @@
 
 namespace demo {
 
-class input {
+class input : public sbx::noncopyable, public sbx::nonmovable {
 
   friend class application;
 

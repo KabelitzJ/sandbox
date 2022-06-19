@@ -4,6 +4,8 @@
 #include <GLFW/glfw3.h>
 
 #include <types/primitives.hpp>
+#include <utils/noncopyable.hpp>
+#include <utils/nonmovable.hpp>
 
 #include "logger.hpp"
 #include "event_manager.hpp"
@@ -11,7 +13,7 @@
 
 namespace demo {
 
-class monitor {
+class monitor : public sbx::noncopyable, public sbx::nonmovable {
 
 public:
 
@@ -24,17 +26,7 @@ public:
     _initialize();
   }
 
-  monitor(const monitor&) = delete;
-
-  monitor(monitor&&) = delete;
-
-  ~monitor() {
-    _terminate();
-  }
-
-  monitor& operator=(const monitor&) = delete;
-
-  monitor& operator=(monitor&&) = delete;
+  ~monitor() = default;
 
   [[nodiscard]] sbx::int32 width() const noexcept {
     return _width;
@@ -55,14 +47,6 @@ public:
 private:
 
   void _initialize() {
-    if (!glfwInit()) {
-      throw std::runtime_error{"Failed to initialize GLFW"};
-    }
-
-    if (!glfwVulkanSupported()) {
-      throw std::runtime_error{"Vulkan is not supported"};
-    }
-
     _handle = glfwGetPrimaryMonitor();
 
     if (!_handle) {
@@ -86,10 +70,6 @@ private:
         evt_manager->dispatch<monitor_disconnected_event>();
       }
     });
-  }
-
-  void _terminate() {
-    glfwTerminate();
   }
 
   event_manager* _event_manager{};

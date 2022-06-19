@@ -6,10 +6,12 @@
 #include <algorithm>
 #include <ranges>
 
-#include <types/primitives.hpp>
-
 #include <vulkan/vulkan.hpp>
 #include <GLFW/glfw3.h>
+
+#include <types/primitives.hpp>
+#include <utils/noncopyable.hpp>
+#include <utils/nonmovable.hpp>
 
 #include "enumerate.hpp"
 
@@ -20,7 +22,7 @@
 
 namespace demo {
 
-class swapchain {
+class swapchain : public sbx::noncopyable, public sbx::nonmovable {
 
 public:
 
@@ -37,17 +39,9 @@ public:
     _initialize();
   }
 
-  swapchain(const swapchain&) = delete;
-
-  swapchain(swapchain&&) = delete;
-
   ~swapchain() {
     _terminate();
   }
-
-  swapchain& operator=(const swapchain&) = delete;
-
-  swapchain& operator=(swapchain&&) = delete;
 
   [[nodiscard]] VkSwapchainKHR handle() const noexcept {
     return _handle;
@@ -61,7 +55,7 @@ public:
     return _image_views;
   }
 
-  [[nodiscard]] const VkFormat& format() const noexcept {
+  [[nodiscard]] VkFormat format() const noexcept {
     return _format;
   }
 

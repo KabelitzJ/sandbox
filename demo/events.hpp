@@ -19,10 +19,10 @@ struct window_moved_event {
   sbx::int32 y{};
 }; // struct window_moved_event
 
-struct mouse_moved_event {
-  sbx::int32 x{};
-  sbx::int32 y{};
-}; // struct mouse_moved_event
+struct framebuffer_resized_event {
+  sbx::int32 width{};
+  sbx::int32 height{};
+}; // struct framebuffer_resized_event
 
 struct window_minimized_event { };
 
@@ -55,6 +55,16 @@ struct button_released_event {
   button button;
   modifiers modifiers{};
 }; // struct button_released_event
+
+struct mouse_moved_event {
+  sbx::int32 x{};
+  sbx::int32 y{};
+}; // struct mouse_moved_event
+
+struct mouse_scrolled_event {
+  sbx::float32 x{};
+  sbx::float32 y{};
+}; // struct mouse_scrolled_event
 
 } // namespace demo
 
