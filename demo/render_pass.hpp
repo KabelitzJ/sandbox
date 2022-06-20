@@ -4,14 +4,13 @@
 #include <vulkan/vulkan.hpp>
 
 #include <utils/noncopyable.hpp>
-#include <utils/nonmovable.hpp>
 
 #include "logical_device.hpp"
 #include "swapchain.hpp"
 
 namespace demo {
 
-class render_pass : public sbx::noncopyable, public sbx::nonmovable {
+class render_pass : sbx::noncopyable {
 
 public:
 

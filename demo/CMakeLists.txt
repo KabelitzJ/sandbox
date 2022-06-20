@@ -15,8 +15,9 @@ add_dependencies(
   ${PROJECT_NAME}
   sbx::sbx
   Vulkan::Vulkan
-  glfw
-  spdlog
+  fmt::fmt
+  glfw::glfw3
+  spdlog::spdlog
   basic_shader
 )
 
@@ -68,8 +69,9 @@ target_link_libraries(
   PUBLIC
     sbx::sbx
     Vulkan::Vulkan
-    glfw
-    spdlog
+    fmt::fmt
+    glfw::glfw3
+    spdlog::spdlog
 )
 
 target_compile_features(

@@ -5,14 +5,13 @@
 #include <GLFW/glfw3.h>
 
 #include <utils/noncopyable.hpp>
-#include <utils/nonmovable.hpp>
 
 #include "window.hpp"
 #include "instance.hpp"
 
 namespace demo {
 
-class surface : public sbx::noncopyable, public sbx::nonmovable {
+class surface : sbx::noncopyable {
 
 public:
 

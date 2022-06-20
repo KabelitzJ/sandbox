@@ -10,7 +10,6 @@
 #include <types/primitives.hpp>
 #include <platform/target.hpp>
 #include <utils/noncopyable.hpp>
-#include <utils/nonmovable.hpp>
 
 #include "logger.hpp"
 #include "configuration.hpp"
@@ -22,7 +21,7 @@
 
 namespace demo {
 
-class window : public sbx::noncopyable, public sbx::nonmovable {
+class window : sbx::noncopyable {
 
   friend class instance;
 

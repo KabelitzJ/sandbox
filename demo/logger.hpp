@@ -8,11 +8,10 @@
 #include <spdlog/sinks/stdout_color_sinks.h>
 
 #include <utils/noncopyable.hpp>
-#include <utils/nonmovable.hpp>
 
 namespace demo {
 
-class logger : public sbx::noncopyable, public sbx::nonmovable {
+class logger : sbx::noncopyable {
 
   template<typename... Args>
   using format_string_type = spdlog::format_string_t<Args...>;

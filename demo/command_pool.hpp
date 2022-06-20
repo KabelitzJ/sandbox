@@ -4,14 +4,13 @@
 #include <vulkan/vulkan.hpp>
 
 #include <utils/noncopyable.hpp>
-#include <utils/nonmovable.hpp>
 
 #include "physical_device.hpp"
 #include "logical_device.hpp"
 
 namespace demo {
 
-class command_pool : public sbx::noncopyable, public sbx::nonmovable {
+class command_pool : sbx::noncopyable {
 
 public:
 

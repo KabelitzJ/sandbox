@@ -11,7 +11,6 @@
 
 #include <types/primitives.hpp>
 #include <utils/noncopyable.hpp>
-#include <utils/nonmovable.hpp>
 
 #include "enumerate.hpp"
 
@@ -22,7 +21,7 @@
 
 namespace demo {
 
-class swapchain : public sbx::noncopyable, public sbx::nonmovable {
+class swapchain : sbx::noncopyable {
 
 public:
 

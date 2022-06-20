@@ -10,7 +10,6 @@
 #include <io/file_reader.hpp>
 #include <types/primitives.hpp>
 #include <utils/noncopyable.hpp>
-#include <utils/nonmovable.hpp>
 
 #include "logical_device.hpp"
 #include "render_pass.hpp"
@@ -19,7 +18,7 @@
 
 namespace demo {
 
-class pipeline : public sbx::noncopyable, public sbx::nonmovable {
+class pipeline : sbx::noncopyable {
 
 public:
 
@@ -265,6 +264,8 @@ private:
 
     if (file_name[0] == 'v') {
       return VK_SHADER_STAGE_VERTEX_BIT;
+    } else if (file_name[0] == 'f') {
+      return VK_SHADER_STAGE_FRAGMENT_BIT;
     } else if (file_name[0] == 't') {
       // Here we unfortunately have to check the full name of the shader.
       if (file_name == "tessellation_evaluation") {
@@ -276,8 +277,6 @@ private:
       }
     } else if (file_name[0] == 'g') {
       return VK_SHADER_STAGE_GEOMETRY_BIT;
-    } else if (file_name[0] == 'f') {
-      return VK_SHADER_STAGE_FRAGMENT_BIT;
     } else if (file_name[0] == 'c') {
       return VK_SHADER_STAGE_COMPUTE_BIT;
     } else {

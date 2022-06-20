@@ -10,7 +10,6 @@
 #include <types/primitives.hpp>
 #include <platform/target.hpp>
 #include <utils/noncopyable.hpp>
-#include <utils/nonmovable.hpp>
 
 #include "logger.hpp"
 #include "instance.hpp"
@@ -18,7 +17,7 @@
 
 namespace demo {
 
-class physical_device : public sbx::noncopyable, public sbx::nonmovable {
+class physical_device : sbx::noncopyable {
 
   friend class logical_device;
   friend class swapchain;

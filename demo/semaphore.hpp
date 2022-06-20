@@ -4,13 +4,12 @@
 #include <vulkan/vulkan.hpp>
 
 #include <utils/noncopyable.hpp>
-#include <utils/nonmovable.hpp>
 
 #include "logical_device.hpp"
 
 namespace demo {
 
-class semaphore : sbx::noncopyable, sbx::nonmovable {
+class semaphore : sbx::noncopyable {
 
 public:
 

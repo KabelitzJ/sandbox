@@ -8,7 +8,6 @@
 #include <types/primitives.hpp>
 #include <platform/target.hpp>
 #include <utils/noncopyable.hpp>
-#include <utils/nonmovable.hpp>
 
 #include "logger.hpp"
 #include "window.hpp"
@@ -16,7 +15,7 @@
 
 namespace demo {
 
-class instance : public sbx::noncopyable, public sbx::nonmovable {
+class instance : sbx::noncopyable {
 
   friend class logical_device;
 

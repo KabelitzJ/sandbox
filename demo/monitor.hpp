@@ -5,7 +5,6 @@
 
 #include <types/primitives.hpp>
 #include <utils/noncopyable.hpp>
-#include <utils/nonmovable.hpp>
 
 #include "logger.hpp"
 #include "event_manager.hpp"
@@ -13,7 +12,7 @@
 
 namespace demo {
 
-class monitor : public sbx::noncopyable, public sbx::nonmovable {
+class monitor : sbx::noncopyable {
 
 public:
 

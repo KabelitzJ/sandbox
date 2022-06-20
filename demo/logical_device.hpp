@@ -7,14 +7,13 @@
 #include <vulkan/vulkan.hpp>
 
 #include <utils/noncopyable.hpp>
-#include <utils/nonmovable.hpp>
 
 #include "instance.hpp"
 #include "physical_device.hpp"
 
 namespace demo {
 
-class logical_device : public sbx::noncopyable, public sbx::nonmovable {
+class logical_device : sbx::noncopyable {
 
 public:
 

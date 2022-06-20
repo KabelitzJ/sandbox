@@ -6,7 +6,6 @@
 #include <iostream>
 
 #include <utils/noncopyable.hpp>
-#include <utils/nonmovable.hpp>
 
 #include "events.hpp"
 #include "event_manager.hpp"
@@ -15,7 +14,7 @@
 
 namespace demo {
 
-class input : public sbx::noncopyable, public sbx::nonmovable {
+class input : sbx::noncopyable {
 
   friend class application;
 
