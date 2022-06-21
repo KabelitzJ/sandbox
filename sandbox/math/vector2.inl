@@ -186,7 +186,12 @@ inline constexpr std::ostream& operator<<(std::ostream& output_stream, const bas
 
 template<arithmetic Type>
 inline constexpr std::ofstream& operator<<(std::ofstream& output_stream, const basic_vector2<Type>& vector) {
-  // [TODO] KAJ 2022-01-31 09:48 - Find a suitable format for vectors and implement a parser for that format.
+  auto json = nlohmann::json::object();
+
+  to_json(json, vector);
+
+  output_stream << std::setw(2) << json;
+
   return output_stream;
 }
 
@@ -206,6 +211,20 @@ template<arithmetic Type, input_stream<Type> InputStream>
 inline constexpr InputStream& operator>>(InputStream& input_stream, basic_vector2<Type>& vector) {
   // [TODO] KAJ 2022-01-31 09:48 - Find a suitable format for vectors and implement a parser for that format.
   return input_stream;
+}
+
+template<arithmetic Type>
+void to_json(nlohmann::json& json, const basic_vector2<Type>& vector) {
+  json = nlohmann::json::object({
+    {"x", vector.x},
+    {"y", vector.y}
+  });
+}
+
+template<arithmetic Type>
+void from_json(const nlohmann::json& json, basic_vector2<Type>& vector) {
+  json.at("x").get_to(vector.x);
+  json.at("y").get_to(vector.y);
 }
 
 } // namespace sbx

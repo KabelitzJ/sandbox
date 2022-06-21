@@ -7,6 +7,8 @@
 #include <vulkan/vulkan.hpp>
 #include <GLFW/glfw3.h>
 
+#include <fmt/format.h>
+
 #include <types/primitives.hpp>
 #include <platform/target.hpp>
 #include <utils/noncopyable.hpp>
@@ -118,8 +120,13 @@ private:
     const auto name = _configuration->get<std::string>("name");
     const auto width = _configuration->get<sbx::int32>("window.resolution.width");
     const auto height = _configuration->get<sbx::int32>("window.resolution.height");
+    const auto version_major = _configuration->get<sbx::int32>("version.major");
+    const auto version_minor = _configuration->get<sbx::int32>("version.minor");
+    const auto version_patch = _configuration->get<sbx::int32>("version.patch");
 
-    _handle = glfwCreateWindow(width, height, name.c_str(), nullptr, nullptr);
+    const auto title = fmt::format("{} [v{}.{}.{}]", name, version_major, version_minor, version_patch);
+
+    _handle = glfwCreateWindow(width, height, title.c_str(), nullptr, nullptr);
 
     if (!_handle) {
       throw std::runtime_error("Failed to create window");

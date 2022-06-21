@@ -16,4 +16,6 @@ int main() {
   auto app = demo::application{"demo/config/app.json"};
 
   return app.start();
+
+  return 0;
 }

@@ -45,7 +45,7 @@ struct basic_vector3 {
   /** @brief The type that can describe the length of the vector */
   using length_type = float32;
 
-  /** @brief The type that can index compotents */
+  /** @brief The type that can index components */
   using index_type = std::size_t;
 
   // -- Static data members --
@@ -353,7 +353,7 @@ template<arithmetic Type>
 [[nodiscard]] constexpr basic_vector3<Type> operator*(basic_vector3<Type> lhs, const Type rhs) noexcept;
 
 /**
- * @brief Devides a vector by a scalar.
+ * @brief Divides a vector by a scalar.
  * 
  * @tparam Type The type of the vectors components.
  * 
@@ -436,6 +436,14 @@ constexpr std::istream& operator>>(std::istream& input_stream, basic_vector3<Typ
 template<arithmetic Type, input_stream<Type> InputStream>
 constexpr InputStream& operator>>(InputStream& input_stream, basic_vector3<Type>& vector);
 
+// -- Serialization functions --
+
+template<arithmetic Type>
+void to_json(nlohmann::json& json, const basic_vector3<Type>& vector);
+
+template<arithmetic Type>
+void from_json(const nlohmann::json& json, basic_vector3<Type>& vector);
+
 // -- Type aliases --
 
 /** @brief Type alias for a three dimensional vector with 32 bit floating-point components. */
@@ -446,12 +454,6 @@ using vector3i = basic_vector3<int32>;
 
 /** @brief Type alias for vector3f. */
 using vector3 = vector3f;
-
-template<arithmetic Type>
-void to_json(nlohmann::json& json, const basic_vector3<Type>& vector);
-
-template<arithmetic Type>
-void from_json(const nlohmann::json& json, basic_vector3<Type>& vector);
 
 } // namespace sbx
 

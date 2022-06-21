@@ -7,6 +7,8 @@
 #include <ostream>
 #include <type_traits>
 
+#include <nlohmann/json.hpp>
+
 #include <meta/concepts.hpp>
 
 #include <types/primitives.hpp>
@@ -41,7 +43,7 @@ struct basic_vector2 {
   /** @brief The type that can describe the length of the vector */
   using length_type = float32;
 
-  /** @brief The type that can index compotents */
+  /** @brief The type that can index components */
   using index_type = std::size_t;
 
   // -- Static data members --
@@ -327,7 +329,7 @@ template<arithmetic Type>
 [[nodiscard]] constexpr basic_vector2<Type> operator*(basic_vector2<Type> lhs, const Type rhs) noexcept;
 
 /**
- * @brief Devides a vector by a scalar.
+ * @brief Divides a vector by a scalar.
  * 
  * @tparam Type The type of the vectors components.
  * 
@@ -409,6 +411,14 @@ constexpr std::ifstream& operator>>(std::ifstream& input_stream, basic_vector2<T
  */
 template<arithmetic Type, input_stream<Type> InputStream>
 constexpr InputStream& operator>>(InputStream& input_stream, basic_vector2<Type>& vector);
+
+// -- Serialization functions --
+
+template<arithmetic Type>
+void to_json(nlohmann::json& json, const basic_vector2<Type>& vector);
+
+template<arithmetic Type>
+void from_json(const nlohmann::json& json, basic_vector2<Type>& vector);
 
 // -- Type aliases --
 
