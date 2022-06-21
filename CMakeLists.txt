@@ -24,24 +24,17 @@ add_subdirectory(external)
 # Build library
 add_subdirectory(sandbox)
 
-# Install library
-#
-# include(GNUInstallDirs)
-# include(CMakePackageConfigHelpers)
-#
-# TODO: Add install target
-
 # Build demo project
 option(SBX_BUILD_DEMO "Enable building the demo project." ON)
 
-if (SBX_BUILD_DEMO)
+if(SBX_BUILD_DEMO)
   add_subdirectory(demo)
 endif()
 
 # Build unit tests
 option(SBX_BUILD_TESTS "Enable building unit tests." OFF)
 
-if (SBX_BUILD_TESTS)
+if(SBX_BUILD_TESTS)
   enable_testing()
   add_subdirectory(tests)
 endif()
@@ -49,6 +42,6 @@ endif()
 # Generate documentations
 option(SBX_GENERATE_DOCS "Enable generating documentations." OFF)
 
-if (SBX_GENERATE_DOCS)
+if(SBX_GENERATE_DOCS)
   add_subdirectory(docs)
 endif()

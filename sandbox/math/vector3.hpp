@@ -7,6 +7,8 @@
 #include <ostream>
 #include <type_traits>
 
+#include <nlohmann/json.hpp>
+
 #include <meta/concepts.hpp>
 
 #include <types/primitives.hpp>
@@ -444,6 +446,12 @@ using vector3i = basic_vector3<int32>;
 
 /** @brief Type alias for vector3f. */
 using vector3 = vector3f;
+
+template<arithmetic Type>
+void to_json(nlohmann::json& json, const basic_vector3<Type>& vector);
+
+template<arithmetic Type>
+void from_json(const nlohmann::json& json, basic_vector3<Type>& vector);
 
 } // namespace sbx
 

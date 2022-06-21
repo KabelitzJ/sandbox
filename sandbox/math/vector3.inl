@@ -240,4 +240,20 @@ inline constexpr InputStream& operator>>(InputStream& input_stream, basic_vector
   return input_stream;
 }
 
+template<arithmetic Type>
+void to_json(nlohmann::json& json, const basic_vector3<Type>& vector) {
+  json = {
+    {"x", vector.x},
+    {"y", vector.y},
+    {"z", vector.z}
+  };
+}
+
+template<arithmetic Type>
+void from_json(const nlohmann::json& json, basic_vector3<Type>& vector) {
+  json.at("x").get_to(vector.x);
+  json.at("y").get_to(vector.y);
+  json.at("z").get_to(vector.z);
+}
+
 } // namespace sbx

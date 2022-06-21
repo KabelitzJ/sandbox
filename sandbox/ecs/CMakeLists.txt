@@ -78,22 +78,3 @@ set_target_properties(
     LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<$<CONFIG:Debug>:debug>$<$<CONFIG:Release>:release>/lib/"
     ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<$<CONFIG:Debug>:debug>$<$<CONFIG:Release>:release>/lib/"
 )
-
-install(
-  TARGETS ${PROJECT_NAME}
-  EXPORT ${CMAKE_PROJECT_NAME}_${PROJECT_NAME}_export
-  FILE_SET HEADERS
-    DESTINATION "include/${CMAKE_PROJECT_NAME}"
-  RUNTIME
-    DESTINATION "bin"
-  LIBRARY
-    DESTINATION "lib"
-  ARCHIVE
-    DESTINATION "lib"
-)
-
-install(
-  EXPORT ${CMAKE_PROJECT_NAME}_${PROJECT_NAME}_export
-  DESTINATION "cmake"
-  NAMESPACE ${PROJECT_NAME}::
-)
