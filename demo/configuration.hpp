@@ -5,7 +5,8 @@
 #include <string>
 #include <vector>
 
-#include <io/json/json.hpp>
+#include <nlohmann_json/json.hpp>
+
 #include <utils/noncopyable.hpp>
 
 #include "logger.hpp"
@@ -33,50 +34,19 @@ class configuration : sbx::noncopyable {
 
 public:
 
-  configuration(const std::filesystem::path& path)
-  : _document{std::filesystem::absolute(path)},
-    _cache{} {}
+  configuration(const std::filesystem::path& path) { }
 
   ~configuration() = default;
 
   template<typename Type>
   Type get(const std::string& key) {
-    auto node = sbx::json_node{};
-
-    if (const auto itr = _cache.find(key); itr != _cache.cend()) {
-      node = itr->second;
-    } else {
-      const auto path = split(key, ".");
-
-      for (const auto& segment : path) {
-        if (node.is_null()) {
-          node = _document[segment];
-        } else {
-          node = node[segment];
-        }
-      }
-      
-      _cache.emplace(key, node);
-    }
-
-    if constexpr (std::is_same_v<Type, std::string>) {
-      return node.as_string();
-    } else if (std::is_integral_v<Type> && !std::is_same_v<Type, bool>) {
-      const auto copy = sbx::float32{node.as_number()};
-      return static_cast<Type>(copy);
-    } else if (std::is_floating_point_v<Type>) {
-      return static_cast<Type>(node.as_number());
-    } else if (std::is_same_v<Type, bool>) {
-      return node.as_boolean();
-    } else {
-      throw std::runtime_error{"Configuration does not support this type"};
-    }
+    return Type{};
   }
 
 private:
 
-  sbx::json_document _document{};
-  std::unordered_map<std::string, sbx::json_node> _cache{};
+
+
 
 }; // class configuration
 
