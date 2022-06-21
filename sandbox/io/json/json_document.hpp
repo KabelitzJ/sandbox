@@ -56,6 +56,14 @@ public:
     return const_cast<json_node&>(std::as_const(*this)[index]);
   }
 
+  std::string dump(const size_t indent = 0) const {
+    auto stream = std::stringstream{};
+
+    stream << *_root;
+
+    return stream.str();
+  }
+
 private:
 
   std::shared_ptr<json_node> _root{};

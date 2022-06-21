@@ -13,7 +13,13 @@
 #include "application.hpp"
 
 int main() {
-  auto app = demo::application{"demo/config/app.json"};
+  // auto app = demo::application{"demo/config/app.json"};
 
-  return app.start();
+  // return app.start();
+
+  auto doc = sbx::json_document{"demo/config/app.json"};
+
+  std::cout << doc.dump();
+
+  return 0;
 }
