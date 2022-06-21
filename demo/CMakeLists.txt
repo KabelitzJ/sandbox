@@ -16,7 +16,7 @@ add_dependencies(
   sbx::sbx
   Vulkan::Vulkan
   fmt::fmt
-  glfw::glfw3
+  glfw
   nlohmann_json::nlohmann_json
   spdlog::spdlog
   basic_shader
@@ -71,7 +71,7 @@ target_link_libraries(
     sbx::sbx
     Vulkan::Vulkan
     fmt::fmt
-    glfw::glfw3
+    glfw
     nlohmann_json::nlohmann_json
     spdlog::spdlog
 )

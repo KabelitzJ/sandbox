@@ -113,7 +113,8 @@ private:
 
     // Core systems
     _configuration = std::make_unique<configuration>(_config_path);
-    _logger = std::make_unique<logger>(_configuration->get<std::string>("name"));
+    const auto name = _configuration->get<std::string>("name");
+    _logger = std::make_unique<logger>(name);
     _event_manager = std::make_unique<event_manager>(_logger.get());
 
     // Window related systems

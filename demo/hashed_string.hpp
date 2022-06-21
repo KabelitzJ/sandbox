@@ -2,6 +2,7 @@
 #define DEMO_HASHED_STRING_HPP_
 
 #include <string>
+#include <string_view>
 
 #include "hash.hpp"
 
@@ -9,11 +10,6 @@ namespace demo {
 
 template<character Character>
 class basic_hashed_string { 
-
-  template<typename>
-  friend constexpr bool operator==(const basic_hashed_string<Character>& lhs, const basic_hashed_string<Character>& rhs) noexcept;
-  template<typename>
-  friend constexpr bool operator<=>(const basic_hashed_string<Character>& lhs, const basic_hashed_string<Character>& rhs) noexcept;
 
 public:
 
@@ -31,9 +27,19 @@ public:
   constexpr basic_hashed_string(const char_type(&string)[Size]) noexcept
   : _hash{fnv_1a_hash(string, Size)} { }
 
+  constexpr basic_hashed_string(const std::basic_string<char_type>& string) noexcept
+  : _hash{fnv_1a_hash(string.data(), string.size())} { }
+
+  constexpr basic_hashed_string(std::basic_string_view<char_type> string) noexcept
+  : _hash{fnv_1a_hash(string.data(), string.size())} { }
+
   ~basic_hashed_string() noexcept = default;
 
   constexpr operator hash_type() const noexcept {
+    return _hash;
+  }
+
+  constexpr hash_type hash() const noexcept {
     return _hash;
   }
 
@@ -45,12 +51,12 @@ private:
 
 template<character Character>
 [[nodiscard]] constexpr bool operator==(const basic_hashed_string<Character>& lhs, const basic_hashed_string<Character>& rhs) noexcept {
-  return lhs._hash == rhs._hash;
+  return lhs.hash() == rhs.hash();
 }
 
 template<character Character>
 [[nodiscard]] constexpr std::strong_ordering operator<=>(const basic_hashed_string<Character>& lhs, const basic_hashed_string<Character>& rhs) noexcept {
-  return lhs._hash <=> rhs._hash;
+  return lhs.hash() <=> rhs.hash();
 }
 
 template<character Character>
@@ -58,6 +64,12 @@ basic_hashed_string(const Character* string, const std::size_t size) -> basic_ha
 
 template<character Character, std::size_t Size>
 basic_hashed_string(const Character(&string)[Size]) -> basic_hashed_string<Character>;
+
+template<character Character, std::size_t Size>
+basic_hashed_string(const std::basic_string<Character>&) -> basic_hashed_string<Character>;
+
+template<character Character, std::size_t Size>
+basic_hashed_string(std::basic_string_view<Character>) -> basic_hashed_string<Character>;
 
 using hashed_string = basic_hashed_string<char>;
 
@@ -70,5 +82,12 @@ namespace literals {
 } // namespace literals
 
 } // namespace demo
+
+template<>
+struct std::hash<demo::hashed_string> {
+  [[nodiscard]] constexpr std::size_t operator()(const demo::hashed_string& string) const noexcept {
+    return string.hash();
+  }
+};
 
 #endif // DEMO_HASHED_STRING_HPP_
