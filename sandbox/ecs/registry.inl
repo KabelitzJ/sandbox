@@ -16,12 +16,12 @@ Component& registry::add_component(const entity& entity, Args&&... args) {
   const auto component_id = _component_id<no_cv_component_type>();
 
   if (component_id >= _component_containers.size()) {
-    _component_containers.emplace_back(std::make_unique<component_storage<no_cv_component_type>>());
+    _component_containers.emplace_back(std::make_unique<component_container<no_cv_component_type>>());
   }
 
-  auto& component_container = *static_cast<component_storage<no_cv_component_type>*>(_component_containers[component_id].get());
+  auto& component = *static_cast<component_container<no_cv_component_type>*>(_component_containers[component_id].get());
 
-  return component_container.emplace(entity, std::forward<Args>(args)...);
+  return component.emplace(entity, std::forward<Args>(args)...);
 }
 
 template<typename Component>
@@ -34,9 +34,9 @@ void registry::remove_component(const entity& entity) {
 
   const auto component_id = _component_id<no_cv_component_type>();
 
-  auto& component_container = *static_cast<component_storage<no_cv_component_type>*>(_component_containers[component_id].get());
+  auto& component = *static_cast<component_container<no_cv_component_type>*>(_component_containers[component_id].get());
 
-  component_container.erase(entity);
+  component.erase(entity);
 }
 
 template<typename Component>
@@ -53,9 +53,9 @@ bool registry::has_component(const entity& entity) const {
     return false;
   }
 
-  auto& component_container = *static_cast<component_storage<no_cv_component_type>*>(_component_containers[component_id].get());
+  auto& component = *static_cast<component_container<no_cv_component_type>*>(_component_containers[component_id].get());
 
-  return component_container.contains(entity);
+  return component.contains(entity);
 }
 
 template<typename Component>
@@ -68,9 +68,9 @@ const Component& registry::get_component(const entity& entity) const {
 
   const auto component_id = _component_id<no_cv_component_type>();
 
-  const auto& component_container = *static_cast<component_storage<no_cv_component_type>*>(_component_containers[component_id].get());
+  const auto& component = *static_cast<component_container<no_cv_component_type>*>(_component_containers[component_id].get());
 
-  return component_container.get(entity);
+  return component.get(entity);
 }
 
 template<typename Component>

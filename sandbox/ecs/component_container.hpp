@@ -1,56 +1,43 @@
-#ifndef SBX_ECS_COMPONENT_STORAGE_HPP_
-#define SBX_ECS_COMPONENT_STORAGE_HPP_
+#ifndef SBX_ECS_COMPONENT_CONTAINER_HPP_
+#define SBX_ECS_COMPONENT_CONTAINER_HPP_
 
 #include <memory>
 #include <vector>
 #include <iostream>
+#include <queue>
 
-#include <memory/pool_storage.hpp>
+#include <memory/pool_allocator.hpp>
 
 #include <meta/concepts.hpp>
+
+#include <utils/noncopyable.hpp>
 
 #include "entity_set.hpp"
 
 namespace sbx {
 
-namespace detail {
+template<typename Type>
+concept component = !std::is_abstract_v<Type> && !std::is_const_v<Type> && !std::is_volatile_v<Type> && standard_layout<Type>;
 
-template<container Container>
-class component_storage_iterator final {
-
-  using container_type = Container;
-
-public:
-
-private:
-
-}; // class component_storage_iterator
-
-} // namespace detail
-
-template<standard_layout Type>
-class component_storage : public entity_set {
+template<component Type, allocator<Type> Allocator = pool_allocator<Type, 516>>
+class component_container : public entity_set, public noncopyable {
 
   using base_type = entity_set;
 
-  using pool_type = pool_storage<Type, 1024>;
+  using allocator_type = Allocator;
+
+  using allocator_traits = std::allocator_traits<allocator_type>;
+
+  using component_storage_type = std::unique_ptr<Type, void(*)(Type*)>;
 
 public:
 
   using value_type = Type;
   using size_type = std::size_t;
 
-  component_storage() = default;
+  component_container() = default;
 
-  component_storage(const component_storage&) = delete;
-
-  component_storage(component_storage&& other) noexcept = default;
-
-  ~component_storage() = default;
-
-  component_storage& operator=(const component_storage&) = delete;
-
-  component_storage& operator=(component_storage&& other) noexcept = default;
+  ~component_container() = default;
 
   template<typename... Args>
   value_type& emplace(const entity& entity, Args&&... args) {
@@ -85,25 +72,16 @@ public:
 
 private:
 
-  struct component_deleter {
-
-    component_deleter(pool_type* pool) : _pool{pool} { }
-
-    void operator()(value_type* data) const {
-      _pool->deallocate(data);
-    }
-
-  private:
-
-    pool_type* _pool{};
-
-  };
-
   template<typename... Args>
   base_type::iterator _emplace(const entity& entity, Args&&... args) {
     const auto itr = base_type::_try_emplace(entity);
 
-    auto component = std::unique_ptr<value_type, component_deleter>(_pool.allocate(), component_deleter{std::addressof(_pool)});
+    auto component_deleter = [this](auto* ptr){
+      allocator_traits::destroy(_allocator, ptr);
+      allocator_traits::deallocate(_allocator, ptr, 1);
+    };
+
+    auto component = component_storage_type{allocator_traits::allocate(_allocator, 1), component_deleter};
     std::construct_at(component.get(), std::forward<Args>(args)...);
 
     _components.emplace_back(std::move(component));
@@ -124,11 +102,11 @@ private:
     base_type::_swap_and_pop(entity);
   }
 
-  pool_type _pool{};
-  std::vector<std::unique_ptr<value_type, component_deleter>> _components{};
+  allocator_type _allocator{};
+  std::vector<component_storage_type> _components{};
 
-}; // class component_storage
+}; // class component_container
 
 } // namespace sbx
 
-#endif // SBX_ECS_COMPONENT_STORAGE_HPP_
+#endif // SBX_ECS_COMPONENT_CONTAINER_HPP_

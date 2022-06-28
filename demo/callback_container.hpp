@@ -17,13 +17,15 @@
 
 namespace demo {
 
-struct callback_container_base {
+class callback_container_base {
+
+public:
 
   virtual ~callback_container_base() = default;
 
   virtual void remove(const subscription& handle) = 0;
 
-}; // struct callback_container_base
+}; // class callback_container_base
 
 template<typename Type>
 class callback_container : public callback_container_base {

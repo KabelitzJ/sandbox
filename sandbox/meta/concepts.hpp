@@ -10,6 +10,9 @@ namespace sbx {
 template<typename Type>
 concept arithmetic = std::is_arithmetic_v<Type> && !std::is_same_v<Type, bool>;
 
+template<typename Type>
+concept standard_layout = std::is_standard_layout_v<Type>;
+
 template<typename OutputStream, typename Type>
 concept output_stream = requires (OutputStream& os, const Type& value) {
   { os << value } -> std::same_as<OutputStream&>;

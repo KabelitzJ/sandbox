@@ -3,7 +3,7 @@
 
 #include "entity.hpp"
 #include "entity_set.hpp"
-#include "component_storage.hpp"
+#include "component_container.hpp"
 #include "registry.hpp"
 #include "view.hpp"
 

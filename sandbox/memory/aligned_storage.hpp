@@ -4,10 +4,9 @@
 #include <memory>
 #include <type_traits>
 
-namespace sbx {
+#include <meta/concepts.hpp>
 
-template<typename Type>
-concept standard_layout = std::is_standard_layout_v<Type>;
+namespace sbx {
 
 template<standard_layout Type>
 class aligned_storage {
