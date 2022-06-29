@@ -4,32 +4,15 @@
 #include <filesystem>
 #include <string>
 #include <vector>
+#include <fstream>
 
 #include <nlohmann/json.hpp>
 
 #include <utils/noncopyable.hpp>
 
 #include "hashed_string.hpp"
-#include "logger.hpp"
 
 namespace demo {
-
-std::vector<std::string> split(const std::string& string, const std::string& delimiter) {
-  const auto delimiter_size = delimiter.size();
-  auto result = std::vector<std::string>{};
-
-  auto last = std::size_t{0};
-  auto next = std::size_t{0};
-
-  while ((next = string.find(delimiter, last)) != std::string::npos) {
-    result.push_back(string.substr(last, next - last));
-    last = next + delimiter_size;
-  }
-
-  result.push_back(string.substr(last));
-
-  return result;
-}
 
 class configuration : sbx::noncopyable {
 
@@ -49,7 +32,7 @@ public:
       return it->second.get<Type>();
     }
 
-    const auto path = split(key, ".");
+    const auto path = _split(key, ".");
 
     auto json = _json;
  
@@ -66,11 +49,24 @@ public:
     return json.get<Type>();
   }
 
-  void dump() {
-    std::cout << _json.dump(4) << std::endl;
+private:
+
+  std::vector<std::string> _split(const std::string& string, const std::string& delimiter) {
+  const auto delimiter_size = delimiter.size();
+  auto result = std::vector<std::string>{};
+
+  auto last = std::size_t{0};
+  auto next = std::size_t{0};
+
+  while ((next = string.find(delimiter, last)) != std::string::npos) {
+    result.push_back(string.substr(last, next - last));
+    last = next + delimiter_size;
   }
 
-private:
+  result.push_back(string.substr(last));
+
+  return result;
+}
 
   void _load(const std::filesystem::path& path) {
     if (!std::filesystem::exists(path)) {

@@ -10,7 +10,7 @@
 
 namespace demo {
 
-class command_buffer : sbx::noncopyable {
+class command_buffer : public sbx::noncopyable {
 
 public:
 

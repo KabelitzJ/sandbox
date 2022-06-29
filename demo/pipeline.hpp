@@ -12,7 +12,6 @@
 #include <utils/noncopyable.hpp>
 
 #include "logical_device.hpp"
-#include "render_pass.hpp"
 #include "swapchain.hpp"
 
 
@@ -22,10 +21,9 @@ class pipeline : sbx::noncopyable {
 
 public:
 
-  pipeline(const std::filesystem::path& path, logical_device* logical_device, swapchain* swapchain, render_pass* render_pass)
+  pipeline(const std::filesystem::path& path, logical_device* logical_device, swapchain* swapchain)
   : _logical_device{logical_device},
     _swapchain{swapchain},
-    _render_pass{render_pass},
     _pipeline_layout{},
     _handle{} {
     const auto absolute_path = std::filesystem::absolute(path);
@@ -177,7 +175,7 @@ private:
       .pColorBlendState = &color_blend_state_create_info,
       .pDynamicState = nullptr,
       .layout = _pipeline_layout,
-      .renderPass = _render_pass->handle(),
+      .renderPass = _swapchain->render_pass(),
       .subpass = 0,
       .basePipelineHandle = nullptr,
       .basePipelineIndex = 0
@@ -286,7 +284,6 @@ private:
 
   logical_device* _logical_device{};
   swapchain* _swapchain{};
-  render_pass* _render_pass{};
 
   VkPipelineLayout _pipeline_layout{};
   VkPipeline _handle{};

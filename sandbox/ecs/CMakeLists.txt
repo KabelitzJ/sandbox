@@ -11,13 +11,13 @@ target_sources(
     FILE_SET HEADERS 
     BASE_DIRS ${PROJECT_SOURCE_DIR}/..
     FILES 
-      component_storage.hpp
-      ecs.hpp
       entity_set.hpp
       entity.hpp
+      component_container.hpp
       registry.hpp
       registry.inl
       view.hpp
+      ecs.hpp
 )
 
 target_include_directories(

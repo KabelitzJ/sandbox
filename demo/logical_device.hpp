@@ -41,6 +41,10 @@ public:
     return _present_queue;
   }
 
+  void wait_till_idle() {
+    vkDeviceWaitIdle(_handle);
+  }
+
 private:
 
   void _initialize() {
