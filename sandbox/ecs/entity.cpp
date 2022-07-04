@@ -2,8 +2,6 @@
 
 #include <utility>
 
-#include <platform/assert.hpp>
-
 namespace sbx {
 
 const entity entity::null{id_mask, version_mask};
@@ -32,7 +30,6 @@ entity::version_type entity::_version() const noexcept {
 }
 
 void entity::_increment_version() noexcept {
-  SBX_ASSERT(*this != null, "Cannot increment version of null entity");
   _value = (_value & id_mask) | ((_value + 1) & version_mask);
 }
 
@@ -40,4 +37,9 @@ bool operator==(const entity& lhs, const entity& rhs) noexcept {
   return lhs._value == rhs._value;
 }
 
+
 } // namespace sbx
+
+std::size_t std::hash<sbx::entity>::operator()(const sbx::entity& entity) const noexcept {
+  return std::hash<sbx::entity::value_type>{}(entity._value);
+} 

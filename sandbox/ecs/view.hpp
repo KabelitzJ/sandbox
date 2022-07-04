@@ -5,10 +5,11 @@
 #include <tuple>
 
 #include "entity.hpp"
+#include "component_container.hpp"
 
 namespace sbx {
 
-template<typename... Components>
+template<component... Components>
 class view final {
 
   friend class registry;
@@ -23,51 +24,44 @@ public:
   using iterator = container_type::iterator;
   using const_iterator = container_type::const_iterator;
 
-  view() = default;
+  view(const view& other) = delete;
+
+  view(view&& other) noexcept;
 
   ~view() = default;
 
-  [[nodiscard]] iterator begin() {
-    return _entries.begin();
-  }
+  view& operator=(const view& other) = delete;
 
-  [[nodiscard]] const_iterator begin() const {
-    return _entries.begin();
-  }
+  view& operator=(view&& other) noexcept;
 
-  [[nodiscard]] const_iterator cbegin() const {
-    return _entries.cbegin();
-  }
+  [[nodiscard]] iterator begin() noexcept;
 
-  [[nodiscard]] iterator end() {
-    return _entries.end();
-  }
+  [[nodiscard]] const_iterator begin() const noexcept;
 
-  [[nodiscard]] const_iterator end() const {
-    return _entries.end();
-  }
+  [[nodiscard]] const_iterator cbegin() const noexcept;
 
-  [[nodiscard]] const_iterator cend() const {
-    return _entries.cend();
-  }
+  [[nodiscard]] iterator end() noexcept;
 
-  [[nodiscard]] size_type size() const {
-    return _entries.size();
-  }
+  [[nodiscard]] const_iterator end() const noexcept;
 
-  [[nodiscard]] bool empty() const {
-    return _entries.empty();
-  }
+  [[nodiscard]] const_iterator cend() const noexcept;
+
+  [[nodiscard]] size_type size() const noexcept;
+
+  [[nodiscard]] bool empty() const noexcept;
 
 private:
 
-  view(const container_type& components)
-  : _entries{components} { }
+  view() = default;
+
+  view(const container_type& components);
 
   container_type _entries{};
 
-};
+}; // class view
 
 } // namespace sbx
+
+#include "view.inl"
 
 #endif // SBX_ECS_VIEW_HPP_

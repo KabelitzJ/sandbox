@@ -1,15 +1,21 @@
 #ifndef SBX_ECS_ENTITY_HPP_
 #define SBX_ECS_ENTITY_HPP_
 
-#include <types/primitives.hpp>
+#include <iostream>
+#include <bitset>
+
+#include "types.hpp"
 
 namespace sbx {
 
 class entity final {
 
-  friend class entity_set;
+  friend struct std::hash<entity>;
+
   friend class registry;
+
   friend bool operator==(const entity& lhs, const entity& rhs) noexcept;
+  friend std::ostream& operator<<(std::ostream& output_stream, const entity& entity);
 
   using id_type = uint32;
   using version_type = uint16;
@@ -17,7 +23,7 @@ class entity final {
 
   inline static constexpr auto id_mask = value_type{0xFFFFF};
   inline static constexpr auto version_mask = value_type{0xFFF};
-  inline static constexpr auto version_shift = std::size_t{12};
+  inline static constexpr auto version_shift = std::size_t{12}; 
 
 public:
 
@@ -49,6 +55,15 @@ private:
 
 }; // class entity
 
+bool operator==(const entity& lhs, const entity& rhs) noexcept;
+
+std::ostream& operator<<(std::ostream& output_stream, const entity& entity);
+
 } // namespace sbx
+
+template<>
+struct std::hash<sbx::entity> {
+  std::size_t operator()(const sbx::entity& entity) const noexcept;
+}; // struct std::hash
 
 #endif // SBX_ECS_ENTITY_HPP_
