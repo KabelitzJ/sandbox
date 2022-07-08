@@ -1,9 +1,11 @@
 {
-  "name": "Demo",
-  "version": {
-    "major": 0,
-    "minor": 1,
-    "patch": 0
+  "app": {
+    "name": "Demo",
+    "version": {
+      "major": 0,
+      "minor": 1,
+      "patch": 0
+    }
   },
   "window": {
     "resolution": {

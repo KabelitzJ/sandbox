@@ -117,23 +117,20 @@ private:
     glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
     glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
 
-    const auto name = _configuration->get<std::string>("name");
-    const auto width = _configuration->get<sbx::int32>("window.resolution.width");
-    const auto height = _configuration->get<sbx::int32>("window.resolution.height");
-    const auto version_major = _configuration->get<sbx::int32>("version.major");
-    const auto version_minor = _configuration->get<sbx::int32>("version.minor");
-    const auto version_patch = _configuration->get<sbx::int32>("version.patch");
+    const auto& name = _configuration->app_name();
+    const auto& version = _configuration->app_version();
+    const auto& resolution = _configuration->window_resolution();
 
-    const auto title = fmt::format("{} [v{}.{}.{}]", name, version_major, version_minor, version_patch);
+    const auto title = fmt::format("{} [v{}.{}.{}]", name, version.major, version.minor, version.patch);
 
-    _handle = glfwCreateWindow(width, height, title.c_str(), nullptr, nullptr);
+    _handle = glfwCreateWindow(resolution.x, resolution.y, title.c_str(), nullptr, nullptr);
 
     if (!_handle) {
       throw std::runtime_error("Failed to create window");
     }
 
-    _width = width;
-    _height = height;
+    _width = resolution.x;
+    _height = resolution.y;
 
     glfwSetWindowUserPointer(_handle, _event_manager);
 

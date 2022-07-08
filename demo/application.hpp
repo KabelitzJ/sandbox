@@ -103,12 +103,11 @@ private:
    * @brief Initializes all systems of the application.
    */
   void _initialize() {
-    // Set up all systems - ORDER MATTERS because of dependencies
+    // Set up all systems - ORDER MATTERS (dependencies)
 
     // Core systems
     _configuration = std::make_unique<configuration>(_config_path);
-    const auto name = _configuration->get<std::string>("name");
-    _logger = std::make_unique<logger>(name);
+    _logger = std::make_unique<logger>(_configuration.get());
     _event_manager = std::make_unique<event_manager>(_logger.get());
 
     // Window related systems
@@ -126,6 +125,7 @@ private:
     _swapchain = std::make_unique<swapchain>(_window.get(), _surface.get(), _physical_device.get(), _logical_device.get(), _command_pool.get());
     _pipeline = std::make_unique<pipeline>("demo/assets/shaders/basic", _logical_device.get(), _swapchain.get());
 
+    // Event listeners
     _subscriptions.emplace_back(_event_manager->subscribe<window_closed_event>([this](const auto&) {
       _is_running = false;
     }));

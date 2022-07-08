@@ -9,6 +9,8 @@
 
 #include <utils/noncopyable.hpp>
 
+#include "configuration.hpp"
+
 namespace demo {
 
 class logger : sbx::noncopyable {
@@ -18,8 +20,8 @@ class logger : sbx::noncopyable {
 
 public:
 
-  logger(const std::string& name)
-  : _logger{std::make_unique<spdlog::logger>(name, std::make_shared<spdlog::sinks::stdout_color_sink_mt>())} {
+  logger(configuration* configuration)
+  : _logger{std::make_unique<spdlog::logger>(configuration->app_name(), std::make_shared<spdlog::sinks::stdout_color_sink_mt>())} {
     _logger->set_pattern("[%Y-%m-%d %H:%M:%S] [%n] [%^%l%$] %v");
     _logger->set_level(spdlog::level::trace);
   }

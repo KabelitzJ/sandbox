@@ -60,16 +60,14 @@ private:
   }
 
   void _initialize() {
-    const auto app_name = _configuration->get<std::string>("name");
-    const auto app_major_version = _configuration->get<sbx::uint32>("version.major");
-    const auto app_minor_version = _configuration->get<sbx::uint32>("version.minor");
-    const auto app_patch_version = _configuration->get<sbx::uint32>("version.patch");
+    const auto& name = _configuration->app_name();
+    const auto& version = _configuration->app_version();
 
     const auto app_info = VkApplicationInfo{
       .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
       .pNext = nullptr,
-      .pApplicationName = _configuration->get<std::string>("name").c_str(),
-      .applicationVersion = VK_MAKE_VERSION(app_major_version, app_minor_version, app_patch_version),
+      .pApplicationName = name.c_str(),
+      .applicationVersion = VK_MAKE_VERSION(version.major, version.minor, version.patch),
       .pEngineName = "Sandbox",
       .engineVersion = VK_MAKE_VERSION(1, 0, 0),
       .apiVersion = VK_API_VERSION_1_0

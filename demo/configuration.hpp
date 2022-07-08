@@ -10,65 +10,70 @@
 
 #include <utils/noncopyable.hpp>
 
+#include <types/primitives.hpp>
+
+#include <math/vector2.hpp>
+
 #include "hashed_string.hpp"
 
 namespace demo {
+
+struct version {
+  sbx::uint32 major{};
+  sbx::uint32 minor{};
+  sbx::uint32 patch{};
+}; // struct version
 
 class configuration : sbx::noncopyable {
 
 public:
 
   configuration(const std::filesystem::path& path)
-  : _json{},
-    _cache{} {
-    _load(path);
+  : _name{},
+    _version{},
+    _window_resolution{},
+    _is_fullscreen{} {
+    _initialize(path);
   }
 
   ~configuration() = default;
 
-  template<typename Type>
-  Type get(const std::string& key) {
-    if (auto it = _cache.find(key); it != _cache.end()) {
-      return it->second.get<Type>();
-    }
+  const std::string& app_name() const noexcept {
+    return _name;
+  }
 
-    const auto path = _split(key, ".");
+  const version& app_version() const noexcept {
+    return _version;
+  }
 
-    auto json = _json;
- 
-    for (const auto& part : path) {
-      if (!json.contains(part)) {
-        throw std::runtime_error{"Key not found in configuration: " + key};
-      }
+  const sbx::vector2i& window_resolution() const noexcept {
+    return _window_resolution;
+  }
 
-      json = json[part];
-    }
-
-    _cache[key] = json;
-
-    return json.get<Type>();
+  bool is_fullscreen() const noexcept {
+    return _is_fullscreen;
   }
 
 private:
 
   std::vector<std::string> _split(const std::string& string, const std::string& delimiter) {
-  const auto delimiter_size = delimiter.size();
-  auto result = std::vector<std::string>{};
+    const auto delimiter_size = delimiter.size();
+    auto result = std::vector<std::string>{};
 
-  auto last = std::size_t{0};
-  auto next = std::size_t{0};
+    auto last = std::size_t{0};
+    auto next = std::size_t{0};
 
-  while ((next = string.find(delimiter, last)) != std::string::npos) {
-    result.push_back(string.substr(last, next - last));
-    last = next + delimiter_size;
+    while ((next = string.find(delimiter, last)) != std::string::npos) {
+      result.push_back(string.substr(last, next - last));
+      last = next + delimiter_size;
+    }
+
+    result.push_back(string.substr(last));
+
+    return result;
   }
 
-  result.push_back(string.substr(last));
-
-  return result;
-}
-
-  void _load(const std::filesystem::path& path) {
+  void _initialize(const std::filesystem::path& path) {
     if (!std::filesystem::exists(path)) {
       throw std::runtime_error{"Configuration file does not exist"};
     }
@@ -83,18 +88,40 @@ private:
       throw std::runtime_error{"Could not open configuration file"};
     }
 
-    file >> _json;
+    auto config = nlohmann::json{};
 
-    if (_json.empty()) {
+    file >> config;
+
+    file.close();
+
+    if (config.empty()) {
       throw std::runtime_error{"Configuration file is empty"};
     }
 
-    file.close();
+    const auto& app = config.at("app");
+
+    app.at("name").get_to(_name);
+
+    const auto& version = app.at("version");
+
+    version.at("major").get_to(_version.major);
+    version.at("minor").get_to(_version.minor);
+    version.at("patch").get_to(_version.patch);
+
+    const auto& window = config.at("window");
+
+    const auto& resolution = window.at("resolution");
+
+    resolution.at("width").get_to(_window_resolution.x);
+    resolution.at("height").get_to(_window_resolution.y);
+
+    window.at("is_fullscreen").get_to(_is_fullscreen);
   }
 
-  nlohmann::json _json{};
-  std::unordered_map<hashed_string, nlohmann::json> _cache{};
-
+  std::string _name{};
+  version _version{};
+  sbx::vector2i _window_resolution{};
+  bool _is_fullscreen{};
 
 }; // class configuration
 
