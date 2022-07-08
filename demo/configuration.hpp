@@ -29,29 +29,29 @@ class configuration : sbx::noncopyable {
 public:
 
   configuration(const std::filesystem::path& path)
-  : _name{},
-    _version{},
+  : _app_name{},
+    _app_version{},
     _window_resolution{},
-    _is_fullscreen{} {
+    _is_window_fullscreen{} {
     _initialize(path);
   }
 
   ~configuration() = default;
 
   const std::string& app_name() const noexcept {
-    return _name;
+    return _app_name;
   }
 
   const version& app_version() const noexcept {
-    return _version;
+    return _app_version;
   }
 
   const sbx::vector2i& window_resolution() const noexcept {
     return _window_resolution;
   }
 
-  bool is_fullscreen() const noexcept {
-    return _is_fullscreen;
+  bool is_window_fullscreen() const noexcept {
+    return _is_window_fullscreen;
   }
 
 private:
@@ -100,13 +100,13 @@ private:
 
     const auto& app = config.at("app");
 
-    app.at("name").get_to(_name);
+    app.at("name").get_to(_app_name);
 
     const auto& version = app.at("version");
 
-    version.at("major").get_to(_version.major);
-    version.at("minor").get_to(_version.minor);
-    version.at("patch").get_to(_version.patch);
+    version.at("major").get_to(_app_version.major);
+    version.at("minor").get_to(_app_version.minor);
+    version.at("patch").get_to(_app_version.patch);
 
     const auto& window = config.at("window");
 
@@ -115,13 +115,13 @@ private:
     resolution.at("width").get_to(_window_resolution.x);
     resolution.at("height").get_to(_window_resolution.y);
 
-    window.at("is_fullscreen").get_to(_is_fullscreen);
+    window.at("is_fullscreen").get_to(_is_window_fullscreen);
   }
 
-  std::string _name{};
-  version _version{};
+  std::string _app_name{};
+  version _app_version{};
   sbx::vector2i _window_resolution{};
-  bool _is_fullscreen{};
+  bool _is_window_fullscreen{};
 
 }; // class configuration
 
