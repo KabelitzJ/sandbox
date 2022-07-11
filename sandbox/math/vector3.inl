@@ -222,7 +222,7 @@ inline constexpr std::ofstream& operator<<(std::ofstream& output_stream, const b
 
   to_json(json, vector);
 
-  output_stream << std::setw(2) << json;
+  output_stream << json;
 
   return output_stream;
 }
@@ -262,3 +262,12 @@ void from_json(const nlohmann::json& json, basic_vector3<Type>& vector) {
 }
 
 } // namespace sbx
+
+template<sbx::arithmetic Type>
+inline std::size_t std::hash<sbx::basic_vector3<Type>>::operator()(const sbx::basic_vector3<Type>& vector) const noexcept {
+  auto seed = std::size_t{0};
+  sbx::hash_combine(seed, vector.x);
+  sbx::hash_combine(seed, vector.y);
+  sbx::hash_combine(seed, vector.z);
+  return seed;
+}

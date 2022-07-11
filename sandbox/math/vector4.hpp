@@ -18,7 +18,9 @@
 namespace sbx {
 
 template<arithmetic Type>
-struct basic_vector4 {
+class basic_vector4 {
+
+public:
 
   // -- Type aliases --
 
@@ -272,7 +274,7 @@ struct basic_vector4 {
    */
   [[nodiscard]] constexpr const_pointer data() const noexcept;
 
-}; // struct basic_vector4
+}; // class basic_vector4
 
 // -- Free comparison operators --
 
@@ -476,6 +478,11 @@ using vector4i = basic_vector4<int32>;
 using vector4 = vector4f;
 
 } // namespace sbx
+
+template<sbx::arithmetic Type>
+struct std::hash<sbx::basic_vector4<Type>> {
+  std::size_t operator()(const sbx::basic_vector4<Type>& vector) const noexcept;
+}; // struct std::hash
 
 #include "vector4.inl"
 

@@ -10,12 +10,13 @@
 #include <io/io.hpp>
 #include <core/core.hpp>
 
-#include "application.hpp"
+#include "engine.hpp"
+#include "transform.hpp"
 
 int main() {
-  auto app = demo::application{"demo/config/app.json"};
+  auto engine = demo::engine{"demo/config/app.json"};
 
-  return app.start();
+  return engine.start();
 
   return 0;
 }

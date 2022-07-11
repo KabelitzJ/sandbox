@@ -26,9 +26,6 @@
 #include "pipeline.hpp"
 #include "framebuffers.hpp"
 #include "command_pool.hpp"
-#include "command_buffer.hpp"
-#include "semaphore.hpp"
-#include "fence.hpp"
 
 #include "time.hpp"
 #include "events.hpp"
@@ -37,9 +34,7 @@
 
 namespace demo {
 
-class application {
-
-  inline static constexpr auto max_frames_in_flight = 2;
+class engine {
 
 public:
 
@@ -48,7 +43,7 @@ public:
    * 
    * @param configuration The path to the configuration file
    */
-  application(const std::filesystem::path& config_path)
+  engine(const std::filesystem::path& config_path)
   : _config_path{config_path},
     _subscriptions{},
     _is_running{false},
@@ -68,16 +63,16 @@ public:
     _swapchain{nullptr},
     _pipeline{nullptr} { }
 
-  ~application() {
+  ~engine() {
     for (const auto& subscription : _subscriptions) {
       _event_manager->unsubscribe(subscription);
     }
   }
 
   /**
-   * @brief Initializes and runs the application.
+   * @brief Initializes and runs the engine.
    * 
-   * @returns EXIT_SUCCESS if the application ran successfully, EXIT_FAILURE if an error occurred.
+   * @returns EXIT_SUCCESS if the engine ran successfully, EXIT_FAILURE if an error occurred.
    */
   sbx::int32 start() {
     try {
@@ -100,7 +95,7 @@ public:
 private:
 
   /**
-   * @brief Initializes all systems of the application.
+   * @brief Initializes all systems of the engine.
    */
   void _initialize() {
     // Set up all systems - ORDER MATTERS (dependencies)
@@ -144,7 +139,7 @@ private:
   }
 
   /**
-   * @brief Runs the application.
+   * @brief Runs the engine.
    */
   void _run() {
     using clock = std::chrono::high_resolution_clock;

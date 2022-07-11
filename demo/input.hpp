@@ -16,7 +16,7 @@ namespace demo {
 
 class input : sbx::noncopyable {
 
-  friend class application;
+  friend class engine;
 
 public:
 

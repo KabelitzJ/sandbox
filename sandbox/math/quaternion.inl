@@ -1,6 +1,8 @@
 #include <cassert>
 #include <cmath>
 
+#include <utils/hash.hpp>
+
 namespace sbx {
 
 template<std::floating_point Type>
@@ -63,7 +65,7 @@ inline constexpr basic_quaternion<Type>& basic_quaternion<Type>::operator=(const
   return *this;
 }
 
-template<typename Type>
+template<std::floating_point Type>
 inline constexpr basic_quaternion<Type>::reference basic_quaternion<Type>::operator[](const index_type index) noexcept {
   assert(index < 4);
 
@@ -84,7 +86,7 @@ inline constexpr basic_quaternion<Type>::reference basic_quaternion<Type>::opera
   }
 }
 
-template<typename Type>
+template<std::floating_point Type>
 inline constexpr basic_quaternion<Type>::const_reference basic_quaternion<Type>::operator[](const index_type index) const noexcept {
   assert(index < 4);
 
@@ -105,12 +107,12 @@ inline constexpr basic_quaternion<Type>::const_reference basic_quaternion<Type>:
   }
 }
 
-template<typename Type>
+template<std::floating_point Type>
 inline constexpr basic_quaternion<Type>::pointer basic_quaternion<Type>::data() noexcept {
   return &x;
 }
 
-template<typename Type>
+template<std::floating_point Type>
 inline constexpr basic_quaternion<Type>::const_pointer basic_quaternion<Type>::data() const noexcept {
   return &x;
 }
@@ -120,4 +122,32 @@ inline constexpr bool operator==(const basic_quaternion<Type>& lhs, const basic_
   return lhs.x == rhs.x && lhs.y == rhs.y && lhs.z == rhs.z && lhs.w == rhs.w;
 }
 
+template<std::floating_point Type>
+void to_json(nlohmann::json& json, const basic_quaternion<Type>& quat) {
+  json = nlohmann::json::object({
+    {"x", quat.x},
+    {"y", quat.y},
+    {"z", quat.z},
+    {"w", quat.w}
+  });
+}
+
+template<std::floating_point Type>
+void from_json(const nlohmann::json& json, basic_quaternion<Type>& quat) {
+  json.at("x").get_to(quat.x);
+  json.at("y").get_to(quat.y);
+  json.at("z").get_to(quat.z);
+  json.at("w").get_to(quat.w);
+}
+
 } // namespace sbx
+
+template<std::floating_point Type>
+std::size_t std::hash<sbx::basic_quaternion<Type>>::operator()(const sbx::basic_quaternion<Type>& quat) const noexcept {
+  auto seed = std::size_t{0};
+  sbx::hash_combine(seed, quat.x);
+  sbx::hash_combine(seed, quat.y);
+  sbx::hash_combine(seed, quat.z);
+  sbx::hash_combine(seed, quat.w);
+  return seed;
+}

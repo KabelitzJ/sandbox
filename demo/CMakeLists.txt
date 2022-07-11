@@ -32,7 +32,7 @@ target_sources(
     FILE_SET HEADERS 
     BASE_DIRS ${PROJECT_SOURCE_DIR}/..
     FILES 
-      application.hpp
+      engine.hpp
       enumerate.hpp
       logger.hpp
       pipeline.hpp
@@ -50,12 +50,8 @@ target_sources(
       key.hpp
       button.hpp
       modifiers.hpp
-      render_pass.hpp
-      framebuffers.hpp
       command_pool.hpp
-      command_buffer.hpp
-      semaphore.hpp
-      fence.hpp
+      transform.hpp
 )
 
 target_include_directories(

@@ -24,7 +24,9 @@ namespace sbx {
  * @tparam Type The type of the quaternion components.
  */
 template<std::floating_point Type>
-struct basic_quaternion {
+class basic_quaternion {
+
+public:
 
   // -- Type aliases --
 
@@ -43,7 +45,7 @@ struct basic_quaternion {
   /** @brief The const pointer type of the matrix components. */
   using const_pointer = const value_type*;
 
-  /** @brief The type that can index compotents */
+  /** @brief The type that can index components */
   using index_type = std::size_t;
 
   // -- Data members --
@@ -130,6 +132,14 @@ struct basic_quaternion {
 template<std::floating_point Type>
 [[nodiscard]] constexpr bool operator==(const basic_quaternion<Type>& lhs, const basic_quaternion<Type>& rhs) noexcept;
 
+// -- Serialization functions --
+
+template<std::floating_point Type>
+void to_json(nlohmann::json& json, const basic_quaternion<Type>& quaternion);
+
+template<std::floating_point Type>
+void from_json(const nlohmann::json& json, basic_quaternion<Type>& quaternion);
+
 // -- Type aliases --
 
 /** @brief Type alias for a quaternion with 32 bit floating-point components. */
@@ -139,6 +149,11 @@ using quaternionf = basic_quaternion<float32>;
 using quaternion = quaternionf;
 
 } // namespace sbx
+
+template<std::floating_point Type>
+struct std::hash<sbx::basic_quaternion<Type>> {
+  std::size_t operator()(const sbx::basic_quaternion<Type>& quaternion) const noexcept;
+}; // struct std::hash
 
 #include "quaternion.inl"
 

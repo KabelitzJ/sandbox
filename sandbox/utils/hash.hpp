@@ -1,27 +1,17 @@
-#ifndef DEMO_HASH_HPP_
-#define DEMO_HASH_HPP_
+#ifndef SBX_UTILS_HASH_HPP_
+#define SBX_UTILS_HASH_HPP_
 
 #include <concepts>
 #include <string>
 
-namespace demo {
+namespace sbx {
 
-// template<std::size_t Prime = 16777619u, std::size_t OffsetBasis = 2166136261u>
-// struct fnv_1a_hash {
+template<typename Type>
+inline void hash_combine(std::size_t& seed, const Type& value) noexcept {
+  seed ^= std::hash<Type>{}(value) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+}
 
-//   [[nodiscard]] constexpr std::size_t operator()(const std::string& string) const noexcept {
-//     std::size_t hash = OffsetBasis;
-
-//     for (const auto& character : string) {
-//       hash ^= character;
-//       hash *= Prime;
-//     }
-
-//     return hash;
-//   }
-
-// };
-
+// [TODO] KAJ 2022-07-11 17:45 - This does not support wide chars
 template<typename Type>
 concept character = std::is_same_v<Type, char> || (sizeof(Type) == 1 && std::is_convertible_v<Type, char>);
 
@@ -38,6 +28,6 @@ requires (sizeof(Character) == 1)
   return hash;
 }
 
-} // namespace demo
+} // namespace sbx
 
-#endif // DEMO_HASH_HPP_
+#endif // SBX_UTILS_HASH_HPP_

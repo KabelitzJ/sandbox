@@ -23,7 +23,9 @@ namespace sbx {
  * @tparam Type The type of the vectors components.
  */
 template<arithmetic Type>
-struct basic_vector3 {
+class basic_vector3 {
+
+public:
 
   // -- Type aliases --
 
@@ -293,7 +295,7 @@ struct basic_vector3 {
    */
   [[nodiscard]] constexpr const_pointer data() const noexcept;
 
-}; // struct vector3
+}; // class vector3
 
 // -- Free comparison operators --
 
@@ -456,6 +458,11 @@ using vector3i = basic_vector3<int32>;
 using vector3 = vector3f;
 
 } // namespace sbx
+
+template<sbx::arithmetic Type>
+struct std::hash<sbx::basic_vector3<Type>> {
+  std::size_t operator()(const sbx::basic_vector3<Type>& vector) const noexcept;
+}; // struct std::hash
 
 #include "vector3.inl"
 

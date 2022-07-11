@@ -17,6 +17,11 @@ inline constexpr auto pi_v = Type{3.14159265358979323851};
 
 inline constexpr auto pi = pi_v<float32>;
 
+template<std::floating_point Type>
+inline constexpr auto gravity_v = Type{9.80665};
+
+inline constexpr auto gravity = gravity_v<float32>;
+
 } // namespace sbx
 
 #endif // SBX_MATH_CONSTANTS_HPP_
