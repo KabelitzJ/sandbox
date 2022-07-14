@@ -114,8 +114,9 @@ private:
 
   void _initialize() {
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
-    glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+    // [TODO] KAJ 2022-07-14 14:59 - Check wether these can be removed entirely
+    // glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+    // glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
 
     const auto& name = _configuration->app_name();
     const auto& version = _configuration->app_version();

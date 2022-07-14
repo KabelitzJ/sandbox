@@ -20,6 +20,8 @@
 #include "physical_device.hpp"
 #include "logical_device.hpp"
 #include "command_pool.hpp"
+#include "event_manager.hpp"
+#include "events.hpp"
 
 namespace demo {
 
@@ -29,21 +31,20 @@ class swapchain : public sbx::noncopyable {
 
 public:
 
-  swapchain(window* window, surface* surface, physical_device* physical_device, logical_device* logical_device, command_pool* command_pool)
+  swapchain(window* window, surface* surface, physical_device* physical_device, logical_device* logical_device, command_pool* command_pool, event_manager* event_manager)
   : _window{window},
     _surface{surface},
     _physical_device{physical_device},
     _logical_device{logical_device},
     _command_pool{command_pool},
+    _event_manager{event_manager},
     _handle{nullptr},
-    _images{},
-    _image_views{},
-    _format{},
-    _extent{} {
+    _framebuffer_resized{false} {
     _initialize();
   }
 
   ~swapchain() {
+    _event_manager->unsubscribe(_subscription);
     _terminate();
   }
 
@@ -82,9 +83,16 @@ public:
   void prepare_frame() {
     vkWaitForFences(_logical_device->handle(), 1, &_frame_data[_current_frame].image_in_flight_fence, VK_TRUE, std::numeric_limits<sbx::uint64>::max());
 
-    vkResetFences(_logical_device->handle(), 1, &_frame_data[_current_frame].image_in_flight_fence);
+    const auto result = vkAcquireNextImageKHR(_logical_device->handle(), _handle, std::numeric_limits<sbx::uint64>::max(), _frame_data[_current_frame].image_available_semaphore, nullptr, &_image_index);
 
-    vkAcquireNextImageKHR(_logical_device->handle(), _handle, std::numeric_limits<sbx::uint64>::max(), _frame_data[_current_frame].image_available_semaphore, nullptr, &_image_index);
+    if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+      _recreate();
+      return;
+    } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+      throw std::runtime_error("Failed to acquire swapchain image!");
+    }
+
+    vkResetFences(_logical_device->handle(), 1, &_frame_data[_current_frame].image_in_flight_fence);
 
     vkResetCommandBuffer(_frame_data[_current_frame].command_buffer, 0);
   }
@@ -119,7 +127,14 @@ public:
       .pResults = nullptr
     };
 
-    vkQueuePresentKHR(_logical_device->present_queue(), &present_info);
+    const auto result = vkQueuePresentKHR(_logical_device->present_queue(), &present_info);
+
+    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || _framebuffer_resized) {
+      _framebuffer_resized = false;
+      _recreate();
+    } else if (result != VK_SUCCESS) {
+      throw std::runtime_error("Failed to present swapchain image!");
+    }
 
     _current_frame = (_current_frame + 1) % max_frames_in_flight;
   }
@@ -140,10 +155,14 @@ private:
     _create_image_views();
     _create_framebuffers();
     _create_frame_data();
+
+    _subscription = _event_manager->subscribe<framebuffer_resized_event>([this]([[maybe_unused]] const auto& event){
+      _framebuffer_resized = true;
+    });
   }
 
   void _create_swapchain() {
-    const auto& swapchain_support = _physical_device->_swapchain_support;
+    const auto& swapchain_support = _physical_device->swapchain_support();
 
     const auto surface_format = _choose_surface_format(swapchain_support.formats);
     const auto present_mode = _choose_present_mode(swapchain_support.present_modes);
@@ -155,13 +174,14 @@ private:
       _image_count = swapchain_support.capabilities.maxImageCount;
     }
 
-    const auto& queue_family_indices = _physical_device->_queue_family_indices;
+    const auto graphics_family = _physical_device->graphics_family();
+    const auto present_family = _physical_device->present_family();
 
     auto indices = std::vector<sbx::uint32>{};
 
-    if (queue_family_indices.graphics_family.value() != queue_family_indices.present_family.value()) {
-      indices.push_back(queue_family_indices.graphics_family.value());
-      indices.push_back(queue_family_indices.present_family.value());
+    if (graphics_family != present_family) {
+      indices.push_back(graphics_family);
+      indices.push_back(present_family);
     }
 
     const auto swapchain_create_info = VkSwapchainCreateInfoKHR{
@@ -363,24 +383,59 @@ private:
   }
 
   void _terminate() {
+    _destroy_frame_data();
+    _destroy_framebuffers();
+    _destroy_image_views();
+    _destroy_render_pass();
+    _destroy_swapchain();
+  }
+
+  void _destroy_framebuffers() {
+    for (const auto& framebuffer : _framebuffers) {
+      vkDestroyFramebuffer(_logical_device->handle(), framebuffer, nullptr);
+    }
+
+    _framebuffers.clear();
+  }
+
+  void _destroy_image_views() {
+    for (const auto& image_view : _image_views) {
+      vkDestroyImageView(_logical_device->handle(), image_view, nullptr);
+    }
+
+    _image_views.clear();
+  }
+
+  void _destroy_render_pass() {
+    vkDestroyRenderPass(_logical_device->handle(), _render_pass, nullptr);
+  }
+
+  void _destroy_swapchain() {
+    vkDestroySwapchainKHR(_logical_device->handle(), _handle, nullptr);
+  }
+
+  void _destroy_frame_data() {
     for (const auto& frame : _frame_data) {
       vkDestroyFence(_logical_device->handle(), frame.image_in_flight_fence, nullptr);
       vkDestroySemaphore(_logical_device->handle(), frame.image_available_semaphore, nullptr);
       vkDestroySemaphore(_logical_device->handle(), frame.render_finished_semaphore, nullptr);
       vkFreeCommandBuffers(_logical_device->handle(), _command_pool->handle(), 1, &frame.command_buffer);
     }
+  }
 
-    for (const auto& framebuffer : _framebuffers) {
-      vkDestroyFramebuffer(_logical_device->handle(), framebuffer, nullptr);
-    }
+  void _recreate() {
+    vkDeviceWaitIdle(_logical_device->handle());
 
-    for (const auto& image_view : _image_views) {
-      vkDestroyImageView(_logical_device->handle(), image_view, nullptr);
-    }
+    _destroy_framebuffers();
+    _destroy_image_views();
+    _destroy_render_pass();
+    _destroy_swapchain();
 
-    vkDestroyRenderPass(_logical_device->handle(), _render_pass, nullptr);
-
-    vkDestroySwapchainKHR(_logical_device->handle(), _handle, nullptr);
+    _create_swapchain();
+    _create_render_pass();
+    _get_images();
+    _create_image_views();
+    _create_framebuffers();
   }
 
   VkSurfaceFormatKHR _choose_surface_format(const std::vector<VkSurfaceFormatKHR>& available_formats) {
@@ -416,14 +471,9 @@ private:
       return capabilities.currentExtent;
     }
 
-    auto width = sbx::int32{0};
-    auto height = sbx::int32{0};
-
-    glfwGetFramebufferSize(_window->handle(), &width, &height);
-
     VkExtent2D actual_extent = {
-      static_cast<sbx::uint32>(width),
-      static_cast<sbx::uint32>(height)
+      static_cast<sbx::uint32>(_window->width()),
+      static_cast<sbx::uint32>(_window->height())
     };
 
     actual_extent.width = std::clamp(actual_extent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
@@ -437,6 +487,7 @@ private:
   physical_device* _physical_device{};
   logical_device* _logical_device{};
   command_pool* _command_pool{};
+  event_manager* _event_manager{};
 
   sbx::uint32 _image_count{};
   sbx::uint32 _image_index{};
@@ -452,6 +503,9 @@ private:
 
   VkFormat _format{};
   VkExtent2D _extent{};
+
+  bool _framebuffer_resized{};
+  subscription _subscription{};
 
 }; // class swapchain
 

@@ -32,6 +32,9 @@
 #include "hashed_string.hpp"
 #include "key.hpp"
 
+#include "buffer.hpp"
+#include "vertex.hpp"
+
 namespace demo {
 
 class engine {
@@ -45,23 +48,8 @@ public:
    */
   engine(const std::filesystem::path& config_path)
   : _config_path{config_path},
-    _subscriptions{},
     _is_running{false},
-    _is_paused{false},
-    _configuration{nullptr},
-    _logger{nullptr},
-    _event_manager{nullptr},
-    _context{nullptr},
-    _monitor{nullptr},
-    _window{nullptr},
-    _input{nullptr},
-    _instance{nullptr},
-    _surface{nullptr},
-    _physical_device{nullptr},
-    _logical_device{nullptr},
-    _command_pool{nullptr},
-    _swapchain{nullptr},
-    _pipeline{nullptr} { }
+    _is_paused{false} { }
 
   ~engine() {
     for (const auto& subscription : _subscriptions) {
@@ -117,8 +105,17 @@ private:
     _physical_device = std::make_unique<physical_device>(_logger.get(), _instance.get(), _surface.get());
     _logical_device = std::make_unique<logical_device>(_instance.get(), _physical_device.get());
     _command_pool = std::make_unique<command_pool>(_physical_device.get(), _logical_device.get());
-    _swapchain = std::make_unique<swapchain>(_window.get(), _surface.get(), _physical_device.get(), _logical_device.get(), _command_pool.get());
+    _swapchain = std::make_unique<swapchain>(_window.get(), _surface.get(), _physical_device.get(), _logical_device.get(), _command_pool.get(), _event_manager.get());
     _pipeline = std::make_unique<pipeline>("demo/assets/shaders/basic", _logical_device.get(), _swapchain.get());
+
+    const auto vertices = std::array<vertex, 3>{
+      vertex{{0.0f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}},
+      vertex{{0.5f, 0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}},
+      vertex{{-0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}}
+    };
+
+    _vertex_buffer = std::make_unique<buffer<vertex, 3>>(_physical_device.get(), _logical_device.get(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    _vertex_buffer->map(vertices);
 
     // Event listeners
     _subscriptions.emplace_back(_event_manager->subscribe<window_closed_event>([this](const auto&) {
@@ -209,6 +206,31 @@ private:
 
     vkCmdBindPipeline(_swapchain->current_command_buffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, _pipeline->handle());
 
+    const auto& swapchain_extent = _swapchain->extent();
+
+    const auto viewport = VkViewport {
+      .x = 0.0f,
+      .y = 0.0f,
+      .width = static_cast<sbx::float32>(swapchain_extent.width),
+      .height = static_cast<sbx::float32>(swapchain_extent.height),
+      .minDepth = 0.0f,
+      .maxDepth = 1.0f
+    };
+
+    vkCmdSetViewport(_swapchain->current_command_buffer(), 0, 1, &viewport);
+
+    const auto scissor = VkRect2D {
+      .offset = {0, 0},
+      .extent = swapchain_extent
+    };
+
+    vkCmdSetScissor(_swapchain->current_command_buffer(), 0, 1, &scissor);
+
+    const auto buffers = std::array<VkBuffer, 1>{_vertex_buffer->handle()};
+    const auto offsets = std::array<VkDeviceSize, 1>{0};
+
+    vkCmdBindVertexBuffers(_swapchain->current_command_buffer(), 0, 1, buffers.data(), offsets.data());
+
     vkCmdDraw(_swapchain->current_command_buffer(), 3, 1, 0, 0);
 
     vkCmdEndRenderPass(_swapchain->current_command_buffer());
@@ -240,6 +262,8 @@ private:
   std::unique_ptr<command_pool> _command_pool{};
   std::unique_ptr<swapchain> _swapchain{};
   std::unique_ptr<pipeline> _pipeline{};
+
+  std::unique_ptr<buffer<vertex, 3>> _vertex_buffer{};
 
 }; // class application
 

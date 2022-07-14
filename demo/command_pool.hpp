@@ -32,7 +32,7 @@ public:
 private:
 
   void _initialize() {
-    const auto graphics_queue_family_index = _physical_device->_queue_family_indices.graphics_family.value();
+    const auto graphics_queue_family_index = _physical_device->graphics_family();
 
     const auto command_pool_create_info = VkCommandPoolCreateInfo{
       .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,

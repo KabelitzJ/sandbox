@@ -25,11 +25,16 @@ class physical_device : sbx::noncopyable {
 
 public:
 
+  struct swapchain_support_details {
+    VkSurfaceCapabilitiesKHR capabilities{};
+    std::vector<VkSurfaceFormatKHR> formats{};
+    std::vector<VkPresentModeKHR> present_modes{};
+  };
+
   physical_device(logger* logger, instance* instance, surface* surface)
   : _logger{logger},
     _instance{instance},
     _surface{surface},
-    _swapchain_support{},
     _queue_family_indices{},
     _handle{nullptr} {
     _initialize();
@@ -41,6 +46,31 @@ public:
     return _handle;
   }
 
+  sbx::uint32 graphics_family() const noexcept {
+    return _queue_family_indices.graphics_family.value();
+  }
+
+  sbx::uint32 present_family() const noexcept {
+    return _queue_family_indices.present_family.value();
+  }
+
+  swapchain_support_details swapchain_support() const noexcept {
+    return _query_swapchain_support(_handle);
+  }
+
+  sbx::uint32 find_memory_type(const sbx::uint32 type_filter, const VkMemoryPropertyFlags properties) {
+    auto memory_properties = VkPhysicalDeviceMemoryProperties{};
+    vkGetPhysicalDeviceMemoryProperties(_handle, &memory_properties);
+
+    for (uint32_t memory_type = 0; memory_type < memory_properties.memoryTypeCount; memory_type++) {
+      if (type_filter & (1 << memory_type) && (memory_properties.memoryTypes[memory_type].propertyFlags & properties) == properties) {
+        return memory_type;
+      }
+    }
+
+    throw std::runtime_error("Failed to find suitable memory type!");
+  }
+
 private:
 
   struct queue_family_indices {
@@ -50,12 +80,6 @@ private:
     bool is_complete() const noexcept {
       return graphics_family.has_value() && present_family.has_value();
     }
-  };
-
-  struct swapchain_support_details {
-    VkSurfaceCapabilitiesKHR capabilities{};
-    std::vector<VkSurfaceFormatKHR> formats{};
-    std::vector<VkPresentModeKHR> present_modes{};
   };
 
   void _initialize() {
@@ -92,7 +116,6 @@ private:
       const auto queue_families = _find_queue_families(device);
 
       if (queue_families.is_complete()) {
-        _swapchain_support = swapchain_support;
         _queue_family_indices = queue_families;
         _handle = device;
 
@@ -117,7 +140,7 @@ private:
 #endif
   }
 
-  bool _has_device_extentions_support(VkPhysicalDevice device) {
+  bool _has_device_extentions_support(VkPhysicalDevice device) const {
     auto available_extention_count = sbx::uint32{0};
     auto available_extensions = std::vector<VkExtensionProperties>{};
 
@@ -147,7 +170,7 @@ private:
     return true;
   }
 
-  queue_family_indices _find_queue_families(VkPhysicalDevice device) {
+  queue_family_indices _find_queue_families(VkPhysicalDevice device) const {
     auto indices = queue_family_indices{};
 
     auto queue_family_count = sbx::uint32{0};
@@ -183,13 +206,13 @@ private:
     return indices;
   }
 
-  std::vector<const char*> _extensions() {
+  std::vector<const char*> _extensions() const {
     return std::vector<const char*>{
       VK_KHR_SWAPCHAIN_EXTENSION_NAME
     };
   }
 
-  swapchain_support_details _query_swapchain_support(VkPhysicalDevice device) {
+  swapchain_support_details _query_swapchain_support(VkPhysicalDevice device) const {
     auto details = swapchain_support_details{};
 
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, _surface->handle(), &details.capabilities);
@@ -215,11 +238,14 @@ private:
     return details;
   }
 
+  swapchain_support_details _swapchain_support() {
+    return _query_swapchain_support(_handle);
+  }
+
   logger* _logger{};
   instance* _instance{};
   surface* _surface{};
 
-  swapchain_support_details _swapchain_support{};
   queue_family_indices _queue_family_indices{};
   VkPhysicalDevice _handle{};
 

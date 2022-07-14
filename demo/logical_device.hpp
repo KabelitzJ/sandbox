@@ -48,11 +48,12 @@ public:
 private:
 
   void _initialize() {
-    const auto queue_family_indices = _physical_device->_queue_family_indices;
+    const auto graphics_family = _physical_device->graphics_family();
+    const auto present_family = _physical_device->present_family();
 
     auto unique_queue_family_indices = std::unordered_set<sbx::uint32>{
-      queue_family_indices.graphics_family.value(),
-      queue_family_indices.present_family.value()
+      graphics_family,
+      present_family
     };
 
     const auto queue_priority = sbx::float32{1.0f};
@@ -94,8 +95,8 @@ private:
       throw std::runtime_error{"Failed to create logical device"};
     }
 
-    vkGetDeviceQueue(_handle, queue_family_indices.graphics_family.value(), 0, &_graphics_queue);
-    vkGetDeviceQueue(_handle, queue_family_indices.present_family.value(), 0, &_present_queue);
+    vkGetDeviceQueue(_handle, graphics_family, 0, &_graphics_queue);
+    vkGetDeviceQueue(_handle, present_family, 0, &_present_queue);
   }
 
   void _terminate() {

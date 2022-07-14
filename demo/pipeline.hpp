@@ -13,7 +13,7 @@
 
 #include "logical_device.hpp"
 #include "swapchain.hpp"
-
+#include "vertex.hpp"
 
 namespace demo {
 
@@ -51,14 +51,17 @@ private:
       throw std::runtime_error{"Shader has no shader modules: " + path.string()};
     }
 
+    const auto vertex_binding_descriptions = vertex::binding_descriptions();
+    const auto vertex_attribute_descriptions = vertex::attribute_descriptions();
+
     const auto vertex_input_stage_create_info = VkPipelineVertexInputStateCreateInfo {
       .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
       .pNext = nullptr,
       .flags = 0,
-      .vertexBindingDescriptionCount = 0,
-      .pVertexBindingDescriptions = nullptr,
-      .vertexAttributeDescriptionCount = 0,
-      .pVertexAttributeDescriptions = nullptr
+      .vertexBindingDescriptionCount = static_cast<sbx::uint32>(vertex_binding_descriptions.size()),
+      .pVertexBindingDescriptions = vertex_binding_descriptions.data(),
+      .vertexAttributeDescriptionCount = static_cast<sbx::uint32>(vertex_attribute_descriptions.size()),
+      .pVertexAttributeDescriptions = vertex_attribute_descriptions.data()
     };
 
     const auto input_assembly_stage_create_info = VkPipelineInputAssemblyStateCreateInfo {
@@ -71,7 +74,7 @@ private:
 
     const auto& swapchain_extent = _swapchain->extent();
 
-    const auto viewport_create_info = VkViewport {
+    const auto viewport = VkViewport {
       .x = 0.0f,
       .y = 0.0f,
       .width = static_cast<sbx::float32>(swapchain_extent.width),
@@ -80,7 +83,7 @@ private:
       .maxDepth = 1.0f
     };
 
-    const auto scissor_create_info = VkRect2D {
+    const auto scissor = VkRect2D {
       .offset = {0, 0},
       .extent = swapchain_extent
     };
@@ -90,9 +93,9 @@ private:
       .pNext = nullptr,
       .flags = 0,
       .viewportCount = 1,
-      .pViewport = &viewport_create_info,
+      .pViewport = &viewport,
       .scissorCount = 1,
-      .pScissors = &scissor_create_info
+      .pScissors = &scissor
     };
 
     const auto rasterization_stage_create_info = VkPipelineRasterizationStateCreateInfo {
@@ -145,6 +148,16 @@ private:
       .blendConstants = {0.0f, 0.0f, 0.0f, 0.0f}
     };
 
+    const auto dynamic_states = std::array<VkDynamicState, 2>{VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
+
+    const auto dynamic_state_create_info = VkPipelineDynamicStateCreateInfo{
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
+      .pNext = nullptr,
+      .flags = 0,
+      .dynamicStateCount = static_cast<sbx::uint32>(dynamic_states.size()),
+      .pDynamicStates = dynamic_states.data()
+    };
+
     const auto pipeline_layout_create_info = VkPipelineLayoutCreateInfo {
       .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
       .pNext = nullptr,
@@ -173,7 +186,7 @@ private:
       .pMultisampleState = &multisample_stage_create_info,
       .pDepthStencilState = nullptr,
       .pColorBlendState = &color_blend_state_create_info,
-      .pDynamicState = nullptr,
+      .pDynamicState = &dynamic_state_create_info,
       .layout = _pipeline_layout,
       .renderPass = _swapchain->render_pass(),
       .subpass = 0,
