@@ -33,14 +33,14 @@ public:
     const auto position_attribute_description = VkVertexInputAttributeDescription{
       .location = 0,
       .binding = 0,
-      .format = VK_FORMAT_R32G32_SFLOAT,
+      .format = VK_FORMAT_R32G32B32_SFLOAT,
       .offset = offsetof(vertex, _position)
     };
 
     const auto color_attribute_description = VkVertexInputAttributeDescription{
       .location = 1,
       .binding = 0,
-      .format = VK_FORMAT_R32G32_SFLOAT,
+      .format = VK_FORMAT_R32G32B32_SFLOAT,
       .offset = offsetof(vertex, _color)
     };
 

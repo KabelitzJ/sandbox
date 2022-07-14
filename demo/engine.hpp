@@ -46,8 +46,9 @@ public:
    * 
    * @param configuration The path to the configuration file
    */
-  engine(const std::filesystem::path& config_path)
+  engine(const std::filesystem::path& config_path, const std::vector<std::string>& cli_args)
   : _config_path{config_path},
+    _cli_args{cli_args},
     _is_running{false},
     _is_paused{false} { }
 
@@ -241,6 +242,7 @@ private:
   }
 
   std::filesystem::path _config_path{};
+  std::vector<std::string> _cli_args{};
   std::vector<subscription> _subscriptions{};
 
   bool _is_running{};

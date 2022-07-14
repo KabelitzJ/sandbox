@@ -13,8 +13,8 @@
 #include "engine.hpp"
 #include "transform.hpp"
 
-int main() {
-  auto engine = demo::engine{"demo/config/app.json"};
+int main(int argc, char** argv) {
+  auto engine = demo::engine{"demo/config/app.json", std::vector<std::string>{argv, argv + argc}};
 
   return engine.start();
 
