@@ -5,6 +5,8 @@
 #include <memory>
 #include <cstring>
 
+#include <platform/assert.hpp>
+
 #include <meta/concepts.hpp>
 
 namespace sbx {
@@ -58,6 +60,8 @@ public:
   }
 
   pointer allocate([[maybe_unused]] const size_type count) {
+    SBX_ASSERT(count == 1, "Pool allocator can not allocate arrays");
+
     if (!_root) {
       _allocate_chunk();
     }
@@ -68,6 +72,8 @@ public:
   }
 
   void deallocate(pointer ptr, [[maybe_unused]] const size_type count) {
+    SBX_ASSERT(count == 1, "Pool allocator can not deallocate arrays");
+
     auto* front = static_cast<node*>(static_cast<void_pointer>(ptr));
     std::memset(front, 0, sizeof(value_type));
     front->next = _root;

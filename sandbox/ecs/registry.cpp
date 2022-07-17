@@ -2,17 +2,6 @@
 
 namespace sbx {
 
-registry::registry(registry&& other) noexcept
-: _entities{std::move(other._entities)},
-  _free_entities{std::move(other._free_entities)} { }
-
-registry& registry::operator=(registry&& other) noexcept {
-  _entities = std::move(other._entities);
-  _free_entities = std::move(other._free_entities);
-
-  return *this;
-}
-
 entity registry::create_entity() {
   if (!_free_entities.empty()) {
     const auto index = _free_entities.back();

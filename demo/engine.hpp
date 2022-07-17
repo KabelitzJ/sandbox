@@ -21,10 +21,8 @@
 #include "physical_device.hpp"
 #include "logical_device.hpp"
 #include "surface.hpp"
-#include "render_pass.hpp"
 #include "swapchain.hpp"
 #include "pipeline.hpp"
-#include "framebuffers.hpp"
 #include "command_pool.hpp"
 
 #include "time.hpp"

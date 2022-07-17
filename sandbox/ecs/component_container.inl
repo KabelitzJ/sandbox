@@ -9,24 +9,7 @@ inline component_container<Type, Allocator>::component_container() noexcept
 : _allocator{},
   _sparse{},
   _dense{},
-  _components{} {}
-
-template<component Type, typename Allocator>
-inline component_container<Type, Allocator>::component_container(component_container&& other) noexcept
-: _sparse{std::move(other._sparse)},
-  _dense{std::move(other._dense)},
-  _components{std::move(other._components)} {}
-
-template<component Type, typename Allocator>
-inline component_container<Type, Allocator>& component_container<Type, Allocator>::operator=(component_container&& other) noexcept {
-  if (this != &other) {
-    _sparse = std::move(other._sparse);
-    _dense = std::move(other._dense);
-    _components = std::move(other._components);
-  }
-
-  return *this;
-}
+  _components{} { }
 
 template<component Type, typename Allocator>
 inline void component_container<Type, Allocator>::remove(const entity& entity) {

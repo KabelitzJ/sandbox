@@ -13,8 +13,6 @@
 #include <types/primitives.hpp>
 #include <utils/noncopyable.hpp>
 
-#include "enumerate.hpp"
-
 #include "window.hpp"
 #include "surface.hpp"
 #include "physical_device.hpp"

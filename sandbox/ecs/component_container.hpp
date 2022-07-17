@@ -6,21 +6,11 @@
 #include <vector>
 #include <concepts>
 
+#include <utils/noncopyable.hpp>
+
 #include "entity.hpp"
 
 namespace sbx {
-
-class component_container_base {
-
-public:
-
-  virtual ~component_container_base() = default;
-
-  virtual void remove(const entity& entity) = 0;
-
-  virtual bool contains(const entity& entity) const noexcept = 0;
-
-}; // class component_container_base
 
 template<typename Type>
 concept component = 
@@ -31,7 +21,7 @@ concept component =
   std::is_standard_layout_v<Type>;
 
 template<component Type, typename Allocator = std::allocator<Type>>
-class component_container : public component_container_base {
+class component_container : public noncopyable {
 
   using allocator_traits = std::allocator_traits<Allocator>;
 
@@ -45,19 +35,11 @@ public:
 
   component_container() noexcept;
 
-  component_container(const component_container& other) = delete;
+  ~component_container() = default;
 
-  component_container(component_container&& other) noexcept;
+  void remove(const entity& entity);
 
-  ~component_container() override = default;
-
-  component_container& operator=(const component_container& other) = delete;
-
-  component_container& operator=(component_container&& other) noexcept;
-
-  void remove(const entity& entity) override;
-
-  [[nodiscard]] bool contains(const entity& entity) const noexcept override;
+  [[nodiscard]] bool contains(const entity& entity) const noexcept;
 
   template<typename... Args>
   requires std::constructible_from<Type, Args...>

@@ -7,15 +7,15 @@
 #include <iostream>
 #include <typeindex>
 
+#include <utils/noncopyable.hpp>
+
 #include "entity.hpp"
 #include "component_container.hpp"
 #include "view.hpp"
 
 namespace sbx {
 
-class registry {
-
-  using component_container_type = std::vector<std::unique_ptr<component_container_base>>;
+class registry : public noncopyable {
 
 public:
 
@@ -23,15 +23,7 @@ public:
 
   registry() = default;
 
-  registry(const registry&) = delete;
-
-  registry(registry&&) noexcept;
-
   ~registry() = default;
-
-  registry& operator=(const registry&) = delete;
-
-  registry& operator=(registry&&) noexcept;
 
   [[nodiscard]] entity create_entity();
 
@@ -67,7 +59,7 @@ private:
 
   std::vector<entity> _entities{};
   std::vector<size_type> _free_entities{};
-  component_container_type _components{};
+  std::vector<std::unique_ptr<void, void(*)(void*)>> _component_containers{};
   mutable size_type _current_component_id{};
 
 }; // class registry;
