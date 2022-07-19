@@ -9,6 +9,7 @@
 #include <utils/noncopyable.hpp>
 
 #include "entity.hpp"
+#include "entity_set.hpp"
 
 namespace sbx {
 
@@ -21,7 +22,9 @@ concept component =
   std::is_standard_layout_v<Type>;
 
 template<component Type, typename Allocator = std::allocator<Type>>
-class component_container : public noncopyable {
+class component_container final : public entity_set, public noncopyable {
+
+  using base_type = entity_set;
 
   using allocator_traits = std::allocator_traits<Allocator>;
 
@@ -35,11 +38,7 @@ public:
 
   component_container() noexcept;
 
-  ~component_container() = default;
-
-  void remove(const entity& entity);
-
-  [[nodiscard]] bool contains(const entity& entity) const noexcept;
+  ~component_container() override = default;
 
   template<typename... Args>
   requires std::constructible_from<Type, Args...>
@@ -53,6 +52,8 @@ public:
   void patch(const entity& entity, Function&& function);
 
 private:
+
+  void _swap_and_pop(const entity& entity) override;
 
   class component_deleter {
 
@@ -71,8 +72,6 @@ private:
   };
 
   allocator_type _allocator{};
-  std::unordered_map<entity, size_type> _sparse{};
-  std::vector<entity> _dense{};
   std::vector<std::unique_ptr<value_type, component_deleter>> _components{};
 
 }; // class component_container

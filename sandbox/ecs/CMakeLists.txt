@@ -6,12 +6,14 @@ target_sources(
   ${PROJECT_NAME}
   PRIVATE
     entity.cpp
+    entity_set.cpp
     registry.cpp
   PUBLIC
     FILE_SET HEADERS 
     BASE_DIRS ${PROJECT_SOURCE_DIR}/..
     FILES 
       entity.hpp
+      entity_set.hpp
       component_container.hpp
       component_container.inl
       registry.hpp

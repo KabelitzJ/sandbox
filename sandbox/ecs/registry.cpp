@@ -22,6 +22,10 @@ void registry::destroy_entity(const entity& entity) {
     throw std::runtime_error{"Entity is not valid"};
   }
 
+  for (const auto& component_container : _component_containers) {
+    component_container->remove(entity);
+  }
+
   const auto index = static_cast<size_type>(entity._id());
 
   _entities[index]._increment_version();

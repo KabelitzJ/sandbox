@@ -6,39 +6,9 @@ namespace sbx {
 
 template<component Type, typename Allocator>
 inline component_container<Type, Allocator>::component_container() noexcept
-: _allocator{},
-  _sparse{},
-  _dense{},
+: base_type{},
+  _allocator{},
   _components{} { }
-
-template<component Type, typename Allocator>
-inline void component_container<Type, Allocator>::remove(const entity& entity) {
-  if (!contains(entity)) {
-    return;
-  }
-
-  const auto index = _sparse.at(entity);
-
-  _sparse.at(_dense.back()) = index;
-  const auto& old_entity = std::exchange(_dense.at(index), _dense.back());
-
-  using std::swap;
-  swap(_components.at(index), _components.back());
-
-  _dense.pop_back();
-  _components.pop_back();
-  _sparse.erase(old_entity);
-}
-
-template<component Type, typename Allocator>
-inline bool component_container<Type, Allocator>::contains(const entity& entity) const noexcept {
-  if (const auto entry = _sparse.find(entity); entry != _sparse.cend()) {
-    const auto index = entry->second;
-    return index < _dense.size() && _dense[index] == entity;
-  }
-
-  return false;
-}
 
 template<component Type, typename Allocator>
 template<typename... Args>
@@ -48,10 +18,7 @@ inline component_container<Type, Allocator>::reference component_container<Type,
     throw std::runtime_error{"Entity already contains component"};
   }
 
-  const auto index = _components.size();
-
-  _sparse.emplace(std::make_pair(entity, index));
-  _dense.push_back(entity);
+  base_type::_emplace(entity);
 
   auto component = std::unique_ptr<value_type, component_deleter>{allocator_traits::allocate(_allocator, 1), component_deleter{_allocator}};
   allocator_traits::construct(_allocator, component.get(), std::forward<Args>(args)...);
@@ -63,24 +30,30 @@ inline component_container<Type, Allocator>::reference component_container<Type,
 
 template<component Type, typename Allocator>
 inline component_container<Type, Allocator>::const_reference component_container<Type, Allocator>::get(const entity& entity) const {
-  if (const auto entry = _sparse.find(entity); entry != _sparse.cend()) {
-    const auto index = entry->second;
-
-    return *_components.at(index);
-  }
-
-  throw std::runtime_error{"Entity does not have component assigned to it"};
+  return *_components.at(_index(entity));
 }
 
 template<component Type, typename Allocator>
 inline component_container<Type, Allocator>::reference component_container<Type, Allocator>::get(const entity& entity) {
-  return const_cast<reference>(std::as_const(*this).get(entity));
+  return *_components.at(_index(entity));
 }
 
 template<component Type, typename Allocator>
 template<std::invocable<Type&> Function>
 inline void component_container<Type, Allocator>::patch(const entity& entity, Function&& function) {
   std::invoke(function, get(entity));
+}
+
+template<component Type, typename Allocator>
+inline void component_container<Type, Allocator>::_swap_and_pop(const entity& entity) {
+  const auto index = _index(entity);
+
+  using std::swap;
+  swap(_components[index], _components.back());
+
+  _components.pop_back();
+
+  base_type::_swap_and_pop(entity);
 }
 
 template<component Type, typename Allocator>

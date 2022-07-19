@@ -6,8 +6,6 @@
 
 namespace sbx {
 
-// [TODO] KAJ 2022-07-17 20:38 - Find a way to type alias 'component_container<Component, pool_allocator<Component, 64>>'
-
 template<component Component, typename... Args>
 inline Component& registry::add_component(const entity& entity, Args&&... args) {
   if (!is_valid_entity(entity)) {
@@ -17,16 +15,10 @@ inline Component& registry::add_component(const entity& entity, Args&&... args) 
   const auto component_id = _component_id<Component>();
 
   if (component_id == _component_containers.size()) {
-    const auto deleter = [](auto* container){
-      delete static_cast<component_container<Component, pool_allocator<Component, 64>>*>(container);
-    };
-
-    auto container = std::unique_ptr<void, void(*)(void*)>{new component_container<Component, pool_allocator<Component, 64>>{}, deleter};
-
-    _component_containers.push_back(std::move(container));
+    _component_containers.push_back(std::make_unique<component_container_type<Component>>());
   }
 
-  auto& container = *static_cast<component_container<Component, pool_allocator<Component, 64>>*>(_component_containers[component_id].get());
+  auto& container = *static_cast<component_container_type<Component>*>(_component_containers[component_id].get());
 
   return container.add(entity, std::forward<Args>(args)...);
 }
@@ -39,7 +31,7 @@ inline void registry::remove_component(const entity& entity) {
 
   const auto component_id = _component_id<Component>();
 
-  auto& container = *static_cast<component_container<Component, pool_allocator<Component, 64>>*>(_component_containers[component_id].get());
+  auto& container = *static_cast<component_container_type<Component>*>(_component_containers[component_id].get());
 
   container.remove(entity);
 }
@@ -52,7 +44,7 @@ inline bool registry::has_component(const entity& entity) const {
 
   const auto component_id = _component_id<Component>();
 
-  const auto& container = *static_cast<component_container<Component, pool_allocator<Component, 64>>*>(_component_containers[component_id].get());
+  const auto& container = *static_cast<component_container_type<Component>*>(_component_containers[component_id].get());
 
   return container.contains(entity);
 }
@@ -66,10 +58,10 @@ inline Component& registry::get_component(const entity& entity) {
   const auto component_id = _component_id<Component>();
 
   if constexpr (std::is_const_v<Component>) {
-    const auto& container = *static_cast<component_container<Component, pool_allocator<Component, 64>>*>(_component_containers[component_id].get());
+    const auto& container = *static_cast<component_container_type<Component>*>(_component_containers[component_id].get());
     return container.get(entity);
   } else {
-    auto& container = *static_cast<component_container<Component, pool_allocator<Component, 64>>*>(_component_containers[component_id].get());
+    auto& container = *static_cast<component_container_type<Component>*>(_component_containers[component_id].get());
     return container.get(entity);
   }
 }
@@ -82,7 +74,7 @@ inline void registry::patch_component(const entity& entity, Function&& function)
 
   const auto component_id = _component_id<Component>();
 
-  auto& container = *static_cast<component_container<Component, pool_allocator<Component, 64>>*>(_component_containers[component_id].get());
+  auto& container = *static_cast<component_container_type<Component>*>(_component_containers[component_id].get());
   return container.patch(entity, std::forward<Function>(function));
 }
 

@@ -37,7 +37,6 @@ bool operator==(const entity& lhs, const entity& rhs) noexcept {
   return lhs._value == rhs._value;
 }
 
-
 } // namespace sbx
 
 std::size_t std::hash<sbx::entity>::operator()(const sbx::entity& entity) const noexcept {
