@@ -52,6 +52,7 @@ target_sources(
       command_pool.hpp
       transform.hpp
       vertex.hpp
+      model.hpp
 )
 
 target_include_directories(

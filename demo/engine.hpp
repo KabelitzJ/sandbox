@@ -30,8 +30,9 @@
 #include "hashed_string.hpp"
 #include "key.hpp"
 
-#include "buffer.hpp"
 #include "vertex.hpp"
+#include "buffer.hpp"
+#include "model.hpp"
 
 namespace demo {
 
@@ -107,14 +108,19 @@ private:
     _swapchain = std::make_unique<swapchain>(_window.get(), _surface.get(), _physical_device.get(), _logical_device.get(), _command_pool.get(), _event_manager.get());
     _pipeline = std::make_unique<pipeline>("demo/assets/shaders/basic", _logical_device.get(), _swapchain.get());
 
-    const auto vertices = std::array<vertex, 3>{
-      vertex{{0.0f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}},
-      vertex{{0.5f, 0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}},
-      vertex{{-0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}}
+    const auto vertices = std::array<vertex, 4>{
+      vertex{{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}},
+      vertex{{ 0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}},
+      vertex{{ 0.5f,  0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}},
+      vertex{{-0.5f,  0.5f, 0.0f}, {0.0f, 0.0f, 0.0f}}
     };
 
-    _vertex_buffer = std::make_unique<buffer<vertex, 3>>(_physical_device.get(), _logical_device.get(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-    _vertex_buffer->map(vertices);
+    const auto indices = std::array<sbx::uint32, 6>{
+      0, 1, 2,
+      2, 3, 0
+    };
+
+    _model = std::make_unique<model<4, 6>>(_physical_device.get(), _logical_device.get(), _command_pool.get(), vertices, indices);
 
     // Event listeners
     _subscriptions.emplace_back(_event_manager->subscribe<window_closed_event>([this](const auto&) {
@@ -225,12 +231,14 @@ private:
 
     vkCmdSetScissor(_swapchain->current_command_buffer(), 0, 1, &scissor);
 
-    const auto buffers = std::array<VkBuffer, 1>{_vertex_buffer->handle()};
+    const auto buffers = std::array<VkBuffer, 1>{_model->vertex_buffer().handle()};
     const auto offsets = std::array<VkDeviceSize, 1>{0};
 
     vkCmdBindVertexBuffers(_swapchain->current_command_buffer(), 0, 1, buffers.data(), offsets.data());
 
-    vkCmdDraw(_swapchain->current_command_buffer(), 3, 1, 0, 0);
+    vkCmdBindIndexBuffer(_swapchain->current_command_buffer(), _model->index_buffer().handle(), 0, VK_INDEX_TYPE_UINT32);
+
+    vkCmdDrawIndexed(_swapchain->current_command_buffer(), static_cast<sbx::uint32>(_model->index_buffer().size()), 1, 0, 0, 0);
 
     vkCmdEndRenderPass(_swapchain->current_command_buffer());
 
@@ -263,7 +271,7 @@ private:
   std::unique_ptr<swapchain> _swapchain{};
   std::unique_ptr<pipeline> _pipeline{};
 
-  std::unique_ptr<buffer<vertex, 3>> _vertex_buffer{};
+  std::unique_ptr<model<4, 6>> _model{};
 
 }; // class application
 
