@@ -36,6 +36,9 @@
 
 namespace demo {
 
+using vertex_buffer = buffer<vertex>;
+using index_buffer = buffer<sbx::uint32>;
+
 class engine {
 
 public:
@@ -108,19 +111,36 @@ private:
     _swapchain = std::make_unique<swapchain>(_window.get(), _surface.get(), _physical_device.get(), _logical_device.get(), _command_pool.get(), _event_manager.get());
     _pipeline = std::make_unique<pipeline>("demo/assets/shaders/basic", _logical_device.get(), _swapchain.get());
 
-    const auto vertices = std::array<vertex, 4>{
-      vertex{{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}},
-      vertex{{ 0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}},
-      vertex{{ 0.5f,  0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}},
-      vertex{{-0.5f,  0.5f, 0.0f}, {0.0f, 0.0f, 0.0f}}
-    };
+    // Demo vertex buffer
+    {
+      const auto vertices = std::vector<vertex>{
+        vertex{{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}},
+        vertex{{ 0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}},
+        vertex{{ 0.5f,  0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}},
+        vertex{{-0.5f,  0.5f, 0.0f}, {0.0f, 0.0f, 0.0f}}
+      };
 
-    const auto indices = std::array<sbx::uint32, 6>{
-      0, 1, 2,
-      2, 3, 0
-    };
+      auto staging_buffer = vertex_buffer{_physical_device.get(), _logical_device.get(), _command_pool.get(), vertices.size(), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT};
+      staging_buffer.map(vertices);
 
-    _model = std::make_unique<model<4, 6>>(_physical_device.get(), _logical_device.get(), _command_pool.get(), vertices, indices);
+      _vertex_buffer = std::make_unique<vertex_buffer>(_physical_device.get(), _logical_device.get(), _command_pool.get(), vertices.size(), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+      _vertex_buffer->copy_from(staging_buffer);
+    }
+
+    // Demo index buffer
+    {
+      const auto indices = std::vector<sbx::uint32>{
+        0, 1, 2,
+        2, 3, 0
+      };
+
+      auto staging_buffer = index_buffer{_physical_device.get(), _logical_device.get(), _command_pool.get(), indices.size(), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT};
+      staging_buffer.map(indices);
+
+      _index_buffer = std::make_unique<index_buffer>(_physical_device.get(), _logical_device.get(), _command_pool.get(), indices.size(), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT , VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+      _index_buffer->copy_from(staging_buffer);
+    }
+
 
     // Event listeners
     _subscriptions.emplace_back(_event_manager->subscribe<window_closed_event>([this](const auto&) {
@@ -231,14 +251,14 @@ private:
 
     vkCmdSetScissor(_swapchain->current_command_buffer(), 0, 1, &scissor);
 
-    const auto buffers = std::array<VkBuffer, 1>{_model->vertex_buffer().handle()};
+    const auto buffers = std::array<VkBuffer, 1>{_vertex_buffer->handle()};
     const auto offsets = std::array<VkDeviceSize, 1>{0};
 
     vkCmdBindVertexBuffers(_swapchain->current_command_buffer(), 0, 1, buffers.data(), offsets.data());
 
-    vkCmdBindIndexBuffer(_swapchain->current_command_buffer(), _model->index_buffer().handle(), 0, VK_INDEX_TYPE_UINT32);
+    vkCmdBindIndexBuffer(_swapchain->current_command_buffer(), _index_buffer->handle(), 0, VK_INDEX_TYPE_UINT32);
 
-    vkCmdDrawIndexed(_swapchain->current_command_buffer(), static_cast<sbx::uint32>(_model->index_buffer().size()), 1, 0, 0, 0);
+    vkCmdDrawIndexed(_swapchain->current_command_buffer(), static_cast<sbx::uint32>(_index_buffer->size()), 1, 0, 0, 0);
 
     vkCmdEndRenderPass(_swapchain->current_command_buffer());
 
@@ -271,7 +291,8 @@ private:
   std::unique_ptr<swapchain> _swapchain{};
   std::unique_ptr<pipeline> _pipeline{};
 
-  std::unique_ptr<model<4, 6>> _model{};
+  std::unique_ptr<vertex_buffer> _vertex_buffer{};
+  std::unique_ptr<index_buffer> _index_buffer{};
 
 }; // class application
 

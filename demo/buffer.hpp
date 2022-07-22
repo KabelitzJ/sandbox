@@ -16,117 +16,70 @@
 
 namespace demo {
 
-// [TODO] KAJ 2022-07-21 04:21 - Redesign buffer class. This is to general... May create explicit vertex_buffer and index_buffer class
-
-enum class buffer_type : sbx::uint32 {
-  vertex_buffer = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-  index_buffer = VK_BUFFER_USAGE_INDEX_BUFFER_BIT
-};
-
-template<typename Type, std::size_t Size, buffer_type BufferType>
+template<typename Type>
 class buffer : sbx::noncopyable {
 
 public:
 
   using value_type = Type;
-  using size_type = std::size_t;
 
   buffer() = default;
 
-  buffer(physical_device* physical_device, logical_device* logical_device, command_pool* command_pool, const std::array<value_type, Size>& data)
+  buffer(physical_device* physical_device, logical_device* logical_device, command_pool* command_pool, const VkDeviceSize size, const VkBufferUsageFlags usage, const VkMemoryPropertyFlags properties)
   : _physical_device{physical_device},
     _logical_device{logical_device},
-    _command_pool{command_pool} {
-    _initialize(data);
+    _command_pool{command_pool},
+    _size{size},
+    _usage{usage},
+    _properties{properties} {
+    _initialize();
   }
 
   ~buffer() {
     _terminate();
   }
 
-  VkBuffer handle() const {
-    return _buffer_data.buffer;
+  [[nodiscard]] VkBuffer handle() const noexcept {
+    return _handle;
   } 
 
-  [[nodiscard]] size_type size() const noexcept {
-    return Size;
+  [[nodiscard]] VkDeviceSize size() const noexcept {
+    return _size;
   }
 
-private:
+  void map(const std::vector<value_type>& data) {
+    if (data.size() != _size) {
+      throw std::runtime_error{"Data could not be mapped"};
+    }
 
-  struct buffer_data {
-    VkBuffer buffer{};
-    VkDeviceMemory memory{};
-  };
+    if (!(_usage & VK_BUFFER_USAGE_TRANSFER_SRC_BIT)) {
+      throw std::runtime_error{"Cannot call map on buffer that is not a staging buffer"};
+    }
 
-  void _initialize(const std::array<value_type, Size>& data) {
-    const auto buffer_size = sizeof(value_type) * Size;
+    const auto size = sizeof(value_type) * _size;
 
-    auto staging_buffer_data = _create_buffer(buffer_size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-
-    _map_memory(staging_buffer_data, data, buffer_size);
-
-    _buffer_data = _create_buffer(buffer_size, VK_BUFFER_USAGE_TRANSFER_DST_BIT | static_cast<std::underlying_type_t<buffer_type>>(BufferType), VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-    
-    _copy_buffer(staging_buffer_data.buffer, _buffer_data.buffer, buffer_size);
-
-    _destroy_buffer(staging_buffer_data);
-  }
-
-  void _map_memory(buffer_data& target, const std::array<value_type, Size>& data,  const VkDeviceSize size) const {
     auto data_buffer = static_cast<void*>(nullptr);
 
-    vkMapMemory(_logical_device->handle(), target.memory, 0, size, 0, &data_buffer);
+    vkMapMemory(_logical_device->handle(), _memory, 0, size, 0, &data_buffer);
     std::memcpy(data_buffer, data.data(), size);
-    vkUnmapMemory(_logical_device->handle(), target.memory);
+    vkUnmapMemory(_logical_device->handle(), _memory);
   }
 
-  buffer_data _create_buffer(const VkDeviceSize size, const VkBufferUsageFlags usage, const VkMemoryPropertyFlags properties) const {
-    auto buffer_handle = VkBuffer{};
-    auto memory_handle = VkDeviceMemory{};
-
-    const auto buffer_create_info = VkBufferCreateInfo{
-      .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-      .pNext = nullptr,
-      .flags = 0,
-      .size = size,
-      .usage = usage,
-      .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
-      .queueFamilyIndexCount = 0,
-      .pQueueFamilyIndices = nullptr
-    };
-
-    if (vkCreateBuffer(_logical_device->handle(), &buffer_create_info, nullptr, &buffer_handle) != VK_SUCCESS) {
-      throw std::runtime_error("Failed to create buffer!");
+  void copy_from(const buffer& other) {
+    if (_size != other._size) {
+      throw std::runtime_error{"Data could not be mapped"};
     }
 
-    auto memory_requirements = VkMemoryRequirements{};
-    vkGetBufferMemoryRequirements(_logical_device->handle(), buffer_handle, &memory_requirements);
-
-    const auto memory_allocate_info = VkMemoryAllocateInfo{
-      .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
-      .pNext = nullptr,
-      .allocationSize = memory_requirements.size,
-      .memoryTypeIndex = _physical_device->find_memory_type(memory_requirements.memoryTypeBits, properties)
-    };
-
-    if (vkAllocateMemory(_logical_device->handle(), &memory_allocate_info, nullptr, &memory_handle) != VK_SUCCESS) {
-      throw std::runtime_error("Failed to allocate buffer memory");
+    if (!(_usage & VK_BUFFER_USAGE_TRANSFER_DST_BIT)) {
+      throw std::runtime_error("Buffer is not a transfer destination");
     }
 
-    if (vkBindBufferMemory(_logical_device->handle(), buffer_handle, memory_handle, 0) != VK_SUCCESS) {
-      throw std::runtime_error("Failed to bind buffer memory");
+    if (!(other._usage & VK_BUFFER_USAGE_TRANSFER_SRC_BIT)) {
+      throw std::runtime_error("Given buffer is not a transfer source");
     }
 
-    return buffer_data{buffer_handle, memory_handle};
-  }
+    const auto size = sizeof(value_type) * _size;
 
-  void _destroy_buffer(buffer_data& data) const {
-    vkFreeMemory(_logical_device->handle(), data.memory, nullptr);
-    vkDestroyBuffer(_logical_device->handle(), data.buffer, nullptr);
-  }
-
-  void _copy_buffer(const VkBuffer source_buffer, const VkBuffer destination_buffer, const VkDeviceSize size) const {
     const auto command_buffer_allocation_info = VkCommandBufferAllocateInfo {
       .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
       .pNext = nullptr,
@@ -153,7 +106,7 @@ private:
       .size = size
     };
 
-    vkCmdCopyBuffer(command_buffer, source_buffer, destination_buffer, 1, &buffer_copy);
+    vkCmdCopyBuffer(command_buffer, other._handle, _handle, 1, &buffer_copy);
 
     vkEndCommandBuffer(command_buffer);
 
@@ -175,15 +128,59 @@ private:
     vkFreeCommandBuffers(_logical_device->handle(), _command_pool->handle(), 1, &command_buffer);
   }
 
+private:
+
+  void _initialize() {
+    const auto size = sizeof(value_type) * _size;
+
+    const auto buffer_create_info = VkBufferCreateInfo{
+      .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+      .pNext = nullptr,
+      .flags = 0,
+      .size = size,
+      .usage = _usage,
+      .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
+      .queueFamilyIndexCount = 0,
+      .pQueueFamilyIndices = nullptr
+    };
+
+    if (vkCreateBuffer(_logical_device->handle(), &buffer_create_info, nullptr, &_handle) != VK_SUCCESS) {
+      throw std::runtime_error("Failed to create buffer!");
+    }
+
+    auto memory_requirements = VkMemoryRequirements{};
+    vkGetBufferMemoryRequirements(_logical_device->handle(), _handle, &memory_requirements);
+
+    const auto memory_allocate_info = VkMemoryAllocateInfo{
+      .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
+      .pNext = nullptr,
+      .allocationSize = memory_requirements.size,
+      .memoryTypeIndex = _physical_device->find_memory_type(memory_requirements.memoryTypeBits, _properties)
+    };
+
+    if (vkAllocateMemory(_logical_device->handle(), &memory_allocate_info, nullptr, &_memory) != VK_SUCCESS) {
+      throw std::runtime_error("Failed to allocate buffer memory");
+    }
+
+    if (vkBindBufferMemory(_logical_device->handle(), _handle, _memory, 0) != VK_SUCCESS) {
+      throw std::runtime_error("Failed to bind buffer memory");
+    }
+  }
+
   void _terminate() {
-    _destroy_buffer(_buffer_data);
+    vkFreeMemory(_logical_device->handle(), _memory, nullptr);
+    vkDestroyBuffer(_logical_device->handle(), _handle, nullptr);
   }
 
   physical_device* _physical_device{};
   logical_device* _logical_device{};
   command_pool* _command_pool{};
 
-  buffer_data _buffer_data{};
+  VkDeviceSize _size{};
+  VkBufferUsageFlags _usage{};
+  VkMemoryPropertyFlags _properties{};
+  VkBuffer _handle{};
+  VkDeviceMemory _memory{};
 
 }; // class buffer
 

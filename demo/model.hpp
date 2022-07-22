@@ -18,26 +18,26 @@ namespace demo {
 template<std::size_t VertexCount, std::size_t IndexCount>
 class model : public sbx::noncopyable {
 
-public:
+// public:
 
-  model(physical_device* physical_device, logical_device* logical_device, command_pool* command_pool, const std::array<vertex, VertexCount>& vertices, const std::array<sbx::uint32, IndexCount>& indices)
-  : _vertex_buffer{physical_device, logical_device, command_pool, vertices},
-    _index_buffer{physical_device, logical_device, command_pool, indices} { }
+//   model(physical_device* physical_device, logical_device* logical_device, command_pool* command_pool, const std::array<vertex, VertexCount>& vertices, const std::array<sbx::uint32, IndexCount>& indices)
+//   : _vertex_buffer{physical_device, logical_device, command_pool, vertices},
+//     _index_buffer{physical_device, logical_device, command_pool, indices} { }
 
-  ~model() = default;
+//   ~model() = default;
 
-  const buffer<vertex, VertexCount, buffer_type::vertex_buffer>& vertex_buffer() const noexcept {
-    return _vertex_buffer;
-  }
+//   const buffer<vertex, VertexCount, buffer_type::vertex_buffer>& vertex_buffer() const noexcept {
+//     return _vertex_buffer;
+//   }
 
-  const buffer<sbx::uint32, IndexCount, buffer_type::index_buffer>& index_buffer() const noexcept {
-    return _index_buffer;
-  }
+//   const buffer<sbx::uint32, IndexCount, buffer_type::index_buffer>& index_buffer() const noexcept {
+//     return _index_buffer;
+//   }
 
-private:
+// private:
 
-  buffer<vertex, VertexCount, buffer_type::vertex_buffer> _vertex_buffer{};
-  buffer<sbx::uint32, IndexCount, buffer_type::index_buffer> _index_buffer{};
+//   buffer<vertex, VertexCount, buffer_type::vertex_buffer> _vertex_buffer{};
+//   buffer<sbx::uint32, IndexCount, buffer_type::index_buffer> _index_buffer{};
 
 }; // class model
 
