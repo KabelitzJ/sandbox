@@ -1,0 +1,3 @@
+# libsbx-ecs
+
+C++ library

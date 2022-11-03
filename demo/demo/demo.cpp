@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include <libsbx/core/core.hpp>
+#include <libsbx/ecs/ecs.hpp>
 
 class test_module : public sbx::core::module<test_module> {
   
@@ -21,6 +22,7 @@ private:
 
 int main() {
   std::cout << "libsbx-core: " << LIBSBX_CORE_VERSION_STR << "\n";
+  std::cout << "libsbx-ecs: " << LIBSBX_ECS_VERSION_STR << "\n";
 
   sbx::core::module_manager::create_all();
 
