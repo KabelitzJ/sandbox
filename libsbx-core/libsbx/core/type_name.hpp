@@ -24,28 +24,37 @@
  */
 
 /**
- * @file libsbx/core/version.hpp 
+ * @file libsbx/core/type_name.hpp
  */
 
-#ifndef LIBSBX_CORE_VERSION_HPP_
-#define LIBSBX_CORE_VERSION_HPP_
+#ifndef LIBSBX_CORE_TYPE_NAME_HPP_
+#define LIBSBX_CORE_TYPE_NAME_HPP_
 
 /**
  * @ingroup libsbx-core
  */
 
-#define LIBSBX_CORE_VERSION       $libsbx_core.version.project_number$ULL
-#define LIBSBX_CORE_VERSION_STR   "$libsbx_core.version.project$"
-#define LIBSBX_CORE_VERSION_ID    "$libsbx_core.version.project_id$"
-#define LIBSBX_CORE_VERSION_FULL  "$libsbx_core.version$"
+#include <cstdlib>
+#include <string>
+#include <typeindex>
 
-#define LIBSBX_CORE_VERSION_MAJOR $libsbx_core.version.major$
-#define LIBSBX_CORE_VERSION_MINOR $libsbx_core.version.minor$
-#define LIBSBX_CORE_VERSION_PATCH $libsbx_core.version.patch$
+#include <cxxabi.h>
 
-#define LIBSBX_CORE_PRE_RELEASE   $libsbx_core.version.pre_release$
+namespace sbx::core {
 
-#define LIBSBX_CORE_SNAPSHOT_SN   $libsbx_core.version.snapshot_sn$ULL
-#define LIBSBX_CORE_SNAPSHOT_ID   "$libsbx_core.version.snapshot_id$"
+std::string type_name(const std::type_index& type) {
+  auto status = 0;
+  auto name = std::string{type.name()};
+  auto* demangled_name = abi::__cxa_demangle(name.c_str(), NULL, NULL, &status);
 
-#endif // LIBSBX_CORE_VERSION_HPP_
+  if(status == 0) {
+    name = demangled_name;
+    std::free(demangled_name);
+  }
+
+  return name;
+}
+
+} // namespace sbx::core
+
+#endif // LIBSBX_CORE_TYPE_NAME_HPP_

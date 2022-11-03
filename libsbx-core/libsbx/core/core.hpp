@@ -18,6 +18,9 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
+ * 
+ * You should have received a copy of the MIT License along with this program.
+ * If not, see <https://opensource.org/licenses/MIT/>.
  */
 
 /**
@@ -33,5 +36,8 @@
  */
 
 #include <libsbx/core/version.hpp>
+#include <libsbx/core/type_name.hpp>
+#include <libsbx/core/delegate.hpp>
+#include <libsbx/core/module.hpp>
 
 #endif // LIBSBX_CORE_HPP_

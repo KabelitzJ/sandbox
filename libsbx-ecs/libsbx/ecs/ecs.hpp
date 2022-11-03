@@ -24,28 +24,19 @@
  */
 
 /**
- * @file libsbx/core/version.hpp 
+ * @file libsbx/ecs/ecs.hpp
  */
 
-#ifndef LIBSBX_CORE_VERSION_HPP_
-#define LIBSBX_CORE_VERSION_HPP_
+#ifndef LIBSBX_ECS_HPP_
+#define LIBSBX_ECS_HPP_
 
 /**
- * @ingroup libsbx-core
+ * @defgroup libsbx-ecs
+ * @since 0.1.0
  */
 
-#define LIBSBX_CORE_VERSION       $libsbx_core.version.project_number$ULL
-#define LIBSBX_CORE_VERSION_STR   "$libsbx_core.version.project$"
-#define LIBSBX_CORE_VERSION_ID    "$libsbx_core.version.project_id$"
-#define LIBSBX_CORE_VERSION_FULL  "$libsbx_core.version$"
+#include <libsbx/ecs/version.hpp>
+#include <libsbx/ecs/entity.hpp>
+#include <libsbx/ecs/registry.hpp>
 
-#define LIBSBX_CORE_VERSION_MAJOR $libsbx_core.version.major$
-#define LIBSBX_CORE_VERSION_MINOR $libsbx_core.version.minor$
-#define LIBSBX_CORE_VERSION_PATCH $libsbx_core.version.patch$
-
-#define LIBSBX_CORE_PRE_RELEASE   $libsbx_core.version.pre_release$
-
-#define LIBSBX_CORE_SNAPSHOT_SN   $libsbx_core.version.snapshot_sn$ULL
-#define LIBSBX_CORE_SNAPSHOT_ID   "$libsbx_core.version.snapshot_id$"
-
-#endif // LIBSBX_CORE_VERSION_HPP_
+#endif // LIBSBX_ECS_HPP_

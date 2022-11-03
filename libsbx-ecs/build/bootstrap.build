@@ -1,0 +1,6 @@
+project = libsbx-ecs
+
+using version
+using config
+using install
+using dist

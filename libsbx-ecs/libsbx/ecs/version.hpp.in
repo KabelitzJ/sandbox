@@ -24,28 +24,28 @@
  */
 
 /**
- * @file libsbx/core/version.hpp 
+ * @file libsbx/ecs/version.hpp
  */
 
-#ifndef LIBSBX_CORE_VERSION_HPP_
-#define LIBSBX_CORE_VERSION_HPP_
+#ifndef LIBSBX_ECS_VERSION_HPP_
+#define LIBSBX_ECS_VERSION_HPP_
 
 /**
- * @ingroup libsbx-core
+ * @ingroup libsbx-ecs
  */
 
-#define LIBSBX_CORE_VERSION       $libsbx_core.version.project_number$ULL
-#define LIBSBX_CORE_VERSION_STR   "$libsbx_core.version.project$"
-#define LIBSBX_CORE_VERSION_ID    "$libsbx_core.version.project_id$"
-#define LIBSBX_CORE_VERSION_FULL  "$libsbx_core.version$"
+#define LIBSBX_ECS_VERSION       $libsbx_ecs.version.project_number$ULL
+#define LIBSBX_ECS_VERSION_STR   "$libsbx_ecs.version.project$"
+#define LIBSBX_ECS_VERSION_ID    "$libsbx_ecs.version.project_id$"
+#define LIBSBX_ECS_VERSION_FULL  "$libsbx_ecs.version$"
 
-#define LIBSBX_CORE_VERSION_MAJOR $libsbx_core.version.major$
-#define LIBSBX_CORE_VERSION_MINOR $libsbx_core.version.minor$
-#define LIBSBX_CORE_VERSION_PATCH $libsbx_core.version.patch$
+#define LIBSBX_ECS_VERSION_MAJOR $libsbx_ecs.version.major$
+#define LIBSBX_ECS_VERSION_MINOR $libsbx_ecs.version.minor$
+#define LIBSBX_ECS_VERSION_PATCH $libsbx_ecs.version.patch$
 
-#define LIBSBX_CORE_PRE_RELEASE   $libsbx_core.version.pre_release$
+#define LIBSBX_ECS_PRE_RELEASE   $libsbx_ecs.version.pre_release$
 
-#define LIBSBX_CORE_SNAPSHOT_SN   $libsbx_core.version.snapshot_sn$ULL
-#define LIBSBX_CORE_SNAPSHOT_ID   "$libsbx_core.version.snapshot_id$"
+#define LIBSBX_ECS_SNAPSHOT_SN   $libsbx_ecs.version.snapshot_sn$ULL
+#define LIBSBX_ECS_SNAPSHOT_ID   "$libsbx_ecs.version.snapshot_id$"
 
-#endif // LIBSBX_CORE_VERSION_HPP_
+#endif // LIBSBX_ECS_VERSION_HPP_
