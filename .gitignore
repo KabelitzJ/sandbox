@@ -1,0 +1,5 @@
+.bdep/
+.build2/local/
+.vscode/
+
+configs/
