@@ -1,0 +1,6 @@
+dependencies =
+import dependencies += libsbx-core%lib{sbx-core}
+
+exe{demo}: {hxx ixx txx cxx}{**} $dependencies
+
+cxx.poptions += "-I$out_root" "-I$src_root"
