@@ -1,0 +1,3 @@
+# libsbx-core
+
+C++ library

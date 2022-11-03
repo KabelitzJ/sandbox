@@ -1,0 +1,6 @@
+$out_root/
+{
+  include libsbx/core/
+}
+
+export $out_root/libsbx/core/$import.target
