@@ -36,5 +36,7 @@
  */
 
 #include <libsbx/ecs/version.hpp>
+#include <libsbx/ecs/entity.hpp>
+#include <libsbx/ecs/registry.hpp>
 
 #endif // LIBSBX_ECS_HPP_

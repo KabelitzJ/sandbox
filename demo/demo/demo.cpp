@@ -16,7 +16,13 @@ public:
     std::cout << "test_module::update()\n";
   }
 
+  sbx::ecs::registry& registry() {
+    return _registry;
+  }
+
 private:
+
+  sbx::ecs::registry _registry{};
 
 }; // class test_module
 
@@ -25,6 +31,12 @@ int main() {
   std::cout << "libsbx-ecs: " << LIBSBX_ECS_VERSION_STR << "\n";
 
   sbx::core::module_manager::create_all();
+
+  auto& registry = test_module::get().registry();
+
+  auto player = registry.create_entity("Player");
+
+  std::cout << registry.get_component<sbx::ecs::tag>(player) << '\n';
 
   sbx::core::module_manager::update_stages();
 
