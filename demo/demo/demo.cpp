@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cstdlib>
 
 #include <libsbx/core/core.hpp>
 #include <libsbx/ecs/ecs.hpp>
@@ -30,7 +31,19 @@ int main() {
   std::cout << "libsbx-core: " << LIBSBX_CORE_VERSION_STR << "\n";
   std::cout << "libsbx-ecs: " << LIBSBX_ECS_VERSION_STR << "\n";
 
-  sbx::core::module_manager::create_all();
+  try {
+    sbx::core::module_manager::create_all();
+  } catch (const std::exception& exception) {
+    sbx::core::logger::error("{}", exception.what());
+    return EXIT_FAILURE;
+  }
+
+  sbx::core::logger::trace("Test");
+  sbx::core::logger::debug("Test");
+  sbx::core::logger::info("Test");
+  sbx::core::logger::warn("Test");
+  sbx::core::logger::error("Test");
+  sbx::core::logger::critical("Test");
 
   auto& registry = test_module::get().registry();
 
@@ -42,5 +55,5 @@ int main() {
 
   sbx::core::module_manager::destroy_all();
 
-  return 0;
+  return EXIT_SUCCESS;
 }
