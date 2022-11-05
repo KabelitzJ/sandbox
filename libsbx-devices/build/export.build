@@ -1,0 +1,6 @@
+$out_root/
+{
+  include libsbx/devices/
+}
+
+export $out_root/libsbx/devices/$import.target
