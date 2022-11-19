@@ -36,5 +36,6 @@
  */
 
 #include <libsbx/graphics/version.hpp>
+#include <libsbx/graphics/graphics_module.hpp>
 
 #endif // LIBSBX_GRAPHICS_HPP_

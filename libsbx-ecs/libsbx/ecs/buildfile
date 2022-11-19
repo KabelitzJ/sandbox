@@ -1,4 +1,6 @@
 public_dependencies = # Interface dependencies.
+import public_dependencies += libsbx-core%lib{sbx-core}
+
 private_dependencies = # Implementation dependencies.
 #import xxxx_libs += libhello%lib{hello}
 

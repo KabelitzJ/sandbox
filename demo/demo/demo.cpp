@@ -16,7 +16,7 @@ public:
   test_module() = default;
   ~test_module() override = default;
 
-  void update() override {
+  void update([[maybe_unused]] const sbx::core::time& delta_time) override {
     
   }
 
@@ -31,6 +31,8 @@ private:
 }; // class test_module
 
 int main() {
+  using clock_type = std::chrono::high_resolution_clock;
+
   sbx::core::logger::info("libsbx-core: {}", LIBSBX_CORE_VERSION_STR);
   sbx::core::logger::info("libsbx-ecs: {}", LIBSBX_ECS_VERSION_STR);
   sbx::core::logger::info("libsbx-devices: {}", LIBSBX_DEVICES_VERSION_STR);
@@ -45,16 +47,14 @@ int main() {
 
   auto& window = sbx::devices::device_module::get().current_window();
 
-  auto last = std::chrono::high_resolution_clock::now();
+  auto last = clock_type::now();
   
   while (!window.should_close()) {
-    auto now = std::chrono::high_resolution_clock::now();
-    const auto delta_time = std::chrono::duration_cast<std::chrono::duration<float>>(now - last);
+    auto now = clock_type::now();
+    const auto delta_time = sbx::core::time{now - last};
     last = now;
 
-    sbx::core::module_manager::update_stages();
-
-    window.set_title(fmt::format("Window [Delta: {} ms]", delta_time.count()));
+    sbx::core::module_manager::update_stages(delta_time);
   }
 
   sbx::core::module_manager::destroy_all();

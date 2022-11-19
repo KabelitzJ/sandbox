@@ -24,22 +24,36 @@
  */
 
 /**
- * @file libsbx/core/core.hpp 
+ * @file libsbx/ecs/ecs_module.hpp 
  */
 
-#ifndef LIBSBX_CORE_HPP_
-#define LIBSBX_CORE_HPP_
+#ifndef LIBSBX_ECS_ECS_MODULE_HPP_
+#define LIBSBX_ECS_ECS_MODULE_HPP_
 
 /**
- * @defgroup libsbx-core
- * @since v0.1.0
+ * @ingroup libsbx-ecs
  */
 
-#include <libsbx/core/delegate.hpp>
-#include <libsbx/core/logger.hpp>
 #include <libsbx/core/module.hpp>
-#include <libsbx/core/time.hpp>
-#include <libsbx/core/type_name.hpp>
-#include <libsbx/core/version.hpp>
 
-#endif // LIBSBX_CORE_HPP_
+namespace sbx::module {
+
+class ecs_module : public core::module<ecs_module> {
+
+  inline static const auto registered = register_module(stage::normal);
+
+public:
+
+  ecs_module() = default;
+
+  ~ecs_module() override = default;
+
+  void update([[maybe_unused]] const core::time& delta_time) override {
+
+  }
+
+}; // class ecs_module
+
+} // namespace sbx::module
+
+#endif // LIBSBX_ECS_ECS_MODULE_HPP_

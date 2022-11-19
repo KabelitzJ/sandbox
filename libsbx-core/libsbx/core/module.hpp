@@ -46,6 +46,7 @@
 
 #include <libsbx/core/delegate.hpp>
 #include <libsbx/core/type_name.hpp>
+#include <libsbx/core/time.hpp>
 
 namespace sbx::core {
 
@@ -94,21 +95,21 @@ public:
     }
   }
 
-  static void update_stages() {
-    update_stage(stage::pre);
-    update_stage(stage::normal);
-    update_stage(stage::post);
-    update_stage(stage::render);
+  static void update_stages(const time& delta_time) {
+    update_stage(stage::pre, delta_time);
+    update_stage(stage::normal, delta_time);
+    update_stage(stage::post, delta_time);
+    update_stage(stage::render, delta_time);
   }
 
-  static void update_stage(stage stage) {
+  static void update_stage(stage stage, const time& delta_time) {
     if (const auto entry = _instances_by_stage.find(stage); entry != _instances_by_stage.cend()) {
       const auto& instance_types = entry->second;
 
       for (auto& type : instance_types) {
         auto& instance = _instances.at(type);
 
-        instance->update();
+        instance->update(delta_time);
       }
     }
   }
@@ -129,7 +130,7 @@ private:
 
     virtual ~module_base() = default;
 
-    virtual void update() = 0;
+    virtual void update(const time& delta_time) = 0;
 
   protected:
 

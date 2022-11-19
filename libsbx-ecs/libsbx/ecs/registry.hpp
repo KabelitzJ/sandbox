@@ -216,7 +216,7 @@ OutputStream& operator<<(OutputStream& output_stream, const tag& tag) {
 class registry {
 
   template<typename Type>
-  using container_type = detail::component_container<Type>;
+  using container_type = detail::component_container<std::remove_const_t<Type>>;
 
 public:
 

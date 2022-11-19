@@ -24,22 +24,40 @@
  */
 
 /**
- * @file libsbx/core/core.hpp 
+ * @file libsbx/graphics/graphics_module.hpp 
  */
 
-#ifndef LIBSBX_CORE_HPP_
-#define LIBSBX_CORE_HPP_
+#ifndef LIBSBX_GRAPHICS_GRAPHICS_MODULE_HPP_
+#define LIBSBX_GRAPHICS_GRAPHICS_MODULE_HPP_
 
 /**
- * @defgroup libsbx-core
- * @since v0.1.0
+ * @ingroup libsbx-graphics
  */
 
-#include <libsbx/core/delegate.hpp>
-#include <libsbx/core/logger.hpp>
 #include <libsbx/core/module.hpp>
-#include <libsbx/core/time.hpp>
-#include <libsbx/core/type_name.hpp>
-#include <libsbx/core/version.hpp>
 
-#endif // LIBSBX_CORE_HPP_
+#include <libsbx/devices/device_module.hpp>
+
+namespace sbx::graphics {
+
+class graphics_module : public core::module<graphics_module> {
+
+  inline static const auto registered = register_module(stage::normal, core::dependencies<devices::device_module>{});
+
+public:
+
+  graphics_module() = default;
+
+  ~graphics_module() override = default;
+
+  void update([[maybe_unused]] const core::time& delta_time) override {
+
+  }
+
+private:
+
+}; // class graphics_module
+
+} // namespace sbx::graphics
+
+#endif // LIBSBX_GRAPHICS_GRAPHICS_MODULE_HPP_
