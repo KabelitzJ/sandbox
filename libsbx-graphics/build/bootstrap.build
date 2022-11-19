@@ -1,0 +1,6 @@
+project = libsbx-graphics
+
+using version
+using config
+using install
+using dist

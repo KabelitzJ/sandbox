@@ -19,6 +19,10 @@ class device_module : public core::module<device_module> {
 public:
 
   device_module() {
+    glfwSetErrorCallback([](std::int32_t error_code, const char* description){
+      sbx::core::logger::error("({}) {}", error_code, description);
+    });
+
     if (!glfwInit()) {
       throw std::runtime_error{"Failed to initialize GLFW"};
     }
@@ -28,10 +32,13 @@ public:
     }
 
     _monitor = std::make_unique<monitor>();
-    _window = std::make_unique<window>();
+    _window = std::make_unique<window>(window_create_info{"Window", 960, 720});
   }
 
   ~device_module() override {
+    _window.reset();
+    _monitor.reset();
+
     glfwTerminate();
   }
 
