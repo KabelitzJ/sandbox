@@ -10,3 +10,4 @@ depends: * build2 >= 0.15.0
 depends: * bpkg >= 0.15.0
 depends: libsbx-core >= 0.1.0
 depends: glfw >= 3.3.8
+depends: libvulkan-meta >= 1.0.0

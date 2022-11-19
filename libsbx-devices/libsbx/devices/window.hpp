@@ -78,12 +78,6 @@ public:
     glfwSetWindowTitle(_window, title.c_str());
   }
 
-  std::vector<const char*> get_requirements() const {
-    auto requirements = std::vector<const char*>{};
-
-    return requirements;
-  }
-
 private:
 
   void _setup_callbacks() {

@@ -35,8 +35,11 @@
  */
 
 #include <memory>
+#include <cinttypes>
 
 #include <GLFW/glfw3.h>
+
+#include <vulkan/vulkan.h>
 
 #include <libsbx/core/module.hpp>
 
@@ -78,6 +81,18 @@ public:
   void update(const core::time& delta_time) override {
     glfwPollEvents();
     _window->set_title(fmt::format("Window [Delta: {:.6f} ms]", delta_time));
+  }
+
+  std::vector<const char*> get_required_extentions() const {
+    auto extention_count = std::uint32_t{};
+
+    const auto* glfw_extentions = glfwGetRequiredInstanceExtensions(&extention_count);
+
+    auto extentions = std::vector<const char*>{glfw_extentions, glfw_extentions + extention_count};
+
+    extentions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+
+    return extentions;
   }
 
   monitor& current_monitor() {
