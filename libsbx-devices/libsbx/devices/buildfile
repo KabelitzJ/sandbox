@@ -1,7 +1,7 @@
 public_dependencies = # Interface dependencies.
 import public_dependencies += libsbx-core%liba{sbx-core}
 import public_dependencies += glfw%liba{glfw}
-import public_dependencies += libvulkan-meta%lib{vulkan}
+# import public_dependencies += libvulkan-meta%lib{vulkan}
 
 private_dependencies = # Implementation dependencies.
 

@@ -39,7 +39,7 @@
 
 #include <GLFW/glfw3.h>
 
-#include <vulkan/vulkan.h>
+// #include <vulkan/vulkan.h>
 
 #include <libsbx/core/module.hpp>
 
@@ -83,16 +83,16 @@ public:
     _window->set_title(fmt::format("Window [Delta: {:.6f} ms]", delta_time));
   }
 
-  std::vector<const char*> get_required_extentions() const {
+  std::vector<const char*> get_required_extensions() const {
     auto extention_count = std::uint32_t{};
 
-    const auto* glfw_extentions = glfwGetRequiredInstanceExtensions(&extention_count);
+    const auto* glfw_extensions = glfwGetRequiredInstanceExtensions(&extention_count);
 
-    auto extentions = std::vector<const char*>{glfw_extentions, glfw_extentions + extention_count};
+    auto extensions = std::vector<const char*>{glfw_extensions, glfw_extensions + extention_count};
 
-    extentions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+    // extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 
-    return extentions;
+    return extensions;
   }
 
   monitor& current_monitor() {
