@@ -52,12 +52,16 @@ class graphics_module : public core::module<graphics_module> {
 public:
 
   graphics_module()
-  : _instance{std::make_unique<instance>()} { }
+  : _instance{std::make_unique<graphics::instance>()} { }
 
   ~graphics_module() override = default;
 
   void update([[maybe_unused]] const core::time& delta_time) override {
 
+  }
+
+  instance& instance() {
+    return *_instance;
   }
 
 private:

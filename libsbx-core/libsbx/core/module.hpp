@@ -121,7 +121,7 @@ private:
   struct module_factory {
     stage module_stage{};
     std::unordered_set<std::type_index> dependencies{};
-    delegate<std::unique_ptr<module_base>()> create_fn{};
+    std::function<std::unique_ptr<module_base>()> create_fn{};
   }; // struct module_factory
 
   class module_base {
@@ -202,16 +202,14 @@ protected:
   static bool register_module(stage stage, dependencies<Dependencies...>&& dependencies = {}) {
     const auto type = std::type_index{typeid(Derived)};
 
-    auto create_fn = []() -> std::unique_ptr<module_base> {
-      // [NOTE]: We store a weak reference to the instance here so we dont have to query it every time
-      _instance = new Derived{};
-      return std::unique_ptr<module_base>(_instance);
-    };
-
     auto factory = module_factory{
       .module_stage = stage,
       .dependencies = dependencies.get(),
-      .create_fn = delegate<std::unique_ptr<module_base>()>{std::move(create_fn)}
+      .create_fn = std::function<std::unique_ptr<module_base>()>{[]() -> std::unique_ptr<module_base> {
+        // [NOTE]: We store a weak reference to the instance here so we dont have to query it every time
+        _instance = new Derived{};
+        return std::unique_ptr<module_base>(_instance);
+      }}
     };
 
     const auto result = factories().insert({type, std::move(factory)}).second;
