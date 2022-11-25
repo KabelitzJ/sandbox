@@ -154,7 +154,7 @@ private:
       _create_module(dependency, _factories.at(dependency));
     }
 
-    _instances.insert({type, std::invoke(factory.create_fn)});
+    _instances[type] = std::invoke(factory.create_fn);
     _instances_by_stage[factory.module_stage].push_back(type);
   }
 
@@ -193,18 +193,7 @@ public:
   }
 
   static Derived& get() {
-    const auto type = std::type_index{typeid(Derived)};
-
-    auto& module_instances = instances();
-
-    if (module_instances.find(type) == module_instances.cend()) {
-      auto error_message = std::stringstream{};
-      error_message << "Module of type '" << type_name(type) << "' has not been created yat. Check your dependencies.";
-
-      throw std::runtime_error{error_message.str()};
-    }
-
-    return *static_cast<Derived*>(module_instances.at(type).get());
+    return *_instance;
   }
 
 protected:
@@ -214,7 +203,9 @@ protected:
     const auto type = std::type_index{typeid(Derived)};
 
     auto create_fn = []() -> std::unique_ptr<module_base> {
-      return std::make_unique<Derived>();
+      // [NOTE]: We store a weak reference to the instance here so we dont have to query it every time
+      _instance = new Derived{};
+      return std::unique_ptr<module_base>(_instance);
     };
 
     auto factory = module_factory{
@@ -231,6 +222,10 @@ protected:
 
     return true;
   }
+
+private:
+
+  inline static Derived* _instance{};
 
 }; // class module
 

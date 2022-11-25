@@ -34,9 +34,14 @@
  * @ingroup libsbx-graphics
  */
 
+
+#include <memory>
+
 #include <libsbx/core/module.hpp>
 
 #include <libsbx/devices/device_module.hpp>
+
+#include <libsbx/graphics/instance.hpp>
 
 namespace sbx::graphics {
 
@@ -46,7 +51,8 @@ class graphics_module : public core::module<graphics_module> {
 
 public:
 
-  graphics_module() = default;
+  graphics_module()
+  : _instance{std::make_unique<instance>()} { }
 
   ~graphics_module() override = default;
 
@@ -55,6 +61,8 @@ public:
   }
 
 private:
+
+  std::unique_ptr<graphics::instance> _instance{};
 
 }; // class graphics_module
 
