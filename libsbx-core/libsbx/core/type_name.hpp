@@ -40,9 +40,12 @@
 
 #include <cxxabi.h>
 
+#include <libsbx/core/platform.hpp>
+
 namespace sbx::core {
 
 std::string type_name(const std::type_index& type) {
+#if defined(LIBSBX_COMPILER_GNU)
   auto status = 0;
   auto name = std::string{type.name()};
   auto* demangled_name = abi::__cxa_demangle(name.c_str(), NULL, NULL, &status);
@@ -53,6 +56,9 @@ std::string type_name(const std::type_index& type) {
   }
 
   return name;
+#else
+  return type.name();
+#endif
 }
 
 } // namespace sbx::core
