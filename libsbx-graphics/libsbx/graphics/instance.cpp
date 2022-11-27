@@ -10,6 +10,20 @@ instance::instance() {
   for (const auto* extension : devices::device_module::get().get_required_extensions()) {
     core::logger::debug("{}", extension);
   }
+
+  _initialize();
+}
+
+instance::~instance() {
+  _terminate();
+}
+
+void instance::_initialize() {
+
+}
+
+void instance::_terminate() {
+  
 }
 
 } // namespace sbx::graphics

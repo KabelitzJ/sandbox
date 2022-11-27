@@ -39,7 +39,7 @@
 
 #include <GLFW/glfw3.h>
 
-// #include <vulkan/vulkan.h>
+#include <vulkan/vulkan.h>
 
 #include <libsbx/core/module.hpp>
 
@@ -90,7 +90,7 @@ public:
 
     auto extensions = std::vector<const char*>{glfw_extensions, glfw_extensions + extention_count};
 
-    // extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+    extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 
     return extensions;
   }

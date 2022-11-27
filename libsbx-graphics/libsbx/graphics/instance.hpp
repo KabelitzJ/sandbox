@@ -9,7 +9,13 @@ public:
 
   instance();
 
+  ~instance();
+
 private:
+
+  void _initialize();
+
+  void _terminate();
 
 }; // class instance
 
