@@ -24,70 +24,36 @@
  */
 
 /**
- * @file libsbx/devices/window.hpp 
+ * @file libsbx/ecs/ecs_module.hpp 
  */
 
-#ifndef LIBSBX_DEVICES_WINDOW_HPP_
-#define LIBSBX_DEVICES_WINDOW_HPP_
+#ifndef LIBSBX_ECS_ECS_MODULE_HPP_
+#define LIBSBX_ECS_ECS_MODULE_HPP_
 
 /**
- * @ingroup libsbx-devices
+ * @ingroup libsbx-ecs
  */
 
-#include <string>
-#include <vector>
-#include <stdexcept>
-#include <cinttypes>
+#include <libsbx/core/module.hpp>
 
-#include <GLFW/glfw3.h>
+namespace sbx::module {
 
-namespace sbx::devices {
+class ecs_module : public core::module<ecs_module> {
 
-struct window_create_info {
-  std::string title{};
-  std::uint32_t width{};
-  std::uint32_t height{};
-};
-
-class window {
+  inline static const auto registered = register_module(stage::normal);
 
 public:
 
-  window(const window_create_info& create_info) {
-    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+  ecs_module() = default;
 
-    _window = glfwCreateWindow(create_info.width, create_info.height, create_info.title.c_str(), nullptr, nullptr);
+  ~ecs_module() override = default;
 
-    if (!_window) {
-      throw std::runtime_error("Failed to create window");
-    }
+  void update([[maybe_unused]] const core::time& delta_time) override {
 
-    _setup_callbacks();
   }
 
-  ~window() {
-    glfwDestroyWindow(_window);
-  }
+}; // class ecs_module
 
-  bool should_close() const {
-    return glfwWindowShouldClose(_window);
-  }
+} // namespace sbx::module
 
-  void set_title(const std::string& title) {
-    glfwSetWindowTitle(_window, title.c_str());
-  }
-
-private:
-
-  void _setup_callbacks() {
-    
-  }
-
-  GLFWwindow* _window{};
-
-}; // class window
-
-} // namespace sbx::devices
-
-#endif // LIBSBX_DEVICES_WINDOW_HPP_
+#endif // LIBSBX_ECS_ECS_MODULE_HPP_

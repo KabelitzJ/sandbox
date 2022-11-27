@@ -35,10 +35,11 @@
  * @since v0.1.0
  */
 
-#include <libsbx/core/version.hpp>
-#include <libsbx/core/type_name.hpp>
 #include <libsbx/core/delegate.hpp>
-#include <libsbx/core/module.hpp>
 #include <libsbx/core/logger.hpp>
+#include <libsbx/core/module.hpp>
+#include <libsbx/core/time.hpp>
+#include <libsbx/core/type_name.hpp>
+#include <libsbx/core/version.hpp>
 
 #endif // LIBSBX_CORE_HPP_

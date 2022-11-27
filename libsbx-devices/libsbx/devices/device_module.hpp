@@ -1,13 +1,47 @@
+/* 
+ * Copyright (c) 2022 Jonas Kabelitz
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ * 
+ * You should have received a copy of the MIT License along with this program.
+ * If not, see <https://opensource.org/licenses/MIT/>.
+ */
+
+/**
+ * @file libsbx/devices/devices_module.hpp 
+ */
+
 #ifndef LIBSBX_DEVICES_DEVICE_MODULE_HPP_
 #define LIBSBX_DEVICES_DEVICE_MODULE_HPP_
+
+/**
+ * @ingroup libsbx-devices
+ */
 
 #include <memory>
 #include <vector>
 #include <cstdint>
+#include <cinttypes>
 
 #include <GLFW/glfw3.h>
 
-#include <vulkan/vulkan.hpp>
+#include <vulkan/vulkan.h>
 
 #include <libsbx/core/module.hpp>
 #include <libsbx/core/platform.hpp>
@@ -24,6 +58,10 @@ class device_module : public core::module<device_module> {
 public:
 
   device_module() {
+    glfwSetErrorCallback([](std::int32_t error_code, const char* description){
+      sbx::core::logger::error("({}) {}", error_code, description);
+    });
+
     if (!glfwInit()) {
       throw std::runtime_error{"Failed to initialize GLFW"};
     }
@@ -33,15 +71,31 @@ public:
     }
 
     _monitor = std::make_unique<monitor>();
-    _window = std::make_unique<window>();
+    _window = std::make_unique<window>(window_create_info{"Window", 960, 720});
   }
 
   ~device_module() override {
+    _window.reset();
+    _monitor.reset();
+
     glfwTerminate();
   }
 
-  void update() override {
+  void update(const core::time& delta_time) override {
     glfwPollEvents();
+    _window->set_title(fmt::format("Window [Delta: {:.6f} ms]", delta_time));
+  }
+
+  std::vector<const char*> get_required_extensions() const {
+    auto extention_count = std::uint32_t{};
+
+    const auto* glfw_extensions = glfwGetRequiredInstanceExtensions(&extention_count);
+
+    auto extensions = std::vector<const char*>{glfw_extensions, glfw_extensions + extention_count};
+
+    extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+
+    return extensions;
   }
 
   std::vector<const char*> required_extentions() {

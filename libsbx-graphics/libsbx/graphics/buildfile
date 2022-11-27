@@ -1,10 +1,11 @@
 public_dependencies = # Interface dependencies.
 import public_dependencies += libsbx-core%lib{sbx-core}
+import public_dependencies += libsbx-devices%lib{sbx-devices}
 
 private_dependencies = # Implementation dependencies.
 #import xxxx_libs += libhello%lib{hello}
 
-lib{sbx-ecs}: {hxx ixx txx cxx}{** -version} hxx{version} $private_dependencies $public_dependencies
+lib{sbx-graphics}: {hxx ixx txx cxx}{** -version} hxx{version} $private_dependencies $public_dependencies
 
 hxx{version}: in{version} $src_root/manifest
 
@@ -14,34 +15,34 @@ hxx{export}@./: cxx.importable = false
 #
 cxx.poptions += "-I$out_root" "-I$src_root"
 
-{hbmia obja}{*}: cxx.poptions += -DLIBSBX_ECS_STATIC_BUILD
-{hbmis objs}{*}: cxx.poptions += -DLIBSBX_ECS_SHARED_BUILD
+{hbmia obja}{*}: cxx.poptions += -DLIBSBX_GRAPHICS_STATIC_BUILD
+{hbmis objs}{*}: cxx.poptions += -DLIBSBX_GRAPHICS_SHARED_BUILD
 
 # Export options.
 #
-lib{sbx-ecs}:
+lib{sbx-graphics}:
 {
   cxx.export.poptions = "-I$out_root" "-I$src_root"
   cxx.export.libs = $public_dependencies
 }
 
-liba{sbx-ecs}: cxx.export.poptions += -DLIBSBX_ECS_STATIC
-libs{sbx-ecs}: cxx.export.poptions += -DLIBSBX_ECS_SHARED
+liba{sbx-graphics}: cxx.export.poptions += -DLIBSBX_GRAPHICS_STATIC
+libs{sbx-graphics}: cxx.export.poptions += -DLIBSBX_GRAPHICS_SHARED
 
 # For pre-releases use the complete version to make sure they cannot be used
 # in place of another pre-release or the final version. See the version module
 # for details on the version.* variable values.
 #
 if $version.pre_release
-  lib{sbx-ecs}: bin.lib.version = "-$version.project_id"
+  lib{sbx-graphics}: bin.lib.version = "-$version.project_id"
 else
-  lib{sbx-ecs}: bin.lib.version = "-$version.major.$version.minor"
+  lib{sbx-graphics}: bin.lib.version = "-$version.major.$version.minor"
 
-# Install into the libsbx/ecs/ subdirectory of, say, /usr/include/
+# Install into the libsbx/graphics/ subdirectory of, say, /usr/include/
 # recreating subdirectories.
 #
 {hxx ixx txx}{*}:
 {
-  install = include/libsbx/ecs/
+  install = include/libsbx/graphics/
   install.subdirs = true
 }

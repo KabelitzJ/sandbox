@@ -24,70 +24,18 @@
  */
 
 /**
- * @file libsbx/devices/window.hpp 
+ * @file libsbx/graphics/graphics.hpp 
  */
 
-#ifndef LIBSBX_DEVICES_WINDOW_HPP_
-#define LIBSBX_DEVICES_WINDOW_HPP_
+#ifndef LIBSBX_GRAPHICS_HPP_
+#define LIBSBX_GRAPHICS_HPP_
 
 /**
- * @ingroup libsbx-devices
+ * @defgroup libsbx-graphics
+ * @since v0.1.0
  */
 
-#include <string>
-#include <vector>
-#include <stdexcept>
-#include <cinttypes>
+#include <libsbx/graphics/version.hpp>
+#include <libsbx/graphics/graphics_module.hpp>
 
-#include <GLFW/glfw3.h>
-
-namespace sbx::devices {
-
-struct window_create_info {
-  std::string title{};
-  std::uint32_t width{};
-  std::uint32_t height{};
-};
-
-class window {
-
-public:
-
-  window(const window_create_info& create_info) {
-    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
-
-    _window = glfwCreateWindow(create_info.width, create_info.height, create_info.title.c_str(), nullptr, nullptr);
-
-    if (!_window) {
-      throw std::runtime_error("Failed to create window");
-    }
-
-    _setup_callbacks();
-  }
-
-  ~window() {
-    glfwDestroyWindow(_window);
-  }
-
-  bool should_close() const {
-    return glfwWindowShouldClose(_window);
-  }
-
-  void set_title(const std::string& title) {
-    glfwSetWindowTitle(_window, title.c_str());
-  }
-
-private:
-
-  void _setup_callbacks() {
-    
-  }
-
-  GLFWwindow* _window{};
-
-}; // class window
-
-} // namespace sbx::devices
-
-#endif // LIBSBX_DEVICES_WINDOW_HPP_
+#endif // LIBSBX_GRAPHICS_HPP_

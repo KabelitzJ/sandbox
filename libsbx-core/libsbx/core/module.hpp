@@ -46,6 +46,7 @@
 
 #include <libsbx/core/delegate.hpp>
 #include <libsbx/core/type_name.hpp>
+#include <libsbx/core/time.hpp>
 
 namespace sbx::core {
 
@@ -94,21 +95,21 @@ public:
     }
   }
 
-  static void update_stages() {
-    update_stage(stage::pre);
-    update_stage(stage::normal);
-    update_stage(stage::post);
-    update_stage(stage::render);
+  static void update_stages(const time& delta_time) {
+    update_stage(stage::pre, delta_time);
+    update_stage(stage::normal, delta_time);
+    update_stage(stage::post, delta_time);
+    update_stage(stage::render, delta_time);
   }
 
-  static void update_stage(stage stage) {
+  static void update_stage(stage stage, const time& delta_time) {
     if (const auto entry = _instances_by_stage.find(stage); entry != _instances_by_stage.cend()) {
       const auto& instance_types = entry->second;
 
       for (auto& type : instance_types) {
         auto& instance = _instances.at(type);
 
-        instance->update();
+        instance->update(delta_time);
       }
     }
   }
@@ -120,7 +121,7 @@ private:
   struct module_factory {
     stage module_stage{};
     std::unordered_set<std::type_index> dependencies{};
-    delegate<std::unique_ptr<module_base>()> create_fn{};
+    std::function<std::unique_ptr<module_base>()> create_fn{};
   }; // struct module_factory
 
   class module_base {
@@ -129,7 +130,7 @@ private:
 
     virtual ~module_base() = default;
 
-    virtual void update() = 0;
+    virtual void update(const time& delta_time) = 0;
 
   protected:
 
@@ -153,7 +154,7 @@ private:
       _create_module(dependency, _factories.at(dependency));
     }
 
-    _instances.insert({type, std::invoke(factory.create_fn)});
+    _instances[type] = std::invoke(factory.create_fn);
     _instances_by_stage[factory.module_stage].push_back(type);
   }
 
@@ -192,18 +193,7 @@ public:
   }
 
   static Derived& get() {
-    const auto type = std::type_index{typeid(Derived)};
-
-    auto& module_instances = instances();
-
-    if (module_instances.find(type) == module_instances.cend()) {
-      auto error_message = std::stringstream{};
-      error_message << "Module of type '" << type_name(type) << "' has not been created yat. Check your dependencies.";
-
-      throw std::runtime_error{error_message.str()};
-    }
-
-    return *static_cast<Derived*>(module_instances.at(type).get());
+    return *_instance;
   }
 
 protected:
@@ -212,14 +202,15 @@ protected:
   static bool register_module(stage stage, dependencies<Dependencies...>&& dependencies = {}) {
     const auto type = std::type_index{typeid(Derived)};
 
-    auto create_fn = []() -> std::unique_ptr<module_base> {
-      return std::make_unique<Derived>();
-    };
-
     auto factory = module_factory{
       .module_stage = stage,
       .dependencies = dependencies.get(),
-      .create_fn = delegate<std::unique_ptr<module_base>()>{std::move(create_fn)}
+      .create_fn = std::function<std::unique_ptr<module_base>()>{[]() -> std::unique_ptr<module_base> {
+        // [NOTE]: We store a weak reference to the instance here so we dont have to query it every time. Its lifetime is still going to be managed by the module_manager.
+        auto instance = std::make_unique<Derived>();
+        _instance = instance.get();
+        return instance;
+      }}
     };
 
     const auto result = factories().insert({type, std::move(factory)}).second;
@@ -230,6 +221,10 @@ protected:
 
     return true;
   }
+
+private:
+
+  inline static Derived* _instance{};
 
 }; // class module
 

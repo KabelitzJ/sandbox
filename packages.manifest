@@ -6,3 +6,5 @@ location: demo/
 location: libsbx-ecs/
 :
 location: libsbx-devices/
+:
+location: libsbx-graphics/

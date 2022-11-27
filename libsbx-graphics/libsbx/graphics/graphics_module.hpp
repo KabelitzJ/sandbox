@@ -24,70 +24,52 @@
  */
 
 /**
- * @file libsbx/devices/window.hpp 
+ * @file libsbx/graphics/graphics_module.hpp 
  */
 
-#ifndef LIBSBX_DEVICES_WINDOW_HPP_
-#define LIBSBX_DEVICES_WINDOW_HPP_
+#ifndef LIBSBX_GRAPHICS_GRAPHICS_MODULE_HPP_
+#define LIBSBX_GRAPHICS_GRAPHICS_MODULE_HPP_
 
 /**
- * @ingroup libsbx-devices
+ * @ingroup libsbx-graphics
  */
 
-#include <string>
-#include <vector>
-#include <stdexcept>
-#include <cinttypes>
 
-#include <GLFW/glfw3.h>
+#include <memory>
 
-namespace sbx::devices {
+#include <libsbx/core/module.hpp>
 
-struct window_create_info {
-  std::string title{};
-  std::uint32_t width{};
-  std::uint32_t height{};
-};
+#include <libsbx/devices/device_module.hpp>
 
-class window {
+#include <libsbx/graphics/instance.hpp>
+
+namespace sbx::graphics {
+
+class graphics_module : public core::module<graphics_module> {
+
+  inline static const auto registered = register_module(stage::normal, core::dependencies<devices::device_module>{});
 
 public:
 
-  window(const window_create_info& create_info) {
-    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+  graphics_module()
+  : _instance{std::make_unique<graphics::instance>()} { }
 
-    _window = glfwCreateWindow(create_info.width, create_info.height, create_info.title.c_str(), nullptr, nullptr);
+  ~graphics_module() override = default;
 
-    if (!_window) {
-      throw std::runtime_error("Failed to create window");
-    }
+  void update([[maybe_unused]] const core::time& delta_time) override {
 
-    _setup_callbacks();
   }
 
-  ~window() {
-    glfwDestroyWindow(_window);
-  }
-
-  bool should_close() const {
-    return glfwWindowShouldClose(_window);
-  }
-
-  void set_title(const std::string& title) {
-    glfwSetWindowTitle(_window, title.c_str());
+  instance& instance() {
+    return *_instance;
   }
 
 private:
 
-  void _setup_callbacks() {
-    
-  }
+  std::unique_ptr<graphics::instance> _instance{};
 
-  GLFWwindow* _window{};
+}; // class graphics_module
 
-}; // class window
+} // namespace sbx::graphics
 
-} // namespace sbx::devices
-
-#endif // LIBSBX_DEVICES_WINDOW_HPP_
+#endif // LIBSBX_GRAPHICS_GRAPHICS_MODULE_HPP_

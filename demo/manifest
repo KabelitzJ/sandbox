@@ -11,3 +11,4 @@ depends: * bpkg >= 0.15.0
 depends: libsbx-core >= 0.1.0
 depends: libsbx-ecs >= 0.1.0
 depends: libsbx-devices >= 0.1.0
+depends: libsbx-graphics >= 0.1.0
