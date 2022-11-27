@@ -206,9 +206,10 @@ protected:
       .module_stage = stage,
       .dependencies = dependencies.get(),
       .create_fn = std::function<std::unique_ptr<module_base>()>{[]() -> std::unique_ptr<module_base> {
-        // [NOTE]: We store a weak reference to the instance here so we dont have to query it every time
-        _instance = new Derived{};
-        return std::unique_ptr<module_base>(_instance);
+        // [NOTE]: We store a weak reference to the instance here so we dont have to query it every time. Its lifetime is still going to be managed by the module_manager.
+        auto instance = std::make_unique<Derived>();
+        _instance = instance.get();
+        return instance;
       }}
     };
 
