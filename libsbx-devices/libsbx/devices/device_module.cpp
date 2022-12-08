@@ -67,7 +67,7 @@ void device_module::update([[maybe_unused]] const core::time& delta_time) {
   glfwPollEvents();
 }
 
-std::vector<const char*> device_module::get_required_extensions() const {
+std::vector<const char*> device_module::required_extensions() const {
   auto extention_count = std::uint32_t{};
 
   const auto* glfw_extensions = glfwGetRequiredInstanceExtensions(&extention_count);

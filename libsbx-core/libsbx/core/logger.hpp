@@ -39,6 +39,8 @@
 #include <spdlog/logger.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 
+#include <libsbx/core/target.hpp>
+
 namespace sbx::core {
 
 class logger {
@@ -114,7 +116,12 @@ private:
   static spdlog::logger& _logger() {
     static auto logger = spdlog::logger{"sandbox", std::make_shared<spdlog::sinks::stdout_color_sink_mt>()};
     logger.set_pattern("[%Y-%m-%d %H:%M:%S] [%n] [%^%l%$] : %v");
+
+#if defined(SBX_DEBUG)
     logger.set_level(spdlog::level::trace);
+#else
+    logger.set_level(spdlog::level::info);
+#endif
 
     return logger;
   }

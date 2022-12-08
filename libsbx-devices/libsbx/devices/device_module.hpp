@@ -56,7 +56,7 @@ public:
 
   void update(const core::time& delta_time) override;
 
-  std::vector<const char*> get_required_extensions() const;
+  std::vector<const char*> required_extensions() const;
 
   monitor& current_monitor();
 
