@@ -1,5 +1,5 @@
-#ifndef LIBSBX_GRAPHICS_INSTANCE_HPP_
-#define LIBSBX_GRAPHICS_INSTANCE_HPP_
+#ifndef LIBSBX_GRAPHICS_DEVICES_INSTANCE_HPP_
+#define LIBSBX_GRAPHICS_DEVICES_INSTANCE_HPP_
 
 #include <vector>
 
@@ -45,4 +45,4 @@ private:
 
 } // namespace sbx::graphics
 
-#endif // LIBSBX_GRAPHICS_INSTANCE_HPP_
+#endif // LIBSBX_GRAPHICS_DEVICES_INSTANCE_HPP_

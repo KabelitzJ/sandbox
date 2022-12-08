@@ -92,18 +92,6 @@ private:
   return lhs._value.count() <=> rhs._value.count();
 }
 
-[[nodiscard]] constexpr time operator+(time lhs, const time& rhs) noexcept {
-  return lhs += rhs;
-}
-
-[[nodiscard]] constexpr time operator-(time lhs, const time& rhs) noexcept {
-  return lhs -= rhs;
-}
-
-[[nodiscard]] std::ostream& operator<<(std::ostream& output_stream, const time& time) {
-  return output_stream << time._value.count();
-}
-
 } // namespace sbx::core
 
 #endif // LIBSBX_CORE_TIME_HPP_

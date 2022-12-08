@@ -45,7 +45,6 @@
 #include <vector>
 
 #include <libsbx/core/delegate.hpp>
-#include <libsbx/core/type_name.hpp>
 #include <libsbx/core/time.hpp>
 
 namespace sbx::core {

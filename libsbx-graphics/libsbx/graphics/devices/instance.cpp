@@ -1,4 +1,4 @@
-#include <libsbx/graphics/instance.hpp>
+#include <libsbx/graphics/devices/instance.hpp>
 
 #include <cinttypes>
 #include <iostream>

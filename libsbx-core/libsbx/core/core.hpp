@@ -39,7 +39,6 @@
 #include <libsbx/core/logger.hpp>
 #include <libsbx/core/module.hpp>
 #include <libsbx/core/time.hpp>
-#include <libsbx/core/type_name.hpp>
 #include <libsbx/core/version.hpp>
 
 #endif // LIBSBX_CORE_HPP_

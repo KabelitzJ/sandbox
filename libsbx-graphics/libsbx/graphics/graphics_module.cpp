@@ -24,37 +24,23 @@
  */
 
 /**
- * @file libsbx/core/type_name.hpp
+ * @file libsbx/graphics/graphics_module.cpp
  */
 
-#ifndef LIBSBX_CORE_TYPE_NAME_HPP_
-#define LIBSBX_CORE_TYPE_NAME_HPP_
+#include <libsbx/graphics/graphics_module.hpp>
 
-/**
- * @ingroup libsbx-core
- */
+namespace sbx::graphics {
 
-#include <cstdlib>
-#include <string>
-#include <typeindex>
+graphics_module::graphics_module()
+: _instance{std::make_unique<graphics::instance>()} { }
 
-#include <cxxabi.h>
 
-namespace sbx::core {
+void graphics_module::update([[maybe_unused]] const core::time& delta_time) {
 
-std::string type_name(const std::type_index& type) {
-  auto status = 0;
-  auto name = std::string{type.name()};
-  auto* demangled_name = abi::__cxa_demangle(name.c_str(), NULL, NULL, &status);
-
-  if(status == 0) {
-    name = demangled_name;
-    std::free(demangled_name);
-  }
-
-  return name;
 }
 
-} // namespace sbx::core
+instance& graphics_module::instance() {
+  return *_instance;
+}
 
-#endif // LIBSBX_CORE_TYPE_NAME_HPP_
+} // namespace sbx::graphics
