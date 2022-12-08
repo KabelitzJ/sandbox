@@ -44,13 +44,7 @@ class monitor {
 
 public:
 
-  monitor() {
-    _monitor = glfwGetPrimaryMonitor();
-
-    if (!_monitor) {
-      throw std::runtime_error{"Failed to get primary monitor"};
-    }
-  }
+  monitor();
 
   ~monitor() = default;
 

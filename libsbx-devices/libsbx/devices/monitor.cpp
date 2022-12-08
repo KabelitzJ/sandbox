@@ -24,49 +24,19 @@
  */
 
 /**
- * @file libsbx/devices/window.hpp 
+ * @file libsbx/devices/monitor.cpp
  */
 
-#ifndef LIBSBX_DEVICES_WINDOW_HPP_
-#define LIBSBX_DEVICES_WINDOW_HPP_
-
-/**
- * @ingroup libsbx-devices
- */
-
-#include <string>
-#include <cinttypes>
-
-#include <GLFW/glfw3.h>
+#include <libsbx/devices/monitor.hpp>
 
 namespace sbx::devices {
 
-struct window_create_info {
-  std::string title{};
-  std::uint32_t width{};
-  std::uint32_t height{};
-};
+monitor::monitor() {
+  _monitor = glfwGetPrimaryMonitor();
 
-class window {
-
-public:
-
-  window(const window_create_info& create_info);
-
-  ~window();
-
-  bool should_close() const;
-
-  void set_title(const std::string& title);
-
-private:
-
-  void _setup_callbacks();
-
-  GLFWwindow* _window{};
-
-}; // class window
+  if (!_monitor) {
+    throw std::runtime_error{"Failed to get primary monitor"};
+  }
+}
 
 } // namespace sbx::devices
-
-#endif // LIBSBX_DEVICES_WINDOW_HPP_
