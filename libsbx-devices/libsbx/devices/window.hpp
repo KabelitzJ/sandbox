@@ -41,6 +41,12 @@
 
 #include <GLFW/glfw3.h>
 
+#include <libsbx/core/core_module.hpp>
+
+#include <libsbx/devices/events.hpp>
+#include <libsbx/devices/key.hpp>
+#include <libsbx/devices/modifiers.hpp>
+
 namespace sbx::devices {
 
 struct window_create_info {
@@ -55,9 +61,12 @@ public:
 
   window(const window_create_info& create_info) {
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+    glfwWindowHint(GLFW_RESIZABLE, false);
+    glfwWindowHint(GLFW_VISIBLE, true);
 
     _window = glfwCreateWindow(create_info.width, create_info.height, create_info.title.c_str(), nullptr, nullptr);
+
+    glfwFocusWindow(_window);
 
     if (!_window) {
       throw std::runtime_error("Failed to create window");
@@ -74,6 +83,10 @@ public:
     return glfwWindowShouldClose(_window);
   }
 
+  void close() {
+    glfwSetWindowShouldClose(_window, true);
+  }
+
   void set_title(const std::string& title) {
     glfwSetWindowTitle(_window, title.c_str());
   }
@@ -81,7 +94,15 @@ public:
 private:
 
   void _setup_callbacks() {
-    
+    glfwSetKeyCallback(_window, []([[maybe_unused]] GLFWwindow* window, int keycode, [[maybe_unused]] int scancode, int action, int mods){
+      auto& dispatcher = core::core_module::get().dispatcher();
+
+      if (action == GLFW_PRESS) {
+       dispatcher.enqueue<key_pressed_event>(key{keycode}, modifiers{mods});
+      } else if (action == GLFW_RELEASE) {
+        dispatcher.enqueue<key_released_event>(key{keycode}, modifiers{mods});
+      }
+    });
   }
 
   GLFWwindow* _window{};

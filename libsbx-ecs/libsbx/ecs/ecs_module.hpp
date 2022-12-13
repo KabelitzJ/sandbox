@@ -35,12 +35,13 @@
  */
 
 #include <libsbx/core/module.hpp>
+#include <libsbx/core/core_module.hpp>
 
 namespace sbx::module {
 
 class ecs_module : public core::module<ecs_module> {
 
-  inline static const auto registered = register_module(stage::normal);
+  inline static const auto registered = register_module(stage::normal, core::dependencies<core::core_module>{});
 
 public:
 

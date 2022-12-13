@@ -7,7 +7,7 @@
 namespace sbx::graphics {
 
 instance::instance() {
-  for (const auto* extension : devices::device_module::get().get_required_extensions()) {
+  for (const auto* extension : devices::device_module::get().required_extentions()) {
     core::logger::debug("{}", extension);
   }
 

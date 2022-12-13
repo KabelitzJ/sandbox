@@ -24,59 +24,58 @@
  */
 
 /**
- * @file libsbx/graphics/graphics_module.hpp 
+ * @file libsbx/core/signal.hpp
  */
 
-#ifndef LIBSBX_GRAPHICS_GRAPHICS_MODULE_HPP_
-#define LIBSBX_GRAPHICS_GRAPHICS_MODULE_HPP_
+#ifndef LIBSBX_CORE_SIGNAL_HPP_
+#define LIBSBX_CORE_SIGNAL_HPP_
 
 /**
- * @ingroup libsbx-graphics
+ * @ingroup libsbx-core
  */
 
-
 #include <memory>
+#include <vector>
 
-#include <libsbx/core/core_module.hpp>
-#include <libsbx/core/logger.hpp>
-#include <libsbx/core/module.hpp>
 #include <libsbx/core/slot.hpp>
 
-#include <libsbx/devices/device_module.hpp>
-#include <libsbx/devices/events.hpp>
+namespace sbx::core {
 
-#include <libsbx/graphics/instance.hpp>
-
-namespace sbx::graphics {
-
-class graphics_module : public core::module<graphics_module> {
-
-  inline static const auto registered = register_module(stage::normal, core::dependencies<core::core_module, devices::device_module>{});
+template<typename... Args>
+class signal {
 
 public:
 
-  graphics_module() {
-    
+  signal() = default;
+
+  void connect(slot<Args...>& slot) {
+    _slots.push_back(&slot);    
   }
 
-  ~graphics_module() override {
-
+  void disconnect(slot<Args...>& slot) {
+    std::erase_if(_slots, [&slot](const auto* entry){ return entry == &slot; });
   }
 
-  void update([[maybe_unused]] const core::time& delta_time) override {
-    
+  void emit(Args... args) {
+    for (auto& slot : _slots) {
+      std::invoke(*slot, std::forward<Args>(args)...);
+    }
   }
 
-  instance& instance() {
-    return _instance;
+  bool is_empty() const noexcept {
+    return _slots.empty();  
+  }
+
+  void clear() {
+    _slots.clear();
   }
 
 private:
 
-  graphics::instance _instance{};
+  std::vector<slot<Args...>*> _slots{};
 
-}; // class graphics_module
+}; // class signal
 
-} // namespace sbx::graphics
+} // namespace sbx::core
 
-#endif // LIBSBX_GRAPHICS_GRAPHICS_MODULE_HPP_
+#endif // LIBSBX_CORE_SIGNAL_HPP_

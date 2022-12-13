@@ -34,6 +34,7 @@
  * @ingroup libsbx-core
  */
 
+#include <cinttypes>
 #include <functional>
 #include <memory>
 #include <type_traits>

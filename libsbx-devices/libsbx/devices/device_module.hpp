@@ -45,15 +45,18 @@
 
 #include <libsbx/core/module.hpp>
 #include <libsbx/core/platform.hpp>
+#include <libsbx/core/core_module.hpp>
+#include <libsbx/core/slot.hpp>
 
 #include <libsbx/devices/monitor.hpp>
 #include <libsbx/devices/window.hpp>
+#include <libsbx/devices/events.hpp>
 
 namespace sbx::devices {
 
 class device_module : public core::module<device_module> {
 
-  inline static const auto registered = register_module(stage::normal);
+  inline static const auto registered = register_module(stage::normal, core::dependencies<core::core_module>{});
 
 public:
 
@@ -81,21 +84,8 @@ public:
     glfwTerminate();
   }
 
-  void update(const core::time& delta_time) override {
+  void update([[maybe_unused]] const core::time& delta_time) override {
     glfwPollEvents();
-    _window->set_title(fmt::format("Window [Delta: {:.6f} ms]", delta_time));
-  }
-
-  std::vector<const char*> get_required_extensions() const {
-    auto extention_count = std::uint32_t{};
-
-    const auto* glfw_extensions = glfwGetRequiredInstanceExtensions(&extention_count);
-
-    auto extensions = std::vector<const char*>{glfw_extensions, glfw_extensions + extention_count};
-
-    extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-
-    return extensions;
   }
 
   std::vector<const char*> required_extentions() {

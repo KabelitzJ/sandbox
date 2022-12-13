@@ -184,34 +184,9 @@ private:
 
 }; // class view
 
-class tag {
-
-public:
-
-  tag(const std::string& value) : _value{value} { }
-
-  tag(std::string&& value) : _value{std::move(value)} { }
-
-  ~tag() = default;
-
-  operator std::string() const noexcept {
-    return _value;
-  }
-
-  operator std::string_view() const noexcept {
-    return std::string_view{_value.c_str(), _value.size()};
-  }
-
-private:
-
-  std::string _value{};
-
-}; // class tag
-
-template<typename OutputStream>
-OutputStream& operator<<(OutputStream& output_stream, const tag& tag) {
-  return output_stream << std::string_view{tag};
-}
+struct tag {
+  std::string name{};
+};
 
 class registry {
 
@@ -272,17 +247,27 @@ public:
 
   template<typename Type>
   void remove_component(const entity& entity) {
-    _assure<Type>().erase(entity);
+    if (auto* container = _try<Type>; container) {
+      container->erase(entity);
+    }
   }
 
   template<typename Type>
   bool has_component(const entity& entity) {
-    return _assure<Type>().contains(entity);
+    if (auto* container = _try<Type>; container) {
+      return container->contains(entity);
+    }
+
+    return false;
   }
 
   template<typename Type>
   Type& get_component(const entity& entity) {
-    return _assure<Type>().at(entity);
+    if (auto* container = _try<Type>; container) {
+      return container->at(entity);
+    }
+
+    throw std::runtime_error{"Entity does not have entity assigned to it"};
   }
 
   template<typename... Types>
@@ -308,14 +293,23 @@ public:
 private:
 
   template<typename Type>
-  container_type<Type>& _assure() {
-  const auto type = std::type_index{typeid(Type)};
+  container_type<Type>* _try() {
+    const auto type = std::type_index{typeid(Type)};
 
-  auto entry = _containers.find(type);
+    auto entry = _containers.find(type);
 
-  if (entry == _containers.cend()) {
-    entry = _containers.insert({type, std::make_unique<container_type<Type>>()}).first;
+    return entry != _containers.end() ? static_cast<container_type<Type>*>(entry->second.get()) : nullptr; 
   }
+
+  template<typename Type>
+  container_type<Type>& _assure() {
+    const auto type = std::type_index{typeid(Type)};
+
+    auto entry = _containers.find(type);
+
+    if (entry == _containers.cend()) {
+      entry = _containers.insert({type, std::make_unique<container_type<Type>>()}).first;
+    }
 
     return *static_cast<container_type<Type>*>(entry->second.get());
   }

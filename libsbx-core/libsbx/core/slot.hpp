@@ -24,59 +24,44 @@
  */
 
 /**
- * @file libsbx/graphics/graphics_module.hpp 
+ * @file libsbx/core/slot.hpp
  */
 
-#ifndef LIBSBX_GRAPHICS_GRAPHICS_MODULE_HPP_
-#define LIBSBX_GRAPHICS_GRAPHICS_MODULE_HPP_
+#ifndef LIBSBX_CORE_SLOT_HPP_
+#define LIBSBX_CORE_SLOT_HPP_
 
 /**
- * @ingroup libsbx-graphics
+ * @ingroup libsbx-core
  */
 
+#include <type_traits>
 
-#include <memory>
+#include <libsbx/core/delegate.hpp>
 
-#include <libsbx/core/core_module.hpp>
-#include <libsbx/core/logger.hpp>
-#include <libsbx/core/module.hpp>
-#include <libsbx/core/slot.hpp>
+namespace sbx::core {
 
-#include <libsbx/devices/device_module.hpp>
-#include <libsbx/devices/events.hpp>
-
-#include <libsbx/graphics/instance.hpp>
-
-namespace sbx::graphics {
-
-class graphics_module : public core::module<graphics_module> {
-
-  inline static const auto registered = register_module(stage::normal, core::dependencies<core::core_module, devices::device_module>{});
+template<typename... Args>
+class slot {
 
 public:
 
-  graphics_module() {
-    
-  }
+  slot() = default;
 
-  ~graphics_module() override {
+  template<typename Callable>
+  requires (std::is_invocable_r_v<void, Callable, Args...>)
+  slot(Callable&& callable)
+  : _callable{std::forward<Callable>(callable)} { }
 
-  }
-
-  void update([[maybe_unused]] const core::time& delta_time) override {
-    
-  }
-
-  instance& instance() {
-    return _instance;
+  void operator()(Args... args) {
+    std::invoke(_callable, std::forward<Args>(args)...);
   }
 
 private:
 
-  graphics::instance _instance{};
+  delegate<void(Args...)> _callable{};
 
-}; // class graphics_module
+}; // class slot
 
-} // namespace sbx::graphics
+} // namespace sbx::core
 
-#endif // LIBSBX_GRAPHICS_GRAPHICS_MODULE_HPP_
+#endif // LIBSBX_CORE_SLOT_HPP_
