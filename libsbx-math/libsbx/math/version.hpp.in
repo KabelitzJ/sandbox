@@ -1,0 +1,18 @@
+#ifndef LIBSBX_MATH_VERSION_HPP_
+#define LIBSBX_MATH_VERSION_HPP_
+
+#define LIBSBX_MATH_VERSION       $libsbx_math.version.project_number$ULL
+#define LIBSBX_MATH_VERSION_STR   "$libsbx_math.version.project$"
+#define LIBSBX_MATH_VERSION_ID    "$libsbx_math.version.project_id$"
+#define LIBSBX_MATH_VERSION_FULL  "$libsbx_math.version$"
+
+#define LIBSBX_MATH_VERSION_MAJOR $libsbx_math.version.major$
+#define LIBSBX_MATH_VERSION_MINOR $libsbx_math.version.minor$
+#define LIBSBX_MATH_VERSION_PATCH $libsbx_math.version.patch$
+
+#define LIBSBX_MATH_PRE_RELEASE   $libsbx_math.version.pre_release$
+
+#define LIBSBX_MATH_SNAPSHOT_SN   $libsbx_math.version.snapshot_sn$ULL
+#define LIBSBX_MATH_SNAPSHOT_ID   "$libsbx_math.version.snapshot_id$"
+
+#endif // LIBSBX_MATH_VERSION_HPP_

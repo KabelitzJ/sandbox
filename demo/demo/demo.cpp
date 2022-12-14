@@ -3,6 +3,7 @@
 #include <chrono>
 
 #include <libsbx/core/core.hpp>
+#include <libsbx/math/math.hpp>
 #include <libsbx/ecs/ecs.hpp>
 #include <libsbx/devices/devices.hpp>
 #include <libsbx/graphics/graphics.hpp>
@@ -11,6 +12,7 @@ int main() {
   using clock_type = std::chrono::high_resolution_clock;
 
   sbx::core::logger::info("libsbx-core: {}", LIBSBX_CORE_VERSION_STR);
+  sbx::core::logger::info("libsbx-math: {}", LIBSBX_MATH_VERSION_STR);
   sbx::core::logger::info("libsbx-ecs: {}", LIBSBX_ECS_VERSION_STR);
   sbx::core::logger::info("libsbx-devices: {}", LIBSBX_DEVICES_VERSION_STR);
   sbx::core::logger::info("libsbx-graphics: {}", LIBSBX_GRAPHICS_VERSION_STR);
@@ -24,6 +26,7 @@ int main() {
 
 
   auto& window = sbx::devices::device_module::get().current_window();
+  auto& dispatcher = sbx::core::core_module::get().dispatcher();
 
   auto key_pressed_listener = sbx::core::slot<sbx::devices::key_pressed_event>{[&window](const sbx::devices::key_pressed_event& event){
     if (event.key == sbx::devices::key::escape) {
@@ -31,7 +34,14 @@ int main() {
     }
   }};
 
-  sbx::core::core_module::get().dispatcher().connect(key_pressed_listener);
+  dispatcher.connect(key_pressed_listener);
+
+  auto vec1 = sbx::math::vector3{1.0f, 2.0f, 3.0f};
+  auto vec2 = sbx::math::vector3{1.0f, 2.0f, 3.0f};
+
+  auto vec3 = vec1 + vec2;
+
+  sbx::core::logger::debug("({}, {}, {})", vec3.x, vec3.y, vec3.z);
 
   auto last = clock_type::now();
   

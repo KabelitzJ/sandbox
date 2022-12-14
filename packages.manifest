@@ -1,10 +1,12 @@
 : 1
 location: libsbx-core/
 :
-location: demo/
+location: libsbx-math/
 :
 location: libsbx-ecs/
 :
 location: libsbx-devices/
 :
 location: libsbx-graphics/
+:
+location: demo/

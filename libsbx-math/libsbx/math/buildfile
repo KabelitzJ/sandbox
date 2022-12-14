@@ -1,0 +1,46 @@
+public_dependencies = # Interface dependencies.
+import public_dependencies += libsbx-core%liba{sbx-core}
+
+private_dependencies = # Implementation dependencies.
+
+lib{sbx-math}: {hxx ixx txx cxx}{** -version} hxx{version} $private_dependencies $public_dependencies
+
+hxx{version}: in{version} $src_root/manifest
+
+hxx{export}@./: cxx.importable = false
+
+# Build options.
+#
+cxx.poptions += "-I$out_root" "-I$src_root"
+
+{hbmia obja}{*}: cxx.poptions += -DLIBSBX_MATH_STATIC_BUILD
+{hbmis objs}{*}: cxx.poptions += -DLIBSBX_MATH_SHARED_BUILD
+
+# Export options.
+#
+lib{sbx-math}:
+{
+  cxx.export.poptions = "-I$out_root" "-I$src_root"
+  cxx.export.libs = $public_dependencies
+}
+
+liba{sbx-math}: cxx.export.poptions += -DLIBSBX_MATH_STATIC
+libs{sbx-math}: cxx.export.poptions += -DLIBSBX_MATH_SHARED
+
+# For pre-releases use the complete version to make sure they cannot be used
+# in place of another pre-release or the final version. See the version module
+# for details on the version.* variable values.
+#
+if $version.pre_release
+  lib{sbx-math}: bin.lib.version = "-$version.project_id"
+else
+  lib{sbx-math}: bin.lib.version = "-$version.major.$version.minor"
+
+# Install into the libsbx/math/ subdirectory of, say, /usr/include/
+# recreating subdirectories.
+#
+{hxx ixx txx}{*}:
+{
+  install = include/libsbx/math/
+  install.subdirs = true
+}

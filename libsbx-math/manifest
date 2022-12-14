@@ -1,15 +1,11 @@
 : 1
-name: demo
+name: libsbx-math
 version: 0.1.0
 project: sandbox
-summary: demo C++ executable
+summary: sbx-math C++ library
 license: MIT
 description-file: README.md
 email: jonas-kabelitz@gmx.de
 depends: * build2 >= 0.15.0
 depends: * bpkg >= 0.15.0
 depends: libsbx-core >= 0.1.0
-depends: libsbx-math >= 0.1.0
-depends: libsbx-ecs >= 0.1.0
-depends: libsbx-devices >= 0.1.0
-depends: libsbx-graphics >= 0.1.0
