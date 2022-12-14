@@ -1,23 +1,19 @@
-#ifndef LIBSBX_MATH_VECTOR2_HPP_
-#define LIBSBX_MATH_VECTOR2_HPP_
+#ifndef LIBSBX_MATH_VECTOR4_HPP_
+#define LIBSBX_MATH_VECTOR4_HPP_
 
 #include <cstddef>
-#include <cstdint>
+#include <cinttypes>
 #include <cmath>
 #include <concepts>
 #include <type_traits>
 
 #include <libsbx/math/concepts.hpp>
+#include <libsbx/math/vector3.hpp>
 
 namespace sbx::math {
 
-/**
- * @brief A vector in two-dimensional space.
- *
- * @tparam Type The type of the vectors components.
- */
 template<arithmetic Type>
-class basic_vector2 {
+class basic_vector4 {
 
 public:
 
@@ -42,24 +38,12 @@ public:
   using length_type = std::float_t;
 
   /** @brief The type that can index components */
-  using index_type = std::size_t;
+  using index_type = std::size_t; 
 
   // -- Static data members --
 
-  /** @brief The origin of two-dimensional space */
-  inline static constexpr basic_vector2 zero{value_type{0}, value_type{0}};
-
-  /** @brief A unit vector along the positive x-axis */
-  inline static constexpr basic_vector2 right{value_type{-1}, value_type{0}};
-
-  /** @brief A unit vector along the negative x-axis */
-  inline static constexpr basic_vector2 left{value_type{1}, value_type{0}};
-
-  /** @brief A unit vector along the positive y-axis */
-  inline static constexpr basic_vector2 up{value_type{0}, value_type{-1}};
-
-  /** @brief A unit vector along the negative y-axis */
-  inline static constexpr basic_vector2 down{value_type{0}, value_type{1}};
+  /** @brief The origin of three dimensional space */
+  inline static constexpr basic_vector4 zero{value_type{0}, value_type{0}, value_type{0}, value_type{0}};
 
   // -- Data members --
 
@@ -67,33 +51,47 @@ public:
   value_type x{};
   /** @brief The y-component. */
   value_type y{};
+  /** @brief The z-component. */
+  value_type z{};
+  /** @brief The w-component. */
+  value_type w{};
 
   // -- Constructors --
 
   /** @brief Constructs a vector with all components set to zero. */
-  constexpr basic_vector2() noexcept;
+  constexpr basic_vector4() noexcept;
 
   /**
    * @brief Constructs a vector and assigns all components to the value.
    * 
    * @param value Value for all components.
    */
-  explicit constexpr basic_vector2(const value_type value) noexcept;
+  explicit constexpr basic_vector4(const value_type value) noexcept;
 
   /**
    * @brief Constructs a vector and assigns all components to the values.
    * 
    * @param x The value for the x component.
    * @param y The value for the y component.
+   * @param z The value for the z component.
+   * @param w The value for the w component.
    */
-  constexpr basic_vector2(const value_type x, const value_type y) noexcept;
+  constexpr basic_vector4(const value_type x, const value_type y, const value_type z, const value_type w) noexcept;
+
+  /**
+   * @brief Uses a three dimensional vector and a w-component to construct a four dimensional vector.
+   * 
+   * @param vector Three dimensional vector.
+   * @param w The value for the w component. (Default: 0)
+   */
+  explicit constexpr basic_vector4(const basic_vector3<value_type>& vector, const value_type w = value_type{0}) noexcept;
 
   /** 
    * @brief Constructs a vector and copies the components from the other vector
    *
    * @param other The other vector to copy the components from. 
    */
-  constexpr basic_vector2(const basic_vector2& other) noexcept = default;
+  constexpr basic_vector4(const basic_vector4& other) noexcept = default;
 
   /**
    * @brief Constructs a vector and copies the components from the other vector
@@ -103,26 +101,26 @@ public:
    * @param other The other vector to copy the components from.
    */
   template<arithmetic Other>
-  explicit constexpr basic_vector2(const basic_vector2<Other>& other) noexcept;
+  explicit constexpr basic_vector4(const basic_vector4<Other>& other) noexcept;
 
   /** 
    * @brief Constructs a vector and moves the components out of the other vector
    *
    * @param other The other vector to move the components from. 
    */
-  constexpr basic_vector2(basic_vector2&& other) noexcept = default;
+  constexpr basic_vector4(basic_vector4&& other) noexcept = default;
 
   /** @brief Destroys the vector */
-  ~basic_vector2() noexcept = default;
+  ~basic_vector4() noexcept = default;
 
   // -- Static member functions --
 
   /**
    * @brief Returns a normalized copy.
    * 
-   * @return basic_vector2 The normalized vector.
+   * @return basic_vector4 The normalized vector.
    */
-  [[nodiscard]] static constexpr basic_vector2 normalized(const basic_vector2& vector) noexcept requires (std::floating_point<Type>);
+  [[nodiscard]] static constexpr basic_vector4 normalized(const basic_vector4& vector) noexcept;
 
   // -- Assignment operators --
 
@@ -131,9 +129,9 @@ public:
    * 
    * @param other The other vector to copy the components from.
    * 
-   * @return basic_vector2& A reference to this vector.
+   * @return basic_vector4& A reference to this vector.
    */
-  constexpr basic_vector2& operator=(const basic_vector2& other) noexcept = default;
+  constexpr basic_vector4& operator=(const basic_vector4& other) noexcept = default;
 
   /**
    * @brief Copies the components from the other vector.
@@ -142,28 +140,28 @@ public:
    * 
    * @param other The other vector to copy the components from.
    * 
-   * @return basic_vector2& A reference to this vector.
+   * @return basic_vector4& A reference to this vector.
    */
   template<arithmetic Other>
-  constexpr basic_vector2& operator=(const basic_vector2<Other>& other) noexcept;
+  constexpr basic_vector4& operator=(const basic_vector4<Other>& other) noexcept;
 
   /**
    * @brief Moves the components out of the other vector.
    * 
    * @param other The other vector to move the components from.
    * 
-   * @return basic_vector2& A reference to this vector.
+   * @return basic_vector4& A reference to this vector.
    */
-  constexpr basic_vector2& operator=(basic_vector2&& other) noexcept = default;
+  constexpr basic_vector4& operator=(basic_vector4&& other) noexcept = default;
 
   // -- Unary arithmetic operators --
 
   /**
    * @brief Negates the vector.
    * 
-   * @return basic_vector2& A reference to this vector.
+   * @return basic_vector4& A reference to this vector.
    */
-  constexpr basic_vector2& operator-() noexcept;
+  constexpr basic_vector4& operator-() noexcept;
 
   // -- Binary arithmetic operators --
 
@@ -172,27 +170,36 @@ public:
    * 
    * @param other The other vector to add.
    * 
-   * @return basic_vector2& A reference to this vector. 
+   * @return basic_vector4& A reference to this vector. 
    */
-  constexpr basic_vector2& operator+=(const basic_vector2& other) noexcept;
+  constexpr basic_vector4& operator+=(const basic_vector4& other) noexcept;
 
   /**
    * @brief Subtracts the components of the other vector from this vector.
    * 
    * @param other The other vector to subtract.
    * 
-   * @return basic_vector2& A reference to this vector. 
+   * @return basic_vector4& A reference to this vector. 
    */
-  constexpr basic_vector2& operator-=(const basic_vector2& other) noexcept;
+  constexpr basic_vector4& operator-=(const basic_vector4& other) noexcept;
 
   /**
    * @brief Multiplies the components of this vector by the scalar.
    * 
    * @param scalar The scalar to multiply by.
    * 
-   * @return basic_vector2& A reference to this vector. 
+   * @return basic_vector4& A reference to this vector. 
    */
-  constexpr basic_vector2& operator*=(const value_type scalar) noexcept;
+  constexpr basic_vector4& operator*=(const value_type scalar) noexcept;
+
+  /**
+   * @brief Multiplies the components of this vector by the vector.
+   * 
+   * @param other The vector to multiply by.
+   * 
+   * @return basic_vector4& A reference to this vector.
+   */
+  constexpr basic_vector4& operator*=(const basic_vector4& other) noexcept;
 
   /**
    * @brief Divides the components of this vector by the scalar.
@@ -201,9 +208,18 @@ public:
    * 
    * @throws std::domain_error If the scalar is zero.
    * 
-   * @return basic_vector2& A reference to this vector. 
+   * @return basic_vector4& A reference to this vector. 
    */
-  constexpr basic_vector2& operator/=(const value_type scalar);
+  constexpr basic_vector4& operator/=(const value_type scalar);
+
+  /**
+   * @brief Divides the components of this vector by the vector.
+   * 
+   * @param other The vector to divide by.
+   * 
+   * @return basic_vector4& A reference to this vector. 
+   */
+  constexpr basic_vector4& operator/=(const basic_vector4& other);
 
   // -- Access operators --
 
@@ -235,7 +251,7 @@ public:
   [[nodiscard]] constexpr length_type length() const noexcept;
 
   /** @brief Normalizes the vector. */
-  constexpr void normalize() noexcept requires (std::floating_point<Type>);
+  constexpr void normalize() noexcept;
 
   // -- Data access --
 
@@ -253,7 +269,7 @@ public:
    */
   [[nodiscard]] constexpr const_pointer data() const noexcept;
 
-}; // class basic_vector2
+}; // class basic_vector4
 
 // -- Free comparison operators --
 
@@ -269,7 +285,21 @@ public:
  * @return false The vectors are not equal.
  */
 template<arithmetic Type>
-[[nodiscard]] constexpr bool operator==(const basic_vector2<Type>& lhs, const basic_vector2<Type>& rhs) noexcept;
+[[nodiscard]] constexpr bool operator==(const basic_vector4<Type>& lhs, const basic_vector4<Type>& rhs) noexcept;
+
+/**
+ * @brief Compares two vectors for inequality.
+ * 
+ * @tparam Type The type of the vectors components.
+ * 
+ * @param lhs The left-hand side vector.
+ * @param rhs The right-hand side vector.
+ * 
+ * @return true The vectors are not equal.
+ * @return false The vectors are equal.
+ */
+template<arithmetic Type>
+[[nodiscard]] constexpr bool operator!=(const basic_vector4<Type>& lhs, const basic_vector4<Type>& rhs) noexcept;
 
 // -- Free arithmetic operators --
 
@@ -281,10 +311,10 @@ template<arithmetic Type>
  * @param lhs The left-hand side vector.
  * @param rhs The right-hand side vector.
  * 
- * @return basic_vector2<Type> The sum of the two vectors.
+ * @return basic_vector4<Type> The sum of the two vectors.
  */
 template<arithmetic Type>
-[[nodiscard]] constexpr basic_vector2<Type> operator+(basic_vector2<Type> lhs, const basic_vector2<Type>& rhs) noexcept;
+[[nodiscard]] constexpr basic_vector4<Type> operator+(basic_vector4<Type> lhs, const basic_vector4<Type>& rhs) noexcept;
 
 /**
  * @brief Subtracts two vectors.
@@ -294,10 +324,10 @@ template<arithmetic Type>
  * @param lhs The left-hand side vector.
  * @param rhs The right-hand side vector.
  * 
- * @return basic_vector2<Type> The difference of the two vectors. 
+ * @return basic_vector4<Type> The difference of the two vectors. 
  */
 template<arithmetic Type>
-[[nodiscard]] constexpr basic_vector2<Type> operator-(basic_vector2<Type> lhs, const basic_vector2<Type>& rhs) noexcept;
+[[nodiscard]] constexpr basic_vector4<Type> operator-(basic_vector4<Type> lhs, const basic_vector4<Type>& rhs) noexcept;
 
 /**
  * @brief Multiplies a vector by a scalar. 
@@ -307,10 +337,23 @@ template<arithmetic Type>
  * @param lhs The left-hand side vector.
  * @param rhs The right-hand side scalar.
  * 
- * @return basic_vector2<Type> The product of the vector and scalar. 
+ * @return basic_vector4<Type> The product of the vector and scalar. 
  */
 template<arithmetic Type>
-[[nodiscard]] constexpr basic_vector2<Type> operator*(basic_vector2<Type> lhs, const Type rhs) noexcept;
+[[nodiscard]] constexpr basic_vector4<Type> operator*(basic_vector4<Type> lhs, const Type rhs) noexcept;
+
+/**
+ * @brief Multiplies a vector by a vector.
+ * 
+ * @tparam Type The type of the vectors components.
+ * 
+ * @param lhs The left-hand side vector. 
+ * @param rhs The right-hand side vector.
+ * 
+ * @return basic_vector4<Type> The product of the two vectors. 
+ */
+template<arithmetic Type>
+[[nodiscard]] constexpr basic_vector4<Type> operator*(basic_vector4<Type> lhs , const basic_vector4<Type>& rhs) noexcept;
 
 /**
  * @brief Divides a vector by a scalar.
@@ -322,24 +365,35 @@ template<arithmetic Type>
  * 
  * @throws std::domain_error If the scalar is zero.
  * 
- * @return basic_vector2<Type> The quotient of the vector and scalar.
+ * @return basic_vector4<Type> The quotient of the vector and scalar.
  */
 template<arithmetic Type>
-[[nodiscard]] constexpr basic_vector2<Type> operator/(basic_vector2<Type> lhs, const Type rhs) noexcept;
+[[nodiscard]] constexpr basic_vector4<Type> operator/(basic_vector4<Type> lhs, const Type rhs);
 
-// -- Type aliases --
+/**
+ * @brief Divides a vector by a vector.
+ * 
+ * @tparam Type The type of the vectors components.
+ * 
+ * @param lhs The left-hand side vector. 
+ * @param rhs The right-hand side vector.
+ * 
+ * @return basic_vector4<Type> The quotient of the two vectors. 
+ */
+template<arithmetic Type>
+[[nodiscard]] constexpr basic_vector4<Type> operator/(basic_vector4<Type> lhs, const basic_vector4<Type>& rhs);
 
-/** @brief Type alias for a two-dimensional vector with 32 bit floating-point components. */
-using vector2f = basic_vector2<std::float_t>;
+/** @brief Type alias for a four-dimensional vector with 32 bit floating-point components. */
+using vector4f = basic_vector4<std::float_t>;
 
-/** @brief Type alias for a two-dimensional vector with 32 bit integer components. */
-using vector2i = basic_vector2<std::int32_t>;
+/** @brief Type alias for a four-dimensional vector with 32 bit integer components. */
+using vector4i = basic_vector4<std::int32_t>;
 
 /** @brief Type alias for vector2f. */
-using vector2 = vector2f;
+using vector4 = vector4f;
 
 } // namespace sbx::math
 
-#include <libsbx/math/vector2.ipp>
+#include <libsbx/math/vector4.ipp>
 
-#endif // LIBSBX_MATH_VECTOR2_HPP_
+#endif // LIBSBX_MATH_VECTOR4_HPP_

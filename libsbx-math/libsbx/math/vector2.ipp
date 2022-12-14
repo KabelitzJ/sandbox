@@ -145,11 +145,6 @@ inline constexpr bool operator==(const basic_vector2<Type>& lhs, const basic_vec
 }
 
 template<arithmetic Type>
-inline constexpr bool operator!=(const basic_vector2<Type>& lhs, const basic_vector2<Type>& rhs) noexcept {
-  return !(lhs == rhs);
-}
-
-template<arithmetic Type>
 inline constexpr basic_vector2<Type> operator+(basic_vector2<Type> lhs, const basic_vector2<Type>& rhs) noexcept {
   return lhs += rhs;
 }

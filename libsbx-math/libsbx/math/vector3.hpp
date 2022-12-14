@@ -1,5 +1,5 @@
-#ifndef SBX_MATH_VECTOR3_HPP_
-#define SBX_MATH_VECTOR3_HPP_
+#ifndef LIBSBX_MATH_VECTOR3_HPP_
+#define LIBSBX_MATH_VECTOR3_HPP_
 
 #include <cstddef>
 #include <concepts>
@@ -435,4 +435,4 @@ using vector3 = vector3f;
 
 #include <libsbx/math/vector3.ipp>
 
-#endif // SBX_MATH_VECTOR3_HPP_
+#endif // LIBSBX_MATH_VECTOR3_HPP_
