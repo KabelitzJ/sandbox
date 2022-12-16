@@ -24,57 +24,67 @@
  */
 
 /**
- * @file libsbx/devices/window.hpp 
+ * @file libsbx/devices/devices_module.cpp
  */
 
-#ifndef LIBSBX_DEVICES_WINDOW_HPP_
-#define LIBSBX_DEVICES_WINDOW_HPP_
+#include <libsbx/devices/device_module.hpp>
 
-/**
- * @ingroup libsbx-devices
- */
-
-#include <string>
 #include <cinttypes>
 
 #include <GLFW/glfw3.h>
 
-#include <libsbx/core/core_module.hpp>
+#include <vulkan/vulkan.h>
 
-#include <libsbx/devices/events.hpp>
-#include <libsbx/devices/key.hpp>
-#include <libsbx/devices/modifiers.hpp>
+#include <libsbx/core/logger.hpp>
 
 namespace sbx::devices {
 
-struct window_create_info {
-  std::string title{};
-  std::uint32_t width{};
-  std::uint32_t height{};
-};
+device_module::device_module() {
+  glfwSetErrorCallback([](std::int32_t error_code, const char* description){
+    sbx::core::logger::error("({}) {}", error_code, description);
+  });
 
-class window {
+  if (!glfwInit()) {
+    throw std::runtime_error{"Failed to initialize GLFW"};
+  }
 
-public:
+  if (!glfwVulkanSupported()) {
+    throw std::runtime_error{"Vulkan is not supported"};
+  }
 
-  window(const window_create_info& create_info);
+  _monitor = std::make_unique<monitor>();
+  _window = std::make_unique<window>(window_create_info{"Window", 960, 720});
+}
 
-  ~window();
+device_module::~device_module() {
+  _window.reset();
+  _monitor.reset();
 
-  bool should_close() const;
+  glfwTerminate();
+}
 
-  void close();
+void device_module::update([[maybe_unused]] const core::time& delta_time) {
+  glfwPollEvents();
+}
 
-  void set_title(const std::string& title);
+std::vector<const char*> device_module::required_extensions() const {
+  auto extention_count = std::uint32_t{};
 
-private:
+  const auto* glfw_extensions = glfwGetRequiredInstanceExtensions(&extention_count);
 
-  void _setup_callbacks();
+  auto extensions = std::vector<const char*>{glfw_extensions, glfw_extensions + extention_count};
 
-  GLFWwindow* _window{};
+  extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 
-}; // class window
+  return extensions;
+}
+
+monitor& device_module::current_monitor() {
+  return *_monitor;
+}
+
+window& device_module::current_window() {
+  return *_window;
+}
 
 } // namespace sbx::devices
-
-#endif // LIBSBX_DEVICES_WINDOW_HPP_

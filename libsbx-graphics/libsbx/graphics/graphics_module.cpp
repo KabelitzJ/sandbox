@@ -24,57 +24,23 @@
  */
 
 /**
- * @file libsbx/devices/window.hpp 
+ * @file libsbx/graphics/graphics_module.cpp
  */
 
-#ifndef LIBSBX_DEVICES_WINDOW_HPP_
-#define LIBSBX_DEVICES_WINDOW_HPP_
+#include <libsbx/graphics/graphics_module.hpp>
 
-/**
- * @ingroup libsbx-devices
- */
+namespace sbx::graphics {
 
-#include <string>
-#include <cinttypes>
+graphics_module::graphics_module()
+: _instance{std::make_unique<graphics::instance>()} { }
 
-#include <GLFW/glfw3.h>
 
-#include <libsbx/core/core_module.hpp>
+void graphics_module::update([[maybe_unused]] const core::time& delta_time) {
 
-#include <libsbx/devices/events.hpp>
-#include <libsbx/devices/key.hpp>
-#include <libsbx/devices/modifiers.hpp>
+}
 
-namespace sbx::devices {
+instance& graphics_module::instance() {
+  return *_instance;
+}
 
-struct window_create_info {
-  std::string title{};
-  std::uint32_t width{};
-  std::uint32_t height{};
-};
-
-class window {
-
-public:
-
-  window(const window_create_info& create_info);
-
-  ~window();
-
-  bool should_close() const;
-
-  void close();
-
-  void set_title(const std::string& title);
-
-private:
-
-  void _setup_callbacks();
-
-  GLFWwindow* _window{};
-
-}; // class window
-
-} // namespace sbx::devices
-
-#endif // LIBSBX_DEVICES_WINDOW_HPP_
+} // namespace sbx::graphics

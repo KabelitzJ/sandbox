@@ -41,11 +41,12 @@
 #include <libsbx/core/logger.hpp>
 #include <libsbx/core/module.hpp>
 #include <libsbx/core/slot.hpp>
+#include <libsbx/core/time.hpp>
 
 #include <libsbx/devices/device_module.hpp>
 #include <libsbx/devices/events.hpp>
 
-#include <libsbx/graphics/instance.hpp>
+#include <libsbx/graphics/devices/instance.hpp>
 
 namespace sbx::graphics {
 
@@ -55,25 +56,17 @@ class graphics_module : public core::module<graphics_module> {
 
 public:
 
-  graphics_module() {
-    
-  }
+  graphics_module();
 
-  ~graphics_module() override {
+  ~graphics_module() override = default;
 
-  }
+  void update([[maybe_unused]] const core::time& delta_time) override;
 
-  void update([[maybe_unused]] const core::time& delta_time) override {
-    
-  }
-
-  instance& instance() {
-    return _instance;
-  }
+  instance& instance();
 
 private:
 
-  graphics::instance _instance{};
+  std::unique_ptr<graphics::instance> _instance{};
 
 }; // class graphics_module
 

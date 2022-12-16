@@ -24,57 +24,54 @@
  */
 
 /**
- * @file libsbx/devices/window.hpp 
+ * @file libsbx/devices/window.cpp 
  */
 
-#ifndef LIBSBX_DEVICES_WINDOW_HPP_
-#define LIBSBX_DEVICES_WINDOW_HPP_
+#include <libsbx/devices/window.hpp>
 
-/**
- * @ingroup libsbx-devices
- */
-
-#include <string>
-#include <cinttypes>
-
-#include <GLFW/glfw3.h>
-
-#include <libsbx/core/core_module.hpp>
-
-#include <libsbx/devices/events.hpp>
-#include <libsbx/devices/key.hpp>
-#include <libsbx/devices/modifiers.hpp>
+#include <stdexcept>
 
 namespace sbx::devices {
 
-struct window_create_info {
-  std::string title{};
-  std::uint32_t width{};
-  std::uint32_t height{};
-};
+window::window(const window_create_info& create_info) {
+  glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+  glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
-class window {
+  _window = glfwCreateWindow(create_info.width, create_info.height, create_info.title.c_str(), nullptr, nullptr);
 
-public:
+  if (!_window) {
+    throw std::runtime_error("Failed to create window");
+  }
 
-  window(const window_create_info& create_info);
+  _setup_callbacks();
+}
 
-  ~window();
+window::~window() {
+  glfwDestroyWindow(_window);
+}
 
-  bool should_close() const;
+bool window::should_close() const {
+  return glfwWindowShouldClose(_window);
+}
 
-  void close();
+void window::close() {
+  glfwSetWindowShouldClose(_window, true);
+}
 
-  void set_title(const std::string& title);
+void window::set_title(const std::string& title) {
+  glfwSetWindowTitle(_window, title.c_str());
+}
 
-private:
+void window::_setup_callbacks() {
+  glfwSetKeyCallback(_window, []([[maybe_unused]] GLFWwindow* window, int keycode, [[maybe_unused]] int scancode, int action, int mods){
+    auto& dispatcher = core::core_module::get().dispatcher();
 
-  void _setup_callbacks();
-
-  GLFWwindow* _window{};
-
-}; // class window
+    if (action == GLFW_PRESS) {
+      dispatcher.enqueue<key_pressed_event>(key{keycode}, modifiers{mods});
+    } else if (action == GLFW_RELEASE) {
+      dispatcher.enqueue<key_released_event>(key{keycode}, modifiers{mods});
+    }
+  });
+}
 
 } // namespace sbx::devices
-
-#endif // LIBSBX_DEVICES_WINDOW_HPP_

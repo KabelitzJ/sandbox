@@ -24,43 +24,19 @@
  */
 
 /**
- * @file libsbx/core/type_name.hpp
+ * @file libsbx/devices/monitor.cpp
  */
 
-#ifndef LIBSBX_CORE_TYPE_NAME_HPP_
-#define LIBSBX_CORE_TYPE_NAME_HPP_
+#include <libsbx/devices/monitor.hpp>
 
-/**
- * @ingroup libsbx-core
- */
+namespace sbx::devices {
 
-#include <cstdlib>
-#include <string>
-#include <typeindex>
+monitor::monitor() {
+  _monitor = glfwGetPrimaryMonitor();
 
-#include <cxxabi.h>
-
-#include <libsbx/core/platform.hpp>
-
-namespace sbx::core {
-
-std::string type_name(const std::type_index& type) {
-#if defined(LIBSBX_COMPILER_GNU)
-  auto status = 0;
-  auto name = std::string{type.name()};
-  auto* demangled_name = abi::__cxa_demangle(name.c_str(), NULL, NULL, &status);
-
-  if(status == 0) {
-    name = demangled_name;
-    std::free(demangled_name);
+  if (!_monitor) {
+    throw std::runtime_error{"Failed to get primary monitor"};
   }
-
-  return name;
-#else
-  return type.name();
-#endif
 }
 
-} // namespace sbx::core
-
-#endif // LIBSBX_CORE_TYPE_NAME_HPP_
+} // namespace sbx::devices

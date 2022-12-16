@@ -34,6 +34,7 @@
  * @ingroup libsbx-devices
  */
 
+#include <vector>
 #include <memory>
 #include <vector>
 #include <cstdint>
@@ -60,55 +61,17 @@ class device_module : public core::module<device_module> {
 
 public:
 
-  device_module() {
-    glfwSetErrorCallback([](std::int32_t error_code, const char* description){
-      sbx::core::logger::error("({}) {}", error_code, description);
-    });
+  device_module();
 
-    if (!glfwInit()) {
-      throw std::runtime_error{"Failed to initialize GLFW"};
-    }
+  ~device_module() override;
 
-    if (!glfwVulkanSupported()) {
-      throw std::runtime_error{"Vulkan is not supported"};
-    }
+  void update([[maybe_unused]] const core::time& delta_time) override;
 
-    _monitor = std::make_unique<monitor>();
-    _window = std::make_unique<window>(window_create_info{"Window", 960, 720});
-  }
+  std::vector<const char*> required_extensions() const;
 
-  ~device_module() override {
-    _window.reset();
-    _monitor.reset();
+  monitor& current_monitor();
 
-    glfwTerminate();
-  }
-
-  void update([[maybe_unused]] const core::time& delta_time) override {
-    glfwPollEvents();
-  }
-
-  std::vector<const char*> required_extentions() {
-    auto extension_count = std::uint32_t{0};
-
-    const auto glfw_extensions = glfwGetRequiredInstanceExtensions(&extension_count);
-
-    auto extensions = std::vector<const char*>{glfw_extensions, glfw_extensions + extension_count};
-
-#if defined(LIBSBX_DEBUG)
-    extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-#endif
-
-    return extensions;
-  }
-
-  monitor& current_monitor() {
-    return *_monitor;
-  }
-
-  window& current_window() {
-    return *_window;
-  }
+  window& current_window();
 
 private:
 
