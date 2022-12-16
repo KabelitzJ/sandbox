@@ -10,6 +10,7 @@ depends: * build2 >= 0.15.0
 depends: * bpkg >= 0.15.0
 depends: libsbx-core >= 0.1.0
 depends: libsbx-math >= 0.1.0
+depends: libsbx-io >= 0.1.0
 depends: libsbx-ecs >= 0.1.0
 depends: libsbx-devices >= 0.1.0
 depends: libsbx-graphics >= 0.1.0

@@ -4,6 +4,7 @@
 
 #include <libsbx/core/core.hpp>
 #include <libsbx/math/math.hpp>
+#include <libsbx/io/io.hpp>
 #include <libsbx/ecs/ecs.hpp>
 #include <libsbx/devices/devices.hpp>
 #include <libsbx/graphics/graphics.hpp>
@@ -13,6 +14,7 @@ int main() {
 
   sbx::core::logger::info("libsbx-core: {}", LIBSBX_CORE_VERSION_STR);
   sbx::core::logger::info("libsbx-math: {}", LIBSBX_MATH_VERSION_STR);
+  sbx::core::logger::info("libsbx-io: {}", LIBSBX_IO_VERSION_STR);
   sbx::core::logger::info("libsbx-ecs: {}", LIBSBX_ECS_VERSION_STR);
   sbx::core::logger::info("libsbx-devices: {}", LIBSBX_DEVICES_VERSION_STR);
   sbx::core::logger::info("libsbx-graphics: {}", LIBSBX_GRAPHICS_VERSION_STR);
@@ -40,6 +42,8 @@ int main() {
   auto vec2 = sbx::math::vector3{1.0f, 2.0f, 3.0f};
 
   auto vec3 = vec1 + vec2;
+
+  auto n = sbx::io::node{42};
 
   sbx::core::logger::debug("({}, {}, {})", vec3.x, vec3.y, vec3.z);
 
