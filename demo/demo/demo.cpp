@@ -31,6 +31,8 @@ int main() {
   auto on_key_pressed = sbx::core::slot<sbx::devices::key_pressed_event>{[&window](const sbx::devices::key_pressed_event& event){
     if (event.key == sbx::devices::key::space) {
       window.close();
+    } else {
+      sbx::core::logger::info("key: {}", event.key);
     }
   }};
 

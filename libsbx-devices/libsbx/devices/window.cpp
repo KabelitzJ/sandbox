@@ -31,6 +31,8 @@
 
 #include <stdexcept>
 
+#include <libsbx/core/logger.hpp>
+
 namespace sbx::devices {
 
 window::window(const window_create_info& create_info) {
@@ -73,13 +75,13 @@ void window::register_on_key_released(const core::slot<key_released_event>& list
 }
 
 void window::_setup_callbacks() {
-  glfwSetKeyCallback(_window, [](GLFWwindow* window, int keycode, [[maybe_unused]] int scancode, int action, int mods){
+  glfwSetKeyCallback(_window, [](GLFWwindow* window, std::int32_t keycode, [[maybe_unused]] std::int32_t scancode, std::int32_t action, std::int32_t mods){
     auto* handle = static_cast<sbx::devices::window*>(glfwGetWindowUserPointer(window));
 
     if (action == GLFW_PRESS) {
-      handle->_on_key_pressed.emit(sbx::devices::key_pressed_event{key{keycode}, modifiers{mods}});
+      handle->_on_key_pressed.emit(sbx::devices::key_pressed_event{key{keycode, scancode}, modifiers{mods}});
     } else if (action == GLFW_RELEASE) {
-      handle->_on_key_released.emit(sbx::devices::key_released_event{key{keycode}, modifiers{mods}});
+      handle->_on_key_released.emit(sbx::devices::key_released_event{key{keycode, scancode}, modifiers{mods}});
     }
   });
 }

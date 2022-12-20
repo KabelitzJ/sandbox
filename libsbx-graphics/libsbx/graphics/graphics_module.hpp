@@ -46,6 +46,7 @@
 #include <libsbx/devices/events.hpp>
 
 #include <libsbx/graphics/devices/instance.hpp>
+#include <libsbx/graphics/devices/physical_device.hpp>
 
 namespace sbx::graphics {
 
@@ -61,11 +62,14 @@ public:
 
   void update([[maybe_unused]] const core::time& delta_time) override;
 
-  instance& instance();
+  instance& instance() noexcept;
+
+  physical_device& physical_device() noexcept;
 
 private:
 
   std::unique_ptr<graphics::instance> _instance{};
+  std::unique_ptr<graphics::physical_device> _physical_device{};
 
 }; // class graphics_module
 

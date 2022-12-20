@@ -32,15 +32,20 @@
 namespace sbx::graphics {
 
 graphics_module::graphics_module()
-: _instance{std::make_unique<graphics::instance>()} { }
+: _instance{std::make_unique<graphics::instance>()},
+  _physical_device{std::make_unique<graphics::physical_device>()} { }
 
 
 void graphics_module::update([[maybe_unused]] const core::time& delta_time) {
 
 }
 
-instance& graphics_module::instance() {
+instance& graphics_module::instance() noexcept {
   return *_instance;
 }
+
+physical_device& graphics_module::physical_device() noexcept {
+  return *_physical_device;
+} 
 
 } // namespace sbx::graphics

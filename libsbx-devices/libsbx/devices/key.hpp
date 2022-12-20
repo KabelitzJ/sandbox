@@ -4,12 +4,15 @@
 #include <type_traits>
 #include <functional>
 #include <cinttypes>
+#include <iostream>
 
 namespace sbx::devices {
 
 class key {
 
   friend class window;
+
+  friend std::ostream& operator<<(std::ostream& output_stream, const key& key);
 
 public:
 
@@ -143,11 +146,14 @@ public:
 
 private:
 
-  key(std::int32_t value);
+  key(std::int32_t value, std::int32_t scancode);
 
   std::int32_t _value{};
+  std::int32_t _scancode{};
 
 }; // class key
+
+std::ostream& operator<<(std::ostream& output_stream, const key& key);
 
 } // namespace sbx::devices
 
