@@ -52,7 +52,7 @@ public:
   slot(Callable&& callable)
   : _callable{std::forward<Callable>(callable)} { }
 
-  void operator()(Args... args) {
+  void operator()(Args... args) const {
     std::invoke(_callable, std::forward<Args>(args)...);
   }
 

@@ -26,17 +26,15 @@ int main() {
     return EXIT_FAILURE;
   }
 
-
   auto& window = sbx::devices::device_module::get().current_window();
-  auto& dispatcher = sbx::core::core_module::get().dispatcher();
 
-  auto key_pressed_listener = sbx::core::slot<sbx::devices::key_pressed_event>{[&window](const sbx::devices::key_pressed_event& event){
-    if (event.key == sbx::devices::key::escape) {
+  auto on_key_pressed = sbx::core::slot<sbx::devices::key_pressed_event>{[&window](const sbx::devices::key_pressed_event& event){
+    if (event.key == sbx::devices::key::space) {
       window.close();
     }
   }};
 
-  dispatcher.connect(key_pressed_listener);
+  window.register_on_key_pressed(on_key_pressed);
 
   auto vec1 = sbx::math::vector3{1.0f, 2.0f, 3.0f};
   auto vec2 = sbx::math::vector3{1.0f, 2.0f, 3.0f};
@@ -56,8 +54,6 @@ int main() {
 
     sbx::core::module_manager::update_stages(delta_time);
   }
-
-  sbx::core::core_module::get().dispatcher().disconnect(key_pressed_listener);
 
   sbx::core::module_manager::destroy_all();
 

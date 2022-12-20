@@ -39,11 +39,12 @@
 
 #include <GLFW/glfw3.h>
 
-#include <libsbx/core/core_module.hpp>
-
 #include <libsbx/devices/events.hpp>
 #include <libsbx/devices/key.hpp>
 #include <libsbx/devices/modifiers.hpp>
+
+#include <libsbx/core/signal.hpp>
+#include <libsbx/core/slot.hpp>
 
 namespace sbx::devices {
 
@@ -67,11 +68,17 @@ public:
 
   void set_title(const std::string& title);
 
+  void register_on_key_pressed(const core::slot<key_pressed_event>& listener);
+
+  void register_on_key_released(const core::slot<key_released_event>& listener);
+
 private:
 
   void _setup_callbacks();
 
   GLFWwindow* _window{};
+  core::signal<key_pressed_event> _on_key_pressed{};
+  core::signal<key_released_event> _on_key_released{};
 
 }; // class window
 

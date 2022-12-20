@@ -46,7 +46,6 @@
 
 #include <libsbx/core/module.hpp>
 #include <libsbx/core/platform.hpp>
-#include <libsbx/core/core_module.hpp>
 #include <libsbx/core/slot.hpp>
 
 #include <libsbx/devices/monitor.hpp>
@@ -57,7 +56,7 @@ namespace sbx::devices {
 
 class device_module : public core::module<device_module> {
 
-  inline static const auto registered = register_module(stage::normal, core::dependencies<core::core_module>{});
+  inline static const auto registered = register_module(stage::normal);
 
 public:
 

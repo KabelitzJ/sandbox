@@ -37,7 +37,6 @@
 
 #include <memory>
 
-#include <libsbx/core/core_module.hpp>
 #include <libsbx/core/logger.hpp>
 #include <libsbx/core/module.hpp>
 #include <libsbx/core/slot.hpp>
@@ -52,7 +51,7 @@ namespace sbx::graphics {
 
 class graphics_module : public core::module<graphics_module> {
 
-  inline static const auto registered = register_module(stage::normal, core::dependencies<core::core_module, devices::device_module>{});
+  inline static const auto registered = register_module(stage::normal, core::dependencies<devices::device_module>{});
 
 public:
 

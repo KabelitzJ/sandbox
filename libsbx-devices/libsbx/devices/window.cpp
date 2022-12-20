@@ -43,6 +43,8 @@ window::window(const window_create_info& create_info) {
     throw std::runtime_error("Failed to create window");
   }
 
+  glfwSetWindowUserPointer(_window, this);
+
   _setup_callbacks();
 }
 
@@ -62,14 +64,22 @@ void window::set_title(const std::string& title) {
   glfwSetWindowTitle(_window, title.c_str());
 }
 
+void window::register_on_key_pressed(const core::slot<key_pressed_event>& listener) {
+  _on_key_pressed.connect(listener);
+}
+
+void window::register_on_key_released(const core::slot<key_released_event>& listener) {
+  _on_key_released.connect(listener);
+}
+
 void window::_setup_callbacks() {
-  glfwSetKeyCallback(_window, []([[maybe_unused]] GLFWwindow* window, int keycode, [[maybe_unused]] int scancode, int action, int mods){
-    auto& dispatcher = core::core_module::get().dispatcher();
+  glfwSetKeyCallback(_window, [](GLFWwindow* window, int keycode, [[maybe_unused]] int scancode, int action, int mods){
+    auto* handle = static_cast<sbx::devices::window*>(glfwGetWindowUserPointer(window));
 
     if (action == GLFW_PRESS) {
-      dispatcher.enqueue<key_pressed_event>(key{keycode}, modifiers{mods});
+      handle->_on_key_pressed.emit(sbx::devices::key_pressed_event{key{keycode}, modifiers{mods}});
     } else if (action == GLFW_RELEASE) {
-      dispatcher.enqueue<key_released_event>(key{keycode}, modifiers{mods});
+      handle->_on_key_released.emit(sbx::devices::key_released_event{key{keycode}, modifiers{mods}});
     }
   });
 }

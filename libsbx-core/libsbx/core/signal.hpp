@@ -48,11 +48,11 @@ public:
 
   signal() = default;
 
-  void connect(slot<Args...>& slot) {
+  void connect(const slot<Args...>& slot) {
     _slots.push_back(&slot);    
   }
 
-  void disconnect(slot<Args...>& slot) {
+  void disconnect(const slot<Args...>& slot) {
     std::erase_if(_slots, [&slot](const auto* entry){ return entry == &slot; });
   }
 
@@ -72,7 +72,7 @@ public:
 
 private:
 
-  std::vector<slot<Args...>*> _slots{};
+  std::vector<const slot<Args...>*> _slots{};
 
 }; // class signal
 
