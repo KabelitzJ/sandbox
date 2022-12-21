@@ -37,6 +37,7 @@
 #include <chrono>
 #include <concepts>
 #include <iostream>
+#include <cmath>
 
 namespace sbx::core {
 
@@ -46,7 +47,7 @@ class time {
   friend constexpr std::partial_ordering operator<=>(const time& lhs, const time& rhs) noexcept;
   friend std::ostream& operator<<(std::ostream& output_stream, const time& time);
 
-  using duration_type = std::chrono::duration<float>;
+  using duration_type = std::chrono::duration<std::float_t>;
 
 public:
 
@@ -62,7 +63,7 @@ public:
 
   time& operator=(const time&) = default;
 
-  constexpr operator float() const {
+  constexpr operator std::float_t() const {
     return _value.count();
   }
 

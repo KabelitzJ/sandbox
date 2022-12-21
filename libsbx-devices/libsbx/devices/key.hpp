@@ -6,13 +6,13 @@
 #include <cinttypes>
 #include <iostream>
 
+#include <fmt/format.h>
+
 namespace sbx::devices {
 
 class key {
 
   friend class window;
-
-  friend std::ostream& operator<<(std::ostream& output_stream, const key& key);
 
 public:
 
@@ -142,13 +142,14 @@ public:
 
   bool operator==(const key& other) const noexcept;
 
-  operator std::int32_t() const noexcept;
+  operator std::string_view() const noexcept;
 
 private:
 
-  key(std::int32_t value);
+  key(std::int32_t value, std::int32_t code);
 
   std::int32_t _value{};
+  std::int32_t _code{};
 
 }; // class key
 

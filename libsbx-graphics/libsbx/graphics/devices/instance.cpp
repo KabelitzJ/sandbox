@@ -36,16 +36,12 @@ instance::instance() {
 
   const auto extentions = _extensions();
 
-  for (const auto* extention : extentions) {
-    core::logger::debug("{}", extention);
-  }
+  core::logger::debug("Extentions: {}", fmt::join(extentions, ", "));
 
   const auto layers = _layers();
 
-  for (const auto* layer : layers) {
-    core::logger::debug("{}", layer);
-  }
-
+  core::logger::debug("Layers: {}", fmt::join(layers, ", "));
+  
 #if defined(SBX_DEBUG)
   auto instance_debug_messenger_create_info = VkDebugUtilsMessengerCreateInfoEXT{};
   _populate_debug_messenger_create_info(instance_debug_messenger_create_info);

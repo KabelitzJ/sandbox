@@ -79,9 +79,9 @@ void window::_setup_callbacks() {
     auto* handle = static_cast<sbx::devices::window*>(glfwGetWindowUserPointer(window));
 
     if (action == GLFW_PRESS) {
-      handle->_on_key_pressed.emit(sbx::devices::key_pressed_event{key{keycode, scancode}, modifiers{mods}});
+      handle->_on_key_pressed.emit(sbx::devices::key_pressed_event{key{keycode, keycode}, modifiers{mods}});
     } else if (action == GLFW_RELEASE) {
-      handle->_on_key_released.emit(sbx::devices::key_released_event{key{keycode, scancode}, modifiers{mods}});
+      handle->_on_key_released.emit(sbx::devices::key_released_event{key{keycode, keycode}, modifiers{mods}});
     }
   });
 }
