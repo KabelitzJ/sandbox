@@ -7,9 +7,8 @@
 
 #include <libsbx/core/logger.hpp>
 
-#include <libsbx/devices/device_module.hpp>
-
-#include <libsbx/devices/device_module.hpp>
+#include <libsbx/graphics/devices/extentions.hpp>
+#include <libsbx/graphics/devices/layers.hpp>
 
 namespace sbx::graphics {
 
@@ -42,14 +41,14 @@ instance::instance() {
 
   core::logger::debug("Layers: {}", fmt::join(layers, ", "));
   
-#if defined(SBX_DEBUG)
+#if defined(LIBSBX_DEBUG)
   auto instance_debug_messenger_create_info = VkDebugUtilsMessengerCreateInfoEXT{};
   _populate_debug_messenger_create_info(instance_debug_messenger_create_info);
 #endif
 
   const auto instance_create_info = VkInstanceCreateInfo{
     .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
-#if defined(SBX_DEBUG)
+#if defined(LIBSBX_DEBUG)
     .pNext = &instance_debug_messenger_create_info,
 #else
     .pNext = nullptr,
@@ -66,7 +65,7 @@ instance::instance() {
     throw std::runtime_error{"Failed to create instance"};
   }
 
-#if defined(SBX_DEBUG)
+#if defined(LIBSBX_DEBUG)
   auto debug_messenger_create_info = VkDebugUtilsMessengerCreateInfoEXT{};
   _populate_debug_messenger_create_info(debug_messenger_create_info);
 
@@ -77,7 +76,7 @@ instance::instance() {
 }
 
 instance::~instance() {
-#if defined(SBX_DEBUG)
+#if defined(LIBSBX_DEBUG)
   _destroy_debug_messenger(_handle, _debug_messenger, nullptr);
 #endif
   vkDestroyInstance(_handle, nullptr);
@@ -92,15 +91,11 @@ instance::operator VkInstance() const noexcept {
 }
 
 std::vector<const char*> instance::_extensions() {
-  const auto required_extensions = devices::device_module::get().required_extensions();
+  const auto required_extensions = extentions::instance();
 
   auto available_extention_count = std::uint32_t{0};
-  auto available_extensions = std::vector<VkExtensionProperties>{};
-
   vkEnumerateInstanceExtensionProperties(nullptr, &available_extention_count, nullptr);
-
-  available_extensions.resize(available_extention_count);
-
+  auto available_extensions = std::vector<VkExtensionProperties>{available_extention_count};
   vkEnumerateInstanceExtensionProperties(nullptr, &available_extention_count, available_extensions.data());
 
   for (const auto* required_extension : required_extensions) {
@@ -114,7 +109,7 @@ std::vector<const char*> instance::_extensions() {
     }
 
     if (!found) {
-      throw std::runtime_error{"Required extension not available: " + std::string{required_extension}};
+      throw std::runtime_error{fmt::format("Required extension not available: {}", required_extension)};
     }
   }
 
@@ -122,10 +117,7 @@ std::vector<const char*> instance::_extensions() {
 }
 
 std::vector<const char*> instance::_layers() {
-#if defined(SBX_DEBUG)
-  const auto required_layers = std::vector<const char*>{
-    "VK_LAYER_KHRONOS_validation"
-  };
+  const auto required_layers = layers::instance();
 
   auto available_layer_count = std::uint32_t{0};
   auto available_layers = std::vector<VkLayerProperties>{};
@@ -147,17 +139,14 @@ std::vector<const char*> instance::_layers() {
     }
 
     if (!found) {
-      throw std::runtime_error{"Required layer not available: " + std::string{required_layer}};
+      throw std::runtime_error{fmt::format("Required layer not available: {}", required_layer)};
     }
   }
 
   return required_layers;
-#else
-  return std::vector<const char*>{};
-#endif
 }
 
-#if defined(SBX_DEBUG)
+#if defined(LIBSBX_DEBUG)
 
 void instance::_populate_debug_messenger_create_info(VkDebugUtilsMessengerCreateInfoEXT& create_info) {
   create_info = VkDebugUtilsMessengerCreateInfoEXT{

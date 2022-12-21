@@ -117,7 +117,7 @@ private:
     static auto logger = spdlog::logger{"sandbox", std::make_shared<spdlog::sinks::stdout_color_sink_mt>()};
     logger.set_pattern("[%Y-%m-%d %H:%M:%S] [%n] [%^%l%$] : %v");
 
-#if defined(SBX_DEBUG)
+#if defined(LIBSBX_DEBUG)
     logger.set_level(spdlog::level::trace);
 #else
     logger.set_level(spdlog::level::info);

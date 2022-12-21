@@ -2,7 +2,7 @@
 #define LIBSBX_CORE_TARGET_HPP_
 
 #if !defined(NDEBUG) || defined(DEBUG)
-  #define SBX_DEBUG
+  #define LIBSBX_DEBUG
 #endif
 
 #if defined(WIN32) || defined(_WIN32)

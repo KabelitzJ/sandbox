@@ -9,7 +9,7 @@
 
 namespace sbx::graphics {
 
-class physical_device : utility::noncopyable {
+class physical_device : public utility::noncopyable {
 
 public:
 

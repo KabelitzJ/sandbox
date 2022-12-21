@@ -11,7 +11,7 @@
 
 namespace sbx::graphics {
 
-class instance : utility::noncopyable {
+class instance : public utility::noncopyable {
 
 public:
 
@@ -29,7 +29,7 @@ private:
 
   std::vector<const char*> _layers();
 
-#if defined(SBX_DEBUG)
+#if defined(LIBSBX_DEBUG)
   void _populate_debug_messenger_create_info(VkDebugUtilsMessengerCreateInfoEXT& create_info);
 
   VkResult _create_debug_messenger(VkInstance instance_handle, const VkDebugUtilsMessengerCreateInfoEXT* create_info, const VkAllocationCallbacks* allocator, VkDebugUtilsMessengerEXT* debug_messenger);
@@ -37,7 +37,7 @@ private:
   void _destroy_debug_messenger(VkInstance instance_handle, VkDebugUtilsMessengerEXT debug_messenger, const VkAllocationCallbacks* allocator);
 #endif
 
-#if defined(SBX_DEBUG)
+#if defined(LIBSBX_DEBUG)
   VkDebugUtilsMessengerEXT _debug_messenger{};
 #endif
 

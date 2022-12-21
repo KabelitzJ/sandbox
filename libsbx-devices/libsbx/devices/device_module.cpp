@@ -74,8 +74,6 @@ std::vector<const char*> device_module::required_extensions() const {
 
   auto extensions = std::vector<const char*>{glfw_extensions, glfw_extensions + extention_count};
 
-  extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-
   return extensions;
 }
 

@@ -21,7 +21,7 @@ int main() {
   sbx::core::logger::debug("libsbx-devices:  {}", LIBSBX_DEVICES_VERSION_STR);
   sbx::core::logger::debug("libsbx-graphics: {}", LIBSBX_GRAPHICS_VERSION_STR);
 
-#if defined(SBX_DEBUG)
+#if defined(LIBSBX_DEBUG)
   auto start = clock_type::now();
 #endif
 
@@ -32,7 +32,7 @@ int main() {
     return EXIT_FAILURE;
   }
 
-#if defined(SBX_DEBUG)
+#if defined(LIBSBX_DEBUG)
   auto end = clock_type::now();
 
   auto duration = std::chrono::duration_cast<std::chrono::duration<std::float_t>>(end - start).count();
