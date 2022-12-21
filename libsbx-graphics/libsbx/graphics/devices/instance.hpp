@@ -7,9 +7,11 @@
 
 #include <libsbx/core/target.hpp>
 
+#include <libsbx/utility/noncopyable.hpp>
+
 namespace sbx::graphics {
 
-class instance {
+class instance : utility::noncopyable {
 
 public:
 

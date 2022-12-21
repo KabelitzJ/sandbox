@@ -33,7 +33,7 @@ namespace sbx::graphics {
 
 graphics_module::graphics_module()
 : _instance{std::make_unique<graphics::instance>()},
-  _physical_device{std::make_unique<graphics::physical_device>()} { }
+  _physical_device{std::make_unique<graphics::physical_device>(*_instance)} { }
 
 
 void graphics_module::update([[maybe_unused]] const core::time& delta_time) {

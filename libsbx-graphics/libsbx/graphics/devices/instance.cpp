@@ -83,6 +83,14 @@ instance::~instance() {
   vkDestroyInstance(_handle, nullptr);
 }
 
+VkInstance instance::handle() const noexcept {
+  return _handle;
+}
+
+instance::operator VkInstance() const noexcept {
+  return _handle;
+}
+
 std::vector<const char*> instance::_extensions() {
   const auto required_extensions = devices::device_module::get().required_extensions();
 
