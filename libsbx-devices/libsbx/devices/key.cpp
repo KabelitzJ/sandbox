@@ -137,4 +137,6 @@ key::operator std::int32_t() const noexcept {
 key::key(std::int32_t value)
 : _value{value} { }
 
+
+
 } // namespace sbx::devices
