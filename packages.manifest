@@ -12,3 +12,5 @@ location: libsbx-graphics/
 location: demo/
 :
 location: libsbx-io/
+:
+location: libsbx-utility/

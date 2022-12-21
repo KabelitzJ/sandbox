@@ -1,0 +1,6 @@
+project = libsbx-utility
+
+using version
+using config
+using install
+using dist

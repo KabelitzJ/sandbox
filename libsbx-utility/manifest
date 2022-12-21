@@ -1,13 +1,11 @@
 : 1
-name: libsbx-graphics
+name: libsbx-utility
 version: 0.1.0
 project: sandbox
-summary: sbx-graphics C++ library
+summary: sbx-utility C++ library
 license: MIT
 description-file: README.md
 email: jonas-kabelitz@gmx.de
 depends: * build2 >= 0.15.0
 depends: * bpkg >= 0.15.0
 depends: libsbx-core >= 0.1.0
-depends: libsbx-utility >= 0.1.0
-depends: libsbx-devices >= 0.1.0

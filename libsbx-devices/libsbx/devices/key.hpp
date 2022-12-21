@@ -146,14 +146,11 @@ public:
 
 private:
 
-  key(std::int32_t value, std::int32_t scancode);
+  key(std::int32_t value);
 
   std::int32_t _value{};
-  std::int32_t _scancode{};
 
 }; // class key
-
-std::ostream& operator<<(std::ostream& output_stream, const key& key);
 
 } // namespace sbx::devices
 
