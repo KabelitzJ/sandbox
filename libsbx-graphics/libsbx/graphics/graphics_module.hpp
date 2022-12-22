@@ -48,6 +48,7 @@
 #include <libsbx/graphics/devices/instance.hpp>
 #include <libsbx/graphics/devices/physical_device.hpp>
 #include <libsbx/graphics/devices/logical_device.hpp>
+#include <libsbx/graphics/devices/surface.hpp>
 
 namespace sbx::graphics {
 
@@ -59,7 +60,7 @@ public:
 
   graphics_module();
 
-  ~graphics_module() override = default;
+  ~graphics_module() override;
 
   static void validate(VkResult result);
 
@@ -69,6 +70,10 @@ public:
 
   physical_device& physical_device() noexcept;
 
+  logical_device& logical_device() noexcept;
+
+  surface& surface() noexcept;
+
 private:
 
   static std::string _stringify_result(VkResult result);
@@ -76,6 +81,7 @@ private:
   std::unique_ptr<graphics::instance> _instance{};
   std::unique_ptr<graphics::physical_device> _physical_device{};
   std::unique_ptr<graphics::logical_device> _logical_device{};
+  std::unique_ptr<graphics::surface> _surface{};
 
 }; // class graphics_module
 

@@ -40,7 +40,7 @@ int main() {
   sbx::core::logger::debug("Created all modules successfully (took {}s)", duration);
 #endif
 
-  auto& window = sbx::devices::device_module::get().current_window();
+  auto& window = sbx::devices::device_module::get().window();
 
   auto on_key_pressed = sbx::core::slot<sbx::devices::key_pressed_event>{[&window](const sbx::devices::key_pressed_event& event){
     if (event.key == sbx::devices::key::escape) {
@@ -51,6 +51,8 @@ int main() {
   }};
 
   window.register_on_key_pressed(on_key_pressed);
+
+  window.show();
 
   auto last = clock_type::now();
   

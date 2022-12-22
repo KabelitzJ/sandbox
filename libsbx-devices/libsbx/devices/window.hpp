@@ -62,7 +62,15 @@ public:
 
   ~window();
 
+  GLFWwindow* handle() const noexcept;
+
+  operator GLFWwindow*() const noexcept;
+
   bool should_close() const;
+
+  void show();
+  
+  void hide();
 
   void close();
 
@@ -76,7 +84,7 @@ private:
 
   void _setup_callbacks();
 
-  GLFWwindow* _window{};
+  GLFWwindow* _handle{};
   core::signal<key_pressed_event> _on_key_pressed{};
   core::signal<key_released_event> _on_key_released{};
 

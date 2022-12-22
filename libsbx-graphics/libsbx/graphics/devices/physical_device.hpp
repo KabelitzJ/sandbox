@@ -21,13 +21,13 @@ public:
 
   operator VkPhysicalDevice() const noexcept;
 
-  VkPhysicalDeviceProperties properties() const noexcept;
+  const VkPhysicalDeviceProperties& properties() const noexcept;
 
-  VkPhysicalDeviceFeatures features() const noexcept;
+  const VkPhysicalDeviceFeatures& features() const noexcept;
 
-  VkPhysicalDeviceMemoryProperties memory_properties() const noexcept;
+  const VkPhysicalDeviceMemoryProperties& memory_properties() const noexcept;
 
-  VkSampleCountFlagBits sample_count() const noexcept;
+  const VkSampleCountFlagBits& sample_count() const noexcept;
 
 private:
 

@@ -46,6 +46,7 @@
 
 #include <libsbx/core/delegate.hpp>
 #include <libsbx/core/time.hpp>
+#include <libsbx/core/logger.hpp>
 
 namespace sbx::core {
 
@@ -152,6 +153,8 @@ private:
     for (const auto& dependency : factory.dependencies) {
       _create_module(dependency, _factories.at(dependency));
     }
+
+    logger::info("Creating module: {}", type.name());
 
     _instances[type] = std::invoke(factory.create_fn);
     _instances_by_stage[factory.module_stage].push_back(type);

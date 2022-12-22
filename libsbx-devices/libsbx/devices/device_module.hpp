@@ -68,14 +68,14 @@ public:
 
   std::vector<const char*> required_extensions() const;
 
-  monitor& current_monitor();
+  monitor& monitor();
 
-  window& current_window();
+  window& window();
 
 private:
 
-  std::unique_ptr<monitor> _monitor{};
-  std::unique_ptr<window> _window{};
+  std::unique_ptr<devices::monitor> _monitor{};
+  std::unique_ptr<devices::window> _window{};
 
 }; // class device_module
 

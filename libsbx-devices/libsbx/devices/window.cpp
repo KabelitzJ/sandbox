@@ -37,33 +37,50 @@ namespace sbx::devices {
 
 window::window(const window_create_info& create_info) {
   glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-  glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+  glfwWindowHint(GLFW_RESIZABLE, false);
+  glfwWindowHint(GLFW_VISIBLE, false);
 
-  _window = glfwCreateWindow(create_info.width, create_info.height, create_info.title.c_str(), nullptr, nullptr);
+  _handle = glfwCreateWindow(create_info.width, create_info.height, create_info.title.c_str(), nullptr, nullptr);
 
-  if (!_window) {
+  if (!_handle) {
     throw std::runtime_error("Failed to create window");
   }
 
-  glfwSetWindowUserPointer(_window, this);
+  glfwSetWindowUserPointer(_handle, this);
 
   _setup_callbacks();
 }
 
 window::~window() {
-  glfwDestroyWindow(_window);
+  glfwDestroyWindow(_handle);
+}
+
+GLFWwindow* window::handle() const noexcept {
+  return _handle;
+}
+
+window::operator GLFWwindow*() const noexcept {
+  return _handle;
 }
 
 bool window::should_close() const {
-  return glfwWindowShouldClose(_window);
+  return glfwWindowShouldClose(_handle);
+}
+
+void window::show() {
+  glfwShowWindow(_handle);
+}
+
+void window::hide() {
+  glfwHideWindow(_handle);
 }
 
 void window::close() {
-  glfwSetWindowShouldClose(_window, true);
+  glfwSetWindowShouldClose(_handle, true);
 }
 
 void window::set_title(const std::string& title) {
-  glfwSetWindowTitle(_window, title.c_str());
+  glfwSetWindowTitle(_handle, title.c_str());
 }
 
 void window::register_on_key_pressed(const core::slot<key_pressed_event>& listener) {
@@ -75,7 +92,7 @@ void window::register_on_key_released(const core::slot<key_released_event>& list
 }
 
 void window::_setup_callbacks() {
-  glfwSetKeyCallback(_window, [](GLFWwindow* window, std::int32_t keycode, [[maybe_unused]] std::int32_t scancode, std::int32_t action, std::int32_t mods){
+  glfwSetKeyCallback(_handle, [](GLFWwindow* window, std::int32_t keycode, [[maybe_unused]] std::int32_t scancode, std::int32_t action, std::int32_t mods){
     auto* handle = static_cast<sbx::devices::window*>(glfwGetWindowUserPointer(window));
 
     if (action == GLFW_PRESS) {

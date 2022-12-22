@@ -10,6 +10,10 @@
 
 namespace sbx::graphics {
 
+VkResult logical_device::queue::wait_idle() const {
+  return vkQueueWaitIdle(handle);
+}
+
 logical_device::logical_device(const physical_device& physical_device) {
   _create_queues(physical_device);
   _create_logical_device(physical_device);
@@ -29,7 +33,7 @@ logical_device::operator VkDevice() const noexcept {
   return _handle;
 }
 
-VkPhysicalDeviceFeatures logical_device::physical_device_features() const noexcept {
+const VkPhysicalDeviceFeatures& logical_device::physical_device_features() const noexcept {
   return _physical_device_features;
 }
 
@@ -49,7 +53,7 @@ const logical_device::queue& logical_device::transfer_queue() const noexcept {
   return _queues.transfer_queue;
 }
 
-VkResult logical_device::wait_idle() {
+VkResult logical_device::wait_idle() const {
   return vkDeviceWaitIdle(_handle);
 }
 

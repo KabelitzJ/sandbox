@@ -40,6 +40,8 @@
 namespace sbx::devices {
 
 device_module::device_module() {
+  core::logger::info("Creating device_module");
+
   glfwSetErrorCallback([](std::int32_t error_code, const char* description){
     sbx::core::logger::error("({}) {}", error_code, description);
   });
@@ -52,8 +54,10 @@ device_module::device_module() {
     throw std::runtime_error{"Vulkan is not supported"};
   }
 
-  _monitor = std::make_unique<monitor>();
-  _window = std::make_unique<window>(window_create_info{"Window", 960, 720});
+  _monitor = std::make_unique<devices::monitor>();
+  _window = std::make_unique<devices::window>(window_create_info{"Window", 960, 720});
+
+  core::logger::info("Created device_module");
 }
 
 device_module::~device_module() {
@@ -77,11 +81,11 @@ std::vector<const char*> device_module::required_extensions() const {
   return extensions;
 }
 
-monitor& device_module::current_monitor() {
+monitor& device_module::monitor() {
   return *_monitor;
 }
 
-window& device_module::current_window() {
+window& device_module::window() {
   return *_window;
 }
 

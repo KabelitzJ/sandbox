@@ -34,7 +34,13 @@ namespace sbx::graphics {
 graphics_module::graphics_module()
 : _instance{std::make_unique<graphics::instance>()},
   _physical_device{std::make_unique<graphics::physical_device>(*_instance)},
-  _logical_device{std::make_unique<graphics::logical_device>(*_physical_device)} { }
+  _logical_device{std::make_unique<graphics::logical_device>(*_physical_device)} {
+    _surface = std::make_unique<graphics::surface>(*_instance, *_physical_device, *_logical_device);
+}
+
+graphics_module::~graphics_module() {
+  validate(_logical_device->graphics_queue().wait_idle());
+}
 
 void graphics_module::validate(VkResult result) {
   if (result >= 0) {
@@ -54,6 +60,14 @@ instance& graphics_module::instance() noexcept {
 
 physical_device& graphics_module::physical_device() noexcept {
   return *_physical_device;
+}
+
+logical_device& graphics_module::logical_device() noexcept {
+  return *_logical_device;
+} 
+
+surface& graphics_module::surface() noexcept {
+  return *_surface;
 } 
 
 std::string graphics_module::_stringify_result(VkResult result) {

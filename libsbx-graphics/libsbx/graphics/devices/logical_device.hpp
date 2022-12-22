@@ -17,6 +17,9 @@ public:
   struct queue {
     std::uint32_t family{};
     VkQueue handle{};
+
+    VkResult wait_idle() const;
+
   }; // struct queue
 
   logical_device(const physical_device& physical_device);
@@ -27,8 +30,8 @@ public:
 
   operator VkDevice() const noexcept;
 
-  VkPhysicalDeviceFeatures physical_device_features() const noexcept;
-
+  const VkPhysicalDeviceFeatures& physical_device_features() const noexcept;
+  
   const queue& graphics_queue() const noexcept;
 
   const queue& present_queue() const noexcept;
@@ -37,7 +40,7 @@ public:
 
   const queue& transfer_queue() const noexcept;
 
-  VkResult wait_idle();
+  VkResult wait_idle() const;
 
 private:
 

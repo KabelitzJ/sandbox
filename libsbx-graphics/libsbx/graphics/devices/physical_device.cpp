@@ -45,19 +45,19 @@ physical_device::operator VkPhysicalDevice() const noexcept {
   return _handle;
 }
 
-VkPhysicalDeviceProperties physical_device::properties() const noexcept {
+const VkPhysicalDeviceProperties& physical_device::properties() const noexcept {
   return _properties;
 }
 
-VkPhysicalDeviceFeatures physical_device::features() const noexcept {
+const VkPhysicalDeviceFeatures& physical_device::features() const noexcept {
   return _features;
 }
 
-VkPhysicalDeviceMemoryProperties physical_device::memory_properties() const noexcept {
+const VkPhysicalDeviceMemoryProperties& physical_device::memory_properties() const noexcept {
   return _memory_properties;
 }
 
-VkSampleCountFlagBits physical_device::sample_count() const noexcept {
+const VkSampleCountFlagBits& physical_device::sample_count() const noexcept {
   return _sample_count;
 }
 
