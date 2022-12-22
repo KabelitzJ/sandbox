@@ -8,6 +8,7 @@
 #include <libsbx/core/logger.hpp>
 
 #include <libsbx/graphics/graphics_module.hpp>
+#include <libsbx/graphics/devices/extentions.hpp>
 
 namespace sbx::graphics {
 
@@ -81,6 +82,22 @@ std::uint32_t physical_device::_score_device(const VkPhysicalDevice& device) {
 	vkEnumerateDeviceExtensionProperties(device, nullptr, &extension_property_count, nullptr);
 	auto extension_properties = std::vector<VkExtensionProperties>{extension_property_count};
 	vkEnumerateDeviceExtensionProperties(device, nullptr, &extension_property_count, extension_properties.data());
+
+  const auto device_extentions = extentions::device();
+
+  for (const auto* extension : device_extentions) {
+		auto extension_found = false;
+
+		for (const auto& property : extension_properties) {
+			if (std::strcmp(extension, property.extensionName) == 0) {
+				extension_found = true;
+				break;
+			}
+		}
+
+		if (!extension_found)
+			return 0;
+	}
 
   auto physical_device_properties = VkPhysicalDeviceProperties{};
 	vkGetPhysicalDeviceProperties(device, &physical_device_properties);

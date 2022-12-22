@@ -19,7 +19,7 @@ public:
     VkQueue handle{};
   }; // struct queue
 
-  logical_device(const instance& instance, const physical_device& physical_device);
+  logical_device(const physical_device& physical_device);
 
   ~logical_device();
 
@@ -37,6 +37,8 @@ public:
 
   const queue& transfer_queue() const noexcept;
 
+  VkResult wait_idle();
+
 private:
 
   struct queues {
@@ -48,7 +50,7 @@ private:
   };
 
   void _create_queues(const physical_device& physical_device);
-  void _logical_device();
+  void _create_logical_device(const physical_device& physical_device);
 
   VkDevice _handle{};
   VkPhysicalDeviceFeatures _physical_device_features{};

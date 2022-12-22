@@ -47,6 +47,7 @@
 
 #include <libsbx/graphics/devices/instance.hpp>
 #include <libsbx/graphics/devices/physical_device.hpp>
+#include <libsbx/graphics/devices/logical_device.hpp>
 
 namespace sbx::graphics {
 
@@ -60,6 +61,8 @@ public:
 
   ~graphics_module() override = default;
 
+  static void validate(VkResult result);
+
   void update([[maybe_unused]] const core::time& delta_time) override;
 
   instance& instance() noexcept;
@@ -68,8 +71,11 @@ public:
 
 private:
 
+  static std::string _stringify_result(VkResult result);
+
   std::unique_ptr<graphics::instance> _instance{};
   std::unique_ptr<graphics::physical_device> _physical_device{};
+  std::unique_ptr<graphics::logical_device> _logical_device{};
 
 }; // class graphics_module
 

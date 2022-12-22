@@ -10,11 +10,13 @@
 namespace sbx::graphics {
 
 struct layers {
-  static std::vector<const char*> instance() noexcept {
+  static std::vector<const char*> validation() noexcept {
     auto layers = std::vector<const char*>{};
+
 #if defined(LIBSBX_DEBUG)
     layers.push_back("VK_LAYER_KHRONOS_validation");
 #endif
+
     return layers;
   }
 }; // struct layers

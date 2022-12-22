@@ -5,6 +5,7 @@
 #include <functional>
 #include <cinttypes>
 #include <iostream>
+#include <string_view>
 
 #include <fmt/format.h>
 

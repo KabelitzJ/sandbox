@@ -7,6 +7,7 @@
 
 #include <libsbx/core/logger.hpp>
 
+#include <libsbx/graphics/graphics_module.hpp>
 #include <libsbx/graphics/devices/extentions.hpp>
 #include <libsbx/graphics/devices/layers.hpp>
 
@@ -23,15 +24,13 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL _debug_callback(VkDebugUtilsMessageSeverit
 }
 
 instance::instance() {
-  const auto app_info = VkApplicationInfo{
-    .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
-    .pNext = nullptr,
-    .pApplicationName = "Demo",
-    .applicationVersion = VK_MAKE_VERSION(0, 1, 0),
-    .pEngineName = "Sandbox",
-    .engineVersion = VK_MAKE_VERSION(1, 0, 0),
-    .apiVersion = VK_API_VERSION_1_0
-  };
+  auto app_info = VkApplicationInfo{};
+  app_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+  app_info.pApplicationName = "Demo";
+  app_info.applicationVersion = VK_MAKE_VERSION(0, 1, 0);
+  app_info.pEngineName = "Sandbox";
+  app_info.engineVersion = VK_MAKE_VERSION(1, 0, 0);
+  app_info.apiVersion = VK_API_VERSION_1_0;
 
   const auto extentions = _extensions();
 
@@ -40,38 +39,27 @@ instance::instance() {
   const auto layers = _layers();
 
   core::logger::debug("Layers: {}", fmt::join(layers, ", "));
-  
+
+  auto instance_create_info = VkInstanceCreateInfo{};
+  instance_create_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 #if defined(LIBSBX_DEBUG)
   auto instance_debug_messenger_create_info = VkDebugUtilsMessengerCreateInfoEXT{};
   _populate_debug_messenger_create_info(instance_debug_messenger_create_info);
+  instance_create_info.pNext = &instance_debug_messenger_create_info;
 #endif
+  instance_create_info.pApplicationInfo = &app_info;
+  instance_create_info.enabledLayerCount = static_cast<std::uint32_t>(layers.size());
+  instance_create_info.ppEnabledLayerNames = layers.data();
+  instance_create_info.enabledExtensionCount = static_cast<std::uint32_t>(extentions.size());
+  instance_create_info.ppEnabledExtensionNames = extentions.data();
 
-  const auto instance_create_info = VkInstanceCreateInfo{
-    .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
-#if defined(LIBSBX_DEBUG)
-    .pNext = &instance_debug_messenger_create_info,
-#else
-    .pNext = nullptr,
-#endif
-    .flags = 0,
-    .pApplicationInfo = &app_info,
-    .enabledLayerCount = static_cast<std::uint32_t>(layers.size()),
-    .ppEnabledLayerNames = layers.data(),
-    .enabledExtensionCount = static_cast<std::uint32_t>(extentions.size()),
-    .ppEnabledExtensionNames = extentions.data()
-  };
-
-  if (vkCreateInstance(&instance_create_info, nullptr, &_handle) != VK_SUCCESS) {
-    throw std::runtime_error{"Failed to create instance"};
-  }
+  graphics_module::validate(vkCreateInstance(&instance_create_info, nullptr, &_handle));
 
 #if defined(LIBSBX_DEBUG)
   auto debug_messenger_create_info = VkDebugUtilsMessengerCreateInfoEXT{};
   _populate_debug_messenger_create_info(debug_messenger_create_info);
 
-  if (_create_debug_messenger(_handle, &debug_messenger_create_info, nullptr, &_debug_messenger) != VK_SUCCESS) {
-    throw std::runtime_error{"Failed to create debug messenger"};
-  }
+  graphics_module::validate(_create_debug_messenger(_handle, &debug_messenger_create_info, nullptr, &_debug_messenger));
 #endif
 }
 
@@ -117,7 +105,7 @@ std::vector<const char*> instance::_extensions() {
 }
 
 std::vector<const char*> instance::_layers() {
-  const auto required_layers = layers::instance();
+  const auto required_layers = layers::validation();
 
   auto available_layer_count = std::uint32_t{0};
   auto available_layers = std::vector<VkLayerProperties>{};
