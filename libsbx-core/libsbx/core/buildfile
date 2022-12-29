@@ -2,7 +2,6 @@ public_dependencies =
 import public_dependencies += spdlog%liba{spdlog}
 
 private_dependencies =
-#import private_dependencies += libhello%lib{hello}
 
 lib{sbx-core}: {hxx ixx txx cxx}{** -version} hxx{version} $private_dependencies $public_dependencies
 

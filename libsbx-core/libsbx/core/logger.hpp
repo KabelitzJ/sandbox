@@ -47,12 +47,23 @@ class logger {
 
 public:
 
+  template<typename... Args>
+  using format_string_type = spdlog::format_string_t<Args...>;
+
   logger() = delete;
+
+  logger(const logger& other) = delete;
+
+  logger(logger&& other) = delete;
 
   ~logger() = default;
 
+  logger& operator=(const logger& other) = delete;
+
+  logger& operator=(logger&& other) = delete;
+
   template<typename... Args>
-  static void trace(spdlog::format_string_t<Args...> format, Args&&... args) {
+  static void trace(format_string_type<Args...> format, Args&&... args) {
     _logger().trace(format, std::forward<Args>(args)...);
   }
 
@@ -62,7 +73,7 @@ public:
   }
 
   template<typename... Args>
-  static void debug(spdlog::format_string_t<Args...> format, Args&&... args) {
+  static void debug(format_string_type<Args...> format, Args&&... args) {
     _logger().debug(format, std::forward<Args>(args)...);
   }
 
@@ -72,7 +83,7 @@ public:
   }
 
   template<typename... Args>
-  static void info(spdlog::format_string_t<Args...> format, Args&&... args) {
+  static void info(format_string_type<Args...> format, Args&&... args) {
     _logger().info(format, std::forward<Args>(args)...);
   }
 
@@ -82,7 +93,7 @@ public:
   }
 
   template<typename... Args>
-  static void warn(spdlog::format_string_t<Args...> format, Args&&... args) {
+  static void warn(format_string_type<Args...> format, Args&&... args) {
     _logger().warn(format, std::forward<Args>(args)...);
   }
 
@@ -92,7 +103,7 @@ public:
   }
 
   template<typename... Args>
-  static void error(spdlog::format_string_t<Args...> format, Args&&... args) {
+  static void error(format_string_type<Args...> format, Args&&... args) {
     _logger().error(format, std::forward<Args>(args)...);
   }
 
@@ -102,7 +113,7 @@ public:
   }
 
   template<typename... Args>
-  static void critical(spdlog::format_string_t<Args...> format, Args&&... args) {
+  static void critical(format_string_type<Args...> format, Args&&... args) {
     _logger().critical(format, std::forward<Args>(args)...);
   }
 
@@ -114,7 +125,7 @@ public:
 private:
 
   static spdlog::logger& _logger() {
-    static auto logger = spdlog::logger{"sandbox", std::make_shared<spdlog::sinks::stdout_color_sink_mt>()};
+    static auto logger = spdlog::logger{"sbx", std::make_shared<spdlog::sinks::stdout_color_sink_mt>()};
     logger.set_pattern("[%Y-%m-%d %H:%M:%S] [%n] [%^%l%$] : %v");
 
 #if defined(LIBSBX_DEBUG)

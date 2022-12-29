@@ -1,6 +1,0 @@
-project = libsbx-math
-
-using version
-using config
-using install
-using dist
