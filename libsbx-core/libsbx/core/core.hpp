@@ -38,5 +38,6 @@
 #include <libsbx/core/version.hpp>
 #include <libsbx/core/target.hpp>
 #include <libsbx/core/logger.hpp>
+#include <libsbx/core/module.hpp>
 
 #endif // LIBSBX_CORE_HPP_
