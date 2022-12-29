@@ -40,29 +40,29 @@ int main() {
   sbx::core::logger::debug("Created all modules successfully (took {}s)", duration);
 #endif
 
-  auto& window = sbx::devices::device_module::get().window();
+  // auto& window = sbx::devices::device_module::get().window();
 
-  auto on_key_pressed = sbx::core::slot<sbx::devices::key_pressed_event>{[&window](const sbx::devices::key_pressed_event& event){
-    if (event.key == sbx::devices::key::escape) {
-      window.close();
-    } else {
-      sbx::core::logger::debug("key pressed: {}", event.key);
-    }
-  }};
+  // auto on_key_pressed = sbx::core::slot<sbx::devices::key_pressed_event>{[&window](const sbx::devices::key_pressed_event& event){
+  //   if (event.key == sbx::devices::key::escape) {
+  //     window.close();
+  //   } else {
+  //     sbx::core::logger::debug("key pressed: {}", event.key);
+  //   }
+  // }};
 
-  window.register_on_key_pressed(on_key_pressed);
+  // window.register_on_key_pressed(on_key_pressed);
 
-  window.show();
+  // window.show();
 
-  auto last = clock_type::now();
+  // auto last = clock_type::now();
   
-  while (!window.should_close()) {
-    auto now = clock_type::now();
-    const auto delta_time = sbx::core::time{now - last};
-    last = now;
+  // while (!window.should_close()) {
+  //   auto now = clock_type::now();
+  //   const auto delta_time = sbx::core::time{now - last};
+  //   last = now;
 
-    sbx::core::module_manager::update_stages(delta_time);
-  }
+  //   sbx::core::module_manager::update_stages(delta_time);
+  // }
 
   sbx::core::module_manager::destroy_all();
 

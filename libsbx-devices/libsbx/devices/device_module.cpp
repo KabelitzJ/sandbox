@@ -40,8 +40,6 @@
 namespace sbx::devices {
 
 device_module::device_module() {
-  core::logger::info("Creating device_module");
-
   glfwSetErrorCallback([](std::int32_t error_code, const char* description){
     sbx::core::logger::error("({}) {}", error_code, description);
   });
@@ -56,8 +54,6 @@ device_module::device_module() {
 
   _monitor = std::make_unique<devices::monitor>();
   _window = std::make_unique<devices::window>(window_create_info{"Window", 960, 720});
-
-  core::logger::info("Created device_module");
 }
 
 device_module::~device_module() {
@@ -71,7 +67,7 @@ void device_module::update([[maybe_unused]] const core::time& delta_time) {
   glfwPollEvents();
 }
 
-std::vector<const char*> device_module::required_extensions() const {
+std::vector<const char*> device_module::required_instance_extensions() const {
   auto extention_count = std::uint32_t{};
 
   const auto* glfw_extensions = glfwGetRequiredInstanceExtensions(&extention_count);

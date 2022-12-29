@@ -154,8 +154,6 @@ private:
       _create_module(dependency, _factories.at(dependency));
     }
 
-    logger::info("Creating module: {}", type.name());
-
     _instances[type] = std::invoke(factory.create_fn);
     _instances_by_stage[factory.module_stage].push_back(type);
   }

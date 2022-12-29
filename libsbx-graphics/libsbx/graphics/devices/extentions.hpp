@@ -13,7 +13,7 @@ namespace sbx::graphics {
 
 struct extentions {
   static std::vector<const char*> instance() noexcept {
-    auto extensions = devices::device_module::get().required_extensions();
+    auto extensions = devices::device_module::get().required_instance_extensions();
 
     extensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
 

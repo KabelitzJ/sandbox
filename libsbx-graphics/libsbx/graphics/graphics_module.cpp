@@ -27,19 +27,26 @@
  * @file libsbx/graphics/graphics_module.cpp
  */
 
+#include <libsbx/core/logger.hpp>
+
+#include <libsbx/devices/device_module.hpp>
+
 #include <libsbx/graphics/graphics_module.hpp>
 
 namespace sbx::graphics {
 
-graphics_module::graphics_module()
-: _instance{std::make_unique<graphics::instance>()},
-  _physical_device{std::make_unique<graphics::physical_device>(*_instance)},
-  _logical_device{std::make_unique<graphics::logical_device>(*_physical_device)} {
-    _surface = std::make_unique<graphics::surface>(*_instance, *_physical_device, *_logical_device);
+graphics_module::graphics_module() {
+// : _instance{std::make_unique<graphics::instance>()},
+//   _physical_device{std::make_unique<graphics::physical_device>(*_instance)},
+//   _logical_device{std::make_unique<graphics::logical_device>(*_physical_device)} {
+//     _surface = std::make_unique<graphics::surface>(*_instance, *_physical_device, *_logical_device);
+  core::logger::info("{}", devices::device_module::get().answer());
+  core::logger::info("{}", devices::device_module::get().greet("Jonas"));
+  // core::logger::info("{}", devices::device_module::get().window().should_close());
 }
 
 graphics_module::~graphics_module() {
-  validate(_logical_device->graphics_queue().wait_idle());
+  // validate(_logical_device->graphics_queue().wait_idle());
 }
 
 void graphics_module::validate(VkResult result) {
@@ -55,19 +62,19 @@ void graphics_module::update([[maybe_unused]] const core::time& delta_time) {
 }
 
 instance& graphics_module::instance() noexcept {
-  return *_instance;
+  // return *_instance;
 }
 
 physical_device& graphics_module::physical_device() noexcept {
-  return *_physical_device;
+  // return *_physical_device;
 }
 
 logical_device& graphics_module::logical_device() noexcept {
-  return *_logical_device;
+  // return *_logical_device;
 } 
 
 surface& graphics_module::surface() noexcept {
-  return *_surface;
+  // return *_surface;
 } 
 
 std::string graphics_module::_stringify_result(VkResult result) {

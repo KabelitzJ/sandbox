@@ -78,10 +78,10 @@ private:
 
   static std::string _stringify_result(VkResult result);
 
-  std::unique_ptr<graphics::instance> _instance{};
-  std::unique_ptr<graphics::physical_device> _physical_device{};
-  std::unique_ptr<graphics::logical_device> _logical_device{};
-  std::unique_ptr<graphics::surface> _surface{};
+  // std::unique_ptr<graphics::instance> _instance{};
+  // std::unique_ptr<graphics::physical_device> _physical_device{};
+  // std::unique_ptr<graphics::logical_device> _logical_device{};
+  // std::unique_ptr<graphics::surface> _surface{};
 
 }; // class graphics_module
 

@@ -66,16 +66,27 @@ public:
 
   void update([[maybe_unused]] const core::time& delta_time) override;
 
-  std::vector<const char*> required_extensions() const;
+  std::vector<const char*> required_instance_extensions() const;
 
   monitor& monitor();
 
   window& window();
 
+  std::uint32_t answer() const noexcept {
+    return _answer;
+  }
+
+  std::string greet(const std::string name) const noexcept {
+    return fmt::format("{} {}", _hello, name);
+  }
+
 private:
 
   std::unique_ptr<devices::monitor> _monitor{};
   std::unique_ptr<devices::window> _window{};
+
+  std::uint32_t _answer{42};
+  std::string _hello{"Hello"};
 
 }; // class device_module
 
