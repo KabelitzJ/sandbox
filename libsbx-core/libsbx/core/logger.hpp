@@ -52,90 +52,88 @@ public:
 
   logger() = delete;
 
-  logger(const logger& other) = delete;
-
-  logger(logger&& other) = delete;
-
   ~logger() = default;
 
-  logger& operator=(const logger& other) = delete;
-
-  logger& operator=(logger&& other) = delete;
-
   template<typename... Args>
-  static void trace(format_string_type<Args...> format, Args&&... args) {
-    _logger().trace(format, std::forward<Args>(args)...);
+  static auto trace(format_string_type<Args...> format, Args&&... args) -> void {
+    _instance().trace(format, std::forward<Args>(args)...);
   }
 
   template<typename Type>
-  static void trace(const Type& value) {
-    _logger().trace(value);
+  static auto trace(const Type& value) -> void {
+    _instance().trace(value);
   }
 
   template<typename... Args>
-  static void debug(format_string_type<Args...> format, Args&&... args) {
-    _logger().debug(format, std::forward<Args>(args)...);
+  static auto debug(format_string_type<Args...> format, Args&&... args) -> void {
+    _instance().debug(format, std::forward<Args>(args)...);
   }
 
   template<typename Type>
-  static void debug(const Type& value) {
-    _logger().debug(value);
+  static auto debug(const Type& value) -> void {
+    _instance().debug(value);
   }
 
   template<typename... Args>
-  static void info(format_string_type<Args...> format, Args&&... args) {
-    _logger().info(format, std::forward<Args>(args)...);
+  static auto info(format_string_type<Args...> format, Args&&... args) -> void {
+    _instance().info(format, std::forward<Args>(args)...);
   }
 
   template<typename Type>
-  static void info(const Type& value) {
-    _logger().info(value);
+  static auto info(const Type& value) -> void {
+    _instance().info(value);
   }
 
   template<typename... Args>
-  static void warn(format_string_type<Args...> format, Args&&... args) {
-    _logger().warn(format, std::forward<Args>(args)...);
+  static auto warn(format_string_type<Args...> format, Args&&... args) -> void {
+    _instance().warn(format, std::forward<Args>(args)...);
   }
 
   template<typename Type>
-  static void warn(const Type& value) {
-    _logger().warn(value);
+  static auto warn(const Type& value) -> void {
+    _instance().warn(value);
   }
 
   template<typename... Args>
-  static void error(format_string_type<Args...> format, Args&&... args) {
-    _logger().error(format, std::forward<Args>(args)...);
+  static auto error(format_string_type<Args...> format, Args&&... args) -> void {
+    _instance().error(format, std::forward<Args>(args)...);
   }
 
   template<typename Type>
-  static void error(const Type& value) {
-    _logger().error(value);
+  static auto error(const Type& value) -> void {
+    _instance().error(value);
   }
 
   template<typename... Args>
-  static void critical(format_string_type<Args...> format, Args&&... args) {
-    _logger().critical(format, std::forward<Args>(args)...);
+  static auto critical(format_string_type<Args...> format, Args&&... args) -> void {
+    _instance().critical(format, std::forward<Args>(args)...);
   }
 
   template<typename Type>
-  static void critical(const Type& value) {
-    _logger().critical(value);
+  static auto critical(const Type& value) -> void {
+    _instance().critical(value);
   }
 
 private:
 
-  static spdlog::logger& _logger() {
-    static auto logger = spdlog::logger{"sbx", std::make_shared<spdlog::sinks::stdout_color_sink_mt>()};
+  static auto _instance() -> spdlog::logger& {
+    static auto instance = _create_logger();
+    return instance;
+  }
+
+  static auto _create_logger() -> spdlog::logger {
+    auto logger = spdlog::logger{"sbx", std::make_shared<spdlog::sinks::stdout_color_sink_mt>()};
+
     logger.set_pattern("[%Y-%m-%d %H:%M:%S] [%n] [%^%l%$] : %v");
 
 #if defined(LIBSBX_DEBUG)
-    logger.set_level(spdlog::level::trace);
+    logger.set_level(spdlog::level::debug);
 #else
     logger.set_level(spdlog::level::info);
 #endif
 
     return logger;
-  }
+  } 
 
 }; // class logger
 
