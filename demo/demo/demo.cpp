@@ -3,6 +3,7 @@
 #include <chrono>
 
 #include <libsbx/core/core.hpp>
+#include <libsbx/devices/devices.hpp>
 
 class foo : public sbx::core::module<foo> {
 
@@ -19,7 +20,7 @@ public:
   }
 
   auto update(std::float_t delta_time) -> void override {
-    sbx::core::logger::info("foo::update({})", delta_time);
+
   }
 
   auto value() const noexcept -> std::uint32_t {
@@ -49,7 +50,7 @@ public:
   }
 
   auto update(std::float_t delta_time) -> void override {
-    sbx::core::logger::info("bar::update({})", delta_time);
+
   }
 
   auto value() const noexcept -> std::uint32_t {
