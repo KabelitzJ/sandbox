@@ -1,0 +1,6 @@
+project = libsbx-devices
+
+using version
+using config
+using install
+using dist
