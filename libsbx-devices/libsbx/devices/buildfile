@@ -1,10 +1,10 @@
 public_dependencies = # Interface dependencies.
-import public_dependencies += glfw%lib{glfw}
-import public_dependencies += libsbx-core%lib{sbx-core}
+import public_dependencies += glfw%liba{glfw}
+import public_dependencies += libsbx-core%liba{sbx-core}
 
 private_dependencies = # Implementation dependencies.
 
-lib{sbx-devices}: {hxx ixx txx cxx}{** -version} hxx{version} $private_dependencies $public_dependencies
+liba{sbx-devices}: {hxx ixx txx cxx}{** -version} hxx{version} $private_dependencies $public_dependencies
 
 hxx{version}: in{version} $src_root/manifest
 
@@ -19,7 +19,7 @@ cxx.poptions += "-I$out_root" "-I$src_root"
 
 # Export options.
 #
-lib{sbx-devices}:
+liba{sbx-devices}:
 {
   cxx.export.poptions = "-I$out_root" "-I$src_root"
   cxx.export.libs = $public_dependencies
@@ -33,9 +33,9 @@ libs{sbx-devices}: cxx.export.poptions += -DLIBSBX_DEVICES_SHARED
 # for details on the version.* variable values.
 #
 if $version.pre_release
-  lib{sbx-devices}: bin.lib.version = "-$version.project_id"
+  liba{sbx-devices}: bin.lib.version = "-$version.project_id"
 else
-  lib{sbx-devices}: bin.lib.version = "-$version.major.$version.minor"
+  liba{sbx-devices}: bin.lib.version = "-$version.major.$version.minor"
 
 # Install into the libsbx/devices/ subdirectory of, say, /usr/include/
 # recreating subdirectories.

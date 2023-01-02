@@ -1,6 +1,6 @@
 dependencies =
-import dependencies += libsbx-core%lib{sbx-core}
-import dependencies += libsbx-devices%lib{sbx-devices}
+import dependencies += libsbx-core%liba{sbx-core}
+import dependencies += libsbx-devices%liba{sbx-devices}
 
 exe{demo}: {hxx ixx txx cxx}{**} $dependencies
 

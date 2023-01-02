@@ -3,7 +3,7 @@ import public_dependencies += spdlog%liba{spdlog}
 
 private_dependencies =
 
-lib{sbx-core}: {hxx ixx txx cxx}{** -version} hxx{version} $private_dependencies $public_dependencies
+liba{sbx-core}: {hxx ixx txx cxx}{** -version} hxx{version} $private_dependencies $public_dependencies
 
 hxx{version}: in{version} $src_root/manifest
 
@@ -18,7 +18,7 @@ cxx.poptions += "-I$out_root" "-I$src_root"
 
 # Export options.
 #
-lib{sbx-core}:
+liba{sbx-core}:
 {
   cxx.export.poptions = "-I$out_root" "-I$src_root"
   cxx.export.libs = $public_dependencies
@@ -32,9 +32,9 @@ libs{sbx-core}: cxx.export.poptions += -DLIBSBX_CORE_SHARED
 # for details on the version.* variable values.
 #
 if $version.pre_release
-  lib{sbx-core}: bin.lib.version = "-$version.project_id"
+  liba{sbx-core}: bin.lib.version = "-$version.project_id"
 else
-  lib{sbx-core}: bin.lib.version = "-$version.major.$version.minor"
+  liba{sbx-core}: bin.lib.version = "-$version.major.$version.minor"
 
 # Install into the libsbx/core/ subdirectory of, say, /usr/include/
 # recreating subdirectories.
