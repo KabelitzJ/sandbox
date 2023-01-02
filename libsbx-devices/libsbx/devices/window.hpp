@@ -35,7 +35,7 @@ public:
   }
 
   auto should_close() -> bool {
-    glfwWindowShouldClose(_handle);
+    return glfwWindowShouldClose(_handle);
   }
 
 private:
