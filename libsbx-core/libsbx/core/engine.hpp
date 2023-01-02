@@ -32,7 +32,7 @@ public:
     _destroy_modules();
   }
 
-  auto run(std::unique_ptr<application>& application) -> void {
+  auto run(const std::unique_ptr<application>& application) -> void {
     using clock_type = std::chrono::high_resolution_clock;
 
     _is_running = true;
@@ -43,6 +43,8 @@ public:
       const auto now = clock_type::now();
       const auto delta_time = std::chrono::duration_cast<std::chrono::duration<std::float_t>>(last - now).count();
       last = now;
+
+      application->update();
 
       _update_stage(stage::pre, delta_time);
       _update_stage(stage::normal, delta_time);
