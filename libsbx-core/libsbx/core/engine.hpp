@@ -11,6 +11,7 @@
 #include <chrono>
 
 #include <libsbx/core/module.hpp>
+#include <libsbx/core/application.hpp>
 
 namespace sbx::core {
 
@@ -31,7 +32,7 @@ public:
     _destroy_modules();
   }
 
-  auto run() -> void {
+  auto run(std::unique_ptr<application>& application) -> void {
     using clock_type = std::chrono::high_resolution_clock;
 
     _is_running = true;
@@ -99,7 +100,6 @@ private:
   }
 
   bool _is_running{};
-
   std::vector<std::string_view> _args{};
 
   std::unordered_map<std::type_index, std::unique_ptr<module_base>> _modules{};
