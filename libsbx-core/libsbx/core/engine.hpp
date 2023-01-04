@@ -16,7 +16,7 @@
 namespace sbx::core {
 
 template<typename Derived, typename Base>
-concept base_of = std::is_base_of_v<Base, Derived>;
+concept derived_from = std::is_base_of_v<Base, Derived>;
 
 class engine {
 
@@ -35,7 +35,7 @@ public:
     _destroy_modules();
   }
 
-  template<base_of<application> Type>
+  template<derived_from<application> Type>
   auto run(const std::unique_ptr<Type>& application) -> void {
     using clock_type = std::chrono::high_resolution_clock;
 
