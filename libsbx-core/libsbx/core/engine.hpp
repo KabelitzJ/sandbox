@@ -15,6 +15,9 @@
 
 namespace sbx::core {
 
+template<typename Derived, typename Base>
+concept base_of = std::is_base_of_v<Base, Derived>;
+
 class engine {
 
   using stage = module_manager::stage;
@@ -32,7 +35,8 @@ public:
     _destroy_modules();
   }
 
-  auto run(const std::unique_ptr<application>& application) -> void {
+  template<base_of<application> Type>
+  auto run(const std::unique_ptr<Type>& application) -> void {
     using clock_type = std::chrono::high_resolution_clock;
 
     _is_running = true;

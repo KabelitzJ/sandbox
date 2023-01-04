@@ -1,6 +1,7 @@
 #ifndef LIBSBX_DEVICES_HPP_
 #define LIBSBX_DEVICES_HPP_
 
+#include <libsbx/devices/events.hpp>
 #include <libsbx/devices/device_module.hpp>
 #include <libsbx/devices/version.hpp>
 
