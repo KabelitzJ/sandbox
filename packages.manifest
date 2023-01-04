@@ -4,3 +4,5 @@ location: libsbx-core/
 location: libsbx-devices/
 :
 location: demo/
+:
+location: libsbx-graphics/
