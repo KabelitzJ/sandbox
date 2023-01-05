@@ -9,6 +9,14 @@ class instance {
 
 public:
 
+  instance() {
+
+  }
+
+  ~instance() {
+    
+  }
+
 private:
 
   VkInstance _handle{};
