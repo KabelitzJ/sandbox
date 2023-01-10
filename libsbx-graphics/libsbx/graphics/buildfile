@@ -1,8 +1,10 @@
-intf_libs = # Interface dependencies.
-impl_libs = # Implementation dependencies.
-#import xxxx_libs += libhello%lib{hello}
+public_dependencies = # Interface dependencies.
+import public_dependencies += libsbx-core%liba{sbx-core}
+import public_dependencies += libsbx-devices%liba{sbx-devices}
 
-lib{sbx-graphics}: {hxx ixx txx cxx}{** -version} hxx{version} $impl_libs $intf_libs
+private_dependencies = # Implementation dependencies. 
+
+lib{sbx-graphics}: {hxx ixx txx cxx}{** -version} hxx{version} $private_dependencies $public_dependencies
 
 hxx{version}: in{version} $src_root/manifest
 
@@ -10,7 +12,7 @@ hxx{export}@./: cxx.importable = false
 
 # Build options.
 #
-cxx.poptions =+ "-I$out_root" "-I$src_root"
+cxx.poptions += "-I$out_root" "-I$src_root"
 
 {hbmia obja}{*}: cxx.poptions += -DLIBSBX_GRAPHICS_STATIC_BUILD
 {hbmis objs}{*}: cxx.poptions += -DLIBSBX_GRAPHICS_SHARED_BUILD
@@ -40,6 +42,6 @@ else
 #
 {hxx ixx txx}{*}:
 {
-  install         = include/libsbx/graphics/
+  install = include/libsbx/graphics/
   install.subdirs = true
 }
