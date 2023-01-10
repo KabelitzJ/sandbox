@@ -1,5 +1,6 @@
 public_dependencies =
 import public_dependencies += spdlog%liba{spdlog}
+import public_dependencies += libsbx-utility%liba{sbx-utility}
 
 private_dependencies =
 

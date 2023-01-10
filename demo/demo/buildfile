@@ -1,4 +1,5 @@
 dependencies =
+import dependencies += libsbx-utility%liba{sbx-utility}
 import dependencies += libsbx-core%liba{sbx-core}
 import dependencies += libsbx-devices%liba{sbx-devices}
 import dependencies += libsbx-graphics%liba{sbx-graphics}

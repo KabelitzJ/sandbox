@@ -1,8 +1,11 @@
-intf_libs = # Interface dependencies.
-impl_libs = # Implementation dependencies.
-#import xxxx_libs += libhello%lib{hello}
+public_dependencies =
+import public_dependencies += libsbx-vulkan%liba{sbx-vulkan}
+import public_dependencies += libsbx-core%liba{sbx-core}
+import public_dependencies += libsbx-devices%liba{sbx-devices}
 
-lib{sbx-graphics}: {hxx ixx txx cxx}{** -version} hxx{version} $impl_libs $intf_libs
+private_dependencies =
+
+lib{sbx-graphics}: {hxx ixx txx cxx}{** -version} hxx{version} $private_dependencies $public_dependencies
 
 hxx{version}: in{version} $src_root/manifest
 
@@ -20,7 +23,7 @@ cxx.poptions =+ "-I$out_root" "-I$src_root"
 lib{sbx-graphics}:
 {
   cxx.export.poptions = "-I$out_root" "-I$src_root"
-  cxx.export.libs = $intf_libs
+  cxx.export.libs = $public_dependencies
 }
 
 liba{sbx-graphics}: cxx.export.poptions += -DLIBSBX_GRAPHICS_STATIC
