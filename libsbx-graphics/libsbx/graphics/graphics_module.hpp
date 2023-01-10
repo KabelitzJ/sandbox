@@ -19,7 +19,9 @@ public:
 
   graphics_module()
   : _instance{std::make_unique<graphics::instance>()} {
+    auto& window = devices::device_module::get().window();
 
+    window.handle();
   }
 
   ~graphics_module() override {

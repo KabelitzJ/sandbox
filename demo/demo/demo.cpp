@@ -10,8 +10,7 @@ class demo_application : public sbx::core::application {
 
 public:
 
-  demo_application(sbx::core::engine& engine)
-  : sbx::core::application{sbx::core::version{0, 1, 0}} {
+  demo_application(sbx::core::engine& engine) {
     auto& window = sbx::devices::device_module::get().window();
 
     window.set_on_window_closed([&engine]([[maybe_unused]] const sbx::devices::window_closed_event& event){

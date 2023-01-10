@@ -27,6 +27,8 @@ public:
       throw std::runtime_error{"Could not create glfw window"};
     }
 
+    glfwFocusWindow(_handle);
+
     _set_callbacks();
   }
 

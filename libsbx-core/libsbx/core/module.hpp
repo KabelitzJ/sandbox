@@ -63,8 +63,8 @@ class module : public module_manager::module_base {
 public:
 
   virtual ~module() {
-    static_assert(!std::is_abstract_v<Type>, "");
-    static_assert(std::is_base_of_v<module<Type>, Type>, "");
+    static_assert(!std::is_abstract_v<Type>, "Class may not be abstract.");
+    static_assert(std::is_base_of_v<module<Type>, Type>, "Class must inherit from module<Class>.");
 
     if (static_cast<Type*>(this) == _instance) {
       _instance = nullptr;
