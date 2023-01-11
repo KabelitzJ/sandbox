@@ -3,4 +3,3 @@
 .vscode/
 
 configs/
-!configs/gcc/debug/build/
