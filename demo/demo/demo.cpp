@@ -10,11 +10,12 @@ class demo_application : public sbx::core::application {
 
 public:
 
-  demo_application(sbx::core::engine& engine) {
+  demo_application(sbx::core::engine& engine)
+  : _engine{engine} {
     auto& window = sbx::devices::device_module::get().window();
 
-    window.set_on_window_closed([&engine]([[maybe_unused]] const sbx::devices::window_closed_event& event){
-      engine.quit();
+    window.set_on_window_closed([this]([[maybe_unused]] const sbx::devices::window_closed_event& event){
+      _engine.quit();
     });
   }
 
@@ -23,6 +24,10 @@ public:
   auto update() -> void  {
     
   }
+
+private:
+
+  sbx::core::engine& _engine;
 
 }; // class demo_application
 
