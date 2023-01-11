@@ -2,6 +2,8 @@
 #define LIBSBX_DEVICES_DEVICE_MODULE_HPP_
 
 #include <memory>
+#include <vector>
+#include <cinttypes>
 
 #include <GLFW/glfw3.h>
 
@@ -42,6 +44,13 @@ public:
 
   window& window() {
     return *_window;
+  }
+
+  auto required_instance_extensions() const -> std::vector<const char*> {
+    auto extension_count = std::uint32_t{0};
+    auto extensions = glfwGetRequiredInstanceExtensions(&extension_count);
+
+    return std::vector<const char*>{extensions, extensions + extension_count};
   }
 
 private:

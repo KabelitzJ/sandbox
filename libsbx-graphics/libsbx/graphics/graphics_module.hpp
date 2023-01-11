@@ -7,7 +7,7 @@
 
 #include <libsbx/devices/device_module.hpp>
 
-#include <libsbx/graphics/instance.hpp>
+#include <libsbx/graphics/devices/instance.hpp>
 
 namespace sbx::graphics {
 

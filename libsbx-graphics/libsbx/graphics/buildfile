@@ -22,7 +22,7 @@ cxx.poptions += "-I$out_root" "-I$src_root"
 lib{sbx-graphics}:
 {
   cxx.export.poptions = "-I$out_root" "-I$src_root"
-  cxx.export.libs = $intf_libs
+  cxx.export.libs = $public_dependencies
 }
 
 liba{sbx-graphics}: cxx.export.poptions += -DLIBSBX_GRAPHICS_STATIC
