@@ -54,12 +54,12 @@ public:
   }
 
   template<callable<void, const window_moved_event&> Callable>
-  auto set_on_window_closed(Callable&& callable) -> void {
+  auto set_on_window_moved(Callable&& callable) -> void {
     _on_window_moved = std::forward<Callable>(callable);
   }
 
   template<callable<void, const window_resized_event&> Callable>
-  auto set_on_window_closed(Callable&& callable) -> void {
+  auto set_on_window_resized(Callable&& callable) -> void {
     _on_window_resized = std::forward<Callable>(callable);
   }
 
