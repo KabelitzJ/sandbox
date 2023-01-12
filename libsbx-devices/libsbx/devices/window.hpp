@@ -20,6 +20,7 @@ public:
   window() {
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     glfwWindowHint(GLFW_RESIZABLE, false);
+    glfwWindowHint(GLFW_VISIBLE, true);
 
     _handle = glfwCreateWindow(960, 720, "Demo", nullptr, nullptr);
 
@@ -46,6 +47,14 @@ public:
 
   auto should_close() -> bool {
     return glfwWindowShouldClose(_handle);
+  }
+
+  void show() {
+    glfwShowWindow(_handle);
+  }
+
+  void hide() {
+    glfwHideWindow(_handle);
   }
 
   template<callable<void, const window_closed_event&> Callable>

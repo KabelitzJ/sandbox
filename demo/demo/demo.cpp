@@ -14,6 +14,8 @@ public:
   : _engine{engine} {
     auto& window = sbx::devices::device_module::get().window();
 
+    
+
     window.set_on_window_closed([this]([[maybe_unused]] const sbx::devices::window_closed_event& event){
       _engine.quit();
     });
