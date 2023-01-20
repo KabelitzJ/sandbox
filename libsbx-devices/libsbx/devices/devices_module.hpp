@@ -1,5 +1,5 @@
-#ifndef LIBSBX_DEVICES_DEVICE_MODULE_HPP_
-#define LIBSBX_DEVICES_DEVICE_MODULE_HPP_
+#ifndef LIBSBX_DEVICES_DEVICES_MODULE_HPP_
+#define LIBSBX_DEVICES_DEVICES_MODULE_HPP_
 
 #include <memory>
 #include <vector>
@@ -14,13 +14,13 @@
 
 namespace sbx::devices {
 
-class device_module : public core::module<device_module> {
+class devices_module : public core::module<devices_module> {
 
   inline static const auto is_registered = register_module(stage::normal);
 
 public:
 
-  device_module() {
+  devices_module() {
     if (!glfwInit()) {
       throw std::runtime_error{"Could not initialize glfw"};
     }
@@ -32,7 +32,7 @@ public:
     _window = std::make_unique<devices::window>();
   }
 
-  ~device_module() override {
+  ~devices_module() override {
     _window = nullptr;
 
     glfwTerminate();
@@ -57,8 +57,8 @@ private:
 
   std::unique_ptr<devices::window> _window{};
 
-}; // class device_module
+}; // class devices_module
 
 } // namespace sbx::devices
 
-#endif // LIBSBX_DEVICES_DEVICE_MODULE_HPP_
+#endif // LIBSBX_DEVICES_DEVICES_MODULE_HPP_

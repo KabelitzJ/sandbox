@@ -12,7 +12,7 @@ public:
 
   demo_application(sbx::core::engine& engine)
   : _engine{engine} {
-    auto& window = sbx::devices::device_module::get().window();
+    auto& window = sbx::devices::devices_module::get().window();
 
     
 

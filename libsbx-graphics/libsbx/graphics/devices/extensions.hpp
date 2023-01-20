@@ -9,7 +9,7 @@
 
 #include <libsbx/core/platform.hpp>
 
-#include <libsbx/devices/device_module.hpp>
+#include <libsbx/devices/devices_module.hpp>
 
 namespace sbx::graphics {
 
@@ -23,7 +23,7 @@ struct extensions {
   }
 
   static auto instance() -> std::vector<const char*> {
-    auto required_extensions = devices::device_module::get().required_instance_extensions();
+    auto required_extensions = devices::devices_module::get().required_instance_extensions();
 
 #if defined(SBX_DEBUG)
     required_extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);

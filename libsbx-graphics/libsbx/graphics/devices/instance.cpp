@@ -2,6 +2,7 @@
 
 #include <libsbx/core/logger.hpp>
 
+#include <libsbx/graphics/graphics_module.hpp>
 #include <libsbx/graphics/devices/extensions.hpp>
 #include <libsbx/graphics/devices/validation_layers.hpp>
 
@@ -51,17 +52,13 @@ instance::instance() {
     .ppEnabledExtensionNames = extentions.data()
   };
 
-  if (vkCreateInstance(&instance_create_info, nullptr, &_handle) != VK_SUCCESS) {
-    throw std::runtime_error{"Failed to create instance"};
-  }
+  graphics_module::validate(vkCreateInstance(&instance_create_info, nullptr, &_handle));
 
 #if defined (SBX_DEBUG)
   auto debug_messenger_create_info = VkDebugUtilsMessengerCreateInfoEXT{};
   _populate_debug_messenger_create_info(debug_messenger_create_info);
 
-  if (_create_debug_messenger(_handle, &debug_messenger_create_info, nullptr, &_debug_messenger) != VK_SUCCESS) {
-    throw std::runtime_error{"Failed to create debug messenger"};
-  }
+  graphics_module::validate(_create_debug_messenger(_handle, &debug_messenger_create_info, nullptr, &_debug_messenger));
 #endif
 }
 

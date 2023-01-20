@@ -8,4 +8,4 @@ description-file: README.md
 email: jonas-kabelitz@gmx.de
 depends: * build2 >= 0.15.0
 depends: * bpkg >= 0.15.0
-depends: spdlog >= 1.9.1
+depends: spdlog >= 1.10.0
