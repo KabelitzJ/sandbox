@@ -15,11 +15,11 @@ function compile_shader {
 
   $binary_dir = "$path\bin"
 
-  if (!(Test-Path "$binary_dir")) {
-    New-Item -ItemType "Directory" -Path "$binary_dir" | Out-Null
-  }
+  Write-Host "$binary_dir"
 
-  $files = Get-ChildItem "$path"
+  New-Item -ItemType "Directory" -Path "$binary_dir" -Force | Out-Null
+
+  $files = Get-ChildItem -Path "$path" -Filter "*.glsl" -File
 
   foreach ($file in $files) {
     if (Test-Path -Path "$file" -PathType Leaf) {
@@ -31,12 +31,12 @@ function compile_shader {
       & "$glslc" -fshader-stage="$stage" -c "$file" -o "$output"
     }
   }
+
+  Write-Host ""
 }
 
-$shaders = Get-ChildItem "$directory"
+$shaders = Get-ChildItem "$directory" -Directory
 
 foreach ($shader in $shaders) {
   compile_shader $shader
 }
-
-# & "$glslc" "-fshader-stage=${_TYPE} -c ${_FILE} -o ${_OUTPUT_FILE}"
