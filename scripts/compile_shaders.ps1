@@ -15,8 +15,6 @@ function compile_shader {
 
   $binary_dir = "$path\bin"
 
-  Write-Host "$binary_dir"
-
   New-Item -ItemType "Directory" -Path "$binary_dir" -Force | Out-Null
 
   $files = Get-ChildItem -Path "$path" -Filter "*.glsl" -File
