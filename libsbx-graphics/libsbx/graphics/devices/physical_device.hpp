@@ -20,13 +20,29 @@ public:
 
   auto handle() const noexcept -> VkPhysicalDevice;
 
-  operator VkPhysicalDevice() const noexcept; 
+  operator VkPhysicalDevice() const noexcept;
+
+	auto properties() const -> const VkPhysicalDeviceProperties&;
+
+	auto features() const -> const VkPhysicalDeviceFeatures&;
+
+	auto memory_properties() const -> const VkPhysicalDeviceMemoryProperties&;
+
+	auto msaa_samples() const -> const VkSampleCountFlagBits&;
 
 private:
 
   auto _choose_device(const std::vector<VkPhysicalDevice>& devices) -> VkPhysicalDevice;
 
+  auto _score_device(const VkPhysicalDevice& device) -> std::uint32_t;
+
+  auto _get_max_usable_sample_count() const -> VkSampleCountFlagBits;
+
   VkPhysicalDevice _handle{};
+  VkPhysicalDeviceProperties _properties{};
+	VkPhysicalDeviceFeatures _features{};
+	VkPhysicalDeviceMemoryProperties _memory_properties{};
+  VkSampleCountFlagBits _msaa_samples{};
 
 }; // class physical_device
 
