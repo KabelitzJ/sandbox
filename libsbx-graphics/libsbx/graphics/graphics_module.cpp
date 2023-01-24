@@ -60,7 +60,7 @@ static auto _stringify_result(VkResult result) -> std::string {
 graphics_module::graphics_module()
 : _instance{std::make_unique<graphics::instance>()},
   _physical_device{std::make_unique<graphics::physical_device>(*_instance)},
-  _logical_device{std::make_unique<graphics::logical_device>(*_instance, *_physical_device)} {
+  _logical_device{std::make_unique<graphics::logical_device>(*_physical_device)} {
   auto& window = devices::devices_module::get().window();
 
   window.handle();
