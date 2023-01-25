@@ -3,3 +3,4 @@ import dependencies += libsbx-devices%liba{sbx_devices}
 import dependencies += gtest%liba{gtest}
 
 exe{driver}: {hxx ixx txx cxx}{**} $dependencies testscript{**}
+exe{driver}: test.arguments = '--gtest_color=yes'

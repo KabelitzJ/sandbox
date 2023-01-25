@@ -5,7 +5,6 @@ cxx.internal.scope = current
 cxx.std = latest
 
 using cxx
-using bash
 
 hxx{*}: extension = hpp
 ixx{*}: extension = ipp
