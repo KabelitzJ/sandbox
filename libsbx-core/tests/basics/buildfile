@@ -1,0 +1,3 @@
+import libs = libsbx-core%lib{sbx-core}
+
+exe{driver}: {hxx ixx txx cxx}{**} $libs testscript{**}
