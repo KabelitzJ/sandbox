@@ -9,4 +9,5 @@ email: jonas-kabelitz@gmx.de
 depends: * build2 >= 0.15.0
 depends: * bpkg >= 0.15.0
 depends: glfw >= 3.3.8
+depends: gtest >= 1.11.0
 depends: libsbx-core >= 0.1.0
