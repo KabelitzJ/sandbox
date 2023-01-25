@@ -2,5 +2,6 @@ project = libsbx-devices
 
 using version
 using config
+using test
 using install
 using dist

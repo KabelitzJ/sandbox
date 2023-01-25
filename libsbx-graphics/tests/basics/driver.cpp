@@ -1,10 +1,8 @@
 #include <iostream>
+#include <vector>
+#include <cinttypes>
 
 #include <gtest/gtest.h>
-
-TEST(libsbx_core, foo) {
-  EXPECT_EQ(true, true);
-}
 
 auto main(int argc, char** argv) -> int {
   testing::InitGoogleTest(&argc, argv);
