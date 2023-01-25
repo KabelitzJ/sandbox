@@ -11,10 +11,6 @@
 
 #include <libsbx/devices/devices_module.hpp>
 
-#if !defined(VK_KHR_PORTABILITY_ENUMERATION_EXTENTION_NAME)
-  #define VK_KHR_PORTABILITY_ENUMERATION_EXTENTION_NAME "VK_KHR_portability_enumeration"
-#endif
-
 namespace sbx::graphics {
 
 struct extensions {
@@ -29,8 +25,7 @@ struct extensions {
   static auto instance() -> std::vector<const char*> {
     auto required_extensions = devices::devices_module::get().required_instance_extensions();
 
-    required_extensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME); 
-    required_extensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENTION_NAME);
+    required_extensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
 
 #if defined(SBX_DEBUG)
     required_extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
