@@ -9,15 +9,19 @@ function compile_shader {
     [string]$path
   )
 
+  $files = Get-ChildItem -Path "$path" -Filter "*.glsl" -File
+
+  if ($files.Count -eq 0) {
+    return 0
+  }
+
   $shader_name = Split-Path "$path" -Leaf
-  
+
   Write-Host "Compiling shader: '$shader_name'"
 
   $binary_dir = "$path\bin"
 
   New-Item -ItemType "Directory" -Path "$binary_dir" -Force | Out-Null
-
-  $files = Get-ChildItem -Path "$path" -Filter "*.glsl" -File
 
   foreach ($file in $files) {
     if (Test-Path -Path "$file" -PathType Leaf) {
@@ -31,10 +35,19 @@ function compile_shader {
   }
 
   Write-Host ""
+
+  return 1
 }
 
 $shaders = Get-ChildItem "$directory" -Directory
 
 foreach ($shader in $shaders) {
-  compile_shader $shader
+  if ((compile_shader $shader) -eq 0) {
+    Write-Host "[Error] Directory '$shader' does not contain shader sources."
+    Write-Host
+    Write-Host "Usage: $PSCommandPath [-directory <path>]"
+    Write-Host
+    Write-Host "  Where -directory is the path to the top leves shader source directory (default = ./)"
+    return
+  }
 }
