@@ -10,6 +10,7 @@
 #include <libsbx/graphics/devices/instance.hpp>
 #include <libsbx/graphics/devices/physical_device.hpp>
 #include <libsbx/graphics/devices/logical_device.hpp>
+#include <libsbx/graphics/devices/surface.hpp>
 
 namespace sbx::graphics {
 
@@ -32,12 +33,15 @@ public:
   physical_device& physical_device();
 
   logical_device& logical_device();
+
+  surface& surface();
   
 private:
 
   std::unique_ptr<graphics::instance> _instance{};
   std::unique_ptr<graphics::physical_device> _physical_device{};
   std::unique_ptr<graphics::logical_device> _logical_device{};
+  std::unique_ptr<graphics::surface> _surface{};
 
 }; // class graphics_module
 

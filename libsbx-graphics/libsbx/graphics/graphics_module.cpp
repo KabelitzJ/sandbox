@@ -60,10 +60,9 @@ static auto _stringify_result(VkResult result) -> std::string {
 graphics_module::graphics_module()
 : _instance{std::make_unique<graphics::instance>()},
   _physical_device{std::make_unique<graphics::physical_device>(*_instance)},
-  _logical_device{std::make_unique<graphics::logical_device>(*_physical_device)} {
-  auto& window = devices::devices_module::get().window();
+  _logical_device{std::make_unique<graphics::logical_device>(*_physical_device)},
+  _surface{std::make_unique<graphics::surface>(*_instance, *_physical_device, *_logical_device)} {
 
-  window.handle();
 }
 
 graphics_module::~graphics_module() {
@@ -92,6 +91,10 @@ physical_device& graphics_module::physical_device() {
 
 logical_device& graphics_module::logical_device() {
   return *_logical_device;
+}
+
+surface& graphics_module::surface() {
+  return *_surface;
 }
 
 } // namespace sbx::graphics
