@@ -15,9 +15,9 @@ public:
 
   ~instance();
 
-  auto handle() const noexcept -> VkInstance;
+  auto handle() const noexcept -> const VkInstance&;
 
-  operator VkInstance() const noexcept;
+  operator const VkInstance&() const noexcept;
 
 private:
 

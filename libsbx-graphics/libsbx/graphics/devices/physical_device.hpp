@@ -18,9 +18,9 @@ public:
 
   ~physical_device();
 
-  auto handle() const noexcept -> VkPhysicalDevice;
+  auto handle() const noexcept -> const VkPhysicalDevice&;
 
-  operator VkPhysicalDevice() const noexcept;
+  operator const VkPhysicalDevice&() const noexcept;
 
 	auto properties() const -> const VkPhysicalDeviceProperties&;
 

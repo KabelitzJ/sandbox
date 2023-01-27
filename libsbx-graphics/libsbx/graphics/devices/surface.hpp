@@ -17,9 +17,9 @@ public:
 
   ~surface();
 
-  auto handle() const noexcept -> VkSurfaceKHR;
+  auto handle() const noexcept -> const VkSurfaceKHR&;
 
-  operator VkSurfaceKHR() const noexcept;
+  operator const VkSurfaceKHR&() const noexcept;
 
 private:
 

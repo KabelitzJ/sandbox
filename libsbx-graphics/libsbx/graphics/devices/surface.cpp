@@ -55,11 +55,11 @@ surface::~surface() {
   vkDestroySurfaceKHR(instance, _handle, nullptr);
 }
 
-auto surface::handle() const noexcept -> VkSurfaceKHR {
+auto surface::handle() const noexcept -> const VkSurfaceKHR& {
   return _handle;
 }
 
-surface::operator VkSurfaceKHR() const noexcept {
+surface::operator const VkSurfaceKHR&() const noexcept {
   return _handle;
 }
 

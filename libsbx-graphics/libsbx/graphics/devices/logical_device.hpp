@@ -23,9 +23,9 @@ public:
 
   ~logical_device();
 
-  auto handle() const noexcept -> VkDevice;
+  auto handle() const noexcept -> const VkDevice&;
 
-  operator VkDevice() const noexcept;
+  operator const VkDevice&() const noexcept;
 
   auto enables_features() const -> const VkPhysicalDeviceFeatures&;
 

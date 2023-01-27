@@ -63,11 +63,11 @@ instance::~instance() {
   vkDestroyInstance(_handle, nullptr);
 }
 
-auto instance::handle() const noexcept -> VkInstance {
+auto instance::handle() const noexcept -> const VkInstance& {
   return _handle;
 }
 
-instance::operator VkInstance() const noexcept {
+instance::operator const VkInstance&() const noexcept {
   return _handle;
 }
 

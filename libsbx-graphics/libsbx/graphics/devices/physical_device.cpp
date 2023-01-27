@@ -46,11 +46,11 @@ physical_device::~physical_device() {
 
 }
 
-auto physical_device::handle() const noexcept -> VkPhysicalDevice {
+auto physical_device::handle() const noexcept -> const VkPhysicalDevice& {
   return _handle;
 }
 
-physical_device::operator VkPhysicalDevice() const noexcept {
+physical_device::operator const VkPhysicalDevice&() const noexcept {
   return _handle;
 }
 

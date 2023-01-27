@@ -21,11 +21,11 @@ logical_device::~logical_device() {
   vkDestroyDevice(_handle, nullptr);
 }
 
-auto logical_device::handle() const noexcept -> VkDevice {
+auto logical_device::handle() const noexcept -> const VkDevice& {
   return _handle;
 }
 
-logical_device::operator VkDevice() const noexcept {
+logical_device::operator const VkDevice&() const noexcept {
   return _handle;
 }
 
