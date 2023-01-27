@@ -1,6 +1,8 @@
 : 1
 location: libsbx-core/
 :
+location: libsbx-math/
+:
 location: libsbx-devices/
 :
 location: libsbx-graphics/

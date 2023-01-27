@@ -2,7 +2,7 @@
 
 #include <gtest/gtest.h>
 
-TEST(libsbx_core, foo) {
+TEST(libsbx_graphics, foo) {
   EXPECT_EQ(true, true);
 }
 

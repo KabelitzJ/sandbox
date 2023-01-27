@@ -1,5 +1,5 @@
 dependencies =
-import dependencies += libsbx-devices%liba{sbx_devices}
+import dependencies += libsbx-math%liba{sbx_math}
 import dependencies += gtest%liba{gtest}
 
 exe{driver}: {hxx ixx txx cxx}{**} $dependencies testscript{**}

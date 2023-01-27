@@ -1,0 +1,7 @@
+project = libsbx-math
+
+using version
+using config
+using test
+using install
+using dist

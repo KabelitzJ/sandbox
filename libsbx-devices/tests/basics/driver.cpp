@@ -2,7 +2,7 @@
 
 #include <gtest/gtest.h>
 
-TEST(libsbx_devices, foo) {
+TEST(libsbx_devices, base) {
   EXPECT_EQ(true, true);
 }
 
