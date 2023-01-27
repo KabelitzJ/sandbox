@@ -50,7 +50,7 @@ auto logical_device::transfer_queue() const -> const queue& {
 }
 
 auto logical_device::wait_for_idle() const -> void {
-  graphics_module::validate(vkDeviceWaitIdle(_handle));
+  validate(vkDeviceWaitIdle(_handle));
 }
 
 auto logical_device::_create_queue_indices(const physical_device& physical_device) -> void {
@@ -237,7 +237,7 @@ auto logical_device::_create_logical_logical_device(const physical_device& physi
 	device_create_info.ppEnabledExtensionNames = device_extensions.data();
 	device_create_info.pEnabledFeatures = &enabled_features;
 
-	graphics_module::validate(vkCreateDevice(physical_device, &device_create_info, nullptr, &_handle));
+	validate(vkCreateDevice(physical_device, &device_create_info, nullptr, &_handle));
 
 	vkGetDeviceQueue(_handle, _graphics_queue.family, 0, &_graphics_queue.handle);
 	vkGetDeviceQueue(_handle, _present_queue.family, 0, &_present_queue.handle);

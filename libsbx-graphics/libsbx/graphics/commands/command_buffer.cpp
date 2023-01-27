@@ -22,7 +22,7 @@ command_buffer::command_buffer(bool should_begin, VkQueueFlagBits queue_type, Vk
 	command_buffer_allocate_info.level = buffer_level;
 	command_buffer_allocate_info.commandBufferCount = 1;
 
-  graphics_module::validate(vkAllocateCommandBuffers(logical_device, &command_buffer_allocate_info, &_handle));
+  validate(vkAllocateCommandBuffers(logical_device, &command_buffer_allocate_info, &_handle));
 
   if (should_begin) {
     begin();
@@ -56,7 +56,7 @@ auto command_buffer::begin(VkCommandBufferUsageFlags usage) -> void {
 	command_buffer_begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 	command_buffer_begin_info.flags = usage;
 
-	graphics_module::validate(vkBeginCommandBuffer(_handle, &command_buffer_begin_info));
+	validate(vkBeginCommandBuffer(_handle, &command_buffer_begin_info));
 
 	_is_running = true;
 }
@@ -67,14 +67,14 @@ auto command_buffer::end() -> void {
     return;
   }
 
-  graphics_module::validate(vkEndCommandBuffer(_handle));
+  validate(vkEndCommandBuffer(_handle));
 
   _is_running = false;
 }
 
 auto command_buffer::submit_idle() -> void {
   auto& logical_device = graphics_module::get().logical_device();
-	auto& selected_queue = _queue();
+	auto selected_queue = _queue();
 
 	if (_is_running) {
 		end();
@@ -90,20 +90,20 @@ auto command_buffer::submit_idle() -> void {
 
 	auto fence = VkFence{};
 
-	graphics_module::validate(vkCreateFence(logical_device, &fence_create_info, nullptr, &fence));
+	validate(vkCreateFence(logical_device, &fence_create_info, nullptr, &fence));
 
-  graphics_module::validate(vkResetFences(logical_device, 1, &fence));
+  validate(vkResetFences(logical_device, 1, &fence));
 
-	graphics_module::validate(vkQueueSubmit(selected_queue, 1, &submit_info, fence));
+	validate(vkQueueSubmit(selected_queue, 1, &submit_info, fence));
 
-	graphics_module::validate(vkWaitForFences(logical_device, 1, &fence, true, std::numeric_limits<uint64_t>::max()));
+	validate(vkWaitForFences(logical_device, 1, &fence, true, std::numeric_limits<uint64_t>::max()));
 
 	vkDestroyFence(logical_device, fence, nullptr);
 }
 
 auto command_buffer::submit(const VkSemaphore& wait_semaphore, const VkSemaphore &signal_semaphore, const VkFence& fence) -> void {
   auto& logical_device = graphics_module::get().logical_device();
-	auto& selected_queue = _queue();
+	auto selected_queue = _queue();
 
 	if (_is_running) {
 		end();
@@ -126,13 +126,13 @@ auto command_buffer::submit(const VkSemaphore& wait_semaphore, const VkSemaphore
 	}
 
 	if (fence) {
-		graphics_module::validate(vkResetFences(logical_device, 1, &fence));
+		validate(vkResetFences(logical_device, 1, &fence));
   }
 
-	graphics_module::validate(vkQueueSubmit(selected_queue, 1, &submit_info, fence));
+	validate(vkQueueSubmit(selected_queue, 1, &submit_info, fence));
 }
 
-auto command_buffer::_queue() const noexcept -> const VkQueue& {
+auto command_buffer::_queue() const noexcept -> VkQueue {
   auto& logical_device = graphics_module::get().logical_device();
 
   if (_queue_type == VK_QUEUE_GRAPHICS_BIT) {

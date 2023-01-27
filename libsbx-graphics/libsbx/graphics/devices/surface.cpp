@@ -9,9 +9,9 @@ namespace sbx::graphics {
 surface::surface(const instance& instance, const physical_device& physical_device, const logical_device& logical_device) {
   auto& window = devices::devices_module::get().window();
 
-  graphics_module::validate(glfwCreateWindowSurface(instance, window, nullptr, &_handle));
+  validate(glfwCreateWindowSurface(instance, window, nullptr, &_handle));
 
-  graphics_module::validate(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physical_device, _handle, &_capabilities));
+  validate(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physical_device, _handle, &_capabilities));
 
   auto surface_format_count = std::uint32_t{0};
 	vkGetPhysicalDeviceSurfaceFormatsKHR(physical_device, _handle, &surface_format_count, nullptr);

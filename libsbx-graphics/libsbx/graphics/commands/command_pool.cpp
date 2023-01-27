@@ -14,7 +14,7 @@ command_pool::command_pool(const std::thread::id& thread_id)
   command_pool_create_info.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
   command_pool_create_info.queueFamilyIndex = graphics_family;
 
-  graphics_module::validate(vkCreateCommandPool(logical_device, &command_pool_create_info, nullptr, &_handle));
+  validate(vkCreateCommandPool(logical_device, &command_pool_create_info, nullptr, &_handle));
 }
 
 command_pool::~command_pool() {

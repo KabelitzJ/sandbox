@@ -35,7 +35,7 @@ public:
 
 private:
 
-  auto _queue() const noexcept -> const VkQueue&;
+  auto _queue() const noexcept -> VkQueue;
 
   std::shared_ptr<command_pool> _command_pool{};
 

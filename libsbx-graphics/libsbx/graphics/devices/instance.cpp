@@ -46,13 +46,13 @@ instance::instance() {
   instance_create_info.enabledExtensionCount = static_cast<std::uint32_t>(extentions.size());
   instance_create_info.ppEnabledExtensionNames = extentions.data();
 
-  graphics_module::validate(vkCreateInstance(&instance_create_info, nullptr, &_handle));
+  validate(vkCreateInstance(&instance_create_info, nullptr, &_handle));
 
 #if defined (SBX_DEBUG)
   auto debug_messenger_create_info = VkDebugUtilsMessengerCreateInfoEXT{};
   _populate_debug_messenger_create_info(debug_messenger_create_info);
 
-  graphics_module::validate(_create_debug_messenger(_handle, &debug_messenger_create_info, nullptr, &_debug_messenger));
+  validate(_create_debug_messenger(_handle, &debug_messenger_create_info, nullptr, &_debug_messenger));
 #endif
 }
 

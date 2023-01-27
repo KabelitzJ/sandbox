@@ -19,6 +19,13 @@
 
 namespace sbx::graphics {
 
+/**
+ * @brief Checks a @see VkResult and throws an exception if it is an error
+ * @param result 
+ * @throws @see std::runtime_error 
+ */
+auto validate(VkResult result) -> void;
+
 class graphics_module : public core::module<graphics_module> {
 
   inline static const auto is_registered = register_module(stage::normal, dependencies<devices::devices_module>{});
@@ -30,8 +37,6 @@ public:
   ~graphics_module() override;
 
   auto update([[maybe_unused]] std::float_t delta_time) -> void override;
-
-  static auto validate(VkResult result) -> void;
 
   instance& instance();
 

@@ -2,6 +2,14 @@
 
 namespace sbx::graphics {
 
+auto validate(VkResult result) -> void {
+  if (result >= 0) {
+    return;
+  }
+
+  throw std::runtime_error{_stringify_result(result)};
+}
+
 static auto _stringify_result(VkResult result) -> std::string {
   switch (result) {
     case VK_SUCCESS:
@@ -71,14 +79,6 @@ graphics_module::~graphics_module() {
 
 auto graphics_module::update([[maybe_unused]] std::float_t delta_time) -> void {
 
-}
-
-auto graphics_module::validate(VkResult result) -> void {
-  if (result >= 0) {
-    return;
-  }
-
-  throw std::runtime_error{_stringify_result(result)};
 }
 
 instance& graphics_module::instance() {
