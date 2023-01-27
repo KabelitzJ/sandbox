@@ -2,6 +2,7 @@
 #define LIBSBX_GRAPHICS_GRAPHICS_MODULE_HPP_
 
 #include <memory>
+#include <unordered_map>
 
 #include <libsbx/core/module.hpp>
 
@@ -11,6 +12,8 @@
 #include <libsbx/graphics/devices/physical_device.hpp>
 #include <libsbx/graphics/devices/logical_device.hpp>
 #include <libsbx/graphics/devices/surface.hpp>
+
+#include <libsbx/graphics/commands/command_pool.hpp>
 
 namespace sbx::graphics {
 
@@ -42,6 +45,8 @@ private:
   std::unique_ptr<graphics::physical_device> _physical_device{};
   std::unique_ptr<graphics::logical_device> _logical_device{};
   std::unique_ptr<graphics::surface> _surface{};
+
+  std::unordered_map<std::thread::id, std::shared_ptr<command_pool>> _command_pools{};
 
 }; // class graphics_module
 
