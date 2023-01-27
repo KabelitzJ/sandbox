@@ -97,4 +97,12 @@ surface& graphics_module::surface() {
   return *_surface;
 }
 
+auto graphics_module::command_pool(const std::thread::id& thread_id) -> const std::shared_ptr<graphics::command_pool>& {
+  if (auto entry = _command_pools.find(thread_id); entry != _command_pools.end()) {
+    return entry->second;
+  }
+
+  return _command_pools.insert({thread_id, std::make_shared<graphics::command_pool>(thread_id)}).first->second;
+}
+
 } // namespace sbx::graphics

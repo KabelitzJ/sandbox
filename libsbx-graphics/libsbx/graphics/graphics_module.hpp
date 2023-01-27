@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <unordered_map>
+#include <vector>
 
 #include <libsbx/core/module.hpp>
 
@@ -14,6 +15,7 @@
 #include <libsbx/graphics/devices/surface.hpp>
 
 #include <libsbx/graphics/commands/command_pool.hpp>
+#include <libsbx/graphics/commands/command_buffer.hpp>
 
 namespace sbx::graphics {
 
@@ -38,15 +40,25 @@ public:
   logical_device& logical_device();
 
   surface& surface();
+
+  auto command_pool(const std::thread::id& thread_id = std::this_thread::get_id()) -> const std::shared_ptr<command_pool>&;
   
 private:
 
   std::unique_ptr<graphics::instance> _instance{};
   std::unique_ptr<graphics::physical_device> _physical_device{};
   std::unique_ptr<graphics::logical_device> _logical_device{};
-  std::unique_ptr<graphics::surface> _surface{};
 
-  std::unordered_map<std::thread::id, std::shared_ptr<command_pool>> _command_pools{};
+  std::unordered_map<std::thread::id, std::shared_ptr<graphics::command_pool>> _command_pools{};
+
+  std::unique_ptr<graphics::surface> _surface{};
+  std::unique_ptr<command_buffer> _command_buffer{};
+  VkSemaphore _resent_complete{};
+  VkSemaphore _render_complete{};
+  VkFence _in_flight_fence{};
+
+  std::size_t _current_frame{};
+  bool _framebuffer_resized{};
 
 }; // class graphics_module
 
