@@ -26,6 +26,12 @@ namespace sbx::graphics {
  */
 auto validate(VkResult result) -> void;
 
+
+/**
+ * @brief Module for managing rendering specific tasks
+ * 
+ * @extends @ref sbx::core::module<T>
+ */
 class graphics_module : public core::module<graphics_module> {
 
   inline static const auto is_registered = register_module(stage::normal, dependencies<devices::devices_module>{});

@@ -4,3 +4,6 @@
 
 configs/
 targets/
+
+docs/*
+!docs/Doxyfile

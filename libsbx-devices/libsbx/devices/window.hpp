@@ -10,6 +10,13 @@
 
 namespace sbx::devices {
 
+/**
+ * @brief  Describes a type or object that can be invoked with the give parameters and return the given type
+ * 
+ * @tparam Callable Type of the callable
+ * @tparam Return Return type of the callable
+ * @tparam Args... Types of the arguments of the callable
+ */
 template<typename Callable, typename Return, typename... Args>
 concept callable = std::is_invocable_r_v<Return, Callable, Args...>;
 
@@ -45,18 +52,34 @@ public:
     return _handle;
   }
 
+  /**
+   * @brief Determins if the window should be closed
+   * @return true if the window should be closed, false otherwise
+   */
   auto should_close() -> bool {
     return glfwWindowShouldClose(_handle);
   }
 
-  void show() {
+  /**
+   * @brief Makes the window visible
+   */
+  auto show() -> void {
     glfwShowWindow(_handle);
   }
 
-  void hide() {
+  /**
+   * @brief Hides the window
+   */
+  auto hide() -> void {
     glfwHideWindow(_handle);
   }
 
+  /**
+   * @brief Sets the callback for the @ref sbx::devices::window_closed_event event type
+   * @tparam Callable 
+   * @param callable 
+   * @return 
+   */
   template<callable<void, const window_closed_event&> Callable>
   auto set_on_window_closed(Callable&& callable) -> void {
     _on_window_closed = std::forward<Callable>(callable);

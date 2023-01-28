@@ -5,6 +5,9 @@
 
 namespace sbx::devices {
 
+/** 
+ * @brief An event that is fired when a window requests to be closed 
+ */
 struct window_closed_event { };
 
 struct window_moved_event {
