@@ -31,10 +31,12 @@
 #define LIBSBX_MATH_HPP_
 
 /**
- * @defgroup libsbx_math
+ * @defgroup libsbx-math
  * @since v0.1.0
  */
 
 #include <libsbx/math/version.hpp>
+#include <libsbx/math/concepts.hpp>
+#include <libsbx/math/vector3.hpp>
 
 #endif // LIBSBX_MATH_HPP_

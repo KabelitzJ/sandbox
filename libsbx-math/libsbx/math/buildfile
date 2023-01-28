@@ -1,4 +1,5 @@
 public_dependencies =
+import public_dependencies += fmt%liba{fmt}
 import public_dependencies += libsbx-core%liba{sbx_core}
 
 private_dependencies =

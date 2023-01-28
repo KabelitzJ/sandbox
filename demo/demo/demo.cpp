@@ -3,6 +3,7 @@
 #include <chrono>
 
 #include <libsbx/core/core.hpp>
+#include <libsbx/math/math.hpp>
 #include <libsbx/devices/devices.hpp>
 #include <libsbx/graphics/graphics.hpp>
 
@@ -14,7 +15,9 @@ public:
   : _engine{engine} {
     auto& window = sbx::devices::devices_module::get().window();
 
-    
+    auto v = sbx::math::vector3{};
+
+    sbx::core::logger::info("{}", v);
 
     window.set_on_window_closed([this]([[maybe_unused]] const sbx::devices::window_closed_event& event){
       _engine.quit();

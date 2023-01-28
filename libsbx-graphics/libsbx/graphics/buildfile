@@ -1,5 +1,6 @@
 public_dependencies = # Interface dependencies.
 import public_dependencies += libsbx-core%liba{sbx_core}
+import public_dependencies += libsbx-math%liba{sbx_math}
 import public_dependencies += libsbx-devices%liba{sbx_devices}
 
 private_dependencies = # Implementation dependencies. 

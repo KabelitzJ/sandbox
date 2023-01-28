@@ -2,14 +2,6 @@
 
 namespace sbx::graphics {
 
-auto validate(VkResult result) -> void {
-  if (result >= 0) {
-    return;
-  }
-
-  throw std::runtime_error{_stringify_result(result)};
-}
-
 static auto _stringify_result(VkResult result) -> std::string {
   switch (result) {
     case VK_SUCCESS:
@@ -63,6 +55,14 @@ static auto _stringify_result(VkResult result) -> std::string {
     default:
       return "Unknown Vulkan error";
   }
+}
+
+auto validate(VkResult result) -> void {
+  if (result >= 0) {
+    return;
+  }
+
+  throw std::runtime_error{_stringify_result(result)};
 }
 
 graphics_module::graphics_module()
