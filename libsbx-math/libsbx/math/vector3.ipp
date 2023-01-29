@@ -3,8 +3,9 @@
 #include <fmt/format.h>
 #include <fmt/ostream.h>
 
-#include <libsbx/core/hash.hpp>
 #include <libsbx/core/assert.hpp>
+
+#include <libsbx/utility/hash.hpp>
 
 namespace sbx::math {
 

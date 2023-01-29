@@ -41,7 +41,6 @@
 #include <libsbx/core/module.hpp>
 #include <libsbx/core/engine.hpp>
 #include <libsbx/core/application.hpp>
-#include <libsbx/core/hash.hpp>
 #include <libsbx/core/assert.hpp>
 
 #endif // LIBSBX_CORE_HPP_
