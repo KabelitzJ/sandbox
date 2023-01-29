@@ -12,6 +12,9 @@
 
 namespace sbx::core {
 
+template<typename Derived, typename Base>
+concept derived_from = std::is_base_of_v<Base, Derived>;
+
 class module_manager {
 
   template<typename>
@@ -77,12 +80,14 @@ public:
 
 protected:
 
+  using base_type = module_manager::module_base;
+
   template<typename... Types>
   using dependencies = module_manager::dependencies<Types...>;
 
   using stage = module_manager::stage;
 
-  template<typename... Types>
+  template<derived_from<base_type>... Types>
   static auto register_module(stage stage, dependencies<Types...>&& dependencies = {}) -> bool {
     module_manager::_factories.insert({std::type_index{typeid(Type)}, module_manager::module_factory{
       .stage = stage,

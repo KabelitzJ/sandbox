@@ -15,9 +15,6 @@
 
 namespace sbx::core {
 
-template<typename Derived, typename Base>
-concept derived_from = std::is_base_of_v<Base, Derived>;
-
 class engine {
 
   using stage = module_manager::stage;

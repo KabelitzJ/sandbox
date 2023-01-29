@@ -9,7 +9,7 @@ namespace sbx::graphics {
 
 class instance {
 
-  using debug_messenger_t = debug_messenger<instance>;
+  using debug_messenger_type = debug_messenger<instance>;
 
 public:
 

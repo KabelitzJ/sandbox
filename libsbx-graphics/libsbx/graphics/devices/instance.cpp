@@ -23,7 +23,7 @@ instance::instance() {
 
   auto instance_create_info = VkInstanceCreateInfo{};
   instance_create_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-  instance_create_info.pNext = debug_messenger_t::create_info();
+  instance_create_info.pNext = debug_messenger_type::create_info();
   instance_create_info.pApplicationInfo = &app_info;
   instance_create_info.enabledLayerCount = static_cast<std::uint32_t>(layers.size());
   instance_create_info.ppEnabledLayerNames = layers.data();
@@ -33,13 +33,13 @@ instance::instance() {
   validate(vkCreateInstance(&instance_create_info, nullptr, &_handle));
 
   if constexpr (core::build_configuration_v == core::build_configuration::debug) {
-    validate(debug_messenger_t::initialize(*this));
+    validate(debug_messenger_type::initialize(*this));
   }
 }
 
 instance::~instance() {
   if constexpr (core::build_configuration_v == core::build_configuration::debug) {
-    debug_messenger_t::terminate(*this);
+    debug_messenger_type::terminate(*this);
   }
 
   vkDestroyInstance(_handle, nullptr);
