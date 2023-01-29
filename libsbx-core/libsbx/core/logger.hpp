@@ -126,11 +126,11 @@ private:
 
     logger.set_pattern("[%Y-%m-%d %H:%M:%S] [%n] [%^%l%$] : %v");
 
-#if defined(LIBSBX_DEBUG)
-    logger.set_level(spdlog::level::debug);
-#else
-    logger.set_level(spdlog::level::info);
-#endif
+    if constexpr (build_configuration_v == build_configuration::debug) {
+      logger.set_level(spdlog::level::debug);
+    } else {
+      logger.set_level(spdlog::level::info);
+    }
 
     return logger;
   } 

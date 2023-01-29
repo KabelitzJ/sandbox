@@ -7,7 +7,7 @@
 
 #include <vulkan/vulkan.hpp>
 
-#include <libsbx/core/platform.hpp>
+#include <libsbx/core/target.hpp>
 
 #include <libsbx/devices/devices_module.hpp>
 
@@ -27,9 +27,9 @@ struct extensions {
 
     required_extensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
 
-#if defined(SBX_DEBUG)
-    required_extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-#endif
+    if constexpr (core::build_configuration_v == core::build_configuration::debug) {
+      required_extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+    }
 
     auto available_extention_count = std::uint32_t{0};
     auto available_extensions = std::vector<VkExtensionProperties>{};
