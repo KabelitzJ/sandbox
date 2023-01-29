@@ -6,12 +6,6 @@
 
 namespace sbx::core {
 
-#if defined(__cpp_exceptions)
-inline static constexpr auto has_exceptions_v = true;
-#else
-inline static constexpr auto has_exceptions_v = false;
-#endif
-
 /** @brief Possible build configurations */
 enum class build_configuration : std::uint8_t {
   debug = 0,
@@ -19,9 +13,9 @@ enum class build_configuration : std::uint8_t {
 }; // enum class build_configuration
 
 #if defined(DEBUG) || !defined(NDEBUG)
-inline static constexpr auto build_configuration_v = build_configuration::debug;
+inline constexpr auto build_configuration_v = build_configuration::debug;
 #else
-inline static constexpr auto build_configuration_v = build_configuration::release;
+inline constexpr auto build_configuration_v = build_configuration::release;
 #endif
 
 /** @brief Possible operating systems */
@@ -33,13 +27,13 @@ enum class operating_system : std::uint8_t {
 }; // enum class operating_system
 
 #if defined(WIN32) || defined(_WIN32)
-inline static constexpr auto operating_system_v = operating_system::windows;
+inline constexpr auto operating_system_v = operating_system::windows;
 #elif defined(__APPLE__)
-inline static constexpr auto operating_system_v = operating_system::mac;
+inline constexpr auto operating_system_v = operating_system::mac;
 #elif defined(__linux__) || defined(__linux)
-inline static constexpr auto operating_system_v = operating_system::linux;
+inline constexpr auto operating_system_v = operating_system::linux;
 #else 
-inline static constexpr auto operating_system_v = operating_system::unknown;
+inline constexpr auto operating_system_v = operating_system::unknown;
 #endif
 
 /** @brief Possible compilers */
@@ -51,13 +45,13 @@ enum class compiler : std::uint8_t {
 }; // enum class compiler
 
 #if defined(__clang__)
-inline static constexpr auto compiler_v = compiler::clang;
+inline constexpr auto compiler_v = compiler::clang;
 #elif defined(__GNUC__)
-inline static constexpr auto compiler_v = compiler::gnuc;
+inline constexpr auto compiler_v = compiler::gnuc;
 #elif defined(__MSC_VER)
-inline static constexpr auto compiler_v = compiler::msc;
+inline constexpr auto compiler_v = compiler::msc;
 #else
-inline static constexpr auto compiler_v = compiler::unknown;
+inline constexpr auto compiler_v = compiler::unknown;
 #endif
 
 } // namespace sbx::core

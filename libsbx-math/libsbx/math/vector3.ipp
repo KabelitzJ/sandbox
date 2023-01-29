@@ -4,6 +4,7 @@
 #include <fmt/ostream.h>
 
 #include <libsbx/core/hash.hpp>
+#include <libsbx/core/assert.hpp>
 
 namespace sbx::math {
 
@@ -180,7 +181,7 @@ inline constexpr basic_vector3<Type>& basic_vector3<Type>::operator/=(const Othe
 
 template<numeric Type>
 inline constexpr basic_vector3<Type>::reference basic_vector3<Type>::operator[](const index_type index) noexcept {
-  assert(index < 3);
+  core::assert_that(index < 3, "Invalid index");
 
   switch (index) {
     default:
@@ -198,7 +199,7 @@ inline constexpr basic_vector3<Type>::reference basic_vector3<Type>::operator[](
 
 template<numeric Type>
 inline constexpr basic_vector3<Type>::const_reference basic_vector3<Type>::operator[](const index_type index) const noexcept {
-  assert(index < 3);
+  core::assert_that(index < 3, "Invalid index");
 
   switch (index) {
     default:
