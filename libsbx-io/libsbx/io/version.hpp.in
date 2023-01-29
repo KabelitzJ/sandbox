@@ -1,0 +1,18 @@
+#ifndef LIBSBX_IO_VERSION_HPP_
+#define LIBSBX_IO_VERSION_HPP_
+
+#define LIBSBX_IO_VERSION       $libsbx_io.version.project_number$ULL
+#define LIBSBX_IO_VERSION_STR   "$libsbx_io.version.project$"
+#define LIBSBX_IO_VERSION_ID    "$libsbx_io.version.project_id$"
+#define LIBSBX_IO_VERSION_FULL  "$libsbx_io.version$"
+
+#define LIBSBX_IO_VERSION_MAJOR $libsbx_io.version.major$
+#define LIBSBX_IO_VERSION_MINOR $libsbx_io.version.minor$
+#define LIBSBX_IO_VERSION_PATCH $libsbx_io.version.patch$
+
+#define LIBSBX_IO_PRE_RELEASE   $libsbx_io.version.pre_release$
+
+#define LIBSBX_IO_SNAPSHOT_SN   $libsbx_io.version.snapshot_sn$ULL
+#define LIBSBX_IO_SNAPSHOT_ID   "$libsbx_io.version.snapshot_id$"
+
+#endif // LIBSBX_IO_VERSION_HPP_

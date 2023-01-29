@@ -1,12 +1,11 @@
-public_dependencies =
-import public_dependencies += spdlog%liba{spdlog}
+public_dependencies = # Interface dependencies.
 import public_dependencies += libsbx-utility%liba{sbx_utility}
 
 public_dependencies = $cxx.deduplicate_export_libs($public_dependencies)
 
-private_dependencies =
+private_dependencies = # Implementation dependencies.
 
-lib{sbx_core}: {hxx ixx txx cxx}{** -version} hxx{version} $private_dependencies $public_dependencies
+lib{sbx_io}: {hxx ixx txx cxx}{** -version} hxx{version} $private_dependencies $public_dependencies
 
 hxx{version}: in{version} $src_root/manifest
 
@@ -16,34 +15,34 @@ hxx{export}@./: cxx.importable = false
 #
 cxx.poptions += "-I$out_root" "-I$src_root"
 
-{hbmia obja}{*}: cxx.poptions += -DLIBSBX_CORE_STATIC_BUILD
-{hbmis objs}{*}: cxx.poptions += -DLIBSBX_CORE_SHARED_BUILD
+{hbmia obja}{*}: cxx.poptions += -DLIBSBX_IO_STATIC_BUILD
+{hbmis objs}{*}: cxx.poptions += -DLIBSBX_IO_SHARED_BUILD
 
 # Export options.
 #
-lib{sbx_core}:
+lib{sbx_io}:
 {
   cxx.export.poptions = "-I$out_root" "-I$src_root"
   cxx.export.libs = $public_dependencies
 }
 
-liba{sbx_core}: cxx.export.poptions += -DLIBSBX_CORE_STATIC
-libs{sbx_core}: cxx.export.poptions += -DLIBSBX_CORE_SHARED
+liba{sbx_io}: cxx.export.poptions += -DLIBSBX_IO_STATIC
+libs{sbx_io}: cxx.export.poptions += -DLIBSBX_IO_SHARED
 
 # For pre-releases use the complete version to make sure they cannot be used
 # in place of another pre-release or the final version. See the version module
 # for details on the version.* variable values.
 #
 if $version.pre_release
-  lib{sbx_core}: bin.lib.version = "-$version.project_id"
+  lib{sbx_io}: bin.lib.version = "-$version.project_id"
 else
-  lib{sbx_core}: bin.lib.version = "-$version.major.$version.minor"
+  lib{sbx_io}: bin.lib.version = "-$version.major.$version.minor"
 
-# Install into the libsbx/core/ subdirectory of, say, /usr/include/
+# Install into the libsbx/io/ subdirectory of, say, /usr/include/
 # recreating subdirectories.
 #
 {hxx ixx txx}{*}:
 {
-  install = include/libsbx/core/
+  install         = include/libsbx/io/
   install.subdirs = true
 }

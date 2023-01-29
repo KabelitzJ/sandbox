@@ -1,7 +1,11 @@
 : 1
+location: libsbx-utility/
+:
 location: libsbx-core/
 :
 location: libsbx-math/
+:
+location: libsbx-io/
 :
 location: libsbx-devices/
 :

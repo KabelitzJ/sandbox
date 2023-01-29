@@ -1,9 +1,11 @@
-public_dependencies = # Interface dependencies.
+public_dependencies =
 import public_dependencies += libsbx-core%liba{sbx_core}
 import public_dependencies += libsbx-math%liba{sbx_math}
 import public_dependencies += libsbx-devices%liba{sbx_devices}
 
-private_dependencies = # Implementation dependencies. 
+public_dependencies = $cxx.deduplicate_export_libs($public_dependencies)
+
+private_dependencies =
 
 lib{sbx_graphics}: {hxx ixx txx cxx}{** -version} hxx{version} $private_dependencies $public_dependencies
 
