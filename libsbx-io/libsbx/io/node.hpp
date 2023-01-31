@@ -34,7 +34,9 @@ public:
 
   basic_node() = default;
 
-  // template{value} { }
+  // template<utility::convertible_to_one_of<Types...> Type>
+  // basic_node(const Type& value)
+  // : _value{value} { }
 
   ~basic_node() = default;
 
