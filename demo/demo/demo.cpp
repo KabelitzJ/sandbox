@@ -2,7 +2,9 @@
 #include <cstdlib>
 #include <chrono>
 
+#include <libsbx/utility/utility.hpp>
 #include <libsbx/core/core.hpp>
+#include <libsbx/io/io.hpp>
 #include <libsbx/math/math.hpp>
 #include <libsbx/devices/devices.hpp>
 #include <libsbx/graphics/graphics.hpp>
