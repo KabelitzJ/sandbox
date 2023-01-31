@@ -5,6 +5,7 @@
 #include <cmath>
 #include <fstream>
 #include <unordered_map>
+#include <map>
 #include <type_traits>
 #include <variant>
 #include <vector>
@@ -17,78 +18,127 @@
 
 namespace sbx::io {
 
-template<typename... Types>
-concept node_value = (
-  std::is_integral_v<Types...> || 
-  std::is_floating_point_v<Types...> || 
-  std::is_same_v<Types..., std::string>
-) && utility::are_all_unique_v<Types...>;
-
-template<node_value... Types>
+template<bool Ordered>
 class basic_node {
 
-  using self_type = basic_node<Types...>;
-  using variant_type = std::variant<Types...>;
+  using map_type = std::conditional_t<Ordered, std::map<std::string, basic_node>, std::unordered_map<std::string, basic_node>>;
+
+  using array_type = std::vector<basic_node>;
+
+  using value_type = std::variant<std::monostate, std::int32_t, std::float_t, bool, std::string, array_type, map_type>;
+
 
 public:
 
+  template<typename Type>
+  inline static constexpr auto is_valid_type_v = utility::one_of<Type, std::int32_t, std::float_t, bool, std::string, array_type, map_type>;
+
+  inline static constexpr auto is_ordered = Ordered;
+
   basic_node() = default;
 
-  // template<utility::convertible_to_one_of<Types...> Type>
-  // basic_node(const Type& value)
-  // : _value{value} { }
+  template<typename Type>
+  requires (is_valid_type_v<Type>)
+  basic_node(const Type& value) 
+  : _value{value} { }
+
+  template<typename Type>
+  requires (is_valid_type_v<Type>)
+  basic_node(Type&& value) 
+  : _value{std::move(value)} { }
 
   ~basic_node() = default;
 
-  // template<utility::one_of<Types...> Type>
-  // auto as() -> Type& {
-  //   if (!_value) {
-  //     throw std::runtime_error{"Node has no value"};
-  //   }
+  auto operator[](const std::string& key) -> basic_node& {
+    if (!std::holds_alternative<map_type>(_value)) {
+      _value = map_type{};
+    }
 
-  //   if (!std::holds_alternative<Type>(_value.value())) {
-  //     throw std::runtime_error{"Node holds different type"};
-  //   }
+    return std::get<map_type>(_value)[key];
+  }
 
-  //   return std::get<Type>(_value.value());
-  // }
-
-  // auto at(const std::string& name) -> self_type& {
-  //   if (auto entry = _indices.find(name); entry != _indices.end()) {
-  //     return _children.at(entry->second).second;
-  //   } 
+  auto operator[](std::size_t index) -> basic_node& {
+    if (!std::holds_alternative<array_type>(_value)) {
+      _value = array_type{};
+    }
     
-  //   throw std::runtime_error{fmt::format("Node has no child named '{}'", name)};
-  // }
+    return std::get<array_type>(_value)[index];
+  }
 
-  // auto operator[](const std::string& name) -> self_type& {
-  //   if (auto entry = _indices.find(name); entry != _indices.end()) {
-  //     return _children.at(entry->second).second;
-  //   }
+  template<typename Type>
+  requires (is_valid_type_v<Type>)
+  auto push_back(const Type& value) -> void {
+    if (!std::holds_alternative<array_type>(_value)) {
+      throw std::runtime_error{"Tried to push into non array type node"};
+    }
 
-  //   _indices.insert({name, _children.size()});
-  //   _children.push_back({name, self_type{name}});
+    std::get<array_type>(_value).push_back(basic_node{value});
+  }
 
-  //   return _children.back().second;
-  // }
+  template<typename Type>
+  requires (is_valid_type_v<Type>)
+  auto operator=(const Type& value) -> basic_node& {
+    _value = value;
+    return *this;
+  }
+
+  auto to_string(std::uint32_t indent_level = 0) const -> std::string {
+    auto string = std::stringstream{};
+
+    if (std::holds_alternative<map_type>(_value)) {
+      for (const auto& [name, child] : std::get<map_type>(_value)) {
+        string << std::string(indent_level, ' ') << name << ":\n";
+        string << child.to_string(indent_level + 2);
+      }
+    } else if (std::holds_alternative<array_type>(_value)) {
+      auto& array = std::get<array_type>(_value);
+      
+      if (array.empty()) {
+        string << std::string(indent_level, ' ') << "- []\n";
+      } else {
+        for (const auto& child : array) {
+          string << std::string(indent_level, ' ') << "-\n";
+          string << child.to_string(indent_level + 2);
+        }
+      }
+    } else {
+      string << std::string(indent_level, ' ');
+
+      if (_value.index() == 1) {
+        string << "- " << std::get<std::int32_t>(_value) << "\n";
+      } else if (_value.index() == 2) {
+        string << "- " << std::get<std::float_t>(_value) << "\n";
+      } else if (_value.index() == 3) {
+        string << "- " << (std::get<bool>(_value) ? "yes" : "no") << "\n";
+      } else if (_value.index() == 4) {
+        string << "- \"" << std::get<std::string>(_value) << "\"\n";
+      }
+    }
+
+    return string.str();
+  }
 
 private:
 
-
+  value_type _value{};
 
 }; // class basic_node
 
-template<typename... Types>
-std::ostream& operator<<(std::ostream& output_stream, const basic_node<Types...>& node) {
+template<bool Ordered>
+std::ostream& operator<<(std::ostream& output_stream, const basic_node<Ordered>& node) {
   return output_stream << node.to_string();
 }
 
-template<typename... Types>
-std::ifstream& operator>>(std::ifstream& input_stream, basic_node<Types...>& node) {
+template<bool Ordered>
+std::istream& operator>>(std::istream& input_stream, basic_node<Ordered>& node) {
   return input_stream;
 }
 
-using node = basic_node<std::string, std::int32_t, std::uint32_t, std::float_t>;
+using unordered_node = basic_node<false>;
+
+using ordered_node = basic_node<true>;
+
+using node = unordered_node;
 
 } // namespace sbx::io
 

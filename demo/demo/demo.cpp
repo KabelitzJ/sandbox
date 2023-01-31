@@ -21,6 +21,27 @@ public:
 
     sbx::core::logger::info("{}", v);
 
+    auto root = sbx::io::node{};
+
+    root["value1"] = 32;
+    root["value2"] = false;
+    root["value3"] = 11.4f;
+
+    auto& value3 = root["value3"];
+
+    value3["x"] = 1;
+    value3["y"] = 2;
+    value3["z"] = 3;
+
+    std::cout << root;
+
+    // auto file = std::ofstream{"./demo/assets/io.txt"};
+
+    // if (file.is_open()) {
+    //   file << root;
+    //   file.close();
+    // }
+
     window.set_on_window_closed([this]([[maybe_unused]] const sbx::devices::window_closed_event& event){
       _engine.quit();
     });
