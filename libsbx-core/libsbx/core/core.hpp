@@ -42,5 +42,6 @@
 #include <libsbx/core/engine.hpp>
 #include <libsbx/core/application.hpp>
 #include <libsbx/core/assert.hpp>
+#include <libsbx/core/concepts.hpp>
 
 #endif // LIBSBX_CORE_HPP_

@@ -9,6 +9,24 @@
 #include <libsbx/devices/devices.hpp>
 #include <libsbx/graphics/graphics.hpp>
 
+struct junk {
+  std::string value{};
+};
+
+struct data {
+  std::uint32_t x{};
+  std::uint32_t y{};
+  std::uint32_t z{};
+};
+
+sbx::io::node& operator<<(sbx::io::node& node, const data& data) {
+  node["x"] = data.x;
+  node["y"] = data.y;
+  node["z"] = data.z;
+
+  return node;
+}
+
 class demo_application : public sbx::core::application {
 
 public:
@@ -23,24 +41,23 @@ public:
 
     auto root = sbx::io::node{};
 
-    root["value1"] = 32;
-    root["value2"] = false;
-    root["value3"] = 11.4f;
+    auto d = data{ .x = 1, .y = 32, .z = 444 };
 
-    auto& value3 = root["value3"];
+    root["int"] = 32;
+    root["float"] = 11.4f;
+    root["bool"] = false;
+    root["string"] = "Jonas";
+    root["list"] = sbx::io::node::list_type{ 1, 2, 3, 4, 5 };
+    root["map"] = sbx::io::node::map_type{{ "Jonas", 22 }, { "Caitlin", 20}};
+    root["data"] = d;
+    root["position"] = v;
 
-    value3["x"] = 1;
-    value3["y"] = 2;
-    value3["z"] = 3;
+    auto file = std::ofstream{"./demo/assets/io.txt"};
 
-    std::cout << root;
-
-    // auto file = std::ofstream{"./demo/assets/io.txt"};
-
-    // if (file.is_open()) {
-    //   file << root;
-    //   file.close();
-    // }
+    if (file.is_open()) {
+      file << root;
+      file.close();
+    }
 
     window.set_on_window_closed([this]([[maybe_unused]] const sbx::devices::window_closed_event& event){
       _engine.quit();

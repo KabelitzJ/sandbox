@@ -18,7 +18,7 @@ inline auto assert_that(Expression&& expression, std::string_view message, const
   if constexpr (build_configuration_v == build_configuration::debug) {
     if (!static_cast<bool>(expression)) {
       logger::error("Assertion '{}' at {}:{} in '{}' failed", message, source_location.file_name(), source_location.line(), source_location.function_name());
-      std::exit(EXIT_FAILURE);
+      std::terminate();
     }
   }
 }

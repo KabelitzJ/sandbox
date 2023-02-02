@@ -8,6 +8,8 @@
 #include <ostream>
 #include <type_traits>
 
+#include <libsbx/io/node.hpp>
+
 #include <libsbx/math/concepts.hpp>
 
 namespace sbx::math {
@@ -423,6 +425,9 @@ template<numeric Type, numeric Other>
 
 template<numeric Type>
 auto operator<<(std::ostream& output_stream, const basic_vector3<Type>& vector) -> std::ostream&;
+
+template<numeric Type>
+auto operator<<(io::node& node, const basic_vector3<Type>& vector) -> io::node&;
 
 // -- Type aliases --
 

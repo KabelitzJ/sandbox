@@ -1,0 +1,17 @@
+bool: false
+data:
+  x: 1
+  y: 32
+  z: 444
+float: 11.4
+int: 32
+list:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+map:
+  Caitlin: 20
+  Jonas: 22
+string: true

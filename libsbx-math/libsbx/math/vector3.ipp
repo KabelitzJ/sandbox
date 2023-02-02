@@ -318,6 +318,15 @@ auto operator<<(std::ostream& output_stream, const basic_vector3<Type>& vector) 
   return output_stream << fmt::format("({}, {}, {})", vector.x, vector.y, vector.z);
 }
 
+template<numeric Type>
+auto operator<<(io::node& node, const basic_vector3<Type>& vector) -> io::node& {
+  node["x"] = vector.x;
+  node["y"] = vector.y;
+  node["z"] = vector.y;
+
+  return node;
+}
+
 } // namespace sbx::math
 
 template<sbx::math::numeric Type>

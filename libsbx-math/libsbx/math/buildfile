@@ -2,6 +2,7 @@ public_dependencies =
 import public_dependencies += fmt%liba{fmt}
 import public_dependencies += libsbx-core%liba{sbx_core}
 import public_dependencies += libsbx-utility%liba{sbx_utility}
+import public_dependencies += libsbx-io%liba{sbx_io}
 
 public_dependencies = $cxx.deduplicate_export_libs($public_dependencies)
 
