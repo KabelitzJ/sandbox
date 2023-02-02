@@ -1,5 +1,5 @@
-#ifndef LIBSBX_IO_basic_node_HPP_
-#define LIBSBX_IO_basic_node_HPP_
+#ifndef LIBSBX_IO_BASIC_NODE_HPP_
+#define LIBSBX_IO_BASIC_NODE_HPP_
 
 #include <cinttypes>
 #include <cmath>
@@ -21,18 +21,6 @@
 #include <libsbx/io/concepts.hpp>
 
 namespace sbx::io {
-
-template<typename Container, typename Key, typename Value>
-concept associative_container = requires(Container& container, const Key& key, const Value& value) {
-  { Container::key_type } -> std::same_as<Key>;
-  { Container::mapped_type } -> std::same_as<Value>;
-  { Container::value_type } -> std::same_as<std::pair<const Key, Value>>;
-  { container.begin() } -> std::forward_iterator;
-  { container.end() } -> std::forward_iterator;
-  { container[key] } -> std::same_as<Value&>;
-}; // concept associative_container
-
-
 
 template<typename Type>
 concept signed_integer = std::is_integral_v<Type> && !std::is_same_v<Type, bool> && std::is_signed_v<Type>;
@@ -243,4 +231,4 @@ using ordered_node = basic_node<std::int32_t, std::uint32_t, std::float_t, bool,
 
 } // namespace sbx::io
 
-#endif // LIBSBX_IO_basic_node_HPP_
+#endif // LIBSBX_IO_BASIC_NODE_HPP_

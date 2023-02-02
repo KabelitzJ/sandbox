@@ -13,16 +13,30 @@ struct junk {
   std::string value{};
 };
 
+struct transform {
+  sbx::math::vector3 position{};
+  sbx::math::vector3 rotation{};
+  sbx::math::vector3 scale{};
+};
+
+sbx::io::node& operator<<(sbx::io::node& node, const transform& transform) {
+  node["position"] = transform.position;
+  node["rotation"] = transform.rotation;
+  node["scale"] = transform.scale;
+
+  return node;
+}
+
 struct data {
-  std::uint32_t x{};
-  std::uint32_t y{};
-  std::uint32_t z{};
+  std::int32_t integer{};
+  std::float_t floating_point{};
+  transform transform{};
 };
 
 sbx::io::node& operator<<(sbx::io::node& node, const data& data) {
-  node["x"] = data.x;
-  node["y"] = data.y;
-  node["z"] = data.z;
+  node["integer"] = data.integer;
+  node["floating_point"] = data.floating_point;
+  node["transform"] = data.transform;
 
   return node;
 }
@@ -41,18 +55,19 @@ public:
 
     auto root = sbx::io::node{};
 
-    auto d = data{ .x = 1, .y = 32, .z = 444 };
+    auto d = data{ 
+      .integer = 42, 
+      .floating_point = 0.69f, 
+      .transform = transform{
+        .position = sbx::math::vector3{0.0f, 0.0f, 0.0f},
+        .rotation = sbx::math::vector3{0.0f, 0.0f, 0.0f},
+        .scale = sbx::math::vector3{0.0f, 0.0f, 0.0f}
+      }
+    };
 
-    root["int"] = 32;
-    root["float"] = 11.4f;
-    root["bool"] = false;
-    root["string"] = "Jonas";
-    root["list"] = sbx::io::node::list_type{ 1, 2, 3, 4, 5 };
-    root["map"] = sbx::io::node::map_type{{ "Jonas", 22 }, { "Caitlin", 20}};
     root["data"] = d;
-    root["position"] = v;
 
-    auto file = std::ofstream{"./demo/assets/io.txt"};
+    auto file = std::ofstream{"./demo/assets/data.sbx"};
 
     if (file.is_open()) {
       file << root;

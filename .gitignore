@@ -1,6 +1,7 @@
 .bdep/
 .build2/local/
 .vscode/
+.vs/
 
 configs/
 targets/
