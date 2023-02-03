@@ -12,3 +12,5 @@ location: libsbx-devices/
 location: libsbx-graphics/
 :
 location: demo/
+:
+location: libsbx-scripting/

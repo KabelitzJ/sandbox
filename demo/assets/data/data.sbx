@@ -1,0 +1,16 @@
+data:
+  transform:
+    scale:
+      z: 0
+      y: 0
+      x: 0
+    rotation:
+      z: 0
+      y: 0
+      x: 0
+    position:
+      z: 0
+      y: 0
+      x: 0
+  floating_point: 0.69
+  integer: 42

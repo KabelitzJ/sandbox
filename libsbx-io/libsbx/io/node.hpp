@@ -146,7 +146,9 @@ public:
       throw std::runtime_error{"Tried to access node that is not of type map"};
     }
 
-    return std::get<map_type>(_value).at(key);
+    auto& map = std::get<map_type>(_value);
+
+    return map.at(key); 
   }
 
   auto operator[](const string_type& key) -> basic_node& {
