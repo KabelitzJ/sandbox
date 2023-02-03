@@ -71,20 +71,6 @@ public:
       file.close();
     }
 
-    auto script = sbx::scripting::script{"./demo/assets/scripts/test.script"};
-
-    auto a = std::int32_t{1};
-    auto b = std::int32_t{1};
-
-    auto result = script.call_function<std::int32_t>("add", a, b);
-
-    sbx::core::logger::info("add({}, {}) = {}", a, b, result);
-
-    auto answer = script.call_function<std::int32_t>("answer");
-
-    sbx::core::logger::info("answer() = {}", answer);
-
-
     window.set_on_window_closed([this]([[maybe_unused]] const sbx::devices::window_closed_event& event){
       _engine.quit();
     });
