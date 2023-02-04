@@ -76,7 +76,8 @@ public:
   basic_node(Type value) 
   : _value{value} { }
 
-  basic_node(const string_type& value) 
+  template<std::convertible_to<string_type> Type>
+  basic_node(const Type& value) 
   : _value{value} { }
 
   basic_node(const list_type& value) 
@@ -141,16 +142,6 @@ public:
     return operator<<(*this, value);
   }
 
-  auto at(const string_type& key) -> basic_node& {
-    if (!std::holds_alternative<map_type>(_value)) {
-      throw std::runtime_error{"Tried to access node that is not of type map"};
-    }
-
-    auto& map = std::get<map_type>(_value);
-
-    return map.at(key); 
-  }
-
   auto operator[](const string_type& key) -> basic_node& {
     if (!std::holds_alternative<map_type>(_value)) {
       _value = map_type{};
@@ -159,6 +150,14 @@ public:
     auto& map = std::get<map_type>(_value);
 
     return map[key];
+  }
+
+  template<typename Type>
+  auto as() -> Type& {
+    if (!std::holds_alternative<Type>(_value)) {
+      throw std::runtime_error{"Invalid type conversion"};
+    }
+    return std::get<Type>(_value);
   }
 
   auto to_string(std::uint32_t indent_level = 0) const -> std::string {

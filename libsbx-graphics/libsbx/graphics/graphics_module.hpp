@@ -64,6 +64,7 @@ private:
 
   std::unique_ptr<graphics::surface> _surface{};
   std::unique_ptr<command_buffer> _command_buffer{};
+
   VkSemaphore _resent_complete{};
   VkSemaphore _render_complete{};
   VkFence _in_flight_fence{};

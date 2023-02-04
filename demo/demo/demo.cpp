@@ -50,11 +50,11 @@ public:
 
     sbx::core::logger::info("{}", v);
 
-    auto root = sbx::io::node{};
+    auto output = sbx::io::node{};
 
     auto d = data{ 
       .integer = 42, 
-      .floating_point = 0.69f, 
+      .floating_point = 0.69f,
       .transform = transform{
         .position = sbx::math::vector3{0.0f, 0.0f, 0.0f},
         .rotation = sbx::math::vector3{0.0f, 0.0f, 0.0f},
@@ -62,14 +62,22 @@ public:
       }
     };
 
-    root["data"] = d;
+    output["data"] = d;
 
-    auto file = std::ofstream{"./demo/assets/data/data.sbx"};
+    auto output_file = std::ofstream{"./demo/assets/data/data.sbx"};
 
-    if (file.is_open()) {
-      file << root;
-      file.close();
+    if (output_file.is_open()) {
+      output_file << output;
+      output_file.close();
     }
+
+    auto i = output["data"]["integer"].as<sbx::io::node::signed_integer_type>();
+
+    sbx::core::logger::info("integer: {}", i);
+
+    auto f = output["data"]["floating_point"].as<sbx::io::node::floating_point_type>();
+
+    sbx::core::logger::info("floating_point: {}", f);
 
     window.set_on_window_closed([this]([[maybe_unused]] const sbx::devices::window_closed_event& event){
       _engine.quit();
