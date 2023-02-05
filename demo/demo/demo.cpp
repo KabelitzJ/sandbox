@@ -56,28 +56,23 @@ public:
       .integer = 42, 
       .floating_point = 0.69f,
       .transform = transform{
-        .position = sbx::math::vector3{0.0f, 0.0f, 0.0f},
-        .rotation = sbx::math::vector3{0.0f, 0.0f, 0.0f},
-        .scale = sbx::math::vector3{0.0f, 0.0f, 0.0f}
+        .position = sbx::math::vector3{1.0f, 0.0f, 0.0f},
+        .rotation = sbx::math::vector3{0.0f, 1.0f, 0.0f},
+        .scale = sbx::math::vector3{0.0f, 0.0f, 1.0f}
       }
     };
 
     output["data"] = d;
+    output["list"] = sbx::io::node::list_type{1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+    output["map"] = sbx::io::node::map_type{{"key1", "value1"}, {"key2", "value2"}, {"key3", "value3"}};
+
 
     auto output_file = std::ofstream{"./demo/assets/data/data.sbx"};
 
     if (output_file.is_open()) {
-      output_file << output;
+      output_file << output.to_string();
       output_file.close();
     }
-
-    auto i = output["data"]["integer"].as<sbx::io::node::signed_integer_type>();
-
-    sbx::core::logger::info("integer: {}", i);
-
-    auto f = output["data"]["floating_point"].as<sbx::io::node::floating_point_type>();
-
-    sbx::core::logger::info("floating_point: {}", f);
 
     window.set_on_window_closed([this]([[maybe_unused]] const sbx::devices::window_closed_event& event){
       _engine.quit();
