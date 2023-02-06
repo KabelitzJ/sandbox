@@ -1,0 +1,18 @@
+#ifndef LIBSBX_ASYNC_VERSION_HPP_
+#define LIBSBX_ASYNC_VERSION_HPP_
+
+#define LIBSBX_ASYNC_VERSION       $libsbx_async.version.project_number$ULL
+#define LIBSBX_ASYNC_VERSION_STR   "$libsbx_async.version.project$"
+#define LIBSBX_ASYNC_VERSION_ID    "$libsbx_async.version.project_id$"
+#define LIBSBX_ASYNC_VERSION_FULL  "$libsbx_async.version$"
+
+#define LIBSBX_ASYNC_VERSION_MAJOR $libsbx_async.version.major$
+#define LIBSBX_ASYNC_VERSION_MINOR $libsbx_async.version.minor$
+#define LIBSBX_ASYNC_VERSION_PATCH $libsbx_async.version.patch$
+
+#define LIBSBX_ASYNC_PRE_RELEASE   $libsbx_async.version.pre_release$
+
+#define LIBSBX_ASYNC_SNAPSHOT_SN   $libsbx_async.version.snapshot_sn$ULL
+#define LIBSBX_ASYNC_SNAPSHOT_ID   "$libsbx_async.version.snapshot_id$"
+
+#endif // LIBSBX_ASYNC_VERSION_HPP_

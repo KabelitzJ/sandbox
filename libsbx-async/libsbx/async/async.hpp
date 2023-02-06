@@ -1,0 +1,6 @@
+#ifndef LIBSBX_ASYNC_HPP_
+#define LIBSBX_ASYNC_HPP_
+
+
+
+#endif // LIBSBX_ASYNC_HPP_

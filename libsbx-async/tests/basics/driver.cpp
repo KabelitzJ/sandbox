@@ -1,11 +1,10 @@
 #include <iostream>
-#include <regex>
 
 #include <gtest/gtest.h>
 
-#include <libsbx/scripting/scripting.hpp>
+#include <libsbx/async/async.hpp>
 
-TEST(libsbx_scripting, root) {
+TEST(sbx_async, base) {
   EXPECT_EQ(true, true);
 }
 
