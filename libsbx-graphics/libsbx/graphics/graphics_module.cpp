@@ -81,19 +81,19 @@ auto graphics_module::update([[maybe_unused]] std::float_t delta_time) -> void {
 
 }
 
-instance& graphics_module::instance() {
+auto graphics_module::instance() -> graphics::instance&  {
   return *_instance;
 }
 
-physical_device& graphics_module::physical_device() {
+auto graphics_module::physical_device() -> graphics::physical_device& {
   return *_physical_device;
 }
 
-logical_device& graphics_module::logical_device() {
+auto graphics_module::logical_device() -> graphics::logical_device& {
   return *_logical_device;
 }
 
-surface& graphics_module::surface() {
+auto graphics_module::surface() -> graphics::surface& {
   return *_surface;
 }
 

@@ -4,6 +4,7 @@
 
 #include <libsbx/utility/utility.hpp>
 #include <libsbx/core/core.hpp>
+#include <libsbx/async/async.hpp>
 #include <libsbx/io/io.hpp>
 #include <libsbx/scripting/scripting.hpp>
 #include <libsbx/math/math.hpp>
@@ -46,37 +47,17 @@ public:
   : _engine{engine} {
     auto& window = sbx::devices::devices_module::get().window();
 
-    auto v = sbx::math::vector3{};
-
-    sbx::core::logger::info("{}", v);
-
-    auto output = sbx::io::node{};
-
-    auto d = data{ 
-      .integer = 42, 
-      .floating_point = 0.69f,
-      .transform = transform{
-        .position = sbx::math::vector3{1.0f, 0.0f, 0.0f},
-        .rotation = sbx::math::vector3{0.0f, 1.0f, 0.0f},
-        .scale = sbx::math::vector3{0.0f, 0.0f, 1.0f}
-      }
-    };
-
-    output["data"] = d;
-    output["list"] = sbx::io::node::list_type{1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-    output["map"] = sbx::io::node::map_type{{"key1", "value1"}, {"key2", "value2"}, {"key3", "value3"}};
-
-
-    auto output_file = std::ofstream{"./demo/assets/data/data.sbx"};
-
-    if (output_file.is_open()) {
-      output_file << output.to_string();
-      output_file.close();
-    }
-
     window.set_on_window_closed([this]([[maybe_unused]] const sbx::devices::window_closed_event& event){
       _engine.quit();
     });
+
+    auto& loader = sbx::async::async_module::get().loader();
+
+    auto result = loader.enqueue<std::uint32_t>([this]{
+      return 42;
+    });
+
+    sbx::core::logger::info("{}", result.get());
   }
 
   ~demo_application() override = default;

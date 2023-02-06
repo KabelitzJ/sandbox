@@ -10,6 +10,8 @@
 #include <cinttypes>
 #include <cmath>
 
+#include <libsbx/utility/noncopyable.hpp>
+
 namespace sbx::core {
 
 template<typename Derived, typename Base>
@@ -61,7 +63,7 @@ private:
 }; // class module_manager
 
 template<typename Type>
-class module : public module_manager::module_base {
+class module : public module_manager::module_base, public utility::noncopyable {
 
 public:
 

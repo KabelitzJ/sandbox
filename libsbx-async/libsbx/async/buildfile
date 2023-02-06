@@ -2,6 +2,8 @@ public_dependencies =
 import public_dependencies += libsbx-utility%liba{sbx_utility}
 import public_dependencies += libsbx-core%liba{sbx_core}
 
+public_dependencies = $cxx.deduplicate_export_libs($public_dependencies)
+
 private_dependencies =
 
 lib{sbx_async}: {hxx ixx txx cxx}{** -version} hxx{version} $private_dependencies $public_dependencies

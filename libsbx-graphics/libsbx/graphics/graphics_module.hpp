@@ -7,6 +7,8 @@
 
 #include <libsbx/core/module.hpp>
 
+#include <libsbx/async/async_module.hpp>
+
 #include <libsbx/devices/devices_module.hpp>
 
 #include <libsbx/graphics/devices/instance.hpp>
@@ -34,7 +36,7 @@ auto validate(VkResult result) -> void;
  */
 class graphics_module : public core::module<graphics_module> {
 
-  inline static const auto is_registered = register_module(stage::normal, dependencies<devices::devices_module>{});
+  inline static const auto is_registered = register_module(stage::normal, dependencies<async::async_module, devices::devices_module>{});
 
 public:
 
@@ -44,13 +46,13 @@ public:
 
   auto update([[maybe_unused]] std::float_t delta_time) -> void override;
 
-  instance& instance();
+  auto instance() -> instance&;
 
-  physical_device& physical_device();
+  auto physical_device() -> physical_device&;
 
-  logical_device& logical_device();
+  auto logical_device() -> logical_device&;
 
-  surface& surface();
+  auto surface() -> surface&;
 
   auto command_pool(const std::thread::id& thread_id = std::this_thread::get_id()) -> const std::shared_ptr<command_pool>&;
   
@@ -63,7 +65,7 @@ private:
   std::unordered_map<std::thread::id, std::shared_ptr<graphics::command_pool>> _command_pools{};
 
   std::unique_ptr<graphics::surface> _surface{};
-  std::unique_ptr<command_buffer> _command_buffer{};
+  std::unique_ptr<graphics::command_buffer> _command_buffer{};
 
   VkSemaphore _resent_complete{};
   VkSemaphore _render_complete{};

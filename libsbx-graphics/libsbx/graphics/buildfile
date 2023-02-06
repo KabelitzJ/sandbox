@@ -1,5 +1,7 @@
 public_dependencies =
+import public_dependencies += libsbx-utility%liba{sbx_utility}
 import public_dependencies += libsbx-core%liba{sbx_core}
+import public_dependencies += libsbx-async%liba{sbx_async}
 import public_dependencies += libsbx-math%liba{sbx_math}
 import public_dependencies += libsbx-devices%liba{sbx_devices}
 

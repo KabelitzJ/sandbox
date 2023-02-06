@@ -12,4 +12,5 @@ depends: gtest >= 1.11.0
 depends: fmt >= 8.1.1
 depends: libsbx-utility >= 0.1.0
 depends: libsbx-core >= 0.1.0
+depends: libsbx-async >= 0.1.0
 depends: libsbx-math >= 0.1.0

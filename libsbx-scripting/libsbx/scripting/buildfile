@@ -1,11 +1,14 @@
-public_dependencies = # Interface dependencies.
+public_dependencies =
 import public_dependencies += gtest%liba{gtest}
 import public_dependencies += fmt%liba{fmt}
 import public_dependencies += libsbx-utility%liba{sbx_utility}
 import public_dependencies += libsbx-core%liba{sbx_core}
+import public_dependencies += libsbx-async%liba{sbx_async}
 import public_dependencies += libsbx-math%liba{sbx_math}
 
-private_dependencies = # Implementation dependencies.
+public_dependencies = $cxx.deduplicate_export_libs($public_dependencies)
+
+private_dependencies =
 
 lib{sbx_scripting}: {hxx ixx txx cxx}{** -version} hxx{version} $private_dependencies $public_dependencies
 

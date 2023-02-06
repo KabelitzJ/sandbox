@@ -3,6 +3,8 @@ location: libsbx-utility/
 :
 location: libsbx-core/
 :
+location: libsbx-async/
+:
 location: libsbx-io/
 :
 location: libsbx-scripting/
@@ -14,5 +16,3 @@ location: libsbx-devices/
 location: libsbx-graphics/
 :
 location: demo/
-:
-location: libsbx-async/
