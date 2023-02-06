@@ -5,6 +5,8 @@ location: libsbx-core/
 :
 location: libsbx-io/
 :
+location: libsbx-scripting/
+:
 location: libsbx-math/
 :
 location: libsbx-devices/
@@ -12,5 +14,3 @@ location: libsbx-devices/
 location: libsbx-graphics/
 :
 location: demo/
-:
-location: libsbx-scripting/
