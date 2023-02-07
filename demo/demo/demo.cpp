@@ -11,6 +11,11 @@
 #include <libsbx/devices/devices.hpp>
 #include <libsbx/graphics/graphics.hpp>
 
+#include <demo/quantity.hpp>
+#include <demo/length.hpp>
+#include <demo/wight.hpp>
+#include <demo/time.hpp>
+
 struct transform {
   sbx::math::vector3 position{};
   sbx::math::vector3 rotation{};
@@ -50,20 +55,12 @@ public:
     window.set_on_window_closed([this]([[maybe_unused]] const sbx::devices::window_closed_event& event){
       _engine.quit();
     });
-
-    auto& loader = sbx::async::async_module::get().loader();
-
-    auto result = loader.enqueue<std::uint32_t>([this]{
-      return 42;
-    });
-
-    sbx::core::logger::info("{}", result.get());
   }
 
   ~demo_application() override = default;
 
   auto update() -> void  {
-    
+
   }
 
 private:
