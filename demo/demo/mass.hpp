@@ -1,5 +1,5 @@
-#ifndef DEMO_WEIGHT_HPP_
-#define DEMO_WEIGHT_HPP_
+#ifndef DEMO_MASS_HPP_
+#define DEMO_MASS_HPP_
 
 #include <demo/quantity.hpp>
 
@@ -7,13 +7,13 @@ namespace demo {
 
 namespace detail {
 
-struct weight_dimension { };
+struct mass_dimension { };
 
 } // namespace detail
 
-using kilogram = quantity<detail::weight_dimension, std::float_t, std::kilo>;
-using gram = quantity<detail::weight_dimension, std::float_t>;
-using milligram = quantity<detail::weight_dimension, std::float_t, std::milli>;
+using kilogram = quantity<detail::mass_dimension, std::float_t, std::kilo>;
+using gram = quantity<detail::mass_dimension, std::float_t>;
+using milligram = quantity<detail::mass_dimension, std::float_t, std::milli>;
 
 namespace literals {
 
@@ -45,4 +45,4 @@ auto operator"" _mg(unsigned long long value) -> milligram {
 
 } // namespace demo
 
-#endif // DEMO_WEIGHT_HPP_
+#endif // DEMO_MASS_HPP_
