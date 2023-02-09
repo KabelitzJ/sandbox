@@ -1,5 +1,5 @@
-#ifndef DEMO_LENGTH_HPP_
-#define DEMO_LENGTH_HPP_
+#ifndef DEMO_DISTANCE_HPP_
+#define DEMO_DISTANCE_HPP_
 
 #include <demo/quantity.hpp>
 
@@ -7,15 +7,15 @@ namespace demo {
 
 namespace detail {
   
-struct length_dimension { };
+struct distance { };
 
 } // namespace detail
 
-using kilometer = quantity<detail::length_dimension, std::float_t, std::kilo>;
-using meter = quantity<detail::length_dimension, std::float_t>;
-using decimeter = quantity<detail::length_dimension, std::float_t, std::deci>;
-using centimeter = quantity<detail::length_dimension, std::float_t, std::centi>;
-using millimeter = quantity<detail::length_dimension, std::float_t, std::milli>;
+using kilometer = quantity<detail::distance, std::float_t, std::kilo>;
+using meter = quantity<detail::distance, std::float_t>;
+using decimeter = quantity<detail::distance, std::float_t, std::deci>;
+using centimeter = quantity<detail::distance, std::float_t, std::centi>;
+using millimeter = quantity<detail::distance, std::float_t, std::milli>;
 
 namespace literals {
 
@@ -63,4 +63,4 @@ inline auto operator"" _mm(unsigned long long value) -> millimeter {
 
 } // namespace demo
 
-#endif // DEMO_LENGTH_HPP_
+#endif // DEMO_DISTANCE_HPP_

@@ -12,9 +12,10 @@
 #include <libsbx/graphics/graphics.hpp>
 
 #include <demo/quantity.hpp>
-#include <demo/length.hpp>
+#include <demo/distance.hpp>
 #include <demo/wight.hpp>
 #include <demo/time.hpp>
+#include <demo/velocity.hpp>
 
 struct transform {
   sbx::math::vector3 position{};
@@ -50,11 +51,15 @@ public:
 
   demo_application(sbx::core::engine& engine)
   : _engine{engine} {
+    using namespace demo::literals;
+
     auto& window = sbx::devices::devices_module::get().window();
 
     window.set_on_window_closed([this]([[maybe_unused]] const sbx::devices::window_closed_event& event){
       _engine.quit();
     });
+
+    auto v = 10_m / 1_s;
   }
 
   ~demo_application() override = default;
