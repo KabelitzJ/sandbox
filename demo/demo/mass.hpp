@@ -1,5 +1,5 @@
-#ifndef DEMO_WEIGHT_HPP_
-#define DEMO_WEIGHT_HPP_
+#ifndef DEMO_MASS_HPP_
+#define DEMO_MASS_HPP_
 
 #include <demo/quantity.hpp>
 
@@ -45,4 +45,4 @@ auto operator"" _mg(unsigned long long value) -> milligram {
 
 } // namespace demo
 
-#endif // DEMO_WEIGHT_HPP_
+#endif // DEMO_MASS_HPP_

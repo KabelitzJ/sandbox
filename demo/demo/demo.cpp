@@ -13,7 +13,7 @@
 
 #include <demo/quantity.hpp>
 #include <demo/distance.hpp>
-#include <demo/wight.hpp>
+#include <demo/mass.hpp>
 #include <demo/time.hpp>
 #include <demo/velocity.hpp>
 
@@ -59,7 +59,13 @@ public:
       _engine.quit();
     });
 
-    auto v = 10_m / 1_s;
+    auto distance = 1.0_km + 1.0_m + 1.0_dm + 1.0_cm + 1.0_mm;
+    auto mass = 1.0_kg + 1.0_g + 1.0_mg;
+    auto time = 1.0_s + 1.0_ms + 1.0_us + 1.0_ns;
+
+    sbx::core::logger::info("{} km", distance.value());
+    sbx::core::logger::info("{} kg", mass.value());
+    sbx::core::logger::info("{} s", time.value());
   }
 
   ~demo_application() override = default;
