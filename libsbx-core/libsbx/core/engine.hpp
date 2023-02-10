@@ -42,7 +42,7 @@ public:
 
     while (_is_running) {
       const auto now = clock_type::now();
-      const auto delta_time = std::chrono::duration_cast<std::chrono::duration<std::float_t>>(last - now).count();
+      const auto delta_time = std::chrono::duration_cast<std::chrono::duration<std::float_t>>(now - last).count();
       last = now;
 
       application->update();

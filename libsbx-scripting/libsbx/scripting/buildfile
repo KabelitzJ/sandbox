@@ -1,6 +1,7 @@
 public_dependencies =
 import public_dependencies += gtest%liba{gtest}
 import public_dependencies += fmt%liba{fmt}
+import public_dependencies += sol2%liba{sol2}
 import public_dependencies += libsbx-utility%liba{sbx_utility}
 import public_dependencies += libsbx-core%liba{sbx_core}
 import public_dependencies += libsbx-async%liba{sbx_async}
