@@ -59,13 +59,16 @@ public:
       _engine.quit();
     });
 
-    auto distance = 1.0_km + 1.0_m + 1.0_dm + 1.0_cm + 1.0_mm;
-    auto mass = 1.0_kg + 1.0_g + 1.0_mg;
-    auto time = 1.0_s + 1.0_ms + 1.0_us + 1.0_ns;
+    auto file_content = sbx::io::read_file("./demo/assets/scripts/test.script");
 
-    sbx::core::logger::info("{} km", distance.value());
-    sbx::core::logger::info("{} kg", mass.value());
-    sbx::core::logger::info("{} s", time.value());
+    auto lexer = sbx::scripting::lexer{file_content};
+
+    auto tokens = lexer.tokens();
+
+    for (const auto& token : tokens) {
+      sbx::core::logger::info("{}: '{}'", sbx::scripting::to_string(token.type), token.value);
+    }
+
   }
 
   ~demo_application() override = default;
