@@ -1,5 +1,5 @@
-#ifndef DEMO_UNITS_HPP_
-#define DEMO_UNITS_HPP_
+#ifndef DEMO_QUANTITY_HPP_
+#define DEMO_QUANTITY_HPP_
 
 #include <ratio>
 #include <cmath>
@@ -84,9 +84,9 @@ public:
 
   ~quantity() = default;
 
-  quantity& operator=(const quantity& other) = default;
+  auto operator=(const quantity& other) -> quantity& = default;
 
-  quantity& operator=(quantity&& other) = default;
+  auto operator=(quantity&& other) -> quantity& = default;
 
   template<representation OtherRepresentation, ratio OtherRatio>
   auto operator=(const quantity<dimension_type, OtherRepresentation, OtherRatio>& other) -> quantity& {
@@ -148,4 +148,4 @@ auto quantity_cast(const quantity<typename TargetQuantity::dimension_type, FromR
 
 } // namespace demo
 
-#endif // DEMO_UNITS_HPP_
+#endif // DEMO_QUANTITY_HPP_

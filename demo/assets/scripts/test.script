@@ -1,17 +1,12 @@
-// Comment
-g_answer: i32 = 42;
-
 add: (lhs: i32, rhs: i32) -> i32 = {
-  result: i32 = lhs + rhs;
-
-  return result;
+  return lhs + rhs;
 }
 
-answer: () -> i32 = {
-  // Comment
-  return g_answer;
+start_up: () -> void = {
+  // ...
 }
 
-is_answer(value: i32) -> bool {
-  return value == g_answer;
+update: (delta_time: f32) -> void = {
+  // ...
 }
+

@@ -7,20 +7,20 @@ namespace demo {
 
 namespace detail {
 
-struct time_dimension { };
+struct time { };
 
 } // namespace detail
 
-using year = quantity<detail::time_dimension, std::float_t, std::ratio<31556952>>;
-using month = quantity<detail::time_dimension, std::float_t, std::ratio<2629746>>;
-using week = quantity<detail::time_dimension, std::float_t, std::ratio<604800>>;
-using day = quantity<detail::time_dimension, std::float_t, std::ratio<86400>>;
-using hour = quantity<detail::time_dimension, std::float_t, std::ratio<3600>>;
-using minute = quantity<detail::time_dimension, std::float_t, std::ratio<60>>;
-using second = quantity<detail::time_dimension, std::float_t>;
-using millisecond = quantity<detail::time_dimension, std::float_t, std::milli>;
-using microsecond = quantity<detail::time_dimension, std::float_t, std::micro>;
-using nanosecond = quantity<detail::time_dimension, std::float_t, std::nano>;
+using year = quantity<detail::time, std::float_t, std::ratio<31556952>>;
+using month = quantity<detail::time, std::float_t, std::ratio<2629746>>;
+using week = quantity<detail::time, std::float_t, std::ratio<604800>>;
+using day = quantity<detail::time, std::float_t, std::ratio<86400>>;
+using hour = quantity<detail::time, std::float_t, std::ratio<3600>>;
+using minute = quantity<detail::time, std::float_t, std::ratio<60>>;
+using second = quantity<detail::time, std::float_t>;
+using millisecond = quantity<detail::time, std::float_t, std::milli>;
+using microsecond = quantity<detail::time, std::float_t, std::micro>;
+using nanosecond = quantity<detail::time, std::float_t, std::nano>;
 
 namespace literals {
 

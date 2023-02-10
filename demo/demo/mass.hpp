@@ -7,13 +7,13 @@ namespace demo {
 
 namespace detail {
 
-struct mass_dimension { };
+struct weight { };
 
 } // namespace detail
 
-using kilogram = quantity<detail::mass_dimension, std::float_t, std::kilo>;
-using gram = quantity<detail::mass_dimension, std::float_t>;
-using milligram = quantity<detail::mass_dimension, std::float_t, std::milli>;
+using kilogram = quantity<detail::weight, std::float_t, std::kilo>;
+using gram = quantity<detail::weight, std::float_t>;
+using milligram = quantity<detail::weight, std::float_t, std::milli>;
 
 namespace literals {
 

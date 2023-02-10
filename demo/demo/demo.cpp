@@ -15,6 +15,7 @@
 #include <demo/distance.hpp>
 #include <demo/mass.hpp>
 #include <demo/time.hpp>
+#include <demo/velocity.hpp>
 
 struct transform {
   sbx::math::vector3 position{};

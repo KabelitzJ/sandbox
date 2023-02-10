@@ -7,15 +7,15 @@ namespace demo {
 
 namespace detail {
   
-struct distance_dimension { };
+struct distance { };
 
 } // namespace detail
 
-using kilometer = quantity<detail::distance_dimension, std::float_t, std::kilo>;
-using meter = quantity<detail::distance_dimension, std::float_t>;
-using decimeter = quantity<detail::distance_dimension, std::float_t, std::deci>;
-using centimeter = quantity<detail::distance_dimension, std::float_t, std::centi>;
-using millimeter = quantity<detail::distance_dimension, std::float_t, std::milli>;
+using kilometer = quantity<detail::distance, std::float_t, std::kilo>;
+using meter = quantity<detail::distance, std::float_t>;
+using decimeter = quantity<detail::distance, std::float_t, std::deci>;
+using centimeter = quantity<detail::distance, std::float_t, std::centi>;
+using millimeter = quantity<detail::distance, std::float_t, std::milli>;
 
 namespace literals {
 
