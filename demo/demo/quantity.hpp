@@ -76,7 +76,7 @@ public:
 
   template<representation OtherRepresentation, ratio OtherRatio = ratio_type>
   quantity(const quantity<dimension_type, OtherRepresentation, OtherRatio>& other)
-  : _value{static_cast<value_type>(other.value()) * ratio_conversion_v<value_type, Ratio, OtherRatio>} { }
+  : _value{quantity_cast<quantity>(other)} { }
 
   quantity(const quantity& other) = default;
 
