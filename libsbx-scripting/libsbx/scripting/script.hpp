@@ -24,15 +24,16 @@ public:
       throw std::runtime_error{fmt::format("Script '{}' is not a valid file", path.string())};
     }
 
-    _state.open_libraries(sol::lib::base, sol::lib::io, sol::lib::table, sol::lib::math, sol::lib::string);
-    _state.script_file(path.string());
-
     _name = path.stem().string();
+
+    _state.open_libraries(sol::lib::base, sol::lib::io, sol::lib::table, sol::lib::math, sol::lib::string);
+
+    _create_bindings();
+
+    _state.script_file(path.string());
 
     _startup_function = _validate_function("startup");
     _update_function = _validate_function("update");
-
-    _create_table();
   }
 
   script(const script& other) = delete;
@@ -75,7 +76,7 @@ private:
     return function;
   }
 
-  auto _create_table() -> void {
+  auto _create_bindings() -> void {
     auto library = _state.create_named_table("sbx");
 
     auto logger_type = library.new_usertype<core::logger>("logger", sol::no_constructor);

@@ -176,7 +176,7 @@ public:
    * 
    * @return basic_vector3& A reference to this vector.
    */
-  constexpr basic_vector3& operator=(const basic_vector3& other) noexcept = default;
+  constexpr auto operator=(const basic_vector3& other) noexcept -> basic_vector3& = default;
 
   /**
    * @brief Copies the components from the other vector.
@@ -188,7 +188,7 @@ public:
    * @return basic_vector3& A reference to this vector.
    */
   template<numeric Other>
-  constexpr basic_vector3& operator=(const basic_vector3<Other>& other) noexcept;
+  constexpr auto operator=(const basic_vector3<Other>& other) noexcept -> basic_vector3&;
 
   /**
    * @brief Moves the components out of the other vector.
@@ -197,7 +197,7 @@ public:
    * 
    * @return basic_vector3& A reference to this vector.
    */
-  constexpr basic_vector3& operator=(basic_vector3&& other) noexcept = default;
+  constexpr auto operator=(basic_vector3&& other) noexcept -> basic_vector3& = default;
 
   // -- Unary numeric operators --
 
@@ -206,7 +206,7 @@ public:
    * 
    * @return basic_vector3& A reference to this vector.
    */
-  constexpr basic_vector3& operator-() noexcept;
+  constexpr auto operator-() noexcept -> basic_vector3&;
 
   // -- Binary numeric operators --
 

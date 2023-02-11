@@ -72,7 +72,7 @@ inline constexpr auto basic_vector3<Type>::clamp(const basic_vector3& vector, co
 
 template<numeric Type>
 template<numeric Other>
-constexpr basic_vector3<Type>& basic_vector3<Type>::operator=(const basic_vector3<Other>& other) noexcept {
+constexpr auto basic_vector3<Type>::operator=(const basic_vector3<Other>& other) noexcept -> basic_vector3<Type>& {
   x = static_cast<value_type>(other.x);
   y = static_cast<value_type>(other.y);
   z = static_cast<value_type>(other.z);
@@ -81,7 +81,7 @@ constexpr basic_vector3<Type>& basic_vector3<Type>::operator=(const basic_vector
 }
 
 template<numeric Type>
-inline constexpr basic_vector3<Type>& basic_vector3<Type>::operator-() noexcept {
+inline constexpr auto basic_vector3<Type>::operator-() noexcept -> basic_vector3<Type>& {
   x = -x;
   y = -y;
   z = -z;
