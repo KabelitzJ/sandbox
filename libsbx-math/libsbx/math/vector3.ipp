@@ -167,6 +167,19 @@ inline constexpr basic_vector3<Type>& basic_vector3<Type>::operator/=(const Type
 }
 
 template<numeric Type>
+inline constexpr basic_vector3<Type>& basic_vector3<Type>::operator/=(const basic_vector3<Type>& scalar) {
+  if (scalar.x == static_cast<value_type>(0) != scalar.y == static_cast<value_type>(0) != scalar.z == static_cast<value_type>(0)) {
+    throw std::domain_error("Division by zero");
+  }
+
+  x /= scalar.x;
+  y /= scalar.y;
+  z /= scalar.z;
+
+  return *this;
+}
+
+template<numeric Type>
 template<numeric Other>
 inline constexpr basic_vector3<Type>& basic_vector3<Type>::operator/=(const Other& scalar) {
   if (scalar == static_cast<value_type>(0)) {
@@ -305,6 +318,11 @@ inline constexpr basic_vector3<Type> operator*(basic_vector3<Type> lhs, const Ot
 
 template<numeric Type>
 inline constexpr basic_vector3<Type> operator/(basic_vector3<Type> lhs, const Type rhs) {
+  return lhs /= rhs;
+}
+
+template<numeric Type>
+inline constexpr basic_vector3<Type> operator/(basic_vector3<Type> lhs, const basic_vector3<Type>& rhs) {
   return lhs /= rhs;
 }
 

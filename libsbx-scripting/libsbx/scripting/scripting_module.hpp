@@ -23,7 +23,7 @@ class scripting_module : public core::module<scripting_module> {
 public:
 
   scripting_module() {
-    _state.open_libraries(sol::lib::base, sol::lib::package, sol::lib::string, sol::lib::math);
+
   }
 
   ~scripting_module() override {
@@ -54,14 +54,9 @@ public:
     return *_scripts.at(name);
   }
 
-  sol::state& state() {
-    return _state;
-  }
-
 private:
 
   std::unordered_map<std::string, std::unique_ptr<scripting::script>> _scripts{};
-  sol::state _state{};
 
 }; // class scripting_module
 

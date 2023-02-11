@@ -257,6 +257,8 @@ public:
    */
   constexpr basic_vector3& operator/=(const value_type scalar);
 
+  constexpr basic_vector3& operator/=(const basic_vector3& scalar);
+
   template<numeric Other>
   constexpr basic_vector3& operator/=(const Other& scalar);
 
@@ -419,6 +421,9 @@ template<numeric Type, numeric Other>
  */
 template<numeric Type>
 [[nodiscard]] constexpr basic_vector3<Type> operator/(basic_vector3<Type> lhs, const Type rhs);
+
+template<numeric Type>
+[[nodiscard]] constexpr basic_vector3<Type> operator/(basic_vector3<Type> lhs, const basic_vector3<Type>& rhs);
 
 template<numeric Type, numeric Other>
 [[nodiscard]] constexpr basic_vector3<Type> operator/(basic_vector3<Type> lhs, const Other& rhs);

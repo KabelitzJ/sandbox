@@ -32,8 +32,11 @@ public:
 
     auto& scripting_module = sbx::scripting::scripting_module::get();
 
-    scripting_module.load_script("./demo/assets/scripts/test.lua");
-    scripting_module.load_script("./demo/assets/scripts/main.lua");
+    for (const auto& entry : std::filesystem::directory_iterator("./demo/assets/scripts")) {
+      if (entry.is_regular_file()) {
+        scripting_module.load_script(entry.path());
+      }
+    }
   }
 
   ~demo_application() override = default;
