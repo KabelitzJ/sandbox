@@ -37,6 +37,13 @@ public:
         scripting_module.load_script(entry.path());
       }
     }
+
+    auto& main_script = scripting_module.script("main");
+
+    main_script.set("position", sbx::math::vector3f{1.0f, 2.0f, 3.0f});
+    main_script.set("velocity", sbx::math::vector3f{4.0f, 5.0f, 6.0f});
+    main_script.set("acceleration", sbx::math::vector3f{7.0f, 8.0f, 9.0f});
+    main_script.startup();
   }
 
   ~demo_application() override = default;

@@ -56,12 +56,24 @@ public:
   
   template<typename Key, typename Type>
   auto set(Key&& key, const Type& value) -> void {
-    _state.set(std::forward<Key>(key), value);
+    auto variable = _state[std::forward<Key>(key)];
+
+    if (!variable.valid()) {
+      throw std::runtime_error{fmt::format("Could not find variable '{}' in lua script '{}'", key, _name)};
+    }
+
+    variable = value;
   }
 
   template<typename Key, typename Type>
   auto get(Key&& key) -> Type& {
-    return _state.get<Type>(std::forward<Key>(key));
+    auto variable = _state[std::forward<Key>(key)];
+
+    if (!variable.valid()) {
+      throw std::runtime_error{fmt::format("Could not find variable '{}' in lua script '{}'", key, _name)};
+    }
+
+    return static_cast<Type&>(variable);
   }
 
 private:
@@ -104,23 +116,29 @@ private:
     vector3_type.set("y", &math::vector3::y);
     vector3_type.set("z", &math::vector3::z);
 
+    vector3_type.set_function("normalize", [](math::vector3& vector) { vector.normalize(); });
+
     vector3_type.set_function("length", [](const math::vector3& vector) { return vector.length(); });
 
-    vector3_type.set_function(sol::meta_function::addition, [](const math::vector3& lhs, const math::vector3& rhs) {
-      return lhs + rhs;
-    });
+    vector3_type.set_function(sol::meta_function::addition, sol::overload(
+      sol::resolve<math::vector3(math::vector3 lhs, const std::float_t rhs)>(&math::operator+),
+      sol::resolve<math::vector3(math::vector3 lhs, const math::vector3& rhs)>(&math::operator+)
+    ));
 
-    vector3_type.set_function(sol::meta_function::subtraction, [](const math::vector3& lhs, const math::vector3& rhs) {
-      return lhs - rhs;
-    });
+    vector3_type.set_function(sol::meta_function::subtraction, sol::overload(
+      sol::resolve<math::vector3(math::vector3 lhs, const std::float_t rhs)>(&math::operator-),
+      sol::resolve<math::vector3(math::vector3 lhs, const math::vector3& rhs)>(&math::operator-)
+    ));
 
-    vector3_type.set_function(sol::meta_function::multiplication, [](const math::vector3& lhs, std::float_t rhs) {
-      return lhs * rhs;
-    });
+    vector3_type.set_function(sol::meta_function::multiplication, sol::overload(
+      sol::resolve<math::vector3(math::vector3 lhs, const std::float_t rhs)>(&math::operator*),
+      sol::resolve<math::vector3(math::vector3 lhs, const math::vector3& rhs)>(&math::operator*)
+    ));
 
-    vector3_type.set_function(sol::meta_function::division, [](const math::vector3& lhs, std::float_t rhs) {
-      return lhs / rhs;
-    });
+    vector3_type.set_function(sol::meta_function::division, sol::overload(
+      sol::resolve<math::vector3(math::vector3 lhs, const std::float_t rhs)>(&math::operator/),
+      sol::resolve<math::vector3(math::vector3 lhs, const math::vector3& rhs)>(&math::operator/)
+    ));
   }
   
   std::string _name{};

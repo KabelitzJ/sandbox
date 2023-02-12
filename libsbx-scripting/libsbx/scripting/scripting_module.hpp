@@ -43,15 +43,15 @@ public:
       core::logger::warn(fmt::format("Overriding existing script '{}'", name));
     }
 
-    auto result = _scripts.insert({name, std::make_unique<scripting::script>(path)});
-
-    auto& new_script = result.first->second;
-
-    new_script->startup();
+    _scripts.insert({name, std::make_unique<scripting::script>(path)});
   }
 
   auto script(const std::string& name) -> script& {
-    return *_scripts.at(name);
+    if (auto it = _scripts.find(name); it != _scripts.end()) {
+      return *it->second;
+    }
+
+    throw std::runtime_error{fmt::format("Script '{}' does not exist", name)};
   }
 
 private:
