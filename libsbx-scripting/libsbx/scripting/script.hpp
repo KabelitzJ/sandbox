@@ -59,7 +59,7 @@ public:
     auto variable = _state[std::forward<Key>(key)];
 
     if (!variable.valid()) {
-      throw std::runtime_error{fmt::format("Could not find variable '{}' in lua script '{}'", key, _name)};
+      throw std::runtime_error{fmt::format("Could not find variable '{}' in script '{}.lua'", key, _name)};
     }
 
     variable = value;
@@ -70,7 +70,7 @@ public:
     auto variable = _state[std::forward<Key>(key)];
 
     if (!variable.valid()) {
-      throw std::runtime_error{fmt::format("Could not find variable '{}' in lua script '{}'", key, _name)};
+      throw std::runtime_error{fmt::format("Could not find variable '{}' in script '{}.lua'", key, _name)};
     }
 
     return static_cast<Type&>(variable);
