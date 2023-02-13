@@ -4,6 +4,7 @@
 #include <chrono>
 
 #include <libsbx/utility/utility.hpp>
+#include <libsbx/units/units.hpp>
 #include <libsbx/core/core.hpp>
 #include <libsbx/async/async.hpp>
 #include <libsbx/io/io.hpp>
@@ -11,12 +12,6 @@
 #include <libsbx/math/math.hpp>
 #include <libsbx/devices/devices.hpp>
 #include <libsbx/graphics/graphics.hpp>
-
-#include <demo/quantity.hpp>
-#include <demo/distance.hpp>
-#include <demo/mass.hpp>
-#include <demo/time.hpp>
-#include <demo/velocity.hpp>
 
 class demo_application : public sbx::core::application {
 

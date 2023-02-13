@@ -9,6 +9,7 @@ email: jonas-kabelitz@gmx.de
 depends: * build2 >= 0.15.0
 depends: * bpkg >= 0.15.0
 depends: libsbx-utility >= 0.1.0
+depends: libsbx-units >= 0.1.0
 depends: libsbx-core >= 0.1.0
 depends: libsbx-async >= 0.1.0
 depends: libsbx-io >= 0.1.0

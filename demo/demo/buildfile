@@ -1,5 +1,6 @@
 dependencies =
 import dependencies += libsbx-utility%liba{sbx_utility}
+import dependencies += libsbx-units%liba{sbx_units}
 import dependencies += libsbx-core%liba{sbx_core}
 import dependencies += libsbx-async%liba{sbx_async}
 import dependencies += libsbx-io%liba{sbx_io}
