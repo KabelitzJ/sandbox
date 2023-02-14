@@ -1,6 +1,6 @@
 # Test executables.
 #
-*.exe
+driver
 
 # Testscript output directories (can be symlinks).
 #
