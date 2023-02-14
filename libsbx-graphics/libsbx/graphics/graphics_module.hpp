@@ -19,6 +19,8 @@
 #include <libsbx/graphics/commands/command_pool.hpp>
 #include <libsbx/graphics/commands/command_buffer.hpp>
 
+#include <libsbx/graphics/swapchain/swapchain.hpp>
+
 namespace sbx::graphics {
 
 /**
@@ -58,6 +60,13 @@ public:
   
 private:
 
+  struct per_frame_data {
+    VkSemaphore present_complete{};
+    VkSemaphore render_complete{};
+    VkFence in_flight_fence{};
+    command_buffer command_buffer{};
+  }; // struct per_frame_data
+
   std::unique_ptr<graphics::instance> _instance{};
   std::unique_ptr<graphics::physical_device> _physical_device{};
   std::unique_ptr<graphics::logical_device> _logical_device{};
@@ -67,9 +76,9 @@ private:
   std::unique_ptr<graphics::surface> _surface{};
   std::unique_ptr<graphics::command_buffer> _command_buffer{};
 
-  VkSemaphore _resent_complete{};
-  VkSemaphore _render_complete{};
-  VkFence _in_flight_fence{};
+  std::unique_ptr<graphics::swapchain> _swapchain{};
+
+  std::vector<per_frame_data> _per_frame_data{};
 
   std::size_t _current_frame{};
   bool _framebuffer_resized{};
