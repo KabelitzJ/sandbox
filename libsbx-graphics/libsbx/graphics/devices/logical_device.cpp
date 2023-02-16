@@ -10,6 +10,18 @@
 
 namespace sbx::graphics {
 
+auto queue::handle() const noexcept -> const VkQueue& {
+  return _handle;
+}
+
+queue::operator const VkQueue&() const noexcept {
+  return _handle;
+}
+
+auto queue::family() const noexcept -> const std::uint32_t& {
+  return _family;
+}
+
 logical_device::logical_device(const physical_device& physical_device) {
   _create_queue_indices(physical_device);
   _create_logical_logical_device(physical_device);
@@ -68,24 +80,24 @@ auto logical_device::_create_queue_indices(const physical_device& physical_devic
   for (auto i = std::uint32_t{0}; i < device_queue_family_property_count; ++i) {
 		if (device_queue_family_properties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) {
 			graphics_family = i;
-			_graphics_queue.family = i;
+			_graphics_queue._family = i;
 			_supported_queues |= VK_QUEUE_GRAPHICS_BIT;
 		}
 
 		if (device_queue_family_properties[i].queueCount > 0) {
 			present_family = i;
-			_present_queue.family = i;
+			_present_queue._family = i;
 		}
 
 		if (device_queue_family_properties[i].queueFlags & VK_QUEUE_COMPUTE_BIT) {
 			compute_family = i;
-			_compute_queue.family = i;
+			_compute_queue._family = i;
 			_supported_queues |= VK_QUEUE_COMPUTE_BIT;
 		}
 
 		if (device_queue_family_properties[i].queueFlags & VK_QUEUE_TRANSFER_BIT) {
 			transfer_family = i;
-			_transfer_queue.family = i;
+			_transfer_queue._family = i;
 			_supported_queues |= VK_QUEUE_TRANSFER_BIT;
 		}
 
@@ -95,7 +107,7 @@ auto logical_device::_create_queue_indices(const physical_device& physical_devic
 	}
 
 	if (!graphics_family) {
-		throw std::runtime_error("Failed to find queue family supporting VK_QUEUE_GRAPHICS_BIT");
+		throw std::runtime_error("Failed to find queue _family supporting VK_QUEUE_GRAPHICS_BIT");
   }
 }
 
@@ -106,37 +118,37 @@ auto logical_device::_create_logical_logical_device(const physical_device& physi
 	if (_supported_queues & VK_QUEUE_GRAPHICS_BIT) {
 		auto graphics_queue_create_info = VkDeviceQueueCreateInfo{};
 		graphics_queue_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-		graphics_queue_create_info.queueFamilyIndex = _graphics_queue.family;
+		graphics_queue_create_info.queueFamilyIndex = _graphics_queue._family;
 		graphics_queue_create_info.queueCount = 1;
 		graphics_queue_create_info.pQueuePriorities = &queue_priorities;
 
 		queue_create_infos.emplace_back(graphics_queue_create_info);
 	} else {
-		_graphics_queue.family = 0;
+		_graphics_queue._family = 0;
 	}
 
-	if (_supported_queues & VK_QUEUE_COMPUTE_BIT && _compute_queue.family != _graphics_queue.family) {
+	if (_supported_queues & VK_QUEUE_COMPUTE_BIT && _compute_queue._family != _graphics_queue._family) {
 		auto compute_queue_create_info = VkDeviceQueueCreateInfo{};
 		compute_queue_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-		compute_queue_create_info.queueFamilyIndex = _compute_queue.family;
+		compute_queue_create_info.queueFamilyIndex = _compute_queue._family;
 		compute_queue_create_info.queueCount = 1;
 		compute_queue_create_info.pQueuePriorities = &queue_priorities;
 
 		queue_create_infos.emplace_back(compute_queue_create_info);
 	} else {
-		_compute_queue.family = _graphics_queue.family;
+		_compute_queue._family = _graphics_queue._family;
 	}
 
-	if (_supported_queues & VK_QUEUE_TRANSFER_BIT && _transfer_queue.family != _graphics_queue.family && _transfer_queue.family != _compute_queue.family) {
+	if (_supported_queues & VK_QUEUE_TRANSFER_BIT && _transfer_queue._family != _graphics_queue._family && _transfer_queue._family != _compute_queue._family) {
 		auto transfer_queue_create_info = VkDeviceQueueCreateInfo{};
 		transfer_queue_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-		transfer_queue_create_info.queueFamilyIndex = _transfer_queue.family;
+		transfer_queue_create_info.queueFamilyIndex = _transfer_queue._family;
 		transfer_queue_create_info.queueCount = 1;
 		transfer_queue_create_info.pQueuePriorities = &queue_priorities;
 
 		queue_create_infos.emplace_back(transfer_queue_create_info);
 	} else {
-		_transfer_queue.family = _graphics_queue.family;
+		_transfer_queue._family = _graphics_queue._family;
 	}
 
 	const auto& physical_device_features = physical_device.features();
@@ -239,10 +251,10 @@ auto logical_device::_create_logical_logical_device(const physical_device& physi
 
 	validate(vkCreateDevice(physical_device, &device_create_info, nullptr, &_handle));
 
-	vkGetDeviceQueue(_handle, _graphics_queue.family, 0, &_graphics_queue.handle);
-	vkGetDeviceQueue(_handle, _present_queue.family, 0, &_present_queue.handle);
-	vkGetDeviceQueue(_handle, _compute_queue.family, 0, &_compute_queue.handle);
-	vkGetDeviceQueue(_handle, _transfer_queue.family, 0, &_transfer_queue.handle);
+	vkGetDeviceQueue(_handle, _graphics_queue._family, 0, &_graphics_queue._handle);
+	vkGetDeviceQueue(_handle, _present_queue._family, 0, &_present_queue._handle);
+	vkGetDeviceQueue(_handle, _compute_queue._family, 0, &_compute_queue._handle);
+	vkGetDeviceQueue(_handle, _transfer_queue._family, 0, &_transfer_queue._handle);
 }
 
 } // namespace sbx::graphics

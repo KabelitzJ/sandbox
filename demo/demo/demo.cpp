@@ -33,6 +33,8 @@ public:
       }
     }
 
+    scripting_module.script("main").startup();
+
     window.show();
   }
 

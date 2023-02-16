@@ -1,5 +1,9 @@
 #include <libsbx/graphics/graphics_module.hpp>
 
+#include <libsbx/utility/fast_mod.hpp>
+
+#include <libsbx/graphics/swapchain/rectangle.hpp>
+
 namespace sbx::graphics {
 
 static auto _stringify_result(VkResult result) -> std::string {
@@ -74,11 +78,47 @@ graphics_module::graphics_module()
 }
 
 graphics_module::~graphics_module() {
+  const auto& graphics_queue = _logical_device->graphics_queue();
 
+  validate(vkQueueWaitIdle(graphics_queue));
+
+  _swapchain.reset();
+
+  _command_pools.clear();
+
+  for (const auto& frame_data : _per_frame_data) {
+    vkDestroyFence(*_logical_device, frame_data.in_flight_fence, nullptr);
+    vkDestroySemaphore(*_logical_device, frame_data.render_finished_semaphore, nullptr);
+    vkDestroySemaphore(*_logical_device, frame_data.image_available_semaphore, nullptr);
+  }
+
+  _per_frame_data.clear();
+
+  _command_buffers.clear();
 }
 
 auto graphics_module::update([[maybe_unused]] std::float_t delta_time) -> void {
+  if (!_swapchain || _framebuffer_resized) {
+    _recreate_swapchain();
+  }
 
+  const auto& frame_data = _per_frame_data[_current_frame];
+
+  // Get the next image in the swapchain (back/front buffer)
+  const auto result = _swapchain->acquire_next_image(frame_data.image_available_semaphore, frame_data.in_flight_fence);
+
+  if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+    _recreate_swapchain();
+    return;
+  }
+
+  if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+    throw std::runtime_error{"Failed to acquire swapchain image"};
+  }
+
+  _start_render_pass();
+
+  _end_render_pass();
 }
 
 auto graphics_module::instance() -> graphics::instance&  {
@@ -109,6 +149,65 @@ auto graphics_module::swapchain() -> graphics::swapchain& {
   return *_swapchain;
 };
 
+auto graphics_module::_start_render_pass() -> void {
+  const auto& command_buffer = _command_buffers[_swapchain->active_image_index()];
+
+  if (!command_buffer->is_running()) {
+    command_buffer->begin(VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
+  }
+
+  const auto render_area = rectangle2d{offset2d{0, 0}, _swapchain->extent()};
+
+  auto viewport = VkViewport{};
+	viewport.x = 0.0f;
+	viewport.y = 0.0f;
+	viewport.width = static_cast<float>(render_area.extent().width());
+	viewport.height = static_cast<float>(render_area.extent().height());
+	viewport.minDepth = 0.0f;
+	viewport.maxDepth = 1.0f;
+	vkCmdSetViewport(*command_buffer, 0, 1, &viewport);
+
+	auto scissor = VkRect2D{};
+	scissor.offset = render_area.offset();
+	scissor.extent = render_area.extent();
+	vkCmdSetScissor(*command_buffer, 0, 1, &scissor);
+
+  // auto render_pass_begin_info = VkRenderPassBeginInfo{};
+	// render_pass_begin_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+	// render_pass_begin_info.renderPass = *renderStage.GetRenderpass();
+	// render_pass_begin_info.framebuffer = renderStage.GetActiveFramebuffer(swapchain->GetActiveImageIndex());
+	// render_pass_begin_info.renderArea = render_area;
+	// render_pass_begin_info.clearValueCount = static_cast<uint32_t>(clearValues.size());
+	// render_pass_begin_info.pClearValues = clearValues.data();
+  // vkCmdBeginRenderPass(*commandBuffer, &render_pass_begin_info, VK_SUBPASS_CONTENTS_INLINE);
+
+}
+
+auto graphics_module::_end_render_pass() -> void {
+  const auto& frame_data = _per_frame_data[_current_frame];
+
+  const auto active_image_index = _swapchain->active_image_index();
+  auto& command_buffer = _command_buffers[active_image_index];
+
+  const auto& present_queue = _logical_device->present_queue();
+
+  // Submit the command buffer to the graphics queue and draw the on the image
+  command_buffer->end();
+  command_buffer->submit(frame_data.image_available_semaphore, frame_data.render_finished_semaphore, frame_data.in_flight_fence);
+
+  // Present the image to the screen
+  const auto result = _swapchain->queue_present(present_queue, frame_data.render_finished_semaphore);
+
+  if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
+    _framebuffer_resized = true;
+  } else if (result != VK_SUCCESS) {
+    throw std::runtime_error{"Failed to present swapchain image"};
+  }
+
+  // _current_frame = (_current_frame + 1) % _swapchain->image_count();
+  _current_frame = utility::fast_mod(_current_frame + 1, _swapchain->image_count());
+}
+
 auto graphics_module::_recreate_swapchain() -> void {
   _logical_device->wait_idle();
 
@@ -119,6 +218,8 @@ auto graphics_module::_recreate_swapchain() -> void {
   _swapchain = std::make_unique<graphics::swapchain>(extent, _swapchain);
 
   _recreate_command_buffers();
+
+  _framebuffer_resized = false;
 }
 
 auto graphics_module::_recreate_command_buffers() -> void {

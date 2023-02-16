@@ -3,13 +3,15 @@
 
 #include <vulkan/vulkan.hpp>
 
+#include <libsbx/utility/noncopyable.hpp>
+
 #include <libsbx/graphics/devices/instance.hpp>
 #include <libsbx/graphics/devices/physical_device.hpp>
 #include <libsbx/graphics/devices/logical_device.hpp>
 
 namespace sbx::graphics {
 
-class surface {
+class surface : public utility::noncopyable {
 
 public:
 
@@ -20,6 +22,10 @@ public:
   auto handle() const noexcept -> const VkSurfaceKHR&;
 
   operator const VkSurfaceKHR&() const noexcept;
+
+  auto capabilities() const noexcept -> const VkSurfaceCapabilitiesKHR&;
+
+  auto format() const noexcept -> const VkSurfaceFormatKHR&;
 
 private:
 

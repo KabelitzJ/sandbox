@@ -3,8 +3,7 @@
 #include <limits>
 
 #include <libsbx/core/logger.hpp>
-
-#include <libsbx/graphics/devices/logical_device.hpp>
+#include <libsbx/core/assert.hpp>
 
 #include <libsbx/graphics/graphics_module.hpp>
 
@@ -73,8 +72,8 @@ auto command_buffer::end() -> void {
 }
 
 auto command_buffer::submit_idle() -> void {
-  auto& logical_device = graphics_module::get().logical_device();
-	auto selected_queue = _queue();
+  const auto& logical_device = graphics_module::get().logical_device();
+	const auto& selected_queue = _queue();
 
 	if (_is_running) {
 		end();
@@ -102,8 +101,8 @@ auto command_buffer::submit_idle() -> void {
 }
 
 auto command_buffer::submit(const VkSemaphore& wait_semaphore, const VkSemaphore &signal_semaphore, const VkFence& fence) -> void {
-  auto& logical_device = graphics_module::get().logical_device();
-	auto selected_queue = _queue();
+  const auto& logical_device = graphics_module::get().logical_device();
+	const auto& selected_queue = _queue();
 
 	if (_is_running) {
 		end();
@@ -132,16 +131,12 @@ auto command_buffer::submit(const VkSemaphore& wait_semaphore, const VkSemaphore
 	validate(vkQueueSubmit(selected_queue, 1, &submit_info, fence));
 }
 
-auto command_buffer::_queue() const noexcept -> VkQueue {
+auto command_buffer::_queue() const noexcept -> const queue& {
   auto& logical_device = graphics_module::get().logical_device();
 
-  if (_queue_type == VK_QUEUE_GRAPHICS_BIT) {
-    return logical_device.graphics_queue().handle;
-  } else if (_queue_type == VK_QUEUE_COMPUTE_BIT) {
-    return logical_device.compute_queue().handle;
-  }
+  core::assert_that(_queue_type == VK_QUEUE_GRAPHICS_BIT || _queue_type == VK_QUEUE_COMPUTE_BIT, "Invalid queue type");
 
-  return nullptr;
+  return _queue_type == VK_QUEUE_GRAPHICS_BIT ? logical_device.graphics_queue() : logical_device.compute_queue();
 }
 
 } // namespace sbx::graphics

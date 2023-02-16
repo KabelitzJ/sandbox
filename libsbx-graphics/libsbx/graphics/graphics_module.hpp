@@ -62,6 +62,10 @@ public:
   
 private:
 
+  auto _start_render_pass() -> void;
+
+  auto _end_render_pass() -> void;
+
   auto _recreate_swapchain() -> void;
 
   auto _recreate_command_buffers() -> void;
@@ -85,7 +89,7 @@ private:
   std::vector<per_frame_data> _per_frame_data{};
   std::vector<std::unique_ptr<graphics::command_buffer>> _command_buffers{};
 
-  std::size_t _current_frame{};
+  std::uint32_t _current_frame{};
   bool _framebuffer_resized{};
 
 }; // class graphics_module

@@ -5,19 +5,39 @@
 
 #include <vulkan/vulkan.hpp>
 
+#include <libsbx/utility/noncopyable.hpp>
+
 #include <libsbx/graphics/devices/instance.hpp>
 #include <libsbx/graphics/devices/physical_device.hpp>
 
 namespace sbx::graphics {
 
-class logical_device {
+class queue : public utility::noncopyable {
+
+  friend class logical_device;
 
 public:
 
-  struct queue {
-    VkQueue handle{};
-    std::uint32_t family{};
-  }; // struct queue
+  ~queue() = default;
+
+  auto handle() const noexcept -> const VkQueue&;
+
+  operator const VkQueue&() const noexcept;
+
+  auto family() const noexcept -> const std::uint32_t&;
+
+private:
+
+  queue() = default;
+
+  VkQueue _handle{};
+  std::uint32_t _family{};
+
+}; // class queue
+
+class logical_device : public utility::noncopyable {
+
+public:
 
   logical_device(const physical_device& physical_device);
 

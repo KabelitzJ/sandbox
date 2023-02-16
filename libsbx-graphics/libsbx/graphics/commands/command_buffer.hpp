@@ -5,6 +5,8 @@
 
 #include <vulkan/vulkan.hpp>
 
+#include <libsbx/graphics/devices/logical_device.hpp>
+
 #include <libsbx/graphics/commands/command_pool.hpp>
 
 namespace sbx::graphics {
@@ -35,7 +37,7 @@ public:
 
 private:
 
-  auto _queue() const noexcept -> VkQueue;
+  auto _queue() const noexcept -> const queue&;
 
   std::shared_ptr<command_pool> _command_pool{};
 

@@ -6,11 +6,13 @@
 
 #include <vulkan/vulkan.hpp>
 
+#include <libsbx/utility/noncopyable.hpp>
+
 #include <libsbx/graphics/devices/instance.hpp>
 
 namespace sbx::graphics {
 
-class physical_device {
+class physical_device : public utility::noncopyable {
 
 public:
 
