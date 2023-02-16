@@ -33,9 +33,7 @@ public:
       }
     }
 
-    auto& main_script = scripting_module.script("main");
-
-    main_script.startup();
+    window.show();
   }
 
   ~demo_application() override = default;

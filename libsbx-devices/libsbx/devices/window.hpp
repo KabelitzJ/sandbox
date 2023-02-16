@@ -27,7 +27,7 @@ public:
   window(const std::string& title, std::uint32_t width, std::uint32_t height) {
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     glfwWindowHint(GLFW_RESIZABLE, false);
-    glfwWindowHint(GLFW_VISIBLE, true);
+    glfwWindowHint(GLFW_VISIBLE, false);
 
     _title = title;
     _width = width;

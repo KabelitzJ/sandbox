@@ -4,6 +4,7 @@
 #include <memory>
 #include <unordered_map>
 #include <string>
+#include <mutex>
 
 #include <sol/sol.hpp>
 
@@ -31,6 +32,18 @@ public:
   }
 
   auto update(std::float_t delta_time) -> void override {
+    // for (auto entry = _futures.begin(); entry != _futures.end();) {
+    //   if (entry->wait_for(std::chrono::seconds{0}) == std::future_status::ready) {
+    //     auto script = entry->get();
+
+    //     _scripts.insert({script->name(), std::move(script)});
+
+    //     entry = _futures.erase(entry);
+    //   } else {
+    //     ++entry;
+    //   }
+    // }
+
     for (auto& [name, script] : _scripts) {
       script->update(delta_time);
     }
@@ -43,10 +56,24 @@ public:
       core::logger::warn(fmt::format("Overriding existing script '{}'", name));
     }
 
-    _scripts.insert({name, std::make_unique<scripting::script>(path)});
+    // _scripts.insert({name, std::make_unique<scripting::script>(path)});
+
+    auto& loader = async::async_module::get().loader();
+
+    loader.enqueue<void>([this, &path](){
+      auto script = std::make_unique<scripting::script>(path);
+
+      auto lock = std::scoped_lock{_mutex};
+
+      _scripts.insert({script->name(), std::move(script)});
+    });
+
+    // _futures.push_back(std::move(future));
   }
 
   auto script(const std::string& name) -> script& {
+    auto lock = std::scoped_lock{_mutex};
+
     if (auto it = _scripts.find(name); it != _scripts.end()) {
       return *it->second;
     }
@@ -56,6 +83,8 @@ public:
 
 private:
 
+  std::mutex _mutex{};
+  // std::vector<std::future<std::unique_ptr<scripting::script>>> _futures{};
   std::unordered_map<std::string, std::unique_ptr<scripting::script>> _scripts{};
 
 }; // class scripting_module

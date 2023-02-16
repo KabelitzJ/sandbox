@@ -53,6 +53,10 @@ public:
   auto update(std::float_t delta_time) -> void {
     std::invoke(_update_function, delta_time);
   }
+
+  auto name() const noexcept -> const std::string& {
+    return _name;
+  }
   
   template<typename Key, typename Type>
   auto set(Key&& key, const Type& value) -> void {
