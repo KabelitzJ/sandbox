@@ -37,7 +37,7 @@ public:
 
   auto transfer_queue() const -> const queue&;
 
-  auto wait_for_idle() const -> void;
+  auto wait_idle() const -> void;
 
 private:
 

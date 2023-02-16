@@ -2,6 +2,10 @@
 
 namespace sbx::graphics {
 
+extent2d::extent2d(const VkExtent2D& extent)
+: _width{extent.width},
+  _height{extent.height} {}
+
 extent2d::extent2d(std::uint32_t width, std::uint32_t height) 
 : _width{width}, 
 _height{height} {}
@@ -21,6 +25,11 @@ extent2d::operator VkExtent2D() const noexcept {
 auto operator==(const extent2d& lhs, const extent2d& rhs) noexcept -> bool {
   return lhs.width() == rhs.width() && lhs.height() == rhs.height();
 }
+
+extent3d::extent3d(const VkExtent3D& extent)
+: _width{extent.width},
+  _height{extent.height},
+  _depth{extent.depth} {}
 
 extent3d::extent3d(std::uint32_t width, std::uint32_t height, std::uint32_t depth)
 : _width{width},

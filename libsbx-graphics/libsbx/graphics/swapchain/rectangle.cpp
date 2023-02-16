@@ -2,6 +2,10 @@
 
 namespace sbx::graphics {
 
+rectangle2d::rectangle2d(const VkRect2D& rectangle)
+: _offset{rectangle.offset},
+  _extent{rectangle.extent} {}
+
 rectangle2d::rectangle2d(const offset2d& offset, const extent2d& extent)
 : _offset{offset},
   _extent{extent} {}

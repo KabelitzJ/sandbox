@@ -2,6 +2,10 @@
 
 namespace sbx::graphics {
 
+offset2d::offset2d(const VkOffset2D& offset)
+: _x{offset.x},
+  _y{offset.y} {}
+
 offset2d::offset2d(std::int32_t x, std::int32_t y)
 : _x{x},
   _y{y} {}
@@ -21,6 +25,11 @@ offset2d::operator VkOffset2D() const noexcept {
 auto operator==(const offset2d& lhs, const offset2d& rhs) noexcept -> bool {
   return lhs.x() == rhs.x() && lhs.y() == rhs.y();
 }
+
+offset3d::offset3d(const VkOffset3D& offset)
+: _x{offset.x},
+  _y{offset.y},
+  _z{offset.z} {}
 
 offset3d::offset3d(std::int32_t x, std::int32_t y, std::int32_t z)
 : _x{x},

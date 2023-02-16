@@ -57,14 +57,19 @@ public:
   auto surface() -> surface&;
 
   auto command_pool(const std::thread::id& thread_id = std::this_thread::get_id()) -> const std::shared_ptr<command_pool>&;
+
+  auto swapchain() -> swapchain&;
   
 private:
 
+  auto _recreate_swapchain() -> void;
+
+  auto _recreate_command_buffers() -> void;
+
   struct per_frame_data {
-    VkSemaphore present_complete{};
-    VkSemaphore render_complete{};
+    VkSemaphore image_available_semaphore{};
+    VkSemaphore render_finished_semaphore{};
     VkFence in_flight_fence{};
-    command_buffer command_buffer{};
   }; // struct per_frame_data
 
   std::unique_ptr<graphics::instance> _instance{};
@@ -74,11 +79,11 @@ private:
   std::unordered_map<std::thread::id, std::shared_ptr<graphics::command_pool>> _command_pools{};
 
   std::unique_ptr<graphics::surface> _surface{};
-  std::unique_ptr<graphics::command_buffer> _command_buffer{};
 
   std::unique_ptr<graphics::swapchain> _swapchain{};
 
   std::vector<per_frame_data> _per_frame_data{};
+  std::vector<std::unique_ptr<graphics::command_buffer>> _command_buffers{};
 
   std::size_t _current_frame{};
   bool _framebuffer_resized{};

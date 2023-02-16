@@ -13,6 +13,8 @@ public:
 
   offset2d() = default;
 
+  offset2d(const VkOffset2D& offset);
+
   offset2d(std::int32_t x, std::int32_t y);
 
   ~offset2d() = default;
@@ -37,6 +39,8 @@ class offset3d {
 public:
 
   offset3d() = default;
+
+  offset3d(const VkOffset3D& offset);
 
   offset3d(std::int32_t x, std::int32_t y, std::int32_t z);
 

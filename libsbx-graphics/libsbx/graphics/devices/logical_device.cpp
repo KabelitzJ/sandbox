@@ -16,7 +16,7 @@ logical_device::logical_device(const physical_device& physical_device) {
 }
 
 logical_device::~logical_device() {
-  wait_for_idle();
+  wait_idle();
 
   vkDestroyDevice(_handle, nullptr);
 }
@@ -49,7 +49,7 @@ auto logical_device::transfer_queue() const -> const queue& {
   return _transfer_queue;
 }
 
-auto logical_device::wait_for_idle() const -> void {
+auto logical_device::wait_idle() const -> void {
   validate(vkDeviceWaitIdle(_handle));
 }
 

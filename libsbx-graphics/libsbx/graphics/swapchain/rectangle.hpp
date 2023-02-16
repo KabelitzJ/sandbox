@@ -16,6 +16,8 @@ public:
 
   rectangle2d() = default;
 
+  rectangle2d(const VkRect2D& rectangle);
+
   rectangle2d(const offset2d& offset, const extent2d& extent);
 
   ~rectangle2d() = default;

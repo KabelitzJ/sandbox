@@ -13,6 +13,8 @@ public:
 
   extent2d() = default;
 
+  extent2d(const VkExtent2D& extent);
+
   extent2d(std::uint32_t width, std::uint32_t height);
 
   ~extent2d() = default;
@@ -37,6 +39,8 @@ class extent3d {
 public:
 
   extent3d() = default;
+
+  extent3d(const VkExtent3D& extent);
 
   extent3d(std::uint32_t width, std::uint32_t height, std::uint32_t depth);
 

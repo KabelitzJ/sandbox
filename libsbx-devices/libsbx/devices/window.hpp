@@ -24,12 +24,16 @@ class window {
 
 public:
 
-  window() {
+  window(const std::string& title, std::uint32_t width, std::uint32_t height) {
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     glfwWindowHint(GLFW_RESIZABLE, false);
     glfwWindowHint(GLFW_VISIBLE, true);
 
-    _handle = glfwCreateWindow(960, 720, "Demo", nullptr, nullptr);
+    _title = title;
+    _width = width;
+    _height = height;
+
+    _handle = glfwCreateWindow(static_cast<std::int32_t>(_width), static_cast<std::int32_t>(_height), _title.c_str(), nullptr, nullptr);
 
     if (!_handle) {
       throw std::runtime_error{"Could not create glfw window"};
@@ -50,6 +54,18 @@ public:
 
   operator GLFWwindow*() {
     return _handle;
+  }
+
+  auto title() const -> const std::string& {
+    return _title;
+  }
+
+  auto width() const -> std::uint32_t {
+    return _width;
+  }
+
+  auto height() const -> std::uint32_t {
+    return _height;
   }
 
   /**
@@ -128,7 +144,12 @@ private:
     });
   }
 
+  std::string _title{};
+  std::uint32_t _width{};
+  std::uint32_t _height{};
+
   GLFWwindow* _handle{};
+
   std::function<void(const window_closed_event&)> _on_window_closed{};
   std::function<void(const window_moved_event&)> _on_window_moved{};
   std::function<void(const window_resized_event&)> _on_window_resized{};

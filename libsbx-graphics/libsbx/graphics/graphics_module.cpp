@@ -58,7 +58,7 @@ static auto _stringify_result(VkResult result) -> std::string {
 }
 
 auto validate(VkResult result) -> void {
-  if (result >= 0) {
+  if (result >= VK_SUCCESS) {
     return;
   }
 
@@ -103,6 +103,53 @@ auto graphics_module::command_pool(const std::thread::id& thread_id) -> const st
   }
 
   return _command_pools.insert({thread_id, std::make_shared<graphics::command_pool>(thread_id)}).first->second;
+}
+
+auto graphics_module::swapchain() -> graphics::swapchain& {
+  return *_swapchain;
+};
+
+auto graphics_module::_recreate_swapchain() -> void {
+  _logical_device->wait_idle();
+
+  const auto& window = devices::devices_module::get().window();
+
+  const auto extent = extent2d{window.width(), window.height()};
+
+  _swapchain = std::make_unique<graphics::swapchain>(extent, _swapchain);
+
+  _recreate_command_buffers();
+}
+
+auto graphics_module::_recreate_command_buffers() -> void {
+  const auto image_count = _swapchain->image_count();
+
+  for (const auto& data : _per_frame_data) {
+    vkDestroyFence(*_logical_device, data.in_flight_fence, nullptr);
+    vkDestroySemaphore(*_logical_device, data.image_available_semaphore, nullptr);
+    vkDestroySemaphore(*_logical_device, data.render_finished_semaphore, nullptr);
+  }
+
+  _per_frame_data.resize(image_count);
+
+  auto semaphore_create_info = VkSemaphoreCreateInfo{};
+	semaphore_create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+	auto fence_create_info = VkFenceCreateInfo{};
+	fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+	fence_create_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+
+  for (auto& data : _per_frame_data) {
+    validate(vkCreateSemaphore(*_logical_device, &semaphore_create_info, nullptr, &data.image_available_semaphore));
+    validate(vkCreateSemaphore(*_logical_device, &semaphore_create_info, nullptr, &data.render_finished_semaphore));
+    validate(vkCreateFence(*_logical_device, &fence_create_info, nullptr, &data.in_flight_fence));
+  }
+
+  _command_buffers.resize(image_count);
+
+  for (auto& command_buffer : _command_buffers) {
+    command_buffer = std::make_unique<graphics::command_buffer>(false);
+  }
 }
 
 } // namespace sbx::graphics
