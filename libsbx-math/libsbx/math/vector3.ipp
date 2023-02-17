@@ -154,7 +154,7 @@ inline constexpr basic_vector3<Type>& basic_vector3<Type>::operator*=(const Othe
 }
 
 template<numeric Type>
-inline constexpr basic_vector3<Type>& basic_vector3<Type>::operator/=(const Type scalar) {
+inline constexpr basic_vector3<Type>& basic_vector3<Type>::operator/=(const Type scalar) noexcept {
   core::assert_that(scalar != static_cast<value_type>(0), "Division by zero");
 
   x /= scalar;
@@ -165,7 +165,7 @@ inline constexpr basic_vector3<Type>& basic_vector3<Type>::operator/=(const Type
 }
 
 template<numeric Type>
-inline constexpr basic_vector3<Type>& basic_vector3<Type>::operator/=(const basic_vector3<Type>& scalar) {
+inline constexpr basic_vector3<Type>& basic_vector3<Type>::operator/=(const basic_vector3<Type>& scalar) noexcept {
   core::assert_that(scalar.x != static_cast<value_type>(0), "Division by zero");
 
   x /= scalar.x;
@@ -177,7 +177,7 @@ inline constexpr basic_vector3<Type>& basic_vector3<Type>::operator/=(const basi
 
 template<numeric Type>
 template<numeric Other>
-inline constexpr basic_vector3<Type>& basic_vector3<Type>::operator/=(const Other& scalar) {
+inline constexpr basic_vector3<Type>& basic_vector3<Type>::operator/=(const Other& scalar) noexcept {
   core::assert_that(scalar != static_cast<value_type>(0), "Division by zero");
 
   x /= static_cast<value_type>(scalar);

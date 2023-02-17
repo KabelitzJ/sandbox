@@ -11,7 +11,7 @@
 #include <libsbx/scripting/scripting.hpp>
 #include <libsbx/math/math.hpp>
 #include <libsbx/devices/devices.hpp>
-#include <libsbx/graphics/graphics.hpp>
+#include <libsbx/graphics/graphics.hpp> 
 
 class demo_application : public sbx::core::application {
 
