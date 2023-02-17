@@ -19,7 +19,7 @@
 #include <libsbx/graphics/commands/command_pool.hpp>
 #include <libsbx/graphics/commands/command_buffer.hpp>
 
-#include <libsbx/graphics/swapchain/swapchain.hpp>
+#include <libsbx/graphics/renderpass/swapchain.hpp>
 
 namespace sbx::graphics {
 

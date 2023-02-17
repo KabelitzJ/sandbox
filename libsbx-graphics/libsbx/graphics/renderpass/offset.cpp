@@ -1,4 +1,4 @@
-#include <libsbx/graphics/swapchain/offset.hpp>
+#include <libsbx/graphics/renderpass/offset.hpp>
 
 namespace sbx::graphics {
 

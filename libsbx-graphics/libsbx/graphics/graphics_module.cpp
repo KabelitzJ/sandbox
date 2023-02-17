@@ -2,7 +2,7 @@
 
 #include <libsbx/utility/fast_mod.hpp>
 
-#include <libsbx/graphics/swapchain/rectangle.hpp>
+#include <libsbx/graphics/renderpass/rectangle.hpp>
 
 namespace sbx::graphics {
 

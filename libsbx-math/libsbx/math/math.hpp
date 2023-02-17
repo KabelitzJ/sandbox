@@ -39,4 +39,6 @@
 #include <libsbx/math/concepts.hpp>
 #include <libsbx/math/vector3.hpp>
 
+#include <libsbx/math/color.hpp>
+
 #endif // LIBSBX_MATH_HPP_

@@ -1,4 +1,4 @@
-#include <libsbx/graphics/swapchain/swapchain.hpp>
+#include <libsbx/graphics/renderpass/swapchain.hpp>
 
 #include <limits>
 

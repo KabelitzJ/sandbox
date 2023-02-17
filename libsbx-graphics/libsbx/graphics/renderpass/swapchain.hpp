@@ -7,7 +7,7 @@
 
 #include <vulkan/vulkan.h>
 
-#include <libsbx/graphics/swapchain/extent.hpp>
+#include <libsbx/graphics/renderpass/extent.hpp>
 
 namespace sbx::graphics {
 
