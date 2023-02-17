@@ -155,9 +155,7 @@ inline constexpr basic_vector3<Type>& basic_vector3<Type>::operator*=(const Othe
 
 template<numeric Type>
 inline constexpr basic_vector3<Type>& basic_vector3<Type>::operator/=(const Type scalar) {
-  if (scalar == static_cast<value_type>(0)) {
-    throw std::domain_error("Division by zero");
-  }
+  core::assert_that(scalar != static_cast<value_type>(0), "Division by zero");
 
   x /= scalar;
   y /= scalar;
@@ -168,9 +166,7 @@ inline constexpr basic_vector3<Type>& basic_vector3<Type>::operator/=(const Type
 
 template<numeric Type>
 inline constexpr basic_vector3<Type>& basic_vector3<Type>::operator/=(const basic_vector3<Type>& scalar) {
-  if (scalar.x == static_cast<value_type>(0) != scalar.y == static_cast<value_type>(0) != scalar.z == static_cast<value_type>(0)) {
-    throw std::domain_error("Division by zero");
-  }
+  core::assert_that(scalar.x != static_cast<value_type>(0), "Division by zero");
 
   x /= scalar.x;
   y /= scalar.y;
@@ -182,9 +178,7 @@ inline constexpr basic_vector3<Type>& basic_vector3<Type>::operator/=(const basi
 template<numeric Type>
 template<numeric Other>
 inline constexpr basic_vector3<Type>& basic_vector3<Type>::operator/=(const Other& scalar) {
-  if (scalar == static_cast<value_type>(0)) {
-    throw std::domain_error("Division by zero");
-  }
+  core::assert_that(scalar != static_cast<value_type>(0), "Division by zero");
 
   x /= static_cast<value_type>(scalar);
   y /= static_cast<value_type>(scalar);
@@ -317,17 +311,17 @@ inline constexpr basic_vector3<Type> operator*(basic_vector3<Type> lhs, const Ot
 }
 
 template<numeric Type>
-inline constexpr basic_vector3<Type> operator/(basic_vector3<Type> lhs, const Type rhs) {
+inline constexpr basic_vector3<Type> operator/(basic_vector3<Type> lhs, const Type rhs) noexcept {
   return lhs /= rhs;
 }
 
 template<numeric Type>
-inline constexpr basic_vector3<Type> operator/(basic_vector3<Type> lhs, const basic_vector3<Type>& rhs) {
+inline constexpr basic_vector3<Type> operator/(basic_vector3<Type> lhs, const basic_vector3<Type>& rhs) noexcept {
   return lhs /= rhs;
 }
 
 template<numeric Type, numeric Other>
-inline constexpr basic_vector3<Type> operator/(basic_vector3<Type> lhs, const Other& rhs) {
+inline constexpr basic_vector3<Type> operator/(basic_vector3<Type> lhs, const Other& rhs) noexcept {
   return lhs /= rhs;
 }
 

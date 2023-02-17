@@ -255,12 +255,12 @@ public:
    * 
    * @return basic_vector3& A reference to this vector. 
    */
-  constexpr basic_vector3& operator/=(const value_type scalar);
+  constexpr basic_vector3& operator/=(const value_type scalar) noexcept;
 
-  constexpr basic_vector3& operator/=(const basic_vector3& scalar);
+  constexpr basic_vector3& operator/=(const basic_vector3& scalar) noexcept;
 
   template<numeric Other>
-  constexpr basic_vector3& operator/=(const Other& scalar);
+  constexpr basic_vector3& operator/=(const Other& scalar) noexcept;
 
   // -- Access operators --
 
@@ -420,13 +420,13 @@ template<numeric Type, numeric Other>
  * @return basic_vector3<Type> The quotient of the vector and scalar.
  */
 template<numeric Type>
-[[nodiscard]] constexpr basic_vector3<Type> operator/(basic_vector3<Type> lhs, const Type rhs);
+[[nodiscard]] constexpr basic_vector3<Type> operator/(basic_vector3<Type> lhs, const Type rhs) noexcept;
 
 template<numeric Type>
-[[nodiscard]] constexpr basic_vector3<Type> operator/(basic_vector3<Type> lhs, const basic_vector3<Type>& rhs);
+[[nodiscard]] constexpr basic_vector3<Type> operator/(basic_vector3<Type> lhs, const basic_vector3<Type>& rhs) noexcept;
 
 template<numeric Type, numeric Other>
-[[nodiscard]] constexpr basic_vector3<Type> operator/(basic_vector3<Type> lhs, const Other& rhs);
+[[nodiscard]] constexpr basic_vector3<Type> operator/(basic_vector3<Type> lhs, const Other& rhs) noexcept;
 
 template<numeric Type>
 auto operator<<(std::ostream& output_stream, const basic_vector3<Type>& vector) -> std::ostream&;
