@@ -24,7 +24,26 @@
 #include <libsbx/graphics/pipeline/pipeline.hpp>
 #include <libsbx/graphics/pipeline/shader.hpp>
 
+#include <libsbx/graphics/buffer/buffer.hpp>
+
 namespace sbx::graphics {
+
+struct vector2 {
+  std::float_t x;
+  std::float_t y;
+}; // struct vector2
+
+struct color {
+  std::float_t r;
+  std::float_t g;
+  std::float_t b;
+  std::float_t a;
+}; // struct color
+
+struct vertex {
+  vector2 position;
+  color color;
+}; // struct vertex
 
 /**
  * @brief Checks a @see VkResult and throws an exception if it is an error
@@ -103,6 +122,8 @@ private:
 
   std::vector<per_frame_data> _per_frame_data{};
   std::vector<std::unique_ptr<graphics::command_buffer>> _command_buffers{};
+
+  std::unique_ptr<graphics::buffer> _vertex_buffer{};
 
   std::uint32_t _current_frame{};
   bool _framebuffer_resized{};

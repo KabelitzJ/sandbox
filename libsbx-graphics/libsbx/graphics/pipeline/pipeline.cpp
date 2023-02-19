@@ -8,6 +8,8 @@
 
 namespace sbx::graphics {
 
+
+
 pipeline::pipeline(const std::filesystem::path& path) {
   const auto& logical_device = graphics_module::get().logical_device();
   const auto& renderpass = graphics_module::get().renderpass();
@@ -105,12 +107,36 @@ pipeline::pipeline(const std::filesystem::path& path) {
   depth_stencil_state.depthBoundsTestEnable = false;
   depth_stencil_state.stencilTestEnable = false;
 
+  auto vertex_binding_description = std::vector<VkVertexInputBindingDescription>{};
+
+  vertex_binding_description.push_back(VkVertexInputBindingDescription{
+    .binding = 0,
+    .stride = sizeof(vertex),
+    .inputRate = VK_VERTEX_INPUT_RATE_VERTEX
+  });
+
+  auto vertex_attribute_descriptions = std::vector<VkVertexInputAttributeDescription>{};
+
+  vertex_attribute_descriptions.push_back(VkVertexInputAttributeDescription{
+    .location = 0,
+    .binding = 0,
+    .format = VK_FORMAT_R32G32_SFLOAT,
+    .offset = offsetof(vertex, position)
+  });
+
+  vertex_attribute_descriptions.push_back(VkVertexInputAttributeDescription{
+    .location = 1,
+    .binding = 0,
+    .format = VK_FORMAT_R32G32B32A32_SFLOAT,
+    .offset = offsetof(vertex, color)
+  });
+
   auto vertex_input_state = VkPipelineVertexInputStateCreateInfo{};
   vertex_input_state.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-  vertex_input_state.vertexBindingDescriptionCount = 0;
-  vertex_input_state.pVertexBindingDescriptions = nullptr;
-  vertex_input_state.vertexAttributeDescriptionCount = 0;
-  vertex_input_state.pVertexAttributeDescriptions = nullptr;
+  vertex_input_state.vertexBindingDescriptionCount = static_cast<std::uint32_t>(vertex_binding_description.size());
+  vertex_input_state.pVertexBindingDescriptions = vertex_binding_description.data();
+  vertex_input_state.vertexAttributeDescriptionCount = static_cast<std::uint32_t>(vertex_attribute_descriptions.size());
+  vertex_input_state.pVertexAttributeDescriptions = vertex_attribute_descriptions.data();
 
   auto input_assembly_state = VkPipelineInputAssemblyStateCreateInfo{};
   input_assembly_state.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;

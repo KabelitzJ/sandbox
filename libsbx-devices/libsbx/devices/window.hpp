@@ -90,6 +90,18 @@ public:
     glfwHideWindow(_handle);
   }
 
+  auto is_iconified() const noexcept -> bool {
+    return glfwGetWindowAttrib(_handle, GLFW_ICONIFIED);
+  }
+
+  auto is_focused() const noexcept -> bool {
+    return glfwGetWindowAttrib(_handle, GLFW_FOCUSED);
+  }
+
+  auto is_visible() const noexcept -> bool {
+    return glfwGetWindowAttrib(_handle, GLFW_VISIBLE);
+  }
+
   /**
    * @brief Sets the callback for the @ref sbx::devices::window_closed_event event type
    * @tparam Callable 

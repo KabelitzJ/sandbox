@@ -92,16 +92,35 @@ graphics_module::~graphics_module() {
     vkDestroySemaphore(*_logical_device, frame_data.image_available_semaphore, nullptr);
   }
 
+  // // [NOTE] KAJ 2023-02-19 20:47 - Command buffers must be freed before the command pools
   _command_buffers.clear();
   _command_pools.clear();
 }
 
 auto graphics_module::initialize() -> void {
   _renderpass = std::make_unique<graphics::renderpass>();
+
   _recreate_swapchain();
+
+  auto vertices = std::array<vertex, 6>{
+    vertex{vector2{-0.5, -0.5}, color{0.98, 0.29, 0.24, 1.0}},
+    vertex{vector2{ 0.5, -0.5}, color{0.98, 0.29, 0.24, 1.0}},
+    vertex{vector2{ 0.5,  0.5}, color{0.98, 0.29, 0.24, 1.0}},
+    vertex{vector2{ 0.5,  0.5}, color{0.98, 0.29, 0.24, 1.0}},
+    vertex{vector2{-0.5,  0.5}, color{0.98, 0.29, 0.24, 1.0}},
+    vertex{vector2{-0.5, -0.5}, color{0.98, 0.29, 0.24, 1.0}}
+  };
+
+  _vertex_buffer = std::make_unique<graphics::buffer>(vertices.data(), sizeof(vertex) * vertices.size(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 }
 
 auto graphics_module::update([[maybe_unused]] std::float_t delta_time) -> void {
+  const auto& window = devices::devices_module::get().window();
+
+  if (window.is_iconified()) {
+    return;
+  }
+
   if (_framebuffer_resized) {
     _recreate_swapchain();
     return;
@@ -130,7 +149,12 @@ auto graphics_module::update([[maybe_unused]] std::float_t delta_time) -> void {
   const auto& pipeline = _pipelines["basic"];
   vkCmdBindPipeline(*command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, *pipeline);
 
-  vkCmdDraw(*command_buffer, 6, 1, 0, 0);
+  auto buffers = std::array<VkBuffer, 1>{*_vertex_buffer};
+  auto offsets = std::array<VkDeviceSize, 1>{0};
+
+  vkCmdBindVertexBuffers(*command_buffer, 0, 1, buffers.data(), offsets.data());
+
+  vkCmdDraw(*command_buffer, _vertex_buffer->size(), 1, 0, 0);
 
   _end_render_pass();
 }
