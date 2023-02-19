@@ -130,7 +130,7 @@ auto graphics_module::update([[maybe_unused]] std::float_t delta_time) -> void {
   const auto& pipeline = _pipelines["basic"];
   vkCmdBindPipeline(*command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, *pipeline);
 
-  vkCmdDraw(*command_buffer, 3, 1, 0, 0);
+  vkCmdDraw(*command_buffer, 6, 1, 0, 0);
 
   _end_render_pass();
 }
@@ -246,7 +246,6 @@ auto graphics_module::_end_render_pass() -> void {
     throw std::runtime_error{"Failed to present swapchain image"};
   }
 
-  // _current_frame = (_current_frame + 1) % _swapchain->image_count();
   _current_frame = utility::fast_mod(_current_frame + 1, _swapchain->image_count());
 }
 

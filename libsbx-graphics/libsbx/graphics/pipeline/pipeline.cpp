@@ -126,7 +126,7 @@ pipeline::pipeline(const std::filesystem::path& path) {
 
   validate(vkCreatePipelineLayout(logical_device, &pipeline_layout_create_info, nullptr, &_layout));
 
-  auto subpass = std::uint32_t{};
+  auto subpass = std::uint32_t{0};
   
   auto pipeline_create_info = VkGraphicsPipelineCreateInfo{};
   pipeline_create_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;

@@ -1,9 +1,13 @@
 #version 450
 
-vec2 positions[3] = vec2[](
-  vec2(0.0, -0.5),
-  vec2(0.5, 0.5),
-  vec2(-0.5, 0.5)
+// The position of the vertices of a rectangle.
+vec2 positions[6] = vec2[](
+  vec2(-0.5, -0.5),
+  vec2( 0.5, -0.5),
+  vec2( 0.5,  0.5),
+  vec2( 0.5,  0.5),
+  vec2(-0.5,  0.5),
+  vec2(-0.5, -0.5)
 );
 
 layout(location = 0) out vec4 vertex_out_color;
