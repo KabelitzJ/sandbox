@@ -2,6 +2,9 @@
 #include <cstdlib>
 #include <filesystem>
 #include <chrono>
+#include <memory>
+#include <algorithm>
+#include <iterator>
 
 #include <libsbx/utility/utility.hpp>
 #include <libsbx/units/units.hpp>
@@ -36,6 +39,10 @@ public:
     scripting_module.script("main").startup();
 
     window.show();
+
+    auto pipeline = std::make_unique<sbx::graphics::pipeline>("./demo/assets/shaders/basic/");
+
+    engine.quit();
   }
 
   ~demo_application() override = default;
