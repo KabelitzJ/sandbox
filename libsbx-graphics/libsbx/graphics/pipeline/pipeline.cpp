@@ -89,7 +89,7 @@ pipeline::pipeline(const std::filesystem::path& path) {
 
   auto dynamic_states = std::array<VkDynamicState, 2>{
     VK_DYNAMIC_STATE_VIEWPORT,
-    VK_DYNAMIC_STATE_SCISSOR_WITH_COUNT
+    VK_DYNAMIC_STATE_SCISSOR
   };
 
   auto dynamic_state = VkPipelineDynamicStateCreateInfo{};
@@ -117,8 +117,6 @@ pipeline::pipeline(const std::filesystem::path& path) {
   input_assembly_state.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
   input_assembly_state.primitiveRestartEnable = false;
 
-  auto pipeline_layout = VkPipelineLayout{};  
-
   auto pipeline_layout_create_info = VkPipelineLayoutCreateInfo{};
   pipeline_layout_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
   pipeline_layout_create_info.setLayoutCount = 0;
@@ -126,7 +124,7 @@ pipeline::pipeline(const std::filesystem::path& path) {
   pipeline_layout_create_info.pushConstantRangeCount = 0;
   pipeline_layout_create_info.pPushConstantRanges = nullptr;
 
-  validate(vkCreatePipelineLayout(logical_device, &pipeline_layout_create_info, nullptr, &pipeline_layout));
+  validate(vkCreatePipelineLayout(logical_device, &pipeline_layout_create_info, nullptr, &_layout));
 
   auto subpass = std::uint32_t{};
   
