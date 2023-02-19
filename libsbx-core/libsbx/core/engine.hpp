@@ -25,11 +25,19 @@ public:
 
   engine(std::vector<std::string_view>&& args)
   : _args{std::move(args)} {
-    _create_modules();
+    for (const auto& [type, factory] : module_manager::_factories) {
+      _create_module(type, factory);
+    }
+
+    for (auto& [type, module] : _modules) {
+      module->initialize();
+    }
   }
 
   ~engine() {
-    _destroy_modules();
+    for (const auto& entry : _modules) {
+      _destroy_module(entry.first);
+    }
   }
 
   template<derived_from<application> Type>
@@ -59,12 +67,6 @@ public:
 
 private:
 
-  auto _create_modules() -> void {
-    for (const auto& [type, factory] : module_manager::_factories) {
-      _create_module(type, factory);
-    }
-  }
-
   auto _create_module(std::type_index type, const module_factory& factory) -> void {
     if (_modules.contains(type)) {
       return;
@@ -77,13 +79,6 @@ private:
     _modules.insert({type, factory.create()});
     _module_by_stage[factory.stage].push_back(type);
   }
-
-  auto _destroy_modules() -> void {
-    for (const auto& entry : _modules) {
-      _destroy_module(entry.first);
-    }
-  }
-
   auto _destroy_module(std::type_index type) -> void {
     if (auto entry = _modules.find(type); entry != _modules.cend()) {
       for (const auto& dependency : module_manager::_factories.at(type).dependencies) {

@@ -26,12 +26,16 @@ public:
 
   operator const VkPipeline&() const noexcept;
 
+  auto layout() const noexcept -> const VkPipelineLayout&;
+
 private:
 
   auto _get_stage_from_name(const std::string& name) const noexcept -> VkShaderStageFlagBits;
 
+  std::unordered_map<VkShaderStageFlagBits, std::unique_ptr<shader>> _shaders{};
+
+  VkPipelineLayout _layout{};
   VkPipeline _handle{};
-  std::vector<std::unique_ptr<shader>> _shaders{};
 
 }; // class pipeline
 

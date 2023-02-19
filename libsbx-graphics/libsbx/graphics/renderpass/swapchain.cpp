@@ -1,6 +1,7 @@
 #include <libsbx/graphics/renderpass/swapchain.hpp>
 
 #include <limits>
+#include <ranges>
 
 #include <libsbx/graphics/graphics_module.hpp>
 
@@ -13,7 +14,7 @@ static const auto composite_alpha_flags = std::vector<VkCompositeAlphaFlagBitsKH
   VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR,
 };
 
-swapchain::swapchain(const extent2d& extent, const std::unique_ptr<swapchain>& old_swapchain)
+swapchain::swapchain(const VkExtent2D& extent, const std::unique_ptr<swapchain>& old_swapchain)
 : _extent{extent},
   _present_mode{VK_PRESENT_MODE_FIFO_KHR},
   _active_image_index{std::numeric_limits<std::uint32_t>::max()},
@@ -106,29 +107,20 @@ swapchain::swapchain(const extent2d& extent, const std::unique_ptr<swapchain>& o
 	validate(vkGetSwapchainImagesKHR(logical_device, _handle, &_image_count, nullptr));
 
 	_images.resize(_image_count);
-	_image_views.resize(_image_count);
+  _image_views.resize(_image_count);
 
 	validate(vkGetSwapchainImagesKHR(logical_device, _handle, &_image_count, _images.data()));
 
 	for (uint32_t i = 0; i < _image_count; i++) {
-    auto image_view_create_info = VkImageViewCreateInfo{};
-    image_view_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-    image_view_create_info.image = _images.at(i);
-    image_view_create_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
-    image_view_create_info.format = surface_format.format;
-    image_view_create_info.components = {VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_G, VK_COMPONENT_SWIZZLE_B, VK_COMPONENT_SWIZZLE_A};
-    image_view_create_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-    image_view_create_info.subresourceRange.baseMipLevel = 0;
-    image_view_create_info.subresourceRange.levelCount = 1;
-    image_view_create_info.subresourceRange.baseArrayLayer = 0;
-    image_view_create_info.subresourceRange.layerCount = 1;
-    validate(vkCreateImageView(logical_device, &image_view_create_info, nullptr, &_image_views.at(i)));
+    auto& image = _images.at(i);
+    auto& image_view = _image_views.at(i);
+
+    _create_image_view(image, surface_format.format, VK_IMAGE_ASPECT_COLOR_BIT, image_view);
 	}
 
-	VkFenceCreateInfo fenceCreateInfo = {};
-	fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+  _create_depth_images();
 
-	vkCreateFence(logical_device, &fenceCreateInfo, nullptr, &_image_fence);
+  _create_framebuffers();
 }
 
 swapchain::~swapchain() {
@@ -140,7 +132,15 @@ swapchain::~swapchain() {
 		vkDestroyImageView(logical_device, image_view, nullptr);
 	}
 
-	vkDestroyFence(logical_device, _image_fence, nullptr);
+  for (const auto& depth_image : _depth_images) {
+    vkDestroyImageView(logical_device, depth_image.image_view, nullptr);
+    vkFreeMemory(logical_device, depth_image.memory, nullptr);
+    vkDestroyImage(logical_device, depth_image.image, nullptr);
+  }
+
+  for (const auto& framebuffer : _framebuffers) {
+    vkDestroyFramebuffer(logical_device, framebuffer, nullptr);
+  }
 }
 
 auto swapchain::handle() const noexcept -> const VkSwapchainKHR& {
@@ -151,7 +151,7 @@ swapchain::operator const VkSwapchainKHR&() const noexcept {
   return _handle;
 }
 
-auto swapchain::extent() const noexcept -> const extent2d& {
+auto swapchain::extent() const noexcept -> const VkExtent2D& {
   return _extent;
 }
 
@@ -175,20 +175,8 @@ auto swapchain::present_mode() const noexcept -> VkPresentModeKHR {
   return _present_mode;
 }
 
-auto swapchain::images() const noexcept -> const std::vector<VkImage>& {
-  return _images;
-}
-
-auto swapchain::image(std::uint32_t index) const noexcept -> const VkImage& {
-  return _images.at(index);
-}
-
-auto swapchain::image_views() const noexcept -> const std::vector<VkImageView>& {
-  return _image_views;
-}
-
-auto swapchain::image_view(std::uint32_t index) const noexcept -> const VkImageView& {
-  return _image_views.at(index);
+auto swapchain::current_framebuffer() const noexcept -> const VkFramebuffer& {
+  return _framebuffers.at(_active_image_index);
 }
 
 auto swapchain::acquire_next_image(const VkSemaphore& image_available_semaphore, const VkFence& fence) -> VkResult {
@@ -218,6 +206,94 @@ auto swapchain::queue_present(const VkQueue& queue, const VkSemaphore& wait_sema
 	present_info.pImageIndices = &_active_image_index;
 
 	return vkQueuePresentKHR(queue, &present_info);
+}
+
+auto swapchain::_create_image_view(const VkImage& image, VkFormat format, VkImageAspectFlags aspect, VkImageView& image_view) -> void {
+  const auto& logical_device = graphics_module::get().logical_device();
+
+  auto image_view_create_info = VkImageViewCreateInfo{};
+  image_view_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+  image_view_create_info.image = image;
+  image_view_create_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
+  image_view_create_info.format = format;
+  image_view_create_info.subresourceRange.aspectMask = aspect;
+  image_view_create_info.subresourceRange.baseMipLevel = 0;
+  image_view_create_info.subresourceRange.levelCount = 1;
+  image_view_create_info.subresourceRange.baseArrayLayer = 0;
+  image_view_create_info.subresourceRange.layerCount = 1;
+
+  validate(vkCreateImageView(logical_device, &image_view_create_info, nullptr, &image_view));
+}
+
+auto swapchain::_create_depth_images() -> void {
+  auto& logical_device = graphics_module::get().logical_device();
+  auto& physical_device = graphics_module::get().physical_device();
+
+  auto depth_format = physical_device.find_supported_format(
+    {VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
+    VK_IMAGE_TILING_OPTIMAL,
+    VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
+  );
+
+  _depth_images.resize(_image_count);
+
+  for (auto& [image, memory, image_view] : _depth_images) {
+    auto image_create_info = VkImageCreateInfo{};
+    image_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+    image_create_info.flags = 0;
+    image_create_info.imageType = VK_IMAGE_TYPE_2D;
+    image_create_info.extent.width = _extent.width;
+    image_create_info.extent.height = _extent.height;
+    image_create_info.extent.depth = 1;
+    image_create_info.mipLevels = 1;
+    image_create_info.arrayLayers = 1;
+    image_create_info.format = depth_format;
+    image_create_info.tiling = VK_IMAGE_TILING_OPTIMAL;
+    image_create_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    image_create_info.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+    image_create_info.samples = VK_SAMPLE_COUNT_1_BIT;
+    image_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+    validate(vkCreateImage(logical_device, &image_create_info, nullptr, &image));
+
+    auto memory_requirements = VkMemoryRequirements{};
+    vkGetImageMemoryRequirements(logical_device, image, &memory_requirements);
+
+    auto memory_allocate_info = VkMemoryAllocateInfo{};
+    memory_allocate_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    memory_allocate_info.allocationSize = memory_requirements.size;
+    memory_allocate_info.memoryTypeIndex = physical_device.find_memory_type(memory_requirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+
+    validate(vkAllocateMemory(logical_device, &memory_allocate_info, nullptr, &memory));
+
+    validate(vkBindImageMemory(logical_device, image, memory, 0));
+
+    _create_image_view(image, depth_format, VK_IMAGE_ASPECT_DEPTH_BIT, image_view);
+  }
+}
+
+auto swapchain::_create_framebuffers() -> void {
+  auto& logical_device = graphics_module::get().logical_device();
+  auto& renderpass = graphics_module::get().renderpass();
+
+  _framebuffers.resize(_image_count);
+
+  for (auto i = std::uint32_t{0}; i < _image_count; ++i) {
+    auto& framebuffer = _framebuffers.at(i);
+
+    auto attachments = std::array<VkImageView, 2>{_image_views.at(i), _depth_images.at(i).image_view};
+
+    auto framebuffer_create_info = VkFramebufferCreateInfo{};
+    framebuffer_create_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+    framebuffer_create_info.renderPass = renderpass;
+    framebuffer_create_info.attachmentCount = static_cast<std::uint32_t>(attachments.size());
+    framebuffer_create_info.pAttachments = attachments.data();
+    framebuffer_create_info.width = _extent.width;
+    framebuffer_create_info.height = _extent.height;
+    framebuffer_create_info.layers = 1;
+
+    validate(vkCreateFramebuffer(logical_device, &framebuffer_create_info, nullptr, &framebuffer));
+  }
 }
 
 } // namespace sbx::graphics

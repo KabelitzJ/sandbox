@@ -32,6 +32,10 @@ public:
 
 	auto msaa_samples() const -> const VkSampleCountFlagBits&;
 
+  auto find_memory_type(std::uint32_t typeFilter, VkMemoryPropertyFlags properties) const -> std::uint32_t;
+
+  auto find_supported_format(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) const -> VkFormat;
+
 private:
 
   auto _choose_device(const std::vector<VkPhysicalDevice>& devices) -> VkPhysicalDevice;

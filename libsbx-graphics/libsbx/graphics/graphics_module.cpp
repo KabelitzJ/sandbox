@@ -1,8 +1,8 @@
 #include <libsbx/graphics/graphics_module.hpp>
 
-#include <libsbx/utility/fast_mod.hpp>
+#include <fmt/format.h>
 
-#include <libsbx/graphics/renderpass/rectangle.hpp>
+#include <libsbx/utility/fast_mod.hpp>
 
 namespace sbx::graphics {
 
@@ -82,9 +82,9 @@ graphics_module::~graphics_module() {
 
   validate(vkQueueWaitIdle(graphics_queue));
 
-  _swapchain.reset();
+  _pipelines.clear();
 
-  _command_pools.clear();
+  _swapchain.reset();
 
   for (const auto& frame_data : _per_frame_data) {
     vkDestroyFence(*_logical_device, frame_data.in_flight_fence, nullptr);
@@ -92,14 +92,19 @@ graphics_module::~graphics_module() {
     vkDestroySemaphore(*_logical_device, frame_data.image_available_semaphore, nullptr);
   }
 
-  _per_frame_data.clear();
-
   _command_buffers.clear();
+  _command_pools.clear();
+}
+
+auto graphics_module::initialize() -> void {
+  _renderpass = std::make_unique<graphics::renderpass>();
+  _recreate_swapchain();
 }
 
 auto graphics_module::update([[maybe_unused]] std::float_t delta_time) -> void {
-  if (!_swapchain || _framebuffer_resized) {
+  if (_framebuffer_resized) {
     _recreate_swapchain();
+    return;
   }
 
   const auto& frame_data = _per_frame_data[_current_frame];
@@ -116,7 +121,16 @@ auto graphics_module::update([[maybe_unused]] std::float_t delta_time) -> void {
     throw std::runtime_error{"Failed to acquire swapchain image"};
   }
 
+  const auto& command_buffer = _command_buffers[_swapchain->active_image_index()];
+
   _start_render_pass();
+
+  // // [NOTE] KAJ 2023-02-19 17:39 - Drawing happens here
+
+  const auto& pipeline = _pipelines["basic"];
+  vkCmdBindPipeline(*command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, *pipeline);
+
+  vkCmdDraw(*command_buffer, 3, 1, 0, 0);
 
   _end_render_pass();
 }
@@ -145,9 +159,31 @@ auto graphics_module::command_pool(const std::thread::id& thread_id) -> const st
   return _command_pools.insert({thread_id, std::make_shared<graphics::command_pool>(thread_id)}).first->second;
 }
 
+auto graphics_module::renderpass() -> graphics::renderpass& {
+  return *_renderpass;
+}
+
 auto graphics_module::swapchain() -> graphics::swapchain& {
   return *_swapchain;
 };
+
+auto graphics_module::load_pipeline(const std::filesystem::path& path) -> graphics::pipeline& {
+  const auto name = path.stem().string();
+
+  if (auto entry = _pipelines.find(name); entry != _pipelines.end()) {
+    return *entry->second;
+  }
+
+  return *_pipelines.insert({name, std::make_unique<graphics::pipeline>(path)}).first->second;
+}
+
+auto graphics_module::pipeline(const std::string& name) -> graphics::pipeline& {
+  if (auto entry = _pipelines.find(name); entry != _pipelines.end()) {
+    return *entry->second;
+  }
+
+  throw std::runtime_error{"Pipeline not found"};
+}
 
 auto graphics_module::_start_render_pass() -> void {
   const auto& command_buffer = _command_buffers[_swapchain->active_image_index()];
@@ -156,31 +192,35 @@ auto graphics_module::_start_render_pass() -> void {
     command_buffer->begin(VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
   }
 
-  const auto render_area = rectangle2d{offset2d{0, 0}, _swapchain->extent()};
+  const auto render_area = VkRect2D{VkOffset2D{0, 0}, _swapchain->extent()};
 
   auto viewport = VkViewport{};
 	viewport.x = 0.0f;
 	viewport.y = 0.0f;
-	viewport.width = static_cast<float>(render_area.extent().width());
-	viewport.height = static_cast<float>(render_area.extent().height());
+	viewport.width = static_cast<float>(render_area.extent.width);
+	viewport.height = static_cast<float>(render_area.extent.height);
 	viewport.minDepth = 0.0f;
 	viewport.maxDepth = 1.0f;
 	vkCmdSetViewport(*command_buffer, 0, 1, &viewport);
 
 	auto scissor = VkRect2D{};
-	scissor.offset = render_area.offset();
-	scissor.extent = render_area.extent();
+	scissor.offset = render_area.offset;
+	scissor.extent = render_area.extent;
 	vkCmdSetScissor(*command_buffer, 0, 1, &scissor);
 
-  // auto render_pass_begin_info = VkRenderPassBeginInfo{};
-	// render_pass_begin_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-	// render_pass_begin_info.renderPass = *renderStage.GetRenderpass();
-	// render_pass_begin_info.framebuffer = renderStage.GetActiveFramebuffer(swapchain->GetActiveImageIndex());
-	// render_pass_begin_info.renderArea = render_area;
-	// render_pass_begin_info.clearValueCount = static_cast<uint32_t>(clearValues.size());
-	// render_pass_begin_info.pClearValues = clearValues.data();
-  // vkCmdBeginRenderPass(*commandBuffer, &render_pass_begin_info, VK_SUBPASS_CONTENTS_INLINE);
+  const auto clear_values = std::array<VkClearValue, 2>{
+    VkClearValue{.color = VkClearColorValue{0.0f, 0.0f, 0.0f, 1.0f}},
+    VkClearValue{.depthStencil = VkClearDepthStencilValue{1.0f, 0}}
+  };
 
+  auto render_pass_begin_info = VkRenderPassBeginInfo{};
+	render_pass_begin_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+	render_pass_begin_info.renderPass = *_renderpass;
+	render_pass_begin_info.framebuffer = _swapchain->current_framebuffer();
+	render_pass_begin_info.renderArea = render_area;
+	render_pass_begin_info.clearValueCount = static_cast<std::uint32_t>(clear_values.size());
+	render_pass_begin_info.pClearValues = clear_values.data();
+  vkCmdBeginRenderPass(*command_buffer, &render_pass_begin_info, VK_SUBPASS_CONTENTS_INLINE);
 }
 
 auto graphics_module::_end_render_pass() -> void {
@@ -190,6 +230,8 @@ auto graphics_module::_end_render_pass() -> void {
   auto& command_buffer = _command_buffers[active_image_index];
 
   const auto& present_queue = _logical_device->present_queue();
+
+  vkCmdEndRenderPass(*command_buffer);
 
   // Submit the command buffer to the graphics queue and draw the on the image
   command_buffer->end();
@@ -213,7 +255,7 @@ auto graphics_module::_recreate_swapchain() -> void {
 
   const auto& window = devices::devices_module::get().window();
 
-  const auto extent = extent2d{window.width(), window.height()};
+  const auto extent = VkExtent2D{window.width(), window.height()};
 
   _swapchain = std::make_unique<graphics::swapchain>(extent, _swapchain);
 

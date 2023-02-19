@@ -30,20 +30,24 @@ public:
 
   }
 
+  auto initialize() -> void override {
+
+  }
+
   auto update(std::float_t delta_time) -> void override {
     for (auto& [name, script] : _scripts) {
       script->update(delta_time);
     }
   }
 
-  auto load_script(const std::filesystem::path& path) -> void {
+  auto load_script(const std::filesystem::path& path) -> script& {
     auto name = path.stem().string();
 
-    if (_scripts.contains(name)) {
-      core::logger::warn(fmt::format("Overriding existing script '{}'", name));
+    if (auto it = _scripts.find(name); it != _scripts.end()) {
+      return *it->second;
     }
 
-    _scripts.insert({name, std::make_unique<scripting::script>(path)});
+    return *_scripts.insert({name, std::make_unique<scripting::script>(path)}).first->second;
   }
 
   auto script(const std::string& name) -> script& {

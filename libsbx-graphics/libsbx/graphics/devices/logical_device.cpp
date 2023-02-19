@@ -18,7 +18,7 @@ queue::operator const VkQueue&() const noexcept {
   return _handle;
 }
 
-auto queue::family() const noexcept -> const std::uint32_t& {
+auto queue::family() const noexcept -> std::uint32_t {
   return _family;
 }
 

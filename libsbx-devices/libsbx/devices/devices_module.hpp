@@ -38,6 +38,10 @@ public:
     glfwTerminate();
   }
 
+  auto initialize() -> void override {
+    
+  }
+
   auto update([[maybe_unused]] std::float_t delta_time) -> void override {
     glfwPollEvents();
   }

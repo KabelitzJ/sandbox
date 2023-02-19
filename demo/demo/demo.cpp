@@ -36,13 +36,15 @@ public:
       }
     }
 
-    scripting_module.script("main").startup();
+    auto& graphics_module = sbx::graphics::graphics_module::get();
+
+    for (const auto& entry : std::filesystem::directory_iterator("./demo/assets/shaders")) {
+      if (entry.is_directory()) {
+        graphics_module.load_pipeline(entry.path());
+      }
+    }
 
     window.show();
-
-    auto pipeline = std::make_unique<sbx::graphics::pipeline>("./demo/assets/shaders/basic/");
-
-    engine.quit();
   }
 
   ~demo_application() override = default;

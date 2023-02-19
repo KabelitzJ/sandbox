@@ -18,9 +18,6 @@
 
 #include <libsbx/graphics/renderpass/renderpass.hpp>
 #include <libsbx/graphics/renderpass/swapchain.hpp>
-#include <libsbx/graphics/renderpass/extent.hpp>
-#include <libsbx/graphics/renderpass/offset.hpp>
-#include <libsbx/graphics/renderpass/rectangle.hpp>
 
 
 #endif // LIBSBX_GRAPHICS_HPP_

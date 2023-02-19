@@ -24,7 +24,7 @@ public:
 
   operator const VkQueue&() const noexcept;
 
-  auto family() const noexcept -> const std::uint32_t&;
+  auto family() const noexcept -> std::uint32_t;
 
 private:
 

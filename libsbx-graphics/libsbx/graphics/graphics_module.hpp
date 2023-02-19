@@ -21,6 +21,9 @@
 
 #include <libsbx/graphics/renderpass/swapchain.hpp>
 
+#include <libsbx/graphics/pipeline/pipeline.hpp>
+#include <libsbx/graphics/pipeline/shader.hpp>
+
 namespace sbx::graphics {
 
 /**
@@ -46,6 +49,8 @@ public:
 
   ~graphics_module() override;
 
+  auto initialize() -> void override;
+
   auto update([[maybe_unused]] std::float_t delta_time) -> void override;
 
   auto instance() -> instance&;
@@ -58,7 +63,13 @@ public:
 
   auto command_pool(const std::thread::id& thread_id = std::this_thread::get_id()) -> const std::shared_ptr<command_pool>&;
 
+  auto renderpass() -> renderpass&;
+
   auto swapchain() -> swapchain&;
+
+  auto load_pipeline(const std::filesystem::path& path) -> pipeline&;
+
+  auto pipeline(const std::string& key) -> pipeline&;
   
 private:
 
@@ -82,7 +93,11 @@ private:
 
   std::unordered_map<std::thread::id, std::shared_ptr<graphics::command_pool>> _command_pools{};
 
+  std::unordered_map<std::string, std::unique_ptr<graphics::pipeline>> _pipelines{};
+
   std::unique_ptr<graphics::surface> _surface{};
+
+  std::unique_ptr<graphics::renderpass> _renderpass{};
 
   std::unique_ptr<graphics::swapchain> _swapchain{};
 

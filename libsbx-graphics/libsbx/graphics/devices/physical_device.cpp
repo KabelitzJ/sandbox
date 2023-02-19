@@ -70,6 +70,34 @@ auto physical_device::msaa_samples() const -> const VkSampleCountFlagBits& {
   return _msaa_samples;
 }
 
+auto physical_device::find_memory_type(std::uint32_t typeFilter, VkMemoryPropertyFlags properties) const -> std::uint32_t {
+  auto physical_device_memory_properties = VkPhysicalDeviceMemoryProperties{};
+  vkGetPhysicalDeviceMemoryProperties(_handle, &physical_device_memory_properties);
+
+  for (auto i = std::uint32_t{0}; i < physical_device_memory_properties.memoryTypeCount; ++i) {
+    if ((typeFilter & (1 << i)) && (physical_device_memory_properties.memoryTypes[i].propertyFlags & properties) == properties) {
+      return i;
+    }
+  }
+
+  throw std::runtime_error{"failed to find suitable memory type!"};
+}
+
+auto physical_device::find_supported_format(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) const -> VkFormat {
+  for (auto format : candidates) {
+    auto format_properties = VkFormatProperties{};
+    vkGetPhysicalDeviceFormatProperties(_handle, format, &format_properties);
+
+    if (tiling == VK_IMAGE_TILING_LINEAR && (format_properties.linearTilingFeatures & features) == features) {
+      return format;
+    } else if (tiling == VK_IMAGE_TILING_OPTIMAL && (format_properties.optimalTilingFeatures & features) == features) {
+      return format;
+    }
+  }
+
+  throw std::runtime_error{"failed to find supported format!"};
+}
+
 auto physical_device::_choose_device(const std::vector<VkPhysicalDevice>& devices) -> VkPhysicalDevice {
   auto scores = std::multimap<std::uint32_t, VkPhysicalDevice>{};
 

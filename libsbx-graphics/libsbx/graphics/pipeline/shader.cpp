@@ -12,8 +12,6 @@ shader::shader(const std::filesystem::path& path, VkShaderStageFlagBits stage)
 : _stage{stage} {
   auto code = io::read_file(path);
 
-  core::logger::info("{}", code);
-
   const auto& logical_device = graphics_module::get().logical_device();
 
   auto create_info = VkShaderModuleCreateInfo{};

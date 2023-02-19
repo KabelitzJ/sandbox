@@ -16,7 +16,7 @@ instance::instance() {
   app_info.applicationVersion = VK_MAKE_VERSION(0, 1, 0);
   app_info.pEngineName = "Sandbox";
   app_info.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-  app_info.apiVersion = VK_API_VERSION_1_0;
+  app_info.apiVersion = VK_API_VERSION_1_3;
 
   const auto extentions = extensions::instance();
   const auto layers = validation_layers::instance();

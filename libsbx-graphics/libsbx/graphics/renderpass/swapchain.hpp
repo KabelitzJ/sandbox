@@ -7,7 +7,7 @@
 
 #include <vulkan/vulkan.h>
 
-#include <libsbx/graphics/renderpass/extent.hpp>
+#include <libsbx/graphics/renderpass/renderpass.hpp>
 
 namespace sbx::graphics {
 
@@ -15,7 +15,7 @@ class swapchain {
 
 public:
 
-  swapchain(const extent2d& extent, const std::unique_ptr<swapchain>& old_swapchain);
+  swapchain(const VkExtent2D& extent, const std::unique_ptr<swapchain>& old_swapchain);
 
   ~swapchain();
 
@@ -23,7 +23,7 @@ public:
 
   operator const VkSwapchainKHR&() const noexcept;
 
-  auto extent() const noexcept -> const extent2d&;
+  auto extent() const noexcept -> const VkExtent2D&;
 
   auto active_image_index() const noexcept -> std::uint32_t;
 
@@ -35,13 +35,7 @@ public:
 
   auto present_mode() const noexcept -> VkPresentModeKHR;
 
-  auto images() const noexcept -> const std::vector<VkImage>&;
-
-  auto image(std::uint32_t index) const noexcept -> const VkImage&;
-
-  auto image_views() const noexcept -> const std::vector<VkImageView>&; 
-
-  auto image_view(std::uint32_t index) const noexcept -> const VkImageView&;
+  auto current_framebuffer() const noexcept -> const VkFramebuffer&;
 
   auto acquire_next_image(const VkSemaphore& image_available_semaphore = nullptr, const VkFence& fence = nullptr) -> VkResult;
 
@@ -49,8 +43,22 @@ public:
 
 private:
 
-  extent2d _extent{};
+  struct depth_image {
+    VkImage image{};
+    VkDeviceMemory memory{};
+    VkImageView image_view{};
+  };
+
+  auto _create_image_view(const VkImage& image, VkFormat format, VkImageAspectFlags aspect, VkImageView& image_view) -> void;
+
+  auto _create_depth_images() -> void;
+
+  auto _create_framebuffers() -> void;
+
+  VkExtent2D _extent{};
   VkPresentModeKHR _present_mode{};
+  VkFormat _format{};
+
   std::uint32_t _active_image_index{};
   std::uint32_t _image_count{};
 
@@ -58,8 +66,11 @@ private:
 	VkCompositeAlphaFlagBitsKHR _composite_alpha{};
 
 	std::vector<VkImage> _images{};
-	std::vector<VkImageView> _image_views{};
-	VkFence _image_fence{};
+  std::vector<VkImageView> _image_views{};
+
+  std::vector<depth_image> _depth_images{};
+
+  std::vector<VkFramebuffer> _framebuffers{};
 
 	VkSwapchainKHR _handle{};
 
