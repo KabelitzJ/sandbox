@@ -29,10 +29,10 @@ public:
   /** @brief The type of the vector components. */
   using value_type = Type;
 
-  /** @brief The reference type of the vector components. */
+  /** @brief The basic_vector3& type of the vector components. */
   using reference = value_type&;
 
-  /** @brief The const reference type of the vector components. */
+  /** @brief The const basic_vector3& type of the vector components. */
   using const_reference = const value_type&;
 
   /** @brief The pointer type of the vector components. */
@@ -143,7 +143,7 @@ public:
    * 
    * @return basic_vector3 The normalized vector.
    */
-  [[nodiscard]] static constexpr auto normalized(const_reference vector) noexcept -> basic_vector3;
+  [[nodiscard]] static constexpr auto normalized(const basic_vector3& vector) noexcept -> basic_vector3;
 
   /**
    * @brief Returns the dot product of two vectors.
@@ -153,7 +153,7 @@ public:
    * 
    * @return value_type The dot product.
    */
-  [[nodiscard]] static constexpr auto dot(const_reference lhs, const_reference rhs) noexcept -> value_type;
+  [[nodiscard]] static constexpr auto dot(const basic_vector3& lhs, const basic_vector3& rhs) noexcept -> value_type;
 
   /**
    * @brief Returns the cross product of two vectors.
@@ -163,9 +163,9 @@ public:
    * 
    * @return basic_vector3 The cross product.
    */
-  [[nodiscard]] static constexpr auto cross(const_reference lhs, const_reference rhs) noexcept -> basic_vector3;
+  [[nodiscard]] static constexpr auto cross(const basic_vector3& lhs, const basic_vector3& rhs) noexcept -> basic_vector3;
 
-  [[nodiscard]] static constexpr auto clamp(const_reference vector, const value_type min, const value_type max) noexcept -> basic_vector3;
+  [[nodiscard]] static constexpr auto clamp(const basic_vector3& vector, const value_type min, const value_type max) noexcept -> basic_vector3;
 
   // -- Assignment operators --
 
@@ -174,9 +174,9 @@ public:
    * 
    * @param other The other vector to copy the components from.
    * 
-   * @return reference A reference to this vector.
+   * @return basic_vector3& A reference to this vector.
    */
-  constexpr auto operator=(const basic_vector3& other) noexcept -> reference = default;
+  constexpr auto operator=(const basic_vector3& other) noexcept -> basic_vector3& = default;
 
   /**
    * @brief Copies the components from the other vector.
@@ -185,66 +185,66 @@ public:
    * 
    * @param other The other vector to copy the components from.
    * 
-   * @return reference A reference to this vector.
+   * @return basic_vector3& A reference to this vector.
    */
   template<numeric Other>
-  constexpr auto operator=(const basic_vector3<Other>& other) noexcept -> reference;
+  constexpr auto operator=(const basic_vector3<Other>& other) noexcept -> basic_vector3&;
 
   /**
    * @brief Moves the components out of the other vector.
    * 
    * @param other The other vector to move the components from.
    * 
-   * @return reference A reference to this vector.
+   * @return basic_vector3& A reference to this vector.
    */
-  constexpr auto operator=(basic_vector3<Other>&& other) noexcept -> reference = default;
+  constexpr auto operator=(basic_vector3&& other) noexcept -> basic_vector3& = default;
 
   // -- Unary numeric operators --
 
   /**
    * @brief Negates the vector.
    * 
-   * @return reference A reference to this vector.
+   * @return basic_vector3& A reference to this vector.
    */
-  constexpr auto operator-() noexcept -> reference;
+  constexpr auto operator-() noexcept -> basic_vector3&;
 
   // -- Binary numeric operators --
 
-  constexpr auto operator+=(const value_type scalar) noexcept -> reference;
+  constexpr auto operator+=(const value_type scalar) noexcept -> basic_vector3&;
 
   /**
    * @brief Adds the components of the other vector to this vector.
    * 
    * @param other The other vector to add.
    * 
-   * @return reference A reference to this vector. 
+   * @return basic_vector3& A reference to this vector. 
    */
-  constexpr auto operator+=(const_reference other) noexcept -> reference;
+  constexpr auto operator+=(const basic_vector3& other) noexcept -> basic_vector3&;
 
-  constexpr auto operator-=(const value_type scalar) noexcept -> reference;
+  constexpr auto operator-=(const value_type scalar) noexcept -> basic_vector3&;
 
   /**
    * @brief Subtracts the components of the other vector from this vector.
    * 
    * @param other The other vector to subtract.
    * 
-   * @return reference A reference to this vector. 
+   * @return basic_vector3& A reference to this vector. 
    */
-  constexpr auto operator-=(const_reference other) noexcept -> reference;
+  constexpr auto operator-=(const basic_vector3& other) noexcept -> basic_vector3&;
 
   /**
    * @brief Multiplies the components of this vector by the scalar.
    * 
    * @param scalar The scalar to multiply by.
    * 
-   * @return reference A reference to this vector. 
+   * @return basic_vector3& A reference to this vector. 
    */
-  constexpr auto operator*=(const value_type scalar) noexcept -> reference;
+  constexpr auto operator*=(const value_type scalar) noexcept -> basic_vector3&;
 
-  constexpr auto operator*=(const_reference scalar) noexcept -> reference;
+  constexpr auto operator*=(const basic_vector3& scalar) noexcept -> basic_vector3&;
 
   template<numeric Other>
-  constexpr auto operator*=(const Other& scalar) noexcept -> reference;
+  constexpr auto operator*=(const Other& scalar) noexcept -> basic_vector3&;
 
   /**
    * @brief Divides the components of this vector by the scalar.
@@ -253,14 +253,14 @@ public:
    * 
    * @throws std::domain_error If the scalar is zero.
    * 
-   * @return reference A reference to this vector. 
+   * @return basic_vector3& A reference to this vector. 
    */
-  constexpr auto operator/=(const value_type scalar) noexcept -> reference;
+  constexpr auto operator/=(const value_type scalar) noexcept -> basic_vector3&;
 
-  constexpr auto operator/=(const_reference scalar) noexcept -> reference;
+  constexpr auto operator/=(const basic_vector3& scalar) noexcept -> basic_vector3&;
 
   template<numeric Other>
-  constexpr auto operator/=(const Other& scalar) noexcept -> reference;
+  constexpr auto operator/=(const Other& scalar) noexcept -> basic_vector3&;
 
   // -- Access operators --
 
@@ -269,18 +269,18 @@ public:
    * 
    * @param index The index of the component.
    * 
-   * @return reference A reference to the component. 
+   * @return basic_vector3& A reference to the component. 
    */
-  [[nodiscard]] constexpr auto operator[](const index_type index) noexcept -> reference;
+  [[nodiscard]] constexpr auto operator[](const index_type index) noexcept -> basic_vector3&;
 
   /**
    * @brief Returns the component at the specified index.
    * 
    * @param index The index of the component. 
    * 
-   * @return const_reference A const_reference to the component.
+   * @return const basic_vector3& A const basic_vector3& to the component.
    */
-  [[nodiscard]] constexpr auto operator[](const index_type index) const noexcept -> const_reference;
+  [[nodiscard]] constexpr auto operator[](const index_type index) const noexcept -> const basic_vector3&;
 
   // -- Member functions --
 
@@ -296,7 +296,7 @@ public:
   /** 
    * @brief Normalizes the vector.
    */
-  constexpr auto normalize() noexcept -> reference;
+  constexpr auto normalize() noexcept -> basic_vector3&;
 
   /**
    * @brief Clamps each component between the min and max value.
@@ -306,7 +306,7 @@ public:
    * 
    * @return 
    */
-  constexpr auto clamp(const value_type min, const value_type max) noexcept -> reference;
+  constexpr auto clamp(const value_type min, const value_type max) noexcept -> basic_vector3&;
 
   // -- Data access --
 
@@ -426,7 +426,7 @@ template<numeric Type>
 [[nodiscard]] constexpr auto operator/(basic_vector3<Type> lhs, const basic_vector3<Type>& rhs) noexcept -> basic_vector3<Type>;
 
 template<numeric Type, numeric Other>
-[[nodiscard]] constexpr auto operator/(basic_vector3<Type> lhs, const Other& rhs) noexcept -> basic_vector3<Type>;
+[[nodiscard]] constexpr auto operator/(basic_vector3<Type> lhs, const Other rhs) noexcept -> basic_vector3<Type>;
 
 template<numeric Type>
 auto operator<<(std::ostream& output_stream, const basic_vector3<Type>& vector) -> std::ostream&;

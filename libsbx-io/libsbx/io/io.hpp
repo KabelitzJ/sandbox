@@ -6,4 +6,7 @@
 #include <libsbx/io/concepts.hpp>
 #include <libsbx/io/read_file.hpp>
 
+#include <libsbx/io/file.hpp>
+#include <libsbx/io/yaml_file.hpp>
+
 #endif // LIBSBX_IO_HPP_

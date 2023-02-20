@@ -1,5 +1,6 @@
 public_dependencies =
 import public_dependencies += fmt%liba{fmt}
+import public_dependencies += yaml-cpp%liba{yaml-cpp}
 import public_dependencies += libsbx-utility%liba{sbx_utility}
 import public_dependencies += libsbx-core%liba{sbx_core}
 
