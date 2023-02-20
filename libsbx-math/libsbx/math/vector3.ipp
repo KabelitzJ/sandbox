@@ -42,18 +42,18 @@ inline constexpr basic_vector3<Type>::basic_vector3(const basic_vector3<Other>& 
   z{static_cast<value_type>(other.z)} { }
 
 template<numeric Type>
-inline constexpr auto basic_vector3<Type>::normalized(const basic_vector3& vector) noexcept -> basic_vector3<Type> {
+inline constexpr auto basic_vector3<Type>::normalized(const_reference vector) noexcept -> basic_vector3<Type> {
   const auto length = vector.length();
   return length == static_cast<value_type>(0) ? vector : vector / length;
 }
 
 template<numeric Type>
-inline constexpr auto basic_vector3<Type>::dot(const basic_vector3& lhs, const basic_vector3& rhs) noexcept -> value_type {
+inline constexpr auto basic_vector3<Type>::dot(const_reference lhs, const_reference rhs) noexcept -> value_type {
   return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z;
 }
 
 template<numeric Type>
-inline constexpr auto basic_vector3<Type>::cross(const basic_vector3& lhs, const basic_vector3& rhs) noexcept -> basic_vector3<Type> {
+inline constexpr auto basic_vector3<Type>::cross(const_reference lhs, const_reference rhs) noexcept -> basic_vector3<Type> {
   const auto x = lhs.y * rhs.z - lhs.z * rhs.y;
   const auto y = lhs.z * rhs.x - lhs.x * rhs.z;
   const auto z = lhs.x * rhs.y - lhs.y * rhs.x;
@@ -62,7 +62,7 @@ inline constexpr auto basic_vector3<Type>::cross(const basic_vector3& lhs, const
 }
 
 template<numeric Type>
-inline constexpr auto basic_vector3<Type>::clamp(const basic_vector3& vector, const Type min, const Type max) noexcept -> basic_vector3<Type> {
+inline constexpr auto basic_vector3<Type>::clamp(const_reference vector, const Type min, const Type max) noexcept -> basic_vector3<Type> {
   const auto x = std::max(min, std::min(vector.x, max));
   const auto y = std::max(min, std::min(vector.y, max));
   const auto z = std::max(min, std::min(vector.z, max));
@@ -72,7 +72,7 @@ inline constexpr auto basic_vector3<Type>::clamp(const basic_vector3& vector, co
 
 template<numeric Type>
 template<numeric Other>
-constexpr auto basic_vector3<Type>::operator=(const basic_vector3<Other>& other) noexcept -> basic_vector3<Type>& {
+constexpr auto basic_vector3<Type>::operator=(const basic_vector3<Other>& other) noexcept -> reference {
   x = static_cast<value_type>(other.x);
   y = static_cast<value_type>(other.y);
   z = static_cast<value_type>(other.z);
@@ -81,7 +81,7 @@ constexpr auto basic_vector3<Type>::operator=(const basic_vector3<Other>& other)
 }
 
 template<numeric Type>
-inline constexpr auto basic_vector3<Type>::operator-() noexcept -> basic_vector3<Type>& {
+inline constexpr auto basic_vector3<Type>::operator-() noexcept -> reference {
   x = -x;
   y = -y;
   z = -z;
@@ -90,7 +90,7 @@ inline constexpr auto basic_vector3<Type>::operator-() noexcept -> basic_vector3
 }
 
 template<numeric Type>
-inline constexpr basic_vector3<Type>& basic_vector3<Type>::operator+=(const Type scalar) noexcept {
+inline constexpr auto basic_vector3<Type>::operator+=(const Type scalar) noexcept -> reference {
   x += scalar;
   y += scalar;
   z += scalar;
@@ -99,7 +99,7 @@ inline constexpr basic_vector3<Type>& basic_vector3<Type>::operator+=(const Type
 }
 
 template<numeric Type>
-inline constexpr basic_vector3<Type>& basic_vector3<Type>::operator+=(const basic_vector3<Type>& other) noexcept {
+inline constexpr auto basic_vector3<Type>::operator+=(const_reference other) noexcept -> reference {
   x += other.x;
   y += other.y;
   z += other.z;
@@ -108,7 +108,7 @@ inline constexpr basic_vector3<Type>& basic_vector3<Type>::operator+=(const basi
 }
 
 template<numeric Type>
-inline constexpr basic_vector3<Type>& basic_vector3<Type>::operator-=(const Type other) noexcept {
+inline constexpr auto basic_vector3<Type>::operator-=(const Type other) noexcept -> reference {
   x -= other;
   y -= other;
   z -= other;
@@ -117,7 +117,7 @@ inline constexpr basic_vector3<Type>& basic_vector3<Type>::operator-=(const Type
 }
 
 template<numeric Type>
-inline constexpr basic_vector3<Type>& basic_vector3<Type>::operator-=(const basic_vector3<Type>& other) noexcept {
+inline constexpr auto basic_vector3<Type>::operator-=(const_reference other) noexcept -> reference {
   x -= other.x;
   y -= other.y;
   z -= other.z;
@@ -126,7 +126,7 @@ inline constexpr basic_vector3<Type>& basic_vector3<Type>::operator-=(const basi
 }
 
 template<numeric Type>
-inline constexpr basic_vector3<Type>& basic_vector3<Type>::operator*=(const Type scalar) noexcept {
+inline constexpr auto basic_vector3<Type>::operator*=(const Type scalar) noexcept -> reference {
   x *= scalar;
   y *= scalar;
   z *= scalar;
@@ -135,7 +135,7 @@ inline constexpr basic_vector3<Type>& basic_vector3<Type>::operator*=(const Type
 }
 
 template<numeric Type>
-inline constexpr basic_vector3<Type>& basic_vector3<Type>::operator*=(const basic_vector3<Type>& scalar) noexcept {
+inline constexpr auto basic_vector3<Type>::operator*=(const_reference scalar) noexcept -> reference {
   x *= scalar.x;
   y *= scalar.y;
   z *= scalar.z;
@@ -145,7 +145,7 @@ inline constexpr basic_vector3<Type>& basic_vector3<Type>::operator*=(const basi
 
 template<numeric Type>
 template<numeric Other>
-inline constexpr basic_vector3<Type>& basic_vector3<Type>::operator*=(const Other& scalar) noexcept {
+inline constexpr auto basic_vector3<Type>::operator*=(const Other& scalar) noexcept -> reference {
   x *= static_cast<value_type>(scalar);
   y *= static_cast<value_type>(scalar);
   z *= static_cast<value_type>(scalar);
@@ -154,7 +154,7 @@ inline constexpr basic_vector3<Type>& basic_vector3<Type>::operator*=(const Othe
 }
 
 template<numeric Type>
-inline constexpr basic_vector3<Type>& basic_vector3<Type>::operator/=(const Type scalar) noexcept {
+inline constexpr auto basic_vector3<Type>::operator/=(const Type scalar) noexcept -> reference {
   core::assert_that(scalar != static_cast<value_type>(0), "Division by zero");
 
   x /= scalar;
@@ -165,7 +165,7 @@ inline constexpr basic_vector3<Type>& basic_vector3<Type>::operator/=(const Type
 }
 
 template<numeric Type>
-inline constexpr basic_vector3<Type>& basic_vector3<Type>::operator/=(const basic_vector3<Type>& scalar) noexcept {
+inline constexpr auto basic_vector3<Type>::operator/=(const_reference scalar) noexcept -> reference {
   core::assert_that(scalar.x != static_cast<value_type>(0), "Division by zero");
 
   x /= scalar.x;
@@ -177,7 +177,7 @@ inline constexpr basic_vector3<Type>& basic_vector3<Type>::operator/=(const basi
 
 template<numeric Type>
 template<numeric Other>
-inline constexpr basic_vector3<Type>& basic_vector3<Type>::operator/=(const Other& scalar) noexcept {
+inline constexpr auto basic_vector3<Type>::operator/=(const Other& scalar) noexcept -> reference {
   core::assert_that(scalar != static_cast<value_type>(0), "Division by zero");
 
   x /= static_cast<value_type>(scalar);
@@ -188,7 +188,7 @@ inline constexpr basic_vector3<Type>& basic_vector3<Type>::operator/=(const Othe
 }
 
 template<numeric Type>
-inline constexpr basic_vector3<Type>::reference basic_vector3<Type>::operator[](const index_type index) noexcept {
+inline constexpr auto basic_vector3<Type>::operator[](const index_type index) noexcept -> reference {
   core::assert_that(index < 3, "Invalid index");
 
   switch (index) {
@@ -206,7 +206,7 @@ inline constexpr basic_vector3<Type>::reference basic_vector3<Type>::operator[](
 }
 
 template<numeric Type>
-inline constexpr basic_vector3<Type>::const_reference basic_vector3<Type>::operator[](const index_type index) const noexcept {
+inline constexpr auto basic_vector3<Type>::operator[](const index_type index) const noexcept -> const_reference {
   core::assert_that(index < 3, "Invalid index");
 
   switch (index) {
@@ -224,7 +224,7 @@ inline constexpr basic_vector3<Type>::const_reference basic_vector3<Type>::opera
 }
 
 template<numeric Type>
-inline constexpr basic_vector3<Type>::length_type basic_vector3<Type>::length() const noexcept {
+inline constexpr auto basic_vector3<Type>::length() const noexcept -> length_type {
   return std::sqrt(x * x + y * y + z * z);
 }
 
@@ -234,7 +234,7 @@ inline constexpr auto basic_vector3<Type>::length_squared() const noexcept -> le
 }
 
 template<numeric Type>
-inline constexpr basic_vector3<Type>& basic_vector3<Type>::normalize() noexcept {
+inline constexpr auto basic_vector3<Type>::normalize() noexcept -> reference {
   const auto len = length();
 
   if (len != length_type{0}) {
@@ -247,7 +247,7 @@ inline constexpr basic_vector3<Type>& basic_vector3<Type>::normalize() noexcept 
 }
 
 template<numeric Type>
-inline constexpr basic_vector3<Type>& basic_vector3<Type>::clamp(const Type min, const Type max) noexcept {
+inline constexpr auto basic_vector3<Type>::clamp(const Type min, const Type max) noexcept -> reference {
   x = std::max(min, std::min(x, max));
   y = std::max(min, std::min(y, max));
   z = std::max(min, std::min(z, max));
@@ -256,12 +256,12 @@ inline constexpr basic_vector3<Type>& basic_vector3<Type>::clamp(const Type min,
 }
 
 template<numeric Type>
-inline constexpr basic_vector3<Type>::pointer basic_vector3<Type>::data() noexcept {
+inline constexpr auto basic_vector3<Type>::data() noexcept -> pointer {
   return &x;
 }
 
 template<numeric Type>
-inline constexpr basic_vector3<Type>::const_pointer basic_vector3<Type>::data() const noexcept {
+inline constexpr auto basic_vector3<Type>::data() const noexcept -> const_pointer {
   return &x;
 }
 
