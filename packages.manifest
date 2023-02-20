@@ -18,3 +18,5 @@ location: libsbx-graphics/
 location: demo/
 :
 location: libsbx-units/
+:
+location: libsbx-memory/
