@@ -32,7 +32,20 @@
 
 /**
  * @defgroup libsbx-core
+ * 
+ * @brief The core library of the libsbx project.
+ * @version v0.1.0
  * @since v0.1.0
+ * 
+ * @author Jonas Kabelitz <jonas-kabelitz@gmx.de>
+ * @date 2023-02-21
+ * 
+ * External dependencies:
+ *   - <a href="https://cppget.org/spdlog">spdlog</a>
+ *   - <a href="https://cppget.org/gtest">gtest</a>
+ * 
+ * Internal dependencies:
+ *   - @ref libsbx-utility
  */
 
 #include <libsbx/core/application.hpp>

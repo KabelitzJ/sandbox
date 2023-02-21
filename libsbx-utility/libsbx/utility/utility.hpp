@@ -32,7 +32,13 @@
 
 /**
  * @defgroup libsbx-utility
+ * 
+ * @brief The core library of the libsbx project.
+ * @version v0.1.0
  * @since v0.1.0
+ * 
+ * @author Jonas Kabelitz <jonas-kabelitz@gmx.de>
+ * @date 2023-02-21
  */
 
 #include <libsbx/utility/version.hpp>

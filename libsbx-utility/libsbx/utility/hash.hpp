@@ -90,19 +90,27 @@ struct fnv1a_traits;
 
 /**
  * @brief Traits for the fnv1a hash function specialized for 32-bit hashes.
+ * 
+ * @see https://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function#FNV_hash_parameters
  */
 template<>
 struct fnv1a_traits<std::uint32_t> {
+  /** @brief The offset basis for 32-bit fnv1a. */
   inline static constexpr auto offset_basis = std::uint32_t{0x811c9dc5};
+  /** @brief The prime for 32-bit fnv1a. */
   inline static constexpr auto prime = std::uint32_t{0x01000193};
 }; // struct fnv1a_traits
 
 /**
  * @brief Traits for the fnv1a hash function specialized for 64-bit hashes.
+ * 
+ * @see https://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function#FNV_hash_parameters
  */
 template<>
 struct fnv1a_traits<std::uint64_t> {
+  /** @brief The offset basis for 64-bit fnv1a. */
   inline static constexpr auto offset_basis = std::uint64_t{0xcbf29ce484222325};
+  /** @brief The prime for 64-bit fnv1a. */
   inline static constexpr auto prime = std::uint64_t{0x00000100000001B3};
 }; // struct fnv1a_traits
 
