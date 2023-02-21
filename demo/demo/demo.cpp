@@ -44,14 +44,14 @@ public:
       }
     }
 
-    auto file = sbx::io::yaml_file{"./demo/assets/data/config.yaml"};
-
-    auto entry = file["window"];
-
-    sbx::core::logger::info("{}", entry["width"].as<std::uint32_t>());
-    sbx::core::logger::info("{}", entry["height"].as<std::uint32_t>());
-
     window.show();
+
+    using namespace sbx::utility::literals;
+
+    auto name = "Jonas"_hs;
+
+    sbx::core::logger::info("{}", name.hash());
+
   }
 
   ~demo_application() override = default;

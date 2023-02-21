@@ -344,6 +344,6 @@ auto operator<<(io::node& node, const basic_vector3<Type>& vector) -> io::node& 
 template<sbx::math::numeric Type>
 inline std::size_t std::hash<sbx::math::basic_vector3<Type>>::operator()(const sbx::math::basic_vector3<Type>& vector) const noexcept {
   auto seed = std::size_t{0};
-  sbx::core::hash_combine(seed, vector.x, vector.y, vector.z);
+  sbx::utility::hash_combine(seed, vector.x, vector.y, vector.z);
   return seed;
 }
