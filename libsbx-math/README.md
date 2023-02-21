@@ -1,3 +1,3 @@
-# libsbx_math
+# libsbx-math
 
 C++ library
