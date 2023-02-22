@@ -28,6 +28,12 @@ public:
       _engine.quit();
     });
 
+    window.set_on_key([this]([[maybe_unused]] const sbx::devices::key_event& event){
+      if (event.key == GLFW_KEY_ESCAPE && event.action == GLFW_PRESS) {
+        _engine.quit();
+      }
+    });
+
     auto& scripting_module = sbx::scripting::scripting_module::get();
 
     for (const auto& entry : std::filesystem::directory_iterator("./demo/assets/scripts")) {
@@ -45,13 +51,6 @@ public:
     }
 
     window.show();
-
-    using namespace sbx::utility::literals;
-
-    auto name = "Jonas"_hs;
-
-    sbx::core::logger::info("{}", name.hash());
-
   }
 
   ~demo_application() override = default;

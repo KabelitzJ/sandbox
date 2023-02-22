@@ -6,19 +6,12 @@
 #include <stdexcept>
 #include <functional>
 
+#include <libsbx/core/concepts.hpp>
+#include <libsbx/core/delegate.hpp>
+
 #include <libsbx/devices/events.hpp>
 
 namespace sbx::devices {
-
-/**
- * @brief  Describes a type or object that can be invoked with the give parameters and return the given type
- * 
- * @tparam Callable Type of the callable
- * @tparam Return Return type of the callable
- * @tparam Args... Types of the arguments of the callable
- */
-template<typename Callable, typename Return, typename... Args>
-concept callable = std::is_invocable_r_v<Return, Callable, Args...>;
 
 class window {
 
@@ -108,19 +101,24 @@ public:
    * @param callable 
    * @return 
    */
-  template<callable<void, const window_closed_event&> Callable>
+  template<core::callable<void, const window_closed_event&> Callable>
   auto set_on_window_closed(Callable&& callable) -> void {
     _on_window_closed = std::forward<Callable>(callable);
   }
 
-  template<callable<void, const window_moved_event&> Callable>
+  template<core::callable<void, const window_moved_event&> Callable>
   auto set_on_window_moved(Callable&& callable) -> void {
     _on_window_moved = std::forward<Callable>(callable);
   }
 
-  template<callable<void, const window_resized_event&> Callable>
+  template<core::callable<void, const window_resized_event&> Callable>
   auto set_on_window_resized(Callable&& callable) -> void {
     _on_window_resized = std::forward<Callable>(callable);
+  }
+
+  template<core::callable<void, const key_event&> Callable>
+  auto set_on_key(Callable&& callable) -> void {
+    _on_key = std::forward<Callable>(callable);
   }
 
 private:
@@ -154,6 +152,15 @@ private:
         user_data._on_window_resized(event);
       }
     });
+
+    glfwSetKeyCallback(_handle, [](GLFWwindow* window, std::int32_t key, std::int32_t scancode, std::int32_t action, std::int32_t mods){
+      const auto& user_data = *static_cast<devices::window*>(glfwGetWindowUserPointer(window));
+
+      if (user_data._on_key) {
+        const auto event = key_event{key, scancode, action, mods};
+        user_data._on_key(event);
+      }
+    });
   }
 
   std::string _title{};
@@ -162,9 +169,10 @@ private:
 
   GLFWwindow* _handle{};
 
-  std::function<void(const window_closed_event&)> _on_window_closed{};
-  std::function<void(const window_moved_event&)> _on_window_moved{};
-  std::function<void(const window_resized_event&)> _on_window_resized{};
+  core::delegate<void(const window_closed_event&)> _on_window_closed{};
+  core::delegate<void(const window_moved_event&)> _on_window_moved{};
+  core::delegate<void(const window_resized_event&)> _on_window_resized{};
+  core::delegate<void(const key_event&)> _on_key{};
 
 }; // class window
 

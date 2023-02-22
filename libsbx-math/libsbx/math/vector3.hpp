@@ -450,8 +450,15 @@ using vector3 = vector3f;
 
 } // namespace sbx::math
 
+/**
+ * @brief Specialization of std::hash for sbx::math::basic_vector3.
+ * @tparam Type The type of the vectors components.
+ */
 template<sbx::math::numeric Type>
 struct std::hash<sbx::math::basic_vector3<Type>> {
+  /**
+   * @brief Calculates the hash of a vector.
+   */
   std::size_t operator()(const sbx::math::basic_vector3<Type>& vector) const noexcept;
 }; // struct std::hash
 

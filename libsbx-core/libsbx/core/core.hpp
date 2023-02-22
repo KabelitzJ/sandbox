@@ -56,5 +56,6 @@
 #include <libsbx/core/module.hpp>
 #include <libsbx/core/target.hpp>
 #include <libsbx/core/version.hpp>
+#include <libsbx/core/delegate.hpp>
 
 #endif // LIBSBX_CORE_HPP_

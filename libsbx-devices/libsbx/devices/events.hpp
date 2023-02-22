@@ -20,6 +20,13 @@ struct window_resized_event {
   std::int32_t height{};
 };
 
+struct key_event {
+  std::int32_t key{};
+  std::int32_t scancode{};
+  std::int32_t action{};
+  std::int32_t mods{};
+}; // struct key_pressed_event
+
 } // namespace sbx::devices
 
 #endif // LIBSBX_DEVICES_EVENTS_HPP_
