@@ -98,20 +98,37 @@ graphics_module::~graphics_module() {
 }
 
 auto graphics_module::initialize() -> void {
-  _renderpass = std::make_unique<graphics::renderpass>();
+  auto& window = devices::devices_module::get().window();
+
+  window.set_on_framebuffer_resized([this]([[maybe_unused]] const devices::framebuffer_resized_event& event) {
+    _framebuffer_resized = true;
+  });
+
+  _render_pass = std::make_unique<graphics::render_pass>();
 
   _recreate_swapchain();
 
-  auto vertices = std::array<vertex, 6>{
-    vertex{vector2{-0.5, -0.5}, color{0.98, 0.29, 0.24, 1.0}},
-    vertex{vector2{ 0.5, -0.5}, color{0.98, 0.29, 0.24, 1.0}},
-    vertex{vector2{ 0.5,  0.5}, color{0.98, 0.29, 0.24, 1.0}},
-    vertex{vector2{ 0.5,  0.5}, color{0.98, 0.29, 0.24, 1.0}},
-    vertex{vector2{-0.5,  0.5}, color{0.98, 0.29, 0.24, 1.0}},
-    vertex{vector2{-0.5, -0.5}, color{0.98, 0.29, 0.24, 1.0}}
+  // vertex{vector2{-0.5, -0.5}, color{0.98, 0.29, 0.24, 1.0}},
+  // vertex{vector2{ 0.5, -0.5}, color{0.98, 0.29, 0.24, 1.0}},
+  // vertex{vector2{ 0.5,  0.5}, color{0.98, 0.29, 0.24, 1.0}},
+  // vertex{vector2{ 0.5,  0.5}, color{0.98, 0.29, 0.24, 1.0}},
+  // vertex{vector2{-0.5,  0.5}, color{0.98, 0.29, 0.24, 1.0}},
+  // vertex{vector2{-0.5, -0.5}, color{0.98, 0.29, 0.24, 1.0}}
+  auto vertices = std::vector<vertex>{
+    vertex{vector2{-0.5, -0.5}, color{1.0, 0.0, 0.0, 1.0}},
+    vertex{vector2{ 0.5, -0.5}, color{0.0, 0.1, 0.0, 1.0}},
+    vertex{vector2{ 0.5,  0.5}, color{0.0, 0.0, 1.0, 1.0}},
+    vertex{vector2{-0.5,  0.5}, color{0.0, 0.0, 0.0, 1.0}}
   };
 
   _vertex_buffer = std::make_unique<graphics::buffer>(vertices.data(), sizeof(vertex) * vertices.size(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+
+  auto _indices = std::vector<std::uint32_t>{
+    0, 1, 2, 
+    2, 3, 0
+  };
+
+  _index_buffer = std::make_unique<graphics::buffer>(_indices.data(), sizeof(std::uint32_t) * _indices.size(), VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 }
 
 auto graphics_module::update([[maybe_unused]] std::float_t delta_time) -> void {
@@ -123,7 +140,6 @@ auto graphics_module::update([[maybe_unused]] std::float_t delta_time) -> void {
 
   if (_framebuffer_resized) {
     _recreate_swapchain();
-    return;
   }
 
   const auto& frame_data = _per_frame_data[_current_frame];
@@ -132,11 +148,9 @@ auto graphics_module::update([[maybe_unused]] std::float_t delta_time) -> void {
   const auto result = _swapchain->acquire_next_image(frame_data.image_available_semaphore, frame_data.in_flight_fence);
 
   if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-    _recreate_swapchain();
+    _framebuffer_resized = true;
     return;
-  }
-
-  if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+  }else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
     throw std::runtime_error{"Failed to acquire swapchain image"};
   }
 
@@ -154,7 +168,9 @@ auto graphics_module::update([[maybe_unused]] std::float_t delta_time) -> void {
 
   vkCmdBindVertexBuffers(*command_buffer, 0, 1, buffers.data(), offsets.data());
 
-  vkCmdDraw(*command_buffer, _vertex_buffer->size(), 1, 0, 0);
+  vkCmdBindIndexBuffer(*command_buffer, *_index_buffer, 0, VK_INDEX_TYPE_UINT32);
+
+  vkCmdDrawIndexed(*command_buffer, static_cast<std::uint32_t>(_index_buffer->size() / sizeof(std::uint32_t)), 1, 0, 0, 0);
 
   _end_render_pass();
 }
@@ -183,8 +199,8 @@ auto graphics_module::command_pool(const std::thread::id& thread_id) -> const st
   return _command_pools.insert({thread_id, std::make_shared<graphics::command_pool>(thread_id)}).first->second;
 }
 
-auto graphics_module::renderpass() -> graphics::renderpass& {
-  return *_renderpass;
+auto graphics_module::render_pass() -> graphics::render_pass& {
+  return *_render_pass;
 }
 
 auto graphics_module::swapchain() -> graphics::swapchain& {
@@ -239,7 +255,7 @@ auto graphics_module::_start_render_pass() -> void {
 
   auto render_pass_begin_info = VkRenderPassBeginInfo{};
 	render_pass_begin_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-	render_pass_begin_info.renderPass = *_renderpass;
+	render_pass_begin_info.renderPass = *_render_pass;
 	render_pass_begin_info.framebuffer = _swapchain->current_framebuffer();
 	render_pass_begin_info.renderArea = render_area;
 	render_pass_begin_info.clearValueCount = static_cast<std::uint32_t>(clear_values.size());

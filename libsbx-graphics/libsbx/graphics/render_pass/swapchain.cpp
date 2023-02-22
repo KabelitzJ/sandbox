@@ -1,4 +1,4 @@
-#include <libsbx/graphics/renderpass/swapchain.hpp>
+#include <libsbx/graphics/render_pass/swapchain.hpp>
 
 #include <limits>
 #include <ranges>
@@ -274,7 +274,7 @@ auto swapchain::_create_depth_images() -> void {
 
 auto swapchain::_create_framebuffers() -> void {
   auto& logical_device = graphics_module::get().logical_device();
-  auto& renderpass = graphics_module::get().renderpass();
+  auto& render_pass = graphics_module::get().render_pass();
 
   _framebuffers.resize(_image_count);
 
@@ -285,7 +285,7 @@ auto swapchain::_create_framebuffers() -> void {
 
     auto framebuffer_create_info = VkFramebufferCreateInfo{};
     framebuffer_create_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-    framebuffer_create_info.renderPass = renderpass;
+    framebuffer_create_info.renderPass = render_pass;
     framebuffer_create_info.attachmentCount = static_cast<std::uint32_t>(attachments.size());
     framebuffer_create_info.pAttachments = attachments.data();
     framebuffer_create_info.width = _extent.width;

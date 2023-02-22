@@ -19,28 +19,24 @@ surface::surface(const instance& instance, const physical_device& physical_devic
 	auto surface_formats = std::vector<VkSurfaceFormatKHR>{surface_format_count};
 	vkGetPhysicalDeviceSurfaceFormatsKHR(physical_device, _handle, &surface_format_count, surface_formats.data());
 
-	if (surface_format_count == 1 && surface_formats[0].format == VK_FORMAT_UNDEFINED) {
-		_format.format = VK_FORMAT_B8G8R8A8_UNORM;
-		_format.colorSpace = surface_formats[0].colorSpace;
-	} else {
-		auto found_B8G8R8A8_UNORM = false;
+  if (surface_formats.empty()) {
+    throw std::runtime_error("No surface formats available");
+  }
 
-		for (auto &surfaceFormat : surface_formats) {
-			if (surfaceFormat.format == VK_FORMAT_B8G8R8A8_UNORM) {
-				_format.format = surfaceFormat.format;
-				_format.colorSpace = surfaceFormat.colorSpace;
+  auto found_desired_format = false;
 
-				found_B8G8R8A8_UNORM = true;
+  for (auto& surface_format : surface_formats) {
+    if (surface_format.format == VK_FORMAT_B8G8R8A8_SRGB && surface_format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
+      _format = surface_format;
+      found_desired_format = true;
 
-				break;
-			}
-		}
+      break;
+    }
+  }
 
-		if (!found_B8G8R8A8_UNORM) {
-			_format.format = surface_formats[0].format;
-			_format.colorSpace = surface_formats[0].colorSpace;
-		}
-	}
+  if (!found_desired_format) {
+    _format = surface_formats[0];
+  }
 
 	auto present_support = std::uint32_t{0};
 	vkGetPhysicalDeviceSurfaceSupportKHR(physical_device, logical_device.present_queue().family(), _handle, &present_support);

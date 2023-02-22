@@ -19,7 +19,7 @@
 #include <libsbx/graphics/commands/command_pool.hpp>
 #include <libsbx/graphics/commands/command_buffer.hpp>
 
-#include <libsbx/graphics/renderpass/swapchain.hpp>
+#include <libsbx/graphics/render_pass/swapchain.hpp>
 
 #include <libsbx/graphics/pipeline/pipeline.hpp>
 #include <libsbx/graphics/pipeline/shader.hpp>
@@ -82,7 +82,7 @@ public:
 
   auto command_pool(const std::thread::id& thread_id = std::this_thread::get_id()) -> const std::shared_ptr<command_pool>&;
 
-  auto renderpass() -> renderpass&;
+  auto render_pass() -> render_pass&;
 
   auto swapchain() -> swapchain&;
 
@@ -116,7 +116,7 @@ private:
 
   std::unique_ptr<graphics::surface> _surface{};
 
-  std::unique_ptr<graphics::renderpass> _renderpass{};
+  std::unique_ptr<graphics::render_pass> _render_pass{};
 
   std::unique_ptr<graphics::swapchain> _swapchain{};
 
@@ -124,6 +124,7 @@ private:
   std::vector<std::unique_ptr<graphics::command_buffer>> _command_buffers{};
 
   std::unique_ptr<graphics::buffer> _vertex_buffer{};
+  std::unique_ptr<graphics::buffer> _index_buffer{};
 
   std::uint32_t _current_frame{};
   bool _framebuffer_resized{};

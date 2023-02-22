@@ -20,6 +20,11 @@ struct window_resized_event {
   std::int32_t height{};
 };
 
+struct framebuffer_resized_event {
+  std::int32_t width{};
+  std::int32_t height{};
+};
+
 struct key_event {
   std::int32_t key{};
   std::int32_t scancode{};

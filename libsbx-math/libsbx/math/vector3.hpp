@@ -165,7 +165,30 @@ public:
    */
   [[nodiscard]] static constexpr auto cross(const basic_vector3& lhs, const basic_vector3& rhs) noexcept -> basic_vector3;
 
+  /**
+   * @brief Clamps the components of the vector between the given minimum and maximum values.
+   * 
+   * @param vector The vector to clamp.
+   * @param min The minimum value.
+   * @param max The maximum value.
+   * 
+   * @return basic_vector3 The clamped vector.
+   */
   [[nodiscard]] static constexpr auto clamp(const basic_vector3& vector, const value_type min, const value_type max) noexcept -> basic_vector3;
+
+  /**
+   * @brief Returns a vector which is the result of linear interpolation between two vectors by a given scale. 
+   * 
+   * @tparam Scale The type of the scale.
+   * 
+   * @param lhs The left hand side vector.
+   * @param rhs The right hand side vector.
+   * @param scale The scale.
+   * 
+   * @return basic_vector3 The interpolated vector.
+   */
+  template<std::floating_point Scale>
+  [[nodiscard]] static constexpr auto lerp(const basic_vector3& lhs, const basic_vector3& rhs, const Scale scale) noexcept -> basic_vector3;
 
   // -- Assignment operators --
 

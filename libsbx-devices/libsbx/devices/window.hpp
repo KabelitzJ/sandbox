@@ -5,6 +5,7 @@
 
 #include <stdexcept>
 #include <functional>
+#include <unordered_set>
 
 #include <libsbx/core/concepts.hpp>
 #include <libsbx/core/delegate.hpp>
@@ -19,7 +20,7 @@ public:
 
   window(const std::string& title, std::uint32_t width, std::uint32_t height) {
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    glfwWindowHint(GLFW_RESIZABLE, false);
+    // glfwWindowHint(GLFW_RESIZABLE, false);
     glfwWindowHint(GLFW_VISIBLE, false);
 
     _title = title;
@@ -121,6 +122,11 @@ public:
     _on_key = std::forward<Callable>(callable);
   }
 
+  template<core::callable<void, const framebuffer_resized_event&> Callable>
+  auto set_on_framebuffer_resized(Callable&& callable) -> void {
+    _on_framebuffer_resized = std::forward<Callable>(callable);
+  }
+
 private:
 
   void _set_callbacks() {
@@ -153,6 +159,15 @@ private:
       }
     });
 
+    glfwSetFramebufferSizeCallback(_handle, [](GLFWwindow* window, std::int32_t width, std::int32_t height){
+      const auto& user_data = *static_cast<devices::window*>(glfwGetWindowUserPointer(window));
+
+      if (user_data._on_framebuffer_resized) {
+        const auto event = framebuffer_resized_event{width, height};
+        user_data._on_framebuffer_resized(event);
+      }
+    });
+
     glfwSetKeyCallback(_handle, [](GLFWwindow* window, std::int32_t key, std::int32_t scancode, std::int32_t action, std::int32_t mods){
       const auto& user_data = *static_cast<devices::window*>(glfwGetWindowUserPointer(window));
 
@@ -172,6 +187,7 @@ private:
   core::delegate<void(const window_closed_event&)> _on_window_closed{};
   core::delegate<void(const window_moved_event&)> _on_window_moved{};
   core::delegate<void(const window_resized_event&)> _on_window_resized{};
+  core::delegate<void(const framebuffer_resized_event&)> _on_framebuffer_resized{};
   core::delegate<void(const key_event&)> _on_key{};
 
 }; // class window

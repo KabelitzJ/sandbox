@@ -256,6 +256,13 @@ inline constexpr auto basic_vector3<Type>::clamp(const Type min, const Type max)
 }
 
 template<numeric Type>
+template<std::floating_point Scale>
+inline constexpr auto basic_vector3<Type>::lerp(const basic_vector3& lhs, const basic_vector3& rhs, const Scale scale) noexcept -> basic_vector3 {
+  core::assert_that(scale >= static_cast<Scale>(0) && scale <= static_cast<Scale>(1), "Invalid scale");
+  return lhs + (rhs - lhs) * scale;
+}
+
+template<numeric Type>
 inline constexpr auto basic_vector3<Type>::data() noexcept -> pointer {
   return &x;
 }

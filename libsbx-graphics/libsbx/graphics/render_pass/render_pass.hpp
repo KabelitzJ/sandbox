@@ -1,5 +1,5 @@
-#ifndef LIBSBX_GRAPHICS_RENDERPASS_RENDERPASS_HPP_
-#define LIBSBX_GRAPHICS_RENDERPASS_RENDERPASS_HPP_
+#ifndef LIBSBX_GRAPHICS_RENDER_PASS_RENDER_PASS_HPP_
+#define LIBSBX_GRAPHICS_RENDER_PASS_RENDER_PASS_HPP_
 
 #include <vulkan/vulkan.hpp>
 
@@ -7,13 +7,13 @@
 
 namespace sbx::graphics {
 
-class renderpass : public utility::noncopyable {
+class render_pass : public utility::noncopyable {
   
 public:
 
-  renderpass();
+  render_pass();
 
-  ~renderpass();
+  ~render_pass();
 
   auto handle() const noexcept -> const VkRenderPass&;
 
@@ -23,8 +23,8 @@ private:
 
   VkRenderPass _handle{};
 
-}; // class renderpass
+}; // class render_pass
 
 } // namespace sbx::graphics
 
-#endif // LIBSBX_GRAPHICS_RENDERPASS_RENDERPASS_HPP_
+#endif // LIBSBX_GRAPHICS_RENDER_PASS_RENDER_PASS_HPP_

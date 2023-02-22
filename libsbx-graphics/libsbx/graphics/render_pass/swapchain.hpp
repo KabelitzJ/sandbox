@@ -7,7 +7,7 @@
 
 #include <vulkan/vulkan.h>
 
-#include <libsbx/graphics/renderpass/renderpass.hpp>
+#include <libsbx/graphics/render_pass/render_pass.hpp>
 
 namespace sbx::graphics {
 

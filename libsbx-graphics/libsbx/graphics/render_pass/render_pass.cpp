@@ -1,4 +1,4 @@
-#include <libsbx/graphics/renderpass/renderpass.hpp>
+#include <libsbx/graphics/render_pass/render_pass.hpp>
 
 #include <libsbx/graphics/graphics_module.hpp>
 
@@ -7,7 +7,7 @@
 
 namespace sbx::graphics {
 
-renderpass::renderpass() {
+render_pass::render_pass() {
   const auto& physical_device = graphics_module::get().physical_device();
   const auto& logical_device = graphics_module::get().logical_device();
   const auto& surface = graphics_module::get().surface();
@@ -62,29 +62,29 @@ renderpass::renderpass() {
 
   auto attachments = std::array<VkAttachmentDescription, 2>{color_attachment, depth_attachment};
 
-  auto renderpass_create_info = VkRenderPassCreateInfo{};
-  renderpass_create_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-  renderpass_create_info.attachmentCount = static_cast<std::uint32_t>(attachments.size());
-  renderpass_create_info.pAttachments = attachments.data();
-  renderpass_create_info.subpassCount = 1;
-  renderpass_create_info.pSubpasses = &subpass_description;
-  renderpass_create_info.dependencyCount = 1;
-  renderpass_create_info.pDependencies = &subpass_dependency;
+  auto render_pass_create_info = VkRenderPassCreateInfo{};
+  render_pass_create_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+  render_pass_create_info.attachmentCount = static_cast<std::uint32_t>(attachments.size());
+  render_pass_create_info.pAttachments = attachments.data();
+  render_pass_create_info.subpassCount = 1;
+  render_pass_create_info.pSubpasses = &subpass_description;
+  render_pass_create_info.dependencyCount = 1;
+  render_pass_create_info.pDependencies = &subpass_dependency;
 
-  validate(vkCreateRenderPass(logical_device, &renderpass_create_info, nullptr, &_handle));
+  validate(vkCreateRenderPass(logical_device, &render_pass_create_info, nullptr, &_handle));
 }
 
-renderpass::~renderpass() {
+render_pass::~render_pass() {
   const auto& logical_device = graphics_module::get().logical_device();
 
   vkDestroyRenderPass(logical_device, _handle, nullptr);
 }
 
-auto renderpass::handle() const noexcept -> const VkRenderPass& {
+auto render_pass::handle() const noexcept -> const VkRenderPass& {
   return _handle;
 }
 
-renderpass::operator const VkRenderPass&() const noexcept {
+render_pass::operator const VkRenderPass&() const noexcept {
   return _handle;
 }
 
