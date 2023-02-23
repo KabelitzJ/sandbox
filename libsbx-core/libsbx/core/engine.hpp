@@ -41,8 +41,10 @@ public:
   }
 
   template<derived_from<application> Type>
-  auto run(const std::unique_ptr<Type>& application) -> void {
+  auto run() -> void {
     using clock_type = std::chrono::high_resolution_clock;
+
+    auto application = std::make_unique<Type>(*this);
 
     _is_running = true;
 

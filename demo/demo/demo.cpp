@@ -68,8 +68,7 @@ private:
 auto main(int argc, const char** argv) -> int {
   try {
     auto engine = std::make_unique<sbx::core::engine>(std::vector<std::string_view>{argv, argv + argc});
-    auto application = std::make_unique<demo_application>(*engine);
-    engine->run(application);
+    engine->run<demo_application>();
   } catch(const std::exception& exception) {
     sbx::core::logger::error("{}", exception.what());
     return EXIT_FAILURE;
