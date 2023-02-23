@@ -108,27 +108,29 @@ auto graphics_module::initialize() -> void {
 
   _recreate_swapchain();
 
-  // vertex{vector2{-0.5, -0.5}, color{0.98, 0.29, 0.24, 1.0}},
-  // vertex{vector2{ 0.5, -0.5}, color{0.98, 0.29, 0.24, 1.0}},
-  // vertex{vector2{ 0.5,  0.5}, color{0.98, 0.29, 0.24, 1.0}},
-  // vertex{vector2{ 0.5,  0.5}, color{0.98, 0.29, 0.24, 1.0}},
-  // vertex{vector2{-0.5,  0.5}, color{0.98, 0.29, 0.24, 1.0}},
-  // vertex{vector2{-0.5, -0.5}, color{0.98, 0.29, 0.24, 1.0}}
-  auto vertices = std::vector<vertex>{
-    vertex{vector2{-0.5, -0.5}, color{1.0, 0.0, 0.0, 1.0}},
-    vertex{vector2{ 0.5, -0.5}, color{0.0, 0.1, 0.0, 1.0}},
-    vertex{vector2{ 0.5,  0.5}, color{0.0, 0.0, 1.0, 1.0}},
-    vertex{vector2{-0.5,  0.5}, color{0.0, 0.0, 0.0, 1.0}}
-  };
+  {
+    auto vertices = std::vector<vertex>{
+      vertex{vector2{-0.5, -0.5}, color{1.0, 0.0, 0.0, 1.0}},
+      vertex{vector2{ 0.5, -0.5}, color{0.0, 0.1, 0.0, 1.0}},
+      vertex{vector2{ 0.5,  0.5}, color{0.0, 0.0, 1.0, 1.0}},
+      vertex{vector2{-0.5,  0.5}, color{0.0, 0.0, 0.0, 1.0}}
+    };
 
-  _vertex_buffer = std::make_unique<graphics::buffer>(vertices.data(), sizeof(vertex) * vertices.size(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    auto staging_buffer = buffer{vertices.data(), sizeof(vertex) * vertices.size(), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT};
 
-  auto _indices = std::vector<std::uint32_t>{
-    0, 1, 2, 
-    2, 3, 0
-  };
+    _vertex_buffer = std::make_unique<graphics::buffer>(staging_buffer, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+  }
 
-  _index_buffer = std::make_unique<graphics::buffer>(_indices.data(), sizeof(std::uint32_t) * _indices.size(), VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+  {
+    auto _indices = std::vector<std::uint32_t>{
+      0, 1, 2, 
+      2, 3, 0
+    };
+
+    auto staging_buffer = buffer{_indices.data(), sizeof(std::uint32_t) * _indices.size(), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT};
+    
+    _index_buffer = std::make_unique<graphics::buffer>(staging_buffer, VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+  }
 }
 
 auto graphics_module::update([[maybe_unused]] std::float_t delta_time) -> void {

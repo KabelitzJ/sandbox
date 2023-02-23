@@ -86,13 +86,12 @@ auto command_buffer::submit_idle() -> void {
 
 	auto fence_create_info = VkFenceCreateInfo{};
 	fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-  fence_create_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
 	auto fence = VkFence{};
 
 	validate(vkCreateFence(logical_device, &fence_create_info, nullptr, &fence));
 
-  // validate(vkResetFences(logical_device, 1, &fence)); // [TODO] Check if this is needed
+  validate(vkResetFences(logical_device, 1, &fence));
 
 	validate(vkQueueSubmit(selected_queue, 1, &submit_info, fence));
 

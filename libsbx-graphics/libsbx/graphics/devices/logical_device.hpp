@@ -63,6 +63,8 @@ private:
 
   auto _create_queue_indices(const physical_device& physical_device) -> void;
 
+  auto _get_enabled_features(const physical_device& physical_device) const -> VkPhysicalDeviceFeatures;
+
   auto _create_logical_logical_device(const physical_device& physical_device) -> void;
 
   VkDevice _handle{};

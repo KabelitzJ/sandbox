@@ -41,6 +41,11 @@ buffer::buffer(const void* data, VkDeviceSize size, VkBufferUsageFlags usage, Vk
   write(data, size);
 }
 
+buffer::buffer(const buffer& source, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties)
+: buffer{source.size(), usage, properties} {
+  copy(source);
+}
+
 buffer::~buffer() {
   const auto& logical_device = graphics_module::get().logical_device();
 

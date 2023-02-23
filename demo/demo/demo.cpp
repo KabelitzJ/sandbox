@@ -65,7 +65,7 @@ private:
 
 }; // class demo_application
 
-auto main(int argc, char** argv) -> int {
+auto main(int argc, const char** argv) -> int {
   try {
     auto engine = std::make_unique<sbx::core::engine>(std::vector<std::string_view>{argv, argv + argc});
     auto application = std::make_unique<demo_application>(*engine);

@@ -17,6 +17,8 @@ public:
 
   buffer(const void* data, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties);
 
+  buffer(const buffer& source, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties);
+
   ~buffer();
 
   auto handle() const noexcept -> const VkBuffer&;
@@ -35,9 +37,9 @@ public:
 
   auto unmap() const noexcept -> void;
 
-  auto copy(const buffer& src, VkDeviceSize size) const noexcept -> void;
+  auto copy(const buffer& source, VkDeviceSize size) const noexcept -> void;
 
-  auto copy(const buffer& src) const noexcept -> void;
+  auto copy(const buffer& source) const noexcept -> void;
 
   auto write(const void* data, VkDeviceSize size) const noexcept -> void;
 
