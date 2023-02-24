@@ -128,7 +128,7 @@ auto graphics_module::initialize() -> void {
     };
 
     auto staging_buffer = buffer{_indices.data(), sizeof(std::uint32_t) * _indices.size(), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT};
-    
+
     _index_buffer = std::make_unique<graphics::buffer>(staging_buffer, VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
   }
 }
@@ -163,16 +163,12 @@ auto graphics_module::update([[maybe_unused]] std::float_t delta_time) -> void {
   // // [NOTE] KAJ 2023-02-19 17:39 - Drawing happens here
 
   const auto& pipeline = _pipelines["basic"];
-  vkCmdBindPipeline(*command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, *pipeline);
+  command_buffer->bind_pipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, *pipeline);
 
-  auto buffers = std::array<VkBuffer, 1>{*_vertex_buffer};
-  auto offsets = std::array<VkDeviceSize, 1>{0};
+  command_buffer->bind_vertex_buffer(0, *_vertex_buffer);
+  command_buffer->bind_index_buffer(*_index_buffer, 0, VK_INDEX_TYPE_UINT32);
 
-  vkCmdBindVertexBuffers(*command_buffer, 0, 1, buffers.data(), offsets.data());
-
-  vkCmdBindIndexBuffer(*command_buffer, *_index_buffer, 0, VK_INDEX_TYPE_UINT32);
-
-  vkCmdDrawIndexed(*command_buffer, static_cast<std::uint32_t>(_index_buffer->size() / sizeof(std::uint32_t)), 1, 0, 0, 0);
+  command_buffer->draw_indexed(static_cast<std::uint32_t>(_index_buffer->size() / sizeof(std::uint32_t)), 1, 0, 0, 0);
 
   _end_render_pass();
 }
@@ -243,12 +239,14 @@ auto graphics_module::_start_render_pass() -> void {
 	viewport.height = static_cast<float>(render_area.extent.height);
 	viewport.minDepth = 0.0f;
 	viewport.maxDepth = 1.0f;
-	vkCmdSetViewport(*command_buffer, 0, 1, &viewport);
+
+	command_buffer->set_viewport(viewport);
 
 	auto scissor = VkRect2D{};
 	scissor.offset = render_area.offset;
 	scissor.extent = render_area.extent;
-	vkCmdSetScissor(*command_buffer, 0, 1, &scissor);
+  
+  command_buffer->set_scissor(scissor);
 
   const auto clear_values = std::array<VkClearValue, 2>{
     VkClearValue{.color = VkClearColorValue{0.0f, 0.0f, 0.0f, 1.0f}},
@@ -262,7 +260,8 @@ auto graphics_module::_start_render_pass() -> void {
 	render_pass_begin_info.renderArea = render_area;
 	render_pass_begin_info.clearValueCount = static_cast<std::uint32_t>(clear_values.size());
 	render_pass_begin_info.pClearValues = clear_values.data();
-  vkCmdBeginRenderPass(*command_buffer, &render_pass_begin_info, VK_SUBPASS_CONTENTS_INLINE);
+
+  command_buffer->begin_render_pass(render_pass_begin_info, VK_SUBPASS_CONTENTS_INLINE);
 }
 
 auto graphics_module::_end_render_pass() -> void {
@@ -273,7 +272,7 @@ auto graphics_module::_end_render_pass() -> void {
 
   const auto& present_queue = _logical_device->present_queue();
 
-  vkCmdEndRenderPass(*command_buffer);
+  command_buffer->end_render_pass();
 
   // Submit the command buffer to the graphics queue and draw the on the image
   command_buffer->end();

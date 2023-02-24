@@ -101,7 +101,7 @@ auto buffer::copy(const buffer& src, VkDeviceSize size) const noexcept -> void {
   auto copy_region = VkBufferCopy{};
   copy_region.size = size;
 
-  vkCmdCopyBuffer(command_buffer, src, *this, 1, &copy_region);
+  command_buffer.copy_buffer(src, _handle, copy_region);
 
   command_buffer.submit_idle();
 }

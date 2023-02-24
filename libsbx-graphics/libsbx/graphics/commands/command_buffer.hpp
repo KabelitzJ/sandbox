@@ -35,6 +35,24 @@ public:
 
   auto submit(const VkSemaphore& wait_semaphore = nullptr, const VkSemaphore &signal_semaphore = nullptr, const VkFence& fence = nullptr) -> void;
 
+  auto copy_buffer(const VkBuffer& source, const VkBuffer& destination, const VkBufferCopy& region) -> void;
+
+  auto set_viewport(const VkViewport& viewport) -> void;
+
+  auto set_scissor(const VkRect2D& scissor) -> void;
+
+  auto bind_pipeline(VkPipelineBindPoint bind_point, const VkPipeline& pipeline) -> void;
+
+  auto bind_vertex_buffer(std::uint32_t first_binding, const VkBuffer& buffer) -> void;
+
+  auto bind_index_buffer(const VkBuffer& buffer, VkDeviceSize offset, VkIndexType index_type) -> void;
+
+  auto draw_indexed(std::uint32_t index_count, std::uint32_t instance_count, std::uint32_t first_index, std::int32_t vertex_offset, std::uint32_t first_instance) -> void;
+
+  auto begin_render_pass(const VkRenderPassBeginInfo& renderpass_begin_info, VkSubpassContents subpass_contents) -> void;
+
+  auto end_render_pass() -> void;
+
 private:
 
   auto _queue() const noexcept -> const queue&;

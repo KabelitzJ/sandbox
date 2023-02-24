@@ -45,5 +45,6 @@
 #include <libsbx/utility/hash.hpp>
 #include <libsbx/utility/concepts.hpp>
 #include <libsbx/utility/fast_mod.hpp>
+#include <libsbx/utility/ptr_view.hpp>
 
 #endif // LIBSBX_UTILITY_HPP_

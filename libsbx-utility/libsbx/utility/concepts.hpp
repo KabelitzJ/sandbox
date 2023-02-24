@@ -54,6 +54,10 @@ inline constexpr auto is_convertible_to_one_of_v = is_convertible_to_one_of<Type
 template<typename Type, typename... TypeList>
 concept convertible_to_one_of = is_convertible_to_one_of_v<Type, TypeList...>;
 
+
+template<typename Type, typename Base>
+concept implements = !std::is_abstract_v<Type> && std::is_abstract_v<Base> && std::is_base_of_v<Base, Type>; 
+
 } // namespace sbx::utility
 
 #endif // LIBSBX_UTILITY_CONCEPTS_HPP_

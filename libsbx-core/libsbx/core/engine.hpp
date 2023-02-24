@@ -10,12 +10,15 @@
 #include <cmath>
 #include <chrono>
 
+#include <libsbx/utility/concepts.hpp>
+#include <libsbx/utility/noncopyable.hpp>
+
 #include <libsbx/core/module.hpp>
 #include <libsbx/core/application.hpp>
 
 namespace sbx::core {
 
-class engine {
+class engine : public utility::noncopyable {
 
   using stage = module_manager::stage;
   using module_base = module_manager::module_base;
@@ -23,7 +26,7 @@ class engine {
 
 public:
 
-  engine(std::vector<std::string_view>&& args)
+  engine(std::vector<std::string>&& args)
   : _args{std::move(args)} {
     for (const auto& [type, factory] : module_manager::_factories) {
       _create_module(type, factory);
@@ -40,11 +43,15 @@ public:
     }
   }
 
-  template<derived_from<application> Type>
+  template<utility::implements<application> Type>
   auto run() -> void {
+    if (_is_running) {
+      return;
+    }
+
     using clock_type = std::chrono::high_resolution_clock;
 
-    auto application = std::make_unique<Type>(*this);
+    auto application = std::make_unique<Type>(this);
 
     _is_running = true;
 
@@ -100,7 +107,7 @@ private:
   }
 
   bool _is_running{};
-  std::vector<std::string_view> _args{};
+  std::vector<std::string> _args{};
 
   std::unordered_map<std::type_index, std::unique_ptr<module_base>> _modules{};
   std::unordered_map<stage, std::vector<std::type_index>> _module_by_stage{};

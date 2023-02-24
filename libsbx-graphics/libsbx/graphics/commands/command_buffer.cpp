@@ -131,6 +131,45 @@ auto command_buffer::submit(const VkSemaphore& wait_semaphore, const VkSemaphore
 	validate(vkQueueSubmit(selected_queue, 1, &submit_info, fence));
 }
 
+auto command_buffer::copy_buffer(const VkBuffer& source, const VkBuffer& destination, const VkBufferCopy& region) -> void {
+  vkCmdCopyBuffer(_handle, source, destination, 1, &region);
+}
+
+auto command_buffer::set_viewport(const VkViewport& viewport) -> void {
+  vkCmdSetViewport(_handle, 0, 1, &viewport);
+}
+
+auto command_buffer::set_scissor(const VkRect2D& scissor) -> void {
+  vkCmdSetScissor(_handle, 0, 1, &scissor); 
+}
+
+auto command_buffer::bind_pipeline(VkPipelineBindPoint bind_point, const VkPipeline& pipeline) -> void {
+  vkCmdBindPipeline(_handle, bind_point, pipeline);
+}
+
+auto command_buffer::bind_vertex_buffer(std::uint32_t first_binding, const VkBuffer& buffer) -> void {
+  auto buffers = std::array<VkBuffer, 1>{buffer};
+  auto offsets = std::array<VkDeviceSize, 1>{0};
+
+  vkCmdBindVertexBuffers(_handle, first_binding, 1, buffers.data(), offsets.data());
+}
+
+auto command_buffer::bind_index_buffer(const VkBuffer& buffer, VkDeviceSize offset, VkIndexType index_type) -> void {
+  vkCmdBindIndexBuffer(_handle, buffer, offset, index_type);
+}
+
+auto command_buffer::draw_indexed(std::uint32_t index_count, std::uint32_t instance_count, std::uint32_t first_index, std::int32_t vertex_offset, std::uint32_t first_instance) -> void {
+  vkCmdDrawIndexed(_handle, index_count, instance_count, first_index, vertex_offset, first_instance);
+}
+
+auto command_buffer::begin_render_pass(const VkRenderPassBeginInfo& renderpass_begin_info, VkSubpassContents subpass_contents) -> void {
+  vkCmdBeginRenderPass(_handle, &renderpass_begin_info, subpass_contents);
+}
+
+auto command_buffer::end_render_pass() -> void {
+  vkCmdEndRenderPass(_handle);
+}
+
 auto command_buffer::_queue() const noexcept -> const queue& {
   auto& logical_device = graphics_module::get().logical_device();
 

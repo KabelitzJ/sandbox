@@ -20,17 +20,17 @@ class demo_application : public sbx::core::application {
 
 public:
 
-  demo_application(sbx::core::engine& engine)
-  : _engine{engine} {
+  demo_application(sbx::utility::ptr_view<sbx::core::engine> engine)
+  : sbx::core::application{engine} {
     auto& window = sbx::devices::devices_module::get().window();
 
     window.set_on_window_closed([this]([[maybe_unused]] const sbx::devices::window_closed_event& event){
-      _engine.quit();
+      _engine->quit();
     });
 
     window.set_on_key([this]([[maybe_unused]] const sbx::devices::key_event& event){
       if (event.key == GLFW_KEY_ESCAPE && event.action == GLFW_PRESS) {
-        _engine.quit();
+        _engine->quit();
       }
     });
 
@@ -59,15 +59,13 @@ public:
 
   }
 
-private:
-
-  sbx::core::engine& _engine;
-
 }; // class demo_application
 
 auto main(int argc, const char** argv) -> int {
   try {
-    auto engine = std::make_unique<sbx::core::engine>(std::vector<std::string_view>{argv, argv + argc});
+    auto args = std::vector<std::string>{argv, argv + argc};
+    auto engine = std::make_unique<sbx::core::engine>(std::move(args));
+
     engine->run<demo_application>();
   } catch(const std::exception& exception) {
     sbx::core::logger::error("{}", exception.what());
