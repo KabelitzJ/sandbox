@@ -20,7 +20,7 @@ class demo_application : public sbx::core::application {
 
 public:
 
-  demo_application(sbx::utility::ptr_view<sbx::core::engine> engine)
+  demo_application(sbx::utility::observer_ptr<sbx::core::engine> engine)
   : sbx::core::application{engine} {
     auto& window = sbx::devices::devices_module::get().window();
 

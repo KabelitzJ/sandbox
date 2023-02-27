@@ -5,13 +5,9 @@
 
 #include <libsbx/utility/noncopyable.hpp>
 
-#include <libsbx/graphics/devices/debug_messenger.hpp>
-
 namespace sbx::graphics {
 
 class instance : public utility::noncopyable {
-
-  using debug_messenger_type = debug_messenger<instance>;
 
 public:
 

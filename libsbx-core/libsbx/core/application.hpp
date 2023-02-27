@@ -6,7 +6,7 @@
 
 #include <libsbx/core/version.hpp>
 
-#include <libsbx/utility/ptr_view.hpp>
+#include <libsbx/utility/observer_ptr.hpp>
 
 namespace sbx::core {
 
@@ -16,8 +16,8 @@ class application {
 
 public:
 
-  application(utility::ptr_view<engine> engine) noexcept
-  : _engine{std::move(engine)} {}
+  application(utility::observer_ptr<engine> engine) noexcept
+  : _engine{engine} {}
 
   virtual ~application() = default;
 
@@ -25,7 +25,7 @@ public:
 
 protected:
 
-  utility::ptr_view<engine> _engine{};
+  utility::observer_ptr<engine> _engine{};
 
 }; // class application
 

@@ -6,20 +6,19 @@
 #include <libsbx/core/target.hpp>
 #include <libsbx/core/logger.hpp>
 
+#include <libsbx/graphics/devices/instance.hpp>
+
 namespace sbx::graphics {
 
-template<typename Target>
 class debug_messenger {
 
 public:
 
   debug_messenger() = delete;
 
-  ~debug_messenger() {
-    static_assert(std::is_same_v<decltype(std::declval<Target>().handle()), const VkInstance&>, "Target type does not fulfill the requirements");
-  }
+  ~debug_messenger() = default;
 
-  [[nodiscard]] static auto initialize(const Target& target, const VkAllocationCallbacks* allocator = nullptr) -> VkResult {
+  [[nodiscard]] static auto initialize(const instance& target, const VkAllocationCallbacks* allocator = nullptr) -> VkResult {
     if constexpr (core::build_configuration_v == core::build_configuration::debug) {
       auto* function = reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(vkGetInstanceProcAddr(target.handle(), "vkCreateDebugUtilsMessengerEXT"));
 
@@ -33,7 +32,7 @@ public:
     }
   }
 
-  static auto terminate(const Target& target, const VkAllocationCallbacks* allocator = nullptr) -> void {
+  static auto terminate(const instance& target, const VkAllocationCallbacks* allocator = nullptr) -> void {
     if constexpr (core::build_configuration_v == core::build_configuration::debug) {
       auto* function = reinterpret_cast<PFN_vkDestroyDebugUtilsMessengerEXT>(vkGetInstanceProcAddr(target.handle(), "vkDestroyDebugUtilsMessengerEXT"));
 

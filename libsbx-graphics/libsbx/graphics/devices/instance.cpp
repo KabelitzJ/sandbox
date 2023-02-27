@@ -6,6 +6,7 @@
 #include <libsbx/graphics/graphics_module.hpp>
 #include <libsbx/graphics/devices/extensions.hpp>
 #include <libsbx/graphics/devices/validation_layers.hpp>
+#include <libsbx/graphics/devices/debug_messenger.hpp>
 
 namespace sbx::graphics {
 
@@ -23,7 +24,7 @@ instance::instance() {
 
   auto instance_create_info = VkInstanceCreateInfo{};
   instance_create_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-  instance_create_info.pNext = debug_messenger_type::create_info();
+  instance_create_info.pNext = debug_messenger::create_info();
   instance_create_info.pApplicationInfo = &app_info;
   instance_create_info.enabledLayerCount = static_cast<std::uint32_t>(layers.size());
   instance_create_info.ppEnabledLayerNames = layers.data();
@@ -33,13 +34,13 @@ instance::instance() {
   validate(vkCreateInstance(&instance_create_info, nullptr, &_handle));
 
   if constexpr (core::build_configuration_v == core::build_configuration::debug) {
-    validate(debug_messenger_type::initialize(*this));
+    validate(debug_messenger::initialize(*this));
   }
 }
 
 instance::~instance() {
   if constexpr (core::build_configuration_v == core::build_configuration::debug) {
-    debug_messenger_type::terminate(*this);
+    debug_messenger::terminate(*this);
   }
 
   vkDestroyInstance(_handle, nullptr);
