@@ -7,37 +7,37 @@ namespace sbx::units {
 
 namespace detail {
 
-struct weight { };
+struct weight_tag { };
 
 } // namespace detail
 
-using kilogram = quantity<detail::weight, std::float_t, std::kilo>;
-using gram = quantity<detail::weight, std::float_t>;
-using milligram = quantity<detail::weight, std::float_t, std::milli>;
+using kilogram = quantity<detail::weight_tag, std::float_t, std::kilo>;
+using gram = quantity<detail::weight_tag, std::float_t>;
+using milligram = quantity<detail::weight_tag, std::float_t, std::milli>;
 
 namespace literals {
 
-auto operator"" _kg(long double value) -> kilogram {
+constexpr auto operator"" _kg(long double value) -> kilogram {
   return kilogram{static_cast<kilogram::value_type>(value)};
 }
 
-auto operator"" _kg(unsigned long long value) -> kilogram {
+constexpr auto operator"" _kg(unsigned long long value) -> kilogram {
   return kilogram{static_cast<kilogram::value_type>(value)};
 }
 
-auto operator"" _g(long double value) -> gram {
+constexpr auto operator"" _g(long double value) -> gram {
   return gram{static_cast<gram::value_type>(value)};
 }
 
-auto operator"" _g(unsigned long long value) -> gram {
+constexpr auto operator"" _g(unsigned long long value) -> gram {
   return gram{static_cast<gram::value_type>(value)};
 }
 
-auto operator"" _mg(long double value) -> milligram {
+constexpr auto operator"" _mg(long double value) -> milligram {
   return milligram{static_cast<milligram::value_type>(value)};
 }
 
-auto operator"" _mg(unsigned long long value) -> milligram {
+constexpr auto operator"" _mg(unsigned long long value) -> milligram {
   return milligram{static_cast<milligram::value_type>(value)};
 }
 

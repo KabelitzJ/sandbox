@@ -7,5 +7,6 @@
 #include <libsbx/units/time.hpp>
 #include <libsbx/units/velocity.hpp>
 #include <libsbx/units/mass.hpp>
+#include <libsbx/units/bytes.hpp>
 
 #endif // LIBSBX_UNITS_HPP_

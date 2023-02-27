@@ -71,49 +71,49 @@ public:
   quantity() = default;
 
   template<std::convertible_to<value_type> Type>
-  explicit quantity(Type value)
+  constexpr explicit quantity(Type value) noexcept
   : _value{value} { }
 
   template<representation OtherRepresentation, ratio OtherRatio = ratio_type>
-  quantity(const quantity<dimension_type, OtherRepresentation, OtherRatio>& other)
+  constexpr quantity(const quantity<dimension_type, OtherRepresentation, OtherRatio>& other) noexcept
   : _value{quantity_cast<quantity>(other)} { }
 
-  quantity(const quantity& other) = default;
+  constexpr quantity(const quantity& other) noexcept = default;
 
-  quantity(quantity&& other) = default;
+  constexpr quantity(quantity&& other) noexcept = default;
 
-  ~quantity() = default;
+  constexpr ~quantity() noexcept = default;
 
-  auto operator=(const quantity& other) -> quantity& = default;
+  constexpr auto operator=(const quantity& other) noexcept -> quantity& = default;
 
-  auto operator=(quantity&& other) -> quantity& = default;
+  constexpr auto operator=(quantity&& other) noexcept -> quantity& = default;
 
   template<representation OtherRepresentation, ratio OtherRatio>
-  auto operator=(const quantity<dimension_type, OtherRepresentation, OtherRatio>& other) -> quantity& {
+  constexpr auto operator=(const quantity<dimension_type, OtherRepresentation, OtherRatio>& other) noexcept -> quantity& {
     _value = static_cast<value_type>(other.value()) * ratio_conversion_v<value_type, Ratio, OtherRatio>;
 
     return *this;
   }
 
   template<representation OtherRepresentation, ratio OtherRatio>
-  auto operator+=(const quantity<dimension_type, OtherRepresentation, OtherRatio>& other) -> quantity& {
+  constexpr auto operator+=(const quantity<dimension_type, OtherRepresentation, OtherRatio>& other) noexcept -> quantity& {
     _value += static_cast<value_type>(other.value()) * ratio_conversion_v<value_type, Ratio, OtherRatio>;
 
     return *this;
   }
 
   template<representation OtherRepresentation, ratio OtherRatio>
-  auto operator-=(const quantity<dimension_type, OtherRepresentation, OtherRatio>& other) -> quantity& {
+  constexpr auto operator-=(const quantity<dimension_type, OtherRepresentation, OtherRatio>& other) noexcept -> quantity& {
     _value -= static_cast<value_type>(other.value()) * ratio_conversion_v<value_type, Ratio, OtherRatio>;
 
     return *this;
   }
 
-  auto operator-() const -> quantity {
+  constexpr auto operator-() const noexcept -> quantity {
     return quantity{-_value};
   }
 
-  auto value() const -> value_type {
+  constexpr auto value() const noexcept -> value_type {
     return _value;
   }
 
@@ -124,22 +124,22 @@ private:
 }; // class quantity
 
 template<typename Dimension, representation LhsRepresentation, ratio LhsRatio, representation RhsRepresentation, ratio RhsRatio>
-auto operator+(quantity<Dimension, LhsRepresentation, LhsRatio> lhs, const quantity<Dimension, RhsRepresentation, RhsRatio>& rhs) -> quantity<Dimension, LhsRepresentation, LhsRatio> {
+constexpr auto operator+(quantity<Dimension, LhsRepresentation, LhsRatio> lhs, const quantity<Dimension, RhsRepresentation, RhsRatio>& rhs) -> quantity<Dimension, LhsRepresentation, LhsRatio> {
   return lhs += rhs;
 }
 
 template<typename Dimension, representation LhsRepresentation, ratio LhsRatio, representation RhsRepresentation, ratio RhsRatio>
-auto operator-(quantity<Dimension, LhsRepresentation, LhsRatio> lhs, const quantity<Dimension, RhsRepresentation, RhsRatio>& rhs) -> quantity<Dimension, LhsRepresentation, LhsRatio> {
+constexpr auto operator-(quantity<Dimension, LhsRepresentation, LhsRatio> lhs, const quantity<Dimension, RhsRepresentation, RhsRatio>& rhs) -> quantity<Dimension, LhsRepresentation, LhsRatio> {
   return lhs -= rhs;
 }
 
 template<typename Dimension, representation Representation, ratio Ratio>
-auto operator-(const quantity<Dimension, Representation, Ratio>& value) -> quantity<Dimension, Representation, Ratio> {
+constexpr auto operator-(const quantity<Dimension, Representation, Ratio>& value) -> quantity<Dimension, Representation, Ratio> {
   return -value;
 }
 
 template<typename TargetQuantity, representation FromRepresentation, ratio FromRatio>
-auto quantity_cast(const quantity<typename TargetQuantity::dimension_type, FromRepresentation, FromRatio>& from) -> TargetQuantity {
+constexpr auto quantity_cast(const quantity<typename TargetQuantity::dimension_type, FromRepresentation, FromRatio>& from) -> TargetQuantity {
   using value_type = typename TargetQuantity::value_type;
   using ratio_type = typename TargetQuantity::ratio_type;
 

@@ -8,11 +8,11 @@ namespace sbx::units {
 
 namespace detail {
 
-struct velocity : distance, time { };
+struct velocity_tag : distance_tag, time_tag { };
 
 } // namespace detail
 
-using velocity = quantity<detail::velocity, std::float_t>;
+using velocity = quantity<detail::velocity_tag, std::float_t>;
 
 auto operator/(const meter& lhs, const second& rhs) -> velocity {
   return velocity{lhs.value() / rhs.value()};

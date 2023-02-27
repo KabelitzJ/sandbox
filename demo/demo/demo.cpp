@@ -50,6 +50,12 @@ public:
       }
     }
 
+    using namespace sbx::units::literals;
+
+    auto buffer_size = sbx::units::quantity_cast<sbx::units::byte>(1_kib);
+
+    sbx::core::logger::info("Allocating {} bytes of memory for the buffer.", buffer_size.value());
+
     window.show();
   }
 
