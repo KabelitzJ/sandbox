@@ -4,6 +4,8 @@
 
 #include <libsbx/utility/fast_mod.hpp>
 
+#include <yaml-cpp/yaml.h>
+
 namespace sbx::graphics {
 
 static auto _stringify_result(VkResult result) -> std::string {
@@ -108,29 +110,7 @@ auto graphics_module::initialize() -> void {
 
   _recreate_swapchain();
 
-  {
-    auto vertices = std::vector<vertex>{
-      vertex{vector2{-0.5, -0.5}, color{1.0, 0.0, 0.0, 1.0}},
-      vertex{vector2{ 0.5, -0.5}, color{0.0, 0.1, 0.0, 1.0}},
-      vertex{vector2{ 0.5,  0.5}, color{0.0, 0.0, 1.0, 1.0}},
-      vertex{vector2{-0.5,  0.5}, color{0.0, 0.0, 0.0, 1.0}}
-    };
-
-    auto staging_buffer = buffer{vertices.data(), sizeof(vertex) * vertices.size(), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT};
-
-    _vertex_buffer = std::make_unique<graphics::buffer>(staging_buffer, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-  }
-
-  {
-    auto _indices = std::vector<std::uint32_t>{
-      0, 1, 2, 
-      2, 3, 0
-    };
-
-    auto staging_buffer = buffer{_indices.data(), sizeof(std::uint32_t) * _indices.size(), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT};
-
-    _index_buffer = std::make_unique<graphics::buffer>(staging_buffer, VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-  }
+  _mesh = std::make_unique<graphics::mesh>("./demo/assets/meshes/square.yaml");
 }
 
 auto graphics_module::update([[maybe_unused]] std::float_t delta_time) -> void {
@@ -165,10 +145,10 @@ auto graphics_module::update([[maybe_unused]] std::float_t delta_time) -> void {
   const auto& pipeline = _pipelines["basic"];
   command_buffer->bind_pipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, *pipeline);
 
-  command_buffer->bind_vertex_buffer(0, *_vertex_buffer);
-  command_buffer->bind_index_buffer(*_index_buffer, 0, VK_INDEX_TYPE_UINT32);
+  command_buffer->bind_vertex_buffer(0, _mesh->vertex_buffer());
+  command_buffer->bind_index_buffer(_mesh->index_buffer(), 0, VK_INDEX_TYPE_UINT32);
 
-  command_buffer->draw_indexed(static_cast<std::uint32_t>(_index_buffer->size() / sizeof(std::uint32_t)), 1, 0, 0, 0);
+  command_buffer->draw_indexed(static_cast<std::uint32_t>(_mesh->index_buffer().size() / sizeof(std::uint32_t)), 1, 0, 0, 0);
 
   _end_render_pass();
 }

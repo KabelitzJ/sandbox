@@ -8,7 +8,7 @@
 #include <ostream>
 #include <type_traits>
 
-#include <libsbx/io/node.hpp>
+#include <yaml-cpp/yaml.h>
 
 #include <libsbx/math/concepts.hpp>
 
@@ -454,8 +454,8 @@ template<numeric Type, numeric Other>
 template<numeric Type>
 auto operator<<(std::ostream& output_stream, const basic_vector3<Type>& vector) -> std::ostream&;
 
-template<numeric Type>
-auto operator<<(io::node& node, const basic_vector3<Type>& vector) -> io::node&;
+// template<numeric Type>
+// auto operator<<(io::node& node, const basic_vector3<Type>& vector) -> io::node&;
 
 // -- Type aliases --
 
@@ -484,6 +484,12 @@ struct std::hash<sbx::math::basic_vector3<Type>> {
    */
   std::size_t operator()(const sbx::math::basic_vector3<Type>& vector) const noexcept;
 }; // struct std::hash
+
+template<sbx::math::numeric Type>
+struct YAML::convert<sbx::math::basic_vector3<Type>> {
+  static Node encode(const sbx::math::basic_vector3<Type>& vector);
+  static bool decode(const Node& node, sbx::math::basic_vector3<Type>& vector);
+}; // struct YAML::convert<sbx::math::basic_vector3<Type>>
 
 #include <libsbx/math/vector3.ipp>
 

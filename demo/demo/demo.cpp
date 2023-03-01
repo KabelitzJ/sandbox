@@ -8,6 +8,7 @@
 
 #include <libsbx/utility/utility.hpp>
 #include <libsbx/units/units.hpp>
+#include <libsbx/memory/memory.hpp>
 #include <libsbx/core/core.hpp>
 #include <libsbx/async/async.hpp>
 #include <libsbx/io/io.hpp>
@@ -49,12 +50,6 @@ public:
         graphics_module.load_pipeline(entry.path());
       }
     }
-
-    using namespace sbx::units::literals;
-
-    auto buffer_size = sbx::units::quantity_cast<sbx::units::byte>(1_kib);
-
-    sbx::core::logger::info("Allocating {} bytes of memory for the buffer.", buffer_size.value());
 
     window.show();
   }

@@ -337,15 +337,6 @@ auto operator<<(std::ostream& output_stream, const basic_vector3<Type>& vector) 
   return output_stream << fmt::format("({}, {}, {})", vector.x, vector.y, vector.z);
 }
 
-template<numeric Type>
-auto operator<<(io::node& node, const basic_vector3<Type>& vector) -> io::node& {
-  node["x"] = vector.x;
-  node["y"] = vector.y;
-  node["z"] = vector.y;
-
-  return node;
-}
-
 } // namespace sbx::math
 
 template<sbx::math::numeric Type>
@@ -353,4 +344,28 @@ inline std::size_t std::hash<sbx::math::basic_vector3<Type>>::operator()(const s
   auto seed = std::size_t{0};
   sbx::utility::hash_combine(seed, vector.x, vector.y, vector.z);
   return seed;
+}
+
+template<sbx::math::numeric Type>
+inline auto YAML::convert<sbx::math::basic_vector3<Type>>::encode(const sbx::math::basic_vector3<Type>& rhs) -> YAML::Node {
+  auto node = Node{};
+
+  node["x"] = rhs.x;
+  node["y"] = rhs.y;
+  node["z"] = rhs.z;
+
+  return node;
+}
+
+template<sbx::math::numeric Type>
+inline auto YAML::convert<sbx::math::basic_vector3<Type>>::decode(const YAML::Node& node, sbx::math::basic_vector3<Type>& rhs) -> bool {
+  if (!node.IsMap()) {
+    return false;
+  }
+
+  rhs.x = node["x"].as<Type>();
+  rhs.y = node["y"].as<Type>();
+  rhs.z = node["z"].as<Type>();
+
+  return true;
 }
