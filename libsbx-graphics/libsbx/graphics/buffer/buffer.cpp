@@ -43,7 +43,7 @@ buffer::buffer(const void* data, VkDeviceSize size, VkBufferUsageFlags usage, Vk
 
 buffer::buffer(const buffer& source, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties)
 : buffer{source.size(), usage, properties} {
-  copy(source);
+  copy_from(source);
 }
 
 buffer::~buffer() {
@@ -93,8 +93,8 @@ auto buffer::unmap() const noexcept -> void {
   vkUnmapMemory(logical_device, _memory);
 }
 
-auto buffer::copy(const buffer& src, VkDeviceSize size) const noexcept -> void {
-  core::assert_that(size <= _size, "buffer::copy: size is greater than buffer size");
+auto buffer::copy_from(const buffer& src, VkDeviceSize size) const noexcept -> void {
+  core::assert_that(size <= _size, "buffer::copy_from: size is greater than buffer size");
 
   auto command_buffer = graphics::command_buffer{};
 
@@ -106,14 +106,17 @@ auto buffer::copy(const buffer& src, VkDeviceSize size) const noexcept -> void {
   command_buffer.submit_idle();
 }
 
-auto buffer::copy(const buffer& src) const noexcept -> void {
-  copy(src, _size);
+auto buffer::copy_from(const buffer& src) const noexcept -> void {
+  copy_from(src, _size);
 }
 
-auto buffer::write(const void* data, VkDeviceSize size) const noexcept -> void {
-  core::assert_that(size <= _size, "buffer::write: size is greater than buffer size");
+auto buffer::write(const void* data, VkDeviceSize size, VkDeviceSize offset) const noexcept -> void {
+  core::assert_that(offset + size <= _size, "buffer::write: size is greater than buffer size");
 
-  std::memcpy(map(), data, size);
+  auto* memory = static_cast<std::byte*>(map());
+
+  std::memcpy(memory + offset, data, size);
+
   unmap();
 }
 

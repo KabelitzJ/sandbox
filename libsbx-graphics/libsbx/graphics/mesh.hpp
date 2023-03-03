@@ -4,6 +4,7 @@
 #include <filesystem>
 #include <cmath>
 #include <cstdint>
+#include <string>
 
 #include <yaml-cpp/yaml.h>
 
@@ -32,46 +33,30 @@ class mesh {
 
 public:
 
-  mesh(const std::filesystem::path& path) {
-    auto file = YAML::LoadFile(path.string());
-
-    auto vertices = std::vector<vertex>{};
-
-    for (const auto& node : file["vertices"]) {
-      vertices.push_back(node.as<vertex>());
-    }
-
-    auto indices = std::vector<std::uint32_t>{};
-
-    for (const auto& index : file["indices"]) {
-      indices.push_back(index.as<std::uint32_t>());
-    }
-
-    {
-      auto staging_buffer = buffer{vertices.data(), sizeof(vertex) * vertices.size(), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT};
-
-      _vertex_buffer = std::make_unique<buffer>(staging_buffer, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-    }
-
-    {
-      auto staging_buffer = buffer{indices.data(), sizeof(std::uint32_t) * indices.size(), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT};
-
-      _index_buffer = std::make_unique<buffer>(staging_buffer, VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-    }
-  }
+  mesh(const std::filesystem::path& path);
 
   ~mesh() = default;
 
-  auto vertex_buffer() const -> const buffer& {
+  auto name() const noexcept -> const std::string& {
+    return _name;
+  }
+
+  auto version() const noexcept -> const std::string& {
+    return _version;
+  }
+
+  auto vertex_buffer() const noexcept -> const buffer& {
     return *_vertex_buffer;
   }
 
-  auto index_buffer() const -> const buffer& {
+  auto index_buffer() const noexcept -> const buffer& {
     return *_index_buffer;
   }
 
 private:
 
+  std::string _name{};
+  std::string _version{};
   std::unique_ptr<buffer> _vertex_buffer{};
   std::unique_ptr<buffer> _index_buffer{};
 

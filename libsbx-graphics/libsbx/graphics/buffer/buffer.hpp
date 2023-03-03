@@ -37,11 +37,11 @@ public:
 
   auto unmap() const noexcept -> void;
 
-  auto copy(const buffer& source, VkDeviceSize size) const noexcept -> void;
+  auto copy_from(const buffer& source, VkDeviceSize size) const noexcept -> void;
 
-  auto copy(const buffer& source) const noexcept -> void;
+  auto copy_from(const buffer& source) const noexcept -> void;
 
-  auto write(const void* data, VkDeviceSize size) const noexcept -> void;
+  auto write(const void* data, VkDeviceSize size, VkDeviceSize offset = 0) const noexcept -> void;
 
 private:
 
