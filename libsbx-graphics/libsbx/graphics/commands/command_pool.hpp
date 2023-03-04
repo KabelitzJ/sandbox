@@ -5,13 +5,15 @@
 
 #include <vulkan/vulkan.hpp>
 
+#include <libsbx/graphics/devices/logical_device.hpp>
+
 namespace sbx::graphics {
 
 class command_pool {
 
 public:
 
-  command_pool(const std::thread::id& thread_id = std::this_thread::get_id());
+  command_pool(VkQueueFlagBits queue_type = VK_QUEUE_GRAPHICS_BIT);
 
   ~command_pool();
 
@@ -19,12 +21,11 @@ public:
 
   operator const VkCommandPool&() const noexcept;
 
-  auto thread_id() const noexcept -> const std::thread::id&;
-
 private:
 
+  auto _queue(VkQueueFlagBits queue_type) const -> const queue&;
+
   VkCommandPool _handle{};
-  std::thread::id _thread_id{};
 
 }; // class command_pool
 

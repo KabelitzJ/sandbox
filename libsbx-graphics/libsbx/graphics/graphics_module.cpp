@@ -2,9 +2,11 @@
 
 #include <fmt/format.h>
 
+#include <yaml-cpp/yaml.h>
+
 #include <libsbx/utility/fast_mod.hpp>
 
-#include <yaml-cpp/yaml.h>
+#include <libsbx/graphics/pipeline/push_constant.hpp>
 
 namespace sbx::graphics {
 
@@ -142,8 +144,13 @@ auto graphics_module::update([[maybe_unused]] std::float_t delta_time) -> void {
 
   // // [NOTE] KAJ 2023-02-19 17:39 - Drawing happens here
 
+  auto push_constant_data = push_constant{};
+  push_constant_data.color = color{1.0f, 0.0f, 0.0f, 1.0f};
+
   const auto& pipeline = _pipelines["basic"];
   command_buffer->bind_pipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, *pipeline);
+
+  command_buffer->push_constants(pipeline->layout(), VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, push_constant_data);
 
   command_buffer->bind_vertex_buffer(0, _mesh->vertex_buffer());
   command_buffer->bind_index_buffer(_mesh->index_buffer(), 0, VK_INDEX_TYPE_UINT32);
@@ -169,12 +176,14 @@ auto graphics_module::surface() -> graphics::surface& {
   return *_surface;
 }
 
-auto graphics_module::command_pool(const std::thread::id& thread_id) -> const std::shared_ptr<graphics::command_pool>& {
-  if (auto entry = _command_pools.find(thread_id); entry != _command_pools.end()) {
+auto graphics_module::command_pool(VkQueueFlagBits queue_type, const std::thread::id& thread_id) -> const std::shared_ptr<graphics::command_pool>& {
+  const auto key = command_pool_key{queue_type, thread_id};
+
+  if (auto entry = _command_pools.find(key); entry != _command_pools.end()) {
     return entry->second;
   }
 
-  return _command_pools.insert({thread_id, std::make_shared<graphics::command_pool>(thread_id)}).first->second;
+  return _command_pools.insert({key, std::make_shared<graphics::command_pool>(queue_type)}).first->second;
 }
 
 auto graphics_module::render_pass() -> graphics::render_pass& {

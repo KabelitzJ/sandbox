@@ -9,6 +9,8 @@
 
 #include <libsbx/graphics/commands/command_pool.hpp>
 
+#include <libsbx/graphics/pipeline/push_constant.hpp>
+
 namespace sbx::graphics {
 
 class command_buffer {
@@ -47,13 +49,15 @@ public:
 
   auto draw_indexed(std::uint32_t index_count, std::uint32_t instance_count, std::uint32_t first_index, std::int32_t vertex_offset, std::uint32_t first_instance) -> void;
 
+  auto push_constants(const VkPipelineLayout& pipeline_layout, VkShaderStageFlags stage_flags, const push_constant& constants) -> void;
+
   auto begin_render_pass(const VkRenderPassBeginInfo& renderpass_begin_info, VkSubpassContents subpass_contents) -> void;
 
   auto end_render_pass() -> void;
 
 private:
 
-  auto _queue() const noexcept -> const queue&;
+  auto _queue() const -> const queue&;
 
   std::shared_ptr<command_pool> _command_pool{};
 

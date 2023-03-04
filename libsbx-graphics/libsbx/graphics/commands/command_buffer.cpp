@@ -164,6 +164,10 @@ auto command_buffer::draw_indexed(std::uint32_t index_count, std::uint32_t insta
   vkCmdDrawIndexed(_handle, index_count, instance_count, first_index, vertex_offset, first_instance);
 }
 
+auto command_buffer::push_constants(const VkPipelineLayout& pipeline_layout, VkShaderStageFlags stage_flags, const push_constant& constants) -> void {
+  vkCmdPushConstants(_handle, pipeline_layout, stage_flags, 0, sizeof(push_constant), &constants);
+}
+
 auto command_buffer::begin_render_pass(const VkRenderPassBeginInfo& renderpass_begin_info, VkSubpassContents subpass_contents) -> void {
   vkCmdBeginRenderPass(_handle, &renderpass_begin_info, subpass_contents);
 }
@@ -172,12 +176,19 @@ auto command_buffer::end_render_pass() -> void {
   vkCmdEndRenderPass(_handle);
 }
 
-auto command_buffer::_queue() const noexcept -> const queue& {
+auto command_buffer::_queue() const -> const queue& {
   auto& logical_device = graphics_module::get().logical_device();
 
-  core::assert_that(_queue_type == VK_QUEUE_GRAPHICS_BIT || _queue_type == VK_QUEUE_COMPUTE_BIT, "Invalid queue type");
-
-  return _queue_type == VK_QUEUE_GRAPHICS_BIT ? logical_device.graphics_queue() : logical_device.compute_queue();
+  switch (_queue_type) {
+    case VK_QUEUE_GRAPHICS_BIT:
+      return logical_device.graphics_queue();
+    case VK_QUEUE_COMPUTE_BIT:
+      return logical_device.compute_queue();
+    case VK_QUEUE_TRANSFER_BIT:
+      return logical_device.transfer_queue();
+    default:
+      throw std::runtime_error("Invalid queue type");
+  }
 }
 
 } // namespace sbx::graphics

@@ -6,9 +6,9 @@
 
 #include <libsbx/graphics/graphics_module.hpp>
 
+#include <libsbx/graphics/pipeline/push_constant.hpp>
+
 namespace sbx::graphics {
-
-
 
 pipeline::pipeline(const std::filesystem::path& path) {
   const auto& logical_device = graphics_module::get().logical_device();
@@ -143,12 +143,17 @@ pipeline::pipeline(const std::filesystem::path& path) {
   input_assembly_state.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
   input_assembly_state.primitiveRestartEnable = false;
 
+  auto push_constant_range = VkPushConstantRange{};
+  push_constant_range.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+  push_constant_range.offset = 0;
+  push_constant_range.size = sizeof(push_constant);
+
   auto pipeline_layout_create_info = VkPipelineLayoutCreateInfo{};
   pipeline_layout_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
   pipeline_layout_create_info.setLayoutCount = 0;
   pipeline_layout_create_info.pSetLayouts = nullptr;
-  pipeline_layout_create_info.pushConstantRangeCount = 0;
-  pipeline_layout_create_info.pPushConstantRanges = nullptr;
+  pipeline_layout_create_info.pushConstantRangeCount = 1;
+  pipeline_layout_create_info.pPushConstantRanges = &push_constant_range;
 
   validate(vkCreatePipelineLayout(logical_device, &pipeline_layout_create_info, nullptr, &_layout));
 

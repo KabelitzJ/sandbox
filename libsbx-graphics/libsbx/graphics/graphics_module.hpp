@@ -11,6 +11,8 @@
 
 #include <libsbx/devices/devices_module.hpp>
 
+#include <libsbx/utility/hash.hpp>
+
 #include <libsbx/graphics/devices/instance.hpp>
 #include <libsbx/graphics/devices/physical_device.hpp>
 #include <libsbx/graphics/devices/logical_device.hpp>
@@ -65,7 +67,7 @@ public:
 
   auto surface() -> surface&;
 
-  auto command_pool(const std::thread::id& thread_id = std::this_thread::get_id()) -> const std::shared_ptr<command_pool>&;
+  auto command_pool(VkQueueFlagBits queue_type = VK_QUEUE_GRAPHICS_BIT, const std::thread::id& thread_id = std::this_thread::get_id()) -> const std::shared_ptr<command_pool>&;
 
   auto render_pass() -> render_pass&;
 
@@ -91,11 +93,28 @@ private:
     VkFence in_flight_fence{};
   }; // struct per_frame_data
 
+  struct command_pool_key {
+    VkQueueFlagBits queue_type;
+    std::thread::id thread_id;
+
+    auto operator==(const command_pool_key& other) const noexcept -> bool {
+      return queue_type == other.queue_type && thread_id == other.thread_id;
+    }
+  }; // struct command_pool_key
+
+  struct command_pool_key_hash {
+    auto operator()(const command_pool_key& key) const noexcept -> std::size_t {
+      auto hast = std::size_t{0};
+      utility::hash_combine(hast, key.queue_type, key.thread_id);
+      return hast;
+    }
+  }; // struct command_pool_key_hash
+
   std::unique_ptr<graphics::instance> _instance{};
   std::unique_ptr<graphics::physical_device> _physical_device{};
   std::unique_ptr<graphics::logical_device> _logical_device{};
 
-  std::unordered_map<std::thread::id, std::shared_ptr<graphics::command_pool>> _command_pools{};
+  std::unordered_map<command_pool_key, std::shared_ptr<graphics::command_pool>, command_pool_key_hash> _command_pools{};
 
   std::unordered_map<std::string, std::unique_ptr<graphics::pipeline>> _pipelines{};
 

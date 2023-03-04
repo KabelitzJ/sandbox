@@ -46,7 +46,7 @@ mesh::mesh(const std::filesystem::path& path) {
   _vertex_buffer = std::make_unique<buffer>(vertex_buffer_size, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
   _index_buffer = std::make_unique<buffer>(index_buffer_size, VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-  auto command_buffer = graphics::command_buffer{};
+  auto command_buffer = graphics::command_buffer{true, VK_QUEUE_TRANSFER_BIT};
 
   {
     auto copy_region = VkBufferCopy{};
