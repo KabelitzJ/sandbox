@@ -44,6 +44,7 @@ public:
   }
 
   template<utility::implements<application> Type>
+  requires (std::is_constructible_v<Type, engine*>) // [TODO] KAJ 2023-03-05 13:22 - Is this redundant?
   auto run() -> void {
     if (_is_running) {
       return;

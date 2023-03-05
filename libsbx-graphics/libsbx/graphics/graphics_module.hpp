@@ -12,6 +12,7 @@
 #include <libsbx/devices/devices_module.hpp>
 
 #include <libsbx/utility/hash.hpp>
+#include <libsbx/utility/concepts.hpp>
 
 #include <libsbx/graphics/devices/instance.hpp>
 #include <libsbx/graphics/devices/physical_device.hpp>
@@ -28,7 +29,7 @@
 
 #include <libsbx/graphics/buffer/buffer.hpp>
 
-#include <libsbx/graphics/mesh.hpp>
+#include <libsbx/graphics/renderer.hpp>
 
 namespace sbx::graphics {
 
@@ -76,6 +77,12 @@ public:
   auto load_pipeline(const std::filesystem::path& path) -> pipeline&;
 
   auto pipeline(const std::string& key) -> pipeline&;
+
+  template<utility::implements<renderer> Renderer, typename... Args>
+  requires (std::is_constructible_v<Renderer, Args...>)
+  auto set_renderer(Args&&... args) -> void {
+    _renderer = std::make_unique<Renderer>(std::forward<Args>(args)...);
+  }
   
 private:
 
@@ -127,7 +134,7 @@ private:
   std::vector<per_frame_data> _per_frame_data{};
   std::vector<std::unique_ptr<graphics::command_buffer>> _command_buffers{};
 
-  std::unique_ptr<graphics::mesh> _mesh{};
+  std::unique_ptr<graphics::renderer> _renderer{};
 
   std::uint32_t _current_frame{};
   bool _framebuffer_resized{};

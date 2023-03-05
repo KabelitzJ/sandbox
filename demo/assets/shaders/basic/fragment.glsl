@@ -9,5 +9,5 @@ layout(push_constant) uniform push_constant {
 } uniform_push_constant;
 
 void main() {
-  out_color = in_color * 0.6 + uniform_push_constant.color * 0.4;
+  out_color = in_color * 0.5 + uniform_push_constant.color * 0.5;
 }

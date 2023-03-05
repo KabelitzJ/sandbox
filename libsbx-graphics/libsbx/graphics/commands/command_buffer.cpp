@@ -12,7 +12,7 @@ namespace sbx::graphics {
 inline static constexpr auto submit_pipeline_stages = VkPipelineStageFlags{VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
 
 command_buffer::command_buffer(bool should_begin, VkQueueFlagBits queue_type, VkCommandBufferLevel buffer_level)
-: _command_pool{graphics_module::get().command_pool()},
+: _command_pool{graphics_module::get().command_pool(queue_type)},
   _queue_type{queue_type},
   _is_running{false} {
   auto& logical_device = graphics_module::get().logical_device();

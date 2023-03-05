@@ -111,8 +111,6 @@ auto graphics_module::initialize() -> void {
   _render_pass = std::make_unique<graphics::render_pass>();
 
   _recreate_swapchain();
-
-  _mesh = std::make_unique<graphics::mesh>("./demo/assets/meshes/square.yaml");
 }
 
 auto graphics_module::update([[maybe_unused]] std::float_t delta_time) -> void {
@@ -138,24 +136,15 @@ auto graphics_module::update([[maybe_unused]] std::float_t delta_time) -> void {
     throw std::runtime_error{"Failed to acquire swapchain image"};
   }
 
-  const auto& command_buffer = _command_buffers[_swapchain->active_image_index()];
+  auto& command_buffer = _command_buffers[_swapchain->active_image_index()];
 
   _start_render_pass();
 
   // // [NOTE] KAJ 2023-02-19 17:39 - Drawing happens here
 
-  auto push_constant_data = push_constant{};
-  push_constant_data.color = color{1.0f, 0.0f, 0.0f, 1.0f};
-
-  const auto& pipeline = _pipelines["basic"];
-  command_buffer->bind_pipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, *pipeline);
-
-  command_buffer->push_constants(pipeline->layout(), VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, push_constant_data);
-
-  command_buffer->bind_vertex_buffer(0, _mesh->vertex_buffer());
-  command_buffer->bind_index_buffer(_mesh->index_buffer(), 0, VK_INDEX_TYPE_UINT32);
-
-  command_buffer->draw_indexed(static_cast<std::uint32_t>(_mesh->index_buffer().size() / sizeof(std::uint32_t)), 1, 0, 0, 0);
+  if (_renderer) {
+    _renderer->render(*command_buffer);
+  }
 
   _end_render_pass();
 }
