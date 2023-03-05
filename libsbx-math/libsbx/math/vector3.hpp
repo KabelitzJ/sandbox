@@ -101,14 +101,13 @@ public:
    */
   constexpr basic_vector3(const value_type x, const value_type y, const value_type z) noexcept;
 
-  // TODO: Needs vector2 first
-  // /**
-  //  * @brief Constructs a three dimensional vector from a two dimensional vector.
-  //  * 
-  //  * @param vector A vector to copy the components from.
-  //  * @param z The value for the z component. (Default: 1)
-  //  */
-  // explicit constexpr basic_vector3(const basic_vector2<value_type>& vector, const value_type z = value_type{0}) noexcept;
+  /**
+   * @brief Constructs a three dimensional vector from a two dimensional vector.
+   * 
+   * @param vector A vector to copy the components from.
+   * @param z The value for the z component. (Default: 1)
+   */
+  explicit constexpr basic_vector3(const basic_vector2<value_type>& vector, const value_type z = value_type{0}) noexcept;
 
   /** 
    * @brief Constructs a vector and copies the components from the other vector
@@ -480,16 +479,13 @@ using vector3 = vector3f;
  */
 template<sbx::math::numeric Type>
 struct std::hash<sbx::math::basic_vector3<Type>> {
-  /**
-   * @brief Calculates the hash of a vector.
-   */
-  std::size_t operator()(const sbx::math::basic_vector3<Type>& vector) const noexcept;
+  auto operator()(const sbx::math::basic_vector3<Type>& vector) const noexcept -> std::size_t;
 }; // struct std::hash
 
 template<sbx::math::numeric Type>
 struct YAML::convert<sbx::math::basic_vector3<Type>> {
-  static Node encode(const sbx::math::basic_vector3<Type>& vector);
-  static bool decode(const Node& node, sbx::math::basic_vector3<Type>& vector);
+  static auto encode(const sbx::math::basic_vector3<Type>& vector) -> Node;
+  static auto decode(const Node& node, sbx::math::basic_vector3<Type>& vector) -> bool;
 }; // struct YAML::convert
 
 #include <libsbx/math/vector3.ipp>

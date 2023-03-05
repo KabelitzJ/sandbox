@@ -2,16 +2,9 @@
 
 #include <libsbx/graphics/graphics_module.hpp>
 
-#include <libsbx/graphics/devices/physical_device.hpp>
-#include <libsbx/graphics/devices/logical_device.hpp>
-
 namespace sbx::graphics {
 
-render_pass::render_pass() {
-  const auto& physical_device = graphics_module::get().physical_device();
-  const auto& logical_device = graphics_module::get().logical_device();
-  const auto& surface = graphics_module::get().surface();
-
+render_pass::render_pass(const physical_device& physical_device, const logical_device& logical_device, const surface& surface) {
   auto color_attachment = VkAttachmentDescription{};
   color_attachment.format = surface.format().format;
   color_attachment.samples = VK_SAMPLE_COUNT_1_BIT;

@@ -77,7 +77,8 @@ graphics_module::graphics_module()
 : _instance{std::make_unique<graphics::instance>()},
   _physical_device{std::make_unique<graphics::physical_device>(*_instance)},
   _logical_device{std::make_unique<graphics::logical_device>(*_physical_device)},
-  _surface{std::make_unique<graphics::surface>(*_instance, *_physical_device, *_logical_device)} {
+  _surface{std::make_unique<graphics::surface>(*_instance, *_physical_device, *_logical_device)},
+  _render_pass{std::make_unique<graphics::render_pass>(*_physical_device, *_logical_device, *_surface)} {
 
 }
 
@@ -107,8 +108,6 @@ auto graphics_module::initialize() -> void {
   window.set_on_framebuffer_resized([this]([[maybe_unused]] const devices::framebuffer_resized_event& event) {
     _framebuffer_resized = true;
   });
-
-  _render_pass = std::make_unique<graphics::render_pass>();
 
   _recreate_swapchain();
 }

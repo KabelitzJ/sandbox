@@ -1,3 +1,5 @@
+#include <libsbx/math/vector2.hpp>
+
 #include <cmath>
 #include <iomanip>
 #include <string>
@@ -132,49 +134,44 @@ inline constexpr auto basic_vector2<Type>::normalize() noexcept -> void {
 }
 
 template<numeric Type>
-inline constexpr basic_vector2<Type>::pointer basic_vector2<Type>::data() noexcept {
+inline constexpr auto basic_vector2<Type>::data() noexcept -> pointer {
   return &x;
 }
 
 template<numeric Type>
-inline constexpr basic_vector2<Type>::const_pointer basic_vector2<Type>::data() const noexcept {
+inline constexpr auto basic_vector2<Type>::data() const noexcept -> const_pointer {
   return &x;
 }
 
 template<numeric Type>
-inline constexpr bool operator==(const basic_vector2<Type>& lhs, const basic_vector2<Type>& rhs) noexcept {
+inline constexpr auto operator==(const basic_vector2<Type>& lhs, const basic_vector2<Type>& rhs) noexcept -> bool {
   return lhs.x == rhs.x && lhs.y == rhs.y;
 }
 
 template<numeric Type>
-inline constexpr bool operator!=(const basic_vector2<Type>& lhs, const basic_vector2<Type>& rhs) noexcept {
-  return !(lhs == rhs);
-}
-
-template<numeric Type>
-inline constexpr basic_vector2<Type> operator+(basic_vector2<Type> lhs, const basic_vector2<Type>& rhs) noexcept {
+inline constexpr auto operator+(basic_vector2<Type> lhs, const basic_vector2<Type>& rhs) noexcept -> basic_vector2<Type> {
   return lhs += rhs;
 }
 
 template<numeric Type> 
-inline constexpr basic_vector2<Type> operator-(basic_vector2<Type> lhs, const basic_vector2<Type>& rhs) noexcept {
+inline constexpr auto operator-(basic_vector2<Type> lhs, const basic_vector2<Type>& rhs) noexcept -> basic_vector2<Type> {
   return lhs -= rhs;
 }
 
 template<numeric Type>
-inline constexpr basic_vector2<Type> operator*(basic_vector2<Type> lhs, const Type rhs) noexcept {
+inline constexpr auto operator*(basic_vector2<Type> lhs, const Type rhs) noexcept -> basic_vector2<Type> {
   return lhs *= rhs;
 }
 
 template<numeric Type>
-inline constexpr basic_vector2<Type> operator/(basic_vector2<Type> lhs, const Type rhs) noexcept {
+inline constexpr auto operator/(basic_vector2<Type> lhs, const Type rhs) noexcept -> basic_vector2<Type> {
   return lhs /= rhs;
 }
 
 } // namespace sbx::math
 
 template<sbx::math::numeric Type>
-inline std::size_t std::hash<sbx::math::basic_vector2<Type>>::operator()(const sbx::math::basic_vector2<Type>& vector) const noexcept {
+inline auto std::hash<sbx::math::basic_vector2<Type>>::operator()(const sbx::math::basic_vector2<Type>& vector) const noexcept -> std::size_t {
   auto seed = std::size_t{0};
   sbx::utility::hash_combine(seed, vector.x, vector.y);
   return seed;

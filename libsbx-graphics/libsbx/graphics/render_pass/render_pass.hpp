@@ -5,13 +5,17 @@
 
 #include <libsbx/utility/noncopyable.hpp>
 
+#include <libsbx/graphics/devices/physical_device.hpp>
+#include <libsbx/graphics/devices/logical_device.hpp>
+#include <libsbx/graphics/devices/surface.hpp>
+
 namespace sbx::graphics {
 
 class render_pass : public utility::noncopyable {
   
 public:
 
-  render_pass();
+  render_pass(const physical_device& physical_device, const logical_device& logical_device, const surface& surface);
 
   ~render_pass();
 

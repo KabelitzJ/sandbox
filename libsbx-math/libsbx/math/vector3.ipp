@@ -27,12 +27,11 @@ inline constexpr basic_vector3<Type>::basic_vector3(const value_type _x, const v
   y{_y},
   z{_z} { }
 
-// TODO: Needs vector2 first
-// template<numeric Type>
-// inline constexpr basic_vector3<Type>::basic_vector3(const basic_vector2<Type>& vector, const Type _z) noexcept
-// : x{vector.x},
-//   y{vector.y},
-//   z{_z} { }
+template<numeric Type>
+inline constexpr basic_vector3<Type>::basic_vector3(const basic_vector2<Type>& vector, const Type _z) noexcept
+: x{vector.x},
+  y{vector.y},
+  z{_z} { }
 
 template<numeric Type>
 template<numeric Other>
@@ -166,7 +165,7 @@ inline constexpr auto basic_vector3<Type>::operator/=(const Type scalar) noexcep
 
 template<numeric Type>
 inline constexpr auto basic_vector3<Type>::operator/=(const basic_vector3& scalar) noexcept -> basic_vector3& {
-  core::assert_that(scalar.x != static_cast<value_type>(0), "Division by zero");
+  core::assert_that(scalar.x != static_cast<value_type>(0) && scalar.y != static_cast<value_type>(0) && scalar.z != static_cast<value_type>(0), "Division by zero");
 
   x /= scalar.x;
   y /= scalar.y;
@@ -340,7 +339,7 @@ auto operator<<(std::ostream& output_stream, const basic_vector3<Type>& vector) 
 } // namespace sbx::math
 
 template<sbx::math::numeric Type>
-inline std::size_t std::hash<sbx::math::basic_vector3<Type>>::operator()(const sbx::math::basic_vector3<Type>& vector) const noexcept {
+inline auto std::hash<sbx::math::basic_vector3<Type>>::operator()(const sbx::math::basic_vector3<Type>& vector) const noexcept -> std::size_t {
   auto seed = std::size_t{0};
   sbx::utility::hash_combine(seed, vector.x, vector.y, vector.z);
   return seed;
