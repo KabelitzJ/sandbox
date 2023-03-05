@@ -11,6 +11,7 @@
 #include <yaml-cpp/yaml.h>
 
 #include <libsbx/math/concepts.hpp>
+#include <libsbx/math/vector2.hpp>
 
 namespace sbx::math {
 
@@ -134,7 +135,7 @@ public:
   constexpr basic_vector3(basic_vector3&& other) noexcept = default;
 
   /** @brief Destroys the vector */
-  ~basic_vector3() noexcept = default;
+  constexpr ~basic_vector3() noexcept = default;
 
   // -- Static member functions --
 
@@ -489,7 +490,7 @@ template<sbx::math::numeric Type>
 struct YAML::convert<sbx::math::basic_vector3<Type>> {
   static Node encode(const sbx::math::basic_vector3<Type>& vector);
   static bool decode(const Node& node, sbx::math::basic_vector3<Type>& vector);
-}; // struct YAML::convert<sbx::math::basic_vector3<Type>>
+}; // struct YAML::convert
 
 #include <libsbx/math/vector3.ipp>
 
