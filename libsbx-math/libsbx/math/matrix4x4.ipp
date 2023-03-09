@@ -116,14 +116,14 @@ inline constexpr auto basic_matrix4x4<Type>::inverted(const basic_matrix4x4& mat
 
   const auto row0 = basic_vector4<value_type>{inverse[0][0], inverse[1][0], inverse[2][0], inverse[3][0]};
 
-  const auto dot0 = matrix[0] * row0;
+  const auto det0 = matrix[0] * row0;
   
   // I dont know why those parentheses are needed here... But im too scared to remove them
-  const auto dot1 = value_type{(dot0.x + dot0.y) + (dot0.z + dot0.w)};
+  const auto det1 = value_type{(det0.x + det0.y) + (det0.z + det0.w)};
 
-  core::assert_that(dot1 != value_type{0}, "Cant be 0");
+  core::assert_that(det0 != value_type{0}, "Cant be 0");
 
-  const auto one_over_determinant = value_type{1} / dot1;
+  const auto one_over_determinant = value_type{1} / det1;
 
   return inverse * one_over_determinant;
 }

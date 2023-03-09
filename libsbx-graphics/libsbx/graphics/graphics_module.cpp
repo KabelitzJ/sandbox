@@ -119,27 +119,27 @@ auto graphics_module::update([[maybe_unused]] std::float_t delta_time) -> void {
     return;
   }
 
-  if (_framebuffer_resized) {
-    _recreate_swapchain();
-  }
-
   const auto& frame_data = _per_frame_data[_current_frame];
 
   // Get the next image in the swapchain (back/front buffer)
   const auto result = _swapchain->acquire_next_image(frame_data.image_available_semaphore, frame_data.in_flight_fence);
 
   if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-    _framebuffer_resized = true;
+    _recreate_swapchain();
     return;
   }else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
     throw std::runtime_error{"Failed to acquire swapchain image"};
   }
 
+  validate(vkResetFences(*_logical_device, 1, &frame_data.in_flight_fence));
+
   auto& command_buffer = _command_buffers[_swapchain->active_image_index()];
 
-  _start_render_pass();
+  if (!_start_render_pass()) {
+    return;
+  }
 
-  // // [NOTE] KAJ 2023-02-19 17:39 - Drawing happens here
+  // [NOTE] KAJ 2023-02-19 17:39 - Drawing happens here
 
   if (_renderer) {
     _renderer->render(*command_buffer);
@@ -200,7 +200,12 @@ auto graphics_module::pipeline(const std::string& name) -> graphics::pipeline& {
   throw std::runtime_error{"Pipeline not found"};
 }
 
-auto graphics_module::_start_render_pass() -> void {
+auto graphics_module::_start_render_pass() -> bool {
+  if (_framebuffer_resized) {
+    _recreate_swapchain();
+    return false;
+  }
+
   const auto& command_buffer = _command_buffers[_swapchain->active_image_index()];
 
   if (!command_buffer->is_running()) {
@@ -239,13 +244,14 @@ auto graphics_module::_start_render_pass() -> void {
 	render_pass_begin_info.pClearValues = clear_values.data();
 
   command_buffer->begin_render_pass(render_pass_begin_info, VK_SUBPASS_CONTENTS_INLINE);
+
+  return true;
 }
 
 auto graphics_module::_end_render_pass() -> void {
   const auto& frame_data = _per_frame_data[_current_frame];
 
-  const auto active_image_index = _swapchain->active_image_index();
-  auto& command_buffer = _command_buffers[active_image_index];
+  auto& command_buffer = _command_buffers[_swapchain->active_image_index()];
 
   const auto& present_queue = _logical_device->present_queue();
 

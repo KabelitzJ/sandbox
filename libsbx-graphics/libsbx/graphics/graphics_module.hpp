@@ -86,7 +86,7 @@ public:
   
 private:
 
-  auto _start_render_pass() -> void;
+  auto _start_render_pass() -> bool;
 
   auto _end_render_pass() -> void;
 

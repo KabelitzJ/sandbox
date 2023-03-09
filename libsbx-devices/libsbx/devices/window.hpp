@@ -133,7 +133,7 @@ private:
     glfwSetWindowUserPointer(_handle, this);
 
     glfwSetWindowCloseCallback(_handle, [](GLFWwindow* window){
-      const auto& user_data = *static_cast<devices::window*>(glfwGetWindowUserPointer(window));
+      auto& user_data = *static_cast<devices::window*>(glfwGetWindowUserPointer(window));
 
       if (user_data._on_window_closed) {
         const auto event = window_closed_event{};
@@ -151,7 +151,7 @@ private:
     });
 
     glfwSetWindowSizeCallback(_handle, [](GLFWwindow* window, std::int32_t width, std::int32_t height){
-      const auto& user_data = *static_cast<devices::window*>(glfwGetWindowUserPointer(window));
+      auto& user_data = *static_cast<devices::window*>(glfwGetWindowUserPointer(window));
 
       if (user_data._on_window_resized) {
         const auto event = window_resized_event{width, height};
@@ -160,16 +160,18 @@ private:
     });
 
     glfwSetFramebufferSizeCallback(_handle, [](GLFWwindow* window, std::int32_t width, std::int32_t height){
-      const auto& user_data = *static_cast<devices::window*>(glfwGetWindowUserPointer(window));
+      auto& user_data = *static_cast<devices::window*>(glfwGetWindowUserPointer(window));
 
       if (user_data._on_framebuffer_resized) {
         const auto event = framebuffer_resized_event{width, height};
         user_data._on_framebuffer_resized(event);
+        user_data._width = static_cast<std::uint32_t>(width);
+        user_data._height = static_cast<std::uint32_t>(height);
       }
     });
 
     glfwSetKeyCallback(_handle, [](GLFWwindow* window, std::int32_t key, std::int32_t scancode, std::int32_t action, std::int32_t mods){
-      const auto& user_data = *static_cast<devices::window*>(glfwGetWindowUserPointer(window));
+      auto& user_data = *static_cast<devices::window*>(glfwGetWindowUserPointer(window));
 
       if (user_data._on_key) {
         const auto event = key_event{key, scancode, action, mods};
