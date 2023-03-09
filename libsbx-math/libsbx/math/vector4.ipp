@@ -212,32 +212,32 @@ inline constexpr auto operator==(const basic_vector4<Type>& lhs, const basic_vec
 }
 
 template<numeric Type>
-inline constexpr auto operator+(basic_vector4<Type> lhs, const basic_vector4<Type>& rhs) noexcept  {
+inline constexpr auto operator+(basic_vector4<Type> lhs, const basic_vector4<Type>& rhs) noexcept -> basic_vector4<Type> {
   return lhs += rhs;
 }
 
 template<numeric Type>
-inline constexpr auto operator-(basic_vector4<Type> lhs, const basic_vector4<Type>& rhs) noexcept {
+inline constexpr auto operator-(basic_vector4<Type> lhs, const basic_vector4<Type>& rhs) noexcept -> basic_vector4<Type> {
   return lhs -= rhs;
 }
 
 template<numeric Type>
-inline constexpr auto operator*(basic_vector4<Type> lhs, const Type rhs) noexcept {
+inline constexpr auto operator*(basic_vector4<Type> lhs, const Type rhs) noexcept -> basic_vector4<Type> {
   return lhs *= rhs;
 }
 
 template<numeric Type>
-inline constexpr auto operator*(basic_vector4<Type> lhs, const basic_vector4<Type>& rhs) noexcept {
+inline constexpr auto operator*(basic_vector4<Type> lhs, const basic_vector4<Type>& rhs) noexcept -> basic_vector4<Type> {
   return lhs *= rhs;
 }
 
 template<numeric Type>
-inline constexpr auto operator/(basic_vector4<Type> lhs, const Type rhs) noexcept {
+inline constexpr auto operator/(basic_vector4<Type> lhs, const Type rhs) noexcept -> basic_vector4<Type> {
   return lhs /= rhs;
 }
 
 template<numeric Type>
-inline constexpr auto operator/(basic_vector4<Type> lhs, const basic_vector4<Type>& rhs) noexcept {
+inline constexpr auto operator/(basic_vector4<Type> lhs, const basic_vector4<Type>& rhs) noexcept -> basic_vector4<Type> {
   return lhs /= rhs;
 }
 

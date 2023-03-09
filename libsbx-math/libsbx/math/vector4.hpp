@@ -1,5 +1,5 @@
-#ifndef SBX_MATH_VECTOR4_HPP_
-#define SBX_MATH_VECTOR4_HPP_
+#ifndef LIBSBX_MATH_VECTOR4_HPP_
+#define LIBSBX_MATH_VECTOR4_HPP_
 
 #include <cstddef>
 #include <cmath>
@@ -156,7 +156,7 @@ public:
    * 
    * @return basic_vector4& A reference to this vector.
    */
-  constexpr auto operator=(basic_vector4&& other) noexcept = default -> basic_vector4&;
+  constexpr auto operator=(basic_vector4&& other) noexcept -> basic_vector4& = default;
 
   // -- Unary numeric operators --
 
@@ -399,4 +399,4 @@ struct YAML::convert<sbx::math::basic_vector4<Type>> {
 
 #include <libsbx/math/vector4.ipp>
 
-#endif // SBX_MATH_VECTOR4_HPP_
+#endif // LIBSBX_MATH_VECTOR4_HPP_

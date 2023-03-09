@@ -1,5 +1,5 @@
-#ifndef SBX_MATH_VECTOR2_HPP_
-#define SBX_MATH_VECTOR2_HPP_
+#ifndef LIBSBX_MATH_VECTOR2_HPP_
+#define LIBSBX_MATH_VECTOR2_HPP_
 
 #include <cstddef>
 #include <cinttypes>
@@ -357,4 +357,4 @@ struct YAML::convert<sbx::math::basic_vector2<Type>> {
 
 #include <libsbx/math/vector2.ipp>
 
-#endif // SBX_MATH_VECTOR2_HPP_
+#endif // LIBSBX_MATH_VECTOR2_HPP_
