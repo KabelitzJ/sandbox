@@ -139,49 +139,49 @@ private:
     glfwSetWindowUserPointer(_handle, this);
 
     glfwSetWindowCloseCallback(_handle, [](GLFWwindow* window){
-      auto& user_data = *static_cast<devices::window*>(glfwGetWindowUserPointer(window));
+      auto& self = *static_cast<devices::window*>(glfwGetWindowUserPointer(window));
 
-      if (user_data._on_window_closed) {
+      if (self._on_window_closed) {
         const auto event = window_closed_event{};
-        user_data._on_window_closed(event);
+        self._on_window_closed(event);
       }
     });
 
     glfwSetWindowPosCallback(_handle, [](GLFWwindow* window, std::int32_t x, std::int32_t y){
-      const auto& user_data = *static_cast<devices::window*>(glfwGetWindowUserPointer(window));
+      const auto& self = *static_cast<devices::window*>(glfwGetWindowUserPointer(window));
 
-      if (user_data._on_window_moved) {
+      if (self._on_window_moved) {
         const auto event = window_moved_event{x, y};
-        user_data._on_window_moved(event);
+        self._on_window_moved(event);
       }
     });
 
     glfwSetWindowSizeCallback(_handle, [](GLFWwindow* window, std::int32_t width, std::int32_t height){
-      auto& user_data = *static_cast<devices::window*>(glfwGetWindowUserPointer(window));
+      auto& self = *static_cast<devices::window*>(glfwGetWindowUserPointer(window));
 
-      if (user_data._on_window_resized) {
+      if (self._on_window_resized) {
         const auto event = window_resized_event{width, height};
-        user_data._on_window_resized(event);
+        self._on_window_resized(event);
       }
     });
 
     glfwSetFramebufferSizeCallback(_handle, [](GLFWwindow* window, std::int32_t width, std::int32_t height){
-      auto& user_data = *static_cast<devices::window*>(glfwGetWindowUserPointer(window));
+      auto& self = *static_cast<devices::window*>(glfwGetWindowUserPointer(window));
 
-      if (user_data._on_framebuffer_resized) {
+      if (self._on_framebuffer_resized) {
         const auto event = framebuffer_resized_event{width, height};
-        user_data._on_framebuffer_resized(event);
-        user_data._width = static_cast<std::uint32_t>(width);
-        user_data._height = static_cast<std::uint32_t>(height);
+        self._on_framebuffer_resized(event);
+        self._width = static_cast<std::uint32_t>(width);
+        self._height = static_cast<std::uint32_t>(height);
       }
     });
 
     glfwSetKeyCallback(_handle, [](GLFWwindow* window, std::int32_t key, std::int32_t scancode, std::int32_t action, std::int32_t mods){
-      auto& user_data = *static_cast<devices::window*>(glfwGetWindowUserPointer(window));
+      auto& self = *static_cast<devices::window*>(glfwGetWindowUserPointer(window));
 
-      if (user_data._on_key) {
+      if (self._on_key) {
         const auto event = key_event{key, scancode, action, mods};
-        user_data._on_key(event);
+        self._on_key(event);
       }
     });
   }

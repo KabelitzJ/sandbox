@@ -1,5 +1,6 @@
 public_dependencies =
 import public_dependencies += libsbx-utility%liba{sbx_utility}
+import public_dependencies += libsbx-memory%liba{sbx_memory}
 
 public_dependencies = $cxx.deduplicate_export_libs($public_dependencies)
 
