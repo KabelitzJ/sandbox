@@ -1,0 +1,6 @@
+$out_root/
+{
+  include libsbx/signal/
+}
+
+export $out_root/libsbx/signal/$import.target

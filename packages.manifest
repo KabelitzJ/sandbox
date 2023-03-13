@@ -20,3 +20,7 @@ location: demo/
 location: libsbx-units/
 :
 location: libsbx-memory/
+:
+location: libsbx-signal/
+:
+location: libsbx-ecs/

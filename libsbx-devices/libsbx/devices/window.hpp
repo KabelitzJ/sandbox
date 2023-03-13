@@ -14,18 +14,24 @@
 
 namespace sbx::devices {
 
+struct window_create_info {
+  std::string title{};
+  std::uint32_t width{};
+  std::uint32_t height{};
+}; // struct window_create_info
+
 class window {
 
 public:
 
-  window(const std::string& title, std::uint32_t width, std::uint32_t height) {
+  window(const window_create_info& create_info) {
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     // glfwWindowHint(GLFW_RESIZABLE, false);
     glfwWindowHint(GLFW_VISIBLE, false);
 
-    _title = title;
-    _width = width;
-    _height = height;
+    _title = create_info.title;
+    _width = create_info.width;
+    _height = create_info.height;
 
     _handle = glfwCreateWindow(static_cast<std::int32_t>(_width), static_cast<std::int32_t>(_height), _title.c_str(), nullptr, nullptr);
 

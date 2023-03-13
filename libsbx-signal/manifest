@@ -1,0 +1,11 @@
+: 1
+name: libsbx-signal
+version: 0.1.0
+project: sandbox
+summary: sbx-signal C++ library
+license: MIT
+description-file: README.md
+email: jonas-kabelitz@gmx.de
+depends: * build2 >= 0.15.0
+depends: * bpkg >= 0.15.0
+depends: libsbx-utility >= 0.1.0

@@ -10,6 +10,8 @@
 #include <libsbx/units/units.hpp>
 #include <libsbx/memory/memory.hpp>
 #include <libsbx/core/core.hpp>
+#include <libsbx/signal/signal.hpp>
+#include <libsbx/ecs/ecs.hpp>
 #include <libsbx/async/async.hpp>
 #include <libsbx/io/io.hpp>
 #include <libsbx/scripting/scripting.hpp>

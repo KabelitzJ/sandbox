@@ -1,0 +1,18 @@
+#ifndef LIBSBX_ECS_VERSION_HPP_
+#define LIBSBX_ECS_VERSION_HPP_
+
+#define LIBSBX_ECS_VERSION       $libsbx_ecs.version.project_number$ULL
+#define LIBSBX_ECS_VERSION_STR   "$libsbx_ecs.version.project$"
+#define LIBSBX_ECS_VERSION_ID    "$libsbx_ecs.version.project_id$"
+#define LIBSBX_ECS_VERSION_FULL  "$libsbx_ecs.version$"
+
+#define LIBSBX_ECS_VERSION_MAJOR $libsbx_ecs.version.major$
+#define LIBSBX_ECS_VERSION_MINOR $libsbx_ecs.version.minor$
+#define LIBSBX_ECS_VERSION_PATCH $libsbx_ecs.version.patch$
+
+#define LIBSBX_ECS_PRE_RELEASE   $libsbx_ecs.version.pre_release$
+
+#define LIBSBX_ECS_SNAPSHOT_SN   $libsbx_ecs.version.snapshot_sn$ULL
+#define LIBSBX_ECS_SNAPSHOT_ID   "$libsbx_ecs.version.snapshot_id$"
+
+#endif // LIBSBX_ECS_VERSION_HPP_
