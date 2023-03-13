@@ -30,10 +30,6 @@ public:
 
   }
 
-  auto initialize() -> void override {
-
-  }
-
   auto update(std::float_t delta_time) -> void override {
     for (auto& [name, script] : _scripts) {
       script->update(delta_time);

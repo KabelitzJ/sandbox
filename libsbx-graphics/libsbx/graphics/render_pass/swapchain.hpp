@@ -9,13 +9,17 @@
 
 #include <libsbx/graphics/render_pass/render_pass.hpp>
 
+#include <libsbx/graphics/devices/physical_device.hpp>
+#include <libsbx/graphics/devices/logical_device.hpp>
+#include <libsbx/graphics/devices/surface.hpp>
+
 namespace sbx::graphics {
 
 class swapchain {
 
 public:
 
-  swapchain(const VkExtent2D& extent, const std::unique_ptr<swapchain>& old_swapchain);
+  swapchain(const physical_device& physical_device, const logical_device& logical_device, const surface& surface, const VkExtent2D& extent, const std::unique_ptr<swapchain>& old_swapchain = nullptr);
 
   ~swapchain();
 

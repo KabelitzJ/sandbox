@@ -34,13 +34,13 @@ instance::instance() {
   validate(vkCreateInstance(&instance_create_info, nullptr, &_handle));
 
   if constexpr (core::build_configuration_v == core::build_configuration::debug) {
-    validate(debug_messenger::initialize(*this));
+    validate(debug_messenger::create(*this));
   }
 }
 
 instance::~instance() {
   if constexpr (core::build_configuration_v == core::build_configuration::debug) {
-    debug_messenger::terminate(*this);
+    debug_messenger::destroy(*this);
   }
 
   vkDestroyInstance(_handle, nullptr);

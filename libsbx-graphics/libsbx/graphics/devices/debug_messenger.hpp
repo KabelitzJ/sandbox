@@ -18,56 +18,15 @@ public:
 
   ~debug_messenger() = default;
 
-  [[nodiscard]] static auto initialize(const instance& target, const VkAllocationCallbacks* allocator = nullptr) -> VkResult {
-    if constexpr (core::build_configuration_v == core::build_configuration::debug) {
-      auto* function = reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(vkGetInstanceProcAddr(target.handle(), "vkCreateDebugUtilsMessengerEXT"));
+  [[nodiscard]] static auto create(const instance& target, const VkAllocationCallbacks* allocator = nullptr) -> VkResult;
 
-      if (function) {
-        return function(target.handle(), create_info(), allocator, &_handle);
-      }
+  static auto destroy(const instance& target, const VkAllocationCallbacks* allocator = nullptr) -> void;
 
-      return VK_ERROR_EXTENSION_NOT_PRESENT;
-    } else {
-      return VK_SUCCESS;
-    }
-  }
-
-  static auto terminate(const instance& target, const VkAllocationCallbacks* allocator = nullptr) -> void {
-    if constexpr (core::build_configuration_v == core::build_configuration::debug) {
-      auto* function = reinterpret_cast<PFN_vkDestroyDebugUtilsMessengerEXT>(vkGetInstanceProcAddr(target.handle(), "vkDestroyDebugUtilsMessengerEXT"));
-
-      if (function) {
-        function(target.handle(), _handle, allocator);
-      }
-    }
-  }
-
-  static auto create_info() -> VkDebugUtilsMessengerCreateInfoEXT* {
-    if constexpr (core::build_configuration_v == core::build_configuration::debug) {
-      static auto create_info = VkDebugUtilsMessengerCreateInfoEXT{};
-
-      create_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-      create_info.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
-      create_info.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-      create_info.pfnUserCallback = _debug_callback;
-
-      return &create_info;
-    } else {
-      return nullptr;
-    }
-  }
+  static auto create_info() -> VkDebugUtilsMessengerCreateInfoEXT*;
 
 private:
 
-  static VKAPI_ATTR auto VKAPI_CALL _debug_callback(VkDebugUtilsMessageSeverityFlagBitsEXT message_severity, [[maybe_unused]] VkDebugUtilsMessageTypeFlagsEXT message_type, const VkDebugUtilsMessengerCallbackDataEXT* callback_data, [[maybe_unused]] void* user_data) -> VkBool32 {
-    if (message_severity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) {
-      core::logger::warn("{}", callback_data->pMessage);
-    } else if (message_severity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) {
-      core::logger::error("{}", callback_data->pMessage);
-    }
-
-    return VK_FALSE;
-  }
+  static VKAPI_ATTR auto VKAPI_CALL _debug_callback(VkDebugUtilsMessageSeverityFlagBitsEXT message_severity, [[maybe_unused]] VkDebugUtilsMessageTypeFlagsEXT message_type, const VkDebugUtilsMessengerCallbackDataEXT* callback_data, [[maybe_unused]] void* user_data) -> VkBool32;
 
   inline static VkDebugUtilsMessengerEXT _handle{};
 

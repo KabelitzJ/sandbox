@@ -49,7 +49,6 @@ private:
 
   struct module_base {
     virtual ~module_base() = default;
-    virtual auto initialize() -> void = 0;
     virtual auto update(std::float_t delta_time) -> void = 0;
   }; // struct module_base
 

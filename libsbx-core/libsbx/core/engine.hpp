@@ -31,10 +31,6 @@ public:
     for (const auto& [type, factory] : module_manager::_factories) {
       _create_module(type, factory);
     }
-
-    for (auto& [type, module] : _modules) {
-      module->initialize();
-    }
   }
 
   ~engine() {

@@ -79,7 +79,11 @@ graphics_module::graphics_module()
   _logical_device{std::make_unique<graphics::logical_device>(*_physical_device)},
   _surface{std::make_unique<graphics::surface>(*_instance, *_physical_device, *_logical_device)},
   _render_pass{std::make_unique<graphics::render_pass>(*_physical_device, *_logical_device, *_surface)} {
+  auto& window = devices::devices_module::get().window();
 
+  window.set_on_framebuffer_resized([this]([[maybe_unused]] const devices::framebuffer_resized_event& event) {
+    _framebuffer_resized = true;
+  });
 }
 
 graphics_module::~graphics_module() {
@@ -102,20 +106,15 @@ graphics_module::~graphics_module() {
   _command_pools.clear();
 }
 
-auto graphics_module::initialize() -> void {
-  auto& window = devices::devices_module::get().window();
-
-  window.set_on_framebuffer_resized([this]([[maybe_unused]] const devices::framebuffer_resized_event& event) {
-    _framebuffer_resized = true;
-  });
-
-  _recreate_swapchain();
-}
-
 auto graphics_module::update([[maybe_unused]] std::float_t delta_time) -> void {
   const auto& window = devices::devices_module::get().window();
 
   if (window.is_iconified()) {
+    return;
+  }
+
+  if (!_swapchain) {
+    _recreate_swapchain();
     return;
   }
 
@@ -280,7 +279,7 @@ auto graphics_module::_recreate_swapchain() -> void {
 
   const auto extent = VkExtent2D{window.width(), window.height()};
 
-  _swapchain = std::make_unique<graphics::swapchain>(extent, _swapchain);
+  _swapchain = std::make_unique<graphics::swapchain>(*_physical_device, *_logical_device, *_surface, extent, _swapchain);
 
   _recreate_command_buffers();
 
