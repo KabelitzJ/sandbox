@@ -78,7 +78,9 @@ graphics_module::graphics_module()
   _physical_device{std::make_unique<graphics::physical_device>(*_instance)},
   _logical_device{std::make_unique<graphics::logical_device>(*_physical_device)},
   _surface{std::make_unique<graphics::surface>(*_instance, *_physical_device, *_logical_device)},
-  _render_pass{std::make_unique<graphics::render_pass>(*_physical_device, *_logical_device, *_surface)} {
+  _render_pass{std::make_unique<graphics::render_pass>(*_physical_device, *_logical_device, *_surface)},
+  // [NOTE] KAJ 2023-03-14 19:02 - We want to create the swapchain the first time we run update
+  _framebuffer_resized{true} {
   auto& window = devices::devices_module::get().window();
 
   window.set_on_framebuffer_resized([this]([[maybe_unused]] const devices::framebuffer_resized_event& event) {
@@ -113,9 +115,8 @@ auto graphics_module::update([[maybe_unused]] std::float_t delta_time) -> void {
     return;
   }
 
-  if (!_swapchain) {
+  if (_framebuffer_resized) {
     _recreate_swapchain();
-    return;
   }
 
   const auto& frame_data = _per_frame_data[_current_frame];
@@ -124,7 +125,7 @@ auto graphics_module::update([[maybe_unused]] std::float_t delta_time) -> void {
   const auto result = _swapchain->acquire_next_image(frame_data.image_available_semaphore, frame_data.in_flight_fence);
 
   if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-    _recreate_swapchain();
+    _framebuffer_resized = true;
     return;
   }else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
     throw std::runtime_error{"Failed to acquire swapchain image"};
@@ -201,7 +202,7 @@ auto graphics_module::pipeline(const std::string& name) -> graphics::pipeline& {
 
 auto graphics_module::_start_render_pass() -> bool {
   if (_framebuffer_resized) {
-    _recreate_swapchain();
+    // [NOTE] KAJ 2023-03-14 19:01 - This could happen when glfw sends a framebuffer resized event
     return false;
   }
 
