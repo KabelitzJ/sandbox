@@ -33,17 +33,17 @@ public:
 
   auto properties() const noexcept -> VkMemoryPropertyFlags;
 
-  auto map() const noexcept -> void*;
+  auto copy_from(const buffer& source, VkDeviceSize size) const -> void;
 
-  auto unmap() const noexcept -> void;
+  auto copy_from(const buffer& source) const -> void;
 
-  auto copy_from(const buffer& source, VkDeviceSize size) const noexcept -> void;
-
-  auto copy_from(const buffer& source) const noexcept -> void;
-
-  auto write(const void* data, VkDeviceSize size, VkDeviceSize offset = 0) const noexcept -> void;
+  auto write(const void* data, VkDeviceSize size, VkDeviceSize offset = 0) const -> void;
 
 private:
+
+  auto _map() const noexcept -> void*;
+
+  auto _unmap() const noexcept -> void;
 
   VkBuffer _handle{};
   VkDeviceSize _size{};

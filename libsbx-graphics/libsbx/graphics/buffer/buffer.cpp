@@ -77,24 +77,10 @@ auto buffer::properties() const noexcept -> VkMemoryPropertyFlags {
   return _properties;
 }
 
-auto buffer::map() const noexcept -> void* {
-  const auto& logical_device = graphics_module::get().logical_device();
-
-  auto data = static_cast<void*>(nullptr);
-
-  vkMapMemory(logical_device, _memory, 0, _size, 0, &data);
-
-  return data;
-}
-
-auto buffer::unmap() const noexcept -> void {
-  const auto& logical_device = graphics_module::get().logical_device();
-
-  vkUnmapMemory(logical_device, _memory);
-}
-
-auto buffer::copy_from(const buffer& src, VkDeviceSize size) const noexcept -> void {
-  core::assert_that(size <= _size, "buffer::copy_from: size is greater than buffer size");
+auto buffer::copy_from(const buffer& src, VkDeviceSize size) const -> void {
+  if (size > _size) {
+    throw std::runtime_error{"Size is greater than buffer size"};
+  } 
 
   auto command_buffer = graphics::command_buffer{};
 
@@ -106,18 +92,36 @@ auto buffer::copy_from(const buffer& src, VkDeviceSize size) const noexcept -> v
   command_buffer.submit_idle();
 }
 
-auto buffer::copy_from(const buffer& src) const noexcept -> void {
+auto buffer::copy_from(const buffer& src) const -> void {
   copy_from(src, _size);
 }
 
-auto buffer::write(const void* data, VkDeviceSize size, VkDeviceSize offset) const noexcept -> void {
-  core::assert_that(offset + size <= _size, "buffer::write: size is greater than buffer size");
+auto buffer::write(const void* data, VkDeviceSize size, VkDeviceSize offset) const -> void {
+  if (size > _size) {
+    throw std::runtime_error{"Size is greater than buffer size"};
+  } 
 
-  auto* memory = static_cast<std::byte*>(map());
+  auto* memory = static_cast<std::byte*>(_map());
 
   std::memcpy(memory + offset, data, size);
 
-  unmap();
+  _unmap();
+}
+
+auto buffer::_map() const noexcept -> void* {
+  const auto& logical_device = graphics_module::get().logical_device();
+
+  auto data = static_cast<void*>(nullptr);
+
+  vkMapMemory(logical_device, _memory, 0, _size, 0, &data);
+
+  return data;
+}
+
+auto buffer::_unmap() const noexcept -> void {
+  const auto& logical_device = graphics_module::get().logical_device();
+
+  vkUnmapMemory(logical_device, _memory);
 }
 
 } // namespace sbx::graphics
