@@ -170,7 +170,7 @@ inline constexpr auto operator*(basic_vector2<Type> lhs, const Type rhs) noexcep
 }
 
 template<numeric Type>
-inline constexpr auto operator/(basic_vector2<Type> lhs, const Type rhs) noexcept -> basic_vector2<Type> {
+inline constexpr auto operator/(basic_vector2<Type> lhs, const Type rhs) -> basic_vector2<Type> {
   return lhs /= rhs;
 }
 
