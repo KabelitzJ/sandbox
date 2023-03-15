@@ -214,7 +214,7 @@ public:
    * 
    * @return basic_vector4& A reference to this vector. 
    */
-  constexpr auto operator/=(const value_type scalar) noexcept -> basic_vector4&;
+  constexpr auto operator/=(const value_type scalar) -> basic_vector4&;
 
   /**
    * @brief Divides the components of this vector by the vector.
@@ -223,7 +223,7 @@ public:
    * 
    * @return basic_vector4& A reference to this vector. 
    */
-  constexpr auto operator/=(const basic_vector4& other) noexcept -> basic_vector4&;
+  constexpr auto operator/=(const basic_vector4& other) -> basic_vector4&;
 
   // -- Access operators --
 
@@ -234,7 +234,7 @@ public:
    * 
    * @return reference A reference to the component. 
    */
-  [[nodiscard]] constexpr auto operator[](const index_type index) noexcept -> reference;
+  [[nodiscard]] constexpr auto operator[](const index_type index) -> reference;
 
   /**
    * @brief Returns the component at the specified index.
@@ -243,7 +243,7 @@ public:
    * 
    * @return const_reference A const reference to the component.
    */
-  [[nodiscard]] constexpr auto operator[](const index_type index) const noexcept -> const_reference;
+  [[nodiscard]] constexpr auto operator[](const index_type index) const -> const_reference;
 
   // -- Member functions --
 
@@ -358,7 +358,7 @@ template<numeric Type>
  * @return basic_vector4<Type> The quotient of the vector and scalar.
  */
 template<numeric Type>
-[[nodiscard]] constexpr auto operator/(basic_vector4<Type> lhs, const Type rhs) noexcept -> basic_vector4<Type>;
+[[nodiscard]] constexpr auto operator/(basic_vector4<Type> lhs, const Type rhs) -> basic_vector4<Type>;
 
 /**
  * @brief Divides a vector by a vector.
@@ -371,7 +371,7 @@ template<numeric Type>
  * @return basic_vector4<Type> The quotient of the two vectors. 
  */
 template<numeric Type>
-[[nodiscard]] constexpr auto operator/(basic_vector4<Type> lhs, const basic_vector4<Type>& rhs) noexcept -> basic_vector4<Type>;
+[[nodiscard]] constexpr auto operator/(basic_vector4<Type> lhs, const basic_vector4<Type>& rhs) -> basic_vector4<Type>;
 
 // -- Type aliases --
 
