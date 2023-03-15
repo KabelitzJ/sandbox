@@ -1,11 +1,17 @@
 #include <libsbx/graphics/mesh.hpp>
 
+#include <libsbx/core/logger.hpp>
+
+#include <libsbx/utility/timer.hpp>
+
 #include <libsbx/graphics/graphics_module.hpp>
 
 namespace sbx::graphics {
 
 mesh::mesh(const std::filesystem::path& path) {
   const auto& logical_device = graphics_module::get().logical_device();
+
+  auto timer = utility::timer{};
 
   auto file = YAML::LoadFile(path.string());
 
@@ -71,6 +77,8 @@ mesh::mesh(const std::filesystem::path& path) {
   validate(vkWaitForFences(logical_device, 1, &fence, true, std::numeric_limits<uint64_t>::max()));
 
 	vkDestroyFence(logical_device, fence, nullptr);
+
+  core::logger::debug("Loaded mesh '{}' in {}ms", _name, units::quantity_cast<units::millisecond>(timer.elapsed()).value());
 }
 
 } // namespace sbx::graphics

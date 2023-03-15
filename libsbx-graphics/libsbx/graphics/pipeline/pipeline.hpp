@@ -34,6 +34,7 @@ private:
 
   std::unordered_map<VkShaderStageFlagBits, std::unique_ptr<shader>> _shaders{};
 
+  std::string _name{};
   VkPipelineLayout _layout{};
   VkPipeline _handle{};
 

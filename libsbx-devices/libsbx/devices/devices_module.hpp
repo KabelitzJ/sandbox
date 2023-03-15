@@ -42,7 +42,7 @@ public:
     glfwPollEvents();
   }
 
-  window& window() {
+  auto window() -> devices::window& {
     return *_window;
   }
 

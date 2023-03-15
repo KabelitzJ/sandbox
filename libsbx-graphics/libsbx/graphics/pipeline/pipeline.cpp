@@ -4,6 +4,10 @@
 
 #include <fmt/format.h>
 
+#include <libsbx/core/logger.hpp>
+
+#include <libsbx/utility/timer.hpp>
+
 #include <libsbx/graphics/graphics_module.hpp>
 #include <libsbx/graphics/mesh.hpp>
 
@@ -14,6 +18,10 @@ namespace sbx::graphics {
 pipeline::pipeline(const std::filesystem::path& path) {
   const auto& logical_device = graphics_module::get().logical_device();
   const auto& render_pass = graphics_module::get().render_pass();
+
+  auto timer = utility::timer{};
+
+  _name = path.filename().string();
 
   const auto binary_path = path / "bin";
 
@@ -181,6 +189,8 @@ pipeline::pipeline(const std::filesystem::path& path) {
   pipeline_create_info.basePipelineHandle = VK_NULL_HANDLE;
 
   validate(vkCreateGraphicsPipelines(logical_device, VK_NULL_HANDLE, 1, &pipeline_create_info, nullptr, &_handle));
+
+  core::logger::debug("Pipeline '{}' created in {}ms", _name, units::quantity_cast<units::millisecond>(timer.elapsed()).value());
 }
 
 pipeline::~pipeline() {

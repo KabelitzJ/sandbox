@@ -47,5 +47,6 @@
 #include <libsbx/utility/fast_mod.hpp>
 #include <libsbx/utility/observer_ptr.hpp>
 #include <libsbx/utility/overload.hpp>
+#include <libsbx/utility/timer.hpp>
 
 #endif // LIBSBX_UTILITY_HPP_
