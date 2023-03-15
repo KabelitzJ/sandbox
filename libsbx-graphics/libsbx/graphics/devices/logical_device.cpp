@@ -214,7 +214,7 @@ auto logical_device::_get_enabled_features(const physical_device& physical_devic
   return enabled_features;
 }
 
-auto logical_device::_create_logical_logical_device(const physical_device& physical_device) -> void {
+auto logical_device::_create_logical_device(const physical_device& physical_device) -> void {
   auto queue_create_infos = std::vector<VkDeviceQueueCreateInfo>{};
 	float queue_priorities = 0.0f;
 
