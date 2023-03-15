@@ -14,12 +14,16 @@ static const auto composite_alpha_flags = std::vector<VkCompositeAlphaFlagBitsKH
   VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR,
 };
 
-swapchain::swapchain(const physical_device& physical_device, const logical_device& logical_device, const surface& surface, const VkExtent2D& extent, const std::unique_ptr<swapchain>& old_swapchain)
+swapchain::swapchain(const VkExtent2D& extent, const std::unique_ptr<swapchain>& old_swapchain)
 : _extent{extent},
   _present_mode{VK_PRESENT_MODE_FIFO_KHR},
   _active_image_index{std::numeric_limits<std::uint32_t>::max()},
   _pre_transform{VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR},
   _composite_alpha{VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR} {
+  const auto& physical_device = graphics_module::get().physical_device();
+  const auto& logical_device = graphics_module::get().logical_device();
+  const auto& surface = graphics_module::get().surface();
+
   const auto& surface_capabilities = surface.capabilities();
   const auto& surface_format = surface.format();
 

@@ -280,7 +280,7 @@ auto graphics_module::_recreate_swapchain() -> void {
 
   const auto extent = VkExtent2D{window.width(), window.height()};
 
-  _swapchain = std::make_unique<graphics::swapchain>(*_physical_device, *_logical_device, *_surface, extent, _swapchain);
+  _swapchain = std::make_unique<graphics::swapchain>(extent, _swapchain);
 
   _recreate_command_buffers();
 
