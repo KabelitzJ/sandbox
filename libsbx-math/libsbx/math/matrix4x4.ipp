@@ -67,7 +67,7 @@ inline constexpr auto basic_matrix4x4<Type>::transposed(const basic_matrix4x4& m
 }
 
 template<numeric Type>
-inline constexpr auto basic_matrix4x4<Type>::inverted(const basic_matrix4x4& matrix) noexcept -> basic_matrix4x4<Type> {
+inline constexpr auto basic_matrix4x4<Type>::inverted(const basic_matrix4x4& matrix) -> basic_matrix4x4<Type> {
   const auto coef00 = matrix[2][2] * matrix[3][3] - matrix[3][2] * matrix[2][3];
   const auto coef02 = matrix[1][2] * matrix[3][3] - matrix[3][2] * matrix[1][3];
   const auto coef03 = matrix[1][2] * matrix[2][3] - matrix[2][2] * matrix[1][3];
@@ -118,10 +118,12 @@ inline constexpr auto basic_matrix4x4<Type>::inverted(const basic_matrix4x4& mat
 
   const auto det0 = matrix[0] * row0;
   
-  // I dont know why those parentheses are needed here... But im too scared to remove them
+  // [NOTE] KAJ 2022-07-29 00:45 - I dont know why those parentheses are needed here... But im too scared to remove them
   const auto det1 = value_type{(det0.x + det0.y) + (det0.z + det0.w)};
 
-  core::assert_that(det0 != value_type{0}, "Cant be 0");
+  if (det0 != static_cast<value_type>(0)) {
+    throw std::runtime_error{"Matrix is not invertible"};
+  }
 
   const auto one_over_determinant = value_type{1} / det1;
 
@@ -271,14 +273,20 @@ inline constexpr basic_matrix4x4<Type>& basic_matrix4x4<Type>::operator*=(const 
 }
 
 template<numeric Type>
-inline constexpr basic_matrix4x4<Type>::column_type_reference basic_matrix4x4<Type>::operator[](const index_type index) noexcept {
-  core::assert_that(index < 4, "Invalid index");
+inline constexpr basic_matrix4x4<Type>::column_type_reference basic_matrix4x4<Type>::operator[](const index_type index) {
+  if (index >= 4) {
+    throw std::out_of_range{"Invalid index for 4x4 matrix"};
+  }
+
   return _columns[index];
 }
 
 template<numeric Type>
-inline constexpr basic_matrix4x4<Type>::const_column_type_reference basic_matrix4x4<Type>::operator[](const index_type index) const noexcept {
-  core::assert_that(index < 4, "Invalid index");
+inline constexpr basic_matrix4x4<Type>::const_column_type_reference basic_matrix4x4<Type>::operator[](const index_type index) const {
+  if (index >= 4) {
+    throw std::out_of_range{"Invalid index for 4x4 matrix"};
+  }
+
   return _columns[index];
 }
 

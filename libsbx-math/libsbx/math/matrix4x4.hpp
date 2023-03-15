@@ -153,7 +153,7 @@ struct basic_matrix4x4 {
 
   [[nodiscard]] constexpr static auto transposed(const basic_matrix4x4& matrix) noexcept -> basic_matrix4x4;
 
-  [[nodiscard]] constexpr static auto inverted(const basic_matrix4x4& matrix) noexcept -> basic_matrix4x4;
+  [[nodiscard]] constexpr static auto inverted(const basic_matrix4x4& matrix) -> basic_matrix4x4;
 
   [[nodiscard]] constexpr static auto look_in_direction(const basic_vector3<value_type>& position, const basic_vector3<value_type>& direction, const basic_vector3<value_type>& up) noexcept -> basic_matrix4x4;
 
@@ -235,7 +235,7 @@ struct basic_matrix4x4 {
    * 
    * @return reference A reference to the component. 
    */
-  [[nodiscard]] constexpr auto operator[](const index_type index) noexcept -> column_type_reference;
+  [[nodiscard]] constexpr auto operator[](const index_type index) -> column_type_reference;
 
   /**
    * @brief Returns the component at the specified index.
@@ -244,7 +244,7 @@ struct basic_matrix4x4 {
    * 
    * @return const_reference A const reference to the component.
    */
-  [[nodiscard]] constexpr auto operator[](const index_type index) const noexcept -> const_column_type_reference;
+  [[nodiscard]] constexpr auto operator[](const index_type index) const -> const_column_type_reference;
 
   // -- Data access --
 
