@@ -26,7 +26,7 @@ auto queue::family() const noexcept -> std::uint32_t {
 
 logical_device::logical_device(const physical_device& physical_device) {
   _create_queue_indices(physical_device);
-  _create_logical_logical_device(physical_device);
+  _create_logical_device(physical_device);
 }
 
 logical_device::~logical_device() {

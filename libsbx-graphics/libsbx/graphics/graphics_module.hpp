@@ -101,10 +101,6 @@ private:
   struct command_pool_key {
     VkQueueFlagBits queue_type;
     std::thread::id thread_id;
-
-    auto operator==(const command_pool_key& other) const noexcept -> bool {
-      return queue_type == other.queue_type && thread_id == other.thread_id;
-    }
   }; // struct command_pool_key
 
   struct command_pool_key_hash {
@@ -115,11 +111,17 @@ private:
     }
   }; // struct command_pool_key_hash
 
+  struct command_pool_key_equality {
+    auto operator()(const command_pool_key& lhs, const command_pool_key& rhs) const noexcept -> bool {
+      return lhs.queue_type == rhs.queue_type && lhs.thread_id == rhs.thread_id;
+    }
+  }; // struct command_pool_key_equal
+
   std::unique_ptr<graphics::instance> _instance{};
   std::unique_ptr<graphics::physical_device> _physical_device{};
   std::unique_ptr<graphics::logical_device> _logical_device{};
 
-  std::unordered_map<command_pool_key, std::shared_ptr<graphics::command_pool>, command_pool_key_hash> _command_pools{};
+  std::unordered_map<command_pool_key, std::shared_ptr<graphics::command_pool>, command_pool_key_hash, command_pool_key_equality> _command_pools{};
 
   std::unordered_map<std::string, std::unique_ptr<graphics::pipeline>> _pipelines{};
 

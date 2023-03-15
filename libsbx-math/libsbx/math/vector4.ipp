@@ -3,6 +3,7 @@
 #include <cmath>
 #include <iomanip>
 #include <string>
+#include <stdexcept>
 
 #include <libsbx/utility/hash.hpp>
 
@@ -115,7 +116,7 @@ inline constexpr auto basic_vector4<Type>::operator*=(const basic_vector4<Type>&
 
 template<numeric Type>
 inline constexpr auto basic_vector4<Type>::operator/=(const Type scalar) -> basic_vector4<Type>& {
-  if (scalar == static_cast<Other>(0)) {
+  if (scalar == static_cast<Type>(0)) {
     throw std::domain_error{"Division by zero"};
   }
 
@@ -129,7 +130,7 @@ inline constexpr auto basic_vector4<Type>::operator/=(const Type scalar) -> basi
 
 template<numeric Type>
 inline constexpr auto basic_vector4<Type>::operator/=(const basic_vector4<Type>& other) -> basic_vector4<Type>& {
-  if (scalar.x == static_cast<Type>(0) || scalar.y == static_cast<Type>(0) || scalar.z == static_cast<Type>(0) || scalar.w == static_cast<Type>(0)) {
+  if (other.x == static_cast<Type>(0) || other.y == static_cast<Type>(0) || other.z == static_cast<Type>(0) || other.w == static_cast<Type>(0)) {
     throw std::domain_error{"Division by zero"};
   }
 
@@ -143,7 +144,7 @@ inline constexpr auto basic_vector4<Type>::operator/=(const basic_vector4<Type>&
 
 template<numeric Type>
 inline constexpr auto basic_vector4<Type>::operator[](const index_type index) -> reference {
-  if (scalar >= static_cast<Type>(4)) {
+  if (index >= static_cast<Type>(4)) {
     throw std::domain_error{"Index out of bounds"};
   }
 
@@ -166,7 +167,7 @@ inline constexpr auto basic_vector4<Type>::operator[](const index_type index) ->
 
 template<numeric Type>
 inline constexpr auto basic_vector4<Type>::operator[](const index_type index) const -> const_reference {
-  if (scalar >= static_cast<Type>(4)) {
+  if (index >= static_cast<Type>(4)) {
     throw std::domain_error{"Index out of bounds"};
   }
 
