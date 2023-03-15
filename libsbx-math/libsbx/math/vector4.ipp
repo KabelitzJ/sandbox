@@ -143,7 +143,9 @@ inline constexpr auto basic_vector4<Type>::operator/=(const basic_vector4<Type>&
 
 template<numeric Type>
 inline constexpr auto basic_vector4<Type>::operator[](const index_type index) noexcept -> reference {
-  core::assert_that(index < 4, "Index out of bounds");
+  if (scalar >= static_cast<Type>(4)) {
+    throw std::domain_error{"Index out of bounds"};
+  }
 
   switch (index) {
     default:
@@ -164,7 +166,9 @@ inline constexpr auto basic_vector4<Type>::operator[](const index_type index) no
 
 template<numeric Type>
 inline constexpr auto basic_vector4<Type>::operator[](const index_type index) const noexcept -> const_reference {
-  core::assert_that(index < 4, "Index out of bounds");
+  if (scalar >= static_cast<Type>(4)) {
+    throw std::domain_error{"Index out of bounds"};
+  }
 
   switch (index) {
     default:
