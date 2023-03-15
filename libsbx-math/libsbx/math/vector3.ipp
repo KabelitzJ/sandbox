@@ -330,17 +330,17 @@ inline constexpr basic_vector3<Type> operator*(basic_vector3<Type> lhs, const Ot
 }
 
 template<numeric Type>
-inline constexpr basic_vector3<Type> operator/(basic_vector3<Type> lhs, const Type rhs) noexcept {
+inline constexpr basic_vector3<Type> operator/(basic_vector3<Type> lhs, const Type rhs) {
   return lhs /= rhs;
 }
 
 template<numeric Type>
-inline constexpr basic_vector3<Type> operator/(basic_vector3<Type> lhs, const basic_vector3<Type>& rhs) noexcept {
+inline constexpr basic_vector3<Type> operator/(basic_vector3<Type> lhs, const basic_vector3<Type>& rhs) {
   return lhs /= rhs;
 }
 
 template<numeric Type, numeric Other>
-inline constexpr basic_vector3<Type> operator/(basic_vector3<Type> lhs, const Other rhs) noexcept {
+inline constexpr basic_vector3<Type> operator/(basic_vector3<Type> lhs, const Other rhs) {
   return lhs /= rhs;
 }
 
