@@ -153,8 +153,10 @@ inline constexpr auto basic_vector3<Type>::operator*=(const Other& scalar) noexc
 }
 
 template<numeric Type>
-inline constexpr auto basic_vector3<Type>::operator/=(const Type scalar) noexcept -> basic_vector3& {
-  core::assert_that(scalar != static_cast<value_type>(0), "Division by zero");
+inline constexpr auto basic_vector3<Type>::operator/=(const Type scalar) -> basic_vector3& {
+  if (scalar == static_cast<Type>(0)) {
+    throw std::domain_error{"Division by zero"};
+  }
 
   x /= scalar;
   y /= scalar;
@@ -164,8 +166,10 @@ inline constexpr auto basic_vector3<Type>::operator/=(const Type scalar) noexcep
 }
 
 template<numeric Type>
-inline constexpr auto basic_vector3<Type>::operator/=(const basic_vector3& scalar) noexcept -> basic_vector3& {
-  core::assert_that(scalar.x != static_cast<value_type>(0) && scalar.y != static_cast<value_type>(0) && scalar.z != static_cast<value_type>(0), "Division by zero");
+inline constexpr auto basic_vector3<Type>::operator/=(const basic_vector3& scalar) -> basic_vector3& {
+  if (scalar.x == static_cast<Type>(0) || scalar.y == static_cast<Type>(0) || scalar.z == static_cast<Type>(0)) {
+    throw std::domain_error{"Division by zero"};
+  }
 
   x /= scalar.x;
   y /= scalar.y;
@@ -176,8 +180,10 @@ inline constexpr auto basic_vector3<Type>::operator/=(const basic_vector3& scala
 
 template<numeric Type>
 template<numeric Other>
-inline constexpr auto basic_vector3<Type>::operator/=(const Other& scalar) noexcept -> basic_vector3& {
-  core::assert_that(scalar != static_cast<value_type>(0), "Division by zero");
+inline constexpr auto basic_vector3<Type>::operator/=(const Other& scalar) -> basic_vector3& {
+  if (scalar == static_cast<Other>(0)) {
+    throw std::domain_error{"Division by zero"};
+  }
 
   x /= static_cast<value_type>(scalar);
   y /= static_cast<value_type>(scalar);
@@ -187,8 +193,10 @@ inline constexpr auto basic_vector3<Type>::operator/=(const Other& scalar) noexc
 }
 
 template<numeric Type>
-inline constexpr auto basic_vector3<Type>::operator[](const index_type index) noexcept -> basic_vector3& {
-  core::assert_that(index < 3, "Invalid index");
+inline constexpr auto basic_vector3<Type>::operator[](const index_type index) -> basic_vector3& {
+  if (scalar >= static_cast<Type>(3)) {
+    throw std::domain_error{"Index out of bounds"};
+  }
 
   switch (index) {
     default:
@@ -205,8 +213,10 @@ inline constexpr auto basic_vector3<Type>::operator[](const index_type index) no
 }
 
 template<numeric Type>
-inline constexpr auto basic_vector3<Type>::operator[](const index_type index) const noexcept -> const basic_vector3& {
-  core::assert_that(index < 3, "Invalid index");
+inline constexpr auto basic_vector3<Type>::operator[](const index_type index) const -> const basic_vector3& {
+  if (scalar >= static_cast<Type>(3)) {
+    throw std::domain_error{"Index out of bounds"};
+  }
 
   switch (index) {
     default:
@@ -257,7 +267,10 @@ inline constexpr auto basic_vector3<Type>::clamp(const Type min, const Type max)
 template<numeric Type>
 template<std::floating_point Scale>
 inline constexpr auto basic_vector3<Type>::lerp(const basic_vector3& lhs, const basic_vector3& rhs, const Scale scale) noexcept -> basic_vector3 {
-  core::assert_that(scale >= static_cast<Scale>(0) && scale <= static_cast<Scale>(1), "Invalid scale");
+  if (scalar < static_cast<Type>(0) || scalar > static_cast<Type>(1)) {
+    throw std::std::invalid_argument{"Invalid scale for lerp"};
+  }
+
   return lhs + (rhs - lhs) * scale;
 }
 
