@@ -96,6 +96,9 @@ public:
   : _vtable{_create_vtable<std::remove_reference_t<Callable>>()},
     _storage{_create_storage<std::remove_reference_t<Callable>>(std::forward<std::remove_reference_t<Callable>>(callable))} { }
 
+  delegate(Return(*callable)(Args...))
+  : delegate{[callable](Args... args){ std::invoke(callable, std::forward<Args>(args)...); }} { }
+
   delegate(const delegate& other)
   : _vtable{other._vtable} {
     if (_vtable) {
@@ -164,11 +167,9 @@ public:
     return _vtable != nullptr;
   }
 
-  explicit operator bool() const noexcept {
+  operator bool() const noexcept {
     return is_valid();
   }
-
-  
 
 private:
 
