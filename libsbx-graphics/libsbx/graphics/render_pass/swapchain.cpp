@@ -100,7 +100,9 @@ swapchain::swapchain(const VkExtent2D& extent, const std::unique_ptr<swapchain>&
 		swapchain_create_info.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
 		swapchain_create_info.queueFamilyIndexCount = static_cast<uint32_t>(queue_family.size());
 		swapchain_create_info.pQueueFamilyIndices = queue_family.data();
-	}
+	} else {
+    swapchain_create_info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+  }
 
 	validate(vkCreateSwapchainKHR(logical_device, &swapchain_create_info, nullptr, &_handle));
 
