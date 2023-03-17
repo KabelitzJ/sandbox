@@ -98,6 +98,18 @@ public:
 
   delegate(Return(*callable)(Args...))
   : delegate{[callable](Args... args){ std::invoke(callable, std::forward<Args>(args)...); }} { }
+  
+  template<typename Class>
+  delegate(Class& instance, Return(Class::*method)(Args...))
+  : delegate{_wrap_method(&instance, method)} { }
+
+  template<typename Class>
+  delegate(Class& instance, Return(Class::*method)(Args...)const)
+  : delegate{_wrap_method(&instance, method)} { }
+
+  template<typename Class>
+  delegate(const Class& instance, Return(Class::*method)(Args...)const)
+  : delegate{_wrap_method(&instance, method)} { }
 
   delegate(const delegate& other)
   : _vtable{other._vtable} {
@@ -175,6 +187,21 @@ private:
 
   template<typename Callable>
   inline static constexpr auto requires_dynamic_allocation_v = !(std::is_nothrow_move_constructible_v<Callable> && sizeof(Callable) <= sizeof(static_storage_type) && alignof(Callable) <= alignof(static_storage_type));
+
+  template<typename Class>
+  auto _wrap_method(Class* instance, Return(Class::*method)(Args...)) {
+    return [instance, method](Args... args){ std::invoke(method, instance, std::forward<Args>(args)...); };
+  }
+
+  template<typename Class>
+  auto _wrap_method(Class* instance, Return(Class::*method)(Args...)const) {
+    return [instance, method](Args... args){ std::invoke(method, instance, std::forward<Args>(args)...); };
+  }
+
+  template<typename Class>
+  auto _wrap_method(const Class* instance, Return(Class::*method)(Args...)const) {
+    return [instance, method](Args... args){ std::invoke(method, instance, std::forward<Args>(args)...); };
+  }
 
   struct vtable {
     Return(*invoke)(const storage& storage, Args&&... args);
