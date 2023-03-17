@@ -131,8 +131,6 @@ auto graphics_module::update([[maybe_unused]] std::float_t delta_time) -> void {
     throw std::runtime_error{"Failed to acquire swapchain image"};
   }
 
-  validate(vkResetFences(*_logical_device, 1, &frame_data.in_flight_fence));
-
   auto& command_buffer = _command_buffers[_swapchain->active_image_index()];
 
   if (!_start_render_pass()) {
