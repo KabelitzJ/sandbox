@@ -113,15 +113,15 @@ auto logical_device::_create_queue_indices(const physical_device& physical_devic
   }
 
   if (!present_family) {
-    core::logger::debug("Failed to find suitable present queue family");
+    core::logger::debug("sbx::graphics", "Failed to find suitable present queue family");
   }
 
   if (!compute_family) {
-    core::logger::debug("Failed to find suitable compute queue family");
+    core::logger::debug("sbx::graphics", "Failed to find suitable compute queue family");
   }
 
   if (!transfer_family) {
-    core::logger::debug("Failed to find suitable transfer queue family");
+    core::logger::debug("sbx::graphics", "Failed to find suitable transfer queue family");
   }
 }
 
@@ -140,13 +140,13 @@ auto logical_device::_get_enabled_features(const physical_device& physical_devic
 		  enabled_features.wideLines = true;
     }
 	} else {
-		core::logger::warn("Selected GPU does not support wireframe pipelines");
+		core::logger::warn("sbx::graphics", "Selected GPU does not support wireframe pipelines");
 	}
 
 	if (physical_device_features.samplerAnisotropy) {
 		enabled_features.samplerAnisotropy = true;
   } else {
-		core::logger::warn("Selected GPU does not support sampler anisotropy");
+		core::logger::warn("sbx::graphics", "Selected GPU does not support sampler anisotropy");
   }
 
 	if (physical_device_features.textureCompressionBC) {
@@ -160,55 +160,55 @@ auto logical_device::_get_enabled_features(const physical_device& physical_devic
 	if (physical_device_features.vertexPipelineStoresAndAtomics) {
 		enabled_features.vertexPipelineStoresAndAtomics = true;
   } else {
-		core::logger::warn("Selected GPU does not support vertex pipeline stores and atomics");
+		core::logger::warn("sbx::graphics", "sbx::graphics", "Selected GPU does not support vertex pipeline stores and atomics");
   }
 
 	if (physical_device_features.fragmentStoresAndAtomics) {
 		enabled_features.fragmentStoresAndAtomics = true;
   } else {
-		core::logger::warn("Selected GPU does not support fragment stores and atomics");
+		core::logger::warn("sbx::graphics", "Selected GPU does not support fragment stores and atomics");
   }
 
 	if (physical_device_features.shaderStorageImageExtendedFormats) {
 		enabled_features.shaderStorageImageExtendedFormats = true;
   } else {
-		core::logger::warn("Selected GPU does not support shader storage extended formats");
+		core::logger::warn("sbx::graphics", "Selected GPU does not support shader storage extended formats");
   }
 
 	if (physical_device_features.shaderStorageImageWriteWithoutFormat) {
 		enabled_features.shaderStorageImageWriteWithoutFormat = true;
   } else {
-		core::logger::warn("Selected GPU does not support shader storage write without format");
+		core::logger::warn("sbx::graphics", "Selected GPU does not support shader storage write without format");
   }
 
   if (physical_device_features.shaderClipDistance) {
 		enabled_features.shaderClipDistance = true;
   } else {
-		core::logger::warn("Selected GPU does not support shader clip distance");
+		core::logger::warn("sbx::graphics", "Selected GPU does not support shader clip distance");
   }
 
   if (physical_device_features.shaderCullDistance) {
 		enabled_features.shaderCullDistance = true;
   } else {
-		core::logger::warn("Selected GPU does not support shader cull distance");
+		core::logger::warn("sbx::graphics", "Selected GPU does not support shader cull distance");
   }
 
 	if (physical_device_features.geometryShader) {
 		enabled_features.geometryShader = true;
   } else {
-		core::logger::warn("Selected GPU does not support geometry shaders");
+		core::logger::warn("sbx::graphics", "Selected GPU does not support geometry shaders");
   }
 
 	if (physical_device_features.tessellationShader) {
 		enabled_features.tessellationShader = true;
   } else {
-		core::logger::warn("Selected GPU does not support tessellation shaders");
+		core::logger::warn("sbx::graphics", "Selected GPU does not support tessellation shaders");
   }
 
 	if (physical_device_features.multiViewport) {
 		enabled_features.multiViewport = true;
   } else {
-		core::logger::warn("Selected GPU does not support multi viewports");
+		core::logger::warn("sbx::graphics", "Selected GPU does not support multi viewports");
   }
 
   return enabled_features;

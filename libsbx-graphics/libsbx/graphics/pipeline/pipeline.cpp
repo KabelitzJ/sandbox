@@ -190,7 +190,7 @@ pipeline::pipeline(const std::filesystem::path& path) {
 
   validate(vkCreateGraphicsPipelines(logical_device, VK_NULL_HANDLE, 1, &pipeline_create_info, nullptr, &_handle));
 
-  core::logger::debug("Pipeline '{}' created in {}ms", _name, units::quantity_cast<units::millisecond>(timer.elapsed()).value());
+  core::logger::debug("sbx::graphics", "Pipeline '{}' created in {}ms", _name, units::quantity_cast<units::millisecond>(timer.elapsed()).value());
 }
 
 pipeline::~pipeline() {

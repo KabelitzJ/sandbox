@@ -38,6 +38,7 @@
 
 #include <spdlog/logger.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
+#include <spdlog/sinks/basic_file_sink.h>
 
 #include <libsbx/core/target.hpp>
 
@@ -55,74 +56,82 @@ public:
   ~logger() = default;
 
   template<typename... Args>
-  static auto trace(format_string_type<Args...> format, Args&&... args) -> void {
-    _instance().trace(format, std::forward<Args>(args)...);
+  static auto trace(std::string name, format_string_type<Args...> format, Args&&... args) -> void {
+    _instance(std::move(name)).trace(format, std::forward<Args>(args)...);
   }
 
   template<typename Type>
-  static auto trace(const Type& value) -> void {
-    _instance().trace(value);
+  static auto trace(std::string name, const Type& value) -> void {
+    _instance(std::move(name)).trace(value);
   }
 
   template<typename... Args>
-  static auto debug(format_string_type<Args...> format, Args&&... args) -> void {
-    _instance().debug(format, std::forward<Args>(args)...);
+  static auto debug(std::string name, format_string_type<Args...> format, Args&&... args) -> void {
+    _instance(std::move(name)).debug(format, std::forward<Args>(args)...);
   }
 
   template<typename Type>
-  static auto debug(const Type& value) -> void {
-    _instance().debug(value);
+  static auto debug(std::string name, const Type& value) -> void {
+    _instance(std::move(name)).debug(value);
   }
 
   template<typename... Args>
-  static auto info(format_string_type<Args...> format, Args&&... args) -> void {
-    _instance().info(format, std::forward<Args>(args)...);
+  static auto info(std::string name, format_string_type<Args...> format, Args&&... args) -> void {
+    _instance(std::move(name)).info(format, std::forward<Args>(args)...);
   }
 
   template<typename Type>
-  static auto info(const Type& value) -> void {
-    _instance().info(value);
+  static auto info(std::string name, const Type& value) -> void {
+    _instance(std::move(name)).info(value);
   }
 
   template<typename... Args>
-  static auto warn(format_string_type<Args...> format, Args&&... args) -> void {
-    _instance().warn(format, std::forward<Args>(args)...);
+  static auto warn(std::string name, format_string_type<Args...> format, Args&&... args) -> void {
+    _instance(std::move(name)).warn(format, std::forward<Args>(args)...);
   }
 
   template<typename Type>
-  static auto warn(const Type& value) -> void {
-    _instance().warn(value);
+  static auto warn(std::string name, const Type& value) -> void {
+    _instance(std::move(name)).warn(value);
   }
 
   template<typename... Args>
-  static auto error(format_string_type<Args...> format, Args&&... args) -> void {
-    _instance().error(format, std::forward<Args>(args)...);
+  static auto error(std::string name, format_string_type<Args...> format, Args&&... args) -> void {
+    _instance(std::move(name)).error(format, std::forward<Args>(args)...);
   }
 
   template<typename Type>
-  static auto error(const Type& value) -> void {
-    _instance().error(value);
+  static auto error(std::string name, const Type& value) -> void {
+    _instance(std::move(name)).error(value);
   }
 
   template<typename... Args>
-  static auto critical(format_string_type<Args...> format, Args&&... args) -> void {
-    _instance().critical(format, std::forward<Args>(args)...);
+  static auto critical(std::string name, format_string_type<Args...> format, Args&&... args) -> void {
+    _instance(std::move(name)).critical(format, std::forward<Args>(args)...);
   }
 
   template<typename Type>
-  static auto critical(const Type& value) -> void {
-    _instance().critical(value);
+  static auto critical(std::string name, const Type& value) -> void {
+    _instance(std::move(name)).critical(value);
   }
 
 private:
 
-  static auto _instance() -> spdlog::logger& {
-    static auto instance = _create_logger();
+  static auto _instance(std::string name) -> spdlog::logger& {
+    static auto instance = _create_logger(std::move(name));
     return instance;
   }
 
-  static auto _create_logger() -> spdlog::logger {
-    auto logger = spdlog::logger{"sbx", std::make_shared<spdlog::sinks::stdout_color_sink_mt>()};
+  static auto _create_logger(std::string name) -> spdlog::logger {
+    auto sinks = std::vector<std::shared_ptr<spdlog::sinks::sink>>{};
+
+    sinks.push_back(std::make_shared<spdlog::sinks::basic_file_sink_mt>("./demo/logs/sbx.log", true));
+
+    if constexpr (build_configuration_v == build_configuration::debug) {
+      sinks.push_back(std::make_shared<spdlog::sinks::stdout_color_sink_mt>());
+    }
+
+    auto logger = spdlog::logger{std::move(name), std::begin(sinks), std::end(sinks)};
 
     logger.set_pattern("[%Y-%m-%d %H:%M:%S] [%n] [%^%l%$] : %v");
 

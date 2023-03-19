@@ -98,18 +98,18 @@ private:
     auto logger_type = library.new_usertype<core::logger>("logger", sol::no_constructor);
 
     logger_type.set_function("debug", sol::overload(
-      [](const std::string& message) { core::logger::debug(message); },
-      [](std::float_t value) { core::logger::debug(value); }
+      [](const std::string& message) { core::logger::debug("sbx::scripting", message); },
+      [](std::float_t value) { core::logger::debug("sbx::scripting", value); }
     ));
 
     logger_type.set_function("info", sol::overload(
-      [](const std::string& message) { core::logger::info(message); },
-      [](std::float_t value) { core::logger::info(value); }
+      [](const std::string& message) { core::logger::info("sbx::scripting", message); },
+      [](std::float_t value) { core::logger::info("sbx::scripting", value); }
     ));
 
     logger_type.set_function("warn", sol::overload(
-      [](const std::string& message) { core::logger::warn(message); },
-      [](std::float_t value) { core::logger::warn(value); }
+      [](const std::string& message) { core::logger::warn("sbx::scripting", message); },
+      [](std::float_t value) { core::logger::warn("sbx::scripting", value); }
     ));
 
     auto vector3_constructor = sol::constructors<math::vector3(), math::vector3(std::float_t, std::float_t, std::float_t)>{};

@@ -40,7 +40,6 @@ public:
   }
 
   template<utility::implements<application> Type>
-  requires (std::is_constructible_v<Type, engine*>) // [TODO] KAJ 2023-03-05 13:22 - Is this redundant?
   auto run() -> void {
     if (_is_running) {
       return;
@@ -48,7 +47,8 @@ public:
 
     using clock_type = std::chrono::high_resolution_clock;
 
-    auto application = std::make_unique<Type>(this);
+    auto application = std::make_unique<Type>();
+    application->_set_engine(this);
 
     _is_running = true;
 

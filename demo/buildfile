@@ -1,4 +1,4 @@
-./: {*/ -build/ -assets/} doc{README.md} manifest
+./: {*/ -build/ -assets/ -logs/} doc{README.md} manifest
 
 # Don't install tests.
 #

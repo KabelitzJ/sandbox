@@ -14,16 +14,21 @@ class engine;
 
 class application {
 
-public:
+  friend class engine;
 
-  application(utility::observer_ptr<engine> engine) noexcept
-  : _engine{engine} {}
+public:
 
   virtual ~application() = default;
 
   virtual auto update() -> void = 0;
 
 protected:
+
+  auto quit() noexcept -> void;
+
+private:
+
+  auto _set_engine(utility::observer_ptr<engine> engine) noexcept -> void;
 
   utility::observer_ptr<engine> _engine{};
 

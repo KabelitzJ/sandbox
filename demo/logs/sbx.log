@@ -1,0 +1,3 @@
+[2023-03-19 15:39:04] [sbx::graphics] [debug] : Selected GPU 'NVIDIA GeForce RTX 2070 SUPER'
+[2023-03-19 15:39:04] [sbx::graphics] [debug] : Pipeline 'basic' created in 1.0021ms
+[2023-03-19 15:39:04] [sbx::graphics] [debug] : Loaded mesh 'square' in 2.9994001ms

@@ -2,9 +2,16 @@
 
 namespace sbx::graphics {
 
-image::image(const VkExtent3D& extent, VkSampleCountFlagBits samples, VkImageUsageFlags usage, VkFormat format, std::uint32_t mip_levels, std::uint32_t array_layers, VkFilter filter, VkSamplerAddressMode address_mode, VkImageLayout layout) {
-
-}
+image::image(const VkExtent3D& extent, VkSampleCountFlagBits samples, VkImageUsageFlags usage, VkFormat format, std::uint32_t mip_levels, std::uint32_t array_layers, VkFilter filter, VkSamplerAddressMode address_mode, VkImageLayout layout)
+: _extent{extent},
+  _samples{samples},
+  _usage{usage},
+  _format{format},
+  _mip_levels{mip_levels},
+  _array_layers{array_layers},
+  _filter{filter},
+  _address_mode{address_mode},
+  _layout{layout} { }
 
 image::~image() {
 

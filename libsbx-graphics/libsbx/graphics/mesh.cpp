@@ -78,7 +78,7 @@ mesh::mesh(const std::filesystem::path& path) {
 
 	vkDestroyFence(logical_device, fence, nullptr);
 
-  core::logger::debug("Loaded mesh '{}' in {}ms", _name, units::quantity_cast<units::millisecond>(timer.elapsed()).value());
+  core::logger::debug("sbx::graphics", "Loaded mesh '{}' in {}ms", _name, units::quantity_cast<units::millisecond>(timer.elapsed()).value());
 }
 
 } // namespace sbx::graphics
