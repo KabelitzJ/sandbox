@@ -57,5 +57,7 @@
 #include <libsbx/core/target.hpp>
 #include <libsbx/core/version.hpp>
 #include <libsbx/core/delegate.hpp>
+#include <libsbx/core/scoped_timer.hpp>
+#include <libsbx/core/macros.hpp>
 
 #endif // LIBSBX_CORE_HPP_

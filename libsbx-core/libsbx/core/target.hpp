@@ -4,6 +4,8 @@
 #include <cstdint>
 #include <type_traits>
 
+#include <libsbx/core/macros.hpp>
+
 namespace sbx::core {
 
 /** @brief Possible build configurations */
@@ -13,8 +15,10 @@ enum class build_configuration : std::uint8_t {
 }; // enum class build_configuration
 
 #if defined(DEBUG) || !defined(NDEBUG)
+#define SBX_DEBUG
 inline constexpr auto build_configuration_v = build_configuration::debug;
 #else
+#define SBX_RELEASE
 inline constexpr auto build_configuration_v = build_configuration::release;
 #endif
 

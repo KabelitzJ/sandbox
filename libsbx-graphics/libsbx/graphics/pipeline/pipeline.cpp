@@ -5,6 +5,7 @@
 #include <fmt/format.h>
 
 #include <libsbx/core/logger.hpp>
+#include <libsbx/core/scoped_timer.hpp>
 
 #include <libsbx/utility/timer.hpp>
 
@@ -19,7 +20,7 @@ pipeline::pipeline(const std::filesystem::path& path) {
   const auto& logical_device = graphics_module::get().logical_device();
   const auto& render_pass = graphics_module::get().render_pass();
 
-  auto timer = utility::timer{};
+  SBX_DEBUG_SCOPED_TIMER([this](const units::second& duration){ core::logger::debug("sbx::graphics", "Loaded pipeline '{}' in {}ms", _name, units::quantity_cast<units::millisecond>(duration).value()); });
 
   _name = path.filename().string();
 
@@ -189,8 +190,6 @@ pipeline::pipeline(const std::filesystem::path& path) {
   pipeline_create_info.basePipelineHandle = VK_NULL_HANDLE;
 
   validate(vkCreateGraphicsPipelines(logical_device, VK_NULL_HANDLE, 1, &pipeline_create_info, nullptr, &_handle));
-
-  core::logger::debug("sbx::graphics", "Pipeline '{}' created in {}ms", _name, units::quantity_cast<units::millisecond>(timer.elapsed()).value());
 }
 
 pipeline::~pipeline() {
