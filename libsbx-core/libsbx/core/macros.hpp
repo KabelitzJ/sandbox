@@ -1,8 +1,0 @@
-#ifndef LIBSBX_CORE_MACROS_HPP_
-#define LIBSBX_CORE_MACROS_HPP_
-
-#define SBX_STR_CAT_HELPER(a, b) a ## b
-#define SBX_STR_CAT(a, b) SBX_STR_CAT_HELPER(a, b)
-#define SBX_UNIQUE_NAME(Var) SBX_STR_CAT(Var, __LINE__)
-
-#endif // LIBSBX_CORE_MACROS_HPP_
