@@ -39,10 +39,10 @@ surface::surface(const instance& instance, const physical_device& physical_devic
   }
 
 	auto present_support = std::uint32_t{0};
-	vkGetPhysicalDeviceSurfaceSupportKHR(physical_device, logical_device.present_queue().family(), _handle, &present_support);
+	vkGetPhysicalDeviceSurfaceSupportKHR(physical_device, logical_device.graphics_queue().family(), _handle, &present_support);
 
 	if (!present_support) {
-		throw std::runtime_error("Present queue family does not have presentation support");
+		throw std::runtime_error("Graphics queue family does not have presentation support");
   }
 }
 

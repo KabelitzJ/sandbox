@@ -12,7 +12,7 @@ namespace sbx::graphics {
 mesh::mesh(const std::filesystem::path& path) {
   const auto& logical_device = graphics_module::get().logical_device();
 
-  SBX_DEBUG_SCOPED_TIMER([this](const units::second& duration){ core::logger::debug("sbx::graphics", "Loaded mesh '{}' in {}ms", _name, units::quantity_cast<units::millisecond>(duration).value()); });
+  auto timer = core::scoped_timer{[this](const units::second& duration){ core::logger::debug("sbx::graphics", "Loaded mesh '{}' in {}ms", _name, units::quantity_cast<units::millisecond>(duration).value()); }};
 
   auto file = YAML::LoadFile(path.string());
   
@@ -75,6 +75,7 @@ mesh::mesh(const std::filesystem::path& path) {
 
   command_buffer.submit(nullptr, nullptr, fence);
 
+  // [TODO] KAJ 2023-03-20 20:07 - This forces the CPU to wait for the GPU to finish copying the data to the device local buffer.
   validate(vkWaitForFences(logical_device, 1, &fence, true, std::numeric_limits<uint64_t>::max()));
 
 	vkDestroyFence(logical_device, fence, nullptr);

@@ -57,22 +57,31 @@ public:
 
   template<typename... Args>
   static auto trace(std::string name, format_string_type<Args...> format, Args&&... args) -> void {
-    _instance(std::move(name)).trace(format, std::forward<Args>(args)...);
+    // [NOTE] KAJ 2023-03-20 19:43 - This should make trace and debug messages be no-ops in release builds.
+    if constexpr (build_configuration_v == build_configuration::debug) {
+      _instance(std::move(name)).trace(format, std::forward<Args>(args)...);
+    }
   }
 
   template<typename Type>
   static auto trace(std::string name, const Type& value) -> void {
-    _instance(std::move(name)).trace(value);
+    if constexpr (build_configuration_v == build_configuration::debug) {
+      _instance(std::move(name)).trace(value);
+    }
   }
 
   template<typename... Args>
   static auto debug(std::string name, format_string_type<Args...> format, Args&&... args) -> void {
-    _instance(std::move(name)).debug(format, std::forward<Args>(args)...);
+    if constexpr (build_configuration_v == build_configuration::debug) {
+      _instance(std::move(name)).debug(format, std::forward<Args>(args)...);
+    }
   }
 
   template<typename Type>
   static auto debug(std::string name, const Type& value) -> void {
-    _instance(std::move(name)).debug(value);
+    if constexpr (build_configuration_v == build_configuration::debug) {
+      _instance(std::move(name)).debug(value);
+    }
   }
 
   template<typename... Args>

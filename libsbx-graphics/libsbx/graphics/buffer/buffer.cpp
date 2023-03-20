@@ -15,13 +15,24 @@ buffer::buffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlag
   const auto& physical_device = graphics_module::get().physical_device();
   const auto& logical_device = graphics_module::get().logical_device();
 
-  auto buffer_info = VkBufferCreateInfo{};
-  buffer_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-  buffer_info.size = _size;
-  buffer_info.usage = usage;
-  buffer_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+  const auto& graphics_queue_family = logical_device.graphics_queue().family();
+  const auto& transfer_queue_family = logical_device.transfer_queue().family();
 
-  validate(vkCreateBuffer(logical_device, &buffer_info, nullptr, &_handle));
+  auto buffer_create_info = VkBufferCreateInfo{};
+  buffer_create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+  buffer_create_info.size = _size;
+  buffer_create_info.usage = usage;
+  
+  if (graphics_queue_family != transfer_queue_family) {
+		auto queue_families = std::array<uint32_t, 2>{graphics_queue_family, transfer_queue_family};
+		buffer_create_info.sharingMode = VK_SHARING_MODE_CONCURRENT;
+		buffer_create_info.queueFamilyIndexCount = static_cast<uint32_t>(queue_families.size());
+		buffer_create_info.pQueueFamilyIndices = queue_families.data();
+	} else {
+    buffer_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+  }
+
+  validate(vkCreateBuffer(logical_device, &buffer_create_info, nullptr, &_handle));
 
   auto memory_requirements = VkMemoryRequirements{};
   vkGetBufferMemoryRequirements(logical_device, _handle, &memory_requirements);

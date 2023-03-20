@@ -35,12 +35,6 @@ private:
 
 }; // class scoped_timer
 
-#if defined(SBX_DEBUG)
-#define SBX_DEBUG_SCOPED_TIMER(callback) auto SBX_UNIQUE_NAME(_debug_timer_) = sbx::core::scoped_timer{callback}
-#else
-#define SBX_DEBUG_SCOPED_TIMER(callback)
-#endif // defined(SBX_DEBUG)
-
 } // namespace sbx::core
 
 #endif // LIBSBX_CORE_SCOPED_TIMER_HPP_
