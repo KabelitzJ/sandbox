@@ -6,7 +6,7 @@
 #include <unordered_map>
 #include <memory>
 
-#include <vulkan/vulkan.h>
+#include <vulkan/vulkan.hpp>
 
 #include <libsbx/utility/noncopyable.hpp>
 

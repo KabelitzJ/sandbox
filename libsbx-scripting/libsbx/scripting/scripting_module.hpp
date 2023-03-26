@@ -16,7 +16,7 @@
 
 namespace sbx::scripting {
 
-class scripting_module : public core::module<scripting_module> {
+class scripting_module final : public core::module<scripting_module> {
 
   inline static const auto is_registered = register_module(stage::normal, dependencies<async::async_module>{});
 

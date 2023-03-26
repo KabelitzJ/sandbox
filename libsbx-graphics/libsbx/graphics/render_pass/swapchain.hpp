@@ -5,7 +5,7 @@
 #include <memory>
 #include <vector>
 
-#include <vulkan/vulkan.h>
+#include <vulkan/vulkan.hpp>
 
 #include <libsbx/graphics/render_pass/render_pass.hpp>
 

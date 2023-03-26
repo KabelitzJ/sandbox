@@ -24,3 +24,5 @@ location: libsbx-memory/
 location: libsbx-signal/
 :
 location: libsbx-ecs/
+:
+location: libsbx-scene/

@@ -46,7 +46,7 @@ auto validate(VkResult result) -> void;
  * 
  * @extends @ref sbx::core::module<T>
  */
-class graphics_module : public core::module<graphics_module> {
+class graphics_module final : public core::module<graphics_module> {
 
   inline static const auto is_registered = register_module(stage::normal, dependencies<async::async_module, devices::devices_module>{});
 

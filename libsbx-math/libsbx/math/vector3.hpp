@@ -183,7 +183,7 @@ public:
    * 
    * @param lhs The left hand side vector.
    * @param rhs The right hand side vector.
-   * @param scale The scale.
+   * @param scale The scale to interpolate by. Must be in the range [0.0, 1.0].
    * 
    * @return basic_vector3 The interpolated vector.
    */

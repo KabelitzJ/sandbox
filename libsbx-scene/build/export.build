@@ -1,0 +1,6 @@
+$out_root/
+{
+  include libsbx/scene/
+}
+
+export $out_root/libsbx/scene/$import.target

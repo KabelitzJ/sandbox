@@ -268,7 +268,7 @@ inline constexpr auto basic_vector3<Type>::clamp(const Type min, const Type max)
 
 template<numeric Type>
 template<std::floating_point Scale>
-inline constexpr auto basic_vector3<Type>::lerp(const basic_vector3& lhs, const basic_vector3& rhs, const Scale scale) noexcept -> basic_vector3 {
+inline constexpr auto basic_vector3<Type>::lerp(const basic_vector3& lhs, const basic_vector3& rhs, const Scale scale) -> basic_vector3 {
   if (scale < static_cast<Type>(0) || scale > static_cast<Type>(1)) {
     throw std::invalid_argument{"Invalid scale for lerp"};
   }

@@ -9,7 +9,7 @@
 
 namespace sbx::async {
 
-class async_module : public core::module<async_module> {
+class async_module final : public core::module<async_module> {
 
   inline static const auto is_registered = register_module(stage::normal);
 
