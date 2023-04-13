@@ -1,0 +1,4 @@
+[2023-04-13 14:41:53] [sbx::graphics] [debug] : Selected GPU 'Intel(R) Iris(R) Xe Graphics'
+[2023-04-13 14:41:53] [sbx::graphics] [debug] : Queue Family 0 supports 1 queues of type [Graphics|Compute|Transfer|Sparse Binding]
+[2023-04-13 14:41:53] [sbx::graphics] [debug] : Pipeline 'basic' created in 5.8101997ms
+[2023-04-13 14:41:53] [sbx::graphics] [debug] : Mesh 'square' created in 5.9525ms
