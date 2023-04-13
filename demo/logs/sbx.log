@@ -1,6 +1,0 @@
-[2023-03-20 22:11:01] [sbx::graphics] [debug] : Selected GPU 'NVIDIA GeForce RTX 2070 SUPER'
-[2023-03-20 22:11:01] [sbx::graphics] [debug] : Queue Family 0 supports 16 queues of type [Graphics|Compute|Transfer|Sparse Binding]
-[2023-03-20 22:11:01] [sbx::graphics] [debug] : Queue Family 1 supports 2 queues of type [Transfer|Sparse Binding]
-[2023-03-20 22:11:01] [sbx::graphics] [debug] : Queue Family 2 supports 8 queues of type [Compute|Transfer|Sparse Binding]
-[2023-03-20 22:11:01] [sbx::graphics] [debug] : Pipeline 'basic' created in 47.1038s
-[2023-03-20 22:11:01] [sbx::graphics] [debug] : Mesh 'square' created in 5.0014997s
