@@ -11,7 +11,7 @@ class image : public utility::noncopyable {
 
 public:
 
-  image(VkImageType type, const VkExtent3D& extent, VkSampleCountFlagBits samples, VkImageUsageFlags usage, VkFormat format, std::uint32_t mip_levels, std::uint32_t array_layers,   VkImageLayout layout);
+  image(VkImageType type, const VkExtent3D& extent, VkSampleCountFlagBits samples, VkImageUsageFlags usage, VkFormat format, std::uint32_t mip_levels, std::uint32_t array_layers, VkImageLayout layout);
 
   ~image();
 

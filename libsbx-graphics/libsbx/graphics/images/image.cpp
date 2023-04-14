@@ -48,8 +48,7 @@ auto image::format() const noexcept -> VkFormat {
 
 auto image::_create_image() -> void {
   auto& logical_device = graphics_module::get().logical_device();
-  auto& physical_device = graphics_module::get().physical_device();
-
+  
   const auto& graphics_queue_family = logical_device.graphics_queue().family();
   const auto& transfer_queue_family = logical_device.transfer_queue().family();
 

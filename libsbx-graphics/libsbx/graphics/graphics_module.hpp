@@ -23,6 +23,7 @@
 #include <libsbx/graphics/commands/command_buffer.hpp>
 
 #include <libsbx/graphics/render_pass/swapchain.hpp>
+#include <libsbx/graphics/render_pass/framebuffer.hpp>
 
 #include <libsbx/graphics/pipeline/pipeline.hpp>
 #include <libsbx/graphics/pipeline/shader.hpp>
@@ -92,6 +93,8 @@ private:
 
   auto _recreate_command_buffers() -> void;
 
+  auto _recreate_framebuffers() -> void;
+
   struct per_frame_data {
     VkSemaphore image_available_semaphore{};
     VkSemaphore render_finished_semaphore{};
@@ -128,8 +131,8 @@ private:
   std::unique_ptr<graphics::surface> _surface{};
 
   std::unique_ptr<graphics::render_pass> _render_pass{};
-
   std::unique_ptr<graphics::swapchain> _swapchain{};
+  std::vector<std::unique_ptr<graphics::framebuffer>> _framebuffers{};
 
   std::vector<per_frame_data> _per_frame_data{};
   std::vector<std::unique_ptr<graphics::command_buffer>> _command_buffers{};

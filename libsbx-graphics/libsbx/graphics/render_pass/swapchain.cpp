@@ -197,7 +197,9 @@ auto swapchain::acquire_next_image(const VkSemaphore& image_available_semaphore,
   return result;
 }
 
-auto swapchain::present(const VkSemaphore& wait_semaphore) -> VkResult {
+auto swapchain::present(const image& image, const VkSemaphore& wait_semaphore) -> VkResult {
+  static_cast<void>(image);
+
   const auto& logical_device = graphics_module::get().logical_device();
 
   auto present_info = VkPresentInfoKHR{};

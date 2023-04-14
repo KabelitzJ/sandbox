@@ -7,6 +7,8 @@
 
 #include <vulkan/vulkan.h>
 
+#include <libsbx/graphics/images/image.hpp>
+
 #include <libsbx/graphics/render_pass/render_pass.hpp>
 
 namespace sbx::graphics {
@@ -39,7 +41,7 @@ public:
 
   auto acquire_next_image(const VkSemaphore& image_available_semaphore = nullptr, const VkFence& fence = nullptr) -> VkResult;
 
-  auto present(const VkSemaphore& wait_semaphore = nullptr) -> VkResult;
+  auto present(const image& image, const VkSemaphore& wait_semaphore = nullptr) -> VkResult;
 
 private:
 
