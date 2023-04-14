@@ -11,7 +11,7 @@ class image : public utility::noncopyable {
 
 public:
 
-  image(const VkExtent3D& extent, VkSampleCountFlagBits samples, VkImageUsageFlags usage, VkFormat format, std::uint32_t mip_levels, std::uint32_t array_layers, VkFilter filter, VkSamplerAddressMode address_mode, VkImageLayout layout);
+  image(VkImageType type, const VkExtent3D& extent, VkSampleCountFlagBits samples, VkImageUsageFlags usage, VkFormat format, std::uint32_t mip_levels, std::uint32_t array_layers,   VkImageLayout layout);
 
   ~image();
 
@@ -27,6 +27,14 @@ public:
 
 private:
 
+  auto _create_image() -> void;
+
+  auto _allocate_memory() -> void;
+
+  auto _create_image_view() -> void;
+
+  VkImageType _type;
+
   VkExtent3D _extent;
   VkSampleCountFlagBits _samples;
 	VkImageUsageFlags _usage;
@@ -34,14 +42,10 @@ private:
   std::uint32_t _mip_levels;
   std::uint32_t _array_layers;
 
-  VkFilter _filter;
-  VkSamplerAddressMode _address_mode;
-
   VkImageLayout _layout;
 
   VkImage _handle;
   VkDeviceMemory _memory;
-  VkSampler _sampler;
   VkImageView _view;
 
 }; // class image

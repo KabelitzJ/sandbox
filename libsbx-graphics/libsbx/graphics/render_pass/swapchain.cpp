@@ -96,9 +96,9 @@ swapchain::swapchain(const VkExtent2D& extent, const std::unique_ptr<swapchain>&
   }
 
 	if (graphics_queue_family != transfer_queue_family) {
-		auto queue_families = std::array<uint32_t, 2>{graphics_queue_family, transfer_queue_family};
+		auto queue_families = std::array<std::uint32_t, 2>{graphics_queue_family, transfer_queue_family};
 		swapchain_create_info.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
-		swapchain_create_info.queueFamilyIndexCount = static_cast<uint32_t>(queue_families.size());
+		swapchain_create_info.queueFamilyIndexCount = static_cast<std::uint32_t>(queue_families.size());
 		swapchain_create_info.pQueueFamilyIndices = queue_families.data();
 	} else {
     swapchain_create_info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
@@ -197,7 +197,9 @@ auto swapchain::acquire_next_image(const VkSemaphore& image_available_semaphore,
   return result;
 }
 
-auto swapchain::queue_present(const VkQueue& queue, const VkSemaphore& wait_semaphore) -> VkResult {
+auto swapchain::present(const VkSemaphore& wait_semaphore) -> VkResult {
+  const auto& logical_device = graphics_module::get().logical_device();
+
   auto present_info = VkPresentInfoKHR{};
 
 	present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -207,7 +209,7 @@ auto swapchain::queue_present(const VkQueue& queue, const VkSemaphore& wait_sema
 	present_info.pSwapchains = &_handle;
 	present_info.pImageIndices = &_active_image_index;
 
-	return vkQueuePresentKHR(queue, &present_info);
+	return vkQueuePresentKHR(logical_device.graphics_queue(), &present_info);
 }
 
 auto swapchain::_create_image_view(const VkImage& image, VkFormat format, VkImageAspectFlags aspect, VkImageView& image_view) -> void {
@@ -259,9 +261,9 @@ auto swapchain::_create_depth_images() -> void {
     image_create_info.samples = VK_SAMPLE_COUNT_1_BIT;
     
     if (graphics_queue_family != transfer_queue_family) {
-      auto queue_families = std::array<uint32_t, 2>{graphics_queue_family, transfer_queue_family};
+      auto queue_families = std::array<std::uint32_t, 2>{graphics_queue_family, transfer_queue_family};
       image_create_info.sharingMode = VK_SHARING_MODE_CONCURRENT;
-      image_create_info.queueFamilyIndexCount = static_cast<uint32_t>(queue_families.size());
+      image_create_info.queueFamilyIndexCount = static_cast<std::uint32_t>(queue_families.size());
       image_create_info.pQueueFamilyIndices = queue_families.data();
     } else {
       image_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;

@@ -97,7 +97,7 @@ auto command_buffer::submit_idle() -> void {
 
 	validate(vkQueueSubmit(selected_queue, 1, &submit_info, fence));
 
-	validate(vkWaitForFences(logical_device, 1, &fence, true, std::numeric_limits<uint64_t>::max()));
+	validate(vkWaitForFences(logical_device, 1, &fence, true, std::numeric_limits<std::uint64_t>::max()));
 
 	vkDestroyFence(logical_device, fence, nullptr);
 }

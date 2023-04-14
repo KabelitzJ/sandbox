@@ -24,9 +24,9 @@ buffer::buffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlag
   buffer_create_info.usage = usage;
   
   if (graphics_queue_family != transfer_queue_family) {
-		auto queue_families = std::array<uint32_t, 2>{graphics_queue_family, transfer_queue_family};
+		auto queue_families = std::array<std::uint32_t, 2>{graphics_queue_family, transfer_queue_family};
 		buffer_create_info.sharingMode = VK_SHARING_MODE_CONCURRENT;
-		buffer_create_info.queueFamilyIndexCount = static_cast<uint32_t>(queue_families.size());
+		buffer_create_info.queueFamilyIndexCount = static_cast<std::uint32_t>(queue_families.size());
 		buffer_create_info.pQueueFamilyIndices = queue_families.data();
 	} else {
     buffer_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;

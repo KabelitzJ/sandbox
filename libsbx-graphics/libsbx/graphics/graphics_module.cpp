@@ -251,8 +251,6 @@ auto graphics_module::_end_render_pass() -> void {
 
   auto& command_buffer = _command_buffers[_swapchain->active_image_index()];
 
-  const auto& graphics_queue = _logical_device->graphics_queue();
-
   command_buffer->end_render_pass();
 
   // Submit the command buffer to the graphics queue and draw the on the image
@@ -260,7 +258,7 @@ auto graphics_module::_end_render_pass() -> void {
   command_buffer->submit(frame_data.image_available_semaphore, frame_data.render_finished_semaphore, frame_data.in_flight_fence);
 
   // Present the image to the screen
-  const auto result = _swapchain->queue_present(graphics_queue, frame_data.render_finished_semaphore);
+  const auto result = _swapchain->present(frame_data.render_finished_semaphore);
 
   if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
     _framebuffer_resized = true;

@@ -86,7 +86,6 @@ pipeline::pipeline(const std::filesystem::path& path) {
   multisample_state.sampleShadingEnable = false;
   multisample_state.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 
-
   auto color_blend_attachment = VkPipelineColorBlendAttachmentState{};
   color_blend_attachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
   color_blend_attachment.blendEnable = false;
@@ -96,7 +95,6 @@ pipeline::pipeline(const std::filesystem::path& path) {
   color_blend_state.logicOpEnable = false;
   color_blend_state.attachmentCount = 1;
   color_blend_state.pAttachments = &color_blend_attachment;
-
 
   auto dynamic_states = std::array<VkDynamicState, 2>{
     VK_DYNAMIC_STATE_VIEWPORT,

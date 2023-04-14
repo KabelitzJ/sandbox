@@ -39,7 +39,7 @@ public:
 
   auto acquire_next_image(const VkSemaphore& image_available_semaphore = nullptr, const VkFence& fence = nullptr) -> VkResult;
 
-  auto queue_present(const VkQueue& queue, const VkSemaphore& wait_semaphore = nullptr) -> VkResult;
+  auto present(const VkSemaphore& wait_semaphore = nullptr) -> VkResult;
 
 private:
 
