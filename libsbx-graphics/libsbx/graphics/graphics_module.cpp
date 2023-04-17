@@ -236,7 +236,7 @@ auto graphics_module::_start_render_pass() -> bool {
   auto render_pass_begin_info = VkRenderPassBeginInfo{};
 	render_pass_begin_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 	render_pass_begin_info.renderPass = *_render_pass;
-	render_pass_begin_info.framebuffer = _swapchain->current_framebuffer();
+	render_pass_begin_info.framebuffer = _swapchain->current_framebuffer(); // *_framebuffers[_swapchain->active_image_index()];
 	render_pass_begin_info.renderArea = render_area;
 	render_pass_begin_info.clearValueCount = static_cast<std::uint32_t>(clear_values.size());
 	render_pass_begin_info.pClearValues = clear_values.data();
@@ -250,8 +250,7 @@ auto graphics_module::_end_render_pass() -> void {
   const auto& frame_data = _per_frame_data[_current_frame];
 
   auto& command_buffer = _command_buffers[_swapchain->active_image_index()];
-
-  const auto& graphics_queue = _logical_device->graphics_queue();
+  auto& framebuffer = _framebuffers[_swapchain->active_image_index()];
 
   command_buffer->end_render_pass();
 
@@ -260,7 +259,7 @@ auto graphics_module::_end_render_pass() -> void {
   command_buffer->submit(frame_data.image_available_semaphore, frame_data.render_finished_semaphore, frame_data.in_flight_fence);
 
   // Present the image to the screen
-  const auto result = _swapchain->queue_present(graphics_queue, frame_data.render_finished_semaphore);
+  const auto result = _swapchain->present(framebuffer->color_attachment(), frame_data.render_finished_semaphore);
 
   if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
     _framebuffer_resized = true;
@@ -281,6 +280,8 @@ auto graphics_module::_recreate_swapchain() -> void {
   _swapchain = std::make_unique<graphics::swapchain>(extent, _swapchain);
 
   _recreate_command_buffers();
+
+  _recreate_framebuffers();
 
   _framebuffer_resized = false;
 }
@@ -313,6 +314,16 @@ auto graphics_module::_recreate_command_buffers() -> void {
 
   for (auto& command_buffer : _command_buffers) {
     command_buffer = std::make_unique<graphics::command_buffer>(false);
+  }
+}
+
+auto graphics_module::_recreate_framebuffers() -> void {
+  const auto image_count = _swapchain->image_count();
+
+  _framebuffers.resize(image_count);
+
+  for (auto& framebuffer : _framebuffers) {
+    framebuffer = std::make_unique<graphics::framebuffer>(_swapchain->extent());
   }
 }
 
