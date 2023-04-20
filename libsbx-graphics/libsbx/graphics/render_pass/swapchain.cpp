@@ -27,8 +27,7 @@ swapchain::swapchain(const VkExtent2D& extent, const std::unique_ptr<swapchain>&
   const auto& surface_capabilities = surface.capabilities();
   const auto& surface_format = surface.format();
 
-  const auto& graphics_queue_family = logical_device.graphics_queue().family();
-  const auto& transfer_queue_family = logical_device.transfer_queue().family();
+  const auto& sharing_mode = logical_device.queue_sharing_mode();
 
   auto physical_present_mode_count = std::uint32_t{0};
   vkGetPhysicalDeviceSurfacePresentModesKHR(physical_device, surface, &physical_present_mode_count, nullptr);
@@ -75,12 +74,14 @@ swapchain::swapchain(const VkExtent2D& extent, const std::unique_ptr<swapchain>&
 	swapchain_create_info.imageExtent = _extent;
 	swapchain_create_info.imageArrayLayers = 1;
 	swapchain_create_info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-	swapchain_create_info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
 	swapchain_create_info.preTransform = static_cast<VkSurfaceTransformFlagBitsKHR>(_pre_transform);
 	swapchain_create_info.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
 	swapchain_create_info.compositeAlpha = _composite_alpha;
 	swapchain_create_info.presentMode = _present_mode;
 	swapchain_create_info.clipped = true;
+  swapchain_create_info.imageSharingMode = sharing_mode.mode;
+  swapchain_create_info.queueFamilyIndexCount = static_cast<std::uint32_t>(sharing_mode.queue_families.size());
+  swapchain_create_info.pQueueFamilyIndices = sharing_mode.queue_families.data();
 	swapchain_create_info.oldSwapchain = nullptr;
 
 	if (surface_capabilities.supportedUsageFlags & VK_IMAGE_USAGE_TRANSFER_SRC_BIT) {
@@ -93,15 +94,6 @@ swapchain::swapchain(const VkExtent2D& extent, const std::unique_ptr<swapchain>&
 
 	if (old_swapchain) {
     swapchain_create_info.oldSwapchain = *old_swapchain;
-  }
-
-	if (graphics_queue_family != transfer_queue_family) {
-		auto queue_families = std::array<std::uint32_t, 2>{graphics_queue_family, transfer_queue_family};
-		swapchain_create_info.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
-		swapchain_create_info.queueFamilyIndexCount = static_cast<std::uint32_t>(queue_families.size());
-		swapchain_create_info.pQueueFamilyIndices = queue_families.data();
-	} else {
-    swapchain_create_info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
   }
 
 	validate(vkCreateSwapchainKHR(logical_device, &swapchain_create_info, nullptr, &_handle));
@@ -134,15 +126,12 @@ swapchain::~swapchain() {
 		vkDestroyImageView(logical_device, image_view, nullptr);
 	}
 
-  for (const auto& depth_image : _depth_images) {
-    vkDestroyImageView(logical_device, depth_image.image_view, nullptr);
-    vkFreeMemory(logical_device, depth_image.memory, nullptr);
-    vkDestroyImage(logical_device, depth_image.image, nullptr);
-  }
 
   for (const auto& framebuffer : _framebuffers) {
     vkDestroyFramebuffer(logical_device, framebuffer, nullptr);
   }
+
+  _depth_images.clear();
 }
 
 auto swapchain::handle() const noexcept -> const VkSwapchainKHR& {
@@ -232,60 +221,35 @@ auto swapchain::_create_image_view(const VkImage& image, VkFormat format, VkImag
 }
 
 auto swapchain::_create_depth_images() -> void {
-  auto& logical_device = graphics_module::get().logical_device();
   auto& physical_device = graphics_module::get().physical_device();
-
-  const auto& graphics_queue_family = logical_device.graphics_queue().family();
-  const auto& transfer_queue_family = logical_device.transfer_queue().family();
-
-  auto depth_format = physical_device.find_supported_format(
-    {VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
+  
+  const auto depth_format = physical_device.find_supported_format(
+    {
+      VK_FORMAT_D32_SFLOAT,
+      VK_FORMAT_D32_SFLOAT_S8_UINT,
+      VK_FORMAT_D24_UNORM_S8_UINT
+    },
     VK_IMAGE_TILING_OPTIMAL,
     VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
   );
 
   _depth_images.resize(_image_count);
 
-  for (auto& [image, memory, image_view] : _depth_images) {
-    auto image_create_info = VkImageCreateInfo{};
-    image_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-    image_create_info.flags = 0;
-    image_create_info.imageType = VK_IMAGE_TYPE_2D;
-    image_create_info.extent.width = _extent.width;
-    image_create_info.extent.height = _extent.height;
-    image_create_info.extent.depth = 1;
-    image_create_info.mipLevels = 1;
-    image_create_info.arrayLayers = 1;
-    image_create_info.format = depth_format;
-    image_create_info.tiling = VK_IMAGE_TILING_OPTIMAL;
-    image_create_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    image_create_info.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-    image_create_info.samples = VK_SAMPLE_COUNT_1_BIT;
-    
-    if (graphics_queue_family != transfer_queue_family) {
-      auto queue_families = std::array<std::uint32_t, 2>{graphics_queue_family, transfer_queue_family};
-      image_create_info.sharingMode = VK_SHARING_MODE_CONCURRENT;
-      image_create_info.queueFamilyIndexCount = static_cast<std::uint32_t>(queue_families.size());
-      image_create_info.pQueueFamilyIndices = queue_families.data();
-    } else {
-      image_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-    }
-
-    validate(vkCreateImage(logical_device, &image_create_info, nullptr, &image));
-
-    auto memory_requirements = VkMemoryRequirements{};
-    vkGetImageMemoryRequirements(logical_device, image, &memory_requirements);
-
-    auto memory_allocate_info = VkMemoryAllocateInfo{};
-    memory_allocate_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    memory_allocate_info.allocationSize = memory_requirements.size;
-    memory_allocate_info.memoryTypeIndex = physical_device.find_memory_type(memory_requirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-
-    validate(vkAllocateMemory(logical_device, &memory_allocate_info, nullptr, &memory));
-
-    validate(vkBindImageMemory(logical_device, image, memory, 0));
-
-    _create_image_view(image, depth_format, VK_IMAGE_ASPECT_DEPTH_BIT, image_view);
+  for (auto& depth_image : _depth_images) {
+    depth_image = std::make_unique<image>(
+      VK_IMAGE_TYPE_2D, 
+      VkExtent3D{
+        _extent.width, 
+        _extent.height, 
+        1
+      }, 
+      VK_SAMPLE_COUNT_1_BIT, 
+      VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, 
+      depth_format, 
+      1, 
+      1, 
+      VK_IMAGE_LAYOUT_UNDEFINED
+    );
   }
 }
 
@@ -298,7 +262,7 @@ auto swapchain::_create_framebuffers() -> void {
   for (auto i = std::uint32_t{0}; i < _image_count; ++i) {
     auto& framebuffer = _framebuffers.at(i);
 
-    auto attachments = std::array<VkImageView, 2>{_image_views.at(i), _depth_images.at(i).image_view};
+    auto attachments = std::array<VkImageView, 2>{_image_views.at(i), _depth_images.at(i)->view()};
 
     auto framebuffer_create_info = VkFramebufferCreateInfo{};
     framebuffer_create_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;

@@ -57,7 +57,7 @@ public:
 
 private:
 
-  auto _queue() const -> const queue&;
+  auto _queue() const -> const logical_device::queue&;
 
   std::shared_ptr<command_pool> _command_pool{};
 

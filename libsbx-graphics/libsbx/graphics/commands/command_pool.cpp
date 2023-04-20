@@ -30,7 +30,7 @@ command_pool::operator const VkCommandPool&() const noexcept {
   return _handle;
 }
 
-auto command_pool::_queue(VkQueueFlagBits queue_type) const -> const queue& {
+auto command_pool::_queue(VkQueueFlagBits queue_type) const -> const logical_device::queue& {
   const auto& logical_device = graphics_module::get().logical_device();
 
   switch (queue_type) {

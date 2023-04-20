@@ -23,7 +23,7 @@ public:
 
 private:
 
-  auto _queue(VkQueueFlagBits queue_type) const -> const queue&;
+  auto _queue(VkQueueFlagBits queue_type) const -> const logical_device::queue&;
 
   VkCommandPool _handle{};
 

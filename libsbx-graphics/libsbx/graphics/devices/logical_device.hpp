@@ -13,32 +13,37 @@
 
 namespace sbx::graphics {
 
-class queue : public utility::noncopyable {
-
-  friend class logical_device;
-
-public:
-
-  ~queue() = default;
-
-  auto handle() const noexcept -> const VkQueue&;
-
-  operator const VkQueue&() const noexcept;
-
-  auto family() const noexcept -> std::uint32_t;
-
-private:
-
-  queue() = default;
-
-  VkQueue _handle{};
-  std::uint32_t _family{};
-
-}; // class queue
-
 class logical_device : public utility::noncopyable {
 
 public:
+
+  class queue : public utility::noncopyable {
+
+    friend class logical_device;
+
+  public:
+
+    ~queue() = default;
+
+    auto handle() const noexcept -> const VkQueue&;
+
+    operator const VkQueue&() const noexcept;
+
+    auto family() const noexcept -> std::uint32_t;
+
+  private:
+
+    queue() = default;
+
+    VkQueue _handle{};
+    std::uint32_t _family{};
+
+  }; // class queue
+
+  struct sharing_mode {
+    VkSharingMode mode{};
+    std::vector<std::uint32_t> queue_families{};
+  }; // struct sharing_mode
 
   logical_device(const physical_device& physical_device);
 
@@ -57,6 +62,8 @@ public:
   auto transfer_queue() const -> const queue&;
 
   auto wait_idle() const -> void;
+
+  auto queue_sharing_mode() const noexcept -> const sharing_mode&;
 
 private:
 
@@ -78,6 +85,7 @@ private:
 	queue _graphics_queue{};
 	queue _compute_queue{};
 	queue _transfer_queue{};
+  sharing_mode _queue_sharing_mode{};
 
 }; // class logical_device
 

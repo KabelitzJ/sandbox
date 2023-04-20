@@ -45,12 +45,6 @@ public:
 
 private:
 
-  struct depth_image {
-    VkImage image{};
-    VkDeviceMemory memory{};
-    VkImageView image_view{};
-  };
-
   auto _create_image_view(const VkImage& image, VkFormat format, VkImageAspectFlags aspect, VkImageView& image_view) -> void;
 
   auto _create_depth_images() -> void;
@@ -70,12 +64,11 @@ private:
 	std::vector<VkImage> _images{};
   std::vector<VkImageView> _image_views{};
 
-  std::vector<depth_image> _depth_images{};
+  std::vector<std::unique_ptr<image>> _depth_images{};
 
   std::vector<VkFramebuffer> _framebuffers{};
 
 	VkSwapchainKHR _handle{};
-
 
 }; // class swapchain
 

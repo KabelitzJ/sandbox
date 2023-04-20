@@ -176,7 +176,7 @@ auto command_buffer::end_render_pass() -> void {
   vkCmdEndRenderPass(_handle);
 }
 
-auto command_buffer::_queue() const -> const queue& {
+auto command_buffer::_queue() const -> const logical_device::queue& {
   auto& logical_device = graphics_module::get().logical_device();
 
   switch (_queue_type) {

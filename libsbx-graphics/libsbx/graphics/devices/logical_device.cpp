@@ -45,15 +45,15 @@ static auto _print_queue_families(const VkQueueFamilyProperties& queue_family_pr
   return result;
 };
 
-auto queue::handle() const noexcept -> const VkQueue& {
+auto logical_device::queue::handle() const noexcept -> const VkQueue& {
   return _handle;
 }
 
-queue::operator const VkQueue&() const noexcept {
+logical_device::queue::operator const VkQueue&() const noexcept {
   return _handle;
 }
 
-auto queue::family() const noexcept -> std::uint32_t {
+auto logical_device::queue::family() const noexcept -> std::uint32_t {
   return _family;
 }
 
@@ -93,6 +93,10 @@ auto logical_device::transfer_queue() const -> const queue& {
 
 auto logical_device::wait_idle() const -> void {
   validate(vkDeviceWaitIdle(_handle));
+}
+
+auto logical_device::queue_sharing_mode() const noexcept -> const sharing_mode& {
+  return _queue_sharing_mode;
 }
 
 auto logical_device::_get_queue_family_indices(const physical_device& physical_device) const -> queue_family_indices {
@@ -307,6 +311,14 @@ auto logical_device::_create_logical_device(const physical_device& physical_devi
 	vkGetDeviceQueue(_handle, _graphics_queue._family, 0, &_graphics_queue._handle);
 	vkGetDeviceQueue(_handle, _compute_queue._family, 0, &_compute_queue._handle);
 	vkGetDeviceQueue(_handle, _transfer_queue._family, 0, &_transfer_queue._handle);
+
+  if (_graphics_queue.family() == _compute_queue.family()) {
+    _queue_sharing_mode.mode = VK_SHARING_MODE_EXCLUSIVE;
+  } else {
+    _queue_sharing_mode.mode = VK_SHARING_MODE_CONCURRENT;
+    _queue_sharing_mode.queue_families.push_back(_graphics_queue.family());
+    _queue_sharing_mode.queue_families.push_back(_transfer_queue.family());
+  }
 }
 
 } // namespace sbx::graphics

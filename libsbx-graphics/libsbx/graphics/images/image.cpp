@@ -49,8 +49,7 @@ auto image::format() const noexcept -> VkFormat {
 auto image::_create_image() -> void {
   auto& logical_device = graphics_module::get().logical_device();
   
-  const auto& graphics_queue_family = logical_device.graphics_queue().family();
-  const auto& transfer_queue_family = logical_device.transfer_queue().family();
+  const auto& sharing_mode = logical_device.queue_sharing_mode();
 
   auto image_create_info = VkImageCreateInfo{};
   image_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -63,15 +62,9 @@ auto image::_create_image() -> void {
   image_create_info.initialLayout = _layout;
   image_create_info.usage = _usage;
   image_create_info.samples = _samples;
-
-  if (graphics_queue_family != transfer_queue_family) {
-    auto queue_families = std::array<std::uint32_t, 2>{graphics_queue_family, transfer_queue_family};
-    image_create_info.sharingMode = VK_SHARING_MODE_CONCURRENT;
-    image_create_info.queueFamilyIndexCount = static_cast<std::uint32_t>(queue_families.size());
-    image_create_info.pQueueFamilyIndices = queue_families.data();
-  } else {
-    image_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-  }
+  image_create_info.sharingMode = sharing_mode.mode;
+  image_create_info.queueFamilyIndexCount = static_cast<std::uint32_t>(sharing_mode.queue_families.size());
+  image_create_info.pQueueFamilyIndices = sharing_mode.queue_families.data();
 
   validate(vkCreateImage(logical_device, &image_create_info, nullptr, &_handle));
 }
