@@ -41,7 +41,6 @@
  * @date 2023-02-21
  */
 
-#include <libsbx/math/version.hpp>
 #include <libsbx/math/concepts.hpp>
 
 #include <libsbx/math/vector2.hpp>

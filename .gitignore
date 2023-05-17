@@ -3,6 +3,7 @@
 .vscode/
 .vs/
 
+build/
 configs/
 targets/
 

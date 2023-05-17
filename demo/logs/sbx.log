@@ -1,9 +1,4 @@
-[2023-04-20 23:38:46] [sbx::graphics] [warning] : Layer VK_LAYER_OW_OVERLAY uses API version 1.2 which is older than the application specified API version of 1.3. May cause issues.
-[2023-04-20 23:38:46] [sbx::graphics] [warning] : Layer VK_LAYER_OW_OBS_HOOK uses API version 1.2 which is older than the application specified API version of 1.3. May cause issues.
-[2023-04-20 23:38:46] [sbx::graphics] [debug] : Selected GPU 'NVIDIA GeForce RTX 2070 SUPER'
-[2023-04-20 23:38:46] [sbx::graphics] [debug] : Queue Family 0 supports 16 queues of type [Graphics|Compute|Transfer|Sparse Binding]
-[2023-04-20 23:38:46] [sbx::graphics] [debug] : Queue Family 1 supports 2 queues of type [Transfer|Sparse Binding]
-[2023-04-20 23:38:46] [sbx::graphics] [debug] : Queue Family 2 supports 8 queues of type [Compute|Transfer|Sparse Binding]
-[2023-04-20 23:38:46] [sbx::graphics] [debug] : Queue Family 3 supports 1 queues of type [Transfer|Sparse Binding]
-[2023-04-20 23:38:46] [sbx::graphics] [debug] : Pipeline 'basic' created in 1.0328ms
-[2023-04-20 23:38:46] [sbx::graphics] [debug] : Mesh 'square' created in 3.5129ms
+[2023-05-17 10:35:08] [sbx::graphics] [debug] : Selected GPU 'Intel(R) Iris(R) Xe Graphics'
+[2023-05-17 10:35:08] [sbx::graphics] [debug] : Queue Family 0 supports 1 queues of type [Graphics|Compute|Transfer|Sparse Binding]
+[2023-05-17 10:35:08] [sbx::graphics] [debug] : Pipeline 'basic' created in 1.4984ms
+[2023-05-17 10:35:08] [sbx::graphics] [debug] : Mesh 'square' created in 2.8751ms

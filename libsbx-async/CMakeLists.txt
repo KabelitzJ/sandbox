@@ -1,0 +1,41 @@
+project(async)
+
+message(STATUS "Configuring ${PROJECT_NAME}...")
+
+add_library(${PROJECT_NAME} STATIC)
+add_library(${CMAKE_PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
+
+target_sources(
+  ${PROJECT_NAME}
+  PRIVATE
+    "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/async.cpp"
+  PUBLIC
+    "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/async.hpp"
+    "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/async_module.hpp"
+    "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/loader.hpp"
+    "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/mutex.hpp"
+)
+
+target_include_directories(
+  ${PROJECT_NAME}
+  PUBLIC
+    ${PROJECT_SOURCE_DIR}
+)
+
+target_link_libraries(
+  ${PROJECT_NAME}
+  PUBLIC
+    libsbx::utility
+    libsbx::core
+)
+
+set_target_properties(
+  ${PROJECT_NAME}
+  PROPERTIES
+    CXX_STANDARD 23
+    CXX_STANDARD_REQUIRED ON
+    CXX_EXTENSIONS OFF
+    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
+    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+)

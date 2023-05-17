@@ -41,7 +41,6 @@
  * @date 2023-02-21
  */
 
-#include <libsbx/utility/version.hpp>
 #include <libsbx/utility/hash.hpp>
 #include <libsbx/utility/concepts.hpp>
 #include <libsbx/utility/fast_mod.hpp>

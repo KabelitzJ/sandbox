@@ -1,7 +1,6 @@
 #ifndef LIBSBX_UNITS_HPP_
 #define LIBSBX_UNITS_HPP_
 
-#include <libsbx/units/version.hpp>
 #include <libsbx/units/quantity.hpp>
 #include <libsbx/units/distance.hpp>
 #include <libsbx/units/time.hpp>
