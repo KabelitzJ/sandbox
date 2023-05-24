@@ -13,9 +13,27 @@ FetchContent_Declare(
   GIT_TAG yaml-cpp-0.7.0
 )
 
-FetchContent_MakeAvailable(yaml-cpp)
+FetchContent_Declare(
+  SPIRV-Headers
+  GIT_REPOSITORY https://github.com/KhronosGroup/SPIRV-Headers.git
+  GIT_TAG sdk-1.3.236.0
+)
 
-find_package(Vulkan REQUIRED FATAL_ERROR) 
+FetchContent_Declare(
+  SPIRV-Tools
+  GIT_REPOSITORY https://github.com/KhronosGroup/SPIRV-Tools.git
+  GIT_TAG sdk-1.3.236.0
+)
+
+FetchContent_Declare(
+  SPIRV-Cross
+  GIT_REPOSITORY https://github.com/KhronosGroup/SPIRV-Cross.git
+  GIT_TAG sdk-1.3.236.0
+)
+
+FetchContent_MakeAvailable(yaml-cpp SPIRV-Headers SPIRV-Tools SPIRV-Cross)
+
+find_package(Vulkan REQUIRED FATAL_ERROR)
 
 target_sources(
   ${PROJECT_NAME}
@@ -71,9 +89,13 @@ target_link_libraries(
   PUBLIC
     yaml-cpp
     Vulkan::Vulkan
+    SPIRV-Headers
+    SPIRV-Tools
+    spirv-cross-cpp
     libsbx::utility
     libsbx::io
     libsbx::async
+    libsbx::math
     libsbx::core
     libsbx::devices
 )

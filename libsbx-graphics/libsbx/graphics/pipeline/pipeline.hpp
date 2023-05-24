@@ -10,7 +10,10 @@
 
 #include <libsbx/utility/noncopyable.hpp>
 
+#include <libsbx/graphics/buffer/buffer.hpp>
+
 #include <libsbx/graphics/pipeline/shader.hpp>
+#include <libsbx/graphics/pipeline/uniform.hpp>
 
 namespace sbx::graphics {
 
@@ -28,6 +31,10 @@ public:
 
   auto layout() const noexcept -> const VkPipelineLayout&;
 
+  auto active_descriptor_set() const noexcept -> const VkDescriptorSet&;
+
+  auto update_uniform(const uniform& uniform) -> void;
+
 private:
 
   auto _get_stage_from_name(const std::string& name) const noexcept -> VkShaderStageFlagBits;
@@ -37,6 +44,11 @@ private:
   std::string _name{};
   VkPipelineLayout _layout{};
   VkPipeline _handle{};
+
+  VkDescriptorPool _descriptor_pool{};
+  VkDescriptorSetLayout _descriptor_set_layout{};
+  std::vector<VkDescriptorSet> _descriptor_sets{};
+  std::vector<std::unique_ptr<buffer>> _uniform_buffers{};
 
 }; // class pipeline
 

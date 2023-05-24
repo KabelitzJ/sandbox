@@ -49,8 +49,8 @@ mesh::mesh(const std::filesystem::path& path) {
   staging_buffer.write(vertices.data(), vertex_buffer_size);
   staging_buffer.write(indices.data(), index_buffer_size, vertex_buffer_size);
 
-  _vertex_buffer = std::make_unique<buffer>(vertex_buffer_size, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-  _index_buffer = std::make_unique<buffer>(index_buffer_size, VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+  _vertex_buffer = std::make_unique<buffer>(vertex_buffer_size, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, false);
+  _index_buffer = std::make_unique<buffer>(index_buffer_size, VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, false);
 
   auto command_buffer = graphics::command_buffer{true, VK_QUEUE_TRANSFER_BIT};
 
@@ -79,7 +79,7 @@ mesh::mesh(const std::filesystem::path& path) {
 
 	vkDestroyFence(logical_device, fence, nullptr);
 
-  core::logger::debug("sbx::graphics", "Mesh '{}' created in {}ms", _name, units::quantity_cast<units::millisecond>(timer.elapsed()).value());
+  core::logger::debug("sbx::graphics", "Mesh '{}' with {} vertices and {} indices created in {}ms", _name, vertices.size(), indices.size(), units::quantity_cast<units::millisecond>(timer.elapsed()).value());
 }
 
 } // namespace sbx::graphics

@@ -13,7 +13,7 @@ class buffer : public utility::noncopyable {
 
 public:
 
-  buffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties);
+  buffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, bool map_memory = true);
 
   buffer(const void* data, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties);
 
@@ -39,17 +39,18 @@ public:
 
   auto write(const void* data, VkDeviceSize size, VkDeviceSize offset = 0) const -> void;
 
+  auto map() -> void;
+
+  auto unmap() -> void;
+
 private:
-
-  auto _map() const noexcept -> void*;
-
-  auto _unmap() const noexcept -> void;
 
   VkBuffer _handle{};
   VkDeviceSize _size{};
   VkDeviceMemory _memory{};
   VkBufferUsageFlags _usage{};
   VkMemoryPropertyFlags _properties{};
+  void* _mapped{};
 
 }; // class buffer
 

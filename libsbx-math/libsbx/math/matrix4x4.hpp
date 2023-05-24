@@ -12,6 +12,7 @@
 
 #include <libsbx/math/concepts.hpp>
 #include <libsbx/math/vector4.hpp>
+#include <libsbx/math/angle.hpp>
 
 namespace sbx::math {
 
@@ -159,11 +160,11 @@ struct basic_matrix4x4 {
 
   [[nodiscard]] constexpr static auto look_at(const basic_vector3<value_type>& position, const basic_vector3<value_type>& target, const basic_vector3<value_type>& up) noexcept -> basic_matrix4x4;
 
-  // [[nodiscard]] constexpr static basic_matrix4x4 perspective(const basic_angle<value_type>& fov, const value_type aspect, const value_type near, const value_type far) noexcept;
+  [[nodiscard]] constexpr static basic_matrix4x4 perspective(const basic_angle<value_type>& fov, const value_type aspect, const value_type near, const value_type far) noexcept;
 
   [[nodiscard]] constexpr static auto translated(const basic_matrix4x4& matrix, const basic_vector3<value_type>& vector) noexcept -> basic_matrix4x4;
 
-  // [[nodiscard]] constexpr static basic_matrix4x4 rotated(const basic_matrix4x4& matrix, const basic_vector3<value_type>& axis, const basic_angle<value_type>& radians) noexcept;
+  [[nodiscard]] constexpr static basic_matrix4x4 rotated(const basic_matrix4x4& matrix, const basic_vector3<value_type>& axis, const basic_angle<value_type>& angle) noexcept;
 
   [[nodiscard]] constexpr static auto scaled(const basic_matrix4x4& matrix, const basic_vector3<value_type>& vector) noexcept -> basic_matrix4x4;
 

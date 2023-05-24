@@ -8,20 +8,19 @@
 
 #include <yaml-cpp/yaml.h>
 
+#include <libsbx/math/vector2.hpp>
+#include <libsbx/math/vector4.hpp>
+#include <libsbx/math/color.hpp>
+
 #include <libsbx/graphics/buffer/buffer.hpp>
 
 #include <libsbx/graphics/pipeline/push_constant.hpp>
 
 namespace sbx::graphics {
 
-struct vector2 {
-  std::float_t x;
-  std::float_t y;
-}; // struct vector2
-
 struct vertex {
-  vector2 position;
-  color color;
+  math::vector4 position;
+  math::color color;
 }; // struct vertex
 
 class mesh {
@@ -60,31 +59,10 @@ private:
 } // namespace sbx::graphics
 
 template<>
-struct YAML::convert<sbx::graphics::vector2> {
-  static auto encode(const sbx::graphics::vector2& rhs) -> YAML::Node {
-    YAML::Node node;
-    node["x"] = rhs.x;
-    node["y"] = rhs.y;
-    return node;
-  }
-
-  static auto decode(const YAML::Node& node, sbx::graphics::vector2& vector) -> bool {
-    if (!node.IsMap()) {
-      return false;
-    }
-
-    vector.x = node["x"].as<std::float_t>();
-    vector.y = node["y"].as<std::float_t>();
-
-    return true;
-  }
-}; // struct YAML::convert<vector2>
-
-template<>
 struct YAML::convert<sbx::graphics::vertex> {
   static auto encode(const sbx::graphics::vertex& rhs) -> YAML::Node {
     YAML::Node node;
-    node["position"] = rhs.position;
+    node["position"] = sbx::math::vector3{rhs.position.x, rhs.position.y, rhs.position.z};
     node["color"] = rhs.color;
     return node;
   }
@@ -94,8 +72,8 @@ struct YAML::convert<sbx::graphics::vertex> {
       return false;
     }
 
-    vertex.position = node["position"].as<sbx::graphics::vector2>();
-    vertex.color = node["color"].as<sbx::graphics::color>();
+    vertex.position = sbx::math::vector4{node["position"].as<sbx::math::vector3>(), 1.0f};
+    vertex.color = node["color"].as<sbx::math::color>();
 
     return true;
   }

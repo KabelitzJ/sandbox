@@ -294,7 +294,7 @@ public:
    * 
    * @return basic_vector3& A reference to the component. 
    */
-  [[nodiscard]] constexpr auto operator[](const index_type index) -> basic_vector3&;
+  [[nodiscard]] constexpr auto operator[](const index_type index) -> reference;
 
   /**
    * @brief Returns the component at the specified index.
@@ -303,7 +303,7 @@ public:
    * 
    * @return const basic_vector3& A const basic_vector3& to the component.
    */
-  [[nodiscard]] constexpr auto operator[](const index_type index) const -> const basic_vector3&;
+  [[nodiscard]] constexpr auto operator[](const index_type index) const -> const_reference;
 
   // -- Member functions --
 

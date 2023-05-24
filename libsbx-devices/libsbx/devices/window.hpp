@@ -68,6 +68,10 @@ public:
     return _height;
   }
 
+  auto aspect_ratio() const -> std::float_t {
+    return static_cast<std::float_t>(_width) / static_cast<std::float_t>(_height);
+  }
+
   /**
    * @brief Determins if the window should be closed
    * @return true if the window should be closed, false otherwise

@@ -8,10 +8,11 @@
 
 namespace sbx::graphics {
 
-buffer::buffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties)
+buffer::buffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, bool map_memory)
 : _size{size},
   _usage{usage},
-  _properties{properties} {
+  _properties{properties},
+  _mapped{nullptr} {
   const auto& physical_device = graphics_module::get().physical_device();
   const auto& logical_device = graphics_module::get().logical_device();
 
@@ -38,6 +39,10 @@ buffer::buffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlag
   validate(vkAllocateMemory(logical_device, &allocation_info, nullptr, &_memory));
 
   vkBindBufferMemory(logical_device, _handle, _memory, 0);
+
+  if (map_memory) {
+    map();
+  }
 }
 
 buffer::buffer(const void* data, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties)
@@ -101,31 +106,37 @@ auto buffer::copy_from(const buffer& src) const -> void {
 }
 
 auto buffer::write(const void* data, VkDeviceSize size, VkDeviceSize offset) const -> void {
-  if (size > _size) {
+  if (size + offset > _size) {
     throw std::runtime_error{"Size is greater than buffer size"};
   } 
 
-  auto* memory = static_cast<std::byte*>(_map());
+  if (!_mapped) {
+    throw std::runtime_error{"Buffer is not mapped"};
+  }
 
-  std::memcpy(memory + offset, data, size);
-
-  _unmap();
+  std::memcpy(static_cast<std::uint8_t*>(_mapped) + offset, data, size);
 }
 
-auto buffer::_map() const noexcept -> void* {
+auto buffer::map() -> void {
   const auto& logical_device = graphics_module::get().logical_device();
 
-  auto data = static_cast<void*>(nullptr);
+  if (_mapped) {
+    throw std::runtime_error{"Buffer is already mapped"};
+  }
 
-  vkMapMemory(logical_device, _memory, 0, _size, 0, &data);
-
-  return data;
+  vkMapMemory(logical_device, _memory, 0, _size, 0, &_mapped);
 }
 
-auto buffer::_unmap() const noexcept -> void {
+auto buffer::unmap() -> void {
   const auto& logical_device = graphics_module::get().logical_device();
+
+  if (!_mapped) {
+    throw std::runtime_error{"Buffer is not mapped"};
+  }
 
   vkUnmapMemory(logical_device, _memory);
+
+  _mapped = nullptr;
 }
 
 } // namespace sbx::graphics

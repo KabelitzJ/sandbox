@@ -195,7 +195,7 @@ inline constexpr auto basic_vector3<Type>::operator/=(const Other& scalar) -> ba
 }
 
 template<numeric Type>
-inline constexpr auto basic_vector3<Type>::operator[](const index_type index) -> basic_vector3& {
+inline constexpr auto basic_vector3<Type>::operator[](const index_type index) -> reference {
   if (index >= static_cast<Type>(3)) {
     throw std::domain_error{"Index out of bounds"};
   }
@@ -215,7 +215,7 @@ inline constexpr auto basic_vector3<Type>::operator[](const index_type index) ->
 }
 
 template<numeric Type>
-inline constexpr auto basic_vector3<Type>::operator[](const index_type index) const -> const basic_vector3& {
+inline constexpr auto basic_vector3<Type>::operator[](const index_type index) const -> const_reference {
   if (index >= static_cast<Type>(3)) {
     throw std::domain_error{"Index out of bounds"};
   }

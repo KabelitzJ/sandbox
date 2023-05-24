@@ -35,6 +35,7 @@
  */
 
 #include <memory>
+#include <source_location>
 
 #include <spdlog/logger.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
