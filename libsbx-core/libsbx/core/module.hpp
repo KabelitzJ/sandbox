@@ -53,7 +53,7 @@ private:
   }; // struct module_base
 
   struct module_factory {
-    stage stage{};
+    module_manager::stage stage{};
     std::unordered_set<std::type_index> dependencies{};
     std::function<std::unique_ptr<module_base>()> create{};
   }; // module_factory

@@ -131,11 +131,11 @@ auto graphics_module::update([[maybe_unused]] std::float_t delta_time) -> void {
     throw std::runtime_error{"Failed to acquire swapchain image"};
   }
 
-  auto& command_buffer = _command_buffers[_swapchain->active_image_index()];
-
   if (!_start_render_pass()) {
     return;
   }
+
+  auto& command_buffer = _command_buffers[_swapchain->active_image_index()];
 
   // [NOTE] KAJ 2023-02-19 17:39 - Drawing happens here
 
