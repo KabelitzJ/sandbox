@@ -119,10 +119,12 @@ auto graphics_module::update([[maybe_unused]] std::float_t delta_time) -> void {
     _recreate_swapchain();
   }
 
+
   const auto& frame_data = _per_frame_data[_current_frame];
 
   // Get the next image in the swapchain (back/front buffer)
   const auto result = _swapchain->acquire_next_image(frame_data.image_available_semaphore, frame_data.in_flight_fence);
+  
 
   if (result == VK_ERROR_OUT_OF_DATE_KHR) {
     _framebuffer_resized = true;
@@ -130,6 +132,11 @@ auto graphics_module::update([[maybe_unused]] std::float_t delta_time) -> void {
   }else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
     throw std::runtime_error{"Failed to acquire swapchain image"};
   }
+
+  vkResetFences(*_logical_device, 1, &frame_data.in_flight_fence);
+
+  core::logger::debug("sbx::graphics", "Current frame: {}", _current_frame);
+  core::logger::debug("sbx::graphics", "Active image index: {}", _swapchain->active_image_index());
 
   if (!_start_render_pass()) {
     return;
