@@ -148,7 +148,7 @@ class basic_entity {
 
   friend std::hash<basic_entity<Type>>;
 
-  using entity_traits = entity_traits<Type>;
+  using entity_traits = ecs::entity_traits<Type>;
 
 public:
 

@@ -15,10 +15,12 @@ class async_module final : public core::module<async_module> {
 
 public:
 
-  async_module()
-  : _loader{std::make_unique<async::loader>()} {
+  // async_module()
+  // : _loader{std::make_unique<async::loader>()} {
 
-  }
+  // }
+
+  async_module() = default;
 
   ~async_module() override {
 
@@ -28,13 +30,13 @@ public:
 
   }
 
-  auto loader() -> async::loader& {
-    return *_loader;
-  }  
+  // auto loader() -> async::loader& {
+  //   return *_loader;
+  // }  
 
 private:
 
-  std::unique_ptr<async::loader> _loader{};
+  // std::unique_ptr<async::loader> _loader{};
 
 }; // class async_module
 
