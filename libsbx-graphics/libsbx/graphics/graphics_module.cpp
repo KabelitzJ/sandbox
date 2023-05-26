@@ -140,7 +140,7 @@ auto graphics_module::update([[maybe_unused]] std::float_t delta_time) -> void {
   // [NOTE] KAJ 2023-02-19 17:39 - Drawing happens here
 
   if (_renderer) {
-    _renderer->render(*command_buffer);
+    _renderer->render(*command_buffer, delta_time);
   }
 
   _end_render_pass();

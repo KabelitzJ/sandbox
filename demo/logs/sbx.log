@@ -1,5 +1,5 @@
-[2023-05-24 16:00:54] [sbx::graphics] [debug] : Selected GPU 'Intel(R) Iris(R) Xe Graphics'
-[2023-05-24 16:00:54] [sbx::graphics] [debug] : Queue Family 0 supports 1 queues of type [Graphics|Compute|Transfer|Sparse Binding]
-[2023-05-24 16:00:54] [sbx::graphics] [debug] : Pipeline 'basic' created in 2.5359ms
-[2023-05-24 16:00:54] [sbx::graphics] [debug] : Mesh 'cube' with 8 vertices and 39 indices created in 12.486ms
-[2023-05-24 16:00:54] [sbx::graphics] [debug] : swapchain created with 3 images
+[2023-05-27 01:53:20] [sbx::graphics] [debug] : Selected GPU 'Intel(R) Iris(R) Xe Graphics'
+[2023-05-27 01:53:20] [sbx::graphics] [debug] : Queue Family 0 supports 1 queues of type [Graphics|Compute|Transfer|Sparse Binding]
+[2023-05-27 01:53:20] [sbx::graphics] [debug] : Pipeline 'basic' created in 10.9759ms
+[2023-05-27 01:53:20] [sbx::graphics] [debug] : Mesh 'cube' with 8 vertices and 36 indices created in 9.031799ms
+[2023-05-27 01:53:20] [sbx::graphics] [debug] : swapchain created with 3 images

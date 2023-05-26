@@ -13,7 +13,7 @@ public:
 
   virtual ~renderer() = default;
 
-  virtual auto render(command_buffer& command_buffer) -> void = 0;
+  virtual auto render(command_buffer& command_buffer, std::float_t delta_time) -> void = 0;
 
 private:
 
