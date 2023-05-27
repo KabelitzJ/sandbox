@@ -144,6 +144,7 @@ requires (utility::is_complete_v<entity_traits<Type>>)
 class basic_entity {
 
   template<typename Entity, memory::allocator_for<Entity> Allocator>
+  requires (utility::is_complete_v<entity_traits<Entity>>)
   friend class basic_registry;
 
   friend std::hash<basic_entity<Type>>;

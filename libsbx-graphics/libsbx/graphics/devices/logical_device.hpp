@@ -3,6 +3,7 @@
 
 #include <unordered_map>
 #include <optional>
+#include <cinttypes>
 
 #include <vulkan/vulkan.hpp>
 

@@ -100,8 +100,6 @@ swapchain::swapchain(const VkExtent2D& extent, const std::unique_ptr<swapchain>&
 
 	validate(vkGetSwapchainImagesKHR(logical_device, _handle, &_image_count, nullptr));
 
-  core::logger::debug("graphics", "swapchain created with {} images", _image_count);
-
 	_images.resize(_image_count);
   _image_views.resize(_image_count);
 

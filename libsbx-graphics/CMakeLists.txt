@@ -33,7 +33,7 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(yaml-cpp SPIRV-Headers SPIRV-Tools SPIRV-Cross)
 
-find_package(Vulkan REQUIRED FATAL_ERROR)
+find_package(Vulkan REQUIRED)
 
 target_sources(
   ${PROJECT_NAME}
@@ -103,10 +103,44 @@ target_link_libraries(
 set_target_properties(
   ${PROJECT_NAME}
   PROPERTIES
-    CXX_STANDARD 23
-    CXX_STANDARD_REQUIRED ON
-    CXX_EXTENSIONS OFF
     ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
     LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+)
+
+target_compile_definitions(
+  ${PROJECT_NAME}
+  PRIVATE
+    GLFW_INCLUDE_VULKAN
+)
+
+target_compile_features(
+  ${PROJECT_NAME}
+  PUBLIC
+    cxx_std_20
+)
+
+target_compile_options(
+  ${PROJECT_NAME}
+  PUBLIC
+    -Wall 
+    -Wextra
+    -Wshadow
+    -Wnon-virtual-dtor
+    -Wold-style-cast
+    -Wcast-align
+    -Wunused
+    -Woverloaded-virtual
+    -Wpedantic
+    -Wconversion
+    -Wsign-conversion
+    -Wnull-dereference
+    -Wdouble-promotion
+    -Wformat=2
+    -Wduplicated-cond
+    -Wduplicated-branches
+    -Wlogical-op
+    -Wuseless-cast
+    -static-libstdc++ 
+    -static-libgcc
 )

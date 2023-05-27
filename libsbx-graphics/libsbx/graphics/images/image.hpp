@@ -1,6 +1,8 @@
 #ifndef LIBSBX_GRAPHICS_IMAGES_IMAGE_HPP_
 #define LIBSBX_GRAPHICS_IMAGES_IMAGE_HPP_
 
+#include <cinttypes>
+
 #include <vulkan/vulkan.hpp>
 
 #include <libsbx/utility/noncopyable.hpp>

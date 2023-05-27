@@ -130,7 +130,7 @@ inline constexpr auto basic_vector4<Type>::operator/=(const Type scalar) -> basi
 
 template<numeric Type>
 inline constexpr auto basic_vector4<Type>::operator/=(const basic_vector4<Type>& other) -> basic_vector4<Type>& {
-  if (other.x == static_cast<Type>(0) || other.y == static_cast<Type>(0) || other.z == static_cast<Type>(0) || other.w == static_cast<Type>(0)) {
+  if (other.x == static_cast<index_type>(0) || other.y == static_cast<Type>(0) || other.z == static_cast<Type>(0) || other.w == static_cast<Type>(0)) {
     throw std::domain_error{"Division by zero"};
   }
 
@@ -144,7 +144,7 @@ inline constexpr auto basic_vector4<Type>::operator/=(const basic_vector4<Type>&
 
 template<numeric Type>
 inline constexpr auto basic_vector4<Type>::operator[](const index_type index) -> reference {
-  if (index >= static_cast<Type>(4)) {
+  if (index >= static_cast<index_type>(4)) {
     throw std::domain_error{"Index out of bounds"};
   }
 

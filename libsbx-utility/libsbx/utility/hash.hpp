@@ -39,6 +39,7 @@
 #include <string_view>
 #include <iostream>
 #include <concepts>
+#include <cinttypes>
 
 namespace sbx::utility {
 
@@ -53,7 +54,7 @@ concept hashable = requires(const Type& instance) {
 /**
  * @brief Combines multiple hashes into a single hash.
  */
-inline constexpr auto hash_combine(std::size_t& seed) -> void { }
+inline constexpr auto hash_combine([[maybe_unused]] std::size_t& seed) -> void { }
 
 /**
  * @brief Combines multiple hashes into a single hash.

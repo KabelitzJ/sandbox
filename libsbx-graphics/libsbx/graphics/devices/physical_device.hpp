@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <cstring>
+#include <cinttypes>
 
 #include <vulkan/vulkan.hpp>
 

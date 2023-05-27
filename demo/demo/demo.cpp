@@ -36,9 +36,11 @@ public:
   ~demo_renderer() override = default;
 
   auto render(sbx::graphics::command_buffer& command_buffer, std::float_t delta_time) -> void override {
+    auto& window = sbx::devices::devices_module::get().window();
     auto& pipeline = sbx::graphics::graphics_module::get().pipeline("basic");
 
     _uniform.model = sbx::math::matrix4x4::rotated(_uniform.model, sbx::math::vector3{0.0f, 0.0f, 1.0f}, sbx::math::degree{45.0f} * delta_time * 3.0f);
+    _uniform.projection = sbx::math::matrix4x4::perspective(sbx::math::radian{45.0f}, window.aspect_ratio(), 0.1f, 10.0f);
 
     command_buffer.bind_pipeline(pipeline, VK_PIPELINE_BIND_POINT_GRAPHICS);
 
