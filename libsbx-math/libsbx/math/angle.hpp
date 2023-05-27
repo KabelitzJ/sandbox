@@ -14,16 +14,16 @@ public:
 
   using value_type = Type;
 
-  basic_degree() = default;
+  constexpr basic_degree() = default;
 
-  explicit basic_degree(value_type value) noexcept
+  explicit constexpr basic_degree(value_type value) noexcept
   : _value{value} {}
 
-  auto value() const noexcept -> value_type {
+  constexpr auto value() const noexcept -> value_type {
     return _value;
   }
 
-  operator value_type() const noexcept {
+  constexpr operator value_type() const noexcept {
     return _value;
   }
 
@@ -32,6 +32,11 @@ private:
   value_type _value{};
 
 }; // class basic_degree
+
+template<std::floating_point Type>
+constexpr auto operator*(const basic_degree<Type>& lhs, const Type rhs) noexcept -> basic_degree<Type> {
+  return basic_degree<Type>{lhs.value() * rhs};
+}
 
 using degree = basic_degree<std::float_t>;
 
@@ -42,16 +47,16 @@ public:
 
   using value_type = Type;
 
-  basic_radian() = default;
+  constexpr basic_radian() = default;
 
-  explicit basic_radian(value_type value) noexcept
+  explicit constexpr basic_radian(value_type value) noexcept
   : _value{value} {}
 
-  auto value() const noexcept -> value_type {
+  constexpr auto value() const noexcept -> value_type {
     return _value;
   }
 
-  operator value_type() const noexcept {
+  constexpr operator value_type() const noexcept {
     return _value;
   }
 
@@ -60,6 +65,11 @@ private:
   value_type _value{};
 
 }; // class basic_radian
+
+template<std::floating_point Type>
+constexpr auto operator*(const basic_radian<Type>& lhs, const Type rhs) noexcept -> basic_radian<Type> {
+  return basic_radian<Type>{lhs.value() * rhs};
+}
 
 using radian = basic_radian<std::float_t>;
 
@@ -70,17 +80,17 @@ public:
 
   using value_type = Type;
 
-  basic_angle(const basic_degree<value_type>& degree) noexcept
+  constexpr basic_angle(const basic_degree<value_type>& degree) noexcept
   : _radian{degree.value() * std::numbers::pi_v<value_type> / static_cast<value_type>(180)} {}
 
-  basic_angle(const basic_radian<value_type>& radian) noexcept
+  constexpr basic_angle(const basic_radian<value_type>& radian) noexcept
   : _radian{radian.value()} {}
 
-  auto to_degrees() const noexcept -> basic_degree<value_type> {
+  constexpr auto to_degrees() const noexcept -> basic_degree<value_type> {
     return basic_degree<value_type>{_radian.value() * static_cast<value_type>(180) / std::numbers::pi_v<value_type>};
   }
 
-  auto to_radians() const noexcept -> basic_radian<value_type> {
+  constexpr auto to_radians() const noexcept -> basic_radian<value_type> {
     return _radian;
   }
 

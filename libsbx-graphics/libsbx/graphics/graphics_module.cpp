@@ -135,9 +135,6 @@ auto graphics_module::update([[maybe_unused]] std::float_t delta_time) -> void {
 
   vkResetFences(*_logical_device, 1, &frame_data.in_flight_fence);
 
-  core::logger::debug("sbx::graphics", "Current frame: {}", _current_frame);
-  core::logger::debug("sbx::graphics", "Active image index: {}", _swapchain->active_image_index());
-
   if (!_start_render_pass()) {
     return;
   }
