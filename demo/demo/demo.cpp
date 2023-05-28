@@ -23,15 +23,24 @@ class demo_renderer : public sbx::graphics::renderer {
 
 public:
 
-  demo_renderer()
-  : _mesh{std::make_unique<sbx::graphics::mesh>("./demo/assets/meshes/cube.yaml")},
-    _push_constant{sbx::math::vector4{1.0f, 0.0f, 0.0f, 1.0f}},
-    _uniform{} { 
-      auto& window = sbx::devices::devices_module::get().window();
-      _uniform.model = sbx::math::matrix4x4::identity;
-      _uniform.view = sbx::math::matrix4x4::look_at(sbx::math::vector3{2.0f, 2.0f, 2.0f}, sbx::math::vector3{0.0f, 0.0f, 0.0f}, sbx::math::vector3{0.0f, 0.0f, 1.0f});
-      _uniform.projection = sbx::math::matrix4x4::perspective(sbx::math::radian{45.0f}, window.aspect_ratio(), 0.1f, 10.0f);
-    }
+  demo_renderer() { 
+    auto& window = sbx::devices::devices_module::get().window();
+
+    _camera_position = sbx::math::vector3{2.0f, 2.0f, 2.0f};
+
+    _light_position = sbx::math::vector3{-2.0f, 2.0f, 2.0f};
+
+    _mesh = std::make_unique<sbx::graphics::mesh>("./demo/assets/meshes/cube.yaml");
+
+    _push_constant.light_color = sbx::math::color{1.0f, 1.0f, 1.0f, 1.0f};
+    _push_constant.ambient_color = sbx::math::color{0.1f, 0.1f, 0.1f, 1.0f};
+    _push_constant.camera_position = sbx::math::vector4{_camera_position, 1.0f};
+    _push_constant.light_position = sbx::math::vector4{_light_position, 1.0f};
+
+    _uniform.model = sbx::math::matrix4x4::identity;
+    _uniform.view = sbx::math::matrix4x4::look_at(_camera_position, sbx::math::vector3{0.0f, 0.0f, 0.0f}, sbx::math::vector3{0.0f, 0.0f, 1.0f});
+    _uniform.projection = sbx::math::matrix4x4::perspective(sbx::math::radian{45.0f}, window.aspect_ratio(), 0.1f, 10.0f);
+  }
 
   ~demo_renderer() override = default;
 
@@ -57,6 +66,8 @@ public:
 
 private:
 
+  sbx::math::vector3 _camera_position{};
+  sbx::math::vector3 _light_position{};
   std::unique_ptr<sbx::graphics::mesh> _mesh{};
   sbx::graphics::push_constant _push_constant{};
   sbx::graphics::uniform _uniform{};

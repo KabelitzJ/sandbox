@@ -71,7 +71,6 @@ target_compile_options(
   PUBLIC
     -Wall 
     -Wextra
-    -Wshadow
     -Wnon-virtual-dtor
     -Wold-style-cast
     -Wcast-align

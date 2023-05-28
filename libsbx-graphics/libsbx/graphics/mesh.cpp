@@ -18,17 +18,30 @@ mesh::mesh(const std::filesystem::path& path) {
   _name = file["name"].as<std::string>();
   _version = file["version"].as<std::string>();
 
+  auto positions = file["positions"].as<std::vector<math::vector3>>();
+  auto colors = file["colors"].as<std::vector<math::color>>();
+  auto normals = file["normals"].as<std::vector<math::vector3>>();
+  auto uvs = file["uvs"].as<std::vector<math::vector2>>();
+
   auto vertices = std::vector<vertex>{};
 
   for (const auto& node : file["vertices"]) {
-    vertices.push_back(node.as<vertex>());
+    const auto position_index = node["position"].as<std::size_t>();
+    const auto& position = positions[position_index];
+
+    const auto color_index = node["color"].as<std::size_t>();
+    const auto& color = colors[color_index];
+
+    const auto normal_index = node["normal"].as<std::size_t>();
+    const auto& normal = normals[normal_index];
+
+    const auto uv_index = node["uv"].as<std::size_t>();
+    const auto& uv = uvs[uv_index];
+
+    vertices.push_back(vertex{position, color, normal, uv});
   }
 
-  auto indices = std::vector<std::uint32_t>{};
-
-  for (const auto& index : file["indices"]) {
-    indices.push_back(index.as<std::uint32_t>());
-  }
+  auto indices = file["indices"].as<std::vector<std::uint32_t>>();
 
   auto fence_create_info = VkFenceCreateInfo{};
   fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;

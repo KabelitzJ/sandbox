@@ -77,7 +77,7 @@ pipeline::pipeline(const std::filesystem::path& path) {
   rasterization_state.rasterizerDiscardEnable = false;
   rasterization_state.polygonMode = VK_POLYGON_MODE_FILL;
   rasterization_state.lineWidth = 1.0f;
-  rasterization_state.cullMode = VK_CULL_MODE_NONE;
+  rasterization_state.cullMode = VK_CULL_MODE_BACK_BIT;
   rasterization_state.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
   rasterization_state.depthBiasEnable = false;
 
@@ -127,7 +127,7 @@ pipeline::pipeline(const std::filesystem::path& path) {
   vertex_attribute_descriptions.push_back(VkVertexInputAttributeDescription{
     .location = 0,
     .binding = 0,
-    .format = VK_FORMAT_R32G32B32A32_SFLOAT,
+    .format = VK_FORMAT_R32G32B32_SFLOAT,
     .offset = offsetof(vertex, position)
   });
 
@@ -136,6 +136,20 @@ pipeline::pipeline(const std::filesystem::path& path) {
     .binding = 0,
     .format = VK_FORMAT_R32G32B32A32_SFLOAT,
     .offset = offsetof(vertex, color)
+  });
+
+  vertex_attribute_descriptions.push_back(VkVertexInputAttributeDescription{
+    .location = 2,
+    .binding = 0,
+    .format = VK_FORMAT_R32G32B32_SFLOAT,
+    .offset = offsetof(vertex, normal)
+  });
+
+  vertex_attribute_descriptions.push_back(VkVertexInputAttributeDescription{
+    .location = 3,
+    .binding = 0,
+    .format = VK_FORMAT_R32G32_SFLOAT,
+    .offset = offsetof(vertex, uv)
   });
 
   auto vertex_input_state = VkPipelineVertexInputStateCreateInfo{};

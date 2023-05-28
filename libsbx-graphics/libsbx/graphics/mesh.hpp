@@ -9,6 +9,7 @@
 #include <yaml-cpp/yaml.h>
 
 #include <libsbx/math/vector2.hpp>
+#include <libsbx/math/vector3.hpp>
 #include <libsbx/math/vector4.hpp>
 #include <libsbx/math/color.hpp>
 
@@ -19,8 +20,10 @@
 namespace sbx::graphics {
 
 struct vertex {
-  math::vector4 position;
+  math::vector3 position;
   math::color color;
+  math::vector3 normal;
+  math::vector2 uv;
 }; // struct vertex
 
 class mesh {
@@ -62,8 +65,10 @@ template<>
 struct YAML::convert<sbx::graphics::vertex> {
   static auto encode(const sbx::graphics::vertex& rhs) -> YAML::Node {
     YAML::Node node;
-    node["position"] = sbx::math::vector3{rhs.position.x, rhs.position.y, rhs.position.z};
+    node["position"] = rhs.position;
     node["color"] = rhs.color;
+    node["normal"] = rhs.normal;
+    node["uv"] = rhs.uv;
     return node;
   }
 
@@ -72,8 +77,10 @@ struct YAML::convert<sbx::graphics::vertex> {
       return false;
     }
 
-    vertex.position = sbx::math::vector4{node["position"].as<sbx::math::vector3>(), 1.0f};
+    vertex.position = node["position"].as<sbx::math::vector3>();
     vertex.color = node["color"].as<sbx::math::color>();
+    vertex.normal = node["normal"].as<sbx::math::vector3>();
+    vertex.uv = node["uv"].as<sbx::math::vector2>();
 
     return true;
   }
