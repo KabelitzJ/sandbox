@@ -5,6 +5,8 @@
 
 #include <yaml-cpp/yaml.h>
 
+#include <libsbx/utility/hash.hpp>
+
 namespace sbx::math {
 
 struct color {
@@ -13,6 +15,10 @@ struct color {
   std::float_t b;
   std::float_t a;
 }; // class color
+
+constexpr auto operator==(const color& lhs, const color& rhs) noexcept -> bool {
+  return lhs.r == rhs.r && lhs.g == rhs.g && lhs.b == rhs.b && lhs.a == rhs.a;
+}
 
 } // namespace sbx::math
 
@@ -42,5 +48,14 @@ struct YAML::convert<sbx::math::color> {
     return true;
   }
 }; // struct YAML::convert
+
+template<>
+struct std::hash<sbx::math::color> {
+  auto operator()(const sbx::math::color& color) const noexcept -> std::size_t {
+    auto hash = std::size_t{0};
+    sbx::utility::hash_combine(hash, color.r, color.g, color.b, color.a);
+    return hash;
+  }
+}; // struct std::hash
 
 #endif // LIBSBX_MATH_COLOR_HPP_

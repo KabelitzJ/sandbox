@@ -8,6 +8,8 @@
 
 #include <yaml-cpp/yaml.h>
 
+#include <libsbx/utility/hash.hpp>
+
 #include <libsbx/math/vector2.hpp>
 #include <libsbx/math/vector3.hpp>
 #include <libsbx/math/vector4.hpp>
@@ -26,6 +28,10 @@ struct vertex {
   math::vector2 uv;
 }; // struct vertex
 
+constexpr auto operator==(const vertex& lhs, const vertex& rhs) noexcept -> bool {
+  return lhs.position == rhs.position && lhs.color == rhs.color && lhs.normal == rhs.normal && lhs.uv == rhs.uv;
+}
+
 class mesh {
 
 public:
@@ -36,10 +42,6 @@ public:
 
   auto name() const noexcept -> const std::string& {
     return _name;
-  }
-
-  auto version() const noexcept -> const std::string& {
-    return _version;
   }
 
   auto vertex_buffer() const noexcept -> const buffer& {
@@ -53,7 +55,6 @@ public:
 private:
 
   std::string _name{};
-  std::string _version{};
   std::unique_ptr<buffer> _vertex_buffer{};
   std::unique_ptr<buffer> _index_buffer{};
 
@@ -85,5 +86,14 @@ struct YAML::convert<sbx::graphics::vertex> {
     return true;
   }
 }; // struct YAML::convert<vertex>
+
+template<>
+struct std::hash<sbx::graphics::vertex> {
+  auto operator()(const sbx::graphics::vertex& vertex) const noexcept -> std::size_t {
+    auto hash = std::size_t{0};
+    sbx::utility::hash_combine(hash, vertex.position, vertex.color, vertex.normal, vertex.uv);
+    return hash;
+  }
+}; // struct std::hash<vertex>
 
 #endif // LIBSBX_GRAPHICS_MESH_HPP_

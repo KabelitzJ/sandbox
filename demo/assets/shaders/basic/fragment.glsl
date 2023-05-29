@@ -38,11 +38,10 @@ vec4 phong_shading(vec3 light_direction, float intensity) {
 }
 
 void main() {
-  // Calculate the diffuse color
   vec3 light_direction = normalize(vec3(uniform_push_constant.light_position) - in_position);
   float intensity = max(dot(in_normal, light_direction), 0.0);
  
   vec4 phong_shading = phong_shading(light_direction, intensity);
 
-  out_color = vec4(abs(in_normal), 1.0);
+  out_color = phong_shading;
 }

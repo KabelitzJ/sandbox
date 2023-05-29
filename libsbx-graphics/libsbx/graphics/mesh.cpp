@@ -1,5 +1,9 @@
 #include <libsbx/graphics/mesh.hpp>
 
+#define TINYOBJLOADER_IMPLEMENTATION
+#define TINYOBJLOADER_USE_MAPBOX_EARCUT
+#include <tiny_obj_loader.h>
+
 #include <libsbx/core/logger.hpp>
 
 #include <libsbx/utility/timer.hpp>
@@ -13,35 +17,84 @@ mesh::mesh(const std::filesystem::path& path) {
 
   auto timer = utility::timer{};
 
-  auto file = YAML::LoadFile(path.string());
-  
-  _name = file["name"].as<std::string>();
-  _version = file["version"].as<std::string>();
-
-  auto positions = file["positions"].as<std::vector<math::vector3>>();
-  auto colors = file["colors"].as<std::vector<math::color>>();
-  auto normals = file["normals"].as<std::vector<math::vector3>>();
-  auto uvs = file["uvs"].as<std::vector<math::vector2>>();
-
   auto vertices = std::vector<vertex>{};
+  auto indices = std::vector<std::uint32_t>{};
 
-  for (const auto& node : file["vertices"]) {
-    const auto position_index = node["position"].as<std::size_t>();
-    const auto& position = positions[position_index];
+  // [NOTE] KAJ 2023-05-29 : Old tinyobjloader API.
+  auto attributes = tinyobj::attrib_t{};
+  auto shapes = std::vector<tinyobj::shape_t>{};
+  auto materials = std::vector<tinyobj::material_t>{};
+  auto error = std::string{};
+  auto warning = std::string{};
 
-    const auto color_index = node["color"].as<std::size_t>();
-    const auto& color = colors[color_index];
+  const auto result = tinyobj::LoadObj(&attributes, &shapes, &materials, &warning, &error, path.string().c_str(), path.parent_path().string().c_str());
 
-    const auto normal_index = node["normal"].as<std::size_t>();
-    const auto& normal = normals[normal_index];
-
-    const auto uv_index = node["uv"].as<std::size_t>();
-    const auto& uv = uvs[uv_index];
-
-    vertices.push_back(vertex{position, color, normal, uv});
+  if (!warning.empty()) {
+    core::logger::warn("sbx::graphics", "{}", warning);
   }
 
-  auto indices = file["indices"].as<std::vector<std::uint32_t>>();
+  if (!error.empty()) {
+    core::logger::error("sbx::graphics", "{}", error);
+  }
+
+  if (!result) {
+    throw std::runtime_error{fmt::format("Failed to load mesh '{}'", path.string())};
+  }
+
+  _name = path.stem().string();
+
+  for (const auto& shape : shapes) {
+    for (const auto& index : shape.mesh.indices) {
+      auto new_vertex = vertex{};
+
+      new_vertex.position.x = attributes.vertices[3 * index.vertex_index + 0];
+      new_vertex.position.y = attributes.vertices[3 * index.vertex_index + 1];
+      new_vertex.position.z = attributes.vertices[3 * index.vertex_index + 2];
+
+      new_vertex.normal.x = attributes.normals[3 * index.normal_index + 0];
+      new_vertex.normal.y = attributes.normals[3 * index.normal_index + 1];
+      new_vertex.normal.z = attributes.normals[3 * index.normal_index + 2];
+
+      new_vertex.uv.x = attributes.texcoords[2 * index.texcoord_index + 0];
+      new_vertex.uv.y = attributes.texcoords[2 * index.texcoord_index + 1];
+
+      new_vertex.color = math::color{0.87f, 0.21f, 0.12f, 1.0f};
+
+      vertices.push_back(new_vertex);
+      indices.push_back(indices.size());
+    }
+  }
+
+  // [NOTE] KAJ 2023-05-29 : Maybe use YAML instead of tinyobjloader?
+  // auto file = YAML::LoadFile(path.string());
+  
+  // _name = file["name"].as<std::string>();
+  // _version = file["version"].as<std::string>();
+
+  // auto positions = file["positions"].as<std::vector<math::vector3>>();
+  // auto colors = file["colors"].as<std::vector<math::color>>();
+  // auto normals = file["normals"].as<std::vector<math::vector3>>();
+  // auto uvs = file["uvs"].as<std::vector<math::vector2>>();
+
+  // auto vertices = std::vector<vertex>{};
+
+  // for (const auto& node : file["vertices"]) {
+  //   const auto position_index = node["position"].as<std::size_t>();
+  //   const auto& position = positions[position_index];
+
+  //   const auto color_index = node["color"].as<std::size_t>();
+  //   const auto& color = colors[color_index];
+
+  //   const auto normal_index = node["normal"].as<std::size_t>();
+  //   const auto& normal = normals[normal_index];
+
+  //   const auto uv_index = node["uv"].as<std::size_t>();
+  //   const auto& uv = uvs[uv_index];
+
+  //   vertices.push_back(vertex{position, color, normal, uv});
+  // }
+
+  // auto indices = file["indices"].as<std::vector<std::uint32_t>>();
 
   auto fence_create_info = VkFenceCreateInfo{};
   fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;

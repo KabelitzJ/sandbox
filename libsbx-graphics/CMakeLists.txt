@@ -31,7 +31,13 @@ FetchContent_Declare(
   GIT_TAG sdk-1.3.236.0
 )
 
-FetchContent_MakeAvailable(yaml-cpp SPIRV-Headers SPIRV-Tools SPIRV-Cross)
+FetchContent_Declare(
+  tinyobjloader
+  GIT_REPOSITORY https://github.com/tinyobjloader/tinyobjloader.git
+  GIT_TAG v2.0.0rc10
+)
+
+FetchContent_MakeAvailable(yaml-cpp SPIRV-Headers SPIRV-Tools SPIRV-Cross tinyobjloader)
 
 find_package(Vulkan REQUIRED)
 
@@ -92,6 +98,7 @@ target_link_libraries(
     SPIRV-Headers
     SPIRV-Tools
     spirv-cross-cpp
+    tinyobjloader
     libsbx::utility
     libsbx::io
     libsbx::async
