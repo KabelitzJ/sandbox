@@ -37,11 +37,28 @@ vec4 phong_shading(vec3 light_direction, float intensity) {
   return (ambient + diffuse + specular) * in_color;
 }
 
+vec4 cel_shading(vec3 light_direction, float intensity) {
+  const int CEL_LEVELS = 4;
+  const vec4 SHADOW_COLOR = vec4(0.0, 0.0, 0.0, 1.0);
+
+  // Calculate the index of the shade based on the intensity
+  float shade_index = floor(intensity * float(CEL_LEVELS));
+  
+  // Calculate the color based on the shade index
+  vec4 cel_color = mix(SHADOW_COLOR, in_color, shade_index / float(CEL_LEVELS - 1));
+  
+  // Output the final color
+  return cel_color;
+}
+
 void main() {
   vec3 light_direction = normalize(vec3(uniform_push_constant.light_position) - in_position);
   float intensity = max(dot(in_normal, light_direction), 0.0);
  
   vec4 phong_shading = phong_shading(light_direction, intensity);
+  vec4 cel_shading = cel_shading(light_direction, intensity);
 
-  out_color = phong_shading;
+  float mix_factor = 0.5;
+
+  out_color = mix(phong_shading, cel_shading, mix_factor);
 }
