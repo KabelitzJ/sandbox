@@ -28,7 +28,7 @@ public:
 
     _camera_position = sbx::math::vector3{2.0f, 2.0f, 1.0f};
 
-    _light_position = sbx::math::vector3{-2.0f, 2.0f, 1.0f};
+    _light_position = sbx::math::vector3{-1.0f, 3.0f, 1.0f};
 
     _mesh = std::make_unique<sbx::graphics::mesh>("./demo/assets/meshes/suzanne.obj");
 

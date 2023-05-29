@@ -1,9 +1,9 @@
-[2023-05-29 09:42:41] [sbx::graphics] [warning] : Layer VK_LAYER_OW_OVERLAY uses API version 1.2 which is older than the application specified API version of 1.3. May cause issues.
-[2023-05-29 09:42:41] [sbx::graphics] [warning] : Layer VK_LAYER_OW_OBS_HOOK uses API version 1.2 which is older than the application specified API version of 1.3. May cause issues.
-[2023-05-29 09:42:41] [sbx::graphics] [debug] : Selected GPU 'NVIDIA GeForce RTX 2070 SUPER'
-[2023-05-29 09:42:41] [sbx::graphics] [debug] : Queue Family 0 supports 16 queues of type [Graphics|Compute|Transfer|Sparse Binding]
-[2023-05-29 09:42:41] [sbx::graphics] [debug] : Queue Family 1 supports 2 queues of type [Transfer|Sparse Binding]
-[2023-05-29 09:42:41] [sbx::graphics] [debug] : Queue Family 2 supports 8 queues of type [Compute|Transfer|Sparse Binding]
-[2023-05-29 09:42:41] [sbx::graphics] [debug] : Queue Family 3 supports 1 queues of type [Transfer|Sparse Binding]
-[2023-05-29 09:42:41] [sbx::graphics] [debug] : Pipeline 'basic' created in 8.3932ms
-[2023-05-29 09:42:41] [sbx::graphics] [debug] : Mesh 'suzanne' with 2904 vertices and 2904 indices created in 3.0960999ms
+[2023-05-29 10:39:45] [sbx::graphics] [warning] : Layer VK_LAYER_OW_OVERLAY uses API version 1.2 which is older than the application specified API version of 1.3. May cause issues.
+[2023-05-29 10:39:45] [sbx::graphics] [warning] : Layer VK_LAYER_OW_OBS_HOOK uses API version 1.2 which is older than the application specified API version of 1.3. May cause issues.
+[2023-05-29 10:39:45] [sbx::graphics] [debug] : Selected GPU 'NVIDIA GeForce RTX 2070 SUPER'
+[2023-05-29 10:39:45] [sbx::graphics] [debug] : Queue Family 0 supports 16 queues of type [Graphics|Compute|Transfer|Sparse Binding]
+[2023-05-29 10:39:45] [sbx::graphics] [debug] : Queue Family 1 supports 2 queues of type [Transfer|Sparse Binding]
+[2023-05-29 10:39:45] [sbx::graphics] [debug] : Queue Family 2 supports 8 queues of type [Compute|Transfer|Sparse Binding]
+[2023-05-29 10:39:45] [sbx::graphics] [debug] : Queue Family 3 supports 1 queues of type [Transfer|Sparse Binding]
+[2023-05-29 10:39:45] [sbx::graphics] [debug] : Pipeline 'basic' created in 12.7068ms
+[2023-05-29 10:39:45] [sbx::graphics] [debug] : Mesh 'suzanne' with 2904 vertices and 2904 indices created in 3.7163ms
