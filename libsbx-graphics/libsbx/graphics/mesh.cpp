@@ -1,9 +1,5 @@
 #include <libsbx/graphics/mesh.hpp>
 
-#define TINYOBJLOADER_IMPLEMENTATION
-#define TINYOBJLOADER_USE_MAPBOX_EARCUT
-#include <tiny_obj_loader.h>
-
 #include <libsbx/core/logger.hpp>
 
 #include <libsbx/utility/timer.hpp>
@@ -12,36 +8,11 @@
 
 namespace sbx::graphics {
 
-mesh::mesh(const std::filesystem::path& path) {
+mesh::mesh(const tinyobj::attrib_t& attributes, const std::vector<tinyobj::shape_t>& shapes) {
   const auto& logical_device = graphics_module::get().logical_device();
-
-  auto timer = utility::timer{};
 
   auto vertices = std::vector<vertex>{};
   auto indices = std::vector<std::uint32_t>{};
-
-  // [NOTE] KAJ 2023-05-29 : Old tinyobjloader API.
-  auto attributes = tinyobj::attrib_t{};
-  auto shapes = std::vector<tinyobj::shape_t>{};
-  auto materials = std::vector<tinyobj::material_t>{};
-  auto error = std::string{};
-  auto warning = std::string{};
-
-  const auto result = tinyobj::LoadObj(&attributes, &shapes, &materials, &warning, &error, path.string().c_str(), path.parent_path().string().c_str());
-
-  if (!warning.empty()) {
-    core::logger::warn("sbx::graphics", "{}", warning);
-  }
-
-  if (!error.empty()) {
-    core::logger::error("sbx::graphics", "{}", error);
-  }
-
-  if (!result) {
-    throw std::runtime_error{fmt::format("Failed to load mesh '{}'", path.string())};
-  }
-
-  _name = path.stem().string();
 
   for (const auto& shape : shapes) {
     for (const auto& index : shape.mesh.indices) {
@@ -57,8 +28,6 @@ mesh::mesh(const std::filesystem::path& path) {
 
       new_vertex.uv.x = attributes.texcoords[2 * index.texcoord_index + 0];
       new_vertex.uv.y = attributes.texcoords[2 * index.texcoord_index + 1];
-
-      new_vertex.color = math::color{0.87f, 0.21f, 0.12f, 1.0f};
 
       vertices.push_back(new_vertex);
       indices.push_back(indices.size());
@@ -144,8 +113,6 @@ mesh::mesh(const std::filesystem::path& path) {
   validate(vkWaitForFences(logical_device, 1, &fence, true, std::numeric_limits<std::uint64_t>::max()));
 
 	vkDestroyFence(logical_device, fence, nullptr);
-
-  core::logger::debug("sbx::graphics", "Mesh '{}' with {} vertices and {} indices created in {}ms", _name, vertices.size(), indices.size(), units::quantity_cast<units::millisecond>(timer.elapsed()).value());
 }
 
 } // namespace sbx::graphics

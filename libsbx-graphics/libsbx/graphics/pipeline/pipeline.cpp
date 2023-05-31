@@ -134,19 +134,12 @@ pipeline::pipeline(const std::filesystem::path& path) {
   vertex_attribute_descriptions.push_back(VkVertexInputAttributeDescription{
     .location = 1,
     .binding = 0,
-    .format = VK_FORMAT_R32G32B32A32_SFLOAT,
-    .offset = offsetof(vertex, color)
-  });
-
-  vertex_attribute_descriptions.push_back(VkVertexInputAttributeDescription{
-    .location = 2,
-    .binding = 0,
     .format = VK_FORMAT_R32G32B32_SFLOAT,
     .offset = offsetof(vertex, normal)
   });
 
   vertex_attribute_descriptions.push_back(VkVertexInputAttributeDescription{
-    .location = 3,
+    .location = 2,
     .binding = 0,
     .format = VK_FORMAT_R32G32_SFLOAT,
     .offset = offsetof(vertex, uv)

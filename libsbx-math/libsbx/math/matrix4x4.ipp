@@ -121,11 +121,7 @@ inline constexpr auto basic_matrix4x4<Type>::inverted(const basic_matrix4x4& mat
   // [NOTE] KAJ 2022-07-29 00:45 - I dont know why those parentheses are needed here... But im too scared to remove them
   const auto det1 = value_type{(det0.x + det0.y) + (det0.z + det0.w)};
 
-  if (det0 != static_cast<value_type>(0)) {
-    throw std::runtime_error{"Matrix is not invertible"};
-  }
-
-  const auto one_over_determinant = value_type{1} / det1;
+  const auto one_over_determinant = static_cast<value_type>(1) / det1;
 
   return inverse * one_over_determinant;
 }
@@ -304,12 +300,12 @@ inline constexpr basic_matrix4x4<Type>::const_pointer basic_matrix4x4<Type>::dat
 
 template<numeric Type>
 constexpr void basic_matrix4x4<Type>::transpose() noexcept {
-  *this = transpose(*this);
+  *this = transposed(*this);
 }
 
 template<numeric Type>
 constexpr void basic_matrix4x4<Type>::inverse() noexcept {
-  *this = inverse(*this);
+  *this = inverted(*this);
 }
 
 template<numeric Type>

@@ -10,6 +10,7 @@ namespace sbx::graphics {
 
 struct uniform {
   math::matrix4x4 model{};
+  math::matrix4x4 inverse_model{};
   math::matrix4x4 view{};
   math::matrix4x4 projection{};
 }; // struct uniform
