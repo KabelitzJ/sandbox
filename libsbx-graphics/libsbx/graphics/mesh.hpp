@@ -38,7 +38,7 @@ class mesh {
 
 public:
 
-  mesh(const tinyobj::attrib_t& attributes, const std::vector<tinyobj::shape_t>& shapes);
+  mesh(const tinyobj::attrib_t& attributes, const tinyobj::shape_t& shape);
 
   ~mesh() = default;
 

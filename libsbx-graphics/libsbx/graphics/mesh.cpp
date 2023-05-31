@@ -8,30 +8,28 @@
 
 namespace sbx::graphics {
 
-mesh::mesh(const tinyobj::attrib_t& attributes, const std::vector<tinyobj::shape_t>& shapes) {
+mesh::mesh(const tinyobj::attrib_t& attributes, const tinyobj::shape_t& shape) {
   const auto& logical_device = graphics_module::get().logical_device();
 
   auto vertices = std::vector<vertex>{};
   auto indices = std::vector<std::uint32_t>{};
 
-  for (const auto& shape : shapes) {
-    for (const auto& index : shape.mesh.indices) {
-      auto new_vertex = vertex{};
+  for (const auto& index : shape.mesh.indices) {
+    auto new_vertex = vertex{};
 
-      new_vertex.position.x = attributes.vertices[3 * index.vertex_index + 0];
-      new_vertex.position.y = attributes.vertices[3 * index.vertex_index + 1];
-      new_vertex.position.z = attributes.vertices[3 * index.vertex_index + 2];
+    new_vertex.position.x = attributes.vertices[3 * index.vertex_index + 0];
+    new_vertex.position.y = attributes.vertices[3 * index.vertex_index + 1];
+    new_vertex.position.z = attributes.vertices[3 * index.vertex_index + 2];
 
-      new_vertex.normal.x = attributes.normals[3 * index.normal_index + 0];
-      new_vertex.normal.y = attributes.normals[3 * index.normal_index + 1];
-      new_vertex.normal.z = attributes.normals[3 * index.normal_index + 2];
+    new_vertex.normal.x = attributes.normals[3 * index.normal_index + 0];
+    new_vertex.normal.y = attributes.normals[3 * index.normal_index + 1];
+    new_vertex.normal.z = attributes.normals[3 * index.normal_index + 2];
 
-      new_vertex.uv.x = attributes.texcoords[2 * index.texcoord_index + 0];
-      new_vertex.uv.y = attributes.texcoords[2 * index.texcoord_index + 1];
+    new_vertex.uv.x = attributes.texcoords[2 * index.texcoord_index + 0];
+    new_vertex.uv.y = attributes.texcoords[2 * index.texcoord_index + 1];
 
-      vertices.push_back(new_vertex);
-      indices.push_back(indices.size());
-    }
+    vertices.push_back(new_vertex);
+    indices.push_back(indices.size());
   }
 
   // [NOTE] KAJ 2023-05-29 : Maybe use YAML instead of tinyobjloader?

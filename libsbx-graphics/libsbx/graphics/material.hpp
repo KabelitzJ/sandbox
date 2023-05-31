@@ -11,7 +11,7 @@ class material {
 
 public:
 
-  material(const tinyobj::attrib_t& attributes, const std::vector<tinyobj::material_t>& materials);
+  material(const tinyobj::attrib_t& attributes, const tinyobj::material_t& material);
 
   ~material() = default;
 

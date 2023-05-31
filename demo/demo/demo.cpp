@@ -30,7 +30,7 @@ public:
 
     _light_position = sbx::math::vector3{-1.0f, 3.0f, 1.0f};
 
-    _model = std::make_unique<sbx::graphics::model>("./demo/assets/meshes/sphere.obj");
+    _model = std::make_unique<sbx::graphics::model>("./demo/assets/meshes/suzanne.obj");
 
     _push_constant.ambient_color = _model->material().ambient();
     _push_constant.diffuse_color = _model->material().diffuse();
@@ -52,7 +52,7 @@ public:
     auto& window = sbx::devices::devices_module::get().window();
     auto& pipeline = sbx::graphics::graphics_module::get().pipeline("basic");
 
-    _uniform.model = sbx::math::matrix4x4::rotated(_uniform.model, sbx::math::vector3{0.0f, 0.0f, 1.0f}, sbx::math::degree{45.0f} * delta_time * 1.5f);
+    _uniform.model = sbx::math::matrix4x4::rotated(_uniform.model, sbx::math::vector3{0.0f, 0.0f, 1.0f}, sbx::math::degree{45.0f} * delta_time);
     _uniform.inverse_model = sbx::math::matrix4x4::inverted(_uniform.model);
     _uniform.projection = sbx::math::matrix4x4::perspective(sbx::math::radian{45.0f}, window.aspect_ratio(), 0.1f, 10.0f);
 

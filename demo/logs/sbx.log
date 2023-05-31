@@ -1,4 +1,6 @@
-[2023-05-31 13:08:15] [sbx::graphics] [debug] : Selected GPU 'Intel(R) Iris(R) Xe Graphics'
-[2023-05-31 13:08:15] [sbx::graphics] [debug] : Queue Family 0 supports 1 queues of type [Graphics|Compute|Transfer|Sparse Binding]
-[2023-05-31 13:08:15] [sbx::graphics] [debug] : Pipeline 'basic' created in 2.7310998ms
-[2023-05-31 13:08:15] [sbx::graphics] [debug] : Loaded mesh './demo/assets/meshes/sphere.obj' in 0.009171 ms
+[2023-05-31 15:42:08] [sbx::graphics] [debug] : Selected GPU 'Intel(R) Iris(R) Xe Graphics'
+[2023-05-31 15:42:08] [sbx::graphics] [debug] : Queue Family 0 supports 1 queues of type [Graphics|Compute|Transfer|Sparse Binding]
+[2023-05-31 15:42:08] [sbx::graphics] [debug] : Pipeline 'basic' created in 1.8824ms
+[2023-05-31 15:42:08] [sbx::graphics] [debug] : meshes: 1
+[2023-05-31 15:42:08] [sbx::graphics] [debug] : materials: 1
+[2023-05-31 15:42:08] [sbx::graphics] [debug] : Loaded mesh './demo/assets/meshes/suzanne.obj' in 0.0083547 ms
