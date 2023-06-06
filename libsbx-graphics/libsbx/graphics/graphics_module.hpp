@@ -31,6 +31,7 @@
 #include <libsbx/graphics/buffer/buffer.hpp>
 
 #include <libsbx/graphics/renderer.hpp>
+#include <libsbx/graphics/mesh.hpp>
 
 namespace sbx::graphics {
 
@@ -73,7 +74,16 @@ public:
 
   auto swapchain() -> swapchain&;
 
-  auto load_pipeline(const std::filesystem::path& path) -> pipeline&;
+  template<typename Vertex = vertex3d>
+  auto load_pipeline(const std::filesystem::path& path) -> graphics::pipeline& {
+    const auto name = path.stem().string();
+
+    if (auto entry = _pipelines.find(name); entry != _pipelines.end()) {
+      return *entry->second;
+    }
+
+    return *_pipelines.insert({name, pipeline::create<Vertex>(path)}).first->second;
+  }
 
   auto pipeline(const std::string& key) -> pipeline&;
 

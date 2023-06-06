@@ -18,6 +18,7 @@
 #include <libsbx/scripting/scripting.hpp>
 #include <libsbx/devices/devices.hpp>
 #include <libsbx/graphics/graphics.hpp> 
+#include <libsbx/models/models.hpp>
 
 class demo_renderer : public sbx::graphics::renderer {
 
@@ -30,7 +31,7 @@ public:
 
     _light_position = sbx::math::vector3{-1.0f, 3.0f, 1.0f};
 
-    _model = std::make_unique<sbx::graphics::model>("./demo/assets/meshes/suzanne.obj");
+    _model = std::make_unique<sbx::graphics::model>("./demo/assets/meshes/tree.obj");
 
     _push_constant.ambient_color = _model->material().ambient();
     _push_constant.diffuse_color = _model->material().diffuse();

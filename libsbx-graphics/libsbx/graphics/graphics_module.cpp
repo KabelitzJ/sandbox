@@ -184,16 +184,6 @@ auto graphics_module::swapchain() -> graphics::swapchain& {
   return *_swapchain;
 };
 
-auto graphics_module::load_pipeline(const std::filesystem::path& path) -> graphics::pipeline& {
-  const auto name = path.stem().string();
-
-  if (auto entry = _pipelines.find(name); entry != _pipelines.end()) {
-    return *entry->second;
-  }
-
-  return *_pipelines.insert({name, std::make_unique<graphics::pipeline>(path)}).first->second;
-}
-
 auto graphics_module::pipeline(const std::string& name) -> graphics::pipeline& {
   if (auto entry = _pipelines.find(name); entry != _pipelines.end()) {
     return *entry->second;

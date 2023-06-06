@@ -167,7 +167,7 @@ inline constexpr auto basic_vector4<Type>::operator[](const index_type index) ->
 
 template<numeric Type>
 inline constexpr auto basic_vector4<Type>::operator[](const index_type index) const -> const_reference {
-  if (index >= static_cast<Type>(4)) {
+  if (index >= static_cast<index_type>(4)) {
     throw std::domain_error{"Index out of bounds"};
   }
 

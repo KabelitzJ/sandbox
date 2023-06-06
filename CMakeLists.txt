@@ -35,5 +35,6 @@ add_subdirectory(libsbx-ecs)
 add_subdirectory(libsbx-scene)
 add_subdirectory(libsbx-scripting)
 add_subdirectory(libsbx-signal)
+add_subdirectory(libsbx-models)
 
 add_subdirectory(demo)

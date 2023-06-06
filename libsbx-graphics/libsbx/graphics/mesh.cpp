@@ -11,24 +11,24 @@ namespace sbx::graphics {
 mesh::mesh(const tinyobj::attrib_t& attributes, const tinyobj::shape_t& shape) {
   const auto& logical_device = graphics_module::get().logical_device();
 
-  auto vertices = std::vector<vertex>{};
+  auto vertices = std::vector<vertex3d>{};
   auto indices = std::vector<std::uint32_t>{};
 
   for (const auto& index : shape.mesh.indices) {
-    auto new_vertex = vertex{};
+    auto vertex = vertex3d{};
 
-    new_vertex.position.x = attributes.vertices[3 * index.vertex_index + 0];
-    new_vertex.position.y = attributes.vertices[3 * index.vertex_index + 1];
-    new_vertex.position.z = attributes.vertices[3 * index.vertex_index + 2];
+    vertex.position.x = attributes.vertices[3 * index.vertex_index + 0];
+    vertex.position.y = attributes.vertices[3 * index.vertex_index + 1];
+    vertex.position.z = attributes.vertices[3 * index.vertex_index + 2];
 
-    new_vertex.normal.x = attributes.normals[3 * index.normal_index + 0];
-    new_vertex.normal.y = attributes.normals[3 * index.normal_index + 1];
-    new_vertex.normal.z = attributes.normals[3 * index.normal_index + 2];
+    vertex.normal.x = attributes.normals[3 * index.normal_index + 0];
+    vertex.normal.y = attributes.normals[3 * index.normal_index + 1];
+    vertex.normal.z = attributes.normals[3 * index.normal_index + 2];
 
-    new_vertex.uv.x = attributes.texcoords[2 * index.texcoord_index + 0];
-    new_vertex.uv.y = attributes.texcoords[2 * index.texcoord_index + 1];
+    vertex.uv.x = attributes.texcoords[2 * index.texcoord_index + 0];
+    vertex.uv.y = attributes.texcoords[2 * index.texcoord_index + 1];
 
-    vertices.push_back(new_vertex);
+    vertices.push_back(vertex);
     indices.push_back(indices.size());
   }
 
@@ -72,7 +72,7 @@ mesh::mesh(const tinyobj::attrib_t& attributes, const tinyobj::shape_t& shape) {
 
   validate(vkResetFences(logical_device, 1, &fence));
 
-  auto vertex_buffer_size = sizeof(vertex) * vertices.size();
+  auto vertex_buffer_size = sizeof(vertex3d) * vertices.size();
   auto index_buffer_size = sizeof(std::uint32_t) * indices.size();
 
   auto staging_buffer_size = vertex_buffer_size + index_buffer_size;

@@ -1,13 +1,27 @@
-project(demo)
+project(models)
 
 message(STATUS "Configuring ${PROJECT_NAME}...")
 
-add_executable(${PROJECT_NAME})
+add_library(${PROJECT_NAME} STATIC)
+add_library(${CMAKE_PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
+
+include(FetchContent)
+
+FetchContent_Declare(
+  fmt
+  GIT_REPOSITORY https://github.com/fmtlib/fmt.git
+  GIT_TAG 9.1.0
+)
+
+FetchContent_MakeAvailable(fmt)
 
 target_sources(
   ${PROJECT_NAME}
   PRIVATE
-    "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/demo.cpp"
+    "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/models.cpp"
+  PUBLIC
+    "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/models.hpp"
+
 )
 
 target_include_directories(
@@ -18,21 +32,10 @@ target_include_directories(
 
 target_link_libraries(
   ${PROJECT_NAME}
-  PRIVATE
-    libsbx::units
+  PUBLIC
+    fmt::fmt
     libsbx::utility
-    libsbx::async
-    libsbx::io
-    libsbx::math
-    libsbx::memory
     libsbx::core
-    libsbx::devices
-    libsbx::graphics
-    libsbx::ecs
-    libsbx::scene
-    libsbx::scripting
-    libsbx::signal
-    libsbx::models
 )
 
 set_target_properties(

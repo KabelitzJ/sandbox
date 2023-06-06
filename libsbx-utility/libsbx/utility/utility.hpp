@@ -47,5 +47,6 @@
 #include <libsbx/utility/observer_ptr.hpp>
 #include <libsbx/utility/overload.hpp>
 #include <libsbx/utility/timer.hpp>
+#include <libsbx/utility/enable_private_constructor.hpp>
 
 #endif // LIBSBX_UTILITY_HPP_

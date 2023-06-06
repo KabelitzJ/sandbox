@@ -1,0 +1,6 @@
+#ifndef LIBSBX_MODELS_HPP_
+#define LIBSBX_MODELS_HPP_
+
+
+
+#endif // LIBSBX_MODELS_HPP_
