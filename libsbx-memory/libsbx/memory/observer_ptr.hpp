@@ -1,5 +1,5 @@
-#ifndef LIBSBX_UTILITY_observer_ptr_HPP_
-#define LIBSBX_UTILITY_observer_ptr_HPP_
+#ifndef LIBSBX_MEMORY_OBSERVER_PTR_HPP_
+#define LIBSBX_MEMORY_OBSERVER_PTR_HPP_
 
 #include <memory>
 #include <utility>
@@ -132,4 +132,4 @@ struct std::hash<sbx::utility::observer_ptr<Type>> {
   }
 };
 
-#endif // LIBSBX_UTILITY_observer_ptr_HPP_
+#endif // LIBSBX_MEMORY_OBSERVER_PTR_HPP_

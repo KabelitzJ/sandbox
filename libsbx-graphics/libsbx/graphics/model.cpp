@@ -39,7 +39,7 @@ model::model(const std::filesystem::path& path) {
   core::logger::debug("sbx::graphics", "meshes: {}", shapes.size());
   core::logger::debug("sbx::graphics", "materials: {}", materials.size());
 
-  _mesh = std::make_unique<graphics::mesh>(attributes, shapes[0]);
+  _mesh = std::make_unique<graphics::mesh>(attributes, shapes);
   _material = std::make_unique<graphics::material>(attributes, materials[0]);
 
   core::logger::debug("sbx::graphics", "Loaded mesh '{}' in {} ms", path.string(), timer.elapsed().value());

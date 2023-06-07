@@ -1,9 +1,10 @@
-#ifndef LIBSBX_ECS_REGISTRY_HPP_
-#define LIBSBX_ECS_REGISTRY_HPP_
+#ifndef LIBSBX_REGISTRY_HPP_
+#define LIBSBX_REGISTRY_HPP_
 
 #include <vector>
 #include <memory>
 #include <unordered_map>
+#include <unordered_set>
 #include <typeindex>
 #include <optional>
 #include <algorithm>
@@ -16,31 +17,113 @@
 #include <libsbx/ecs/sparse_set.hpp>
 #include <libsbx/ecs/storage.hpp>
 #include <libsbx/ecs/view.hpp>
+#include <libsbx/ecs/component_handle.hpp>
 
 namespace sbx::ecs {
 
+template<typename To, typename From>
+struct constness_as {
+  using type = std::remove_const_t<To>;
+};
+
+template<typename To, typename From>
+struct constness_as<To, const From> {
+  using type = std::add_const_t<To>;
+};
+
+template<typename To, typename From>
+using constness_as_t = typename constness_as<To, From>::type;
+
+template<typename... Types>
+struct variadic_template_size {
+  inline static constexpr auto value = sizeof...(Types);
+}; // struct variadic_template_size
+
+template<typename... Types>
+constexpr auto variadic_template_size_v = variadic_template_size<Types...>::value;
+
+template<typename Entity, typename EntityList, typename FreeList> 
+class registry_iterator {
+
+  using iterator_type = EntityList::const_iterator;
+
+  using entity_traits = ecs::entity_traits<Entity>;
+
+
+public:
+
+  using value_type = typename iterator_type::value_type;
+  using pointer = typename iterator_type::pointer;
+  using reference = typename iterator_type::reference;
+  using difference_type = typename iterator_type::difference_type;
+  using iterator_category = std::forward_iterator_tag;
+
+  registry_iterator(iterator_type current, iterator_type end, FreeList& free_entities)
+  : _current{current},
+    _end{end},
+    _free_entities{std::addressof(free_entities)} {
+    while(_current != _end && !_is_valid()) {
+      ++_current;
+    }
+  }
+
+  auto operator++() noexcept -> registry_iterator& {
+    while(++_current != _end && !_is_valid()) {}
+    return *this;
+  }
+
+  auto operator++(int) noexcept -> registry_iterator {
+    auto copy = *this;
+    ++(*this);
+    return copy;
+  }
+
+  auto operator->() const noexcept -> pointer {
+    return &*_current;
+  }
+
+  auto operator*() const noexcept -> reference {
+    return *(operator->());
+  }
+
+  template<typename LhsEntity, typename LhsEntityList, typename LhsFreeList, typename RhsEntity,  typename RhsEntityList, typename RhsFreeList>
+  friend auto operator==(const registry_iterator<LhsEntity, LhsEntityList, LhsFreeList>& lhs, const registry_iterator<RhsEntity, RhsEntityList, RhsFreeList>& rhs) noexcept -> bool {
+    return lhs._current == rhs._current;
+  } 
+
+private:
+
+  auto _is_valid() const noexcept -> bool {
+    return !_free_entities->contains(entity_traits::to_id(*_current));
+  }
+
+  iterator_type _current;
+  iterator_type _end;
+  const FreeList* _free_entities;
+
+}; // class registry_iterator
+
 template<typename Entity, memory::allocator_for<Entity> Allocator = std::allocator<Entity>>
-requires (utility::is_complete_v<entity_traits<Entity>>)
 class basic_registry {
 
   using allocator_traits = std::allocator_traits<Allocator>;
 
   using entity_storage_type = std::vector<Entity, Allocator>;
-  using free_list_type = std::vector<std::size_t, memory::rebound_allocator_t<Allocator, std::size_t>>;
+  using free_list_type = std::unordered_set<std::size_t, std::hash<std::size_t>, std::equal_to<std::size_t>, memory::rebound_allocator_t<Allocator, std::size_t>>;
 
   using basic_storage_type = sparse_set<Entity, Allocator>;
 
   template<typename Type>
-  using storage_type = storage<Entity, Type, memory::rebound_allocator_t<Allocator, Type>>;
+  using storage_type = constness_as_t<storage<Entity, std::remove_const_t<Type>, memory::rebound_allocator_t<Allocator, std::remove_const_t<Type>>>, Type>;
+
+  using entity_traits = ecs::entity_traits<Entity>;
 
 public:
 
-  using entity_type = Entity;
+  using entity_type = entity_traits::entity_type;
   using allocator_type = Allocator;
   using size_type = std::size_t;
-
-  template<typename... Components>
-  using view_type = basic_view<Components...>;
+  using iterator = registry_iterator<entity_type, entity_storage_type, free_list_type>;
 
   basic_registry() = default;
 
@@ -49,7 +132,7 @@ public:
   basic_registry(basic_registry&& other) noexcept
   : _entities{std::move(other._entities)},
     _free_entities{std::move(other._free_entities)},
-    _component_storages{std::move(other._component_storages)} { }
+    _storages{std::move(other._storages)} { }
 
   ~basic_registry() {
     clear();
@@ -61,14 +144,22 @@ public:
     if (this != &other) {
       _entities = std::move(other._entities);
       _free_entities = std::move(other._free_entities);
-      _component_storages = std::move(other._component_storages);
+      _storages = std::move(other._storages);
     }
 
     return *this;
   }
 
+  auto begin() -> iterator {
+    return iterator{_entities.begin(), _entities.end(), _free_entities};
+  }
+
+  auto end() -> iterator {
+    return iterator{_entities.end(), _entities.end(), _free_entities};
+  }
+
   auto clear() -> void {
-    for (auto& [key, storage] : _component_storages) {
+    for (auto& [key, storage] : _storages) {
       storage->clear();
     }
 
@@ -78,24 +169,29 @@ public:
 
   auto create_entity() -> entity_type {
     if (!_free_entities.empty()) {
-      auto index = _free_entities.back();
-      _free_entities.pop_back();
+      auto index = *_free_entities.begin();
+      _free_entities.erase(_free_entities.begin());
 
       return _entities.at(index);
     }
 
-    const auto id = static_cast<entity_type::id_type>(_entities.size());
+    const auto id = static_cast<entity_traits::id_type>(_entities.size());
 
-    auto new_entity = entity{id, static_cast<entity_type::version_type>(0)};
+    auto new_entity = entity_traits::construct(id);
 
     _entities.push_back(new_entity);
     return new_entity;
   }
 
   auto destroy_entity(const entity_type& entity) -> void {
-    auto index = static_cast<std::size_t>(entity._id());
-    _free_entities.push_back(index);
-    _entities.at(index)._increment_version();
+    // [NOTE] : Clear out all components that are owned by this entity
+    for (auto& [type, storage] : _storages) {
+      storage->remove(entity);
+    }
+
+    auto index = static_cast<std::size_t>(entity_traits::to_id(entity));
+    _free_entities.insert(index);
+    _entities.at(index) = entity_traits::next(_entities.at(index));
   }
 
   auto is_valid_entity(const entity_type& entity) -> bool {
@@ -105,9 +201,7 @@ public:
 
   template<typename Component>
   auto has_component(const entity_type& entity) const -> bool {
-    using component_type = std::remove_cvref_t<Component>;
-
-    if (const auto storage = _try_get_storage<component_type>(); storage) {
+    if (const auto storage = _try_get_storage<std::remove_const_t<Component>>(); storage) {
       return storage->get().contains(entity);
     }
 
@@ -115,121 +209,120 @@ public:
   }
 
   template<typename Component, typename... Args>
-  auto add_component(const entity_type& entity, Args&&... args) -> Component& {
-    using component_type = std::remove_cvref_t<Component>;
+  auto add_component(const entity_type& entity, Args&&... args) -> component_handle<Component> {
+    auto& storage = _get_or_create_storage<std::remove_const_t<Component>>();
 
-    auto& storage = _get_or_create_storage<component_type>();
-
-    return static_cast<storage_type<component_type>&>(storage).add(entity, std::forward<Args>(args)...);
+    return storage.add(entity, std::forward<Args>(args)...);
   }
 
+  /**
+   * @brief Gets the component assigned to an entity
+   * 
+   * @tparam Component Type of the component
+   * @param entity The entity the component is assigned to
+   * 
+   * @throws std::runtime_error when the entity does not have a component of the given type assigned to itself 
+   * 
+   * @return The component assigned to the entity
+   */
   template<typename Component>
-  auto get_component(const entity_type& entity) const -> const Component& {
-    using component_type = std::remove_cvref_t<Component>;
-
-    if (const auto component = try_get_component<component_type>(entity); component) {
-      return component->get();
+  auto get_component(const entity_type& entity) const -> component_handle<const Component> {
+    if (const auto component = try_get_component<std::remove_const_t<Component>>(entity); component) {
+      return *component;
     }
 
     throw std::runtime_error{"Entity does not have component assigned to it"};
   }
 
   template<typename Component>
-  auto get_component(const entity_type& entity) -> Component& {
-    using component_type = std::remove_cvref_t<Component>;
-
-    if (auto component = try_get_component<component_type>(entity); component) {
-      return component->get();
+  auto get_component(const entity_type& entity) -> component_handle<Component> {
+    if (auto component = try_get_component<std::remove_const_t<Component>>(entity); component) {
+      return *component;
     }
 
     throw std::runtime_error{"Entity does not have component assigned to it"};
   }
 
   template<typename Component>
-  auto try_get_component(const entity_type& entity) const -> std::optional<std::reference_wrapper<const Component>> {
-    using component_type = std::remove_cvref_t<Component>;
-
-    if (const auto storage = _try_get_storage<component_type>(); storage) {
-      const auto& component_storage = static_cast<const storage_type<component_type>&>(storage->get());
-
-      if (auto entry = component_storage.find(entity); entry != component_storage.cend()) {
-        return std::cref(*entry);
+  auto try_get_component(const entity_type& entity) const -> component_handle<const Component> {
+    if (const auto storage = _try_get_storage<std::remove_const_t<Component>>(); storage) {
+      if (auto entry = storage->get().find(entity); entry != storage->get().cend()) {
+        return *entry;
       }
     }
 
-    throw std::nullopt;
+    return component_handle<const Component>{};
   }
 
   template<typename Component>
-  auto try_get_component(const entity_type& entity) -> std::optional<std::reference_wrapper<Component>> {
-    using component_type = std::remove_cvref_t<Component>;
-
-    if (auto storage = _try_get_storage<component_type>(); storage) {
-      auto& component_storage = static_cast<storage_type<component_type>&>(storage->get());
-
-      if (auto entry = component_storage.find(entity); entry != component_storage.end()) {
-        return std::ref(*entry);
+  auto try_get_component(const entity_type& entity) -> component_handle<Component> {
+    if (auto storage = _try_get_storage<std::remove_const_t<Component>>(); storage) {
+      if (auto entry = storage->get().find(entity); entry != storage->get().end()) {
+        return *entry;
       }
     }
 
-    throw std::nullopt;
+    return component_handle<Component>{};
   }
 
   template<typename... Components>
-  auto create_view() -> view_type<Components...> {
-    if constexpr (sizeof...(Components) == 0) {
-      return view_type<Components...>{};
-    } else {
-      using container_type = typename view_type<Components...>::container_type;
+  requires (variadic_template_size_v<Components...> != 0)
+  auto create_view() -> basic_view<storage_type<Components>...> {
+    return {_get_or_create_storage<std::remove_const_t<Components>>()...};
+  }
 
-      const auto component_filter = [&](const auto& entity){
-        const auto has_components = std::initializer_list{has_component<Components>(entity)...};
-      
-        return std::all_of(std::begin(has_components), std::end(has_components), std::identity{});
-      };
-
-      auto entries = container_type{};
-
-      for (const auto& entity : _entities | std::views::filter(component_filter)) {
-        entries.emplace_back(std::forward_as_tuple(entity, get_component<Components>(entity)...));
-      }
-
-      return view_type<Components...>{entries};
-    }
+  template<typename... Components>
+  requires (variadic_template_size_v<Components...> != 0)
+  auto create_view() const -> basic_view<storage_type<const Components>...> {
+    return {_get_or_create_storage<std::remove_const_t<Components>>()...};
   }
 
 private:
 
   template<typename Component>
-  auto _get_or_create_storage() -> basic_storage_type& {
+  auto _get_or_create_storage() const -> const storage_type<Component>& {
     const auto type = std::type_index{typeid(Component)};
 
-    if (auto entry = _component_storages.find(type); entry != _component_storages.end()) {
-      return *entry->second;
+    if (auto entry = _storages.find(type); entry != _storages.cend()) {
+      return static_cast<const storage_type<Component>&>(*entry->second);
     }
 
-    auto entry = _component_storages.insert({type, std::make_unique<storage_type<Component>>()}).first;
+    // [Note]: We use an empty storage placeholder in const context until we find it in the available storages
+    static const auto placeholder = storage_type<Component>{};
 
-    return *entry->second;
+    return placeholder;
   }
 
   template<typename Component>
-  auto _try_get_storage() const -> std::optional<std::reference_wrapper<const basic_storage_type>> {
+  auto _get_or_create_storage() -> storage_type<Component>& {
     const auto type = std::type_index{typeid(Component)};
 
-    if (auto entry = _component_storages.find(type); entry != _component_storages.cend()) {
-      return std::cref(*entry->second);
+    if (auto entry = _storages.find(type); entry != _storages.end()) {
+      return static_cast<storage_type<Component>&>(*entry->second);
+    }
+
+    auto entry = _storages.insert({type, std::make_unique<storage_type<Component>>()}).first;
+
+    return static_cast<storage_type<Component>&>(*entry->second);
+  }
+
+  template<typename Component>
+  auto _try_get_storage() const -> std::optional<std::reference_wrapper<const storage_type<Component>>> {
+    const auto type = std::type_index{typeid(Component)};
+
+    if (auto entry = _storages.find(type); entry != _storages.cend()) {
+      return std::cref(static_cast<const storage_type<Component>&>(*entry->second));
     }
 
     return std::nullopt;
   }
 
   template<typename Component>
-  auto _try_get_storage() -> std::optional<std::reference_wrapper<basic_storage_type>> {
+  auto _try_get_storage() -> std::optional<std::reference_wrapper<storage_type<Component>>> {
     const auto type = std::type_index{typeid(Component)};
 
-    if (auto entry = _component_storages.find(type); entry != _component_storages.end()) {
-      return std::ref(*entry->second);
+    if (auto entry = _storages.find(type); entry != _storages.end()) {
+      return std::ref(static_cast<storage_type<Component>&>(*entry->second));
     }
 
     return std::nullopt;
@@ -238,12 +331,12 @@ private:
   entity_storage_type _entities;
   free_list_type _free_entities;
 
-  std::unordered_map<std::type_index, std::unique_ptr<basic_storage_type>> _component_storages;
+  std::unordered_map<std::type_index, std::unique_ptr<basic_storage_type>> _storages;
 
-};
+}; // class basic_registry
 
 using registry = basic_registry<entity>;
 
 } // namespace sbx::ecs
 
-#endif // LIBSBX_ECS_REGISTRY_HPP_
+#endif // LIBSBX_REGISTRY_HPP_

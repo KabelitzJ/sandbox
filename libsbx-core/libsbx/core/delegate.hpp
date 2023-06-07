@@ -41,6 +41,8 @@
 
 #include <libsbx/core/concepts.hpp>
 
+#include <libsbx/memory/aligned_storage.hpp>
+
 namespace sbx::core {
 
 /** @brief Exception type that is thrown when a delegate that does not hold a handle is invoked. */
@@ -61,7 +63,7 @@ class delegate;
 template<typename Return, typename... Args>
 class delegate<Return(Args...)> {
 
-  using static_storage_type = std::aligned_storage_t<sizeof(std::byte*), alignof(std::byte*)>;
+  using static_storage_type = memory::aligned_storage_t<sizeof(std::byte*), alignof(std::byte*)>;
   using dynamic_storage_type = std::byte*;
 
   union storage {

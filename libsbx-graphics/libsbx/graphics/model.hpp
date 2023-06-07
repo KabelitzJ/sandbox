@@ -39,6 +39,7 @@ public:
 private:
 
   std::string _name{};
+
   std::unique_ptr<graphics::mesh> _mesh;
   std::unique_ptr<graphics::material> _material;
 

@@ -19,6 +19,7 @@
 #include <libsbx/devices/devices.hpp>
 #include <libsbx/graphics/graphics.hpp> 
 #include <libsbx/models/models.hpp>
+#include <libsbx/scenes/scenes.hpp>
 
 class demo_renderer : public sbx::graphics::renderer {
 

@@ -4,7 +4,7 @@
 #include <cinttypes>
 #include <utility>
 
-#include <libsbx/utility/observer_ptr.hpp>
+#include <libsbx/memory/observer_ptr.hpp>
 
 namespace sbx::core {
 

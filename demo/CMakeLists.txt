@@ -29,7 +29,7 @@ target_link_libraries(
     libsbx::devices
     libsbx::graphics
     libsbx::ecs
-    libsbx::scene
+    libsbx::scenes
     libsbx::scripting
     libsbx::signal
     libsbx::models

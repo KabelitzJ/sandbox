@@ -1,4 +1,4 @@
-project(scene)
+project(scenes)
 
 message(STATUS "Configuring ${PROJECT_NAME}...")
 
@@ -18,10 +18,10 @@ FetchContent_MakeAvailable(fmt)
 target_sources(
   ${PROJECT_NAME}
   PRIVATE
-    "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/scene.cpp"
+    "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/scenes.cpp"
   PUBLIC
-    "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/scene.hpp"
-    "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/scene_module.hpp"
+    "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/scenes.hpp"
+    "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/scenes_module.hpp"
 
 )
 
@@ -37,6 +37,8 @@ target_link_libraries(
     fmt::fmt
     libsbx::utility
     libsbx::core
+    libsbx::math
+    libsbx::graphics
 )
 
 set_target_properties(

@@ -1,103 +1,45 @@
 #ifndef LIBSBX_UTILITY_TYPE_LIST_HPP_
 #define LIBSBX_UTILITY_TYPE_LIST_HPP_
 
+#include <cstddef>
+
 namespace sbx::utility {
 
-template<typename... Types>
+template<typename... Type>
 struct type_list {
-  static constexpr auto size = sizeof...(Types);
+  using type = type_list;
+
+  static constexpr auto size = sizeof...(Type);
 }; // struct type_list
 
+template<typename, typename>
+struct type_list_index;
 
+template<typename Type, typename First, typename... Other>
+struct type_list_index<Type, type_list<First, Other...>> {
+  using value_type = std::size_t;
 
-template<typename... Types>
-struct type_list_front;
+  static constexpr auto value = type_list_index<Type, type_list<Other...>>::value + value_type{1};
+}; // struct type_list_index
 
-template<typename Type, typename... Rest>
-struct type_list_front<type_list<Type, Rest...>> {
-  using type = Type;
-}; // struct type_list_front
+template<typename Type, typename... Other>
+struct type_list_index<Type, type_list<Type, Other...>> {
+  static_assert(type_list_index<Type, type_list<Other...>>::value == sizeof...(Other), "Duplicate type in type list");
 
-template<typename... Types>
-using type_list_front_t = typename type_list_front<Types...>::type;
+  using value_type = std::size_t;
 
+  static constexpr auto value = value_type{0};
+};
 
+template<typename Type>
+struct type_list_index<Type, type_list<>> {
+  using value_type = std::size_t;
 
-template<typename... Types>
-struct type_list_back;
+  static constexpr auto value = value_type{0};
+}; // struct type_list_index
 
-template<typename Type, typename... Rest>
-struct type_list_back<type_list<Type, Rest...>> {
-  using type = type_list<Rest...>;
-}; // struct type_list_back
-
-template<typename... Types>
-using type_list_back_t = typename type_list_back<Types...>::type;
-
-
-
-template<typename... Types>
-struct type_list_push_front;
-
-template<typename Type, typename... Rest>
-struct type_list_push_front<type_list<Rest...>, Type> {
-  using type = type_list<Type, Rest...>;
-}; // struct type_list_push_front
-
-template<typename... Types>
-using type_list_push_front_t = typename type_list_push_front<Types...>::type;
-
-
-
-template<typename... Types>
-struct type_list_push_back;
-
-template<typename Type, typename... Rest>
-struct type_list_push_back<type_list<Rest...>, Type> {
-  using type = type_list<Rest..., Type>;
-}; // struct type_list_push_back
-
-template<typename... Types>
-using type_list_push_back_t = typename type_list_push_back<Types...>::type;
-
-
-
-template<typename... Types>
-struct type_list_pop_front;
-
-template<typename Type, typename... Rest>
-struct type_list_pop_front<type_list<Type, Rest...>> {
-  using type = type_list<Rest...>;
-}; // struct type_list_pop_front
-
-template<typename... Types>
-using type_list_pop_front_t = typename type_list_pop_front<Types...>::type;
-
-
-
-template<typename... Types>
-struct type_list_pop_back;
-
-template<typename Type, typename... Rest>
-struct type_list_pop_back<type_list<Type, Rest...>> {
-  using type = type_list<Type>;
-}; // struct type_list_pop_back
-
-template<typename... Types>
-using type_list_pop_back_t = typename type_list_pop_back<Types...>::type;
-
-
-
-template<typename... Types>
-struct type_list_concat;
-
-template<typename... Lhs, typename... Rhs>
-struct type_list_concat<type_list<Lhs...>, type_list<Rhs...>> {
-  using type = type_list<Lhs..., Rhs...>;
-}; // struct type_list_concat
-
-template<typename... Types>
-using type_list_concat_t = typename type_list_concat<Types...>::type;
+template<typename Type, typename List>
+inline constexpr std::size_t type_list_index_v = type_list_index<Type, List>::value;
 
 } // namespace sbx::utility
 

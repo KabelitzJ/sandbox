@@ -1,12 +1,10 @@
-#ifndef LIBSBX_ECS_ENTITY_HPP_
-#define LIBSBX_ECS_ENTITY_HPP_
+#ifndef LIBSBX_ENTITY_HPP_
+#define LIBSBX_ENTITY_HPP_
 
 #include <cinttypes>
 #include <memory>
 #include <type_traits>
 #include <utility>
-
-#include <libsbx/utility/concepts.hpp>
 
 #include <libsbx/memory/concepts.hpp>
 
@@ -52,17 +50,6 @@ struct basic_entity_traits<std::uint64_t> {
 template<typename Type>
 requires (std::is_enum_v<Type>)
 struct basic_entity_traits<Type> : basic_entity_traits<std::underlying_type_t<Type>> {
-  using entity_type = Type;
-};
-
-/**
- * @brief Entity traits for a class entity representation. Propagates to its entity_type type alias
- *
- * @tparam Type Class type
- */
-template<typename Type>
-requires (std::is_class_v<Type>)
-struct basic_entity_traits<Type> : basic_entity_traits<typename Type::entity_type> {
   using entity_type = Type;
 };
 
@@ -122,7 +109,7 @@ struct entity_traits : basic_entity_traits<Type> {
    *
    * @return
    */
-  static constexpr auto construct(const id_type id, const version_type version) noexcept -> entity_type {
+  static constexpr auto construct(const id_type id, const version_type version = version_type{0}) noexcept -> entity_type {
     return entity_type{(id & id_mask_v) | (static_cast<id_type>(version) << version_shift_v)};
   }
 
@@ -137,84 +124,30 @@ struct entity_traits : basic_entity_traits<Type> {
     const auto version = to_version(value) + 1;
     return construct(to_id(value), static_cast<version_type>(version + (version == version_mask_v)));
   }
-};
+}; // struct entity_traits
 
-template<typename Type>
-requires (utility::is_complete_v<entity_traits<Type>>)
-class basic_entity {
+enum class entity : std::uint32_t { };
 
-  template<typename Entity, memory::allocator_for<Entity> Allocator>
-  requires (utility::is_complete_v<entity_traits<Entity>>)
-  friend class basic_registry;
+struct null_entity_t {
 
-  friend std::hash<basic_entity<Type>>;
-
-  using entity_traits = ecs::entity_traits<Type>;
-
-public:
-
-  using entity_type = entity_traits::entity_type;
-  using id_type = entity_traits::id_type;
-  using version_type = entity_traits::version_type;
-
-  inline static const basic_entity null{entity_traits::id_mask_v, entity_traits::version_mask_v};
-
-  constexpr basic_entity()
-  : _value{null._value} { }
-
-  constexpr basic_entity(const basic_entity&) noexcept = default;
-
-  constexpr basic_entity(basic_entity&&) noexcept = default;
-
-  constexpr ~basic_entity() noexcept = default;
-
-  constexpr auto operator=(const basic_entity&) noexcept -> basic_entity& = default;
-
-  constexpr auto operator=(basic_entity&&) noexcept -> basic_entity& = default;
-
-  constexpr auto operator==(const basic_entity& other) const noexcept -> bool {
-    return entity_traits::to_underlying(_value) == entity_traits::to_underlying(other._value);
+  template<typename Entity>
+  [[nodiscard]] constexpr operator Entity() const noexcept {
+    return entity_traits<Entity>::construct(entity_traits<Entity>::id_mask_v, entity_traits<Entity>::version_mask_v);
   }
 
-private:
-
-  constexpr basic_entity(const id_type id, const version_type version) noexcept
-  : _value{entity_traits::construct(id, version)} { }
-
-  constexpr auto _id() const noexcept -> id_type {
-    return entity_traits::to_id(_value);
+  [[nodiscard]] constexpr auto operator==([[maybe_unused]] const null_entity_t other) const noexcept -> bool {
+    return true;
   }
 
-  constexpr auto _version() const noexcept -> version_type {
-    return entity_traits::to_version(_value);
+  template<typename Entity>
+  [[nodiscard]] constexpr bool operator==(const Entity entity) const noexcept {
+    return entity_traits<Entity>::to_id(entity) == entity_traits<Entity>::to_id(*this);
   }
 
-  constexpr auto _increment_version() noexcept {
-    _value = entity_traits::next(_value);
-  }
+}; // struct null_entity
 
-  entity_type _value{};
-
-}; // class basic_entity
-
-
-namespace detail {
-
-enum class entity_tag : std::uint32_t { };
-
-} // namespace detail
-
-using entity = basic_entity<detail::entity_tag>;
+inline constexpr auto null_entity = null_entity_t{};
 
 } // namespace sbx::ecs
 
-template<typename Type>
-struct std::hash<sbx::ecs::basic_entity<Type>> {
-  auto operator()(const sbx::ecs::basic_entity<Type>& entity) const noexcept -> std::size_t {
-    using underlying_type = typename sbx::ecs::basic_entity<Type>::id_type;
-    const auto value = sbx::ecs::basic_entity<Type>::entity_traits::to_underlying(entity._value);
-
-    return std::hash<underlying_type>{}(value);
-  }
-};
-#endif // LIBSBX_ECS_ENTITY_HPP_
+#endif // LIBSBX_ENTITY_HPP_

@@ -44,9 +44,9 @@
 #include <libsbx/utility/hash.hpp>
 #include <libsbx/utility/concepts.hpp>
 #include <libsbx/utility/fast_mod.hpp>
-#include <libsbx/utility/observer_ptr.hpp>
 #include <libsbx/utility/overload.hpp>
 #include <libsbx/utility/timer.hpp>
 #include <libsbx/utility/enable_private_constructor.hpp>
+#include <libsbx/utility/iterator.hpp>
 
 #endif // LIBSBX_UTILITY_HPP_

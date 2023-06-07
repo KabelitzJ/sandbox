@@ -8,7 +8,7 @@
 
 namespace sbx::graphics {
 
-mesh::mesh(const tinyobj::attrib_t& attributes, const tinyobj::shape_t& shape) {
+mesh::mesh(const tinyobj::attrib_t& attributes, const std::vector<tinyobj::shape_t>& shapes) {
   const auto& logical_device = graphics_module::get().logical_device();
 
   auto unique_vertices = std::unordered_map<vertex3d, std::uint32_t>{};
@@ -16,26 +16,28 @@ mesh::mesh(const tinyobj::attrib_t& attributes, const tinyobj::shape_t& shape) {
   auto vertices = std::vector<vertex3d>{};
   auto indices = std::vector<std::uint32_t>{};
 
-  for (const auto& index : shape.mesh.indices) {
-    auto vertex = vertex3d{};
+  for (const auto& shape : shapes) {
+    for (const auto& index : shape.mesh.indices) {
+      auto vertex = vertex3d{};
 
-    vertex.position.x = attributes.vertices[3 * index.vertex_index + 0];
-    vertex.position.y = attributes.vertices[3 * index.vertex_index + 1];
-    vertex.position.z = attributes.vertices[3 * index.vertex_index + 2];
+      vertex.position.x = attributes.vertices[3 * index.vertex_index + 0];
+      vertex.position.y = attributes.vertices[3 * index.vertex_index + 1];
+      vertex.position.z = attributes.vertices[3 * index.vertex_index + 2];
 
-    vertex.normal.x = attributes.normals[3 * index.normal_index + 0];
-    vertex.normal.y = attributes.normals[3 * index.normal_index + 1];
-    vertex.normal.z = attributes.normals[3 * index.normal_index + 2];
+      vertex.normal.x = attributes.normals[3 * index.normal_index + 0];
+      vertex.normal.y = attributes.normals[3 * index.normal_index + 1];
+      vertex.normal.z = attributes.normals[3 * index.normal_index + 2];
 
-    vertex.uv.x = attributes.texcoords[2 * index.texcoord_index + 0];
-    vertex.uv.y = attributes.texcoords[2 * index.texcoord_index + 1];
+      vertex.uv.x = attributes.texcoords[2 * index.texcoord_index + 0];
+      vertex.uv.y = attributes.texcoords[2 * index.texcoord_index + 1];
 
-    if (auto entry = unique_vertices.find(vertex); entry != unique_vertices.end()) {
-      indices.push_back(entry->second);
-    } else {
-      unique_vertices.insert({vertex, vertices.size()});
-      indices.push_back(vertices.size());
-      vertices.push_back(vertex);
+      if (auto entry = unique_vertices.find(vertex); entry != unique_vertices.end()) {
+        indices.push_back(entry->second);
+      } else {
+        unique_vertices.insert({vertex, vertices.size()});
+        indices.push_back(vertices.size());
+        vertices.push_back(vertex);
+      }
     }
   }
 

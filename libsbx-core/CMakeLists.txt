@@ -50,6 +50,7 @@ target_link_libraries(
     fmt::fmt
     spdlog::spdlog
     libsbx::utility
+    libsbx::memory
 )
 
 set_target_properties(
