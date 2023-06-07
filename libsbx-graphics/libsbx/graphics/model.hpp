@@ -8,6 +8,8 @@
 #include <libsbx/graphics/mesh.hpp>
 #include <libsbx/graphics/material.hpp>
 
+#include <libsbx/graphics/commands/command_buffer.hpp>
+
 namespace sbx::graphics {
 
 class model {
@@ -28,6 +30,10 @@ public:
 
   auto material() const noexcept -> const class material& {
     return *_material;
+  }
+
+  auto render(command_buffer& command_buffer, std::float_t delta_time) -> void {
+    _mesh->render(command_buffer, delta_time);
   }
 
 private:

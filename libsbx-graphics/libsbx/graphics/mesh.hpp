@@ -20,6 +20,8 @@
 
 #include <libsbx/graphics/buffer/buffer.hpp>
 
+#include <libsbx/graphics/commands/command_buffer.hpp>
+
 #include <libsbx/graphics/pipeline/push_constant.hpp>
 #include <libsbx/graphics/pipeline/vertex_input.hpp>
 
@@ -91,6 +93,13 @@ public:
 
   auto index_buffer() const noexcept -> const buffer& {
     return *_index_buffer;
+  }
+
+  auto render(command_buffer& command_buffer, std::float_t delta_time) -> void {
+    command_buffer.bind_vertex_buffer(0, *_vertex_buffer);
+    command_buffer.bind_index_buffer(*_index_buffer, 0, VK_INDEX_TYPE_UINT32);
+
+    command_buffer.draw_indexed(static_cast<std::uint32_t>(_index_buffer->size() / sizeof(std::uint32_t)), 1, 0, 0, 0);
   }
 
 private:

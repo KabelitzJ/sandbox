@@ -236,7 +236,7 @@ inline constexpr auto basic_vector3<Type>::operator[](const index_type index) co
 
 template<numeric Type>
 inline constexpr auto basic_vector3<Type>::length() const noexcept -> length_type {
-  return std::sqrt(x * x + y * y + z * z);
+  return std::sqrt(length_squared());
 }
 
 template<numeric Type>
@@ -248,7 +248,7 @@ template<numeric Type>
 inline constexpr auto basic_vector3<Type>::normalize() noexcept -> basic_vector3& {
   const auto len = length();
 
-  if (len != length_type{0}) {
+  if (len != static_cast<length_type>(0)) {
     x /= len;
     y /= len;
     z /= len;

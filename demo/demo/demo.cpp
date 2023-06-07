@@ -45,6 +45,8 @@ public:
     _uniform.inverse_model = sbx::math::matrix4x4::identity;
     _uniform.view = sbx::math::matrix4x4::look_at(_camera_position, sbx::math::vector3{0.0f, 0.0f, 0.0f}, sbx::math::vector3::up);
     _uniform.projection = sbx::math::matrix4x4::perspective(sbx::math::radian{45.0f}, window.aspect_ratio(), 0.1f, 10.0f);
+
+    add_subrenderer<sbx::graphics::model_subrenderer>();
   }
 
   ~demo_renderer() override = default;
@@ -64,10 +66,7 @@ public:
     command_buffer.bind_descriptor_set(pipeline, VK_PIPELINE_BIND_POINT_GRAPHICS);
     command_buffer.push_constants(pipeline, VK_SHADER_STAGE_FRAGMENT_BIT, _push_constant);
 
-    command_buffer.bind_vertex_buffer(0, _model->mesh().vertex_buffer());
-    command_buffer.bind_index_buffer(_model->mesh().index_buffer(), 0, VK_INDEX_TYPE_UINT32);
-
-    command_buffer.draw_indexed(static_cast<std::uint32_t>(_model->mesh().index_buffer().size() / sizeof(std::uint32_t)), 1, 0, 0, 0);
+    _model->render(command_buffer, delta_time);
   }
 
 private:

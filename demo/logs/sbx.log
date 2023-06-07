@@ -1,6 +1,6 @@
-[2023-06-06 23:10:18] [sbx::graphics] [debug] : Selected GPU 'Intel(R) Iris(R) Xe Graphics'
-[2023-06-06 23:10:18] [sbx::graphics] [debug] : Queue Family 0 supports 1 queues of type [Graphics|Compute|Transfer|Sparse Binding]
-[2023-06-06 23:10:18] [sbx::graphics] [debug] : Pipeline 'basic' created in 1.9596ms
-[2023-06-06 23:10:18] [sbx::graphics] [debug] : meshes: 2
-[2023-06-06 23:10:18] [sbx::graphics] [debug] : materials: 2
-[2023-06-06 23:10:18] [sbx::graphics] [debug] : Loaded mesh './demo/assets/meshes/tree.obj' in 0.0050062 ms
+[2023-06-07 10:03:11] [sbx::graphics] [debug] : Selected GPU 'Intel(R) Iris(R) Xe Graphics'
+[2023-06-07 10:03:11] [sbx::graphics] [debug] : Queue Family 0 supports 1 queues of type [Graphics|Compute|Transfer|Sparse Binding]
+[2023-06-07 10:03:11] [sbx::graphics] [debug] : Pipeline 'basic' created in 2.9928ms
+[2023-06-07 10:03:11] [sbx::graphics] [debug] : meshes: 2
+[2023-06-07 10:03:11] [sbx::graphics] [debug] : materials: 2
+[2023-06-07 10:03:11] [sbx::graphics] [debug] : Loaded mesh './demo/assets/meshes/tree.obj' in 0.0065565 ms
