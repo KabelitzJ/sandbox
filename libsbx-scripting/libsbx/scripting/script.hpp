@@ -32,8 +32,8 @@ public:
 
     _state.script_file(path.string());
 
-    _startup_function = _validate_function("startup");
-    _update_function = _validate_function("update");
+    // _startup_function = _validate_function("on_create");
+    // _update_function = _validate_function("on_update");
   }
 
   script(const script& other) = delete;
@@ -46,12 +46,26 @@ public:
 
   auto operator=(script&& other) noexcept -> script& = default;
 
-  auto startup() -> void {
-    std::invoke(_startup_function);
+  auto on_create() -> void {
+    auto on_create = _state.get<sol::function>("on_create");
+
+    if (!on_create.valid() || !on_create.is<sol::function>()) {
+      core::logger::warn("sbx::scripting", "Function 'on_create' not found in script '{}'", _name);
+      return;
+    }
+
+    std::invoke(on_create);
   }
 
-  auto update(std::float_t delta_time) -> void {
-    std::invoke(_update_function, delta_time);
+  auto on_update(std::float_t delta_time) -> void {
+    auto on_update = _state.get<sol::function>("on_update");
+
+    if (!on_update.valid() || !on_update.is<sol::function>()) {
+      core::logger::warn("sbx::scripting", "Function 'on_update' not found in script '{}'", _name);
+      return;
+    }
+
+    std::invoke(on_update);
   }
 
   auto name() const noexcept -> const std::string& {

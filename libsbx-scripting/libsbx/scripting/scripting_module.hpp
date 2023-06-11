@@ -32,7 +32,7 @@ public:
 
   auto update(std::float_t delta_time) -> void override {
     for (auto& [name, script] : _scripts) {
-      script->update(delta_time);
+      script->on_update(delta_time);
     }
   }
 

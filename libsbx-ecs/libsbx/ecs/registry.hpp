@@ -12,6 +12,7 @@
 #include <ranges>
 
 #include <libsbx/memory/concepts.hpp>
+#include <libsbx/memory/observer_ptr.hpp>
 
 #include <libsbx/ecs/entity.hpp>
 #include <libsbx/ecs/sparse_set.hpp>
@@ -209,7 +210,7 @@ public:
   }
 
   template<typename Component, typename... Args>
-  auto add_component(const entity_type& entity, Args&&... args) -> component_handle<Component> {
+  auto add_component(const entity_type& entity, Args&&... args) -> memory::observer_ptr<Component> {
     auto& storage = _get_or_create_storage<std::remove_const_t<Component>>();
 
     return storage.add(entity, std::forward<Args>(args)...);
@@ -226,7 +227,7 @@ public:
    * @return The component assigned to the entity
    */
   template<typename Component>
-  auto get_component(const entity_type& entity) const -> component_handle<const Component> {
+  auto get_component(const entity_type& entity) const -> memory::observer_ptr<const Component> {
     if (const auto component = try_get_component<std::remove_const_t<Component>>(entity); component) {
       return *component;
     }
@@ -235,7 +236,7 @@ public:
   }
 
   template<typename Component>
-  auto get_component(const entity_type& entity) -> component_handle<Component> {
+  auto get_component(const entity_type& entity) -> memory::observer_ptr<Component> {
     if (auto component = try_get_component<std::remove_const_t<Component>>(entity); component) {
       return *component;
     }
@@ -244,25 +245,25 @@ public:
   }
 
   template<typename Component>
-  auto try_get_component(const entity_type& entity) const -> component_handle<const Component> {
+  auto try_get_component(const entity_type& entity) const -> memory::observer_ptr<const Component> {
     if (const auto storage = _try_get_storage<std::remove_const_t<Component>>(); storage) {
       if (auto entry = storage->get().find(entity); entry != storage->get().cend()) {
         return *entry;
       }
     }
 
-    return component_handle<const Component>{};
+    return memory::observer_ptr<const Component>{};
   }
 
   template<typename Component>
-  auto try_get_component(const entity_type& entity) -> component_handle<Component> {
+  auto try_get_component(const entity_type& entity) -> memory::observer_ptr<Component> {
     if (auto storage = _try_get_storage<std::remove_const_t<Component>>(); storage) {
       if (auto entry = storage->get().find(entity); entry != storage->get().end()) {
         return *entry;
       }
     }
 
-    return component_handle<Component>{};
+    return memory::observer_ptr<Component>{};
   }
 
   template<typename... Components>

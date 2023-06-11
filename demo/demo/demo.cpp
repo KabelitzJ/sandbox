@@ -32,7 +32,7 @@ public:
 
     _light_position = sbx::math::vector3{-1.0f, 3.0f, 1.0f};
 
-    _model = std::make_unique<sbx::graphics::model>("./demo/assets/meshes/tree.obj");
+    _model = std::make_unique<sbx::graphics::model>("./demo/assets/meshes/suzanne.obj");
 
     _push_constant.ambient_color = _model->material().ambient();
     _push_constant.diffuse_color = _model->material().diffuse();
@@ -105,6 +105,10 @@ public:
       }
     }
 
+    auto& script = scripting_module.script("main");
+
+    script.on_create();
+
     auto& graphics_module = sbx::graphics::graphics_module::get();
 
     for (const auto& entry : std::filesystem::directory_iterator("./demo/assets/shaders")) {
@@ -123,6 +127,10 @@ public:
   auto update() -> void  {
 
   }
+
+private:
+
+
 
 }; // class demo_application
 

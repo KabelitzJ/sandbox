@@ -26,9 +26,9 @@ protected:
 
 private:
 
-  auto _set_engine(utility::observer_ptr<engine> engine) noexcept -> void;
+  auto _set_engine(memory::observer_ptr<engine> engine) noexcept -> void;
 
-  utility::observer_ptr<engine> _engine{};
+  memory::observer_ptr<engine> _engine{};
 
 }; // class application
 

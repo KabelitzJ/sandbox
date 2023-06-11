@@ -3,7 +3,6 @@
 
 newmtl Bark
 Ns 500.00
-# Generate a brown tree bark color
 Ka 0.59 0.34 0.09
 Kd 0.59 0.34 0.09
 Ks 0.5 0.5 0.5

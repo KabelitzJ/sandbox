@@ -8,7 +8,7 @@ auto application::quit() noexcept -> void {
   _engine->quit();
 }
 
-auto application::_set_engine(utility::observer_ptr<engine> engine) noexcept -> void {
+auto application::_set_engine(memory::observer_ptr<engine> engine) noexcept -> void {
   _engine = engine;
 }
 

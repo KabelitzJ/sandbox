@@ -4,7 +4,7 @@
 #include <memory>
 #include <utility>
 
-namespace sbx::utility {
+namespace sbx::memory {
 
 template<typename Type>
 class observer_ptr {
@@ -64,8 +64,12 @@ public:
     std::swap(_value, other._value);
   }
 
-  constexpr operator bool() const noexcept {
+  constexpr auto is_valid() const noexcept -> bool {
     return _value != nullptr;
+  }
+
+  constexpr operator bool() const noexcept {
+    return is_valid();
   }
 
   constexpr auto operator->() const noexcept -> const_pointer {
@@ -123,11 +127,11 @@ constexpr auto make_observer(std::shared_ptr<Type>& value) noexcept -> observer_
   return observer_ptr<Type>{value.get()};
 }
 
-} // namespace sbx::utility
+} // namespace sbx::memory
 
 template<typename Type>
-struct std::hash<sbx::utility::observer_ptr<Type>> {
-  constexpr auto operator()(const sbx::utility::observer_ptr<Type>& value) const noexcept -> std::size_t {
+struct std::hash<sbx::memory::observer_ptr<Type>> {
+  constexpr auto operator()(const sbx::memory::observer_ptr<Type>& value) const noexcept -> std::size_t {
     return std::hash<Type*>{}(value.get());
   }
 };
