@@ -23,7 +23,6 @@
 #include <libsbx/graphics/commands/command_buffer.hpp>
 
 #include <libsbx/graphics/pipeline/push_constant.hpp>
-#include <libsbx/graphics/pipeline/vertex_input.hpp>
 
 namespace sbx::graphics {
 
@@ -36,48 +35,6 @@ struct vertex3d {
 constexpr auto operator==(const vertex3d& lhs, const vertex3d& rhs) noexcept -> bool {
   return lhs.position == rhs.position && lhs.normal == rhs.normal && lhs.uv == rhs.uv;
 }
-
-template<>
-struct vertex_input<vertex3d> {
-  static auto binding_descriptions() noexcept -> std::vector<VkVertexInputBindingDescription> {
-    auto binding_description = std::vector<VkVertexInputBindingDescription>{};
-
-    binding_description.push_back(VkVertexInputBindingDescription{
-      .binding = 0,
-      .stride = sizeof(vertex3d),
-      .inputRate = VK_VERTEX_INPUT_RATE_VERTEX
-    });
-
-    return binding_description;
-  }
-
-  static auto attribute_descriptions() noexcept -> std::vector<VkVertexInputAttributeDescription> {
-    auto attribute_descriptions = std::vector<VkVertexInputAttributeDescription>{};
-
-    attribute_descriptions.push_back(VkVertexInputAttributeDescription{
-      .location = 0,
-      .binding = 0,
-      .format = VK_FORMAT_R32G32B32_SFLOAT,
-      .offset = offsetof(vertex3d, position)
-    });
-
-    attribute_descriptions.push_back(VkVertexInputAttributeDescription{
-      .location = 1,
-      .binding = 0,
-      .format = VK_FORMAT_R32G32B32_SFLOAT,
-      .offset = offsetof(vertex3d, normal)
-    });
-
-    attribute_descriptions.push_back(VkVertexInputAttributeDescription{
-      .location = 2,
-      .binding = 0,
-      .format = VK_FORMAT_R32G32_SFLOAT,
-      .offset = offsetof(vertex3d, uv)
-    });
-
-    return attribute_descriptions;
-  }
-}; // struct vertex_input<vertex3d>
 
 class mesh {
 

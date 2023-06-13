@@ -145,9 +145,9 @@ auto command_buffer::set_scissor(const VkRect2D& scissor) -> void {
   vkCmdSetScissor(_handle, 0, 1, &scissor); 
 }
 
-auto command_buffer::bind_pipeline(const pipeline& pipeline, VkPipelineBindPoint bind_point) -> void {
-  vkCmdBindPipeline(_handle, bind_point, pipeline);
-}
+// auto command_buffer::bind_pipeline(const pipeline& pipeline, VkPipelineBindPoint bind_point) -> void {
+//   vkCmdBindPipeline(_handle, bind_point, pipeline);
+// }
 
 auto command_buffer::bind_vertex_buffer(std::uint32_t first_binding, const VkBuffer& buffer) -> void {
   auto buffers = std::array<VkBuffer, 1>{buffer};
@@ -164,13 +164,13 @@ auto command_buffer::draw_indexed(std::uint32_t index_count, std::uint32_t insta
   vkCmdDrawIndexed(_handle, index_count, instance_count, first_index, vertex_offset, first_instance);
 }
 
-auto command_buffer::push_constants(const pipeline& pipeline, VkShaderStageFlags stage_flags, const push_constant& constants) -> void {
-  vkCmdPushConstants(_handle, pipeline.layout(), stage_flags, 0, sizeof(push_constant), &constants);
-}
+// auto command_buffer::push_constants(const pipeline& pipeline, VkShaderStageFlags stage_flags, const push_constant& constants) -> void {
+//   vkCmdPushConstants(_handle, pipeline.layout(), stage_flags, 0, sizeof(push_constant), &constants);
+// }
 
-auto command_buffer::bind_descriptor_set(const pipeline& pipeline, VkPipelineBindPoint bind_point) -> void {
-  vkCmdBindDescriptorSets(_handle, bind_point, pipeline.layout(), 0, 1, &pipeline.active_descriptor_set(), 0, nullptr);
-}
+// auto command_buffer::bind_descriptor_set(const pipeline& pipeline, VkPipelineBindPoint bind_point) -> void {
+//   vkCmdBindDescriptorSets(_handle, bind_point, pipeline.layout(), 0, 1, &pipeline.active_descriptor_set(), 0, nullptr);
+// }
 
 auto command_buffer::begin_render_pass(const VkRenderPassBeginInfo& renderpass_begin_info, VkSubpassContents subpass_contents) -> void {
   vkCmdBeginRenderPass(_handle, &renderpass_begin_info, subpass_contents);

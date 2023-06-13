@@ -26,6 +26,7 @@
 #include <libsbx/graphics/render_pass/framebuffer.hpp>
 
 #include <libsbx/graphics/pipeline/pipeline.hpp>
+#include <libsbx/graphics/pipeline/graphics_pipeline.hpp>
 #include <libsbx/graphics/pipeline/shader.hpp>
 
 #include <libsbx/graphics/buffer/buffer.hpp>
@@ -74,15 +75,10 @@ public:
 
   auto swapchain() -> swapchain&;
 
-  template<typename Vertex = vertex3d>
-  auto load_pipeline(const std::filesystem::path& path) -> graphics::pipeline& {
+  auto load_pipeline(const std::filesystem::path& path) -> void {
     const auto name = path.stem().string();
 
-    if (auto entry = _pipelines.find(name); entry != _pipelines.end()) {
-      return *entry->second;
-    }
-
-    return *_pipelines.insert({name, pipeline::create<Vertex>(path)}).first->second;
+    _pipelines.insert({name, std::make_unique<graphics::graphics_pipeline>(path)});
   }
 
   auto pipeline(const std::string& key) -> pipeline&;

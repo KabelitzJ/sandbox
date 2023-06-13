@@ -28,18 +28,8 @@ public:
 
 private:
 
-  auto _read_stage_data(const spirv_cross::Compiler& compiler, bool inputs) -> void;
-
-  struct stage_data {
-    std::uint32_t location;
-    std::string type;
-  }; // struct stage_data
-
   VkShaderStageFlagBits _stage{};
   VkShaderModule _handle{};
-
-  std::unordered_map<std::string, stage_data> _inputs;
-  std::unordered_map<std::string, stage_data> _outputs;
 
 }; // class shader
 

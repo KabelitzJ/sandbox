@@ -9,10 +9,6 @@
 
 #include <libsbx/graphics/commands/command_pool.hpp>
 
-#include <libsbx/graphics/pipeline/push_constant.hpp>
-#include <libsbx/graphics/pipeline/pipeline.hpp>
-#include <libsbx/graphics/pipeline/uniform.hpp>
-
 namespace sbx::graphics {
 
 class command_buffer {
@@ -43,17 +39,11 @@ public:
 
   auto set_scissor(const VkRect2D& scissor) -> void;
 
-  auto bind_pipeline(const pipeline& pipeline, VkPipelineBindPoint bind_point) -> void;
-
   auto bind_vertex_buffer(std::uint32_t first_binding, const VkBuffer& buffer) -> void;
 
   auto bind_index_buffer(const VkBuffer& buffer, VkDeviceSize offset, VkIndexType index_type) -> void;
 
   auto draw_indexed(std::uint32_t index_count, std::uint32_t instance_count, std::uint32_t first_index, std::int32_t vertex_offset, std::uint32_t first_instance) -> void;
-
-  auto push_constants(const pipeline& pipeline, VkShaderStageFlags stage_flags, const push_constant& constants) -> void;
-
-  auto bind_descriptor_set(const pipeline& pipeline, VkPipelineBindPoint bind_point) -> void;
 
   auto begin_render_pass(const VkRenderPassBeginInfo& renderpass_begin_info, VkSubpassContents subpass_contents) -> void;
 

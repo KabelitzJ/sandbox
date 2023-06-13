@@ -1,4 +1,4 @@
-#include <libsbx/graphics/pipeline/pipeline.hpp>
+#include <libsbx/graphics/pipeline/graphics_pipeline.hpp>
 
 #include <unordered_set>
 
@@ -12,11 +12,10 @@
 #include <libsbx/graphics/mesh.hpp>
 
 #include <libsbx/graphics/pipeline/push_constant.hpp>
-#include <libsbx/graphics/pipeline/vertex_input.hpp>
 
 namespace sbx::graphics {
 
-pipeline::pipeline(const std::filesystem::path& path, std::vector<VkVertexInputBindingDescription> binding_descriptions, std::vector<VkVertexInputAttributeDescription> attribute_descriptions) {
+graphics_pipeline::graphics_pipeline(const std::filesystem::path& path) {
   const auto& logical_device = graphics_module::get().logical_device();
   const auto& render_pass = graphics_module::get().render_pass();
 
@@ -114,6 +113,37 @@ pipeline::pipeline(const std::filesystem::path& path, std::vector<VkVertexInputB
   depth_stencil_state.depthCompareOp = VK_COMPARE_OP_LESS;
   depth_stencil_state.depthBoundsTestEnable = false;
   depth_stencil_state.stencilTestEnable = false;
+
+  auto binding_descriptions = std::vector<VkVertexInputBindingDescription>{};
+
+  binding_descriptions.push_back(VkVertexInputBindingDescription{
+    .binding = 0,
+    .stride = sizeof(vertex3d),
+    .inputRate = VK_VERTEX_INPUT_RATE_VERTEX
+  });
+
+  auto attribute_descriptions = std::vector<VkVertexInputAttributeDescription>{};
+
+  attribute_descriptions.push_back(VkVertexInputAttributeDescription{
+    .location = 0,
+    .binding = 0,
+    .format = VK_FORMAT_R32G32B32_SFLOAT,
+    .offset = offsetof(vertex3d, position)
+  });
+
+  attribute_descriptions.push_back(VkVertexInputAttributeDescription{
+    .location = 1,
+    .binding = 0,
+    .format = VK_FORMAT_R32G32B32_SFLOAT,
+    .offset = offsetof(vertex3d, normal)
+  });
+
+  attribute_descriptions.push_back(VkVertexInputAttributeDescription{
+    .location = 2,
+    .binding = 0,
+    .format = VK_FORMAT_R32G32_SFLOAT,
+    .offset = offsetof(vertex3d, uv)
+  });
 
   auto vertex_input_state = VkPipelineVertexInputStateCreateInfo{};
   vertex_input_state.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -230,7 +260,7 @@ pipeline::pipeline(const std::filesystem::path& path, std::vector<VkVertexInputB
   core::logger::debug("sbx::graphics", "Pipeline '{}' created in {}ms", _name, units::quantity_cast<units::millisecond>(timer.elapsed()).value());
 }
 
-pipeline::~pipeline() {
+graphics_pipeline::~graphics_pipeline() {
   const auto& logical_device = graphics_module::get().logical_device();
 
   _shaders.clear();
@@ -245,31 +275,31 @@ pipeline::~pipeline() {
   vkDestroyPipeline(logical_device, _handle, nullptr);
 }
 
-auto pipeline::handle() const noexcept -> const VkPipeline& {
+auto graphics_pipeline::handle() const noexcept -> const VkPipeline& {
   return _handle;
 }
 
-pipeline::operator const VkPipeline&() const noexcept {
-  return _handle;
-}
-
-auto pipeline::layout() const noexcept -> const VkPipelineLayout& {
+auto graphics_pipeline::layout() const noexcept -> const VkPipelineLayout& {
   return _layout;
 }
 
-auto pipeline::active_descriptor_set() const noexcept -> const VkDescriptorSet& {
+auto graphics_pipeline::bind_point() const noexcept -> VkPipelineBindPoint {
+  return VK_PIPELINE_BIND_POINT_GRAPHICS;
+}
+
+auto graphics_pipeline::active_descriptor_set() const noexcept -> const VkDescriptorSet& {
   const auto& swapchain = graphics_module::get().swapchain();
 
   return _descriptor_sets[swapchain.active_image_index()];
 }
 
-auto pipeline::update_uniform(const uniform& uniform) -> void {
+auto graphics_pipeline::update_uniform(const uniform& uniform) -> void {
   const auto& swapchain = graphics_module::get().swapchain();
 
   _uniform_buffers[swapchain.active_image_index()]->write(&uniform, sizeof(uniform));
 }
 
-auto pipeline::_get_stage_from_name(const std::string& name) const noexcept -> VkShaderStageFlagBits {
+auto graphics_pipeline::_get_stage_from_name(const std::string& name) const noexcept -> VkShaderStageFlagBits {
   if (name == "vertex") {
     return VK_SHADER_STAGE_VERTEX_BIT;
   } else if (name == "fragment") {
