@@ -26,12 +26,15 @@ class demo_subrenderer : public sbx::graphics::subrenderer {
 
 public:
 
-  demo_subrenderer() {
+  demo_subrenderer(const sbx::graphics::pipeline::stage& stage)
+  : sbx::graphics::subrenderer{stage} {
     auto& window = sbx::devices::devices_module::get().window();
 
     _camera_position = sbx::math::vector3{2.0f, 2.0f, 1.0f};
 
     _light_position = sbx::math::vector3{-1.0f, 3.0f, 1.0f};
+
+    _pipeline = std::make_unique<sbx::graphics::graphics_pipeline>(stage, "./demo/assets/shaders/basic");
 
     _model = std::make_unique<sbx::graphics::model>("./demo/assets/meshes/sphere.obj");
 
@@ -53,18 +56,17 @@ public:
 
   auto render(sbx::graphics::command_buffer& command_buffer, std::float_t delta_time) -> void override {
     auto& window = sbx::devices::devices_module::get().window();
-    auto& pipeline = static_cast<sbx::graphics::graphics_pipeline&>(sbx::graphics::graphics_module::get().pipeline("basic"));
 
     _uniform.model = sbx::math::matrix4x4::rotated(_uniform.model, sbx::math::vector3{0.0f, 0.0f, 1.0f}, sbx::math::degree{45.0f} * delta_time);
     _uniform.inverse_model = sbx::math::matrix4x4::inverted(_uniform.model);
     _uniform.projection = sbx::math::matrix4x4::perspective(sbx::math::radian{45.0f}, window.aspect_ratio(), 0.1f, 10.0f);
 
-    pipeline.bind(command_buffer);
+    _pipeline->bind(command_buffer);
 
-    pipeline.update_uniform(_uniform);
+    _pipeline->update_uniform(_uniform);
 
-    pipeline.bind_descriptor_set(command_buffer);
-    pipeline.update_push_constant(command_buffer, VK_SHADER_STAGE_FRAGMENT_BIT, _push_constant);
+    _pipeline->bind_descriptor_set(command_buffer);
+    _pipeline->update_push_constant(command_buffer, VK_SHADER_STAGE_FRAGMENT_BIT, _push_constant);
 
     _model->render(command_buffer, delta_time);
   }
@@ -73,6 +75,8 @@ private:
 
   sbx::math::vector3 _camera_position{};
   sbx::math::vector3 _light_position{};
+
+  std::unique_ptr<sbx::graphics::graphics_pipeline> _pipeline{};
   std::unique_ptr<sbx::graphics::model> _model{};
   sbx::graphics::push_constant _push_constant{};
   sbx::graphics::uniform _uniform{};
@@ -131,12 +135,6 @@ public:
     }
 
     auto& graphics_module = sbx::graphics::graphics_module::get();
-
-    for (const auto& entry : std::filesystem::directory_iterator("./demo/assets/shaders")) {
-      if (entry.is_directory()) {
-        graphics_module.load_pipeline(entry.path());
-      }
-    }
 
     graphics_module.set_renderer<demo_renderer>();
 

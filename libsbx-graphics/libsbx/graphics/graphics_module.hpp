@@ -72,17 +72,7 @@ public:
 
   auto command_pool(VkQueueFlagBits queue_type = VK_QUEUE_GRAPHICS_BIT, const std::thread::id& thread_id = std::this_thread::get_id()) -> const std::shared_ptr<command_pool>&;
 
-  auto render_pass() -> render_pass&;
-
   auto swapchain() -> swapchain&;
-
-  auto load_pipeline(const std::filesystem::path& path) -> void {
-    const auto name = path.stem().string();
-
-    _pipelines.insert({name, std::make_unique<graphics::graphics_pipeline>(path)});
-  }
-
-  auto pipeline(const std::string& key) -> pipeline&;
 
   template<utility::implements<renderer> Renderer, typename... Args>
   requires (std::is_constructible_v<Renderer, Args...>)
@@ -90,16 +80,18 @@ public:
     _renderer = std::make_unique<Renderer>(std::forward<Args>(args)...);
     _reset_render_stages();
   }
+
+  auto render_stage(const pipeline::stage& stage) -> graphics::render_stage&;
   
 private:
 
-  auto _start_render_pass(render_stage& render_stage) -> bool;
+  auto _start_render_pass(graphics::render_stage& render_stage) -> bool;
 
-  auto _end_render_pass(render_stage& render_stage) -> void;
+  auto _end_render_pass(graphics::render_stage& render_stage) -> void;
 
   auto _reset_render_stages() -> void;
 
-  auto _recreate_pass(render_stage& render_stage) -> void;
+  auto _recreate_pass(graphics::render_stage& render_stage) -> void;
 
   auto _recreate_swapchain() -> void;
 
@@ -138,11 +130,8 @@ private:
 
   std::unordered_map<command_pool_key, std::shared_ptr<graphics::command_pool>, command_pool_key_hash, command_pool_key_equality> _command_pools{};
 
-  std::unordered_map<std::string, std::unique_ptr<graphics::pipeline>> _pipelines{};
-
   std::unique_ptr<graphics::surface> _surface{};
 
-  std::unique_ptr<graphics::render_pass> _render_pass{};
   std::unique_ptr<graphics::swapchain> _swapchain{};
   std::vector<std::unique_ptr<graphics::framebuffer>> _framebuffers{};
 

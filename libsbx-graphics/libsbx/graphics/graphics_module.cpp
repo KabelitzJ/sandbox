@@ -77,10 +77,7 @@ graphics_module::graphics_module()
 : _instance{std::make_unique<graphics::instance>()},
   _physical_device{std::make_unique<graphics::physical_device>(*_instance)},
   _logical_device{std::make_unique<graphics::logical_device>(*_physical_device)},
-  _surface{std::make_unique<graphics::surface>(*_instance, *_physical_device, *_logical_device)},
-  _render_pass{std::make_unique<graphics::render_pass>(*_physical_device, *_logical_device, *_surface)},
-  // [NOTE] KAJ 2023-03-14 19:02 - We want to create the swapchain the first time we run update
-  _framebuffer_resized{true} {
+  _surface{std::make_unique<graphics::surface>(*_instance, *_physical_device, *_logical_device)} {
   auto& window = devices::devices_module::get().window();
 
   window.set_on_framebuffer_resized([this]([[maybe_unused]] const devices::framebuffer_resized_event& event) {
@@ -92,8 +89,6 @@ graphics_module::~graphics_module() {
   const auto& graphics_queue = _logical_device->graphics_queue();
 
   validate(vkQueueWaitIdle(graphics_queue));
-
-  _pipelines.clear();
 
   _swapchain.reset();
 
@@ -188,41 +183,46 @@ auto graphics_module::command_pool(VkQueueFlagBits queue_type, const std::thread
   return _command_pools.insert({key, std::make_shared<graphics::command_pool>(queue_type)}).first->second;
 }
 
-auto graphics_module::render_pass() -> graphics::render_pass& {
-  return *_render_pass;
-}
-
 auto graphics_module::swapchain() -> graphics::swapchain& {
   return *_swapchain;
 };
 
-auto graphics_module::pipeline(const std::string& name) -> graphics::pipeline& {
-  if (auto entry = _pipelines.find(name); entry != _pipelines.end()) {
-    return *entry->second;
+auto graphics_module::render_stage(const pipeline::stage& stage) -> graphics::render_stage& {
+  if (!_renderer) {
+    throw std::runtime_error{"No renderer set"};
   }
 
-  throw std::runtime_error{"Pipeline not found"};
+  return _renderer->render_stage(stage);
 }
 
-auto graphics_module::_start_render_pass(render_stage& render_stage) -> bool {
+auto graphics_module::_start_render_pass(graphics::render_stage& render_stage) -> bool {
   if (render_stage.is_outdated()) {
     _recreate_pass(render_stage);
     return false;
   }
 
-  const auto& command_buffer = _command_buffers[_swapchain->active_image_index()];
+  const auto active_image_index = _swapchain->active_image_index();
+
+  const auto& command_buffer = _command_buffers[active_image_index];
 
   if (!command_buffer->is_running()) {
     command_buffer->begin(VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
   }
 
-  const auto render_area = VkRect2D{VkOffset2D{0, 0}, _swapchain->extent()};
+  const auto& area = render_stage.render_area();
+
+  const auto& offset = area.offset();
+  const auto& extent = area.extent();
+
+  auto render_area = VkRect2D{};
+  render_area.offset = VkOffset2D{offset.x, offset.y};
+  render_area.extent = VkExtent2D{extent.x, extent.x};
 
   auto viewport = VkViewport{};
 	viewport.x = 0.0f;
 	viewport.y = 0.0f;
-	viewport.width = static_cast<float>(render_area.extent.width);
-	viewport.height = static_cast<float>(render_area.extent.height);
+	viewport.width = static_cast<std::float_t>(render_area.extent.width);
+	viewport.height = static_cast<std::float_t>(render_area.extent.height);
 	viewport.minDepth = 0.0f;
 	viewport.maxDepth = 1.0f;
 
@@ -238,8 +238,8 @@ auto graphics_module::_start_render_pass(render_stage& render_stage) -> bool {
 
   auto render_pass_begin_info = VkRenderPassBeginInfo{};
 	render_pass_begin_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-	render_pass_begin_info.renderPass = *_render_pass;
-	render_pass_begin_info.framebuffer = _swapchain->current_framebuffer(); // *_framebuffers[_swapchain->active_image_index()];
+	render_pass_begin_info.renderPass = render_stage.render_pass();
+	render_pass_begin_info.framebuffer = render_stage.framebuffer(active_image_index);
 	render_pass_begin_info.renderArea = render_area;
 	render_pass_begin_info.clearValueCount = static_cast<std::uint32_t>(clear_values.size());
 	render_pass_begin_info.pClearValues = clear_values.data();
@@ -249,7 +249,7 @@ auto graphics_module::_start_render_pass(render_stage& render_stage) -> bool {
   return true;
 }
 
-auto graphics_module::_end_render_pass(render_stage& render_stage) -> void {
+auto graphics_module::_end_render_pass(graphics::render_stage& render_stage) -> void {
   const auto& frame_data = _per_frame_data[_current_frame];
 
   auto& command_buffer = _command_buffers[_swapchain->active_image_index()];
@@ -281,7 +281,7 @@ auto graphics_module::_reset_render_stages() -> void {
   }
 }
 
-auto  graphics_module::_recreate_pass(render_stage& render_stage) -> void {
+auto  graphics_module::_recreate_pass(graphics::render_stage& render_stage) -> void {
   const auto& graphics_queue = _logical_device->graphics_queue();
 
   validate(vkQueueWaitIdle(graphics_queue));

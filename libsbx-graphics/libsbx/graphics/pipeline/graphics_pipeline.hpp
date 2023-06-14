@@ -24,9 +24,9 @@ class graphics_pipeline : public pipeline {
 
 public:
 
-  graphics_pipeline(const std::filesystem::path& path);
+  graphics_pipeline(stage stage, const std::filesystem::path& path);
 
-  ~graphics_pipeline() override;
+  ~graphics_pipeline();
 
   auto handle() const noexcept -> const VkPipeline& override;
 
@@ -55,6 +55,8 @@ private:
   std::string _name{};
   VkPipelineLayout _layout{};
   VkPipeline _handle{};
+
+  stage _stage{};
 
   VkDescriptorPool _descriptor_pool{};
   VkDescriptorSetLayout _descriptor_set_layout{};

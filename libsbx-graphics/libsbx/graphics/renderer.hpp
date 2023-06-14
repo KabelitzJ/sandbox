@@ -42,6 +42,10 @@ public:
     return _render_stages;
   }
 
+  auto render_stage(const pipeline::stage& stage) -> graphics::render_stage& {
+    return *_render_stages.at(stage.renderpass);
+  }
+
 protected:
 
   template<utility::implements<subrenderer> Type, typename... Args>
@@ -50,7 +54,7 @@ protected:
 
     _subrenderer_stages.insert({stage, type});
 
-    _subrenderers.insert({type, std::make_unique<Type>(std::forward<Args>(args)...)});
+    _subrenderers.insert({type, std::make_unique<Type>(stage, std::forward<Args>(args)...)});
   }
 
 private:

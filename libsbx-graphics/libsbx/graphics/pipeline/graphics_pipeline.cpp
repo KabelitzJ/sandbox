@@ -15,9 +15,10 @@
 
 namespace sbx::graphics {
 
-graphics_pipeline::graphics_pipeline(const std::filesystem::path& path) {
+graphics_pipeline::graphics_pipeline(stage stage, const std::filesystem::path& path)
+: _stage{stage} {
   const auto& logical_device = graphics_module::get().logical_device();
-  const auto& render_pass = graphics_module::get().render_pass();
+  const auto& render_stage = graphics_module::get().render_stage(stage);
 
   auto timer = utility::timer{};
 
@@ -249,7 +250,7 @@ graphics_pipeline::graphics_pipeline(const std::filesystem::path& path) {
   pipeline_create_info.pDynamicState = &dynamic_state;
 
   pipeline_create_info.layout = _layout;
-  pipeline_create_info.renderPass = render_pass;
+  pipeline_create_info.renderPass = render_stage.render_pass();
   pipeline_create_info.subpass = subpass;
 
   pipeline_create_info.basePipelineIndex = -1;

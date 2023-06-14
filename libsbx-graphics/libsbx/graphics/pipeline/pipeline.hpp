@@ -31,7 +31,7 @@ public:
 
   pipeline() = default;
 
-  virtual ~pipeline() = default;
+  ~pipeline() = default;
 
   auto bind(const command_buffer& command_buffer) const noexcept -> void {
     vkCmdBindPipeline(command_buffer, bind_point(), handle());

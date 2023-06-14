@@ -5,7 +5,14 @@
 
 #include <vulkan/vulkan.hpp>
 
+#include <libsbx/graphics/devices/logical_device.hpp>
+
+#include <libsbx/graphics/render_pass/swapchain.hpp>
+#include <libsbx/graphics/render_pass/render_pass.hpp>
+
 #include <libsbx/graphics/images/image.hpp>
+
+#include <libsbx/graphics/render_stage.hpp>
 
 namespace sbx::graphics {
 
@@ -13,7 +20,7 @@ class framebuffer {
 
 public:
 
-  framebuffer(const VkExtent2D& extent);
+  framebuffer(const VkExtent2D& extent, VkSampleCountFlagBits samples = VK_SAMPLE_COUNT_1_BIT);
 
   ~framebuffer();
 

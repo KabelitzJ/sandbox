@@ -13,6 +13,7 @@
 #include <libsbx/math/vector2.hpp>
 
 #include <libsbx/graphics/render_pass/swapchain.hpp>
+#include <libsbx/graphics/render_pass/render_pass.hpp>
 
 namespace sbx::graphics {
 
@@ -186,15 +187,17 @@ public:
     _subpass_bindings{std::move(subpass_bindings)},
     _viewport{viewport},
     _subpass_attachment_count{static_cast<std::uint32_t>(_subpass_bindings.size()), 0} {
-    for (const auto& image : _attachments) {
+    for (const auto& attachment : _attachments) {
       auto clear_value = VkClearValue{};
 
-      switch (image.image_type()) {
+      auto clear_color = attachment.clear_color();
+
+      switch (attachment.image_type()) {
         case attachment::type::color: {
-          clear_value.color = VkClearColorValue{image.clear_color().r, image.clear_color().g, image.clear_color().b, image.clear_color().a};
+          clear_value.color = VkClearColorValue{clear_color.r, clear_color.g, clear_color.b, clear_color.a};
 
           for (const auto& subpass : _subpass_bindings) {
-            if (auto bindings = subpass.attachment_bindings(); std::find(bindings.begin(), bindings.end(), image.binding()) != bindings.end()) {
+            if (auto bindings = subpass.attachment_bindings(); std::find(bindings.begin(), bindings.end(), attachment.binding()) != bindings.end()) {
               _subpass_attachment_count[subpass.binding()]++;
             }
           }
@@ -203,12 +206,12 @@ public:
         }
         case attachment::type::depth: {
           clear_value.depthStencil = VkClearDepthStencilValue{1.0f, 0};
-          _depth_attachment = image;
+          _depth_attachment = attachment;
           break;
         }
         case attachment::type::swapchain: {
-          clear_value.color = VkClearColorValue{image.clear_color().r, image.clear_color().g, image.clear_color().b, image.clear_color().a};
-          _swapchain_attachment = image;
+          clear_value.color = VkClearColorValue{clear_color.r, clear_color.g, clear_color.b, clear_color.a};
+          _swapchain_attachment = attachment;
           break;
         }
       }
@@ -233,6 +236,14 @@ public:
     return _clear_values;
   }
 
+  auto has_depth_attachment() const noexcept -> bool {
+    return _depth_attachment.has_value();
+  }
+
+  auto has_swapchain_attachment() const noexcept -> bool {
+    return _swapchain_attachment.has_value();
+  }
+
   auto viewport() const noexcept -> const class viewport& {
     return _viewport;
   }
@@ -241,34 +252,17 @@ public:
     return _render_area;
   }
 
-  auto update() -> void {
-    auto last_render_area = _render_area;
-
-    _render_area.set_offset(_viewport.offset());
-
-    // [TODO] KAJ 2023-06-14 : This looks a bit scuffed. Maybe try to understand what it actually does and rewrite it.
-
-    if (auto size = _viewport.size(); size) {
-      _render_area.set_extent(math::vector2u{_viewport.scale() * (*size)});
-    } else {
-      auto& window = devices::devices_module::get().window();
-      auto window_size = math::vector2u{window.width(), window.height()};
-
-      _render_area.set_extent(math::vector2u{_viewport.scale() * window_size});
-    }
-
-    _render_area.set_aspect_ratio(static_cast<std::float_t>(_render_area.extent().x) / static_cast<std::float_t>(_render_area.extent().y));
-    _render_area.set_extent(_render_area.extent() + _render_area.offset());
-
-    _is_outdated = last_render_area != _render_area;
+  auto render_pass() const noexcept -> const graphics::render_pass& {
+    return *_render_pass;
   }
 
-  auto rebuild(const swapchain& swapchain) -> void {
-    update();
+  auto update() -> void;
 
-    // [TODO] KAJ 2023-06-14 : Implement this.
+  auto rebuild(const swapchain& swapchain) -> void;
+
+  auto framebuffer(std::uint32_t index) const noexcept -> const graphics::framebuffer& {
+    return *_framebuffers[index];
   }
-
 
 private:
 
@@ -276,6 +270,8 @@ private:
   std::vector<subpass_binding> _subpass_bindings;
 
   graphics::viewport _viewport;
+
+  std::unique_ptr<graphics::render_pass> _render_pass;
 
   std::vector<std::uint32_t> _subpass_attachment_count;
 

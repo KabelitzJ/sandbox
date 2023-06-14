@@ -37,7 +37,7 @@ public:
 
   auto present_mode() const noexcept -> VkPresentModeKHR;
 
-  auto current_framebuffer() const noexcept -> const VkFramebuffer&;
+  // auto current_framebuffer() const noexcept -> const VkFramebuffer&;
 
   auto acquire_next_image(const VkSemaphore& image_available_semaphore = nullptr, const VkFence& fence = nullptr) -> VkResult;
 
@@ -47,9 +47,9 @@ private:
 
   auto _create_image_view(const VkImage& image, VkFormat format, VkImageAspectFlags aspect, VkImageView& image_view) -> void;
 
-  auto _create_depth_images() -> void;
+  // auto _create_depth_images() -> void;
 
-  auto _create_framebuffers() -> void;
+  // auto _create_framebuffers() -> void;
 
   VkExtent2D _extent{};
   VkPresentModeKHR _present_mode{};
@@ -64,9 +64,9 @@ private:
 	std::vector<VkImage> _images{};
   std::vector<VkImageView> _image_views{};
 
-  std::vector<std::unique_ptr<image>> _depth_images{};
+  // std::vector<std::unique_ptr<image>> _depth_images{};
 
-  std::vector<VkFramebuffer> _framebuffers{};
+  // std::vector<VkFramebuffer> _framebuffers{};
 
 	VkSwapchainKHR _handle{};
 
