@@ -5,6 +5,7 @@
 #include <memory>
 #include <algorithm>
 #include <iterator>
+#include <utility>
 
 #include <libsbx/utility/utility.hpp>
 #include <libsbx/units/units.hpp>
@@ -21,18 +22,18 @@
 #include <libsbx/models/models.hpp>
 #include <libsbx/scenes/scenes.hpp>
 
-class demo_renderer : public sbx::graphics::renderer {
+class demo_subrenderer : public sbx::graphics::subrenderer {
 
 public:
 
-  demo_renderer() { 
+  demo_subrenderer() {
     auto& window = sbx::devices::devices_module::get().window();
 
     _camera_position = sbx::math::vector3{2.0f, 2.0f, 1.0f};
 
     _light_position = sbx::math::vector3{-1.0f, 3.0f, 1.0f};
 
-    _model = std::make_unique<sbx::graphics::model>("./demo/assets/meshes/suzanne.obj");
+    _model = std::make_unique<sbx::graphics::model>("./demo/assets/meshes/sphere.obj");
 
     _push_constant.ambient_color = _model->material().ambient();
     _push_constant.diffuse_color = _model->material().diffuse();
@@ -46,11 +47,9 @@ public:
     _uniform.inverse_model = sbx::math::matrix4x4::identity;
     _uniform.view = sbx::math::matrix4x4::look_at(_camera_position, sbx::math::vector3{0.0f, 0.0f, 0.0f}, sbx::math::vector3::up);
     _uniform.projection = sbx::math::matrix4x4::perspective(sbx::math::radian{45.0f}, window.aspect_ratio(), 0.1f, 10.0f);
-
-    add_subrenderer<sbx::graphics::model_subrenderer>();
   }
 
-  ~demo_renderer() override = default;
+  ~demo_subrenderer() override = default;
 
   auto render(sbx::graphics::command_buffer& command_buffer, std::float_t delta_time) -> void override {
     auto& window = sbx::devices::devices_module::get().window();
@@ -78,6 +77,32 @@ private:
   sbx::graphics::push_constant _push_constant{};
   sbx::graphics::uniform _uniform{};
 
+}; // class demo_subrenderer
+
+class demo_renderer : public sbx::graphics::renderer {
+
+public:
+
+  demo_renderer() { 
+    auto render_pass_attachments_1 = std::vector<sbx::graphics::attachment>{
+      sbx::graphics::attachment{0, "swapchain", sbx::graphics::attachment::type::swapchain, VK_FORMAT_UNDEFINED},
+      sbx::graphics::attachment{1, "depth", sbx::graphics::attachment::type::depth}
+    };
+
+    auto render_pass_subpass_bindings_1 = std::vector<sbx::graphics::subpass_binding>{
+      sbx::graphics::subpass_binding{0, {0, 1}}
+    };
+
+    add_render_stage(std::make_unique<sbx::graphics::render_stage>(std::move(render_pass_attachments_1), std::move(render_pass_subpass_bindings_1)));
+
+    add_subrenderer<demo_subrenderer>(sbx::graphics::pipeline::stage{0, 0});
+    add_subrenderer<sbx::graphics::model_subrenderer>(sbx::graphics::pipeline::stage{0, 0});
+  }
+
+  ~demo_renderer() override {
+
+  }
+
 }; // class demo_renderer
 
 class demo_application : public sbx::core::application {
@@ -104,10 +129,6 @@ public:
         scripting_module.load_script(entry.path());
       }
     }
-
-    auto& script = scripting_module.script("main");
-
-    script.on_create();
 
     auto& graphics_module = sbx::graphics::graphics_module::get();
 

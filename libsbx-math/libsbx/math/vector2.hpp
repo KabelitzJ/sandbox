@@ -180,6 +180,9 @@ public:
    */
   constexpr auto operator+=(const basic_vector2& other) noexcept -> basic_vector2&;
 
+  template<numeric Other>
+  constexpr auto operator+=(const basic_vector2<Other>& other) noexcept -> basic_vector2&;
+
   /**
    * @brief Subtracts the components of the other vector from this vector.
    * 
@@ -197,6 +200,12 @@ public:
    * @return basic_vector2& A reference to this vector. 
    */
   constexpr auto operator*=(const value_type scalar) noexcept -> basic_vector2&;
+
+  template<numeric Other>
+  constexpr auto operator*=(const Other scalar) noexcept -> basic_vector2&;
+
+  template<numeric Other>
+  constexpr auto operator*=(const basic_vector2<Other>& other) noexcept -> basic_vector2&;
 
   /**
    * @brief Divides the components of this vector by the scalar.
@@ -290,6 +299,10 @@ template<numeric Type>
 template<numeric Type>
 [[nodiscard]] constexpr auto operator+(basic_vector2<Type> lhs, const basic_vector2<Type>& rhs) noexcept -> basic_vector2<Type>;
 
+template<numeric Type, numeric Other>
+[[nodiscard]] constexpr auto operator+(basic_vector2<Type> lhs, const basic_vector2<Other>& rhs) noexcept -> basic_vector2<Type>;
+
+
 /**
  * @brief Subtracts two vectors.
  * 
@@ -316,6 +329,9 @@ template<numeric Type>
 template<numeric Type>
 [[nodiscard]] constexpr auto operator*(basic_vector2<Type> lhs, const Type rhs) noexcept -> basic_vector2<Type>;
 
+template<numeric Type, numeric Other>
+[[nodiscard]] constexpr auto operator*(basic_vector2<Type> lhs, const basic_vector2<Other>& rhs) noexcept -> basic_vector2<Type>;
+
 /**
  * @brief Divides a vector by a scalar.
  * 
@@ -338,6 +354,8 @@ using vector2f = basic_vector2<std::float_t>;
 
 /** @brief Type alias for a two-dimensional vector with 32 bit integer components. */
 using vector2i = basic_vector2<std::int32_t>;
+
+using vector2u = basic_vector2<std::uint32_t>;
 
 /** @brief Type alias for vector2f. */
 using vector2 = vector2f;

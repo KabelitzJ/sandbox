@@ -1,6 +1,17 @@
 param(
-  [string]$directory="."
+  [string]$directory
 )
+
+if ($directory -eq "") {
+  Write-Host "[Error] No directory specified."
+  Write-Host
+  Write-Host "Usage: $PSCommandPath -directory <path>"
+  Write-Host
+
+  return
+}
+
+Write-Host "Compiling shaders in directory: '$directory'"
 
 $glslc = "glslc.exe"
 
@@ -39,15 +50,14 @@ function compile_shader {
   return 1
 }
 
-$shaders = Get-ChildItem "$directory" -Directory
+$shaders = Get-ChildItem -Directory "$directory"
 
 foreach ($shader in $shaders) {
   if ((compile_shader $shader) -eq 0) {
     Write-Host "[Error] Directory '$shader' does not contain shader sources."
     Write-Host
-    Write-Host "Usage: $PSCommandPath [-directory <path>]"
+    Write-Host "Usage: $PSCommandPath -directory <path>"
     Write-Host
-    Write-Host "  Where -directory is the path to the top leves shader source directory (default = ./)"
     return
   }
 }

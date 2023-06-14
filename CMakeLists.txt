@@ -24,6 +24,9 @@ option(GLFW_BUILD_DOCS "Build the GLFW documentation" OFF)
 option(GLFW_INSTALL "Generate installation target" OFF)
 option(GLFW_DOCUMENT_INTERNALS "Include internals in documentation" OFF)
 
+option(SPIRV_CROSS_CLI "Build the CLI binary. Requires SPIRV_CROSS_STATIC." OFF)
+option(SPIRV_CROSS_ENABLE_TESTS "Enable SPIRV-Cross tests." OFF)
+
 add_subdirectory(libsbx-units)
 add_subdirectory(libsbx-utility)
 add_subdirectory(libsbx-async)

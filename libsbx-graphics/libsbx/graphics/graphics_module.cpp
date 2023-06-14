@@ -111,23 +111,21 @@ graphics_module::~graphics_module() {
 auto graphics_module::update([[maybe_unused]] std::float_t delta_time) -> void {
   const auto& window = devices::devices_module::get().window();
 
-  if (window.is_iconified()) {
+  if (!_renderer || window.is_iconified()) {
     return;
   }
 
-  if (_framebuffer_resized) {
-    _recreate_swapchain();
-  }
-
+  // if (_framebuffer_resized) {
+  //   _recreate_swapchain();
+  // }
 
   const auto& frame_data = _per_frame_data[_current_frame];
 
   // Get the next image in the swapchain (back/front buffer)
   const auto result = _swapchain->acquire_next_image(frame_data.image_available_semaphore, frame_data.in_flight_fence);
   
-
   if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-    _framebuffer_resized = true;
+    _recreate_swapchain();
     return;
   }else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
     throw std::runtime_error{"Failed to acquire swapchain image"};
@@ -135,19 +133,33 @@ auto graphics_module::update([[maybe_unused]] std::float_t delta_time) -> void {
 
   vkResetFences(*_logical_device, 1, &frame_data.in_flight_fence);
 
-  if (!_start_render_pass()) {
-    return;
-  }
-
-  auto& command_buffer = _command_buffers[_swapchain->active_image_index()];
-
   // [NOTE] KAJ 2023-02-19 17:39 - Drawing happens here
 
-  if (_renderer) {
-    _renderer->render(*command_buffer, delta_time);
-  }
+  auto stage = pipeline::stage{};
 
-  _end_render_pass();
+  for (const auto& render_stage : _renderer->render_stages()) {
+    render_stage->update();
+
+    if (!_start_render_pass(*render_stage)) {
+      return;
+    }
+
+    auto& command_buffer = _command_buffers[_swapchain->active_image_index()];
+
+    for (const auto& subpass : render_stage->subpasses()) {
+      stage.subpass = subpass.binding();
+
+      _renderer->render_stage(stage, *command_buffer, delta_time);
+
+      if (subpass.binding() != render_stage->subpasses().back().binding()) {
+        vkCmdNextSubpass(*command_buffer, VK_SUBPASS_CONTENTS_INLINE);
+      }
+    }
+
+    _end_render_pass(*render_stage);
+
+    stage.renderpass++;
+  }
 }
 
 auto graphics_module::instance() -> graphics::instance&  {
@@ -192,9 +204,9 @@ auto graphics_module::pipeline(const std::string& name) -> graphics::pipeline& {
   throw std::runtime_error{"Pipeline not found"};
 }
 
-auto graphics_module::_start_render_pass() -> bool {
-  if (_framebuffer_resized) {
-    // [NOTE] KAJ 2023-03-14 19:01 - This could happen when glfw sends a framebuffer resized event
+auto graphics_module::_start_render_pass(render_stage& render_stage) -> bool {
+  if (render_stage.is_outdated()) {
+    _recreate_pass(render_stage);
     return false;
   }
 
@@ -222,10 +234,7 @@ auto graphics_module::_start_render_pass() -> bool {
   
   command_buffer->set_scissor(scissor);
 
-  const auto clear_values = std::array<VkClearValue, 2>{
-    VkClearValue{.color = VkClearColorValue{0.0f, 0.0f, 0.0f, 1.0f}},
-    VkClearValue{.depthStencil = VkClearDepthStencilValue{1.0f, 0}}
-  };
+  const auto& clear_values = render_stage.clear_values();
 
   auto render_pass_begin_info = VkRenderPassBeginInfo{};
 	render_pass_begin_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -240,7 +249,7 @@ auto graphics_module::_start_render_pass() -> bool {
   return true;
 }
 
-auto graphics_module::_end_render_pass() -> void {
+auto graphics_module::_end_render_pass(render_stage& render_stage) -> void {
   const auto& frame_data = _per_frame_data[_current_frame];
 
   auto& command_buffer = _command_buffers[_swapchain->active_image_index()];
@@ -262,6 +271,26 @@ auto graphics_module::_end_render_pass() -> void {
   }
 
   _current_frame = utility::fast_mod(_current_frame + 1, _swapchain->image_count());
+}
+
+auto graphics_module::_reset_render_stages() -> void {
+  _recreate_swapchain();
+
+  for (auto& stage : _renderer->render_stages()) {
+    stage->rebuild(*_swapchain);
+  }
+}
+
+auto  graphics_module::_recreate_pass(render_stage& render_stage) -> void {
+  const auto& graphics_queue = _logical_device->graphics_queue();
+
+  validate(vkQueueWaitIdle(graphics_queue));
+
+  if (_framebuffer_resized) {
+    _recreate_swapchain();
+  }
+
+  render_stage.rebuild(*_swapchain);
 }
 
 auto graphics_module::_recreate_swapchain() -> void {

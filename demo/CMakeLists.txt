@@ -4,6 +4,17 @@ message(STATUS "Configuring ${PROJECT_NAME}...")
 
 add_executable(${PROJECT_NAME})
 
+find_program(POWERSHELL_PATH NAMES pwsh)
+
+message(STATUS "POWERSHELL_PATH: ${POWERSHELL_PATH}")
+
+add_custom_target(
+  shaders
+  COMMAND ${POWERSHELL_PATH} -ExecutionPolicy Bypass "${CMAKE_SOURCE_DIR}/scripts/compile_shaders.ps1" -directory "${PROJECT_SOURCE_DIR}/assets/shaders/"
+)
+
+add_dependencies(${PROJECT_NAME} shaders)
+
 target_sources(
   ${PROJECT_NAME}
   PRIVATE

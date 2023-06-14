@@ -37,9 +37,7 @@ vec4 phong_shading(vec3 light_direction, float intensity) {
   vec4 specular = uniform_push_constant.light_color * uniform_push_constant.specular_color * specular_intensity;
 
   // Calculate the final color
-  vec4 phong_color = ambient + diffuse + specular;
-
-  return phong_color;
+  return ambient + diffuse + specular;
 }
 
 vec4 cel_shading(vec3 light_direction, float intensity) {
@@ -63,7 +61,7 @@ void main() {
   vec4 phong_shading = phong_shading(light_direction, intensity);
   vec4 cel_shading = cel_shading(light_direction, intensity);
 
-  float mix_factor = 0.25;
+  float mix_factor = 0.33;
 
   out_color = mix(phong_shading, cel_shading, mix_factor);
 }

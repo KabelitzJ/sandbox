@@ -63,6 +63,15 @@ inline constexpr auto basic_vector2<Type>::operator+=(const basic_vector2& other
 }
 
 template<numeric Type>
+template<numeric Other>
+constexpr auto basic_vector2<Type>::operator+=(const basic_vector2<Other>& other) noexcept -> basic_vector2<Type>& {
+  x += static_cast<value_type>(other.x);
+  y += static_cast<value_type>(other.y);
+  
+  return *this;
+}
+
+template<numeric Type>
 inline constexpr auto basic_vector2<Type>::operator-=(const basic_vector2& other) noexcept -> basic_vector2<Type>& {
   x -= other.x;
   y -= other.y;
@@ -74,6 +83,24 @@ template<numeric Type>
 inline constexpr auto basic_vector2<Type>::operator*=(const Type scalar) noexcept -> basic_vector2<Type>& {
   x *= scalar;
   y *= scalar;
+  
+  return *this;
+}
+
+template<numeric Type>
+template<numeric Other>
+inline constexpr auto basic_vector2<Type>::operator*=(const Other scalar) noexcept -> basic_vector2<Type>& {
+  x *= static_cast<value_type>(scalar);
+  y *= static_cast<value_type>(scalar);
+  
+  return *this;
+}
+
+template<numeric Type>
+template<numeric Other>
+inline constexpr auto basic_vector2<Type>::operator*=(const basic_vector2<Other>& other) noexcept -> basic_vector2<Type>& {
+  x *= static_cast<value_type>(other.x);
+  y *= static_cast<value_type>(other.y);
   
   return *this;
 }
@@ -159,6 +186,11 @@ inline constexpr auto operator+(basic_vector2<Type> lhs, const basic_vector2<Typ
   return lhs += rhs;
 }
 
+template<numeric Type, numeric Other>
+[[nodiscard]] constexpr auto operator+(basic_vector2<Type> lhs, const basic_vector2<Other>& rhs) noexcept -> basic_vector2<Type> {
+  return lhs += rhs;
+}
+
 template<numeric Type> 
 inline constexpr auto operator-(basic_vector2<Type> lhs, const basic_vector2<Type>& rhs) noexcept -> basic_vector2<Type> {
   return lhs -= rhs;
@@ -166,6 +198,11 @@ inline constexpr auto operator-(basic_vector2<Type> lhs, const basic_vector2<Typ
 
 template<numeric Type>
 inline constexpr auto operator*(basic_vector2<Type> lhs, const Type rhs) noexcept -> basic_vector2<Type> {
+  return lhs *= rhs;
+}
+
+template<numeric Type, numeric Other>
+[[nodiscard]] constexpr auto operator*(basic_vector2<Type> lhs, const basic_vector2<Other>& rhs) noexcept -> basic_vector2<Type> {
   return lhs *= rhs;
 }
 

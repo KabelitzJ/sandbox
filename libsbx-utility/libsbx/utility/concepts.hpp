@@ -56,7 +56,7 @@ concept convertible_to_one_of = is_convertible_to_one_of_v<Type, TypeList...>;
 
 
 template<typename Type, typename Base>
-concept implements = !std::is_abstract_v<Type> && std::is_abstract_v<Base> && std::is_base_of_v<Base, Type>; 
+concept implements = !std::is_abstract_v<Type> && std::has_virtual_destructor_v<Base> && std::is_base_of_v<Base, Type>; 
 
 template<typename Type>
 struct is_complete : std::bool_constant<(sizeof(Type) != 0 && !std::is_void_v<Type>)> { };

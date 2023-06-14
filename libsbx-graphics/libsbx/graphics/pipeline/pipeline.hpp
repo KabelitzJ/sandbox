@@ -6,6 +6,7 @@
 #include <vulkan/vulkan.hpp>
 
 #include <libsbx/utility/noncopyable.hpp>
+#include <libsbx/utility/hash.hpp>
 
 #include <libsbx/graphics/commands/command_buffer.hpp>
 
@@ -14,6 +15,19 @@ namespace sbx::graphics {
 class pipeline : public utility::noncopyable {
 
 public:
+
+  struct stage {
+    std::uint32_t renderpass;
+    std::uint32_t subpass;
+
+    auto operator==(const stage& rhs) const noexcept -> bool {
+      return renderpass == rhs.renderpass && subpass == rhs.subpass;
+    }
+
+    auto operator<(const stage& rhs) const noexcept -> bool {
+      return renderpass < rhs.renderpass || (renderpass == rhs.renderpass && subpass < rhs.subpass);
+    }
+  }; // struct stage 
 
   pipeline() = default;
 
@@ -36,5 +50,14 @@ public:
 }; // class pipeline
 
 } // namespace sbx::graphics
+
+template<>
+struct std::hash<sbx::graphics::pipeline::stage> {
+  auto operator()(const sbx::graphics::pipeline::stage& stage) const noexcept -> std::size_t {
+    auto hash = std::size_t{0};
+    sbx::utility::hash_combine(hash, stage.renderpass, stage.subpass);
+    return hash;
+  }
+}; // struct std::hash<sbx::graphics::pipeline::stage>
 
 #endif // LIBSBX_GRAPHICS_PIPELINE_PIPELINE_HPP_

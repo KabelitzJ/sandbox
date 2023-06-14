@@ -3,13 +3,18 @@
 
 #include <memory>
 #include <vector>
+#include <typeindex>
 
 #include <libsbx/utility/noncopyable.hpp>
 #include <libsbx/utility/concepts.hpp>
+#include <libsbx/utility/hash.hpp>
 
 #include <libsbx/graphics/commands/command_buffer.hpp>
 
+#include <libsbx/graphics/pipeline/pipeline.hpp>
+
 #include <libsbx/graphics/subrenderer.hpp>
+#include <libsbx/graphics/render_stage.hpp>
 
 namespace sbx::graphics {
 
@@ -21,18 +26,39 @@ public:
 
   virtual ~renderer() = default;
 
-  virtual auto render(command_buffer& command_buffer, std::float_t delta_time) -> void = 0;
+  auto render_stage(const pipeline::stage& stage, command_buffer& command_buffer, std::float_t delta_time) -> void {
+    for (const auto& [render_stage, type] : _subrenderer_stages) {
+      if (render_stage == stage) {
+        _subrenderers[type]->render(command_buffer, delta_time);
+      }
+    }
+  }
+
+  auto add_render_stage(std::unique_ptr<graphics::render_stage>&& render_stage) -> void {
+    _render_stages.push_back(std::move(render_stage));
+  }
+
+  auto render_stages() const noexcept -> const std::vector<std::unique_ptr<graphics::render_stage>>& {
+    return _render_stages;
+  }
 
 protected:
 
   template<utility::implements<subrenderer> Type, typename... Args>
-  auto add_subrenderer(Args&&... args) -> void {
-    _subrenderers.push_back(std::make_unique<Type>(std::forward<Args>(args)...));
+  auto add_subrenderer(const pipeline::stage& stage, Args&&... args) -> void {
+    const auto type = std::type_index{typeid(Type)};
+
+    _subrenderer_stages.insert({stage, type});
+
+    _subrenderers.insert({type, std::make_unique<Type>(std::forward<Args>(args)...)});
   }
 
 private:
 
-  std::vector<std::unique_ptr<subrenderer>> _subrenderers;
+  std::vector<std::unique_ptr<graphics::render_stage>> _render_stages;
+
+  std::unordered_map<std::type_index, std::unique_ptr<subrenderer>> _subrenderers;
+  std::multimap<pipeline::stage, std::type_index> _subrenderer_stages;
 
 }; // class renderer
 

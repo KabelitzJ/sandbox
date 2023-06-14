@@ -33,6 +33,7 @@
 
 #include <libsbx/graphics/renderer.hpp>
 #include <libsbx/graphics/mesh.hpp>
+#include <libsbx/graphics/render_stage.hpp>
 
 namespace sbx::graphics {
 
@@ -87,13 +88,18 @@ public:
   requires (std::is_constructible_v<Renderer, Args...>)
   auto set_renderer(Args&&... args) -> void {
     _renderer = std::make_unique<Renderer>(std::forward<Args>(args)...);
+    _reset_render_stages();
   }
   
 private:
 
-  auto _start_render_pass() -> bool;
+  auto _start_render_pass(render_stage& render_stage) -> bool;
 
-  auto _end_render_pass() -> void;
+  auto _end_render_pass(render_stage& render_stage) -> void;
+
+  auto _reset_render_stages() -> void;
+
+  auto _recreate_pass(render_stage& render_stage) -> void;
 
   auto _recreate_swapchain() -> void;
 
