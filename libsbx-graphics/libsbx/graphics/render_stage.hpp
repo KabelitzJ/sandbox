@@ -14,6 +14,7 @@
 
 #include <libsbx/graphics/render_pass/swapchain.hpp>
 #include <libsbx/graphics/render_pass/render_pass.hpp>
+#include <libsbx/graphics/render_pass/framebuffer.hpp>
 
 namespace sbx::graphics {
 
@@ -182,11 +183,12 @@ class render_stage {
 
 public:
 
-  render_stage(std::vector<attachment> attachments, std::vector<subpass_binding> subpass_bindings, const viewport viewport = graphics::viewport{}) noexcept
+  render_stage(std::vector<attachment>&& attachments, std::vector<subpass_binding>&& subpass_bindings, const viewport viewport = graphics::viewport{}) noexcept
   : _attachments{std::move(attachments)}, 
     _subpass_bindings{std::move(subpass_bindings)},
     _viewport{viewport},
-    _subpass_attachment_count{static_cast<std::uint32_t>(_subpass_bindings.size()), 0} {
+    _subpass_attachment_count{static_cast<std::uint32_t>(_subpass_bindings.size()), 0},
+    _is_outdated{true} {
     for (const auto& attachment : _attachments) {
       auto clear_value = VkClearValue{};
 
@@ -260,9 +262,7 @@ public:
 
   auto rebuild(const swapchain& swapchain) -> void;
 
-  auto framebuffer(std::uint32_t index) const noexcept -> const graphics::framebuffer& {
-    return *_framebuffers[index];
-  }
+  auto framebuffer(std::uint32_t index) noexcept -> framebuffer&;
 
 private:
 

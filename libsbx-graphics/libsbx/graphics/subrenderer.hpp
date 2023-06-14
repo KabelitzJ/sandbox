@@ -13,7 +13,8 @@ class subrenderer {
 
 public:
 
-  subrenderer(const pipeline::stage& stage);
+  subrenderer(const pipeline::stage& stage)
+  : _stage{stage} { }
 
   virtual ~subrenderer() = default;
 

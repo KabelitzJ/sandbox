@@ -97,14 +97,16 @@ public:
       sbx::graphics::subpass_binding{0, {0, 1}}
     };
 
-    add_render_stage(std::make_unique<sbx::graphics::render_stage>(std::move(render_pass_attachments_1), std::move(render_pass_subpass_bindings_1)));
-
-    add_subrenderer<demo_subrenderer>(sbx::graphics::pipeline::stage{0, 0});
-    add_subrenderer<sbx::graphics::model_subrenderer>(sbx::graphics::pipeline::stage{0, 0});
+    add_render_stage(std::move(render_pass_attachments_1), std::move(render_pass_subpass_bindings_1));
   }
 
   ~demo_renderer() override {
 
+  }
+
+  auto initialize() -> void override {
+    add_subrenderer<demo_subrenderer>(sbx::graphics::pipeline::stage{0, 0});
+    add_subrenderer<sbx::graphics::model_subrenderer>(sbx::graphics::pipeline::stage{0, 0});
   }
 
 }; // class demo_renderer

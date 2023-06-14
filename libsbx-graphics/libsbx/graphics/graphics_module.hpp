@@ -79,6 +79,7 @@ public:
   auto set_renderer(Args&&... args) -> void {
     _renderer = std::make_unique<Renderer>(std::forward<Args>(args)...);
     _reset_render_stages();
+    _renderer->initialize();
   }
 
   auto render_stage(const pipeline::stage& stage) -> graphics::render_stage&;

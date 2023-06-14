@@ -110,10 +110,6 @@ auto graphics_module::update([[maybe_unused]] std::float_t delta_time) -> void {
     return;
   }
 
-  // if (_framebuffer_resized) {
-  //   _recreate_swapchain();
-  // }
-
   const auto& frame_data = _per_frame_data[_current_frame];
 
   // Get the next image in the swapchain (back/front buffer)
@@ -144,7 +140,7 @@ auto graphics_module::update([[maybe_unused]] std::float_t delta_time) -> void {
     for (const auto& subpass : render_stage->subpasses()) {
       stage.subpass = subpass.binding();
 
-      _renderer->render_stage(stage, *command_buffer, delta_time);
+      _renderer->render(stage, *command_buffer, delta_time);
 
       if (subpass.binding() != render_stage->subpasses().back().binding()) {
         vkCmdNextSubpass(*command_buffer, VK_SUBPASS_CONTENTS_INLINE);

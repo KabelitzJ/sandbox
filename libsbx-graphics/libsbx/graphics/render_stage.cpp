@@ -40,4 +40,8 @@ auto render_stage::rebuild(const swapchain& swapchain) -> void {
   }
 }
 
+auto render_stage::framebuffer(std::uint32_t index) noexcept -> graphics::framebuffer& {
+  return *_framebuffers[index];
+}
+
 } // namespace sbx::graphics

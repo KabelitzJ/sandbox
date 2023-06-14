@@ -52,7 +52,7 @@ public:
     return *_index_buffer;
   }
 
-  auto render(command_buffer& command_buffer, std::float_t delta_time) -> void {
+  auto render(command_buffer& command_buffer, [[maybe_unused]] std::float_t delta_time) -> void {
     command_buffer.bind_vertex_buffer(0, *_vertex_buffer);
     command_buffer.bind_index_buffer(*_index_buffer, 0, VK_INDEX_TYPE_UINT32);
 

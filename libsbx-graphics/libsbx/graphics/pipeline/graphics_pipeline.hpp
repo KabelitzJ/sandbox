@@ -26,7 +26,7 @@ public:
 
   graphics_pipeline(stage stage, const std::filesystem::path& path);
 
-  ~graphics_pipeline();
+  ~graphics_pipeline() override;
 
   auto handle() const noexcept -> const VkPipeline& override;
 

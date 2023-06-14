@@ -12,8 +12,6 @@
 
 #include <libsbx/graphics/images/image.hpp>
 
-#include <libsbx/graphics/render_stage.hpp>
-
 namespace sbx::graphics {
 
 class framebuffer {

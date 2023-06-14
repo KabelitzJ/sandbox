@@ -26,7 +26,9 @@ public:
 
   virtual ~renderer() = default;
 
-  auto render_stage(const pipeline::stage& stage, command_buffer& command_buffer, std::float_t delta_time) -> void {
+  virtual auto initialize() -> void = 0;
+
+  auto render(const pipeline::stage& stage, command_buffer& command_buffer, std::float_t delta_time) -> void {
     for (const auto& [render_stage, type] : _subrenderer_stages) {
       if (render_stage == stage) {
         _subrenderers[type]->render(command_buffer, delta_time);
@@ -34,8 +36,8 @@ public:
     }
   }
 
-  auto add_render_stage(std::unique_ptr<graphics::render_stage>&& render_stage) -> void {
-    _render_stages.push_back(std::move(render_stage));
+  auto add_render_stage(std::vector<attachment>&& attachments, std::vector<subpass_binding>&& subpass_bindings, const viewport viewport = graphics::viewport{}) -> void {
+    _render_stages.push_back(std::make_unique<graphics::render_stage>(std::move(attachments), std::move(subpass_bindings), viewport));
   }
 
   auto render_stages() const noexcept -> const std::vector<std::unique_ptr<graphics::render_stage>>& {

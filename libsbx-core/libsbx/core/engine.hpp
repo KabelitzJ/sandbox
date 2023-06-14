@@ -39,7 +39,7 @@ public:
     }
   }
 
-  template<utility::implements<application> Type>
+  template<utility::implements<application> Application>
   auto run() -> void {
     if (_is_running) {
       return;
@@ -47,7 +47,7 @@ public:
 
     using clock_type = std::chrono::high_resolution_clock;
 
-    auto application = std::make_unique<Type>();
+    auto application = std::make_unique<Application>();
     application->_set_engine(this);
 
     _is_running = true;

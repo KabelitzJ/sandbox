@@ -57,7 +57,7 @@ public:
     std::invoke(on_create);
   }
 
-  auto on_update(std::float_t delta_time) -> void {
+  auto on_update() -> void {
     auto on_update = _state.get<sol::function>("on_update");
 
     if (!on_update.valid() || !on_update.is<sol::function>()) {
