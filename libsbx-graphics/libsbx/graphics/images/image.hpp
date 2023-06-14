@@ -29,7 +29,7 @@ public:
 
   static auto has_stencil_component(VkFormat format) noexcept -> bool;
 
-  static auto create_image(VkImage& image, VkDeviceMemory& memory, const VkExtent3D& extent, VkImageType type, VkSampleCountFlagBits samples, VkImageUsageFlags usage, VkFormat format, std::uint32_t mip_levels, std::uint32_t array_layers, VkImageLayout layout) -> void;
+  static auto create_image(VkImage& image, VkDeviceMemory& memory, const VkExtent3D& extent, VkImageType type, VkSampleCountFlagBits samples, VkImageUsageFlags usage, VkFormat format, std::uint32_t mip_levels, std::uint32_t array_layers, VkImageLayout layout = VK_IMAGE_LAYOUT_UNDEFINED) -> void;
 
   static auto create_image_view(const VkImage& image, VkImageView& image_view, VkImageViewType type, VkFormat format, VkImageAspectFlags image_aspect, std::uint32_t mip_levels, std::uint32_t base_mip_level, std::uint32_t layer_count, std::uint32_t base_array_layer) -> void;
 

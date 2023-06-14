@@ -15,6 +15,13 @@ static const auto depth_formats = std::vector<VkFormat>{
   VK_FORMAT_D32_SFLOAT_S8_UINT
 };
 
+static const auto stencil_formats = std::vector<VkFormat>{
+  VK_FORMAT_S8_UINT, 
+  VK_FORMAT_D16_UNORM_S8_UINT, 
+  VK_FORMAT_D24_UNORM_S8_UINT, 
+  VK_FORMAT_D32_SFLOAT_S8_UINT
+};
+
 image::image(const VkExtent3D extent, VkFilter filter, VkSamplerAddressMode addressMode, VkSampleCountFlagBits samples, VkImageLayout layout, VkImageUsageFlags usage, VkFormat format, std::uint32_t mipLevels, std::uint32_t arrayLayers)
 : _extent{extent},
   _filter{filter},
@@ -74,11 +81,27 @@ auto image::has_depth_component(VkFormat format) noexcept -> bool {
 }
 
 auto image::has_stencil_component(VkFormat format) noexcept -> bool {
-
+  return std::find(stencil_formats.begin(), stencil_formats.end(), format) != stencil_formats.end();
 }
 
 auto image::create_image(VkImage& image, VkDeviceMemory& memory, const VkExtent3D& extent, VkImageType type, VkSampleCountFlagBits samples, VkImageUsageFlags usage, VkFormat format, std::uint32_t mip_levels, std::uint32_t array_layers, VkImageLayout layout) -> void {
+  auto& logical_device = graphics_module::get().logical_device();
 
+  auto image_create_info = VkImageCreateInfo{};
+  image_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+  image_create_info.flags = array_layers == 6 ? VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT : 0;
+  image_create_info.imageType = type;
+  image_create_info.format = format;
+  image_create_info.extent = extent;
+  image_create_info.mipLevels = mip_levels;
+  image_create_info.arrayLayers = array_layers;
+  image_create_info.samples = samples;
+  image_create_info.tiling = VK_IMAGE_TILING_OPTIMAL;
+  image_create_info.usage = usage;
+  image_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+  image_create_info.initialLayout = layout;
+
+  validate(vkCreateImage(logical_device, &image_create_info, nullptr, &image));
 }
 
 auto image::create_image_view(const VkImage& image, VkImageView& image_view, VkImageViewType type, VkFormat format, VkImageAspectFlags image_aspect, std::uint32_t mip_levels, std::uint32_t base_mip_level, std::uint32_t layer_count, std::uint32_t base_array_layer) -> void {
