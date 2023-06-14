@@ -1,6 +1,0 @@
-[2023-06-14 11:24:04] [sbx::graphics] [debug] : Selected GPU 'Intel(R) Iris(R) Xe Graphics'
-[2023-06-14 11:24:04] [sbx::graphics] [debug] : Queue Family 0 supports 1 queues of type [Graphics|Compute|Transfer|Sparse Binding]
-[2023-06-14 11:24:04] [sbx::graphics] [debug] : Pipeline 'basic' created in 1.9079ms
-[2023-06-14 11:24:04] [sbx::graphics] [debug] : meshes: 1
-[2023-06-14 11:24:04] [sbx::graphics] [debug] : materials: 1
-[2023-06-14 11:24:04] [sbx::graphics] [debug] : Loaded mesh './demo/assets/meshes/sphere.obj' in 0.0117854 ms
