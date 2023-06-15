@@ -111,10 +111,6 @@ swapchain::swapchain(const VkExtent2D& extent, const std::unique_ptr<swapchain>&
 
     _create_image_view(image, surface_format.format, VK_IMAGE_ASPECT_COLOR_BIT, image_view);
 	}
-
-  // _create_depth_images();
-
-  // _create_framebuffers();
 }
 
 swapchain::~swapchain() {
@@ -125,13 +121,6 @@ swapchain::~swapchain() {
 	for (const auto& image_view : _image_views) {
 		vkDestroyImageView(logical_device, image_view, nullptr);
 	}
-
-
-  // for (const auto& framebuffer : _framebuffers) {
-  //   vkDestroyFramebuffer(logical_device, framebuffer, nullptr);
-  // }
-
-  // _depth_images.clear();
 }
 
 auto swapchain::handle() const noexcept -> const VkSwapchainKHR& {
@@ -165,10 +154,6 @@ auto swapchain::composite_alpha() const noexcept -> VkCompositeAlphaFlagBitsKHR 
 auto swapchain::present_mode() const noexcept -> VkPresentModeKHR {
   return _present_mode;
 }
-
-// auto swapchain::current_framebuffer() const noexcept -> const VkFramebuffer& {
-//   return _framebuffers.at(_active_image_index);
-// }
 
 auto swapchain::image(std::uint32_t index) const noexcept -> const VkImage& {
   return _images.at(index);
@@ -224,62 +209,5 @@ auto swapchain::_create_image_view(const VkImage& image, VkFormat format, VkImag
 
   validate(vkCreateImageView(logical_device, &image_view_create_info, nullptr, &image_view));
 }
-
-// auto swapchain::_create_depth_images() -> void {
-//   auto& physical_device = graphics_module::get().physical_device();
-  
-//   const auto depth_format = physical_device.find_supported_format(
-//     {
-//       VK_FORMAT_D32_SFLOAT,
-//       VK_FORMAT_D32_SFLOAT_S8_UINT,
-//       VK_FORMAT_D24_UNORM_S8_UINT
-//     },
-//     VK_IMAGE_TILING_OPTIMAL,
-//     VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
-//   );
-
-//   _depth_images.resize(_image_count);
-
-//   for (auto& depth_image : _depth_images) {
-//     depth_image = std::make_unique<image>(
-//       VK_IMAGE_TYPE_2D, 
-//       VkExtent3D{
-//         _extent.width, 
-//         _extent.height, 
-//         1
-//       }, 
-//       VK_SAMPLE_COUNT_1_BIT, 
-//       VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, 
-//       depth_format, 
-//       1, 
-//       1, 
-//       VK_IMAGE_LAYOUT_UNDEFINED
-//     );
-//   }
-// }
-
-// auto swapchain::_create_framebuffers() -> void {
-//   auto& logical_device = graphics_module::get().logical_device();
-//   auto& render_pass = graphics_module::get().render_pass();
-
-//   _framebuffers.resize(_image_count);
-
-//   for (auto i = std::uint32_t{0}; i < _image_count; ++i) {
-//     auto& framebuffer = _framebuffers.at(i);
-
-//     auto attachments = std::array<VkImageView, 2>{_image_views.at(i), _depth_images.at(i)->view()};
-
-//     auto framebuffer_create_info = VkFramebufferCreateInfo{};
-//     framebuffer_create_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-//     framebuffer_create_info.renderPass = render_pass;
-//     framebuffer_create_info.attachmentCount = static_cast<std::uint32_t>(attachments.size());
-//     framebuffer_create_info.pAttachments = attachments.data();
-//     framebuffer_create_info.width = _extent.width;
-//     framebuffer_create_info.height = _extent.height;
-//     framebuffer_create_info.layers = 1;
-
-//     validate(vkCreateFramebuffer(logical_device, &framebuffer_create_info, nullptr, &framebuffer));
-//   }
-// }
 
 } // namespace sbx::graphics

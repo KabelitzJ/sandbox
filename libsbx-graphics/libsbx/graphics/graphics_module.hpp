@@ -23,7 +23,6 @@
 #include <libsbx/graphics/commands/command_buffer.hpp>
 
 #include <libsbx/graphics/render_pass/swapchain.hpp>
-#include <libsbx/graphics/render_pass/framebuffer.hpp>
 
 #include <libsbx/graphics/pipeline/pipeline.hpp>
 #include <libsbx/graphics/pipeline/graphics_pipeline.hpp>

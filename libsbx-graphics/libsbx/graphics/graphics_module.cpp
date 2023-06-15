@@ -137,12 +137,14 @@ auto graphics_module::update([[maybe_unused]] std::float_t delta_time) -> void {
 
     auto& command_buffer = _command_buffers[_swapchain->active_image_index()];
 
-    for (const auto& subpass : render_stage->subpasses()) {
+    const auto& subpasses = render_stage->subpasses();
+
+    for (const auto& subpass : subpasses) {
       stage.subpass = subpass.binding();
 
       _renderer->render(stage, *command_buffer, delta_time);
 
-      if (subpass.binding() != render_stage->subpasses().back().binding()) {
+      if (subpass.binding() != subpasses.back().binding()) {
         vkCmdNextSubpass(*command_buffer, VK_SUBPASS_CONTENTS_INLINE);
       }
     }

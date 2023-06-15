@@ -23,8 +23,6 @@
 #include <libsbx/graphics/commands/command_pool.hpp>
 #include <libsbx/graphics/commands/command_buffer.hpp>
 
-#include <libsbx/graphics/render_pass/render_pass.hpp>
 #include <libsbx/graphics/render_pass/swapchain.hpp>
-
 
 #endif // LIBSBX_GRAPHICS_HPP_

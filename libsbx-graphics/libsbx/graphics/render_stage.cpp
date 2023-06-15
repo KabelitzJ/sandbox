@@ -39,7 +39,7 @@ render_stage::render_stage(std::vector<graphics::attachment>&& attachments, std:
   _subpass_bindings{std::move(subpass_bindings)},
   _viewport{viewport},
   _render_pass{nullptr},
-  _subpass_attachment_count{static_cast<std::uint32_t>(_subpass_bindings.size()), 0},
+  _subpass_attachment_counts{static_cast<std::uint32_t>(_subpass_bindings.size()), 0},
   _is_outdated{true} {
 
   for (const auto& attachment : _attachments) {
@@ -53,7 +53,7 @@ render_stage::render_stage(std::vector<graphics::attachment>&& attachments, std:
 
         for (const auto& subpass : _subpass_bindings) {
           if (auto bindings = subpass.attachment_bindings(); std::find(bindings.begin(), bindings.end(), attachment.binding()) != bindings.end()) {
-            _subpass_attachment_count[subpass.binding()]++;
+            _subpass_attachment_counts[subpass.binding()]++;
           }
         }
 
@@ -110,9 +110,6 @@ auto render_stage::update() -> void {
 auto render_stage::rebuild(const swapchain& swapchain) -> void {
   update();
 
-  // [TODO] KAJ 2023-06-14 : Implement this.
-
-  auto& physical_device = graphics_module::get().physical_device();
   auto& logical_device = graphics_module::get().logical_device();
   auto& surface = graphics_module::get().surface();
 
@@ -194,7 +191,6 @@ auto render_stage::_create_render_pass(VkFormat depth_format, VkFormat surface_f
   auto subpass_dependencies = std::vector<VkSubpassDependency>{};
 
   for (const auto& subpass : _subpass_bindings) {
-		// Attachments.
 		auto subpass_colour_attachments = std::vector<VkAttachmentReference>{};
 
 		auto depth_attachment = std::optional<std::uint32_t>{};
@@ -203,8 +199,7 @@ auto render_stage::_create_render_pass(VkFormat depth_format, VkFormat surface_f
 			auto image_attachment = attachment(attachment_binding);
 
 			if (!image_attachment) {
-				core::logger::debug("sbx::graphics", "Failed to find attachment with binding: {}", attachment_binding);
-				continue;
+				throw std::runtime_error{fmt::format("Failed to find attachment with binding {}", attachment_binding)};
 			}
 
 			if (image_attachment->image_type() == attachment::type::depth) {
@@ -219,10 +214,8 @@ auto render_stage::_create_render_pass(VkFormat depth_format, VkFormat surface_f
 			subpass_colour_attachments.emplace_back(attachmentReference);
 		}
 
-		// Subpass description.
 		subpasses.push_back(subpass_description{VK_PIPELINE_BIND_POINT_GRAPHICS, std::move(subpass_colour_attachments), depth_attachment});
 
-		// Subpass dependencies.
 		auto subpass_dependency = VkSubpassDependency{};
 		subpass_dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 		subpass_dependency.dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
@@ -259,7 +252,6 @@ auto render_stage::_create_render_pass(VkFormat depth_format, VkFormat surface_f
 		subpass_descriptions.emplace_back(subpass.description());
 	}
 
-	// Creates the render pass.
 	auto render_pass_create_info = VkRenderPassCreateInfo{};
 	render_pass_create_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
 	render_pass_create_info.attachmentCount = static_cast<std::uint32_t>(attachments.size());

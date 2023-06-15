@@ -15,10 +15,9 @@
 #include <libsbx/math/vector2.hpp>
 
 #include <libsbx/graphics/images/depth_image.hpp>
+#include <libsbx/graphics/images/image2d.hpp>
 
 #include <libsbx/graphics/render_pass/swapchain.hpp>
-#include <libsbx/graphics/render_pass/render_pass.hpp>
-#include <libsbx/graphics/render_pass/framebuffer.hpp>
 
 namespace sbx::graphics {
 
@@ -223,6 +222,10 @@ public:
     return _subpass_bindings;
   }
 
+  auto attachment_count(std::uint32_t subpass) -> std::uint32_t {
+    return _subpass_attachment_counts[subpass];
+  }
+
   auto is_outdated() const noexcept -> bool {
     return _is_outdated;
   }
@@ -269,12 +272,14 @@ private:
   graphics::viewport _viewport;
 
   VkRenderPass _render_pass;
+
   std::unique_ptr<graphics::depth_image> _depth_stencil;
+
   std::vector<VkFramebuffer> _framebuffers;
   std::vector<std::unique_ptr<graphics::image2d>> _image_attachments;
 
   std::vector<VkClearValue> _clear_values;
-  std::vector<std::uint32_t> _subpass_attachment_count;
+  std::vector<std::uint32_t> _subpass_attachment_counts;
   std::optional<graphics::attachment> _depth_attachment;
   std::optional<graphics::attachment> _swapchain_attachment;
 
