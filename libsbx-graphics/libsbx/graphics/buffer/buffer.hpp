@@ -1,9 +1,10 @@
 #ifndef LIBSBX_GRAPHICS_BUFFER_BUFFER_HPP_
 #define LIBSBX_GRAPHICS_BUFFER_BUFFER_HPP_
 
-#include <vulkan/vulkan.hpp>
-
 #include <utility>
+
+#include <cinttypes>
+#include <vulkan/vulkan.hpp>
 
 #include <libsbx/utility/noncopyable.hpp>
 
@@ -13,13 +14,19 @@ class buffer : public utility::noncopyable {
 
 public:
 
+  enum class status : std::uint8_t {
+    reset,
+    changed,
+    normal
+  }; // enum class status
+
   buffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, bool map_memory = true);
 
   buffer(const void* data, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties);
 
   buffer(const buffer& source, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties);
 
-  ~buffer();
+  virtual ~buffer();
 
   auto handle() const noexcept -> const VkBuffer&;
 
@@ -43,7 +50,7 @@ public:
 
   auto unmap() -> void;
 
-private:
+protected:
 
   VkBuffer _handle{};
   VkDeviceSize _size{};

@@ -6,6 +6,8 @@
 #include <libsbx/math/vector4.hpp>
 #include <libsbx/math/matrix4x4.hpp>
 
+#include <libsbx/graphics/buffer/uniform_buffer.hpp>
+
 namespace sbx::graphics {
 
 struct uniform {

@@ -11,9 +11,11 @@
 
 #include <libsbx/graphics/commands/command_buffer.hpp>
 
+#include <libsbx/graphics/descriptor/descriptor.hpp>
+
 namespace sbx::graphics {
 
-class image : public utility::noncopyable {
+class image : public utility::noncopyable, public descriptor {
 
 public:
 
@@ -46,6 +48,8 @@ public:
   static auto copy_buffer_to_image(const VkBuffer& buffer, const VkImage& image, const VkExtent3D& extent, std::uint32_t layer_count, std::uint32_t base_array_layer) -> void;
 
 	static auto copy_image(const VkImage& src_image, VkImage& dst_image, VkDeviceMemory& dst_image_memory, VkFormat src_format, const VkExtent3D& extent, VkImageLayout src_image_layout, std::uint32_t mip_level, std::uint32_t array_layer) -> bool;
+
+  auto write_descriptor_set(std::uint32_t binding, VkDescriptorType descriptor_type) const noexcept -> graphics::write_descriptor_set override;
 
   auto extent() const noexcept -> const VkExtent3D&;
 
