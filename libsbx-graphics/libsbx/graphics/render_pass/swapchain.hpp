@@ -37,11 +37,15 @@ public:
 
   auto present_mode() const noexcept -> VkPresentModeKHR;
 
+  auto image(std::uint32_t index) const noexcept -> const VkImage&;
+
+  auto image_view(std::uint32_t index) const noexcept -> const VkImageView&;
+
   // auto current_framebuffer() const noexcept -> const VkFramebuffer&;
 
   auto acquire_next_image(const VkSemaphore& image_available_semaphore = nullptr, const VkFence& fence = nullptr) -> VkResult;
 
-  auto present(const image& image, const VkSemaphore& wait_semaphore = nullptr) -> VkResult;
+  auto present(const VkSemaphore& wait_semaphore = nullptr) -> VkResult;
 
 private:
 

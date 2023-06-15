@@ -75,7 +75,7 @@ logical_device::operator const VkDevice&() const noexcept {
   return _handle;
 }
 
-auto logical_device::enables_features() const -> const VkPhysicalDeviceFeatures& {
+auto logical_device::enabled_features() const -> const VkPhysicalDeviceFeatures& {
   return _enabled_features;
 }
 

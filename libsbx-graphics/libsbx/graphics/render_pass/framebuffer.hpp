@@ -10,7 +10,7 @@
 #include <libsbx/graphics/render_pass/swapchain.hpp>
 #include <libsbx/graphics/render_pass/render_pass.hpp>
 
-#include <libsbx/graphics/images/image.hpp>
+#include <libsbx/graphics/images/image2d.hpp>
 
 namespace sbx::graphics {
 
@@ -18,7 +18,7 @@ class framebuffer {
 
 public:
 
-  framebuffer(const VkExtent2D& extent, VkSampleCountFlagBits samples = VK_SAMPLE_COUNT_1_BIT);
+  framebuffer(const VkExtent2D& extent,  VkSampleCountFlagBits samples = VK_SAMPLE_COUNT_1_BIT);
 
   ~framebuffer();
 
@@ -26,16 +26,12 @@ public:
 
   operator const VkFramebuffer&() const noexcept;
 
-  auto color_attachment() const noexcept -> const image&;
-
-  auto depth_attachment() const noexcept -> const image&;
+  auto attachment() const noexcept -> const image&;
 
 private:
 
   VkFramebuffer _handle;
-
-  std::unique_ptr<image> _color_attachment;
-  std::unique_ptr<image> _depth_attachment;
+  std::unique_ptr<image2d> _attachment;
 
 }; // class framebuffer
 

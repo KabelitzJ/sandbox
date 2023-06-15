@@ -7,10 +7,14 @@
 
 #include <vulkan/vulkan.hpp>
 
+#include <libsbx/core/logger.hpp>
+
 #include <libsbx/devices/devices_module.hpp>
 
 #include <libsbx/math/color.hpp>
 #include <libsbx/math/vector2.hpp>
+
+#include <libsbx/graphics/images/depth_image.hpp>
 
 #include <libsbx/graphics/render_pass/swapchain.hpp>
 #include <libsbx/graphics/render_pass/render_pass.hpp>
@@ -23,7 +27,7 @@ class attachment {
 public:
 
   enum class type {
-    color,
+    image,
     depth,
     swapchain
   }; // enum class type
@@ -183,47 +187,36 @@ class render_stage {
 
 public:
 
-  render_stage(std::vector<attachment>&& attachments, std::vector<subpass_binding>&& subpass_bindings, const viewport viewport = graphics::viewport{}) noexcept
-  : _attachments{std::move(attachments)}, 
-    _subpass_bindings{std::move(subpass_bindings)},
-    _viewport{viewport},
-    _subpass_attachment_count{static_cast<std::uint32_t>(_subpass_bindings.size()), 0},
-    _is_outdated{true} {
-    for (const auto& attachment : _attachments) {
-      auto clear_value = VkClearValue{};
+  render_stage(std::vector<attachment>&& attachments, std::vector<subpass_binding>&& subpass_bindings, const graphics::viewport& viewport = graphics::viewport{});
 
-      auto clear_color = attachment.clear_color();
+  ~render_stage();
 
-      switch (attachment.image_type()) {
-        case attachment::type::color: {
-          clear_value.color = VkClearColorValue{clear_color.r, clear_color.g, clear_color.b, clear_color.a};
-
-          for (const auto& subpass : _subpass_bindings) {
-            if (auto bindings = subpass.attachment_bindings(); std::find(bindings.begin(), bindings.end(), attachment.binding()) != bindings.end()) {
-              _subpass_attachment_count[subpass.binding()]++;
-            }
-          }
-
-          break;
-        }
-        case attachment::type::depth: {
-          clear_value.depthStencil = VkClearDepthStencilValue{1.0f, 0};
-          _depth_attachment = attachment;
-          break;
-        }
-        case attachment::type::swapchain: {
-          clear_value.color = VkClearColorValue{clear_color.r, clear_color.g, clear_color.b, clear_color.a};
-          _swapchain_attachment = attachment;
-          break;
-        }
-      }
-
-      _clear_values.push_back(clear_value);
-    }
+  auto attachments() const noexcept -> const std::vector<graphics::attachment>& {
+    return _attachments;
   }
 
-  auto attachments() const noexcept -> const std::vector<attachment>& {
-    return _attachments;
+  auto attachment(const std::string& name) const noexcept -> std::optional<graphics::attachment> {
+    auto entry = std::find_if(_attachments.begin(), _attachments.end(), [&name](const graphics::attachment& attachment) {
+      return attachment.name() == name;
+    });
+
+    if (entry == _attachments.end()) {
+      return std::nullopt;
+    }
+
+    return *entry;
+  }
+
+  auto attachment(std::uint32_t binding) const noexcept -> std::optional<graphics::attachment> {
+    auto entry = std::find_if(_attachments.begin(), _attachments.end(), [&binding](const graphics::attachment& attachment) {
+      return attachment.binding() == binding;
+    });
+
+    if (entry == _attachments.end()) {
+      return std::nullopt;
+    }
+
+    return *entry;
   }
 
   auto subpasses() const noexcept -> const std::vector<subpass_binding>& {
@@ -254,33 +247,36 @@ public:
     return _render_area;
   }
 
-  auto render_pass() const noexcept -> const graphics::render_pass& {
-    return *_render_pass;
+  auto render_pass() const noexcept -> const VkRenderPass& {
+    return _render_pass;
   }
 
   auto update() -> void;
 
   auto rebuild(const swapchain& swapchain) -> void;
 
-  auto framebuffer(std::uint32_t index) noexcept -> framebuffer&;
+  auto framebuffer(std::uint32_t index) noexcept -> VkFramebuffer&;
 
 private:
 
-  std::vector<attachment> _attachments;
+  auto _create_render_pass(VkFormat depth_format, VkFormat surface_format) -> void;
+
+  auto _rebuild_framebuffers(const swapchain& swapchain) -> void;
+
+  std::vector<graphics::attachment> _attachments;
   std::vector<subpass_binding> _subpass_bindings;
 
   graphics::viewport _viewport;
 
-  std::unique_ptr<graphics::render_pass> _render_pass;
-
-  std::vector<std::uint32_t> _subpass_attachment_count;
-
-  std::vector<std::unique_ptr<graphics::framebuffer>> _framebuffers{};
+  VkRenderPass _render_pass;
+  std::unique_ptr<graphics::depth_image> _depth_stencil;
+  std::vector<VkFramebuffer> _framebuffers;
+  std::vector<std::unique_ptr<graphics::image2d>> _image_attachments;
 
   std::vector<VkClearValue> _clear_values;
-
-  std::optional<attachment> _depth_attachment;
-  std::optional<attachment> _swapchain_attachment;
+  std::vector<std::uint32_t> _subpass_attachment_count;
+  std::optional<graphics::attachment> _depth_attachment;
+  std::optional<graphics::attachment> _swapchain_attachment;
 
   graphics::render_area _render_area;
 

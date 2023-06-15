@@ -11,6 +11,8 @@
 
 #include <yaml-cpp/yaml.h>
 
+#include <fmt/format.h>
+
 #include <libsbx/math/concepts.hpp>
 
 namespace sbx::math {
@@ -370,8 +372,18 @@ struct std::hash<sbx::math::basic_vector2<Type>> {
 template<sbx::math::numeric Type>
 struct YAML::convert<sbx::math::basic_vector2<Type>> {
   static auto encode(const sbx::math::basic_vector2<Type>& vector) -> Node;
+
   static auto decode(const Node& node, sbx::math::basic_vector2<Type>& vector) -> bool;
 }; // struct YAML::convert
+
+template<sbx::math::numeric Type>
+struct fmt::formatter<sbx::math::basic_vector2<Type>> {
+  template<typename ParseContext>
+  constexpr auto parse(ParseContext& context) -> decltype(context.begin());
+
+  template<typename FormatContext>
+  auto format(const sbx::math::basic_vector2<Type>& vector, FormatContext& context) -> decltype(context.out());
+}; // struct fmt::formatter
 
 #include <libsbx/math/vector2.ipp>
 

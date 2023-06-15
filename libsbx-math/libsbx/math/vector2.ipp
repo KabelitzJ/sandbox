@@ -242,3 +242,15 @@ inline auto YAML::convert<sbx::math::basic_vector2<Type>>::decode(const YAML::No
   return true;
 }
 
+template<sbx::math::numeric Type>
+template<typename ParseContext>
+inline constexpr auto fmt::formatter<sbx::math::basic_vector2<Type>>::parse(ParseContext& context) -> decltype(context.begin()) {
+  return context.begin();
+}
+
+template<sbx::math::numeric Type>
+template<typename FormatContext>
+inline auto fmt::formatter<sbx::math::basic_vector2<Type>>::format(const sbx::math::basic_vector2<Type>& vector, FormatContext& context) -> decltype(context.out()) {
+  return fmt::format_to(context.out(), "({},{})", vector.x, vector.y);
+}
+

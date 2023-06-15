@@ -54,7 +54,7 @@ public:
 
   operator const VkDevice&() const noexcept;
 
-  auto enables_features() const -> const VkPhysicalDeviceFeatures&;
+  auto enabled_features() const -> const VkPhysicalDeviceFeatures&;
 
   auto graphics_queue() const -> const queue&;
 

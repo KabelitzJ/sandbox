@@ -9,15 +9,17 @@
 
 #include <libsbx/math/vector2.hpp>
 
+#include <libsbx/graphics/commands/command_buffer.hpp>
+
 namespace sbx::graphics {
 
 class image : public utility::noncopyable {
 
 public:
 
-  image(const VkExtent3D extent, VkFilter filter, VkSamplerAddressMode addressMode, VkSampleCountFlagBits samples, VkImageLayout layout, VkImageUsageFlags usage, VkFormat format, std::uint32_t mipLevels, std::uint32_t arrayLayers);
+  image(const VkExtent3D extent, VkFilter filter, VkSamplerAddressMode address_mode, VkSampleCountFlagBits samples, VkImageLayout layout, VkImageUsageFlags usage, VkFormat format, std::uint32_t mip_levels, std::uint32_t array_layers);
 
-  ~image();
+  virtual ~image();
 
   static auto descriptor_set_layout(std::uint32_t binding, VkDescriptorType descriptor_type, VkShaderStageFlags shader_stage_flags, std::uint32_t count = 1u) noexcept -> VkDescriptorSetLayoutBinding;
 
@@ -29,15 +31,17 @@ public:
 
   static auto has_stencil_component(VkFormat format) noexcept -> bool;
 
-  static auto create_image(VkImage& image, VkDeviceMemory& memory, const VkExtent3D& extent, VkImageType type, VkSampleCountFlagBits samples, VkImageUsageFlags usage, VkFormat format, std::uint32_t mip_levels, std::uint32_t array_layers, VkImageLayout layout = VK_IMAGE_LAYOUT_UNDEFINED) -> void;
+  static auto create_image(VkImage& image, VkDeviceMemory& memory, const VkExtent3D& extent, VkFormat format, VkSampleCountFlagBits samples, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, std::uint32_t mip_levels, std::uint32_t array_layers, VkImageType type) -> void;
 
   static auto create_image_view(const VkImage& image, VkImageView& image_view, VkImageViewType type, VkFormat format, VkImageAspectFlags image_aspect, std::uint32_t mip_levels, std::uint32_t base_mip_level, std::uint32_t layer_count, std::uint32_t base_array_layer) -> void;
 
-  static auto create_sampler(VkSampler& sampler, VkFilter filter, VkSamplerAddressMode address_mode, bool anisotropic, std::uint32_t mip_levels) -> void;
+  static auto create_image_sampler(VkSampler& sampler, VkFilter filter, VkSamplerAddressMode address_mode, bool anisotropic, std::uint32_t mip_levels) -> void;
 
   static auto create_mipmaps(const VkImage& image, const VkExtent3D& extent, VkFormat format, VkImageLayout dst_image_layout, std::uint32_t mip_levels, std::uint32_t base_array_layer, std::uint32_t layer_count) -> void;
 
   static auto transition_image_layout(const VkImage& image, VkFormat format, VkImageLayout src_image_layout, VkImageLayout dst_image_layout, VkImageAspectFlags image_aspect, std::uint32_t mip_levels, std::uint32_t base_mip_level, std::uint32_t layer_count, std::uint32_t base_array_layer) -> void;
+
+  static auto insert_image_memory_barrier(const command_buffer& command_buffer, const VkImage& image, VkAccessFlags src_access_mask, VkAccessFlags dst_access_mask, VkImageLayout old_image_layout, VkImageLayout new_image_layout, VkPipelineStageFlags src_stage_mask, VkPipelineStageFlags dst_stage_mask, VkImageAspectFlags image_aspect, uint32_t mip_levels, uint32_t base_mip_level, uint32_t layer_count, uint32_t base_array_layer) -> void;
 
   static auto copy_buffer_to_image(const VkBuffer& buffer, const VkImage& image, const VkExtent3D& extent, std::uint32_t layer_count, std::uint32_t base_array_layer) -> void;
 
@@ -73,19 +77,19 @@ public:
 
   auto sampler() const noexcept -> const VkSampler&;
 
-private:
+protected:
 
   VkExtent3D _extent;
-  VkSampleCountFlagBits _samples;
-  VkImageUsageFlags _usage;
-  VkFormat _format;
-  std::uint32_t _mip_levels;
-  std::uint32_t _array_layers;
 
   VkFilter _filter;
   VkSamplerAddressMode _address_mode;
 
+  VkSampleCountFlagBits _samples;
   VkImageLayout _layout;
+  VkImageUsageFlags _usage;
+  VkFormat _format;
+  std::uint32_t _mip_levels;
+  std::uint32_t _array_layers;
 
   VkImage _handle;
   VkDeviceMemory _memory;

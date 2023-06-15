@@ -83,12 +83,8 @@ framebuffer::operator const VkFramebuffer&() const noexcept {
   return _handle;
 }
 
-auto framebuffer::color_attachment() const noexcept -> const image& {
-  return *_color_attachment;
-}
-
-auto framebuffer::depth_attachment() const noexcept -> const image& {
-  return *_depth_attachment;
+auto framebuffer::attachment() const noexcept -> const image& {
+  return *_attachment;
 }
 
 } // namespace sbx::graphics

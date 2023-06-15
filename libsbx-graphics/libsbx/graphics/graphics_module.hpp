@@ -98,7 +98,7 @@ private:
 
   auto _recreate_command_buffers() -> void;
 
-  auto _recreate_framebuffers() -> void;
+  // auto _recreate_framebuffers() -> void;
 
   struct per_frame_data {
     VkSemaphore image_available_semaphore{};
@@ -134,7 +134,7 @@ private:
   std::unique_ptr<graphics::surface> _surface{};
 
   std::unique_ptr<graphics::swapchain> _swapchain{};
-  std::vector<std::unique_ptr<graphics::framebuffer>> _framebuffers{};
+  // std::vector<std::unique_ptr<graphics::framebuffer>> _framebuffers{};
 
   std::vector<per_frame_data> _per_frame_data{};
   std::vector<std::unique_ptr<graphics::command_buffer>> _command_buffers{};

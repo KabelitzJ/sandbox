@@ -170,6 +170,14 @@ auto swapchain::present_mode() const noexcept -> VkPresentModeKHR {
 //   return _framebuffers.at(_active_image_index);
 // }
 
+auto swapchain::image(std::uint32_t index) const noexcept -> const VkImage& {
+  return _images.at(index);
+}
+
+auto swapchain::image_view(std::uint32_t index) const noexcept -> const VkImageView& {
+  return _image_views.at(index);
+}
+
 auto swapchain::acquire_next_image(const VkSemaphore& image_available_semaphore, const VkFence& fence) -> VkResult {
   auto& logical_device = graphics_module::get().logical_device();
 
@@ -186,9 +194,7 @@ auto swapchain::acquire_next_image(const VkSemaphore& image_available_semaphore,
   return result;
 }
 
-auto swapchain::present(const image& image, const VkSemaphore& wait_semaphore) -> VkResult {
-  static_cast<void>(image);
-
+auto swapchain::present(const VkSemaphore& wait_semaphore) -> VkResult {
   const auto& logical_device = graphics_module::get().logical_device();
 
   auto present_info = VkPresentInfoKHR{};

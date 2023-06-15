@@ -212,7 +212,7 @@ auto graphics_module::_start_render_pass(graphics::render_stage& render_stage) -
 
   auto render_area = VkRect2D{};
   render_area.offset = VkOffset2D{offset.x, offset.y};
-  render_area.extent = VkExtent2D{extent.x, extent.x};
+  render_area.extent = VkExtent2D{extent.x, extent.y};
 
   auto viewport = VkViewport{};
 	viewport.x = 0.0f;
@@ -249,16 +249,19 @@ auto graphics_module::_end_render_pass(graphics::render_stage& render_stage) -> 
   const auto& frame_data = _per_frame_data[_current_frame];
 
   auto& command_buffer = _command_buffers[_swapchain->active_image_index()];
-  auto& framebuffer = _framebuffers[_swapchain->active_image_index()];
 
   command_buffer->end_render_pass();
+
+  if (!render_stage.has_swapchain_attachment()) {
+    return;
+  }
 
   // Submit the command buffer to the graphics queue and draw the on the image
   command_buffer->end();
   command_buffer->submit(frame_data.image_available_semaphore, frame_data.render_finished_semaphore, frame_data.in_flight_fence);
 
   // Present the image to the screen
-  const auto result = _swapchain->present(framebuffer->color_attachment(), frame_data.render_finished_semaphore);
+  const auto result = _swapchain->present(frame_data.render_finished_semaphore);
 
   if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
     _framebuffer_resized = true;
@@ -282,7 +285,7 @@ auto  graphics_module::_recreate_pass(graphics::render_stage& render_stage) -> v
 
   validate(vkQueueWaitIdle(graphics_queue));
 
-  if (_framebuffer_resized) {
+  if (render_stage.has_swapchain_attachment() && _framebuffer_resized) {
     _recreate_swapchain();
   }
 
@@ -300,7 +303,7 @@ auto graphics_module::_recreate_swapchain() -> void {
 
   _recreate_command_buffers();
 
-  _recreate_framebuffers();
+  // _recreate_framebuffers();
 
   _framebuffer_resized = false;
 }
@@ -336,14 +339,14 @@ auto graphics_module::_recreate_command_buffers() -> void {
   }
 }
 
-auto graphics_module::_recreate_framebuffers() -> void {
-  const auto image_count = _swapchain->image_count();
+// auto graphics_module::_recreate_framebuffers() -> void {
+//   const auto image_count = _swapchain->image_count();
 
-  _framebuffers.resize(image_count);
+//   _framebuffers.resize(image_count);
 
-  for (auto& framebuffer : _framebuffers) {
-    framebuffer = std::make_unique<graphics::framebuffer>(_swapchain->extent());
-  }
-}
+//   for (auto& framebuffer : _framebuffers) {
+//     framebuffer = std::make_unique<graphics::framebuffer>(_swapchain->extent());
+//   }
+// }
 
 } // namespace sbx::graphics
