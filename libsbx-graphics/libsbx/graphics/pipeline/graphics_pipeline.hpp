@@ -30,6 +30,10 @@ public:
 
   auto handle() const noexcept -> const VkPipeline& override;
 
+  auto descriptor_set_layout() const noexcept -> const VkDescriptorSetLayout& override;
+
+  auto descriptor_pool() const noexcept -> const VkDescriptorPool& override;
+
   auto layout() const noexcept -> const VkPipelineLayout& override;
 
   auto bind_point() const noexcept -> VkPipelineBindPoint override;

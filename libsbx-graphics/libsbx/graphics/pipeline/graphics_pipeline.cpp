@@ -280,6 +280,14 @@ auto graphics_pipeline::handle() const noexcept -> const VkPipeline& {
   return _handle;
 }
 
+auto graphics_pipeline::descriptor_set_layout() const noexcept -> const VkDescriptorSetLayout& {
+  return _descriptor_set_layout;
+}
+
+auto graphics_pipeline::descriptor_pool() const noexcept -> const VkDescriptorPool& {
+  return _descriptor_pool;
+}
+
 auto graphics_pipeline::layout() const noexcept -> const VkPipelineLayout& {
   return _layout;
 }

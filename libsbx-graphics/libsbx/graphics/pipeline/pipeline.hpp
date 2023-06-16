@@ -43,6 +43,10 @@ public:
 
   virtual auto handle() const noexcept -> const VkPipeline& = 0;
 
+  virtual auto descriptor_set_layout() const noexcept -> const VkDescriptorSetLayout& = 0;
+
+  virtual auto descriptor_pool() const noexcept -> const VkDescriptorPool& = 0;
+
   virtual auto layout() const noexcept -> const VkPipelineLayout& = 0;
 
   virtual auto bind_point() const noexcept -> VkPipelineBindPoint = 0;
