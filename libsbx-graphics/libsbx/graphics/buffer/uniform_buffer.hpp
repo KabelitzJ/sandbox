@@ -3,6 +3,8 @@
 
 #include <vulkan/vulkan.hpp>
 
+#include <libsbx/memory/observer_ptr.hpp>
+
 #include <libsbx/graphics/buffer/buffer.hpp>
 
 #include <libsbx/graphics/descriptor/descriptor.hpp>
@@ -13,11 +15,15 @@ class uniform_buffer : public buffer, public descriptor {
 
 public:
 
-  uniform_buffer(VkDeviceSize size, const void *data = nullptr);
+  uniform_buffer(VkDeviceSize size, memory::observer_ptr<void> data = nullptr);
 
-  auto update(const void *data) const -> void;
+  ~uniform_buffer() override = default;
+
+  auto update(const void *data) -> void;
 
   auto write_descriptor_set(std::uint32_t binding, VkDescriptorType descriptor_type) const noexcept -> graphics::write_descriptor_set override;
+
+  static auto create_descriptor_set_layout_binding(std::uint32_t binding, VkDescriptorType descriptor_type, VkShaderStageFlags stage_flags) noexcept -> VkDescriptorSetLayoutBinding;
 
 }; // class uniform_buffer
 

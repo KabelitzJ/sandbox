@@ -1,3 +1,6 @@
+#ifndef LIBSBX_GRAPHICS_IMAGES_DEPTH_IMAGE_HPP_
+#define LIBSBX_GRAPHICS_IMAGES_DEPTH_IMAGE_HPP_
+
 #include <libsbx/graphics/images/image.hpp>
 
 namespace sbx::graphics {
@@ -11,3 +14,5 @@ public:
 }; // class depth_image
 
 } // sbx::graphics
+
+#endif // LIBSBX_GRAPHICS_IMAGES_DEPTH_IMAGE_HPP_

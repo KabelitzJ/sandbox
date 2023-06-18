@@ -28,4 +28,12 @@
 
 #include <libsbx/graphics/render_pass/swapchain.hpp>
 
+#include <libsbx/graphics/buffer/buffer.hpp>
+#include <libsbx/graphics/buffer/uniform_buffer.hpp>
+#include <libsbx/graphics/buffer/uniform_handler.hpp>
+
+#include <libsbx/graphics/images/image.hpp>
+#include <libsbx/graphics/images/image2d.hpp>
+#include <libsbx/graphics/images/depth_image.hpp>
+
 #endif // LIBSBX_GRAPHICS_HPP_

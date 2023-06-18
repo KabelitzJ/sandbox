@@ -8,6 +8,8 @@
 
 #include <libsbx/utility/noncopyable.hpp>
 
+#include <libsbx/memory/observer_ptr.hpp>
+
 namespace sbx::graphics {
 
 class buffer : public utility::noncopyable {
@@ -20,11 +22,7 @@ public:
     normal
   }; // enum class status
 
-  buffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, bool map_memory = true);
-
-  buffer(const void* data, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties);
-
-  buffer(const buffer& source, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties);
+  buffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, memory::observer_ptr<void> memory = nullptr);
 
   virtual ~buffer();
 
@@ -36,28 +34,17 @@ public:
 
   auto size() const noexcept -> VkDeviceSize;
 
-  auto usage() const noexcept -> VkBufferUsageFlags;
-
-  auto properties() const noexcept -> VkMemoryPropertyFlags;
-
-  auto copy_from(const buffer& source, VkDeviceSize size) const -> void;
-
-  auto copy_from(const buffer& source) const -> void;
-
-  auto write(const void* data, VkDeviceSize size, VkDeviceSize offset = 0) const -> void;
-
-  auto map() -> void;
+  auto map() -> memory::observer_ptr<void>;
 
   auto unmap() -> void;
+
+  auto write(const void* data, VkDeviceSize size, VkDeviceSize offset = 0) -> void;
 
 protected:
 
   VkBuffer _handle{};
   VkDeviceSize _size{};
   VkDeviceMemory _memory{};
-  VkBufferUsageFlags _usage{};
-  VkMemoryPropertyFlags _properties{};
-  void* _mapped{};
 
 }; // class buffer
 

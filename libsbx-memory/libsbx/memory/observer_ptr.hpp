@@ -14,8 +14,6 @@ public:
   using value_type = Type;
   using pointer = value_type*;
   using const_pointer = const value_type*;
-  using reference = value_type&;
-  using const_reference = const value_type&;
 
   constexpr observer_ptr() noexcept = default;
 
@@ -80,11 +78,11 @@ public:
     return _value;
   }
 
-  constexpr auto operator*() const noexcept -> const_reference {
+  constexpr auto operator*() const noexcept(noexcept(*std::declval<pointer>())) -> std::add_const_t<std::add_lvalue_reference_t<value_type>> {
     return *_value;
   }
 
-  constexpr auto operator*() noexcept -> reference {
+  constexpr auto operator*() noexcept(noexcept(*std::declval<pointer>())) -> std::add_lvalue_reference_t<value_type> {
     return *_value;
   }
 

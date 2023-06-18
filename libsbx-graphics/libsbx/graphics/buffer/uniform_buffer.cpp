@@ -1,11 +1,11 @@
-#include <libsbox/graphics/buffer/uniform_buffer.hpp>
+#include <libsbx/graphics/buffer/uniform_buffer.hpp>
 
 namespace sbx::graphics {
 
-uniform_buffer::uniform_buffer(VkDeviceSize size, const void* data)
-: buffer{data, size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT} { }
+uniform_buffer::uniform_buffer(VkDeviceSize size, memory::observer_ptr<void> data)
+: buffer{size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, data} { }
 
-auto uniform_buffer::update(const void* data) -> void {
+auto uniform_buffer::update(const void *data) -> void {
   write(data, _size);
 }
 
@@ -23,7 +23,18 @@ auto uniform_buffer::write_descriptor_set(std::uint32_t binding, VkDescriptorTyp
   write_descriptor_set.descriptorCount = 1;
   write_descriptor_set.descriptorType = descriptor_type;
 
-  return write_descriptor_set{write_descriptor_set, buffer_info};
+  return graphics::write_descriptor_set{write_descriptor_set, buffer_info};
+}
+
+auto uniform_buffer::create_descriptor_set_layout_binding(std::uint32_t binding, VkDescriptorType descriptor_type, VkShaderStageFlags stage_flags) noexcept -> VkDescriptorSetLayoutBinding {
+  auto descriptor_set_layout_binding = VkDescriptorSetLayoutBinding{};
+  descriptor_set_layout_binding.binding = binding;
+  descriptor_set_layout_binding.descriptorType = descriptor_type;
+  descriptor_set_layout_binding.descriptorCount = 1;
+  descriptor_set_layout_binding.stageFlags = stage_flags;
+  descriptor_set_layout_binding.pImmutableSamplers = nullptr;
+
+  return descriptor_set_layout_binding;
 }
 
 } // namespace sbx::graphics

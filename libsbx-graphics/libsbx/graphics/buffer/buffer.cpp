@@ -8,11 +8,8 @@
 
 namespace sbx::graphics {
 
-buffer::buffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, bool map_memory)
-: _size{size},
-  _usage{usage},
-  _properties{properties},
-  _mapped{nullptr} {
+buffer::buffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, memory::observer_ptr<void> memory)
+: _size{size} {
   const auto& physical_device = graphics_module::get().physical_device();
   const auto& logical_device = graphics_module::get().logical_device();
 
@@ -38,21 +35,25 @@ buffer::buffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlag
 
   validate(vkAllocateMemory(logical_device, &allocation_info, nullptr, &_memory));
 
-  vkBindBufferMemory(logical_device, _handle, _memory, 0);
+  if (memory) {
+    auto mapped_memory = map();
 
-  if (map_memory) {
-    map();
+    std::memcpy(mapped_memory.get(), memory.get(), _size);
+
+    if (!(usage & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)) {
+      auto flush_range = VkMappedMemoryRange{};
+      flush_range.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
+      flush_range.memory = _memory;
+      flush_range.offset = 0;
+      flush_range.size = _size;
+
+      validate(vkFlushMappedMemoryRanges(logical_device, 1, &flush_range));
+    }
+
+    unmap();
   }
-}
 
-buffer::buffer(const void* data, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties)
-: buffer{size, usage, properties} {
-  write(data, size);
-}
-
-buffer::buffer(const buffer& source, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties)
-: buffer{source.size(), usage, properties} {
-  copy_from(source);
+  validate(vkBindBufferMemory(logical_device, _handle, _memory, 0));
 }
 
 buffer::~buffer() {
@@ -78,65 +79,30 @@ auto buffer::size() const noexcept -> std::size_t {
   return _size;
 }
 
-auto buffer::usage() const noexcept -> VkBufferUsageFlags {
-  return _usage;
-}
-
-auto buffer::properties() const noexcept -> VkMemoryPropertyFlags {
-  return _properties;
-}
-
-auto buffer::copy_from(const buffer& src, VkDeviceSize size) const -> void {
-  if (size > _size) {
-    throw std::runtime_error{"Size is greater than buffer size"};
-  } 
-
-  auto command_buffer = graphics::command_buffer{};
-
-  auto copy_region = VkBufferCopy{};
-  copy_region.size = size;
-
-  command_buffer.copy_buffer(src, _handle, copy_region);
-
-  command_buffer.submit_idle();
-}
-
-auto buffer::copy_from(const buffer& src) const -> void {
-  copy_from(src, _size);
-}
-
-auto buffer::write(const void* data, VkDeviceSize size, VkDeviceSize offset) const -> void {
-  if (size + offset > _size) {
-    throw std::runtime_error{"Size is greater than buffer size"};
-  } 
-
-  if (!_mapped) {
-    throw std::runtime_error{"Buffer is not mapped"};
-  }
-
-  std::memcpy(static_cast<std::uint8_t*>(_mapped) + offset, data, size);
-}
-
-auto buffer::map() -> void {
+auto buffer::map() -> memory::observer_ptr<void> {
   const auto& logical_device = graphics_module::get().logical_device();
 
-  if (_mapped) {
-    throw std::runtime_error{"Buffer is already mapped"};
-  }
+  auto* mapped_memory = static_cast<void*>(nullptr);
 
-  vkMapMemory(logical_device, _memory, 0, _size, 0, &_mapped);
+  validate(vkMapMemory(logical_device, _memory, 0, _size, 0, &mapped_memory));
+
+  return memory::observer_ptr<void>{mapped_memory};
 }
 
 auto buffer::unmap() -> void {
   const auto& logical_device = graphics_module::get().logical_device();
 
-  if (!_mapped) {
-    throw std::runtime_error{"Buffer is not mapped"};
-  }
-
   vkUnmapMemory(logical_device, _memory);
+}
 
-  _mapped = nullptr;
+auto buffer::write(const void* data, VkDeviceSize size, VkDeviceSize offset) -> void {
+  const auto& logical_device = graphics_module::get().logical_device();
+
+  auto mapped_memory = map();
+
+  std::memcpy(static_cast<std::uint8_t*>(mapped_memory.get()) + offset, data, size);
+
+  unmap();
 }
 
 } // namespace sbx::graphics

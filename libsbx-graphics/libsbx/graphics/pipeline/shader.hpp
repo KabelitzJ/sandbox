@@ -2,7 +2,9 @@
 #define LIBSBX_GRAPHICS_PIPELINE_SHADER_HPP_
 
 #include <filesystem>
+#include <map>
 #include <unordered_map>
+#include <optional>
 
 #include <spirv_cross/spirv_cross.hpp>
 
@@ -15,6 +17,180 @@ namespace sbx::graphics {
 class shader : public utility::noncopyable {
 
 public:
+
+  enum class data_type : std::uint8_t {
+    boolean,
+    int32,
+    uint32,
+    float32,
+    vec2,
+    ivec2,
+    uvec2,
+    vec3,
+    ivec3,
+    uvec3,
+    vec4,
+    ivec4,
+    uvec4,
+    mat2,
+    mat3,
+    mat4,
+  }; // enum class data_type
+
+  class uniform {
+
+  public:
+
+    explicit uniform(std::uint32_t binding, std::uint32_t offset, std::uint32_t size, data_type type, bool is_readonly, bool is_writeonly, VkShaderStageFlags stage_flags)
+    : _binding{binding},
+      _offset{offset},
+      _size{size},
+      _type{type},
+      _is_readonly{is_readonly},
+      _is_writeonly{is_writeonly},
+      _stage_flags{stage_flags} { }
+
+    auto binding() const noexcept -> std::uint32_t {
+      return _binding;
+    }
+
+    auto offset() const noexcept -> std::uint32_t {
+      return _offset;
+    }
+
+    auto size() const noexcept -> std::uint32_t {
+      return _size;
+    }
+
+    auto type() const noexcept -> data_type {
+      return _type;
+    }
+
+    auto is_readonly() const noexcept -> bool {
+      return _is_readonly;
+    }
+
+    auto is_writeonly() const noexcept -> bool {
+      return _is_writeonly;
+    }
+
+    auto stage_flags() const noexcept -> VkShaderStageFlags {
+      return _stage_flags;
+    }
+
+    auto operator==(const uniform& other) const noexcept -> bool {
+      return _binding == other._binding && _offset == other._offset && _size == other._size && _type == other._type && _is_readonly == other._is_readonly && _is_writeonly == other._is_writeonly && _stage_flags == other._stage_flags;
+    }
+
+  private:
+
+    std::uint32_t _binding{};
+    std::uint32_t _offset{};
+    std::uint32_t _size{};
+    data_type _type{};
+    bool _is_readonly{};
+    bool _is_writeonly{};
+    VkShaderStageFlags _stage_flags{};
+
+  }; // class uniform
+
+  class uniform_block {
+
+  public:
+
+    enum class type : std::uint8_t {
+      none,
+      uniform,
+      storage,
+      push
+    }; // enum class type
+
+    explicit uniform_block(std::uint32_t binding, std::uint32_t size, VkShaderStageFlags stage_flags, type type)
+    : _binding{binding},
+      _size{size},
+      _stage_flags{stage_flags},
+      _type{type} { }
+
+    auto binding() const noexcept -> std::uint32_t {
+      return _binding;
+    }
+
+    auto size() const noexcept -> std::uint32_t {
+      return _size;
+    }
+
+    auto stage_flags() const noexcept -> VkShaderStageFlags {
+      return _stage_flags;
+    }
+
+    auto buffer_type() const noexcept -> type {
+      return _type;
+    }
+
+    auto uniforms() const noexcept -> const std::map<std::string, uniform>& {
+      return _uniforms;
+    }
+
+    auto find_uniform(const std::string& name) const noexcept -> std::optional<uniform> {
+      if (auto entry = _uniforms.find(name); entry != _uniforms.end()) {
+        return entry->second;
+      }
+
+      return std::nullopt;
+    }
+
+    auto operator==(const uniform_block& other) const noexcept -> bool {
+      return _binding == other._binding && _size == other._size && _stage_flags == other._stage_flags && _type == other._type && _uniforms == other._uniforms;
+    }
+
+  private:
+
+    std::uint32_t _binding{};
+    std::uint32_t _size{};
+    VkShaderStageFlags _stage_flags{};
+    std::map<std::string, uniform> _uniforms{};
+    type _type{};
+
+  }; // class uniform_block
+
+  class attribute {
+
+  public:
+
+    explicit attribute(std::uint32_t binding, std::uint32_t size, VkShaderStageFlags stage_flags, data_type type)
+    : _binding{binding},
+      _size{size},
+      _stage_flags{stage_flags},
+      _type{type} { }
+
+    auto binding() const noexcept -> std::uint32_t {
+      return _binding;
+    }
+
+    auto size() const noexcept -> std::uint32_t {
+      return _size;
+    }
+
+    auto stage_flags() const noexcept -> VkShaderStageFlags {
+      return _stage_flags;
+    }
+
+    auto type() const noexcept -> data_type {
+      return _type;
+    }
+
+    auto operator==(const attribute& other) const noexcept -> bool {
+      return _binding == other._binding && _size == other._size && _stage_flags == other._stage_flags && _type == other._type;
+    }
+
+  private:
+
+    std::uint32_t _binding{};
+    std::uint32_t _size{};
+    VkShaderStageFlags _stage_flags{};
+    data_type _type{};
+
+  }; // class attribute
 
   shader(const std::filesystem::path& path, VkShaderStageFlagBits stage);
 
