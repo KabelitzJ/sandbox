@@ -38,7 +38,7 @@ public:
 
     _model = std::make_unique<sbx::graphics::model>("./demo/assets/meshes/sphere.obj");
 
-    auto ubo = sbx::graphics::uniform_buffer{0};
+    auto ubo = sbx::graphics::uniform_buffer{1};
 
     _push_constant.ambient_color = _model->material().ambient();
     _push_constant.diffuse_color = _model->material().diffuse();
