@@ -72,7 +72,7 @@ public:
 
     auto write_descriptor_set = descriptor.write_descriptor_set(binding, descriptor_type);
 
-    _descriptors.insert({name, descriptor_entry{&descriptor, write_descriptor_set, binding}});
+    _descriptors.insert({name, descriptor_entry{&descriptor, std::move(write_descriptor_set), binding}});
 
     _is_descriptor_set_dirty = true;
   }

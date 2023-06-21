@@ -29,7 +29,8 @@ public:
   demo_subrenderer(const sbx::graphics::pipeline::stage& stage)
   : sbx::graphics::subrenderer{stage},
     _pipeline{std::make_unique<sbx::graphics::graphics_pipeline>(stage, "./demo/assets/shaders/basic")},
-    _model{std::make_unique<sbx::graphics::model>("./demo/assets/meshes/sphere.obj")} {
+    _model{std::make_unique<sbx::graphics::model>("./demo/assets/meshes/sphere.obj")},
+    _uniform_buffer{std::make_unique<sbx::graphics::uniform_buffer>(sizeof(uniform_buffer_object))} {
     auto& window = sbx::devices::devices_module::get().window();
 
     _camera_position = sbx::math::vector3{2.0f, 2.0f, 1.0f};
@@ -59,7 +60,11 @@ public:
     _uniform_buffer_object.projection = sbx::math::matrix4x4::perspective(sbx::math::radian{45.0f}, window.aspect_ratio(), 0.1f, 10.0f);
     _uniform_buffer_object.normal = sbx::math::matrix4x4::transposed(sbx::math::matrix4x4::inverted(_uniform_buffer_object.model));
 
+    _uniform_buffer->write(&_uniform_buffer_object, sizeof(uniform_buffer_object));
+
     _pipeline->bind(command_buffer);
+
+    _pipeline->update_uniform_block("buffer_object", *_uniform_buffer);
 
     _pipeline->bind_descriptors(command_buffer);
 
@@ -82,6 +87,7 @@ private:
   std::unique_ptr<sbx::graphics::model> _model{};
 
   uniform_buffer_object _uniform_buffer_object{};
+  std::unique_ptr<sbx::graphics::uniform_buffer> _uniform_buffer{};
 
 }; // class demo_subrenderer
 

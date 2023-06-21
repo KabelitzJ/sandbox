@@ -2,6 +2,7 @@
 #define LIBSBX_GRAPHICS_DESCRIPTOR_DESCRIPTOR_HPP_
 
 #include <variant>
+#include <memory>
 #include <cinttypes>
 
 #include <vulkan/vulkan.hpp>
@@ -23,7 +24,9 @@ public:
 private:
 
   VkWriteDescriptorSet _write_descriptor_set;
-  std::variant<VkDescriptorImageInfo, VkDescriptorBufferInfo> _descriptor_info;
+  // std::variant<VkDescriptorImageInfo, VkDescriptorBufferInfo> _descriptor_info;
+  std::unique_ptr<VkDescriptorImageInfo> _descriptor_image_info;
+  std::unique_ptr<VkDescriptorBufferInfo> _descriptor_buffer_info;
 
 }; // class write_descriptor_set
 
