@@ -27,31 +27,27 @@ class demo_subrenderer : public sbx::graphics::subrenderer {
 public:
 
   demo_subrenderer(const sbx::graphics::pipeline::stage& stage)
-  : sbx::graphics::subrenderer{stage} {
+  : sbx::graphics::subrenderer{stage},
+    _pipeline{std::make_unique<sbx::graphics::graphics_pipeline>(stage, "./demo/assets/shaders/basic")},
+    _model{std::make_unique<sbx::graphics::model>("./demo/assets/meshes/sphere.obj")} {
     auto& window = sbx::devices::devices_module::get().window();
 
     _camera_position = sbx::math::vector3{2.0f, 2.0f, 1.0f};
 
     _light_position = sbx::math::vector3{-1.0f, 3.0f, 1.0f};
 
-    _pipeline = std::make_unique<sbx::graphics::graphics_pipeline>(stage, "./demo/assets/shaders/basic");
+    // _push_constant.ambient_color = _model->material().ambient();
+    // _push_constant.diffuse_color = _model->material().diffuse();
+    // _push_constant.specular_color = _model->material().specular();
+    // _push_constant.shininess = sbx::math::vector4{_model->material().shininess(), 0.0f, 0.0f, 0.0f};
+    // _push_constant.camera_position = sbx::math::vector4{_camera_position, 1.0f};
+    // _push_constant.light_color = sbx::math::color{1.0f, 1.0f, 1.0f, 1.0f};
+    // _push_constant.light_position = sbx::math::vector4{_light_position, 1.0f};
 
-    _model = std::make_unique<sbx::graphics::model>("./demo/assets/meshes/sphere.obj");
-
-    auto ubo = sbx::graphics::uniform_buffer{1};
-
-    _push_constant.ambient_color = _model->material().ambient();
-    _push_constant.diffuse_color = _model->material().diffuse();
-    _push_constant.specular_color = _model->material().specular();
-    _push_constant.shininess = sbx::math::vector4{_model->material().shininess(), 0.0f, 0.0f, 0.0f};
-    _push_constant.camera_position = sbx::math::vector4{_camera_position, 1.0f};
-    _push_constant.light_color = sbx::math::color{1.0f, 1.0f, 1.0f, 1.0f};
-    _push_constant.light_position = sbx::math::vector4{_light_position, 1.0f};
-
-    _uniform.model = sbx::math::matrix4x4::identity;
-    _uniform.inverse_model = sbx::math::matrix4x4::identity;
-    _uniform.view = sbx::math::matrix4x4::look_at(_camera_position, sbx::math::vector3{0.0f, 0.0f, 0.0f}, sbx::math::vector3::up);
-    _uniform.projection = sbx::math::matrix4x4::perspective(sbx::math::radian{45.0f}, window.aspect_ratio(), 0.1f, 10.0f);
+    _uniform_buffer_object.model = sbx::math::matrix4x4::identity;
+    _uniform_buffer_object.view = sbx::math::matrix4x4::look_at(_camera_position, sbx::math::vector3{0.0f, 0.0f, 0.0f}, sbx::math::vector3::up);
+    _uniform_buffer_object.projection = sbx::math::matrix4x4::perspective(sbx::math::radian{45.0f}, window.aspect_ratio(), 0.1f, 10.0f);
+    _uniform_buffer_object.normal = sbx::math::matrix4x4::identity;
   }
 
   ~demo_subrenderer() override = default;
@@ -59,29 +55,33 @@ public:
   auto render(sbx::graphics::command_buffer& command_buffer, std::float_t delta_time) -> void override {
     auto& window = sbx::devices::devices_module::get().window();
 
-    _uniform.model = sbx::math::matrix4x4::rotated(_uniform.model, sbx::math::vector3{0.0f, 0.0f, 1.0f}, sbx::math::degree{45.0f} * delta_time);
-    _uniform.inverse_model = sbx::math::matrix4x4::inverted(_uniform.model);
-    _uniform.projection = sbx::math::matrix4x4::perspective(sbx::math::radian{45.0f}, window.aspect_ratio(), 0.1f, 10.0f);
+    _uniform_buffer_object.model = sbx::math::matrix4x4::rotated(_uniform_buffer_object.model, sbx::math::vector3{0.0f, 0.0f, 1.0f}, sbx::math::degree{45.0f} * delta_time);
+    _uniform_buffer_object.projection = sbx::math::matrix4x4::perspective(sbx::math::radian{45.0f}, window.aspect_ratio(), 0.1f, 10.0f);
+    _uniform_buffer_object.normal = sbx::math::matrix4x4::transposed(sbx::math::matrix4x4::inverted(_uniform_buffer_object.model));
 
     _pipeline->bind(command_buffer);
 
-    _pipeline->update_uniform(_uniform);
-
-    _pipeline->bind_descriptor_set(command_buffer);
-    _pipeline->update_push_constant(command_buffer, VK_SHADER_STAGE_FRAGMENT_BIT, _push_constant);
+    _pipeline->bind_descriptors(command_buffer);
 
     _model->render(command_buffer, delta_time);
   }
 
 private:
 
+  struct uniform_buffer_object {
+    sbx::math::matrix4x4 model;
+    sbx::math::matrix4x4 view;
+    sbx::math::matrix4x4 projection;
+    sbx::math::matrix4x4 normal;
+  }; // struct uniform_buffer_object
+
   sbx::math::vector3 _camera_position{};
   sbx::math::vector3 _light_position{};
 
   std::unique_ptr<sbx::graphics::graphics_pipeline> _pipeline{};
   std::unique_ptr<sbx::graphics::model> _model{};
-  sbx::graphics::push_constant _push_constant{};
-  sbx::graphics::uniform _uniform{};
+
+  uniform_buffer_object _uniform_buffer_object{};
 
 }; // class demo_subrenderer
 
@@ -107,8 +107,8 @@ public:
   }
 
   auto initialize() -> void override {
-    add_subrenderer<demo_subrenderer>(sbx::graphics::pipeline::stage{0, 0});
-    add_subrenderer<sbx::graphics::model_subrenderer>(sbx::graphics::pipeline::stage{0, 0});
+    add_subrenderer<demo_subrenderer>(sbx::graphics::pipeline::stage{ .renderpass = 0, .subpass = 0 });
+    // add_subrenderer<sbx::graphics::model_subrenderer>(sbx::graphics::pipeline::stage{0, 0});
   }
 
 }; // class demo_renderer

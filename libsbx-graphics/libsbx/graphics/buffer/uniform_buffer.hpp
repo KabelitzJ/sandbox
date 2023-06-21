@@ -19,7 +19,7 @@ public:
 
   ~uniform_buffer() override = default;
 
-  auto update(const void *data) -> void;
+  auto update(memory::observer_ptr<void> data) -> void;
 
   auto write_descriptor_set(std::uint32_t binding, VkDescriptorType descriptor_type) const noexcept -> graphics::write_descriptor_set override;
 

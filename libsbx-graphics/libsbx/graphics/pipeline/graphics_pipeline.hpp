@@ -4,9 +4,13 @@
 #include <filesystem>
 #include <vector>
 #include <unordered_map>
+#include <map>
 #include <memory>
+#include <optional>
 
 #include <vulkan/vulkan.hpp>
+
+#include <fmt/format.h>
 
 #include <libsbx/utility/noncopyable.hpp>
 #include <libsbx/utility/enable_private_constructor.hpp>
@@ -15,8 +19,9 @@
 
 #include <libsbx/graphics/pipeline/shader.hpp>
 #include <libsbx/graphics/pipeline/pipeline.hpp>
-#include <libsbx/graphics/pipeline/uniform.hpp>
-#include <libsbx/graphics/pipeline/push_constant.hpp>
+
+#include <libsbx/graphics/descriptor/descriptor.hpp>
+#include <libsbx/graphics/descriptor/descriptor_set.hpp>
 
 namespace sbx::graphics {
 
@@ -38,23 +43,79 @@ public:
 
   auto bind_point() const noexcept -> VkPipelineBindPoint override;
 
-  auto active_descriptor_set() const noexcept -> const VkDescriptorSet&;
+  auto find_descriptor_block(const std::string& name) const noexcept -> std::optional<shader::uniform_block> {
+    if (auto it = _uniform_blocks.find(name); it != _uniform_blocks.end()) {
+      return it->second;
+    }
 
-  auto update_uniform(const uniform& uniform) -> void;
-
-  auto update_push_constant(const command_buffer& command_buffer, VkShaderStageFlags stage_flags, const push_constant& data) const noexcept -> void {
-    vkCmdPushConstants(command_buffer, layout(), stage_flags, 0, sizeof(push_constant), &data);
+    return std::nullopt;
   }
 
-  auto bind_descriptor_set(const command_buffer& command_buffer) const noexcept -> void {
-    vkCmdBindDescriptorSets(command_buffer, bind_point(), layout(), 0, 1, &active_descriptor_set(), 0, nullptr);
+  template<typename Descriptor>
+  requires (std::is_base_of_v<descriptor, Descriptor>)
+  auto update_uniform_block(const std::string& name, const Descriptor& descriptor) -> void {
+    auto binding_entry = _descriptor_bindings.find(name);
+
+    if (binding_entry == _descriptor_bindings.end()) {
+      throw std::runtime_error(fmt::format("Failed to find descriptor binding for descriptor '{}'", name));
+    }
+
+    auto binding = binding_entry->second;
+
+    auto descriptor_type_entry = _descriptor_type_at_binding.find(binding);
+
+    if (descriptor_type_entry == _descriptor_type_at_binding.end()) {
+      throw std::runtime_error(fmt::format("Failed to find descriptor type for descriptor '{}'", name));
+    }
+
+    auto descriptor_type = descriptor_type_entry->second;
+
+    auto write_descriptor_set = descriptor.write_descriptor_set(binding, descriptor_type);
+
+    _descriptors.insert({name, descriptor_entry{&descriptor, write_descriptor_set, binding}});
+
+    _is_descriptor_set_dirty = true;
+  }
+
+  auto bind_descriptors(const command_buffer& command_buffer) -> void {
+    if (_is_descriptor_set_dirty) {
+      _write_descriptor_sets.clear();
+      _write_descriptor_sets.reserve(_descriptors.size());
+
+      for (const auto& [name, descriptor] : _descriptors) {
+        auto write_descriptor_set = descriptor.write_descriptor_set.handle();
+        write_descriptor_set.dstSet = *_descriptor_set;
+
+        _write_descriptor_sets.push_back(write_descriptor_set);
+      }
+
+      _descriptor_set->update(_write_descriptor_sets);
+
+      _is_descriptor_set_dirty = false;
+    }
+
+    _descriptor_set->bind(command_buffer);
   }
 
 private:
 
+  struct descriptor_entry {
+    const descriptor* descriptor;
+    write_descriptor_set write_descriptor_set;
+    std::uint32_t binding;
+  }; // struct descriptor_entry
+
   auto _get_stage_from_name(const std::string& name) const noexcept -> VkShaderStageFlagBits;
 
   std::unordered_map<VkShaderStageFlagBits, std::unique_ptr<shader>> _shaders{};
+
+  std::map<std::string, shader::uniform> _uniforms{};
+  std::map<std::string, shader::uniform_block> _uniform_blocks{};
+
+  std::map<std::uint32_t, VkDescriptorType> _descriptor_type_at_binding{};
+
+  std::map<std::string, std::uint32_t> _descriptor_bindings{};
+  std::map<std::string, std::uint32_t> _descriptor_sizes{};
 
   std::string _name{};
   VkPipelineLayout _layout{};
@@ -64,8 +125,12 @@ private:
 
   VkDescriptorPool _descriptor_pool{};
   VkDescriptorSetLayout _descriptor_set_layout{};
-  std::vector<VkDescriptorSet> _descriptor_sets{};
-  std::vector<std::unique_ptr<buffer>> _uniform_buffers{};
+
+  std::unique_ptr<descriptor_set> _descriptor_set{};
+
+  std::map<std::string, descriptor_entry> _descriptors{};
+  std::vector<VkWriteDescriptorSet> _write_descriptor_sets{};
+  bool _is_descriptor_set_dirty{};
 
 }; // class graphics_pipeline
 

@@ -19,6 +19,7 @@ class shader : public utility::noncopyable {
 public:
 
   enum class data_type : std::uint8_t {
+    unknown,
     boolean,
     int32,
     uint32,
@@ -33,8 +34,15 @@ public:
     ivec4,
     uvec4,
     mat2,
+    imat2,
+    umat2,
     mat3,
+    imat3,
+    umat3,
     mat4,
+    imat4,
+    umat4,
+    sampler2d,
   }; // enum class data_type
 
   class uniform {
@@ -105,11 +113,12 @@ public:
       push
     }; // enum class type
 
-    explicit uniform_block(std::uint32_t binding, std::uint32_t size, VkShaderStageFlags stage_flags, type type)
+    explicit uniform_block(std::uint32_t binding, std::uint32_t size, VkShaderStageFlags stage_flags, type type, std::map<std::string, uniform> uniforms)
     : _binding{binding},
       _size{size},
       _stage_flags{stage_flags},
-      _type{type} { }
+      _type{type},
+      _uniforms{std::move(uniforms)} { }
 
     auto binding() const noexcept -> std::uint32_t {
       return _binding;
@@ -148,8 +157,8 @@ public:
     std::uint32_t _binding{};
     std::uint32_t _size{};
     VkShaderStageFlags _stage_flags{};
-    std::map<std::string, uniform> _uniforms{};
     type _type{};
+    std::map<std::string, uniform> _uniforms{};
 
   }; // class uniform_block
 
@@ -202,7 +211,24 @@ public:
 
   auto stage() const noexcept -> VkShaderStageFlagBits;
 
+  auto uniforms() const noexcept -> const std::map<std::string, uniform>& {
+    return _uniforms;
+  }
+
+  auto uniform_blocks() const noexcept -> const std::map<std::string, uniform_block>& {
+    return _uniform_blocks;
+  }
+
 private:
+
+  auto _create_reflection(const spirv_cross::Compiler& compiler) -> void;
+
+  auto _get_data_type(const spirv_cross::SPIRType& type) -> data_type;
+
+  auto _data_type_to_string(data_type type) -> std::string;
+
+  std::map<std::string, uniform> _uniforms{};
+  std::map<std::string, uniform_block> _uniform_blocks{};
 
   VkShaderStageFlagBits _stage{};
   VkShaderModule _handle{};

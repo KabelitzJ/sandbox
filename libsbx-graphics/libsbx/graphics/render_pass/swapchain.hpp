@@ -43,6 +43,8 @@ public:
 
 private:
 
+  auto _choose_present_mode() const -> VkPresentModeKHR;
+
   auto _create_image_view(const VkImage& image, VkFormat format, VkImageAspectFlags aspect, VkImageView& image_view) -> void;
 
   VkExtent2D _extent{};

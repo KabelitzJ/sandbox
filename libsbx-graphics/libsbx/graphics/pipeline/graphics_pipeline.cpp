@@ -11,12 +11,13 @@
 #include <libsbx/graphics/graphics_module.hpp>
 #include <libsbx/graphics/mesh.hpp>
 
-#include <libsbx/graphics/pipeline/push_constant.hpp>
+#include <libsbx/graphics/buffer/uniform_buffer.hpp>
 
 namespace sbx::graphics {
 
 graphics_pipeline::graphics_pipeline(stage stage, const std::filesystem::path& path)
-: _stage{stage} {
+: _stage{stage},
+  _is_descriptor_set_dirty{true} {
   const auto& logical_device = graphics_module::get().logical_device();
   const auto& render_stage = graphics_module::get().render_stage(stage);
 
@@ -39,7 +40,7 @@ graphics_pipeline::graphics_pipeline(stage stage, const std::filesystem::path& p
       const auto stage = _get_stage_from_name(stem);
 
       if (stage == VK_SHADER_STAGE_FLAG_BITS_MAX_ENUM) {
-        throw std::runtime_error{fmt::format("Unknown shader stage '{}'", stem)};
+        throw std::runtime_error{fmt::format("Unsupported shader stage '{}'", stem)};
       }
 
       _shaders.insert({stage, std::make_unique<shader>(file, stage)});
@@ -65,6 +66,62 @@ graphics_pipeline::graphics_pipeline(stage stage, const std::filesystem::path& p
     shader_stage.pName = "main";
 
     shader_stages.push_back(shader_stage);
+
+    const auto& uniforms = shader->uniforms();
+    _uniforms.insert(uniforms.begin(), uniforms.end());
+
+    const auto& uniform_blocks = shader->uniform_blocks();
+    _uniform_blocks.insert(uniform_blocks.begin(), uniform_blocks.end());
+  }
+
+  auto descriptor_set_layout_bindings = std::vector<VkDescriptorSetLayoutBinding>{};
+  auto descriptor_pool_sizes_by_type = std::map<VkDescriptorType, std::uint32_t>{};
+
+  for (const auto& [name, uniform_block] : _uniform_blocks) {
+    auto descriptor_type = VK_DESCRIPTOR_TYPE_MAX_ENUM;
+
+    switch (uniform_block.buffer_type()) {
+      case shader::uniform_block::type::uniform: {
+        descriptor_type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        descriptor_set_layout_bindings.push_back(uniform_buffer::create_descriptor_set_layout_binding(uniform_block.binding(), descriptor_type, uniform_block.stage_flags()));
+        break;
+      }
+      case shader::uniform_block::type::push: {
+        throw std::runtime_error{"Push constants are not supported yet"};
+      }
+      case shader::uniform_block::type::storage: {
+        throw std::runtime_error{"Storage buffers are not supported yet"};
+      }
+      case shader::uniform_block::type::none:
+      default: {
+        throw std::runtime_error{"Invalid uniform block type"};
+      }
+    }
+
+    if (descriptor_type != VK_DESCRIPTOR_TYPE_MAX_ENUM) {
+      descriptor_pool_sizes_by_type[descriptor_type] += 3; // ???
+    }
+
+    _descriptor_bindings.insert({name, uniform_block.binding()});
+    _descriptor_sizes.insert({name, uniform_block.size()});
+  }
+
+  std::ranges::sort(descriptor_set_layout_bindings, [](const auto& lhs, const auto& rhs) {
+    return lhs.binding < rhs.binding;
+  });
+
+  for (const auto& descriptor : descriptor_set_layout_bindings) {
+    _descriptor_type_at_binding.insert({descriptor.binding, descriptor.descriptorType});
+  }
+
+  auto descriptor_pool_sizes = std::vector<VkDescriptorPoolSize>{};
+
+  for (const auto& [type, count] : descriptor_pool_sizes_by_type) {
+    auto pool_size = VkDescriptorPoolSize{};
+    pool_size.type = type;
+    pool_size.descriptorCount = count;
+
+    descriptor_pool_sizes.push_back(pool_size);
   }
 
   auto viewport_state = VkPipelineViewportStateCreateInfo{};
@@ -158,81 +215,31 @@ graphics_pipeline::graphics_pipeline(stage stage, const std::filesystem::path& p
   input_assembly_state.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
   input_assembly_state.primitiveRestartEnable = false;
 
-  auto push_constant_range = VkPushConstantRange{};
-  push_constant_range.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-  push_constant_range.offset = 0;
-  push_constant_range.size = sizeof(push_constant);
-
-  auto descriptor_set_layout_binding = VkDescriptorSetLayoutBinding{};
-  descriptor_set_layout_binding.binding = 0;
-  descriptor_set_layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-  descriptor_set_layout_binding.descriptorCount = 1;
-  descriptor_set_layout_binding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-  descriptor_set_layout_binding.pImmutableSamplers = nullptr;
-
   auto descriptor_set_layout_create_info = VkDescriptorSetLayoutCreateInfo{};
   descriptor_set_layout_create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-  descriptor_set_layout_create_info.bindingCount = 1;
-  descriptor_set_layout_create_info.pBindings = &descriptor_set_layout_binding;
+  descriptor_set_layout_create_info.bindingCount = static_cast<std::uint32_t>(descriptor_set_layout_bindings.size());
+  descriptor_set_layout_create_info.pBindings = descriptor_set_layout_bindings.data();
 
   validate(vkCreateDescriptorSetLayout(logical_device, &descriptor_set_layout_create_info, nullptr, &_descriptor_set_layout));
 
-  auto descriptor_pool_size = std::vector<VkDescriptorPoolSize>{
-    VkDescriptorPoolSize{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 3 } 
-  };
-
   auto descriptor_pool_create_info = VkDescriptorPoolCreateInfo{};
   descriptor_pool_create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-  descriptor_pool_create_info.poolSizeCount = static_cast<std::uint32_t>(descriptor_pool_size.size());
-  descriptor_pool_create_info.pPoolSizes = descriptor_pool_size.data();
+  descriptor_pool_create_info.poolSizeCount = static_cast<std::uint32_t>(descriptor_pool_sizes.size());
+  descriptor_pool_create_info.pPoolSizes = descriptor_pool_sizes.data();
   descriptor_pool_create_info.maxSets = 3;
 
   validate(vkCreateDescriptorPool(logical_device, &descriptor_pool_create_info, nullptr, &_descriptor_pool));
-
-  auto descriptor_set_layouts = std::vector<VkDescriptorSetLayout>{3, _descriptor_set_layout};
-
-  auto descriptor_set_allocate_info = VkDescriptorSetAllocateInfo{};
-  descriptor_set_allocate_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-  descriptor_set_allocate_info.descriptorPool = _descriptor_pool;
-  descriptor_set_allocate_info.descriptorSetCount = 3;
-  descriptor_set_allocate_info.pSetLayouts = descriptor_set_layouts.data();
-
-  _descriptor_sets.resize(3);
-
-  validate(vkAllocateDescriptorSets(logical_device, &descriptor_set_allocate_info, _descriptor_sets.data()));
-
-  _uniform_buffers.resize(3);
-
-  for (auto i = 0u; i < 3; ++i) {
-    _uniform_buffers[i] = std::make_unique<buffer>(sizeof(uniform), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-
-    auto descriptor_buffer_info = VkDescriptorBufferInfo{};
-    descriptor_buffer_info.buffer = *_uniform_buffers[i];
-    descriptor_buffer_info.offset = 0;
-    descriptor_buffer_info.range = sizeof(uniform);
-
-    auto write_descriptor_set = VkWriteDescriptorSet{};
-    write_descriptor_set.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    write_descriptor_set.dstSet = _descriptor_sets[i];
-    write_descriptor_set.dstBinding = 0;
-    write_descriptor_set.dstArrayElement = 0;
-    write_descriptor_set.descriptorCount = 1;
-    write_descriptor_set.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    write_descriptor_set.pImageInfo = nullptr;
-    write_descriptor_set.pTexelBufferView = nullptr;
-    write_descriptor_set.pBufferInfo = &descriptor_buffer_info;
-
-    vkUpdateDescriptorSets(logical_device, 1, &write_descriptor_set, 0, nullptr);
-  }
 
   auto pipeline_layout_create_info = VkPipelineLayoutCreateInfo{};
   pipeline_layout_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
   pipeline_layout_create_info.setLayoutCount = 1;
   pipeline_layout_create_info.pSetLayouts = &_descriptor_set_layout;
-  pipeline_layout_create_info.pushConstantRangeCount = 1;
-  pipeline_layout_create_info.pPushConstantRanges = &push_constant_range;
+  pipeline_layout_create_info.pushConstantRangeCount = 0;
+  pipeline_layout_create_info.pPushConstantRanges = nullptr;
 
   validate(vkCreatePipelineLayout(logical_device, &pipeline_layout_create_info, nullptr, &_layout));
+
+  _descriptor_set = std::make_unique<descriptor_set>(*this);
 
   auto subpass = std::uint32_t{0};
   
@@ -269,8 +276,6 @@ graphics_pipeline::~graphics_pipeline() {
   vkDestroyDescriptorPool(logical_device, _descriptor_pool, nullptr);
   vkDestroyDescriptorSetLayout(logical_device, _descriptor_set_layout, nullptr);
 
-  _uniform_buffers.clear();
-
   vkDestroyPipelineLayout(logical_device, _layout, nullptr);
 
   vkDestroyPipeline(logical_device, _handle, nullptr);
@@ -294,18 +299,6 @@ auto graphics_pipeline::layout() const noexcept -> const VkPipelineLayout& {
 
 auto graphics_pipeline::bind_point() const noexcept -> VkPipelineBindPoint {
   return VK_PIPELINE_BIND_POINT_GRAPHICS;
-}
-
-auto graphics_pipeline::active_descriptor_set() const noexcept -> const VkDescriptorSet& {
-  const auto& swapchain = graphics_module::get().swapchain();
-
-  return _descriptor_sets[swapchain.active_image_index()];
-}
-
-auto graphics_pipeline::update_uniform(const uniform& uniform) -> void {
-  const auto& swapchain = graphics_module::get().swapchain();
-
-  _uniform_buffers[swapchain.active_image_index()]->write(&uniform, sizeof(uniform));
 }
 
 auto graphics_pipeline::_get_stage_from_name(const std::string& name) const noexcept -> VkShaderStageFlagBits {

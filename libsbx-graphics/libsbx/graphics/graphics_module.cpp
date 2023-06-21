@@ -6,8 +6,6 @@
 
 #include <libsbx/utility/fast_mod.hpp>
 
-#include <libsbx/graphics/pipeline/push_constant.hpp>
-
 namespace sbx::graphics {
 
 static auto _stringify_result(VkResult result) -> std::string {

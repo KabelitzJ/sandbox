@@ -38,7 +38,7 @@ public:
 
   auto unmap() -> void;
 
-  auto write(const void* data, VkDeviceSize size, VkDeviceSize offset = 0) -> void;
+  auto write(memory::observer_ptr<void> data, VkDeviceSize size, VkDeviceSize offset = 0) -> void;
 
 protected:
 

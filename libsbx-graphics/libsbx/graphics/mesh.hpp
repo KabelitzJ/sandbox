@@ -22,8 +22,6 @@
 
 #include <libsbx/graphics/commands/command_buffer.hpp>
 
-#include <libsbx/graphics/pipeline/push_constant.hpp>
-
 namespace sbx::graphics {
 
 struct vertex3d {

@@ -20,7 +20,6 @@ swapchain::swapchain(const VkExtent2D& extent, const std::unique_ptr<swapchain>&
   _active_image_index{std::numeric_limits<std::uint32_t>::max()},
   _pre_transform{VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR},
   _composite_alpha{VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR} {
-  const auto& physical_device = graphics_module::get().physical_device();
   const auto& logical_device = graphics_module::get().logical_device();
   const auto& surface = graphics_module::get().surface();
 
@@ -29,22 +28,7 @@ swapchain::swapchain(const VkExtent2D& extent, const std::unique_ptr<swapchain>&
 
   const auto& sharing_mode = logical_device.queue_sharing_mode();
 
-  auto physical_present_mode_count = std::uint32_t{0};
-  vkGetPhysicalDeviceSurfacePresentModesKHR(physical_device, surface, &physical_present_mode_count, nullptr);
-
-  auto physical_present_modes = std::vector<VkPresentModeKHR>{physical_present_mode_count};
-  vkGetPhysicalDeviceSurfacePresentModesKHR(physical_device, surface, &physical_present_mode_count, physical_present_modes.data());
-
-  for (const auto& present_mode : physical_present_modes) {
-		if (present_mode == VK_PRESENT_MODE_MAILBOX_KHR) {
-			_present_mode = present_mode;
-			break;
-		}
-
-		if (present_mode != VK_PRESENT_MODE_MAILBOX_KHR && present_mode == VK_PRESENT_MODE_IMMEDIATE_KHR) {
-			_present_mode = present_mode;
-		}
-	}
+  _present_mode = _choose_present_mode();
 
   auto desired_image_count = surface_capabilities.minImageCount + 1;
 
@@ -191,6 +175,25 @@ auto swapchain::present(const VkSemaphore& wait_semaphore) -> VkResult {
 	present_info.pImageIndices = &_active_image_index;
 
 	return vkQueuePresentKHR(logical_device.graphics_queue(), &present_info);
+}
+
+auto swapchain::_choose_present_mode() const -> VkPresentModeKHR {
+  const auto& physical_device = graphics_module::get().physical_device();
+  const auto& surface = graphics_module::get().surface();
+
+  auto physical_present_mode_count = std::uint32_t{0};
+  vkGetPhysicalDeviceSurfacePresentModesKHR(physical_device, surface, &physical_present_mode_count, nullptr);
+
+  auto physical_present_modes = std::vector<VkPresentModeKHR>{physical_present_mode_count};
+  vkGetPhysicalDeviceSurfacePresentModesKHR(physical_device, surface, &physical_present_mode_count, physical_present_modes.data());
+
+  for (const auto& present_mode : physical_present_modes) {
+		if (present_mode == VK_PRESENT_MODE_MAILBOX_KHR) {
+			return present_mode;
+		}
+	}
+
+  return VK_PRESENT_MODE_FIFO_KHR;
 }
 
 auto swapchain::_create_image_view(const VkImage& image, VkFormat format, VkImageAspectFlags aspect, VkImageView& image_view) -> void {
