@@ -5,9 +5,9 @@ layout(location = 1) in vec3 in_normal;
 
 layout(location = 0) out vec4 out_color;
 
-const vec4 ambient_color = vec4(0.1, 0.1, 0.1, 1.0);
-const vec4 diffuse_color = vec4(0.5, 0.5, 0.5, 1.0);
-const vec4 specular_color = vec4(1.0, 1.0, 1.0, 1.0);
+const vec4 ambient_color  = vec4(0.87, 0.21, 0.12, 1.0);
+const vec4 diffuse_color = vec4(0.87, 0.21, 0.12, 1.0);
+const vec4 specular_color = vec4(0.5, 0.5, 0.5, 1.0);
 const vec4 shininess = vec4(32.0, 0.0, 0.0, 0.0);
 const vec4 camera_position = vec4(2.0, 2.0, 1.0, 0.0);
 const vec4 light_position = vec4(-1.0, 3.0, 1.0, 0.0);
