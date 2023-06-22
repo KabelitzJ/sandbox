@@ -7,18 +7,17 @@
 namespace sbx::graphics {
 
 uniform_handler::uniform_handler(bool _is_multi_pipeline)
-: _is_multi_pipeline{_is_multi_pipeline},
-  _status{buffer::status::normal} { }
+: uniform_handler{std::nullopt, _is_multi_pipeline} { }
 
 uniform_handler::uniform_handler(const std::optional<shader::uniform_block>& uniform_block, bool _is_multi_pipeline)
 : _is_multi_pipeline{_is_multi_pipeline},
   _uniform_block{uniform_block},
-  _size{_uniform_block->size()},
+  _size{_uniform_block ? _uniform_block->size() : 0},
   _status{buffer::status::normal} {
     _per_frame_data.resize(swapchain::max_frames_in_flight);
 
     for (auto& data : _per_frame_data) {
-      data.buffer = std::make_unique<graphics::uniform_buffer>(_uniform_block->size());
+      data.buffer = (_size > 0) ? std::make_unique<graphics::uniform_buffer>(_uniform_block->size()) : nullptr;
       data.memory = nullptr;
     }
   }
@@ -37,6 +36,13 @@ auto uniform_handler::update(const std::optional<shader::uniform_block>& uniform
     frame_data.buffer = std::make_unique<graphics::uniform_buffer>(_size);
     frame_data.memory = nullptr;
     _status = buffer::status::changed;
+
+    return false;
+  } else if (_uniform_block && !frame_data.buffer) {
+    frame_data.buffer = std::make_unique<graphics::uniform_buffer>(_size);
+    frame_data.memory = nullptr;
+    _status = buffer::status::changed;
+
     return false;
   }
 
