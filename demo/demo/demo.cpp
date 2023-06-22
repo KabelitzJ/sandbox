@@ -37,14 +37,6 @@ public:
 
     _light_position = sbx::math::vector3{-1.0f, 3.0f, 1.0f};
 
-    // _push_constant.ambient_color = _model->material().ambient();
-    // _push_constant.diffuse_color = _model->material().diffuse();
-    // _push_constant.specular_color = _model->material().specular();
-    // _push_constant.shininess = sbx::math::vector4{_model->material().shininess(), 0.0f, 0.0f, 0.0f};
-    // _push_constant.camera_position = sbx::math::vector4{_camera_position, 1.0f};
-    // _push_constant.light_color = sbx::math::color{1.0f, 1.0f, 1.0f, 1.0f};
-    // _push_constant.light_position = sbx::math::vector4{_light_position, 1.0f};
-
     _uniform_buffer_object.model = sbx::math::matrix4x4::identity;
     _uniform_buffer_object.view = sbx::math::matrix4x4::look_at(_camera_position, sbx::math::vector3{0.0f, 0.0f, 0.0f}, sbx::math::vector3::up);
     _uniform_buffer_object.projection = sbx::math::matrix4x4::perspective(sbx::math::radian{45.0f}, window.aspect_ratio(), 0.1f, 10.0f);
