@@ -28,7 +28,7 @@ public:
 
   demo_subrenderer(const sbx::graphics::pipeline::stage& stage)
   : sbx::graphics::subrenderer{stage},
-    _pipeline{std::make_unique<sbx::graphics::graphics_pipeline>(stage, "./demo/assets/shaders/basic"), sbx::graphics::vertex_input<sbx::graphics::vertex3d>::description()},
+    _pipeline{std::make_unique<sbx::graphics::graphics_pipeline>(stage, "./demo/assets/shaders/basic", sbx::graphics::vertex_input<sbx::graphics::vertex3d>::description())},
     _uniforms{_pipeline->find_descriptor_block("buffer_object")},
     _model{std::make_unique<sbx::graphics::model>("./demo/assets/meshes/suzanne.obj")} {
     auto& window = sbx::devices::devices_module::get().window();
