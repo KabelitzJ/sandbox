@@ -17,7 +17,7 @@
 
 namespace sbx::graphics {
 
-graphics_pipeline::graphics_pipeline(stage stage, const std::filesystem::path& path)
+graphics_pipeline::graphics_pipeline(stage stage, const std::filesystem::path& path, const vertex_input_description& vertex_input_description)
 : _bind_point{VK_PIPELINE_BIND_POINT_GRAPHICS},
   _stage{stage},
   _is_descriptor_set_dirty{true} {
@@ -175,36 +175,40 @@ graphics_pipeline::graphics_pipeline(stage stage, const std::filesystem::path& p
   depth_stencil_state.depthBoundsTestEnable = false;
   depth_stencil_state.stencilTestEnable = false;
 
-  auto binding_descriptions = std::vector<VkVertexInputBindingDescription>{};
+  // auto binding_descriptions = std::vector<VkVertexInputBindingDescription>{};
 
-  binding_descriptions.push_back(VkVertexInputBindingDescription{
-    .binding = 0,
-    .stride = sizeof(vertex3d),
-    .inputRate = VK_VERTEX_INPUT_RATE_VERTEX
-  });
+  const auto& binding_descriptions = vertex_input_description.binding_descriptions();
 
-  auto attribute_descriptions = std::vector<VkVertexInputAttributeDescription>{};
+  // binding_descriptions.push_back(VkVertexInputBindingDescription{
+  //   .binding = 0,
+  //   .stride = sizeof(vertex3d),
+  //   .inputRate = VK_VERTEX_INPUT_RATE_VERTEX
+  // });
 
-  attribute_descriptions.push_back(VkVertexInputAttributeDescription{
-    .location = 0,
-    .binding = 0,
-    .format = VK_FORMAT_R32G32B32_SFLOAT,
-    .offset = offsetof(vertex3d, position)
-  });
+  // auto attribute_descriptions = std::vector<VkVertexInputAttributeDescription>{};
 
-  attribute_descriptions.push_back(VkVertexInputAttributeDescription{
-    .location = 1,
-    .binding = 0,
-    .format = VK_FORMAT_R32G32B32_SFLOAT,
-    .offset = offsetof(vertex3d, normal)
-  });
+  const auto& attribute_descriptions = vertex_input_description.attribute_descriptions();
 
-  attribute_descriptions.push_back(VkVertexInputAttributeDescription{
-    .location = 2,
-    .binding = 0,
-    .format = VK_FORMAT_R32G32_SFLOAT,
-    .offset = offsetof(vertex3d, uv)
-  });
+  // attribute_descriptions.push_back(VkVertexInputAttributeDescription{
+  //   .location = 0,
+  //   .binding = 0,
+  //   .format = VK_FORMAT_R32G32B32_SFLOAT,
+  //   .offset = offsetof(vertex3d, position)
+  // });
+
+  // attribute_descriptions.push_back(VkVertexInputAttributeDescription{
+  //   .location = 1,
+  //   .binding = 0,
+  //   .format = VK_FORMAT_R32G32B32_SFLOAT,
+  //   .offset = offsetof(vertex3d, normal)
+  // });
+
+  // attribute_descriptions.push_back(VkVertexInputAttributeDescription{
+  //   .location = 2,
+  //   .binding = 0,
+  //   .format = VK_FORMAT_R32G32_SFLOAT,
+  //   .offset = offsetof(vertex3d, uv)
+  // });
 
   auto vertex_input_state = VkPipelineVertexInputStateCreateInfo{};
   vertex_input_state.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;

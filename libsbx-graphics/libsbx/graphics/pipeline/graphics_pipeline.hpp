@@ -20,6 +20,7 @@
 
 #include <libsbx/graphics/pipeline/shader.hpp>
 #include <libsbx/graphics/pipeline/pipeline.hpp>
+#include <libsbx/graphics/pipeline/vertex_input_description.hpp>
 
 #include <libsbx/graphics/descriptor/descriptor.hpp>
 #include <libsbx/graphics/descriptor/descriptor_set.hpp>
@@ -30,7 +31,7 @@ class graphics_pipeline : public pipeline {
 
 public:
 
-  graphics_pipeline(stage stage, const std::filesystem::path& path);
+  graphics_pipeline(stage stage, const std::filesystem::path& path, const vertex_input_description& vertex_input_description);
 
   ~graphics_pipeline() override;
 
