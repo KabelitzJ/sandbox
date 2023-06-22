@@ -96,8 +96,6 @@ auto buffer::unmap() -> void {
 }
 
 auto buffer::write(memory::observer_ptr<void> data, VkDeviceSize size, VkDeviceSize offset) -> void {
-  const auto& logical_device = graphics_module::get().logical_device();
-
   auto mapped_memory = map();
 
   std::memcpy(static_cast<std::uint8_t*>(mapped_memory.get()) + offset, data.get(), size);

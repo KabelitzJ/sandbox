@@ -95,6 +95,8 @@ swapchain::swapchain(const VkExtent2D& extent, const std::unique_ptr<swapchain>&
 
     _create_image_view(image, surface_format.format, VK_IMAGE_ASPECT_COLOR_BIT, image_view);
 	}
+
+  core::logger::debug("sbx::graphics", "swapchain created: extent: {}x{}, image count: {}", _extent.width, _extent.height, _image_count);
 }
 
 swapchain::~swapchain() {

@@ -1,4 +1,4 @@
-#include "matrix4x4.hpp"
+#include <libsbx/math/matrix4x4.hpp>
 
 #include <algorithm>
 #include <iomanip>

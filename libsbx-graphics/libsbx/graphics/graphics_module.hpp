@@ -25,7 +25,6 @@
 #include <libsbx/graphics/render_pass/swapchain.hpp>
 
 #include <libsbx/graphics/pipeline/pipeline.hpp>
-#include <libsbx/graphics/pipeline/graphics_pipeline.hpp>
 #include <libsbx/graphics/pipeline/shader.hpp>
 
 #include <libsbx/graphics/buffer/buffer.hpp>
@@ -83,6 +82,10 @@ public:
 
   auto render_stage(const pipeline::stage& stage) -> graphics::render_stage&;
   
+  auto current_frame() const noexcept -> std::uint32_t {
+    return _current_frame;
+  }
+
 private:
 
   auto _start_render_pass(graphics::render_stage& render_stage) -> bool;
@@ -133,7 +136,6 @@ private:
   std::unique_ptr<graphics::surface> _surface{};
 
   std::unique_ptr<graphics::swapchain> _swapchain{};
-  // std::vector<std::unique_ptr<graphics::framebuffer>> _framebuffers{};
 
   std::vector<per_frame_data> _per_frame_data{};
   std::vector<std::unique_ptr<graphics::command_buffer>> _command_buffers{};

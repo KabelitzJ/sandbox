@@ -5,7 +5,6 @@
 #include <libsbx/graphics/renderer.hpp>
 #include <libsbx/graphics/render_stage.hpp>
 #include <libsbx/graphics/subrenderer.hpp>
-#include <libsbx/graphics/model_subrenderer.hpp>
 #include <libsbx/graphics/mesh.hpp>
 #include <libsbx/graphics/material.hpp>
 #include <libsbx/graphics/model.hpp>

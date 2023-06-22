@@ -133,7 +133,7 @@ auto graphics_module::update([[maybe_unused]] std::float_t delta_time) -> void {
       return;
     }
 
-    auto& command_buffer = _command_buffers[_swapchain->active_image_index()];
+    auto& command_buffer = _command_buffers[_current_frame];
 
     const auto& subpasses = render_stage->subpasses();
 
@@ -197,9 +197,7 @@ auto graphics_module::_start_render_pass(graphics::render_stage& render_stage) -
     return false;
   }
 
-  const auto active_image_index = _swapchain->active_image_index();
-
-  const auto& command_buffer = _command_buffers[active_image_index];
+  const auto& command_buffer = _command_buffers[_current_frame];
 
   if (!command_buffer->is_running()) {
     command_buffer->begin(VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
@@ -235,7 +233,7 @@ auto graphics_module::_start_render_pass(graphics::render_stage& render_stage) -
   auto render_pass_begin_info = VkRenderPassBeginInfo{};
 	render_pass_begin_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 	render_pass_begin_info.renderPass = render_stage.render_pass();
-	render_pass_begin_info.framebuffer = render_stage.framebuffer(active_image_index);
+	render_pass_begin_info.framebuffer = render_stage.framebuffer(_swapchain->active_image_index());
 	render_pass_begin_info.renderArea = render_area;
 	render_pass_begin_info.clearValueCount = static_cast<std::uint32_t>(clear_values.size());
 	render_pass_begin_info.pClearValues = clear_values.data();
@@ -248,7 +246,7 @@ auto graphics_module::_start_render_pass(graphics::render_stage& render_stage) -
 auto graphics_module::_end_render_pass(graphics::render_stage& render_stage) -> void {
   const auto& frame_data = _per_frame_data[_current_frame];
 
-  auto& command_buffer = _command_buffers[_swapchain->active_image_index()];
+  auto& command_buffer = _command_buffers[_current_frame];
 
   command_buffer->end_render_pass();
 
@@ -269,7 +267,9 @@ auto graphics_module::_end_render_pass(graphics::render_stage& render_stage) -> 
     throw std::runtime_error{"Failed to present swapchain image"};
   }
 
-  _current_frame = utility::fast_mod(_current_frame + 1, _swapchain->image_count());
+  // swapchain::max_frames_in_flight
+
+  _current_frame = utility::fast_mod(_current_frame + 1, swapchain::max_frames_in_flight);
 }
 
 auto graphics_module::_reset_render_stages() -> void {
@@ -309,15 +309,13 @@ auto graphics_module::_recreate_swapchain() -> void {
 }
 
 auto graphics_module::_recreate_command_buffers() -> void {
-  const auto image_count = _swapchain->image_count();
-
   for (const auto& data : _per_frame_data) {
     vkDestroyFence(*_logical_device, data.in_flight_fence, nullptr);
     vkDestroySemaphore(*_logical_device, data.image_available_semaphore, nullptr);
     vkDestroySemaphore(*_logical_device, data.render_finished_semaphore, nullptr);
   }
 
-  _per_frame_data.resize(image_count);
+  _per_frame_data.resize(swapchain::max_frames_in_flight);
 
   auto semaphore_create_info = VkSemaphoreCreateInfo{};
 	semaphore_create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
@@ -332,21 +330,11 @@ auto graphics_module::_recreate_command_buffers() -> void {
     validate(vkCreateFence(*_logical_device, &fence_create_info, nullptr, &data.in_flight_fence));
   }
 
-  _command_buffers.resize(image_count);
+  _command_buffers.resize(swapchain::max_frames_in_flight);
 
   for (auto& command_buffer : _command_buffers) {
     command_buffer = std::make_unique<graphics::command_buffer>(false);
   }
 }
-
-// auto graphics_module::_recreate_framebuffers() -> void {
-//   const auto image_count = _swapchain->image_count();
-
-//   _framebuffers.resize(image_count);
-
-//   for (auto& framebuffer : _framebuffers) {
-//     framebuffer = std::make_unique<graphics::framebuffer>(_swapchain->extent());
-//   }
-// }
 
 } // namespace sbx::graphics

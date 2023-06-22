@@ -13,10 +13,13 @@
 
 #include <libsbx/graphics/buffer/uniform_buffer.hpp>
 
+#include <libsbx/graphics/render_pass/swapchain.hpp>
+
 namespace sbx::graphics {
 
 graphics_pipeline::graphics_pipeline(stage stage, const std::filesystem::path& path)
-: _stage{stage},
+: _bind_point{VK_PIPELINE_BIND_POINT_GRAPHICS},
+  _stage{stage},
   _is_descriptor_set_dirty{true} {
   const auto& logical_device = graphics_module::get().logical_device();
   const auto& render_stage = graphics_module::get().render_stage(stage);
@@ -99,7 +102,7 @@ graphics_pipeline::graphics_pipeline(stage stage, const std::filesystem::path& p
     }
 
     if (descriptor_type != VK_DESCRIPTOR_TYPE_MAX_ENUM) {
-      descriptor_pool_sizes_by_type[descriptor_type] += 3; // ???
+      descriptor_pool_sizes_by_type[descriptor_type] += swapchain::max_frames_in_flight; // ??? 3 ???
     }
 
     _descriptor_bindings.insert({name, uniform_block.binding()});
@@ -224,9 +227,10 @@ graphics_pipeline::graphics_pipeline(stage stage, const std::filesystem::path& p
 
   auto descriptor_pool_create_info = VkDescriptorPoolCreateInfo{};
   descriptor_pool_create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+  descriptor_pool_create_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
   descriptor_pool_create_info.poolSizeCount = static_cast<std::uint32_t>(descriptor_pool_sizes.size());
   descriptor_pool_create_info.pPoolSizes = descriptor_pool_sizes.data();
-  descriptor_pool_create_info.maxSets = 3;
+  descriptor_pool_create_info.maxSets = swapchain::max_frames_in_flight;
 
   validate(vkCreateDescriptorPool(logical_device, &descriptor_pool_create_info, nullptr, &_descriptor_pool));
 
@@ -239,7 +243,11 @@ graphics_pipeline::graphics_pipeline(stage stage, const std::filesystem::path& p
 
   validate(vkCreatePipelineLayout(logical_device, &pipeline_layout_create_info, nullptr, &_layout));
 
-  _descriptor_set = std::make_unique<descriptor_set>(*this);
+  _descriptor_sets.resize(swapchain::max_frames_in_flight);
+
+  for (auto& descriptor_set : _descriptor_sets) {
+    descriptor_set = std::make_unique<graphics::descriptor_set>(*this);
+  }
 
   auto subpass = std::uint32_t{0};
   
@@ -273,6 +281,8 @@ graphics_pipeline::~graphics_pipeline() {
 
   _shaders.clear();
 
+  _descriptor_sets.clear();
+
   vkDestroyDescriptorPool(logical_device, _descriptor_pool, nullptr);
   vkDestroyDescriptorSetLayout(logical_device, _descriptor_set_layout, nullptr);
 
@@ -298,7 +308,36 @@ auto graphics_pipeline::layout() const noexcept -> const VkPipelineLayout& {
 }
 
 auto graphics_pipeline::bind_point() const noexcept -> VkPipelineBindPoint {
-  return VK_PIPELINE_BIND_POINT_GRAPHICS;
+  return _bind_point;
+}
+
+auto graphics_pipeline::push(const std::string name, uniform_handler& uniform) -> void {
+  uniform.update(find_descriptor_block(name));
+  _push(name, uniform.uniform_buffer());
+}
+
+auto graphics_pipeline::bind_descriptors(const command_buffer& command_buffer) -> void {
+  const auto current_frame = graphics_module::get().current_frame();
+
+  auto& descriptor_set = _descriptor_sets[current_frame];
+
+  if (_is_descriptor_set_dirty) {
+    _write_descriptor_sets.clear();
+    _write_descriptor_sets.reserve(_descriptors.size());
+
+    for (const auto& [name, descriptor] : _descriptors) {
+      auto write_descriptor_set = descriptor.write_descriptor_set.handle();
+      write_descriptor_set.dstSet = *descriptor_set;
+
+      _write_descriptor_sets.push_back(write_descriptor_set);
+    }
+
+    descriptor_set->update(_write_descriptor_sets);
+
+    _is_descriptor_set_dirty = false;
+  }
+
+  descriptor_set->bind(command_buffer);
 }
 
 auto graphics_pipeline::_get_stage_from_name(const std::string& name) const noexcept -> VkShaderStageFlagBits {

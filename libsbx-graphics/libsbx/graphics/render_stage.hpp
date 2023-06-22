@@ -258,7 +258,7 @@ public:
 
   auto rebuild(const swapchain& swapchain) -> void;
 
-  auto framebuffer(std::uint32_t index) noexcept -> VkFramebuffer&;
+  auto framebuffer(std::uint32_t index) noexcept -> const VkFramebuffer&;
 
 private:
 

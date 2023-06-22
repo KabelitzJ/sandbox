@@ -29,8 +29,8 @@ public:
   demo_subrenderer(const sbx::graphics::pipeline::stage& stage)
   : sbx::graphics::subrenderer{stage},
     _pipeline{std::make_unique<sbx::graphics::graphics_pipeline>(stage, "./demo/assets/shaders/basic")},
-    _model{std::make_unique<sbx::graphics::model>("./demo/assets/meshes/sphere.obj")},
-    _uniform_buffer{std::make_unique<sbx::graphics::uniform_buffer>(sizeof(uniform_buffer_object))} {
+    _uniforms{_pipeline->find_descriptor_block("buffer_object")},
+    _model{std::make_unique<sbx::graphics::model>("./demo/assets/meshes/suzanne.obj")} {
     auto& window = sbx::devices::devices_module::get().window();
 
     _camera_position = sbx::math::vector3{2.0f, 2.0f, 1.0f};
@@ -56,15 +56,18 @@ public:
   auto render(sbx::graphics::command_buffer& command_buffer, std::float_t delta_time) -> void override {
     auto& window = sbx::devices::devices_module::get().window();
 
+    _pipeline->bind(command_buffer);
+
     _uniform_buffer_object.model = sbx::math::matrix4x4::rotated(_uniform_buffer_object.model, sbx::math::vector3{0.0f, 0.0f, 1.0f}, sbx::math::degree{45.0f} * delta_time);
     _uniform_buffer_object.projection = sbx::math::matrix4x4::perspective(sbx::math::radian{45.0f}, window.aspect_ratio(), 0.1f, 10.0f);
     _uniform_buffer_object.normal = sbx::math::matrix4x4::transposed(sbx::math::matrix4x4::inverted(_uniform_buffer_object.model));
 
-    _uniform_buffer->write(&_uniform_buffer_object, sizeof(uniform_buffer_object));
+    _uniforms.push("normal", _uniform_buffer_object.normal);
+    _uniforms.push("view", _uniform_buffer_object.view);
+    _uniforms.push("model", _uniform_buffer_object.model);
+    _uniforms.push("projection", _uniform_buffer_object.projection);
 
-    _pipeline->bind(command_buffer);
-
-    _pipeline->update_uniform_block("buffer_object", *_uniform_buffer);
+    _pipeline->push("buffer_object", _uniforms);
 
     _pipeline->bind_descriptors(command_buffer);
 
@@ -80,14 +83,16 @@ private:
     sbx::math::matrix4x4 normal;
   }; // struct uniform_buffer_object
 
-  sbx::math::vector3 _camera_position{};
-  sbx::math::vector3 _light_position{};
+  sbx::math::vector3 _camera_position;
+  sbx::math::vector3 _light_position;
 
-  std::unique_ptr<sbx::graphics::graphics_pipeline> _pipeline{};
-  std::unique_ptr<sbx::graphics::model> _model{};
+  std::unique_ptr<sbx::graphics::graphics_pipeline> _pipeline;
 
-  uniform_buffer_object _uniform_buffer_object{};
-  std::unique_ptr<sbx::graphics::uniform_buffer> _uniform_buffer{};
+  sbx::graphics::uniform_handler _uniforms;
+  uniform_buffer_object _uniform_buffer_object;
+
+  std::unique_ptr<sbx::graphics::model> _model;
+
 
 }; // class demo_subrenderer
 
@@ -114,7 +119,6 @@ public:
 
   auto initialize() -> void override {
     add_subrenderer<demo_subrenderer>(sbx::graphics::pipeline::stage{ .renderpass = 0, .subpass = 0 });
-    // add_subrenderer<sbx::graphics::model_subrenderer>(sbx::graphics::pipeline::stage{0, 0});
   }
 
 }; // class demo_renderer

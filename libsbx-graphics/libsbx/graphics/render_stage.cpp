@@ -110,7 +110,6 @@ auto render_stage::update() -> void {
 auto render_stage::rebuild(const swapchain& swapchain) -> void {
   update();
 
-  auto& logical_device = graphics_module::get().logical_device();
   auto& surface = graphics_module::get().surface();
 
   if (_depth_attachment) {
@@ -146,7 +145,7 @@ auto render_stage::rebuild(const swapchain& swapchain) -> void {
   _is_outdated = false;
 }
 
-auto render_stage::framebuffer(std::uint32_t index) noexcept -> VkFramebuffer& {
+auto render_stage::framebuffer(std::uint32_t index) noexcept -> const VkFramebuffer& {
   return _framebuffers[index];
 }
 
@@ -273,7 +272,7 @@ auto render_stage::_rebuild_framebuffers(const swapchain& swapchain) -> void {
 
   _framebuffers.resize(swapchain.image_count());
 
-  for (auto i = 0u; i < swapchain.image_count(); ++i) {
+  for (auto i = 0u; i < _framebuffers.size(); ++i) {
     auto attachments = std::vector<VkImageView>{};
 
     for (const auto& attachment : _attachments) {
