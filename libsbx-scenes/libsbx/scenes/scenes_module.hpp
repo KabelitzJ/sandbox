@@ -1,9 +1,14 @@
 #ifndef LIBSBX_SCENES_SCENE_MODULE_HPP_
 #define LIBSBX_SCENES_SCENE_MODULE_HPP_
 
+#include <memory>
+
 #include <libsbx/core/module.hpp>
 
 #include <libsbx/graphics/graphics_module.hpp>
+
+#include <libsbx/scenes/scene.hpp>
+#include <libsbx/scenes/camera.hpp>
 
 namespace sbx::scenes {
 
@@ -21,9 +26,13 @@ public:
 
   }
 
+  auto scene() const -> const scenes::scene& {
+    return *_scene;
+  }
+
 private:
 
-
+  std::unique_ptr<scenes::scene> _scene;
 
 }; // class scene_modules
 
