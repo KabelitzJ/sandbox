@@ -45,15 +45,15 @@ public:
 
   auto bind_point() const noexcept -> VkPipelineBindPoint override;
 
-  auto find_descriptor_block(const std::string& name) const noexcept -> std::optional<shader::uniform_block> {
+  auto find_descriptor_block(const std::string& name) const -> const shader::uniform_block& {
     if (auto it = _uniform_blocks.find(name); it != _uniform_blocks.end()) {
       return it->second;
     }
 
-    return std::nullopt;
+    throw std::runtime_error(fmt::format("Failed to find descriptor block '{}' in graphics pipeline '{}'", name, _name));
   }
 
-  auto push(const std::string name, uniform_handler& uniform) -> void;
+  auto push(const std::string name, const uniform_handler& uniform_handler) -> void;
 
   auto bind_descriptors(const command_buffer& command_buffer) -> void;
 
@@ -73,7 +73,7 @@ private:
     auto binding_entry = _descriptor_bindings.find(name);
 
     if (binding_entry == _descriptor_bindings.end()) {
-      throw std::runtime_error(fmt::format("Failed to find descriptor binding for descriptor '{}'", name));
+      throw std::runtime_error(fmt::format("Failed to find descriptor binding for descriptor '{}' in pipeline '{}'", name, _name));
     }
 
     auto binding = binding_entry->second;
@@ -81,7 +81,7 @@ private:
     auto descriptor_type_entry = _descriptor_type_at_binding.find(binding);
 
     if (descriptor_type_entry == _descriptor_type_at_binding.end()) {
-      throw std::runtime_error(fmt::format("Failed to find descriptor type for descriptor '{}'", name));
+      throw std::runtime_error(fmt::format("Failed to find descriptor type for descriptor '{}' in pipeline '{}'", name, _name));
     }
 
     auto descriptor_type = descriptor_type_entry->second;

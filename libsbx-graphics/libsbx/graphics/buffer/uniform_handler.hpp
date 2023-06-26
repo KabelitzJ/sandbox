@@ -18,32 +18,18 @@ class uniform_handler {
 
 public:
 
-  explicit uniform_handler(bool _is_multi_pipeline = false);
-
-  explicit uniform_handler(const std::optional<shader::uniform_block>& uniform_block, bool _is_multi_pipeline = false);
+  explicit uniform_handler(const shader::uniform_block& uniform_block, bool _is_multi_pipeline = false);
 
   template<typename Type>
 	void push(const std::string& uniform_name, const Type& object, std::size_t size = 0);
-
-  auto update(const std::optional<shader::uniform_block>& uniform_block) -> bool;
 
   auto uniform_buffer() const noexcept -> const uniform_buffer&;
 
 private:
 
-  struct per_frame_data {
-    memory::observer_ptr<void> memory;
-    std::unique_ptr<graphics::uniform_buffer> buffer;
-  }; // struct per_frame_data
-
-  template<typename Type>
-	void _push(const Type& object, std::size_t size, std::size_t offset);
-
   bool _is_multi_pipeline;
-  std::optional<shader::uniform_block> _uniform_block;
-  std::size_t _size;
-  std::vector<per_frame_data> _per_frame_data;
-  buffer::status _status;
+  shader::uniform_block _uniform_block;
+  std::vector<std::unique_ptr<graphics::uniform_buffer>> _buffers;
 
 }; // class uniform_handler
 

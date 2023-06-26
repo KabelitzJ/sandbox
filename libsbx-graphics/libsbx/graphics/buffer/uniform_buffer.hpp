@@ -17,13 +17,19 @@ public:
 
   uniform_buffer(VkDeviceSize size, memory::observer_ptr<void> data = nullptr);
 
-  ~uniform_buffer() override = default;
+  ~uniform_buffer() override;
 
-  auto update(memory::observer_ptr<void> data) -> void;
+  auto mapped_memory() const noexcept -> memory::observer_ptr<void>;
+
+  auto write(memory::observer_ptr<const void> data, VkDeviceSize size, VkDeviceSize offset = 0) -> void override;
 
   auto write_descriptor_set(std::uint32_t binding, VkDescriptorType descriptor_type) const noexcept -> graphics::write_descriptor_set override;
 
   static auto create_descriptor_set_layout_binding(std::uint32_t binding, VkDescriptorType descriptor_type, VkShaderStageFlags stage_flags) noexcept -> VkDescriptorSetLayoutBinding;
+
+private:
+
+  memory::observer_ptr<void> _mapped_memory;
 
 }; // class uniform_buffer
 

@@ -16,12 +16,6 @@ class buffer : public utility::noncopyable {
 
 public:
 
-  enum class status : std::uint8_t {
-    reset,
-    changed,
-    normal
-  }; // enum class status
-
   buffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, memory::observer_ptr<void> memory = nullptr);
 
   virtual ~buffer();
@@ -34,13 +28,13 @@ public:
 
   auto size() const noexcept -> VkDeviceSize;
 
+  virtual auto write(memory::observer_ptr<const void> data, VkDeviceSize size, VkDeviceSize offset = 0) -> void;
+
+protected:
+
   auto map() -> memory::observer_ptr<void>;
 
   auto unmap() -> void;
-
-  auto write(memory::observer_ptr<void> data, VkDeviceSize size, VkDeviceSize offset = 0) -> void;
-
-protected:
 
   VkBuffer _handle{};
   VkDeviceSize _size{};

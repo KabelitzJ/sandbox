@@ -95,7 +95,7 @@ auto buffer::unmap() -> void {
   vkUnmapMemory(logical_device, _memory);
 }
 
-auto buffer::write(memory::observer_ptr<void> data, VkDeviceSize size, VkDeviceSize offset) -> void {
+auto buffer::write(memory::observer_ptr<const void> data, VkDeviceSize size, VkDeviceSize offset) -> void {
   auto mapped_memory = map();
 
   std::memcpy(static_cast<std::uint8_t*>(mapped_memory.get()) + offset, data.get(), size);
