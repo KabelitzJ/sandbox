@@ -1,6 +1,6 @@
-#include <libsbx/graphics/material.hpp>
+#include <libsbx/models/material.hpp>
 
-namespace sbx::graphics {
+namespace sbx::models {
 
 material::material(const tinyobj::attrib_t& attributes, const tinyobj::material_t& material) {
   _ambient = math::color{material.ambient[0], material.ambient[1], material.ambient[2], 1.0f};
@@ -9,4 +9,4 @@ material::material(const tinyobj::attrib_t& attributes, const tinyobj::material_
   _shininess = material.shininess;
 }
 
-} // namespace sbx::graphics
+} // namespace sbx::models

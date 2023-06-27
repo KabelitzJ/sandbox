@@ -30,7 +30,6 @@
 #include <libsbx/graphics/buffer/buffer.hpp>
 
 #include <libsbx/graphics/renderer.hpp>
-#include <libsbx/graphics/mesh.hpp>
 #include <libsbx/graphics/render_stage.hpp>
 
 namespace sbx::graphics {

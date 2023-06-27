@@ -28,9 +28,9 @@ public:
 
   demo_subrenderer(const sbx::graphics::pipeline::stage& stage)
   : sbx::graphics::subrenderer{stage},
-    _pipeline{std::make_unique<sbx::graphics::graphics_pipeline>(stage, "./demo/assets/shaders/basic", sbx::graphics::vertex_input<sbx::graphics::vertex3d>::description())},
+    _pipeline{std::make_unique<sbx::graphics::graphics_pipeline>(stage, "./demo/assets/shaders/basic", sbx::graphics::vertex_input<sbx::models::vertex3d>::description())},
     _uniforms{_pipeline->find_descriptor_block("buffer_object")},
-    _model{std::make_unique<sbx::graphics::model>("./demo/assets/meshes/suzanne.obj")} {
+    _model{std::make_unique<sbx::models::model>("./demo/assets/meshes/suzanne.obj")} {
     auto& window = sbx::devices::devices_module::get().window();
 
     _camera_position = sbx::math::vector3{2.0f, 2.0f, 1.0f};
@@ -83,7 +83,7 @@ private:
   sbx::graphics::uniform_handler _uniforms;
   uniform_buffer_object _uniform_buffer_object;
 
-  std::unique_ptr<sbx::graphics::model> _model;
+  std::unique_ptr<sbx::models::model> _model;
 
 
 }; // class demo_subrenderer

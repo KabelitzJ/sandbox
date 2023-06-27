@@ -9,7 +9,6 @@
 #include <libsbx/utility/timer.hpp>
 
 #include <libsbx/graphics/graphics_module.hpp>
-#include <libsbx/graphics/mesh.hpp>
 
 #include <libsbx/graphics/buffer/uniform_buffer.hpp>
 

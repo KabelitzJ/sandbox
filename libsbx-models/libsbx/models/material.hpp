@@ -1,11 +1,11 @@
-#ifndef LIBSBX_GRAPHICS_MATERIAL_HPP_
-#define LIBSBX_GRAPHICS_MATERIAL_HPP_
+#ifndef LIBSBX_MODELS_MATERIAL_HPP_
+#define LIBSBX_MODELS_MATERIAL_HPP_
 
 #include <libsbx/math/color.hpp>
 
 #include <tiny_obj_loader.h>
 
-namespace sbx::graphics {
+namespace sbx::models {
 
 class material {
 
@@ -40,6 +40,6 @@ private:
 
 }; // class material
 
-} // namespace sbx::graphics
+} // namespace sbx::models
 
-#endif // LIBSBX_GRAPHICS_MATERIAL_HPP_
+#endif // LIBSBX_MODELS_MATERIAL_HPP_

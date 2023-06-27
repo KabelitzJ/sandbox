@@ -1,4 +1,4 @@
-#include <libsbx/graphics/mesh.hpp>
+#include <libsbx/models/mesh.hpp>
 
 #include <libsbx/core/logger.hpp>
 
@@ -6,10 +6,10 @@
 
 #include <libsbx/graphics/graphics_module.hpp>
 
-namespace sbx::graphics {
+namespace sbx::models {
 
 mesh::mesh(const tinyobj::attrib_t& attributes, const std::vector<tinyobj::shape_t>& shapes) {
-  const auto& logical_device = graphics_module::get().logical_device();
+  const auto& logical_device = graphics::graphics_module::get().logical_device();
 
   auto unique_vertices = std::unordered_map<vertex3d, std::uint32_t>{};
 
@@ -46,22 +46,22 @@ mesh::mesh(const tinyobj::attrib_t& attributes, const std::vector<tinyobj::shape
 
   auto fence = VkFence{};
 
-  validate(vkCreateFence(logical_device, &fence_create_info, nullptr, &fence));
+  graphics::validate(vkCreateFence(logical_device, &fence_create_info, nullptr, &fence));
 
-  validate(vkResetFences(logical_device, 1, &fence));
+  graphics::validate(vkResetFences(logical_device, 1, &fence));
 
   auto vertex_buffer_size = sizeof(vertex3d) * vertices.size();
   auto index_buffer_size = sizeof(std::uint32_t) * indices.size();
 
   auto staging_buffer_size = vertex_buffer_size + index_buffer_size;
 
-  auto staging_buffer = buffer{staging_buffer_size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT};
+  auto staging_buffer = graphics::buffer{staging_buffer_size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT};
 
   staging_buffer.write(vertices.data(), vertex_buffer_size);
   staging_buffer.write(indices.data(), index_buffer_size, vertex_buffer_size);
 
-  _vertex_buffer = std::make_unique<buffer>(vertex_buffer_size, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-  _index_buffer = std::make_unique<buffer>(index_buffer_size, VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+  _vertex_buffer = std::make_unique<graphics::buffer>(vertex_buffer_size, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+  _index_buffer = std::make_unique<graphics::buffer>(index_buffer_size, VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
   auto command_buffer = graphics::command_buffer{true, VK_QUEUE_TRANSFER_BIT};
 
@@ -86,9 +86,9 @@ mesh::mesh(const tinyobj::attrib_t& attributes, const std::vector<tinyobj::shape
   command_buffer.submit(nullptr, nullptr, fence);
 
   // [TODO] KAJ 2023-03-20 20:07 - This forces the CPU to wait for the GPU to finish copying the data to the device local buffer.
-  validate(vkWaitForFences(logical_device, 1, &fence, true, std::numeric_limits<std::uint64_t>::max()));
+  graphics::validate(vkWaitForFences(logical_device, 1, &fence, true, std::numeric_limits<std::uint64_t>::max()));
 
 	vkDestroyFence(logical_device, fence, nullptr);
 }
 
-} // namespace sbx::graphics
+} // namespace sbx::models
