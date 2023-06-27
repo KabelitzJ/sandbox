@@ -315,8 +315,8 @@ auto graphics_pipeline::bind_point() const noexcept -> VkPipelineBindPoint {
   return _bind_point;
 }
 
-auto graphics_pipeline::push(const std::string name, const uniform_handler& uniform) -> void {
-  _push(name, uniform.uniform_buffer());
+auto graphics_pipeline::push(const uniform_handler& uniform) -> void {
+  _push(uniform.name(), uniform.uniform_buffer());
 }
 
 auto graphics_pipeline::bind_descriptors(const command_buffer& command_buffer) -> void {

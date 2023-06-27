@@ -59,7 +59,7 @@ public:
     _uniforms.push("model", _uniform_buffer_object.model);
     _uniforms.push("projection", _uniform_buffer_object.projection);
 
-    _pipeline->push("buffer_object", _uniforms);
+    _pipeline->push(_uniforms);
 
     _pipeline->bind_descriptors(command_buffer);
 

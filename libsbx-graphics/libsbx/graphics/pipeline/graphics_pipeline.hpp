@@ -53,7 +53,7 @@ public:
     throw std::runtime_error(fmt::format("Failed to find descriptor block '{}' in graphics pipeline '{}'", name, _name));
   }
 
-  auto push(const std::string name, const uniform_handler& uniform_handler) -> void;
+  auto push(const uniform_handler& uniform_handler) -> void;
 
   auto bind_descriptors(const command_buffer& command_buffer) -> void;
 

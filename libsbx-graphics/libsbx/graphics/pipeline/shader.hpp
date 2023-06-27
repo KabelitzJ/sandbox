@@ -113,12 +113,17 @@ public:
       push
     }; // enum class type
 
-    explicit uniform_block(std::uint32_t binding, std::uint32_t size, VkShaderStageFlags stage_flags, type type, std::map<std::string, uniform> uniforms)
-    : _binding{binding},
+    explicit uniform_block(const std::string& name, std::uint32_t binding, std::uint32_t size, VkShaderStageFlags stage_flags, type type, std::map<std::string, uniform> uniforms)
+    : _name{name},
+      _binding{binding},
       _size{size},
       _stage_flags{stage_flags},
       _type{type},
       _uniforms{std::move(uniforms)} { }
+
+    auto name() const noexcept -> const std::string& {
+      return _name;
+    }
 
     auto binding() const noexcept -> std::uint32_t {
       return _binding;
@@ -154,6 +159,7 @@ public:
 
   private:
 
+    std::string _name{};
     std::uint32_t _binding{};
     std::uint32_t _size{};
     VkShaderStageFlags _stage_flags{};

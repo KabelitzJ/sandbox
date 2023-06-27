@@ -6,9 +6,8 @@
 
 namespace sbx::graphics {
 
-uniform_handler::uniform_handler(const shader::uniform_block& uniform_block, bool _is_multi_pipeline)
-: _is_multi_pipeline{_is_multi_pipeline},
-  _uniform_block{uniform_block} {
+uniform_handler::uniform_handler(const shader::uniform_block& uniform_block)
+: _uniform_block{uniform_block} {
   _buffers.resize(swapchain::max_frames_in_flight);
 
   for (auto& buffer : _buffers) {

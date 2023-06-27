@@ -77,7 +77,7 @@ auto shader::_create_reflection(const spirv_cross::Compiler& compiler) -> void {
       uniforms.insert({member_name, uniform{member_binding, member_offset, member_size, member_data_type, false, false, _stage}});
     }
 
-    _uniform_blocks.insert({uniform_blocks_name, uniform_block{uniform_blocks_binding, uniform_blocks_size, _stage, uniform_block::type::uniform, std::move(uniforms)}});
+    _uniform_blocks.insert({uniform_blocks_name, uniform_block{uniform_blocks_name, uniform_blocks_binding, uniform_blocks_size, _stage, uniform_block::type::uniform, std::move(uniforms)}});
   }
 }
 

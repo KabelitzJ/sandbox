@@ -18,16 +18,19 @@ class uniform_handler {
 
 public:
 
-  explicit uniform_handler(const shader::uniform_block& uniform_block, bool _is_multi_pipeline = false);
+  explicit uniform_handler(const shader::uniform_block& uniform_block);
 
   template<typename Type>
 	void push(const std::string& uniform_name, const Type& object, std::size_t size = 0);
 
   auto uniform_buffer() const noexcept -> const uniform_buffer&;
 
+  auto name() const noexcept -> const std::string& {
+    return _uniform_block.name();
+  }
+
 private:
 
-  bool _is_multi_pipeline;
   shader::uniform_block _uniform_block;
   std::vector<std::unique_ptr<graphics::uniform_buffer>> _buffers;
 
