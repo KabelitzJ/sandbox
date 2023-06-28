@@ -52,4 +52,6 @@
 #include <libsbx/math/angle.hpp>
 #include <libsbx/math/color.hpp>
 
+#include <libsbx/math/random.hpp>
+
 #endif // LIBSBX_MATH_HPP_
