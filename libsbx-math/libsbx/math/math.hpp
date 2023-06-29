@@ -49,6 +49,8 @@
 
 #include <libsbx/math/matrix4x4.hpp>
 
+#include <libsbx/math/quaternion.hpp>
+
 #include <libsbx/math/angle.hpp>
 #include <libsbx/math/color.hpp>
 
