@@ -13,7 +13,13 @@ FetchContent_Declare(
   GIT_TAG 9.1.0
 )
 
-FetchContent_MakeAvailable(fmt)
+FetchContent_Declare(
+  yaml-cpp
+  GIT_REPOSITORY https://github.com/jbeder/yaml-cpp.git
+  GIT_TAG yaml-cpp-0.7.0
+)
+
+FetchContent_MakeAvailable(fmt yaml-cpp)
 
 target_sources(
   ${PROJECT_NAME}
@@ -39,9 +45,11 @@ target_link_libraries(
   ${PROJECT_NAME}
   PUBLIC
     fmt::fmt
+    yaml-cpp
     libsbx::utility
     libsbx::core
     libsbx::math
+    libsbx::ecs
     libsbx::graphics
 )
 
