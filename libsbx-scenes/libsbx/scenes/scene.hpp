@@ -2,17 +2,19 @@
 #define LIBSBX_SCENES_SCENE_HPP_
 
 #include <memory>
+#include <vector>
 #include <unordered_map>
 
 #include <libsbx/memory/observer_ptr.hpp>
+
+#include <libsbx/math/uuid.hpp>
 
 #include <libsbx/ecs/registry.hpp>
 #include <libsbx/ecs/entity.hpp>
 
 #include <libsbx/scenes/camera.hpp>
 
-#include <libsbx/scenes/components/uuid.hpp>
-#include <libsbx/scenes/components/transform.hpp>
+#include <libsbx/scenes/transform.hpp>
 
 namespace sbx::scenes {
 
@@ -58,7 +60,7 @@ public:
 
     auto node = scene::node{memory::make_observer<ecs::registry>(_registry), entity};
 
-    auto uuid = _registry.add_component<scenes::uuid>(entity);
+    auto uuid = _registry.add_component<math::uuid>(entity);
     _nodes.insert({*uuid, node});
 
     _registry.add_component<scenes::transform>(entity, transform);
@@ -70,10 +72,28 @@ public:
     return *_camera;
   }
 
+  template<typename... Args>
+  auto set_camera(Args&&... args) -> void {
+    _camera = std::make_unique<scenes::camera>(std::forward<Args>(args)...);
+  }
+
+  template<typename... Components>
+  auto query() -> std::vector<node> {
+    auto nodes = std::vector<node>{};
+
+    auto view = _registry.create_view<Components...>();
+
+    for (const auto& entity : view) {
+      nodes.push_back(node{memory::make_observer<ecs::registry>(_registry), entity});
+    }
+
+    return nodes;
+  }
+
 private:
 
   ecs::registry _registry;
-  std::unordered_map<uuid, node> _nodes;
+  std::unordered_map<math::uuid, node> _nodes;
 
   std::unique_ptr<scenes::camera> _camera;
 

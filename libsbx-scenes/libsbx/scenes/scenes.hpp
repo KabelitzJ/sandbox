@@ -5,7 +5,6 @@
 #include <libsbx/scenes/scene.hpp>
 #include <libsbx/scenes/camera.hpp>
 
-#include <libsbx/scenes/components/uuid.hpp>
-#include <libsbx/scenes/components/transform.hpp>
+#include <libsbx/scenes/transform.hpp>
 
 #endif // LIBSBX_SCENE_HPP_

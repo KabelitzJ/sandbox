@@ -18,7 +18,8 @@
 #include <libsbx/io/io.hpp>
 #include <libsbx/scripting/scripting.hpp>
 #include <libsbx/devices/devices.hpp>
-#include <libsbx/graphics/graphics.hpp> 
+#include <libsbx/graphics/graphics.hpp>
+#include <libsbx/assets/assets.hpp>
 #include <libsbx/models/models.hpp>
 #include <libsbx/scenes/scenes.hpp>
 

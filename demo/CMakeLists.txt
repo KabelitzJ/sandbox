@@ -43,6 +43,7 @@ target_link_libraries(
     libsbx::scenes
     libsbx::scripting
     libsbx::signal
+    libsbx::assets
     libsbx::models
 )
 

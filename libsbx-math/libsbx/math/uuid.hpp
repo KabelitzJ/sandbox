@@ -1,11 +1,11 @@
-#ifndef LIBSBX_SCENES_COMPONENTS_UUID_HPP_
-#define LIBSBX_SCENES_COMPONENTS_UUID_HPP_
+#ifndef LIBSBX_MATH_UUID_HPP_
+#define LIBSBX_MATH_UUID_HPP_
 
 #include <cinttypes>
 
 #include <libsbx/math/random.hpp>
 
-namespace sbx::scenes {
+namespace sbx::math {
 
 class uuid {
 
@@ -14,7 +14,7 @@ public:
   using value_type = std::uint64_t;
 
   uuid()
-  : _value{math::random::next<value_type>()} { }
+  : _value{random::next<value_type>()} { }
 
   ~uuid() = default;
 
@@ -36,15 +36,15 @@ private:
 
 }; // class uuid
 
-} // namespace sbx::scenes
+} // namespace sbx::math
 
 template<>
-struct std::hash<sbx::scenes::uuid> {
-  auto operator()(const sbx::scenes::uuid& uuid) const noexcept -> std::size_t {
-    auto hasher = std::hash<sbx::scenes::uuid::value_type>{};
+struct std::hash<sbx::math::uuid> {
+  auto operator()(const sbx::math::uuid& uuid) const noexcept -> std::size_t {
+    auto hasher = std::hash<sbx::math::uuid::value_type>{};
     return hasher(uuid.value());
   }
-}; // struct std::hash<sbx::scenes::uuid>
+}; // struct std::hash<sbx::math::uuid>
 
-#endif // LIBSBX_SCENES_COMPONENTS_UUID_HPP_
+#endif // LIBSBX_MATH_UUID_HPP_
 

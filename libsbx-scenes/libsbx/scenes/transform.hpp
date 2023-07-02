@@ -1,5 +1,5 @@
-#ifndef LIBSBX_SCENES_COMPONENTS_TRANSFORM_HPP_
-#define LIBSBX_SCENES_COMPONENTS_TRANSFORM_HPP_
+#ifndef LIBSBX_SCENES_TRANSFORM_HPP_
+#define LIBSBX_SCENES_TRANSFORM_HPP_
 
 #include <vector>
 #include <memory>
@@ -26,6 +26,8 @@ public:
   : _position{position},
     _rotation{rotation},
     _scale{scale},
+    _world_matrix{math::matrix4x4::identity},
+    _is_world_matrix_dirty{true},
     _parent{parent} { }
 
   auto local_position() const -> const math::vector3& {
@@ -65,7 +67,18 @@ public:
     _children.push_back(child);
   }
 
-  auto matrix() const -> math::matrix4x4 {
+  auto world_matrix() const -> math::matrix4x4 {
+    _update_world_matrix();
+    return _world_matrix;
+  }
+
+private:
+
+  auto _update_world_matrix() const -> void {
+    if (!_is_world_matrix_dirty) {
+      return;
+    }
+
     const auto translation = math::matrix4x4::translated(math::matrix4x4::identity, _position);
     const auto rotation = _rotation.to_matrix();
     const auto scale = math::matrix4x4::scaled(math::matrix4x4::identity, _scale);
@@ -73,17 +86,20 @@ public:
     const auto local_transform = translation * rotation * scale;
 
     if (_parent) {
-      return _parent->matrix() * local_transform;
-    } 
+      _world_matrix = _parent->world_matrix() * local_transform;
+    } else {
+      _world_matrix = local_transform;
+    }
 
-    return local_transform;
+    _is_world_matrix_dirty = false;
   }
-
-private:
 
   math::vector3 _position;
   math::quaternion _rotation;
   math::vector3 _scale;
+
+  mutable math::matrix4x4 _world_matrix;
+  mutable bool _is_world_matrix_dirty = true;
 
   memory::observer_ptr<transform> _parent;
   std::vector<memory::observer_ptr<transform>> _children;
@@ -92,4 +108,4 @@ private:
 
 } // namespace sbx::scenes
 
-#endif // LIBSBX_SCENES_COMPONENTS_TRANSFORM_HPP_
+#endif // LIBSBX_SCENES_TRANSFORM_HPP_

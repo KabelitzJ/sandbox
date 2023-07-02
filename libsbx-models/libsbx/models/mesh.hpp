@@ -13,6 +13,8 @@
 
 #include <libsbx/utility/hash.hpp>
 
+#include <libsbx/assets/asset.hpp>
+
 #include <libsbx/math/vector2.hpp>
 #include <libsbx/math/vector3.hpp>
 #include <libsbx/math/vector4.hpp>
@@ -36,13 +38,15 @@ constexpr auto operator==(const vertex3d& lhs, const vertex3d& rhs) noexcept -> 
   return lhs.position == rhs.position && lhs.normal == rhs.normal && lhs.uv == rhs.uv;
 }
 
-class mesh {
+class mesh : public assets::asset<mesh> {
 
 public:
 
+  mesh(const std::filesystem::path& path) { }
+
   mesh(const tinyobj::attrib_t& attributes, const std::vector<tinyobj::shape_t>& shapes);
 
-  ~mesh() = default;
+  ~mesh() override = default;
 
   auto vertex_buffer() const noexcept -> const graphics::buffer& {
     return *_vertex_buffer;

@@ -18,7 +18,9 @@ class scenes_module final : public core::module<scenes_module> {
 
 public:
 
-  scenes_module() = default;
+  scenes_module() {
+    _scene = std::make_unique<scenes::scene>();
+  }
 
   ~scenes_module() override = default;
 
@@ -26,7 +28,7 @@ public:
 
   }
 
-  auto scene() const -> const scenes::scene& {
+  auto scene() const -> scenes::scene& {
     return *_scene;
   }
 
