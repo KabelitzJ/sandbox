@@ -30,7 +30,7 @@ public:
 
   }
 
-  auto update([[maybe_unused]] std::float_t delta_time) -> void override {
+  auto update() -> void override {
     for (auto& [name, script] : _scripts) {
       script->on_update();
     }

@@ -28,10 +28,10 @@ public:
 
   virtual auto initialize() -> void = 0;
 
-  auto render(const pipeline::stage& stage, command_buffer& command_buffer, std::float_t delta_time) -> void {
+  auto render(const pipeline::stage& stage, command_buffer& command_buffer) -> void {
     for (const auto& [render_stage, type] : _subrenderer_stages) {
       if (render_stage == stage) {
-        _subrenderers[type]->render(command_buffer, delta_time);
+        _subrenderers[type]->render(command_buffer);
       }
     }
   }

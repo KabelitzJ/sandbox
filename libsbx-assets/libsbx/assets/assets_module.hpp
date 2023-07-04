@@ -23,7 +23,7 @@ public:
 
   ~assets_module() override = default;
 
-  auto update([[maybe_unused]] std::float_t delta_time) -> void override {
+  auto update() -> void override {
 
   }
 
@@ -34,7 +34,7 @@ public:
 
   template<typename Type>
   auto get_asset(const asset_handle<Type>& handle) -> Type& {
-    return _get_storage<Type>().get(handle);
+    return static_cast<Type&>(_get_storage<Type>().get(handle));
   }
 
 private:

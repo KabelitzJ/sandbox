@@ -33,9 +33,10 @@ private:
 
 }; // class basic_degree
 
-template<std::floating_point Type>
-constexpr auto operator*(const basic_degree<Type>& lhs, const Type rhs) noexcept -> basic_degree<Type> {
-  return basic_degree<Type>{lhs.value() * rhs};
+template<std::floating_point Type, typename Other>
+requires (std::is_convertible_v<Other, Type>)
+constexpr auto operator*(const basic_degree<Type>& lhs, const Other rhs) noexcept -> basic_degree<Type> {
+  return basic_degree<Type>{lhs.value() * static_cast<Type>(rhs)};
 }
 
 using degree = basic_degree<std::float_t>;
@@ -66,9 +67,10 @@ private:
 
 }; // class basic_radian
 
-template<std::floating_point Type>
-constexpr auto operator*(const basic_radian<Type>& lhs, const Type rhs) noexcept -> basic_radian<Type> {
-  return basic_radian<Type>{lhs.value() * rhs};
+template<std::floating_point Type, typename Other>
+requires (std::is_convertible_v<Other, Type>)
+constexpr auto operator*(const basic_radian<Type>& lhs, const Other rhs) noexcept -> basic_radian<Type> {
+  return basic_radian<Type>{lhs.value() * static_cast<Type>(rhs)};
 }
 
 using radian = basic_radian<std::float_t>;

@@ -49,7 +49,7 @@ private:
 
   struct module_base {
     virtual ~module_base() = default;
-    virtual auto update(std::float_t delta_time) -> void = 0;
+    virtual auto update() -> void = 0;
   }; // struct module_base
 
   struct module_factory {

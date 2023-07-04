@@ -117,6 +117,10 @@ public:
     return _value;
   }
 
+  constexpr operator value_type() const noexcept {
+    return _value;
+  }
+
 private:
 
   value_type _value{};

@@ -46,8 +46,10 @@ public:
 
   ~demo_subrenderer() override = default;
 
-  auto render(sbx::graphics::command_buffer& command_buffer, std::float_t delta_time) -> void override {
+  auto render(sbx::graphics::command_buffer& command_buffer) -> void override {
     auto& window = sbx::devices::devices_module::get().window();
+
+    const auto delta_time = sbx::core::time::delta_time();
 
     _pipeline->bind(command_buffer);
 

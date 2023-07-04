@@ -18,7 +18,7 @@ public:
 
   virtual ~subrenderer() = default;
 
-  virtual auto render(command_buffer& command_buffer, std::float_t delta_time) -> void = 0;
+  virtual auto render(command_buffer& command_buffer) -> void = 0;
 
   auto stage() const noexcept -> const pipeline::stage& {
     return _stage;

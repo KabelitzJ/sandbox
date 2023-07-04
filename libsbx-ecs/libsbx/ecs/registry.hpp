@@ -229,7 +229,7 @@ public:
   template<typename Component>
   auto get_component(const entity_type& entity) const -> memory::observer_ptr<const Component> {
     if (const auto component = try_get_component<std::remove_const_t<Component>>(entity); component) {
-      return *component;
+      return component;
     }
 
     throw std::runtime_error{"Entity does not have component assigned to it"};
@@ -238,7 +238,7 @@ public:
   template<typename Component>
   auto get_component(const entity_type& entity) -> memory::observer_ptr<Component> {
     if (auto component = try_get_component<std::remove_const_t<Component>>(entity); component) {
-      return *component;
+      return component;
     }
 
     throw std::runtime_error{"Entity does not have component assigned to it"};
@@ -248,7 +248,7 @@ public:
   auto try_get_component(const entity_type& entity) const -> memory::observer_ptr<const Component> {
     if (const auto storage = _try_get_storage<std::remove_const_t<Component>>(); storage) {
       if (auto entry = storage->get().find(entity); entry != storage->get().cend()) {
-        return *entry;
+        return memory::make_observer<Component>(*entry);
       }
     }
 
@@ -259,7 +259,7 @@ public:
   auto try_get_component(const entity_type& entity) -> memory::observer_ptr<Component> {
     if (auto storage = _try_get_storage<std::remove_const_t<Component>>(); storage) {
       if (auto entry = storage->get().find(entity); entry != storage->get().end()) {
-        return *entry;
+        return memory::make_observer<Component>(*entry);
       }
     }
 

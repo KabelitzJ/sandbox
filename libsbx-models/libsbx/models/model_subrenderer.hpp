@@ -18,7 +18,7 @@ public:
 
   ~model_subrenderer() override = default;
 
-  auto render(graphics::command_buffer& command_buffer, std::float_t delta_time) -> void override {
+  auto render(graphics::command_buffer& command_buffer) -> void override {
     auto& scene_module = scenes::scenes_module::get();
     auto& asset_module = assets::assets_module::get();
 

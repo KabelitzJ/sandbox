@@ -15,6 +15,7 @@
 
 #include <libsbx/core/module.hpp>
 #include <libsbx/core/application.hpp>
+#include <libsbx/core/time.hpp>
 
 namespace sbx::core {
 
@@ -61,9 +62,11 @@ public:
 
       application->update();
 
-      _update_stage(stage::pre, delta_time);
-      _update_stage(stage::normal, delta_time);
-      _update_stage(stage::post, delta_time);
+      time::_delta_time = units::second{delta_time};
+
+      _update_stage(stage::pre);
+      _update_stage(stage::normal);
+      _update_stage(stage::post);
     }
   }
 
@@ -95,10 +98,10 @@ private:
     }
   }
 
-  auto _update_stage(stage stage, std::float_t delta_time) -> void {
+  auto _update_stage(stage stage) -> void {
     if (auto entry = _module_by_stage.find(stage); entry != _module_by_stage.end()) {
       for (const auto& type : entry->second) {
-        _modules.at(type)->update(delta_time);
+        _modules.at(type)->update();
       }
     }
   }
