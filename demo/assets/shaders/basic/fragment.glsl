@@ -31,7 +31,7 @@ vec4 phong_shading(vec3 light_direction, float intensity) {
 }
 
 vec4 cel_shading(vec3 light_direction, float intensity) {
-  const int CEL_LEVELS = 3;
+  const int CEL_LEVELS = 4;
   const vec4 SHADOW_COLOR = vec4(0.15, 0.15, 0.15, 1.0);
 
   // Calculate the index of the shade based on the intensity
@@ -51,7 +51,7 @@ void main() {
   vec4 phong_shading = phong_shading(light_direction, intensity);
   vec4 cel_shading = cel_shading(light_direction, intensity);
 
-  float mix_factor = 0.25;
+  float mix_factor = 0.0;
 
   out_color = mix(phong_shading, cel_shading, mix_factor);
 }

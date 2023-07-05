@@ -5,10 +5,15 @@
 #include <vector>
 #include <cinttypes>
 
+#include <fmt/format.h>
+
 #include <GLFW/glfw3.h>
 
 #include <libsbx/core/module.hpp>
 #include <libsbx/core/logger.hpp>
+#include <libsbx/core/engine.hpp>
+
+#include <libsbx/units/time.hpp>
 
 #include <libsbx/devices/window.hpp>
 
@@ -40,6 +45,18 @@ public:
 
   auto update() -> void override {
     glfwPollEvents();
+
+    _elapsed_time += core::engine::delta_time();
+
+    if (_elapsed_time >= units::second{1}) {
+      _elapsed_time -= units::second{1};
+
+      glfwSetWindowTitle(*_window, fmt::format("{} | {} FPS", _window->title(), _frame_count).c_str());
+
+      _frame_count = 0;
+    } else {
+      ++_frame_count;
+    }
   }
 
   auto window() -> devices::window& {
@@ -56,6 +73,9 @@ public:
 private:
 
   std::unique_ptr<devices::window> _window{};
+
+  std::uint32_t _frame_count{};
+  units::second _elapsed_time{};
 
 }; // class devices_module
 

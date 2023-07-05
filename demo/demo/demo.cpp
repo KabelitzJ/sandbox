@@ -49,7 +49,7 @@ public:
   auto render(sbx::graphics::command_buffer& command_buffer) -> void override {
     auto& window = sbx::devices::devices_module::get().window();
 
-    const auto delta_time = sbx::core::time::delta_time();
+    const auto delta_time = sbx::core::engine::delta_time();
 
     _pipeline->bind(command_buffer);
 

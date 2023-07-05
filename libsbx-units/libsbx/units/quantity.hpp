@@ -72,7 +72,7 @@ public:
 
   template<std::convertible_to<value_type> Type>
   constexpr explicit quantity(Type value) noexcept
-  : _value{value} { }
+  : _value{static_cast<value_type>(value)} { }
 
   template<representation OtherRepresentation, ratio OtherRatio = ratio_type>
   constexpr quantity(const quantity<dimension_type, OtherRepresentation, OtherRatio>& other) noexcept
@@ -126,6 +126,16 @@ private:
   value_type _value{};
 
 }; // class quantity
+
+template<typename Dimension, representation Representation, ratio Ratio>
+constexpr auto operator==(const quantity<Dimension, Representation, Ratio>& lhs, const quantity<Dimension, Representation, Ratio>& rhs) noexcept -> bool {
+  return lhs.value() == rhs.value();
+}
+
+template<typename Dimension, representation Representation, ratio Ratio>
+constexpr auto operator<=>(const quantity<Dimension, Representation, Ratio>& lhs, const quantity<Dimension, Representation, Ratio>& rhs) noexcept -> std::partial_ordering {
+  return lhs.value() <=> rhs.value();
+}
 
 template<typename Dimension, representation LhsRepresentation, ratio LhsRatio, representation RhsRepresentation, ratio RhsRatio>
 constexpr auto operator+(quantity<Dimension, LhsRepresentation, LhsRatio> lhs, const quantity<Dimension, RhsRepresentation, RhsRatio>& rhs) -> quantity<Dimension, LhsRepresentation, LhsRatio> {

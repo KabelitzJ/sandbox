@@ -60,6 +60,11 @@ public:
     return _title;
   }
 
+  auto set_title(const std::string& title) -> void {
+    _title = title;
+    glfwSetWindowTitle(_handle, _title.c_str());
+  }
+
   auto width() const -> std::uint32_t {
     return _width;
   }

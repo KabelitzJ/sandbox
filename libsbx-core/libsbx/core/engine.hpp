@@ -13,9 +13,10 @@
 #include <libsbx/utility/concepts.hpp>
 #include <libsbx/utility/noncopyable.hpp>
 
+#include <libsbx/units/time.hpp>
+
 #include <libsbx/core/module.hpp>
 #include <libsbx/core/application.hpp>
-#include <libsbx/core/time.hpp>
 
 namespace sbx::core {
 
@@ -40,6 +41,10 @@ public:
     }
   }
 
+  static auto delta_time() -> units::second {
+    return _delta_time;
+  }
+
   template<utility::implements<application> Application>
   auto run() -> void {
     if (_is_running) {
@@ -62,7 +67,7 @@ public:
 
       application->update();
 
-      time::_delta_time = units::second{delta_time};
+      engine::_delta_time = units::second{delta_time};
 
       _update_stage(stage::pre);
       _update_stage(stage::normal);
@@ -105,6 +110,8 @@ private:
       }
     }
   }
+
+  static units::second _delta_time;
 
   bool _is_running{};
   std::vector<std::string> _args{};
