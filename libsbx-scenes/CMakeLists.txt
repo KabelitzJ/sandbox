@@ -20,6 +20,7 @@ target_sources(
     "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/scene.hpp"
     "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/camera.hpp"
     "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/transform.hpp"
+    "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/scene_subrenderer.hpp"
 
 )
 
@@ -41,6 +42,7 @@ target_link_libraries(
     libsbx::math
     libsbx::ecs
     libsbx::graphics
+    libsbx::models
 )
 
 set_target_properties(

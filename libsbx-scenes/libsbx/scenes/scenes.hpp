@@ -4,7 +4,10 @@
 #include <libsbx/scenes/scenes_module.hpp>
 #include <libsbx/scenes/scene.hpp>
 #include <libsbx/scenes/camera.hpp>
+#include <libsbx/scenes/scene_subrenderer.hpp>
 
 #include <libsbx/scenes/transform.hpp>
+
+#include <libsbx/scenes/components/mesh_component.hpp>  
 
 #endif // LIBSBX_SCENE_HPP_
