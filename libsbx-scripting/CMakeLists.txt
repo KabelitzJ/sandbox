@@ -5,26 +5,8 @@ message(STATUS "Configuring ${PROJECT_NAME}...")
 add_library(${PROJECT_NAME} STATIC)
 add_library(${CMAKE_PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
-include(FetchContent)
-
-FetchContent_Declare(
-  fmt
-  GIT_REPOSITORY https://github.com/fmtlib/fmt.git
-  GIT_TAG 9.1.0
-)
-
-FetchContent_Declare(
-  lua
-  GIT_REPOSITORY https://github.com/lubgr/lua-cmake.git
-)
-
-FetchContent_Declare(
-  sol2
-  GIT_REPOSITORY https://github.com/ThePhD/sol2.git
-  GIT_TAG v3.3.0
-)
-
-FetchContent_MakeAvailable(fmt lua sol2)
+find_package(fmt REQUIRED)
+find_package(sol2 REQUIRED)
 
 target_sources(
   ${PROJECT_NAME}
@@ -45,9 +27,10 @@ target_include_directories(
 target_link_libraries(
   ${PROJECT_NAME}
   PUBLIC
+    # External dependencies
     fmt::fmt
-    lua
-    sol2
+    sol2::sol2
+    # Internal dependencies
     libsbx::utility
     libsbx::core
     libsbx::async

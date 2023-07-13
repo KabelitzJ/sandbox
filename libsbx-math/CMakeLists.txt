@@ -5,27 +5,8 @@ message(STATUS "Configuring ${PROJECT_NAME}...")
 add_library(${PROJECT_NAME} STATIC)
 add_library(${CMAKE_PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
-include(FetchContent)
-
-FetchContent_Declare(
-  yaml-cpp
-  GIT_REPOSITORY https://github.com/jbeder/yaml-cpp.git
-  GIT_TAG yaml-cpp-0.7.0
-)
-
-FetchContent_Declare(
-  fmt
-  GIT_REPOSITORY https://github.com/fmtlib/fmt.git
-  GIT_TAG 9.1.0
-)
-
-FetchContent_Declare(
-  nlohmann_json
-  GIT_REPOSITORY https://github.com/nlohmann/json.git
-  GIT_TAG v3.11.2
-)
-
-FetchContent_MakeAvailable(yaml-cpp fmt nlohmann_json)
+find_package(fmt REQUIRED)
+find_package(yaml-cpp REQUIRED)
 
 target_sources(
   ${PROJECT_NAME}
@@ -59,9 +40,10 @@ target_include_directories(
 target_link_libraries(
   ${PROJECT_NAME}
   PUBLIC
-    yaml-cpp
+    # External dependencies
     fmt::fmt
-    nlohmann_json
+    yaml-cpp
+    # Internal dependencies
     libsbx::utility
     libsbx::core
     libsbx::io

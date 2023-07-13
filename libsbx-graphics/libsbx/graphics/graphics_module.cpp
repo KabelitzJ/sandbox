@@ -2,8 +2,6 @@
 
 #include <fmt/format.h>
 
-#include <yaml-cpp/yaml.h>
-
 #include <libsbx/utility/fast_mod.hpp>
 
 namespace sbx::graphics {

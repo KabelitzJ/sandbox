@@ -25,6 +25,7 @@ target_include_directories(
 target_link_libraries(
   ${PROJECT_NAME}
   PUBLIC
+    # Internal dependencies
     libsbx::utility
     libsbx::core
 )

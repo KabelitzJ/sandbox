@@ -5,21 +5,8 @@ message(STATUS "Configuring ${PROJECT_NAME}...")
 add_library(${PROJECT_NAME} STATIC)
 add_library(${CMAKE_PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
-include(FetchContent)
-
-FetchContent_Declare(
-  fmt
-  GIT_REPOSITORY https://github.com/fmtlib/fmt.git
-  GIT_TAG 9.1.0
-)
-
-FetchContent_Declare(
-  glfw
-  GIT_REPOSITORY https://github.com/glfw/glfw.git
-  GIT_TAG 3.3.8
-)
-
-FetchContent_MakeAvailable(fmt glfw)
+find_package(fmt REQUIRED)
+find_package(glfw3 REQUIRED)
 
 target_sources(
   ${PROJECT_NAME}
@@ -41,8 +28,10 @@ target_include_directories(
 target_link_libraries(
   ${PROJECT_NAME}
   PUBLIC
+    # External dependencies
     fmt::fmt
     glfw
+    # Internal dependencies
     libsbx::utility
     libsbx::units
     libsbx::core

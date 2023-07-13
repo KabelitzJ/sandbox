@@ -5,41 +5,9 @@ message(STATUS "Configuring ${PROJECT_NAME}...")
 add_library(${PROJECT_NAME} STATIC)
 add_library(${CMAKE_PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
-include(FetchContent)
-
-FetchContent_Declare(
-  yaml-cpp
-  GIT_REPOSITORY https://github.com/jbeder/yaml-cpp.git
-  GIT_TAG yaml-cpp-0.7.0
-)
-
-FetchContent_Declare(
-  SPIRV-Headers
-  GIT_REPOSITORY https://github.com/KhronosGroup/SPIRV-Headers.git
-  GIT_TAG sdk-1.3.236.0
-)
-
-FetchContent_Declare(
-  SPIRV-Tools
-  GIT_REPOSITORY https://github.com/KhronosGroup/SPIRV-Tools.git
-  GIT_TAG sdk-1.3.236.0
-)
-
-FetchContent_Declare(
-  SPIRV-Cross
-  GIT_REPOSITORY https://github.com/KhronosGroup/SPIRV-Cross.git
-  GIT_TAG sdk-1.3.236.0
-)
-
-FetchContent_Declare(
-  tinyobjloader
-  GIT_REPOSITORY https://github.com/tinyobjloader/tinyobjloader.git
-  GIT_TAG v2.0.0rc10
-)
-
-FetchContent_MakeAvailable(yaml-cpp SPIRV-Headers SPIRV-Tools SPIRV-Cross tinyobjloader)
-
 find_package(Vulkan REQUIRED)
+find_package(SPIRV-Headers REQUIRED)
+find_package(spirv-cross REQUIRED)
 
 target_sources(
   ${PROJECT_NAME}
@@ -104,14 +72,14 @@ target_include_directories(
 target_link_libraries(
   ${PROJECT_NAME}
   PUBLIC
-    # external
-    yaml-cpp
+    # External dependencies
     Vulkan::Vulkan
-    SPIRV-Headers
-    SPIRV-Tools
+    SPIRV-Headers::SPIRV-Headers
+    spirv-cross-core
     spirv-cross-cpp
-    tinyobjloader
-    # internal
+    spirv-cross-reflect
+    spirv-cross-glsl
+    # Internal dependencies
     libsbx::utility
     libsbx::io
     libsbx::async

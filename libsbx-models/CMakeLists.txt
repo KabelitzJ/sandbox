@@ -5,15 +5,9 @@ message(STATUS "Configuring ${PROJECT_NAME}...")
 add_library(${PROJECT_NAME} STATIC)
 add_library(${CMAKE_PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
-include(FetchContent)
-
-FetchContent_Declare(
-  fmt
-  GIT_REPOSITORY https://github.com/fmtlib/fmt.git
-  GIT_TAG 9.1.0
-)
-
-FetchContent_MakeAvailable(fmt)
+find_package(fmt REQUIRED)
+find_package(yaml-cpp REQUIRED)
+find_package(tinyobjloader REQUIRED)
 
 target_sources(
   ${PROJECT_NAME}
@@ -39,7 +33,11 @@ target_include_directories(
 target_link_libraries(
   ${PROJECT_NAME}
   PUBLIC
+    # External dependencies
     fmt::fmt
+    yaml-cpp
+    tinyobjloader::tinyobjloader
+    # Internal dependencies
     libsbx::utility
     libsbx::core
     libsbx::graphics

@@ -5,21 +5,8 @@ message(STATUS "Configuring ${PROJECT_NAME}...")
 add_library(${PROJECT_NAME} STATIC)
 add_library(${CMAKE_PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
-include(FetchContent)
-
-FetchContent_Declare(
-  fmt
-  GIT_REPOSITORY https://github.com/fmtlib/fmt.git
-  GIT_TAG 9.1.0
-)
-
-FetchContent_Declare(
-  spdlog
-  GIT_REPOSITORY https://github.com/gabime/spdlog.git
-  GIT_TAG v1.11.0
-)
-
-FetchContent_MakeAvailable(fmt spdlog)
+find_package(fmt REQUIRED)
+find_package(spdlog REQUIRED)
 
 target_sources(
   ${PROJECT_NAME}
@@ -48,8 +35,10 @@ target_include_directories(
 target_link_libraries(
   ${PROJECT_NAME}
   PUBLIC
+    # External dependencies
     fmt::fmt
     spdlog::spdlog
+    # Internal dependencies
     libsbx::utility
     libsbx::units
     libsbx::memory
