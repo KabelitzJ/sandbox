@@ -8,6 +8,9 @@
 
 #include <libsbx/scenes/transform.hpp>
 
-#include <libsbx/scenes/components/mesh_component.hpp>  
+#include <libsbx/scenes/components/mesh_handle.hpp>
+#include <libsbx/scenes/components/tag.hpp>
+#include <libsbx/scenes/components/id.hpp>
+#include <libsbx/scenes/components/relationship.hpp>
 
 #endif // LIBSBX_SCENE_HPP_
