@@ -203,7 +203,7 @@ public:
   template<typename Component>
   auto has_component(const entity_type& entity) const -> bool {
     if (const auto storage = _try_get_storage<std::remove_const_t<Component>>(); storage) {
-      return storage->get().contains(entity);
+      return storage->contains(entity);
     }
 
     return false;
@@ -247,7 +247,7 @@ public:
   template<typename Component>
   auto try_get_component(const entity_type& entity) const -> memory::observer_ptr<const Component> {
     if (const auto storage = _try_get_storage<std::remove_const_t<Component>>(); storage) {
-      if (auto entry = storage->get().find(entity); entry != storage->get().cend()) {
+      if (auto entry = storage->find(entity); entry != storage->cend()) {
         return memory::make_observer<Component>(*entry);
       }
     }
@@ -258,7 +258,7 @@ public:
   template<typename Component>
   auto try_get_component(const entity_type& entity) -> memory::observer_ptr<Component> {
     if (auto storage = _try_get_storage<std::remove_const_t<Component>>(); storage) {
-      if (auto entry = storage->get().find(entity); entry != storage->get().end()) {
+      if (auto entry = storage->find(entity); entry != storage->end()) {
         return memory::make_observer<Component>(*entry);
       }
     }
@@ -308,25 +308,25 @@ private:
   }
 
   template<typename Component>
-  auto _try_get_storage() const -> std::optional<std::reference_wrapper<const storage_type<Component>>> {
+  auto _try_get_storage() const -> memory::observer_ptr<const storage_type<Component>> {
     const auto type = std::type_index{typeid(Component)};
 
     if (auto entry = _storages.find(type); entry != _storages.cend()) {
-      return std::cref(static_cast<const storage_type<Component>&>(*entry->second));
+      return memory::make_observer<const storage_type<Component>>(static_cast<const storage_type<Component>*>(entry->second.get()));
     }
 
-    return std::nullopt;
+    return memory::observer_ptr<const storage_type<Component>>{};
   }
 
   template<typename Component>
-  auto _try_get_storage() -> std::optional<std::reference_wrapper<storage_type<Component>>> {
+  auto _try_get_storage() -> memory::observer_ptr<storage_type<Component>> {
     const auto type = std::type_index{typeid(Component)};
 
     if (auto entry = _storages.find(type); entry != _storages.end()) {
-      return std::ref(static_cast<storage_type<Component>&>(*entry->second));
+      return memory::make_observer<storage_type<Component>>(static_cast<storage_type<Component>*>(entry->second.get()));
     }
 
-    return std::nullopt;
+    return memory::observer_ptr<storage_type<Component>>{};
   }
 
   entity_storage_type _entities;
