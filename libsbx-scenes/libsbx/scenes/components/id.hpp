@@ -22,7 +22,7 @@ public:
     return _id;
   }
 
-  auto value() const noexcept -> math::uuid {
+  auto value() const noexcept -> const math::uuid& {
     return _id;
   }
 

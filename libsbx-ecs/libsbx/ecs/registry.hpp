@@ -210,7 +210,7 @@ public:
   }
 
   template<typename Component, typename... Args>
-  auto add_component(const entity_type& entity, Args&&... args) -> memory::observer_ptr<Component> {
+  auto add_component(const entity_type& entity, Args&&... args) -> Component& {
     auto& storage = _get_or_create_storage<std::remove_const_t<Component>>();
 
     return storage.add(entity, std::forward<Args>(args)...);
@@ -227,16 +227,16 @@ public:
    * @return The component assigned to the entity
    */
   template<typename Component>
-  auto get_component(const entity_type& entity) const -> memory::observer_ptr<const Component> {
+  auto get_component(const entity_type& entity) const -> const Component& {
     if (const auto component = try_get_component<std::remove_const_t<Component>>(entity); component) {
-      return component;
+      return *component;
     }
 
     throw std::runtime_error{"Entity does not have component assigned to it"};
   }
 
   template<typename Component>
-  auto get_component(const entity_type& entity) -> memory::observer_ptr<Component> {
+  auto get_component(const entity_type& entity) -> Component& {
     if (auto component = try_get_component<std::remove_const_t<Component>>(entity); component) {
       return component;
     }

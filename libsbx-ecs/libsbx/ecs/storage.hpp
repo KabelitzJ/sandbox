@@ -59,9 +59,9 @@ public:
 
   template<typename... Args>
   requires(std::constructible_from<Value, Args...>)
-  auto add(const key_type& key, Args&&... args) -> memory::observer_ptr<value_type> {
+  auto add(const key_type& key, Args&&... args) -> reference {
     if (auto entry = find(key); entry != end()) {
-      return memory::make_observer<value_type>(*entry = value_type{std::forward<Args>(args)...});
+      return *entry = value_type{std::forward<Args>(args)...};
     }
 
     base_type::_emplace(key);
@@ -72,7 +72,7 @@ public:
       _values.emplace_back(std::forward<Args>(args)...);
     }
 
-    return memory::make_observer<value_type>(_values.back());
+    return _values.back();
   }
 
   auto begin() -> iterator {

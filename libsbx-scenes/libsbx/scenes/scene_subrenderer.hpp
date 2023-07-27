@@ -17,7 +17,7 @@ public:
   ~scene_subrenderer() override = default;
 
   auto render(graphics::command_buffer& command_buffer) -> void override {
-    auto handle = models::mesh::handle_type{};
+    
   }
 
 }; // class scene_subrenderer

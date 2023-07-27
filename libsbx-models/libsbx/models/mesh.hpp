@@ -38,7 +38,7 @@ constexpr auto operator==(const vertex3d& lhs, const vertex3d& rhs) noexcept -> 
   return lhs.position == rhs.position && lhs.normal == rhs.normal && lhs.uv == rhs.uv;
 }
 
-class mesh : public assets::asset<mesh> {
+class mesh : public assets::asset {
 
 public:
 

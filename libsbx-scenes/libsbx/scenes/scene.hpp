@@ -61,7 +61,7 @@ public:
     auto node = scene::node{memory::make_observer<ecs::registry>(_registry), entity};
 
     auto uuid = _registry.add_component<math::uuid>(entity);
-    _nodes.insert({*uuid, node});
+    _nodes.insert({uuid, node});
 
     _registry.add_component<scenes::transform>(entity, transform);
 
