@@ -1,6 +1,16 @@
 dependencies =
-import dependencies += libsbx-core%lib{sbx-core}
-import dependencies += libsbx-ecs%lib{sbx-ecs}
+import dependencies += libsbx-utility%liba{sbx_utility}
+import dependencies += libsbx-units%liba{sbx_units}
+import dependencies += libsbx-memory%liba{sbx_memory}
+import dependencies += libsbx-core%liba{sbx_core}
+import dependencies += libsbx-signal%liba{sbx_signal}
+import dependencies += libsbx-ecs%liba{sbx_ecs}
+import dependencies += libsbx-async%liba{sbx_async}
+import dependencies += libsbx-io%liba{sbx_io}
+import dependencies += libsbx-math%liba{sbx_math}
+import dependencies += libsbx-scripting%liba{sbx_scripting}
+import dependencies += libsbx-devices%liba{sbx_devices}
+import dependencies += libsbx-graphics%liba{sbx_graphics}
 
 exe{demo}: {hxx ixx txx cxx}{**} $dependencies
 

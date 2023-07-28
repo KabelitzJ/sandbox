@@ -1,0 +1,22 @@
+name: "Demo"
+entities:
+  - name: "Camera"
+    components:
+      - type: "Transform"
+        position: { x: 0.0, y: 0.0, z: 0.0 }
+        rotation: { x: 0.0, y: 0.0, z: 0.0 }
+        scale: { x: 1.0, y: 1.0, z: 1.0 }
+      - type: "Camera"
+        fov: 60.0
+        near: 0.1
+        far: 100.0
+        aspect: 1.0
+  - name: "Cube"
+    components:
+      - type: "Transform"
+        position: { x: 0.0, y: 0.0, z: -5.0 }
+        rotation: { x: 0.0, y: 0.0, z: 0.0 }
+        scale: { x: 1.0, y: 1.0, z: 1.0 }
+      - type: "Model"
+        mesh: "cube"
+        material: "cube"

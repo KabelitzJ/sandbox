@@ -1,0 +1,13 @@
+: 1
+name: libsbx-async
+version: 0.1.0
+project: sandbox
+summary: sbx-async C++ library
+license: MIT
+description-file: README.md
+email: jonas-kabelitz@gmx.de
+depends: * build2 >= 0.15.0
+depends: * bpkg >= 0.15.0
+depends: gtest >= 1.11.0
+depends: libsbx-utility >= 0.1.0
+depends: libsbx-core >= 0.1.0

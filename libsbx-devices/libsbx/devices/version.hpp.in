@@ -1,0 +1,18 @@
+#ifndef LIBSBX_DEVICES_VERSION_HPP_
+#define LIBSBX_DEVICES_VERSION_HPP_
+
+#define LIBSBX_DEVICES_VERSION       $libsbx_devices.version.project_number$ULL
+#define LIBSBX_DEVICES_VERSION_STR   "$libsbx_devices.version.project$"
+#define LIBSBX_DEVICES_VERSION_ID    "$libsbx_devices.version.project_id$"
+#define LIBSBX_DEVICES_VERSION_FULL  "$libsbx_devices.version$"
+
+#define LIBSBX_DEVICES_VERSION_MAJOR $libsbx_devices.version.major$
+#define LIBSBX_DEVICES_VERSION_MINOR $libsbx_devices.version.minor$
+#define LIBSBX_DEVICES_VERSION_PATCH $libsbx_devices.version.patch$
+
+#define LIBSBX_DEVICES_PRE_RELEASE   $libsbx_devices.version.pre_release$
+
+#define LIBSBX_DEVICES_SNAPSHOT_SN   $libsbx_devices.version.snapshot_sn$ULL
+#define LIBSBX_DEVICES_SNAPSHOT_ID   "$libsbx_devices.version.snapshot_id$"
+
+#endif // LIBSBX_DEVICES_VERSION_HPP_

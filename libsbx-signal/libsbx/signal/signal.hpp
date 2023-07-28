@@ -1,0 +1,6 @@
+#ifndef LIBSBX_SIGNAL_HPP_
+#define LIBSBX_SIGNAL_HPP_
+
+
+
+#endif // LIBSBX_SIGNAL_HPP_

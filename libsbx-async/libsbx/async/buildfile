@@ -1,0 +1,49 @@
+public_dependencies =
+import public_dependencies += libsbx-utility%liba{sbx_utility}
+import public_dependencies += libsbx-core%liba{sbx_core}
+
+public_dependencies = $cxx.deduplicate_export_libs($public_dependencies)
+
+private_dependencies =
+
+lib{sbx_async}: {hxx ixx txx cxx}{** -version} hxx{version} $private_dependencies $public_dependencies
+
+hxx{version}: in{version} $src_root/manifest
+
+hxx{export}@./: cxx.importable = false
+
+# Build options.
+#
+cxx.poptions += "-I$out_root" "-I$src_root"
+
+{hbmia obja}{*}: cxx.poptions += -DLIBSBX_ASYNC_STATIC_BUILD
+{hbmis objs}{*}: cxx.poptions += -DLIBSBX_ASYNC_SHARED_BUILD
+
+# Export options.
+#
+lib{sbx_async}:
+{
+  cxx.export.poptions = "-I$out_root" "-I$src_root"
+  cxx.export.libs = $public_dependencies
+}
+
+liba{sbx_async}: cxx.export.poptions += -DLIBSBX_ASYNC_STATIC
+libs{sbx_async}: cxx.export.poptions += -DLIBSBX_ASYNC_SHARED
+
+# For pre-releases use the complete version to make sure they cannot be used
+# in place of another pre-release or the final version. See the version module
+# for details on the version.* variable values.
+#
+if $version.pre_release
+  lib{sbx_async}: bin.lib.version = "-$version.project_id"
+else
+  lib{sbx_async}: bin.lib.version = "-$version.major.$version.minor"
+
+# Install into the libsbx/async/ subdirectory of, say, /usr/include/
+# recreating subdirectories.
+#
+{hxx ixx txx}{*}:
+{
+  install = include/libsbx/async/
+  install.subdirs = true
+}

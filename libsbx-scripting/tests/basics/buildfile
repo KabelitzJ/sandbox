@@ -1,0 +1,6 @@
+dependencies =
+import dependencies += gtest%liba{gtest}
+import dependencies += libsbx-scripting%liba{sbx_scripting}
+
+exe{driver}: {hxx ixx txx cxx}{**} $dependencies testscript{**}
+exe{driver}: test.arguments = '--gtest_color=yes' '--gtest_print_time=1'

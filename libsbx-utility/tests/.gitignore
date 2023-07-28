@@ -1,0 +1,8 @@
+# Test executables.
+#
+*.exe
+
+# Testscript output directories (can be symlinks).
+#
+test
+test-*

@@ -1,8 +1,8 @@
 # Uncomment to suppress warnings coming from external libraries.
 #
-#cxx.internal.scope = current
+cxx.internal.scope = current
 
-cxx.std = latest
+cxx.std = 23
 
 using cxx
 
@@ -14,3 +14,7 @@ cxx{*}: extension = cpp
 # Assume headers are importable unless stated otherwise.
 #
 hxx{*}: cxx.importable = true
+
+# The test target for cross-testing (running tests under Wine, etc).
+#
+test.target = $cxx.target

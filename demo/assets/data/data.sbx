@@ -1,0 +1,31 @@
+map:
+  key3: "value3"
+  key2: "value2"
+  key1: "value1"
+list:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+data:
+  transform:
+    scale:
+      z: 0
+      y: 0
+      x: 0
+    rotation:
+      z: 1
+      y: 1
+      x: 0
+    position:
+      z: 0
+      y: 0
+      x: 1
+  floating_point: 0.69
+  integer: 42

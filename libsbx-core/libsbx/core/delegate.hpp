@@ -24,7 +24,7 @@
  */
 
 /**
- * @file libsbx/core/delegate.hpp
+ * @file libsbx/core/delegate.hpp 
  */
 
 #ifndef LIBSBX_CORE_DELEGATE_HPP_
@@ -39,35 +39,31 @@
 #include <type_traits>
 #include <utility>
 
+#include <libsbx/core/concepts.hpp>
+
+#include <libsbx/memory/aligned_storage.hpp>
+
 namespace sbx::core {
 
 /** @brief Exception type that is thrown when a delegate that does not hold a handle is invoked. */
-struct bad_delegate_call : std::exception {
-
-  bad_delegate_call() = default;
-
-  const char* what() const noexcept override {
-    return "bad_delegate_call";
-  }
-
+struct bad_delegate_call : std::runtime_error {
+  bad_delegate_call()
+  : std::runtime_error("bad_delegate_call") {}
 }; // struct bad_delegate_call
 
-template<typename>
+template<typename Signature>
 class delegate;
 
 /**
  * @brief Container for functors and lambdas that makes use of small object optimization.
- * 
- * It can store a functor or lambda that stores one reference or pointer without allocating dynamic memory.
- * In most cases this is enough and helps to minimize overhead from dynamic memory allocations.
- * 
- * @tparam Return Return type of the functor.
- * @tparam Args List of argument types for invoking the functor.
+ *
+ * @tparam Return Return type of the delegate
+ * @tparam ...Args Argument types of the delegate
  */
 template<typename Return, typename... Args>
 class delegate<Return(Args...)> {
 
-  using static_storage_type = std::aligned_storage_t<sizeof(std::byte*), alignof(std::byte*)>;
+  using static_storage_type = memory::aligned_storage_t<sizeof(std::byte*), alignof(std::byte*)>;
   using dynamic_storage_type = std::byte*;
 
   union storage {
@@ -96,11 +92,26 @@ public:
    * 
    * @param callable Forwarded reference to a functor instance 
    */
-  template<typename Callable>
+  template<callable<Return, Args...> Callable>
+  requires (!std::is_same_v<std::remove_reference_t<Callable>, delegate>) // Dont allow other delegates here!
   delegate(Callable&& callable)
-  requires (std::is_invocable_r_v<Return, Callable, Args...> && !std::is_same_v<std::remove_reference_t<Callable>, delegate>) // Dont allow other delegates here!
   : _vtable{_create_vtable<std::remove_reference_t<Callable>>()},
     _storage{_create_storage<std::remove_reference_t<Callable>>(std::forward<std::remove_reference_t<Callable>>(callable))} { }
+
+  delegate(Return(*callable)(Args...))
+  : delegate{[callable](Args... args){ std::invoke(callable, std::forward<Args>(args)...); }} { }
+  
+  template<typename Class>
+  delegate(Class& instance, Return(Class::*method)(Args...))
+  : delegate{_wrap_method(&instance, method)} { }
+
+  template<typename Class>
+  delegate(Class& instance, Return(Class::*method)(Args...)const)
+  : delegate{_wrap_method(&instance, method)} { }
+
+  template<typename Class>
+  delegate(const Class& instance, Return(Class::*method)(Args...)const)
+  : delegate{_wrap_method(&instance, method)} { }
 
   delegate(const delegate& other)
   : _vtable{other._vtable} {
@@ -154,7 +165,7 @@ public:
     return *this;
   }
 
-  Return operator()(Args... args) const {
+  auto invoke(Args&&... args) const {
     if (!_vtable) {
       throw std::runtime_error{"bad_delegate_call"};
     }
@@ -162,10 +173,37 @@ public:
     return std::invoke(_vtable->invoke, _storage, std::forward<Args>(args)...);
   }
 
+  Return operator()(Args&&... args) const {
+    return invoke(std::forward<Args>(args)...);
+  }
+
+  auto is_valid() const noexcept {
+    return _vtable != nullptr;
+  }
+
+  operator bool() const noexcept {
+    return is_valid();
+  }
+
 private:
 
   template<typename Callable>
   inline static constexpr auto requires_dynamic_allocation_v = !(std::is_nothrow_move_constructible_v<Callable> && sizeof(Callable) <= sizeof(static_storage_type) && alignof(Callable) <= alignof(static_storage_type));
+
+  template<typename Class>
+  auto _wrap_method(Class* instance, Return(Class::*method)(Args...)) {
+    return [instance, method](Args... args){ std::invoke(method, instance, std::forward<Args>(args)...); };
+  }
+
+  template<typename Class>
+  auto _wrap_method(Class* instance, Return(Class::*method)(Args...)const) {
+    return [instance, method](Args... args){ std::invoke(method, instance, std::forward<Args>(args)...); };
+  }
+
+  template<typename Class>
+  auto _wrap_method(const Class* instance, Return(Class::*method)(Args...)const) {
+    return [instance, method](Args... args){ std::invoke(method, instance, std::forward<Args>(args)...); };
+  }
 
   struct vtable {
     Return(*invoke)(const storage& storage, Args&&... args);

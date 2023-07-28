@@ -1,101 +1,153 @@
-/* 
- * Copyright (c) 2022 Jonas Kabelitz
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- * 
- * You should have received a copy of the MIT License along with this program.
- * If not, see <https://opensource.org/licenses/MIT/>.
- */
+#ifndef LIBSBX_ENTITY_HPP_
+#define LIBSBX_ENTITY_HPP_
 
-/**
- * @file libsbx/ecs/entity.hpp
- */
-
-#ifndef LIBSBX_ECS_ENTITY_HPP_
-#define LIBSBX_ECS_ENTITY_HPP_
-
-#include <bitset>
 #include <cinttypes>
-#include <iostream>
+#include <memory>
+#include <type_traits>
+#include <utility>
+
+#include <libsbx/memory/concepts.hpp>
 
 namespace sbx::ecs {
 
 /**
- * @ingroup libsbx-ecs
+ * @brief Primary template
+ *
+ * @tparam Type Type of the entity
  */
+template<typename Type>
+struct basic_entity_traits;
 
-class entity final {
-
-  friend struct std::hash<entity>;
-
-  friend class registry;
-
-  friend bool operator==(const entity& lhs, const entity& rhs) noexcept;
-  friend std::ostream& operator<<(std::ostream& output_stream, const entity& entity);
+/** @brief Entity traits for 32 bit entity representation */
+template<>
+struct basic_entity_traits<std::uint32_t> {
+  using entity_type = std::uint32_t;
 
   using id_type = std::uint32_t;
   using version_type = std::uint16_t;
-  using value_type = std::uint32_t;
 
-  inline static constexpr auto id_mask = value_type{0xFFFFF};
-  inline static constexpr auto version_mask = value_type{0xFFF};
-  inline static constexpr auto version_shift = std::size_t{12}; 
+  inline static constexpr auto id_mask_v = id_type{0xFFFFF};
+  inline static constexpr auto version_mask_v = id_type{0xFFF};
+};
 
-public:
+/** @brief Entity traits for 64 bit entity representation */
+template<>
+struct basic_entity_traits<std::uint64_t> {
+  using entity_type = std::uint64_t;
 
-  static const entity null;
+  using id_type = std::uint64_t;
+  using version_type = std::uint32_t;
 
-  entity(const entity& other) noexcept = default;
+  inline static constexpr auto id_mask_v = id_type{0xFFFFFFFF};
+  inline static constexpr auto version_mask_v = id_type{0xFFFFFFFF};
+};
 
-  entity(entity&& other) noexcept;
+/**
+ * @brief Entity traits for an enum entity representation. Propagates to the underlying type
+ *
+ * @tparam Type Enumeration type
+ */
+template<typename Type>
+requires (std::is_enum_v<Type>)
+struct basic_entity_traits<Type> : basic_entity_traits<std::underlying_type_t<Type>> {
+  using entity_type = Type;
+};
 
-  ~entity() noexcept = default;
+/**
+ * @brief Entity traits
+ *
+ * @tparam Type Unsigned integral, enumeration or class type
+ */
+template<typename Type>
+struct entity_traits : basic_entity_traits<Type> {
+  using entity_type = basic_entity_traits<Type>::entity_type;
+  using id_type = basic_entity_traits<Type>::id_type;
+  using version_type = basic_entity_traits<Type>::version_type;
 
-  entity& operator=(const entity& other) noexcept = default;
+  inline static constexpr auto id_mask_v = basic_entity_traits<Type>::id_mask_v;
+  inline static constexpr auto version_mask_v = basic_entity_traits<Type>::version_mask_v;
+  inline static constexpr auto version_shift_v = std::popcount(id_mask_v);
 
-  entity& operator=(entity&& other) noexcept;
+  /**
+   * @brief Converts the type to its underlying type
+   *
+   * @param value
+   *
+   * @return
+   */
+  static constexpr auto to_underlying(const entity_type value) noexcept -> id_type {
+    return static_cast<id_type>(value);
+  }
 
-private:
+  /**
+   * @brief Gets the id part of the entity
+   *
+   * @param value
+   *
+   * @return
+   */
+  static constexpr auto to_id(const entity_type value) noexcept -> id_type {
+    return (to_underlying(value) & id_mask_v);
+  }
 
-  entity() noexcept;
+  /**
+   * @brief Gets the version part of the entity
+   *
+   * @param value
+   *
+   * @return
+   */
+  static constexpr auto to_version(const entity_type value) noexcept -> version_type {
+    return (to_underlying(value) >> version_shift_v);
+  }
 
-  entity(const id_type id, const version_type version) noexcept;
+  /**
+   * @brief Constructs a new entity form an id and a version
+   *
+   * @param id The id part of the entity
+   * @param version The version part of the entity
+   *
+   * @return
+   */
+  static constexpr auto construct(const id_type id, const version_type version = version_type{0}) noexcept -> entity_type {
+    return entity_type{(id & id_mask_v) | (static_cast<id_type>(version) << version_shift_v)};
+  }
 
-  id_type _id() const noexcept;
+  /**
+   * @brief Gets the next version of an entity
+   *
+   * @param value
+   *
+   * @return
+   */
+  static constexpr auto next(const entity_type value) noexcept -> entity_type {
+    const auto version = to_version(value) + 1;
+    return construct(to_id(value), static_cast<version_type>(version + (version == version_mask_v)));
+  }
+}; // struct entity_traits
 
-  version_type _version() const noexcept;
+enum class entity : std::uint32_t { };
 
-  void _increment_version() noexcept;
+struct null_entity_t {
 
-  value_type _value{};
+  template<typename Entity>
+  [[nodiscard]] constexpr operator Entity() const noexcept {
+    return entity_traits<Entity>::construct(entity_traits<Entity>::id_mask_v, entity_traits<Entity>::version_mask_v);
+  }
 
-}; // class entity
+  [[nodiscard]] constexpr auto operator==([[maybe_unused]] const null_entity_t other) const noexcept -> bool {
+    return true;
+  }
 
-bool operator==(const entity& lhs, const entity& rhs) noexcept;
+  template<typename Entity>
+  [[nodiscard]] constexpr bool operator==(const Entity entity) const noexcept {
+    return entity_traits<Entity>::to_id(entity) == entity_traits<Entity>::to_id(*this);
+  }
 
-std::ostream& operator<<(std::ostream& output_stream, const entity& entity);
+}; // struct null_entity
+
+inline constexpr auto null_entity = null_entity_t{};
 
 } // namespace sbx::ecs
 
-template<>
-struct std::hash<sbx::ecs::entity> {
-  std::size_t operator()(const sbx::ecs::entity& entity) const noexcept;
-}; // struct std::hash
-
-#endif // LIBSBX_ECS_ENTITY_HPP_
+#endif // LIBSBX_ENTITY_HPP_

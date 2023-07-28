@@ -1,8 +1,12 @@
-public_dependencies = # Interface dependencies.
-private_dependencies = # Implementation dependencies.
-#import xxxx_libs += libhello%lib{hello}
+public_dependencies =
+import public_dependencies += libsbx-utility%liba{sbx_utility}
+import public_dependencies += libsbx-memory%liba{sbx_memory}
 
-lib{sbx-ecs}: {hxx ixx txx cxx}{** -version} hxx{version} $private_dependencies $public_dependencies
+public_dependencies = $cxx.deduplicate_export_libs($public_dependencies)
+
+private_dependencies =
+
+lib{sbx_ecs}: {hxx ixx txx cxx}{** -version} hxx{version} $private_dependencies $public_dependencies
 
 hxx{version}: in{version} $src_root/manifest
 
@@ -17,23 +21,23 @@ cxx.poptions += "-I$out_root" "-I$src_root"
 
 # Export options.
 #
-lib{sbx-ecs}:
+lib{sbx_ecs}:
 {
   cxx.export.poptions = "-I$out_root" "-I$src_root"
   cxx.export.libs = $public_dependencies
 }
 
-liba{sbx-ecs}: cxx.export.poptions += -DLIBSBX_ECS_STATIC
-libs{sbx-ecs}: cxx.export.poptions += -DLIBSBX_ECS_SHARED
+liba{sbx_ecs}: cxx.export.poptions += -DLIBSBX_ECS_STATIC
+libs{sbx_ecs}: cxx.export.poptions += -DLIBSBX_ECS_SHARED
 
 # For pre-releases use the complete version to make sure they cannot be used
 # in place of another pre-release or the final version. See the version module
 # for details on the version.* variable values.
 #
 if $version.pre_release
-  lib{sbx-ecs}: bin.lib.version = "-$version.project_id"
+  lib{sbx_ecs}: bin.lib.version = "-$version.project_id"
 else
-  lib{sbx-ecs}: bin.lib.version = "-$version.major.$version.minor"
+  lib{sbx_ecs}: bin.lib.version = "-$version.major.$version.minor"
 
 # Install into the libsbx/ecs/ subdirectory of, say, /usr/include/
 # recreating subdirectories.
