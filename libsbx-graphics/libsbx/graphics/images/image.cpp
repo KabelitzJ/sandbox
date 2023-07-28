@@ -1,6 +1,7 @@
 #include <libsbx/graphics/images/image.hpp>
 
 #include <cmath>
+#include <ranges>
 
 #include <libsbx/core/logger.hpp>
 
@@ -48,7 +49,7 @@ image::~image() {
   vkDestroyImage(logical_device, _handle, nullptr);
 }
 
-auto image::descriptor_set_layout(std::uint32_t binding, VkDescriptorType descriptor_type, VkShaderStageFlags shader_stage_flags, std::uint32_t count) noexcept -> VkDescriptorSetLayoutBinding {
+auto image::create_descriptor_set_layout_binding(std::uint32_t binding, VkDescriptorType descriptor_type, VkShaderStageFlags shader_stage_flags, std::uint32_t count) noexcept -> VkDescriptorSetLayoutBinding {
   auto descriptor_set_layout_binding = VkDescriptorSetLayoutBinding{};
   descriptor_set_layout_binding.binding = binding;
   descriptor_set_layout_binding.descriptorType = descriptor_type;
@@ -178,7 +179,7 @@ auto image::create_mipmaps(const VkImage& image, const VkExtent3D& extent, VkFor
 
   auto command_buffer = graphics::command_buffer{};
 
-  for (auto i = 0u; i < mip_levels; ++i) {
+  for (auto i : std::views::iota(1u, mip_levels)) {
     auto barrier0 = VkImageMemoryBarrier{};
     barrier0.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
 		barrier0.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;

@@ -41,6 +41,7 @@ target_link_libraries(
     libsbx::core
     libsbx::math
     libsbx::ecs
+    libsbx::assets
     libsbx::graphics
     libsbx::models
 )

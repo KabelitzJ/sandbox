@@ -9,26 +9,28 @@ class mesh_handle {
 
 public:
 
-  mesh_handle(models::mesh::handle_type handle)
+  using handle_type = models::mesh::handle_type;
+
+  mesh_handle(handle_type handle)
   : _handle{handle} { }
 
   mesh_handle(const mesh_handle& other) = default;
 
-  operator const models::mesh::handle_type&() const noexcept {
+  operator const handle_type&() const noexcept {
     return _handle;
   }
 
-  operator models::mesh::handle_type&() noexcept {
+  operator handle_type&() noexcept {
     return _handle;
   }
 
-  auto value() const noexcept -> const models::mesh::handle_type& {
+  auto value() const noexcept -> const handle_type& {
     return _handle;
   }
 
 private:
 
-  models::mesh::handle_type _handle;
+  handle_type _handle;
 
 }; // class mesh_handle
 

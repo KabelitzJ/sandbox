@@ -1,10 +1,10 @@
-#ifndef LIBSBX_CORE_TARGET_HPP_
-#define LIBSBX_CORE_TARGET_HPP_
+#ifndef LIBSBX_UTILITY_TARGET_HPP_
+#define LIBSBX_UTILITY_TARGET_HPP_
 
 #include <cstdint>
 #include <type_traits>
 
-namespace sbx::core {
+namespace sbx::utility {
 
 /** @brief Possible build configurations */
 enum class build_configuration : std::uint8_t {
@@ -54,6 +54,6 @@ inline constexpr auto compiler_v = compiler::msc;
 inline constexpr auto compiler_v = compiler::unknown;
 #endif
 
-} // namespace sbx::core
+} // namespace sbx::utility
 
-#endif // LIBSBX_CORE_TARGET_HPP_
+#endif // LIBSBX_UTILITY_TARGET_HPP_

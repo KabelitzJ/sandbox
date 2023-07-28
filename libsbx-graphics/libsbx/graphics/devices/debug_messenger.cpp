@@ -3,7 +3,7 @@
 namespace sbx::graphics {
 
 auto debug_messenger::create(const instance& target, const VkAllocationCallbacks* allocator) -> VkResult {
-  if constexpr (core::build_configuration_v == core::build_configuration::debug) {
+  if constexpr (utility::build_configuration_v == utility::build_configuration::debug) {
     auto* function = reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(vkGetInstanceProcAddr(target.handle(), "vkCreateDebugUtilsMessengerEXT"));
 
     if (function) {
@@ -17,7 +17,7 @@ auto debug_messenger::create(const instance& target, const VkAllocationCallbacks
 }
 
  auto debug_messenger::destroy(const instance& target, const VkAllocationCallbacks* allocator) -> void {
-  if constexpr (core::build_configuration_v == core::build_configuration::debug) {
+  if constexpr (utility::build_configuration_v == utility::build_configuration::debug) {
     auto* function = reinterpret_cast<PFN_vkDestroyDebugUtilsMessengerEXT>(vkGetInstanceProcAddr(target.handle(), "vkDestroyDebugUtilsMessengerEXT"));
 
     if (function) {
@@ -27,7 +27,7 @@ auto debug_messenger::create(const instance& target, const VkAllocationCallbacks
 }
 
 auto debug_messenger::create_info() -> VkDebugUtilsMessengerCreateInfoEXT* {
-  if constexpr (core::build_configuration_v == core::build_configuration::debug) {
+  if constexpr (utility::build_configuration_v == utility::build_configuration::debug) {
     static auto create_info = VkDebugUtilsMessengerCreateInfoEXT{};
 
     create_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;

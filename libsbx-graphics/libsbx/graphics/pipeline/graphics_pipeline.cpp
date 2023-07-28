@@ -94,7 +94,6 @@ graphics_pipeline::graphics_pipeline(stage stage, const std::filesystem::path& p
       case shader::uniform_block::type::storage: {
         throw std::runtime_error{"Storage buffers are not supported yet"};
       }
-      case shader::uniform_block::type::none:
       default: {
         throw std::runtime_error{"Invalid uniform block type"};
       }
@@ -106,6 +105,19 @@ graphics_pipeline::graphics_pipeline(stage stage, const std::filesystem::path& p
 
     _descriptor_bindings.insert({name, uniform_block.binding()});
     _descriptor_sizes.insert({name, uniform_block.size()});
+  }
+
+  for (const auto& [name, uniform] : _uniforms) {
+    if (uniform.type() != shader::data_type::sampler2d) {
+      throw std::runtime_error{"Unsupported uniform type"};
+    }
+
+    const auto descriptor_type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+
+    descriptor_set_layout_bindings.push_back(image::create_descriptor_set_layout_binding(uniform.binding(), descriptor_type, uniform.stage_flags()));
+    descriptor_pool_sizes_by_type[descriptor_type] += swapchain::max_frames_in_flight; // ??? 3 ???
+
+    _descriptor_bindings.insert({name, uniform.binding()});
   }
 
   std::ranges::sort(descriptor_set_layout_bindings, [](const auto& lhs, const auto& rhs) {
@@ -316,6 +328,10 @@ auto graphics_pipeline::bind_point() const noexcept -> VkPipelineBindPoint {
 
 auto graphics_pipeline::push(const uniform_handler& uniform) -> void {
   _push(uniform.name(), uniform.uniform_buffer());
+}
+
+auto graphics_pipeline::push(const std::string& name, const image2d& image) -> void {
+  _push(name, image);
 }
 
 auto graphics_pipeline::bind_descriptors(const command_buffer& command_buffer) -> void {

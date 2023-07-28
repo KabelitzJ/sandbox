@@ -4,6 +4,7 @@
 #include <memory>
 #include <vector>
 #include <unordered_map>
+#include <functional>
 
 #include <libsbx/memory/observer_ptr.hpp>
 
@@ -31,12 +32,12 @@ public:
     ~node() = default;
 
     template<typename Component>
-    auto get_component() -> memory::observer_ptr<Component>{
+    auto get_component() -> Component& {
       return _registry->get_component<Component>(_entity);
     }
 
     template<typename Component, typename... Args>
-    auto add_component(Args&&... args) -> memory::observer_ptr<Component>{
+    auto add_component(Args&&... args) -> Component& {
       return _registry->add_component<Component, Args...>(_entity, std::forward<Args>(args)...);
     }
 
@@ -78,16 +79,14 @@ public:
   }
 
   template<typename... Components>
-  auto query() -> std::vector<node> {
-    auto nodes = std::vector<node>{};
-
+  auto query(std::function<void(node&)> callback) -> void {
     auto view = _registry.create_view<Components...>();
 
     for (const auto& entity : view) {
-      nodes.push_back(node{memory::make_observer<ecs::registry>(_registry), entity});
-    }
+      auto node = scene::node{memory::make_observer<ecs::registry>(_registry), entity};
 
-    return nodes;
+      std::invoke(callback, node);
+    }
   }
 
 private:

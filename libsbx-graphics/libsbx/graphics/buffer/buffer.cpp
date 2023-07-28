@@ -1,6 +1,6 @@
 #include <libsbx/graphics/buffer/buffer.hpp>
 
-#include <libsbx/core/assert.hpp>
+#include <libsbx/utility/assert.hpp>
 
 #include <libsbx/graphics/graphics_module.hpp>
 
@@ -40,6 +40,7 @@ buffer::buffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlag
 
     std::memcpy(mapped_memory.get(), memory.get(), _size);
 
+    // [NOTE] KAJ 2023-07-28 : If the memory is not host coherent, we need to flush it.
     if (!(usage & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)) {
       auto flush_range = VkMappedMemoryRange{};
       flush_range.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;

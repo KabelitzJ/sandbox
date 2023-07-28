@@ -3,7 +3,13 @@
 
 #include <libsbx/graphics/subrenderer.hpp>
 
-#include <libsbx/models/mesh.hpp>
+#include <libsbx/assets/assets_module.hpp>
+
+#include <libsbx/models/model.hpp>
+
+#include <libsbx/scenes/scenes_module.hpp>
+
+#include <libsbx/scenes/components/mesh_handle.hpp>
 
 namespace sbx::scenes {
 

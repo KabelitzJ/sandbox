@@ -3,7 +3,7 @@
 #include <limits>
 
 #include <libsbx/core/logger.hpp>
-#include <libsbx/core/assert.hpp>
+#include <libsbx/utility/assert.hpp>
 
 #include <libsbx/graphics/graphics_module.hpp>
 

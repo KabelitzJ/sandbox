@@ -4,7 +4,7 @@
 #include <iomanip>
 #include <cmath>
 
-#include <libsbx/core/assert.hpp>
+#include <libsbx/utility/assert.hpp>
 
 namespace sbx::math {
 

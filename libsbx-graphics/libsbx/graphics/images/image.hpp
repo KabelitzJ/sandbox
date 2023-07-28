@@ -23,7 +23,7 @@ public:
 
   virtual ~image();
 
-  static auto descriptor_set_layout(std::uint32_t binding, VkDescriptorType descriptor_type, VkShaderStageFlags shader_stage_flags, std::uint32_t count = 1u) noexcept -> VkDescriptorSetLayoutBinding;
+  static auto create_descriptor_set_layout_binding(std::uint32_t binding, VkDescriptorType descriptor_type, VkShaderStageFlags shader_stage_flags, std::uint32_t count = 1u) noexcept -> VkDescriptorSetLayoutBinding;
 
   static auto mip_levels(const VkExtent3D& extent) noexcept -> std::uint32_t;
 

@@ -238,7 +238,7 @@ public:
   template<typename Component>
   auto get_component(const entity_type& entity) -> Component& {
     if (auto component = try_get_component<std::remove_const_t<Component>>(entity); component) {
-      return component;
+      return *component;
     }
 
     throw std::runtime_error{"Entity does not have component assigned to it"};

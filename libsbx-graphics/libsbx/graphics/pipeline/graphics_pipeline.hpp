@@ -25,6 +25,8 @@
 #include <libsbx/graphics/descriptor/descriptor.hpp>
 #include <libsbx/graphics/descriptor/descriptor_set.hpp>
 
+#include <libsbx/graphics/images/image2d.hpp>
+
 namespace sbx::graphics {
 
 class graphics_pipeline : public pipeline {
@@ -54,6 +56,8 @@ public:
   }
 
   auto push(const uniform_handler& uniform_handler) -> void;
+
+  auto push(const std::string& name, const image2d& image) -> void;
 
   auto bind_descriptors(const command_buffer& command_buffer) -> void;
 

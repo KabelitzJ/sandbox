@@ -42,7 +42,7 @@ model::model(const std::filesystem::path& path) {
   _mesh = std::make_unique<models::mesh>(attributes, shapes);
   _material = std::make_unique<models::material>(attributes, materials[0]);
 
-  core::logger::debug("sbx::graphics", "Loaded mesh '{}' in {} ms", path.string(), timer.elapsed().value());
+  core::logger::debug("sbx::graphics", "Loaded mesh '{}' in {} s", path.string(), timer.elapsed().value());
 }
 
 } // namespace sbx::models

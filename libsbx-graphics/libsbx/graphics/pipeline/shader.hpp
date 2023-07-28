@@ -107,7 +107,6 @@ public:
   public:
 
     enum class type : std::uint8_t {
-      none,
       uniform,
       storage,
       push

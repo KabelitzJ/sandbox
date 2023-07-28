@@ -8,6 +8,7 @@ add_library(${CMAKE_PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 find_package(Vulkan REQUIRED)
 find_package(SPIRV-Headers REQUIRED)
 find_package(spirv-cross REQUIRED)
+find_package(stb REQUIRED)
 
 target_sources(
   ${PROJECT_NAME}
@@ -79,6 +80,7 @@ target_link_libraries(
     spirv-cross-cpp
     spirv-cross-reflect
     spirv-cross-glsl
+    stb::stb
     # Internal dependencies
     libsbx::utility
     libsbx::io

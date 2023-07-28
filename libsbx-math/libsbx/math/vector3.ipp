@@ -5,7 +5,7 @@
 #include <fmt/format.h>
 #include <fmt/ostream.h>
 
-#include <libsbx/core/assert.hpp>
+#include <libsbx/utility/assert.hpp>
 
 #include <libsbx/utility/hash.hpp>
 

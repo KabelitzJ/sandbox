@@ -42,6 +42,8 @@ public:
     _uniform_buffer_object.view = sbx::math::matrix4x4::look_at(_camera_position, sbx::math::vector3{0.0f, 0.0f, 0.0f}, sbx::math::vector3::up);
     _uniform_buffer_object.projection = sbx::math::matrix4x4::perspective(sbx::math::radian{45.0f}, window.aspect_ratio(), 0.1f, 10.0f);
     _uniform_buffer_object.normal = sbx::math::matrix4x4::identity;
+
+    _image = std::make_unique<sbx::graphics::image2d>("./demo/assets/textures/default.png");
   }
 
   ~demo_subrenderer() override = default;
@@ -63,6 +65,7 @@ public:
     _uniforms.push("projection", _uniform_buffer_object.projection);
 
     _pipeline->push(_uniforms);
+    _pipeline->push("image", *_image);
 
     _pipeline->bind_descriptors(command_buffer);
 
@@ -87,6 +90,8 @@ private:
   uniform_buffer_object _uniform_buffer_object;
 
   std::unique_ptr<sbx::models::model> _model;
+
+  std::unique_ptr<sbx::graphics::image2d> _image;
 
 
 }; // class demo_subrenderer
@@ -170,8 +175,9 @@ auto main(int argc, const char** argv) -> int {
     engine->run<demo_application>();
   } catch(const std::exception& exception) {
     sbx::core::logger::error("demo", "{}", exception.what());
-    return EXIT_FAILURE;
+
+    return sbx::utility::exit::failure; 
   }
 
-  return EXIT_SUCCESS;
+  return sbx::utility::exit::success;
 }

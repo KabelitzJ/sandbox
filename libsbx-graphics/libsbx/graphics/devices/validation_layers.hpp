@@ -5,7 +5,7 @@
 
 #include <vulkan/vulkan.hpp>
 
-#include <libsbx/core/target.hpp>
+#include <libsbx/utility/target.hpp>
 
 namespace sbx::graphics {
 
@@ -14,7 +14,7 @@ struct validation_layers {
   static auto instance() -> std::vector<const char*> {
     auto required_layers = std::vector<const char*>{};
 
-    if constexpr (core::build_configuration_v == core::build_configuration::debug) {
+    if constexpr (utility::build_configuration_v == utility::build_configuration::debug) {
       required_layers.push_back("VK_LAYER_KHRONOS_validation");
 
       auto available_layer_count = std::uint32_t{0};
