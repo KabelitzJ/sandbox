@@ -1,0 +1,181 @@
+enum class asset_type : std::uint32_t {
+  texture,
+  config,
+  mesh
+}; // enum class asset_type
+
+template<asset_type Type>
+class asset {
+
+public:
+
+  using handle_type = uuid;
+
+  inline static constexpr auto type = Type;
+
+  auto handle() const noexcept -> const handle_type& {
+    return _handle;
+  }
+
+private:
+
+  handle_type _handle;
+
+}; // class asset
+
+class texture : public asset<asset_type::texture> {
+
+public:
+
+  texture(const std::filesystem::path& path);
+
+  ~texture();
+
+  auto width() const noexcept -> std::int32_t;
+  auto height() const noexcept -> std::int32_t;
+  auto components() const noexcept -> std::int32_t;
+
+  auto set_pixel(std::int32_t x, std::int32_t y, std::uint8_t r, std::uint8_t g, std::uint8_t b, std::uint8_t a = std::numeric_limits<std::uint8_t>::max()) -> void;
+
+  auto write(const std::filesystem::path& path) -> void;
+
+private:
+
+  std::int32_t _width;
+  std::int32_t _height;
+  std::int32_t _components;
+  std::uint8_t* _pixels;
+
+}; // class texture
+
+class config : public asset<asset_type::config> {
+
+}; // class config
+
+class mesh : public asset<asset_type::mesh> {
+
+public:
+
+  mesh(const std::filesystem::path& path);
+
+  ~mesh();
+
+private:
+
+}; // class mesh
+
+struct asset_loader_base {
+  virtual ~asset_loader_base() = default;
+};
+
+// template<typename Asset, typename... Args>
+// requires (std::is_base_of_v<asset<Asset::type>, Asset>)
+// struct asset_loader : public asset_loader_base {
+//   inline static constexpr auto type = Asset::type;
+
+//   virtual auto operator()(Args&&...args) -> std::unique_ptr<Asset> = 0;
+// }; // struct loader
+
+
+// template<typename Path>
+// struct texture_loader : asset_loader<texture, Path> {
+//   auto operator()(Path&& path) -> std::unique_ptr<texture> override {
+//     return std::make_unique<texture>(std::forward<Path>(path));
+//   }
+// }; // class texture_loader
+
+struct storage_base {
+  virtual ~storage_base() = default;
+};
+
+template<typename Type>
+class storage : public storage_base {
+
+  using storage_type = std::unordered_map<hashed_string, std::unique_ptr<Type>>;
+
+public:
+
+  using value_type = Type;
+  using reference = Type&;
+  using iterator = typename storage_type::iterator;
+
+  storage() {
+
+  }
+
+  ~storage() override {
+    
+  }
+
+  auto insert(const hashed_string& key, std::unique_ptr<Type>&& value) -> reference {
+    auto entry = _storage.insert({key, std::move(value)});
+
+    return *entry.first->second;
+  }
+
+  auto find(const hashed_string& key) -> iterator {
+    return _storage.find(key);
+  }
+
+  auto begin() -> iterator {
+    return _storage.begin();
+  }
+
+  auto end() -> iterator {
+    return _storage.end();
+  }
+
+  auto is_empty() const -> bool {
+    return _storage.empty();
+  }
+
+  auto clear() -> void {
+    _storage.clear();
+  }
+
+private:
+
+  storage_type _storage;
+
+}; // class storage
+
+class asset_manager {
+
+public:
+
+  template<typename Asset, typename... Args>
+  requires (std::is_base_of_v<asset<Asset::type>, Asset> && std::is_constructible_v<Asset, Args...>)
+  auto load(const hashed_string& key, Args&&... args) -> Asset& {
+    auto& storage = _get_or_create_storage<Asset>(Asset::type);
+
+    return storage.insert(key, std::make_unique<Asset>(std::forward<Args>(args)...));
+  }
+
+  template<typename Asset>
+  requires (std::is_base_of_v<asset<Asset::type>, Asset>)
+  auto get(const hashed_string& key) -> Asset& {
+    auto& storage = _get_or_create_storage<Asset>(Asset::type);
+
+    if (auto entry = storage.find(key); entry != storage.end()) {
+      return *entry->second;
+    }
+
+    throw std::runtime_error{fmt::format("No asset with name '{}' was found", key.c_str())};
+  }
+
+private:
+
+  template<typename Type>
+  auto _get_or_create_storage(asset_type type) -> storage<Type>& {
+    if (auto entry = _storages.find(type); entry != _storages.end()) {
+      return *static_cast<storage<Type>*>(entry->second.get());
+    }
+
+    auto entry = _storages.insert({type, std::make_unique<storage<Type>>()});
+
+    return *static_cast<storage<Type>*>(entry.first->second.get());
+  }
+
+  std::unordered_map<asset_type, std::unique_ptr<storage_base>> _storages;
+
+}; // class asset_manager
