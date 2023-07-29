@@ -54,7 +54,7 @@ void main() {
   vec4 phong_shading = phong_shading(light_direction, intensity);
   vec4 cel_shading = cel_shading(light_direction, intensity);
 
-  float mix_factor = 0.0;
+  float mix_factor = 0.45;
 
   out_color = texture(image, in_uv) * mix(phong_shading, cel_shading, mix_factor);
 }

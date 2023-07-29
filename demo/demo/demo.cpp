@@ -43,7 +43,7 @@ public:
     _uniform_buffer_object.projection = sbx::math::matrix4x4::perspective(sbx::math::radian{45.0f}, window.aspect_ratio(), 0.1f, 10.0f);
     _uniform_buffer_object.normal = sbx::math::matrix4x4::identity;
 
-    _image = std::make_unique<sbx::graphics::image2d>("./demo/assets/textures/default.png");
+    _image = std::make_unique<sbx::graphics::image2d>("./demo/assets/textures/base.png");
   }
 
   ~demo_subrenderer() override = default;
