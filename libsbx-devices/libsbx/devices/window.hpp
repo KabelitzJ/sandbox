@@ -6,6 +6,7 @@
 #include <stdexcept>
 #include <functional>
 #include <unordered_set>
+#include <cmath>
 
 #include <libsbx/core/concepts.hpp>
 #include <libsbx/core/delegate.hpp>
