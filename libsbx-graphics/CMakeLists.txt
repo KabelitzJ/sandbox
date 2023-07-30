@@ -87,6 +87,7 @@ target_link_libraries(
     libsbx::async
     libsbx::math
     libsbx::core
+    libsbx::assets
     libsbx::devices
 )
 

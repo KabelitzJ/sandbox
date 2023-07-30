@@ -8,8 +8,29 @@
 
 namespace sbx::models {
 
-mesh::mesh(const tinyobj::attrib_t& attributes, const std::vector<tinyobj::shape_t>& shapes) {
+mesh::mesh(const std::filesystem::path& path) {
   const auto& logical_device = graphics::graphics_module::get().logical_device();
+
+  // [NOTE] KAJ 2023-05-29 : Old tinyobjloader API.
+  auto attributes = tinyobj::attrib_t{};
+  auto shapes = std::vector<tinyobj::shape_t>{};
+  auto materials = std::vector<tinyobj::material_t>{};
+  auto error = std::string{};
+  auto warning = std::string{};
+
+  const auto result = tinyobj::LoadObj(&attributes, &shapes, &materials, &warning, &error, path.string().c_str(), path.parent_path().string().c_str());
+
+  if (!warning.empty()) {
+    core::logger::warn("sbx::graphics", "{}", warning);
+  }
+
+  if (!error.empty()) {
+    core::logger::error("sbx::graphics", "{}", error);
+  }
+
+  if (!result) {
+    throw std::runtime_error{fmt::format("Failed to load mesh '{}'", path.string())};
+  }
 
   auto unique_vertices = std::unordered_map<vertex3d, std::uint32_t>{};
 
@@ -89,6 +110,11 @@ mesh::mesh(const tinyobj::attrib_t& attributes, const std::vector<tinyobj::shape
   graphics::validate(vkWaitForFences(logical_device, 1, &fence, true, std::numeric_limits<std::uint64_t>::max()));
 
 	vkDestroyFence(logical_device, fence, nullptr);
+}
+
+mesh::~mesh() {
+  _vertex_buffer.reset();
+  _index_buffer.reset();
 }
 
 } // namespace sbx::models

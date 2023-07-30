@@ -30,8 +30,7 @@ public:
   demo_subrenderer(const sbx::graphics::pipeline::stage& stage)
   : sbx::graphics::subrenderer{stage},
     _pipeline{std::make_unique<sbx::graphics::graphics_pipeline>(stage, "./demo/assets/shaders/basic", sbx::graphics::vertex_input<sbx::models::vertex3d>::description())},
-    _uniforms{_pipeline->find_descriptor_block("buffer_object")},
-    _model{std::make_unique<sbx::models::model>("./demo/assets/meshes/suzanne.obj")} {
+    _uniforms{_pipeline->find_descriptor_block("buffer_object")} {
     auto& window = sbx::devices::devices_module::get().window();
 
     _camera_position = sbx::math::vector3{2.0f, 2.0f, 1.0f};
@@ -42,14 +41,17 @@ public:
     _uniform_buffer_object.view = sbx::math::matrix4x4::look_at(_camera_position, sbx::math::vector3{0.0f, 0.0f, 0.0f}, sbx::math::vector3::up);
     _uniform_buffer_object.projection = sbx::math::matrix4x4::perspective(sbx::math::radian{45.0f}, window.aspect_ratio(), 0.1f, 10.0f);
     _uniform_buffer_object.normal = sbx::math::matrix4x4::identity;
-
-    _image = std::make_unique<sbx::graphics::image2d>("./demo/assets/textures/base.png");
   }
 
   ~demo_subrenderer() override = default;
 
   auto render(sbx::graphics::command_buffer& command_buffer) -> void override {
-    auto& window = sbx::devices::devices_module::get().window();
+    auto& devices_module = sbx::devices::devices_module::get();
+    auto& window = devices_module.window();
+
+    auto& assets_module = sbx::assets::assets_module::get();
+    auto& mesh = assets_module.get_asset<sbx::models::mesh>("suzanne");
+    auto& image = assets_module.get_asset<sbx::graphics::image2d>("base");
 
     const auto delta_time = sbx::core::engine::delta_time();
 
@@ -65,11 +67,11 @@ public:
     _uniforms.push("projection", _uniform_buffer_object.projection);
 
     _pipeline->push(_uniforms);
-    _pipeline->push("image", *_image);
+    _pipeline->push("image", image);
 
     _pipeline->bind_descriptors(command_buffer);
 
-    _model->render(command_buffer, delta_time);
+    mesh.render(command_buffer);
   }
 
 private:
@@ -88,11 +90,6 @@ private:
 
   sbx::graphics::uniform_handler _uniforms;
   uniform_buffer_object _uniform_buffer_object;
-
-  std::unique_ptr<sbx::models::model> _model;
-
-  std::unique_ptr<sbx::graphics::image2d> _image;
-
 
 }; // class demo_subrenderer
 
@@ -152,10 +149,26 @@ public:
 
     graphics_module.set_renderer<demo_renderer>();
 
+    auto& assets_module = sbx::assets::assets_module::get();
+
+    assets_module.load_asset<sbx::graphics::image2d>("base", "./demo/assets/textures/base.png");
+
+    assets_module.load_asset<sbx::models::mesh>("suzanne", "./demo/assets/meshes/suzanne.obj");
+
     window.show();
   }
 
-  ~demo_application() override = default;
+  ~demo_application() override {
+    // [TODO] KAJ 2023-07-30 : This works but after the application finishes we need to wait for the device to be idle before we can unload the assets.
+    auto& graphics_module = sbx::graphics::graphics_module::get();
+    auto& assets_module = sbx::assets::assets_module::get();
+
+    auto& logical_device = graphics_module.logical_device();
+
+    logical_device.wait_idle();
+
+    assets_module.unload_assets();
+  }
 
   auto update() -> void  {
 

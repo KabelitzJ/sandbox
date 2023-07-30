@@ -11,24 +11,29 @@
 
 namespace sbx::assets {
 
+enum class asset_type : std::uint32_t {
+  texture,
+  mesh,
+}; // enum class asset_type
+
+template<asset_type Type>
 class asset {
 
 public:
 
-  using handle_type = math::uuid;
+  using id_type = math::uuid;
 
-  asset()
-  : _handle{} { }
+  inline static constexpr auto type = Type;
 
   virtual ~asset() = default;
 
-  auto handle() const noexcept -> const handle_type& {
-    return _handle;
+  auto id() const noexcept -> const id_type& {
+    return _id;
   }
 
 private:
 
-  handle_type _handle;
+  id_type _id;
 
 }; // class asset
 

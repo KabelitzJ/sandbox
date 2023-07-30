@@ -5,11 +5,13 @@
 
 #include <libsbx/math/vector2.hpp>
 
+#include <libsbx/assets/asset.hpp>
+
 #include <libsbx/graphics/images/image.hpp>
 
 namespace sbx::graphics {
 
-class image2d : public image {
+class image2d : public image, public assets::asset<assets::asset_type::texture> {
 
 public:
 

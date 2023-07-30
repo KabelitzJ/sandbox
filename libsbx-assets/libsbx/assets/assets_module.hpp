@@ -3,6 +3,9 @@
 
 #include <memory>
 #include <typeindex>
+#include <unordered_map>
+
+#include <libsbx/utility/hashed_string.hpp>
 
 #include <libsbx/core/module.hpp>
 
@@ -28,53 +31,54 @@ public:
   }
 
   template<typename Asset, typename... Args>
-  auto add_asset(Args&&... args) -> asset::handle_type {
-    auto& storage = _get_or_create_storage<Asset>();
+  requires (std::is_base_of_v<asset<Asset::type>, Asset> && std::is_constructible_v<Asset, Args...>)
+  auto load_asset(const utility::hashed_string& key, Args&&... args) -> Asset& {
+    auto& storage = _get_or_create_storage<Asset>(Asset::type);
 
-    auto& asset = storage.emplace(std::forward<Args>(args)...);
-
-    return asset.handle();
+    return storage.insert(key, std::make_unique<Asset>(std::forward<Args>(args)...));
   }
 
   template<typename Asset>
-  auto get_asset(asset::handle_type handle) -> Asset& {
-    if (auto storage = _try_get_storage<Asset>(); storage) {
-      if (auto entry = storage->find(handle); entry != storage->end()) {
-        return entry->second;
+  requires (std::is_base_of_v<asset<Asset::type>, Asset>)
+  [[nodiscard]] auto get_asset(const utility::hashed_string& key) -> Asset& {
+    if (auto storage = _try_get_storage<Asset>(Asset::type); storage) {
+      if (auto entry = storage->find(key); entry != storage->end()) {
+        return *entry->second;
       }
     }
 
-    throw std::runtime_error{"Asset not found."};
+    throw std::runtime_error{fmt::format("Failed to find asset '{}'", key.c_str())};
   }
-  
+
+  auto unload_assets() -> void {
+    for (auto& [type, storage] : _storages) {
+      storage->clear();
+    }
+  }
 
 private:
 
-  template<typename Asset>
-  auto _get_or_create_storage() -> storage<Asset>& {
-    const auto type = std::type_index{typeid(Asset)};
-
+  template<typename Type>
+  auto _get_or_create_storage(asset_type type) -> storage<Type>& {
     if (auto entry = _storages.find(type); entry != _storages.end()) {
-      return *static_cast<storage<Asset>*>(entry->second.get());
+      return *static_cast<storage<Type>*>(entry->second.get());
     }
 
-    auto storage = _storages.insert({type, std::make_unique<assets::storage<Asset>>()});
+    auto entry = _storages.insert({type, std::make_unique<storage<Type>>()});
 
-    return *static_cast<assets::storage<Asset>*>(storage.first->second.get());
+    return *static_cast<storage<Type>*>(entry.first->second.get());
   }
 
-  template<typename Asset>
-  auto _try_get_storage() -> memory::observer_ptr<storage<Asset>> {
-    const auto type = std::type_index{typeid(Asset)};
-
+  template<typename Type>
+  auto _try_get_storage(asset_type type) -> memory::observer_ptr<storage<Type>> {
     if (auto entry = _storages.find(type); entry != _storages.end()) {
-      return memory::make_observer<storage<Asset>>(static_cast<storage<Asset>*>(entry->second.get()));
+      return memory::observer_ptr{static_cast<storage<Type>*>(entry->second.get())};
     }
 
-    return memory::observer_ptr<storage<Asset>>{};
+    return memory::observer_ptr<storage<Type>>{};
   }
 
-  std::unordered_map<std::type_index, std::unique_ptr<storage_base>> _storages;
+  std::unordered_map<asset_type, std::unique_ptr<storage_base>> _storages;
 
 }; // class assets_module
 

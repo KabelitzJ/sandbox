@@ -38,25 +38,15 @@ constexpr auto operator==(const vertex3d& lhs, const vertex3d& rhs) noexcept -> 
   return lhs.position == rhs.position && lhs.normal == rhs.normal && lhs.uv == rhs.uv;
 }
 
-class mesh : public assets::asset {
+class mesh : public assets::asset<assets::asset_type::mesh> {
 
 public:
 
-  mesh(const std::filesystem::path& path) { }
+  mesh(const std::filesystem::path& path);
 
-  mesh(const tinyobj::attrib_t& attributes, const std::vector<tinyobj::shape_t>& shapes);
+  ~mesh() override;
 
-  ~mesh() override = default;
-
-  auto vertex_buffer() const noexcept -> const graphics::buffer& {
-    return *_vertex_buffer;
-  }
-
-  auto index_buffer() const noexcept -> const graphics::buffer& {
-    return *_index_buffer;
-  }
-
-  auto render(graphics::command_buffer& command_buffer, [[maybe_unused]] std::float_t delta_time) -> void {
+  auto render(graphics::command_buffer& command_buffer) -> void {
     command_buffer.bind_vertex_buffer(0, *_vertex_buffer);
     command_buffer.bind_index_buffer(*_index_buffer, 0, VK_INDEX_TYPE_UINT32);
 
