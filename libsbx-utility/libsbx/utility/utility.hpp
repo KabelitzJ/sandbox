@@ -49,7 +49,6 @@
 #include <libsbx/utility/enable_private_constructor.hpp>
 #include <libsbx/utility/iterator.hpp>
 #include <libsbx/utility/flags.hpp>
-#include <libsbx/utility/exit.hpp>
 #include <libsbx/utility/assert.hpp>
 #include <libsbx/utility/target.hpp>
 
