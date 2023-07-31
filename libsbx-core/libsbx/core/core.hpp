@@ -54,5 +54,6 @@
 #include <libsbx/core/logger.hpp>
 #include <libsbx/core/module.hpp>
 #include <libsbx/core/delegate.hpp>
+#include <libsbx/core/exit.hpp>
 
 #endif // LIBSBX_CORE_HPP_
