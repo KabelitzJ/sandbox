@@ -20,7 +20,7 @@ namespace sbx::assets {
 
 class assets_module final : public core::module<assets_module> {
 
-  inline static const auto is_registered = register_module(stage::normal, core::dependencies<async/async_module>{});
+  inline static const auto is_registered = register_module(stage::normal, dependencies<async::async_module>{});
 
 public:
 
