@@ -181,8 +181,8 @@ auto main(int argc, const char** argv) -> int {
   } catch(const std::exception& exception) {
     sbx::core::logger::error("demo", "{}", exception.what());
 
-    return sbx::utility::exit::failure; 
+    return sbx::core::exit::failure; 
   }
 
-  return sbx::utility::exit::success;
+  return sbx::core::exit::success;
 }
