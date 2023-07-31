@@ -26,7 +26,9 @@ public:
 
   assets_module() = default;
 
-  ~assets_module() override = default;
+  ~assets_module() override {
+    unload_assets();
+  }
 
   auto update() -> void override {
 
