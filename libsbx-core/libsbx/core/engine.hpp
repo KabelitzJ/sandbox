@@ -30,7 +30,7 @@ public:
 
   engine(std::vector<std::string>&& args)
   : _args{std::move(args)} {
-    for (const auto& [type, factory] : module_manager::_factories) {
+    for (const auto& [type, factory] : module_manager::_factories()) {
       _create_module(type, factory);
     }
   }
@@ -87,7 +87,7 @@ private:
     }
 
     for (const auto& dependency : factory.dependencies) {
-      _create_module(dependency, module_manager::_factories.at(dependency));
+      _create_module(dependency, module_manager::_factories().at(dependency));
     }
 
     _modules.insert({type, factory.create()});
@@ -95,7 +95,7 @@ private:
   }
   auto _destroy_module(std::type_index type) -> void {
     if (auto entry = _modules.find(type); entry != _modules.cend()) {
-      for (const auto& dependency : module_manager::_factories.at(type).dependencies) {
+      for (const auto& dependency : module_manager::_factories().at(type).dependencies) {
         _destroy_module(dependency);
       }
 
