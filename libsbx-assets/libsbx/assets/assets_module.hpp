@@ -7,6 +7,8 @@
 
 #include <libsbx/utility/hashed_string.hpp>
 
+#include <libsbx/async/async_module.hpp>
+
 #include <libsbx/core/module.hpp>
 
 #include <libsbx/memory/observer_ptr.hpp>
@@ -18,7 +20,7 @@ namespace sbx::assets {
 
 class assets_module final : public core::module<assets_module> {
 
-  inline static const auto is_registered = register_module(stage::normal);
+  inline static const auto is_registered = register_module(stage::normal core::dependencies<async/async_module>{});
 
 public:
 
