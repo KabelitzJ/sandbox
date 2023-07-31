@@ -84,7 +84,6 @@ target_link_libraries(
     # Internal dependencies
     libsbx::utility
     libsbx::io
-    libsbx::async
     libsbx::math
     libsbx::core
     libsbx::assets
