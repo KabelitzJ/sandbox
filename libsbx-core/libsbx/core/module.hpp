@@ -58,7 +58,10 @@ private:
     std::function<std::unique_ptr<module_base>()> create{};
   }; // module_factory
 
-  inline static std::unordered_map<std::type_index, module_factory> _factories{};
+  static auto _factories() -> std::unordered_map<std::type_index, module_factory> {
+    static auto instance = std::unordered_map<std::type_index, module_factory>{};
+    return instance;
+  }
 
 }; // class module_manager
 
@@ -91,7 +94,7 @@ protected:
 
   template<derived_from<base_type>... Types>
   static auto register_module(stage stage, dependencies<Types...>&& dependencies = {}) -> bool {
-    module_manager::_factories.insert({std::type_index{typeid(Type)}, module_manager::module_factory{
+    module_manager::_factories().insert({std::type_index{typeid(Type)}, module_manager::module_factory{
       .stage = stage,
       .dependencies = dependencies.get(),
       .create = [](){
