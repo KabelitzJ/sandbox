@@ -82,12 +82,15 @@ graphics_module::graphics_module()
 }
 
 graphics_module::~graphics_module() {
-  const auto& graphics_queue = _logical_device->graphics_queue();
-  const auto& transfer_queue = _logical_device->transfer_queue();
-  const auto& compute_queue = _logical_device->compute_queue();
+  _logical_device->wait_idle();
 
+  const auto& graphics_queue = _logical_device->graphics_queue();
   validate(vkQueueWaitIdle(graphics_queue));
+
+  const auto& transfer_queue = _logical_device->transfer_queue();
   validate(vkQueueWaitIdle(transfer_queue));
+
+  const auto& compute_queue = _logical_device->compute_queue();
   validate(vkQueueWaitIdle(compute_queue));
 
   _swapchain.reset();

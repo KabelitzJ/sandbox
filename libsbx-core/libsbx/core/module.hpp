@@ -58,7 +58,7 @@ private:
     std::function<std::unique_ptr<module_base>()> create{};
   }; // module_factory
 
-  static auto _factories() -> std::unordered_map<std::type_index, module_factory> {
+  static auto _factories() -> std::unordered_map<std::type_index, module_factory>& {
     static auto instance = std::unordered_map<std::type_index, module_factory>{};
     return instance;
   }

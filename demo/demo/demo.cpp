@@ -166,23 +166,8 @@ public:
 
   }
 
-private:
-
-
-
 }; // class demo_application
 
-auto main(int argc, const char** argv) -> int {
-  try {
-    auto args = std::vector<std::string>{argv, argv + argc};
-    auto engine = std::make_unique<sbx::core::engine>(std::move(args));
-
-    engine->run<demo_application>();
-  } catch(const std::exception& exception) {
-    sbx::core::logger::error("demo", "{}", exception.what());
-
-    return sbx::core::exit::failure; 
-  }
-
-  return sbx::core::exit::success;
+auto sbx::core::create_application() -> std::unique_ptr<sbx::core::application> {
+  return std::make_unique<demo_application>();
 }

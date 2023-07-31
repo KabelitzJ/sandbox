@@ -45,15 +45,26 @@ public:
     return _delta_time;
   }
 
-  template<utility::implements<application> Application>
-  auto run() -> void {
+  // [TODO] KAJ 2023-07-31 : This is concept code. Need to figure out how to make it work.
+  // template<typename Module>
+  // requires (std::is_base_of_v<module_base, Module>)
+  // [[nodiscard]] auto get_module() -> Module& {
+  //   const auto type = std::type_index{typeid(Module)};
+
+  //   if (auto entry = _modules.find(type); entry != _modules.end()) {
+  //     return static_cast<Module&>(*entry->second);
+  //   }
+
+  //   throw std::runtime_error{fmt::format("Failed to find module '{}'", typeid(Module).name())};
+  // }
+
+  auto run(std::unique_ptr<application> application) -> void {
     if (_is_running) {
       return;
     }
 
     using clock_type = std::chrono::high_resolution_clock;
 
-    auto application = std::make_unique<Application>();
     application->_set_engine(this);
 
     _is_running = true;

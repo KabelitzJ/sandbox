@@ -24,15 +24,11 @@ class assets_module final : public core::module<assets_module> {
 
 public:
 
-  assets_module() = default;
+  assets_module();
 
-  ~assets_module() override {
-    unload_assets();
-  }
+  ~assets_module();
 
-  auto update() -> void override {
-
-  }
+  auto update() -> void override;
 
   template<typename Asset, typename... Args>
   requires (std::is_base_of_v<asset<Asset::type>, Asset> && std::is_constructible_v<Asset, Args...>)

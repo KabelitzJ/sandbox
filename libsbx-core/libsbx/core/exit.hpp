@@ -7,7 +7,7 @@ namespace sbx::core {
 
 struct exit {
   inline static constexpr auto success = std::int32_t{0};
-  inline static constexpr auto failure = std::int32_t{0};
+  inline static constexpr auto failure = std::int32_t{1};
 }; // struct exit
 
 } // namespace sbx::core
