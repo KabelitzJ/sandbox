@@ -159,15 +159,7 @@ public:
   }
 
   ~demo_application() override {
-    // [TODO] KAJ 2023-07-30 : This works but after the application finishes we need to wait for the device to be idle before we can unload the assets.
-    auto& graphics_module = sbx::graphics::graphics_module::get();
-    auto& assets_module = sbx::assets::assets_module::get();
 
-    auto& logical_device = graphics_module.logical_device();
-
-    logical_device.wait_idle();
-
-    assets_module.unload_assets();
   }
 
   auto update() -> void  {
