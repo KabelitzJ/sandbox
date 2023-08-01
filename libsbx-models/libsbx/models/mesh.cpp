@@ -1,6 +1,7 @@
 #include <libsbx/models/mesh.hpp>
 
 #include <libsbx/core/logger.hpp>
+#include <libsbx/core/engine.hpp>
 
 #include <libsbx/utility/timer.hpp>
 
@@ -9,7 +10,9 @@
 namespace sbx::models {
 
 mesh::mesh(const std::filesystem::path& path) {
-  const auto& logical_device = graphics::graphics_module::get().logical_device();
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+  const auto& logical_device = graphics_module.logical_device();
 
   // [NOTE] KAJ 2023-05-29 : Old tinyobjloader API.
   auto attributes = tinyobj::attrib_t{};

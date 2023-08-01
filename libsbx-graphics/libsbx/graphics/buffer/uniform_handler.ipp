@@ -1,12 +1,16 @@
 #include <libsbx/graphics/buffer/uniform_handler.hpp>
 
+#include <libsbx/core/engine.hpp>
+
 #include <libsbx/graphics/graphics_module.hpp>
 
 namespace sbx::graphics {
 
 template<typename Type>
 void uniform_handler::push(const std::string& uniform_name, const Type& object, std::size_t size) {
-  const auto current_frame = graphics_module::get().current_frame();
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+  const auto current_frame = graphics_module.current_frame();
 
   auto& buffer = _buffers[current_frame];
 

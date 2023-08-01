@@ -34,7 +34,7 @@ public:
       throw std::runtime_error{"Glfw does not support vulkan"};
     }
 
-    _window = std::make_unique<devices::window>(window_create_info{"Demo | 0 FPS", 1280, 720});
+    _window = std::make_unique<devices::window>(window_create_info{"Demo", 1280, 720});
   }
 
   ~devices_module() override {

@@ -73,14 +73,6 @@ public:
   virtual ~module() {
     static_assert(!std::is_abstract_v<Type>, "Class may not be abstract.");
     static_assert(std::is_base_of_v<module<Type>, Type>, "Class must inherit from module<Class>.");
-
-    if (static_cast<Type*>(this) == _instance) {
-      _instance = nullptr;
-    }
-  }
-
-  static auto get() noexcept -> Type& {
-    return *_instance;
   }
 
 protected:
@@ -99,17 +91,12 @@ protected:
       .dependencies = dependencies.get(),
       .create = [](){
         auto instance = std::make_unique<Type>();
-        module<Type>::_instance = instance.get();
         return instance;
       }
     }});
 
     return true;
   }
-
-private:
-
-  inline static Type* _instance{};
 
 }; // class module
 

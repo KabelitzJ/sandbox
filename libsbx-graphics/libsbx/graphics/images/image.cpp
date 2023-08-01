@@ -4,6 +4,7 @@
 #include <ranges>
 
 #include <libsbx/core/logger.hpp>
+#include <libsbx/core/exit.hpp>
 
 #include <libsbx/graphics/graphics_module.hpp>
 
@@ -41,7 +42,9 @@ image::image(const VkExtent3D extent, VkFilter filter, VkSamplerAddressMode addr
   _array_layers{array_layers} { }
 
 image::~image() {
-  auto& logical_device = graphics_module::get().logical_device();
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>(); 
+
+  auto& logical_device = graphics_module.logical_device();
 
   vkDestroyImageView(logical_device, _view, nullptr);
   vkDestroySampler(logical_device, _sampler, nullptr);
@@ -65,7 +68,9 @@ auto image::mip_levels(const VkExtent3D& extent) noexcept -> std::uint32_t {
 }
 
 auto image::find_supported_format(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) noexcept -> VkFormat {
-  auto& physical_device = graphics_module::get().physical_device();
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+      
+  auto& physical_device = graphics_module.physical_device();
 
   for (const auto& format : candidates) {
     auto format_properties = VkFormatProperties{};
@@ -92,8 +97,10 @@ auto image::has_stencil_component(VkFormat format) noexcept -> bool {
 }
 
 auto image::create_image(VkImage& image, VkDeviceMemory& memory, const VkExtent3D& extent, VkFormat format, VkSampleCountFlagBits samples, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, std::uint32_t mip_levels, std::uint32_t array_layers, VkImageType type) -> void {
-  auto& physical_device = graphics_module::get().physical_device();
-  auto& logical_device = graphics_module::get().logical_device();
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+  auto& physical_device = graphics_module.physical_device();
+  auto& logical_device = graphics_module.logical_device();
 
   auto image_create_info = VkImageCreateInfo{};
   image_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -125,7 +132,9 @@ auto image::create_image(VkImage& image, VkDeviceMemory& memory, const VkExtent3
 }
 
 auto image::create_image_view(const VkImage& image, VkImageView& image_view, VkImageViewType type, VkFormat format, VkImageAspectFlags image_aspect, std::uint32_t mip_levels, std::uint32_t base_mip_level, std::uint32_t layer_count, std::uint32_t base_array_layer) -> void {
-  auto& logical_device = graphics_module::get().logical_device();
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+  auto& logical_device = graphics_module.logical_device();
 
   auto image_view_create_info = VkImageViewCreateInfo{};
   image_view_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -143,8 +152,10 @@ auto image::create_image_view(const VkImage& image, VkImageView& image_view, VkI
 }
 
 auto image::create_image_sampler(VkSampler& sampler, VkFilter filter, VkSamplerAddressMode address_mode, bool anisotropic, std::uint32_t mip_levels) -> void {
-  auto& physical_device = graphics_module::get().physical_device();
-  auto& logical_device = graphics_module::get().logical_device();
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+  auto& physical_device = graphics_module.physical_device();
+  auto& logical_device = graphics_module.logical_device();
 
   auto sampler_create_info = VkSamplerCreateInfo{};
   sampler_create_info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
@@ -168,7 +179,9 @@ auto image::create_image_sampler(VkSampler& sampler, VkFilter filter, VkSamplerA
 }
 
 auto image::create_mipmaps(const VkImage& image, const VkExtent3D& extent, VkFormat format, VkImageLayout dst_image_layout, std::uint32_t mip_levels, std::uint32_t base_array_layer, std::uint32_t layer_count) -> void {
-  auto& physical_device = graphics_module::get().physical_device();
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+  auto& physical_device = graphics_module.physical_device();
 
   auto format_properties = VkFormatProperties{};
   vkGetPhysicalDeviceFormatProperties(physical_device, format, &format_properties);
@@ -373,8 +386,10 @@ auto image::copy_buffer_to_image(const VkBuffer& buffer, const VkImage& image, c
 }
 
 auto image::copy_image(const VkImage& src_image, VkImage& dst_image, VkDeviceMemory& dst_image_memory, VkFormat src_format, const VkExtent3D& extent, VkImageLayout src_image_layout, std::uint32_t mip_level, std::uint32_t array_layer) -> bool {
-  auto& physical_device = graphics_module::get().physical_device();
-  auto& surface = graphics_module::get().surface();
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+    
+  auto& physical_device = graphics_module.physical_device();
+  auto& surface = graphics_module.surface();
 
   // Checks blit swapchain support.
 	auto supports_blit = true;

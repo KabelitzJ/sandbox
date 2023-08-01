@@ -5,6 +5,7 @@
 #include <fmt/format.h>
 
 #include <libsbx/core/logger.hpp>
+#include <libsbx/core/engine.hpp>
 
 #include <libsbx/utility/timer.hpp>
 
@@ -20,8 +21,10 @@ graphics_pipeline::graphics_pipeline(stage stage, const std::filesystem::path& p
 : _bind_point{VK_PIPELINE_BIND_POINT_GRAPHICS},
   _stage{stage},
   _is_descriptor_set_dirty{true} {
-  const auto& logical_device = graphics_module::get().logical_device();
-  const auto& render_stage = graphics_module::get().render_stage(stage);
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+  const auto& logical_device = graphics_module.logical_device();
+  const auto& render_stage = graphics_module.render_stage(stage);
 
   auto timer = utility::timer{};
 
@@ -292,7 +295,9 @@ graphics_pipeline::graphics_pipeline(stage stage, const std::filesystem::path& p
 }
 
 graphics_pipeline::~graphics_pipeline() {
-  const auto& logical_device = graphics_module::get().logical_device();
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+  const auto& logical_device = graphics_module.logical_device();
 
   _shaders.clear();
 
@@ -335,7 +340,9 @@ auto graphics_pipeline::push(const std::string& name, const image2d& image) -> v
 }
 
 auto graphics_pipeline::bind_descriptors(const command_buffer& command_buffer) -> void {
-  const auto current_frame = graphics_module::get().current_frame();
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+  const auto current_frame = graphics_module.current_frame();
 
   auto& descriptor_set = _descriptor_sets[current_frame];
 

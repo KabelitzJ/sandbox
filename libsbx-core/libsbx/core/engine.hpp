@@ -12,6 +12,7 @@
 
 #include <libsbx/utility/concepts.hpp>
 #include <libsbx/utility/noncopyable.hpp>
+#include <libsbx/utility/assert.hpp>
 
 #include <libsbx/units/time.hpp>
 
@@ -30,6 +31,10 @@ public:
 
   engine(std::vector<std::string>&& args)
   : _args{std::move(args)} {
+    utility::assert_that(_instance == nullptr, "Engine already exists.");
+
+    _instance = this;
+
     for (const auto& [type, factory] : module_manager::_factories()) {
       _create_module(type, factory);
     }
@@ -39,24 +44,25 @@ public:
     for (const auto& entry : _modules) {
       _destroy_module(entry.first);
     }
+
+    _instance = nullptr;
   }
 
   static auto delta_time() -> units::second {
     return _delta_time;
   }
 
-  // [TODO] KAJ 2023-07-31 : This is concept code. Need to figure out how to make it work.
-  // template<typename Module>
-  // requires (std::is_base_of_v<module_base, Module>)
-  // [[nodiscard]] auto get_module() -> Module& {
-  //   const auto type = std::type_index{typeid(Module)};
+  template<typename Module>
+  requires (std::is_base_of_v<module_base, Module>)
+  [[nodiscard]] static auto get_module() -> Module& {
+    const auto type = std::type_index{typeid(Module)};
 
-  //   if (auto entry = _modules.find(type); entry != _modules.end()) {
-  //     return static_cast<Module&>(*entry->second);
-  //   }
+    if (auto entry = _instance->_modules.find(type); entry != _instance->_modules.end()) {
+      return static_cast<Module&>(*entry->second);
+    }
 
-  //   throw std::runtime_error{fmt::format("Failed to find module '{}'", typeid(Module).name())};
-  // }
+    throw std::runtime_error{fmt::format("Failed to find module '{}'", typeid(Module).name())};
+  }
 
   auto run(std::unique_ptr<application> application) -> void {
     if (_is_running) {
@@ -121,6 +127,8 @@ private:
       }
     }
   }
+
+  static engine* _instance;
 
   static units::second _delta_time;
 

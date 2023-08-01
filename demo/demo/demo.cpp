@@ -31,7 +31,9 @@ public:
   : sbx::graphics::subrenderer{stage},
     _pipeline{std::make_unique<sbx::graphics::graphics_pipeline>(stage, "./demo/assets/shaders/basic", sbx::graphics::vertex_input<sbx::models::vertex3d>::description())},
     _uniforms{_pipeline->find_descriptor_block("buffer_object")} {
-    auto& window = sbx::devices::devices_module::get().window();
+    auto& devices_module = sbx::core::engine::get_module<sbx::devices::devices_module>();
+
+    auto& window = devices_module.window();
 
     _camera_position = sbx::math::vector3{2.0f, 2.0f, 1.0f};
 
@@ -46,10 +48,12 @@ public:
   ~demo_subrenderer() override = default;
 
   auto render(sbx::graphics::command_buffer& command_buffer) -> void override {
-    auto& devices_module = sbx::devices::devices_module::get();
+    auto& devices_module = sbx::core::engine::get_module<sbx::devices::devices_module>();
+
     auto& window = devices_module.window();
 
-    auto& assets_module = sbx::assets::assets_module::get();
+    auto& assets_module = sbx::core::engine::get_module<sbx::assets::assets_module>();
+
     auto& mesh = assets_module.get_asset<sbx::models::mesh>("suzanne");
     auto& image = assets_module.get_asset<sbx::graphics::image2d>("base");
 
@@ -125,7 +129,9 @@ class demo_application : public sbx::core::application {
 public:
 
   demo_application() {
-    auto& window = sbx::devices::devices_module::get().window();
+    auto& devices_module = sbx::core::engine::get_module<sbx::devices::devices_module>();
+
+    auto& window = devices_module.window();
 
     window.set_on_window_closed([this]([[maybe_unused]] const sbx::devices::window_closed_event& event){
       quit();
@@ -137,7 +143,7 @@ public:
       }
     });
 
-    auto& scripting_module = sbx::scripting::scripting_module::get();
+    auto& scripting_module = sbx::core::engine::get_module<sbx::scripting::scripting_module>();
 
     for (const auto& entry : std::filesystem::directory_iterator("./demo/assets/scripts")) {
       if (entry.is_regular_file()) {
@@ -145,11 +151,11 @@ public:
       }
     }
 
-    auto& graphics_module = sbx::graphics::graphics_module::get();
+    auto& graphics_module = sbx::core::engine::get_module<sbx::graphics::graphics_module>();
 
     graphics_module.set_renderer<demo_renderer>();
 
-    auto& assets_module = sbx::assets::assets_module::get();
+    auto& assets_module = sbx::core::engine::get_module<sbx::assets::assets_module>();
 
     assets_module.load_asset<sbx::graphics::image2d>("base", "./demo/assets/textures/base.png");
 

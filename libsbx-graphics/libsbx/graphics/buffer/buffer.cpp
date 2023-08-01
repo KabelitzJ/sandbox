@@ -2,6 +2,8 @@
 
 #include <libsbx/utility/assert.hpp>
 
+#include <libsbx/core/engine.hpp>
+
 #include <libsbx/graphics/graphics_module.hpp>
 
 #include <libsbx/graphics/commands/command_buffer.hpp>
@@ -10,8 +12,10 @@ namespace sbx::graphics {
 
 buffer::buffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, memory::observer_ptr<void> memory)
 : _size{size} {
-  const auto& physical_device = graphics_module::get().physical_device();
-  const auto& logical_device = graphics_module::get().logical_device();
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+  const auto& physical_device = graphics_module.physical_device();
+  const auto& logical_device = graphics_module.logical_device();
 
   const auto& sharing_mode = logical_device.queue_sharing_mode();
 
@@ -58,7 +62,9 @@ buffer::buffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlag
 }
 
 buffer::~buffer() {
-  const auto& logical_device = graphics_module::get().logical_device();
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+  const auto& logical_device = graphics_module.logical_device();
 
   vkFreeMemory(logical_device, _memory, nullptr);
   vkDestroyBuffer(logical_device, _handle, nullptr);
@@ -81,7 +87,9 @@ auto buffer::size() const noexcept -> std::size_t {
 }
 
 auto buffer::map() -> memory::observer_ptr<void> {
-  const auto& logical_device = graphics_module::get().logical_device();
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+  const auto& logical_device = graphics_module.logical_device();
 
   auto* mapped_memory = static_cast<void*>(nullptr);
 
@@ -91,7 +99,9 @@ auto buffer::map() -> memory::observer_ptr<void> {
 }
 
 auto buffer::unmap() -> void {
-  const auto& logical_device = graphics_module::get().logical_device();
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+  const auto& logical_device = graphics_module.logical_device();
 
   vkUnmapMemory(logical_device, _memory);
 }

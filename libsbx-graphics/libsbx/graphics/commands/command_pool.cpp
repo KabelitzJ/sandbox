@@ -1,11 +1,15 @@
 #include <libsbx/graphics/commands/command_pool.hpp>
 
+#include <libsbx/core/engine.hpp>
+
 #include <libsbx/graphics/graphics_module.hpp>
 
 namespace sbx::graphics {
 
 command_pool::command_pool(VkQueueFlagBits queue_type) {
-  const auto& logical_device = graphics_module::get().logical_device();
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+  const auto& logical_device = graphics_module.logical_device();
   
   const auto& queue = _queue(queue_type);
 
@@ -18,7 +22,9 @@ command_pool::command_pool(VkQueueFlagBits queue_type) {
 }
 
 command_pool::~command_pool() {
-  auto& logical_device = graphics_module::get().logical_device();
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+  auto& logical_device = graphics_module.logical_device();
   vkDestroyCommandPool(logical_device, _handle, nullptr);
 }
 
@@ -31,7 +37,9 @@ command_pool::operator const VkCommandPool&() const noexcept {
 }
 
 auto command_pool::_queue(VkQueueFlagBits queue_type) const -> const logical_device::queue& {
-  const auto& logical_device = graphics_module::get().logical_device();
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+  
+  const auto& logical_device = graphics_module.logical_device();
 
   switch (queue_type) {
     case VK_QUEUE_GRAPHICS_BIT:

@@ -16,7 +16,8 @@ uniform_handler::uniform_handler(const shader::uniform_block& uniform_block)
 }
 
 auto uniform_handler::uniform_buffer() const noexcept -> const graphics::uniform_buffer& {
-  auto current_frame = graphics_module::get().current_frame();
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+  auto current_frame = graphics_module.current_frame();
 
   return *_buffers[current_frame];
 }

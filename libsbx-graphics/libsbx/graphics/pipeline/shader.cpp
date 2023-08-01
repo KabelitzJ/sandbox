@@ -6,6 +6,7 @@
 #include <libsbx/io/read_file.hpp>
 
 #include <libsbx/core/logger.hpp>
+#include <libsbx/core/engine.hpp>
 
 #include <libsbx/graphics/graphics_module.hpp>
 
@@ -13,7 +14,9 @@ namespace sbx::graphics {
 
 shader::shader(const std::filesystem::path& path, VkShaderStageFlagBits stage)
 : _stage{stage} {
-  const auto& logical_device = graphics_module::get().logical_device();
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+  const auto& logical_device = graphics_module.logical_device();
 
   auto code = io::read_file(path);
 
@@ -30,7 +33,9 @@ shader::shader(const std::filesystem::path& path, VkShaderStageFlagBits stage)
 }
 
 shader::~shader() {
-  const auto& logical_device = graphics_module::get().logical_device();
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+  const auto& logical_device = graphics_module.logical_device();
 
   vkDestroyShaderModule(logical_device, _handle, nullptr);
 }
