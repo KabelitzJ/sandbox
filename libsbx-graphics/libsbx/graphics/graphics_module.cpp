@@ -80,9 +80,9 @@ graphics_module::graphics_module()
 
   auto& window = devices_module.window();
 
-  window.framebuffer_resized_signal().connect([this]([[maybe_unused]] const auto& event) {
+  window.on_framebuffer_resized() += [this]([[maybe_unused]] const auto& event) {
     _framebuffer_resized = true;
-  });
+  };
 }
 
 graphics_module::~graphics_module() {

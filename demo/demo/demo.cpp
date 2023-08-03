@@ -134,15 +134,15 @@ public:
     auto& window = devices_module.window();
 
 
-    window.window_closed_signal().connect([this]([[maybe_unused]] const auto& event){
+    window.on_window_closed_signal() += [this]([[maybe_unused]] const auto& event){
       quit();
-    });
+    };
 
-    window.key_pressed_signal().connect([this]([[maybe_unused]] const auto& event){
+    window.on_key_pressed() += [this]([[maybe_unused]] const auto& event){
       if (event.key == GLFW_KEY_ESCAPE && event.action == GLFW_PRESS) {
         quit();
       }
-    });
+    };
 
     auto& scripting_module = sbx::core::engine::get_module<sbx::scripting::scripting_module>();
 

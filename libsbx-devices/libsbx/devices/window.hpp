@@ -114,28 +114,28 @@ public:
     return glfwGetWindowAttrib(_handle, GLFW_VISIBLE);
   }
 
-  auto window_closed_signal() -> signals::signal<window_closed_event>& {
-    return _window_closed_signal;
+  auto on_window_closed_signal() -> signals::signal<window_closed_event>& {
+    return _on_window_closed_signal;
   }
 
-  auto window_moved_signal() -> signals::signal<window_moved_event>& {
-    return _window_moved_signal;
+  auto on_window_moved_signal() -> signals::signal<window_moved_event>& {
+    return _on_window_moved_signal;
   }
 
-  auto window_resized_signal() -> signals::signal<window_resized_event>& {
-    return _window_resized_signal;
+  auto on_window_resized_signal() -> signals::signal<window_resized_event>& {
+    return _on_window_resized_signal;
   }
 
-  auto framebuffer_resized_signal() -> signals::signal<framebuffer_resized_event>& {
-    return _framebuffer_resized_signal;
+  auto on_framebuffer_resized() -> signals::signal<framebuffer_resized_event>& {
+    return _on_framebuffer_resized;
   }
 
-  auto key_pressed_signal() -> signals::signal<key_pressed_event>& {
-    return _key_pressed_signal;
+  auto on_key_released() -> signals::signal<key_pressed_event>& {
+    return _on_key_released;
   }
 
-  auto key_released_signal() -> signals::signal<key_released_event>& {
-    return _key_released_signal;
+  auto on_key_pressed() -> signals::signal<key_released_event>& {
+    return _on_key_pressed;
   }
 
 private:
@@ -146,25 +146,25 @@ private:
     glfwSetWindowCloseCallback(_handle, [](GLFWwindow* window){
       auto& self = *static_cast<devices::window*>(glfwGetWindowUserPointer(window));
 
-      self._window_closed_signal(window_closed_event{});
+      self._on_window_closed_signal(window_closed_event{});
     });
 
     glfwSetWindowPosCallback(_handle, [](GLFWwindow* window, std::int32_t x, std::int32_t y){
       auto& self = *static_cast<devices::window*>(glfwGetWindowUserPointer(window));
 
-      self._window_moved_signal(window_moved_event{x, y});
+      self._on_window_moved_signal(window_moved_event{x, y});
     });
 
     glfwSetWindowSizeCallback(_handle, [](GLFWwindow* window, std::int32_t width, std::int32_t height){
       auto& self = *static_cast<devices::window*>(glfwGetWindowUserPointer(window));
 
-      self._window_resized_signal(window_resized_event{width, height});
+      self._on_window_resized_signal(window_resized_event{width, height});
     });
 
     glfwSetFramebufferSizeCallback(_handle, [](GLFWwindow* window, std::int32_t width, std::int32_t height){
       auto& self = *static_cast<devices::window*>(glfwGetWindowUserPointer(window));
 
-      self._framebuffer_resized_signal(framebuffer_resized_event{width, height});
+      self._on_framebuffer_resized(framebuffer_resized_event{width, height});
 
       self._width = static_cast<std::uint32_t>(width);
       self._height = static_cast<std::uint32_t>(height);
@@ -174,9 +174,9 @@ private:
       auto& self = *static_cast<devices::window*>(glfwGetWindowUserPointer(window));
 
       if (action == GLFW_PRESS) {
-        self._key_pressed_signal(key_pressed_event{key, scancode, action, mods});
+        self._on_key_released(key_pressed_event{key, scancode, action, mods});
       } else if (action == GLFW_RELEASE) {
-        self._key_released_signal(key_released_event{key, scancode, action, mods});
+        self._on_key_pressed(key_released_event{key, scancode, action, mods});
       }
     });
   }
@@ -187,12 +187,12 @@ private:
 
   GLFWwindow* _handle{};
 
-  signals::signal<window_closed_event> _window_closed_signal;
-  signals::signal<window_moved_event> _window_moved_signal;
-  signals::signal<window_resized_event> _window_resized_signal;
-  signals::signal<framebuffer_resized_event> _framebuffer_resized_signal;
-  signals::signal<key_pressed_event> _key_pressed_signal;
-  signals::signal<key_released_event> _key_released_signal;
+  signals::signal<window_closed_event> _on_window_closed_signal;
+  signals::signal<window_moved_event> _on_window_moved_signal;
+  signals::signal<window_resized_event> _on_window_resized_signal;
+  signals::signal<framebuffer_resized_event> _on_framebuffer_resized;
+  signals::signal<key_pressed_event> _on_key_released;
+  signals::signal<key_released_event> _on_key_pressed;
 
 }; // class window
 
