@@ -11,6 +11,8 @@
 #include <libsbx/core/concepts.hpp>
 #include <libsbx/core/delegate.hpp>
 
+#include <libsbx/signals/signal.hpp>
+
 #include <libsbx/devices/events.hpp>
 
 namespace sbx::devices {

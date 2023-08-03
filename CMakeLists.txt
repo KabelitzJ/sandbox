@@ -43,7 +43,7 @@ add_subdirectory(libsbx-graphics)
 add_subdirectory(libsbx-ecs)
 add_subdirectory(libsbx-scenes)
 add_subdirectory(libsbx-scripting)
-add_subdirectory(libsbx-signal)
+add_subdirectory(libsbx-signals)
 add_subdirectory(libsbx-assets)
 add_subdirectory(libsbx-models)
 

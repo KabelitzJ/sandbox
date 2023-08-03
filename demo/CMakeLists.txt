@@ -42,7 +42,7 @@ target_link_libraries(
     libsbx::ecs
     libsbx::scenes
     libsbx::scripting
-    libsbx::signal
+    libsbx::signals
     libsbx::assets
     libsbx::models
 )

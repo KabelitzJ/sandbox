@@ -35,6 +35,7 @@ target_link_libraries(
     libsbx::utility
     libsbx::units
     libsbx::core
+    libsbx::signals
 )
 
 set_target_properties(
