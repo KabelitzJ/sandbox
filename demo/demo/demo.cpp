@@ -133,11 +133,12 @@ public:
 
     auto& window = devices_module.window();
 
-    window.set_on_window_closed([this]([[maybe_unused]] const sbx::devices::window_closed_event& event){
+
+    window.window_closed_signal().connect([this]([[maybe_unused]] const auto& event){
       quit();
     });
 
-    window.set_on_key([this]([[maybe_unused]] const sbx::devices::key_event& event){
+    window.key_pressed_signal().connect([this]([[maybe_unused]] const auto& event){
       if (event.key == GLFW_KEY_ESCAPE && event.action == GLFW_PRESS) {
         quit();
       }

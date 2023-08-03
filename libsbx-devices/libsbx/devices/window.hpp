@@ -114,35 +114,28 @@ public:
     return glfwGetWindowAttrib(_handle, GLFW_VISIBLE);
   }
 
-  /**
-   * @brief Sets the callback for the @ref sbx::devices::window_closed_event event type
-   * @tparam Callable 
-   * @param callable 
-   * @return 
-   */
-  template<core::callable<void, const window_closed_event&> Callable>
-  auto set_on_window_closed(Callable&& callable) -> void {
-    _on_window_closed = std::forward<Callable>(callable);
+  auto window_closed_signal() -> signals::signal<window_closed_event>& {
+    return _window_closed_signal;
   }
 
-  template<core::callable<void, const window_moved_event&> Callable>
-  auto set_on_window_moved(Callable&& callable) -> void {
-    _on_window_moved = std::forward<Callable>(callable);
+  auto window_moved_signal() -> signals::signal<window_moved_event>& {
+    return _window_moved_signal;
   }
 
-  template<core::callable<void, const window_resized_event&> Callable>
-  auto set_on_window_resized(Callable&& callable) -> void {
-    _on_window_resized = std::forward<Callable>(callable);
+  auto window_resized_signal() -> signals::signal<window_resized_event>& {
+    return _window_resized_signal;
   }
 
-  template<core::callable<void, const key_event&> Callable>
-  auto set_on_key(Callable&& callable) -> void {
-    _on_key = std::forward<Callable>(callable);
+  auto framebuffer_resized_signal() -> signals::signal<framebuffer_resized_event>& {
+    return _framebuffer_resized_signal;
   }
 
-  template<core::callable<void, const framebuffer_resized_event&> Callable>
-  auto set_on_framebuffer_resized(Callable&& callable) -> void {
-    _on_framebuffer_resized = std::forward<Callable>(callable);
+  auto key_pressed_signal() -> signals::signal<key_pressed_event>& {
+    return _key_pressed_signal;
+  }
+
+  auto key_released_signal() -> signals::signal<key_released_event>& {
+    return _key_released_signal;
   }
 
 private:
@@ -153,47 +146,37 @@ private:
     glfwSetWindowCloseCallback(_handle, [](GLFWwindow* window){
       auto& self = *static_cast<devices::window*>(glfwGetWindowUserPointer(window));
 
-      if (self._on_window_closed) {
-        const auto event = window_closed_event{};
-        self._on_window_closed(event);
-      }
+      self._window_closed_signal(window_closed_event{});
     });
 
     glfwSetWindowPosCallback(_handle, [](GLFWwindow* window, std::int32_t x, std::int32_t y){
-      const auto& self = *static_cast<devices::window*>(glfwGetWindowUserPointer(window));
+      auto& self = *static_cast<devices::window*>(glfwGetWindowUserPointer(window));
 
-      if (self._on_window_moved) {
-        const auto event = window_moved_event{x, y};
-        self._on_window_moved(event);
-      }
+      self._window_moved_signal(window_moved_event{x, y});
     });
 
     glfwSetWindowSizeCallback(_handle, [](GLFWwindow* window, std::int32_t width, std::int32_t height){
       auto& self = *static_cast<devices::window*>(glfwGetWindowUserPointer(window));
 
-      if (self._on_window_resized) {
-        const auto event = window_resized_event{width, height};
-        self._on_window_resized(event);
-      }
+      self._window_resized_signal(window_resized_event{width, height});
     });
 
     glfwSetFramebufferSizeCallback(_handle, [](GLFWwindow* window, std::int32_t width, std::int32_t height){
       auto& self = *static_cast<devices::window*>(glfwGetWindowUserPointer(window));
 
-      if (self._on_framebuffer_resized) {
-        const auto event = framebuffer_resized_event{width, height};
-        self._on_framebuffer_resized(event);
-        self._width = static_cast<std::uint32_t>(width);
-        self._height = static_cast<std::uint32_t>(height);
-      }
+      self._framebuffer_resized_signal(framebuffer_resized_event{width, height});
+
+      self._width = static_cast<std::uint32_t>(width);
+      self._height = static_cast<std::uint32_t>(height);
     });
 
     glfwSetKeyCallback(_handle, [](GLFWwindow* window, std::int32_t key, std::int32_t scancode, std::int32_t action, std::int32_t mods){
       auto& self = *static_cast<devices::window*>(glfwGetWindowUserPointer(window));
 
-      if (self._on_key) {
-        const auto event = key_event{key, scancode, action, mods};
-        self._on_key(event);
+      if (action == GLFW_PRESS) {
+        self._key_pressed_signal(key_pressed_event{key, scancode, action, mods});
+      } else if (action == GLFW_RELEASE) {
+        self._key_released_signal(key_released_event{key, scancode, action, mods});
       }
     });
   }
@@ -204,11 +187,12 @@ private:
 
   GLFWwindow* _handle{};
 
-  core::delegate<void(const window_closed_event&)> _on_window_closed{};
-  core::delegate<void(const window_moved_event&)> _on_window_moved{};
-  core::delegate<void(const window_resized_event&)> _on_window_resized{};
-  core::delegate<void(const framebuffer_resized_event&)> _on_framebuffer_resized{};
-  core::delegate<void(const key_event&)> _on_key{};
+  signals::signal<window_closed_event> _window_closed_signal;
+  signals::signal<window_moved_event> _window_moved_signal;
+  signals::signal<window_resized_event> _window_resized_signal;
+  signals::signal<framebuffer_resized_event> _framebuffer_resized_signal;
+  signals::signal<key_pressed_event> _key_pressed_signal;
+  signals::signal<key_released_event> _key_released_signal;
 
 }; // class window
 

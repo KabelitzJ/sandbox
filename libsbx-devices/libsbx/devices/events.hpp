@@ -25,12 +25,19 @@ struct framebuffer_resized_event {
   std::int32_t height{};
 };
 
-struct key_event {
+struct key_pressed_event {
   std::int32_t key{};
   std::int32_t scancode{};
   std::int32_t action{};
   std::int32_t mods{};
 }; // struct key_pressed_event
+
+struct key_released_event {
+  std::int32_t key{};
+  std::int32_t scancode{};
+  std::int32_t action{};
+  std::int32_t mods{};
+}; // struct key_released_event
 
 } // namespace sbx::devices
 
