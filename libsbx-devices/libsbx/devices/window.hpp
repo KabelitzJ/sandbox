@@ -130,12 +130,12 @@ public:
     return _on_framebuffer_resized;
   }
 
-  auto on_key_released() -> signals::signal<key_pressed_event>& {
-    return _on_key_released;
+  auto on_key_pressed() -> signals::signal<key_pressed_event>& {
+    return _on_key_pressed;
   }
 
-  auto on_key_pressed() -> signals::signal<key_released_event>& {
-    return _on_key_pressed;
+  auto on_key_released() -> signals::signal<key_released_event>& {
+    return _on_key_released;
   }
 
 private:
@@ -174,9 +174,9 @@ private:
       auto& self = *static_cast<devices::window*>(glfwGetWindowUserPointer(window));
 
       if (action == GLFW_PRESS) {
-        self._on_key_released(key_pressed_event{key, scancode, action, mods});
+        self._on_key_pressed(key_pressed_event{key, scancode, action, mods});
       } else if (action == GLFW_RELEASE) {
-        self._on_key_pressed(key_released_event{key, scancode, action, mods});
+        self._on_key_released(key_released_event{key, scancode, action, mods});
       }
     });
   }
@@ -191,8 +191,8 @@ private:
   signals::signal<window_moved_event> _on_window_moved_signal;
   signals::signal<window_resized_event> _on_window_resized_signal;
   signals::signal<framebuffer_resized_event> _on_framebuffer_resized;
-  signals::signal<key_pressed_event> _on_key_released;
-  signals::signal<key_released_event> _on_key_pressed;
+  signals::signal<key_pressed_event> _on_key_pressed;
+  signals::signal<key_released_event> _on_key_released;
 
 }; // class window
 

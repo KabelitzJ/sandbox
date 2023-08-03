@@ -139,7 +139,7 @@ public:
     };
 
     window.on_key_pressed() += [this]([[maybe_unused]] const auto& event){
-      if (event.key == GLFW_KEY_ESCAPE && event.action == GLFW_PRESS) {
+      if (event.key == GLFW_KEY_ESCAPE) {
         quit();
       }
     };
