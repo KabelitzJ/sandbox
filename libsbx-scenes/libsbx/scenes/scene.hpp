@@ -28,7 +28,7 @@ public:
     _root.add_component<scenes::transform>();
   }
 
-  auto create_node(const transform& transform = transform{}) -> node {
+  auto create_node(const transform& transform = scenes::transform{}) -> node {
     auto node = scenes::node{&_registry, _registry.create_entity()};
 
     auto& id = node.add_component<scenes::id>();
@@ -41,6 +41,23 @@ public:
     node.add_component<scenes::transform>(transform);
 
     return node;
+  }
+
+  auto destroy_node(const node& node) -> void {
+    auto& id = node.get_component<scenes::id>();
+    auto& relationship = node.get_component<scenes::relationship>();
+
+    for (auto& child : relationship.children()) {
+      destroy_node(_nodes.at(child));
+    }
+
+    auto& parent = _nodes.at(relationship.parent());
+
+    parent.get_component<scenes::relationship>().remove_child(id);
+
+    _nodes.erase(id);
+
+    _registry.destroy_entity(node._entity);
   }
 
 private:

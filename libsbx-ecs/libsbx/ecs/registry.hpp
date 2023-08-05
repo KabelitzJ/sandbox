@@ -216,6 +216,15 @@ public:
     return storage.add(entity, std::forward<Args>(args)...);
   }
 
+  template<typename Component>
+  auto remove_component(const entity_type& entity) -> bool {
+    if (const auto storage = _try_get_storage<std::remove_const_t<Component>>(); storage) {
+      return storage->remove(entity);
+    }
+
+    return false;
+  }
+
   /**
    * @brief Gets the component assigned to an entity
    * 
@@ -248,11 +257,11 @@ public:
   auto try_get_component(const entity_type& entity) const -> memory::observer_ptr<const Component> {
     if (const auto storage = _try_get_storage<std::remove_const_t<Component>>(); storage) {
       if (auto entry = storage->find(entity); entry != storage->cend()) {
-        return memory::make_observer<Component>(*entry);
+        return memory::make_observer<const Component>(*entry);
       }
     }
 
-    return memory::observer_ptr<const Component>{};
+    return nullptr;
   }
 
   template<typename Component>
@@ -263,7 +272,7 @@ public:
       }
     }
 
-    return memory::observer_ptr<Component>{};
+    return nullptr;
   }
 
   template<typename... Components>
@@ -315,7 +324,7 @@ private:
       return memory::make_observer<const storage_type<Component>>(static_cast<const storage_type<Component>*>(entry->second.get()));
     }
 
-    return memory::observer_ptr<const storage_type<Component>>{};
+    return nullptr;
   }
 
   template<typename Component>
@@ -326,7 +335,7 @@ private:
       return memory::make_observer<storage_type<Component>>(static_cast<storage_type<Component>*>(entry->second.get()));
     }
 
-    return memory::observer_ptr<storage_type<Component>>{};
+    return nullptr;
   }
 
   entity_storage_type _entities;

@@ -17,13 +17,28 @@ public:
   ~node() = default;
 
   template<typename Component, typename... Args>
-  Component& add_component(Args&&... args) {
+  auto add_component(Args&&... args) -> Component& {
     return _registry->add_component<Component>(_entity, std::forward<Args>(args)...);
   }
 
   template<typename Component>
-  Component& get_component() {
+  auto get_component() -> Component& {
     return _registry->get_component<Component>(_entity);
+  }
+
+  template<typename Component>
+  auto get_component() const -> const Component& {
+    return _registry->get_component<Component>(_entity);
+  }
+
+  template<typename Component>
+  auto has_component() const -> bool {
+    return _registry->has_component<Component>(_entity);
+  }
+
+  template<typename Component>
+  auto remove_component() -> void {
+    _registry->remove_component<Component>(_entity);
   }
 
 private:
