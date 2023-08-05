@@ -20,7 +20,7 @@ struct storage_base {
 template<typename Type>
 class storage : public storage_base {
 
-  using storage_type = std::unordered_map<utility::hashed_string, std::unique_ptr<Type>>;
+  using storage_type = std::unordered_map<typename Type::id_type, std::unique_ptr<Type>>;
 
 public:
 
@@ -36,14 +36,14 @@ public:
     
   }
 
-  auto insert(const utility::hashed_string& key, std::unique_ptr<Type>&& value) -> reference {
-    auto entry = _storage.insert({key, std::move(value)});
+  auto insert(const asset_id id, std::unique_ptr<Type>&& value) -> reference {
+    auto entry = _storage.insert({id, std::move(value)});
 
     return *entry.first->second;
   }
 
-  auto find(const utility::hashed_string& key) -> iterator {
-    return _storage.find(key);
+  auto find(const asset_id id) -> iterator {
+    return _storage.find(id);
   }
 
   auto begin() -> iterator {

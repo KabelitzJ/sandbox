@@ -54,14 +54,14 @@ public:
 
     auto& assets_module = sbx::core::engine::get_module<sbx::assets::assets_module>();
 
-    auto& mesh = assets_module.get_asset<sbx::models::mesh>("suzanne");
-    auto& image = assets_module.get_asset<sbx::graphics::image2d>("base");
+    auto& mesh = assets_module.get_asset<sbx::models::mesh>("./demo/assets/meshes/suzanne.obj");
+    auto& image = assets_module.get_asset<sbx::graphics::image2d>("./demo/assets/textures/base.png");
 
     const auto delta_time = sbx::core::engine::delta_time();
 
     _pipeline->bind(command_buffer);
 
-    _uniform_buffer_object.model = sbx::math::matrix4x4::rotated(_uniform_buffer_object.model, sbx::math::vector3{0.0f, 0.0f, 1.0f}, sbx::math::degree{45.0f} * delta_time);
+    _uniform_buffer_object.model = sbx::math::matrix4x4::rotated(_uniform_buffer_object.model, sbx::math::vector3::up, sbx::math::degree{45.0f} * delta_time);
     _uniform_buffer_object.projection = sbx::math::matrix4x4::perspective(sbx::math::radian{45.0f}, window.aspect_ratio(), 0.1f, 10.0f);
     _uniform_buffer_object.normal = sbx::math::matrix4x4::transposed(sbx::math::matrix4x4::inverted(_uniform_buffer_object.model));
 
@@ -158,9 +158,9 @@ public:
 
     auto& assets_module = sbx::core::engine::get_module<sbx::assets::assets_module>();
 
-    assets_module.load_asset<sbx::graphics::image2d>("base", "./demo/assets/textures/base.png");
+    assets_module.load_asset<sbx::graphics::image2d>("./demo/assets/textures/base.png");
 
-    assets_module.load_asset<sbx::models::mesh>("suzanne", "./demo/assets/meshes/suzanne.obj");
+    assets_module.load_asset<sbx::models::mesh>("./demo/assets/meshes/suzanne.obj");
 
     window.show();
   }

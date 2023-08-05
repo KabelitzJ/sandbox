@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <typeindex>
+#include <filesystem>
 #include <unordered_map>
 
 #include <libsbx/utility/hashed_string.hpp>
@@ -18,6 +19,11 @@
 
 namespace sbx::assets {
 
+struct asset_metadata {
+  std::filesystem::path path;
+  asset_id id;
+}; // struct asset_metadata
+
 class assets_module final : public core::module<assets_module> {
 
   inline static const auto is_registered = register_module(stage::normal, dependencies<async::async_module>{});
@@ -31,23 +37,39 @@ public:
   auto update() -> void override;
 
   template<typename Asset, typename... Args>
-  requires (std::is_base_of_v<asset<Asset::type>, Asset> && std::is_constructible_v<Asset, Args...>)
-  auto load_asset(const utility::hashed_string& key, Args&&... args) -> Asset& {
+  requires (std::is_base_of_v<asset<Asset::type>, Asset> && std::is_constructible_v<Asset, const std::filesystem::path&, Args...>)
+  auto load_asset(const std::filesystem::path& path, Args&&... args) -> Asset& {
     auto& storage = _get_or_create_storage<Asset>(Asset::type);
 
-    return storage.insert(key, std::make_unique<Asset>(std::forward<Args>(args)...));
+    auto asset = std::make_unique<Asset>(path, std::forward<Args>(args)...);
+
+    const auto id = asset->id();
+
+    _metadata.insert({path, asset_metadata{path, id}});
+
+    return storage.insert(id, std::move(asset));
   }
 
   template<typename Asset>
   requires (std::is_base_of_v<asset<Asset::type>, Asset>)
-  [[nodiscard]] auto get_asset(const utility::hashed_string& key) -> Asset& {
+  [[nodiscard]] auto get_asset(const asset_id id) -> Asset& {
     if (auto storage = _try_get_storage<Asset>(Asset::type); storage) {
-      if (auto entry = storage->find(key); entry != storage->end()) {
+      if (auto entry = storage->find(id); entry != storage->end()) {
         return *entry->second;
       }
     }
 
-    throw std::runtime_error{fmt::format("Failed to find asset '{}'", key.c_str())};
+    throw std::runtime_error{fmt::format("Failed to find asset")};
+  }
+
+  template<typename Asset>
+  requires (std::is_base_of_v<asset<Asset::type>, Asset>)
+  [[nodiscard]] auto get_asset(const std::filesystem::path& path) -> Asset& {
+    if (auto entry = _metadata.find(path); entry != _metadata.end()) {
+      return get_asset<Asset>(entry->second.id);
+    }
+
+    throw std::runtime_error{fmt::format("Failed to find asset '{}'", path.string())};
   }
 
   auto unload_assets() -> void {
@@ -79,6 +101,7 @@ private:
   }
 
   std::unordered_map<asset_type, std::unique_ptr<storage_base>> _storages;
+  std::unordered_map<std::filesystem::path, asset_metadata> _metadata;
 
 }; // class assets_module
 
