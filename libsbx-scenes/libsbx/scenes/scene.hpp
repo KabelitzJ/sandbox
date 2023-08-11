@@ -60,6 +60,21 @@ public:
     _registry.destroy_entity(node._entity);
   }
 
+  auto world_transform(const node& node) -> math::matrix4x4 {
+    auto& transform = node.get_component<scenes::transform>();
+    auto& relationship = node.get_component<scenes::relationship>();
+
+    auto& parent = _nodes.at(relationship.parent());
+
+    auto world = math::matrix4x4::identity;
+
+    if (parent.get_component<scenes::id>() != _root.get_component<scenes::id>()) {
+      world = world_transform(parent);
+    }
+
+    return world * transform.as_matrix();
+  }
+
 private:
 
   std::unordered_map<math::uuid, node> _nodes;

@@ -5,23 +5,13 @@
 
 namespace sbx::scenes {
 
-class id final {
+class id final : public math::uuid {
 
 public:
 
-  id()
-  : _value{} { }
+  using super = math::uuid;
 
-  id(math::uuid value)
-  : _value{value} { }
-
-  operator math::uuid() const noexcept {
-    return _value;
-  }
-
-private:
-
-  math::uuid _value;
+  super::super;
 
 }; // class id
 

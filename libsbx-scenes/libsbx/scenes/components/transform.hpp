@@ -42,7 +42,7 @@ public:
     _scale = scale;
   }
 
-  operator math::matrix4x4() const noexcept {
+  auto as_matrix() const -> math::matrix4x4 {
     auto result = math::matrix4x4::identity;
 
     result = math::matrix4x4::translated(result, _position);

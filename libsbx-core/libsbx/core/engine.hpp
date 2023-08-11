@@ -18,6 +18,7 @@
 
 #include <libsbx/core/module.hpp>
 #include <libsbx/core/application.hpp>
+#include <libsbx/core/logger.hpp>
 
 namespace sbx::core {
 
@@ -58,7 +59,7 @@ public:
     const auto type = std::type_index{typeid(Module)};
 
     if (auto entry = _instance->_modules.find(type); entry != _instance->_modules.end()) {
-      return static_cast<Module&>(*entry->second);
+      return *static_cast<Module*>(entry->second.get());
     }
 
     throw std::runtime_error{fmt::format("Failed to find module '{}'", typeid(Module).name())};
@@ -98,7 +99,7 @@ public:
 
 private:
 
-  auto _create_module(std::type_index type, const module_factory& factory) -> void {
+  auto _create_module(const std::type_index& type, const module_factory& factory) -> void {
     if (_modules.contains(type)) {
       return;
     }
@@ -107,17 +108,22 @@ private:
       _create_module(dependency, module_manager::_factories().at(dependency));
     }
 
-    _modules.insert({type, factory.create()});
+    _modules.insert({type, std::invoke(factory.create)});
     _module_by_stage[factory.stage].push_back(type);
   }
-  auto _destroy_module(std::type_index type) -> void {
-    if (auto entry = _modules.find(type); entry != _modules.cend()) {
-      for (const auto& dependency : module_manager::_factories().at(type).dependencies) {
-        _destroy_module(dependency);
-      }
-
-      entry->second.reset();
+  auto _destroy_module(const std::type_index& type) -> void {
+    if (!_modules.at(type)) {
+      return;
     }
+
+    for (const auto& dependency : module_manager::_factories().at(type).dependencies) {
+      logger::debug("", "Destroying dependency '{}' of module '{}'", dependency.name(), type.name());
+      _destroy_module(dependency);
+    }
+
+    logger::debug("", "Destroying module '{}'", type.name());
+
+    _modules.at(type).reset();
   }
 
   auto _update_stage(stage stage) -> void {
