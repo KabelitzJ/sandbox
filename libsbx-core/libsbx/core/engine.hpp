@@ -59,7 +59,7 @@ public:
     const auto type = std::type_index{typeid(Module)};
 
     if (auto entry = _instance->_modules.find(type); entry != _instance->_modules.end()) {
-      return *static_cast<Module*>(entry->second.get());
+      return *static_cast<Module*>(entry->second);
     }
 
     throw std::runtime_error{fmt::format("Failed to find module '{}'", typeid(Module).name())};
@@ -123,7 +123,10 @@ private:
 
     logger::debug("", "Destroying module '{}'", type.name());
 
-    _modules.at(type).reset();
+    auto* module = _modules.at(type);
+    std::destroy_at(module);
+    std::free(module);
+    _modules.at(type) = nullptr;
   }
 
   auto _update_stage(stage stage) -> void {
@@ -141,7 +144,7 @@ private:
   bool _is_running{};
   std::vector<std::string> _args{};
 
-  std::unordered_map<std::type_index, std::unique_ptr<module_base>> _modules{};
+  std::unordered_map<std::type_index, module_base*> _modules{};
   std::unordered_map<stage, std::vector<std::type_index>> _module_by_stage{};
 
 }; // class engine

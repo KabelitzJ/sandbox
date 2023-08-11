@@ -36,6 +36,7 @@
 
 #include <memory>
 #include <source_location>
+#include <unordered_map>
 
 #include <spdlog/logger.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
@@ -128,8 +129,15 @@ public:
 private:
 
   static auto _instance(std::string name) -> spdlog::logger& {
-    static auto instance = _create_logger(std::move(name));
-    return instance;
+    if (auto entry = _loggers.find(name); entry != _loggers.end()) {
+      return entry->second;
+    }
+
+    auto logger = _create_logger(name);
+
+    auto entry = _loggers.emplace(std::move(name), std::move(logger));
+
+    return entry.first->second;
   }
 
   static auto _create_logger(std::string name) -> spdlog::logger {
@@ -153,6 +161,8 @@ private:
 
     return logger;
   } 
+
+  inline static std::unordered_map<std::string, spdlog::logger> _loggers{};
 
 }; // class logger
 
