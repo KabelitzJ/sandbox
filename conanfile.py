@@ -53,8 +53,8 @@ class libsbx_recipe(ConanFile):
   )
 
   generators = (
-    "CMakeToolchain",
-    "CMakeDeps"
+    "CMakeDeps",
+    "CMakeToolchain"
   )
 
   def config_options(self):

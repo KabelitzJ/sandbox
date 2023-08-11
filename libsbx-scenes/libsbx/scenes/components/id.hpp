@@ -11,7 +11,7 @@ public:
 
   using super = math::uuid;
 
-  super::super;
+  using super::super;
 
 }; // class id
 

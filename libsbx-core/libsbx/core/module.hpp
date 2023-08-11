@@ -90,7 +90,7 @@ protected:
       .stage = stage,
       .dependencies = dependencies.get(),
       .create = [](){
-        auto* instance = reinterpret_cast<Derived*>(std::malloc(sizeof(Derived)));
+        auto* instance = reinterpret_cast<Derived*>(::operator new(sizeof(Derived)));
 
         if (!instance) {
           throw std::bad_alloc{};

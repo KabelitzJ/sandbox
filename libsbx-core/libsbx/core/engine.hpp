@@ -117,15 +117,12 @@ private:
     }
 
     for (const auto& dependency : module_manager::_factories().at(type).dependencies) {
-      logger::debug("", "Destroying dependency '{}' of module '{}'", dependency.name(), type.name());
       _destroy_module(dependency);
     }
 
-    logger::debug("", "Destroying module '{}'", type.name());
-
     auto* module = _modules.at(type);
     std::destroy_at(module);
-    std::free(module);
+    ::operator delete(module);
     _modules.at(type) = nullptr;
   }
 
