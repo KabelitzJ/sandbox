@@ -1,6 +1,0 @@
-$out_root/
-{
-  include libsbx/math/
-}
-
-export $out_root/libsbx/math/$import.target
