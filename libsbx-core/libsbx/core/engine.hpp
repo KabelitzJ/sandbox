@@ -147,4 +147,5 @@ private:
 }; // class engine
 
 } // namespace sbx::core
+
 #endif // LIBSBX_CORE_ENGINE_HPP_
