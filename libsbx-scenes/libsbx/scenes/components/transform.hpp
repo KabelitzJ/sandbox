@@ -11,7 +11,7 @@ class transform final {
 
 public:
 
-  transform(const math::vector3& position = math::vector3{0.0f, 0.0f, 0.0f}, const math::vector3& rotation = math::vector3{0.0f, 0.0f, 0.0f}, const math::vector3& scale = math::vector3{1.0f, 1.0f, 1.0f})
+  transform(const math::vector3& position = math::vector3::zero, const math::vector3& rotation = math::vector3::zero, const math::vector3& scale = math::vector3::one)
   : _position{position}, 
     _rotation{rotation}, 
     _scale{scale} { }

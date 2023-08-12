@@ -12,6 +12,7 @@ add_library(${CMAKE_PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
 find_package(fmt REQUIRED)
 find_package(yaml-cpp REQUIRED)
+find_package(range-v3 REQUIRED)
 
 target_sources(
   ${PROJECT_NAME}
@@ -26,6 +27,7 @@ target_sources(
     "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/components/tag.hpp"
     "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/components/relationship.hpp"
     "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/components/transform.hpp"
+    "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/components/static_mesh.hpp"
 )
 
 target_include_directories(
@@ -40,6 +42,7 @@ target_link_libraries(
     # External dependencies
     fmt::fmt
     yaml-cpp
+    range-v3::range-v3
     # Internal dependencies
     libsbx::utility
     libsbx::core

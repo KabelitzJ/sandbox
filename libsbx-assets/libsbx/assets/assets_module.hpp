@@ -38,7 +38,7 @@ public:
 
   template<typename Asset, typename... Args>
   requires (std::is_base_of_v<asset<Asset::type>, Asset> && std::is_constructible_v<Asset, const std::filesystem::path&, Args...>)
-  auto load_asset(const std::filesystem::path& path, Args&&... args) -> Asset& {
+  auto load_asset(const std::filesystem::path& path, Args&&... args) -> asset_id {
     auto& storage = _get_or_create_storage<Asset>(Asset::type);
 
     auto asset = std::make_unique<Asset>(path, std::forward<Args>(args)...);
@@ -47,7 +47,9 @@ public:
 
     _metadata.insert({path, asset_metadata{path, id}});
 
-    return storage.insert(id, std::move(asset));
+    storage.insert(id, std::move(asset));
+
+    return id;
   }
 
   template<typename Asset>

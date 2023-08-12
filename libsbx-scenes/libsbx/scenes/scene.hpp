@@ -4,13 +4,21 @@
 #include <unordered_map>
 #include <memory>
 #include <utility>
+#include <ranges>
+#include <vector>
+
+#include <range/v3/all.hpp>
 
 #include <libsbx/ecs/registry.hpp>
+
+#include <libsbx/core/logger.hpp>
+
 #include <libsbx/ecs/entity.hpp>
 
 #include <libsbx/scenes/node.hpp>
 
 #include <libsbx/scenes/components/id.hpp>
+#include <libsbx/scenes/components/tag.hpp>
 #include <libsbx/scenes/components/relationship.hpp>
 #include <libsbx/scenes/components/transform.hpp>
 
@@ -26,9 +34,11 @@ public:
     auto& id = _root.add_component<scenes::id>();
     _root.add_component<scenes::relationship>(id);
     _root.add_component<scenes::transform>();
+
+    _nodes.insert({id, _root});
   }
 
-  auto create_node(const transform& transform = scenes::transform{}) -> node {
+  auto create_node(const std::string& tag = "", const transform& transform = scenes::transform{}) -> node {
     auto node = scenes::node{&_registry, _registry.create_entity()};
 
     auto& id = node.add_component<scenes::id>();
@@ -39,6 +49,8 @@ public:
     _root.get_component<scenes::relationship>().add_child(id);
 
     node.add_component<scenes::transform>(transform);
+
+    node.add_component<scenes::tag>(!tag.empty() ? tag : scenes::tag{"Node"});
 
     return node;
   }
@@ -51,9 +63,11 @@ public:
       destroy_node(_nodes.at(child));
     }
 
-    auto& parent = _nodes.at(relationship.parent());
-
-    parent.get_component<scenes::relationship>().remove_child(id);
+    if (auto entry = _nodes.find(id); entry != _nodes.end()) {
+      entry->second.get_component<scenes::relationship>().remove_child(id);
+    } else {
+      core::logger::warn("sbx::scenes", "Node '{}' has invalid parent", node.get_component<scenes::tag>());
+    }
 
     _nodes.erase(id);
 
@@ -73,6 +87,15 @@ public:
     }
 
     return world * transform.as_matrix();
+  }
+
+  template<typename... Components>
+  auto query() -> std::vector<node> {
+    auto view = _registry.create_view<Components...>();
+
+    auto to_node = std::views::transform([&](auto& entity) { return node{&_registry, entity}; });
+
+    return view | to_node | ranges::to<std::vector>();
   }
 
 private:

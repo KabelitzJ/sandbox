@@ -20,7 +20,7 @@ struct storage_base {
 template<typename Type>
 class storage : public storage_base {
 
-  using storage_type = std::unordered_map<typename Type::id_type, std::unique_ptr<Type>>;
+  using storage_type = std::unordered_map<asset_id, std::unique_ptr<Type>>;
 
 public:
 

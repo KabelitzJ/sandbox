@@ -17,6 +17,11 @@
 
 #include <libsbx/scenes/scenes_module.hpp>
 
+#include <libsbx/scenes/components/static_mesh.hpp>
+#include <libsbx/scenes/components/transform.hpp>
+#include <libsbx/scenes/components/relationship.hpp>
+#include <libsbx/scenes/components/id.hpp>
+
 namespace sbx::scenes {
 
 class scene_subrenderer final : public graphics::subrenderer {
@@ -45,34 +50,63 @@ public:
 
   auto render(graphics::command_buffer& command_buffer) -> void override {
     auto& devices_module = core::engine::get_module<devices::devices_module>();
-    auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
-
     auto& window = devices_module.window();
+
+    auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
+    auto& scene = scenes_module.scene();
 
     auto& assets_module = core::engine::get_module<assets::assets_module>();
 
-    auto& mesh = assets_module.get_asset<models::mesh>("./demo/assets/meshes/suzanne.obj");
-    auto& image = assets_module.get_asset<graphics::image2d>("./demo/assets/textures/base.png");
-
     const auto delta_time = core::engine::delta_time();
+
+    _uniform_buffer_object.projection = math::matrix4x4::perspective(math::radian{45.0f}, window.aspect_ratio(), 0.1f, 100.0f);
 
     _pipeline->bind(command_buffer);
 
-    _uniform_buffer_object.model = math::matrix4x4::rotated(_uniform_buffer_object.model, math::vector3::up, math::degree{45.0f} * delta_time);
-    _uniform_buffer_object.projection = math::matrix4x4::perspective(math::radian{45.0f}, window.aspect_ratio(), 0.1f, 10.0f);
-    _uniform_buffer_object.normal = math::matrix4x4::transposed(math::matrix4x4::inverted(_uniform_buffer_object.model));
+    for (auto& node : scene.query<scenes::static_mesh>()) {
+      const auto& static_mesh = node.get_component<scenes::static_mesh>();
+      auto& transform = node.get_component<scenes::transform>();
 
-    _uniforms.push("normal", _uniform_buffer_object.normal);
-    _uniforms.push("view", _uniform_buffer_object.view);
-    _uniforms.push("model", _uniform_buffer_object.model);
-    _uniforms.push("projection", _uniform_buffer_object.projection);
+      transform.set_rotation(transform.rotation() + math::vector3{0.0f, 0.0f, math::degree{45.0f} * delta_time});
 
-    _pipeline->push(_uniforms);
-    _pipeline->push("image", image);
+      auto& mesh = assets_module.get_asset<models::mesh>(static_mesh.mesh_id());
+      auto& image = assets_module.get_asset<graphics::image2d>(static_mesh.texture_id());
 
-    _pipeline->bind_descriptors(command_buffer);
+      auto world_transform = scene.world_transform(node);
 
-    mesh.render(command_buffer);
+      _uniform_buffer_object.model = world_transform;
+      _uniform_buffer_object.normal = math::matrix4x4::transposed(math::matrix4x4::inverted(world_transform));
+
+      _uniforms.push("normal", _uniform_buffer_object.normal);
+      _uniforms.push("view", _uniform_buffer_object.view);
+      _uniforms.push("model", _uniform_buffer_object.model);
+      _uniforms.push("projection", _uniform_buffer_object.projection);
+
+      _pipeline->push(_uniforms);
+      _pipeline->push("image", image);
+
+      _pipeline->bind_descriptors(command_buffer);
+
+      mesh.render(command_buffer);
+    }
+
+    // _pipeline->bind(command_buffer);
+
+    // _uniform_buffer_object.model = math::matrix4x4::rotated(_uniform_buffer_object.model, math::vector3::up, math::degree{45.0f} * delta_time);
+    // _uniform_buffer_object.projection = math::matrix4x4::perspective(math::radian{45.0f}, window.aspect_ratio(), 0.1f, 10.0f);
+    // _uniform_buffer_object.normal = math::matrix4x4::transposed(math::matrix4x4::inverted(_uniform_buffer_object.model));
+
+    // _uniforms.push("normal", _uniform_buffer_object.normal);
+    // _uniforms.push("view", _uniform_buffer_object.view);
+    // _uniforms.push("model", _uniform_buffer_object.model);
+    // _uniforms.push("projection", _uniform_buffer_object.projection);
+
+    // _pipeline->push(_uniforms);
+    // _pipeline->push("image", image);
+
+    // _pipeline->bind_descriptors(command_buffer);
+
+    // mesh.render(command_buffer);
   }
 
 private:

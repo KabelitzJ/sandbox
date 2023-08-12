@@ -11,7 +11,9 @@ public:
 
   using super = math::uuid;
 
-  using super::super;
+  template<typename... Args>
+  id(Args&&... args)
+  : super{std::forward<Args>(args)...} { }
 
 }; // class id
 

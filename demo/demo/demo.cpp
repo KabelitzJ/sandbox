@@ -159,9 +159,16 @@ public:
 
     auto& assets_module = sbx::core::engine::get_module<sbx::assets::assets_module>();
 
-    assets_module.load_asset<sbx::graphics::image2d>("./demo/assets/textures/base.png");
+    auto texture_id = assets_module.load_asset<sbx::graphics::image2d>("./demo/assets/textures/base.png");
 
-    assets_module.load_asset<sbx::models::mesh>("./demo/assets/meshes/suzanne.obj");
+    auto mesh_id = assets_module.load_asset<sbx::models::mesh>("./demo/assets/meshes/suzanne.obj");
+
+    auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
+
+    auto& scene = scenes_module.scene();
+
+    auto monkey = scene.create_node("Monkey", sbx::scenes::transform{sbx::math::vector3{-2.0f, -2.0f, -1.0f}});
+    monkey.add_component<sbx::scenes::static_mesh>(mesh_id, texture_id);
 
     window.show();
   }

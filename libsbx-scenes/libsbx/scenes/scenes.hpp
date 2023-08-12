@@ -9,5 +9,6 @@
 #include <libsbx/scenes/components/tag.hpp>
 #include <libsbx/scenes/components/relationship.hpp>
 #include <libsbx/scenes/components/transform.hpp>
+#include <libsbx/scenes/components/static_mesh.hpp>
 
 #endif // LIBSBX_SCENE_HPP_

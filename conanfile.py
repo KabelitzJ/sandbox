@@ -87,6 +87,7 @@ class libsbx_recipe(ConanFile):
     self.requires("spirv-cross/1.3.243.0")
     self.requires("spirv-headers/1.5.4")
     self.requires("stb/cci.20220909")
+    self.requires("range-v3/0.12.0")
 
   def build(self):
     cmake = CMake(self)

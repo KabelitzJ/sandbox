@@ -1,0 +1,28 @@
+: 1
+location: libsbx-utility/
+:
+location: libsbx-core/
+:
+location: libsbx-async/
+:
+location: libsbx-io/
+:
+location: libsbx-scripting/
+:
+location: libsbx-math/
+:
+location: libsbx-devices/
+:
+location: libsbx-graphics/
+:
+location: demo/
+:
+location: libsbx-units/
+:
+location: libsbx-memory/
+:
+location: libsbx-signal/
+:
+location: libsbx-ecs/
+:
+location: libsbx-scene/

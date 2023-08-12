@@ -5,15 +5,20 @@
 
 namespace sbx::scenes {
 
-class tag final : public std::string {
+template<typename Char>
+class basic_tag final : public std::basic_string<Char> {
 
 public:
 
-  using super = std::string;
+  using super = std::basic_string<Char>;
 
-  using super::super;
+  template<typename... Args>
+  basic_tag(Args&&... args)
+  : super{std::forward<Args>(args)...} { }
 
 }; // class tag
+
+using tag = basic_tag<char>;
 
 } // namespace sbx::scenes
 

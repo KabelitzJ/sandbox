@@ -45,19 +45,17 @@ class asset {
 
 public:
 
-  using id_type = asset_id;
-
   inline static constexpr auto type = Type;
 
   virtual ~asset() = default;
 
-  auto id() const noexcept -> const id_type& {
+  auto id() const noexcept -> asset_id {
     return _id;
   }
 
 private:
 
-  id_type _id;
+  asset_id _id;
 
 }; // class asset
 
