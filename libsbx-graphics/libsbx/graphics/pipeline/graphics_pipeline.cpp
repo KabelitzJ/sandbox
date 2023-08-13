@@ -19,7 +19,6 @@ namespace sbx::graphics {
 
 graphics_pipeline::graphics_pipeline(stage stage, const std::filesystem::path& path, const vertex_input_description& vertex_input_description)
 : _bind_point{VK_PIPELINE_BIND_POINT_GRAPHICS},
-  _stage{stage},
   _is_descriptor_set_dirty{true} {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 

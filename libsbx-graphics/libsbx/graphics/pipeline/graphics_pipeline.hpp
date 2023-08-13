@@ -111,9 +111,7 @@ private:
   VkPipelineLayout _layout{};
   VkPipeline _handle{};
   VkPipelineBindPoint _bind_point{};
-
-  stage _stage{};
-
+  
   VkDescriptorPool _descriptor_pool{};
   VkDescriptorSetLayout _descriptor_set_layout{};
 
