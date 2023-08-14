@@ -21,7 +21,7 @@ auto read_file(const std::filesystem::path& path) -> std::vector<char> {
 
   content.resize(size);
 
-  file.read(content.data(), size);
+  file.read(content.data(), static_cast<std::streamsize>(size));
 
   file.close();
 

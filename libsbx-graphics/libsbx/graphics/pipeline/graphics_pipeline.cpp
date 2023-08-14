@@ -5,6 +5,7 @@
 #include <fmt/format.h>
 
 #include <libsbx/core/logger.hpp>
+#include <libsbx/core/engine.hpp>
 
 #include <libsbx/utility/timer.hpp>
 
@@ -16,12 +17,13 @@
 
 namespace sbx::graphics {
 
-graphics_pipeline::graphics_pipeline(stage stage, const std::filesystem::path& path, const vertex_input_description& vertex_input_description)
+graphics_pipeline::graphics_pipeline(const std::filesystem::path& path, const pipeline::stage& stage, const vertex_input_description& vertex_input_description)
 : _bind_point{VK_PIPELINE_BIND_POINT_GRAPHICS},
-  _stage{stage},
-  _is_descriptor_set_dirty{true} {
-  const auto& logical_device = graphics_module::get().logical_device();
-  const auto& render_stage = graphics_module::get().render_stage(stage);
+  _stage{stage} {
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+  const auto& logical_device = graphics_module.logical_device();
+  const auto& render_stage = graphics_module.render_stage(stage);
 
   auto timer = utility::timer{};
 
@@ -94,7 +96,6 @@ graphics_pipeline::graphics_pipeline(stage stage, const std::filesystem::path& p
       case shader::uniform_block::type::storage: {
         throw std::runtime_error{"Storage buffers are not supported yet"};
       }
-      case shader::uniform_block::type::none:
       default: {
         throw std::runtime_error{"Invalid uniform block type"};
       }
@@ -106,6 +107,19 @@ graphics_pipeline::graphics_pipeline(stage stage, const std::filesystem::path& p
 
     _descriptor_bindings.insert({name, uniform_block.binding()});
     _descriptor_sizes.insert({name, uniform_block.size()});
+  }
+
+  for (const auto& [name, uniform] : _uniforms) {
+    if (uniform.type() != shader::data_type::sampler2d) {
+      throw std::runtime_error{"Unsupported uniform type"};
+    }
+
+    const auto descriptor_type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+
+    descriptor_set_layout_bindings.push_back(image::create_descriptor_set_layout_binding(uniform.binding(), descriptor_type, uniform.stage_flags()));
+    descriptor_pool_sizes_by_type[descriptor_type] += swapchain::max_frames_in_flight; // ??? 3 ???
+
+    _descriptor_bindings.insert({name, uniform.binding()});
   }
 
   std::ranges::sort(descriptor_set_layout_bindings, [](const auto& lhs, const auto& rhs) {
@@ -174,40 +188,9 @@ graphics_pipeline::graphics_pipeline(stage stage, const std::filesystem::path& p
   depth_stencil_state.depthBoundsTestEnable = false;
   depth_stencil_state.stencilTestEnable = false;
 
-  // auto binding_descriptions = std::vector<VkVertexInputBindingDescription>{};
-
   const auto& binding_descriptions = vertex_input_description.binding_descriptions();
 
-  // binding_descriptions.push_back(VkVertexInputBindingDescription{
-  //   .binding = 0,
-  //   .stride = sizeof(vertex3d),
-  //   .inputRate = VK_VERTEX_INPUT_RATE_VERTEX
-  // });
-
-  // auto attribute_descriptions = std::vector<VkVertexInputAttributeDescription>{};
-
   const auto& attribute_descriptions = vertex_input_description.attribute_descriptions();
-
-  // attribute_descriptions.push_back(VkVertexInputAttributeDescription{
-  //   .location = 0,
-  //   .binding = 0,
-  //   .format = VK_FORMAT_R32G32B32_SFLOAT,
-  //   .offset = offsetof(vertex3d, position)
-  // });
-
-  // attribute_descriptions.push_back(VkVertexInputAttributeDescription{
-  //   .location = 1,
-  //   .binding = 0,
-  //   .format = VK_FORMAT_R32G32B32_SFLOAT,
-  //   .offset = offsetof(vertex3d, normal)
-  // });
-
-  // attribute_descriptions.push_back(VkVertexInputAttributeDescription{
-  //   .location = 2,
-  //   .binding = 0,
-  //   .format = VK_FORMAT_R32G32_SFLOAT,
-  //   .offset = offsetof(vertex3d, uv)
-  // });
 
   auto vertex_input_state = VkPipelineVertexInputStateCreateInfo{};
   vertex_input_state.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -233,7 +216,8 @@ graphics_pipeline::graphics_pipeline(stage stage, const std::filesystem::path& p
   descriptor_pool_create_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
   descriptor_pool_create_info.poolSizeCount = static_cast<std::uint32_t>(descriptor_pool_sizes.size());
   descriptor_pool_create_info.pPoolSizes = descriptor_pool_sizes.data();
-  descriptor_pool_create_info.maxSets = swapchain::max_frames_in_flight;
+  // [NOTE] KAJ 2023-08-14 : "A allocation failed due to having no more space in the descriptor pool" is caused by this value being too low. Magic number for now, but should be enough for most cases.
+  descriptor_pool_create_info.maxSets = 8192;
 
   validate(vkCreateDescriptorPool(logical_device, &descriptor_pool_create_info, nullptr, &_descriptor_pool));
 
@@ -245,12 +229,6 @@ graphics_pipeline::graphics_pipeline(stage stage, const std::filesystem::path& p
   pipeline_layout_create_info.pPushConstantRanges = nullptr;
 
   validate(vkCreatePipelineLayout(logical_device, &pipeline_layout_create_info, nullptr, &_layout));
-
-  _descriptor_sets.resize(swapchain::max_frames_in_flight);
-
-  for (auto& descriptor_set : _descriptor_sets) {
-    descriptor_set = std::make_unique<graphics::descriptor_set>(*this);
-  }
 
   auto subpass = std::uint32_t{0};
   
@@ -280,11 +258,13 @@ graphics_pipeline::graphics_pipeline(stage stage, const std::filesystem::path& p
 }
 
 graphics_pipeline::~graphics_pipeline() {
-  const auto& logical_device = graphics_module::get().logical_device();
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+  const auto& logical_device = graphics_module.logical_device();
 
   _shaders.clear();
 
-  _descriptor_sets.clear();
+  logical_device.wait_idle();
 
   vkDestroyDescriptorPool(logical_device, _descriptor_pool, nullptr);
   vkDestroyDescriptorSetLayout(logical_device, _descriptor_set_layout, nullptr);
@@ -312,34 +292,6 @@ auto graphics_pipeline::layout() const noexcept -> const VkPipelineLayout& {
 
 auto graphics_pipeline::bind_point() const noexcept -> VkPipelineBindPoint {
   return _bind_point;
-}
-
-auto graphics_pipeline::push(const uniform_handler& uniform) -> void {
-  _push(uniform.name(), uniform.uniform_buffer());
-}
-
-auto graphics_pipeline::bind_descriptors(const command_buffer& command_buffer) -> void {
-  const auto current_frame = graphics_module::get().current_frame();
-
-  auto& descriptor_set = _descriptor_sets[current_frame];
-
-  if (_is_descriptor_set_dirty) {
-    _write_descriptor_sets.clear();
-    _write_descriptor_sets.reserve(_descriptors.size());
-
-    for (const auto& [name, descriptor] : _descriptors) {
-      auto write_descriptor_set = descriptor.write_descriptor_set.handle();
-      write_descriptor_set.dstSet = *descriptor_set;
-
-      _write_descriptor_sets.push_back(write_descriptor_set);
-    }
-
-    descriptor_set->update(_write_descriptor_sets);
-
-    _is_descriptor_set_dirty = false;
-  }
-
-  descriptor_set->bind(command_buffer);
 }
 
 auto graphics_pipeline::_get_stage_from_name(const std::string& name) const noexcept -> VkShaderStageFlagBits {

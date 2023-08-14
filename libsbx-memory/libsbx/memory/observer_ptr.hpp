@@ -4,8 +4,19 @@
 #include <memory>
 #include <utility>
 
+#include <libsbx/utility/assert.hpp>
+
 namespace sbx::memory {
 
+/**
+ * @brief A non-owning pointer that can be used to observe the value of a pointer.
+ * 
+ * @tparam Type The type of the pointer.
+ * 
+ * @since 1.0.0
+ * 
+ * @note This class adds null checks to the pointer dereference operators in debug builds. 
+ */
 template<typename Type>
 class observer_ptr {
 
@@ -71,18 +82,22 @@ public:
   }
 
   constexpr auto operator->() const noexcept -> const_pointer {
+    utility::assert_that(is_valid(), "Cannot dereference a null pointer.");
     return _value;
   }
 
   constexpr auto operator->() noexcept -> pointer {
+    utility::assert_that(is_valid(), "Cannot dereference a null pointer.");
     return _value;
   }
 
   constexpr auto operator*() const noexcept(noexcept(*std::declval<pointer>())) -> std::add_const_t<std::add_lvalue_reference_t<value_type>> {
+    utility::assert_that(is_valid(), "Cannot dereference a null pointer.");
     return *_value;
   }
 
   constexpr auto operator*() noexcept(noexcept(*std::declval<pointer>())) -> std::add_lvalue_reference_t<value_type> {
+    utility::assert_that(is_valid(), "Cannot dereference a null pointer.");
     return *_value;
   }
 
@@ -100,11 +115,30 @@ private:
 
 }; // class observer_ptr
 
+/**
+ * @brief Compares two observer pointers for equality.
+ * 
+ * @tparam Type The type of the pointer.
+ * 
+ * @param lhs The left hand side of the comparison.
+ * @param rhs The right hand side of the comparison.
+ * 
+ * @return true if the pointers are equal, false otherwise.
+ */
 template<typename Type>
 constexpr auto operator==(const observer_ptr<Type>& lhs, const observer_ptr<Type>& rhs) noexcept -> bool {
   return lhs.get() == rhs.get();
 }
 
+/**
+ * @brief Creates an observer pointer from a pointer.
+ * 
+ * @tparam Type The type of the pointer.
+ * 
+ * @param value The pointer to create the observer pointer from.
+ * 
+ * @return An observer pointer to the pointer. 
+ */
 template<typename Type>
 constexpr auto make_observer(Type* value) noexcept -> observer_ptr<Type> {
   return observer_ptr<Type>{value};

@@ -55,58 +55,55 @@ private:
   struct module_factory {
     module_manager::stage stage{};
     std::unordered_set<std::type_index> dependencies{};
-    std::function<std::unique_ptr<module_base>()> create{};
+    std::function<module_base*()> create{};
   }; // module_factory
 
-  inline static std::unordered_map<std::type_index, module_factory> _factories{};
+  static auto _factories() -> std::unordered_map<std::type_index, module_factory>& {
+    static auto instance = std::unordered_map<std::type_index, module_factory>{};
+    return instance;
+  }
 
 }; // class module_manager
 
-template<typename Type>
+template<typename Derived>
 class module : public module_manager::module_base, public utility::noncopyable {
 
 public:
 
   virtual ~module() {
-    static_assert(!std::is_abstract_v<Type>, "Class may not be abstract.");
-    static_assert(std::is_base_of_v<module<Type>, Type>, "Class must inherit from module<Class>.");
-
-    if (static_cast<Type*>(this) == _instance) {
-      _instance = nullptr;
-    }
-  }
-
-  static auto get() noexcept -> Type& {
-    return *_instance;
+    static_assert(!std::is_abstract_v<Derived>, "Class may not be abstract.");
+    static_assert(std::is_base_of_v<module<Derived>, Derived>, "Class must inherit from module<Class>.");
   }
 
 protected:
 
   using base_type = module_manager::module_base;
 
-  template<typename... Types>
-  using dependencies = module_manager::dependencies<Types...>;
+  template<typename... Dependencies>
+  using dependencies = module_manager::dependencies<Dependencies...>;
 
   using stage = module_manager::stage;
 
-  template<derived_from<base_type>... Types>
-  static auto register_module(stage stage, dependencies<Types...>&& dependencies = {}) -> bool {
-    module_manager::_factories.insert({std::type_index{typeid(Type)}, module_manager::module_factory{
+  template<derived_from<base_type>... Dependencies>
+  static auto register_module(stage stage, dependencies<Dependencies...>&& dependencies = {}) -> bool {
+    module_manager::_factories().insert({std::type_index{typeid(Derived)}, module_manager::module_factory{
       .stage = stage,
       .dependencies = dependencies.get(),
       .create = [](){
-        auto instance = std::make_unique<Type>();
-        module<Type>::_instance = instance.get();
+        auto* instance = reinterpret_cast<Derived*>(::operator new(sizeof(Derived)));
+
+        if (!instance) {
+          throw std::bad_alloc{};
+        }
+
+        std::construct_at(instance);
+
         return instance;
       }
     }});
 
     return true;
   }
-
-private:
-
-  inline static Type* _instance{};
 
 }; // class module
 

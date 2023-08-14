@@ -3,6 +3,8 @@
 #include <limits>
 #include <ranges>
 
+#include <libsbx/core/engine.hpp>
+
 #include <libsbx/graphics/graphics_module.hpp>
 
 namespace sbx::graphics {
@@ -20,8 +22,10 @@ swapchain::swapchain(const VkExtent2D& extent, const std::unique_ptr<swapchain>&
   _active_image_index{std::numeric_limits<std::uint32_t>::max()},
   _pre_transform{VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR},
   _composite_alpha{VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR} {
-  const auto& logical_device = graphics_module::get().logical_device();
-  const auto& surface = graphics_module::get().surface();
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+  const auto& logical_device = graphics_module.logical_device();
+  const auto& surface = graphics_module.surface();
 
   const auto& surface_capabilities = surface.capabilities();
   const auto& surface_format = surface.format();
@@ -98,7 +102,9 @@ swapchain::swapchain(const VkExtent2D& extent, const std::unique_ptr<swapchain>&
 }
 
 swapchain::~swapchain() {
-	const auto& logical_device = graphics_module::get().logical_device();
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+	const auto& logical_device = graphics_module.logical_device();
 
 	vkDestroySwapchainKHR(logical_device, _handle, nullptr);
 
@@ -148,7 +154,9 @@ auto swapchain::image_view(std::uint32_t index) const noexcept -> const VkImageV
 }
 
 auto swapchain::acquire_next_image(const VkSemaphore& image_available_semaphore, const VkFence& fence) -> VkResult {
-  auto& logical_device = graphics_module::get().logical_device();
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+        
+  auto& logical_device = graphics_module.logical_device();
 
   if (fence) {
     validate(vkWaitForFences(logical_device, 1, &fence, true, std::numeric_limits<std::uint64_t>::max()));
@@ -164,7 +172,9 @@ auto swapchain::acquire_next_image(const VkSemaphore& image_available_semaphore,
 }
 
 auto swapchain::present(const VkSemaphore& wait_semaphore) -> VkResult {
-  const auto& logical_device = graphics_module::get().logical_device();
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+        
+  auto& logical_device = graphics_module.logical_device();
 
   auto present_info = VkPresentInfoKHR{};
 	present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -178,8 +188,10 @@ auto swapchain::present(const VkSemaphore& wait_semaphore) -> VkResult {
 }
 
 auto swapchain::_choose_present_mode() const -> VkPresentModeKHR {
-  const auto& physical_device = graphics_module::get().physical_device();
-  const auto& surface = graphics_module::get().surface();
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+  const auto& physical_device = graphics_module.physical_device();
+  const auto& surface = graphics_module.surface();
 
   auto physical_present_mode_count = std::uint32_t{0};
   vkGetPhysicalDeviceSurfacePresentModesKHR(physical_device, surface, &physical_present_mode_count, nullptr);
@@ -197,7 +209,9 @@ auto swapchain::_choose_present_mode() const -> VkPresentModeKHR {
 }
 
 auto swapchain::_create_image_view(const VkImage& image, VkFormat format, VkImageAspectFlags aspect, VkImageView& image_view) -> void {
-  const auto& logical_device = graphics_module::get().logical_device();
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+  const auto& logical_device = graphics_module.logical_device();
 
   auto image_view_create_info = VkImageViewCreateInfo{};
   image_view_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;

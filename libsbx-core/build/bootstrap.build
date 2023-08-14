@@ -1,7 +1,0 @@
-project = libsbx-core
-
-using version
-using config
-using test
-using install
-using dist

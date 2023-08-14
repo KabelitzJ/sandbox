@@ -7,12 +7,12 @@
 
 #include <libsbx/core/module.hpp>
 
-#include <libsbx/async/async_module.hpp>
-
 #include <libsbx/devices/devices_module.hpp>
 
 #include <libsbx/utility/hash.hpp>
 #include <libsbx/utility/concepts.hpp>
+
+#include <libsbx/assets/assets_module.hpp>
 
 #include <libsbx/graphics/devices/instance.hpp>
 #include <libsbx/graphics/devices/physical_device.hpp>
@@ -49,7 +49,7 @@ auto validate(VkResult result) -> void;
  */
 class graphics_module final : public core::module<graphics_module> {
 
-  inline static const auto is_registered = register_module(stage::normal, dependencies<async::async_module, devices::devices_module>{});
+  inline static const auto is_registered = register_module(stage::normal, dependencies<assets::assets_module, devices::devices_module>{});
 
 public:
 

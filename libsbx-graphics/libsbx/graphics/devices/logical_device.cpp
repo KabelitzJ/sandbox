@@ -1,7 +1,7 @@
 #include <libsbx/graphics/devices/logical_device.hpp>
 
 #include <libsbx/core/logger.hpp>
-#include <libsbx/core/target.hpp>
+#include <libsbx/utility/target.hpp>
 
 #include <libsbx/graphics/graphics_module.hpp>
 #include <libsbx/graphics/devices/validation_layers.hpp>

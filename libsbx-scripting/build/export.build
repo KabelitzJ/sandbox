@@ -1,6 +1,0 @@
-$out_root/
-{
-  include libsbx/scripting/
-}
-
-export $out_root/libsbx/scripting/$import.target

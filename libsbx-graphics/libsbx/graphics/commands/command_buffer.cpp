@@ -3,7 +3,9 @@
 #include <limits>
 
 #include <libsbx/core/logger.hpp>
-#include <libsbx/core/assert.hpp>
+#include <libsbx/core/engine.hpp>
+
+#include <libsbx/utility/assert.hpp>
 
 #include <libsbx/graphics/graphics_module.hpp>
 
@@ -12,10 +14,13 @@ namespace sbx::graphics {
 inline static constexpr auto submit_pipeline_stages = VkPipelineStageFlags{VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
 
 command_buffer::command_buffer(bool should_begin, VkQueueFlagBits queue_type, VkCommandBufferLevel buffer_level)
-: _command_pool{graphics_module::get().command_pool(queue_type)},
-  _queue_type{queue_type},
+: _queue_type{queue_type},
   _is_running{false} {
-  auto& logical_device = graphics_module::get().logical_device();
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+  auto& logical_device = graphics_module.logical_device();
+
+  _command_pool = graphics_module.command_pool(queue_type);
 
   auto command_buffer_allocate_info = VkCommandBufferAllocateInfo{};
 	command_buffer_allocate_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -31,7 +36,9 @@ command_buffer::command_buffer(bool should_begin, VkQueueFlagBits queue_type, Vk
 }
 
 command_buffer::~command_buffer() {
-  auto& logical_device = graphics_module::get().logical_device();
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+  auto& logical_device = graphics_module.logical_device();
   vkFreeCommandBuffers(logical_device, *_command_pool, 1, &_handle);
 }
 
@@ -74,7 +81,9 @@ auto command_buffer::end() -> void {
 }
 
 auto command_buffer::submit_idle() -> void {
-  const auto& logical_device = graphics_module::get().logical_device();
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+  const auto& logical_device = graphics_module.logical_device();
 	const auto& selected_queue = _queue();
 
 	if (_is_running) {
@@ -103,7 +112,9 @@ auto command_buffer::submit_idle() -> void {
 }
 
 auto command_buffer::submit(const VkSemaphore& wait_semaphore, const VkSemaphore &signal_semaphore, const VkFence& fence) -> void {
-  const auto& logical_device = graphics_module::get().logical_device();
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+  const auto& logical_device = graphics_module.logical_device();
 	const auto& selected_queue = _queue();
 
 	if (_is_running) {
@@ -181,7 +192,9 @@ auto command_buffer::end_render_pass() -> void {
 }
 
 auto command_buffer::_queue() const -> const logical_device::queue& {
-  auto& logical_device = graphics_module::get().logical_device();
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+  auto& logical_device = graphics_module.logical_device();
 
   switch (_queue_type) {
     case VK_QUEUE_GRAPHICS_BIT:

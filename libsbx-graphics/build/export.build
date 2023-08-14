@@ -1,6 +1,0 @@
-$out_root/
-{
-  include libsbx/graphics/
-}
-
-export $out_root/libsbx/graphics/$import.target

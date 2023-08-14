@@ -7,7 +7,9 @@
 
 #include <vulkan/vulkan.hpp>
 
-#include <libsbx/core/target.hpp>
+#include <libsbx/core/engine.hpp>
+
+#include <libsbx/utility/target.hpp>
 
 #include <libsbx/devices/devices_module.hpp>
 
@@ -23,11 +25,13 @@ struct extensions {
   }
 
   static auto instance() -> std::vector<const char*> {
-    auto required_extensions = devices::devices_module::get().required_instance_extensions();
+    auto& devices_module = core::engine::get_module<devices::devices_module>();
+
+    auto required_extensions = devices_module.required_instance_extensions();
 
     required_extensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
 
-    if constexpr (core::build_configuration_v == core::build_configuration::debug) {
+    if constexpr (utility::build_configuration_v == utility::build_configuration::debug) {
       required_extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
     }
 

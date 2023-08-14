@@ -1,7 +1,0 @@
-project = libsbx-memory
-
-using version
-using config
-using test
-using install
-using dist

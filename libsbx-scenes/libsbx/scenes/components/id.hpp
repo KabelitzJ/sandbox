@@ -5,30 +5,15 @@
 
 namespace sbx::scenes {
 
-class id {
+class id final : public math::uuid {
 
 public:
 
-  id(math::uuid id)
-  : _id{id} { }
+  using super = math::uuid;
 
-  id(const id& other) = default;
-
-  operator const math::uuid&() const noexcept {
-    return _id;
-  }
-
-  operator math::uuid&() noexcept {
-    return _id;
-  }
-
-  auto value() const noexcept -> const math::uuid& {
-    return _id;
-  }
-
-private:
-
-  math::uuid _id;
+  template<typename... Args>
+  id(Args&&... args)
+  : super{std::forward<Args>(args)...} { }
 
 }; // class id
 

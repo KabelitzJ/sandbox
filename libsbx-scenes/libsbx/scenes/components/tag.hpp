@@ -5,35 +5,20 @@
 
 namespace sbx::scenes {
 
-class tag {
+template<typename Char>
+class basic_tag final : public std::basic_string<Char> {
 
 public:
 
-  tag(const std::string& tag)
-  : _tag{tag} { }
+  using super = std::basic_string<Char>;
 
-  tag(std::string tag)
-  : _tag{std::move(tag)} { }
-
-  tag(const tag& other) = default;
-
-  operator const std::string&() const noexcept {
-    return _tag;
-  }
-
-  operator std::string&() noexcept {
-    return _tag;
-  }
-
-  auto value() const noexcept -> const std::string& {
-    return _tag;
-  }
-
-private:
-
-  std::string _tag;
+  template<typename... Args>
+  basic_tag(Args&&... args)
+  : super{std::forward<Args>(args)...} { }
 
 }; // class tag
+
+using tag = basic_tag<char>;
 
 } // namespace sbx::scenes
 

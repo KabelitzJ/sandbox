@@ -98,7 +98,7 @@ struct entity_traits : basic_entity_traits<Type> {
    * @return
    */
   static constexpr auto to_version(const entity_type value) noexcept -> version_type {
-    return (to_underlying(value) >> version_shift_v);
+    return static_cast<version_type>(to_underlying(value) >> version_shift_v);
   }
 
   /**

@@ -11,27 +11,62 @@
 
 namespace sbx::assets {
 
-class asset {
+enum class asset_type : std::uint32_t {
+  mesh,
+  texture,
+  pipeline
+}; // enum class asset_type
+
+class asset_id {
 
 public:
 
-  using handle_type = math::uuid;
+  using value_type = math::uuid;
 
-  asset()
-  : _handle{} { }
+  asset_id() noexcept = default;
 
-  virtual ~asset() = default;
+  ~asset_id() = default;
 
-  auto handle() const noexcept -> const handle_type& {
-    return _handle;
+  operator value_type() const noexcept {
+    return _value;
+  }
+
+  auto operator==(const asset_id& other) const noexcept -> bool {
+    return _value == other._value;
   }
 
 private:
 
-  handle_type _handle;
+  value_type _value;
+
+}; // class asset_id
+
+template<asset_type Type>
+class asset {
+
+public:
+
+  inline static constexpr auto type = Type;
+
+  virtual ~asset() = default;
+
+  auto id() const noexcept -> asset_id {
+    return _id;
+  }
+
+private:
+
+  asset_id _id;
 
 }; // class asset
 
 } // namespace sbx::assets
+
+template<>
+struct std::hash<sbx::assets::asset_id> {
+  auto operator()(const sbx::assets::asset_id& id) const noexcept -> std::size_t {
+    return static_cast<sbx::assets::asset_id::value_type>(id);
+  }
+}; // struct std::hash
 
 #endif // LIBSBX_ASSETS_ASSET_HPP_

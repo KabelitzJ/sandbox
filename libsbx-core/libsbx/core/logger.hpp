@@ -36,12 +36,13 @@
 
 #include <memory>
 #include <source_location>
+#include <unordered_map>
 
 #include <spdlog/logger.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/sinks/basic_file_sink.h>
 
-#include <libsbx/core/target.hpp>
+#include <libsbx/utility/target.hpp>
 
 namespace sbx::core {
 
@@ -59,28 +60,28 @@ public:
   template<typename... Args>
   static auto trace(std::string name, format_string_type<Args...> format, Args&&... args) -> void {
     // [NOTE] KAJ 2023-03-20 19:43 - This should make trace and debug messages be no-ops in release builds.
-    if constexpr (build_configuration_v == build_configuration::debug) {
+    if constexpr (utility::build_configuration_v == utility::build_configuration::debug) {
       _instance(std::move(name)).trace(format, std::forward<Args>(args)...);
     }
   }
 
   template<typename Type>
   static auto trace(std::string name, const Type& value) -> void {
-    if constexpr (build_configuration_v == build_configuration::debug) {
+    if constexpr (utility::build_configuration_v == utility::build_configuration::debug) {
       _instance(std::move(name)).trace(value);
     }
   }
 
   template<typename... Args>
   static auto debug(std::string name, format_string_type<Args...> format, Args&&... args) -> void {
-    if constexpr (build_configuration_v == build_configuration::debug) {
+    if constexpr (utility::build_configuration_v == utility::build_configuration::debug) {
       _instance(std::move(name)).debug(format, std::forward<Args>(args)...);
     }
   }
 
   template<typename Type>
   static auto debug(std::string name, const Type& value) -> void {
-    if constexpr (build_configuration_v == build_configuration::debug) {
+    if constexpr (utility::build_configuration_v == utility::build_configuration::debug) {
       _instance(std::move(name)).debug(value);
     }
   }
@@ -128,8 +129,15 @@ public:
 private:
 
   static auto _instance(std::string name) -> spdlog::logger& {
-    static auto instance = _create_logger(std::move(name));
-    return instance;
+    if (auto entry = _loggers.find(name); entry != _loggers.end()) {
+      return entry->second;
+    }
+
+    auto logger = _create_logger(name);
+
+    auto entry = _loggers.emplace(std::move(name), std::move(logger));
+
+    return entry.first->second;
   }
 
   static auto _create_logger(std::string name) -> spdlog::logger {
@@ -137,7 +145,7 @@ private:
 
     sinks.push_back(std::make_shared<spdlog::sinks::basic_file_sink_mt>("./demo/logs/sbx.log", true));
 
-    if constexpr (build_configuration_v == build_configuration::debug) {
+    if constexpr (utility::build_configuration_v == utility::build_configuration::debug) {
       sinks.push_back(std::make_shared<spdlog::sinks::stdout_color_sink_mt>());
     }
 
@@ -145,7 +153,7 @@ private:
 
     logger.set_pattern("[%Y-%m-%d %H:%M:%S] [%n] [%^%l%$] : %v");
 
-    if constexpr (build_configuration_v == build_configuration::debug) {
+    if constexpr (utility::build_configuration_v == utility::build_configuration::debug) {
       logger.set_level(spdlog::level::debug);
     } else {
       logger.set_level(spdlog::level::info);
@@ -153,6 +161,8 @@ private:
 
     return logger;
   } 
+
+  inline static std::unordered_map<std::string, spdlog::logger> _loggers{};
 
 }; // class logger
 

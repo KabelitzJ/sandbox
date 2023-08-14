@@ -1,6 +1,8 @@
 #include <libsbx/graphics/buffer/buffer.hpp>
 
-#include <libsbx/core/assert.hpp>
+#include <libsbx/utility/assert.hpp>
+
+#include <libsbx/core/engine.hpp>
 
 #include <libsbx/graphics/graphics_module.hpp>
 
@@ -8,10 +10,12 @@
 
 namespace sbx::graphics {
 
-buffer::buffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, memory::observer_ptr<void> memory)
+buffer::buffer(size_type size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, memory::observer_ptr<void> memory)
 : _size{size} {
-  const auto& physical_device = graphics_module::get().physical_device();
-  const auto& logical_device = graphics_module::get().logical_device();
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+  const auto& physical_device = graphics_module.physical_device();
+  const auto& logical_device = graphics_module.logical_device();
 
   const auto& sharing_mode = logical_device.queue_sharing_mode();
 
@@ -40,6 +44,7 @@ buffer::buffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlag
 
     std::memcpy(mapped_memory.get(), memory.get(), _size);
 
+    // [NOTE] KAJ 2023-07-28 : If the memory is not host coherent, we need to flush it.
     if (!(usage & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)) {
       auto flush_range = VkMappedMemoryRange{};
       flush_range.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
@@ -57,7 +62,9 @@ buffer::buffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlag
 }
 
 buffer::~buffer() {
-  const auto& logical_device = graphics_module::get().logical_device();
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+  const auto& logical_device = graphics_module.logical_device();
 
   vkFreeMemory(logical_device, _memory, nullptr);
   vkDestroyBuffer(logical_device, _handle, nullptr);
@@ -80,7 +87,9 @@ auto buffer::size() const noexcept -> std::size_t {
 }
 
 auto buffer::map() -> memory::observer_ptr<void> {
-  const auto& logical_device = graphics_module::get().logical_device();
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+  const auto& logical_device = graphics_module.logical_device();
 
   auto* mapped_memory = static_cast<void*>(nullptr);
 
@@ -90,12 +99,14 @@ auto buffer::map() -> memory::observer_ptr<void> {
 }
 
 auto buffer::unmap() -> void {
-  const auto& logical_device = graphics_module::get().logical_device();
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+  const auto& logical_device = graphics_module.logical_device();
 
   vkUnmapMemory(logical_device, _memory);
 }
 
-auto buffer::write(memory::observer_ptr<const void> data, VkDeviceSize size, VkDeviceSize offset) -> void {
+auto buffer::write(memory::observer_ptr<const void> data, size_type size, size_type offset) -> void {
   auto mapped_memory = map();
 
   std::memcpy(static_cast<std::uint8_t*>(mapped_memory.get()) + offset, data.get(), size);

@@ -1,5 +1,7 @@
 #include <libsbx/graphics/render_stage.hpp>
 
+#include <libsbx/core/engine.hpp>
+
 #include <libsbx/graphics/graphics_module.hpp>
 
 namespace sbx::graphics {
@@ -76,7 +78,9 @@ render_stage::render_stage(std::vector<graphics::attachment>&& attachments, std:
 }
 
 render_stage::~render_stage() {
-  auto& logical_device = graphics_module::get().logical_device();
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+  auto& logical_device = graphics_module.logical_device();
 
   for (const auto& framebuffer : _framebuffers) {
     vkDestroyFramebuffer(logical_device, framebuffer, nullptr);
@@ -86,6 +90,8 @@ render_stage::~render_stage() {
 }
 
 auto render_stage::update() -> void {
+  auto& devices_module = core::engine::get_module<devices::devices_module>();
+
   auto last_render_area = _render_area;
 
   _render_area.set_offset(_viewport.offset());
@@ -95,7 +101,7 @@ auto render_stage::update() -> void {
   if (auto size = _viewport.size(); size) {
     _render_area.set_extent(math::vector2u{_viewport.scale() * (*size)});
   } else {
-    auto& window = devices::devices_module::get().window();
+    auto& window = devices_module.window();
     auto window_size = math::vector2u{window.width(), window.height()};
 
     _render_area.set_extent(math::vector2u{_viewport.scale() * window_size});
@@ -108,9 +114,11 @@ auto render_stage::update() -> void {
 }
 
 auto render_stage::rebuild(const swapchain& swapchain) -> void {
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
   update();
 
-  auto& surface = graphics_module::get().surface();
+  auto& surface = graphics_module.surface();
 
   if (_depth_attachment) {
     _depth_stencil = std::make_unique<graphics::depth_image>(_render_area.extent(), VK_SAMPLE_COUNT_1_BIT);
@@ -150,7 +158,9 @@ auto render_stage::framebuffer(std::uint32_t index) noexcept -> const VkFramebuf
 }
 
 auto render_stage::_create_render_pass(VkFormat depth_format, VkFormat surface_format) -> void {
-  auto& logical_device = graphics_module::get().logical_device();
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+  auto& logical_device = graphics_module.logical_device();
 
   auto attachments = std::vector<VkAttachmentDescription>{};
 
@@ -195,7 +205,7 @@ auto render_stage::_create_render_pass(VkFormat depth_format, VkFormat surface_f
 		auto depth_attachment = std::optional<std::uint32_t>{};
 
 		for (const auto& attachment_binding : subpass.attachment_bindings()) {
-			auto image_attachment = attachment(attachment_binding);
+			auto image_attachment = find_attachment(attachment_binding);
 
 			if (!image_attachment) {
 				throw std::runtime_error{fmt::format("Failed to find attachment with binding {}", attachment_binding)};
@@ -264,7 +274,9 @@ auto render_stage::_create_render_pass(VkFormat depth_format, VkFormat surface_f
 }
 
 auto render_stage::_rebuild_framebuffers(const swapchain& swapchain) -> void {
-  auto& logical_device = graphics_module::get().logical_device();
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+  auto& logical_device = graphics_module.logical_device();
 
   for (const auto& framebuffer : _framebuffers) {
     vkDestroyFramebuffer(logical_device, framebuffer, nullptr);

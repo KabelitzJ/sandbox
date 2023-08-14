@@ -1,5 +1,7 @@
 #include <libsbx/graphics/buffer/uniform_buffer.hpp>
 
+#include <libsbx/graphics/graphics_module.hpp>
+
 namespace sbx::graphics {
 
 uniform_buffer::uniform_buffer(VkDeviceSize size, memory::observer_ptr<void> data)
@@ -8,6 +10,12 @@ uniform_buffer::uniform_buffer(VkDeviceSize size, memory::observer_ptr<void> dat
 }
 
 uniform_buffer::~uniform_buffer() {
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+  const auto& logical_device = graphics_module.logical_device();
+
+  logical_device.wait_idle();
+  
   buffer::unmap();
 }
 
@@ -21,9 +29,9 @@ auto uniform_buffer::mapped_memory() const noexcept -> memory::observer_ptr<void
 
 auto uniform_buffer::write_descriptor_set(std::uint32_t binding, VkDescriptorType descriptor_type) const noexcept -> graphics::write_descriptor_set {
   auto buffer_info = VkDescriptorBufferInfo{};
-  buffer_info.buffer = _handle;
+  buffer_info.buffer = handle();
   buffer_info.offset = 0;
-  buffer_info.range = _size;
+  buffer_info.range = size();
 
   auto write_descriptor_set = VkWriteDescriptorSet{};
   write_descriptor_set.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;

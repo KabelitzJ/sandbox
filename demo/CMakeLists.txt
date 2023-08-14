@@ -4,14 +4,31 @@ message(STATUS "Configuring ${PROJECT_NAME}...")
 
 add_executable(${PROJECT_NAME})
 
-find_program(POWERSHELL_PATH NAMES pwsh)
+if(WIN32)
+  message(STATUS "WIN32")
 
-message(STATUS "POWERSHELL_PATH: ${POWERSHELL_PATH}")
+  find_program(POWERSHELL_PATH NAMES pwsh)
 
-add_custom_target(
-  shaders
-  COMMAND ${POWERSHELL_PATH} -ExecutionPolicy Bypass "${CMAKE_SOURCE_DIR}/scripts/compile_shaders.ps1" -directory "${PROJECT_SOURCE_DIR}/assets/shaders/"
-)
+  message(STATUS "POWERSHELL_PATH: ${POWERSHELL_PATH}")
+
+  add_custom_target(
+    shaders
+    COMMAND ${POWERSHELL_PATH} -ExecutionPolicy Bypass "${CMAKE_SOURCE_DIR}/scripts/compile_shaders.ps1" -directory "${PROJECT_SOURCE_DIR}/assets/shaders/"
+  )
+elseif(UNIX)
+  message(STATUS "UNIX")
+  find_program(BASH_PATH NAMES bash)
+
+  message(STATUS "BASH_PATH: ${BASH_PATH}")
+
+  add_custom_target(
+    shaders
+    COMMAND ${BASH_PATH} "${CMAKE_SOURCE_DIR}/scripts/compile_shaders.sh" "${PROJECT_SOURCE_DIR}/assets/shaders/"
+  )
+else()
+  message(FATAL_ERROR "Unsupported platform detected")
+endif()
+
 
 add_dependencies(${PROJECT_NAME} shaders)
 
@@ -42,7 +59,7 @@ target_link_libraries(
     libsbx::ecs
     libsbx::scenes
     libsbx::scripting
-    libsbx::signal
+    libsbx::signals
     libsbx::assets
     libsbx::models
 )
@@ -53,6 +70,7 @@ set_target_properties(
     ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
     LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+    POSITION_INDEPENDENT_CODE ON
 )
 
 target_compile_features(
@@ -84,3 +102,11 @@ target_compile_options(
     -static-libstdc++ 
     -static-libgcc
 )
+
+if(MINGW)
+  target_link_options(
+    ${PROJECT_NAME}
+    PUBLIC
+      -Wl,--disable-dynamicbase,--default-image-base-low
+  )
+endif()

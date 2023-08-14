@@ -1,19 +1,25 @@
 #ifndef LIBSBX_GRAPHICS_IMAGES_IMAGE2D_HPP_
 #define LIBSBX_GRAPHICS_IMAGES_IMAGE2D_HPP_
 
+#include <filesystem>
+
 #include <libsbx/math/vector2.hpp>
+
+#include <libsbx/assets/asset.hpp>
 
 #include <libsbx/graphics/images/image.hpp>
 
 namespace sbx::graphics {
 
-class image2d : public image {
+class image2d : public image, public assets::asset<assets::asset_type::texture> {
 
 public:
 
   image2d(const math::vector2u& extent, VkFormat format = VK_FORMAT_R8G8B8A8_UNORM, VkImageLayout layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VkImageUsageFlags usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_STORAGE_BIT, VkFilter filter = VK_FILTER_LINEAR, VkSamplerAddressMode address_mode = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VkSampleCountFlagBits samples = VK_SAMPLE_COUNT_1_BIT, bool anisotropic = false, bool mipmap = false);
 
-  ~image2d() override = default;
+  image2d(const std::filesystem::path& path, VkFilter filter = VK_FILTER_LINEAR, VkSamplerAddressMode address_mode = VK_SAMPLER_ADDRESS_MODE_REPEAT, bool anisotropic = true, bool mipmap = true);
+
+  ~image2d() override;
 
 private:
 
@@ -21,6 +27,7 @@ private:
 
   bool _anisotropic;
 	bool _mipmap;
+  std::filesystem::path _path;
 
 }; // class image2d
 

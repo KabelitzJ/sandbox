@@ -53,6 +53,8 @@ public:
   /** @brief A vector with all components set to zero. */
   inline static constexpr basic_vector3 zero{value_type{0}, value_type{0}, value_type{0}};
 
+  inline static constexpr basic_vector3 one{value_type{1}, value_type{1}, value_type{1}};
+
   /** @brief A unit vector along the positive x-axis */
   inline static constexpr basic_vector3 right{value_type{1}, value_type{0}, value_type{0}};
 

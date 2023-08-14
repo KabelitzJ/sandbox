@@ -18,21 +18,22 @@ class uniform_handler {
 
 public:
 
-  explicit uniform_handler(const shader::uniform_block& uniform_block);
+  explicit uniform_handler(const std::optional<shader::uniform_block>& uniform_block = std::nullopt);
 
   template<typename Type>
-	void push(const std::string& uniform_name, const Type& object, std::size_t size = 0);
+	auto push(const Type& object, std::size_t size, std::size_t offset) -> void;
+
+  template<typename Type>
+	auto push(const std::string& uniform_name, const Type& object, std::size_t size = 0) -> void;
 
   auto uniform_buffer() const noexcept -> const uniform_buffer&;
 
-  auto name() const noexcept -> const std::string& {
-    return _uniform_block.name();
-  }
+  auto update(const std::optional<shader::uniform_block>& uniform_block) -> bool;
 
 private:
 
-  shader::uniform_block _uniform_block;
-  std::vector<std::unique_ptr<graphics::uniform_buffer>> _buffers;
+  std::optional<shader::uniform_block> _uniform_block;
+  std::unique_ptr<graphics::uniform_buffer> _uniform_buffer;
 
 }; // class uniform_handler
 

@@ -6,6 +6,7 @@
 #include <libsbx/io/read_file.hpp>
 
 #include <libsbx/core/logger.hpp>
+#include <libsbx/core/engine.hpp>
 
 #include <libsbx/graphics/graphics_module.hpp>
 
@@ -13,7 +14,9 @@ namespace sbx::graphics {
 
 shader::shader(const std::filesystem::path& path, VkShaderStageFlagBits stage)
 : _stage{stage} {
-  const auto& logical_device = graphics_module::get().logical_device();
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+  const auto& logical_device = graphics_module.logical_device();
 
   auto code = io::read_file(path);
 
@@ -30,7 +33,9 @@ shader::shader(const std::filesystem::path& path, VkShaderStageFlagBits stage)
 }
 
 shader::~shader() {
-  const auto& logical_device = graphics_module::get().logical_device();
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+  const auto& logical_device = graphics_module.logical_device();
 
   vkDestroyShaderModule(logical_device, _handle, nullptr);
 }
@@ -63,7 +68,7 @@ auto shader::_create_reflection(const spirv_cross::Compiler& compiler) -> void {
 
     auto uniforms = std::map<std::string, uniform>{};
 
-    for (auto i : std::ranges::iota_view{0u, member_count}) {
+    for (auto i : std::views::iota(0u, member_count)) {
       const auto& member_type = compiler.get_type(type.member_types[i]);
       const auto& member_name = compiler.get_member_name(type.self, i);
 
@@ -77,7 +82,20 @@ auto shader::_create_reflection(const spirv_cross::Compiler& compiler) -> void {
       uniforms.insert({member_name, uniform{member_binding, member_offset, member_size, member_data_type, false, false, _stage}});
     }
 
-    _uniform_blocks.insert({uniform_blocks_name, uniform_block{uniform_blocks_name, uniform_blocks_binding, uniform_blocks_size, _stage, uniform_block::type::uniform, std::move(uniforms)}});
+    _uniform_blocks.insert({uniform_blocks_name, uniform_block{uniform_blocks_binding, uniform_blocks_size, _stage, uniform_block::type::uniform, std::move(uniforms)}});
+  }
+
+  for (const auto& image_sampler : resources.sampled_images) {
+    const auto& type = compiler.get_type(image_sampler.type_id);
+
+    const auto& name = image_sampler.name;
+    const auto binding = compiler.get_decoration(image_sampler.id, spv::DecorationBinding);
+
+    auto image = uniform{binding, 0, 0, data_type::sampler2d, false, false, _stage};
+
+    core::logger::debug("sbx::graphics", "image sampler: name: {}, binding: {}", name, binding);
+
+    _uniforms.insert({name, image});
   }
 }
 
