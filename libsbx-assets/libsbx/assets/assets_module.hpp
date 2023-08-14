@@ -73,6 +73,16 @@ public:
     throw std::runtime_error{fmt::format("Failed to find asset '{}'", path.string())};
   }
 
+  template<typename Asset>
+  requires (std::is_base_of_v<asset<Asset::type>, Asset>)
+  [[nodiscard]] auto try_get_asset_id(const std::filesystem::path& path) -> std::optional<asset_id> {
+    if (auto entry = _metadata.find(path); entry != _metadata.end()) {
+      return entry->second.id;
+    }
+
+    return std::nullopt;
+  }
+
   auto unload_assets() -> void {
     // [Note] KAJ 2023-08-14 16:50 - Unfortunately mesh and pipeline assets need be unloaded in a fixed order since meshes hold indirect references to pipelines.
     _storages.erase(asset_type::mesh);
