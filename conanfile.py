@@ -1,6 +1,6 @@
 import os
 from conan import ConanFile
-from conan.tools.cmake import CMakeToolchain, CMake, cmake_layout
+from conan.tools.cmake import CMake, cmake_layout
 from conan.tools.build import check_max_cppstd, check_min_cppstd
 
 class libsbx_recipe(ConanFile):
@@ -34,21 +34,21 @@ class libsbx_recipe(ConanFile):
   # Source directories
   exports_sources = (
     "CMakeLists.txt",
-    "libsbx-units",
-    "libsbx-utility",
-    "libsbx-async",
-    "libsbx-io",
-    "libsbx-math",
-    "libsbx-memory",
-    "libsbx-core",
-    "libsbx-devices",
-    "libsbx-graphics",
-    "libsbx-ecs",
-    "libsbx-scenes",
-    "libsbx-scripting",
-    "libsbx-signals",
-    "libsbx-assets",
-    "libsbx-models",
+    "libsbx-units/*",
+    "libsbx-utility/*",
+    "libsbx-async/*",
+    "libsbx-io/*",
+    "libsbx-math/*",
+    "libsbx-memory/*",
+    "libsbx-core/*",
+    "libsbx-devices/*",
+    "libsbx-graphics/*",
+    "libsbx-ecs/*",
+    "libsbx-scenes/*",
+    "libsbx-scripting/*",
+    "libsbx-signals/*",
+    "libsbx-assets/*",
+    "libsbx-models/*",
     "demo/*"
   )
 
