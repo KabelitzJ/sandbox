@@ -12,8 +12,7 @@
 
 #include <fmt/format.h>
 
-#include <libsbx/utility/noncopyable.hpp>
-#include <libsbx/utility/enable_private_constructor.hpp>
+#include <libsbx/assets/asset.hpp>
 
 #include <libsbx/graphics/buffer/buffer.hpp>
 #include <libsbx/graphics/buffer/uniform_handler.hpp>
@@ -29,11 +28,11 @@
 
 namespace sbx::graphics {
 
-class graphics_pipeline : public pipeline {
+class graphics_pipeline : public pipeline, public assets::asset<assets::asset_type::pipeline> {
 
 public:
 
-  graphics_pipeline(stage stage, const std::filesystem::path& path, const vertex_input_description& vertex_input_description);
+  graphics_pipeline(const std::filesystem::path& path, pipeline::stage stage, const vertex_input_description& vertex_input_description);
 
   ~graphics_pipeline() override;
 
@@ -46,6 +45,10 @@ public:
   auto layout() const noexcept -> const VkPipelineLayout& override;
 
   auto bind_point() const noexcept -> VkPipelineBindPoint override;
+
+  auto stage() const noexcept -> const pipeline::stage& {
+    return _stage;
+  }
 
   auto find_descriptor_block(const std::string& name) const -> const shader::uniform_block& {
     if (auto it = _uniform_blocks.find(name); it != _uniform_blocks.end()) {
@@ -112,7 +115,7 @@ private:
   VkPipeline _handle{};
   VkPipelineBindPoint _bind_point{};
 
-  stage _stage{};
+  pipeline::stage _stage{};
 
   VkDescriptorPool _descriptor_pool{};
   VkDescriptorSetLayout _descriptor_set_layout{};

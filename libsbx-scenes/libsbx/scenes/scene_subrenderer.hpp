@@ -30,7 +30,7 @@ public:
 
   scene_subrenderer(const graphics::pipeline::stage& stage, const std::filesystem::path& path)
   : graphics::subrenderer{stage},
-    _pipeline{std::make_unique<graphics::graphics_pipeline>(stage, path, graphics::vertex_input<models::vertex3d>::description())},
+    _pipeline{std::make_unique<graphics::graphics_pipeline>(path, stage, graphics::vertex_input<models::vertex3d>::description())},
     _uniforms{_pipeline->find_descriptor_block("buffer_object")} {
     auto& devices_module = core::engine::get_module<devices::devices_module>();
 
@@ -61,8 +61,6 @@ public:
 
     _uniform_buffer_object.projection = math::matrix4x4::perspective(math::radian{45.0f}, window.aspect_ratio(), 0.1f, 100.0f);
 
-    _pipeline->bind(command_buffer);
-
     for (auto& node : scene.query<scenes::static_mesh>()) {
       const auto& static_mesh = node.get_component<scenes::static_mesh>();
       auto& transform = node.get_component<scenes::transform>();
@@ -71,6 +69,9 @@ public:
 
       auto& mesh = assets_module.get_asset<models::mesh>(static_mesh.mesh_id());
       auto& image = assets_module.get_asset<graphics::image2d>(static_mesh.texture_id());
+      auto& pipeline = assets_module.get_asset<graphics::graphics_pipeline>(static_mesh.pipeline_id());
+
+      pipeline.bind(command_buffer);
 
       auto world_transform = scene.world_transform(node);
 
@@ -82,10 +83,10 @@ public:
       _uniforms.push("model", _uniform_buffer_object.model);
       _uniforms.push("projection", _uniform_buffer_object.projection);
 
-      _pipeline->push(_uniforms);
-      _pipeline->push("image", image);
+      pipeline.push(_uniforms);
+      pipeline.push("image", image);
 
-      _pipeline->bind_descriptors(command_buffer);
+      pipeline.bind_descriptors(command_buffer);
 
       mesh.render(command_buffer);
     }

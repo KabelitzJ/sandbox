@@ -163,12 +163,14 @@ public:
 
     auto mesh_id = assets_module.load_asset<sbx::models::mesh>("./demo/assets/meshes/suzanne.obj");
 
+    auto pipeline_id = assets_module.load_asset<sbx::graphics::graphics_pipeline>("./demo/assets/shaders/basic", sbx::graphics::pipeline::stage{0, 0}, sbx::graphics::vertex_input<sbx::models::vertex3d>::description());
+
     auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
 
     auto& scene = scenes_module.scene();
 
     auto monkey = scene.create_node("Monkey", sbx::scenes::transform{sbx::math::vector3{-2.0f, -2.0f, -1.0f}});
-    monkey.add_component<sbx::scenes::static_mesh>(mesh_id, texture_id);
+    monkey.add_component<sbx::scenes::static_mesh>(mesh_id, texture_id, pipeline_id);
 
     window.show();
   }

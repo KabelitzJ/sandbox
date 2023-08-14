@@ -17,7 +17,7 @@
 
 namespace sbx::graphics {
 
-graphics_pipeline::graphics_pipeline(stage stage, const std::filesystem::path& path, const vertex_input_description& vertex_input_description)
+graphics_pipeline::graphics_pipeline(const std::filesystem::path& path, pipeline::stage stage, const vertex_input_description& vertex_input_description)
 : _bind_point{VK_PIPELINE_BIND_POINT_GRAPHICS},
   _stage{stage},
   _is_descriptor_set_dirty{true} {
@@ -300,6 +300,8 @@ graphics_pipeline::~graphics_pipeline() {
   const auto& logical_device = graphics_module.logical_device();
 
   _shaders.clear();
+
+  logical_device.wait_idle();
 
   _descriptor_sets.clear();
 
