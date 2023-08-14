@@ -216,7 +216,8 @@ graphics_pipeline::graphics_pipeline(const std::filesystem::path& path, const pi
   descriptor_pool_create_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
   descriptor_pool_create_info.poolSizeCount = static_cast<std::uint32_t>(descriptor_pool_sizes.size());
   descriptor_pool_create_info.pPoolSizes = descriptor_pool_sizes.data();
-  descriptor_pool_create_info.maxSets = swapchain::max_frames_in_flight;
+  // [NOTE] KAJ 2023-08-14 : "A allocation failed due to having no more space in the descriptor pool" is caused by this value being too low. Magic number for now, but should be enough for most cases.
+  descriptor_pool_create_info.maxSets = 8192;
 
   validate(vkCreateDescriptorPool(logical_device, &descriptor_pool_create_info, nullptr, &_descriptor_pool));
 
