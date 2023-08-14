@@ -38,21 +38,25 @@ public:
     _nodes.insert({id, _root});
   }
 
-  auto create_node(const std::string& tag = "", const transform& transform = scenes::transform{}) -> node {
+  auto create_child_node(node& parent, const std::string& tag = "", const transform& transform = scenes::transform{}) -> node {
     auto node = scenes::node{&_registry, _registry.create_entity()};
 
     auto& id = node.add_component<scenes::id>();
 
     _nodes.insert({id, node});
 
-    node.add_component<scenes::relationship>(_root.get_component<scenes::id>());
-    _root.get_component<scenes::relationship>().add_child(id);
+    node.add_component<scenes::relationship>(parent.get_component<scenes::id>());
+    parent.get_component<scenes::relationship>().add_child(id);
 
     node.add_component<scenes::transform>(transform);
 
     node.add_component<scenes::tag>(!tag.empty() ? tag : scenes::tag{"Node"});
 
     return node;
+  }
+
+  auto create_node(const std::string& tag = "", const transform& transform = scenes::transform{}) -> node {
+    return create_child_node(_root, tag, transform);
   }
 
   auto destroy_node(const node& node) -> void {

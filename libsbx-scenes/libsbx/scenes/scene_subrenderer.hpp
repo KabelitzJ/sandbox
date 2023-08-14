@@ -28,23 +28,10 @@ class scene_subrenderer final : public graphics::subrenderer {
 
 public:
 
-  scene_subrenderer(const graphics::pipeline::stage& stage, const std::filesystem::path& path)
+  scene_subrenderer(const graphics::pipeline::stage& stage)
   : graphics::subrenderer{stage},
-    _pipeline{std::make_unique<graphics::graphics_pipeline>(stage, path, graphics::vertex_input<models::vertex3d>::description())},
-    _uniforms{_pipeline->find_descriptor_block("buffer_object")} {
-    auto& devices_module = core::engine::get_module<devices::devices_module>();
-
-    auto& window = devices_module.window();
-
-    _camera_position = math::vector3{2.0f, 2.0f, 1.0f};
-
-    _light_position = math::vector3{-1.0f, 3.0f, 1.0f};
-
-    _uniform_buffer_object.model = math::matrix4x4::identity;
-    _uniform_buffer_object.view = math::matrix4x4::look_at(_camera_position, math::vector3{0.0f, 0.0f, 0.0f}, math::vector3::up);
-    _uniform_buffer_object.projection = math::matrix4x4::perspective(math::radian{45.0f}, window.aspect_ratio(), 0.1f, 100.0f);
-    _uniform_buffer_object.normal = math::matrix4x4::identity;
-  }
+    _camera_position{2.0f, 2.0f, 1.0f},
+    _light_position{-1.0f, 3.0f, 1.0f} { }
 
   ~scene_subrenderer() override = default;
 
@@ -59,11 +46,15 @@ public:
 
     const auto delta_time = core::engine::delta_time();
 
-    _uniform_buffer_object.projection = math::matrix4x4::perspective(math::radian{45.0f}, window.aspect_ratio(), 0.1f, 100.0f);
+    _uniforms.view = math::matrix4x4::look_at(_camera_position, math::vector3{0.0f, 0.0f, 0.0f}, math::vector3::up);
+    _uniforms.projection = math::matrix4x4::perspective(math::radian{45.0f}, window.aspect_ratio(), 0.1f, 100.0f);
 
-    _pipeline->bind(command_buffer);
+    _scene_uniform_handler.push("view", _uniforms.view);
+    _scene_uniform_handler.push("projection", _uniforms.projection);
 
-    for (auto& node : scene.query<scenes::static_mesh>()) {
+    auto nodes = scene.query<scenes::static_mesh>();
+
+    for (auto& node : nodes) {
       const auto& static_mesh = node.get_component<scenes::static_mesh>();
       auto& transform = node.get_component<scenes::transform>();
 
@@ -71,60 +62,28 @@ public:
 
       auto& mesh = assets_module.get_asset<models::mesh>(static_mesh.mesh_id());
       auto& image = assets_module.get_asset<graphics::image2d>(static_mesh.texture_id());
+      auto& pipeline = assets_module.get_asset<graphics::graphics_pipeline>(static_mesh.pipeline_id());
 
       auto world_transform = scene.world_transform(node);
 
-      _uniform_buffer_object.model = world_transform;
-      _uniform_buffer_object.normal = math::matrix4x4::transposed(math::matrix4x4::inverted(world_transform));
+      mesh.update(world_transform);
 
-      _uniforms.push("normal", _uniform_buffer_object.normal);
-      _uniforms.push("view", _uniform_buffer_object.view);
-      _uniforms.push("model", _uniform_buffer_object.model);
-      _uniforms.push("projection", _uniform_buffer_object.projection);
-
-      _pipeline->push(_uniforms);
-      _pipeline->push("image", image);
-
-      _pipeline->bind_descriptors(command_buffer);
-
-      mesh.render(command_buffer);
+      mesh.render(command_buffer, pipeline, _scene_uniform_handler, image, stage());
     }
-
-    // _pipeline->bind(command_buffer);
-
-    // _uniform_buffer_object.model = math::matrix4x4::rotated(_uniform_buffer_object.model, math::vector3::up, math::degree{45.0f} * delta_time);
-    // _uniform_buffer_object.projection = math::matrix4x4::perspective(math::radian{45.0f}, window.aspect_ratio(), 0.1f, 10.0f);
-    // _uniform_buffer_object.normal = math::matrix4x4::transposed(math::matrix4x4::inverted(_uniform_buffer_object.model));
-
-    // _uniforms.push("normal", _uniform_buffer_object.normal);
-    // _uniforms.push("view", _uniform_buffer_object.view);
-    // _uniforms.push("model", _uniform_buffer_object.model);
-    // _uniforms.push("projection", _uniform_buffer_object.projection);
-
-    // _pipeline->push(_uniforms);
-    // _pipeline->push("image", image);
-
-    // _pipeline->bind_descriptors(command_buffer);
-
-    // mesh.render(command_buffer);
   }
 
 private:
 
-  struct uniform_buffer_object {
-    math::matrix4x4 model;
+  struct uniforms {
     math::matrix4x4 view;
     math::matrix4x4 projection;
-    math::matrix4x4 normal;
-  }; // struct uniform_buffer_object
+  }; // struct uniforms
 
   math::vector3 _camera_position;
   math::vector3 _light_position;
 
-  std::unique_ptr<graphics::graphics_pipeline> _pipeline;
-
-  graphics::uniform_handler _uniforms;
-  uniform_buffer_object _uniform_buffer_object;
+  uniforms _uniforms;
+  graphics::uniform_handler _scene_uniform_handler;
 
 }; // class scene_subrenderer
 

@@ -22,6 +22,8 @@ target_sources(
   PUBLIC
     "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/models.hpp"
     "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/mesh.hpp"
+    "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/buffer.hpp"
+    "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/vertex3d.hpp"
 )
 
 target_include_directories(
@@ -83,8 +85,10 @@ target_compile_options(
     -static-libgcc
 )
 
-target_link_options(
-  ${PROJECT_NAME}
-  PUBLIC
-    -Wl,--disable-dynamicbase,--default-image-base-low
-)
+if(MINGW)
+  target_link_options(
+    ${PROJECT_NAME}
+    PUBLIC
+      -Wl,--disable-dynamicbase,--default-image-base-low
+  )
+endif()

@@ -16,7 +16,9 @@ class buffer : public utility::noncopyable {
 
 public:
 
-  buffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, memory::observer_ptr<void> memory = nullptr);
+  using size_type = VkDeviceSize;
+
+  buffer(size_type size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, memory::observer_ptr<void> memory = nullptr);
 
   virtual ~buffer();
 
@@ -26,15 +28,17 @@ public:
 
   auto memory() const noexcept -> const VkDeviceMemory&;
 
-  auto size() const noexcept -> VkDeviceSize;
+  virtual auto size() const noexcept -> size_type;
 
-  virtual auto write(memory::observer_ptr<const void> data, VkDeviceSize size, VkDeviceSize offset = 0) -> void;
+  virtual auto write(memory::observer_ptr<const void> data, size_type size, size_type offset = 0) -> void;
 
 protected:
 
   auto map() -> memory::observer_ptr<void>;
 
   auto unmap() -> void;
+
+private:
 
   VkBuffer _handle{};
   VkDeviceSize _size{};

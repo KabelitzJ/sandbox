@@ -4,7 +4,12 @@ layout(location = 0) in vec3 in_position;
 layout(location = 1) in vec3 in_normal;
 layout(location = 2) in vec2 in_uv;
 
-layout(binding = 1) uniform sampler2D image;
+layout(binding = 0) uniform uniform_object {
+  mat4 model;
+  mat4 normal;
+} object;
+
+layout(binding = 2) uniform sampler2D image;
 
 layout(location = 0) out vec4 out_color;
 

@@ -19,7 +19,7 @@ public:
 
   image2d(const std::filesystem::path& path, VkFilter filter = VK_FILTER_LINEAR, VkSamplerAddressMode address_mode = VK_SAMPLER_ADDRESS_MODE_REPEAT, bool anisotropic = true, bool mipmap = true);
 
-  ~image2d() override = default;
+  ~image2d() override;
 
 private:
 

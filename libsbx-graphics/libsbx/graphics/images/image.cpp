@@ -347,7 +347,7 @@ auto image::transition_image_layout(const VkImage& image, VkFormat format, VkIma
   command_buffer.submit_idle();
 }
 
-auto image::insert_image_memory_barrier(const command_buffer& command_buffer, const VkImage& image, VkAccessFlags src_access_mask, VkAccessFlags dst_access_mask, VkImageLayout old_image_layout, VkImageLayout new_image_layout, VkPipelineStageFlags src_stage_mask, VkPipelineStageFlags dst_stage_mask, VkImageAspectFlags image_aspect, uint32_t mip_levels, uint32_t base_mip_level, uint32_t layer_count, uint32_t base_array_layer) -> void {
+auto image::insert_image_memory_barrier(command_buffer& command_buffer, const VkImage& image, VkAccessFlags src_access_mask, VkAccessFlags dst_access_mask, VkImageLayout old_image_layout, VkImageLayout new_image_layout, VkPipelineStageFlags src_stage_mask, VkPipelineStageFlags dst_stage_mask, VkImageAspectFlags image_aspect, uint32_t mip_levels, uint32_t base_mip_level, uint32_t layer_count, uint32_t base_array_layer) -> void {
   auto barrier = VkImageMemoryBarrier{};
   barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
 	barrier.srcAccessMask = src_access_mask;

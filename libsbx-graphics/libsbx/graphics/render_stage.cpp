@@ -205,7 +205,7 @@ auto render_stage::_create_render_pass(VkFormat depth_format, VkFormat surface_f
 		auto depth_attachment = std::optional<std::uint32_t>{};
 
 		for (const auto& attachment_binding : subpass.attachment_bindings()) {
-			auto image_attachment = attachment(attachment_binding);
+			auto image_attachment = find_attachment(attachment_binding);
 
 			if (!image_attachment) {
 				throw std::runtime_error{fmt::format("Failed to find attachment with binding {}", attachment_binding)};

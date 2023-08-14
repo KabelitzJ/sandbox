@@ -1,6 +1,6 @@
 import os
 from conan import ConanFile
-from conan.tools.cmake import CMake, cmake_layout
+from conan.tools.cmake import CMakeDeps, CMakeToolchain, CMake, cmake_layout
 from conan.tools.build import check_max_cppstd, check_min_cppstd
 
 class libsbx_recipe(ConanFile):
@@ -11,7 +11,10 @@ class libsbx_recipe(ConanFile):
   license = "MIT"
   author = "Jonas Kabelitz <jonas-kabelitz@gmx.de>"
   description = "libsbx library"
-  topics = ("libsbx", "lib")
+  topics = (
+    "libsbx",
+    "lib"
+  )
 
   # Binary configuration
   settings = (
@@ -52,26 +55,23 @@ class libsbx_recipe(ConanFile):
     "demo/*"
   )
 
-  generators = (
-    "CMakeDeps",
-    "CMakeToolchain"
-  )
-
   def config_options(self):
     if self.settings.os == "Windows":
-      del self.options.fPIC
+      self.options.fPic = False
 
   def layout(self):
     cmake_layout(self)
 
     # Define custom layout for build artifacts
 
-    is_compiler_multi_config = self.settings.get_safe("compiler") == "msvc"
+    is_compiler_multi_config = self.settings.compiler == "msvc"
 
-    if is_compiler_multi_config:
-      self.folders.generators = os.path.join("build", "dependencies")
-    else:
-      self.folders.generators = os.path.join("build", str(self.settings.build_type).lower(), "dependencies")
+    self.folders.build = "build"
+
+    if not is_compiler_multi_config:
+      self.folders.build = os.path.join(self.folders.build, str(self.settings.build_type).lower())
+
+    self.folders.generators = os.path.join(self.folders.build, "dependencies")
 
   def validate(self):
     check_min_cppstd(self, "14")
@@ -89,13 +89,26 @@ class libsbx_recipe(ConanFile):
     self.requires("stb/cci.20220909")
     self.requires("range-v3/0.12.0")
 
+  def generate(self):
+    deps = CMakeDeps(self)
+    toolchain = CMakeToolchain(self)
+
+    deps.generate()
+    toolchain.generate()
+
   def build(self):
     cmake = CMake(self)
 
+    print("Foo", self.options.build_demo)
+    print("Foo", self.options.shared)
+
     variables = {
-      "SBX_BUILD_DEMO": "On" if self.options["build_demo"] else "Off",
-      "SBX_BUILD_SHARED": "On" if self.options["shared"] else "Off"
+      "SBX_BUILD_DEMO": "On" if self.options.build_demo else "Off",
+      "SBX_BUILD_SHARED": "On" if self.options.shared else "Off"
     }
+
+    print("SBX_BUILD_DEMO", variables["SBX_BUILD_DEMO"])
+    print("SBX_BUILD_SHARED", variables["SBX_BUILD_SHARED"])
 
     cmake.configure(variables)
     cmake.build()

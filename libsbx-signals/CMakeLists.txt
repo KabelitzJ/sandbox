@@ -87,8 +87,10 @@ target_compile_options(
     -static-libgcc
 )
 
-target_link_options(
-  ${PROJECT_NAME}
-  PUBLIC
-    -Wl,--disable-dynamicbase,--default-image-base-low
-)
+if(MINGW)
+  target_link_options(
+    ${PROJECT_NAME}
+    PUBLIC
+      -Wl,--disable-dynamicbase,--default-image-base-low
+  )
+endif()

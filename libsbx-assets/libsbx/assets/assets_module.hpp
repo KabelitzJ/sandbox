@@ -20,7 +20,6 @@
 namespace sbx::assets {
 
 struct asset_metadata {
-  std::filesystem::path path;
   asset_id id;
 }; // struct asset_metadata
 
@@ -45,7 +44,7 @@ public:
 
     const auto id = asset->id();
 
-    _metadata.insert({path, asset_metadata{path, id}});
+    _metadata.insert({path, asset_metadata{id}});
 
     storage.insert(id, std::move(asset));
 
@@ -75,6 +74,11 @@ public:
   }
 
   auto unload_assets() -> void {
+    // [Note] KAJ 2023-08-14 16:50 - Unfortunately mesh and pipeline assets need be unloaded in a fixed order since meshes hold indirect references to pipelines.
+    _storages.erase(asset_type::mesh);
+    _storages.erase(asset_type::pipeline);
+
+    // [Note] KAJ 2023-08-14 16:50 - To ensure we dont introduce bugs when adding new asset types we clear the rest out here
     for (auto& [type, storage] : _storages) {
       storage->clear();
     }
@@ -103,7 +107,7 @@ private:
   }
 
   std::unordered_map<asset_type, std::unique_ptr<storage_base>> _storages;
-  std::unordered_map<std::filesystem::path, asset_metadata> _metadata;
+  std::unordered_map<std::string, asset_metadata> _metadata;
 
 }; // class assets_module
 

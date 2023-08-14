@@ -17,9 +17,9 @@
 
 namespace sbx::graphics {
 
-graphics_pipeline::graphics_pipeline(stage stage, const std::filesystem::path& path, const vertex_input_description& vertex_input_description)
+graphics_pipeline::graphics_pipeline(const std::filesystem::path& path, const pipeline::stage& stage, const vertex_input_description& vertex_input_description)
 : _bind_point{VK_PIPELINE_BIND_POINT_GRAPHICS},
-  _is_descriptor_set_dirty{true} {
+  _stage{stage} {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
   const auto& logical_device = graphics_module.logical_device();
@@ -188,40 +188,9 @@ graphics_pipeline::graphics_pipeline(stage stage, const std::filesystem::path& p
   depth_stencil_state.depthBoundsTestEnable = false;
   depth_stencil_state.stencilTestEnable = false;
 
-  // auto binding_descriptions = std::vector<VkVertexInputBindingDescription>{};
-
   const auto& binding_descriptions = vertex_input_description.binding_descriptions();
 
-  // binding_descriptions.push_back(VkVertexInputBindingDescription{
-  //   .binding = 0,
-  //   .stride = sizeof(vertex3d),
-  //   .inputRate = VK_VERTEX_INPUT_RATE_VERTEX
-  // });
-
-  // auto attribute_descriptions = std::vector<VkVertexInputAttributeDescription>{};
-
   const auto& attribute_descriptions = vertex_input_description.attribute_descriptions();
-
-  // attribute_descriptions.push_back(VkVertexInputAttributeDescription{
-  //   .location = 0,
-  //   .binding = 0,
-  //   .format = VK_FORMAT_R32G32B32_SFLOAT,
-  //   .offset = offsetof(vertex3d, position)
-  // });
-
-  // attribute_descriptions.push_back(VkVertexInputAttributeDescription{
-  //   .location = 1,
-  //   .binding = 0,
-  //   .format = VK_FORMAT_R32G32B32_SFLOAT,
-  //   .offset = offsetof(vertex3d, normal)
-  // });
-
-  // attribute_descriptions.push_back(VkVertexInputAttributeDescription{
-  //   .location = 2,
-  //   .binding = 0,
-  //   .format = VK_FORMAT_R32G32_SFLOAT,
-  //   .offset = offsetof(vertex3d, uv)
-  // });
 
   auto vertex_input_state = VkPipelineVertexInputStateCreateInfo{};
   vertex_input_state.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -260,12 +229,6 @@ graphics_pipeline::graphics_pipeline(stage stage, const std::filesystem::path& p
 
   validate(vkCreatePipelineLayout(logical_device, &pipeline_layout_create_info, nullptr, &_layout));
 
-  _descriptor_sets.resize(swapchain::max_frames_in_flight);
-
-  for (auto& descriptor_set : _descriptor_sets) {
-    descriptor_set = std::make_unique<graphics::descriptor_set>(*this);
-  }
-
   auto subpass = std::uint32_t{0};
   
   auto pipeline_create_info = VkGraphicsPipelineCreateInfo{};
@@ -300,7 +263,7 @@ graphics_pipeline::~graphics_pipeline() {
 
   _shaders.clear();
 
-  _descriptor_sets.clear();
+  logical_device.wait_idle();
 
   vkDestroyDescriptorPool(logical_device, _descriptor_pool, nullptr);
   vkDestroyDescriptorSetLayout(logical_device, _descriptor_set_layout, nullptr);
@@ -328,40 +291,6 @@ auto graphics_pipeline::layout() const noexcept -> const VkPipelineLayout& {
 
 auto graphics_pipeline::bind_point() const noexcept -> VkPipelineBindPoint {
   return _bind_point;
-}
-
-auto graphics_pipeline::push(const uniform_handler& uniform) -> void {
-  _push(uniform.name(), uniform.uniform_buffer());
-}
-
-auto graphics_pipeline::push(const std::string& name, const image2d& image) -> void {
-  _push(name, image);
-}
-
-auto graphics_pipeline::bind_descriptors(const command_buffer& command_buffer) -> void {
-  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
-
-  const auto current_frame = graphics_module.current_frame();
-
-  auto& descriptor_set = _descriptor_sets[current_frame];
-
-  if (_is_descriptor_set_dirty) {
-    _write_descriptor_sets.clear();
-    _write_descriptor_sets.reserve(_descriptors.size());
-
-    for (const auto& [name, descriptor] : _descriptors) {
-      auto write_descriptor_set = descriptor.write_descriptor_set.handle();
-      write_descriptor_set.dstSet = *descriptor_set;
-
-      _write_descriptor_sets.push_back(write_descriptor_set);
-    }
-
-    descriptor_set->update(_write_descriptor_sets);
-
-    _is_descriptor_set_dirty = false;
-  }
-
-  descriptor_set->bind(command_buffer);
 }
 
 auto graphics_pipeline::_get_stage_from_name(const std::string& name) const noexcept -> VkShaderStageFlagBits {

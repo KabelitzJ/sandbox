@@ -194,7 +194,7 @@ public:
     return _attachments;
   }
 
-  auto attachment(const std::string& name) const noexcept -> std::optional<graphics::attachment> {
+  auto find_attachment(const std::string& name) const noexcept -> std::optional<graphics::attachment> {
     auto entry = std::find_if(_attachments.begin(), _attachments.end(), [&name](const graphics::attachment& attachment) {
       return attachment.name() == name;
     });
@@ -206,7 +206,7 @@ public:
     return *entry;
   }
 
-  auto attachment(std::uint32_t binding) const noexcept -> std::optional<graphics::attachment> {
+  auto find_attachment(std::uint32_t binding) const noexcept -> std::optional<graphics::attachment> {
     auto entry = std::find_if(_attachments.begin(), _attachments.end(), [&binding](const graphics::attachment& attachment) {
       return attachment.binding() == binding;
     });
