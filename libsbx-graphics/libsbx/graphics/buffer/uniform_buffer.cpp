@@ -1,5 +1,7 @@
 #include <libsbx/graphics/buffer/uniform_buffer.hpp>
 
+#include <libsbx/graphics/graphics_module.hpp>
+
 namespace sbx::graphics {
 
 uniform_buffer::uniform_buffer(VkDeviceSize size, memory::observer_ptr<void> data)
@@ -8,6 +10,12 @@ uniform_buffer::uniform_buffer(VkDeviceSize size, memory::observer_ptr<void> dat
 }
 
 uniform_buffer::~uniform_buffer() {
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+  const auto& logical_device = graphics_module.logical_device();
+
+  logical_device.wait_idle();
+  
   buffer::unmap();
 }
 

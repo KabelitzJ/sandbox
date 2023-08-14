@@ -22,6 +22,7 @@
 
 #include <libsbx/graphics/descriptor/descriptor.hpp>
 #include <libsbx/graphics/descriptor/descriptor_set.hpp>
+#include <libsbx/graphics/descriptor/descriptor_handler.hpp>
 
 #include <libsbx/graphics/render_pass/swapchain.hpp>
 

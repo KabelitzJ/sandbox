@@ -10,6 +10,8 @@
 
 #include <libsbx/graphics/commands/command_buffer.hpp>
 
+#include <libsbx/graphics/pipeline/shader.hpp>
+
 namespace sbx::graphics {
 
 class pipeline : public utility::noncopyable {
@@ -33,7 +35,7 @@ public:
 
   virtual ~pipeline() = default;
 
-  auto bind(const command_buffer& command_buffer) const noexcept -> void {
+  auto bind(command_buffer& command_buffer) const noexcept -> void {
     vkCmdBindPipeline(command_buffer, bind_point(), handle());
   }
 
@@ -50,6 +52,12 @@ public:
   virtual auto layout() const noexcept -> const VkPipelineLayout& = 0;
 
   virtual auto bind_point() const noexcept -> VkPipelineBindPoint = 0;
+
+  virtual auto descriptor_block(const std::string& name) const -> const shader::uniform_block& = 0;
+
+  virtual auto find_descriptor_binding(const std::string& name) const -> std::optional<std::uint32_t> = 0;
+
+  virtual auto find_descriptor_type_at_binding(std::uint32_t binding) const -> std::optional<VkDescriptorType> = 0;
 
 }; // class pipeline
 

@@ -18,9 +18,17 @@
 #include <libsbx/math/vector2.hpp>
 #include <libsbx/math/vector3.hpp>
 #include <libsbx/math/vector4.hpp>
+#include <libsbx/math/matrix4x4.hpp>
 #include <libsbx/math/color.hpp>
 
+#include <libsbx/graphics/pipeline/pipeline.hpp>
+#include <libsbx/graphics/pipeline/graphics_pipeline.hpp>
+
 #include <libsbx/graphics/commands/command_buffer.hpp>
+
+#include <libsbx/graphics/descriptor/descriptor_handler.hpp>
+
+#include <libsbx/graphics/buffer/uniform_handler.hpp>
 
 #include <libsbx/models/vertex3d.hpp>
 #include <libsbx/models/buffer.hpp>
@@ -35,7 +43,28 @@ public:
 
   ~mesh() override;
 
-  auto render(graphics::command_buffer& command_buffer) -> void {
+  auto update(const math::matrix4x4& model) -> void {
+    _object_uniforms.push("model", model);
+    _object_uniforms.push("normal", math::matrix4x4::transposed(math::matrix4x4::inverted(model)));
+  }
+
+  auto render(graphics::command_buffer& command_buffer, graphics::graphics_pipeline& pipeline, graphics::uniform_handler& scene_uniforms, const graphics::image2d& image, const graphics::pipeline::stage& stage) -> void {
+    if (pipeline.stage() != stage) {
+      return;
+    }
+
+    pipeline.bind(command_buffer);
+
+    _descriptor_handler.push("uniform_scene", scene_uniforms);
+    _descriptor_handler.push("uniform_object", _object_uniforms);
+    _descriptor_handler.push("image", image);
+
+    if (!_descriptor_handler.update(pipeline)) {
+      return;
+    }
+
+    _descriptor_handler.bind_descriptors(command_buffer);
+
     command_buffer.bind_vertex_buffer(0, *_vertex_buffer);
     command_buffer.bind_index_buffer(*_index_buffer, 0, VK_INDEX_TYPE_UINT32);
 
@@ -47,31 +76,11 @@ private:
   std::unique_ptr<vertex_buffer> _vertex_buffer{};
   std::unique_ptr<index_buffer> _index_buffer{};
 
+  graphics::uniform_handler _object_uniforms;
+  graphics::descriptor_handler _descriptor_handler;
+
 }; // class mesh
 
 } // namespace sbx::models
-
-// template<>
-// struct YAML::convert<sbx::models::vertex3d> {
-//   static auto encode(const sbx::models::vertex3d& rhs) -> YAML::Node {
-//     YAML::Node node;
-//     node["position"] = rhs.position;
-//     node["normal"] = rhs.normal;
-//     node["uv"] = rhs.uv;
-//     return node;
-//   }
-
-//   static auto decode(const YAML::Node& node, sbx::models::vertex3d& vertex) -> bool {
-//     if (!node.IsMap()) {
-//       return false;
-//     }
-
-//     vertex.position = node["position"].as<sbx::math::vector3>();
-//     vertex.normal = node["normal"].as<sbx::math::vector3>();
-//     vertex.uv = node["uv"].as<sbx::math::vector2>();
-
-//     return true;
-//   }
-// }; // struct YAML::convert<vertex3d>
 
 #endif // LIBSBX_MODELS_MESH_HPP_

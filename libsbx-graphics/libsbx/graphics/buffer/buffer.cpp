@@ -65,8 +65,6 @@ buffer::~buffer() {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
   const auto& logical_device = graphics_module.logical_device();
-  
-  logical_device.wait_idle();
 
   vkFreeMemory(logical_device, _memory, nullptr);
   vkDestroyBuffer(logical_device, _handle, nullptr);

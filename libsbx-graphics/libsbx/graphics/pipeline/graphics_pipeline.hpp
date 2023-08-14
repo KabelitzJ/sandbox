@@ -32,7 +32,7 @@ class graphics_pipeline : public pipeline, public assets::asset<assets::asset_ty
 
 public:
 
-  graphics_pipeline(const std::filesystem::path& path, pipeline::stage stage, const vertex_input_description& vertex_input_description);
+  graphics_pipeline(const std::filesystem::path& path, const pipeline::stage& stage, const vertex_input_description& vertex_input_description);
 
   ~graphics_pipeline() override;
 
@@ -50,7 +50,7 @@ public:
     return _stage;
   }
 
-  auto find_descriptor_block(const std::string& name) const -> const shader::uniform_block& {
+  auto descriptor_block(const std::string& name) const -> const shader::uniform_block& override {
     if (auto it = _uniform_blocks.find(name); it != _uniform_blocks.end()) {
       return it->second;
     }
@@ -58,47 +58,25 @@ public:
     throw std::runtime_error(fmt::format("Failed to find descriptor block '{}' in graphics pipeline '{}'", name, _name));
   }
 
-  auto push(const uniform_handler& uniform_handler) -> void;
+  auto find_descriptor_binding(const std::string& name) const -> std::optional<std::uint32_t> override {
+    if (auto it = _descriptor_bindings.find(name); it != _descriptor_bindings.end()) {
+      return it->second;
+    }
 
-  auto push(const std::string& name, const image2d& image) -> void;
+    return std::nullopt;
+  }
 
-  auto bind_descriptors(const command_buffer& command_buffer) -> void;
+  auto find_descriptor_type_at_binding(std::uint32_t binding) const -> std::optional<VkDescriptorType> override {
+    if (auto it = _descriptor_type_at_binding.find(binding); it != _descriptor_type_at_binding.end()) {
+      return it->second;
+    }
+
+    return std::nullopt;
+  }
 
 private:
 
-  struct descriptor_entry {
-    const graphics::descriptor* descriptor;
-    graphics::write_descriptor_set write_descriptor_set;
-    std::uint32_t binding;
-  }; // struct descriptor_entry
-
   auto _get_stage_from_name(const std::string& name) const noexcept -> VkShaderStageFlagBits;
-
-  template<typename Descriptor>
-  requires (std::is_base_of_v<descriptor, Descriptor>)
-  auto _push(const std::string& name, const Descriptor& descriptor) -> void {
-    auto binding_entry = _descriptor_bindings.find(name);
-
-    if (binding_entry == _descriptor_bindings.end()) {
-      throw std::runtime_error(fmt::format("Failed to find descriptor binding for descriptor '{}' in pipeline '{}'", name, _name));
-    }
-
-    auto binding = binding_entry->second;
-
-    auto descriptor_type_entry = _descriptor_type_at_binding.find(binding);
-
-    if (descriptor_type_entry == _descriptor_type_at_binding.end()) {
-      throw std::runtime_error(fmt::format("Failed to find descriptor type for descriptor '{}' in pipeline '{}'", name, _name));
-    }
-
-    auto descriptor_type = descriptor_type_entry->second;
-
-    auto write_descriptor_set = descriptor.write_descriptor_set(binding, descriptor_type);
-
-    _descriptors.insert({name, descriptor_entry{std::addressof(descriptor), std::move(write_descriptor_set), binding}});
-
-    _is_descriptor_set_dirty = true;
-  }
 
   std::unordered_map<VkShaderStageFlagBits, std::unique_ptr<shader>> _shaders{};
 
@@ -119,12 +97,6 @@ private:
 
   VkDescriptorPool _descriptor_pool{};
   VkDescriptorSetLayout _descriptor_set_layout{};
-
-  std::vector<std::unique_ptr<descriptor_set>> _descriptor_sets{};
-
-  std::map<std::string, descriptor_entry> _descriptors{};
-  std::vector<VkWriteDescriptorSet> _write_descriptor_sets{};
-  bool _is_descriptor_set_dirty{};
 
 }; // class graphics_pipeline
 

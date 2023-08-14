@@ -23,7 +23,7 @@ public:
 
   operator VkDescriptorSet() const noexcept;
 
-  auto bind(const command_buffer& command_buffer) const noexcept -> void;
+  auto bind(command_buffer& command_buffer) const noexcept -> void;
 
 private:
 
