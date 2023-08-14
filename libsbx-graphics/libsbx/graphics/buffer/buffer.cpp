@@ -10,7 +10,7 @@
 
 namespace sbx::graphics {
 
-buffer::buffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, memory::observer_ptr<void> memory)
+buffer::buffer(size_type size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, memory::observer_ptr<void> memory)
 : _size{size} {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
@@ -65,6 +65,8 @@ buffer::~buffer() {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
   const auto& logical_device = graphics_module.logical_device();
+  
+  logical_device.wait_idle();
 
   vkFreeMemory(logical_device, _memory, nullptr);
   vkDestroyBuffer(logical_device, _handle, nullptr);
@@ -106,7 +108,7 @@ auto buffer::unmap() -> void {
   vkUnmapMemory(logical_device, _memory);
 }
 
-auto buffer::write(memory::observer_ptr<const void> data, VkDeviceSize size, VkDeviceSize offset) -> void {
+auto buffer::write(memory::observer_ptr<const void> data, size_type size, size_type offset) -> void {
   auto mapped_memory = map();
 
   std::memcpy(static_cast<std::uint8_t*>(mapped_memory.get()) + offset, data.get(), size);

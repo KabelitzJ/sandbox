@@ -9,10 +9,13 @@
 
 namespace sbx::models {
 
-mesh::mesh(const std::filesystem::path& path) {
-  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+struct mesh_data {
+  std::vector<vertex3d> vertices;
+  std::vector<std::uint32_t> indices;
+}; // struct mesh_data
 
-  const auto& logical_device = graphics_module.logical_device();
+static auto _load_mesh_data(const std::filesystem::path& path) -> mesh_data {
+  auto data = mesh_data{};
 
   // [NOTE] KAJ 2023-05-29 : Old tinyobjloader API.
   auto attributes = tinyobj::attrib_t{};
@@ -37,9 +40,6 @@ mesh::mesh(const std::filesystem::path& path) {
 
   auto unique_vertices = std::unordered_map<vertex3d, std::uint32_t>{};
 
-  auto vertices = std::vector<vertex3d>{};
-  auto indices = std::vector<std::uint32_t>{};
-
   for (const auto& shape : shapes) {
     for (const auto& index : shape.mesh.indices) {
       auto vertex = vertex3d{};
@@ -56,14 +56,24 @@ mesh::mesh(const std::filesystem::path& path) {
       vertex.uv.y = attributes.texcoords[2 * index.texcoord_index + 1];
 
       if (auto entry = unique_vertices.find(vertex); entry != unique_vertices.end()) {
-        indices.push_back(entry->second);
+        data.indices.push_back(entry->second);
       } else {
-        unique_vertices.insert({vertex, vertices.size()});
-        indices.push_back(vertices.size());
-        vertices.push_back(vertex);
+        unique_vertices.insert({vertex, data.vertices.size()});
+        data.indices.push_back(data.vertices.size());
+        data.vertices.push_back(vertex);
       }
     }
   }
+
+  return data;
+}
+
+mesh::mesh(const std::filesystem::path& path) {
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+  const auto& logical_device = graphics_module.logical_device();
+
+  const auto [vertices, indices] = _load_mesh_data(path);
 
   auto fence_create_info = VkFenceCreateInfo{};
   fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
@@ -84,8 +94,8 @@ mesh::mesh(const std::filesystem::path& path) {
   staging_buffer.write(vertices.data(), vertex_buffer_size);
   staging_buffer.write(indices.data(), index_buffer_size, vertex_buffer_size);
 
-  _vertex_buffer = std::make_unique<graphics::buffer>(vertex_buffer_size, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-  _index_buffer = std::make_unique<graphics::buffer>(index_buffer_size, VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+  _vertex_buffer = std::make_unique<vertex_buffer>(vertices.size(), VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+  _index_buffer = std::make_unique<index_buffer>(indices.size(), VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
   auto command_buffer = graphics::command_buffer{true, VK_QUEUE_TRANSFER_BIT};
 
@@ -116,8 +126,7 @@ mesh::mesh(const std::filesystem::path& path) {
 }
 
 mesh::~mesh() {
-  _vertex_buffer.reset();
-  _index_buffer.reset();
+
 }
 
 } // namespace sbx::models

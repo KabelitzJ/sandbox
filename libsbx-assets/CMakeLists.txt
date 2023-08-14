@@ -41,7 +41,6 @@ target_link_libraries(
     libsbx::core
     libsbx::async
     libsbx::math
-    libsbx::graphics
 )
 
 set_target_properties(

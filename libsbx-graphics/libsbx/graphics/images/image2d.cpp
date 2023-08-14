@@ -9,6 +9,8 @@
 
 #include <libsbx/core/logger.hpp>
 
+#include <libsbx/graphics/graphics_module.hpp>
+
 #include <libsbx/graphics/buffer/buffer.hpp>
 
 namespace sbx::graphics {
@@ -29,6 +31,13 @@ image2d::image2d(const std::filesystem::path& path, VkFilter filter, VkSamplerAd
   _load();
 }
 
+image2d::~image2d() {
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+  const auto& logical_device = graphics_module.logical_device();
+  
+  logical_device.wait_idle();
+}
 
 auto image2d::_load() -> void {
   auto timer = utility::timer{};
