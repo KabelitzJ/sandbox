@@ -4,14 +4,31 @@ message(STATUS "Configuring ${PROJECT_NAME}...")
 
 add_executable(${PROJECT_NAME})
 
-find_program(POWERSHELL_PATH NAMES pwsh)
+if(WIN32)
+  message(STATUS "WIN32")
 
-message(STATUS "POWERSHELL_PATH: ${POWERSHELL_PATH}")
+  find_program(POWERSHELL_PATH NAMES pwsh)
 
-add_custom_target(
-  shaders
-  COMMAND ${POWERSHELL_PATH} -ExecutionPolicy Bypass "${CMAKE_SOURCE_DIR}/scripts/compile_shaders.ps1" -directory "${PROJECT_SOURCE_DIR}/assets/shaders/"
-)
+  message(STATUS "POWERSHELL_PATH: ${POWERSHELL_PATH}")
+
+  add_custom_target(
+    shaders
+    COMMAND ${POWERSHELL_PATH} -ExecutionPolicy Bypass "${CMAKE_SOURCE_DIR}/scripts/compile_shaders.ps1" -directory "${PROJECT_SOURCE_DIR}/assets/shaders/"
+  )
+elseif(UNIX)
+  message(STATUS "UNIX")
+  find_program(BASH_PATH NAMES bash)
+
+  message(STATUS "BASH_PATH: ${BASH_PATH}")
+
+  add_custom_target(
+    shaders
+    COMMAND ${BASH_PATH} "${CMAKE_SOURCE_DIR}/scripts/compile_shaders.sh" "${PROJECT_SOURCE_DIR}/assets/shaders/"
+  )
+else()
+  message(FATAL_ERROR "Unsupported platform detected")
+endif()
+
 
 add_dependencies(${PROJECT_NAME} shaders)
 
@@ -86,8 +103,10 @@ target_compile_options(
     -static-libgcc
 )
 
-target_link_options(
-  ${PROJECT_NAME}
-  PUBLIC
-    -Wl,--disable-dynamicbase,--default-image-base-low
-)
+if(MINGW)
+  target_link_options(
+    ${PROJECT_NAME}
+    PUBLIC
+      -Wl,--disable-dynamicbase,--default-image-base-low
+  )
+endif()

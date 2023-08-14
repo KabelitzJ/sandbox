@@ -20,7 +20,6 @@
 namespace sbx::assets {
 
 struct asset_metadata {
-  std::filesystem::path path;
   asset_id id;
 }; // struct asset_metadata
 
@@ -45,7 +44,7 @@ public:
 
     const auto id = asset->id();
 
-    _metadata.insert({path, asset_metadata{path, id}});
+    _metadata.insert({path, asset_metadata{id}});
 
     storage.insert(id, std::move(asset));
 
@@ -103,7 +102,7 @@ private:
   }
 
   std::unordered_map<asset_type, std::unique_ptr<storage_base>> _storages;
-  std::unordered_map<std::filesystem::path, asset_metadata> _metadata;
+  std::unordered_map<std::string, asset_metadata> _metadata;
 
 }; // class assets_module
 

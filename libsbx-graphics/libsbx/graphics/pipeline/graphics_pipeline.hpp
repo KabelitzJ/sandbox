@@ -64,8 +64,8 @@ public:
 private:
 
   struct descriptor_entry {
-    const descriptor* descriptor;
-    write_descriptor_set write_descriptor_set;
+    const graphics::descriptor* descriptor;
+    graphics::write_descriptor_set write_descriptor_set;
     std::uint32_t binding;
   }; // struct descriptor_entry
 
