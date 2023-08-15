@@ -103,13 +103,13 @@ public:
     auto& scene = scenes_module.scene();
 
     auto monkey = scene.create_node("Monkey", sbx::scenes::transform{sbx::math::vector3{-3.0f, -3.0f, -1.0f}});
-    monkey.add_component<sbx::scenes::static_mesh>(monkey_id, base_id, pipeline_id);
+    monkey.add_component<sbx::scenes::static_mesh>(sphere_id, base_id, pipeline_id);
 
     auto sphere = scene.create_child_node(monkey, "Sphere", sbx::scenes::transform{sbx::math::vector3{-4.0f, 0.0f, 0.0f}, sbx::math::vector3::zero, sbx::math::vector3{0.5f, 0.5f, 0.5f}});
     sphere.add_component<sbx::scenes::static_mesh>(sphere_id, base_id, pipeline_id);
 
     auto cube = scene.create_child_node(sphere, "Cube", sbx::scenes::transform{sbx::math::vector3{2.0f, 0.0f, 0.0f}, sbx::math::vector3::zero, sbx::math::vector3{0.3f, 0.3f, 0.3f}});
-    cube.add_component<sbx::scenes::static_mesh>(cube_id, base_id, pipeline_id);
+    cube.add_component<sbx::scenes::static_mesh>(sphere_id, base_id, pipeline_id);
 
     window.show();
   }

@@ -43,28 +43,7 @@ public:
 
   ~mesh() override;
 
-  auto update(const math::matrix4x4& model) -> void {
-    _object_uniforms.push("model", model);
-    _object_uniforms.push("normal", math::matrix4x4::transposed(math::matrix4x4::inverted(model)));
-  }
-
-  auto render(graphics::command_buffer& command_buffer, graphics::graphics_pipeline& pipeline, graphics::uniform_handler& scene_uniforms, const graphics::image2d& image, const graphics::pipeline::stage& stage) -> void {
-    if (pipeline.stage() != stage) {
-      return;
-    }
-
-    pipeline.bind(command_buffer);
-
-    _descriptor_handler.push("uniform_scene", scene_uniforms);
-    _descriptor_handler.push("uniform_object", _object_uniforms);
-    _descriptor_handler.push("image", image);
-
-    if (!_descriptor_handler.update(pipeline)) {
-      return;
-    }
-
-    _descriptor_handler.bind_descriptors(command_buffer);
-
+  auto render(graphics::command_buffer& command_buffer) -> void {
     command_buffer.bind_vertex_buffer(0, *_vertex_buffer);
     command_buffer.bind_index_buffer(*_index_buffer, 0, VK_INDEX_TYPE_UINT32);
 
@@ -75,9 +54,6 @@ private:
 
   std::unique_ptr<vertex_buffer> _vertex_buffer{};
   std::unique_ptr<index_buffer> _index_buffer{};
-
-  graphics::uniform_handler _object_uniforms;
-  graphics::descriptor_handler _descriptor_handler;
 
 }; // class mesh
 
