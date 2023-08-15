@@ -57,7 +57,7 @@ class libsbx_recipe(ConanFile):
 
   def config_options(self):
     if self.settings.os == "Windows":
-      self.options.fPic = False
+      self.options.fPIC = False
 
   def layout(self):
     cmake_layout(self)
