@@ -2,6 +2,7 @@
 #define LIBSBX_DEVICES_EVENTS_HPP_
 
 #include <cinttypes>
+#include <cmath>
 
 namespace sbx::devices {
 
@@ -38,6 +39,11 @@ struct key_released_event {
   std::int32_t action{};
   std::int32_t mods{};
 }; // struct key_released_event
+
+struct mouse_moved_event {
+  std::float_t x;
+  std::float_t y;
+}; // struct mouse_moved_event
 
 } // namespace sbx::devices
 

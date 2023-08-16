@@ -26,12 +26,20 @@ public:
     _position = position;
   }
 
+  auto move_by(const math::vector3& offset) noexcept -> void {
+    _position += offset;
+  }
+
   auto rotation() const noexcept -> const math::vector3& {
     return _rotation;
   }
 
   auto set_rotation(const math::vector3& rotation) noexcept -> void {
     _rotation = rotation;
+  }
+
+  auto rotate_by(const math::vector3& offset) noexcept -> void {
+    _rotation += offset;
   }
 
   auto scale() const noexcept -> const math::vector3& {

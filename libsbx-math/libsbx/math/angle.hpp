@@ -33,6 +33,11 @@ private:
 
 }; // class basic_degree
 
+template<std::floating_point Type>
+constexpr auto operator==(const basic_degree<Type>& lhs, const basic_degree<Type>& rhs) noexcept -> bool {
+  return static_cast<basic_degree<Type>::value_type>(lhs) == static_cast<basic_degree<Type>::value_type>(rhs);
+}
+
 template<std::floating_point Type, typename Other>
 requires (std::is_convertible_v<Other, Type>)
 constexpr auto operator*(const basic_degree<Type>& lhs, const Other rhs) noexcept -> basic_degree<Type> {
@@ -66,6 +71,11 @@ private:
   value_type _value{};
 
 }; // class basic_radian
+
+template<std::floating_point Type>
+constexpr auto operator==(const basic_radian<Type>& lhs, const basic_radian<Type>& rhs) noexcept -> bool {
+  return static_cast<basic_radian<Type>::value_type>(lhs) == static_cast<basic_radian<Type>::value_type>(rhs);
+}
 
 template<std::floating_point Type, typename Other>
 requires (std::is_convertible_v<Other, Type>)
@@ -101,6 +111,11 @@ private:
   basic_radian<Type> _radian{};
 
 }; // class basic_angle
+
+template<std::floating_point Type>
+constexpr auto operator==(const basic_angle<Type>& lhs, const basic_angle<Type>& rhs) noexcept -> bool {
+  return lhs.to_radians() == rhs.to_radians();
+}
 
 using angle = basic_angle<std::float_t>;
 

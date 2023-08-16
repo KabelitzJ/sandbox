@@ -59,7 +59,6 @@ public:
 
     auto& window = devices_module.window();
 
-
     window.on_window_closed_signal() += [this]([[maybe_unused]] const auto& event){
       quit();
     };
@@ -104,6 +103,13 @@ public:
 
     auto cube = scene.create_child_node(sphere, "Cube", sbx::scenes::transform{sbx::math::vector3{2.0f, 0.0f, 0.0f}, sbx::math::vector3::zero, sbx::math::vector3{0.3f, 0.3f, 0.3f}});
     cube.add_component<sbx::scenes::static_mesh>(sphere_id, base_id);
+
+    auto camera = scene.create_camera(sbx::math::degree{90.0f}, window.aspect_ratio(), 0.1f, 1000.0f, "Camera");
+    auto& camera_transform = camera.get_component<sbx::scenes::transform>();
+
+    window.on_mouse_moved() += [&camera_transform](const auto& event){
+      camera_transform.rotate_by(sbx::math::vector3{event.x, 0.0f, event.y} * 0.005);
+    };
 
     window.show();
   }

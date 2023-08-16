@@ -15,12 +15,15 @@
 
 #include <libsbx/ecs/entity.hpp>
 
+#include <libsbx/devices/devices_module.hpp>
+
 #include <libsbx/scenes/node.hpp>
 
 #include <libsbx/scenes/components/id.hpp>
 #include <libsbx/scenes/components/tag.hpp>
 #include <libsbx/scenes/components/relationship.hpp>
 #include <libsbx/scenes/components/transform.hpp>
+#include <libsbx/scenes/components/camera.hpp>
 
 namespace sbx::scenes {
 
@@ -36,6 +39,11 @@ public:
     _root.add_component<scenes::transform>();
 
     _nodes.insert({id, _root});
+
+    auto& devices_module = core::engine::get_module<devices::devices_module>();
+    auto& window = devices_module.window();
+
+    create_camera(math::degree{90.0f}, window.aspect_ratio(), 0.1f, 1000.0f, "MAIN");
   }
 
   auto create_child_node(node& parent, const std::string& tag = "", const transform& transform = scenes::transform{}) -> node {
@@ -76,6 +84,23 @@ public:
     _nodes.erase(id);
 
     _registry.destroy_entity(node._entity);
+  }
+
+  auto create_camera(const math::angle& field_of_view, std::float_t aspect_ratio, std::float_t near_plane, std::float_t far_plane, const std::string& tag = "", const transform& transform = scenes::transform{}, bool is_active = true) -> node {
+    auto node = create_node(tag, transform);
+
+    if (is_active) {
+      auto nodes = query<scenes::camera>();
+
+      for (auto& node : nodes) {
+        auto& camera = node.get_component<scenes::camera>();
+        camera.set_is_active(false);
+      }
+    }
+
+    node.add_component<scenes::camera>(field_of_view, aspect_ratio, near_plane, far_plane, is_active);
+
+    return node;
   }
 
   auto world_transform(const node& node) -> math::matrix4x4 {

@@ -276,6 +276,14 @@ inline constexpr auto basic_vector3<Type>::lerp(const basic_vector3& lhs, const 
   return lhs + (rhs - lhs) * scale;
 }
 
+// template<numeric Type>
+// inline constexpr auto basic_vector3<Type>::rotated(const basic_vector3& vector, const basic_vector3& axis, const basic_angle<Type>& angle) noexcept -> basic_vector3 {
+//   const auto cos = std::cos(angle.to_radians());
+//   const auto sin = std::sin(angle.to_radians());
+
+
+// }
+
 template<numeric Type>
 inline constexpr auto basic_vector3<Type>::data() noexcept -> pointer {
   return &x;

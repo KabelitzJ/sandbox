@@ -8,6 +8,8 @@
 #include <libsbx/models/mesh.hpp>
 #include <libsbx/models/vertex3d.hpp>
 
+#include <libsbx/core/logger.hpp>
+
 #include <libsbx/devices/devices_module.hpp>
 
 #include <libsbx/graphics/subrenderer.hpp>
@@ -25,6 +27,7 @@
 #include <libsbx/scenes/components/transform.hpp>
 #include <libsbx/scenes/components/relationship.hpp>
 #include <libsbx/scenes/components/id.hpp>
+#include <libsbx/scenes/components/camera.hpp>
 
 namespace sbx::scenes {
 
@@ -47,22 +50,64 @@ public:
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
     auto& scene = scenes_module.scene();
 
-    const auto delta_time = core::engine::delta_time();
+    auto camera_nodes = scene.query<scenes::camera>();
 
-    _view = math::matrix4x4::look_at(_camera_position, math::vector3{0.0f, 0.0f, 0.0f}, math::vector3::up);
-    _projection = math::matrix4x4::perspective(math::radian{45.0f}, window.aspect_ratio(), 0.1f, 100.0f);
+    auto has_active_camera = false;
 
-    _scene_uniform_handler.push("view", _view);
-    _scene_uniform_handler.push("projection", _projection);
+    for (auto& node : camera_nodes) {
+      auto& camera = node.get_component<scenes::camera>();
 
-    auto nodes = scene.query<scenes::static_mesh>();
+      if (!camera.is_active()) {
+        continue;
+      }
 
-    for (auto& node : nodes) {
+      has_active_camera = true;
+
+      camera.set_aspect_ratio(window.aspect_ratio());
+
+      _scene_uniform_handler.push("projection", camera.projection());
+
+      auto& transform = node.get_component<scenes::transform>();
+
+      _scene_uniform_handler.push("view", math::matrix4x4::inverted(transform.as_matrix()));
+    }
+
+    if (!has_active_camera) {
+      core::logger::warn("sbx::scenes", "Scene does not have an active camera");
+      return;
+    }
+
+    // const auto delta_time = core::engine::delta_time();
+
+    // _view = math::matrix4x4::look_at(_camera_position, math::vector3{0.0f, 0.0f, 0.0f}, math::vector3::up);
+    // _projection = math::matrix4x4::perspective(math::degree{90.0f}, window.aspect_ratio(), 0.1f, 1000.0f);
+
+    // _scene_uniform_handler.push("view", _view);
+    // _scene_uniform_handler.push("projection", _projection);
+
+    auto mesh_nodes = scene.query<scenes::static_mesh>();
+
+    for (auto& node : mesh_nodes) {
       _render_node(node, command_buffer);
     }
   }
 
 private:
+
+  // auto _forward(const math::vector3& position, const math::vector3& rotation) -> math::vector3 {
+  //   auto matrix = math::matrix4x4::identity;
+
+  //   matrix = math::matrix4x4::rotated(matrix, math::vector3::right, math::degree{rotation.x});
+  //   matrix = math::matrix4x4::rotated(matrix, math::vector3::forward, math::degree{rotation.y});
+
+  //   auto rotated = matrix * math::vector4{position};
+
+  //   return math::vector3{rotated.x, rotated.y, rotated.z};
+  // }
+
+  // auto _up(const math::vector3& position, const math::vector3& rotation) -> math::vector3 {
+
+  // }
 
   auto _render_node(node& node, graphics::command_buffer& command_buffer) -> void {
     auto& assets_module = core::engine::get_module<assets::assets_module>();

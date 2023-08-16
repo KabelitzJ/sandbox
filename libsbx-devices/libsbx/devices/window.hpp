@@ -11,6 +11,8 @@
 #include <libsbx/core/concepts.hpp>
 #include <libsbx/core/delegate.hpp>
 
+#include <libsbx/math/vector2.hpp>
+
 #include <libsbx/signals/signal.hpp>
 
 #include <libsbx/devices/events.hpp>
@@ -27,7 +29,8 @@ class window {
 
 public:
 
-  window(const window_create_info& create_info) {
+  window(const window_create_info& create_info)
+  : _last_mouse_position{-1.0f, -1.0f} {
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     // [NOTE] KAJ 2023-08-15 : Currently there seems to be a bug in the Vukan SDK version 1.3.250.1 that causes the validation layers to crash when resizing the window.
     // glfwWindowHint(GLFW_RESIZABLE, false);
@@ -43,7 +46,15 @@ public:
       throw std::runtime_error{"Could not create glfw window"};
     }
 
+    glfwSetWindowUserPointer(_handle, this);
+
     glfwFocusWindow(_handle);
+
+    if (glfwRawMouseMotionSupported()) {
+      glfwSetInputMode(_handle, GLFW_RAW_MOUSE_MOTION, true);
+    }
+
+    glfwSetInputMode(_handle, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     _set_callbacks();
   }
@@ -139,6 +150,10 @@ public:
     return _on_key_released;
   }
 
+  auto on_mouse_moved() -> signals::signal<mouse_moved_event>& {
+    return _on_mouse_moved;
+  }
+
 private:
 
   void _set_callbacks() {
@@ -180,6 +195,19 @@ private:
         self._on_key_released(key_released_event{key, scancode, action, mods});
       }
     });
+
+    glfwSetCursorPosCallback(_handle, [](auto* window, auto x, auto y){
+      auto& self = *static_cast<devices::window*>(glfwGetWindowUserPointer(window));
+
+      auto mouse_position = math::vector2{static_cast<std::float_t>(x), static_cast<std::float_t>(y)};
+
+      if (self._last_mouse_position.x < 0.0f || self._last_mouse_position.y < 0.0f) {
+        self._on_mouse_moved(mouse_moved_event{mouse_position.x, mouse_position.y});
+      } else {
+        self._on_mouse_moved(mouse_moved_event{mouse_position.x - self._last_mouse_position.x, mouse_position.y - self._last_mouse_position.y});
+        self._last_mouse_position = mouse_position;
+      }
+    });
   }
 
   std::string _title{};
@@ -188,12 +216,15 @@ private:
 
   GLFWwindow* _handle{};
 
+  math::vector2 _last_mouse_position;
+
   signals::signal<window_closed_event> _on_window_closed_signal;
   signals::signal<window_moved_event> _on_window_moved_signal;
   signals::signal<window_resized_event> _on_window_resized_signal;
   signals::signal<framebuffer_resized_event> _on_framebuffer_resized;
   signals::signal<key_pressed_event> _on_key_pressed;
   signals::signal<key_released_event> _on_key_released;
+  signals::signal<mouse_moved_event> _on_mouse_moved;
 
 }; // class window
 

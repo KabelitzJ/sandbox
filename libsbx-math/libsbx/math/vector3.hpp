@@ -12,6 +12,7 @@
 
 #include <libsbx/math/concepts.hpp>
 #include <libsbx/math/vector2.hpp>
+#include <libsbx/math/angle.hpp>
 
 namespace sbx::math {
 
@@ -192,6 +193,8 @@ public:
   template<std::floating_point Scale>
   [[nodiscard]] static constexpr auto lerp(const basic_vector3& lhs, const basic_vector3& rhs, const Scale scale) -> basic_vector3;
 
+  // [[nodiscard]] static constexpr auto rotated(const basic_vector3& vector, const basic_vector3& axis, const basic_angle<Type>& angle) noexcept -> basic_vector3;
+  
   // -- Assignment operators --
 
   /**
