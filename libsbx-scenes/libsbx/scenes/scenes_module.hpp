@@ -5,7 +5,7 @@
 
 #include <libsbx/core/module.hpp>
 
-#include <libsbx/graphics/graphics_module.hpp>
+// #include <libsbx/graphics/graphics_module.hpp>
 
 #include <libsbx/scenes/scene.hpp>
 
@@ -13,7 +13,7 @@ namespace sbx::scenes {
 
 class scenes_module final : public core::module<scenes_module> {
 
-  inline static const auto is_registered = register_module(stage::normal, dependencies<graphics::graphics_module>{});
+  inline static const auto is_registered = register_module(stage::normal/*, dependencies<graphics::graphics_module>{}*/);
 
 public:
 

@@ -45,7 +45,7 @@ public:
   }
 
   auto initialize() -> void override {
-    add_subrenderer<sbx::scenes::scene_subrenderer>(sbx::graphics::pipeline::stage{ .renderpass = 0, .subpass = 0 });
+    add_subrenderer<sbx::scenes::scene_subrenderer>(sbx::graphics::pipeline::stage{0, 0}, "./demo/assets/shaders/basic");
   }
 
 }; // class demo_renderer
@@ -92,24 +92,18 @@ public:
     auto sphere_id = assets_module.load_asset<sbx::models::mesh>("./demo/assets/meshes/sphere.obj");
     auto cube_id = assets_module.load_asset<sbx::models::mesh>("./demo/assets/meshes/cube.obj");
 
-    auto pipeline_id = assets_module.load_asset<sbx::graphics::graphics_pipeline>(
-      "./demo/assets/shaders/basic",
-      sbx::graphics::pipeline::stage{ .renderpass = 0, .subpass = 0 }, 
-      sbx::graphics::vertex_input<sbx::models::vertex3d>::description()
-    );
-
     auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
 
     auto& scene = scenes_module.scene();
 
     auto monkey = scene.create_node("Monkey", sbx::scenes::transform{sbx::math::vector3{-3.0f, -3.0f, -1.0f}});
-    monkey.add_component<sbx::scenes::static_mesh>(sphere_id, base_id, pipeline_id);
+    monkey.add_component<sbx::scenes::static_mesh>(sphere_id, base_id);
 
     auto sphere = scene.create_child_node(monkey, "Sphere", sbx::scenes::transform{sbx::math::vector3{-4.0f, 0.0f, 0.0f}, sbx::math::vector3::zero, sbx::math::vector3{0.5f, 0.5f, 0.5f}});
-    sphere.add_component<sbx::scenes::static_mesh>(sphere_id, base_id, pipeline_id);
+    sphere.add_component<sbx::scenes::static_mesh>(sphere_id, base_id);
 
     auto cube = scene.create_child_node(sphere, "Cube", sbx::scenes::transform{sbx::math::vector3{2.0f, 0.0f, 0.0f}, sbx::math::vector3::zero, sbx::math::vector3{0.3f, 0.3f, 0.3f}});
-    cube.add_component<sbx::scenes::static_mesh>(sphere_id, base_id, pipeline_id);
+    cube.add_component<sbx::scenes::static_mesh>(sphere_id, base_id);
 
     window.show();
   }

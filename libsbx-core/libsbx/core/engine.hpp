@@ -87,9 +87,13 @@ public:
 
       engine::_delta_time = units::second{delta_time};
 
+      _update_stage(stage::always);
+
       _update_stage(stage::pre);
       _update_stage(stage::normal);
       _update_stage(stage::post);
+
+      _update_stage(stage::rendering);
     }
   }
 

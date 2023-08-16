@@ -84,11 +84,6 @@ public:
   }
 
   auto unload_assets() -> void {
-    // [Note] KAJ 2023-08-14 16:50 - Unfortunately mesh and pipeline assets need be unloaded in a fixed order since meshes hold indirect references to pipelines.
-    _storages.erase(asset_type::mesh);
-    _storages.erase(asset_type::pipeline);
-
-    // [Note] KAJ 2023-08-14 16:50 - To ensure we dont introduce bugs when adding new asset types we clear the rest out here
     for (auto& [type, storage] : _storages) {
       storage->clear();
     }

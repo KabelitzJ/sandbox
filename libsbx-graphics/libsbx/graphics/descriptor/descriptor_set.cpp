@@ -26,8 +26,6 @@ descriptor_set::descriptor_set(const pipeline& pipeline) noexcept
   descriptor_set_allocate_info.pSetLayouts = descriptor_set_layouts.data();
 
   validate(vkAllocateDescriptorSets(logical_device, &descriptor_set_allocate_info, &_descriptor_set));
-
-  auto i = 0;
 }
 
 descriptor_set::~descriptor_set() {

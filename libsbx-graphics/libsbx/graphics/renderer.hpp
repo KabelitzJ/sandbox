@@ -51,6 +51,7 @@ public:
 protected:
 
   template<utility::implements<subrenderer> Type, typename... Args>
+  requires (std::is_constructible_v<Type, const pipeline::stage&, Args...>)
   auto add_subrenderer(const pipeline::stage& stage, Args&&... args) -> void {
     const auto type = std::type_index{typeid(Type)};
 

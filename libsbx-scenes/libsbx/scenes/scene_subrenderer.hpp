@@ -6,10 +6,13 @@
 #include <libsbx/math/vector3.hpp>
 
 #include <libsbx/models/mesh.hpp>
+#include <libsbx/models/vertex3d.hpp>
 
 #include <libsbx/devices/devices_module.hpp>
 
 #include <libsbx/graphics/subrenderer.hpp>
+
+#include <libsbx/graphics/pipeline/graphics_pipeline.hpp>
 
 #include <libsbx/graphics/buffer/uniform_handler.hpp>
 #include <libsbx/graphics/descriptor/descriptor_handler.hpp>
@@ -29,8 +32,9 @@ class scene_subrenderer final : public graphics::subrenderer {
 
 public:
 
-  scene_subrenderer(const graphics::pipeline::stage& stage)
+  scene_subrenderer(const graphics::pipeline::stage& stage, const std::filesystem::path& path)
   : graphics::subrenderer{stage},
+    _pipeline{stage, path, graphics::vertex_input<models::vertex3d>::description()},
     _camera_position{2.0f, 2.0f, 1.0f},
     _light_position{-1.0f, 3.0f, 1.0f} { }
 
@@ -45,11 +49,11 @@ public:
 
     const auto delta_time = core::engine::delta_time();
 
-    _uniforms.view = math::matrix4x4::look_at(_camera_position, math::vector3{0.0f, 0.0f, 0.0f}, math::vector3::up);
-    _uniforms.projection = math::matrix4x4::perspective(math::radian{45.0f}, window.aspect_ratio(), 0.1f, 100.0f);
+    _view = math::matrix4x4::look_at(_camera_position, math::vector3{0.0f, 0.0f, 0.0f}, math::vector3::up);
+    _projection = math::matrix4x4::perspective(math::radian{45.0f}, window.aspect_ratio(), 0.1f, 100.0f);
 
-    _scene_uniform_handler.push("view", _uniforms.view);
-    _scene_uniform_handler.push("projection", _uniforms.projection);
+    _scene_uniform_handler.push("view", _view);
+    _scene_uniform_handler.push("projection", _projection);
 
     auto nodes = scene.query<scenes::static_mesh>();
 
@@ -76,13 +80,12 @@ private:
 
     auto& mesh = assets_module.get_asset<models::mesh>(static_mesh.mesh_id());
     auto& image = assets_module.get_asset<graphics::image2d>(static_mesh.texture_id());
-    auto& pipeline = assets_module.get_asset<graphics::graphics_pipeline>(static_mesh.pipeline_id());
 
-    if (pipeline.stage() != stage()) {
+    if (_pipeline.stage() != stage()) {
       return;
     }
 
-    pipeline.bind(command_buffer);
+    _pipeline.bind(command_buffer);
 
     auto world_transform = scene.world_transform(node);
 
@@ -91,13 +94,11 @@ private:
     uniform_handler.push("model", world_transform);
     uniform_handler.push("normal", math::matrix4x4::transposed(math::matrix4x4::inverted(world_transform)));
 
-    pipeline.bind(command_buffer);
-
     descriptor_handler.push("uniform_scene", _scene_uniform_handler);
     descriptor_handler.push("uniform_object", uniform_handler);
     descriptor_handler.push("image", image);
 
-    if (!descriptor_handler.update(pipeline)) {
+    if (!descriptor_handler.update(_pipeline)) {
       return;
     }
 
@@ -106,41 +107,21 @@ private:
     mesh.render(command_buffer);
   }
 
-  // _object_uniforms.push("model", model);
-  // _object_uniforms.push("normal", math::matrix4x4::transposed(math::matrix4x4::inverted(model)));
-
-  // if (pipeline.stage() != stage) {
-  //   return;
-  // }
-
-  // pipeline.bind(command_buffer);
-
-  // _descriptor_handler.push("uniform_scene", scene_uniforms);
-  // _descriptor_handler.push("uniform_object", _object_uniforms);
-  // _descriptor_handler.push("image", image);
-
-  // if (!_descriptor_handler.update(pipeline)) {
-  //   return;
-  // }
-
-  // _descriptor_handler.bind_descriptors(command_buffer);
-
-  struct uniforms {
-    math::matrix4x4 view;
-    math::matrix4x4 projection;
-  }; // struct uniforms#
-
   struct uniform_data {
     graphics::uniform_handler uniform_handler;
     graphics::descriptor_handler descriptor_handler;
   }; // struct uniform_data#
+
+  graphics::graphics_pipeline _pipeline;
 
   math::vector3 _camera_position;
   math::vector3 _light_position;
 
   std::unordered_map<math::uuid, uniform_data> _uniform_data;
 
-  uniforms _uniforms;
+  math::matrix4x4 _view;
+  math::matrix4x4 _projection;
+
   graphics::uniform_handler _scene_uniform_handler;
 
 }; // class scene_subrenderer

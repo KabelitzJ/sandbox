@@ -12,8 +12,6 @@
 
 #include <fmt/format.h>
 
-#include <libsbx/assets/asset.hpp>
-
 #include <libsbx/graphics/buffer/buffer.hpp>
 #include <libsbx/graphics/buffer/uniform_handler.hpp>
 
@@ -28,11 +26,11 @@
 
 namespace sbx::graphics {
 
-class graphics_pipeline : public pipeline, public assets::asset<assets::asset_type::pipeline> {
+class graphics_pipeline : public pipeline {
 
 public:
 
-  graphics_pipeline(const std::filesystem::path& path, const pipeline::stage& stage, const vertex_input_description& vertex_input_description);
+  graphics_pipeline(const pipeline::stage& stage, const std::filesystem::path& path, const vertex_input_description& vertex_input_description);
 
   ~graphics_pipeline() override;
 

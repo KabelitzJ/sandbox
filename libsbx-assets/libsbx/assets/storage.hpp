@@ -33,7 +33,7 @@ public:
   }
 
   ~storage() override {
-    
+    clear();
   }
 
   auto insert(const asset_id id, std::unique_ptr<Type>&& value) -> reference {
