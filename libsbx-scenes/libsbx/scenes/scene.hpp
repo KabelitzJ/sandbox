@@ -10,12 +10,15 @@
 #include <range/v3/all.hpp>
 
 #include <libsbx/ecs/registry.hpp>
+#include <libsbx/ecs/entity.hpp>
 
 #include <libsbx/core/logger.hpp>
 
-#include <libsbx/ecs/entity.hpp>
-
 #include <libsbx/devices/devices_module.hpp>
+
+#include <libsbx/assets/assets_module.hpp>
+
+#include <libsbx/scripting/script.hpp>
 
 #include <libsbx/scenes/node.hpp>
 
@@ -24,6 +27,7 @@
 #include <libsbx/scenes/components/relationship.hpp>
 #include <libsbx/scenes/components/transform.hpp>
 #include <libsbx/scenes/components/camera.hpp>
+#include <libsbx/scenes/components/script.hpp>
 
 namespace sbx::scenes {
 
@@ -44,6 +48,19 @@ public:
     auto& window = devices_module.window();
 
     create_camera(math::degree{90.0f}, window.aspect_ratio(), 0.1f, 1000.0f, "MAIN");
+  }
+
+  auto start() -> void {
+    auto& assets_module = core::engine::get_module<assets::assets_module>();
+
+    auto script_nodes = query<scenes::script>();
+
+    for (auto& node : script_nodes) {
+      auto& script_id = node.get_component<scenes::script>();
+      auto& script = assets_module.get_asset<scripting::script>(script_id);
+
+      script.on_create();
+    }
   }
 
   auto create_child_node(node& parent, const std::string& tag = "", const transform& transform = scenes::transform{}) -> node {

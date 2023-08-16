@@ -21,6 +21,8 @@
 
 #include <libsbx/graphics/pipeline/graphics_pipeline.hpp>
 
+#include <libsbx/scripting/script.hpp>
+
 #include <libsbx/scenes/scenes_module.hpp>
 
 #include <libsbx/scenes/components/static_mesh.hpp>
@@ -28,6 +30,7 @@
 #include <libsbx/scenes/components/relationship.hpp>
 #include <libsbx/scenes/components/id.hpp>
 #include <libsbx/scenes/components/camera.hpp>
+#include <libsbx/scenes/components/script.hpp>
 
 namespace sbx::scenes {
 
@@ -70,6 +73,8 @@ public:
       auto& transform = node.get_component<scenes::transform>();
 
       _scene_uniform_handler.push("view", math::matrix4x4::inverted(transform.as_matrix()));
+
+      break;
     }
 
     if (!has_active_camera) {
@@ -77,13 +82,29 @@ public:
       return;
     }
 
-    // const auto delta_time = core::engine::delta_time();
+    auto& assets_module = core::engine::get_module<assets::assets_module>();
 
-    // _view = math::matrix4x4::look_at(_camera_position, math::vector3{0.0f, 0.0f, 0.0f}, math::vector3::up);
-    // _projection = math::matrix4x4::perspective(math::degree{90.0f}, window.aspect_ratio(), 0.1f, 1000.0f);
+    auto script_nodes = scene.query<scenes::script>();
 
-    // _scene_uniform_handler.push("view", _view);
-    // _scene_uniform_handler.push("projection", _projection);
+    for (auto& node : script_nodes) {
+      auto& transform = node.get_component<scenes::transform>();
+
+      auto& script_id = node.get_component<scenes::script>();
+      auto& script = assets_module.get_asset<scripting::script>(script_id);
+
+      script.set("position", transform.position());
+      script.set("rotation", transform.rotation());
+
+      script.on_update();
+
+      if (auto position = script.get<math::vector3>("position"); position) {
+        transform.set_position(*position);
+      }
+
+      if (auto rotation = script.get<math::vector3>("position"); rotation) {
+        transform.set_rotation(*rotation);
+      }
+    }
 
     auto mesh_nodes = scene.query<scenes::static_mesh>();
 

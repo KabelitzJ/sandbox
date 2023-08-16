@@ -2,16 +2,20 @@
 #define LIBSBX_SCRIPTING_SCRIPT_HPP_
 
 #include <filesystem>
+#include <optional>
 
 #include <sol/sol.hpp>
 
 #include <libsbx/core/logger.hpp>
+#include <libsbx/core/engine.hpp>
 
 #include <libsbx/math/vector3.hpp>
 
+#include <libsbx/assets/asset.hpp>
+
 namespace sbx::scripting {
 
-class script {
+class script : public assets::asset<assets::asset_type::script> {
 
 public:
 
@@ -50,7 +54,7 @@ public:
     auto on_create = _state.get<sol::function>("on_create");
 
     if (!on_create.valid() || !on_create.is<sol::function>()) {
-      core::logger::warn("sbx::scripting", "Function 'on_create' not found in script '{}'", _name);
+      // core::logger::warn("sbx::scripting", "Function 'on_create' not found in script '{}'", _name);
       return;
     }
 
@@ -61,7 +65,7 @@ public:
     auto on_update = _state.get<sol::function>("on_update");
 
     if (!on_update.valid() || !on_update.is<sol::function>()) {
-      core::logger::warn("sbx::scripting", "Function 'on_update' not found in script '{}'", _name);
+      // core::logger::warn("sbx::scripting", "Function 'on_update' not found in script '{}'", _name);
       return;
     }
 
@@ -74,24 +78,12 @@ public:
   
   template<typename Key, typename Type>
   auto set(Key&& key, const Type& value) -> void {
-    auto variable = _state[std::forward<Key>(key)];
-
-    if (!variable.valid()) {
-      throw std::runtime_error{fmt::format("Could not find variable '{}' in script '{}.lua'", key, _name)};
-    }
-
-    variable = value;
+    _state.set(std::forward<Key>(key), value);
   }
 
-  template<typename Key, typename Type>
-  auto get(Key&& key) -> Type& {
-    auto variable = _state[std::forward<Key>(key)];
-
-    if (!variable.valid()) {
-      throw std::runtime_error{fmt::format("Could not find variable '{}' in script '{}.lua'", key, _name)};
-    }
-
-    return static_cast<Type&>(variable);
+  template<typename Type, typename Key>
+  auto get(Key&& key) -> sol::optional<Type> {
+    return _state.get<sol::optional<Type>>(std::forward<Key>(key));
   }
 
 private:
@@ -125,6 +117,8 @@ private:
       [](const std::string& message) { core::logger::warn("sbx::scripting", message); },
       [](std::float_t value) { core::logger::warn("sbx::scripting", value); }
     ));
+
+    library.set_function("delta_time", [](){ return core::engine::delta_time().value(); });
 
     auto vector3_constructor = sol::constructors<math::vector3(), math::vector3(std::float_t, std::float_t, std::float_t)>{};
 
@@ -161,8 +155,6 @@ private:
   
   std::string _name{};
   sol::state _state{};
-  sol::function _startup_function{};
-  sol::function _update_function{};
 
 }; // class script
 

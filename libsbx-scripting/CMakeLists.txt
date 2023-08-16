@@ -40,6 +40,7 @@ target_link_libraries(
     libsbx::core
     libsbx::async
     libsbx::math
+    libsbx::assets
 )
 
 set_target_properties(

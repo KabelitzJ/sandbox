@@ -29,6 +29,7 @@ target_sources(
     "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/components/transform.hpp"
     "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/components/static_mesh.hpp"
     "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/components/camera.hpp"
+    "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/components/script.hpp"
 )
 
 target_include_directories(
@@ -53,6 +54,7 @@ target_link_libraries(
     libsbx::devices
     libsbx::graphics
     libsbx::models
+    libsbx::scripting
 )
 
 set_target_properties(

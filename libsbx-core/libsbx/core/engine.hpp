@@ -50,7 +50,7 @@ public:
   }
 
   static auto delta_time() -> units::second {
-    return _delta_time;
+    return _instance->_delta_time;
   }
 
   template<typename Module>
@@ -85,7 +85,7 @@ public:
 
       application->update();
 
-      engine::_delta_time = units::second{delta_time};
+      _instance->_delta_time = units::second{delta_time};
 
       _update_stage(stage::always);
 
@@ -140,7 +140,7 @@ private:
 
   static engine* _instance;
 
-  static units::second _delta_time;
+  units::second _delta_time;
 
   bool _is_running{};
   std::vector<std::string> _args{};
