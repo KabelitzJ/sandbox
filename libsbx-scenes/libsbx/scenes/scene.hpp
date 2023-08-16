@@ -59,7 +59,17 @@ public:
       auto& script_id = node.get_component<scenes::script>();
       auto& script = assets_module.get_asset<scripting::script>(script_id);
 
+      auto& transform = node.get_component<scenes::transform>();
+
       script.on_create();
+
+      if (auto position = script.get<math::vector3>("position"); position.is<math::vector3>()) {
+       transform.set_position(position.as<math::vector3>());
+      }
+
+      if (auto rotation = script.get<math::vector3>("rotation"); rotation.is<math::vector3>()) {
+        transform.set_rotation(rotation.as<math::vector3>());
+      }
     }
   }
 

@@ -82,8 +82,8 @@ public:
   }
 
   template<typename Type, typename Key>
-  auto get(Key&& key) -> sol::optional<Type> {
-    return _state.get<sol::optional<Type>>(std::forward<Key>(key));
+  auto get(Key&& key) -> sol::object {
+    return _state.get<sol::object>(std::forward<Key>(key));
   }
 
 private:
@@ -150,6 +150,10 @@ private:
     vector3_type.set_function(sol::meta_function::division, sol::overload(
       sol::resolve<math::vector3(math::vector3 lhs, const std::float_t rhs)>(&math::operator/),
       sol::resolve<math::vector3(math::vector3 lhs, const math::vector3& rhs)>(&math::operator/)
+    ));
+
+    vector3_type.set_function(sol::meta_function::unary_minus, sol::overload(
+      sol::resolve<math::vector3(const math::vector3& vector)>(&math::operator-)
     ));
   }
   

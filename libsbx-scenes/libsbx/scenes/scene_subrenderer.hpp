@@ -53,6 +53,12 @@ public:
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
     auto& scene = scenes_module.scene();
 
+    auto script_nodes = scene.query<scenes::script>();
+
+    for (auto& node : script_nodes) {
+      _update_script(node);
+    }
+
     auto camera_nodes = scene.query<scenes::camera>();
 
     auto has_active_camera = false;
@@ -72,7 +78,10 @@ public:
 
       auto& transform = node.get_component<scenes::transform>();
 
-      _scene_uniform_handler.push("view", math::matrix4x4::inverted(transform.as_matrix()));
+      // core::logger::debug("sbx::scenes", "Camera rotation: {}", transform.rotation());
+
+      // _scene_uniform_handler.push("view", math::matrix4x4::inverted(transform.as_matrix()));
+      _scene_uniform_handler.push("view", math::matrix4x4::look_at(math::vector3{7.0f, 7.0f, 7.0f}, math::vector3::zero, math::vector3::up));
 
       break;
     }
@@ -80,30 +89,6 @@ public:
     if (!has_active_camera) {
       core::logger::warn("sbx::scenes", "Scene does not have an active camera");
       return;
-    }
-
-    auto& assets_module = core::engine::get_module<assets::assets_module>();
-
-    auto script_nodes = scene.query<scenes::script>();
-
-    for (auto& node : script_nodes) {
-      auto& transform = node.get_component<scenes::transform>();
-
-      auto& script_id = node.get_component<scenes::script>();
-      auto& script = assets_module.get_asset<scripting::script>(script_id);
-
-      script.set("position", transform.position());
-      script.set("rotation", transform.rotation());
-
-      script.on_update();
-
-      if (auto position = script.get<math::vector3>("position"); position) {
-        transform.set_position(*position);
-      }
-
-      if (auto rotation = script.get<math::vector3>("position"); rotation) {
-        transform.set_rotation(*rotation);
-      }
     }
 
     auto mesh_nodes = scene.query<scenes::static_mesh>();
@@ -115,20 +100,27 @@ public:
 
 private:
 
-  // auto _forward(const math::vector3& position, const math::vector3& rotation) -> math::vector3 {
-  //   auto matrix = math::matrix4x4::identity;
+  auto _update_script(node& node) -> void {
+    auto& assets_module = core::engine::get_module<assets::assets_module>();
 
-  //   matrix = math::matrix4x4::rotated(matrix, math::vector3::right, math::degree{rotation.x});
-  //   matrix = math::matrix4x4::rotated(matrix, math::vector3::forward, math::degree{rotation.y});
+    auto& transform = node.get_component<scenes::transform>();
 
-  //   auto rotated = matrix * math::vector4{position};
+    auto& script_id = node.get_component<scenes::script>();
+    auto& script = assets_module.get_asset<scripting::script>(script_id);
 
-  //   return math::vector3{rotated.x, rotated.y, rotated.z};
-  // }
+    script.set("position", transform.position());
+    script.set("rotation", transform.rotation());
 
-  // auto _up(const math::vector3& position, const math::vector3& rotation) -> math::vector3 {
+    script.on_update();
 
-  // }
+    if (auto position = script.get<math::vector3>("position"); position.is<math::vector3>()) {
+      transform.set_position(position.as<math::vector3>());
+    }
+
+    if (auto rotation = script.get<math::vector3>("rotation"); rotation.is<math::vector3>()) {
+      transform.set_rotation(rotation.as<math::vector3>());
+    }
+  }
 
   auto _render_node(node& node, graphics::command_buffer& command_buffer) -> void {
     auto& assets_module = core::engine::get_module<assets::assets_module>();
@@ -142,7 +134,7 @@ private:
     const auto& id = node.get_component<scenes::id>();
     auto& transform = node.get_component<scenes::transform>();
 
-    transform.set_rotation(transform.rotation() + math::vector3{0.0f, 0.0f, math::degree{45.0f} * delta_time});
+    transform.rotate_by(math::vector3{0.0f, 0.0f, math::degree{75.0f} * delta_time});
 
     auto& mesh = assets_module.get_asset<models::mesh>(static_mesh.mesh_id());
     auto& image = assets_module.get_asset<graphics::image2d>(static_mesh.texture_id());

@@ -107,8 +107,10 @@ public:
     moon.add_component<sbx::scenes::static_mesh>(sphere_id, base_id);
 
     auto camera = scene.create_camera(sbx::math::degree{90.0f}, window.aspect_ratio(), 0.1f, 1000.0f, "Camera");
-    // camera.get_component<sbx::scenes::transform>().set_position(sbx::math::vector3{0.0f, -8.0f, 0.0f});
     camera.add_component<sbx::scenes::script>(script_id);
+    auto& transform = camera.get_component<sbx::scenes::transform>();
+    transform.set_position(sbx::math::vector3{4.0f, 4.0f, 4.0f});
+    transform.look_at(sbx::math::vector3::zero);
 
     // [Todo] KAJ 2023-08-16 15:30 - This should probably be done automatically
     scene.start();

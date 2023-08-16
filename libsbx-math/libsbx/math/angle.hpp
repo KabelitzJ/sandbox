@@ -119,6 +119,16 @@ constexpr auto operator==(const basic_angle<Type>& lhs, const basic_angle<Type>&
 
 using angle = basic_angle<std::float_t>;
 
+template<std::floating_point Type>
+constexpr auto to_degrees(const basic_radian<Type>& radian) noexcept -> basic_degree<Type> {
+  return basic_angle<Type>{radian}.to_degrees();
+}
+
+template<std::floating_point Type>
+constexpr auto to_radians(const basic_degree<Type>& degree) noexcept -> basic_radian<Type> {
+  return basic_angle<Type>{degree}.to_radians();
+}
+
 // [NOTE] KAJ 2023-05-24 : This, somehow, causes a linker error (multiple definition)
 // namespace literals {
 

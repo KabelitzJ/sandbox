@@ -10,6 +10,8 @@
 
 #include <yaml-cpp/yaml.h>
 
+#include <fmt/format.h>
+
 #include <libsbx/math/concepts.hpp>
 #include <libsbx/math/vector2.hpp>
 #include <libsbx/math/angle.hpp>
@@ -492,6 +494,23 @@ struct YAML::convert<sbx::math::basic_vector3<Type>> {
   static auto encode(const sbx::math::basic_vector3<Type>& vector) -> Node;
   static auto decode(const Node& node, sbx::math::basic_vector3<Type>& vector) -> bool;
 }; // struct YAML::convert
+
+template<sbx::math::numeric Type>
+struct fmt::formatter<sbx::math::basic_vector3<Type>> : formatter<std::string_view> {
+
+  using underlying_formatter_type = formatter<std::string_view>;
+
+  template<typename ParseContext>
+  constexpr auto parse(ParseContext& context) -> decltype(context.begin()) {
+    return underlying_formatter_type::parse(context);
+  }
+
+  template<typename FormatContext>
+  auto format(const sbx::math::basic_vector3<Type>& vector, FormatContext& context) -> decltype(context.out()) {
+    return underlying_formatter_type::format(fmt::format("({:.2f}, {:.2f}, {:.2f})", vector.x, vector.y, vector.z), context);
+  }
+
+}; // struct fmt::formatter
 
 #include <libsbx/math/vector3.ipp>
 

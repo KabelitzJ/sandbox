@@ -50,6 +50,16 @@ public:
     _scale = scale;
   }
 
+  auto look_at(const math::vector3& target) noexcept -> void {
+    auto direction = math::vector3::normalized(target - _position);
+
+    const auto pitch = math::radian{std::atan2(direction.z, std::sqrt(direction.x * direction.x + direction.y * direction.y))};
+    const auto yaw = math::radian{std::atan2(direction.y, direction.x)};
+
+    _rotation.x = math::to_degrees(pitch);
+    _rotation.y = math::to_degrees(yaw);
+  }
+
   auto as_matrix() const -> math::matrix4x4 {
     auto result = math::matrix4x4::identity;
 
