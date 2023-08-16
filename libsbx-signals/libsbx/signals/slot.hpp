@@ -109,34 +109,6 @@ private:
 
 }; // class slot
 
-// template <typename Function, typename... Args>
-// class extended_slot final : public slot_base<Args...> {
-
-// public:
-
-//   template<typename Other>
-//   constexpr extended_slot(cleanable& cleanable, Other&& function, group_id group)
-//   : slot_base<Args...>{cleanable, group}, 
-//     _function{std::forward<Other>(function)} {}
-
-//   connection con;
-
-// protected:
-
-//   auto call_slot(Args&&... args) -> void override {
-//     std::invoke(_function, con, std::forward<Args>(args)...);
-//   }
-
-//   auto get_callable() const noexcept -> function_ptr override {
-//     return get_function_ptr(_function);
-//   }
-
-// private:
-
-//   std::decay_t<Function> _function;
-  
-// }; // extended_slot
-
 template<typename MemberFunctionPtr, typename Object, typename... Args>
 class member_function_ptr_slot final : public slot_base<Args...> {
 public:
@@ -168,40 +140,6 @@ private:
   std::decay_t<Object> _object;
 
 }; // member_function_ptr_slot
-
-// template<typename MemberFunctionPtr, typename Object, typename... Args>
-// class extended_member_function_ptr_slot final : public slot_base<Args...> {
-// public:
-
-//   template<typename MFP, typename O>
-//   constexpr extended_member_function_ptr_slot(cleanable& cleanable, MFP&& member_function_ptr, O&& object, group_id group)
-//   : slot_base<Args...>{cleanable, group}, 
-//     _member_function_ptr{std::forward<MFP>(member_function_ptr)}, 
-//     _object{std::forward<O>(object)} { }
-
-//   connection con;
-
-// protected:
-
-//   auto call_slot(Args&&... args) -> void override {
-//     // ((*_object).*pmf)(args...);
-//     std::invoke(_member_function_ptr, _object, con, std::forward<Args>(args)...);
-//   }
-
-//   auto get_callable() const noexcept -> function_ptr override {
-//     return get_function_ptr(_member_function_ptr);
-//   }
-
-//   auto get_object() const noexcept -> object_ptr override {
-//     return get_object_ptr(_member_function_ptr);
-//   }
-
-// private:
-
-//   std::decay_t<MemberFunctionPtr> _member_function_ptr;
-//   std::decay_t<Object> _object;
-
-// }; // member_function_ptr_slot
 
 template<typename Function, typename WeakPtr, typename... Args>
 class tracked_slot final : public slot_base<Args...> {
