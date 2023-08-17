@@ -38,10 +38,7 @@ target_link_libraries(
     # Internal dependencies
     libsbx::utility
     libsbx::core
-    libsbx::async
     libsbx::math
-    libsbx::assets
-    libsbx::scenes
 )
 
 set_target_properties(
@@ -57,6 +54,13 @@ target_compile_features(
   ${PROJECT_NAME}
   PUBLIC
     cxx_std_20
+)
+
+target_compile_definitions(
+  ${PROJECT_NAME}
+  PUBLIC
+    # SOL_ALL_SAFETIES_ON=1
+    # SOL_USING_CXX_LUA=1
 )
 
 target_compile_options(

@@ -12,6 +12,8 @@
 #include <libsbx/ecs/registry.hpp>
 #include <libsbx/ecs/entity.hpp>
 
+#include <libsbx/math/transform.hpp>
+
 #include <libsbx/core/logger.hpp>
 
 #include <libsbx/devices/devices_module.hpp>
@@ -25,9 +27,7 @@
 #include <libsbx/scenes/components/id.hpp>
 #include <libsbx/scenes/components/tag.hpp>
 #include <libsbx/scenes/components/relationship.hpp>
-#include <libsbx/scenes/components/transform.hpp>
 #include <libsbx/scenes/components/camera.hpp>
-#include <libsbx/scenes/components/script.hpp>
 
 namespace sbx::scenes {
 
@@ -40,7 +40,7 @@ public:
     _root{&_registry, _registry.create_entity()} {
     auto& id = _root.add_component<scenes::id>();
     _root.add_component<scenes::relationship>(id);
-    _root.add_component<scenes::transform>();
+    _root.add_component<math::transform>();
 
     _nodes.insert({id, _root});
 
@@ -51,25 +51,24 @@ public:
   }
 
   auto start() -> void {
-    auto& assets_module = core::engine::get_module<assets::assets_module>();
-
-    auto script_nodes = query<scenes::script>();
+    auto script_nodes = query<scripting::script>();
 
     for (auto& node : script_nodes) {
-      auto& script_id = node.get_component<scenes::script>();
-      auto& script = assets_module.get_asset<scripting::script>(script_id);
+      auto& script = node.get_component<scripting::script>();
 
-      auto& transform = node.get_component<scenes::transform>();
+      auto& transform = node.get_component<math::transform>();
+
+      script.set("transform", transform);
 
       script.on_create();
 
-      if (auto object = script.get<scenes::transform>("transform"); object.is<scenes::transform>()) {
-       transform = object.as<scenes::transform>();
+      if (auto object = script.get<math::transform>("transform"); object.is<math::transform>()) {
+       transform = object.as<math::transform>();
       }
     }
   }
 
-  auto create_child_node(node& parent, const std::string& tag = "", const transform& transform = scenes::transform{}) -> node {
+  auto create_child_node(node& parent, const std::string& tag = "", const math::transform& transform = math::transform{}) -> node {
     auto node = scenes::node{&_registry, _registry.create_entity()};
 
     auto& id = node.add_component<scenes::id>();
@@ -79,14 +78,14 @@ public:
     node.add_component<scenes::relationship>(parent.get_component<scenes::id>());
     parent.get_component<scenes::relationship>().add_child(id);
 
-    node.add_component<scenes::transform>(transform);
+    node.add_component<math::transform>(transform);
 
     node.add_component<scenes::tag>(!tag.empty() ? tag : scenes::tag{"Node"});
 
     return node;
   }
 
-  auto create_node(const std::string& tag = "", const transform& transform = scenes::transform{}) -> node {
+  auto create_node(const std::string& tag = "", const math::transform& transform = math::transform{}) -> node {
     return create_child_node(_root, tag, transform);
   }
 
@@ -109,7 +108,7 @@ public:
     _registry.destroy_entity(node._entity);
   }
 
-  auto create_camera(const math::angle& field_of_view, std::float_t aspect_ratio, std::float_t near_plane, std::float_t far_plane, const std::string& tag = "", const transform& transform = scenes::transform{}, bool is_active = true) -> node {
+  auto create_camera(const math::angle& field_of_view, std::float_t aspect_ratio, std::float_t near_plane, std::float_t far_plane, const std::string& tag = "", const math::transform& transform = math::transform{}, bool is_active = true) -> node {
     auto node = create_node(tag, transform);
 
     if (is_active) {
@@ -127,7 +126,7 @@ public:
   }
 
   auto world_transform(const node& node) -> math::matrix4x4 {
-    auto& transform = node.get_component<scenes::transform>();
+    auto& transform = node.get_component<math::transform>();
     auto& relationship = node.get_component<scenes::relationship>();
 
     auto& parent = _nodes.at(relationship.parent());

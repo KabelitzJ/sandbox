@@ -4,6 +4,7 @@
 #include <memory>
 
 #include <libsbx/math/vector3.hpp>
+#include <libsbx/math/transform.hpp>
 
 #include <libsbx/models/mesh.hpp>
 #include <libsbx/models/vertex3d.hpp>
@@ -26,11 +27,9 @@
 #include <libsbx/scenes/scenes_module.hpp>
 
 #include <libsbx/scenes/components/static_mesh.hpp>
-#include <libsbx/scenes/components/transform.hpp>
 #include <libsbx/scenes/components/relationship.hpp>
 #include <libsbx/scenes/components/id.hpp>
 #include <libsbx/scenes/components/camera.hpp>
-#include <libsbx/scenes/components/script.hpp>
 
 namespace sbx::scenes {
 
@@ -53,7 +52,7 @@ public:
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
     auto& scene = scenes_module.scene();
 
-    auto script_nodes = scene.query<scenes::script>();
+    auto script_nodes = scene.query<scripting::script>();
 
     for (auto& node : script_nodes) {
       _update_script(node);
@@ -76,7 +75,7 @@ public:
 
       _scene_uniform_handler.push("projection", camera.projection());
 
-      auto& transform = node.get_component<scenes::transform>();
+      auto& transform = node.get_component<math::transform>();
 
       // core::logger::debug("sbx::scenes", "Camera rotation: {}", transform.rotation());
 
@@ -101,19 +100,16 @@ public:
 private:
 
   auto _update_script(node& node) -> void {
-    auto& assets_module = core::engine::get_module<assets::assets_module>();
+    auto& transform = node.get_component<math::transform>();
 
-    auto& transform = node.get_component<scenes::transform>();
-
-    auto& script_id = node.get_component<scenes::script>();
-    auto& script = assets_module.get_asset<scripting::script>(script_id);
+    auto& script = node.get_component<scripting::script>();
 
     script.set("transform", transform);
 
     script.on_update();
 
-    if (auto object = script.get<scenes::transform>("transform"); object.is<scenes::transform>()) {
-      transform = object.as<scenes::transform>();
+    if (auto object = script.get<math::transform>("transform"); object.is<math::transform>()) {
+      transform = object.as<math::transform>();
     }
   }
 

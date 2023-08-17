@@ -4,6 +4,8 @@
 #include <filesystem>
 #include <optional>
 
+// #define SOL_USING_CXX_LUA
+// #define SOL_ALL_SAFETIES_ON 1
 #include <sol/sol.hpp>
 
 #include <libsbx/core/logger.hpp>
@@ -11,13 +13,11 @@
 
 #include <libsbx/math/vector3.hpp>
 
-#include <libsbx/assets/asset.hpp>
-
-#include <libsbx/scenes/components/transform.hpp>
+#include <libsbx/math/transform.hpp>
 
 namespace sbx::scripting {
 
-class script : public assets::asset<assets::asset_type::script> {
+class script {
 
 public:
 
@@ -37,9 +37,6 @@ public:
     _create_bindings();
 
     _state.script_file(path.string());
-
-    // _startup_function = _validate_function("on_create");
-    // _update_function = _validate_function("on_update");
   }
 
   script(const script& other) = delete;
@@ -89,16 +86,6 @@ public:
   }
 
 private:
-
-  auto _validate_function(const std::string& name) -> sol::function {
-    auto function = _state.get<sol::function>(name);
-
-    if (!function.valid() || !function.is<sol::function>()) {
-      throw std::runtime_error{fmt::format("Could not find function '{}' in lua script '{}'", name, _name)};
-    }
-
-    return function;
-  }
 
   auto _create_bindings() -> void {
     auto library = _state.create_named_table("sbx");
@@ -163,23 +150,22 @@ private:
       sol::resolve<math::vector3(const math::vector3& vector)>(&math::operator-)
     ));
 
-    auto transform_constructor = sol::constructors<scenes::transform()>{};
+    auto transform_constructor = sol::constructors<math::transform()>{};
 
-    auto transform_type = library.new_usertype<scenes::transform>("transform", transform_constructor);
+    auto transform_type = library.new_usertype<math::transform>("transform", transform_constructor);
 
-    transform_type.set_function("position", &scenes::transform::position);
-    transform_type.set_function("set_position", &scenes::transform::set_position);
-    transform_type.set_function("move_by", &scenes::transform::move_by);
+    transform_type.set_function("position", &math::transform::position);
+    transform_type.set_function("set_position", &math::transform::set_position);
+    transform_type.set_function("move_by", &math::transform::move_by);
 
-    transform_type.set_function("euler_angles", &scenes::transform::euler_angles);
-    transform_type.set_function("set_euler_angles", &scenes::transform::set_euler_angles);
-    transform_type.set_function("add_euler_angles", &scenes::transform::add_euler_angles);
+    transform_type.set_function("euler_angles", &math::transform::euler_angles);
+    transform_type.set_function("set_euler_angles", &math::transform::set_euler_angles);
+    transform_type.set_function("add_euler_angles", &math::transform::add_euler_angles);
 
-    transform_type.set_function("scale", &scenes::transform::scale);
-    transform_type.set_function("set_scale", &scenes::transform::set_scale);
+    transform_type.set_function("scale", &math::transform::scale);
+    transform_type.set_function("set_scale", &math::transform::set_scale);
 
-    transform_type.set_function("look_at", &scenes::transform::look_at);
-
+    transform_type.set_function("look_at", &math::transform::look_at);
   }
   
   std::string _name{};

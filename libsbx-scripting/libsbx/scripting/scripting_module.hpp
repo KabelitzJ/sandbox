@@ -10,15 +10,13 @@
 #include <libsbx/core/module.hpp>
 #include <libsbx/core/logger.hpp>
 
-#include <libsbx/async/async_module.hpp>
-
 #include <libsbx/scripting/script.hpp>
 
 namespace sbx::scripting {
 
 class scripting_module final : public core::module<scripting_module> {
 
-  inline static const auto is_registered = register_module(stage::normal, dependencies<async::async_module>{});
+  inline static const auto is_registered = register_module(stage::normal);
 
 public:
 
