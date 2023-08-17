@@ -1,6 +1,8 @@
 #ifndef LIBSBX_SCENES_COMPONENTS_TRANSFORM_HPP_
 #define LIBSBX_SCENES_COMPONENTS_TRANSFORM_HPP_
 
+#include <numbers>
+
 #include <libsbx/math/vector3.hpp>
 #include <libsbx/math/matrix4x4.hpp>
 #include <libsbx/math/angle.hpp>
@@ -11,9 +13,9 @@ class transform final {
 
 public:
 
-  transform(const math::vector3& position = math::vector3::zero, const math::vector3& rotation = math::vector3::zero, const math::vector3& scale = math::vector3::one)
+  transform(const math::vector3& position = math::vector3::zero, const math::vector3& euler_angles = math::vector3::zero, const math::vector3& scale = math::vector3::one)
   : _position{position}, 
-    _rotation{rotation}, 
+    _euler_angles{euler_angles}, 
     _scale{scale} { }
 
   ~transform() = default;
@@ -30,16 +32,16 @@ public:
     _position += offset;
   }
 
-  auto rotation() const noexcept -> const math::vector3& {
-    return _rotation;
+  auto euler_angles() const noexcept -> const math::vector3& {
+    return _euler_angles;
   }
 
-  auto set_rotation(const math::vector3& rotation) noexcept -> void {
-    _rotation = rotation;
+  auto set_euler_angles(const math::vector3& euler_angles) noexcept -> void {
+    _euler_angles = euler_angles;
   }
 
-  auto rotate_by(const math::vector3& offset) noexcept -> void {
-    _rotation += offset;
+  auto add_euler_angles(const math::vector3& offset) noexcept -> void {
+    _euler_angles += offset;
   }
 
   auto scale() const noexcept -> const math::vector3& {
@@ -53,11 +55,12 @@ public:
   auto look_at(const math::vector3& target) noexcept -> void {
     auto direction = math::vector3::normalized(target - _position);
 
-    const auto pitch = math::radian{std::atan2(direction.z, std::sqrt(direction.x * direction.x + direction.y * direction.y))};
-    const auto yaw = math::radian{std::atan2(direction.y, direction.x)};
+    const auto pitch = math::radian{std::asin(direction.z)};
+    const auto yaw = math::radian{-std::atan2(direction.y, direction.x)};
 
-    _rotation.x = math::to_degrees(pitch);
-    _rotation.y = math::to_degrees(yaw);
+    _euler_angles.x = math::to_degrees(pitch);
+    // _euler_angles.y = 0.0f;
+    _euler_angles.z = math::to_degrees(yaw);
   }
 
   auto as_matrix() const -> math::matrix4x4 {
@@ -65,9 +68,9 @@ public:
 
     result = math::matrix4x4::translated(result, _position);
 
-    result = math::matrix4x4::rotated(result, math::vector3::right, math::degree{_rotation.x});
-    result = math::matrix4x4::rotated(result, math::vector3::forward, math::degree{_rotation.y});
-    result = math::matrix4x4::rotated(result, math::vector3::up, math::degree{_rotation.z});
+    result = math::matrix4x4::rotated(result, math::vector3::right, math::degree{_euler_angles.x});
+    result = math::matrix4x4::rotated(result, math::vector3::forward, math::degree{_euler_angles.y});
+    result = math::matrix4x4::rotated(result, math::vector3::up, math::degree{_euler_angles.z});
 
     result = math::matrix4x4::scaled(result, _scale);
 
@@ -77,7 +80,7 @@ public:
 private:
 
   math::vector3 _position;
-  math::vector3 _rotation;
+  math::vector3 _euler_angles;
   math::vector3 _scale;
 
 }; // class transform

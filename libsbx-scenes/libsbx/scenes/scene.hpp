@@ -63,12 +63,8 @@ public:
 
       script.on_create();
 
-      if (auto position = script.get<math::vector3>("position"); position.is<math::vector3>()) {
-       transform.set_position(position.as<math::vector3>());
-      }
-
-      if (auto rotation = script.get<math::vector3>("rotation"); rotation.is<math::vector3>()) {
-        transform.set_rotation(rotation.as<math::vector3>());
+      if (auto object = script.get<scenes::transform>("transform"); object.is<scenes::transform>()) {
+       transform = object.as<scenes::transform>();
       }
     }
   }

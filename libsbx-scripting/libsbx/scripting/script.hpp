@@ -13,6 +13,8 @@
 
 #include <libsbx/assets/asset.hpp>
 
+#include <libsbx/scenes/components/transform.hpp>
+
 namespace sbx::scripting {
 
 class script : public assets::asset<assets::asset_type::script> {
@@ -128,9 +130,14 @@ private:
     vector3_type.set("y", &math::vector3::y);
     vector3_type.set("z", &math::vector3::z);
 
-    vector3_type.set_function("normalize", [](math::vector3& vector) { vector.normalize(); });
+    // vector3_type.set("zero", math::vector3::zero);
 
-    vector3_type.set_function("length", [](const math::vector3& vector) { return vector.length(); });
+    // vector3_type["zero"] = math::vector3::zero;
+    auto vector3_table = sol::table{library["vector3"]};
+    vector3_table.set("zero", math::vector3::zero);
+
+    vector3_type.set_function("normalize", &math::vector3::normalize);
+    vector3_type.set_function("length", &math::vector3::length);
 
     vector3_type.set_function(sol::meta_function::addition, sol::overload(
       sol::resolve<math::vector3(math::vector3 lhs, const std::float_t rhs)>(&math::operator+),
@@ -155,6 +162,24 @@ private:
     vector3_type.set_function(sol::meta_function::unary_minus, sol::overload(
       sol::resolve<math::vector3(const math::vector3& vector)>(&math::operator-)
     ));
+
+    auto transform_constructor = sol::constructors<scenes::transform()>{};
+
+    auto transform_type = library.new_usertype<scenes::transform>("transform", transform_constructor);
+
+    transform_type.set_function("position", &scenes::transform::position);
+    transform_type.set_function("set_position", &scenes::transform::set_position);
+    transform_type.set_function("move_by", &scenes::transform::move_by);
+
+    transform_type.set_function("euler_angles", &scenes::transform::euler_angles);
+    transform_type.set_function("set_euler_angles", &scenes::transform::set_euler_angles);
+    transform_type.set_function("add_euler_angles", &scenes::transform::add_euler_angles);
+
+    transform_type.set_function("scale", &scenes::transform::scale);
+    transform_type.set_function("set_scale", &scenes::transform::set_scale);
+
+    transform_type.set_function("look_at", &scenes::transform::look_at);
+
   }
   
   std::string _name{};

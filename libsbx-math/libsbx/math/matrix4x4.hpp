@@ -10,6 +10,8 @@
 #include <ostream>
 #include <type_traits>
 
+#include <fmt/format.h>
+
 #include <libsbx/math/concepts.hpp>
 #include <libsbx/math/vector4.hpp>
 #include <libsbx/math/angle.hpp>
@@ -313,6 +315,29 @@ using matrix4x4i = basic_matrix4x4<std::int32_t>;
 using matrix4x4 = matrix4x4f;
 
 } // namespace sbx::math
+
+template<sbx::math::numeric Type>
+struct fmt::formatter<sbx::math::basic_matrix4x4<Type>> : formatter<std::string_view> {
+
+  using underlying_formatter_type = formatter<std::string_view>;
+
+  template<typename ParseContext>
+  constexpr auto parse(ParseContext& context) -> decltype(context.begin()) {
+    return underlying_formatter_type::parse(context);
+  }
+
+  template<typename FormatContext>
+  auto format(const sbx::math::basic_matrix4x4<Type>& matrix, FormatContext& context) -> decltype(context.out()) {
+    return underlying_formatter_type::format(fmt::format(
+      "\n{:.2f}, {:.2f}, {:.2f}\n{:.2f}, {:.2f}, {:.2f}\n{:.2f}, {:.2f}, {:.2f}", 
+      matrix[0][0], matrix[1][0], matrix[2][0], matrix[3][0],
+      matrix[0][1], matrix[1][1], matrix[2][1], matrix[3][1],
+      matrix[0][2], matrix[1][2], matrix[2][2], matrix[3][2],
+      matrix[0][3], matrix[1][3], matrix[2][3], matrix[3][3]
+    ), context);
+  }
+
+}; // struct fmt::formatter
 
 #include <libsbx/math/matrix4x4.ipp>
 

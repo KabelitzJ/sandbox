@@ -108,40 +108,30 @@ private:
     auto& script_id = node.get_component<scenes::script>();
     auto& script = assets_module.get_asset<scripting::script>(script_id);
 
-    script.set("position", transform.position());
-    script.set("rotation", transform.rotation());
+    script.set("transform", transform);
 
     script.on_update();
 
-    if (auto position = script.get<math::vector3>("position"); position.is<math::vector3>()) {
-      transform.set_position(position.as<math::vector3>());
-    }
-
-    if (auto rotation = script.get<math::vector3>("rotation"); rotation.is<math::vector3>()) {
-      transform.set_rotation(rotation.as<math::vector3>());
+    if (auto object = script.get<scenes::transform>("transform"); object.is<scenes::transform>()) {
+      transform = object.as<scenes::transform>();
     }
   }
 
   auto _render_node(node& node, graphics::command_buffer& command_buffer) -> void {
+    if (_pipeline.stage() != stage()) {
+      return;
+    }
+
     auto& assets_module = core::engine::get_module<assets::assets_module>();
 
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
     auto& scene = scenes_module.scene();
 
-    const auto delta_time = core::engine::delta_time();
-
     const auto& static_mesh = node.get_component<scenes::static_mesh>();
     const auto& id = node.get_component<scenes::id>();
-    auto& transform = node.get_component<scenes::transform>();
-
-    transform.rotate_by(math::vector3{0.0f, 0.0f, math::degree{75.0f} * delta_time});
 
     auto& mesh = assets_module.get_asset<models::mesh>(static_mesh.mesh_id());
     auto& image = assets_module.get_asset<graphics::image2d>(static_mesh.texture_id());
-
-    if (_pipeline.stage() != stage()) {
-      return;
-    }
 
     _pipeline.bind(command_buffer);
 

@@ -112,7 +112,7 @@ private:
   }
 
   std::unordered_map<asset_type, std::unique_ptr<storage_base>> _storages;
-  std::unordered_map<std::filesystem::path, asset_metadata> _metadata;
+  std::unordered_map<std::string, asset_metadata> _metadata;
 
 }; // class assets_module
 

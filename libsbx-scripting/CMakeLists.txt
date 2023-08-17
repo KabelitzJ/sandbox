@@ -41,6 +41,7 @@ target_link_libraries(
     libsbx::async
     libsbx::math
     libsbx::assets
+    libsbx::scenes
 )
 
 set_target_properties(
