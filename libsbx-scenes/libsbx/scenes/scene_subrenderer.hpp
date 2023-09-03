@@ -154,7 +154,7 @@ private:
   struct uniform_data {
     graphics::uniform_handler uniform_handler;
     graphics::descriptor_handler descriptor_handler;
-  }; // struct uniform_data#
+  }; // struct uniform_data
 
   graphics::graphics_pipeline _pipeline;
 

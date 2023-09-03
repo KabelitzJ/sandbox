@@ -88,6 +88,7 @@ class libsbx_recipe(ConanFile):
     self.requires("spirv-headers/1.5.4")
     self.requires("stb/cci.20220909")
     self.requires("range-v3/0.12.0")
+    self.requires("freetype/2.13.0")
 
   def generate(self):
     deps = CMakeDeps(self)
