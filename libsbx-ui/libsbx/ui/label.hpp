@@ -3,6 +3,10 @@
 
 #include <string>
 
+#include <libsbx/core/logger.hpp>
+
+#include <libsbx/assets/asset.hpp>
+
 #include <libsbx/ui/widget.hpp>
 
 namespace sbx::ui {
@@ -11,9 +15,10 @@ class label : public widget {
 
 public:
 
-  label(const std::string& text, const math::vector2& position, const math::vector2& size)
+  label(const std::string& text, const math::vector2& position, const math::vector2& size, assets::asset_id font_id)
   : widget{position, size},
-    _text{text} { }
+    _text{text},
+    _font_id{font_id} { }
 
   ~label() override = default;
 
@@ -24,6 +29,7 @@ public:
 private:
 
   std::string _text;
+  assets::asset_id _font_id;
 
 }; // class label
 

@@ -91,7 +91,7 @@ public:
 
     auto& ui_module = sbx::core::engine::get_module<sbx::ui::ui_module>();
 
-    ui_module.add_widget<sbx::ui::label>("Hello, World!", sbx::math::vector2{0.0f, 0.0f}, sbx::math::vector2{10.0f, 4.0f});
+    ui_module.add_widget<sbx::ui::label>("Hello, World!", sbx::math::vector2{0.0f, 0.0f}, sbx::math::vector2{10.0f, 4.0f}, font_roboto_id);
 
     auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
 
