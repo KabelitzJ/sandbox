@@ -89,6 +89,10 @@ public:
     auto font_jet_brains_mono_id = assets_module.load_asset<sbx::ui::font>("./demo/assets/fonts/JetBrainsMono-Medium.ttf");
     auto font_roboto_id = assets_module.load_asset<sbx::ui::font>("./demo/assets/fonts/Roboto-Regular.ttf");
 
+    auto& ui_module = sbx::core::engine::get_module<sbx::ui::ui_module>();
+
+    ui_module.add_widget<sbx::ui::label>("Hello, World!", sbx::math::vector2{0.0f, 0.0f}, sbx::math::vector2{10.0f, 4.0f});
+
     auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
 
     auto& scene = scenes_module.scene();

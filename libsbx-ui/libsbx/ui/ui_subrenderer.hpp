@@ -6,7 +6,8 @@
 #include <libsbx/graphics/subrenderer.hpp>
 #include <libsbx/graphics/pipeline/graphics_pipeline.hpp>
 
-#include <libsbx/ui/vertex.hpp>
+#include <libsbx/ui/vertex2d.hpp>
+#include <libsbx/ui/ui_module.hpp>
 
 namespace sbx::ui {
 
@@ -16,12 +17,18 @@ public:
 
   ui_subrenderer(const graphics::pipeline::stage& stage, const std::filesystem::path& path)
   : graphics::subrenderer{stage},
-    _pipeline{stage, path, graphics::vertex_input<ui::vertex>::description()} { }
+    _pipeline{stage, path, graphics::vertex_input<ui::vertex2d>::description()} { }
 
   ~ui_subrenderer() override = default;
 
   auto render(graphics::command_buffer& command_buffer) -> void override {
+    const auto& ui_module = core::engine::get_module<ui::ui_module>();
 
+    const auto& widgets = ui_module.widgets();
+
+    for (const auto& widget : widgets) {
+      widget->render(command_buffer);
+    }
   }
 
 private:

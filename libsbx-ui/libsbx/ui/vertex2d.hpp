@@ -1,5 +1,5 @@
-#ifndef LIBSBX_UI_VERTEX_HPP_
-#define LIBSBX_UI_VERTEX_HPP_
+#ifndef LIBSBX_UI_VERTEX2D_HPP_
+#define LIBSBX_UI_VERTEX2D_HPP_
 
 #include <libsbx/math/vector2.hpp>
 
@@ -7,24 +7,24 @@
 
 namespace sbx::ui {
 
-struct vertex {
+struct vertex2d {
   math::vector2 position;
 }; // struct vertex
 
-constexpr auto operator==(const vertex& lhs, const vertex& rhs) noexcept -> bool {
+constexpr auto operator==(const vertex2d& lhs, const vertex2d& rhs) noexcept -> bool {
   return lhs.position == rhs.position;
 }
 
 } // namespace sbx::ui
 
 template<>
-struct sbx::graphics::vertex_input<sbx::ui::vertex> {
+struct sbx::graphics::vertex_input<sbx::ui::vertex2d> {
   static auto description() -> sbx::graphics::vertex_input_description {
     auto binding_descriptions = std::vector<VkVertexInputBindingDescription>{};
 
     binding_descriptions.push_back(VkVertexInputBindingDescription{
       .binding = 0,
-      .stride = sizeof(sbx::ui::vertex),
+      .stride = sizeof(sbx::ui::vertex2d),
       .inputRate = VK_VERTEX_INPUT_RATE_VERTEX
     });
 
@@ -34,11 +34,11 @@ struct sbx::graphics::vertex_input<sbx::ui::vertex> {
       .location = 0,
       .binding = 0,
       .format = VK_FORMAT_R32G32_SFLOAT,
-      .offset = offsetof(sbx::ui::vertex, position)
+      .offset = offsetof(sbx::ui::vertex2d, position)
     });
 
     return sbx::graphics::vertex_input_description{std::move(binding_descriptions), std::move(attribute_descriptions)};
   }
 }; // struct sbx::graphics::vertex_input
 
-#endif // LIBSBX_UI_VERTEX_HPP_
+#endif // LIBSBX_UI_VERTEX2D_HPP_
