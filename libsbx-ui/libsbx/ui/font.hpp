@@ -6,17 +6,35 @@
 #include <fmt/format.h>
 #include <freetype/freetype.h>
 
+#include <libsbx/utility/primitive.hpp>
+
 #include <libsbx/assets/asset.hpp>
 
 namespace sbx::ui {
+
+struct character {
+  
+}; // struct character
+
+class pixels : public utility::primitive<std::uint32_t> {
+
+public:
+
+  using super = utility::primitive<std::uint32_t>;
+
+  using super::super;
+
+}; // class pixels
 
 class font : public assets::asset<assets::asset_type::font> {
 
 public:
 
-  font(const std::filesystem::path& path);
+  font(const std::filesystem::path& path, pixels height = 18u);
 
   ~font() override;
+
+  auto set_height(pixels height) -> void;
 
 private:
 

@@ -52,5 +52,6 @@
 #include <libsbx/utility/assert.hpp>
 #include <libsbx/utility/target.hpp>
 #include <libsbx/utility/expected.hpp>
+#include <libsbx/utility/primitive.hpp>
 
 #endif // LIBSBX_UTILITY_HPP_

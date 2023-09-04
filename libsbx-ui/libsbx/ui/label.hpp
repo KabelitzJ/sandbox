@@ -2,12 +2,17 @@
 #define LIBSBX_UI_LABEL_HPP_
 
 #include <string>
+#include <memory>
 
 #include <libsbx/core/logger.hpp>
 
 #include <libsbx/assets/asset.hpp>
+#include <libsbx/assets/assets_module.hpp>
+
+#include <libsbx/graphics/images/image2d.hpp>
 
 #include <libsbx/ui/widget.hpp>
+#include <libsbx/ui/font.hpp>
 
 namespace sbx::ui {
 
@@ -15,14 +20,19 @@ class label : public widget {
 
 public:
 
-  label(const std::string& text, const math::vector2& position, const math::vector2& size, assets::asset_id font_id)
+  label(const std::string& text, const math::vector2u& position, const math::vector2u& size, assets::asset_id font_id)
   : widget{position, size},
     _text{text},
-    _font_id{font_id} { }
+    _font_id{font_id},
+    _image{std::make_unique<graphics::image2d>(size)} { }
 
   ~label() override = default;
 
   auto render(graphics::command_buffer& command_buffer) -> void override {
+    auto& assets_module = core::engine::get_module<assets::assets_module>();
+
+    auto& font = assets_module.get_asset<ui::font>(_font_id);
+
 
   }
 
@@ -30,6 +40,7 @@ private:
 
   std::string _text;
   assets::asset_id _font_id;
+  std::unique_ptr<graphics::image2d> _image;
 
 }; // class label
 

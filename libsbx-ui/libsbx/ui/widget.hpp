@@ -13,7 +13,7 @@ class widget {
 
 public:
 
-  widget(const math::vector2& position, const math::vector2& size)
+  widget(const math::vector2u& position, const math::vector2u& size)
   : _position{position},
     _size{size} { }
 
