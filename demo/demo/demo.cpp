@@ -19,7 +19,7 @@
 #include <libsbx/scripting/scripting.hpp>
 #include <libsbx/devices/devices.hpp>
 #include <libsbx/graphics/graphics.hpp>
-#include <libsbx/ui/ui.hpp>
+// #include <libsbx/ui/ui.hpp>
 #include <libsbx/assets/assets.hpp>
 #include <libsbx/models/models.hpp>
 #include <libsbx/scenes/scenes.hpp>
@@ -48,7 +48,7 @@ public:
 
   auto initialize() -> void override {
     add_subrenderer<sbx::scenes::scene_subrenderer>(sbx::graphics::pipeline::stage{0, 0}, "./demo/assets/shaders/basic");
-    add_subrenderer<sbx::ui::ui_subrenderer>(sbx::graphics::pipeline::stage{0, 1}, "./demo/assets/shaders/ui");
+    // add_subrenderer<sbx::ui::ui_subrenderer>(sbx::graphics::pipeline::stage{0, 1}, "./demo/assets/shaders/ui");
   }
 
 }; // class demo_renderer
@@ -86,12 +86,12 @@ public:
     auto sphere_id = assets_module.load_asset<sbx::models::mesh>("./demo/assets/meshes/sphere.obj");
     auto cube_id = assets_module.load_asset<sbx::models::mesh>("./demo/assets/meshes/cube.obj");
 
-    auto font_jet_brains_mono_id = assets_module.load_asset<sbx::ui::font>("./demo/assets/fonts/JetBrainsMono-Medium.ttf");
-    auto font_roboto_id = assets_module.load_asset<sbx::ui::font>("./demo/assets/fonts/Roboto-Regular.ttf");
+    // auto font_jet_brains_mono_id = assets_module.load_asset<sbx::ui::font>("./demo/assets/fonts/JetBrainsMono-Medium.ttf");
+    // auto font_roboto_id = assets_module.load_asset<sbx::ui::font>("./demo/assets/fonts/Roboto-Regular.ttf");
 
-    auto& ui_module = sbx::core::engine::get_module<sbx::ui::ui_module>();
+    // auto& ui_module = sbx::core::engine::get_module<sbx::ui::ui_module>();
 
-    ui_module.add_widget<sbx::ui::label>("Hello, World!", sbx::math::vector2u{0, 0}, sbx::math::vector2u{10, 4}, font_roboto_id);
+    // ui_module.add_widget<sbx::ui::label>("Hello, World!", sbx::math::vector2u{0, 0}, sbx::math::vector2u{10, 4}, font_roboto_id);
 
     auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
 
