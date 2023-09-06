@@ -56,7 +56,7 @@ target_link_libraries(
     libsbx::core
     libsbx::devices
     libsbx::graphics
-    # libsbx::ui
+    libsbx::ui
     libsbx::ecs
     libsbx::scenes
     libsbx::scripting
