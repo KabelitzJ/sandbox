@@ -22,7 +22,6 @@
 
 #include <libsbx/graphics/pipeline/graphics_pipeline.hpp>
 
-#include <libsbx/scripting/script.hpp>
 
 #include <libsbx/scenes/scenes_module.hpp>
 
@@ -30,6 +29,7 @@
 #include <libsbx/scenes/components/relationship.hpp>
 #include <libsbx/scenes/components/id.hpp>
 #include <libsbx/scenes/components/camera.hpp>
+#include <libsbx/scenes/components/script.hpp>
 
 namespace sbx::scenes {
 
@@ -52,7 +52,7 @@ public:
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
     auto& scene = scenes_module.scene();
 
-    auto script_nodes = scene.query<scripting::script>();
+    auto script_nodes = scene.query<scenes::script>();
 
     for (auto& node : script_nodes) {
       _update_script(node);
@@ -77,16 +77,16 @@ public:
 
       auto& transform = node.get_component<math::transform>();
 
-      // core::logger::debug("sbx::scenes", "Camera rotation: {}", transform.rotation());
+      // core::logger::debug("Camera rotation: {}", transform.rotation());
 
       // _scene_uniform_handler.push("view", math::matrix4x4::inverted(transform.as_matrix()));
-      _scene_uniform_handler.push("view", math::matrix4x4::look_at(math::vector3{7.0f, 7.0f, 7.0f}, math::vector3::zero, math::vector3::up));
+      _scene_uniform_handler.push("view", math::matrix4x4::look_at(math::vector3{4.0f, 4.0f, 4.0f}, math::vector3::zero, math::vector3::up));
 
       break;
     }
 
     if (!has_active_camera) {
-      core::logger::warn("sbx::scenes", "Scene does not have an active camera");
+      core::logger::warn("Scene does not have an active camera");
       return;
     }
 
@@ -102,15 +102,13 @@ private:
   auto _update_script(node& node) -> void {
     auto& transform = node.get_component<math::transform>();
 
-    auto& script = node.get_component<scripting::script>();
+    auto& script = node.get_component<scenes::script>();
 
     script.set("transform", transform);
 
-    script.on_update();
+    script.invoke("on_update");
 
-    if (auto object = script.get<math::transform>("transform"); object.is<math::transform>()) {
-      transform = object.as<math::transform>();
-    }
+    transform = script.get<math::transform>("transform");
   }
 
   auto _render_node(node& node, graphics::command_buffer& command_buffer) -> void {

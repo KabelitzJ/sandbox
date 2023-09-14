@@ -27,11 +27,11 @@ static auto _load_mesh_data(const std::filesystem::path& path) -> mesh_data {
   const auto result = tinyobj::LoadObj(&attributes, &shapes, &materials, &warning, &error, path.string().c_str(), path.parent_path().string().c_str());
 
   if (!warning.empty()) {
-    core::logger::warn("sbx::graphics", "{}", warning);
+    core::logger::warn("{}", warning);
   }
 
   if (!error.empty()) {
-    core::logger::error("sbx::graphics", "{}", error);
+    core::logger::error("{}", error);
   }
 
   if (!result) {

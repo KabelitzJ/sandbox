@@ -82,7 +82,7 @@ class libsbx_recipe(ConanFile):
     self.requires("spdlog/1.11.0")
     self.requires("yaml-cpp/0.7.0")
     self.requires("glfw/3.3.8")
-    self.requires("sol2/3.2.3")
+    self.requires("sol2/3.3.1")
     self.requires("tinyobjloader/2.0.0-rc10")
     self.requires("spirv-cross/1.3.243.0")
     self.requires("spirv-headers/1.5.4")

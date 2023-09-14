@@ -211,12 +211,20 @@ graphics_pipeline::graphics_pipeline(const pipeline::stage& stage, const std::fi
 
   validate(vkCreateDescriptorSetLayout(logical_device, &descriptor_set_layout_create_info, nullptr, &_descriptor_set_layout));
 
+  // [NOTE] KAJ 2023-09-13 : Workaround
+  descriptor_pool_sizes.resize(6);
+  descriptor_pool_sizes[0] = VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 4096};
+  descriptor_pool_sizes[1] = VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 2048};
+  descriptor_pool_sizes[2] = VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 2048};
+  descriptor_pool_sizes[3] = VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 2048};
+  descriptor_pool_sizes[4] = VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 2048};
+  descriptor_pool_sizes[5] = VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 2048};
+
   auto descriptor_pool_create_info = VkDescriptorPoolCreateInfo{};
   descriptor_pool_create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
   descriptor_pool_create_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
   descriptor_pool_create_info.poolSizeCount = static_cast<std::uint32_t>(descriptor_pool_sizes.size());
   descriptor_pool_create_info.pPoolSizes = descriptor_pool_sizes.data();
-  // [NOTE] KAJ 2023-08-14 : "A allocation failed due to having no more space in the descriptor pool" is caused by this value being too low. Magic number for now, but should be enough for most cases.
   descriptor_pool_create_info.maxSets = 8192;
 
   validate(vkCreateDescriptorPool(logical_device, &descriptor_pool_create_info, nullptr, &_descriptor_pool));
@@ -254,7 +262,7 @@ graphics_pipeline::graphics_pipeline(const pipeline::stage& stage, const std::fi
 
   validate(vkCreateGraphicsPipelines(logical_device, VK_NULL_HANDLE, 1, &pipeline_create_info, nullptr, &_handle));
 
-  core::logger::debug("sbx::graphics", "Pipeline '{}' created in {}ms", _name, units::quantity_cast<units::millisecond>(timer.elapsed()).value());
+  core::logger::debug("Pipeline '{}' created in {}ms", _name, units::quantity_cast<units::millisecond>(timer.elapsed()).value());
 }
 
 graphics_pipeline::~graphics_pipeline() {

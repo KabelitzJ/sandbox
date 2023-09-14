@@ -13,6 +13,7 @@ add_library(${CMAKE_PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 find_package(fmt REQUIRED)
 find_package(yaml-cpp REQUIRED)
 find_package(range-v3 REQUIRED)
+find_package(sol2 REQUIRED)
 
 target_sources(
   ${PROJECT_NAME}
@@ -44,6 +45,7 @@ target_link_libraries(
     fmt::fmt
     yaml-cpp
     range-v3::range-v3
+    sol2::sol2
     # Internal dependencies
     libsbx::utility
     libsbx::core
@@ -53,7 +55,6 @@ target_link_libraries(
     libsbx::devices
     libsbx::graphics
     libsbx::models
-    libsbx::scripting
 )
 
 set_target_properties(

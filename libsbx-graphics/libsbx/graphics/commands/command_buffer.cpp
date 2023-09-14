@@ -56,7 +56,7 @@ auto command_buffer::is_running() const noexcept -> bool {
 
 auto command_buffer::begin(VkCommandBufferUsageFlags usage) -> void {
   if (_is_running) {
-    core::logger::warn("sbx::graphics", "Tried to begin recording a command buffer that was already beeing recorded");
+    core::logger::warn("Tried to begin recording a command buffer that was already beeing recorded");
     return;
   }
 
@@ -71,7 +71,7 @@ auto command_buffer::begin(VkCommandBufferUsageFlags usage) -> void {
 
 auto command_buffer::end() -> void {
   if (!_is_running) {
-    core::logger::warn("sbx::graphics", "Tried to stop recording a command buffer that was not beeing recorded");
+    core::logger::warn("Tried to stop recording a command buffer that was not beeing recorded");
     return;
   }
 

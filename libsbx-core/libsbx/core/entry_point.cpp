@@ -14,7 +14,7 @@ auto main(int argc, char** argv) -> int {
 
     engine->run(std::move(application));
   } catch(const std::exception& exception) {
-    sbx::core::logger::error("sbx::core", "{}", exception.what());
+    sbx::core::logger::error("{}", exception.what());
     return sbx::core::exit::failure; 
   }
 

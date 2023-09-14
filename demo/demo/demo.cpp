@@ -7,21 +7,20 @@
 #include <iterator>
 #include <utility>
 
-#include <libsbx/utility/utility.hpp>
 #include <libsbx/units/units.hpp>
-#include <libsbx/memory/memory.hpp>
-#include <libsbx/math/math.hpp>
-#include <libsbx/core/core.hpp>
-#include <libsbx/signals/signals.hpp>
-#include <libsbx/ecs/ecs.hpp>
+#include <libsbx/utility/utility.hpp>
 #include <libsbx/async/async.hpp>
 #include <libsbx/io/io.hpp>
-#include <libsbx/scripting/scripting.hpp>
+#include <libsbx/math/math.hpp>
+#include <libsbx/memory/memory.hpp>
+#include <libsbx/core/core.hpp>
+#include <libsbx/signals/signals.hpp>
+#include <libsbx/assets/assets.hpp>
 #include <libsbx/devices/devices.hpp>
 #include <libsbx/graphics/graphics.hpp>
-#include <libsbx/ui/ui.hpp>
-#include <libsbx/assets/assets.hpp>
 #include <libsbx/models/models.hpp>
+#include <libsbx/ecs/ecs.hpp>
+// #include <libsbx/ui/ui.hpp>
 #include <libsbx/scenes/scenes.hpp>
 
 class demo_renderer : public sbx::graphics::renderer {
@@ -36,7 +35,7 @@ public:
 
     auto render_pass_subpass_bindings_1 = std::vector<sbx::graphics::subpass_binding>{
       sbx::graphics::subpass_binding{0, {0, 1}},
-      sbx::graphics::subpass_binding{1, {0}}
+      // sbx::graphics::subpass_binding{1, {0}}
     };
 
     add_render_stage(std::move(render_pass_attachments_1), std::move(render_pass_subpass_bindings_1));
@@ -48,7 +47,7 @@ public:
 
   auto initialize() -> void override {
     add_subrenderer<sbx::scenes::scene_subrenderer>(sbx::graphics::pipeline::stage{0, 0}, "./demo/assets/shaders/basic");
-    add_subrenderer<sbx::ui::ui_subrenderer>(sbx::graphics::pipeline::stage{0, 1}, "./demo/assets/shaders/ui");
+    // add_subrenderer<sbx::ui::ui_subrenderer>(sbx::graphics::pipeline::stage{0, 1}, "./demo/assets/shaders/ui");
   }
 
 }; // class demo_renderer
@@ -86,36 +85,34 @@ public:
     auto sphere_id = assets_module.load_asset<sbx::models::mesh>("./demo/assets/meshes/sphere.obj");
     auto cube_id = assets_module.load_asset<sbx::models::mesh>("./demo/assets/meshes/cube.obj");
 
-    // auto font_jet_brains_mono_id = assets_module.load_asset<sbx::ui::font>("./demo/assets/fonts/JetBrainsMono-Medium.ttf");
-    // auto font_roboto_id = assets_module.load_asset<sbx::ui::font>("./demo/assets/fonts/Roboto-Regular.ttf");
+    // // auto font_jet_brains_mono_id = assets_module.load_asset<sbx::ui::font>("./demo/assets/fonts/JetBrainsMono-Medium.ttf");
+    // // auto font_roboto_id = assets_module.load_asset<sbx::ui::font>("./demo/assets/fonts/Roboto-Regular.ttf");
 
-    // auto& ui_module = sbx::core::engine::get_module<sbx::ui::ui_module>();
+    // // auto& ui_module = sbx::core::engine::get_module<sbx::ui::ui_module>();
 
-    // ui_module.add_widget<sbx::ui::label>("Hello, World!", sbx::math::vector2u{0, 0}, sbx::math::vector2u{10, 4}, font_roboto_id);
+    // // ui_module.add_widget<sbx::ui::label>("Hello, World!", sbx::math::vector2u{0, 0}, sbx::math::vector2u{10, 4}, font_roboto_id);
 
     auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
 
     auto& scene = scenes_module.scene();
 
-    {
-      auto sun = scene.create_node("Sun");
-      sun.add_component<sbx::scenes::static_mesh>(sphere_id, base_id);
-      auto& sun_rotation = sun.add_component<sbx::scripting::script>("./demo/assets/scripts/rotate.lua");
-      sun_rotation.set("speed", 75.0f);
+    auto sun = scene.create_node("Sun");
+    sun.add_component<sbx::scenes::static_mesh>(sphere_id, base_id);
+    auto& sun_rotation = sun.add_component<sbx::scenes::script>("./demo/assets/scripts/rotate.lua");
+    sun_rotation.set("speed", 75.0f);
 
-      auto earth = scene.create_child_node(sun, "Earth", sbx::math::transform{sbx::math::vector3{-4.0f, 0.0f, 0.0f}, sbx::math::vector3::zero, sbx::math::vector3{0.5f, 0.5f, 0.5f}});
-      earth.add_component<sbx::scenes::static_mesh>(sphere_id, base_id);
-      auto& earth_rotation = earth.add_component<sbx::scripting::script>("./demo/assets/scripts/rotate.lua");
-      earth_rotation.set("speed", 100.0f);
+    auto earth = scene.create_child_node(sun, "Earth", sbx::math::transform{sbx::math::vector3{-4.0f, 0.0f, 0.0f}, sbx::math::vector3::zero, sbx::math::vector3{0.5f, 0.5f, 0.5f}});
+    earth.add_component<sbx::scenes::static_mesh>(sphere_id, base_id);
+    auto& earth_rotation = earth.add_component<sbx::scenes::script>("./demo/assets/scripts/rotate.lua");
+    earth_rotation.set("speed", 100.0f);
 
-      auto moon = scene.create_child_node(earth, "Moon", sbx::math::transform{sbx::math::vector3{2.0f, 0.0f, 0.0f}, sbx::math::vector3::zero, sbx::math::vector3{0.3f, 0.3f, 0.3f}});
-      moon.add_component<sbx::scenes::static_mesh>(sphere_id, base_id);
-      auto& moon_rotation = moon.add_component<sbx::scripting::script>("./demo/assets/scripts/rotate.lua");
-      moon_rotation.set("speed", 125.0f);
-    }
+    auto moon = scene.create_child_node(earth, "Moon", sbx::math::transform{sbx::math::vector3{2.0f, 0.0f, 0.0f}, sbx::math::vector3::zero, sbx::math::vector3{0.3f, 0.3f, 0.3f}});
+    moon.add_component<sbx::scenes::static_mesh>(sphere_id, base_id);
+    auto& moon_rotation = moon.add_component<sbx::scenes::script>("./demo/assets/scripts/rotate.lua");
+    moon_rotation.set("speed", 125.0f);
 
-    auto camera = scene.create_camera(sbx::math::degree{90.0f}, window.aspect_ratio(), 0.1f, 1000.0f, "Camera");
-    camera.add_component<sbx::scripting::script>("./demo/assets/scripts/camera.lua");
+    // auto camera = scene.create_camera(sbx::math::degree{90.0f}, window.aspect_ratio(), 0.1f, 1000.0f, "Camera");
+    // camera.add_component<sbx::scripting::script>("./demo/assets/scripts/camera.lua");
 
     // [Todo] KAJ 2023-08-16 15:30 - This should probably be done automatically
     scene.start();

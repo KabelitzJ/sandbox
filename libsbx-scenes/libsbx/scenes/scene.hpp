@@ -20,14 +20,13 @@
 
 #include <libsbx/assets/assets_module.hpp>
 
-#include <libsbx/scripting/script.hpp>
-
 #include <libsbx/scenes/node.hpp>
 
 #include <libsbx/scenes/components/id.hpp>
 #include <libsbx/scenes/components/tag.hpp>
 #include <libsbx/scenes/components/relationship.hpp>
 #include <libsbx/scenes/components/camera.hpp>
+#include <libsbx/scenes/components/script.hpp>
 
 namespace sbx::scenes {
 
@@ -51,20 +50,18 @@ public:
   }
 
   auto start() -> void {
-    auto script_nodes = query<scripting::script>();
+    auto script_nodes = query<scenes::script>();
 
     for (auto& node : script_nodes) {
-      auto& script = node.get_component<scripting::script>();
+      auto& script = node.get_component<scenes::script>();
 
       auto& transform = node.get_component<math::transform>();
 
       script.set("transform", transform);
 
-      script.on_create();
+      script.invoke("on_create");
 
-      if (auto object = script.get<math::transform>("transform"); object.is<math::transform>()) {
-       transform = object.as<math::transform>();
-      }
+      transform = script.get<math::transform>("transform");
     }
   }
 
@@ -100,7 +97,7 @@ public:
     if (auto entry = _nodes.find(id); entry != _nodes.end()) {
       entry->second.get_component<scenes::relationship>().remove_child(id);
     } else {
-      core::logger::warn("sbx::scenes", "Node '{}' has invalid parent", node.get_component<scenes::tag>());
+      core::logger::warn("Node '{}' has invalid parent", node.get_component<scenes::tag>());
     }
 
     _nodes.erase(id);

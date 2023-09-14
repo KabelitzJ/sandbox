@@ -11,5 +11,6 @@
 // #include <libsbx/scenes/components/transform.hpp>
 #include <libsbx/scenes/components/static_mesh.hpp>
 #include <libsbx/scenes/components/camera.hpp>
+#include <libsbx/scenes/components/script.hpp>
 
 #endif // LIBSBX_SCENE_HPP_

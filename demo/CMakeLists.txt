@@ -54,15 +54,14 @@ target_link_libraries(
     libsbx::math
     libsbx::memory
     libsbx::core
-    libsbx::devices
-    libsbx::graphics
-    libsbx::ui
-    libsbx::ecs
-    libsbx::scenes
-    libsbx::scripting
     libsbx::signals
     libsbx::assets
+    libsbx::devices
+    libsbx::graphics
+    # # libsbx::ui
     libsbx::models
+    libsbx::ecs
+    libsbx::scenes
 )
 
 set_target_properties(

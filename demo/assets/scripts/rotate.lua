@@ -3,7 +3,7 @@ transform = sbx.transform.new();
 speed = 0.0;
 
 function on_create()
-  
+  sbx.logger.info("speed:" .. speed);
 end
 
 function on_update()

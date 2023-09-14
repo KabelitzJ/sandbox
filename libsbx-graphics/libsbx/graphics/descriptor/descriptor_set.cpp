@@ -10,9 +10,9 @@
 namespace sbx::graphics {
 
 descriptor_set::descriptor_set(const pipeline& pipeline) noexcept
-: _pipeline_layout(pipeline.layout()),
-  _pipeline_bind_point(pipeline.bind_point()),
-  _descriptor_pool(pipeline.descriptor_pool()) {
+: _pipeline_layout{pipeline.layout()},
+  _pipeline_bind_point{pipeline.bind_point()},
+  _descriptor_pool{pipeline.descriptor_pool()} {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
   auto& logical_device = graphics_module.logical_device();
