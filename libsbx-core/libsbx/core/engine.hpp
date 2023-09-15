@@ -1,7 +1,7 @@
 #ifndef LIBSBX_CORE_ENGINE_HPP_
 #define LIBSBX_CORE_ENGINE_HPP_
 
-#include <unordered_map>
+#include <map>
 #include <vector>
 #include <typeindex>
 #include <memory>
@@ -9,6 +9,7 @@
 #include <string_view>
 #include <cmath>
 #include <chrono>
+#include <ranges>
 
 #include <libsbx/utility/concepts.hpp>
 #include <libsbx/utility/noncopyable.hpp>
@@ -42,7 +43,7 @@ public:
   }
 
   ~engine() {
-    for (const auto& entry : _modules) {
+    for (const auto& entry : _modules | std::views::reverse) {
       _destroy_module(entry.first);
     }
 
@@ -145,8 +146,8 @@ private:
   bool _is_running{};
   std::vector<std::string> _args{};
 
-  std::unordered_map<std::type_index, module_base*> _modules{};
-  std::unordered_map<stage, std::vector<std::type_index>> _module_by_stage{};
+  std::map<std::type_index, module_base*> _modules{};
+  std::map<stage, std::vector<std::type_index>> _module_by_stage{};
 
 }; // class engine
 

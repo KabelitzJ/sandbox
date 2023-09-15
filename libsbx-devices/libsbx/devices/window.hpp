@@ -54,7 +54,7 @@ public:
       glfwSetInputMode(_handle, GLFW_RAW_MOUSE_MOTION, true);
     }
 
-    glfwSetInputMode(_handle, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    // glfwSetInputMode(_handle, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     _set_callbacks();
   }
