@@ -101,3 +101,5 @@ if(MINGW)
       -Wl,--disable-dynamicbase,--default-image-base-low
   )
 endif()
+
+add_subdirectory(tests)

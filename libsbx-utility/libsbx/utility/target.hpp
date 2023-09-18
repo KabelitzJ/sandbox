@@ -39,15 +39,15 @@ inline constexpr auto operating_system_v = operating_system::unknown;
 /** @brief Possible compilers */
 enum class compiler : std::uint8_t {
   clang = 0,
-  gnuc = 1,
+  gnu = 1,
   msc = 2,
   unknown = 3
 }; // enum class compiler
 
 #if defined(__clang__)
 inline constexpr auto compiler_v = compiler::clang;
-#elif defined(__GNUC__)
-inline constexpr auto compiler_v = compiler::gnuc;
+#elif (defined(__GNUC__) || defined(__GNUG__) || defined(__MINGW32__))
+inline constexpr auto compiler_v = compiler::gnu;
 #elif defined(__MSC_VER)
 inline constexpr auto compiler_v = compiler::msc;
 #else

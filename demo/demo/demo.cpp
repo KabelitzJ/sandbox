@@ -101,7 +101,7 @@ public:
     auto& sun_rotation = sun.add_component<sbx::scenes::script>("./demo/assets/scripts/rotate.lua");
     sun_rotation.set("speed", 75.0f);
 
-    auto earth = scene.create_child_node(sun, "Earth", sbx::math::transform{sbx::math::vector3{-4.0f, 0.0f, 0.0f}, sbx::math::vector3::zero, sbx::math::vector3{0.5f, 0.5f, 0.5f}});
+    auto earth = scene.create_child_node(sun, "Earth", sbx::math::transform{sbx::math::vector3{4.0f, 0.0f, 0.0f}, sbx::math::vector3::zero, sbx::math::vector3{0.5f, 0.5f, 0.5f}});
     earth.add_component<sbx::scenes::static_mesh>(sphere_id, base_id);
     auto& earth_rotation = earth.add_component<sbx::scenes::script>("./demo/assets/scripts/rotate.lua");
     earth_rotation.set("speed", 100.0f);

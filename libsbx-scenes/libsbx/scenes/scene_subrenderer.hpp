@@ -80,7 +80,7 @@ public:
       // core::logger::debug("Camera rotation: {}", transform.rotation());
 
       // _scene_uniform_handler.push("view", math::matrix4x4::inverted(transform.as_matrix()));
-      _scene_uniform_handler.push("view", math::matrix4x4::look_at(math::vector3{4.0f, 4.0f, 4.0f}, math::vector3::zero, math::vector3::up));
+      _scene_uniform_handler.push("view", math::matrix4x4::look_at(math::vector3{15.0f, 15.0f, 15.0f}, math::vector3::zero, math::vector3::up));
 
       break;
     }
