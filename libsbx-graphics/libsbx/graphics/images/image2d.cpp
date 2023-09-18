@@ -87,7 +87,7 @@ auto image2d::_load() -> void {
     transition_image_layout(_handle, _format, VK_IMAGE_LAYOUT_UNDEFINED, _layout, VK_IMAGE_ASPECT_COLOR_BIT, _mip_levels, 0, _array_layers, 0);
   }
 
-  core::logger::debug("Loaded image: {} ({}x{}) in {} s", _path.string(), _extent.width, _extent.height, timer.elapsed().value());
+  core::logger::debug("Loaded image: {} ({}x{}) in {}ms", _path.string(), _extent.width, _extent.height, units::quantity_cast<units::millisecond>(timer.elapsed()).value());
 }
 
 } // namespace sbx::graphics

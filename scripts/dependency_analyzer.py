@@ -26,4 +26,3 @@ if not found_circle:
   print("No circular dependency detected.")
       
 print("Dependency analysis completed.")
-
