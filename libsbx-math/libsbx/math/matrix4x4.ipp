@@ -175,6 +175,22 @@ inline constexpr basic_matrix4x4<Type> basic_matrix4x4<Type>::perspective(const 
 }
 
 template<numeric Type>
+inline constexpr auto basic_matrix4x4<Type>::orthographic(const value_type left, const value_type right, const value_type bottom, const value_type top, const value_type near, const value_type far) noexcept -> basic_matrix4x4<Type> {
+  // [NOTE] KAJ 2022-07-29 00:47 - https://www.youtube.com/watch?rhs=YO46x8fALzE&list=PL8327DO66nu9qYVKLDmdLW_84-yE4auCR&index=17
+
+  auto result = basic_matrix4x4<value_type>::identity;
+
+  result[0][0] = static_cast<value_type>(2) / (right - left);
+  result[1][1] = static_cast<value_type>(2) / (top - bottom);
+  result[2][2] = static_cast<value_type>(2) / (far - near);
+  result[3][0] = -(right + left) / (right - left);
+  result[3][1] = -(top + bottom) / (top - bottom);
+  result[3][2] = -(far + near) / (far - near);
+
+  return result;
+}
+
+template<numeric Type>
 inline constexpr basic_matrix4x4<Type> basic_matrix4x4<Type>::translated(const basic_matrix4x4<value_type>& matrix, const basic_vector3<value_type>& vector) noexcept {
   auto result = basic_matrix4x4<value_type>{matrix};
 

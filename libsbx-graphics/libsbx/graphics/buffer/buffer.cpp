@@ -10,7 +10,7 @@
 
 namespace sbx::graphics {
 
-buffer::buffer(size_type size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, memory::observer_ptr<void> memory)
+buffer::buffer(size_type size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, memory::observer_ptr<const void> memory)
 : _size{size} {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 

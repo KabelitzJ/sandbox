@@ -32,7 +32,9 @@ public:
 
     auto& font = assets_module.get_asset<ui::font>(_font_id);
 
-
+    for (const auto& character : _text) {
+      const auto& glyph = font.get_glyph(character);
+    }
   }
 
 private:

@@ -4,6 +4,8 @@
 #include <concepts>
 #include <type_traits>
 
+#include <fmt/format.h>
+
 namespace sbx::utility {
 
 /**
@@ -31,7 +33,7 @@ public:
 
   using value_type = Type;
 
-  constexpr primitive(Type value) noexcept
+  constexpr primitive(Type value = static_cast<value_type>(0)) noexcept
   : _value{value} { }
 
   constexpr ~primitive() = default;
@@ -47,5 +49,22 @@ private:
 }; // class primitive
 
 } // namespace sbx::utility
+
+template<typename Type>
+requires (std::is_base_of_v<sbx::utility::primitive<typename Type::value_type>, Type>)
+struct fmt::formatter<Type> : fmt::formatter<typename Type::value_type> {
+  using super = fmt::formatter<typename Type::value_type>;
+
+  template<typename ParseContext>
+  constexpr auto parse(ParseContext& context) -> decltype(context.begin()) {
+    return super::parse(context);
+  }
+
+  template<typename FormatContext>
+  auto format(const Type& value, FormatContext& context) -> decltype(context.out()) {
+    return super::format(value, context);
+  }
+
+}; // struct fmt::formatter<sbx::utility::primitive<Type>>
 
 #endif // LIBSBX_UTILITY_PRIMITIVE_HPP_

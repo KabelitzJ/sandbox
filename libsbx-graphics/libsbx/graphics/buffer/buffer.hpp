@@ -18,7 +18,7 @@ public:
 
   using size_type = VkDeviceSize;
 
-  buffer(size_type size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, memory::observer_ptr<void> memory = nullptr);
+  buffer(size_type size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, memory::observer_ptr<const void> memory = nullptr);
 
   virtual ~buffer();
 

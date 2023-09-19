@@ -3,6 +3,11 @@
 
 #include <filesystem>
 
+#include <libsbx/math/matrix4x4.hpp>
+
+#include <libsbx/devices/devices_module.hpp>
+#include <libsbx/devices/window.hpp>
+
 #include <libsbx/graphics/subrenderer.hpp>
 #include <libsbx/graphics/pipeline/graphics_pipeline.hpp>
 
@@ -43,7 +48,16 @@ public:
   ~ui_subrenderer() override = default;
 
   auto render(graphics::command_buffer& command_buffer) -> void override {
+    if (_pipeline.stage() != stage()) {
+      return;
+    }
+
     const auto& ui_module = core::engine::get_module<ui::ui_module>();
+
+    auto& devices_module = core::engine::get_module<devices::devices_module>();
+    auto& window = devices_module.window();
+
+    _uniform_handler.push("projection", math::matrix4x4::orthographic(0.0f, static_cast<float>(window.width()), static_cast<float>(window.height()), 0.0f, -1.0f, 1.0f));
 
     const auto& widgets = ui_module.widgets();
 
@@ -56,13 +70,26 @@ private:
 
   auto _render_widget(widget& widget, graphics::command_buffer& command_buffer) -> void {
     const auto& id = widget.id();
-
-    auto& [uniform_handler, descriptor_handler] = *_uniform_data.at(id);
-
     const auto& position = widget.position();
     const auto& size = widget.size();
 
-    
+    _pipeline.bind(command_buffer);
+
+    auto& [uniform_handler, descriptor_handler] = *_uniform_data.at(id);
+
+    uniform_handler.push("placeholder", math::matrix4x4::identity);
+
+    descriptor_handler.push("uniform_scene", _uniform_handler);
+    descriptor_handler.push("uniform_object", uniform_handler);
+    // descriptor_handler.push("image", image);
+
+    if (!descriptor_handler.update(_pipeline)) {
+      return;
+    }
+
+    descriptor_handler.bind_descriptors(command_buffer);
+
+    widget.render(command_buffer);
   }
 
   struct uniform_data {
@@ -73,6 +100,8 @@ private:
   graphics::graphics_pipeline _pipeline;
 
   std::unordered_map<math::uuid, std::unique_ptr<uniform_data>> _uniform_data;
+
+  graphics::uniform_handler _uniform_handler;
 
 }; // class ui_subrenderer
 

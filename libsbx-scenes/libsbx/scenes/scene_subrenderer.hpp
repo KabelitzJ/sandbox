@@ -60,6 +60,10 @@ public:
   ~scene_subrenderer() override = default;
 
   auto render(graphics::command_buffer& command_buffer) -> void override {
+    if (_pipeline.stage() != stage()) {
+      return;
+    }
+
     auto& devices_module = core::engine::get_module<devices::devices_module>();
     auto& window = devices_module.window();
 
@@ -126,10 +130,6 @@ private:
   }
 
   auto _render_node(node& node, graphics::command_buffer& command_buffer) -> void {
-    if (_pipeline.stage() != stage()) {
-      return;
-    }
-
     auto& assets_module = core::engine::get_module<assets::assets_module>();
 
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();

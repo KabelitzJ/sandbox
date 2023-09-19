@@ -3,6 +3,8 @@
 
 #include <filesystem>
 
+#include <libsbx/memory/observer_ptr.hpp>
+
 #include <libsbx/math/vector2.hpp>
 
 #include <libsbx/assets/asset.hpp>
@@ -20,6 +22,8 @@ public:
   image2d(const std::filesystem::path& path, VkFilter filter = VK_FILTER_LINEAR, VkSamplerAddressMode address_mode = VK_SAMPLER_ADDRESS_MODE_REPEAT, bool anisotropic = true, bool mipmap = true);
 
   ~image2d() override;
+
+  auto set_pixels(memory::observer_ptr<const std::uint8_t> pixels) -> void;
 
 private:
 

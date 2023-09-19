@@ -39,16 +39,33 @@ image2d::~image2d() {
   logical_device.wait_idle();
 }
 
-auto image2d::_load() -> void {
-  auto timer = utility::timer{};
+auto image2d::set_pixels(memory::observer_ptr<const std::uint8_t> pixels) -> void {
+  auto buffer_size = _extent.width * _extent.height * 4;
+  auto staging_buffer = graphics::buffer{buffer_size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, pixels.get()};
 
+  transition_image_layout(_handle, _format, _layout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_ASPECT_COLOR_BIT, _mip_levels, 0, _array_layers, 0);
+
+  copy_buffer_to_image(staging_buffer, _handle, _extent, _array_layers, 0);
+
+  if (_mipmap) {
+    create_mipmaps(_handle, _extent, _format, _layout, _mip_levels, 0, _array_layers);
+  } else {
+    transition_image_layout(_handle, _format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, _layout, VK_IMAGE_ASPECT_COLOR_BIT, _mip_levels, 0, _array_layers, 0);
+  }
+}
+
+auto image2d::_load() -> void {
   auto* data = static_cast<std::uint8_t*>(nullptr);
 
   if (!_path.empty()) {
+    auto timer = utility::timer{};
+
     stbi_set_flip_vertically_on_load(true);
 
     // [NOTE] KAJ 2023-07-28 : Force 4 channels (RGBA) and ignore the original image's channels.
     data = stbi_load(_path.string().c_str(), reinterpret_cast<std::int32_t*>(&_extent.width), reinterpret_cast<std::int32_t*>(&_extent.height), nullptr, STBI_rgb_alpha);
+
+    core::logger::debug("Loaded image: {} ({}x{}) in {}ms", _path.string(), _extent.width, _extent.height, units::quantity_cast<units::millisecond>(timer.elapsed()).value());
 
     if (!data) {
       throw std::runtime_error{fmt::format("Failed to load image: {}", _path.string())};
@@ -86,8 +103,6 @@ auto image2d::_load() -> void {
   } else {
     transition_image_layout(_handle, _format, VK_IMAGE_LAYOUT_UNDEFINED, _layout, VK_IMAGE_ASPECT_COLOR_BIT, _mip_levels, 0, _array_layers, 0);
   }
-
-  core::logger::debug("Loaded image: {} ({}x{}) in {}ms", _path.string(), _extent.width, _extent.height, units::quantity_cast<units::millisecond>(timer.elapsed()).value());
 }
 
 } // namespace sbx::graphics
