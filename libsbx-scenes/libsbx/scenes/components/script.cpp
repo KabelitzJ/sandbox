@@ -95,9 +95,9 @@ auto script::_create_library() -> void {
     sol::resolve<math::vector3(math::vector3 lhs, const math::vector3& rhs)>(&math::operator/)
   ));
 
-  // vector3_type.set_function(sol::meta_function::unary_minus, sol::overload(
-  //   sol::resolve<math::vector3(const math::vector3& vector)>(&math::operator-)
-  // ));
+  vector3_type.set_function(sol::meta_function::unary_minus, sol::overload(
+    sol::resolve<math::vector3(const math::vector3& vector)>(&math::operator-)
+  ));
 
   auto transform_constructor = sol::constructors<math::transform(), math::transform(const math::vector3&, const math::vector3&, const math::vector3&)>{};
 
