@@ -21,7 +21,7 @@ script::script(const std::filesystem::path& path) {
 
   _state.open_libraries(sol::lib::base, sol::lib::io, sol::lib::table, sol::lib::math, sol::lib::string);
 
-  _create_library();
+  _create_bindings();
 
   _state.script_file(path.string());
 }
@@ -37,9 +37,17 @@ auto script::invoke(const std::string& name) -> void {
   std::invoke(function);
 }
 
-auto script::_create_library() -> void {
+auto script::_create_bindings() -> void {
   auto library = _state.create_named_table("sbx");
 
+  library.set_function("delta_time", [](){ return core::engine::delta_time().value(); });
+
+  _create_logger_bindings(library);
+  _create_vector3_bindings(library);
+  _create_transform_bindings(library);
+}
+
+auto script::_create_logger_bindings(sol::table& library) -> void {
   auto logger_type = library.new_usertype<core::logger>("logger", sol::no_constructor);
   
   logger_type.set_function("debug", sol::overload(
@@ -61,9 +69,9 @@ auto script::_create_library() -> void {
     [](const std::string& message) { core::logger::error(message); },
     [](std::float_t value) { core::logger::error(value); }
   ));
+}
 
-  library.set_function("delta_time", [](){ return core::engine::delta_time().value(); });
-
+auto script::_create_vector3_bindings(sol::table& library) -> void {
   auto vector3_constructor = sol::constructors<math::vector3(), math::vector3(std::float_t, std::float_t, std::float_t)>{};
 
   auto vector3_type = library.new_usertype<math::vector3>("vector3", vector3_constructor);
@@ -98,7 +106,9 @@ auto script::_create_library() -> void {
   vector3_type.set_function(sol::meta_function::unary_minus, sol::overload(
     sol::resolve<math::vector3(const math::vector3& vector)>(&math::operator-)
   ));
+}
 
+auto script::_create_transform_bindings(sol::table& library) -> void {
   auto transform_constructor = sol::constructors<math::transform(), math::transform(const math::vector3&, const math::vector3&, const math::vector3&)>{};
 
   auto transform_type = library.new_usertype<math::transform>("transform", transform_constructor);

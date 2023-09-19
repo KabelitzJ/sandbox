@@ -42,7 +42,13 @@ public:
 
 private:
   
-  auto _create_library() -> void;
+  auto _create_bindings() -> void;
+
+  auto _create_logger_bindings(sol::table& library) -> void;
+
+  auto _create_vector3_bindings(sol::table& library) -> void;
+
+  auto _create_transform_bindings(sol::table& library) -> void;
 
   std::string _name{};
   sol::state _state{};
