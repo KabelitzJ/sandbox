@@ -6,6 +6,7 @@
 #include <utility>
 #include <ranges>
 #include <vector>
+#include <typeindex>
 
 #include <range/v3/all.hpp>
 
@@ -20,6 +21,8 @@
 
 #include <libsbx/assets/assets_module.hpp>
 
+#include <libsbx/signals/signal.hpp>
+
 #include <libsbx/scenes/node.hpp>
 
 #include <libsbx/scenes/components/id.hpp>
@@ -32,11 +35,15 @@ namespace sbx::scenes {
 
 class scene {
 
+  friend class node;
+
+  using signal_container = std::unordered_map<std::type_index, signals::signal<node&>>;
+
 public:
 
   scene()
   : _registry{}, 
-    _root{&_registry, _registry.create_entity()} {
+    _root{&_registry, _registry.create_entity(), &_on_component_added, &_on_component_removed} {
     auto& id = _root.add_component<scenes::id>();
     _root.add_component<scenes::relationship>(id);
     _root.add_component<math::transform>();
@@ -66,7 +73,7 @@ public:
   }
 
   auto create_child_node(node& parent, const std::string& tag = "", const math::transform& transform = math::transform{}) -> node {
-    auto node = scenes::node{&_registry, _registry.create_entity()};
+    auto node = scenes::node{&_registry, _registry.create_entity(), &_on_component_added, &_on_component_removed};
 
     auto& id = node.add_component<scenes::id>();
 
@@ -141,12 +148,29 @@ public:
   auto query() -> std::vector<node> {
     auto view = _registry.create_view<Components...>();
 
-    auto to_node = std::views::transform([&](auto& entity) { return node{&_registry, entity}; });
+    auto to_node = std::views::transform([&](auto& entity) { return node{&_registry, entity, &_on_component_added, &_on_component_removed}; });
 
     return view | to_node | ranges::to<std::vector>();
   }
 
+  template<typename Component>
+  auto on_component_added() -> signals::signal<node&>& {
+    const auto type = std::type_index{typeid(Component)};
+
+    return _on_component_added[type];
+  }
+
+  template<typename Component>
+  auto on_component_removed() -> signals::signal<node&>& {
+    const auto type = std::type_index{typeid(Component)};
+
+    return _on_component_removed[type];
+  }
+
 private:
+
+  signal_container _on_component_added;
+  signal_container _on_component_removed;
 
   std::unordered_map<math::uuid, node> _nodes;
 
