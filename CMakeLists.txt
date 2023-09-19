@@ -25,6 +25,9 @@ message(STATUS "SBX_BUILD_DEMO: ${SBX_BUILD_DEMO}")
 option(SBX_BUILD_SHARED "Build shared library" OFF)
 message(STATUS "SBX_BUILD_SHARED: ${SBX_BUILD_SHARED}")
 
+option(SBX_BUILD_TESTS "Build tests" On)
+message(STATUS "SBX_BUILD_TESTS: ${SBX_BUILD_TESTS}")
+
 add_subdirectory(libsbx-units)
 add_subdirectory(libsbx-utility)
 add_subdirectory(libsbx-async)

@@ -26,12 +26,14 @@ class libsbx_recipe(ConanFile):
   options = {
     "shared": [True, False],
     "fPIC": [True, False],
-    "build_demo": [True, False]
+    "build_demo": [True, False],
+    "build_tests": [True, False]
   }
   default_options = {
     "shared": False,
     "fPIC": True,
-    "build_demo": True
+    "build_demo": True,
+    "build_tests": True
   }
 
   # Source directories
@@ -73,10 +75,6 @@ class libsbx_recipe(ConanFile):
 
     self.folders.generators = os.path.join(self.folders.build, "dependencies")
 
-  def validate(self):
-    check_min_cppstd(self, "14")
-    check_max_cppstd(self, "23")
-
   def requirements(self):
     self.requires("fmt/10.0.0")
     self.requires("spdlog/1.11.0")
@@ -101,16 +99,11 @@ class libsbx_recipe(ConanFile):
   def build(self):
     cmake = CMake(self)
 
-    print("Foo", self.options.build_demo)
-    print("Foo", self.options.shared)
-
     variables = {
       "SBX_BUILD_DEMO": "On" if self.options.build_demo else "Off",
-      "SBX_BUILD_SHARED": "On" if self.options.shared else "Off"
+      "SBX_BUILD_SHARED": "On" if self.options.shared else "Off",
+      "SBX_BUILD_TESTS": "On" if self.options.build_tests else "Off"
     }
-
-    print("SBX_BUILD_DEMO", variables["SBX_BUILD_DEMO"])
-    print("SBX_BUILD_SHARED", variables["SBX_BUILD_SHARED"])
 
     cmake.configure(variables)
     cmake.build()
@@ -118,6 +111,3 @@ class libsbx_recipe(ConanFile):
   def package(self):
     cmake = CMake(self)
     cmake.install()
-
-  def package_info(self):
-    self.cpp_info.libs = ["libsbx"]

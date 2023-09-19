@@ -102,4 +102,6 @@ if(MINGW)
   )
 endif()
 
-add_subdirectory(tests)
+if(${SBX_BUILD_TESTS})
+  add_subdirectory(tests)
+endif()
