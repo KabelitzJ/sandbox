@@ -43,10 +43,11 @@ target_link_libraries(
     libsbx::units
     libsbx::utility
     libsbx::math
-    libsbx::math
     libsbx::core
     libsbx::assets
+    libsbx::signals
     libsbx::graphics
+    libsbx::models
 )
 
 set_target_properties(

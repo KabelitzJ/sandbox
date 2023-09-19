@@ -23,8 +23,7 @@ public:
   label(const std::string& text, const math::vector2u& position, const math::vector2u& size, assets::asset_id font_id)
   : widget{position, size},
     _text{text},
-    _font_id{font_id},
-    _image{std::make_unique<graphics::image2d>(size)} { }
+    _font_id{font_id} { }
 
   ~label() override = default;
 
@@ -40,7 +39,6 @@ private:
 
   std::string _text;
   assets::asset_id _font_id;
-  std::unique_ptr<graphics::image2d> _image;
 
 }; // class label
 

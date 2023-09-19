@@ -10,6 +10,8 @@
 
 #include <libsbx/core/module.hpp>
 
+#include <libsbx/signals/signal.hpp>
+
 #include <libsbx/graphics/graphics_module.hpp>
 
 #include <libsbx/ui/font.hpp>
@@ -50,13 +52,28 @@ public:
   template<typename Type, typename... Args>
   requires (std::is_base_of_v<widget, Type>, std::is_constructible_v<Type, Args...>)
   auto add_widget(Args&&... args) -> void {
-    _widgets.push_back(std::make_unique<Type>(std::forward<Args>(args)...));
+    auto widget = std::make_unique<Type>(std::forward<Args>(args)...);
+
+    _on_widget_added.emit(*widget);
+
+    _widgets.push_back(std::move(widget));
+  }
+
+  auto on_widget_added() noexcept -> signals::signal<widget&>& {
+    return _on_widget_added;
+  }
+
+  auto on_widget_removed() noexcept -> signals::signal<widget&>& {
+    return _on_widget_removed;
   }
 
 private:
 
   FT_Library _library;
   std::vector<std::unique_ptr<widget>> _widgets;
+
+  signals::signal<widget&> _on_widget_added;
+  signals::signal<widget&> _on_widget_removed;
 
 }; // class ui_module
 

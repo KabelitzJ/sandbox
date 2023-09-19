@@ -9,10 +9,11 @@ namespace sbx::ui {
 
 struct vertex2d {
   math::vector2 position;
+  math::vector2 uv;
 }; // struct vertex
 
 constexpr auto operator==(const vertex2d& lhs, const vertex2d& rhs) noexcept -> bool {
-  return lhs.position == rhs.position;
+  return lhs.position == rhs.position && lhs.uv == rhs.uv;
 }
 
 } // namespace sbx::ui
@@ -35,6 +36,13 @@ struct sbx::graphics::vertex_input<sbx::ui::vertex2d> {
       .binding = 0,
       .format = VK_FORMAT_R32G32_SFLOAT,
       .offset = offsetof(sbx::ui::vertex2d, position)
+    });
+
+    attribute_descriptions.push_back(VkVertexInputAttributeDescription{
+      .location = 1,
+      .binding = 0,
+      .format = VK_FORMAT_R32G32_SFLOAT,
+      .offset = offsetof(sbx::ui::vertex2d, uv)
     });
 
     return sbx::graphics::vertex_input_description{std::move(binding_descriptions), std::move(attribute_descriptions)};

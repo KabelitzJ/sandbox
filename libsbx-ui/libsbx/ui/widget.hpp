@@ -4,6 +4,7 @@
 #include <cinttypes>
 
 #include <libsbx/math/vector2.hpp>
+#include <libsbx/math/uuid.hpp>
 
 #include <libsbx/graphics/commands/command_buffer.hpp>
 
@@ -37,10 +38,15 @@ public:
     _size = size;
   }
 
+  auto id() const noexcept -> const math::uuid& {
+    return _id;
+  }
+
 private:
   
   math::vector2 _position;
   math::vector2 _size;
+  math::uuid _id;
 
 }; // class widget
 
