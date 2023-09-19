@@ -72,28 +72,28 @@ auto script::_create_library() -> void {
   vector3_type.set("y", &math::vector3::y);
   vector3_type.set("z", &math::vector3::z);
 
-  // vector3_type.set_function("normalize", &math::vector3::normalize);
-  // vector3_type.set_function("length", &math::vector3::length);
+  vector3_type.set_function("normalize", &math::vector3::normalize);
+  vector3_type.set_function("length", &math::vector3::length);
 
-  // vector3_type.set_function(sol::meta_function::addition, sol::overload(
-  //   sol::resolve<math::vector3(math::vector3 lhs, const std::float_t rhs)>(&math::operator+),
-  //   sol::resolve<math::vector3(math::vector3 lhs, const math::vector3& rhs)>(&math::operator+)
-  // ));
+  vector3_type.set_function(sol::meta_function::addition, sol::overload(
+    sol::resolve<math::vector3(math::vector3 lhs, const std::float_t rhs)>(&math::operator+),
+    sol::resolve<math::vector3(math::vector3 lhs, const math::vector3& rhs)>(&math::operator+)
+  ));
 
-  // vector3_type.set_function(sol::meta_function::subtraction, sol::overload(
-  //   sol::resolve<math::vector3(math::vector3 lhs, const std::float_t rhs)>(&math::operator-),
-  //   sol::resolve<math::vector3(math::vector3 lhs, const math::vector3& rhs)>(&math::operator-)
-  // ));
+  vector3_type.set_function(sol::meta_function::subtraction, sol::overload(
+    sol::resolve<math::vector3(math::vector3 lhs, const std::float_t rhs)>(&math::operator-),
+    sol::resolve<math::vector3(math::vector3 lhs, const math::vector3& rhs)>(&math::operator-)
+  ));
 
-  // vector3_type.set_function(sol::meta_function::multiplication, sol::overload(
-  //   sol::resolve<math::vector3(math::vector3 lhs, const std::float_t rhs)>(&math::operator*),
-  //   sol::resolve<math::vector3(math::vector3 lhs, const math::vector3& rhs)>(&math::operator*)
-  // ));
+  vector3_type.set_function(sol::meta_function::multiplication, sol::overload(
+    sol::resolve<math::vector3(math::vector3 lhs, const std::float_t rhs)>(&math::operator*),
+    sol::resolve<math::vector3(math::vector3 lhs, const math::vector3& rhs)>(&math::operator*)
+  ));
 
-  // vector3_type.set_function(sol::meta_function::division, sol::overload(
-  //   sol::resolve<math::vector3(math::vector3 lhs, const std::float_t rhs)>(&math::operator/),
-  //   sol::resolve<math::vector3(math::vector3 lhs, const math::vector3& rhs)>(&math::operator/)
-  // ));
+  vector3_type.set_function(sol::meta_function::division, sol::overload(
+    sol::resolve<math::vector3(math::vector3 lhs, const std::float_t rhs)>(&math::operator/),
+    sol::resolve<math::vector3(math::vector3 lhs, const math::vector3& rhs)>(&math::operator/)
+  ));
 
   // vector3_type.set_function(sol::meta_function::unary_minus, sol::overload(
   //   sol::resolve<math::vector3(const math::vector3& vector)>(&math::operator-)
@@ -103,18 +103,18 @@ auto script::_create_library() -> void {
 
   auto transform_type = library.new_usertype<math::transform>("transform", transform_constructor);
 
-  // transform_type.set_function("position", &math::transform::position);
-  // transform_type.set_function("set_position", &math::transform::set_position);
-  // transform_type.set_function("move_by", &math::transform::move_by);
+  transform_type.set_function("position", &math::transform::position);
+  transform_type.set_function("set_position", &math::transform::set_position);
+  transform_type.set_function("move_by", &math::transform::move_by);
 
-  // transform_type.set_function("euler_angles", &math::transform::euler_angles);
-  // transform_type.set_function("set_euler_angles", &math::transform::set_euler_angles);
+  transform_type.set_function("euler_angles", &math::transform::euler_angles);
+  transform_type.set_function("set_euler_angles", &math::transform::set_euler_angles);
   transform_type.set_function("add_euler_angles", &math::transform::add_euler_angles);
 
-  // transform_type.set_function("scale", &math::transform::scale);
-  // transform_type.set_function("set_scale", &math::transform::set_scale);
+  transform_type.set_function("scale", &math::transform::scale);
+  transform_type.set_function("set_scale", &math::transform::set_scale);
 
-  // transform_type.set_function("look_at", &math::transform::look_at);
+  transform_type.set_function("look_at", &math::transform::look_at);
 }
 
 } // namespace sbx::scenes
