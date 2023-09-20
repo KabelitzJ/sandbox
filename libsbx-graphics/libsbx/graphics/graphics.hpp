@@ -16,6 +16,7 @@
 #include <libsbx/graphics/pipeline/pipeline.hpp>
 #include <libsbx/graphics/pipeline/graphics_pipeline.hpp>
 #include <libsbx/graphics/pipeline/vertex_input_description.hpp>
+#include <libsbx/graphics/pipeline/mesh.hpp>
 
 #include <libsbx/graphics/commands/command_pool.hpp>
 #include <libsbx/graphics/commands/command_buffer.hpp>

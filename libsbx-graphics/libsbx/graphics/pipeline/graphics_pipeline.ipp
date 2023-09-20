@@ -17,7 +17,8 @@
 
 namespace sbx::graphics {
 
-graphics_pipeline::graphics_pipeline(const pipeline::stage& stage, const std::filesystem::path& path, const vertex_input_description& vertex_input_description)
+template<vertex Vertex>
+graphics_pipeline<Vertex>::graphics_pipeline(const pipeline::stage& stage, const std::filesystem::path& path)
 : _bind_point{VK_PIPELINE_BIND_POINT_GRAPHICS},
   _stage{stage} {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
@@ -188,9 +189,7 @@ graphics_pipeline::graphics_pipeline(const pipeline::stage& stage, const std::fi
   depth_stencil_state.depthBoundsTestEnable = false;
   depth_stencil_state.stencilTestEnable = false;
 
-  const auto& binding_descriptions = vertex_input_description.binding_descriptions();
-
-  const auto& attribute_descriptions = vertex_input_description.attribute_descriptions();
+  const auto [binding_descriptions, attribute_descriptions] = vertex_input<Vertex>::description();
 
   auto vertex_input_state = VkPipelineVertexInputStateCreateInfo{};
   vertex_input_state.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -265,7 +264,8 @@ graphics_pipeline::graphics_pipeline(const pipeline::stage& stage, const std::fi
   core::logger::debug("Pipeline '{}' created in {}ms", _name, units::quantity_cast<units::millisecond>(timer.elapsed()).value());
 }
 
-graphics_pipeline::~graphics_pipeline() {
+template<vertex Vertex>
+graphics_pipeline<Vertex>::~graphics_pipeline() {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
   const auto& logical_device = graphics_module.logical_device();
@@ -282,27 +282,33 @@ graphics_pipeline::~graphics_pipeline() {
   vkDestroyPipeline(logical_device, _handle, nullptr);
 }
 
-auto graphics_pipeline::handle() const noexcept -> const VkPipeline& {
+template<vertex Vertex>
+auto graphics_pipeline<Vertex>::handle() const noexcept -> const VkPipeline& {
   return _handle;
 }
 
-auto graphics_pipeline::descriptor_set_layout() const noexcept -> const VkDescriptorSetLayout& {
+template<vertex Vertex>
+auto graphics_pipeline<Vertex>::descriptor_set_layout() const noexcept -> const VkDescriptorSetLayout& {
   return _descriptor_set_layout;
 }
 
-auto graphics_pipeline::descriptor_pool() const noexcept -> const VkDescriptorPool& {
+template<vertex Vertex>
+auto graphics_pipeline<Vertex>::descriptor_pool() const noexcept -> const VkDescriptorPool& {
   return _descriptor_pool;
 }
 
-auto graphics_pipeline::layout() const noexcept -> const VkPipelineLayout& {
+template<vertex Vertex>
+auto graphics_pipeline<Vertex>::layout() const noexcept -> const VkPipelineLayout& {
   return _layout;
 }
 
-auto graphics_pipeline::bind_point() const noexcept -> VkPipelineBindPoint {
+template<vertex Vertex>
+auto graphics_pipeline<Vertex>::bind_point() const noexcept -> VkPipelineBindPoint {
   return _bind_point;
 }
 
-auto graphics_pipeline::_get_stage_from_name(const std::string& name) const noexcept -> VkShaderStageFlagBits {
+template<vertex Vertex>
+auto graphics_pipeline<Vertex>::_get_stage_from_name(const std::string& name) const noexcept -> VkShaderStageFlagBits {
   if (name == "vertex") {
     return VK_SHADER_STAGE_VERTEX_BIT;
   } else if (name == "fragment") {

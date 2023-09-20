@@ -16,37 +16,40 @@
 
 namespace sbx::ui {
 
-struct character {
-  
-}; // struct character
+template<typename Type>
+struct basic_rect {
+  math::basic_vector2<Type> position;
+  math::basic_vector2<Type> size;
+}; // struct basic_rect
 
-struct pixels : utility::primitive<std::uint32_t> { 
-  using super = utility::primitive<std::uint32_t>;
-  using super::super;
-};// struct pixels
+using rect = basic_rect<std::float_t>;
+using rectu = basic_rect<std::uint32_t>;
 
 class font : public assets::asset<assets::asset_type::font> {
 
 public:
 
-  struct glyph {
-    math::vector2u size;
-    math::vector2u bearing;
+  struct glyph_info {
+    rectu bounds;
+    rect uvs;
+    math::vector2 bearing;
     std::uint32_t advance;
-    std::unique_ptr<graphics::image2d> image;
-  }; // struct glyph
+  }; // struct glyph_info
 
-  font(const std::filesystem::path& path, pixels height = 18u);
+  font(const std::filesystem::path& path, std::uint32_t height = 32u);
 
   ~font() override;
 
-  auto get_glyph(char character) const noexcept -> const glyph&;
+  auto glyph(char character) const noexcept -> const glyph_info&;
+
+  auto atlas() const noexcept -> const graphics::image2d&;
 
 private:
 
   FT_Face _face;
 
-  std::unordered_map<char, glyph> _glyphs;
+  std::unordered_map<char, glyph_info> _glyphs;
+  std::unique_ptr<graphics::image2d> _atlas;
 
 }; // class font
 

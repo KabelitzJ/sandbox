@@ -15,10 +15,9 @@
 
 #include <libsbx/graphics/buffer/uniform_handler.hpp>
 
-#include <libsbx/models/buffer.hpp>
-#include <libsbx/models/mesh.hpp>
-
 #include <libsbx/ui/vertex2d.hpp>
+#include <libsbx/ui/mesh.hpp>
+#include <libsbx/ui/pipeline.hpp>
 #include <libsbx/ui/ui_module.hpp>
 
 namespace sbx::ui {
@@ -29,7 +28,7 @@ public:
 
   ui_subrenderer(const graphics::pipeline::stage& stage, const std::filesystem::path& path)
   : graphics::subrenderer{stage},
-    _pipeline{stage, path, graphics::vertex_input<ui::vertex2d>::description()} {
+    _pipeline{stage, path} {
     auto& ui_module = core::engine::get_module<ui::ui_module>();
 
     ui_module.on_widget_added() += [this](ui::widget& widget){
@@ -97,7 +96,7 @@ private:
     graphics::descriptor_handler descriptor_handler;
   }; // struct uniform_data
 
-  graphics::graphics_pipeline _pipeline;
+  pipeline _pipeline;
 
   std::unordered_map<math::uuid, std::unique_ptr<uniform_data>> _uniform_data;
 

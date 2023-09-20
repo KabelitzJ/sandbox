@@ -22,6 +22,8 @@
 
 #include <libsbx/graphics/pipeline/graphics_pipeline.hpp>
 
+#include <libsbx/models/pipeline.hpp>
+
 #include <libsbx/scenes/scenes_module.hpp>
 
 #include <libsbx/scenes/components/static_mesh.hpp>
@@ -38,7 +40,7 @@ public:
 
   scene_subrenderer(const graphics::pipeline::stage& stage, const std::filesystem::path& path)
   : graphics::subrenderer{stage},
-    _pipeline{stage, path, graphics::vertex_input<models::vertex3d>::description()},
+    _pipeline{stage, path},
     _camera_position{2.0f, 2.0f, 1.0f},
     _light_position{-1.0f, 3.0f, 1.0f} {
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
@@ -168,7 +170,7 @@ private:
     graphics::descriptor_handler descriptor_handler;
   }; // struct uniform_data
 
-  graphics::graphics_pipeline _pipeline;
+  models::pipeline _pipeline;
 
   math::vector3 _camera_position;
   math::vector3 _light_position;
