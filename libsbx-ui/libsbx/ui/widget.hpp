@@ -8,6 +8,8 @@
 
 #include <libsbx/graphics/commands/command_buffer.hpp>
 
+#include <libsbx/graphics/descriptor/descriptor_handler.hpp>
+
 namespace sbx::ui {
 
 class widget {
@@ -19,6 +21,8 @@ public:
     _size{size} { }
 
   virtual ~widget() = default;
+
+  virtual auto update(graphics::uniform_handler& uniform, graphics::descriptor_handler& descriptor_handler) -> void = 0;
 
   virtual auto render(graphics::command_buffer& command_buffer) -> void = 0;
 

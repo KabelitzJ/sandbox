@@ -152,7 +152,7 @@ graphics_pipeline<Vertex>::graphics_pipeline(const pipeline::stage& stage, const
   rasterization_state.rasterizerDiscardEnable = false;
   rasterization_state.polygonMode = VK_POLYGON_MODE_FILL;
   rasterization_state.lineWidth = 1.0f;
-  rasterization_state.cullMode = VK_CULL_MODE_BACK_BIT;
+  rasterization_state.cullMode = VK_CULL_MODE_NONE;
   rasterization_state.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
   rasterization_state.depthBiasEnable = false;
 
@@ -162,14 +162,25 @@ graphics_pipeline<Vertex>::graphics_pipeline(const pipeline::stage& stage, const
   multisample_state.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 
   auto color_blend_attachment = VkPipelineColorBlendAttachmentState{};
+  color_blend_attachment.blendEnable = true;
+  color_blend_attachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+  color_blend_attachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+  color_blend_attachment.colorBlendOp = VK_BLEND_OP_ADD;
+  color_blend_attachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+  color_blend_attachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+  color_blend_attachment.alphaBlendOp = VK_BLEND_OP_MAX;
   color_blend_attachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-  color_blend_attachment.blendEnable = false;
 
   auto color_blend_state = VkPipelineColorBlendStateCreateInfo{};
   color_blend_state.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
   color_blend_state.logicOpEnable = false;
+  color_blend_state.logicOp = VK_LOGIC_OP_COPY;
   color_blend_state.attachmentCount = 1;
   color_blend_state.pAttachments = &color_blend_attachment;
+  color_blend_state.blendConstants[0] = 0.0f;
+  color_blend_state.blendConstants[1] = 0.0f;
+  color_blend_state.blendConstants[2] = 0.0f;
+  color_blend_state.blendConstants[3] = 0.0f;
 
   auto dynamic_states = std::array<VkDynamicState, 2>{
     VK_DYNAMIC_STATE_VIEWPORT,
@@ -236,8 +247,6 @@ graphics_pipeline<Vertex>::graphics_pipeline(const pipeline::stage& stage, const
   pipeline_layout_create_info.pPushConstantRanges = nullptr;
 
   validate(vkCreatePipelineLayout(logical_device, &pipeline_layout_create_info, nullptr, &_layout));
-
-  auto subpass = std::uint32_t{0};
   
   auto pipeline_create_info = VkGraphicsPipelineCreateInfo{};
   pipeline_create_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -251,10 +260,9 @@ graphics_pipeline<Vertex>::graphics_pipeline(const pipeline::stage& stage, const
   pipeline_create_info.pDepthStencilState = &depth_stencil_state;
   pipeline_create_info.pColorBlendState = &color_blend_state;
   pipeline_create_info.pDynamicState = &dynamic_state;
-
   pipeline_create_info.layout = _layout;
   pipeline_create_info.renderPass = render_stage.render_pass();
-  pipeline_create_info.subpass = subpass;
+  pipeline_create_info.subpass = stage.subpass;
 
   pipeline_create_info.basePipelineIndex = -1;
   pipeline_create_info.basePipelineHandle = VK_NULL_HANDLE;

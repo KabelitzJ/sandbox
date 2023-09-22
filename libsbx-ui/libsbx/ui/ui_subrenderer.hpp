@@ -47,16 +47,12 @@ public:
   ~ui_subrenderer() override = default;
 
   auto render(graphics::command_buffer& command_buffer) -> void override {
-    if (_pipeline.stage() != stage()) {
-      return;
-    }
-
     const auto& ui_module = core::engine::get_module<ui::ui_module>();
 
     auto& devices_module = core::engine::get_module<devices::devices_module>();
     auto& window = devices_module.window();
 
-    _uniform_handler.push("projection", math::matrix4x4::orthographic(0.0f, static_cast<float>(window.width()), static_cast<float>(window.height()), 0.0f, -1.0f, 1.0f));
+    _uniform_handler.push("projection", math::matrix4x4::orthographic(0.0f, static_cast<float>(window.width()), 0.0f, static_cast<float>(window.height()), 0.1f, 100.0f));
 
     const auto& widgets = ui_module.widgets();
 
@@ -76,11 +72,10 @@ private:
 
     auto& [uniform_handler, descriptor_handler] = *_uniform_data.at(id);
 
-    uniform_handler.push("placeholder", math::matrix4x4::identity);
+    widget.update(uniform_handler, descriptor_handler);
 
     descriptor_handler.push("uniform_scene", _uniform_handler);
     descriptor_handler.push("uniform_object", uniform_handler);
-    // descriptor_handler.push("image", image);
 
     if (!descriptor_handler.update(_pipeline)) {
       return;

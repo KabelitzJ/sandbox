@@ -11,6 +11,9 @@ class mesh : public graphics::mesh<vertex2d> {
 
 public:
 
+  mesh(std::vector<vertex2d>&& vertices, std::vector<std::uint32_t>&& indices)
+  : graphics::mesh<vertex2d>{std::move(vertices), std::move(indices)} { }
+
   ~mesh() override = default;
 
 }; // class mesh

@@ -62,10 +62,6 @@ public:
   ~scene_subrenderer() override = default;
 
   auto render(graphics::command_buffer& command_buffer) -> void override {
-    if (_pipeline.stage() != stage()) {
-      return;
-    }
-
     auto& devices_module = core::engine::get_module<devices::devices_module>();
     auto& window = devices_module.window();
 
@@ -100,7 +96,7 @@ public:
       // core::logger::debug("Camera rotation: {}", transform.rotation());
 
       // _scene_uniform_handler.push("view", math::matrix4x4::inverted(transform.as_matrix()));
-      _scene_uniform_handler.push("view", math::matrix4x4::look_at(math::vector3{15.0f, 15.0f, 15.0f}, math::vector3::zero, math::vector3::up));
+      _scene_uniform_handler.push("view", math::matrix4x4::look_at(math::vector3{5.0f, 5.0f, 5.0f}, math::vector3::zero, math::vector3::up));
 
       break;
     }
