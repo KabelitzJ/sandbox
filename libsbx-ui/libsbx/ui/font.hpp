@@ -4,8 +4,6 @@
 #include <filesystem>
 #include <unordered_map>
 
-#include <freetype/freetype.h>
-
 #include <libsbx/utility/primitive.hpp>
 
 #include <libsbx/assets/asset.hpp>
@@ -13,6 +11,8 @@
 #include <libsbx/math/vector2.hpp>
 
 #include <libsbx/graphics/images/image2d.hpp>
+
+#include <libsbx/ui/atlas.hpp>
 
 namespace sbx::ui {
 
@@ -42,14 +42,12 @@ public:
 
   auto glyph(char character) const noexcept -> const glyph_info&;
 
-  auto atlas() const noexcept -> const graphics::image2d&;
+  auto atlas() const noexcept -> const ui::atlas&;
 
 private:
 
-  FT_Face _face;
-
   std::unordered_map<char, glyph_info> _glyphs;
-  std::unique_ptr<graphics::image2d> _atlas;
+  std::unique_ptr<ui::atlas> _atlas;
 
 }; // class font
 

@@ -26,23 +26,15 @@ class ui_module : public core::module<ui_module> {
 public:
 
   ui_module() {
-    const auto error = FT_Init_FreeType(&_library);
 
-    if (error) {
-      throw std::runtime_error("Failed to initialize FreeType library");
-    }
   }
 
   ~ui_module() override {
-    FT_Done_FreeType(_library);
+
   }
 
   auto update() -> void override {
 
-  }
-
-  auto font_library() const noexcept -> const FT_Library& {
-    return _library;
   }
 
   auto widgets() const noexcept -> const std::vector<std::unique_ptr<widget>>& {
@@ -69,7 +61,6 @@ public:
 
 private:
 
-  FT_Library _library;
   std::vector<std::unique_ptr<widget>> _widgets;
 
   signals::signal<widget&> _on_widget_added;

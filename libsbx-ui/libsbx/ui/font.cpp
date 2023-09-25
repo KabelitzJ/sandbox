@@ -6,10 +6,9 @@
 #include <filesystem>
 #include <ranges>
 
-#include <fmt/format.h>
+#include <freetype/freetype.h>
 
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#include <stb_image_write.h>
+#include <fmt/format.h>
 
 #include <libsbx/ui/ui_module.hpp>
 
@@ -18,12 +17,18 @@ namespace sbx::ui {
 static constexpr auto num_glyphs = 128u;
 
 font::font(const std::filesystem::path& path, std::uint32_t height) {
-  const auto& ui_module = core::engine::get_module<ui::ui_module>();
-  const auto& library = ui_module.font_library();
+  auto library = FT_Library{};
+  auto face = FT_Face{};
 
   auto error = FT_Error{0};
 
-  error = FT_New_Face(library, path.string().c_str(), 0, &_face);
+  error = FT_Init_FreeType(&library);
+
+  if (error) {
+    throw std::runtime_error("Failed to initialize FreeType library");
+  }
+
+  error = FT_New_Face(library, path.string().c_str(), 0, &face);
 
   if (error == FT_Err_Unknown_File_Format) {
     throw std::runtime_error{fmt::format("Failed to load font '{}': unknown file format", path.string())};
@@ -31,7 +36,7 @@ font::font(const std::filesystem::path& path, std::uint32_t height) {
     throw std::runtime_error{fmt::format("Failed to load font '{}': unknown error", path.string())};
   }
 
-  error = FT_Set_Char_Size(_face, 0, height << 6, 96, 96);
+  error = FT_Set_Char_Size(face, 0, height << 6, 96, 96);
 
   if (error) {
     throw std::runtime_error{fmt::format("Failed to set font size to '{}'", height)};
@@ -40,38 +45,38 @@ font::font(const std::filesystem::path& path, std::uint32_t height) {
   auto atlas_size = math::vector2u{0, 0};
 
   for (const auto character : std::views::iota(0u, num_glyphs)) {
-    error = FT_Load_Char(_face, character, FT_LOAD_RENDER);
+    error = FT_Load_Char(face, character, FT_LOAD_RENDER);
 
     if (error) {
       throw std::runtime_error{fmt::format("Failed to load glyph '{}'", character)};
     }
 
-    atlas_size.x += _face->glyph->bitmap.width;
-    atlas_size.y = std::max(atlas_size.y, _face->glyph->bitmap.rows);
+    atlas_size.x += face->glyph->bitmap.width;
+    atlas_size.y = std::max(atlas_size.y, face->glyph->bitmap.rows);
   }
 
   core::logger::debug("Creating font atlas for font '{}' ({}x{})", path.string(), atlas_size.x, atlas_size.y);
 
-  auto atlas = std::vector<std::uint8_t>{};
-  atlas.resize(atlas_size.x * atlas_size.y);
+  auto atlas_data = std::vector<std::uint8_t>{};
+  atlas_data.resize(atlas_size.x * atlas_size.y);
 
   auto atlas_position = math::vector2u{0, 0};
 
   for (const auto character : std::views::iota(0u, num_glyphs)) {
-    error = FT_Load_Char(_face, character, FT_LOAD_RENDER);
+    error = FT_Load_Char(face, character, FT_LOAD_RENDER);
 
     if (error) {
       throw std::runtime_error{fmt::format("Failed to load glyph '{}'", character)};
     }
 
-    const auto glyph = _face->glyph;
+    const auto glyph = face->glyph;
 
     for (auto y = 0u; y < glyph->bitmap.rows; ++y) {
       for (auto x = 0u; x < glyph->bitmap.width; ++x) {
         const auto atlas_index = (atlas_position.y + y) * atlas_size.x + (atlas_position.x + x);
         const auto glyph_index = y * glyph->bitmap.width + x;
 
-        atlas[atlas_index] = glyph->bitmap.buffer[glyph_index];
+        atlas_data[atlas_index] = glyph->bitmap.buffer[glyph_index];
       }
     }
 
@@ -97,31 +102,21 @@ font::font(const std::filesystem::path& path, std::uint32_t height) {
     atlas_position.x += glyph->bitmap.width;
   }
 
-  auto png_data = std::vector<std::uint8_t>{};
-  png_data.resize(atlas_size.x * atlas_size.y * 4);
+  FT_Done_Face(face);
+  FT_Done_FreeType(library);
 
-  for (const auto i : std::views::iota(0u, atlas_size.x * atlas_size.y)) {
-    png_data[i * 4 + 0] = atlas[i];
-    png_data[i * 4 + 1] = atlas[i];
-    png_data[i * 4 + 2] = atlas[i];
-    png_data[i * 4 + 3] = 0xff;
-  }
-
-  stbi_write_png("atlas.png", atlas_size.x, atlas_size.y, 4, png_data.data(), atlas_size.x * 4);
-
-  _atlas = std::make_unique<graphics::image2d>(atlas_size, VK_FORMAT_R8_UNORM);
-  _atlas->set_pixels(atlas.data());
+  _atlas = std::make_unique<ui::atlas>(atlas_size.x, atlas_size.y, atlas_data);
 }
 
 font::~font() {
-  FT_Done_Face(_face);
+
 }
 
 auto font::glyph(char character) const noexcept -> const glyph_info& {
   return _glyphs.at(character);
 }
 
-auto font::atlas() const noexcept -> const graphics::image2d& {
+auto font::atlas() const noexcept -> const ui::atlas& {
   return *_atlas;
 }
 
