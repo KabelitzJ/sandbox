@@ -31,6 +31,7 @@ private:
 
   bool _anisotropic;
 	bool _mipmap;
+  std::uint8_t _channels;
   std::filesystem::path _path;
 
 }; // class image2d

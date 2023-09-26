@@ -55,8 +55,6 @@ font::font(const std::filesystem::path& path, std::uint32_t height) {
     atlas_size.y = std::max(atlas_size.y, face->glyph->bitmap.rows);
   }
 
-  core::logger::debug("Creating font atlas for font '{}' ({}x{})", path.string(), atlas_size.x, atlas_size.y);
-
   auto atlas_data = std::vector<std::uint8_t>{};
   atlas_data.resize(atlas_size.x * atlas_size.y);
 
@@ -97,6 +95,8 @@ font::font(const std::filesystem::path& path, std::uint32_t height) {
   FT_Done_FreeType(library);
 
   _atlas = std::make_unique<ui::atlas>(atlas_size.x, atlas_size.y, atlas_data);
+
+  core::logger::debug("Created font atlas for font '{}' ({}x{})", path.string(), atlas_size.x, atlas_size.y);
 }
 
 font::~font() {
