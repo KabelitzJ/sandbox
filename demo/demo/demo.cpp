@@ -90,8 +90,7 @@ public:
 
     auto& ui_module = sbx::core::engine::get_module<sbx::ui::ui_module>();
 
-    ui_module.add_widget<sbx::ui::label>("Hello, World!", sbx::math::vector2u{25, 25}, font_roboto_id);
-    ui_module.add_widget<sbx::ui::label>("Hello, World!", sbx::math::vector2u{25, 50}, font_jet_brains_mono_id, sbx::math::color{1.0f, 0.0f, 0.0f, 1.0f});
+    ui_module.add_widget<sbx::ui::label>("Hello, World!", sbx::math::vector2u{25, 25}, font_roboto_id, sbx::math::color{1.0f, 1.0f, 1.0f, 1.0f});
 
     auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
 
