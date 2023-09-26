@@ -12,6 +12,5 @@ layout(binding = 1) uniform uniform_scene {
 void main() {
   out_uv = in_uv;
 
-  // gl_Position = scene.projection * vec4(in_position, 0.0, 1.0);
-  gl_Position = vec4(in_position, 0.0, 1.0);
+  gl_Position = scene.projection * vec4(in_position, 0.0, 1.0);
 }

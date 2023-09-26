@@ -164,7 +164,7 @@ struct basic_matrix4x4 {
 
   [[nodiscard]] constexpr static basic_matrix4x4 perspective(const basic_angle<value_type>& fov, const value_type aspect, const value_type near, const value_type far) noexcept;
 
-  [[nodiscard]] constexpr static auto orthographic(const value_type left, const value_type right, const value_type bottom, const value_type top, const value_type near, const value_type far) noexcept -> basic_matrix4x4;
+  [[nodiscard]] constexpr static auto orthographic(const value_type left, const value_type right, const value_type bottom, const value_type top) noexcept -> basic_matrix4x4;
 
   [[nodiscard]] constexpr static auto translated(const basic_matrix4x4& matrix, const basic_vector3<value_type>& vector) noexcept -> basic_matrix4x4;
 

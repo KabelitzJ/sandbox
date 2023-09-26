@@ -47,12 +47,12 @@ public:
   ~ui_subrenderer() override = default;
 
   auto render(graphics::command_buffer& command_buffer) -> void override {
-    const auto& ui_module = core::engine::get_module<ui::ui_module>();
-
+    auto& ui_module = core::engine::get_module<ui::ui_module>();
     auto& devices_module = core::engine::get_module<devices::devices_module>();
+
     auto& window = devices_module.window();
 
-    _uniform_handler.push("projection", math::matrix4x4::orthographic(0.0f, static_cast<float>(window.width()), 0.0f, static_cast<float>(window.height()), 0.1f, 100.0f));
+    _uniform_handler.push("projection", math::matrix4x4::orthographic(0.0f, static_cast<float>(window.width()), static_cast<float>(window.height()), 0.0f));
 
     const auto& widgets = ui_module.widgets();
 
@@ -66,11 +66,10 @@ private:
   auto _render_widget(widget& widget, graphics::command_buffer& command_buffer) -> void {
     const auto& id = widget.id();
     const auto& position = widget.position();
-    const auto& size = widget.size();
 
     _pipeline.bind(command_buffer);
 
-    auto& [uniform_handler, descriptor_handler] = *_uniform_data.at(id);
+    auto& [uniform_handler, descriptor_handler, mesh] = *_uniform_data.at(id);
 
     widget.update(uniform_handler, descriptor_handler);
 
@@ -83,12 +82,13 @@ private:
 
     descriptor_handler.bind_descriptors(command_buffer);
 
-    widget.render(command_buffer);
+    widget.render(command_buffer, mesh);
   }
 
   struct uniform_data {
     graphics::uniform_handler uniform_handler;
     graphics::descriptor_handler descriptor_handler;
+    std::unique_ptr<mesh> mesh;
   }; // struct uniform_data
 
   pipeline _pipeline;

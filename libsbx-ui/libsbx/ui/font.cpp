@@ -82,20 +82,11 @@ font::font(const std::filesystem::path& path, std::uint32_t height) {
 
     auto glyph_info = font::glyph_info{};
 
-    glyph_info.bounds.position.x = atlas_position.x;
-    glyph_info.bounds.position.y = atlas_position.y;
-    glyph_info.bounds.size.x = glyph->bitmap.width;
-    glyph_info.bounds.size.y = glyph->bitmap.rows;
-
-    glyph_info.uvs.position.x = static_cast<std::float_t>(atlas_position.x) / atlas_size.x;
-    glyph_info.uvs.position.y = static_cast<std::float_t>(atlas_position.y) / atlas_size.y;
-    glyph_info.uvs.size.x = static_cast<std::float_t>(glyph->bitmap.width) / atlas_size.x;
-    glyph_info.uvs.size.y = static_cast<std::float_t>(glyph->bitmap.rows) / atlas_size.y;
-
-    glyph_info.bearing.x = glyph->bitmap_left;
-    glyph_info.bearing.y = glyph->bitmap_top;
-
-    glyph_info.advance = glyph->advance.x >> 6;
+    glyph_info.size = math::vector2i{glyph->bitmap.width, glyph->bitmap.rows};
+    glyph_info.bearing = math::vector2i{glyph->bitmap_left, glyph->bitmap_top};
+    glyph_info.advance = (glyph->advance.x >> 6);
+    glyph_info.uv_position = math::vector2f{static_cast<float>(atlas_position.x) / atlas_size.x, static_cast<float>(atlas_position.y) / atlas_size.y};
+    glyph_info.uv_size = math::vector2f{static_cast<float>(glyph->bitmap.width) / atlas_size.x, static_cast<float>(glyph->bitmap.rows) / atlas_size.y};
 
     _glyphs.insert({character, glyph_info});
 

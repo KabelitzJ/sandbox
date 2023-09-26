@@ -16,24 +16,16 @@
 
 namespace sbx::ui {
 
-template<typename Type>
-struct basic_rect {
-  math::basic_vector2<Type> position;
-  math::basic_vector2<Type> size;
-}; // struct basic_rect
-
-using rect = basic_rect<std::float_t>;
-using rectu = basic_rect<std::uint32_t>;
-
 class font : public assets::asset<assets::asset_type::font> {
 
 public:
 
   struct glyph_info {
-    rectu bounds;
-    rect uvs;
-    math::vector2 bearing;
+    math::vector2i size;
+    math::vector2i bearing;
     std::uint32_t advance;
+    math::vector2f uv_position;
+    math::vector2f uv_size;
   }; // struct glyph_info
 
   font(const std::filesystem::path& path, std::uint32_t height = 32u);

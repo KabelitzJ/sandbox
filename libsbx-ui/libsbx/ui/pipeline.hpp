@@ -12,7 +12,7 @@ class pipeline : public graphics::graphics_pipeline<ui::vertex2d> {
 public:
 
   pipeline(const graphics::pipeline::stage& stage, const std::filesystem::path& path)
-  : graphics::graphics_pipeline<ui::vertex2d>{stage, path} { }
+  : graphics::graphics_pipeline<ui::vertex2d>{stage, path, graphics::pipeline_definition{ .uses_depth = true, .uses_transparency = true }} { }
 
   ~pipeline() override = default;
 

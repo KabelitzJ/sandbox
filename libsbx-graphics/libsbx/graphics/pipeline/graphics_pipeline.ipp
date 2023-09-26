@@ -18,7 +18,7 @@
 namespace sbx::graphics {
 
 template<vertex Vertex>
-graphics_pipeline<Vertex>::graphics_pipeline(const pipeline::stage& stage, const std::filesystem::path& path)
+graphics_pipeline<Vertex>::graphics_pipeline(const pipeline::stage& stage, const std::filesystem::path& path, const pipeline_definition& definition)
 : _bind_point{VK_PIPELINE_BIND_POINT_GRAPHICS},
   _stage{stage} {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
@@ -162,14 +162,27 @@ graphics_pipeline<Vertex>::graphics_pipeline(const pipeline::stage& stage, const
   multisample_state.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 
   auto color_blend_attachment = VkPipelineColorBlendAttachmentState{};
-  color_blend_attachment.blendEnable = true;
-  color_blend_attachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
-  color_blend_attachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-  color_blend_attachment.colorBlendOp = VK_BLEND_OP_ADD;
-  color_blend_attachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-  color_blend_attachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
-  color_blend_attachment.alphaBlendOp = VK_BLEND_OP_MAX;
-  color_blend_attachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+
+  if (definition.uses_transparency) {
+    color_blend_attachment.blendEnable = true;
+    color_blend_attachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+    color_blend_attachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+    color_blend_attachment.colorBlendOp = VK_BLEND_OP_ADD;
+    color_blend_attachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+    color_blend_attachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+    color_blend_attachment.alphaBlendOp = VK_BLEND_OP_MAX;
+    color_blend_attachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+  } else {
+    color_blend_attachment.blendEnable = false;
+    color_blend_attachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
+    color_blend_attachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
+    color_blend_attachment.colorBlendOp = VK_BLEND_OP_ADD;
+    color_blend_attachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+    color_blend_attachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+    color_blend_attachment.alphaBlendOp = VK_BLEND_OP_ADD;
+    color_blend_attachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+  }
+
 
   auto color_blend_state = VkPipelineColorBlendStateCreateInfo{};
   color_blend_state.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
@@ -194,11 +207,20 @@ graphics_pipeline<Vertex>::graphics_pipeline(const pipeline::stage& stage, const
 
   auto depth_stencil_state = VkPipelineDepthStencilStateCreateInfo{};
   depth_stencil_state.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-  depth_stencil_state.depthTestEnable = true;
-  depth_stencil_state.depthWriteEnable = true;
-  depth_stencil_state.depthCompareOp = VK_COMPARE_OP_LESS;
-  depth_stencil_state.depthBoundsTestEnable = false;
-  depth_stencil_state.stencilTestEnable = false;
+
+  if (definition.uses_depth) {
+    depth_stencil_state.depthTestEnable = true;
+    depth_stencil_state.depthWriteEnable = true;
+    depth_stencil_state.depthCompareOp = VK_COMPARE_OP_LESS;
+    depth_stencil_state.depthBoundsTestEnable = false;
+    depth_stencil_state.stencilTestEnable = false;
+  } else {
+    depth_stencil_state.depthTestEnable = false;
+    depth_stencil_state.depthWriteEnable = false;
+    depth_stencil_state.depthCompareOp = VK_COMPARE_OP_ALWAYS;
+    depth_stencil_state.depthBoundsTestEnable = false;
+    depth_stencil_state.stencilTestEnable = false;
+  }
 
   const auto [binding_descriptions, attribute_descriptions] = vertex_input<Vertex>::description();
 

@@ -26,6 +26,11 @@
 
 namespace sbx::graphics {
 
+struct pipeline_definition {
+  bool uses_depth{true};
+  bool uses_transparency{false};
+}; // struct pipeline_definition
+
 template<vertex Vertex>
 class graphics_pipeline : public pipeline {
 
@@ -33,7 +38,7 @@ public:
 
   using vertex_type = Vertex;
 
-  graphics_pipeline(const pipeline::stage& stage, const std::filesystem::path& path);
+  graphics_pipeline(const pipeline::stage& stage, const std::filesystem::path& path, const pipeline_definition& definition = pipeline_definition{});
 
   ~graphics_pipeline() override;
 

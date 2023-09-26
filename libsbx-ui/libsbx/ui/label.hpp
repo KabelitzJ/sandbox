@@ -26,71 +26,12 @@ class label : public widget {
 
 public:
 
-  label(const std::string& text, const math::vector2u& position, const math::vector2u& size, assets::asset_id font_id)
-  : widget{position, size},
+  label(const std::string& text, const math::vector2u& position, assets::asset_id font_id, const math::color& color = math::color{1.0f, 1.0f, 1.0f, 1.0f})
+  : widget{position},
     _text{text},
-    _color{math::color{1.0f, 1.0f, 1.0f, 1.0f}},
-    _font_id{font_id},
-    _position{position},
-    _size{size} {
-    auto& assets_module = core::engine::get_module<assets::assets_module>();
-
-    auto& font = assets_module.get_asset<ui::font>(_font_id);
-
-    const auto character = _text[0];
-
-    const auto& glyph = font.glyph(character);
-    const auto& atlas = font.atlas();
-
-    auto vertices = std::vector<ui::vertex2d>{};
-
-    {
-      auto position_x = static_cast<float>(_position.x);
-      auto position_y = static_cast<float>(_position.y);
-
-      auto uv_x = glyph.uvs.position.x / static_cast<std::float_t>(atlas.width());
-      auto uv_y = glyph.uvs.position.y / static_cast<std::float_t>(atlas.height());
-
-      vertices.push_back(ui::vertex2d{math::vector2{position_x, position_y}, math::vector2{uv_x, uv_y}});
-    }
-
-    {
-      auto position_x = static_cast<float>(_position.x + _size.x);
-      auto position_y = static_cast<float>(_position.y);
-
-      auto uv_x = glyph.uvs.position.x + glyph.uvs.size.x / static_cast<std::float_t>(atlas.width());
-      auto uv_y = glyph.uvs.position.y / static_cast<std::float_t>(atlas.height());
-
-      vertices.push_back(ui::vertex2d{math::vector2{position_x, position_y}, math::vector2{uv_x, uv_y}});
-    }
-
-    {
-      auto position_x = static_cast<float>(_position.x + _size.x);
-      auto position_y = static_cast<float>(_position.y + _size.y);
-
-      auto uv_x = glyph.uvs.position.x + glyph.uvs.size.x / static_cast<std::float_t>(atlas.width());
-      auto uv_y = glyph.uvs.position.y + glyph.uvs.size.y / static_cast<std::float_t>(atlas.height());
-
-      vertices.push_back(ui::vertex2d{math::vector2{position_x, position_y}, math::vector2{uv_x, uv_y}});
-    }
-
-    {
-      auto position_x = static_cast<float>(_position.x);
-      auto position_y = static_cast<float>(_position.y + _size.y);
-
-      auto uv_x = glyph.uvs.position.x / static_cast<std::float_t>(atlas.width());
-      auto uv_y = glyph.uvs.position.y + glyph.uvs.size.y / static_cast<std::float_t>(atlas.height());
-
-      vertices.push_back(ui::vertex2d{math::vector2{position_x, position_y}, math::vector2{uv_x, uv_y}});
-    }
-
-    auto indices = std::vector<std::uint32_t>{
-      0, 1, 3,
-      1, 2, 3
-    };
-
-    _mesh = std::make_unique<ui::mesh>(std::move(vertices), std::move(indices));
-  }
+    _is_dirty{true},
+    _color{color},
+    _font_id{font_id} { }
 
   ~label() override = default;
 
@@ -106,18 +47,100 @@ public:
     descriptor_handler.push("atlas", atlas.image());
   }
 
-  auto render(graphics::command_buffer& command_buffer) -> void override {
-    _mesh->render(command_buffer);
+  auto render(graphics::command_buffer& command_buffer, std::unique_ptr<mesh>& mesh) -> void override {
+    if (_is_dirty) {
+      _update_mesh(mesh);
+
+      _is_dirty = false;
+    }
+
+    if (!mesh) {
+      throw std::runtime_error{"Failed to create mesh for label"};
+    }
+
+    mesh->render(command_buffer);
   }
 
 private:
 
+  auto _update_mesh(std::unique_ptr<mesh>& mesh) -> void {
+    auto& assets_module = core::engine::get_module<assets::assets_module>();
+
+    auto& font = assets_module.get_asset<ui::font>(_font_id);
+
+    auto vertices = std::vector<ui::vertex2d>{};
+    auto indices = std::vector<std::uint32_t>{};
+
+    auto position_x = _position.x;
+    auto position_y = _position.y;
+
+    for (const auto& character : _text) {
+      auto& glyph = font.glyph(character);
+
+      auto x = position_x + glyph.bearing.x;
+      auto y = position_y - (glyph.size.y - glyph.bearing.y);
+
+      auto w = glyph.size.x;
+      auto h = glyph.size.y;
+
+      {
+        auto position = math::vector2f{x, y + h};
+        auto uv = math::vector2f{glyph.uv_position.x, glyph.uv_position.y};
+
+        vertices.emplace_back(position, uv);
+        indices.emplace_back(vertices.size() - 1);
+      }
+
+      {
+        auto position = math::vector2f{x, y};
+        auto uv = math::vector2f{glyph.uv_position.x, glyph.uv_position.y + glyph.uv_size.y};
+
+        vertices.emplace_back(position, uv);
+        indices.emplace_back(vertices.size() - 1);
+      }
+
+      {
+        auto position = math::vector2f{x + w, y};
+        auto uv = math::vector2f{glyph.uv_position.x + glyph.uv_size.x, glyph.uv_position.y + glyph.uv_size.y};
+
+        vertices.emplace_back(position, uv);
+        indices.emplace_back(vertices.size() - 1);
+      }
+
+      {
+        auto position = math::vector2f{x, y + h};
+        auto uv = math::vector2f{glyph.uv_position.x, glyph.uv_position.y};
+
+        vertices.emplace_back(position, uv);
+        indices.emplace_back(vertices.size() - 1);
+      }
+
+      {
+        auto position = math::vector2f{x + w, y};
+        auto uv = math::vector2f{glyph.uv_position.x + glyph.uv_size.x, glyph.uv_position.y + glyph.uv_size.y};
+
+        vertices.emplace_back(position, uv);
+        indices.emplace_back(vertices.size() - 1);
+      }
+
+      {
+        auto position = math::vector2f{x + w, y + h};
+        auto uv = math::vector2f{glyph.uv_position.x + glyph.uv_size.x, glyph.uv_position.y};
+
+        vertices.emplace_back(position, uv);
+        indices.emplace_back(vertices.size() - 1);
+      }
+
+      position_x += glyph.advance;
+    }
+
+    mesh = std::make_unique<ui::mesh>(std::move(vertices), std::move(indices));
+  }
+
   std::string _text;
+  bool _is_dirty;
   math::color _color;
   assets::asset_id _font_id;
-  math::vector2u _position;
-  math::vector2u _size;
-  std::unique_ptr<ui::mesh> _mesh;
 
 }; // class label
 

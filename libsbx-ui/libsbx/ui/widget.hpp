@@ -10,21 +10,22 @@
 
 #include <libsbx/graphics/descriptor/descriptor_handler.hpp>
 
+#include <libsbx/ui/mesh.hpp>
+
 namespace sbx::ui {
 
 class widget {
 
 public:
 
-  widget(const math::vector2u& position, const math::vector2u& size)
-  : _position{position},
-    _size{size} { }
+  widget(const math::vector2u& position)
+  : _position{position} { }
 
   virtual ~widget() = default;
 
   virtual auto update(graphics::uniform_handler& uniform, graphics::descriptor_handler& descriptor_handler) -> void = 0;
 
-  virtual auto render(graphics::command_buffer& command_buffer) -> void = 0;
+  virtual auto render(graphics::command_buffer& command_buffer, std::unique_ptr<mesh>& mesh) -> void = 0;
 
   auto position() const noexcept -> const math::vector2& {
     return _position;
@@ -34,22 +35,13 @@ public:
     _position = position;
   }
 
-  auto size() const noexcept -> const math::vector2& {
-    return _size;
-  }
-
-  auto set_size(const math::vector2& size) noexcept -> void {
-    _size = size;
-  }
-
   auto id() const noexcept -> const math::uuid& {
     return _id;
   }
 
-private:
+protected:
   
   math::vector2 _position;
-  math::vector2 _size;
   math::uuid _id;
 
 }; // class widget

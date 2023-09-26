@@ -45,18 +45,6 @@ public:
 
   auto update() -> void override {
     glfwPollEvents();
-
-    _elapsed_time += core::engine::delta_time();
-
-    if (_elapsed_time >= units::second{1}) {
-      _elapsed_time -= units::second{1};
-
-      glfwSetWindowTitle(*_window, fmt::format("{} | {} FPS", _window->title(), _frame_count).c_str());
-
-      _frame_count = 0;
-    } else {
-      ++_frame_count;
-    }
   }
 
   auto window() -> devices::window& {

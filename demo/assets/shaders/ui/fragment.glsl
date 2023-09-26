@@ -11,7 +11,5 @@ layout(binding = 0) uniform uniform_object {
 layout(binding = 2) uniform sampler2D atlas;
 
 void main() {
-  // vec4 sampled = vec4(1.0, 1.0, 1.0, texture(atlas, in_uv).r);
-
   out_color = vec4(1.0, 1.0, 1.0, texture(atlas, in_uv).r) * object.color;
 }
