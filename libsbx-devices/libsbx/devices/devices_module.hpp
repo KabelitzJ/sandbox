@@ -62,9 +62,6 @@ private:
 
   std::unique_ptr<devices::window> _window{};
 
-  std::uint32_t _frame_count{};
-  units::second _elapsed_time{};
-
 }; // class devices_module
 
 } // namespace sbx::devices
