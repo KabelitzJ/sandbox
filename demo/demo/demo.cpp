@@ -65,12 +65,6 @@ public:
       sbx::core::engine::quit();
     };
 
-    // window.on_key_pressed() += [this](const sbx::devices::key_pressed_event& event){
-    //   if (event.key == sbx::devices::key::escape) {
-    //     quit();
-    //   }
-    // };
-
     auto& graphics_module = sbx::core::engine::get_module<sbx::graphics::graphics_module>();
 
     graphics_module.set_renderer<demo_renderer>();
