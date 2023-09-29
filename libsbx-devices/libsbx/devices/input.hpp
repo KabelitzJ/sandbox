@@ -27,6 +27,18 @@ enum class input_mod : std::int32_t {
   num_lock = GLFW_MOD_NUM_LOCK,
 }; // enum class input_mod
 
+class input {
+
+public:
+
+  static auto is_key_pressed(key key) -> bool;
+
+  static auto is_key_released(key key) -> bool;
+
+private:
+
+}; // class input
+
 } // namespace sbx::devices
 
 template<>
