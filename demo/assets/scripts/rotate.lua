@@ -15,5 +15,7 @@ function on_update()
 
   if (sbx.input.is_key_pressed(sbx.key.space)) then
     sbx.logger.info("space key is down");
-  end
+  elseif (sbx.input.is_key_released(sbx.key.space)) then
+    sbx.logger.info("space key is up");
+  end 
 end
