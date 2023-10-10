@@ -12,10 +12,4 @@ function on_update()
   local euler_angles = sbx.vector3.new(0.0, 0.0, speed * delta_time);
 
   transform:add_euler_angles(euler_angles);
-
-  if (sbx.input.is_key_pressed(sbx.key.space)) then
-    sbx.logger.info("space key is down");
-  elseif (sbx.input.is_key_released(sbx.key.space)) then
-    sbx.logger.info("space key is up");
-  end 
 end

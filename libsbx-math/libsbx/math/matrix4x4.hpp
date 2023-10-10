@@ -104,27 +104,27 @@ struct basic_matrix4x4 {
    * @brief Constructs a matrix with the given values. 
    * 
    * @param x0 The x value of the first column.
-   * @param y0 The y value of the first column.
-   * @param z0 The z value of the first column.
-   * @param w0 The w value of the first column.
    * @param x1 The x value of the second column.
-   * @param y1 The y value of the second column.
-   * @param z1 The z value of the second column.
-   * @param w1 The w value of the second column.
    * @param x2 The x value of the third column.
-   * @param y2 The y value of the third column.
-   * @param z2 The z value of the third column.
-   * @param w2 The w value of the third column.
    * @param x3 The x value of the fourth column.
+   * @param y0 The y value of the first column.
+   * @param y1 The y value of the second column.
+   * @param y2 The y value of the third column.
    * @param y3 The y value of the fourth column.
+   * @param z0 The z value of the first column.
+   * @param z1 The z value of the second column.
+   * @param z2 The z value of the third column.
    * @param z3 The z value of the fourth column.
+   * @param w0 The w value of the first column.
+   * @param w1 The w value of the second column.
+   * @param w2 The w value of the third column.
    * @param w3 The w value of the fourth column.
    */
   constexpr basic_matrix4x4(
-    const value_type x0, const value_type y0, const value_type z0, const value_type w0,
-    const value_type x1, const value_type y1, const value_type z1, const value_type w1,
-    const value_type x2, const value_type y2, const value_type z2, const value_type w2,
-    const value_type x3, const value_type y3, const value_type z3, const value_type w3
+    const value_type x0, const value_type x1, const value_type x2, const value_type x3,
+    const value_type y0, const value_type y1, const value_type y2, const value_type y3,
+    const value_type z0, const value_type z1, const value_type z2, const value_type z3,
+    const value_type w0, const value_type w1, const value_type w2, const value_type w3
   ) noexcept;
 
   /**
@@ -157,8 +157,6 @@ struct basic_matrix4x4 {
   [[nodiscard]] constexpr static auto transposed(const basic_matrix4x4& matrix) noexcept -> basic_matrix4x4;
 
   [[nodiscard]] constexpr static auto inverted(const basic_matrix4x4& matrix) -> basic_matrix4x4;
-
-  [[nodiscard]] constexpr static auto look_in_direction(const basic_vector3<value_type>& position, const basic_vector3<value_type>& direction, const basic_vector3<value_type>& up) noexcept -> basic_matrix4x4;
 
   [[nodiscard]] constexpr static auto look_at(const basic_vector3<value_type>& position, const basic_vector3<value_type>& target, const basic_vector3<value_type>& up) noexcept -> basic_matrix4x4;
 

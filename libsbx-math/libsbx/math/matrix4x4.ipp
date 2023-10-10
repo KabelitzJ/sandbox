@@ -27,10 +27,10 @@ inline constexpr basic_matrix4x4<Type>::basic_matrix4x4(
 
 template<numeric Type>
 inline constexpr basic_matrix4x4<Type>::basic_matrix4x4(
-  const value_type x0, const value_type y0, const value_type z0, const value_type w0,
-  const value_type x1, const value_type y1, const value_type z1, const value_type w1,
-  const value_type x2, const value_type y2, const value_type z2, const value_type w2,
-  const value_type x3, const value_type y3, const value_type z3, const value_type w3
+  const value_type x0, const value_type x1, const value_type x2, const value_type x3,
+  const value_type y0, const value_type y1, const value_type y2, const value_type y3,
+  const value_type z0, const value_type z1, const value_type z2, const value_type z3,
+  const value_type w0, const value_type w1, const value_type w2, const value_type w3
 ) noexcept
 : _columns{column_type{x0, y0, z0, w0}, column_type{x1, y1, z1, w1}, column_type{x2, y2, z2, w2}, column_type{x3, y3, z3, w3}} { }
 
@@ -127,8 +127,8 @@ inline constexpr auto basic_matrix4x4<Type>::inverted(const basic_matrix4x4& mat
 }
 
 template<numeric Type>
-inline constexpr auto basic_matrix4x4<Type>::look_in_direction(const basic_vector3<value_type>& position, const basic_vector3<value_type>& direction, const basic_vector3<value_type>& up) noexcept -> basic_matrix4x4<Type> {
-  const auto w = basic_vector3<value_type>::normalized(direction);
+inline constexpr auto basic_matrix4x4<Type>::look_at(const basic_vector3<value_type>& position, const basic_vector3<value_type>& target, const basic_vector3<value_type>& up) noexcept -> basic_matrix4x4<Type> {
+  const auto w = basic_vector3<value_type>::normalized(target - position);
   const auto u = basic_vector3<value_type>::normalized(basic_vector3<value_type>::cross(w, up));
   const auto rhs = basic_vector3<value_type>::cross(w, u);
 
@@ -148,11 +148,6 @@ inline constexpr auto basic_matrix4x4<Type>::look_in_direction(const basic_vecto
   result[3][2] = -basic_vector3<value_type>::dot(w, position);
 
   return result;
-}
-
-template<numeric Type>
-inline constexpr basic_matrix4x4<Type> basic_matrix4x4<Type>::look_at(const basic_vector3<value_type>& position, const basic_vector3<value_type>& target, const basic_vector3<value_type>& up) noexcept {
-  return look_in_direction(position, target - position, up);
 }
 
 template<numeric Type>
