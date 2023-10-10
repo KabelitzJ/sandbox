@@ -53,7 +53,7 @@ static auto _load_mesh_data(const std::filesystem::path& path) -> mesh_data {
       vertex.normal.z = attributes.normals[3 * index.normal_index + 2];
 
       vertex.uv.x = attributes.texcoords[2 * index.texcoord_index + 0];
-      vertex.uv.y = attributes.texcoords[2 * index.texcoord_index + 1];
+      vertex.uv.y = 1.0f - attributes.texcoords[2 * index.texcoord_index + 1];
 
       if (auto entry = unique_vertices.find(vertex); entry != unique_vertices.end()) {
         data.indices.push_back(entry->second);

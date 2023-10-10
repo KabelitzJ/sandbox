@@ -168,6 +168,8 @@ struct basic_matrix4x4 {
 
   [[nodiscard]] constexpr static basic_matrix4x4 rotated(const basic_matrix4x4& matrix, const basic_vector3<value_type>& axis, const basic_angle<value_type>& angle) noexcept;
 
+  [[nodiscard]] constexpr static basic_matrix4x4 rotation_from_euler_angles(const basic_vector3<value_type>& euler_angles) noexcept;
+
   [[nodiscard]] constexpr static auto scaled(const basic_matrix4x4& matrix, const basic_vector3<value_type>& vector) noexcept -> basic_matrix4x4;
 
   // -- Assignment operators --

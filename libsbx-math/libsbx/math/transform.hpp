@@ -63,18 +63,11 @@ public:
   }
 
   auto as_matrix() const -> matrix4x4 {
-    auto result = matrix4x4::identity;
+    const auto translation = matrix4x4::translated(matrix4x4::identity, _position);
+    const auto rotation = matrix4x4::rotation_from_euler_angles(_euler_angles);
+    const auto scale = matrix4x4::scaled(matrix4x4::identity, _scale);
 
-    result = matrix4x4::translated(result, _position);
-
-    // [NOTE] KAJ 2023-10-10 : Using eulers ZYX rotation order
-    result = matrix4x4::rotated(result, vector3::right, degree{_euler_angles.x});
-    result = matrix4x4::rotated(result, vector3::up, degree{_euler_angles.y});
-    result = matrix4x4::rotated(result, vector3::forward, degree{_euler_angles.z});
-
-    result = matrix4x4::scaled(result, _scale);
-
-    return result;
+    return translation * rotation * scale;
   }
 
 private:

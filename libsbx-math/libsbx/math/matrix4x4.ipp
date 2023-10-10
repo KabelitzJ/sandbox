@@ -157,7 +157,7 @@ inline constexpr basic_matrix4x4<Type> basic_matrix4x4<Type>::perspective(const 
   auto result = basic_matrix4x4<value_type>::zero;
 
   result[0][0] = static_cast<value_type>(1) / (aspect * tan_half_fov);
-  result[1][1] = -(static_cast<value_type>(1) / tan_half_fov);
+  result[1][1] = static_cast<value_type>(1) / tan_half_fov;
   result[2][2] = far / (far - near);
   result[2][3] = static_cast<value_type>(1);
   result[3][2] = -(far * near) / (far - near);
@@ -218,6 +218,37 @@ inline constexpr basic_matrix4x4<Type> basic_matrix4x4<Type>::rotated(const basi
   result[1] = matrix[0] * rotate[1][0] + matrix[1] * rotate[1][1] + matrix[2] * rotate[1][2];
   result[2] = matrix[0] * rotate[2][0] + matrix[1] * rotate[2][1] + matrix[2] * rotate[2][2];
   result[3] = matrix[3];
+
+  return result;
+}
+
+template<numeric Type>
+inline constexpr basic_matrix4x4<Type> basic_matrix4x4<Type>::rotation_from_euler_angles(const basic_vector3<value_type>& euler_angles) noexcept {
+  const auto cos_pitch = std::cos(to_radians(degree{euler_angles.x}).value());
+  const auto sin_pitch = std::sin(to_radians(degree{euler_angles.x}).value());
+  const auto cos_roll = std::cos(to_radians(degree{euler_angles.y}).value());
+  const auto sin_roll = std::sin(to_radians(degree{euler_angles.y}).value());
+  const auto cos_yaw = std::cos(to_radians(degree{euler_angles.z}).value());
+  const auto sin_yaw = std::sin(to_radians(degree{euler_angles.z}).value());
+
+  auto result = basic_matrix4x4<value_type>{};
+
+  result[0][0] = cos_yaw * cos_roll + sin_yaw * sin_pitch * sin_roll;
+  result[0][1] = sin_roll * cos_pitch;
+  result[0][2] = -sin_yaw * cos_roll + cos_yaw * sin_pitch * sin_roll;
+  result[0][3] = static_cast<value_type>(0);
+  result[1][0] = -cos_yaw * sin_roll + sin_yaw * sin_pitch * cos_roll;
+  result[1][1] = cos_roll * cos_pitch;
+  result[1][2] = sin_roll * sin_yaw + cos_yaw * sin_pitch * cos_roll;
+  result[1][3] = static_cast<value_type>(0);
+  result[2][0] = sin_yaw * cos_pitch;
+  result[2][1] = -sin_pitch;
+  result[2][2] = cos_yaw * cos_pitch;
+  result[2][3] = static_cast<value_type>(0);
+  result[3][0] = static_cast<value_type>(0);
+  result[3][1] = static_cast<value_type>(0);
+  result[3][2] = static_cast<value_type>(0);
+  result[3][3] = static_cast<value_type>(1);
 
   return result;
 }
