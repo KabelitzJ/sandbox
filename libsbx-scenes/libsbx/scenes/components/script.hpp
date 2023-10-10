@@ -50,6 +50,8 @@ private:
 
   auto _create_transform_bindings(sol::table& library) -> void;
 
+  auto _create_input_bindings(sol::table& library) -> void;
+
   std::string _name{};
   sol::state _state{};
 

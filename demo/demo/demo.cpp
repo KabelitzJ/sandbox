@@ -62,13 +62,7 @@ public:
     auto& window = devices_module.window();
 
     window.on_window_closed_signal() += [this]([[maybe_unused]] const auto& event){
-      quit();
-    };
-
-    window.on_key_pressed() += [this]([[maybe_unused]] const auto& event){
-      if (event.key == GLFW_KEY_ESCAPE) {
-        quit();
-      }
+      sbx::core::engine::quit();
     };
 
     auto& graphics_module = sbx::core::engine::get_module<sbx::graphics::graphics_module>();
@@ -125,7 +119,9 @@ public:
   }
 
   auto update() -> void  {
-
+    if (sbx::devices::input::is_key_pressed(sbx::devices::key::escape)) {
+      sbx::core::engine::quit();
+    }
   }
 
 }; // class demo_application

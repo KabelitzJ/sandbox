@@ -6,6 +6,8 @@
 #include <libsbx/math/vector3.hpp>
 #include <libsbx/math/transform.hpp>
 
+#include <libsbx/devices/input.hpp>
+
 namespace sbx::scenes {
 
 script::script(const std::filesystem::path& path) {
@@ -45,6 +47,7 @@ auto script::_create_bindings() -> void {
   _create_logger_bindings(library);
   _create_vector3_bindings(library);
   _create_transform_bindings(library);
+  _create_input_bindings(library);
 }
 
 auto script::_create_logger_bindings(sol::table& library) -> void {
@@ -135,6 +138,23 @@ auto script::_create_transform_bindings(sol::table& library) -> void {
   transform_type.set_function("set_scale", &math::transform::set_scale);
 
   transform_type.set_function("look_at", &math::transform::look_at);
+}
+
+auto script::_create_input_bindings(sol::table& library) -> void {
+  auto key_type = library.new_enum("key",
+    "space", devices::key::space,
+    "apostrophe", devices::key::apostrophe,
+    "comma", devices::key::comma,
+    "minus", devices::key::minus,
+    "period", devices::key::period,
+    "slash", devices::key::slash
+  );
+
+  auto input_type = library.new_usertype<devices::input>("input", sol::no_constructor);
+
+  input_type.set_function("is_key_pressed", &devices::input::is_key_pressed);
+  input_type.set_function("is_key_released", &devices::input::is_key_released);
+
 }
 
 } // namespace sbx::scenes

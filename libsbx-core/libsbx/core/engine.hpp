@@ -54,6 +54,10 @@ public:
     return _instance->_delta_time;
   }
 
+  static auto quit() -> void {
+    _instance->_is_running = false;
+  }
+
   template<typename Module>
   requires (std::is_base_of_v<module_base, Module>)
   [[nodiscard]] static auto get_module() -> Module& {
@@ -72,8 +76,6 @@ public:
     }
 
     using clock_type = std::chrono::high_resolution_clock;
-
-    application->_set_engine(this);
 
     _is_running = true;
 
@@ -96,10 +98,6 @@ public:
 
       _update_stage(stage::rendering);
     }
-  }
-
-  auto quit() -> void {
-    _is_running = false;
   }
 
 private:

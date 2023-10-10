@@ -23,9 +23,8 @@ constexpr auto operator|(Enum lhs, Enum rhs) noexcept -> Enum {
 }
 
 template<bitmask_enum Enum>
-constexpr auto operator|=(Enum& lhs, Enum rhs) noexcept -> Enum {
+constexpr auto operator|=(Enum& lhs, Enum rhs) noexcept -> void {
   lhs = lhs | rhs;
-  return lhs;
 }
 
 template<bitmask_enum Enum>
@@ -35,21 +34,8 @@ constexpr auto operator&(Enum lhs, Enum rhs) noexcept -> Enum {
 }
 
 template<bitmask_enum Enum>
-constexpr auto operator&=(Enum& lhs, Enum rhs) noexcept -> Enum {
+constexpr auto operator&=(Enum& lhs, Enum rhs) noexcept -> void {
   lhs = lhs & rhs;
-  return lhs;
-}
-
-template<bitmask_enum Enum>
-constexpr auto operator^(Enum lhs, Enum rhs) noexcept -> Enum {
-  using underlying_type = std::underlying_type_t<Enum>;
-  return static_cast<Enum>(static_cast<underlying_type>(lhs) ^ static_cast<underlying_type>(rhs));
-}
-
-template<bitmask_enum Enum>
-constexpr auto operator^=(Enum& lhs, Enum rhs) noexcept -> Enum {
-  lhs = lhs ^ rhs;
-  return lhs;
 }
 
 } // namespace sbx::utility
