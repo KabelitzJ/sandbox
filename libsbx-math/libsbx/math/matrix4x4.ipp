@@ -128,24 +128,24 @@ inline constexpr auto basic_matrix4x4<Type>::inverted(const basic_matrix4x4& mat
 
 template<numeric Type>
 inline constexpr auto basic_matrix4x4<Type>::look_at(const basic_vector3<value_type>& position, const basic_vector3<value_type>& target, const basic_vector3<value_type>& up) noexcept -> basic_matrix4x4<Type> {
-  const auto w = basic_vector3<value_type>::normalized(target - position);
-  const auto u = basic_vector3<value_type>::normalized(basic_vector3<value_type>::cross(w, up));
-  const auto rhs = basic_vector3<value_type>::cross(w, u);
+  const auto forward = basic_vector3<value_type>::normalized(target - position);
+  const auto right = basic_vector3<value_type>::normalized(basic_vector3<value_type>::cross(up, forward));
+  const auto new_up = basic_vector3<value_type>::cross(forward, right);
 
   auto result = basic_matrix4x4<value_type>::identity;
 
-  result[0][0] = u.x;
-  result[1][0] = u.y;
-  result[2][0] = u.z;
-  result[0][1] = rhs.x;
-  result[1][1] = rhs.y;
-  result[2][1] = rhs.z;
-  result[0][2] = w.x;
-  result[1][2] = w.y;
-  result[2][2] = w.z;
-  result[3][0] = -basic_vector3<value_type>::dot(u, position);
-  result[3][1] = -basic_vector3<value_type>::dot(rhs, position);
-  result[3][2] = -basic_vector3<value_type>::dot(w, position);
+  result[0][0] = right.x;
+  result[1][0] = right.y;
+  result[2][0] = right.z;
+  result[0][1] = new_up.x;
+  result[1][1] = new_up.y;
+  result[2][1] = new_up.z;
+  result[0][2] = forward.x;
+  result[1][2] = forward.y;
+  result[2][2] = forward.z;
+  result[3][0] = -basic_vector3<value_type>::dot(right, position);
+  result[3][1] = -basic_vector3<value_type>::dot(new_up, position);
+  result[3][2] = -basic_vector3<value_type>::dot(forward, position);
 
   return result;
 }
@@ -157,7 +157,7 @@ inline constexpr basic_matrix4x4<Type> basic_matrix4x4<Type>::perspective(const 
   auto result = basic_matrix4x4<value_type>::zero;
 
   result[0][0] = static_cast<value_type>(1) / (aspect * tan_half_fov);
-  result[1][1] = static_cast<value_type>(1) / (tan_half_fov);
+  result[1][1] = -(static_cast<value_type>(1) / tan_half_fov);
   result[2][2] = far / (far - near);
   result[2][3] = static_cast<value_type>(1);
   result[3][2] = -(far * near) / (far - near);

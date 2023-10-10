@@ -68,9 +68,9 @@ public:
     result = matrix4x4::translated(result, _position);
 
     // [NOTE] KAJ 2023-10-10 : Using eulers ZYX rotation order
-    result = matrix4x4::rotated(result, vector3::backward, degree{_euler_angles.z});
-    result = matrix4x4::rotated(result, vector3::up, degree{_euler_angles.y});
     result = matrix4x4::rotated(result, vector3::right, degree{_euler_angles.x});
+    result = matrix4x4::rotated(result, vector3::up, degree{_euler_angles.y});
+    result = matrix4x4::rotated(result, vector3::forward, degree{_euler_angles.z});
 
     result = matrix4x4::scaled(result, _scale);
 
