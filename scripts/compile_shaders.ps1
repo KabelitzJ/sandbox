@@ -12,6 +12,7 @@ if ($directory -eq "") {
 }
 
 Write-Host "Compiling shaders in directory: '$directory'"
+Write-Host
 
 $glslc = "glslc.exe"
 
@@ -45,7 +46,7 @@ function compile_shader {
     }
   }
 
-  Write-Host ""
+  Write-Host
 
   return 1
 }

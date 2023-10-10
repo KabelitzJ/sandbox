@@ -70,11 +70,12 @@ public:
   /** @brief A unit vector along the negative y-axis */
   inline static constexpr basic_vector3 down{value_type{0}, value_type{-1}, value_type{0}};
 
-  /** @brief A unit vector along the positive z-axis */
-  inline static constexpr basic_vector3 backward{value_type{0}, value_type{0}, value_type{1}};
-
   /** @brief A unit vector along the negative z-axis */
-  inline static constexpr basic_vector3 forward{value_type{0}, value_type{0}, value_type{-1}};
+
+  inline static constexpr basic_vector3 forward{value_type{0}, value_type{0}, value_type{1}};
+  
+  /** @brief A unit vector along the positive z-axis */
+  inline static constexpr basic_vector3 backward{value_type{0}, value_type{0}, value_type{-1}};
 
   // -- Data members --
 

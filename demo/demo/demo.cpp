@@ -111,8 +111,8 @@ public:
     auto& moon_rotation = moon.add_component<sbx::scenes::script>("./demo/assets/scripts/rotate.lua");
     moon_rotation.set("speed", 125.0f);
 
-    // auto camera = scene.create_camera(sbx::math::degree{90.0f}, window.aspect_ratio(), 0.1f, 1000.0f, "Camera");
-    // camera.add_component<sbx::scripting::script>("./demo/assets/scripts/camera.lua");
+    auto camera = scene.create_camera(sbx::math::degree{90.0f}, window.aspect_ratio(), 0.1f, 1000.0f, "Camera");
+    camera.add_component<sbx::scenes::script>("./demo/assets/scripts/camera.lua");
 
     // [Todo] KAJ 2023-08-16 15:30 - This should probably be done automatically
     scene.start();

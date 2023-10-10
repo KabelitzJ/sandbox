@@ -80,6 +80,16 @@ auto script::_create_vector3_bindings(sol::table& library) -> void {
   vector3_type.set("y", &math::vector3::y);
   vector3_type.set("z", &math::vector3::z);
 
+  // [NOTE] KAJ 2023-10-10 : SOL2 currently does not support static member variables in usertypes
+  library["vector3"]["zero"] = math::vector3::zero;
+  library["vector3"]["one"] = math::vector3::one;
+  library["vector3"]["right"] = math::vector3::right;
+  library["vector3"]["left"] = math::vector3::left;
+  library["vector3"]["up"] = math::vector3::up;
+  library["vector3"]["down"] = math::vector3::down;
+  library["vector3"]["forward"] = math::vector3::forward;
+  library["vector3"]["backward"] = math::vector3::backward;
+
   vector3_type.set_function("normalize", &math::vector3::normalize);
   vector3_type.set_function("length", &math::vector3::length);
 

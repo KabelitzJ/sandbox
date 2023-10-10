@@ -55,12 +55,11 @@ public:
   auto look_at(const vector3& target) noexcept -> void {
     auto direction = vector3::normalized(target - _position);
 
-    const auto pitch = radian{std::asin(direction.z)};
-    const auto yaw = radian{-std::atan2(direction.y, direction.x)};
+    const auto pitch = radian{std::asin(-direction.y)};
+    const auto yaw = radian{std::atan2(direction.x, direction.z)};
+    const auto roll = radian{0.0f};
 
-    _euler_angles.x = to_degrees(pitch);
-    // _euler_angles.y = 0.0f;
-    _euler_angles.z = to_degrees(yaw);
+    _euler_angles = vector3{pitch, yaw, roll};
   }
 
   auto as_matrix() const -> matrix4x4 {
@@ -68,9 +67,10 @@ public:
 
     result = matrix4x4::translated(result, _position);
 
+    // [NOTE] KAJ 2023-10-10 : Using eulers ZYX rotation order
+    result = matrix4x4::rotated(result, vector3::backward, degree{_euler_angles.z});
+    result = matrix4x4::rotated(result, vector3::up, degree{_euler_angles.y});
     result = matrix4x4::rotated(result, vector3::right, degree{_euler_angles.x});
-    result = matrix4x4::rotated(result, vector3::forward, degree{_euler_angles.y});
-    result = matrix4x4::rotated(result, vector3::up, degree{_euler_angles.z});
 
     result = matrix4x4::scaled(result, _scale);
 
