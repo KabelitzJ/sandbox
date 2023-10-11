@@ -129,8 +129,8 @@ inline constexpr auto basic_matrix4x4<Type>::inverted(const basic_matrix4x4& mat
 template<numeric Type>
 inline constexpr auto basic_matrix4x4<Type>::look_at(const basic_vector3<value_type>& position, const basic_vector3<value_type>& target, const basic_vector3<value_type>& up) noexcept -> basic_matrix4x4<Type> {
   const auto forward = basic_vector3<value_type>::normalized(target - position);
-  const auto right = basic_vector3<value_type>::normalized(basic_vector3<value_type>::cross(up, forward));
-  const auto new_up = basic_vector3<value_type>::cross(forward, right);
+  const auto right = basic_vector3<value_type>::normalized(basic_vector3<value_type>::cross(forward, up));
+  const auto new_up = basic_vector3<value_type>::cross(right, forward);
 
   auto result = basic_matrix4x4<value_type>::identity;
 
@@ -140,12 +140,12 @@ inline constexpr auto basic_matrix4x4<Type>::look_at(const basic_vector3<value_t
   result[0][1] = new_up.x;
   result[1][1] = new_up.y;
   result[2][1] = new_up.z;
-  result[0][2] = forward.x;
-  result[1][2] = forward.y;
-  result[2][2] = forward.z;
+  result[0][2] = -forward.x;
+  result[1][2] = -forward.y;
+  result[2][2] = -forward.z;
   result[3][0] = -basic_vector3<value_type>::dot(right, position);
   result[3][1] = -basic_vector3<value_type>::dot(new_up, position);
-  result[3][2] = -basic_vector3<value_type>::dot(forward, position);
+  result[3][2] = basic_vector3<value_type>::dot(forward, position);
 
   return result;
 }
@@ -158,9 +158,12 @@ inline constexpr basic_matrix4x4<Type> basic_matrix4x4<Type>::perspective(const 
 
   result[0][0] = static_cast<value_type>(1) / (aspect * tan_half_fov);
   result[1][1] = static_cast<value_type>(1) / tan_half_fov;
-  result[2][2] = far / (far - near);
-  result[2][3] = static_cast<value_type>(1);
+  result[2][2] = far / (near - far);
+  result[2][3] = -static_cast<value_type>(1);
   result[3][2] = -(far * near) / (far - near);
+
+  //// [NOTE] KAJ 2023-10-11 : Flip the y-axis to match Vulkan's coordinate system.
+  result[1][1] *= -1;
 
   return result;
 }
