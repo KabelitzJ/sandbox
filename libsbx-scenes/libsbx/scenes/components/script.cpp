@@ -147,14 +147,23 @@ auto script::_create_input_bindings(sol::table& library) -> void {
     "comma", devices::key::comma,
     "minus", devices::key::minus,
     "period", devices::key::period,
-    "slash", devices::key::slash
+    "slash", devices::key::slash,
+    "up", devices::key::up,
+    "down", devices::key::down,
+    "left", devices::key::left,
+    "right", devices::key::right,
+    "w", devices::key::w,
+    "a", devices::key::a,
+    "s", devices::key::s,
+    "d", devices::key::d,
+    "q", devices::key::q,
+    "e", devices::key::e
   );
 
   auto input_type = library.new_usertype<devices::input>("input", sol::no_constructor);
 
   input_type.set_function("is_key_pressed", &devices::input::is_key_pressed);
   input_type.set_function("is_key_released", &devices::input::is_key_released);
-
 }
 
 } // namespace sbx::scenes

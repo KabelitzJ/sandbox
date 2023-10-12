@@ -95,24 +95,6 @@ public:
     auto& monkey_rotation = monkey.add_component<sbx::scenes::script>("./demo/assets/scripts/rotate.lua");
     monkey_rotation.set("speed", 75.0f);
 
-    // auto sun = scene.create_node("Sun");
-    // sun.add_component<sbx::scenes::static_mesh>(sphere_id, base_id);
-    // auto& sun_rotation = sun.add_component<sbx::scenes::script>("./demo/assets/scripts/rotate.lua");
-    // sun_rotation.set("speed", 75.0f);
-
-    // auto earth = scene.create_child_node(sun, "Earth", sbx::math::transform{sbx::math::vector3{4.0f, 0.0f, 0.0f}, sbx::math::vector3::zero, sbx::math::vector3{0.5f, 0.5f, 0.5f}});
-    // earth.add_component<sbx::scenes::static_mesh>(sphere_id, base_id);
-    // auto& earth_rotation = earth.add_component<sbx::scenes::script>("./demo/assets/scripts/rotate.lua");
-    // earth_rotation.set("speed", 100.0f);
-
-    // auto moon = scene.create_child_node(earth, "Moon", sbx::math::transform{sbx::math::vector3{2.0f, 0.0f, 0.0f}, sbx::math::vector3::zero, sbx::math::vector3{0.3f, 0.3f, 0.3f}});
-    // moon.add_component<sbx::scenes::static_mesh>(sphere_id, base_id);
-    // auto& moon_rotation = moon.add_component<sbx::scenes::script>("./demo/assets/scripts/rotate.lua");
-    // moon_rotation.set("speed", 125.0f);
-
-    // auto camera = scene.create_camera(sbx::math::degree{90.0f}, window.aspect_ratio(), 0.1f, 1000.0f, "Camera");
-    // camera.add_component<sbx::scenes::script>("./demo/assets/scripts/camera.lua");
-
     // [Todo] KAJ 2023-08-16 15:30 - This should probably be done automatically
     scene.start();
 
