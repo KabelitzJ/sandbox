@@ -11,19 +11,30 @@ end
 function on_update()
   local delta_time = sbx.delta_time();
 
+  local euler_angles = sbx.vector3.new();
+
   if (sbx.input.is_key_pressed(sbx.key.a)) then
-    transform:add_euler_angles(sbx.vector3.new(0.0, 0.0, -speed * delta_time));
+    euler_angles.z = -1.0;
   elseif (sbx.input.is_key_pressed(sbx.key.d)) then
-    transform:add_euler_angles(sbx.vector3.new(0.0, 0.0, speed * delta_time));
-  elseif (sbx.input.is_key_pressed(sbx.key.w)) then
-    transform:add_euler_angles(sbx.vector3.new(-speed * delta_time, 0.0, 0.0));
+    euler_angles.z = 1.0;
+  end
+  
+  if (sbx.input.is_key_pressed(sbx.key.w)) then
+    euler_angles.x = 1.0;
   elseif (sbx.input.is_key_pressed(sbx.key.s)) then
-    transform:add_euler_angles(sbx.vector3.new(speed * delta_time, 0.0, 0.0));
-  elseif (sbx.input.is_key_pressed(sbx.key.q)) then
-    transform:add_euler_angles(sbx.vector3.new(0.0, speed * delta_time, 0.0));
+    euler_angles.x = -1.0;
+  end
+  
+  if (sbx.input.is_key_pressed(sbx.key.q)) then
+    euler_angles.y = 1.0;
   elseif (sbx.input.is_key_pressed(sbx.key.e)) then
-    transform:add_euler_angles(sbx.vector3.new(0.0, -speed * delta_time, 0.0));
-  elseif (sbx.input.is_key_pressed(sbx.key.space)) then
-    transform:set_euler_angles(sbx.vector3.new(0.0, 0.0, 0.0));
+    euler_angles.y = -1.0;
+  end
+
+  if (sbx.input.is_key_pressed(sbx.key.space)) then
+    transform:set_euler_angles(sbx.vector3.new());
+  elseif (euler_angles:length() > 0.0) then
+    euler_angles:normalize();
+    transform:add_euler_angles(euler_angles * speed * delta_time);
   end
 end
