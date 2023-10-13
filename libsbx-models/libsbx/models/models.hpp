@@ -3,6 +3,5 @@
 
 #include <libsbx/models/vertex3d.hpp>
 #include <libsbx/models/mesh.hpp>
-#include <libsbx/models/model.hpp>
 
 #endif // LIBSBX_MODELS_HPP_

@@ -20,9 +20,9 @@ function on_update()
   end
   
   if (sbx.input.is_key_pressed(sbx.key.w)) then
-    euler_angles.x = 1.0;
-  elseif (sbx.input.is_key_pressed(sbx.key.s)) then
     euler_angles.x = -1.0;
+  elseif (sbx.input.is_key_pressed(sbx.key.s)) then
+    euler_angles.x = 1.0;
   end
   
   if (sbx.input.is_key_pressed(sbx.key.q)) then
