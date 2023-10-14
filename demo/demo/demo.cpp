@@ -106,7 +106,9 @@ public:
   }
 
   auto update() -> void  {
-    if (sbx::devices::input::is_key_pressed(sbx::devices::key::escape)) {
+    auto& devices_module = sbx::core::engine::get_module<sbx::devices::devices_module>();
+
+    if (devices_module.key_state(sbx::devices::key::escape) == sbx::devices::input_action::press) {
       sbx::core::engine::quit();
     }
   }

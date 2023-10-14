@@ -30,15 +30,17 @@ struct framebuffer_resized_event {
   std::int32_t height{};
 };
 
-struct key_pressed_event {
+struct key_event {
   key key;
+  input_action action;
   input_mod mods;
-}; // struct key_pressed_event
+}; // struct key_event
 
-struct key_released_event {
-  key key;
+struct mouse_button_event {
+  mouse_button button;
+  input_action action;
   input_mod mods;
-}; // struct key_released_event
+}; // struct mouse_button_event
 
 struct mouse_moved_event {
   std::float_t x;

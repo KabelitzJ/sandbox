@@ -146,12 +146,8 @@ public:
     return _on_framebuffer_resized;
   }
 
-  auto on_key_pressed() -> signals::signal<const key_pressed_event&>& {
-    return _on_key_pressed;
-  }
-
-  auto on_key_released() -> signals::signal<const key_released_event&>& {
-    return _on_key_released;
+  auto on_key() -> signals::signal<const key_event&>& {
+    return _on_key;
   }
 
   auto on_mouse_moved() -> signals::signal<const mouse_moved_event&>& {
@@ -193,11 +189,7 @@ private:
     glfwSetKeyCallback(_handle, [](GLFWwindow* window, std::int32_t key, std::int32_t scancode, std::int32_t action, std::int32_t mods){
       auto& self = *static_cast<devices::window*>(glfwGetWindowUserPointer(window));
 
-      if (action == GLFW_PRESS) {
-        self._on_key_pressed(key_pressed_event{static_cast<devices::key>(key), static_cast<devices::input_mod>(mods)});
-      } else if (action == GLFW_RELEASE) {
-        self._on_key_released(key_released_event{static_cast<devices::key>(key), static_cast<devices::input_mod>(mods)});
-      }
+      self._on_key(key_event{static_cast<devices::key>(key), static_cast<devices::input_action>(action), static_cast<devices::input_mod>(mods)});
     });
 
     glfwSetCursorPosCallback(_handle, [](auto* window, auto x, auto y){
@@ -226,8 +218,7 @@ private:
   signals::signal<const window_moved_event&> _on_window_moved_signal;
   signals::signal<const window_resized_event&> _on_window_resized_signal;
   signals::signal<const framebuffer_resized_event&> _on_framebuffer_resized;
-  signals::signal<const key_pressed_event&> _on_key_pressed;
-  signals::signal<const key_released_event&> _on_key_released;
+  signals::signal<const key_event&> _on_key;
   signals::signal<const mouse_moved_event&> _on_mouse_moved;
 
 }; // class window
