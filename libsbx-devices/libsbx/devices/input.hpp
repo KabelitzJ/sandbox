@@ -2,6 +2,7 @@
 #define LIBSBX_DEVICES_INPUT_HPP_
 
 #include <cinttypes>
+#include <unordered_map>
 
 #include <GLFW/glfw3.h>
 
@@ -9,27 +10,23 @@
 
 #include <libsbx/devices/key.hpp>
 #include <libsbx/devices/mouse_button.hpp>
+#include <libsbx/devices/input_action.hpp>
+#include <libsbx/devices/input_mod.hpp>
 
 namespace sbx::devices {
 
-enum class input_action : std::int32_t {
-  release = GLFW_RELEASE,
-  press = GLFW_PRESS,
-  repeat = GLFW_REPEAT,
-}; // enum class input_action
-
-enum class input_mod : std::int32_t {
-  shift = GLFW_MOD_SHIFT,
-  control = GLFW_MOD_CONTROL,
-  alt = GLFW_MOD_ALT,
-  super = GLFW_MOD_SUPER,
-  caps_lock = GLFW_MOD_CAPS_LOCK,
-  num_lock = GLFW_MOD_NUM_LOCK,
-}; // enum class input_mod
+struct key_state {
+  input_action action;
+  input_action last_action;
+}; // struct key_state
 
 class input {
 
+  friend class window;
+
 public:
+
+  input() = delete;
 
   static auto is_key_pressed(key key) -> bool;
 
@@ -37,14 +34,12 @@ public:
 
 private:
 
+  static auto _update_key_state(key key, input_action action) -> void;
+
+  static std::unordered_map<key, key_state> _key_states;
+
 }; // class input
 
 } // namespace sbx::devices
-
-template<>
-struct sbx::utility::enable_bitmask_operators<sbx::devices::input_action> : std::true_type { };
-
-template<>
-struct sbx::utility::enable_bitmask_operators<sbx::devices::input_mod> : std::true_type { };
 
 #endif // LIBSBX_DEVICES_INPUT_HPP_

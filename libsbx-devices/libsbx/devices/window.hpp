@@ -16,6 +16,7 @@
 #include <libsbx/signals/signal.hpp>
 
 #include <libsbx/devices/events.hpp>
+#include <libsbx/devices/input.hpp>
 
 namespace sbx::devices {
 
@@ -190,12 +191,14 @@ private:
       self._height = static_cast<std::uint32_t>(height);
     });
 
-    glfwSetKeyCallback(_handle, [](GLFWwindow* window, std::int32_t key, std::int32_t scancode, std::int32_t action, std::int32_t mods){
+    glfwSetKeyCallback(_handle, [](GLFWwindow* window, std::int32_t key, [[maybe_unused]] std::int32_t scancode, std::int32_t action, std::int32_t mods){
       auto& self = *static_cast<devices::window*>(glfwGetWindowUserPointer(window));
 
       if (action == GLFW_PRESS) {
+        input::_update_key_state(static_cast<devices::key>(key), input_action::press);
         self._on_key_pressed(key_pressed_event{static_cast<devices::key>(key), static_cast<devices::input_mod>(mods)});
       } else if (action == GLFW_RELEASE) {
+        input::_update_key_state(static_cast<devices::key>(key), input_action::release);
         self._on_key_released(key_released_event{static_cast<devices::key>(key), static_cast<devices::input_mod>(mods)});
       }
     });
