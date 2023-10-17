@@ -128,24 +128,24 @@ public:
     _registry.destroy_entity(node._entity);
   }
 
-  auto create_camera(const math::angle& field_of_view, std::float_t aspect_ratio, std::float_t near_plane, std::float_t far_plane, const std::string& tag = "", const math::transform& transform = math::transform{}, bool is_active = true) -> node {
-    auto node = create_node(tag, transform);
+  // auto create_camera(const math::angle& field_of_view, std::float_t aspect_ratio, std::float_t near_plane, std::float_t far_plane, const std::string& tag = "", const math::transform& transform = math::transform{}, bool is_active = true) -> node {
+  //   auto node = create_node(tag, transform);
 
-    if (is_active) {
-      auto nodes = query<scenes::camera>();
+  //   if (is_active) {
+  //     auto nodes = query<scenes::camera>();
 
-      for (auto& node : nodes) {
-        auto& camera = node.get_component<scenes::camera>();
-        camera.set_is_active(false);
-      }
+  //     for (auto& node : nodes) {
+  //       auto& camera = node.get_component<scenes::camera>();
+  //       camera.set_is_active(false);
+  //     }
 
-      _camera = node;
-    }
+  //     _camera = node;
+  //   }
 
-    node.add_component<scenes::camera>(field_of_view, aspect_ratio, near_plane, far_plane, is_active);
+  //   node.add_component<scenes::camera>(field_of_view, aspect_ratio, near_plane, far_plane, is_active);
 
-    return node;
-  }
+  //   return node;
+  // }
 
   auto camera() -> node {
     return _camera;

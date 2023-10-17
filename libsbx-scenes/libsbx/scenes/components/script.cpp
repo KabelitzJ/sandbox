@@ -157,7 +157,8 @@ auto script::_create_input_bindings(sol::table& library) -> void {
     "s", devices::key::s,
     "d", devices::key::d,
     "q", devices::key::q,
-    "e", devices::key::e
+    "e", devices::key::e,
+    "r", devices::key::r
   );
 
   auto input_type = library.new_usertype<devices::input>("input", sol::no_constructor);

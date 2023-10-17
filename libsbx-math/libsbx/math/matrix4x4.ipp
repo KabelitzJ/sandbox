@@ -227,33 +227,35 @@ inline constexpr basic_matrix4x4<Type> basic_matrix4x4<Type>::rotated(const basi
 
 template<numeric Type>
 inline constexpr basic_matrix4x4<Type> basic_matrix4x4<Type>::rotation_from_euler_angles(const basic_vector3<value_type>& euler_angles) noexcept {
-  const auto cos_pitch = std::cos(to_radians(degree{euler_angles.x}).value());
-  const auto sin_pitch = std::sin(to_radians(degree{euler_angles.x}).value());
-  const auto cos_roll = std::cos(to_radians(degree{euler_angles.y}).value());
-  const auto sin_roll = std::sin(to_radians(degree{euler_angles.y}).value());
+  const auto cos_roll = std::cos(to_radians(degree{euler_angles.x}).value());
+  const auto sin_roll = std::sin(to_radians(degree{euler_angles.x}).value());
+  const auto cos_pitch = std::cos(to_radians(degree{euler_angles.y}).value());
+  const auto sin_pitch = std::sin(to_radians(degree{euler_angles.y}).value());
   const auto cos_yaw = std::cos(to_radians(degree{euler_angles.z}).value());
   const auto sin_yaw = std::sin(to_radians(degree{euler_angles.z}).value());
 
-  auto result = basic_matrix4x4<value_type>{};
+  auto yaw = basic_matrix4x4<value_type>::identity;
 
-  result[0][0] = cos_yaw * cos_roll + sin_yaw * sin_pitch * sin_roll;
-  result[0][1] = sin_roll * cos_pitch;
-  result[0][2] = -sin_yaw * cos_roll + cos_yaw * sin_pitch * sin_roll;
-  result[0][3] = static_cast<value_type>(0);
-  result[1][0] = -cos_yaw * sin_roll + sin_yaw * sin_pitch * cos_roll;
-  result[1][1] = cos_roll * cos_pitch;
-  result[1][2] = sin_roll * sin_yaw + cos_yaw * sin_pitch * cos_roll;
-  result[1][3] = static_cast<value_type>(0);
-  result[2][0] = sin_yaw * cos_pitch;
-  result[2][1] = -sin_pitch;
-  result[2][2] = cos_yaw * cos_pitch;
-  result[2][3] = static_cast<value_type>(0);
-  result[3][0] = static_cast<value_type>(0);
-  result[3][1] = static_cast<value_type>(0);
-  result[3][2] = static_cast<value_type>(0);
-  result[3][3] = static_cast<value_type>(1);
+  yaw[0][0] = cos_yaw;
+  yaw[0][1] = sin_yaw;
+  yaw[1][0] = -sin_yaw;
+  yaw[1][1] = cos_yaw;
 
-  return result;
+  auto pitch = basic_matrix4x4<value_type>::identity;
+
+  pitch[0][0] = cos_pitch;
+  pitch[0][2] = -sin_pitch;
+  pitch[2][0] = sin_pitch;
+  pitch[2][2] = cos_pitch;
+
+  auto roll = basic_matrix4x4<value_type>::identity;
+
+  roll[1][1] = cos_roll;
+  roll[1][2] = sin_roll;
+  roll[2][1] = -sin_roll;
+  roll[2][2] = cos_roll;
+
+  return yaw * pitch * roll;
 }
 
 template<numeric Type>

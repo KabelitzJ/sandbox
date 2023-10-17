@@ -91,14 +91,15 @@ graphics_pipeline<Vertex>::graphics_pipeline(const pipeline::stage& stage, const
         descriptor_set_layout_bindings.push_back(uniform_buffer::create_descriptor_set_layout_binding(uniform_block.binding(), descriptor_type, uniform_block.stage_flags()));
         break;
       }
-      case shader::uniform_block::type::push: {
-        throw std::runtime_error{"Push constants are not supported yet"};
-      }
       case shader::uniform_block::type::storage: {
         throw std::runtime_error{"Storage buffers are not supported yet"};
       }
+      case shader::uniform_block::type::push: {
+        // [NOTE] KAJ 2023-10-17 : Push constants do not require a descriptor set layout binding
+        break;
+      }
       default: {
-        throw std::runtime_error{"Invalid uniform block type"};
+        throw std::runtime_error{"Unknown uniform block type"};
       }
     }
 
@@ -152,7 +153,7 @@ graphics_pipeline<Vertex>::graphics_pipeline(const pipeline::stage& stage, const
   rasterization_state.rasterizerDiscardEnable = false;
   rasterization_state.polygonMode = VK_POLYGON_MODE_FILL;
   rasterization_state.lineWidth = 1.0f;
-  rasterization_state.cullMode = VK_CULL_MODE_NONE;
+  rasterization_state.cullMode = VK_CULL_MODE_BACK_BIT;
   rasterization_state.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
   rasterization_state.depthBiasEnable = false;
 
@@ -261,12 +262,31 @@ graphics_pipeline<Vertex>::graphics_pipeline(const pipeline::stage& stage, const
 
   validate(vkCreateDescriptorPool(logical_device, &descriptor_pool_create_info, nullptr, &_descriptor_pool));
 
+  auto push_constant_ranges = std::vector<VkPushConstantRange>{};
+
+  auto current_offset = std::uint32_t{0u};
+
+  for (const auto& [name, uniform] : _uniform_blocks) {
+    if (uniform.buffer_type() != shader::uniform_block::type::push) {
+      continue;
+    }
+
+    auto push_constant_range = VkPushConstantRange{};
+    push_constant_range.stageFlags = uniform.stage_flags();
+    push_constant_range.offset = current_offset;
+    push_constant_range.size = uniform.size();
+
+    push_constant_ranges.push_back(push_constant_range);
+
+    current_offset += push_constant_range.size;
+  }
+
   auto pipeline_layout_create_info = VkPipelineLayoutCreateInfo{};
   pipeline_layout_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
   pipeline_layout_create_info.setLayoutCount = 1;
   pipeline_layout_create_info.pSetLayouts = &_descriptor_set_layout;
-  pipeline_layout_create_info.pushConstantRangeCount = 0;
-  pipeline_layout_create_info.pPushConstantRanges = nullptr;
+  pipeline_layout_create_info.pushConstantRangeCount = static_cast<std::uint32_t>(push_constant_ranges.size());
+  pipeline_layout_create_info.pPushConstantRanges = push_constant_ranges.data();
 
   validate(vkCreatePipelineLayout(logical_device, &pipeline_layout_create_info, nullptr, &_layout));
   

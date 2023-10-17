@@ -18,6 +18,7 @@
 #include <libsbx/graphics/pipeline/graphics_pipeline.hpp>
 
 #include <libsbx/graphics/buffer/uniform_handler.hpp>
+#include <libsbx/graphics/buffer/push_handler.hpp>
 #include <libsbx/graphics/descriptor/descriptor_handler.hpp>
 
 #include <libsbx/graphics/pipeline/graphics_pipeline.hpp>
@@ -74,35 +75,24 @@ public:
       _update_script(node);
     }
 
-    auto camera_nodes = scene.query<scenes::camera>();
+    auto camera_node = scene.camera();
 
-    auto has_active_camera = false;
+    auto& camera = camera_node.get_component<scenes::camera>();
 
-    for (auto& node : camera_nodes) {
-      auto& camera = node.get_component<scenes::camera>();
-
-      if (!camera.is_active()) {
-        continue;
-      }
-
-      has_active_camera = true;
-
-      camera.set_aspect_ratio(window.aspect_ratio());
-
-      _scene_uniform_handler.push("projection", camera.projection());
-
-      auto& transform = node.get_component<math::transform>();
-
-      _scene_uniform_handler.push("view", math::matrix4x4::inverted(transform.as_matrix()));
-      // _scene_uniform_handler.push("view", math::matrix4x4::look_at(math::vector3{3.0f, 3.0f, 3.0f}, math::vector3::zero, math::vector3::up));
-
-      break;
-    }
-
-    if (!has_active_camera) {
+    if (!camera.is_active()) {
       core::logger::warn("Scene does not have an active camera");
       return;
     }
+
+    camera.set_aspect_ratio(window.aspect_ratio());
+
+    _scene_uniform_handler.push("projection", camera.projection());
+
+    auto& transform = camera_node.get_component<math::transform>();
+
+    _scene_uniform_handler.push("view", math::matrix4x4::inverted(transform.as_matrix()));
+
+    _scene_uniform_handler.push("camera_position", transform.position()); 
 
     auto mesh_nodes = scene.query<scenes::static_mesh>();
 
@@ -131,6 +121,8 @@ private:
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
     auto& scene = scenes_module.scene();
 
+    auto camera_node = scene.camera();
+
     const auto& static_mesh = node.get_component<scenes::static_mesh>();
     const auto& id = node.get_component<scenes::id>();
 
@@ -141,13 +133,16 @@ private:
 
     auto world_transform = scene.world_transform(node);
 
-    auto& [uniform_handler, descriptor_handler] = *_uniform_data.at(id);
+    auto& uniform_data = _uniform_data.at(id);
+    
+    auto& push_handler = uniform_data->push_handler;
+    auto& descriptor_handler = uniform_data->descriptor_handler;
 
-    uniform_handler.push("model", world_transform);
-    uniform_handler.push("normal", math::matrix4x4::transposed(math::matrix4x4::inverted(world_transform)));
+    push_handler.push("model", world_transform);
+    push_handler.push("normal", math::matrix4x4::transposed(math::matrix4x4::inverted(world_transform)));
 
     descriptor_handler.push("uniform_scene", _scene_uniform_handler);
-    descriptor_handler.push("uniform_object", uniform_handler);
+    descriptor_handler.push("object", push_handler);
     descriptor_handler.push("image", image);
 
     if (!descriptor_handler.update(_pipeline)) {
@@ -155,12 +150,13 @@ private:
     }
 
     descriptor_handler.bind_descriptors(command_buffer);
+    push_handler.bind(command_buffer, _pipeline);
 
     mesh.render(command_buffer);
   }
 
   struct uniform_data {
-    graphics::uniform_handler uniform_handler;
+    graphics::push_handler push_handler;
     graphics::descriptor_handler descriptor_handler;
   }; // struct uniform_data
 
