@@ -14,6 +14,7 @@
 #include <libsbx/ecs/entity.hpp>
 
 #include <libsbx/math/transform.hpp>
+#include <libsbx/math/angle.hpp>
 
 #include <libsbx/core/logger.hpp>
 
@@ -43,17 +44,32 @@ public:
 
   scene()
   : _registry{}, 
-    _root{&_registry, _registry.create_entity(), &_on_component_added, &_on_component_removed} {
-    auto& id = _root.add_component<scenes::id>();
-    _root.add_component<scenes::relationship>(id);
+    _root{&_registry, _registry.create_entity(), &_on_component_added, &_on_component_removed},
+    _camera{&_registry, _registry.create_entity(), &_on_component_added, &_on_component_removed} {
+    // [NOTE] KAJ 2023-10-17 : Initialize root node
+    auto& root_id = _root.add_component<scenes::id>();
+    _root.add_component<scenes::relationship>(root_id);
     _root.add_component<math::transform>();
+    _root.add_component<scenes::tag>("ROOT");
 
-    _nodes.insert({id, _root});
+    _nodes.insert({root_id, _root});
+
+    // [NOTE] KAJ 2023-10-17 : Initialize camera node
+    auto& camera_id = _camera.add_component<scenes::id>();
+
+    _nodes.insert({camera_id, _camera});
+
+    _camera.add_component<scenes::relationship>(root_id);
+    _root.get_component<scenes::relationship>().add_child(camera_id);
+
+    _camera.add_component<math::transform>();
+    _camera.add_component<scenes::tag>("Camera");
 
     auto& devices_module = core::engine::get_module<devices::devices_module>();
     auto& window = devices_module.window();
 
-    create_camera(math::degree{90.0f}, window.aspect_ratio(), 0.1f, 1000.0f, "MAIN");
+    auto& camera = _camera.add_component<scenes::camera>(math::angle{math::radian{45.0f}}, 1.0f, 0.1f, 100.0f, true);
+    camera.set_aspect_ratio(window.aspect_ratio());
   }
 
   auto start() -> void {
@@ -122,11 +138,17 @@ public:
         auto& camera = node.get_component<scenes::camera>();
         camera.set_is_active(false);
       }
+
+      _camera = node;
     }
 
     node.add_component<scenes::camera>(field_of_view, aspect_ratio, near_plane, far_plane, is_active);
 
     return node;
+  }
+
+  auto camera() -> node {
+    return _camera;
   }
 
   auto world_transform(const node& node) -> math::matrix4x4 {
@@ -176,6 +198,7 @@ private:
 
   ecs::registry _registry;
   node _root;
+  node _camera;
 
 }; // class scene
 

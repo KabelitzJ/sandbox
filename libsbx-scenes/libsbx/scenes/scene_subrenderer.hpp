@@ -93,8 +93,8 @@ public:
 
       auto& transform = node.get_component<math::transform>();
 
-      // _scene_uniform_handler.push("view", math::matrix4x4::inverted(transform.as_matrix()));
-      _scene_uniform_handler.push("view", math::matrix4x4::look_at(math::vector3{3.0f, 3.0f, 3.0f}, math::vector3::zero, math::vector3::up));
+      _scene_uniform_handler.push("view", math::matrix4x4::inverted(transform.as_matrix()));
+      // _scene_uniform_handler.push("view", math::matrix4x4::look_at(math::vector3{3.0f, 3.0f, 3.0f}, math::vector3::zero, math::vector3::up));
 
       break;
     }

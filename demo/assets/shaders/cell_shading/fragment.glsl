@@ -20,8 +20,8 @@ const vec4 diffuse_color  = vec4(1.0, 1.0, 1.0, 1.0);
 const vec4 specular_color = vec4(0.5, 0.5, 0.5, 1.0);
 const vec4 shininess = vec4(32.0, 0.0, 0.0, 0.0);
 
-const vec4 camera_position = vec4(2.0, 2.0, 1.0, 0.0);
-const vec4 light_position = vec4(-1.0, 3.0, 1.0, 0.0);
+const vec4 camera_position = vec4(0.0, 0.0, 5.0, 0.0);
+const vec4 light_position = vec4(3.0, 3.0, 3.0, 0.0);
 const vec4 light_color = vec4(1.0, 1.0, 1.0, 1.0);
 
 vec4 phong_shading(vec3 light_direction, float intensity) {

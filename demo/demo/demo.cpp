@@ -46,7 +46,7 @@ public:
   }
 
   auto initialize() -> void override {
-    add_subrenderer<sbx::scenes::scene_subrenderer>(sbx::graphics::pipeline::stage{0, 0}, "./demo/assets/shaders/basic");
+    add_subrenderer<sbx::scenes::scene_subrenderer>(sbx::graphics::pipeline::stage{0, 0}, "./demo/assets/shaders/cell_shading");
     add_subrenderer<sbx::ui::ui_subrenderer>(sbx::graphics::pipeline::stage{0, 1}, "./demo/assets/shaders/ui");
   }
 
@@ -94,6 +94,11 @@ public:
     monkey.add_component<sbx::scenes::static_mesh>(monkey_id, base_id);
     auto& monkey_rotation = monkey.add_component<sbx::scenes::script>("./demo/assets/scripts/rotate.lua");
     monkey_rotation.set("speed", 75.0f);
+
+    auto camera = scene.camera();
+
+    auto& camera_transform = camera.get_component<sbx::math::transform>();
+    camera_transform.set_position(sbx::math::vector3{0.0f, 0.0f, 5.0f});
 
     // [Todo] KAJ 2023-08-16 15:30 - This should probably be done automatically
     scene.start();
