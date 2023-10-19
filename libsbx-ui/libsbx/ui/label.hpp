@@ -71,67 +71,67 @@ private:
     auto vertices = std::vector<ui::vertex2d>{};
     auto indices = std::vector<std::uint32_t>{};
 
-    auto position_x = _position.x;
-    auto position_y = _position.y;
+    auto position_x = static_cast<std::float_t>(_position.x);
+    auto position_y = static_cast<std::float_t>(_position.y);
 
     for (const auto& character : _text) {
       auto& glyph = font.glyph(character);
 
-      auto x = position_x + glyph.bearing.x;
-      auto y = position_y - (glyph.size.y - glyph.bearing.y);
+      auto x = position_x + static_cast<std::float_t>(glyph.bearing.x);
+      auto y = position_y - static_cast<std::float_t>(glyph.size.y - glyph.bearing.y);
 
-      auto w = glyph.size.x;
-      auto h = glyph.size.y;
+      auto w = static_cast<std::float_t>(glyph.size.x);
+      auto h = static_cast<std::float_t>(glyph.size.y);
 
       {
-        auto position = math::vector2f{x, y + h};
-        auto uv = math::vector2f{glyph.uv_position.x, glyph.uv_position.y};
+        auto position = math::vector2{x, y + h};
+        auto uv = math::vector2{glyph.uv_position.x, glyph.uv_position.y};
 
         vertices.emplace_back(position, uv);
         indices.emplace_back(vertices.size() - 1);
       }
 
       {
-        auto position = math::vector2f{x, y};
-        auto uv = math::vector2f{glyph.uv_position.x, glyph.uv_position.y + glyph.uv_size.y};
+        auto position = math::vector2{x, y};
+        auto uv = math::vector2{glyph.uv_position.x, glyph.uv_position.y + glyph.uv_size.y};
 
         vertices.emplace_back(position, uv);
         indices.emplace_back(vertices.size() - 1);
       }
 
       {
-        auto position = math::vector2f{x + w, y};
-        auto uv = math::vector2f{glyph.uv_position.x + glyph.uv_size.x, glyph.uv_position.y + glyph.uv_size.y};
+        auto position = math::vector2{x + w, y};
+        auto uv = math::vector2{glyph.uv_position.x + glyph.uv_size.x, glyph.uv_position.y + glyph.uv_size.y};
 
         vertices.emplace_back(position, uv);
         indices.emplace_back(vertices.size() - 1);
       }
 
       {
-        auto position = math::vector2f{x, y + h};
-        auto uv = math::vector2f{glyph.uv_position.x, glyph.uv_position.y};
+        auto position = math::vector2{x, y + h};
+        auto uv = math::vector2{glyph.uv_position.x, glyph.uv_position.y};
 
         vertices.emplace_back(position, uv);
         indices.emplace_back(vertices.size() - 1);
       }
 
       {
-        auto position = math::vector2f{x + w, y};
-        auto uv = math::vector2f{glyph.uv_position.x + glyph.uv_size.x, glyph.uv_position.y + glyph.uv_size.y};
+        auto position = math::vector2{x + w, y};
+        auto uv = math::vector2{glyph.uv_position.x + glyph.uv_size.x, glyph.uv_position.y + glyph.uv_size.y};
 
         vertices.emplace_back(position, uv);
         indices.emplace_back(vertices.size() - 1);
       }
 
       {
-        auto position = math::vector2f{x + w, y + h};
-        auto uv = math::vector2f{glyph.uv_position.x + glyph.uv_size.x, glyph.uv_position.y};
+        auto position = math::vector2{x + w, y + h};
+        auto uv = math::vector2{glyph.uv_position.x + glyph.uv_size.x, glyph.uv_position.y};
 
         vertices.emplace_back(position, uv);
         indices.emplace_back(vertices.size() - 1);
       }
 
-      position_x += glyph.advance;
+      position_x += static_cast<std::float_t>(glyph.advance);
     }
 
     mesh = std::make_unique<ui::mesh>(std::move(vertices), std::move(indices));

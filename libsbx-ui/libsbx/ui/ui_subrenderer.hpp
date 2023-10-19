@@ -65,7 +65,6 @@ private:
 
   auto _render_widget(widget& widget, graphics::command_buffer& command_buffer) -> void {
     const auto& id = widget.id();
-    const auto& position = widget.position();
 
     _pipeline.bind(command_buffer);
 

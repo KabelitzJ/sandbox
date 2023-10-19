@@ -55,7 +55,13 @@ public:
   auto forward() const noexcept -> vector3 {
     const auto rotation = math::matrix4x4::rotation_from_euler_angles(_euler_angles);
 
-    return math::vector3{rotation * math::vector4{math::vector3::forward}};
+    return -math::vector3{rotation[2]};
+  }
+
+  auto right() const noexcept -> vector3 {
+    const auto rotation = math::matrix4x4::rotation_from_euler_angles(_euler_angles);
+
+    return math::vector3{rotation[0]};
   }
 
   auto look_at(const vector3& target) noexcept -> void {

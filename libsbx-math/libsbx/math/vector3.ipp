@@ -253,7 +253,7 @@ inline constexpr auto basic_vector3<Type>::length_squared() const noexcept -> le
 }
 
 template<numeric Type>
-inline constexpr auto basic_vector3<Type>::normalize() noexcept -> basic_vector3& {
+inline constexpr auto basic_vector3<Type>::normalize() noexcept -> basic_vector3<Type>& {
   const auto len = length();
 
   if (len != static_cast<length_type>(0)) {
