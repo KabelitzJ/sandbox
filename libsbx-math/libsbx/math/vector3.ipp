@@ -7,7 +7,11 @@
 
 #include <libsbx/utility/assert.hpp>
 
+#include <libsbx/utility/assert.hpp>
+
 #include <libsbx/utility/hash.hpp>
+
+#include <libsbx/math/vector4.hpp>
 
 namespace sbx::math {
 
@@ -34,6 +38,12 @@ inline constexpr basic_vector3<Type>::basic_vector3(const basic_vector2<Type>& v
 : x{vector.x},
   y{vector.y},
   z{_z} { }
+
+template<numeric Type>
+inline constexpr basic_vector3<Type>::basic_vector3(const basic_vector4<Type>& vector) noexcept 
+: x{vector.x},
+  y{vector.y},
+  z{vector.z} { }
 
 template<numeric Type>
 template<numeric Other>
@@ -196,42 +206,16 @@ inline constexpr auto basic_vector3<Type>::operator/=(const Other& scalar) -> ba
 
 template<numeric Type>
 inline constexpr auto basic_vector3<Type>::operator[](const index_type index) -> reference {
-  if (index >= static_cast<index_type>(3)) {
-    throw std::domain_error{"Index out of bounds"};
-  }
+  utility::assert_that(index < static_cast<index_type>(3), "Index out of bounds");
 
-  switch (index) {
-    default:
-    case 0: {
-      return x;
-    }
-    case 1: {
-      return y;
-    }
-    case 2: {
-      return z;
-    }
-  }
+  return data()[index];
 }
 
 template<numeric Type>
 inline constexpr auto basic_vector3<Type>::operator[](const index_type index) const -> const_reference {
-  if (index >= static_cast<index_type>(3)) {
-    throw std::domain_error{"Index out of bounds"};
-  }
+  utility::assert_that(index < static_cast<index_type>(3), "Index out of bounds");
 
-  switch (index) {
-    default:
-    case 0: {
-      return x;
-    }
-    case 1: {
-      return y;
-    }
-    case 2: {
-      return z;
-    }
-  }
+  return data()[index];
 }
 
 template<numeric Type>
@@ -245,7 +229,7 @@ inline constexpr auto basic_vector3<Type>::length_squared() const noexcept -> le
 }
 
 template<numeric Type>
-inline constexpr auto basic_vector3<Type>::normalize() noexcept -> basic_vector3& {
+inline constexpr auto basic_vector3<Type>::normalize() noexcept -> basic_vector3<Type>& {
   const auto len = length();
 
   if (len != static_cast<length_type>(0)) {
@@ -275,6 +259,14 @@ inline constexpr auto basic_vector3<Type>::lerp(const basic_vector3& lhs, const 
 
   return lhs + (rhs - lhs) * scale;
 }
+
+// template<numeric Type>
+// inline constexpr auto basic_vector3<Type>::rotated(const basic_vector3& vector, const basic_vector3& axis, const basic_angle<Type>& angle) noexcept -> basic_vector3 {
+//   const auto cos = std::cos(angle.to_radians());
+//   const auto sin = std::sin(angle.to_radians());
+
+
+// }
 
 template<numeric Type>
 inline constexpr auto basic_vector3<Type>::data() noexcept -> pointer {

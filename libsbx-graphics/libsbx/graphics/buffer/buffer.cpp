@@ -10,7 +10,7 @@
 
 namespace sbx::graphics {
 
-buffer::buffer(size_type size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, memory::observer_ptr<void> memory)
+buffer::buffer(size_type size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, memory::observer_ptr<const void> memory)
 : _size{size} {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
@@ -50,7 +50,7 @@ buffer::buffer(size_type size, VkBufferUsageFlags usage, VkMemoryPropertyFlags p
       flush_range.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
       flush_range.memory = _memory;
       flush_range.offset = 0;
-      flush_range.size = _size;
+      flush_range.size = VK_WHOLE_SIZE;
 
       validate(vkFlushMappedMemoryRanges(logical_device, 1, &flush_range));
     }
@@ -93,7 +93,7 @@ auto buffer::map() -> memory::observer_ptr<void> {
 
   auto* mapped_memory = static_cast<void*>(nullptr);
 
-  validate(vkMapMemory(logical_device, _memory, 0, _size, 0, &mapped_memory));
+  validate(vkMapMemory(logical_device, _memory, 0, VK_WHOLE_SIZE, 0, &mapped_memory));
 
   return memory::observer_ptr<void>{mapped_memory};
 }

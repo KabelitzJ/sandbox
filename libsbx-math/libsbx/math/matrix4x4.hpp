@@ -10,6 +10,8 @@
 #include <ostream>
 #include <type_traits>
 
+#include <fmt/format.h>
+
 #include <libsbx/math/concepts.hpp>
 #include <libsbx/math/vector4.hpp>
 #include <libsbx/math/angle.hpp>
@@ -102,27 +104,27 @@ struct basic_matrix4x4 {
    * @brief Constructs a matrix with the given values. 
    * 
    * @param x0 The x value of the first column.
-   * @param y0 The y value of the first column.
-   * @param z0 The z value of the first column.
-   * @param w0 The w value of the first column.
    * @param x1 The x value of the second column.
-   * @param y1 The y value of the second column.
-   * @param z1 The z value of the second column.
-   * @param w1 The w value of the second column.
    * @param x2 The x value of the third column.
-   * @param y2 The y value of the third column.
-   * @param z2 The z value of the third column.
-   * @param w2 The w value of the third column.
    * @param x3 The x value of the fourth column.
+   * @param y0 The y value of the first column.
+   * @param y1 The y value of the second column.
+   * @param y2 The y value of the third column.
    * @param y3 The y value of the fourth column.
+   * @param z0 The z value of the first column.
+   * @param z1 The z value of the second column.
+   * @param z2 The z value of the third column.
    * @param z3 The z value of the fourth column.
+   * @param w0 The w value of the first column.
+   * @param w1 The w value of the second column.
+   * @param w2 The w value of the third column.
    * @param w3 The w value of the fourth column.
    */
   constexpr basic_matrix4x4(
-    const value_type x0, const value_type y0, const value_type z0, const value_type w0,
-    const value_type x1, const value_type y1, const value_type z1, const value_type w1,
-    const value_type x2, const value_type y2, const value_type z2, const value_type w2,
-    const value_type x3, const value_type y3, const value_type z3, const value_type w3
+    const value_type x0, const value_type x1, const value_type x2, const value_type x3,
+    const value_type y0, const value_type y1, const value_type y2, const value_type y3,
+    const value_type z0, const value_type z1, const value_type z2, const value_type z3,
+    const value_type w0, const value_type w1, const value_type w2, const value_type w3
   ) noexcept;
 
   /**
@@ -156,15 +158,17 @@ struct basic_matrix4x4 {
 
   [[nodiscard]] constexpr static auto inverted(const basic_matrix4x4& matrix) -> basic_matrix4x4;
 
-  [[nodiscard]] constexpr static auto look_in_direction(const basic_vector3<value_type>& position, const basic_vector3<value_type>& direction, const basic_vector3<value_type>& up) noexcept -> basic_matrix4x4;
-
   [[nodiscard]] constexpr static auto look_at(const basic_vector3<value_type>& position, const basic_vector3<value_type>& target, const basic_vector3<value_type>& up) noexcept -> basic_matrix4x4;
 
   [[nodiscard]] constexpr static basic_matrix4x4 perspective(const basic_angle<value_type>& fov, const value_type aspect, const value_type near, const value_type far) noexcept;
 
+  [[nodiscard]] constexpr static auto orthographic(const value_type left, const value_type right, const value_type bottom, const value_type top) noexcept -> basic_matrix4x4;
+
   [[nodiscard]] constexpr static auto translated(const basic_matrix4x4& matrix, const basic_vector3<value_type>& vector) noexcept -> basic_matrix4x4;
 
   [[nodiscard]] constexpr static basic_matrix4x4 rotated(const basic_matrix4x4& matrix, const basic_vector3<value_type>& axis, const basic_angle<value_type>& angle) noexcept;
+
+  [[nodiscard]] constexpr static basic_matrix4x4 rotation_from_euler_angles(const basic_vector3<value_type>& euler_angles) noexcept;
 
   [[nodiscard]] constexpr static auto scaled(const basic_matrix4x4& matrix, const basic_vector3<value_type>& vector) noexcept -> basic_matrix4x4;
 
@@ -313,6 +317,29 @@ using matrix4x4i = basic_matrix4x4<std::int32_t>;
 using matrix4x4 = matrix4x4f;
 
 } // namespace sbx::math
+
+template<sbx::math::numeric Type>
+struct fmt::formatter<sbx::math::basic_matrix4x4<Type>> : formatter<std::string_view> {
+
+  using underlying_formatter_type = formatter<std::string_view>;
+
+  template<typename ParseContext>
+  constexpr auto parse(ParseContext& context) -> decltype(context.begin()) {
+    return underlying_formatter_type::parse(context);
+  }
+
+  template<typename FormatContext>
+  auto format(const sbx::math::basic_matrix4x4<Type>& matrix, FormatContext& context) -> decltype(context.out()) {
+    return underlying_formatter_type::format(fmt::format(
+      "\n{:.2f}, {:.2f}, {:.2f}\n{:.2f}, {:.2f}, {:.2f}\n{:.2f}, {:.2f}, {:.2f}", 
+      matrix[0][0], matrix[1][0], matrix[2][0], matrix[3][0],
+      matrix[0][1], matrix[1][1], matrix[2][1], matrix[3][1],
+      matrix[0][2], matrix[1][2], matrix[2][2], matrix[3][2],
+      matrix[0][3], matrix[1][3], matrix[2][3], matrix[3][3]
+    ), context);
+  }
+
+}; // struct fmt::formatter
 
 #include <libsbx/math/matrix4x4.ipp>
 

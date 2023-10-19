@@ -62,8 +62,8 @@ auto shader::_create_reflection(const spirv_cross::Compiler& compiler) -> void {
     const auto uniform_blocks_binding = compiler.get_decoration(uniform_buffer.id, spv::DecorationBinding);
     const auto uniform_blocks_size = compiler.get_declared_struct_size(type);
 
-    core::logger::debug("sbx::graphics", "uniform block: name: {}, binding: {}, size: {}", uniform_blocks_name, uniform_blocks_binding, uniform_blocks_size);
-
+    core::logger::debug("uniform block: '{}' binding: {} size: {}", uniform_blocks_name, uniform_blocks_binding, uniform_blocks_size);
+ 
     const auto member_count = type.member_types.size();
 
     auto uniforms = std::map<std::string, uniform>{};
@@ -77,7 +77,7 @@ auto shader::_create_reflection(const spirv_cross::Compiler& compiler) -> void {
       const auto member_size = compiler.get_declared_struct_member_size(type, i);
       const auto member_data_type = _get_data_type(member_type);
 
-      core::logger::debug("sbx::graphics", "  uniform: name: {}, binding: {}, offset: {}, size: {}, data type: {}", member_name, member_binding, member_offset, member_size, _data_type_to_string(member_data_type));
+      core::logger::debug("  binding: {}\toffset: {}\tsize: {}\tdata_type: {}", member_binding, member_offset, member_size, _data_type_to_string(member_data_type));
 
       uniforms.insert({member_name, uniform{member_binding, member_offset, member_size, member_data_type, false, false, _stage}});
     }
@@ -93,9 +93,39 @@ auto shader::_create_reflection(const spirv_cross::Compiler& compiler) -> void {
 
     auto image = uniform{binding, 0, 0, data_type::sampler2d, false, false, _stage};
 
-    core::logger::debug("sbx::graphics", "image sampler: name: {}, binding: {}", name, binding);
+    core::logger::debug("image sampler: '{}' binding: {}", name, binding);
 
     _uniforms.insert({name, image});
+  }
+
+  for (const auto& push_constant : resources.push_constant_buffers) {
+    const auto& type = compiler.get_type(push_constant.type_id);
+
+    const auto& uniform_blocks_name = push_constant.name;
+    const auto uniform_blocks_binding = compiler.get_decoration(push_constant.id, spv::DecorationBinding);
+    const auto uniform_blocks_size = compiler.get_declared_struct_size(type);
+
+    core::logger::debug("uniform block: '{}' binding: {} size: {}", uniform_blocks_name, uniform_blocks_binding, uniform_blocks_size);
+ 
+    const auto member_count = type.member_types.size();
+
+    auto uniforms = std::map<std::string, uniform>{};
+
+    for (auto i : std::views::iota(0u, member_count)) {
+      const auto& member_type = compiler.get_type(type.member_types[i]);
+      const auto& member_name = compiler.get_member_name(type.self, i);
+
+      const auto member_binding = compiler.get_member_decoration(type.self, i, spv::DecorationBinding);
+      const auto member_offset = compiler.type_struct_member_offset(type, i);
+      const auto member_size = compiler.get_declared_struct_member_size(type, i);
+      const auto member_data_type = _get_data_type(member_type);
+
+      core::logger::debug("  binding: {}\toffset: {}\tsize: {}\tdata_type: {}", member_binding, member_offset, member_size, _data_type_to_string(member_data_type));
+
+      uniforms.insert({member_name, uniform{member_binding, member_offset, member_size, member_data_type, false, false, _stage}});
+    }
+
+    _uniform_blocks.insert({uniform_blocks_name, uniform_block{uniform_blocks_binding, uniform_blocks_size, _stage, uniform_block::type::push, std::move(uniforms)}});
   }
 }
 

@@ -14,7 +14,7 @@ namespace sbx::assets {
 enum class asset_type : std::uint32_t {
   mesh,
   texture,
-  pipeline
+  font
 }; // enum class asset_type
 
 class asset_id {

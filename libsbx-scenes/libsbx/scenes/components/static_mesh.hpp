@@ -13,10 +13,9 @@ class static_mesh final {
 
 public:
 
-  static_mesh(assets::asset_id mesh_id, assets::asset_id texture_id, assets::asset_id pipeline_id)
+  static_mesh(assets::asset_id mesh_id, assets::asset_id texture_id)
   : _mesh_id{mesh_id}, 
-    _texture_id{texture_id},
-    _pipeline_id{pipeline_id} { }
+    _texture_id{texture_id} { }
 
   auto mesh_id() const noexcept -> assets::asset_id {
     return _mesh_id;
@@ -26,15 +25,10 @@ public:
     return _texture_id;
   }
 
-  auto pipeline_id() const noexcept -> assets::asset_id {
-    return _pipeline_id;
-  }
-
 private:
 
   assets::asset_id _mesh_id;
   assets::asset_id _texture_id;
-  assets::asset_id _pipeline_id;
 
 }; // class static_mesh
 

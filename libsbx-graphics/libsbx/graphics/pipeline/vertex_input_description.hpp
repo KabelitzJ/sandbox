@@ -7,27 +7,9 @@
 
 namespace sbx::graphics {
 
-class vertex_input_description {
-
-public:
-
-  explicit vertex_input_description(std::vector<VkVertexInputBindingDescription> _binding_descriptions, std::vector<VkVertexInputAttributeDescription> _attribute_descriptions) noexcept
-  : _binding_descriptions(std::move(_binding_descriptions)), 
-    _attribute_descriptions(std::move(_attribute_descriptions)) {}
-
-  auto binding_descriptions() const noexcept -> const std::vector<VkVertexInputBindingDescription>& {
-    return _binding_descriptions;
-  }
-
-  auto attribute_descriptions() const noexcept -> const std::vector<VkVertexInputAttributeDescription>& {
-    return _attribute_descriptions;
-  }
-
-private:
-
-  std::vector<VkVertexInputBindingDescription> _binding_descriptions;
-  std::vector<VkVertexInputAttributeDescription> _attribute_descriptions;
-
+struct vertex_input_description {
+  std::vector<VkVertexInputBindingDescription> binding_descriptions;
+  std::vector<VkVertexInputAttributeDescription> attribute_descriptions;
 }; // struct vertex_input
 
 template<typename Vertex>

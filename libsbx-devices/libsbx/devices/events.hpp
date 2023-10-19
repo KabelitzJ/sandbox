@@ -2,6 +2,12 @@
 #define LIBSBX_DEVICES_EVENTS_HPP_
 
 #include <cinttypes>
+#include <cmath>
+
+#include <libsbx/devices/key.hpp>
+#include <libsbx/devices/mouse_button.hpp>
+#include <libsbx/devices/input_action.hpp>
+#include <libsbx/devices/input_mod.hpp>
 
 namespace sbx::devices {
 
@@ -26,18 +32,19 @@ struct framebuffer_resized_event {
 };
 
 struct key_pressed_event {
-  std::int32_t key{};
-  std::int32_t scancode{};
-  std::int32_t action{};
-  std::int32_t mods{};
+  key key;
+  input_mod mods;
 }; // struct key_pressed_event
 
 struct key_released_event {
-  std::int32_t key{};
-  std::int32_t scancode{};
-  std::int32_t action{};
-  std::int32_t mods{};
+  key key;
+  input_mod mods;
 }; // struct key_released_event
+
+struct mouse_moved_event {
+  std::float_t x;
+  std::float_t y;
+}; // struct mouse_moved_event
 
 } // namespace sbx::devices
 

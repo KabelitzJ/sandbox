@@ -49,7 +49,7 @@ auto validate(VkResult result) -> void;
  */
 class graphics_module final : public core::module<graphics_module> {
 
-  inline static const auto is_registered = register_module(stage::normal, dependencies<assets::assets_module, devices::devices_module>{});
+  inline static const auto is_registered = register_module(stage::rendering, dependencies<assets::assets_module, devices::devices_module>{});
 
 public:
 

@@ -1,7 +1,7 @@
 #ifndef LIBSBX_CORE_ENGINE_HPP_
 #define LIBSBX_CORE_ENGINE_HPP_
 
-#include <unordered_map>
+#include <map>
 #include <vector>
 #include <typeindex>
 #include <memory>
@@ -9,6 +9,7 @@
 #include <string_view>
 #include <cmath>
 #include <chrono>
+#include <ranges>
 
 #include <libsbx/utility/concepts.hpp>
 #include <libsbx/utility/noncopyable.hpp>
@@ -42,7 +43,7 @@ public:
   }
 
   ~engine() {
-    for (const auto& entry : _modules) {
+    for (const auto& entry : _modules | std::views::reverse) {
       _destroy_module(entry.first);
     }
 
@@ -50,7 +51,11 @@ public:
   }
 
   static auto delta_time() -> units::second {
-    return _delta_time;
+    return _instance->_delta_time;
+  }
+
+  static auto quit() -> void {
+    _instance->_is_running = false;
   }
 
   template<typename Module>
@@ -72,8 +77,6 @@ public:
 
     using clock_type = std::chrono::high_resolution_clock;
 
-    application->_set_engine(this);
-
     _is_running = true;
 
     auto last = clock_type::now();
@@ -85,16 +88,16 @@ public:
 
       application->update();
 
-      engine::_delta_time = units::second{delta_time};
+      _instance->_delta_time = units::second{delta_time};
+
+      _update_stage(stage::always);
 
       _update_stage(stage::pre);
       _update_stage(stage::normal);
       _update_stage(stage::post);
-    }
-  }
 
-  auto quit() -> void {
-    _is_running = false;
+      _update_stage(stage::rendering);
+    }
   }
 
 private:
@@ -136,13 +139,13 @@ private:
 
   static engine* _instance;
 
-  static units::second _delta_time;
+  units::second _delta_time;
 
   bool _is_running{};
   std::vector<std::string> _args{};
 
-  std::unordered_map<std::type_index, module_base*> _modules{};
-  std::unordered_map<stage, std::vector<std::type_index>> _module_by_stage{};
+  std::map<std::type_index, module_base*> _modules{};
+  std::map<stage, std::vector<std::type_index>> _module_by_stage{};
 
 }; // class engine
 

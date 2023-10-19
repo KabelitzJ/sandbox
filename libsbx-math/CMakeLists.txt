@@ -34,6 +34,7 @@ target_sources(
     "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/angle.hpp"
     "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/random.hpp"
     "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/uuid.hpp"
+    "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/transform.hpp"
 )
 
 target_include_directories(
@@ -99,4 +100,8 @@ if(MINGW)
     PUBLIC
       -Wl,--disable-dynamicbase,--default-image-base-low
   )
+endif()
+
+if(${SBX_BUILD_TESTS})
+  add_subdirectory(tests)
 endif()

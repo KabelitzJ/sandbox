@@ -97,6 +97,8 @@ graphics_module::~graphics_module() {
   const auto& compute_queue = _logical_device->compute_queue();
   validate(vkQueueWaitIdle(compute_queue));
 
+  _renderer.reset();
+
   _swapchain.reset();
 
   for (const auto& frame_data : _per_frame_data) {

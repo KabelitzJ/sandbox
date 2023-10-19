@@ -27,10 +27,10 @@ inline constexpr basic_matrix4x4<Type>::basic_matrix4x4(
 
 template<numeric Type>
 inline constexpr basic_matrix4x4<Type>::basic_matrix4x4(
-  const value_type x0, const value_type y0, const value_type z0, const value_type w0,
-  const value_type x1, const value_type y1, const value_type z1, const value_type w1,
-  const value_type x2, const value_type y2, const value_type z2, const value_type w2,
-  const value_type x3, const value_type y3, const value_type z3, const value_type w3
+  const value_type x0, const value_type x1, const value_type x2, const value_type x3,
+  const value_type y0, const value_type y1, const value_type y2, const value_type y3,
+  const value_type z0, const value_type z1, const value_type z2, const value_type z3,
+  const value_type w0, const value_type w1, const value_type w2, const value_type w3
 ) noexcept
 : _columns{column_type{x0, y0, z0, w0}, column_type{x1, y1, z1, w1}, column_type{x2, y2, z2, w2}, column_type{x3, y3, z3, w3}} { }
 
@@ -127,49 +127,57 @@ inline constexpr auto basic_matrix4x4<Type>::inverted(const basic_matrix4x4& mat
 }
 
 template<numeric Type>
-inline constexpr auto basic_matrix4x4<Type>::look_in_direction(const basic_vector3<value_type>& position, const basic_vector3<value_type>& direction, const basic_vector3<value_type>& up) noexcept -> basic_matrix4x4<Type> {
-  // [NOTE] KAJ 2022-07-29 00:48 - https://www.youtube.com/watch?rhs=rvJHkYnAR3w&list=PL8327DO66nu9qYVKLDmdLW_84-yE4auCR&index=18
-
-  const auto w = basic_vector3<value_type>::normalized(direction);
-  const auto u = basic_vector3<value_type>::normalized(basic_vector3<value_type>::cross(w, up));
-  const auto rhs = basic_vector3<value_type>::cross(w, u);
+inline constexpr auto basic_matrix4x4<Type>::look_at(const basic_vector3<value_type>& position, const basic_vector3<value_type>& target, const basic_vector3<value_type>& up) noexcept -> basic_matrix4x4<Type> {
+  const auto forward = basic_vector3<value_type>::normalized(target - position);
+  const auto right = basic_vector3<value_type>::normalized(basic_vector3<value_type>::cross(forward, up));
+  const auto new_up = basic_vector3<value_type>::cross(right, forward);
 
   auto result = basic_matrix4x4<value_type>::identity;
 
-  result[0][0] = u.x;
-  result[1][0] = u.y;
-  result[2][0] = u.z;
-  result[0][1] = rhs.x;
-  result[1][1] = rhs.y;
-  result[2][1] = rhs.z;
-  result[0][2] = w.x;
-  result[1][2] = w.y;
-  result[2][2] = w.z;
-  result[3][0] = -basic_vector3<value_type>::dot(u, position);
-  result[3][1] = -basic_vector3<value_type>::dot(rhs, position);
-  result[3][2] = -basic_vector3<value_type>::dot(w, position);
+  result[0][0] = right.x;
+  result[1][0] = right.y;
+  result[2][0] = right.z;
+  result[0][1] = new_up.x;
+  result[1][1] = new_up.y;
+  result[2][1] = new_up.z;
+  result[0][2] = -forward.x;
+  result[1][2] = -forward.y;
+  result[2][2] = -forward.z;
+  result[3][0] = -basic_vector3<value_type>::dot(right, position);
+  result[3][1] = -basic_vector3<value_type>::dot(new_up, position);
+  result[3][2] = basic_vector3<value_type>::dot(forward, position);
 
   return result;
 }
 
 template<numeric Type>
-inline constexpr basic_matrix4x4<Type> basic_matrix4x4<Type>::look_at(const basic_vector3<value_type>& position, const basic_vector3<value_type>& target, const basic_vector3<value_type>& up) noexcept {
-  return look_in_direction(position, target - position, up);
-}
-
-template<numeric Type>
 inline constexpr basic_matrix4x4<Type> basic_matrix4x4<Type>::perspective(const basic_angle<value_type>& fov, const value_type aspect, const value_type near, const value_type far) noexcept {
-  // [NOTE] KAJ 2022-07-29 00:47 - https://www.youtube.com/watch?rhs=YO46x8fALzE&list=PL8327DO66nu9qYVKLDmdLW_84-yE4auCR&index=17
-
   const auto tan_half_fov = std::tan(fov.to_radians() / static_cast<value_type>(2));
 
   auto result = basic_matrix4x4<value_type>::zero;
 
   result[0][0] = static_cast<value_type>(1) / (aspect * tan_half_fov);
-  result[1][1] = static_cast<value_type>(1) / (tan_half_fov);
-  result[2][2] = far / (far - near);
-  result[2][3] = static_cast<value_type>(1);
+  result[1][1] = static_cast<value_type>(1) / tan_half_fov;
+  result[2][2] = far / (near - far);
+  result[2][3] = -static_cast<value_type>(1);
   result[3][2] = -(far * near) / (far - near);
+
+  //// [NOTE] KAJ 2023-10-11 : Flip the y-axis to match Vulkan's coordinate system.
+  result[1][1] *= -1;
+
+  return result;
+}
+
+template<numeric Type>
+inline constexpr auto basic_matrix4x4<Type>::orthographic(const value_type left, const value_type right, const value_type bottom, const value_type top) noexcept -> basic_matrix4x4<Type> {
+  auto result = basic_matrix4x4<value_type>::identity;
+
+  result[0][0] = static_cast<value_type>(2) / (right - left);
+  result[1][1] = static_cast<value_type>(2) / (top - bottom);
+  result[2][2] = -static_cast<value_type>(1);
+
+  result[3][0] = -(right + left) / (right - left);
+  result[3][1] = -(top + bottom) / (top - bottom);
 
   return result;
 }
@@ -213,6 +221,71 @@ inline constexpr basic_matrix4x4<Type> basic_matrix4x4<Type>::rotated(const basi
   result[1] = matrix[0] * rotate[1][0] + matrix[1] * rotate[1][1] + matrix[2] * rotate[1][2];
   result[2] = matrix[0] * rotate[2][0] + matrix[1] * rotate[2][1] + matrix[2] * rotate[2][2];
   result[3] = matrix[3];
+
+  return result;
+}
+
+template<numeric Type>
+inline constexpr basic_matrix4x4<Type> basic_matrix4x4<Type>::rotation_from_euler_angles(const basic_vector3<value_type>& euler_angles) noexcept {
+  // const auto cos_roll = std::cos(to_radians(degree{euler_angles.x}).value());
+  // const auto sin_roll = std::sin(to_radians(degree{euler_angles.x}).value());
+  // const auto cos_pitch = std::cos(to_radians(degree{euler_angles.y}).value());
+  // const auto sin_pitch = std::sin(to_radians(degree{euler_angles.y}).value());
+  // const auto cos_yaw = std::cos(to_radians(degree{euler_angles.z}).value());
+  // const auto sin_yaw = std::sin(to_radians(degree{euler_angles.z}).value());
+
+  // auto yaw = basic_matrix4x4<value_type>::identity;
+
+  // yaw[0][0] = cos_yaw;
+  // yaw[0][1] = sin_yaw;
+  // yaw[1][0] = -sin_yaw;
+  // yaw[1][1] = cos_yaw;
+
+  // auto pitch = basic_matrix4x4<value_type>::identity;
+
+  // pitch[0][0] = cos_pitch;
+  // pitch[0][2] = -sin_pitch;
+  // pitch[2][0] = sin_pitch;
+  // pitch[2][2] = cos_pitch;
+
+  // auto roll = basic_matrix4x4<value_type>::identity;
+
+  // roll[1][1] = cos_roll;
+  // roll[1][2] = sin_roll;
+  // roll[2][1] = -sin_roll;
+  // roll[2][2] = cos_roll;
+
+  // return yaw * pitch * roll;
+
+  const auto t1 = to_radians(degree{euler_angles.x}).value();
+  const auto t2 = to_radians(degree{euler_angles.y}).value();
+  const auto t3 = to_radians(degree{euler_angles.z}).value();
+
+  value_type c1 = std::cos(-t1);
+  value_type c2 = std::cos(-t2);
+  value_type c3 = std::cos(-t3);
+  value_type s1 = std::sin(-t1);
+  value_type s2 = std::sin(-t2);
+  value_type s3 = std::sin(-t3);
+
+  auto result = basic_matrix4x4<value_type>{};
+
+  result[0][0] = c2 * c3;
+  result[0][1] =-c1 * s3 + s1 * s2 * c3;
+  result[0][2] = s1 * s3 + c1 * s2 * c3;
+  result[0][3] = static_cast<value_type>(0);
+  result[1][0] = c2 * s3;
+  result[1][1] = c1 * c3 + s1 * s2 * s3;
+  result[1][2] =-s1 * c3 + c1 * s2 * s3;
+  result[1][3] = static_cast<value_type>(0);
+  result[2][0] =-s2;
+  result[2][1] = s1 * c2;
+  result[2][2] = c1 * c2;
+  result[2][3] = static_cast<value_type>(0);
+  result[3][0] = static_cast<value_type>(0);
+  result[3][1] = static_cast<value_type>(0);
+  result[3][2] = static_cast<value_type>(0);
+  result[3][3] = static_cast<value_type>(1);
 
   return result;
 }
@@ -350,7 +423,7 @@ inline constexpr basic_vector4<Type> operator*(basic_matrix4x4<Type> lhs, const 
 
   // return add0 + add1;
   
-  return basic_vector3<Type>{
+  return basic_vector4<Type>{
     lhs[0][0] * rhs[0] + lhs[0][1] * rhs[1] + lhs[0][2] * rhs[2] + lhs[0][3] * rhs[3],
     lhs[1][0] * rhs[0] + lhs[1][1] * rhs[1] + lhs[1][2] * rhs[2] + lhs[1][3] * rhs[3],
     lhs[2][0] * rhs[0] + lhs[2][1] * rhs[1] + lhs[2][2] * rhs[2] + lhs[2][3] * rhs[3],

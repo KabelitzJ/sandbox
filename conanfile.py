@@ -26,12 +26,14 @@ class libsbx_recipe(ConanFile):
   options = {
     "shared": [True, False],
     "fPIC": [True, False],
-    "build_demo": [True, False]
+    "build_demo": [True, False],
+    "build_tests": [True, False]
   }
   default_options = {
     "shared": False,
     "fPIC": True,
-    "build_demo": True
+    "build_demo": True,
+    "build_tests": True
   }
 
   # Source directories
@@ -57,7 +59,7 @@ class libsbx_recipe(ConanFile):
 
   def config_options(self):
     if self.settings.os == "Windows":
-      self.options.fPic = False
+      self.options.fPIC = False
 
   def layout(self):
     cmake_layout(self)
@@ -73,21 +75,19 @@ class libsbx_recipe(ConanFile):
 
     self.folders.generators = os.path.join(self.folders.build, "dependencies")
 
-  def validate(self):
-    check_min_cppstd(self, "14")
-    check_max_cppstd(self, "23")
-
   def requirements(self):
     self.requires("fmt/10.0.0")
     self.requires("spdlog/1.11.0")
     self.requires("yaml-cpp/0.7.0")
     self.requires("glfw/3.3.8")
-    self.requires("sol2/3.3.0")
+    self.requires("sol2/3.3.1")
     self.requires("tinyobjloader/2.0.0-rc10")
     self.requires("spirv-cross/1.3.243.0")
     self.requires("spirv-headers/1.5.4")
     self.requires("stb/cci.20220909")
     self.requires("range-v3/0.12.0")
+    self.requires("freetype/2.13.0")
+    self.requires("gtest/1.14.0")
 
   def generate(self):
     deps = CMakeDeps(self)
@@ -99,16 +99,11 @@ class libsbx_recipe(ConanFile):
   def build(self):
     cmake = CMake(self)
 
-    print("Foo", self.options.build_demo)
-    print("Foo", self.options.shared)
-
     variables = {
       "SBX_BUILD_DEMO": "On" if self.options.build_demo else "Off",
-      "SBX_BUILD_SHARED": "On" if self.options.shared else "Off"
+      "SBX_BUILD_SHARED": "On" if self.options.shared else "Off",
+      "SBX_BUILD_TESTS": "On" if self.options.build_tests else "Off"
     }
-
-    print("SBX_BUILD_DEMO", variables["SBX_BUILD_DEMO"])
-    print("SBX_BUILD_SHARED", variables["SBX_BUILD_SHARED"])
 
     cmake.configure(variables)
     cmake.build()
@@ -116,6 +111,3 @@ class libsbx_recipe(ConanFile):
   def package(self):
     cmake = CMake(self)
     cmake.install()
-
-  def package_info(self):
-    self.cpp_info.libs = ["libsbx"]

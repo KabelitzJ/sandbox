@@ -1,0 +1,11 @@
+#ifndef LIBSBX_UI_HPP_
+#define LIBSBX_UI_HPP_
+
+#include <libsbx/ui/ui_module.hpp>
+#include <libsbx/ui/font.hpp>
+#include <libsbx/ui/vertex2d.hpp>
+#include <libsbx/ui/ui_subrenderer.hpp>
+#include <libsbx/ui/widget.hpp>
+#include <libsbx/ui/label.hpp>
+
+#endif // LIBSBX_UI_HPP_

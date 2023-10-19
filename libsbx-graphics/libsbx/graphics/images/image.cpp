@@ -399,7 +399,7 @@ auto image::copy_image(const VkImage& src_image, VkImage& dst_image, VkDeviceMem
 	vkGetPhysicalDeviceFormatProperties(physical_device, surface.format().format, &format_properties);
 
 	if (!(format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_BLIT_SRC_BIT)) {
-		core::logger::warn("sbx::graphics", "Device does not support blitting from optimal tiled images, using copy instead of blit");
+		core::logger::warn("Device does not support blitting from optimal tiled images, using copy instead of blit");
 		supports_blit = false;
 	}
 
@@ -407,7 +407,7 @@ auto image::copy_image(const VkImage& src_image, VkImage& dst_image, VkDeviceMem
 	vkGetPhysicalDeviceFormatProperties(physical_device, src_format, &format_properties);
 
 	if (!(format_properties.linearTilingFeatures & VK_FORMAT_FEATURE_BLIT_DST_BIT)) {
-		core::logger::warn("sbx::graphics", "Device does not support blitting to linear tiled images, using copy instead of blit");
+		core::logger::warn("Device does not support blitting to linear tiled images, using copy instead of blit");
 		supports_blit = false;
 	}
 

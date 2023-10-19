@@ -18,7 +18,7 @@ class uniform_handler {
 
 public:
 
-  explicit uniform_handler(const std::optional<shader::uniform_block>& uniform_block = std::nullopt);
+  uniform_handler(const std::optional<shader::uniform_block>& uniform_block = std::nullopt);
 
   template<typename Type>
 	auto push(const Type& object, std::size_t size, std::size_t offset) -> void;

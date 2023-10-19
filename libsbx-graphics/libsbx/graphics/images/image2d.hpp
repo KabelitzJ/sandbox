@@ -3,6 +3,8 @@
 
 #include <filesystem>
 
+#include <libsbx/memory/observer_ptr.hpp>
+
 #include <libsbx/math/vector2.hpp>
 
 #include <libsbx/assets/asset.hpp>
@@ -21,12 +23,15 @@ public:
 
   ~image2d() override;
 
+  auto set_pixels(memory::observer_ptr<const std::uint8_t> pixels) -> void;
+
 private:
 
   auto _load() -> void;
 
   bool _anisotropic;
 	bool _mipmap;
+  std::uint8_t _channels;
   std::filesystem::path _path;
 
 }; // class image2d

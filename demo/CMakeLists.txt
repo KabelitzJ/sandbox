@@ -5,7 +5,7 @@ message(STATUS "Configuring ${PROJECT_NAME}...")
 add_executable(${PROJECT_NAME})
 
 if(WIN32)
-  message(STATUS "WIN32")
+  message(STATUS "Using WIN32 shell")
 
   find_program(POWERSHELL_PATH NAMES pwsh)
 
@@ -16,7 +16,7 @@ if(WIN32)
     COMMAND ${POWERSHELL_PATH} -ExecutionPolicy Bypass "${CMAKE_SOURCE_DIR}/scripts/compile_shaders.ps1" -directory "${PROJECT_SOURCE_DIR}/assets/shaders/"
   )
 elseif(UNIX)
-  message(STATUS "UNIX")
+  message(STATUS "Using UNIX shell")
   find_program(BASH_PATH NAMES bash)
 
   message(STATUS "BASH_PATH: ${BASH_PATH}")
@@ -54,14 +54,14 @@ target_link_libraries(
     libsbx::math
     libsbx::memory
     libsbx::core
-    libsbx::devices
-    libsbx::graphics
-    libsbx::ecs
-    libsbx::scenes
-    libsbx::scripting
     libsbx::signals
     libsbx::assets
+    libsbx::devices
+    libsbx::graphics
+    libsbx::ui
     libsbx::models
+    libsbx::ecs
+    libsbx::scenes
 )
 
 set_target_properties(
