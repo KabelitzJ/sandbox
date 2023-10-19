@@ -7,6 +7,8 @@
 
 #include <libsbx/utility/assert.hpp>
 
+#include <libsbx/utility/assert.hpp>
+
 #include <libsbx/utility/hash.hpp>
 
 #include <libsbx/math/vector4.hpp>
@@ -204,42 +206,16 @@ inline constexpr auto basic_vector3<Type>::operator/=(const Other& scalar) -> ba
 
 template<numeric Type>
 inline constexpr auto basic_vector3<Type>::operator[](const index_type index) -> reference {
-  if (index >= static_cast<index_type>(3)) {
-    throw std::domain_error{"Index out of bounds"};
-  }
+  utility::assert_that(index < static_cast<index_type>(3), "Index out of bounds");
 
-  switch (index) {
-    default:
-    case 0: {
-      return x;
-    }
-    case 1: {
-      return y;
-    }
-    case 2: {
-      return z;
-    }
-  }
+  return data()[index];
 }
 
 template<numeric Type>
 inline constexpr auto basic_vector3<Type>::operator[](const index_type index) const -> const_reference {
-  if (index >= static_cast<index_type>(3)) {
-    throw std::domain_error{"Index out of bounds"};
-  }
+  utility::assert_that(index < static_cast<index_type>(3), "Index out of bounds");
 
-  switch (index) {
-    default:
-    case 0: {
-      return x;
-    }
-    case 1: {
-      return y;
-    }
-    case 2: {
-      return z;
-    }
-  }
+  return data()[index];
 }
 
 template<numeric Type>

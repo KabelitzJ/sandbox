@@ -39,9 +39,9 @@ class scene_subrenderer final : public graphics::subrenderer {
 
 public:
 
-  scene_subrenderer(const graphics::pipeline::stage& stage, const std::filesystem::path& path)
+  scene_subrenderer(const std::filesystem::path& path, const graphics::pipeline::stage& stage)
   : graphics::subrenderer{stage},
-    _pipeline{stage, path},
+    _pipeline{path, stage},
     _camera_position{2.0f, 2.0f, 1.0f},
     _light_position{-1.0f, 3.0f, 1.0f} {
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();

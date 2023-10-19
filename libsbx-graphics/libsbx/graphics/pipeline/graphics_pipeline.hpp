@@ -38,7 +38,7 @@ public:
 
   using vertex_type = Vertex;
 
-  graphics_pipeline(const pipeline::stage& stage, const std::filesystem::path& path, const pipeline_definition& definition = pipeline_definition{});
+  graphics_pipeline(const std::filesystem::path& path, const pipeline::stage& stage, const pipeline_definition& definition = pipeline_definition{});
 
   ~graphics_pipeline() override;
 

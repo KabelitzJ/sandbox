@@ -51,13 +51,13 @@ public:
 protected:
 
   template<utility::implements<subrenderer> Type, typename... Args>
-  requires (std::is_constructible_v<Type, const pipeline::stage&, Args...>)
-  auto add_subrenderer(const pipeline::stage& stage, Args&&... args) -> void {
+  requires (std::is_constructible_v<Type, const std::filesystem::path&, const pipeline::stage&, Args...>)
+  auto add_subrenderer(const std::filesystem::path& path, const pipeline::stage& stage, Args&&... args) -> void {
     const auto type = std::type_index{typeid(Type)};
 
     _subrenderer_stages.insert({stage, type});
 
-    _subrenderers.insert({type, std::make_unique<Type>(stage, std::forward<Args>(args)...)});
+    _subrenderers.insert({type, std::make_unique<Type>(path, stage, std::forward<Args>(args)...)});
   }
 
 private:

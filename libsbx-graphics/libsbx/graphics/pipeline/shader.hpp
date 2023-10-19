@@ -86,6 +86,10 @@ public:
       return _stage_flags;
     }
 
+    auto add_stage_flag(VkShaderStageFlags stage) noexcept -> void {
+      _stage_flags |= stage;
+    }
+
     auto operator==(const uniform& other) const noexcept -> bool {
       return _binding == other._binding && _offset == other._offset && _size == other._size && _type == other._type && _is_readonly == other._is_readonly && _is_writeonly == other._is_writeonly && _stage_flags == other._stage_flags;
     }
@@ -129,6 +133,10 @@ class uniform_block {
 
     auto stage_flags() const noexcept -> VkShaderStageFlags {
       return _stage_flags;
+    }
+
+    auto add_stage_flag(VkShaderStageFlags stage) noexcept -> void {
+      _stage_flags |= stage;
     }
 
     auto buffer_type() const noexcept -> type {

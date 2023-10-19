@@ -26,9 +26,9 @@ class ui_subrenderer : public graphics::subrenderer {
 
 public:
 
-  ui_subrenderer(const graphics::pipeline::stage& stage, const std::filesystem::path& path)
+  ui_subrenderer(const std::filesystem::path& path, const graphics::pipeline::stage& stage)
   : graphics::subrenderer{stage},
-    _pipeline{stage, path} {
+    _pipeline{path, stage} {
     auto& ui_module = core::engine::get_module<ui::ui_module>();
 
     ui_module.on_widget_added() += [this](ui::widget& widget){

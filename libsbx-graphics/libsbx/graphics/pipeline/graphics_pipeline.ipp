@@ -9,6 +9,8 @@
 
 #include <libsbx/utility/timer.hpp>
 
+#include <libsbx/assets/assets_module.hpp>
+
 #include <libsbx/graphics/graphics_module.hpp>
 
 #include <libsbx/graphics/buffer/uniform_buffer.hpp>
@@ -18,19 +20,22 @@
 namespace sbx::graphics {
 
 template<vertex Vertex>
-graphics_pipeline<Vertex>::graphics_pipeline(const pipeline::stage& stage, const std::filesystem::path& path, const pipeline_definition& definition)
+graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, const pipeline::stage& stage, const pipeline_definition& definition)
 : _bind_point{VK_PIPELINE_BIND_POINT_GRAPHICS},
   _stage{stage} {
+  auto& assets_module = core::engine::get_module<assets::assets_module>();
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
   const auto& logical_device = graphics_module.logical_device();
   const auto& render_stage = graphics_module.render_stage(stage);
 
+  const auto actual_path = assets_module.asset_path(path);
+
   auto timer = utility::timer{};
 
-  _name = path.filename().string();
+  _name = actual_path.filename().string();
 
-  const auto binary_path = path / "bin";
+  const auto binary_path = actual_path / "bin";
 
   if (!std::filesystem::exists(binary_path) && !std::filesystem::is_directory(binary_path)) {
     throw std::runtime_error{"Path does not exist"};
@@ -72,11 +77,21 @@ graphics_pipeline<Vertex>::graphics_pipeline(const pipeline::stage& stage, const
 
     shader_stages.push_back(shader_stage);
 
-    const auto& uniforms = shader->uniforms();
-    _uniforms.insert(uniforms.begin(), uniforms.end());
-
-    const auto& uniform_blocks = shader->uniform_blocks();
-    _uniform_blocks.insert(uniform_blocks.begin(), uniform_blocks.end());
+    for (const auto& [name, uniform] : shader->uniforms()) {
+      if (auto entry = _uniforms.find(name); entry != _uniforms.end()) {
+        entry->second.add_stage_flag(uniform.stage_flags());
+      } else {
+        _uniforms.insert({name, uniform});
+      }
+    }
+    
+    for (const auto& [name, uniform_block] : shader->uniform_blocks()) {
+      if (auto entry = _uniform_blocks.find(name); entry != _uniform_blocks.end()) {
+        entry->second.add_stage_flag(uniform_block.stage_flags());
+      } else {
+        _uniform_blocks.insert({name, uniform_block});
+      }
+    }
   }
 
   auto descriptor_set_layout_bindings = std::vector<VkDescriptorSetLayoutBinding>{};
@@ -305,7 +320,6 @@ graphics_pipeline<Vertex>::graphics_pipeline(const pipeline::stage& stage, const
   pipeline_create_info.layout = _layout;
   pipeline_create_info.renderPass = render_stage.render_pass();
   pipeline_create_info.subpass = stage.subpass;
-
   pipeline_create_info.basePipelineIndex = -1;
   pipeline_create_info.basePipelineHandle = VK_NULL_HANDLE;
 
