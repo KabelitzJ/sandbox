@@ -4,8 +4,6 @@ speed = 0.0;
 
 function on_create()
   speed = 120.0;
-
-  sbx.logger.info("speed:" .. speed);
 end
 
 function on_update()
