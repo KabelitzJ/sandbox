@@ -31,7 +31,7 @@ class engine : public utility::noncopyable {
 
 public:
 
-  engine(std::vector<std::string>&& args)
+  engine(std::vector<std::string_view>&& args)
   : _args{std::move(args)} {
     utility::assert_that(_instance == nullptr, "Engine already exists.");
 
@@ -56,6 +56,10 @@ public:
 
   static auto quit() -> void {
     _instance->_is_running = false;
+  }
+
+  static auto args() noexcept -> const std::vector<std::string_view>& {
+    return _instance->_args;
   }
 
   template<typename Module>
@@ -142,7 +146,7 @@ private:
   units::second _delta_time;
 
   bool _is_running{};
-  std::vector<std::string> _args{};
+  std::vector<std::string_view> _args{};
 
   std::map<std::type_index, module_base*> _modules{};
   std::map<stage, std::vector<std::type_index>> _module_by_stage{};
