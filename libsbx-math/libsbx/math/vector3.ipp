@@ -9,6 +9,8 @@
 
 #include <libsbx/utility/hash.hpp>
 
+#include <libsbx/math/vector4.hpp>
+
 namespace sbx::math {
 
 template<numeric Type>
@@ -34,6 +36,12 @@ inline constexpr basic_vector3<Type>::basic_vector3(const basic_vector2<Type>& v
 : x{vector.x},
   y{vector.y},
   z{_z} { }
+
+template<numeric Type>
+inline constexpr basic_vector3<Type>::basic_vector3(const basic_vector4<Type>& vector) noexcept 
+: x{vector.x},
+  y{vector.y},
+  z{vector.z} { }
 
 template<numeric Type>
 template<numeric Other>

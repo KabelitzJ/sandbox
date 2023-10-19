@@ -391,7 +391,7 @@ inline constexpr basic_vector4<Type> operator*(basic_matrix4x4<Type> lhs, const 
 
   // return add0 + add1;
   
-  return basic_vector3<Type>{
+  return basic_vector4<Type>{
     lhs[0][0] * rhs[0] + lhs[0][1] * rhs[1] + lhs[0][2] * rhs[2] + lhs[0][3] * rhs[3],
     lhs[1][0] * rhs[0] + lhs[1][1] * rhs[1] + lhs[1][2] * rhs[2] + lhs[1][3] * rhs[3],
     lhs[2][0] * rhs[0] + lhs[2][1] * rhs[1] + lhs[2][2] * rhs[2] + lhs[2][3] * rhs[3],

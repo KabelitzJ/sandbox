@@ -137,6 +137,8 @@ auto script::_create_transform_bindings(sol::table& library) -> void {
   transform_type.set_function("scale", &math::transform::scale);
   transform_type.set_function("set_scale", &math::transform::set_scale);
 
+  transform_type.set_function("forward", &math::transform::forward);
+
   transform_type.set_function("look_at", &math::transform::look_at);
 }
 
