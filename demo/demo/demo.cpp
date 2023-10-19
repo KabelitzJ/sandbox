@@ -62,22 +62,7 @@ public:
     auto& graphics_module = sbx::core::engine::get_module<sbx::graphics::graphics_module>();
     auto& ui_module = sbx::core::engine::get_module<sbx::ui::ui_module>();
 
-    auto& args = sbx::core::engine::args();
-
-    auto has_asset_directory_in_args = false;
-
-    if (auto entry = std::ranges::find(args, "--assets"); entry != args.end()) {
-      const auto index = std::distance(args.begin(), entry);
-
-      if (index + 1 < args.size()) {
-        has_asset_directory_in_args = true;
-        assets_module.set_asset_directory(args.at(index + 1));
-      }
-    }
-
-    if (!has_asset_directory_in_args) {
-      assets_module.set_asset_directory("./demo/assets");
-    }
+    assets_module.set_asset_directory("./demo/assets");
 
     auto& window = devices_module.window();
 
@@ -86,7 +71,6 @@ public:
     };
 
     graphics_module.set_renderer<demo_renderer>();
-
 
     auto base_id = assets_module.load_asset<sbx::graphics::image2d>("res://textures/base.png");
     auto default_id = assets_module.load_asset<sbx::graphics::image2d>("res://textures/default.png");

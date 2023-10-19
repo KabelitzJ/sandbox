@@ -16,7 +16,8 @@ public:
   transform(const vector3& position = vector3::zero, const vector3& euler_angles = vector3::zero, const vector3& scale = vector3::one)
   : _position{position}, 
     _euler_angles{euler_angles}, 
-    _scale{scale} { }
+    _scale{scale},
+    _rotation_matrix{matrix4x4::rotation_from_euler_angles(_euler_angles)} { }
 
   ~transform() = default;
 
@@ -38,10 +39,12 @@ public:
 
   auto set_euler_angles(const vector3& euler_angles) noexcept -> void {
     _euler_angles = euler_angles;
+    _rotation_matrix = matrix4x4::rotation_from_euler_angles(_euler_angles);
   }
 
   auto add_euler_angles(const vector3& offset) noexcept -> void {
     _euler_angles += offset;
+    _rotation_matrix = matrix4x4::rotation_from_euler_angles(_euler_angles);
   }
 
   auto scale() const noexcept -> const vector3& {
@@ -53,15 +56,11 @@ public:
   }
 
   auto forward() const noexcept -> vector3 {
-    const auto rotation = math::matrix4x4::rotation_from_euler_angles(_euler_angles);
-
-    return -math::vector3{rotation[2]};
+    return -math::vector3{_rotation_matrix[2]};
   }
 
   auto right() const noexcept -> vector3 {
-    const auto rotation = math::matrix4x4::rotation_from_euler_angles(_euler_angles);
-
-    return math::vector3{rotation[0]};
+    return math::vector3{_rotation_matrix[0]};
   }
 
   auto look_at(const vector3& target) noexcept -> void {
@@ -76,10 +75,9 @@ public:
 
   auto as_matrix() const -> matrix4x4 {
     const auto translation = matrix4x4::translated(matrix4x4::identity, _position);
-    const auto rotation = matrix4x4::rotation_from_euler_angles(_euler_angles);
     const auto scale = matrix4x4::scaled(matrix4x4::identity, _scale);
 
-    return translation * rotation * scale;
+    return translation * _rotation_matrix * scale;
   }
 
 private:
@@ -87,6 +85,8 @@ private:
   vector3 _position;
   vector3 _euler_angles;
   vector3 _scale;
+
+  math::matrix4x4 _rotation_matrix;
 
 }; // class transform
 

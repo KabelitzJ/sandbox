@@ -91,7 +91,7 @@ auto image2d::_load() -> void {
     // [NOTE] KAJ 2023-07-28 : Force 4 channels (RGBA) and ignore the original image's channels.
     data = stbi_load(_path.string().c_str(), reinterpret_cast<std::int32_t*>(&_extent.width), reinterpret_cast<std::int32_t*>(&_extent.height), nullptr, STBI_rgb_alpha);
 
-    core::logger::debug("Loaded image: {} ({}x{}) in {}ms", _path.string(), _extent.width, _extent.height, units::quantity_cast<units::millisecond>(timer.elapsed()).value());
+    core::logger::debug("Loaded image: {} ({}x{}) in {:.2f}ms", _path.string(), _extent.width, _extent.height, units::quantity_cast<units::millisecond>(timer.elapsed()).value());
 
     if (!data) {
       throw std::runtime_error{fmt::format("Failed to load image: {}", _path.string())};

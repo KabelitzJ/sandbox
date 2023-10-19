@@ -227,58 +227,28 @@ inline constexpr basic_matrix4x4<Type> basic_matrix4x4<Type>::rotated(const basi
 
 template<numeric Type>
 inline constexpr basic_matrix4x4<Type> basic_matrix4x4<Type>::rotation_from_euler_angles(const basic_vector3<value_type>& euler_angles) noexcept {
-  // const auto cos_roll = std::cos(to_radians(degree{euler_angles.x}).value());
-  // const auto sin_roll = std::sin(to_radians(degree{euler_angles.x}).value());
-  // const auto cos_pitch = std::cos(to_radians(degree{euler_angles.y}).value());
-  // const auto sin_pitch = std::sin(to_radians(degree{euler_angles.y}).value());
-  // const auto cos_yaw = std::cos(to_radians(degree{euler_angles.z}).value());
-  // const auto sin_yaw = std::sin(to_radians(degree{euler_angles.z}).value());
-
-  // auto yaw = basic_matrix4x4<value_type>::identity;
-
-  // yaw[0][0] = cos_yaw;
-  // yaw[0][1] = sin_yaw;
-  // yaw[1][0] = -sin_yaw;
-  // yaw[1][1] = cos_yaw;
-
-  // auto pitch = basic_matrix4x4<value_type>::identity;
-
-  // pitch[0][0] = cos_pitch;
-  // pitch[0][2] = -sin_pitch;
-  // pitch[2][0] = sin_pitch;
-  // pitch[2][2] = cos_pitch;
-
-  // auto roll = basic_matrix4x4<value_type>::identity;
-
-  // roll[1][1] = cos_roll;
-  // roll[1][2] = sin_roll;
-  // roll[2][1] = -sin_roll;
-  // roll[2][2] = cos_roll;
-
-  // return yaw * pitch * roll;
-
   const auto t1 = to_radians(degree{euler_angles.x}).value();
   const auto t2 = to_radians(degree{euler_angles.y}).value();
   const auto t3 = to_radians(degree{euler_angles.z}).value();
 
-  value_type c1 = std::cos(-t1);
-  value_type c2 = std::cos(-t2);
-  value_type c3 = std::cos(-t3);
-  value_type s1 = std::sin(-t1);
-  value_type s2 = std::sin(-t2);
-  value_type s3 = std::sin(-t3);
+  const auto c1 = std::cos(-t1);
+  const auto c2 = std::cos(-t2);
+  const auto c3 = std::cos(-t3);
+  const auto s1 = std::sin(-t1);
+  const auto s2 = std::sin(-t2);
+  const auto s3 = std::sin(-t3);
 
   auto result = basic_matrix4x4<value_type>{};
 
   result[0][0] = c2 * c3;
-  result[0][1] =-c1 * s3 + s1 * s2 * c3;
+  result[0][1] = -c1 * s3 + s1 * s2 * c3;
   result[0][2] = s1 * s3 + c1 * s2 * c3;
   result[0][3] = static_cast<value_type>(0);
   result[1][0] = c2 * s3;
   result[1][1] = c1 * c3 + s1 * s2 * s3;
-  result[1][2] =-s1 * c3 + c1 * s2 * s3;
+  result[1][2] = -s1 * c3 + c1 * s2 * s3;
   result[1][3] = static_cast<value_type>(0);
-  result[2][0] =-s2;
+  result[2][0] = -s2;
   result[2][1] = s1 * c2;
   result[2][2] = c1 * c2;
   result[2][3] = static_cast<value_type>(0);
