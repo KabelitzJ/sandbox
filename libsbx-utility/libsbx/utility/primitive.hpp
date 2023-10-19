@@ -33,7 +33,7 @@ public:
 
   using value_type = Type;
 
-  constexpr primitive(Type value = static_cast<value_type>(0)) noexcept
+  constexpr explicit primitive(Type value = static_cast<value_type>(0)) noexcept
   : _value{value} { }
 
   constexpr ~primitive() = default;

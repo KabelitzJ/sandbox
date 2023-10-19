@@ -16,6 +16,14 @@
 
 namespace sbx::ui {
 
+struct pixels : utility::primitive<std::uint32_t> {
+
+  using super = utility::primitive<std::uint32_t>;
+
+  using super::super;
+
+}; // struct pixels
+
 class font : public assets::asset<assets::asset_type::font> {
 
 public:
@@ -28,7 +36,7 @@ public:
     math::vector2f uv_size;
   }; // struct glyph_info
 
-  font(const std::filesystem::path& path, std::uint32_t height = 32u);
+  font(const std::filesystem::path& path, pixels height = pixels{32u});
 
   ~font() override;
 

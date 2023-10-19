@@ -16,7 +16,7 @@ namespace sbx::ui {
 
 static constexpr auto num_glyphs = 128u;
 
-font::font(const std::filesystem::path& path, std::uint32_t height) {
+font::font(const std::filesystem::path& path, pixels height) {
   auto library = FT_Library{};
   auto face = FT_Face{};
 
