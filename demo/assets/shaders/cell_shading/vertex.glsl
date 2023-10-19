@@ -8,15 +8,16 @@ layout(location = 0) out vec3 out_position;
 layout(location = 1) out vec3 out_normal;
 layout(location = 2) out vec2 out_uv;
 
-layout(binding = 0) uniform uniform_object {
+layout(binding = 0) uniform uniform_scene {
+  mat4 view;
+  mat4 projection;
+  vec4 camera_position;
+} scene;
+
+layout(push_constant) uniform uniform_object {
   mat4 model;
   mat4 normal;
 } object;
-
-layout(binding = 1) uniform uniform_scene {
-  mat4 view;
-  mat4 projection;
-} scene;
 
 void main() {
   out_position = vec3(object.model * vec4(in_position, 1.0));

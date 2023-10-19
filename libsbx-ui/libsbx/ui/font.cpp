@@ -80,8 +80,8 @@ font::font(const std::filesystem::path& path, std::uint32_t height) {
 
     auto glyph_info = font::glyph_info{};
 
-    glyph_info.size = math::vector2i{glyph->bitmap.width, glyph->bitmap.rows};
-    glyph_info.bearing = math::vector2i{glyph->bitmap_left, glyph->bitmap_top};
+    glyph_info.size = math::vector2u{glyph->bitmap.width, glyph->bitmap.rows};
+    glyph_info.bearing = math::vector2u{glyph->bitmap_left, glyph->bitmap_top};
     glyph_info.advance = (glyph->advance.x >> 6);
     glyph_info.uv_position = math::vector2f{static_cast<float>(atlas_position.x) / atlas_size.x, static_cast<float>(atlas_position.y) / atlas_size.y};
     glyph_info.uv_size = math::vector2f{static_cast<float>(glyph->bitmap.width) / atlas_size.x, static_cast<float>(glyph->bitmap.rows) / atlas_size.y};

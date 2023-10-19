@@ -21,8 +21,8 @@ class font : public assets::asset<assets::asset_type::font> {
 public:
 
   struct glyph_info {
-    math::vector2i size;
-    math::vector2i bearing;
+    math::vector2u size;
+    math::vector2u bearing;
     std::uint32_t advance;
     math::vector2f uv_position;
     math::vector2f uv_size;

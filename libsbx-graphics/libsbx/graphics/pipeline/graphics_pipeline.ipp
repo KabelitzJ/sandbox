@@ -9,6 +9,8 @@
 
 #include <libsbx/utility/timer.hpp>
 
+#include <libsbx/assets/assets_module.hpp>
+
 #include <libsbx/graphics/graphics_module.hpp>
 
 #include <libsbx/graphics/buffer/uniform_buffer.hpp>
@@ -18,19 +20,22 @@
 namespace sbx::graphics {
 
 template<vertex Vertex>
-graphics_pipeline<Vertex>::graphics_pipeline(const pipeline::stage& stage, const std::filesystem::path& path, const pipeline_definition& definition)
+graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, const pipeline::stage& stage, const pipeline_definition& definition)
 : _bind_point{VK_PIPELINE_BIND_POINT_GRAPHICS},
   _stage{stage} {
+  auto& assets_module = core::engine::get_module<assets::assets_module>();
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
   const auto& logical_device = graphics_module.logical_device();
   const auto& render_stage = graphics_module.render_stage(stage);
 
+  const auto actual_path = assets_module.asset_path(path);
+
   auto timer = utility::timer{};
 
-  _name = path.filename().string();
+  _name = actual_path.filename().string();
 
-  const auto binary_path = path / "bin";
+  const auto binary_path = actual_path / "bin";
 
   if (!std::filesystem::exists(binary_path) && !std::filesystem::is_directory(binary_path)) {
     throw std::runtime_error{"Path does not exist"};
@@ -72,11 +77,21 @@ graphics_pipeline<Vertex>::graphics_pipeline(const pipeline::stage& stage, const
 
     shader_stages.push_back(shader_stage);
 
-    const auto& uniforms = shader->uniforms();
-    _uniforms.insert(uniforms.begin(), uniforms.end());
-
-    const auto& uniform_blocks = shader->uniform_blocks();
-    _uniform_blocks.insert(uniform_blocks.begin(), uniform_blocks.end());
+    for (const auto& [name, uniform] : shader->uniforms()) {
+      if (auto entry = _uniforms.find(name); entry != _uniforms.end()) {
+        entry->second.add_stage_flag(uniform.stage_flags());
+      } else {
+        _uniforms.insert({name, uniform});
+      }
+    }
+    
+    for (const auto& [name, uniform_block] : shader->uniform_blocks()) {
+      if (auto entry = _uniform_blocks.find(name); entry != _uniform_blocks.end()) {
+        entry->second.add_stage_flag(uniform_block.stage_flags());
+      } else {
+        _uniform_blocks.insert({name, uniform_block});
+      }
+    }
   }
 
   auto descriptor_set_layout_bindings = std::vector<VkDescriptorSetLayoutBinding>{};
@@ -91,14 +106,15 @@ graphics_pipeline<Vertex>::graphics_pipeline(const pipeline::stage& stage, const
         descriptor_set_layout_bindings.push_back(uniform_buffer::create_descriptor_set_layout_binding(uniform_block.binding(), descriptor_type, uniform_block.stage_flags()));
         break;
       }
-      case shader::uniform_block::type::push: {
-        throw std::runtime_error{"Push constants are not supported yet"};
-      }
       case shader::uniform_block::type::storage: {
         throw std::runtime_error{"Storage buffers are not supported yet"};
       }
+      case shader::uniform_block::type::push: {
+        // [NOTE] KAJ 2023-10-17 : Push constants do not require a descriptor set layout binding
+        break;
+      }
       default: {
-        throw std::runtime_error{"Invalid uniform block type"};
+        throw std::runtime_error{"Unknown uniform block type"};
       }
     }
 
@@ -152,7 +168,7 @@ graphics_pipeline<Vertex>::graphics_pipeline(const pipeline::stage& stage, const
   rasterization_state.rasterizerDiscardEnable = false;
   rasterization_state.polygonMode = VK_POLYGON_MODE_FILL;
   rasterization_state.lineWidth = 1.0f;
-  rasterization_state.cullMode = VK_CULL_MODE_NONE;
+  rasterization_state.cullMode = VK_CULL_MODE_BACK_BIT;
   rasterization_state.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
   rasterization_state.depthBiasEnable = false;
 
@@ -261,12 +277,31 @@ graphics_pipeline<Vertex>::graphics_pipeline(const pipeline::stage& stage, const
 
   validate(vkCreateDescriptorPool(logical_device, &descriptor_pool_create_info, nullptr, &_descriptor_pool));
 
+  auto push_constant_ranges = std::vector<VkPushConstantRange>{};
+
+  auto current_offset = std::uint32_t{0u};
+
+  for (const auto& [name, uniform] : _uniform_blocks) {
+    if (uniform.buffer_type() != shader::uniform_block::type::push) {
+      continue;
+    }
+
+    auto push_constant_range = VkPushConstantRange{};
+    push_constant_range.stageFlags = uniform.stage_flags();
+    push_constant_range.offset = current_offset;
+    push_constant_range.size = uniform.size();
+
+    push_constant_ranges.push_back(push_constant_range);
+
+    current_offset += push_constant_range.size;
+  }
+
   auto pipeline_layout_create_info = VkPipelineLayoutCreateInfo{};
   pipeline_layout_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
   pipeline_layout_create_info.setLayoutCount = 1;
   pipeline_layout_create_info.pSetLayouts = &_descriptor_set_layout;
-  pipeline_layout_create_info.pushConstantRangeCount = 0;
-  pipeline_layout_create_info.pPushConstantRanges = nullptr;
+  pipeline_layout_create_info.pushConstantRangeCount = static_cast<std::uint32_t>(push_constant_ranges.size());
+  pipeline_layout_create_info.pPushConstantRanges = push_constant_ranges.data();
 
   validate(vkCreatePipelineLayout(logical_device, &pipeline_layout_create_info, nullptr, &_layout));
   
@@ -285,7 +320,6 @@ graphics_pipeline<Vertex>::graphics_pipeline(const pipeline::stage& stage, const
   pipeline_create_info.layout = _layout;
   pipeline_create_info.renderPass = render_stage.render_pass();
   pipeline_create_info.subpass = stage.subpass;
-
   pipeline_create_info.basePipelineIndex = -1;
   pipeline_create_info.basePipelineHandle = VK_NULL_HANDLE;
 

@@ -6,7 +6,8 @@
 
 #include <libsbx/devices/key.hpp>
 #include <libsbx/devices/mouse_button.hpp>
-#include <libsbx/devices/input.hpp>
+#include <libsbx/devices/input_action.hpp>
+#include <libsbx/devices/input_mod.hpp>
 
 namespace sbx::devices {
 

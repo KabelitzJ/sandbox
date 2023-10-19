@@ -27,11 +27,11 @@ public:
 
   virtual auto render(graphics::command_buffer& command_buffer, std::unique_ptr<mesh>& mesh) -> void = 0;
 
-  auto position() const noexcept -> const math::vector2& {
+  auto position() const noexcept -> const math::vector2u& {
     return _position;
   }
 
-  auto set_position(const math::vector2& position) noexcept -> void {
+  auto set_position(const math::vector2u& position) noexcept -> void {
     _position = position;
   }
 
@@ -41,7 +41,7 @@ public:
 
 protected:
   
-  math::vector2 _position;
+  math::vector2u _position;
   math::uuid _id;
 
 }; // class widget

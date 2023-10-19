@@ -6,26 +6,33 @@
 #include <libsbx/math/vector3.hpp>
 #include <libsbx/math/transform.hpp>
 
+#include <libsbx/assets/assets_module.hpp>
+
 #include <libsbx/devices/devices_module.hpp>
+#include <libsbx/devices/input.hpp>
 
 namespace sbx::scenes {
 
 script::script(const std::filesystem::path& path) {
-  if (!std::filesystem::exists(path)) {
-    throw std::runtime_error{fmt::format("Could not find script '{}'", path.string())};
+  auto& assets_module = core::engine::get_module<assets::assets_module>();
+
+  auto actual_path = assets_module.asset_path(path);
+
+  if (!std::filesystem::exists(actual_path)) {
+    throw std::runtime_error{fmt::format("Could not find script '{}'", actual_path.string())};
   }
 
-  if (auto extension = path.extension(); extension != ".lua") {
-    throw std::runtime_error{fmt::format("Script '{}' is not a valid file", path.string())};
+  if (auto extension = actual_path.extension(); extension != ".lua") {
+    throw std::runtime_error{fmt::format("Script '{}' is not a valid file", actual_path.string())};
   }
 
-  _name = path.stem().string();
+  _name = actual_path.stem().string();
 
   _state.open_libraries(sol::lib::base, sol::lib::io, sol::lib::table, sol::lib::math, sol::lib::string);
 
   _create_bindings();
 
-  _state.script_file(path.string());
+  _state.script_file(actual_path.string());
 }
 
 auto script::invoke(const std::string& name) -> void {
@@ -137,6 +144,9 @@ auto script::_create_transform_bindings(sol::table& library) -> void {
   transform_type.set_function("scale", &math::transform::scale);
   transform_type.set_function("set_scale", &math::transform::set_scale);
 
+  transform_type.set_function("forward", &math::transform::forward);
+  transform_type.set_function("right", &math::transform::right);
+
   transform_type.set_function("look_at", &math::transform::look_at);
 }
 
@@ -157,7 +167,8 @@ auto script::_create_input_bindings(sol::table& library) -> void {
     "s", devices::key::s,
     "d", devices::key::d,
     "q", devices::key::q,
-    "e", devices::key::e
+    "e", devices::key::e,
+    "r", devices::key::r
   );
 
   auto input_action_type = library.new_enum("input_action",

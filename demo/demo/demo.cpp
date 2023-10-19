@@ -46,8 +46,8 @@ public:
   }
 
   auto initialize() -> void override {
-    add_subrenderer<sbx::scenes::scene_subrenderer>(sbx::graphics::pipeline::stage{0, 0}, "./demo/assets/shaders/basic");
-    add_subrenderer<sbx::ui::ui_subrenderer>(sbx::graphics::pipeline::stage{0, 1}, "./demo/assets/shaders/ui");
+    add_subrenderer<sbx::scenes::scene_subrenderer>("res://shaders/cell_shading", sbx::graphics::pipeline::stage{0, 0});
+    add_subrenderer<sbx::ui::ui_subrenderer>("res://shaders/ui", sbx::graphics::pipeline::stage{0, 1});
   }
 
 }; // class demo_renderer
@@ -58,6 +58,26 @@ public:
 
   demo_application() {
     auto& devices_module = sbx::core::engine::get_module<sbx::devices::devices_module>();
+    auto& assets_module = sbx::core::engine::get_module<sbx::assets::assets_module>();
+    auto& graphics_module = sbx::core::engine::get_module<sbx::graphics::graphics_module>();
+    auto& ui_module = sbx::core::engine::get_module<sbx::ui::ui_module>();
+
+    auto& args = sbx::core::engine::args();
+
+    auto has_asset_directory_in_args = false;
+
+    if (auto entry = std::ranges::find(args, "--assets"); entry != args.end()) {
+      const auto index = std::distance(args.begin(), entry);
+
+      if (index + 1 < args.size()) {
+        has_asset_directory_in_args = true;
+        assets_module.set_asset_directory(args.at(index + 1));
+      }
+    }
+
+    if (!has_asset_directory_in_args) {
+      assets_module.set_asset_directory("./demo/assets");
+    }
 
     auto& window = devices_module.window();
 
@@ -65,24 +85,19 @@ public:
       sbx::core::engine::quit();
     };
 
-    auto& graphics_module = sbx::core::engine::get_module<sbx::graphics::graphics_module>();
-
     graphics_module.set_renderer<demo_renderer>();
 
-    auto& assets_module = sbx::core::engine::get_module<sbx::assets::assets_module>();
 
-    auto base_id = assets_module.load_asset<sbx::graphics::image2d>("./demo/assets/textures/base.png");
-    auto default_id = assets_module.load_asset<sbx::graphics::image2d>("./demo/assets/textures/default.png");
-    auto grid_id = assets_module.load_asset<sbx::graphics::image2d>("./demo/assets/textures/grid.png");
+    auto base_id = assets_module.load_asset<sbx::graphics::image2d>("res://textures/base.png");
+    auto default_id = assets_module.load_asset<sbx::graphics::image2d>("res://textures/default.png");
+    auto grid_id = assets_module.load_asset<sbx::graphics::image2d>("res://textures/grid.png");
 
-    auto monkey_id = assets_module.load_asset<sbx::models::mesh>("./demo/assets/meshes/suzanne.obj");
-    auto sphere_id = assets_module.load_asset<sbx::models::mesh>("./demo/assets/meshes/sphere.obj");
-    auto cube_id = assets_module.load_asset<sbx::models::mesh>("./demo/assets/meshes/cube.obj");
+    auto monkey_id = assets_module.load_asset<sbx::models::mesh>("res://meshes/suzanne.obj");
+    auto sphere_id = assets_module.load_asset<sbx::models::mesh>("res://meshes/sphere.obj");
+    auto cube_id = assets_module.load_asset<sbx::models::mesh>("res://meshes/cube.obj");
 
-    auto font_jet_brains_mono_id = assets_module.load_asset<sbx::ui::font>("./demo/assets/fonts/JetBrainsMono-Medium.ttf", 16u);
-    auto font_roboto_id = assets_module.load_asset<sbx::ui::font>("./demo/assets/fonts/Roboto-Regular.ttf", 16u);
-
-    auto& ui_module = sbx::core::engine::get_module<sbx::ui::ui_module>();
+    auto font_jet_brains_mono_id = assets_module.load_asset<sbx::ui::font>("res://fonts/JetBrainsMono-Medium.ttf", 16u);
+    auto font_roboto_id = assets_module.load_asset<sbx::ui::font>("res://fonts/Roboto-Regular.ttf", 16u);
 
     ui_module.add_widget<sbx::ui::label>("Hello, World!", sbx::math::vector2u{25, 25}, font_roboto_id, sbx::math::color{1.0f, 1.0f, 1.0f, 1.0f});
 
@@ -92,8 +107,16 @@ public:
 
     auto monkey = scene.create_node("Monkey");
     monkey.add_component<sbx::scenes::static_mesh>(monkey_id, base_id);
-    auto& monkey_rotation = monkey.add_component<sbx::scenes::script>("./demo/assets/scripts/rotate.lua");
+    auto& monkey_rotation = monkey.add_component<sbx::scenes::script>("res://scripts/rotate.lua");
     monkey_rotation.set("speed", 75.0f);
+
+    auto camera = scene.camera();
+
+    auto& camera_movement = camera.add_component<sbx::scenes::script>("res://scripts/camera_movement.lua");
+    camera_movement.set("move_speed", 5.0f);
+
+    auto& camera_transform = camera.get_component<sbx::math::transform>();
+    camera_transform.set_position(sbx::math::vector3{0.0f, 0.0f, 5.0f});
 
     // [Todo] KAJ 2023-08-16 15:30 - This should probably be done automatically
     scene.start();

@@ -18,6 +18,9 @@
 
 namespace sbx::math {
 
+template<numeric Type>
+class basic_vector4;
+
 /**
  * @brief A vector in three-dimensional space.
  *
@@ -114,6 +117,8 @@ public:
    * @param z The value for the z component. (Default: 1)
    */
   explicit constexpr basic_vector3(const basic_vector2<value_type>& vector, const value_type z = value_type{0}) noexcept;
+
+  explicit constexpr basic_vector3(const basic_vector4<value_type>& vector) noexcept;
 
   /** 
    * @brief Constructs a vector and copies the components from the other vector

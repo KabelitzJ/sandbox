@@ -4,22 +4,29 @@
 
 namespace sbx::devices {
 
-// auto input::is_key_pressed(key key) -> bool {
-//   auto& devices_module = core::engine::get_module<devices::devices_module>();
-//   auto& window = devices_module.window();
+std::unordered_map<key, key_state> input::_key_states;
 
-//   const auto input_action = static_cast<devices::input_action>(glfwGetKey(window, static_cast<std::int32_t>(key)));
+auto input::is_key_pressed(key key) -> bool {
+  if (auto entry = _key_states.find(key); entry != _key_states.end()) {
+    return entry->second.action == input_action::press;
+  }
 
-//   return input_action == devices::input_action::press;
-// }
+  return false;
+}
 
-// auto input::is_key_released(key key) -> bool {
-//   auto& devices_module = core::engine::get_module<devices::devices_module>();
-//   auto& window = devices_module.window();
+auto input::is_key_released(key key) -> bool {
+  if (auto entry = _key_states.find(key); entry != _key_states.end()) {
+    return entry->second.action == input_action::release;
+  }
 
-//   const auto input_action = static_cast<devices::input_action>(glfwGetKey(window, static_cast<std::int32_t>(key)));
+  return false;
+}
 
-//   return input_action == devices::input_action::release;
-// }
+auto input::_update_key_state(key key, input_action action) -> void {
+  auto& state = _key_states[key];
+
+  state.last_action = state.action;
+  state.action = action;
+}
 
 } // namespace sbx::devices

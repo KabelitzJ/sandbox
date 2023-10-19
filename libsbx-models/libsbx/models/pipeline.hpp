@@ -11,8 +11,8 @@ class pipeline : public graphics::graphics_pipeline<vertex3d> {
 
 public:
 
-  pipeline(const graphics::pipeline::stage& stage, const std::filesystem::path& path)
-  : graphics::graphics_pipeline<vertex3d>{stage, path, graphics::pipeline_definition{ .uses_depth = true, .uses_transparency = false }} { }
+  pipeline(const std::filesystem::path& path, const graphics::pipeline::stage& stage)
+  : graphics::graphics_pipeline<vertex3d>{path, stage, graphics::pipeline_definition{ .uses_depth = true, .uses_transparency = false }} { }
 
   ~pipeline() override = default;
 

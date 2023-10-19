@@ -35,16 +35,22 @@ public:
 
   auto update() -> void override;
 
+  auto set_asset_directory(const std::filesystem::path& path) -> void {
+    _asset_directory = path;
+  }
+
   template<typename Asset, typename... Args>
   requires (std::is_base_of_v<asset<Asset::type>, Asset> && std::is_constructible_v<Asset, const std::filesystem::path&, Args...>)
   auto load_asset(const std::filesystem::path& path, Args&&... args) -> asset_id {
+    const auto actual_path = asset_path(path);
+
     auto& storage = _get_or_create_storage<Asset>(Asset::type);
 
-    auto asset = std::make_unique<Asset>(path, std::forward<Args>(args)...);
+    auto asset = std::make_unique<Asset>(actual_path, std::forward<Args>(args)...);
 
     const auto id = asset->id();
 
-    _metadata.insert({path, asset_metadata{id}});
+    _metadata.insert({actual_path, asset_metadata{id}});
 
     storage.insert(id, std::move(asset));
 
@@ -66,17 +72,21 @@ public:
   template<typename Asset>
   requires (std::is_base_of_v<asset<Asset::type>, Asset>)
   [[nodiscard]] auto get_asset(const std::filesystem::path& path) -> Asset& {
-    if (auto entry = _metadata.find(path); entry != _metadata.end()) {
+    const auto actual_path = asset_path(path);
+
+    if (auto entry = _metadata.find(actual_path); entry != _metadata.end()) {
       return get_asset<Asset>(entry->second.id);
     }
 
-    throw std::runtime_error{fmt::format("Failed to find asset '{}'", path.string())};
+    throw std::runtime_error{fmt::format("Failed to find asset '{}'", actual_path.string())};
   }
 
   template<typename Asset>
   requires (std::is_base_of_v<asset<Asset::type>, Asset>)
   [[nodiscard]] auto try_get_asset_id(const std::filesystem::path& path) -> std::optional<asset_id> {
-    if (auto entry = _metadata.find(path); entry != _metadata.end()) {
+    const auto actual_path = asset_path(path);
+
+    if (auto entry = _metadata.find(actual_path); entry != _metadata.end()) {
       return entry->second.id;
     }
 
@@ -87,6 +97,14 @@ public:
     for (auto& [type, storage] : _storages) {
       storage->clear();
     }
+  }
+
+  auto asset_path(const std::filesystem::path& path) -> std::filesystem::path {
+    if (path.string().starts_with("res://")) {
+      return _asset_directory / path.string().substr(6);
+    }
+
+    return path;
   }
 
 private:
@@ -111,6 +129,7 @@ private:
     return memory::observer_ptr<storage<Type>>{};
   }
 
+  std::filesystem::path _asset_directory;
   std::unordered_map<asset_type, std::unique_ptr<storage_base>> _storages;
   std::unordered_map<std::filesystem::path, asset_metadata> _metadata;
 
