@@ -18,9 +18,6 @@
 #include <libsbx/units/time.hpp>
 
 #include <libsbx/devices/window.hpp>
-#include <libsbx/devices/key.hpp>
-#include <libsbx/devices/mouse_button.hpp>
-#include <libsbx/devices/input.hpp>
 
 namespace sbx::devices {
 
@@ -40,12 +37,6 @@ public:
     }
 
     _window = std::make_unique<devices::window>(window_create_info{"Demo", 1280, 720});
-
-    _window->on_key() += [this](const key_event& event) {
-      const auto key = static_cast<devices::key>(event.key);
-
-      _key_states[key] = event.action;
-    };
   }
 
   ~devices_module() override {
@@ -69,17 +60,7 @@ public:
     return std::vector<const char*>{extensions, extensions + extension_count};
   }
 
-  auto key_state(key key) -> input_action {
-    if (auto it = _key_states.find(key); it != _key_states.end()) {
-      return it->second;
-    }
-
-    return input_action::release;
-  }
-
 private:
-
-  std::unordered_map<key, input_action> _key_states{};
 
   std::unique_ptr<devices::window> _window{};
 

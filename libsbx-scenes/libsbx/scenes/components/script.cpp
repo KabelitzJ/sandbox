@@ -8,7 +8,6 @@
 
 #include <libsbx/assets/assets_module.hpp>
 
-#include <libsbx/devices/devices_module.hpp>
 #include <libsbx/devices/input.hpp>
 
 namespace sbx::scenes {
@@ -171,15 +170,10 @@ auto script::_create_input_bindings(sol::table& library) -> void {
     "r", devices::key::r
   );
 
-  auto input_action_type = library.new_enum("input_action",
-    "release", devices::input_action::release,
-    "press", devices::input_action::press,
-    "repeat", devices::input_action::repeat
-  );
+  auto input_type = library.new_usertype<devices::input>("input", sol::no_constructor);
 
-  auto input_type = library["input"];
-
-  input_type["key_state"] = &devices::devices_module::key_state;
+  input_type.set_function("is_key_pressed", &devices::input::is_key_pressed);
+  input_type.set_function("is_key_released", &devices::input::is_key_released);
 }
 
 } // namespace sbx::scenes
