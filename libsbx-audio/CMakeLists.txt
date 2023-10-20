@@ -1,41 +1,29 @@
-project(demo)
+project(audio)
 
 message(STATUS "Configuring ${PROJECT_NAME}...")
 
-add_executable(${PROJECT_NAME})
-
-if(WIN32)
-  message(STATUS "Using WIN32 shell")
-
-  find_program(POWERSHELL_PATH NAMES pwsh)
-
-  message(STATUS "POWERSHELL_PATH: ${POWERSHELL_PATH}")
-
-  add_custom_target(
-    shaders
-    COMMAND ${POWERSHELL_PATH} -ExecutionPolicy Bypass "${CMAKE_SOURCE_DIR}/scripts/compile_shaders.ps1" -directory "${PROJECT_SOURCE_DIR}/assets/shaders/"
-  )
-elseif(UNIX)
-  message(STATUS "Using UNIX shell")
-  find_program(BASH_PATH NAMES bash)
-
-  message(STATUS "BASH_PATH: ${BASH_PATH}")
-
-  add_custom_target(
-    shaders
-    COMMAND ${BASH_PATH} "${CMAKE_SOURCE_DIR}/scripts/compile_shaders.sh" "${PROJECT_SOURCE_DIR}/assets/shaders/"
-  )
+if(${SBX_BUILD_SHARED})
+  add_library(${PROJECT_NAME} SHARED)
 else()
-  message(FATAL_ERROR "Unsupported platform detected")
+  add_library(${PROJECT_NAME} STATIC)
 endif()
 
+add_library(${CMAKE_PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
-add_dependencies(${PROJECT_NAME} shaders)
+find_package(fmt REQUIRED)
+find_package(OpenAL REQUIRED)
+find_package(audiofile REQUIRED)
 
 target_sources(
   ${PROJECT_NAME}
   PRIVATE
-    "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/demo.cpp"
+    "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/audio.cpp"
+    "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/audio_module.cpp"
+    "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/sound.cpp"
+  PUBLIC
+    "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/audio.hpp"
+    "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/audio_module.hpp"
+    "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/sound.hpp"
 )
 
 target_include_directories(
@@ -46,23 +34,15 @@ target_include_directories(
 
 target_link_libraries(
   ${PROJECT_NAME}
-  PRIVATE
-    libsbx::units
+  PUBLIC
+    # External dependencies
+    fmt::fmt
+    OpenAL::OpenAL
+    audiofile::audiofile
+    # Internal dependencies
     libsbx::utility
-    libsbx::io
-    libsbx::math
-    libsbx::memory
-    libsbx::signals
-    libsbx::ecs
     libsbx::core
-    libsbx::async
     libsbx::assets
-    libsbx::audio
-    # libsbx::devices
-    # libsbx::graphics
-    # libsbx::ui
-    # libsbx::models
-    # libsbx::scenes
 )
 
 set_target_properties(

@@ -76,5 +76,4 @@ void main() {
   float mix_factor = 0.25;
 
   out_color = texture(image, in_uv) * vec4(mix(phong_shading, cel_shading, mix_factor), 1.0);
-  // out_color = texture(image, in_uv) * vec4(phong_shading, 1.0);
 }

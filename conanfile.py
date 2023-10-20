@@ -42,6 +42,7 @@ class libsbx_recipe(ConanFile):
     "libsbx-units/*",
     "libsbx-utility/*",
     "libsbx-async/*",
+    "libsbx-audio/*",
     "libsbx-io/*",
     "libsbx-math/*",
     "libsbx-memory/*",
@@ -88,6 +89,8 @@ class libsbx_recipe(ConanFile):
     self.requires("range-v3/0.12.0")
     self.requires("freetype/2.13.0")
     self.requires("gtest/1.14.0")
+    self.requires("openal-soft/1.22.2")
+    self.requires("audiofile/1.1.1")
 
   def generate(self):
     deps = CMakeDeps(self)
