@@ -12,12 +12,14 @@ add_library(${CMAKE_PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
 find_package(fmt REQUIRED)
 find_package(glfw3 REQUIRED)
+find_package(stb REQUIRED)
 
 target_sources(
   ${PROJECT_NAME}
   PRIVATE
     "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/devices.cpp"
     "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/input.cpp"
+    "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/window.cpp"
   PUBLIC
     "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/devices.hpp"
     "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/devices_module.hpp"
@@ -42,12 +44,14 @@ target_link_libraries(
     # External dependencies
     fmt::fmt
     glfw
+    stb::stb
     # Internal dependencies
     libsbx::utility
     libsbx::units
     libsbx::math
-    libsbx::core
     libsbx::signals
+    libsbx::core
+    libsbx::assets
 )
 
 set_target_properties(

@@ -5,6 +5,7 @@
 
 #include <stdexcept>
 #include <functional>
+#include <filesystem>
 #include <unordered_set>
 #include <cmath>
 
@@ -96,6 +97,8 @@ public:
   auto aspect_ratio() const -> std::float_t {
     return static_cast<std::float_t>(_width) / static_cast<std::float_t>(_height);
   }
+
+  auto set_icon(const std::filesystem::path& path) -> void;
 
   /**
    * @brief Determins if the window should be closed

@@ -67,6 +67,8 @@ public:
 
     auto& window = devices_module.window();
 
+    window.set_icon("res://icons/sandbox.png");
+
     window.on_window_closed_signal() += [this]([[maybe_unused]] const auto& event){
       sbx::core::engine::quit();
     };
