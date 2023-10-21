@@ -74,6 +74,10 @@ auto audio_module::update() -> void {
 
   const auto& camera_position = camera_transform.position();
 
+  alListenerf(AL_GAIN, _gains[sound::type::master]);
+
+  check_error();
+
   alListener3f(AL_POSITION, camera_position.x, camera_position.y, -camera_position.z);
 
   check_error();
@@ -88,10 +92,6 @@ auto audio_module::update() -> void {
   const auto camera_orientation = std::array<std::float_t, 6>{camera_forward.x, camera_forward.y, camera_forward.z, camera_up.x, camera_up.y, camera_up.z};
 
   alListenerfv(AL_ORIENTATION, camera_orientation.data());
-
-  check_error();
-
-  alListenerf(AL_GAIN, 1.0f);
 
   check_error();
 

@@ -29,8 +29,6 @@ sound::sound(assets::asset_id sound_buffer_id, type type, bool should_begin, boo
   set_gain(_gain);
   set_pitch(_pitch);
 
-  alSourcef(_source, AL_ROLLOFF_FACTOR, 1.0f);
-
   if (should_begin) {
     play(should_loop);
   }
