@@ -85,7 +85,7 @@ auto audio_module::update() -> void {
 
   check_error();
 
-  alListenerf(AL_GAIN, 0.5f);
+  alListenerf(AL_GAIN, 1.0f);
 
   check_error();
 
