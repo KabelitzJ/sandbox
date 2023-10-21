@@ -49,6 +49,12 @@ audio_module::audio_module() {
   alDistanceModel(AL_INVERSE_DISTANCE_CLAMPED);
 
   check_error();
+
+  _gains[sound::type::music] = 1.0f;
+  _gains[sound::type::effect] = 1.0f;
+  _gains[sound::type::master] = 1.0f;
+  _gains[sound::type::ambient] = 1.0f;
+  _gains[sound::type::general] = 1.0f;
 }
 
 audio_module::~audio_module() {
@@ -115,6 +121,14 @@ auto audio_module::update() -> void {
 
     check_error();
   }
+}
+
+auto audio_module::set_gain(sound::type type, std::float_t gain) -> void {
+  _gains[type] = gain;
+}
+
+auto audio_module::gain(sound::type type) -> std::float_t {
+  return _gains[type];
 }
 
 } // namespace sbx::audio

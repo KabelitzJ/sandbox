@@ -61,9 +61,11 @@ auto sound::play(bool should_loop) -> void {
 }
 
 auto sound::set_gain(std::float_t gain) -> void {
+  auto& audio_module = core::engine::get_module<audio::audio_module>();
+    
   _gain = gain;
 
-  alSourcef(_source, AL_GAIN, _gain);
+  alSourcef(_source, AL_GAIN, _gain * audio_module.gain(_type));
 
   check_error();
 }

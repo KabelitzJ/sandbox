@@ -1,6 +1,8 @@
 #ifndef LIBSBX_AUDIO_AUDIO_MODULE_HPP_
 #define LIBSBX_AUDIO_AUDIO_MODULE_HPP_
 
+#include <unordered_map>
+
 #include <AL/al.h>
 #include <AL/alc.h>
 
@@ -27,10 +29,16 @@ public:
 
   auto update() -> void override;
 
+  auto set_gain(sound::type type, std::float_t gain) -> void;
+
+  auto gain(sound::type type) -> std::float_t;
+
 private:
 
   ALCdevice* _device;
   ALCcontext* _context;
+
+  std::unordered_map<sound::type, std::float_t> _gains;
 
 }; // class audio_module
 
