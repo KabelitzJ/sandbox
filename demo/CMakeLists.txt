@@ -58,11 +58,11 @@ target_link_libraries(
     libsbx::async
     libsbx::assets
     libsbx::audio
-    # libsbx::devices
-    # libsbx::graphics
-    # libsbx::ui
-    # libsbx::models
-    # libsbx::scenes
+    libsbx::devices
+    libsbx::graphics
+    libsbx::ui
+    libsbx::models
+    libsbx::scenes
 )
 
 set_target_properties(

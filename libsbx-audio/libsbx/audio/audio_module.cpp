@@ -3,7 +3,11 @@
 #include <libsbx/core/logger.hpp>
 #include <libsbx/core/engine.hpp>
 
+#include <libsbx/math/transform.hpp>
+
 #include <libsbx/assets/assets_module.hpp>
+
+#include <libsbx/scenes/scenes_module.hpp>
 
 namespace sbx::audio {
 
@@ -50,13 +54,59 @@ audio_module::~audio_module() {
 }
 
 auto audio_module::update() -> void {
+  auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
 
-}
+  auto& scene = scenes_module.scene();
 
-auto audio_module::load_sound() -> void {
-  auto& assets_module = core::engine::get_module<assets::assets_module>();
+  auto camera = scene.camera();
 
-  auto buffer = sound_buffer{assets_module.asset_path("res://audio/ambient.wav")};
+  const auto& transform = camera.get_component<math::transform>();
+
+  const auto& position = transform.position();
+
+  alListener3f(AL_POSITION, position.x, position.y, position.z);
+
+  check_error();
+
+  alListener3f(AL_VELOCITY, position.x, position.y, position.z);
+
+  check_error();
+
+  const auto& forward = transform.forward();
+  const auto& up = math::vector3::up;
+
+  const auto orientation = std::array<std::float_t, 6>{forward.x, forward.y, forward.z, up.x, up.y, up.z};
+
+  alListenerfv(AL_ORIENTATION, orientation.data());
+
+  check_error();
+
+  auto sound_components = scene.query<audio::sound>();
+
+  for (auto& sound_component : sound_components) {
+    auto& sound = sound_component.get_component<audio::sound>();
+
+    auto& transform = sound_component.get_component<math::transform>();
+
+    const auto& position = transform.position();
+
+    alSource3f(sound.handle(), AL_POSITION, position.x, position.y, position.z);
+
+    check_error();
+
+    alSource3f(sound.handle(), AL_VELOCITY, position.x, position.y, position.z);
+
+    check_error();
+
+    const auto& forward = transform.forward();
+    const auto& up = math::vector3::up;
+
+    const auto orientation = std::array<std::float_t, 6>{forward.x, forward.y, forward.z, up.x, up.y, up.z};
+
+    alSourcefv(sound.handle(), AL_ORIENTATION, orientation.data());
+
+    check_error();
+  }
 }
 
 } // namespace sbx::audio

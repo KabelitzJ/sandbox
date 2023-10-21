@@ -16,6 +16,10 @@ public:
 
   ~sound() override;
 
+  auto handle() const -> std::uint32_t;
+
+  operator std::uint32_t() const;
+
   auto play(bool is_looping = false) -> void;
 
   auto set_gain(std::float_t gain) -> void;

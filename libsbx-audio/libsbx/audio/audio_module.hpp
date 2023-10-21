@@ -17,7 +17,7 @@ auto check_error() -> void;
 
 class audio_module : public core::module<audio_module> {
 
-  inline static const auto is_registered = register_module(stage::normal, dependencies<assets::assets_module>{});
+  inline static const auto is_registered = register_module(stage::pre, dependencies<assets::assets_module>{});
 
 public:
 
@@ -26,8 +26,6 @@ public:
   ~audio_module() override;
 
   auto update() -> void override;
-
-  auto load_sound() -> void;
 
 private:
 

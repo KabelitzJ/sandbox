@@ -39,6 +39,14 @@ sound::~sound() {
   check_error();
 }
 
+auto sound::handle() const -> std::uint32_t {
+  return _source;
+}
+
+sound::operator std::uint32_t() const {
+  return handle();
+}
+
 auto sound::play(bool is_looping) -> void {
   alSourcei(_source, AL_LOOPING, is_looping);
 
@@ -47,6 +55,8 @@ auto sound::play(bool is_looping) -> void {
   alSourcePlay(_source);
 
   check_error();
+
+  set_gain(_gain);
 }
 
 auto sound::set_gain(std::float_t gain) -> void {

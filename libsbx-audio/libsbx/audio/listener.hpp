@@ -20,7 +20,7 @@ public:
 
 private:
 
-
+  ALuint _listener;
 
 }; // class listener
 
