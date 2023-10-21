@@ -52,11 +52,11 @@ sound_buffer::sound_buffer(const std::filesystem::path& path) {
 
   check_error();
 
-  alBufferData(_buffer, channels == 1 ? AL_FORMAT_MONO16 : AL_FORMAT_STEREO16, sample_data, total_pcm_frame_count * channels * sizeof(std::int16_t), sample_rate);
+  alBufferData(_buffer, (channels == 1) ? AL_FORMAT_MONO16 : AL_FORMAT_STEREO16, sample_data, total_pcm_frame_count * channels * sizeof(std::int16_t), sample_rate);
 
   check_error();
 
-  core::logger::debug("Loaded sound: {} in {:.2f}ms", path.string(), units::quantity_cast<units::millisecond>(timer.elapsed()).value());
+  core::logger::debug("Loaded sound: {} ({}) in {:.2f}ms", path.string(), (channels == 1) ? "mono" : "stereo", units::quantity_cast<units::millisecond>(timer.elapsed()).value());
 }
 
 sound_buffer::~sound_buffer() {

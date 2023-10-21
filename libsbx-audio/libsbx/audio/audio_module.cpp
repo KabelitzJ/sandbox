@@ -45,6 +45,10 @@ audio_module::audio_module() {
   }
 
   check_error();
+
+  alDistanceModel(AL_INVERSE_DISTANCE_CLAMPED);
+
+  check_error();
 }
 
 audio_module::~audio_module() {
@@ -60,24 +64,28 @@ auto audio_module::update() -> void {
 
   auto camera = scene.camera();
 
-  const auto& transform = camera.get_component<math::transform>();
+  const auto& camera_transform = camera.get_component<math::transform>();
 
-  const auto& position = transform.position();
+  const auto& camera_position = camera_transform.position();
 
-  alListener3f(AL_POSITION, position.x, position.y, position.z);
-
-  check_error();
-
-  alListener3f(AL_VELOCITY, position.x, position.y, position.z);
+  alListener3f(AL_POSITION, camera_position.x, camera_position.y, -camera_position.z);
 
   check_error();
 
-  const auto& forward = transform.forward();
-  const auto& up = math::vector3::up;
+  alListener3f(AL_VELOCITY, camera_position.x, camera_position.y, -camera_position.z);
 
-  const auto orientation = std::array<std::float_t, 6>{forward.x, forward.y, forward.z, up.x, up.y, up.z};
+  check_error();
 
-  alListenerfv(AL_ORIENTATION, orientation.data());
+  const auto& camera_forward = camera_transform.forward();
+  const auto& camera_up = math::vector3::up;
+
+  const auto camera_orientation = std::array<std::float_t, 6>{camera_forward.x, camera_forward.y, camera_forward.z, camera_up.x, camera_up.y, camera_up.z};
+
+  alListenerfv(AL_ORIENTATION, camera_orientation.data());
+
+  check_error();
+
+  alListenerf(AL_GAIN, 0.5f);
 
   check_error();
 
@@ -86,24 +94,24 @@ auto audio_module::update() -> void {
   for (auto& sound_component : sound_components) {
     auto& sound = sound_component.get_component<audio::sound>();
 
-    auto& transform = sound_component.get_component<math::transform>();
+    auto& sound_transform = sound_component.get_component<math::transform>();
 
-    const auto& position = transform.position();
+    const auto& sound_position = sound_transform.position();
 
-    alSource3f(sound.handle(), AL_POSITION, position.x, position.y, position.z);
-
-    check_error();
-
-    alSource3f(sound.handle(), AL_VELOCITY, position.x, position.y, position.z);
+    alSource3f(sound, AL_POSITION, sound_position.x, sound_position.y, -sound_position.z);
 
     check_error();
 
-    const auto& forward = transform.forward();
-    const auto& up = math::vector3::up;
+    alSource3f(sound, AL_VELOCITY, sound_position.x, sound_position.y, -sound_position.z);
 
-    const auto orientation = std::array<std::float_t, 6>{forward.x, forward.y, forward.z, up.x, up.y, up.z};
+    check_error();
 
-    alSourcefv(sound.handle(), AL_ORIENTATION, orientation.data());
+    const auto& sound_forward = sound_transform.forward();
+    const auto& sound_up = math::vector3::up;
+
+    const auto sound_orientation = std::array<std::float_t, 6>{sound_forward.x, sound_forward.y, sound_forward.z, sound_up.x, sound_up.y, sound_up.z};
+
+    alSourcefv(sound, AL_ORIENTATION, sound_orientation.data());
 
     check_error();
   }

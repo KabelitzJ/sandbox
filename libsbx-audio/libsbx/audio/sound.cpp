@@ -9,8 +9,9 @@
 
 namespace sbx::audio {
 
-sound::sound(assets::asset_id sound_buffer_id, bool should_begin, bool is_looping, std::float_t gain, std::float_t pitch)
+sound::sound(assets::asset_id sound_buffer_id, type type, bool should_begin, bool should_loop, std::float_t gain, std::float_t pitch)
 : _sound_buffer_id{sound_buffer_id},
+  _type{type},
   _gain{gain},
   _pitch{pitch} {
   auto& assets_module = core::engine::get_module<assets::assets_module>();
@@ -28,8 +29,10 @@ sound::sound(assets::asset_id sound_buffer_id, bool should_begin, bool is_loopin
   set_gain(_gain);
   set_pitch(_pitch);
 
+  alSourcef(_source, AL_ROLLOFF_FACTOR, 1.0f);
+
   if (should_begin) {
-    play(is_looping);
+    play(should_loop);
   }
 }
 
@@ -47,16 +50,14 @@ sound::operator std::uint32_t() const {
   return handle();
 }
 
-auto sound::play(bool is_looping) -> void {
-  alSourcei(_source, AL_LOOPING, is_looping);
+auto sound::play(bool should_loop) -> void {
+  alSourcei(_source, AL_LOOPING, should_loop);
 
   check_error();
 
   alSourcePlay(_source);
 
   check_error();
-
-  set_gain(_gain);
 }
 
 auto sound::set_gain(std::float_t gain) -> void {

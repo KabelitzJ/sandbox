@@ -12,7 +12,15 @@ class sound : public assets::asset<assets::asset_type::sound> {
 
 public:
 
-  sound(assets::asset_id sound_buffer, bool should_begin = false, bool is_looping = false, std::float_t gain = 1.0f, std::float_t pitch = 1.0f);
+  enum class type : std::uint8_t {
+    master,
+    general,
+    music,
+    effect,
+    ambient
+  }; // enum class type
+
+  sound(assets::asset_id sound_buffer, type type = type::general, bool should_begin = false, bool should_loop = false, std::float_t gain = 1.0f, std::float_t pitch = 1.0f);
 
   ~sound() override;
 
@@ -31,6 +39,8 @@ private:
   assets::asset_id _sound_buffer_id;
 
   std::uint32_t _source;
+
+  type _type;
 
   std::float_t _gain;
   std::float_t _pitch;
