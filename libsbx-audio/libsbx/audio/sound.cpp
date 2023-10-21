@@ -1,13 +1,68 @@
 #include <libsbx/audio/sound.hpp>
 
+#include <libsbx/core/engine.hpp>
+
+#include <libsbx/assets/assets_module.hpp>
+
+#include <libsbx/audio/audio_module.hpp>
+#include <libsbx/audio/sound_buffer.hpp>
+
 namespace sbx::audio {
 
-sound::sound() {
+sound::sound(assets::asset_id sound_buffer_id, bool should_begin, bool is_looping, std::float_t gain, std::float_t pitch)
+: _sound_buffer_id{sound_buffer_id},
+  _gain{gain},
+  _pitch{pitch} {
+  auto& assets_module = core::engine::get_module<assets::assets_module>();
 
+  alGenSources(1, &_source);
+
+  check_error();
+
+  auto& sound_buffer = assets_module.get_asset<audio::sound_buffer>(_sound_buffer_id);
+
+  alSourcei(_source, AL_BUFFER, sound_buffer.handle());
+
+  check_error();
+
+  set_gain(_gain);
+  set_pitch(_pitch);
+
+  if (should_begin) {
+    play(is_looping);
+  }
 }
 
 sound::~sound() {
+  alDeleteSources(1, &_source);
 
+  check_error();
+}
+
+auto sound::play(bool is_looping) -> void {
+  alSourcei(_source, AL_LOOPING, is_looping);
+
+  check_error();
+
+  alSourcePlay(_source);
+
+  check_error();
+}
+
+auto sound::set_gain(std::float_t gain) -> void {
+  _gain = gain;
+
+  alSourcef(_source, AL_GAIN, _gain);
+
+  check_error();
+}
+
+auto sound::set_pitch(std::float_t pitch) -> void {
+  _pitch = pitch;
+
+  alSourcef(_source, AL_PITCH, _pitch);
+
+  check_error();
 }
 
 } // namespace sbx::audio

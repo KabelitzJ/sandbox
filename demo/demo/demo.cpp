@@ -121,98 +121,21 @@
 
 // }; // class demo_application
 
-#include <AL/al.h>
-#include <AL/alc.h>
-
-#include <AudioFile.h>
-
 class demo_application : public sbx::core::application {
 
 public:
 
   demo_application() {
     auto& assets_module = sbx::core::engine::get_module<sbx::assets::assets_module>();
+    auto& audio_module = sbx::core::engine::get_module<sbx::audio::audio_module>();
 
     assets_module.set_asset_directory("./demo/assets");
 
-    ALCdevice* _device;
-    ALCcontext* _context;
-    
-    _device = alcOpenDevice(nullptr);
+    const auto ambient_id = assets_module.load_asset<sbx::audio::sound_buffer>("res://audio/ambient.wav");
 
-    if (!_device) {
-      throw std::runtime_error("Failed to open audio device");
-    }
+    auto sound = sbx::audio::sound{ambient_id};
 
-    _context = alcCreateContext(_device, nullptr);
-
-    if (!alcMakeContextCurrent(_context)) {
-      throw std::runtime_error("Failed to make audio context current");
-    }
-
-    if (alGetError() != AL_NO_ERROR) {
-      throw std::runtime_error("Failed to initialize audio context");
-    }
-
-    auto source = ALuint{0};
-
-    alGenSources(1, &source);
-
-    if (alGetError() != AL_NO_ERROR) {
-      throw std::runtime_error("Failed to generate audio source");
-    }
-
-    alSourcef(source, AL_PITCH, 1);
-
-    if (alGetError() != AL_NO_ERROR) {
-      throw std::runtime_error("Failed to set audio source pitch");
-    }
-
-    alSourcef(source, AL_GAIN, 1);
-
-    if (alGetError() != AL_NO_ERROR) {
-      throw std::runtime_error("Failed to set audio source gain");
-    }
-
-    alSource3f(source, AL_POSITION, 0.0f, 0.0f, 0.0f);
-
-    if (alGetError() != AL_NO_ERROR) {
-      throw std::runtime_error("Failed to set audio source position");
-    }
-
-    alSource3f(source, AL_VELOCITY, 0.0f, 0.0f, 0.0f);
-
-    if (alGetError() != AL_NO_ERROR) {
-      throw std::runtime_error("Failed to set audio source velocity");
-    }
-
-    alSourcei(source, AL_LOOPING, AL_TRUE);
-
-    if (alGetError() != AL_NO_ERROR) {
-      throw std::runtime_error("Failed to set audio source looping");
-    }
-
-    auto buffer = ALuint{0};
-
-    alGenBuffers(1, &buffer);
-
-    if (alGetError() != AL_NO_ERROR) {
-      throw std::runtime_error("Failed to generate audio buffer");
-    }
-
-    auto audio_file = AudioFile<float>{};
-
-    auto path = assets_module.asset_path("res://audio/ambient.wav");
-
-    sbx::core::logger::info("Loading audio file: {}", path.string());
-
-    if (!audio_file.load(path.string())) {
-      throw std::runtime_error(fmt::format("Failed to load audio file: {}", path.string()));
-    }
-
-    audio_file.printSummary();
-
-    alcCloseDevice(_device);
+    sound.play(true);
   }
 
   ~demo_application() override = default;
