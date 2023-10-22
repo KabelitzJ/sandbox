@@ -14,7 +14,9 @@
 
 namespace sbx::audio {
 
-auto wave_loader::load(const std::filesystem::path& path) -> sound_buffer::handle_type {
+auto wave_loader::load(const std::filesystem::path& path) -> sound_buffer_data {
+  auto result = sound_buffer_data{};
+
   auto timer = utility::timer{};
 
   auto file = std::ifstream{path, std::ios::binary};
@@ -36,7 +38,6 @@ auto wave_loader::load(const std::filesystem::path& path) -> sound_buffer::handl
 
   file.close();
 
-  auto buffer = sound_buffer::handle_type{};
   auto channels = std::uint32_t{};
   auto sample_rate = std::uint32_t{};
   auto total_pcm_frame_count = std::uint64_t{};
@@ -47,17 +48,17 @@ auto wave_loader::load(const std::filesystem::path& path) -> sound_buffer::handl
     throw std::runtime_error{"Failed to load sound: " + path.string()};
   }
 
-  alGenBuffers(1, &buffer);
+  alGenBuffers(1, &result.buffer);
 
   check_error();
 
-  alBufferData(buffer, (channels == 2) ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16, sample_data, total_pcm_frame_count * channels * sizeof(std::int16_t), sample_rate);
+  alBufferData(result.buffer, (channels == 2) ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16, sample_data, total_pcm_frame_count * channels * sizeof(std::int16_t), sample_rate);
 
   check_error();
 
   core::logger::debug("Loaded sound: {} with {} channel{} ({}), {} sample rate, {} total pcm frame count", path.string(), channels, (channels > 1) ? "s" : "", (channels == 2) ? "stereo" : "mono", sample_rate, total_pcm_frame_count);
 
-  return buffer;
+  return result;
 }
 
 } // namespace sbx::audio

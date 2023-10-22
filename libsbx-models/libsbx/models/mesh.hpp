@@ -16,6 +16,8 @@
 
 #include <libsbx/assets/asset.hpp>
 
+#include <libsbx/io/loader_factory.hpp>
+
 #include <libsbx/math/vector2.hpp>
 #include <libsbx/math/vector3.hpp>
 #include <libsbx/math/vector4.hpp>
@@ -36,28 +38,14 @@
 
 namespace sbx::models {
 
-class mesh : public graphics::mesh<vertex3d>, public assets::asset<assets::asset_type::mesh> {
+struct mesh_data {
+  std::vector<vertex3d> vertices;
+  std::vector<std::uint32_t> indices;
+}; // struct mesh_data
+
+class mesh : public graphics::mesh<vertex3d>, public io::loader_factory<mesh, mesh_data>, public assets::asset<assets::asset_type::mesh> {
 
 public:
-
-  struct mesh_data {
-    std::vector<vertex3d> vertices;
-    std::vector<std::uint32_t> indices;
-  }; // struct mesh_data
-
-  template<typename Derived>
-  class loader {
-
-  protected:
-
-    template<typename... Extensions>
-    static auto register_extensions(Extensions&&... extensions) -> bool {
-      ((mesh::_loaders()[extensions] = &Derived::load), ...);
-
-      return true;
-    }
-
-  }; // struct loader
 
   mesh(const std::filesystem::path& path);
 
@@ -65,12 +53,7 @@ public:
   
 private:
 
-  using loader_container_type = std::unordered_map<std::string, std::function<mesh_data(const std::filesystem::path&)>>;
-
-  static auto _loaders() -> loader_container_type& {
-    static auto loaders = loader_container_type{};
-    return loaders;
-  }
+  
 
 }; // class mesh
 

@@ -17,18 +17,20 @@ sound_buffer::sound_buffer(const std::filesystem::path& path) {
 
   auto& loader = entry->second;
 
-  _buffer = std::invoke(loader, path);
+  const auto data = std::invoke(loader, path);
+
+  _buffer = data.buffer;
 }
 
 sound_buffer::~sound_buffer() {
 
 }
 
-auto sound_buffer::handle() const -> handle_type {
+auto sound_buffer::handle() const -> std::uint32_t {
   return _buffer;
 }
 
-sound_buffer::operator handle_type() const {
+sound_buffer::operator std::uint32_t() const {
   return _buffer;
 }
 

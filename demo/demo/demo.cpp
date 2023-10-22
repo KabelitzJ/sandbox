@@ -13,6 +13,7 @@
 #include <libsbx/math/math.hpp>
 #include <libsbx/memory/memory.hpp>
 #include <libsbx/signals/signals.hpp>
+#include <libsbx/bitmaps/bitmaps.hpp>
 #include <libsbx/ecs/ecs.hpp>
 #include <libsbx/core/core.hpp>
 #include <libsbx/async/async.hpp>

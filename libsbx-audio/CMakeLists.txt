@@ -49,6 +49,7 @@ target_link_libraries(
     drmp3::drmp3
     # Internal dependencies
     libsbx::utility
+    libsbx::io
     libsbx::core
     libsbx::assets
     libsbx::scenes

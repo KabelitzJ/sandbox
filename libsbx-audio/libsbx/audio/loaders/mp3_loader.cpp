@@ -5,8 +5,10 @@
 
 namespace sbx::audio {
 
-auto mp3_loader::load(const std::filesystem::path& path) -> sound_buffer::handle_type {
-  return 0;
+auto mp3_loader::load(const std::filesystem::path& path) -> sound_buffer_data{
+  auto buffer_data = sound_buffer_data{};
+
+  return buffer_data;
 }
 
 } // namespace sbx::audio

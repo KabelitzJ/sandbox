@@ -53,6 +53,7 @@ target_link_libraries(
     libsbx::math
     libsbx::memory
     libsbx::signals
+    libsbx::bitmaps
     libsbx::ecs
     libsbx::core
     libsbx::async

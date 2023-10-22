@@ -11,7 +11,7 @@ class mp3_loader : public sound_buffer::loader<mp3_loader> {
 
 public:
 
-  static auto load(const std::filesystem::path& path) -> sound_buffer::handle_type;
+  static auto load(const std::filesystem::path& path) -> sound_buffer_data;
 
 }; // class mp3_loader
 

@@ -11,48 +11,29 @@
 
 #include <libsbx/assets/assets.hpp>
 
+#include <libsbx/io/loader_factory.hpp>
+
 namespace sbx::audio {
 
-class sound_buffer : public assets::asset<assets::asset_type::sound> {
+struct sound_buffer_data {
+  std::uint32_t buffer;
+}; // struct sound_buffer_data
+
+class sound_buffer : public io::loader_factory<sound_buffer, sound_buffer_data>,  public assets::asset<assets::asset_type::sound> {
 
 public:
-
-  using handle_type = std::uint32_t;
-
-  template<typename Derived>
-  class loader {
-
-  protected:
-
-    template<typename... Extensions>
-    static auto register_extensions(Extensions&&... extensions) -> bool {
-      ((sound_buffer::_loaders()[extensions] = &Derived::load), ...);
-
-      return true;
-    }
-
-  }; // struct loader
 
   sound_buffer(const std::filesystem::path& path);
 
   ~sound_buffer() override;
 
-  auto handle() const -> handle_type;
+  auto handle() const -> std::uint32_t;
 
-  operator handle_type() const;
+  operator std::uint32_t() const;
 
 private:
 
-  using loader_container_type = std::unordered_map<std::string, std::function<handle_type(const std::filesystem::path&)>>;
-
-  static auto _loaders() -> loader_container_type& {
-    static auto loaders = loader_container_type{};
-    return loaders;
-  }
-
-  
-
-  handle_type _buffer;
+  std::uint32_t _buffer;
 
 }; // class sound_buffer
 

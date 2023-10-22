@@ -2,8 +2,8 @@
 
 namespace sbx::models {
 
-auto obj_loader::load(const std::filesystem::path& path) -> mesh::mesh_data {
-  auto data = mesh::mesh_data{};
+auto obj_loader::load(const std::filesystem::path& path) -> mesh_data {
+  auto data = mesh_data{};
 
   // [NOTE] KAJ 2023-05-29 : Old tinyobjloader API.
   auto attributes = tinyobj::attrib_t{};

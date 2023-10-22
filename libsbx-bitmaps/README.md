@@ -1,0 +1,3 @@
+# libsbx-bitmaps
+
+C++ library

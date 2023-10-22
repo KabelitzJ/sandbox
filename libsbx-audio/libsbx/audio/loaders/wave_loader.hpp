@@ -11,7 +11,7 @@ class wave_loader : public sound_buffer::loader<wave_loader> {
 
 public:
 
-  static auto load(const std::filesystem::path& path) -> sound_buffer::handle_type;
+  static auto load(const std::filesystem::path& path) -> sound_buffer_data;
 
 }; // class wave_loader
 
