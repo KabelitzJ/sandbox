@@ -89,6 +89,7 @@ public:
     ui_module.add_widget<sbx::ui::label>("Hello, World!", sbx::math::vector2u{25, 25}, font_roboto_id, sbx::math::color{1.0f, 1.0f, 1.0f, 1.0f});
 
     auto ambiebce_birds_sound_id = assets_module.load_asset<sbx::audio::sound_buffer>("res://audio/ambiebce.wav");
+    auto forest_sound_id = assets_module.load_asset<sbx::audio::sound_buffer>("res://audio/forest.wav");
 
     auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
 
@@ -98,7 +99,7 @@ public:
     monkey.add_component<sbx::scenes::static_mesh>(monkey_id, base_id);
     auto& monkey_rotation = monkey.add_component<sbx::scenes::script>("res://scripts/rotate.lua");
     monkey_rotation.set("speed", 75.0f);
-    monkey.add_component<sbx::audio::sound>(ambiebce_birds_sound_id, sbx::audio::sound::type::ambient, true, true);
+    monkey.add_component<sbx::audio::sound>(forest_sound_id, sbx::audio::sound::type::ambient, true, true, 8.0f, 1.0f);
 
     auto camera = scene.camera();
 
