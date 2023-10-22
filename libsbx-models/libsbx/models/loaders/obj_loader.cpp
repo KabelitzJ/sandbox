@@ -1,5 +1,7 @@
 #include <libsbx/models/loaders/obj_loader.hpp>
 
+#include <tiny_obj_loader.h>
+
 namespace sbx::models {
 
 auto obj_loader::load(const std::filesystem::path& path) -> mesh_data {

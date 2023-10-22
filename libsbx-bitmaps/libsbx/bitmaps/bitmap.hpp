@@ -14,7 +14,7 @@ namespace sbx::bitmaps {
 struct bitmap_data {
   std::uint32_t width;
   std::uint32_t height;
-  std::uint8_t* data;
+  std::uint8_t* buffer;
 }; // struct bitmap_data
 
 class bitmap : public io::loader_factory<bitmap, bitmap_data> {

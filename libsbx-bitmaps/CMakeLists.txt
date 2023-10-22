@@ -11,6 +11,7 @@ endif()
 add_library(${CMAKE_PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
 find_package(fmt REQUIRED)
+find_package(stb REQUIRED)
 
 target_sources(
   ${PROJECT_NAME}
@@ -35,6 +36,7 @@ target_link_libraries(
   PUBLIC
     # External dependencies
     fmt::fmt
+    stb::stb
     # Internal dependencies
     libsbx::utility
     libsbx::io
