@@ -24,8 +24,9 @@ public:
 
   protected:
 
-    static auto register_extensions(const std::string& extension) -> bool {
-      sound_buffer::_loaders()[extension] = &Derived::load;
+    template<typename... Extensions>
+    static auto register_extensions(Extensions&&... extensions) -> bool {
+      ((sound_buffer::_loaders()[extensions] = &Derived::load), ...);
 
       return true;
     }

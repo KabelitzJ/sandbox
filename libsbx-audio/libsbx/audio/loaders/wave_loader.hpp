@@ -7,7 +7,7 @@ namespace sbx::audio {
 
 class wave_loader : public sound_buffer::loader<wave_loader> {
 
-  inline static const auto is_registered = register_extensions(".wav");
+  inline static const auto is_registered = register_extensions(".wav", ".wave");
 
 public:
 
