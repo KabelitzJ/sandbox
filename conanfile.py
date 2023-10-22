@@ -91,6 +91,7 @@ class libsbx_recipe(ConanFile):
     self.requires("gtest/1.14.0")
     self.requires("openal-soft/1.22.2")
     self.requires("drwav/0.13.12")
+    self.requires("drmp3/0.6.34")
 
   def generate(self):
     deps = CMakeDeps(self)

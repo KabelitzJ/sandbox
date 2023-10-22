@@ -5,4 +5,7 @@
 #include <libsbx/audio/sound.hpp>
 #include <libsbx/audio/sound_buffer.hpp>
 
+#include <libsbx/audio/loaders/wave_loader.hpp>
+#include <libsbx/audio/loaders/mp3_loader.hpp>
+
 #endif // LIBSBX_AUDIO_HPP_

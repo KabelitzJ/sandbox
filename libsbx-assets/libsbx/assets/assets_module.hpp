@@ -99,7 +99,7 @@ public:
     }
   }
 
-  auto asset_path(const std::filesystem::path& path) -> std::filesystem::path {
+  auto asset_path(const std::filesystem::path& path) const -> std::filesystem::path {
     if (path.string().starts_with("res://")) {
       return (_asset_directory / path.string().substr(6)).make_preferred();
     }

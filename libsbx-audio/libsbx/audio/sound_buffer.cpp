@@ -1,73 +1,36 @@
 #include <libsbx/audio/sound_buffer.hpp>
 
-#include <cmath>
-#include <fstream>
+#include <libsbx/core/engine.hpp>
 
-#define DR_WAV_IMPLEMENTATION
-#include <dr_wav.h>
-
-#include <libsbx/units/time.hpp>
-
-#include <libsbx/utility/timer.hpp>
-
-#include <libsbx/core/logger.hpp>
-
-#include <libsbx/audio/audio_module.hpp>
+#include <libsbx/assets/assets_module.hpp>
 
 namespace sbx::audio {
 
 sound_buffer::sound_buffer(const std::filesystem::path& path) {
-  auto timer = utility::timer{};
+  const auto extension = path.extension().string();
 
-  auto file = std::ifstream{path, std::ios::binary};
+  if (const auto entry = _loaders().find(extension); entry != _loaders().end()) {
+    const auto& assets_module = core::engine::get_module<assets::assets_module>();
 
-  if (!file) {
-    throw std::runtime_error{"Failed to open file: " + path.string()};
+    const auto actual_path = assets_module.asset_path(path);
+
+    auto& loader = entry->second;
+
+    _buffer = std::invoke(loader, actual_path);
+  } else {
+   throw std::runtime_error{"Unsupported sound format: " + extension};
   }
-
-  file.seekg(0, std::ios::end);
-
-  const auto size = file.tellg();
-
-  file.seekg(0, std::ios::beg);
-
-  auto data = std::vector<std::uint8_t>{};
-  data.resize(size);
-
-  file.read(reinterpret_cast<char*>(data.data()), size);
-
-  file.close();
-
-  auto channels = std::uint32_t{};
-  auto sample_rate = std::uint32_t{};
-  auto total_pcm_frame_count = std::uint64_t{};
-
-  auto* sample_data = drwav_open_memory_and_read_pcm_frames_s16(reinterpret_cast<std::uint8_t*>(data.data()), size, &channels, &sample_rate, &total_pcm_frame_count, nullptr);
-
-  if (!sample_data) {
-    throw std::runtime_error{"Failed to load sound: " + path.string()};
-  }
-
-  alGenBuffers(1, &_buffer);
-
-  check_error();
-
-  alBufferData(_buffer, (channels == 2) ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16, sample_data, total_pcm_frame_count * channels * sizeof(std::int16_t), sample_rate);
-
-  check_error();
-
-  core::logger::debug("Loaded sound: {} with {} channel{} ({}), {} sample rate, {} total pcm frame count", path.string(), channels, (channels > 1) ? "s" : "", (channels == 2) ? "stereo" : "mono", sample_rate, total_pcm_frame_count);
 }
 
 sound_buffer::~sound_buffer() {
 
 }
 
-auto sound_buffer::handle() const -> ALuint {
+auto sound_buffer::handle() const -> handle_type {
   return _buffer;
 }
 
-sound_buffer::operator ALuint() const {
+sound_buffer::operator handle_type() const {
   return _buffer;
 }
 
