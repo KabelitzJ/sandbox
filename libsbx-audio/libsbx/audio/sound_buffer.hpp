@@ -50,6 +50,8 @@ private:
     return loaders;
   }
 
+  
+
   handle_type _buffer;
 
 }; // class sound_buffer

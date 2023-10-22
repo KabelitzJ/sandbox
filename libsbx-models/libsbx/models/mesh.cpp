@@ -9,72 +9,25 @@
 
 namespace sbx::models {
 
-struct mesh_data {
-  std::vector<vertex3d> vertices;
-  std::vector<std::uint32_t> indices;
-}; // struct mesh_data
-
-static auto _load_mesh_data(const std::filesystem::path& path) -> mesh_data {
-  auto data = mesh_data{};
-
-  // [NOTE] KAJ 2023-05-29 : Old tinyobjloader API.
-  auto attributes = tinyobj::attrib_t{};
-  auto shapes = std::vector<tinyobj::shape_t>{};
-  auto materials = std::vector<tinyobj::material_t>{};
-  auto error = std::string{};
-  auto warning = std::string{};
-
-  const auto result = tinyobj::LoadObj(&attributes, &shapes, &materials, &warning, &error, path.string().c_str(), path.parent_path().string().c_str());
-
-  if (!warning.empty()) {
-    core::logger::warn("{}", warning);
-  }
-
-  if (!error.empty()) {
-    core::logger::error("{}", error);
-  }
-
-  if (!result) {
-    throw std::runtime_error{fmt::format("Failed to load mesh '{}'", path.string())};
-  }
-
-  auto unique_vertices = std::unordered_map<vertex3d, std::uint32_t>{};
-
-  for (const auto& shape : shapes) {
-    for (const auto& index : shape.mesh.indices) {
-      auto vertex = vertex3d{};
-
-      vertex.position.x = attributes.vertices[3 * index.vertex_index + 0];
-      vertex.position.y = attributes.vertices[3 * index.vertex_index + 1];
-      vertex.position.z = attributes.vertices[3 * index.vertex_index + 2];
-
-      vertex.normal.x = attributes.normals[3 * index.normal_index + 0];
-      vertex.normal.y = attributes.normals[3 * index.normal_index + 1];
-      vertex.normal.z = attributes.normals[3 * index.normal_index + 2];
-
-      vertex.uv.x = attributes.texcoords[2 * index.texcoord_index + 0];
-      vertex.uv.y = attributes.texcoords[2 * index.texcoord_index + 1];
-
-      if (auto entry = unique_vertices.find(vertex); entry != unique_vertices.end()) {
-        data.indices.push_back(entry->second);
-      } else {
-        unique_vertices.insert({vertex, data.vertices.size()});
-        data.indices.push_back(data.vertices.size());
-        data.vertices.push_back(vertex);
-      }
-    }
-  }
-
-  return data;
-}
-
 mesh::mesh(const std::filesystem::path& path)
 : graphics::mesh<vertex3d>{} {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
   const auto& logical_device = graphics_module.logical_device();
 
-  const auto [vertices, indices] = _load_mesh_data(path);
+  const auto extension = path.extension().string();
+
+  const auto entry = _loaders().find(extension);
+
+  if (entry == _loaders().end()) {
+    throw std::runtime_error{"No loader found for extension: " + extension};
+  }
+
+  auto& loader = entry->second;
+
+  auto timer = utility::timer{};
+
+  auto [vertices, indices] = std::invoke(loader, path);
 
   auto fence_create_info = VkFenceCreateInfo{};
   fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
@@ -124,6 +77,8 @@ mesh::mesh(const std::filesystem::path& path)
   graphics::validate(vkWaitForFences(logical_device, 1, &fence, true, std::numeric_limits<std::uint64_t>::max()));
 
 	vkDestroyFence(logical_device, fence, nullptr);
+
+  core::logger::debug("Loaded mesh: {}, vertices: {}, indices: {} in {} ms", path.string(), vertices.size(), indices.size(), units::quantity_cast<units::millisecond>(timer.elapsed()).value());
 }
 
 mesh::~mesh() {

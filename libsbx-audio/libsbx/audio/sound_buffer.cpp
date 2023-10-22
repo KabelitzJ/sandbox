@@ -9,17 +9,15 @@ namespace sbx::audio {
 sound_buffer::sound_buffer(const std::filesystem::path& path) {
   const auto extension = path.extension().string();
 
-  if (const auto entry = _loaders().find(extension); entry != _loaders().end()) {
-    const auto& assets_module = core::engine::get_module<assets::assets_module>();
+  const auto entry = _loaders().find(extension);
 
-    const auto actual_path = assets_module.asset_path(path);
-
-    auto& loader = entry->second;
-
-    _buffer = std::invoke(loader, actual_path);
-  } else {
-   throw std::runtime_error{"Unsupported sound format: " + extension};
+  if (entry == _loaders().end()) {
+    throw std::runtime_error{"No loader found for extension: " + extension};
   }
+
+  auto& loader = entry->second;
+
+  _buffer = std::invoke(loader, path);
 }
 
 sound_buffer::~sound_buffer() {
