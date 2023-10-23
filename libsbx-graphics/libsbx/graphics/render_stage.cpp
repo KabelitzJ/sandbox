@@ -10,7 +10,7 @@ class subpass_description {
 
 public:
 
-  subpass_description(VkPipelineBindPoint bind_point, std::vector<VkAttachmentReference>&& color_attachments, const std::optional<std::uint32_t>& depth_attachment)
+  subpass_description(VkPipelineBindPoint bind_point, std::vector<VkAttachmentReference>&& color_attachments, const std::optional<std::uint32_t>& depth_attachment, const std::optional<std::uint32_t>& resolve_attachment)
   : _color_attachment{std::move(color_attachments)} {
     _description = VkSubpassDescription{};
     _description.pipelineBindPoint = bind_point;
@@ -20,7 +20,15 @@ public:
     if (depth_attachment) {
       _depth_attachment.attachment = *depth_attachment;
       _depth_attachment.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
       _description.pDepthStencilAttachment = &_depth_attachment;
+    }
+
+    if (resolve_attachment) {
+      _resolve_attachment.attachment = *resolve_attachment;
+      _resolve_attachment.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+      _description.pResolveAttachments = &_resolve_attachment;
     }
   }
 
@@ -33,6 +41,7 @@ private:
   VkSubpassDescription _description;
   std::vector<VkAttachmentReference> _color_attachment;
   VkAttachmentReference _depth_attachment;
+  VkAttachmentReference _resolve_attachment;
 
 }; // class subpass_description
 
@@ -58,11 +67,12 @@ render_stage::render_stage(std::vector<graphics::attachment>&& attachments, std:
         for (const auto& subpass : _subpass_bindings) {
           if (auto bindings = subpass.attachment_bindings(); std::find(bindings.begin(), bindings.end(), attachment.binding()) != bindings.end()) {
             _subpass_attachment_counts[subpass.binding()]++;
+            
+            if (attachment.is_multi_sampled()) {
+              _subpass_multi_sampled[subpass.binding()] = true;
+            }
           }
 
-          if (attachment.is_multi_sampled()) {
-            _subpass_multi_sampled[subpass.binding()] = true;
-          }
         }
 
         break;
@@ -211,9 +221,11 @@ auto render_stage::_create_render_pass(VkFormat depth_format, VkFormat surface_f
   auto subpass_dependencies = std::vector<VkSubpassDependency>{};
 
   for (const auto& subpass : _subpass_bindings) {
-		auto subpass_colour_attachments = std::vector<VkAttachmentReference>{};
+		auto subpass_color_attachments = std::vector<VkAttachmentReference>{};
 
 		auto depth_attachment = std::optional<std::uint32_t>{};
+    auto resolve_attachment = std::optional<std::uint32_t>{};
+    auto has_multi_sampled_attachment = false;
 
 		for (const auto& attachment_binding : subpass.attachment_bindings()) {
 			auto image_attachment = find_attachment(attachment_binding);
@@ -222,19 +234,28 @@ auto render_stage::_create_render_pass(VkFormat depth_format, VkFormat surface_f
 				throw std::runtime_error{fmt::format("Failed to find attachment with binding {}", attachment_binding)};
 			}
 
+      has_multi_sampled_attachment |= image_attachment->is_multi_sampled();
+
 			if (image_attachment->image_type() == attachment::type::depth) {
 				depth_attachment = image_attachment->binding();
 				continue;
 			}
 
-			VkAttachmentReference attachmentReference = {};
-			attachmentReference.attachment = image_attachment->binding();
-			attachmentReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+      if (image_attachment->image_type() == attachment::type::swapchain) {
+        resolve_attachment = image_attachment->binding();
+        continue;
+      }
 
-			subpass_colour_attachments.emplace_back(attachmentReference);
+			auto attachment_reference = VkAttachmentReference{};
+			attachment_reference.attachment = image_attachment->binding();
+			attachment_reference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+			subpass_color_attachments.push_back(attachment_reference);
 		}
 
-		subpasses.push_back(subpass_description{VK_PIPELINE_BIND_POINT_GRAPHICS, std::move(subpass_colour_attachments), depth_attachment});
+    auto temp = 0;
+
+		subpasses.push_back(subpass_description{VK_PIPELINE_BIND_POINT_GRAPHICS, std::move(subpass_color_attachments), depth_attachment, (has_multi_sampled_attachment) ? resolve_attachment : std::nullopt});
 
 		auto subpass_dependency = VkSubpassDependency{};
 		subpass_dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
