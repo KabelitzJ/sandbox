@@ -4,6 +4,7 @@
 #include <string>
 #include <cinttypes>
 #include <optional>
+#include <vector>
 
 #include <vulkan/vulkan.hpp>
 
@@ -31,10 +32,11 @@ public:
     swapchain
   }; // enum class type
 
-  attachment(std::uint32_t binding, std::string name, type type, VkFormat format = VK_FORMAT_R8G8B8A8_UNORM, const math::color& clear_color = math::color{0.0f, 0.0f, 0.0f, 1.0f}) noexcept
+  attachment(std::uint32_t binding, std::string name, type type, bool is_multi_sampled = false, VkFormat format = VK_FORMAT_R8G8B8A8_UNORM, const math::color& clear_color = math::color{0.0f, 0.0f, 0.0f, 1.0f}) noexcept
   : _binding{binding}, 
     _name{std::move(name)}, 
     _type{type}, 
+    _is_multi_sampled{is_multi_sampled},
     _format{format}, 
     _clear_color{clear_color} { }
 
@@ -50,6 +52,10 @@ public:
     return _type;
   }
 
+  auto is_multi_sampled() const noexcept -> bool {
+    return _is_multi_sampled;
+  }
+
   auto format() const noexcept -> VkFormat {
     return _format;
   }
@@ -63,6 +69,7 @@ private:
   std::uint32_t _binding;
   std::string _name;
   type _type;
+  bool _is_multi_sampled;
   VkFormat _format;
   math::color _clear_color;
 
@@ -254,6 +261,10 @@ public:
     return _render_pass;
   }
 
+  auto is_multi_sampled(std::uint32_t subpass) const noexcept -> bool {
+    return _subpass_multi_sampled[subpass];
+  }
+
   auto update() -> void;
 
   auto rebuild(const swapchain& swapchain) -> void;
@@ -282,6 +293,8 @@ private:
   std::vector<std::uint32_t> _subpass_attachment_counts;
   std::optional<graphics::attachment> _depth_attachment;
   std::optional<graphics::attachment> _swapchain_attachment;
+
+  std::vector<bool> _subpass_multi_sampled;
 
   graphics::render_area _render_area;
 

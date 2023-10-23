@@ -27,6 +27,7 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
   const auto& logical_device = graphics_module.logical_device();
+  const auto& physical_device = graphics_module.physical_device();
   const auto& render_stage = graphics_module.render_stage(stage);
 
   const auto actual_path = assets_module.asset_path(path);
@@ -175,7 +176,7 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
   auto multisample_state = VkPipelineMultisampleStateCreateInfo{};
   multisample_state.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
   multisample_state.sampleShadingEnable = false;
-  multisample_state.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+  multisample_state.rasterizationSamples = render_stage.is_multi_sampled(stage.subpass) ? physical_device.msaa_samples() : VK_SAMPLE_COUNT_1_BIT;
 
   auto color_blend_attachment = VkPipelineColorBlendAttachmentState{};
 

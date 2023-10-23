@@ -44,6 +44,8 @@ render_stage::render_stage(std::vector<graphics::attachment>&& attachments, std:
   _subpass_attachment_counts{static_cast<std::uint32_t>(_subpass_bindings.size()), 0},
   _is_outdated{true} {
 
+  _subpass_multi_sampled.resize(_subpass_bindings.size(), false);
+
   for (const auto& attachment : _attachments) {
     auto clear_value = VkClearValue{};
 
@@ -56,6 +58,10 @@ render_stage::render_stage(std::vector<graphics::attachment>&& attachments, std:
         for (const auto& subpass : _subpass_bindings) {
           if (auto bindings = subpass.attachment_bindings(); std::find(bindings.begin(), bindings.end(), attachment.binding()) != bindings.end()) {
             _subpass_attachment_counts[subpass.binding()]++;
+          }
+
+          if (attachment.is_multi_sampled()) {
+            _subpass_multi_sampled[subpass.binding()] = true;
           }
         }
 
@@ -118,10 +124,13 @@ auto render_stage::rebuild(const swapchain& swapchain) -> void {
 
   update();
 
+  auto& physical_device = graphics_module.physical_device();
   auto& surface = graphics_module.surface();
 
+  const auto msaa_samples = physical_device.msaa_samples();
+
   if (_depth_attachment) {
-    _depth_stencil = std::make_unique<graphics::depth_image>(_render_area.extent(), VK_SAMPLE_COUNT_1_BIT);
+    _depth_stencil = std::make_unique<graphics::depth_image>(_render_area.extent(), msaa_samples);
   }
 
   if (!_render_pass) {
@@ -131,7 +140,8 @@ auto render_stage::rebuild(const swapchain& swapchain) -> void {
   for (const auto& attachment : _attachments) {
     switch (attachment.image_type()) {
       case attachment::type::image: {
-        _image_attachments.push_back(std::make_unique<graphics::image2d>(_render_area.extent(), attachment.format(), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_STORAGE_BIT, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_SAMPLE_COUNT_1_BIT));
+        const auto samples = attachment.is_multi_sampled() ? msaa_samples : VK_SAMPLE_COUNT_1_BIT;
+        _image_attachments.push_back(std::make_unique<graphics::image2d>(_render_area.extent(), attachment.format(), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_STORAGE_BIT, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, samples));
         break;
       }
       case attachment::type::depth: {
@@ -160,12 +170,13 @@ auto render_stage::framebuffer(std::uint32_t index) noexcept -> const VkFramebuf
 auto render_stage::_create_render_pass(VkFormat depth_format, VkFormat surface_format) -> void {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
+  auto& physical_device = graphics_module.physical_device();
   auto& logical_device = graphics_module.logical_device();
 
   auto attachments = std::vector<VkAttachmentDescription>{};
 
   for (const auto& attachment : _attachments) {
-    const auto attachment_samples = VK_SAMPLE_COUNT_1_BIT;
+    const auto attachment_samples = attachment.is_multi_sampled() ? physical_device.msaa_samples() : VK_SAMPLE_COUNT_1_BIT;
 
     auto attachment_description = VkAttachmentDescription{};
     attachment_description.samples = attachment_samples;

@@ -31,8 +31,8 @@ public:
 
   demo_renderer() { 
     auto render_pass_attachments_1 = std::vector<sbx::graphics::attachment>{
-      sbx::graphics::attachment{0, "swapchain", sbx::graphics::attachment::type::swapchain, VK_FORMAT_UNDEFINED},
-      sbx::graphics::attachment{1, "depth", sbx::graphics::attachment::type::depth}
+      sbx::graphics::attachment{0, "swapchain", sbx::graphics::attachment::type::swapchain, true, VK_FORMAT_UNDEFINED},
+      sbx::graphics::attachment{1, "depth", sbx::graphics::attachment::type::depth, true}
     };
 
     auto render_pass_subpass_bindings_1 = std::vector<sbx::graphics::subpass_binding>{
