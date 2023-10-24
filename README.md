@@ -1,6 +1,12 @@
 # Sandbox Game Engine
 
+[![Language: C++](https://img.shields.io/badge/Language-C%2B%2B20-blue?logo=c%2B%2B)](https://isocpp.org/)
+[![Version: 0.1.0](https://img.shields.io/badge/version-0.1.0-red?logo=git)](https://github.com/KabelitzJ/sandbox/releases/tag/v0.1.0)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green)](https://opensource.org/licenses/MIT)
+
 This is a game engine project that is currently under heavy development and is mainly for educational purposes.
+
+It is written in `C++20` and tries to use modern C++ features and best practices wherever possible.
 
 ## 📑 Table of Contents
 
