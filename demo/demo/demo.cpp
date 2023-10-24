@@ -87,7 +87,7 @@ public:
 
     ui_module.add_widget<sbx::ui::label>("Hello, World!", sbx::math::vector2u{25, 25}, font_roboto_id, sbx::math::color{1.0f, 1.0f, 1.0f, 1.0f});
 
-    auto ambiebce_birds_sound_id = assets_module.load_asset<sbx::audio::sound_buffer>("res://audio/ambiebce.wav");
+    auto ambience_birds_sound_id = assets_module.load_asset<sbx::audio::sound_buffer>("res://audio/ambience.wav");
     auto forest_sound_id = assets_module.load_asset<sbx::audio::sound_buffer>("res://audio/forest.wav");
 
     auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
