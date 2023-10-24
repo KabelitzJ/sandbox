@@ -146,7 +146,7 @@ public:
     }
   }
 
-};
+}; // class demo_application
 
 auto sbx::core::create_application() -> std::unique_ptr<sbx::core::application> {
   return std::make_unique<demo_application>();
@@ -179,7 +179,7 @@ public:
     // Initialize the renderer
   };
 
-};
+}; // class demo_renderer
 
 class demo_application : public sbx::core::application {
 
@@ -195,7 +195,7 @@ public:
     graphics_module.set_renderer<demo_renderer>();
   }
 
-};
+}; // class demo_application
 
 ```
 
