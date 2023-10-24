@@ -10,7 +10,6 @@ It is written in `C++20` and tries to use modern C++ features and best practices
 
 ## 📑 Table of Contents
 
-- [📑 Table of Contents](#-table-of-contents)
 - [🚀 Features](#-features)
 - [🛠️ Getting Started](#️-getting-started)
   - [📋 Prerequisites](#-prerequisites)
