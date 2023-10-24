@@ -118,6 +118,7 @@ private:
     _modules.insert({type, std::invoke(factory.create)});
     _module_by_stage[factory.stage].push_back(type);
   }
+
   auto _destroy_module(const std::type_index& type) -> void {
     if (!_modules.at(type)) {
       return;
