@@ -4,20 +4,21 @@ This is a game engine project that is currently under heavy development and is m
 
 ## 📑 Table of Contents
 
-- [🚀 Features](#🚀-features)
-- [Getting Started](#🛠️-getting-started)
-  - [Prerequisites](#📋-prerequisites)
-  - [Cloning the repository](#📥-cloning-the-repository)
-  - [Installing dependencies](#📦-installing-dependencies)
-  - [Building](#🔨-building)
-  - [Running](#🚀-running)
-- [Examples](#🎲-examples)
-  - [Create a new application](#📱-create-a-new-application)
-  - [Create a new renderer](#🎨-create-a-new-renderer)
-  - [Define render passes and subrenderers](#🎬-define-render-passes-and-subrenderers)
-- [Contributing and bug reports](#🤝-contributing-and-bug-reports)
-- [License](#📝-license)
-- [Contact](#📧-contact)
+- [📑 Table of Contents](#-table-of-contents)
+- [🚀 Features](#-features)
+- [🛠️ Getting Started](#️-getting-started)
+  - [📋 Prerequisites](#-prerequisites)
+  - [📥 Cloning the repository](#-cloning-the-repository)
+  - [📦 Installing dependencies](#-installing-dependencies)
+  - [🔨 Building](#-building)
+  - [🚀 Running](#-running)
+- [🎲 Examples](#-examples)
+  - [📱 Create a new application](#-create-a-new-application)
+  - [🎨 Create a new renderer](#-create-a-new-renderer)
+  - [🎬 Define render passes and subrenderers](#-define-render-passes-and-subrenderers)
+- [🤝 Contributing and bug reports](#-contributing-and-bug-reports)
+- [📝 License](#-license)
+- [📧 Contact](#-contact)
 
 ## 🚀 Features
 
