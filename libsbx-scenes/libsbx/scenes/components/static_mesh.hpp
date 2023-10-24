@@ -3,10 +3,6 @@
 
 #include <libsbx/assets/asset.hpp>
 
-#include <libsbx/models/mesh.hpp>
-
-#include <libsbx/graphics/images/image2d.hpp>
-
 namespace sbx::scenes {
 
 class static_mesh final {

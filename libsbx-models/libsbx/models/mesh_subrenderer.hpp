@@ -1,45 +1,31 @@
-#ifndef LIBSBX_SCENES_SCENE_SUBRENDERER_HPP_
-#define LIBSBX_SCENES_SCENE_SUBRENDERER_HPP_
+#ifndef LIBSBX_MODELS_MESH_SUBRENDERER_HPP_
+#define LIBSBX_MODELS_MESH_SUBRENDERER_HPP_
 
-#include <memory>
+#include <filesystem>
 
-#include <libsbx/math/vector3.hpp>
-#include <libsbx/math/transform.hpp>
-
-#include <libsbx/models/mesh.hpp>
-#include <libsbx/models/vertex3d.hpp>
-
-#include <libsbx/core/logger.hpp>
-
-#include <libsbx/devices/devices_module.hpp>
+#include <libsbx/math/matrix4x4.hpp>
 
 #include <libsbx/graphics/subrenderer.hpp>
-
+#include <libsbx/graphics/pipeline/pipeline.hpp>
 #include <libsbx/graphics/pipeline/graphics_pipeline.hpp>
-
-#include <libsbx/graphics/buffer/uniform_handler.hpp>
-#include <libsbx/graphics/buffer/push_handler.hpp>
 #include <libsbx/graphics/descriptor/descriptor_handler.hpp>
-
-#include <libsbx/graphics/pipeline/graphics_pipeline.hpp>
-
-#include <libsbx/models/pipeline.hpp>
+#include <libsbx/graphics/buffer/uniform_handler.hpp>
 
 #include <libsbx/scenes/scenes_module.hpp>
-
+#include <libsbx/scenes/scene.hpp>
+#include <libsbx/scenes/node.hpp>
 #include <libsbx/scenes/components/static_mesh.hpp>
-#include <libsbx/scenes/components/relationship.hpp>
-#include <libsbx/scenes/components/id.hpp>
-#include <libsbx/scenes/components/camera.hpp>
-#include <libsbx/scenes/components/script.hpp>
 
-namespace sbx::scenes {
+#include <libsbx/models/vertex3d.hpp>
+#include <libsbx/models/pipeline.hpp>
 
-class scene_subrenderer final : public graphics::subrenderer {
+namespace sbx::models {
+
+class mesh_subrenderer final : public graphics::subrenderer {
 
 public:
 
-  scene_subrenderer(const std::filesystem::path& path, const graphics::pipeline::stage& stage)
+  mesh_subrenderer(const std::filesystem::path& path, const graphics::pipeline::stage& stage)
   : graphics::subrenderer{stage},
     _pipeline{path, stage},
     _camera_position{2.0f, 2.0f, 1.0f},
@@ -60,7 +46,7 @@ public:
     };
   }
 
-  ~scene_subrenderer() override = default;
+  ~mesh_subrenderer() override = default;
 
   auto render(graphics::command_buffer& command_buffer) -> void override {
     auto& devices_module = core::engine::get_module<devices::devices_module>();
@@ -103,7 +89,7 @@ public:
 
 private:
 
-  auto _update_script(node& node) -> void {
+  auto _update_script(scenes::node& node) -> void {
     auto& transform = node.get_component<math::transform>();
 
     auto& script = node.get_component<scenes::script>();
@@ -115,7 +101,7 @@ private:
     transform = script.get<math::transform>("transform");
   }
 
-  auto _render_node(node& node, graphics::command_buffer& command_buffer) -> void {
+  auto _render_node(scenes::node& node, graphics::command_buffer& command_buffer) -> void {
     auto& assets_module = core::engine::get_module<assets::assets_module>();
 
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
@@ -160,7 +146,7 @@ private:
     graphics::descriptor_handler descriptor_handler;
   }; // struct uniform_data
 
-  models::pipeline _pipeline;
+  pipeline _pipeline;
 
   math::vector3 _camera_position;
   math::vector3 _light_position;
@@ -172,8 +158,8 @@ private:
 
   graphics::uniform_handler _scene_uniform_handler;
 
-}; // class scene_subrenderer
+}; // class mesh_subrenderer
 
-} // namespace sbx::scenes
+} // namespace sbx::models
 
-#endif // LIBSBX_SCENES_SCENE_SUBRENDERER_HPP_
+#endif // LIBSBX_MODELS_MESH_SUBRENDERER_HPP_
