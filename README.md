@@ -4,7 +4,7 @@ This is a game engine project that is currently under heavy development and is m
 
 ## 📑 Table of Contents
 
-- [Features](#🚀-features)
+- [🚀 Features](#🚀-features)
 - [Getting Started](#🛠️-getting-started)
   - [Prerequisites](#📋-prerequisites)
   - [Cloning the repository](#📥-cloning-the-repository)
