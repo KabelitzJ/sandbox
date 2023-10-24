@@ -4,6 +4,7 @@
 #include <ranges>
 
 #include <libsbx/core/engine.hpp>
+#include <libsbx/core/logger.hpp>
 
 #include <libsbx/graphics/graphics_module.hpp>
 
@@ -74,10 +75,14 @@ swapchain::swapchain(const VkExtent2D& extent, const std::unique_ptr<swapchain>&
 
 	if (surface_capabilities.supportedUsageFlags & VK_IMAGE_USAGE_TRANSFER_SRC_BIT) {
 		swapchain_create_info.imageUsage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+    core::logger::debug("Swapchain supports VK_IMAGE_USAGE_TRANSFER_SRC_BIT");
   }
 
 	if (surface_capabilities.supportedUsageFlags & VK_IMAGE_USAGE_TRANSFER_DST_BIT) {
 		swapchain_create_info.imageUsage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+    core::logger::debug("Swapchain supports VK_IMAGE_USAGE_TRANSFER_DST_BIT");
+  } else {
+    throw std::runtime_error("Swapchain does not support VK_IMAGE_USAGE_TRANSFER_DST_BIT");
   }
 
 	if (old_swapchain) {

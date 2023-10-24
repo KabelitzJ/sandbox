@@ -49,6 +49,8 @@ public:
 
 	static auto copy_image(const VkImage& src_image, VkImage& dst_image, VkDeviceMemory& dst_image_memory, VkFormat src_format, const VkExtent3D& extent, VkImageLayout src_image_layout, std::uint32_t mip_level, std::uint32_t array_layer) -> bool;
 
+  static auto blit_image(const VkImage& src_image, const VkImage& dst_image, const VkExtent3D& extent, VkImageLayout src_image_layout, VkImageLayout dst_image_layout, VkFilter filter, VkImageAspectFlags image_aspect, std::uint32_t mip_level, std::uint32_t array_layer) -> bool;
+
   auto write_descriptor_set(std::uint32_t binding, VkDescriptorType descriptor_type) const noexcept -> graphics::write_descriptor_set override;
 
   auto extent() const noexcept -> const VkExtent3D&;

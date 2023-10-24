@@ -32,11 +32,10 @@ public:
     swapchain
   }; // enum class type
 
-  attachment(std::uint32_t binding, std::string name, type type, bool is_multi_sampled = false, VkFormat format = VK_FORMAT_R8G8B8A8_UNORM, const math::color& clear_color = math::color{0.0f, 0.0f, 0.0f, 1.0f}) noexcept
+  attachment(std::uint32_t binding, std::string name, type type, VkFormat format = VK_FORMAT_R8G8B8A8_UNORM, const math::color& clear_color = math::color{0.0f, 0.0f, 0.0f, 1.0f}) noexcept
   : _binding{binding}, 
     _name{std::move(name)}, 
-    _type{type}, 
-    _is_multi_sampled{is_multi_sampled},
+    _type{type},
     _format{format}, 
     _clear_color{clear_color} { }
 
@@ -50,10 +49,6 @@ public:
 
   auto image_type() const noexcept -> type {
     return _type;
-  }
-
-  auto is_multi_sampled() const noexcept -> bool {
-    return _is_multi_sampled;
   }
 
   auto format() const noexcept -> VkFormat {
@@ -261,10 +256,6 @@ public:
     return _render_pass;
   }
 
-  auto is_multi_sampled(std::uint32_t subpass) const noexcept -> bool {
-    return _subpass_multi_sampled[subpass];
-  }
-
   auto update() -> void;
 
   auto rebuild(const swapchain& swapchain) -> void;
@@ -284,17 +275,15 @@ private:
 
   VkRenderPass _render_pass;
 
-  std::unique_ptr<graphics::depth_image> _depth_stencil;
+  std::unique_ptr<graphics::depth_image> _depth_image;
+  std::vector<std::unique_ptr<graphics::image2d>> _image_attachments;
 
   std::vector<VkFramebuffer> _framebuffers;
-  std::vector<std::unique_ptr<graphics::image2d>> _image_attachments;
 
   std::vector<VkClearValue> _clear_values;
   std::vector<std::uint32_t> _subpass_attachment_counts;
   std::optional<graphics::attachment> _depth_attachment;
   std::optional<graphics::attachment> _swapchain_attachment;
-
-  std::vector<bool> _subpass_multi_sampled;
 
   graphics::render_area _render_area;
 

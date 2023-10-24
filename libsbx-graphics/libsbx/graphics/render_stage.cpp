@@ -10,7 +10,7 @@ class subpass_description {
 
 public:
 
-  subpass_description(VkPipelineBindPoint bind_point, std::vector<VkAttachmentReference>&& color_attachments, const std::optional<std::uint32_t>& depth_attachment, const std::optional<std::uint32_t>& resolve_attachment)
+  subpass_description(VkPipelineBindPoint bind_point, std::vector<VkAttachmentReference>&& color_attachments, const std::optional<std::uint32_t>& depth_attachment)
   : _color_attachment{std::move(color_attachments)} {
     _description = VkSubpassDescription{};
     _description.pipelineBindPoint = bind_point;
@@ -23,13 +23,6 @@ public:
 
       _description.pDepthStencilAttachment = &_depth_attachment;
     }
-
-    if (resolve_attachment) {
-      _resolve_attachment.attachment = *resolve_attachment;
-      _resolve_attachment.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-      _description.pResolveAttachments = &_resolve_attachment;
-    }
   }
 
   auto description() const noexcept -> const VkSubpassDescription& {
@@ -41,7 +34,6 @@ private:
   VkSubpassDescription _description;
   std::vector<VkAttachmentReference> _color_attachment;
   VkAttachmentReference _depth_attachment;
-  VkAttachmentReference _resolve_attachment;
 
 }; // class subpass_description
 
@@ -52,8 +44,6 @@ render_stage::render_stage(std::vector<graphics::attachment>&& attachments, std:
   _render_pass{nullptr},
   _subpass_attachment_counts{static_cast<std::uint32_t>(_subpass_bindings.size()), 0},
   _is_outdated{true} {
-
-  _subpass_multi_sampled.resize(_subpass_bindings.size(), false);
 
   for (const auto& attachment : _attachments) {
     auto clear_value = VkClearValue{};
@@ -67,12 +57,7 @@ render_stage::render_stage(std::vector<graphics::attachment>&& attachments, std:
         for (const auto& subpass : _subpass_bindings) {
           if (auto bindings = subpass.attachment_bindings(); std::find(bindings.begin(), bindings.end(), attachment.binding()) != bindings.end()) {
             _subpass_attachment_counts[subpass.binding()]++;
-            
-            if (attachment.is_multi_sampled()) {
-              _subpass_multi_sampled[subpass.binding()] = true;
-            }
           }
-
         }
 
         break;
@@ -134,24 +119,20 @@ auto render_stage::rebuild(const swapchain& swapchain) -> void {
 
   update();
 
-  auto& physical_device = graphics_module.physical_device();
   auto& surface = graphics_module.surface();
 
-  const auto msaa_samples = physical_device.msaa_samples();
-
   if (_depth_attachment) {
-    _depth_stencil = std::make_unique<graphics::depth_image>(_render_area.extent(), msaa_samples);
+    _depth_image = std::make_unique<graphics::depth_image>(_render_area.extent(), VK_SAMPLE_COUNT_1_BIT);
   }
 
   if (!_render_pass) {
-    _create_render_pass(_depth_stencil ? _depth_stencil->format() : VK_FORMAT_UNDEFINED, surface.format().format);
+    _create_render_pass(_depth_image ? _depth_image->format() : VK_FORMAT_UNDEFINED, surface.format().format);
   }
 
   for (const auto& attachment : _attachments) {
     switch (attachment.image_type()) {
       case attachment::type::image: {
-        const auto samples = attachment.is_multi_sampled() ? msaa_samples : VK_SAMPLE_COUNT_1_BIT;
-        _image_attachments.push_back(std::make_unique<graphics::image2d>(_render_area.extent(), attachment.format(), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_STORAGE_BIT, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, samples));
+        _image_attachments.push_back(std::make_unique<graphics::image2d>(_render_area.extent(), attachment.format(), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_STORAGE_BIT, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_SAMPLE_COUNT_1_BIT));
         break;
       }
       case attachment::type::depth: {
@@ -180,16 +161,13 @@ auto render_stage::framebuffer(std::uint32_t index) noexcept -> const VkFramebuf
 auto render_stage::_create_render_pass(VkFormat depth_format, VkFormat surface_format) -> void {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
-  auto& physical_device = graphics_module.physical_device();
   auto& logical_device = graphics_module.logical_device();
 
   auto attachments = std::vector<VkAttachmentDescription>{};
 
   for (const auto& attachment : _attachments) {
-    const auto attachment_samples = attachment.is_multi_sampled() ? physical_device.msaa_samples() : VK_SAMPLE_COUNT_1_BIT;
-
     auto attachment_description = VkAttachmentDescription{};
-    attachment_description.samples = attachment_samples;
+    attachment_description.samples = VK_SAMPLE_COUNT_1_BIT;
     attachment_description.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
     attachment_description.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
     attachment_description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -224,8 +202,6 @@ auto render_stage::_create_render_pass(VkFormat depth_format, VkFormat surface_f
 		auto subpass_color_attachments = std::vector<VkAttachmentReference>{};
 
 		auto depth_attachment = std::optional<std::uint32_t>{};
-    auto resolve_attachment = std::optional<std::uint32_t>{};
-    auto has_multi_sampled_attachment = false;
 
 		for (const auto& attachment_binding : subpass.attachment_bindings()) {
 			auto image_attachment = find_attachment(attachment_binding);
@@ -234,17 +210,10 @@ auto render_stage::_create_render_pass(VkFormat depth_format, VkFormat surface_f
 				throw std::runtime_error{fmt::format("Failed to find attachment with binding {}", attachment_binding)};
 			}
 
-      has_multi_sampled_attachment |= image_attachment->is_multi_sampled();
-
 			if (image_attachment->image_type() == attachment::type::depth) {
 				depth_attachment = image_attachment->binding();
 				continue;
 			}
-
-      if (image_attachment->image_type() == attachment::type::swapchain) {
-        resolve_attachment = image_attachment->binding();
-        continue;
-      }
 
 			auto attachment_reference = VkAttachmentReference{};
 			attachment_reference.attachment = image_attachment->binding();
@@ -253,9 +222,7 @@ auto render_stage::_create_render_pass(VkFormat depth_format, VkFormat surface_f
 			subpass_color_attachments.push_back(attachment_reference);
 		}
 
-    auto temp = 0;
-
-		subpasses.push_back(subpass_description{VK_PIPELINE_BIND_POINT_GRAPHICS, std::move(subpass_color_attachments), depth_attachment, (has_multi_sampled_attachment) ? resolve_attachment : std::nullopt});
+		subpasses.push_back(subpass_description{VK_PIPELINE_BIND_POINT_GRAPHICS, std::move(subpass_color_attachments), depth_attachment});
 
 		auto subpass_dependency = VkSubpassDependency{};
 		subpass_dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
@@ -326,7 +293,7 @@ auto render_stage::_rebuild_framebuffers(const swapchain& swapchain) -> void {
           break;
         }
         case attachment::type::depth: {
-          attachments.push_back(_depth_stencil->view());
+          attachments.push_back(_depth_image->view());
           break;
         }
         case attachment::type::swapchain: {

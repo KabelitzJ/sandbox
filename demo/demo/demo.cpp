@@ -32,21 +32,18 @@ public:
   demo_renderer() { 
     auto render_pass_attachments = std::vector<sbx::graphics::attachment>{
       sbx::graphics::attachment{0, "swapchain", sbx::graphics::attachment::type::swapchain},
-      sbx::graphics::attachment{1, "depth", sbx::graphics::attachment::type::depth, true},
-      sbx::graphics::attachment{2, "resolve", sbx::graphics::attachment::type::image, true, VK_FORMAT_R8G8B8A8_SRGB}
+      sbx::graphics::attachment{1, "depth", sbx::graphics::attachment::type::depth}
     };
 
     auto render_pass_subpass_bindings = std::vector<sbx::graphics::subpass_binding>{
-      sbx::graphics::subpass_binding{0, {0, 1, 2}},
+      sbx::graphics::subpass_binding{0, {0, 1}},
       sbx::graphics::subpass_binding{1, {0}}
     };
 
     add_render_stage(std::move(render_pass_attachments), std::move(render_pass_subpass_bindings));
   }
 
-  ~demo_renderer() override {
-
-  }
+  ~demo_renderer() override = default;
 
   auto initialize() -> void override {
     add_subrenderer<sbx::scenes::scene_subrenderer>("res://shaders/cell_shading", sbx::graphics::pipeline::stage{0, 0});
