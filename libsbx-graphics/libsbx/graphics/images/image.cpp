@@ -1,8 +1,10 @@
 #include <libsbx/graphics/images/image.hpp>
 
 #include <cmath>
+#include <ranges>
 
 #include <libsbx/core/logger.hpp>
+#include <libsbx/core/exit.hpp>
 
 #include <libsbx/graphics/graphics_module.hpp>
 
@@ -40,7 +42,9 @@ image::image(const VkExtent3D extent, VkFilter filter, VkSamplerAddressMode addr
   _array_layers{array_layers} { }
 
 image::~image() {
-  auto& logical_device = graphics_module::get().logical_device();
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>(); 
+
+  auto& logical_device = graphics_module.logical_device();
 
   vkDestroyImageView(logical_device, _view, nullptr);
   vkDestroySampler(logical_device, _sampler, nullptr);
@@ -48,7 +52,7 @@ image::~image() {
   vkDestroyImage(logical_device, _handle, nullptr);
 }
 
-auto image::descriptor_set_layout(std::uint32_t binding, VkDescriptorType descriptor_type, VkShaderStageFlags shader_stage_flags, std::uint32_t count) noexcept -> VkDescriptorSetLayoutBinding {
+auto image::create_descriptor_set_layout_binding(std::uint32_t binding, VkDescriptorType descriptor_type, VkShaderStageFlags shader_stage_flags, std::uint32_t count) noexcept -> VkDescriptorSetLayoutBinding {
   auto descriptor_set_layout_binding = VkDescriptorSetLayoutBinding{};
   descriptor_set_layout_binding.binding = binding;
   descriptor_set_layout_binding.descriptorType = descriptor_type;
@@ -64,7 +68,9 @@ auto image::mip_levels(const VkExtent3D& extent) noexcept -> std::uint32_t {
 }
 
 auto image::find_supported_format(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) noexcept -> VkFormat {
-  auto& physical_device = graphics_module::get().physical_device();
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+      
+  auto& physical_device = graphics_module.physical_device();
 
   for (const auto& format : candidates) {
     auto format_properties = VkFormatProperties{};
@@ -91,8 +97,10 @@ auto image::has_stencil_component(VkFormat format) noexcept -> bool {
 }
 
 auto image::create_image(VkImage& image, VkDeviceMemory& memory, const VkExtent3D& extent, VkFormat format, VkSampleCountFlagBits samples, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, std::uint32_t mip_levels, std::uint32_t array_layers, VkImageType type) -> void {
-  auto& physical_device = graphics_module::get().physical_device();
-  auto& logical_device = graphics_module::get().logical_device();
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+  auto& physical_device = graphics_module.physical_device();
+  auto& logical_device = graphics_module.logical_device();
 
   auto image_create_info = VkImageCreateInfo{};
   image_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -124,7 +132,9 @@ auto image::create_image(VkImage& image, VkDeviceMemory& memory, const VkExtent3
 }
 
 auto image::create_image_view(const VkImage& image, VkImageView& image_view, VkImageViewType type, VkFormat format, VkImageAspectFlags image_aspect, std::uint32_t mip_levels, std::uint32_t base_mip_level, std::uint32_t layer_count, std::uint32_t base_array_layer) -> void {
-  auto& logical_device = graphics_module::get().logical_device();
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+  auto& logical_device = graphics_module.logical_device();
 
   auto image_view_create_info = VkImageViewCreateInfo{};
   image_view_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -142,8 +152,10 @@ auto image::create_image_view(const VkImage& image, VkImageView& image_view, VkI
 }
 
 auto image::create_image_sampler(VkSampler& sampler, VkFilter filter, VkSamplerAddressMode address_mode, bool anisotropic, std::uint32_t mip_levels) -> void {
-  auto& physical_device = graphics_module::get().physical_device();
-  auto& logical_device = graphics_module::get().logical_device();
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+  auto& physical_device = graphics_module.physical_device();
+  auto& logical_device = graphics_module.logical_device();
 
   auto sampler_create_info = VkSamplerCreateInfo{};
   sampler_create_info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
@@ -167,7 +179,9 @@ auto image::create_image_sampler(VkSampler& sampler, VkFilter filter, VkSamplerA
 }
 
 auto image::create_mipmaps(const VkImage& image, const VkExtent3D& extent, VkFormat format, VkImageLayout dst_image_layout, std::uint32_t mip_levels, std::uint32_t base_array_layer, std::uint32_t layer_count) -> void {
-  auto& physical_device = graphics_module::get().physical_device();
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+  auto& physical_device = graphics_module.physical_device();
 
   auto format_properties = VkFormatProperties{};
   vkGetPhysicalDeviceFormatProperties(physical_device, format, &format_properties);
@@ -178,7 +192,7 @@ auto image::create_mipmaps(const VkImage& image, const VkExtent3D& extent, VkFor
 
   auto command_buffer = graphics::command_buffer{};
 
-  for (auto i = 0u; i < mip_levels; ++i) {
+  for (auto i : std::views::iota(1u, mip_levels)) {
     auto barrier0 = VkImageMemoryBarrier{};
     barrier0.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
 		barrier0.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
@@ -333,7 +347,7 @@ auto image::transition_image_layout(const VkImage& image, VkFormat format, VkIma
   command_buffer.submit_idle();
 }
 
-auto image::insert_image_memory_barrier(const command_buffer& command_buffer, const VkImage& image, VkAccessFlags src_access_mask, VkAccessFlags dst_access_mask, VkImageLayout old_image_layout, VkImageLayout new_image_layout, VkPipelineStageFlags src_stage_mask, VkPipelineStageFlags dst_stage_mask, VkImageAspectFlags image_aspect, uint32_t mip_levels, uint32_t base_mip_level, uint32_t layer_count, uint32_t base_array_layer) -> void {
+auto image::insert_image_memory_barrier(command_buffer& command_buffer, const VkImage& image, VkAccessFlags src_access_mask, VkAccessFlags dst_access_mask, VkImageLayout old_image_layout, VkImageLayout new_image_layout, VkPipelineStageFlags src_stage_mask, VkPipelineStageFlags dst_stage_mask, VkImageAspectFlags image_aspect, uint32_t mip_levels, uint32_t base_mip_level, uint32_t layer_count, uint32_t base_array_layer) -> void {
   auto barrier = VkImageMemoryBarrier{};
   barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
 	barrier.srcAccessMask = src_access_mask;
@@ -372,8 +386,10 @@ auto image::copy_buffer_to_image(const VkBuffer& buffer, const VkImage& image, c
 }
 
 auto image::copy_image(const VkImage& src_image, VkImage& dst_image, VkDeviceMemory& dst_image_memory, VkFormat src_format, const VkExtent3D& extent, VkImageLayout src_image_layout, std::uint32_t mip_level, std::uint32_t array_layer) -> bool {
-  auto& physical_device = graphics_module::get().physical_device();
-  auto& surface = graphics_module::get().surface();
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+    
+  auto& physical_device = graphics_module.physical_device();
+  auto& surface = graphics_module.surface();
 
   // Checks blit swapchain support.
 	auto supports_blit = true;
@@ -383,7 +399,7 @@ auto image::copy_image(const VkImage& src_image, VkImage& dst_image, VkDeviceMem
 	vkGetPhysicalDeviceFormatProperties(physical_device, surface.format().format, &format_properties);
 
 	if (!(format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_BLIT_SRC_BIT)) {
-		core::logger::warn("sbx::graphics", "Device does not support blitting from optimal tiled images, using copy instead of blit");
+		core::logger::warn("Device does not support blitting from optimal tiled images, using copy instead of blit");
 		supports_blit = false;
 	}
 
@@ -391,7 +407,7 @@ auto image::copy_image(const VkImage& src_image, VkImage& dst_image, VkDeviceMem
 	vkGetPhysicalDeviceFormatProperties(physical_device, src_format, &format_properties);
 
 	if (!(format_properties.linearTilingFeatures & VK_FORMAT_FEATURE_BLIT_DST_BIT)) {
-		core::logger::warn("sbx::graphics", "Device does not support blitting to linear tiled images, using copy instead of blit");
+		core::logger::warn("Device does not support blitting to linear tiled images, using copy instead of blit");
 		supports_blit = false;
 	}
 

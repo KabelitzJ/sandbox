@@ -1,6 +1,0 @@
-$out_root/
-{
-  include libsbx/async/
-}
-
-export $out_root/libsbx/async/$import.target

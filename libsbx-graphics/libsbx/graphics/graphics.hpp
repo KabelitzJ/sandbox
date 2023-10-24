@@ -16,17 +16,20 @@
 #include <libsbx/graphics/pipeline/pipeline.hpp>
 #include <libsbx/graphics/pipeline/graphics_pipeline.hpp>
 #include <libsbx/graphics/pipeline/vertex_input_description.hpp>
+#include <libsbx/graphics/pipeline/mesh.hpp>
 
 #include <libsbx/graphics/commands/command_pool.hpp>
 #include <libsbx/graphics/commands/command_buffer.hpp>
 
 #include <libsbx/graphics/descriptor/descriptor.hpp>
 #include <libsbx/graphics/descriptor/descriptor_set.hpp>
+#include <libsbx/graphics/descriptor/descriptor_handler.hpp>
 
 #include <libsbx/graphics/render_pass/swapchain.hpp>
 
 #include <libsbx/graphics/buffer/buffer.hpp>
 #include <libsbx/graphics/buffer/uniform_buffer.hpp>
+#include <libsbx/graphics/buffer/push_handler.hpp>
 
 #include <libsbx/graphics/images/image.hpp>
 #include <libsbx/graphics/images/image2d.hpp>

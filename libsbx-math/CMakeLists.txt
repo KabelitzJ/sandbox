@@ -2,7 +2,12 @@ project(math)
 
 message(STATUS "Configuring ${PROJECT_NAME}...")
 
-add_library(${PROJECT_NAME} STATIC)
+if(${SBX_BUILD_SHARED})
+  add_library(${PROJECT_NAME} SHARED)
+else()
+  add_library(${PROJECT_NAME} STATIC)
+endif()
+
 add_library(${CMAKE_PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
 find_package(fmt REQUIRED)
@@ -29,6 +34,7 @@ target_sources(
     "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/angle.hpp"
     "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/random.hpp"
     "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/uuid.hpp"
+    "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/transform.hpp"
 )
 
 target_include_directories(
@@ -55,6 +61,7 @@ set_target_properties(
     ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
     LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+    POSITION_INDEPENDENT_CODE ON
 )
 
 target_compile_features(
@@ -86,3 +93,15 @@ target_compile_options(
     -static-libstdc++ 
     -static-libgcc
 )
+
+if(MINGW)
+  target_link_options(
+    ${PROJECT_NAME}
+    PUBLIC
+      -Wl,--disable-dynamicbase,--default-image-base-low
+  )
+endif()
+
+if(${SBX_BUILD_TESTS})
+  add_subdirectory(tests)
+endif()

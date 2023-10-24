@@ -39,7 +39,7 @@ physical_device::physical_device(const instance& instance)
 	vkGetPhysicalDeviceMemoryProperties(_handle, &_memory_properties);
 	_msaa_samples = _get_max_usable_sample_count();
 
-  core::logger::debug("sbx::graphics", "Selected GPU '{}'", _properties.deviceName);
+  core::logger::debug("Selected GPU '{}'", _properties.deviceName);
 }
 
 physical_device::~physical_device() {

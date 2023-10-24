@@ -1,6 +1,7 @@
 #include <libsbx/models/mesh.hpp>
 
 #include <libsbx/core/logger.hpp>
+#include <libsbx/core/engine.hpp>
 
 #include <libsbx/utility/timer.hpp>
 
@@ -8,38 +9,25 @@
 
 namespace sbx::models {
 
-mesh::mesh(const tinyobj::attrib_t& attributes, const std::vector<tinyobj::shape_t>& shapes) {
-  const auto& logical_device = graphics::graphics_module::get().logical_device();
+mesh::mesh(const std::filesystem::path& path)
+: graphics::mesh<vertex3d>{} {
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
-  auto unique_vertices = std::unordered_map<vertex3d, std::uint32_t>{};
+  const auto& logical_device = graphics_module.logical_device();
 
-  auto vertices = std::vector<vertex3d>{};
-  auto indices = std::vector<std::uint32_t>{};
+  const auto extension = path.extension().string();
 
-  for (const auto& shape : shapes) {
-    for (const auto& index : shape.mesh.indices) {
-      auto vertex = vertex3d{};
+  const auto entry = _loaders().find(extension);
 
-      vertex.position.x = attributes.vertices[3 * index.vertex_index + 0];
-      vertex.position.y = attributes.vertices[3 * index.vertex_index + 1];
-      vertex.position.z = attributes.vertices[3 * index.vertex_index + 2];
-
-      vertex.normal.x = attributes.normals[3 * index.normal_index + 0];
-      vertex.normal.y = attributes.normals[3 * index.normal_index + 1];
-      vertex.normal.z = attributes.normals[3 * index.normal_index + 2];
-
-      vertex.uv.x = attributes.texcoords[2 * index.texcoord_index + 0];
-      vertex.uv.y = attributes.texcoords[2 * index.texcoord_index + 1];
-
-      if (auto entry = unique_vertices.find(vertex); entry != unique_vertices.end()) {
-        indices.push_back(entry->second);
-      } else {
-        unique_vertices.insert({vertex, vertices.size()});
-        indices.push_back(vertices.size());
-        vertices.push_back(vertex);
-      }
-    }
+  if (entry == _loaders().end()) {
+    throw std::runtime_error{"No loader found for extension: " + extension};
   }
+
+  auto& loader = entry->second;
+
+  auto timer = utility::timer{};
+
+  auto [vertices, indices] = std::invoke(loader, path);
 
   auto fence_create_info = VkFenceCreateInfo{};
   fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
@@ -60,8 +48,8 @@ mesh::mesh(const tinyobj::attrib_t& attributes, const std::vector<tinyobj::shape
   staging_buffer.write(vertices.data(), vertex_buffer_size);
   staging_buffer.write(indices.data(), index_buffer_size, vertex_buffer_size);
 
-  _vertex_buffer = std::make_unique<graphics::buffer>(vertex_buffer_size, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-  _index_buffer = std::make_unique<graphics::buffer>(index_buffer_size, VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+  _vertex_buffer = std::make_unique<vertex_buffer_type>(vertices.size(), VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_BUFFER_USAGE_TRANSFER_DST_BIT);
+  _index_buffer = std::make_unique<index_buffer_type>(indices.size(), VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_BUFFER_USAGE_TRANSFER_DST_BIT);
 
   auto command_buffer = graphics::command_buffer{true, VK_QUEUE_TRANSFER_BIT};
 
@@ -89,6 +77,12 @@ mesh::mesh(const tinyobj::attrib_t& attributes, const std::vector<tinyobj::shape
   graphics::validate(vkWaitForFences(logical_device, 1, &fence, true, std::numeric_limits<std::uint64_t>::max()));
 
 	vkDestroyFence(logical_device, fence, nullptr);
+
+  core::logger::debug("Loaded mesh: {}, vertices: {}, indices: {} in {} ms", path.string(), vertices.size(), indices.size(), units::quantity_cast<units::millisecond>(timer.elapsed()).value());
+}
+
+mesh::~mesh() {
+
 }
 
 } // namespace sbx::models

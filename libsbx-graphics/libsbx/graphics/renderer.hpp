@@ -36,7 +36,7 @@ public:
     }
   }
 
-  auto add_render_stage(std::vector<attachment>&& attachments, std::vector<subpass_binding>&& subpass_bindings, const viewport viewport = graphics::viewport{}) -> void {
+  auto add_render_stage(std::vector<attachment>&& attachments, std::vector<subpass_binding>&& subpass_bindings, const viewport& viewport = graphics::viewport{}) -> void {
     _render_stages.push_back(std::make_unique<graphics::render_stage>(std::move(attachments), std::move(subpass_bindings), viewport));
   }
 
@@ -51,12 +51,13 @@ public:
 protected:
 
   template<utility::implements<subrenderer> Type, typename... Args>
-  auto add_subrenderer(const pipeline::stage& stage, Args&&... args) -> void {
+  requires (std::is_constructible_v<Type, const std::filesystem::path&, const pipeline::stage&, Args...>)
+  auto add_subrenderer(const std::filesystem::path& path, const pipeline::stage& stage, Args&&... args) -> void {
     const auto type = std::type_index{typeid(Type)};
 
     _subrenderer_stages.insert({stage, type});
 
-    _subrenderers.insert({type, std::make_unique<Type>(stage, std::forward<Args>(args)...)});
+    _subrenderers.insert({type, std::make_unique<Type>(path, stage, std::forward<Args>(args)...)});
   }
 
 private:

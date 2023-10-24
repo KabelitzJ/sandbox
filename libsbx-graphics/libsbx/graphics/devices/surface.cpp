@@ -1,6 +1,7 @@
 #include <libsbx/graphics/devices/surface.hpp>
 
 #include <libsbx/core/logger.hpp>
+#include <libsbx/core/engine.hpp>
 
 #include <libsbx/devices/devices_module.hpp>
 
@@ -9,7 +10,9 @@
 namespace sbx::graphics {
 
 surface::surface(const instance& instance, const physical_device& physical_device, const logical_device& logical_device) {
-  auto& window = devices::devices_module::get().window();
+  auto& devices_module = core::engine::get_module<devices::devices_module>();
+
+  auto& window = devices_module.window();
 
   validate(glfwCreateWindowSurface(instance, window, nullptr, &_handle));
 
@@ -49,7 +52,9 @@ surface::surface(const instance& instance, const physical_device& physical_devic
 }
 
 surface::~surface() {
-  auto& instance = graphics_module::get().instance();
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+  auto& instance = graphics_module.instance();
   vkDestroySurfaceKHR(instance, _handle, nullptr);
 }
 

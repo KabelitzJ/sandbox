@@ -3,7 +3,7 @@
 
 #include <vulkan/vulkan.hpp>
 
-#include <libsbx/core/target.hpp>
+#include <libsbx/utility/target.hpp>
 #include <libsbx/core/logger.hpp>
 
 #include <libsbx/graphics/devices/instance.hpp>

@@ -86,6 +86,10 @@ public:
       return _stage_flags;
     }
 
+    auto add_stage_flag(VkShaderStageFlags stage) noexcept -> void {
+      _stage_flags |= stage;
+    }
+
     auto operator==(const uniform& other) const noexcept -> bool {
       return _binding == other._binding && _offset == other._offset && _size == other._size && _type == other._type && _is_readonly == other._is_readonly && _is_writeonly == other._is_writeonly && _stage_flags == other._stage_flags;
     }
@@ -102,28 +106,22 @@ public:
 
   }; // class uniform
 
-  class uniform_block {
+class uniform_block {
 
   public:
 
     enum class type : std::uint8_t {
-      none,
       uniform,
       storage,
       push
     }; // enum class type
 
-    explicit uniform_block(const std::string& name, std::uint32_t binding, std::uint32_t size, VkShaderStageFlags stage_flags, type type, std::map<std::string, uniform> uniforms)
-    : _name{name},
-      _binding{binding},
+    explicit uniform_block(std::uint32_t binding, std::uint32_t size, VkShaderStageFlags stage_flags, type type, std::map<std::string, uniform> uniforms)
+    : _binding{binding},
       _size{size},
       _stage_flags{stage_flags},
       _type{type},
       _uniforms{std::move(uniforms)} { }
-
-    auto name() const noexcept -> const std::string& {
-      return _name;
-    }
 
     auto binding() const noexcept -> std::uint32_t {
       return _binding;
@@ -135,6 +133,10 @@ public:
 
     auto stage_flags() const noexcept -> VkShaderStageFlags {
       return _stage_flags;
+    }
+
+    auto add_stage_flag(VkShaderStageFlags stage) noexcept -> void {
+      _stage_flags |= stage;
     }
 
     auto buffer_type() const noexcept -> type {
@@ -159,7 +161,6 @@ public:
 
   private:
 
-    std::string _name{};
     std::uint32_t _binding{};
     std::uint32_t _size{};
     VkShaderStageFlags _stage_flags{};

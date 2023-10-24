@@ -56,4 +56,6 @@
 
 #include <libsbx/math/random.hpp>
 
+#include <libsbx/math/transform.hpp>
+
 #endif // LIBSBX_MATH_HPP_

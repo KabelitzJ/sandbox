@@ -7,113 +7,64 @@
 #include <iterator>
 #include <utility>
 
-#include <libsbx/utility/utility.hpp>
 #include <libsbx/units/units.hpp>
-#include <libsbx/memory/memory.hpp>
-#include <libsbx/math/math.hpp>
-#include <libsbx/core/core.hpp>
-#include <libsbx/signal/signal.hpp>
-#include <libsbx/ecs/ecs.hpp>
-#include <libsbx/async/async.hpp>
+#include <libsbx/utility/utility.hpp>
 #include <libsbx/io/io.hpp>
-#include <libsbx/scripting/scripting.hpp>
+#include <libsbx/math/math.hpp>
+#include <libsbx/memory/memory.hpp>
+#include <libsbx/signals/signals.hpp>
+#include <libsbx/bitmaps/bitmaps.hpp>
+#include <libsbx/ecs/ecs.hpp>
+#include <libsbx/core/core.hpp>
+#include <libsbx/async/async.hpp>
+#include <libsbx/assets/assets.hpp>
+#include <libsbx/audio/audio.hpp>
 #include <libsbx/devices/devices.hpp>
 #include <libsbx/graphics/graphics.hpp>
-#include <libsbx/assets/assets.hpp>
 #include <libsbx/models/models.hpp>
 #include <libsbx/scenes/scenes.hpp>
-
-class demo_subrenderer : public sbx::graphics::subrenderer {
-
-public:
-
-  demo_subrenderer(const sbx::graphics::pipeline::stage& stage)
-  : sbx::graphics::subrenderer{stage},
-    _pipeline{std::make_unique<sbx::graphics::graphics_pipeline>(stage, "./demo/assets/shaders/basic", sbx::graphics::vertex_input<sbx::models::vertex3d>::description())},
-    _uniforms{_pipeline->find_descriptor_block("buffer_object")},
-    _model{std::make_unique<sbx::models::model>("./demo/assets/meshes/suzanne.obj")} {
-    auto& window = sbx::devices::devices_module::get().window();
-
-    _camera_position = sbx::math::vector3{2.0f, 2.0f, 1.0f};
-
-    _light_position = sbx::math::vector3{-1.0f, 3.0f, 1.0f};
-
-    _uniform_buffer_object.model = sbx::math::matrix4x4::identity;
-    _uniform_buffer_object.view = sbx::math::matrix4x4::look_at(_camera_position, sbx::math::vector3{0.0f, 0.0f, 0.0f}, sbx::math::vector3::up);
-    _uniform_buffer_object.projection = sbx::math::matrix4x4::perspective(sbx::math::radian{45.0f}, window.aspect_ratio(), 0.1f, 10.0f);
-    _uniform_buffer_object.normal = sbx::math::matrix4x4::identity;
-  }
-
-  ~demo_subrenderer() override = default;
-
-  auto render(sbx::graphics::command_buffer& command_buffer) -> void override {
-    auto& window = sbx::devices::devices_module::get().window();
-
-    const auto delta_time = sbx::core::engine::delta_time();
-
-    _pipeline->bind(command_buffer);
-
-    _uniform_buffer_object.model = sbx::math::matrix4x4::rotated(_uniform_buffer_object.model, sbx::math::vector3{0.0f, 0.0f, 1.0f}, sbx::math::degree{45.0f} * delta_time);
-    _uniform_buffer_object.projection = sbx::math::matrix4x4::perspective(sbx::math::radian{45.0f}, window.aspect_ratio(), 0.1f, 10.0f);
-    _uniform_buffer_object.normal = sbx::math::matrix4x4::transposed(sbx::math::matrix4x4::inverted(_uniform_buffer_object.model));
-
-    _uniforms.push("normal", _uniform_buffer_object.normal);
-    _uniforms.push("view", _uniform_buffer_object.view);
-    _uniforms.push("model", _uniform_buffer_object.model);
-    _uniforms.push("projection", _uniform_buffer_object.projection);
-
-    _pipeline->push(_uniforms);
-
-    _pipeline->bind_descriptors(command_buffer);
-
-    _model->render(command_buffer, delta_time);
-  }
-
-private:
-
-  struct uniform_buffer_object {
-    sbx::math::matrix4x4 model;
-    sbx::math::matrix4x4 view;
-    sbx::math::matrix4x4 projection;
-    sbx::math::matrix4x4 normal;
-  }; // struct uniform_buffer_object
-
-  sbx::math::vector3 _camera_position;
-  sbx::math::vector3 _light_position;
-
-  std::unique_ptr<sbx::graphics::graphics_pipeline> _pipeline;
-
-  sbx::graphics::uniform_handler _uniforms;
-  uniform_buffer_object _uniform_buffer_object;
-
-  std::unique_ptr<sbx::models::model> _model;
-
-
-}; // class demo_subrenderer
+#include <libsbx/ui/ui.hpp>
+#include <libsbx/shadows/shadows.hpp>
 
 class demo_renderer : public sbx::graphics::renderer {
 
 public:
 
-  demo_renderer() { 
-    auto render_pass_attachments_1 = std::vector<sbx::graphics::attachment>{
-      sbx::graphics::attachment{0, "swapchain", sbx::graphics::attachment::type::swapchain, VK_FORMAT_UNDEFINED},
-      sbx::graphics::attachment{1, "depth", sbx::graphics::attachment::type::depth}
-    };
+  demo_renderer() {
+    {
+      auto attachments = std::vector<sbx::graphics::attachment>{
+        sbx::graphics::attachment{0, "shadow", sbx::graphics::attachment::type::image, VK_FORMAT_R8_UNORM}
+      };
 
-    auto render_pass_subpass_bindings_1 = std::vector<sbx::graphics::subpass_binding>{
-      sbx::graphics::subpass_binding{0, {0, 1}}
-    };
+      auto subpass_bindings = std::vector<sbx::graphics::subpass_binding>{
+        sbx::graphics::subpass_binding{0, {0}}
+      };
 
-    add_render_stage(std::move(render_pass_attachments_1), std::move(render_pass_subpass_bindings_1));
+      add_render_stage(std::move(attachments), std::move(subpass_bindings), sbx::graphics::viewport{sbx::math::vector2u{4096, 4096}});
+    }
+
+    {
+      auto attachments = std::vector<sbx::graphics::attachment>{
+        sbx::graphics::attachment{0, "swapchain", sbx::graphics::attachment::type::swapchain},
+        sbx::graphics::attachment{1, "depth", sbx::graphics::attachment::type::depth}
+      };
+
+      auto subpass_bindings = std::vector<sbx::graphics::subpass_binding>{
+        sbx::graphics::subpass_binding{0, {0, 1}},
+        sbx::graphics::subpass_binding{1, {0}}
+      };
+
+      add_render_stage(std::move(attachments), std::move(subpass_bindings));
+    }
   }
 
-  ~demo_renderer() override {
-
-  }
+  ~demo_renderer() override = default;
 
   auto initialize() -> void override {
-    add_subrenderer<demo_subrenderer>(sbx::graphics::pipeline::stage{ .renderpass = 0, .subpass = 0 });
+    add_subrenderer<sbx::shadows::shadow_subrenderer>("res://shaders/shadow", sbx::graphics::pipeline::stage{0, 0});
+
+    add_subrenderer<sbx::models::mesh_subrenderer>("res://shaders/cell_shading", sbx::graphics::pipeline::stage{1, 0});
+    add_subrenderer<sbx::ui::ui_subrenderer>("res://shaders/ui", sbx::graphics::pipeline::stage{1, 1});
   }
 
 }; // class demo_renderer
@@ -123,55 +74,88 @@ class demo_application : public sbx::core::application {
 public:
 
   demo_application() {
-    auto& window = sbx::devices::devices_module::get().window();
+    auto& devices_module = sbx::core::engine::get_module<sbx::devices::devices_module>();
+    auto& assets_module = sbx::core::engine::get_module<sbx::assets::assets_module>();
+    auto& graphics_module = sbx::core::engine::get_module<sbx::graphics::graphics_module>();
+    auto& ui_module = sbx::core::engine::get_module<sbx::ui::ui_module>();
 
-    window.set_on_window_closed([this]([[maybe_unused]] const sbx::devices::window_closed_event& event){
-      quit();
-    });
+    assets_module.set_asset_directory("./demo/assets");
 
-    window.set_on_key([this]([[maybe_unused]] const sbx::devices::key_event& event){
-      if (event.key == GLFW_KEY_ESCAPE && event.action == GLFW_PRESS) {
-        quit();
-      }
-    });
+    auto& window = devices_module.window();
 
-    auto& scripting_module = sbx::scripting::scripting_module::get();
+    window.set_icon("res://icons/sandbox.png");
 
-    for (const auto& entry : std::filesystem::directory_iterator("./demo/assets/scripts")) {
-      if (entry.is_regular_file()) {
-        scripting_module.load_script(entry.path());
-      }
-    }
-
-    auto& graphics_module = sbx::graphics::graphics_module::get();
+    window.on_window_closed_signal() += [this]([[maybe_unused]] const auto& event){
+      sbx::core::engine::quit();
+    };
 
     graphics_module.set_renderer<demo_renderer>();
+
+    auto base_id = assets_module.load_asset<sbx::graphics::image2d>("res://textures/base.png");
+    auto default_id = assets_module.load_asset<sbx::graphics::image2d>("res://textures/default.png");
+    auto grid_id = assets_module.load_asset<sbx::graphics::image2d>("res://textures/grid.png");
+    auto prototype_black_id = assets_module.load_asset<sbx::graphics::image2d>("res://textures/prototype_black.png");
+
+    auto monkey_id = assets_module.load_asset<sbx::models::mesh>("res://meshes/suzanne.obj");
+    auto sphere_id = assets_module.load_asset<sbx::models::mesh>("res://meshes/sphere.obj");
+    auto cube_id = assets_module.load_asset<sbx::models::mesh>("res://meshes/cube.obj");
+
+    auto font_jet_brains_mono_id = assets_module.load_asset<sbx::ui::font>("res://fonts/JetBrainsMono-Medium.ttf", sbx::ui::pixels{48u});
+    auto font_roboto_id = assets_module.load_asset<sbx::ui::font>("res://fonts/Roboto-Regular.ttf", sbx::ui::pixels{48u});
+
+    ui_module.add_widget<sbx::ui::label>("Hello, World!", sbx::math::vector2u{25, 25}, font_jet_brains_mono_id, sbx::math::color{1.0f, 1.0f, 1.0f, 1.0f});
+
+    auto ambience_birds_sound_id = assets_module.load_asset<sbx::audio::sound_buffer>("res://audio/ambience.wav");
+    auto forest_sound_id = assets_module.load_asset<sbx::audio::sound_buffer>("res://audio/forest.wav");
+
+    auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
+
+    auto& scene = scenes_module.scene();
+
+    auto monkey = scene.create_node("Monkey", sbx::math::transform{sbx::math::vector3f{0.0f, 2.0f, 0.0f}});
+
+    monkey.add_component<sbx::scenes::static_mesh>(monkey_id, base_id);
+    
+    auto& monkey_rotation = monkey.add_component<sbx::scenes::script>("res://scripts/rotate.lua");
+    monkey_rotation.set("speed", 75.0f);
+
+    monkey.add_component<sbx::audio::sound>(forest_sound_id, sbx::audio::sound::type::ambient, true, true, 8.0f, 1.0f);
+
+    auto camera = scene.camera();
+
+    auto& camera_transform = camera.get_component<sbx::math::transform>();
+    camera_transform.set_position(sbx::math::vector3{0.0f, 2.0f, 5.0f});
+
+    auto& camera_controller = camera.add_component<sbx::scenes::script>("res://scripts/camera_controller.lua");
+    camera_controller.set("move_speed", 5.0f);
+
+    auto floor = scene.create_node("Floor", sbx::math::transform{sbx::math::vector3f::zero, sbx::math::vector3f::zero, sbx::math::vector3f{20.0f, 0.1f, 20.0f}});
+    floor.add_component<sbx::scenes::static_mesh>(cube_id, prototype_black_id);
+
+    auto back_wall = scene.create_node("BackWall", sbx::math::transform{sbx::math::vector3f{0.0f, 10.0f, -10.0f}, sbx::math::vector3f::zero, sbx::math::vector3f{20.0f, 20.0f, 0.1f}});
+    back_wall.add_component<sbx::scenes::static_mesh>(cube_id, prototype_black_id);
+
+    auto side_wall = scene.create_node("BackWall", sbx::math::transform{sbx::math::vector3f{-10.0f, 10.0f, 0.0f}, sbx::math::vector3f{180.0f, 0.0f, 0.0f}, sbx::math::vector3f{0.1f, 20.0f, 20.0f}});
+    side_wall.add_component<sbx::scenes::static_mesh>(cube_id, prototype_black_id);
+
+    // [Todo] KAJ 2023-08-16 15:30 - This should probably be done automatically
+    scene.start();
 
     window.show();
   }
 
-  ~demo_application() override = default;
-
-  auto update() -> void  {
+  ~demo_application() override {
 
   }
 
-private:
-
-
+  auto update() -> void  {
+    if (sbx::devices::input::is_key_pressed(sbx::devices::key::escape)) {
+      sbx::core::engine::quit();
+    }
+  }
 
 }; // class demo_application
 
-auto main(int argc, const char** argv) -> int {
-  try {
-    auto args = std::vector<std::string>{argv, argv + argc};
-    auto engine = std::make_unique<sbx::core::engine>(std::move(args));
-
-    engine->run<demo_application>();
-  } catch(const std::exception& exception) {
-    sbx::core::logger::error("demo", "{}", exception.what());
-    return EXIT_FAILURE;
-  }
-
-  return EXIT_SUCCESS;
+auto sbx::core::create_application() -> std::unique_ptr<sbx::core::application> {
+  return std::make_unique<demo_application>();
 }

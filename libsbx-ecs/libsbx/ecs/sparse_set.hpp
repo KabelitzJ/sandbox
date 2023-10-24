@@ -69,12 +69,14 @@ public:
     return _dense.at(index);
   }
 
-  auto remove(const_reference value) -> void {
+  auto remove(const_reference value) -> bool {
     if (!contains(value)) {
-      return;
+      return false;
     }
 
     _swap_and_pop(value);
+
+    return true;
   }
 
   auto clear() -> void {

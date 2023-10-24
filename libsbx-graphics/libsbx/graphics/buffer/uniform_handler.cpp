@@ -6,19 +6,26 @@
 
 namespace sbx::graphics {
 
-uniform_handler::uniform_handler(const shader::uniform_block& uniform_block)
+uniform_handler::uniform_handler(const std::optional<shader::uniform_block>& uniform_block)
 : _uniform_block{uniform_block} {
-  _buffers.resize(swapchain::max_frames_in_flight);
-
-  for (auto& buffer : _buffers) {
-    buffer = std::make_unique<graphics::uniform_buffer>(_uniform_block.size());
+  if (_uniform_block) {
+    _uniform_buffer = std::make_unique<graphics::uniform_buffer>(_uniform_block->size());
   }
 }
 
 auto uniform_handler::uniform_buffer() const noexcept -> const graphics::uniform_buffer& {
-  auto current_frame = graphics_module::get().current_frame();
+  return *_uniform_buffer;
+}
 
-  return *_buffers[current_frame];
+auto uniform_handler::update(const std::optional<shader::uniform_block>& uniform_block) -> bool {
+  if (_uniform_block != uniform_block) {
+    _uniform_block = uniform_block;
+    _uniform_buffer = std::make_unique<graphics::uniform_buffer>(_uniform_block->size());
+
+    return false; 
+  }
+
+  return true;
 }
 
 } // namespace sbx::graphics

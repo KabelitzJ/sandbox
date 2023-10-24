@@ -2,6 +2,6 @@
 
 namespace sbx::core {
 
-units::second engine::_delta_time{};
+engine* engine::_instance{nullptr};
 
 } // namespace sbx::core

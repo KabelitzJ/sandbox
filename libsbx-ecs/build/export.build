@@ -1,6 +1,0 @@
-$out_root/
-{
-  include libsbx/ecs/
-}
-
-export $out_root/libsbx/ecs/$import.target

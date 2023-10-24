@@ -1,7 +1,7 @@
 #include <libsbx/graphics/devices/instance.hpp>
 
 #include <libsbx/core/logger.hpp>
-#include <libsbx/core/target.hpp>
+#include <libsbx/utility/target.hpp>
 
 #include <libsbx/graphics/graphics_module.hpp>
 #include <libsbx/graphics/devices/extensions.hpp>
@@ -33,13 +33,13 @@ instance::instance() {
 
   validate(vkCreateInstance(&instance_create_info, nullptr, &_handle));
 
-  if constexpr (core::build_configuration_v == core::build_configuration::debug) {
+  if constexpr (utility::build_configuration_v == utility::build_configuration::debug) {
     validate(debug_messenger::create(*this));
   }
 }
 
 instance::~instance() {
-  if constexpr (core::build_configuration_v == core::build_configuration::debug) {
+  if constexpr (utility::build_configuration_v == utility::build_configuration::debug) {
     debug_messenger::destroy(*this);
   }
 

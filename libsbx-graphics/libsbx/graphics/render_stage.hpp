@@ -4,6 +4,7 @@
 #include <string>
 #include <cinttypes>
 #include <optional>
+#include <vector>
 
 #include <vulkan/vulkan.hpp>
 
@@ -34,7 +35,7 @@ public:
   attachment(std::uint32_t binding, std::string name, type type, VkFormat format = VK_FORMAT_R8G8B8A8_UNORM, const math::color& clear_color = math::color{0.0f, 0.0f, 0.0f, 1.0f}) noexcept
   : _binding{binding}, 
     _name{std::move(name)}, 
-    _type{type}, 
+    _type{type},
     _format{format}, 
     _clear_color{clear_color} { }
 
@@ -63,6 +64,7 @@ private:
   std::uint32_t _binding;
   std::string _name;
   type _type;
+  bool _is_multi_sampled;
   VkFormat _format;
   math::color _clear_color;
 
@@ -194,7 +196,7 @@ public:
     return _attachments;
   }
 
-  auto attachment(const std::string& name) const noexcept -> std::optional<graphics::attachment> {
+  auto find_attachment(const std::string& name) const noexcept -> std::optional<graphics::attachment> {
     auto entry = std::find_if(_attachments.begin(), _attachments.end(), [&name](const graphics::attachment& attachment) {
       return attachment.name() == name;
     });
@@ -206,7 +208,7 @@ public:
     return *entry;
   }
 
-  auto attachment(std::uint32_t binding) const noexcept -> std::optional<graphics::attachment> {
+  auto find_attachment(std::uint32_t binding) const noexcept -> std::optional<graphics::attachment> {
     auto entry = std::find_if(_attachments.begin(), _attachments.end(), [&binding](const graphics::attachment& attachment) {
       return attachment.binding() == binding;
     });
@@ -273,10 +275,10 @@ private:
 
   VkRenderPass _render_pass;
 
-  std::unique_ptr<graphics::depth_image> _depth_stencil;
+  std::unique_ptr<graphics::depth_image> _depth_image;
+  std::vector<std::unique_ptr<graphics::image2d>> _image_attachments;
 
   std::vector<VkFramebuffer> _framebuffers;
-  std::vector<std::unique_ptr<graphics::image2d>> _image_attachments;
 
   std::vector<VkClearValue> _clear_values;
   std::vector<std::uint32_t> _subpass_attachment_counts;

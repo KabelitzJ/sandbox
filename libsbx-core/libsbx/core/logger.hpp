@@ -36,12 +36,13 @@
 
 #include <memory>
 #include <source_location>
+#include <unordered_map>
 
 #include <spdlog/logger.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/sinks/basic_file_sink.h>
 
-#include <libsbx/core/target.hpp>
+#include <libsbx/utility/target.hpp>
 
 namespace sbx::core {
 
@@ -57,102 +58,102 @@ public:
   ~logger() = default;
 
   template<typename... Args>
-  static auto trace(std::string name, format_string_type<Args...> format, Args&&... args) -> void {
+  static auto trace(format_string_type<Args...> format, Args&&... args) -> void {
     // [NOTE] KAJ 2023-03-20 19:43 - This should make trace and debug messages be no-ops in release builds.
-    if constexpr (build_configuration_v == build_configuration::debug) {
-      _instance(std::move(name)).trace(format, std::forward<Args>(args)...);
+    if constexpr (utility::build_configuration_v == utility::build_configuration::debug) {
+      _instance().trace(format, std::forward<Args>(args)...);
     }
   }
 
   template<typename Type>
-  static auto trace(std::string name, const Type& value) -> void {
-    if constexpr (build_configuration_v == build_configuration::debug) {
-      _instance(std::move(name)).trace(value);
+  static auto trace(const Type& value) -> void {
+    if constexpr (utility::build_configuration_v == utility::build_configuration::debug) {
+      _instance().trace(value);
     }
   }
 
   template<typename... Args>
-  static auto debug(std::string name, format_string_type<Args...> format, Args&&... args) -> void {
-    if constexpr (build_configuration_v == build_configuration::debug) {
-      _instance(std::move(name)).debug(format, std::forward<Args>(args)...);
+  static auto debug(format_string_type<Args...> format, Args&&... args) -> void {
+    if constexpr (utility::build_configuration_v == utility::build_configuration::debug) {
+      _instance().debug(format, std::forward<Args>(args)...);
     }
   }
 
   template<typename Type>
-  static auto debug(std::string name, const Type& value) -> void {
-    if constexpr (build_configuration_v == build_configuration::debug) {
-      _instance(std::move(name)).debug(value);
+  static auto debug(const Type& value) -> void {
+    if constexpr (utility::build_configuration_v == utility::build_configuration::debug) {
+      _instance().debug(value);
     }
   }
 
   template<typename... Args>
-  static auto info(std::string name, format_string_type<Args...> format, Args&&... args) -> void {
-    _instance(std::move(name)).info(format, std::forward<Args>(args)...);
+  static auto info(format_string_type<Args...> format, Args&&... args) -> void {
+    _instance().info(format, std::forward<Args>(args)...);
   }
 
   template<typename Type>
-  static auto info(std::string name, const Type& value) -> void {
-    _instance(std::move(name)).info(value);
+  static auto info(const Type& value) -> void {
+    _instance().info(value);
   }
 
   template<typename... Args>
-  static auto warn(std::string name, format_string_type<Args...> format, Args&&... args) -> void {
-    _instance(std::move(name)).warn(format, std::forward<Args>(args)...);
+  static auto warn(format_string_type<Args...> format, Args&&... args) -> void {
+    _instance().warn(format, std::forward<Args>(args)...);
   }
 
   template<typename Type>
-  static auto warn(std::string name, const Type& value) -> void {
-    _instance(std::move(name)).warn(value);
+  static auto warn(const Type& value) -> void {
+    _instance().warn(value);
   }
 
   template<typename... Args>
-  static auto error(std::string name, format_string_type<Args...> format, Args&&... args) -> void {
-    _instance(std::move(name)).error(format, std::forward<Args>(args)...);
+  static auto error(format_string_type<Args...> format, Args&&... args) -> void {
+    _instance().error(format, std::forward<Args>(args)...);
   }
 
   template<typename Type>
-  static auto error(std::string name, const Type& value) -> void {
-    _instance(std::move(name)).error(value);
+  static auto error(const Type& value) -> void {
+    _instance().error(value);
   }
 
   template<typename... Args>
-  static auto critical(std::string name, format_string_type<Args...> format, Args&&... args) -> void {
-    _instance(std::move(name)).critical(format, std::forward<Args>(args)...);
+  static auto critical(format_string_type<Args...> format, Args&&... args) -> void {
+    _instance().critical(format, std::forward<Args>(args)...);
   }
 
   template<typename Type>
-  static auto critical(std::string name, const Type& value) -> void {
-    _instance(std::move(name)).critical(value);
+  static auto critical(const Type& value) -> void {
+    _instance().critical(value);
   }
 
 private:
 
-  static auto _instance(std::string name) -> spdlog::logger& {
-    static auto instance = _create_logger(std::move(name));
+  static auto _instance() -> spdlog::logger& {
+    static auto instance = _create_logger();
     return instance;
   }
 
-  static auto _create_logger(std::string name) -> spdlog::logger {
+  static auto _create_logger() -> spdlog::logger {
     auto sinks = std::vector<std::shared_ptr<spdlog::sinks::sink>>{};
 
     sinks.push_back(std::make_shared<spdlog::sinks::basic_file_sink_mt>("./demo/logs/sbx.log", true));
 
-    if constexpr (build_configuration_v == build_configuration::debug) {
+    if constexpr (utility::build_configuration_v == utility::build_configuration::debug) {
       sinks.push_back(std::make_shared<spdlog::sinks::stdout_color_sink_mt>());
     }
 
-    auto logger = spdlog::logger{std::move(name), std::begin(sinks), std::end(sinks)};
+    auto logger = spdlog::logger{"logger", std::begin(sinks), std::end(sinks)};
 
-    logger.set_pattern("[%Y-%m-%d %H:%M:%S] [%n] [%^%l%$] : %v");
+    logger.set_pattern("[%Y-%m-%d %H:%M:%S] [%^%l%$] : %v");
 
-    if constexpr (build_configuration_v == build_configuration::debug) {
+    if constexpr (utility::build_configuration_v == utility::build_configuration::debug) {
       logger.set_level(spdlog::level::debug);
     } else {
       logger.set_level(spdlog::level::info);
     }
 
     return logger;
-  } 
+  }
 
 }; // class logger
 

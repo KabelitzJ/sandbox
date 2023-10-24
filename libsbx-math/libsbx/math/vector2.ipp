@@ -4,7 +4,7 @@
 #include <iomanip>
 #include <string>
 
-#include <libsbx/core/assert.hpp>
+#include <libsbx/utility/assert.hpp>
 
 #include <libsbx/utility/hash.hpp>
 

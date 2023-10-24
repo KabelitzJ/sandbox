@@ -1,7 +1,7 @@
 #ifndef LIBSBX_CORE_ENGINE_HPP_
 #define LIBSBX_CORE_ENGINE_HPP_
 
-#include <unordered_map>
+#include <map>
 #include <vector>
 #include <typeindex>
 #include <memory>
@@ -9,14 +9,17 @@
 #include <string_view>
 #include <cmath>
 #include <chrono>
+#include <ranges>
 
 #include <libsbx/utility/concepts.hpp>
 #include <libsbx/utility/noncopyable.hpp>
+#include <libsbx/utility/assert.hpp>
 
 #include <libsbx/units/time.hpp>
 
 #include <libsbx/core/module.hpp>
 #include <libsbx/core/application.hpp>
+#include <libsbx/core/logger.hpp>
 
 namespace sbx::core {
 
@@ -28,33 +31,55 @@ class engine : public utility::noncopyable {
 
 public:
 
-  engine(std::vector<std::string>&& args)
+  engine(std::vector<std::string_view>&& args)
   : _args{std::move(args)} {
-    for (const auto& [type, factory] : module_manager::_factories) {
+    utility::assert_that(_instance == nullptr, "Engine already exists.");
+
+    _instance = this;
+
+    for (const auto& [type, factory] : module_manager::_factories()) {
       _create_module(type, factory);
     }
   }
 
   ~engine() {
-    for (const auto& entry : _modules) {
+    for (const auto& entry : _modules | std::views::reverse) {
       _destroy_module(entry.first);
     }
+
+    _instance = nullptr;
   }
 
   static auto delta_time() -> units::second {
-    return _delta_time;
+    return _instance->_delta_time;
   }
 
-  template<utility::implements<application> Application>
-  auto run() -> void {
+  static auto quit() -> void {
+    _instance->_is_running = false;
+  }
+
+  static auto args() noexcept -> const std::vector<std::string_view>& {
+    return _instance->_args;
+  }
+
+  template<typename Module>
+  requires (std::is_base_of_v<module_base, Module>)
+  [[nodiscard]] static auto get_module() -> Module& {
+    const auto type = std::type_index{typeid(Module)};
+
+    if (auto entry = _instance->_modules.find(type); entry != _instance->_modules.end()) {
+      return *static_cast<Module*>(entry->second);
+    }
+
+    throw std::runtime_error{fmt::format("Failed to find module '{}'", typeid(Module).name())};
+  }
+
+  auto run(std::unique_ptr<application> application) -> void {
     if (_is_running) {
       return;
     }
 
     using clock_type = std::chrono::high_resolution_clock;
-
-    auto application = std::make_unique<Application>();
-    application->_set_engine(this);
 
     _is_running = true;
 
@@ -67,40 +92,46 @@ public:
 
       application->update();
 
-      engine::_delta_time = units::second{delta_time};
+      _instance->_delta_time = units::second{delta_time};
+
+      _update_stage(stage::always);
 
       _update_stage(stage::pre);
       _update_stage(stage::normal);
       _update_stage(stage::post);
-    }
-  }
 
-  auto quit() -> void {
-    _is_running = false;
+      _update_stage(stage::rendering);
+    }
   }
 
 private:
 
-  auto _create_module(std::type_index type, const module_factory& factory) -> void {
+  auto _create_module(const std::type_index& type, const module_factory& factory) -> void {
     if (_modules.contains(type)) {
       return;
     }
 
     for (const auto& dependency : factory.dependencies) {
-      _create_module(dependency, module_manager::_factories.at(dependency));
+      _create_module(dependency, module_manager::_factories().at(dependency));
     }
 
-    _modules.insert({type, factory.create()});
+    _modules.insert({type, std::invoke(factory.create)});
     _module_by_stage[factory.stage].push_back(type);
   }
-  auto _destroy_module(std::type_index type) -> void {
-    if (auto entry = _modules.find(type); entry != _modules.cend()) {
-      for (const auto& dependency : module_manager::_factories.at(type).dependencies) {
-        _destroy_module(dependency);
-      }
 
-      entry->second.reset();
+  auto _destroy_module(const std::type_index& type) -> void {
+    if (!_modules.at(type)) {
+      return;
     }
+
+    for (const auto& dependency : module_manager::_factories().at(type).dependencies) {
+      _destroy_module(dependency);
+    }
+
+    auto* module = _modules.at(type);
+    std::destroy_at(module);
+    ::operator delete(module);
+    _modules.at(type) = nullptr;
   }
 
   auto _update_stage(stage stage) -> void {
@@ -111,15 +142,18 @@ private:
     }
   }
 
-  static units::second _delta_time;
+  static engine* _instance;
+
+  units::second _delta_time;
 
   bool _is_running{};
-  std::vector<std::string> _args{};
+  std::vector<std::string_view> _args{};
 
-  std::unordered_map<std::type_index, std::unique_ptr<module_base>> _modules{};
-  std::unordered_map<stage, std::vector<std::type_index>> _module_by_stage{};
+  std::map<std::type_index, module_base*> _modules{};
+  std::map<stage, std::vector<std::type_index>> _module_by_stage{};
 
 }; // class engine
 
 } // namespace sbx::core
+
 #endif // LIBSBX_CORE_ENGINE_HPP_

@@ -4,6 +4,8 @@
 
 #include <libsbx/utility/fast_mod.hpp>
 
+#include <libsbx/core/engine.hpp>
+
 namespace sbx::graphics {
 
 static auto _stringify_result(VkResult result) -> std::string {
@@ -74,17 +76,28 @@ graphics_module::graphics_module()
   _physical_device{std::make_unique<graphics::physical_device>(*_instance)},
   _logical_device{std::make_unique<graphics::logical_device>(*_physical_device)},
   _surface{std::make_unique<graphics::surface>(*_instance, *_physical_device, *_logical_device)} {
-  auto& window = devices::devices_module::get().window();
+  auto& devices_module = core::engine::get_module<devices::devices_module>();
 
-  window.set_on_framebuffer_resized([this]([[maybe_unused]] const devices::framebuffer_resized_event& event) {
+  auto& window = devices_module.window();
+
+  window.on_framebuffer_resized() += [this]([[maybe_unused]] const auto& event) {
     _framebuffer_resized = true;
-  });
+  };
 }
 
 graphics_module::~graphics_module() {
-  const auto& graphics_queue = _logical_device->graphics_queue();
+  _logical_device->wait_idle();
 
+  const auto& graphics_queue = _logical_device->graphics_queue();
   validate(vkQueueWaitIdle(graphics_queue));
+
+  const auto& transfer_queue = _logical_device->transfer_queue();
+  validate(vkQueueWaitIdle(transfer_queue));
+
+  const auto& compute_queue = _logical_device->compute_queue();
+  validate(vkQueueWaitIdle(compute_queue));
+
+  _renderer.reset();
 
   _swapchain.reset();
 
@@ -100,7 +113,9 @@ graphics_module::~graphics_module() {
 }
 
 auto graphics_module::update() -> void {
-  const auto& window = devices::devices_module::get().window();
+  auto& devices_module = core::engine::get_module<devices::devices_module>();
+
+  const auto& window = devices_module.window();
 
   if (!_renderer || window.is_iconified()) {
     return;
@@ -291,9 +306,11 @@ auto  graphics_module::_recreate_pass(graphics::render_stage& render_stage) -> v
 }
 
 auto graphics_module::_recreate_swapchain() -> void {
+  auto& devices_module = core::engine::get_module<devices::devices_module>();
+
   _logical_device->wait_idle();
 
-  const auto& window = devices::devices_module::get().window();
+  const auto& window = devices_module.window();
 
   const auto extent = VkExtent2D{window.width(), window.height()};
 

@@ -48,6 +48,10 @@
 #include <libsbx/utility/timer.hpp>
 #include <libsbx/utility/enable_private_constructor.hpp>
 #include <libsbx/utility/iterator.hpp>
-#include <libsbx/utility/flags.hpp>
+#include <libsbx/utility/bitmask.hpp>
+#include <libsbx/utility/assert.hpp>
+#include <libsbx/utility/target.hpp>
+#include <libsbx/utility/expected.hpp>
+#include <libsbx/utility/primitive.hpp>
 
 #endif // LIBSBX_UTILITY_HPP_

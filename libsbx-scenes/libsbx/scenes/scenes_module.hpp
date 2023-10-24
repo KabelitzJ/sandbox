@@ -5,21 +5,19 @@
 
 #include <libsbx/core/module.hpp>
 
-#include <libsbx/graphics/graphics_module.hpp>
-
 #include <libsbx/scenes/scene.hpp>
-#include <libsbx/scenes/camera.hpp>
 
 namespace sbx::scenes {
 
 class scenes_module final : public core::module<scenes_module> {
 
-  inline static const auto is_registered = register_module(stage::normal, dependencies<graphics::graphics_module>{});
+  inline static const auto is_registered = register_module(stage::normal);
 
 public:
 
-  scenes_module() {
-    _scene = std::make_unique<scenes::scene>();
+  scenes_module()
+  : _scene{std::make_unique<scenes::scene>()} {
+    
   }
 
   ~scenes_module() override = default;
@@ -28,7 +26,7 @@ public:
 
   }
 
-  auto scene() const -> scenes::scene& {
+  auto scene() -> scenes::scene& {
     return *_scene;
   }
 

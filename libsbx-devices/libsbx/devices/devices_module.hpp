@@ -1,9 +1,11 @@
 #ifndef LIBSBX_DEVICES_DEVICES_MODULE_HPP_
 #define LIBSBX_DEVICES_DEVICES_MODULE_HPP_
 
+#include <cinttypes>
+
 #include <memory>
 #include <vector>
-#include <cinttypes>
+#include <unordered_map>
 
 #include <fmt/format.h>
 
@@ -34,29 +36,17 @@ public:
       throw std::runtime_error{"Glfw does not support vulkan"};
     }
 
-    _window = std::make_unique<devices::window>(window_create_info{"Demo", 960, 720});
+    _window = std::make_unique<devices::window>(window_create_info{"Demo", 1280, 720});
   }
 
   ~devices_module() override {
-    _window = nullptr;
+    _window.reset();
 
     glfwTerminate();
   }
 
   auto update() -> void override {
     glfwPollEvents();
-
-    _elapsed_time += core::engine::delta_time();
-
-    if (_elapsed_time >= units::second{1}) {
-      _elapsed_time -= units::second{1};
-
-      glfwSetWindowTitle(*_window, fmt::format("{} | {} FPS", _window->title(), _frame_count).c_str());
-
-      _frame_count = 0;
-    } else {
-      ++_frame_count;
-    }
   }
 
   auto window() -> devices::window& {
@@ -73,9 +63,6 @@ public:
 private:
 
   std::unique_ptr<devices::window> _window{};
-
-  std::uint32_t _frame_count{};
-  units::second _elapsed_time{};
 
 }; // class devices_module
 

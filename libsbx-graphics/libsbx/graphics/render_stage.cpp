@@ -1,5 +1,7 @@
 #include <libsbx/graphics/render_stage.hpp>
 
+#include <libsbx/core/engine.hpp>
+
 #include <libsbx/graphics/graphics_module.hpp>
 
 namespace sbx::graphics {
@@ -18,6 +20,7 @@ public:
     if (depth_attachment) {
       _depth_attachment.attachment = *depth_attachment;
       _depth_attachment.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
       _description.pDepthStencilAttachment = &_depth_attachment;
     }
   }
@@ -76,7 +79,9 @@ render_stage::render_stage(std::vector<graphics::attachment>&& attachments, std:
 }
 
 render_stage::~render_stage() {
-  auto& logical_device = graphics_module::get().logical_device();
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+  auto& logical_device = graphics_module.logical_device();
 
   for (const auto& framebuffer : _framebuffers) {
     vkDestroyFramebuffer(logical_device, framebuffer, nullptr);
@@ -86,6 +91,8 @@ render_stage::~render_stage() {
 }
 
 auto render_stage::update() -> void {
+  auto& devices_module = core::engine::get_module<devices::devices_module>();
+
   auto last_render_area = _render_area;
 
   _render_area.set_offset(_viewport.offset());
@@ -95,7 +102,7 @@ auto render_stage::update() -> void {
   if (auto size = _viewport.size(); size) {
     _render_area.set_extent(math::vector2u{_viewport.scale() * (*size)});
   } else {
-    auto& window = devices::devices_module::get().window();
+    auto& window = devices_module.window();
     auto window_size = math::vector2u{window.width(), window.height()};
 
     _render_area.set_extent(math::vector2u{_viewport.scale() * window_size});
@@ -108,16 +115,18 @@ auto render_stage::update() -> void {
 }
 
 auto render_stage::rebuild(const swapchain& swapchain) -> void {
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
   update();
 
-  auto& surface = graphics_module::get().surface();
+  auto& surface = graphics_module.surface();
 
   if (_depth_attachment) {
-    _depth_stencil = std::make_unique<graphics::depth_image>(_render_area.extent(), VK_SAMPLE_COUNT_1_BIT);
+    _depth_image = std::make_unique<graphics::depth_image>(_render_area.extent(), VK_SAMPLE_COUNT_1_BIT);
   }
 
   if (!_render_pass) {
-    _create_render_pass(_depth_stencil ? _depth_stencil->format() : VK_FORMAT_UNDEFINED, surface.format().format);
+    _create_render_pass(_depth_image ? _depth_image->format() : VK_FORMAT_UNDEFINED, surface.format().format);
   }
 
   for (const auto& attachment : _attachments) {
@@ -150,15 +159,15 @@ auto render_stage::framebuffer(std::uint32_t index) noexcept -> const VkFramebuf
 }
 
 auto render_stage::_create_render_pass(VkFormat depth_format, VkFormat surface_format) -> void {
-  auto& logical_device = graphics_module::get().logical_device();
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+  auto& logical_device = graphics_module.logical_device();
 
   auto attachments = std::vector<VkAttachmentDescription>{};
 
   for (const auto& attachment : _attachments) {
-    const auto attachment_samples = VK_SAMPLE_COUNT_1_BIT;
-
     auto attachment_description = VkAttachmentDescription{};
-    attachment_description.samples = attachment_samples;
+    attachment_description.samples = VK_SAMPLE_COUNT_1_BIT;
     attachment_description.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
     attachment_description.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
     attachment_description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -190,12 +199,12 @@ auto render_stage::_create_render_pass(VkFormat depth_format, VkFormat surface_f
   auto subpass_dependencies = std::vector<VkSubpassDependency>{};
 
   for (const auto& subpass : _subpass_bindings) {
-		auto subpass_colour_attachments = std::vector<VkAttachmentReference>{};
+		auto subpass_color_attachments = std::vector<VkAttachmentReference>{};
 
 		auto depth_attachment = std::optional<std::uint32_t>{};
 
 		for (const auto& attachment_binding : subpass.attachment_bindings()) {
-			auto image_attachment = attachment(attachment_binding);
+			auto image_attachment = find_attachment(attachment_binding);
 
 			if (!image_attachment) {
 				throw std::runtime_error{fmt::format("Failed to find attachment with binding {}", attachment_binding)};
@@ -206,14 +215,14 @@ auto render_stage::_create_render_pass(VkFormat depth_format, VkFormat surface_f
 				continue;
 			}
 
-			VkAttachmentReference attachmentReference = {};
-			attachmentReference.attachment = image_attachment->binding();
-			attachmentReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+			auto attachment_reference = VkAttachmentReference{};
+			attachment_reference.attachment = image_attachment->binding();
+			attachment_reference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-			subpass_colour_attachments.emplace_back(attachmentReference);
+			subpass_color_attachments.push_back(attachment_reference);
 		}
 
-		subpasses.push_back(subpass_description{VK_PIPELINE_BIND_POINT_GRAPHICS, std::move(subpass_colour_attachments), depth_attachment});
+		subpasses.push_back(subpass_description{VK_PIPELINE_BIND_POINT_GRAPHICS, std::move(subpass_color_attachments), depth_attachment});
 
 		auto subpass_dependency = VkSubpassDependency{};
 		subpass_dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
@@ -264,7 +273,9 @@ auto render_stage::_create_render_pass(VkFormat depth_format, VkFormat surface_f
 }
 
 auto render_stage::_rebuild_framebuffers(const swapchain& swapchain) -> void {
-  auto& logical_device = graphics_module::get().logical_device();
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+  auto& logical_device = graphics_module.logical_device();
 
   for (const auto& framebuffer : _framebuffers) {
     vkDestroyFramebuffer(logical_device, framebuffer, nullptr);
@@ -282,7 +293,7 @@ auto render_stage::_rebuild_framebuffers(const swapchain& swapchain) -> void {
           break;
         }
         case attachment::type::depth: {
-          attachments.push_back(_depth_stencil->view());
+          attachments.push_back(_depth_image->view());
           break;
         }
         case attachment::type::swapchain: {

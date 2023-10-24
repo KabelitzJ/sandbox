@@ -10,10 +10,16 @@
 
 #include <yaml-cpp/yaml.h>
 
+#include <fmt/format.h>
+
 #include <libsbx/math/concepts.hpp>
 #include <libsbx/math/vector2.hpp>
+#include <libsbx/math/angle.hpp>
 
 namespace sbx::math {
+
+template<numeric Type>
+class basic_vector4;
 
 /**
  * @brief A vector in three-dimensional space.
@@ -53,23 +59,26 @@ public:
   /** @brief A vector with all components set to zero. */
   inline static constexpr basic_vector3 zero{value_type{0}, value_type{0}, value_type{0}};
 
+  inline static constexpr basic_vector3 one{value_type{1}, value_type{1}, value_type{1}};
+
   /** @brief A unit vector along the positive x-axis */
   inline static constexpr basic_vector3 right{value_type{1}, value_type{0}, value_type{0}};
 
   /** @brief A unit vector along the negative x-axis */
   inline static constexpr basic_vector3 left{value_type{-1}, value_type{0}, value_type{0}};
 
-  /** @brief A unit vector along the negative z-axis */
-  inline static constexpr basic_vector3 forward{value_type{0}, value_type{1}, value_type{0}};
-
-  /** @brief A unit vector along the positive z-axis */
-  inline static constexpr basic_vector3 backward{value_type{0}, value_type{-1}, value_type{0}};
-
   /** @brief A unit vector along the positive y-axis */
-  inline static constexpr basic_vector3 up{value_type{0}, value_type{0}, value_type{1}};
+  inline static constexpr basic_vector3 up{value_type{0}, value_type{1}, value_type{0}};
 
   /** @brief A unit vector along the negative y-axis */
-  inline static constexpr basic_vector3 down{value_type{0}, value_type{0}, value_type{-1}};
+  inline static constexpr basic_vector3 down{value_type{0}, value_type{-1}, value_type{0}};
+
+  /** @brief A unit vector along the negative z-axis */
+
+  inline static constexpr basic_vector3 forward{value_type{0}, value_type{0}, value_type{1}};
+  
+  /** @brief A unit vector along the positive z-axis */
+  inline static constexpr basic_vector3 backward{value_type{0}, value_type{0}, value_type{-1}};
 
   // -- Data members --
 
@@ -108,6 +117,8 @@ public:
    * @param z The value for the z component. (Default: 1)
    */
   explicit constexpr basic_vector3(const basic_vector2<value_type>& vector, const value_type z = value_type{0}) noexcept;
+
+  explicit constexpr basic_vector3(const basic_vector4<value_type>& vector) noexcept;
 
   /** 
    * @brief Constructs a vector and copies the components from the other vector
@@ -190,6 +201,8 @@ public:
   template<std::floating_point Scale>
   [[nodiscard]] static constexpr auto lerp(const basic_vector3& lhs, const basic_vector3& rhs, const Scale scale) -> basic_vector3;
 
+  // [[nodiscard]] static constexpr auto rotated(const basic_vector3& vector, const basic_vector3& axis, const basic_angle<Type>& angle) noexcept -> basic_vector3;
+  
   // -- Assignment operators --
 
   /**
@@ -487,6 +500,23 @@ struct YAML::convert<sbx::math::basic_vector3<Type>> {
   static auto encode(const sbx::math::basic_vector3<Type>& vector) -> Node;
   static auto decode(const Node& node, sbx::math::basic_vector3<Type>& vector) -> bool;
 }; // struct YAML::convert
+
+template<sbx::math::numeric Type>
+struct fmt::formatter<sbx::math::basic_vector3<Type>> : formatter<std::string_view> {
+
+  using underlying_formatter_type = formatter<std::string_view>;
+
+  template<typename ParseContext>
+  constexpr auto parse(ParseContext& context) -> decltype(context.begin()) {
+    return underlying_formatter_type::parse(context);
+  }
+
+  template<typename FormatContext>
+  auto format(const sbx::math::basic_vector3<Type>& vector, FormatContext& context) -> decltype(context.out()) {
+    return underlying_formatter_type::format(fmt::format("({:.2f}, {:.2f}, {:.2f})", vector.x, vector.y, vector.z), context);
+  }
+
+}; // struct fmt::formatter
 
 #include <libsbx/math/vector3.ipp>
 

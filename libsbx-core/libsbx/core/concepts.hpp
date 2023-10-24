@@ -2,6 +2,7 @@
 #define LIBSBX_CORE_CONCEPTS_HPP_
 
 #include <type_traits>
+#include <concepts>
 
 namespace sbx::core {
 
@@ -17,21 +18,21 @@ concept callable = std::is_invocable_r_v<Return, Callable, Args...>;
 
 template<typename Iterable>
 concept iterable = requires(Iterable iterable) {
-  { Iterable::iterator } -> std::same_as<typename Iterable::iterator>;
+  { Iterable::iterator };
   { iterable.begin() } -> std::same_as<typename Iterable::iterator>;
   { iterable.end() } -> std::same_as<typename Iterable::iterator>;
 }; // concept iterable
 
 template<typename Iterable>
 concept const_iterable = requires(Iterable iterable) {
-  { Iterable::const_iterator } -> std::same_as<typename Iterable::const_iterator>;
+  { Iterable::const_iterator };
   { iterable.cbegin() } -> std::same_as<typename Iterable::const_iterator>;
   { iterable.cend() } -> std::same_as<typename Iterable::const_iterator>;
 }; // concept const_iterable
 
 template<typename Iterable>
 concept reverse_iterable = requires(Iterable iterable) {
-  { Iterable::reverse_iterator } -> std::same_as<typename Iterable::reverse_iterator>;
+  { Iterable::reverse_iterator };
   { iterable.rbegin() } -> std::same_as<typename Iterable::reverse_iterator>;
   { iterable.rend() } -> std::same_as<typename Iterable::reverse_iterator>;
 }; // concept reverse_iterable

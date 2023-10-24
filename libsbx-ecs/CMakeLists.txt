@@ -2,7 +2,12 @@ project(ecs)
 
 message(STATUS "Configuring ${PROJECT_NAME}...")
 
-add_library(${PROJECT_NAME} STATIC)
+if(${SBX_BUILD_SHARED})
+  add_library(${PROJECT_NAME} SHARED)
+else()
+  add_library(${PROJECT_NAME} STATIC)
+endif()
+
 add_library(${CMAKE_PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
 target_sources(
@@ -40,6 +45,7 @@ set_target_properties(
     ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
     LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+    POSITION_INDEPENDENT_CODE ON
 )
 
 target_compile_features(
@@ -71,3 +77,11 @@ target_compile_options(
     -static-libstdc++ 
     -static-libgcc
 )
+
+if(MINGW)
+  target_link_options(
+    ${PROJECT_NAME}
+    PUBLIC
+      -Wl,--disable-dynamicbase,--default-image-base-low
+  )
+endif()
