@@ -19,7 +19,7 @@ public:
   ~shadow_subrenderer() override = default;
 
   auto render(graphics::command_buffer& command_buffer) -> void override {
-
+    static_cast<void>(command_buffer);
   }
 
 private:
