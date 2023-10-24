@@ -103,7 +103,7 @@ public:
     auto font_jet_brains_mono_id = assets_module.load_asset<sbx::ui::font>("res://fonts/JetBrainsMono-Medium.ttf", sbx::ui::pixels{48u});
     auto font_roboto_id = assets_module.load_asset<sbx::ui::font>("res://fonts/Roboto-Regular.ttf", sbx::ui::pixels{48u});
 
-    ui_module.add_widget<sbx::ui::label>("Hello, World!", sbx::math::vector2u{25, 25}, font_roboto_id, sbx::math::color{1.0f, 1.0f, 1.0f, 1.0f});
+    ui_module.add_widget<sbx::ui::label>("Hello, World!", sbx::math::vector2u{25, 25}, font_jet_brains_mono_id, sbx::math::color{1.0f, 1.0f, 1.0f, 1.0f});
 
     auto ambience_birds_sound_id = assets_module.load_asset<sbx::audio::sound_buffer>("res://audio/ambience.wav");
     auto forest_sound_id = assets_module.load_asset<sbx::audio::sound_buffer>("res://audio/forest.wav");
