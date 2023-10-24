@@ -468,68 +468,6 @@ auto image::copy_image(const VkImage& src_image, VkImage& dst_image, VkDeviceMem
 	return supports_blit;
 }
 
-auto image::blit_image(const VkImage& src_image, const VkImage& dst_image, const VkExtent3D& extent, VkImageLayout src_image_layout, VkImageLayout dst_image_layout, VkFilter filter, VkImageAspectFlags image_aspect, std::uint32_t mip_level, std::uint32_t array_layer) -> bool {
-  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
-    
-  auto& physical_device = graphics_module.physical_device();
-  auto& surface = graphics_module.surface();
-
-  // Checks blit swapchain support.
-  auto format_properties = VkFormatProperties{}; 
-
-  // Check if the device supports blitting from optimal images (the swapchain images are in optimal format).
-  vkGetPhysicalDeviceFormatProperties(physical_device, surface.format().format, &format_properties);
-
-  if (!(format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_BLIT_SRC_BIT)) {
-    core::logger::warn("Device does not support blitting from optimal tiled images, using copy instead of blit");
-    return false;
-  }
-
-  // Check if the device supports blitting to linear images.
-  vkGetPhysicalDeviceFormatProperties(physical_device, surface.format().format, &format_properties);
-
-  if (!(format_properties.linearTilingFeatures & VK_FORMAT_FEATURE_BLIT_DST_BIT)) {
-    core::logger::warn("Device does not support blitting to linear tiled images, using copy instead of blit");
-    return false;
-  }
-
-  // Do the actual blit from the swapchain image to our host visible destination image.
-  auto command_buffer = graphics::command_buffer{};
-
-  // Transition destination image to transfer destination layout.
-  insert_image_memory_barrier(command_buffer, dst_image, 0, VK_ACCESS_TRANSFER_WRITE_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_IMAGE_ASPECT_COLOR_BIT, 1, 0, 1, 0);
-
-  // Transition image from previous usage to transfer source layout
-  insert_image_memory_barrier(command_buffer, src_image, VK_ACCESS_MEMORY_READ_BIT, VK_ACCESS_TRANSFER_READ_BIT, src_image_layout, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_IMAGE_ASPECT_COLOR_BIT, 1, mip_level, 1, array_layer);
-
-  // Define the region to blit (we will blit the whole swapchain image).
-  auto blit_size = VkOffset3D{static_cast<int32_t>(extent.width), static_cast<int32_t>(extent.height), static_cast<int32_t>(extent.depth)};
-
-  auto image_blit_region = VkImageBlit{};
-  image_blit_region.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-  image_blit_region.srcSubresource.mipLevel = mip_level;
-  image_blit_region.srcSubresource.baseArrayLayer = array_layer;
-  image_blit_region.srcSubresource.layerCount = 1;
-  image_blit_region.srcOffsets[1] = blit_size;
-  image_blit_region.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-  image_blit_region.dstSubresource.mipLevel = 0;
-  image_blit_region.dstSubresource.baseArrayLayer = 0;
-  image_blit_region.dstSubresource.layerCount = 1;
-  image_blit_region.dstOffsets[1] = blit_size;
-
-  vkCmdBlitImage(command_buffer, src_image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, dst_image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &image_blit_region, filter);
-
-  // Transition destination image to general layout, which is the required layout for mapping the image memory later on.
-  insert_image_memory_barrier(command_buffer, dst_image, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_MEMORY_READ_BIT, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, dst_image_layout, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_IMAGE_ASPECT_COLOR_BIT, 1, 0, 1, 0);
-
-  // Transition back the image after the blit is done.
-  insert_image_memory_barrier(command_buffer, src_image, VK_ACCESS_TRANSFER_READ_BIT, VK_ACCESS_MEMORY_READ_BIT, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, src_image_layout, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_IMAGE_ASPECT_COLOR_BIT, 1, mip_level, 1, array_layer);
-
-  command_buffer.submit_idle();
-
-  return true;
-}
-
 auto image::write_descriptor_set(std::uint32_t binding, VkDescriptorType descriptor_type) const noexcept -> graphics::write_descriptor_set {
   auto descriptor_image_info = VkDescriptorImageInfo{};
   descriptor_image_info.imageLayout = _layout;

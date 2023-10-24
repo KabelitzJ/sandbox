@@ -94,6 +94,7 @@ public:
     auto base_id = assets_module.load_asset<sbx::graphics::image2d>("res://textures/base.png");
     auto default_id = assets_module.load_asset<sbx::graphics::image2d>("res://textures/default.png");
     auto grid_id = assets_module.load_asset<sbx::graphics::image2d>("res://textures/grid.png");
+    auto prototype_black_id = assets_module.load_asset<sbx::graphics::image2d>("res://textures/prototype_black.png");
 
     auto monkey_id = assets_module.load_asset<sbx::models::mesh>("res://meshes/suzanne.obj");
     auto sphere_id = assets_module.load_asset<sbx::models::mesh>("res://meshes/sphere.obj");
@@ -129,11 +130,13 @@ public:
     camera_controller.set("move_speed", 5.0f);
 
     auto floor = scene.create_node("Floor", sbx::math::transform{sbx::math::vector3f::zero, sbx::math::vector3f::zero, sbx::math::vector3f{20.0f, 0.1f, 20.0f}});
-    floor.add_component<sbx::scenes::static_mesh>(cube_id, base_id);
+    floor.add_component<sbx::scenes::static_mesh>(cube_id, prototype_black_id);
 
     auto back_wall = scene.create_node("BackWall", sbx::math::transform{sbx::math::vector3f{0.0f, 10.0f, -10.0f}, sbx::math::vector3f::zero, sbx::math::vector3f{20.0f, 20.0f, 0.1f}});
-    back_wall.add_component<sbx::scenes::static_mesh>(cube_id, base_id);
+    back_wall.add_component<sbx::scenes::static_mesh>(cube_id, prototype_black_id);
 
+    auto side_wall = scene.create_node("BackWall", sbx::math::transform{sbx::math::vector3f{-10.0f, 10.0f, 0.0f}, sbx::math::vector3f{180.0f, 0.0f, 0.0f}, sbx::math::vector3f{0.1f, 20.0f, 20.0f}});
+    side_wall.add_component<sbx::scenes::static_mesh>(cube_id, prototype_black_id);
 
     // [Todo] KAJ 2023-08-16 15:30 - This should probably be done automatically
     scene.start();

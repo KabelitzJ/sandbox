@@ -10,6 +10,8 @@
 
 #include <range/v3/all.hpp>
 
+#include <yaml-cpp/yaml.h>
+
 #include <libsbx/ecs/registry.hpp>
 #include <libsbx/ecs/entity.hpp>
 
