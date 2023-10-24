@@ -11,5 +11,5 @@ function on_update()
 
   local euler_angles = sbx.vector3.up * speed * delta_time;
 
-  -- transform:add_euler_angles(euler_angles);
+  transform:add_euler_angles(euler_angles);
 end

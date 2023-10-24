@@ -119,8 +119,8 @@ public:
 
     auto camera = scene.camera();
 
-    auto& camera_movement = camera.add_component<sbx::scenes::script>("res://scripts/camera_movement.lua");
-    camera_movement.set("move_speed", 5.0f);
+    auto& camera_controller = camera.add_component<sbx::scenes::script>("res://scripts/camera_controller.lua");
+    camera_controller.set("move_speed", 5.0f);
 
     auto& camera_transform = camera.get_component<sbx::math::transform>();
     camera_transform.set_position(sbx::math::vector3{0.0f, 0.0f, 5.0f});

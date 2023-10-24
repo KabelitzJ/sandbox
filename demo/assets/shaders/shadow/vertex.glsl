@@ -2,16 +2,19 @@
 
 layout(location = 0) in vec3 in_position;
 
-layout(push_constant) uniform uniform_object {
-  mat4 model;
+layout(location = 0) out vec3 out_position;
+
+layout(binding = 0) uniform uniform_scene {
   mat4 view;
   mat4 projection;
+} scene;
+
+layout(push_constant) uniform uniform_object {
+  mat4 model;
 } object;
 
-out gl_PerVertex {
-  vec4 gl_Position;
-};
-
 void main() {
-  gl_Position = object.projection * object.view * object.model * vec4(in_position, 1.0);
+  out_position = vec3(object.model * vec4(in_position, 1.0));
+
+  gl_Position = scene.projection * scene.view * vec4(out_position, 1.0);
 }
