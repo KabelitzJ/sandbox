@@ -17,12 +17,12 @@ It is written in `C++20` and tries to use modern C++ features and best practices
   - [📦 Installing dependencies](#-installing-dependencies)
   - [🔨 Building](#-building)
   - [🚀 Running](#-running)
-- [🎲 Examples](#-examples)
-  - [📱 Create a new application](#-create-a-new-application)
+- [📝 Examples](#-examples)
+  - [🌱 Create a new application](#-create-a-new-application)
   - [🎨 Create a new renderer](#-create-a-new-renderer)
   - [🎬 Define render passes and subrenderers](#-define-render-passes-and-subrenderers)
 - [🤝 Contributing and bug reports](#-contributing-and-bug-reports)
-- [📝 License](#-license)
+- [🔒 License](#-license)
 - [📧 Contact](#-contact)
 
 ## 🚀 Features
@@ -91,11 +91,11 @@ To run the demo executable, run the following command:
 ./build/debug/bin/demo.exe
 ```
 
-## 🎲 Examples
+## 📝 Examples
 
 The project comes with a demo executable that showcases the features of the engine. To run the demo, follow the steps in the [Running](#🚀-running) section.
 
-### 📱 Create a new application 
+### 🌱 Create a new application 
 
 The demo creates a new class that derives from the `sbx::core::application` class. The application class is used to configure the game and to create the scene.
 It then is passed to the engine via the `auto sbx::core::create_application() -> std::unique_ptr<sbx::core::application>` function.
@@ -253,7 +253,7 @@ Contributions to the project are welcome. To contribute, follow these steps:
 
 If you find any bugs or have any suggestions, feel free to open an issue.
 
-## 📝 License
+## 🔒 License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
