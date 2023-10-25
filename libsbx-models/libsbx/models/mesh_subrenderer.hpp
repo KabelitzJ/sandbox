@@ -15,6 +15,9 @@
 #include <libsbx/scenes/scene.hpp>
 #include <libsbx/scenes/node.hpp>
 #include <libsbx/scenes/components/static_mesh.hpp>
+#include <libsbx/scenes/components/id.hpp>
+#include <libsbx/scenes/components/camera.hpp>
+#include <libsbx/scenes/components/script.hpp>
 
 #include <libsbx/models/vertex3d.hpp>
 #include <libsbx/models/pipeline.hpp>
@@ -49,8 +52,9 @@ public:
   ~mesh_subrenderer() override = default;
 
   auto render(graphics::command_buffer& command_buffer) -> void override {
-    auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
-    auto& render_stage = graphics_module.render_stage(stage());
+    // [NOTE] KAJ 2023-10-25 : We need those when we want to load the shadow maps
+    // auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+    // auto& render_stage = graphics_module.render_stage(stage());
 
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
     auto& scene = scenes_module.scene();
@@ -101,7 +105,8 @@ private:
 
   auto _render_node(scenes::node& node, graphics::command_buffer& command_buffer) -> void {
     auto& assets_module = core::engine::get_module<assets::assets_module>();
-    auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+    // [NOTE] KAJ 2023-10-25 : We need this for loading the shadow map in the future
+    // auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
     auto& scene = scenes_module.scene();

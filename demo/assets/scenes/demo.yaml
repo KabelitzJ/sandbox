@@ -1,4 +1,5 @@
 name: "Demo"
+assets: "./demo/assets"
 entities:
   - name: "Camera"
     components:

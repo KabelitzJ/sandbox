@@ -7,33 +7,21 @@
 #include <ranges>
 #include <vector>
 #include <typeindex>
+#include <filesystem>
 
 #include <range/v3/all.hpp>
-
-#include <yaml-cpp/yaml.h>
 
 #include <libsbx/ecs/registry.hpp>
 #include <libsbx/ecs/entity.hpp>
 
 #include <libsbx/math/transform.hpp>
-#include <libsbx/math/angle.hpp>
+#include <libsbx/math/uuid.hpp>
 
 #include <libsbx/core/logger.hpp>
-
-#include <libsbx/devices/devices_module.hpp>
-#include <libsbx/devices/window.hpp>
-
-#include <libsbx/assets/assets_module.hpp>
 
 #include <libsbx/signals/signal.hpp>
 
 #include <libsbx/scenes/node.hpp>
-
-#include <libsbx/scenes/components/id.hpp>
-#include <libsbx/scenes/components/tag.hpp>
-#include <libsbx/scenes/components/relationship.hpp>
-#include <libsbx/scenes/components/camera.hpp>
-#include <libsbx/scenes/components/script.hpp>
 
 namespace sbx::scenes {
 
@@ -45,133 +33,47 @@ class scene {
 
 public:
 
-  scene()
-  : _registry{}, 
-    _root{&_registry, _registry.create_entity(), &_on_component_added, &_on_component_removed},
-    _camera{&_registry, _registry.create_entity(), &_on_component_added, &_on_component_removed} {
-    // [NOTE] KAJ 2023-10-17 : Initialize root node
-    auto& root_id = _root.add_component<scenes::id>();
-    _root.add_component<scenes::relationship>(root_id);
-    _root.add_component<math::transform>();
-    _root.add_component<scenes::tag>("ROOT");
+  scene();
 
-    _nodes.insert({root_id, _root});
+  scene(const std::filesystem::path& path)
+  : scene{} {
+    
+    auto node = YAML::LoadFile(path.string());
 
-    // [NOTE] KAJ 2023-10-17 : Initialize camera node
-    auto& camera_id = _camera.add_component<scenes::id>();
+    const auto name = node["name"].as<std::string>();
 
-    _nodes.insert({camera_id, _camera});
+    core::logger::debug("Scene name: {}", name);
 
-    _camera.add_component<scenes::relationship>(root_id);
-    _root.get_component<scenes::relationship>().add_child(camera_id);
+    const auto entities = node["entities"].as<std::vector<YAML::Node>>();
 
-    _camera.add_component<math::transform>();
-    _camera.add_component<scenes::tag>("Camera");
+    for (const auto& entity : entities) {
+      const auto entity_name = entity["name"].as<std::string>();
 
-    auto& devices_module = core::engine::get_module<devices::devices_module>();
-    auto& window = devices_module.window();
+      core::logger::debug("  Entity name: {}", entity_name);
 
-    auto& camera = _camera.add_component<scenes::camera>(math::angle{math::radian{45.0f}}, 1.0f, 0.1f, 100.0f, true);
-    camera.set_aspect_ratio(window.aspect_ratio());
+      const auto components = entity["components"].as<std::vector<YAML::Node>>();
 
-    window.on_framebuffer_resized() += [&camera](const devices::framebuffer_resized_event& event) {
-      camera.set_aspect_ratio(static_cast<std::float_t>(event.width) / static_cast<std::float_t>(event.height));
-    };
-  }
+      for (const auto& component : components) {
+        const auto component_type = component["type"].as<std::string>();
 
-  auto start() -> void {
-    auto script_nodes = query<scenes::script>();
-
-    for (auto& node : script_nodes) {
-      auto& script = node.get_component<scenes::script>();
-
-      auto& transform = node.get_component<math::transform>();
-
-      script.set("transform", transform);
-
-      script.invoke("on_create");
-
-      transform = script.get<math::transform>("transform");
+        core::logger::debug("    Component type: {}", component_type);
+      }
     }
   }
 
-  auto create_child_node(node& parent, const std::string& tag = "", const math::transform& transform = math::transform{}) -> node {
-    auto node = scenes::node{&_registry, _registry.create_entity(), &_on_component_added, &_on_component_removed};
+  auto start() -> void;
 
-    auto& id = node.add_component<scenes::id>();
+  auto create_child_node(node& parent, const std::string& tag = "", const math::transform& transform = math::transform{}) -> node;
 
-    _nodes.insert({id, node});
+  auto create_node(const std::string& tag = "", const math::transform& transform = math::transform{}) -> node;  
 
-    node.add_component<scenes::relationship>(parent.get_component<scenes::id>());
-    parent.get_component<scenes::relationship>().add_child(id);
-
-    node.add_component<math::transform>(transform);
-
-    node.add_component<scenes::tag>(!tag.empty() ? tag : scenes::tag{"Node"});
-
-    return node;
-  }
-
-  auto create_node(const std::string& tag = "", const math::transform& transform = math::transform{}) -> node {
-    return create_child_node(_root, tag, transform);
-  }
-
-  auto destroy_node(const node& node) -> void {
-    auto& id = node.get_component<scenes::id>();
-    auto& relationship = node.get_component<scenes::relationship>();
-
-    for (auto& child : relationship.children()) {
-      destroy_node(_nodes.at(child));
-    }
-
-    if (auto entry = _nodes.find(id); entry != _nodes.end()) {
-      entry->second.get_component<scenes::relationship>().remove_child(id);
-    } else {
-      core::logger::warn("Node '{}' has invalid parent", node.get_component<scenes::tag>());
-    }
-
-    _nodes.erase(id);
-
-    _registry.destroy_entity(node._entity);
-  }
-
-  // auto create_camera(const math::angle& field_of_view, std::float_t aspect_ratio, std::float_t near_plane, std::float_t far_plane, const std::string& tag = "", const math::transform& transform = math::transform{}, bool is_active = true) -> node {
-  //   auto node = create_node(tag, transform);
-
-  //   if (is_active) {
-  //     auto nodes = query<scenes::camera>();
-
-  //     for (auto& node : nodes) {
-  //       auto& camera = node.get_component<scenes::camera>();
-  //       camera.set_is_active(false);
-  //     }
-
-  //     _camera = node;
-  //   }
-
-  //   node.add_component<scenes::camera>(field_of_view, aspect_ratio, near_plane, far_plane, is_active);
-
-  //   return node;
-  // }
+  auto destroy_node(const node& node) -> void;
 
   auto camera() -> node {
     return _camera;
   }
 
-  auto world_transform(const node& node) -> math::matrix4x4 {
-    auto& transform = node.get_component<math::transform>();
-    auto& relationship = node.get_component<scenes::relationship>();
-
-    auto& parent = _nodes.at(relationship.parent());
-
-    auto world = math::matrix4x4::identity;
-
-    if (parent.get_component<scenes::id>() != _root.get_component<scenes::id>()) {
-      world = world_transform(parent);
-    }
-
-    return world * transform.as_matrix();
-  }
+  auto world_transform(const node& node) -> math::matrix4x4;
 
   template<typename... Components>
   auto query() -> std::vector<node> {
