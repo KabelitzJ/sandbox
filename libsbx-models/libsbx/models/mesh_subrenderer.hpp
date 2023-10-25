@@ -49,9 +49,6 @@ public:
   ~mesh_subrenderer() override = default;
 
   auto render(graphics::command_buffer& command_buffer) -> void override {
-    auto& devices_module = core::engine::get_module<devices::devices_module>();
-    auto& window = devices_module.window();
-
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
     auto& scene = scenes_module.scene();
 
@@ -69,8 +66,6 @@ public:
       core::logger::warn("Scene does not have an active camera");
       return;
     }
-
-    camera.set_aspect_ratio(window.aspect_ratio());
 
     _scene_uniform_handler.push("projection", camera.projection());
 
@@ -152,9 +147,6 @@ private:
   math::vector3 _light_position;
 
   std::unordered_map<math::uuid, std::unique_ptr<uniform_data>> _uniform_data;
-
-  math::matrix4x4 _view;
-  math::matrix4x4 _projection;
 
   graphics::uniform_handler _scene_uniform_handler;
 

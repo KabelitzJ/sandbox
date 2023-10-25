@@ -21,6 +21,7 @@
 #include <libsbx/core/logger.hpp>
 
 #include <libsbx/devices/devices_module.hpp>
+#include <libsbx/devices/window.hpp>
 
 #include <libsbx/assets/assets_module.hpp>
 
@@ -72,6 +73,10 @@ public:
 
     auto& camera = _camera.add_component<scenes::camera>(math::angle{math::radian{45.0f}}, 1.0f, 0.1f, 100.0f, true);
     camera.set_aspect_ratio(window.aspect_ratio());
+
+    window.on_framebuffer_resized() += [&camera](const devices::framebuffer_resized_event& event) {
+      camera.set_aspect_ratio(static_cast<std::float_t>(event.width) / static_cast<std::float_t>(event.height));
+    };
   }
 
   auto start() -> void {
