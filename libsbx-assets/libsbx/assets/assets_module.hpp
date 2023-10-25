@@ -81,8 +81,6 @@ public:
     throw std::runtime_error{fmt::format("Failed to find asset '{}'", actual_path.string())};
   }
 
-  template<typename Asset>
-  requires (std::is_base_of_v<asset<Asset::type>, Asset>)
   [[nodiscard]] auto try_get_asset_id(const std::filesystem::path& path) -> std::optional<asset_id> {
     const auto actual_path = asset_path(path);
 
