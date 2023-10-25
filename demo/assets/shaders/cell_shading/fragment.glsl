@@ -13,6 +13,7 @@ layout(binding = 0) uniform uniform_scene {
 } scene;
 
 layout(binding = 1) uniform sampler2D image;
+// layout(binding = 2) uniform sampler2D shadow_map;
 
 struct material {
   vec3 ambient;
