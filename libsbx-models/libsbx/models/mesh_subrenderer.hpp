@@ -49,6 +49,9 @@ public:
   ~mesh_subrenderer() override = default;
 
   auto render(graphics::command_buffer& command_buffer) -> void override {
+    auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+    auto& render_stage = graphics_module.render_stage(stage());
+
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
     auto& scene = scenes_module.scene();
 
@@ -98,6 +101,7 @@ private:
 
   auto _render_node(scenes::node& node, graphics::command_buffer& command_buffer) -> void {
     auto& assets_module = core::engine::get_module<assets::assets_module>();
+    auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
     auto& scene = scenes_module.scene();
@@ -125,6 +129,7 @@ private:
     descriptor_handler.push("uniform_scene", _scene_uniform_handler);
     descriptor_handler.push("object", push_handler);
     descriptor_handler.push("image", image);
+    // descriptor_handler.push("shadow_map", graphics_module.attachment("shadow"));
 
     if (!descriptor_handler.update(_pipeline)) {
       return;

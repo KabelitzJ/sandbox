@@ -204,6 +204,18 @@ auto graphics_module::render_stage(const pipeline::stage& stage) -> graphics::re
   return _renderer->render_stage(stage);
 }
 
+auto graphics_module::attachment(const std::string& name) const -> const descriptor& {
+  if (!_renderer) {
+    throw std::runtime_error{"No renderer set"};
+  }
+
+  if (auto entry = _attachments.find(name); entry != _attachments.end()) {
+    return *entry->second;
+  }
+
+  throw std::runtime_error{fmt::format("No attachment with name '{}' found", name)};
+}
+
 auto graphics_module::_start_render_pass(graphics::render_stage& render_stage) -> bool {
   if (render_stage.is_outdated()) {
     _recreate_pass(render_stage);
@@ -291,6 +303,8 @@ auto graphics_module::_reset_render_stages() -> void {
   for (auto& stage : _renderer->render_stages()) {
     stage->rebuild(*_swapchain);
   }
+
+  _recreate_attachments();
 }
 
 auto  graphics_module::_recreate_pass(graphics::render_stage& render_stage) -> void {
@@ -303,6 +317,8 @@ auto  graphics_module::_recreate_pass(graphics::render_stage& render_stage) -> v
   }
 
   render_stage.rebuild(*_swapchain);
+
+  _recreate_attachments();
 }
 
 auto graphics_module::_recreate_swapchain() -> void {
@@ -317,8 +333,6 @@ auto graphics_module::_recreate_swapchain() -> void {
   _swapchain = std::make_unique<graphics::swapchain>(extent, _swapchain);
 
   _recreate_command_buffers();
-
-  // _recreate_framebuffers();
 
   _framebuffer_resized = false;
 }
@@ -349,6 +363,15 @@ auto graphics_module::_recreate_command_buffers() -> void {
 
   for (auto& command_buffer : _command_buffers) {
     command_buffer = std::make_unique<graphics::command_buffer>(false);
+  }
+}
+
+auto graphics_module::_recreate_attachments() -> void {
+  _attachments.clear();
+
+  for (const auto& render_stage : _renderer->render_stages()) {
+    const auto& descriptors = render_stage->descriptors();
+    _attachments.insert(descriptors.begin(), descriptors.end());
   }
 }
 

@@ -262,6 +262,12 @@ public:
 
   auto framebuffer(std::uint32_t index) noexcept -> const VkFramebuffer&;
 
+  auto descriptor(const std::string& name) const noexcept -> const graphics::descriptor*;
+
+  auto descriptors() const noexcept -> const std::map<std::string, const graphics::descriptor*>& {
+    return _descriptors;
+  }
+
 private:
 
   auto _create_render_pass(VkFormat depth_format, VkFormat surface_format) -> void;
@@ -274,6 +280,8 @@ private:
   graphics::viewport _viewport;
 
   VkRenderPass _render_pass;
+
+  std::map<std::string, const graphics::descriptor*> _descriptors;
 
   std::unique_ptr<graphics::depth_image> _depth_image;
   std::vector<std::unique_ptr<graphics::image2d>> _image_attachments;

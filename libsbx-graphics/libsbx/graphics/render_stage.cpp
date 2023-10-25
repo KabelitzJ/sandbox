@@ -151,11 +151,31 @@ auto render_stage::rebuild(const swapchain& swapchain) -> void {
 
   _rebuild_framebuffers(swapchain);
 
+  _descriptors.clear();
+
+  auto where = _descriptors.end();
+
+  for (const auto& attachment : _attachments) {
+    if (attachment.image_type() == attachment::type::depth) {
+      where = _descriptors.insert(where, {attachment.name(), _depth_image.get()});
+    } else {
+      where = _descriptors.insert(where, {attachment.name(), _image_attachments[attachment.binding()].get()});
+    }
+  }
+
   _is_outdated = false;
 }
 
 auto render_stage::framebuffer(std::uint32_t index) noexcept -> const VkFramebuffer& {
   return _framebuffers[index];
+}
+
+auto render_stage::descriptor(const std::string& name) const noexcept -> const graphics::descriptor* {
+  if (auto it = _descriptors.find(name); it != _descriptors.end()) {
+    return it->second;
+  }
+
+  return nullptr;
 }
 
 auto render_stage::_create_render_pass(VkFormat depth_format, VkFormat surface_format) -> void {

@@ -85,6 +85,8 @@ public:
     return _current_frame;
   }
 
+  auto attachment(const std::string& name) const -> const descriptor&;
+
 private:
 
   auto _start_render_pass(graphics::render_stage& render_stage) -> bool;
@@ -99,7 +101,7 @@ private:
 
   auto _recreate_command_buffers() -> void;
 
-  // auto _recreate_framebuffers() -> void;
+  auto _recreate_attachments() -> void;
 
   struct per_frame_data {
     VkSemaphore image_available_semaphore{};
@@ -131,6 +133,8 @@ private:
   std::unique_ptr<graphics::logical_device> _logical_device{};
 
   std::unordered_map<command_pool_key, std::shared_ptr<graphics::command_pool>, command_pool_key_hash, command_pool_key_equality> _command_pools{};
+
+  std::map<std::string, const descriptor*> _attachments{};
 
   std::unique_ptr<graphics::surface> _surface{};
 
