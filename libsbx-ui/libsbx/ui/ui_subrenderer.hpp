@@ -42,8 +42,12 @@ public:
 
     const auto& widgets = ui_module.widgets();
 
-    for (const auto& id : _used_uniforms) {
-      _uniform_data.erase(id);
+    for (auto entry = _uniform_data.begin(); entry != _uniform_data.end();) {
+      if (_used_uniforms.contains(entry->first)) {
+        ++entry;
+      } else {
+        entry = _uniform_data.erase(entry);
+      }
     }
 
     _used_uniforms.clear();

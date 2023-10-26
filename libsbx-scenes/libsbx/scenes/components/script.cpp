@@ -174,6 +174,7 @@ auto script::_create_input_bindings(sol::table& library) -> void {
 
   input_type.set_function("is_key_pressed", &devices::input::is_key_pressed);
   input_type.set_function("is_key_released", &devices::input::is_key_released);
+  input_type.set_function("is_key_down", &devices::input::is_key_down);
 }
 
 } // namespace sbx::scenes

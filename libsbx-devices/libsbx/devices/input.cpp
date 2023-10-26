@@ -16,6 +16,16 @@ auto input::is_key_pressed(key key) -> bool {
   return false;
 }
 
+auto input::is_key_down(key key) -> bool {
+  if (auto entry = _key_states.find(key); entry != _key_states.end()) {
+    const auto& state = entry->second;
+
+    return state.action == input_action::press || state.action == input_action::repeat;
+  }
+
+  return false;
+}
+
 auto input::is_key_released(key key) -> bool {
   if (auto entry = _key_states.find(key); entry != _key_states.end()) {
     const auto& state = entry->second;

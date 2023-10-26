@@ -31,6 +31,8 @@ public:
 
   static auto is_key_pressed(key key) -> bool;
 
+  static auto is_key_down(key key) -> bool;
+
   static auto is_key_released(key key) -> bool;
 
 private:

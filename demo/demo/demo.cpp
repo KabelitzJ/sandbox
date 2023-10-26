@@ -45,7 +45,7 @@ public:
 
     {
       auto attachments = std::vector<sbx::graphics::attachment>{
-        sbx::graphics::attachment{0, "swapchain", sbx::graphics::attachment::type::swapchain, VK_FORMAT_R8G8B8A8_UNORM, sbx::math::color{1.0f, 0.0f, 0.0f, 1.0f}},
+        sbx::graphics::attachment{0, "swapchain", sbx::graphics::attachment::type::swapchain},
         sbx::graphics::attachment{1, "depth", sbx::graphics::attachment::type::depth}
       };
 
