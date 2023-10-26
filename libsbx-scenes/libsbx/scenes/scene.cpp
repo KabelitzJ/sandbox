@@ -1,5 +1,9 @@
 #include <libsbx/scenes/scene.hpp>
 
+#include <libsbx/units/time.hpp>
+
+#include <libsbx/utility/timer.hpp>
+
 #include <libsbx/math/angle.hpp>
 
 #include <libsbx/devices/devices_module.hpp>
@@ -56,6 +60,8 @@ scene::scene(const std::filesystem::path& path)
   auto& devices_module = core::engine::get_module<devices::devices_module>();
 
   const auto actual_path = assets_manager.asset_path(path);
+
+  auto timer = utility::timer{};
 
   auto root_node = YAML::LoadFile(actual_path.string());
 
@@ -123,6 +129,8 @@ scene::scene(const std::filesystem::path& path)
       }
     }
   }
+
+  core::logger::debug("Loaded scene: {} in {:.2f} ms", path.string(), units::quantity_cast<units::millisecond>(timer.elapsed()).value());
 }
 
 auto scene::start() -> void {

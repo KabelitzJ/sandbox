@@ -100,7 +100,7 @@ font::font(const std::filesystem::path& path, pixels height) {
 
   _atlas = std::make_unique<ui::atlas>(atlas_size.x, atlas_size.y, atlas_data);
 
-  core::logger::debug("Created font atlas for font '{}' ({}x{}) in {:.2f}ms", path.string(), atlas_size.x, atlas_size.y, units::quantity_cast<units::millisecond>(timer.elapsed()).value());
+  core::logger::debug("Created font atlas for font '{}' ({}x{}) in {:.2f} ms", path.string(), atlas_size.x, atlas_size.y, units::quantity_cast<units::millisecond>(timer.elapsed()).value());
 }
 
 font::~font() {
