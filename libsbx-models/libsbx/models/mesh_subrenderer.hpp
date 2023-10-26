@@ -5,6 +5,8 @@
 
 #include <libsbx/math/matrix4x4.hpp>
 
+#include <libsbx/core/logger.hpp>
+
 #include <libsbx/graphics/subrenderer.hpp>
 #include <libsbx/graphics/pipeline/pipeline.hpp>
 #include <libsbx/graphics/pipeline/graphics_pipeline.hpp>
@@ -39,11 +41,15 @@ public:
     scene.on_component_added<scenes::static_mesh>() += [this](scenes::node& node){
       const auto& id = node.get_component<scenes::id>();
 
+      core::logger::debug("Mesh was added");
+
       _uniform_data.insert({id, std::make_unique<uniform_data>()});
     };
 
     scene.on_component_removed<scenes::static_mesh>() += [this](scenes::node& node){
       const auto& id = node.get_component<scenes::id>();
+
+      core::logger::debug("Mesh was removed");
 
       _uniform_data.erase(id);
     };

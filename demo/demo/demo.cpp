@@ -96,9 +96,13 @@ public:
     auto grid_id = assets_module.load_asset<sbx::graphics::image2d>("res://textures/grid.png");
     auto prototype_black_id = assets_module.load_asset<sbx::graphics::image2d>("res://textures/prototype_black.png");
 
+    _texture_id = prototype_black_id;
+
     auto monkey_id = assets_module.load_asset<sbx::models::mesh>("res://meshes/suzanne.obj");
     auto sphere_id = assets_module.load_asset<sbx::models::mesh>("res://meshes/sphere.obj");
     auto cube_id = assets_module.load_asset<sbx::models::mesh>("res://meshes/cube.obj");
+
+    _mesh_id = cube_id;
 
     auto font_jet_brains_mono_id = assets_module.load_asset<sbx::ui::font>("res://fonts/JetBrainsMono-Medium.ttf", sbx::ui::pixels{48u});
     auto font_roboto_id = assets_module.load_asset<sbx::ui::font>("res://fonts/Roboto-Regular.ttf", sbx::ui::pixels{48u});
@@ -151,8 +155,30 @@ public:
   auto update() -> void  {
     if (sbx::devices::input::is_key_pressed(sbx::devices::key::escape)) {
       sbx::core::engine::quit();
+    } 
+    
+    if (sbx::devices::input::is_key_pressed(sbx::devices::key::space)) {
+      _flag = !_flag;
+    }
+
+    auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
+    auto& scene = scenes_module.scene();
+
+    if (_flag && !_cube) {
+      _cube = scene.create_node("Cube", sbx::math::transform{sbx::math::vector3{-2.0f, 2.0f, 0.0f}, sbx::math::vector3::zero, sbx::math::vector3::one});
+      _cube->add_component<sbx::scenes::static_mesh>(_mesh_id, _texture_id);
+    } else if (!_flag && _cube) {
+      scene.destroy_node(*_cube);
+      _cube.reset();
     }
   }
+
+private:
+
+  std::optional<sbx::scenes::node> _cube;
+  sbx::assets::asset_id _mesh_id;
+  sbx::assets::asset_id _texture_id;
+  bool _flag = false;
 
 }; // class demo_application
 

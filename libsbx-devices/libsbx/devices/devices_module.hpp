@@ -18,6 +18,7 @@
 #include <libsbx/units/time.hpp>
 
 #include <libsbx/devices/window.hpp>
+#include <libsbx/devices/input.hpp>
 
 namespace sbx::devices {
 
@@ -46,6 +47,7 @@ public:
   }
 
   auto update() -> void override {
+    input::_transition_pressed_keys();
     glfwPollEvents();
   }
 

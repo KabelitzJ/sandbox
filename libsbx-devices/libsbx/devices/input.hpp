@@ -22,6 +22,7 @@ struct key_state {
 
 class input {
 
+  friend class devices_module;
   friend class window;
 
 public:
@@ -33,6 +34,8 @@ public:
   static auto is_key_released(key key) -> bool;
 
 private:
+
+  static auto _transition_pressed_keys() -> void;
 
   static auto _update_key_state(key key, input_action action) -> void;
 

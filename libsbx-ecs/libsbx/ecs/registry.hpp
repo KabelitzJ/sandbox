@@ -195,8 +195,8 @@ public:
     _entities.at(index) = entity_traits::next(_entities.at(index));
   }
 
-  auto is_valid_entity(const entity_type& entity) -> bool {
-    auto index = static_cast<std::size_t>(entity._id());
+  auto is_valid_entity(const entity_type& entity) const noexcept -> bool {
+    auto index = static_cast<std::size_t>(entity_traits::to_id(entity));
     return index < _entities.size() && entity == _entities.at(index);
   }
 
