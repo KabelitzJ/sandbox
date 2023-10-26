@@ -13,6 +13,8 @@ end
 function on_update()
   local delta_time = sbx.delta_time();
 
+  sbx.logger.info(delta_time);
+
   -- Rotation
 
   if (sbx.input.is_key_pressed(sbx.key.q)) then

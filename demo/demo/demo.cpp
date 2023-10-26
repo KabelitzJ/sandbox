@@ -45,7 +45,7 @@ public:
 
     {
       auto attachments = std::vector<sbx::graphics::attachment>{
-        sbx::graphics::attachment{0, "swapchain", sbx::graphics::attachment::type::swapchain},
+        sbx::graphics::attachment{0, "swapchain", sbx::graphics::attachment::type::swapchain, VK_FORMAT_R8G8B8A8_UNORM, sbx::math::color{1.0f, 0.0f, 0.0f, 1.0f}},
         sbx::graphics::attachment{1, "depth", sbx::graphics::attachment::type::depth}
       };
 
@@ -75,7 +75,7 @@ public:
 
   demo_application() {
     auto& assets_module = sbx::core::engine::get_module<sbx::assets::assets_module>();
-
+    
     assets_module.set_asset_directory("./demo/assets");
 
     auto base_id = assets_module.load_asset<sbx::graphics::image2d>("res://textures/base.png");
@@ -97,6 +97,14 @@ public:
     auto ambience_birds_sound_id = assets_module.load_asset<sbx::audio::sound_buffer>("res://audio/ambience.wav");
     auto forest_sound_id = assets_module.load_asset<sbx::audio::sound_buffer>("res://audio/forest.wav");
 
+    auto& ui_module = sbx::core::engine::get_module<sbx::ui::ui_module>();
+
+    ui_module.add_widget<sbx::ui::label>("Hello, World!", sbx::math::vector2u{25, 25}, font_jet_brains_mono_id, sbx::math::color{0.53f, 0.01f, 0.01f, 1.0f});
+
+    auto& graphics_module = sbx::core::engine::get_module<sbx::graphics::graphics_module>();
+
+    graphics_module.set_renderer<demo_renderer>();
+
     auto& devices_module = sbx::core::engine::get_module<sbx::devices::devices_module>();
 
     auto& window = devices_module.window();
@@ -107,45 +115,9 @@ public:
       sbx::core::engine::quit();
     };
 
-    auto& ui_module = sbx::core::engine::get_module<sbx::ui::ui_module>();
-
-    ui_module.add_widget<sbx::ui::label>("Hello, World!", sbx::math::vector2u{25, 25}, font_jet_brains_mono_id, sbx::math::color{0.53f, 0.01f, 0.01f, 1.0f});
-
-    // auto& scene = scenes_module.scene();
-
-    // auto monkey = scene.create_node("Monkey", sbx::math::transform{sbx::math::vector3f{0.0f, 2.0f, 0.0f}});
-
-    // monkey.add_component<sbx::scenes::static_mesh>(monkey_id, base_id);
-    
-    // auto& monkey_rotation = monkey.add_component<sbx::scenes::script>("res://scripts/rotate.lua");
-    // monkey_rotation.set("speed", 75.0f);
-
-    // monkey.add_component<sbx::audio::sound>(forest_sound_id, sbx::audio::sound::type::ambient, true, true, 8.0f, 1.0f);
-
-    // auto camera = scene.camera();
-
-    // auto& camera_transform = camera.get_component<sbx::math::transform>();
-    // camera_transform.set_position(sbx::math::vector3{0.0f, 2.0f, 5.0f});
-
-    // auto& camera_controller = camera.add_component<sbx::scenes::script>("res://scripts/camera_controller.lua");
-    // camera_controller.set("move_speed", 5.0f);
-
-    // auto floor = scene.create_node("Floor", sbx::math::transform{sbx::math::vector3f::zero, sbx::math::vector3f::zero, sbx::math::vector3f{20.0f, 0.1f, 20.0f}});
-    // floor.add_component<sbx::scenes::static_mesh>(cube_id, prototype_black_id);
-
-    // auto back_wall = scene.create_node("BackWall", sbx::math::transform{sbx::math::vector3f{0.0f, 10.0f, -10.0f}, sbx::math::vector3f::zero, sbx::math::vector3f{20.0f, 20.0f, 0.1f}});
-    // back_wall.add_component<sbx::scenes::static_mesh>(cube_id, prototype_black_id);
-
-    // auto side_wall = scene.create_node("BackWall", sbx::math::transform{sbx::math::vector3f{-10.0f, 10.0f, 0.0f}, sbx::math::vector3f{180.0f, 0.0f, 0.0f}, sbx::math::vector3f{0.1f, 20.0f, 20.0f}});
-    // side_wall.add_component<sbx::scenes::static_mesh>(cube_id, prototype_black_id);
-
     auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
 
     auto& scene = scenes_module.load_scene("res://scenes/demo.yaml");
-
-    auto& graphics_module = sbx::core::engine::get_module<sbx::graphics::graphics_module>();
-
-    graphics_module.set_renderer<demo_renderer>();
 
     // [Todo] KAJ 2023-08-16 15:30 - This should probably be done automatically
     scene.start();

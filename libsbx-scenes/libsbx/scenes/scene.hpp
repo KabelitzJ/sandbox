@@ -58,23 +58,9 @@ public:
   auto query() -> std::vector<node> {
     auto view = _registry.create_view<Components...>();
 
-    auto to_node = std::views::transform([&](auto& entity) { return node{&_registry, entity, &_on_component_added, &_on_component_removed}; });
+    auto to_node = std::views::transform([&](auto& entity) { return node{&_registry, entity}; });
 
     return view | to_node | ranges::to<std::vector>();
-  }
-
-  template<typename Component>
-  auto on_component_added() -> signals::signal<node&>& {
-    const auto type = std::type_index{typeid(Component)};
-
-    return _on_component_added[type];
-  }
-
-  template<typename Component>
-  auto on_component_removed() -> signals::signal<node&>& {
-    const auto type = std::type_index{typeid(Component)};
-
-    return _on_component_removed[type];
   }
 
 private:
@@ -88,9 +74,6 @@ private:
       node.add_component<Component>(std::forward<Args>(args)...);
     }
   }
-
-  signal_container _on_component_added;
-  signal_container _on_component_removed;
 
   std::unordered_map<math::uuid, node> _nodes;
 

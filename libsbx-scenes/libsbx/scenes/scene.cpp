@@ -18,8 +18,8 @@ namespace sbx::scenes {
 
 scene::scene()
 : _registry{}, 
-  _root{&_registry, _registry.create_entity(), &_on_component_added, &_on_component_removed},
-  _camera{&_registry, _registry.create_entity(), &_on_component_added, &_on_component_removed} {
+  _root{&_registry, _registry.create_entity()},
+  _camera{&_registry, _registry.create_entity()} {
   // [NOTE] KAJ 2023-10-17 : Initialize root node
   auto& root_id = _root.add_component<scenes::id>();
   _root.add_component<scenes::relationship>(root_id);
@@ -142,7 +142,7 @@ auto scene::start() -> void {
 }
 
 auto scene::create_child_node(node& parent, const std::string& tag, const math::transform& transform) -> node {
-  auto node = scenes::node{&_registry, _registry.create_entity(), &_on_component_added, &_on_component_removed};
+  auto node = scenes::node{&_registry, _registry.create_entity()};
 
   auto& id = node.add_component<scenes::id>();
 
