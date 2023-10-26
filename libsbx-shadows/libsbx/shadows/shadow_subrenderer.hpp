@@ -24,22 +24,7 @@ public:
 
   shadow_subrenderer(const std::filesystem::path& path, const graphics::pipeline::stage& stage)
   : graphics::subrenderer{stage},
-    _pipeline{path, stage} {
-    auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
-    auto& scene = scenes_module.scene();
-
-    scene.on_component_added<scenes::static_mesh>() += [this](scenes::node& node){
-      const auto& id = node.get_component<scenes::id>();
-
-      _uniform_data.insert({id, std::make_unique<uniform_data>()});
-    };
-
-    scene.on_component_removed<scenes::static_mesh>() += [this](scenes::node& node){
-      const auto& id = node.get_component<scenes::id>();
-
-      _uniform_data.erase(id);
-    };
-  }
+    _pipeline{path, stage} { }
 
   ~shadow_subrenderer() override = default;
 
@@ -60,7 +45,14 @@ public:
 
     auto mesh_nodes = scene.query<scenes::static_mesh>();
 
+    for (const auto& id : _used_uniforms) {
+      _uniform_data.erase(id);
+    }
+
+    _used_uniforms.clear();
+
     for (auto& node : mesh_nodes) {
+      _used_uniforms.insert(node.get_component<scenes::id>());
       _render_node(node, command_buffer);
     }
   }
@@ -80,10 +72,11 @@ private:
 
     auto world_transform = scene.world_transform(node);
 
-    auto& uniform_data = _uniform_data.at(id);
+    // [NOTE] KAJ 2023-10-26 : We want to insert a new object into the map when it does not exist
+    auto& uniform_data = _uniform_data[id];
     
-    auto& push_handler = uniform_data->push_handler;
-    auto& descriptor_handler = uniform_data->descriptor_handler;
+    auto& push_handler = uniform_data.push_handler;
+    auto& descriptor_handler = uniform_data.descriptor_handler;
 
     _pipeline.bind(command_buffer);
 
@@ -109,7 +102,8 @@ private:
 
   pipeline _pipeline;
 
-  std::unordered_map<math::uuid, std::unique_ptr<uniform_data>> _uniform_data;
+  std::unordered_map<math::uuid, uniform_data> _uniform_data;
+  std::unordered_set<math::uuid> _used_uniforms;
 
   graphics::uniform_handler _scene_uniform_handler;
 

@@ -139,9 +139,9 @@ public:
     // auto side_wall = scene.create_node("BackWall", sbx::math::transform{sbx::math::vector3f{-10.0f, 10.0f, 0.0f}, sbx::math::vector3f{180.0f, 0.0f, 0.0f}, sbx::math::vector3f{0.1f, 20.0f, 20.0f}});
     // side_wall.add_component<sbx::scenes::static_mesh>(cube_id, prototype_black_id);
 
-    auto& scnes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
+    auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
 
-    auto& scene = scnes_module.load_scene("res://scenes/demo.yaml");
+    auto& scene = scenes_module.load_scene("res://scenes/demo.yaml");
 
     auto& graphics_module = sbx::core::engine::get_module<sbx::graphics::graphics_module>();
 

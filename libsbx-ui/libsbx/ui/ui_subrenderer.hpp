@@ -28,21 +28,7 @@ public:
 
   ui_subrenderer(const std::filesystem::path& path, const graphics::pipeline::stage& stage)
   : graphics::subrenderer{stage},
-    _pipeline{path, stage} {
-    auto& ui_module = core::engine::get_module<ui::ui_module>();
-
-    ui_module.on_widget_added() += [this](ui::widget& widget){
-      const auto& id = widget.id();
-
-      _uniform_data.insert({id, std::make_unique<uniform_data>()});
-    };
-
-    ui_module.on_widget_removed() += [this](ui::widget& widget){
-      const auto& id = widget.id();
-
-      _uniform_data.erase(id);
-    };
-  }
+    _pipeline{path, stage} { }
 
   ~ui_subrenderer() override = default;
 
@@ -56,7 +42,14 @@ public:
 
     const auto& widgets = ui_module.widgets();
 
+    for (const auto& id : _used_uniforms) {
+      _uniform_data.erase(id);
+    }
+
+    _used_uniforms.clear();
+
     for (const auto& widget : widgets) {
+      _used_uniforms.insert(widget->id());
       _render_widget(*widget, command_buffer);
     }
   }
@@ -68,7 +61,11 @@ private:
 
     _pipeline.bind(command_buffer);
 
-    auto& [uniform_handler, descriptor_handler, mesh] = *_uniform_data.at(id);
+    auto& uniform_data = _uniform_data[id];
+
+    auto& uniform_handler = uniform_data.uniform_handler;
+    auto& descriptor_handler = uniform_data.descriptor_handler;
+    auto& mesh = uniform_data.mesh;
 
     widget.update(uniform_handler, descriptor_handler);
 
@@ -92,7 +89,8 @@ private:
 
   pipeline _pipeline;
 
-  std::unordered_map<math::uuid, std::unique_ptr<uniform_data>> _uniform_data;
+  std::unordered_map<math::uuid, uniform_data> _uniform_data;
+  std::unordered_set<math::uuid> _used_uniforms;
 
   graphics::uniform_handler _uniform_handler;
 
