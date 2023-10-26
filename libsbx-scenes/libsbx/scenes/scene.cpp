@@ -1,5 +1,7 @@
 #include <libsbx/scenes/scene.hpp>
 
+#include <libsbx/math/angle.hpp>
+
 #include <libsbx/devices/devices_module.hpp>
 #include <libsbx/devices/window.hpp>
 
@@ -10,6 +12,7 @@
 #include <libsbx/scenes/components/relationship.hpp>
 #include <libsbx/scenes/components/camera.hpp>
 #include <libsbx/scenes/components/script.hpp>
+#include <libsbx/scenes/components/static_mesh.hpp>
 
 namespace sbx::scenes {
 
@@ -39,12 +42,87 @@ scene::scene()
   auto& devices_module = core::engine::get_module<devices::devices_module>();
   auto& window = devices_module.window();
 
-  auto& camera = _camera.add_component<scenes::camera>(math::angle{math::radian{45.0f}}, 1.0f, 0.1f, 100.0f, true);
-  camera.set_aspect_ratio(window.aspect_ratio());
+  _camera.add_component<scenes::camera>(math::angle{math::radian{45.0f}}, window.aspect_ratio(), 0.1f, 100.0f, true);
 
-  window.on_framebuffer_resized() += [&camera](const devices::framebuffer_resized_event& event) {
+  window.on_framebuffer_resized() += [this](const devices::framebuffer_resized_event& event) {
+    auto& camera = _camera.get_component<scenes::camera>();
     camera.set_aspect_ratio(static_cast<std::float_t>(event.width) / static_cast<std::float_t>(event.height));
   };
+}
+
+scene::scene(const std::filesystem::path& path)
+: scene{} {
+  auto& assets_manager = core::engine::get_module<assets::assets_module>();
+  auto& devices_module = core::engine::get_module<devices::devices_module>();
+
+  const auto actual_path = assets_manager.asset_path(path);
+
+  auto root_node = YAML::LoadFile(actual_path.string());
+
+  const auto name = root_node["name"].as<std::string>();
+
+  core::logger::debug("Scene name: {}", name);
+
+  const auto entities = root_node["entities"].as<std::vector<YAML::Node>>();
+
+  for (const auto& entity_node : entities) {
+    const auto entity_name = entity_node["name"].as<std::string>();
+
+    core::logger::debug("  Entity name: {}", entity_name);
+
+    auto entity = create_node(entity_name);
+
+    const auto components = entity_node["components"].as<std::vector<YAML::Node>>();
+
+    for (const auto& component_node : components) {
+      const auto component_type = component_node["type"].as<std::string>();
+
+      core::logger::debug("    Component type: {}", component_type);
+
+      if (component_type == "Transform") {
+        const auto position = component_node["position"].as<math::vector3>();
+        const auto euler_angles = component_node["rotation"].as<math::vector3>();
+        const auto scale = component_node["scale"].as<math::vector3>();
+
+        _add_or_update_component<math::transform>(entity, position, euler_angles, scale);
+      } else if (component_type == "StaticMesh") {
+        const auto mesh_path = component_node["mesh"].as<std::string>();
+        const auto texture_path = component_node["texture"].as<std::string>();
+
+        auto mesh_id = assets_manager.try_get_asset_id(std::filesystem::path{mesh_path});
+
+        if (!mesh_id) {
+          core::logger::warn("Mesh '{}' could not be found", mesh_path);
+          continue;
+        }
+
+        auto texture_id = assets_manager.try_get_asset_id(std::filesystem::path{texture_path});
+
+        if (!texture_id) {
+          core::logger::warn("Texture '{}' could not be found", texture_path);
+          continue;
+        }
+
+        _add_or_update_component<scenes::static_mesh>(entity, *mesh_id, *texture_id);
+      } else if (component_type == "Camera") {
+        const auto fov = component_node["fov"].as<std::float_t>();
+        const auto near = component_node["near"].as<std::float_t>();
+        const auto far = component_node["far"].as<std::float_t>();
+
+        auto& window = devices_module.window();
+
+        _add_or_update_component<scenes::camera>(entity, math::degree{fov}, window.aspect_ratio(), near, far);
+
+        _camera = entity;
+      } else if (component_type == "Script") {
+        const auto path = component_node["script"].as<std::string>();
+
+        _add_or_update_component<scenes::script>(entity, path);
+      } else {
+        core::logger::warn("Unknown component type: {}", component_type);
+      }
+    }
+  }
 }
 
 auto scene::start() -> void {

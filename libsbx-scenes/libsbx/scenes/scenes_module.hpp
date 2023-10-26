@@ -16,7 +16,7 @@ class scenes_module final : public core::module<scenes_module> {
 public:
 
   scenes_module()
-  : _scene{std::make_unique<scenes::scene>("./demo/assets/scenes/demo.yaml")} {
+  : _scene{nullptr} {
     
   }
 
@@ -26,7 +26,15 @@ public:
 
   }
 
+  auto load_scene(const std::filesystem::path& path) -> scenes::scene& {
+    return *(_scene = std::make_unique<scenes::scene>(path));
+  }
+
   auto scene() -> scenes::scene& {
+    if (!_scene) {
+      throw std::runtime_error{"No active scene"};
+    }
+
     return *_scene;
   }
 

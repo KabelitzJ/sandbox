@@ -18,6 +18,9 @@
 #include <libsbx/math/uuid.hpp>
 
 #include <libsbx/core/logger.hpp>
+#include <libsbx/core/engine.hpp>
+
+#include <libsbx/assets/assets_module.hpp>
 
 #include <libsbx/signals/signal.hpp>
 
@@ -35,31 +38,7 @@ public:
 
   scene();
 
-  scene(const std::filesystem::path& path)
-  : scene{} {
-    
-    auto node = YAML::LoadFile(path.string());
-
-    const auto name = node["name"].as<std::string>();
-
-    core::logger::debug("Scene name: {}", name);
-
-    const auto entities = node["entities"].as<std::vector<YAML::Node>>();
-
-    for (const auto& entity : entities) {
-      const auto entity_name = entity["name"].as<std::string>();
-
-      core::logger::debug("  Entity name: {}", entity_name);
-
-      const auto components = entity["components"].as<std::vector<YAML::Node>>();
-
-      for (const auto& component : components) {
-        const auto component_type = component["type"].as<std::string>();
-
-        core::logger::debug("    Component type: {}", component_type);
-      }
-    }
-  }
+  scene(const std::filesystem::path& path);
 
   auto start() -> void;
 
@@ -99,6 +78,16 @@ public:
   }
 
 private:
+
+  template<typename Component, typename... Args>
+  auto _add_or_update_component(node& node, Args&&... args) -> void {
+    if (node.has_component<Component>()) {
+      auto& component = node.get_component<Component>();
+      component = Component{std::forward<Args>(args)...};
+    } else {
+      node.add_component<Component>(std::forward<Args>(args)...);
+    }
+  }
 
   signal_container _on_component_added;
   signal_container _on_component_removed;
