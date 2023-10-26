@@ -154,10 +154,4 @@ target_compile_options(
     -static-libgcc
 )
 
-if(MINGW)
-  target_link_options(
-    ${PROJECT_NAME}
-    PUBLIC
-      -Wl,--disable-dynamicbase,--default-image-base-low
-  )
-endif()
+

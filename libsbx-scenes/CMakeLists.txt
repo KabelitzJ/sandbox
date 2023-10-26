@@ -30,6 +30,7 @@ target_sources(
     "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/components/relationship.hpp"
     "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/components/static_mesh.hpp"
     "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/components/camera.hpp"
+    "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/components/point_light.hpp"
 )
 
 target_include_directories(
@@ -95,11 +96,3 @@ target_compile_options(
     -static-libstdc++ 
     -static-libgcc
 )
-
-if(MINGW)
-  target_link_options(
-    ${PROJECT_NAME}
-    PUBLIC
-      -Wl,--disable-dynamicbase,--default-image-base-low
-  )
-endif()

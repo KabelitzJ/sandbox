@@ -5,6 +5,8 @@
 #include <libsbx/utility/timer.hpp>
 
 #include <libsbx/math/angle.hpp>
+#include <libsbx/math/vector3.hpp>
+#include <libsbx/math/color.hpp>
 
 #include <libsbx/devices/devices_module.hpp>
 #include <libsbx/devices/window.hpp>
@@ -17,6 +19,7 @@
 #include <libsbx/scenes/components/camera.hpp>
 #include <libsbx/scenes/components/script.hpp>
 #include <libsbx/scenes/components/static_mesh.hpp>
+#include <libsbx/scenes/components/point_light.hpp>
 
 namespace sbx::scenes {
 
@@ -124,6 +127,15 @@ scene::scene(const std::filesystem::path& path)
         const auto path = component_node["script"].as<std::string>();
 
         _add_or_update_component<scenes::script>(entity, path);
+      } else if (component_type == "PointLight") {
+        const auto ambient = component_node["ambient"].as<math::color>();
+        const auto diffuse = component_node["diffuse"].as<math::color>();
+        const auto specular = component_node["specular"].as<math::color>();
+        const auto constant = component_node["constant"].as<std::float_t>();
+        const auto linear = component_node["linear"].as<std::float_t>();
+        const auto quadratic = component_node["quadratic"].as<std::float_t>();
+
+        _add_or_update_component<scenes::point_light>(entity, ambient, diffuse, specular, constant, linear, quadratic);
       } else {
         core::logger::warn("Unknown component type: {}", component_type);
       }
