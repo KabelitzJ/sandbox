@@ -145,7 +145,7 @@ public:
       _cube = scene.create_node("Cube", sbx::math::transform{sbx::math::vector3{-2.0f, 2.0f, 0.0f}, sbx::math::vector3::zero, sbx::math::vector3::one});
       _cube->add_component<sbx::scenes::static_mesh>(_mesh_id, _texture_id);
       auto& script = _cube->add_component<sbx::scenes::script>("res://scripts/rotate.lua");
-      script.set("speed", 120.0f);
+      script.set("speed", -120.0f);
     } else if (!_flag && _cube) {
       scene.destroy_node(*_cube);
       _cube.reset();
