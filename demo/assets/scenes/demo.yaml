@@ -32,7 +32,7 @@ entities:
         scale: { x: 20.0, y: 0.1, z: 20.0 }
       - type: "StaticMesh"
         mesh: "res://meshes/cube.obj"
-        texture: "res://textures/base.png"
+        texture: "res://textures/prototype_black.png"
   - name: "BackWall"
     components:
       - type: "Transform"
@@ -41,7 +41,7 @@ entities:
         scale: { x: 20.0, y: 20.0, z: 0.1 }
       - type: "StaticMesh"
         mesh: "res://meshes/cube.obj"
-        texture: "res://textures/base.png"
+        texture: "res://textures/prototype_black.png"
   - name: "LeftWall"
     components:
       - type: "Transform"
@@ -50,5 +50,5 @@ entities:
         scale: { x: 0.1, y: 20.0, z: 20.0 }
       - type: "StaticMesh"
         mesh: "res://meshes/cube.obj"
-        texture: "res://textures/base.png"
+        texture: "res://textures/prototype_black.png"
 

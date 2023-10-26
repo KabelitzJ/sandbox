@@ -83,7 +83,7 @@ public:
     auto grid_id = assets_module.load_asset<sbx::graphics::image2d>("res://textures/grid.png");
     auto prototype_black_id = assets_module.load_asset<sbx::graphics::image2d>("res://textures/prototype_black.png");
 
-    _texture_id = prototype_black_id;
+    _texture_id = base_id;
 
     auto monkey_id = assets_module.load_asset<sbx::models::mesh>("res://meshes/suzanne.obj");
     auto sphere_id = assets_module.load_asset<sbx::models::mesh>("res://meshes/sphere.obj");

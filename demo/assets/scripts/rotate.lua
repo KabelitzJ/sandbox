@@ -3,7 +3,7 @@ transform = sbx.transform.new();
 speed = 0.0;
 
 function on_create()
-
+  speed = 90.0;
 end
 
 function on_update()
