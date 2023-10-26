@@ -144,7 +144,7 @@ private:
 
     auto logger = spdlog::logger{"logger", std::begin(sinks), std::end(sinks)};
 
-    logger.set_pattern("[%Y-%m-%d %H:%M:%S] [%^%l%$] : %v");
+    logger.set_pattern("[%Y-%m-%d %H:%M:%S] [%^%l%$] [%n] : %v");
 
     if constexpr (utility::build_configuration_v == utility::build_configuration::debug) {
       logger.set_level(spdlog::level::debug);
