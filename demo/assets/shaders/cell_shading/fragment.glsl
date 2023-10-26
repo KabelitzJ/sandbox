@@ -35,7 +35,7 @@ const material default_material = material(
 );
 
 const light default_light = light(
-  vec3(3.0, 3.0, 3.0),
+  vec3(5.0, 5.0, 5.0),
   vec3(1.0, 0.97, 0.84)
 );
 
@@ -48,8 +48,8 @@ vec3 phong_shading(vec3 light_direction, float intensity) {
 
   // Calculate the specular color
   vec3 camera_direction = normalize(vec3(scene.camera_position) - in_position);
-  vec3 reflection_direction = reflect(-light_direction, in_normal);
-  float specular_intensity = pow(max(dot(camera_direction, reflection_direction), 0.0), default_material.shininess);
+  vec3 halfway_direction = normalize(light_direction + camera_direction);
+  float specular_intensity = pow(max(dot(in_normal, halfway_direction), 0.0), default_material.shininess);
   vec3 specular = (default_material.specular * specular_intensity);
 
   // Calculate the final color
