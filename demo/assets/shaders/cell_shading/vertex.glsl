@@ -11,7 +11,8 @@ layout(location = 2) out vec2 out_uv;
 layout(binding = 0) uniform uniform_scene {
   mat4 view;
   mat4 projection;
-  vec4 camera_position;
+  vec3 camera_position;
+  int light_count;
 } scene;
 
 layout(push_constant) uniform uniform_object {

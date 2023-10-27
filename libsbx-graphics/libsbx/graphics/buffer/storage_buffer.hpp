@@ -13,11 +13,11 @@ class storage_buffer : public descriptor, public buffer  {
 
 public:
 
-  storage_buffer(VkDeviceSize size, memory::observer_ptr<void> data = nullptr);
+  storage_buffer(VkDeviceSize size, memory::observer_ptr<const void> data = nullptr);
 
   ~storage_buffer() override;
 
-  auto update(memory::observer_ptr<void> data) -> void;
+  auto update(memory::observer_ptr<const void> data, VkDeviceSize size) -> void;
 
   auto write_descriptor_set(std::uint32_t binding, VkDescriptorType descriptor_type) const noexcept -> graphics::write_descriptor_set override;
 

@@ -4,7 +4,7 @@
 
 namespace sbx::graphics {
 
-storage_buffer::storage_buffer(VkDeviceSize size, memory::observer_ptr<void> data)
+storage_buffer::storage_buffer(VkDeviceSize size, memory::observer_ptr<const void> data)
 : buffer{size, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, data}, 
   _mapped_memory{map()} { }
 
@@ -18,8 +18,8 @@ storage_buffer::~storage_buffer() {
   unmap();
 }
 
-auto storage_buffer::update(memory::observer_ptr<void> data) -> void {
-  std::memcpy(static_cast<std::uint8_t*>(_mapped_memory.get()), data.get(), size());
+auto storage_buffer::update(memory::observer_ptr<const void> data, VkDeviceSize size) -> void {
+  std::memcpy(static_cast<std::uint8_t*>(_mapped_memory.get()), data.get(), size);
 }
 
 auto storage_buffer::write_descriptor_set(std::uint32_t binding, VkDescriptorType descriptor_type) const noexcept -> graphics::write_descriptor_set {

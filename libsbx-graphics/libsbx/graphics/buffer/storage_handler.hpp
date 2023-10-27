@@ -21,7 +21,8 @@ public:
 
   storage_handler(const std::optional<shader::uniform_block>& uniform_block = std::nullopt);
 
-  auto push(std::span<const std::byte> data) -> void;
+  template<typename Type>
+  auto push(std::span<const Type> buffer) -> void;
 
   template<typename Type>
 	auto push(const Type& object, std::size_t size, std::size_t offset) -> void;

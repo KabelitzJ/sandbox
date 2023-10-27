@@ -14,6 +14,7 @@
 #include <libsbx/graphics/graphics_module.hpp>
 
 #include <libsbx/graphics/buffer/uniform_buffer.hpp>
+#include <libsbx/graphics/buffer/storage_buffer.hpp>
 
 #include <libsbx/graphics/render_pass/swapchain.hpp>
 
@@ -107,7 +108,9 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
         break;
       }
       case shader::uniform_block::type::storage: {
-        throw std::runtime_error{"Storage buffers are not supported yet"};
+        descriptor_type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+        descriptor_set_layout_bindings.push_back(storage_buffer::create_descriptor_set_layout_binding(uniform_block.binding(), descriptor_type, uniform_block.stage_flags()));
+        break;
       }
       case shader::uniform_block::type::push: {
         // [NOTE] KAJ 2023-10-17 : Push constants do not require a descriptor set layout binding

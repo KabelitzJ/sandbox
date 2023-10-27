@@ -3,6 +3,19 @@
 namespace sbx::graphics {
 
 template<typename Type>
+auto storage_handler::push(std::span<const Type> buffer) -> void {
+  if (!_uniform_block || !_storage_buffer) {
+    return;
+  }
+
+  if (buffer.size() != _uniform_block->size()) {
+    throw std::runtime_error{fmt::format("Data size ({}) does not match uniform block size ({})", buffer.size(), _uniform_block->size())};
+  }
+
+  _storage_buffer->update(buffer.data(), buffer.size());
+}
+
+template<typename Type>
 auto storage_handler::push(const Type& object, std::size_t size, std::size_t offset) -> void {
   if (!_uniform_block || !_storage_buffer) {
     return;

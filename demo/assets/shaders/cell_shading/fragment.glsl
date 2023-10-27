@@ -1,5 +1,17 @@
 #version 450
 
+struct material {
+  vec3 ambient;
+  vec3 diffuse;
+  vec3 specular;
+  float shininess;
+};
+
+struct light {
+  vec3 color;
+  float radius;
+};
+
 layout(location = 0) in vec3 in_position;
 layout(location = 1) in vec3 in_normal;
 layout(location = 2) in vec2 in_uv;
@@ -9,23 +21,16 @@ layout(location = 0) out vec4 out_color;
 layout(binding = 0) uniform uniform_scene {
   mat4 view;
   mat4 projection;
-  vec4 camera_position;
+  vec3 camera_position;
+  int light_count;
 } scene;
 
-layout(binding = 1) uniform sampler2D image;
+layout(binding = 1) buffer buffer_lights {
+  light array[];
+} lights;
+
+layout(binding = 2) uniform sampler2D image;
 // layout(binding = 2) uniform sampler2D shadow_map;
-
-struct material {
-  vec3 ambient;
-  vec3 diffuse;
-  vec3 specular;
-  float shininess;
-};
-
-struct light {
-  vec3 position;
-  vec3 color;
-};
 
 const material default_material = material(
   vec3(1.0, 1.0, 1.0),
@@ -35,9 +40,12 @@ const material default_material = material(
 );
 
 const light default_light = light(
-  vec3(5.0, 5.0, 5.0),
-  vec3(1.0, 0.97, 0.84)
+  // vec3(5.0, 5.0, 5.0),
+  vec3(1.0, 0.97, 0.84),
+  10.0
 );
+
+const vec3 default_light_position = vec3(5.0, 5.0, 5.0);
 
 vec3 phong_shading(vec3 light_direction, float intensity) {
   // Calculate the ambient color
@@ -68,7 +76,7 @@ vec3 cel_shading(float intensity) {
 }
 
 void main() {
-  vec3 light_direction = normalize(vec3(default_light.position) - in_position);
+  vec3 light_direction = normalize(default_light_position - in_position);
   float intensity = max(dot(in_normal, light_direction), 0.0);
  
   vec3 phong_shading = phong_shading(light_direction, intensity);

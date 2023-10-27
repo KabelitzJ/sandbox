@@ -15,6 +15,7 @@
 #include <libsbx/graphics/pipeline/graphics_pipeline.hpp>
 #include <libsbx/graphics/descriptor/descriptor_handler.hpp>
 #include <libsbx/graphics/buffer/uniform_handler.hpp>
+#include <libsbx/graphics/buffer/storage_handler.hpp>
 
 #include <libsbx/scenes/scenes_module.hpp>
 #include <libsbx/scenes/scene.hpp>
@@ -23,6 +24,7 @@
 #include <libsbx/scenes/components/id.hpp>
 #include <libsbx/scenes/components/camera.hpp>
 #include <libsbx/scenes/components/script.hpp>
+#include <libsbx/scenes/components/point_light.hpp>
 
 #include <libsbx/models/vertex3d.hpp>
 #include <libsbx/models/pipeline.hpp>
@@ -30,6 +32,8 @@
 namespace sbx::models {
 
 class mesh_subrenderer final : public graphics::subrenderer {
+
+  inline static constexpr auto max_lights_v = std::size_t{16};
 
 public:
 
@@ -71,6 +75,23 @@ public:
     _scene_uniform_handler.push("view", math::matrix4x4::inverted(transform.as_matrix()));
 
     _scene_uniform_handler.push("camera_position", transform.position()); 
+
+    auto light_nodes = scene.query<scenes::point_light>();
+
+    auto lights = std::vector<scenes::point_light>{};
+    auto light_count = std::uint32_t{0};
+
+    for (const auto& node : light_nodes) {
+      lights.push_back(node.get_component<scenes::point_light>());
+      ++light_count;
+
+      if (light_count >= max_lights_v) {
+        break;
+      }
+    }
+
+    _lights_storage_handler.push(std::span<const scenes::point_light>{lights.data(), light_count});
+    _scene_uniform_handler.push("light_count", light_count);
 
     auto mesh_nodes = scene.query<scenes::static_mesh>();
 
@@ -133,8 +154,9 @@ private:
     push_handler.push("model", world_transform);
     push_handler.push("normal", math::matrix4x4::transposed(math::matrix4x4::inverted(world_transform)));
 
-    descriptor_handler.push("uniform_scene", _scene_uniform_handler);
     descriptor_handler.push("object", push_handler);
+    descriptor_handler.push("uniform_scene", _scene_uniform_handler);
+    descriptor_handler.push("buffer_lights", _lights_storage_handler);
     descriptor_handler.push("image", image);
     // descriptor_handler.push("shadow_map", graphics_module.attachment("shadow"));
 
@@ -162,6 +184,7 @@ private:
   std::unordered_set<math::uuid> _used_uniforms;
 
   graphics::uniform_handler _scene_uniform_handler;
+  graphics::storage_handler _lights_storage_handler;
 
 }; // class mesh_subrenderer
 

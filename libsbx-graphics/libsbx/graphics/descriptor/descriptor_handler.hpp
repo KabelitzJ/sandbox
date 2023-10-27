@@ -9,6 +9,7 @@
 #include <libsbx/memory/observer_ptr.hpp>
 
 #include <libsbx/graphics/buffer/uniform_handler.hpp>
+#include <libsbx/graphics/buffer/storage_handler.hpp>
 #include <libsbx/graphics/buffer/push_handler.hpp>
 
 #include <libsbx/graphics/pipeline/pipeline.hpp>
@@ -51,6 +52,13 @@ public:
     if (_pipeline) {
       uniform_handler.update(_pipeline->descriptor_block(name));
       _push(name, uniform_handler.uniform_buffer());
+    }
+  }
+
+  auto push(const std::string& name, storage_handler& storage_handler) -> void {
+    if (_pipeline) {
+      storage_handler.update(_pipeline->descriptor_block(name));
+      _push(name, storage_handler.storage_buffer());
     }
   }
 

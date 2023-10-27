@@ -128,14 +128,10 @@ scene::scene(const std::filesystem::path& path)
 
         _add_or_update_component<scenes::script>(entity, path);
       } else if (component_type == "PointLight") {
-        const auto ambient = component_node["ambient"].as<math::color>();
-        const auto diffuse = component_node["diffuse"].as<math::color>();
-        const auto specular = component_node["specular"].as<math::color>();
-        const auto constant = component_node["constant"].as<std::float_t>();
-        const auto linear = component_node["linear"].as<std::float_t>();
-        const auto quadratic = component_node["quadratic"].as<std::float_t>();
+        const auto color = component_node["color"].as<math::color>();
+        const auto radius = component_node["radius"].as<std::float_t>();
 
-        _add_or_update_component<scenes::point_light>(entity, ambient, diffuse, specular, constant, linear, quadratic);
+        _add_or_update_component<scenes::point_light>(entity, color, radius);
       } else {
         core::logger::warn("Unknown component type: {}", component_type);
       }

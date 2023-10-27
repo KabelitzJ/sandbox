@@ -85,19 +85,6 @@ auto shader::_create_reflection(const spirv_cross::Compiler& compiler) -> void {
     _uniform_blocks.insert({uniform_blocks_name, uniform_block{uniform_blocks_binding, uniform_blocks_size, _stage, uniform_block::type::uniform, std::move(uniforms)}});
   }
 
-  for (const auto& image_sampler : resources.sampled_images) {
-    const auto& type = compiler.get_type(image_sampler.type_id);
-
-    const auto& name = image_sampler.name;
-    const auto binding = compiler.get_decoration(image_sampler.id, spv::DecorationBinding);
-
-    auto image = uniform{binding, 0, 0, data_type::sampler2d, false, false, _stage};
-
-    core::logger::debug("image sampler: '{}' binding: {}", name, binding);
-
-    _uniforms.insert({name, image});
-  }
-
   for (const auto& push_constant : resources.push_constant_buffers) {
     const auto& type = compiler.get_type(push_constant.type_id);
 
@@ -126,6 +113,50 @@ auto shader::_create_reflection(const spirv_cross::Compiler& compiler) -> void {
     }
 
     _uniform_blocks.insert({uniform_blocks_name, uniform_block{uniform_blocks_binding, uniform_blocks_size, _stage, uniform_block::type::push, std::move(uniforms)}});
+  }
+
+  for (const auto& storage_buffer : resources.storage_buffers) {
+    const auto& type = compiler.get_type(storage_buffer.type_id);
+
+    const auto& storage_buffer_name = storage_buffer.name;
+    const auto storage_buffer_binding = compiler.get_decoration(storage_buffer.id, spv::DecorationBinding);
+    const auto storage_buffer_size = compiler.get_declared_struct_size_runtime_array(type, 16);
+
+    core::logger::debug("uniform block: '{}' binding: {} size: {}", storage_buffer_name, storage_buffer_binding, storage_buffer_size);
+
+    const auto member_count = type.member_types.size();
+
+    auto uniforms = std::map<std::string, uniform>{};
+
+    for (auto i : std::views::iota(0u, member_count)) {
+      const auto& member_type = compiler.get_type(type.member_types[i]);
+      const auto& member_name = compiler.get_member_name(type.self, i);
+
+      const auto member_binding = compiler.get_member_decoration(type.self, i, spv::DecorationBinding);
+      const auto member_offset = compiler.type_struct_member_offset(type, i);
+      const auto member_data_type = _get_data_type(member_type);
+
+      const auto member_member_count = member_type.member_types.size();
+
+      core::logger::debug("  binding: {}\toffset: {}\tsize: {} \tdata_type: {}", member_binding, member_offset, 0, _data_type_to_string(member_data_type));
+
+      uniforms.insert({member_name, uniform{member_binding, member_offset, 0, member_data_type, false, false, _stage}});
+    }
+
+    _uniform_blocks.insert({storage_buffer_name, uniform_block{storage_buffer_binding, storage_buffer_size, _stage, uniform_block::type::storage, std::move(uniforms)}});
+  }
+
+  for (const auto& image_sampler : resources.sampled_images) {
+    const auto& type = compiler.get_type(image_sampler.type_id);
+
+    const auto& name = image_sampler.name;
+    const auto binding = compiler.get_decoration(image_sampler.id, spv::DecorationBinding);
+
+    auto image = uniform{binding, 0, 0, data_type::sampler2d, false, false, _stage};
+
+    core::logger::debug("image sampler: '{}' binding: {}", name, binding);
+
+    _uniforms.insert({name, image});
   }
 }
 
@@ -224,9 +255,9 @@ auto shader::_get_data_type(const spirv_cross::SPIRType& type) -> data_type {
     }
   } else if (type.basetype == spirv_cross::SPIRType::SampledImage) {
     return data_type::sampler2d;
-  } else {
-    return data_type::unknown;
-  }
+  } 
+
+  return data_type::unknown;
 }
 
 auto shader::_data_type_to_string(data_type type) -> std::string {
