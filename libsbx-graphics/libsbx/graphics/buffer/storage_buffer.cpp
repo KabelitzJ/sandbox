@@ -1,32 +1,28 @@
-#include <libsbx/graphics/buffer/uniform_buffer.hpp>
+#include <libsbx/graphics/buffer/storage_buffer.hpp>
 
 #include <libsbx/graphics/graphics_module.hpp>
 
 namespace sbx::graphics {
 
-uniform_buffer::uniform_buffer(VkDeviceSize size, memory::observer_ptr<void> data)
-: buffer{size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, data},
-  _mapped_memory{buffer::map()} {}
+storage_buffer::storage_buffer(VkDeviceSize size, memory::observer_ptr<void> data)
+: buffer{size, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, data}, 
+  _mapped_memory{map()} { }
 
-uniform_buffer::~uniform_buffer() {
+storage_buffer::~storage_buffer() {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
   const auto& logical_device = graphics_module.logical_device();
 
   logical_device.wait_idle();
   
-  buffer::unmap();
+  unmap();
 }
 
-auto uniform_buffer::update(memory::observer_ptr<const void> data, VkDeviceSize size, VkDeviceSize offset) -> void {
-  std::memcpy(static_cast<std::uint8_t*>(_mapped_memory.get()) + offset, data.get(), size);
+auto storage_buffer::update(memory::observer_ptr<void> data) -> void {
+  std::memcpy(static_cast<std::uint8_t*>(_mapped_memory.get()), data.get(), size());
 }
 
-auto uniform_buffer::mapped_memory() const noexcept -> memory::observer_ptr<void> {
-  return _mapped_memory;
-}
-
-auto uniform_buffer::write_descriptor_set(std::uint32_t binding, VkDescriptorType descriptor_type) const noexcept -> graphics::write_descriptor_set {
+auto storage_buffer::write_descriptor_set(std::uint32_t binding, VkDescriptorType descriptor_type) const noexcept -> graphics::write_descriptor_set {
   auto buffer_info = VkDescriptorBufferInfo{};
   buffer_info.buffer = handle();
   buffer_info.offset = 0;
@@ -43,7 +39,7 @@ auto uniform_buffer::write_descriptor_set(std::uint32_t binding, VkDescriptorTyp
   return graphics::write_descriptor_set{write_descriptor_set, buffer_info};
 }
 
-auto uniform_buffer::create_descriptor_set_layout_binding(std::uint32_t binding, VkDescriptorType descriptor_type, VkShaderStageFlags stage_flags) noexcept -> VkDescriptorSetLayoutBinding {
+auto storage_buffer::create_descriptor_set_layout_binding(std::uint32_t binding, VkDescriptorType descriptor_type, VkShaderStageFlags stage_flags) noexcept -> VkDescriptorSetLayoutBinding {
   auto descriptor_set_layout_binding = VkDescriptorSetLayoutBinding{};
   descriptor_set_layout_binding.binding = binding;
   descriptor_set_layout_binding.descriptorType = descriptor_type;

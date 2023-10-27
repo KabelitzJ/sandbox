@@ -1,23 +1,19 @@
-#include <libsbx/graphics/buffer/uniform_handler.hpp>
-
-#include <libsbx/core/engine.hpp>
-
-#include <libsbx/graphics/graphics_module.hpp>
+#include <libsbx/graphics/buffer/storage_handler.hpp>
 
 namespace sbx::graphics {
 
 template<typename Type>
-auto uniform_handler::push(const Type& object, std::size_t size, std::size_t offset) -> void {
-  if (!_uniform_block || !_uniform_buffer) {
+auto storage_handler::push(const Type& object, std::size_t size, std::size_t offset) -> void {
+  if (!_uniform_block || !_storage_buffer) {
     return;
   }
 
-  _uniform_buffer->update(std::addressof(object), size, offset);
+  _storage_buffer->update(std::addressof(object), size, offset);
 }
 
 template<typename Type>
-auto uniform_handler::push(const std::string& uniform_name, const Type& object, std::size_t size) -> void {
-  if (!_uniform_block || !_uniform_buffer) {
+auto storage_handler::push(const std::string& uniform_name, const Type& object, std::size_t size) -> void {
+  if (!_uniform_block || !_storage_buffer) {
     return;
   }
 

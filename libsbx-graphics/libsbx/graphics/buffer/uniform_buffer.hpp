@@ -21,7 +21,7 @@ public:
 
   auto mapped_memory() const noexcept -> memory::observer_ptr<void>;
 
-  auto write(memory::observer_ptr<const void> data, VkDeviceSize size, VkDeviceSize offset = 0) -> void override;
+  auto update(memory::observer_ptr<const void> data, VkDeviceSize size, VkDeviceSize offset = 0) -> void;
 
   auto write_descriptor_set(std::uint32_t binding, VkDescriptorType descriptor_type) const noexcept -> graphics::write_descriptor_set override;
 

@@ -29,6 +29,9 @@
 
 #include <libsbx/graphics/buffer/buffer.hpp>
 #include <libsbx/graphics/buffer/uniform_buffer.hpp>
+#include <libsbx/graphics/buffer/uniform_handler.hpp>
+#include <libsbx/graphics/buffer/storage_buffer.hpp>
+#include <libsbx/graphics/buffer/storage_handler.hpp>
 #include <libsbx/graphics/buffer/push_handler.hpp>
 
 #include <libsbx/graphics/images/image.hpp>
