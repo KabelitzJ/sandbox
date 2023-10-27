@@ -13,6 +13,8 @@ class storage_buffer : public descriptor, public buffer  {
 
 public:
 
+  inline static constexpr auto max_size = std::size_t{4096};
+
   storage_buffer(VkDeviceSize size, memory::observer_ptr<const void> data = nullptr);
 
   ~storage_buffer() override;

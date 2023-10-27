@@ -130,16 +130,14 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
   }
 
   for (const auto& [name, uniform] : _uniforms) {
-    if (uniform.type() != shader::data_type::sampler2d) {
-      throw std::runtime_error{"Unsupported uniform type"};
+    if (uniform.type() == shader::data_type::sampler2d) {
+      const auto descriptor_type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+
+      descriptor_set_layout_bindings.push_back(image::create_descriptor_set_layout_binding(uniform.binding(), descriptor_type, uniform.stage_flags()));
+      descriptor_pool_sizes_by_type[descriptor_type] += swapchain::max_frames_in_flight; // ??? 3 ???
+
+      _descriptor_bindings.insert({name, uniform.binding()});
     }
-
-    const auto descriptor_type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-
-    descriptor_set_layout_bindings.push_back(image::create_descriptor_set_layout_binding(uniform.binding(), descriptor_type, uniform.stage_flags()));
-    descriptor_pool_sizes_by_type[descriptor_type] += swapchain::max_frames_in_flight; // ??? 3 ???
-
-    _descriptor_bindings.insert({name, uniform.binding()});
   }
 
   std::ranges::sort(descriptor_set_layout_bindings, [](const auto& lhs, const auto& rhs) {

@@ -116,7 +116,7 @@ class uniform_block {
       push
     }; // enum class type
 
-    explicit uniform_block(std::uint32_t binding, std::uint32_t size, VkShaderStageFlags stage_flags, type type, std::map<std::string, uniform> uniforms)
+    explicit uniform_block(std::uint32_t binding, std::uint32_t size, VkShaderStageFlags stage_flags, type type, std::map<std::string, uniform> uniforms = {})
     : _binding{binding},
       _size{size},
       _stage_flags{stage_flags},

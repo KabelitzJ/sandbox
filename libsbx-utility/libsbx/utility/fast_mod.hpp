@@ -18,7 +18,7 @@ namespace sbx::utility {
 template<std::unsigned_integral Type>
 constexpr auto fast_mod(const Type value, const Type modulus) noexcept -> Type {
   // return value - (value / modulus) * modulus;
-  return value < modulus ? value : modulus % value;
+  return value < modulus ? value : value % modulus;
 }
 
 } // namespace sbx::utility

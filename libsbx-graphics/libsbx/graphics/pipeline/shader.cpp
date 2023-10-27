@@ -3,10 +3,14 @@
 #include <fstream>
 #include <ranges>
 
+#include <libsbx/utility/fast_mod.hpp>
+
 #include <libsbx/io/read_file.hpp>
 
 #include <libsbx/core/logger.hpp>
 #include <libsbx/core/engine.hpp>
+
+#include <libsbx/graphics/buffer/storage_buffer.hpp>
 
 #include <libsbx/graphics/graphics_module.hpp>
 
@@ -55,6 +59,7 @@ auto shader::stage() const noexcept -> VkShaderStageFlagBits {
 auto shader::_create_reflection(const spirv_cross::Compiler& compiler) -> void {
   auto resources = compiler.get_shader_resources();
 
+  // Reflection for uniform blocks
   for (const auto& uniform_buffer : resources.uniform_buffers) {
     const auto& type = compiler.get_type(uniform_buffer.type_id);
 
@@ -85,6 +90,7 @@ auto shader::_create_reflection(const spirv_cross::Compiler& compiler) -> void {
     _uniform_blocks.insert({uniform_blocks_name, uniform_block{uniform_blocks_binding, uniform_blocks_size, _stage, uniform_block::type::uniform, std::move(uniforms)}});
   }
 
+  // Reflection for push constants
   for (const auto& push_constant : resources.push_constant_buffers) {
     const auto& type = compiler.get_type(push_constant.type_id);
 
@@ -115,37 +121,27 @@ auto shader::_create_reflection(const spirv_cross::Compiler& compiler) -> void {
     _uniform_blocks.insert({uniform_blocks_name, uniform_block{uniform_blocks_binding, uniform_blocks_size, _stage, uniform_block::type::push, std::move(uniforms)}});
   }
 
+  // Reflection for storage buffers
   for (const auto& storage_buffer : resources.storage_buffers) {
     const auto& type = compiler.get_type(storage_buffer.type_id);
 
     const auto& storage_buffer_name = storage_buffer.name;
     const auto storage_buffer_binding = compiler.get_decoration(storage_buffer.id, spv::DecorationBinding);
-    const auto storage_buffer_size = compiler.get_declared_struct_size_runtime_array(type, 16);
 
-    core::logger::debug("uniform block: '{}' binding: {} size: {}", storage_buffer_name, storage_buffer_binding, storage_buffer_size);
+    // Get the size of one element in the storage buffer
+    const auto storage_buffer_element_size = compiler.get_declared_struct_size_runtime_array(type, 1);
 
-    const auto member_count = type.member_types.size();
+    // Calculate the size in regard to the element size
+    const auto storage_buffer_size = storage_buffer::max_size - utility::fast_mod(storage_buffer::max_size, storage_buffer_element_size);
 
-    auto uniforms = std::map<std::string, uniform>{};
+    auto buffer = uniform_block{storage_buffer_binding, storage_buffer_size, _stage, uniform_block::type::storage};
 
-    for (auto i : std::views::iota(0u, member_count)) {
-      const auto& member_type = compiler.get_type(type.member_types[i]);
-      const auto& member_name = compiler.get_member_name(type.self, i);
+    core::logger::debug("uniform block: '{}' binding: {} element_size: {} max_elements: {}", storage_buffer_name, storage_buffer_binding, storage_buffer_element_size, storage_buffer_size / storage_buffer_element_size);
 
-      const auto member_binding = compiler.get_member_decoration(type.self, i, spv::DecorationBinding);
-      const auto member_offset = compiler.type_struct_member_offset(type, i);
-      const auto member_data_type = _get_data_type(member_type);
-
-      const auto member_member_count = member_type.member_types.size();
-
-      core::logger::debug("  binding: {}\toffset: {}\tsize: {} \tdata_type: {}", member_binding, member_offset, 0, _data_type_to_string(member_data_type));
-
-      uniforms.insert({member_name, uniform{member_binding, member_offset, 0, member_data_type, false, false, _stage}});
-    }
-
-    _uniform_blocks.insert({storage_buffer_name, uniform_block{storage_buffer_binding, storage_buffer_size, _stage, uniform_block::type::storage, std::move(uniforms)}});
+    _uniform_blocks.insert({storage_buffer_name, buffer});
   }
 
+  // Reflection for images
   for (const auto& image_sampler : resources.sampled_images) {
     const auto& type = compiler.get_type(image_sampler.type_id);
 

@@ -8,11 +8,11 @@ auto storage_handler::push(std::span<const Type> buffer) -> void {
     return;
   }
 
-  if (buffer.size() != _uniform_block->size()) {
-    throw std::runtime_error{fmt::format("Data size ({}) does not match uniform block size ({})", buffer.size(), _uniform_block->size())};
+  if (buffer.size() * sizeof(Type) > _storage_buffer->size()) {
+    throw std::runtime_error{fmt::format("Buffer size ({}) is larger than storage buffer size ({})", buffer.size() * sizeof(Type), _storage_buffer->size())};
   }
 
-  _storage_buffer->update(buffer.data(), buffer.size());
+  _storage_buffer->update(buffer.data(), buffer.size() * sizeof(Type));
 }
 
 template<typename Type>
