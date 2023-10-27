@@ -21,6 +21,7 @@ It is written in `C++20` and tries to use modern C++ features and best practices
   - [🌱 Create a new application](#-create-a-new-application)
   - [🎨 Create a new renderer](#-create-a-new-renderer)
   - [🎬 Define render passes and subrenderers](#-define-render-passes-and-subrenderers)
+- [📷 Screenshots](#-screenshots)
 - [🤝 Contributing and bug reports](#-contributing-and-bug-reports)
 - [🔒 License](#-license)
 - [📧 Contact](#-contact)
@@ -244,6 +245,10 @@ public:
 }; // class demo_renderer
 
 ```
+
+## 📷 Screenshots
+
+![screenshot](./images/screenshot.png)
 
 ## 🤝 Contributing and bug reports
 
