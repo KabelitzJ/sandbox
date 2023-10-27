@@ -30,11 +30,14 @@ It is written in `C++20` and tries to use modern C++ features and best practices
 Here are the features that are ready or under development:
 
 - [x] Entity-Component-System architecture
-- [ ] 2D / UI rendering 🔜
 - [x] 3D rendering
-- [x] Physics engine
 - [x] Scripting support 
-- [ ] Audio engine 🔜
+- [x] Audio engine
+- [x] Scene management
+- [ ] Lighting system 🔜
+- [ ] Post-processing effects 🔜
+- [ ] 2D / UI rendering 🔜
+- [ ] Physics engine 🔜
 - [ ] Networking support 🔜
 - [ ] AI system 🔜
 
