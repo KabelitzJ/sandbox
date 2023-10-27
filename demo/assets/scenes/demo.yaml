@@ -27,12 +27,30 @@ entities:
   - name: "Light1"
     components:
       - type: "Transform"
+        position: { x: 3.0, y: 5.0, z: 0.0 }
+        rotation: { x: 0.0, y: 0.0, z: 0.0 }
+        scale: { x: 1.0, y: 1.0, z: 1.0 }
+      - type: "PointLight"
+        color: { r: 1.0, g: 0.0, b: 0.0, a: 1.0 }
+        radius: 5.0
+  - name: "Light2"
+    components:
+      - type: "Transform"
         position: { x: 0.0, y: 5.0, z: 0.0 }
         rotation: { x: 0.0, y: 0.0, z: 0.0 }
         scale: { x: 1.0, y: 1.0, z: 1.0 }
       - type: "PointLight"
-        color: { r: 0.5, g: 0.5, b: 0.5, a: 1.0 }
-        radius: 10.0
+        color: { r: 0.0, g: 1.0, b: 0.0, a: 1.0 }
+        radius: 5.0
+  - name: "Light3"
+    components:
+      - type: "Transform"
+        position: { x: -3.0, y: 5.0, z: 0.0 }
+        rotation: { x: 0.0, y: 0.0, z: 0.0 }
+        scale: { x: 1.0, y: 1.0, z: 1.0 }
+      - type: "PointLight"
+        color: { r: 0.0, g: 0.0, b: 1.0, a: 1.0 }
+        radius: 5.0
   - name: "Floor"
     components:
       - type: "Transform"

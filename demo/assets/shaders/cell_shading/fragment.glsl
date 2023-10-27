@@ -1,14 +1,15 @@
 #version 450
 
 struct material {
-  vec3 ambient;
-  vec3 diffuse;
-  vec3 specular;
+  vec4 ambient;
+  vec4 diffuse;
+  vec4 specular;
   float shininess;
 };
 
-struct light {
-  vec3 color;
+struct point_light {
+  vec4 color;
+  vec3 position;
   float radius;
 };
 
@@ -26,47 +27,47 @@ layout(binding = 0) uniform uniform_scene {
 } scene;
 
 layout(binding = 1) buffer buffer_lights {
-  light array[];
+  point_light array[];
 } lights;
 
 layout(binding = 2) uniform sampler2D image;
 // layout(binding = 2) uniform sampler2D shadow_map;
 
 const material default_material = material(
-  vec3(1.0, 1.0, 1.0),
-  vec3(1.0, 1.0, 1.0),
-  vec3(0.5, 0.5, 0.5),
+  vec4(1.0, 1.0, 1.0, 1.0),
+  vec4(1.0, 1.0, 1.0, 1.0),
+  vec4(0.5, 0.5, 0.5, 1.0),
   32.0
 );
 
-const light default_light = light(
-  // vec3(5.0, 5.0, 5.0),
-  vec3(1.0, 0.97, 0.84),
+const point_light default_light = point_light(
+  vec4(1.0, 0.97, 0.84, 1.0),
+  vec3(5.0, 5.0, 5.0),
   10.0
 );
 
-const vec3 default_light_position = vec3(5.0, 5.0, 5.0);
+const float mix_factor = 0.25;
 
-vec3 phong_shading(vec3 light_direction, float intensity) {
+vec4 phong_shading(vec3 light_direction, float intensity) {
   // Calculate the ambient color
-  vec3 ambient = (default_light.color * 0.1) * default_material.ambient;
+  vec4 ambient = (default_light.color * 0.1) * default_material.ambient;
 
   // Calculate the diffuse color
-  vec3 diffuse = (default_light.color * 0.5) * (default_material.diffuse * intensity);
+  vec4 diffuse = (default_light.color * 0.5) * (default_material.diffuse * intensity);
 
   // Calculate the specular color
   vec3 camera_direction = normalize(vec3(scene.camera_position) - in_position);
   vec3 halfway_direction = normalize(light_direction + camera_direction);
   float specular_intensity = pow(max(dot(in_normal, halfway_direction), 0.0), default_material.shininess);
-  vec3 specular = (default_material.specular * specular_intensity);
+  vec4 specular = (default_material.specular * specular_intensity);
 
   // Calculate the final color
   return (ambient + diffuse + specular);
 }
 
-vec3 cel_shading(float intensity) {
+vec4 cel_shading(float intensity) {
   const int CEL_LEVELS = 4;
-  const vec3 SHADOW_COLOR = vec3(0.0, 0.0, 0.0);
+  const vec4 SHADOW_COLOR = vec4(0.0, 0.0, 0.0, 1.0);
 
   // Calculate the index of the shade based on the intensity
   float shade_index = floor(intensity * float(CEL_LEVELS));
@@ -75,14 +76,34 @@ vec3 cel_shading(float intensity) {
   return mix(SHADOW_COLOR, default_material.ambient, shade_index / float(CEL_LEVELS - 1));
 }
 
+vec4 shading(vec3 light_direction, float intensity) {
+  vec4 phong_shading = phong_shading(light_direction, intensity);
+  vec4 cel_shading = cel_shading(intensity);
+
+  return mix(phong_shading, cel_shading, mix_factor);
+}
+
 void main() {
-  vec3 light_direction = normalize(default_light_position - in_position);
-  float intensity = max(dot(in_normal, light_direction), 0.0);
  
-  vec3 phong_shading = phong_shading(light_direction, intensity);
-  vec3 cel_shading = cel_shading(intensity);
+  vec4 total_color = vec4(0.0, 0.0, 0.0, 1.0);
 
-  float mix_factor = 0.25;
+  for (int i = 0; i < scene.light_count; ++i) {
+    point_light current_light = lights.array[i];
 
-  out_color = texture(image, in_uv) * vec4(mix(phong_shading, cel_shading, mix_factor), 1.0);
+    vec3 light_direction = normalize(current_light.position - in_position);
+
+    float light_distance = length(light_direction);
+
+    if (light_distance > current_light.radius) {
+      continue;
+    }
+
+    float attenuation = 1.0 - (light_distance / current_light.radius);
+
+    float intensity = max(dot(in_normal, light_direction), 0.0);
+
+    total_color += shading(light_direction, intensity) * current_light.color * attenuation;
+  }
+
+  out_color = texture(image, in_uv) * total_color;
 }

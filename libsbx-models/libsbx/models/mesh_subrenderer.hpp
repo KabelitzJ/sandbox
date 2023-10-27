@@ -6,6 +6,8 @@
 #include <ranges>
 #include <algorithm>
 
+#include <libsbx/math/color.hpp>
+#include <libsbx/math/vector3.hpp>
 #include <libsbx/math/matrix4x4.hpp>
 
 #include <libsbx/core/logger.hpp>
@@ -30,6 +32,12 @@
 #include <libsbx/models/pipeline.hpp>
 
 namespace sbx::models {
+
+struct point_light {
+  math::color color;
+  math::vector3 position;
+  std::float_t intensity;
+}; // struct point_light
 
 class mesh_subrenderer final : public graphics::subrenderer {
 
@@ -78,11 +86,15 @@ public:
 
     auto light_nodes = scene.query<scenes::point_light>();
 
-    auto lights = std::vector<scenes::point_light>{};
+    auto lights = std::vector<models::point_light>{};
     auto light_count = std::uint32_t{0};
 
     for (const auto& node : light_nodes) {
-      lights.push_back(node.get_component<scenes::point_light>());
+      const auto& light = node.get_component<scenes::point_light>();
+      const auto& transform = node.get_component<math::transform>();
+
+      lights.push_back(models::point_light{light.color(), transform.position(), light.radius()});
+      
       ++light_count;
 
       if (light_count >= max_lights_v) {
@@ -90,7 +102,7 @@ public:
       }
     }
 
-    _lights_storage_handler.push(std::span<const scenes::point_light>{lights.data(), light_count});
+    _lights_storage_handler.push(std::span<const models::point_light>{lights.data(), light_count});
     _scene_uniform_handler.push("light_count", light_count);
 
     auto mesh_nodes = scene.query<scenes::static_mesh>();
