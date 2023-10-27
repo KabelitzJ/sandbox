@@ -18,7 +18,7 @@ auto push(std::span<const std::byte> data) -> void {
     throw std::runtime_error{fmt::format("Data size ({}) does not match uniform block size ({})", data.size(), _uniform_block->size())};
   }
 
-  _storage_buffer->update(data);
+  
 }
 
 auto storage_handler::storage_buffer() const noexcept -> const graphics::storage_buffer& {
