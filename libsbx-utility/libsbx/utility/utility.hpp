@@ -53,5 +53,6 @@
 #include <libsbx/utility/target.hpp>
 #include <libsbx/utility/expected.hpp>
 #include <libsbx/utility/primitive.hpp>
+#include <libsbx/utility/string_literal.hpp>
 
 #endif // LIBSBX_UTILITY_HPP_

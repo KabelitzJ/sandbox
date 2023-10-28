@@ -65,6 +65,7 @@ target_link_libraries(
     libsbx::models
     libsbx::scenes
     libsbx::shadows
+    libsbx::physics
 )
 
 set_target_properties(
