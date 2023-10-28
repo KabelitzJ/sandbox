@@ -6,6 +6,7 @@ assets:
   meshes:
     - &cube "res://meshes/cube.obj"
     - &suzanne "res://meshes/suzanne.obj"
+    - &sphere "res://meshes/sphere.obj"
 entities:
   - name: "Player"
     components:
@@ -28,35 +29,50 @@ entities:
       - type: "StaticMesh"
         mesh: *suzanne
         texture: *base
-      - type: "Script"
-        script: "res://scripts/rotate.lua"
+      # - type: "Script"
+      #   script: "res://scripts/rotate.lua"
   - name: "Light1"
     components:
       - type: "Transform"
         position: { x: 3.0, y: 5.0, z: 0.0 }
         rotation: { x: 0.0, y: 0.0, z: 0.0 }
-        scale: { x: 1.0, y: 1.0, z: 1.0 }
+        scale: { x: 0.2, y: 0.2, z: 0.2 }
       - type: "PointLight"
         color: { r: 1.0, g: 0.0, b: 0.0, a: 1.0 }
         radius: 5.0
+      - type: "StaticMesh"
+        mesh: *sphere
+        texture: *prototype_black
+      - type: "Script"
+        script: "res://scripts/orbit.lua"
   - name: "Light2"
     components:
       - type: "Transform"
-        position: { x: 0.0, y: 5.0, z: 0.0 }
+        position: { x: 0.0, y: 5.0, z: 3.0 }
         rotation: { x: 0.0, y: 0.0, z: 0.0 }
-        scale: { x: 1.0, y: 1.0, z: 1.0 }
+        scale: { x: 0.2, y: 0.2, z: 0.2 }
       - type: "PointLight"
         color: { r: 0.0, g: 1.0, b: 0.0, a: 1.0 }
         radius: 5.0
+      - type: "StaticMesh"
+        mesh: *sphere
+        texture: *prototype_black
+      - type: "Script"
+        script: "res://scripts/orbit.lua"
   - name: "Light3"
     components:
       - type: "Transform"
         position: { x: -3.0, y: 5.0, z: 0.0 }
         rotation: { x: 0.0, y: 0.0, z: 0.0 }
-        scale: { x: 1.0, y: 1.0, z: 1.0 }
+        scale: { x: 0.2, y: 0.2, z: 0.2 }
       - type: "PointLight"
         color: { r: 0.0, g: 0.0, b: 1.0, a: 1.0 }
         radius: 5.0
+      - type: "StaticMesh"
+        mesh: *sphere
+        texture: *prototype_black
+      - type: "Script"
+        script: "res://scripts/orbit.lua"
   - name: "Floor"
     components:
       - type: "Transform"
