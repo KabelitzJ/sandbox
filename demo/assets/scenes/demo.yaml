@@ -62,26 +62,52 @@ entities:
       - type: "Transform"
         position: { x: 0.0, y: 0.0, z: 0.0 }
         rotation: { x: 0.0, y: 0.0, z: 0.0 }
-        scale: { x: 10.0, y: 0.1, z: 10.0 }
+        scale: { x: 30.0, y: 0.1, z: 30.0 }
       - type: "StaticMesh"
         mesh: *cube
         texture: *prototype_black
   - name: "BackWall"
     components:
       - type: "Transform"
-        position: { x: 0.0, y: 5.0, z: -5.0 }
-        rotation: { x: 0.0, y: 0.0, z: -90.0 }
-        scale: { x: 10.0, y: 10.0, z: 0.1 }
+        position: { x: 0.0, y: 0.0, z: -15.0 }
+        rotation: { x: 0.0, y: 0.0, z: 0.0 }
+        scale: { x: 30.0, y: 30.0, z: 0.1 }
+      - type: "StaticMesh"
+        mesh: *cube
+        texture: *prototype_black
+  - name: "FrontWall"
+    components:
+      - type: "Transform"
+        position: { x: 0.0, y: 0.0, z: 15.0 }
+        rotation: { x: 0.0, y: 0.0, z: 0.0 }
+        scale: { x: 30.0, y: 30.0, z: 0.1 }
       - type: "StaticMesh"
         mesh: *cube
         texture: *prototype_black
   - name: "LeftWall"
     components:
       - type: "Transform"
-        position: { x: -5.0, y: 5.0, z: 0.0 }
-        rotation: { x: -90.0, y: 0.0, z: 0.0 }
-        scale: { x: 0.1, y: 10.0, z: 10.0 }
+        position: { x: -15.0, y: 0.0, z: 0.0 }
+        rotation: { x: 0.0, y: 0.0, z: 0.0 }
+        scale: { x: 0.1, y: 30.0, z: 30.0 }
       - type: "StaticMesh"
         mesh: *cube
         texture: *prototype_black
-
+  - name: "RightWall"
+    components:
+      - type: "Transform"
+        position: { x: 15.0, y: 0.0, z: 0.0 }
+        rotation: { x: 0.0, y: 0.0, z: 0.0 }
+        scale: { x: 0.1, y: 30.0, z: 30.0 }
+      - type: "StaticMesh"
+        mesh: *cube
+        texture: *prototype_black
+  - name: "Ceiling"
+    components:
+      - type: "Transform"
+        position: { x: 0.0, y: 15.0, z: 0.0 }
+        rotation: { x: 0.0, y: 0.0, z: 0.0 }
+        scale: { x: 30.0, y: 0.1, z: 30.0 }
+      - type: "StaticMesh"
+        mesh: *cube
+        texture: *prototype_black
