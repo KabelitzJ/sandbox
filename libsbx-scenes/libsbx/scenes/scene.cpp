@@ -135,6 +135,8 @@ scene::scene(const std::filesystem::path& path)
       } else {
         core::logger::warn("Unknown component type: {}", component_type);
       }
+      
+      // [TODO] KAJ 2023-10-28 : Add support for audio components
     }
   }
 
