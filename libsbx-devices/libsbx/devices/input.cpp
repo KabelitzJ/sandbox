@@ -5,6 +5,8 @@
 namespace sbx::devices {
 
 std::unordered_map<key, key_state> input::_key_states;
+std::unordered_map<mouse_button, key_state> input::_mouse_button_states;
+math::vector2u input::_mouse_position;
 
 auto input::is_key_pressed(key key) -> bool {
   if (auto entry = _key_states.find(key); entry != _key_states.end()) {
