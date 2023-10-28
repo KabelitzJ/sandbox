@@ -8,6 +8,8 @@
 
 #include <libsbx/utility/bitmask.hpp>
 
+#include <libsbx/math/vector2.hpp>
+
 #include <libsbx/devices/key.hpp>
 #include <libsbx/devices/mouse_button.hpp>
 #include <libsbx/devices/input_action.hpp>
@@ -39,9 +41,17 @@ private:
 
   static auto _transition_pressed_keys() -> void;
 
+  static auto _transition_pressed_mouse_buttons() -> void;
+
   static auto _update_key_state(key key, input_action action) -> void;
 
+  static auto _update_mouse_button_state(mouse_button button, input_action action) -> void;
+
+  static auto _update_mouse_position(const math::vector2u& position) -> void;
+
   static std::unordered_map<key, key_state> _key_states;
+  static std::unordered_map<mouse_button, key_state> _mouse_button_states;
+  static math::vector2u _mouse_position;
 
 }; // class input
 

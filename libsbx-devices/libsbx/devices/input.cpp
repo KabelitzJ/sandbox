@@ -44,6 +44,14 @@ auto input::_transition_pressed_keys() -> void {
   }
 }
 
+auto input::_transition_pressed_mouse_buttons() -> void {
+  for (auto& [button, key_state] : _mouse_button_states) {
+    if (key_state.action == input_action::press) {
+      key_state.action = input_action::repeat;
+    }
+  }
+}
+
 auto input::_update_key_state(key key, input_action action) -> void {
   auto entry = _key_states.find(key);
 
@@ -55,6 +63,23 @@ auto input::_update_key_state(key key, input_action action) -> void {
 
   state.last_action = state.action;
   state.action = action;
+}
+
+auto input::_update_mouse_button_state(mouse_button button, input_action action) -> void {
+  auto entry = _mouse_button_states.find(button);
+
+  if (entry == _mouse_button_states.end()) {
+    entry = _mouse_button_states.insert({button, key_state{input_action::release, input_action::release}}).first;
+  }
+
+  auto& state = entry->second;
+
+  state.last_action = state.action;
+  state.action = action;
+}
+
+auto input::_update_mouse_position(const math::vector2u& position) -> void {
+
 }
 
 } // namespace sbx::devices

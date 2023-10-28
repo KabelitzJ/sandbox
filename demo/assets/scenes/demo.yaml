@@ -7,7 +7,7 @@ assets:
     - &cube "res://meshes/cube.obj"
     - &suzanne "res://meshes/suzanne.obj"
 entities:
-  - name: "Camera"
+  - name: "Player"
     components:
       - type: "Transform"
         position: { x: 0.0, y: 2.0, z: 5.0 }
