@@ -13,7 +13,7 @@
 
 #include <libsbx/graphics/descriptor/descriptor_handler.hpp>
 
-#include <libsbx/graphics/buffer/uniform_handler.hpp>
+#include <libsbx/graphics/buffers/uniform_handler.hpp>
 
 #include <libsbx/ui/vertex2d.hpp>
 #include <libsbx/ui/mesh.hpp>

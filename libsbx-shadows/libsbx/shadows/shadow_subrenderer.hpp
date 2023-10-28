@@ -2,8 +2,8 @@
 #define LIBSBX_SHADOWS_SHADOW_SUBRENDERER_HPP_
 
 #include <libsbx/graphics/subrenderer.hpp>
-#include <libsbx/graphics/buffer/push_handler.hpp>
-#include <libsbx/graphics/buffer/uniform_handler.hpp>
+#include <libsbx/graphics/buffers/push_handler.hpp>
+#include <libsbx/graphics/buffers/uniform_handler.hpp>
 #include <libsbx/graphics/descriptor/descriptor_handler.hpp>
 
 #include <libsbx/scenes/scenes_module.hpp>

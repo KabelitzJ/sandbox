@@ -12,8 +12,8 @@
 
 #include <fmt/format.h>
 
-#include <libsbx/graphics/buffer/buffer.hpp>
-#include <libsbx/graphics/buffer/uniform_handler.hpp>
+#include <libsbx/graphics/buffers/buffer.hpp>
+#include <libsbx/graphics/buffers/uniform_handler.hpp>
 
 #include <libsbx/graphics/pipeline/shader.hpp>
 #include <libsbx/graphics/pipeline/pipeline.hpp>

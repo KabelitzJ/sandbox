@@ -1,4 +1,4 @@
-#include <libsbx/graphics/buffer/push_handler.hpp>
+#include <libsbx/graphics/buffers/push_handler.hpp>
 
 #include <fmt/format.h>
 

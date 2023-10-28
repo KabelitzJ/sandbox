@@ -11,7 +11,7 @@
 
 #include <libsbx/graphics/graphics_module.hpp>
 
-#include <libsbx/graphics/buffer/buffer.hpp>
+#include <libsbx/graphics/buffers/buffer.hpp>
 
 namespace sbx::graphics {
 

@@ -1,4 +1,4 @@
-#include <libsbx/graphics/buffer/storage_handler.hpp>
+#include <libsbx/graphics/buffers/storage_handler.hpp>
 
 #include <fmt/format.h>
 

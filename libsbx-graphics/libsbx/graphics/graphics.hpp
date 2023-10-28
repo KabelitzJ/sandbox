@@ -27,12 +27,12 @@
 
 #include <libsbx/graphics/render_pass/swapchain.hpp>
 
-#include <libsbx/graphics/buffer/buffer.hpp>
-#include <libsbx/graphics/buffer/uniform_buffer.hpp>
-#include <libsbx/graphics/buffer/uniform_handler.hpp>
-#include <libsbx/graphics/buffer/storage_buffer.hpp>
-#include <libsbx/graphics/buffer/storage_handler.hpp>
-#include <libsbx/graphics/buffer/push_handler.hpp>
+#include <libsbx/graphics/buffers/buffer.hpp>
+#include <libsbx/graphics/buffers/uniform_buffer.hpp>
+#include <libsbx/graphics/buffers/uniform_handler.hpp>
+#include <libsbx/graphics/buffers/storage_buffer.hpp>
+#include <libsbx/graphics/buffers/storage_handler.hpp>
+#include <libsbx/graphics/buffers/push_handler.hpp>
 
 #include <libsbx/graphics/images/image.hpp>
 #include <libsbx/graphics/images/image2d.hpp>

@@ -10,7 +10,7 @@
 #include <libsbx/core/logger.hpp>
 #include <libsbx/core/engine.hpp>
 
-#include <libsbx/graphics/buffer/storage_buffer.hpp>
+#include <libsbx/graphics/buffers/storage_buffer.hpp>
 
 #include <libsbx/graphics/graphics_module.hpp>
 

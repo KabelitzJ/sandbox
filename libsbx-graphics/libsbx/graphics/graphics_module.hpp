@@ -27,7 +27,7 @@
 #include <libsbx/graphics/pipeline/pipeline.hpp>
 #include <libsbx/graphics/pipeline/shader.hpp>
 
-#include <libsbx/graphics/buffer/buffer.hpp>
+#include <libsbx/graphics/buffers/buffer.hpp>
 
 #include <libsbx/graphics/renderer.hpp>
 #include <libsbx/graphics/render_stage.hpp>

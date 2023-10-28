@@ -8,9 +8,9 @@
 
 #include <libsbx/memory/observer_ptr.hpp>
 
-#include <libsbx/graphics/buffer/uniform_handler.hpp>
-#include <libsbx/graphics/buffer/storage_handler.hpp>
-#include <libsbx/graphics/buffer/push_handler.hpp>
+#include <libsbx/graphics/buffers/uniform_handler.hpp>
+#include <libsbx/graphics/buffers/storage_handler.hpp>
+#include <libsbx/graphics/buffers/push_handler.hpp>
 
 #include <libsbx/graphics/pipeline/pipeline.hpp>
 

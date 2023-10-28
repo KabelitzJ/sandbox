@@ -1,11 +1,11 @@
-#ifndef LIBSBX_GRAPHICS_BUFFER_UNIFORM_BUFFER_HPP_
-#define LIBSBX_GRAPHICS_BUFFER_UNIFORM_BUFFER_HPP_
+#ifndef LIBSBX_GRAPHICS_BUFFERS_UNIFORM_BUFFER_HPP_
+#define LIBSBX_GRAPHICS_BUFFERS_UNIFORM_BUFFER_HPP_
 
 #include <vulkan/vulkan.hpp>
 
 #include <libsbx/memory/observer_ptr.hpp>
 
-#include <libsbx/graphics/buffer/buffer.hpp>
+#include <libsbx/graphics/buffers/buffer.hpp>
 
 #include <libsbx/graphics/descriptor/descriptor.hpp>
 
@@ -35,4 +35,4 @@ private:
 
 } // namespace sbx::graphics
 
-#endif // LIBSBX_GRAPHICS_BUFFER_UNIFORM_BUFFER_HPP_
+#endif // LIBSBX_GRAPHICS_BUFFERS_UNIFORM_BUFFER_HPP_

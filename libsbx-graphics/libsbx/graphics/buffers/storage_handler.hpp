@@ -1,5 +1,5 @@
-#ifndef LIBSBX_GRAPHICS_BUFFER_STORAGE_HANDLER_HPP_
-#define LIBSBX_GRAPHICS_BUFFER_STORAGE_HANDLER_HPP_
+#ifndef LIBSBX_GRAPHICS_BUFFERS_STORAGE_HANDLER_HPP_
+#define LIBSBX_GRAPHICS_BUFFERS_STORAGE_HANDLER_HPP_
 
 #include <memory>
 #include <optional>
@@ -11,7 +11,7 @@
 
 #include <libsbx/graphics/pipeline/shader.hpp>
 
-#include <libsbx/graphics/buffer/storage_buffer.hpp>
+#include <libsbx/graphics/buffers/storage_buffer.hpp>
 
 namespace sbx::graphics {
 
@@ -43,6 +43,6 @@ private:
 
 } // namespace sbx::graphics
 
-#include <libsbx/graphics/buffer/storage_handler.ipp>
+#include <libsbx/graphics/buffers/storage_handler.ipp>
 
-#endif // LIBSBX_GRAPHICS_BUFFER_STORAGE_HANDLER_HPP_
+#endif // LIBSBX_GRAPHICS_BUFFERS_STORAGE_HANDLER_HPP_

@@ -10,7 +10,7 @@
 
 #include <libsbx/graphics/pipeline/shader.hpp>
 
-#include <libsbx/graphics/buffer/uniform_buffer.hpp>
+#include <libsbx/graphics/buffers/uniform_buffer.hpp>
 
 namespace sbx::graphics {
 
@@ -39,6 +39,6 @@ private:
 
 } // namespace sbx::graphics
 
-#include <libsbx/graphics/buffer/uniform_handler.ipp>
+#include <libsbx/graphics/buffers/uniform_handler.ipp>
 
 #endif // LIBSBX_GRAPHICS_BUFFERS_UNIFORM_HANDLER_HPP_

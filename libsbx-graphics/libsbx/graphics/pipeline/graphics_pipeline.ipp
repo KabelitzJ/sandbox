@@ -13,8 +13,8 @@
 
 #include <libsbx/graphics/graphics_module.hpp>
 
-#include <libsbx/graphics/buffer/uniform_buffer.hpp>
-#include <libsbx/graphics/buffer/storage_buffer.hpp>
+#include <libsbx/graphics/buffers/uniform_buffer.hpp>
+#include <libsbx/graphics/buffers/storage_buffer.hpp>
 
 #include <libsbx/graphics/render_pass/swapchain.hpp>
 

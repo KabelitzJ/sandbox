@@ -1,4 +1,4 @@
-#include <libsbx/graphics/buffer/buffer.hpp>
+#include <libsbx/graphics/buffers/buffer.hpp>
 
 #include <libsbx/utility/assert.hpp>
 

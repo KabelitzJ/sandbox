@@ -1,5 +1,5 @@
-#ifndef LIBSBX_GRAPHICS_BUFFER_PUSH_HANDLER_HPP_
-#define LIBSBX_GRAPHICS_BUFFER_PUSH_HANDLER_HPP_
+#ifndef LIBSBX_GRAPHICS_BUFFERS_PUSH_HANDLER_HPP_
+#define LIBSBX_GRAPHICS_BUFFERS_PUSH_HANDLER_HPP_
 
 #include <cinttypes>
 #include <optional>
@@ -37,6 +37,6 @@ private:
 
 } // namespace sbx::graphics
 
-#include <libsbx/graphics/buffer/push_handler.ipp>
+#include <libsbx/graphics/buffers/push_handler.ipp>
 
-#endif // LIBSBX_GRAPHICS_BUFFER_PUSH_HANDLER_HPP_
+#endif // LIBSBX_GRAPHICS_BUFFERS_PUSH_HANDLER_HPP_

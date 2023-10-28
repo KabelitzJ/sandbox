@@ -1,11 +1,11 @@
-#ifndef LIBSBX_GRAPHICS_BUFFER_STORAGE_BUFFER_HPP_
-#define LIBSBX_GRAPHICS_BUFFER_STORAGE_BUFFER_HPP_
+#ifndef LIBSBX_GRAPHICS_BUFFERS_STORAGE_BUFFER_HPP_
+#define LIBSBX_GRAPHICS_BUFFERS_STORAGE_BUFFER_HPP_
 
 #include <libsbx/memory/observer_ptr.hpp>
 
 #include <libsbx/graphics/descriptor/descriptor.hpp>
 
-#include <libsbx/graphics/buffer/buffer.hpp>
+#include <libsbx/graphics/buffers/buffer.hpp>
 
 namespace sbx::graphics {
 
@@ -33,5 +33,5 @@ private:
 
 } // namespace sbx::graphics
 
-#endif // LIBSBX_GRAPHICS_BUFFER_STORAGE_BUFFER_HPP_
+#endif // LIBSBX_GRAPHICS_BUFFERS_STORAGE_BUFFER_HPP_
 

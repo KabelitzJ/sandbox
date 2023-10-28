@@ -6,7 +6,7 @@
 
 #include <libsbx/graphics/graphics_module.hpp>
 
-#include <libsbx/graphics/buffer/buffer.hpp>
+#include <libsbx/graphics/buffers/buffer.hpp>
 
 #include <libsbx/graphics/pipeline/vertex_input_description.hpp>
 

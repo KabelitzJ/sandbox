@@ -1,4 +1,4 @@
-#include <libsbx/graphics/buffer/uniform_handler.hpp>
+#include <libsbx/graphics/buffers/uniform_handler.hpp>
 
 #include <libsbx/core/engine.hpp>
 
