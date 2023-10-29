@@ -129,7 +129,7 @@ entities:
   - name: "BackWall"
     components:
       - type: "Transform"
-        position: { x: 0.0, y: 0.0, z: -15.0 }
+        position: { x: 0.0, y: 15.0, z: -15.0 }
         rotation: { x: 0.0, y: 0.0, z: 0.0 }
         scale: { x: 30.0, y: 30.0, z: 0.1 }
       - type: "StaticMesh"
@@ -138,7 +138,7 @@ entities:
   - name: "FrontWall"
     components:
       - type: "Transform"
-        position: { x: 0.0, y: 0.0, z: 15.0 }
+        position: { x: 0.0, y: 15.0, z: 15.0 }
         rotation: { x: 0.0, y: 0.0, z: 0.0 }
         scale: { x: 30.0, y: 30.0, z: 0.1 }
       - type: "StaticMesh"
@@ -147,7 +147,7 @@ entities:
   - name: "LeftWall"
     components:
       - type: "Transform"
-        position: { x: -15.0, y: 0.0, z: 0.0 }
+        position: { x: -15.0, y: 15.0, z: 0.0 }
         rotation: { x: 0.0, y: 0.0, z: 0.0 }
         scale: { x: 0.1, y: 30.0, z: 30.0 }
       - type: "StaticMesh"
@@ -156,7 +156,7 @@ entities:
   - name: "RightWall"
     components:
       - type: "Transform"
-        position: { x: 15.0, y: 0.0, z: 0.0 }
+        position: { x: 15.0, y: 15.0, z: 0.0 }
         rotation: { x: 0.0, y: 0.0, z: 0.0 }
         scale: { x: 0.1, y: 30.0, z: 30.0 }
       - type: "StaticMesh"

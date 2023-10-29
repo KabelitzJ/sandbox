@@ -160,6 +160,7 @@ auto script::_create_input_bindings(sol::table& library) -> void {
     "minus", devices::key::minus,
     "period", devices::key::period,
     "slash", devices::key::slash,
+    "left_shift", devices::key::left_shift,
     "up", devices::key::up,
     "down", devices::key::down,
     "left", devices::key::left,

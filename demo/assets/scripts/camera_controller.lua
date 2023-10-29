@@ -1,6 +1,7 @@
 transform = sbx.transform.new();
 
 move_speed = 5.0;
+sprint_multiplier = 2.5;
 rotation_speed = 120.0;
 
 local y_rotation = 0.0;
@@ -53,7 +54,13 @@ function on_update()
     move_direction = move_direction + transform:right();
   end
 
-  transform:move_by(move_direction:normalize() * move_speed * delta_time);
+  local speed = move_speed;
+
+  if (sbx.input.is_key_down(sbx.key.left_shift)) then
+    speed = speed * sprint_multiplier;
+  end
+
+  transform:move_by(move_direction:normalize() * speed * delta_time);
 
   -- Reset
 
