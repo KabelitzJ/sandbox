@@ -55,6 +55,8 @@ class libsbx_recipe(ConanFile):
     "libsbx-signals/*",
     "libsbx-assets/*",
     "libsbx-models/*",
+    "libsbx-shadows/*",
+    "libsbx-physics/*",
     "demo/*"
   )
 
