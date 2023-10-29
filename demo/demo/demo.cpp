@@ -83,6 +83,7 @@ public:
     auto default_id = assets_module.load_asset<sbx::graphics::image2d>("res://textures/default.png");
     auto grid_id = assets_module.load_asset<sbx::graphics::image2d>("res://textures/grid.png");
     auto prototype_black_id = assets_module.load_asset<sbx::graphics::image2d>("res://textures/prototype_black.png");
+    auto white_id = assets_module.load_asset<sbx::graphics::image2d>("res://textures/white.png");
 
     _texture_id = base_id;
 

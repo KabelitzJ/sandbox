@@ -1,5 +1,7 @@
 #include <libsbx/scenes/components/script.hpp>
 
+#include <cmath>
+
 #include <libsbx/core/logger.hpp>
 #include <libsbx/core/engine.hpp>
 
@@ -54,6 +56,7 @@ auto script::_create_bindings() -> void {
   _create_vector3_bindings(library);
   _create_transform_bindings(library);
   _create_input_bindings(library);
+  _create_math_bindings(library);
 }
 
 auto script::_create_logger_bindings(sol::table& library) -> void {
@@ -175,6 +178,20 @@ auto script::_create_input_bindings(sol::table& library) -> void {
   input_type.set_function("is_key_pressed", &devices::input::is_key_pressed);
   input_type.set_function("is_key_released", &devices::input::is_key_released);
   input_type.set_function("is_key_down", &devices::input::is_key_down);
+}
+
+auto script::_create_math_bindings(sol::table& library) -> void {
+  library.set_function("sin", sol::overload(
+    [](std::float_t value) { return std::sin(value); }
+  ));
+
+  library.set_function("cos", sol::overload(
+    [](std::float_t value) { return std::cos(value); }
+  ));
+
+  library.set_function("tan", sol::overload(
+    [](std::float_t value) { return std::tan(value); }
+  ));
 }
 
 } // namespace sbx::scenes

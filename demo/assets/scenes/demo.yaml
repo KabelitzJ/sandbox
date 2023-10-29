@@ -3,6 +3,7 @@ assets:
   textures: 
     - &prototype_black "res://textures/prototype_black.png"
     - &base "res://textures/base.png"
+    - &white "res://textures/white.png"
   meshes:
     - &cube "res://meshes/cube.obj"
     - &suzanne "res://meshes/suzanne.obj"
@@ -34,11 +35,11 @@ entities:
         parameters:
           - name: "speed"
             type: "number"
-            value: 120.0
+            value: 0.0
   - name: "Light1"
     components:
       - type: "Transform"
-        position: { x: 3.0, y: 5.0, z: 0.0 }
+        position: { x: 3.0, y: 3.0, z: 0.0 }
         rotation: { x: 0.0, y: 0.0, z: 0.0 }
         scale: { x: 0.2, y: 0.2, z: 0.2 }
       - type: "PointLight"
@@ -46,17 +47,20 @@ entities:
         radius: 5.0
       - type: "StaticMesh"
         mesh: *sphere
-        texture: *prototype_black
+        texture: *white
       - type: "Script"
         script: "res://scripts/orbit.lua"
         parameters:
           - name: "speed"
             type: "number"
-            value: 1.0
+            value: 90.0
+          - name: "center"
+            type: "vector3"
+            value: { x: 0.0, y: 5.0, z: 0.0 }
   - name: "Light2"
     components:
       - type: "Transform"
-        position: { x: 0.0, y: 5.0, z: 3.0 }
+        position: { x: -1.5, y: 3.0, z: 2.6 }
         rotation: { x: 0.0, y: 0.0, z: 0.0 }
         scale: { x: 0.2, y: 0.2, z: 0.2 }
       - type: "PointLight"
@@ -64,13 +68,23 @@ entities:
         radius: 5.0
       - type: "StaticMesh"
         mesh: *sphere
-        texture: *prototype_black
+        texture: *white
       - type: "Script"
         script: "res://scripts/orbit.lua"
+        parameters:
+          - name: "speed"
+            type: "number"
+            value: 90.0
+          - name: "center"
+            type: "vector3"
+            value: { x: 0.0, y: 5.0, z: 0.0 }
+          - name: "angle_degrees"
+            type: "number"
+            value: 120.0
   - name: "Light3"
     components:
       - type: "Transform"
-        position: { x: -3.0, y: 5.0, z: 0.0 }
+        position: { x: -1.5, y: 3.0, z: -2.6 }
         rotation: { x: 0.0, y: 0.0, z: 0.0 }
         scale: { x: 0.2, y: 0.2, z: 0.2 }
       - type: "PointLight"
@@ -78,9 +92,19 @@ entities:
         radius: 5.0
       - type: "StaticMesh"
         mesh: *sphere
-        texture: *prototype_black
+        texture: *white
       - type: "Script"
         script: "res://scripts/orbit.lua"
+        parameters:
+          - name: "speed"
+            type: "number"
+            value: 90.0
+          - name: "center"
+            type: "vector3"
+            value: { x: 0.0, y: 5.0, z: 0.0 }
+          - name: "angle_degrees"
+            type: "number"
+            value: 240.0
   - name: "Floor"
     components:
       - type: "Transform"

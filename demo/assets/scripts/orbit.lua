@@ -1,10 +1,11 @@
 transform = sbx.transform.new();
 
+center = sbx.vector3.new();
 speed = 0.0;
 angle_degrees = 0.0;
 
 function on_create()
-  speed = 1.0;
+
 end
 
 function on_update()
@@ -12,16 +13,16 @@ function on_update()
 
   local angle_radians = angle_degrees * math.pi / 180.0;
 
-  local cos_theta = math.cos(angle_radians);
-  local sin_theta = math.sin(angle_radians);
-  
-  local rotated = sbx.vector3.new();
+  local sin_angle = sbx.sin(angle_radians);
+  local cos_angle = sbx.cos(angle_radians);
 
-  rotated.x = cos_theta * transform:position().x - sin_theta * transform:position().z;
-  rotated.y = transform:position().y;
-  rotated.z = sin_theta * transform:position().x + cos_theta * transform:position().z;
+  local new_position = sbx.vector3.new();
 
-  transform:set_position(rotated);
+  new_position.x = center.x + cos_angle * 3.0;
+  new_position.y = center.y;
+  new_position.z = center.z + sin_angle * 3.0;
 
-  angle_degrees = (angle_degrees + speed * delta_time) % 360.0;
+  transform:set_position(new_position);
+
+  angle_degrees = angle_degrees + speed * delta_time;
 end
