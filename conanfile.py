@@ -33,7 +33,8 @@ class libsbx_recipe(ConanFile):
     "shared": False,
     "fPIC": True,
     "build_demo": True,
-    "build_tests": True
+    "build_tests": True,
+    "gtest/*:no_main": True
   }
 
   # Source directories
@@ -83,21 +84,21 @@ class libsbx_recipe(ConanFile):
     self.folders.generators = os.path.join(self.folders.build, "dependencies")
 
   def requirements(self):
-    self.requires("fmt/10.0.0")
-    self.requires("spdlog/1.11.0")
-    self.requires("yaml-cpp/0.7.0")
-    self.requires("glfw/3.3.8")
-    self.requires("sol2/3.3.1")
-    self.requires("tinyobjloader/2.0.0-rc10")
-    self.requires("spirv-cross/1.3.243.0")
-    self.requires("spirv-headers/1.5.4")
-    self.requires("stb/cci.20220909")
-    self.requires("range-v3/0.12.0")
-    self.requires("freetype/2.13.0")
-    self.requires("gtest/1.14.0")
-    self.requires("openal-soft/1.22.2")
-    self.requires("drwav/0.13.12")
-    self.requires("drmp3/0.6.34")
+    self.requires("fmt/10.0.0", headers=True, libs=True, transitive_headers=True, transitive_libs=True)
+    self.requires("spdlog/1.11.0", headers=True, libs=True, transitive_headers=True, transitive_libs=True)
+    self.requires("yaml-cpp/0.7.0", headers=True, libs=True, transitive_headers=True, transitive_libs=True)
+    self.requires("glfw/3.3.8", headers=True, libs=True, transitive_headers=True, transitive_libs=True)
+    self.requires("sol2/3.3.1", headers=True, libs=True, transitive_headers=True, transitive_libs=True)
+    self.requires("tinyobjloader/2.0.0-rc10", headers=True, libs=True, transitive_headers=True, transitive_libs=True)
+    self.requires("spirv-cross/1.3.243.0", headers=True, libs=True, transitive_headers=True, transitive_libs=True)
+    self.requires("spirv-headers/1.5.4", headers=True, libs=True, transitive_headers=True, transitive_libs=True)
+    self.requires("stb/cci.20220909", headers=True, libs=True, transitive_headers=True, transitive_libs=True)
+    self.requires("range-v3/0.12.0", headers=True, libs=True, transitive_headers=True, transitive_libs=True)
+    self.requires("freetype/2.13.0", headers=True, libs=True, transitive_headers=True, transitive_libs=True)
+    self.requires("gtest/1.14.0", headers=True, libs=True, transitive_headers=True, transitive_libs=True)
+    self.requires("openal-soft/1.22.2", headers=True, libs=True, transitive_headers=True, transitive_libs=True)
+    self.requires("drwav/0.13.12", headers=True, libs=True, transitive_headers=True, transitive_libs=True)
+    self.requires("drmp3/0.6.34", headers=True, libs=True, transitive_headers=True, transitive_libs=True)
 
   def generate(self):
     deps = CMakeDeps(self)
@@ -123,7 +124,5 @@ class libsbx_recipe(ConanFile):
     cmake.install()
 
   def package_info(self):
-    self.cpp_info.includedirs = [
-      "aaaaaaaaa"
-    ]
-    self.cpp_info.libdirs = ["build/release/lib"]
+    self.cpp_info.components["core"].libs = ["core"]
+    self.cpp_info.components["core"].includedirs = ["include"]
