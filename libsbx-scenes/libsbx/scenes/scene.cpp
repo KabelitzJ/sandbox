@@ -124,9 +124,39 @@ scene::scene(const std::filesystem::path& path)
 
         _camera = entity;
       } else if (component_type == "Script") {
+        // [NOTE] KAJ 2023-10-29 : Remove any existing script component. We currently only support one script per entity
+        entity.remove_component<scenes::script>();
+
         const auto path = component_node["script"].as<std::string>();
 
-        _add_or_update_component<scenes::script>(entity, path);
+        auto& script = entity.add_component<scenes::script>(path);
+
+        if (const auto parameters = component_node["parameters"]; parameters) {
+          for (const auto& parameter : parameters) {
+            const auto name = parameter["name"].as<std::string>();
+            const auto type = parameter["type"].as<std::string>();
+
+            if (type == "number") {
+              const auto value = parameter["value"].as<std::float_t>();
+
+              script.set(name, value);
+            } else if (type == "vector3") {
+              const auto value = parameter["value"].as<math::vector3>();
+
+              script.set(name, value);
+            } else if (type == "color") {
+              const auto value = parameter["value"].as<math::color>();
+
+              script.set(name, value);
+            } else if (type == "string") {
+              const auto value = parameter["value"].as<std::string>();
+
+              script.set(name, value);
+            } else {
+              core::logger::warn("Unknown parameter type: {}", type);
+            }
+          }
+        }
       } else if (component_type == "PointLight") {
         const auto color = component_node["color"].as<math::color>();
         const auto radius = component_node["radius"].as<std::float_t>();

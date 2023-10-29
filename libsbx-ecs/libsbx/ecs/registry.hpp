@@ -218,7 +218,7 @@ public:
 
   template<typename Component>
   auto remove_component(const entity_type& entity) -> bool {
-    if (const auto storage = _try_get_storage<std::remove_const_t<Component>>(); storage) {
+    if (auto storage = _try_get_storage<std::remove_const_t<Component>>(); storage) {
       return storage->remove(entity);
     }
 
