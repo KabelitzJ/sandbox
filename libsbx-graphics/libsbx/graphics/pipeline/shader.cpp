@@ -82,7 +82,7 @@ auto shader::_create_reflection(const spirv_cross::Compiler& compiler) -> void {
       const auto member_size = compiler.get_declared_struct_member_size(type, i);
       const auto member_data_type = _get_data_type(member_type);
 
-      core::logger::debug("  binding: {}\toffset: {}\tsize: {}\tdata_type: {}", member_binding, member_offset, member_size, _data_type_to_string(member_data_type));
+      core::logger::debug("  binding: {}\toffset: {}\tsize: {}{}\tdata_type: {}", member_binding, member_offset, member_size, member_size < 10 ? "\t" : "", _data_type_to_string(member_data_type));
 
       uniforms.insert({member_name, uniform{member_binding, member_offset, member_size, member_data_type, false, false, _stage}});
     }
@@ -113,7 +113,7 @@ auto shader::_create_reflection(const spirv_cross::Compiler& compiler) -> void {
       const auto member_size = compiler.get_declared_struct_member_size(type, i);
       const auto member_data_type = _get_data_type(member_type);
 
-      core::logger::debug("  binding: {}\toffset: {}\tsize: {}\tdata_type: {}", member_binding, member_offset, member_size, _data_type_to_string(member_data_type));
+      core::logger::debug("  binding: {}\toffset: {}\tsize: {}{}\tdata_type: {}", member_binding, member_offset, member_size, member_size < 10 ? "\t" : "", _data_type_to_string(member_data_type));
 
       uniforms.insert({member_name, uniform{member_binding, member_offset, member_size, member_data_type, false, false, _stage}});
     }

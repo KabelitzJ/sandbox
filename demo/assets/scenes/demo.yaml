@@ -108,6 +108,15 @@ entities:
           - name: "angle_degrees"
             type: "number"
             value: 240.0
+  - name: "Light4"
+    components:
+      - type: "Transform"
+        position: { x: 0.0, y: 5.0, z: 0.0 }
+        rotation: { x: 0.0, y: 0.0, z: 0.0 }
+        scale: { x: 1.0, y: 1.0, z: 1.0 }
+      - type: "PointLight"
+        color: { r: 1.0, g: 1.0, b: 1.0, a: 1.0 }
+        radius: 15.0
   - name: "Floor"
     components:
       - type: "Transform"
