@@ -25,12 +25,14 @@ target_sources(
     "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/loaders/wave_loader.cpp"
     "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/loaders/mp3_loader.cpp"
   PUBLIC
-    "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/audio.hpp"
-    "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/audio_module.hpp"
-    "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/sound_buffer.hpp"
-    "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/sound.hpp"
-    "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/loaders/wave_loader.hpp"
-    "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/loaders/mp3_loader.hpp"
+    FILE_SET HEADERS
+    FILES
+      "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/audio.hpp"
+      "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/audio_module.hpp"
+      "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/sound_buffer.hpp"
+      "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/sound.hpp"
+      "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/loaders/wave_loader.hpp"
+      "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/loaders/mp3_loader.hpp"
 )
 
 target_include_directories(
@@ -92,6 +94,21 @@ target_compile_options(
     -Wuseless-cast
     -static-libstdc++ 
     -static-libgcc
+)
+
+install(
+  TARGETS
+    ${PROJECT_NAME}
+  EXPORT
+    ${PROJECT_NAME}Targets
+  LIBRARY 
+    DESTINATION lib
+  ARCHIVE 
+    DESTINATION lib
+  RUNTIME 
+    DESTINATION bin
+  FILE_SET 
+    HEADERS 
 )
 
 

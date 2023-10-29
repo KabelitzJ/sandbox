@@ -74,7 +74,8 @@ class demo_application : public sbx::core::application {
 
 public:
 
-  demo_application() {
+  demo_application()
+  : sbx::core::application{} {
     auto& assets_module = sbx::core::engine::get_module<sbx::assets::assets_module>();
     
     assets_module.set_asset_directory("./demo/assets");

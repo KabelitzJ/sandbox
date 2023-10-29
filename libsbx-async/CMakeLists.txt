@@ -15,10 +15,12 @@ target_sources(
   PRIVATE
     "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/async.cpp"
   PUBLIC
-    "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/async.hpp"
-    "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/async_module.hpp"
-    "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/loader.hpp"
-    "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/mutex.hpp"
+    FILE_SET HEADERS
+    FILES
+      "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/async.hpp"
+      "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/async_module.hpp"
+      "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/loader.hpp"
+      "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/mutex.hpp"
 )
 
 target_include_directories(
@@ -72,6 +74,21 @@ target_compile_options(
     -Wuseless-cast
     -static-libstdc++ 
     -static-libgcc
+)
+
+install(
+  TARGETS
+    ${PROJECT_NAME}
+  EXPORT
+    ${PROJECT_NAME}Targets
+  LIBRARY 
+    DESTINATION lib
+  ARCHIVE 
+    DESTINATION lib
+  RUNTIME 
+    DESTINATION bin
+  FILE_SET 
+    HEADERS 
 )
 
 

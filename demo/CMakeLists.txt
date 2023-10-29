@@ -106,5 +106,3 @@ target_compile_options(
     -static-libstdc++ 
     -static-libgcc
 )
-
-

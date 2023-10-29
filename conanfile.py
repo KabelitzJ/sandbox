@@ -39,25 +39,29 @@ class libsbx_recipe(ConanFile):
   # Source directories
   exports_sources = (
     "CMakeLists.txt",
-    "libsbx-units/*",
-    "libsbx-utility/*",
-    "libsbx-async/*",
-    "libsbx-audio/*",
-    "libsbx-io/*",
-    "libsbx-math/*",
-    "libsbx-memory/*",
-    "libsbx-core/*",
-    "libsbx-devices/*",
-    "libsbx-graphics/*",
-    "libsbx-ecs/*",
-    "libsbx-scenes/*",
-    "libsbx-scripting/*",
-    "libsbx-signals/*",
-    "libsbx-assets/*",
-    "libsbx-models/*",
-    "libsbx-shadows/*",
-    "libsbx-physics/*",
-    "demo/*"
+    "libsbx-units/**",
+    "libsbx-utility/**",
+    "libsbx-async/**",
+    "libsbx-audio/**",
+    "libsbx-bitmaps/**",
+    "libsbx-io/**",
+    "libsbx-math/**",
+    "libsbx-memory/**",
+    "libsbx-core/**",
+    "libsbx-devices/**",
+    "libsbx-graphics/**",
+    "libsbx-ecs/**",
+    "libsbx-scenes/**",
+    "libsbx-scripting/**",
+    "libsbx-signals/**",
+    "libsbx-assets/**",
+    "libsbx-models/**",
+    "libsbx-ui/**",
+    "libsbx-shadows/**",
+    "libsbx-physics/**",
+    "demo/**",
+    "scripts/**",
+    "!demo/assets/**",
   )
 
   def config_options(self):
@@ -117,3 +121,9 @@ class libsbx_recipe(ConanFile):
   def package(self):
     cmake = CMake(self)
     cmake.install()
+
+  def package_info(self):
+    self.cpp_info.includedirs = [
+      "aaaaaaaaa"
+    ]
+    self.cpp_info.libdirs = ["build/release/lib"]
