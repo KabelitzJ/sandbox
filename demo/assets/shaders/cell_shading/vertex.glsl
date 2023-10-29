@@ -18,6 +18,8 @@ layout(binding = 0) uniform uniform_scene {
 layout(push_constant) uniform uniform_object {
   mat4 model;
   mat4 normal;
+  vec4 tint;
+  int uses_lighting;
 } object;
 
 void main() {

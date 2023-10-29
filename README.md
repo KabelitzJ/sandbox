@@ -249,6 +249,7 @@ public:
 ## 📷 Screenshots
 
 ![screenshot](./images/screenshot.png)
+![dynamic_lighting](./images/dynamic_lighting.gif)
 
 ## 🤝 Contributing and bug reports
 

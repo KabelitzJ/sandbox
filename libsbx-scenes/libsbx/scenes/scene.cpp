@@ -112,7 +112,13 @@ scene::scene(const std::filesystem::path& path)
           continue;
         }
 
-        _add_or_update_component<scenes::static_mesh>(entity, *mesh_id, *texture_id);
+        auto tint = math::color{1.0f, 1.0f, 1.0f, 1.0f};
+
+        if (const auto tint_node = component_node["tint"]; tint_node) {
+          tint = tint_node.as<math::color>();
+        }
+
+        _add_or_update_component<scenes::static_mesh>(entity, *mesh_id, *texture_id, tint);
       } else if (component_type == "Camera") {
         const auto fov = component_node["fov"].as<std::float_t>();
         const auto near = component_node["near"].as<std::float_t>();

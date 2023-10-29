@@ -33,6 +33,13 @@ layout(binding = 1) buffer buffer_lights {
 layout(binding = 2) uniform sampler2D image;
 // layout(binding = 2) uniform sampler2D shadow_map;
 
+layout(push_constant) uniform uniform_object {
+  mat4 model;
+  mat4 normal;
+  vec4 tint;
+  int uses_lighting;
+} object;
+
 const material default_material = material(
   vec4(1.0, 1.0, 1.0, 1.0),
   vec4(1.0, 1.0, 1.0, 1.0),
@@ -83,9 +90,8 @@ vec4 shading(vec3 light_direction, float intensity) {
   return mix(phong_shading, cel_shading, mix_factor);
 }
 
-void main() {
- 
-  vec4 total_color = vec4(0.0, 0.0, 0.0, 1.0);
+vec4 sum_shading() {
+  vec4 shaded_color = vec4(0.0, 0.0, 0.0, 1.0);
 
   for (int i = 0; i < scene.light_count; ++i) {
     point_light current_light = lights.array[i];
@@ -102,8 +108,18 @@ void main() {
 
     float intensity = max(dot(in_normal, light_direction), 0.0);
 
-    total_color += shading(light_direction, intensity) * current_light.color * attenuation;
+    shaded_color += shading(light_direction, intensity) * current_light.color * attenuation;
   }
 
-  out_color = texture(image, in_uv) * total_color;
+  return shaded_color;
+}
+
+void main() {
+  vec4 shaded_color = vec4(1.0, 1.0, 1.0, 1.0);
+
+  if (object.uses_lighting == 1) {
+    shaded_color = sum_shading();
+  }
+
+  out_color = texture(image, in_uv) * object.tint * shaded_color;
 }

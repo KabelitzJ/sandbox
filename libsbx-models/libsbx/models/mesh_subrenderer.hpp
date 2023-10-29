@@ -152,6 +152,7 @@ private:
 
     auto& mesh = assets_module.get_asset<models::mesh>(static_mesh.mesh_id());
     auto& image = assets_module.get_asset<graphics::image2d>(static_mesh.texture_id());
+    const auto& tint = static_mesh.tint();
 
     _pipeline.bind(command_buffer);
 
@@ -165,6 +166,9 @@ private:
 
     push_handler.push("model", world_transform);
     push_handler.push("normal", math::matrix4x4::transposed(math::matrix4x4::inverted(world_transform)));
+    push_handler.push("tint", tint);
+    // [NOTE] KAJ 2023-10-29 : Meshes on light sources should not be lit
+    push_handler.push("uses_lighting", node.has_component<scenes::point_light>() ? 0 : 1);
 
     descriptor_handler.push("object", push_handler);
     descriptor_handler.push("uniform_scene", _scene_uniform_handler);

@@ -35,7 +35,7 @@ entities:
         parameters:
           - name: "speed"
             type: "number"
-            value: 0.0
+            value: 90.0
   - name: "Light1"
     components:
       - type: "Transform"
@@ -48,6 +48,7 @@ entities:
       - type: "StaticMesh"
         mesh: *sphere
         texture: *white
+        tint: { r: 1.0, g: 0.0, b: 0.0, a: 1.0 }
       - type: "Script"
         script: "res://scripts/orbit.lua"
         parameters:
@@ -69,6 +70,7 @@ entities:
       - type: "StaticMesh"
         mesh: *sphere
         texture: *white
+        tint: { r: 0.0, g: 1.0, b: 0.0, a: 1.0 }
       - type: "Script"
         script: "res://scripts/orbit.lua"
         parameters:
@@ -93,6 +95,7 @@ entities:
       - type: "StaticMesh"
         mesh: *sphere
         texture: *white
+        tint: { r: 0.0, g: 0.0, b: 1.0, a: 1.0 }
       - type: "Script"
         script: "res://scripts/orbit.lua"
         parameters:
