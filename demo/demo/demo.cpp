@@ -25,7 +25,7 @@
 #include <libsbx/scenes/scenes.hpp>
 #include <libsbx/ui/ui.hpp>
 #include <libsbx/shadows/shadows.hpp>
-#include <libsbx/physics/physics.hpp>
+// #include <libsbx/physics/physics.hpp>
 
 class demo_renderer : public sbx::graphics::renderer {
 

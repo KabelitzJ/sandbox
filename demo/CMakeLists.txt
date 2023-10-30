@@ -61,11 +61,11 @@ target_link_libraries(
     libsbx::audio
     libsbx::devices
     libsbx::graphics
-    libsbx::ui
     libsbx::models
     libsbx::scenes
+    libsbx::ui
     libsbx::shadows
-    libsbx::physics
+    # libsbx::physics
 )
 
 set_target_properties(
