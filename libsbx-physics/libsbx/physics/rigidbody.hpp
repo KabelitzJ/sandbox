@@ -13,9 +13,23 @@ public:
 
   rigidbody(std::float_t mass, bool is_static = false);
 
-  void apply_force(const math::vector3& force);
+  auto apply_force(const math::vector3& force) -> void;
 
-  void apply_impulse(const math::vector3& impulse);
+  auto velocity() const -> const math::vector3&;
+
+  auto set_velocity(const math::vector3& velocity) -> void;
+
+  auto acceleration() const -> const math::vector3&;
+
+  auto set_acceleration(const math::vector3& acceleration) -> void;
+
+  auto mass() const -> std::float_t;
+
+  auto set_mass(std::float_t mass) -> void;
+
+  auto is_static() const -> bool;
+
+  auto set_is_static(bool is_static) -> void;
 
 private:
 

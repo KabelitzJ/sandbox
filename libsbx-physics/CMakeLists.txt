@@ -16,6 +16,7 @@ target_sources(
   ${PROJECT_NAME}
   PRIVATE
     "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/physics.cpp"
+    "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/rigidbody.cpp"
   PUBLIC
     FILE_SET HEADERS
     FILES
@@ -40,6 +41,7 @@ target_link_libraries(
     libsbx::utility
     libsbx::math
     libsbx::core
+    libsbx::scenes
 )
 
 set_target_properties(
