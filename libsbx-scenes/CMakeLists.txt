@@ -51,11 +51,12 @@ target_link_libraries(
     sol2::sol2
     # Internal dependencies
     libsbx::utility
-    libsbx::core
     libsbx::math
     libsbx::ecs
     libsbx::signals
+    libsbx::core
     libsbx::assets
+    libsbx::audio
     libsbx::devices
     libsbx::graphics
 )

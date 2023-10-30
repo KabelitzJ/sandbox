@@ -61,12 +61,6 @@ public:
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
     auto& scene = scenes_module.scene();
 
-    auto script_nodes = scene.query<scenes::script>();
-
-    for (auto& node : script_nodes) {
-      _update_script(node);
-    }
-
     auto camera_node = scene.camera();
 
     auto& camera = camera_node.get_component<scenes::camera>();
@@ -124,18 +118,6 @@ public:
   }
 
 private:
-
-  auto _update_script(scenes::node& node) -> void {
-    auto& transform = node.get_component<math::transform>();
-
-    auto& script = node.get_component<scenes::script>();
-
-    script.set("transform", transform);
-
-    script.invoke("on_update");
-
-    transform = script.get<math::transform>("transform");
-  }
 
   auto _render_node(scenes::node& node, graphics::command_buffer& command_buffer) -> void {
     auto& assets_module = core::engine::get_module<assets::assets_module>();

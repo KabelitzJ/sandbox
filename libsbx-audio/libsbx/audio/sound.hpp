@@ -4,6 +4,8 @@
 #include <AL/al.h>
 #include <AL/alc.h>
 
+#include <libsbx/math/vector3.hpp>
+
 #include <libsbx/assets/asset.hpp>
 
 namespace sbx::audio {
@@ -33,6 +35,8 @@ public:
   auto set_gain(std::float_t gain) -> void;
 
   auto set_pitch(std::float_t pitch) -> void;
+
+  auto update_orientations(const math::vector3& position, const math::vector3& forward) -> void;
 
 private:
 

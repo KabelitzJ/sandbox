@@ -6,6 +6,8 @@
 #include <AL/al.h>
 #include <AL/alc.h>
 
+#include <libsbx/math/vector3.hpp>
+
 #include <libsbx/core/module.hpp>
 
 #include <libsbx/assets/assets_module.hpp>
@@ -19,7 +21,7 @@ auto check_error() -> void;
 
 class audio_module : public core::module<audio_module> {
 
-  inline static const auto is_registered = register_module(stage::pre, dependencies<assets::assets_module>{});
+  inline static const auto is_registered = register_module(stage::normal, dependencies<assets::assets_module>{});
 
 public:
 
@@ -32,6 +34,8 @@ public:
   auto set_gain(sound::type type, std::float_t gain) -> void;
 
   auto gain(sound::type type) -> std::float_t;
+
+  auto update_listener_orientation(const math::vector3& position, const math::vector3& forward) -> void;
 
 private:
 

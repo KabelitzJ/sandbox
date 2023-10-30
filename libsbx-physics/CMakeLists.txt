@@ -35,6 +35,8 @@ target_link_libraries(
     # External dependencies
     fmt::fmt
     # Internal dependencies
+    libsbx::units
+    libsbx::utility
     libsbx::math
     libsbx::core
 )

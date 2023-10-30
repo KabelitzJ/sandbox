@@ -76,4 +76,22 @@ auto sound::set_pitch(std::float_t pitch) -> void {
   check_error();
 }
 
+auto sound::update_orientations(const math::vector3& position, const math::vector3& forward) -> void {
+  alSource3f(_source, AL_POSITION, position.x, position.y, -position.z);
+
+  check_error();
+
+  alSource3f(_source, AL_VELOCITY, position.x, position.y, -position.z);
+
+  check_error();
+
+  const auto& up = math::vector3::up;
+
+  const auto sound_orientation = std::array<std::float_t, 6>{forward.x, forward.y, forward.z, up.x, up.y, up.z};
+
+  alSourcefv(_source, AL_ORIENTATION, sound_orientation.data());
+
+  check_error();
+}
+
 } // namespace sbx::audio
