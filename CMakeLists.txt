@@ -46,6 +46,7 @@ add_subdirectory(libsbx-models)
 add_subdirectory(libsbx-scenes)
 add_subdirectory(libsbx-ui)
 add_subdirectory(libsbx-shadows)
+add_subdirectory(libsbx-physics)
 
 if (${SBX_BUILD_DEMO})
   add_subdirectory(demo)

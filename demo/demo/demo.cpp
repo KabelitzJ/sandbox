@@ -25,7 +25,7 @@
 #include <libsbx/scenes/scenes.hpp>
 #include <libsbx/ui/ui.hpp>
 #include <libsbx/shadows/shadows.hpp>
-// #include <libsbx/physics/physics.hpp>
+#include <libsbx/physics/physics.hpp>
 
 class demo_renderer : public sbx::graphics::renderer {
 
@@ -121,6 +121,8 @@ public:
     auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
 
     auto& scene = scenes_module.load_scene("res://scenes/demo.yaml");
+
+    auto& physics_module = sbx::core::engine::get_module<sbx::physics::physics_module>();
 
     // [Todo] KAJ 2023-08-16 15:30 - This should probably be done automatically
     scene.start();
