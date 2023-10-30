@@ -147,13 +147,23 @@ public:
     auto& scene = scenes_module.scene();
 
     if (_flag && !_cube) {
-      _cube = scene.create_node("Cube", sbx::math::transform{sbx::math::vector3{-2.0f, 2.0f, 0.0f}, sbx::math::vector3::zero, sbx::math::vector3::one});
+      _cube = scene.create_node("Cube", sbx::math::transform{sbx::math::vector3{-5.0f, 2.0f, 0.0f}, sbx::math::vector3::zero, sbx::math::vector3::one});
       _cube->add_component<sbx::scenes::static_mesh>(_mesh_id, _texture_id);
       auto& script = _cube->add_component<sbx::scenes::script>("res://scripts/rotate.lua");
       script.set("speed", -120.0f);
     } else if (!_flag && _cube) {
       scene.destroy_node(*_cube);
       _cube.reset();
+    }
+
+    _time += sbx::units::second{sbx::core::engine::delta_time()};
+
+    if (_time >= sbx::units::second{1.0f}) {
+      sbx::core::logger::info("FPS: {}", _frames);
+      _time -= sbx::units::second{1.0f};
+      _frames = 0;
+    } else {
+      ++_frames;
     }
   }
 
@@ -163,6 +173,9 @@ private:
   sbx::assets::asset_id _mesh_id;
   sbx::assets::asset_id _texture_id;
   bool _flag = false;
+
+  sbx::units::second _time;
+  std::uint32_t _frames;
 
 }; // class demo_application
 
