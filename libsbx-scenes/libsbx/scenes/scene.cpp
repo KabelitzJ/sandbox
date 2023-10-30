@@ -13,6 +13,8 @@
 
 #include <libsbx/assets/assets_module.hpp>
 
+#include <libsbx/audio/sound.hpp>
+
 #include <libsbx/scenes/components/id.hpp>
 #include <libsbx/scenes/components/tag.hpp>
 #include <libsbx/scenes/components/relationship.hpp>
@@ -168,6 +170,19 @@ scene::scene(const std::filesystem::path& path)
         const auto radius = component_node["radius"].as<std::float_t>();
 
         _add_or_update_component<scenes::point_light>(entity, color, radius);
+      } else if (component_type == "SoundSource") {
+        const auto sound = component_node["sound"].as<std::string>();
+        const auto is_looping = component_node["is_looping"].as<bool>();
+        const auto volume = component_node["volume"].as<std::float_t>();
+
+        auto sound_id = assets_manager.try_get_asset_id(std::filesystem::path{sound});
+
+        if (!sound_id) {
+          core::logger::warn("Sound '{}' could not be found", sound);
+          continue;
+        }
+
+        _add_or_update_component<audio::sound>(entity, *sound_id, audio::sound::type::ambient, true, is_looping, volume);
       } else {
         core::logger::warn("Unknown component type: {}", component_type);
       }
