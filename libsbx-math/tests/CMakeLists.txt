@@ -10,7 +10,7 @@ find_package(GTest REQUIRED)
 target_sources(
   ${PROJECT_NAME}
   PRIVATE
-    "${PROJECT_SOURCE_DIR}/math_tests.cpp"
+    "${PROJECT_SOURCE_DIR}/tests.cpp"
 )
 
 target_include_directories(

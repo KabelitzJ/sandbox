@@ -1,26 +1,16 @@
-project(physics VERSION 0.1.0 LANGUAGES CXX)
+project(physics-tests)
 
 message(STATUS "Configuring ${PROJECT_NAME}...")
 
-if(${SBX_BUILD_SHARED})
-  add_library(${PROJECT_NAME} SHARED)
-else()
-  add_library(${PROJECT_NAME} STATIC)
-endif()
-
-add_library(${CMAKE_PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
+add_executable(${PROJECT_NAME})
 
 find_package(fmt REQUIRED)
+find_package(GTest REQUIRED)
 
 target_sources(
   ${PROJECT_NAME}
   PRIVATE
-    "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/physics.cpp"
-  PUBLIC
-    FILE_SET HEADERS
-    FILES
-      "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/physics.hpp"
-      "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/physics_module.hpp"
+    "${PROJECT_SOURCE_DIR}/tests.cpp"
 )
 
 target_include_directories(
@@ -34,9 +24,9 @@ target_link_libraries(
   PUBLIC
     # External dependencies
     fmt::fmt
+    gtest::gtest
     # Internal dependencies
-    libsbx::math
-    libsbx::core
+    libsbx::physics
 )
 
 set_target_properties(
@@ -93,6 +83,4 @@ install(
     HEADERS 
 )
 
-if(${SBX_BUILD_TESTS})
-  add_subdirectory(tests)
-endif()
+

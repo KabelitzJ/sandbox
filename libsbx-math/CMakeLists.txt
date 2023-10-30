@@ -111,8 +111,6 @@ install(
     HEADERS 
 )
 
-
-
 if(${SBX_BUILD_TESTS})
   add_subdirectory(tests)
 endif()
