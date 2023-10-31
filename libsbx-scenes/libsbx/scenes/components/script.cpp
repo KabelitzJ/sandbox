@@ -5,6 +5,7 @@
 #include <libsbx/core/logger.hpp>
 #include <libsbx/core/engine.hpp>
 
+#include <libsbx/math/vector2.hpp>
 #include <libsbx/math/vector3.hpp>
 #include <libsbx/math/transform.hpp>
 
@@ -53,6 +54,7 @@ auto script::_create_bindings() -> void {
   library.set_function("delta_time", [](){ return core::engine::delta_time().value(); });
 
   _create_logger_bindings(library);
+  _create_vector2_bindings(library);
   _create_vector3_bindings(library);
   _create_transform_bindings(library);
   _create_input_bindings(library);
@@ -81,6 +83,15 @@ auto script::_create_logger_bindings(sol::table& library) -> void {
     [](const std::string& message) { core::logger::error(message); },
     [](std::float_t value) { core::logger::error(value); }
   ));
+}
+
+auto script::_create_vector2_bindings(sol::table& library) -> void {
+  auto vector2_constructor = sol::constructors<math::vector2(), math::vector2(std::float_t, std::float_t)>{};
+
+  auto vector2_type = library.new_usertype<math::vector2>("vector2", vector2_constructor);
+
+  vector2_type.set("x", &math::vector2::x);
+  vector2_type.set("y", &math::vector2::y);
 }
 
 auto script::_create_vector3_bindings(sol::table& library) -> void {
@@ -179,6 +190,14 @@ auto script::_create_input_bindings(sol::table& library) -> void {
   input_type.set_function("is_key_pressed", &devices::input::is_key_pressed);
   input_type.set_function("is_key_released", &devices::input::is_key_released);
   input_type.set_function("is_key_down", &devices::input::is_key_down);
+
+  input_type.set_function("is_mouse_button_pressed", &devices::input::is_mouse_button_pressed);
+  input_type.set_function("is_mouse_button_released", &devices::input::is_mouse_button_released);
+  input_type.set_function("is_mouse_button_down", &devices::input::is_mouse_button_down);
+
+  input_type.set_function("mouse_position", &devices::input::mouse_position);
+
+  input_type.set_function("scroll_delta", &devices::input::scroll_delta);
 }
 
 auto script::_create_math_bindings(sol::table& library) -> void {

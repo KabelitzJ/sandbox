@@ -229,7 +229,29 @@ private:
         self._on_mouse_moved(mouse_moved_event{mouse_position.x - self._last_mouse_position.x, mouse_position.y - self._last_mouse_position.y});
         self._last_mouse_position = mouse_position;
       }
+
+      input::_update_mouse_position(mouse_position);
     });
+
+    glfwSetMouseButtonCallback(_handle, [](auto* window, auto button, auto action, auto mods){
+      auto& self = *static_cast<devices::window*>(glfwGetWindowUserPointer(window));
+
+      if (action == GLFW_PRESS) {
+        input::_update_mouse_button_state(static_cast<devices::mouse_button>(button), input_action::press);
+        self._on_mouse_button_pressed(mouse_button_pressed_event{static_cast<devices::mouse_button>(button), static_cast<devices::input_mod>(mods)});
+      } else if (action == GLFW_RELEASE) {
+        input::_update_mouse_button_state(static_cast<devices::mouse_button>(button), input_action::release);
+        self._on_mouse_button_released(mouse_button_released_event{static_cast<devices::mouse_button>(button), static_cast<devices::input_mod>(mods)});
+      }
+    });
+
+    glfwSetScrollCallback(_handle, [](auto* window, auto x, auto y){
+      auto& self = *static_cast<devices::window*>(glfwGetWindowUserPointer(window));
+
+      self._on_mouse_scrolled(mouse_scrolled_event{static_cast<std::float_t>(x), static_cast<std::float_t>(y)});
+
+      input::_update_scroll_delta(math::vector2{static_cast<std::float_t>(x), static_cast<std::float_t>(y)});
+    }); 
   }
 
   std::string _title{};
@@ -247,6 +269,9 @@ private:
   signals::signal<const key_pressed_event&> _on_key_pressed;
   signals::signal<const key_released_event&> _on_key_released;
   signals::signal<const mouse_moved_event&> _on_mouse_moved;
+  signals::signal<const mouse_button_pressed_event&> _on_mouse_button_pressed;
+  signals::signal<const mouse_button_released_event&> _on_mouse_button_released;
+  signals::signal<const mouse_scrolled_event&> _on_mouse_scrolled;
 
 }; // class window
 

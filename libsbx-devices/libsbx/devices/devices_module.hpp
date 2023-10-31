@@ -49,6 +49,7 @@ public:
   auto update() -> void override {
     input::_transition_pressed_keys();
     input::_transition_pressed_mouse_buttons();
+    input::_transition_scroll_delta();
     
     glfwPollEvents();
   }

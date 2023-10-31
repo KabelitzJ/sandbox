@@ -163,15 +163,30 @@ public:
       _cube.reset();
     }
 
-    _time += sbx::units::second{sbx::core::engine::delta_time()};
+    const auto& scroll = sbx::devices::input::scroll_delta();
 
-    if (_time >= sbx::units::second{1.0f}) {
-      sbx::core::logger::info("FPS: {}", _frames);
-      _time -= sbx::units::second{1.0f};
-      _frames = 0;
-    } else {
-      ++_frames;
+    auto camera_node = scene.camera();
+    auto& camera = camera_node.get_component<sbx::scenes::camera>();
+
+    auto field_of_view = camera.field_of_view().to_degrees() + scroll.y * 5.0f;
+
+    if (field_of_view > 120.0f) {
+      field_of_view = sbx::math::degree{120.0f};
+    } else if (field_of_view < 30.0f) {
+      field_of_view = sbx::math::degree{30.0f};
     }
+
+    camera.set_field_of_view(field_of_view);
+
+    // _time += sbx::units::second{sbx::core::engine::delta_time()};
+
+    // if (_time >= sbx::units::second{1.0f}) {
+    //   sbx::core::logger::info("FPS: {}", _frames);
+    //   _time -= sbx::units::second{1.0f};
+    //   _frames = 0;
+    // } else {
+    //   ++_frames;
+    // }
   }
 
 private:
@@ -181,8 +196,8 @@ private:
   sbx::assets::asset_id _texture_id;
   bool _flag = false;
 
-  sbx::units::second _time;
-  std::uint32_t _frames;
+  // sbx::units::second _time;
+  // std::uint32_t _frames;
 
 }; // class demo_application
 

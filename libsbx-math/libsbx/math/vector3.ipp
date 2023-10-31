@@ -165,11 +165,7 @@ inline constexpr auto basic_vector3<Type>::operator*=(const Other& scalar) noexc
 }
 
 template<numeric Type>
-inline constexpr auto basic_vector3<Type>::operator/=(const Type scalar) -> basic_vector3& {
-  if (scalar == static_cast<Type>(0)) {
-    throw std::domain_error{"Division by zero"};
-  }
-
+inline constexpr auto basic_vector3<Type>::operator/=(const Type scalar) noexcept -> basic_vector3& {
   x /= scalar;
   y /= scalar;
   z /= scalar;
@@ -178,11 +174,7 @@ inline constexpr auto basic_vector3<Type>::operator/=(const Type scalar) -> basi
 }
 
 template<numeric Type>
-inline constexpr auto basic_vector3<Type>::operator/=(const basic_vector3& scalar) -> basic_vector3& {
-  if (scalar.x == static_cast<Type>(0) || scalar.y == static_cast<Type>(0) || scalar.z == static_cast<Type>(0)) {
-    throw std::domain_error{"Division by zero"};
-  }
-
+inline constexpr auto basic_vector3<Type>::operator/=(const basic_vector3& scalar) noexcept -> basic_vector3& {
   x /= scalar.x;
   y /= scalar.y;
   z /= scalar.z;
@@ -192,11 +184,7 @@ inline constexpr auto basic_vector3<Type>::operator/=(const basic_vector3& scala
 
 template<numeric Type>
 template<numeric Other>
-inline constexpr auto basic_vector3<Type>::operator/=(const Other& scalar) -> basic_vector3& {
-  if (scalar == static_cast<Other>(0)) {
-    throw std::domain_error{"Division by zero"};
-  }
-
+inline constexpr auto basic_vector3<Type>::operator/=(const Other& scalar) noexcept -> basic_vector3& {
   x /= static_cast<value_type>(scalar);
   y /= static_cast<value_type>(scalar);
   z /= static_cast<value_type>(scalar);
@@ -324,17 +312,17 @@ inline constexpr basic_vector3<Type> operator*(basic_vector3<Type> lhs, const Ot
 }
 
 template<numeric Type>
-inline constexpr basic_vector3<Type> operator/(basic_vector3<Type> lhs, const Type rhs) {
+inline constexpr basic_vector3<Type> operator/(basic_vector3<Type> lhs, const Type rhs) noexcept {
   return lhs /= rhs;
 }
 
 template<numeric Type>
-inline constexpr basic_vector3<Type> operator/(basic_vector3<Type> lhs, const basic_vector3<Type>& rhs) {
+inline constexpr basic_vector3<Type> operator/(basic_vector3<Type> lhs, const basic_vector3<Type>& rhs) noexcept {
   return lhs /= rhs;
 }
 
 template<numeric Type, numeric Other>
-inline constexpr basic_vector3<Type> operator/(basic_vector3<Type> lhs, const Other rhs) {
+inline constexpr basic_vector3<Type> operator/(basic_vector3<Type> lhs, const Other rhs) noexcept {
   return lhs /= rhs;
 }
 

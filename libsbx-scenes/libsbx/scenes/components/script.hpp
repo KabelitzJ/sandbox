@@ -46,6 +46,8 @@ private:
 
   auto _create_logger_bindings(sol::table& library) -> void;
 
+  auto _create_vector2_bindings(sol::table& library) -> void;
+
   auto _create_vector3_bindings(sol::table& library) -> void;
 
   auto _create_transform_bindings(sol::table& library) -> void;
