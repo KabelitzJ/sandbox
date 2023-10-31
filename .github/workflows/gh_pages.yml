@@ -41,6 +41,9 @@ jobs:
       # Copy images
       - name: Copy images
         run: sudo cp -r './images' './docs/html/images'
+      # Copy license
+      - name: Copy license
+        run: sudo cp './LICENSE' './docs/html/LICENSE'
       # Setup Pages
       - name: Setup Pages
         uses: actions/configure-pages@v3

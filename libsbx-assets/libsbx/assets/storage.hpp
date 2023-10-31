@@ -20,7 +20,7 @@ struct storage_base {
 template<typename Type>
 class storage : public storage_base {
 
-  using storage_type = std::unordered_map<asset_id, std::unique_ptr<Type>>;
+  using storage_type = std::unordered_map<asset_id, Type>;
 
 public:
 
@@ -36,8 +36,16 @@ public:
     clear();
   }
 
-  auto insert(const asset_id id, std::unique_ptr<Type>&& value) -> reference {
-    auto entry = _storage.insert({id, std::move(value)});
+  template<typename... Args>
+  requires (std::is_constructible_v<Type, Args...>)
+  auto insert(const asset_id id, Args&&... args) -> reference {
+    auto entry = _storage.insert({id, Type{std::forward<Args>(args)...}});
+
+    return *entry.first->second;
+  }
+
+  auto insert(const asset_id id, Type&& value) -> reference {
+    auto entry = _storage.insert({id, std::forward<Type>(value)});
 
     return *entry.first->second;
   }

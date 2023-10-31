@@ -264,7 +264,7 @@ If you find any bugs or have any suggestions, feel free to open an issue.
 
 ## 🔒 License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License. See the [LICENSE](./LICENSE) file for details.
 
 Feel free to use this project for your own purposes. If you do you may send me a message, I would love to see what you have created with this project.
 
