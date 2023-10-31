@@ -47,7 +47,7 @@ jobs:
       - name: Setup Doxygen Awesome
         run: |
           sudo git submodule add https://github.com/jothepro/doxygen-awesome-css.git
-          sudo cd doxygen-awesome-css
+          cd doxygen-awesome-css
           sudo git checkout v2.2.1
           sudo make install
       # Setup Pages
