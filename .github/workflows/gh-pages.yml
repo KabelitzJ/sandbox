@@ -35,7 +35,11 @@ jobs:
         uses: mattnotmitt/doxygen-action@v1.9.5
         with:
           working-directory: './'
-          doxyfile-path: 'docs/Doxyfile'
+          doxyfile-path: './docs/Doxyfile'
+      - name: Copy images
+        run: |
+          mkdir -p './docs/html/images'
+          cp -r './images' './docs/html/images'
       - name: Setup Pages
         uses: actions/configure-pages@v3
       - name: Upload artifact
