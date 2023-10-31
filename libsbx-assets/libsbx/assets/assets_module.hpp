@@ -46,9 +46,9 @@ public:
 
     auto& storage = _get_or_create_storage<Asset>(Asset::type);
 
-    auto asset = Asset{actual_path, std::forward<Args>(args)...};
+    auto asset = std::make_unique<Asset>(actual_path, std::forward<Args>(args)...);
 
-    const auto id = asset.id();
+    const auto id = asset->id();
 
     _metadata.insert({actual_path, asset_metadata{id}});
 
@@ -62,7 +62,7 @@ public:
   [[nodiscard]] auto get_asset(const asset_id id) -> Asset& {
     if (auto storage = _try_get_storage<Asset>(Asset::type); storage) {
       if (auto entry = storage->find(id); entry != storage->end()) {
-        return entry->second;
+        return *entry->second;
       }
     }
 
