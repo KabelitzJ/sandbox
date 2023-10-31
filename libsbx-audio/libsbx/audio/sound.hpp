@@ -36,8 +36,6 @@ public:
 
   auto set_pitch(std::float_t pitch) -> void;
 
-  auto update_orientations(const math::vector3& position, const math::vector3& forward) -> void;
-
 private:
 
   assets::asset_id _sound_buffer_id;

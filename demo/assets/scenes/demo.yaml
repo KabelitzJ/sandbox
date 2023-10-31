@@ -1,4 +1,4 @@
-name: "Demo"
+name: "demo"
 assets:
   textures: 
     - &prototype_black "res://textures/prototype_black.png"
@@ -12,51 +12,51 @@ assets:
     - &forest "res://audio/forest.wav"
     - &ambience "res://audio/ambience.wav"
 entities:
-  - name: "Player"
+  - name: "player"
     components:
-      - type: "Transform"
+      - type: "transform"
         position: { x: 0.0, y: 2.0, z: 5.0 }
         rotation: { x: 0.0, y: 0.0, z: 0.0 }
         scale: { x: 1.0, y: 1.0, z: 1.0 }
-      - type: "Camera"
+      - type: "camera"
         fov: 45.0
         near: 0.1
         far: 100.0
-      - type: "Script"
+      - type: "script"
         script: "res://scripts/camera_controller.lua"
-  - name: "Monkey"
+  - name: "monkey"
     components:
-      - type: "Transform"
+      - type: "transform"
         position: { x: 0.0, y: 2.0, z: 0.0 }
         rotation: { x: 0.0, y: 0.0, z: 0.0 }
         scale: { x: 1.0, y: 1.0, z: 1.0 }
-      - type: "StaticMesh"
+      - type: "static_mesh"
         mesh: *suzanne
         texture: *base
-      - type: SoundSource
+      - type: sound_source
         sound: *forest
         is_looping: true
         volume: 5.0
-      - type: "Script"
+      - type: "script"
         script: "res://scripts/rotate.lua"
         parameters:
           - name: "speed"
             type: "number"
             value: 90.0
-  - name: "Light1"
+  - name: "light1"
     components:
-      - type: "Transform"
+      - type: "transform"
         position: { x: 3.0, y: 3.0, z: 0.0 }
         rotation: { x: 0.0, y: 0.0, z: 0.0 }
         scale: { x: 0.2, y: 0.2, z: 0.2 }
-      - type: "PointLight"
+      - type: "point_light"
         color: { r: 1.0, g: 0.0, b: 0.0, a: 1.0 }
         radius: 5.0
-      - type: "StaticMesh"
+      - type: "static_mesh"
         mesh: *sphere
         texture: *white
         tint: { r: 1.0, g: 0.0, b: 0.0, a: 1.0 }
-      - type: "Script"
+      - type: "script"
         script: "res://scripts/orbit.lua"
         parameters:
           - name: "speed"
@@ -65,20 +65,20 @@ entities:
           - name: "center"
             type: "vector3"
             value: { x: 0.0, y: 5.0, z: 0.0 }
-  - name: "Light2"
+  - name: "light2"
     components:
-      - type: "Transform"
+      - type: "transform"
         position: { x: -1.5, y: 3.0, z: 2.6 }
         rotation: { x: 0.0, y: 0.0, z: 0.0 }
         scale: { x: 0.2, y: 0.2, z: 0.2 }
-      - type: "PointLight"
+      - type: "point_light"
         color: { r: 0.0, g: 1.0, b: 0.0, a: 1.0 }
         radius: 5.0
-      - type: "StaticMesh"
+      - type: "static_mesh"
         mesh: *sphere
         texture: *white
         tint: { r: 0.0, g: 1.0, b: 0.0, a: 1.0 }
-      - type: "Script"
+      - type: "script"
         script: "res://scripts/orbit.lua"
         parameters:
           - name: "speed"
@@ -90,20 +90,20 @@ entities:
           - name: "angle_degrees"
             type: "number"
             value: 120.0
-  - name: "Light3"
+  - name: "light3"
     components:
-      - type: "Transform"
+      - type: "transform"
         position: { x: -1.5, y: 3.0, z: -2.6 }
         rotation: { x: 0.0, y: 0.0, z: 0.0 }
         scale: { x: 0.2, y: 0.2, z: 0.2 }
-      - type: "PointLight"
+      - type: "point_light"
         color: { r: 0.0, g: 0.0, b: 1.0, a: 1.0 }
         radius: 5.0
-      - type: "StaticMesh"
+      - type: "static_mesh"
         mesh: *sphere
         texture: *white
         tint: { r: 0.0, g: 0.0, b: 1.0, a: 1.0 }
-      - type: "Script"
+      - type: "script"
         script: "res://scripts/orbit.lua"
         parameters:
           - name: "speed"
@@ -115,66 +115,71 @@ entities:
           - name: "angle_degrees"
             type: "number"
             value: 240.0
-  - name: "Light4"
+  - name: "light4"
     components:
-      - type: "Transform"
+      - type: "transform"
         position: { x: 0.0, y: 5.0, z: 0.0 }
         rotation: { x: 0.0, y: 0.0, z: 0.0 }
         scale: { x: 1.0, y: 1.0, z: 1.0 }
-      - type: "PointLight"
+      - type: "point_light"
         color: { r: 1.0, g: 1.0, b: 1.0, a: 1.0 }
         radius: 15.0
-  - name: "Floor"
+  - name: "floor"
     components:
-      - type: "Transform"
+      - type: "transform"
         position: { x: 0.0, y: 0.0, z: 0.0 }
         rotation: { x: 0.0, y: 0.0, z: 0.0 }
         scale: { x: 30.0, y: 0.1, z: 30.0 }
-      - type: "StaticMesh"
+      - type: "static_mesh"
         mesh: *cube
         texture: *prototype_black
-  - name: "BackWall"
+      - type: "rigidbody"
+        mass: 0.0
+        is_static: true
+      - type: "box_collider"
+        size: { x: 30.0, y: 0.1, z: 30.0 }
+  - name: "back_wall"
     components:
-      - type: "Transform"
+      - type: "transform"
         position: { x: 0.0, y: 15.0, z: -15.0 }
         rotation: { x: 0.0, y: 0.0, z: 0.0 }
         scale: { x: 30.0, y: 30.0, z: 0.1 }
-      - type: "StaticMesh"
+      - type: "static_mesh"
         mesh: *cube
         texture: *prototype_black
-  - name: "FrontWall"
+  - name: "front_wall"
     components:
-      - type: "Transform"
+      - type: "transform"
         position: { x: 0.0, y: 15.0, z: 15.0 }
         rotation: { x: 0.0, y: 0.0, z: 0.0 }
         scale: { x: 30.0, y: 30.0, z: 0.1 }
-      - type: "StaticMesh"
+      - type: "static_mesh"
         mesh: *cube
         texture: *prototype_black
-  - name: "LeftWall"
+  - name: "left_wall"
     components:
-      - type: "Transform"
+      - type: "transform"
         position: { x: -15.0, y: 15.0, z: 0.0 }
         rotation: { x: 0.0, y: 0.0, z: 0.0 }
         scale: { x: 0.1, y: 30.0, z: 30.0 }
-      - type: "StaticMesh"
+      - type: "static_mesh"
         mesh: *cube
         texture: *prototype_black
-  - name: "RightWall"
+  - name: "right_wall"
     components:
-      - type: "Transform"
+      - type: "transform"
         position: { x: 15.0, y: 15.0, z: 0.0 }
         rotation: { x: 0.0, y: 0.0, z: 0.0 }
         scale: { x: 0.1, y: 30.0, z: 30.0 }
-      - type: "StaticMesh"
+      - type: "static_mesh"
         mesh: *cube
         texture: *prototype_black
-  - name: "Ceiling"
+  - name: "ceiling"
     components:
-      - type: "Transform"
+      - type: "transform"
         position: { x: 0.0, y: 15.0, z: 0.0 }
         rotation: { x: 0.0, y: 0.0, z: 0.0 }
         scale: { x: 30.0, y: 0.1, z: 30.0 }
-      - type: "StaticMesh"
+      - type: "static_mesh"
         mesh: *cube
         texture: *prototype_black

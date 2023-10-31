@@ -45,6 +45,10 @@ public:
     _registry->remove_component<Component>(_entity);
   }
 
+  friend auto operator==(const node& lhs, const node& rhs) -> bool {
+    return lhs._registry == rhs._registry && lhs._entity == rhs._entity;
+  }
+
 private:
 
   node(memory::observer_ptr<ecs::registry> registry, ecs::entity entity)

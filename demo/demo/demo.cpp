@@ -147,10 +147,17 @@ public:
     auto& scene = scenes_module.scene();
 
     if (_flag && !_cube) {
-      _cube = scene.create_node("Cube", sbx::math::transform{sbx::math::vector3{-5.0f, 2.0f, 0.0f}, sbx::math::vector3::zero, sbx::math::vector3::one});
+      _cube = scene.create_node("Cube", sbx::math::transform{sbx::math::vector3{-5.0f, 10.0f, 0.0f}, sbx::math::vector3::zero, sbx::math::vector3::one});
+
       _cube->add_component<sbx::scenes::static_mesh>(_mesh_id, _texture_id);
+
       auto& script = _cube->add_component<sbx::scenes::script>("res://scripts/rotate.lua");
       script.set("speed", -120.0f);
+
+      auto& rigidbody = _cube->add_component<sbx::physics::rigidbody>(1.0f, false);
+      rigidbody.set_acceleration(sbx::math::vector3{0.0f, -9.81f, 0.0f});
+
+      _cube->add_component<sbx::physics::box_collider>(sbx::math::vector3{1.0f, 1.0f, 1.0f});
     } else if (!_flag && _cube) {
       scene.destroy_node(*_cube);
       _cube.reset();

@@ -56,7 +56,6 @@ target_link_libraries(
     libsbx::signals
     libsbx::core
     libsbx::assets
-    libsbx::audio
     libsbx::devices
     libsbx::graphics
 )
