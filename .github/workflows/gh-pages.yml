@@ -40,9 +40,7 @@ jobs:
           doxyfile-path: './docs/Doxyfile'
       # Copy images
       - name: Copy images
-        run: |
-          sudo mkdir -p './docs/html/images'
-          sudo cp -r './images' './docs/html/images'
+        run: sudo cp -r './images' './docs/html/images'
       # Setup Pages
       - name: Setup Pages
         uses: actions/configure-pages@v3
