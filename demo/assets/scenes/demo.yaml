@@ -43,7 +43,7 @@ entities:
         parameters:
           - name: "speed"
             type: "number"
-            value: 90.0
+            value: 45.0
   - name: "light1"
     components:
       - type: "transform"
@@ -119,7 +119,7 @@ entities:
   - name: "light4"
     components:
       - type: "transform"
-        position: { x: 0.0, y: 5.0, z: 0.0 }
+        position: { x: 3.0, y: 5.0, z: 3.0 }
         rotation: { x: 0.0, y: 0.0, z: 0.0 }
         scale: { x: 1.0, y: 1.0, z: 1.0 }
       - type: "point_light"
