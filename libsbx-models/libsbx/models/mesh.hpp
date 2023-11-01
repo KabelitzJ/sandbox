@@ -27,10 +27,6 @@ public:
   mesh(const std::filesystem::path& path);
 
   ~mesh() override;
-  
-private:
-
-  
 
 }; // class mesh
 
