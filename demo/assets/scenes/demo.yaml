@@ -135,6 +135,7 @@ entities:
         texture: *prototype_black
       - type: "rigidbody"
         mass: 0.0
+        bounce: 0.0
         is_static: true
       - type: "box_collider"
         size: { x: 30.0, y: 0.1, z: 30.0 }

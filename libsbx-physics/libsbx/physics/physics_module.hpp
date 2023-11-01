@@ -31,9 +31,10 @@ public:
 
     scenes_module.register_loader("rigidbody", [](scenes::node& node, const YAML::Node& node_data){
       const auto mass = node_data["mass"].as<std::float_t>();
+      const auto bounce = node_data["bounce"].as<std::float_t>();
       const auto is_static = node_data["is_static"].as<bool>();
 
-      node.add_component<physics::rigidbody>(mass, is_static);
+      node.add_component<physics::rigidbody>(mass, bounce, is_static);
     });
 
     scenes_module.register_loader("box_collider", [](scenes::node& node, const YAML::Node& node_data){
@@ -72,8 +73,17 @@ public:
 
           if (auto info = _test_collision(node, collider_node); info) {
             core::logger::debug("Collision detected! {} <-> {}", node.get_component<scenes::tag>(), collider_node.get_component<scenes::tag>());
-            rigidbody.set_velocity(math::vector3::zero);
-            rigidbody.set_acceleration(math::vector3::zero);
+
+            auto& other_rigidbody = collider_node.get_component<physics::rigidbody>();
+
+            const auto bounce = rigidbody.bounce() + other_rigidbody.bounce();
+            const auto velocity = rigidbody.velocity() * bounce;
+
+            if (velocity.length_squared() > 0.01f) {
+              rigidbody.set_velocity(-velocity);
+            } else {
+              rigidbody.set_velocity(math::vector3::zero);
+            }
           }
         }
       } 

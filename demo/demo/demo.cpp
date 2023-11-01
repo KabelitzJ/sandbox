@@ -154,7 +154,7 @@ public:
       auto& script = _cube->add_component<sbx::scenes::script>("res://scripts/rotate.lua");
       script.set("speed", -120.0f);
 
-      auto& rigidbody = _cube->add_component<sbx::physics::rigidbody>(1.0f, false);
+      auto& rigidbody = _cube->add_component<sbx::physics::rigidbody>(1.0f, 0.75, false);
       rigidbody.set_acceleration(sbx::math::vector3{0.0f, -9.81f, 0.0f});
 
       _cube->add_component<sbx::physics::box_collider>(sbx::math::vector3{1.0f, 1.0f, 1.0f});
