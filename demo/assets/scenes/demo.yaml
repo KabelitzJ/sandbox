@@ -8,6 +8,7 @@ assets:
     - &cube "res://meshes/cube.obj"
     - &suzanne "res://meshes/suzanne.obj"
     - &sphere "res://meshes/sphere.obj"
+    - &tree "res://meshes/tree.obj"
   audios:
     - &forest "res://audio/forest.wav"
     - &ambience "res://audio/ambience.wav"
@@ -27,11 +28,11 @@ entities:
   - name: "monkey"
     components:
       - type: "transform"
-        position: { x: 0.0, y: 2.0, z: 0.0 }
+        position: { x: 0.0, y: 0.0, z: 0.0 }
         rotation: { x: 0.0, y: 0.0, z: 0.0 }
-        scale: { x: 1.0, y: 1.0, z: 1.0 }
+        scale: { x: 2.0, y: 2.0, z: 2.0 }
       - type: "static_mesh"
-        mesh: *suzanne
+        mesh: *tree
         texture: *base
       - type: sound_source
         sound: *forest

@@ -91,8 +91,9 @@ public:
     auto monkey_id = assets_module.load_asset<sbx::models::mesh>("res://meshes/suzanne.obj");
     auto sphere_id = assets_module.load_asset<sbx::models::mesh>("res://meshes/sphere.obj");
     auto cube_id = assets_module.load_asset<sbx::models::mesh>("res://meshes/cube.obj");
+    auto tree_id = assets_module.load_asset<sbx::models::mesh>("res://meshes/tree.obj");
 
-    _mesh_id = cube_id;
+    _mesh_id = sphere_id;
 
     auto font_jet_brains_mono_id = assets_module.load_asset<sbx::ui::font>("res://fonts/JetBrainsMono-Medium.ttf", sbx::ui::pixels{48u});
     auto font_roboto_id = assets_module.load_asset<sbx::ui::font>("res://fonts/Roboto-Regular.ttf", sbx::ui::pixels{48u});
@@ -151,8 +152,8 @@ public:
 
       _cube->add_component<sbx::scenes::static_mesh>(_mesh_id, _texture_id);
 
-      auto& script = _cube->add_component<sbx::scenes::script>("res://scripts/rotate.lua");
-      script.set("speed", -120.0f);
+      // auto& script = _cube->add_component<sbx::scenes::script>("res://scripts/rotate.lua");
+      // script.set("speed", -120.0f);
 
       auto& rigidbody = _cube->add_component<sbx::physics::rigidbody>(1.0f, 0.75, false);
       rigidbody.set_acceleration(sbx::math::vector3{0.0f, -9.81f, 0.0f});
