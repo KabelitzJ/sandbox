@@ -163,20 +163,24 @@ public:
       _cube.reset();
     }
 
-    const auto& scroll = sbx::devices::input::scroll_delta();
-
     auto camera_node = scene.camera();
     auto& camera = camera_node.get_component<sbx::scenes::camera>();
 
-    auto field_of_view = camera.field_of_view().to_degrees() + scroll.y * 5.0f;
+    if (sbx::devices::input::is_key_pressed(sbx::devices::key::r)) {
+      camera.set_field_of_view(sbx::math::degree{75.0f});
+    } else {
+      const auto& scroll = sbx::devices::input::scroll_delta();
 
-    if (field_of_view > 120.0f) {
-      field_of_view = sbx::math::degree{120.0f};
-    } else if (field_of_view < 30.0f) {
-      field_of_view = sbx::math::degree{30.0f};
+      auto field_of_view = camera.field_of_view().to_degrees() - scroll.y * 10.0f;
+
+      if (field_of_view > 75.0f) {
+        field_of_view = sbx::math::degree{75.0f};
+      } else if (field_of_view < 30.0f) {
+        field_of_view = sbx::math::degree{30.0f};
+      }
+
+      camera.set_field_of_view(field_of_view);
     }
-
-    camera.set_field_of_view(field_of_view);
 
     // _time += sbx::units::second{sbx::core::engine::delta_time()};
 
