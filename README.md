@@ -1,9 +1,11 @@
 # Sandbox Game Engine
 
-[![Language: C++](https://img.shields.io/badge/Language-C%2B%2B20-blue?logo=c%2B%2B)](https://isocpp.org/)
+[![Static Badge](https://img.shields.io/badge/Language-C%2B%2B-blue?logo=c%2B%2B&logoColor=blue)](https://isocpp.org/)
 [![Version: 0.1.0](https://img.shields.io/badge/version-0.1.0-red?logo=git)](https://github.com/KabelitzJ/sandbox/releases/tag/v0.1.0)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green)](https://opensource.org/licenses/MIT)
-[![Deploy docs to Pages](https://github.com/KabelitzJ/sandbox/actions/workflows/gh_pages.yml/badge.svg?branch=main)](https://github.com/KabelitzJ/sandbox/actions/workflows/gh_pages.yml)
+[![Static Badge](https://img.shields.io/badge/License-MIT-green?logo=opensourceinitiative&logoColor=green)](https://opensource.org/licenses/MIT)
+[![GitHub Workflow Status (with event)](https://img.shields.io/github/actions/workflow/status/KabelitzJ/sandbox/gh_pages.yml?logo=github&label=Deploy%20docs)](https://kabelitzj.github.io/sandbox/)
+
+![logo](./images/logo.png)
 
 This is a game engine project that is currently under heavy development and is mainly for educational purposes.
 
