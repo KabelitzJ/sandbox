@@ -124,13 +124,14 @@ private:
       return;
     }
 
-    for (const auto& dependency : module_manager::_factories().at(type).dependencies) {
+    auto& factory = module_manager::_factories().at(type);
+
+    for (const auto& dependency : factory.dependencies) {
       _destroy_module(dependency);
     }
 
     auto* module = _modules.at(type);
-    std::destroy_at(module);
-    ::operator delete(module);
+    std::invoke(factory.destroy, module);
     _modules.at(type) = nullptr;
   }
 

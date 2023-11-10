@@ -1,4 +1,4 @@
-project(demo)
+project(demo VERSION 0.1.0 LANGUAGES CXX)
 
 message(STATUS "Configuring ${PROJECT_NAME}...")
 
@@ -58,14 +58,14 @@ target_link_libraries(
     libsbx::core
     libsbx::async
     libsbx::assets
-    libsbx::audio
     libsbx::devices
     libsbx::graphics
     libsbx::models
     libsbx::scenes
-    libsbx::physics
+    libsbx::audio
     libsbx::ui
     libsbx::shadows
+    libsbx::physics
 )
 
 set_target_properties(

@@ -1,12 +1,12 @@
 #ifndef LIBSBX_GRAPHICS_PIPELINE_GRAPHICS_PIPELINE_HPP_
 #define LIBSBX_GRAPHICS_PIPELINE_GRAPHICS_PIPELINE_HPP_
 
+#include <optional>
 #include <filesystem>
 #include <vector>
 #include <unordered_map>
 #include <map>
 #include <memory>
-#include <optional>
 
 #include <vulkan/vulkan.hpp>
 

@@ -96,17 +96,10 @@ install(
     HEADERS 
 )
 
-install(
-  TARGETS
+if(MINGW)
+  target_link_options(
     ${PROJECT_NAME}
-  EXPORT
-    ${PROJECT_NAME}Targets
-  LIBRARY 
-    DESTINATION lib
-  ARCHIVE 
-    DESTINATION lib
-  RUNTIME 
-    DESTINATION bin
-  FILE_SET 
-    HEADERS 
-)
+    PUBLIC
+      -Wl,--disable-dynamicbase,--default-image-base-low
+  )
+endif()

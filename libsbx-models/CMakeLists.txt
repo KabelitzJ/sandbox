@@ -1,4 +1,4 @@
-project(models)
+project(models VERSION 0.1.0 LANGUAGES CXX)
 
 message(STATUS "Configuring ${PROJECT_NAME}...")
 
@@ -106,5 +106,13 @@ install(
   FILE_SET 
     HEADERS 
 )
+
+if(MINGW)
+  target_link_options(
+    ${PROJECT_NAME}
+    PUBLIC
+      -Wl,--disable-dynamicbase,--default-image-base-low
+  )
+endif()
 
 

@@ -18,11 +18,11 @@
 #include <libsbx/core/core.hpp>
 #include <libsbx/async/async.hpp>
 #include <libsbx/assets/assets.hpp>
-#include <libsbx/audio/audio.hpp>
 #include <libsbx/devices/devices.hpp>
 #include <libsbx/graphics/graphics.hpp>
 #include <libsbx/models/models.hpp>
 #include <libsbx/scenes/scenes.hpp>
+#include <libsbx/audio/audio.hpp>
 #include <libsbx/ui/ui.hpp>
 #include <libsbx/shadows/shadows.hpp>
 #include <libsbx/physics/physics.hpp>
@@ -86,14 +86,14 @@ public:
     auto prototype_black_id = assets_module.load_asset<sbx::graphics::image2d>("res://textures/prototype_black.png");
     auto white_id = assets_module.load_asset<sbx::graphics::image2d>("res://textures/white.png");
 
-    _texture_id = base_id;
+    // _texture_id = base_id;
 
     auto monkey_id = assets_module.load_asset<sbx::models::mesh>("res://meshes/suzanne.obj");
     auto sphere_id = assets_module.load_asset<sbx::models::mesh>("res://meshes/sphere.obj");
     auto cube_id = assets_module.load_asset<sbx::models::mesh>("res://meshes/cube.obj");
     auto tree_id = assets_module.load_asset<sbx::models::mesh>("res://meshes/tree.obj");
 
-    _mesh_id = sphere_id;
+    // _mesh_id = sphere_id;
 
     auto font_jet_brains_mono_id = assets_module.load_asset<sbx::ui::font>("res://fonts/JetBrainsMono-Medium.ttf", sbx::ui::pixels{48u});
     auto font_roboto_id = assets_module.load_asset<sbx::ui::font>("res://fonts/Roboto-Regular.ttf", sbx::ui::pixels{48u});
@@ -140,48 +140,48 @@ public:
       sbx::core::engine::quit();
     } 
     
-    if (sbx::devices::input::is_key_pressed(sbx::devices::key::space)) {
-      _flag = !_flag;
-    }
+    // if (sbx::devices::input::is_key_pressed(sbx::devices::key::space)) {
+    //   _flag = !_flag;
+    // }
 
-    auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
-    auto& scene = scenes_module.scene();
+    // auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
+    // auto& scene = scenes_module.scene();
 
-    if (_flag && !_cube) {
-      _cube = scene.create_node("Cube", sbx::math::transform{sbx::math::vector3{-5.0f, 10.0f, 0.0f}, sbx::math::vector3::zero, sbx::math::vector3::one});
+    // if (_flag && !_cube) {
+    //   _cube = scene.create_node("Cube", sbx::math::transform{sbx::math::vector3{-5.0f, 10.0f, 0.0f}, sbx::math::vector3::zero, sbx::math::vector3::one});
 
-      _cube->add_component<sbx::scenes::static_mesh>(_mesh_id, _texture_id);
+    //   _cube->add_component<sbx::scenes::static_mesh>(_mesh_id, _texture_id);
 
-      // auto& script = _cube->add_component<sbx::scenes::script>("res://scripts/rotate.lua");
-      // script.set("speed", -120.0f);
+    //   // auto& script = _cube->add_component<sbx::scenes::script>("res://scripts/rotate.lua");
+    //   // script.set("speed", -120.0f);
 
-      auto& rigidbody = _cube->add_component<sbx::physics::rigidbody>(1.0f, 0.75, false);
-      rigidbody.set_acceleration(sbx::math::vector3{0.0f, -9.81f, 0.0f});
+    //   auto& rigidbody = _cube->add_component<sbx::physics::rigidbody>(1.0f, 0.75f, false);
+    //   rigidbody.set_acceleration(sbx::math::vector3{0.0f, -9.81f, 0.0f});
 
-      _cube->add_component<sbx::physics::box_collider>(sbx::math::vector3{1.0f, 1.0f, 1.0f});
-    } else if (!_flag && _cube) {
-      scene.destroy_node(*_cube);
-      _cube.reset();
-    }
+    //   _cube->add_component<sbx::physics::box_collider>(sbx::math::vector3{1.0f, 1.0f, 1.0f});
+    // } else if (!_flag && _cube) {
+    //   scene.destroy_node(*_cube);
+    //   _cube.reset();
+    // }
 
-    auto camera_node = scene.camera();
-    auto& camera = camera_node.get_component<sbx::scenes::camera>();
+    // auto camera_node = scene.camera();
+    // auto& camera = camera_node.get_component<sbx::scenes::camera>();
 
-    if (sbx::devices::input::is_key_pressed(sbx::devices::key::r)) {
-      camera.set_field_of_view(sbx::math::degree{75.0f});
-    } else {
-      const auto& scroll = sbx::devices::input::scroll_delta();
+    // if (sbx::devices::input::is_key_pressed(sbx::devices::key::r)) {
+    //   camera.set_field_of_view(sbx::math::degree{75.0f});
+    // } else {
+    //   const auto& scroll = sbx::devices::input::scroll_delta();
 
-      auto field_of_view = camera.field_of_view().to_degrees() - scroll.y * 10.0f;
+    //   auto field_of_view = camera.field_of_view().to_degrees() - scroll.y * 10.0f;
 
-      if (field_of_view > 75.0f) {
-        field_of_view = sbx::math::degree{75.0f};
-      } else if (field_of_view < 30.0f) {
-        field_of_view = sbx::math::degree{30.0f};
-      }
+    //   if (field_of_view > 75.0f) {
+    //     field_of_view = sbx::math::degree{75.0f};
+    //   } else if (field_of_view < 30.0f) {
+    //     field_of_view = sbx::math::degree{30.0f};
+    //   }
 
-      camera.set_field_of_view(field_of_view);
-    }
+    //   camera.set_field_of_view(field_of_view);
+    // }
 
     // _time += sbx::units::second{sbx::core::engine::delta_time()};
 
@@ -196,10 +196,10 @@ public:
 
 private:
 
-  std::optional<sbx::scenes::node> _cube;
-  sbx::assets::asset_id _mesh_id;
-  sbx::assets::asset_id _texture_id;
-  bool _flag = false;
+  // std::optional<sbx::scenes::node> _cube;
+  // sbx::assets::asset_id _mesh_id;
+  // sbx::assets::asset_id _texture_id;
+  // bool _flag = false;
 
   // sbx::units::second _time;
   // std::uint32_t _frames;

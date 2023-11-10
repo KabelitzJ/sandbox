@@ -58,6 +58,7 @@ private:
     module_manager::stage stage{};
     std::unordered_set<std::type_index> dependencies{};
     std::function<module_base*()> create{};
+    std::function<void(module_base*)> destroy{};
   }; // module_factory
 
   static auto _factories() -> std::unordered_map<std::type_index, module_factory>& {
@@ -92,7 +93,7 @@ protected:
       .stage = stage,
       .dependencies = dependencies.get(),
       .create = [](){
-        auto* instance = reinterpret_cast<Derived*>(::operator new(sizeof(Derived)));
+        auto* instance = reinterpret_cast<Derived*>(std::malloc(sizeof(Derived)));
 
         if (!instance) {
           throw std::bad_alloc{};
@@ -101,6 +102,10 @@ protected:
         std::construct_at(instance);
 
         return instance;
+      },
+      .destroy = [](module_base* instance){
+        std::destroy_at(reinterpret_cast<Derived*>(instance));
+        std::free(instance);
       }
     }});
 

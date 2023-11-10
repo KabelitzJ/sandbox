@@ -2,6 +2,7 @@
 #define LIBSBX_GRAPHICS_PIPELINE_PIPELINE_HPP_
 
 #include <cinttypes>
+#include <optional>
 
 #include <vulkan/vulkan.hpp>
 
