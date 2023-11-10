@@ -1,7 +1,7 @@
 import os
 from pathlib import Path as path
 
-blacklist = ["build", "docs", "scripts", "assets", ".git", ".vscode"]
+blacklist = ["build", "docs", "scripts", "assets", "images", ".git", ".vscode", ".github"]
 extensions = [".cpp", ".hpp", ".ipp", ".tpp", ".mpp"]
 
 def count_code_lines(file_path):
