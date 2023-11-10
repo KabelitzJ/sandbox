@@ -123,8 +123,6 @@ public:
 
     auto& scene = scenes_module.load_scene("res://scenes/demo.yaml");
 
-    auto& physics_module = sbx::core::engine::get_module<sbx::physics::physics_module>();
-
     // [Todo] KAJ 2023-08-16 15:30 - This should probably be done automatically
     scene.start();
 

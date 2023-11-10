@@ -47,6 +47,12 @@ using basic_index_buffer = basic_buffer<Type, VK_BUFFER_USAGE_INDEX_BUFFER_BIT>;
 template<typename Type>
 using basic_vertex_buffer = basic_buffer<Type, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT>;
 
+struct submesh {
+  std::uint32_t index_count{};
+  std::uint32_t index_offset{};
+  std::uint32_t vertex_offset{};
+}; // struct submesh
+
 template<vertex Vertex>
 class mesh {
 
@@ -115,11 +121,18 @@ public:
 
   virtual ~mesh() = default;
 
-  auto render(graphics::command_buffer& command_buffer) -> void {
+  auto render(graphics::command_buffer& command_buffer, std::uint32_t instance_count = 1u) -> void {
     command_buffer.bind_vertex_buffer(0, *_vertex_buffer);
     command_buffer.bind_index_buffer(*_index_buffer, 0, VK_INDEX_TYPE_UINT32);
 
-    command_buffer.draw_indexed(static_cast<std::uint32_t>(_index_buffer->size()), 1, 0, 0, 0);
+    command_buffer.draw_indexed(static_cast<std::uint32_t>(_index_buffer->size()), instance_count, 0, 0, 0);
+  }
+
+  auto render_submesh(graphics::command_buffer& command_buffer, const submesh& submesh, std::uint32_t instance_count = 1u) -> void {
+    command_buffer.bind_vertex_buffer(0, *_vertex_buffer);
+    command_buffer.bind_index_buffer(*_index_buffer, 0, VK_INDEX_TYPE_UINT32);
+
+    command_buffer.draw_indexed(submesh.index_count, instance_count, submesh.index_offset, submesh.vertex_offset, 0);
   }
 
 protected:
