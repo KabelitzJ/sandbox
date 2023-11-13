@@ -65,6 +65,40 @@ public:
   using index_buffer_type = basic_index_buffer<index_type>;
 
   mesh(std::vector<vertex_type>&& vertices, std::vector<std::uint32_t>&& indices) {
+    _submeshes.push_back(submesh{static_cast<std::uint32_t>(indices.size()), 0, 0});
+    
+    _upload_vertices(std::move(vertices), std::move(indices));
+  }
+
+  virtual ~mesh() = default;
+
+  auto render(graphics::command_buffer& command_buffer, std::uint32_t instance_count = 1u) -> void {
+    command_buffer.bind_vertex_buffer(0, *_vertex_buffer);
+    command_buffer.bind_index_buffer(*_index_buffer, 0, VK_INDEX_TYPE_UINT32);
+
+    command_buffer.draw_indexed(static_cast<std::uint32_t>(_index_buffer->size()), instance_count, 0, 0, 0);
+  }
+
+  auto render_submesh(graphics::command_buffer& command_buffer, std::uint32_t submesh_index, std::uint32_t instance_count = 1u) -> void {
+    command_buffer.bind_vertex_buffer(0, *_vertex_buffer);
+    command_buffer.bind_index_buffer(*_index_buffer, 0, VK_INDEX_TYPE_UINT32);
+
+    const auto& submesh = _submeshes.at(submesh_index);
+
+    command_buffer.draw_indexed(submesh.index_count, instance_count, submesh.index_offset, submesh.vertex_offset, 0);
+  }
+
+  auto submeshes() const noexcept -> const std::vector<submesh>& {
+    return _submeshes;
+  }
+
+protected:
+
+  mesh()
+  : _vertex_buffer{nullptr},
+    _index_buffer{nullptr} { }
+
+  auto _upload_vertices(std::vector<vertex_type>&& vertices, std::vector<std::uint32_t>&& indices) -> void {
     auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
     auto& logical_device = graphics_module.logical_device();
@@ -119,30 +153,9 @@ public:
     vkDestroyFence(logical_device, fence, nullptr);
   }
 
-  virtual ~mesh() = default;
-
-  auto render(graphics::command_buffer& command_buffer, std::uint32_t instance_count = 1u) -> void {
-    command_buffer.bind_vertex_buffer(0, *_vertex_buffer);
-    command_buffer.bind_index_buffer(*_index_buffer, 0, VK_INDEX_TYPE_UINT32);
-
-    command_buffer.draw_indexed(static_cast<std::uint32_t>(_index_buffer->size()), instance_count, 0, 0, 0);
-  }
-
-  auto render_submesh(graphics::command_buffer& command_buffer, const submesh& submesh, std::uint32_t instance_count = 1u) -> void {
-    command_buffer.bind_vertex_buffer(0, *_vertex_buffer);
-    command_buffer.bind_index_buffer(*_index_buffer, 0, VK_INDEX_TYPE_UINT32);
-
-    command_buffer.draw_indexed(submesh.index_count, instance_count, submesh.index_offset, submesh.vertex_offset, 0);
-  }
-
-protected:
-
-  mesh()
-  : _vertex_buffer{nullptr},
-    _index_buffer{nullptr} { }
-
   std::unique_ptr<vertex_buffer_type> _vertex_buffer{};
   std::unique_ptr<index_buffer_type> _index_buffer{};
+  std::vector<submesh> _submeshes{};
 
 }; // class mesh
 

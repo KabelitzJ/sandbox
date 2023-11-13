@@ -31,6 +31,11 @@ auto obj_loader::load(const std::filesystem::path& path) -> mesh_data {
   auto unique_vertices = std::unordered_map<vertex3d, std::uint32_t>{};
 
   for (const auto& shape : shapes) {
+    auto submesh = graphics::submesh{};
+
+    submesh.index_offset = data.indices.size();
+    submesh.vertex_offset = data.vertices.size();
+
     for (const auto& index : shape.mesh.indices) {
       auto vertex = vertex3d{};
 
@@ -53,6 +58,10 @@ auto obj_loader::load(const std::filesystem::path& path) -> mesh_data {
         data.vertices.push_back(vertex);
       }
     }
+
+    submesh.index_count = data.indices.size() - submesh.index_offset;
+
+    data.submeshes.push_back(submesh);
   }
 
   return data;

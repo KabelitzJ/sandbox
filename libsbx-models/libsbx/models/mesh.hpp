@@ -18,6 +18,7 @@ namespace sbx::models {
 struct mesh_data {
   std::vector<vertex3d> vertices;
   std::vector<std::uint32_t> indices;
+  std::vector<graphics::submesh> submeshes;
 }; // struct mesh_data
 
 class mesh : public graphics::mesh<vertex3d>, public io::loader_factory<mesh, mesh_data>, public assets::asset<assets::asset_type::mesh> {
