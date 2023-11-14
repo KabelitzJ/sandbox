@@ -29,6 +29,8 @@ buffer::buffer(size_type size, VkBufferUsageFlags usage, VkMemoryPropertyFlags p
 
   validate(vkCreateBuffer(logical_device, &buffer_create_info, nullptr, &_handle));
 
+  core::logger::debug("Created buffer of size {} with usage {} and properties {}", _size, usage, properties);
+
   auto memory_requirements = VkMemoryRequirements{};
   vkGetBufferMemoryRequirements(logical_device, _handle, &memory_requirements);
 

@@ -139,10 +139,10 @@ entities:
     components:
       - type: "transform"
         position: { x: 0.0, y: 0.0, z: 0.0 }
-        rotation: { x: 0.0, y: 0.0, z: 0.0 }
-        scale: { x: 30.0, y: 0.1, z: 30.0 }
+        rotation: { x: 90.0, y: 0.0, z: 0.0 }
+        scale: { x: 20.0, y: 20.0, z: 1.0 }
       - type: "static_mesh"
-        mesh: *cube
+        mesh: *plane
         texture: *prototype_black
       - type: "rigidbody"
         mass: 0.0
@@ -153,45 +153,45 @@ entities:
   - name: "back_wall"
     components:
       - type: "transform"
-        position: { x: 0.0, y: 15.0, z: -15.0 }
-        rotation: { x: 0.0, y: 0.0, z: 0.0 }
-        scale: { x: 30.0, y: 30.0, z: 0.1 }
+        position: { x: 0.0, y: 0.0, z: -10.0 }
+        rotation: { x: 0.0, y: 180.0, z: 0.0 }
+        scale: { x: 20.0, y: 20.0, z: 1.0 }
       - type: "static_mesh"
-        mesh: *cube
+        mesh: *plane
         texture: *prototype_black
   - name: "front_wall"
     components:
       - type: "transform"
-        position: { x: 0.0, y: 15.0, z: 15.0 }
-        rotation: { x: 0.0, y: 0.0, z: 0.0 }
-        scale: { x: 30.0, y: 30.0, z: 0.1 }
+        position: { x: 0.0, y: 0.0, z: 10.0 }
+        rotation: { x: 0.0, y: 360.0, z: 0.0 }
+        scale: { x: 20.0, y: 20.0, z: 1.0 }
       - type: "static_mesh"
-        mesh: *cube
+        mesh: *plane
         texture: *prototype_black
   - name: "left_wall"
     components:
       - type: "transform"
-        position: { x: -15.0, y: 15.0, z: 0.0 }
-        rotation: { x: 0.0, y: 0.0, z: 0.0 }
-        scale: { x: 0.1, y: 30.0, z: 30.0 }
+        position: { x: 10.0, y: 0.0, z: 0.0 }
+        rotation: { x: 0.0, y: 90.0, z: 0.0 }
+        scale: { x: 20.0, y: 20.0, z: 1.0 }
       - type: "static_mesh"
-        mesh: *cube
+        mesh: *plane
         texture: *prototype_black
   - name: "right_wall"
     components:
       - type: "transform"
-        position: { x: 15.0, y: 15.0, z: 0.0 }
-        rotation: { x: 0.0, y: 0.0, z: 0.0 }
-        scale: { x: 0.1, y: 30.0, z: 30.0 }
+        position: { x: -10.0, y: 0.0, z: 0.0 }
+        rotation: { x: 0.0, y: 270.0, z: 0.0 }
+        scale: { x: 20.0, y: 20.0, z: 1.0 }
       - type: "static_mesh"
-        mesh: *cube
+        mesh: *plane
         texture: *prototype_black
   - name: "ceiling"
     components:
       - type: "transform"
-        position: { x: 0.0, y: 15.0, z: 0.0 }
-        rotation: { x: 0.0, y: 0.0, z: 0.0 }
-        scale: { x: 30.0, y: 0.1, z: 30.0 }
+        position: { x: 0.0, y: 10.0, z: 0.0 }
+        rotation: { x: 270.0, y: 0.0, z: 0.0 }
+        scale: { x: 20.0, y: 20.0, z: 1.0 }
       - type: "static_mesh"
-        mesh: *cube
+        mesh: *plane
         texture: *prototype_black

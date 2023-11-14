@@ -30,8 +30,18 @@ public:
   : graphics::subrenderer{stage},
     _pipeline{path, stage} {
     auto vertices = std::vector<vertex2d>{
-      vertex2d{}
+      vertex2d{math::vector2f{0.0f, 0.0f}, math::vector2f{0.0f, 0.0f}},
+      vertex2d{math::vector2f{1.0f, 0.0f}, math::vector2f{1.0f, 0.0f}},
+      vertex2d{math::vector2f{1.0f, 1.0f}, math::vector2f{1.0f, 1.0f}},
+      vertex2d{math::vector2f{0.0f, 1.0f}, math::vector2f{0.0f, 1.0f}}
     };
+
+    auto indices = std::vector<std::uint32_t>{
+      0, 1, 2,
+      2, 3, 0
+    };
+
+    _mesh = std::make_unique<mesh>(std::move(vertices), std::move(indices));
   }
 
   ~ui_subrenderer() override = default;
