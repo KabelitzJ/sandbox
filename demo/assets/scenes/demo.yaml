@@ -9,6 +9,7 @@ assets:
     - &suzanne "res://meshes/suzanne.obj"
     - &sphere "res://meshes/sphere.obj"
     - &tree "res://meshes/tree.obj"
+    - &plane "res://meshes/plane.obj"
   audios:
     - &forest "res://audio/forest.wav"
     - &ambience "res://audio/ambience.wav"
@@ -44,6 +45,15 @@ entities:
           - name: "speed"
             type: "number"
             value: 45.0
+  - name: "plane"
+    components:
+      - type: "transform"
+        position: { x: -3.0, y: 1.0, z: 3.0 }
+        rotation: { x: 0.0, y: 0.0, z: 0.0 }
+        scale: { x: 2.0, y: 2.0, z: 2.0 }
+      - type: "static_mesh"
+        mesh: *plane
+        texture: *base
   - name: "light1"
     components:
       - type: "transform"

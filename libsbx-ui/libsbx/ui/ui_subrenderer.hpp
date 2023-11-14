@@ -28,7 +28,11 @@ public:
 
   ui_subrenderer(const std::filesystem::path& path, const graphics::pipeline::stage& stage)
   : graphics::subrenderer{stage},
-    _pipeline{path, stage} { }
+    _pipeline{path, stage} {
+    auto vertices = std::vector<vertex2d>{
+      vertex2d{}
+    };
+  }
 
   ~ui_subrenderer() override = default;
 
@@ -70,7 +74,6 @@ private:
 
     auto& uniform_handler = uniform_data.uniform_handler;
     auto& descriptor_handler = uniform_data.descriptor_handler;
-    auto& mesh = uniform_data.mesh;
 
     widget.update(uniform_handler, descriptor_handler);
 
@@ -83,16 +86,17 @@ private:
 
     descriptor_handler.bind_descriptors(command_buffer);
 
-    widget.render(command_buffer, mesh);
+    widget.render(command_buffer, _mesh);
   }
 
   struct uniform_data {
     graphics::uniform_handler uniform_handler;
     graphics::descriptor_handler descriptor_handler;
-    std::unique_ptr<mesh> mesh;
   }; // struct uniform_data
 
   pipeline _pipeline;
+
+  std::unique_ptr<mesh> _mesh;
 
   std::unordered_map<math::uuid, uniform_data> _uniform_data;
   std::unordered_set<math::uuid> _used_uniforms;
