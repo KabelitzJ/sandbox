@@ -40,7 +40,8 @@ public:
 
     _uniform_handler.push("projection", math::matrix4x4::orthographic(0.0f, static_cast<float>(window.width()), static_cast<float>(window.height()), 0.0f));
 
-    const auto& widgets = ui_module.widgets();
+    const auto& container = ui_module.container();
+    const auto& widgets = container.widgets();
 
     for (auto entry = _uniform_data.begin(); entry != _uniform_data.end();) {
       if (_used_uniforms.contains(entry->first)) {

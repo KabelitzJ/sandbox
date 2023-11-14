@@ -103,7 +103,9 @@ public:
 
     auto& ui_module = sbx::core::engine::get_module<sbx::ui::ui_module>();
 
-    ui_module.add_widget<sbx::ui::label>("Hello, World!", sbx::math::vector2u{25, 25}, font_jet_brains_mono_id, sbx::math::color{0.53f, 0.01f, 0.01f, 1.0f});
+    auto& container = ui_module.container();
+
+    container.add_widget<sbx::ui::label>("Hello, World!", sbx::math::vector2u{25, 25}, font_jet_brains_mono_id, sbx::math::color{0.53f, 0.01f, 0.01f, 1.0f});
 
     auto& graphics_module = sbx::core::engine::get_module<sbx::graphics::graphics_module>();
 

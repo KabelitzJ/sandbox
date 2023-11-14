@@ -6,6 +6,7 @@
 #include <type_traits>
 
 #include <fmt/format.h>
+
 #include <freetype/freetype.h>
 
 #include <libsbx/core/module.hpp>
@@ -16,6 +17,8 @@
 
 #include <libsbx/ui/font.hpp>
 #include <libsbx/ui/widget.hpp>
+#include <libsbx/ui/container.hpp>
+#include <libsbx/ui/layouts/relative_layout.hpp>
 
 namespace sbx::ui {
 
@@ -25,9 +28,8 @@ class ui_module : public core::module<ui_module> {
 
 public:
 
-  ui_module() {
-
-  }
+  ui_module()
+  : _root_container{std::make_unique<relative_layout>()} { }
 
   ~ui_module() override {
 
@@ -37,34 +39,13 @@ public:
 
   }
 
-  auto widgets() const noexcept -> const std::vector<std::unique_ptr<widget>>& {
-    return _widgets;
-  }
-
-  template<typename Type, typename... Args>
-  requires (std::is_base_of_v<widget, Type>, std::is_constructible_v<Type, Args...>)
-  auto add_widget(Args&&... args) -> void {
-    auto widget = std::make_unique<Type>(std::forward<Args>(args)...);
-
-    _on_widget_added.emit(*widget);
-
-    _widgets.push_back(std::move(widget));
-  }
-
-  auto on_widget_added() noexcept -> signals::signal<widget&>& {
-    return _on_widget_added;
-  }
-
-  auto on_widget_removed() noexcept -> signals::signal<widget&>& {
-    return _on_widget_removed;
+  auto container() noexcept -> ui::container& {
+    return _root_container;
   }
 
 private:
 
-  std::vector<std::unique_ptr<widget>> _widgets;
-
-  signals::signal<widget&> _on_widget_added;
-  signals::signal<widget&> _on_widget_removed;
+  ui::container _root_container;
 
 }; // class ui_module
 
