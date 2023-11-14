@@ -95,8 +95,8 @@ public:
 
     // _mesh_id = sphere_id;
 
-    auto font_jet_brains_mono_id = assets_module.load_asset<sbx::ui::font>("res://fonts/JetBrainsMono-Medium.ttf", sbx::ui::pixels{24u});
-    auto font_roboto_id = assets_module.load_asset<sbx::ui::font>("res://fonts/Roboto-Regular.ttf", sbx::ui::pixels{24u});
+    auto font_jet_brains_mono_id = assets_module.load_asset<sbx::ui::font>("res://fonts/JetBrainsMono-Medium.ttf", sbx::ui::pixels{18u});
+    auto font_roboto_id = assets_module.load_asset<sbx::ui::font>("res://fonts/Roboto-Regular.ttf", sbx::ui::pixels{18u});
 
     auto ambience_birds_sound_id = assets_module.load_asset<sbx::audio::sound_buffer>("res://audio/ambience.wav");
     auto forest_sound_id = assets_module.load_asset<sbx::audio::sound_buffer>("res://audio/forest.wav");
@@ -105,8 +105,8 @@ public:
 
     auto& container = ui_module.container();
 
-    _label_fps = container.add_widget<sbx::ui::label>("", sbx::math::vector2u{25, 25}, font_jet_brains_mono_id, sbx::math::color{0.53f, 0.01f, 0.01f, 1.0f});
-    _label_delta_time = container.add_widget<sbx::ui::label>("", sbx::math::vector2u{25, 50}, font_jet_brains_mono_id, sbx::math::color{0.53f, 0.01f, 0.01f, 1.0f});
+    _label_fps = container.add_widget<sbx::ui::label>("FPS:  0", sbx::math::vector2u{25, 25}, font_jet_brains_mono_id, sbx::math::color{0.53f, 0.01f, 0.01f, 1.0f});
+    _label_delta_time = container.add_widget<sbx::ui::label>("Delta time: 0 ms", sbx::math::vector2u{25, 50}, font_jet_brains_mono_id, sbx::math::color{0.53f, 0.01f, 0.01f, 1.0f});
 
     auto& graphics_module = sbx::core::engine::get_module<sbx::graphics::graphics_module>();
 
@@ -180,7 +180,9 @@ public:
     //   camera.set_field_of_view(field_of_view);
     // }
 
-    _time += sbx::units::second{sbx::core::engine::delta_time()};
+    const auto delta_time = sbx::core::engine::delta_time();
+
+    _time += sbx::units::second{delta_time};
 
     if (_time >= sbx::units::second{1.0f}) {
       _label_fps->set_text(fmt::format("FPS: {}", _frames));
@@ -190,7 +192,7 @@ public:
       ++_frames;
     }
 
-    _label_delta_time->set_text(fmt::format("Delta time: {} ms", sbx::units::quantity_cast<sbx::units::millisecond>(_time).value()));
+    _label_delta_time->set_text(fmt::format("Delta time: {:.2f} ms", sbx::units::quantity_cast<sbx::units::millisecond>(delta_time).value()));
   }
 
 private:

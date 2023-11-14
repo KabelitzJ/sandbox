@@ -27,8 +27,6 @@ buffer::buffer(size_type size, VkBufferUsageFlags usage, VkMemoryPropertyFlags p
   buffer_create_info.queueFamilyIndexCount = static_cast<std::uint32_t>(sharing_mode.queue_families.size());
   buffer_create_info.pQueueFamilyIndices = sharing_mode.queue_families.data();
 
-  core::logger::debug("Creating buffer of size {} with usage {} and properties {}", _size, usage, properties);
-
   validate(vkCreateBuffer(logical_device, &buffer_create_info, nullptr, &_handle));
 
   auto memory_requirements = VkMemoryRequirements{};

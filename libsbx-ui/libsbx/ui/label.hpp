@@ -59,16 +59,19 @@ public:
       _is_dirty = false;
     }
 
-    if (!mesh) {
-      throw std::runtime_error{"Failed to create mesh for label"};
+    if (mesh) {
+      mesh->render(command_buffer);
     }
-
-    mesh->render(command_buffer);
   }
 
 private:
 
   auto _update_mesh(std::unique_ptr<mesh>& mesh) -> void {
+    if (_text.empty() || _text == "") {
+      mesh = nullptr;
+      return;
+    }
+
     auto& assets_module = core::engine::get_module<assets::assets_module>();
 
     auto& font = assets_module.get_asset<ui::font>(_font_id);
