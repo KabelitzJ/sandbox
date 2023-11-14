@@ -53,96 +53,96 @@ public:
   }
 
   auto render(graphics::command_buffer& command_buffer, std::unique_ptr<mesh>& mesh) -> void override {
-    if (_is_dirty) {
-      _update_mesh(mesh);
+    // if (_is_dirty) {
+    //   _update_mesh(mesh);
 
-      _is_dirty = false;
-    }
+    //   _is_dirty = false;
+    // }
 
     if (mesh) {
-      mesh->render(command_buffer);
+      mesh->render(command_buffer, 3);
     }
   }
 
 private:
 
   auto _update_mesh(std::unique_ptr<mesh>& mesh) -> void {
-    if (_text.empty() || _text == "") {
-      mesh = nullptr;
-      return;
-    }
+    // if (_text.empty() || _text == "") {
+    //   mesh = nullptr;
+    //   return;
+    // }
 
-    auto& assets_module = core::engine::get_module<assets::assets_module>();
+    // auto& assets_module = core::engine::get_module<assets::assets_module>();
 
-    auto& font = assets_module.get_asset<ui::font>(_font_id);
+    // auto& font = assets_module.get_asset<ui::font>(_font_id);
 
-    auto vertices = std::vector<ui::vertex2d>{};
-    auto indices = std::vector<std::uint32_t>{};
+    // auto vertices = std::vector<ui::vertex2d>{};
+    // auto indices = std::vector<std::uint32_t>{};
 
-    auto position_x = static_cast<std::float_t>(_position.x);
-    auto position_y = static_cast<std::float_t>(_position.y);
+    // auto position_x = static_cast<std::float_t>(_position.x);
+    // auto position_y = static_cast<std::float_t>(_position.y);
 
-    for (const auto& character : _text) {
-      auto& glyph = font.glyph(character);
+    // for (const auto& character : _text) {
+    //   auto& glyph = font.glyph(character);
 
-      auto x = position_x + static_cast<std::float_t>(glyph.bearing.x);
-      auto y = position_y - static_cast<std::float_t>(glyph.size.y - glyph.bearing.y);
+    //   auto x = position_x + static_cast<std::float_t>(glyph.bearing.x);
+    //   auto y = position_y - static_cast<std::float_t>(glyph.size.y - glyph.bearing.y);
 
-      auto w = static_cast<std::float_t>(glyph.size.x);
-      auto h = static_cast<std::float_t>(glyph.size.y);
+    //   auto w = static_cast<std::float_t>(glyph.size.x);
+    //   auto h = static_cast<std::float_t>(glyph.size.y);
 
-      {
-        auto position = math::vector2{x, y + h};
-        auto uv = math::vector2{glyph.uv_position.x, glyph.uv_position.y};
+    //   {
+    //     auto position = math::vector2{x, y + h};
+    //     auto uv = math::vector2{glyph.uv_position.x, glyph.uv_position.y};
 
-        vertices.emplace_back(position, uv);
-        indices.emplace_back(vertices.size() - 1);
-      }
+    //     vertices.emplace_back(position, uv);
+    //     indices.emplace_back(vertices.size() - 1);
+    //   }
 
-      {
-        auto position = math::vector2{x, y};
-        auto uv = math::vector2{glyph.uv_position.x, glyph.uv_position.y + glyph.uv_size.y};
+    //   {
+    //     auto position = math::vector2{x, y};
+    //     auto uv = math::vector2{glyph.uv_position.x, glyph.uv_position.y + glyph.uv_size.y};
 
-        vertices.emplace_back(position, uv);
-        indices.emplace_back(vertices.size() - 1);
-      }
+    //     vertices.emplace_back(position, uv);
+    //     indices.emplace_back(vertices.size() - 1);
+    //   }
 
-      {
-        auto position = math::vector2{x + w, y};
-        auto uv = math::vector2{glyph.uv_position.x + glyph.uv_size.x, glyph.uv_position.y + glyph.uv_size.y};
+    //   {
+    //     auto position = math::vector2{x + w, y};
+    //     auto uv = math::vector2{glyph.uv_position.x + glyph.uv_size.x, glyph.uv_position.y + glyph.uv_size.y};
 
-        vertices.emplace_back(position, uv);
-        indices.emplace_back(vertices.size() - 1);
-      }
+    //     vertices.emplace_back(position, uv);
+    //     indices.emplace_back(vertices.size() - 1);
+    //   }
 
-      {
-        auto position = math::vector2{x, y + h};
-        auto uv = math::vector2{glyph.uv_position.x, glyph.uv_position.y};
+    //   {
+    //     auto position = math::vector2{x, y + h};
+    //     auto uv = math::vector2{glyph.uv_position.x, glyph.uv_position.y};
 
-        vertices.emplace_back(position, uv);
-        indices.emplace_back(vertices.size() - 1);
-      }
+    //     vertices.emplace_back(position, uv);
+    //     indices.emplace_back(vertices.size() - 1);
+    //   }
 
-      {
-        auto position = math::vector2{x + w, y};
-        auto uv = math::vector2{glyph.uv_position.x + glyph.uv_size.x, glyph.uv_position.y + glyph.uv_size.y};
+    //   {
+    //     auto position = math::vector2{x + w, y};
+    //     auto uv = math::vector2{glyph.uv_position.x + glyph.uv_size.x, glyph.uv_position.y + glyph.uv_size.y};
 
-        vertices.emplace_back(position, uv);
-        indices.emplace_back(vertices.size() - 1);
-      }
+    //     vertices.emplace_back(position, uv);
+    //     indices.emplace_back(vertices.size() - 1);
+    //   }
 
-      {
-        auto position = math::vector2{x + w, y + h};
-        auto uv = math::vector2{glyph.uv_position.x + glyph.uv_size.x, glyph.uv_position.y};
+    //   {
+    //     auto position = math::vector2{x + w, y + h};
+    //     auto uv = math::vector2{glyph.uv_position.x + glyph.uv_size.x, glyph.uv_position.y};
 
-        vertices.emplace_back(position, uv);
-        indices.emplace_back(vertices.size() - 1);
-      }
+    //     vertices.emplace_back(position, uv);
+    //     indices.emplace_back(vertices.size() - 1);
+    //   }
 
-      position_x += static_cast<std::float_t>(glyph.advance);
-    }
+    //   position_x += static_cast<std::float_t>(glyph.advance);
+    // }
 
-    mesh = std::make_unique<ui::mesh>(std::move(vertices), std::move(indices));
+    // mesh = std::make_unique<ui::mesh>(std::move(vertices), std::move(indices));
   }
 
   std::string _text;
