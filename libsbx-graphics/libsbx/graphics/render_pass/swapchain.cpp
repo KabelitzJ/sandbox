@@ -206,9 +206,12 @@ auto swapchain::_choose_present_mode() const -> VkPresentModeKHR {
 
   for (const auto& present_mode : physical_present_modes) {
 		if (present_mode == VK_PRESENT_MODE_MAILBOX_KHR) {
+      core::logger::debug("Using VK_PRESENT_MODE_MAILBOX_KHR");
 			return present_mode;
 		}
 	}
+
+  core::logger::debug("Using VK_PRESENT_MODE_FIFO_KHR");
 
   return VK_PRESENT_MODE_FIFO_KHR;
 }

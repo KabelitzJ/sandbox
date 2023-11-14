@@ -18,10 +18,14 @@ public:
 
   template<typename Widget, typename... Args>
   requires (std::is_base_of_v<widget, Widget>, std::is_constructible_v<Widget, Args...>)
-  auto add_widget(Args&&... args) -> void {
+  auto add_widget(Args&&... args) -> memory::observer_ptr<Widget> {
     auto widget = std::make_unique<Widget>(std::forward<Args>(args)...);
 
+    auto reference = memory::make_observer<Widget>(widget.get());
+
     _widgets.push_back(std::move(widget));
+
+    return reference;
   }
 
   auto widgets() const noexcept -> const std::vector<std::unique_ptr<widget>>& {

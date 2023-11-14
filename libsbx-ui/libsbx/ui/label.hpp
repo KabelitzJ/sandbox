@@ -35,6 +35,11 @@ public:
 
   ~label() override = default;
 
+  auto set_text(const std::string& text) -> void {
+    _is_dirty = text != _text;
+    _text = text;
+  }
+
   auto update(graphics::uniform_handler& uniform, graphics::descriptor_handler& descriptor_handler) -> void override {
     auto& assets_module = core::engine::get_module<assets::assets_module>();
 
