@@ -9,10 +9,20 @@ namespace sbx::ui {
 
 class pipeline : public graphics::graphics_pipeline<ui::vertex2d> {
 
+  inline static constexpr auto pipeline_definition = graphics::pipeline_definition{
+    .uses_depth = true,
+    .uses_transparency = true,
+    .rasterization_state = graphics::rasterization_state{
+      .polygon_mode = graphics::polygon_mode::fill,
+      .cull_mode = graphics::cull_mode::none,
+      .front_face = graphics::front_face::counter_clockwise
+    }
+  };
+
 public:
 
   pipeline(const std::filesystem::path& path, const graphics::pipeline::stage& stage)
-  : graphics::graphics_pipeline<ui::vertex2d>{path, stage, graphics::pipeline_definition{ .uses_depth = true, .uses_transparency = true }} { }
+  : graphics::graphics_pipeline<ui::vertex2d>{path, stage, pipeline_definition} { }
 
   ~pipeline() override = default;
 

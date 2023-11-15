@@ -26,9 +26,34 @@
 
 namespace sbx::graphics {
 
+enum class polygon_mode : std::uint8_t {
+  fill = VK_POLYGON_MODE_FILL,
+  line = VK_POLYGON_MODE_LINE,
+  point = VK_POLYGON_MODE_POINT
+}; // enum class polygon_mode
+
+enum class cull_mode : std::uint8_t {
+  none = VK_CULL_MODE_NONE,
+  front = VK_CULL_MODE_FRONT_BIT,
+  back = VK_CULL_MODE_BACK_BIT,
+  front_and_back = VK_CULL_MODE_FRONT_AND_BACK
+}; // enum class cull_mode
+
+enum class front_face : std::uint8_t {
+  counter_clockwise = VK_FRONT_FACE_COUNTER_CLOCKWISE,
+  clockwise = VK_FRONT_FACE_CLOCKWISE
+}; // enum class front_face
+
+struct rasterization_state {
+  polygon_mode polygon_mode{polygon_mode::fill};
+  cull_mode cull_mode{cull_mode::back};
+  front_face front_face{front_face::counter_clockwise};
+}; // struct rasterization_state
+
 struct pipeline_definition {
   bool uses_depth{true};
   bool uses_transparency{false};
+  rasterization_state rasterization_state{};
 }; // struct pipeline_definition
 
 template<vertex Vertex>

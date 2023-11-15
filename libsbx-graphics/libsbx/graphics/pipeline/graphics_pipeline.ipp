@@ -167,10 +167,10 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
   rasterization_state.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
   rasterization_state.depthClampEnable = false;
   rasterization_state.rasterizerDiscardEnable = false;
-  rasterization_state.polygonMode = VK_POLYGON_MODE_FILL;
+  rasterization_state.polygonMode = static_cast<VkPolygonMode>(definition.rasterization_state.polygon_mode);
   rasterization_state.lineWidth = 1.0f;
-  rasterization_state.cullMode = VK_CULL_MODE_BACK_BIT;
-  rasterization_state.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+  rasterization_state.cullMode = static_cast<VkCullModeFlags>(definition.rasterization_state.cull_mode);
+  rasterization_state.frontFace = static_cast<VkFrontFace>(definition.rasterization_state.front_face);
   rasterization_state.depthBiasEnable = false;
 
   auto multisample_state = VkPipelineMultisampleStateCreateInfo{};
