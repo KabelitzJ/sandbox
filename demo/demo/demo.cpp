@@ -62,9 +62,9 @@ public:
   ~demo_renderer() override = default;
 
   auto initialize() -> void override {
-    // add_subrenderer<sbx::shadows::shadow_subrenderer>("res://shaders/shadow", sbx::graphics::pipeline::stage{0, 0});
+    add_subrenderer<sbx::shadows::shadow_subrenderer>("res://shaders/shadow", sbx::graphics::pipeline::stage{0, 0});
 
-    // add_subrenderer<sbx::models::mesh_subrenderer>("res://shaders/cell_shading", sbx::graphics::pipeline::stage{1, 0});
+    add_subrenderer<sbx::models::mesh_subrenderer>("res://shaders/cell_shading", sbx::graphics::pipeline::stage{1, 0});
     add_subrenderer<sbx::ui::ui_subrenderer>("res://shaders/ui", sbx::graphics::pipeline::stage{1, 1});
   }
 
@@ -106,8 +106,8 @@ public:
 
     auto& container = ui_module.container();
 
-    _label_fps = container.add_widget<sbx::ui::label>("FPS:  0", sbx::math::vector2u{25, 25}, font_jet_brains_mono_id, sbx::math::color{0.53f, 0.01f, 0.01f, 1.0f});
-    _label_delta_time = container.add_widget<sbx::ui::label>("Delta time: 0 ms", sbx::math::vector2u{25, 50}, font_jet_brains_mono_id, sbx::math::color{0.53f, 0.01f, 0.01f, 1.0f});
+    _label_fps = container.add_widget<sbx::ui::label>("FPS:  0", sbx::math::vector2u{25, 25}, font_jet_brains_mono_id, 0.75f, sbx::math::color{0.53f, 0.01f, 0.01f, 1.0f});
+    _label_delta_time = container.add_widget<sbx::ui::label>("Delta time: 0 ms", sbx::math::vector2u{25, 50}, font_jet_brains_mono_id, 0.75f, sbx::math::color{0.53f, 0.01f, 0.01f, 1.0f});
 
     auto& graphics_module = sbx::core::engine::get_module<sbx::graphics::graphics_module>();
 

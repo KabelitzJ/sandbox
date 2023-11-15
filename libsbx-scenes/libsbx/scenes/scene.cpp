@@ -61,8 +61,7 @@ scene::scene()
 
 scene::scene(const std::filesystem::path& path)
 : scene{} {
-  auto& assets_manager = core::engine::get_module<assets::assets_module>();
-  auto& devices_module = core::engine::get_module<devices::devices_module>();
+  auto& assets_manager = core::engine::get_module<assets::assets_module>(); 
 
   const auto actual_path = assets_manager.asset_path(path);
 
@@ -105,121 +104,6 @@ scene::scene(const std::filesystem::path& path)
       }
     }
   }
-
-  // for (const auto& entity_node : entities) {
-  //   const auto entity_name = entity_node["name"].as<std::string>();
-
-  //   core::logger::debug("  Entity name: {}", entity_name);
-
-  //   auto entity = create_node(entity_name);
-
-  //   const auto components = entity_node["components"].as<std::vector<YAML::Node>>();
-
-  //   for (const auto& component_node : components) {
-  //     const auto component_type = component_node["type"].as<std::string>();
-
-  //     core::logger::debug("    Component type: {}", component_type);
-
-  //     if (component_type == "Transform") {
-  //       const auto position = component_node["position"].as<math::vector3>();
-  //       const auto euler_angles = component_node["rotation"].as<math::vector3>();
-  //       const auto scale = component_node["scale"].as<math::vector3>();
-
-  //       _add_or_update_component<math::transform>(entity, position, euler_angles, scale);
-  //     } else if (component_type == "StaticMesh") {
-  //       const auto mesh_path = component_node["mesh"].as<std::string>();
-  //       const auto texture_path = component_node["texture"].as<std::string>();
-
-  //       auto mesh_id = assets_manager.try_get_asset_id(std::filesystem::path{mesh_path});
-
-  //       if (!mesh_id) {
-  //         core::logger::warn("Mesh '{}' could not be found", mesh_path);
-  //         continue;
-  //       }
-
-  //       auto texture_id = assets_manager.try_get_asset_id(std::filesystem::path{texture_path});
-
-  //       if (!texture_id) {
-  //         core::logger::warn("Texture '{}' could not be found", texture_path);
-  //         continue;
-  //       }
-
-  //       auto tint = math::color{1.0f, 1.0f, 1.0f, 1.0f};
-
-  //       if (const auto tint_node = component_node["tint"]; tint_node) {
-  //         tint = tint_node.as<math::color>();
-  //       }
-
-  //       _add_or_update_component<scenes::static_mesh>(entity, *mesh_id, *texture_id, tint);
-  //     } else if (component_type == "Camera") {
-  //       const auto fov = component_node["fov"].as<std::float_t>();
-  //       const auto near = component_node["near"].as<std::float_t>();
-  //       const auto far = component_node["far"].as<std::float_t>();
-
-  //       auto& window = devices_module.window();
-
-  //       _add_or_update_component<scenes::camera>(entity, math::degree{fov}, window.aspect_ratio(), near, far);
-
-  //       _camera = entity;
-  //     } else if (component_type == "Script") {
-  //       // [NOTE] KAJ 2023-10-29 : Remove any existing script component. We currently only support one script per entity
-  //       entity.remove_component<scenes::script>();
-
-  //       const auto path = component_node["script"].as<std::string>();
-
-  //       auto& script = entity.add_component<scenes::script>(path);
-
-  //       if (const auto parameters = component_node["parameters"]; parameters) {
-  //         for (const auto& parameter : parameters) {
-  //           const auto name = parameter["name"].as<std::string>();
-  //           const auto type = parameter["type"].as<std::string>();
-
-  //           if (type == "number") {
-  //             const auto value = parameter["value"].as<std::float_t>();
-
-  //             script.set(name, value);
-  //           } else if (type == "vector3") {
-  //             const auto value = parameter["value"].as<math::vector3>();
-
-  //             script.set(name, value);
-  //           } else if (type == "color") {
-  //             const auto value = parameter["value"].as<math::color>();
-
-  //             script.set(name, value);
-  //           } else if (type == "string") {
-  //             const auto value = parameter["value"].as<std::string>();
-
-  //             script.set(name, value);
-  //           } else {
-  //             core::logger::warn("Unknown parameter type: {}", type);
-  //           }
-  //         }
-  //       }
-  //     } else if (component_type == "PointLight") {
-  //       const auto color = component_node["color"].as<math::color>();
-  //       const auto radius = component_node["radius"].as<std::float_t>();
-
-  //       _add_or_update_component<scenes::point_light>(entity, color, radius);
-  //     } else if (component_type == "SoundSource") {
-  //       const auto sound = component_node["sound"].as<std::string>();
-  //       const auto is_looping = component_node["is_looping"].as<bool>();
-  //       const auto volume = component_node["volume"].as<std::float_t>();
-
-  //       auto sound_id = assets_manager.try_get_asset_id(std::filesystem::path{sound});
-
-  //       if (!sound_id) {
-  //         core::logger::warn("Sound '{}' could not be found", sound);
-  //         continue;
-  //       }
-
-  //       _add_or_update_component<audio::sound>(entity, *sound_id, audio::sound::type::ambient, true, is_looping, volume);
-  //     } else {
-  //       core::logger::warn("Unknown component type: {}", component_type);
-  //     }
-      
-  //     // [TODO] KAJ 2023-10-28 : Add support for audio components
-  //   }
-  // }
 
   core::logger::debug("Loaded scene: {} in {:.2f} ms", path.string(), units::quantity_cast<units::millisecond>(timer.elapsed()).value());
 }

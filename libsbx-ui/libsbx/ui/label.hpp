@@ -26,11 +26,11 @@ class label : public widget {
 
 public:
 
-  label(const std::string& text, const math::vector2u& position, assets::asset_id font_id, const math::color& color = math::color{1.0f, 1.0f, 1.0f, 1.0f})
+  label(const std::string& text, const math::vector2u& position, assets::asset_id font_id, std::float_t scale = 1.0f, const math::color& color = math::color{1.0f, 1.0f, 1.0f, 1.0f})
   : widget{position},
     _text{text},
     _font_id{font_id},
-    _scale{1.0f},
+    _scale{scale},
     _color{color},
     _is_dirty{true},
     _glyph_data{} { }
@@ -64,7 +64,7 @@ public:
 
   auto render(graphics::command_buffer& command_buffer, std::unique_ptr<mesh>& mesh) -> void override {
     if (mesh) {
-      mesh->render(command_buffer, _glyph_data.size());
+      mesh->render(command_buffer, static_cast<std::uint32_t>(_glyph_data.size()));
     }
   }
 
@@ -85,11 +85,11 @@ private:
 
       const auto& glyph = font.glyph(character);
 
-      auto x = position_x + static_cast<std::float_t>(glyph.bearing.x);
-      auto y = position_y - static_cast<std::float_t>(glyph.size.y - glyph.bearing.y);
+      auto x = position_x + static_cast<std::float_t>(glyph.bearing.x) * _scale;
+      auto y = position_y - static_cast<std::float_t>(glyph.size.y - glyph.bearing.y) * _scale;
 
-      auto w = static_cast<std::float_t>(glyph.size.x);
-      auto h = static_cast<std::float_t>(glyph.size.y);
+      auto w = static_cast<std::float_t>(glyph.size.x) * _scale;
+      auto h = static_cast<std::float_t>(glyph.size.y) * _scale;
 
       data.offset = math::vector2{x, y};
       data.size = math::vector2{w, h};
@@ -99,7 +99,7 @@ private:
 
       _glyph_data.push_back(data);
 
-      position_x += static_cast<std::float_t>(glyph.advance);
+      position_x += static_cast<std::float_t>(glyph.advance) * _scale;
     }
 
     _is_dirty = false;
