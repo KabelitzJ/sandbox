@@ -13,5 +13,6 @@ layout(binding = 3) uniform sampler2D atlas;
 void main() {
   float opacity = texture(atlas, in_uv).r;
 
-  out_color = object.color * vec4(1.0, 1.0, 1.0, 1.0);
+  // out_color = vec4(1.0, 1.0, 1.0, 1.0) * object.color;
+  out_color = vec4(1.0, 0.0, 0.0, opacity); // * object.color;
 }

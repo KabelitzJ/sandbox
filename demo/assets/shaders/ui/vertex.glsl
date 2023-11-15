@@ -14,9 +14,7 @@ layout(binding = 1) buffer buffer_transforms {
 } transforms;
 
 void main() {
-  vec4 model = transforms.data[gl_InstanceIndex] * vec4(in_position, 0.0, 1.0);
-
   out_uv = in_uv;
 
-  gl_Position = scene.projection * model;
+  gl_Position = scene.projection * transforms.data[gl_InstanceIndex] * vec4(in_position, 0.0, 1.0);
 }

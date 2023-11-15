@@ -29,10 +29,11 @@ public:
   label(const std::string& text, const math::vector2u& position, assets::asset_id font_id, const math::color& color = math::color{1.0f, 1.0f, 1.0f, 1.0f})
   : widget{position},
     _text{text},
-    _is_dirty{true},
-    _transforms{},
+    _font_id{font_id},
+    _scale{1.0f},
     _color{color},
-    _font_id{font_id} { }
+    _is_dirty{true},
+    _transforms{} { }
 
   ~label() override = default;
 
@@ -70,20 +71,43 @@ public:
 private:
 
   auto _recalculate_transforms() -> void {
+    auto& assets_module = core::engine::get_module<assets::assets_module>();
+
     _transforms.clear();
 
+    auto& font = assets_module.get_asset<ui::font>(_font_id);
+
+    auto current_x = _position.x;
+    auto current_y = _position.y;
+
     for (const auto character : _text) {
-      _transforms.push_back(math::matrix4x4::identity);
+      auto transform = math::matrix4x4::identity;
+
+      const auto& glyph = font.glyph(character);
+
+      const auto x = current_x + static_cast<std::float_t>(glyph.bearing.x);
+      const auto y = current_y - static_cast<std::float_t>(glyph.size.y - glyph.bearing.y);
+
+      const auto w = static_cast<std::float_t>(glyph.size.x);
+      const auto h = static_cast<std::float_t>(glyph.size.y);
+
+      transform = math::matrix4x4::translated(transform, math::vector3{x, y, 0.0f});
+      transform = math::matrix4x4::scaled(transform, math::vector3{w, h, 0.0f});
+
+      _transforms.push_back(transform);
+
+      current_x += static_cast<std::float_t>(glyph.advance);
     }
 
     _is_dirty = false;
   }
 
   std::string _text;
+  assets::asset_id _font_id;
+  std::float_t _scale;
+  math::color _color;
   bool _is_dirty;
   std::vector<math::matrix4x4> _transforms;
-  math::color _color;
-  assets::asset_id _font_id;
 
 }; // class label
 
