@@ -23,7 +23,7 @@ public:
 
   virtual ~widget() = default;
 
-  virtual auto update(graphics::uniform_handler& uniform, graphics::descriptor_handler& descriptor_handler) -> void = 0;
+  virtual auto update(graphics::descriptor_handler& descriptor_handler, graphics::uniform_handler& uniform_handler, graphics::storage_handler& storage_handler) -> void = 0;
 
   virtual auto render(graphics::command_buffer& command_buffer, std::unique_ptr<mesh>& mesh) -> void = 0;
 

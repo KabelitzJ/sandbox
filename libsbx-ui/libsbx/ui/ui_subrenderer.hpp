@@ -52,7 +52,7 @@ public:
 
     auto& window = devices_module.window();
 
-    _uniform_handler.push("projection", math::matrix4x4::orthographic(0.0f, static_cast<float>(window.width()), static_cast<float>(window.height()), 0.0f));
+    _scene_uniform_handler.push("projection", math::matrix4x4::orthographic(0.0f, static_cast<float>(window.width()), static_cast<float>(window.height()), 0.0f));
 
     const auto& container = ui_module.container();
     const auto& widgets = container.widgets();
@@ -84,11 +84,11 @@ private:
 
     auto& uniform_handler = uniform_data.uniform_handler;
     auto& descriptor_handler = uniform_data.descriptor_handler;
+    auto& storage_handler = uniform_data.storage_handler;
 
-    widget.update(uniform_handler, descriptor_handler);
+    widget.update(descriptor_handler, uniform_handler, storage_handler);
 
-    descriptor_handler.push("uniform_scene", _uniform_handler);
-    descriptor_handler.push("uniform_object", uniform_handler);
+    descriptor_handler.push("uniform_scene", _scene_uniform_handler);
 
     if (!descriptor_handler.update(_pipeline)) {
       return;
@@ -100,8 +100,9 @@ private:
   }
 
   struct uniform_data {
-    graphics::uniform_handler uniform_handler;
     graphics::descriptor_handler descriptor_handler;
+    graphics::uniform_handler uniform_handler;
+    graphics::storage_handler storage_handler;
   }; // struct uniform_data
 
   pipeline _pipeline;
@@ -111,7 +112,7 @@ private:
   std::unordered_map<math::uuid, uniform_data> _uniform_data;
   std::unordered_set<math::uuid> _used_uniforms;
 
-  graphics::uniform_handler _uniform_handler;
+  graphics::uniform_handler _scene_uniform_handler;
 
 }; // class ui_subrenderer
 

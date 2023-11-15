@@ -132,7 +132,7 @@ auto shader::_create_reflection(const spirv_cross::Compiler& compiler) -> void {
     const auto storage_buffer_element_size = compiler.get_declared_struct_size_runtime_array(type, 1);
 
     // Calculate the size in regard to the element size
-    const auto storage_buffer_size = storage_buffer::max_size - utility::fast_mod(storage_buffer::max_size, storage_buffer_element_size);
+    const auto storage_buffer_size = storage_buffer::max_elements * storage_buffer_element_size;
 
     auto buffer = uniform_block{storage_buffer_binding, storage_buffer_size, _stage, uniform_block::type::storage};
 

@@ -9,7 +9,7 @@ auto storage_handler::push(std::span<const Type> buffer) -> void {
   }
 
   if (buffer.size() * sizeof(Type) > _storage_buffer->size()) {
-    throw std::runtime_error{fmt::format("Buffer size ({}) is larger than storage buffer size ({})", buffer.size() * sizeof(Type), _storage_buffer->size())};
+    throw std::runtime_error{fmt::format("Buffer size ({} * {} = {}) is larger than storage buffer size ({})", buffer.size(), sizeof(Type), buffer.size() * sizeof(Type), _storage_buffer->size())};
   }
 
   _storage_buffer->update(buffer.data(), buffer.size() * sizeof(Type));

@@ -18,7 +18,7 @@
 #include <libsbx/ui/font.hpp>
 #include <libsbx/ui/widget.hpp>
 #include <libsbx/ui/container.hpp>
-#include <libsbx/ui/layouts/relative_layout.hpp>
+#include <libsbx/ui/layouts/absolute_layout.hpp>
 
 namespace sbx::ui {
 
@@ -29,7 +29,7 @@ class ui_module : public core::module<ui_module> {
 public:
 
   ui_module()
-  : _root_container{std::make_unique<relative_layout>()} { }
+  : _root_container{std::make_unique<absolute_layout>()} { }
 
   ~ui_module() override {
 
