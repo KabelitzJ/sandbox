@@ -33,7 +33,7 @@ public:
     _scale{1.0f},
     _color{color},
     _is_dirty{true},
-    _transforms{} { }
+    _glyph_data{} { }
 
   ~label() override = default;
 
@@ -48,10 +48,10 @@ public:
     uniform_handler.push("color", _color);
 
     if (_is_dirty) {
-      _recalculate_transforms();
+      _recalculate_glyph_data();
     }
 
-    storage_handler.push(std::span<const math::matrix4x4>{_transforms.data(), _transforms.size()});
+    storage_handler.push(std::span<const glyph_data>{_glyph_data.data(), _glyph_data.size()});
 
     auto& font = assets_module.get_asset<ui::font>(_font_id);
 
@@ -59,55 +59,65 @@ public:
 
     descriptor_handler.push("atlas", atlas.image());
     descriptor_handler.push("uniform_object", uniform_handler);
-    descriptor_handler.push("buffer_transforms", storage_handler);
+    descriptor_handler.push("buffer_glyphs", storage_handler);
   }
 
   auto render(graphics::command_buffer& command_buffer, std::unique_ptr<mesh>& mesh) -> void override {
     if (mesh) {
-      mesh->render(command_buffer, _transforms.size());
+      mesh->render(command_buffer, _glyph_data.size());
     }
   }
 
 private:
 
-  auto _recalculate_transforms() -> void {
+  auto _recalculate_glyph_data() -> void {
     auto& assets_module = core::engine::get_module<assets::assets_module>();
 
-    _transforms.clear();
+    _glyph_data.clear();
 
     auto& font = assets_module.get_asset<ui::font>(_font_id);
 
-    auto current_x = _position.x;
-    auto current_y = _position.y;
+    auto position_x = static_cast<std::float_t>(_position.x);
+    auto position_y = static_cast<std::float_t>(_position.y);
 
     for (const auto character : _text) {
-      auto transform = math::matrix4x4::identity;
+      auto data = glyph_data{};
 
       const auto& glyph = font.glyph(character);
 
-      const auto x = current_x + static_cast<std::float_t>(glyph.bearing.x);
-      const auto y = current_y - static_cast<std::float_t>(glyph.size.y - glyph.bearing.y);
+      auto x = position_x + static_cast<std::float_t>(glyph.bearing.x);
+      auto y = position_y - static_cast<std::float_t>(glyph.size.y - glyph.bearing.y);
 
-      const auto w = static_cast<std::float_t>(glyph.size.x);
-      const auto h = static_cast<std::float_t>(glyph.size.y);
+      auto w = static_cast<std::float_t>(glyph.size.x);
+      auto h = static_cast<std::float_t>(glyph.size.y);
 
-      transform = math::matrix4x4::translated(transform, math::vector3{x, y, 0.0f});
-      transform = math::matrix4x4::scaled(transform, math::vector3{w, h, 0.0f});
+      data.offset = math::vector2{x, y};
+      data.size = math::vector2{w, h};
 
-      _transforms.push_back(transform);
+      data.uv_offset = glyph.uv_position;
+      data.uv_size = glyph.uv_size;
 
-      current_x += static_cast<std::float_t>(glyph.advance);
+      _glyph_data.push_back(data);
+
+      position_x += static_cast<std::float_t>(glyph.advance);
     }
 
     _is_dirty = false;
   }
+
+  struct glyph_data {
+    math::vector2 offset;
+    math::vector2 size;
+    math::vector2 uv_offset;
+    math::vector2 uv_size;
+  }; // struct glyph_data
 
   std::string _text;
   assets::asset_id _font_id;
   std::float_t _scale;
   math::color _color;
   bool _is_dirty;
-  std::vector<math::matrix4x4> _transforms;
+  std::vector<glyph_data> _glyph_data;
 
 }; // class label
 
