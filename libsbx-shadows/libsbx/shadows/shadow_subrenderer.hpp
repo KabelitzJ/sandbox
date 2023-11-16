@@ -1,6 +1,8 @@
 #ifndef LIBSBX_SHADOWS_SHADOW_SUBRENDERER_HPP_
 #define LIBSBX_SHADOWS_SHADOW_SUBRENDERER_HPP_
 
+#include <unordered_map>
+
 #include <libsbx/graphics/subrenderer.hpp>
 #include <libsbx/graphics/buffers/push_handler.hpp>
 #include <libsbx/graphics/buffers/uniform_handler.hpp>
