@@ -1,17 +1,7 @@
 #version 450
 
-struct material {
-  vec4 ambient;
-  vec4 diffuse;
-  vec4 specular;
-  float shininess;
-};
-
-struct point_light {
-  vec4 color;
-  vec3 position;
-  float radius;
-};
+#include "../common/material.glsl"
+#include "../common/light.glsl"
 
 layout(location = 0) in vec3 in_position;
 layout(location = 1) in vec3 in_normal;
@@ -31,7 +21,7 @@ layout(binding = 1) buffer buffer_lights {
 } lights;
 
 layout(binding = 2) uniform sampler2D image;
-// layout(binding = 2) uniform sampler2D shadow_map;
+// layout(binding = 3) uniform sampler2D shadow_map;
 
 layout(push_constant) uniform uniform_object {
   mat4 model;

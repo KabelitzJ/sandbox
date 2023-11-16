@@ -121,6 +121,7 @@ private:
 
   auto _render_node(scenes::node& node, graphics::command_buffer& command_buffer) -> void {
     auto& assets_module = core::engine::get_module<assets::assets_module>();
+    auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
     // [NOTE] KAJ 2023-10-25 : We need this for loading the shadow map in the future
     // auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
@@ -156,7 +157,7 @@ private:
     descriptor_handler.push("uniform_scene", _scene_uniform_handler);
     descriptor_handler.push("buffer_lights", _lights_storage_handler);
     descriptor_handler.push("image", image);
-    // descriptor_handler.push("shadow_map", graphics_module.attachment("shadow"));
+    // descriptor_handler.push("shadow_map", graphics_module.attachment("shadow_map"));
 
     if (!descriptor_handler.update(_pipeline)) {
       return;

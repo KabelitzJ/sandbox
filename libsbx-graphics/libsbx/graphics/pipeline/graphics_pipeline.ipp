@@ -131,10 +131,10 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
 
   for (const auto& [name, uniform] : _uniforms) {
     if (uniform.type() == shader::data_type::sampler2d) {
-      const auto descriptor_type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+      // const auto descriptor_type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 
-      descriptor_set_layout_bindings.push_back(image::create_descriptor_set_layout_binding(uniform.binding(), descriptor_type, uniform.stage_flags()));
-      descriptor_pool_sizes_by_type[descriptor_type] += swapchain::max_frames_in_flight; // ??? 3 ???
+      descriptor_set_layout_bindings.push_back(image::create_descriptor_set_layout_binding(uniform.binding(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, uniform.stage_flags()));
+      // descriptor_pool_sizes_by_type[descriptor_type] += swapchain::max_frames_in_flight; // ??? 3 ???
 
       _descriptor_bindings.insert({name, uniform.binding()});
     }
@@ -148,15 +148,15 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
     _descriptor_type_at_binding.insert({descriptor.binding, descriptor.descriptorType});
   }
 
-  auto descriptor_pool_sizes = std::vector<VkDescriptorPoolSize>{};
+  // auto descriptor_pool_sizes = std::vector<VkDescriptorPoolSize>{};
 
-  for (const auto& [type, count] : descriptor_pool_sizes_by_type) {
-    auto pool_size = VkDescriptorPoolSize{};
-    pool_size.type = type;
-    pool_size.descriptorCount = count;
+  // for (const auto& [type, count] : descriptor_pool_sizes_by_type) {
+  //   auto pool_size = VkDescriptorPoolSize{};
+  //   pool_size.type = type;
+  //   pool_size.descriptorCount = count;
 
-    descriptor_pool_sizes.push_back(pool_size);
-  }
+  //   descriptor_pool_sizes.push_back(pool_size);
+  // }
 
   auto viewport_state = VkPipelineViewportStateCreateInfo{};
   viewport_state.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -261,13 +261,14 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
   validate(vkCreateDescriptorSetLayout(logical_device, &descriptor_set_layout_create_info, nullptr, &_descriptor_set_layout));
 
   // [NOTE] KAJ 2023-09-13 : Workaround
-  descriptor_pool_sizes.resize(6);
-  descriptor_pool_sizes[0] = VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 4096};
-  descriptor_pool_sizes[1] = VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 2048};
-  descriptor_pool_sizes[2] = VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 2048};
-  descriptor_pool_sizes[3] = VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 2048};
-  descriptor_pool_sizes[4] = VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 2048};
-  descriptor_pool_sizes[5] = VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 2048};
+  auto descriptor_pool_sizes = std::vector<VkDescriptorPoolSize>{
+    VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 4096},
+    VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 2048},
+    VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 2048},
+    VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 2048},
+    VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 2048},
+    VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 2048}
+  };
 
   auto descriptor_pool_create_info = VkDescriptorPoolCreateInfo{};
   descriptor_pool_create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;

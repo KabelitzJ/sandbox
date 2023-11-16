@@ -34,7 +34,7 @@ public:
   demo_renderer() {
     {
       auto attachments = std::vector<sbx::graphics::attachment>{
-        sbx::graphics::attachment{0, "shadow", sbx::graphics::attachment::type::image, VK_FORMAT_R8_UNORM}
+        sbx::graphics::attachment{0, "shadow_map", sbx::graphics::attachment::type::image, VK_FORMAT_R8_UNORM}
       };
 
       auto subpass_bindings = std::vector<sbx::graphics::subpass_binding>{
