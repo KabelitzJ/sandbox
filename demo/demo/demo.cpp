@@ -108,6 +108,7 @@ public:
 
     _label_fps = container.add_widget<sbx::ui::label>("FPS:  0", sbx::math::vector2u{25, 25}, font_jet_brains_mono_id, 0.75f, sbx::math::color{0.53f, 0.01f, 0.01f, 1.0f});
     _label_delta_time = container.add_widget<sbx::ui::label>("Delta time: 0 ms", sbx::math::vector2u{25, 50}, font_jet_brains_mono_id, 0.75f, sbx::math::color{0.53f, 0.01f, 0.01f, 1.0f});
+    container.add_widget<sbx::ui::label>("Random Text 123", sbx::math::vector2u{25, 75}, font_jet_brains_mono_id, 0.75f, sbx::math::color{0.53f, 0.01f, 0.01f, 1.0f});
 
     auto& graphics_module = sbx::core::engine::get_module<sbx::graphics::graphics_module>();
 
@@ -142,8 +143,8 @@ public:
       sbx::core::engine::quit();
     }
 
-    // auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
-    // auto& scene = scenes_module.scene();
+    auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
+    auto& scene = scenes_module.scene();
 
     // if (_flag && !_cube) {
     //   _cube = scene.create_node("Cube", sbx::math::transform{sbx::math::vector3{-5.0f, 10.0f, 0.0f}, sbx::math::vector3::zero, sbx::math::vector3::one});
@@ -201,10 +202,10 @@ private:
   sbx::memory::observer_ptr<sbx::ui::label> _label_fps;
   sbx::memory::observer_ptr<sbx::ui::label> _label_delta_time;
 
-  // std::optional<sbx::scenes::node> _cube;
-  // sbx::assets::asset_id _mesh_id;
-  // sbx::assets::asset_id _texture_id;
-  // bool _flag = false;
+  std::optional<sbx::scenes::node> _cube;
+  sbx::assets::asset_id _mesh_id;
+  sbx::assets::asset_id _texture_id;
+  bool _flag = false;
 
   sbx::units::second _time;
   std::uint32_t _frames;
