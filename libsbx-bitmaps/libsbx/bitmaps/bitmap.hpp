@@ -7,6 +7,8 @@
 #include <string>
 #include <unordered_map>
 
+#include <libsbx/utility/noncopyable.hpp>
+
 #include <libsbx/io/loader_factory.hpp>
 
 namespace sbx::bitmaps {
@@ -17,7 +19,7 @@ struct bitmap_data {
   std::uint8_t* buffer;
 }; // struct bitmap_data
 
-class bitmap : public io::loader_factory<bitmap, bitmap_data> {
+class bitmap : public io::loader_factory<bitmap, bitmap_data>, public utility::noncopyable {
 
 public:
 
@@ -26,6 +28,10 @@ public:
   ~bitmap();
 
 private:
+
+  std::uint32_t _width;
+  std::uint32_t _height;
+  std::uint8_t* _buffer;
 
 }; // class bitmap
 

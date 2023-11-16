@@ -1,5 +1,7 @@
 #include <libsbx/scenes/scene.hpp>
 
+#include <unordered_map>
+
 #include <libsbx/units/time.hpp>
 
 #include <libsbx/utility/timer.hpp>

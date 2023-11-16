@@ -3,6 +3,7 @@
 
 #include <optional>
 #include <filesystem>
+#include <cinttypes>
 #include <vector>
 #include <unordered_map>
 #include <map>
@@ -111,13 +112,13 @@ private:
 
   std::unordered_map<VkShaderStageFlagBits, std::unique_ptr<shader>> _shaders{};
 
-  std::map<std::string, shader::uniform> _uniforms{};
-  std::map<std::string, shader::uniform_block> _uniform_blocks{};
+  std::unordered_map<std::string, shader::uniform> _uniforms{};
+  std::unordered_map<std::string, shader::uniform_block> _uniform_blocks{};
 
-  std::map<std::uint32_t, VkDescriptorType> _descriptor_type_at_binding{};
+  std::unordered_map<std::uint32_t, VkDescriptorType> _descriptor_type_at_binding{};
 
-  std::map<std::string, std::uint32_t> _descriptor_bindings{};
-  std::map<std::string, std::uint32_t> _descriptor_sizes{};
+  std::unordered_map<std::string, std::uint32_t> _descriptor_bindings{};
+  std::unordered_map<std::string, std::uint32_t> _descriptor_sizes{};
 
   std::string _name{};
   VkPipelineLayout _layout{};

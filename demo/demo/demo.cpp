@@ -24,7 +24,7 @@
 #include <libsbx/scenes/scenes.hpp>
 #include <libsbx/audio/audio.hpp>
 #include <libsbx/ui/ui.hpp>
-#include <libsbx/shadows/shadows.hpp>
+// #include <libsbx/shadows/shadows.hpp>
 #include <libsbx/physics/physics.hpp>
 
 class demo_renderer : public sbx::graphics::renderer {
@@ -62,7 +62,7 @@ public:
   ~demo_renderer() override = default;
 
   auto initialize() -> void override {
-    add_subrenderer<sbx::shadows::shadow_subrenderer>("res://shaders/shadow", sbx::graphics::pipeline::stage{0, 0});
+    // add_subrenderer<sbx::shadows::shadow_subrenderer>("res://shaders/shadow", sbx::graphics::pipeline::stage{0, 0});
 
     add_subrenderer<sbx::models::mesh_subrenderer>("res://shaders/cell_shading", sbx::graphics::pipeline::stage{1, 0});
     add_subrenderer<sbx::ui::ui_subrenderer>("res://shaders/ui", sbx::graphics::pipeline::stage{1, 1});
@@ -86,7 +86,7 @@ public:
     auto prototype_black_id = assets_module.load_asset<sbx::graphics::image2d>("res://textures/prototype_black.png");
     auto white_id = assets_module.load_asset<sbx::graphics::image2d>("res://textures/white.png");
 
-    // _texture_id = base_id;
+    _texture_id = base_id;
 
     auto monkey_id = assets_module.load_asset<sbx::models::mesh>("res://meshes/suzanne.obj");
     auto sphere_id = assets_module.load_asset<sbx::models::mesh>("res://meshes/sphere.obj");
@@ -94,7 +94,7 @@ public:
     auto tree_id = assets_module.load_asset<sbx::models::mesh>("res://meshes/tree.obj");
     auto plane_id = assets_module.load_asset<sbx::models::mesh>("res://meshes/plane.obj");
 
-    // _mesh_id = sphere_id;
+    _mesh_id = sphere_id;
 
     auto font_jet_brains_mono_id = assets_module.load_asset<sbx::ui::font>("res://fonts/JetBrainsMono-Medium.ttf", sbx::ui::pixels{18u});
     auto font_roboto_id = assets_module.load_asset<sbx::ui::font>("res://fonts/Roboto-Regular.ttf", sbx::ui::pixels{18u});
@@ -143,25 +143,29 @@ public:
       sbx::core::engine::quit();
     }
 
+    if (sbx::devices::input::is_key_pressed(sbx::devices::key::space)) {
+      _flag = !_flag;
+    }
+
     auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
     auto& scene = scenes_module.scene();
 
-    // if (_flag && !_cube) {
-    //   _cube = scene.create_node("Cube", sbx::math::transform{sbx::math::vector3{-5.0f, 10.0f, 0.0f}, sbx::math::vector3::zero, sbx::math::vector3::one});
+    if (_flag && !_cube) {
+      _cube = scene.create_node("Cube", sbx::math::transform{sbx::math::vector3{-5.0f, 10.0f, 0.0f}, sbx::math::vector3::zero, sbx::math::vector3::one});
 
-    //   _cube->add_component<sbx::scenes::static_mesh>(_mesh_id, _texture_id);
+      _cube->add_component<sbx::scenes::static_mesh>(_mesh_id, _texture_id);
 
-    //   // auto& script = _cube->add_component<sbx::scenes::script>("res://scripts/rotate.lua");
-    //   // script.set("speed", -120.0f);
+      // auto& script = _cube->add_component<sbx::scenes::script>("res://scripts/rotate.lua");
+      // script.set("speed", -120.0f);
 
-    //   auto& rigidbody = _cube->add_component<sbx::physics::rigidbody>(1.0f, 0.75f, false);
-    //   rigidbody.set_acceleration(sbx::math::vector3{0.0f, -9.81f, 0.0f});
+      auto& rigidbody = _cube->add_component<sbx::physics::rigidbody>(1.0f, 0.75f, false);
+      rigidbody.set_acceleration(sbx::math::vector3{0.0f, -9.81f, 0.0f});
 
-    //   _cube->add_component<sbx::physics::box_collider>(sbx::math::vector3{1.0f, 1.0f, 1.0f});
-    // } else if (!_flag && _cube) {
-    //   scene.destroy_node(*_cube);
-    //   _cube.reset();
-    // }
+      _cube->add_component<sbx::physics::box_collider>(sbx::math::vector3{1.0f, 1.0f, 1.0f});
+    } else if (!_flag && _cube) {
+      scene.destroy_node(*_cube);
+      _cube.reset();
+    }
 
     // auto camera_node = scene.camera();
     // auto& camera = camera_node.get_component<sbx::scenes::camera>();
