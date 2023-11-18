@@ -37,22 +37,22 @@ public:
     // [NOTE] KAJ 2023-08-15 : Currently there seems to be a bug in the Vukan SDK version 1.3.250.1 that causes the validation layers to crash when resizing the window.
     // glfwWindowHint(GLFW_RESIZABLE, false);
     glfwWindowHint(GLFW_VISIBLE, false);
-    // glfwWindowHint(GLFW_DECORATED, false);
+    glfwWindowHint(GLFW_DECORATED, false);
 
     _title = create_info.title;
-    _width = create_info.width;
-    _height = create_info.height;
+    // _width = create_info.width;
+    // _height = create_info.height;
 
-    // auto* monitor = glfwGetPrimaryMonitor();
+    auto* monitor = glfwGetPrimaryMonitor();
 
-    // if (!monitor) {
-    //   throw std::runtime_error{"Could not get primary monitor"};
-    // }
+    if (!monitor) {
+      throw std::runtime_error{"Could not get primary monitor"};
+    }
 
-    // const auto* video_mode = glfwGetVideoMode(monitor);
+    const auto* video_mode = glfwGetVideoMode(monitor);
 
-    // _width = video_mode->width;
-    // _height = video_mode->height;
+    _width = video_mode->width;
+    _height = video_mode->height;
 
     _handle = glfwCreateWindow(static_cast<std::int32_t>(_width), static_cast<std::int32_t>(_height), _title.c_str(), nullptr, nullptr);
 
