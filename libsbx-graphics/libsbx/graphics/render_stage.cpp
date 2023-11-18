@@ -91,6 +91,70 @@ render_stage::~render_stage() {
   vkDestroyRenderPass(logical_device, _render_pass, nullptr);
 }
 
+auto render_stage::attachments() const noexcept -> const std::vector<graphics::attachment>& {
+  return _attachments;
+}
+
+auto render_stage::find_attachment(const std::string& name) const noexcept -> std::optional<graphics::attachment> {
+  auto entry = std::find_if(_attachments.begin(), _attachments.end(), [&name](const graphics::attachment& attachment) {
+    return attachment.name() == name;
+  });
+
+  if (entry == _attachments.end()) {
+    return std::nullopt;
+  }
+
+  return *entry;
+}
+
+auto render_stage::find_attachment(std::uint32_t binding) const noexcept -> std::optional<graphics::attachment> {
+  auto entry = std::find_if(_attachments.begin(), _attachments.end(), [&binding](const graphics::attachment& attachment) {
+    return attachment.binding() == binding;
+  });
+
+  if (entry == _attachments.end()) {
+    return std::nullopt;
+  }
+
+  return *entry;
+}
+
+auto render_stage::subpasses() const noexcept -> const std::vector<subpass_binding>& {
+  return _subpass_bindings;
+}
+
+auto render_stage::attachment_count(std::uint32_t subpass) -> std::uint32_t {
+  return _subpass_attachment_counts[subpass];
+}
+
+auto render_stage::is_outdated() const noexcept -> bool {
+  return _is_outdated;
+}
+
+auto render_stage::clear_values() const noexcept -> const std::vector<VkClearValue>& {
+  return _clear_values;
+}
+
+auto render_stage::has_depth_attachment() const noexcept -> bool {
+  return _depth_attachment.has_value();
+}
+
+auto render_stage::has_swapchain_attachment() const noexcept -> bool {
+  return _swapchain_attachment.has_value();
+}
+
+auto render_stage::viewport() const noexcept -> const class viewport& {
+  return _viewport;
+}
+
+auto render_stage::render_area() const noexcept -> const class render_area& {
+  return _render_area;
+}
+
+auto render_stage::render_pass() const noexcept -> const VkRenderPass& {
+  return _render_pass;
+}
+
 auto render_stage::update() -> void {
   auto& devices_module = core::engine::get_module<devices::devices_module>();
 
@@ -131,22 +195,10 @@ auto render_stage::rebuild(const swapchain& swapchain) -> void {
   }
 
   for (const auto& attachment : _attachments) {
-    switch (attachment.image_type()) {
-      case attachment::type::image: {
-        _image_attachments.push_back(std::make_unique<graphics::image2d>(_render_area.extent(), attachment.format(), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_STORAGE_BIT, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_SAMPLE_COUNT_1_BIT));
-        break;
-      }
-      case attachment::type::depth: {
-        _image_attachments.push_back(nullptr);
-        break;
-      }
-      case attachment::type::swapchain: {
-        _image_attachments.push_back(nullptr);
-        break;
-      }
-      default: {
-        break;
-      }
+    if (attachment.image_type() == attachment::type::image) {
+      _image_attachments.insert({attachment.binding(), std::make_unique<graphics::image2d>(_render_area.extent(), attachment.format(), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_STORAGE_BIT, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_SAMPLE_COUNT_1_BIT)});
+    } else if (attachment.image_type() == attachment::type::swapchain) {
+      _image_attachments.insert({attachment.binding(), nullptr});
     }
   }
 
@@ -179,6 +231,10 @@ auto render_stage::descriptor(const std::string& name) const noexcept -> const g
   return nullptr;
 }
 
+auto render_stage::descriptors() const noexcept -> const std::map<std::string, const graphics::descriptor*>& {
+  return _descriptors;
+}
+
 auto render_stage::_create_render_pass(VkFormat depth_format, VkFormat surface_format) -> void {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
@@ -198,7 +254,7 @@ auto render_stage::_create_render_pass(VkFormat depth_format, VkFormat surface_f
     switch (attachment.image_type()) {
       case attachment::type::image: {
         attachment_description.format = attachment.format();
-        attachment_description.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        attachment_description.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         break;
       }
       case attachment::type::depth: {
@@ -252,24 +308,24 @@ auto render_stage::_create_render_pass(VkFormat depth_format, VkFormat surface_f
 		subpass_dependency.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 		subpass_dependency.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
-		if (subpass.binding() == _subpass_bindings.size()) {
-			subpass_dependency.dstSubpass = VK_SUBPASS_EXTERNAL;
-			subpass_dependency.dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-			subpass_dependency.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-			subpass_dependency.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
-		} else {
-			subpass_dependency.dstSubpass = subpass.binding();
-		}
+    if (subpass.binding() == _subpass_bindings.size()) {
+      subpass_dependency.dstSubpass = VK_SUBPASS_EXTERNAL;
+      subpass_dependency.dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+      subpass_dependency.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+      subpass_dependency.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+    } else {
+      subpass_dependency.dstSubpass = subpass.binding();
+    }
 
-		if (subpass.binding() == 0) {
-			subpass_dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-			subpass_dependency.srcStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-			subpass_dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-			subpass_dependency.srcAccessMask = VK_ACCESS_MEMORY_READ_BIT;
-			subpass_dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-		} else {
-			subpass_dependency.srcSubpass = subpass.binding() - 1;
-		}
+    if (subpass.binding() == 0) {
+      subpass_dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+      subpass_dependency.srcStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+      subpass_dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+      subpass_dependency.srcAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+      subpass_dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    } else {
+      subpass_dependency.srcSubpass = subpass.binding() - 1;
+    }
 
 		subpass_dependencies.emplace_back(subpass_dependency);
 	}
