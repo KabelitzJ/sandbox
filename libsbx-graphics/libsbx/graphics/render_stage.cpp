@@ -254,7 +254,7 @@ auto render_stage::_create_render_pass(VkFormat depth_format, VkFormat surface_f
     switch (attachment.image_type()) {
       case attachment::type::image: {
         attachment_description.format = attachment.format();
-        attachment_description.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        attachment_description.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
         break;
       }
       case attachment::type::depth: {

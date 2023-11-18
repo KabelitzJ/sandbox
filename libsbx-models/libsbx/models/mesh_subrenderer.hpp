@@ -159,9 +159,7 @@ private:
 
     // const auto& shadow_map = static_cast<const graphics::image&>(graphics_module.attachment("shadow_map"));
 
-    // graphics::image::transition_image_layout(command_buffer, shadow_map, shadow_map.format(), shadow_map.layout(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_ASPECT_COLOR_BIT, 1, 0, 1, 0);
-
-    // descriptor_handler.push("shadow_map", graphics_module.attachment("shadow_map"));
+    // descriptor_handler.push("shadow_map", shadow_map);
 
     if (!descriptor_handler.update(_pipeline)) {
       return;
