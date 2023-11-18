@@ -2,6 +2,9 @@
 #define LIBSBX_SHADOWS_SHADOW_SUBRENDERER_HPP_
 
 #include <libsbx/graphics/subrenderer.hpp>
+#include <libsbx/graphics/graphics_module.hpp>
+#include <libsbx/graphics/images/image.hpp>
+#include <libsbx/graphics/images/depth_image.hpp>
 #include <libsbx/graphics/buffers/push_handler.hpp>
 #include <libsbx/graphics/buffers/uniform_handler.hpp>
 #include <libsbx/graphics/descriptor/descriptor_handler.hpp>
@@ -30,6 +33,7 @@ public:
 
   auto render(graphics::command_buffer& command_buffer) -> void override {
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
+    auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
     auto& scene = scenes_module.scene();
 

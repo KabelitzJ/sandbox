@@ -54,11 +54,17 @@ function compile_shader {
 $shaders = Get-ChildItem -Directory "$directory"
 
 foreach ($shader in $shaders) {
+  if ((Split-Path "$shader" -Leaf) -eq "common") {
+    continue
+  }
+
   if ((compile_shader $shader) -eq 0) {
     Write-Host "[Error] Directory '$shader' does not contain shader sources."
     Write-Host
     Write-Host "Usage: $PSCommandPath -directory <path>"
     Write-Host
-    return
+    return 1
   }
 }
+
+return 0

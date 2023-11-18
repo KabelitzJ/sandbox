@@ -1,6 +1,6 @@
 #version 450
 
-layout(location = 0) out float out_depth;
+// layout(location = 0) out float out_depth;
 
 void main() {
   

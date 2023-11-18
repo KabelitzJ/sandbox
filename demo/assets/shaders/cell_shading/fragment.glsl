@@ -31,7 +31,7 @@ layout(binding = 1) buffer buffer_lights {
 } lights;
 
 layout(binding = 2) uniform sampler2D image;
-// layout(binding = 2) uniform sampler2D shadow_map;
+layout(binding = 3) uniform sampler2D shadow_map;
 
 layout(push_constant) uniform uniform_object {
   mat4 model;
