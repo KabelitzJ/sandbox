@@ -4,7 +4,6 @@
 #include <libsbx/units/quantity.hpp>
 #include <libsbx/units/distance.hpp>
 #include <libsbx/units/time.hpp>
-#include <libsbx/units/velocity.hpp>
 #include <libsbx/units/mass.hpp>
 #include <libsbx/units/bytes.hpp>
 

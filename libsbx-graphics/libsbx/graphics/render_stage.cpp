@@ -16,6 +16,7 @@ public:
     _description.pipelineBindPoint = bind_point;
     _description.colorAttachmentCount = static_cast<std::uint32_t>(_color_attachment.size());
     _description.pColorAttachments = _color_attachment.data();
+    _description.pInputAttachments = nullptr;
 
     if (depth_attachment) {
       _depth_attachment.attachment = *depth_attachment;
