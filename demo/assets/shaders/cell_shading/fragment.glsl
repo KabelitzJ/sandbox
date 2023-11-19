@@ -1,16 +1,12 @@
 #version 450
 
+#include "../common/lighting.glsl"
+
 struct material {
   vec4 ambient;
   vec4 diffuse;
   vec4 specular;
   float shininess;
-};
-
-struct point_light {
-  vec4 color;
-  vec3 position;
-  float radius;
 };
 
 layout(location = 0) in vec3 in_position;
@@ -23,12 +19,14 @@ layout(binding = 0) uniform uniform_scene {
   mat4 view;
   mat4 projection;
   vec3 camera_position;
-  int light_count;
+  uint point_light_count;
+  vec3 directional_light_direction;
+  vec4 directional_light_color;
 } scene;
 
-layout(binding = 1) buffer buffer_lights {
-  point_light array[];
-} lights;
+layout(binding = 1) buffer buffer_point_lights {
+  point_light data[];
+} point_lights;
 
 layout(binding = 2) uniform sampler2D image;
 layout(binding = 3) uniform sampler2D shadow_map;
@@ -47,20 +45,14 @@ const material default_material = material(
   32.0
 );
 
-const point_light default_light = point_light(
-  vec4(1.0, 0.97, 0.84, 1.0),
-  vec3(5.0, 5.0, 5.0),
-  10.0
-);
-
 const float mix_factor = 0.25;
 
-vec4 phong_shading(vec3 light_direction, float intensity) {
+vec4 phong_shading(vec3 light_direction, vec4 light_color, float intensity) {
   // Calculate the ambient color
-  vec4 ambient = (default_light.color * 0.1) * default_material.ambient;
+  vec4 ambient = (light_color * 0.1) * default_material.ambient;
 
   // Calculate the diffuse color
-  vec4 diffuse = (default_light.color * 0.5) * (default_material.diffuse * intensity);
+  vec4 diffuse = (light_color * 0.5) * (default_material.diffuse * intensity);
 
   // Calculate the specular color
   vec3 camera_direction = normalize(vec3(scene.camera_position) - in_position);
@@ -83,8 +75,8 @@ vec4 cel_shading(float intensity) {
   return mix(SHADOW_COLOR, default_material.ambient, shade_index / float(CEL_LEVELS - 1));
 }
 
-vec4 shading(vec3 light_direction, float intensity) {
-  vec4 phong_shading = phong_shading(light_direction, intensity);
+vec4 shading(vec3 light_direction, vec4 light_color, float intensity) {
+  vec4 phong_shading = phong_shading(light_direction, light_color, intensity);
   vec4 cel_shading = cel_shading(intensity);
 
   return mix(phong_shading, cel_shading, mix_factor);
@@ -93,8 +85,8 @@ vec4 shading(vec3 light_direction, float intensity) {
 vec4 sum_shading() {
   vec4 shaded_color = vec4(0.0, 0.0, 0.0, 1.0);
 
-  for (int i = 0; i < scene.light_count; ++i) {
-    point_light current_light = lights.array[i];
+  for (int i = 0; i < scene.point_light_count; ++i) {
+    point_light current_light = point_lights.data[i];
 
     vec3 light_direction = normalize(current_light.position - in_position);
 
@@ -108,18 +100,27 @@ vec4 sum_shading() {
 
     float intensity = max(dot(in_normal, light_direction), 0.0);
 
-    shaded_color += shading(light_direction, intensity) * current_light.color * attenuation;
+    shaded_color += shading(light_direction, current_light.color, intensity) * current_light.color * attenuation;
   }
 
   return shaded_color;
 }
 
 void main() {
-  vec4 shaded_color = vec4(1.0, 1.0, 1.0, 1.0);
+  // vec4 shaded_color = vec4(1.0, 1.0, .0, 1.0);
 
-  if (object.uses_lighting == 1) {
-    shaded_color = sum_shading();
-  }
+  // if (object.uses_lighting == 1) {
+  //   shaded_color = sum_shading();
+  // }
 
-  out_color = texture(image, in_uv) * object.tint * shaded_color;
+  // vec4 shaded_color = scene.directional_light_color;
+
+  // for (uint i = 0; i < scene.point_light_count; ++i) {
+  //   shaded_color += calculate_point_light(point_lights.data[i], in_position, in_normal, vec4(1.0, 1.0, 1.0, 1.0), 32.0);
+  // }
+
+  float shadow = texture(shadow_map, in_uv).r;
+
+  // out_color = texture(image, in_uv);
+  out_color = vec4(shadow, shadow, shadow, 1.0);
 }

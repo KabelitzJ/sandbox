@@ -20,7 +20,7 @@ auto push_handler::push(const std::string& uniform_name, const Type& object, std
   auto uniform = _uniform_block->find_uniform(uniform_name);
 
   if (!uniform) {
-    throw std::runtime_error{fmt::format("Uniform '{}' not found in uniform block", uniform_name)};
+    throw std::runtime_error{fmt::format("Uniform '{}' not found in push block", uniform_name)};
   }
 
   auto object_size = (size > 0) ? size : std::min(sizeof(Type), static_cast<std::size_t>(uniform->size()));

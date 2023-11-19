@@ -11,5 +11,6 @@
 #include <libsbx/scenes/components/camera.hpp>
 #include <libsbx/scenes/components/script.hpp>
 #include <libsbx/scenes/components/point_light.hpp>
+#include <libsbx/scenes/components/directional_light.hpp>
 
 #endif // LIBSBX_SCENE_HPP_

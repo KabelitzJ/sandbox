@@ -41,7 +41,7 @@ struct point_light {
 
 class mesh_subrenderer final : public graphics::subrenderer {
 
-  inline static constexpr auto max_lights_v = std::size_t{16};
+  inline static constexpr auto max_point_lights = std::size_t{16};
 
 public:
 
@@ -72,16 +72,16 @@ public:
 
     _scene_uniform_handler.push("projection", camera.projection());
 
-    auto& transform = camera_node.get_component<math::transform>();
+    auto& camera_transform = camera_node.get_component<math::transform>();
 
-    _scene_uniform_handler.push("view", math::matrix4x4::inverted(transform.as_matrix()));
+    _scene_uniform_handler.push("view", math::matrix4x4::inverted(camera_transform.as_matrix()));
 
-    _scene_uniform_handler.push("camera_position", transform.position()); 
+    _scene_uniform_handler.push("camera_position", camera_transform.position()); 
 
     auto light_nodes = scene.query<scenes::point_light>();
 
     auto lights = std::vector<models::point_light>{};
-    auto light_count = std::uint32_t{0};
+    auto point_light_count = std::uint32_t{0};
 
     for (const auto& node : light_nodes) {
       const auto& light = node.get_component<scenes::point_light>();
@@ -89,17 +89,32 @@ public:
 
       lights.push_back(models::point_light{light.color(), transform.position(), light.radius()});
       
-      ++light_count;
+      ++point_light_count;
 
-      if (light_count >= max_lights_v) {
+      if (point_light_count >= max_point_lights) {
         break;
       }
     }
 
-    _lights_storage_handler.push(std::span<const models::point_light>{lights.data(), light_count});
-    _scene_uniform_handler.push("light_count", light_count);
+    _lights_storage_handler.push(std::span<const models::point_light>{lights.data(), point_light_count});
+    _scene_uniform_handler.push("point_light_count", point_light_count);
 
-    auto mesh_nodes = scene.query<scenes::static_mesh>();
+    auto directional_light_nodes = scene.query<scenes::directional_light>();
+
+    if (directional_light_nodes.empty()) {
+      core::logger::warn("Scene does not have a directional light");
+    }
+
+    if (directional_light_nodes.size() > 1) {
+      core::logger::warn("Scene has more than one directional light. Discarding all but the first one");
+    }
+
+    auto& directional_light_node = directional_light_nodes[0];
+
+    auto& directional_light = directional_light_node.get_component<scenes::directional_light>();
+
+    _scene_uniform_handler.push("directional_light_direction", directional_light.direction());
+    _scene_uniform_handler.push("directional_light_color", directional_light.color());
 
     for (auto entry = _uniform_data.begin(); entry != _uniform_data.end();) {
       if (_used_uniforms.contains(entry->first)) {
@@ -110,6 +125,8 @@ public:
     }
 
     _used_uniforms.clear();
+
+    auto mesh_nodes = scene.query<scenes::static_mesh>();
 
     for (auto& node : mesh_nodes) {
       _used_uniforms.insert(node.get_component<scenes::id>());
@@ -154,12 +171,9 @@ private:
 
     descriptor_handler.push("object", push_handler);
     descriptor_handler.push("uniform_scene", _scene_uniform_handler);
-    descriptor_handler.push("buffer_lights", _lights_storage_handler);
+    descriptor_handler.push("buffer_point_lights", _lights_storage_handler);
     descriptor_handler.push("image", image);
-
-    // const auto& shadow_map = static_cast<const graphics::image&>(graphics_module.attachment("shadow_map"));
-
-    // descriptor_handler.push("shadow_map", shadow_map);
+    descriptor_handler.push("shadow_map", graphics_module.attachment("shadow_map"));
 
     if (!descriptor_handler.update(_pipeline)) {
       return;

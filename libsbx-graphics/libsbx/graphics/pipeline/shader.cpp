@@ -251,7 +251,9 @@ auto shader::_get_data_type(const spirv_cross::SPIRType& type) -> data_type {
     }
   } else if (type.basetype == spirv_cross::SPIRType::SampledImage) {
     return data_type::sampler2d;
-  } 
+  } else if (type.basetype == spirv_cross::SPIRType::Struct) {
+    return data_type::structure;
+  }
 
   return data_type::unknown;
 }
@@ -280,6 +282,8 @@ auto shader::_data_type_to_string(data_type type) -> std::string {
     case data_type::mat4: return "mat4";
     case data_type::imat4: return "imat4";
     case data_type::umat4: return "umat4";
+    case data_type::sampler2d: return "sampler2d";
+    case data_type::structure: return "structure";
     case data_type::unknown:
     default: return "unknown";
   }

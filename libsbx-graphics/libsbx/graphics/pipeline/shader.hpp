@@ -43,6 +43,7 @@ public:
     imat4,
     umat4,
     sampler2d,
+    structure
   }; // enum class data_type
 
   class uniform {

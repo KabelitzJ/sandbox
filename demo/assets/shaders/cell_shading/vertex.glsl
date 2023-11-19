@@ -12,7 +12,9 @@ layout(binding = 0) uniform uniform_scene {
   mat4 view;
   mat4 projection;
   vec3 camera_position;
-  int light_count;
+  int point_light_count;
+  vec3 directional_light_direction;
+  vec4 directional_light_color;
 } scene;
 
 layout(push_constant) uniform uniform_object {
