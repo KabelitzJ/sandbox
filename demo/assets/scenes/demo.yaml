@@ -29,9 +29,9 @@ entities:
   - name: "sun"
     components:
       - type: "transform"
-        position: { x: 4.0, y: 8.0, z: 4.0 }
+        position: { x: 2.0, y: 5.0, z: 2.0 }
         rotation: { x: 0.0, y: 0.0, z: 0.0 }
-        scale: { x: 1.0, y: 1.0, z: 1.0 }
+        scale: { x: 0.2, y: 0.2, z: 0.2 }
       - type: "directional_light"
         direction: { x: 1.0, y: -1.0, z: 1.0 }
         color: { r: 0.98, g: 0.98, b: 0.98, a: 1.0 }
@@ -40,7 +40,7 @@ entities:
       - type: "transform"
         position: { x: 0.0, y: 0.0, z: 0.0 }
         rotation: { x: 90.0, y: 0.0, z: 0.0 }
-        scale: { x: 20.0, y: 20.0, z: 1.0 }
+        scale: { x: 10.0, y: 10.0, z: 1.0 }
       - type: "static_mesh"
         mesh: *plane
         texture: *prototype_black
@@ -49,7 +49,37 @@ entities:
       - type: "transform"
         position: { x: 0.0, y: 1.0, z: 0.0 }
         rotation: { x: 0.0, y: 45.0, z: 0.0 }
-        scale: { x: 1.0, y: 1.0, z: 1.0 }
+        scale: { x: 0.5, y: 0.5, z: 0.5 }
+      - type: "static_mesh"
+        mesh: *cube
+        texture: *base
+      - type: "script"
+        script: "res://scripts/rotate.lua"
+        parameters:
+          - name: "speed"
+            type: "number"
+            value: 50.0
+  - name: "cube2"
+    components:
+      - type: "transform"
+        position: { x: 2.0, y: 2.0, z: 0.0 }
+        rotation: { x: 0.0, y: 45.0, z: 0.0 }
+        scale: { x: 0.5, y: 0.5, z: 0.5 }
+      - type: "static_mesh"
+        mesh: *cube
+        texture: *base
+      - type: "script"
+        script: "res://scripts/rotate.lua"
+        parameters:
+          - name: "speed"
+            type: "number"
+            value: 50.0
+  - name: "cube3"
+    components:
+      - type: "transform"
+        position: { x: -2.0, y: 0.25, z: 0.0 }
+        rotation: { x: 0.0, y: 0.0, z: 0.0 }
+        scale: { x: 0.5, y: 0.5, z: 0.5 }
       - type: "static_mesh"
         mesh: *cube
         texture: *base

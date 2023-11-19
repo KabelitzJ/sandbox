@@ -41,7 +41,6 @@ public:
   auto render(graphics::command_buffer& command_buffer) -> void override {
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
     auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
-    auto& devices_module = core::engine::get_module<devices::devices_module>();
 
     auto& scene = scenes_module.scene();
 
@@ -60,12 +59,10 @@ public:
 
     auto& directional_light = directional_light_node.get_component<scenes::directional_light>();
     auto& transform = directional_light_node.get_component<math::transform>();
+    
+    _scene_uniform_handler.push("view", math::matrix4x4::look_at(transform.position(), math::vector3::zero, math::vector3::up));
 
-    _scene_uniform_handler.push("view", math::matrix4x4::inverted(transform.as_matrix()));
-
-    auto& window = devices_module.window();
-
-    _scene_uniform_handler.push("projection", math::matrix4x4::orthographic(-10.0f, 10.0f, -10.0f, 10.0f, 0.1f, 20.0f));
+    _scene_uniform_handler.push("projection", math::matrix4x4::orthographic(-10.0f, 10.0f, -10.0f, 10.0f, -10.0f, 20.0f));
 
     auto mesh_nodes = scene.query<scenes::static_mesh>();
 

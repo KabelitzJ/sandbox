@@ -112,9 +112,12 @@ public:
     auto& directional_light_node = directional_light_nodes[0];
 
     auto& directional_light = directional_light_node.get_component<scenes::directional_light>();
+    auto& directional_light_transform = directional_light_node.get_component<math::transform>();
 
-    _scene_uniform_handler.push("directional_light_direction", directional_light.direction());
-    _scene_uniform_handler.push("directional_light_color", directional_light.color());
+    const auto view = math::matrix4x4::look_at(directional_light_transform.position(), math::vector3::zero, math::vector3::up);
+    const auto projection = math::matrix4x4::orthographic(-10.0f, 10.0f, -10.0f, 10.0f, -10.0f, 20.0f);
+
+    _scene_uniform_handler.push("light_space", math::matrix4x4{projection * view});
 
     for (auto entry = _uniform_data.begin(); entry != _uniform_data.end();) {
       if (_used_uniforms.contains(entry->first)) {
