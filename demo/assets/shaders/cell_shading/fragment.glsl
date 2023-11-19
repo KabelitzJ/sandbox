@@ -80,7 +80,7 @@ void main() {
   // calculate shadow
   float shadow = calculate_shadow(in_light_space_position, light_dir);  
 
-  out_color = (ambient + (1.0 - shadow) * (diffuse + specular)) * color;
+  // out_color = (ambient + (1.0 - shadow) * (diffuse + specular)) * color;
 
-  // out_color = vec4(texture(shadow_map, in_uv).rrr, 1.0);
+  out_color = vec4(texture(shadow_map, in_uv).rrr, 1.0);
 }
