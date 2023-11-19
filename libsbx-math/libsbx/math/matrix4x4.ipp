@@ -186,9 +186,17 @@ template<numeric Type>
 inline constexpr auto basic_matrix4x4<Type>::orthographic(const value_type left, const value_type right, const value_type bottom, const value_type top,  const value_type near, const value_type far) noexcept -> basic_matrix4x4<Type> {
   auto result = basic_matrix4x4<value_type>::identity;
 
+  // result[0][0] = static_cast<value_type>(2) / (right - left);
+  // result[1][1] = static_cast<value_type>(2) / (top - bottom);
+  // result[2][2] = static_cast<value_type>(1) / (far - near);
+
+  // result[3][0] = -(right + left) / (right - left);
+  // result[3][1] = -(top + bottom) / (top - bottom);
+  // result[3][2] = -near / (far - near);
+
   result[0][0] = static_cast<value_type>(2) / (right - left);
   result[1][1] = static_cast<value_type>(2) / (top - bottom);
-  result[2][2] = static_cast<value_type>(1) / (far - near);
+  result[2][2] = -static_cast<value_type>(1) / (far - near);
 
   result[3][0] = -(right + left) / (right - left);
   result[3][1] = -(top + bottom) / (top - bottom);
