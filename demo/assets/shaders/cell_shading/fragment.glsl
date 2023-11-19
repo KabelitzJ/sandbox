@@ -58,7 +58,7 @@ float calculate_shadow(vec4 light_space_position, vec3 light_dir) {
 
   float bias = max(0.05 * (1.0 - dot(in_normal, light_dir)), 0.005);
 
-  return (current_depth - bias) > closest_depth ? 1.0 : 0.0;
+  return (current_depth - 0.005) > closest_depth ? 1.0 : 0.0;
 }
 
 void main() {

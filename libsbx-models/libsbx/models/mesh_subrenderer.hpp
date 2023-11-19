@@ -110,8 +110,6 @@ public:
     }
 
     auto& directional_light_node = directional_light_nodes[0];
-
-    auto& directional_light = directional_light_node.get_component<scenes::directional_light>();
     auto& directional_light_transform = directional_light_node.get_component<math::transform>();
 
     const auto view = math::matrix4x4::look_at(directional_light_transform.position(), math::vector3::zero, math::vector3::up);
