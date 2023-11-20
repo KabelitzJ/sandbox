@@ -45,23 +45,14 @@ public:
 
     auto& scene = scenes_module.scene();
 
-    auto directional_light_nodes = scene.query<scenes::directional_light>();
+    auto& scene_light = scene.light();
 
-    if (directional_light_nodes.empty()) {
-      core::logger::warn("Scene does not have a directional light");
-      return;
-    }
+    auto& light_direction = scene_light.direction();
 
-    if (directional_light_nodes.size() > 1) {
-      core::logger::warn("Scene has more than one directional light. Discarding all but the first one");
-    }
+    const auto view = math::matrix4x4::look_at(math::vector3{5, 5, 5}, math::vector3::zero, math::vector3::up);
+    const auto projection = math::matrix4x4::orthographic(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, 20.0f);
 
-    auto& directional_light_node = directional_light_nodes[0];
-    auto& transform = directional_light_node.get_component<math::transform>();
-
-    _scene_uniform_handler.push("view", math::matrix4x4::look_at(transform.position(), math::vector3::zero, math::vector3::up));
-
-    _scene_uniform_handler.push("projection", math::matrix4x4::orthographic(-10.0f, 10.0f, -10.0f, 10.0f, -10.0f, 20.0f));
+    _scene_uniform_handler.push("light_space", math::matrix4x4{projection * view});
 
     auto mesh_nodes = scene.query<scenes::static_mesh>();
 

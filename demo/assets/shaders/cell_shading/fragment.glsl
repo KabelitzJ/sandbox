@@ -21,12 +21,9 @@ layout(binding = 0) uniform uniform_scene {
   mat4 projection;
   vec3 camera_position;
   mat4 light_space;
-  uint point_light_count;
+  vec3 light_direction;
+  vec4 light_color;
 } scene;
-
-layout(binding = 1) buffer buffer_point_lights {
-  point_light data[];
-} point_lights;
 
 layout(binding = 2) uniform sampler2D image;
 layout(binding = 3) uniform sampler2D shadow_map;
@@ -34,9 +31,9 @@ layout(binding = 3) uniform sampler2D shadow_map;
 layout(push_constant) uniform uniform_object {
   mat4 model;
   mat4 normal;
-  vec4 tint;
-  int uses_lighting;
 } object;
+
+const vec3 light_position = vec3(5.0, 5.0, 5.0);
 
 const material default_material = material(
   vec4(1.0, 1.0, 1.0, 1.0),
@@ -45,54 +42,57 @@ const material default_material = material(
   32.0
 );
 
-const vec3 light_position = vec3(4.0, 6.0, 4.0);
+float calculate_shadow(vec3 light_direction) {
+  float shadow = 0.0;
 
-float calculate_shadow(vec4 light_space_position, vec3 light_dir) {
-  // float shadow = 0.0;
+  vec2 texel_size = 1.0 / textureSize(shadow_map, 0);
 
-  // vec2 texel_size = 1.0 / textureSize(shadow_map, 0);
+  vec3 coordinates = in_light_space_position.xyz / in_light_space_position.w;
 
-  float bias = max(0.005 * (1.0 - dot(in_normal, light_dir)), 0.0005);
+  float bias = max(0.001 * (1.0 - dot(in_normal, light_direction)), 0.0001);
+  // float bias = 0.001;
 
-  // for (int x = -1; x <= 1; ++x) {
-  //   for (int y = -1; y <= 1; ++y) {
-  //     float pcf_depth = texture(shadow_map, light_space_position.xy + vec2(x, y) * texel_size).r;
-  //     shadow += (light_space_position.z - bias) > pcf_depth ? 1.0 : 0.0;
-  //   }
-  // }
+  int count = 0;
+  int range = 1;
 
-  // return shadow / 9.0;
+  for (int x = -range; x <= range; ++x) {
+    for (int y = -range; y <= range; ++y) {
+      float pcf_depth = texture(shadow_map, coordinates.xy + vec2(x, y) * texel_size).r;
+      shadow += (coordinates.z - bias) > pcf_depth ? 1.0 : 0.0;
+      ++count;
+    }
+  }
 
-  vec3 proj_coords = light_space_position.xyz / light_space_position.w;
-
-  float current_depth = proj_coords.z;
-  float closest_depth = texture(shadow_map, proj_coords.xy).r;
-
-  return current_depth - bias > closest_depth ? 1.0 : 0.0;
+  return shadow / float(count);
 }
 
 void main() {
-  vec4 color = texture(image, in_uv);
+  vec3 light_direction = normalize(light_position - in_position);
 
-  vec4 light_color = vec4(1.0, 1.0, 1.0, 1.0);
-  // ambient
-  vec4 ambient = 0.15 * light_color;
-  // diffuse
-  vec3 light_dir = normalize(light_position - in_position);
-  float diff = max(dot(light_dir, in_normal), 0.0);
-  vec4 diffuse = diff * light_color;
-  // specular
-  vec3 view_dir = normalize(scene.camera_position - in_position);
-  float spec = 0.0;
-  vec3 halfway_dir = normalize(light_dir + view_dir);  
-  spec = pow(max(dot(in_normal, halfway_dir), 0.0), 64.0);
-  vec4 specular = spec * light_color;    
-  // calculate shadow
-  float shadow = calculate_shadow(in_light_space_position, light_dir);  
+  // Ambient
+  vec4 ambient_color = scene.light_color * 0.15;
 
-  // out_color = (ambient + (1.0 - shadow) * (diffuse + specular)) * color;
-  // out_color = (ambient + diffuse + specular) * color;
+  // Diffuse
+  float diffuse_factor = max(dot(light_direction, in_normal), 0.0);
+  vec4 diffuse_color = diffuse_factor * scene.light_color;
 
-  out_color = vec4(shadow, shadow, shadow, 1.0);
+  // Specular
+  vec3 view_direction = normalize(scene.camera_position - in_position);
+  vec3 halfway_direction = normalize(light_direction + view_direction);  
+  float specular_factor = pow(max(dot(in_normal, halfway_direction), 0.0), 64.0);
+  vec4 specular_color = specular_factor * scene.light_color; 
+
+  // Calculate shadow
+  float shadow_factor = calculate_shadow(light_direction);
+
+  // Sample texture
+  vec4 sampled_color = texture(image, in_uv);
+
+  out_color = (ambient_color + (1.0 - shadow_factor) * (diffuse_color + specular_color)) * sampled_color;
+  // out_color = (ambient_color + diffuse_color + specular_color) * sampled_color;
+  // out_color = color * shadow;
+
+
+  // out_color = vec4(shadow_factor, shadow_factor, shadow_factor, 1.0);
   // out_color = vec4(texture(shadow_map, in_uv).rrr, 1.0);
 }

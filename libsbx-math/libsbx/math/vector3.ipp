@@ -59,6 +59,11 @@ inline constexpr auto basic_vector3<Type>::normalized(const basic_vector3& vecto
 }
 
 template<numeric Type>
+inline constexpr auto basic_vector3<Type>::absolute(const basic_vector3& vector) noexcept -> basic_vector3<Type> {
+  return basic_vector3{std::abs(vector.x), std::abs(vector.y), std::abs(vector.z)};
+}
+
+template<numeric Type>
 inline constexpr auto basic_vector3<Type>::dot(const basic_vector3& lhs, const basic_vector3& rhs) noexcept -> value_type {
   return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z;
 }

@@ -259,7 +259,7 @@ auto render_stage::_create_render_pass(VkFormat depth_format, VkFormat surface_f
       }
       case attachment::type::depth: {
         attachment_description.format = depth_format;
-        attachment_description.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+        attachment_description.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         break;
       }
       case attachment::type::swapchain: {

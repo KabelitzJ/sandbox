@@ -61,13 +61,7 @@ public:
         return;
       }
 
-      auto tint = math::color{1.0f, 1.0f, 1.0f, 1.0f};
-
-      if (const auto tint_node = node_data["tint"]; tint_node) {
-        tint = tint_node.as<math::color>();
-      }
-
-      node.add_component<scenes::static_mesh>(*mesh_id, *texture_id, tint);
+      node.add_component<scenes::static_mesh>(*mesh_id, *texture_id);
     });
 
     register_loader("camera", [this](node& node, const YAML::Node& node_data) {

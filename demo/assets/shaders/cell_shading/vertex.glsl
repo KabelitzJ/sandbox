@@ -14,22 +14,22 @@ layout(binding = 0) uniform uniform_scene {
   mat4 projection;
   vec3 camera_position;
   mat4 light_space;
-  int point_light_count;
+  vec3 light_direction;
+  vec4 light_color;
 } scene;
 
 layout(push_constant) uniform uniform_object {
   mat4 model;
   mat4 normal;
-  vec4 tint;
-  int uses_lighting;
 } object;
 
-const mat4 depth_bias = mat4(
-  0.5, 0.0, 0.0, 0.0,
-  0.0, 0.5, 0.0, 0.0,
-  0.0, 0.0, 0.5, 0.0,
-  0.5, 0.5, 0.5, 1.0
+const mat4 depth_bias = mat4( 
+	0.5, 0.0, 0.0, 0.0,
+	0.0, 0.5, 0.0, 0.0,
+	0.0, 0.0, 1.0, 0.0,
+	0.5, 0.5, 0.0, 1.0
 );
+
 
 void main() {
   out_position = vec3(object.model * vec4(in_position, 1.0));

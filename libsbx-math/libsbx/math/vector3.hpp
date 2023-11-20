@@ -156,6 +156,8 @@ public:
    */
   [[nodiscard]] static constexpr auto normalized(const basic_vector3& vector) noexcept -> basic_vector3;
 
+  [[nodiscard]] static constexpr auto absolute(const basic_vector3& vector) noexcept -> basic_vector3; 
+
   /**
    * @brief Returns the dot product of two vectors.
    * 

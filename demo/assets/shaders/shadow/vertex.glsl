@@ -3,8 +3,7 @@
 layout(location = 0) in vec3 in_position;
 
 layout(binding = 0) uniform uniform_scene {
-  mat4 view;
-  mat4 projection;
+  mat4 light_space;
 } scene;
 
 layout(push_constant) uniform uniform_object {
@@ -12,5 +11,5 @@ layout(push_constant) uniform uniform_object {
 } object;
 
 void main() {
-  gl_Position = scene.projection * scene.view * object.model * vec4(in_position, 1.0);
+  gl_Position = scene.light_space * object.model * vec4(in_position, 1.0);
 }

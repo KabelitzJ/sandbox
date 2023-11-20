@@ -11,10 +11,9 @@ class static_mesh final {
 
 public:
 
-  static_mesh(assets::asset_id mesh_id, assets::asset_id texture_id, const math::color& tint = math::color{1.0f, 1.0f, 1.0f, 1.0f})
+  static_mesh(assets::asset_id mesh_id, assets::asset_id texture_id)
   : _mesh_id{mesh_id}, 
-    _texture_id{texture_id},
-    _tint{tint} { }
+    _texture_id{texture_id} { }
 
   auto mesh_id() const noexcept -> assets::asset_id {
     return _mesh_id;
@@ -22,10 +21,6 @@ public:
 
   auto texture_id() const noexcept -> assets::asset_id {
     return _texture_id;
-  }
-
-  auto tint() const noexcept -> const math::color& {
-    return _tint;
   }
 
 private:

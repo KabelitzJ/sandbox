@@ -79,42 +79,39 @@ public:
 
     _scene_uniform_handler.push("camera_position", camera_transform.position()); 
 
-    auto light_nodes = scene.query<scenes::point_light>();
+    // auto light_nodes = scene.query<scenes::point_light>();
 
-    auto lights = std::vector<models::point_light>{};
-    auto point_light_count = std::uint32_t{0};
+    // auto lights = std::vector<models::point_light>{};
+    // auto point_light_count = std::uint32_t{0};
 
-    for (const auto& node : light_nodes) {
-      const auto& light = node.get_component<scenes::point_light>();
-      const auto& transform = node.get_component<math::transform>();
+    // for (const auto& node : light_nodes) {
+    //   const auto& light = node.get_component<scenes::point_light>();
+    //   const auto& transform = node.get_component<math::transform>();
 
-      lights.push_back(models::point_light{light.color(), transform.position(), light.radius()});
+    //   lights.push_back(models::point_light{light.color(), transform.position(), light.radius()});
       
-      ++point_light_count;
+    //   ++point_light_count;
 
-      if (point_light_count >= max_point_lights) {
-        break;
-      }
-    }
+    //   if (point_light_count >= max_point_lights) {
+    //     break;
+    //   }
+    // }
 
-    _lights_storage_handler.push(std::span<const models::point_light>{lights.data(), point_light_count});
-    _scene_uniform_handler.push("point_light_count", point_light_count);
+    // _lights_storage_handler.push(std::span<const models::point_light>{lights.data(), point_light_count});
+    // _scene_uniform_handler.push("point_light_count", point_light_count);
 
-    auto directional_light_nodes = scene.query<scenes::directional_light>();
+    auto& scene_light = scene.light();
 
-    if (directional_light_nodes.empty()) {
-      core::logger::warn("Scene does not have a directional light");
-    }
+    auto& light_direction = scene_light.direction();
+    auto& light_color = scene_light.color();
 
-    if (directional_light_nodes.size() > 1) {
-      core::logger::warn("Scene has more than one directional light. Discarding all but the first one");
-    }
+    _scene_uniform_handler.push("light_direction", light_direction);
+    _scene_uniform_handler.push("light_color", light_color);
 
-    auto& directional_light_node = directional_light_nodes[0];
-    auto& directional_light_transform = directional_light_node.get_component<math::transform>();
+    auto position = light_direction * -5.0f;
 
-    const auto view = math::matrix4x4::look_at(directional_light_transform.position(), math::vector3::zero, math::vector3::up);
-    const auto projection = math::matrix4x4::orthographic(-10.0f, 10.0f, -10.0f, 10.0f, -10.0f, 20.0f);
+    const auto view = math::matrix4x4::look_at(math::vector3{5, 5, 5}, math::vector3::zero, math::vector3::up);
+    const auto projection = math::matrix4x4::orthographic(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, 20.0f);
 
     _scene_uniform_handler.push("light_space", math::matrix4x4{projection * view});
 
@@ -152,7 +149,6 @@ private:
 
     auto& mesh = assets_module.get_asset<models::mesh>(static_mesh.mesh_id());
     auto& image = assets_module.get_asset<graphics::image2d>(static_mesh.texture_id());
-    const auto& tint = static_mesh.tint();
 
     _pipeline.bind(command_buffer);
 
@@ -166,13 +162,9 @@ private:
 
     push_handler.push("model", world_transform);
     push_handler.push("normal", math::matrix4x4::transposed(math::matrix4x4::inverted(world_transform)));
-    push_handler.push("tint", tint);
-    // [NOTE] KAJ 2023-10-29 : Meshes on light sources should not be lit
-    push_handler.push("uses_lighting", node.has_component<scenes::point_light>() ? 0 : 1);
 
     descriptor_handler.push("object", push_handler);
     descriptor_handler.push("uniform_scene", _scene_uniform_handler);
-    descriptor_handler.push("buffer_point_lights", _lights_storage_handler);
     descriptor_handler.push("image", image);
     descriptor_handler.push("shadow_map", graphics_module.attachment("shadow_map"));
 
