@@ -248,6 +248,11 @@ inline constexpr auto basic_vector3<Type>::lerp(const basic_vector3& lhs, const 
   return lhs + (rhs - lhs) * scale;
 }
 
+template<numeric Type>
+constexpr auto basic_vector3<Type>::distance_sqared(const basic_vector3& lhs, const basic_vector3& rhs) noexcept -> length_type {
+  return (lhs - rhs).length_squared();
+}
+
 // template<numeric Type>
 // inline constexpr auto basic_vector3<Type>::rotated(const basic_vector3& vector, const basic_vector3& axis, const basic_angle<Type>& angle) noexcept -> basic_vector3 {
 //   const auto cos = std::cos(angle.to_radians());

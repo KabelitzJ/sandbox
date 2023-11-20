@@ -3,7 +3,16 @@
 
 #include <unordered_map>
 
+#include <libsbx/math/vector3.hpp>
+#include <libsbx/math/matrix4x4.hpp>
+
+#include <libsbx/devices/devices_module.hpp>
+#include <libsbx/devices/window.hpp>
+
 #include <libsbx/graphics/subrenderer.hpp>
+#include <libsbx/graphics/graphics_module.hpp>
+#include <libsbx/graphics/images/image.hpp>
+#include <libsbx/graphics/images/depth_image.hpp>
 #include <libsbx/graphics/buffers/push_handler.hpp>
 #include <libsbx/graphics/buffers/uniform_handler.hpp>
 #include <libsbx/graphics/descriptor/descriptor_handler.hpp>
@@ -12,6 +21,7 @@
 #include <libsbx/scenes/components/camera.hpp>
 #include <libsbx/scenes/components/static_mesh.hpp>
 #include <libsbx/scenes/components/id.hpp>
+#include <libsbx/scenes/components/directional_light.hpp>
 
 #include <libsbx/models/mesh.hpp>
 
@@ -35,15 +45,23 @@ public:
 
     auto& scene = scenes_module.scene();
 
-    auto camera_node = scene.camera();
+    auto directional_light_nodes = scene.query<scenes::directional_light>();
 
-    auto& camera = camera_node.get_component<scenes::camera>();
+    if (directional_light_nodes.empty()) {
+      core::logger::warn("Scene does not have a directional light");
+      return;
+    }
 
-    _scene_uniform_handler.push("projection", camera.projection());
+    if (directional_light_nodes.size() > 1) {
+      core::logger::warn("Scene has more than one directional light. Discarding all but the first one");
+    }
 
-    auto& transform = camera_node.get_component<math::transform>();
+    auto& directional_light_node = directional_light_nodes[0];
+    auto& transform = directional_light_node.get_component<math::transform>();
 
-    _scene_uniform_handler.push("view", math::matrix4x4::inverted(transform.as_matrix()));
+    _scene_uniform_handler.push("view", math::matrix4x4::look_at(transform.position(), math::vector3::zero, math::vector3::up));
+
+    _scene_uniform_handler.push("projection", math::matrix4x4::orthographic(-10.0f, 10.0f, -10.0f, 10.0f, -10.0f, 20.0f));
 
     auto mesh_nodes = scene.query<scenes::static_mesh>();
 

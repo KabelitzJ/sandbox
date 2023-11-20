@@ -192,69 +192,29 @@ public:
 
   ~render_stage();
 
-  auto attachments() const noexcept -> const std::vector<graphics::attachment>& {
-    return _attachments;
-  }
+  auto attachments() const noexcept -> const std::vector<graphics::attachment>&;
 
-  auto find_attachment(const std::string& name) const noexcept -> std::optional<graphics::attachment> {
-    auto entry = std::find_if(_attachments.begin(), _attachments.end(), [&name](const graphics::attachment& attachment) {
-      return attachment.name() == name;
-    });
+  auto find_attachment(const std::string& name) const noexcept -> std::optional<graphics::attachment>;
 
-    if (entry == _attachments.end()) {
-      return std::nullopt;
-    }
+  auto find_attachment(std::uint32_t binding) const noexcept -> std::optional<graphics::attachment>;
 
-    return *entry;
-  }
+  auto subpasses() const noexcept -> const std::vector<subpass_binding>&;
 
-  auto find_attachment(std::uint32_t binding) const noexcept -> std::optional<graphics::attachment> {
-    auto entry = std::find_if(_attachments.begin(), _attachments.end(), [&binding](const graphics::attachment& attachment) {
-      return attachment.binding() == binding;
-    });
+  auto attachment_count(std::uint32_t subpass) -> std::uint32_t;
 
-    if (entry == _attachments.end()) {
-      return std::nullopt;
-    }
+  auto is_outdated() const noexcept -> bool;
 
-    return *entry;
-  }
+  auto clear_values() const noexcept -> const std::vector<VkClearValue>&;
 
-  auto subpasses() const noexcept -> const std::vector<subpass_binding>& {
-    return _subpass_bindings;
-  }
+  auto has_depth_attachment() const noexcept -> bool;
 
-  auto attachment_count(std::uint32_t subpass) -> std::uint32_t {
-    return _subpass_attachment_counts[subpass];
-  }
+  auto has_swapchain_attachment() const noexcept -> bool;
 
-  auto is_outdated() const noexcept -> bool {
-    return _is_outdated;
-  }
+  auto viewport() const noexcept -> const class viewport&;
 
-  auto clear_values() const noexcept -> const std::vector<VkClearValue>& {
-    return _clear_values;
-  }
+  auto render_area() const noexcept -> const class render_area&;
 
-  auto has_depth_attachment() const noexcept -> bool {
-    return _depth_attachment.has_value();
-  }
-
-  auto has_swapchain_attachment() const noexcept -> bool {
-    return _swapchain_attachment.has_value();
-  }
-
-  auto viewport() const noexcept -> const class viewport& {
-    return _viewport;
-  }
-
-  auto render_area() const noexcept -> const class render_area& {
-    return _render_area;
-  }
-
-  auto render_pass() const noexcept -> const VkRenderPass& {
-    return _render_pass;
-  }
+  auto render_pass() const noexcept -> const VkRenderPass&;
 
   auto update() -> void;
 
@@ -264,9 +224,9 @@ public:
 
   auto descriptor(const std::string& name) const noexcept -> const graphics::descriptor*;
 
-  auto descriptors() const noexcept -> const std::map<std::string, const graphics::descriptor*>& {
-    return _descriptors;
-  }
+  auto descriptors() const noexcept -> const std::map<std::string, const graphics::descriptor*>&;
+
+  auto transition_image_layouts(command_buffer& command_buffer) const -> void;
 
 private:
 
@@ -284,7 +244,7 @@ private:
   std::map<std::string, const graphics::descriptor*> _descriptors;
 
   std::unique_ptr<graphics::depth_image> _depth_image;
-  std::vector<std::unique_ptr<graphics::image2d>> _image_attachments;
+  std::unordered_map<std::uint32_t, std::unique_ptr<graphics::image2d>> _image_attachments;
 
   std::vector<VkFramebuffer> _framebuffers;
 

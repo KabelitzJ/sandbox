@@ -41,7 +41,7 @@ struct point_light {
 
 class mesh_subrenderer final : public graphics::subrenderer {
 
-  inline static constexpr auto max_lights_v = std::size_t{16};
+  inline static constexpr auto max_point_lights = std::size_t{16};
 
 public:
 
@@ -72,16 +72,16 @@ public:
 
     _scene_uniform_handler.push("projection", camera.projection());
 
-    auto& transform = camera_node.get_component<math::transform>();
+    auto& camera_transform = camera_node.get_component<math::transform>();
 
-    _scene_uniform_handler.push("view", math::matrix4x4::inverted(transform.as_matrix()));
+    _scene_uniform_handler.push("view", math::matrix4x4::inverted(camera_transform.as_matrix()));
 
-    _scene_uniform_handler.push("camera_position", transform.position()); 
+    _scene_uniform_handler.push("camera_position", camera_transform.position()); 
 
     auto light_nodes = scene.query<scenes::point_light>();
 
     auto lights = std::vector<models::point_light>{};
-    auto light_count = std::uint32_t{0};
+    auto point_light_count = std::uint32_t{0};
 
     for (const auto& node : light_nodes) {
       const auto& light = node.get_component<scenes::point_light>();
@@ -89,17 +89,33 @@ public:
 
       lights.push_back(models::point_light{light.color(), transform.position(), light.radius()});
       
-      ++light_count;
+      ++point_light_count;
 
-      if (light_count >= max_lights_v) {
+      if (point_light_count >= max_point_lights) {
         break;
       }
     }
 
-    _lights_storage_handler.push(std::span<const models::point_light>{lights.data(), light_count});
-    _scene_uniform_handler.push("light_count", light_count);
+    _lights_storage_handler.push(std::span<const models::point_light>{lights.data(), point_light_count});
+    _scene_uniform_handler.push("point_light_count", point_light_count);
 
-    auto mesh_nodes = scene.query<scenes::static_mesh>();
+    auto directional_light_nodes = scene.query<scenes::directional_light>();
+
+    if (directional_light_nodes.empty()) {
+      core::logger::warn("Scene does not have a directional light");
+    }
+
+    if (directional_light_nodes.size() > 1) {
+      core::logger::warn("Scene has more than one directional light. Discarding all but the first one");
+    }
+
+    auto& directional_light_node = directional_light_nodes[0];
+    auto& directional_light_transform = directional_light_node.get_component<math::transform>();
+
+    const auto view = math::matrix4x4::look_at(directional_light_transform.position(), math::vector3::zero, math::vector3::up);
+    const auto projection = math::matrix4x4::orthographic(-10.0f, 10.0f, -10.0f, 10.0f, -10.0f, 20.0f);
+
+    _scene_uniform_handler.push("light_space", math::matrix4x4{projection * view});
 
     for (auto entry = _uniform_data.begin(); entry != _uniform_data.end();) {
       if (_used_uniforms.contains(entry->first)) {
@@ -110,6 +126,8 @@ public:
     }
 
     _used_uniforms.clear();
+
+    auto mesh_nodes = scene.query<scenes::static_mesh>();
 
     for (auto& node : mesh_nodes) {
       _used_uniforms.insert(node.get_component<scenes::id>());
@@ -123,7 +141,7 @@ private:
     auto& assets_module = core::engine::get_module<assets::assets_module>();
     auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
     // [NOTE] KAJ 2023-10-25 : We need this for loading the shadow map in the future
-    // auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+    auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
     auto& scene = scenes_module.scene();
@@ -155,9 +173,9 @@ private:
 
     descriptor_handler.push("object", push_handler);
     descriptor_handler.push("uniform_scene", _scene_uniform_handler);
-    descriptor_handler.push("buffer_lights", _lights_storage_handler);
+    descriptor_handler.push("buffer_point_lights", _lights_storage_handler);
     descriptor_handler.push("image", image);
-    // descriptor_handler.push("shadow_map", graphics_module.attachment("shadow_map"));
+    descriptor_handler.push("shadow_map", graphics_module.attachment("shadow_map"));
 
     if (!descriptor_handler.update(_pipeline)) {
       return;

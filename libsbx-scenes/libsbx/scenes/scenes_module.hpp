@@ -18,6 +18,7 @@
 #include <libsbx/scenes/components/script.hpp>
 #include <libsbx/scenes/components/static_mesh.hpp>
 #include <libsbx/scenes/components/point_light.hpp>
+#include <libsbx/scenes/components/directional_light.hpp>
 #include <libsbx/scenes/components/camera.hpp>
 
 namespace sbx::scenes {
@@ -122,6 +123,13 @@ public:
       const auto radius = node_data["radius"].as<std::float_t>();
 
       node.add_component<point_light>(color, radius);
+    });
+
+    register_loader("directional_light", [](node& node, const YAML::Node& node_data) {
+      const auto direction = node_data["direction"].as<math::vector3>();
+      const auto color = node_data["color"].as<math::color>();
+
+      node.add_component<directional_light>(direction, color);
     });
   }
 

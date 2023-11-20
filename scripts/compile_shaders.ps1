@@ -63,6 +63,8 @@ foreach ($shader in $shaders) {
     Write-Host
     Write-Host "Usage: $PSCommandPath -directory <path>"
     Write-Host
-    return
+    return 1
   }
 }
+
+return 0

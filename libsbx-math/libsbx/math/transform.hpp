@@ -70,7 +70,7 @@ public:
     const auto yaw = radian{std::atan2(direction.x, direction.z)};
     const auto roll = radian{0.0f};
 
-    _euler_angles = vector3{pitch, yaw, roll};
+    _euler_angles = vector3{math::to_degrees(pitch), math::to_degrees(yaw), math::to_degrees(roll)};
   }
 
   auto as_matrix() const -> matrix4x4 {
