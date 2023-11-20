@@ -47,15 +47,6 @@ entities:
       - type: "static_mesh"
         mesh: *plane
         texture: *prototype_black
-  - name: "foo"
-    components:
-      - type: "transform"
-        position: { x: 3.0, y: 3.0, z: 3.0 }
-        rotation: { x: 0.0, y: 45.0, z: 0.0 }
-        scale: { x: 0.2, y: 0.2, z: 0.2 }
-      - type: "static_mesh"
-        mesh: *sphere
-        texture: *base
   - name: "cube1"
     components:
       - type: "transform"
@@ -95,3 +86,9 @@ entities:
       - type: "static_mesh"
         mesh: *cube
         texture: *base
+      - type: "script"
+        script: "res://scripts/rotate.lua"
+        parameters:
+          - name: "speed"
+            type: "number"
+            value: 50.0

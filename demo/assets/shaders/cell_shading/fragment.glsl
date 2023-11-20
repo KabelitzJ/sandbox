@@ -50,7 +50,8 @@ float calculate_shadow(vec3 light_direction) {
   vec3 coordinates = in_light_space_position.xyz / in_light_space_position.w;
 
   float bias = max(0.001 * (1.0 - dot(in_normal, light_direction)), 0.0001);
-  // float bias = 0.001;
+  
+  float current_depth = coordinates.z - bias;
 
   int count = 0;
   int range = 1;
@@ -58,7 +59,7 @@ float calculate_shadow(vec3 light_direction) {
   for (int x = -range; x <= range; ++x) {
     for (int y = -range; y <= range; ++y) {
       float pcf_depth = texture(shadow_map, coordinates.xy + vec2(x, y) * texel_size).r;
-      shadow += (coordinates.z - bias) > pcf_depth ? 1.0 : 0.0;
+      shadow += current_depth > pcf_depth ? 1.0 : 0.0;
       ++count;
     }
   }
@@ -89,7 +90,7 @@ void main() {
   vec4 sampled_color = texture(image, in_uv);
 
   out_color = (ambient_color + (1.0 - shadow_factor) * (diffuse_color + specular_color)) * sampled_color;
-  // out_color = (ambient_color + diffuse_color + specular_color) * sampled_color;
+  // out_color = (ambient_color + diffuse_color + specular_color) * sampled_color * (1.0 - shadow_factor);
   // out_color = color * shadow;
 
 
