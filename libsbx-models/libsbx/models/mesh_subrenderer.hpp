@@ -114,7 +114,7 @@ public:
     auto& directional_light_transform = directional_light_node.get_component<math::transform>();
 
     const auto view = math::matrix4x4::look_at(directional_light_transform.position(), math::vector3::zero, math::vector3::up);
-    const auto projection = math::matrix4x4::orthographic(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, 96.0f);
+    const auto projection = math::matrix4x4::orthographic(-10.0f, 10.0f, -10.0f, 10.0f, -10.0f, 20.0f);
 
     _scene_uniform_handler.push("light_space", math::matrix4x4{projection * view});
 

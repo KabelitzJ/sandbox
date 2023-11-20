@@ -24,11 +24,18 @@ layout(push_constant) uniform uniform_object {
   int uses_lighting;
 } object;
 
+const mat4 depth_bias = mat4(
+  0.5, 0.0, 0.0, 0.0,
+  0.0, 0.5, 0.0, 0.0,
+  0.0, 0.0, 0.5, 0.0,
+  0.5, 0.5, 0.5, 1.0
+);
+
 void main() {
   out_position = vec3(object.model * vec4(in_position, 1.0));
   out_normal = normalize(mat3(object.normal) * in_normal);
   out_uv = in_uv;
-  out_light_space_position = scene.light_space * vec4(out_position, 1.0);
+  out_light_space_position = (depth_bias * scene.light_space) * vec4(out_position, 1.0);
 
   gl_Position = scene.projection * scene.view * vec4(out_position, 1.0);
 }

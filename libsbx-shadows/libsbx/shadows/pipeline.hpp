@@ -15,12 +15,7 @@ class pipeline : public graphics::graphics_pipeline<vertex3d> {
     .rasterization_state = graphics::rasterization_state{
       .polygon_mode = graphics::polygon_mode::fill,
       .cull_mode = graphics::cull_mode::front,
-      .front_face = graphics::front_face::counter_clockwise,
-      .depth_bias = graphics::depth_bias{
-        .constant_factor = 1.25f,
-        .clamp = 0.0f,
-        .slope_factor = 1.75f
-      }
+      .front_face = graphics::front_face::counter_clockwise
     }
   };
 

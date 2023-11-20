@@ -45,20 +45,30 @@ const material default_material = material(
   32.0
 );
 
-const vec3 light_position = vec3(2.0, 5.0, 2.0);
+const vec3 light_position = vec3(4.0, 6.0, 4.0);
 
 float calculate_shadow(vec4 light_space_position, vec3 light_dir) {
-  vec3 projection_coords = light_space_position.xyz / light_space_position.w;
+  // float shadow = 0.0;
 
-  projection_coords = projection_coords * 0.5 + 0.5;
+  // vec2 texel_size = 1.0 / textureSize(shadow_map, 0);
 
-  float current_depth = projection_coords.z;
+  float bias = max(0.005 * (1.0 - dot(in_normal, light_dir)), 0.0005);
 
-  float closest_depth = texture(shadow_map, projection_coords.xy).r;
+  // for (int x = -1; x <= 1; ++x) {
+  //   for (int y = -1; y <= 1; ++y) {
+  //     float pcf_depth = texture(shadow_map, light_space_position.xy + vec2(x, y) * texel_size).r;
+  //     shadow += (light_space_position.z - bias) > pcf_depth ? 1.0 : 0.0;
+  //   }
+  // }
 
-  float bias = max(0.05 * (1.0 - dot(in_normal, light_dir)), 0.005);
+  // return shadow / 9.0;
 
-  return (current_depth - 0.005) > closest_depth ? 1.0 : 0.0;
+  vec3 proj_coords = light_space_position.xyz / light_space_position.w;
+
+  float current_depth = proj_coords.z;
+  float closest_depth = texture(shadow_map, proj_coords.xy).r;
+
+  return current_depth - bias > closest_depth ? 1.0 : 0.0;
 }
 
 void main() {
@@ -81,6 +91,8 @@ void main() {
   float shadow = calculate_shadow(in_light_space_position, light_dir);  
 
   // out_color = (ambient + (1.0 - shadow) * (diffuse + specular)) * color;
+  // out_color = (ambient + diffuse + specular) * color;
 
-  out_color = vec4(texture(shadow_map, in_uv).rrr, 1.0);
+  out_color = vec4(shadow, shadow, shadow, 1.0);
+  // out_color = vec4(texture(shadow_map, in_uv).rrr, 1.0);
 }
