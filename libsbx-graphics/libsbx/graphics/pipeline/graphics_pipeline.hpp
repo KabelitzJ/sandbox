@@ -45,10 +45,17 @@ enum class front_face : std::uint8_t {
   clockwise = VK_FRONT_FACE_CLOCKWISE
 }; // enum class front_face
 
+struct depth_bias {
+  std::float_t constant_factor{0.0f};
+  std::float_t clamp{0.0f};
+  std::float_t slope_factor{0.0f};
+}; // struct depth_bias
+
 struct rasterization_state {
   polygon_mode polygon_mode{polygon_mode::fill};
   cull_mode cull_mode{cull_mode::back};
   front_face front_face{front_face::counter_clockwise};
+  std::optional<depth_bias> depth_bias{};
 }; // struct rasterization_state
 
 struct pipeline_definition {

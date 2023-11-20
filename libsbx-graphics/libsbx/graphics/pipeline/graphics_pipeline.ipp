@@ -171,7 +171,20 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
   rasterization_state.lineWidth = 1.0f;
   rasterization_state.cullMode = static_cast<VkCullModeFlags>(definition.rasterization_state.cull_mode);
   rasterization_state.frontFace = static_cast<VkFrontFace>(definition.rasterization_state.front_face);
-  rasterization_state.depthBiasEnable = false;
+
+  if (definition.rasterization_state.depth_bias.has_value()) {
+    auto& depth_bias = definition.rasterization_state.depth_bias.value();
+
+    rasterization_state.depthBiasEnable = true;
+    rasterization_state.depthBiasConstantFactor = depth_bias.constant_factor;
+    rasterization_state.depthBiasClamp = depth_bias.clamp;
+    rasterization_state.depthBiasSlopeFactor = depth_bias.slope_factor;
+  } else {
+    rasterization_state.depthBiasEnable = false;
+    rasterization_state.depthBiasConstantFactor = 0.0f;
+    rasterization_state.depthBiasClamp = 0.0f;
+    rasterization_state.depthBiasSlopeFactor = 0.0f;
+  }
 
   auto multisample_state = VkPipelineMultisampleStateCreateInfo{};
   multisample_state.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;

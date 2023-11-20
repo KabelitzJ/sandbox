@@ -30,6 +30,7 @@
 
 #include <libsbx/models/vertex3d.hpp>
 #include <libsbx/models/pipeline.hpp>
+#include <libsbx/models/mesh.hpp>
 
 namespace sbx::models {
 
@@ -113,7 +114,7 @@ public:
     auto& directional_light_transform = directional_light_node.get_component<math::transform>();
 
     const auto view = math::matrix4x4::look_at(directional_light_transform.position(), math::vector3::zero, math::vector3::up);
-    const auto projection = math::matrix4x4::orthographic(-10.0f, 10.0f, -10.0f, 10.0f, -10.0f, 20.0f);
+    const auto projection = math::matrix4x4::orthographic(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, 96.0f);
 
     _scene_uniform_handler.push("light_space", math::matrix4x4{projection * view});
 
@@ -139,8 +140,6 @@ private:
 
   auto _render_node(scenes::node& node, graphics::command_buffer& command_buffer) -> void {
     auto& assets_module = core::engine::get_module<assets::assets_module>();
-    auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
-    // [NOTE] KAJ 2023-10-25 : We need this for loading the shadow map in the future
     auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();

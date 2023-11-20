@@ -61,7 +61,7 @@ public:
 
     _scene_uniform_handler.push("view", math::matrix4x4::look_at(transform.position(), math::vector3::zero, math::vector3::up));
 
-    _scene_uniform_handler.push("projection", math::matrix4x4::orthographic(-10.0f, 10.0f, -10.0f, 10.0f, -10.0f, 20.0f));
+    _scene_uniform_handler.push("projection", math::matrix4x4::orthographic(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, 96.0f));
 
     auto mesh_nodes = scene.query<scenes::static_mesh>();
 
