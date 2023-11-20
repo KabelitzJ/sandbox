@@ -51,7 +51,7 @@ float calculate_shadow(vec3 light_direction) {
     return shadow;
   }
 
-  float bias = max(0.01 * (1.0 - dot(in_normal, light_direction)), 0.001);
+  float bias = max(0.001 * (1.0 - dot(in_normal, light_direction)), 0.0001);
   
   float current_depth = coordinates.z - bias;
 
