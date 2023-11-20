@@ -2,6 +2,7 @@
 #define LIBSBX_SHADOWS_SHADOW_SUBRENDERER_HPP_
 
 #include <unordered_map>
+#include <algorithm>
 
 #include <libsbx/math/vector3.hpp>
 #include <libsbx/math/matrix4x4.hpp>
@@ -47,10 +48,12 @@ public:
 
     auto& scene_light = scene.light();
 
-    auto& light_direction = scene_light.direction();
+    auto light_direction = scene_light.direction();
 
-    const auto view = math::matrix4x4::look_at(math::vector3{5, 5, 5}, math::vector3::zero, math::vector3::up);
-    const auto projection = math::matrix4x4::orthographic(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, 20.0f);
+    const auto position = light_direction * -20.0f;
+
+    const auto view = math::matrix4x4::look_at(position, position + light_direction, math::vector3::up);
+    const auto projection = math::matrix4x4::orthographic(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, 100.0f);
 
     _scene_uniform_handler.push("light_space", math::matrix4x4{projection * view});
 

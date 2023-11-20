@@ -122,4 +122,38 @@ auto demo_application::update() -> void  {
   _label_delta_time->set_text(fmt::format("Delta time: {:.2f} ms", sbx::units::quantity_cast<sbx::units::millisecond>(delta_time).value()));
 }
 
+auto demo_application::_generate_floor(const sbx::math::vector2i& tile_size, sbx::math::vector2i& tile_count) -> void {
+  auto vertices = std::vector<sbx::models::vertex3d>{};
+  auto indices = std::vector<std::uint32_t>{};
+
+  auto unique_vertices = std::unordered_map<sbx::models::vertex3d, std::uint32_t>{};
+
+  for (auto y = 0; y < tile_count.y; ++y) {
+    for (auto x = 0; x < tile_count.x; ++x) {
+      auto position = sbx::math::vector3{static_cast<std::float_t>(x * tile_size.x), 0.0f, static_cast<std::float_t>(y * tile_size.y)};
+
+      auto uv = sbx::math::vector2{static_cast<std::float_t>(x), static_cast<std::float_t>(y)};
+
+      auto normal = sbx::math::vector3::up;
+
+      auto vertex = sbx::models::vertex3d{position, normal, uv};
+
+      auto index = static_cast<std::uint32_t>(vertices.size());
+
+      auto it = unique_vertices.find(vertex);
+
+      if (it == unique_vertices.end()) {
+        unique_vertices[vertex] = index;
+        vertices.push_back(vertex);
+      } else {
+        index = it->second;
+      }
+
+      indices.push_back(index);
+    }
+
+    // auto mesh = sbx::models::mesh{std::move(vertices), std::move(indices)};
+  }  
+}
+
 } // namespace demo

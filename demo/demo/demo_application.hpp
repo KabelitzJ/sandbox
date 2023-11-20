@@ -35,6 +35,8 @@ public:
 
 private:
 
+  auto _generate_floor(const sbx::math::vector2i& tile_size, sbx::math::vector2i& tile_count) -> void;
+
   sbx::memory::observer_ptr<sbx::ui::label> _label_fps;
   sbx::memory::observer_ptr<sbx::ui::label> _label_delta_time;
 

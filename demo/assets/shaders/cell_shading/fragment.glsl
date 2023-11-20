@@ -33,8 +33,6 @@ layout(push_constant) uniform uniform_object {
   mat4 normal;
 } object;
 
-const vec3 light_position = vec3(5.0, 5.0, 5.0);
-
 const material default_material = material(
   vec4(1.0, 1.0, 1.0, 1.0),
   vec4(1.0, 1.0, 1.0, 1.0),
@@ -49,7 +47,11 @@ float calculate_shadow(vec3 light_direction) {
 
   vec3 coordinates = in_light_space_position.xyz / in_light_space_position.w;
 
-  float bias = max(0.001 * (1.0 - dot(in_normal, light_direction)), 0.0001);
+  if (coordinates.z > 1.0 || coordinates.z < -1.0) {
+    return shadow;
+  }
+
+  float bias = max(0.01 * (1.0 - dot(in_normal, light_direction)), 0.001);
   
   float current_depth = coordinates.z - bias;
 
@@ -68,6 +70,7 @@ float calculate_shadow(vec3 light_direction) {
 }
 
 void main() {
+  vec3 light_position = scene.light_direction * -20.0;
   vec3 light_direction = normalize(light_position - in_position);
 
   // Ambient
