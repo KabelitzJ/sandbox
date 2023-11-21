@@ -70,8 +70,7 @@ float calculate_shadow(vec3 light_direction) {
 }
 
 void main() {
-  vec3 light_position = scene.light_direction * -20.0;
-  vec3 light_direction = normalize(light_position - in_position);
+  vec3 light_direction = normalize(-scene.light_direction);
 
   // Ambient
   vec4 ambient_color = scene.light_color * 0.15;
