@@ -39,6 +39,10 @@ public:
     _asset_directory = path;
   }
 
+  auto asset_directory() const -> const std::filesystem::path& {
+    return _asset_directory;
+  }
+
   /**
    * @brief Loads an asset from the given path. 
    * 
