@@ -57,6 +57,8 @@ demo_application::demo_application()
 
   auto& scene = scenes_module.load_scene("res://scenes/demo.yaml");
 
+  auto floor = _generate_floor(sbx::math::vector2i{1, 1}, sbx::math::vector2i{10, 10});
+
   // [Todo] KAJ 2023-08-16 15:30 - This should probably be done automatically
   scene.start();
 
@@ -122,7 +124,7 @@ auto demo_application::update() -> void  {
   _label_delta_time->set_text(fmt::format("Delta time: {:.2f} ms", sbx::units::quantity_cast<sbx::units::millisecond>(delta_time).value()));
 }
 
-auto demo_application::_generate_floor(const sbx::math::vector2i& tile_size, sbx::math::vector2i& tile_count) -> void {
+auto demo_application::_generate_floor(const sbx::math::vector2i& tile_count, const sbx::math::vector2i& tile_size) -> sbx::models::mesh {
   auto vertices = std::vector<sbx::models::vertex3d>{};
   auto indices = std::vector<std::uint32_t>{};
 
@@ -151,9 +153,9 @@ auto demo_application::_generate_floor(const sbx::math::vector2i& tile_size, sbx
 
       indices.push_back(index);
     }
+  }
 
-    auto mesh = sbx::models::mesh{std::move(vertices), std::move(indices)};
-  }  
+  return sbx::models::mesh{std::move(vertices), std::move(indices)};
 }
 
 } // namespace demo
