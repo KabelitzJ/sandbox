@@ -253,6 +253,7 @@ public:
 
 ![screenshot](./images/screenshot.png)
 ![dynamic_lighting](./images/dynamic_lighting.gif)
+![dynamic_lighting](./images/shadow.png)
 
 ## 🤝 Contributing and bug reports
 

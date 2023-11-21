@@ -39,6 +39,17 @@ public:
     _asset_directory = path;
   }
 
+  /**
+   * @brief Loads an asset from the given path. 
+   * 
+   * @tparam Asset  The asset type.
+   * @tparam ...Args The asset constructor arguments.
+   * 
+   * @param path The path to the asset. 
+   * @param ...args The asset constructor arguments.
+   * 
+   * @return The asset id.
+   */
   template<typename Asset, typename... Args>
   requires (std::is_base_of_v<asset<Asset::type>, Asset> && std::is_constructible_v<Asset, const std::filesystem::path&, Args...>)
   auto load_asset(const std::filesystem::path& path, Args&&... args) -> asset_id {
@@ -51,6 +62,18 @@ public:
     const auto id = asset->id();
 
     _metadata.insert({actual_path, asset_metadata{id}});
+
+    storage.insert(id, std::move(asset));
+
+    return id;
+  }
+
+  template<typename Asset>
+  requires (std::is_base_of_v<asset<Asset::type>, Asset>)
+  auto add_asset(std::unique_ptr<Asset>&& asset) -> asset_id {
+    auto& storage = _get_or_create_storage<Asset>(Asset::type);
+
+    const auto id = asset->id();
 
     storage.insert(id, std::move(asset));
 

@@ -57,7 +57,10 @@ demo_application::demo_application()
 
   auto& scene = scenes_module.load_scene("res://scenes/demo.yaml");
 
-  auto floor = _generate_floor(sbx::math::vector2i{1, 1}, sbx::math::vector2i{10, 10});
+  auto floor_id = assets_module.add_asset<sbx::models::mesh>(_generate_plane(sbx::math::vector2u{15u, 15u}, sbx::math::vector2u{2u, 2u}));
+
+  auto floor_node = scene.create_node("Floor", sbx::math::transform{sbx::math::vector3::zero, sbx::math::vector3::zero, sbx::math::vector3::one});
+  floor_node.add_component<sbx::scenes::static_mesh>(floor_id, prototype_black_id);
 
   // [Todo] KAJ 2023-08-16 15:30 - This should probably be done automatically
   scene.start();
@@ -124,38 +127,43 @@ auto demo_application::update() -> void  {
   _label_delta_time->set_text(fmt::format("Delta time: {:.2f} ms", sbx::units::quantity_cast<sbx::units::millisecond>(delta_time).value()));
 }
 
-auto demo_application::_generate_floor(const sbx::math::vector2i& tile_count, const sbx::math::vector2i& tile_size) -> sbx::models::mesh {
+auto demo_application::_generate_plane(const sbx::math::vector2u& tile_count, const sbx::math::vector2u& tile_size) -> std::unique_ptr<sbx::models::mesh> {
   auto vertices = std::vector<sbx::models::vertex3d>{};
   auto indices = std::vector<std::uint32_t>{};
 
-  auto unique_vertices = std::unordered_map<sbx::models::vertex3d, std::uint32_t>{};
+  // Generate vertices
 
-  for (auto y = 0; y < tile_count.y; ++y) {
-    for (auto x = 0; x < tile_count.x; ++x) {
-      auto position = sbx::math::vector3{static_cast<std::float_t>(x * tile_size.x), 0.0f, static_cast<std::float_t>(y * tile_size.y)};
+  const auto offset = sbx::math::vector2{static_cast<std::float_t>(tile_count.x * tile_size.x / 2.0f), static_cast<std::float_t>(tile_count.y * tile_size.y / 2.0f)};
 
-      auto uv = sbx::math::vector2{static_cast<std::float_t>(x), static_cast<std::float_t>(y)};
+  for (auto y = 0u; y < tile_count.y + 1u; ++y) {
+    for (auto x = 0u; x < tile_count.x + 1u; ++x) {
+      const auto position = sbx::math::vector3{static_cast<std::float_t>(x * tile_size.x - offset.x), 0.0f, static_cast<std::float_t>(y * tile_size.y - offset.y)};
+      const auto normal = sbx::math::vector3::up;
+      const auto uv = sbx::math::vector2{static_cast<std::float_t>(x), static_cast<std::float_t>(y)};
 
-      auto normal = sbx::math::vector3::up;
-
-      auto vertex = sbx::models::vertex3d{position, normal, uv};
-
-      auto index = static_cast<std::uint32_t>(vertices.size());
-
-      auto it = unique_vertices.find(vertex);
-
-      if (it == unique_vertices.end()) {
-        unique_vertices[vertex] = index;
-        vertices.push_back(vertex);
-      } else {
-        index = it->second;
-      }
-
-      indices.push_back(index);
+      vertices.emplace_back(position, normal, uv);
     }
   }
 
-  return sbx::models::mesh{std::move(vertices), std::move(indices)};
+  // Calculate indices
+
+  const auto vertex_count = tile_count.x + 1u;
+
+  for (auto i = 0u; i < vertex_count * vertex_count - vertex_count; ++i) {
+    if ((i + 1u) % vertex_count == 0) {
+      continue;
+    }
+
+    indices.emplace_back(i);
+    indices.emplace_back(i + vertex_count);
+    indices.emplace_back(i + vertex_count + 1u);
+
+    indices.emplace_back(i);
+    indices.emplace_back(i + vertex_count + 1u);
+    indices.emplace_back(i + 1u);
+  }
+
+  return std::make_unique<sbx::models::mesh>(std::move(vertices), std::move(indices));
 }
 
 } // namespace demo

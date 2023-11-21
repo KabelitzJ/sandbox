@@ -25,6 +25,7 @@
 #include <libsbx/scenes/components/static_mesh.hpp>
 #include <libsbx/scenes/components/id.hpp>
 #include <libsbx/scenes/components/camera.hpp>
+#include <libsbx/scenes/components/tag.hpp>
 #include <libsbx/scenes/components/script.hpp>
 #include <libsbx/scenes/components/point_light.hpp>
 
@@ -129,6 +130,7 @@ public:
 
     for (auto& node : mesh_nodes) {
       _used_uniforms.insert(node.get_component<scenes::id>());
+      auto tag = node.get_component<scenes::tag>();
       _render_node(node, command_buffer);
     }
   }

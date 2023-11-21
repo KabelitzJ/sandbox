@@ -14,7 +14,7 @@ assets:
     - &forest "res://audio/forest.wav"
     - &ambience "res://audio/ambience.wav"
 light:
-  direction: { x: -1.0, y: -1.0, z: -1.0 }
+  direction: { x: 1.0, y: -1.0, z: 1.0 }
   color: { r: 1.0, g: 0.9, b: 0.9, a: 1.0 }
 entities:
   - name: "player"
@@ -29,15 +29,6 @@ entities:
         far: 100.0
       - type: "script"
         script: "res://scripts/camera_controller.lua"
-  - name: "floor"
-    components:
-      - type: "transform"
-        position: { x: 0.0, y: 0.0, z: 0.0 }
-        rotation: { x: 90.0, y: 0.0, z: 0.0 }
-        scale: { x: 30.0, y: 30.0, z: 1.0 }
-      - type: "static_mesh"
-        mesh: *plane
-        texture: *prototype_black
   - name: "tree"
     components:
       - type: "transform"
@@ -74,7 +65,7 @@ entities:
   - name: "monkey"
     components:
       - type: "transform"
-        position: { x: -1.2, y: 0.5, z: -1.2 }
+        position: { x: 1.0, y: 0.5, z: 2.0 }
         rotation: { x: 0.0, y: 0.0, z: 0.0 }
         scale: { x: 0.5, y: 0.5, z: 0.5 }
       - type: "static_mesh"
