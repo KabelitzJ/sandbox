@@ -8,13 +8,9 @@ demo_application::demo_application()
 : sbx::core::application{} {
   auto& assets_module = sbx::core::engine::get_module<sbx::assets::assets_module>();
   
-  const auto& args = sbx::core::engine::args();
+  const auto& cli = sbx::core::engine::cli();
 
-  if (args.size() >= 2) {
-    assets_module.set_asset_directory(args[1]);
-  } else {
-    assets_module.set_asset_directory("./demo/assets");
-  }
+  assets_module.set_asset_directory("./demo/assets");
 
   sbx::core::logger::info("Asset directory: {}", assets_module.asset_directory().string());
 

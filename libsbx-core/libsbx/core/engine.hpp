@@ -20,6 +20,7 @@
 #include <libsbx/core/module.hpp>
 #include <libsbx/core/application.hpp>
 #include <libsbx/core/logger.hpp>
+#include <libsbx/core/cli.hpp>
 
 namespace sbx::core {
 
@@ -32,7 +33,7 @@ class engine : public utility::noncopyable {
 public:
 
   engine(std::vector<std::string_view>&& args)
-  : _args{std::move(args)} {
+  : _cli{std::move(args)} {
     utility::assert_that(_instance == nullptr, "Engine already exists.");
 
     _instance = this;
@@ -58,8 +59,8 @@ public:
     _instance->_is_running = false;
   }
 
-  static auto args() noexcept -> const std::vector<std::string_view>& {
-    return _instance->_args;
+  static auto cli() noexcept -> core::cli& {
+    return _instance->_cli;
   }
 
   template<typename Module>
@@ -148,7 +149,8 @@ private:
   units::second _delta_time;
 
   bool _is_running{};
-  std::vector<std::string_view> _args{};
+  // std::vector<std::string_view> _args{};
+  core::cli _cli;
 
   std::map<std::type_index, module_base*> _modules{};
   std::map<stage, std::vector<std::type_index>> _module_by_stage{};
