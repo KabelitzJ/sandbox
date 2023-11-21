@@ -25,6 +25,8 @@ class mesh : public graphics::mesh<vertex3d>, public io::loader_factory<mesh, me
 
 public:
 
+  using graphics::mesh<vertex3d>::mesh;
+
   mesh(const std::filesystem::path& path);
 
   ~mesh() override;

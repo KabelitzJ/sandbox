@@ -152,7 +152,7 @@ auto demo_application::_generate_floor(const sbx::math::vector2i& tile_size, sbx
       indices.push_back(index);
     }
 
-    // auto mesh = sbx::models::mesh{std::move(vertices), std::move(indices)};
+    auto mesh = sbx::models::mesh{std::move(vertices), std::move(indices)};
   }  
 }
 
