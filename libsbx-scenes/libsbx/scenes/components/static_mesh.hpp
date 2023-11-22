@@ -11,12 +11,17 @@ class static_mesh final {
 
 public:
 
-  static_mesh(assets::asset_id mesh_id, assets::asset_id texture_id)
-  : _mesh_id{mesh_id}, 
+  static_mesh(assets::asset_id mesh_id, assets::asset_id texture_id, const std::vector<std::uint32_t>& submesh_indices = {0u})
+  : _mesh_id{mesh_id},
+    _submesh_indices{submesh_indices},
     _texture_id{texture_id} { }
 
   auto mesh_id() const noexcept -> assets::asset_id {
     return _mesh_id;
+  }
+
+  auto submesh_indices() const noexcept -> const std::vector<std::uint32_t>& {
+    return _submesh_indices;
   }
 
   auto texture_id() const noexcept -> assets::asset_id {
@@ -26,8 +31,9 @@ public:
 private:
 
   assets::asset_id _mesh_id;
+  std::vector<std::uint32_t> _submesh_indices;
   assets::asset_id _texture_id;
-  math::color _tint;
+
 
 }; // class static_mesh
 

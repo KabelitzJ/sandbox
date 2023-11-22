@@ -1,5 +1,10 @@
 #version 450
 
+struct transform {
+  mat4 model;
+  mat4 normal;
+}; // struct transform
+
 layout(location = 0) in vec3 in_position;
 layout(location = 1) in vec3 in_normal;
 layout(location = 2) in vec2 in_uv;
@@ -18,10 +23,9 @@ layout(binding = 0) uniform uniform_scene {
   vec4 light_color;
 } scene;
 
-layout(push_constant) uniform uniform_object {
-  mat4 model;
-  mat4 normal;
-} object;
+layout(binding = 1) buffer buffer_transforms {
+  transform data[];
+} transforms;
 
 const mat4 depth_bias = mat4( 
 	0.5, 0.0, 0.0, 0.0,
@@ -32,8 +36,10 @@ const mat4 depth_bias = mat4(
 
 
 void main() {
-  out_position = vec3(object.model * vec4(in_position, 1.0));
-  out_normal = normalize(mat3(object.normal) * in_normal);
+  transform transform = transforms.data[gl_InstanceIndex]; 
+
+  out_position = vec3(transform.model * vec4(in_position, 1.0));
+  out_normal = normalize(mat3(transform.normal) * in_normal);
   out_uv = in_uv;
   out_light_space_position = (depth_bias * scene.light_space) * vec4(out_position, 1.0);
 

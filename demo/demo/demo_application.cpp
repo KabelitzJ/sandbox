@@ -26,6 +26,7 @@ demo_application::demo_application()
   auto sphere_id = assets_module.load_asset<sbx::models::mesh>("res://meshes/sphere.obj");
   auto cube_id = assets_module.load_asset<sbx::models::mesh>("res://meshes/cube.obj");
   auto tree_id = assets_module.load_asset<sbx::models::mesh>("res://meshes/tree.obj");
+  auto tree_1_id = assets_module.load_asset<sbx::models::mesh>("res://meshes/tree_1.obj");
   auto plane_id = assets_module.load_asset<sbx::models::mesh>("res://meshes/plane.obj");
 
   // _mesh_id = sphere_id;

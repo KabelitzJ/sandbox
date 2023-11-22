@@ -86,7 +86,7 @@ public:
 private:
 
     auto _parse(std::vector<std::string_view>&& args) -> void {
-      
+      static_cast<void>(args);
     }
 
   std::vector<std::string_view> _args;

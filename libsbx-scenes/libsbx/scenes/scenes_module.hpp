@@ -61,7 +61,17 @@ public:
         return;
       }
 
-      node.add_component<scenes::static_mesh>(*mesh_id, *texture_id);
+      auto submesh_indices = std::vector<std::uint32_t>{};
+
+      if (const auto submesh_indices_node = node_data["submesh_indices"]; submesh_indices_node) {
+        for (const auto& index : submesh_indices_node.as<std::vector<std::uint32_t>>()) {
+          submesh_indices.push_back(index);
+        }
+      } else {
+        submesh_indices.push_back(0u);
+      }
+
+      node.add_component<scenes::static_mesh>(*mesh_id, *texture_id, submesh_indices);
     });
 
     register_loader("camera", [this](node& node, const YAML::Node& node_data) {
