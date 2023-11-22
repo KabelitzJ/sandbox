@@ -65,7 +65,7 @@ demo_application::demo_application()
   auto floor_id = assets_module.add_asset<sbx::models::mesh>(_generate_plane(sbx::math::vector2u{15u, 15u}, sbx::math::vector2u{2u, 2u}));
 
   auto floor_node = scene.create_node("Floor", sbx::math::transform{sbx::math::vector3::zero, sbx::math::vector3::zero, sbx::math::vector3::one});
-  floor_node.add_component<sbx::scenes::static_mesh>(floor_id, prototype_black_id);
+  floor_node.add_component<sbx::scenes::static_mesh>(floor_id, std::vector<sbx::scenes::static_mesh::submesh>{{0, prototype_black_id}});
 
   // [Todo] KAJ 2023-08-16 15:30 - This should probably be done automatically
   scene.start();

@@ -1,6 +1,9 @@
 #ifndef LIBSBX_SCENES_COMPONENTS_STATIC_MESH_HPP_
 #define LIBSBX_SCENES_COMPONENTS_STATIC_MESH_HPP_
 
+#include <vector>
+#include <cinttypes>
+
 #include <libsbx/math/color.hpp>
 
 #include <libsbx/assets/asset.hpp>
@@ -11,29 +14,27 @@ class static_mesh final {
 
 public:
 
-  static_mesh(assets::asset_id mesh_id, assets::asset_id texture_id, const std::vector<std::uint32_t>& submesh_indices = {0u})
+  struct submesh {
+    std::uint32_t index;
+    assets::asset_id texture_id;
+  }; // struct submesh
+
+  static_mesh(assets::asset_id mesh_id, const std::vector<submesh>& submeshes)
   : _mesh_id{mesh_id},
-    _submesh_indices{submesh_indices},
-    _texture_id{texture_id} { }
+    _submeshes{submeshes} { }
 
   auto mesh_id() const noexcept -> assets::asset_id {
     return _mesh_id;
   }
 
-  auto submesh_indices() const noexcept -> const std::vector<std::uint32_t>& {
-    return _submesh_indices;
-  }
-
-  auto texture_id() const noexcept -> assets::asset_id {
-    return _texture_id;
+  auto submeshes() const noexcept -> const std::vector<submesh>& {
+    return _submeshes;
   }
 
 private:
 
   assets::asset_id _mesh_id;
-  std::vector<std::uint32_t> _submesh_indices;
-  assets::asset_id _texture_id;
-
+  std::vector<submesh> _submeshes;
 
 }; // class static_mesh
 

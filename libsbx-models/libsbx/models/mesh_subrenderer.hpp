@@ -167,9 +167,8 @@ private:
 
     const auto& static_mesh = node.get_component<scenes::static_mesh>();
     const auto mesh_id = static_mesh.mesh_id();
-    const auto texture_id = static_mesh.texture_id();
 
-    for (const auto& index : static_mesh.submesh_indices()) {
+    for (const auto& [index, texture_id] : static_mesh.submeshes()) {
       const auto key = mesh_key{mesh_id, texture_id, index};
 
       _used_uniforms.insert(key);

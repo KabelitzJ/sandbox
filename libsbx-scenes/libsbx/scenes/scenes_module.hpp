@@ -11,6 +11,8 @@
 
 #include <libsbx/core/module.hpp>
 
+#include <libsbx/assets/assets_module.hpp>
+
 #include <libsbx/devices/devices_module.hpp>
 
 #include <libsbx/scenes/scene.hpp>
@@ -42,10 +44,9 @@ public:
     });
 
     register_loader("static_mesh", [](node& node, const YAML::Node& node_data) {
-      const auto mesh_path = node_data["mesh"].as<std::string>();
-      const auto texture_path = node_data["texture"].as<std::string>();
-
       auto& assets_manager = core::engine::get_module<assets::assets_module>();
+
+      const auto mesh_path = node_data["mesh"].as<std::string>();
 
       auto mesh_id = assets_manager.try_get_asset_id(std::filesystem::path{mesh_path});
 
@@ -54,24 +55,30 @@ public:
         return;
       }
 
-      auto texture_id = assets_manager.try_get_asset_id(std::filesystem::path{texture_path});
+      auto submeshes = std::vector<scenes::static_mesh::submesh>{};
 
-      if (!texture_id) {
-        core::logger::warn("Texture '{}' could not be found", texture_path);
+      if (const auto submeshes_node = node_data["submeshes"]; submeshes_node) {
+        for (const auto& submesh_node : submeshes_node.as<std::vector<YAML::Node>>()) {
+          auto texture_path = submesh_node["texture"].as<std::string>();
+          auto texture_id = assets_manager.try_get_asset_id(std::filesystem::path{texture_path});
+
+          if (!texture_id) {
+            core::logger::warn("Texture '{}' could not be found", texture_path);
+            return;
+          }
+
+          auto submesh_index = submesh_node["index"].as<std::uint32_t>();
+
+          submeshes.push_back(scenes::static_mesh::submesh{submesh_index, *texture_id});
+        }
+      }
+
+      if (submeshes.empty()) {
+        core::logger::warn("No submeshes found for mesh '{}'", mesh_path);
         return;
       }
 
-      auto submesh_indices = std::vector<std::uint32_t>{};
-
-      if (const auto submesh_indices_node = node_data["submesh_indices"]; submesh_indices_node) {
-        for (const auto& index : submesh_indices_node.as<std::vector<std::uint32_t>>()) {
-          submesh_indices.push_back(index);
-        }
-      } else {
-        submesh_indices.push_back(0u);
-      }
-
-      node.add_component<scenes::static_mesh>(*mesh_id, *texture_id, submesh_indices);
+      node.add_component<scenes::static_mesh>(*mesh_id, std::move(submeshes));
     });
 
     register_loader("camera", [this](node& node, const YAML::Node& node_data) {
