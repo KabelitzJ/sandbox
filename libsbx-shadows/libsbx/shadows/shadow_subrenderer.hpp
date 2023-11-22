@@ -1,6 +1,15 @@
 #ifndef LIBSBX_SHADOWS_SHADOW_SUBRENDERER_HPP_
 #define LIBSBX_SHADOWS_SHADOW_SUBRENDERER_HPP_
 
+#include <unordered_map>
+#include <algorithm>
+
+#include <libsbx/math/vector3.hpp>
+#include <libsbx/math/matrix4x4.hpp>
+
+#include <libsbx/devices/devices_module.hpp>
+#include <libsbx/devices/window.hpp>
+
 #include <libsbx/graphics/subrenderer.hpp>
 #include <libsbx/graphics/graphics_module.hpp>
 #include <libsbx/graphics/images/image.hpp>
@@ -13,6 +22,7 @@
 #include <libsbx/scenes/components/camera.hpp>
 #include <libsbx/scenes/components/static_mesh.hpp>
 #include <libsbx/scenes/components/id.hpp>
+#include <libsbx/scenes/components/directional_light.hpp>
 
 #include <libsbx/models/mesh.hpp>
 
@@ -33,19 +43,19 @@ public:
 
   auto render(graphics::command_buffer& command_buffer) -> void override {
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
-    auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
     auto& scene = scenes_module.scene();
 
-    auto camera_node = scene.camera();
+    auto& scene_light = scene.light();
 
-    auto& camera = camera_node.get_component<scenes::camera>();
+    auto light_direction = scene_light.direction();
 
-    _scene_uniform_handler.push("projection", camera.projection());
+    const auto position = light_direction * -20.0f;
 
-    auto& transform = camera_node.get_component<math::transform>();
+    const auto view = math::matrix4x4::look_at(position, position + light_direction, math::vector3::up);
+    const auto projection = math::matrix4x4::orthographic(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, 100.0f);
 
-    _scene_uniform_handler.push("view", math::matrix4x4::inverted(transform.as_matrix()));
+    _scene_uniform_handler.push("light_space", math::matrix4x4{projection * view});
 
     auto mesh_nodes = scene.query<scenes::static_mesh>();
 

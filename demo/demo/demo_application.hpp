@@ -35,6 +35,8 @@ public:
 
 private:
 
+  auto _generate_plane(const sbx::math::vector2u& tile_count, const sbx::math::vector2u& tile_size) -> std::unique_ptr<sbx::models::mesh>;
+
   sbx::memory::observer_ptr<sbx::ui::label> _label_fps;
   sbx::memory::observer_ptr<sbx::ui::label> _label_delta_time;
 

@@ -25,11 +25,13 @@
 #include <libsbx/scenes/components/static_mesh.hpp>
 #include <libsbx/scenes/components/id.hpp>
 #include <libsbx/scenes/components/camera.hpp>
+#include <libsbx/scenes/components/tag.hpp>
 #include <libsbx/scenes/components/script.hpp>
 #include <libsbx/scenes/components/point_light.hpp>
 
 #include <libsbx/models/vertex3d.hpp>
 #include <libsbx/models/pipeline.hpp>
+#include <libsbx/models/mesh.hpp>
 
 namespace sbx::models {
 
@@ -41,22 +43,20 @@ struct point_light {
 
 class mesh_subrenderer final : public graphics::subrenderer {
 
-  inline static constexpr auto max_lights_v = std::size_t{16};
+  inline static constexpr auto max_point_lights = std::size_t{16};
 
 public:
 
   mesh_subrenderer(const std::filesystem::path& path, const graphics::pipeline::stage& stage)
   : graphics::subrenderer{stage},
-    _pipeline{path, stage},
-    _camera_position{2.0f, 2.0f, 1.0f},
-    _light_position{-1.0f, 3.0f, 1.0f} { }
+    _pipeline{path, stage} { }
 
   ~mesh_subrenderer() override = default;
 
   auto render(graphics::command_buffer& command_buffer) -> void override {
     // [NOTE] KAJ 2023-10-25 : We need those when we want to load the shadow maps
-    // auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
-    // auto& render_stage = graphics_module.render_stage(stage());
+    auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+    auto& assets_module = core::engine::get_module<assets::assets_module>();
 
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
     auto& scene = scenes_module.scene();
@@ -72,34 +72,47 @@ public:
 
     _scene_uniform_handler.push("projection", camera.projection());
 
-    auto& transform = camera_node.get_component<math::transform>();
+    auto& camera_transform = camera_node.get_component<math::transform>();
 
-    _scene_uniform_handler.push("view", math::matrix4x4::inverted(transform.as_matrix()));
+    _scene_uniform_handler.push("view", math::matrix4x4::inverted(camera_transform.as_matrix()));
 
-    _scene_uniform_handler.push("camera_position", transform.position()); 
+    _scene_uniform_handler.push("camera_position", camera_transform.position()); 
 
-    auto light_nodes = scene.query<scenes::point_light>();
+    // auto light_nodes = scene.query<scenes::point_light>();
 
-    auto lights = std::vector<models::point_light>{};
-    auto light_count = std::uint32_t{0};
+    // auto lights = std::vector<models::point_light>{};
+    // auto point_light_count = std::uint32_t{0};
 
-    for (const auto& node : light_nodes) {
-      const auto& light = node.get_component<scenes::point_light>();
-      const auto& transform = node.get_component<math::transform>();
+    // for (const auto& node : light_nodes) {
+    //   const auto& light = node.get_component<scenes::point_light>();
+    //   const auto& transform = node.get_component<math::transform>();
 
-      lights.push_back(models::point_light{light.color(), transform.position(), light.radius()});
+    //   lights.push_back(models::point_light{light.color(), transform.position(), light.radius()});
       
-      ++light_count;
+    //   ++point_light_count;
 
-      if (light_count >= max_lights_v) {
-        break;
-      }
-    }
+    //   if (point_light_count >= max_point_lights) {
+    //     break;
+    //   }
+    // }
 
-    _lights_storage_handler.push(std::span<const models::point_light>{lights.data(), light_count});
-    _scene_uniform_handler.push("light_count", light_count);
+    // _lights_storage_handler.push(std::span<const models::point_light>{lights.data(), point_light_count});
+    // _scene_uniform_handler.push("point_light_count", point_light_count);
 
-    auto mesh_nodes = scene.query<scenes::static_mesh>();
+    auto& scene_light = scene.light();
+
+    auto& light_direction = scene_light.direction();
+    auto& light_color = scene_light.color();
+
+    _scene_uniform_handler.push("light_direction", light_direction);
+    _scene_uniform_handler.push("light_color", light_color);
+
+    const auto position = light_direction * -20.0f;
+
+    const auto view = math::matrix4x4::look_at(position, position + light_direction, math::vector3::up);
+    const auto projection = math::matrix4x4::orthographic(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, 100.0f);
+
+    _scene_uniform_handler.push("light_space", math::matrix4x4{projection * view});
 
     for (auto entry = _uniform_data.begin(); entry != _uniform_data.end();) {
       if (_used_uniforms.contains(entry->first)) {
@@ -110,76 +123,102 @@ public:
     }
 
     _used_uniforms.clear();
+    _static_meshes.clear();
+
+    auto mesh_nodes = scene.query<scenes::static_mesh>();
 
     for (auto& node : mesh_nodes) {
-      _used_uniforms.insert(node.get_component<scenes::id>());
-      _render_node(node, command_buffer);
+      _submit_mesh(node);
+    }
+
+    for (const auto& [key, data] : _static_meshes) {
+      _pipeline.bind(command_buffer);
+
+      auto& uniform_data = _uniform_data[key];
+
+      auto& descriptor_handler = uniform_data.descriptor_handler;
+      auto& storage_handler = uniform_data.storage_handler;
+
+      storage_handler.push(std::span<const per_mesh_data>{data});
+
+      auto& mesh = assets_module.get_asset<models::mesh>(key.mesh_id);
+      auto& image = assets_module.get_asset<graphics::image2d>(key.texture_id);
+
+      descriptor_handler.push("uniform_scene", _scene_uniform_handler);
+      descriptor_handler.push("buffer_mesh_data", storage_handler);
+      descriptor_handler.push("image", image);
+      descriptor_handler.push("shadow_map", graphics_module.attachment("shadow_map"));
+
+      if (!descriptor_handler.update(_pipeline)) {
+        return;
+      }
+
+      descriptor_handler.bind_descriptors(command_buffer);
+
+      mesh.render_submesh(command_buffer, key.submesh_index, static_cast<std::uint32_t>(data.size()));
     }
   }
 
 private:
 
-  auto _render_node(scenes::node& node, graphics::command_buffer& command_buffer) -> void {
-    auto& assets_module = core::engine::get_module<assets::assets_module>();
-    // [NOTE] KAJ 2023-10-25 : We need this for loading the shadow map in the future
-    // auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
-
+  auto _submit_mesh(scenes::node& node) -> void {
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
     auto& scene = scenes_module.scene();
 
-    auto camera_node = scene.camera();
-
     const auto& static_mesh = node.get_component<scenes::static_mesh>();
-    const auto& id = node.get_component<scenes::id>();
+    const auto mesh_id = static_mesh.mesh_id();
 
-    auto& mesh = assets_module.get_asset<models::mesh>(static_mesh.mesh_id());
-    auto& image = assets_module.get_asset<graphics::image2d>(static_mesh.texture_id());
-    const auto& tint = static_mesh.tint();
+    for (const auto& [index, texture_id, tint] : static_mesh.submeshes()) {
+      const auto key = mesh_key{mesh_id, texture_id, index};
 
-    _pipeline.bind(command_buffer);
+      _used_uniforms.insert(key);
 
-    auto world_transform = scene.world_transform(node);
+      auto model = scene.world_transform(node);
+      auto normal = math::matrix4x4::transposed(math::matrix4x4::inverted(model));
 
-    // [NOTE] KAJ 2023-10-26 : We want to insert a new object into the map when it does not exist
-    auto& uniform_data = _uniform_data[id];
-    
-    auto& push_handler = uniform_data.push_handler;
-    auto& descriptor_handler = uniform_data.descriptor_handler;
-
-    push_handler.push("model", world_transform);
-    push_handler.push("normal", math::matrix4x4::transposed(math::matrix4x4::inverted(world_transform)));
-    push_handler.push("tint", tint);
-    // [NOTE] KAJ 2023-10-29 : Meshes on light sources should not be lit
-    push_handler.push("uses_lighting", node.has_component<scenes::point_light>() ? 0 : 1);
-
-    descriptor_handler.push("object", push_handler);
-    descriptor_handler.push("uniform_scene", _scene_uniform_handler);
-    descriptor_handler.push("buffer_lights", _lights_storage_handler);
-    descriptor_handler.push("image", image);
-    // descriptor_handler.push("shadow_map", graphics_module.attachment("shadow_map"));
-
-    if (!descriptor_handler.update(_pipeline)) {
-      return;
+      _static_meshes[key].push_back(per_mesh_data{std::move(model), std::move(normal), tint});
     }
-
-    descriptor_handler.bind_descriptors(command_buffer);
-    push_handler.bind(command_buffer, _pipeline);
-
-    mesh.render(command_buffer);
   }
 
   struct uniform_data {
-    graphics::push_handler push_handler;
     graphics::descriptor_handler descriptor_handler;
+    graphics::storage_handler storage_handler;
   }; // struct uniform_data
+
+  struct mesh_key {
+    assets::asset_id mesh_id;
+    assets::asset_id texture_id;
+    std::uint32_t submesh_index;
+  }; // struct mesh_key
+
+  struct per_mesh_data {
+    math::matrix4x4 model;
+    math::matrix4x4 normal;
+    math::color tint;
+  }; // struct per_mesh_data
+
+  struct mesh_key_hash {
+    auto operator()(const mesh_key& key) const noexcept -> std::size_t {
+      auto seed = std::size_t{0};
+
+      utility::hash_combine(seed, key.mesh_id, key.texture_id, key.submesh_index);
+
+      return seed;
+    }
+  }; // struct mesh_key_hash
+
+  struct mesh_key_equal {
+    auto operator()(const mesh_key& lhs, const mesh_key& rhs) const noexcept -> bool {
+      return lhs.mesh_id == rhs.mesh_id && lhs.texture_id == rhs.texture_id && lhs.submesh_index == rhs.submesh_index;
+    }
+  }; // struct mesh_key_equal
 
   pipeline _pipeline;
 
-  math::vector3 _camera_position;
-  math::vector3 _light_position;
+  std::unordered_map<mesh_key, uniform_data, mesh_key_hash, mesh_key_equal> _uniform_data;
+  std::unordered_set<mesh_key, mesh_key_hash, mesh_key_equal> _used_uniforms;
 
-  std::unordered_map<math::uuid, uniform_data> _uniform_data;
-  std::unordered_set<math::uuid> _used_uniforms;
+  std::unordered_map<mesh_key, std::vector<per_mesh_data>, mesh_key_hash, mesh_key_equal> _static_meshes;
 
   graphics::uniform_handler _scene_uniform_handler;
   graphics::storage_handler _lights_storage_handler;

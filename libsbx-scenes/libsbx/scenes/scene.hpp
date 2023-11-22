@@ -25,6 +25,7 @@
 #include <libsbx/signals/signal.hpp>
 
 #include <libsbx/scenes/node.hpp>
+#include <libsbx/scenes/components/directional_light.hpp>
 
 namespace sbx::scenes {
 
@@ -63,6 +64,10 @@ public:
     return view | to_node | ranges::to<std::vector>();
   }
 
+  auto light() -> directional_light& {
+    return _light;
+  }
+
 private:
 
   template<typename Component, typename... Args>
@@ -80,6 +85,8 @@ private:
   ecs::registry _registry;
   node _root;
   node _camera;
+
+  directional_light _light;
 
 }; // class scene
 

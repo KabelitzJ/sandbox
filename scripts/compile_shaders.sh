@@ -33,5 +33,9 @@ function compile_shader {
 shaders=$(find $1 -maxdepth 1 -mindepth 1 -type d)
 
 for shader in $shaders; do
+  if [ $shader == "common" ]; then
+    continue
+  fi
+  
   compile_shader $shader
 done

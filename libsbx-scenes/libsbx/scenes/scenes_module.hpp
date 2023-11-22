@@ -11,6 +11,8 @@
 
 #include <libsbx/core/module.hpp>
 
+#include <libsbx/assets/assets_module.hpp>
+
 #include <libsbx/devices/devices_module.hpp>
 
 #include <libsbx/scenes/scene.hpp>
@@ -18,6 +20,7 @@
 #include <libsbx/scenes/components/script.hpp>
 #include <libsbx/scenes/components/static_mesh.hpp>
 #include <libsbx/scenes/components/point_light.hpp>
+#include <libsbx/scenes/components/directional_light.hpp>
 #include <libsbx/scenes/components/camera.hpp>
 
 namespace sbx::scenes {
@@ -41,10 +44,9 @@ public:
     });
 
     register_loader("static_mesh", [](node& node, const YAML::Node& node_data) {
-      const auto mesh_path = node_data["mesh"].as<std::string>();
-      const auto texture_path = node_data["texture"].as<std::string>();
-
       auto& assets_manager = core::engine::get_module<assets::assets_module>();
+
+      const auto mesh_path = node_data["mesh"].as<std::string>();
 
       auto mesh_id = assets_manager.try_get_asset_id(std::filesystem::path{mesh_path});
 
@@ -53,20 +55,36 @@ public:
         return;
       }
 
-      auto texture_id = assets_manager.try_get_asset_id(std::filesystem::path{texture_path});
+      auto submeshes = std::vector<scenes::static_mesh::submesh>{};
 
-      if (!texture_id) {
-        core::logger::warn("Texture '{}' could not be found", texture_path);
+      if (const auto submeshes_node = node_data["submeshes"]; submeshes_node) {
+        for (const auto& submesh_node : submeshes_node.as<std::vector<YAML::Node>>()) {
+          auto texture_path = submesh_node["texture"].as<std::string>();
+          auto texture_id = assets_manager.try_get_asset_id(std::filesystem::path{texture_path});
+
+          if (!texture_id) {
+            core::logger::warn("Texture '{}' could not be found", texture_path);
+            return;
+          }
+
+          auto submesh_index = submesh_node["index"].as<std::uint32_t>();
+
+          auto tint = math::color{1.0f, 1.0f, 1.0f, 1.0f};
+
+          if (const auto tint_node = submesh_node["tint"]; tint_node) {
+            tint = tint_node.as<math::color>();
+          }
+
+          submeshes.push_back(scenes::static_mesh::submesh{submesh_index, *texture_id, tint});
+        }
+      }
+
+      if (submeshes.empty()) {
+        core::logger::warn("No submeshes found for mesh '{}'", mesh_path);
         return;
       }
 
-      auto tint = math::color{1.0f, 1.0f, 1.0f, 1.0f};
-
-      if (const auto tint_node = node_data["tint"]; tint_node) {
-        tint = tint_node.as<math::color>();
-      }
-
-      node.add_component<scenes::static_mesh>(*mesh_id, *texture_id, tint);
+      node.add_component<scenes::static_mesh>(*mesh_id, std::move(submeshes));
     });
 
     register_loader("camera", [this](node& node, const YAML::Node& node_data) {
@@ -122,6 +140,13 @@ public:
       const auto radius = node_data["radius"].as<std::float_t>();
 
       node.add_component<point_light>(color, radius);
+    });
+
+    register_loader("directional_light", [](node& node, const YAML::Node& node_data) {
+      const auto direction = node_data["direction"].as<math::vector3>();
+      const auto color = node_data["color"].as<math::color>();
+
+      node.add_component<directional_light>(direction, color);
     });
   }
 

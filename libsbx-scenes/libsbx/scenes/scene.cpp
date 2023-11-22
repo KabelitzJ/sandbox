@@ -1,5 +1,7 @@
 #include <libsbx/scenes/scene.hpp>
 
+#include <unordered_map>
+
 #include <libsbx/units/time.hpp>
 
 #include <libsbx/utility/timer.hpp>
@@ -28,7 +30,8 @@ namespace sbx::scenes {
 scene::scene()
 : _registry{}, 
   _root{&_registry, _registry.create_entity()},
-  _camera{&_registry, _registry.create_entity()} {
+  _camera{&_registry, _registry.create_entity()},
+  _light{math::vector3{1.0, -1.0, 1.0}, math::color{1.0, 1.0, 1.0, 1.0}} {
   // [NOTE] KAJ 2023-10-17 : Initialize root node
   auto& root_id = _root.add_component<scenes::id>();
   _root.add_component<scenes::relationship>(root_id);
@@ -61,9 +64,12 @@ scene::scene()
 
 scene::scene(const std::filesystem::path& path)
 : scene{} {
-  auto& assets_manager = core::engine::get_module<assets::assets_module>(); 
+  auto& assets_manager = core::engine::get_module<assets::assets_module>();
+  auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
 
   const auto actual_path = assets_manager.asset_path(path);
+
+  auto& loaders = scenes_module._component_loaders;
 
   auto timer = utility::timer{};
 
@@ -72,6 +78,13 @@ scene::scene(const std::filesystem::path& path)
   const auto name = root_node["name"].as<std::string>();
 
   core::logger::debug("Scene name: {}", name);
+
+  if (auto light_node = root_node["light"]; light_node) {
+    auto direction = light_node["direction"].as<math::vector3>();
+    auto color = light_node["color"].as<math::color>();
+
+    _light = directional_light{direction, color};
+  }
 
   const auto entities = root_node["entities"].as<std::vector<YAML::Node>>();
 
@@ -83,10 +96,6 @@ scene::scene(const std::filesystem::path& path)
     auto entity = create_node(entity_name);
 
     const auto components = entity_node["components"].as<std::vector<YAML::Node>>();
-
-    auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
-
-    auto& loaders = scenes_module._component_loaders;
 
     for (const auto& component_node : components) {
       const auto component_type = component_node["type"].as<std::string>();

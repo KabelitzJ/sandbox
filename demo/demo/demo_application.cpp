@@ -8,7 +8,11 @@ demo_application::demo_application()
 : sbx::core::application{} {
   auto& assets_module = sbx::core::engine::get_module<sbx::assets::assets_module>();
   
+  const auto& cli = sbx::core::engine::cli();
+
   assets_module.set_asset_directory("./demo/assets");
+
+  sbx::core::logger::info("Asset directory: {}", assets_module.asset_directory().string());
 
   auto base_id = assets_module.load_asset<sbx::graphics::image2d>("res://textures/base.png");
   auto default_id = assets_module.load_asset<sbx::graphics::image2d>("res://textures/default.png");
@@ -22,6 +26,7 @@ demo_application::demo_application()
   auto sphere_id = assets_module.load_asset<sbx::models::mesh>("res://meshes/sphere.obj");
   auto cube_id = assets_module.load_asset<sbx::models::mesh>("res://meshes/cube.obj");
   auto tree_id = assets_module.load_asset<sbx::models::mesh>("res://meshes/tree.obj");
+  auto tree_1_id = assets_module.load_asset<sbx::models::mesh>("res://meshes/tree_1.obj");
   auto plane_id = assets_module.load_asset<sbx::models::mesh>("res://meshes/plane.obj");
 
   // _mesh_id = sphere_id;
@@ -56,6 +61,11 @@ demo_application::demo_application()
   auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
 
   auto& scene = scenes_module.load_scene("res://scenes/demo.yaml");
+
+  auto floor_id = assets_module.add_asset<sbx::models::mesh>(_generate_plane(sbx::math::vector2u{15u, 15u}, sbx::math::vector2u{2u, 2u}));
+
+  auto floor_node = scene.create_node("Floor", sbx::math::transform{sbx::math::vector3::zero, sbx::math::vector3::zero, sbx::math::vector3::one});
+  floor_node.add_component<sbx::scenes::static_mesh>(floor_id, std::vector<sbx::scenes::static_mesh::submesh>{{0, prototype_black_id}});
 
   // [Todo] KAJ 2023-08-16 15:30 - This should probably be done automatically
   scene.start();
@@ -120,6 +130,45 @@ auto demo_application::update() -> void  {
   }
 
   _label_delta_time->set_text(fmt::format("Delta time: {:.2f} ms", sbx::units::quantity_cast<sbx::units::millisecond>(delta_time).value()));
+}
+
+auto demo_application::_generate_plane(const sbx::math::vector2u& tile_count, const sbx::math::vector2u& tile_size) -> std::unique_ptr<sbx::models::mesh> {
+  auto vertices = std::vector<sbx::models::vertex3d>{};
+  auto indices = std::vector<std::uint32_t>{};
+
+  // Generate vertices
+
+  const auto offset = sbx::math::vector2{static_cast<std::float_t>(tile_count.x * tile_size.x / 2.0f), static_cast<std::float_t>(tile_count.y * tile_size.y / 2.0f)};
+
+  for (auto y = 0u; y < tile_count.y + 1u; ++y) {
+    for (auto x = 0u; x < tile_count.x + 1u; ++x) {
+      const auto position = sbx::math::vector3{static_cast<std::float_t>(x * tile_size.x - offset.x), 0.0f, static_cast<std::float_t>(y * tile_size.y - offset.y)};
+      const auto normal = sbx::math::vector3::up;
+      const auto uv = sbx::math::vector2{static_cast<std::float_t>(x), static_cast<std::float_t>(y)};
+
+      vertices.emplace_back(position, normal, uv);
+    }
+  }
+
+  // Calculate indices
+
+  const auto vertex_count = tile_count.x + 1u;
+
+  for (auto i = 0u; i < vertex_count * vertex_count - vertex_count; ++i) {
+    if ((i + 1u) % vertex_count == 0) {
+      continue;
+    }
+
+    indices.emplace_back(i);
+    indices.emplace_back(i + vertex_count);
+    indices.emplace_back(i + vertex_count + 1u);
+
+    indices.emplace_back(i);
+    indices.emplace_back(i + vertex_count + 1u);
+    indices.emplace_back(i + 1u);
+  }
+
+  return std::make_unique<sbx::models::mesh>(std::move(vertices), std::move(indices));
 }
 
 } // namespace demo

@@ -85,7 +85,7 @@ public:
 
     const auto& submesh = _submeshes.at(submesh_index);
 
-    command_buffer.draw_indexed(submesh.index_count, instance_count, submesh.index_offset, submesh.vertex_offset, 0);
+    command_buffer.draw_indexed(submesh.index_count, instance_count, submesh.index_offset, 0, 0);
   }
 
   auto submeshes() const noexcept -> const std::vector<submesh>& {

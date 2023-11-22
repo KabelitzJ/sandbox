@@ -72,8 +72,6 @@ public:
           }
 
           if (auto info = _test_collision(node, collider_node); info) {
-            core::logger::debug("Collision detected! {} <-> {}", node.get_component<scenes::tag>(), collider_node.get_component<scenes::tag>());
-
             auto& other_rigidbody = collider_node.get_component<physics::rigidbody>();
 
             const auto bounce = rigidbody.bounce() + other_rigidbody.bounce();

@@ -3,6 +3,7 @@
 
 #include <optional>
 #include <filesystem>
+#include <cinttypes>
 #include <vector>
 #include <unordered_map>
 #include <map>
@@ -44,10 +45,17 @@ enum class front_face : std::uint8_t {
   clockwise = VK_FRONT_FACE_CLOCKWISE
 }; // enum class front_face
 
+struct depth_bias {
+  std::float_t constant_factor{0.0f};
+  std::float_t clamp{0.0f};
+  std::float_t slope_factor{0.0f};
+}; // struct depth_bias
+
 struct rasterization_state {
   polygon_mode polygon_mode{polygon_mode::fill};
   cull_mode cull_mode{cull_mode::back};
   front_face front_face{front_face::counter_clockwise};
+  std::optional<depth_bias> depth_bias{};
 }; // struct rasterization_state
 
 struct pipeline_definition {
@@ -111,13 +119,13 @@ private:
 
   std::unordered_map<VkShaderStageFlagBits, std::unique_ptr<shader>> _shaders{};
 
-  std::map<std::string, shader::uniform> _uniforms{};
-  std::map<std::string, shader::uniform_block> _uniform_blocks{};
+  std::unordered_map<std::string, shader::uniform> _uniforms{};
+  std::unordered_map<std::string, shader::uniform_block> _uniform_blocks{};
 
-  std::map<std::uint32_t, VkDescriptorType> _descriptor_type_at_binding{};
+  std::unordered_map<std::uint32_t, VkDescriptorType> _descriptor_type_at_binding{};
 
-  std::map<std::string, std::uint32_t> _descriptor_bindings{};
-  std::map<std::string, std::uint32_t> _descriptor_sizes{};
+  std::unordered_map<std::string, std::uint32_t> _descriptor_bindings{};
+  std::unordered_map<std::string, std::uint32_t> _descriptor_sizes{};
 
   std::string _name{};
   VkPipelineLayout _layout{};
