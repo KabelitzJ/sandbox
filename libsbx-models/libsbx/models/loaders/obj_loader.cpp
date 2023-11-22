@@ -34,7 +34,9 @@ auto obj_loader::load(const std::filesystem::path& path) -> mesh_data {
     auto submesh = graphics::submesh{};
 
     submesh.index_offset = data.indices.size();
-    submesh.vertex_offset = data.vertices.size();
+
+    // [NOTE] KAJ 2023-11-22 : This is a offset into the vertex buffer. We dont want to use this.
+    submesh.vertex_offset = 0u;
 
     for (const auto& index : shape.mesh.indices) {
       auto vertex = vertex3d{};

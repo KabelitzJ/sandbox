@@ -30,7 +30,7 @@ entities:
         far: 100.0
       - type: "script"
         script: "res://scripts/camera_controller.lua"
-  - name: "tree"
+  - name: "tree1"
     components:
       - type: "transform"
         position: { x: 0.0, y: 0.0, z: 0.0 }
@@ -39,7 +39,18 @@ entities:
       - type: "static_mesh"
         mesh: *tree_1
         submeshes:
-          # - { index: 0, texture: *base }
+          - { index: 0, texture: *white }
+          - { index: 1, texture: *base }
+  - name: "tree2"
+    components:
+      - type: "transform"
+        position: { x: -4.0, y: 0.0, z: 0.0 }
+        rotation: { x: 0.0, y: 20.0, z: 0.0 }
+        scale: { x: 1.0, y: 1.0, z: 1.0 }
+      - type: "static_mesh"
+        mesh: *tree_1
+        submeshes:
+          - { index: 0, texture: *white }
           - { index: 1, texture: *base }
   - name: "sphere"
     components:
