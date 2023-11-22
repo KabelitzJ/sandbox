@@ -139,13 +139,13 @@ public:
       auto& descriptor_handler = uniform_data.descriptor_handler;
       auto& storage_handler = uniform_data.storage_handler;
 
-      storage_handler.push(std::span<const mesh_data>{data});
+      storage_handler.push(std::span<const per_mesh_data>{data});
 
       auto& mesh = assets_module.get_asset<models::mesh>(key.mesh_id);
       auto& image = assets_module.get_asset<graphics::image2d>(key.texture_id);
 
       descriptor_handler.push("uniform_scene", _scene_uniform_handler);
-      descriptor_handler.push("buffer_transforms", storage_handler);
+      descriptor_handler.push("buffer_mesh_data", storage_handler);
       descriptor_handler.push("image", image);
       descriptor_handler.push("shadow_map", graphics_module.attachment("shadow_map"));
 
@@ -168,7 +168,7 @@ private:
     const auto& static_mesh = node.get_component<scenes::static_mesh>();
     const auto mesh_id = static_mesh.mesh_id();
 
-    for (const auto& [index, texture_id] : static_mesh.submeshes()) {
+    for (const auto& [index, texture_id, tint] : static_mesh.submeshes()) {
       const auto key = mesh_key{mesh_id, texture_id, index};
 
       _used_uniforms.insert(key);
@@ -176,7 +176,7 @@ private:
       auto model = scene.world_transform(node);
       auto normal = math::matrix4x4::transposed(math::matrix4x4::inverted(model));
 
-      _static_meshes[key].push_back(mesh_data{std::move(model), std::move(normal)});
+      _static_meshes[key].push_back(per_mesh_data{std::move(model), std::move(normal), tint});
     }
   }
 
@@ -191,10 +191,11 @@ private:
     std::uint32_t submesh_index;
   }; // struct mesh_key
 
-  struct mesh_data {
+  struct per_mesh_data {
     math::matrix4x4 model;
     math::matrix4x4 normal;
-  }; // struct mesh_data
+    math::color tint;
+  }; // struct per_mesh_data
 
   struct mesh_key_hash {
     auto operator()(const mesh_key& key) const noexcept -> std::size_t {
@@ -217,7 +218,7 @@ private:
   std::unordered_map<mesh_key, uniform_data, mesh_key_hash, mesh_key_equal> _uniform_data;
   std::unordered_set<mesh_key, mesh_key_hash, mesh_key_equal> _used_uniforms;
 
-  std::unordered_map<mesh_key, std::vector<mesh_data>, mesh_key_hash, mesh_key_equal> _static_meshes;
+  std::unordered_map<mesh_key, std::vector<per_mesh_data>, mesh_key_hash, mesh_key_equal> _static_meshes;
 
   graphics::uniform_handler _scene_uniform_handler;
   graphics::storage_handler _lights_storage_handler;

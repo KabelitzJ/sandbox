@@ -69,7 +69,13 @@ public:
 
           auto submesh_index = submesh_node["index"].as<std::uint32_t>();
 
-          submeshes.push_back(scenes::static_mesh::submesh{submesh_index, *texture_id});
+          auto tint = math::color{1.0f, 1.0f, 1.0f, 1.0f};
+
+          if (const auto tint_node = submesh_node["tint"]; tint_node) {
+            tint = tint_node.as<math::color>();
+          }
+
+          submeshes.push_back(scenes::static_mesh::submesh{submesh_index, *texture_id, tint});
         }
       }
 
