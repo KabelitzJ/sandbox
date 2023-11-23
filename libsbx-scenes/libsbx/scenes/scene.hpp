@@ -11,6 +11,8 @@
 
 #include <range/v3/all.hpp>
 
+#include <yaml-cpp/yaml.h>
+
 #include <libsbx/ecs/registry.hpp>
 #include <libsbx/ecs/entity.hpp>
 
@@ -79,6 +81,10 @@ private:
       node.add_component<Component>(std::forward<Args>(args)...);
     }
   }
+
+  auto _parse_assets(const YAML::Node& root_node) -> void;
+
+  auto _parse_entities(const YAML::Node& root_node) -> void;
 
   std::unordered_map<math::uuid, node> _nodes;
 
