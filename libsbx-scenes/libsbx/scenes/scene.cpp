@@ -69,7 +69,7 @@ scene::scene(const std::filesystem::path& path)
 
   const auto actual_path = assets_manager.asset_path(path);
 
-  auto& loaders = scenes_module._component_loaders;
+  auto& component_loaders = scenes_module._component_loaders;
 
   auto timer = utility::timer{};
 
@@ -86,6 +86,30 @@ scene::scene(const std::filesystem::path& path)
     _light = directional_light{direction, color};
   }
 
+  auto& asset_loaders = scenes_module._asset_loaders;
+
+  const auto assets_node = root_node["assets"];
+
+  if (auto entry = asset_loaders.find("texture"); entry != asset_loaders.end()) {
+    const auto textures_node = assets_node["textures"].as<std::vector<YAML::Node>>();
+
+    for (const auto& texture_node : textures_node) {
+      std::invoke(entry->second, texture_node);
+    }
+  } else {
+    core::logger::warn("Unknown component type: texture");
+  }
+
+  if (auto entry = asset_loaders.find("mesh"); entry != asset_loaders.end()) {
+    const auto meshes_node = assets_node["meshes"].as<std::vector<YAML::Node>>();
+
+    for (const auto& mesh_node : meshes_node) {
+      std::invoke(entry->second, mesh_node);
+    }
+  } else {
+    core::logger::warn("Unknown component type: mesh");
+  }
+
   const auto entities = root_node["entities"].as<std::vector<YAML::Node>>();
 
   for (const auto& entity_node : entities) {
@@ -100,10 +124,11 @@ scene::scene(const std::filesystem::path& path)
     for (const auto& component_node : components) {
       const auto component_type = component_node["type"].as<std::string>();
 
-      if (auto entry = loaders.find(component_type); entry != loaders.end()) {
+      if (auto entry = component_loaders.find(component_type); entry != component_loaders.end()) {
         core::logger::debug("    Component type: {}", component_type);
 
-        entry->second(entity, component_node);
+        // entry->second(entity, component_node);
+        std::invoke(entry->second, entity, component_node);
 
         if (component_type == "camera") {
           _camera = entity;

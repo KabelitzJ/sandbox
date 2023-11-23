@@ -15,6 +15,8 @@
 #include <libsbx/scenes/scenes_module.hpp>
 #include <libsbx/scenes/components/tag.hpp>
 
+#include <libsbx/models/mesh.hpp>
+
 #include <libsbx/physics/rigidbody.hpp>
 #include <libsbx/physics/box_collider.hpp>
 
@@ -29,7 +31,7 @@ public:
   physics_module() {
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
 
-    scenes_module.register_loader("rigidbody", [](scenes::node& node, const YAML::Node& node_data){
+    scenes_module.register_component_loader("rigidbody", [](scenes::node& node, const YAML::Node& node_data){
       const auto mass = node_data["mass"].as<std::float_t>();
       const auto bounce = node_data["bounce"].as<std::float_t>();
       const auto is_static = node_data["is_static"].as<bool>();
@@ -37,10 +39,19 @@ public:
       node.add_component<physics::rigidbody>(mass, bounce, is_static);
     });
 
-    scenes_module.register_loader("box_collider", [](scenes::node& node, const YAML::Node& node_data){
+    scenes_module.register_component_loader("box_collider", [](scenes::node& node, const YAML::Node& node_data){
       const auto size = node_data["size"].as<math::vector3>();
 
       node.add_component<physics::box_collider>(size);
+    });
+
+    // [NOTE] KAJ 2023-11-23 : This should not be done here but libsbx::models does not have a module
+    scenes_module.register_asset_loader("mesh", [](const YAML::Node& node_data) {
+      auto& assets_module = core::engine::get_module<assets::assets_module>();
+
+      const auto path = node_data.as<std::string>();
+
+      assets_module.load_asset<models::mesh>(std::filesystem::path{path});
     });
   }
 

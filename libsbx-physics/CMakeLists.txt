@@ -43,6 +43,7 @@ target_link_libraries(
     libsbx::math
     libsbx::core
     libsbx::scenes
+    libsbx::models
 )
 
 set_target_properties(

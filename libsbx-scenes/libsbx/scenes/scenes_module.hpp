@@ -15,6 +15,8 @@
 
 #include <libsbx/devices/devices_module.hpp>
 
+#include <libsbx/graphics/images/image2d.hpp>
+
 #include <libsbx/scenes/scene.hpp>
 
 #include <libsbx/scenes/components/script.hpp>
@@ -35,7 +37,7 @@ public:
 
   scenes_module()
   : _scene{nullptr} {
-    register_loader("transform", [](node& node, const YAML::Node& node_data) {
+    register_component_loader("transform", [](node& node, const YAML::Node& node_data) {
       const auto position = node_data["position"].as<math::vector3>();
       const auto rotation = node_data["rotation"].as<math::vector3>();
       const auto scale = node_data["scale"].as<math::vector3>();
@@ -43,7 +45,7 @@ public:
       node.add_component<math::transform>(position, rotation, scale);
     });
 
-    register_loader("static_mesh", [](node& node, const YAML::Node& node_data) {
+    register_component_loader("static_mesh", [](node& node, const YAML::Node& node_data) {
       auto& assets_manager = core::engine::get_module<assets::assets_module>();
 
       const auto mesh_path = node_data["mesh"].as<std::string>();
@@ -87,7 +89,7 @@ public:
       node.add_component<scenes::static_mesh>(*mesh_id, std::move(submeshes));
     });
 
-    register_loader("camera", [this](node& node, const YAML::Node& node_data) {
+    register_component_loader("camera", [this](node& node, const YAML::Node& node_data) {
       const auto fov = node_data["fov"].as<std::float_t>();
       const auto near = node_data["near"].as<std::float_t>();
       const auto far = node_data["far"].as<std::float_t>();
@@ -99,7 +101,7 @@ public:
       node.add_component<camera>(math::degree{fov}, window.aspect_ratio(), near, far);
     });
 
-    register_loader("script", [](node& node, const YAML::Node& node_data) {
+    register_component_loader("script", [](node& node, const YAML::Node& node_data) {
       // [NOTE] KAJ 2023-10-29 : Remove any existing script component. We currently only support one script per entity
       node.remove_component<scenes::script>();
 
@@ -135,18 +137,26 @@ public:
       }
     });
 
-    register_loader("point_light", [](node& node, const YAML::Node& node_data) {
+    register_component_loader("point_light", [](node& node, const YAML::Node& node_data) {
       const auto color = node_data["color"].as<math::color>();
       const auto radius = node_data["radius"].as<std::float_t>();
 
       node.add_component<point_light>(color, radius);
     });
 
-    register_loader("directional_light", [](node& node, const YAML::Node& node_data) {
+    register_component_loader("directional_light", [](node& node, const YAML::Node& node_data) {
       const auto direction = node_data["direction"].as<math::vector3>();
       const auto color = node_data["color"].as<math::color>();
 
       node.add_component<directional_light>(direction, color);
+    });
+
+    register_asset_loader("texture", [](const YAML::Node& node_data) {
+      auto& assets_manager = core::engine::get_module<assets::assets_module>();
+
+      const auto path = node_data.as<std::string>();
+
+      assets_manager.load_asset<graphics::image2d>(std::filesystem::path{path});
     });
   }
 
@@ -177,8 +187,13 @@ public:
   }
 
   template<std::invocable<node&, const YAML::Node&> Callable>
-  auto register_loader(const std::string& name, Callable&& callable) -> void {
+  auto register_component_loader(const std::string& name, Callable&& callable) -> void {
     _component_loaders.insert({name, std::forward<Callable>(callable)});
+  }
+
+  template<std::invocable<const YAML::Node&> Callable>
+  auto register_asset_loader(const std::string& name, Callable&& callable) -> void {
+    _asset_loaders.insert({name, std::forward<Callable>(callable)});
   }
 
 private:
@@ -197,6 +212,7 @@ private:
 
   std::unique_ptr<scenes::scene> _scene;
   std::unordered_map<std::string, std::function<void(node&, const YAML::Node&)>> _component_loaders;
+  std::unordered_map<std::string, std::function<void(const YAML::Node&)>> _asset_loaders;
 
 }; // class scene_modules
 

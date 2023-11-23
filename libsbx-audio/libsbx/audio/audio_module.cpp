@@ -58,7 +58,7 @@ audio_module::audio_module() {
 
   auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
 
-  scenes_module.register_loader("sound_source", [](scenes::node& node, const YAML::Node& node_data) {
+  scenes_module.register_component_loader("sound_source", [](scenes::node& node, const YAML::Node& node_data) {
     const auto sound = node_data["sound"].as<std::string>();
     const auto is_looping = node_data["is_looping"].as<bool>();
     const auto volume = node_data["volume"].as<std::float_t>();

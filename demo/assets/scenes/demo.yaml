@@ -1,4 +1,7 @@
 name: "demo"
+light:
+  direction: { x: -1.0, y: -1.0, z: -1.0 }
+  color: { r: 1.0, g: 0.9, b: 0.9, a: 1.0 }
 assets:
   textures: 
     - &prototype_black "res://textures/prototype_black.png"
@@ -14,9 +17,6 @@ assets:
   audios:
     - &forest "res://audio/forest.wav"
     - &ambience "res://audio/ambience.wav"
-light:
-  direction: { x: -1.0, y: -1.0, z: -1.0 }
-  color: { r: 1.0, g: 0.9, b: 0.9, a: 1.0 }
 entities:
   - name: "player"
     components:
@@ -25,7 +25,7 @@ entities:
         rotation: { x: 0.0, y: 0.0, z: 0.0 }
         scale: { x: 1.0, y: 1.0, z: 1.0 }
       - type: "camera"
-        fov: 90.0
+        fov: 80.0
         near: 0.1
         far: 100.0
       - type: "script"
@@ -68,6 +68,28 @@ entities:
       - type: "transform"
         position: { x: 4.0, y: 0.0, z: 3.0 }
         rotation: { x: 0.0, y: 75.0, z: 0.0 }
+        scale: { x: 1.0, y: 1.0, z: 1.0 }
+      - type: "static_mesh"
+        mesh: *tree_1
+        submeshes:
+          - { index: 0, texture: *white, tint: { r: 0.37, g: 0.53, b: 0.32, a: 1.0 } }
+          - { index: 1, texture: *white, tint: { r: 0.62, g: 0.58, b: 0.44, a: 1.0 } }
+  - name: "tree5"
+    components:
+      - type: "transform"
+        position: { x: 6.0, y: 0.0, z: -6.0 }
+        rotation: { x: 0.0, y: 150.0, z: 0.0 }
+        scale: { x: 1.0, y: 1.0, z: 1.0 }
+      - type: "static_mesh"
+        mesh: *tree_1
+        submeshes:
+          - { index: 0, texture: *white, tint: { r: 0.37, g: 0.53, b: 0.32, a: 1.0 } }
+          - { index: 1, texture: *white, tint: { r: 0.62, g: 0.58, b: 0.44, a: 1.0 } }
+  - name: "tree6"
+    components:
+      - type: "transform"
+        position: { x: 6.0, y: 0.0, z: 6.0 }
+        rotation: { x: 0.0, y: 20.0, z: 0.0 }
         scale: { x: 1.0, y: 1.0, z: 1.0 }
       - type: "static_mesh"
         mesh: *tree_1

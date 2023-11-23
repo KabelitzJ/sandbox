@@ -14,20 +14,20 @@ demo_application::demo_application()
 
   sbx::core::logger::info("Asset directory: {}", assets_module.asset_directory().string());
 
-  auto base_id = assets_module.load_asset<sbx::graphics::image2d>("res://textures/base.png");
-  auto default_id = assets_module.load_asset<sbx::graphics::image2d>("res://textures/default.png");
-  auto grid_id = assets_module.load_asset<sbx::graphics::image2d>("res://textures/grid.png");
-  auto prototype_black_id = assets_module.load_asset<sbx::graphics::image2d>("res://textures/prototype_black.png");
-  auto white_id = assets_module.load_asset<sbx::graphics::image2d>("res://textures/white.png");
+  // auto base_id = assets_module.load_asset<sbx::graphics::image2d>("res://textures/base.png");
+  // auto default_id = assets_module.load_asset<sbx::graphics::image2d>("res://textures/default.png");
+  // auto grid_id = assets_module.load_asset<sbx::graphics::image2d>("res://textures/grid.png");
+  // auto prototype_black_id = assets_module.load_asset<sbx::graphics::image2d>("res://textures/prototype_black.png");
+  // auto white_id = assets_module.load_asset<sbx::graphics::image2d>("res://textures/white.png");
 
   // _texture_id = base_id;
 
-  auto monkey_id = assets_module.load_asset<sbx::models::mesh>("res://meshes/suzanne.obj");
-  auto sphere_id = assets_module.load_asset<sbx::models::mesh>("res://meshes/sphere.obj");
-  auto cube_id = assets_module.load_asset<sbx::models::mesh>("res://meshes/cube.obj");
-  auto tree_id = assets_module.load_asset<sbx::models::mesh>("res://meshes/tree.obj");
-  auto tree_1_id = assets_module.load_asset<sbx::models::mesh>("res://meshes/tree_1.obj");
-  auto plane_id = assets_module.load_asset<sbx::models::mesh>("res://meshes/plane.obj");
+  // auto monkey_id = assets_module.load_asset<sbx::models::mesh>("res://meshes/suzanne.obj");
+  // auto sphere_id = assets_module.load_asset<sbx::models::mesh>("res://meshes/sphere.obj");
+  // auto cube_id = assets_module.load_asset<sbx::models::mesh>("res://meshes/cube.obj");
+  // auto tree_id = assets_module.load_asset<sbx::models::mesh>("res://meshes/tree.obj");
+  // auto tree_1_id = assets_module.load_asset<sbx::models::mesh>("res://meshes/tree_1.obj");
+  // auto plane_id = assets_module.load_asset<sbx::models::mesh>("res://meshes/plane.obj");
 
   // _mesh_id = sphere_id;
 
@@ -64,8 +64,10 @@ demo_application::demo_application()
 
   auto floor_id = assets_module.add_asset<sbx::models::mesh>(_generate_plane(sbx::math::vector2u{15u, 15u}, sbx::math::vector2u{2u, 2u}));
 
+  auto white_id = assets_module.try_get_asset_id("res://textures/white.png");
+
   auto floor_node = scene.create_node("Floor", sbx::math::transform{sbx::math::vector3::zero, sbx::math::vector3::zero, sbx::math::vector3::one});
-  floor_node.add_component<sbx::scenes::static_mesh>(floor_id, std::vector<sbx::scenes::static_mesh::submesh>{{0, prototype_black_id}});
+  floor_node.add_component<sbx::scenes::static_mesh>(floor_id, std::vector<sbx::scenes::static_mesh::submesh>{{0, *white_id, sbx::math::color{0.37f, 0.43f, 0.32f, 1.0f}}});
 
   // [Todo] KAJ 2023-08-16 15:30 - This should probably be done automatically
   scene.start();

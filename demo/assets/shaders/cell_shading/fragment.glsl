@@ -38,7 +38,7 @@ const material default_material = material(
   vec4(1.0, 1.0, 1.0, 1.0),
   vec4(1.0, 1.0, 1.0, 1.0),
   vec4(0.5, 0.5, 0.5, 1.0),
-  32.0
+  0.0
 );
 
 float calculate_shadow(vec3 light_direction) {
@@ -57,8 +57,8 @@ float calculate_shadow(vec3 light_direction) {
   
   float current_depth = coordinates.z - bias;
 
+  int range = 2;
   int count = 0;
-  int range = 1;
 
   for (int x = -range; x <= range; ++x) {
     for (int y = -range; y <= range; ++y) {
@@ -84,7 +84,7 @@ void main() {
   // Specular
   vec3 view_direction = normalize(scene.camera_position - in_position);
   vec3 halfway_direction = normalize(light_direction + view_direction);  
-  float specular_factor = pow(max(dot(in_normal, halfway_direction), 0.0), 64.0);
+  float specular_factor = pow(max(dot(in_normal, halfway_direction), 0.0), default_material.shininess);
   vec4 specular_color = specular_factor * scene.light_color; 
 
   // Calculate shadow
@@ -93,7 +93,7 @@ void main() {
   // Sample texture
   vec4 sampled_color = texture(image, in_uv);
 
-  out_color = (ambient_color + (1.0 - shadow_factor) * (diffuse_color + specular_color)) * sampled_color * in_tint;
+  out_color = clamp((ambient_color + (1.0 - shadow_factor) * (diffuse_color + specular_color)) * sampled_color * in_tint, 0.0, 1.0);
   // out_color = (ambient_color + diffuse_color + specular_color) * sampled_color * (1.0 - shadow_factor);
   // out_color = color * shadow;
 
