@@ -1,13 +1,7 @@
 #version 450
 
 #include "../common/lighting.glsl"
-
-struct material {
-  vec4 ambient;
-  vec4 diffuse;
-  vec4 specular;
-  float shininess;
-}; // struct material
+#include "../common/material.glsl"
 
 layout(location = 0) in vec3 in_position;
 layout(location = 1) in vec3 in_normal;
@@ -38,7 +32,7 @@ const material default_material = material(
   vec4(1.0, 1.0, 1.0, 1.0),
   vec4(1.0, 1.0, 1.0, 1.0),
   vec4(0.5, 0.5, 0.5, 1.0),
-  0.0
+  32.0
 );
 
 float calculate_shadow(vec3 light_direction) {
@@ -57,8 +51,8 @@ float calculate_shadow(vec3 light_direction) {
   
   float current_depth = coordinates.z - bias;
 
-  int range = 2;
   int count = 0;
+  int range = 2;
 
   for (int x = -range; x <= range; ++x) {
     for (int y = -range; y <= range; ++y) {
@@ -93,7 +87,7 @@ void main() {
   // Sample texture
   vec4 sampled_color = texture(image, in_uv);
 
-  out_color = clamp((ambient_color + (1.0 - shadow_factor) * (diffuse_color + specular_color)) * sampled_color * in_tint, 0.0, 1.0);
+  out_color = (ambient_color + (1.0 - shadow_factor) * (diffuse_color + specular_color)) * sampled_color * in_tint;
   // out_color = (ambient_color + diffuse_color + specular_color) * sampled_color * (1.0 - shadow_factor);
   // out_color = color * shadow;
 
