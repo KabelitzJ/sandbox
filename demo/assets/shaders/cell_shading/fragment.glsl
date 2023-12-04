@@ -35,7 +35,23 @@ const material default_material = material(
   32.0
 );
 
-float calculate_shadow(vec3 light_direction) {
+vec4 phong_lighting(vec3 light_direction, vec3 view_direction, vec3 normal, material material) {
+  // Ambient
+  vec4 ambient_color = scene.light_color * material.ambient;
+
+  // Diffuse
+  float diffuse_factor = max(dot(light_direction, normal), 0.0);
+  vec4 diffuse_color = diffuse_factor * scene.light_color * material.diffuse;
+
+  // Specular
+  vec3 halfway_direction = normalize(light_direction + view_direction);  
+  float specular_factor = pow(max(dot(normal, halfway_direction), 0.0), material.shininess);
+  vec4 specular_color = specular_factor * scene.light_color * material.specular; 
+
+  return ambient_color + diffuse_color + specular_color;
+}
+
+float pcf_shadow(vec3 light_direction) {
   float shadow = 0.0;
 
   vec2 texel_size = 1.0 / textureSize(shadow_map, 0);
@@ -50,7 +66,7 @@ float calculate_shadow(vec3 light_direction) {
   // float bias = 0.001;
   
   float current_depth = coordinates.z - bias;
-
+  
   int count = 0;
   int range = 2;
 
@@ -67,27 +83,20 @@ float calculate_shadow(vec3 light_direction) {
 
 void main() {
   vec3 light_direction = normalize(-scene.light_direction);
-
-  // Ambient
-  vec4 ambient_color = scene.light_color * 0.15;
-
-  // Diffuse
-  float diffuse_factor = max(dot(light_direction, in_normal), 0.0);
-  vec4 diffuse_color = diffuse_factor * scene.light_color;
-
-  // Specular
   vec3 view_direction = normalize(scene.camera_position - in_position);
-  vec3 halfway_direction = normalize(light_direction + view_direction);  
-  float specular_factor = pow(max(dot(in_normal, halfway_direction), 0.0), default_material.shininess);
-  vec4 specular_color = specular_factor * scene.light_color; 
+
+  // Calculate lighting
+  vec4 lighting = phong_lighting(light_direction, view_direction, in_normal, default_material);
 
   // Calculate shadow
-  float shadow_factor = calculate_shadow(light_direction);
+  float shadow_factor = pcf_shadow(light_direction);
 
   // Sample texture
   vec4 sampled_color = texture(image, in_uv);
 
-  out_color = (ambient_color + (1.0 - shadow_factor) * (diffuse_color + specular_color)) * sampled_color * in_tint;
+  vec4 shaded_lighting = mix(lighting * (1.0 - shadow_factor), lighting * 0.2, shadow_factor);
+
+  out_color = shaded_lighting * sampled_color * in_tint;
   // out_color = (ambient_color + diffuse_color + specular_color) * sampled_color * (1.0 - shadow_factor);
   // out_color = color * shadow;
 
