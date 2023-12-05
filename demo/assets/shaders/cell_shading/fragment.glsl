@@ -32,10 +32,10 @@ const material default_material = material(
 
 vec4 phong_lighting(vec3 light_direction, vec3 view_direction, vec3 normal, material material) {
   // Ambient
-  vec4 ambient_color = scene.light_color * material.ambient;
+  vec4 ambient_color = scene.light_color * material.ambient * 0.2;
 
   // Diffuse
-  float diffuse_factor = max(dot(light_direction, normal), 0.0);
+  float diffuse_factor = max(dot(light_direction, normal), 0.0) * 0.8;
   vec4 diffuse_color = diffuse_factor * scene.light_color * material.diffuse;
 
   // Specular
@@ -58,13 +58,13 @@ float pcf_shadow(vec3 light_direction) {
 
   float shadow = 0.0;
 
-  float bias = max(0.001 * (1.0 - dot(in_normal, light_direction)), 0.0001);
+  float bias = max(0.005 * (1.0 - dot(in_normal, light_direction)), 0.0005);
   // float bias = 0.001;
   
   float current_depth = coordinates.z;
   
   int count = 0;
-  int range = 2;
+  int range = 3;
 
   for (int x = -range; x <= range; ++x) {
     for (int y = -range; y <= range; ++y) {
@@ -90,9 +90,11 @@ void main() {
   // Sample texture
   vec4 sampled_color = texture(image, in_uv);
 
-  vec4 shaded_lighting = mix(lighting * (1.0 - shadow_factor), lighting * 0.2, shadow_factor);
+  // Apply lighting
+  vec4 color = sampled_color * lighting * in_tint;
 
-  out_color = shaded_lighting * sampled_color * in_tint;
+  out_color = mix(color * (1.0 - shadow_factor), color * 0.2, shadow_factor);
+
   // out_color = (ambient_color + diffuse_color + specular_color) * sampled_color * (1.0 - shadow_factor);
   // out_color = color * shadow;
 

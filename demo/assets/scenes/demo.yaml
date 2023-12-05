@@ -77,7 +77,7 @@ entities:
     components:
       - type: "transform"
         position: { x: 4.0, y: 0.0, z: 3.0 }
-        rotation: { x: 0.0, y: 75.0, z: 0.0 }
+        rotation: { x: 0.0, y: 85.0, z: 0.0 }
         scale: { x: 1.0, y: 1.0, z: 1.0 }
       - type: "static_mesh"
         mesh: *tree_1
@@ -88,7 +88,7 @@ entities:
     components:
       - type: "transform"
         position: { x: 6.0, y: 0.0, z: -6.0 }
-        rotation: { x: 0.0, y: 150.0, z: 0.0 }
+        rotation: { x: 0.0, y: 180.0, z: 0.0 }
         scale: { x: 1.0, y: 1.0, z: 1.0 }
       - type: "static_mesh"
         mesh: *tree_1
@@ -99,7 +99,7 @@ entities:
     components:
       - type: "transform"
         position: { x: 6.0, y: 0.0, z: 6.0 }
-        rotation: { x: 0.0, y: 20.0, z: 0.0 }
+        rotation: { x: 0.0, y: 120.0, z: 0.0 }
         scale: { x: 1.0, y: 1.0, z: 1.0 }
       - type: "static_mesh"
         mesh: *tree_1
