@@ -19,8 +19,8 @@ layout(location = 4) out vec4 out_tint;
 layout(binding = 0) uniform uniform_scene {
   mat4 view;
   mat4 projection;
-  vec3 camera_position;
   mat4 light_space;
+  vec3 camera_position;
   vec3 light_direction;
   vec4 light_color;
 } scene;
@@ -37,7 +37,7 @@ const mat4 depth_bias = mat4(
 );
 
 void main() {
-  per_mesh_data data = mesh_data.data[gl_InstanceIndex]; 
+  const per_mesh_data data = mesh_data.data[gl_InstanceIndex]; 
 
   out_position = vec3(data.model * vec4(in_position, 1.0));
   out_normal = normalize(mat3(data.normal) * in_normal);

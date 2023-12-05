@@ -23,11 +23,6 @@ layout(binding = 0) uniform uniform_scene {
 layout(binding = 2) uniform sampler2D image;
 layout(binding = 3) uniform sampler2D shadow_map;
 
-layout(push_constant) uniform uniform_object {
-  mat4 model;
-  mat4 normal;
-} object;
-
 const material default_material = material(
   vec4(1.0, 1.0, 1.0, 1.0),
   vec4(1.0, 1.0, 1.0, 1.0),
