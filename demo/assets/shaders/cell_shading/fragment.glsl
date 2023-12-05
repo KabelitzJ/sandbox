@@ -32,7 +32,7 @@ const material default_material = material(
   vec4(1.0, 1.0, 1.0, 1.0),
   vec4(1.0, 1.0, 1.0, 1.0),
   vec4(0.5, 0.5, 0.5, 1.0),
-  32.0
+  16.0
 );
 
 vec4 phong_lighting(vec3 light_direction, vec3 view_direction, vec3 normal, material material) {
@@ -52,20 +52,21 @@ vec4 phong_lighting(vec3 light_direction, vec3 view_direction, vec3 normal, mate
 }
 
 float pcf_shadow(vec3 light_direction) {
-  float shadow = 0.0;
-
-  vec2 texel_size = 1.0 / textureSize(shadow_map, 0);
+  vec2 texture_size = textureSize(shadow_map, 0);
+  vec2 texel_size = 1.0 / texture_size;
 
   vec3 coordinates = in_light_space_position.xyz / in_light_space_position.w;
 
   if (coordinates.z > 1.0 || coordinates.z < -1.0) {
-    return shadow;
+    return 0.0;
   }
+
+  float shadow = 0.0;
 
   float bias = max(0.001 * (1.0 - dot(in_normal, light_direction)), 0.0001);
   // float bias = 0.001;
   
-  float current_depth = coordinates.z - bias;
+  float current_depth = coordinates.z;
   
   int count = 0;
   int range = 2;
@@ -73,7 +74,7 @@ float pcf_shadow(vec3 light_direction) {
   for (int x = -range; x <= range; ++x) {
     for (int y = -range; y <= range; ++y) {
       float pcf_depth = texture(shadow_map, coordinates.xy + vec2(x, y) * texel_size).r;
-      shadow += current_depth > pcf_depth ? 1.0 : 0.0;
+      shadow += (current_depth - bias) > pcf_depth ? 1.0 : 0.0;
       ++count;
     }
   }

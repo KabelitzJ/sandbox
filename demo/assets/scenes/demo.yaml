@@ -115,7 +115,7 @@ entities:
       - type: "static_mesh"
         mesh: *sphere
         submeshes:
-          - { index: 0, texture: *white, tint: { r: 1, g: 0.80, b: 0.29, a: 1.0 } }
+          - { index: 0, texture: *white, tint: { r: 1, g: 0.31, b: 0.31, a: 1.0 } }
   - name: "cube"
     components:
       - type: "transform"

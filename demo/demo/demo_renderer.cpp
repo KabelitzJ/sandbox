@@ -12,7 +12,7 @@ demo_renderer::demo_renderer() {
       sbx::graphics::subpass_binding{0, {0}}
     };
 
-    add_render_stage(std::move(attachments), std::move(subpass_bindings), sbx::graphics::viewport{sbx::math::vector2u{4096, 4096}});
+    add_render_stage(std::move(attachments), std::move(subpass_bindings), sbx::graphics::viewport{sbx::math::vector2u{2048, 2048}});
   }
 
   {

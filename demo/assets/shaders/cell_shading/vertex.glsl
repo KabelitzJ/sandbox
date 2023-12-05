@@ -36,7 +36,6 @@ const mat4 depth_bias = mat4(
 	0.5, 0.5, 0.0, 1.0
 );
 
-
 void main() {
   per_mesh_data data = mesh_data.data[gl_InstanceIndex]; 
 

@@ -1,6 +1,8 @@
 #ifndef COMMON_LIGHTING_GLSL
 #define COMMON_LIGHTING_GLSL
 
+#include "../common/material.glsl"
+
 struct point_light {
   vec4 color;
   vec3 position;
