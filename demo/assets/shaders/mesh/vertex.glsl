@@ -29,7 +29,7 @@ layout(binding = 1) buffer buffer_mesh_data {
   per_mesh_data data[];
 } mesh_data;
 
-const mat4 depth_bias = mat4( 
+const mat4 DEPTH_BIAS = mat4( 
 	0.5, 0.0, 0.0, 0.0,
 	0.0, 0.5, 0.0, 0.0,
 	0.0, 0.0, 1.0, 0.0,
@@ -42,7 +42,7 @@ void main() {
   out_position = vec3(data.model * vec4(in_position, 1.0));
   out_normal = normalize(mat3(data.normal) * in_normal);
   out_uv = in_uv;
-  out_light_space_position = (depth_bias * scene.light_space) * vec4(out_position, 1.0);
+  out_light_space_position = (DEPTH_BIAS * scene.light_space) * vec4(out_position, 1.0);
   out_tint = data.tint;
 
   gl_Position = scene.projection * scene.view * vec4(out_position, 1.0);
