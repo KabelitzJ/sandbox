@@ -1,6 +1,6 @@
 name: "demo"
 light:
-  direction: { x: -1.0, y: -1.0, z: -1.0 }
+  direction: { x: -0.5, y: -1.0, z: -0.5}
   color: { r: 1.0, g: 0.9, b: 0.9, a: 1.0 }
 assets:
   textures: 
@@ -13,6 +13,7 @@ assets:
     - &sphere "res://meshes/sphere.obj"
     - &tree "res://meshes/tree.obj"
     - &tree_1 "res://meshes/tree_1.obj"
+    - &tree_2 "res://meshes/tree_2.obj"
     - &plane "res://meshes/plane.obj"
   audios:
     - &forest "res://audio/forest.wav"
@@ -33,7 +34,7 @@ entities:
   - name: "plane"
     components:
       - type: "transform"
-        position: { x: 0.0, y: 5.0, z: -5.0 }
+        position: { x: 0.0, y: 2.0, z: -5.0 }
         rotation: { x: 0.0, y: 180.0, z: 0.0 }
         scale: { x: 10.0, y: 10.0, z: 1.0 }
       - type: "static_mesh"
@@ -47,10 +48,10 @@ entities:
         rotation: { x: 0.0, y: 100.0, z: 0.0 }
         scale: { x: 1.0, y: 1.0, z: 1.0 }
       - type: "static_mesh"
-        mesh: *tree_1
+        mesh: *tree_2
         submeshes:
-          - { index: 0, texture: *white, tint: { r: 0.37, g: 0.53, b: 0.32, a: 1.0 } }
-          - { index: 1, texture: *white, tint: { r: 0.62, g: 0.58, b: 0.44, a: 1.0 } }
+          - { index: 0, texture: *white, tint: { r: 0.28, g: 0.453273, b: 0.08, a: 1.0 }, flexibility: 0.15 }
+          - { index: 1, texture: *white, tint: { r: 0.397718, g: 0.194929, b: 0.099134, a: 1.0 } }
   - name: "tree2"
     components:
       - type: "transform"
@@ -58,10 +59,10 @@ entities:
         rotation: { x: 0.0, y: 200.0, z: 0.0 }
         scale: { x: 1.0, y: 1.0, z: 1.0 }
       - type: "static_mesh"
-        mesh: *tree_1
+        mesh: *tree_2
         submeshes:
-          - { index: 0, texture: *white, tint: { r: 0.37, g: 0.53, b: 0.32, a: 1.0 } }
-          - { index: 1, texture: *white, tint: { r: 0.62, g: 0.58, b: 0.44, a: 1.0 } }
+          - { index: 0, texture: *white, tint: { r: 0.28, g: 0.453273, b: 0.08, a: 1.0 }, flexibility: 0.15 }
+          - { index: 1, texture: *white, tint: { r: 0.397718, g: 0.194929, b: 0.099134, a: 1.0 } }
   - name: "tree3"
     components:
       - type: "transform"
@@ -69,10 +70,10 @@ entities:
         rotation: { x: 0.0, y: 20.0, z: 0.0 }
         scale: { x: 1.0, y: 1.0, z: 1.0 }
       - type: "static_mesh"
-        mesh: *tree_1
+        mesh: *tree_2
         submeshes:
-          - { index: 0, texture: *white, tint: { r: 0.37, g: 0.53, b: 0.32, a: 1.0 } }
-          - { index: 1, texture: *white, tint: { r: 0.62, g: 0.58, b: 0.44, a: 1.0 } }
+          - { index: 0, texture: *white, tint: { r: 0.28, g: 0.453273, b: 0.08, a: 1.0 }, flexibility: 0.15 }
+          - { index: 1, texture: *white, tint: { r: 0.397718, g: 0.194929, b: 0.099134, a: 1.0 } }
   - name: "tree4"
     components:
       - type: "transform"
@@ -80,10 +81,10 @@ entities:
         rotation: { x: 0.0, y: 85.0, z: 0.0 }
         scale: { x: 1.0, y: 1.0, z: 1.0 }
       - type: "static_mesh"
-        mesh: *tree_1
+        mesh: *tree_2
         submeshes:
-          - { index: 0, texture: *white, tint: { r: 0.37, g: 0.53, b: 0.32, a: 1.0 } }
-          - { index: 1, texture: *white, tint: { r: 0.62, g: 0.58, b: 0.44, a: 1.0 } }
+          - { index: 0, texture: *white, tint: { r: 0.28, g: 0.453273, b: 0.08, a: 1.0 }, flexibility: 0.15 }
+          - { index: 1, texture: *white, tint: { r: 0.397718, g: 0.194929, b: 0.099134, a: 1.0 } }
   - name: "tree5"
     components:
       - type: "transform"
@@ -91,10 +92,10 @@ entities:
         rotation: { x: 0.0, y: 180.0, z: 0.0 }
         scale: { x: 1.0, y: 1.0, z: 1.0 }
       - type: "static_mesh"
-        mesh: *tree_1
+        mesh: *tree_2
         submeshes:
-          - { index: 0, texture: *white, tint: { r: 0.37, g: 0.53, b: 0.32, a: 1.0 } }
-          - { index: 1, texture: *white, tint: { r: 0.62, g: 0.58, b: 0.44, a: 1.0 } }
+          - { index: 0, texture: *white, tint: { r: 0.28, g: 0.453273, b: 0.08, a: 1.0 }, flexibility: 0.15 }
+          - { index: 1, texture: *white, tint: { r: 0.397718, g: 0.194929, b: 0.099134, a: 1.0 } }
   - name: "tree6"
     components:
       - type: "transform"
@@ -102,10 +103,10 @@ entities:
         rotation: { x: 0.0, y: 120.0, z: 0.0 }
         scale: { x: 1.0, y: 1.0, z: 1.0 }
       - type: "static_mesh"
-        mesh: *tree_1
+        mesh: *tree_2
         submeshes:
-          - { index: 0, texture: *white, tint: { r: 0.37, g: 0.53, b: 0.32, a: 1.0 } }
-          - { index: 1, texture: *white, tint: { r: 0.62, g: 0.58, b: 0.44, a: 1.0 } }
+          - { index: 0, texture: *white, tint: { r: 0.28, g: 0.453273, b: 0.08, a: 1.0 }, flexibility: 0.15 }
+          - { index: 1, texture: *white, tint: { r: 0.397718, g: 0.194929, b: 0.099134, a: 1.0 } }
   - name: "sphere"
     components:
       - type: "transform"

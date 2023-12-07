@@ -72,12 +72,17 @@ public:
           auto submesh_index = submesh_node["index"].as<std::uint32_t>();
 
           auto tint = math::color{1.0f, 1.0f, 1.0f, 1.0f};
+          auto flexibility = 0.0f;
 
           if (const auto tint_node = submesh_node["tint"]; tint_node) {
             tint = tint_node.as<math::color>();
           }
 
-          submeshes.push_back(scenes::static_mesh::submesh{submesh_index, *texture_id, tint});
+          if (const auto flexibility_node = submesh_node["flexibility"]; flexibility_node) {
+            flexibility = flexibility_node.as<std::float_t>();
+          }
+
+          submeshes.push_back(scenes::static_mesh::submesh{submesh_index, *texture_id, tint, flexibility});
         }
       }
 

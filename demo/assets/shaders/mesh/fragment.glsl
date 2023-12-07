@@ -7,17 +7,18 @@ layout(location = 0) in vec3 in_position;
 layout(location = 1) in vec3 in_normal;
 layout(location = 2) in vec2 in_uv;
 layout(location = 3) in vec4 in_light_space_position;
-layout(location = 4) in vec4 in_tint;
+layout(location = 4) in vec4 in_color;
 
 layout(location = 0) out vec4 out_color;
 
 layout(binding = 0) uniform uniform_scene {
   mat4 view;
   mat4 projection;
-  vec3 camera_position;
   mat4 light_space;
+  vec3 camera_position;
   vec3 light_direction;
   vec4 light_color;
+  float time;
 } scene;
 
 layout(binding = 2) uniform sampler2D image;
@@ -54,7 +55,6 @@ float calculate_shadow() {
   }
 
 	float total = 0.0;
-  int sum = 0;
 
 	for(int x = 0; x < PCF_COUNT; x++) {
     for(int y = 0; y < PCF_COUNT; y++) {
@@ -66,7 +66,6 @@ float calculate_shadow() {
       float factor = (coordinates.z - BIAS) > object_depth ? 0.0 : 1.0;
 
       total += factor * SAMPLE_WEIGHT;
-      sum += 1;
     }
 	}
 
@@ -93,14 +92,14 @@ void main(void) {
 	lighting += 1.4 * sky_diffuse * SKY_COL;
 	lighting += 1.3 * sky_diffuse * shadow * scene.light_color;
 
-	vec4 final_color = texture(image, in_uv) * lighting * in_tint;
+	vec4 final_color = texture(image, in_uv) * lighting * in_color;
 
 	final_color += 0.03 * sky_reflection * SKY_COL * sky_diffuse;
 	final_color += 0.04 * rim_light * SKY_COL;
 	final_color += 0.09 * sun_specular * shadow * scene.light_color;
 
-	out_color = vec4(pow(final_color, vec4(1.4545)));
-  // out_color = final_color;
+	// out_color = vec4(pow(final_color, vec4(1.4545)));
+  out_color = final_color;
   // out_color = vec4(shadow, shadow, shadow, 1.0);
-  // out_color = texture(shadow_map, in_uv);
+  // out_color = vec4(texture(shadow_map, in_uv).rrr, 1.0);
 }

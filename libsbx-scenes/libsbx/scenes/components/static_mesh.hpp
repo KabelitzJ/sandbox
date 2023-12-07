@@ -18,6 +18,7 @@ public:
     std::uint32_t index;
     assets::asset_id texture_id;
     math::color tint{1.0f, 1.0f, 1.0f, 1.0f};
+    std::float_t flexibility{0.0f};
   }; // struct submesh
 
   static_mesh(assets::asset_id mesh_id, const std::vector<submesh>& submeshes)

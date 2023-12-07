@@ -55,6 +55,10 @@ public:
     return _instance->_delta_time;
   }
 
+  static auto time() -> units::second {
+    return _instance->_time;
+  }
+
   static auto quit() -> void {
     _instance->_is_running = false;
   }
@@ -94,6 +98,7 @@ public:
       application->update();
 
       _instance->_delta_time = units::second{delta_time};
+      _instance->_time += _instance->_delta_time;
 
       _update_stage(stage::always);
 
@@ -147,6 +152,7 @@ private:
   static engine* _instance;
 
   units::second _delta_time;
+  units::second _time;
 
   bool _is_running{};
   // std::vector<std::string_view> _args{};

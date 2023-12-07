@@ -1,7 +1,7 @@
 #version 450
 
-// layout(location = 0) out float out_depth;
+// layout(location = 0) out vec4 out_color;
 
 void main() {
-  // out_depth = gl_FragCoord.z;
+  // out_color = vec4(1.0, 0.0, 0.0, 1.0);
 }

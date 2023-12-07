@@ -99,6 +99,9 @@ public:
     // _lights_storage_handler.push(std::span<const models::point_light>{lights.data(), point_light_count});
     // _scene_uniform_handler.push("point_light_count", point_light_count);
 
+    const auto time = std::fmod(core::engine::time().value() * 0.42f, 1.0f);
+    _scene_uniform_handler.push("time", time);
+
     auto& scene_light = scene.light();
 
     auto& light_direction = scene_light.direction();
@@ -168,15 +171,17 @@ private:
     const auto& static_mesh = node.get_component<scenes::static_mesh>();
     const auto mesh_id = static_mesh.mesh_id();
 
-    for (const auto& [index, texture_id, tint] : static_mesh.submeshes()) {
-      const auto key = mesh_key{mesh_id, texture_id, index};
+    for (const auto& submesh : static_mesh.submeshes()) {
+      const auto key = mesh_key{mesh_id, submesh.texture_id, submesh.index};
 
       _used_uniforms.insert(key);
 
       auto model = scene.world_transform(node);
       auto normal = math::matrix4x4::transposed(math::matrix4x4::inverted(model));
 
-      _static_meshes[key].push_back(per_mesh_data{std::move(model), std::move(normal), tint});
+      auto material = math::color{submesh.tint.r, submesh.tint.g, submesh.tint.b, submesh.flexibility};
+
+      _static_meshes[key].push_back(per_mesh_data{std::move(model), std::move(normal), material});
     }
   }
 
@@ -194,7 +199,7 @@ private:
   struct per_mesh_data {
     math::matrix4x4 model;
     math::matrix4x4 normal;
-    math::color tint;
+    math::color material; // rgb = tint, a = flexibility
   }; // struct per_mesh_data
 
   struct mesh_key_hash {

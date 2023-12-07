@@ -4,6 +4,10 @@
 #include <unordered_map>
 #include <algorithm>
 
+#include <libsbx/utility/fast_mod.hpp>
+
+#include <libsbx/core/engine.hpp>
+
 #include <libsbx/math/vector3.hpp>
 #include <libsbx/math/matrix4x4.hpp>
 
@@ -43,6 +47,7 @@ public:
 
   auto render(graphics::command_buffer& command_buffer) -> void override {
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
+    auto& assets_module = core::engine::get_module<assets::assets_module>();
 
     auto& scene = scenes_module.scene();
 
@@ -57,7 +62,8 @@ public:
 
     _scene_uniform_handler.push("light_space", math::matrix4x4{projection * view});
 
-    auto mesh_nodes = scene.query<scenes::static_mesh>();
+    const auto time = std::fmod(core::engine::time().value() * 0.42f, 1.0f);
+    _scene_uniform_handler.push("time", time);
 
     for (auto entry = _uniform_data.begin(); entry != _uniform_data.end();) {
       if (_used_uniforms.contains(entry->first)) {
@@ -68,60 +74,98 @@ public:
     }
 
     _used_uniforms.clear();
+    _static_meshes.clear();
+
+    auto mesh_nodes = scene.query<scenes::static_mesh>();
 
     for (auto& node : mesh_nodes) {
-      _used_uniforms.insert(node.get_component<scenes::id>());
-      _render_node(node, command_buffer);
+      _submit_mesh(node);
+    }
+
+    for (const auto& [key, data] : _static_meshes) {
+      _pipeline.bind(command_buffer);
+
+      auto& uniform_data = _uniform_data[key];
+
+      auto& descriptor_handler = uniform_data.descriptor_handler;
+      auto& storage_handler = uniform_data.storage_handler;
+
+      storage_handler.push(std::span<const per_mesh_data>{data});
+
+      auto& mesh = assets_module.get_asset<models::mesh>(key.mesh_id);
+
+      descriptor_handler.push("uniform_scene", _scene_uniform_handler);
+      descriptor_handler.push("buffer_mesh_data", storage_handler);
+
+      if (!descriptor_handler.update(_pipeline)) {
+        return;
+      }
+
+      descriptor_handler.bind_descriptors(command_buffer);
+
+      mesh.render_submesh(command_buffer, key.submesh_index, static_cast<std::uint32_t>(data.size()));
     }
   }
 
 private:
 
-  auto _render_node(scenes::node& node, graphics::command_buffer& command_buffer) -> void {
-    auto& assets_module = core::engine::get_module<assets::assets_module>();
-
+  auto _submit_mesh(scenes::node& node) -> void {
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
     auto& scene = scenes_module.scene();
 
     const auto& static_mesh = node.get_component<scenes::static_mesh>();
-    const auto& id = node.get_component<scenes::id>();
+    const auto mesh_id = static_mesh.mesh_id();
 
-    auto& mesh = assets_module.get_asset<models::mesh>(static_mesh.mesh_id());
+    for (const auto& submesh : static_mesh.submeshes()) {
+      const auto key = mesh_key{mesh_id, submesh.index};
 
-    auto world_transform = scene.world_transform(node);
+      _used_uniforms.insert(key);
 
-    // [NOTE] KAJ 2023-10-26 : We want to insert a new object into the map when it does not exist
-    auto& uniform_data = _uniform_data[id];
-    
-    auto& push_handler = uniform_data.push_handler;
-    auto& descriptor_handler = uniform_data.descriptor_handler;
+      auto model = scene.world_transform(node);
 
-    _pipeline.bind(command_buffer);
+      auto material = math::color{0.0f, 0.0f, 0.0f, submesh.flexibility};
 
-    push_handler.push("model", world_transform);
-
-    descriptor_handler.push("uniform_scene", _scene_uniform_handler);
-    descriptor_handler.push("object", push_handler);
-
-    if (!descriptor_handler.update(_pipeline)) {
-      return;
+      _static_meshes[key].push_back(per_mesh_data{std::move(model), material});
     }
-
-    descriptor_handler.bind_descriptors(command_buffer);
-    push_handler.bind(command_buffer, _pipeline);
-
-    mesh.render(command_buffer);
   }
 
   struct uniform_data {
-    graphics::push_handler push_handler;
     graphics::descriptor_handler descriptor_handler;
+    graphics::storage_handler storage_handler;
   }; // struct uniform_data
+
+  struct mesh_key {
+    assets::asset_id mesh_id;
+    std::uint32_t submesh_index;
+  }; // struct mesh_key
+
+  struct per_mesh_data {
+    math::matrix4x4 model;
+    math::color material; // rgb = unused, a = flexibility
+  }; // struct per_mesh_data
+
+  struct mesh_key_hash {
+    auto operator()(const mesh_key& key) const noexcept -> std::size_t {
+      auto seed = std::size_t{0};
+
+      utility::hash_combine(seed, key.mesh_id, key.submesh_index);
+
+      return seed;
+    }
+  }; // struct mesh_key_hash
+
+  struct mesh_key_equal {
+    auto operator()(const mesh_key& lhs, const mesh_key& rhs) const noexcept -> bool {
+      return lhs.mesh_id == rhs.mesh_id && lhs.submesh_index == rhs.submesh_index;
+    }
+  }; // struct mesh_key_equal
 
   pipeline _pipeline;
 
-  std::unordered_map<math::uuid, uniform_data> _uniform_data;
-  std::unordered_set<math::uuid> _used_uniforms;
+  std::unordered_map<mesh_key, uniform_data, mesh_key_hash, mesh_key_equal> _uniform_data;
+  std::unordered_set<mesh_key, mesh_key_hash, mesh_key_equal> _used_uniforms;
+
+  std::unordered_map<mesh_key, std::vector<per_mesh_data>, mesh_key_hash, mesh_key_equal> _static_meshes;
 
   graphics::uniform_handler _scene_uniform_handler;
 
