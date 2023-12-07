@@ -62,7 +62,7 @@ public:
 
     _scene_uniform_handler.push("light_space", math::matrix4x4{projection * view});
 
-    const auto time = std::fmod(core::engine::time().value() * 0.42f, 1.0f);
+    const auto time = std::fmod(core::engine::time().value() * scene.wind_speed(), 1.0f);
     _scene_uniform_handler.push("time", time);
 
     for (auto entry = _uniform_data.begin(); entry != _uniform_data.end();) {

@@ -84,6 +84,10 @@ scene::scene(const std::filesystem::path& path)
     _light = directional_light{direction, color};
   }
 
+  if (auto wind_node = root_node["wind"]; wind_node) {
+    _wind_speed = wind_node["speed"].as<std::float_t>();
+  }
+
   _parse_assets(root_node);
   _parse_entities(root_node);
 

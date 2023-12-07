@@ -99,7 +99,7 @@ public:
     // _lights_storage_handler.push(std::span<const models::point_light>{lights.data(), point_light_count});
     // _scene_uniform_handler.push("point_light_count", point_light_count);
 
-    const auto time = std::fmod(core::engine::time().value() * 0.42f, 1.0f);
+    const auto time = std::fmod(core::engine::time().value() * scene.wind_speed(), 1.0f);
     _scene_uniform_handler.push("time", time);
 
     auto& scene_light = scene.light();

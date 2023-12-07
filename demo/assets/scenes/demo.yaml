@@ -1,7 +1,9 @@
 name: "demo"
 light:
-  direction: { x: -0.5, y: -1.0, z: -0.5}
-  color: { r: 1.0, g: 0.9, b: 0.9, a: 1.0 }
+  direction: { x: -0.6, y: -1.0, z: -0.6}
+  color: { r: 1.0, g: 0.8, b: 0.8, a: 1.0 }
+wind:
+  speed: 0.42
 assets:
   textures: 
     - &prototype_black "res://textures/prototype_black.png"
@@ -15,6 +17,7 @@ assets:
     - &tree_1 "res://meshes/tree_1.obj"
     - &tree_2 "res://meshes/tree_2.obj"
     - &plane "res://meshes/plane.obj"
+    - &crate "res://meshes/crate.obj"
   audios:
     - &forest "res://audio/forest.wav"
     - &ambience "res://audio/ambience.wav"
@@ -31,16 +34,36 @@ entities:
         far: 100.0
       - type: "script"
         script: "res://scripts/camera_controller.lua"
-  - name: "plane"
+  - name: "crate1"
     components:
       - type: "transform"
-        position: { x: 0.0, y: 2.0, z: -5.0 }
-        rotation: { x: 0.0, y: 180.0, z: 0.0 }
-        scale: { x: 10.0, y: 10.0, z: 1.0 }
+        position: { x: -2.0, y: 0.0, z: -2.0 }
+        rotation: { x: 0.0, y: 23.0, z: 0.0 }
+        scale: { x: 1.0, y: 1.0, z: 1.0 }
       - type: "static_mesh"
-        mesh: *plane
+        mesh: *crate
         submeshes:
-          - { index: 0, texture: *white}
+          - { index: 0, texture: *prototype_black }
+  - name: "crate2"
+    components:
+      - type: "transform"
+        position: { x: 2.0, y: 0.0, z: -2.0 }
+        rotation: { x: 0.0, y: 45.0, z: 0.0 }
+        scale: { x: 1.0, y: 1.0, z: 1.0 }
+      - type: "static_mesh"
+        mesh: *crate
+        submeshes:
+          - { index: 0, texture: *prototype_black }
+  - name: "crate3"
+    components:
+      - type: "transform"
+        position: { x: -2.0, y: 0.0, z: 2.0 }
+        rotation: { x: 0.0, y: 67.0, z: 0.0 }
+        scale: { x: 1.0, y: 1.0, z: 1.0 }
+      - type: "static_mesh"
+        mesh: *crate
+        submeshes:
+          - { index: 0, texture: *prototype_black }
   - name: "tree1"
     components:
       - type: "transform"

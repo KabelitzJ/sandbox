@@ -70,6 +70,10 @@ public:
     return _light;
   }
 
+  auto wind_speed() const -> std::float_t {
+    return _wind_speed;
+  }
+
 private:
 
   template<typename Component, typename... Args>
@@ -93,6 +97,7 @@ private:
   node _camera;
 
   directional_light _light;
+  std::float_t _wind_speed;
 
 }; // class scene
 
