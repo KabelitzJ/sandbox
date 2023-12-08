@@ -25,7 +25,7 @@ entities:
   - name: "player"
     components:
       - type: "transform"
-        position: { x: 0.0, y: 1.0, z: 5.0 }
+        position: { x: 0.0, y: 6.0, z: 5.0 }
         rotation: { x: 0.0, y: 0.0, z: 0.0 }
         scale: { x: 1.0, y: 1.0, z: 1.0 }
       - type: "camera"
@@ -74,7 +74,7 @@ entities:
         mesh: *tree_2
         submeshes:
           - { index: 0, texture: *white, tint: { r: 0.28, g: 0.453273, b: 0.08, a: 1.0 }, flexibility: 0.15 }
-          - { index: 1, texture: *white, tint: { r: 0.397718, g: 0.194929, b: 0.099134, a: 1.0 } }
+          - { index: 1, texture: *white, tint: { r: 0.397718, g: 0.194929, b: 0.099134, a: 1.0 }, flexibility: 0.1, anchor_height: 0.1 }
   - name: "tree2"
     components:
       - type: "transform"
@@ -85,7 +85,7 @@ entities:
         mesh: *tree_2
         submeshes:
           - { index: 0, texture: *white, tint: { r: 0.28, g: 0.453273, b: 0.08, a: 1.0 }, flexibility: 0.15 }
-          - { index: 1, texture: *white, tint: { r: 0.397718, g: 0.194929, b: 0.099134, a: 1.0 } }
+          - { index: 1, texture: *white, tint: { r: 0.397718, g: 0.194929, b: 0.099134, a: 1.0 }, flexibility: 0.1, anchor_height: 0.1 }
   - name: "tree3"
     components:
       - type: "transform"
@@ -96,7 +96,7 @@ entities:
         mesh: *tree_2
         submeshes:
           - { index: 0, texture: *white, tint: { r: 0.28, g: 0.453273, b: 0.08, a: 1.0 }, flexibility: 0.15 }
-          - { index: 1, texture: *white, tint: { r: 0.397718, g: 0.194929, b: 0.099134, a: 1.0 } }
+          - { index: 1, texture: *white, tint: { r: 0.397718, g: 0.194929, b: 0.099134, a: 1.0 }, flexibility: 0.1, anchor_height: 0.1 }
   - name: "tree4"
     components:
       - type: "transform"
@@ -107,7 +107,7 @@ entities:
         mesh: *tree_2
         submeshes:
           - { index: 0, texture: *white, tint: { r: 0.28, g: 0.453273, b: 0.08, a: 1.0 }, flexibility: 0.15 }
-          - { index: 1, texture: *white, tint: { r: 0.397718, g: 0.194929, b: 0.099134, a: 1.0 } }
+          - { index: 1, texture: *white, tint: { r: 0.397718, g: 0.194929, b: 0.099134, a: 1.0 }, flexibility: 0.1, anchor_height: 0.1 }
   - name: "tree5"
     components:
       - type: "transform"
@@ -118,7 +118,7 @@ entities:
         mesh: *tree_2
         submeshes:
           - { index: 0, texture: *white, tint: { r: 0.28, g: 0.453273, b: 0.08, a: 1.0 }, flexibility: 0.15 }
-          - { index: 1, texture: *white, tint: { r: 0.397718, g: 0.194929, b: 0.099134, a: 1.0 } }
+          - { index: 1, texture: *white, tint: { r: 0.397718, g: 0.194929, b: 0.099134, a: 1.0 }, flexibility: 0.1, anchor_height: 0.1 }
   - name: "tree6"
     components:
       - type: "transform"
@@ -129,7 +129,7 @@ entities:
         mesh: *tree_2
         submeshes:
           - { index: 0, texture: *white, tint: { r: 0.28, g: 0.453273, b: 0.08, a: 1.0 }, flexibility: 0.15 }
-          - { index: 1, texture: *white, tint: { r: 0.397718, g: 0.194929, b: 0.099134, a: 1.0 } }
+          - { index: 1, texture: *white, tint: { r: 0.397718, g: 0.194929, b: 0.099134, a: 1.0 }, flexibility: 0.1, anchor_height: 0.1 }
   - name: "sphere"
     components:
       - type: "transform"

@@ -2,7 +2,7 @@
 
 struct per_mesh_data {
   mat4 model;
-  vec4 material; // rgb = unused, a = flexibility
+  vec4 wind; // x = flexibility, y = anchor height, z = unused, w = unused
 }; // struct per_mesh_data
 
 layout(location = 0) in vec3 in_position;
@@ -18,10 +18,9 @@ layout(binding = 1) buffer buffer_mesh_data {
 
 const float PI = 3.1415926535897932384626433832795;
 const float MAX_ANCHOR_HEIGHT = 2.0;
-const float ANCHOR_HEIGHT = 0.0;
 
-vec3 wind_effect(vec3 world_position, float flexibility){
-	float height_from_anchor = max(0.0, in_position.y - (ANCHOR_HEIGHT * MAX_ANCHOR_HEIGHT));
+vec3 wind_effect(vec3 world_position, float flexibility, float anchor_height){
+	float height_from_anchor = max(0.0, in_position.y - (anchor_height * MAX_ANCHOR_HEIGHT));
 
 	float amplitude = height_from_anchor * flexibility;
 
@@ -39,5 +38,5 @@ void main() {
 
   vec3 world_position = vec3(data.model * vec4(in_position, 1.0));
 
-  gl_Position = scene.light_space * vec4(wind_effect(world_position, data.material.a), 1.0);
+  gl_Position = scene.light_space * vec4(wind_effect(world_position, data.wind.x, data.wind.y), 1.0);
 }

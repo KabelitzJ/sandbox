@@ -3,7 +3,8 @@
 struct per_mesh_data {
   mat4 model;
   mat4 normal;
-  vec4 material; // rgb = color, a = flexibility
+  vec4 tint;
+  vec4 wind; // x = flexibility, y = anchor height, z = unused, w = unused
 }; // struct per_mesh_data
 
 layout(location = 0) in vec3 in_position;
@@ -39,13 +40,10 @@ const mat4 DEPTH_BIAS = mat4(
 
 const float PI = 3.1415926535897932384626433832795;
 const float MAX_ANCHOR_HEIGHT = 2.0;
-const float FLEXIBILITY = 0.15;
-const float ANCHOR_HEIGHT = 0.0;
-
 const float BRIGHTNESS_EFFECT = 0.5;
 
-vec3 wind_effect(vec3 world_position, float flexibility){
-	float height_from_anchor = max(0.0, in_position.y - (ANCHOR_HEIGHT * MAX_ANCHOR_HEIGHT));
+vec3 wind_effect(vec3 world_position, float flexibility, float anchor_height){
+	float height_from_anchor = max(0.0, in_position.y - (anchor_height * MAX_ANCHOR_HEIGHT));
 
 	float amplitude = height_from_anchor * flexibility;
 
@@ -63,14 +61,14 @@ void main() {
 
   vec3 world_position = vec3(data.model * vec4(in_position, 1.0));
 
-  out_position = wind_effect(world_position, data.material.a);
+  out_position = wind_effect(world_position, data.wind.x, data.wind.y);
   out_normal = normalize(mat3(data.normal) * in_normal);
   out_uv = in_uv;
   out_light_space_position = (DEPTH_BIAS * scene.light_space) * vec4(out_position, 1.0);
 
-  float brightness = (data.material.r + data.material.g + data.material.b) / 3.0;
+  float brightness = (data.tint.r + data.tint.g + data.tint.b) / 3.0;
   brightness = (1.0 - BRIGHTNESS_EFFECT) + BRIGHTNESS_EFFECT * brightness;
-  out_color = vec4(data.material.rgb * brightness, 1.0);
+  out_color = vec4(data.tint.rgb * brightness, 1.0);
 
   gl_Position = scene.projection * scene.view * vec4(out_position, 1.0);
 }

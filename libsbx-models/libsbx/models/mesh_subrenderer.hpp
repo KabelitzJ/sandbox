@@ -179,9 +179,7 @@ private:
       auto model = scene.world_transform(node);
       auto normal = math::matrix4x4::transposed(math::matrix4x4::inverted(model));
 
-      auto material = math::color{submesh.tint.r, submesh.tint.g, submesh.tint.b, submesh.flexibility};
-
-      _static_meshes[key].push_back(per_mesh_data{std::move(model), std::move(normal), material});
+      _static_meshes[key].push_back(per_mesh_data{std::move(model), std::move(normal), submesh.tint, math::vector4{submesh.flexibility, submesh.anchor_height, 0.0f, 0.0f}});
     }
   }
 
@@ -199,7 +197,8 @@ private:
   struct per_mesh_data {
     math::matrix4x4 model;
     math::matrix4x4 normal;
-    math::color material; // rgb = tint, a = flexibility
+    math::color tint;
+    math::vector4 wind; // x: flexibility, y: anchor_height, zw: unused
   }; // struct per_mesh_data
 
   struct mesh_key_hash {

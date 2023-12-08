@@ -73,6 +73,7 @@ public:
 
           auto tint = math::color{1.0f, 1.0f, 1.0f, 1.0f};
           auto flexibility = 0.0f;
+          auto anchor_height = 0.0f;
 
           if (const auto tint_node = submesh_node["tint"]; tint_node) {
             tint = tint_node.as<math::color>();
@@ -82,7 +83,11 @@ public:
             flexibility = flexibility_node.as<std::float_t>();
           }
 
-          submeshes.push_back(scenes::static_mesh::submesh{submesh_index, *texture_id, tint, flexibility});
+          if (const auto anchor_height_node = submesh_node["anchor_height"]; anchor_height_node) {
+            anchor_height = anchor_height_node.as<std::float_t>();
+          }
+
+          submeshes.push_back(scenes::static_mesh::submesh{submesh_index, *texture_id, tint, flexibility, anchor_height});
         }
       }
 
