@@ -43,8 +43,7 @@ public:
   }
 
   auto add_euler_angles(const vector3& offset) noexcept -> void {
-    _euler_angles += offset;
-    _rotation_matrix = matrix4x4::rotation_from_euler_angles(_euler_angles);
+    set_euler_angles(_euler_angles + offset);
   }
 
   auto scale() const noexcept -> const vector3& {
@@ -70,7 +69,7 @@ public:
     const auto yaw = radian{std::atan2(direction.x, direction.z)};
     const auto roll = radian{0.0f};
 
-    _euler_angles = vector3{math::to_degrees(pitch), math::to_degrees(yaw), math::to_degrees(roll)};
+    set_euler_angles(vector3{math::to_degrees(pitch), math::to_degrees(yaw), math::to_degrees(roll)});
   }
 
   auto as_matrix() const -> matrix4x4 {

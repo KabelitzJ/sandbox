@@ -65,7 +65,6 @@ scene::scene()
 scene::scene(const std::filesystem::path& path)
 : scene{} {
   auto& assets_manager = core::engine::get_module<assets::assets_module>();
-  auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
 
   const auto actual_path = assets_manager.asset_path(path);
 

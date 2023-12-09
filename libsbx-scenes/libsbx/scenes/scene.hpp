@@ -59,11 +59,9 @@ public:
 
   template<typename... Components>
   auto query() -> std::vector<node> {
-    auto view = _registry.create_view<Components...>();
-
-    auto to_node = std::views::transform([&](auto& entity) { return node{&_registry, entity}; });
-
-    return view | to_node | ranges::to<std::vector>();
+    return _registry.create_view<Components...>()
+      | std::views::transform([&](auto& entity) { return node{&_registry, entity}; })
+      | ranges::to<std::vector>();
   }
 
   auto light() -> directional_light& {
