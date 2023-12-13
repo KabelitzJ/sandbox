@@ -159,13 +159,13 @@ inline constexpr basic_matrix4x4<Type> basic_matrix4x4<Type>::perspective(const 
   auto result = basic_matrix4x4<value_type>::zero;
 
   result[0][0] = static_cast<value_type>(1) / (aspect * tan_half_fov);
-  result[1][1] = static_cast<value_type>(1) / tan_half_fov;
+  result[1][1] = -static_cast<value_type>(1) / tan_half_fov;
   result[2][2] = far / (near - far);
   result[2][3] = -static_cast<value_type>(1);
-  result[3][2] = -(far * near) / (far - near);
+  result[3][2] = (near * far) / (near - far);
 
   //// [NOTE] KAJ 2023-10-11 : Flip the y-axis to match Vulkan's coordinate system.
-  result[1][1] *= -1;
+  // result[1][1] *= -1;
 
   return result;
 }

@@ -32,26 +32,26 @@ function on_update()
     end
   end
 
-  transform:set_euler_angles(sbx.vector3.new(0.0, y_rotation, 0.0));
+  transform:set_euler_angles(sbx.vector3.new(-45.0, y_rotation, 0.0));
 
   -- Movement
 
   local move_direction = sbx.vector3.new(0.0, 0.0, 0.0);
 
   if (sbx.input.is_key_down(sbx.key.w)) then
-    move_direction = move_direction + transform:forward();
+    move_direction = move_direction + sbx.vector3.forward;
   end
 
   if (sbx.input.is_key_down(sbx.key.s)) then
-    move_direction = move_direction - transform:forward();
+    move_direction = move_direction - sbx.vector3.forward;
   end
 
   if (sbx.input.is_key_down(sbx.key.a)) then
-    move_direction = move_direction - transform:right();
+    move_direction = move_direction - sbx.vector3.right;
   end
 
   if (sbx.input.is_key_down(sbx.key.d)) then
-    move_direction = move_direction + transform:right();
+    move_direction = move_direction + sbx.vector3.right;
   end
 
   local speed = move_speed;
