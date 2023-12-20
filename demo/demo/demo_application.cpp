@@ -62,7 +62,7 @@ demo_application::demo_application()
 
   auto& scene = scenes_module.load_scene("res://scenes/demo.yaml");
 
-  auto floor_id = assets_module.add_asset<sbx::models::mesh>(_generate_plane(sbx::math::vector2u{50u, 50u}, sbx::math::vector2u{1u, 1u}));
+  auto floor_id = assets_module.add_asset<sbx::models::mesh>(_generate_plane(sbx::math::vector2u{100u, 100u}, sbx::math::vector2u{1u, 1u}));
 
   auto white_id = assets_module.try_get_asset_id("res://textures/white.png");
 

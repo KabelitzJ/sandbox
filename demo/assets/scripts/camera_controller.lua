@@ -87,4 +87,7 @@ function on_update()
 
   transform:set_position(position);
   -- transform:look_at(target);
+
+  -- transform:set_position(sbx.vector3.new(3.0, 3.0, 3.0));
+  -- transform:look_at(sbx.vector3.new(0.0, 0.0, 0.0));
 end
