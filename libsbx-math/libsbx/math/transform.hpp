@@ -62,14 +62,17 @@ public:
     return math::vector3{_rotation_matrix[0]};
   }
 
+  auto up() const noexcept -> vector3 {
+    return math::vector3{_rotation_matrix[1]};
+  }
+
   auto look_at(const vector3& target) noexcept -> void {
-    auto direction = vector3::normalized(target - _position);
+    const auto direction = vector3::normalized(target - _position);
 
-    const auto pitch = radian{std::asin(-direction.y)};
     const auto yaw = radian{std::atan2(direction.x, direction.z)};
-    const auto roll = radian{0.0f};
+    const auto pitch = radian{std::asin(-direction.y)};
 
-    set_euler_angles(vector3{math::to_degrees(pitch), math::to_degrees(yaw), math::to_degrees(roll)});
+    set_euler_angles(vector3{to_degrees(pitch), to_degrees(yaw), 0.0f});
   }
 
   auto as_matrix() const -> matrix4x4 {

@@ -14,7 +14,7 @@
 
 namespace sbx::audio {
 
-auto mp3_loader::load(const std::filesystem::path& path) -> sound_buffer_data{
+auto mp3_loader::load(const std::filesystem::path& path) -> sound_buffer_data {
   auto buffer_data = sound_buffer_data{};
 
   auto timer = utility::timer{};

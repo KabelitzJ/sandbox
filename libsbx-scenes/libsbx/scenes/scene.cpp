@@ -165,7 +165,6 @@ auto scene::world_transform(const node& node) -> math::matrix4x4 {
 }
 
 auto scene::_parse_assets(const YAML::Node& root_node) -> void {
-  auto& assets_manager = core::engine::get_module<assets::assets_module>();
   auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
 
   const auto assets_node = root_node["assets"];
