@@ -35,6 +35,11 @@ inline constexpr basic_matrix4x4<Type>::basic_matrix4x4(
 : _columns{column_type{x0, y0, z0, w0}, column_type{x1, y1, z1, w1}, column_type{x2, y2, z2, w2}, column_type{x3, y3, z3, w3}} { }
 
 template<numeric Type>
+inline constexpr basic_matrix4x4<Type>::basic_matrix4x4(const basic_quaternion<value_type>& quaternion) noexcept {
+
+}
+
+template<numeric Type>
 template<numeric From>
 inline constexpr basic_matrix4x4<Type>::basic_matrix4x4(const basic_matrix4x4<From>& other) noexcept
 : _columns{column_type{other[0]}, column_type{other[1]}, column_type{other[2]}, column_type{other[3]}} { }

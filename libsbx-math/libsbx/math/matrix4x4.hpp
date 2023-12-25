@@ -15,6 +15,7 @@
 #include <libsbx/math/concepts.hpp>
 #include <libsbx/math/vector4.hpp>
 #include <libsbx/math/angle.hpp>
+#include <libsbx/math/quaternion.hpp>
 
 namespace sbx::math {
 
@@ -126,6 +127,8 @@ struct basic_matrix4x4 {
     const value_type z0, const value_type z1, const value_type z2, const value_type z3,
     const value_type w0, const value_type w1, const value_type w2, const value_type w3
   ) noexcept;
+
+  constexpr basic_matrix4x4(const basic_quaternion<value_type>& quaternion) noexcept;
 
   /**
    * @brief Copies the values of the given matrix.
