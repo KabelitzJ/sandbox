@@ -254,7 +254,7 @@ inline constexpr auto basic_vector3<Type>::lerp(const basic_vector3& lhs, const 
 }
 
 template<numeric Type>
-constexpr auto basic_vector3<Type>::distance_sqared(const basic_vector3& lhs, const basic_vector3& rhs) noexcept -> length_type {
+constexpr auto basic_vector3<Type>::distance_squared(const basic_vector3& lhs, const basic_vector3& rhs) noexcept -> length_type {
   return (lhs - rhs).length_squared();
 }
 

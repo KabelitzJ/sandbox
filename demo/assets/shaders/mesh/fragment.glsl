@@ -80,9 +80,9 @@ void main(void) {
   float sun_diffuse = clamp(dot(in_normal, to_light), 0.0, 1.0);
 	float sky_diffuse = 0.7 + 0.3 * clamp(in_normal.y, 0.0, 1.0);
 	float fresnel = pow(1.0 - clamp(dot(to_camera, in_normal), 0.0, 1.0), 2);
-	float sun_specular = pow(clamp(dot(reflected_view, -scene.light_direction), 0.0, 1.0), 2.0) * (0.8 + 5.0 * fresnel);
+	float sun_specular = pow(clamp(dot(reflected_view, to_light), 0.0, 1.0), 2.0) * (0.8 + 5.0 * fresnel);
 	float rim_light = fresnel;
-	float sky_reflection = smoothstep(0.0, 0.6, reflected_view.y) * (0.4 + 0.6 * fresnel);//use shinyness
+	float sky_reflection = smoothstep(0.0, 0.6, reflected_view.y) * (0.4 + 0.6 * fresnel);
 
   float shadow = calculate_shadow();
   // float shadow = 0.0;

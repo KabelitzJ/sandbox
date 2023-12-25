@@ -203,7 +203,7 @@ public:
   template<std::floating_point Scale>
   [[nodiscard]] static constexpr auto lerp(const basic_vector3& lhs, const basic_vector3& rhs, const Scale scale) -> basic_vector3;
 
-  [[nodiscard]] static constexpr auto distance_sqared(const basic_vector3& lhs, const basic_vector3& rhs) noexcept -> length_type;
+  [[nodiscard]] static constexpr auto distance_squared(const basic_vector3& lhs, const basic_vector3& rhs) noexcept -> length_type;
 
   // [[nodiscard]] static constexpr auto rotated(const basic_vector3& vector, const basic_vector3& axis, const basic_angle<Type>& angle) noexcept -> basic_vector3;
   
