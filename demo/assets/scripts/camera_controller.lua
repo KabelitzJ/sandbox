@@ -81,7 +81,7 @@ function on_update()
 
   local radius = current_distance * sbx.cos(vertical_angle * math.pi / 180.0);
 
-  position.x = target.x + cos_angle * radius;
+  position.x() = target.x() + cos_angle * radius;
   position.y = current_distance * sbx.sin(vertical_angle * math.pi / 180.0); 
   position.z = target.z + sin_angle * radius;
 

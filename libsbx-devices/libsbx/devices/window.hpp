@@ -223,10 +223,10 @@ private:
 
       auto mouse_position = math::vector2{static_cast<std::float_t>(x), static_cast<std::float_t>(y)};
 
-      if (self._last_mouse_position.x < 0.0f || self._last_mouse_position.y < 0.0f) {
-        self._on_mouse_moved(mouse_moved_event{mouse_position.x, mouse_position.y});
+      if (self._last_mouse_position.x() < 0.0f || self._last_mouse_position.y() < 0.0f) {
+        self._on_mouse_moved(mouse_moved_event{mouse_position.x(), mouse_position.y()});
       } else {
-        self._on_mouse_moved(mouse_moved_event{mouse_position.x - self._last_mouse_position.x, mouse_position.y - self._last_mouse_position.y});
+        self._on_mouse_moved(mouse_moved_event{mouse_position.x() - self._last_mouse_position.x(), mouse_position.y() - self._last_mouse_position.y()});
         self._last_mouse_position = mouse_position;
       }
 

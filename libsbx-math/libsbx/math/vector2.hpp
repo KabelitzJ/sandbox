@@ -14,6 +14,7 @@
 #include <fmt/format.h>
 
 #include <libsbx/math/concepts.hpp>
+#include <libsbx/math/vector.hpp>
 
 namespace sbx::math {
 
@@ -22,251 +23,69 @@ namespace sbx::math {
  *
  * @tparam Type The type of the vectors components.
  */
-template<numeric Type>
-class basic_vector2 {
+template<arithmetic Type>
+class basic_vector2 : public basic_vector<2u, Type> {
+
+  using base_type = basic_vector<2u, Type>;
 
 public:
 
   // -- Type aliases --
 
   /** @brief The type of the vector components. */
-  using value_type = Type;
+  using value_type = base_type::value_type;
 
   /** @brief The reference type of the vector components. */
-  using reference = value_type&;
+  using reference = base_type::reference;
 
   /** @brief The const reference type of the vector components. */
-  using const_reference = const value_type&;
+  using const_reference = base_type::const_reference;
 
   /** @brief The pointer type of the vector components. */
-  using pointer = value_type*;
+  using pointer = base_type::pointer;
 
   /** @brief The const pointer type of the vector components. */
-  using const_pointer = const value_type*;
+  using const_pointer = base_type::const_pointer;
 
   /** @brief The type that can describe the length of the vector */
-  using length_type = std::float_t;
+  using length_type = base_type::length_type;
 
   /** @brief The type that can index components */
-  using index_type = std::size_t;
+  using size_type = base_type::size_type;
 
-  // -- Static data members --
+  // -- Constants --
 
-  /** @brief The origin of two-dimensional space */
-  inline static constexpr basic_vector2 zero{value_type{0}, value_type{0}};
+  inline static constexpr auto x_axis = size_type{0};
 
-  /** @brief A unit vector along the positive x-axis */
-  inline static constexpr basic_vector2 right{value_type{-1}, value_type{0}};
-
-  /** @brief A unit vector along the negative x-axis */
-  inline static constexpr basic_vector2 left{value_type{1}, value_type{0}};
-
-  /** @brief A unit vector along the positive y-axis */
-  inline static constexpr basic_vector2 up{value_type{0}, value_type{-1}};
-
-  /** @brief A unit vector along the negative y-axis */
-  inline static constexpr basic_vector2 down{value_type{0}, value_type{1}};
-
-  // -- Data members --
-
-  /** @brief The x-component. */
-  value_type x{};
-  /** @brief The y-component. */
-  value_type y{};
+  inline static constexpr auto y_axis = size_type{1};
 
   // -- Constructors --
 
-  /** @brief Constructs a vector with all components set to zero. */
-  constexpr basic_vector2() noexcept;
+  using base_type::base_type;
 
-  /**
-   * @brief Constructs a vector and assigns all components to the value.
-   * 
-   * @param value Value for all components.
-   */
-  explicit constexpr basic_vector2(const value_type value) noexcept;
+  constexpr basic_vector2(const base_type& base) noexcept
+  : base_type{base} { }
 
-  /**
-   * @brief Constructs a vector and assigns all components to the values.
-   * 
-   * @param x The value for the x component.
-   * @param y The value for the y component.
-   */
-  constexpr basic_vector2(const value_type x, const value_type y) noexcept;
-
-  /** 
-   * @brief Constructs a vector and copies the components from the other vector
-   *
-   * @param other The other vector to copy the components from. 
-   */
-  constexpr basic_vector2(const basic_vector2& other) noexcept = default;
-
-  /**
-   * @brief Constructs a vector and copies the components from the other vector
-   * 
-   * @tparam Other The type of the other vector.
-   * 
-   * @param other The other vector to copy the components from.
-   */
-  template<numeric Other>
-  explicit constexpr basic_vector2(const basic_vector2<Other>& other) noexcept;
-
-  /** 
-   * @brief Constructs a vector and moves the components out of the other vector
-   *
-   * @param other The other vector to move the components from. 
-   */
-  constexpr basic_vector2(basic_vector2&& other) noexcept = default;
+  constexpr basic_vector2(const basic_vector2& other) noexcept
+  : base_type{other} { }
 
   /** @brief Destroys the vector */
-  constexpr ~basic_vector2() noexcept = default;
+  constexpr ~basic_vector2() noexcept override = default;
 
-  // -- Static member functions --
-
-  /**
-   * @brief Returns a normalized copy.
-   * 
-   * @return basic_vector2 The normalized vector.
-   */
-  [[nodiscard]] static constexpr auto normalized(const basic_vector2& vector) noexcept -> basic_vector2;
-
-  // -- Assignment operators --
-
-  /**
-   * @brief Copies the components from the other vector.
-   * 
-   * @param other The other vector to copy the components from.
-   * 
-   * @return basic_vector2& A reference to this vector.
-   */
-  constexpr auto operator=(const basic_vector2& other) noexcept -> basic_vector2& = default;
-
-  /**
-   * @brief Copies the components from the other vector.
-   * 
-   * @tparam Other The type of the other vector.
-   * 
-   * @param other The other vector to copy the components from.
-   * 
-   * @return basic_vector2& A reference to this vector.
-   */
-  template<numeric Other>
-  constexpr auto operator=(const basic_vector2<Other>& other) noexcept -> basic_vector2&;
-
-  /**
-   * @brief Moves the components out of the other vector.
-   * 
-   * @param other The other vector to move the components from.
-   * 
-   * @return basic_vector2& A reference to this vector.
-   */
-  constexpr auto operator=(basic_vector2&& other) noexcept -> basic_vector2& = default;
-
-  // -- Unary numeric operators --
-
-  /**
-   * @brief Negates the vector.
-   * 
-   * @return basic_vector2& A reference to this vector.
-   */
-  constexpr auto operator-() noexcept -> basic_vector2&;
-
-  // -- Binary numeric operators --
-
-  /**
-   * @brief Adds the components of the other vector to this vector.
-   * 
-   * @param other The other vector to add.
-   * 
-   * @return basic_vector2& A reference to this vector. 
-   */
-  constexpr auto operator+=(const basic_vector2& other) noexcept -> basic_vector2&;
-
-  template<numeric Other>
-  constexpr auto operator+=(const basic_vector2<Other>& other) noexcept -> basic_vector2&;
-
-  /**
-   * @brief Subtracts the components of the other vector from this vector.
-   * 
-   * @param other The other vector to subtract.
-   * 
-   * @return basic_vector2& A reference to this vector. 
-   */
-  constexpr auto operator-=(const basic_vector2& other) noexcept -> basic_vector2&;
-
-  /**
-   * @brief Multiplies the components of this vector by the scalar.
-   * 
-   * @param scalar The scalar to multiply by.
-   * 
-   * @return basic_vector2& A reference to this vector. 
-   */
-  constexpr auto operator*=(const value_type scalar) noexcept -> basic_vector2&;
-
-  template<numeric Other>
-  constexpr auto operator*=(const Other scalar) noexcept -> basic_vector2&;
-
-  template<numeric Other>
-  constexpr auto operator*=(const basic_vector2<Other>& other) noexcept -> basic_vector2&;
-
-  /**
-   * @brief Divides the components of this vector by the scalar.
-   * 
-   * @param scalar The scalar to divide by.
-   * 
-   * @throws std::domain_error If the scalar is zero.
-   * 
-   * @return basic_vector2& A reference to this vector. 
-   */
-  constexpr auto operator/=(const value_type scalar) -> basic_vector2&;
-
-  // -- Access operators --
-
-  /**
-   * @brief Returns the component at the specified index.
-   * 
-   * @param index The index of the component.
-   * 
-   * @return reference A reference to the component. 
-   */
-  [[nodiscard]] constexpr auto operator[](const index_type index) -> reference;
-
-  /**
-   * @brief Returns the component at the specified index.
-   * 
-   * @param index The index of the component. 
-   * 
-   * @return const_reference A const reference to the component.
-   */
-  [[nodiscard]] constexpr auto operator[](const index_type index) const -> const_reference;
+  constexpr auto operator=(const basic_vector2& other) noexcept -> basic_vector2& {
+    base_type::operator=(other);
+    return *this;
+  }
 
   // -- Member functions --
 
-  /**
-   * @brief Returns the length.
-   * 
-   * @return value_type The length.
-   */
-  [[nodiscard]] constexpr auto length() const noexcept -> length_type;
+  [[nodiscard]] constexpr auto x() const noexcept -> const_reference;
 
-  /** @brief Normalizes the vector. */
-  constexpr auto normalize() noexcept -> void;
+  [[nodiscard]] constexpr auto x() noexcept -> reference;
 
-  // -- Data access --
+  [[nodiscard]] constexpr auto y() const noexcept -> const_reference;
 
-  /**
-   * @brief Return a pointer to the first component.
-   *
-   * @return pointer A pointer to the first component. 
-   */
-  [[nodiscard]] constexpr auto data() noexcept -> pointer;
-
-  /**
-   * @brief Return a pointer to the first component.
-   * 
-   * @return const_pointer A pointer to the first component.
-   */
-  [[nodiscard]] constexpr auto data() const noexcept -> const_pointer;
+  [[nodiscard]] constexpr auto y() noexcept -> reference;
 
 }; // class basic_vector2
 
@@ -283,10 +102,10 @@ public:
  * @return true The vectors are equal.
  * @return false The vectors are not equal.
  */
-template<numeric Type>
+template<arithmetic Type>
 [[nodiscard]] constexpr auto operator==(const basic_vector2<Type>& lhs, const basic_vector2<Type>& rhs) noexcept -> bool;
 
-// -- Free numeric operators --
+// -- Free arithmetic operators --
 
 /**
  * @brief Adds two vectors.
@@ -298,10 +117,10 @@ template<numeric Type>
  * 
  * @return basic_vector2<Type> The sum of the two vectors.
  */
-template<numeric Type>
+template<arithmetic Type>
 [[nodiscard]] constexpr auto operator+(basic_vector2<Type> lhs, const basic_vector2<Type>& rhs) noexcept -> basic_vector2<Type>;
 
-template<numeric Type, numeric Other>
+template<arithmetic Type, arithmetic Other>
 [[nodiscard]] constexpr auto operator+(basic_vector2<Type> lhs, const basic_vector2<Other>& rhs) noexcept -> basic_vector2<Type>;
 
 
@@ -315,7 +134,7 @@ template<numeric Type, numeric Other>
  * 
  * @return basic_vector2<Type> The difference of the two vectors. 
  */
-template<numeric Type>
+template<arithmetic Type>
 [[nodiscard]] constexpr auto operator-(basic_vector2<Type> lhs, const basic_vector2<Type>& rhs) noexcept -> basic_vector2<Type>;
 
 /**
@@ -328,10 +147,10 @@ template<numeric Type>
  * 
  * @return basic_vector2<Type> The product of the vector and scalar. 
  */
-template<numeric Type>
+template<arithmetic Type>
 [[nodiscard]] constexpr auto operator*(basic_vector2<Type> lhs, const Type rhs) noexcept -> basic_vector2<Type>;
 
-template<numeric Type, numeric Other>
+template<arithmetic Type, arithmetic Other>
 [[nodiscard]] constexpr auto operator*(basic_vector2<Type> lhs, const basic_vector2<Other>& rhs) noexcept -> basic_vector2<Type>;
 
 /**
@@ -346,7 +165,7 @@ template<numeric Type, numeric Other>
  * 
  * @return basic_vector2<Type> The quotient of the vector and scalar.
  */
-template<numeric Type>
+template<arithmetic Type>
 [[nodiscard]] constexpr auto operator/(basic_vector2<Type> lhs, const Type rhs) -> basic_vector2<Type>;
 
 // -- Type aliases --
@@ -364,19 +183,19 @@ using vector2 = vector2f;
 
 } // namespace ::math
 
-template<sbx::math::numeric Type>
+template<sbx::math::arithmetic Type>
 struct std::hash<sbx::math::basic_vector2<Type>> {
   auto operator()(const sbx::math::basic_vector2<Type>& vector) const noexcept -> std::size_t;
 }; // struct std::hash
 
-template<sbx::math::numeric Type>
+template<sbx::math::arithmetic Type>
 struct YAML::convert<sbx::math::basic_vector2<Type>> {
   static auto encode(const sbx::math::basic_vector2<Type>& vector) -> Node;
 
   static auto decode(const Node& node, sbx::math::basic_vector2<Type>& vector) -> bool;
 }; // struct YAML::convert
 
-template<sbx::math::numeric Type>
+template<sbx::math::arithmetic Type>
 struct fmt::formatter<sbx::math::basic_vector2<Type>> {
   template<typename ParseContext>
   constexpr auto parse(ParseContext& context) -> decltype(context.begin());

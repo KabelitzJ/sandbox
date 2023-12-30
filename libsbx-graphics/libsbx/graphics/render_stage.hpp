@@ -146,7 +146,7 @@ public:
   render_area(const math::vector2u& extent = math::vector2u{}, const math::vector2i& offset = math::vector2i{}) noexcept
   : _extent{extent}, 
     _offset{offset}, 
-    _aspect_ratio{static_cast<std::float_t>(extent.x) / static_cast<std::float_t>(extent.y)} { }
+    _aspect_ratio{static_cast<std::float_t>(extent.x()) / static_cast<std::float_t>(extent.y())} { }
 
   auto operator==(const render_area& other) const noexcept -> bool {
     return _extent == other._extent && _offset == other._offset;

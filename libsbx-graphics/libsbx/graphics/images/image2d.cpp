@@ -16,7 +16,7 @@
 namespace sbx::graphics {
 
 image2d::image2d(const math::vector2u& extent, VkFormat format, VkImageLayout layout, VkImageUsageFlags usage, VkFilter filter, VkSamplerAddressMode address_mode, VkSampleCountFlagBits samples, bool anisotropic, bool mipmap)
-: image{VkExtent3D{extent.x, extent.y, 1}, filter, address_mode, samples, layout, (usage | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT), format, 1, 1},
+: image{VkExtent3D{extent.x(), extent.y(), 1}, filter, address_mode, samples, layout, (usage | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT), format, 1, 1},
   _anisotropic{anisotropic},
   _mipmap{mipmap} {
   _load();

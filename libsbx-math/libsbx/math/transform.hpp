@@ -13,7 +13,7 @@ class transform final {
 
 public:
 
-  transform(const vector3& position = vector3::zero, const vector3& euler_angles = vector3::zero, const vector3& scale = vector3::one)
+  transform(const vector3& position = vector3::zero(), const vector3& euler_angles = vector3::zero(), const vector3& scale = vector3::one())
   : _position{position}, 
     _euler_angles{euler_angles}, 
     _scale{scale},
@@ -69,10 +69,10 @@ public:
   auto look_at(const vector3& target) noexcept -> void {
     const auto direction = vector3::normalized(target - _position);
 
-    const auto yaw = radian{std::atan2(direction.x, direction.z)};
-    const auto pitch = radian{std::asin(-direction.y)};
+    const auto yaw = radian{std::atan2(direction.x(), direction.z())};
+    const auto pitch = radian{std::asin(-direction.y())};
 
-    set_euler_angles(vector3{to_degrees(pitch), to_degrees(yaw), 0.0f});
+    set_euler_angles(vector3{to_degrees(pitch).value(), to_degrees(yaw).value(), 0.0f});
   }
 
   auto as_matrix() const -> matrix4x4 {

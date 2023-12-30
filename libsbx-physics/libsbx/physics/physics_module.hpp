@@ -91,7 +91,7 @@ public:
             if (velocity.length_squared() > 0.01f) {
               rigidbody.set_velocity(-velocity);
             } else {
-              rigidbody.set_velocity(math::vector3::zero);
+              rigidbody.set_velocity(math::vector3::zero());
             }
           }
         }
@@ -124,7 +124,7 @@ private:
     const auto b_min = b_transform.position() - b_collider.size() / 2.0f;
     const auto b_max = b_transform.position() + b_collider.size() / 2.0f;
 
-    if (a_min.x > b_max.x || a_max.x < b_min.x) {
+    if (a_min.x() > b_max.x() || a_max.x() < b_min.x()) {
       return std::nullopt;
     }
 

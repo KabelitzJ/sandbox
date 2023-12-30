@@ -24,7 +24,7 @@ namespace sbx::math {
  * 
  * @tparam Type The type of the matrix components.
  */
-template<numeric Type>
+template<arithmetic Type>
 struct basic_matrix4x4 {
 
   // -- Type aliases --
@@ -142,7 +142,7 @@ struct basic_matrix4x4 {
    * 
    * @param other The matrix to copy.
    */
-  template<numeric From>
+  template<arithmetic From>
   explicit constexpr basic_matrix4x4(const basic_matrix4x4<From>& other) noexcept;
 
   /**
@@ -195,7 +195,7 @@ struct basic_matrix4x4 {
    * 
    * @return basic_matrix4x4& Reference to this matrix.
    */
-  template<numeric From>
+  template<arithmetic From>
   constexpr auto operator=(const basic_matrix4x4<From>& other) noexcept -> basic_matrix4x4&;
 
   /**
@@ -207,7 +207,7 @@ struct basic_matrix4x4 {
    */
   constexpr auto operator=(basic_matrix4x4&& other) noexcept -> basic_matrix4x4& = default;
 
-  // -- Binary numeric operators --
+  // -- Binary arithmetic operators --
 
   /**
    * @brief Adds the given matrix to this matrix.
@@ -290,24 +290,24 @@ private:
 
 // -- Free comparison operators --
 
-template<numeric Type>
+template<arithmetic Type>
 [[nodiscard]] constexpr auto operator==(const basic_matrix4x4<Type>& lhs, const basic_matrix4x4<Type>& rhs) noexcept -> bool;
 
-// -- Free numeric operators --
+// -- Free arithmetic operators --
 
-template<numeric Type>
+template<arithmetic Type>
 [[nodiscard]] constexpr auto operator+(basic_matrix4x4<Type> lhs, const basic_matrix4x4<Type>& rhs) noexcept -> basic_matrix4x4<Type>;
 
-template<numeric Type>
+template<arithmetic Type>
 [[nodiscard]] constexpr auto operator-(basic_matrix4x4<Type> lhs, const basic_matrix4x4<Type>& rhs) noexcept -> basic_matrix4x4<Type>;
 
-template<numeric Type>
+template<arithmetic Type>
 [[nodiscard]] constexpr auto operator*(basic_matrix4x4<Type> lhs, const Type rhs) noexcept -> basic_matrix4x4<Type>;
 
-template<numeric Type>
+template<arithmetic Type>
 [[nodiscard]] constexpr auto operator*(basic_matrix4x4<Type> lhs, const basic_vector4<Type>& rhs) noexcept -> basic_vector4<Type>;
 
-template<numeric Type>
+template<arithmetic Type>
 [[nodiscard]] constexpr auto operator*(basic_matrix4x4<Type> lhs, const basic_matrix4x4<Type>& rhs) noexcept -> basic_matrix4x4<Type>;
 
 // -- Type aliases --
@@ -323,7 +323,7 @@ using matrix4x4 = matrix4x4f;
 
 } // namespace sbx::math
 
-template<sbx::math::numeric Type>
+template<sbx::math::arithmetic Type>
 struct fmt::formatter<sbx::math::basic_matrix4x4<Type>> : formatter<std::string_view> {
 
   using underlying_formatter_type = formatter<std::string_view>;

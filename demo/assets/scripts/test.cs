@@ -34,7 +34,7 @@ public class ThirdPersonCamera : MonoBehaviour
         // Calculate camera position based on rotation, distance, and height
         float horizontalAngle = currentRotation * Mathf.Deg2Rad;
         float verticalAngleRad = verticalAngle * Mathf.Deg2Rad;
-        float xPos = target.position.x + currentDistance * Mathf.Sin(horizontalAngle) * Mathf.Cos(verticalAngleRad);
+        float xPos = target.position.x() + currentDistance * Mathf.Sin(horizontalAngle) * Mathf.Cos(verticalAngleRad);
         float yPos = target.position.y + currentDistance * Mathf.Tan(verticalAngleRad);
         float zPos = target.position.z + currentDistance * Mathf.Cos(horizontalAngle) * Mathf.Cos(verticalAngleRad);
 

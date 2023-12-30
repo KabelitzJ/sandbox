@@ -77,7 +77,7 @@ private:
 
     auto& font = assets_module.get_asset<ui::font>(_font_id);
 
-    auto position_x = static_cast<std::float_t>(_position.x);
+    auto position_x = static_cast<std::float_t>(_position.x());
     auto position_y = static_cast<std::float_t>(_position.y);
 
     for (const auto character : _text) {
@@ -85,10 +85,10 @@ private:
 
       const auto& glyph = font.glyph(character);
 
-      auto x = position_x + static_cast<std::float_t>(glyph.bearing.x) * _scale;
+      auto x = position_x + static_cast<std::float_t>(glyph.bearing.x()) * _scale;
       auto y = position_y - static_cast<std::float_t>(glyph.size.y - glyph.bearing.y) * _scale;
 
-      auto w = static_cast<std::float_t>(glyph.size.x) * _scale;
+      auto w = static_cast<std::float_t>(glyph.size.x()) * _scale;
       auto h = static_cast<std::float_t>(glyph.size.y) * _scale;
 
       data.offset = math::vector2{x, y};

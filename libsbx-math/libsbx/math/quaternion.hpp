@@ -25,7 +25,7 @@ public:
 
   using length_type = std::float_t;
 
-  inline static constexpr basic_quaternion identity{basic_vector3<value_type>::zero, basic_radian<value_type>{static_cast<value_type>(1)}};
+  inline static constexpr basic_quaternion identity{basic_vector3<value_type>::zero(), basic_radian<value_type>{static_cast<value_type>(1)}};
 
   /**
     * @brief Construct a new quaternion.

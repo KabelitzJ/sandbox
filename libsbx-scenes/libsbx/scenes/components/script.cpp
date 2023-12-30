@@ -90,8 +90,15 @@ auto script::_create_vector2_bindings(sol::table& library) -> void {
 
   auto vector2_type = library.new_usertype<math::vector2>("vector2", vector2_constructor);
 
-  vector2_type.set("x", &math::vector2::x);
-  vector2_type.set("y", &math::vector2::y);
+  vector2_type.set("x", sol::property(
+    sol::resolve<std::float_t&()>(&math::vector2::x),
+    sol::resolve<const std::float_t&() const>(&math::vector2::x)
+  ));
+
+  vector2_type.set("y", sol::property(
+    sol::resolve<std::float_t&()>(&math::vector2::y),
+    sol::resolve<const std::float_t&() const>(&math::vector2::y)
+  ));
 }
 
 auto script::_create_vector3_bindings(sol::table& library) -> void {
@@ -99,46 +106,62 @@ auto script::_create_vector3_bindings(sol::table& library) -> void {
 
   auto vector3_type = library.new_usertype<math::vector3>("vector3", vector3_constructor);
 
-  vector3_type.set("x", &math::vector3::x);
-  vector3_type.set("y", &math::vector3::y);
-  vector3_type.set("z", &math::vector3::z);
+  vector3_type.set("x", sol::property(
+    sol::resolve<std::float_t&()>(&math::vector3::x),
+    sol::resolve<const std::float_t&() const>(&math::vector3::x)
+  ));
 
-  // [NOTE] KAJ 2023-10-10 : SOL2 currently does not support static member variables in usertypes
-  library["vector3"]["zero"] = math::vector3::zero;
-  library["vector3"]["one"] = math::vector3::one;
-  library["vector3"]["right"] = math::vector3::right;
-  library["vector3"]["left"] = math::vector3::left;
-  library["vector3"]["up"] = math::vector3::up;
-  library["vector3"]["down"] = math::vector3::down;
-  library["vector3"]["forward"] = math::vector3::forward;
-  library["vector3"]["backward"] = math::vector3::backward;
+  vector3_type.set("y", sol::property(
+    sol::resolve<std::float_t&()>(&math::vector3::y),
+    sol::resolve<const std::float_t&() const>(&math::vector3::y)
+  ));
+
+  vector3_type.set("z", sol::property(
+    sol::resolve<std::float_t&()>(&math::vector3::z),
+    sol::resolve<const std::float_t&() const>(&math::vector3::z)
+  ));
+
+  vector3_type.set("zero", sol::readonly_property(&math::vector3::zero));
+  vector3_type.set("one", sol::readonly_property(&math::vector3::one));
+  vector3_type.set("right", sol::readonly_property(&math::vector3::right));
+  vector3_type.set("left", sol::readonly_property(&math::vector3::left));
+  vector3_type.set("up", sol::readonly_property(&math::vector3::up));
+  vector3_type.set("down", sol::readonly_property(&math::vector3::down));
+  vector3_type.set("forward", sol::readonly_property(&math::vector3::forward));
+  vector3_type.set("backward", sol::readonly_property(&math::vector3::backward));
+
+  // // [NOTE] KAJ 2023-10-10 : SOL2 currently does not support static member variables in usertypes
+  // library["vector3"]["zero"] = math::vector3::zero();
+  // library["vector3"]["one"] = math::vector3::one();
+  // library["vector3"]["right"] = math::vector3::right();
+  // library["vector3"]["left"] = math::vector3::left();
+  // library["vector3"]["up"] = math::vector3::up();
+  // library["vector3"]["down"] = math::vector3::down();
+  // library["vector3"]["forward"] = math::vector3::forward();
+  // library["vector3"]["backward"] = math::vector3::backward();
 
   vector3_type.set_function("normalize", &math::vector3::normalize);
   vector3_type.set_function("length", &math::vector3::length);
 
-  vector3_type.set_function(sol::meta_function::addition, sol::overload(
-    sol::resolve<math::vector3(math::vector3 lhs, const std::float_t rhs)>(&math::operator+),
-    sol::resolve<math::vector3(math::vector3 lhs, const math::vector3& rhs)>(&math::operator+)
-  ));
+  vector3_type.set_function(sol::meta_function::addition, [](math::vector3 lhs, const math::vector3& rhs){
+    return lhs += rhs;
+  });
 
-  vector3_type.set_function(sol::meta_function::subtraction, sol::overload(
-    sol::resolve<math::vector3(math::vector3 lhs, const std::float_t rhs)>(&math::operator-),
-    sol::resolve<math::vector3(math::vector3 lhs, const math::vector3& rhs)>(&math::operator-)
-  ));
+  vector3_type.set_function(sol::meta_function::subtraction, [](math::vector3 lhs, const math::vector3& rhs){
+    return lhs -= rhs;
+  });
 
-  vector3_type.set_function(sol::meta_function::multiplication, sol::overload(
-    sol::resolve<math::vector3(math::vector3 lhs, const std::float_t rhs)>(&math::operator*),
-    sol::resolve<math::vector3(math::vector3 lhs, const math::vector3& rhs)>(&math::operator*)
-  ));
+  vector3_type.set_function(sol::meta_function::multiplication, [](math::vector3 lhs, const std::float_t& rhs){
+    return lhs *= rhs;
+  });
 
-  vector3_type.set_function(sol::meta_function::division, sol::overload(
-    sol::resolve<math::vector3(math::vector3 lhs, const std::float_t rhs)>(&math::operator/),
-    sol::resolve<math::vector3(math::vector3 lhs, const math::vector3& rhs)>(&math::operator/)
-  ));
+  vector3_type.set_function(sol::meta_function::division, [](math::vector3 lhs, const std::float_t& rhs){
+    return lhs /= rhs;
+  });
 
-  vector3_type.set_function(sol::meta_function::unary_minus, sol::overload(
-    sol::resolve<math::vector3(const math::vector3& vector)>(&math::operator-)
-  ));
+  vector3_type.set_function(sol::meta_function::unary_minus, [](const math::vector3& vector){
+    return -vector;
+  });
 }
 
 auto script::_create_transform_bindings(sol::table& library) -> void {

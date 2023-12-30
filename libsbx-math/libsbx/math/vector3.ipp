@@ -15,361 +15,125 @@
 
 namespace sbx::math {
 
-template<numeric Type>
-inline constexpr basic_vector3<Type>::basic_vector3() noexcept
-: x{static_cast<value_type>(0)}, 
-  y{static_cast<value_type>(0)}, 
-  z{static_cast<value_type>(0)} { }
+// template<arithmetic Type>
+// inline constexpr basic_vector3<Type>::basic_vector3(const Type x, const Type y, const Type z) noexcept {
+//   base_type::component(x_axis) = x;
+//   base_type::component(y_axis) = y;
+//   base_type::component(z_axis) = z;
+// }
 
-template<numeric Type>
-inline constexpr basic_vector3<Type>::basic_vector3(const value_type value) noexcept
-: x{value},
-  y{value},
-  z{value} { }
+// template<arithmetic Type>
+// inline constexpr basic_vector3<Type>::basic_vector3(const basic_vector2<Type>& vector, const Type z) noexcept
+// : base_type{vector.x(), vector.y(), z} { }
 
-template<numeric Type>
-inline constexpr basic_vector3<Type>::basic_vector3(const value_type _x, const value_type _y, const value_type _z) noexcept
-: x{_x},
-  y{_y},
-  z{_z} { }
+// template<arithmetic Type>
+// inline constexpr basic_vector3<Type>::basic_vector3(const basic_vector4<Type>& vector) noexcept 
+// : base_type{vector.x(), vector.y(), vector.z()} { }
 
-template<numeric Type>
-inline constexpr basic_vector3<Type>::basic_vector3(const basic_vector2<Type>& vector, const Type _z) noexcept
-: x{vector.x},
-  y{vector.y},
-  z{_z} { }
-
-template<numeric Type>
-inline constexpr basic_vector3<Type>::basic_vector3(const basic_vector4<Type>& vector) noexcept 
-: x{vector.x},
-  y{vector.y},
-  z{vector.z} { }
-
-template<numeric Type>
-template<numeric Other>
-inline constexpr basic_vector3<Type>::basic_vector3(const basic_vector3<Other>& other) noexcept
-: x{static_cast<value_type>(other.x)},
-  y{static_cast<value_type>(other.y)},
-  z{static_cast<value_type>(other.z)} { }
-
-template<numeric Type>
-inline constexpr auto basic_vector3<Type>::normalized(const basic_vector3& vector) noexcept -> basic_vector3<Type> {
-  const auto length = vector.length();
-  return length == static_cast<value_type>(0) ? vector : vector / length;
-}
-
-template<numeric Type>
+template<arithmetic Type>
 inline constexpr auto basic_vector3<Type>::absolute(const basic_vector3& vector) noexcept -> basic_vector3<Type> {
-  return basic_vector3{std::abs(vector.x), std::abs(vector.y), std::abs(vector.z)};
+  return basic_vector3{std::abs(vector.x()), std::abs(vector.y()), std::abs(vector.z())};
 }
 
-template<numeric Type>
+template<arithmetic Type>
 inline constexpr auto basic_vector3<Type>::dot(const basic_vector3& lhs, const basic_vector3& rhs) noexcept -> value_type {
-  return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z;
+  return lhs.x() * rhs.x() + lhs.y() * rhs.y() + lhs.z() * rhs.z();
 }
 
-template<numeric Type>
+template<arithmetic Type>
 inline constexpr auto basic_vector3<Type>::cross(const basic_vector3& lhs, const basic_vector3& rhs) noexcept -> basic_vector3<Type> {
-  const auto x = lhs.y * rhs.z - lhs.z * rhs.y;
-  const auto y = lhs.z * rhs.x - lhs.x * rhs.z;
-  const auto z = lhs.x * rhs.y - lhs.y * rhs.x;
+  const auto x = lhs.y() * rhs.z() - lhs.z() * rhs.y();
+  const auto y = lhs.z() * rhs.x() - lhs.x() * rhs.z();
+  const auto z = lhs.x() * rhs.y() - lhs.y() * rhs.x();
 
   return basic_vector3<Type>{x, y, z};
 }
 
-template<numeric Type>
-inline constexpr auto basic_vector3<Type>::clamp(const basic_vector3& vector, const Type min, const Type max) noexcept -> basic_vector3<Type> {
-  const auto x = std::max(min, std::min(vector.x, max));
-  const auto y = std::max(min, std::min(vector.y, max));
-  const auto z = std::max(min, std::min(vector.z, max));
+// template<arithmetic Type>
+// template<std::convertible_to<Type> Scale>
+// inline constexpr auto basic_vector3<Type>::lerp(const basic_vector3& lhs, const basic_vector3& rhs, const Scale& scale) noexcept -> basic_vector3<Type> {
+//   return lhs + (rhs - lhs) * static_cast<value_type>(scale);
+// }
 
-  return basic_vector3<Type>{x, y, z};
-}
-
-template<numeric Type>
-template<numeric Other>
-constexpr auto basic_vector3<Type>::operator=(const basic_vector3<Other>& other) noexcept -> basic_vector3& {
-  x = static_cast<value_type>(other.x);
-  y = static_cast<value_type>(other.y);
-  z = static_cast<value_type>(other.z);
-
-  return *this;
-}
-
-template<numeric Type>
-inline constexpr auto basic_vector3<Type>::operator-() noexcept -> basic_vector3& {
-  x = -x;
-  y = -y;
-  z = -z;
-
-  return *this;
-}
-
-template<numeric Type>
-inline constexpr auto basic_vector3<Type>::operator+=(const Type scalar) noexcept -> basic_vector3& {
-  x += scalar;
-  y += scalar;
-  z += scalar;
-
-  return *this;
-}
-
-template<numeric Type>
-inline constexpr auto basic_vector3<Type>::operator+=(const basic_vector3& other) noexcept -> basic_vector3& {
-  x += other.x;
-  y += other.y;
-  z += other.z;
-
-  return *this;
-}
-
-template<numeric Type>
-inline constexpr auto basic_vector3<Type>::operator-=(const Type other) noexcept -> basic_vector3& {
-  x -= other;
-  y -= other;
-  z -= other;
-
-  return *this;
-}
-
-template<numeric Type>
-inline constexpr auto basic_vector3<Type>::operator-=(const basic_vector3& other) noexcept -> basic_vector3& {
-  x -= other.x;
-  y -= other.y;
-  z -= other.z;
-
-  return *this;
-}
-
-template<numeric Type>
-inline constexpr auto basic_vector3<Type>::operator*=(const Type scalar) noexcept -> basic_vector3& {
-  x *= scalar;
-  y *= scalar;
-  z *= scalar;
-
-  return *this;
-}
-
-template<numeric Type>
-inline constexpr auto basic_vector3<Type>::operator*=(const basic_vector3& scalar) noexcept -> basic_vector3& {
-  x *= scalar.x;
-  y *= scalar.y;
-  z *= scalar.z;
-
-  return *this;
-}
-
-template<numeric Type>
-template<numeric Other>
-inline constexpr auto basic_vector3<Type>::operator*=(const Other& scalar) noexcept -> basic_vector3& {
-  x *= static_cast<value_type>(scalar);
-  y *= static_cast<value_type>(scalar);
-  z *= static_cast<value_type>(scalar);
-
-  return *this;
-}
-
-template<numeric Type>
-inline constexpr auto basic_vector3<Type>::operator/=(const Type scalar) noexcept -> basic_vector3& {
-  x /= scalar;
-  y /= scalar;
-  z /= scalar;
-
-  return *this;
-}
-
-template<numeric Type>
-inline constexpr auto basic_vector3<Type>::operator/=(const basic_vector3& scalar) noexcept -> basic_vector3& {
-  x /= scalar.x;
-  y /= scalar.y;
-  z /= scalar.z;
-
-  return *this;
-}
-
-template<numeric Type>
-template<numeric Other>
-inline constexpr auto basic_vector3<Type>::operator/=(const Other& scalar) noexcept -> basic_vector3& {
-  x /= static_cast<value_type>(scalar);
-  y /= static_cast<value_type>(scalar);
-  z /= static_cast<value_type>(scalar);
-
-  return *this;
-}
-
-template<numeric Type>
-inline constexpr auto basic_vector3<Type>::operator[](const index_type index) -> reference {
-  utility::assert_that(index < static_cast<index_type>(3), "Index out of bounds");
-
-  return data()[index];
-}
-
-template<numeric Type>
-inline constexpr auto basic_vector3<Type>::operator[](const index_type index) const -> const_reference {
-  utility::assert_that(index < static_cast<index_type>(3), "Index out of bounds");
-
-  return data()[index];
-}
-
-template<numeric Type>
-inline constexpr auto basic_vector3<Type>::length() const noexcept -> length_type {
-  return std::sqrt(length_squared());
-}
-
-template<numeric Type>
-inline constexpr auto basic_vector3<Type>::length_squared() const noexcept -> length_type {
-  return x * x + y * y + z * z;
-}
-
-template<numeric Type>
-inline constexpr auto basic_vector3<Type>::normalize() noexcept -> basic_vector3<Type>& {
-  const auto len = length();
-
-  if (len != static_cast<length_type>(0)) {
-    x /= len;
-    y /= len;
-    z /= len;
-  }
-
-  return *this;
-}
-
-template<numeric Type>
-inline constexpr auto basic_vector3<Type>::clamp(const Type min, const Type max) noexcept -> basic_vector3& {
-  x = std::max(min, std::min(x, max));
-  y = std::max(min, std::min(y, max));
-  z = std::max(min, std::min(z, max));
-
-  return *this;
-}
-
-template<numeric Type>
-template<std::floating_point Scale>
-inline constexpr auto basic_vector3<Type>::lerp(const basic_vector3& lhs, const basic_vector3& rhs, const Scale scale) -> basic_vector3 {
-  if (scale < static_cast<Type>(0) || scale > static_cast<Type>(1)) {
-    throw std::invalid_argument{"Invalid scale for lerp"};
-  }
-
-  return lhs + (rhs - lhs) * scale;
-}
-
-template<numeric Type>
-constexpr auto basic_vector3<Type>::distance_squared(const basic_vector3& lhs, const basic_vector3& rhs) noexcept -> length_type {
+template<arithmetic Type>
+inline constexpr auto basic_vector3<Type>::distance_squared(const basic_vector3& lhs, const basic_vector3& rhs) noexcept -> length_type {
   return (lhs - rhs).length_squared();
 }
 
-// template<numeric Type>
-// inline constexpr auto basic_vector3<Type>::rotated(const basic_vector3& vector, const basic_vector3& axis, const basic_angle<Type>& angle) noexcept -> basic_vector3 {
-//   const auto cos = std::cos(angle.to_radians());
-//   const auto sin = std::sin(angle.to_radians());
-
-
-// }
-
-template<numeric Type>
-inline constexpr auto basic_vector3<Type>::data() noexcept -> pointer {
-  return &x;
+template<arithmetic Type>
+inline constexpr auto basic_vector3<Type>::distance(const basic_vector3& lhs, const basic_vector3& rhs) noexcept -> length_type {
+  return (lhs - rhs).length();
 }
 
-template<numeric Type>
-inline constexpr auto basic_vector3<Type>::data() const noexcept -> const_pointer {
-  return &x;
+template<arithmetic Type>
+inline constexpr auto basic_vector3<Type>::x() const noexcept -> const_reference {
+  return base_type::component(x_axis);
 }
 
-template<numeric Type>
-inline constexpr bool operator==(const basic_vector3<Type>& lhs, const basic_vector3<Type>& rhs) noexcept {
-  return lhs.x == rhs.x && lhs.y == rhs.y && lhs.z == rhs.z;
+template<arithmetic Type>
+inline constexpr auto basic_vector3<Type>::x() noexcept -> reference {
+  return base_type::component(x_axis);
 }
 
-template<numeric Type>
-inline constexpr basic_vector3<Type> operator+(basic_vector3<Type> lhs, const Type rhs) noexcept {
-  return lhs += rhs;
+template<arithmetic Type>
+inline constexpr auto basic_vector3<Type>::y() const noexcept -> const_reference {
+  return base_type::component(y_axis);
 }
 
-template<numeric Type>
-inline constexpr basic_vector3<Type> operator+(basic_vector3<Type> lhs, const basic_vector3<Type>& rhs) noexcept {
-  return lhs += rhs;
+template<arithmetic Type>
+inline constexpr auto basic_vector3<Type>::y() noexcept -> reference {
+  return base_type::component(y_axis);
 }
 
-template<numeric Type>
-inline constexpr basic_vector3<Type> operator-(basic_vector3<Type> lhs, const Type rhs) noexcept {
-  return lhs -= rhs;
+template<arithmetic Type>
+inline constexpr auto basic_vector3<Type>::z() const noexcept -> const_reference {
+  return base_type::component(z_axis);
 }
 
-template<numeric Type>
-inline constexpr basic_vector3<Type> operator-(basic_vector3<Type> lhs, const basic_vector3<Type>& rhs) noexcept {
-  return lhs -= rhs;
+template<arithmetic Type>
+inline constexpr auto basic_vector3<Type>::z() noexcept -> reference {
+  return base_type::component(z_axis);
 }
 
-template<numeric Type>
-inline constexpr basic_vector3<Type> operator-(const basic_vector3<Type>& vector) noexcept {
-  return -basic_vector3<Type>{vector};
+template<arithmetic Type>
+inline constexpr auto basic_vector3<Type>::xy() const noexcept -> basic_vector2<value_type> {
+  return basic_vector2<value_type>{x(), y()};
 }
 
-template<numeric Type>
-inline constexpr basic_vector3<Type> operator*(basic_vector3<Type> lhs, const Type rhs) noexcept {
-  return lhs *= rhs;
-}
-
-template<numeric Type>
-inline constexpr basic_vector3<Type> operator*(basic_vector3<Type> lhs, const basic_vector3<Type>& rhs) noexcept {
-  return lhs *= rhs;
-}
-
-template<numeric Type, numeric Other>
-inline constexpr basic_vector3<Type> operator*(basic_vector3<Type> lhs, const Other& rhs) noexcept {
-  return lhs *= rhs;
-}
-
-template<numeric Type>
-inline constexpr basic_vector3<Type> operator/(basic_vector3<Type> lhs, const Type rhs) noexcept {
-  return lhs /= rhs;
-}
-
-template<numeric Type>
-inline constexpr basic_vector3<Type> operator/(basic_vector3<Type> lhs, const basic_vector3<Type>& rhs) noexcept {
-  return lhs /= rhs;
-}
-
-template<numeric Type, numeric Other>
-inline constexpr basic_vector3<Type> operator/(basic_vector3<Type> lhs, const Other rhs) noexcept {
-  return lhs /= rhs;
-}
-
-template<numeric Type>
+template<arithmetic Type>
 auto operator<<(std::ostream& output_stream, const basic_vector3<Type>& vector) -> std::ostream& {
-  return output_stream << fmt::format("({}, {}, {})", vector.x, vector.y, vector.z);
+  return output_stream << fmt::format("({}, {}, {})", vector.x(), vector.y(), vector.z());
 }
 
 } // namespace sbx::math
 
-template<sbx::math::numeric Type>
+template<sbx::math::arithmetic Type>
 inline auto std::hash<sbx::math::basic_vector3<Type>>::operator()(const sbx::math::basic_vector3<Type>& vector) const noexcept -> std::size_t {
   auto seed = std::size_t{0};
-  sbx::utility::hash_combine(seed, vector.x, vector.y, vector.z);
+  sbx::utility::hash_combine(seed, vector.x(), vector.y(), vector.z());
   return seed;
 }
 
-template<sbx::math::numeric Type>
+template<sbx::math::arithmetic Type>
 inline auto YAML::convert<sbx::math::basic_vector3<Type>>::encode(const sbx::math::basic_vector3<Type>& rhs) -> YAML::Node {
   auto node = Node{};
 
-  node["x"] = rhs.x;
-  node["y"] = rhs.y;
-  node["z"] = rhs.z;
+  node["x"] = rhs.x();
+  node["y"] = rhs.y();
+  node["z"] = rhs.z();
 
   return node;
 }
 
-template<sbx::math::numeric Type>
+template<sbx::math::arithmetic Type>
 inline auto YAML::convert<sbx::math::basic_vector3<Type>>::decode(const YAML::Node& node, sbx::math::basic_vector3<Type>& rhs) -> bool {
   if (!node.IsMap()) {
     return false;
   }
 
-  rhs.x = node["x"].as<Type>();
-  rhs.y = node["y"].as<Type>();
-  rhs.z = node["z"].as<Type>();
+  rhs.x() = node["x"].as<Type>();
+  rhs.y() = node["y"].as<Type>();
+  rhs.z() = node["z"].as<Type>();
 
   return true;
 }

@@ -65,9 +65,10 @@ demo_application::demo_application()
   auto floor_id = assets_module.add_asset<sbx::models::mesh>(_generate_plane(sbx::math::vector2u{100u, 100u}, sbx::math::vector2u{1u, 1u}));
 
   auto white_id = assets_module.try_get_asset_id("res://textures/white.png");
+  auto prototype_black_id = assets_module.try_get_asset_id("res://textures/prototype_black.png");
 
-  auto floor_node = scene.create_node("Floor", sbx::math::transform{sbx::math::vector3::zero, sbx::math::vector3::zero, sbx::math::vector3::one});
-  floor_node.add_component<sbx::scenes::static_mesh>(floor_id, std::vector<sbx::scenes::static_mesh::submesh>{{0, *white_id, sbx::math::color{0.37f, 0.43f, 0.32f, 1.0f}}});
+  auto floor_node = scene.create_node("Floor", sbx::math::transform{sbx::math::vector3::zero(), sbx::math::vector3::zero(), sbx::math::vector3::one()});
+  floor_node.add_component<sbx::scenes::static_mesh>(floor_id, std::vector<sbx::scenes::static_mesh::submesh>{{0, *prototype_black_id}});
 
   // [Todo] KAJ 2023-08-16 15:30 - This should probably be done automatically
   scene.start();
@@ -84,7 +85,7 @@ auto demo_application::update() -> void  {
   // auto& scene = scenes_module.scene();
 
   // if (_flag && !_cube) {
-  //   _cube = scene.create_node("Cube", sbx::math::transform{sbx::math::vector3{-5.0f, 10.0f, 0.0f}, sbx::math::vector3::zero, sbx::math::vector3::one});
+  //   _cube = scene.create_node("Cube", sbx::math::transform{sbx::math::vector3{-5.0f, 10.0f, 0.0f}, sbx::math::vector3::zero(), sbx::math::vector3::one()});
 
   //   _cube->add_component<sbx::scenes::static_mesh>(_mesh_id, _texture_id);
 
@@ -140,11 +141,11 @@ auto demo_application::_generate_plane(const sbx::math::vector2u& tile_count, co
 
   // Generate vertices
 
-  const auto offset = sbx::math::vector2{static_cast<std::float_t>(tile_count.x * tile_size.x / 2.0f), static_cast<std::float_t>(tile_count.y * tile_size.y / 2.0f)};
+  const auto offset = sbx::math::vector2{static_cast<std::float_t>(tile_count.x() * tile_size.x() / 2.0f), static_cast<std::float_t>(tile_count.y * tile_size.y / 2.0f)};
 
   for (auto y = 0u; y < tile_count.y + 1u; ++y) {
-    for (auto x = 0u; x < tile_count.x + 1u; ++x) {
-      const auto position = sbx::math::vector3{static_cast<std::float_t>(x * tile_size.x - offset.x), 0.0f, static_cast<std::float_t>(y * tile_size.y - offset.y)};
+    for (auto x = 0u; x < tile_count.x() + 1u; ++x) {
+      const auto position = sbx::math::vector3{static_cast<std::float_t>(x * tile_size.x() - offset.x()), 0.0f, static_cast<std::float_t>(y * tile_size.y - offset.y)};
       const auto normal = sbx::math::vector3::up;
       const auto uv = sbx::math::vector2{static_cast<std::float_t>(x), static_cast<std::float_t>(y)};
 
@@ -154,7 +155,7 @@ auto demo_application::_generate_plane(const sbx::math::vector2u& tile_count, co
 
   // Calculate indices
 
-  const auto vertex_count = tile_count.x + 1u;
+  const auto vertex_count = tile_count.x() + 1u;
 
   for (auto i = 0u; i < vertex_count * vertex_count - vertex_count; ++i) {
     if ((i + 1u) % vertex_count == 0) {

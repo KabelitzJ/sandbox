@@ -165,15 +165,15 @@ auto render_stage::update() -> void {
   // [TODO] KAJ 2023-06-14 : This looks a bit scuffed. Maybe try to understand what it actually does and rewrite it.
 
   if (auto size = _viewport.size(); size) {
-    _render_area.set_extent(math::vector2u{_viewport.scale() * (*size)});
+    _render_area.set_extent(math::vector2u{_viewport.scale().x() * (*size).x(), _viewport.scale().y() * (*size).y()});
   } else {
     auto& window = devices_module.window();
     auto window_size = math::vector2u{window.width(), window.height()};
 
-    _render_area.set_extent(math::vector2u{_viewport.scale() * window_size});
+    _render_area.set_extent(math::vector2u{_viewport.scale().x() * window_size.x(), _viewport.scale().y() * window_size.y()});
   }
 
-  _render_area.set_aspect_ratio(static_cast<std::float_t>(_render_area.extent().x) / static_cast<std::float_t>(_render_area.extent().y));
+  _render_area.set_aspect_ratio(static_cast<std::float_t>(_render_area.extent().x()) / static_cast<std::float_t>(_render_area.extent().y()));
   _render_area.set_extent(_render_area.extent() + _render_area.offset());
 
   _is_outdated = last_render_area != _render_area;
@@ -388,8 +388,8 @@ auto render_stage::_rebuild_framebuffers(const swapchain& swapchain) -> void {
     framebuffer_create_info.renderPass = _render_pass;
     framebuffer_create_info.attachmentCount = static_cast<std::uint32_t>(attachments.size());
     framebuffer_create_info.pAttachments = attachments.data();
-    framebuffer_create_info.width = _render_area.extent().x;
-    framebuffer_create_info.height = _render_area.extent().y;
+    framebuffer_create_info.width = _render_area.extent().x();
+    framebuffer_create_info.height = _render_area.extent().y();
     framebuffer_create_info.layers = 1;
 
     validate(vkCreateFramebuffer(logical_device, &framebuffer_create_info, nullptr, &_framebuffers[i]));

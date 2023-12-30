@@ -18,7 +18,7 @@ function on_update()
 
   local new_position = sbx.vector3.new();
 
-  new_position.x = center.x + cos_angle * 3.0;
+  new_position.x() = center.x() + cos_angle * 3.0;
   new_position.y = center.y;
   new_position.z = center.z + sin_angle * 3.0;
 

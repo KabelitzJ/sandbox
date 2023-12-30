@@ -8,15 +8,15 @@
 
 namespace sbx::math {
 
-template<numeric Type>
+template<arithmetic Type>
 inline constexpr basic_matrix4x4<Type>::basic_matrix4x4() noexcept
 : _columns{column_type{0}, column_type{0}, column_type{0}, column_type{0}} { }
 
-template<numeric Type>
+template<arithmetic Type>
 inline constexpr basic_matrix4x4<Type>::basic_matrix4x4(const std::array<column_type, 4>& columns) noexcept
 : _columns{columns} { }
 
-template<numeric Type>
+template<arithmetic Type>
 inline constexpr basic_matrix4x4<Type>::basic_matrix4x4(
   const column_type& column0,
   const column_type& column1,
@@ -25,7 +25,7 @@ inline constexpr basic_matrix4x4<Type>::basic_matrix4x4(
 ) noexcept
 : _columns{column0, column1, column2, column3} { }
 
-template<numeric Type>
+template<arithmetic Type>
 inline constexpr basic_matrix4x4<Type>::basic_matrix4x4(
   const value_type x0, const value_type x1, const value_type x2, const value_type x3,
   const value_type y0, const value_type y1, const value_type y2, const value_type y3,
@@ -34,17 +34,17 @@ inline constexpr basic_matrix4x4<Type>::basic_matrix4x4(
 ) noexcept
 : _columns{column_type{x0, y0, z0, w0}, column_type{x1, y1, z1, w1}, column_type{x2, y2, z2, w2}, column_type{x3, y3, z3, w3}} { }
 
-template<numeric Type>
+template<arithmetic Type>
 inline constexpr basic_matrix4x4<Type>::basic_matrix4x4(const basic_quaternion<value_type>& quaternion) noexcept {
 
 }
 
-template<numeric Type>
-template<numeric From>
+template<arithmetic Type>
+template<arithmetic From>
 inline constexpr basic_matrix4x4<Type>::basic_matrix4x4(const basic_matrix4x4<From>& other) noexcept
 : _columns{column_type{other[0]}, column_type{other[1]}, column_type{other[2]}, column_type{other[3]}} { }
 
-template<numeric Type>
+template<arithmetic Type>
 inline constexpr auto basic_matrix4x4<Type>::transposed(const basic_matrix4x4& matrix) noexcept -> basic_matrix4x4<Type> {
   auto result = basic_matrix4x4<value_type>{};
 
@@ -71,7 +71,7 @@ inline constexpr auto basic_matrix4x4<Type>::transposed(const basic_matrix4x4& m
   return result;
 }
 
-template<numeric Type>
+template<arithmetic Type>
 inline constexpr auto basic_matrix4x4<Type>::inverted(const basic_matrix4x4& matrix) -> basic_matrix4x4<Type> {
   const auto coef00 = matrix[2][2] * matrix[3][3] - matrix[3][2] * matrix[2][3];
   const auto coef02 = matrix[1][2] * matrix[3][3] - matrix[3][2] * matrix[1][3];
@@ -124,14 +124,14 @@ inline constexpr auto basic_matrix4x4<Type>::inverted(const basic_matrix4x4& mat
   const auto det0 = matrix[0] * row0;
   
   // [NOTE] KAJ 2022-07-29 00:45 - I dont know why those parentheses are needed here... But im too scared to remove them
-  const auto det1 = value_type{(det0.x + det0.y) + (det0.z + det0.w)};
+  const auto det1 = value_type{(det0.x() + det0.y()) + (det0.z() + det0.w)};
 
   const auto one_over_determinant = static_cast<value_type>(1) / det1;
 
   return inverse * one_over_determinant;
 }
 
-template<numeric Type>
+template<arithmetic Type>
 inline constexpr auto basic_matrix4x4<Type>::look_at(const basic_vector3<value_type>& position, const basic_vector3<value_type>& target, const basic_vector3<value_type>& up) noexcept -> basic_matrix4x4<Type> {
   const auto forward = basic_vector3<value_type>::normalized(target - position);
   const auto right = basic_vector3<value_type>::normalized(basic_vector3<value_type>::cross(forward, up));
@@ -139,15 +139,15 @@ inline constexpr auto basic_matrix4x4<Type>::look_at(const basic_vector3<value_t
 
   auto result = basic_matrix4x4<value_type>::identity;
 
-  result[0][0] = right.x;
-  result[1][0] = right.y;
-  result[2][0] = right.z;
-  result[0][1] = new_up.x;
-  result[1][1] = new_up.y;
-  result[2][1] = new_up.z;
-  result[0][2] = -forward.x;
-  result[1][2] = -forward.y;
-  result[2][2] = -forward.z;
+  result[0][0] = right.x();
+  result[1][0] = right.y();
+  result[2][0] = right.z();
+  result[0][1] = new_up.x();
+  result[1][1] = new_up.y();
+  result[2][1] = new_up.z();
+  result[0][2] = -forward.x();
+  result[1][2] = -forward.y();
+  result[2][2] = -forward.z();
   result[3][0] = -basic_vector3<value_type>::dot(right, position);
   result[3][1] = -basic_vector3<value_type>::dot(new_up, position);
   result[3][2] = basic_vector3<value_type>::dot(forward, position);
@@ -155,13 +155,13 @@ inline constexpr auto basic_matrix4x4<Type>::look_at(const basic_vector3<value_t
   return result;
 }
 
-template<numeric Type>
+template<arithmetic Type>
 inline constexpr basic_matrix4x4<Type> basic_matrix4x4<Type>::perspective(const basic_angle<value_type>& fov, const value_type aspect, const value_type near, const value_type far) noexcept {
   // [NOTE] KAJ 2023-11-19 : Right-handed zero-to-one depth range
 
   const auto tan_half_fov = std::tan(fov.to_radians() / static_cast<value_type>(2));
 
-  auto result = basic_matrix4x4<value_type>::zero;
+  auto result = basic_matrix4x4<value_type>{};
 
   result[0][0] = static_cast<value_type>(1) / (aspect * tan_half_fov);
   result[1][1] = -static_cast<value_type>(1) / tan_half_fov;
@@ -175,7 +175,7 @@ inline constexpr basic_matrix4x4<Type> basic_matrix4x4<Type>::perspective(const 
   return result;
 }
 
-template<numeric Type>
+template<arithmetic Type>
 inline constexpr auto basic_matrix4x4<Type>::orthographic(const value_type left, const value_type right, const value_type bottom, const value_type top) noexcept -> basic_matrix4x4<Type> {
   auto result = basic_matrix4x4<value_type>::identity;
 
@@ -189,7 +189,7 @@ inline constexpr auto basic_matrix4x4<Type>::orthographic(const value_type left,
   return result;
 }
 
-template<numeric Type>
+template<arithmetic Type>
 inline constexpr auto basic_matrix4x4<Type>::orthographic(const value_type left, const value_type right, const value_type bottom, const value_type top,  const value_type near, const value_type far) noexcept -> basic_matrix4x4<Type> {
   // [NOTE] KAJ 2023-11-19 : Right-handed zero-to-one depth range
 
@@ -205,7 +205,7 @@ inline constexpr auto basic_matrix4x4<Type>::orthographic(const value_type left,
   return result;
 }
 
-template<numeric Type>
+template<arithmetic Type>
 inline constexpr basic_matrix4x4<Type> basic_matrix4x4<Type>::translated(const basic_matrix4x4<value_type>& matrix, const basic_vector3<value_type>& vector) noexcept {
   auto result = basic_matrix4x4<value_type>{matrix};
 
@@ -214,7 +214,7 @@ inline constexpr basic_matrix4x4<Type> basic_matrix4x4<Type>::translated(const b
   return result;
 }
 
-template<numeric Type>
+template<arithmetic Type>
 inline constexpr basic_matrix4x4<Type> basic_matrix4x4<Type>::rotated(const basic_matrix4x4<value_type>& matrix, const basic_vector3<value_type>& axis, const basic_angle<value_type>& angle) noexcept {
   const auto radians = angle.to_radians();
 
@@ -248,11 +248,11 @@ inline constexpr basic_matrix4x4<Type> basic_matrix4x4<Type>::rotated(const basi
   return result;
 }
 
-template<numeric Type>
+template<arithmetic Type>
 inline constexpr basic_matrix4x4<Type> basic_matrix4x4<Type>::rotation_from_euler_angles(const basic_vector3<value_type>& euler_angles) noexcept {
-  const auto t1 = to_radians(degree{euler_angles.x}).value();
-  const auto t2 = to_radians(degree{euler_angles.y}).value();
-  const auto t3 = to_radians(degree{euler_angles.z}).value();
+  const auto t1 = to_radians(degree{euler_angles.x()}).value();
+  const auto t2 = to_radians(degree{euler_angles.y()}).value();
+  const auto t3 = to_radians(degree{euler_angles.z()}).value();
 
   const auto c1 = std::cos(-t1);
   const auto c2 = std::cos(-t2);
@@ -283,7 +283,7 @@ inline constexpr basic_matrix4x4<Type> basic_matrix4x4<Type>::rotation_from_eule
   return result;
 }
 
-template<numeric Type>
+template<arithmetic Type>
 inline constexpr basic_matrix4x4<Type> basic_matrix4x4<Type>::scaled(const basic_matrix4x4<value_type>& matrix, const basic_vector3<value_type>& vector) noexcept {
   auto result = basic_matrix4x4<value_type>{};
 
@@ -295,8 +295,8 @@ inline constexpr basic_matrix4x4<Type> basic_matrix4x4<Type>::scaled(const basic
   return result;
 }
 
-template<numeric Type>
-template<numeric From>
+template<arithmetic Type>
+template<arithmetic From>
 inline constexpr basic_matrix4x4<Type>& basic_matrix4x4<Type>::operator=(const basic_matrix4x4<From>& other) noexcept {
   _columns[0] = column_type{other[0]};
   _columns[1] = column_type{other[1]};
@@ -306,7 +306,7 @@ inline constexpr basic_matrix4x4<Type>& basic_matrix4x4<Type>::operator=(const b
   return *this;
 }
 
-template<numeric Type>
+template<arithmetic Type>
 inline constexpr basic_matrix4x4<Type>& basic_matrix4x4<Type>::operator+=(const basic_matrix4x4<Type>& other) noexcept {
   _columns[0] += other[0];
   _columns[1] += other[1];
@@ -316,7 +316,7 @@ inline constexpr basic_matrix4x4<Type>& basic_matrix4x4<Type>::operator+=(const 
   return *this;
 }
 
-template<numeric Type>
+template<arithmetic Type>
 inline constexpr basic_matrix4x4<Type>& basic_matrix4x4<Type>::operator-=(const basic_matrix4x4<Type>& other) noexcept {
   _columns[0] -= other[0];
   _columns[1] -= other[1];
@@ -326,7 +326,7 @@ inline constexpr basic_matrix4x4<Type>& basic_matrix4x4<Type>::operator-=(const 
   return *this;
 }
 
-template<numeric Type>
+template<arithmetic Type>
 inline constexpr basic_matrix4x4<Type>& basic_matrix4x4<Type>::operator*=(const Type scalar) noexcept {
   _columns[0] *= scalar;
   _columns[1] *= scalar;
@@ -336,7 +336,7 @@ inline constexpr basic_matrix4x4<Type>& basic_matrix4x4<Type>::operator*=(const 
   return *this;
 }
 
-template<numeric Type>
+template<arithmetic Type>
 inline constexpr basic_matrix4x4<Type>::column_type_reference basic_matrix4x4<Type>::operator[](const index_type index) {
   if (index >= 4) {
     throw std::out_of_range{"Invalid index for 4x4 matrix"};
@@ -345,7 +345,7 @@ inline constexpr basic_matrix4x4<Type>::column_type_reference basic_matrix4x4<Ty
   return _columns[index];
 }
 
-template<numeric Type>
+template<arithmetic Type>
 inline constexpr basic_matrix4x4<Type>::const_column_type_reference basic_matrix4x4<Type>::operator[](const index_type index) const {
   if (index >= 4) {
     throw std::out_of_range{"Invalid index for 4x4 matrix"};
@@ -354,47 +354,47 @@ inline constexpr basic_matrix4x4<Type>::const_column_type_reference basic_matrix
   return _columns[index];
 }
 
-template<numeric Type>
+template<arithmetic Type>
 inline constexpr basic_matrix4x4<Type>::pointer basic_matrix4x4<Type>::data() noexcept {
-  return &_columns[0].x;
+  return &_columns[0].x();
 }
 
-template<numeric Type>
+template<arithmetic Type>
 inline constexpr basic_matrix4x4<Type>::const_pointer basic_matrix4x4<Type>::data() const noexcept {
-  return &_columns[0].x;
+  return &_columns[0].x();
 }
 
-template<numeric Type>
+template<arithmetic Type>
 constexpr void basic_matrix4x4<Type>::transpose() noexcept {
   *this = transposed(*this);
 }
 
-template<numeric Type>
+template<arithmetic Type>
 constexpr void basic_matrix4x4<Type>::inverse() noexcept {
   *this = inverted(*this);
 }
 
-template<numeric Type>
+template<arithmetic Type>
 inline constexpr bool operator==(const basic_matrix4x4<Type>& lhs, const basic_matrix4x4<Type>& rhs) noexcept {
   return lhs[0] == rhs[0] && lhs[1] == rhs[1] && lhs[2] == rhs[2] && lhs[3] == rhs[3];
 }
 
-template<numeric Type>
+template<arithmetic Type>
 inline constexpr basic_matrix4x4<Type> operator+(basic_matrix4x4<Type> lhs, const basic_matrix4x4<Type>& rhs) noexcept {
   return lhs += rhs;
 }
 
-template<numeric Type>
+template<arithmetic Type>
 inline constexpr basic_matrix4x4<Type> operator-(basic_matrix4x4<Type> lhs, const basic_matrix4x4<Type>& rhs) noexcept {
   return lhs -= rhs;
 }
 
-template<numeric Type>
+template<arithmetic Type>
 inline constexpr basic_matrix4x4<Type> operator*(basic_matrix4x4<Type> lhs, const Type rhs) noexcept {
   return lhs *= rhs;
 }
 
-template<numeric Type>
+template<arithmetic Type>
 inline constexpr basic_vector4<Type> operator*(basic_matrix4x4<Type> lhs, const basic_vector4<Type>& rhs) noexcept {
 
   // [NOTE] KAJ 2022-02-04 23:42 - This might become a performance bottleneck in the future. But most matrix multiplications are going to happen on the GPU anyways.
@@ -424,7 +424,7 @@ inline constexpr basic_vector4<Type> operator*(basic_matrix4x4<Type> lhs, const 
   };
 }
 
-template<numeric Type>
+template<arithmetic Type>
 inline constexpr basic_matrix4x4<Type> operator*(basic_matrix4x4<Type> lhs, const basic_matrix4x4<Type>& rhs) noexcept {
   const auto lhs0 = lhs[0];
   const auto lhs1 = lhs[1];
