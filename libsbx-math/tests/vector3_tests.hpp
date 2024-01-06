@@ -40,6 +40,20 @@ TEST(libsbx_math_vector3, multi_value_constructor) {
   EXPECT_FLOAT_EQ(vector.z(), 3.0f);
 }
 
+TEST(libsbx_math_vector3, vector2_constructor) {
+  const auto vector = sbx::math::vector3{sbx::math::vector2{1, 2}};
+
+  EXPECT_FLOAT_EQ(vector.x(), 1.0f);
+  EXPECT_FLOAT_EQ(vector.y(), 2.0f);
+  EXPECT_FLOAT_EQ(vector.z(), 0.0f);
+
+  const auto other = sbx::math::vector3{sbx::math::vector2{1, 2}, 3};
+
+  EXPECT_FLOAT_EQ(other.x(), 1.0f);
+  EXPECT_FLOAT_EQ(other.y(), 2.0f);
+  EXPECT_FLOAT_EQ(other.z(), 3.0f);
+}
+
 TEST(libsbx_math_vector3, copy_constructor) {
   const auto vector = sbx::math::vector3{1, 2, 3};
   const auto other = vector;

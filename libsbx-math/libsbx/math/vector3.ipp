@@ -12,6 +12,11 @@ inline constexpr basic_vector3<Type>::basic_vector3(Other x, Other y, Other z) n
 : base_type{x, y, z} { }
 
 template<scalar Type>
+template<scalar Other, scalar Scalar>
+inline constexpr basic_vector3<Type>::basic_vector3(const basic_vector2<Other>& vector, Scalar z) noexcept
+: base_type{vector.x(), vector.y(), z} { }
+
+template<scalar Type>
 inline constexpr auto basic_vector3<Type>::cross(const basic_vector3& lhs, const basic_vector3& rhs) noexcept -> basic_vector3 {
   return basic_vector3{
     lhs.y() * rhs.z() - lhs.z() * rhs.y(),

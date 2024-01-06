@@ -14,6 +14,7 @@
 namespace sbx::math {
 
 template<std::size_t Size, scalar Type>
+requires (Size > 1u)
 class basic_vector {
 
   template<std::size_t S, scalar Lhs, scalar Rhs>

@@ -14,6 +14,7 @@
 
 #include <libsbx/math/concepts.hpp>
 #include <libsbx/math/vector.hpp>
+#include <libsbx/math/vector2.hpp>
 
 namespace sbx::math {
 
@@ -40,6 +41,9 @@ public:
 
   template<scalar Other>
   constexpr basic_vector3(Other x, Other y, Other z) noexcept;
+
+  template<scalar Other, scalar Scalar = Other>
+  constexpr basic_vector3(const basic_vector2<Other>& vector, Scalar z = Scalar{0}) noexcept;
 
   [[nodiscard]] static constexpr auto cross(const basic_vector3& lhs, const basic_vector3& rhs) noexcept -> basic_vector3;
 
