@@ -23,6 +23,12 @@ inline constexpr basic_quaternion<Type>::basic_quaternion(Other x, Other y, Othe
   _scalar{static_cast<value_type>(w)} { }
 
 template<scalar Type>
+inline constexpr basic_quaternion<Type>::operator matrix_type() const noexcept {
+  // [TODO] KAJ 2024-01-06 : Implement this.
+  return matrix_type::identity;
+}
+
+template<scalar Type>
 inline constexpr auto basic_quaternion<Type>::complex() noexcept -> vector_type& {
   return _complex;
 }

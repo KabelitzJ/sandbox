@@ -8,6 +8,8 @@
 
 #include <libsbx/math/concepts.hpp>
 #include <libsbx/math/vector3.hpp>
+#include <libsbx/math/vector4.hpp>
+#include <libsbx/math/matrix4x4.hpp>
 
 namespace sbx::math {
 
@@ -38,6 +40,8 @@ public:
 
   template<scalar Other = value_type>
   constexpr basic_quaternion(Other x, Other y, Other z, Other w) noexcept;
+
+  constexpr operator matrix_type() const noexcept;
 
   constexpr auto complex() noexcept -> vector_type&;
 
