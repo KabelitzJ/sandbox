@@ -11,7 +11,6 @@
 
 namespace sbx::math {
 
-
 template<scalar Type>
 class basic_quaternion {
 
@@ -53,8 +52,7 @@ private:
   vector_type _complex;
   value_type _scalar;
 
-  [[nodiscard]] constexpr auto length() const noexcept -> length_type;
-
+}; // class basic_quaternion
 
 /** @brief Type alias for a quaternion with 32 bit floating-point components. */
 using quaternionf = basic_quaternion<std::float_t>;
