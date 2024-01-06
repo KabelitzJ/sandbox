@@ -1,12 +1,12 @@
-#ifndef LIBSBX_ZIP_HPP_
-#define LIBSBX_ZIP_HPP_
+#ifndef LIBSBX_UTILITY_ZIP_HPP_
+#define LIBSBX_UTILITY_ZIP_HPP_
+
+namespace sbx::utility {
 
 #include <type_traits>
 #include <concepts>
 #include <vector>
 #include <utility>
-
-namespace sbx::ecs {
 
 namespace detail {
 
@@ -111,6 +111,6 @@ auto zip(Containers&&... containers) {
   return detail::zipper<Containers...>{std::forward<Containers>(containers)...};
 }
 
-} // namespace sbx::ecs
+} // namespace sbx::utility
 
-#endif // LIBSBX_ZIP_HPP_
+#endif // LIBSBX_UTILITY_ZIP_HPP_

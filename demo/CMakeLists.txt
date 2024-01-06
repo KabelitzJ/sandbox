@@ -61,16 +61,16 @@ target_link_libraries(
     libsbx::bitmaps
     libsbx::ecs
     libsbx::core
-    libsbx::async
-    libsbx::assets
-    libsbx::devices
-    libsbx::graphics
-    libsbx::models
-    libsbx::scenes
-    libsbx::audio
-    libsbx::ui
-    libsbx::shadows
-    libsbx::physics
+    # libsbx::async
+    # libsbx::assets
+    # libsbx::devices
+    # libsbx::graphics
+    # libsbx::models
+    # libsbx::scenes
+    # libsbx::audio
+    # libsbx::ui
+    # libsbx::shadows
+    # libsbx::physics
 )
 
 set_target_properties(
