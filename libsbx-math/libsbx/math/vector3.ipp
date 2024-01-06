@@ -43,6 +43,11 @@ inline constexpr auto basic_vector3<Type>::normalized(const basic_vector3& vecto
 }
 
 template<scalar Type>
+inline constexpr basic_vector3<Type>::operator basic_vector2<Type>() const noexcept {
+  return basic_vector2<Type>{x(), y()};
+}
+
+template<scalar Type>
 inline constexpr auto basic_vector3<Type>::x() noexcept -> reference {
   return base_type::operator[](x_axis);
 }

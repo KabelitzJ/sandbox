@@ -51,6 +51,8 @@ public:
 
   [[nodiscard]] static constexpr auto normalized(const basic_vector3& vector) noexcept -> basic_vector3;
 
+  [[nodiscard]] constexpr operator basic_vector2<Type>() const noexcept;
+
   [[nodiscard]] constexpr auto x() noexcept -> reference;
 
   [[nodiscard]] constexpr auto x() const noexcept -> const_reference;

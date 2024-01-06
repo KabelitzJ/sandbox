@@ -103,6 +103,15 @@ TEST(libsbx_math_vector3, normalized) {
   EXPECT_FLOAT_EQ(result.length(), 1.0f);
 }
 
+TEST(libsbx_math_vector3, conversion) {
+  const auto vector = sbx::math::vector3{1, 2, 3};
+
+  const auto result = sbx::math::vector2{vector};
+
+  EXPECT_FLOAT_EQ(result.x(), 1.0f);
+  EXPECT_FLOAT_EQ(result.y(), 2.0f);
+}
+
 TEST(libsbx_math_vector3, copy_assignment) {
   auto vector = sbx::math::vector3{1, 2, 3};
   const auto other = sbx::math::vector3{1, 2, 3};
