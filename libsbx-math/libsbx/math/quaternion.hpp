@@ -8,8 +8,6 @@
 
 #include <libsbx/math/concepts.hpp>
 #include <libsbx/math/vector3.hpp>
-#include <libsbx/math/vector4.hpp>
-#include <libsbx/math/matrix4x4.hpp>
 
 namespace sbx::math {
 
@@ -55,7 +53,7 @@ private:
   vector_type _complex;
   value_type _scalar;
 
-}; // class quaternion
+  [[nodiscard]] constexpr auto length() const noexcept -> length_type;
 
 
 /** @brief Type alias for a quaternion with 32 bit floating-point components. */

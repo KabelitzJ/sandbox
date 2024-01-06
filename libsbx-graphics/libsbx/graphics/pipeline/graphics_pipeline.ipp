@@ -39,7 +39,7 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
   const auto binary_path = actual_path / "bin";
 
   if (!std::filesystem::exists(binary_path) && !std::filesystem::is_directory(binary_path)) {
-    throw std::runtime_error{"Path does not exist"};
+    throw std::runtime_error{fmt::format("Path '{}' does not exist", binary_path.string())};
   }
 
   for (const auto& entry : std::filesystem::directory_iterator(binary_path)) {

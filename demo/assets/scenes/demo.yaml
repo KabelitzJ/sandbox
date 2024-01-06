@@ -9,6 +9,7 @@ assets:
     - &prototype_black "res://textures/prototype_black.png"
     - &base "res://textures/base.png"
     - &white "res://textures/white.png"
+    - &wood "res://textures/wood.png"
   meshes:
     - &cube "res://meshes/cube.obj"
     - &suzanne "res://meshes/suzanne.obj"
@@ -43,7 +44,7 @@ entities:
       - type: "static_mesh"
         mesh: *crate
         submeshes:
-          - { index: 0, texture: *prototype_black }
+          - { index: 0, texture: *wood }
   - name: "crate2"
     components:
       - type: "transform"
@@ -53,7 +54,7 @@ entities:
       - type: "static_mesh"
         mesh: *crate
         submeshes:
-          - { index: 0, texture: *prototype_black }
+          - { index: 0, texture: *wood }
   - name: "crate3"
     components:
       - type: "transform"
@@ -63,7 +64,7 @@ entities:
       - type: "static_mesh"
         mesh: *crate
         submeshes:
-          - { index: 0, texture: *prototype_black }
+          - { index: 0, texture: *wood }
   - name: "tree1"
     components:
       - type: "transform"
