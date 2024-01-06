@@ -7,6 +7,24 @@
 
 #include <libsbx/math/vector4.hpp>
 
+TEST(libsbx_math_vector4, zero) {
+  const auto vector = sbx::math::vector4::zero;
+
+  EXPECT_FLOAT_EQ(vector.x(), 0.0f);
+  EXPECT_FLOAT_EQ(vector.y(), 0.0f);
+  EXPECT_FLOAT_EQ(vector.z(), 0.0f);
+  EXPECT_FLOAT_EQ(vector.w(), 0.0f);
+}
+
+TEST(libsbx_math_vector4, one) {
+  const auto vector = sbx::math::vector4::one;
+
+  EXPECT_FLOAT_EQ(vector.x(), 1.0f);
+  EXPECT_FLOAT_EQ(vector.y(), 1.0f);
+  EXPECT_FLOAT_EQ(vector.z(), 1.0f);
+  EXPECT_FLOAT_EQ(vector.w(), 1.0f);
+}
+
 TEST(libsbx_math_vector4, default_constructor) {
   const auto vector = sbx::math::vector4{};
 

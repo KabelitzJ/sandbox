@@ -39,6 +39,9 @@ public:
   using size_type = base_type::size_type;
   using length_type = base_type::length_type;
 
+  inline static constexpr basic_vector2 zero{base_type::fill(value_type{0})};
+  inline static constexpr basic_vector2 one{base_type::fill(value_type{1})};
+
   using base_type::base_type;
 
   constexpr basic_vector2(const base_type& base) noexcept;

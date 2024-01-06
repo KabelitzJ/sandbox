@@ -17,9 +17,6 @@ template<std::size_t Size, scalar Type>
 requires (Size > 1u)
 class basic_vector {
 
-  template<std::size_t S, scalar Lhs, scalar Rhs>
-  friend constexpr auto operator==(const basic_vector<S, Lhs>& lhs, const basic_vector<S, Rhs>& rhs) noexcept -> bool;
-
 public:
 
   using value_type = Type;
@@ -31,6 +28,14 @@ public:
   template<scalar Other = value_type>
   constexpr basic_vector(Other value = Other{0}) noexcept
   : _components{utility::make_array<value_type, Size>(value)} { }
+
+  [[nodiscard]] constexpr auto operator[](size_type index) noexcept -> reference {
+    return _components[index];
+  }
+
+  [[nodiscard]] constexpr auto operator[](size_type index) const noexcept -> const_reference {
+    return _components[index];
+  }
 
   template<scalar Other>
   constexpr auto operator+=(const basic_vector<Size, Other>& other) noexcept -> basic_vector& {
@@ -45,14 +50,6 @@ public:
   constexpr auto operator-=(const basic_vector<Size, Other>& other) noexcept -> basic_vector& {
     for (auto i : std::views::iota(0u, Size)) {
       _components[i] -= static_cast<value_type>(other[i]);
-    }
-
-    return *this;
-  }
-
-  constexpr auto operator-() noexcept -> basic_vector& {
-    for (auto i : std::views::iota(0u, Size)) {
-      _components[i] = -_components[i];
     }
 
     return *this;
@@ -107,12 +104,17 @@ protected:
   constexpr basic_vector(Args&&... args) noexcept
   : _components{utility::make_array<value_type, Size>(std::forward<Args>(args)...)} { }
 
-  [[nodiscard]] constexpr auto operator[](size_type index) noexcept -> reference {
-    return _components[index];
+  constexpr basic_vector(std::array<value_type, Size>&& components) noexcept
+  : _components{std::move(components)} { }
+
+  template<scalar Other>
+  [[nodiscard]] static constexpr auto fill(Other value) noexcept -> basic_vector {
+    return basic_vector{value};
   }
 
-  [[nodiscard]] constexpr auto operator[](size_type index) const noexcept -> const_reference {
-    return _components[index];
+  template<std::size_t Index, scalar Other>
+  [[nodiscard]] static constexpr auto axis(Other value) noexcept -> basic_vector {
+    return basic_vector{utility::make_array<value_type, Size, Index>(value)};
   }
 
 private:

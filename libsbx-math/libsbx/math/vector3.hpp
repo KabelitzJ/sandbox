@@ -35,6 +35,15 @@ public:
   using size_type = base_type::size_type;
   using length_type = base_type::length_type;
 
+  inline static constexpr basic_vector3 zero{base_type::fill(value_type{0})};
+  inline static constexpr basic_vector3 one{base_type::fill(value_type{1})};
+  inline static constexpr basic_vector3 right{base_type::template axis<x_axis>(value_type{1})};
+  inline static constexpr basic_vector3 left{base_type::template axis<x_axis>(value_type{-1})};
+  inline static constexpr basic_vector3 up{base_type::template axis<y_axis>(value_type{1})};
+  inline static constexpr basic_vector3 down{base_type::template axis<y_axis>(value_type{-1})};
+  inline static constexpr basic_vector3 forward{base_type::template axis<z_axis>(value_type{-1})};
+  inline static constexpr basic_vector3 backward{base_type::template axis<z_axis>(value_type{1})};
+
   using base_type::base_type;
 
   constexpr basic_vector3(const base_type& base) noexcept;

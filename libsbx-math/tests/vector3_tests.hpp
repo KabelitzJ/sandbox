@@ -7,6 +7,70 @@
 
 #include <libsbx/math/vector3.hpp>
 
+TEST(libsbx_math_vector3, zero) {
+  const auto vector = sbx::math::vector3::zero;
+
+  EXPECT_FLOAT_EQ(vector.x(), 0.0f);
+  EXPECT_FLOAT_EQ(vector.y(), 0.0f);
+  EXPECT_FLOAT_EQ(vector.z(), 0.0f);
+}
+
+TEST(libsbx_math_vector3, one) {
+  const auto vector = sbx::math::vector3::one;
+
+  EXPECT_FLOAT_EQ(vector.x(), 1.0f);
+  EXPECT_FLOAT_EQ(vector.y(), 1.0f);
+  EXPECT_FLOAT_EQ(vector.z(), 1.0f);
+}
+
+TEST(libsbx_math_vector3, right) {
+  const auto vector = sbx::math::vector3::right;
+
+  EXPECT_FLOAT_EQ(vector.x(), 1.0f);
+  EXPECT_FLOAT_EQ(vector.y(), 0.0f);
+  EXPECT_FLOAT_EQ(vector.z(), 0.0f);
+}
+
+TEST(libsbx_math_vector3, left) {
+  const auto vector = sbx::math::vector3::left;
+
+  EXPECT_FLOAT_EQ(vector.x(), -1.0f);
+  EXPECT_FLOAT_EQ(vector.y(), 0.0f);
+  EXPECT_FLOAT_EQ(vector.z(), 0.0f);
+}
+
+TEST(libsbx_math_vector3, up) {
+  const auto vector = sbx::math::vector3::up;
+
+  EXPECT_FLOAT_EQ(vector.x(), 0.0f);
+  EXPECT_FLOAT_EQ(vector.y(), 1.0f);
+  EXPECT_FLOAT_EQ(vector.z(), 0.0f);
+}
+
+TEST(libsbx_math_vector3, down) {
+  const auto vector = sbx::math::vector3::down;
+
+  EXPECT_FLOAT_EQ(vector.x(), 0.0f);
+  EXPECT_FLOAT_EQ(vector.y(), -1.0f);
+  EXPECT_FLOAT_EQ(vector.z(), 0.0f);
+}
+
+TEST(libsbx_math_vector3, forward) {
+  const auto vector = sbx::math::vector3::forward;
+
+  EXPECT_FLOAT_EQ(vector.x(), 0.0f);
+  EXPECT_FLOAT_EQ(vector.y(), 0.0f);
+  EXPECT_FLOAT_EQ(vector.z(), -1.0f);
+}
+
+TEST(libsbx_math_vector3, backward) {
+  const auto vector = sbx::math::vector3::backward;
+
+  EXPECT_FLOAT_EQ(vector.x(), 0.0f);
+  EXPECT_FLOAT_EQ(vector.y(), 0.0f);
+  EXPECT_FLOAT_EQ(vector.z(), 1.0f);
+}
+
 TEST(libsbx_math_vector3, default_constructor) {
   const auto vector = sbx::math::vector3{};
 

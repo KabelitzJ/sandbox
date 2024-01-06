@@ -7,6 +7,20 @@
 
 #include <libsbx/math/vector2.hpp>
 
+TEST(libsbx_math_vector2, zero) {
+  const auto vector = sbx::math::vector2::zero;
+
+  EXPECT_FLOAT_EQ(vector.x(), 0.0f);
+  EXPECT_FLOAT_EQ(vector.y(), 0.0f);
+}
+
+TEST(libsbx_math_vector2, one) {
+  const auto vector = sbx::math::vector2::one;
+
+  EXPECT_FLOAT_EQ(vector.x(), 1.0f);
+  EXPECT_FLOAT_EQ(vector.y(), 1.0f);
+}
+
 TEST(libsbx_math_vector2, default_constructor) {
   const auto vector = sbx::math::vector2{};
 
