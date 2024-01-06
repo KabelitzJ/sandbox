@@ -11,6 +11,10 @@ target_sources(
   ${PROJECT_NAME}
   PRIVATE
     "${PROJECT_SOURCE_DIR}/tests.cpp"
+  PUBLIC
+    "${PROJECT_SOURCE_DIR}/vector2_tests.hpp"
+    "${PROJECT_SOURCE_DIR}/vector3_tests.hpp"
+    "${PROJECT_SOURCE_DIR}/vector4_tests.hpp"
 )
 
 target_include_directories(

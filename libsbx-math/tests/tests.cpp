@@ -2,6 +2,7 @@
 
 #include <tests/vector2_tests.hpp>
 #include <tests/vector3_tests.hpp>
+#include <tests/vector4_tests.hpp>
 
 auto main(int argc, char* argv[]) -> int {
   testing::InitGoogleTest(&argc, argv);
