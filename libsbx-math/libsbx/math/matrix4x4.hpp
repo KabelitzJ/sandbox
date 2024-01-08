@@ -13,6 +13,7 @@
 #include <fmt/format.h>
 
 #include <libsbx/math/concepts.hpp>
+#include <libsbx/math/vector3.hpp>
 #include <libsbx/math/vector4.hpp>
 #include <libsbx/math/matrix.hpp>
 
@@ -65,25 +66,25 @@ public:
 
 //   // -- Static member functions --
 
-//   [[nodiscard]] constexpr static auto transposed(const basic_matrix4x4& matrix) noexcept -> basic_matrix4x4;
+  [[nodiscard]] constexpr static auto transposed(const basic_matrix4x4& matrix) noexcept -> basic_matrix4x4;
 
-//   [[nodiscard]] constexpr static auto inverted(const basic_matrix4x4& matrix) -> basic_matrix4x4;
+  [[nodiscard]] constexpr static auto inverted(const basic_matrix4x4& matrix) -> basic_matrix4x4;
 
-//   [[nodiscard]] constexpr static auto look_at(const basic_vector3<value_type>& position, const basic_vector3<value_type>& target, const basic_vector3<value_type>& up) noexcept -> basic_matrix4x4;
+  [[nodiscard]] constexpr static auto look_at(const basic_vector3<value_type>& position, const basic_vector3<value_type>& target, const basic_vector3<value_type>& up) noexcept -> basic_matrix4x4;
 
-//   [[nodiscard]] constexpr static basic_matrix4x4 perspective(const basic_angle<value_type>& fov, const value_type aspect, const value_type near, const value_type far) noexcept;
+  // [[nodiscard]] constexpr static auto perspective(const basic_angle<value_type>& fov, const value_type aspect, const value_type near, const value_type far) noexcept -> basic_matrix4x4;
 
-//   [[nodiscard]] constexpr static auto orthographic(const value_type left, const value_type right, const value_type bottom, const value_type top) noexcept -> basic_matrix4x4;
+  [[nodiscard]] constexpr static auto orthographic(const value_type left, const value_type right, const value_type bottom, const value_type top) noexcept -> basic_matrix4x4;
 
-//   [[nodiscard]] constexpr static auto orthographic(const value_type left, const value_type right, const value_type bottom, const value_type top, const value_type near, const value_type far) noexcept -> basic_matrix4x4;
+  [[nodiscard]] constexpr static auto orthographic(const value_type left, const value_type right, const value_type bottom, const value_type top, const value_type near, const value_type far) noexcept -> basic_matrix4x4;
 
-//   [[nodiscard]] constexpr static auto translated(const basic_matrix4x4& matrix, const basic_vector3<value_type>& vector) noexcept -> basic_matrix4x4;
+  [[nodiscard]] constexpr static auto translated(const basic_matrix4x4& matrix, const basic_vector3<value_type>& vector) noexcept -> basic_matrix4x4;
 
-//   [[nodiscard]] constexpr static basic_matrix4x4 rotated(const basic_matrix4x4& matrix, const basic_vector3<value_type>& axis, const basic_angle<value_type>& angle) noexcept;
+  [[nodiscard]] constexpr static auto scaled(const basic_matrix4x4& matrix, const basic_vector3<value_type>& vector) noexcept -> basic_matrix4x4;
 
-//   [[nodiscard]] constexpr static basic_matrix4x4 rotation_from_euler_angles(const basic_vector3<value_type>& euler_angles) noexcept;
+  // [[nodiscard]] constexpr static auto rotated(const basic_matrix4x4& matrix, const basic_vector3<value_type>& axis, const basic_angle<value_type>& angle) noexcept -> basic_matrix4x4;
 
-//   [[nodiscard]] constexpr static auto scaled(const basic_matrix4x4& matrix, const basic_vector3<value_type>& vector) noexcept -> basic_matrix4x4;
+  // [[nodiscard]] constexpr static auto rotation_from_euler_angles(const basic_vector3<value_type>& euler_angles) noexcept -> basic_matrix4x4;
 
 }; // class basic_matrix4x4
 

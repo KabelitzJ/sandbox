@@ -32,124 +32,119 @@ inline constexpr basic_matrix4x4<Type>::basic_matrix4x4(
 ) noexcept
 : base_type{column_type{x0, y0, z0, w0}, column_type{x1, y1, z1, w1}, column_type{x2, y2, z2, w2}, column_type{x3, y3, z3, w3}} { }
 
-// template<scalar Type>
-// template<scalar From>
-// inline constexpr basic_matrix4x4<Type>::basic_matrix4x4(const basic_matrix4x4<From>& other) noexcept
-// : _columns{column_type{other[0]}, column_type{other[1]}, column_type{other[2]}, column_type{other[3]}} { }
+template<scalar Type>
+inline constexpr auto basic_matrix4x4<Type>::transposed(const basic_matrix4x4& matrix) noexcept -> basic_matrix4x4<Type> {
+  auto result = basic_matrix4x4<value_type>{};
 
-// template<scalar Type>
-// inline constexpr auto basic_matrix4x4<Type>::transposed(const basic_matrix4x4& matrix) noexcept -> basic_matrix4x4<Type> {
-//   auto result = basic_matrix4x4<value_type>{};
+  result[0][0] = matrix[0][0];
+  result[0][1] = matrix[1][0];
+  result[0][2] = matrix[2][0];
+  result[0][3] = matrix[3][0];
 
-//   result[0][0] = matrix[0][0];
-//   result[0][1] = matrix[1][0];
-//   result[0][2] = matrix[2][0];
-//   result[0][3] = matrix[3][0];
+  result[1][0] = matrix[0][1];
+  result[1][1] = matrix[1][1];
+  result[1][2] = matrix[2][1];
+  result[1][3] = matrix[3][1];
 
-//   result[1][0] = matrix[0][1];
-//   result[1][1] = matrix[1][1];
-//   result[1][2] = matrix[2][1];
-//   result[1][3] = matrix[3][1];
+  result[2][0] = matrix[0][2];
+  result[2][1] = matrix[1][2];
+  result[2][2] = matrix[2][2];
+  result[2][3] = matrix[3][2];
 
-//   result[2][0] = matrix[0][2];
-//   result[2][1] = matrix[1][2];
-//   result[2][2] = matrix[2][2];
-//   result[2][3] = matrix[3][2];
+  result[3][0] = matrix[0][3];
+  result[3][1] = matrix[1][3];
+  result[3][2] = matrix[2][3];
+  result[3][3] = matrix[3][3];
 
-//   result[3][0] = matrix[0][3];
-//   result[3][1] = matrix[1][3];
-//   result[3][2] = matrix[2][3];
-//   result[3][3] = matrix[3][3];
+  return result;
+}
 
-//   return result;
-// }
+template<scalar Type>
+inline constexpr auto basic_matrix4x4<Type>::inverted(const basic_matrix4x4& matrix) -> basic_matrix4x4<Type> {
+  const auto coef00 = matrix[2][2] * matrix[3][3] - matrix[3][2] * matrix[2][3];
+  const auto coef02 = matrix[1][2] * matrix[3][3] - matrix[3][2] * matrix[1][3];
+  const auto coef03 = matrix[1][2] * matrix[2][3] - matrix[2][2] * matrix[1][3];
 
-// template<scalar Type>
-// inline constexpr auto basic_matrix4x4<Type>::inverted(const basic_matrix4x4& matrix) -> basic_matrix4x4<Type> {
-//   const auto coef00 = matrix[2][2] * matrix[3][3] - matrix[3][2] * matrix[2][3];
-//   const auto coef02 = matrix[1][2] * matrix[3][3] - matrix[3][2] * matrix[1][3];
-//   const auto coef03 = matrix[1][2] * matrix[2][3] - matrix[2][2] * matrix[1][3];
+  const auto coef04 = matrix[2][1] * matrix[3][3] - matrix[3][1] * matrix[2][3];
+  const auto coef06 = matrix[1][1] * matrix[3][3] - matrix[3][1] * matrix[1][3];
+  const auto coef07 = matrix[1][1] * matrix[2][3] - matrix[2][1] * matrix[1][3];
 
-//   const auto coef04 = matrix[2][1] * matrix[3][3] - matrix[3][1] * matrix[2][3];
-//   const auto coef06 = matrix[1][1] * matrix[3][3] - matrix[3][1] * matrix[1][3];
-//   const auto coef07 = matrix[1][1] * matrix[2][3] - matrix[2][1] * matrix[1][3];
+  const auto coef08 = matrix[2][1] * matrix[3][2] - matrix[3][1] * matrix[2][2];
+  const auto coef10 = matrix[1][1] * matrix[3][2] - matrix[3][1] * matrix[1][2];
+  const auto coef11 = matrix[1][1] * matrix[2][2] - matrix[2][1] * matrix[1][2];
 
-//   const auto coef08 = matrix[2][1] * matrix[3][2] - matrix[3][1] * matrix[2][2];
-//   const auto coef10 = matrix[1][1] * matrix[3][2] - matrix[3][1] * matrix[1][2];
-//   const auto coef11 = matrix[1][1] * matrix[2][2] - matrix[2][1] * matrix[1][2];
+  const auto coef12 = matrix[2][0] * matrix[3][3] - matrix[3][0] * matrix[2][3];
+  const auto coef14 = matrix[1][0] * matrix[3][3] - matrix[3][0] * matrix[1][3];
+  const auto coef15 = matrix[1][0] * matrix[2][3] - matrix[2][0] * matrix[1][3];
 
-//   const auto coef12 = matrix[2][0] * matrix[3][3] - matrix[3][0] * matrix[2][3];
-//   const auto coef14 = matrix[1][0] * matrix[3][3] - matrix[3][0] * matrix[1][3];
-//   const auto coef15 = matrix[1][0] * matrix[2][3] - matrix[2][0] * matrix[1][3];
+  const auto coef16 = matrix[2][0] * matrix[3][2] - matrix[3][0] * matrix[2][2];
+  const auto coef18 = matrix[1][0] * matrix[3][2] - matrix[3][0] * matrix[1][2];
+  const auto coef19 = matrix[1][0] * matrix[2][2] - matrix[2][0] * matrix[1][2];
 
-//   const auto coef16 = matrix[2][0] * matrix[3][2] - matrix[3][0] * matrix[2][2];
-//   const auto coef18 = matrix[1][0] * matrix[3][2] - matrix[3][0] * matrix[1][2];
-//   const auto coef19 = matrix[1][0] * matrix[2][2] - matrix[2][0] * matrix[1][2];
+  const auto coef20 = matrix[2][0] * matrix[3][1] - matrix[3][0] * matrix[2][1];
+  const auto coef22 = matrix[1][0] * matrix[3][1] - matrix[3][0] * matrix[1][1];
+  const auto coef23 = matrix[1][0] * matrix[2][1] - matrix[2][0] * matrix[1][1];
 
-//   const auto coef20 = matrix[2][0] * matrix[3][1] - matrix[3][0] * matrix[2][1];
-//   const auto coef22 = matrix[1][0] * matrix[3][1] - matrix[3][0] * matrix[1][1];
-//   const auto coef23 = matrix[1][0] * matrix[2][1] - matrix[2][0] * matrix[1][1];
+  const auto fac0 = basic_vector4<value_type>{coef00, coef00, coef02, coef03};
+  const auto fac1 = basic_vector4<value_type>{coef04, coef04, coef06, coef07};
+  const auto fac2 = basic_vector4<value_type>{coef08, coef08, coef10, coef11};
+  const auto fac3 = basic_vector4<value_type>{coef12, coef12, coef14, coef15};
+  const auto fac4 = basic_vector4<value_type>{coef16, coef16, coef18, coef19};
+  const auto fac5 = basic_vector4<value_type>{coef20, coef20, coef22, coef23};
 
-//   const auto fac0 = basic_vector4<value_type>{coef00, coef00, coef02, coef03};
-//   const auto fac1 = basic_vector4<value_type>{coef04, coef04, coef06, coef07};
-//   const auto fac2 = basic_vector4<value_type>{coef08, coef08, coef10, coef11};
-//   const auto fac3 = basic_vector4<value_type>{coef12, coef12, coef14, coef15};
-//   const auto fac4 = basic_vector4<value_type>{coef16, coef16, coef18, coef19};
-//   const auto fac5 = basic_vector4<value_type>{coef20, coef20, coef22, coef23};
+  const auto vec0 = basic_vector4<value_type>{matrix[1][0], matrix[0][0], matrix[0][0], matrix[0][0]};
+  const auto vec1 = basic_vector4<value_type>{matrix[1][1], matrix[0][1], matrix[0][1], matrix[0][1]};
+  const auto vec2 = basic_vector4<value_type>{matrix[1][2], matrix[0][2], matrix[0][2], matrix[0][2]};
+  const auto vec3 = basic_vector4<value_type>{matrix[1][3], matrix[0][3], matrix[0][3], matrix[0][3]};
 
-//   const auto vec0 = basic_vector4<value_type>{matrix[1][0], matrix[0][0], matrix[0][0], matrix[0][0]};
-//   const auto vec1 = basic_vector4<value_type>{matrix[1][1], matrix[0][1], matrix[0][1], matrix[0][1]};
-//   const auto vec2 = basic_vector4<value_type>{matrix[1][2], matrix[0][2], matrix[0][2], matrix[0][2]};
-//   const auto vec3 = basic_vector4<value_type>{matrix[1][3], matrix[0][3], matrix[0][3], matrix[0][3]};
+  const auto inv0 = vec1 * fac0 - vec2 * fac1 + vec3 * fac2;
+  const auto inv1 = vec0 * fac0 - vec2 * fac3 + vec3 * fac4;
+  const auto inv2 = vec0 * fac1 - vec1 * fac3 + vec3 * fac5;
+  const auto inv3 = vec0 * fac2 - vec1 * fac4 + vec2 * fac5;
 
-//   const auto inv0 = vec1 * fac0 - vec2 * fac1 + vec3 * fac2;
-//   const auto inv1 = vec0 * fac0 - vec2 * fac3 + vec3 * fac4;
-//   const auto inv2 = vec0 * fac1 - vec1 * fac3 + vec3 * fac5;
-//   const auto inv3 = vec0 * fac2 - vec1 * fac4 + vec2 * fac5;
+  const auto sign0 = basic_vector4<value_type>{+1, -1, +1, -1};
+  const auto sign1 = basic_vector4<value_type>{-1, +1, -1, +1};
 
-//   const auto sign0 = basic_vector4<value_type>{+1, -1, +1, -1};
-//   const auto sign1 = basic_vector4<value_type>{-1, +1, -1, +1};
+  const auto inverse = basic_matrix4x4<value_type>{inv0 * sign0, inv1 * sign1, inv2 * sign0, inv3 * sign1};
 
-//   const auto inverse = basic_matrix4x4<value_type>{inv0 * sign0, inv1 * sign1, inv2 * sign0, inv3 * sign1};
+  const auto row0 = basic_vector4<value_type>{inverse[0][0], inverse[1][0], inverse[2][0], inverse[3][0]};
 
-//   const auto row0 = basic_vector4<value_type>{inverse[0][0], inverse[1][0], inverse[2][0], inverse[3][0]};
-
-//   const auto det0 = matrix[0] * row0;
+  const auto det0 = matrix[0] * row0;
   
-//   // [NOTE] KAJ 2022-07-29 00:45 - I dont know why those parentheses are needed here... But im too scared to remove them
-//   const auto det1 = value_type{(det0.x + det0.y) + (det0.z + det0.w)};
+  // [NOTE] KAJ 2022-07-29 00:45 - I dont know why those parentheses are needed here... But im too scared to remove them
+  const auto det1 = value_type{(det0.x + det0.y) + (det0.z + det0.w)};
 
-//   const auto one_over_determinant = static_cast<value_type>(1) / det1;
+  const auto one_over_determinant = static_cast<value_type>(1) / det1;
 
-//   return inverse * one_over_determinant;
-// }
+  return inverse * one_over_determinant;
+}
+
+template<scalar Type>
+inline constexpr auto basic_matrix4x4<Type>::look_at(const basic_vector3<value_type>& position, const basic_vector3<value_type>& target, const basic_vector3<value_type>& up) noexcept -> basic_matrix4x4<Type> {
+  const auto forward = basic_vector3<value_type>::normalized(target - position);
+  const auto right = basic_vector3<value_type>::normalized(basic_vector3<value_type>::cross(forward, up));
+  const auto new_up = basic_vector3<value_type>::cross(right, forward);
+
+  auto result = basic_matrix4x4<value_type>::identity;
+
+  result[0][0] = right.x;
+  result[1][0] = right.y;
+  result[2][0] = right.z;
+  result[0][1] = new_up.x;
+  result[1][1] = new_up.y;
+  result[2][1] = new_up.z;
+  result[0][2] = -forward.x;
+  result[1][2] = -forward.y;
+  result[2][2] = -forward.z;
+  result[3][0] = -basic_vector3<value_type>::dot(right, position);
+  result[3][1] = -basic_vector3<value_type>::dot(new_up, position);
+  result[3][2] = basic_vector3<value_type>::dot(forward, position);
+
+  return result;
+}
 
 // template<scalar Type>
-// inline constexpr auto basic_matrix4x4<Type>::look_at(const basic_vector3<value_type>& position, const basic_vector3<value_type>& target, const basic_vector3<value_type>& up) noexcept -> basic_matrix4x4<Type> {
-//   const auto forward = basic_vector3<value_type>::normalized(target - position);
-//   const auto right = basic_vector3<value_type>::normalized(basic_vector3<value_type>::cross(forward, up));
-//   const auto new_up = basic_vector3<value_type>::cross(right, forward);
-
-//   auto result = basic_matrix4x4<value_type>::identity;
-
-//   result[0][0] = right.x;
-//   result[1][0] = right.y;
-//   result[2][0] = right.z;
-//   result[0][1] = new_up.x;
-//   result[1][1] = new_up.y;
-//   result[2][1] = new_up.z;
-//   result[0][2] = -forward.x;
-//   result[1][2] = -forward.y;
-//   result[2][2] = -forward.z;
-//   result[3][0] = -basic_vector3<value_type>::dot(right, position);
-//   result[3][1] = -basic_vector3<value_type>::dot(new_up, position);
-//   result[3][2] = basic_vector3<value_type>::dot(forward, position);
-
-//   return result;
-// }
-
-// template<scalar Type>
-// inline constexpr basic_matrix4x4<Type> basic_matrix4x4<Type>::perspective(const basic_angle<value_type>& fov, const value_type aspect, const value_type near, const value_type far) noexcept {
+// inline constexpr auto basic_matrix4x4<Type>::perspective(const basic_angle<value_type>& fov, const value_type aspect, const value_type near, const value_type far) noexcept -> basic_matrix4x4<Type> {
 //   // [NOTE] KAJ 2023-11-19 : Right-handed zero-to-one depth range
 
 //   const auto tan_half_fov = std::tan(fov.to_radians() / static_cast<value_type>(2));
@@ -168,44 +163,56 @@ inline constexpr basic_matrix4x4<Type>::basic_matrix4x4(
 //   return result;
 // }
 
-// template<scalar Type>
-// inline constexpr auto basic_matrix4x4<Type>::orthographic(const value_type left, const value_type right, const value_type bottom, const value_type top) noexcept -> basic_matrix4x4<Type> {
-//   auto result = basic_matrix4x4<value_type>::identity;
+template<scalar Type>
+inline constexpr auto basic_matrix4x4<Type>::orthographic(const value_type left, const value_type right, const value_type bottom, const value_type top) noexcept -> basic_matrix4x4<Type> {
+  auto result = basic_matrix4x4<value_type>::identity;
 
-//   result[0][0] = static_cast<value_type>(2) / (right - left);
-//   result[1][1] = static_cast<value_type>(2) / (top - bottom);
-//   result[2][2] = -static_cast<value_type>(1);
+  result[0][0] = static_cast<value_type>(2) / (right - left);
+  result[1][1] = static_cast<value_type>(2) / (top - bottom);
+  result[2][2] = -static_cast<value_type>(1);
 
-//   result[3][0] = -(right + left) / (right - left);
-//   result[3][1] = -(top + bottom) / (top - bottom);
+  result[3][0] = -(right + left) / (right - left);
+  result[3][1] = -(top + bottom) / (top - bottom);
 
-//   return result;
-// }
+  return result;
+}
 
-// template<scalar Type>
-// inline constexpr auto basic_matrix4x4<Type>::orthographic(const value_type left, const value_type right, const value_type bottom, const value_type top,  const value_type near, const value_type far) noexcept -> basic_matrix4x4<Type> {
-//   // [NOTE] KAJ 2023-11-19 : Right-handed zero-to-one depth range
+template<scalar Type>
+inline constexpr auto basic_matrix4x4<Type>::orthographic(const value_type left, const value_type right, const value_type bottom, const value_type top,  const value_type near, const value_type far) noexcept -> basic_matrix4x4<Type> {
+  // [NOTE] KAJ 2023-11-19 : Right-handed zero-to-one depth range
 
-//   auto result = basic_matrix4x4<value_type>::identity;
+  auto result = basic_matrix4x4<value_type>::identity;
 
-//   result[0][0] = static_cast<value_type>(2) / (right - left);
-//   result[1][1] = static_cast<value_type>(2) / (top - bottom);
-//   result[2][2] = - static_cast<value_type>(1) / (far - near);
-//   result[3][0] = - (right + left) / (right - left);
-//   result[3][1] = - (top + bottom) / (top - bottom);
-//   result[3][2] = - near / (far - near);
+  result[0][0] = static_cast<value_type>(2) / (right - left);
+  result[1][1] = static_cast<value_type>(2) / (top - bottom);
+  result[2][2] = - static_cast<value_type>(1) / (far - near);
+  result[3][0] = - (right + left) / (right - left);
+  result[3][1] = - (top + bottom) / (top - bottom);
+  result[3][2] = - near / (far - near);
 
-//   return result;
-// }
+  return result;
+}
 
-// template<scalar Type>
-// inline constexpr basic_matrix4x4<Type> basic_matrix4x4<Type>::translated(const basic_matrix4x4<value_type>& matrix, const basic_vector3<value_type>& vector) noexcept {
-//   auto result = basic_matrix4x4<value_type>{matrix};
+template<scalar Type>
+inline constexpr auto basic_matrix4x4<Type>::translated(const basic_matrix4x4<Type>& matrix, const basic_vector3<typename basic_matrix4x4<Type>::value_type>& vector) noexcept -> basic_matrix4x4<Type> {
+  auto result = basic_matrix4x4<value_type>{matrix};
 
-//   result[3] = matrix[0] * vector[0] + matrix[1] * vector[1] + matrix[2] * vector[2] + matrix[3];
+  result[3] = matrix[0] * vector[0] + matrix[1] * vector[1] + matrix[2] * vector[2] + matrix[3];
 
-//   return result;
-// }
+  return result;
+}
+
+template<scalar Type>
+inline constexpr auto basic_matrix4x4<Type>::scaled(const basic_matrix4x4<Type>& matrix, const basic_vector3<typename basic_matrix4x4<Type>::value_type>& vector) noexcept -> basic_matrix4x4<Type> {
+  auto result = basic_matrix4x4<value_type>{};
+
+  result[0] = matrix[0] * vector[0];
+  result[1] = matrix[1] * vector[1];
+  result[2] = matrix[2] * vector[2];
+  result[3] = matrix[3];
+
+  return result;
+}
 
 // template<scalar Type>
 // inline constexpr basic_matrix4x4<Type> basic_matrix4x4<Type>::rotated(const basic_matrix4x4<value_type>& matrix, const basic_vector3<value_type>& axis, const basic_angle<value_type>& angle) noexcept {
@@ -242,7 +249,7 @@ inline constexpr basic_matrix4x4<Type>::basic_matrix4x4(
 // }
 
 // template<scalar Type>
-// inline constexpr basic_matrix4x4<Type> basic_matrix4x4<Type>::rotation_from_euler_angles(const basic_vector3<value_type>& euler_angles) noexcept {
+// inline constexpr auto basic_matrix4x4<Type>::rotation_from_euler_angles(const basic_vector3<value_type>& euler_angles) noexcept -> basic_matrix4x4<Type> {
 //   const auto t1 = to_radians(degree{euler_angles.x}).value();
 //   const auto t2 = to_radians(degree{euler_angles.y}).value();
 //   const auto t3 = to_radians(degree{euler_angles.z}).value();
@@ -272,18 +279,6 @@ inline constexpr basic_matrix4x4<Type>::basic_matrix4x4(
 //   result[3][1] = static_cast<value_type>(0);
 //   result[3][2] = static_cast<value_type>(0);
 //   result[3][3] = static_cast<value_type>(1);
-
-//   return result;
-// }
-
-// template<scalar Type>
-// inline constexpr basic_matrix4x4<Type> basic_matrix4x4<Type>::scaled(const basic_matrix4x4<value_type>& matrix, const basic_vector3<value_type>& vector) noexcept {
-//   auto result = basic_matrix4x4<value_type>{};
-
-//   result[0] = matrix[0] * vector[0];
-//   result[1] = matrix[1] * vector[1];
-//   result[2] = matrix[2] * vector[2];
-//   result[3] = matrix[3];
 
 //   return result;
 // }
