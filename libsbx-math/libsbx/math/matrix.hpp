@@ -27,6 +27,18 @@ public:
 
   [[nodiscard]] constexpr auto operator[](size_type index) const noexcept -> const column_type&;
 
+  template<scalar Other>
+  constexpr auto operator+=(const basic_matrix<Columns, Rows, Other>& other) noexcept -> basic_matrix&;
+
+  template<scalar Other>
+  constexpr auto operator-=(const basic_matrix<Columns, Rows, Other>& other) noexcept -> basic_matrix&;
+
+  template<scalar Other>
+  constexpr auto operator*=(Other scalar) noexcept -> basic_matrix&;
+
+  template<scalar Other>
+  constexpr auto operator/=(Other scalar) noexcept -> basic_matrix&;
+
 protected:
 
   template<scalar Other>
@@ -45,6 +57,18 @@ private:
 
 template<std::size_t Columns, std::size_t Rows, scalar Lhs, scalar Rhs>
 constexpr auto operator==(const basic_matrix<Columns, Rows, Lhs>& lhs, const basic_matrix<Columns, Rows, Rhs>& rhs) noexcept -> bool;
+
+template<std::size_t Columns, std::size_t Rows, scalar Lhs, scalar Rhs>
+constexpr auto operator+(basic_matrix<Columns, Rows, Lhs> lhs, const basic_matrix<Columns, Rows, Rhs>& rhs) noexcept -> basic_matrix<Columns, Rows, Lhs>;
+
+template<std::size_t Columns, std::size_t Rows, scalar Lhs, scalar Rhs>
+constexpr auto operator-(basic_matrix<Columns, Rows, Lhs> lhs, const basic_matrix<Columns, Rows, Rhs>& rhs) noexcept -> basic_matrix<Columns, Rows, Lhs>;
+
+template<std::size_t Columns, std::size_t Rows, scalar Lhs, scalar Rhs>
+constexpr auto operator*(basic_matrix<Columns, Rows, Lhs> lhs, Rhs rhs) noexcept -> basic_matrix<Columns, Rows, Lhs>;
+
+template<std::size_t Columns, std::size_t Rows, scalar Lhs, scalar Rhs>
+constexpr auto operator*(Lhs lhs, basic_matrix<Columns, Rows, Rhs> rhs) noexcept -> basic_matrix<Columns, Rows, Rhs>;
 
 } // namespace sbx::math
 

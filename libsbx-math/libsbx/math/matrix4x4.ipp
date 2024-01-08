@@ -283,156 +283,77 @@ inline constexpr auto basic_matrix4x4<Type>::scaled(const basic_matrix4x4<Type>&
 //   return result;
 // }
 
-// template<scalar Type>
-// template<scalar From>
-// inline constexpr basic_matrix4x4<Type>& basic_matrix4x4<Type>::operator=(const basic_matrix4x4<From>& other) noexcept {
-//   _columns[0] = column_type{other[0]};
-//   _columns[1] = column_type{other[1]};
-//   _columns[2] = column_type{other[2]};
-//   _columns[3] = column_type{other[3]};
+template<scalar Lhs, scalar Rhs>
+inline constexpr auto operator+(basic_matrix4x4<Lhs> lhs, const basic_matrix4x4<Rhs>& rhs) noexcept -> basic_matrix4x4<Lhs> {
+  return lhs += rhs;
+}
 
-//   return *this;
-// }
+template<scalar Lhs, scalar Rhs>
+inline constexpr auto operator-(basic_matrix4x4<Lhs> lhs, const basic_matrix4x4<Rhs>& rhs) noexcept -> basic_matrix4x4<Lhs> {
+  return lhs -= rhs;
+}
 
-// template<scalar Type>
-// inline constexpr basic_matrix4x4<Type>& basic_matrix4x4<Type>::operator+=(const basic_matrix4x4<Type>& other) noexcept {
-//   _columns[0] += other[0];
-//   _columns[1] += other[1];
-//   _columns[2] += other[2];
-//   _columns[3] += other[3];
+template<scalar Lhs, scalar Rhs>
+inline constexpr auto operator*(basic_matrix4x4<Lhs> lhs, Rhs scalar) noexcept -> basic_matrix4x4<Lhs> {
+  return lhs *= scalar;
+}
 
-//   return *this;
-// }
+template<scalar Lhs, scalar Rhs>
+inline constexpr auto operator/(basic_matrix4x4<Lhs> lhs, Rhs scalar) noexcept -> basic_matrix4x4<Lhs> {
+  return lhs /= scalar;
+}
 
-// template<scalar Type>
-// inline constexpr basic_matrix4x4<Type>& basic_matrix4x4<Type>::operator-=(const basic_matrix4x4<Type>& other) noexcept {
-//   _columns[0] -= other[0];
-//   _columns[1] -= other[1];
-//   _columns[2] -= other[2];
-//   _columns[3] -= other[3];
+template<scalar Lhs, scalar Rhs>
+inline constexpr auto operator*(basic_matrix4x4<Lhs> lhs, const basic_vector4<Rhs>& rhs) noexcept -> basic_vector4<Lhs> {
 
-//   return *this;
-// }
+  // [NOTE] KAJ 2022-02-04 23:42 - This might become a performance bottleneck in the future. But most matrix multiplications are going to happen on the GPU anyways.
+  // const auto mov0 = rhs[0];
+  // const auto mov1 = rhs[1];
 
-// template<scalar Type>
-// inline constexpr basic_matrix4x4<Type>& basic_matrix4x4<Type>::operator*=(const Type scalar) noexcept {
-//   _columns[0] *= scalar;
-//   _columns[1] *= scalar;
-//   _columns[2] *= scalar;
-//   _columns[3] *= scalar;
+  // const auto mul0 = lhs[0] * mov0;
+  // const auto mul1 = lhs[1] * mov1;
 
-//   return *this;
-// }
+  // const auto add0 = mul0 + mul1;
 
-// template<scalar Type>
-// inline constexpr basic_matrix4x4<Type>::column_type_reference basic_matrix4x4<Type>::operator[](const index_type index) {
-//   if (index >= 4) {
-//     throw std::out_of_range{"Invalid index for 4x4 matrix"};
-//   }
+  // const auto mov2 = rhs[2];
+  // const auto mov3 = rhs[3];
 
-//   return _columns[index];
-// }
+  // const auto mul2 = lhs[2] * mov2;
+  // const auto mul3 = lhs[3] * mov3;
 
-// template<scalar Type>
-// inline constexpr basic_matrix4x4<Type>::const_column_type_reference basic_matrix4x4<Type>::operator[](const index_type index) const {
-//   if (index >= 4) {
-//     throw std::out_of_range{"Invalid index for 4x4 matrix"};
-//   }
+  // const auto add1 = mul2 + mul3;
 
-//   return _columns[index];
-// }
-
-// template<scalar Type>
-// inline constexpr basic_matrix4x4<Type>::pointer basic_matrix4x4<Type>::data() noexcept {
-//   return &_columns[0].x;
-// }
-
-// template<scalar Type>
-// inline constexpr basic_matrix4x4<Type>::const_pointer basic_matrix4x4<Type>::data() const noexcept {
-//   return &_columns[0].x;
-// }
-
-// template<scalar Type>
-// constexpr void basic_matrix4x4<Type>::transpose() noexcept {
-//   *this = transposed(*this);
-// }
-
-// template<scalar Type>
-// constexpr void basic_matrix4x4<Type>::inverse() noexcept {
-//   *this = inverted(*this);
-// }
-
-// template<scalar Type>
-// inline constexpr bool operator==(const basic_matrix4x4<Type>& lhs, const basic_matrix4x4<Type>& rhs) noexcept {
-//   return lhs[0] == rhs[0] && lhs[1] == rhs[1] && lhs[2] == rhs[2] && lhs[3] == rhs[3];
-// }
-
-// template<scalar Type>
-// inline constexpr basic_matrix4x4<Type> operator+(basic_matrix4x4<Type> lhs, const basic_matrix4x4<Type>& rhs) noexcept {
-//   return lhs += rhs;
-// }
-
-// template<scalar Type>
-// inline constexpr basic_matrix4x4<Type> operator-(basic_matrix4x4<Type> lhs, const basic_matrix4x4<Type>& rhs) noexcept {
-//   return lhs -= rhs;
-// }
-
-// template<scalar Type>
-// inline constexpr basic_matrix4x4<Type> operator*(basic_matrix4x4<Type> lhs, const Type rhs) noexcept {
-//   return lhs *= rhs;
-// }
-
-// template<scalar Type>
-// inline constexpr basic_vector4<Type> operator*(basic_matrix4x4<Type> lhs, const basic_vector4<Type>& rhs) noexcept {
-
-//   // [NOTE] KAJ 2022-02-04 23:42 - This might become a performance bottleneck in the future. But most matrix multiplications are going to happen on the GPU anyways.
-//   // const auto mov0 = rhs[0];
-//   // const auto mov1 = rhs[1];
-
-//   // const auto mul0 = lhs[0] * mov0;
-//   // const auto mul1 = lhs[1] * mov1;
-
-//   // const auto add0 = mul0 + mul1;
-
-//   // const auto mov2 = rhs[2];
-//   // const auto mov3 = rhs[3];
-
-//   // const auto mul2 = lhs[2] * mov2;
-//   // const auto mul3 = lhs[3] * mov3;
-
-//   // const auto add1 = mul2 + mul3;
-
-//   // return add0 + add1;
+  // return add0 + add1;
   
-//   return basic_vector4<Type>{
-//     lhs[0][0] * rhs[0] + lhs[0][1] * rhs[1] + lhs[0][2] * rhs[2] + lhs[0][3] * rhs[3],
-//     lhs[1][0] * rhs[0] + lhs[1][1] * rhs[1] + lhs[1][2] * rhs[2] + lhs[1][3] * rhs[3],
-//     lhs[2][0] * rhs[0] + lhs[2][1] * rhs[1] + lhs[2][2] * rhs[2] + lhs[2][3] * rhs[3],
-//     lhs[3][0] * rhs[0] + lhs[3][1] * rhs[1] + lhs[3][2] * rhs[2] + lhs[3][3] * rhs[3]
-//   };
-// }
+  return basic_vector4<Lhs>{
+    lhs[0][0] * static_cast<Lhs>(rhs[0]) + lhs[0][1] * static_cast<Lhs>(rhs[1]) + lhs[0][2] * static_cast<Lhs>(rhs[2]) + lhs[0][3] * static_cast<Lhs>(rhs[3]),
+    lhs[1][0] * static_cast<Lhs>(rhs[0]) + lhs[1][1] * static_cast<Lhs>(rhs[1]) + lhs[1][2] * static_cast<Lhs>(rhs[2]) + lhs[1][3] * static_cast<Lhs>(rhs[3]),
+    lhs[2][0] * static_cast<Lhs>(rhs[0]) + lhs[2][1] * static_cast<Lhs>(rhs[1]) + lhs[2][2] * static_cast<Lhs>(rhs[2]) + lhs[2][3] * static_cast<Lhs>(rhs[3]),
+    lhs[3][0] * static_cast<Lhs>(rhs[0]) + lhs[3][1] * static_cast<Lhs>(rhs[1]) + lhs[3][2] * static_cast<Lhs>(rhs[2]) + lhs[3][3] * static_cast<Lhs>(rhs[3])
+  };
+}
 
-// template<scalar Type>
-// inline constexpr basic_matrix4x4<Type> operator*(basic_matrix4x4<Type> lhs, const basic_matrix4x4<Type>& rhs) noexcept {
-//   const auto lhs0 = lhs[0];
-//   const auto lhs1 = lhs[1];
-//   const auto lhs2 = lhs[2];
-//   const auto lhs3 = lhs[3];
+template<scalar Lhs, scalar Rhs>
+inline constexpr auto operator*(basic_matrix4x4<Lhs> lhs, const basic_matrix4x4<Rhs>& rhs) noexcept -> basic_matrix4x4<Lhs> {
+  const auto lhs0 = lhs[0];
+  const auto lhs1 = lhs[1];
+  const auto lhs2 = lhs[2];
+  const auto lhs3 = lhs[3];
 
-//   const auto rhs0 = rhs[0];
-//   const auto rhs1 = rhs[1];
-//   const auto rhs2 = rhs[2];
-//   const auto rhs3 = rhs[3];
+  const auto rhs0 = rhs[0];
+  const auto rhs1 = rhs[1];
+  const auto rhs2 = rhs[2];
+  const auto rhs3 = rhs[3];
 
-//   // [NOTE] KAJ 2022-02-04 23:42 - This might become a performance bottleneck in the future. But most matrix multiplications are going to happen on the GPU anyways.
-//   auto result = basic_matrix4x4<Type>{};
+  // [NOTE] KAJ 2022-02-04 23:42 - This might become a performance bottleneck in the future. But most matrix multiplications are going to happen on the GPU anyways.
+  auto result = basic_matrix4x4<Lhs>{};
 
-//   result[0] = lhs0 * rhs0[0] + lhs1 * rhs0[1] + lhs2 * rhs0[2] + lhs3 * rhs0[3];
-//   result[1] = lhs0 * rhs1[0] + lhs1 * rhs1[1] + lhs2 * rhs1[2] + lhs3 * rhs1[3];
-//   result[2] = lhs0 * rhs2[0] + lhs1 * rhs2[1] + lhs2 * rhs2[2] + lhs3 * rhs2[3];
-//   result[3] = lhs0 * rhs3[0] + lhs1 * rhs3[1] + lhs2 * rhs3[2] + lhs3 * rhs3[3];
+  result[0] = lhs0 * static_cast<Lhs>(rhs0[0]) + lhs1 * static_cast<Lhs>(rhs0[1]) + lhs2 * static_cast<Lhs>(rhs0[2]) + lhs3 * static_cast<Lhs>(rhs0[3]);
+  result[1] = lhs0 * static_cast<Lhs>(rhs1[0]) + lhs1 * static_cast<Lhs>(rhs1[1]) + lhs2 * static_cast<Lhs>(rhs1[2]) + lhs3 * static_cast<Lhs>(rhs1[3]);
+  result[2] = lhs0 * static_cast<Lhs>(rhs2[0]) + lhs1 * static_cast<Lhs>(rhs2[1]) + lhs2 * static_cast<Lhs>(rhs2[2]) + lhs3 * static_cast<Lhs>(rhs2[3]);
+  result[3] = lhs0 * static_cast<Lhs>(rhs3[0]) + lhs1 * static_cast<Lhs>(rhs3[1]) + lhs2 * static_cast<Lhs>(rhs3[2]) + lhs3 * static_cast<Lhs>(rhs3[3]);
 
-//   return result;
-// }
+  return result;
+}
 
 } // namespace sbx::math

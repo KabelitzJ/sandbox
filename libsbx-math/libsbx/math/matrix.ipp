@@ -24,6 +24,50 @@ inline constexpr auto basic_matrix<Columns, Rows, Type>::operator[](size_type in
 
 template<std::size_t Columns, std::size_t Rows, scalar Type>
 requires (Columns > 1u && Rows > 1u)
+template<scalar Other>
+inline constexpr auto basic_matrix<Columns, Rows, Type>::operator+=(const basic_matrix<Columns, Rows, Other>& other) noexcept -> basic_matrix& {
+  for (auto i : std::views::iota(0u, Columns)) {
+    _columns[i] += other[i];
+  }
+
+  return *this;
+}
+
+template<std::size_t Columns, std::size_t Rows, scalar Type>
+requires (Columns > 1u && Rows > 1u)
+template<scalar Other>
+inline constexpr auto basic_matrix<Columns, Rows, Type>::operator-=(const basic_matrix<Columns, Rows, Other>& other) noexcept -> basic_matrix& {
+  for (auto i : std::views::iota(0u, Columns)) {
+    _columns[i] -= other[i];
+  }
+
+  return *this;
+}
+
+template<std::size_t Columns, std::size_t Rows, scalar Type>
+requires (Columns > 1u && Rows > 1u)
+template<scalar Other>
+inline constexpr auto basic_matrix<Columns, Rows, Type>::operator*=(Other scalar) noexcept -> basic_matrix& {
+  for (auto i : std::views::iota(0u, Columns)) {
+    _columns[i] *= scalar;
+  }
+
+  return *this;
+}
+
+template<std::size_t Columns, std::size_t Rows, scalar Type>
+requires (Columns > 1u && Rows > 1u)
+template<scalar Other>
+inline constexpr auto basic_matrix<Columns, Rows, Type>::operator/=(Other scalar) noexcept -> basic_matrix& {
+  for (auto i : std::views::iota(0u, Columns)) {
+    _columns[i] /= scalar;
+  }
+
+  return *this;
+}
+
+template<std::size_t Columns, std::size_t Rows, scalar Type>
+requires (Columns > 1u && Rows > 1u)
 template<typename... Args>
 inline constexpr basic_matrix<Columns, Rows, Type>::basic_matrix(Args&&... args) noexcept
 : _columns{utility::make_array<column_type, Columns>(std::forward<Args>(args)...)} { }
@@ -49,6 +93,26 @@ inline constexpr auto operator==(const basic_matrix<Columns, Rows, Lhs>& lhs, co
   }
 
   return true;
+}
+
+template<std::size_t Columns, std::size_t Rows, scalar Lhs, scalar Rhs>
+inline constexpr auto operator+(basic_matrix<Columns, Rows, Lhs> lhs, const basic_matrix<Columns, Rows, Rhs>& rhs) noexcept -> basic_matrix<Columns, Rows, Lhs> {
+  return lhs += rhs;
+}
+
+template<std::size_t Columns, std::size_t Rows, scalar Lhs, scalar Rhs>
+inline constexpr auto operator-(basic_matrix<Columns, Rows, Lhs> lhs, const basic_matrix<Columns, Rows, Rhs>& rhs) noexcept -> basic_matrix<Columns, Rows, Lhs> {
+  return lhs -= rhs;
+}
+
+template<std::size_t Columns, std::size_t Rows, scalar Lhs, scalar Rhs>
+inline constexpr auto operator*(basic_matrix<Columns, Rows, Lhs> lhs, Rhs rhs) noexcept -> basic_matrix<Columns, Rows, Lhs> {
+  return lhs *= rhs;
+}
+
+template<std::size_t Columns, std::size_t Rows, scalar Lhs, scalar Rhs>
+inline constexpr auto operator*(Lhs lhs, basic_matrix<Columns, Rows, Rhs> rhs) noexcept -> basic_matrix<Columns, Rows, Rhs> {
+  return rhs *= lhs;
 }
 
 } // namespace sbx::math
