@@ -13,13 +13,13 @@
 
 namespace sbx::math {
 
-template<scalar Type>
+template<floating_point Type>
 class basic_quaternion {
 
-  template<scalar Other>
+  template<floating_point Other>
   using vector_type_for = basic_vector3<Other>;
 
-  template<scalar Other>
+  template<floating_point Other>
   using matrix_type_for = basic_matrix4x4<Other>;
 
 public:
@@ -32,13 +32,13 @@ public:
   using vector_type = vector_type_for<value_type>;
   using matrix_type = matrix_type_for<value_type>;
 
-  template<scalar Other = value_type>
+  template<floating_point Other = value_type>
   constexpr basic_quaternion(Other value = Other{0}) noexcept;
 
-  template<scalar Other = value_type>
+  template<floating_point Other = value_type>
   constexpr basic_quaternion(const vector_type_for<Other>& complex, Other scalar = Other{0}) noexcept;
 
-  template<scalar Other = value_type>
+  template<floating_point Other = value_type>
   constexpr basic_quaternion(Other x, Other y, Other z, Other w) noexcept;
 
   constexpr operator matrix_type() const noexcept;
@@ -58,7 +58,7 @@ private:
 
 }; // class basic_quaternion
 
-template<scalar Lhs, scalar Rhs>
+template<floating_point Lhs, floating_point Rhs>
 [[nodiscard]] constexpr auto operator==(const basic_quaternion<Lhs>& lhs, const basic_quaternion<Rhs>& rhs) noexcept -> bool;
 
 /** @brief Type alias for a quaternion with 32 bit floating-point components. */
@@ -69,7 +69,7 @@ using quaternion = quaternionf;
 
 } // namespace sbx::math
 
-template<sbx::math::scalar Type>
+template<sbx::math::floating_point Type>
 struct std::hash<sbx::math::basic_quaternion<Type>> {
 
   auto operator()(const sbx::math::basic_quaternion<Type>& quaternion) const noexcept -> std::size_t;
