@@ -299,11 +299,6 @@ inline constexpr auto operator*(basic_matrix4x4<Lhs> lhs, Rhs scalar) noexcept -
 }
 
 template<scalar Lhs, scalar Rhs>
-inline constexpr auto operator/(basic_matrix4x4<Lhs> lhs, Rhs scalar) noexcept -> basic_matrix4x4<Lhs> {
-  return lhs /= scalar;
-}
-
-template<scalar Lhs, scalar Rhs>
 inline constexpr auto operator*(basic_matrix4x4<Lhs> lhs, const basic_vector4<Rhs>& rhs) noexcept -> basic_vector4<Lhs> {
 
   // [NOTE] KAJ 2022-02-04 23:42 - This might become a performance bottleneck in the future. But most matrix multiplications are going to happen on the GPU anyways.
@@ -354,6 +349,11 @@ inline constexpr auto operator*(basic_matrix4x4<Lhs> lhs, const basic_matrix4x4<
   result[3] = lhs0 * static_cast<Lhs>(rhs3[0]) + lhs1 * static_cast<Lhs>(rhs3[1]) + lhs2 * static_cast<Lhs>(rhs3[2]) + lhs3 * static_cast<Lhs>(rhs3[3]);
 
   return result;
+}
+
+template<scalar Lhs, scalar Rhs>
+inline constexpr auto operator/(basic_matrix4x4<Lhs> lhs, Rhs scalar) noexcept -> basic_matrix4x4<Lhs> {
+  return lhs /= scalar;
 }
 
 } // namespace sbx::math
