@@ -48,6 +48,11 @@ inline constexpr auto basic_quaternion<Type>::scalar() const noexcept -> const_r
   return _scalar;
 }
 
+template<scalar Lhs, scalar Rhs>
+inline constexpr auto operator==(const basic_quaternion<Lhs>& lhs, const basic_quaternion<Rhs>& rhs) noexcept -> bool {
+  return lhs.complex() == rhs.complex() && lhs.scalar() == rhs.scalar();
+}
+
 } // namespace sbx::math
 
 template<sbx::math::scalar Type>

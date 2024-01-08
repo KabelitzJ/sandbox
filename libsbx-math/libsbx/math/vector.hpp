@@ -73,7 +73,7 @@ public:
     return *this;
   }
 
-  constexpr auto length_squared() const noexcept -> length_type {
+  [[nodiscard]] constexpr auto length_squared() const noexcept -> length_type {
     auto result = length_type{0};
 
     for (auto i : std::views::iota(0u, Size)) {
@@ -83,7 +83,7 @@ public:
     return result;
   }
 
-  constexpr auto length() const noexcept -> length_type {
+  [[nodiscard]] constexpr auto length() const noexcept -> length_type {
     return std::sqrt(length_squared());
   }
 
@@ -124,7 +124,7 @@ private:
 }; // class basic_vector
 
 template<std::size_t Size, scalar Lhs, scalar Rhs>
-constexpr auto operator==(const basic_vector<Size, Lhs>& lhs, const basic_vector<Size, Rhs>& rhs) noexcept -> bool {
+[[nodiscard]] constexpr auto operator==(const basic_vector<Size, Lhs>& lhs, const basic_vector<Size, Rhs>& rhs) noexcept -> bool {
   for (auto i : std::views::iota(0u, Size)) {
     if (!comparision_traits<Lhs>::equal(lhs[i], rhs[i])) {
       return false;
@@ -135,22 +135,22 @@ constexpr auto operator==(const basic_vector<Size, Lhs>& lhs, const basic_vector
 }
 
 template<std::size_t Size, scalar Lhs, scalar Rhs>
-constexpr auto operator+(basic_vector<Size, Lhs> lhs, const basic_vector<Size, Rhs>& rhs) noexcept -> basic_vector<Size, Lhs> {
+[[nodiscard]] constexpr auto operator+(basic_vector<Size, Lhs> lhs, const basic_vector<Size, Rhs>& rhs) noexcept -> basic_vector<Size, Lhs> {
   return lhs += rhs;
 }
 
 template<std::size_t Size, scalar Lhs, scalar Rhs>
-constexpr auto operator-(basic_vector<Size, Lhs> lhs, const basic_vector<Size, Rhs>& rhs) noexcept -> basic_vector<Size, Lhs> {
+[[nodiscard]] constexpr auto operator-(basic_vector<Size, Lhs> lhs, const basic_vector<Size, Rhs>& rhs) noexcept -> basic_vector<Size, Lhs> {
   return lhs -= rhs;
 }
 
 template<std::size_t Size, scalar Lhs, scalar Rhs>
-constexpr auto operator*(basic_vector<Size, Lhs> lhs, Rhs scalar) noexcept -> basic_vector<Size, Lhs> {
+[[nodiscard]] constexpr auto operator*(basic_vector<Size, Lhs> lhs, Rhs scalar) noexcept -> basic_vector<Size, Lhs> {
   return lhs *= scalar;
 }
 
 template<std::size_t Size, scalar Lhs, scalar Rhs>
-constexpr auto operator/(basic_vector<Size, Lhs> lhs, Rhs scalar) noexcept -> basic_vector<Size, Lhs> {
+[[nodiscard]] constexpr auto operator/(basic_vector<Size, Lhs> lhs, Rhs scalar) noexcept -> basic_vector<Size, Lhs> {
   return lhs /= scalar;
 }
 

@@ -64,19 +64,19 @@ public:
 }; // class basic_vector2
 
 template<scalar Lhs, scalar Rhs>
-constexpr auto operator+(basic_vector2<Lhs> lhs, const basic_vector2<Rhs>& rhs) noexcept -> basic_vector2<Lhs>;
+[[nodiscard]] constexpr auto operator+(basic_vector2<Lhs> lhs, const basic_vector2<Rhs>& rhs) noexcept -> basic_vector2<Lhs>;
 
 template<scalar Lhs, scalar Rhs>
-constexpr auto operator-(basic_vector2<Lhs> lhs, const basic_vector2<Rhs>& rhs) noexcept -> basic_vector2<Lhs>;
+[[nodiscard]] constexpr auto operator-(basic_vector2<Lhs> lhs, const basic_vector2<Rhs>& rhs) noexcept -> basic_vector2<Lhs>;
 
 template<scalar Type>
-constexpr auto operator-(basic_vector2<Type> vector) noexcept -> basic_vector2<Type>;
+[[nodiscard]] constexpr auto operator-(basic_vector2<Type> vector) noexcept -> basic_vector2<Type>;
 
 template<scalar Lhs, scalar Rhs>
-constexpr auto operator*(basic_vector2<Lhs> lhs, Rhs scalar) noexcept -> basic_vector2<Lhs>;
+[[nodiscard]] constexpr auto operator*(basic_vector2<Lhs> lhs, Rhs scalar) noexcept -> basic_vector2<Lhs>;
 
 template<scalar Lhs, scalar Rhs>
-constexpr auto operator/(basic_vector2<Lhs> lhs, Rhs scalar) noexcept -> basic_vector2<Lhs>;
+[[nodiscard]] constexpr auto operator/(basic_vector2<Lhs> lhs, Rhs scalar) noexcept -> basic_vector2<Lhs>;
 
 using vector2f = basic_vector2<std::float_t>;
 

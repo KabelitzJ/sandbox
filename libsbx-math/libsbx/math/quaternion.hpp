@@ -58,6 +58,9 @@ private:
 
 }; // class basic_quaternion
 
+template<scalar Lhs, scalar Rhs>
+[[nodiscard]] constexpr auto operator==(const basic_quaternion<Lhs>& lhs, const basic_quaternion<Rhs>& rhs) noexcept -> bool;
+
 /** @brief Type alias for a quaternion with 32 bit floating-point components. */
 using quaternionf = basic_quaternion<std::float_t>;
 

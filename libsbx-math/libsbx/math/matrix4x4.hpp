@@ -89,22 +89,22 @@ public:
 }; // class basic_matrix4x4
 
 template<scalar Lhs, scalar Rhs>
-constexpr auto operator+(basic_matrix4x4<Lhs> lhs, const basic_matrix4x4<Rhs>& rhs) noexcept -> basic_matrix4x4<Lhs>;
+[[nodiscard]] constexpr auto operator+(basic_matrix4x4<Lhs> lhs, const basic_matrix4x4<Rhs>& rhs) noexcept -> basic_matrix4x4<Lhs>;
 
 template<scalar Lhs, scalar Rhs>
-constexpr auto operator-(basic_matrix4x4<Lhs> lhs, const basic_matrix4x4<Rhs>& rhs) noexcept -> basic_matrix4x4<Lhs>;
+[[nodiscard]] constexpr auto operator-(basic_matrix4x4<Lhs> lhs, const basic_matrix4x4<Rhs>& rhs) noexcept -> basic_matrix4x4<Lhs>;
 
 template<scalar Lhs, scalar Rhs>
-constexpr auto operator*(basic_matrix4x4<Lhs> lhs, Rhs scalar) noexcept -> basic_matrix4x4<Lhs>;
+[[nodiscard]] constexpr auto operator*(basic_matrix4x4<Lhs> lhs, Rhs scalar) noexcept -> basic_matrix4x4<Lhs>;
 
 template<scalar Lhs, scalar Rhs>
-constexpr auto operator*(basic_matrix4x4<Lhs> lhs, basic_vector4<Rhs> rhs) noexcept -> basic_vector4<Lhs>;
+[[nodiscard]] constexpr auto operator*(basic_matrix4x4<Lhs> lhs, basic_vector4<Rhs> rhs) noexcept -> basic_vector4<Lhs>;
 
 template<scalar Lhs, scalar Rhs>
-constexpr auto operator*(basic_matrix4x4<Lhs> lhs, basic_matrix4x4<Rhs> rhs) noexcept -> basic_matrix4x4<Lhs>;
+[[nodiscard]] constexpr auto operator*(basic_matrix4x4<Lhs> lhs, basic_matrix4x4<Rhs> rhs) noexcept -> basic_matrix4x4<Lhs>;
 
 template<scalar Lhs, scalar Rhs>
-constexpr auto operator/(basic_matrix4x4<Lhs> lhs, Rhs scalar) noexcept -> basic_matrix4x4<Lhs>;
+[[nodiscard]] constexpr auto operator/(basic_matrix4x4<Lhs> lhs, Rhs scalar) noexcept -> basic_matrix4x4<Lhs>;
 
 using matrix4x4f = basic_matrix4x4<std::float_t>;
 
