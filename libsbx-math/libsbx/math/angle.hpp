@@ -279,18 +279,8 @@ constexpr auto operator*(basic_angle<LhsType> lhs, const RhsType rhs) noexcept -
 using angle = basic_angle<std::float_t>;
 
 template<std::floating_point Type>
-constexpr auto to_degrees(const basic_degree<Type>& degree) noexcept -> basic_degree<Type> {
-  return degree;
-}
-
-template<std::floating_point Type>
 constexpr auto to_degrees(const basic_radian<Type>& radian) noexcept -> basic_degree<Type> {
   return basic_angle<Type>{radian}.to_degrees();
-}
-
-template<std::floating_point Type>
-constexpr auto to_radians(const basic_radian<Type>& radian) noexcept -> basic_radian<Type> {
-  return radian;
 }
 
 template<std::floating_point Type>
@@ -298,26 +288,25 @@ constexpr auto to_radians(const basic_degree<Type>& degree) noexcept -> basic_ra
   return basic_angle<Type>{degree}.to_radians();
 }
 
-// [NOTE] KAJ 2023-05-24 : This, somehow, causes a linker error (multiple definition)
-// namespace literals {
+namespace literals {
 
-// auto operator""_deg(long double value) noexcept -> degree {
-//   return degree{static_cast<std::float_t>(value)};
-// }
+constexpr auto operator""_deg(long double value) noexcept -> degree {
+  return degree{static_cast<std::float_t>(value)};
+}
 
-// auto operator""_deg(unsigned long long value) noexcept -> degree {
-//   return degree{static_cast<std::float_t>(value)};
-// }
+constexpr auto operator""_deg(unsigned long long value) noexcept -> degree {
+  return degree{static_cast<std::float_t>(value)};
+}
 
-// auto operator""_rad(long double value) noexcept -> radian {
-//   return radian{static_cast<std::float_t>(value)};
-// }
+constexpr auto operator""_rad(long double value) noexcept -> radian {
+  return radian{static_cast<std::float_t>(value)};
+}
 
-// auto operator""_rad(unsigned long long value) noexcept -> radian {
-//   return radian{static_cast<std::float_t>(value)};
-// }
+constexpr auto operator""_rad(unsigned long long value) noexcept -> radian {
+  return radian{static_cast<std::float_t>(value)};
+}
 
-// } // namespace literals
+} // namespace literals
 
 } // namespace sbx::math
 

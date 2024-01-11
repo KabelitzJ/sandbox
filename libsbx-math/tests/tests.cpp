@@ -8,6 +8,8 @@
 
 #include <tests/quaternion_tests.hpp>
 
+#include <tests/angle_tests.hpp>
+
 auto main(int argc, char* argv[]) -> int {
   testing::InitGoogleTest(&argc, argv);
 
