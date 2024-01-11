@@ -39,4 +39,6 @@ TEST(libsbx_math_angle, radian_to_degree) {
   EXPECT_FLOAT_EQ(degree.value(), 90.0f);
 }
 
+
+
 #endif // LIBSBX_MATH_TESTS_ANGLE_TESTS_HPP_
