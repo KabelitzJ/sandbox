@@ -124,15 +124,15 @@ private:
     const auto b_min = b_transform.position() - b_collider.size() / 2.0f;
     const auto b_max = b_transform.position() + b_collider.size() / 2.0f;
 
-    if (a_min.x > b_max.x || a_max.x < b_min.x) {
+    if (a_min.x() > b_max.x() || a_max.x() < b_min.x()) {
       return std::nullopt;
     }
 
-    if (a_min.y > b_max.y || a_max.y < b_min.y) {
+    if (a_min.y() > b_max.y() || a_max.y() < b_min.y()) {
       return std::nullopt;
     }
 
-    if (a_min.z > b_max.z || a_max.z < b_min.z) {
+    if (a_min.z() > b_max.z() || a_max.z() < b_min.z()) {
       return std::nullopt;
     }
 

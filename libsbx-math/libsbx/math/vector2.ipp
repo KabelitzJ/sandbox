@@ -71,6 +71,11 @@ inline constexpr auto operator*(basic_vector2<Lhs> lhs, Rhs scalar) noexcept -> 
 }
 
 template<scalar Lhs, scalar Rhs>
+inline constexpr auto operator*(basic_vector2<Lhs> lhs, const basic_vector2<Rhs>& rhs) noexcept -> basic_vector2<Lhs> {
+  return lhs *= rhs;
+}
+
+template<scalar Lhs, scalar Rhs>
 inline constexpr auto operator/(basic_vector2<Lhs> lhs, Rhs scalar) noexcept -> basic_vector2<Lhs> {
   return lhs /= scalar;
 }

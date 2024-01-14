@@ -173,7 +173,7 @@ auto render_stage::update() -> void {
     _render_area.set_extent(math::vector2u{_viewport.scale() * window_size});
   }
 
-  _render_area.set_aspect_ratio(static_cast<std::float_t>(_render_area.extent().x) / static_cast<std::float_t>(_render_area.extent().y));
+  _render_area.set_aspect_ratio(static_cast<std::float_t>(_render_area.extent().x()) / static_cast<std::float_t>(_render_area.extent().y()));
   _render_area.set_extent(_render_area.extent() + _render_area.offset());
 
   _is_outdated = last_render_area != _render_area;
@@ -388,8 +388,8 @@ auto render_stage::_rebuild_framebuffers(const swapchain& swapchain) -> void {
     framebuffer_create_info.renderPass = _render_pass;
     framebuffer_create_info.attachmentCount = static_cast<std::uint32_t>(attachments.size());
     framebuffer_create_info.pAttachments = attachments.data();
-    framebuffer_create_info.width = _render_area.extent().x;
-    framebuffer_create_info.height = _render_area.extent().y;
+    framebuffer_create_info.width = _render_area.extent().x();
+    framebuffer_create_info.height = _render_area.extent().y();
     framebuffer_create_info.layers = 1;
 
     validate(vkCreateFramebuffer(logical_device, &framebuffer_create_info, nullptr, &_framebuffers[i]));

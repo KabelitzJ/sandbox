@@ -234,8 +234,8 @@ auto graphics_module::_start_render_pass(graphics::render_stage& render_stage) -
   const auto& extent = area.extent();
 
   auto render_area = VkRect2D{};
-  render_area.offset = VkOffset2D{offset.x, offset.y};
-  render_area.extent = VkExtent2D{extent.x, extent.y};
+  render_area.offset = VkOffset2D{offset.x(), offset.y()};
+  render_area.extent = VkExtent2D{extent.x(), extent.y()};
 
   auto viewport = VkViewport{};
 	viewport.x = 0.0f;

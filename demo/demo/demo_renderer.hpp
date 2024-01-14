@@ -1,25 +1,25 @@
-// #ifndef DEMO_DEMO_RENDERER_HPP_
-// #define DEMO_DEMO_RENDERER_HPP_
+#ifndef DEMO_DEMO_RENDERER_HPP_
+#define DEMO_DEMO_RENDERER_HPP_
 
-// #include <libsbx/graphics/graphics.hpp>
-// #include <libsbx/models/models.hpp>
-// #include <libsbx/ui/ui.hpp>
-// #include <libsbx/shadows/shadows.hpp>
+#include <libsbx/graphics/graphics.hpp>
+#include <libsbx/models/models.hpp>
+#include <libsbx/ui/ui.hpp>
+#include <libsbx/shadows/shadows.hpp>
 
-// namespace demo {
+namespace demo {
 
-// class demo_renderer : public sbx::graphics::renderer {
+class demo_renderer : public sbx::graphics::renderer {
 
-// public:
+public:
 
-//   demo_renderer();
+  demo_renderer();
 
-//   ~demo_renderer() override = default;
+  ~demo_renderer() override = default;
 
-//   auto initialize() -> void override;
+  auto initialize() -> void override;
 
-// }; // class demo_renderer
+}; // class demo_renderer
 
-// } // namespace demo
+} // namespace demo
 
-// #endif // DEMO_DEMO_RENDERER_HPP_
+#endif // DEMO_DEMO_RENDERER_HPP_

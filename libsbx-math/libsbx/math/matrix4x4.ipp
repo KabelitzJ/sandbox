@@ -112,7 +112,7 @@ inline constexpr auto basic_matrix4x4<Type>::inverted(const basic_matrix4x4& mat
   const auto det0 = matrix[0] * row0;
   
   // [NOTE] KAJ 2022-07-29 00:45 - I dont know why those parentheses are needed here... But im too scared to remove them
-  const auto det1 = value_type{(det0.x + det0.y) + (det0.z + det0.w)};
+  const auto det1 = value_type{(det0.x() + det0.y()) + (det0.z() + det0.w())};
 
   const auto one_over_determinant = static_cast<value_type>(1) / det1;
 
@@ -127,15 +127,15 @@ inline constexpr auto basic_matrix4x4<Type>::look_at(const basic_vector3<value_t
 
   auto result = basic_matrix4x4<value_type>::identity;
 
-  result[0][0] = right.x;
-  result[1][0] = right.y;
-  result[2][0] = right.z;
-  result[0][1] = new_up.x;
-  result[1][1] = new_up.y;
-  result[2][1] = new_up.z;
-  result[0][2] = -forward.x;
-  result[1][2] = -forward.y;
-  result[2][2] = -forward.z;
+  result[0][0] = right.x();
+  result[1][0] = right.y();
+  result[2][0] = right.z();
+  result[0][1] = new_up.x();
+  result[1][1] = new_up.y();
+  result[2][1] = new_up.z();
+  result[0][2] = -forward.x();
+  result[1][2] = -forward.y();
+  result[2][2] = -forward.z();
   result[3][0] = -basic_vector3<value_type>::dot(right, position);
   result[3][1] = -basic_vector3<value_type>::dot(new_up, position);
   result[3][2] = basic_vector3<value_type>::dot(forward, position);
@@ -143,25 +143,25 @@ inline constexpr auto basic_matrix4x4<Type>::look_at(const basic_vector3<value_t
   return result;
 }
 
-// template<scalar Type>
-// inline constexpr auto basic_matrix4x4<Type>::perspective(const basic_angle<value_type>& fov, const value_type aspect, const value_type near, const value_type far) noexcept -> basic_matrix4x4<Type> {
-//   // [NOTE] KAJ 2023-11-19 : Right-handed zero-to-one depth range
+template<scalar Type>
+inline constexpr auto basic_matrix4x4<Type>::perspective(const basic_angle<value_type>& fov, const value_type aspect, const value_type near, const value_type far) noexcept -> basic_matrix4x4<Type> {
+  // [NOTE] KAJ 2023-11-19 : Right-handed zero-to-one depth range
 
-//   const auto tan_half_fov = std::tan(fov.to_radians() / static_cast<value_type>(2));
+  const auto tan_half_fov = std::tan(fov.to_radians() / static_cast<value_type>(2));
 
-//   auto result = basic_matrix4x4<value_type>::zero;
+  auto result = basic_matrix4x4<value_type>::zero;
 
-//   result[0][0] = static_cast<value_type>(1) / (aspect * tan_half_fov);
-//   result[1][1] = -static_cast<value_type>(1) / tan_half_fov;
-//   result[2][2] = far / (near - far);
-//   result[2][3] = -static_cast<value_type>(1);
-//   result[3][2] = (near * far) / (near - far);
+  result[0][0] = static_cast<value_type>(1) / (aspect * tan_half_fov);
+  result[1][1] = -static_cast<value_type>(1) / tan_half_fov;
+  result[2][2] = far / (near - far);
+  result[2][3] = -static_cast<value_type>(1);
+  result[3][2] = (near * far) / (near - far);
 
-//   //// [NOTE] KAJ 2023-10-11 : Flip the y-axis to match Vulkan's coordinate system.
-//   // result[1][1] *= -1;
+  //// [NOTE] KAJ 2023-10-11 : Flip the y-axis to match Vulkan's coordinate system.
+  // result[1][1] *= -1;
 
-//   return result;
-// }
+  return result;
+}
 
 template<scalar Type>
 inline constexpr auto basic_matrix4x4<Type>::orthographic(const value_type left, const value_type right, const value_type bottom, const value_type top) noexcept -> basic_matrix4x4<Type> {
@@ -214,74 +214,84 @@ inline constexpr auto basic_matrix4x4<Type>::scaled(const basic_matrix4x4<Type>&
   return result;
 }
 
-// template<scalar Type>
-// inline constexpr basic_matrix4x4<Type> basic_matrix4x4<Type>::rotated(const basic_matrix4x4<value_type>& matrix, const basic_vector3<value_type>& axis, const basic_angle<value_type>& angle) noexcept {
-//   const auto radians = angle.to_radians();
+template<scalar Type>
+inline constexpr basic_matrix4x4<Type> basic_matrix4x4<Type>::rotated(const basic_matrix4x4<Type>& matrix, const basic_vector3<typename basic_matrix4x4<Type>::value_type>& axis, const basic_angle<typename basic_matrix4x4<Type>::value_type>& angle) noexcept {
+  const auto radians = angle.to_radians();
 
-//   const auto cos = std::cos(radians.value());
-//   const auto sin = std::sin(radians.value());
+  const auto cos = std::cos(radians.value());
+  const auto sin = std::sin(radians.value());
 
-//   const auto normalized_axis = basic_vector3<value_type>::normalized(axis);
-//   const auto temp = normalized_axis * (static_cast<value_type>(1) - cos); 
+  const auto normalized_axis = basic_vector3<value_type>::normalized(axis);
+  const auto temp = normalized_axis * (static_cast<value_type>(1) - cos); 
 
-//   auto rotate = basic_matrix4x4<value_type>{};
+  auto rotate = basic_matrix4x4<value_type>{};
 
-//   rotate[0][0] = cos + temp[0] * axis[0];
-//   rotate[0][1] = temp[0] * axis[1] + sin * axis[2];
-//   rotate[0][2] = temp[0] * axis[2] - sin * axis[1];
+  rotate[0][0] = cos + temp[0] * axis[0];
+  rotate[0][1] = temp[0] * axis[1] + sin * axis[2];
+  rotate[0][2] = temp[0] * axis[2] - sin * axis[1];
 
-//   rotate[1][0] = temp[1] * axis[0] - sin * axis[2];
-//   rotate[1][1] = cos + temp[1] * axis[1];
-//   rotate[1][2] = temp[1] * axis[2] + sin * axis[0];
+  rotate[1][0] = temp[1] * axis[0] - sin * axis[2];
+  rotate[1][1] = cos + temp[1] * axis[1];
+  rotate[1][2] = temp[1] * axis[2] + sin * axis[0];
 
-//   rotate[2][0] = temp[2] * axis[0] + sin * axis[1];
-//   rotate[2][1] = temp[2] * axis[1] - sin * axis[0];
-//   rotate[2][2] = cos + temp[2] * axis[2];
+  rotate[2][0] = temp[2] * axis[0] + sin * axis[1];
+  rotate[2][1] = temp[2] * axis[1] - sin * axis[0];
+  rotate[2][2] = cos + temp[2] * axis[2];
 
-//   auto result = basic_matrix4x4<value_type>{};
+  auto result = basic_matrix4x4<value_type>{};
 
-//   result[0] = matrix[0] * rotate[0][0] + matrix[1] * rotate[0][1] + matrix[2] * rotate[0][2];
-//   result[1] = matrix[0] * rotate[1][0] + matrix[1] * rotate[1][1] + matrix[2] * rotate[1][2];
-//   result[2] = matrix[0] * rotate[2][0] + matrix[1] * rotate[2][1] + matrix[2] * rotate[2][2];
-//   result[3] = matrix[3];
+  result[0] = matrix[0] * rotate[0][0] + matrix[1] * rotate[0][1] + matrix[2] * rotate[0][2];
+  result[1] = matrix[0] * rotate[1][0] + matrix[1] * rotate[1][1] + matrix[2] * rotate[1][2];
+  result[2] = matrix[0] * rotate[2][0] + matrix[1] * rotate[2][1] + matrix[2] * rotate[2][2];
+  result[3] = matrix[3];
 
-//   return result;
-// }
+  return result;
+}
 
-// template<scalar Type>
-// inline constexpr auto basic_matrix4x4<Type>::rotation_from_euler_angles(const basic_vector3<value_type>& euler_angles) noexcept -> basic_matrix4x4<Type> {
-//   const auto t1 = to_radians(degree{euler_angles.x}).value();
-//   const auto t2 = to_radians(degree{euler_angles.y}).value();
-//   const auto t3 = to_radians(degree{euler_angles.z}).value();
+template<scalar Type>
+inline constexpr auto basic_matrix4x4<Type>::rotation_from_euler_angles(const basic_vector3<value_type>& euler_angles) noexcept -> basic_matrix4x4<Type> {
+  const auto t1 = to_radians(basic_degree<Type>{euler_angles.x()}).value();
+  const auto t2 = to_radians(basic_degree<Type>{euler_angles.y()}).value();
+  const auto t3 = to_radians(basic_degree<Type>{euler_angles.z()}).value();
 
-//   const auto c1 = std::cos(-t1);
-//   const auto c2 = std::cos(-t2);
-//   const auto c3 = std::cos(-t3);
-//   const auto s1 = std::sin(-t1);
-//   const auto s2 = std::sin(-t2);
-//   const auto s3 = std::sin(-t3);
+  const auto c1 = std::cos(-t1);
+  const auto c2 = std::cos(-t2);
+  const auto c3 = std::cos(-t3);
+  const auto s1 = std::sin(-t1);
+  const auto s2 = std::sin(-t2);
+  const auto s3 = std::sin(-t3);
 
-//   auto result = basic_matrix4x4<value_type>{};
+  auto result = basic_matrix4x4<value_type>{};
 
-//   result[0][0] = c2 * c3;
-//   result[0][1] = -c1 * s3 + s1 * s2 * c3;
-//   result[0][2] = s1 * s3 + c1 * s2 * c3;
-//   result[0][3] = static_cast<value_type>(0);
-//   result[1][0] = c2 * s3;
-//   result[1][1] = c1 * c3 + s1 * s2 * s3;
-//   result[1][2] = -s1 * c3 + c1 * s2 * s3;
-//   result[1][3] = static_cast<value_type>(0);
-//   result[2][0] = -s2;
-//   result[2][1] = s1 * c2;
-//   result[2][2] = c1 * c2;
-//   result[2][3] = static_cast<value_type>(0);
-//   result[3][0] = static_cast<value_type>(0);
-//   result[3][1] = static_cast<value_type>(0);
-//   result[3][2] = static_cast<value_type>(0);
-//   result[3][3] = static_cast<value_type>(1);
+  result[0][0] = c2 * c3;
+  result[0][1] = -c1 * s3 + s1 * s2 * c3;
+  result[0][2] = s1 * s3 + c1 * s2 * c3;
+  result[0][3] = static_cast<value_type>(0);
+  result[1][0] = c2 * s3;
+  result[1][1] = c1 * c3 + s1 * s2 * s3;
+  result[1][2] = -s1 * c3 + c1 * s2 * s3;
+  result[1][3] = static_cast<value_type>(0);
+  result[2][0] = -s2;
+  result[2][1] = s1 * c2;
+  result[2][2] = c1 * c2;
+  result[2][3] = static_cast<value_type>(0);
+  result[3][0] = static_cast<value_type>(0);
+  result[3][1] = static_cast<value_type>(0);
+  result[3][2] = static_cast<value_type>(0);
+  result[3][3] = static_cast<value_type>(1);
 
-//   return result;
-// }
+  return result;
+}
+
+template<scalar Type>
+inline constexpr auto basic_matrix4x4<Type>::operator[](size_type index) const noexcept -> const column_type& {
+  return static_cast<const column_type&>(base_type::operator[](index));
+}
+
+template<scalar Type>
+inline constexpr auto basic_matrix4x4<Type>::operator[](size_type index) noexcept -> column_type& {
+  return static_cast<column_type&>(base_type::operator[](index));
+}
 
 template<scalar Lhs, scalar Rhs>
 inline constexpr auto operator+(basic_matrix4x4<Lhs> lhs, const basic_matrix4x4<Rhs>& rhs) noexcept -> basic_matrix4x4<Lhs> {

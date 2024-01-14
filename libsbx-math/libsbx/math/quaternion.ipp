@@ -59,9 +59,9 @@ template<sbx::math::floating_point Type>
 inline auto std::hash<sbx::math::basic_quaternion<Type>>::operator()(const sbx::math::basic_quaternion<Type>& quat) const noexcept -> std::size_t {
   auto seed = std::size_t{0};
 
-  sbx::utility::hash_combine(seed, quat.x);
-  sbx::utility::hash_combine(seed, quat.y);
-  sbx::utility::hash_combine(seed, quat.z);
+  sbx::utility::hash_combine(seed, quat.x());
+  sbx::utility::hash_combine(seed, quat.y());
+  sbx::utility::hash_combine(seed, quat.z());
   sbx::utility::hash_combine(seed, quat.w);
 
   return seed;

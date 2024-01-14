@@ -97,18 +97,18 @@ auto audio_module::update() -> void {
 
   check_error();
 
-  alListener3f(AL_POSITION, camera_position.x, camera_position.y, -camera_position.z);
+  alListener3f(AL_POSITION, camera_position.x(), camera_position.y(), -camera_position.z());
 
   check_error();
 
-  alListener3f(AL_VELOCITY, camera_position.x, camera_position.y, -camera_position.z);
+  alListener3f(AL_VELOCITY, camera_position.x(), camera_position.y(), -camera_position.z());
 
   check_error();
 
   const auto& camera_forward = camera_transform.forward();
   const auto& camera_up = math::vector3::up;
 
-  const auto camera_orientation = std::array<std::float_t, 6>{camera_forward.x, camera_forward.y, camera_forward.z, camera_up.x, camera_up.y, camera_up.z};
+  const auto camera_orientation = std::array<std::float_t, 6>{camera_forward.x(), camera_forward.y(), camera_forward.z(), camera_up.x(), camera_up.y(), camera_up.z()};
 
   alListenerfv(AL_ORIENTATION, camera_orientation.data());
 
@@ -123,18 +123,18 @@ auto audio_module::update() -> void {
 
     const auto& sound_position = sound_transform.position();
 
-    alSource3f(sound, AL_POSITION, sound_position.x, sound_position.y, -sound_position.z);
+    alSource3f(sound, AL_POSITION, sound_position.x(), sound_position.y(), -sound_position.z());
 
     check_error();
 
-    alSource3f(sound, AL_VELOCITY, sound_position.x, sound_position.y, -sound_position.z);
+    alSource3f(sound, AL_VELOCITY, sound_position.x(), sound_position.y(), -sound_position.z());
 
     check_error();
 
     const auto& sound_forward = sound_transform.forward();
     const auto& sound_up = math::vector3::up;
 
-    const auto sound_orientation = std::array<std::float_t, 6>{sound_forward.x, sound_forward.y, sound_forward.z, sound_up.x, sound_up.y, sound_up.z};
+    const auto sound_orientation = std::array<std::float_t, 6>{sound_forward.x(), sound_forward.y(), sound_forward.z(), sound_up.x(), sound_up.y(), sound_up.z()};
 
     alSourcefv(sound, AL_ORIENTATION, sound_orientation.data());
 

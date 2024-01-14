@@ -41,16 +41,16 @@ auto obj_loader::load(const std::filesystem::path& path) -> mesh_data {
     for (const auto& index : shape.mesh.indices) {
       auto vertex = vertex3d{};
 
-      vertex.position.x = attributes.vertices[3 * index.vertex_index + 0];
-      vertex.position.y = attributes.vertices[3 * index.vertex_index + 1];
-      vertex.position.z = attributes.vertices[3 * index.vertex_index + 2];
+      vertex.position.x() = attributes.vertices[3 * index.vertex_index + 0];
+      vertex.position.y() = attributes.vertices[3 * index.vertex_index + 1];
+      vertex.position.z() = attributes.vertices[3 * index.vertex_index + 2];
 
-      vertex.normal.x = attributes.normals[3 * index.normal_index + 0];
-      vertex.normal.y = attributes.normals[3 * index.normal_index + 1];
-      vertex.normal.z = attributes.normals[3 * index.normal_index + 2];
+      vertex.normal.x() = attributes.normals[3 * index.normal_index + 0];
+      vertex.normal.y() = attributes.normals[3 * index.normal_index + 1];
+      vertex.normal.z() = attributes.normals[3 * index.normal_index + 2];
 
-      vertex.uv.x = attributes.texcoords[2 * index.texcoord_index + 0];
-      vertex.uv.y = attributes.texcoords[2 * index.texcoord_index + 1];
+      vertex.uv.x() = attributes.texcoords[2 * index.texcoord_index + 0];
+      vertex.uv.y() = attributes.texcoords[2 * index.texcoord_index + 1];
 
       if (auto entry = unique_vertices.find(vertex); entry != unique_vertices.end()) {
         data.indices.push_back(entry->second);

@@ -16,6 +16,7 @@
 #include <libsbx/math/vector3.hpp>
 #include <libsbx/math/vector4.hpp>
 #include <libsbx/math/matrix.hpp>
+#include <libsbx/math/angle.hpp>
 
 namespace sbx::math {
 
@@ -72,7 +73,7 @@ public:
 
   [[nodiscard]] constexpr static auto look_at(const basic_vector3<value_type>& position, const basic_vector3<value_type>& target, const basic_vector3<value_type>& up) noexcept -> basic_matrix4x4;
 
-  // [[nodiscard]] constexpr static auto perspective(const basic_angle<value_type>& fov, const value_type aspect, const value_type near, const value_type far) noexcept -> basic_matrix4x4;
+  [[nodiscard]] constexpr static auto perspective(const basic_angle<value_type>& fov, const value_type aspect, const value_type near, const value_type far) noexcept -> basic_matrix4x4;
 
   [[nodiscard]] constexpr static auto orthographic(const value_type left, const value_type right, const value_type bottom, const value_type top) noexcept -> basic_matrix4x4;
 
@@ -82,9 +83,13 @@ public:
 
   [[nodiscard]] constexpr static auto scaled(const basic_matrix4x4& matrix, const basic_vector3<value_type>& vector) noexcept -> basic_matrix4x4;
 
-  // [[nodiscard]] constexpr static auto rotated(const basic_matrix4x4& matrix, const basic_vector3<value_type>& axis, const basic_angle<value_type>& angle) noexcept -> basic_matrix4x4;
+  [[nodiscard]] constexpr static auto rotated(const basic_matrix4x4& matrix, const basic_vector3<value_type>& axis, const basic_angle<value_type>& angle) noexcept -> basic_matrix4x4;
 
-  // [[nodiscard]] constexpr static auto rotation_from_euler_angles(const basic_vector3<value_type>& euler_angles) noexcept -> basic_matrix4x4;
+  [[nodiscard]] constexpr static auto rotation_from_euler_angles(const basic_vector3<value_type>& euler_angles) noexcept -> basic_matrix4x4;
+
+  constexpr auto operator[](size_type index) const noexcept -> const column_type&;
+
+  constexpr auto operator[](size_type index) noexcept -> column_type&;
 
 }; // class basic_matrix4x4
 
@@ -98,10 +103,10 @@ template<scalar Lhs, scalar Rhs>
 [[nodiscard]] constexpr auto operator*(basic_matrix4x4<Lhs> lhs, Rhs scalar) noexcept -> basic_matrix4x4<Lhs>;
 
 template<scalar Lhs, scalar Rhs>
-[[nodiscard]] constexpr auto operator*(basic_matrix4x4<Lhs> lhs, basic_vector4<Rhs> rhs) noexcept -> basic_vector4<Lhs>;
+[[nodiscard]] constexpr auto operator*(basic_matrix4x4<Lhs> lhs, const basic_vector4<Rhs>& rhs) noexcept -> basic_vector4<Lhs>;
 
 template<scalar Lhs, scalar Rhs>
-[[nodiscard]] constexpr auto operator*(basic_matrix4x4<Lhs> lhs, basic_matrix4x4<Rhs> rhs) noexcept -> basic_matrix4x4<Lhs>;
+[[nodiscard]] constexpr auto operator*(basic_matrix4x4<Lhs> lhs, const basic_matrix4x4<Rhs>& rhs) noexcept -> basic_matrix4x4<Lhs>;
 
 template<scalar Lhs, scalar Rhs>
 [[nodiscard]] constexpr auto operator/(basic_matrix4x4<Lhs> lhs, Rhs scalar) noexcept -> basic_matrix4x4<Lhs>;

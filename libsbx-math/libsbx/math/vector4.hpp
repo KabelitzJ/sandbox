@@ -86,6 +86,9 @@ template<scalar Lhs, scalar Rhs>
 [[nodiscard]] constexpr auto operator*(basic_vector4<Lhs> lhs, Rhs scalar) noexcept -> basic_vector4<Lhs>;
 
 template<scalar Lhs, scalar Rhs>
+[[nodiscard]] constexpr auto operator*(basic_vector4<Lhs> lhs, const basic_vector4<Rhs>& rhs) noexcept -> basic_vector4<Lhs>;
+
+template<scalar Lhs, scalar Rhs>
 [[nodiscard]] constexpr auto operator/(basic_vector4<Lhs> lhs, Rhs scalar) noexcept -> basic_vector4<Lhs>;
 
 using vector4f = basic_vector4<std::float_t>;

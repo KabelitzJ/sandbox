@@ -17,6 +17,10 @@ template<std::size_t Size, scalar Type>
 requires (Size > 1u)
 class basic_vector {
 
+  template<std::size_t S, scalar T>
+  requires (S > 1u)
+  friend class basic_vector;
+
 public:
 
   using value_type = Type;
@@ -28,6 +32,10 @@ public:
   template<scalar Other = value_type>
   constexpr basic_vector(Other value = Other{0}) noexcept
   : _components{utility::make_array<value_type, Size>(value)} { }
+
+  template<scalar Other = value_type>
+  constexpr basic_vector(const basic_vector<Size, Other>& other) noexcept
+  : _components{utility::make_array<value_type, Size>(other._components)} { }
 
   [[nodiscard]] constexpr auto operator[](size_type index) noexcept -> reference {
     return _components[index];
@@ -59,6 +67,15 @@ public:
   constexpr auto operator*=(Other scalar) noexcept -> basic_vector& {
     for (auto i : std::views::iota(0u, Size)) {
       _components[i] *= static_cast<value_type>(scalar);
+    }
+
+    return *this;
+  }
+
+  template<scalar Other>
+  constexpr auto operator*=(const basic_vector<Size, Other>& other) noexcept -> basic_vector& {
+    for (auto i : std::views::iota(0u, Size)) {
+      _components[i] *= static_cast<value_type>(other[i]);
     }
 
     return *this;

@@ -55,12 +55,12 @@ font::font(const std::filesystem::path& path, pixels height) {
       throw std::runtime_error{fmt::format("Failed to load glyph '{}'", character)};
     }
 
-    atlas_size.x += face->glyph->bitmap.width;
-    atlas_size.y = std::max(atlas_size.y, face->glyph->bitmap.rows);
+    atlas_size.x() += face->glyph->bitmap.width;
+    atlas_size.y() = std::max(atlas_size.y(), face->glyph->bitmap.rows);
   }
 
   auto atlas_data = std::vector<std::uint8_t>{};
-  atlas_data.resize(atlas_size.x * atlas_size.y);
+  atlas_data.resize(atlas_size.x() * atlas_size.y());
 
   auto atlas_position = math::vector2u{0, 0};
 
@@ -75,7 +75,7 @@ font::font(const std::filesystem::path& path, pixels height) {
 
     for (auto y = 0u; y < glyph->bitmap.rows; ++y) {
       for (auto x = 0u; x < glyph->bitmap.width; ++x) {
-        const auto atlas_index = (atlas_position.y + y) * atlas_size.x + (atlas_position.x + x);
+        const auto atlas_index = (atlas_position.y() + y) * atlas_size.x() + (atlas_position.x() + x);
         const auto glyph_index = y * glyph->bitmap.width + x;
 
         atlas_data[atlas_index] = glyph->bitmap.buffer[glyph_index];
@@ -87,20 +87,20 @@ font::font(const std::filesystem::path& path, pixels height) {
     glyph_info.size = math::vector2u{glyph->bitmap.width, glyph->bitmap.rows};
     glyph_info.bearing = math::vector2u{glyph->bitmap_left, glyph->bitmap_top};
     glyph_info.advance = (glyph->advance.x >> 6);
-    glyph_info.uv_position = math::vector2f{static_cast<float>(atlas_position.x) / atlas_size.x, static_cast<float>(atlas_position.y) / atlas_size.y};
-    glyph_info.uv_size = math::vector2f{static_cast<float>(glyph->bitmap.width) / atlas_size.x, static_cast<float>(glyph->bitmap.rows) / atlas_size.y};
+    glyph_info.uv_position = math::vector2f{static_cast<float>(atlas_position.x()) / atlas_size.x(), static_cast<float>(atlas_position.y()) / atlas_size.y()};
+    glyph_info.uv_size = math::vector2f{static_cast<float>(glyph->bitmap.width) / atlas_size.x(), static_cast<float>(glyph->bitmap.rows) / atlas_size.y()};
 
     _glyphs.insert({character, glyph_info});
 
-    atlas_position.x += glyph->bitmap.width;
+    atlas_position.x() += glyph->bitmap.width;
   }
 
   FT_Done_Face(face);
   FT_Done_FreeType(library);
 
-  _atlas = std::make_unique<ui::atlas>(atlas_size.x, atlas_size.y, atlas_data);
+  _atlas = std::make_unique<ui::atlas>(atlas_size.x(), atlas_size.y(), atlas_data);
 
-  core::logger::debug("Created font atlas for font '{}' ({}x{}) in {:.2f} ms", path.string(), atlas_size.x, atlas_size.y, units::quantity_cast<units::millisecond>(timer.elapsed()).value());
+  core::logger::debug("Created font atlas for font '{}' ({}x{}) in {:.2f} ms", path.string(), atlas_size.x(), atlas_size.y(), units::quantity_cast<units::millisecond>(timer.elapsed()).value());
 }
 
 font::~font() {

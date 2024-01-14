@@ -90,8 +90,18 @@ auto script::_create_vector2_bindings(sol::table& library) -> void {
 
   auto vector2_type = library.new_usertype<math::vector2>("vector2", vector2_constructor);
 
-  vector2_type.set("x", &math::vector2::x);
-  vector2_type.set("y", &math::vector2::y);
+  // vector2_type.set("x", &math::vector2::x);
+  // vector2_type.set("y", &math::vector2::y);
+
+  vector2_type.set_function("x", sol::property(
+    [](const math::vector2& vector) { return vector.x(); },
+    [](math::vector2& vector, std::float_t value) { vector.x() = value; }
+  ));
+
+  vector2_type.set_function("y", sol::property(
+    [](const math::vector2& vector) { return vector.y(); },
+    [](math::vector2& vector, std::float_t value) { vector.y() = value; }
+  ));
 }
 
 auto script::_create_vector3_bindings(sol::table& library) -> void {
@@ -99,9 +109,20 @@ auto script::_create_vector3_bindings(sol::table& library) -> void {
 
   auto vector3_type = library.new_usertype<math::vector3>("vector3", vector3_constructor);
 
-  vector3_type.set("x", &math::vector3::x);
-  vector3_type.set("y", &math::vector3::y);
-  vector3_type.set("z", &math::vector3::z);
+  vector3_type.set_function("x", sol::property(
+    [](const math::vector3& vector) { return vector.x(); },
+    [](math::vector3& vector, std::float_t value) { vector.x() = value; }
+  ));
+
+  vector3_type.set_function("y", sol::property(
+    [](const math::vector3& vector) { return vector.y(); },
+    [](math::vector3& vector, std::float_t value) { vector.y() = value; }
+  ));
+
+  vector3_type.set_function("z", sol::property(
+    [](const math::vector3& vector) { return vector.z(); },
+    [](math::vector3& vector, std::float_t value) { vector.z() = value; }
+  ));
 
   // [NOTE] KAJ 2023-10-10 : SOL2 currently does not support static member variables in usertypes
   library["vector3"]["zero"] = math::vector3::zero;
@@ -117,27 +138,31 @@ auto script::_create_vector3_bindings(sol::table& library) -> void {
   vector3_type.set_function("length", &math::vector3::length);
 
   vector3_type.set_function(sol::meta_function::addition, sol::overload(
-    sol::resolve<math::vector3(math::vector3 lhs, const std::float_t rhs)>(&math::operator+),
-    sol::resolve<math::vector3(math::vector3 lhs, const math::vector3& rhs)>(&math::operator+)
+    // [TODO] KAJ 2024-01-14 : Add support for scalar addition if needed
+    // [](math::vector3 lhs, const std::float_t rhs) { return lhs + rhs; },
+    [](math::vector3 lhs, const math::vector3& rhs) { return lhs + rhs; }
   ));
 
   vector3_type.set_function(sol::meta_function::subtraction, sol::overload(
-    sol::resolve<math::vector3(math::vector3 lhs, const std::float_t rhs)>(&math::operator-),
-    sol::resolve<math::vector3(math::vector3 lhs, const math::vector3& rhs)>(&math::operator-)
+    // [TODO] KAJ 2024-01-14 : Add support for scalar subtraction if needed
+    // [](math::vector3 lhs, const std::float_t rhs) { return lhs - rhs; },
+    [](math::vector3 lhs, const math::vector3& rhs) { return lhs - rhs; }
   ));
 
   vector3_type.set_function(sol::meta_function::multiplication, sol::overload(
-    sol::resolve<math::vector3(math::vector3 lhs, const std::float_t rhs)>(&math::operator*),
-    sol::resolve<math::vector3(math::vector3 lhs, const math::vector3& rhs)>(&math::operator*)
+    [](math::vector3 lhs, const std::float_t rhs) { return lhs * rhs; }
+    // [TODO] KAJ 2024-01-14 : Add support for scalar multiplication if needed
+    // [](math::vector3 lhs, const math::vector3& rhs) { return lhs * rhs; }
   ));
 
   vector3_type.set_function(sol::meta_function::division, sol::overload(
-    sol::resolve<math::vector3(math::vector3 lhs, const std::float_t rhs)>(&math::operator/),
-    sol::resolve<math::vector3(math::vector3 lhs, const math::vector3& rhs)>(&math::operator/)
+    [](math::vector3 lhs, const std::float_t rhs) { return lhs / rhs; }
+    // [TODO] KAJ 2024-01-14 : Add support for scalar division if needed
+    // [](math::vector3 lhs, const math::vector3& rhs) { return lhs / rhs; }
   ));
 
   vector3_type.set_function(sol::meta_function::unary_minus, sol::overload(
-    sol::resolve<math::vector3(const math::vector3& vector)>(&math::operator-)
+    [](math::vector3 vector) { return -vector; }
   ));
 }
 

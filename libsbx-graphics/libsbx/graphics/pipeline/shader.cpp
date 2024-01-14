@@ -143,8 +143,6 @@ auto shader::_create_reflection(const spirv_cross::Compiler& compiler) -> void {
 
   // Reflection for images
   for (const auto& image_sampler : resources.sampled_images) {
-    const auto& type = compiler.get_type(image_sampler.type_id);
-
     const auto& name = image_sampler.name;
     const auto binding = compiler.get_decoration(image_sampler.id, spv::DecorationBinding);
 
