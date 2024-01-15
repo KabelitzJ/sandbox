@@ -74,6 +74,8 @@ public:
 
   [[nodiscard]] constexpr auto z() const noexcept -> const_reference;
 
+  constexpr auto normalize() noexcept -> basic_vector3&;
+
 }; // template<scalar Type>
 
 template<scalar Lhs, scalar Rhs>

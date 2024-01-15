@@ -77,6 +77,11 @@ inline constexpr auto basic_vector3<Type>::z() const noexcept -> const_reference
   return base_type::operator[](z_axis);
 }
 
+template<scalar Type>
+inline constexpr auto basic_vector3<Type>::normalize() noexcept -> basic_vector3& {
+  return static_cast<basic_vector3&>(base_type::normalize());
+}
+
 template<scalar Lhs, scalar Rhs>
 inline constexpr auto operator+(basic_vector3<Lhs> lhs, const basic_vector3<Rhs>& rhs) noexcept -> basic_vector3<Lhs> {
   return lhs += rhs;

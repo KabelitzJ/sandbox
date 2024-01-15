@@ -77,15 +77,16 @@ function on_update()
 
   --   /| GAGA
   --  / | HHAG
-  -- /__| sct   
+  -- /__| sct
 
   local radius = current_distance * sbx.cos(vertical_angle * math.pi / 180.0);
 
   position.x = target.x + cos_angle * radius;
   position.y = current_distance * sbx.sin(vertical_angle * math.pi / 180.0); 
   position.z = target.z + sin_angle * radius;
-
+  
   transform:set_position(position);
+
   -- transform:look_at(target);
 
   -- transform:set_position(sbx.vector3.new(3.0, 3.0, 3.0));
