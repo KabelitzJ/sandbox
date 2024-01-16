@@ -2,6 +2,10 @@ project(ui VERSION 0.1.0 LANGUAGES CXX)
 
 message(STATUS "Configuring ${PROJECT_NAME}...")
 
+string(TOUPPER ${PROJECT_NAME} PROJECT_NAME_UPPER)
+
+configure_file("${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/version.hpp.in" "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/version.hpp" @ONLY)
+
 if(${SBX_BUILD_SHARED})
   add_library(${PROJECT_NAME} SHARED)
 else()

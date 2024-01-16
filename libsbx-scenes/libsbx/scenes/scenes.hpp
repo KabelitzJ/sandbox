@@ -1,6 +1,8 @@
 #ifndef LIBSBX_SCENE_HPP_
 #define LIBSBX_SCENE_HPP_
 
+#include <libsbx/scenes/version.hpp>
+
 #include <libsbx/scenes/scenes_module.hpp>
 #include <libsbx/scenes/scene.hpp>
 

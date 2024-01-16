@@ -48,6 +48,8 @@
  *   - @ref libsbx-utility
  */
 
+#include <libsbx/core/version.hpp>
+
 #include <libsbx/core/application.hpp>
 #include <libsbx/core/concepts.hpp>
 #include <libsbx/core/engine.hpp>

@@ -1,6 +1,8 @@
 #ifndef LIBSBX_SHADOWS_HPP_
 #define LIBSBX_SHADOWS_HPP_
 
+#include <libsbx/shadows/version.hpp>
+
 #include <libsbx/shadows/vertex3d.hpp>
 #include <libsbx/shadows/pipeline.hpp>
 #include <libsbx/shadows/shadow_subrenderer.hpp>

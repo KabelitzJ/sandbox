@@ -1,6 +1,8 @@
 #ifndef LIBSBX_GRAPHICS_HPP_
 #define LIBSBX_GRAPHICS_HPP_
 
+#include <libsbx/graphics/version.hpp>
+
 #include <libsbx/graphics/graphics_module.hpp>
 #include <libsbx/graphics/renderer.hpp>
 #include <libsbx/graphics/render_stage.hpp>

@@ -2,6 +2,7 @@
 #define LIBSBX_SIGNAL_SLOT_STATE_HPP_
 
 #include <mutex>
+#include <atomic>
 #include <cinttypes>
 
 #include <libsbx/signals/lockable.hpp>
