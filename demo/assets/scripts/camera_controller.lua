@@ -9,8 +9,8 @@ local move_speed = 5.0; -- Movement speed of the camera
 local sprint_multiplier = 2.5; -- Sprint multiplier of the camera
 local rotation_speed = 120.0; -- Rotation speed of the camera
 local vertical_angle = 45.0; -- Vertical angle of the camera
-local current_rotation = 45.0;
-local current_distance = 8.0;
+local current_rotation = 45.0; -- Current rotation of the camera
+local current_distance = 3.0; -- Current distance of the camera
 
 function on_create()
 

@@ -1,6 +1,6 @@
 name: "demo"
 light:
-  direction: { x: -0.6, y: -1.0, z: -0.6}
+  direction: { x: 0.6, y: -1.0, z: -0.6}
   color: { r: 1.0, g: 0.8, b: 0.8, a: 1.0 }
 wind:
   speed: 0.42
@@ -26,7 +26,7 @@ entities:
   - name: "player"
     components:
       - type: "transform"
-        position: { x: 0.0, y: 6.0, z: 5.0 }
+        position: { x: 0.0, y: 5.0, z: 5.0 }
         rotation: { x: 0.0, y: 0.0, z: 0.0 }
         scale: { x: 1.0, y: 1.0, z: 1.0 }
       - type: "camera"
@@ -35,6 +35,16 @@ entities:
         far: 100.0
       - type: "script"
         script: "res://scripts/camera_controller.lua"
+  - name: "plane"
+    components:
+      - type: "transform"
+        position: { x: 0.0, y: 1.0, z: -5.0 }
+        rotation: { x: 180.0, y: 6.0, z: 0.0 }
+        scale: { x: 10.0, y: 10.0, z: 10.0 }
+      - type: "static_mesh"
+        mesh: *plane
+        submeshes:
+          - { index: 0, texture: *white }
   - name: "crate1"
     components:
       - type: "transform"

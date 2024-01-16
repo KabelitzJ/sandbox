@@ -141,7 +141,7 @@ auto shader::_create_reflection(const spirv_cross::Compiler& compiler) -> void {
     _uniform_blocks.insert({storage_buffer_name, buffer});
   }
 
-  // Reflection for images
+  // Reflection for image samplers
   for (const auto& image_sampler : resources.sampled_images) {
     const auto& name = image_sampler.name;
     const auto binding = compiler.get_decoration(image_sampler.id, spv::DecorationBinding);
@@ -149,6 +149,20 @@ auto shader::_create_reflection(const spirv_cross::Compiler& compiler) -> void {
     auto image = uniform{binding, 0, 0, data_type::sampler2d, false, false, _stage};
 
     core::logger::debug("image sampler: '{}' binding: {}", name, binding);
+
+    _uniforms.insert({name, image});
+  }
+
+  // Reflection for storage images
+  for (const auto& storage_image : resources.storage_images) {
+    const auto& name = storage_image.name;
+    const auto binding = compiler.get_decoration(storage_image.id, spv::DecorationBinding);
+    const auto is_readonly = compiler.get_decoration(storage_image.id, spv::DecorationNonWritable) == 1;
+    const auto is_writeonly = compiler.get_decoration(storage_image.id, spv::DecorationNonReadable) == 1;
+
+    auto image = uniform{binding, 0, 0, data_type::storage_image, is_readonly, is_writeonly, _stage};
+
+    core::logger::debug("storage image: '{}' binding: {} readonly: {} writeonly: {}", name, binding, is_readonly, is_writeonly);
 
     _uniforms.insert({name, image});
   }

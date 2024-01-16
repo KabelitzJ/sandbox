@@ -21,6 +21,8 @@ class pipeline : public graphics::graphics_pipeline<vertex3d> {
 
 public:
 
+  using vertex_type = vertex3d;
+
   pipeline(const std::filesystem::path& path, const graphics::pipeline::stage& stage)
   : graphics::graphics_pipeline<vertex3d>{path, stage, pipeline_definition} { }
 

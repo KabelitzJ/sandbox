@@ -171,6 +171,10 @@ auto command_buffer::bind_index_buffer(const VkBuffer& buffer, VkDeviceSize offs
   vkCmdBindIndexBuffer(_handle, buffer, offset, index_type);
 }
 
+auto command_buffer::draw(std::uint32_t vertex_count, std::uint32_t instance_count, std::uint32_t first_vertex, std::uint32_t first_instance) -> void {
+  vkCmdDraw(_handle, vertex_count, instance_count, first_vertex, first_instance);
+}
+
 auto command_buffer::draw_indexed(std::uint32_t index_count, std::uint32_t instance_count, std::uint32_t first_index, std::int32_t vertex_offset, std::uint32_t first_instance) -> void {
   vkCmdDrawIndexed(_handle, index_count, instance_count, first_index, vertex_offset, first_instance);
 }

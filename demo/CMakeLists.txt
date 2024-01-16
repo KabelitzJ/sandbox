@@ -65,6 +65,7 @@ target_link_libraries(
     libsbx::assets
     libsbx::devices
     libsbx::graphics
+    libsbx::post
     libsbx::models
     libsbx::scenes
     libsbx::audio
