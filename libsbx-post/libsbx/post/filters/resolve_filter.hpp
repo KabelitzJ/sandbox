@@ -1,5 +1,5 @@
-#ifndef LIBSBX_POST_FILTERS_DEFAULT_FILTER_HPP_
-#define LIBSBX_POST_FILTERS_DEFAULT_FILTER_HPP_
+#ifndef LIBSBX_POST_FILTERS_RESOLVE_FILTER_HPP_
+#define LIBSBX_POST_FILTERS_RESOLVE_FILTER_HPP_
 
 #include <string>
 
@@ -10,7 +10,7 @@
 namespace sbx::post {
 
 template<graphics::vertex Vertex>
-class default_filter final : public filter<Vertex> {
+class resolve_filter final : public filter<Vertex> {
 
   using base_type = filter<Vertex>;
 
@@ -19,11 +19,11 @@ public:
   using vertex_type = base_type::vertex_type;
   using pipeline_type = base_type::pipeline_type;
 
-  default_filter(const std::filesystem::path& path, const graphics::pipeline::stage& stage, const std::string& attachment_name)
+  resolve_filter(const std::filesystem::path& path, const graphics::pipeline::stage& stage, const std::string& attachment_name)
   : base_type{path, stage},
     _attachment_name{attachment_name} { }
 
-  ~default_filter() override = default;
+  ~resolve_filter() override = default;
 
   auto render(graphics::command_buffer& command_buffer) -> void override {
     auto& pipeline = base_type::pipeline();
@@ -48,8 +48,8 @@ private:
 
   std::string _attachment_name;
 
-}; // class default_filter
+}; // class resolve_filter
 
 } // namespace sbx::post
 
-#endif // LIBSBX_POST_FILTERS_DEFAULT_FILTER_HPP_
+#endif // LIBSBX_POST_FILTERS_RESOLVE_FILTER_HPP_
