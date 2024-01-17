@@ -3,6 +3,8 @@
 
 #include <string>
 
+#include <libsbx/graphics/graphics_module.hpp>
+
 #include <libsbx/post/filter.hpp>
 
 namespace sbx::post {
@@ -24,10 +26,14 @@ public:
   ~default_filter() override = default;
 
   auto render(graphics::command_buffer& command_buffer) -> void override {
-    auto& descriptor_handler = base_type::descriptor_handler();
     auto& pipeline = base_type::pipeline();
+    auto& descriptor_handler = base_type::descriptor_handler();
+
+    auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
     pipeline.bind(command_buffer);
+
+    descriptor_handler.push("image", graphics_module.attachment(_attachment_name));
 
     if (!descriptor_handler.update(pipeline)) {
       return;

@@ -8,6 +8,7 @@
 namespace demo {
 
 demo_renderer::demo_renderer() {
+  // Render stage 0: Shadow map
   {
     auto attachments = std::vector<sbx::graphics::attachment>{
       sbx::graphics::attachment{0, "shadow_map", sbx::graphics::attachment::type::image, VK_FORMAT_R32G32_SFLOAT, sbx::math::color{1.0f, 1.0f, 1.0f, 1.0f}}
@@ -20,9 +21,10 @@ demo_renderer::demo_renderer() {
     add_render_stage(std::move(attachments), std::move(subpass_bindings), sbx::graphics::viewport{sbx::math::vector2u{4096, 4096}});
   }
 
+  // Render stage 1: Scene
   {
     auto attachments = std::vector<sbx::graphics::attachment>{
-      sbx::graphics::attachment{0, "swapchain", sbx::graphics::attachment::type::swapchain, VK_FORMAT_R8G8B8A8_UNORM},
+      sbx::graphics::attachment{0, "target", sbx::graphics::attachment::type::image, VK_FORMAT_R8G8B8A8_UNORM, sbx::math::color{0.52f, 0.80f, 0.98f, 1.0f}},
       sbx::graphics::attachment{1, "depth", sbx::graphics::attachment::type::depth}
     };
 
@@ -32,16 +34,32 @@ demo_renderer::demo_renderer() {
 
     add_render_stage(std::move(attachments), std::move(subpass_bindings));
   }
+
+  // Render stage 2: Post processing and UI
+  {
+    auto attachments = std::vector<sbx::graphics::attachment>{
+      sbx::graphics::attachment{0, "swapchain", sbx::graphics::attachment::type::swapchain, VK_FORMAT_R8G8B8A8_UNORM},
+      // sbx::graphics::attachment{1, "depth", sbx::graphics::attachment::type::depth}
+    };
+
+    auto subpass_bindings = std::vector<sbx::graphics::subpass_binding>{
+      sbx::graphics::subpass_binding{0, {0}}
+    };
+
+    add_render_stage(std::move(attachments), std::move(subpass_bindings));
+  }
 }
 
 auto demo_renderer::initialize() -> void {
+  // Render stage 0
   add_subrenderer<sbx::shadows::shadow_subrenderer>("res://shaders/shadow", sbx::graphics::pipeline::stage{0, 0});
 
-  // add_subrenderer<sbx::models::mesh_subrenderer>("res://shaders/mesh", sbx::graphics::pipeline::stage{1, 0});
+  // Render stage 1
+  add_subrenderer<sbx::models::mesh_subrenderer>("res://shaders/mesh", sbx::graphics::pipeline::stage{1, 0});
 
-  add_subrenderer<sbx::post::default_filter<sbx::graphics::empty_vertex>>("res://shaders/default", sbx::graphics::pipeline::stage{1, 0}, "target");
-
-  add_subrenderer<sbx::ui::ui_subrenderer>("res://shaders/ui", sbx::graphics::pipeline::stage{1, 0});
+  // Render stage 2
+  add_subrenderer<sbx::post::default_filter<sbx::graphics::empty_vertex>>("res://shaders/default", sbx::graphics::pipeline::stage{2, 0}, "target");
+  add_subrenderer<sbx::ui::ui_subrenderer>("res://shaders/ui", sbx::graphics::pipeline::stage{2, 0});
 
 }
 
