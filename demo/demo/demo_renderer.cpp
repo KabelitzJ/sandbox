@@ -10,7 +10,7 @@ namespace demo {
 demo_renderer::demo_renderer() {
   {
     auto attachments = std::vector<sbx::graphics::attachment>{
-      sbx::graphics::attachment{0, "shadow_map", sbx::graphics::attachment::type::depth}
+      sbx::graphics::attachment{0, "shadow_map", sbx::graphics::attachment::type::image, VK_FORMAT_R32G32_SFLOAT, sbx::math::color{1.0f, 1.0f, 1.0f, 1.0f}}
     };
 
     auto subpass_bindings = std::vector<sbx::graphics::subpass_binding>{
