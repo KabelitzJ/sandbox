@@ -3,8 +3,6 @@
 
 #include <libsbx/math/vector2.hpp>
 
-#include <libsbx/graphics/buffers/push_handler.hpp>
-
 #include <libsbx/post/filter.hpp>
 
 namespace sbx::post {

@@ -257,9 +257,9 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
   auto vertex_input_state = VkPipelineVertexInputStateCreateInfo{};
   vertex_input_state.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
   vertex_input_state.vertexBindingDescriptionCount = static_cast<std::uint32_t>(binding_descriptions.size());
-  vertex_input_state.pVertexBindingDescriptions = binding_descriptions.data();
+  vertex_input_state.pVertexBindingDescriptions = (vertex_input_state.vertexBindingDescriptionCount > 0u) ? binding_descriptions.data() : nullptr;
   vertex_input_state.vertexAttributeDescriptionCount = static_cast<std::uint32_t>(attribute_descriptions.size());
-  vertex_input_state.pVertexAttributeDescriptions = attribute_descriptions.data();
+  vertex_input_state.pVertexAttributeDescriptions = (vertex_input_state.vertexAttributeDescriptionCount > 0u) ? attribute_descriptions.data() : nullptr;
 
   auto input_assembly_state = VkPipelineInputAssemblyStateCreateInfo{};
   input_assembly_state.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;

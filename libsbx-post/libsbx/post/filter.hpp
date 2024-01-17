@@ -8,6 +8,7 @@
 #include <libsbx/graphics/graphics_module.hpp>
 
 #include <libsbx/graphics/pipeline/graphics_pipeline.hpp>
+#include <libsbx/graphics/pipeline/vertex_input_description.hpp>
 
 #include <libsbx/graphics/descriptor/descriptor_handler.hpp>
 
@@ -17,6 +18,16 @@ namespace sbx::post {
 template<graphics::vertex Vertex>
 class filter : public graphics::subrenderer {
 
+  inline static constexpr auto pipeline_definition = graphics::pipeline_definition{
+    .uses_depth = false,
+    .uses_transparency = false,
+    .rasterization_state = graphics::rasterization_state{
+      .polygon_mode = graphics::polygon_mode::fill,
+      .cull_mode = graphics::cull_mode::none,
+      .front_face = graphics::front_face::counter_clockwise
+    }
+  };
+
 public:
 
   using vertex_type = Vertex;
@@ -24,9 +35,9 @@ public:
 
   filter(const std::filesystem::path& path, const graphics::pipeline::stage& stage)
   : graphics::subrenderer{stage},
-    _pipeline{path, stage} { }
+    _pipeline{path, stage, pipeline_definition} { }
 
-  virtual ~filter() = default;
+  virtual ~filter() override = default;
 
   auto descriptor_handler() noexcept -> graphics::descriptor_handler& {
     return _descriptor_handler;
@@ -55,7 +66,11 @@ public:
   }
 
   auto set_attachment(const std::string& descriptor_name, const graphics::descriptor& descriptor) -> void {
-    _descriptors.insert_or_assign(descriptor_name, &descriptor);
+    if (auto entry = _descriptors.find(descriptor_name); entry != _descriptors.end()) {
+      entry->second = &descriptor;
+    } else {
+      _descriptors.emplace(descriptor_name, &descriptor);
+    }
   }
 
   auto remove_attachment(const std::string& descriptor_name) -> bool {
@@ -67,23 +82,10 @@ public:
     return false;
   }
 
-protected:
-
-  // auto add_descriptor(const std::string& name, const graphics::descriptor* descriptor) -> void {
-  //   _descriptors.insert_or_assign(name, descriptor);
-  // }
-
-  // auto get_descriptor(const std::string& name) const -> const graphics::descriptor* {
-  //   if (auto it = _descriptors.find(name); it != _descriptors.end()) {
-  //     return it->second;
-  //   }
-    
-  //   return nullptr;
-  // }
-
 private:
 
   std::map<std::string, memory::observer_ptr<const graphics::descriptor>> _descriptors;
+
   pipeline_type _pipeline;
   graphics::descriptor_handler _descriptor_handler;
 

@@ -22,13 +22,12 @@ demo_renderer::demo_renderer() {
 
   {
     auto attachments = std::vector<sbx::graphics::attachment>{
-      sbx::graphics::attachment{0, "swapchain", sbx::graphics::attachment::type::swapchain, VK_FORMAT_R8G8B8A8_UNORM, sbx::math::color{0.52f, 0.80f, 0.98f, 1.0f}},
+      sbx::graphics::attachment{0, "swapchain", sbx::graphics::attachment::type::swapchain, VK_FORMAT_R8G8B8A8_UNORM},
       sbx::graphics::attachment{1, "depth", sbx::graphics::attachment::type::depth}
     };
 
     auto subpass_bindings = std::vector<sbx::graphics::subpass_binding>{
-      sbx::graphics::subpass_binding{0, {0, 1}},
-      sbx::graphics::subpass_binding{1, {0}}
+      sbx::graphics::subpass_binding{0, {0, 1}}
     };
 
     add_render_stage(std::move(attachments), std::move(subpass_bindings));
@@ -38,10 +37,12 @@ demo_renderer::demo_renderer() {
 auto demo_renderer::initialize() -> void {
   add_subrenderer<sbx::shadows::shadow_subrenderer>("res://shaders/shadow", sbx::graphics::pipeline::stage{0, 0});
 
-  add_subrenderer<sbx::models::mesh_subrenderer>("res://shaders/mesh", sbx::graphics::pipeline::stage{1, 0});
-  add_subrenderer<sbx::ui::ui_subrenderer>("res://shaders/ui", sbx::graphics::pipeline::stage{1, 1});
+  // add_subrenderer<sbx::models::mesh_subrenderer>("res://shaders/mesh", sbx::graphics::pipeline::stage{1, 0});
 
-  // add_subrenderer<sbx::post::blur_filter<sbx::models::vertex3d>>("res://shaders/blur", sbx::graphics::pipeline::stage{1, 2}, sbx::math::vector2{0.5f, 0.5f});
+  add_subrenderer<sbx::post::default_filter<sbx::graphics::empty_vertex>>("res://shaders/default", sbx::graphics::pipeline::stage{1, 0}, "target");
+
+  add_subrenderer<sbx::ui::ui_subrenderer>("res://shaders/ui", sbx::graphics::pipeline::stage{1, 0});
+
 }
 
 } // namespace demo
