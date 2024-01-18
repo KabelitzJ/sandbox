@@ -58,5 +58,6 @@
 #include <libsbx/utility/string_literal.hpp>
 #include <libsbx/utility/make_array.hpp>
 #include <libsbx/utility/zip.hpp>
+#include <libsbx/utility/type_name.hpp>
 
 #endif // LIBSBX_UTILITY_HPP_
