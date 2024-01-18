@@ -64,10 +64,10 @@ buffer::buffer(size_type size, VkBufferUsageFlags usage, VkMemoryPropertyFlags p
 buffer::~buffer() {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
-  const auto& logical_device = graphics_module.logical_device();
-
-  vkFreeMemory(logical_device, _memory, nullptr);
-  vkDestroyBuffer(logical_device, _handle, nullptr);
+  graphics_module.add_deleter([memory = _memory, handle = _handle](logical_device& logical_device){
+    vkFreeMemory(logical_device, memory, nullptr);
+    vkDestroyBuffer(logical_device, handle, nullptr);
+  });
 }
 
 auto buffer::handle() const noexcept -> const VkBuffer& {

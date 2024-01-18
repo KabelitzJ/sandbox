@@ -107,6 +107,8 @@ graphics_module::~graphics_module() {
     vkDestroySemaphore(*_logical_device, frame_data.image_available_semaphore, nullptr);
   }
 
+  _free_deletion_queue();
+
   // // [NOTE] KAJ 2023-02-19 20:47 - Command buffers must be freed before the command pools
   _command_buffers.clear();
   _command_pools.clear();
@@ -119,6 +121,11 @@ auto graphics_module::update() -> void {
 
   if (!_renderer || window.is_iconified()) {
     return;
+  }
+
+  // [NOTE] KAJ 2024-01-18 16:08 - Free up some resources if we accumulated to many
+  if (_deletion_queue.size() > max_deletion_queue_size) {
+    _free_deletion_queue();
   }
 
   const auto& frame_data = _per_frame_data[_current_frame];

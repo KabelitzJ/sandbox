@@ -14,6 +14,8 @@
 
 #include <libsbx/assets/assets_module.hpp>
 
+#include <libsbx/signals/signal.hpp>
+
 #include <libsbx/graphics/devices/instance.hpp>
 #include <libsbx/graphics/devices/physical_device.hpp>
 #include <libsbx/graphics/devices/logical_device.hpp>
@@ -49,7 +51,9 @@ auto validate(VkResult result) -> void;
  */
 class graphics_module final : public core::module<graphics_module> {
 
-  inline static const auto is_registered = register_module(stage::rendering, dependencies<assets::assets_module, devices::devices_module>{});
+  inline static const auto is_registered = register_module(stage::rendering, dependencies<devices::devices_module>{});
+
+  inline static constexpr auto max_deletion_queue_size = std::size_t{32u};
 
 public:
 
@@ -87,6 +91,12 @@ public:
 
   auto attachment(const std::string& name) const -> const descriptor&;
 
+  template<typename Callable>
+  requires (std::is_invocable_r_v<void, Callable, graphics::logical_device&>)
+  auto add_deleter(Callable&& callable) -> void {
+    _deletion_queue.push_back(std::forward<Callable>(callable));
+  }
+
 private:
 
   auto _start_render_pass(graphics::render_stage& render_stage) -> bool;
@@ -102,6 +112,12 @@ private:
   auto _recreate_command_buffers() -> void;
 
   auto _recreate_attachments() -> void;
+
+  auto _free_deletion_queue() -> void {
+    for (auto& deleter : _deletion_queue) {
+      std::invoke(deleter, *_logical_device);
+    }
+  }
 
   struct per_frame_data {
     VkSemaphore image_available_semaphore{};
@@ -147,6 +163,8 @@ private:
 
   std::uint32_t _current_frame{};
   bool _framebuffer_resized{};
+
+  std::vector<signals::signal<void(graphics::logical_device&)>> _deletion_queue;
 
 }; // class graphics_module
 

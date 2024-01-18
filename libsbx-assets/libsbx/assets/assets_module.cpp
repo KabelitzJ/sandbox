@@ -9,7 +9,7 @@ assets_module::assets_module() {
 }
 
 assets_module::~assets_module() {
-  // unload_assets();
+
 }
 
 auto assets_module::update() -> void {
