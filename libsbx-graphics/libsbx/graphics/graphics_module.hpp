@@ -53,7 +53,7 @@ class graphics_module final : public core::module<graphics_module> {
 
   inline static const auto is_registered = register_module(stage::rendering, dependencies<devices::devices_module>{});
 
-  inline static constexpr auto max_deletion_queue_size = std::size_t{32u};
+  inline static constexpr auto max_deletion_queue_size = std::size_t{16u};
 
 public:
 
