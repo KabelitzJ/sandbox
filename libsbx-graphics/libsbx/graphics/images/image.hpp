@@ -21,7 +21,7 @@ public:
 
   image(const VkExtent3D extent, VkFilter filter, VkSamplerAddressMode address_mode, VkSampleCountFlagBits samples, VkImageLayout layout, VkImageUsageFlags usage, VkFormat format, std::uint32_t mip_levels, std::uint32_t array_layers);
 
-  virtual ~image();
+  virtual ~image() = default;
 
   static auto create_descriptor_set_layout_binding(std::uint32_t binding, VkDescriptorType descriptor_type, VkShaderStageFlags shader_stage_flags, std::uint32_t count = 1u) noexcept -> VkDescriptorSetLayoutBinding;
 

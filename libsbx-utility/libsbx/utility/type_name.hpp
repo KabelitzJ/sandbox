@@ -21,27 +21,27 @@ constexpr auto parse_type_name(std::string_view prefix, std::string_view suffix,
 
 template<typename Type>
 constexpr auto type_name() -> std::string_view {
-  if constexpr (compiler_v == compiler::clang) {
-    constexpr auto prefix = std::string_view{"[Type = "};
-    constexpr auto suffix = "]";
-    constexpr auto function = std::string_view{__PRETTY_FUNCTION__};
+#if defined(__clang__)
+  constexpr auto prefix = std::string_view{"[Type = "};
+  constexpr auto suffix = "]";
+  constexpr auto function = std::string_view{__PRETTY_FUNCTION__};
 
-    return detail::parse_type_name(prefix, suffix, function);
-  } else if constexpr (compiler_v == compiler::gnu) {
-    constexpr auto prefix = std::string_view{"with Type = "};
-    constexpr auto suffix = "; ";
-    constexpr auto function = std::string_view{__PRETTY_FUNCTION__};
+  return detail::parse_type_name(prefix, suffix, function);
+#elif (defined(__GNUC__) || defined(__GNUG__) || defined(__MINGW32__))
+  constexpr auto prefix = std::string_view{"with Type = "};
+  constexpr auto suffix = "; ";
+  constexpr auto function = std::string_view{__PRETTY_FUNCTION__};
 
-    return detail::parse_type_name(prefix, suffix, function);
-  } else if constexpr (compiler_v == compiler::msc) {
-    constexpr auto prefix = std::string_view{"type_name<"};
-    constexpr auto suffix = ">(void)";
-    constexpr auto function = std::string_view{__FUNCSIG__};
+  return detail::parse_type_name(prefix, suffix, function);
+#elif defined(__MSC_VER)
+  constexpr auto prefix = std::string_view{"type_name<"};
+  constexpr auto suffix = ">(void)";
+  constexpr auto function = std::string_view{__FUNCSIG__};
 
-    return detail::parse_type_name(prefix, suffix, function);
-  } else {
-    return typeid(Type).name();   
-  }
+  return detail::parse_type_name(prefix, suffix, function);
+#else
+  return typeid(Type).name(); 
+#endif
 }
 
 } // namespace sbx::utility

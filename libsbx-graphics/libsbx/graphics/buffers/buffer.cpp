@@ -1,5 +1,7 @@
 #include <libsbx/graphics/buffers/buffer.hpp>
 
+#include <fmt/format.h>
+
 #include <libsbx/utility/assert.hpp>
 
 #include <libsbx/core/engine.hpp>
@@ -10,8 +12,9 @@
 
 namespace sbx::graphics {
 
-buffer::buffer(size_type size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, memory::observer_ptr<const void> memory)
-: _size{size} {
+buffer_base::buffer_base(size_type size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, bool unses_deletion_queue, memory::observer_ptr<const void> memory)
+: _size{size},
+  _uses_deletion_queue{unses_deletion_queue} {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
   const auto& physical_device = graphics_module.physical_device();
@@ -59,34 +62,45 @@ buffer::buffer(size_type size, VkBufferUsageFlags usage, VkMemoryPropertyFlags p
   }
 
   validate(vkBindBufferMemory(logical_device, _handle, _memory, 0));
+
+  if (_uses_deletion_queue) {
+    graphics_module.add_deleter([memory = _memory, handle = _handle](graphics::logical_device& logical_device){
+      vkFreeMemory(logical_device, memory, nullptr);
+      vkDestroyBuffer(logical_device, handle, nullptr);
+    });
+  }
 }
 
-buffer::~buffer() {
-  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+buffer_base::~buffer_base() {
+  if (!_uses_deletion_queue) {
+    auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
-  graphics_module.add_deleter([memory = _memory, handle = _handle](logical_device& logical_device){
-    vkFreeMemory(logical_device, memory, nullptr);
-    vkDestroyBuffer(logical_device, handle, nullptr);
-  });
+    const auto& logical_device = graphics_module.logical_device();
+
+    logical_device.wait_idle();
+
+    vkFreeMemory(logical_device, _memory, nullptr);
+    vkDestroyBuffer(logical_device, _handle, nullptr);
+  }
 }
 
-auto buffer::handle() const noexcept -> const VkBuffer& {
+auto buffer_base::handle() const noexcept -> const VkBuffer& {
   return _handle;
 }
 
-buffer::operator const VkBuffer&() const noexcept {
+buffer_base::operator const VkBuffer&() const noexcept {
   return _handle;
 }
 
-auto buffer::memory() const noexcept -> const VkDeviceMemory& {
+auto buffer_base::memory() const noexcept -> const VkDeviceMemory& {
   return _memory;
 }
 
-auto buffer::size() const noexcept -> std::size_t {
+auto buffer_base::size() const noexcept -> std::size_t {
   return _size;
 }
 
-auto buffer::map() -> memory::observer_ptr<void> {
+auto buffer_base::map() -> memory::observer_ptr<void> {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
   const auto& logical_device = graphics_module.logical_device();
@@ -98,7 +112,7 @@ auto buffer::map() -> memory::observer_ptr<void> {
   return memory::observer_ptr<void>{mapped_memory};
 }
 
-auto buffer::unmap() -> void {
+auto buffer_base::unmap() -> void {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
   const auto& logical_device = graphics_module.logical_device();
@@ -106,7 +120,7 @@ auto buffer::unmap() -> void {
   vkUnmapMemory(logical_device, _memory);
 }
 
-auto buffer::write(memory::observer_ptr<const void> data, size_type size, size_type offset) -> void {
+auto buffer_base::write(memory::observer_ptr<const void> data, size_type size, size_type offset) -> void {
   auto mapped_memory = map();
 
   std::memcpy(static_cast<std::uint8_t*>(mapped_memory.get()) + offset, data.get(), size);

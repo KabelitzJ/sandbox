@@ -11,6 +11,8 @@ public:
 
   depth_image(const math::vector2u& extent, VkSampleCountFlagBits samples = VK_SAMPLE_COUNT_1_BIT);
 
+  ~depth_image() override = default;
+
 }; // class depth_image
 
 } // sbx::graphics

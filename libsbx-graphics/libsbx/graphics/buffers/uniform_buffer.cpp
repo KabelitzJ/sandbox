@@ -5,8 +5,8 @@
 namespace sbx::graphics {
 
 uniform_buffer::uniform_buffer(VkDeviceSize size, memory::observer_ptr<void> data)
-: buffer{size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, data},
-  _mapped_memory{buffer::map()} {}
+: buffer_base{size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, data},
+  _mapped_memory{buffer_base::map()} {}
 
 uniform_buffer::~uniform_buffer() {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
@@ -15,7 +15,7 @@ uniform_buffer::~uniform_buffer() {
 
   logical_device.wait_idle();
   
-  buffer::unmap();
+  buffer_base::unmap();
 }
 
 auto uniform_buffer::update(memory::observer_ptr<const void> data, VkDeviceSize size, VkDeviceSize offset) -> void {

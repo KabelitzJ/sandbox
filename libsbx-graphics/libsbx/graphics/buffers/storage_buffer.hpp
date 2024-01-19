@@ -9,7 +9,7 @@
 
 namespace sbx::graphics {
 
-class storage_buffer : public descriptor, public buffer  {
+class storage_buffer : public buffer_base, public descriptor  {
 
 public:
 

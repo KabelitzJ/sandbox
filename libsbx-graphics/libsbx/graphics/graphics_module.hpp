@@ -6,6 +6,7 @@
 #include <vector>
 
 #include <libsbx/core/module.hpp>
+#include <libsbx/core/delegate.hpp>
 
 #include <libsbx/devices/devices_module.hpp>
 
@@ -13,8 +14,6 @@
 #include <libsbx/utility/concepts.hpp>
 
 #include <libsbx/assets/assets_module.hpp>
-
-#include <libsbx/signals/signal.hpp>
 
 #include <libsbx/graphics/devices/instance.hpp>
 #include <libsbx/graphics/devices/physical_device.hpp>
@@ -42,7 +41,6 @@ namespace sbx::graphics {
  * @throws @see std::runtime_error 
  */
 auto validate(VkResult result) -> void;
-
 
 /**
  * @brief Module for managing rendering specific tasks
@@ -117,6 +115,8 @@ private:
     for (auto& deleter : _deletion_queue) {
       std::invoke(deleter, *_logical_device);
     }
+
+    _deletion_queue.clear();
   }
 
   struct per_frame_data {
@@ -164,7 +164,7 @@ private:
   std::uint32_t _current_frame{};
   bool _framebuffer_resized{};
 
-  std::vector<signals::signal<void(graphics::logical_device&)>> _deletion_queue;
+  std::vector<core::delegate<void(graphics::logical_device&)>> _deletion_queue;
 
 }; // class graphics_module
 

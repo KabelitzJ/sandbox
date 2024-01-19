@@ -125,10 +125,10 @@ auto graphics_module::update() -> void {
   }
 
   // [NOTE] KAJ 2024-01-18 16:08 - Free up some resources if we accumulated to many
-  if (_deletion_queue.size() > max_deletion_queue_size) {
-    core::logger::debug("{} graphics handles have been destroyed during runtime. This might indicate a bug!", max_deletion_queue_size)
-    _free_deletion_queue();
-  }
+  // if (_deletion_queue.size() > max_deletion_queue_size) {
+  //   core::logger::debug("{} graphics handles have been destroyed during runtime. This might indicate a bug!", max_deletion_queue_size);
+  //   _free_deletion_queue();
+  // }
 
   const auto& frame_data = _per_frame_data[_current_frame];
 
