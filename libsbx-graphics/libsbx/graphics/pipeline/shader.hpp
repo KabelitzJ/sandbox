@@ -44,6 +44,7 @@ public:
     umat4,
     sampler2d,
     storage_image,
+    subpass_input,
     structure
   }; // enum class data_type
 

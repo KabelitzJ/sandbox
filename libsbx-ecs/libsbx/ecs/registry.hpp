@@ -185,7 +185,7 @@ public:
   }
 
   auto destroy_entity(const entity_type& entity) -> void {
-    // [NOTE] : Clear out all components that are owned by this entity
+    // [NOTE] 2023-03-20 19:43 : Clear out all components that are owned by this entity
     for (auto& [type, storage] : _storages) {
       storage->remove(entity);
     }

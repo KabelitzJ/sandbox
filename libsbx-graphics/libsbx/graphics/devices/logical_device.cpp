@@ -9,7 +9,7 @@
 
 namespace sbx::graphics {
 
-// [NOTE] KAJ 2023-02-23 12:19 - Maybe rework the queue creation
+// [NOTE] KAJ 2023-02-23 : Maybe rework the queue creation
 
 static auto _print_queue_families(const VkQueueFamilyProperties& queue_family_properties) -> std::string {
   auto result = std::string{};
@@ -111,7 +111,7 @@ auto logical_device::_get_queue_family_indices(const physical_device& physical_d
   for (auto i = std::uint32_t{0}; i < device_queue_family_property_count; ++i) {
     core::logger::debug("Queue Family {} supports {} queues of type [{}]", i, device_queue_family_properties[i].queueCount, _print_queue_families(device_queue_family_properties[i]));
 
-    // [NOTE] KAJ 2023-03-20 18:57 - Always pick the queue that is the most specialized for the task i.e. has the least flags other than the one we are looking for
+    // [NOTE] KAJ 2023-03-20 : Always pick the queue that is the most specialized for the task i.e. has the least flags other than the one we are looking for
 		if (device_queue_family_properties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) {
 			if (!result.graphics) {
         result.graphics = i;

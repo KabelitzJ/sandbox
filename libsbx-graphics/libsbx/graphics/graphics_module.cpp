@@ -110,7 +110,7 @@ graphics_module::~graphics_module() {
 
   _free_deletion_queue();
 
-  // // [NOTE] KAJ 2023-02-19 20:47 - Command buffers must be freed before the command pools
+  // [NOTE] KAJ 2023-02-19 : Command buffers must be freed before the command pools
   _command_buffers.clear();
   _command_pools.clear();
 }
@@ -124,7 +124,7 @@ auto graphics_module::update() -> void {
     return;
   }
 
-  // [NOTE] KAJ 2024-01-18 16:08 - Free up some resources if we accumulated to many
+  // [NOTE] KAJ 2024-01-18 : Free up some resources if we accumulated to many
   // if (_deletion_queue.size() > max_deletion_queue_size) {
   //   core::logger::debug("{} graphics handles have been destroyed during runtime. This might indicate a bug!", max_deletion_queue_size);
   //   _free_deletion_queue();
@@ -144,7 +144,7 @@ auto graphics_module::update() -> void {
 
   vkResetFences(*_logical_device, 1, &frame_data.in_flight_fence);
 
-  // [NOTE] KAJ 2023-02-19 17:39 - Drawing happens here
+  // [NOTE] KAJ 2023-02-19 : Drawing happens here
 
   auto stage = pipeline::stage{};
 

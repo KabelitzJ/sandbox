@@ -166,6 +166,18 @@ auto shader::_create_reflection(const spirv_cross::Compiler& compiler) -> void {
 
     _uniforms.insert({name, image});
   }
+
+  // Reflection for subpass inputs
+  for (const auto& storage_image : resources.subpass_inputs) {
+    const auto& name = storage_image.name;
+    const auto binding = compiler.get_decoration(storage_image.id, spv::DecorationBinding);
+
+    auto image = uniform{binding, 0, 0, data_type::subpass_input, true, false, _stage};
+
+    core::logger::debug("storage image: '{}' binding: {}", name, binding);
+
+    _uniforms.insert({name, image});
+  }
 }
 
 auto shader::_get_data_type(const spirv_cross::SPIRType& type) -> data_type {

@@ -111,7 +111,7 @@ inline constexpr auto basic_matrix4x4<Type>::inverted(const basic_matrix4x4& mat
 
   const auto det0 = matrix[0] * row0;
   
-  // [NOTE] KAJ 2022-07-29 00:45 - I dont know why those parentheses are needed here... But im too scared to remove them
+  // [NOTE] KAJ 2022-07-29 : I dont know why those parentheses are needed here... But im too scared to remove them
   const auto det1 = value_type{(det0.x() + det0.y()) + (det0.z() + det0.w())};
 
   const auto one_over_determinant = static_cast<value_type>(1) / det1;
@@ -311,7 +311,7 @@ inline constexpr auto operator*(basic_matrix4x4<Lhs> lhs, Rhs scalar) noexcept -
 template<scalar Lhs, scalar Rhs>
 inline constexpr auto operator*(basic_matrix4x4<Lhs> lhs, const basic_vector4<Rhs>& rhs) noexcept -> basic_vector4<Lhs> {
 
-  // [NOTE] KAJ 2022-02-04 23:42 - This might become a performance bottleneck in the future. But most matrix multiplications are going to happen on the GPU anyways.
+  // [NOTE] KAJ 2022-02-04 : This might become a performance bottleneck in the future. But most matrix multiplications are going to happen on the GPU anyways.
   // const auto mov0 = rhs[0];
   // const auto mov1 = rhs[1];
 
@@ -350,7 +350,7 @@ inline constexpr auto operator*(basic_matrix4x4<Lhs> lhs, const basic_matrix4x4<
   const auto rhs2 = rhs[2];
   const auto rhs3 = rhs[3];
 
-  // [NOTE] KAJ 2022-02-04 23:42 - This might become a performance bottleneck in the future. But most matrix multiplications are going to happen on the GPU anyways.
+  // [NOTE] KAJ 2022-02-04 : This might become a performance bottleneck in the future. But most matrix multiplications are going to happen on the GPU anyways.
   auto result = basic_matrix4x4<Lhs>{};
 
   result[0] = lhs0 * static_cast<Lhs>(rhs0[0]) + lhs1 * static_cast<Lhs>(rhs0[1]) + lhs2 * static_cast<Lhs>(rhs0[2]) + lhs3 * static_cast<Lhs>(rhs0[3]);

@@ -112,12 +112,9 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
         descriptor_set_layout_bindings.push_back(storage_buffer::create_descriptor_set_layout_binding(uniform_block.binding(), descriptor_type, uniform_block.stage_flags()));
         break;
       }
-      case shader::uniform_block::type::push: {
-        // [NOTE] KAJ 2023-10-17 : Push constants do not require a descriptor set layout binding
-        break;
-      }
+      case shader::uniform_block::type::push:
       default: {
-        throw std::runtime_error{"Unknown uniform block type"};
+        break;
       }
     }
 
@@ -137,6 +134,17 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
       // descriptor_pool_sizes_by_type[descriptor_type] += swapchain::max_frames_in_flight; // ??? 3 ???
 
       _descriptor_bindings.insert({name, uniform.binding()});
+    }
+
+    switch (uniform.type()) {
+      case shader::data_type::sampler2d:
+      case shader::data_type::storage_image:
+      case shader::data_type::subpass_input: {
+        break;
+      }
+      default: {
+        core::logger::warn("Unsupported uniform type: {}", uniform.type());
+      }
     }
   }
 
@@ -280,7 +288,8 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
     VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 2048},
     VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 2048},
     VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 2048},
-    VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 2048}
+    VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 2048},
+    VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT , 2048}
   };
 
   auto descriptor_pool_create_info = VkDescriptorPoolCreateInfo{};
