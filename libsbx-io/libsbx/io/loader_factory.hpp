@@ -14,7 +14,12 @@ class loader_factory {
 public:
 
   template<typename Derived>
+  requires (std::is_invocable_r_v<Result, decltype(Derived::load), const std::filesystem::path&>)
   class loader {
+
+  public:
+
+    using result_type = Result;
 
   protected:
 
