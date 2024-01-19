@@ -96,30 +96,25 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
   }
 
   auto descriptor_set_layout_bindings = std::vector<VkDescriptorSetLayoutBinding>{};
-  auto descriptor_pool_sizes_by_type = std::map<VkDescriptorType, std::uint32_t>{};
 
   for (const auto& [name, uniform_block] : _uniform_blocks) {
-    auto descriptor_type = VK_DESCRIPTOR_TYPE_MAX_ENUM;
-
     switch (uniform_block.buffer_type()) {
       case shader::uniform_block::type::uniform: {
-        descriptor_type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        descriptor_set_layout_bindings.push_back(uniform_buffer::create_descriptor_set_layout_binding(uniform_block.binding(), descriptor_type, uniform_block.stage_flags()));
+        descriptor_set_layout_bindings.push_back(uniform_buffer::create_descriptor_set_layout_binding(uniform_block.binding(), VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, uniform_block.stage_flags()));
         break;
       }
       case shader::uniform_block::type::storage: {
-        descriptor_type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-        descriptor_set_layout_bindings.push_back(storage_buffer::create_descriptor_set_layout_binding(uniform_block.binding(), descriptor_type, uniform_block.stage_flags()));
+        descriptor_set_layout_bindings.push_back(storage_buffer::create_descriptor_set_layout_binding(uniform_block.binding(), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, uniform_block.stage_flags()));
         break;
       }
-      case shader::uniform_block::type::push:
+      case shader::uniform_block::type::push: {
+        // [NOTE] KAJ 2024-01-19 : We dont need descriptor sets for push constants but we still want to add them the the bindings and sizes
+        break;
+      }
       default: {
-        break;
+        core::logger::warn("Unsupported uniform block type (sbx::graphics::shader::uniform_block::type): {}", uniform_block.buffer_type());
+        continue;
       }
-    }
-
-    if (descriptor_type != VK_DESCRIPTOR_TYPE_MAX_ENUM) {
-      descriptor_pool_sizes_by_type[descriptor_type] += swapchain::max_frames_in_flight; // ??? 3 ???
     }
 
     _descriptor_bindings.insert({name, uniform_block.binding()});
@@ -127,25 +122,27 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
   }
 
   for (const auto& [name, uniform] : _uniforms) {
-    if (uniform.type() == shader::data_type::sampler2d || uniform.type() == shader::data_type::storage_image) {
-      const auto descriptor_type = uniform.is_writeonly() ? VK_DESCRIPTOR_TYPE_STORAGE_IMAGE : VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-
-      descriptor_set_layout_bindings.push_back(image::create_descriptor_set_layout_binding(uniform.binding(), descriptor_type, uniform.stage_flags()));
-      // descriptor_pool_sizes_by_type[descriptor_type] += swapchain::max_frames_in_flight; // ??? 3 ???
-
-      _descriptor_bindings.insert({name, uniform.binding()});
-    }
-
     switch (uniform.type()) {
-      case shader::data_type::sampler2d:
-      case shader::data_type::storage_image:
+      case shader::data_type::sampler2d: {
+        descriptor_set_layout_bindings.push_back(image::create_descriptor_set_layout_binding(uniform.binding(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, uniform.stage_flags()));
+        break;
+      }
+      case shader::data_type::storage_image: {
+        descriptor_set_layout_bindings.push_back(image::create_descriptor_set_layout_binding(uniform.binding(), VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, uniform.stage_flags()));
+        break;
+      }
       case shader::data_type::subpass_input: {
+        descriptor_set_layout_bindings.push_back(image::create_descriptor_set_layout_binding(uniform.binding(), VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, uniform.stage_flags()));
         break;
       }
       default: {
-        core::logger::warn("Unsupported uniform type: {}", uniform.type());
+        core::logger::warn("Unsupported uniform type (sbx::graphics::shader::data_type): {}", uniform.type());
+        continue;
       }
     }
+
+    _descriptor_bindings.insert({name, uniform.binding()});
+    _descriptor_sizes.insert({name, uniform.size()});
   }
 
   std::ranges::sort(descriptor_set_layout_bindings, [](const auto& lhs, const auto& rhs) {
@@ -155,16 +152,6 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
   for (const auto& descriptor : descriptor_set_layout_bindings) {
     _descriptor_type_at_binding.insert({descriptor.binding, descriptor.descriptorType});
   }
-
-  // auto descriptor_pool_sizes = std::vector<VkDescriptorPoolSize>{};
-
-  // for (const auto& [type, count] : descriptor_pool_sizes_by_type) {
-  //   auto pool_size = VkDescriptorPoolSize{};
-  //   pool_size.type = type;
-  //   pool_size.descriptorCount = count;
-
-  //   descriptor_pool_sizes.push_back(pool_size);
-  // }
 
   auto viewport_state = VkPipelineViewportStateCreateInfo{};
   viewport_state.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
