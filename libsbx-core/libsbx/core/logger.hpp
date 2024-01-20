@@ -39,6 +39,8 @@
 #include <unordered_map>
 #include <type_traits>
 
+#include <fmt/format.h>
+
 #include <spdlog/logger.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/sinks/basic_file_sink.h>
@@ -46,13 +48,6 @@
 #include <libsbx/utility/target.hpp>
 
 namespace sbx::core {
-
-// [NOTE] KAJ 2024-01-19 : Enable formatting to underlying type for all enums
-template<typename Type>
-requires (std::is_enum_v<Type>)
-auto format_as(Type value) -> decltype(fmt::underlying(value)) {
-  return fmt::underlying(value);
-}
 
 class logger {
 
@@ -166,5 +161,19 @@ private:
 }; // class logger
 
 } // namespace sbx::core
+
+// [NOTE] KAJ 2024-01-19 : Enable formatting to underlying type for all enums
+template<typename Type>
+requires (std::is_enum_v<Type>)
+struct fmt::formatter<Type> : public fmt::formatter<std::underlying_type_t<Type>> {
+
+  using base_type = fmt::formatter<std::underlying_type_t<Type>>;
+
+  template<typename FormatContext>
+  auto format(const Type& value, FormatContext& context) -> decltype(auto) {
+    return base_type::format(static_cast<std::underlying_type_t<Type>>(value), context);
+  }
+
+}; // struct fmt::formatter<Type>
 
 #endif // LIBSBX_CORE_LOGGER_HPP_
