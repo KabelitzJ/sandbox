@@ -10,7 +10,9 @@ layout(location = 2) in vec2 in_uv;
 layout(location = 3) in vec4 in_light_space_position;
 layout(location = 4) in vec4 in_color;
 
-layout(location = 0) out vec4 out_color;
+layout(location = 0) out vec4 out_position;
+layout(location = 1) out vec4 out_normal;
+layout(location = 2) out vec4 out_color;
 
 layout(binding = 0) uniform uniform_scene {
   mat4 view;
@@ -100,6 +102,8 @@ void main(void) {
 	// final_color += 0.04 * rim_light * SKY_COL;
 	// final_color += 0.09 * sun_specular * shadow * scene.light_color;
 
+  out_position = vec4(in_position, 1.0);
+  out_normal = vec4(in_normal, 1.0);
   out_color = final_color;
 
 	// out_color = vec4(pow(final_color, vec4(1.4545)));

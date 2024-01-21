@@ -200,7 +200,7 @@ public:
 
   auto subpasses() const noexcept -> const std::vector<subpass_binding>&;
 
-  auto attachment_count(std::uint32_t subpass) -> std::uint32_t;
+  auto attachment_count(std::uint32_t subpass) const -> std::uint32_t;
 
   auto is_outdated() const noexcept -> bool;
 
@@ -222,9 +222,9 @@ public:
 
   auto framebuffer(std::uint32_t index) noexcept -> const VkFramebuffer&;
 
-  auto descriptor(const std::string& name) const noexcept -> const graphics::descriptor*;
+  auto descriptor(const std::string& name) const noexcept -> memory::observer_ptr<const graphics::descriptor>;
 
-  auto descriptors() const noexcept -> const std::map<std::string, const graphics::descriptor*>&;
+  auto descriptors() const noexcept -> const std::map<std::string, memory::observer_ptr<const graphics::descriptor>>&;
 
   auto transition_image_layouts(command_buffer& command_buffer) const -> void;
 
@@ -241,7 +241,7 @@ private:
 
   VkRenderPass _render_pass;
 
-  std::map<std::string, const graphics::descriptor*> _descriptors;
+  std::map<std::string, memory::observer_ptr<const graphics::descriptor>> _descriptors;
 
   std::unique_ptr<graphics::depth_image> _depth_image;
   std::unordered_map<std::uint32_t, std::unique_ptr<graphics::image2d>> _image_attachments;

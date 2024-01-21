@@ -15,6 +15,10 @@ public:
 
   auto initialize() -> void override;
 
+private:
+
+  sbx::math::color _sky_color;
+
 }; // class demo_renderer
 
 } // namespace demo

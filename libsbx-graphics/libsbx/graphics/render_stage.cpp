@@ -43,8 +43,11 @@ render_stage::render_stage(std::vector<graphics::attachment>&& attachments, std:
   _subpass_bindings{std::move(subpass_bindings)},
   _viewport{viewport},
   _render_pass{nullptr},
-  _subpass_attachment_counts{static_cast<std::uint32_t>(_subpass_bindings.size()), 0},
+  _subpass_attachment_counts{},
   _is_outdated{true} {
+  auto attachment_counts = _subpass_bindings.size();
+
+  _subpass_attachment_counts.resize(attachment_counts, 0u);
 
   for (const auto& attachment : _attachments) {
     auto clear_value = VkClearValue{};
@@ -123,7 +126,7 @@ auto render_stage::subpasses() const noexcept -> const std::vector<subpass_bindi
   return _subpass_bindings;
 }
 
-auto render_stage::attachment_count(std::uint32_t subpass) -> std::uint32_t {
+auto render_stage::attachment_count(std::uint32_t subpass) const -> std::uint32_t {
   return _subpass_attachment_counts[subpass];
 }
 
@@ -223,7 +226,7 @@ auto render_stage::framebuffer(std::uint32_t index) noexcept -> const VkFramebuf
   return _framebuffers[index];
 }
 
-auto render_stage::descriptor(const std::string& name) const noexcept -> const graphics::descriptor* {
+auto render_stage::descriptor(const std::string& name) const noexcept -> memory::observer_ptr<const graphics::descriptor> {
   if (auto it = _descriptors.find(name); it != _descriptors.end()) {
     return it->second;
   }
@@ -231,7 +234,7 @@ auto render_stage::descriptor(const std::string& name) const noexcept -> const g
   return nullptr;
 }
 
-auto render_stage::descriptors() const noexcept -> const std::map<std::string, const graphics::descriptor*>& {
+auto render_stage::descriptors() const noexcept -> const std::map<std::string, memory::observer_ptr<const graphics::descriptor>>& {
   return _descriptors;
 }
 

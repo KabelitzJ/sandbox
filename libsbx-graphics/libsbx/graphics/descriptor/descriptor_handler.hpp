@@ -122,7 +122,7 @@ public:
 private:
 
   struct descriptor_entry {
-    const graphics::descriptor* descriptor;
+    memory::observer_ptr<const descriptor> descriptor;
     graphics::write_descriptor_set write_descriptor_set;
     std::uint32_t binding;
   }; // struct descriptor_entry

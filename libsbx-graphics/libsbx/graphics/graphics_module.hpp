@@ -150,7 +150,7 @@ private:
 
   std::unordered_map<command_pool_key, std::shared_ptr<graphics::command_pool>, command_pool_key_hash, command_pool_key_equality> _command_pools{};
 
-  std::map<std::string, const descriptor*> _attachments{};
+  std::map<std::string, memory::observer_ptr<const descriptor>> _attachments{};
 
   std::unique_ptr<graphics::surface> _surface{};
 
