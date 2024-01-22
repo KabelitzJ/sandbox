@@ -163,9 +163,20 @@ auto swapchain::acquire_next_image(const VkSemaphore& image_available_semaphore,
         
   auto& logical_device = graphics_module.logical_device();
 
+  const auto status = VkResult{};
+
+  status = vkGetFenceStatus(logical_device, fence);
+  core::logger::debug("before wait: {}", status);
+
   validate(vkWaitForFences(logical_device, 1, &fence, true, std::numeric_limits<std::uint64_t>::max()));
 
+  status = vkGetFenceStatus(logical_device, fence);
+  core::logger::debug("after wait: {}", status);
+
   const auto result = vkAcquireNextImageKHR(logical_device, _handle, std::numeric_limits<std::uint64_t>::max(), image_available_semaphore, nullptr, &_active_image_index);
+
+  status = vkGetFenceStatus(logical_device, fence);
+  core::logger::debug("after acquire: {}", status);
 
   if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR && result != VK_ERROR_OUT_OF_DATE_KHR) {
     throw std::runtime_error("Failed to acquire next image");
