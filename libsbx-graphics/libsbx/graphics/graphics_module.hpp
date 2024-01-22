@@ -143,8 +143,8 @@ private:
 
   std::unique_ptr<graphics::swapchain> _swapchain{};
 
-  std::vector<per_frame_data> _per_frame_data{};
-  std::vector<graphics::command_buffer> _command_buffers{};
+  std::vector<std::unique_ptr<per_frame_data>> _per_frame_data{};
+  std::vector<std::unique_ptr<graphics::command_buffer>> _command_buffers{};
 
   std::unique_ptr<graphics::renderer> _renderer{};
 
