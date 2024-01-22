@@ -17,8 +17,7 @@ layout(location = 2) in vec2 in_uv;
 layout(location = 0) out vec3 out_position;
 layout(location = 1) out vec3 out_normal;
 layout(location = 2) out vec2 out_uv;
-layout(location = 3) out vec4 out_light_space_position;
-layout(location = 4) out vec4 out_color;
+layout(location = 3) out vec4 out_color;
 
 layout(binding = 0) uniform uniform_scene {
   mat4 view;
@@ -53,7 +52,7 @@ void main() {
   out_position = world_position;
   out_normal = normalize(mat3(data.normal) * in_normal);
   out_uv = in_uv;
-  out_light_space_position = (DEPTH_BIAS * scene.light_space) * vec4(out_position, 1.0);
+  // out_light_space_position = (DEPTH_BIAS * scene.light_space) * vec4(out_position, 1.0);
 
   // float brightness = (data.tint.r + data.tint.g + data.tint.b) / 3.0;
   // brightness = (1.0 - BRIGHTNESS_EFFECT) + BRIGHTNESS_EFFECT * brightness;

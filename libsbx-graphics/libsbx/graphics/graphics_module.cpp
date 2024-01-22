@@ -124,12 +124,6 @@ auto graphics_module::update() -> void {
     return;
   }
 
-  // [NOTE] KAJ 2024-01-18 : Free up some resources if we accumulated to many
-  // if (_deletion_queue.size() > max_deletion_queue_size) {
-  //   core::logger::debug("{} graphics handles have been destroyed during runtime. This might indicate a bug!", max_deletion_queue_size);
-  //   _free_deletion_queue();
-  // }
-
   const auto& frame_data = _per_frame_data[_current_frame];
 
   // Get the next image in the swapchain (back/front buffer)
@@ -138,7 +132,7 @@ auto graphics_module::update() -> void {
   if (result == VK_ERROR_OUT_OF_DATE_KHR) {
     _recreate_swapchain();
     return;
-  }else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+  } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
     throw std::runtime_error{"Failed to acquire swapchain image"};
   }
 
@@ -297,11 +291,10 @@ auto graphics_module::_end_render_pass(graphics::render_stage& render_stage) -> 
 
   if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
     _framebuffer_resized = true;
+    _recreate_swapchain();
   } else if (result != VK_SUCCESS) {
     throw std::runtime_error{"Failed to present swapchain image"};
   }
-
-  // swapchain::max_frames_in_flight
 
   _current_frame = utility::fast_mod(_current_frame + 1, swapchain::max_frames_in_flight);
 }

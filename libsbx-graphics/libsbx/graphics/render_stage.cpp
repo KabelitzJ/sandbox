@@ -197,6 +197,8 @@ auto render_stage::rebuild(const swapchain& swapchain) -> void {
     _create_render_pass(_depth_image ? _depth_image->format() : VK_FORMAT_UNDEFINED, surface.format().format);
   }
 
+  _image_attachments.clear();
+
   for (const auto& attachment : _attachments) {
     if (attachment.image_type() == attachment::type::image) {
       _image_attachments.insert({attachment.binding(), std::make_unique<graphics::image2d>(_render_area.extent(), attachment.format(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_STORAGE_BIT, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_SAMPLE_COUNT_1_BIT)});
