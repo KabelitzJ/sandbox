@@ -4,6 +4,7 @@
 #include <memory>
 #include <unordered_map>
 #include <vector>
+#include <array>
 
 #include <libsbx/core/module.hpp>
 
@@ -23,6 +24,8 @@
 #include <libsbx/graphics/commands/command_buffer.hpp>
 
 #include <libsbx/graphics/render_pass/swapchain.hpp>
+#include <libsbx/graphics/render_pass/fence.hpp>
+#include <libsbx/graphics/render_pass/semaphore.hpp>
 
 #include <libsbx/graphics/pipeline/pipeline.hpp>
 #include <libsbx/graphics/pipeline/shader.hpp>
@@ -104,9 +107,9 @@ private:
   auto _recreate_attachments() -> void;
 
   struct per_frame_data {
-    VkSemaphore image_available_semaphore{};
-    VkSemaphore render_finished_semaphore{};
-    VkFence in_flight_fence{};
+    graphics::semaphore image_available_semaphore;
+    graphics::semaphore render_finished_semaphore;
+    graphics::fence in_flight_fence;
   }; // struct per_frame_data
 
   struct command_pool_key {
@@ -141,7 +144,7 @@ private:
   std::unique_ptr<graphics::swapchain> _swapchain{};
 
   std::vector<per_frame_data> _per_frame_data{};
-  std::vector<std::unique_ptr<graphics::command_buffer>> _command_buffers{};
+  std::vector<graphics::command_buffer> _command_buffers{};
 
   std::unique_ptr<graphics::renderer> _renderer{};
 

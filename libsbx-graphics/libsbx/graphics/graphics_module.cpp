@@ -101,15 +101,15 @@ graphics_module::~graphics_module() {
 
   _swapchain.reset();
 
-  for (const auto& frame_data : _per_frame_data) {
-    vkDestroyFence(*_logical_device, frame_data.in_flight_fence, nullptr);
-    vkDestroySemaphore(*_logical_device, frame_data.render_finished_semaphore, nullptr);
-    vkDestroySemaphore(*_logical_device, frame_data.image_available_semaphore, nullptr);
-  }
+  _per_frame_data.clear();
 
   // // [NOTE] KAJ 2023-02-19 20:47 - Command buffers must be freed before the command pools
   _command_buffers.clear();
   _command_pools.clear();
+
+  _logical_device.reset();
+  _physical_device.reset();
+  _instance.reset();
 }
 
 auto graphics_module::update() -> void {
@@ -124,7 +124,7 @@ auto graphics_module::update() -> void {
   const auto& frame_data = _per_frame_data[_current_frame];
 
   // Get the next image in the swapchain (back/front buffer)
-  const auto result = _swapchain->acquire_next_image(frame_data.image_available_semaphore, frame_data.in_flight_fence);
+  const auto result = _swapchain->acquire_next_image(frame_data->image_available_semaphore, frame_data->in_flight_fence);
   
   if (result == VK_ERROR_OUT_OF_DATE_KHR) {
     _recreate_swapchain();
@@ -133,7 +133,7 @@ auto graphics_module::update() -> void {
     throw std::runtime_error{"Failed to acquire swapchain image"};
   }
 
-  vkResetFences(*_logical_device, 1, &frame_data.in_flight_fence);
+  // vkResetFences(*_logical_device, 1, &frame_data->in_flight_fence);
 
   // [NOTE] KAJ 2023-02-19 17:39 - Drawing happens here
 
@@ -153,10 +153,10 @@ auto graphics_module::update() -> void {
     for (const auto& subpass : subpasses) {
       stage.subpass = subpass.binding();
 
-      _renderer->render(stage, *command_buffer);
+      _renderer->render(stage, command_buffer);
 
       if (subpass.binding() != subpasses.back().binding()) {
-        vkCmdNextSubpass(*command_buffer, VK_SUBPASS_CONTENTS_INLINE);
+        vkCmdNextSubpass(command_buffer, VK_SUBPASS_CONTENTS_INLINE);
       }
     }
 
@@ -224,8 +224,8 @@ auto graphics_module::_start_render_pass(graphics::render_stage& render_stage) -
 
   const auto& command_buffer = _command_buffers[_current_frame];
 
-  if (!command_buffer->is_running()) {
-    command_buffer->begin(VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
+  if (!command_buffer.is_running()) {
+    command_buffer.begin(VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
   }
 
   const auto& area = render_stage.render_area();
@@ -245,13 +245,13 @@ auto graphics_module::_start_render_pass(graphics::render_stage& render_stage) -
 	viewport.minDepth = 0.0f;
 	viewport.maxDepth = 1.0f;
 
-	command_buffer->set_viewport(viewport);
+	command_buffer.set_viewport(viewport);
 
 	auto scissor = VkRect2D{};
 	scissor.offset = render_area.offset;
 	scissor.extent = render_area.extent;
   
-  command_buffer->set_scissor(scissor);
+  command_buffer.set_scissor(scissor);
 
   const auto& clear_values = render_stage.clear_values();
 
@@ -263,7 +263,7 @@ auto graphics_module::_start_render_pass(graphics::render_stage& render_stage) -
 	render_pass_begin_info.clearValueCount = static_cast<std::uint32_t>(clear_values.size());
 	render_pass_begin_info.pClearValues = clear_values.data();
 
-  command_buffer->begin_render_pass(render_pass_begin_info, VK_SUBPASS_CONTENTS_INLINE);
+  command_buffer.begin_render_pass(render_pass_begin_info, VK_SUBPASS_CONTENTS_INLINE);
 
   return true;
 }
@@ -273,18 +273,18 @@ auto graphics_module::_end_render_pass(graphics::render_stage& render_stage) -> 
 
   auto& command_buffer = _command_buffers[_current_frame];
 
-  command_buffer->end_render_pass();
+  command_buffer.end_render_pass();
 
   if (!render_stage.has_swapchain_attachment()) {
     return;
   }
 
   // Submit the command buffer to the graphics queue and draw the on the image
-  command_buffer->end();
-  command_buffer->submit(frame_data.image_available_semaphore, frame_data.render_finished_semaphore, frame_data.in_flight_fence);
+  command_buffer.end();
+  command_buffer.submit(frame_data->image_available_semaphore, frame_data->render_finished_semaphore, frame_data->in_flight_fence);
 
   // Present the image to the screen
-  const auto result = _swapchain->present(frame_data.render_finished_semaphore);
+  const auto result = _swapchain->present(frame_data->render_finished_semaphore);
 
   if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
     _framebuffer_resized = true;
@@ -338,28 +338,9 @@ auto graphics_module::_recreate_swapchain() -> void {
 }
 
 auto graphics_module::_recreate_command_buffers() -> void {
-  for (const auto& data : _per_frame_data) {
-    vkDestroyFence(*_logical_device, data.in_flight_fence, nullptr);
-    vkDestroySemaphore(*_logical_device, data.image_available_semaphore, nullptr);
-    vkDestroySemaphore(*_logical_device, data.render_finished_semaphore, nullptr);
+  for (auto& frame_data : _per_frame_data) {
+    frame_data = std::make_unique<per_frame_data>();
   }
-
-  _per_frame_data.resize(swapchain::max_frames_in_flight);
-
-  auto semaphore_create_info = VkSemaphoreCreateInfo{};
-	semaphore_create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-
-	auto fence_create_info = VkFenceCreateInfo{};
-	fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-	fence_create_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-
-  for (auto& data : _per_frame_data) {
-    validate(vkCreateSemaphore(*_logical_device, &semaphore_create_info, nullptr, &data.image_available_semaphore));
-    validate(vkCreateSemaphore(*_logical_device, &semaphore_create_info, nullptr, &data.render_finished_semaphore));
-    validate(vkCreateFence(*_logical_device, &fence_create_info, nullptr, &data.in_flight_fence));
-  }
-
-  _command_buffers.resize(swapchain::max_frames_in_flight);
 
   for (auto& command_buffer : _command_buffers) {
     command_buffer = std::make_unique<graphics::command_buffer>(false);

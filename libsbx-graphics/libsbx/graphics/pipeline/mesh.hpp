@@ -105,12 +105,11 @@ protected:
 
     auto fence_create_info = VkFenceCreateInfo{};
     fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+    fence_create_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
     auto fence = VkFence{};
 
     graphics::validate(vkCreateFence(logical_device, &fence_create_info, nullptr, &fence));
-
-    graphics::validate(vkResetFences(logical_device, 1, &fence));
 
     auto vertex_buffer_size = sizeof(Vertex) * vertices.size();
     auto index_buffer_size = sizeof(std::uint32_t) * indices.size();

@@ -163,9 +163,7 @@ auto swapchain::acquire_next_image(const VkSemaphore& image_available_semaphore,
         
   auto& logical_device = graphics_module.logical_device();
 
-  if (fence) {
-    validate(vkWaitForFences(logical_device, 1, &fence, true, std::numeric_limits<std::uint64_t>::max()));
-  }
+  validate(vkWaitForFences(logical_device, 1, &fence, true, std::numeric_limits<std::uint64_t>::max()));
 
   const auto result = vkAcquireNextImageKHR(logical_device, _handle, std::numeric_limits<std::uint64_t>::max(), image_available_semaphore, nullptr, &_active_image_index);
 
