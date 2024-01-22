@@ -133,8 +133,6 @@ auto graphics_module::update() -> void {
     throw std::runtime_error{"Failed to acquire swapchain image"};
   }
 
-  // vkResetFences(*_logical_device, 1, &frame_data->in_flight_fence);
-
   // [NOTE] KAJ 2023-02-19 17:39 - Drawing happens here
 
   auto stage = pipeline::stage{};
