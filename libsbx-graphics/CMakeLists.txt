@@ -18,6 +18,7 @@ find_package(Vulkan REQUIRED)
 find_package(SPIRV-Headers REQUIRED)
 find_package(spirv-cross REQUIRED)
 find_package(stb REQUIRED)
+find_package(range-v3 REQUIRED)
 
 option(GLFW_BUILD_EXAMPLES "Build the GLFW example programs" OFF)
 option(GLFW_BUILD_TESTS "Build the GLFW test programs" OFF)
@@ -111,6 +112,7 @@ target_link_libraries(
     spirv-cross-reflect
     spirv-cross-glsl
     stb::stb
+    range-v3::range-v3
     # Internal dependencies
     libsbx::utility
     libsbx::io

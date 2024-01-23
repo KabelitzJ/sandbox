@@ -1,5 +1,7 @@
 #include <libsbx/graphics/render_stage.hpp>
 
+#include <range/v3/all.hpp>
+
 #include <libsbx/core/engine.hpp>
 
 #include <libsbx/graphics/graphics_module.hpp>
@@ -24,6 +26,8 @@ public:
 
       _description.pDepthStencilAttachment = &_depth_attachment;
     }
+
+    core::logger::debug("colorAttachmentCount: {}", _description.colorAttachmentCount);
   }
 
   auto description() const noexcept -> const VkSubpassDescription& {
@@ -127,7 +131,7 @@ auto render_stage::subpasses() const noexcept -> const std::vector<subpass_bindi
 }
 
 auto render_stage::attachment_count(std::uint32_t subpass) const -> std::uint32_t {
-  return _subpass_attachment_counts[subpass];
+  return _subpass_attachment_counts[subpass] + (_is_swapchain_subpass(subpass) ? 1 : 0);
 }
 
 auto render_stage::is_outdated() const noexcept -> bool {
@@ -200,10 +204,16 @@ auto render_stage::rebuild(const swapchain& swapchain) -> void {
   _image_attachments.clear();
 
   for (const auto& attachment : _attachments) {
-    if (attachment.image_type() == attachment::type::image) {
-      _image_attachments.insert({attachment.binding(), std::make_unique<graphics::image2d>(_render_area.extent(), attachment.format(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_STORAGE_BIT, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_SAMPLE_COUNT_1_BIT)});
-    } else if (attachment.image_type() == attachment::type::swapchain) {
-      _image_attachments.insert({attachment.binding(), nullptr});
+    switch (attachment.image_type()) {
+      case attachment::type::image: {
+        _image_attachments.insert({attachment.binding(), std::make_unique<graphics::image2d>(_render_area.extent(), attachment.format(), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_STORAGE_BIT, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_SAMPLE_COUNT_1_BIT)});
+        break;
+      }
+      case attachment::type::depth: 
+      case attachment::type::swapchain: {
+        _image_attachments.insert({attachment.binding(), nullptr});
+        break;
+      }
     }
   }
 
@@ -259,12 +269,12 @@ auto render_stage::_create_render_pass(VkFormat depth_format, VkFormat surface_f
     switch (attachment.image_type()) {
       case attachment::type::image: {
         attachment_description.format = attachment.format();
-        attachment_description.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        attachment_description.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
         break;
       }
       case attachment::type::depth: {
         attachment_description.format = depth_format;
-        attachment_description.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        attachment_description.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
         break;
       }
       case attachment::type::swapchain: {
@@ -308,8 +318,8 @@ auto render_stage::_create_render_pass(VkFormat depth_format, VkFormat surface_f
 
 		auto subpass_dependency = VkSubpassDependency{};
 		subpass_dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-		subpass_dependency.dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
 		subpass_dependency.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+		subpass_dependency.dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
 		subpass_dependency.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 		subpass_dependency.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
@@ -399,6 +409,14 @@ auto render_stage::_rebuild_framebuffers(const swapchain& swapchain) -> void {
 
     validate(vkCreateFramebuffer(logical_device, &framebuffer_create_info, nullptr, &_framebuffers[i]));
   }
+}
+
+auto render_stage::_is_swapchain_subpass(std::uint32_t subpass) const noexcept -> bool {
+  if (!_swapchain_attachment) {
+    return false;
+  }
+
+  return ranges::contains(_subpass_bindings[subpass].attachment_bindings(), _swapchain_attachment->binding());
 }
 
 } // namespace sbx::graphics

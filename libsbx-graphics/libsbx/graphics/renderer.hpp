@@ -29,9 +29,9 @@ public:
   virtual auto initialize() -> void = 0;
 
   auto render(const pipeline::stage& stage, command_buffer& command_buffer) -> void {
-    for (const auto& [render_stage, type] : _subrenderer_stages) {
+    for (const auto& [render_stage, index] : _subrenderer_stages) {
       if (render_stage == stage) {
-        _subrenderers[type]->render(command_buffer);
+        _subrenderers[index]->render(command_buffer);
       }
     }
   }
@@ -56,17 +56,17 @@ protected:
   auto add_subrenderer(const std::filesystem::path& path, const pipeline::stage& stage, Args&&... args) -> void {
     const auto type = std::type_index{typeid(Type)};
 
-    _subrenderer_stages.insert({stage, type});
+    _subrenderer_stages.insert({stage, _subrenderers.size()});
 
-    _subrenderers.insert({type, std::make_unique<Type>(path, stage, std::forward<Args>(args)...)});
+    _subrenderers.push_back(std::make_unique<Type>(path, stage, std::forward<Args>(args)...));
   }
 
 private:
 
   std::vector<std::unique_ptr<graphics::render_stage>> _render_stages;
 
-  std::unordered_map<std::type_index, std::unique_ptr<subrenderer>> _subrenderers;
-  std::multimap<pipeline::stage, std::type_index> _subrenderer_stages;
+  std::vector<std::unique_ptr<subrenderer>> _subrenderers;
+  std::multimap<pipeline::stage, std::size_t> _subrenderer_stages;
 
 }; // class renderer
 
