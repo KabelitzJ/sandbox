@@ -210,10 +210,6 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
 
   auto color_blend_attachments = std::vector<VkPipelineColorBlendAttachmentState>{render_stage.attachment_count(_stage.subpass), color_blend_attachment};
 
-  if (render_stage.has_swapchain_attachment()) {
-    color_blend_attachments.push_back(color_blend_attachment);
-  }
-
   auto color_blend_state = VkPipelineColorBlendStateCreateInfo{};
   color_blend_state.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
   color_blend_state.logicOpEnable = false;

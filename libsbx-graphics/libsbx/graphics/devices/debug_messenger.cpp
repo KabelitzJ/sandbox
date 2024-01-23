@@ -46,6 +46,7 @@ VKAPI_ATTR auto VKAPI_CALL debug_messenger::_debug_callback(VkDebugUtilsMessageS
     core::logger::warn("{}", callback_data->pMessage);
   } else if (message_severity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) {
     core::logger::error("{}", callback_data->pMessage);
+    while (true) { }
   }
 
   return VK_FALSE;
