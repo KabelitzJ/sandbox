@@ -1,5 +1,7 @@
 #include <libsbx/graphics/render_stage.hpp>
 
+#include <fmt/format.h>
+
 #include <range/v3/all.hpp>
 
 #include <libsbx/core/engine.hpp>
@@ -62,22 +64,30 @@ render_stage::render_stage(std::vector<graphics::attachment>&& attachments, std:
       case attachment::type::image: {
         clear_value.color = VkClearColorValue{clear_color.r, clear_color.g, clear_color.b, clear_color.a};
 
-        for (const auto& subpass : _subpass_bindings) {
-          if (auto bindings = subpass.attachment_bindings(); std::find(bindings.begin(), bindings.end(), attachment.binding()) != bindings.end()) {
-            _subpass_attachment_counts[subpass.binding()]++;
-          }
-        }
+        _update_subpass_attachment_counts(attachment);
 
         break;
       }
       case attachment::type::depth: {
+        if (_depth_attachment) {
+          throw std::runtime_error{fmt::format("Render stage can at max have one depth attachemnt! Found depth attachemnts at bindings {} and {}", _depth_attachment->binding(), attachment.binding())};
+        }
+
         clear_value.depthStencil = VkClearDepthStencilValue{1.0f, 0};
         _depth_attachment = attachment;
+
         break;
       }
       case attachment::type::swapchain: {
+        if (_swapchain_attachment) {
+          throw std::runtime_error{fmt::format("Render stage can at max have one swapchain attachemnt! Found swapchain attachemnts at bindings {} and {}", _swapchain_attachment->binding(), attachment.binding())};
+        }
+
+        _update_subpass_attachment_counts(attachment);
+
         clear_value.color = VkClearColorValue{clear_color.r, clear_color.g, clear_color.b, clear_color.a};
         _swapchain_attachment = attachment;
+
         break;
       }
     }
@@ -411,12 +421,12 @@ auto render_stage::_rebuild_framebuffers(const swapchain& swapchain) -> void {
   }
 }
 
-auto render_stage::_is_swapchain_subpass(std::uint32_t subpass) const noexcept -> bool {
-  if (!_swapchain_attachment) {
-    return false;
+auto render_stage::_update_subpass_attachment_counts(const graphics::attachment& attachment) -> void {
+  for (const auto& subpass : _subpass_bindings) {
+    if (auto bindings = subpass.attachment_bindings(); ranges::contains(bindings, attachment.binding())) {
+      _subpass_attachment_counts[subpass.binding()]++;
+    }
   }
-
-  return ranges::contains(_subpass_bindings[subpass].attachment_bindings(), _swapchain_attachment->binding());
 }
 
 } // namespace sbx::graphics

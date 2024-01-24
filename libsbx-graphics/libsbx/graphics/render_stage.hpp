@@ -234,7 +234,7 @@ private:
 
   auto _rebuild_framebuffers(const swapchain& swapchain) -> void;
 
-  auto _is_swapchain_subpass(std::uint32_t subpass) const noexcept -> bool;
+  auto _update_subpass_attachment_counts(const graphics::attachment& attachment) -> void;
 
   std::vector<graphics::attachment> _attachments;
   std::vector<subpass_binding> _subpass_bindings;
