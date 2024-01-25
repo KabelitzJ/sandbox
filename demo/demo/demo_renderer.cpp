@@ -80,7 +80,7 @@ auto demo_renderer::initialize() -> void {
   add_subrenderer<sbx::models::mesh_subrenderer>("res://shaders/mesh", sbx::graphics::pipeline::stage{2, 0});
 
   // Render stage 3
-  add_subrenderer<sbx::post::resolve_filter<sbx::graphics::empty_vertex>>("res://shaders/resolve", sbx::graphics::pipeline::stage{3, 0}, "albedo");
+  add_subrenderer<sbx::post::resolve_filter<sbx::graphics::empty_vertex>>("res://shaders/resolve", sbx::graphics::pipeline::stage{3, 0}, "shadow_map");
   add_subrenderer<sbx::ui::ui_subrenderer>("res://shaders/ui", sbx::graphics::pipeline::stage{3, 0});
 
 }

@@ -139,7 +139,7 @@ auto render_stage::subpasses() const noexcept -> const std::vector<subpass_bindi
 }
 
 auto render_stage::attachment_count(std::uint32_t subpass) const -> std::uint32_t {
-  return _subpass_attachment_counts[subpass] + (_is_swapchain_subpass(subpass) ? 1 : 0);
+  return _subpass_attachment_counts[subpass];
 }
 
 auto render_stage::is_outdated() const noexcept -> bool {
@@ -214,7 +214,7 @@ auto render_stage::rebuild(const swapchain& swapchain) -> void {
   for (const auto& attachment : _attachments) {
     switch (attachment.image_type()) {
       case attachment::type::image: {
-        _image_attachments.insert({attachment.binding(), std::make_unique<graphics::image2d>(_render_area.extent(), to_underlying(attachment.format()), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_STORAGE_BIT, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_SAMPLE_COUNT_1_BIT)});
+        _image_attachments.insert({attachment.binding(), std::make_unique<graphics::image2d>(_render_area.extent(), to_vk_enum<VkFormat>(attachment.format()), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_STORAGE_BIT, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_SAMPLE_COUNT_1_BIT)});
         break;
       }
       case attachment::type::depth: 
@@ -383,7 +383,7 @@ auto render_stage::_create_attachment_descriptions(VkFormat depth_format, VkForm
 
     switch (attachment.image_type()) {
       case attachment::type::image: {
-        attachment_description.format = to_underlying(attachment.format());
+        attachment_description.format = to_vk_enum<VkFormat>(attachment.format());
         attachment_description.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         break;
       }

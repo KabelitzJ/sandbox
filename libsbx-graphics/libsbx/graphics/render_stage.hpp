@@ -22,7 +22,7 @@
 
 namespace sbx::graphics {
 
-enum class format : VkFormat {
+enum class format : std::uint32_t {
   undefined = VK_FORMAT_UNDEFINED,
   r32g32_sfloat = VK_FORMAT_R32G32_SFLOAT,
   r8g8b8a8_unorm = VK_FORMAT_R8G8B8A8_UNORM,
@@ -33,6 +33,12 @@ template<typename Enum>
 requires (std::is_enum_v<Enum>)
 constexpr auto to_underlying(Enum value) -> std::underlying_type_t<Enum> {
   return static_cast<std::underlying_type_t<Enum>>(value);
+}
+
+template<typename VkEnum, typename Enum>
+requires (std::is_enum_v<VkEnum> && std::is_enum_v<Enum>)
+constexpr auto to_vk_enum(Enum value) -> VkEnum {
+  return static_cast<VkEnum>(value);
 }
 
 class attachment {

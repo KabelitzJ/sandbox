@@ -2,6 +2,8 @@
 
 #include <limits>
 
+#include <vulkan/vk_enum_string_helper.h>
+
 #include <libsbx/core/logger.hpp>
 #include <libsbx/core/engine.hpp>
 
@@ -208,7 +210,7 @@ auto command_buffer::_queue() const -> const logical_device::queue& {
     case VK_QUEUE_TRANSFER_BIT:
       return logical_device.transfer_queue();
     default:
-      throw std::runtime_error("Invalid queue type");
+      throw std::runtime_error{fmt::format("Invalid queue type: '{}'", string_VkQueueFlagBits(_queue_type))};
   }
 }
 
