@@ -19,6 +19,7 @@ find_package(SPIRV-Headers REQUIRED)
 find_package(spirv-cross REQUIRED)
 find_package(stb REQUIRED)
 find_package(range-v3 REQUIRED)
+find_package(fmt REQUIRED)
 
 option(GLFW_BUILD_EXAMPLES "Build the GLFW example programs" OFF)
 option(GLFW_BUILD_TESTS "Build the GLFW test programs" OFF)
@@ -113,6 +114,7 @@ target_link_libraries(
     spirv-cross-glsl
     stb::stb
     range-v3::range-v3
+    fmt::fmt
     # Internal dependencies
     libsbx::utility
     libsbx::io

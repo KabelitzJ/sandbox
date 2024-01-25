@@ -234,7 +234,7 @@ private:
 
   auto _rebuild_framebuffers(const swapchain& swapchain) -> void;
 
-  auto _is_swapchain_subpass(std::uint32_t subpass) const noexcept -> bool;
+  auto _update_subpass_attachment_counts(const graphics::attachment& attachment) -> void;
 
   auto _create_attachment_descriptions(VkFormat depth_format, VkFormat surface_format) -> std::vector<VkAttachmentDescription>;
 
