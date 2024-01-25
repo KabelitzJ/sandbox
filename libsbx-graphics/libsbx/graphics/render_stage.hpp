@@ -22,6 +22,19 @@
 
 namespace sbx::graphics {
 
+enum class format : VkFormat {
+  undefined = VK_FORMAT_UNDEFINED,
+  r32g32_sfloat = VK_FORMAT_R32G32_SFLOAT,
+  r8g8b8a8_unorm = VK_FORMAT_R8G8B8A8_UNORM,
+  r32g32b32a32_sfloat = VK_FORMAT_R32G32B32A32_SFLOAT
+}; // enum class format
+
+template<typename Enum>
+requires (std::is_enum_v<Enum>)
+constexpr auto to_underlying(Enum value) -> std::underlying_type_t<Enum> {
+  return static_cast<std::underlying_type_t<Enum>>(value);
+}
+
 class attachment {
 
 public:
@@ -32,7 +45,7 @@ public:
     swapchain
   }; // enum class type
 
-  attachment(std::uint32_t binding, std::string name, type type, VkFormat format = VK_FORMAT_R8G8B8A8_UNORM, const math::color& clear_color = math::color{0.0f, 0.0f, 0.0f, 1.0f}) noexcept
+  attachment(std::uint32_t binding, std::string name, type type, format format = format::r8g8b8a8_unorm, const math::color& clear_color = math::color{0.0f, 0.0f, 0.0f, 1.0f}) noexcept
   : _binding{binding}, 
     _name{std::move(name)}, 
     _type{type},
@@ -51,7 +64,7 @@ public:
     return _type;
   }
 
-  auto format() const noexcept -> VkFormat {
+  auto format() const noexcept -> graphics::format {
     return _format;
   }
 
@@ -65,7 +78,7 @@ private:
   std::string _name;
   type _type;
   bool _is_multi_sampled;
-  VkFormat _format;
+  graphics::format _format;
   math::color _clear_color;
 
 }; // class attachment

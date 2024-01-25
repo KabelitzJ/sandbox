@@ -24,7 +24,6 @@ layout(binding = 0) uniform uniform_scene {
 } scene;
 
 layout(binding = 2) uniform sampler2D image;
-layout(binding = 3) uniform sampler2D shadow_map;
 
 const material DEFAULT_MATERIAL = material(
   vec4(0.2, 0.2, 0.2, 1.0),   // Ambient color

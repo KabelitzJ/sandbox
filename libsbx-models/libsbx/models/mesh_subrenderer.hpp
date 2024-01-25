@@ -151,7 +151,6 @@ public:
       descriptor_handler.push("uniform_scene", _scene_uniform_handler);
       descriptor_handler.push("buffer_mesh_data", storage_handler);
       descriptor_handler.push("image", image);
-      descriptor_handler.push("shadow_map", graphics_module.attachment("shadow_map"));
 
       if (!descriptor_handler.update(_pipeline)) {
         return;

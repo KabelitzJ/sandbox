@@ -17,7 +17,10 @@ public:
 
 private:
 
-  sbx::math::color _sky_color;
+  sbx::math::color _clear_color;
+  sbx::math::color _shadow_map_clear_color;
+  sbx::math::vector2u _shadow_map_size;
+  VkFormat _shadow_map_format;
 
 }; // class demo_renderer
 

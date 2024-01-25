@@ -214,7 +214,7 @@ auto render_stage::rebuild(const swapchain& swapchain) -> void {
   for (const auto& attachment : _attachments) {
     switch (attachment.image_type()) {
       case attachment::type::image: {
-        _image_attachments.insert({attachment.binding(), std::make_unique<graphics::image2d>(_render_area.extent(), attachment.format(), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_STORAGE_BIT, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_SAMPLE_COUNT_1_BIT)});
+        _image_attachments.insert({attachment.binding(), std::make_unique<graphics::image2d>(_render_area.extent(), to_underlying(attachment.format()), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_STORAGE_BIT, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_SAMPLE_COUNT_1_BIT)});
         break;
       }
       case attachment::type::depth: 
@@ -270,16 +270,21 @@ auto render_stage::_create_render_pass(VkFormat depth_format, VkFormat surface_f
 
 		auto depth_attachment = std::optional<std::uint32_t>{};
 
-		for (const auto& attachment : _attachments) {
+		for (const auto& attachment_binding : subpass.attachment_bindings()) {
+			auto attachment = find_attachment(attachment_binding);
 
-			if (attachment.image_type() == attachment::type::depth) {
-				depth_attachment = attachment.binding();
+			if (!attachment) {
+				throw std::runtime_error{fmt::format("Failed to find attachment with binding {}", attachment_binding)};
+			}
+
+			if (attachment->image_type() == attachment::type::depth) {
+				depth_attachment = attachment->binding();
 				continue;
 			}
 
 			auto attachment_reference = VkAttachmentReference{};
-			attachment_reference.attachment = attachment.binding();
-			attachment_reference.layout = ranges::contains(subpass.attachment_bindings(), attachment.binding()) ? VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+			attachment_reference.attachment = attachment->binding();
+			attachment_reference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
 			subpass_color_attachments.push_back(attachment_reference);
 		}
@@ -378,13 +383,13 @@ auto render_stage::_create_attachment_descriptions(VkFormat depth_format, VkForm
 
     switch (attachment.image_type()) {
       case attachment::type::image: {
-        attachment_description.format = attachment.format();
-        attachment_description.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        attachment_description.format = to_underlying(attachment.format());
+        attachment_description.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         break;
       }
       case attachment::type::depth: {
         attachment_description.format = depth_format;
-        attachment_description.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+        attachment_description.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         break;
       }
       case attachment::type::swapchain: {
