@@ -236,6 +236,10 @@ private:
 
   auto _is_swapchain_subpass(std::uint32_t subpass) const noexcept -> bool;
 
+  auto _create_attachment_descriptions(VkFormat depth_format, VkFormat surface_format) -> std::vector<VkAttachmentDescription>;
+
+  auto _create_subpass_dependencies() -> std::vector<VkSubpassDependency>;
+
   std::vector<graphics::attachment> _attachments;
   std::vector<subpass_binding> _subpass_bindings;
 

@@ -54,8 +54,6 @@ protected:
   template<typename Type, typename... Args>
   requires (std::is_constructible_v<Type, const std::filesystem::path&, const pipeline::stage&, Args...>)
   auto add_subrenderer(const std::filesystem::path& path, const pipeline::stage& stage, Args&&... args) -> void {
-    const auto type = std::type_index{typeid(Type)};
-
     _subrenderer_stages.insert({stage, _subrenderers.size()});
 
     _subrenderers.push_back(std::make_unique<Type>(path, stage, std::forward<Args>(args)...));
