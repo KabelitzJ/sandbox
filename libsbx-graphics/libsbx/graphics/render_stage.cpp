@@ -10,13 +10,18 @@ class subpass_description {
 
 public:
 
-  subpass_description(VkPipelineBindPoint bind_point, std::vector<VkAttachmentReference>&& color_attachments, const std::optional<std::uint32_t>& depth_attachment)
-  : _color_attachment{std::move(color_attachments)} {
+  subpass_description(VkPipelineBindPoint bind_point, std::vector<VkAttachmentReference>&& color_attachments, std::vector<VkAttachmentReference>&& input_attachments, const std::optional<std::uint32_t>& depth_attachment)
+  : _color_attachment{std::move(color_attachments)},
+    _input_attachments{std::move(input_attachments)} {
     _description = VkSubpassDescription{};
     _description.pipelineBindPoint = bind_point;
     _description.colorAttachmentCount = static_cast<std::uint32_t>(_color_attachment.size());
     _description.pColorAttachments = _color_attachment.data();
-    _description.pInputAttachments = nullptr;
+    
+    if (!_input_attachments.empty()) {
+      _description.inputAttachmentCount = static_cast<std::uint32_t>(_input_attachments.size());
+      _description.pInputAttachments = _input_attachments.data();
+    }
 
     if (depth_attachment) {
       _depth_attachment.attachment = *depth_attachment;
@@ -34,6 +39,7 @@ private:
 
   VkSubpassDescription _description;
   std::vector<VkAttachmentReference> _color_attachment;
+  std::vector<VkAttachmentReference> _input_attachments;
   VkAttachmentReference _depth_attachment;
 
 }; // class subpass_description
@@ -277,6 +283,7 @@ auto render_stage::_create_render_pass(VkFormat depth_format, VkFormat surface_f
 
   for (const auto& subpass : _subpass_bindings) {
 		auto subpass_color_attachments = std::vector<VkAttachmentReference>{};
+    auto subpass_input_attachments = std::vector<VkAttachmentReference>{};
 
 		auto depth_attachment = std::optional<std::uint32_t>{};
 
@@ -284,7 +291,7 @@ auto render_stage::_create_render_pass(VkFormat depth_format, VkFormat surface_f
 			auto image_attachment = find_attachment(attachment_binding);
 
 			if (!image_attachment) {
-				throw std::runtime_error{fmt::format("Failed to find attachment with binding {}", attachment_binding)};
+				throw std::runtime_error{fmt::format("Failed to find color/depth attachment with binding {}", attachment_binding)};
 			}
 
 			if (image_attachment->image_type() == attachment::type::depth) {
@@ -299,7 +306,21 @@ auto render_stage::_create_render_pass(VkFormat depth_format, VkFormat surface_f
 			subpass_color_attachments.push_back(attachment_reference);
 		}
 
-		subpasses.push_back(subpass_description{VK_PIPELINE_BIND_POINT_GRAPHICS, std::move(subpass_color_attachments), depth_attachment});
+    for (const auto& attachment_binding : subpass.input_attachment_bindings()) {
+			auto image_attachment = find_attachment(attachment_binding);
+
+			if (!image_attachment) {
+				throw std::runtime_error{fmt::format("Failed to find input attachment with binding {}", attachment_binding)};
+			}
+
+			auto attachment_reference = VkAttachmentReference{};
+			attachment_reference.attachment = image_attachment->binding();
+			attachment_reference.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+			subpass_input_attachments.push_back(attachment_reference);
+		}
+
+		subpasses.push_back(subpass_description{VK_PIPELINE_BIND_POINT_GRAPHICS, std::move(subpass_color_attachments), std::move(subpass_input_attachments), depth_attachment});
 
 		auto subpass_dependency = VkSubpassDependency{};
 		subpass_dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
