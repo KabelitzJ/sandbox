@@ -32,7 +32,7 @@ class engine : public utility::noncopyable {
 
 public:
 
-  engine(std::vector<std::string_view>&& args)
+  engine(std::vector<std::string>&& args)
   : _cli{std::move(args)} {
     utility::assert_that(_instance == nullptr, "Engine already exists.");
 

@@ -75,7 +75,7 @@ class libsbx_recipe(ConanFile):
 
     is_compiler_multi_config = self.settings.compiler == "msvc"
 
-    self.folders.build = "build"
+    self.folders.build = os.path.join("build", str(self.settings.compiler), str(self.settings.arch))
 
     if not is_compiler_multi_config:
       self.folders.build = os.path.join(self.folders.build, str(self.settings.build_type).lower())

@@ -63,8 +63,6 @@ graphics_module::~graphics_module() {
 }
 
 auto graphics_module::update() -> void {
-  core::logger::warn(string_VkResult(vkGetFenceStatus(*_logical_device, _per_frame_data[_current_frame].in_flight_fence)));
-
   auto& devices_module = core::engine::get_module<devices::devices_module>();
 
   const auto& window = devices_module.window();
@@ -257,8 +255,6 @@ auto graphics_module::_reset_render_stages() -> void {
 }
 
 auto  graphics_module::_recreate_pass(graphics::render_stage& render_stage) -> void {
-  core::logger::warn(string_VkResult(vkGetFenceStatus(*_logical_device, _per_frame_data[_current_frame].in_flight_fence)));
-
   const auto& graphics_queue = _logical_device->graphics_queue();
 
   validate(vkQueueWaitIdle(graphics_queue));

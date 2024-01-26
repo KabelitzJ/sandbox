@@ -5,7 +5,7 @@
 #include <libsbx/core/logger.hpp>
 
 auto main(int argc, char** argv) -> int {
-  auto args = std::vector<std::string_view>(argv, argv + argc);
+  auto args = std::vector<std::string>(argv, argv + argc);
 
   try {
     auto engine = std::make_unique<sbx::core::engine>(std::move(args));

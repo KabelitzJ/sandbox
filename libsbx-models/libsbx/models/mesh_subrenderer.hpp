@@ -54,8 +54,6 @@ public:
   ~mesh_subrenderer() override = default;
 
   auto render(graphics::command_buffer& command_buffer) -> void override {
-    // [NOTE] KAJ 2023-10-25 : We need those when we want to load the shadow maps
-    auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
     auto& assets_module = core::engine::get_module<assets::assets_module>();
 
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
@@ -75,7 +73,6 @@ public:
     auto& camera_transform = camera_node.get_component<math::transform>();
 
     _scene_uniform_handler.push("view", math::matrix4x4::inverted(camera_transform.as_matrix()));
-    // _scene_uniform_handler.push("view", math::matrix4x4::look_at(math::vector3{3.0f, 3.0f, 3.0f}, math::vector3::zero, math::vector3::up));
 
     _scene_uniform_handler.push("camera_position", camera_transform.position()); 
 
