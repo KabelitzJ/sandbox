@@ -1,6 +1,6 @@
 #version 450
 
-layout(location = 0) out vec4 out_color;
+layout(location = 0) out vec2 out_color;
 
 void main() {
   float depth = gl_FragCoord.z;
@@ -10,5 +10,5 @@ void main() {
 
   float moment2 = depth * depth + 0.25 * (dx * dx + dy * dy);
 
-  out_color = vec4(depth, moment2, 0.0, 0.0);
+  out_color = vec2(depth, moment2);
 }
