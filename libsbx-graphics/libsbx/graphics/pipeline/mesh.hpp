@@ -76,15 +76,6 @@ protected:
 
     auto& logical_device = graphics_module.logical_device();
 
-    auto fence_create_info = VkFenceCreateInfo{};
-    fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-
-    auto fence = VkFence{};
-
-    graphics::validate(vkCreateFence(logical_device, &fence_create_info, nullptr, &fence));
-
-    graphics::validate(vkResetFences(logical_device, 1, &fence));
-
     auto vertex_buffer_size = sizeof(vertex_type) * vertices.size();
     auto index_buffer_size = sizeof(index_type) * indices.size();
 
@@ -119,12 +110,7 @@ protected:
       command_buffer.copy_buffer(staging_buffer, *_index_buffer, copy_region);
     }
 
-    command_buffer.submit(nullptr, nullptr, fence);
-
-    // [TODO] KAJ 2023-03-20 20:07 - This forces the CPU to wait for the GPU to finish copying the data to the device local buffer.
-    graphics::validate(vkWaitForFences(logical_device, 1, &fence, true, std::numeric_limits<std::uint64_t>::max()));
-
-    vkDestroyFence(logical_device, fence, nullptr);
+    command_buffer.submit_idle()
   }
 
   std::unique_ptr<vertex_buffer_type> _vertex_buffer{};
