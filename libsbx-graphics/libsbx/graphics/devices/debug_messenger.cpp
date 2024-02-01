@@ -1,5 +1,9 @@
 #include <libsbx/graphics/devices/debug_messenger.hpp>
 
+#include <libsbx/utility/target.hpp>
+
+#include <libsbx/core/logger.hpp>
+
 namespace sbx::graphics {
 
 auto debug_messenger::create(const instance& target, const VkAllocationCallbacks* allocator) -> VkResult {

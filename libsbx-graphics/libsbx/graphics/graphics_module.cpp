@@ -234,8 +234,7 @@ auto graphics_module::_end_render_pass(graphics::render_stage& render_stage) -> 
   // Present the image to the screen
   const auto result = _swapchain->present(frame_data.render_finished_semaphore);
 
-  if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
-    _framebuffer_resized = true;
+  if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || _framebuffer_resized) {
     _recreate_swapchain();
   } else if (result != VK_SUCCESS) {
     throw std::runtime_error{"Failed to present swapchain image"};
