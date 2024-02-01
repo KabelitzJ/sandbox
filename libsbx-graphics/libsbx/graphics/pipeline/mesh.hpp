@@ -74,8 +74,6 @@ protected:
   auto _upload_vertices(std::vector<vertex_type>&& vertices, std::vector<index_type>&& indices) -> void {
     auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
-    auto& logical_device = graphics_module.logical_device();
-
     auto vertex_buffer_size = sizeof(vertex_type) * vertices.size();
     auto index_buffer_size = sizeof(index_type) * indices.size();
 
@@ -110,7 +108,7 @@ protected:
       command_buffer.copy_buffer(staging_buffer, *_index_buffer, copy_region);
     }
 
-    command_buffer.submit_idle()
+    command_buffer.submit_idle();
   }
 
   std::unique_ptr<vertex_buffer_type> _vertex_buffer{};
