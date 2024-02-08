@@ -91,7 +91,7 @@ public:
   }
 
   [[nodiscard]] constexpr auto length_squared() const noexcept -> length_type {
-    auto result = length_type{0};
+    auto result = static_cast<length_type>(0);
 
     for (auto i : std::views::iota(0u, Size)) {
       result += static_cast<length_type>(_components[i] * _components[i]);
@@ -105,9 +105,9 @@ public:
   }
 
   constexpr auto normalize() noexcept -> basic_vector& {
-    auto length_squared = this->length_squared();
+    const auto length_squared = this->length_squared();
 
-    if (!comparision_traits<length_type>::equal(length_squared, length_type{0})) {
+    if (!comparision_traits<length_type>::equal(length_squared, static_cast<length_type>(0))) {
       *this /= std::sqrt(length_squared);
     }
 

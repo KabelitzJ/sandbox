@@ -10,6 +10,7 @@
 #include <libsbx/math/vector3.hpp>
 #include <libsbx/math/vector4.hpp>
 #include <libsbx/math/matrix4x4.hpp>
+#include <libsbx/math/angle.hpp>
 
 namespace sbx::math {
 
@@ -22,6 +23,12 @@ class basic_quaternion {
   template<floating_point Other>
   using matrix_type_for = basic_matrix4x4<Other>;
 
+  template<floating_point Other>
+  using angle_type_for = basic_angle<Other>;
+
+  template<floating_point Other>
+  using quaternion_type_for = basic_quaternion<Other>;
+
 public:
 
   using value_type = Type;
@@ -31,25 +38,44 @@ public:
   using length_type = std::float_t;
   using vector_type = vector_type_for<value_type>;
   using matrix_type = matrix_type_for<value_type>;
+  using angle_type = basic_angle<value_type>;
 
   template<floating_point Other = value_type>
   constexpr basic_quaternion(Other value = Other{0}) noexcept;
 
-  template<floating_point Other = value_type>
-  constexpr basic_quaternion(const vector_type_for<Other>& complex, Other scalar = Other{0}) noexcept;
+  template<floating_point Complex = value_type, floating_point Scalar = value_type>
+  constexpr basic_quaternion(const vector_type_for<Complex>& complex, Scalar scalar = Scalar{0}) noexcept;
 
   template<floating_point Other = value_type>
   constexpr basic_quaternion(Other x, Other y, Other z, Other w) noexcept;
 
-  constexpr operator matrix_type() const noexcept;
+  [[nodiscard]] constexpr operator matrix_type() const noexcept;
 
-  constexpr auto complex() noexcept -> vector_type&;
+  template<floating_point Other = value_type>
+  constexpr auto operator+=(const basic_quaternion<Other>& other) noexcept -> basic_quaternion&;
 
-  constexpr auto complex() const noexcept -> const vector_type&;
+  template<floating_point Other = value_type>
+  constexpr auto operator-=(const basic_quaternion<Other>& other) noexcept -> basic_quaternion&;
 
-  constexpr auto scalar() noexcept -> reference;
+  template<floating_point Other = value_type>
+  constexpr auto operator*=(Other value) noexcept -> basic_quaternion&;
 
-  constexpr auto scalar() const noexcept -> const_reference;
+  template<floating_point Other = value_type>
+  constexpr auto operator/=(Other value) noexcept -> basic_quaternion&;
+
+  [[nodiscard]] constexpr auto complex() noexcept -> vector_type&;
+
+  [[nodiscard]] constexpr auto complex() const noexcept -> const vector_type&;
+
+  [[nodiscard]] constexpr auto scalar() noexcept -> reference;
+
+  [[nodiscard]] constexpr auto scalar() const noexcept -> const_reference;
+
+  [[nodiscard]] constexpr auto length_squared() const noexcept -> length_type;
+
+  [[nodiscard]] constexpr auto length() const noexcept -> length_type;
+
+  constexpr auto normalize() noexcept -> basic_quaternion&;
 
 private:
 

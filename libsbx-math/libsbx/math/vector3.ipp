@@ -34,7 +34,7 @@ template<scalar Type>
 inline constexpr auto basic_vector3<Type>::normalized(const basic_vector3& vector) noexcept -> basic_vector3 {
   const auto length_squared = vector.length_squared();
 
-  if (!comparision_traits<length_type>::equal(length_squared, length_type{0})) {
+  if (!comparision_traits<length_type>::equal(length_squared, static_cast<length_type>(0))) {
     const auto length = std::sqrt(length_squared);
     return vector / length;
   }

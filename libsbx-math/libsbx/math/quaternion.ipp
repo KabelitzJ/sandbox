@@ -7,12 +7,12 @@ namespace sbx::math {
 template<floating_point Type>
 template<floating_point Other>
 inline constexpr basic_quaternion<Type>::basic_quaternion(Other value) noexcept
-: _complex{vector_type{value}},
+: _complex{value},
   _scalar{static_cast<value_type>(value)} { }
 
 template<floating_point Type>
-template<floating_point Other>
-inline constexpr basic_quaternion<Type>::basic_quaternion(const vector_type_for<Other>& complex, Other scalar) noexcept
+template<floating_point Complex, floating_point Scalar>
+inline constexpr basic_quaternion<Type>::basic_quaternion(const vector_type_for<Complex>& complex, Scalar scalar) noexcept
 : _complex{complex},
   _scalar{static_cast<value_type>(scalar)} { }
 
@@ -26,6 +26,42 @@ template<floating_point Type>
 inline constexpr basic_quaternion<Type>::operator matrix_type() const noexcept {
   // [TODO] KAJ 2024-01-06 : Implement this.
   return matrix_type::identity;
+}
+
+template<floating_point Type>
+template<floating_point Other>
+inline constexpr auto basic_quaternion<Type>::operator+=(const basic_quaternion<Other>& other) noexcept -> basic_quaternion& {
+  _complex += other.complex();
+  _scalar += other.scalar();
+
+  return *this;
+}
+
+template<floating_point Type>
+template<floating_point Other>
+inline constexpr auto basic_quaternion<Type>::operator-=(const basic_quaternion<Other>& other) noexcept -> basic_quaternion& {
+  _complex -= other.complex();
+  _scalar -= other.scalar();
+
+  return *this;
+}
+
+template<floating_point Type>
+template<floating_point Other>
+inline constexpr auto basic_quaternion<Type>::operator*=(Other value) noexcept -> basic_quaternion& {
+  _complex *= value;
+  _scalar *= value;
+
+  return *this;
+}
+
+template<floating_point Type>
+template<floating_point Other>
+inline constexpr auto basic_quaternion<Type>::operator/=(Other value) noexcept -> basic_quaternion& {
+  _complex /= value;
+  _scalar /= value;
+
+  return *this;
 }
 
 template<floating_point Type>
@@ -48,9 +84,30 @@ inline constexpr auto basic_quaternion<Type>::scalar() const noexcept -> const_r
   return _scalar;
 }
 
+template<floating_point Type>
+inline constexpr auto basic_quaternion<Type>::length_squared() const noexcept -> length_type {
+  return _complex.length_squared() + _scalar * _scalar;
+}
+
+template<floating_point Type>
+inline constexpr auto basic_quaternion<Type>::length() const noexcept -> length_type {
+  return std::sqrt(length_squared());
+}
+
+template<floating_point Type>
+inline constexpr auto basic_quaternion<Type>::normalize() noexcept -> basic_quaternion& {
+  const auto length_squared = this->length_squared();
+
+  if (!comparision_traits<length_type>::equal(length_squared, static_cast<length_type>(0))) {
+    *this /= std::sqrt(length_squared);
+  }
+
+  return *this;
+}
+
 template<floating_point Lhs, floating_point Rhs>
 inline constexpr auto operator==(const basic_quaternion<Lhs>& lhs, const basic_quaternion<Rhs>& rhs) noexcept -> bool {
-  return lhs.complex() == rhs.complex() && lhs.scalar() == rhs.scalar();
+  return lhs.complex() == rhs.complex() && comparision_traits<Lhs>::equal(lhs.scalar(), rhs.scalar());
 }
 
 } // namespace sbx::math
