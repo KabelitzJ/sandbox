@@ -23,7 +23,7 @@ function compile_shader {
     output="$binary_dir/$stage.spv"
 
     # Compile the shader
-    echo "  Building stage '$stage' to '$output'"
+    echo "  Building stage '$stage'" # to '$output'"
 
     $glslc -fshader-stage=$stage -c $file -o $output
   done
@@ -33,7 +33,7 @@ function compile_shader {
 shaders=$(find $1 -maxdepth 1 -mindepth 1 -type d)
 
 for shader in $shaders; do
-  if [ $shader == "common" ]; then
+  if [ "$(basename $shader)" == "common" ]; then
     continue
   fi
   
