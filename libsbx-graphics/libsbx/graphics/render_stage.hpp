@@ -221,21 +221,19 @@ public:
 
   auto attachment_count(std::uint32_t subpass) const -> std::uint32_t;
 
-  auto is_outdated() const noexcept -> bool;
-
   auto clear_values() const noexcept -> const std::vector<VkClearValue>&;
 
   auto has_depth_attachment() const noexcept -> bool;
 
   auto has_swapchain_attachment() const noexcept -> bool;
 
-  auto viewport() const noexcept -> const class viewport&;
+  auto viewport() const noexcept -> const viewport&;
 
-  auto render_area() const noexcept -> const class render_area&;
+  auto render_area() const noexcept -> const render_area&;
 
   auto render_pass() const noexcept -> const VkRenderPass&;
 
-  auto update() -> void;
+  auto update(const VkExtent2D extent) -> void;
 
   auto rebuild(const swapchain& swapchain) -> void;
 
@@ -279,8 +277,6 @@ private:
   std::optional<graphics::attachment> _swapchain_attachment;
 
   graphics::render_area _render_area;
-
-  bool _is_outdated;
 
 }; // class render_stage
 

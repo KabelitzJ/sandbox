@@ -66,8 +66,16 @@ surface::operator const VkSurfaceKHR&() const noexcept {
   return _handle;
 }
 
-auto surface::capabilities() const noexcept -> const VkSurfaceCapabilitiesKHR& {
-  return _capabilities;
+auto surface::capabilities() const noexcept -> VkSurfaceCapabilitiesKHR {
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+  const auto& physical_device = graphics_module.physical_device();
+
+  auto capabilities = VkSurfaceCapabilitiesKHR{};
+
+  validate(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physical_device, _handle, &capabilities));
+
+  return capabilities;
 }
 
 auto surface::format() const noexcept -> const VkSurfaceFormatKHR& {

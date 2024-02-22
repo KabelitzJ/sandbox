@@ -97,15 +97,15 @@ public:
 
 private:
 
-  auto _start_render_pass(graphics::render_stage& render_stage) -> bool;
+  auto _start_render_pass(graphics::render_stage& render_stage) -> void;
 
   auto _end_render_pass(graphics::render_stage& render_stage) -> void;
 
   auto _reset_render_stages() -> void;
 
-  auto _recreate_pass(graphics::render_stage& render_stage) -> void;
+  auto _recreate_swapchain(const VkExtent2D& extent) -> void;
 
-  auto _recreate_swapchain() -> void;
+  auto _recreate_per_frame_data() -> void;
 
   auto _recreate_command_buffers() -> void;
 
@@ -162,7 +162,7 @@ private:
   std::unique_ptr<graphics::renderer> _renderer{};
 
   std::uint32_t _current_frame{};
-  bool _framebuffer_resized{};
+  bool _is_framebuffer_resized{};
 
   std::vector<core::delegate<void(graphics::logical_device&)>> _deletion_queue;
 

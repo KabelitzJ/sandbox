@@ -50,7 +50,7 @@ void main() {
 
   // out_position = wind_effect(world_position, in_position, scene.time data.wind.x, data.wind.y, MAX_ANCHOR_HEIGHT);
   out_position = world_position;
-  out_normal = normalize(mat3(data.normal) * in_normal);
+  out_normal = normalize(vec3(data.normal * vec4(in_normal, 1.0)));
   out_uv = in_uv;
   // out_light_space_position = (DEPTH_BIAS * scene.light_space) * vec4(out_position, 1.0);
 

@@ -9,6 +9,8 @@
 #include <libsbx/utility/concepts.hpp>
 #include <libsbx/utility/hash.hpp>
 
+#include <libsbx/core/logger.hpp>
+
 #include <libsbx/graphics/commands/command_buffer.hpp>
 
 #include <libsbx/graphics/pipeline/pipeline.hpp>

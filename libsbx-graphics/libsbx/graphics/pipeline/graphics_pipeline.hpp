@@ -52,16 +52,16 @@ struct depth_bias {
 }; // struct depth_bias
 
 struct rasterization_state {
-  polygon_mode polygon_mode{polygon_mode::fill};
-  cull_mode cull_mode{cull_mode::back};
-  front_face front_face{front_face::counter_clockwise};
-  std::optional<depth_bias> depth_bias{};
+  graphics::polygon_mode polygon_mode{polygon_mode::fill};
+  graphics::cull_mode cull_mode{cull_mode::back};
+  graphics::front_face front_face{front_face::counter_clockwise};
+  std::optional<graphics::depth_bias> depth_bias{};
 }; // struct rasterization_state
 
 struct pipeline_definition {
   bool uses_depth{true};
   bool uses_transparency{false};
-  rasterization_state rasterization_state{};
+  graphics::rasterization_state rasterization_state{};
 }; // struct pipeline_definition
 
 template<vertex Vertex>

@@ -25,6 +25,10 @@ public:
 
   auto extent() const noexcept -> const VkExtent2D&;
 
+  auto is_outdated(const VkExtent2D& extent) const noexcept -> bool {
+    return _extent.width != extent.width || _extent.height != extent.height;
+  }
+
   auto active_image_index() const noexcept -> std::uint32_t;
 
   auto image_count() const noexcept -> std::uint32_t;

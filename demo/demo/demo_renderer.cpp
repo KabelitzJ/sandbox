@@ -55,24 +55,10 @@ demo_renderer::demo_renderer()
     add_render_stage(std::move(attachments), std::move(subpass_bindings));
   }
 
-  // Render stage 3: Post-processing
-  // {
-  //   auto attachments = std::vector<sbx::graphics::attachment>{
-  //     sbx::graphics::attachment{0, "blur", sbx::graphics::attachment::type::image, sbx::graphics::format::r8g8b8a8_unorm, _clear_color}
-  //   };
-
-  //   auto subpass_bindings = std::vector<sbx::graphics::subpass_binding>{
-  //     sbx::graphics::subpass_binding{0, {0}},
-  //   };
-
-  //   add_render_stage(std::move(attachments), std::move(subpass_bindings));
-  // }
-
-  // Render stage 4: Deferred resolve and UI
+  // Render stage 3: Deferred resolve and UI
   {
     auto attachments = std::vector<sbx::graphics::attachment>{
       sbx::graphics::attachment{0, "swapchain", sbx::graphics::attachment::type::swapchain, sbx::graphics::format::r8g8b8a8_unorm, _clear_color}
-      // sbx::graphics::attachment{0, "resolve", sbx::graphics::attachment::type::image, sbx::graphics::format::r8g8b8a8_unorm, _clear_color}
     };
 
     auto subpass_bindings = std::vector<sbx::graphics::subpass_binding>{
@@ -98,9 +84,6 @@ auto demo_renderer::initialize() -> void {
   add_subrenderer<sbx::models::mesh_subrenderer>("res://shaders/mesh", sbx::graphics::pipeline::stage{2, 0});
 
   // Render stage 3
-  // add_subrenderer<sbx::post::blur_filter<sbx::graphics::empty_vertex>>("res://shaders/blur", sbx::graphics::pipeline::stage{1, 0}, "albedo", sbx::math::vector2{1.0f, 1.0f});
-
-  // Render stage 4
   add_subrenderer<sbx::post::resolve_filter<sbx::graphics::empty_vertex>>("res://shaders/resolve", sbx::graphics::pipeline::stage{3, 0}, target);
   add_subrenderer<sbx::ui::ui_subrenderer>("res://shaders/ui", sbx::graphics::pipeline::stage{3, 0});
 

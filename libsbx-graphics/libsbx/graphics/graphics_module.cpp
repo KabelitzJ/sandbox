@@ -29,7 +29,7 @@ graphics_module::graphics_module()
   auto& window = devices_module.window();
 
   window.on_framebuffer_resized() += [this]([[maybe_unused]] const auto& event) {
-    _framebuffer_resized = true;
+    _is_framebuffer_resized = true;
   };
 }
 
@@ -73,11 +73,23 @@ auto graphics_module::update() -> void {
 
   const auto& frame_data = _per_frame_data[_current_frame];
 
+  auto capabilities = VkSurfaceCapabilitiesKHR{};
+
+  validate(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(*_physical_device, *_surface, &capabilities));
+
+  // const auto extent = VkExtent2D{window.width(), window.height()};
+  const auto extent = capabilities.currentExtent;
+
+  if (_is_framebuffer_resized || _swapchain->is_outdated(extent)) {
+    _recreate_swapchain(extent);
+    return;
+  }
+
   // Get the next image in the swapchain (back/front buffer)
   const auto result = _swapchain->acquire_next_image(frame_data.image_available_semaphore, frame_data.in_flight_fence);
   
   if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-    _recreate_swapchain();
+    _recreate_swapchain(extent);
     return;
   } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
     throw std::runtime_error{"Failed to acquire swapchain image"};
@@ -88,11 +100,7 @@ auto graphics_module::update() -> void {
   auto stage = pipeline::stage{};
 
   for (const auto& render_stage : _renderer->render_stages()) {
-    render_stage->update();
-
-    if (!_start_render_pass(*render_stage)) {
-      return;
-    }
+    _start_render_pass(*render_stage);
 
     auto& command_buffer = _command_buffers[_current_frame];
 
@@ -164,12 +172,7 @@ auto graphics_module::attachment(const std::string& name) const -> const descrip
   throw std::runtime_error{fmt::format("No attachment with name '{}' found", name)};
 }
 
-auto graphics_module::_start_render_pass(graphics::render_stage& render_stage) -> bool {
-  if (render_stage.is_outdated()) {
-    _recreate_pass(render_stage);
-    return false;
-  }
-
+auto graphics_module::_start_render_pass(graphics::render_stage& render_stage) -> void {
   const auto& command_buffer = _command_buffers[_current_frame];
 
   if (!command_buffer->is_running()) {
@@ -212,8 +215,6 @@ auto graphics_module::_start_render_pass(graphics::render_stage& render_stage) -
 	render_pass_begin_info.pClearValues = clear_values.data();
 
   command_buffer->begin_render_pass(render_pass_begin_info, VK_SUBPASS_CONTENTS_INLINE);
-
-  return true;
 }
 
 auto graphics_module::_end_render_pass(graphics::render_stage& render_stage) -> void {
@@ -234,8 +235,8 @@ auto graphics_module::_end_render_pass(graphics::render_stage& render_stage) -> 
   // Present the image to the screen
   const auto result = _swapchain->present(frame_data.render_finished_semaphore);
 
-  if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || _framebuffer_resized) {
-    _recreate_swapchain();
+  if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
+    _is_framebuffer_resized = true;
   } else if (result != VK_SUCCESS) {
     throw std::runtime_error{"Failed to present swapchain image"};
   }
@@ -244,46 +245,35 @@ auto graphics_module::_end_render_pass(graphics::render_stage& render_stage) -> 
 }
 
 auto graphics_module::_reset_render_stages() -> void {
-  _recreate_swapchain();
-
-  for (auto& stage : _renderer->render_stages()) {
-    stage->rebuild(*_swapchain);
-  }
-
-  _recreate_attachments();
-}
-
-auto  graphics_module::_recreate_pass(graphics::render_stage& render_stage) -> void {
-  const auto& graphics_queue = _logical_device->graphics_queue();
-
-  validate(vkQueueWaitIdle(graphics_queue));
-
-  if (render_stage.has_swapchain_attachment() && _framebuffer_resized) {
-    _recreate_swapchain();
-  }
-
-  render_stage.rebuild(*_swapchain);
-
-  _recreate_attachments();
-}
-
-auto graphics_module::_recreate_swapchain() -> void {
   auto& devices_module = core::engine::get_module<devices::devices_module>();
-
-  _logical_device->wait_idle();
 
   const auto& window = devices_module.window();
 
   const auto extent = VkExtent2D{window.width(), window.height()};
 
-  _swapchain = std::make_unique<graphics::swapchain>(extent, _swapchain);
-
-  _recreate_command_buffers();
-
-  _framebuffer_resized = false;
+  _recreate_swapchain(extent);
 }
 
-auto graphics_module::_recreate_command_buffers() -> void {
+auto graphics_module::_recreate_swapchain(const VkExtent2D& extent) -> void {
+  auto& devices_module = core::engine::get_module<devices::devices_module>();
+
+  _logical_device->wait_idle();
+
+  _swapchain = std::make_unique<graphics::swapchain>(extent, _swapchain);
+
+  _recreate_per_frame_data();
+  _recreate_command_buffers();
+  
+  for (const auto& render_stage : _renderer->render_stages()) {
+    render_stage->rebuild(*_swapchain);
+  }
+
+  _recreate_attachments();
+
+  _is_framebuffer_resized = false;
+}
+
+auto graphics_module::_recreate_per_frame_data() -> void {
   for (const auto& data : _per_frame_data) {
     vkDestroyFence(*_logical_device, data.in_flight_fence, nullptr);
     vkDestroySemaphore(*_logical_device, data.image_available_semaphore, nullptr);
@@ -304,7 +294,9 @@ auto graphics_module::_recreate_command_buffers() -> void {
     validate(vkCreateSemaphore(*_logical_device, &semaphore_create_info, nullptr, &data.render_finished_semaphore));
     validate(vkCreateFence(*_logical_device, &fence_create_info, nullptr, &data.in_flight_fence));
   }
+}
 
+auto graphics_module::_recreate_command_buffers() -> void {
   _command_buffers.resize(swapchain::max_frames_in_flight);
 
   for (auto& command_buffer : _command_buffers) {

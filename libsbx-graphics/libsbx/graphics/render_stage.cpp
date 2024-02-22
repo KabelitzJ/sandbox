@@ -47,8 +47,7 @@ render_stage::render_stage(std::vector<graphics::attachment>&& attachments, std:
   _subpass_bindings{std::move(subpass_bindings)},
   _viewport{viewport},
   _render_pass{nullptr},
-  _subpass_attachment_counts{},
-  _is_outdated{true} {
+  _subpass_attachment_counts{} {
   auto attachment_counts = _subpass_bindings.size();
 
   _subpass_attachment_counts.resize(attachment_counts, 0u);
@@ -142,10 +141,6 @@ auto render_stage::attachment_count(std::uint32_t subpass) const -> std::uint32_
   return _subpass_attachment_counts[subpass];
 }
 
-auto render_stage::is_outdated() const noexcept -> bool {
-  return _is_outdated;
-}
-
 auto render_stage::clear_values() const noexcept -> const std::vector<VkClearValue>& {
   return _clear_values;
 }
@@ -170,34 +165,19 @@ auto render_stage::render_pass() const noexcept -> const VkRenderPass& {
   return _render_pass;
 }
 
-auto render_stage::update() -> void {
-  auto& devices_module = core::engine::get_module<devices::devices_module>();
-
-  auto last_render_area = _render_area;
-
-  _render_area.set_offset(_viewport.offset());
-
-  // [TODO] KAJ 2023-06-14 : This looks a bit scuffed. Maybe try to understand what it actually does and rewrite it.
-
-  if (auto size = _viewport.size(); size) {
-    _render_area.set_extent(math::vector2u{_viewport.scale() * (*size)});
-  } else {
-    auto& window = devices_module.window();
-    auto window_size = math::vector2u{window.width(), window.height()};
-
-    _render_area.set_extent(math::vector2u{_viewport.scale() * window_size});
-  }
-
-  _render_area.set_aspect_ratio(static_cast<std::float_t>(_render_area.extent().x()) / static_cast<std::float_t>(_render_area.extent().y()));
-  _render_area.set_extent(_render_area.extent() + _render_area.offset());
-
-  _is_outdated = last_render_area != _render_area;
-}
-
 auto render_stage::rebuild(const swapchain& swapchain) -> void {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
-  update();
+  // [TODO] KAJ 2023-06-14 : This looks a bit scuffed. Maybe try to understand what it actually does and rewrite it.
+  _render_area.set_offset(_viewport.offset());
+
+  const auto extent = swapchain.extent();
+  const auto size = _viewport.size() ? *_viewport.size() : math::vector2u{extent.width, extent.height};
+
+  _render_area.set_extent(math::vector2u{_viewport.scale() * size});
+
+  _render_area.set_aspect_ratio(static_cast<std::float_t>(_render_area.extent().x()) / static_cast<std::float_t>(_render_area.extent().y()));
+  _render_area.set_extent(_render_area.extent() + _render_area.offset());
 
   auto& surface = graphics_module.surface();
 
@@ -238,8 +218,6 @@ auto render_stage::rebuild(const swapchain& swapchain) -> void {
       where = _descriptors.insert(where, {attachment.name(), _image_attachments[attachment.binding()].get()});
     }
   }
-
-  _is_outdated = false;
 }
 
 auto render_stage::framebuffer(std::uint32_t index) noexcept -> const VkFramebuffer& {

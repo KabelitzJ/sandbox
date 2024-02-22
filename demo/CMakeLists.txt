@@ -68,7 +68,7 @@ target_link_libraries(
     libsbx::post
     libsbx::models
     libsbx::scenes
-    libsbx::audio
+    # libsbx::audio
     libsbx::ui
     libsbx::shadows
     libsbx::physics

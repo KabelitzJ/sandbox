@@ -72,8 +72,6 @@ protected:
     _index_buffer{nullptr} { }
 
   auto _upload_vertices(std::vector<vertex_type>&& vertices, std::vector<index_type>&& indices) -> void {
-    auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
-
     auto vertex_buffer_size = sizeof(vertex_type) * vertices.size();
     auto index_buffer_size = sizeof(index_type) * indices.size();
 

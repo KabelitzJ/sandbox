@@ -7,6 +7,7 @@
 #include <concepts>
 #include <cinttypes>
 #include <optional>
+#include <charconv>
 
 #include <fmt/format.h>
 

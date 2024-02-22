@@ -3,6 +3,8 @@
 #include <limits>
 #include <ranges>
 
+#include <vulkan/vk_enum_string_helper.h>
+
 #include <libsbx/core/engine.hpp>
 #include <libsbx/core/logger.hpp>
 
@@ -26,9 +28,10 @@ swapchain::swapchain(const VkExtent2D& extent, const std::unique_ptr<swapchain>&
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
   const auto& logical_device = graphics_module.logical_device();
+  const auto& physical_device = graphics_module.physical_device();
   const auto& surface = graphics_module.surface();
 
-  const auto& surface_capabilities = surface.capabilities();
+  const auto surface_capabilities = surface.capabilities();
   const auto& surface_format = surface.format();
 
   const auto& sharing_mode = logical_device.queue_sharing_mode();
@@ -54,13 +57,17 @@ swapchain::swapchain(const VkExtent2D& extent, const std::unique_ptr<swapchain>&
 		}
 	}
 
+  auto capabilities = VkSurfaceCapabilitiesKHR{};
+
+  validate(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physical_device, surface, &capabilities));
+
 	auto swapchain_create_info = VkSwapchainCreateInfoKHR{};
 	swapchain_create_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
 	swapchain_create_info.surface = surface;
 	swapchain_create_info.minImageCount = desired_image_count;
 	swapchain_create_info.imageFormat = surface_format.format;
 	swapchain_create_info.imageColorSpace = surface_format.colorSpace;
-	swapchain_create_info.imageExtent = _extent;
+	swapchain_create_info.imageExtent = capabilities.currentExtent;
 	swapchain_create_info.imageArrayLayers = 1;
 	swapchain_create_info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 	swapchain_create_info.preTransform = static_cast<VkSurfaceTransformFlagBitsKHR>(_pre_transform);
@@ -90,6 +97,8 @@ swapchain::swapchain(const VkExtent2D& extent, const std::unique_ptr<swapchain>&
   }
 
 	validate(vkCreateSwapchainKHR(logical_device, &swapchain_create_info, nullptr, &_handle));
+
+  core::logger::debug("Created swapchain ({}x{})", _extent.width, _extent.height);
 
 	validate(vkGetSwapchainImagesKHR(logical_device, _handle, &_image_count, nullptr));
 

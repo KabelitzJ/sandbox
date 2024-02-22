@@ -131,7 +131,7 @@ struct fmt::formatter<sbx::math::basic_matrix4x4<Type>> {
   auto format(const sbx::math::basic_matrix4x4<Type>& matrix, FormatContext& context) -> decltype(context.out()) {
     if constexpr (sbx::math::is_floating_point_v<Type>) {
       return fmt::format_to(context.out(), 
-        "\n{:.2f}, {:.2f}, {:.2f}\n{:.2f}, {:.2f}, {:.2f}\n{:.2f}, {:.2f}, {:.2f}", 
+        "\n{:.2f}, {:.2f}, {:.2f}, {:.2f}\n{:.2f}, {:.2f}, {:.2f}, {:.2f}\n{:.2f}, {:.2f}, {:.2f}, {:.2f}\n{:.2f}, {:.2f}, {:.2f}, {:.2f}", 
         matrix[0][0], matrix[1][0], matrix[2][0], matrix[3][0],
         matrix[0][1], matrix[1][1], matrix[2][1], matrix[3][1],
         matrix[0][2], matrix[1][2], matrix[2][2], matrix[3][2],
@@ -139,7 +139,7 @@ struct fmt::formatter<sbx::math::basic_matrix4x4<Type>> {
       );
     } else {
       return fmt::format_to(context.out(), 
-        "\n{}, {}, {}\n{}, {}, {}\n{}, {}, {}", 
+        "\n{}, {}, {}, {}\n{}, {}, {}, {}\n{}, {}, {}, {}\n{}, {}, {}, {}", 
         matrix[0][0], matrix[1][0], matrix[2][0], matrix[3][0],
         matrix[0][1], matrix[1][1], matrix[2][1], matrix[3][1],
         matrix[0][2], matrix[1][2], matrix[2][2], matrix[3][2],
