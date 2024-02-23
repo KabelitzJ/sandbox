@@ -2,6 +2,7 @@
 #define LIBSBX_POST_FILTERS_RESOLVE_FILTER_HPP_
 
 #include <string>
+#include <unordered_map>
 
 #include <libsbx/graphics/graphics_module.hpp>
 
@@ -19,9 +20,9 @@ public:
   using vertex_type = base_type::vertex_type;
   using pipeline_type = base_type::pipeline_type;
 
-  resolve_filter(const std::filesystem::path& path, const graphics::pipeline::stage& stage, const std::string& attachment_name)
+  resolve_filter(const std::filesystem::path& path, const graphics::pipeline::stage& stage, std::unordered_map<std::string, std::string>&& attachment_names)
   : base_type{path, stage},
-    _attachment_name{attachment_name} { }
+    _attachment_names{std::move(attachment_names)} { }
 
   ~resolve_filter() override = default;
 
@@ -33,7 +34,11 @@ public:
 
     pipeline.bind(command_buffer);
 
-    descriptor_handler.push("image", graphics_module.attachment(_attachment_name));
+    // descriptor_handler.push("image", graphics_module.attachment(_attachment_name));
+
+    for (const auto& [name, attachment] : _attachment_names) {
+      descriptor_handler.push(name, graphics_module.attachment(attachment));
+    }
 
     if (!descriptor_handler.update(pipeline)) {
       return;
@@ -46,7 +51,7 @@ public:
 
 private:
 
-  std::string _attachment_name;
+  std::unordered_map<std::string, std::string> _attachment_names;
 
 }; // class resolve_filter
 
