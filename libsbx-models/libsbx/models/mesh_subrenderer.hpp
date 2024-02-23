@@ -74,46 +74,8 @@ public:
 
     _scene_uniform_handler.push("view", math::matrix4x4::inverted(camera_transform.as_matrix()));
 
-    _scene_uniform_handler.push("camera_position", camera_transform.position()); 
-
-    // auto light_nodes = scene.query<scenes::point_light>();
-
-    // auto lights = std::vector<models::point_light>{};
-    // auto point_light_count = std::uint32_t{0};
-
-    // for (const auto& node : light_nodes) {
-    //   const auto& light = node.get_component<scenes::point_light>();
-    //   const auto& transform = node.get_component<math::transform>();
-
-    //   lights.push_back(models::point_light{light.color(), transform.position(), light.radius()});
-      
-    //   ++point_light_count;
-
-    //   if (point_light_count >= max_point_lights) {
-    //     break;
-    //   }
-    // }
-
-    // _lights_storage_handler.push(std::span<const models::point_light>{lights.data(), point_light_count});
-    // _scene_uniform_handler.push("point_light_count", point_light_count);
-
     const auto time = std::fmod(core::engine::time().value() * scene.wind_speed(), 1.0f);
     _scene_uniform_handler.push("time", time);
-
-    auto& scene_light = scene.light();
-
-    auto& light_direction = scene_light.direction();
-    auto& light_color = scene_light.color();
-
-    _scene_uniform_handler.push("light_direction", light_direction);
-    _scene_uniform_handler.push("light_color", light_color);
-
-    const auto position = light_direction * -20.0f;
-
-    const auto view = math::matrix4x4::look_at(position, position + light_direction, math::vector3::up);
-    const auto projection = math::matrix4x4::orthographic(-10.0f, 10.0f, -10.0f, 10.0f, 0.1f, 100.0f);
-
-    _scene_uniform_handler.push("light_space", math::matrix4x4{projection * view});
 
     for (auto entry = _uniform_data.begin(); entry != _uniform_data.end();) {
       if (_used_uniforms.contains(entry->first)) {

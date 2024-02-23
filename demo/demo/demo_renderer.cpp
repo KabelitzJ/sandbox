@@ -9,7 +9,8 @@
 namespace demo {
 
 demo_renderer::demo_renderer()
-: _clear_color{0.52f, 0.80f, 0.98f, 1.0f},
+: _clear_color{1.0f, 1.0f, 1.0f, 1.0f},
+  // _clear_color{0.52f, 0.80f, 0.98f, 1.0f},
   _shadow_map_clear_color{1.0f, 1.0f, 1.0f, 1.0f},
   _shadow_map_size{2048, 2048},
   _shadow_map_format{sbx::graphics::format::r32g32_sfloat} {
@@ -45,7 +46,7 @@ demo_renderer::demo_renderer()
       sbx::graphics::attachment{0, "depth", sbx::graphics::attachment::type::depth},
       sbx::graphics::attachment{1, "position", sbx::graphics::attachment::type::image, sbx::graphics::format::r32g32b32a32_sfloat, _clear_color},
       sbx::graphics::attachment{2, "normal", sbx::graphics::attachment::type::image, sbx::graphics::format::r32g32b32a32_sfloat, _clear_color},
-      sbx::graphics::attachment{3, "color", sbx::graphics::attachment::type::image, sbx::graphics::format::r8g8b8a8_unorm, _clear_color}
+      sbx::graphics::attachment{3, "albedo", sbx::graphics::attachment::type::image, sbx::graphics::format::r8g8b8a8_unorm, _clear_color}
     };
 
     auto subpass_bindings = std::vector<sbx::graphics::subpass_binding>{
@@ -77,12 +78,13 @@ auto demo_renderer::initialize() -> void {
   add_subrenderer<sbx::post::blur_filter<sbx::graphics::empty_vertex>>("res://shaders/blur", sbx::graphics::pipeline::stage{1, 0}, "shadow_map", sbx::math::vector2{0.5f, 0.5f});
 
   // Render stage 2
-  add_subrenderer<sbx::models::mesh_subrenderer>("res://shaders/mesh", sbx::graphics::pipeline::stage{2, 0});
+  add_subrenderer<sbx::models::mesh_subrenderer>("res://shaders/deferred", sbx::graphics::pipeline::stage{2, 0});
 
   auto attachment_names = std::unordered_map<std::string, std::string>{
-    {"position", "position"},
-    {"normal", "normal"},
-    {"color", "color"},
+    {"position_image", "position"},
+    {"normal_image", "normal"},
+    {"albedo_image", "albedo"},
+    {"shadow_map_image", "shadow_map"}
   };
 
   // Render stage 3
