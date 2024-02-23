@@ -72,8 +72,6 @@ demo_renderer::demo_renderer()
 auto demo_renderer::initialize() -> void {
   auto& cli  = sbx::core::engine::cli();
 
-  const auto target = cli.argument<std::string>("target").value_or("albedo");
-
   // Render stage 0
   add_subrenderer<sbx::shadows::shadow_subrenderer>("res://shaders/shadow", sbx::graphics::pipeline::stage{0, 0});
 
@@ -81,12 +79,18 @@ auto demo_renderer::initialize() -> void {
   add_subrenderer<sbx::post::blur_filter<sbx::graphics::empty_vertex>>("res://shaders/blur", sbx::graphics::pipeline::stage{1, 0}, "shadow_map", sbx::math::vector2{0.5f, 0.5f});
 
   // Render stage 2
-  add_subrenderer<sbx::models::mesh_subrenderer>("res://shaders/mesh", sbx::graphics::pipeline::stage{2, 0});
+  add_subrenderer<sbx::models::mesh_subrenderer>("res://shaders/deferred", sbx::graphics::pipeline::stage{2, 0});
 
   // Render stage 3
-  add_subrenderer<sbx::post::resolve_filter<sbx::graphics::empty_vertex>>("res://shaders/resolve", sbx::graphics::pipeline::stage{3, 0}, target);
-  add_subrenderer<sbx::ui::ui_subrenderer>("res://shaders/ui", sbx::graphics::pipeline::stage{3, 0});
+  auto attachment_names = std::unordered_map<std::string, std::string>{
+    {"position_image", "position"},
+    {"normal_image", "normal"},
+    {"albedo_image", "albedo"},
+    {"shadow_map_image", "shadow_map"}
+  };
 
+  add_subrenderer<sbx::post::resolve_filter<sbx::graphics::empty_vertex>>("res://shaders/resolve", sbx::graphics::pipeline::stage{3, 0}, std::move(attachment_names));
+  add_subrenderer<sbx::ui::ui_subrenderer>("res://shaders/ui", sbx::graphics::pipeline::stage{3, 0});
 }
 
 } // namespace demo

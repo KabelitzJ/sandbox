@@ -42,6 +42,7 @@ target_link_libraries(
     fmt::fmt
     # Internal dependencies
     libsbx::graphics
+    libsbx::scenes
 )
 
 set_target_properties(

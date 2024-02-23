@@ -22,23 +22,12 @@ layout(location = 3) out vec4 out_color;
 layout(binding = 0) uniform uniform_scene {
   mat4 view;
   mat4 projection;
-  mat4 light_space;
-  vec3 camera_position;
-  vec3 light_direction;
-  vec4 light_color;
   float time;
 } scene;
 
 layout(binding = 1) buffer buffer_mesh_data {
   per_mesh_data data[];
 } mesh_data;
-
-const mat4 DEPTH_BIAS = mat4( 
-	0.5, 0.0, 0.0, 0.0,
-	0.0, 0.5, 0.0, 0.0,
-	0.0, 0.0, 1.0, 0.0,
-	0.5, 0.5, 0.0, 1.0
-);
 
 const float MAX_ANCHOR_HEIGHT = 2.0;
 const float BRIGHTNESS_EFFECT = 0.5;
@@ -52,12 +41,11 @@ void main() {
   out_position = world_position;
   out_normal = normalize(vec3(data.normal * vec4(in_normal, 1.0)));
   out_uv = in_uv;
-  // out_light_space_position = (DEPTH_BIAS * scene.light_space) * vec4(out_position, 1.0);
 
-  // float brightness = (data.tint.r + data.tint.g + data.tint.b) / 3.0;
-  // brightness = (1.0 - BRIGHTNESS_EFFECT) + BRIGHTNESS_EFFECT * brightness;
-  // out_color = vec4(data.tint.rgb * brightness, 1.0);
-  out_color = data.tint;
+  float brightness = (data.tint.r + data.tint.g + data.tint.b) / 3.0;
+  brightness = (1.0 - BRIGHTNESS_EFFECT) + BRIGHTNESS_EFFECT * brightness;
+  out_color = vec4(data.tint.rgb * brightness, 1.0);
+  // out_color = data.tint;
 
   gl_Position = scene.projection * scene.view * vec4(out_position, 1.0);
 }
