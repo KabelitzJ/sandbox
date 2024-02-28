@@ -55,6 +55,8 @@ entities:
         mesh: *crate
         submeshes:
           - { index: 0, texture: *wood }
+      # - type: "script"
+      #   script: "res://scripts/camera_controller.lua"
   - name: "crate2"
     components:
       - type: "transform"

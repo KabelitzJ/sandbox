@@ -15,30 +15,30 @@ demo_renderer::demo_renderer()
   _shadow_map_size{2048, 2048},
   _shadow_map_format{sbx::graphics::format::r32g32_sfloat} {
   // Render stage 0: Shadow map
-  {
-    auto attachments = std::vector<sbx::graphics::attachment>{
-      sbx::graphics::attachment{0, "shadow_map", sbx::graphics::attachment::type::image, _shadow_map_format, _shadow_map_clear_color}
-    };
+  // {
+  //   auto attachments = std::vector<sbx::graphics::attachment>{
+  //     sbx::graphics::attachment{0, "shadow_map", sbx::graphics::attachment::type::image, _shadow_map_format, _shadow_map_clear_color}
+  //   };
 
-    auto subpass_bindings = std::vector<sbx::graphics::subpass_binding>{
-      sbx::graphics::subpass_binding{0, {0}}
-    };
+  //   auto subpass_bindings = std::vector<sbx::graphics::subpass_binding>{
+  //     sbx::graphics::subpass_binding{0, {0}}
+  //   };
 
-    add_render_stage(std::move(attachments), std::move(subpass_bindings), sbx::graphics::viewport{_shadow_map_size});
-  }
+  //   add_render_stage(std::move(attachments), std::move(subpass_bindings), sbx::graphics::viewport{_shadow_map_size});
+  // }
 
   // Render stage 1: Shadow map blur
-  {
-    auto attachments = std::vector<sbx::graphics::attachment>{
-      sbx::graphics::attachment{0, "blurred_shadow_map", sbx::graphics::attachment::type::image, _shadow_map_format, _shadow_map_clear_color}
-    };
+  // {
+  //   auto attachments = std::vector<sbx::graphics::attachment>{
+  //     sbx::graphics::attachment{0, "blurred_shadow_map", sbx::graphics::attachment::type::image, _shadow_map_format, _shadow_map_clear_color}
+  //   };
 
-    auto subpass_bindings = std::vector<sbx::graphics::subpass_binding>{
-      sbx::graphics::subpass_binding{0, {0}}
-    };
+  //   auto subpass_bindings = std::vector<sbx::graphics::subpass_binding>{
+  //     sbx::graphics::subpass_binding{0, {0}}
+  //   };
 
-    add_render_stage(std::move(attachments), std::move(subpass_bindings), sbx::graphics::viewport{_shadow_map_size});
-  }
+  //   add_render_stage(std::move(attachments), std::move(subpass_bindings), sbx::graphics::viewport{_shadow_map_size});
+  // }
 
   // Render stage 2: Deferred scene
   {
@@ -50,7 +50,7 @@ demo_renderer::demo_renderer()
     };
 
     auto subpass_bindings = std::vector<sbx::graphics::subpass_binding>{
-      sbx::graphics::subpass_binding{0, {0, 1, 2, 3}},
+      sbx::graphics::subpass_binding{0, {0, 1, 2, 3}}
     };
 
     add_render_stage(std::move(attachments), std::move(subpass_bindings));
@@ -74,24 +74,24 @@ auto demo_renderer::initialize() -> void {
   auto& cli  = sbx::core::engine::cli();
 
   // Render stage 0
-  add_subrenderer<sbx::shadows::shadow_subrenderer>("res://shaders/shadow", sbx::graphics::pipeline::stage{0, 0});
+  // add_subrenderer<sbx::shadows::shadow_subrenderer>("res://shaders/shadow", sbx::graphics::pipeline::stage{0, 0});
 
   // Render stage 1
-  add_subrenderer<sbx::post::blur_filter<sbx::graphics::empty_vertex>>("res://shaders/blur", sbx::graphics::pipeline::stage{1, 0}, "shadow_map", sbx::math::vector2{0.5f, 0.5f});
+  // add_subrenderer<sbx::post::blur_filter<sbx::graphics::empty_vertex>>("res://shaders/blur", sbx::graphics::pipeline::stage{1, 0}, "shadow_map", sbx::math::vector2{0.5f, 0.5f});
 
   // Render stage 2
-  add_subrenderer<sbx::models::mesh_subrenderer>("res://shaders/deferred", sbx::graphics::pipeline::stage{2, 0});
+  add_subrenderer<sbx::models::mesh_subrenderer>("res://shaders/deferred", sbx::graphics::pipeline::stage{0, 0});
 
   // Render stage 3
   auto attachment_names = std::unordered_map<std::string, std::string>{
     {"position_image", "position"},
     {"normal_image", "normal"},
     {"albedo_image", "albedo"},
-    {"shadow_map_image", "shadow_map"}
+    // {"shadow_map_image", "shadow_map"}
   };
 
-  add_subrenderer<sbx::post::resolve_filter<sbx::graphics::empty_vertex>>("res://shaders/resolve", sbx::graphics::pipeline::stage{3, 0}, std::move(attachment_names));
-  add_subrenderer<sbx::ui::ui_subrenderer>("res://shaders/ui", sbx::graphics::pipeline::stage{3, 0});
+  add_subrenderer<sbx::post::resolve_filter<sbx::graphics::empty_vertex>>("res://shaders/resolve", sbx::graphics::pipeline::stage{1, 0}, std::move(attachment_names));
+  add_subrenderer<sbx::ui::ui_subrenderer>("res://shaders/ui", sbx::graphics::pipeline::stage{1, 0});
 }
 
 } // namespace demo

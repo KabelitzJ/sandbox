@@ -5,7 +5,7 @@
 #include <vector>
 #include <typeindex>
 #include <memory>
-#include <vector>
+#include <span>
 #include <string_view>
 #include <cmath>
 #include <chrono>
@@ -32,8 +32,8 @@ class engine : public utility::noncopyable {
 
 public:
 
-  engine(std::vector<std::string>&& args)
-  : _cli{std::move(args)} {
+  engine(std::span<std::string_view> args)
+  : _cli{args} {
     utility::assert_that(_instance == nullptr, "Engine already exists.");
 
     _instance = this;

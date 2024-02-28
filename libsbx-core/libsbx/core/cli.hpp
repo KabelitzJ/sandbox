@@ -2,6 +2,8 @@
 #define LIBSBX_CORE_CLI_HPP_
 
 #include <string>
+#include <string_view>
+#include <span>
 #include <vector>
 #include <string_view>
 #include <concepts>
@@ -10,6 +12,8 @@
 #include <charconv>
 
 #include <fmt/format.h>
+
+#include <libsbx/core/logger.hpp>
 
 namespace sbx::core {
 
@@ -22,64 +26,82 @@ class cli {
 
 public:
 
-  cli(std::vector<std::string>&& args)
-  : _args{std::move(args)} { }
+  cli(std::span<std::string_view> args) {
+    for (const auto& arg : args) {
+      if (arg.substr(0, 2) != "--") {
+        continue;
+      }
+      
+      const auto pos = arg.find_first_of("=");
+
+      if (pos == std::string::npos) {
+        logger::warn("Could not parse argument: '{}'", arg);
+        continue;
+      }
+
+      const auto key = std::string{arg.substr(2, pos - 2u)};
+      const auto value = std::string{arg.substr(pos + 1u)};
+
+      _arguments[key] = std::move(value);
+    }
+  }
 
   template<argument Type>
   auto argument(const std::string& name) -> std::optional<Type> {
-    auto value = _argument_value(name);
+    if (auto entry = _arguments.find(name); entry != _arguments.end()) {
+      const auto& value = entry->second;
 
-    if (!value) {
-      return std::nullopt;
+      if constexpr (std::is_same_v<Type, bool>) {
+        if (value == "true") {
+          return true;
+        } else if (value == "false") {
+          return false;
+        } else {
+          return std::nullopt;
+        }
+      } else if constexpr (std::is_floating_point_v<Type> || std::is_integral_v<Type>) {
+        auto result = Type{};
+
+        auto [ptr, ec] = std::from_chars(value.data(), value.data() + value.size(), result);
+
+        if (ec == std::errc::invalid_argument || ec == std::errc::result_out_of_range) {
+          return std::nullopt;
+        }
+
+        return result;
+      } else if constexpr (std::is_same_v<Type, std::string>) {
+        return value;
+      }
     }
 
-    if constexpr (std::is_same_v<Type, bool>) {
-      if (*value == "true") {
-        return true;
-      } else if (*value == "false") {
-        return false;
-      } else {
-        return std::nullopt;
-      }
-    } else if constexpr (std::is_floating_point_v<Type> || std::is_integral_v<Type>) {
-      auto result = Type{};
-
-      auto [ptr, ec] = std::from_chars(value->data(), value->data() + value->size(), result);
-
-      if (ec == std::errc::invalid_argument || ec == std::errc::result_out_of_range) {
-        return std::nullopt;
-      }
-
-      return result;
-    } else if constexpr (std::is_same_v<Type, std::string>) {
-      return value;
-    }
+    return std::nullopt;
   }
 
 private:
 
   auto _argument_value(const std::string& name) -> std::optional<std::string> {
-    if (auto entry = _argument_cache.find(name); entry != _argument_cache.end()) {
+    if (auto entry = _arguments.find(name); entry != _arguments.end()) {
       return entry->second;
     }
 
-    const auto key = fmt::format("--{}=", name);
+    return std::nullopt;
 
-    const auto value_position = std::ranges::find_if(_args, [&key](const auto& arg) { return arg.starts_with(key); });
+    // const auto key = fmt::format("--{}=", name);
 
-    if (value_position == _args.end()) {
-      return std::nullopt;
-    }
+    // const auto value_position = std::ranges::find_if(_args, [&key](const auto& arg) { return arg.starts_with(key); });
 
-    const auto value = (*value_position).substr(key.size());
+    // if (value_position == _args.end()) {
+    //   return std::nullopt;
+    // }
 
-    _argument_cache[name] = value;
+    // const auto value = (*value_position).substr(key.size());
 
-    return value;
+    // _argument_cache[name] = value;
+
+    // return value;
   }
 
-  std::vector<std::string> _args;
-  std::unordered_map<std::string, std::string> _argument_cache;
+  std::unordered_map<std::string, std::string> _arguments;
 
 }; // class cli
 

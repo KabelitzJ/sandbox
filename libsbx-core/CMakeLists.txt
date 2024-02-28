@@ -16,6 +16,7 @@ add_library(${CMAKE_PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
 find_package(fmt REQUIRED)
 find_package(spdlog REQUIRED)
+find_package(range-v3 REQUIRED)
 
 target_sources(
   ${PROJECT_NAME}
@@ -50,6 +51,7 @@ target_link_libraries(
     # External dependencies
     fmt::fmt
     spdlog::spdlog
+    range-v3::range-v3
     # Internal dependencies
     libsbx::utility
     libsbx::units
