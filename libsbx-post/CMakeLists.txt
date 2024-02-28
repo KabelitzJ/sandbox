@@ -42,7 +42,6 @@ target_link_libraries(
     fmt::fmt
     # Internal dependencies
     libsbx::graphics
-    libsbx::assets
     libsbx::scenes
 )
 

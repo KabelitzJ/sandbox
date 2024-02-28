@@ -19,23 +19,22 @@ layout(binding = 3) uniform sampler2D albedo_image;
 layout(binding = 4) uniform sampler2D shadow_map_image;
 
 const material DEFAULT_MATERIAL = material(
-  vec4(0.2, 0.2, 0.2, 1.0), // Ambient color
-  vec4(0.8, 0.8, 0.8, 1.0), // Diffuse color
-  vec4(1.0, 1.0, 1.0, 1.0), // Specular color
-  8.0                       // Shininess
+  vec4(0.2, 0.2, 0.2, 1.0),   // Ambient color
+  vec4(0.8, 0.8, 0.8, 1.0),   // Diffuse color
+  vec4(1.0, 1.0, 1.0, 1.0),   // Specular color
+  8.0                         // Shininess
 );
 
 void main() {
-  vec3 position = texture(position_image, in_uv).rgb;
-  vec3 normal = texture(normal_image, in_uv).rgb;
+  vec3 position = texture(position_image, in_uv).xyz;
+  vec3 normal = texture(normal_image, in_uv).xyz;
   vec4 albedo = texture(albedo_image, in_uv);
 
   vec3 view_direction = normalize(scene.camera_position - position);
-
+  
   directional_light light = directional_light(scene.light_direction, scene.light_color);
 
   vec4 lighting = calculate_directional_light_blinn_phong(DEFAULT_MATERIAL, light, normal, view_direction);
 
-
-  out_color = albedo * lighting;  
+  out_color = albedo * lighting;
 }

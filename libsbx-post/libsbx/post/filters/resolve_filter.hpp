@@ -4,7 +4,14 @@
 #include <string>
 #include <unordered_map>
 
+#include <libsbx/math/transform.hpp>
+
 #include <libsbx/graphics/graphics_module.hpp>
+#include <libsbx/graphics/buffers/uniform_buffer.hpp>
+
+#include <libsbx/scenes/scenes_module.hpp>
+#include <libsbx/scenes/scene.hpp>
+#include <libsbx/scenes/components/camera.hpp>
 
 #include <libsbx/scenes/scenes_module.hpp>
 #include <libsbx/scenes/scene.hpp>
@@ -35,40 +42,57 @@ public:
   auto render(graphics::command_buffer& command_buffer) -> void override {
     auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
-
-    auto& pipeline = base_type::pipeline();
-    auto& descriptor_handler = base_type::descriptor_handler();
-
     auto& scene = scenes_module.scene();
 
-    const auto camera_node = scene.camera();
+    auto camera_node = scene.camera();
 
-    const auto& camera = camera_node.get_component<scenes::camera>();
+    auto& camera = camera_node.get_component<scenes::camera>();
 
     if (!camera.is_active()) {
       core::logger::warn("Scene does not have an active camera");
       return;
     }
 
-    auto& camera_transform = camera_node.get_component<math::transform>();
+    auto& pipeline = base_type::pipeline();
+    auto& descriptor_handler = base_type::descriptor_handler();
 
-    _scene_uniform_handler.push("camera_position", camera_transform.position()); 
+    const auto& camera_transform = camera_node.get_component<math::transform>();
 
-    auto& scene_light = scene.light();
+    _scene_uniform_handler.push("camera_position", camera_transform.position());
 
-    auto& light_direction = scene_light.direction();
-    auto& light_color = scene_light.color();
+    const auto& scene_light = scene.light();
 
-    _scene_uniform_handler.push("light_direction", light_direction);
-    _scene_uniform_handler.push("light_color", light_color);
+    _scene_uniform_handler.push("light_direction", scene_light.direction());
+    _scene_uniform_handler.push("light_color", scene_light.color());
+
+    // auto light_nodes = scene.query<scenes::point_light>();
+
+    // auto lights = std::vector<models::point_light>{};
+    // auto point_light_count = std::uint32_t{0};
+
+    // for (const auto& node : light_nodes) {
+    //   const auto& light = node.get_component<scenes::point_light>();
+    //   const auto& transform = node.get_component<math::transform>();
+
+    //   lights.push_back(models::point_light{light.color(), transform.position(), light.radius()});
+      
+    //   ++point_light_count;
+
+    //   if (point_light_count >= max_point_lights) {
+    //     break;
+    //   }
+    // }
+
+    // _lights_storage_handler.push(std::span<const models::point_light>{lights.data(), point_light_count});
+    // _scene_uniform_handler.push("point_light_count", point_light_count);
 
     pipeline.bind(command_buffer);
+
+    descriptor_handler.push("uniform_scene", _scene_uniform_handler);
 
     for (const auto& [name, attachment] : _attachment_names) {
       descriptor_handler.push(name, graphics_module.attachment(attachment));
     }
-
-    descriptor_handler.push("uniform_scene", _scene_uniform_handler);
 
     if (!descriptor_handler.update(pipeline)) {
       return;
@@ -82,7 +106,6 @@ public:
 private:
 
   std::unordered_map<std::string, std::string> _attachment_names;
-
   graphics::uniform_handler _scene_uniform_handler;
 
 }; // class resolve_filter

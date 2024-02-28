@@ -70,7 +70,7 @@ public:
 
     _scene_uniform_handler.push("projection", camera.projection());
 
-    auto& camera_transform = camera_node.get_component<math::transform>();
+    const auto& camera_transform = camera_node.get_component<math::transform>();
 
     _scene_uniform_handler.push("view", math::matrix4x4::inverted(camera_transform.as_matrix()));
 

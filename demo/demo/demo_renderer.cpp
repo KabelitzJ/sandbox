@@ -71,6 +71,8 @@ demo_renderer::demo_renderer()
 }
 
 auto demo_renderer::initialize() -> void {
+  auto& cli  = sbx::core::engine::cli();
+
   // Render stage 0
   add_subrenderer<sbx::shadows::shadow_subrenderer>("res://shaders/shadow", sbx::graphics::pipeline::stage{0, 0});
 
@@ -80,6 +82,7 @@ auto demo_renderer::initialize() -> void {
   // Render stage 2
   add_subrenderer<sbx::models::mesh_subrenderer>("res://shaders/deferred", sbx::graphics::pipeline::stage{2, 0});
 
+  // Render stage 3
   auto attachment_names = std::unordered_map<std::string, std::string>{
     {"position_image", "position"},
     {"normal_image", "normal"},
@@ -87,10 +90,8 @@ auto demo_renderer::initialize() -> void {
     {"shadow_map_image", "shadow_map"}
   };
 
-  // Render stage 3
   add_subrenderer<sbx::post::resolve_filter<sbx::graphics::empty_vertex>>("res://shaders/resolve", sbx::graphics::pipeline::stage{3, 0}, std::move(attachment_names));
   add_subrenderer<sbx::ui::ui_subrenderer>("res://shaders/ui", sbx::graphics::pipeline::stage{3, 0});
-
 }
 
 } // namespace demo
