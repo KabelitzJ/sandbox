@@ -15,11 +15,11 @@ class subpass_description {
 public:
 
   subpass_description(VkPipelineBindPoint bind_point, std::vector<VkAttachmentReference>&& color_attachments, const std::optional<std::uint32_t>& depth_attachment)
-  : _color_attachment{std::move(color_attachments)} {
+  : _color_attachments{std::move(color_attachments)} {
     _description = VkSubpassDescription{};
     _description.pipelineBindPoint = bind_point;
-    _description.colorAttachmentCount = static_cast<std::uint32_t>(_color_attachment.size());
-    _description.pColorAttachments = _color_attachment.data();
+    _description.colorAttachmentCount = static_cast<std::uint32_t>(_color_attachments.size());
+    _description.pColorAttachments = _color_attachments.data();
     _description.pInputAttachments = nullptr;
 
     if (depth_attachment) {
@@ -37,7 +37,7 @@ public:
 private:
 
   VkSubpassDescription _description;
-  std::vector<VkAttachmentReference> _color_attachment;
+  std::vector<VkAttachmentReference> _color_attachments;
   VkAttachmentReference _depth_attachment;
 
 }; // class subpass_description
@@ -367,7 +367,7 @@ auto render_stage::_create_attachment_descriptions(VkFormat depth_format, VkForm
       }
       case attachment::type::depth: {
         attachment_description.format = depth_format;
-        attachment_description.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        attachment_description.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
         break;
       }
       case attachment::type::swapchain: {
