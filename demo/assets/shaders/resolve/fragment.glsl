@@ -16,7 +16,7 @@ layout(binding = 0) uniform uniform_scene {
 layout(binding = 1) uniform sampler2D position_image; 
 layout(binding = 2) uniform sampler2D normal_image;
 layout(binding = 3) uniform sampler2D albedo_image;
-// layout(binding = 4) uniform sampler2D shadow_map_image;
+layout(binding = 4) uniform sampler2D shadow_map_image;
 
 const material DEFAULT_MATERIAL = material(
   vec4(0.2, 0.2, 0.2, 1.0),   // Ambient color
@@ -29,6 +29,7 @@ void main() {
   vec3 position = texture(position_image, in_uv).xyz;
   vec3 normal = texture(normal_image, in_uv).xyz;
   vec4 albedo = texture(albedo_image, in_uv);
+  vec2 shadow = texture(shadow_map_image, in_uv).rg;
 
   vec3 view_direction = normalize(scene.camera_position - position);
   
@@ -36,5 +37,6 @@ void main() {
 
   vec4 lighting = calculate_directional_light_blinn_phong(DEFAULT_MATERIAL, light, normal, view_direction);
 
-  out_color = albedo * lighting;
+  // out_color = albedo * lighting;
+  out_color = vec4(shadow, 0.0, 1.0);
 }

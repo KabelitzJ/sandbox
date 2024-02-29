@@ -136,8 +136,8 @@ private:
       _destroy_module(dependency);
     }
 
-    auto* module = _modules.at(type);
-    std::invoke(factory.destroy, module);
+    auto* module_instance = _modules.at(type);
+    std::invoke(factory.destroy, module_instance);
     _modules.at(type) = nullptr;
   }
 
