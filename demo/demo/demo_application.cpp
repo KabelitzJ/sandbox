@@ -60,7 +60,9 @@ demo_application::demo_application()
 
   auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
 
-  auto& scene = scenes_module.load_scene("res://scenes/demo.yaml");
+  const auto scene_name = cli.argument<std::string>("scene");
+
+  auto& scene = scenes_module.load_scene(scene_name ? *scene_name : "res://scenes/demo.yaml");
 
   auto floor_id = assets_module.add_asset<sbx::models::mesh>(_generate_plane(sbx::math::vector2u{100u, 100u}, sbx::math::vector2u{1u, 1u}));
 

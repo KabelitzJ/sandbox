@@ -13,12 +13,6 @@ layout(location = 0) out vec4 out_position;
 layout(location = 1) out vec4 out_normal;
 layout(location = 2) out vec4 out_albedo;
 
-layout(binding = 0) uniform uniform_scene {
-  mat4 view;
-  mat4 projection;
-  float time;
-} scene;
-
 layout(binding = 2) uniform sampler2D image;
 
 void main(void) {

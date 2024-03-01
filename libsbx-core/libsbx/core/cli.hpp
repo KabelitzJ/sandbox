@@ -47,7 +47,7 @@ public:
   }
 
   template<argument Type>
-  auto argument(const std::string& name) -> std::optional<Type> {
+  auto argument(const std::string& name) const -> std::optional<Type> {
     if (auto entry = _arguments.find(name); entry != _arguments.end()) {
       const auto& value = entry->second;
 
