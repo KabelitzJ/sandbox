@@ -37,6 +37,6 @@ void main() {
 
   vec4 lighting = calculate_directional_light_blinn_phong(DEFAULT_MATERIAL, light, normal, view_direction);
 
-  out_color = albedo; // * lighting;
+  out_color = albedo * lighting;
   // out_color = vec4(shadow, 0.0, 1.0);
 }
