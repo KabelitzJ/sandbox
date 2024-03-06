@@ -77,7 +77,7 @@ auto demo_renderer::initialize() -> void {
   add_subrenderer<sbx::shadows::shadow_subrenderer>("res://shaders/shadow", sbx::graphics::pipeline::stage{0, 0});
 
   // Render stage 1
-  add_subrenderer<sbx::post::blur_filter<sbx::graphics::empty_vertex>>("res://shaders/blur", sbx::graphics::pipeline::stage{1, 0}, "shadow_map", sbx::post::blur_type::gaussian_blur_9, sbx::math::vector2{1.0f, 1.0f});
+  add_subrenderer<sbx::post::blur_filter<sbx::graphics::empty_vertex>>("res://shaders/blur", sbx::graphics::pipeline::stage{1, 0}, "shadow_map", sbx::post::blur_type::gaussian_blur_9, sbx::math::vector2{1.0f, 0.0f});
 
   // Render stage 2
   add_subrenderer<sbx::models::mesh_subrenderer>("res://shaders/deferred", sbx::graphics::pipeline::stage{2, 0});

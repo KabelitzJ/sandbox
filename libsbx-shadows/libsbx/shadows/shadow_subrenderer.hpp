@@ -55,7 +55,7 @@ public:
 
     auto light_direction = scene_light.direction();
 
-    const auto position = light_direction * -20.0f;
+    const auto position = light_direction * -30.0f;
 
     const auto view = math::matrix4x4::look_at(position, position + light_direction, math::vector3::up);
     const auto projection = math::matrix4x4::orthographic(-10.0f, 10.0f, -10.0f, 10.0f, 0.1f, 100.0f);

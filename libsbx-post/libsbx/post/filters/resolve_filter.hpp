@@ -62,7 +62,19 @@ public:
 
     const auto& scene_light = scene.light();
 
-    _scene_uniform_handler.push("light_direction", scene_light.direction());
+    const auto light_direction = scene_light.direction();
+
+    const auto position = light_direction * -30.0f;
+
+    const auto view = math::matrix4x4::look_at(position, position + light_direction, math::vector3::up);
+    const auto projection = math::matrix4x4::orthographic(-10.0f, 10.0f, -10.0f, 10.0f, 0.1f, 100.0f);
+
+    _scene_uniform_handler.push("light_space", math::matrix4x4{projection * view});
+
+    const auto time = std::fmod(core::engine::time().value() * scene.wind_speed(), 1.0f);
+    _scene_uniform_handler.push("time", time);
+
+    _scene_uniform_handler.push("light_direction", light_direction);
     _scene_uniform_handler.push("light_color", scene_light.color());
 
     // auto light_nodes = scene.query<scenes::point_light>();
