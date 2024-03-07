@@ -84,7 +84,7 @@ public:
 
   template<scalar Other>
   constexpr auto operator/=(Other scalar) noexcept -> basic_vector& {
-    utility::assert_that(comparision_traits<Other>::equal(scalar, static_cast<Other>(0)), "Division by zero");
+    utility::assert_that(!comparision_traits<Other>::equal(scalar, static_cast<Other>(0)), "Division by zero");
 
     for (auto i : std::views::iota(0u, Size)) {
       _components[i] /= static_cast<value_type>(scalar);
