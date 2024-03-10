@@ -17,6 +17,7 @@ add_library(${CMAKE_PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 find_package(fmt REQUIRED)
 find_package(yaml-cpp REQUIRED)
 find_package(tinyobjloader REQUIRED)
+find_package(fastgltf REQUIRED)
 
 target_sources(
   ${PROJECT_NAME}
@@ -25,6 +26,7 @@ target_sources(
     "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/mesh.cpp"      
     "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/loaders/obj_loader.cpp"
     "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/loaders/gltf_loader.cpp"
+    "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/loaders/fbx_loader.cpp"
   PUBLIC
     FILE_SET HEADERS
     FILES
@@ -35,6 +37,7 @@ target_sources(
       "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/pipeline.hpp"
       "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/loaders/obj_loader.hpp"
       "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/loaders/gltf_loader.hpp"
+      "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/loaders/fbx_loader.hpp"
 )
 
 target_include_directories(
@@ -50,6 +53,7 @@ target_link_libraries(
     fmt::fmt
     yaml-cpp
     tinyobjloader::tinyobjloader
+    fastgltf::fastgltf
     # Internal dependencies
     libsbx::utility
     libsbx::io

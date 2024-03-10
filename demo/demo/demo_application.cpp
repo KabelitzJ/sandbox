@@ -10,7 +10,12 @@ demo_application::demo_application()
   
   const auto& cli = sbx::core::engine::cli();
 
-  assets_module.set_asset_directory("./demo/assets");
+  if (auto asset_directory = cli.argument<std::string>("assets")) {
+    assets_module.set_asset_directory(*asset_directory);
+  } else {
+    assets_module.set_asset_directory("./demo/assets");
+  }
+
 
   sbx::core::logger::info("Asset directory: {}", assets_module.asset_directory().string());
 

@@ -18,27 +18,15 @@ enum class asset_type : std::uint32_t {
   sound
 }; // enum class asset_type
 
-class asset_id {
+class asset_id final : public math::uuid {
 
 public:
 
-  using value_type = math::uuid;
+  using super = math::uuid;
 
-  asset_id() noexcept = default;
-
-  ~asset_id() = default;
-
-  operator value_type() const noexcept {
-    return _value;
-  }
-
-  auto operator==(const asset_id& other) const noexcept -> bool {
-    return _value == other._value;
-  }
-
-private:
-
-  value_type _value;
+  template<typename... Args>
+  asset_id(Args&&... args)
+  : super{std::forward<Args>(args)...} { }
 
 }; // class asset_id
 

@@ -3,6 +3,8 @@
 
 #include <cinttypes>
 
+#include <fmt/format.h>
+
 #include <libsbx/math/random.hpp>
 
 namespace sbx::math {
@@ -37,6 +39,14 @@ private:
 }; // class uuid
 
 } // namespace sbx::math
+
+template<>
+struct fmt::formatter<sbx::math::uuid> : fmt::formatter<typename sbx::math::uuid::value_type> {
+  template<typename FormatContext>
+  auto format(const sbx::math::uuid& uuid, FormatContext& context) -> decltype(context.out()) {
+    return fmt::formatter<typename sbx::math::uuid::value_type>::format(uuid.value(), context);
+  }
+}; // struct fmt::formatter<sbx::math::uuid>
 
 template<>
 struct std::hash<sbx::math::uuid> {
