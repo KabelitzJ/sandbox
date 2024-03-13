@@ -24,8 +24,33 @@ inline constexpr basic_quaternion<Type>::basic_quaternion(Other x, Other y, Othe
 
 template<floating_point Type>
 inline constexpr basic_quaternion<Type>::operator matrix_type() const noexcept {
-  // [TODO] KAJ 2024-01-06 : Implement this.
-  return matrix_type::identity;
+  auto matrix = matrix_type::identity();
+
+  const auto xx = _complex.x() * _complex.x();
+  const auto xy = _complex.x() * _complex.y();
+  const auto xz = _complex.x() * _complex.z();
+  const auto xw = _complex.x() * _scalar;
+
+  const auto yy = _complex.y() * _complex.y();
+  const auto yz = _complex.y() * _complex.z();
+  const auto yw = _complex.y() * _scalar;
+
+  const auto zz = _complex.z() * _complex.z();
+  const auto zw = _complex.z() * _scalar;
+
+  matrix[0][0] = 1 - 2 * (yy + zz);
+  matrix[0][1] = 2 * (xy - zw);
+  matrix[0][2] = 2 * (xz + yw);
+
+  matrix[1][0] = 2 * (xy + zw);
+  matrix[1][1] = 1 - 2 * (xx + zz);
+  matrix[1][2] = 2 * (yz - xw);
+
+  matrix[2][0] = 2 * (xz - yw);
+  matrix[2][1] = 2 * (yz + xw);
+  matrix[2][2] = 1 - 2 * (xx + yy);
+
+  return matrix;
 }
 
 template<floating_point Type>
@@ -57,11 +82,63 @@ inline constexpr auto basic_quaternion<Type>::operator*=(Other value) noexcept -
 
 template<floating_point Type>
 template<floating_point Other>
+inline constexpr auto basic_quaternion<Type>::operator*=(const basic_quaternion<Other>& other) noexcept -> basic_quaternion& {
+  const auto scalar = _scalar * other.scalar() - vector_type::dot(_complex, other.complex());
+  const auto complex = _complex * other.scalar() + other.complex() * _scalar + vector_type::cross(_complex, other.complex());
+
+  _complex = complex;
+  _scalar = scalar;
+
+  return *this;
+}
+
+template<floating_point Type>
+template<floating_point Other>
 inline constexpr auto basic_quaternion<Type>::operator/=(Other value) noexcept -> basic_quaternion& {
   _complex /= value;
   _scalar /= value;
 
   return *this;
+}
+
+template<floating_point Type>
+inline constexpr auto basic_quaternion<Type>::x() noexcept -> reference {
+  return _complex.x();
+}
+
+template<floating_point Type>
+inline constexpr auto basic_quaternion<Type>::x() const noexcept -> const_reference {
+  return _complex.x();
+}
+
+template<floating_point Type>
+inline constexpr auto basic_quaternion<Type>::y() noexcept -> reference {
+  return _complex.y();
+}
+
+template<floating_point Type>
+inline constexpr auto basic_quaternion<Type>::y() const noexcept -> const_reference {
+  return _complex.y();
+}
+
+template<floating_point Type>
+inline constexpr auto basic_quaternion<Type>::z() noexcept -> reference {
+  return _complex.z();
+}
+
+template<floating_point Type>
+inline constexpr auto basic_quaternion<Type>::z() const noexcept -> const_reference {
+  return _complex.z();
+}
+
+template<floating_point Type>
+inline constexpr auto basic_quaternion<Type>::w() noexcept -> reference {
+  return _scalar;
+}
+
+template<floating_point Type>
+inline constexpr auto basic_quaternion<Type>::w() const noexcept -> const_reference {
+  return _scalar;
 }
 
 template<floating_point Type>
@@ -110,6 +187,36 @@ inline constexpr auto operator==(const basic_quaternion<Lhs>& lhs, const basic_q
   return lhs.complex() == rhs.complex() && comparision_traits<Lhs>::equal(lhs.scalar(), rhs.scalar());
 }
 
+template<floating_point Lhs, floating_point Rhs>
+inline constexpr auto operator+(basic_quaternion<Lhs> lhs, const basic_quaternion<Rhs>& rhs) noexcept -> basic_quaternion<Lhs> {
+  return lhs += rhs;
+}
+
+template<floating_point Lhs, floating_point Rhs>
+inline constexpr auto operator-(basic_quaternion<Lhs> lhs, const basic_quaternion<Rhs>& rhs) noexcept -> basic_quaternion<Lhs> {
+  return lhs -= rhs;
+}
+
+template<floating_point Type>
+inline constexpr auto operator-(basic_quaternion<Type> quat) noexcept -> basic_quaternion<Type> {
+  return basic_quaternion<Type>{-quat.complex(), -quat.scalar()};
+}
+
+template<floating_point Lhs, floating_point Rhs>
+inline constexpr auto operator*(basic_quaternion<Lhs> lhs, Rhs scalar) noexcept -> basic_quaternion<Lhs> {
+  return lhs *= scalar;
+}
+
+template<floating_point Lhs, floating_point Rhs>
+inline constexpr auto operator*(basic_quaternion<Lhs> lhs, const basic_quaternion<Rhs>& rhs) noexcept -> basic_quaternion<Lhs> {
+  return lhs *= rhs;
+}
+
+template<floating_point Lhs, floating_point Rhs>
+inline constexpr auto operator/(basic_quaternion<Lhs> lhs, Rhs scalar) noexcept -> basic_quaternion<Lhs> {
+  return lhs /= scalar;
+}
+
 } // namespace sbx::math
 
 template<sbx::math::floating_point Type>
@@ -122,4 +229,48 @@ inline auto std::hash<sbx::math::basic_quaternion<Type>>::operator()(const sbx::
   sbx::utility::hash_combine(seed, quat.w);
 
   return seed;
+}
+
+template<sbx::math::floating_point Type>
+auto YAML::convert<sbx::math::basic_quaternion<Type>>::decode(const Node& node, sbx::math::basic_quaternion<Type>& quat) -> bool {
+  if (!node.IsSequence() || node.size() != 4) {
+    return false;
+  }
+
+  quat.x() = node[0].as<Type>();
+  quat.y() = node[1].as<Type>();
+  quat.z() = node[2].as<Type>();
+  quat.w() = node[3].as<Type>();
+
+  return true;
+}
+
+template<sbx::math::floating_point Type>
+auto YAML::convert<sbx::math::basic_quaternion<Type>>::encode(const sbx::math::basic_quaternion<Type>& quat) -> Node {
+  auto node = Node{};
+
+  node.SetStyle(YAML::EmitterStyle::Flow);
+
+  node["x"] = quat.x();
+  node["y"] = quat.y();
+  node["z"] = quat.z();
+  node["w"] = quat.w();
+
+  return node;
+}
+
+template<sbx::math::floating_point Type>
+template<typename ParseContext>
+inline constexpr auto fmt::formatter<sbx::math::basic_quaternion<Type>>::parse(ParseContext& context) -> decltype(context.begin()) {
+  return context.begin();
+}
+
+template<sbx::math::floating_point Type>
+template<typename FormatContext>
+inline auto fmt::formatter<sbx::math::basic_quaternion<Type>>::format(const sbx::math::basic_quaternion<Type>& quat, FormatContext& context) -> decltype(context.out()) {
+  if constexpr (sbx::math::is_floating_point_v<Type>) {
+    return fmt::format_to(context.out(), "{{x: {:.2f}, y: {:.2f}, z: {:.2f}, w: {:.2f}}}", quat.x(), quat.y(), quat.z(), quat.w());
+  } else {
+    return fmt::format_to(context.out(), "{{x: {}, y: {}, z: {}, w: {}}}", quat.x(), quat.y(), quat.z(), quat.w());
+  }
 }

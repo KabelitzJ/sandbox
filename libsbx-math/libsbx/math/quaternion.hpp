@@ -6,6 +6,10 @@
 #include <cmath>
 #include <type_traits>
 
+#include <yaml-cpp/yaml.h>
+
+#include <fmt/format.h>
+
 #include <libsbx/math/concepts.hpp>
 #include <libsbx/math/vector3.hpp>
 #include <libsbx/math/vector4.hpp>
@@ -61,7 +65,26 @@ public:
   constexpr auto operator*=(Other value) noexcept -> basic_quaternion&;
 
   template<floating_point Other = value_type>
+  constexpr auto operator*=(const basic_quaternion<Other>& other) noexcept -> basic_quaternion&;
+
+  template<floating_point Other = value_type>
   constexpr auto operator/=(Other value) noexcept -> basic_quaternion&;
+
+  [[nodiscard]] constexpr auto x() noexcept -> reference;
+
+  [[nodiscard]] constexpr auto x() const noexcept -> const_reference;
+
+  [[nodiscard]] constexpr auto y() noexcept -> reference;
+
+  [[nodiscard]] constexpr auto y() const noexcept -> const_reference;
+
+  [[nodiscard]] constexpr auto z() noexcept -> reference;
+
+  [[nodiscard]] constexpr auto z() const noexcept -> const_reference;
+
+  [[nodiscard]] constexpr auto w() noexcept -> reference;
+
+  [[nodiscard]] constexpr auto w() const noexcept -> const_reference;
 
   [[nodiscard]] constexpr auto complex() noexcept -> vector_type&;
 
@@ -87,6 +110,24 @@ private:
 template<floating_point Lhs, floating_point Rhs>
 [[nodiscard]] constexpr auto operator==(const basic_quaternion<Lhs>& lhs, const basic_quaternion<Rhs>& rhs) noexcept -> bool;
 
+template<floating_point Lhs, floating_point Rhs>
+[[nodiscard]] constexpr auto operator+(basic_quaternion<Lhs> lhs, const basic_quaternion<Rhs>& rhs) noexcept -> basic_quaternion<Lhs>;
+
+template<floating_point Lhs, floating_point Rhs>
+[[nodiscard]] constexpr auto operator-(basic_quaternion<Lhs> lhs, const basic_quaternion<Rhs>& rhs) noexcept -> basic_quaternion<Lhs>;
+
+template<floating_point Type>
+[[nodiscard]] constexpr auto operator-(basic_quaternion<Type> quaternion) noexcept -> basic_quaternion<Type>;
+
+template<floating_point Lhs, floating_point Rhs>
+[[nodiscard]] constexpr auto operator*(basic_quaternion<Lhs> lhs, Rhs scalar) noexcept -> basic_quaternion<Lhs>;
+
+template<floating_point Lhs, floating_point Rhs>
+[[nodiscard]] constexpr auto operator*(basic_quaternion<Lhs> lhs, const basic_quaternion<Rhs>& rhs) noexcept -> basic_quaternion<Lhs>;
+
+template<floating_point Lhs, floating_point Rhs>
+[[nodiscard]] constexpr auto operator/(basic_quaternion<Lhs> lhs, Rhs scalar) noexcept -> basic_quaternion<Lhs>;
+
 /** @brief Type alias for a quaternion with 32 bit floating-point components. */
 using quaternionf = basic_quaternion<std::float_t>;
 
@@ -101,6 +142,26 @@ struct std::hash<sbx::math::basic_quaternion<Type>> {
   auto operator()(const sbx::math::basic_quaternion<Type>& quaternion) const noexcept -> std::size_t;
 
 }; // struct std::hash
+
+template<sbx::math::floating_point Type>
+struct YAML::convert<sbx::math::basic_quaternion<Type>> {
+
+  static auto encode(const sbx::math::basic_quaternion<Type>& quaternion) -> YAML::Node;
+
+  static auto decode(const YAML::Node& node, sbx::math::basic_quaternion<Type>& quaternion) -> bool;
+
+}; // struct YAML::convert
+
+template<sbx::math::floating_point Type>
+struct fmt::formatter<sbx::math::basic_quaternion<Type>> {
+
+  template<typename ParseContext>
+  constexpr auto parse(ParseContext& context) -> decltype(context.begin());
+
+  template<typename FormatContext>
+  auto format(const sbx::math::basic_quaternion<Type>& quaternion, FormatContext& context) -> decltype(context.out());
+
+}; // struct fmt::formatter
 
 #include <libsbx/math/quaternion.ipp>
 
