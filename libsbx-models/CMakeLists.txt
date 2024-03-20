@@ -17,7 +17,8 @@ add_library(${CMAKE_PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 find_package(fmt REQUIRED)
 find_package(yaml-cpp REQUIRED)
 find_package(tinyobjloader REQUIRED)
-find_package(fastgltf REQUIRED)
+find_package(nlohmann_json REQUIRED)
+find_package(base64 REQUIRED)
 
 target_sources(
   ${PROJECT_NAME}
@@ -53,7 +54,8 @@ target_link_libraries(
     fmt::fmt
     yaml-cpp
     tinyobjloader::tinyobjloader
-    fastgltf::fastgltf
+    nlohmann_json::nlohmann_json
+    aklomp::base64
     # Internal dependencies
     libsbx::utility
     libsbx::io

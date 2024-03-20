@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <vector>
+#include <string>
 
 #include <libsbx/graphics/graphics_module.hpp>
 
