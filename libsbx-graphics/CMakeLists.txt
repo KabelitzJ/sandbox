@@ -136,6 +136,12 @@ set_target_properties(
 target_compile_definitions(
   ${PROJECT_NAME}
   PRIVATE
+    SBX_CONSTEXPR_ENABLED=${SBX_CONSTEXPR_ENABLED}
+)
+
+target_compile_definitions(
+  ${PROJECT_NAME}
+  PRIVATE
     GLFW_INCLUDE_VULKAN
 )
 

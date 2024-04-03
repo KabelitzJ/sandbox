@@ -6,6 +6,7 @@
 #include <libsbx/math/vector3.hpp>
 #include <libsbx/math/matrix4x4.hpp>
 #include <libsbx/math/angle.hpp>
+#include <libsbx/math/quaternion.hpp>
 
 namespace sbx::math {
 
@@ -13,11 +14,11 @@ class transform final {
 
 public:
 
-  transform(const vector3& position = vector3::zero, const vector3& euler_angles = vector3::zero, const vector3& scale = vector3::one)
+  transform(const vector3& position = vector3::zero, const quaternion& rotation = quaternion::zero, const vector3& scale = vector3::one)
   : _position{position}, 
-    _euler_angles{euler_angles}, 
+    _rotation{rotation}, 
     _scale{scale},
-    _rotation_matrix{matrix4x4::rotation_from_euler_angles(_euler_angles)} { }
+    _rotation_matrix{_rotation.to_matrix()} { }
 
   ~transform() = default;
 
@@ -33,17 +34,25 @@ public:
     _position += offset;
   }
 
-  auto euler_angles() const noexcept -> const vector3& {
-    return _euler_angles;
+  auto rotation() const noexcept -> const quaternion& {
+    return _rotation;
+  }
+
+  auto set_rotation(const quaternion& rotation) noexcept -> void {
+    _rotation = rotation;
+    _rotation_matrix = _rotation.to_matrix();
   }
 
   auto set_euler_angles(const vector3& euler_angles) noexcept -> void {
-    _euler_angles = euler_angles;
-    _rotation_matrix = matrix4x4::rotation_from_euler_angles(_euler_angles);
+    _rotation = quaternion{euler_angles};
+    _rotation.normalize();
+    _rotation_matrix = _rotation.to_matrix();
   }
 
   auto add_euler_angles(const vector3& offset) noexcept -> void {
-    set_euler_angles(_euler_angles + offset);
+    _rotation += quaternion{offset};
+    _rotation.normalize();
+    _rotation_matrix = _rotation.to_matrix();
   }
 
   auto scale() const noexcept -> const vector3& {
@@ -63,13 +72,7 @@ public:
   }
 
   auto look_at(const vector3& target) noexcept -> void {
-    auto direction = vector3::normalized(target - _position);
-
-    const auto pitch = radian{std::asin(-direction.y())};
-    const auto yaw = radian{std::atan2(direction.x(), direction.z())};
-    const auto roll = radian{0.0f};
-
-    set_euler_angles(vector3{math::to_degrees(pitch).value(), math::to_degrees(yaw).value(), math::to_degrees(roll).value()});
+    // [TODO] KAJ 2024-03-20 : Implement look_at.
   }
 
   auto as_matrix() const -> matrix4x4 {
@@ -82,7 +85,7 @@ public:
 private:
 
   vector3 _position;
-  vector3 _euler_angles;
+  quaternion _rotation;
   vector3 _scale;
 
   math::matrix4x4 _rotation_matrix;

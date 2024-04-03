@@ -179,7 +179,7 @@ auto script::_create_transform_bindings(sol::table& library) -> void {
   transform_type.set("set_position", &math::transform::set_position);
   transform_type.set("move_by", &math::transform::move_by);
 
-  transform_type.set("euler_angles", &math::transform::euler_angles);
+  // transform_type.set("euler_angles", &math::transform::euler_angles);
   transform_type.set("set_euler_angles", &math::transform::set_euler_angles);
   transform_type.set("add_euler_angles", &math::transform::add_euler_angles);
 

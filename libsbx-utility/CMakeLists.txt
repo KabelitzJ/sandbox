@@ -69,6 +69,12 @@ set_target_properties(
     POSITION_INDEPENDENT_CODE ON
 )
 
+target_compile_definitions(
+  ${PROJECT_NAME}
+  PRIVATE
+    SBX_CONSTEXPR_ENABLED=${SBX_CONSTEXPR_ENABLED}
+)
+
 target_compile_features(
   ${PROJECT_NAME}
   PUBLIC
