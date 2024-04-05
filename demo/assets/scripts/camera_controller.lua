@@ -87,6 +87,8 @@ function on_update()
   
   transform:set_position(position);
 
+  -- sbx.logger.info("TEST")
+
   -- transform:look_at(target);
 
   -- transform:set_position(sbx.vector3.new(3.0, 3.0, 3.0));

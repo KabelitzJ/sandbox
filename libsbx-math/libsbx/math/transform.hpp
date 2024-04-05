@@ -72,7 +72,7 @@ public:
   }
 
   auto look_at(const vector3& target) noexcept -> void {
-    // [TODO] KAJ 2024-03-20 : Implement look_at.
+    
   }
 
   auto as_matrix() const -> matrix4x4 {
