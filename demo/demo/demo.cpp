@@ -1,7 +1,6 @@
-#include <libsbx/core/core.hpp>
+#include <fmt/format.h>
 
-#include <demo/demo_application.hpp>
-
-auto sbx::core::create_application() -> std::unique_ptr<sbx::core::application> {
-  return std::make_unique<demo::demo_application>();
+auto main() -> int {
+  fmt::print("Hello, world!\n");
+  return 0;
 }

@@ -88,6 +88,7 @@ class libsbx_recipe(ConanFile):
     self.requires("yaml-cpp/0.7.0")
     self.requires("glfw/3.3.8")
     self.requires("sol2/3.3.1")
+    self.requires("glm/cci.20230113")
     self.requires("tinyobjloader/2.0.0-rc10")
     self.requires("openfbx/cci.20210426")
     self.requires("tinygltf/2.8.19")

@@ -29,8 +29,16 @@ else()
   message(FATAL_ERROR "Unsupported platform detected")
 endif()
 
-
 add_dependencies(${PROJECT_NAME} shaders)
+
+find_package(Vulkan REQUIRED)
+find_package(fmt REQUIRED)
+find_package(glfw3 REQUIRED)
+find_package(glm REQUIRED)
+find_package(SPIRV-Headers REQUIRED)
+find_package(spirv-cross REQUIRED)
+find_package(stb REQUIRED)
+find_package(range-v3 REQUIRED)
 
 target_sources(
   ${PROJECT_NAME}
@@ -52,26 +60,37 @@ target_include_directories(
 target_link_libraries(
   ${PROJECT_NAME}
   PRIVATE
-    libsbx::units
-    libsbx::utility
-    libsbx::io
-    libsbx::math
-    libsbx::memory
-    libsbx::signals
-    libsbx::bitmaps
-    libsbx::ecs
-    libsbx::core
-    libsbx::async
-    libsbx::assets
-    libsbx::devices
-    libsbx::graphics
-    libsbx::post
-    libsbx::models
-    libsbx::scenes
+    # libsbx::units
+    # libsbx::utility
+    # libsbx::io
+    # libsbx::math
+    # libsbx::memory
+    # libsbx::signals
+    # libsbx::bitmaps
+    # libsbx::ecs
+    # libsbx::core
+    # libsbx::async
+    # libsbx::assets
+    # libsbx::devices
+    # libsbx::graphics
+    # libsbx::post
+    # libsbx::models
+    # libsbx::scenes
     # libsbx::audio
-    libsbx::ui
-    libsbx::shadows
-    libsbx::physics
+    # libsbx::ui
+    # libsbx::shadows
+    # libsbx::physics
+  PUBLIC
+    fmt::fmt
+    glfw
+    stb::stb
+    Vulkan::Vulkan
+    SPIRV-Headers::SPIRV-Headers
+    spirv-cross-core
+    spirv-cross-cpp
+    spirv-cross-reflect
+    spirv-cross-glsl
+    range-v3::range-v3
 )
 
 set_target_properties(
