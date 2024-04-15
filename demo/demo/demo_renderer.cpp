@@ -46,11 +46,13 @@ demo_renderer::demo_renderer()
       sbx::graphics::attachment{0, "depth", sbx::graphics::attachment::type::depth},
       sbx::graphics::attachment{1, "position", sbx::graphics::attachment::type::image, sbx::graphics::format::r32g32b32a32_sfloat, _clear_color},
       sbx::graphics::attachment{2, "normal", sbx::graphics::attachment::type::image, sbx::graphics::format::r32g32b32a32_sfloat, _clear_color},
-      sbx::graphics::attachment{3, "albedo", sbx::graphics::attachment::type::image, sbx::graphics::format::r8g8b8a8_unorm, _clear_color}
+      sbx::graphics::attachment{3, "albedo", sbx::graphics::attachment::type::image, sbx::graphics::format::r8g8b8a8_unorm, _clear_color},
+      // sbx::graphics::attachment{4, "swapchain", sbx::graphics::attachment::type::swapchain, sbx::graphics::format::r8g8b8a8_unorm, _clear_color}
     };
 
     auto subpass_bindings = std::vector<sbx::graphics::subpass_binding>{
-      sbx::graphics::subpass_binding{0, {0, 1, 2, 3}}
+      sbx::graphics::subpass_binding{0, {0, 1, 2, 3}},
+      // sbx::graphics::subpass_binding{0, {0, 1, 2, 3, 4}},
     };
 
     add_render_stage(std::move(attachments), std::move(subpass_bindings));

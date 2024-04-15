@@ -233,8 +233,6 @@ public:
 
   auto render_pass() const noexcept -> const VkRenderPass&;
 
-  auto update(const VkExtent2D extent) -> void;
-
   auto rebuild(const swapchain& swapchain) -> void;
 
   auto framebuffer(std::uint32_t index) noexcept -> const VkFramebuffer&;
