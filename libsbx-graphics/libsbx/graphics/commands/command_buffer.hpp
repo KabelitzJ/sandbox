@@ -53,7 +53,7 @@ public:
 
 private:
 
-  auto _queue() const -> const logical_device::queue&;
+  auto _queue() const -> const graphics::queue&;
 
   std::shared_ptr<command_pool> _command_pool{};
 

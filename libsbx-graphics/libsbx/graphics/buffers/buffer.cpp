@@ -20,15 +20,19 @@ buffer_base::buffer_base(size_type size, VkBufferUsageFlags usage, VkMemoryPrope
   const auto& physical_device = graphics_module.physical_device();
   const auto& logical_device = graphics_module.logical_device();
 
-  const auto& sharing_mode = logical_device.queue_sharing_mode();
+  const auto& graphics_queue = logical_device.queue<queue::type::graphics>();
+  const auto& present_queue = logical_device.queue<queue::type::present>();
+  const auto& compute_queue = logical_device.queue<queue::type::compute>();
+
+  const auto queue_family_indices = std::array<std::uint32_t, 3>{graphics_queue.family(), present_queue.family(), compute_queue.family()};
 
   auto buffer_create_info = VkBufferCreateInfo{};
   buffer_create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
   buffer_create_info.size = _size;
   buffer_create_info.usage = usage;
-  buffer_create_info.sharingMode = sharing_mode.mode;
-  buffer_create_info.queueFamilyIndexCount = static_cast<std::uint32_t>(sharing_mode.queue_families.size());
-  buffer_create_info.pQueueFamilyIndices = sharing_mode.queue_families.data();
+  buffer_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+  buffer_create_info.queueFamilyIndexCount = static_cast<std::uint32_t>(queue_family_indices.size());
+  buffer_create_info.pQueueFamilyIndices = queue_family_indices.data();
 
   validate(vkCreateBuffer(logical_device, &buffer_create_info, nullptr, &_handle));
 

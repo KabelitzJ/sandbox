@@ -34,7 +34,8 @@ swapchain::swapchain(const VkExtent2D& extent, const std::unique_ptr<swapchain>&
   const auto surface_capabilities = surface.capabilities();
   const auto& surface_format = surface.format();
 
-  const auto& sharing_mode = logical_device.queue_sharing_mode();
+  const auto& graphics_queue = logical_device.queue<queue::type::graphics>();
+  const auto& present_queue = logical_device.queue<queue::type::present>();
 
   _present_mode = _choose_present_mode();
 
@@ -75,10 +76,7 @@ swapchain::swapchain(const VkExtent2D& extent, const std::unique_ptr<swapchain>&
 	swapchain_create_info.compositeAlpha = _composite_alpha;
 	swapchain_create_info.presentMode = _present_mode;
 	swapchain_create_info.clipped = true;
-  swapchain_create_info.imageSharingMode = sharing_mode.mode;
-  swapchain_create_info.queueFamilyIndexCount = static_cast<std::uint32_t>(sharing_mode.queue_families.size());
-  swapchain_create_info.pQueueFamilyIndices = sharing_mode.queue_families.data();
-	swapchain_create_info.oldSwapchain = nullptr;
+  swapchain_create_info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
 	if (surface_capabilities.supportedUsageFlags & VK_IMAGE_USAGE_TRANSFER_SRC_BIT) {
 		swapchain_create_info.imageUsage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
@@ -94,6 +92,14 @@ swapchain::swapchain(const VkExtent2D& extent, const std::unique_ptr<swapchain>&
 
 	if (old_swapchain) {
     swapchain_create_info.oldSwapchain = *old_swapchain;
+  }
+
+  if (present_queue.family() != graphics_queue.family()) {
+    auto queue_families = std::array<std::uint32_t, 2>{graphics_queue.family(), present_queue.family()};
+
+    swapchain_create_info.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
+    swapchain_create_info.queueFamilyIndexCount = static_cast<std::uint32_t>(queue_families.size());
+    swapchain_create_info.pQueueFamilyIndices = queue_families.data();
   }
 
 	validate(vkCreateSwapchainKHR(logical_device, &swapchain_create_info, nullptr, &_handle));
@@ -190,6 +196,8 @@ auto swapchain::present(const VkSemaphore& wait_semaphore) -> VkResult {
         
   auto& logical_device = graphics_module.logical_device();
 
+  const auto& present_queue = logical_device.queue<queue::type::present>();
+
   auto present_info = VkPresentInfoKHR{};
 	present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 	present_info.waitSemaphoreCount = 1;
@@ -198,7 +206,7 @@ auto swapchain::present(const VkSemaphore& wait_semaphore) -> VkResult {
 	present_info.pSwapchains = &_handle;
 	present_info.pImageIndices = &_active_image_index;
 
-	return vkQueuePresentKHR(logical_device.graphics_queue(), &present_info);
+	return vkQueuePresentKHR(present_queue, &present_info);
 }
 
 auto swapchain::_choose_present_mode() const -> VkPresentModeKHR {

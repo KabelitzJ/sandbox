@@ -36,14 +36,17 @@ graphics_module::graphics_module()
 graphics_module::~graphics_module() {
   _logical_device->wait_idle();
 
-  const auto& graphics_queue = _logical_device->graphics_queue();
-  validate(vkQueueWaitIdle(graphics_queue));
+  // const auto& graphics_queue = _logical_device->queue<queue::type::graphics>();
+  // graphics_queue.wait_idle();
 
-  const auto& transfer_queue = _logical_device->transfer_queue();
-  validate(vkQueueWaitIdle(transfer_queue));
+  // const auto& present_queue = _logical_device->queue<queue::type::present>();
+  // present_queue.wait_idle();
 
-  const auto& compute_queue = _logical_device->compute_queue();
-  validate(vkQueueWaitIdle(compute_queue));
+  // const auto& transfer_queue = _logical_device->queue<queue::type::transfer>();
+  // transfer_queue.wait_idle();
+
+  // const auto& compute_queue = _logical_device->queue<queue::type::compute>();
+  // compute_queue.wait_idle();
 
   _renderer.reset();
 
