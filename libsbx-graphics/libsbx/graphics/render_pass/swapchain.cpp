@@ -126,11 +126,11 @@ swapchain::~swapchain() {
 
 	const auto& logical_device = graphics_module.logical_device();
 
-	vkDestroySwapchainKHR(logical_device, _handle, nullptr);
-
 	for (const auto& image_view : _image_views) {
 		vkDestroyImageView(logical_device, image_view, nullptr);
 	}
+
+	vkDestroySwapchainKHR(logical_device, _handle, nullptr);
 }
 
 auto swapchain::handle() const noexcept -> const VkSwapchainKHR& {

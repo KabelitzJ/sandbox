@@ -386,26 +386,38 @@ auto render_stage::_create_attachment_descriptions(VkFormat depth_format, VkForm
 auto render_stage::_create_subpass_dependencies() -> std::vector<VkSubpassDependency> {
   auto subpass_dependencies = std::vector<VkSubpassDependency>{};
 
+  auto depth_dependency = VkSubpassDependency{};
+  depth_dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+  depth_dependency.dstSubpass = 0;
+  depth_dependency.srcStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;;
+  depth_dependency.dstStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;;
+  depth_dependency.srcAccessMask = 0;
+  depth_dependency.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+  depth_dependency.dependencyFlags = 0;
+
   for (const auto i : std::views::iota(0u, _subpass_bindings.size() + 1u)) {
     auto subpass_dependency = VkSubpassDependency{};
-    subpass_dependency.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
     if (i == 0u) {
       subpass_dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-			subpass_dependency.srcStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-			subpass_dependency.srcAccessMask = VK_ACCESS_MEMORY_READ_BIT;
-
+      subpass_dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+      subpass_dependency.srcAccessMask = 0u;
+		
       subpass_dependency.dstSubpass = 0u;
-			subpass_dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-			subpass_dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+      subpass_dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+      subpass_dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+			
+      subpass_dependency.dependencyFlags = 0u;
     } else if (i == _subpass_bindings.size()) {
       subpass_dependency.srcSubpass = i - 1u;
       subpass_dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-			subpass_dependency.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+      subpass_dependency.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
       subpass_dependency.dstSubpass = VK_SUBPASS_EXTERNAL;
-			subpass_dependency.dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-			subpass_dependency.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+      subpass_dependency.dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+      subpass_dependency.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+
+      subpass_dependency.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
     } else {
       subpass_dependency.srcSubpass = i - 1u;
       subpass_dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
@@ -413,7 +425,9 @@ auto render_stage::_create_subpass_dependencies() -> std::vector<VkSubpassDepend
 
       subpass_dependency.dstSubpass = i;
       subpass_dependency.dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-      subpass_dependency.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+      subpass_dependency.dstAccessMask = VK_ACCESS_INPUT_ATTACHMENT_READ_BIT;
+
+      subpass_dependency.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
     }
 
 		subpass_dependencies.emplace_back(subpass_dependency);
