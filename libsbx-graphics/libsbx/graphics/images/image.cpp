@@ -41,6 +41,17 @@ image::image(const VkExtent3D extent, VkFilter filter, VkSamplerAddressMode addr
   _mip_levels{mip_levels},
   _array_layers{array_layers} { }
 
+image::~image() {
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+  auto& logical_device = graphics_module.logical_device();
+
+  vkDestroyImageView(logical_device, _view, nullptr);
+  vkDestroySampler(logical_device, _sampler, nullptr);
+  vkFreeMemory(logical_device, _memory, nullptr);
+  vkDestroyImage(logical_device, _handle, nullptr);
+}
+
 auto image::create_descriptor_set_layout_binding(std::uint32_t binding, VkDescriptorType descriptor_type, VkShaderStageFlags shader_stage_flags, std::uint32_t count) noexcept -> VkDescriptorSetLayoutBinding {
   auto descriptor_set_layout_binding = VkDescriptorSetLayoutBinding{};
   descriptor_set_layout_binding.binding = binding;

@@ -189,17 +189,17 @@ auto render_stage::rebuild(const swapchain& swapchain) -> void {
     _create_render_pass(_depth_image ? _depth_image->format() : VK_FORMAT_UNDEFINED, surface.format().format);
   }
 
-  _image_attachments.clear();
+  _color_images.clear();
 
   for (const auto& attachment : _attachments) {
     switch (attachment.image_type()) {
       case attachment::type::image: {
-        _image_attachments.insert({attachment.binding(), std::make_unique<graphics::image2d>(_render_area.extent(), to_vk_enum<VkFormat>(attachment.format()), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_STORAGE_BIT, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_SAMPLE_COUNT_1_BIT)});
+        _color_images.insert({attachment.binding(), std::make_unique<graphics::image2d>(_render_area.extent(), to_vk_enum<VkFormat>(attachment.format()), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_STORAGE_BIT, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_SAMPLE_COUNT_1_BIT)});
         break;
       }
       case attachment::type::depth: 
       case attachment::type::swapchain: {
-        _image_attachments.insert({attachment.binding(), nullptr});
+        _color_images.insert({attachment.binding(), nullptr});
         break;
       }
     }
@@ -215,7 +215,7 @@ auto render_stage::rebuild(const swapchain& swapchain) -> void {
     if (attachment.image_type() == attachment::type::depth) {
       where = _descriptors.insert(where, {attachment.name(), _depth_image.get()});
     } else {
-      where = _descriptors.insert(where, {attachment.name(), _image_attachments[attachment.binding()].get()});
+      where = _descriptors.insert(where, {attachment.name(), _color_images[attachment.binding()].get()});
     }
   }
 }
@@ -301,6 +301,7 @@ auto render_stage::_rebuild_framebuffers(const swapchain& swapchain) -> void {
     vkDestroyFramebuffer(logical_device, framebuffer, nullptr);
   }
 
+  _framebuffers.clear();
   _framebuffers.resize(swapchain.image_count());
 
   for (auto i = 0u; i < _framebuffers.size(); ++i) {
@@ -309,7 +310,7 @@ auto render_stage::_rebuild_framebuffers(const swapchain& swapchain) -> void {
     for (const auto& attachment : _attachments) {
       switch (attachment.image_type()) {
         case attachment::type::image: {
-          attachments.push_back(_image_attachments[attachment.binding()]->view());
+          attachments.push_back(_color_images[attachment.binding()]->view());
           break;
         }
         case attachment::type::depth: {

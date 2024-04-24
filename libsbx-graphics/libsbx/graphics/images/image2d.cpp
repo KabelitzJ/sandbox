@@ -19,16 +19,7 @@ image2d::image2d(const math::vector2u& extent, VkFormat format, VkImageLayout la
 : image{VkExtent3D{extent.x(), extent.y(), 1}, filter, address_mode, samples, layout, (usage | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT), format, 1, 1},
   _anisotropic{anisotropic},
   _mipmap{mipmap} {
-  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
-
   _load();
-
-  graphics_module.add_deleter([view = _view, sample = _sampler, memory = _memory, handle = _handle](logical_device& logical_device){
-    vkDestroyImageView(logical_device, view, nullptr);
-    vkDestroySampler(logical_device, sample, nullptr);
-    vkFreeMemory(logical_device, memory, nullptr);
-    vkDestroyImage(logical_device, handle, nullptr);
-  });
 }
 
 // [TODO] KAJ 2023-07-28 : We use VK_FORMAT_R8G8B8A8_SRGB here because it best matches the STBI_rgb_alpha format that we load the image with.
@@ -40,13 +31,6 @@ image2d::image2d(const std::filesystem::path& path, VkFilter filter, VkSamplerAd
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
   _load();
-
-  graphics_module.add_deleter([view = _view, sample = _sampler, memory = _memory, handle = _handle](logical_device& logical_device){
-    vkDestroyImageView(logical_device, view, nullptr);
-    vkDestroySampler(logical_device, sample, nullptr);
-    vkFreeMemory(logical_device, memory, nullptr);
-    vkDestroyImage(logical_device, handle, nullptr);
-  });
 }
 
 auto image2d::set_pixels(memory::observer_ptr<const std::uint8_t> pixels) -> void {

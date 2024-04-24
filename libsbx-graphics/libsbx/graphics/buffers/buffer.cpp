@@ -12,9 +12,8 @@
 
 namespace sbx::graphics {
 
-buffer_base::buffer_base(size_type size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, bool unses_deletion_queue, memory::observer_ptr<const void> memory)
-: _size{size},
-  _uses_deletion_queue{unses_deletion_queue} {
+buffer_base::buffer_base(size_type size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, memory::observer_ptr<const void> memory)
+: _size{size} {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
   const auto& physical_device = graphics_module.physical_device();
@@ -66,26 +65,17 @@ buffer_base::buffer_base(size_type size, VkBufferUsageFlags usage, VkMemoryPrope
   }
 
   validate(vkBindBufferMemory(logical_device, _handle, _memory, 0));
-
-  if (_uses_deletion_queue) {
-    graphics_module.add_deleter([memory = _memory, handle = _handle](graphics::logical_device& logical_device){
-      vkFreeMemory(logical_device, memory, nullptr);
-      vkDestroyBuffer(logical_device, handle, nullptr);
-    });
-  }
 }
 
 buffer_base::~buffer_base() {
-  if (!_uses_deletion_queue) {
-    auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
-    const auto& logical_device = graphics_module.logical_device();
+  const auto& logical_device = graphics_module.logical_device();
 
-    logical_device.wait_idle();
+  logical_device.wait_idle();
 
-    vkFreeMemory(logical_device, _memory, nullptr);
-    vkDestroyBuffer(logical_device, _handle, nullptr);
-  }
+  vkFreeMemory(logical_device, _memory, nullptr);
+  vkDestroyBuffer(logical_device, _handle, nullptr);
 }
 
 auto buffer_base::handle() const noexcept -> const VkBuffer& {

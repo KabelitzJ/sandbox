@@ -241,8 +241,6 @@ public:
 
   auto descriptors() const noexcept -> const std::map<std::string, memory::observer_ptr<const graphics::descriptor>>&;
 
-  auto transition_image_layouts(command_buffer& command_buffer) const -> void;
-
 private:
 
   auto _create_render_pass(VkFormat depth_format, VkFormat surface_format) -> void;
@@ -265,7 +263,7 @@ private:
   std::map<std::string, memory::observer_ptr<const graphics::descriptor>> _descriptors;
 
   std::unique_ptr<graphics::depth_image> _depth_image;
-  std::unordered_map<std::uint32_t, std::unique_ptr<graphics::image2d>> _image_attachments;
+  std::unordered_map<std::uint32_t, std::unique_ptr<graphics::image2d>> _color_images;
 
   std::vector<VkFramebuffer> _framebuffers;
 

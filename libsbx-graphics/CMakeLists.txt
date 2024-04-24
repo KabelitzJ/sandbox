@@ -20,6 +20,7 @@ find_package(spirv-cross REQUIRED)
 find_package(stb REQUIRED)
 find_package(range-v3 REQUIRED)
 find_package(fmt REQUIRED)
+find_package(vulkan-memory-allocator REQUIRED)
 
 option(GLFW_BUILD_EXAMPLES "Build the GLFW example programs" OFF)
 option(GLFW_BUILD_TESTS "Build the GLFW test programs" OFF)
@@ -115,6 +116,7 @@ target_link_libraries(
     stb::stb
     range-v3::range-v3
     fmt::fmt
+    vulkan-memory-allocator::vulkan-memory-allocator
     # Internal dependencies
     libsbx::utility
     libsbx::io

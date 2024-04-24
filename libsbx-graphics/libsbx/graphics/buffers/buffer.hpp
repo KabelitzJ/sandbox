@@ -19,7 +19,7 @@ public:
 
   using size_type = VkDeviceSize;
 
-  buffer_base(size_type size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, bool unses_deletion_queue = true, memory::observer_ptr<const void> memory = nullptr);
+  buffer_base(size_type size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, memory::observer_ptr<const void> memory = nullptr);
 
   virtual ~buffer_base();
 
@@ -44,11 +44,10 @@ private:
   VkBuffer _handle{};
   VkDeviceSize _size{};
   VkDeviceMemory _memory{};
-  bool _uses_deletion_queue{};
 
 }; // class buffer_base
 
-template<typename Type, VkBufferUsageFlags Usage, VkMemoryPropertyFlags Properties, bool UsesDeletionQueue>
+template<typename Type, VkBufferUsageFlags Usage, VkMemoryPropertyFlags Properties>
 class basic_buffer : public buffer_base {
 
   using base_type = buffer_base;
@@ -59,10 +58,10 @@ public:
   using size_type = base_type::size_type;
 
   basic_buffer(std::span<const Type> elements, VkMemoryPropertyFlags properties = 0, VkBufferUsageFlags usage = 0u)
-  : base_type{elements.size() * sizeof(Type), (usage | Usage) , (properties | Properties), UsesDeletionQueue, elements.data()} { }
+  : base_type{elements.size() * sizeof(Type), (usage | Usage) , (properties | Properties), elements.data()} { }
 
   basic_buffer(size_type size, VkMemoryPropertyFlags properties = 0, VkBufferUsageFlags usage = 0u)
-  : base_type{size * sizeof(Type), (usage | Usage) , (properties | Properties), UsesDeletionQueue, nullptr} { }
+  : base_type{size * sizeof(Type), (usage | Usage) , (properties | Properties), nullptr} { }
 
   ~basic_buffer() override = default;
 
@@ -76,7 +75,7 @@ public:
 
 }; // class basic_buffer
 
-using staging_buffer = basic_buffer<std::uint8_t, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, (VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT), false>;
+using staging_buffer = basic_buffer<std::uint8_t, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, (VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)>;
 
 } // namespace sbx::graphics
 

@@ -36,18 +36,6 @@ graphics_module::graphics_module()
 graphics_module::~graphics_module() {
   _logical_device->wait_idle();
 
-  // const auto& graphics_queue = _logical_device->queue<queue::type::graphics>();
-  // graphics_queue.wait_idle();
-
-  // const auto& present_queue = _logical_device->queue<queue::type::present>();
-  // present_queue.wait_idle();
-
-  // const auto& transfer_queue = _logical_device->queue<queue::type::transfer>();
-  // transfer_queue.wait_idle();
-
-  // const auto& compute_queue = _logical_device->queue<queue::type::compute>();
-  // compute_queue.wait_idle();
-
   _renderer.reset();
 
   _swapchain.reset();
@@ -57,8 +45,6 @@ graphics_module::~graphics_module() {
     vkDestroySemaphore(*_logical_device, frame_data.render_finished_semaphore, nullptr);
     vkDestroySemaphore(*_logical_device, frame_data.image_available_semaphore, nullptr);
   }
-
-  _free_deletion_queue();
 
   // [NOTE] KAJ 2023-02-19 : Command buffers must be freed before the command pools
   _command_buffers.clear();

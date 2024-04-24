@@ -28,15 +28,6 @@ depth_image::depth_image(const math::vector2u& extent, VkSampleCountFlagBits sam
 	create_image_sampler(_sampler, _filter, _address_mode, false, 1);
 	create_image_view(_handle, _view, VK_IMAGE_VIEW_TYPE_2D, _format, VK_IMAGE_ASPECT_DEPTH_BIT, 1, 0, 1, 0);
 	transition_image_layout(_handle, _format, VK_IMAGE_LAYOUT_UNDEFINED, _layout, aspect_mask, 1, 0, 1, 0);
-
-  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
-
-  graphics_module.add_deleter([view = _view, sample = _sampler, memory = _memory, handle = _handle](logical_device& logical_device){
-    vkDestroyImageView(logical_device, view, nullptr);
-    vkDestroySampler(logical_device, sample, nullptr);
-    vkFreeMemory(logical_device, memory, nullptr);
-    vkDestroyImage(logical_device, handle, nullptr);
-  });
 }
 
 } // namespace sbx::graphics
