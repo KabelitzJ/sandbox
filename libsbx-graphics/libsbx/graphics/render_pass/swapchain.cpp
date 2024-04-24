@@ -127,6 +127,7 @@ swapchain::~swapchain() {
 	const auto& logical_device = graphics_module.logical_device();
 
 	for (const auto& image_view : _image_views) {
+    core::logger::debug("Destroying image view with handle: {}", static_cast<void*>(image_view));
 		vkDestroyImageView(logical_device, image_view, nullptr);
 	}
 
@@ -250,6 +251,7 @@ auto swapchain::_create_image_view(const VkImage& image, VkFormat format, VkImag
   image_view_create_info.subresourceRange.layerCount = 1;
 
   validate(vkCreateImageView(logical_device, &image_view_create_info, nullptr, &image_view));
+  core::logger::debug("Created image view with handle: {}", static_cast<void*>(image_view));
 }
 
 } // namespace sbx::graphics

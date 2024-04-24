@@ -28,8 +28,6 @@ image2d::image2d(const std::filesystem::path& path, VkFilter filter, VkSamplerAd
   _anisotropic{anisotropic},
   _mipmap{mipmap},
   _path{path} {
-  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
-
   _load();
 }
 
