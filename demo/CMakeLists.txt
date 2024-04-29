@@ -60,26 +60,26 @@ target_include_directories(
 target_link_libraries(
   ${PROJECT_NAME}
   PRIVATE
-    # libsbx::units
-    # libsbx::utility
-    # libsbx::io
-    # libsbx::math
-    # libsbx::memory
-    # libsbx::signals
-    # libsbx::bitmaps
-    # libsbx::ecs
-    # libsbx::core
-    # libsbx::async
-    # libsbx::assets
-    # libsbx::devices
-    # libsbx::graphics
-    # libsbx::post
-    # libsbx::models
-    # libsbx::scenes
+    libsbx::units
+    libsbx::utility
+    libsbx::io
+    libsbx::math
+    libsbx::memory
+    libsbx::signals
+    libsbx::bitmaps
+    libsbx::ecs
+    libsbx::core
+    libsbx::async
+    libsbx::assets
+    libsbx::devices
+    libsbx::graphics
+    libsbx::post
+    libsbx::models
+    libsbx::scenes
     # libsbx::audio
-    # libsbx::ui
-    # libsbx::shadows
-    # libsbx::physics
+    libsbx::ui
+    libsbx::shadows
+    libsbx::physics
   PUBLIC
     fmt::fmt
     glfw

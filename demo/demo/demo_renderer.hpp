@@ -1,29 +1,29 @@
 #ifndef DEMO_DEMO_RENDERER_HPP_
 #define DEMO_DEMO_RENDERER_HPP_
 
-// #include <libsbx/graphics/graphics.hpp>
+#include <libsbx/graphics/graphics.hpp>
 
-// namespace demo {
+namespace demo {
 
-// class demo_renderer : public sbx::graphics::renderer {
+class demo_renderer : public sbx::graphics::renderer {
 
-// public:
+public:
 
-//   demo_renderer();
+  demo_renderer();
 
-//   ~demo_renderer() override = default;
+  ~demo_renderer() override = default;
 
-//   auto initialize() -> void override;
+  auto initialize() -> void override;
 
-// private:
+private:
 
-//   sbx::math::color _clear_color;
-//   sbx::math::color _shadow_map_clear_color;
-//   sbx::math::vector2u _shadow_map_size;
-//   sbx::graphics::format _shadow_map_format;
+  sbx::math::color _clear_color;
+  sbx::math::color _shadow_map_clear_color;
+  sbx::math::vector2u _shadow_map_size;
+  sbx::graphics::format _shadow_map_format;
 
-// }; // class demo_renderer
+}; // class demo_renderer
 
-// } // namespace demo
+} // namespace demo
 
 #endif // DEMO_DEMO_RENDERER_HPP_
