@@ -24,7 +24,6 @@ target_sources(
   PRIVATE
     "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/scenes.cpp"
     "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/scene.cpp"
-    "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/components/script.cpp"
   PUBLIC
     FILE_SET HEADERS
     FILES
@@ -60,7 +59,6 @@ target_link_libraries(
     libsbx::ecs
     libsbx::signals
     libsbx::core
-    libsbx::assets
     libsbx::devices
     libsbx::graphics
 )

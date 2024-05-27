@@ -2,8 +2,6 @@
 
 #include <fmt/format.h>
 
-#include <vulkan/vk_enum_string_helper.h>
-
 #include <libsbx/utility/fast_mod.hpp>
 
 #include <libsbx/core/engine.hpp>
@@ -16,7 +14,7 @@ auto validate(VkResult result) -> void {
     return;
   }
 
-  throw std::runtime_error{string_VkResult(result)};
+  throw std::runtime_error{"Validation error"};
 }
 
 graphics_module::graphics_module()
@@ -49,6 +47,10 @@ graphics_module::~graphics_module() {
   // [NOTE] KAJ 2023-02-19 : Command buffers must be freed before the command pools
   _command_buffers.clear();
   _command_pools.clear();
+
+  for (const auto& [type, container] : _asset_containers) {
+    container->clear();
+  }
 }
 
 auto graphics_module::update() -> void {

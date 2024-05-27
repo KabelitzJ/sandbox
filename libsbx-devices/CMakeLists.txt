@@ -57,7 +57,6 @@ target_link_libraries(
     libsbx::math
     libsbx::signals
     libsbx::core
-    libsbx::assets
 )
 
 set_target_properties(

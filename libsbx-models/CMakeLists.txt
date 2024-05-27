@@ -61,7 +61,6 @@ target_link_libraries(
     libsbx::io
     libsbx::core
     libsbx::graphics
-    libsbx::assets
     libsbx::scenes
 )
 

@@ -4,16 +4,17 @@
 #include <memory>
 #include <unordered_map>
 #include <vector>
+#include <typeindex>
 
 #include <libsbx/core/module.hpp>
 #include <libsbx/core/delegate.hpp>
+
+#include <libsbx/math/uuid.hpp>
 
 #include <libsbx/devices/devices_module.hpp>
 
 #include <libsbx/utility/hash.hpp>
 #include <libsbx/utility/concepts.hpp>
-
-#include <libsbx/assets/assets_module.hpp>
 
 #include <libsbx/graphics/devices/instance.hpp>
 #include <libsbx/graphics/devices/physical_device.hpp>
@@ -89,6 +90,35 @@ public:
 
   auto attachment(const std::string& name) const -> const descriptor&;
 
+  template<typename Type, typename... Args>
+  auto add_asset(Args&&... args) -> math::uuid {
+    const auto id = math::uuid{};
+    const auto type = std::type_index{typeid(Type)};
+
+    auto container = _asset_containers.find(type);
+
+    if (container == _asset_containers.end()) {
+      container = _asset_containers.insert({type, std::make_unique<asset_container<Type>>()}).first;
+    }
+
+    static_cast<asset_container<Type>*>(container->second.get())->add(id, std::forward<Args>(args)...);
+
+    return id;
+  }
+
+  template<typename Type>
+  auto get_asset(const math::uuid& id) const -> const Type& {
+    const auto type = std::type_index{typeid(Type)};
+
+    auto container = _asset_containers.find(type);
+
+    if (container == _asset_containers.end()) {
+      throw std::runtime_error{"Asset does not exist"};
+    }
+
+    return static_cast<asset_container<Type>*>(container->second.get())->get(id);
+  }
+
 private:
 
   auto _start_render_pass(graphics::render_stage& render_stage) -> void;
@@ -146,6 +176,50 @@ private:
   std::vector<std::unique_ptr<graphics::command_buffer>> _command_buffers{};
 
   std::unique_ptr<graphics::renderer> _renderer{};
+
+  struct asset_container_base {
+    virtual ~asset_container_base() = default;
+    virtual auto remove(const math::uuid& id) -> void = 0;
+    virtual auto clear() -> void = 0;
+  };
+
+  template<typename Type>
+  class asset_container : public asset_container_base {
+
+  public:
+
+    asset_container() {
+
+    }
+
+    ~asset_container() override {
+
+    }
+
+    auto remove(const math::uuid& id) -> void override {
+      _assets.erase(id);
+    }
+
+    auto clear() -> void override {
+      _assets.clear();
+    }
+
+    template<typename... Args>
+    auto add(const math::uuid& id, Args&&... args) -> void {
+      _assets.insert({id, std::make_unique<Type>(std::forward<Args>(args)...)});
+    }
+
+    auto get(const math::uuid& id) -> const Type& {
+      return *_assets.at(id);
+    }
+
+  private:
+
+    std::unordered_map<math::uuid, std::unique_ptr<Type>> _assets;
+
+  };
+
+  std::unordered_map<std::type_index, std::unique_ptr<asset_container_base>> _asset_containers;
 
   std::uint32_t _current_frame{};
   bool _is_framebuffer_resized{};

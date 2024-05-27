@@ -17,6 +17,7 @@ add_library(${CMAKE_PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 find_package(fmt REQUIRED)
 find_package(yaml-cpp REQUIRED)
 find_package(glm REQUIRED)
+find_package(range-v3 REQUIRED)
 
 target_sources(
   ${PROJECT_NAME}
@@ -59,6 +60,7 @@ target_link_libraries(
     fmt::fmt
     yaml-cpp
     glm::glm
+    range-v3::range-v3
     # Internal dependencies
     libsbx::utility
     libsbx::core

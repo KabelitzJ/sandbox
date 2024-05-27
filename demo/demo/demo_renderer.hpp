@@ -18,9 +18,6 @@ public:
 private:
 
   sbx::math::color _clear_color;
-  sbx::math::color _shadow_map_clear_color;
-  sbx::math::vector2u _shadow_map_size;
-  sbx::graphics::format _shadow_map_format;
 
 }; // class demo_renderer
 

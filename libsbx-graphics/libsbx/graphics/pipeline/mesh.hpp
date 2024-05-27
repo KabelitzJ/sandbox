@@ -46,14 +46,14 @@ public:
 
   }
 
-  auto render(graphics::command_buffer& command_buffer, std::uint32_t instance_count = 1u) -> void {
+  auto render(graphics::command_buffer& command_buffer, std::uint32_t instance_count = 1u) const -> void {
     command_buffer.bind_vertex_buffer(0, *_vertex_buffer);
     command_buffer.bind_index_buffer(*_index_buffer, 0, VK_INDEX_TYPE_UINT32);
 
     command_buffer.draw_indexed(static_cast<std::uint32_t>(_index_buffer->size()), instance_count, 0, 0, 0);
   }
 
-  auto render_submesh(graphics::command_buffer& command_buffer, std::uint32_t submesh_index, std::uint32_t instance_count = 1u) -> void {
+  auto render_submesh(graphics::command_buffer& command_buffer, std::uint32_t submesh_index, std::uint32_t instance_count = 1u) const -> void {
     command_buffer.bind_vertex_buffer(0, *_vertex_buffer);
     command_buffer.bind_index_buffer(*_index_buffer, 0, VK_INDEX_TYPE_UINT32);
 

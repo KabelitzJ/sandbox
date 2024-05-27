@@ -13,15 +13,12 @@
 #include <libsbx/devices/devices_module.hpp>
 #include <libsbx/devices/window.hpp>
 
-#include <libsbx/assets/assets_module.hpp>
-
 #include <libsbx/scenes/scenes_module.hpp>
 
 #include <libsbx/scenes/components/id.hpp>
 #include <libsbx/scenes/components/tag.hpp>
 #include <libsbx/scenes/components/relationship.hpp>
 #include <libsbx/scenes/components/camera.hpp>
-#include <libsbx/scenes/components/script.hpp>
 #include <libsbx/scenes/components/static_mesh.hpp>
 #include <libsbx/scenes/components/point_light.hpp>
 
@@ -60,53 +57,6 @@ scene::scene()
     auto& camera = _camera.get_component<scenes::camera>();
     camera.set_aspect_ratio(static_cast<std::float_t>(event.width) / static_cast<std::float_t>(event.height));
   };
-}
-
-scene::scene(const std::filesystem::path& path)
-: scene{} {
-  auto& assets_manager = core::engine::get_module<assets::assets_module>();
-
-  const auto actual_path = assets_manager.asset_path(path);
-
-  auto timer = utility::timer{};
-
-  auto root_node = YAML::LoadFile(actual_path.string());
-
-  const auto name = root_node["name"].as<std::string>();
-
-  core::logger::debug("Scene name: {}", name);
-
-  if (auto light_node = root_node["light"]; light_node) {
-    auto direction = light_node["direction"].as<math::vector3>();
-    auto color = light_node["color"].as<math::color>();
-
-    _light = directional_light{direction, color};
-  }
-
-  if (auto wind_node = root_node["wind"]; wind_node) {
-    _wind_speed = wind_node["speed"].as<std::float_t>();
-  }
-
-  _parse_assets(root_node);
-  _parse_entities(root_node);
-
-  core::logger::debug("Loaded scene: {} in {:.2f} ms", path.string(), units::quantity_cast<units::millisecond>(timer.elapsed()).value());
-}
-
-auto scene::start() -> void {
-  auto script_nodes = query<scenes::script>();
-
-  for (auto& node : script_nodes) {
-    auto& script = node.get_component<scenes::script>();
-
-    auto& transform = node.get_component<math::transform>();
-
-    script.set("transform", transform);
-
-    script.invoke("on_create");
-
-    transform = script.get<math::transform>("transform");
-  }
 }
 
 auto scene::create_child_node(node& parent, const std::string& tag, const math::transform& transform) -> node {
@@ -162,69 +112,6 @@ auto scene::world_transform(const node& node) -> math::matrix4x4 {
   }
 
   return world * transform.as_matrix();
-}
-
-auto scene::_parse_assets(const YAML::Node& root_node) -> void {
-  auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
-
-  const auto assets_node = root_node["assets"];
-
-  auto& asset_loaders = scenes_module._asset_loaders;
-
-  if (auto entry = asset_loaders.find("texture"); entry != asset_loaders.end()) {
-    const auto textures_node = assets_node["textures"].as<std::vector<YAML::Node>>();
-
-    for (const auto& texture_node : textures_node) {
-      std::invoke(entry->second, texture_node);
-    }
-  } else {
-    core::logger::warn("Unknown component type: texture");
-  }
-
-  if (auto entry = asset_loaders.find("mesh"); entry != asset_loaders.end()) {
-    const auto meshes_node = assets_node["meshes"].as<std::vector<YAML::Node>>();
-
-    for (const auto& mesh_node : meshes_node) {
-      std::invoke(entry->second, mesh_node);
-    }
-  } else {
-    core::logger::warn("Unknown component type: mesh");
-  }
-}
-
-auto scene::_parse_entities(const YAML::Node& root_node) -> void {
-  auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
-  
-  const auto entities = root_node["entities"].as<std::vector<YAML::Node>>();
-
-  auto& component_loaders = scenes_module._component_loaders;
-
-  for (const auto& entity_node : entities) {
-    const auto entity_name = entity_node["name"].as<std::string>();
-
-    core::logger::debug("  Entity name: {}", entity_name);
-
-    auto entity = create_node(entity_name);
-
-    const auto components = entity_node["components"].as<std::vector<YAML::Node>>();
-
-    for (const auto& component_node : components) {
-      const auto component_type = component_node["type"].as<std::string>();
-
-      if (auto entry = component_loaders.find(component_type); entry != component_loaders.end()) {
-        core::logger::debug("    Component type: {}", component_type);
-
-        // entry->second(entity, component_node);
-        std::invoke(entry->second, entity, component_node);
-
-        if (component_type == "camera") {
-          _camera = entity;
-        }
-      } else {
-        core::logger::warn("Unknown component type: {}", component_type);
-      }
-    }
-  }
 }
 
 } // namespace sbx::scenes

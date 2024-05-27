@@ -3,8 +3,6 @@
 #include <limits>
 #include <ranges>
 
-#include <vulkan/vk_enum_string_helper.h>
-
 #include <libsbx/core/engine.hpp>
 #include <libsbx/core/logger.hpp>
 

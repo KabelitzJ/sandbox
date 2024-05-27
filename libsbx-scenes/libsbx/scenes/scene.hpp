@@ -22,8 +22,6 @@
 #include <libsbx/core/logger.hpp>
 #include <libsbx/core/engine.hpp>
 
-#include <libsbx/assets/assets_module.hpp>
-
 #include <libsbx/signals/signal.hpp>
 
 #include <libsbx/scenes/node.hpp>
@@ -40,10 +38,6 @@ class scene {
 public:
 
   scene();
-
-  scene(const std::filesystem::path& path);
-
-  auto start() -> void;
 
   auto create_child_node(node& parent, const std::string& tag = "", const math::transform& transform = math::transform{}) -> node;
 
@@ -83,10 +77,6 @@ private:
       node.add_component<Component>(std::forward<Args>(args)...);
     }
   }
-
-  auto _parse_assets(const YAML::Node& root_node) -> void;
-
-  auto _parse_entities(const YAML::Node& root_node) -> void;
 
   std::unordered_map<math::uuid, node> _nodes;
 

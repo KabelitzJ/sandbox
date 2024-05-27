@@ -5,8 +5,8 @@
 #include <cinttypes>
 
 #include <libsbx/math/color.hpp>
+#include <libsbx/math/uuid.hpp> 
 
-#include <libsbx/assets/asset.hpp>
 
 namespace sbx::scenes {
 
@@ -16,17 +16,17 @@ public:
 
   struct submesh {
     std::uint32_t index;
-    assets::asset_id texture_id;
+    math::uuid texture_id;
     math::color tint{1.0f, 1.0f, 1.0f, 1.0f};
     std::float_t flexibility{0.0f};
     std::float_t anchor_height{0.0f};
   }; // struct submesh
 
-  static_mesh(assets::asset_id mesh_id, const std::vector<submesh>& submeshes)
+  static_mesh(math::uuid mesh_id, const std::vector<submesh>& submeshes)
   : _mesh_id{mesh_id},
     _submeshes{submeshes} { }
 
-  auto mesh_id() const noexcept -> assets::asset_id {
+  auto mesh_id() const noexcept -> math::uuid {
     return _mesh_id;
   }
 
@@ -36,7 +36,7 @@ public:
 
 private:
 
-  assets::asset_id _mesh_id;
+  math::uuid _mesh_id;
   std::vector<submesh> _submeshes;
 
 }; // class static_mesh

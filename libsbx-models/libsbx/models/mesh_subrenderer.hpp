@@ -12,6 +12,7 @@
 
 #include <libsbx/core/logger.hpp>
 
+#include <libsbx/graphics/graphics_module.hpp>
 #include <libsbx/graphics/subrenderer.hpp>
 #include <libsbx/graphics/pipeline/pipeline.hpp>
 #include <libsbx/graphics/pipeline/graphics_pipeline.hpp>
@@ -26,7 +27,6 @@
 #include <libsbx/scenes/components/id.hpp>
 #include <libsbx/scenes/components/camera.hpp>
 #include <libsbx/scenes/components/tag.hpp>
-#include <libsbx/scenes/components/script.hpp>
 #include <libsbx/scenes/components/point_light.hpp>
 
 #include <libsbx/models/vertex3d.hpp>
@@ -54,7 +54,7 @@ public:
   ~mesh_subrenderer() override = default;
 
   auto render(graphics::command_buffer& command_buffer) -> void override {
-    auto& assets_module = core::engine::get_module<assets::assets_module>();
+    auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
     auto& scene = scenes_module.scene();
@@ -104,8 +104,8 @@ public:
 
       storage_handler.push(std::span<const per_mesh_data>{data});
 
-      auto& mesh = assets_module.get_asset<models::mesh>(key.mesh_id);
-      auto& image = assets_module.get_asset<graphics::image2d>(key.texture_id);
+      auto& mesh = graphics_module.get_asset<models::mesh>(key.mesh_id);
+      auto& image = graphics_module.get_asset<graphics::image2d>(key.texture_id);
 
       descriptor_handler.push("uniform_scene", _scene_uniform_handler);
       descriptor_handler.push("buffer_mesh_data", storage_handler);
@@ -148,8 +148,8 @@ private:
   }; // struct uniform_data
 
   struct mesh_key {
-    assets::asset_id mesh_id;
-    assets::asset_id texture_id;
+    math::uuid mesh_id;
+    math::uuid texture_id;
     std::uint32_t submesh_index;
   }; // struct mesh_key
 

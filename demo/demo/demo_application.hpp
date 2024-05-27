@@ -7,19 +7,12 @@
 #include <libsbx/math/math.hpp>
 #include <libsbx/memory/memory.hpp>
 #include <libsbx/signals/signals.hpp>
-#include <libsbx/bitmaps/bitmaps.hpp>
 #include <libsbx/ecs/ecs.hpp>
 #include <libsbx/core/core.hpp>
-#include <libsbx/async/async.hpp>
-#include <libsbx/assets/assets.hpp>
 #include <libsbx/devices/devices.hpp>
 #include <libsbx/graphics/graphics.hpp>
 #include <libsbx/models/models.hpp>
 #include <libsbx/scenes/scenes.hpp>
-// #include <libsbx/audio/audio.hpp>
-#include <libsbx/ui/ui.hpp>
-#include <libsbx/shadows/shadows.hpp>
-#include <libsbx/physics/physics.hpp>
 
 namespace demo {
 
@@ -34,19 +27,6 @@ public:
   auto update() -> void override;
 
 private:
-
-  auto _generate_plane(const sbx::math::vector2u& tile_count, const sbx::math::vector2u& tile_size) -> std::unique_ptr<sbx::models::mesh>;
-
-  sbx::memory::observer_ptr<sbx::ui::label> _label_fps;
-  sbx::memory::observer_ptr<sbx::ui::label> _label_delta_time;
-
-  std::optional<sbx::scenes::node> _cube;
-  sbx::assets::asset_id _mesh_id;
-  sbx::assets::asset_id _texture_id;
-  bool _flag = false;
-
-  sbx::units::second _time;
-  std::uint32_t _frames;
 
 }; // class demo_application
 

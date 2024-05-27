@@ -1,3 +1,0 @@
-# libsbx-async
-
-C++ library

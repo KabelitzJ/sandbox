@@ -9,8 +9,6 @@
 
 #include <libsbx/utility/timer.hpp>
 
-#include <libsbx/assets/assets_module.hpp>
-
 #include <libsbx/graphics/graphics_module.hpp>
 
 #include <libsbx/graphics/buffers/uniform_buffer.hpp>
@@ -24,19 +22,16 @@ template<vertex Vertex>
 graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, const pipeline::stage& stage, const pipeline_definition& definition)
 : _bind_point{VK_PIPELINE_BIND_POINT_GRAPHICS},
   _stage{stage} {
-  auto& assets_module = core::engine::get_module<assets::assets_module>();
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
   const auto& logical_device = graphics_module.logical_device();
   const auto& render_stage = graphics_module.render_stage(stage);
 
-  const auto actual_path = assets_module.asset_path(path);
-
   auto timer = utility::timer{};
 
-  _name = actual_path.filename().string();
+  _name = path.filename().string();
 
-  const auto binary_path = actual_path / "bin";
+  const auto binary_path = path / "bin";
 
   if (!std::filesystem::exists(binary_path) && !std::filesystem::is_directory(binary_path)) {
     throw std::runtime_error{fmt::format("Path '{}' does not exist", binary_path.string())};

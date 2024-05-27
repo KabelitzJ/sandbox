@@ -396,6 +396,8 @@ auto render_stage::_create_subpass_dependencies() -> std::vector<VkSubpassDepend
   depth_dependency.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
   depth_dependency.dependencyFlags = 0;
 
+  subpass_dependencies.push_back(depth_dependency);
+
   for (const auto i : std::views::iota(0u, _subpass_bindings.size() + 1u)) {
     auto subpass_dependency = VkSubpassDependency{};
 

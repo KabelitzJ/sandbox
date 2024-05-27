@@ -122,7 +122,6 @@ target_link_libraries(
     libsbx::io
     libsbx::math
     libsbx::core
-    libsbx::assets
     libsbx::devices
 )
 

@@ -110,8 +110,6 @@ public:
     return static_cast<std::float_t>(_width) / static_cast<std::float_t>(_height);
   }
 
-  auto set_icon(const std::filesystem::path& path) -> void;
-
   /**
    * @brief Determins if the window should be closed
    * @return true if the window should be closed, false otherwise
