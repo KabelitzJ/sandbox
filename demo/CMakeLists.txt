@@ -67,6 +67,7 @@ target_link_libraries(
     libsbx::models
     libsbx::shadows
     libsbx::post
+    libsbx::ui
     libsbx::physics
 )
 
