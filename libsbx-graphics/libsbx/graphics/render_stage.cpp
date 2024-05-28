@@ -179,6 +179,8 @@ auto render_stage::rebuild(const swapchain& swapchain) -> void {
   _render_area.set_aspect_ratio(static_cast<std::float_t>(_render_area.extent().x()) / static_cast<std::float_t>(_render_area.extent().y()));
   _render_area.set_extent(_render_area.extent() + _render_area.offset());
 
+  core::logger::debug("render_stage::rebuild: _render_area.extent(): {}", _render_area.extent());
+
   auto& surface = graphics_module.surface();
 
   if (_depth_attachment) {
@@ -192,16 +194,10 @@ auto render_stage::rebuild(const swapchain& swapchain) -> void {
   _color_images.clear();
 
   for (const auto& attachment : _attachments) {
-    switch (attachment.image_type()) {
-      case attachment::type::image: {
-        _color_images.insert({attachment.binding(), std::make_unique<graphics::image2d>(_render_area.extent(), to_vk_enum<VkFormat>(attachment.format()), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_STORAGE_BIT, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_SAMPLE_COUNT_1_BIT)});
-        break;
-      }
-      case attachment::type::depth: 
-      case attachment::type::swapchain: {
-        _color_images.insert({attachment.binding(), nullptr});
-        break;
-      }
+    if (attachment.image_type() == attachment::type::image) {
+      _color_images.insert({attachment.binding(), std::make_unique<graphics::image2d>(_render_area.extent(), to_vk_enum<VkFormat>(attachment.format()), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_STORAGE_BIT, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_SAMPLE_COUNT_1_BIT)});
+    } else {
+      _color_images.insert({attachment.binding(), nullptr});
     }
   }
 

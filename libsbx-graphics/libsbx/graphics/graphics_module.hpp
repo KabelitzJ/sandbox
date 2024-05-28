@@ -127,7 +127,7 @@ private:
 
   auto _reset_render_stages() -> void;
 
-  auto _recreate_swapchain(const VkExtent2D& extent) -> void;
+  auto _recreate_swapchain() -> void;
 
   auto _recreate_per_frame_data() -> void;
 

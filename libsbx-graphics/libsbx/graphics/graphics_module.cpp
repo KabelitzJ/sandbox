@@ -68,11 +68,10 @@ auto graphics_module::update() -> void {
 
   validate(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(*_physical_device, *_surface, &capabilities));
 
-  // const auto extent = VkExtent2D{window.width(), window.height()};
   const auto extent = capabilities.currentExtent;
 
   if (_is_framebuffer_resized || _swapchain->is_outdated(extent)) {
-    _recreate_swapchain(extent);
+    _recreate_swapchain();
     return;
   }
 
@@ -80,7 +79,7 @@ auto graphics_module::update() -> void {
   const auto result = _swapchain->acquire_next_image(frame_data.image_available_semaphore, frame_data.in_flight_fence);
   
   if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-    _recreate_swapchain(extent);
+    _recreate_swapchain();
     return;
   } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
     throw std::runtime_error{"Failed to acquire swapchain image"};
@@ -236,26 +235,21 @@ auto graphics_module::_end_render_pass(graphics::render_stage& render_stage) -> 
 }
 
 auto graphics_module::_reset_render_stages() -> void {
-  auto& devices_module = core::engine::get_module<devices::devices_module>();
-
-  const auto& window = devices_module.window();
-
-  const auto extent = VkExtent2D{window.width(), window.height()};
-
-  _recreate_swapchain(extent);
+  _recreate_swapchain();
 }
 
-auto graphics_module::_recreate_swapchain(const VkExtent2D& extent) -> void {
+auto graphics_module::_recreate_swapchain() -> void {
   auto& devices_module = core::engine::get_module<devices::devices_module>();
 
   _logical_device->wait_idle();
 
-  _swapchain = std::make_unique<graphics::swapchain>(extent, _swapchain);
+  _swapchain = std::make_unique<graphics::swapchain>(_swapchain);
 
   _recreate_per_frame_data();
   _recreate_command_buffers();
   
   for (const auto& render_stage : _renderer->render_stages()) {
+    core::logger::debug("graphics_module::_recreate_swapchain: _swapchain.extent(): ({}, {})", _swapchain->extent().width, _swapchain->extent().height);
     render_stage->rebuild(*_swapchain);
   }
 

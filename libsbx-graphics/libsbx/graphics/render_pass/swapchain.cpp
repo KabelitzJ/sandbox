@@ -17,9 +17,8 @@ static const auto composite_alpha_flags = std::vector<VkCompositeAlphaFlagBitsKH
   VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR,
 };
 
-swapchain::swapchain(const VkExtent2D& extent, const std::unique_ptr<swapchain>& old_swapchain)
-: _extent{extent},
-  _present_mode{VK_PRESENT_MODE_FIFO_KHR},
+swapchain::swapchain(const std::unique_ptr<swapchain>& old_swapchain)
+: _present_mode{VK_PRESENT_MODE_FIFO_KHR},
   _active_image_index{std::numeric_limits<std::uint32_t>::max()},
   _pre_transform{VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR},
   _composite_alpha{VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR} {
@@ -60,13 +59,15 @@ swapchain::swapchain(const VkExtent2D& extent, const std::unique_ptr<swapchain>&
 
   validate(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physical_device, surface, &capabilities));
 
+  _extent = capabilities.currentExtent;
+
 	auto swapchain_create_info = VkSwapchainCreateInfoKHR{};
 	swapchain_create_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
 	swapchain_create_info.surface = surface;
 	swapchain_create_info.minImageCount = desired_image_count;
 	swapchain_create_info.imageFormat = surface_format.format;
 	swapchain_create_info.imageColorSpace = surface_format.colorSpace;
-	swapchain_create_info.imageExtent = capabilities.currentExtent;
+	swapchain_create_info.imageExtent = _extent;
 	swapchain_create_info.imageArrayLayers = 1;
 	swapchain_create_info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 	swapchain_create_info.preTransform = static_cast<VkSurfaceTransformFlagBitsKHR>(_pre_transform);

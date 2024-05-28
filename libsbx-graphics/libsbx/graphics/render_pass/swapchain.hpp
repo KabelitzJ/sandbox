@@ -15,7 +15,7 @@ public:
 
   static constexpr auto max_frames_in_flight = std::uint32_t{2};
 
-  swapchain(const VkExtent2D& extent, const std::unique_ptr<swapchain>& old_swapchain = nullptr);
+  swapchain(const std::unique_ptr<swapchain>& old_swapchain = nullptr);
 
   ~swapchain();
 
