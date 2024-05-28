@@ -19,13 +19,12 @@ layout(binding = 0) uniform uniform_scene {
 layout(binding = 1) uniform sampler2D position_image; 
 layout(binding = 2) uniform sampler2D normal_image;
 layout(binding = 3) uniform sampler2D albedo_image;
-layout(binding = 4) uniform sampler2D shadow_map_image;
 
 const material DEFAULT_MATERIAL = material(
-  vec4(0.2, 0.2, 0.2, 1.0),   // Ambient color
-  vec4(0.8, 0.8, 0.8, 1.0),   // Diffuse color
-  vec4(1.0, 1.0, 1.0, 1.0),   // Specular color
-  16.0                        // Shininess
+  vec4(1.0, 0.5, 0.3, 1.0),   // Ambient color
+  vec4(1.0, 0.5, 0.3, 1.0),   // Diffuse color
+  vec4(0.5, 0.5, 0.5, 1.0),   // Specular color
+  32.0                        // Shininess
 );
 
 const mat4 DEPTH_BIAS = mat4( 

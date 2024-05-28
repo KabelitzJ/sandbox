@@ -43,15 +43,8 @@ public:
     _rotation_matrix = _rotation.to_matrix();
   }
 
-  auto set_euler_angles(const vector3& euler_angles) noexcept -> void {
-    _rotation = quaternion{euler_angles};
-    _rotation.normalize();
-    _rotation_matrix = _rotation.to_matrix();
-  }
-
-  auto add_euler_angles(const vector3& offset) noexcept -> void {
-    _rotation += quaternion{offset};
-    _rotation.normalize();
+  auto set_rotation(const vector3& axis, const angle& angle) noexcept -> void {
+    _rotation = quaternion{axis, angle};
     _rotation_matrix = _rotation.to_matrix();
   }
 

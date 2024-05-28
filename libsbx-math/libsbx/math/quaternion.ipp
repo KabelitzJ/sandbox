@@ -1,5 +1,6 @@
 #include <libsbx/math/quaternion.hpp>
 
+#include <cmath>
 #include <iostream>
 
 #include <libsbx/utility/hash.hpp>
@@ -27,28 +28,16 @@ inline constexpr basic_quaternion<Type>::basic_quaternion(Other x, Other y, Othe
   _scalar{static_cast<value_type>(w)} { }
 
 template<floating_point Type>
-template<floating_point Other>
-inline constexpr basic_quaternion<Type>::basic_quaternion(const vector_type_for<Other>& euler_angles) noexcept {
-  const auto x = degree{euler_angles.x()};
-  const auto y = degree{euler_angles.y()};
-  const auto z = degree{euler_angles.z()};
+template<floating_point Complex, floating_point Scalar>
+inline constexpr basic_quaternion<Type>::basic_quaternion(const vector_type_for<Complex>& axis, const basic_angle<Scalar>& angle) noexcept {
+  const auto rangle_rad = angle.to_radians();
+  const auto norm_axis = vector_type_for<Complex>::normalized(axis);
 
-  const auto half_x = to_radians(x).value() / static_cast<Other>(2);
-  const auto half_y = to_radians(y).value() / static_cast<Other>(2);
-  const auto half_z = to_radians(z).value() / static_cast<Other>(2);
+  const auto w = std::cos(rangle_rad.value() / static_cast<Scalar>(2));
+  const auto v = std::sin(rangle_rad.value() / static_cast<Scalar>(2));
 
-  const auto sin_x = std::sin(half_x);
-  const auto cos_x = std::cos(half_x);
-  const auto sin_y = std::sin(half_y);
-  const auto cos_y = std::cos(half_y);
-  const auto sin_z = std::sin(half_z);
-  const auto cos_z = std::cos(half_z);
-
-  _complex.x() = sin_x * cos_y * cos_z - cos_x * sin_y * sin_z;
-  _complex.y() = cos_x * sin_y * cos_z + sin_x * cos_y * sin_z;
-  _complex.z() = cos_x * cos_y * sin_z - sin_x * sin_y * cos_z;
-
-  _scalar = cos_x * cos_y * cos_z + sin_x * sin_y * sin_z;
+  _complex = norm_axis * v;
+  _scalar = w;
 }
 
 template<floating_point Type>

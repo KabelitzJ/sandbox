@@ -21,7 +21,7 @@ public:
 
   constexpr basic_degree() = default;
 
-  template<floating_point Other>
+  template<scalar Other>
   requires (std::is_convertible_v<Other, Type>)
   constexpr basic_degree(const Other value) noexcept
   : _value{static_cast<Type>(value)} { }
@@ -116,7 +116,7 @@ public:
 
   constexpr basic_radian() = default;
 
-  template<floating_point Other>
+  template<scalar Other>
   requires (std::is_convertible_v<Other, Type>)
   constexpr basic_radian(const Other value) noexcept
   : _value{static_cast<Type>(value)} { }
@@ -223,6 +223,18 @@ public:
     _radian += basic_radian<Type>{other._radian};
 
     return *this;
+  }
+
+  template<floating_point Other>
+  requires (std::is_convertible_v<Other, Type>)
+  constexpr auto operator+=(const basic_degree<Other>& other) noexcept -> basic_angle<Type>& {
+    return (*this += basic_angle<Other>{other});
+  }
+
+  template<floating_point Other>
+  requires (std::is_convertible_v<Other, Type>)
+  constexpr auto operator+=(const basic_radian<Other>& other) noexcept -> basic_angle<Type>& {
+    return (*this += basic_angle<Other>{other});
   }
 
   template<floating_point Other>

@@ -27,8 +27,7 @@ public:
   descriptor_handler() = default;
 
   explicit descriptor_handler(const pipeline& pipeline)
-  : _pipeline{&pipeline},
-    _is_descriptor_set_dirty{true} {
+  : _pipeline{&pipeline} {
     _descriptor_sets.resize(graphics::swapchain::max_frames_in_flight);
 
     for (auto& descriptor_set : _descriptor_sets) {
@@ -81,15 +80,12 @@ public:
       _pipeline = &pipeline;
 
       _descriptors.clear();
-      _write_descriptor_sets.clear();
 
       _descriptor_sets.resize(graphics::swapchain::max_frames_in_flight);
 
       for (auto& descriptor_set : _descriptor_sets) {
         descriptor_set = std::make_unique<graphics::descriptor_set>(pipeline);
       }
-
-      _is_descriptor_set_dirty = true;
 
       return false;
     }
@@ -100,21 +96,19 @@ public:
 
     auto& descriptor_set = _descriptor_sets[current_frame];
 
-    if (_is_descriptor_set_dirty) {
-      _write_descriptor_sets.clear();
-      _write_descriptor_sets.reserve(_descriptors.size());
+    auto write_descriptor_sets = std::vector<VkWriteDescriptorSet>{};
+    write_descriptor_sets.reserve(_descriptors.size());
 
-      for (const auto& [name, descriptor] : _descriptors) {
-        auto write_descriptor_set = descriptor.write_descriptor_set.handle();
-        write_descriptor_set.dstSet = *descriptor_set;
+    for (const auto& [name, descriptor] : _descriptors) {
+      auto write_descriptor_set = descriptor.write_descriptor_set.handle();
+      write_descriptor_set.dstSet = *descriptor_set;
 
-        _write_descriptor_sets.push_back(write_descriptor_set);
-      }
-
-      descriptor_set->update(_write_descriptor_sets);
-
-      _is_descriptor_set_dirty = false;
+      write_descriptor_sets.push_back(write_descriptor_set);
     }
+
+    descriptor_set->update(write_descriptor_sets);
+
+    _descriptors.clear();
 
     return true;
   }
@@ -145,8 +139,6 @@ private:
     auto write_descriptor_set = descriptor.write_descriptor_set(*binding, *descriptor_type);
 
     _descriptors.insert({name, descriptor_entry{std::addressof(descriptor), std::move(write_descriptor_set), *binding}});
-
-    _is_descriptor_set_dirty = true;
   }
 
   memory::observer_ptr<const pipeline> _pipeline;
@@ -154,8 +146,6 @@ private:
   std::vector<std::unique_ptr<descriptor_set>> _descriptor_sets{};
 
   std::map<std::string, descriptor_entry> _descriptors{};
-  std::vector<VkWriteDescriptorSet> _write_descriptor_sets{};
-  bool _is_descriptor_set_dirty{};
 
 }; // class descriptor_handler
 

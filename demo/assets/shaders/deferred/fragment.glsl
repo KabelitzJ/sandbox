@@ -12,7 +12,6 @@ layout(location = 3) in vec4 in_color;
 layout(location = 0) out vec4 out_position;
 layout(location = 1) out vec4 out_normal;
 layout(location = 2) out vec4 out_albedo;
-layout(location = 3) out vec4 out_color;
 
 layout(binding = 2) uniform sampler2D image;
 
@@ -20,6 +19,4 @@ void main(void) {
   out_position = vec4(in_position, 1.0);
   out_normal = vec4(in_normal, 1.0);
   out_albedo = texture(image, in_uv) * in_color;
-
-  out_color = out_albedo;
 }

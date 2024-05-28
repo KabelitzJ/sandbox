@@ -55,8 +55,8 @@ public:
   template<floating_point Other = value_type>
   constexpr basic_quaternion(Other x, Other y, Other z, Other w) noexcept;
 
-  template<floating_point Other = value_type>
-  constexpr basic_quaternion(const vector_type_for<Other>& euler_angles) noexcept;
+  template<floating_point Complex = value_type, floating_point Scalar = value_type>
+  constexpr basic_quaternion(const vector_type_for<Complex>& axis, const basic_angle<Scalar>& angle) noexcept;
 
   [[nodiscard]] constexpr operator matrix_type() const noexcept;
 

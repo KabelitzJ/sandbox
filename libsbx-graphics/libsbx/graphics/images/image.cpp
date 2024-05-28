@@ -46,7 +46,6 @@ image::~image() {
 
   auto& logical_device = graphics_module.logical_device();
 
-  core::logger::debug("Destroying image view with handle: {}", static_cast<void*>(_view));
   vkDestroyImageView(logical_device, _view, nullptr);
   vkDestroySampler(logical_device, _sampler, nullptr);
   vkFreeMemory(logical_device, _memory, nullptr);
@@ -150,7 +149,6 @@ auto image::create_image_view(const VkImage& image, VkImageView& image_view, VkI
   image_view_create_info.subresourceRange.layerCount = layer_count;
 
   validate(vkCreateImageView(logical_device, &image_view_create_info, nullptr, &image_view));
-  core::logger::debug("Created image view with handle: {}", static_cast<void*>(image_view));
 }
 
 auto image::create_image_sampler(VkSampler& sampler, VkFilter filter, VkSamplerAddressMode address_mode, bool anisotropic, std::uint32_t mip_levels) -> void {

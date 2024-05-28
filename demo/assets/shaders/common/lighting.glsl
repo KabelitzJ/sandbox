@@ -16,18 +16,18 @@ struct directional_light {
   vec4 color;
 }; // directional_light
 
-vec4 calculate_directional_light_blinn_phong(material mat, directional_light light, vec3 normal, vec3 viewDir) {
-  vec3 lightDir = normalize(-light.direction);
-  vec3 halfDir = normalize(lightDir + viewDir);
+vec4 calculate_directional_light_blinn_phong(material material, directional_light light, vec3 normal, vec3 view_direction) {
+  vec3 light_direction = normalize(-light.direction);
+  vec3 half_direction = normalize(light_direction + view_direction);
 
-  float ambientStrength = 0.3; // You can adjust this based on your scene
-  vec4 ambient = mat.ambient * ambientStrength;
+  float ambient_strength = 0.3; // you can adjust this based on your scene
+  vec4 ambient = material.ambient * ambient_strength;
 
-  float diffuseStrength = max(dot(normal, lightDir), 0.0);
-  vec4 diffuse = mat.diffuse * light.color * diffuseStrength;
+  float diffuse_strength = max(dot(normal, light_direction), 0.0);
+  vec4 diffuse = material.diffuse * light.color * diffuse_strength;
 
-  float specularStrength = pow(max(dot(normal, halfDir), 0.0), mat.shininess);
-  vec4 specular = mat.specular * light.color * specularStrength;
+  float specular_strength = pow(max(dot(normal, half_direction), 0.0), material.shininess);
+  vec4 specular = material.specular * light.color * specular_strength;
 
   return ambient + diffuse + specular;
 }

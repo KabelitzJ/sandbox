@@ -178,9 +178,7 @@ auto render_stage::rebuild(const swapchain& swapchain) -> void {
 
   _render_area.set_aspect_ratio(static_cast<std::float_t>(_render_area.extent().x()) / static_cast<std::float_t>(_render_area.extent().y()));
   _render_area.set_extent(_render_area.extent() + _render_area.offset());
-
-  core::logger::debug("render_stage::rebuild: _render_area.extent(): {}", _render_area.extent());
-
+  
   auto& surface = graphics_module.surface();
 
   if (_depth_attachment) {

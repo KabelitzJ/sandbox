@@ -247,9 +247,8 @@ auto graphics_module::_recreate_swapchain() -> void {
 
   _recreate_per_frame_data();
   _recreate_command_buffers();
-  
+
   for (const auto& render_stage : _renderer->render_stages()) {
-    core::logger::debug("graphics_module::_recreate_swapchain: _swapchain.extent(): ({}, {})", _swapchain->extent().width, _swapchain->extent().height);
     render_stage->rebuild(*_swapchain);
   }
 

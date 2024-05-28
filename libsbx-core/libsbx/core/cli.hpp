@@ -85,20 +85,6 @@ private:
     }
 
     return std::nullopt;
-
-    // const auto key = fmt::format("--{}=", name);
-
-    // const auto value_position = std::ranges::find_if(_args, [&key](const auto& arg) { return arg.starts_with(key); });
-
-    // if (value_position == _args.end()) {
-    //   return std::nullopt;
-    // }
-
-    // const auto value = (*value_position).substr(key.size());
-
-    // _argument_cache[name] = value;
-
-    // return value;
   }
 
   std::unordered_map<std::string, std::string> _arguments;

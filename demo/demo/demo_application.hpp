@@ -28,6 +28,8 @@ public:
 
 private:
 
+  sbx::math::angle _rotation;
+
 }; // class demo_application
 
 } // namespace demo
