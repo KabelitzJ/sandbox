@@ -58,6 +58,9 @@ public:
   template<floating_point Complex = value_type, floating_point Scalar = value_type>
   constexpr basic_quaternion(const vector_type_for<Complex>& axis, const basic_angle<Scalar>& angle) noexcept;
 
+  template<floating_point Other = value_type>
+  constexpr basic_quaternion(const matrix_type_for<Other>& matrix) noexcept;
+
   [[nodiscard]] constexpr operator matrix_type() const noexcept;
 
   [[nodiscard]] constexpr auto to_matrix() const noexcept -> matrix_type;

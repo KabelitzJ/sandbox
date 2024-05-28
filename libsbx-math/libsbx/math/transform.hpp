@@ -65,7 +65,18 @@ public:
   }
 
   auto look_at(const vector3& target) noexcept -> void {
-    
+    const auto direction = _position - target;
+
+    const auto z_axis = math::vector3::normalized(direction);
+    const auto x_axis = math::vector3::normalized(math::vector3::cross(math::vector3::up, z_axis));
+    const auto y_axis = math::vector3::cross(z_axis, x_axis);
+
+    auto result = math::matrix4x4{};
+    result[0] = x_axis;
+    result[1] = y_axis;
+    result[2] = z_axis;
+
+    _rotation = quaternion{result};
   }
 
   auto as_matrix() const -> matrix4x4 {

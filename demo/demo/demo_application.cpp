@@ -33,6 +33,7 @@ demo_application::demo_application()
 
   camera.get_component<sbx::math::transform>().set_position(sbx::math::vector3{0.0f, 4.0f, 8.0f});
   camera.get_component<sbx::math::transform>().set_rotation(sbx::math::vector3::right, sbx::math::degree{26.565});
+  // camera.get_component<sbx::math::transform>().look_at(sbx::math::vector3::zero);
 
   auto cube = scene.create_node("Cube");
 
@@ -49,7 +50,7 @@ auto demo_application::update() -> void  {
     return;
   }
 
-  _rotation += sbx::math::degree{20} * sbx::core::engine::delta_time().value();
+  _rotation += sbx::math::degree{45} * sbx::core::engine::delta_time().value();
 
   auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
 

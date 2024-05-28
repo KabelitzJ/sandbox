@@ -1,6 +1,7 @@
 #include <libsbx/math/quaternion.hpp>
 
 #include <cmath>
+#include <cassert>
 #include <iostream>
 
 #include <libsbx/utility/hash.hpp>
@@ -38,6 +39,60 @@ inline constexpr basic_quaternion<Type>::basic_quaternion(const vector_type_for<
 
   _complex = norm_axis * v;
   _scalar = w;
+}
+
+template<floating_point Type>
+template<floating_point Other>
+inline constexpr basic_quaternion<Type>::basic_quaternion(const matrix_type_for<Other>& matrix) noexcept {
+  const auto four_x_squared_minus1 = matrix[0][0] - matrix[1][1] - matrix[2][2];
+  const auto four_y_squared_minus1 = matrix[1][1] - matrix[0][0] - matrix[2][2];
+  const auto four_z_squared_minus1 = matrix[2][2] - matrix[0][0] - matrix[1][1];
+  const auto four_w_squared_minus1 = matrix[0][0] + matrix[1][1] + matrix[2][2];
+
+  auto biggest_index = 0;
+  auto four_biggest_squared_minus1 = four_w_squared_minus1;
+
+  if (four_x_squared_minus1 > four_biggest_squared_minus1) {
+    four_biggest_squared_minus1 = four_x_squared_minus1;
+    biggest_index = 1;
+  }
+
+  if (four_y_squared_minus1 > four_biggest_squared_minus1) {
+    four_biggest_squared_minus1 = four_y_squared_minus1;
+    biggest_index = 2;
+  }
+
+  if(four_z_squared_minus1 > four_biggest_squared_minus1) {
+    four_biggest_squared_minus1 = four_z_squared_minus1;
+    biggest_index = 3;
+  }
+
+  const auto biggest_val = std::sqrt(four_biggest_squared_minus1 + static_cast<Type>(1)) * static_cast<Type>(0.5);
+  const auto mult = static_cast<Type>(0.25) / biggest_val;
+
+  switch (biggest_index) {
+    case 0: {
+      *this = basic_quaternion<Type>{(matrix[1][2] - matrix[2][1]) * mult, (matrix[2][0] - matrix[0][2]) * mult, (matrix[0][1] - matrix[1][0]) * mult, biggest_val};
+      break;
+    }
+    case 1: {
+      *this = basic_quaternion<Type>{biggest_val, (matrix[0][1] + matrix[1][0]) * mult, (matrix[2][0] + matrix[0][2]) * mult, (matrix[1][2] - matrix[2][1]) * mult};
+      break;
+    }
+    case 2: {
+      *this = basic_quaternion<Type>{(matrix[0][1] + matrix[1][0]) * mult, biggest_val, (matrix[1][2] + matrix[2][1]) * mult, (matrix[2][0] - matrix[0][2]) * mult};
+      break;
+    }
+    case 3: {
+      *this = basic_quaternion<Type>{(matrix[2][0] + matrix[0][2]) * mult, (matrix[1][2] + matrix[2][1]) * mult, biggest_val, (matrix[0][1] - matrix[1][0]) * mult};
+      break;
+    }
+    default: {
+      assert(false);
+      *this = basic_quaternion<Type>{Type{0}, Type{0}, Type{0}, Type{1}};
+      break;
+    }
+  }
 }
 
 template<floating_point Type>
