@@ -55,6 +55,7 @@ target_link_libraries(
     libsbx::units
     libsbx::utility
     libsbx::io
+    libsbx::bitmaps
     libsbx::math
     libsbx::memory
     libsbx::signals
@@ -62,7 +63,11 @@ target_link_libraries(
     libsbx::core
     libsbx::devices
     libsbx::graphics
+    libsbx::scenes
     libsbx::models
+    libsbx::shadows
+    libsbx::post
+    libsbx::physics
 )
 
 set_target_properties(

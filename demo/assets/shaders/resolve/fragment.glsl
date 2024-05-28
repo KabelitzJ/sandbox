@@ -21,8 +21,8 @@ layout(binding = 2) uniform sampler2D normal_image;
 layout(binding = 3) uniform sampler2D albedo_image;
 
 const material DEFAULT_MATERIAL = material(
-  vec4(1.0, 0.5, 0.3, 1.0),   // Ambient color
-  vec4(1.0, 0.5, 0.3, 1.0),   // Diffuse color
+  vec4(1.0, 1.0, 1.0, 1.0),   // Ambient color
+  vec4(1.0, 1.0, 1.0, 1.0),   // Diffuse color
   vec4(0.5, 0.5, 0.5, 1.0),   // Specular color
   32.0                        // Shininess
 );
