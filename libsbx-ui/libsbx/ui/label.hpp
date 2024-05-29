@@ -57,10 +57,8 @@ public:
     descriptor_handler.push("buffer_glyphs", storage_handler);
   }
 
-  auto render(graphics::command_buffer& command_buffer, std::unique_ptr<mesh>& mesh) -> void override {
-    if (mesh) {
-      mesh->render(command_buffer, static_cast<std::uint32_t>(_glyph_data.size()));
-    }
+  auto render(graphics::command_buffer& command_buffer, const mesh& mesh) -> void override {
+    mesh.render(command_buffer, static_cast<std::uint32_t>(_glyph_data.size()));
   }
 
 private:

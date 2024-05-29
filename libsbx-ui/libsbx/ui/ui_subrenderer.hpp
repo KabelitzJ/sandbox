@@ -9,6 +9,8 @@
 #include <libsbx/devices/window.hpp>
 
 #include <libsbx/graphics/subrenderer.hpp>
+#include <libsbx/graphics/graphics_module.hpp>
+
 #include <libsbx/graphics/pipeline/graphics_pipeline.hpp>
 
 #include <libsbx/graphics/descriptor/descriptor_handler.hpp>
@@ -41,7 +43,10 @@ public:
       2, 1, 3
     };
 
-    _mesh = std::make_unique<mesh>(std::move(vertices), std::move(indices));
+    auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+    // _mesh = std::make_unique<mesh>(std::move(vertices), std::move(indices));
+    _mesh_id = graphics_module.add_asset<mesh>(std::move(vertices), std::move(indices));
   }
 
   ~ui_subrenderer() override = default;
@@ -76,6 +81,8 @@ public:
 private:
 
   auto _render_widget(widget& widget, graphics::command_buffer& command_buffer) -> void {
+    auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
     const auto& id = widget.id();
 
     _pipeline.bind(command_buffer);
@@ -96,7 +103,9 @@ private:
 
     descriptor_handler.bind_descriptors(command_buffer);
 
-    widget.render(command_buffer, _mesh);
+    auto& mesh = graphics_module.get_asset<ui::mesh>(_mesh_id);
+
+    widget.render(command_buffer, mesh);
   }
 
   struct uniform_data {
@@ -107,7 +116,7 @@ private:
 
   pipeline _pipeline;
 
-  std::unique_ptr<mesh> _mesh;
+  math::uuid _mesh_id;
 
   std::unordered_map<math::uuid, uniform_data> _uniform_data;
   std::unordered_set<math::uuid> _used_uniforms;

@@ -6,8 +6,7 @@ namespace demo {
 
 demo_application::demo_application()
 : sbx::core::application{},
-  _rotation{sbx::math::degree{0}},
-  _font{"demo/assets/fonts/JetBrainsMono-Medium.ttf"} {
+  _rotation{sbx::math::degree{0}} {
   auto& graphics_module = sbx::core::engine::get_module<sbx::graphics::graphics_module>();
 
   graphics_module.set_renderer<demo_renderer>();
@@ -43,6 +42,14 @@ demo_application::demo_application()
   camera.get_component<sbx::math::transform>().set_position(sbx::math::vector3{0.0f, 4.0f, 8.0f});
   camera.get_component<sbx::math::transform>().set_rotation(sbx::math::vector3::right, sbx::math::degree{26.565});
 
+  auto& ui_module = sbx::core::engine::get_module<sbx::ui::ui_module>();
+
+  auto& container = ui_module.container();
+
+  static auto font = sbx::ui::font{"demo/assets/fonts/JetBrainsMono-Medium.ttf", sbx::ui::pixels{16}};
+
+  auto label = container.add_widget<sbx::ui::label>("Hello, World!", sbx::math::vector2u{10, 10}, &font, 1.0f, sbx::math::color{1.0f, 0.0f, 0.0f, 1.0f});
+
   window.show();
 }
 
@@ -65,38 +72,6 @@ auto demo_application::update() -> void  {
   for (auto& node : scene.query<sbx::scenes::static_mesh>()) {
     node.get_component<sbx::math::transform>().set_rotation(sbx::math::vector3::up, _rotation);
   }
-
-  auto& camera_transform = camera.get_component<sbx::math::transform>();
-
-  const auto move_speed = 0.5f;
-
-  auto movement = sbx::math::vector3{};
-
-  if (sbx::devices::input::is_key_down(sbx::devices::key::w)) {
-    movement.z() -= move_speed * dt;
-  }
-
-  if (sbx::devices::input::is_key_down(sbx::devices::key::s)) {
-    movement.z() += move_speed * dt;
-  }
-
-  if (sbx::devices::input::is_key_down(sbx::devices::key::a)) {
-    movement.x() -= move_speed * dt;
-  }
-
-  if (sbx::devices::input::is_key_down(sbx::devices::key::d)) {
-    movement.x() += move_speed * dt;
-  }
-
-  if (sbx::devices::input::is_key_down(sbx::devices::key::q)) {
-    movement.y() += move_speed * dt;
-  }
-
-  if (sbx::devices::input::is_key_down(sbx::devices::key::e)) {
-    movement.y() -= move_speed * dt;
-  }
-
-  camera_transform.move_by(sbx::math::vector3::normalized(movement));
 }
 
 } // namespace demo

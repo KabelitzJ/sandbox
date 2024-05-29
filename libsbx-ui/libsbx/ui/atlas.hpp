@@ -3,6 +3,8 @@
 
 #include <memory>
 
+#include <libsbx/math/uuid.hpp>
+
 #include <libsbx/graphics/images/image2d.hpp>
 
 namespace sbx::ui {
@@ -23,7 +25,7 @@ private:
 
   std::uint32_t _width;
   std::uint32_t _height;
-  graphics::image2d _image;
+  math::uuid _image_id;
 
 }; // class atlas
 

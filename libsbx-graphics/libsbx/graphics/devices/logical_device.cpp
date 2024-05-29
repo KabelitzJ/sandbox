@@ -110,19 +110,19 @@ auto logical_device::_get_queue_family_indices(const physical_device& physical_d
           result.graphics = i;
         }
       }
-		}
 
-    if (device_queue_family_properties[i].queueCount > 0u) {
-      if (!result.present) {
-        result.present = i;
-      } else {
-        const auto old_queue = device_queue_family_properties[*result.present];
-
-        if (std::popcount(device_queue_family_properties[i].queueFlags) < std::popcount(old_queue.queueFlags)) {
+      if (device_queue_family_properties[i].queueCount > 0u) {
+        if (!result.present) {
           result.present = i;
-        } 
+        } else {
+          const auto old_queue = device_queue_family_properties[*result.present];
+
+          if (std::popcount(device_queue_family_properties[i].queueFlags) < std::popcount(old_queue.queueFlags)) {
+            result.present = i;
+          } 
+        }
       }
-    }
+		}
 
 		if (device_queue_family_properties[i].queueFlags & VK_QUEUE_COMPUTE_BIT) {
 			if (!result.compute) {
@@ -156,7 +156,7 @@ auto logical_device::_get_queue_family_indices(const physical_device& physical_d
   core::logger::debug("Selected graphics queue family: {}", *result.graphics);
 
   if (!result.present) {
-    throw std::runtime_error("Failed to find suitable present queue family");
+    result.present = result.graphics;
   }
 
   core::logger::debug("Selected present queue family: {}", *result.present);

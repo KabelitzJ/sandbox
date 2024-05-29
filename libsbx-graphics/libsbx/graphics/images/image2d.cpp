@@ -31,6 +31,11 @@ image2d::image2d(const std::filesystem::path& path, VkFilter filter, VkSamplerAd
   _load();
 }
 
+image2d::image2d(const math::vector2u& extent, VkFormat format , memory::observer_ptr<const std::uint8_t> pixels)
+: image2d{extent, format} {
+  set_pixels(pixels);
+}
+
 auto image2d::set_pixels(memory::observer_ptr<const std::uint8_t> pixels) -> void {
   auto buffer_size = _extent.width * _extent.height * _channels;
   auto staging_buffer = graphics::staging_buffer{std::span{pixels.get(), buffer_size}};

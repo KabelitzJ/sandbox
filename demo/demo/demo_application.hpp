@@ -31,7 +31,6 @@ public:
 private:
 
   sbx::math::angle _rotation;
-  sbx::ui::font _font;
 
 }; // class demo_application
 

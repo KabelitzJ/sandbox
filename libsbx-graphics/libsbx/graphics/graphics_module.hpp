@@ -116,6 +116,19 @@ public:
       throw std::runtime_error{"Asset does not exist"};
     }
 
+    return static_cast<const asset_container<Type>*>(container->second.get())->get(id);
+  }
+
+  template<typename Type>
+  auto get_asset(const math::uuid& id) -> Type& {
+    const auto type = std::type_index{typeid(Type)};
+
+    auto container = _asset_containers.find(type);
+
+    if (container == _asset_containers.end()) {
+      throw std::runtime_error{"Asset does not exist"};
+    }
+
     return static_cast<asset_container<Type>*>(container->second.get())->get(id);
   }
 
@@ -209,7 +222,11 @@ private:
       _assets.insert({id, std::make_unique<Type>(std::forward<Args>(args)...)});
     }
 
-    auto get(const math::uuid& id) -> const Type& {
+    auto get(const math::uuid& id) const -> const Type& {
+      return *_assets.at(id);
+    }
+
+    auto get(const math::uuid& id) -> Type& {
       return *_assets.at(id);
     }
 
