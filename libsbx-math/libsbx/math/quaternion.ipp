@@ -24,6 +24,12 @@ inline constexpr basic_quaternion<Type>::basic_quaternion(const vector_type_for<
 
 template<floating_point Type>
 template<floating_point Other>
+inline constexpr basic_quaternion<Type>::basic_quaternion(const vector_type_for<Other>& euler_angles) noexcept {
+  // [TODO]: Need to implement
+}
+
+template<floating_point Type>
+template<floating_point Other>
 inline constexpr basic_quaternion<Type>::basic_quaternion(Other x, Other y, Other z, Other w) noexcept
 : _complex{x, y, z},
   _scalar{static_cast<value_type>(w)} { }
@@ -89,7 +95,7 @@ inline constexpr basic_quaternion<Type>::basic_quaternion(const matrix_type_for<
     }
     default: {
       assert(false);
-      *this = basic_quaternion<Type>{Type{0}, Type{0}, Type{0}, Type{1}};
+      *this = basic_quaternion<Type>::identity;
       break;
     }
   }

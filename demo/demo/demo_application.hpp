@@ -13,6 +13,8 @@
 #include <libsbx/graphics/graphics.hpp>
 #include <libsbx/models/models.hpp>
 #include <libsbx/scenes/scenes.hpp>
+#include <libsbx/ui/ui.hpp>
+#include <libsbx/physics/physics.hpp>
 
 namespace demo {
 
@@ -29,6 +31,7 @@ public:
 private:
 
   sbx::math::angle _rotation;
+  sbx::ui::font _font;
 
 }; // class demo_application
 

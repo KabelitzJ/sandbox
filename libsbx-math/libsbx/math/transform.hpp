@@ -14,7 +14,7 @@ class transform final {
 
 public:
 
-  transform(const vector3& position = vector3::zero, const quaternion& rotation = quaternion::zero, const vector3& scale = vector3::one)
+  transform(const vector3& position = vector3::zero, const quaternion& rotation = quaternion::identity, const vector3& scale = vector3::one)
   : _position{position}, 
     _rotation{rotation}, 
     _scale{scale},
@@ -57,26 +57,30 @@ public:
   }
 
   auto forward() const noexcept -> vector3 {
-    return -static_cast<vector3>(_rotation_matrix[2]);
+    return -vector3{_rotation_matrix[2]};
   }
 
   auto right() const noexcept -> vector3 {
-    return math::vector3{_rotation_matrix[0]};
+    return vector3{_rotation_matrix[0]};
+  }
+
+  auto up() const noexcept -> vector3 {
+    return vector3{_rotation_matrix[1]};
   }
 
   auto look_at(const vector3& target) noexcept -> void {
-    const auto direction = _position - target;
+    const auto direction = vector3::normalized(target - _position);
+      
+    auto result = matrix4x4{};
 
-    const auto z_axis = math::vector3::normalized(direction);
-    const auto x_axis = math::vector3::normalized(math::vector3::cross(math::vector3::up, z_axis));
-    const auto y_axis = math::vector3::cross(z_axis, x_axis);
+    result[2] = -vector4{direction};
+    const auto right = vector3::cross(up(), result[2]);
 
-    auto result = math::matrix4x4{};
-    result[0] = x_axis;
-    result[1] = y_axis;
-    result[2] = z_axis;
+    result[0] = right * 1.0f / std::sqrt(std::max(0.00001f, vector3::dot(right, right)));
+		result[1] = vector3::cross(result[2], result[0]);
 
     _rotation = quaternion{result};
+    _rotation_matrix = _rotation.to_matrix();
   }
 
   auto as_matrix() const -> matrix4x4 {
@@ -92,7 +96,7 @@ private:
   quaternion _rotation;
   vector3 _scale;
 
-  math::matrix4x4 _rotation_matrix;
+  matrix4x4 _rotation_matrix;
 
 }; // class transform
 

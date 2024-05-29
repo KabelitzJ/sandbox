@@ -96,10 +96,10 @@ constexpr auto operator-(basic_degree<Type> lhs, const basic_degree<Other>& rhs)
   return lhs -= rhs;
 }
 
-template<floating_point Type, floating_point Other>
+template<floating_point Type, std::convertible_to<Type> Other>
 requires (std::is_convertible_v<Other, Type>)
 constexpr auto operator*(basic_degree<Type> lhs, const Other rhs) noexcept -> basic_degree<Type> {
-  return lhs *= rhs;
+  return lhs *= static_cast<Type>(rhs);
 }
 
 using degree = basic_degree<std::float_t>;
@@ -191,10 +191,10 @@ constexpr auto operator-(basic_radian<Type> lhs, const basic_radian<Other>& rhs)
   return lhs -= rhs;
 }
 
-template<floating_point Type, floating_point Other>
+template<floating_point Type, std::convertible_to<Type> Other>
 requires (std::is_convertible_v<Other, Type>)
 constexpr auto operator*(basic_radian<Type> lhs, const Other rhs) noexcept -> basic_radian<Type> {
-  return lhs *= rhs;
+  return lhs *= static_cast<Type>(rhs);
 }
 
 using radian = basic_radian<std::float_t>;

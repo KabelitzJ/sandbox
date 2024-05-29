@@ -6,6 +6,8 @@
 #include <typeindex>
 #include <iostream>
 
+#include <fmt/format.h>
+
 namespace sbx::units {
 
 template<typename Type>
@@ -161,5 +163,20 @@ constexpr auto quantity_cast(const quantity<typename TargetQuantity::dimension_t
 }
 
 } // namespace sbx::units
+
+template<typename Dimension, sbx::units::representation Representation, sbx::units::ratio Ratio>
+struct fmt::formatter<sbx::units::quantity<Dimension, Representation, Ratio>> {
+
+  template<typename ParseContext>
+  constexpr auto parse(ParseContext& context) -> decltype(context.begin()) {
+    return context.begin();
+  }
+
+  template<typename FormatContext>
+  auto format(const sbx::units::quantity<Dimension, Representation, Ratio>& quantity, FormatContext& context) -> decltype(context.out()) {
+    return fmt::format_to(context.out(), "{}", quantity.value());
+  }
+
+}; // fmt::formatter
 
 #endif // LIBSBX_UNITS_QUANTITY_HPP_

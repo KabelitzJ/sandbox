@@ -8,6 +8,8 @@
 
 #include <libsbx/post/filters/resolve_filter.hpp>
 
+#include <libsbx/ui/ui_subrenderer.hpp>
+
 namespace demo {
 
 demo_renderer::demo_renderer()
@@ -54,6 +56,7 @@ auto demo_renderer::initialize() -> void {
 
   // Render stage 1
   add_subrenderer<sbx::post::resolve_filter<sbx::graphics::empty_vertex>>("demo/assets/shaders/resolve", sbx::graphics::pipeline::stage{1, 0}, std::move(attachment_names));
+  add_subrenderer<sbx::ui::ui_subrenderer>("demo/assets/shaders/ui", sbx::graphics::pipeline::stage{1, 0});
 }
 
 } // namespace demo

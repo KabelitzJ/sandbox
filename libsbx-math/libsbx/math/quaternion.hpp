@@ -44,7 +44,7 @@ public:
   using matrix_type = matrix_type_for<value_type>;
   using angle_type = basic_angle<value_type>;
 
-  inline static constexpr basic_quaternion zero{vector_type::zero, value_type{0}};
+  inline static constexpr basic_quaternion identity{vector_type::zero, value_type{1}};
 
   template<floating_point Other = value_type>
   constexpr basic_quaternion(Other value = Other{0}) noexcept;
@@ -53,13 +53,16 @@ public:
   constexpr basic_quaternion(const vector_type_for<Complex>& complex, Scalar scalar) noexcept;
 
   template<floating_point Other = value_type>
+  constexpr basic_quaternion(const vector_type_for<Other>& euler_angles) noexcept;
+
+  template<floating_point Other = value_type>
   constexpr basic_quaternion(Other x, Other y, Other z, Other w) noexcept;
 
   template<floating_point Complex = value_type, floating_point Scalar = value_type>
   constexpr basic_quaternion(const vector_type_for<Complex>& axis, const basic_angle<Scalar>& angle) noexcept;
 
   template<floating_point Other = value_type>
-  constexpr basic_quaternion(const matrix_type_for<Other>& matrix) noexcept;
+  constexpr basic_quaternion(const matrix_type_for<Other>& matrix) noexcept;  
 
   [[nodiscard]] constexpr operator matrix_type() const noexcept;
 
