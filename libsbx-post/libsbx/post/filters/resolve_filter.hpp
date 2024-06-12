@@ -48,11 +48,6 @@ public:
 
     auto& camera = camera_node.get_component<scenes::camera>();
 
-    if (!camera.is_active()) {
-      core::logger::warn("Scene does not have an active camera");
-      return;
-    }
-
     auto& pipeline = base_type::pipeline();
     auto& descriptor_handler = base_type::descriptor_handler();
 

@@ -51,7 +51,7 @@ scene::scene()
   auto& devices_module = core::engine::get_module<devices::devices_module>();
   auto& window = devices_module.window();
 
-  _camera.add_component<scenes::camera>(math::angle{math::radian{45.0f}}, window.aspect_ratio(), 0.1f, 100.0f, true);
+  _camera.add_component<scenes::camera>(math::angle{math::degree{50.0f}}, window.aspect_ratio(), 0.1f, 100.0f);
 
   window.on_framebuffer_resized() += [this](const devices::framebuffer_resized_event& event) {
     auto& camera = _camera.get_component<scenes::camera>();

@@ -2,6 +2,7 @@
 #define LIBSBX_MATH_RANDOM_HPP_
 
 #include <random>
+#include <ranges>
 #include <concepts>
 #include <limits>
 
@@ -24,6 +25,14 @@ struct random {
   }
 
 }; // struct random
+
+template<std::ranges::sized_range Range>
+auto random_element(const Range& range) -> std::ranges::range_value_t<Range> {
+  const auto size = static_cast<std::ranges::range_difference_t<Range>>(std::ranges::size(range));
+  const auto index = random::next<std::ranges::range_difference_t<Range>>(0, size - 1);
+
+  return *std::next(std::begin(range), index);
+}
 
 } // namespace sbx::math
 

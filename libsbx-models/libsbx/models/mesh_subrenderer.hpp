@@ -67,11 +67,6 @@ public:
 
     auto& camera = camera_node.get_component<scenes::camera>();
 
-    if (!camera.is_active()) {
-      core::logger::warn("Scene does not have an active camera");
-      return;
-    }
-
     _scene_uniform_handler.push("projection", camera.projection());
 
     const auto& camera_transform = camera_node.get_component<math::transform>();

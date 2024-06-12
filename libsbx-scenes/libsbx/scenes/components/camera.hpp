@@ -11,12 +11,11 @@ class camera {
 
 public:
 
-  camera(const math::angle& field_of_view, std::float_t aspect_ratio, std::float_t near_plane, std::float_t far_plane, bool is_active = true)
+  camera(const math::angle& field_of_view, std::float_t aspect_ratio, std::float_t near_plane, std::float_t far_plane)
   : _field_of_view{field_of_view},
     _aspect_ratio{aspect_ratio},
     _near_plane{near_plane},
-    _far_plane{far_plane},
-    _is_active{is_active} {
+    _far_plane{far_plane} {
     _update_projection();
   }
 
@@ -45,18 +44,6 @@ public:
 
     _aspect_ratio = aspect_ratio;
     _update_projection();
-  }
-
-  auto is_active() const noexcept -> bool {
-    return _is_active;
-  }
-
-  auto set_is_active(bool is_active) noexcept -> void {
-    _is_active = is_active;
-  }
-
-  auto make_active() noexcept -> void {
-    set_is_active(true);
   }
 
   auto projection() const noexcept -> const math::matrix4x4& {

@@ -13,7 +13,16 @@ demo_application::demo_application()
 
   graphics_module.set_renderer<demo_renderer>();
 
+  auto texture_ids = std::vector<sbx::math::uuid>{};
+
   const auto prototype_white_id = graphics_module.add_asset<sbx::graphics::image2d>("demo/assets/textures/prototype_white.png");
+  const auto base_id = graphics_module.add_asset<sbx::graphics::image2d>("demo/assets/textures/base.png");
+  const auto grid_id = graphics_module.add_asset<sbx::graphics::image2d>("demo/assets/textures/grid.png");
+
+  texture_ids.push_back(prototype_white_id);
+  texture_ids.push_back(base_id);
+  texture_ids.push_back(grid_id);
+
   const auto monkey_id = graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/suzanne.obj");
 
   sbx::core::logger::debug("prototype_white_id: {}", prototype_white_id);
@@ -36,7 +45,7 @@ demo_application::demo_application()
 
     auto submeshes = std::vector<sbx::scenes::static_mesh::submesh>{};
 
-    submeshes.push_back(sbx::scenes::static_mesh::submesh{0, prototype_white_id, sbx::math::color{0.2f * static_cast<std::float_t>(i + 2), 0.0f, 1.0f - 0.2f * static_cast<std::float_t>(i + 2), 1.0f}});
+    submeshes.push_back(sbx::scenes::static_mesh::submesh{0, sbx::math::random_element(texture_ids)});
 
     monkey.add_component<sbx::scenes::static_mesh>(monkey_id, submeshes);
 
@@ -69,14 +78,15 @@ auto demo_application::update() -> void  {
 
   const auto dt = sbx::core::engine::delta_time();
 
-  _rotation += sbx::math::degree{45} * dt;
+  // _rotation += sbx::math::degree{45} * dt;
 
   auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
 
   auto& scene = scenes_module.scene();
 
   for (auto& node : scene.query<sbx::scenes::static_mesh>()) {
-    node.get_component<sbx::math::transform>().set_rotation(sbx::math::vector3::up, _rotation);
+    auto& transform = node.get_component<sbx::math::transform>();
+    transform.set_rotation(sbx::math::vector3::up, _rotation);
   }
 }
 
