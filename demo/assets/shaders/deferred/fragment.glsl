@@ -4,6 +4,8 @@
 #include "../common/material.glsl"
 #include "../common/random.glsl"
 
+#define MAX_IMAGE_ARRAY_SIZE 32
+
 layout(location = 0) in vec3 in_position;
 layout(location = 1) in vec3 in_normal;
 layout(location = 2) in vec2 in_uv;
@@ -15,7 +17,7 @@ layout(location = 1) out vec4 out_normal;
 layout(location = 2) out vec4 out_albedo;
 
 layout(binding = 2) uniform sampler albedo_images_sampler;
-layout(binding = 3) uniform texture2D albedo_images[32];
+layout(binding = 3) uniform texture2D albedo_images[MAX_IMAGE_ARRAY_SIZE];
 
 void main(void) {
   out_position = vec4(in_position, 1.0);
