@@ -13,7 +13,7 @@ class write_descriptor_set {
 
 public:
 
-  write_descriptor_set(const VkWriteDescriptorSet& write_descriptor_set, const VkDescriptorImageInfo& descriptor_info) noexcept;
+  write_descriptor_set(const VkWriteDescriptorSet& write_descriptor_set, const std::vector<VkDescriptorImageInfo>& descriptor_infos) noexcept;
 
   write_descriptor_set(const VkWriteDescriptorSet& write_descriptor_set, const VkDescriptorBufferInfo& descriptor_info) noexcept;
 
@@ -25,7 +25,7 @@ private:
 
   VkWriteDescriptorSet _write_descriptor_set;
   // std::variant<VkDescriptorImageInfo, VkDescriptorBufferInfo> _descriptor_info;
-  std::unique_ptr<VkDescriptorImageInfo> _descriptor_image_info;
+  std::vector<VkDescriptorImageInfo> _descriptor_image_infos;
   std::unique_ptr<VkDescriptorBufferInfo> _descriptor_buffer_info;
 
 }; // class write_descriptor_set

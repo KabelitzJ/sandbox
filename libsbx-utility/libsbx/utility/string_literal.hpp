@@ -6,6 +6,8 @@
 #include <array>
 #include <limits>
 
+#include <fmt/format.h>
+
 namespace sbx::utility {
 
 namespace detail {
@@ -29,6 +31,7 @@ public:
   using character_type = Character;
   using size_type = std::size_t;
   using iterator = const character_type*;
+  using string_view_type = std::basic_string_view<character_type>;
 
   static constexpr auto npos = std::numeric_limits<size_type>::max();
 
@@ -60,8 +63,8 @@ public:
     return _data[index];
   }
 
-  constexpr operator std::basic_string_view<character_type>() const noexcept {
-    return std::basic_string_view<character_type>{_data.data(), Size};
+  constexpr operator string_view_type() const noexcept {
+    return string_view_type{_data.data(), Size};
   }
 
   std::array<character_type, Size - 1> _data;
@@ -75,5 +78,20 @@ template<std::size_t Size>
 using wstring_literal = basic_string_literal<wchar_t, Size>;
 
 } // namespace sbx::utility
+
+template<std::size_t Size>
+struct fmt::formatter<sbx::utility::string_literal<Size>> {
+
+  template<typename ParseContext>
+  constexpr auto parse(ParseContext& context) -> decltype(context.begin()) {
+    return context.begin();
+  }
+
+  template<typename FormatContext>
+  auto format(const sbx::utility::string_literal<Size>& value, FormatContext& context) -> decltype(context.out()) {
+    return fmt::format_to(context.out(), "{}", fmt::join(value._data, ""));
+  }
+
+}; // struct fmt::formatter<sbx::utility::primitive<Type>>
 
 #endif // LIBSBX_UTILITY_STRING_LITERAL_HPP_

@@ -153,6 +153,38 @@ auto shader::_create_reflection(const spirv_cross::Compiler& compiler) -> void {
     _uniforms.insert({name, image});
   }
 
+  for (const auto& separate_image : resources.separate_images) {
+    const auto& type = compiler.get_type(separate_image.type_id);
+
+    const auto& name = separate_image.name;
+    const auto binding = compiler.get_decoration(separate_image.id, spv::DecorationBinding);
+
+    if (type.array.size() == 0u) {
+      core::logger::debug("separate image: '{}' binding: {}", name, binding);
+
+      auto image = uniform{binding, 0, 0, data_type::separate_image2d, false, false, _stage};
+
+      _uniforms.insert({name, image});
+    } else if (type.array.size() == 1u) {
+      core::logger::debug("separate image[{}]: '{}' binding: {}", type.array[0], name, binding);
+
+      auto image = uniform{binding, 0, 32u, data_type::separate_image2d_array, false, false, _stage};
+
+      _uniforms.insert({name, image});
+    }
+  }
+
+  for (const auto& separate_sampler : resources.separate_samplers) {
+    const auto& name = separate_sampler.name;
+    const auto binding = compiler.get_decoration(separate_sampler.id, spv::DecorationBinding);
+
+    auto sampler = uniform{binding, 0, 0, data_type::separate_sampler, false, false, _stage};
+
+    core::logger::debug("separate sampler: '{}' binding: {}", name, binding);
+
+    _uniforms.insert({name, sampler});
+  }
+
   // Reflection for storage images
   for (const auto& storage_image : resources.storage_images) {
     const auto& name = storage_image.name;

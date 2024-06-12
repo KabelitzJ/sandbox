@@ -46,6 +46,10 @@ public:
 
   virtual auto handle() const noexcept -> const VkPipeline& = 0;
 
+  virtual auto has_variable_descriptors() const noexcept -> bool = 0;
+
+  virtual auto descriptor_counts() const noexcept -> const std::unordered_map<std::uint32_t, std::uint32_t>& = 0;
+
   virtual auto descriptor_set_layout() const noexcept -> const VkDescriptorSetLayout& = 0;
 
   virtual auto descriptor_pool() const noexcept -> const VkDescriptorPool& = 0;

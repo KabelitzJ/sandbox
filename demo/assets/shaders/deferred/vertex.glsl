@@ -7,7 +7,7 @@ struct per_mesh_data {
   mat4 model;
   mat4 normal;
   vec4 tint;
-  vec4 wind; // x = flexibility, y = anchor height, z = unused, w = unused
+  uint albedo_image_index;
 }; // struct per_mesh_data
 
 layout(location = 0) in vec3 in_position;
@@ -18,6 +18,7 @@ layout(location = 0) out vec3 out_position;
 layout(location = 1) out vec3 out_normal;
 layout(location = 2) out vec2 out_uv;
 layout(location = 3) out vec4 out_color;
+layout(location = 4) out flat uint out_albedo_image_index;
 
 layout(binding = 0) uniform uniform_scene {
   mat4 view;
@@ -46,6 +47,8 @@ void main() {
   brightness = (1.0 - BRIGHTNESS_EFFECT) + BRIGHTNESS_EFFECT * brightness;
   out_color = vec4(data.tint.rgb * brightness, 1.0);
   // out_color = data.tint;
+
+  out_albedo_image_index = data.albedo_image_index;
 
   gl_Position = scene.projection * scene.view * vec4(out_position, 1.0);
 }

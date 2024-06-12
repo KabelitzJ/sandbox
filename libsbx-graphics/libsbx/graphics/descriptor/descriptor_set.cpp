@@ -3,9 +3,13 @@
 #include <array>
 #include <cinttypes>
 
+#include <range/v3/all.hpp>
+
 #include <libsbx/core/engine.hpp>
 
 #include <libsbx/graphics/graphics_module.hpp>
+#include <libsbx/graphics/pipeline/graphics_pipeline.hpp>
+#include <libsbx/graphics/pipeline/vertex_input_description.hpp>
 
 namespace sbx::graphics {
 
@@ -17,10 +21,24 @@ descriptor_set::descriptor_set(const pipeline& pipeline) noexcept
 
   auto& logical_device = graphics_module.logical_device();
 
-  auto descriptor_set_layouts = std::array<VkDescriptorSetLayout, 1>{pipeline.descriptor_set_layout()};
+  auto descriptor_set_layouts = std::array<VkDescriptorSetLayout, 1u>{};
+  descriptor_set_layouts[0] = pipeline.descriptor_set_layout();
+
+  const auto& descriptor_counts = pipeline.descriptor_counts();
+
+  const auto has_variable_descriptors = ranges::any_of(descriptor_counts, [](const auto& entry){ return entry.second > 1u; });
+
+  auto counts = std::array<std::uint32_t, 1u>{};
+  counts[0] = 32u;
+
+  auto descriptor_set_variable_descriptor_count_allocate_info = VkDescriptorSetVariableDescriptorCountAllocateInfo{};
+  descriptor_set_variable_descriptor_count_allocate_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_ALLOCATE_INFO;
+  descriptor_set_variable_descriptor_count_allocate_info.descriptorSetCount = static_cast<std::uint32_t>(counts.size());
+  descriptor_set_variable_descriptor_count_allocate_info.pDescriptorCounts = counts.data();
 
   auto descriptor_set_allocate_info = VkDescriptorSetAllocateInfo{};
   descriptor_set_allocate_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+  descriptor_set_allocate_info.pNext = has_variable_descriptors ? &descriptor_set_variable_descriptor_count_allocate_info : nullptr;
   descriptor_set_allocate_info.descriptorPool = _descriptor_pool;
   descriptor_set_allocate_info.descriptorSetCount = static_cast<std::uint32_t>(descriptor_set_layouts.size());
   descriptor_set_allocate_info.pSetLayouts = descriptor_set_layouts.data();

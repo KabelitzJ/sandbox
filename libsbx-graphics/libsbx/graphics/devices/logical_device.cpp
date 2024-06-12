@@ -309,8 +309,16 @@ auto logical_device::_create_logical_device(const physical_device& physical_devi
   const auto instance_validation_layers = validation_layers::instance();
   const auto device_extensions = extensions::device();
 
+  auto physical_device_descriptor_indexing_features = VkPhysicalDeviceDescriptorIndexingFeatures {};
+  physical_device_descriptor_indexing_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES;
+  physical_device_descriptor_indexing_features.shaderSampledImageArrayNonUniformIndexing = true;
+  physical_device_descriptor_indexing_features.runtimeDescriptorArray = true;
+  physical_device_descriptor_indexing_features.descriptorBindingVariableDescriptorCount = true;
+  physical_device_descriptor_indexing_features.descriptorBindingPartiallyBound = true;
+
 	auto device_create_info = VkDeviceCreateInfo{};
 	device_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+  device_create_info.pNext = &physical_device_descriptor_indexing_features;
 	device_create_info.queueCreateInfoCount = static_cast<std::uint32_t>(queue_create_infos.size());
 	device_create_info.pQueueCreateInfos = queue_create_infos.data();
   device_create_info.enabledLayerCount = static_cast<std::uint32_t>(instance_validation_layers.size());

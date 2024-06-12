@@ -6,6 +6,8 @@
 
 #include <fmt/format.h>
 
+#include <libsbx/utility/string_literal.hpp>
+
 namespace sbx::utility {
 
 /**
@@ -25,13 +27,15 @@ namespace sbx::utility {
  * 
  * } 
  */
-template<typename Type>
+template<typename Type, string_literal Unit>
 requires (std::is_arithmetic_v<Type>)
 class primitive {
 
 public:
 
   using value_type = Type;
+
+  inline static constexpr auto unit = Unit;
 
   constexpr explicit primitive(Type value = static_cast<value_type>(0)) noexcept
   : _value{value} { }
@@ -50,19 +54,17 @@ private:
 
 } // namespace sbx::utility
 
-template<typename Type>
-requires (std::is_base_of_v<sbx::utility::primitive<typename Type::value_type>, Type>)
-struct fmt::formatter<Type> : fmt::formatter<typename Type::value_type> {
-  using super = fmt::formatter<typename Type::value_type>;
+template<typename Type, sbx::utility::string_literal Unit>
+struct fmt::formatter<sbx::utility::primitive<Type, Unit>> {
 
   template<typename ParseContext>
   constexpr auto parse(ParseContext& context) -> decltype(context.begin()) {
-    return super::parse(context);
+    return context.begin();
   }
 
   template<typename FormatContext>
-  auto format(const Type& value, FormatContext& context) -> decltype(context.out()) {
-    return super::format(value, context);
+  auto format(const sbx::utility::primitive<Type, Unit>& value, FormatContext& context) -> decltype(context.out()) {
+    return fmt::format_to(context.out(), "{}{}", static_cast<Type>(value), Unit);
   }
 
 }; // struct fmt::formatter<sbx::utility::primitive<Type>>

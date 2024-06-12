@@ -14,6 +14,10 @@
 #include <libsbx/graphics/buffers/uniform_buffer.hpp>
 #include <libsbx/graphics/buffers/storage_buffer.hpp>
 
+#include <libsbx/graphics/images/image2d.hpp>
+#include <libsbx/graphics/images/separate_sampler.hpp>
+#include <libsbx/graphics/images/separate_image2d_array.hpp>
+
 #include <libsbx/graphics/render_pass/swapchain.hpp>
 
 namespace sbx::graphics {
@@ -122,6 +126,15 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
         descriptor_set_layout_bindings.push_back(image::create_descriptor_set_layout_binding(uniform.binding(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, uniform.stage_flags()));
         break;
       }
+      case shader::data_type::separate_sampler: {
+        descriptor_set_layout_bindings.push_back(separate_sampler::create_descriptor_set_layout_binding(uniform.binding(), VK_DESCRIPTOR_TYPE_SAMPLER, uniform.stage_flags()));
+        break;
+      }
+      case shader::data_type::separate_image2d_array: {
+        descriptor_set_layout_bindings.push_back(separate_image2d_array::create_descriptor_set_layout_binding(uniform.binding(), VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, uniform.stage_flags()));
+        _has_variable_descriptors = true;
+        break;
+      }
       case shader::data_type::storage_image: {
         descriptor_set_layout_bindings.push_back(image::create_descriptor_set_layout_binding(uniform.binding(), VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, uniform.stage_flags()));
         break;
@@ -146,6 +159,10 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
 
   for (const auto& descriptor : descriptor_set_layout_bindings) {
     _descriptor_type_at_binding.insert({descriptor.binding, descriptor.descriptorType});
+  }
+
+  for (const auto& descriptor : descriptor_set_layout_bindings) {
+    _descriptor_count_at_binding.insert({descriptor.binding, descriptor.descriptorCount});
   }
 
   auto viewport_state = VkPipelineViewportStateCreateInfo{};
@@ -259,8 +276,24 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
   input_assembly_state.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
   input_assembly_state.primitiveRestartEnable = false;
 
+  auto binding_flags = std::vector<VkDescriptorBindingFlags>{};
+
+  for (const auto& descriptor_set_layout_binding : descriptor_set_layout_bindings) {
+    if (descriptor_set_layout_binding.descriptorCount > 1u) {
+      binding_flags.push_back(VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT | VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT);
+    } else {
+      binding_flags.push_back(0u);
+    }
+  }
+
+  auto descriptor_set_layout_binding_flags_create_info = VkDescriptorSetLayoutBindingFlagsCreateInfo{};
+  descriptor_set_layout_binding_flags_create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
+  descriptor_set_layout_binding_flags_create_info.bindingCount = static_cast<std::uint32_t>(binding_flags.size());
+  descriptor_set_layout_binding_flags_create_info.pBindingFlags = binding_flags.data();
+
   auto descriptor_set_layout_create_info = VkDescriptorSetLayoutCreateInfo{};
   descriptor_set_layout_create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+  descriptor_set_layout_create_info.pNext = &descriptor_set_layout_binding_flags_create_info;
   descriptor_set_layout_create_info.bindingCount = static_cast<std::uint32_t>(descriptor_set_layout_bindings.size());
   descriptor_set_layout_create_info.pBindings = descriptor_set_layout_bindings.data();
 
@@ -269,6 +302,8 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
   // [NOTE] KAJ 2023-09-13 : Workaround
   auto descriptor_pool_sizes = std::vector<VkDescriptorPoolSize>{
     VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 4096},
+    VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_SAMPLER, 2048},
+    VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 2048},
     VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 2048},
     VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 2048},
     VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 2048},

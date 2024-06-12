@@ -550,10 +550,14 @@ auto image::copy_image(const VkImage& src_image, VkImage& dst_image, VkDeviceMem
 }
 
 auto image::write_descriptor_set(std::uint32_t binding, VkDescriptorType descriptor_type) const noexcept -> graphics::write_descriptor_set {
+  auto descriptor_image_infos = std::vector<VkDescriptorImageInfo>{};
+
   auto descriptor_image_info = VkDescriptorImageInfo{};
   descriptor_image_info.imageLayout = _layout;
   descriptor_image_info.imageView = _view;
   descriptor_image_info.sampler = _sampler;
+
+  descriptor_image_infos.push_back(descriptor_image_info);
 
   auto descriptor_write = VkWriteDescriptorSet{};
   descriptor_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -563,7 +567,7 @@ auto image::write_descriptor_set(std::uint32_t binding, VkDescriptorType descrip
   descriptor_write.descriptorCount = 1;
   descriptor_write.descriptorType = descriptor_type;
 
-  return graphics::write_descriptor_set{descriptor_write, descriptor_image_info};
+  return graphics::write_descriptor_set{descriptor_write, descriptor_image_infos};
 }
 
 auto image::extent() const noexcept -> const VkExtent3D& {

@@ -43,6 +43,9 @@ public:
     imat4,
     umat4,
     sampler2d,
+    separate_sampler,
+    separate_image2d,
+    separate_image2d_array,
     storage_image,
     subpass_input,
     structure

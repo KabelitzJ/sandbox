@@ -77,6 +77,14 @@ public:
 
   auto handle() const noexcept -> const VkPipeline& override;
 
+  auto has_variable_descriptors() const noexcept -> bool override {
+    return _has_variable_descriptors;
+  }
+
+  auto descriptor_counts() const noexcept -> const std::unordered_map<std::uint32_t, std::uint32_t>& override {
+    return _descriptor_count_at_binding;
+  }
+
   auto descriptor_set_layout() const noexcept -> const VkDescriptorSetLayout& override;
 
   auto descriptor_pool() const noexcept -> const VkDescriptorPool& override;
@@ -123,6 +131,7 @@ private:
   std::unordered_map<std::string, shader::uniform_block> _uniform_blocks{};
 
   std::unordered_map<std::uint32_t, VkDescriptorType> _descriptor_type_at_binding{};
+  std::unordered_map<std::uint32_t, std::uint32_t> _descriptor_count_at_binding{};
 
   std::unordered_map<std::string, std::uint32_t> _descriptor_bindings{};
   std::unordered_map<std::string, std::uint32_t> _descriptor_sizes{};
@@ -131,6 +140,7 @@ private:
   VkPipelineLayout _layout{};
   VkPipeline _handle{};
   VkPipelineBindPoint _bind_point{};
+  bool _has_variable_descriptors;
 
   pipeline::stage _stage{};
 

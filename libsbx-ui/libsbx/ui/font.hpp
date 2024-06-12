@@ -14,13 +14,7 @@
 
 namespace sbx::ui {
 
-struct pixels : utility::primitive<std::uint32_t> {
-
-  using super = utility::primitive<std::uint32_t>;
-
-  using super::super;
-
-}; // struct pixels
+using pixels = utility::primitive<std::uint32_t, "px">;
 
 class font {
 

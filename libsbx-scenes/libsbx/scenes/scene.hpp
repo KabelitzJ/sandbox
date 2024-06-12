@@ -53,8 +53,10 @@ public:
 
   template<typename... Components>
   auto query() -> std::vector<node> {
-    return _registry.create_view<Components...>()
-      | std::views::transform([&](auto& entity) { return node{&_registry, entity}; })
+    auto view = _registry.create_view<Components...>();
+     
+    return view 
+      | ranges::views::transform([&](auto& entity) { return node{&_registry, entity}; })
       | ranges::to<std::vector>();
   }
 

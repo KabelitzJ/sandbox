@@ -19,6 +19,8 @@
 #include <libsbx/graphics/descriptor/descriptor_handler.hpp>
 #include <libsbx/graphics/buffers/uniform_handler.hpp>
 #include <libsbx/graphics/buffers/storage_handler.hpp>
+#include <libsbx/graphics/images/image2d.hpp>
+#include <libsbx/graphics/images/image2d_array.hpp>
 
 #include <libsbx/scenes/scenes_module.hpp>
 #include <libsbx/scenes/scene.hpp>
@@ -87,6 +89,7 @@ public:
 
     _used_uniforms.clear();
     _static_meshes.clear();
+    _albedo_images.clear();
 
     auto mesh_nodes = scene.query<scenes::static_mesh>();
 
@@ -105,11 +108,10 @@ public:
       storage_handler.push(std::span<const per_mesh_data>{data});
 
       auto& mesh = graphics_module.get_asset<models::mesh>(key.mesh_id);
-      auto& image = graphics_module.get_asset<graphics::image2d>(key.texture_id);
 
       descriptor_handler.push("uniform_scene", _scene_uniform_handler);
       descriptor_handler.push("buffer_mesh_data", storage_handler);
-      descriptor_handler.push("image", image);
+      descriptor_handler.push("albedo_images", _albedo_images);
 
       if (!descriptor_handler.update(_pipeline)) {
         return;
@@ -131,14 +133,16 @@ private:
     const auto mesh_id = static_mesh.mesh_id();
 
     for (const auto& submesh : static_mesh.submeshes()) {
-      const auto key = mesh_key{mesh_id, submesh.texture_id, submesh.index};
+      const auto key = mesh_key{mesh_id, submesh.index};
 
       _used_uniforms.insert(key);
 
       auto model = scene.world_transform(node);
       auto normal = math::matrix4x4::transposed(math::matrix4x4::inverted(model));
 
-      _static_meshes[key].push_back(per_mesh_data{std::move(model), std::move(normal), submesh.tint, math::vector4{submesh.flexibility, submesh.anchor_height, 0.0f, 0.0f}});
+      const auto albedo_image_index = _albedo_images.push_back(submesh.texture_id);
+
+      _static_meshes[key].push_back(per_mesh_data{std::move(model), std::move(normal), submesh.tint, albedo_image_index});
     }
   }
 
@@ -149,7 +153,6 @@ private:
 
   struct mesh_key {
     math::uuid mesh_id;
-    math::uuid texture_id;
     std::uint32_t submesh_index;
   }; // struct mesh_key
 
@@ -157,14 +160,14 @@ private:
     math::matrix4x4 model;
     math::matrix4x4 normal;
     math::color tint;
-    math::vector4 wind; // x: flexibility, y: anchor_height, zw: unused
+    std::uint32_t albedo_image_index;
   }; // struct per_mesh_data
 
   struct mesh_key_hash {
     auto operator()(const mesh_key& key) const noexcept -> std::size_t {
       auto seed = std::size_t{0};
 
-      utility::hash_combine(seed, key.mesh_id, key.texture_id, key.submesh_index);
+      utility::hash_combine(seed, key.mesh_id, key.submesh_index);
 
       return seed;
     }
@@ -172,7 +175,7 @@ private:
 
   struct mesh_key_equal {
     auto operator()(const mesh_key& lhs, const mesh_key& rhs) const noexcept -> bool {
-      return lhs.mesh_id == rhs.mesh_id && lhs.texture_id == rhs.texture_id && lhs.submesh_index == rhs.submesh_index;
+      return lhs.mesh_id == rhs.mesh_id && lhs.submesh_index == rhs.submesh_index;
     }
   }; // struct mesh_key_equal
 
@@ -185,6 +188,7 @@ private:
 
   graphics::uniform_handler _scene_uniform_handler;
   graphics::storage_handler _lights_storage_handler;
+  graphics::image2d_array _albedo_images;
 
 }; // class mesh_subrenderer
 

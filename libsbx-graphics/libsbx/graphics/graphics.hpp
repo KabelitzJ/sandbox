@@ -38,6 +38,9 @@
 
 #include <libsbx/graphics/images/image.hpp>
 #include <libsbx/graphics/images/image2d.hpp>
+#include <libsbx/graphics/images/image2d_array.hpp>
 #include <libsbx/graphics/images/depth_image.hpp>
+#include <libsbx/graphics/images/separate_sampler.hpp>
+#include <libsbx/graphics/images/separate_image2d_array.hpp>
 
 #endif // LIBSBX_GRAPHICS_HPP_
