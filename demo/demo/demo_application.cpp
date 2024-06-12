@@ -1,5 +1,7 @@
 #include <demo/demo_application.hpp>
 
+#include <libsbx/math/color.hpp>
+
 #include <demo/demo_renderer.hpp>
 
 namespace demo {
@@ -12,10 +14,10 @@ demo_application::demo_application()
   graphics_module.set_renderer<demo_renderer>();
 
   const auto prototype_white_id = graphics_module.add_asset<sbx::graphics::image2d>("demo/assets/textures/prototype_white.png");
-  const auto cube_id = graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/suzanne.obj");
+  const auto monkey_id = graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/suzanne.obj");
 
   sbx::core::logger::debug("prototype_white_id: {}", prototype_white_id);
-  sbx::core::logger::debug("cube_id: {}", cube_id);
+  sbx::core::logger::debug("monkey_id: {}", monkey_id);
 
   auto& devices_module = sbx::core::engine::get_module<sbx::devices::devices_module>();
 
@@ -29,13 +31,19 @@ demo_application::demo_application()
 
   auto& scene = scenes_module.create_scene();
 
-  auto cube = scene.create_node("Cube");
+  for (auto i : std::views::iota(-2, 3)) {
+    auto monkey = scene.create_node(fmt::format("Monkey{}", i));
 
-  cube.add_component<sbx::scenes::static_mesh>(cube_id, std::vector<sbx::scenes::static_mesh::submesh>{{0, prototype_white_id}});
+    auto submeshes = std::vector<sbx::scenes::static_mesh::submesh>{};
 
-  cube.get_component<sbx::math::transform>().set_rotation(sbx::math::vector3::up, _rotation);
+    submeshes.push_back(sbx::scenes::static_mesh::submesh{0, prototype_white_id, sbx::math::color{0.2f * static_cast<std::float_t>(i + 2), 0.0f, 1.0f - 0.2f * static_cast<std::float_t>(i + 2), 1.0f}});
 
-  sbx::core::logger::debug("Created cube with id: {}", sbx::math::uuid{cube.get_component<sbx::scenes::id>()});
+    monkey.add_component<sbx::scenes::static_mesh>(monkey_id, submeshes);
+
+    monkey.get_component<sbx::math::transform>().set_position(sbx::math::vector3{static_cast<std::float_t>(i) * 3.0f, 0.0f, 0.0f});
+
+    sbx::core::logger::debug("Created {} with id: {}", monkey.add_component<sbx::scenes::tag>(), sbx::math::uuid{monkey.get_component<sbx::scenes::id>()});
+  }
 
   auto camera = scene.camera();
 
@@ -66,8 +74,6 @@ auto demo_application::update() -> void  {
   auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
 
   auto& scene = scenes_module.scene();
-
-  auto camera = scene.camera();
 
   for (auto& node : scene.query<sbx::scenes::static_mesh>()) {
     node.get_component<sbx::math::transform>().set_rotation(sbx::math::vector3::up, _rotation);

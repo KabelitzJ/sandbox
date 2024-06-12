@@ -30,7 +30,6 @@ layout(binding = 1) buffer buffer_mesh_data {
   per_mesh_data data[];
 } mesh_data;
 
-const float MAX_ANCHOR_HEIGHT = 2.0;
 const float BRIGHTNESS_EFFECT = 0.5;
 
 void main() {
@@ -38,15 +37,14 @@ void main() {
 
   vec3 world_position = vec3(data.model * vec4(in_position, 1.0));
 
-  // out_position = wind_effect(world_position, in_position, scene.time data.wind.x, data.wind.y, MAX_ANCHOR_HEIGHT);
   out_position = world_position;
   out_normal = normalize(vec3(data.normal * vec4(in_normal, 1.0)));
   out_uv = in_uv;
 
-  float brightness = (data.tint.r + data.tint.g + data.tint.b) / 3.0;
-  brightness = (1.0 - BRIGHTNESS_EFFECT) + BRIGHTNESS_EFFECT * brightness;
-  out_color = vec4(data.tint.rgb * brightness, 1.0);
-  // out_color = data.tint;
+  // float brightness = (data.tint.r + data.tint.g + data.tint.b) / 3.0;
+  // brightness = (1.0 - BRIGHTNESS_EFFECT) + BRIGHTNESS_EFFECT * brightness;
+  // out_color = vec4(data.tint.rgb * brightness, 1.0);
+  out_color = data.tint;
 
   out_albedo_image_index = data.albedo_image_index;
 

@@ -18,8 +18,6 @@ public:
     std::uint32_t index;
     math::uuid texture_id;
     math::color tint{1.0f, 1.0f, 1.0f, 1.0f};
-    std::float_t flexibility{0.0f};
-    std::float_t anchor_height{0.0f};
   }; // struct submesh
 
   static_mesh(math::uuid mesh_id, const std::vector<submesh>& submeshes)

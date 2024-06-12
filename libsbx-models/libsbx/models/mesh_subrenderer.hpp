@@ -21,6 +21,8 @@
 #include <libsbx/graphics/buffers/storage_handler.hpp>
 #include <libsbx/graphics/images/image2d.hpp>
 #include <libsbx/graphics/images/image2d_array.hpp>
+#include <libsbx/graphics/images/separate_image2d_array.hpp>
+#include <libsbx/graphics/images/separate_sampler.hpp>
 
 #include <libsbx/scenes/scenes_module.hpp>
 #include <libsbx/scenes/scene.hpp>
@@ -111,6 +113,7 @@ public:
 
       descriptor_handler.push("uniform_scene", _scene_uniform_handler);
       descriptor_handler.push("buffer_mesh_data", storage_handler);
+      descriptor_handler.push("albedo_images_sampler", _albedo_images_sampler);
       descriptor_handler.push("albedo_images", _albedo_images);
 
       if (!descriptor_handler.update(_pipeline)) {
@@ -157,10 +160,10 @@ private:
   }; // struct mesh_key
 
   struct per_mesh_data {
-    math::matrix4x4 model;
-    math::matrix4x4 normal;
-    math::color tint;
-    std::uint32_t albedo_image_index;
+    alignas(16) math::matrix4x4 model;
+    alignas(16) math::matrix4x4 normal;
+    alignas(16) math::color tint;
+    alignas(4) std::uint32_t albedo_image_index;
   }; // struct per_mesh_data
 
   struct mesh_key_hash {
@@ -188,7 +191,8 @@ private:
 
   graphics::uniform_handler _scene_uniform_handler;
   graphics::storage_handler _lights_storage_handler;
-  graphics::image2d_array _albedo_images;
+  graphics::separate_sampler _albedo_images_sampler;
+  graphics::separate_image2d_array _albedo_images;
 
 }; // class mesh_subrenderer
 

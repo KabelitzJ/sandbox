@@ -1,7 +1,5 @@
 #version 450
 
-#extension GL_EXT_nonuniform_qualifier : require
-
 #include "../common/lighting.glsl"
 #include "../common/material.glsl"
 #include "../common/random.glsl"
@@ -16,10 +14,11 @@ layout(location = 0) out vec4 out_position;
 layout(location = 1) out vec4 out_normal;
 layout(location = 2) out vec4 out_albedo;
 
-layout(binding = 4) uniform sampler2D albedo_images[];
+layout(binding = 2) uniform sampler albedo_images_sampler;
+layout(binding = 3) uniform texture2D albedo_images[32];
 
 void main(void) {
   out_position = vec4(in_position, 1.0);
   out_normal = vec4(in_normal, 1.0);
-  out_albedo += texture(albedo_images[in_albedo_image_index], in_uv) * in_color;
+  out_albedo = texture(sampler2D(albedo_images[in_albedo_image_index], albedo_images_sampler), in_uv) * in_color;
 }

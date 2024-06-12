@@ -123,7 +123,7 @@ private:
 
       auto model = scene.world_transform(node);
 
-      _static_meshes[key].push_back(per_mesh_data{std::move(model), math::vector4{submesh.flexibility, submesh.anchor_height, 0.0f, 0.0f}});
+      _static_meshes[key].push_back(per_mesh_data{std::move(model)});
     }
   }
 
@@ -139,7 +139,6 @@ private:
 
   struct per_mesh_data {
     math::matrix4x4 model;
-    math::vector4 wind; // x: flexibility, y: anchor_height, zw: unused
   }; // struct per_mesh_data
 
   struct mesh_key_hash {
