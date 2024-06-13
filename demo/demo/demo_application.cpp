@@ -76,9 +76,9 @@ auto demo_application::update() -> void  {
     return;
   }
 
-  const auto dt = sbx::core::engine::delta_time();
+  const auto delta_time = sbx::core::engine::delta_time();
 
-  // _rotation += sbx::math::degree{45} * dt;
+  _rotation += sbx::math::degree{45} * delta_time;
 
   auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
 
