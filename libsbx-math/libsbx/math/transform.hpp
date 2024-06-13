@@ -69,16 +69,20 @@ public:
   }
 
   auto look_at(const vector3& target) noexcept -> void {
-    const auto direction = vector3::normalized(target - _position);
+    // const auto direction = vector3::normalized(target - _position);
       
-    auto result = matrix4x4{};
+    // auto result = matrix4x4{};
 
-    result[2] = -vector4{direction};
-    const auto right = vector3::cross(up(), result[2]);
+    // result[2] = -vector4{direction};
+    // const auto right = vector3::cross(up(), result[2]);
 
-    result[0] = right * 1.0f / std::sqrt(std::max(0.00001f, vector3::dot(right, right)));
-		result[1] = vector3::cross(result[2], result[0]);
+    // result[0] = right * 1.0f / std::sqrt(std::max(0.00001f, vector3::dot(right, right)));
+		// result[1] = vector3::cross(result[2], result[0]);
 
+    // _rotation = quaternion{result};
+    // _rotation_matrix = _rotation.to_matrix();
+
+    auto result = matrix4x4::look_at(_position, target, vector3::up);
     _rotation = quaternion{result};
     _rotation_matrix = _rotation.to_matrix();
   }

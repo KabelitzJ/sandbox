@@ -32,6 +32,11 @@ private:
 
   sbx::math::angle _rotation;
 
+  sbx::math::angle _orbit_angle;
+  sbx::math::angle _tilt_angle;
+  sbx::math::vector3 _target;
+  std::float_t _zoom;
+
 }; // class demo_application
 
 } // namespace demo

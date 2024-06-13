@@ -8,7 +8,11 @@ namespace demo {
 
 demo_application::demo_application()
 : sbx::core::application{},
-  _rotation{sbx::math::degree{0}} {
+  _rotation{sbx::math::degree{0}},
+  _orbit_angle{sbx::math::degree{90}}, 
+  _tilt_angle{sbx::math::degree{30}},
+  _target{sbx::math::vector3{0.0f, 0.0f, 0.0f}},
+  _zoom{30.0f} {
   auto& graphics_module = sbx::core::engine::get_module<sbx::graphics::graphics_module>();
 
   graphics_module.set_renderer<demo_renderer>();
@@ -40,7 +44,7 @@ demo_application::demo_application()
 
   auto& scene = scenes_module.create_scene();
 
-  for (auto i : std::views::iota(-2, 3)) {
+  for (auto i : std::views::iota(0, 5)) {
     auto monkey = scene.create_node(fmt::format("Monkey{}", i));
 
     auto submeshes = std::vector<sbx::scenes::static_mesh::submesh>{};
@@ -49,15 +53,16 @@ demo_application::demo_application()
 
     monkey.add_component<sbx::scenes::static_mesh>(monkey_id, submeshes);
 
-    monkey.get_component<sbx::math::transform>().set_position(sbx::math::vector3{static_cast<std::float_t>(i) * 3.0f, 0.0f, 0.0f});
+    monkey.get_component<sbx::math::transform>().set_position(sbx::math::vector3{static_cast<std::float_t>(i - 2) * 3.0f, 0.0f, 0.0f});
 
-    sbx::core::logger::debug("Created {} with id: {}", monkey.add_component<sbx::scenes::tag>(), sbx::math::uuid{monkey.get_component<sbx::scenes::id>()});
+    sbx::core::logger::debug("Created {} with id: {}", std::string{monkey.get_component<sbx::scenes::tag>()}, sbx::math::uuid{monkey.get_component<sbx::scenes::id>()});
   }
 
   auto camera = scene.camera();
 
-  camera.get_component<sbx::math::transform>().set_position(sbx::math::vector3{0.0f, 4.0f, 8.0f});
-  camera.get_component<sbx::math::transform>().set_rotation(sbx::math::vector3::right, sbx::math::degree{26.565});
+  camera.get_component<sbx::math::transform>().set_position(sbx::math::vector3{0.0f, 2.0f, 8.0f});
+  camera.get_component<sbx::math::transform>().look_at(sbx::math::vector3::zero);
+  // camera.get_component<sbx::math::transform>().set_rotation(sbx::math::vector3::right, sbx::math::degree{26.565});
 
   auto& ui_module = sbx::core::engine::get_module<sbx::ui::ui_module>();
 
@@ -88,6 +93,54 @@ auto demo_application::update() -> void  {
     auto& transform = node.get_component<sbx::math::transform>();
     transform.set_rotation(sbx::math::vector3::up, _rotation);
   }
+
+  auto camera = scene.camera();
+
+  auto& transform = camera.get_component<sbx::math::transform>();
+
+  auto movement = sbx::math::vector3{};
+
+  const auto local_forward = sbx::math::vector3::cross(sbx::math::vector3::up, transform.right()).normalize();
+  const auto local_right = sbx::math::vector3::cross(sbx::math::vector3::up, transform.forward()).normalize();
+
+  if (sbx::devices::input::is_key_down(sbx::devices::key::w)) {
+    movement += local_forward;
+  }
+
+  if (sbx::devices::input::is_key_down(sbx::devices::key::s)) {
+    movement -= local_forward;
+  }
+
+  if (sbx::devices::input::is_key_down(sbx::devices::key::a)) {
+    movement += local_right;
+  }
+
+  if (sbx::devices::input::is_key_down(sbx::devices::key::d)) {
+    movement -= local_right;
+  }
+
+  if (sbx::devices::input::is_key_down(sbx::devices::key::q)) {
+    _orbit_angle += sbx::math::degree{45.0f * delta_time.value()};
+  }
+
+  if (sbx::devices::input::is_key_down(sbx::devices::key::e)) {
+    _orbit_angle -= sbx::math::degree{45.0f * delta_time.value()};
+  }
+
+  _target += movement * 10.0f * delta_time.value();
+
+  const auto tilt_angle_rad = _tilt_angle.to_radians().value();
+
+  const auto radius = std::cos(tilt_angle_rad) * _zoom;
+  const auto height = std::sin(tilt_angle_rad) * _zoom;
+
+  const auto orbit_angle_rad = _orbit_angle.to_radians().value();
+
+  const auto x = std::cos(orbit_angle_rad) * radius;
+  const auto z = std::sin(orbit_angle_rad) * radius;
+
+  transform.set_position(_target + sbx::math::vector3{x, height, z});
+  transform.look_at(_target);
 }
 
 } // namespace demo

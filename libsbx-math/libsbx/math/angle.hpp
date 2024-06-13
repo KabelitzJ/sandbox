@@ -247,6 +247,18 @@ public:
 
   template<floating_point Other>
   requires (std::is_convertible_v<Other, Type>)
+  constexpr auto operator-=(const basic_degree<Other>& other) noexcept -> basic_angle<Type>& {
+    return (*this -= basic_angle<Other>{other});
+  }
+
+  template<floating_point Other>
+  requires (std::is_convertible_v<Other, Type>)
+  constexpr auto operator-=(const basic_radian<Other>& other) noexcept -> basic_angle<Type>& {
+    return (*this -= basic_angle<Other>{other});
+  }
+
+  template<floating_point Other>
+  requires (std::is_convertible_v<Other, Type>)
   constexpr auto operator*=(const Other other) noexcept -> basic_angle<Type>& {
     _radian = basic_radian<Type>{_radian.value() * static_cast<Type>(other)};
 
