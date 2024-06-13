@@ -56,8 +56,9 @@ demo_application::demo_application()
 
   auto camera = scene.camera();
 
-  camera.get_component<sbx::math::transform>().set_position(sbx::math::vector3{0.0f, 4.0f, 8.0f});
-  camera.get_component<sbx::math::transform>().set_rotation(sbx::math::vector3::right, sbx::math::degree{26.565});
+  camera.get_component<sbx::math::transform>().set_position(sbx::math::vector3{0.0f, 2.0f, 8.0f});
+  camera.get_component<sbx::math::transform>().look_at(sbx::math::vector3::zero);
+  // camera.get_component<sbx::math::transform>().set_rotation(sbx::math::vector3::right, sbx::math::degree{26.565});
 
   auto& ui_module = sbx::core::engine::get_module<sbx::ui::ui_module>();
 
@@ -78,7 +79,7 @@ auto demo_application::update() -> void  {
 
   const auto delta_time = sbx::core::engine::delta_time();
 
-  _rotation += sbx::math::degree{45} * delta_time;
+  // _rotation += sbx::math::degree{45} * delta_time;
 
   auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
 
@@ -96,22 +97,23 @@ auto demo_application::update() -> void  {
   auto movement = sbx::math::vector3{};
 
   if (sbx::devices::input::is_key_down(sbx::devices::key::w)) {
-    movement += sbx::math::vector3::forward * 5.0f * delta_time.value();
+    movement += transform.forward();
   }
 
   if (sbx::devices::input::is_key_down(sbx::devices::key::s)) {
-    movement += sbx::math::vector3::backward * 5.0f * delta_time.value();
+    movement += -transform.forward();
   }
 
   if (sbx::devices::input::is_key_down(sbx::devices::key::a)) {
-    movement += sbx::math::vector3::left * 5.0f * delta_time.value();
+    movement += -transform.right();
   }
 
   if (sbx::devices::input::is_key_down(sbx::devices::key::d)) {
-    movement += sbx::math::vector3::right * 5.0f * delta_time.value();
+    movement += transform.right();
   }
 
-  transform.move_by(movement.normalize());
+  transform.move_by(movement.normalize() * 10.0f * delta_time.value());
+  transform.look_at(sbx::math::vector3::zero);
 }
 
 } // namespace demo
