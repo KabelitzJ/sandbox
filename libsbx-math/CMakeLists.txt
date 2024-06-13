@@ -2,6 +2,10 @@ project(math VERSION 0.1.0 LANGUAGES CXX)
 
 message(STATUS "Configuring ${PROJECT_NAME}...")
 
+string(TOUPPER ${PROJECT_NAME} PROJECT_NAME_UPPER)
+
+configure_file("${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/version.hpp.in" "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/version.hpp" @ONLY)
+
 if(${SBX_BUILD_SHARED})
   add_library(${PROJECT_NAME} SHARED)
 else()
@@ -12,6 +16,8 @@ add_library(${CMAKE_PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
 find_package(fmt REQUIRED)
 find_package(yaml-cpp REQUIRED)
+find_package(glm REQUIRED)
+find_package(range-v3 REQUIRED)
 
 target_sources(
   ${PROJECT_NAME}
@@ -22,8 +28,10 @@ target_sources(
     FILES
       "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/math.hpp"
       "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/concepts.hpp"
+      "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/matrix.hpp"
       "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/matrix4x4.hpp"
       "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/matrix4x4.ipp"
+      "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/vector.hpp"
       "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/vector2.hpp"
       "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/vector2.ipp"
       "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/vector3.hpp"
@@ -51,6 +59,8 @@ target_link_libraries(
     # External dependencies
     fmt::fmt
     yaml-cpp
+    glm::glm
+    range-v3::range-v3
     # Internal dependencies
     libsbx::utility
     libsbx::core
@@ -64,6 +74,12 @@ set_target_properties(
     LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
     POSITION_INDEPENDENT_CODE ON
+)
+
+target_compile_definitions(
+  ${PROJECT_NAME}
+  PRIVATE
+    SBX_CONSTEXPR_ENABLED=${SBX_CONSTEXPR_ENABLED}
 )
 
 target_compile_features(

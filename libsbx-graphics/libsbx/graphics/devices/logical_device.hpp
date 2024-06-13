@@ -14,37 +14,47 @@
 
 namespace sbx::graphics {
 
-class logical_device : public utility::noncopyable {
+class queue : public utility::noncopyable {
+
+  friend class logical_device;
 
 public:
 
-  class queue : public utility::noncopyable {
+  enum class type : std::uint32_t {
+    graphics,
+    present,
+    compute,
+    transfer
+  }; // enum class type
 
-    friend class logical_device;
+  queue(queue&& other) noexcept = default;
 
-  public:
+  ~queue() = default;
 
-    ~queue() = default;
+  auto operator=(queue&& other) noexcept -> queue& = default;
 
-    auto handle() const noexcept -> const VkQueue&;
+  auto handle() const noexcept -> const VkQueue&;
 
-    operator const VkQueue&() const noexcept;
+  operator const VkQueue&() const noexcept;
 
-    auto family() const noexcept -> std::uint32_t;
+  auto family() const noexcept -> std::uint32_t;
 
-  private:
+  auto wait_idle() const -> void;
 
-    queue() = default;
+private:
 
-    VkQueue _handle{};
-    std::uint32_t _family{};
+  queue(const VkQueue& handle, std::uint32_t family)
+  : _handle{handle},
+    _family{family} { }
 
-  }; // class queue
+  VkQueue _handle{};
+  std::uint32_t _family{};
 
-  struct sharing_mode {
-    VkSharingMode mode{};
-    std::vector<std::uint32_t> queue_families{};
-  }; // struct sharing_mode
+}; // class queue
+
+class logical_device : public utility::noncopyable {
+
+public:
 
   logical_device(const physical_device& physical_device);
 
@@ -56,20 +66,18 @@ public:
 
   auto enabled_features() const -> const VkPhysicalDeviceFeatures&;
 
-  auto graphics_queue() const -> const queue&;
-
-  auto compute_queue() const -> const queue&;
-
-  auto transfer_queue() const -> const queue&;
+  template<queue::type Type>
+  auto queue() const -> const graphics::queue& {
+    return _queues.at(Type);
+  }
 
   auto wait_idle() const -> void;
-
-  auto queue_sharing_mode() const noexcept -> const sharing_mode&;
 
 private:
 
   struct queue_family_indices {
     std::optional<std::uint32_t> graphics{};
+    std::optional<std::uint32_t> present{};
     std::optional<std::uint32_t> compute{};
     std::optional<std::uint32_t> transfer{};
   }; // struct queue_family_indices
@@ -82,11 +90,7 @@ private:
 
   VkDevice _handle{};
   VkPhysicalDeviceFeatures _enabled_features{};
-
-	queue _graphics_queue{};
-	queue _compute_queue{};
-	queue _transfer_queue{};
-  sharing_mode _queue_sharing_mode{};
+  std::unordered_map<queue::type, graphics::queue> _queues{};
 
 }; // class logical_device
 

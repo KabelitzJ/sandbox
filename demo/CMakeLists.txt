@@ -55,21 +55,20 @@ target_link_libraries(
     libsbx::units
     libsbx::utility
     libsbx::io
+    libsbx::bitmaps
     libsbx::math
     libsbx::memory
     libsbx::signals
-    libsbx::bitmaps
     libsbx::ecs
     libsbx::core
-    libsbx::async
-    libsbx::assets
     libsbx::devices
+    libsbx::gizmos
     libsbx::graphics
-    libsbx::models
     libsbx::scenes
-    libsbx::audio
-    libsbx::ui
+    libsbx::models
     libsbx::shadows
+    libsbx::post
+    libsbx::ui
     libsbx::physics
 )
 
@@ -80,6 +79,12 @@ set_target_properties(
     LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
     POSITION_INDEPENDENT_CODE ON
+)
+
+target_compile_definitions(
+  ${PROJECT_NAME}
+  PRIVATE
+    SBX_CONSTEXPR_ENABLED=${SBX_CONSTEXPR_ENABLED}
 )
 
 target_compile_features(

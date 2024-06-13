@@ -1,5 +1,9 @@
 #include <libsbx/graphics/devices/debug_messenger.hpp>
 
+#include <libsbx/utility/target.hpp>
+
+#include <libsbx/core/logger.hpp>
+
 namespace sbx::graphics {
 
 auto debug_messenger::create(const instance& target, const VkAllocationCallbacks* allocator) -> VkResult {
@@ -46,6 +50,7 @@ VKAPI_ATTR auto VKAPI_CALL debug_messenger::_debug_callback(VkDebugUtilsMessageS
     core::logger::warn("{}", callback_data->pMessage);
   } else if (message_severity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) {
     core::logger::error("{}", callback_data->pMessage);
+    std::terminate();
   }
 
   return VK_FALSE;

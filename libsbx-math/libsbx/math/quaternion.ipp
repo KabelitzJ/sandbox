@@ -1,363 +1,360 @@
-#include <cassert>
+#include <libsbx/math/quaternion.hpp>
+
 #include <cmath>
+#include <cassert>
+#include <iostream>
 
 #include <libsbx/utility/hash.hpp>
 
+#include <libsbx/math/angle.hpp>
+
 namespace sbx::math {
 
-template<std::floating_point Type>
-inline constexpr basic_quaternion<Type>::basic_quaternion() noexcept
-: x{static_cast<Type>(0)}, 
-  y{static_cast<Type>(0)},
-  z{static_cast<Type>(0)}, 
-  w{static_cast<Type>(1)} { }
+template<floating_point Type>
+template<floating_point Other>
+inline constexpr basic_quaternion<Type>::basic_quaternion(Other value) noexcept
+: _complex{value},
+  _scalar{static_cast<value_type>(value)} { }
 
-template<std::floating_point Type>
-inline constexpr basic_quaternion<Type>::basic_quaternion(const Type _x, const Type _y, const Type _z, const Type _w) noexcept
-: x{_x},
-  y{_y},
-  z{_z},
-  w{_w} { }
+template<floating_point Type>
+template<floating_point Complex, floating_point Scalar>
+inline constexpr basic_quaternion<Type>::basic_quaternion(const vector_type_for<Complex>& complex, Scalar scalar) noexcept
+: _complex{complex},
+  _scalar{static_cast<value_type>(scalar)} { }
 
-template<std::floating_point Type>
-inline constexpr basic_quaternion<Type>::basic_quaternion(const basic_vector3<Type>& axis, const basic_angle<Type>& a) noexcept {
-  const auto angle_in_radian = a.to_radians();
-
-  const auto sin_half_angle = std::sin(angle_in_radian * static_cast<Type>(0.5));
-  const auto cos_half_angle = std::cos(angle_in_radian * static_cast<Type>(0.5));
-
-  x = axis.x * sin_half_angle;
-  y = axis.y * sin_half_angle;
-  z = axis.z * sin_half_angle;
-  w = cos_half_angle;
+template<floating_point Type>
+template<floating_point Other>
+inline constexpr basic_quaternion<Type>::basic_quaternion(const vector_type_for<Other>& euler_angles) noexcept {
+  // [TODO]: Need to implement
 }
 
-template<std::floating_point Type>
-inline constexpr basic_quaternion<Type>::basic_quaternion(const basic_vector3<Type>& euler_angles) noexcept {
-  const auto c = basic_vector3<Type>{
-    std::cos(euler_angles.x * Type{0.5}),
-    std::cos(euler_angles.y * Type{0.5}),
-    std::cos(euler_angles.z * Type{0.5})
-  };
+template<floating_point Type>
+template<floating_point Other>
+inline constexpr basic_quaternion<Type>::basic_quaternion(Other x, Other y, Other z, Other w) noexcept
+: _complex{x, y, z},
+  _scalar{static_cast<value_type>(w)} { }
 
-  const auto s = basic_vector3<Type>{
-    std::sin(euler_angles.x * Type{0.5}),
-    std::sin(euler_angles.y * Type{0.5}),
-    std::sin(euler_angles.z * Type{0.5})
-  };
+template<floating_point Type>
+template<floating_point Complex, floating_point Scalar>
+inline constexpr basic_quaternion<Type>::basic_quaternion(const vector_type_for<Complex>& axis, const basic_angle<Scalar>& angle) noexcept {
+  const auto rangle_rad = angle.to_radians();
+  const auto norm_axis = vector_type_for<Complex>::normalized(axis);
 
-  x = s.x * c.y * c.z - c.x * s.y * s.z;
-  y = c.x * s.y * c.z + s.x * c.y * s.z;
-  z = c.x * c.y * s.z - s.x * s.y * c.z;
-  w = c.x * c.y * c.z + s.x * s.y * s.z;
+  const auto w = std::cos(rangle_rad.value() / static_cast<Scalar>(2));
+  const auto v = std::sin(rangle_rad.value() / static_cast<Scalar>(2));
+
+  _complex = norm_axis * v;
+  _scalar = w;
 }
 
-template<std::floating_point Type>
-template<std::floating_point Other>
-inline constexpr basic_quaternion<Type>::basic_quaternion(const basic_quaternion<Other>& other) noexcept
-: x{static_cast<Type>(other.x)},
-  y{static_cast<Type>(other.y)},
-  z{static_cast<Type>(other.z)},
-  w{static_cast<Type>(other.w)} { }
+template<floating_point Type>
+template<floating_point Other>
+inline constexpr basic_quaternion<Type>::basic_quaternion(const matrix_type_for<Other>& matrix) noexcept {
+  const auto four_x_squared_minus1 = matrix[0][0] - matrix[1][1] - matrix[2][2];
+  const auto four_y_squared_minus1 = matrix[1][1] - matrix[0][0] - matrix[2][2];
+  const auto four_z_squared_minus1 = matrix[2][2] - matrix[0][0] - matrix[1][1];
+  const auto four_w_squared_minus1 = matrix[0][0] + matrix[1][1] + matrix[2][2];
 
-template<std::floating_point Type>
-inline constexpr basic_quaternion<Type>::value_type basic_quaternion<Type>::dot(const basic_quaternion<Type>& lhs, const basic_quaternion<Type>& rhs) noexcept {
-  return (lhs.x * rhs.x + lhs.y * rhs.y) + (lhs.z * rhs.z + lhs.w * rhs.w);
-}
+  auto biggest_index = 0;
+  auto four_biggest_squared_minus1 = four_w_squared_minus1;
 
-template<std::floating_point Type>
-inline constexpr basic_quaternion<Type> basic_quaternion<Type>::normalized(const basic_quaternion<Type>& quat) noexcept {
-  const auto len = quat.length();
-
-  if (len <= static_cast<Type>(0)) {
-    return basic_quaternion<Type>{static_cast<Type>(0), static_cast<Type>(0), static_cast<Type>(0), static_cast<Type>(1)};
+  if (four_x_squared_minus1 > four_biggest_squared_minus1) {
+    four_biggest_squared_minus1 = four_x_squared_minus1;
+    biggest_index = 1;
   }
 
-  const auto one_over_len = static_cast<Type>(1) / len;
-
-  return basic_quaternion<Type>{quat.x * one_over_len, quat.y * one_over_len, quat.z * one_over_len, quat.w * one_over_len};
-}
-
-template<std::floating_point Type>
-inline constexpr basic_quaternion<Type> basic_quaternion<Type>::conjugated(const basic_quaternion<Type>& quat) noexcept {
-  return basic_quaternion<Type>{-quat.x, -quat.y, -quat.z, quat.w};
-}
-
-template<std::floating_point Type>
-inline constexpr basic_quaternion<Type> basic_quaternion<Type>::inverted(const basic_quaternion<Type>& quat) noexcept {
-  return conjugated(quat) / dot(quat, quat);
-}
-
-template<std::floating_point Type>
-inline constexpr basic_quaternion<Type> basic_quaternion<Type>::slerp(const basic_quaternion<Type>& lhs, const basic_quaternion<Type>& rhs, const Type factor) noexcept {
-  auto target = rhs;
-
-  auto cos_theta = dot(lhs, rhs);
-
-  // If cosTheta < 0, the interpolation will take the long way around the sphere.
-  // To fix this, one quat must be negated.
-  if(cos_theta < static_cast<Type>(0)) {
-    target = -target;
-    cos_theta = -cos_theta;
+  if (four_y_squared_minus1 > four_biggest_squared_minus1) {
+    four_biggest_squared_minus1 = four_y_squared_minus1;
+    biggest_index = 2;
   }
 
-  // Perform a linear interpolation when cosTheta is close to 1 to avoid side effect of sin(angle) becoming a zero denominator
-  if(cos_theta > static_cast<Type>(1) - std::numeric_limits<Type>::epsilon()) {
-    // Linear interpolation
-    return basic_quaternion<Type>{
-      lhs.x * (static_cast<Type>(1) - factor) + target.x * factor,
-      lhs.y * (static_cast<Type>(1) - factor) + target.y * factor,
-      lhs.z * (static_cast<Type>(1) - factor) + target.z * factor,
-      lhs.w * (static_cast<Type>(1) - factor) + target.w * factor,
-    };
+  if(four_z_squared_minus1 > four_biggest_squared_minus1) {
+    four_biggest_squared_minus1 = four_z_squared_minus1;
+    biggest_index = 3;
   }
 
-  // Essential Mathematics, page 467
-  const auto a = std::acos(cos_theta);
-  return (lhs * std::sin((static_cast<Type>(1) - factor) * a) + target * std::sin(factor * a)) / std::sin(a);
+  const auto biggest_val = std::sqrt(four_biggest_squared_minus1 + static_cast<Type>(1)) * static_cast<Type>(0.5);
+  const auto mult = static_cast<Type>(0.25) / biggest_val;
+
+  switch (biggest_index) {
+    case 0: {
+      *this = basic_quaternion<Type>{(matrix[1][2] - matrix[2][1]) * mult, (matrix[2][0] - matrix[0][2]) * mult, (matrix[0][1] - matrix[1][0]) * mult, biggest_val};
+      break;
+    }
+    case 1: {
+      *this = basic_quaternion<Type>{biggest_val, (matrix[0][1] + matrix[1][0]) * mult, (matrix[2][0] + matrix[0][2]) * mult, (matrix[1][2] - matrix[2][1]) * mult};
+      break;
+    }
+    case 2: {
+      *this = basic_quaternion<Type>{(matrix[0][1] + matrix[1][0]) * mult, biggest_val, (matrix[1][2] + matrix[2][1]) * mult, (matrix[2][0] - matrix[0][2]) * mult};
+      break;
+    }
+    case 3: {
+      *this = basic_quaternion<Type>{(matrix[2][0] + matrix[0][2]) * mult, (matrix[1][2] + matrix[2][1]) * mult, biggest_val, (matrix[0][1] - matrix[1][0]) * mult};
+      break;
+    }
+    default: {
+      assert(false);
+      *this = basic_quaternion<Type>::identity;
+      break;
+    }
+  }
 }
 
-template<std::floating_point Type>
-template<std::floating_point Other>
-inline constexpr basic_quaternion<Type>& basic_quaternion<Type>::operator=(const basic_quaternion<Other>& other) noexcept {
-  x = static_cast<Type>(other.x);
-  y = static_cast<Type>(other.y);
-  z = static_cast<Type>(other.z);
-  w = static_cast<Type>(other.w);
-
-  return *this;
-}
-
-template<std::floating_point Type>
-inline constexpr basic_quaternion<Type>::operator basic_matrix4x4<Type>() const noexcept {
+template<floating_point Type>
+inline constexpr basic_quaternion<Type>::operator matrix_type() const noexcept {
   return to_matrix();
 }
 
-template<std::floating_point Type>
-inline constexpr auto basic_quaternion<Type>::to_matrix() const noexcept -> basic_matrix4x4<Type> {
-  const auto xx = x * x;
-  const auto yy = y * y;
-  const auto zz = z * z;
-  const auto xz = x * z;
-  const auto xy = x * y;
-  const auto yz = y * z;
-  const auto wx = w * x;
-  const auto wy = w * y;
-  const auto wz = w * z;
+template<floating_point Type>
+constexpr auto basic_quaternion<Type>::to_matrix() const noexcept -> matrix_type {
+  auto matrix = matrix_type::identity;
 
-  auto result = basic_matrix4x4<Type>::identity;
+  const auto xx = _complex.x() * _complex.x();
+  const auto xy = _complex.x() * _complex.y();
+  const auto xz = _complex.x() * _complex.z();
+  const auto xw = _complex.x() * _scalar;
 
-  result[0][0] = Type{1} - Type{2} * (yy +  zz);
-  result[0][1] = Type{2} * (xy + wz);
-  result[0][2] = Type{2} * (xz - wy);
+  const auto yy = _complex.y() * _complex.y();
+  const auto yz = _complex.y() * _complex.z();
+  const auto yw = _complex.y() * _scalar;
 
-  result[1][0] = Type{2} * (xy - wz);
-  result[1][1] = Type{1} - Type{2} * (xx +  zz);
-  result[1][2] = Type{2} * (yz + wx);
+  const auto zz = _complex.z() * _complex.z();
+  const auto zw = _complex.z() * _scalar;
 
-  result[2][0] = Type{2} * (xz + wy);
-  result[2][1] = Type{2} * (yz - wx);
-  result[2][2] = Type{1} - Type{2} * (xx +  yy);
+  matrix[0][0] = 1 - 2 * (yy + zz);
+  matrix[0][1] = 2 * (xy - zw);
+  matrix[0][2] = 2 * (xz + yw);
 
-  return result;
+  matrix[1][0] = 2 * (xy + zw);
+  matrix[1][1] = 1 - 2 * (xx + zz);
+  matrix[1][2] = 2 * (yz - xw);
+
+  matrix[2][0] = 2 * (xz - yw);
+  matrix[2][1] = 2 * (yz + xw);
+  matrix[2][2] = 1 - 2 * (xx + yy);
+
+  return matrix;
 }
 
-template<std::floating_point Type>
-inline constexpr basic_quaternion<Type>& basic_quaternion<Type>::operator+=(const basic_quaternion<Type>& other) noexcept {
-  x += other.x;
-  y += other.y;
-  z += other.z;
-  w += other.w;
+template<floating_point Type>
+template<floating_point Other>
+inline constexpr auto basic_quaternion<Type>::operator+=(const basic_quaternion<Other>& other) noexcept -> basic_quaternion& {
+  _complex += other.complex();
+  _scalar += other.scalar();
 
   return *this;
 }
 
-template<std::floating_point Type>
-inline constexpr basic_quaternion<Type>& basic_quaternion<Type>::operator-=(const basic_quaternion<Type>& other) noexcept {
-  x -= other.x;
-  y -= other.y;
-  z -= other.z;
-  w -= other.w;
+template<floating_point Type>
+template<floating_point Other>
+inline constexpr auto basic_quaternion<Type>::operator-=(const basic_quaternion<Other>& other) noexcept -> basic_quaternion& {
+  _complex -= other.complex();
+  _scalar -= other.scalar();
 
   return *this;
 }
 
-template<std::floating_point Type>
-inline constexpr basic_quaternion<Type>& basic_quaternion<Type>::operator*=(const Type scalar) noexcept {
-  x *= scalar;
-  y *= scalar;
-  z *= scalar;
-  w *= scalar;
+template<floating_point Type>
+template<floating_point Other>
+inline constexpr auto basic_quaternion<Type>::operator*=(Other value) noexcept -> basic_quaternion& {
+  _complex *= value;
+  _scalar *= value;
 
   return *this;
 }
 
-template<std::floating_point Type>
-inline constexpr basic_quaternion<Type>& basic_quaternion<Type>::operator*=(const basic_quaternion<Type>& other) noexcept {
-  const auto p = basic_quaternion<Type>{*this};
-  const auto q = basic_quaternion<Type>{other};
+template<floating_point Type>
+template<floating_point Other>
+inline constexpr auto basic_quaternion<Type>::operator*=(const basic_quaternion<Other>& other) noexcept -> basic_quaternion& {
+  const auto scalar = _scalar * other.scalar() - vector_type::dot(_complex, other.complex());
+  const auto complex = _complex * other.scalar() + other.complex() * _scalar + vector_type::cross(_complex, other.complex());
 
-  x =   (p.x * q.w) + (p.y * q.z) - (p.z * q.y) + (p.w * q.x);
-  y =   (p.y * q.w) + (p.z * q.x) - (p.x * q.z) + (p.w * q.y);
-  z =   (p.z * q.w) + (p.x * q.y) - (p.y * q.x) + (p.w * q.z);
-  w = - (p.x * q.x) - (p.y * q.y) - (p.z * q.z) + (p.w * q.w);
+  _complex = complex;
+  _scalar = scalar;
 
   return *this;
 }
 
-template<std::floating_point Type>
-inline constexpr basic_quaternion<Type>& basic_quaternion<Type>::operator/=(const Type scalar) {
-  if (scalar == static_cast<Type>(0)) {
-    throw std::domain_error{"Division by zero"};
+template<floating_point Type>
+template<floating_point Other>
+inline constexpr auto basic_quaternion<Type>::operator/=(Other value) noexcept -> basic_quaternion& {
+  _complex /= value;
+  _scalar /= value;
+
+  return *this;
+}
+
+template<floating_point Type>
+inline constexpr auto basic_quaternion<Type>::x() noexcept -> reference {
+  return _complex.x();
+}
+
+template<floating_point Type>
+inline constexpr auto basic_quaternion<Type>::x() const noexcept -> const_reference {
+  return _complex.x();
+}
+
+template<floating_point Type>
+inline constexpr auto basic_quaternion<Type>::y() noexcept -> reference {
+  return _complex.y();
+}
+
+template<floating_point Type>
+inline constexpr auto basic_quaternion<Type>::y() const noexcept -> const_reference {
+  return _complex.y();
+}
+
+template<floating_point Type>
+inline constexpr auto basic_quaternion<Type>::z() noexcept -> reference {
+  return _complex.z();
+}
+
+template<floating_point Type>
+inline constexpr auto basic_quaternion<Type>::z() const noexcept -> const_reference {
+  return _complex.z();
+}
+
+template<floating_point Type>
+inline constexpr auto basic_quaternion<Type>::w() noexcept -> reference {
+  return _scalar;
+}
+
+template<floating_point Type>
+inline constexpr auto basic_quaternion<Type>::w() const noexcept -> const_reference {
+  return _scalar;
+}
+
+template<floating_point Type>
+inline constexpr auto basic_quaternion<Type>::complex() noexcept -> vector_type& {
+  return _complex;
+}
+
+template<floating_point Type>
+inline constexpr auto basic_quaternion<Type>::complex() const noexcept -> const vector_type& {
+  return _complex;
+}
+
+template<floating_point Type>
+inline constexpr auto basic_quaternion<Type>::scalar() noexcept -> reference {
+  return _scalar;
+}
+
+template<floating_point Type>
+inline constexpr auto basic_quaternion<Type>::scalar() const noexcept -> const_reference {
+  return _scalar;
+}
+
+template<floating_point Type>
+inline constexpr auto basic_quaternion<Type>::length_squared() const noexcept -> length_type {
+  return _complex.length_squared() + _scalar * _scalar;
+}
+
+template<floating_point Type>
+inline constexpr auto basic_quaternion<Type>::length() const noexcept -> length_type {
+  return std::sqrt(length_squared());
+}
+
+template<floating_point Type>
+inline constexpr auto basic_quaternion<Type>::normalize() noexcept -> basic_quaternion& {
+  const auto length_squared = this->length_squared();
+
+  if (!comparision_traits<length_type>::equal(length_squared, static_cast<length_type>(0))) {
+    *this /= std::sqrt(length_squared);
   }
 
   return *this;
 }
 
-template<std::floating_point Type>
-inline constexpr basic_quaternion<Type>::reference basic_quaternion<Type>::operator[](const index_type index) noexcept {
-  assert(index < 4);
-
-  switch (index) {
-    default:
-    case 0: {
-      return x;
-    }
-    case 1: {
-      return y;
-    }
-    case 2: {
-      return z;
-    }
-    case 3: {
-      return w;
-    }
-  }
+template<floating_point Lhs, floating_point Rhs>
+inline constexpr auto operator==(const basic_quaternion<Lhs>& lhs, const basic_quaternion<Rhs>& rhs) noexcept -> bool {
+  return lhs.complex() == rhs.complex() && comparision_traits<Lhs>::equal(lhs.scalar(), rhs.scalar());
 }
 
-template<std::floating_point Type>
-inline constexpr basic_quaternion<Type>::const_reference basic_quaternion<Type>::operator[](const index_type index) const noexcept {
-  assert(index < 4);
-
-  switch (index) {
-    default:
-    case 0: {
-      return x;
-    }
-    case 1: {
-      return y;
-    }
-    case 2: {
-      return z;
-    }
-    case 3: {
-      return w;
-    }
-  }
-}
-
-template<std::floating_point Type>
-inline constexpr basic_quaternion<Type>::pointer basic_quaternion<Type>::data() noexcept {
-  return &x;
-}
-
-template<std::floating_point Type>
-inline constexpr basic_quaternion<Type>::const_pointer basic_quaternion<Type>::data() const noexcept {
-  return &x;
-}
-
-template<std::floating_point Type>
-constexpr basic_quaternion<Type>::length_type basic_quaternion<Type>::length() const noexcept {
-  return std::sqrt(dot(*this, *this));
-}
-
-template<std::floating_point Type>
-constexpr basic_quaternion<Type>& basic_quaternion<Type>::normalize() noexcept {
-  const auto len = length();
-
-  if (len <= static_cast<Type>(0)) {
-    x = static_cast<Type>(0);
-    y = static_cast<Type>(0);
-    z = static_cast<Type>(0);
-    w = static_cast<Type>(1);
-  } else {
-    const auto one_over_len = static_cast<Type>(1) / len;
-
-    x *= one_over_len;
-    y *= one_over_len;
-    z *= one_over_len;
-    w *= one_over_len;
-  }
-
-  return *this;
-}
-
-template<std::floating_point Type>
-constexpr basic_quaternion<Type>& basic_quaternion<Type>::conjugate() noexcept {
-  x *= static_cast<Type>(-1);
-  y *= static_cast<Type>(-1);
-  z *= static_cast<Type>(-1);
-
-  return *this;
-}
-
-template<std::floating_point Type>
-inline constexpr bool operator==(const basic_quaternion<Type>& lhs, const basic_quaternion<Type>& rhs) noexcept {
-  return lhs.x == rhs.x && lhs.y == rhs.y && lhs.z == rhs.z && lhs.w == rhs.w;
-}
-
-template<std::floating_point Type>
-inline constexpr basic_quaternion<Type> operator+(basic_quaternion<Type> quat) noexcept {
-  return quat;
-}
-
-template<std::floating_point Type>
-inline constexpr basic_quaternion<Type> operator-(basic_quaternion<Type> quat) noexcept {
-  return basic_quaternion<Type>{-quat.x, -quat.y, -quat.z, -quat.w};
-}
-
-template<std::floating_point Type>
-inline constexpr basic_quaternion<Type> operator+(basic_quaternion<Type> lhs, const basic_quaternion<Type>& rhs) noexcept {
+template<floating_point Lhs, floating_point Rhs>
+inline constexpr auto operator+(basic_quaternion<Lhs> lhs, const basic_quaternion<Rhs>& rhs) noexcept -> basic_quaternion<Lhs> {
   return lhs += rhs;
 }
 
-template<std::floating_point Type>
-inline constexpr basic_quaternion<Type> operator-(basic_quaternion<Type> lhs, const basic_quaternion<Type>& rhs) noexcept {
-  return lhs -= lhs;
+template<floating_point Lhs, floating_point Rhs>
+inline constexpr auto operator-(basic_quaternion<Lhs> lhs, const basic_quaternion<Rhs>& rhs) noexcept -> basic_quaternion<Lhs> {
+  return lhs -= rhs;
 }
 
-template<std::floating_point Type>
-inline constexpr basic_quaternion<Type> operator*(basic_quaternion<Type> lhs, const Type rhs) noexcept {
+template<floating_point Type>
+inline constexpr auto operator-(basic_quaternion<Type> quat) noexcept -> basic_quaternion<Type> {
+  return basic_quaternion<Type>{-quat.complex(), -quat.scalar()};
+}
+
+template<floating_point Lhs, floating_point Rhs>
+inline constexpr auto operator*(basic_quaternion<Lhs> lhs, Rhs scalar) noexcept -> basic_quaternion<Lhs> {
+  return lhs *= scalar;
+}
+
+template<floating_point Lhs, floating_point Rhs>
+inline constexpr auto operator*(basic_quaternion<Lhs> lhs, const basic_quaternion<Rhs>& rhs) noexcept -> basic_quaternion<Lhs> {
   return lhs *= rhs;
 }
 
-template<std::floating_point Type>
-inline constexpr basic_quaternion<Type> operator*(basic_quaternion<Type> lhs, const basic_quaternion<Type>& rhs) noexcept {
-  return lhs *= rhs;
-}
-
-template<std::floating_point Type>
-[[nodiscard]] constexpr basic_vector3<Type> operator*(basic_quaternion<Type> lhs, const basic_vector3<Type>& rhs) noexcept {
-  const auto v = basic_vector3<Type>{lhs.x, lhs.y, lhs.z};
-  const auto u = basic_vector3<Type>::cross(v, rhs);
-  const auto w = basic_vector3<Type>::cross(v, u);
-
-  return rhs + ((u * lhs.w) + w) * static_cast<Type>(2);
-}
-
-template<std::floating_point Type>
-inline constexpr basic_quaternion<Type> operator/(basic_quaternion<Type> lhs, const Type rhs) {
-  return lhs /= rhs;
+template<floating_point Lhs, floating_point Rhs>
+inline constexpr auto operator/(basic_quaternion<Lhs> lhs, Rhs scalar) noexcept -> basic_quaternion<Lhs> {
+  return lhs /= scalar;
 }
 
 } // namespace sbx::math
 
-template<std::floating_point Type>
-std::size_t std::hash<sbx::math::basic_quaternion<Type>>::operator()(const sbx::math::basic_quaternion<Type>& quat) const noexcept {
+template<sbx::math::floating_point Type>
+inline auto std::hash<sbx::math::basic_quaternion<Type>>::operator()(const sbx::math::basic_quaternion<Type>& quat) const noexcept -> std::size_t {
   auto seed = std::size_t{0};
-  sbx::utility::hash_combine(seed, quat.x);
-  sbx::utility::hash_combine(seed, quat.y);
-  sbx::utility::hash_combine(seed, quat.z);
+
+  sbx::utility::hash_combine(seed, quat.x());
+  sbx::utility::hash_combine(seed, quat.y());
+  sbx::utility::hash_combine(seed, quat.z());
   sbx::utility::hash_combine(seed, quat.w);
+
   return seed;
+}
+
+template<sbx::math::floating_point Type>
+auto YAML::convert<sbx::math::basic_quaternion<Type>>::decode(const Node& node, sbx::math::basic_quaternion<Type>& quat) -> bool {
+  if (!node.IsSequence() || node.size() != 4) {
+    return false;
+  }
+
+  quat.x() = node[0].as<Type>();
+  quat.y() = node[1].as<Type>();
+  quat.z() = node[2].as<Type>();
+  quat.w() = node[3].as<Type>();
+
+  return true;
+}
+
+template<sbx::math::floating_point Type>
+auto YAML::convert<sbx::math::basic_quaternion<Type>>::encode(const sbx::math::basic_quaternion<Type>& quat) -> Node {
+  auto node = Node{};
+
+  node.SetStyle(YAML::EmitterStyle::Flow);
+
+  node["x"] = quat.x();
+  node["y"] = quat.y();
+  node["z"] = quat.z();
+  node["w"] = quat.w();
+
+  return node;
+}
+
+template<sbx::math::floating_point Type>
+template<typename ParseContext>
+inline constexpr auto fmt::formatter<sbx::math::basic_quaternion<Type>>::parse(ParseContext& context) -> decltype(context.begin()) {
+  return context.begin();
+}
+
+template<sbx::math::floating_point Type>
+template<typename FormatContext>
+inline auto fmt::formatter<sbx::math::basic_quaternion<Type>>::format(const sbx::math::basic_quaternion<Type>& quat, FormatContext& context) -> decltype(context.out()) {
+  if constexpr (sbx::math::is_floating_point_v<Type>) {
+    return fmt::format_to(context.out(), "{{x: {:.2f}, y: {:.2f}, z: {:.2f}, w: {:.2f}}}", quat.x(), quat.y(), quat.z(), quat.w());
+  } else {
+    return fmt::format_to(context.out(), "{{x: {}, y: {}, z: {}, w: {}}}", quat.x(), quat.y(), quat.z(), quat.w());
+  }
 }

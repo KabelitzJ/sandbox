@@ -2,6 +2,10 @@ project(graphics VERSION 0.1.0 LANGUAGES CXX)
 
 message(STATUS "Configuring ${PROJECT_NAME}...")
 
+string(TOUPPER ${PROJECT_NAME} PROJECT_NAME_UPPER)
+
+configure_file("${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/version.hpp.in" "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/version.hpp" @ONLY)
+
 if(${SBX_BUILD_SHARED})
   add_library(${PROJECT_NAME} SHARED)
 else()
@@ -14,6 +18,9 @@ find_package(Vulkan REQUIRED)
 find_package(SPIRV-Headers REQUIRED)
 find_package(spirv-cross REQUIRED)
 find_package(stb REQUIRED)
+find_package(range-v3 REQUIRED)
+find_package(fmt REQUIRED)
+find_package(vulkan-memory-allocator REQUIRED)
 
 option(GLFW_BUILD_EXAMPLES "Build the GLFW example programs" OFF)
 option(GLFW_BUILD_TESTS "Build the GLFW test programs" OFF)
@@ -73,8 +80,9 @@ target_sources(
       "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/devices/surface.hpp"
       "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/devices/validation_layers.hpp"
       "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/images/image.hpp"
-      "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/images/depth_image.hpp"
       "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/images/image2d.hpp"
+      "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/images/depth_image.hpp"
+      "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/images/separate_sampler.hpp"
       "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/pipeline/graphics_pipeline.hpp"
       "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/pipeline/graphics_pipeline.ipp"
       "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/pipeline/pipeline.hpp"
@@ -111,12 +119,14 @@ target_link_libraries(
     spirv-cross-reflect
     spirv-cross-glsl
     stb::stb
+    range-v3::range-v3
+    fmt::fmt
+    vulkan-memory-allocator::vulkan-memory-allocator
     # Internal dependencies
     libsbx::utility
     libsbx::io
     libsbx::math
     libsbx::core
-    libsbx::assets
     libsbx::devices
 )
 
@@ -127,6 +137,12 @@ set_target_properties(
     LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
     POSITION_INDEPENDENT_CODE ON
+)
+
+target_compile_definitions(
+  ${PROJECT_NAME}
+  PRIVATE
+    SBX_CONSTEXPR_ENABLED=${SBX_CONSTEXPR_ENABLED}
 )
 
 target_compile_definitions(

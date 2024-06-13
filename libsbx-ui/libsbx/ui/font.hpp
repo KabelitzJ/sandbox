@@ -6,8 +6,6 @@
 
 #include <libsbx/utility/primitive.hpp>
 
-#include <libsbx/assets/asset.hpp>
-
 #include <libsbx/math/vector2.hpp>
 
 #include <libsbx/graphics/images/image2d.hpp>
@@ -16,15 +14,9 @@
 
 namespace sbx::ui {
 
-struct pixels : utility::primitive<std::uint32_t> {
+using pixels = utility::primitive<std::uint32_t, "px">;
 
-  using super = utility::primitive<std::uint32_t>;
-
-  using super::super;
-
-}; // struct pixels
-
-class font : public assets::asset<assets::asset_type::font> {
+class font {
 
 public:
 
@@ -38,7 +30,7 @@ public:
 
   font(const std::filesystem::path& path, pixels height = pixels{32u});
 
-  ~font() override;
+  ~font();
 
   auto glyph(char character) const noexcept -> const glyph_info&;
 

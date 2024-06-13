@@ -9,12 +9,15 @@
 
 #include <libsbx/utility/timer.hpp>
 
-#include <libsbx/assets/assets_module.hpp>
-
 #include <libsbx/graphics/graphics_module.hpp>
 
 #include <libsbx/graphics/buffers/uniform_buffer.hpp>
 #include <libsbx/graphics/buffers/storage_buffer.hpp>
+
+#include <libsbx/graphics/images/image2d.hpp>
+#include <libsbx/graphics/images/image2d_array.hpp>
+#include <libsbx/graphics/images/separate_sampler.hpp>
+#include <libsbx/graphics/images/separate_image2d_array.hpp>
 
 #include <libsbx/graphics/render_pass/swapchain.hpp>
 
@@ -24,22 +27,19 @@ template<vertex Vertex>
 graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, const pipeline::stage& stage, const pipeline_definition& definition)
 : _bind_point{VK_PIPELINE_BIND_POINT_GRAPHICS},
   _stage{stage} {
-  auto& assets_module = core::engine::get_module<assets::assets_module>();
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
   const auto& logical_device = graphics_module.logical_device();
   const auto& render_stage = graphics_module.render_stage(stage);
 
-  const auto actual_path = assets_module.asset_path(path);
-
   auto timer = utility::timer{};
 
-  _name = actual_path.filename().string();
+  _name = path.filename().string();
 
-  const auto binary_path = actual_path / "bin";
+  const auto binary_path = path / "bin";
 
   if (!std::filesystem::exists(binary_path) && !std::filesystem::is_directory(binary_path)) {
-    throw std::runtime_error{"Path does not exist"};
+    throw std::runtime_error{fmt::format("Path '{}' does not exist", binary_path.string())};
   }
 
   for (const auto& entry : std::filesystem::directory_iterator(binary_path)) {
@@ -96,33 +96,25 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
   }
 
   auto descriptor_set_layout_bindings = std::vector<VkDescriptorSetLayoutBinding>{};
-  auto descriptor_pool_sizes_by_type = std::map<VkDescriptorType, std::uint32_t>{};
 
   for (const auto& [name, uniform_block] : _uniform_blocks) {
-    auto descriptor_type = VK_DESCRIPTOR_TYPE_MAX_ENUM;
-
     switch (uniform_block.buffer_type()) {
       case shader::uniform_block::type::uniform: {
-        descriptor_type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        descriptor_set_layout_bindings.push_back(uniform_buffer::create_descriptor_set_layout_binding(uniform_block.binding(), descriptor_type, uniform_block.stage_flags()));
+        descriptor_set_layout_bindings.push_back(uniform_buffer::create_descriptor_set_layout_binding(uniform_block.binding(), VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, uniform_block.stage_flags()));
         break;
       }
       case shader::uniform_block::type::storage: {
-        descriptor_type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-        descriptor_set_layout_bindings.push_back(storage_buffer::create_descriptor_set_layout_binding(uniform_block.binding(), descriptor_type, uniform_block.stage_flags()));
+        descriptor_set_layout_bindings.push_back(storage_buffer::create_descriptor_set_layout_binding(uniform_block.binding(), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, uniform_block.stage_flags()));
         break;
       }
       case shader::uniform_block::type::push: {
-        // [NOTE] KAJ 2023-10-17 : Push constants do not require a descriptor set layout binding
+        // [NOTE] KAJ 2024-01-19 : We dont need descriptor sets for push constants but we still want to add them the the bindings and sizes
         break;
       }
       default: {
-        throw std::runtime_error{"Unknown uniform block type"};
+        core::logger::warn("Unsupported uniform block type (sbx::graphics::shader::uniform_block::type): {}", uniform_block.buffer_type());
+        continue;
       }
-    }
-
-    if (descriptor_type != VK_DESCRIPTOR_TYPE_MAX_ENUM) {
-      descriptor_pool_sizes_by_type[descriptor_type] += swapchain::max_frames_in_flight; // ??? 3 ???
     }
 
     _descriptor_bindings.insert({name, uniform_block.binding()});
@@ -130,14 +122,40 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
   }
 
   for (const auto& [name, uniform] : _uniforms) {
-    if (uniform.type() == shader::data_type::sampler2d) {
-      // const auto descriptor_type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-
-      descriptor_set_layout_bindings.push_back(image::create_descriptor_set_layout_binding(uniform.binding(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, uniform.stage_flags()));
-      // descriptor_pool_sizes_by_type[descriptor_type] += swapchain::max_frames_in_flight; // ??? 3 ???
-
-      _descriptor_bindings.insert({name, uniform.binding()});
+    switch (uniform.type()) {
+      case shader::data_type::sampler2d: {
+        descriptor_set_layout_bindings.push_back(image::create_descriptor_set_layout_binding(uniform.binding(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, uniform.stage_flags()));
+        break;
+      }
+      case shader::data_type::sampler2d_array: {
+        descriptor_set_layout_bindings.push_back(image2d_array::create_descriptor_set_layout_binding(uniform.binding(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, uniform.stage_flags()));
+        break;
+      }
+      case shader::data_type::separate_sampler: {
+        descriptor_set_layout_bindings.push_back(separate_sampler::create_descriptor_set_layout_binding(uniform.binding(), VK_DESCRIPTOR_TYPE_SAMPLER, uniform.stage_flags()));
+        break;
+      }
+      case shader::data_type::separate_image2d_array: {
+        descriptor_set_layout_bindings.push_back(separate_image2d_array::create_descriptor_set_layout_binding(uniform.binding(), VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, uniform.stage_flags()));
+        _has_variable_descriptors = true;
+        break;
+      }
+      case shader::data_type::storage_image: {
+        descriptor_set_layout_bindings.push_back(image::create_descriptor_set_layout_binding(uniform.binding(), VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, uniform.stage_flags()));
+        break;
+      }
+      case shader::data_type::subpass_input: {
+        descriptor_set_layout_bindings.push_back(image::create_descriptor_set_layout_binding(uniform.binding(), VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, uniform.stage_flags()));
+        break;
+      }
+      default: {
+        core::logger::warn("Unsupported uniform type (sbx::graphics::shader::data_type): {}", uniform.type());
+        continue;
+      }
     }
+
+    _descriptor_bindings.insert({name, uniform.binding()});
+    _descriptor_sizes.insert({name, uniform.size()});
   }
 
   std::ranges::sort(descriptor_set_layout_bindings, [](const auto& lhs, const auto& rhs) {
@@ -148,15 +166,9 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
     _descriptor_type_at_binding.insert({descriptor.binding, descriptor.descriptorType});
   }
 
-  // auto descriptor_pool_sizes = std::vector<VkDescriptorPoolSize>{};
-
-  // for (const auto& [type, count] : descriptor_pool_sizes_by_type) {
-  //   auto pool_size = VkDescriptorPoolSize{};
-  //   pool_size.type = type;
-  //   pool_size.descriptorCount = count;
-
-  //   descriptor_pool_sizes.push_back(pool_size);
-  // }
+  for (const auto& descriptor : descriptor_set_layout_bindings) {
+    _descriptor_count_at_binding.insert({descriptor.binding, descriptor.descriptorCount});
+  }
 
   auto viewport_state = VkPipelineViewportStateCreateInfo{};
   viewport_state.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -213,13 +225,16 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
     color_blend_attachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
   }
 
+  auto color_blend_attachments = std::vector<VkPipelineColorBlendAttachmentState>{render_stage.attachment_count(_stage.subpass), color_blend_attachment};
+
+  core::logger::debug("color_blend_attachments: {}", color_blend_attachments.size());
 
   auto color_blend_state = VkPipelineColorBlendStateCreateInfo{};
   color_blend_state.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
   color_blend_state.logicOpEnable = false;
   color_blend_state.logicOp = VK_LOGIC_OP_COPY;
-  color_blend_state.attachmentCount = 1;
-  color_blend_state.pAttachments = &color_blend_attachment;
+  color_blend_state.attachmentCount = static_cast<std::uint32_t>(color_blend_attachments.size());
+  color_blend_state.pAttachments = color_blend_attachments.data();
   color_blend_state.blendConstants[0] = 0.0f;
   color_blend_state.blendConstants[1] = 0.0f;
   color_blend_state.blendConstants[2] = 0.0f;
@@ -257,17 +272,33 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
   auto vertex_input_state = VkPipelineVertexInputStateCreateInfo{};
   vertex_input_state.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
   vertex_input_state.vertexBindingDescriptionCount = static_cast<std::uint32_t>(binding_descriptions.size());
-  vertex_input_state.pVertexBindingDescriptions = binding_descriptions.data();
+  vertex_input_state.pVertexBindingDescriptions = (vertex_input_state.vertexBindingDescriptionCount > 0u) ? binding_descriptions.data() : nullptr;
   vertex_input_state.vertexAttributeDescriptionCount = static_cast<std::uint32_t>(attribute_descriptions.size());
-  vertex_input_state.pVertexAttributeDescriptions = attribute_descriptions.data();
+  vertex_input_state.pVertexAttributeDescriptions = (vertex_input_state.vertexAttributeDescriptionCount > 0u) ? attribute_descriptions.data() : nullptr;
 
   auto input_assembly_state = VkPipelineInputAssemblyStateCreateInfo{};
   input_assembly_state.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
   input_assembly_state.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
   input_assembly_state.primitiveRestartEnable = false;
 
+  auto binding_flags = std::vector<VkDescriptorBindingFlags>{};
+
+  for (const auto& descriptor_set_layout_binding : descriptor_set_layout_bindings) {
+    if (descriptor_set_layout_binding.descriptorCount > 1u) {
+      binding_flags.push_back(VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT | VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT);
+    } else {
+      binding_flags.push_back(0u);
+    }
+  }
+
+  auto descriptor_set_layout_binding_flags_create_info = VkDescriptorSetLayoutBindingFlagsCreateInfo{};
+  descriptor_set_layout_binding_flags_create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
+  descriptor_set_layout_binding_flags_create_info.bindingCount = static_cast<std::uint32_t>(binding_flags.size());
+  descriptor_set_layout_binding_flags_create_info.pBindingFlags = binding_flags.data();
+
   auto descriptor_set_layout_create_info = VkDescriptorSetLayoutCreateInfo{};
   descriptor_set_layout_create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+  descriptor_set_layout_create_info.pNext = &descriptor_set_layout_binding_flags_create_info;
   descriptor_set_layout_create_info.bindingCount = static_cast<std::uint32_t>(descriptor_set_layout_bindings.size());
   descriptor_set_layout_create_info.pBindings = descriptor_set_layout_bindings.data();
 
@@ -276,11 +307,14 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
   // [NOTE] KAJ 2023-09-13 : Workaround
   auto descriptor_pool_sizes = std::vector<VkDescriptorPoolSize>{
     VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 4096},
+    VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_SAMPLER, 2048},
+    VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 2048},
     VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 2048},
     VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 2048},
     VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 2048},
     VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 2048},
-    VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 2048}
+    VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 2048},
+    VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT , 2048}
   };
 
   auto descriptor_pool_create_info = VkDescriptorPoolCreateInfo{};

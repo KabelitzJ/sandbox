@@ -15,7 +15,7 @@ public:
 
   static constexpr auto max_frames_in_flight = std::uint32_t{2};
 
-  swapchain(const VkExtent2D& extent, const std::unique_ptr<swapchain>& old_swapchain = nullptr);
+  swapchain(const std::unique_ptr<swapchain>& old_swapchain = nullptr);
 
   ~swapchain();
 
@@ -24,6 +24,10 @@ public:
   operator const VkSwapchainKHR&() const noexcept;
 
   auto extent() const noexcept -> const VkExtent2D&;
+
+  auto is_outdated(const VkExtent2D& extent) const noexcept -> bool {
+    return _extent.width != extent.width || _extent.height != extent.height;
+  }
 
   auto active_image_index() const noexcept -> std::uint32_t;
 

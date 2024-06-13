@@ -11,6 +11,8 @@
 
 #include <range/v3/all.hpp>
 
+#include <yaml-cpp/yaml.h>
+
 #include <libsbx/ecs/registry.hpp>
 #include <libsbx/ecs/entity.hpp>
 
@@ -19,8 +21,6 @@
 
 #include <libsbx/core/logger.hpp>
 #include <libsbx/core/engine.hpp>
-
-#include <libsbx/assets/assets_module.hpp>
 
 #include <libsbx/signals/signal.hpp>
 
@@ -39,10 +39,6 @@ public:
 
   scene();
 
-  scene(const std::filesystem::path& path);
-
-  auto start() -> void;
-
   auto create_child_node(node& parent, const std::string& tag = "", const math::transform& transform = math::transform{}) -> node;
 
   auto create_node(const std::string& tag = "", const math::transform& transform = math::transform{}) -> node;  
@@ -58,14 +54,26 @@ public:
   template<typename... Components>
   auto query() -> std::vector<node> {
     auto view = _registry.create_view<Components...>();
-
-    auto to_node = std::views::transform([&](auto& entity) { return node{&_registry, entity}; });
-
-    return view | to_node | ranges::to<std::vector>();
+     
+    return view 
+      | ranges::views::transform([&](auto& entity) { return node{&_registry, entity}; })
+      | ranges::to<std::vector>();
   }
 
   auto light() -> directional_light& {
     return _light;
+  }
+
+  auto wind_speed() const -> std::float_t {
+    return _wind_speed;
+  }
+
+  auto find_node(const math::uuid& id) -> std::optional<node> {
+    if (auto entry = _nodes.find(id); entry != _nodes.end()) {
+      return entry->second;
+    } 
+      
+    return std::nullopt;
   }
 
 private:
@@ -87,6 +95,7 @@ private:
   node _camera;
 
   directional_light _light;
+  std::float_t _wind_speed;
 
 }; // class scene
 

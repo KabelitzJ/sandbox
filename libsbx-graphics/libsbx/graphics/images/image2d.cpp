@@ -16,7 +16,7 @@
 namespace sbx::graphics {
 
 image2d::image2d(const math::vector2u& extent, VkFormat format, VkImageLayout layout, VkImageUsageFlags usage, VkFilter filter, VkSamplerAddressMode address_mode, VkSampleCountFlagBits samples, bool anisotropic, bool mipmap)
-: image{VkExtent3D{extent.x, extent.y, 1}, filter, address_mode, samples, layout, (usage | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT), format, 1, 1},
+: image{VkExtent3D{extent.x(), extent.y(), 1}, filter, address_mode, samples, layout, (usage | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT), format, 1, 1},
   _anisotropic{anisotropic},
   _mipmap{mipmap} {
   _load();
@@ -31,17 +31,14 @@ image2d::image2d(const std::filesystem::path& path, VkFilter filter, VkSamplerAd
   _load();
 }
 
-image2d::~image2d() {
-  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
-
-  const auto& logical_device = graphics_module.logical_device();
-  
-  logical_device.wait_idle();
+image2d::image2d(const math::vector2u& extent, VkFormat format , memory::observer_ptr<const std::uint8_t> pixels)
+: image2d{extent, format} {
+  set_pixels(pixels);
 }
 
 auto image2d::set_pixels(memory::observer_ptr<const std::uint8_t> pixels) -> void {
   auto buffer_size = _extent.width * _extent.height * _channels;
-  auto staging_buffer = graphics::buffer{buffer_size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, pixels.get()};
+  auto staging_buffer = graphics::staging_buffer{std::span{pixels.get(), buffer_size}};
 
   transition_image_layout(_handle, _format, _layout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_ASPECT_COLOR_BIT, _mip_levels, 0, _array_layers, 0);
 
@@ -123,7 +120,7 @@ auto image2d::_load() -> void {
   if (data) {
     // [NOTE] KAJ 2023-07-28 : Since we loaded the image with STBI_rgb_alpha, we need to multiply the buffer size by 4.
     auto buffer_size = _extent.width * _extent.height * 4;
-    auto staging_buffer = buffer{buffer_size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, data};
+    auto staging_buffer = graphics::staging_buffer{std::span{data, buffer_size}};
 
     copy_buffer_to_image(staging_buffer, _handle, _extent, _array_layers, 0);
 

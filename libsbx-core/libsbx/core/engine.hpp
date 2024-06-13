@@ -5,7 +5,7 @@
 #include <vector>
 #include <typeindex>
 #include <memory>
-#include <vector>
+#include <span>
 #include <string_view>
 #include <cmath>
 #include <chrono>
@@ -32,8 +32,8 @@ class engine : public utility::noncopyable {
 
 public:
 
-  engine(std::vector<std::string_view>&& args)
-  : _cli{std::move(args)} {
+  engine(std::span<std::string_view> args)
+  : _cli{args} {
     utility::assert_that(_instance == nullptr, "Engine already exists.");
 
     _instance = this;
@@ -53,6 +53,10 @@ public:
 
   static auto delta_time() -> units::second {
     return _instance->_delta_time;
+  }
+
+  static auto time() -> units::second {
+    return _instance->_time;
   }
 
   static auto quit() -> void {
@@ -94,6 +98,7 @@ public:
       application->update();
 
       _instance->_delta_time = units::second{delta_time};
+      _instance->_time += _instance->_delta_time;
 
       _update_stage(stage::always);
 
@@ -131,8 +136,8 @@ private:
       _destroy_module(dependency);
     }
 
-    auto* module = _modules.at(type);
-    std::invoke(factory.destroy, module);
+    auto* module_instance = _modules.at(type);
+    std::invoke(factory.destroy, module_instance);
     _modules.at(type) = nullptr;
   }
 
@@ -147,6 +152,7 @@ private:
   static engine* _instance;
 
   units::second _delta_time;
+  units::second _time;
 
   bool _is_running{};
   // std::vector<std::string_view> _args{};

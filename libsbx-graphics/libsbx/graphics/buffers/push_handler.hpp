@@ -4,6 +4,7 @@
 #include <cinttypes>
 #include <optional>
 #include <memory>
+#include <concepts>
 
 #include <libsbx/graphics/pipeline/shader.hpp>
 #include <libsbx/graphics/pipeline/pipeline.hpp>

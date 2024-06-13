@@ -141,16 +141,82 @@ auto shader::_create_reflection(const spirv_cross::Compiler& compiler) -> void {
     _uniform_blocks.insert({storage_buffer_name, buffer});
   }
 
-  // Reflection for images
+  // Reflection for image samplers
   for (const auto& image_sampler : resources.sampled_images) {
     const auto& type = compiler.get_type(image_sampler.type_id);
 
     const auto& name = image_sampler.name;
     const auto binding = compiler.get_decoration(image_sampler.id, spv::DecorationBinding);
 
-    auto image = uniform{binding, 0, 0, data_type::sampler2d, false, false, _stage};
+    if (type.array.size() == 0u) {
+      core::logger::debug("image sampler: '{}' binding: {}", name, binding);
 
-    core::logger::debug("image sampler: '{}' binding: {}", name, binding);
+      auto image = uniform{binding, 0, 0, data_type::sampler2d, false, false, _stage};
+
+      _uniforms.insert({name, image});
+    } else if (type.array.size() == 1u) {
+      core::logger::debug("image sampler[{}]: '{}' binding: {}", type.array[0], name, binding);
+
+      auto image = uniform{binding, 0, 32u, data_type::sampler2d_array, false, false, _stage};
+
+      _uniforms.insert({name, image});
+    }
+  }
+
+  for (const auto& separate_image : resources.separate_images) {
+    const auto& type = compiler.get_type(separate_image.type_id);
+
+    const auto& name = separate_image.name;
+    const auto binding = compiler.get_decoration(separate_image.id, spv::DecorationBinding);
+
+    if (type.array.size() == 0u) {
+      core::logger::debug("separate image: '{}' binding: {}", name, binding);
+
+      auto image = uniform{binding, 0, 0, data_type::separate_image2d, false, false, _stage};
+
+      _uniforms.insert({name, image});
+    } else if (type.array.size() == 1u) {
+      core::logger::debug("separate image[{}]: '{}' binding: {}", type.array[0], name, binding);
+
+      auto image = uniform{binding, 0, 32u, data_type::separate_image2d_array, false, false, _stage};
+
+      _uniforms.insert({name, image});
+    }
+  }
+
+  for (const auto& separate_sampler : resources.separate_samplers) {
+    const auto& name = separate_sampler.name;
+    const auto binding = compiler.get_decoration(separate_sampler.id, spv::DecorationBinding);
+
+    auto sampler = uniform{binding, 0, 0, data_type::separate_sampler, false, false, _stage};
+
+    core::logger::debug("separate sampler: '{}' binding: {}", name, binding);
+
+    _uniforms.insert({name, sampler});
+  }
+
+  // Reflection for storage images
+  for (const auto& storage_image : resources.storage_images) {
+    const auto& name = storage_image.name;
+    const auto binding = compiler.get_decoration(storage_image.id, spv::DecorationBinding);
+    const auto is_readonly = compiler.get_decoration(storage_image.id, spv::DecorationNonWritable) == 1;
+    const auto is_writeonly = compiler.get_decoration(storage_image.id, spv::DecorationNonReadable) == 1;
+
+    auto image = uniform{binding, 0, 0, data_type::storage_image, is_readonly, is_writeonly, _stage};
+
+    core::logger::debug("storage image: '{}' binding: {} readonly: {} writeonly: {}", name, binding, is_readonly, is_writeonly);
+
+    _uniforms.insert({name, image});
+  }
+
+  // Reflection for subpass inputs
+  for (const auto& storage_image : resources.subpass_inputs) {
+    const auto& name = storage_image.name;
+    const auto binding = compiler.get_decoration(storage_image.id, spv::DecorationBinding);
+
+    auto image = uniform{binding, 0, 0, data_type::subpass_input, true, false, _stage};
+
+    core::logger::debug("storage image: '{}' binding: {}", name, binding);
 
     _uniforms.insert({name, image});
   }
@@ -250,7 +316,23 @@ auto shader::_get_data_type(const spirv_cross::SPIRType& type) -> data_type {
       return data_type::unknown;
     }
   } else if (type.basetype == spirv_cross::SPIRType::SampledImage) {
-    return data_type::sampler2d;
+    if (type.array.size() == 0u) {
+      return data_type::sampler2d;
+    } else if (type.array.size() == 1u) {
+      return data_type::sampler2d_array;
+    } else {
+      return data_type::unknown;
+    }
+  } else if (type.basetype == spirv_cross::SPIRType::Image) {
+    if (type.array.size() == 0u) {
+      return data_type::separate_image2d;
+    } else if (type.array.size() == 1u) {
+      return data_type::separate_image2d_array;
+    } else {
+      return data_type::unknown;
+    }
+  } else if (type.basetype == spirv_cross::SPIRType::Sampler) {
+    return data_type::separate_sampler;
   } else if (type.basetype == spirv_cross::SPIRType::Struct) {
     return data_type::structure;
   }
@@ -283,6 +365,10 @@ auto shader::_data_type_to_string(data_type type) -> std::string {
     case data_type::imat4: return "imat4";
     case data_type::umat4: return "umat4";
     case data_type::sampler2d: return "sampler2d";
+    case data_type::sampler2d_array: return "sampler2d_array";
+    case data_type::separate_sampler: return "separate_sampler";
+    case data_type::separate_image2d: return "separate_image2d";
+    case data_type::separate_image2d_array: return "separate_image2d_array";
     case data_type::structure: return "structure";
     case data_type::unknown:
     default: return "unknown";

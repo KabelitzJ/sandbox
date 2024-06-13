@@ -80,21 +80,21 @@ class zipper {
 
 public:
 
-  using zip_type = zip_iterator<select_iterator_for<Containers>...>;
+  using iterator = zip_iterator<select_iterator_for<Containers>...>;
 
   template<typename... Args>
   zipper(Args&&... containers)
   : _containers{std::forward<Args>(containers)...} { }
 
-  auto begin() -> zip_type {
+  auto begin() -> iterator {
     return std::apply([](auto&& ... containers){ 
-      return zip_type(std::begin(containers)...); 
+      return iterator(std::begin(containers)...); 
     }, _containers);
   }
 
-  auto end() -> zip_type {
+  auto end() -> iterator {
     return std::apply([](auto&& ... containers){ 
-      return zip_type(std::end(containers)...); 
+      return iterator(std::end(containers)...); 
     }, _containers);
   }
 

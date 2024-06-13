@@ -13,15 +13,12 @@
 #include <libsbx/devices/devices_module.hpp>
 #include <libsbx/devices/window.hpp>
 
-#include <libsbx/assets/assets_module.hpp>
-
 #include <libsbx/scenes/scenes_module.hpp>
 
 #include <libsbx/scenes/components/id.hpp>
 #include <libsbx/scenes/components/tag.hpp>
 #include <libsbx/scenes/components/relationship.hpp>
 #include <libsbx/scenes/components/camera.hpp>
-#include <libsbx/scenes/components/script.hpp>
 #include <libsbx/scenes/components/static_mesh.hpp>
 #include <libsbx/scenes/components/point_light.hpp>
 
@@ -54,83 +51,12 @@ scene::scene()
   auto& devices_module = core::engine::get_module<devices::devices_module>();
   auto& window = devices_module.window();
 
-  _camera.add_component<scenes::camera>(math::angle{math::radian{45.0f}}, window.aspect_ratio(), 0.1f, 100.0f, true);
+  _camera.add_component<scenes::camera>(math::angle{math::degree{50.0f}}, window.aspect_ratio(), 0.1f, 100.0f);
 
   window.on_framebuffer_resized() += [this](const devices::framebuffer_resized_event& event) {
     auto& camera = _camera.get_component<scenes::camera>();
     camera.set_aspect_ratio(static_cast<std::float_t>(event.width) / static_cast<std::float_t>(event.height));
   };
-}
-
-scene::scene(const std::filesystem::path& path)
-: scene{} {
-  auto& assets_manager = core::engine::get_module<assets::assets_module>();
-  auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
-
-  const auto actual_path = assets_manager.asset_path(path);
-
-  auto& loaders = scenes_module._component_loaders;
-
-  auto timer = utility::timer{};
-
-  auto root_node = YAML::LoadFile(actual_path.string());
-
-  const auto name = root_node["name"].as<std::string>();
-
-  core::logger::debug("Scene name: {}", name);
-
-  if (auto light_node = root_node["light"]; light_node) {
-    auto direction = light_node["direction"].as<math::vector3>();
-    auto color = light_node["color"].as<math::color>();
-
-    _light = directional_light{direction, color};
-  }
-
-  const auto entities = root_node["entities"].as<std::vector<YAML::Node>>();
-
-  for (const auto& entity_node : entities) {
-    const auto entity_name = entity_node["name"].as<std::string>();
-
-    core::logger::debug("  Entity name: {}", entity_name);
-
-    auto entity = create_node(entity_name);
-
-    const auto components = entity_node["components"].as<std::vector<YAML::Node>>();
-
-    for (const auto& component_node : components) {
-      const auto component_type = component_node["type"].as<std::string>();
-
-      if (auto entry = loaders.find(component_type); entry != loaders.end()) {
-        core::logger::debug("    Component type: {}", component_type);
-
-        entry->second(entity, component_node);
-
-        if (component_type == "camera") {
-          _camera = entity;
-        }
-      } else {
-        core::logger::warn("Unknown component type: {}", component_type);
-      }
-    }
-  }
-
-  core::logger::debug("Loaded scene: {} in {:.2f} ms", path.string(), units::quantity_cast<units::millisecond>(timer.elapsed()).value());
-}
-
-auto scene::start() -> void {
-  auto script_nodes = query<scenes::script>();
-
-  for (auto& node : script_nodes) {
-    auto& script = node.get_component<scenes::script>();
-
-    auto& transform = node.get_component<math::transform>();
-
-    script.set("transform", transform);
-
-    script.invoke("on_create");
-
-    transform = script.get<math::transform>("transform");
-  }
 }
 
 auto scene::create_child_node(node& parent, const std::string& tag, const math::transform& transform) -> node {

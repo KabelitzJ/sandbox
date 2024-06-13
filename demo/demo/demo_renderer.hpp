@@ -2,9 +2,6 @@
 #define DEMO_DEMO_RENDERER_HPP_
 
 #include <libsbx/graphics/graphics.hpp>
-#include <libsbx/models/models.hpp>
-#include <libsbx/ui/ui.hpp>
-#include <libsbx/shadows/shadows.hpp>
 
 namespace demo {
 
@@ -17,6 +14,10 @@ public:
   ~demo_renderer() override = default;
 
   auto initialize() -> void override;
+
+private:
+
+  sbx::math::color _clear_color;
 
 }; // class demo_renderer
 

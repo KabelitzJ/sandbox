@@ -162,6 +162,10 @@ auto command_buffer::bind_index_buffer(const VkBuffer& buffer, VkDeviceSize offs
   vkCmdBindIndexBuffer(_handle, buffer, offset, index_type);
 }
 
+auto command_buffer::draw(std::uint32_t vertex_count, std::uint32_t instance_count, std::uint32_t first_vertex, std::uint32_t first_instance) -> void {
+  vkCmdDraw(_handle, vertex_count, instance_count, first_vertex, first_instance);
+}
+
 auto command_buffer::draw_indexed(std::uint32_t index_count, std::uint32_t instance_count, std::uint32_t first_index, std::int32_t vertex_offset, std::uint32_t first_instance) -> void {
   vkCmdDrawIndexed(_handle, index_count, instance_count, first_index, vertex_offset, first_instance);
 }
@@ -182,20 +186,24 @@ auto command_buffer::end_render_pass() -> void {
   vkCmdEndRenderPass(_handle);
 }
 
-auto command_buffer::_queue() const -> const logical_device::queue& {
+auto command_buffer::_queue() const -> const graphics::queue& {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
   auto& logical_device = graphics_module.logical_device();
 
   switch (_queue_type) {
-    case VK_QUEUE_GRAPHICS_BIT:
-      return logical_device.graphics_queue();
-    case VK_QUEUE_COMPUTE_BIT:
-      return logical_device.compute_queue();
-    case VK_QUEUE_TRANSFER_BIT:
-      return logical_device.transfer_queue();
-    default:
-      throw std::runtime_error("Invalid queue type");
+    case VK_QUEUE_GRAPHICS_BIT: {
+      return logical_device.queue<graphics::queue::type::graphics>();
+    }
+    case VK_QUEUE_COMPUTE_BIT: {
+      return logical_device.queue<graphics::queue::type::compute>();
+    }
+    case VK_QUEUE_TRANSFER_BIT: {
+      return logical_device.queue<graphics::queue::type::transfer>();
+    }
+    default: {
+      throw std::runtime_error{"Invalid queue type"};
+    }
   }
 }
 

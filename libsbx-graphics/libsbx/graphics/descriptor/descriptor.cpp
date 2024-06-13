@@ -2,10 +2,10 @@
 
 namespace sbx::graphics {
 
-write_descriptor_set::write_descriptor_set(const VkWriteDescriptorSet& write_descriptor_set, const VkDescriptorImageInfo& descriptor_info) noexcept
+write_descriptor_set::write_descriptor_set(const VkWriteDescriptorSet& write_descriptor_set, const std::vector<VkDescriptorImageInfo>& descriptor_infos) noexcept
 : _write_descriptor_set{write_descriptor_set},
-  _descriptor_image_info{std::make_unique<VkDescriptorImageInfo>(descriptor_info)} {
-  _write_descriptor_set.pImageInfo = _descriptor_image_info.get();
+  _descriptor_image_infos{descriptor_infos} {
+  _write_descriptor_set.pImageInfo = _descriptor_image_infos.data();
   _write_descriptor_set.pBufferInfo = nullptr;
 }
 

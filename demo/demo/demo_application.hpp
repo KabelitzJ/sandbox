@@ -7,18 +7,13 @@
 #include <libsbx/math/math.hpp>
 #include <libsbx/memory/memory.hpp>
 #include <libsbx/signals/signals.hpp>
-#include <libsbx/bitmaps/bitmaps.hpp>
 #include <libsbx/ecs/ecs.hpp>
 #include <libsbx/core/core.hpp>
-#include <libsbx/async/async.hpp>
-#include <libsbx/assets/assets.hpp>
 #include <libsbx/devices/devices.hpp>
 #include <libsbx/graphics/graphics.hpp>
 #include <libsbx/models/models.hpp>
 #include <libsbx/scenes/scenes.hpp>
-#include <libsbx/audio/audio.hpp>
 #include <libsbx/ui/ui.hpp>
-#include <libsbx/shadows/shadows.hpp>
 #include <libsbx/physics/physics.hpp>
 
 namespace demo {
@@ -35,18 +30,25 @@ public:
 
 private:
 
-  auto _generate_plane(const sbx::math::vector2u& tile_count, const sbx::math::vector2u& tile_size) -> std::unique_ptr<sbx::models::mesh>;
+  std::vector<sbx::math::uuid> _texture_ids;
+  std::vector<sbx::math::uuid> _mesh_ids;
 
-  sbx::memory::observer_ptr<sbx::ui::label> _label_fps;
-  sbx::memory::observer_ptr<sbx::ui::label> _label_delta_time;
-
-  // std::optional<sbx::scenes::node> _cube;
-  // sbx::assets::asset_id _mesh_id;
-  // sbx::assets::asset_id _texture_id;
-  // bool _flag = false;
+  sbx::math::uuid _plane_id;
+  sbx::math::uuid _sphere_id;
+  std::vector<sbx::math::uuid> _monkey_ids;
 
   sbx::units::second _time;
   std::uint32_t _frames;
+
+  sbx::memory::observer_ptr<sbx::ui::label> _fps_label;
+  sbx::memory::observer_ptr<sbx::ui::label> _delta_time_label;
+
+  sbx::math::angle _rotation;
+
+  sbx::math::angle _orbit_angle;
+  sbx::math::angle _tilt_angle;
+  sbx::math::vector3 _target;
+  std::float_t _zoom;
 
 }; // class demo_application
 

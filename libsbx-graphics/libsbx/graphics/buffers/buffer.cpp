@@ -1,5 +1,7 @@
 #include <libsbx/graphics/buffers/buffer.hpp>
 
+#include <fmt/format.h>
+
 #include <libsbx/utility/assert.hpp>
 
 #include <libsbx/core/engine.hpp>
@@ -10,22 +12,26 @@
 
 namespace sbx::graphics {
 
-buffer::buffer(size_type size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, memory::observer_ptr<const void> memory)
+buffer_base::buffer_base(size_type size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, memory::observer_ptr<const void> memory)
 : _size{size} {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
   const auto& physical_device = graphics_module.physical_device();
   const auto& logical_device = graphics_module.logical_device();
 
-  const auto& sharing_mode = logical_device.queue_sharing_mode();
+  const auto& graphics_queue = logical_device.queue<queue::type::graphics>();
+  const auto& present_queue = logical_device.queue<queue::type::present>();
+  const auto& compute_queue = logical_device.queue<queue::type::compute>();
+
+  const auto queue_family_indices = std::array<std::uint32_t, 3>{graphics_queue.family(), present_queue.family(), compute_queue.family()};
 
   auto buffer_create_info = VkBufferCreateInfo{};
   buffer_create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
   buffer_create_info.size = _size;
   buffer_create_info.usage = usage;
-  buffer_create_info.sharingMode = sharing_mode.mode;
-  buffer_create_info.queueFamilyIndexCount = static_cast<std::uint32_t>(sharing_mode.queue_families.size());
-  buffer_create_info.pQueueFamilyIndices = sharing_mode.queue_families.data();
+  buffer_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+  buffer_create_info.queueFamilyIndexCount = static_cast<std::uint32_t>(queue_family_indices.size());
+  buffer_create_info.pQueueFamilyIndices = queue_family_indices.data();
 
   validate(vkCreateBuffer(logical_device, &buffer_create_info, nullptr, &_handle));
 
@@ -61,32 +67,34 @@ buffer::buffer(size_type size, VkBufferUsageFlags usage, VkMemoryPropertyFlags p
   validate(vkBindBufferMemory(logical_device, _handle, _memory, 0));
 }
 
-buffer::~buffer() {
+buffer_base::~buffer_base() {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
   const auto& logical_device = graphics_module.logical_device();
+
+  logical_device.wait_idle();
 
   vkFreeMemory(logical_device, _memory, nullptr);
   vkDestroyBuffer(logical_device, _handle, nullptr);
 }
 
-auto buffer::handle() const noexcept -> const VkBuffer& {
+auto buffer_base::handle() const noexcept -> const VkBuffer& {
   return _handle;
 }
 
-buffer::operator const VkBuffer&() const noexcept {
+buffer_base::operator const VkBuffer&() const noexcept {
   return _handle;
 }
 
-auto buffer::memory() const noexcept -> const VkDeviceMemory& {
+auto buffer_base::memory() const noexcept -> const VkDeviceMemory& {
   return _memory;
 }
 
-auto buffer::size() const noexcept -> std::size_t {
+auto buffer_base::size() const noexcept -> std::size_t {
   return _size;
 }
 
-auto buffer::map() -> memory::observer_ptr<void> {
+auto buffer_base::map() -> memory::observer_ptr<void> {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
   const auto& logical_device = graphics_module.logical_device();
@@ -98,7 +106,7 @@ auto buffer::map() -> memory::observer_ptr<void> {
   return memory::observer_ptr<void>{mapped_memory};
 }
 
-auto buffer::unmap() -> void {
+auto buffer_base::unmap() -> void {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
   const auto& logical_device = graphics_module.logical_device();
@@ -106,7 +114,7 @@ auto buffer::unmap() -> void {
   vkUnmapMemory(logical_device, _memory);
 }
 
-auto buffer::write(memory::observer_ptr<const void> data, size_type size, size_type offset) -> void {
+auto buffer_base::write(memory::observer_ptr<const void> data, size_type size, size_type offset) -> void {
   auto mapped_memory = map();
 
   std::memcpy(static_cast<std::uint8_t*>(mapped_memory.get()) + offset, data.get(), size);

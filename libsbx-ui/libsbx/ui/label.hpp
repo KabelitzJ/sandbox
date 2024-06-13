@@ -4,13 +4,12 @@
 #include <string>
 #include <memory>
 
+#include <libsbx/memory/observer_ptr.hpp>
+
 #include <libsbx/core/logger.hpp>
 #include <libsbx/core/engine.hpp>
 
 #include <libsbx/math/color.hpp>
-
-#include <libsbx/assets/asset.hpp>
-#include <libsbx/assets/assets_module.hpp>
 
 #include <libsbx/graphics/graphics_module.hpp>
 #include <libsbx/graphics/images/image2d.hpp>
@@ -26,10 +25,10 @@ class label : public widget {
 
 public:
 
-  label(const std::string& text, const math::vector2u& position, assets::asset_id font_id, std::float_t scale = 1.0f, const math::color& color = math::color{1.0f, 1.0f, 1.0f, 1.0f})
+  label(const std::string& text, const math::vector2u& position, memory::observer_ptr<const font> font, std::float_t scale = 1.0f, const math::color& color = math::color{1.0f, 1.0f, 1.0f, 1.0f})
   : widget{position},
     _text{text},
-    _font_id{font_id},
+    _font{font},
     _scale{scale},
     _color{color},
     _is_dirty{true},
@@ -43,8 +42,6 @@ public:
   }
 
   auto update(graphics::descriptor_handler& descriptor_handler, graphics::uniform_handler& uniform_handler, graphics::storage_handler& storage_handler) -> void override {
-    auto& assets_module = core::engine::get_module<assets::assets_module>();
-
     uniform_handler.push("color", _color);
 
     if (_is_dirty) {
@@ -53,43 +50,35 @@ public:
 
     storage_handler.push(std::span<const glyph_data>{_glyph_data.data(), _glyph_data.size()});
 
-    auto& font = assets_module.get_asset<ui::font>(_font_id);
-
-    auto& atlas = font.atlas();
+    auto& atlas = _font->atlas();
 
     descriptor_handler.push("atlas", atlas.image());
     descriptor_handler.push("uniform_object", uniform_handler);
     descriptor_handler.push("buffer_glyphs", storage_handler);
   }
 
-  auto render(graphics::command_buffer& command_buffer, std::unique_ptr<mesh>& mesh) -> void override {
-    if (mesh) {
-      mesh->render(command_buffer, static_cast<std::uint32_t>(_glyph_data.size()));
-    }
+  auto render(graphics::command_buffer& command_buffer, const mesh& mesh) -> void override {
+    mesh.render(command_buffer, static_cast<std::uint32_t>(_glyph_data.size()));
   }
 
 private:
 
   auto _recalculate_glyph_data() -> void {
-    auto& assets_module = core::engine::get_module<assets::assets_module>();
-
     _glyph_data.clear();
 
-    auto& font = assets_module.get_asset<ui::font>(_font_id);
-
-    auto position_x = static_cast<std::float_t>(_position.x);
-    auto position_y = static_cast<std::float_t>(_position.y);
+    auto position_x = static_cast<std::float_t>(_position.x());
+    auto position_y = static_cast<std::float_t>(_position.y());
 
     for (const auto character : _text) {
       auto data = glyph_data{};
 
-      const auto& glyph = font.glyph(character);
+      const auto& glyph = _font->glyph(character);
 
-      auto x = position_x + static_cast<std::float_t>(glyph.bearing.x) * _scale;
-      auto y = position_y - static_cast<std::float_t>(glyph.size.y - glyph.bearing.y) * _scale;
+      auto x = position_x + static_cast<std::float_t>(glyph.bearing.x()) * _scale;
+      auto y = position_y - static_cast<std::float_t>(glyph.size.y() - glyph.bearing.y()) * _scale;
 
-      auto w = static_cast<std::float_t>(glyph.size.x) * _scale;
-      auto h = static_cast<std::float_t>(glyph.size.y) * _scale;
+      auto w = static_cast<std::float_t>(glyph.size.x()) * _scale;
+      auto h = static_cast<std::float_t>(glyph.size.y()) * _scale;
 
       data.offset = math::vector2{x, y};
       data.size = math::vector2{w, h};
@@ -113,7 +102,7 @@ private:
   }; // struct glyph_data
 
   std::string _text;
-  assets::asset_id _font_id;
+  memory::observer_ptr<const font> _font;
   std::float_t _scale;
   math::color _color;
   bool _is_dirty;

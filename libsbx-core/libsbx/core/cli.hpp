@@ -2,70 +2,23 @@
 #define LIBSBX_CORE_CLI_HPP_
 
 #include <string>
+#include <string_view>
+#include <span>
 #include <vector>
 #include <string_view>
 #include <concepts>
 #include <cinttypes>
 #include <optional>
+#include <charconv>
+
+#include <fmt/format.h>
+
+#include <libsbx/core/logger.hpp>
 
 namespace sbx::core {
 
-class argument_base {
-
-public:
-
-  argument_base(const std::string& name, const std::string& description)
-  : _name{name},
-    _description{description} { }
-
-  virtual ~argument_base() = default;
-
-  auto name() const noexcept -> const std::string& {
-    return _name;
-  }
-
-  auto description() const noexcept -> const std::string& {
-    return _description;
-  }
-
-protected:
-
-  std::string _name;
-  std::string _description;
-
-}; // class argument_base
-
 template<typename Type>
-class argument : public argument_base {
-
-  friend class cli;
-
-public:
-
-  argument(const std::string& name, const std::string& description)
-  : argument_base{name, description} { }
-
-  ~argument() = default;
-
-  auto has_value() const noexcept -> bool {
-    return _value.has_value();
-  }
-
-  auto value() const noexcept -> const Type& {
-    return _value.value();
-  }
-
-private:
-
-  template<typename... Args>
-  requires (std::constructible_from<Type, Args...>)
-  auto _set_value(Args&&... args) noexcept -> void {
-    _value.emplace(std::forward<Args>(args)...);
-  }
-
-  std::optional<Type> _value;
-
-}; // class argument
+concept argument = (std::is_same_v<Type, bool> || std::is_integral_v<Type> || std::is_floating_point_v<Type> || std::is_same_v<Type, std::string>);
 
 class cli {
 
@@ -73,24 +26,68 @@ class cli {
 
 public:
 
-  cli(std::vector<std::string_view>&& args)
-  : _args{std::move(args)} { }
+  cli(std::span<std::string_view> args) {
+    for (const auto& arg : args) {
+      if (arg.substr(0, 2) != "--") {
+        continue;
+      }
+      
+      const auto pos = arg.find_first_of("=");
 
-  template<typename Type>
-  auto add_argument(const std::string& name, const std::string& description = "") -> argument<Type>& {
-    auto result = _arguments.emplace(name, std::make_unique<argument<Type>>(name, description));
+      if (pos == std::string::npos) {
+        logger::warn("Could not parse argument: '{}'", arg);
+        continue;
+      }
 
-    return *static_cast<argument<Type>*>(result.first->second.get());
+      const auto key = std::string{arg.substr(2, pos - 2u)};
+      const auto value = std::string{arg.substr(pos + 1u)};
+
+      _arguments[key] = std::move(value);
+    }
+  }
+
+  template<argument Type>
+  auto argument(const std::string& name) const -> std::optional<Type> {
+    if (auto entry = _arguments.find(name); entry != _arguments.end()) {
+      const auto& value = entry->second;
+
+      if constexpr (std::is_same_v<Type, bool>) {
+        if (value == "true") {
+          return true;
+        } else if (value == "false") {
+          return false;
+        } else {
+          return std::nullopt;
+        }
+      } else if constexpr (std::is_floating_point_v<Type> || std::is_integral_v<Type>) {
+        auto result = Type{};
+
+        auto [ptr, ec] = std::from_chars(value.data(), value.data() + value.size(), result);
+
+        if (ec == std::errc::invalid_argument || ec == std::errc::result_out_of_range) {
+          return std::nullopt;
+        }
+
+        return result;
+      } else if constexpr (std::is_same_v<Type, std::string>) {
+        return value;
+      }
+    }
+
+    return std::nullopt;
   }
 
 private:
 
-    auto _parse(std::vector<std::string_view>&& args) -> void {
-      static_cast<void>(args);
+  auto _argument_value(const std::string& name) -> std::optional<std::string> {
+    if (auto entry = _arguments.find(name); entry != _arguments.end()) {
+      return entry->second;
     }
 
-  std::vector<std::string_view> _args;
-  std::unordered_map<std::string, std::unique_ptr<argument_base>> _arguments;
+    return std::nullopt;
+  }
+
+  std::unordered_map<std::string, std::string> _arguments;
 
 }; // class cli
 

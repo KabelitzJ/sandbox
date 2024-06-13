@@ -15,6 +15,8 @@
 #include <libsbx/scenes/scenes_module.hpp>
 #include <libsbx/scenes/components/tag.hpp>
 
+#include <libsbx/models/mesh.hpp>
+
 #include <libsbx/physics/rigidbody.hpp>
 #include <libsbx/physics/box_collider.hpp>
 
@@ -27,21 +29,7 @@ class physics_module : public core::module<physics_module> {
 public:
 
   physics_module() {
-    auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
 
-    scenes_module.register_loader("rigidbody", [](scenes::node& node, const YAML::Node& node_data){
-      const auto mass = node_data["mass"].as<std::float_t>();
-      const auto bounce = node_data["bounce"].as<std::float_t>();
-      const auto is_static = node_data["is_static"].as<bool>();
-
-      node.add_component<physics::rigidbody>(mass, bounce, is_static);
-    });
-
-    scenes_module.register_loader("box_collider", [](scenes::node& node, const YAML::Node& node_data){
-      const auto size = node_data["size"].as<math::vector3>();
-
-      node.add_component<physics::box_collider>(size);
-    });
   }
 
   ~physics_module() override = default;
@@ -113,15 +101,15 @@ private:
     const auto b_min = b_transform.position() - b_collider.size() / 2.0f;
     const auto b_max = b_transform.position() + b_collider.size() / 2.0f;
 
-    if (a_min.x > b_max.x || a_max.x < b_min.x) {
+    if (a_min.x() > b_max.x() || a_max.x() < b_min.x()) {
       return std::nullopt;
     }
 
-    if (a_min.y > b_max.y || a_max.y < b_min.y) {
+    if (a_min.y() > b_max.y() || a_max.y() < b_min.y()) {
       return std::nullopt;
     }
 
-    if (a_min.z > b_max.z || a_max.z < b_min.z) {
+    if (a_min.z() > b_max.z() || a_max.z() < b_min.z()) {
       return std::nullopt;
     }
 

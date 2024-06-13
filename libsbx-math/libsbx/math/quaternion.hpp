@@ -6,187 +6,140 @@
 #include <cmath>
 #include <type_traits>
 
-#include <libsbx/math/angle.hpp>
+#include <yaml-cpp/yaml.h>
+
+#include <fmt/format.h>
+
+#include <libsbx/math/concepts.hpp>
 #include <libsbx/math/vector3.hpp>
 #include <libsbx/math/vector4.hpp>
 #include <libsbx/math/matrix4x4.hpp>
+#include <libsbx/math/angle.hpp>
 
 namespace sbx::math {
 
-/**
- * @brief A quaternion that represents a rotation.
- * 
- * @tparam Type The type of the quaternion components.
- */
-template<std::floating_point Type>
+template<floating_point Type>
 class basic_quaternion {
+
+  template<floating_point Other>
+  using vector_type_for = basic_vector3<Other>;
+
+  template<floating_point Other>
+  using matrix_type_for = basic_matrix4x4<Other>;
+
+  template<floating_point Other>
+  using angle_type_for = basic_angle<Other>;
+
+  template<floating_point Other>
+  using quaternion_type_for = basic_quaternion<Other>;
 
 public:
 
-  // -- Type aliases --
-
-  /** @brief Type of the quaternion components */
   using value_type = Type;
-
-  /** @brief The reference type of the quaternion components. */
   using reference = value_type&;
-
-  /** @brief The const reference type of the quaternion components. */
   using const_reference = const value_type&;
+  using size_type = std::size_t;
+  using length_type = std::float_t;
+  using vector_type = vector_type_for<value_type>;
+  using matrix_type = matrix_type_for<value_type>;
+  using angle_type = basic_angle<value_type>;
 
-  /** @brief The pointer type of the quaternion components. */
-  using pointer = value_type*;
+  inline static constexpr basic_quaternion identity{vector_type::zero, value_type{1}};
 
-  /** @brief The const pointer type of the quaternion components. */
-  using const_pointer = const value_type*;
+  template<floating_point Other = value_type>
+  constexpr basic_quaternion(Other value = Other{0}) noexcept;
 
-  /** @brief The type that can describe the length of the quaternion */
-  using length_type = Type;
+  template<floating_point Complex = value_type, floating_point Scalar = value_type>
+  constexpr basic_quaternion(const vector_type_for<Complex>& complex, Scalar scalar) noexcept;
 
-  /** @brief The type that can index components */
-  using index_type = std::size_t;
+  template<floating_point Other = value_type>
+  constexpr basic_quaternion(const vector_type_for<Other>& euler_angles) noexcept;
 
-  // -- Data members --
+  template<floating_point Other = value_type>
+  constexpr basic_quaternion(Other x, Other y, Other z, Other w) noexcept;
 
-  /** @brief The x-component of the quaternion. */
-  value_type x{};
-  /** @brief The y-component of the quaternion. */
-  value_type y{};
-  /** @brief The z-component of the quaternion. */
-  value_type z{};
-  /** @brief The w-component of the quaternion. */
-  value_type w{};
+  template<floating_point Complex = value_type, floating_point Scalar = value_type>
+  constexpr basic_quaternion(const vector_type_for<Complex>& axis, const basic_angle<Scalar>& angle) noexcept;
 
-  // -- Constructors --
+  template<floating_point Other = value_type>
+  constexpr basic_quaternion(const matrix_type_for<Other>& matrix) noexcept;  
 
-  /** @brief Constructs a quaternion with all components set to zero. */
-  constexpr basic_quaternion() noexcept;
+  [[nodiscard]] constexpr operator matrix_type() const noexcept;
 
-  constexpr basic_quaternion(const value_type x, const value_type y, const value_type z, const value_type w = static_cast<Type>(1)) noexcept;
+  [[nodiscard]] constexpr auto to_matrix() const noexcept -> matrix_type;
 
-  constexpr basic_quaternion(const basic_vector3<value_type>& axis, const basic_angle<value_type>& radians) noexcept;
+  template<floating_point Other = value_type>
+  constexpr auto operator+=(const basic_quaternion<Other>& other) noexcept -> basic_quaternion&;
 
-  constexpr basic_quaternion(const basic_vector3<value_type>& euler_angles) noexcept;
+  template<floating_point Other = value_type>
+  constexpr auto operator-=(const basic_quaternion<Other>& other) noexcept -> basic_quaternion&;
 
-  constexpr basic_quaternion(const basic_quaternion&) noexcept = default;
+  template<floating_point Other = value_type>
+  constexpr auto operator*=(Other value) noexcept -> basic_quaternion&;
 
-  template<std::floating_point Other>
-  constexpr basic_quaternion(const basic_quaternion<Other>& other) noexcept;
+  template<floating_point Other = value_type>
+  constexpr auto operator*=(const basic_quaternion<Other>& other) noexcept -> basic_quaternion&;
 
-  constexpr basic_quaternion(basic_quaternion&&) noexcept = default;
+  template<floating_point Other = value_type>
+  constexpr auto operator/=(Other value) noexcept -> basic_quaternion&;
 
-  /** @brief Destroys the quaternion. */
-  ~basic_quaternion() noexcept = default;
+  [[nodiscard]] constexpr auto x() noexcept -> reference;
 
-  static constexpr value_type dot(const basic_quaternion& lhs, const basic_quaternion& rhs) noexcept;
+  [[nodiscard]] constexpr auto x() const noexcept -> const_reference;
 
-  static constexpr basic_quaternion normalized(const basic_quaternion& quat) noexcept;
+  [[nodiscard]] constexpr auto y() noexcept -> reference;
 
-  static constexpr basic_quaternion conjugated(const basic_quaternion& quat) noexcept;
+  [[nodiscard]] constexpr auto y() const noexcept -> const_reference;
 
-  static constexpr basic_quaternion inverted(const basic_quaternion& quat) noexcept;
+  [[nodiscard]] constexpr auto z() noexcept -> reference;
 
-  static constexpr basic_quaternion slerp(const basic_quaternion& lhs, const basic_quaternion& rhs, const value_type factor) noexcept;
+  [[nodiscard]] constexpr auto z() const noexcept -> const_reference;
 
-  // -- Assignment operators --
+  [[nodiscard]] constexpr auto w() noexcept -> reference;
 
-  constexpr basic_quaternion& operator=(const basic_quaternion&) noexcept = default;
+  [[nodiscard]] constexpr auto w() const noexcept -> const_reference;
 
-  template<std::floating_point Other>
-  constexpr basic_quaternion& operator=(const basic_quaternion<Other>& other) noexcept;
+  [[nodiscard]] constexpr auto complex() noexcept -> vector_type&;
 
-  constexpr basic_quaternion& operator=(basic_quaternion&&) noexcept = default;
+  [[nodiscard]] constexpr auto complex() const noexcept -> const vector_type&;
 
-  // -- Conversion operators
+  [[nodiscard]] constexpr auto scalar() noexcept -> reference;
 
-  constexpr explicit operator basic_matrix4x4<value_type>() const noexcept;
+  [[nodiscard]] constexpr auto scalar() const noexcept -> const_reference;
 
-  constexpr auto to_matrix() const noexcept -> basic_matrix4x4<value_type>;
+  [[nodiscard]] constexpr auto length_squared() const noexcept -> length_type;
 
-  constexpr basic_quaternion& operator+=(const basic_quaternion& other) noexcept;
+  [[nodiscard]] constexpr auto length() const noexcept -> length_type;
 
-  constexpr basic_quaternion& operator-=(const basic_quaternion& other) noexcept;
+  constexpr auto normalize() noexcept -> basic_quaternion&;
 
-  constexpr basic_quaternion& operator*=(const value_type scalar) noexcept;
+private:
 
-  constexpr basic_quaternion& operator*=(const basic_quaternion& other) noexcept;
+  vector_type _complex;
+  value_type _scalar;
 
-  constexpr basic_quaternion& operator/=(const value_type scalar);
+}; // class basic_quaternion
 
-  // -- Access operators --
+template<floating_point Lhs, floating_point Rhs>
+[[nodiscard]] constexpr auto operator==(const basic_quaternion<Lhs>& lhs, const basic_quaternion<Rhs>& rhs) noexcept -> bool;
 
-  /**
-   * @brief Returns the component at the given index.
-   *
-   * @param index The index of the component. 
-   * 
-   * @return reference The component at the given index.
-   */
-  [[nodiscard]] constexpr reference operator[](const index_type index) noexcept;
+template<floating_point Lhs, floating_point Rhs>
+[[nodiscard]] constexpr auto operator+(basic_quaternion<Lhs> lhs, const basic_quaternion<Rhs>& rhs) noexcept -> basic_quaternion<Lhs>;
 
-  /**
-   * @brief Returns the component at the given index.
-   *
-   * @param index The index of the component. 
-   * 
-   * @return reference The component at the given index.
-   */
-  [[nodiscard]] constexpr const_reference operator[](const index_type index) const noexcept;
+template<floating_point Lhs, floating_point Rhs>
+[[nodiscard]] constexpr auto operator-(basic_quaternion<Lhs> lhs, const basic_quaternion<Rhs>& rhs) noexcept -> basic_quaternion<Lhs>;
 
-  // -- Data access --
+template<floating_point Type>
+[[nodiscard]] constexpr auto operator-(basic_quaternion<Type> quaternion) noexcept -> basic_quaternion<Type>;
 
-  /**
-   * @brief Return a pointer to the first component.
-   *
-   * @return pointer A pointer to the first component. 
-   */
-  [[nodiscard]] constexpr pointer data() noexcept;
+template<floating_point Lhs, floating_point Rhs>
+[[nodiscard]] constexpr auto operator*(basic_quaternion<Lhs> lhs, Rhs scalar) noexcept -> basic_quaternion<Lhs>;
 
-  /**
-   * @brief Return a pointer to the first component.
-   * 
-   * @return const_pointer A pointer to the first component.
-   */
-  [[nodiscard]] constexpr const_pointer data() const noexcept;
+template<floating_point Lhs, floating_point Rhs>
+[[nodiscard]] constexpr auto operator*(basic_quaternion<Lhs> lhs, const basic_quaternion<Rhs>& rhs) noexcept -> basic_quaternion<Lhs>;
 
-  [[nodiscard]] constexpr length_type length() const noexcept;
-
-  constexpr basic_quaternion& normalize() noexcept;
-
-  constexpr basic_quaternion& conjugate() noexcept;
-
-}; // class quaternion
-
-// -- Free comparison operators --
-
-template<std::floating_point Type>
-[[nodiscard]] constexpr bool operator==(const basic_quaternion<Type>& lhs, const basic_quaternion<Type>& rhs) noexcept;
-
-template<std::floating_point Type>
-[[nodiscard]] constexpr basic_quaternion<Type> operator+(basic_quaternion<Type> quat) noexcept;
-
-template<std::floating_point Type>
-[[nodiscard]] constexpr basic_quaternion<Type> operator-(basic_quaternion<Type> quat) noexcept;
-
-template<std::floating_point Type>
-[[nodiscard]] constexpr basic_quaternion<Type> operator+(basic_quaternion<Type> lhs, const basic_quaternion<Type>& rhs) noexcept;
-
-template<std::floating_point Type>
-[[nodiscard]] constexpr basic_quaternion<Type> operator-(basic_quaternion<Type> lhs, const basic_quaternion<Type>& rhs) noexcept;
-
-template<std::floating_point Type>
-[[nodiscard]] constexpr basic_quaternion<Type> operator*(basic_quaternion<Type> lhs, const Type rhs) noexcept;
-
-template<std::floating_point Type>
-[[nodiscard]] constexpr basic_quaternion<Type> operator*(basic_quaternion<Type> lhs, const basic_quaternion<Type>& rhs) noexcept;
-
-template<std::floating_point Type>
-[[nodiscard]] constexpr basic_vector3<Type> operator*(basic_quaternion<Type> lhs, const basic_vector3<Type>& rhs) noexcept;
-
-template<std::floating_point Type>
-[[nodiscard]] constexpr basic_quaternion<Type> operator/(basic_quaternion<Type> lhs, const Type rhs);
-
-// -- Type aliases --
+template<floating_point Lhs, floating_point Rhs>
+[[nodiscard]] constexpr auto operator/(basic_quaternion<Lhs> lhs, Rhs scalar) noexcept -> basic_quaternion<Lhs>;
 
 /** @brief Type alias for a quaternion with 32 bit floating-point components. */
 using quaternionf = basic_quaternion<std::float_t>;
@@ -196,10 +149,32 @@ using quaternion = quaternionf;
 
 } // namespace sbx::math
 
-template<std::floating_point Type>
+template<sbx::math::floating_point Type>
 struct std::hash<sbx::math::basic_quaternion<Type>> {
-  std::size_t operator()(const sbx::math::basic_quaternion<Type>& quaternion) const noexcept;
+
+  auto operator()(const sbx::math::basic_quaternion<Type>& quaternion) const noexcept -> std::size_t;
+
 }; // struct std::hash
+
+template<sbx::math::floating_point Type>
+struct YAML::convert<sbx::math::basic_quaternion<Type>> {
+
+  static auto encode(const sbx::math::basic_quaternion<Type>& quaternion) -> YAML::Node;
+
+  static auto decode(const YAML::Node& node, sbx::math::basic_quaternion<Type>& quaternion) -> bool;
+
+}; // struct YAML::convert
+
+template<sbx::math::floating_point Type>
+struct fmt::formatter<sbx::math::basic_quaternion<Type>> {
+
+  template<typename ParseContext>
+  constexpr auto parse(ParseContext& context) -> decltype(context.begin());
+
+  template<typename FormatContext>
+  auto format(const sbx::math::basic_quaternion<Type>& quaternion, FormatContext& context) -> decltype(context.out());
+
+}; // struct fmt::formatter
 
 #include <libsbx/math/quaternion.ipp>
 

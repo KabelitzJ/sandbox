@@ -2,6 +2,7 @@
 
 #include <fmt/format.h>
 
+#include <type_traits>
 #include <cstring>
 
 namespace sbx::graphics {

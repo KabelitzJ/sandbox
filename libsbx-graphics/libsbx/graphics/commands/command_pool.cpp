@@ -36,23 +36,24 @@ command_pool::operator const VkCommandPool&() const noexcept {
   return _handle;
 }
 
-auto command_pool::_queue(VkQueueFlagBits queue_type) const -> const logical_device::queue& {
+auto command_pool::_queue(VkQueueFlagBits queue_type) const -> const queue& {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
   
   const auto& logical_device = graphics_module.logical_device();
 
   switch (queue_type) {
-    case VK_QUEUE_GRAPHICS_BIT:
-      return logical_device.graphics_queue();
-      break;
-    case VK_QUEUE_COMPUTE_BIT:
-      return logical_device.compute_queue();
-      break;
-    case VK_QUEUE_TRANSFER_BIT:
-      return logical_device.transfer_queue();
-      break;
-    default:
+    case VK_QUEUE_GRAPHICS_BIT: {
+      return logical_device.queue<graphics::queue::type::graphics>();
+    }
+    case VK_QUEUE_COMPUTE_BIT: {
+      return logical_device.queue<graphics::queue::type::compute>();
+    }
+    case VK_QUEUE_TRANSFER_BIT: {
+      return logical_device.queue<graphics::queue::type::transfer>();
+    }
+    default: {
       throw std::runtime_error("Invalid queue type");
+    }
   }
 }
 

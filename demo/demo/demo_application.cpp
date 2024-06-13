@@ -1,74 +1,131 @@
 #include <demo/demo_application.hpp>
 
+#include <libsbx/math/color.hpp>
+
 #include <demo/demo_renderer.hpp>
 
 namespace demo {
 
 demo_application::demo_application()
-: sbx::core::application{} {
-  auto& assets_module = sbx::core::engine::get_module<sbx::assets::assets_module>();
-  
-  const auto& cli = sbx::core::engine::cli();
-
-  assets_module.set_asset_directory("./demo/assets");
-
-  sbx::core::logger::info("Asset directory: {}", assets_module.asset_directory().string());
-
-  auto base_id = assets_module.load_asset<sbx::graphics::image2d>("res://textures/base.png");
-  auto default_id = assets_module.load_asset<sbx::graphics::image2d>("res://textures/default.png");
-  auto grid_id = assets_module.load_asset<sbx::graphics::image2d>("res://textures/grid.png");
-  auto prototype_black_id = assets_module.load_asset<sbx::graphics::image2d>("res://textures/prototype_black.png");
-  auto white_id = assets_module.load_asset<sbx::graphics::image2d>("res://textures/white.png");
-
-  // _texture_id = base_id;
-
-  auto monkey_id = assets_module.load_asset<sbx::models::mesh>("res://meshes/suzanne.obj");
-  auto sphere_id = assets_module.load_asset<sbx::models::mesh>("res://meshes/sphere.obj");
-  auto cube_id = assets_module.load_asset<sbx::models::mesh>("res://meshes/cube.obj");
-  auto tree_id = assets_module.load_asset<sbx::models::mesh>("res://meshes/tree.obj");
-  auto tree_1_id = assets_module.load_asset<sbx::models::mesh>("res://meshes/tree_1.obj");
-  auto plane_id = assets_module.load_asset<sbx::models::mesh>("res://meshes/plane.obj");
-
-  // _mesh_id = sphere_id;
-
-  auto font_jet_brains_mono_id = assets_module.load_asset<sbx::ui::font>("res://fonts/JetBrainsMono-Medium.ttf", sbx::ui::pixels{18u});
-  auto font_roboto_id = assets_module.load_asset<sbx::ui::font>("res://fonts/Roboto-Regular.ttf", sbx::ui::pixels{18u});
-
-  auto ambience_birds_sound_id = assets_module.load_asset<sbx::audio::sound_buffer>("res://audio/ambience.wav");
-  auto forest_sound_id = assets_module.load_asset<sbx::audio::sound_buffer>("res://audio/forest.wav");
-
-  auto& ui_module = sbx::core::engine::get_module<sbx::ui::ui_module>();
-
-  auto& container = ui_module.container();
-
-  _label_fps = container.add_widget<sbx::ui::label>("FPS:  0", sbx::math::vector2u{25, 25}, font_jet_brains_mono_id, 0.75f, sbx::math::color{0.53f, 0.01f, 0.01f, 1.0f});
-  _label_delta_time = container.add_widget<sbx::ui::label>("Delta time: 0 ms", sbx::math::vector2u{25, 50}, font_jet_brains_mono_id, 0.75f, sbx::math::color{0.53f, 0.01f, 0.01f, 1.0f});
+: sbx::core::application{},
+  _rotation{sbx::math::degree{0}},
+  _orbit_angle{sbx::math::degree{90}}, 
+  _tilt_angle{sbx::math::degree{30}},
+  _target{sbx::math::vector3{0.0f, 0.0f, 0.0f}},
+  _zoom{30.0f} {
+  // Renderer
 
   auto& graphics_module = sbx::core::engine::get_module<sbx::graphics::graphics_module>();
 
   graphics_module.set_renderer<demo_renderer>();
 
+  // Textures
+
+  const auto prototype_white_id = graphics_module.add_asset<sbx::graphics::image2d>("demo/assets/textures/prototype_white.png");
+  const auto prototype_black_id = graphics_module.add_asset<sbx::graphics::image2d>("demo/assets/textures/prototype_black.png");
+  const auto base_id = graphics_module.add_asset<sbx::graphics::image2d>("demo/assets/textures/base.png");
+  const auto grid_id = graphics_module.add_asset<sbx::graphics::image2d>("demo/assets/textures/grid.png");
+  const auto wood_id = graphics_module.add_asset<sbx::graphics::image2d>("demo/assets/textures/wood.png"); 
+  const auto white_id = graphics_module.add_asset<sbx::graphics::image2d>("demo/assets/textures/white.png");
+
+  _texture_ids.push_back(prototype_white_id);
+  _texture_ids.push_back(prototype_black_id);  
+  _texture_ids.push_back(base_id);
+  _texture_ids.push_back(grid_id);
+  _texture_ids.push_back(wood_id);
+  _texture_ids.push_back(white_id);
+
+  // Meshes
+
+  const auto monkey_id = graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/suzanne.obj");
+  const auto plane_id = graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/plane.obj");
+  const auto sphere_id = graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/sphere.obj");
+
+  _mesh_ids.push_back(monkey_id);
+  _mesh_ids.push_back(plane_id);
+  _mesh_ids.push_back(sphere_id);
+
+  // Window
+
   auto& devices_module = sbx::core::engine::get_module<sbx::devices::devices_module>();
 
   auto& window = devices_module.window();
-
-  window.set_icon("res://icons/sandbox.png");
 
   window.on_window_closed_signal() += [this]([[maybe_unused]] const auto& event){
     sbx::core::engine::quit();
   };
 
+  // Scene
+
   auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
 
-  auto& scene = scenes_module.load_scene("res://scenes/demo.yaml");
+  auto& scene = scenes_module.create_scene();
 
-  auto floor_id = assets_module.add_asset<sbx::models::mesh>(_generate_plane(sbx::math::vector2u{15u, 15u}, sbx::math::vector2u{2u, 2u}));
+  // Plane
 
-  auto floor_node = scene.create_node("Floor", sbx::math::transform{sbx::math::vector3::zero, sbx::math::vector3::zero, sbx::math::vector3::one});
-  floor_node.add_component<sbx::scenes::static_mesh>(floor_id, std::vector<sbx::scenes::static_mesh::submesh>{{0, prototype_black_id}});
+  auto plane = scene.create_node("Plane");
 
-  // [Todo] KAJ 2023-08-16 15:30 - This should probably be done automatically
-  scene.start();
+  auto submeshes = std::vector<sbx::scenes::static_mesh::submesh>{};
+
+  submeshes.push_back(sbx::scenes::static_mesh::submesh{0, prototype_white_id});
+
+  plane.add_component<sbx::scenes::static_mesh>(plane_id, submeshes);
+  
+  auto& plane_transform = plane.get_component<sbx::math::transform>();
+  plane_transform.set_position(sbx::math::vector3{0.0f, 0.0f, 0.0f});
+  plane_transform.set_scale(sbx::math::vector3{10.0f, 1.0f, 10.0f});
+
+  _plane_id = plane.get_component<sbx::scenes::id>();
+
+  // Sphere
+
+  auto sphere = scene.create_node("Sphere");
+
+  sphere.add_component<sbx::scenes::gizmo>(sphere_id, 0u, sbx::math::color{1.0f, 0.0f, 0.0f, 1.0f});
+
+  auto& sphere_transform = sphere.get_component<sbx::math::transform>();
+
+  sphere_transform.set_position(sbx::math::vector3{0.0f, 0.0f, 0.0f});
+  sphere_transform.set_scale(sbx::math::vector3{0.2f, 0.2f, 0.2f});
+
+  _sphere_id = sphere.get_component<sbx::scenes::id>();
+
+  // Monkeys
+
+  for (auto i : std::views::iota(0, 5)) {
+    auto monkey = scene.create_node(fmt::format("Monkey{}", i));
+
+    auto submeshes = std::vector<sbx::scenes::static_mesh::submesh>{};
+
+    submeshes.push_back(sbx::scenes::static_mesh::submesh{0, sbx::math::random_element(_texture_ids)});
+
+    monkey.add_component<sbx::scenes::static_mesh>(monkey_id, submeshes);
+
+    auto& transform = monkey.get_component<sbx::math::transform>();
+    transform.set_position(sbx::math::vector3{static_cast<std::float_t>(i - 2) * 3.0f, 2.0f, 0.0f});
+
+    _monkey_ids.push_back(monkey.get_component<sbx::scenes::id>());
+  }
+
+  // Camera
+
+  auto camera = scene.camera();
+
+  camera.get_component<sbx::math::transform>().set_position(sbx::math::vector3{0.0f, 2.0f, 8.0f});
+  camera.get_component<sbx::math::transform>().look_at(sbx::math::vector3::zero);
+
+  // UI
+
+  auto& ui_module = sbx::core::engine::get_module<sbx::ui::ui_module>();
+
+  auto& container = ui_module.container();
+
+  static auto font = sbx::ui::font{"demo/assets/fonts/JetBrainsMono-Medium.ttf", sbx::ui::pixels{16}};
+
+  container.add_widget<sbx::ui::label>("Hello, World!", sbx::math::vector2u{10, 10}, &font, 1.0f, sbx::math::color{1.0f, 0.0f, 0.0f, 1.0f});
+
+  _delta_time_label = container.add_widget<sbx::ui::label>("Delta: 0", sbx::math::vector2u{10, 40}, &font, 1.0f, sbx::math::color{1.0f, 0.0f, 0.0f, 1.0f});
+  _fps_label = container.add_widget<sbx::ui::label>("FPS: 0", sbx::math::vector2u{10, 70}, &font, 1.0f, sbx::math::color{1.0f, 0.0f, 0.0f, 1.0f});
 
   window.show();
 }
@@ -76,99 +133,102 @@ demo_application::demo_application()
 auto demo_application::update() -> void  {
   if (sbx::devices::input::is_key_pressed(sbx::devices::key::escape)) {
     sbx::core::engine::quit();
+    return;
   }
-
-  // auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
-  // auto& scene = scenes_module.scene();
-
-  // if (_flag && !_cube) {
-  //   _cube = scene.create_node("Cube", sbx::math::transform{sbx::math::vector3{-5.0f, 10.0f, 0.0f}, sbx::math::vector3::zero, sbx::math::vector3::one});
-
-  //   _cube->add_component<sbx::scenes::static_mesh>(_mesh_id, _texture_id);
-
-  //   // auto& script = _cube->add_component<sbx::scenes::script>("res://scripts/rotate.lua");
-  //   // script.set("speed", -120.0f);
-
-  //   auto& rigidbody = _cube->add_component<sbx::physics::rigidbody>(1.0f, 0.75f, false);
-  //   rigidbody.set_acceleration(sbx::math::vector3{0.0f, -9.81f, 0.0f});
-
-  //   _cube->add_component<sbx::physics::box_collider>(sbx::math::vector3{1.0f, 1.0f, 1.0f});
-  // } else if (!_flag && _cube) {
-  //   scene.destroy_node(*_cube);
-  //   _cube.reset();
-  // }
-
-  // auto camera_node = scene.camera();
-  // auto& camera = camera_node.get_component<sbx::scenes::camera>();
-
-  // if (sbx::devices::input::is_key_pressed(sbx::devices::key::r)) {
-  //   camera.set_field_of_view(sbx::math::degree{75.0f});
-  // } else {
-  //   const auto& scroll = sbx::devices::input::scroll_delta();
-
-  //   auto field_of_view = camera.field_of_view().to_degrees() - scroll.y * 10.0f;
-
-  //   if (field_of_view > 75.0f) {
-  //     field_of_view = sbx::math::degree{75.0f};
-  //   } else if (field_of_view < 30.0f) {
-  //     field_of_view = sbx::math::degree{30.0f};
-  //   }
-
-  //   camera.set_field_of_view(field_of_view);
-  // }
 
   const auto delta_time = sbx::core::engine::delta_time();
 
-  _time += sbx::units::second{delta_time};
+  _delta_time_label->set_text(fmt::format("Delta: {:.4f}ms", sbx::units::quantity_cast<sbx::units::millisecond>(delta_time).value()));
 
-  if (_time >= sbx::units::second{1.0f}) {
-    _label_fps->set_text(fmt::format("FPS: {}", _frames));
-    _time -= sbx::units::second{1.0f};
+  _time += delta_time;
+  _frames++;
+
+  if (_time >= sbx::units::second{1}) {
+    _fps_label->set_text(fmt::format("FPS: {}", _frames));
+    _time = sbx::units::second{0};
     _frames = 0;
-  } else {
-    ++_frames;
   }
 
-  _label_delta_time->set_text(fmt::format("Delta time: {:.2f} ms", sbx::units::quantity_cast<sbx::units::millisecond>(delta_time).value()));
-}
+  _rotation += sbx::math::degree{45} * delta_time;
 
-auto demo_application::_generate_plane(const sbx::math::vector2u& tile_count, const sbx::math::vector2u& tile_size) -> std::unique_ptr<sbx::models::mesh> {
-  auto vertices = std::vector<sbx::models::vertex3d>{};
-  auto indices = std::vector<std::uint32_t>{};
+  auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
 
-  // Generate vertices
+  auto& scene = scenes_module.scene();
 
-  const auto offset = sbx::math::vector2{static_cast<std::float_t>(tile_count.x * tile_size.x / 2.0f), static_cast<std::float_t>(tile_count.y * tile_size.y / 2.0f)};
+  for (const auto& monkey_id : _monkey_ids) {
+    auto monkey = scene.find_node(monkey_id);
 
-  for (auto y = 0u; y < tile_count.y + 1u; ++y) {
-    for (auto x = 0u; x < tile_count.x + 1u; ++x) {
-      const auto position = sbx::math::vector3{static_cast<std::float_t>(x * tile_size.x - offset.x), 0.0f, static_cast<std::float_t>(y * tile_size.y - offset.y)};
-      const auto normal = sbx::math::vector3::up;
-      const auto uv = sbx::math::vector2{static_cast<std::float_t>(x), static_cast<std::float_t>(y)};
+    auto& transform = monkey->get_component<sbx::math::transform>();
 
-      vertices.emplace_back(position, normal, uv);
+    transform.set_rotation(sbx::math::vector3::up, _rotation);
+  }
+
+  auto camera = scene.camera();
+
+  auto& transform = camera.get_component<sbx::math::transform>();
+
+  auto movement = sbx::math::vector3{};
+
+  const auto local_forward = sbx::math::vector3::cross(sbx::math::vector3::up, transform.right()).normalize();
+  const auto local_right = sbx::math::vector3::cross(sbx::math::vector3::up, transform.forward()).normalize();
+
+  if (sbx::devices::input::is_key_down(sbx::devices::key::w)) {
+    movement += local_forward;
+  }
+
+  if (sbx::devices::input::is_key_down(sbx::devices::key::s)) {
+    movement -= local_forward;
+  }
+
+  if (sbx::devices::input::is_key_down(sbx::devices::key::a)) {
+    movement += local_right;
+  }
+
+  if (sbx::devices::input::is_key_down(sbx::devices::key::d)) {
+    movement -= local_right;
+  }
+
+  if (sbx::devices::input::is_key_down(sbx::devices::key::q)) {
+    _orbit_angle += sbx::math::degree{45.0f * delta_time.value()};
+  }
+
+  if (sbx::devices::input::is_key_down(sbx::devices::key::e)) {
+    _orbit_angle -= sbx::math::degree{45.0f * delta_time.value()};
+  }
+
+  if (sbx::devices::input::is_key_pressed(sbx::devices::key::space)) {
+    for (const auto& monkey_id : _monkey_ids) {
+      auto monkey = scene.find_node(monkey_id);
+
+      auto& staic_mesh = monkey->get_component<sbx::scenes::static_mesh>();
+
+      for (auto& submesh : staic_mesh.submeshes()) {
+        submesh.texture_id = sbx::math::random_element(_texture_ids);
+        submesh.tint = sbx::math::color{sbx::math::random::next<std::float_t>(0.0, 1.0), sbx::math::random::next<std::float_t>(0.0, 1.0), sbx::math::random::next<std::float_t>(0.0, 1.0), 1.0f};
+      }
     }
-  }
+  } 
 
-  // Calculate indices
+  _target += movement * 10.0f * delta_time.value();
 
-  const auto vertex_count = tile_count.x + 1u;
+  const auto tilt_angle_rad = _tilt_angle.to_radians().value();
 
-  for (auto i = 0u; i < vertex_count * vertex_count - vertex_count; ++i) {
-    if ((i + 1u) % vertex_count == 0) {
-      continue;
-    }
+  const auto radius = std::cos(tilt_angle_rad) * _zoom;
+  const auto height = std::sin(tilt_angle_rad) * _zoom;
 
-    indices.emplace_back(i);
-    indices.emplace_back(i + vertex_count);
-    indices.emplace_back(i + vertex_count + 1u);
+  const auto orbit_angle_rad = _orbit_angle.to_radians().value();
 
-    indices.emplace_back(i);
-    indices.emplace_back(i + vertex_count + 1u);
-    indices.emplace_back(i + 1u);
-  }
+  const auto x = std::cos(orbit_angle_rad) * radius;
+  const auto z = std::sin(orbit_angle_rad) * radius;
 
-  return std::make_unique<sbx::models::mesh>(std::move(vertices), std::move(indices));
+  transform.set_position(_target + sbx::math::vector3{x, height, z});
+  transform.look_at(_target);
+
+  auto sphere = scene.find_node(_sphere_id);
+
+  auto& sphere_transform = sphere->get_component<sbx::math::transform>();
+
+  sphere_transform.set_position(_target);
 }
 
 } // namespace demo

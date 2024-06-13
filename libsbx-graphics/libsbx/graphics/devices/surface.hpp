@@ -23,7 +23,7 @@ public:
 
   operator const VkSurfaceKHR&() const noexcept;
 
-  auto capabilities() const noexcept -> const VkSurfaceCapabilitiesKHR&;
+  auto capabilities() const noexcept -> VkSurfaceCapabilitiesKHR;
 
   auto format() const noexcept -> const VkSurfaceFormatKHR&;
 

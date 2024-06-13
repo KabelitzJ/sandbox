@@ -5,70 +5,16 @@
 #include <libsbx/utility/fast_mod.hpp>
 
 #include <libsbx/core/engine.hpp>
+#include <libsbx/core/logger.hpp>
 
 namespace sbx::graphics {
-
-static auto _stringify_result(VkResult result) -> std::string {
-  switch (result) {
-    case VK_SUCCESS:
-      return "Success";
-    case VK_NOT_READY:
-      return "A fence or query has not yet completed";
-    case VK_TIMEOUT:
-      return "A wait operation has not completed in the specified time";
-    case VK_EVENT_SET:
-      return "An event is signaled";
-    case VK_EVENT_RESET:
-      return "An event is unsignaled";
-    case VK_INCOMPLETE:
-      return "A return array was too small for the result";
-    case VK_ERROR_OUT_OF_HOST_MEMORY:
-      return "A host memory allocation has failed";
-    case VK_ERROR_OUT_OF_DEVICE_MEMORY:
-      return "A device memory allocation has failed";
-    case VK_ERROR_INITIALIZATION_FAILED:
-      return "Initialization of an object could not be completed for implementation-specific reasons";
-    case VK_ERROR_DEVICE_LOST:
-      return "The logical or physical device has been lost";
-    case VK_ERROR_MEMORY_MAP_FAILED:
-      return "Mapping of a memory object has failed";
-    case VK_ERROR_LAYER_NOT_PRESENT:
-      return "A requested layer is not present or could not be loaded";
-    case VK_ERROR_EXTENSION_NOT_PRESENT:
-      return "A requested extension is not supported";
-    case VK_ERROR_FEATURE_NOT_PRESENT:
-      return "A requested feature is not supported";
-    case VK_ERROR_INCOMPATIBLE_DRIVER:
-      return "The requested version of Vulkan is not supported by the driver or is otherwise incompatible";
-    case VK_ERROR_TOO_MANY_OBJECTS:
-      return "Too many objects of the type have already been created";
-    case VK_ERROR_FORMAT_NOT_SUPPORTED:
-      return "A requested format is not supported on this device";
-    case VK_ERROR_SURFACE_LOST_KHR:
-      return "A surface is no longer available";
-    case VK_ERROR_OUT_OF_POOL_MEMORY:
-      return "A allocation failed due to having no more space in the descriptor pool";
-    case VK_SUBOPTIMAL_KHR:
-      return "A swapchain no longer matches the surface properties exactly, but can still be used";
-    case VK_ERROR_OUT_OF_DATE_KHR:
-      return "A surface has changed in such a way that it is no longer compatible with the swapchain";
-    case VK_ERROR_INCOMPATIBLE_DISPLAY_KHR:
-      return "The display used by a swapchain does not use the same presentable image layout";
-    case VK_ERROR_NATIVE_WINDOW_IN_USE_KHR:
-      return "The requested window is already connected to a VkSurfaceKHR, or to some other non-Vulkan API";
-    case VK_ERROR_VALIDATION_FAILED_EXT:
-      return "A validation layer found an error";
-    default:
-      return "Unknown Vulkan error";
-  }
-}
 
 auto validate(VkResult result) -> void {
   if (result >= VK_SUCCESS) {
     return;
   }
 
-  throw std::runtime_error{_stringify_result(result)};
+  throw std::runtime_error{"Validation error"};
 }
 
 graphics_module::graphics_module()
@@ -81,21 +27,12 @@ graphics_module::graphics_module()
   auto& window = devices_module.window();
 
   window.on_framebuffer_resized() += [this]([[maybe_unused]] const auto& event) {
-    _framebuffer_resized = true;
+    _is_framebuffer_resized = true;
   };
 }
 
 graphics_module::~graphics_module() {
   _logical_device->wait_idle();
-
-  const auto& graphics_queue = _logical_device->graphics_queue();
-  validate(vkQueueWaitIdle(graphics_queue));
-
-  const auto& transfer_queue = _logical_device->transfer_queue();
-  validate(vkQueueWaitIdle(transfer_queue));
-
-  const auto& compute_queue = _logical_device->compute_queue();
-  validate(vkQueueWaitIdle(compute_queue));
 
   _renderer.reset();
 
@@ -103,13 +40,13 @@ graphics_module::~graphics_module() {
 
   _per_frame_data.clear();
 
-  // // [NOTE] KAJ 2023-02-19 20:47 - Command buffers must be freed before the command pools
+  // [NOTE] KAJ 2023-02-19 : Command buffers must be freed before the command pools
   _command_buffers.clear();
   _command_pools.clear();
 
-  _logical_device.reset();
-  _physical_device.reset();
-  _instance.reset();
+  for (const auto& [type, container] : _asset_containers) {
+    container->clear();
+  }
 }
 
 auto graphics_module::update() -> void {
@@ -123,26 +60,33 @@ auto graphics_module::update() -> void {
 
   const auto& frame_data = _per_frame_data[_current_frame];
 
+  auto capabilities = VkSurfaceCapabilitiesKHR{};
+
+  validate(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(*_physical_device, *_surface, &capabilities));
+
+  const auto extent = capabilities.currentExtent;
+
+  if (_is_framebuffer_resized || _swapchain->is_outdated(extent)) {
+    _recreate_swapchain();
+    return;
+  }
+
   // Get the next image in the swapchain (back/front buffer)
   const auto result = _swapchain->acquire_next_image(frame_data->image_available_semaphore, frame_data->in_flight_fence);
   
   if (result == VK_ERROR_OUT_OF_DATE_KHR) {
     _recreate_swapchain();
     return;
-  }else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+  } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
     throw std::runtime_error{"Failed to acquire swapchain image"};
   }
 
-  // [NOTE] KAJ 2023-02-19 17:39 - Drawing happens here
+  // [NOTE] KAJ 2023-02-19 : Drawing happens here
 
   auto stage = pipeline::stage{};
 
   for (const auto& render_stage : _renderer->render_stages()) {
-    render_stage->update();
-
-    if (!_start_render_pass(*render_stage)) {
-      return;
-    }
+    _start_render_pass(*render_stage);
 
     auto& command_buffer = _command_buffers[_current_frame];
 
@@ -214,12 +158,7 @@ auto graphics_module::attachment(const std::string& name) const -> const descrip
   throw std::runtime_error{fmt::format("No attachment with name '{}' found", name)};
 }
 
-auto graphics_module::_start_render_pass(graphics::render_stage& render_stage) -> bool {
-  if (render_stage.is_outdated()) {
-    _recreate_pass(render_stage);
-    return false;
-  }
-
+auto graphics_module::_start_render_pass(graphics::render_stage& render_stage) -> void {
   const auto& command_buffer = _command_buffers[_current_frame];
 
   if (!command_buffer->is_running()) {
@@ -232,8 +171,8 @@ auto graphics_module::_start_render_pass(graphics::render_stage& render_stage) -
   const auto& extent = area.extent();
 
   auto render_area = VkRect2D{};
-  render_area.offset = VkOffset2D{offset.x, offset.y};
-  render_area.extent = VkExtent2D{extent.x, extent.y};
+  render_area.offset = VkOffset2D{offset.x(), offset.y()};
+  render_area.extent = VkExtent2D{extent.x(), extent.y()};
 
   auto viewport = VkViewport{};
 	viewport.x = 0.0f;
@@ -262,8 +201,6 @@ auto graphics_module::_start_render_pass(graphics::render_stage& render_stage) -
 	render_pass_begin_info.pClearValues = clear_values.data();
 
   command_buffer->begin_render_pass(render_pass_begin_info, VK_SUBPASS_CONTENTS_INLINE);
-
-  return true;
 }
 
 auto graphics_module::_end_render_pass(graphics::render_stage& render_stage) -> void {
@@ -285,38 +222,16 @@ auto graphics_module::_end_render_pass(graphics::render_stage& render_stage) -> 
   const auto result = _swapchain->present(frame_data->render_finished_semaphore);
 
   if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
-    _framebuffer_resized = true;
+    _is_framebuffer_resized = true;
   } else if (result != VK_SUCCESS) {
     throw std::runtime_error{"Failed to present swapchain image"};
   }
-
-  // swapchain::max_frames_in_flight
 
   _current_frame = utility::fast_mod(_current_frame + 1, swapchain::max_frames_in_flight);
 }
 
 auto graphics_module::_reset_render_stages() -> void {
   _recreate_swapchain();
-
-  for (auto& stage : _renderer->render_stages()) {
-    stage->rebuild(*_swapchain);
-  }
-
-  _recreate_attachments();
-}
-
-auto  graphics_module::_recreate_pass(graphics::render_stage& render_stage) -> void {
-  const auto& graphics_queue = _logical_device->graphics_queue();
-
-  validate(vkQueueWaitIdle(graphics_queue));
-
-  if (render_stage.has_swapchain_attachment() && _framebuffer_resized) {
-    _recreate_swapchain();
-  }
-
-  render_stage.rebuild(*_swapchain);
-
-  _recreate_attachments();
 }
 
 auto graphics_module::_recreate_swapchain() -> void {
@@ -324,24 +239,44 @@ auto graphics_module::_recreate_swapchain() -> void {
 
   _logical_device->wait_idle();
 
-  const auto& window = devices_module.window();
+  _swapchain = std::make_unique<graphics::swapchain>(_swapchain);
 
-  const auto extent = VkExtent2D{window.width(), window.height()};
-
-  _swapchain = std::make_unique<graphics::swapchain>(extent, _swapchain);
-
+  _recreate_per_frame_data();
   _recreate_command_buffers();
 
-  _framebuffer_resized = false;
+  for (const auto& render_stage : _renderer->render_stages()) {
+    render_stage->rebuild(*_swapchain);
+  }
+
+  _recreate_attachments();
+
+  _is_framebuffer_resized = false;
+}
+
+auto graphics_module::_recreate_per_frame_data() -> void {
+  for (const auto& data : _per_frame_data) {
+    vkDestroyFence(*_logical_device, data.in_flight_fence, nullptr);
+    vkDestroySemaphore(*_logical_device, data.image_available_semaphore, nullptr);
+    vkDestroySemaphore(*_logical_device, data.render_finished_semaphore, nullptr);
+  }
+
+  _per_frame_data.resize(swapchain::max_frames_in_flight);
+
+  auto semaphore_create_info = VkSemaphoreCreateInfo{};
+	semaphore_create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+	auto fence_create_info = VkFenceCreateInfo{};
+  fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+  fence_create_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+
+  for (auto& data : _per_frame_data) {
+    validate(vkCreateSemaphore(*_logical_device, &semaphore_create_info, nullptr, &data.image_available_semaphore));
+    validate(vkCreateSemaphore(*_logical_device, &semaphore_create_info, nullptr, &data.render_finished_semaphore));
+    validate(vkCreateFence(*_logical_device, &fence_create_info, nullptr, &data.in_flight_fence));
+  }
 }
 
 auto graphics_module::_recreate_command_buffers() -> void {
-  _per_frame_data.resize(swapchain::max_frames_in_flight);
-
-  for (auto& frame_data : _per_frame_data) {
-    frame_data = std::make_unique<per_frame_data>();
-  }
-
   _command_buffers.resize(swapchain::max_frames_in_flight);
 
   for (auto& command_buffer : _command_buffers) {

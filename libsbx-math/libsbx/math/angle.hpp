@@ -5,9 +5,11 @@
 #include <concepts>
 #include <numbers>
 
+#include <libsbx/math/concepts.hpp>
+
 namespace sbx::math {
 
-template<std::floating_point Type>
+template<floating_point Type>
 class basic_degree {
 
 public:
@@ -19,18 +21,27 @@ public:
 
   constexpr basic_degree() = default;
 
-  explicit constexpr basic_degree(value_type value) noexcept
-  : _value{value} {}
-
-  template<typename Other>
+  template<scalar Other>
   requires (std::is_convertible_v<Other, Type>)
-  constexpr auto operator+=(const Other rhs) noexcept -> basic_degree<Type>& {
-    _value += static_cast<Type>(rhs);
+  constexpr basic_degree(const Other value) noexcept
+  : _value{static_cast<Type>(value)} { }
+
+  template<floating_point Other>
+  requires (std::is_convertible_v<Other, Type>)
+  constexpr basic_degree(const basic_degree<Other>& other) noexcept
+  : _value{static_cast<Type>(other._value)} { }
+
+  constexpr ~basic_degree() noexcept = default;
+
+  template<floating_point Other>
+  requires (std::is_convertible_v<Other, Type>)
+  constexpr auto operator=(const basic_degree<Other>& other) noexcept -> basic_degree<Type>& {
+    _value = static_cast<Type>(other._value);
 
     return *this;
   }
 
-  template<typename Other>
+  template<floating_point Other>
   requires (std::is_convertible_v<Other, Type>)
   constexpr auto operator+=(const basic_degree<Other>& rhs) noexcept -> basic_degree<Type>& {
     _value += static_cast<Type>(rhs._value);
@@ -38,15 +49,7 @@ public:
     return *this;
   }
 
-  template<typename Other>
-  requires (std::is_convertible_v<Other, Type>)
-  constexpr auto operator-=(const Other rhs) noexcept -> basic_degree<Type>& {
-    _value -= static_cast<Type>(rhs);
-
-    return *this;
-  }
-
-  template<typename Other>
+  template<floating_point Other>
   requires (std::is_convertible_v<Other, Type>)
   constexpr auto operator-=(const basic_degree<Other>& rhs) noexcept -> basic_degree<Type>& {
     _value -= static_cast<Type>(rhs._value);
@@ -54,7 +57,7 @@ public:
     return *this;
   }
 
-  template<typename Other>
+  template<floating_point Other>
   requires (std::is_convertible_v<Other, Type>)
   constexpr auto operator*=(const Other rhs) noexcept -> basic_degree<Type>& {
     _value *= static_cast<Type>(rhs);
@@ -76,44 +79,32 @@ private:
 
 }; // class basic_degree
 
-template<std::floating_point Type>
+template<floating_point Type>
 constexpr auto operator==(const basic_degree<Type>& lhs, const basic_degree<Type>& rhs) noexcept -> bool {
   return static_cast<basic_degree<Type>::value_type>(lhs) == static_cast<basic_degree<Type>::value_type>(rhs);
 }
 
-template<std::floating_point Type, typename Other>
+template<floating_point Type, floating_point Other>
 requires (std::is_convertible_v<Other, Type>)
 constexpr auto operator+(basic_degree<Type> lhs, const basic_degree<Other>& rhs) noexcept -> basic_degree<Type> {
   return lhs += rhs;
 }
 
-template<std::floating_point Type, typename Other>
-requires (std::is_convertible_v<Other, Type>)
-constexpr auto operator+(basic_degree<Type> lhs, const Other rhs) noexcept -> basic_degree<Type> {
-  return lhs += rhs;
-}
-
-template<std::floating_point Type, typename Other>
+template<floating_point Type, floating_point Other>
 requires (std::is_convertible_v<Other, Type>)
 constexpr auto operator-(basic_degree<Type> lhs, const basic_degree<Other>& rhs) noexcept -> basic_degree<Type> {
   return lhs -= rhs;
 }
 
-template<std::floating_point Type, typename Other>
-requires (std::is_convertible_v<Other, Type>)
-constexpr auto operator-(basic_degree<Type> lhs, const Other rhs) noexcept -> basic_degree<Type> {
-  return lhs -= rhs;
-}
-
-template<std::floating_point Type, typename Other>
+template<floating_point Type, std::convertible_to<Type> Other>
 requires (std::is_convertible_v<Other, Type>)
 constexpr auto operator*(basic_degree<Type> lhs, const Other rhs) noexcept -> basic_degree<Type> {
-  return lhs *= rhs;
+  return lhs *= static_cast<Type>(rhs);
 }
 
 using degree = basic_degree<std::float_t>;
 
-template<std::floating_point Type>
+template<floating_point Type>
 class basic_radian {
 
 public:
@@ -125,10 +116,27 @@ public:
 
   constexpr basic_radian() = default;
 
-  explicit constexpr basic_radian(value_type value) noexcept
-  : _value{value} {}
+  template<scalar Other>
+  requires (std::is_convertible_v<Other, Type>)
+  constexpr basic_radian(const Other value) noexcept
+  : _value{static_cast<Type>(value)} { }
 
-  template<typename Other>
+  template<floating_point Other>
+  requires (std::is_convertible_v<Other, Type>)
+  constexpr basic_radian(const basic_radian<Other>& other) noexcept
+  : _value{static_cast<Type>(other._value)} { }
+
+  constexpr ~basic_radian() noexcept = default;
+
+  template<floating_point Other>
+  requires (std::is_convertible_v<Other, Type>)
+  constexpr auto operator=(const basic_radian<Other>& other) noexcept -> basic_radian<Type>& {
+    _value = static_cast<Type>(other._value);
+
+    return *this;
+  }
+
+  template<floating_point Other>
   requires (std::is_convertible_v<Other, Type>)
   constexpr auto operator+=(const basic_radian<Other>& rhs) noexcept -> basic_radian<Type>& {
     _value += static_cast<Type>(rhs._value);
@@ -136,15 +144,7 @@ public:
     return *this;
   }
 
-  template<typename Other>
-  requires (std::is_convertible_v<Other, Type>)
-  constexpr auto operator+=(const Other rhs) noexcept -> basic_radian<Type>& {
-    _value += static_cast<Type>(rhs);
-
-    return *this;
-  }
-
-  template<typename Other>
+  template<floating_point Other>
   requires (std::is_convertible_v<Other, Type>)
   constexpr auto operator-=(const basic_radian<Other>& rhs) noexcept -> basic_radian<Type>& {
     _value -= static_cast<Type>(rhs._value);
@@ -152,15 +152,7 @@ public:
     return *this;
   }
 
-  template<typename Other>
-  requires (std::is_convertible_v<Other, Type>)
-  constexpr auto operator-=(const Other rhs) noexcept -> basic_radian<Type>& {
-    _value -= static_cast<Type>(rhs);
-
-    return *this;
-  }
-
-  template<typename Other>
+  template<floating_point Other>
   requires (std::is_convertible_v<Other, Type>)
   constexpr auto operator*=(const Other rhs) noexcept -> basic_radian<Type>& {
     _value *= static_cast<Type>(rhs);
@@ -182,44 +174,32 @@ private:
 
 }; // class basic_radian
 
-template<std::floating_point Type>
+template<floating_point Type>
 constexpr auto operator==(const basic_radian<Type>& lhs, const basic_radian<Type>& rhs) noexcept -> bool {
   return static_cast<basic_radian<Type>::value_type>(lhs) == static_cast<basic_radian<Type>::value_type>(rhs);
 }
 
-template<std::floating_point Type, typename Other>
+template<floating_point Type, floating_point Other>
 requires (std::is_convertible_v<Other, Type>)
 constexpr auto operator+(basic_radian<Type> lhs, const basic_radian<Other>& rhs) noexcept -> basic_radian<Type> {
   return lhs += rhs;
 }
 
-template<std::floating_point Type, typename Other>
-requires (std::is_convertible_v<Other, Type>)
-constexpr auto operator+(basic_radian<Type>&lhs, const Other rhs) noexcept -> basic_radian<Type> {
-  return lhs += rhs;
-}
-
-template<std::floating_point Type, typename Other>
-requires (std::is_convertible_v<Other, Type>)
-constexpr auto operator-(basic_radian<Type> lhs, const Other rhs) noexcept -> basic_radian<Type> {
-  return lhs -= rhs;
-}
-
-template<std::floating_point Type, typename Other>
+template<floating_point Type, floating_point Other>
 requires (std::is_convertible_v<Other, Type>)
 constexpr auto operator-(basic_radian<Type> lhs, const basic_radian<Other>& rhs) noexcept -> basic_radian<Type> {
   return lhs -= rhs;
 }
 
-template<std::floating_point Type, typename Other>
+template<floating_point Type, std::convertible_to<Type> Other>
 requires (std::is_convertible_v<Other, Type>)
 constexpr auto operator*(basic_radian<Type> lhs, const Other rhs) noexcept -> basic_radian<Type> {
-  return lhs *= rhs;
+  return lhs *= static_cast<Type>(rhs);
 }
 
 using radian = basic_radian<std::float_t>;
 
-template<std::floating_point Type>
+template<floating_point Type>
 class basic_angle {
 
 public:
@@ -230,7 +210,60 @@ public:
   : _radian{degree.value() * std::numbers::pi_v<value_type> / static_cast<value_type>(180)} {}
 
   constexpr basic_angle(const basic_radian<value_type>& radian) noexcept
-  : _radian{radian.value()} {}
+  : _radian{radian} { }
+
+  template<floating_point Other>
+  requires (std::is_convertible_v<Other, Type>)
+  constexpr basic_angle(const basic_angle<Other>& other) noexcept
+  : _radian{other._radian} { }
+
+  template<floating_point Other>
+  requires (std::is_convertible_v<Other, Type>)
+  constexpr auto operator+=(const basic_angle<Other>& other) noexcept -> basic_angle<Type>& {
+    _radian += basic_radian<Type>{other._radian};
+
+    return *this;
+  }
+
+  template<floating_point Other>
+  requires (std::is_convertible_v<Other, Type>)
+  constexpr auto operator+=(const basic_degree<Other>& other) noexcept -> basic_angle<Type>& {
+    return (*this += basic_angle<Other>{other});
+  }
+
+  template<floating_point Other>
+  requires (std::is_convertible_v<Other, Type>)
+  constexpr auto operator+=(const basic_radian<Other>& other) noexcept -> basic_angle<Type>& {
+    return (*this += basic_angle<Other>{other});
+  }
+
+  template<floating_point Other>
+  requires (std::is_convertible_v<Other, Type>)
+  constexpr auto operator-=(const basic_angle<Other>& other) noexcept -> basic_angle<Type>& {
+    _radian -= basic_radian<Type>{other._radian};
+
+    return *this;
+  }
+
+  template<floating_point Other>
+  requires (std::is_convertible_v<Other, Type>)
+  constexpr auto operator-=(const basic_degree<Other>& other) noexcept -> basic_angle<Type>& {
+    return (*this -= basic_angle<Other>{other});
+  }
+
+  template<floating_point Other>
+  requires (std::is_convertible_v<Other, Type>)
+  constexpr auto operator-=(const basic_radian<Other>& other) noexcept -> basic_angle<Type>& {
+    return (*this -= basic_angle<Other>{other});
+  }
+
+  template<floating_point Other>
+  requires (std::is_convertible_v<Other, Type>)
+  constexpr auto operator*=(const Other other) noexcept -> basic_angle<Type>& {
+    _radian = basic_radian<Type>{_radian.value() * static_cast<Type>(other)};
+
+    return *this;
+  }
 
   constexpr auto to_degrees() const noexcept -> basic_degree<value_type> {
     return basic_degree<value_type>{_radian.value() * static_cast<value_type>(180) / std::numbers::pi_v<value_type>};
@@ -246,53 +279,60 @@ private:
 
 }; // class basic_angle
 
-template<std::floating_point Type>
+template<floating_point Type>
 constexpr auto operator==(const basic_angle<Type>& lhs, const basic_angle<Type>& rhs) noexcept -> bool {
   return lhs.to_radians() == rhs.to_radians();
 }
 
-using angle = basic_angle<std::float_t>;
-
-template<std::floating_point Type>
-constexpr auto to_degrees(const basic_degree<Type>& degree) noexcept -> basic_degree<Type> {
-  return degree;
+template<floating_point LhsType, floating_point RhsType>
+requires (std::is_convertible_v<RhsType, LhsType>)
+constexpr auto operator+(basic_angle<LhsType> lhs, const basic_angle<RhsType>& rhs) noexcept -> basic_angle<LhsType> {
+  return lhs += rhs;
 }
 
-template<std::floating_point Type>
+template<floating_point LhsType, floating_point RhsType>
+requires (std::is_convertible_v<RhsType, LhsType>)
+constexpr auto operator-(basic_angle<LhsType> lhs, const basic_angle<RhsType>& rhs) noexcept -> basic_angle<LhsType> {
+  return lhs -= rhs;
+}
+
+template<floating_point LhsType, floating_point RhsType>
+requires (std::is_convertible_v<RhsType, LhsType>)
+constexpr auto operator*(basic_angle<LhsType> lhs, const RhsType rhs) noexcept -> basic_angle<LhsType> {
+  return lhs *= rhs;
+}
+
+using angle = basic_angle<std::float_t>;
+
+template<floating_point Type>
 constexpr auto to_degrees(const basic_radian<Type>& radian) noexcept -> basic_degree<Type> {
   return basic_angle<Type>{radian}.to_degrees();
 }
 
-template<std::floating_point Type>
-constexpr auto to_radians(const basic_radian<Type>& radian) noexcept -> basic_radian<Type> {
-  return radian;
-}
-
-template<std::floating_point Type>
+template<floating_point Type>
 constexpr auto to_radians(const basic_degree<Type>& degree) noexcept -> basic_radian<Type> {
   return basic_angle<Type>{degree}.to_radians();
 }
 
-// [NOTE] KAJ 2023-05-24 : This, somehow, causes a linker error (multiple definition)
-// namespace literals {
+namespace literals {
 
-// auto operator""_deg(long double value) noexcept -> degree {
-//   return degree{static_cast<std::float_t>(value)};
-// }
+constexpr auto operator""_deg(long double value) noexcept -> degree {
+  return degree{static_cast<std::float_t>(value)};
+}
 
-// auto operator""_deg(unsigned long long value) noexcept -> degree {
-//   return degree{static_cast<std::float_t>(value)};
-// }
+constexpr auto operator""_deg(unsigned long long value) noexcept -> degree {
+  return degree{static_cast<std::float_t>(value)};
+}
 
-// auto operator""_rad(long double value) noexcept -> radian {
-//   return radian{static_cast<std::float_t>(value)};
-// }
+constexpr auto operator""_rad(long double value) noexcept -> radian {
+  return radian{static_cast<std::float_t>(value)};
+}
 
-// auto operator""_rad(unsigned long long value) noexcept -> radian {
-//   return radian{static_cast<std::float_t>(value)};
-// }
+constexpr auto operator""_rad(unsigned long long value) noexcept -> radian {
+  return radian{static_cast<std::float_t>(value)};
+}
 
-// } // namespace literals
+} // namespace literals
 
 } // namespace sbx::math
 

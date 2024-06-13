@@ -6,6 +6,7 @@
 #include <libsbx/math/vector3.hpp>
 #include <libsbx/math/matrix4x4.hpp>
 #include <libsbx/math/angle.hpp>
+#include <libsbx/math/quaternion.hpp>
 
 namespace sbx::math {
 
@@ -13,11 +14,11 @@ class transform final {
 
 public:
 
-  transform(const vector3& position = vector3::zero, const vector3& euler_angles = vector3::zero, const vector3& scale = vector3::one)
+  transform(const vector3& position = vector3::zero, const quaternion& rotation = quaternion::identity, const vector3& scale = vector3::one)
   : _position{position}, 
-    _euler_angles{euler_angles}, 
+    _rotation{rotation}, 
     _scale{scale},
-    _rotation_matrix{matrix4x4::rotation_from_euler_angles(_euler_angles)} { }
+    _rotation_matrix{_rotation.to_matrix()} { }
 
   ~transform() = default;
 
@@ -33,18 +34,18 @@ public:
     _position += offset;
   }
 
-  auto euler_angles() const noexcept -> const vector3& {
-    return _euler_angles;
+  auto rotation() const noexcept -> const quaternion& {
+    return _rotation;
   }
 
-  auto set_euler_angles(const vector3& euler_angles) noexcept -> void {
-    _euler_angles = euler_angles;
-    _rotation_matrix = matrix4x4::rotation_from_euler_angles(_euler_angles);
+  auto set_rotation(const quaternion& rotation) noexcept -> void {
+    _rotation = rotation;
+    _rotation_matrix = _rotation.to_matrix();
   }
 
-  auto add_euler_angles(const vector3& offset) noexcept -> void {
-    _euler_angles += offset;
-    _rotation_matrix = matrix4x4::rotation_from_euler_angles(_euler_angles);
+  auto set_rotation(const vector3& axis, const angle& angle) noexcept -> void {
+    _rotation = quaternion{axis, angle};
+    _rotation_matrix = _rotation.to_matrix();
   }
 
   auto scale() const noexcept -> const vector3& {
@@ -56,21 +57,34 @@ public:
   }
 
   auto forward() const noexcept -> vector3 {
-    return -math::vector3{_rotation_matrix[2]};
+    return -vector3{_rotation_matrix[2]};
   }
 
   auto right() const noexcept -> vector3 {
-    return math::vector3{_rotation_matrix[0]};
+    return vector3{_rotation_matrix[0]};
+  }
+
+  auto up() const noexcept -> vector3 {
+    return vector3{_rotation_matrix[1]};
   }
 
   auto look_at(const vector3& target) noexcept -> void {
-    auto direction = vector3::normalized(target - _position);
+    // const auto direction = vector3::normalized(target - _position);
+      
+    // auto result = matrix4x4{};
 
-    const auto pitch = radian{std::asin(-direction.y)};
-    const auto yaw = radian{std::atan2(direction.x, direction.z)};
-    const auto roll = radian{0.0f};
+    // result[2] = -vector4{direction};
+    // const auto right = vector3::cross(up(), result[2]);
 
-    _euler_angles = vector3{math::to_degrees(pitch), math::to_degrees(yaw), math::to_degrees(roll)};
+    // result[0] = right * 1.0f / std::sqrt(std::max(0.00001f, vector3::dot(right, right)));
+		// result[1] = vector3::cross(result[2], result[0]);
+
+    // _rotation = quaternion{result};
+    // _rotation_matrix = _rotation.to_matrix();
+
+    auto result = matrix4x4::look_at(_position, target, vector3::up);
+    _rotation = quaternion{result};
+    _rotation_matrix = _rotation.to_matrix();
   }
 
   auto as_matrix() const -> matrix4x4 {
@@ -83,10 +97,10 @@ public:
 private:
 
   vector3 _position;
-  vector3 _euler_angles;
+  quaternion _rotation;
   vector3 _scale;
 
-  math::matrix4x4 _rotation_matrix;
+  matrix4x4 _rotation_matrix;
 
 }; // class transform
 

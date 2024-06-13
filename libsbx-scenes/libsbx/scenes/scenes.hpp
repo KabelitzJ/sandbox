@@ -1,6 +1,8 @@
 #ifndef LIBSBX_SCENE_HPP_
 #define LIBSBX_SCENE_HPP_
 
+#include <libsbx/scenes/version.hpp>
+
 #include <libsbx/scenes/scenes_module.hpp>
 #include <libsbx/scenes/scene.hpp>
 
@@ -9,8 +11,8 @@
 #include <libsbx/scenes/components/relationship.hpp>
 #include <libsbx/scenes/components/static_mesh.hpp>
 #include <libsbx/scenes/components/camera.hpp>
-#include <libsbx/scenes/components/script.hpp>
 #include <libsbx/scenes/components/point_light.hpp>
 #include <libsbx/scenes/components/directional_light.hpp>
+#include <libsbx/scenes/components/gizmo.hpp>
 
 #endif // LIBSBX_SCENE_HPP_

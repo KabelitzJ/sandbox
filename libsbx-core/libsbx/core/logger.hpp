@@ -37,6 +37,9 @@
 #include <memory>
 #include <source_location>
 #include <unordered_map>
+#include <type_traits>
+
+#include <fmt/format.h>
 
 #include <spdlog/logger.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
@@ -59,7 +62,7 @@ public:
 
   template<typename... Args>
   static auto trace(format_string_type<Args...> format, Args&&... args) -> void {
-    // [NOTE] KAJ 2023-03-20 19:43 - This should make trace and debug messages be no-ops in release builds.
+    // [NOTE] KAJ 2023-03-20 : This should make trace and debug messages be no-ops in release builds.
     if constexpr (utility::build_configuration_v == utility::build_configuration::debug) {
       _instance().trace(format, std::forward<Args>(args)...);
     }
@@ -158,5 +161,19 @@ private:
 }; // class logger
 
 } // namespace sbx::core
+
+// [NOTE] KAJ 2024-01-19 : Enable formatting to underlying type for all enums
+template<typename Type>
+requires (std::is_enum_v<Type>)
+struct fmt::formatter<Type> : public fmt::formatter<std::underlying_type_t<Type>> {
+
+  using base_type = fmt::formatter<std::underlying_type_t<Type>>;
+
+  template<typename FormatContext>
+  auto format(const Type& value, FormatContext& context) -> decltype(auto) {
+    return base_type::format(static_cast<std::underlying_type_t<Type>>(value), context);
+  }
+
+}; // struct fmt::formatter<Type>
 
 #endif // LIBSBX_CORE_LOGGER_HPP_

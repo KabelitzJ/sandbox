@@ -25,7 +25,7 @@ public:
 
   virtual auto update(graphics::descriptor_handler& descriptor_handler, graphics::uniform_handler& uniform_handler, graphics::storage_handler& storage_handler) -> void = 0;
 
-  virtual auto render(graphics::command_buffer& command_buffer, std::unique_ptr<mesh>& mesh) -> void = 0;
+  virtual auto render(graphics::command_buffer& command_buffer, const mesh& mesh) -> void = 0;
 
   auto position() const noexcept -> const math::vector2u& {
     return _position;

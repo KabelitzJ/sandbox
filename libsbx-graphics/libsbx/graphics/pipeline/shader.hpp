@@ -43,6 +43,12 @@ public:
     imat4,
     umat4,
     sampler2d,
+    sampler2d_array,
+    separate_sampler,
+    separate_image2d,
+    separate_image2d_array,
+    storage_image,
+    subpass_input,
     structure
   }; // enum class data_type
 

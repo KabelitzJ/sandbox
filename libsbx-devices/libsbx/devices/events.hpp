@@ -32,12 +32,12 @@ struct framebuffer_resized_event {
 };
 
 struct key_pressed_event {
-  key key;
+  devices::key key;
   input_mod mods;
 }; // struct key_pressed_event
 
 struct key_released_event {
-  key key;
+  devices::key key;
   input_mod mods;
 }; // struct key_released_event
 

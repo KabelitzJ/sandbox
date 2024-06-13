@@ -11,6 +11,7 @@ if ($directory -eq "") {
   return
 }
 
+Write-Host
 Write-Host "Compiling shaders in directory: '$directory'"
 Write-Host
 
@@ -67,4 +68,3 @@ foreach ($shader in $shaders) {
   }
 }
 
-return 0

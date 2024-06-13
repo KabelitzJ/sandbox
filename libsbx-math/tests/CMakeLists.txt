@@ -11,6 +11,10 @@ target_sources(
   ${PROJECT_NAME}
   PRIVATE
     "${PROJECT_SOURCE_DIR}/tests.cpp"
+  PUBLIC
+    "${PROJECT_SOURCE_DIR}/vector2_tests.hpp"
+    "${PROJECT_SOURCE_DIR}/vector3_tests.hpp"
+    "${PROJECT_SOURCE_DIR}/vector4_tests.hpp"
 )
 
 target_include_directories(
@@ -36,6 +40,12 @@ set_target_properties(
     LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
     POSITION_INDEPENDENT_CODE ON
+)
+
+target_compile_definitions(
+  ${PROJECT_NAME}
+  PRIVATE
+    SBX_CONSTEXPR_ENABLED=${SBX_CONSTEXPR_ENABLED}
 )
 
 target_compile_features(

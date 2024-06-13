@@ -41,6 +41,8 @@
  * @date 2023-02-21
  */
 
+#include <libsbx/utility/version.hpp>
+
 #include <libsbx/utility/hash.hpp>
 #include <libsbx/utility/concepts.hpp>
 #include <libsbx/utility/fast_mod.hpp>
@@ -54,5 +56,8 @@
 #include <libsbx/utility/expected.hpp>
 #include <libsbx/utility/primitive.hpp>
 #include <libsbx/utility/string_literal.hpp>
+#include <libsbx/utility/make_array.hpp>
+#include <libsbx/utility/zip.hpp>
+#include <libsbx/utility/type_name.hpp>
 
 #endif // LIBSBX_UTILITY_HPP_

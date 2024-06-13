@@ -11,6 +11,10 @@ namespace sbx::models {
 
 mesh::mesh(const std::filesystem::path& path)
 : graphics::mesh<vertex3d>{} {
+  if (!std::filesystem::exists(path)) {
+    throw std::runtime_error{"Mesh file not found: " + path.string()};
+  }
+
   const auto extension = path.extension().string();
 
   const auto entry = _loaders().find(extension);

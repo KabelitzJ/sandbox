@@ -2,6 +2,10 @@ project(devices VERSION 0.1.0 LANGUAGES CXX)
 
 message(STATUS "Configuring ${PROJECT_NAME}...")
 
+string(TOUPPER ${PROJECT_NAME} PROJECT_NAME_UPPER)
+
+configure_file("${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/version.hpp.in" "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/version.hpp" @ONLY)
+
 if(${SBX_BUILD_SHARED})
   add_library(${PROJECT_NAME} SHARED)
 else()
@@ -53,7 +57,6 @@ target_link_libraries(
     libsbx::math
     libsbx::signals
     libsbx::core
-    libsbx::assets
 )
 
 set_target_properties(
@@ -63,6 +66,12 @@ set_target_properties(
     LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
     POSITION_INDEPENDENT_CODE ON
+)
+
+target_compile_definitions(
+  ${PROJECT_NAME}
+  PRIVATE
+    SBX_CONSTEXPR_ENABLED=${SBX_CONSTEXPR_ENABLED}
 )
 
 target_compile_features(

@@ -41,12 +41,15 @@
  * @date 2023-02-21
  */
 
+#include <libsbx/math/version.hpp>
+
 #include <libsbx/math/concepts.hpp>
 
 #include <libsbx/math/vector2.hpp>
 #include <libsbx/math/vector3.hpp>
 #include <libsbx/math/vector4.hpp>
 
+#include <libsbx/math/matrix.hpp>
 #include <libsbx/math/matrix4x4.hpp>
 
 #include <libsbx/math/quaternion.hpp>

@@ -7,7 +7,7 @@ namespace sbx::models {
 
 class gltf_loader : public mesh::loader<gltf_loader> {
 
-  inline static const auto is_registered = register_extensions(".gltf");
+  inline static const auto is_registered = register_extensions(".gltf", ".glb");
 
 public:
 
