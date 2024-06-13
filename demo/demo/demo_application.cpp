@@ -40,7 +40,7 @@ demo_application::demo_application()
 
   auto& scene = scenes_module.create_scene();
 
-  for (auto i : std::views::iota(-2, 3)) {
+  for (auto i : std::views::iota(0, 5)) {
     auto monkey = scene.create_node(fmt::format("Monkey{}", i));
 
     auto submeshes = std::vector<sbx::scenes::static_mesh::submesh>{};
@@ -49,9 +49,9 @@ demo_application::demo_application()
 
     monkey.add_component<sbx::scenes::static_mesh>(monkey_id, submeshes);
 
-    monkey.get_component<sbx::math::transform>().set_position(sbx::math::vector3{static_cast<std::float_t>(i) * 3.0f, 0.0f, 0.0f});
+    monkey.get_component<sbx::math::transform>().set_position(sbx::math::vector3{static_cast<std::float_t>(i - 2) * 3.0f, 0.0f, 0.0f});
 
-    sbx::core::logger::debug("Created {} with id: {}", monkey.add_component<sbx::scenes::tag>(), sbx::math::uuid{monkey.get_component<sbx::scenes::id>()});
+    sbx::core::logger::debug("Created {} with id: {}", std::string{monkey.get_component<sbx::scenes::tag>()}, sbx::math::uuid{monkey.get_component<sbx::scenes::id>()});
   }
 
   auto camera = scene.camera();
@@ -76,9 +76,9 @@ auto demo_application::update() -> void  {
     return;
   }
 
-  const auto dt = sbx::core::engine::delta_time();
+  const auto delta_time = sbx::core::engine::delta_time();
 
-  // _rotation += sbx::math::degree{45} * dt;
+  _rotation += sbx::math::degree{45} * delta_time;
 
   auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
 
@@ -88,6 +88,30 @@ auto demo_application::update() -> void  {
     auto& transform = node.get_component<sbx::math::transform>();
     transform.set_rotation(sbx::math::vector3::up, _rotation);
   }
+
+  auto camera = scene.camera();
+
+  auto& transform = camera.get_component<sbx::math::transform>();
+
+  auto movement = sbx::math::vector3{};
+
+  if (sbx::devices::input::is_key_down(sbx::devices::key::w)) {
+    movement += sbx::math::vector3::forward * 5.0f * delta_time.value();
+  }
+
+  if (sbx::devices::input::is_key_down(sbx::devices::key::s)) {
+    movement += sbx::math::vector3::backward * 5.0f * delta_time.value();
+  }
+
+  if (sbx::devices::input::is_key_down(sbx::devices::key::a)) {
+    movement += sbx::math::vector3::left * 5.0f * delta_time.value();
+  }
+
+  if (sbx::devices::input::is_key_down(sbx::devices::key::d)) {
+    movement += sbx::math::vector3::right * 5.0f * delta_time.value();
+  }
+
+  transform.move_by(movement.normalize());
 }
 
 } // namespace demo
