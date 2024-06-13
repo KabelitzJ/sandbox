@@ -8,7 +8,11 @@ namespace demo {
 
 demo_application::demo_application()
 : sbx::core::application{},
-  _rotation{sbx::math::degree{0}} {
+  _rotation{sbx::math::degree{0}},
+  _orbit_angle{sbx::math::degree{90}}, 
+  _tilt_angle{sbx::math::degree{30}},
+  _target{sbx::math::vector3{0.0f, 0.0f, 0.0f}},
+  _zoom{30.0f} {
   auto& graphics_module = sbx::core::engine::get_module<sbx::graphics::graphics_module>();
 
   graphics_module.set_renderer<demo_renderer>();
@@ -96,24 +100,47 @@ auto demo_application::update() -> void  {
 
   auto movement = sbx::math::vector3{};
 
+  const auto local_forward = sbx::math::vector3::cross(sbx::math::vector3::up, transform.right()).normalize();
+  const auto local_right = sbx::math::vector3::cross(sbx::math::vector3::up, transform.forward()).normalize();
+
   if (sbx::devices::input::is_key_down(sbx::devices::key::w)) {
-    movement += transform.forward();
+    movement += local_forward;
   }
 
   if (sbx::devices::input::is_key_down(sbx::devices::key::s)) {
-    movement += -transform.forward();
+    movement -= local_forward;
   }
 
   if (sbx::devices::input::is_key_down(sbx::devices::key::a)) {
-    movement += -transform.right();
+    movement += local_right;
   }
 
   if (sbx::devices::input::is_key_down(sbx::devices::key::d)) {
-    movement += transform.right();
+    movement -= local_right;
   }
 
-  transform.move_by(movement.normalize() * 10.0f * delta_time.value());
-  transform.look_at(sbx::math::vector3::zero);
+  if (sbx::devices::input::is_key_down(sbx::devices::key::q)) {
+    _orbit_angle += sbx::math::degree{45.0f * delta_time.value()};
+  }
+
+  if (sbx::devices::input::is_key_down(sbx::devices::key::e)) {
+    _orbit_angle -= sbx::math::degree{45.0f * delta_time.value()};
+  }
+
+  _target += movement * 10.0f * delta_time.value();
+
+  const auto tilt_angle_rad = _tilt_angle.to_radians().value();
+
+  const auto radius = std::cos(tilt_angle_rad) * _zoom;
+  const auto height = std::sin(tilt_angle_rad) * _zoom;
+
+  const auto orbit_angle_rad = _orbit_angle.to_radians().value();
+
+  const auto x = std::cos(orbit_angle_rad) * radius;
+  const auto z = std::sin(orbit_angle_rad) * radius;
+
+  transform.set_position(_target + sbx::math::vector3{x, height, z});
+  transform.look_at(_target);
 }
 
 } // namespace demo
