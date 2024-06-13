@@ -30,6 +30,19 @@ public:
 
 private:
 
+  std::vector<sbx::math::uuid> _texture_ids;
+  std::vector<sbx::math::uuid> _mesh_ids;
+
+  sbx::math::uuid _plane_id;
+  sbx::math::uuid _sphere_id;
+  std::vector<sbx::math::uuid> _monkey_ids;
+
+  sbx::units::second _time;
+  std::uint32_t _frames;
+
+  sbx::memory::observer_ptr<sbx::ui::label> _fps_label;
+  sbx::memory::observer_ptr<sbx::ui::label> _delta_time_label;
+
   sbx::math::angle _rotation;
 
   sbx::math::angle _orbit_angle;

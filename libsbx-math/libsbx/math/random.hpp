@@ -12,6 +12,8 @@ namespace sbx::math {
 
 struct random {
 
+  random() = delete;
+
   template<numeric Type>
   static auto next(Type min = std::numeric_limits<Type>::min(), Type max = std::numeric_limits<Type>::max()) -> Type {
     using distribution_type = std::conditional_t<std::floating_point<Type>, std::uniform_real_distribution<Type>, std::uniform_int_distribution<Type>>;

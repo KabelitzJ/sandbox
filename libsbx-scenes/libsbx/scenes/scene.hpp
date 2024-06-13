@@ -68,6 +68,14 @@ public:
     return _wind_speed;
   }
 
+  auto find_node(const math::uuid& id) -> std::optional<node> {
+    if (auto entry = _nodes.find(id); entry != _nodes.end()) {
+      return entry->second;
+    } 
+      
+    return std::nullopt;
+  }
+
 private:
 
   template<typename Component, typename... Args>

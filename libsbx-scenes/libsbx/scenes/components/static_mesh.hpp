@@ -32,6 +32,10 @@ public:
     return _submeshes;
   }
 
+  auto submeshes() noexcept -> std::vector<submesh>& {
+    return _submeshes;
+  }
+
 private:
 
   math::uuid _mesh_id;
