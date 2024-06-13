@@ -81,16 +81,12 @@ demo_application::demo_application()
 
   auto sphere = scene.create_node("Sphere");
 
-  submeshes = std::vector<sbx::scenes::static_mesh::submesh>{};
-
-  submeshes.push_back(sbx::scenes::static_mesh::submesh{0, white_id, sbx::math::color{1.0f, 0.0f, 0.0f, 1.0f}});
-
-  sphere.add_component<sbx::scenes::static_mesh>(sphere_id, submeshes);
+  sphere.add_component<sbx::scenes::gizmo>(sphere_id, 0u, sbx::math::color{1.0f, 0.0f, 0.0f, 1.0f});
 
   auto& sphere_transform = sphere.get_component<sbx::math::transform>();
 
   sphere_transform.set_position(sbx::math::vector3{0.0f, 0.0f, 0.0f});
-  sphere_transform.set_scale(sbx::math::vector3{0.5f, 0.5f, 0.5f});
+  sphere_transform.set_scale(sbx::math::vector3{0.2f, 0.2f, 0.2f});
 
   _sphere_id = sphere.get_component<sbx::scenes::id>();
 

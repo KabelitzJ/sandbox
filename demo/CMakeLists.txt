@@ -62,6 +62,7 @@ target_link_libraries(
     libsbx::ecs
     libsbx::core
     libsbx::devices
+    libsbx::gizmos
     libsbx::graphics
     libsbx::scenes
     libsbx::models
