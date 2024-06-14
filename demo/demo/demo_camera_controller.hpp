@@ -22,7 +22,7 @@ public:
     _tilt_angle{sbx::math::degree{30}},
     _min_tilt_angle{sbx::math::degree{1}},
     _max_tilt_angle{sbx::math::degree{89}},
-    _target{sbx::math::vector3{0.0f, 0.0f, 0.0f}},
+    _target{sbx::math::vector3{0.0f, 2.0f, 0.0f}},
     _zoom{30.0f},
     _min_zoom{5.0f},
     _max_zoom{75.0f} { }
@@ -41,7 +41,7 @@ public:
     // WASD movement
 
     auto movement = sbx::math::vector3{};
-    auto mouse_movement = false;
+    auto is_mouse_movement = false;
 
     const auto local_forward = sbx::math::vector3::cross(sbx::math::vector3::up, transform.right()).normalize();
     const auto local_right = sbx::math::vector3::cross(sbx::math::vector3::up, transform.forward()).normalize();
@@ -72,19 +72,14 @@ public:
       _last_mouse_position = mouse_position;
 
       if (sbx::devices::input::is_mouse_button_down(sbx::devices::mouse_button::right)) {
-        _orbit_angle += sbx::math::degree{10.0f * _mouse_position_delta.x() * delta_time.value()};
-
-        if (_mouse_position_delta.x() != 0.0f || _mouse_position_delta.y() != 0.0f) {
-          _orbit_angle += sbx::math::degree{10.0f * _mouse_position_delta.x() * delta_time.value()};
-        }
-
-        _tilt_angle = sbx::math::clamp(_tilt_angle + sbx::math::degree{10.0f * _mouse_position_delta.y() * delta_time.value()}, _min_tilt_angle, _max_tilt_angle);
+        _orbit_angle += sbx::math::degree{80.0f * _mouse_position_delta.x() * delta_time.value()};
+        _tilt_angle = sbx::math::clamp(_tilt_angle + sbx::math::degree{80.0f * _mouse_position_delta.y() * delta_time.value()}, _min_tilt_angle, _max_tilt_angle);
       } 
       
       if (sbx::devices::input::is_mouse_button_down(sbx::devices::mouse_button::left)) {
         movement += local_forward * _mouse_position_delta.y();
         movement += local_right * _mouse_position_delta.x();
-        mouse_movement = true;
+        is_mouse_movement = true;
       }
 
       // We override 
@@ -103,16 +98,15 @@ public:
       _orbit_angle -= sbx::math::degree{45.0f * delta_time.value()};
     }
 
-    auto camera_speed = 2.0f;
+    auto camera_speed = 10.0f;
 
-    // Is the camera is moved by the mouse we want to keep the delta speed
-    if (!mouse_movement) {
-      movement.normalize();
-      camera_speed = 10.0f;
+    movement.normalize();
+
+    if (is_mouse_movement) {
+      movement *= _zoom * 0.3f;
     }
 
     _target += movement * camera_speed * delta_time.value();
-    _target.y() = 2.0f;
 
     // Zoom
 
