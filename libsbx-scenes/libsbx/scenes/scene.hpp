@@ -64,10 +64,6 @@ public:
     return _light;
   }
 
-  auto wind_speed() const -> std::float_t {
-    return _wind_speed;
-  }
-
   auto find_node(const math::uuid& id) -> std::optional<node> {
     if (auto entry = _nodes.find(id); entry != _nodes.end()) {
       return entry->second;
@@ -95,7 +91,6 @@ private:
   node _camera;
 
   directional_light _light;
-  std::float_t _wind_speed;
 
 }; // class scene
 

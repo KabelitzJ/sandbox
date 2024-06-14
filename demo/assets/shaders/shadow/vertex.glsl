@@ -11,7 +11,6 @@ layout(location = 0) in vec3 in_position;
 
 layout(binding = 0) uniform uniform_scene {
   mat4 light_space;
-  float time;
 } scene;
 
 layout(binding = 1) buffer buffer_mesh_data {

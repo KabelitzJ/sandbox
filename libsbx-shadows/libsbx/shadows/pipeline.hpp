@@ -14,15 +14,17 @@ class pipeline : public graphics::graphics_pipeline<vertex3d> {
     .uses_transparency = false,
     .rasterization_state = graphics::rasterization_state{
       .polygon_mode = graphics::polygon_mode::fill,
-      .cull_mode = graphics::cull_mode::front,
+      .cull_mode = graphics::cull_mode::none,
       .front_face = graphics::front_face::counter_clockwise
     }
   };
 
+  using base = graphics::graphics_pipeline<vertex3d>;
+
 public:
 
   pipeline(const std::filesystem::path& path, const graphics::pipeline::stage& stage)
-  : graphics::graphics_pipeline<vertex3d>{path, stage, pipeline_definition} { }
+  : base{path, stage, pipeline_definition} { }
 
   ~pipeline() override = default;
 

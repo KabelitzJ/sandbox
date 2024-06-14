@@ -46,8 +46,6 @@ public:
 
     auto camera_node = scene.camera();
 
-    auto& camera = camera_node.get_component<scenes::camera>();
-
     auto& pipeline = base_type::pipeline();
     auto& descriptor_handler = base_type::descriptor_handler();
 
@@ -65,9 +63,6 @@ public:
     const auto projection = math::matrix4x4::orthographic(-10.0f, 10.0f, -10.0f, 10.0f, 0.1f, 100.0f);
 
     _scene_uniform_handler.push("light_space", math::matrix4x4{projection * view});
-
-    const auto time = std::fmod(core::engine::time().value() * scene.wind_speed(), 1.0f);
-    _scene_uniform_handler.push("time", time);
 
     _scene_uniform_handler.push("light_direction", light_direction);
     _scene_uniform_handler.push("light_color", scene_light.color());

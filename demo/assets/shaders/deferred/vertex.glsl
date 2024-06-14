@@ -23,7 +23,6 @@ layout(location = 4) out flat uint out_albedo_image_index;
 layout(binding = 0) uniform uniform_scene {
   mat4 view;
   mat4 projection;
-  float time;
 } scene;
 
 layout(binding = 1) buffer buffer_mesh_data {

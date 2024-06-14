@@ -13,12 +13,12 @@ layout(binding = 0) uniform uniform_scene {
   vec3 light_direction;
   vec4 light_color;
   mat4 light_space;
-  float time;
 } scene;
 
 layout(binding = 1) uniform sampler2D position_image; 
 layout(binding = 2) uniform sampler2D normal_image;
 layout(binding = 3) uniform sampler2D albedo_image;
+layout(binding = 4) uniform sampler2D shadow_map_image;
 
 const material DEFAULT_MATERIAL = material(
   vec4(1.0, 1.0, 1.0, 1.0),   // Ambient color
@@ -45,6 +45,8 @@ void main() {
   directional_light light = directional_light(scene.light_direction, scene.light_color);
 
   vec4 lighting = calculate_directional_light_blinn_phong(DEFAULT_MATERIAL, light, normal, view_direction);
+
+  // float shadow_factor = calculate_shadow(shadow_map_image, light_space_position, normal, light.direction);
 
   out_color = albedo * lighting;
 }

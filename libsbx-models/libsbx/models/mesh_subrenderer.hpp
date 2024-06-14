@@ -73,9 +73,6 @@ public:
 
     _scene_uniform_handler.push("view", math::matrix4x4::inverted(camera_transform.as_matrix()));
 
-    const auto time = std::fmod(core::engine::time().value() * scene.wind_speed(), 1.0f);
-    _scene_uniform_handler.push("time", time);
-
     for (auto entry = _uniform_data.begin(); entry != _uniform_data.end();) {
       if (_used_uniforms.contains(entry->first)) {
         ++entry;
