@@ -81,7 +81,6 @@ demo_application::demo_application()
 
   auto& sphere_transform = sphere.get_component<sbx::math::transform>();
 
-  sphere_transform.set_position(sbx::math::vector3{0.0f, 2.0f, 0.0f});
   sphere_transform.set_scale(sbx::math::vector3{0.2f, 0.2f, 0.2f});
 
   _sphere_id = sphere.get_component<sbx::scenes::id>();

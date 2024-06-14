@@ -112,6 +112,7 @@ public:
     }
 
     _target += movement * camera_speed * delta_time.value();
+    _target.y() = 2.0f;
 
     // Zoom
 
