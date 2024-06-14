@@ -16,6 +16,8 @@
 #include <libsbx/ui/ui.hpp>
 #include <libsbx/physics/physics.hpp>
 
+#include <demo/demo_camera_controller.hpp>
+
 namespace demo {
 
 class demo_application : public sbx::core::application {
@@ -45,10 +47,7 @@ private:
 
   sbx::math::angle _rotation;
 
-  sbx::math::angle _orbit_angle;
-  sbx::math::angle _tilt_angle;
-  sbx::math::vector3 _target;
-  std::float_t _zoom;
+  demo_camera_controller _camera_controller;
 
 }; // class demo_application
 

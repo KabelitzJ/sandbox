@@ -8,11 +8,7 @@ namespace demo {
 
 demo_application::demo_application()
 : sbx::core::application{},
-  _rotation{sbx::math::degree{0}},
-  _orbit_angle{sbx::math::degree{90}}, 
-  _tilt_angle{sbx::math::degree{30}},
-  _target{sbx::math::vector3{0.0f, 0.0f, 0.0f}},
-  _zoom{30.0f} {
+  _rotation{sbx::math::degree{0}} {
   // Renderer
 
   auto& graphics_module = sbx::core::engine::get_module<sbx::graphics::graphics_module>();
@@ -81,11 +77,11 @@ demo_application::demo_application()
 
   auto sphere = scene.create_node("Sphere");
 
-  sphere.add_component<sbx::scenes::gizmo>(sphere_id, 0u, sbx::math::color{1.0f, 0.0f, 0.0f, 1.0f});
+  sphere.add_component<sbx::scenes::gizmo>(sphere_id, 0u, sbx::math::color{1.0f, 1.0f, 0.0f, 1.0f});
 
   auto& sphere_transform = sphere.get_component<sbx::math::transform>();
 
-  sphere_transform.set_position(sbx::math::vector3{0.0f, 0.0f, 0.0f});
+  sphere_transform.set_position(sbx::math::vector3{0.0f, 2.0f, 0.0f});
   sphere_transform.set_scale(sbx::math::vector3{0.2f, 0.2f, 0.2f});
 
   _sphere_id = sphere.get_component<sbx::scenes::id>();
@@ -163,72 +159,13 @@ auto demo_application::update() -> void  {
     transform.set_rotation(sbx::math::vector3::up, _rotation);
   }
 
-  auto camera = scene.camera();
-
-  auto& transform = camera.get_component<sbx::math::transform>();
-
-  auto movement = sbx::math::vector3{};
-
-  const auto local_forward = sbx::math::vector3::cross(sbx::math::vector3::up, transform.right()).normalize();
-  const auto local_right = sbx::math::vector3::cross(sbx::math::vector3::up, transform.forward()).normalize();
-
-  if (sbx::devices::input::is_key_down(sbx::devices::key::w)) {
-    movement += local_forward;
-  }
-
-  if (sbx::devices::input::is_key_down(sbx::devices::key::s)) {
-    movement -= local_forward;
-  }
-
-  if (sbx::devices::input::is_key_down(sbx::devices::key::a)) {
-    movement += local_right;
-  }
-
-  if (sbx::devices::input::is_key_down(sbx::devices::key::d)) {
-    movement -= local_right;
-  }
-
-  if (sbx::devices::input::is_key_down(sbx::devices::key::q)) {
-    _orbit_angle += sbx::math::degree{45.0f * delta_time.value()};
-  }
-
-  if (sbx::devices::input::is_key_down(sbx::devices::key::e)) {
-    _orbit_angle -= sbx::math::degree{45.0f * delta_time.value()};
-  }
-
-  if (sbx::devices::input::is_key_pressed(sbx::devices::key::space)) {
-    for (const auto& monkey_id : _monkey_ids) {
-      auto monkey = scene.find_node(monkey_id);
-
-      auto& staic_mesh = monkey->get_component<sbx::scenes::static_mesh>();
-
-      for (auto& submesh : staic_mesh.submeshes()) {
-        submesh.texture_id = sbx::math::random_element(_texture_ids);
-        submesh.tint = sbx::math::color{sbx::math::random::next<std::float_t>(0.0, 1.0), sbx::math::random::next<std::float_t>(0.0, 1.0), sbx::math::random::next<std::float_t>(0.0, 1.0), 1.0f};
-      }
-    }
-  } 
-
-  _target += movement * 10.0f * delta_time.value();
-
-  const auto tilt_angle_rad = _tilt_angle.to_radians().value();
-
-  const auto radius = std::cos(tilt_angle_rad) * _zoom;
-  const auto height = std::sin(tilt_angle_rad) * _zoom;
-
-  const auto orbit_angle_rad = _orbit_angle.to_radians().value();
-
-  const auto x = std::cos(orbit_angle_rad) * radius;
-  const auto z = std::sin(orbit_angle_rad) * radius;
-
-  transform.set_position(_target + sbx::math::vector3{x, height, z});
-  transform.look_at(_target);
+  _camera_controller.update();
 
   auto sphere = scene.find_node(_sphere_id);
 
   auto& sphere_transform = sphere->get_component<sbx::math::transform>();
 
-  sphere_transform.set_position(_target);
+  sphere_transform.set_position(_camera_controller.target());
 }
 
 } // namespace demo

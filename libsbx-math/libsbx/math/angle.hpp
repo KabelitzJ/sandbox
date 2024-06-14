@@ -85,6 +85,11 @@ constexpr auto operator==(const basic_degree<Type>& lhs, const basic_degree<Type
 }
 
 template<floating_point Type, floating_point Other>
+constexpr auto operator<=>(const basic_degree<Type>& lhs, const basic_degree<Other>& rhs) noexcept -> std::partial_ordering {
+  return static_cast<basic_degree<Type>::value_type>(lhs) <=> static_cast<basic_degree<Type>::value_type>(rhs);
+}
+
+template<floating_point Type, floating_point Other>
 requires (std::is_convertible_v<Other, Type>)
 constexpr auto operator+(basic_degree<Type> lhs, const basic_degree<Other>& rhs) noexcept -> basic_degree<Type> {
   return lhs += rhs;
@@ -100,6 +105,19 @@ template<floating_point Type, std::convertible_to<Type> Other>
 requires (std::is_convertible_v<Other, Type>)
 constexpr auto operator*(basic_degree<Type> lhs, const Other rhs) noexcept -> basic_degree<Type> {
   return lhs *= static_cast<Type>(rhs);
+}
+
+template<floating_point Type>
+constexpr auto clamp(const basic_degree<Type>& value, const basic_degree<Type>& min, const basic_degree<Type>& max) -> const basic_degree<Type>& {
+  if (value < min) {
+    return min;
+  }
+
+  if (value > max) {
+    return max;
+  }
+
+  return value;
 }
 
 using degree = basic_degree<std::float_t>;
@@ -180,6 +198,11 @@ constexpr auto operator==(const basic_radian<Type>& lhs, const basic_radian<Type
 }
 
 template<floating_point Type, floating_point Other>
+constexpr auto operator<=>(const basic_radian<Type>& lhs, const basic_radian<Other>& rhs) noexcept -> std::partial_ordering {
+  return static_cast<basic_radian<Type>::value_type>(lhs) <=> static_cast<basic_radian<Type>::value_type>(rhs);
+}
+
+template<floating_point Type, floating_point Other>
 requires (std::is_convertible_v<Other, Type>)
 constexpr auto operator+(basic_radian<Type> lhs, const basic_radian<Other>& rhs) noexcept -> basic_radian<Type> {
   return lhs += rhs;
@@ -195,6 +218,19 @@ template<floating_point Type, std::convertible_to<Type> Other>
 requires (std::is_convertible_v<Other, Type>)
 constexpr auto operator*(basic_radian<Type> lhs, const Other rhs) noexcept -> basic_radian<Type> {
   return lhs *= static_cast<Type>(rhs);
+}
+
+template<floating_point Type>
+constexpr auto clamp(const basic_radian<Type>& value, const basic_radian<Type>& min, const basic_radian<Type>& max) -> const basic_radian<Type>& {
+  if (value < min) {
+    return min;
+  }
+
+  if (value > max) {
+    return max;
+  }
+
+  return value;
 }
 
 using radian = basic_radian<std::float_t>;
@@ -284,10 +320,27 @@ constexpr auto operator==(const basic_angle<Type>& lhs, const basic_angle<Type>&
   return lhs.to_radians() == rhs.to_radians();
 }
 
+template<floating_point Type, floating_point Other>
+constexpr auto operator<=>(const basic_angle<Type>& lhs, const basic_angle<Other>& rhs) noexcept -> std::partial_ordering {
+  return lhs.to_radians() <=> rhs.to_radians();
+}
+
 template<floating_point LhsType, floating_point RhsType>
 requires (std::is_convertible_v<RhsType, LhsType>)
 constexpr auto operator+(basic_angle<LhsType> lhs, const basic_angle<RhsType>& rhs) noexcept -> basic_angle<LhsType> {
   return lhs += rhs;
+}
+
+template<floating_point LhsType, floating_point RhsType>
+requires (std::is_convertible_v<RhsType, LhsType>)
+constexpr auto operator+(basic_angle<LhsType> lhs, const basic_degree<RhsType>& rhs) noexcept -> basic_angle<LhsType> {
+  return lhs += basic_angle<LhsType>(rhs);
+}
+
+template<floating_point LhsType, floating_point RhsType>
+requires (std::is_convertible_v<RhsType, LhsType>)
+constexpr auto operator+(basic_angle<LhsType> lhs, const basic_radian<RhsType>& rhs) noexcept -> basic_angle<LhsType> {
+  return lhs += basic_angle<LhsType>(rhs);
 }
 
 template<floating_point LhsType, floating_point RhsType>
@@ -300,6 +353,19 @@ template<floating_point LhsType, floating_point RhsType>
 requires (std::is_convertible_v<RhsType, LhsType>)
 constexpr auto operator*(basic_angle<LhsType> lhs, const RhsType rhs) noexcept -> basic_angle<LhsType> {
   return lhs *= rhs;
+}
+
+template<floating_point Type>
+constexpr auto clamp(const basic_angle<Type>& value, const basic_angle<Type>& min, const basic_angle<Type>& max) -> const basic_angle<Type>& {
+  if (value < min) {
+    return min;
+  }
+
+  if (value > max) {
+    return max;
+  }
+
+  return value;
 }
 
 using angle = basic_angle<std::float_t>;
