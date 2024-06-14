@@ -24,6 +24,11 @@ public:
   : _mesh_id{mesh_id},
     _submeshes{submeshes} { }
 
+  static_mesh(const math::uuid& mesh_id, const math::uuid& texture_id, const math::color& tint = {1.0f, 1.0f, 1.0f, 1.0f})
+  : _mesh_id{mesh_id} {
+    _submeshes.push_back(submesh{0, texture_id, tint});
+  }
+
   auto mesh_id() const noexcept -> math::uuid {
     return _mesh_id;
   }

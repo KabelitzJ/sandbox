@@ -32,11 +32,12 @@ public:
 
 private:
 
+  auto _generate_plane(const sbx::math::vector2u& tile_count, const sbx::math::vector2u& tile_size) -> std::unique_ptr<sbx::models::mesh>;
+
   std::vector<sbx::math::uuid> _texture_ids;
   std::vector<sbx::math::uuid> _mesh_ids;
 
   sbx::math::uuid _plane_id;
-  sbx::math::uuid _sphere_id;
   std::vector<sbx::math::uuid> _monkey_ids;
 
   sbx::units::second _time;

@@ -107,6 +107,22 @@ public:
   }
 
   template<typename Type>
+  auto add_asset(std::unique_ptr<Type>&& asset) -> math::uuid {
+    const auto id = math::uuid{};
+    const auto type = std::type_index{typeid(Type)};
+
+    auto container = _asset_containers.find(type);
+
+    if (container == _asset_containers.end()) {
+      container = _asset_containers.insert({type, std::make_unique<asset_container<Type>>()}).first;
+    }
+
+    static_cast<asset_container<Type>*>(container->second.get())->add(id, std::move(asset));
+
+    return id;
+  }
+
+  template<typename Type>
   auto get_asset(const math::uuid& id) const -> const Type& {
     const auto type = std::type_index{typeid(Type)};
 
@@ -220,6 +236,10 @@ private:
     template<typename... Args>
     auto add(const math::uuid& id, Args&&... args) -> void {
       _assets.insert({id, std::make_unique<Type>(std::forward<Args>(args)...)});
+    }
+
+    auto add(const math::uuid& id, std::unique_ptr<Type>&& asset) -> void {
+      _assets.insert({id, std::move(asset)});
     }
 
     auto get(const math::uuid& id) const -> const Type& {

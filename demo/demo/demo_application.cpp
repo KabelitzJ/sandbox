@@ -34,7 +34,7 @@ demo_application::demo_application()
   // Meshes
 
   const auto monkey_id = graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/suzanne.obj");
-  const auto plane_id = graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/plane.obj");
+  const auto plane_id = graphics_module.add_asset<sbx::models::mesh>(_generate_plane(sbx::math::vector2u{10u, 10u}, sbx::math::vector2u{10u, 10u}));
   const auto sphere_id = graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/sphere.obj");
 
   _mesh_ids.push_back(monkey_id);
@@ -61,29 +61,13 @@ demo_application::demo_application()
 
   auto plane = scene.create_node("Plane");
 
-  auto submeshes = std::vector<sbx::scenes::static_mesh::submesh>{};
-
-  submeshes.push_back(sbx::scenes::static_mesh::submesh{0, prototype_white_id});
-
-  plane.add_component<sbx::scenes::static_mesh>(plane_id, submeshes);
+  plane.add_component<sbx::scenes::static_mesh>(plane_id, prototype_black_id);
   
-  auto& plane_transform = plane.get_component<sbx::math::transform>();
-  plane_transform.set_position(sbx::math::vector3{0.0f, 0.0f, 0.0f});
-  plane_transform.set_scale(sbx::math::vector3{10.0f, 1.0f, 10.0f});
+  // auto& plane_transform = plane.get_component<sbx::math::transform>();
+  // plane_transform.set_position(sbx::math::vector3{0.0f, 0.0f, 0.0f});
+  // plane_transform.set_scale(sbx::math::vector3{10.0f, 1.0f, 10.0f});
 
   _plane_id = plane.get_component<sbx::scenes::id>();
-
-  // Sphere
-
-  auto sphere = scene.create_node("Sphere");
-
-  sphere.add_component<sbx::scenes::gizmo>(sphere_id, 0u, sbx::math::color{1.0f, 1.0f, 0.0f, 1.0f});
-
-  auto& sphere_transform = sphere.get_component<sbx::math::transform>();
-
-  sphere_transform.set_scale(sbx::math::vector3{0.2f, 0.2f, 0.2f});
-
-  _sphere_id = sphere.get_component<sbx::scenes::id>();
 
   // Monkeys
 
@@ -96,8 +80,15 @@ demo_application::demo_application()
 
     monkey.add_component<sbx::scenes::static_mesh>(monkey_id, submeshes);
 
-    auto& transform = monkey.get_component<sbx::math::transform>();
-    transform.set_position(sbx::math::vector3{static_cast<std::float_t>(i - 2) * 3.0f, 2.0f, 0.0f});
+    auto& monkey_transform = monkey.get_component<sbx::math::transform>();
+    monkey_transform.set_position(sbx::math::vector3{static_cast<std::float_t>(i - 2) * 3.0f, 2.0f, 0.0f});
+
+    auto gizmo = scene.create_child_node(monkey, fmt::format("Gizmo{}", i));
+
+    gizmo.add_component<sbx::scenes::gizmo>(sphere_id, 0u, sbx::math::color{sbx::math::random::next<std::float_t>(0.0f, 1.0f), sbx::math::random::next<std::float_t>(0.0f, 1.0f), sbx::math::random::next<std::float_t>(0.0f, 1.0f), 0.5f});
+
+    auto& gizmo_transform = gizmo.get_component<sbx::math::transform>();
+    gizmo_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
 
     _monkey_ids.push_back(monkey.get_component<sbx::scenes::id>());
   }
@@ -131,6 +122,8 @@ auto demo_application::update() -> void  {
     return;
   }
 
+  _camera_controller.update();
+
   const auto delta_time = sbx::core::engine::delta_time();
 
   _delta_time_label->set_text(fmt::format("Delta: {:.4f}ms", sbx::units::quantity_cast<sbx::units::millisecond>(delta_time).value()));
@@ -157,14 +150,45 @@ auto demo_application::update() -> void  {
 
     transform.set_rotation(sbx::math::vector3::up, _rotation);
   }
+}
 
-  _camera_controller.update();
+auto demo_application::_generate_plane(const sbx::math::vector2u& tile_count, const sbx::math::vector2u& tile_size) -> std::unique_ptr<sbx::models::mesh> {
+  auto vertices = std::vector<sbx::models::vertex3d>{};
+  auto indices = std::vector<std::uint32_t>{};
 
-  auto sphere = scene.find_node(_sphere_id);
+  // Generate vertices
 
-  auto& sphere_transform = sphere->get_component<sbx::math::transform>();
+  const auto offset = sbx::math::vector2{static_cast<std::float_t>(tile_count.x() * tile_size.x() / 2.0f), static_cast<std::float_t>(tile_count.y() * tile_size.y() / 2.0f)};
 
-  sphere_transform.set_position(_camera_controller.target());
+  for (auto y = 0u; y < tile_count.y() + 1u; ++y) {
+    for (auto x = 0u; x < tile_count.x() + 1u; ++x) {
+      const auto position = sbx::math::vector3{static_cast<std::float_t>(x * tile_size.x() - offset.x()), 0.0f, static_cast<std::float_t>(y * tile_size.y() - offset.y())};
+      const auto normal = sbx::math::vector3::up;
+      const auto uv = sbx::math::vector2{static_cast<std::float_t>(x), static_cast<std::float_t>(y)};
+
+      vertices.emplace_back(position, normal, uv);
+    }
+  }
+
+  // Calculate indices
+
+  const auto vertex_count = tile_count.x() + 1u;
+
+  for (auto i = 0u; i < vertex_count * vertex_count - vertex_count; ++i) {
+    if ((i + 1u) % vertex_count == 0) {
+      continue;
+    }
+
+    indices.emplace_back(i);
+    indices.emplace_back(i + vertex_count);
+    indices.emplace_back(i + vertex_count + 1u);
+
+    indices.emplace_back(i);
+    indices.emplace_back(i + vertex_count + 1u);
+    indices.emplace_back(i + 1u);
+  }
+
+  return std::make_unique<sbx::models::mesh>(std::move(vertices), std::move(indices));
 }
 
 } // namespace demo
