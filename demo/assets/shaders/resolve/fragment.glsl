@@ -46,7 +46,10 @@ void main() {
 
   vec4 lighting = calculate_directional_light_blinn_phong(DEFAULT_MATERIAL, light, normal, view_direction);
 
-  // float shadow_factor = calculate_shadow(shadow_map_image, light_space_position, normal, light.direction);
+  float shadow_factor = calculate_shadow(shadow_map_image, light_space_position, normal, light.direction);
 
-  out_color = albedo * lighting;
+  float s = texture(shadow_map_image, in_uv).r;
+
+  // out_color = albedo * lighting;
+  out_color = vec4(vec3(s), 1.0);
 }

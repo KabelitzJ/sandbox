@@ -20,7 +20,5 @@ layout(binding = 1) buffer buffer_mesh_data {
 void main() {
   const per_mesh_data data = mesh_data.data[gl_InstanceIndex];
 
-  vec3 world_position = vec3(data.model * vec4(in_position, 1.0));
-
-  gl_Position = scene.light_space * vec4(world_position, 1.0);
+  gl_Position = scene.light_space * data.model * vec4(in_position, 1.0);
 }

@@ -157,6 +157,9 @@ inline constexpr auto basic_matrix4x4<Type>::perspective(const basic_angle<value
   result[2][3] = -static_cast<value_type>(1);
   result[3][2] = (near * far) / (near - far);
 
+  //// [NOTE] KAJ 2023-10-11 : Flip the y-axis to match Vulkan's coordinate system.
+  // result[1][1] *= -1;
+
   return result;
 }
 
