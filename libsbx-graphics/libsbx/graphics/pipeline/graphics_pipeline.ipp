@@ -254,7 +254,7 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
   if (definition.uses_depth) {
     depth_stencil_state.depthTestEnable = true;
     depth_stencil_state.depthWriteEnable = true;
-    depth_stencil_state.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
+    depth_stencil_state.depthCompareOp = VK_COMPARE_OP_LESS;
     depth_stencil_state.depthBoundsTestEnable = false;
     depth_stencil_state.stencilTestEnable = false;
   } else {

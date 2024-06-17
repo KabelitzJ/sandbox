@@ -37,11 +37,13 @@ demo_application::demo_application()
   const auto plane_id = graphics_module.add_asset<sbx::models::mesh>(_generate_plane(sbx::math::vector2u{1u, 1u}, sbx::math::vector2u{10u, 10u}));
   const auto sphere_id = graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/sphere.obj");
   const auto crate_id = graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/crate.obj");
+  const auto tree_2_id = graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/tree_2.obj");
 
   _mesh_ids.push_back(monkey_id);
   _mesh_ids.push_back(plane_id);
   _mesh_ids.push_back(sphere_id);
   _mesh_ids.push_back(crate_id);
+  _mesh_ids.push_back(tree_2_id);
 
   // Window
 
@@ -87,6 +89,20 @@ demo_application::demo_application()
   crate_transform.set_position(sbx::math::vector3{-4.0f, 0.0f, 3.5f});
   crate_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
   crate_transform.set_rotation(sbx::math::vector3::up, sbx::math::degree{20});
+
+  // Tree
+
+  auto tree = scene.create_node("Tree");
+
+  auto submeshes = std::vector<sbx::scenes::static_mesh::submesh>{};
+  submeshes.push_back(sbx::scenes::static_mesh::submesh{0, white_id, sbx::math::color{0.38, 0.54, 0.24, 1.0}});
+  submeshes.push_back(sbx::scenes::static_mesh::submesh{1, white_id, sbx::math::color{0.47, 0.37, 0.24, 1.0}});
+
+  tree.add_component<sbx::scenes::static_mesh>(tree_2_id, submeshes);
+  
+  auto& tree_transform = tree.get_component<sbx::math::transform>();
+  tree_transform.set_position(sbx::math::vector3{0.0f, 0.0f, -4.0f});
+  tree_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
 
   // Monkeys
 

@@ -50,7 +50,7 @@ float pcf(vec4 light_space_position, vec3 normal, vec3 light_direction) {
   float shadow = 0.0;
   vec2 size = 1.0 / textureSize(shadow_map_image, 0);
 
-  int pcf_count = 2;
+  int pcf_count = 1;
   int pfc_iterations = 0;
 
   for(int x = -pcf_count; x <= pcf_count; ++x) {

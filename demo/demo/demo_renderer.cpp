@@ -20,11 +20,12 @@ demo_renderer::demo_renderer()
   // Render stage 0: Shadow map
   {
     auto attachments = std::vector<sbx::graphics::attachment>{
-      sbx::graphics::attachment{0, "shadow_map", sbx::graphics::attachment::type::image, sbx::graphics::format::r32_sfloat, sbx::math::color{1.0f, 1.0f, 1.0f, 1.0f}}
+      sbx::graphics::attachment{0, "depth", sbx::graphics::attachment::type::depth},
+      sbx::graphics::attachment{1, "shadow_map", sbx::graphics::attachment::type::image, sbx::graphics::format::r32_sfloat, sbx::math::color{1.0f, 1.0f, 1.0f, 1.0f}}
     };
 
     auto subpass_bindings = std::vector<sbx::graphics::subpass_binding>{
-      sbx::graphics::subpass_binding{0, {0}}
+      sbx::graphics::subpass_binding{0, {0, 1}}
     };
 
     add_render_stage(std::move(attachments), std::move(subpass_bindings), sbx::graphics::viewport{sbx::math::vector2u{2048, 2048}});
