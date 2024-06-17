@@ -27,10 +27,12 @@
 #include <libsbx/scenes/components/static_mesh.hpp>
 #include <libsbx/scenes/components/id.hpp>
 #include <libsbx/scenes/components/directional_light.hpp>
+#include <libsbx/scenes/components/tag.hpp>
 
 #include <libsbx/models/mesh.hpp>
+#include <libsbx/models/vertex3d.hpp>
 
-#include <libsbx/shadows/vertex3d.hpp>
+// #include <libsbx/shadows/vertex3d.hpp>
 #include <libsbx/shadows/pipeline.hpp>
 
 namespace sbx::shadows {
@@ -51,18 +53,7 @@ public:
 
     auto& scene = scenes_module.scene();
 
-    auto camera = scene.camera();
-
-    auto& scene_light = scene.light();
-
-    const auto light_direction = scene_light.direction();
-
-    const auto position = light_direction * -30.0f;
-
-    const auto view = math::matrix4x4::look_at(position, position + light_direction * 30.0f, math::vector3::up);
-    const auto projection = math::matrix4x4::orthographic(-10.0f, 10.0f, -10.0f, 10.0f, 0.1f, 100.0f);
-
-    _scene_uniform_handler.push("light_space", math::matrix4x4{projection * view});
+    _scene_uniform_handler.push("light_space", scene.light_space());
 
     for (auto entry = _uniform_data.begin(); entry != _uniform_data.end();) {
       if (_used_uniforms.contains(entry->first)) {

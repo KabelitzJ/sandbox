@@ -193,7 +193,7 @@ auto render_stage::rebuild(const swapchain& swapchain) -> void {
 
   for (const auto& attachment : _attachments) {
     if (attachment.image_type() == attachment::type::image) {
-      _color_images.insert({attachment.binding(), std::make_unique<graphics::image2d>(_render_area.extent(), to_vk_enum<VkFormat>(attachment.format()), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_STORAGE_BIT, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_REPEAT, VK_SAMPLE_COUNT_1_BIT)});
+      _color_images.insert({attachment.binding(), std::make_unique<graphics::image2d>(_render_area.extent(), to_vk_enum<VkFormat>(attachment.format()), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_STORAGE_BIT, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_SAMPLE_COUNT_1_BIT)});
     } else {
       _color_images.insert({attachment.binding(), nullptr});
     }

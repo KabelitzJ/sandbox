@@ -13,7 +13,7 @@ enum class blur_type : std::uint32_t {
   gaussian_blur_13 = 2
 }; // enum class blur_type
 
-template<graphics::vertex Vertex>
+template<graphics::vertex Vertex, blur_type Type>
 class blur_filter final : public filter<Vertex> {
 
   using base_type = filter<Vertex>;
@@ -22,10 +22,11 @@ public:
 
   using vertex_type = base_type::vertex_type;
 
-  blur_filter(const std::filesystem::path& path, const graphics::pipeline::stage& stage, const std::string& attachment_name, blur_type type, const math::vector2& direction)
+  inline static constexpr auto type = Type;
+
+  blur_filter(const std::filesystem::path& path, const graphics::pipeline::stage& stage, const std::string& attachment_name, const math::vector2& direction)
   : base_type{path, stage},
     _attachment_name{attachment_name},
-    _type{type},
     _direction{direction} { }
 
   ~blur_filter() override = default;
@@ -37,7 +38,7 @@ public:
     auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
     
     _push_handler.push("direction", _direction);
-    _push_handler.push("type", _type);
+    _push_handler.push("type", type);
 
     descriptor_handler.push("data", _push_handler);
     descriptor_handler.push("source_image", graphics_module.attachment(_attachment_name));
@@ -59,7 +60,6 @@ private:
   graphics::push_handler _push_handler;
 
   std::string _attachment_name;
-  blur_type _type;
   math::vector2 _direction;
 
 }; // class blur_filter

@@ -7,6 +7,7 @@
 #include <libsbx/graphics/pipeline/vertex_input_description.hpp>
 
 #include <libsbx/post/filters/resolve_filter.hpp>
+#include <libsbx/post/filters/blur_filter.hpp>
 
 #include <libsbx/shadows/shadow_subrenderer.hpp>
 #include <libsbx/ui/ui_subrenderer.hpp>
@@ -16,7 +17,7 @@ namespace demo {
 
 demo_renderer::demo_renderer()
 : _clear_color{0.0f, 0.0f, 0.0f, 1.0f} {
-  // Render stage 0: Deferred scene
+  // Render stage 0: Shadow map
   {
     auto attachments = std::vector<sbx::graphics::attachment>{
       sbx::graphics::attachment{0, "shadow_map", sbx::graphics::attachment::type::image, sbx::graphics::format::r32_sfloat, sbx::math::color{1.0f, 1.0f, 1.0f, 1.0f}}

@@ -3,23 +3,24 @@
 
 #include <libsbx/graphics/pipeline/graphics_pipeline.hpp>
 
-#include <libsbx/shadows/vertex3d.hpp>
+// #include <libsbx/shadows/vertex3d.hpp>
+#include <libsbx/models/vertex3d.hpp>
 
 namespace sbx::shadows {
 
-class pipeline : public graphics::graphics_pipeline<vertex3d> {
+class pipeline : public graphics::graphics_pipeline<models::vertex3d> {
 
   inline static constexpr auto pipeline_definition = graphics::pipeline_definition{
     .uses_depth = true,
     .uses_transparency = false,
     .rasterization_state = graphics::rasterization_state{
       .polygon_mode = graphics::polygon_mode::fill,
-      .cull_mode = graphics::cull_mode::none,
+      .cull_mode = graphics::cull_mode::front,
       .front_face = graphics::front_face::counter_clockwise
     }
   };
 
-  using base = graphics::graphics_pipeline<vertex3d>;
+  using base = graphics::graphics_pipeline<models::vertex3d>;
 
 public:
 

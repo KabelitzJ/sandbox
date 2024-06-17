@@ -8,6 +8,8 @@ struct per_mesh_data {
 }; // struct per_mesh_data
 
 layout(location = 0) in vec3 in_position;
+layout(location = 1) in vec3 in_normal;
+layout(location = 2) in vec2 in_uv;
 
 layout(binding = 0) uniform uniform_scene {
   mat4 light_space;
@@ -20,5 +22,7 @@ layout(binding = 1) buffer buffer_mesh_data {
 void main() {
   const per_mesh_data data = mesh_data.data[gl_InstanceIndex];
 
-  gl_Position = scene.light_space * data.model * vec4(in_position, 1.0);
+  vec3 world_position = vec3(data.model * vec4(in_position, 1.0));
+
+  gl_Position = scene.light_space * vec4(world_position, 1.0);
 }

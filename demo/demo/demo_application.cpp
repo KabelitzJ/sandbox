@@ -36,10 +36,12 @@ demo_application::demo_application()
   const auto monkey_id = graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/suzanne.obj");
   const auto plane_id = graphics_module.add_asset<sbx::models::mesh>(_generate_plane(sbx::math::vector2u{1u, 1u}, sbx::math::vector2u{10u, 10u}));
   const auto sphere_id = graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/sphere.obj");
+  const auto crate_id = graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/crate.obj");
 
   _mesh_ids.push_back(monkey_id);
   _mesh_ids.push_back(plane_id);
   _mesh_ids.push_back(sphere_id);
+  _mesh_ids.push_back(crate_id);
 
   // Window
 
@@ -63,11 +65,28 @@ demo_application::demo_application()
 
   plane.add_component<sbx::scenes::static_mesh>(plane_id, prototype_black_id);
   
-  // auto& plane_transform = plane.get_component<sbx::math::transform>();
-  // plane_transform.set_position(sbx::math::vector3{0.0f, 0.0f, 0.0f});
-  // plane_transform.set_scale(sbx::math::vector3{10.0f, 1.0f, 10.0f});
+  auto& plane_transform = plane.get_component<sbx::math::transform>();
+  plane_transform.set_scale(sbx::math::vector3{10.0f, 1.0f, 10.0f});
 
-  _plane_id = plane.get_component<sbx::scenes::id>();
+  // Sphere
+
+  auto sphere = scene.create_node("Sphere");
+
+  sphere.add_component<sbx::scenes::static_mesh>(sphere_id, prototype_black_id);
+  
+  auto& sphere_transform = sphere.get_component<sbx::math::transform>();
+  sphere_transform.set_position(sbx::math::vector3{5.0f, 1.0f, 5.0f});
+
+  // Crate
+
+  auto crate = scene.create_node("Crate");
+
+  crate.add_component<sbx::scenes::static_mesh>(crate_id, wood_id);
+  
+  auto& crate_transform = crate.get_component<sbx::math::transform>();
+  crate_transform.set_position(sbx::math::vector3{-4.0f, 0.0f, 3.5f});
+  crate_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
+  crate_transform.set_rotation(sbx::math::vector3::up, sbx::math::degree{20});
 
   // Monkeys
 
@@ -97,14 +116,10 @@ demo_application::demo_application()
 
   auto camera = scene.camera();
 
-  const auto& light = scene.light();
-
-  const auto light_direction = light.direction();
-
-  const auto position = light_direction * -30.0f;
+  const auto position = sbx::math::vector3{10.0f, 10.0f, 10.0f};
 
   camera.get_component<sbx::math::transform>().set_position(position);
-  camera.get_component<sbx::math::transform>().look_at(position + light_direction);
+  camera.get_component<sbx::math::transform>().look_at(sbx::math::vector3::zero);
 
   // UI
 
@@ -128,7 +143,7 @@ auto demo_application::update() -> void  {
     return;
   }
 
-  // _camera_controller.update();
+  _camera_controller.update();
 
   const auto delta_time = sbx::core::engine::delta_time();
 
