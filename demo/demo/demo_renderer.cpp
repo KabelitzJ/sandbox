@@ -19,7 +19,7 @@ demo_renderer::demo_renderer()
   // Render stage 0: Deferred scene
   {
     auto attachments = std::vector<sbx::graphics::attachment>{
-      sbx::graphics::attachment{0, "shadow_map", sbx::graphics::attachment::type::image, sbx::graphics::format::r32g32_sfloat, sbx::math::color{1.0f, 1.0f, 1.0f, 1.0f}}
+      sbx::graphics::attachment{0, "shadow_map", sbx::graphics::attachment::type::image, sbx::graphics::format::r32_sfloat, sbx::math::color{1.0f, 1.0f, 1.0f, 1.0f}}
     };
 
     auto subpass_bindings = std::vector<sbx::graphics::subpass_binding>{

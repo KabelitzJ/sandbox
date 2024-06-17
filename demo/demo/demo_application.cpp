@@ -34,7 +34,7 @@ demo_application::demo_application()
   // Meshes
 
   const auto monkey_id = graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/suzanne.obj");
-  const auto plane_id = graphics_module.add_asset<sbx::models::mesh>(_generate_plane(sbx::math::vector2u{10u, 10u}, sbx::math::vector2u{10u, 10u}));
+  const auto plane_id = graphics_module.add_asset<sbx::models::mesh>(_generate_plane(sbx::math::vector2u{1u, 1u}, sbx::math::vector2u{10u, 10u}));
   const auto sphere_id = graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/sphere.obj");
 
   _mesh_ids.push_back(monkey_id);
@@ -97,11 +97,14 @@ demo_application::demo_application()
 
   auto camera = scene.camera();
 
-  // camera.get_component<sbx::math::transform>().set_position(sbx::math::vector3{0.0f, 2.0f, 8.0f});
-  // camera.get_component<sbx::math::transform>().look_at(sbx::math::vector3::zero);
+  const auto& light = scene.light();
 
-  camera.get_component<sbx::math::transform>().set_position(sbx::math::vector3{0.0f, 8.0f, 8.0f});
-  camera.get_component<sbx::math::transform>().set_rotation(sbx::math::vector3::right, sbx::math::degree{45});
+  const auto light_direction = light.direction();
+
+  const auto position = light_direction * -30.0f;
+
+  camera.get_component<sbx::math::transform>().set_position(position);
+  camera.get_component<sbx::math::transform>().look_at(position + light_direction);
 
   // UI
 

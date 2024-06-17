@@ -50,6 +50,6 @@ void main() {
 
   float s = texture(shadow_map_image, in_uv).r;
 
-  out_color = albedo * lighting;
-  out_color = vec4(s, s, s, 1.0);
+  // out_color = albedo * lighting;
+  out_color = vec4(vec3(s), 1.0);
 }
