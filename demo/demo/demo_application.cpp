@@ -97,8 +97,11 @@ demo_application::demo_application()
 
   auto camera = scene.camera();
 
-  camera.get_component<sbx::math::transform>().set_position(sbx::math::vector3{0.0f, 2.0f, 8.0f});
-  camera.get_component<sbx::math::transform>().look_at(sbx::math::vector3::zero);
+  // camera.get_component<sbx::math::transform>().set_position(sbx::math::vector3{0.0f, 2.0f, 8.0f});
+  // camera.get_component<sbx::math::transform>().look_at(sbx::math::vector3::zero);
+
+  camera.get_component<sbx::math::transform>().set_position(sbx::math::vector3{0.0f, 8.0f, 8.0f});
+  camera.get_component<sbx::math::transform>().set_rotation(sbx::math::vector3::right, sbx::math::degree{45});
 
   // UI
 
@@ -122,7 +125,7 @@ auto demo_application::update() -> void  {
     return;
   }
 
-  _camera_controller.update();
+  // _camera_controller.update();
 
   const auto delta_time = sbx::core::engine::delta_time();
 
