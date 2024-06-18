@@ -109,7 +109,7 @@ public:
       descriptor_handler.push("albedo_images", _albedo_images);
 
       if (!descriptor_handler.update(_pipeline)) {
-        return;
+        continue;
       }
 
       descriptor_handler.bind_descriptors(command_buffer);
