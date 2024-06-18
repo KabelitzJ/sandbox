@@ -30,6 +30,8 @@ public:
 
   auto update() -> void override;
 
+  auto fixed_update() -> void override;
+
 private:
 
   auto _generate_plane(const sbx::math::vector2u& tile_count, const sbx::math::vector2u& tile_size) -> std::unique_ptr<sbx::models::mesh>;

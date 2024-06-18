@@ -2,6 +2,7 @@
 
 #include <filesystem>
 #include <fstream>
+#include <bit>
 
 #include <fmt/format.h>
 
@@ -11,6 +12,8 @@
 
 #include <libsbx/math/vector2.hpp>  
 #include <libsbx/math/vector3.hpp>
+#include <libsbx/math/matrix4x4.hpp>
+#include <libsbx/math/quaternion.hpp>
 
 #include <libsbx/models/vertex3d.hpp>
 
@@ -24,13 +27,13 @@ static auto _decode_buffer(std::size_t index, std::unordered_map<std::size_t, st
   const auto byte_length = json["byteLength"].get<std::size_t>();
   const auto uri = json["uri"].get<std::string>();
 
-  auto start = uri.find("base64,");
+  auto start = uri.find("data:application/octet-stream;base64,");
 
   if (start == std::string::npos) {
     throw std::runtime_error{fmt::format("Invalid base64 URI: {}", uri.substr(0, uri.find(',')))};
   }
 
-  const auto buffer_base64 = uri.substr(start + 7);
+  const auto buffer_base64 = uri.substr(start + 37u);
 
   auto buffer = std::vector<std::uint8_t>{};
   buffer.resize(byte_length);
@@ -57,19 +60,59 @@ auto gltf_loader::load(const std::filesystem::path& path) -> mesh_data {
 
   auto json = nlohmann::json::parse(file);
 
+  const auto& nodes = json["nodes"];
   const auto& meshes = json["meshes"];
   const auto& accessors = json["accessors"];
   const auto& buffer_views = json["bufferViews"];
   const auto& buffers = json["buffers"];
 
-  for (const auto& mesh : meshes) {
+  auto unique_vertices = std::unordered_map<vertex3d, std::uint32_t>{};
+
+  for (const auto& node : nodes) {
+    const auto mesh_index = node["mesh"].get<std::size_t>();
+
+    auto transform = math::matrix4x4::identity;
+
+    if (node.contains("translation")) {
+      const auto& translation = node["translation"];
+      const auto x = translation[0].get<std::double_t>();
+      const auto z = translation[1].get<std::double_t>();
+      const auto y = translation[2].get<std::double_t>();
+
+      transform = transform * math::matrix4x4::translated(math::matrix4x4::identity, math::vector3{x, y, z});
+    }
+
+    if (node.contains("rotation")) {
+      const auto& rotation = node["rotation"];
+      const auto x = rotation[0].get<std::double_t>();
+      const auto z = rotation[1].get<std::double_t>();
+      const auto y = rotation[2].get<std::double_t>();
+      const auto w = rotation[3].get<std::double_t>();
+
+      transform = transform * math::quaternion{x, y, z, w}.to_matrix();
+    }
+
+    if (node.contains("scale")) {
+      const auto& scale = node["scale"];
+      const auto x = scale[0].get<std::double_t>();
+      const auto z = scale[1].get<std::double_t>();
+      const auto y = scale[2].get<std::double_t>();
+
+      transform = transform * math::matrix4x4::scaled(math::matrix4x4::identity, math::vector3{x, y, z});
+    }
+
+    const auto& mesh = meshes[mesh_index];
+
     const auto mesh_name = mesh["name"].get<std::string>();
     auto submesh = graphics::submesh{};
 
     core::logger::debug("Loading submesh '{}'", mesh_name);
 
     submesh.index_offset = static_cast<std::uint32_t>(data.indices.size());
-    submesh.vertex_offset = static_cast<std::uint32_t>(data.vertices.size()); 
+    // submesh.vertex_offset = static_cast<std::uint32_t>(data.vertices.size()); 
+
+    // [NOTE] KAJ 2023-11-22 : This is a offset into the vertex buffer. We dont want to use this.
+    submesh.vertex_offset = 0u;
 
     const auto& primitives = mesh["primitives"];
     
@@ -189,15 +232,27 @@ auto gltf_loader::load(const std::filesystem::path& path) -> mesh_data {
 
       // [NOTE] KAJ 2024-03-20 : Here we add the positions, normals and uvs to the vertices.
 
+      // for (auto i = 0u; i < positions_count; ++i) {
+      //   const auto position = transform * math::vector4{positions_data[i * 3u + 0u], positions_data[i * 3u + 1u], positions_data[i * 3u + 2u], 0.0f};
+      //   const auto normal = transform * math::vector4{normals_data[i * 3u + 0u], normals_data[i * 3u + 1u], normals_data[i * 3u + 2u], 0.0f};
+      //   const auto uv = math::vector2{uvs_data[i * 2u + 0u], uvs_data[i * 2u + 1u]};
+
+      //   data.vertices.push_back(models::vertex3d{position, normal, uv});
+      // }
+
+      data.vertices.reserve(data.vertices.size() + positions_count);
+
       for (auto i = 0; i < positions_count; ++i) {
-        const auto& position = positions_data[i];
-        const auto& normal = normals_data[i];
+        const auto& position = transform * math::vector4{positions_data[i]};
+        const auto& normal = transform * math::vector4{normals_data[i]};
         const auto& uv = uvs_data[i];
 
         data.vertices.push_back(models::vertex3d{position, normal, uv});
       }
 
-      for (auto i = 0; i < indices_count; ++i) {
+      data.indices.reserve(data.indices.size() + indices_count);
+
+      for (auto i = 0u; i < indices_count; ++i) {
         data.indices.push_back(static_cast<std::uint32_t>(indices_data[i]));
       }
 
@@ -205,6 +260,8 @@ auto gltf_loader::load(const std::filesystem::path& path) -> mesh_data {
 
       data.submeshes.push_back(submesh);
     }
+
+    // break;
   }
 
   return data;

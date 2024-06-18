@@ -24,7 +24,7 @@ namespace sbx::physics {
 
 class physics_module : public core::module<physics_module> {
 
-  inline static const auto is_registered = register_module(stage::pre, dependencies<scenes::scenes_module>{});
+  inline static const auto is_registered = register_module(stage::fixed, dependencies<scenes::scenes_module>{});
 
 public:
 

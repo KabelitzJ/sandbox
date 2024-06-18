@@ -33,6 +33,10 @@ mesh::mesh(const std::filesystem::path& path)
 
   _submeshes = std::move(submeshes);
 
+  for (const auto& submesh : _submeshes) {
+    core::logger::debug("index_count: {}, index_offset: {}, vertex_offset: {}", submesh.index_count,  submesh.index_offset,  submesh.vertex_offset);
+  }
+
   core::logger::debug("Loaded mesh: {}, vertices: {}, indices: {} in {} ms", path.string(), vertices.size(), indices.size(), units::quantity_cast<units::millisecond>(timer.elapsed()).value());
 }
 

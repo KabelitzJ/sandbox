@@ -13,6 +13,8 @@ public:
 
   virtual auto update() -> void = 0;
 
+  virtual auto fixed_update() -> void = 0;
+
 }; // class application
 
 } // namespace sbx::core

@@ -55,6 +55,10 @@ public:
     return _instance->_delta_time;
   }
 
+  static auto fixed_delta_time() -> units::second {
+    return units::second{1.0f / 60.0f};
+  }
+
   static auto time() -> units::second {
     return _instance->_time;
   }
@@ -90,6 +94,8 @@ public:
 
     auto last = clock_type::now();
 
+    auto fixed_accumulator = units::second{};
+
     while (_is_running) {
       const auto now = clock_type::now();
       const auto delta_time = std::chrono::duration_cast<std::chrono::duration<std::float_t>>(now - last).count();
@@ -100,11 +106,17 @@ public:
       _instance->_delta_time = units::second{delta_time};
       _instance->_time += _instance->_delta_time;
 
-      _update_stage(stage::always);
+      fixed_accumulator += _instance->_delta_time;
 
       _update_stage(stage::pre);
       _update_stage(stage::normal);
       _update_stage(stage::post);
+
+      while (fixed_accumulator >= fixed_delta_time()) {
+        application->fixed_update();
+        _update_stage(stage::fixed);
+        fixed_accumulator -= fixed_delta_time();
+      }
 
       _update_stage(stage::rendering);
     }
