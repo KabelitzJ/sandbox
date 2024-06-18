@@ -1,6 +1,5 @@
-
-#ifndef LIBSBX_PHYSICA_BOX_COLLIDER_HPP_
-#define LIBSBX_PHYSICA_BOX_COLLIDER_HPP_
+#ifndef LIBSBX_PHYSICS_BOX_COLLIDER_HPP_
+#define LIBSBX_PHYSICS_BOX_COLLIDER_HPP_
 
 #include <libsbx/math/vector3.hpp>
 
@@ -31,4 +30,4 @@ private:
 
 } // namespace sbx::physics
 
-#endif // LIBSBX_PHYSICA_BOX_COLLIDER_HPP_
+#endif // LIBSBX_PHYSICS_BOX_COLLIDER_HPP_
