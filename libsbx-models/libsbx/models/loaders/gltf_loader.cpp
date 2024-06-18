@@ -109,7 +109,6 @@ auto gltf_loader::load(const std::filesystem::path& path) -> mesh_data {
     core::logger::debug("Loading submesh '{}'", mesh_name);
 
     submesh.index_offset = static_cast<std::uint32_t>(data.indices.size());
-    // submesh.vertex_offset = static_cast<std::uint32_t>(data.vertices.size()); 
 
     // [NOTE] KAJ 2023-11-22 : This is a offset into the vertex buffer. We dont want to use this.
     submesh.vertex_offset = 0u;
@@ -232,14 +231,6 @@ auto gltf_loader::load(const std::filesystem::path& path) -> mesh_data {
 
       // [NOTE] KAJ 2024-03-20 : Here we add the positions, normals and uvs to the vertices.
 
-      // for (auto i = 0u; i < positions_count; ++i) {
-      //   const auto position = transform * math::vector4{positions_data[i * 3u + 0u], positions_data[i * 3u + 1u], positions_data[i * 3u + 2u], 0.0f};
-      //   const auto normal = transform * math::vector4{normals_data[i * 3u + 0u], normals_data[i * 3u + 1u], normals_data[i * 3u + 2u], 0.0f};
-      //   const auto uv = math::vector2{uvs_data[i * 2u + 0u], uvs_data[i * 2u + 1u]};
-
-      //   data.vertices.push_back(models::vertex3d{position, normal, uv});
-      // }
-
       data.vertices.reserve(data.vertices.size() + positions_count);
 
       for (auto i = 0; i < positions_count; ++i) {
@@ -260,8 +251,6 @@ auto gltf_loader::load(const std::filesystem::path& path) -> mesh_data {
 
       data.submeshes.push_back(submesh);
     }
-
-    // break;
   }
 
   return data;
