@@ -88,8 +88,8 @@ demo_application::demo_application()
   auto dragon = scene.create_node("Dragon");
 
   auto dragon_submeshes = std::vector<sbx::scenes::static_mesh::submesh>{};
-  dragon_submeshes.push_back(sbx::scenes::static_mesh::submesh{0, prototype_white_id});
-  // dragon_submeshes.push_back(sbx::scenes::static_mesh::submesh{0, white_id, sbx::math::color{0.52f, 0.14f, 0.16f, 1.0f}});
+  // dragon_submeshes.push_back(sbx::scenes::static_mesh::submesh{0, white_id});
+  dragon_submeshes.push_back(sbx::scenes::static_mesh::submesh{0, white_id, sbx::math::color{0.62f, 0.14f, 0.16f, 1.0f}});
   dragon_submeshes.push_back(sbx::scenes::static_mesh::submesh{1, white_id, sbx::math::color{0.0f, 0.64f, 0.42f, 1.0f}});
 
   dragon.add_component<sbx::scenes::static_mesh>(dragon_id, dragon_submeshes);
