@@ -28,20 +28,7 @@ surface::surface(const instance& instance, const physical_device& physical_devic
     throw std::runtime_error("No surface formats available");
   }
 
-  auto found_desired_format = false;
-
-  for (auto& surface_format : surface_formats) {
-    if (surface_format.format == VK_FORMAT_B8G8R8A8_SRGB && surface_format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
-      _format = surface_format;
-      found_desired_format = true;
-
-      break;
-    }
-  }
-
-  if (!found_desired_format) {
-    _format = surface_formats[0];
-  }
+  _format = _choose_swap_surface_format(surface_formats);
 
   const auto& present_queue = logical_device.queue<queue::type::present>();
 
@@ -82,6 +69,16 @@ auto surface::capabilities() const noexcept -> VkSurfaceCapabilitiesKHR {
 
 auto surface::format() const noexcept -> const VkSurfaceFormatKHR& {
   return _format;
+}
+
+auto surface::_choose_swap_surface_format(const std::vector<VkSurfaceFormatKHR>& available_formats) -> VkSurfaceFormatKHR {
+  for (const auto& available_format : available_formats) {
+    if (available_format.format == VK_FORMAT_B8G8R8A8_SRGB && available_format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
+      return available_format;
+    }
+  }
+
+  return available_formats[0];
 }
 
 } // namespace sbx::graphics
