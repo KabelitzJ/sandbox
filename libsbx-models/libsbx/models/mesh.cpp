@@ -1,5 +1,7 @@
 #include <libsbx/models/mesh.hpp>
 
+#include <libsbx/units/bytes.hpp>
+
 #include <libsbx/core/logger.hpp>
 #include <libsbx/core/engine.hpp>
 
@@ -29,15 +31,18 @@ mesh::mesh(const std::filesystem::path& path)
 
   auto [vertices, indices, submeshes] = std::invoke(loader, path);
 
+  const auto vertices_count = vertices.size();
+  const auto indices_count = vertices.size();
+
   _upload_vertices(std::move(vertices), std::move(indices));
 
   _submeshes = std::move(submeshes);
 
-  for (const auto& submesh : _submeshes) {
-    core::logger::debug("index_count: {}, index_offset: {}, vertex_offset: {}", submesh.index_count,  submesh.index_offset,  submesh.vertex_offset);
-  }
+  const auto b = units::byte{vertices_count * sizeof(vertex3d)};
 
-  core::logger::debug("Loaded mesh: {}, vertices: {}, indices: {} in {} ms", path.string(), vertices.size(), indices.size(), units::quantity_cast<units::millisecond>(timer.elapsed()).value());
+  const auto kb = units::quantity_cast<units::kilobyte>(b);
+
+  core::logger::debug("Loaded mesh: {}, vertices: {}, indices: {}, size: {} kb in {:.2f} ms", path.string(), vertices_count, indices_count, kb.value(), units::quantity_cast<units::millisecond>(timer.elapsed()).value());
 }
 
 mesh::~mesh() {

@@ -10,6 +10,8 @@
 
 #include <nlohmann/json.hpp>
 
+#include <libsbx/io/read_file.hpp>
+
 #include <libsbx/math/vector2.hpp>  
 #include <libsbx/math/vector3.hpp>
 #include <libsbx/math/matrix4x4.hpp>
@@ -19,36 +21,82 @@
 
 namespace sbx::models {
 
-static auto _decode_buffer(std::size_t index, std::unordered_map<std::size_t, std::vector<std::uint8_t>>& buffers, const nlohmann::json& json) -> const std::vector<std::uint8_t>& {
-  if (buffers.contains(index)) {
-    return buffers.at(index);
+// [NOTE] KAJ 2024-06-19 : Taken from glTF-2.0 specifications (https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#accessor-data-types)
+
+struct component {
+  std::size_t id;
+  std::size_t size;
+}; // struct component
+
+struct component_type {
+  inline static constexpr auto signed_byte = component{5120u, 8u};
+  inline static constexpr auto unsigned_byte = component{5121u, 8u};
+  inline static constexpr auto signed_short = component{5122u, 16u};
+  inline static constexpr auto unsigned_short = component{5123u, 16u};
+  inline static constexpr auto unsigned_int = component{5125u, 32u};
+  inline static constexpr auto floating_point = component{5126u, 32u};
+}; // struct component_type
+
+struct components_count {
+  inline static constexpr auto scalar = std::size_t{1u};
+  inline static constexpr auto vec2 = std::size_t{2u};
+  inline static constexpr auto vec3 = std::size_t{3u};
+  inline static constexpr auto vec4 = std::size_t{4u};
+  inline static constexpr auto mat2 = std::size_t{4u};
+  inline static constexpr auto mat3 = std::size_t{9u};
+  inline static constexpr auto mat4 = std::size_t{16u};
+}; // struct type
+
+static auto _decode_buffer(std::size_t index, const std::filesystem::path& path, std::unordered_map<std::size_t, std::vector<std::uint8_t>>& buffers, const nlohmann::json& json) -> const std::vector<std::uint8_t>& {
+  if (const auto entry = buffers.find(index); entry != buffers.cend()) {
+    return entry->second;
   }
 
   const auto byte_length = json["byteLength"].get<std::size_t>();
   const auto uri = json["uri"].get<std::string>();
 
-  auto start = uri.find("data:application/octet-stream;base64,");
-
-  if (start == std::string::npos) {
-    throw std::runtime_error{fmt::format("Invalid base64 URI: {}", uri.substr(0, uri.find(',')))};
-  }
-
-  const auto buffer_base64 = uri.substr(start + 37u);
-
   auto buffer = std::vector<std::uint8_t>{};
   buffer.resize(byte_length);
 
-  auto buffer_size_out = std::size_t{};
+  if (uri.starts_with("data:")) {
+    auto start = uri.find("data:application");
 
-  if (!base64_decode(buffer_base64.data(), buffer_base64.size(), reinterpret_cast<char*>(buffer.data()), &buffer_size_out, 0)) {
-    throw std::runtime_error{"Failed to decode base64 buffer"};
+    if (start == std::string::npos) {
+      throw std::runtime_error{fmt::format("Invalid buffer: {}", uri.substr(0, uri.find(',')))};
+    }
+
+    start = uri.find("base64,");
+
+    if (start == std::string::npos) {
+      throw std::runtime_error{fmt::format("Invalid buffer encoding: {}", uri.substr(0, uri.find(',')))};
+    }
+
+    const auto buffer_base64 = uri.substr(start + 7u);
+
+    auto buffer_size_out = std::size_t{};
+
+    if (!base64_decode(buffer_base64.data(), buffer_base64.size(), reinterpret_cast<char*>(buffer.data()), &buffer_size_out, 0)) {
+      throw std::runtime_error{"Failed to decode base64 buffer"};
+    }
+
+    if (buffer_size_out != buffer.size()) {
+      throw std::runtime_error{fmt::format("Decoded buffer size does not match expected size: {} != {}", buffer_size_out, buffer.size())};
+    }
+  } else {
+    const auto bin_path = path / std::filesystem::path{uri};
+
+    if (!std::filesystem::exists(bin_path)) {
+      throw std::runtime_error{fmt::format("Binary file does not exist: {}", bin_path.string())};
+    }
+
+    buffer = io::read_file(bin_path);
+
+    if (byte_length != buffer.size()) {
+      throw std::runtime_error{fmt::format("Buffer size does not match expected size: {} != {}", byte_length, buffer.size())};
+    }
   }
 
-  if (buffer_size_out != buffer.size()) {
-    throw std::runtime_error{fmt::format("Decoded buffer size does not match expected size: {} != {}", buffer_size_out, buffer.size())};
-  }
-
-  return (buffers[index] = buffer);
+  return buffers.insert({index, std::move(buffer)}).first->second;
 }
 
 auto gltf_loader::load(const std::filesystem::path& path) -> mesh_data {
@@ -69,6 +117,10 @@ auto gltf_loader::load(const std::filesystem::path& path) -> mesh_data {
   auto unique_vertices = std::unordered_map<vertex3d, std::uint32_t>{};
 
   for (const auto& node : nodes) {
+    if (!node.contains("mesh")) {
+      continue;
+    }
+
     const auto mesh_index = node["mesh"].get<std::size_t>();
 
     auto transform = math::matrix4x4::identity;
@@ -101,12 +153,42 @@ auto gltf_loader::load(const std::filesystem::path& path) -> mesh_data {
       transform = transform * math::matrix4x4::scaled(math::matrix4x4::identity, math::vector3{x, y, z});
     }
 
+    if (node.contains("matrix")) {
+      const auto& matrix = node["matrix"];
+      const auto m00 = matrix[0].get<std::double_t>();
+      const auto m01 = matrix[1].get<std::double_t>();
+      const auto m02 = matrix[2].get<std::double_t>();
+      const auto m03 = matrix[3].get<std::double_t>();
+      const auto m10 = matrix[4].get<std::double_t>();
+      const auto m11 = matrix[5].get<std::double_t>();
+      const auto m12 = matrix[6].get<std::double_t>();
+      const auto m13 = matrix[7].get<std::double_t>();
+      const auto m20 = matrix[8].get<std::double_t>();
+      const auto m21 = matrix[9].get<std::double_t>();
+      const auto m22 = matrix[10].get<std::double_t>();
+      const auto m23 = matrix[11].get<std::double_t>();
+      const auto m30 = matrix[12].get<std::double_t>();
+      const auto m31 = matrix[13].get<std::double_t>();
+      const auto m32 = matrix[14].get<std::double_t>();
+      const auto m33 = matrix[15].get<std::double_t>();
+
+      transform = math::matrix4x4{
+        m00, m10, m20, m30,
+        m01, m11, m21, m31,
+        m02, m12, m22, m32,
+        m03, m13, m23, m33,
+      };
+    }
+
     const auto& mesh = meshes[mesh_index];
 
-    const auto mesh_name = mesh["name"].get<std::string>();
-    auto submesh = graphics::submesh{};
+    auto mesh_name = path.stem().string();
 
-    core::logger::debug("Loading submesh '{}'", mesh_name);
+    if (mesh.contains("name")) {
+      mesh_name = mesh["name"].get<std::string>();
+    }
+
+    auto submesh = graphics::submesh{};
 
     submesh.index_offset = static_cast<std::uint32_t>(data.indices.size());
 
@@ -148,23 +230,23 @@ auto gltf_loader::load(const std::filesystem::path& path) -> mesh_data {
       const auto& uvs_accessor = accessors[uvs_index];
       const auto& indices_accessor = accessors[indices_index];
 
-      // [NOTE] KAJ 2024-03-20 : We need to check if the accessors have the correct component type and type.
+      // [NOTE] KAJ 2024-03-20 : We need to check if the accessors have the correct component type and type
 
-      if (positions_accessor["componentType"].get<std::size_t>() != 5126 || positions_accessor["type"].get<std::string>() != "VEC3") {
+      if (positions_accessor["componentType"].get<std::size_t>() != component_type::floating_point.id || positions_accessor["type"].get<std::string>() != "VEC3") {
         throw std::runtime_error{"Invalid component type or type for positions accessor"};
       }
 
-      if (normals_accessor["componentType"].get<std::size_t>() != 5126 || normals_accessor["type"].get<std::string>() != "VEC3") {
+      if (normals_accessor["componentType"].get<std::size_t>() != component_type::floating_point.id || normals_accessor["type"].get<std::string>() != "VEC3") {
         throw std::runtime_error{"Invalid component type or type for normals accessor"};
       }
 
-      if (uvs_accessor["componentType"].get<std::size_t>() != 5126 || uvs_accessor["type"].get<std::string>() != "VEC2") {
+      if (uvs_accessor["componentType"].get<std::size_t>() != component_type::floating_point.id || uvs_accessor["type"].get<std::string>() != "VEC2") {
         throw std::runtime_error{"Invalid component type or type for uvs accessor"};
       }
 
       // [TODO] KAJ 2024-03-20 : We should enable different component types for the indices accessor. For now we only support std::uint16_t.
 
-      if (indices_accessor["componentType"].get<std::size_t>() != 5123 || indices_accessor["type"].get<std::string>() != "SCALAR") {
+      if ((indices_accessor["componentType"].get<std::size_t>() != component_type::unsigned_short.id && indices_accessor["componentType"].get<std::size_t>() != component_type::unsigned_int.id) || indices_accessor["type"].get<std::string>() != "SCALAR") {
         throw std::runtime_error{"Invalid component type or type for indices accessor"};
       }
 
@@ -195,7 +277,7 @@ auto gltf_loader::load(const std::filesystem::path& path) -> mesh_data {
       const auto positions_byte_offset = positions_buffer_view["byteOffset"].get<std::size_t>();
       const auto positions_byte_length = positions_buffer_view["byteLength"].get<std::size_t>();
 
-      const auto& positions_buffer = _decode_buffer(positions_buffer_index, decoded_buffers, buffers[positions_buffer_index]);
+      const auto& positions_buffer = _decode_buffer(positions_buffer_index, path.parent_path(), decoded_buffers, buffers[positions_buffer_index]);
 
       const auto* positions_data = reinterpret_cast<const math::vector3*>(positions_buffer.data() + positions_byte_offset);
 
@@ -205,7 +287,7 @@ auto gltf_loader::load(const std::filesystem::path& path) -> mesh_data {
       const auto normals_byte_offset = normals_buffer_view["byteOffset"].get<std::size_t>();
       const auto normals_byte_length = normals_buffer_view["byteLength"].get<std::size_t>();
 
-      const auto& normals_buffer = _decode_buffer(normals_buffer_index, decoded_buffers, buffers[normals_buffer_index]);
+      const auto& normals_buffer = _decode_buffer(normals_buffer_index, path.parent_path(), decoded_buffers, buffers[normals_buffer_index]);
 
       const auto* normals_data = reinterpret_cast<const math::vector3*>(normals_buffer.data() + normals_byte_offset);
 
@@ -215,7 +297,7 @@ auto gltf_loader::load(const std::filesystem::path& path) -> mesh_data {
       const auto uvs_byte_offset = uvs_buffer_view["byteOffset"].get<std::size_t>();
       const auto uvs_byte_length = uvs_buffer_view["byteLength"].get<std::size_t>();
 
-      const auto& uvs_buffer = _decode_buffer(uvs_buffer_index, decoded_buffers, buffers[uvs_buffer_index]);
+      const auto& uvs_buffer = _decode_buffer(uvs_buffer_index, path.parent_path(), decoded_buffers, buffers[uvs_buffer_index]);
 
       const auto* uvs_data = reinterpret_cast<const math::vector2*>(uvs_buffer.data() + uvs_byte_offset);
 
@@ -225,13 +307,15 @@ auto gltf_loader::load(const std::filesystem::path& path) -> mesh_data {
       const auto indices_byte_offset = indices_buffer_view["byteOffset"].get<std::size_t>();
       const auto indices_byte_length = indices_buffer_view["byteLength"].get<std::size_t>();
 
-      const auto& indices_buffer = _decode_buffer(indices_buffer_index, decoded_buffers, buffers[indices_buffer_index]);
+      const auto& indices_buffer = _decode_buffer(indices_buffer_index, path.parent_path(), decoded_buffers, buffers[indices_buffer_index]);
 
-      const auto* indices_data = reinterpret_cast<const std::uint16_t*>(indices_buffer.data() + indices_byte_offset);
+      const auto* indices_data = reinterpret_cast<const std::uint8_t*>(indices_buffer.data() + indices_byte_offset);
 
       // [NOTE] KAJ 2024-03-20 : Here we add the positions, normals and uvs to the vertices.
 
-      data.vertices.reserve(data.vertices.size() + positions_count);
+      const auto vertices_count = data.vertices.size();
+
+      data.vertices.reserve(vertices_count + positions_count);
 
       for (auto i = 0; i < positions_count; ++i) {
         const auto& position = transform * math::vector4{positions_data[i]};
@@ -244,7 +328,12 @@ auto gltf_loader::load(const std::filesystem::path& path) -> mesh_data {
       data.indices.reserve(data.indices.size() + indices_count);
 
       for (auto i = 0u; i < indices_count; ++i) {
-        data.indices.push_back(static_cast<std::uint32_t>(indices_data[i]));
+        // [NOTE] KAJ 2024-03-20 : We need to add the current vertices_count since we pack all vertices into one buffer
+        if (indices_accessor["componentType"].get<std::size_t>() == component_type::unsigned_short.id) {
+          data.indices.push_back(vertices_count + static_cast<std::uint32_t>(_parse_index<std::uint16_t>(indices_data, i)));
+        } else {
+          data.indices.push_back(vertices_count + _parse_index<std::uint32_t>(indices_data, i));
+        }
       }
 
       submesh.index_count = static_cast<std::uint32_t>(indices_count);

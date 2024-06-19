@@ -157,9 +157,14 @@ constexpr auto operator-(const quantity<Dimension, Representation, Ratio>& value
 template<typename TargetQuantity, representation FromRepresentation, ratio FromRatio>
 constexpr auto quantity_cast(const quantity<typename TargetQuantity::dimension_type, FromRepresentation, FromRatio>& from) -> TargetQuantity {
   using value_type = typename TargetQuantity::value_type;
-  using ratio_type = typename TargetQuantity::ratio_type;
+  using to_ratio = typename TargetQuantity::ratio_type;
 
-  return TargetQuantity{static_cast<value_type>(from.value()) * ratio_conversion_v<value_type, ratio_type, FromRatio>};
+  using ratio_type = std::conditional_t<std::is_floating_point_v<value_type>, value_type, std::float_t>;
+
+  const auto rat = ratio_conversion_v<ratio_type, to_ratio, FromRatio>;
+  const auto val = static_cast<value_type>(from.value());
+
+  return TargetQuantity{static_cast<value_type>(val * rat)};
 }
 
 } // namespace sbx::units

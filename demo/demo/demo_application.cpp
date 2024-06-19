@@ -40,6 +40,7 @@ demo_application::demo_application()
   const auto tree_2_id = graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/tree_2.obj");
   const auto tree_1_id = graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/tree_1.gltf");
   const auto tree_1_1_id = graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/tree_1.obj");
+  const auto dragon_id = graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/dragon.gltf");
 
   _mesh_ids.push_back(monkey_id);
   _mesh_ids.push_back(plane_id);
@@ -48,6 +49,7 @@ demo_application::demo_application()
   _mesh_ids.push_back(tree_2_id);
   _mesh_ids.push_back(tree_1_id);
   _mesh_ids.push_back(tree_1_1_id);
+  _mesh_ids.push_back(dragon_id);
 
   // Window
 
@@ -83,6 +85,20 @@ demo_application::demo_application()
   auto& sphere_transform = sphere.get_component<sbx::math::transform>();
   sphere_transform.set_position(sbx::math::vector3{5.0f, 1.0f, 5.0f});
 
+  // Dragon
+
+  auto dragon = scene.create_node("Dragon");
+
+  auto dragon_submeshes = std::vector<sbx::scenes::static_mesh::submesh>{};
+  dragon_submeshes.push_back(sbx::scenes::static_mesh::submesh{0, white_id, sbx::math::color{0.52, 0.14, 0.16, 1.0}});
+  dragon_submeshes.push_back(sbx::scenes::static_mesh::submesh{1, white_id, sbx::math::color{0.0, 0.64, 0.42, 1.0}});
+
+  dragon.add_component<sbx::scenes::static_mesh>(dragon_id, dragon_submeshes);
+  
+  auto& dragon_transform = dragon.get_component<sbx::math::transform>();
+  dragon_transform.set_position(sbx::math::vector3{-7.0f, 1.0f, -7.0f});
+  dragon_transform.set_rotation(sbx::math::vector3::up, sbx::math::degree{45});
+
   // Crate
 
   auto crate = scene.create_node("Crate");
@@ -97,7 +113,7 @@ demo_application::demo_application()
   // Tree 1
 
   auto submeshes = std::vector<sbx::scenes::static_mesh::submesh>{};
-  // submeshes.push_back(sbx::scenes::static_mesh::submesh{0, white_id, sbx::math::color{0.38, 0.54, 0.24, 1.0}});
+  submeshes.push_back(sbx::scenes::static_mesh::submesh{0, white_id, sbx::math::color{0.38, 0.54, 0.24, 1.0}});
   submeshes.push_back(sbx::scenes::static_mesh::submesh{1, white_id, sbx::math::color{0.47, 0.37, 0.24, 1.0}});
 
   auto tree1 = scene.create_node("Tree1");
