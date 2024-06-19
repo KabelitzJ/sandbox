@@ -138,17 +138,22 @@ demo_application::demo_application()
 
   // Monkeys
 
-  for (auto i : std::views::iota(0, 5)) {
+  for (const auto [i, texture_id] : ranges::views::enumerate(_texture_ids)) {
     auto monkey = scene.create_node(fmt::format("Monkey{}", i));
 
-    auto submeshes = std::vector<sbx::scenes::static_mesh::submesh>{};
-
-    submeshes.push_back(sbx::scenes::static_mesh::submesh{0, sbx::math::random_element(_texture_ids)});
-
-    monkey.add_component<sbx::scenes::static_mesh>(monkey_id, submeshes);
+    monkey.add_component<sbx::scenes::static_mesh>(monkey_id, texture_id);
 
     auto& monkey_transform = monkey.get_component<sbx::math::transform>();
-    monkey_transform.set_position(sbx::math::vector3{static_cast<std::float_t>(i - 2) * 3.0f, 2.0f, 0.0f});
+
+    const auto spacing = 3.0f;
+
+    const auto total_length = static_cast<std::float_t>(_texture_ids.size() - 1) * spacing;
+
+    const auto min = -total_length / 2.0f;
+
+    const auto x = min + static_cast<std::float_t>(i) * spacing;
+
+    monkey_transform.set_position(sbx::math::vector3{x, 2.0f, 0.0f});
 
     auto gizmo = scene.create_child_node(monkey, fmt::format("Gizmo{}", i));
 
@@ -159,6 +164,28 @@ demo_application::demo_application()
 
     _monkey_ids.push_back(monkey.get_component<sbx::scenes::id>());
   }
+
+  // for (auto i : std::views::iota(0, 5)) {
+  //   auto monkey = scene.create_node(fmt::format("Monkey{}", i));
+
+  //   auto submeshes = std::vector<sbx::scenes::static_mesh::submesh>{};
+
+  //   submeshes.push_back(sbx::scenes::static_mesh::submesh{0, sbx::math::random_element(_texture_ids)});
+
+  //   monkey.add_component<sbx::scenes::static_mesh>(monkey_id, submeshes);
+
+  //   auto& monkey_transform = monkey.get_component<sbx::math::transform>();
+  //   monkey_transform.set_position(sbx::math::vector3{static_cast<std::float_t>(i - 2) * 3.0f, 2.0f, 0.0f});
+
+  //   auto gizmo = scene.create_child_node(monkey, fmt::format("Gizmo{}", i));
+
+  //   gizmo.add_component<sbx::scenes::gizmo>(sphere_id, 0u, sbx::math::color{sbx::math::random::next<std::float_t>(0.0f, 1.0f), sbx::math::random::next<std::float_t>(0.0f, 1.0f), sbx::math::random::next<std::float_t>(0.0f, 1.0f), 0.5f});
+
+  //   auto& gizmo_transform = gizmo.get_component<sbx::math::transform>();
+  //   gizmo_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
+
+  //   _monkey_ids.push_back(monkey.get_component<sbx::scenes::id>());
+  // }
 
   // Camera
 

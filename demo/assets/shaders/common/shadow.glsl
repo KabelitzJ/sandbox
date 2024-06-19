@@ -5,11 +5,11 @@
 
 const int PCF_COUNT = 8;
 const float RADIUS = 0.0004;
-const float BIAS = 0.0005;
+const float BIAS = 0.000025;
 const float SAMPLE_WEIGHT = 1.0 / (PCF_COUNT * PCF_COUNT);
 const vec2 OFFSET = vec2(0.5 - 0.5 * PCF_COUNT);
 
-float calculate_shadow(sampler2D shadow_map, vec4 light_space_position, vec3 normal, vec3 light_direction) {
+float calculate_shadow_random(sampler2D shadow_map, vec4 light_space_position, vec3 normal, vec3 light_direction) {
   vec3 coordinates = light_space_position.xyz / light_space_position.w;
 
   if (coordinates.z > 1.0 || coordinates.z < -1.0) {
@@ -34,34 +34,31 @@ float calculate_shadow(sampler2D shadow_map, vec4 light_space_position, vec3 nor
 	return total;
 }
 
-// float calculate_shadow(sampler2D shadow_map, vec4 light_space_position, vec3 normal, vec3 light_direction) {
-//   float shadow = 0.0;
+float calculate_shadow_pcf(sampler2D shadow_map, vec4 light_space_position, vec3 normal, vec3 light_direction) {
+  // perform perspective divide
+  vec3 projected_coords = light_space_position.xyz / light_space_position.w;
 
-//   vec2 texel_size = 1.0 / textureSize(shadow_map, 0);
+  if(projected_coords.z > 1.0) {
+    return 0.0;
+  }
 
-//   vec3 coordinates = light_space_position.xyz / light_space_position.w;
-
-//   if (coordinates.z > 1.0) {
-//     return shadow;
-//   }
-
-//   // float bias = max(0.001 * (1.0 - dot(normal, light_direction)), 0.0001);
-//   float bias = 0.001;
+  // check whether current frag pos is in shadow
   
-//   float current_depth = coordinates.z - bias;
+  float shadow = 0.0;
+  vec2 size = 1.0 / textureSize(shadow_map, 0);
 
-//   int count = 0;
-//   int range = 2;
+  int pcf_count = PCF_COUNT / 2;
+  int pfc_iterations = 0;
 
-//   for (int x = -range; x <= range; ++x) {
-//     for (int y = -range; y <= range; ++y) {
-//       float pcf_depth = texture(shadow_map, coordinates.xy + vec2(x, y) * texel_size).r;
-//       shadow += current_depth > pcf_depth ? 1.0 : 0.0;
-//       ++count;
-//     }
-//   }
+  for(int x = -pcf_count; x <= pcf_count; ++x) {
+    for(int y = -pcf_count; y <= pcf_count; ++y) {
+      float pcf_depth = texture(shadow_map, projected_coords.xy + vec2(x, y) * size).r; 
+      shadow += (projected_coords.z - BIAS) > pcf_depth ? 1.0 : 0.0;
+      pfc_iterations++;    
+    }    
+  }
 
-//   return shadow / float(count);
-// }
+  return (1.0 - shadow / pfc_iterations);
+}
 
 #endif // COMMON_SHADOW_GLSL_
