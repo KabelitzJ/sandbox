@@ -23,6 +23,7 @@ demo_application::demo_application()
   const auto grid_id = graphics_module.add_asset<sbx::graphics::image2d>("demo/assets/textures/grid.png");
   const auto wood_id = graphics_module.add_asset<sbx::graphics::image2d>("demo/assets/textures/wood.png"); 
   const auto white_id = graphics_module.add_asset<sbx::graphics::image2d>("demo/assets/textures/white.png");
+  const auto checkerboard_id = graphics_module.add_asset<sbx::graphics::image2d>("demo/assets/textures/checkerboard.jpg");
 
   _texture_ids.push_back(prototype_white_id);
   _texture_ids.push_back(prototype_black_id);  
@@ -30,6 +31,7 @@ demo_application::demo_application()
   _texture_ids.push_back(grid_id);
   _texture_ids.push_back(wood_id);
   _texture_ids.push_back(white_id);
+  _texture_ids.push_back(checkerboard_id);
 
   // Meshes
 
@@ -88,9 +90,10 @@ demo_application::demo_application()
   auto dragon = scene.create_node("Dragon");
 
   auto dragon_submeshes = std::vector<sbx::scenes::static_mesh::submesh>{};
-  // dragon_submeshes.push_back(sbx::scenes::static_mesh::submesh{0, white_id});
-  dragon_submeshes.push_back(sbx::scenes::static_mesh::submesh{0, white_id, sbx::math::color{0.62f, 0.14f, 0.16f, 1.0f}});
-  dragon_submeshes.push_back(sbx::scenes::static_mesh::submesh{1, white_id, sbx::math::color{0.0f, 0.64f, 0.42f, 1.0f}});
+  // dragon_submeshes.push_back(sbx::scenes::static_mesh::submesh{0, checkerboard_id, sbx::math::color{0.62f, 0.14f, 0.16f, 1.0f}});
+  // dragon_submeshes.push_back(sbx::scenes::static_mesh::submesh{1, white_id, sbx::math::color{0.0f, 0.64f, 0.42f, 1.0f}});
+  dragon_submeshes.push_back(sbx::scenes::static_mesh::submesh{0, checkerboard_id, sbx::math::color{1.0f, 1.0f, 1.0f, 1.0f}});
+  dragon_submeshes.push_back(sbx::scenes::static_mesh::submesh{1, white_id, sbx::math::color{0.62f, 0.14f, 0.16f, 1.0f}});
 
   dragon.add_component<sbx::scenes::static_mesh>(dragon_id, dragon_submeshes);
   
