@@ -39,10 +39,9 @@ public:
 
     auto& scene = scenes_module.scene();
 
-    const auto delta_time = core::engine::delta_time();
+    const auto delta_time = core::engine::fixed_delta_time();
 
     auto rigidbody_nodes = scene.query<rigidbody>();
-    auto collider_nodes = scene.query<box_collider>();
 
     for (auto& node : rigidbody_nodes) {
       auto& rigidbody = node.get_component<physics::rigidbody>();
@@ -53,32 +52,13 @@ public:
 
       auto& transform = node.get_component<math::transform>();
 
-      if (node.has_component<physics::box_collider>()) {
-        for (const auto& collider_node : collider_nodes) {
-          if (node == collider_node) {
-            continue;
-          }
+      transform.move_by(rigidbody.velocity() * delta_time);
 
-          if (auto info = _test_collision(node, collider_node); info) {
-            auto& other_rigidbody = collider_node.get_component<physics::rigidbody>();
+      const auto total_acceleration = rigidbody.acceleration() + (rigidbody.forces() / rigidbody.mass());
 
-            const auto bounce = rigidbody.bounce() + other_rigidbody.bounce();
-            const auto velocity = rigidbody.velocity() * bounce;
+      rigidbody.add_velocity(total_acceleration * delta_time);
 
-            if (velocity.length_squared() > 0.01f) {
-              rigidbody.set_velocity(-velocity);
-            } else {
-              rigidbody.set_velocity(math::vector3::zero);
-            }
-          }
-        }
-      } 
-
-      const auto position = transform.position() + rigidbody.velocity() * delta_time.value();
-      transform.set_position(position);
-
-      const auto velocity = rigidbody.velocity() + rigidbody.acceleration() * delta_time.value();
-      rigidbody.set_velocity(velocity);
+      rigidbody.reset_forces();
     }
   }
 

@@ -25,13 +25,13 @@ demo_application::demo_application()
   const auto white_id = graphics_module.add_asset<sbx::graphics::image2d>("demo/assets/textures/white.png");
   const auto checkerboard_id = graphics_module.add_asset<sbx::graphics::image2d>("demo/assets/textures/checkerboard.jpg");
 
-  _texture_ids.push_back(prototype_white_id);
-  _texture_ids.push_back(prototype_black_id);  
-  _texture_ids.push_back(base_id);
-  _texture_ids.push_back(grid_id);
-  _texture_ids.push_back(wood_id);
-  _texture_ids.push_back(white_id);
-  _texture_ids.push_back(checkerboard_id);
+  _texture_ids.emplace("prototype_white", prototype_white_id);
+  _texture_ids.emplace("prototype_black", prototype_black_id);  
+  _texture_ids.emplace("base", base_id);
+  _texture_ids.emplace("grid", grid_id);
+  _texture_ids.emplace("wood", wood_id);
+  _texture_ids.emplace("white", white_id);
+  _texture_ids.emplace("checkerboard", checkerboard_id);
 
   // Meshes
 
@@ -43,13 +43,13 @@ demo_application::demo_application()
   const auto tree_1_id = graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/tree_1/tree_1.gltf");
   const auto dragon_id = graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/dragon.gltf");
 
-  _mesh_ids.push_back(monkey_id);
-  _mesh_ids.push_back(plane_id);
-  _mesh_ids.push_back(sphere_id);
-  _mesh_ids.push_back(crate_id);
-  _mesh_ids.push_back(tree_2_id);
-  _mesh_ids.push_back(tree_1_id);
-  _mesh_ids.push_back(dragon_id);
+  _mesh_ids.emplace("monkey", monkey_id);
+  _mesh_ids.emplace("plane", plane_id);
+  _mesh_ids.emplace("sphere", sphere_id);
+  _mesh_ids.emplace("crate", crate_id);
+  _mesh_ids.emplace("tree_2", tree_2_id);
+  _mesh_ids.emplace("tree_1", tree_1_id);
+  _mesh_ids.emplace("dragon", dragon_id);
 
   // Window
 
@@ -83,7 +83,10 @@ demo_application::demo_application()
   sphere.add_component<sbx::scenes::static_mesh>(sphere_id, prototype_black_id);
   
   auto& sphere_transform = sphere.get_component<sbx::math::transform>();
-  sphere_transform.set_position(sbx::math::vector3{5.0f, 1.0f, 5.0f});
+  sphere_transform.set_position(sbx::math::vector3{5.0f, 10.0f, 5.0f});
+  
+  auto& spere_rigidbody = sphere.add_component<sbx::physics::rigidbody>(sbx::units::kilogram{1.0f});
+  spere_rigidbody.set_acceleration(sbx::math::vector3{0.0f, -9.81f, 0.0f});
 
   // Dragon
 
@@ -139,10 +142,10 @@ demo_application::demo_application()
 
   // Monkeys
 
-  for (const auto [i, texture_id] : ranges::views::enumerate(_texture_ids)) {
+  for (const auto [i, texture_id_entry] : ranges::views::enumerate(_texture_ids)) {
     auto monkey = scene.create_node(fmt::format("Monkey{}", i));
 
-    monkey.add_component<sbx::scenes::static_mesh>(monkey_id, texture_id);
+    monkey.add_component<sbx::scenes::static_mesh>(monkey_id, texture_id_entry.second);
 
     auto& monkey_transform = monkey.get_component<sbx::math::transform>();
 
@@ -165,28 +168,6 @@ demo_application::demo_application()
 
     _monkey_ids.push_back(monkey.get_component<sbx::scenes::id>());
   }
-
-  // for (auto i : std::views::iota(0, 5)) {
-  //   auto monkey = scene.create_node(fmt::format("Monkey{}", i));
-
-  //   auto submeshes = std::vector<sbx::scenes::static_mesh::submesh>{};
-
-  //   submeshes.push_back(sbx::scenes::static_mesh::submesh{0, sbx::math::random_element(_texture_ids)});
-
-  //   monkey.add_component<sbx::scenes::static_mesh>(monkey_id, submeshes);
-
-  //   auto& monkey_transform = monkey.get_component<sbx::math::transform>();
-  //   monkey_transform.set_position(sbx::math::vector3{static_cast<std::float_t>(i - 2) * 3.0f, 2.0f, 0.0f});
-
-  //   auto gizmo = scene.create_child_node(monkey, fmt::format("Gizmo{}", i));
-
-  //   gizmo.add_component<sbx::scenes::gizmo>(sphere_id, 0u, sbx::math::color{sbx::math::random::next<std::float_t>(0.0f, 1.0f), sbx::math::random::next<std::float_t>(0.0f, 1.0f), sbx::math::random::next<std::float_t>(0.0f, 1.0f), 0.5f});
-
-  //   auto& gizmo_transform = gizmo.get_component<sbx::math::transform>();
-  //   gizmo_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
-
-  //   _monkey_ids.push_back(monkey.get_component<sbx::scenes::id>());
-  // }
 
   // Camera
 
@@ -219,6 +200,10 @@ auto demo_application::update() -> void  {
     return;
   }
 
+  auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
+
+  auto& scene = scenes_module.scene();
+
   _camera_controller.update();
 
   const auto delta_time = sbx::core::engine::delta_time();
@@ -232,13 +217,21 @@ auto demo_application::update() -> void  {
     _fps_label->set_text(fmt::format("FPS: {}", _frames));
     _time = sbx::units::second{0};
     _frames = 0;
+
+    const auto point = sbx::math::random_point_in_circle(sbx::math::vector2{10.0f, -15.0f}, 5.0f);
+
+    auto sphere = scene.create_node("Sphere");
+
+    sphere.add_component<sbx::scenes::static_mesh>(_mesh_ids["sphere"], _texture_ids["white"]);
+
+    auto& sphere_transform = sphere.get_component<sbx::math::transform>();
+    sphere_transform.set_position(sbx::math::vector3{point.x(), 10.0f, point.y()});
+
+    auto& spere_rigidbody = sphere.add_component<sbx::physics::rigidbody>(sbx::units::kilogram{1.0f});
+    spere_rigidbody.set_acceleration(sbx::math::vector3{0.0f, -9.81f, 0.0f});
   }
 
   _rotation += sbx::math::degree{45} * delta_time;
-
-  auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
-
-  auto& scene = scenes_module.scene();
 
   for (const auto& monkey_id : _monkey_ids) {
     auto monkey = scene.find_node(monkey_id);
@@ -247,10 +240,24 @@ auto demo_application::update() -> void  {
 
     transform.set_rotation(sbx::math::vector3::up, _rotation);
   }
+
+  auto to_destroy = std::vector<sbx::scenes::node>{};
+
+  for (const auto& node : scene.query<sbx::math::transform>()) {
+    auto& transform = node.get_component<sbx::math::transform>();
+
+    if (transform.position().y() < -5.0f) {
+      to_destroy.push_back(node);
+    }
+  }
+
+  for (const auto& node : to_destroy) {
+    scene.destroy_node(node);
+  }
 }
 
 auto demo_application::fixed_update() -> void {
-  
+
 }
 
 auto demo_application::_generate_plane(const sbx::math::vector2u& tile_count, const sbx::math::vector2u& tile_size) -> std::unique_ptr<sbx::models::mesh> {

@@ -102,9 +102,21 @@ inline constexpr auto operator*(basic_vector3<Lhs> lhs, Rhs scalar) noexcept -> 
   return lhs *= scalar;
 }
 
+template<scalar Lhs, std::convertible_to<Lhs> Rhs>
+requires (!is_scalar_v<Rhs>)
+inline constexpr auto operator*(basic_vector3<Lhs> lhs, const Rhs& rhs) noexcept -> basic_vector3<Lhs> {
+  return lhs *= static_cast<Lhs>(rhs);
+}
+
 template<scalar Lhs, scalar Rhs>
 inline constexpr auto operator/(basic_vector3<Lhs> lhs, Rhs scalar) noexcept -> basic_vector3<Lhs> {
   return lhs /= scalar;
+}
+
+template<scalar Lhs, std::convertible_to<Lhs> Rhs>
+requires (!is_scalar_v<Rhs>)
+inline constexpr auto operator/(basic_vector3<Lhs> lhs, const Rhs& rhs) noexcept -> basic_vector3<Lhs> {
+  return lhs /= static_cast<Lhs>(rhs);
 }
 
 } // namespace sbx::math

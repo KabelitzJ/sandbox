@@ -16,22 +16,21 @@ float calculate_shadow_random(sampler2D shadow_map, vec4 light_space_position, v
     return 0.0;
   }
 
-	float total = 0.0;
+  const float current_depth = coordinates.z - BIAS;
+
+	float shadow_factor = 0.0;
 
 	for(int x = 0; x < PCF_COUNT; x++) {
     for(int y = 0; y < PCF_COUNT; y++) {
       vec2 sample_position = vec2(x, y) + OFFSET;
       vec2 jitter = random_2d(gl_FragCoord.xy + vec2(13278 * x, 321 * y));
-
       float object_depth = texture(shadow_map, coordinates.xy + (sample_position + jitter) * RADIUS).r;
 
-      float factor = (coordinates.z - BIAS) > object_depth ? 0.0 : 1.0;
-
-      total += factor * SAMPLE_WEIGHT;
+      shadow_factor += current_depth > object_depth ? 0.0 : SAMPLE_WEIGHT;
     }
 	}
 
-	return total;
+	return shadow_factor;
 }
 
 float calculate_shadow_pcf(sampler2D shadow_map, vec4 light_space_position, vec3 normal, vec3 light_direction) {
@@ -44,21 +43,23 @@ float calculate_shadow_pcf(sampler2D shadow_map, vec4 light_space_position, vec3
 
   // check whether current frag pos is in shadow
   
-  float shadow = 0.0;
   vec2 size = 1.0 / textureSize(shadow_map, 0);
 
-  int pcf_count = PCF_COUNT / 2;
-  int pfc_iterations = 0;
+  float shadow_factor = 0.0;
 
-  for(int x = -pcf_count; x <= pcf_count; ++x) {
-    for(int y = -pcf_count; y <= pcf_count; ++y) {
-      float pcf_depth = texture(shadow_map, projected_coords.xy + vec2(x, y) * size).r; 
-      shadow += (projected_coords.z - BIAS) > pcf_depth ? 1.0 : 0.0;
-      pfc_iterations++;    
+  int count = PCF_COUNT / 2;
+  int iterations = 0;
+
+  for(int y = -count; y <= count; ++y) {
+    for(int x = -count; x <= count; ++x) {
+      float depth = texture(shadow_map, projected_coords.xy + vec2(x, y) * size).r; 
+
+      shadow_factor += (projected_coords.z - BIAS) > depth ? 0.0 : 1.0;
+      iterations++;    
     }    
   }
 
-  return (1.0 - shadow / pfc_iterations);
+  return shadow_factor / iterations;
 }
 
 #endif // COMMON_SHADOW_GLSL_

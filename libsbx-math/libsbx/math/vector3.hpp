@@ -90,8 +90,16 @@ template<scalar Type>
 template<scalar Lhs, scalar Rhs>
 [[nodiscard]] constexpr auto operator*(basic_vector3<Lhs> lhs, Rhs scalar) noexcept -> basic_vector3<Lhs>;
 
+template<scalar Lhs, std::convertible_to<Lhs> Rhs>
+requires (!is_scalar_v<Rhs>)
+[[nodiscard]] constexpr auto operator*(basic_vector3<Lhs> lhs, const Rhs& rhs) noexcept -> basic_vector3<Lhs>;
+
 template<scalar Lhs, scalar Rhs>
 [[nodiscard]] constexpr auto operator/(basic_vector3<Lhs> lhs, Rhs scalar) noexcept -> basic_vector3<Lhs>;
+
+template<scalar Lhs, std::convertible_to<Lhs> Rhs>
+requires (!is_scalar_v<Rhs>)
+[[nodiscard]] constexpr auto operator/(basic_vector3<Lhs> lhs, const Rhs& rhs) noexcept -> basic_vector3<Lhs>;
 
 using vector3f = basic_vector3<std::float_t>;
 

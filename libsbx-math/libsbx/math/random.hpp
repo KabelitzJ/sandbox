@@ -7,6 +7,8 @@
 #include <limits>
 
 #include <libsbx/math/concepts.hpp>
+#include <libsbx/math/vector2.hpp>
+#include <libsbx/math/vector3.hpp>
 
 namespace sbx::math {
 
@@ -34,6 +36,27 @@ auto random_element(const Range& range) -> std::ranges::range_value_t<Range> {
   const auto index = random::next<std::ranges::range_difference_t<Range>>(0, size - 1);
 
   return *std::next(std::begin(range), index);
+}
+
+template<scalar Type>
+auto random_point_in_circle(const basic_vector2<Type>& center, const Type radius) -> basic_vector2<Type> {
+  const auto r = radius * std::sqrt(random::next<Type>(Type{0}, Type{1}));
+  const auto theta = random::next<Type>(Type{0}, Type{2} * std::numbers::pi_v<Type>);
+
+  return center + basic_vector2<Type>{r * std::cos(theta), r * std::sin(theta)};
+}
+
+template<scalar Type>
+auto random_point_in_sphere(const basic_vector3<Type>& center, const Type radius) -> basic_vector3<Type> {
+  const auto r = radius * std::cbrt(random::next<Type>(Type{0}, Type{1}));
+  const auto theta = random::next<Type>(Type{0}, Type{2} * std::numbers::pi_v<Type>);
+  const auto phi = random::next<Type>(Type{0}, std::numbers::pi_v<Type>);
+
+  const auto x = r * std::sin(phi) * std::cos(theta);
+  const auto y = r * std::sin(phi) * std::sin(theta);
+  const auto z = r * std::cos(phi);
+
+  return center + basic_vector3<Type>{x, y, z};
 }
 
 } // namespace sbx::math

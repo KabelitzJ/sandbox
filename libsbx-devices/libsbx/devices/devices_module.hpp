@@ -24,7 +24,7 @@ namespace sbx::devices {
 
 class devices_module final : public core::module<devices_module> {
 
-  inline static const auto is_registered = register_module(stage::normal);
+  inline static const auto is_registered = register_module(stage::pre);
 
 public:
 

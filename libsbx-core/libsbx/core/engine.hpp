@@ -101,12 +101,13 @@ public:
       const auto delta_time = std::chrono::duration_cast<std::chrono::duration<std::float_t>>(now - last).count();
       last = now;
 
-      application->update();
 
       _instance->_delta_time = units::second{delta_time};
       _instance->_time += _instance->_delta_time;
 
       fixed_accumulator += _instance->_delta_time;
+
+      application->update();
 
       _update_stage(stage::pre);
       _update_stage(stage::normal);
