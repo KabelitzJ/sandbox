@@ -52,11 +52,11 @@ public:
 
       auto& transform = node.get_component<math::transform>();
 
-      transform.move_by(rigidbody.velocity() * delta_time);
-
       const auto total_acceleration = rigidbody.acceleration() + (rigidbody.forces() / rigidbody.mass());
 
       rigidbody.add_velocity(total_acceleration * delta_time);
+
+      transform.move_by(rigidbody.velocity() * delta_time);
 
       rigidbody.reset_forces();
     }

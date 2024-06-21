@@ -43,6 +43,16 @@ inline constexpr auto basic_vector3<Type>::normalized(const basic_vector3& vecto
 }
 
 template<scalar Type>
+inline constexpr auto basic_vector3<Type>::reflect(const basic_vector3& vector, const basic_vector3& normal) noexcept -> basic_vector3 {
+  return vector - normal * (dot(vector, normal) * 2);
+}
+
+template<scalar Type>
+inline constexpr auto basic_vector3<Type>::abs(const basic_vector3& vector) noexcept -> basic_vector3 {
+  return basic_vector3{std::abs(vector.x()), std::abs(vector.y()), std::abs(vector.z())};
+}
+
+template<scalar Type>
 inline constexpr basic_vector3<Type>::operator basic_vector2<Type>() const noexcept {
   return basic_vector2<Type>{x(), y()};
 }

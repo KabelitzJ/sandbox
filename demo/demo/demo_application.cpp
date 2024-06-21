@@ -36,7 +36,7 @@ demo_application::demo_application()
   // Meshes
 
   const auto monkey_id = graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/suzanne/suzanne.gltf");
-  const auto plane_id = graphics_module.add_asset<sbx::models::mesh>(_generate_plane(sbx::math::vector2u{1u, 1u}, sbx::math::vector2u{10u, 10u}));
+  const auto plane_id = graphics_module.add_asset<sbx::models::mesh>(_generate_plane(sbx::math::vector2u{1u, 1u}, sbx::math::vector2u{20u, 20u}));
   const auto sphere_id = graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/sphere.obj");
   const auto crate_id = graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/crate.obj");
   const auto tree_2_id = graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/tree_2/tree_2.gltf");
@@ -161,7 +161,7 @@ demo_application::demo_application()
 
     auto gizmo = scene.create_child_node(monkey, fmt::format("Gizmo{}", i));
 
-    gizmo.add_component<sbx::scenes::gizmo>(sphere_id, 0u, sbx::math::color{sbx::math::random::next<std::float_t>(0.0f, 1.0f), sbx::math::random::next<std::float_t>(0.0f, 1.0f), sbx::math::random::next<std::float_t>(0.0f, 1.0f), 0.5f});
+    gizmo.add_component<sbx::scenes::gizmo>(sphere_id, 0u, sbx::math::random_color());
 
     auto& gizmo_transform = gizmo.get_component<sbx::math::transform>();
     gizmo_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
@@ -217,18 +217,24 @@ auto demo_application::update() -> void  {
     _fps_label->set_text(fmt::format("FPS: {}", _frames));
     _time = sbx::units::second{0};
     _frames = 0;
+  }
 
-    const auto point = sbx::math::random_point_in_circle(sbx::math::vector2{10.0f, -15.0f}, 5.0f);
-
+  if (sbx::devices::input::is_key_pressed(sbx::devices::key::space)) {
     auto sphere = scene.create_node("Sphere");
 
-    sphere.add_component<sbx::scenes::static_mesh>(_mesh_ids["sphere"], _texture_ids["white"]);
+    sphere.add_component<sbx::scenes::static_mesh>(_mesh_ids["sphere"], _texture_ids["white"], sbx::math::random_color());
 
     auto& sphere_transform = sphere.get_component<sbx::math::transform>();
-    sphere_transform.set_position(sbx::math::vector3{point.x(), 10.0f, point.y()});
+    sphere_transform.set_position(sbx::math::vector3{-20.0f, 3.0f, -25.0f});
 
     auto& spere_rigidbody = sphere.add_component<sbx::physics::rigidbody>(sbx::units::kilogram{1.0f});
     spere_rigidbody.set_acceleration(sbx::math::vector3{0.0f, -9.81f, 0.0f});
+
+    auto point = sbx::math::random_point_on_circle(sbx::math::vector2::zero, 0.5f);
+
+    auto velocity = sbx::math::vector3::normalized(sbx::math::vector3{point.x(), 4.0f, point.y()}) * sbx::math::random::next<std::float_t>(20.0f, 25.0f);
+
+    spere_rigidbody.set_velocity(velocity);
   }
 
   _rotation += sbx::math::degree{45} * delta_time;

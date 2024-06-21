@@ -60,6 +60,10 @@ public:
 
   [[nodiscard]] static constexpr auto normalized(const basic_vector3& vector) noexcept -> basic_vector3;
 
+  [[nodiscard]] static constexpr auto reflect(const basic_vector3& vector, const basic_vector3& normal) noexcept -> basic_vector3;
+
+  [[nodiscard]] static constexpr auto abs(const basic_vector3& vector) noexcept -> basic_vector3;
+
   [[nodiscard]] constexpr operator basic_vector2<Type>() const noexcept;
 
   [[nodiscard]] constexpr auto x() noexcept -> reference;

@@ -9,6 +9,7 @@
 #include <libsbx/math/concepts.hpp>
 #include <libsbx/math/vector2.hpp>
 #include <libsbx/math/vector3.hpp>
+#include <libsbx/math/color.hpp>
 
 namespace sbx::math {
 
@@ -47,6 +48,13 @@ auto random_point_in_circle(const basic_vector2<Type>& center, const Type radius
 }
 
 template<scalar Type>
+auto random_point_on_circle(const basic_vector2<Type>& center, const Type radius) -> basic_vector2<Type> {
+  const auto theta = random::next<Type>(Type{0}, Type{2} * std::numbers::pi_v<Type>);
+
+  return center + basic_vector2<Type>{radius * std::cos(theta), radius * std::sin(theta)};
+}
+
+template<scalar Type>
 auto random_point_in_sphere(const basic_vector3<Type>& center, const Type radius) -> basic_vector3<Type> {
   const auto r = radius * std::cbrt(random::next<Type>(Type{0}, Type{1}));
   const auto theta = random::next<Type>(Type{0}, Type{2} * std::numbers::pi_v<Type>);
@@ -58,6 +66,8 @@ auto random_point_in_sphere(const basic_vector3<Type>& center, const Type radius
 
   return center + basic_vector3<Type>{x, y, z};
 }
+
+auto random_color() -> color;
 
 } // namespace sbx::math
 

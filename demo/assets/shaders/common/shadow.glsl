@@ -9,7 +9,7 @@ const float BIAS = 0.000025;
 const float SAMPLE_WEIGHT = 1.0 / (PCF_COUNT * PCF_COUNT);
 const vec2 OFFSET = vec2(0.5 - 0.5 * PCF_COUNT);
 
-float calculate_shadow_random(sampler2D shadow_map, vec4 light_space_position, vec3 normal, vec3 light_direction) {
+float calculate_shadow_random_jitter(sampler2D shadow_map, vec4 light_space_position, vec3 normal, vec3 light_direction) {
   vec3 coordinates = light_space_position.xyz / light_space_position.w;
 
   if (coordinates.z > 1.0 || coordinates.z < -1.0) {
@@ -60,6 +60,43 @@ float calculate_shadow_pcf(sampler2D shadow_map, vec4 light_space_position, vec3
   }
 
   return shadow_factor / iterations;
+}
+
+float calculate_shadow_pcf_gaussian(sampler2D shadow_map, vec4 light_space_position, vec3 normal, vec3 light_direction) {
+  vec3 projected_coords = light_space_position.xyz / light_space_position.w;
+
+  if(projected_coords.z > 1.0) {
+    return 0.0;
+  }
+
+  vec2 shadow_uv = projected_coords.xy;
+  vec2 size = 1.0 / textureSize(shadow_map, 0);
+
+  float current_depth = projected_coords.z - BIAS;
+
+  float kernel[9] = float[](
+    0.077847, 0.123317, 0.077847,
+    0.123317, 0.195346, 0.123317,
+    0.077847, 0.123317, 0.077847
+  );
+
+  vec2 offsets[9] = vec2[](
+    vec2(-1.0, -1.0), vec2(0.0, -1.0), vec2(1.0, -1.0),
+    vec2(-1.0, 0.0), vec2(0.0, 0.0), vec2(1.0, 0.0),
+    vec2(-1.0, 1.0), vec2(0.0, 1.0), vec2(1.0, 1.0)
+  );
+
+  float shadow_factor = 0.0;
+
+  for(int i = 0; i < 9; i++) {
+    vec2 offset = offsets[i] * size;
+
+    float depth = texture(shadow_map, shadow_uv + offset).r;
+
+    shadow_factor += current_depth > depth ? 0.0 : kernel[i];
+  }
+
+  return shadow_factor;
 }
 
 #endif // COMMON_SHADOW_GLSL_
