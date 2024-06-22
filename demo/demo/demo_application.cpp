@@ -117,8 +117,6 @@ demo_application::demo_application()
   crate_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
   crate_transform.set_rotation(sbx::math::vector3::up, sbx::math::degree{20});
 
-  crate.add_component<sbx::scenes::gizmo>(cube_id, 0u, sbx::math::color{0.0f, 1.0f, 0.0f, 1.0f});
-
   // Tree 1
 
   auto submeshes = std::vector<sbx::scenes::static_mesh::submesh>{};
@@ -126,7 +124,6 @@ demo_application::demo_application()
   submeshes.push_back(sbx::scenes::static_mesh::submesh{1, white_id, sbx::math::color{0.47f, 0.37f, 0.24f, 1.0f}});
 
   auto tree1 = scene.create_node("Tree1");
-
 
   tree1.add_component<sbx::scenes::static_mesh>(tree_1_id, submeshes);
   
@@ -162,8 +159,6 @@ demo_application::demo_application()
     const auto x = min + static_cast<std::float_t>(i) * spacing;
 
     monkey_transform.set_position(sbx::math::vector3{x, 2.0f, 0.0f});
-
-    monkey.add_component<sbx::scenes::gizmo>(sphere_id, 0u, sbx::math::color{0.0f, 1.0f, 0.0f, 1.0f});
   }
 
   // Camera

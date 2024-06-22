@@ -10,7 +10,7 @@ class gizmo final {
 
 public:
 
-  gizmo(math::uuid mesh_id, std::uint32_t submesh_index, const math::color& tint)
+  gizmo(math::uuid mesh_id, std::uint32_t submesh_index, math::color tint = math::color{1.0f, 1.0f, 1.0f, 1.0f})
   : _mesh_id{mesh_id},
     _submesh_index{submesh_index},
     _tint{tint} { }
@@ -27,8 +27,8 @@ public:
     return _tint;
   }
 
-  auto tint() noexcept -> math::color& {
-    return _tint;
+  auto set_tint(const math::color& tint) noexcept -> void {
+    _tint = tint;
   }
 
 private:

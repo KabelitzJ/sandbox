@@ -14,7 +14,7 @@ class pipeline : public graphics::graphics_pipeline<models::vertex3d> {
     .uses_transparency = true,
     .rasterization_state = graphics::rasterization_state{
       .polygon_mode = graphics::polygon_mode::line,
-      .line_width = 5.0f,
+      .line_width = 10.0f,
       .cull_mode = graphics::cull_mode::back,
       .front_face = graphics::front_face::counter_clockwise
     }
