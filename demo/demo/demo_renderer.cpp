@@ -77,7 +77,7 @@ auto demo_renderer::initialize() -> void {
 
   // Render stage 2
   add_subrenderer<sbx::post::resolve_filter<sbx::graphics::empty_vertex>>("demo/assets/shaders/resolve", sbx::graphics::pipeline::stage{2, 0}, std::move(attachment_names));
-  // add_subrenderer<sbx::gizmos::gizmos_subrenderer>("demo/assets/shaders/gizmos", sbx::graphics::pipeline::stage{2, 0});
+  add_subrenderer<sbx::gizmos::gizmos_subrenderer>("demo/assets/shaders/gizmos", sbx::graphics::pipeline::stage{2, 0});
   add_subrenderer<sbx::ui::ui_subrenderer>("demo/assets/shaders/ui", sbx::graphics::pipeline::stage{2, 0});
 }
 

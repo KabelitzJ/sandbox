@@ -38,7 +38,8 @@ demo_application::demo_application()
   const auto monkey_id = graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/suzanne/suzanne.gltf");
   const auto plane_id = graphics_module.add_asset<sbx::models::mesh>(_generate_plane(sbx::math::vector2u{1u, 1u}, sbx::math::vector2u{20u, 20u}));
   const auto sphere_id = graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/sphere.obj");
-  const auto crate_id = graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/crate.obj");
+  const auto crate_id = graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/crate/crate.gltf");
+  const auto cube_id = graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/cube.obj");
   const auto tree_2_id = graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/tree_2/tree_2.gltf");
   const auto tree_1_id = graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/tree_1/tree_1.gltf");
   const auto dragon_id = graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/dragon.gltf");
@@ -47,6 +48,7 @@ demo_application::demo_application()
   _mesh_ids.emplace("plane", plane_id);
   _mesh_ids.emplace("sphere", sphere_id);
   _mesh_ids.emplace("crate", crate_id);
+  _mesh_ids.emplace("cube", cube_id);
   _mesh_ids.emplace("tree_2", tree_2_id);
   _mesh_ids.emplace("tree_1", tree_1_id);
   _mesh_ids.emplace("dragon", dragon_id);
@@ -111,9 +113,11 @@ demo_application::demo_application()
   crate.add_component<sbx::scenes::static_mesh>(crate_id, wood_id);
   
   auto& crate_transform = crate.get_component<sbx::math::transform>();
-  crate_transform.set_position(sbx::math::vector3{-4.0f, 0.0f, 3.5f});
+  crate_transform.set_position(sbx::math::vector3{-4.0f, 1.0f, 3.5f});
   crate_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
   crate_transform.set_rotation(sbx::math::vector3::up, sbx::math::degree{20});
+
+  crate.add_component<sbx::scenes::gizmo>(cube_id, 0u, sbx::math::color{0.0f, 1.0f, 0.0f, 1.0f});
 
   // Tree 1
 
@@ -159,14 +163,7 @@ demo_application::demo_application()
 
     monkey_transform.set_position(sbx::math::vector3{x, 2.0f, 0.0f});
 
-    auto gizmo = scene.create_child_node(monkey, fmt::format("Gizmo{}", i));
-
-    gizmo.add_component<sbx::scenes::gizmo>(sphere_id, 0u, sbx::math::random_color());
-
-    auto& gizmo_transform = gizmo.get_component<sbx::math::transform>();
-    gizmo_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
-
-    _monkey_ids.push_back(monkey.get_component<sbx::scenes::id>());
+    monkey.add_component<sbx::scenes::gizmo>(sphere_id, 0u, sbx::math::color{0.0f, 1.0f, 0.0f, 1.0f});
   }
 
   // Camera

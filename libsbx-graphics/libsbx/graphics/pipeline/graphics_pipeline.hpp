@@ -53,6 +53,7 @@ struct depth_bias {
 
 struct rasterization_state {
   graphics::polygon_mode polygon_mode{polygon_mode::fill};
+  std::float_t line_width{1.0f};
   graphics::cull_mode cull_mode{cull_mode::back};
   graphics::front_face front_face{front_face::counter_clockwise};
   std::optional<graphics::depth_bias> depth_bias{};
