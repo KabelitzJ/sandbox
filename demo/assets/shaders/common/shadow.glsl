@@ -3,7 +3,7 @@
 
 #include "../common/random.glsl"
 
-const int PCF_COUNT = 8;
+const int PCF_COUNT = 3;
 const float RADIUS = 0.0004;
 const float BIAS = 0.000025;
 const float SAMPLE_WEIGHT = 1.0 / (PCF_COUNT * PCF_COUNT);

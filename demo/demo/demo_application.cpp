@@ -42,7 +42,7 @@ demo_application::demo_application()
   const auto cube_id = graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/cube.obj");
   const auto tree_2_id = graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/tree_2/tree_2.gltf");
   const auto tree_1_id = graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/tree_1/tree_1.gltf");
-  const auto dragon_id = graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/dragon.gltf");
+  const auto dragon_id = graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/dragon/dragon.gltf");
 
   _mesh_ids.emplace("monkey", monkey_id);
   _mesh_ids.emplace("plane", plane_id);
