@@ -1,9 +1,27 @@
 #ifndef LIBSBX_PHYSICS_BOX_COLLIDER_HPP_
 #define LIBSBX_PHYSICS_BOX_COLLIDER_HPP_
 
+#include <variant>
+
 #include <libsbx/math/vector3.hpp>
 
 namespace sbx::physics {
+
+struct sphere {
+  std::float_t radius;
+}; // struct sphere
+
+struct cylinder {
+  std::float_t radius;
+  std::float_t base;
+  std::float_t cap;
+}; // struct cylinder
+
+struct capsule {
+  std::float_t radius;
+  std::float_t base;
+  std::float_t cap;
+}; // struct capsule
 
 class box_collider {
 

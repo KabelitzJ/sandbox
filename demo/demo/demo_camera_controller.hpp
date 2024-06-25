@@ -91,11 +91,11 @@ public:
     // QE camera rotation
 
     if (sbx::devices::input::is_key_down(sbx::devices::key::q)) {
-      _orbit_angle += sbx::math::degree{45.0f * delta_time.value()};
+      _orbit_angle -= sbx::math::degree{45.0f * delta_time.value()};
     }
 
     if (sbx::devices::input::is_key_down(sbx::devices::key::e)) {
-      _orbit_angle -= sbx::math::degree{45.0f * delta_time.value()};
+      _orbit_angle += sbx::math::degree{45.0f * delta_time.value()};
     }
 
     auto camera_speed = 10.0f;
