@@ -44,7 +44,7 @@ application::application()
   const auto tree_1_id = graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/tree_1/tree_1.gltf");
   const auto dragon_id = graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/dragon/dragon.gltf");
 
-  const auto line_mesh_id = graphics_module.add_asset<line_mesh>(generate_grid(sbx::math::vector2u{100u, 100u}, sbx::math::vector2{1.0f, 1.0f}));
+  const auto line_mesh_id = graphics_module.add_asset<line_mesh>(generate_grid(sbx::math::vector2u{11u, 11u}, sbx::math::vector2{1.0f, 1.0f}));
 
   _mesh_ids.emplace("monkey", monkey_id);
   _mesh_ids.emplace("plane", plane_id);
@@ -77,7 +77,8 @@ application::application()
   auto plane = scene.create_node("Plane");
 
   plane.add_component<sbx::scenes::static_mesh>(plane_id, prototype_black_id);
-  
+  // plane.add_component<primitive>(line_mesh_id);
+
   auto& plane_transform = plane.get_component<sbx::math::transform>();
   plane_transform.set_scale(sbx::math::vector3{10.0f, 1.0f, 10.0f});
 

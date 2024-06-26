@@ -92,7 +92,7 @@ renderer::renderer()
 
     auto subpass_bindings = std::vector<sbx::graphics::subpass_binding>{
       sbx::graphics::subpass_binding{0, {0, 1, 2, 3}},
-      sbx::graphics::subpass_binding{1, {0, 1, 3}},
+      // sbx::graphics::subpass_binding{0, {0, 1, 3}}
     };
 
     add_render_stage(std::move(attachments), std::move(subpass_bindings));
@@ -118,7 +118,7 @@ auto renderer::initialize() -> void {
 
   // Render stage 1
   add_subrenderer<sbx::models::mesh_subrenderer>("demo/assets/shaders/deferred", sbx::graphics::pipeline::stage{1, 0});
-  add_subrenderer<line_subrenderer>("demo/assets/shaders/line", sbx::graphics::pipeline::stage{1, 1});
+  // add_subrenderer<line_subrenderer>("demo/assets/shaders/line", sbx::graphics::pipeline::stage{1, 1});
 
   auto attachment_names = std::unordered_map<std::string, std::string>{
     {"position_image", "position"},

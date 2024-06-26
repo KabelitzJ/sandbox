@@ -89,6 +89,7 @@ class pipeline : public sbx::graphics::graphics_pipeline<line_vertex3d> {
     .uses_transparency = false,
     .rasterization_state = sbx::graphics::rasterization_state{
       .polygon_mode = sbx::graphics::polygon_mode::line,
+      .line_width = 2.0f,
       .cull_mode = sbx::graphics::cull_mode::back,
       .front_face = sbx::graphics::front_face::counter_clockwise
     },
@@ -149,15 +150,19 @@ public:
     for (const auto& node : primitive_nodes) {
       auto& primitive = node.get_component<demo::primitive>();
       auto& id = node.get_component<sbx::scenes::id>();
+      auto& transform = node.get_component<sbx::math::transform>();
 
       _used_uniforms.insert(id);
 
       _pipeline.bind(command_buffer);
 
-      auto& descriptor_handler = _uniform_data[id];
+      auto& [push_handler, descriptor_handler] = _uniform_data[id];
+
+      push_handler.push("model", transform.as_matrix());
 
       auto& mesh = graphics_module.get_asset<line_mesh>(primitive.mesh_id);
 
+      descriptor_handler.push("data", push_handler);
       descriptor_handler.push("uniform_scene", _scene_uniform_handler);
 
       if (!descriptor_handler.update(_pipeline)) {
@@ -165,6 +170,7 @@ public:
       }
 
       descriptor_handler.bind_descriptors(command_buffer);
+      push_handler.bind(command_buffer, _pipeline);
 
       mesh.render(command_buffer);
     }
@@ -172,9 +178,14 @@ public:
 
 private:
 
+  struct uniform_data {
+    sbx::graphics::push_handler push_handler;
+    sbx::graphics::descriptor_handler descriptor_handler;
+  }; // struct uniform_data
+
   pipeline _pipeline;
 
-  std::unordered_map<sbx::math::uuid, sbx::graphics::descriptor_handler> _uniform_data;
+  std::unordered_map<sbx::math::uuid, uniform_data> _uniform_data;
   std::unordered_set<sbx::math::uuid> _used_uniforms;
 
   sbx::graphics::uniform_handler _scene_uniform_handler;

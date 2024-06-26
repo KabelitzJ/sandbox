@@ -180,7 +180,7 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
   rasterization_state.depthClampEnable = false;
   rasterization_state.rasterizerDiscardEnable = false;
   rasterization_state.polygonMode = to_vk_enum<VkPolygonMode>(definition.rasterization_state.polygon_mode);
-  rasterization_state.lineWidth = 1.0f;
+  rasterization_state.lineWidth = definition.rasterization_state.line_width;
   rasterization_state.cullMode = to_vk_enum<VkCullModeFlags>(definition.rasterization_state.cull_mode);
   rasterization_state.frontFace = to_vk_enum<VkFrontFace>(definition.rasterization_state.front_face);
 

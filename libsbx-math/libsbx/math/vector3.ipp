@@ -7,8 +7,8 @@ inline constexpr basic_vector3<Type>::basic_vector3(const base_type& base) noexc
 : base_type{base} { }
 
 template<scalar Type>
-template<scalar Other>
-inline constexpr basic_vector3<Type>::basic_vector3(Other x, Other y, Other z) noexcept
+template<scalar X, scalar Y, scalar Z>
+inline constexpr basic_vector3<Type>::basic_vector3(X x, Y y, Z z) noexcept
 : base_type{x, y, z} { }
 
 template<scalar Type>

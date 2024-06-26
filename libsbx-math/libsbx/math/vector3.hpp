@@ -48,8 +48,8 @@ public:
 
   constexpr basic_vector3(const base_type& base) noexcept;
 
-  template<scalar Other>
-  constexpr basic_vector3(Other x, Other y, Other z) noexcept;
+  template<scalar X, scalar Y, scalar Z>
+  constexpr basic_vector3(X x, Y y, Z z) noexcept;
 
   template<scalar Other, scalar Scalar = Other>
   constexpr basic_vector3(const basic_vector2<Other>& vector, Scalar z = Scalar{0}) noexcept;
