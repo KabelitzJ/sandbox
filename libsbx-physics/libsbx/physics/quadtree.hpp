@@ -1,8 +1,11 @@
 #ifndef LIBSBX_PHYSICS_QUADTREE_HPP_
 #define LIBSBX_PHYSICS_QUADTREE_HPP_
 
+#include <libsbx/utility/enum.hpp>
+
 #include <libsbx/math/vector2.hpp>
 #include <libsbx/math/uuid.hpp>
+
 #include <libsbx/memory/static_vector.hpp>
 
 namespace sbx::physics {
@@ -45,7 +48,7 @@ private:
 
 }; // class box
 
-template<typename Type, std::size_t Threshold, std::size_t Depth>
+template<typename Type, std::size_t Threshold = 16u, std::size_t Depth = 8u>
 class quadtree {
 
   inline static constexpr auto threshold = Threshold;
@@ -57,92 +60,54 @@ public:
   using reference = value_type&;
   using const_reference = const value_type&;
 
-  quadtree(const box_type& bounds) noexcept
+  quadtree(const box& bounds) noexcept
   : _bounds{bounds} { }
 
-  auto insert(const value_type& value, const box_type& bounds) noexcept -> void {
-    _insert(_root, _bounds, value, bounds, 0u);
+  auto insert(const value_type& value, const box& bounds) noexcept -> void {
+    
   }
 
 private:
 
-  /**
-   * 
-   * +---+---+
-   * | 0 | 1 |
-   * +---+---+
-   * | 3 | 2 |
-   * +---+---+
-   */
-  struct node {
+  class node {
+
+  public:
     
     using id = std::uint32_t;
 
     inline constexpr static auto null = static_cast<id>(-1);
 
-    memory::static_vector<value_type, threshold> values;
-    std::array<id, 4> children{null, null, null, null};
+    /**
+     * +---+---+
+     * | 0 | 1 |
+     * +---+---+
+     * | 3 | 2 |
+     * +---+---+
+     */
+    enum class quadrant : std::uint8_t {
+      top_left = 0,
+      top_right = 1,
+      bottom_right = 2,
+      bottom_left = 3
+    }; // enum class quadrant
+
+    node() noexcept
+    : _children{null, null, null, null} { }
+
+    auto child_at(const quadrant quadrant) -> id {
+      return _children[utility::to_underlying(quadrant)];
+    }
 
     auto is_leaf() const noexcept -> bool {
-      return children[0] == null;
+      return child_at(quadrant::top_left) == null;
     }
 
-    auto child_bounds(const box& bounds, const std::size_t index) const noexcept -> box {
-      const auto center = bounds.center();
-      const auto size = bounds.size() / static_cast<scalar_type>(2);
+  private:
 
-      switch (index) {
-        case 0: return box{math::vector2{center.x() - size.x(), center.y() + size.y()};
-        case 1: return box{center, bounds.max()};
-        case 2: return box{math::vector2{center.x(), bounds.min().y()}, math::vector2{bounds.max().x(), center.y()}};
-        case 3: return box{math::vector2{bounds.min().x(), center.y()}, math::vector2{center.x(), bounds.max().y()}};
-      }
-    }
-
-    auto quadrant(const box& bounds, const box& point) const noexcept -> std::size_t {
-      const auto center = bounds.center();
-
-      if (point.max().x() < center.x()) {
-        if (point.max().y() < center.y()) return 0;
-        if (point.min().y() > center.y()) return 3;
-      }
-      if (point.min().x() > center.x()) {
-        if (point.min().y() > center.y()) return 2;
-        if (point.max().y() < center.y()) return 1;
-      }
-
-      return 4;
-    }
+    memory::static_vector<value_type, threshold> _values;
+    std::array<id, 4> _children{null, null, null, null};
   
   }; // struct node
-
-  auto _insert(node::id& id, const box& bounds, const value_type& value, const box& value_bounds, const std::size_t current_depth) noexcept -> void {
-    if (id == node::null) {
-      id = _nodes.size();
-      _nodes.push_back(node{});
-    }
-
-    auto& current = _nodes[id];
-
-    if (current.is_leaf()) {
-      if (current.values.size() < threshold || current_depth == depth) {
-        current.values.push_back(value);
-        return;
-      }
-
-      for (const auto& current_value : current.values) {
-        const auto index = current.quadrant(bounds, value_bounds);
-        _insert(current.children[index], current.child_bounds(bounds, index), current_value, value_bounds, current_depth + 1);
-      }
-
-      current.values.clear();
-      current.values.push_back(value);
-      return;
-    }
-
-    const auto index = current.quadrant(bounds, value_bounds);
-    _insert(current.children[index], current.child_bounds(bounds, index), value, value_bounds, current_depth + 1);
-  }
 
   box _bounds;
   node::id _root{node::null};

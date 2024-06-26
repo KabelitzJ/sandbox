@@ -1,19 +1,19 @@
-#include <demo/demo_application.hpp>
+#include <demo/application.hpp>
 
 #include <libsbx/math/color.hpp>
 
-#include <demo/demo_renderer.hpp>
+#include <demo/renderer.hpp>
 
 namespace demo {
 
-demo_application::demo_application()
+application::application()
 : sbx::core::application{},
   _rotation{sbx::math::degree{0}} {
   // Renderer
 
   auto& graphics_module = sbx::core::engine::get_module<sbx::graphics::graphics_module>();
 
-  graphics_module.set_renderer<demo_renderer>();
+  graphics_module.set_renderer<renderer>();
 
   // Textures
 
@@ -44,6 +44,8 @@ demo_application::demo_application()
   const auto tree_1_id = graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/tree_1/tree_1.gltf");
   const auto dragon_id = graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/dragon/dragon.gltf");
 
+  const auto line_mesh_id = graphics_module.add_asset<line_mesh>(generate_grid(sbx::math::vector2u{100u, 100u}, sbx::math::vector2{1.0f, 1.0f}));
+
   _mesh_ids.emplace("monkey", monkey_id);
   _mesh_ids.emplace("plane", plane_id);
   _mesh_ids.emplace("sphere", sphere_id);
@@ -52,6 +54,7 @@ demo_application::demo_application()
   _mesh_ids.emplace("tree_2", tree_2_id);
   _mesh_ids.emplace("tree_1", tree_1_id);
   _mesh_ids.emplace("dragon", dragon_id);
+  _mesh_ids.emplace("line_mesh", line_mesh_id);
 
   // Window
 
@@ -186,7 +189,7 @@ demo_application::demo_application()
   window.show();
 }
 
-auto demo_application::update() -> void  {
+auto application::update() -> void  {
   if (sbx::devices::input::is_key_pressed(sbx::devices::key::escape)) {
     sbx::core::engine::quit();
     return;
@@ -254,11 +257,11 @@ auto demo_application::update() -> void  {
   }
 }
 
-auto demo_application::fixed_update() -> void {
+auto application::fixed_update() -> void {
 
 }
 
-auto demo_application::_generate_plane(const sbx::math::vector2u& tile_count, const sbx::math::vector2u& tile_size) -> std::unique_ptr<sbx::models::mesh> {
+auto application::_generate_plane(const sbx::math::vector2u& tile_count, const sbx::math::vector2u& tile_size) -> std::unique_ptr<sbx::models::mesh> {
   auto vertices = std::vector<sbx::models::vertex3d>{};
   auto indices = std::vector<std::uint32_t>{};
 

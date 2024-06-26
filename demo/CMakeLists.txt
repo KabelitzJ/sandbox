@@ -35,11 +35,12 @@ add_dependencies(${PROJECT_NAME} shaders)
 target_sources(
   ${PROJECT_NAME}
   PUBLIC
-    "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/demo_renderer.hpp"
-    "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/demo_application.hpp"
+    "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/renderer.hpp"
+    "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/application.hpp"
+    "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/camera_controller.hpp"
   PRIVATE
-    "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/demo_renderer.cpp"
-    "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/demo_application.cpp"
+    "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/renderer.cpp"
+    "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/application.cpp"
     "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/demo.cpp"
 )
 

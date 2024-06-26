@@ -1,5 +1,5 @@
-#ifndef DEMO_DEMO_APPLICATION_HPP_
-#define DEMO_DEMO_APPLICATION_HPP_
+#ifndef DEMO_APPLICATION_HPP_
+#define DEMO_APPLICATION_HPP_
 
 #include <libsbx/units/units.hpp>
 #include <libsbx/utility/utility.hpp>
@@ -16,17 +16,17 @@
 #include <libsbx/ui/ui.hpp>
 #include <libsbx/physics/physics.hpp>
 
-#include <demo/demo_camera_controller.hpp>
+#include <demo/camera_controller.hpp>
 
 namespace demo {
 
-class demo_application : public sbx::core::application {
+class application : public sbx::core::application {
 
 public:
 
-  demo_application();
+  application();
 
-  ~demo_application() override = default;
+  ~application() override = default;
 
   auto update() -> void override;
 
@@ -50,10 +50,10 @@ private:
 
   sbx::math::angle _rotation;
 
-  demo_camera_controller _camera_controller;
+  camera_controller _camera_controller;
 
-}; // class demo_application
+}; // class application
 
 } // namespace demo
 
-#endif // DEMO_DEMO_APPLICATION_HPP_
+#endif // DEMO_APPLICATION_HPP_

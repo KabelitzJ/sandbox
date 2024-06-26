@@ -1,5 +1,5 @@
-#ifndef DEMO_DEMO_CAMERA_CONTROLLER_HPP_
-#define DEMO_DEMO_CAMERA_CONTROLLER_HPP_
+#ifndef DEMO_CAMERA_CONTROLLER_HPP_
+#define DEMO_CAMERA_CONTROLLER_HPP_
 
 #include <libsbx/math/uuid.hpp>
 #include <libsbx/math/vector2.hpp>
@@ -13,11 +13,11 @@
 
 namespace demo {
 
-class demo_camera_controller {
+class camera_controller {
 
 public:
 
-  demo_camera_controller()
+  camera_controller()
   : _orbit_angle{sbx::math::degree{90}}, 
     _tilt_angle{sbx::math::degree{30}},
     _min_tilt_angle{sbx::math::degree{1}},
@@ -148,8 +148,8 @@ private:
   sbx::math::vector2 _last_mouse_position;
   sbx::math::vector2 _mouse_position_delta;
 
-}; // class demo_camera_controller
+}; // class camera_controller
 
 } // namespace demo
 
-#endif // DEMO_DEMO_CAMERA_CONTROLLER_HPP_
+#endif // DEMO_CAMERA_CONTROLLER_HPP_

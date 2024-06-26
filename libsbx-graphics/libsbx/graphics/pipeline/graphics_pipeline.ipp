@@ -179,10 +179,10 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
   rasterization_state.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
   rasterization_state.depthClampEnable = false;
   rasterization_state.rasterizerDiscardEnable = false;
-  rasterization_state.polygonMode = static_cast<VkPolygonMode>(definition.rasterization_state.polygon_mode);
+  rasterization_state.polygonMode = to_vk_enum<VkPolygonMode>(definition.rasterization_state.polygon_mode);
   rasterization_state.lineWidth = 1.0f;
-  rasterization_state.cullMode = static_cast<VkCullModeFlags>(definition.rasterization_state.cull_mode);
-  rasterization_state.frontFace = static_cast<VkFrontFace>(definition.rasterization_state.front_face);
+  rasterization_state.cullMode = to_vk_enum<VkCullModeFlags>(definition.rasterization_state.cull_mode);
+  rasterization_state.frontFace = to_vk_enum<VkFrontFace>(definition.rasterization_state.front_face);
 
   if (definition.rasterization_state.depth_bias.has_value()) {
     auto& depth_bias = definition.rasterization_state.depth_bias.value();
@@ -276,7 +276,7 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
 
   auto input_assembly_state = VkPipelineInputAssemblyStateCreateInfo{};
   input_assembly_state.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-  input_assembly_state.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+  input_assembly_state.topology = to_vk_enum<VkPrimitiveTopology>(definition.primitive_topology);
   input_assembly_state.primitiveRestartEnable = false;
 
   auto binding_flags = std::vector<VkDescriptorBindingFlags>{};

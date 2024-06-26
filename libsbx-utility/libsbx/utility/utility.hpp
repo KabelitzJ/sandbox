@@ -60,5 +60,6 @@
 #include <libsbx/utility/timer.hpp>
 #include <libsbx/utility/type_name.hpp>
 #include <libsbx/utility/zip.hpp>
+#include <libsbx/utility/enum.hpp>
 
 #endif // LIBSBX_UTILITY_HPP_

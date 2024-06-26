@@ -30,18 +30,6 @@ enum class format : std::uint32_t {
   r32g32b32a32_sfloat = VK_FORMAT_R32G32B32A32_SFLOAT
 }; // enum class format
 
-template<typename Enum>
-requires (std::is_enum_v<Enum>)
-constexpr auto to_underlying(Enum value) -> std::underlying_type_t<Enum> {
-  return static_cast<std::underlying_type_t<Enum>>(value);
-}
-
-template<typename VkEnum, typename Enum>
-requires (std::is_enum_v<VkEnum> && std::is_enum_v<Enum>)
-constexpr auto to_vk_enum(Enum value) -> VkEnum {
-  return static_cast<VkEnum>(value);
-}
-
 class attachment {
 
 public:

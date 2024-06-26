@@ -107,7 +107,7 @@ public:
       descriptor_handler.push("buffer_mesh_data", storage_handler);
 
       if (!descriptor_handler.update(_pipeline)) {
-        return;
+        continue;
       }
 
       descriptor_handler.bind_descriptors(command_buffer);

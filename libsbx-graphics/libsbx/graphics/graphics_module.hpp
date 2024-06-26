@@ -37,11 +37,17 @@
 namespace sbx::graphics {
 
 /**
- * @brief Checks a @see VkResult and throws an exception if it is an error
+ * @brief Checks the @ref VkResult and throws an exception if it is an error
  * @param result 
  * @throws @see std::runtime_error 
  */
 auto validate(VkResult result) -> void;
+
+template<typename VkEnum, typename Enum>
+requires ((std::is_enum_v<VkEnum> || std::is_same_v<VkEnum, VkFlags>) && std::is_enum_v<Enum>)
+constexpr auto to_vk_enum(Enum value) -> VkEnum {
+  return static_cast<VkEnum>(value);
+}
 
 /**
  * @brief Module for managing rendering specific tasks

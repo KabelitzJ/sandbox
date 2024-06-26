@@ -43,7 +43,7 @@ public:
 
     const auto delta_time = core::engine::fixed_delta_time();
 
-    auto tree = quadtree<math::uuid>{box<std::float_t>{math::vector2{-20.0f, -20.0f}, math::vector2{20.0f, 20.0f}}};
+    auto tree = quadtree<math::uuid>{box{math::vector2{-20.0f, -20.0f}, math::vector2{20.0f, 20.0f}}};
 
     auto transform_nodes = scene.query<math::transform>();
 
@@ -54,7 +54,7 @@ public:
 
       const auto position = transform.position();
 
-      tree.insert(id, box<std::float_t>{math::vector2{position.x() - 1.0f, position.y() - 1.0f}, math::vector2{position.x() + 1.0f, position.y() + 1.0f}});
+      tree.insert(id, box{math::vector2{position.x() - 1.0f, position.y() - 1.0f}, math::vector2{position.x() + 1.0f, position.y() + 1.0f}});
     }
 
     auto rigidbody_nodes = scene.query<rigidbody>();
