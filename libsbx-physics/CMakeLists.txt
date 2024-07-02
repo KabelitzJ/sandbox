@@ -15,6 +15,7 @@ endif()
 add_library(${CMAKE_PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
 find_package(fmt REQUIRED)
+find_package(range-v3 REQUIRED)
 
 target_sources(
   ${PROJECT_NAME}
@@ -29,6 +30,7 @@ target_sources(
       "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/rigidbody.hpp"
       "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/box_collider.hpp"
       "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/quadtree.hpp"
+      "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/octtree.hpp"
 )
 
 target_include_directories(
@@ -42,6 +44,7 @@ target_link_libraries(
   PUBLIC
     # External dependencies
     fmt::fmt
+    range-v3::range-v3
     # Internal dependencies
     libsbx::units
     libsbx::utility

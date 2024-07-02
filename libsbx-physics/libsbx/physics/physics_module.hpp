@@ -43,18 +43,37 @@ public:
 
     const auto delta_time = core::engine::fixed_delta_time();
 
-    auto tree = quadtree<math::uuid>{box{math::vector2{-20.0f, -20.0f}, math::vector2{20.0f, 20.0f}}};
+    auto tree = quadtree<math::uuid>{box{math::vector2{-100.0f, -100.0f}, math::vector2{100.0f, 100.0f}}};
 
-    auto transform_nodes = scene.query<math::transform>();
+    auto collider_nodes = scene.query<physics::box_collider>();
 
-    for (auto& node : transform_nodes) {
+    core::logger::debug("collider_nodes: {}", collider_nodes.size());
+
+    for (auto& node : collider_nodes) {
       auto& transform = node.get_component<math::transform>();
+      auto& box_collider = node.get_component<physics::box_collider>();
 
       const auto& id = node.get_component<scenes::id>();
 
-      const auto position = transform.position();
+      const auto& position = transform.position();
+      const auto& size = box_collider.size();
+      const auto half_size = size / 2.0f;
 
-      tree.insert(id, box{math::vector2{position.x() - 1.0f, position.y() - 1.0f}, math::vector2{position.x() + 1.0f, position.y() + 1.0f}});
+      const auto min = math::vector2{position.x() - half_size.x(), position.z() - half_size.z()};
+      const auto max = math::vector2{position.x() + half_size.x(), position.z() + half_size.z()};
+
+      tree.insert(id, box{min, max});
+    }
+
+    for (const auto& [first, second] : tree.intersections()) {
+      auto first_node = scene.find_node(first);
+      auto second_node = scene.find_node(second);
+
+      if (!first_node || !second_node) {
+        continue;
+      }
+
+      core::logger::debug("intersection {} <-> {}", first_node->get_component<scenes::tag>(), second_node->get_component<scenes::tag>());
     }
 
     auto rigidbody_nodes = scene.query<rigidbody>();
@@ -80,37 +99,6 @@ public:
 
 private:
 
-  struct collision_info {
-
-  }; // struct collision_info
-
-  auto _test_collision(const scenes::node& a, const scenes::node& b) -> std::optional<collision_info> {
-    const auto& a_transform = a.get_component<math::transform>();
-    const auto& b_transform = b.get_component<math::transform>();
-
-    const auto& a_collider = a.get_component<physics::box_collider>();
-    const auto& b_collider = b.get_component<physics::box_collider>();
-
-    const auto a_min = a_transform.position() - a_collider.size() / 2.0f;
-    const auto a_max = a_transform.position() + a_collider.size() / 2.0f;
-
-    const auto b_min = b_transform.position() - b_collider.size() / 2.0f;
-    const auto b_max = b_transform.position() + b_collider.size() / 2.0f;
-
-    if (a_min.x() > b_max.x() || a_max.x() < b_min.x()) {
-      return std::nullopt;
-    }
-
-    if (a_min.y() > b_max.y() || a_max.y() < b_min.y()) {
-      return std::nullopt;
-    }
-
-    if (a_min.z() > b_max.z() || a_max.z() < b_min.z()) {
-      return std::nullopt;
-    }
-
-    return collision_info{};
-  }
 
 }; // class physics_module
 

@@ -65,6 +65,14 @@ public:
     return *this;
   }
 
+  template<floating_point Other>
+  requires (std::is_convertible_v<Other, Type>)
+  constexpr auto operator/=(const Other rhs) noexcept -> basic_degree<Type>& {
+    _value /= static_cast<Type>(rhs);
+
+    return *this;
+  }
+
   constexpr auto value() const noexcept -> value_type {
     return _value;
   }
@@ -102,9 +110,13 @@ constexpr auto operator-(basic_degree<Type> lhs, const basic_degree<Other>& rhs)
 }
 
 template<floating_point Type, std::convertible_to<Type> Other>
-requires (std::is_convertible_v<Other, Type>)
 constexpr auto operator*(basic_degree<Type> lhs, const Other rhs) noexcept -> basic_degree<Type> {
   return lhs *= static_cast<Type>(rhs);
+}
+
+template<floating_point Type, std::convertible_to<Type> Other>
+constexpr auto operator/(basic_degree<Type> lhs, const Other rhs) noexcept -> basic_degree<Type> {
+  return lhs /= static_cast<Type>(rhs);
 }
 
 template<floating_point Type>

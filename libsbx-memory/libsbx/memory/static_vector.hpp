@@ -8,10 +8,18 @@
 
 #include <fmt/format.h>
 
+#include <libsbx/utility/assert.hpp>
+
 #include <libsbx/memory/aligned_storage.hpp>
 
 namespace sbx::memory {
 
+/**
+ * @brief static_vector implementation inspired by https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0843r2.html
+ * 
+ * @tparam Type
+ * @tparam Capacity
+ */
 template<typename Type, std::size_t Capacity>
 class static_vector {
 
@@ -37,7 +45,7 @@ public:
   }
 
   static_vector(static_vector&& other) noexcept
-  : _size{std::exchange(other._size, 0u)} {
+  : _size{other._size} {
     for (auto i : std::views::iota(0u, _size)) {
       std::construct_at(_ptr(i), std::move(other[i]));
     }
@@ -47,26 +55,10 @@ public:
     clear();
   }
 
-  auto operator=(const static_vector& other) noexcept -> static_vector& {
-    if (this == &other) {
-      return *this;
+  auto operator=(static_vector other) noexcept -> static_vector& {
+    if (this != &other) {
+      other.swap(*this);
     }
-    
-    clear();
-    
-    *this = other;
-    
-    return *this;
-  }
-
-  auto operator=(static_vector&& other) noexcept -> static_vector& {
-    if (this == &other) {
-      return *this;
-    }
-    
-    clear();
-    
-    *this = std::move(other);
     
     return *this;
   }
@@ -151,6 +143,14 @@ public:
     return *_ptr(index);
   }
 
+  auto data() noexcept -> pointer {
+    return _ptr(0u);
+  }
+
+  auto data() const noexcept -> const_pointer {
+    return _ptr(0u);
+  }
+
   auto push_back(const value_type& value) noexcept -> void {
     if (is_full()) {
       return;
@@ -197,13 +197,22 @@ public:
     _size = 0u;
   }
 
+  auto swap(static_vector& other) -> void {
+    using std::swap;
+
+    swap(_size, other._size);
+    swap(_data, other._data);
+  }
+
 private:
 
   auto _ptr(const size_type index) noexcept -> pointer {
+    utility::assert_that(index <= _size, "index is out of range");
     return std::launder(reinterpret_cast<pointer>(_data[index]));
   }
 
   auto _ptr(const size_type index) const noexcept -> const_pointer {
+    utility::assert_that(index <= _size, "index is out of range");
     return std::launder(reinterpret_cast<const_pointer>(_data[index]));
   }
 
@@ -211,6 +220,16 @@ private:
   std::array<storage_for_t<Type>, Capacity> _data;
 
 }; // class static_vector
+
+template<typename Type, std::size_t Capacity>
+auto operator==(const static_vector<Type, Capacity>& lhs, const static_vector<Type, Capacity>& rhs) -> bool {
+  return std::ranges::equal(lhs, rhs);
+}
+
+template<typename Type, std::size_t Capacity>
+auto swap(static_vector<Type, Capacity>& lhs, static_vector<Type, Capacity>& rhs) -> void {
+  lhs.swap(rhs);
+}
 
 } // namespace sbx::memory
 
