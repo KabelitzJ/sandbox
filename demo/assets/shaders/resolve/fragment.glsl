@@ -18,7 +18,7 @@ layout(binding = 0) uniform uniform_scene {
 layout(binding = 1) uniform sampler2D position_image; 
 layout(binding = 2) uniform sampler2D normal_image;
 layout(binding = 3) uniform sampler2D albedo_image;
-layout(binding = 4) uniform sampler2D shadow_map_image;
+// layout(binding = 4) uniform sampler2D shadow_map_image;
 
 const material DEFAULT_MATERIAL = material(
   vec4(1.0, 1.0, 1.0, 1.0),   // Ambient color
@@ -46,10 +46,10 @@ void main() {
 
   blinn_phong_result lighting_result = calculate_directional_light_blinn_phong(DEFAULT_MATERIAL, light, normal, view_direction);
 
-  float shadow_factor = calculate_shadow_pcf(shadow_map_image, light_space_position, normal, light.direction);
+  // float shadow_factor = calculate_shadow_pcf(shadow_map_image, light_space_position, normal, light.direction);
   // float shadow_factor = calculate_shadow_random_jitter(shadow_map_image, light_space_position, normal, light.direction);
 
-  vec4 lighting = lighting_result.ambient + (lighting_result.diffuse + lighting_result.specular) * shadow_factor;
+  vec4 lighting = lighting_result.ambient + (lighting_result.diffuse + lighting_result.specular); // * shadow_factor;
 
   out_color = albedo * lighting;
   // out_color = vec4(vec3(texture(shadow_map_image, in_uv).r), 1.0);
