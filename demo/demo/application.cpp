@@ -150,10 +150,10 @@ application::application()
   for (const auto [i, texture_id_entry] : ranges::views::enumerate(_texture_ids)) {
     auto monkey = scene.create_node(fmt::format("Monkey{}", i));
 
+    const auto& id = monkey.get_component<sbx::scenes::id>();
+
     monkey.add_component<sbx::scenes::static_mesh>(monkey_id, texture_id_entry.second);
-
-    auto& monkey_transform = monkey.get_component<sbx::math::transform>();
-
+    
     const auto spacing = 3.0f;
 
     const auto total_length = static_cast<std::float_t>(_texture_ids.size() - 1) * spacing;
@@ -162,7 +162,11 @@ application::application()
 
     const auto x = min + static_cast<std::float_t>(i) * spacing;
 
+    auto& monkey_transform = monkey.get_component<sbx::math::transform>();
+
     monkey_transform.set_position(sbx::math::vector3{x, 2.0f, 0.0f});
+
+    _monkey_ids.push_back(id);
   }
 
   // Camera
@@ -213,6 +217,16 @@ auto application::update() -> void  {
     _fps_label->set_text(fmt::format("FPS: {}", _frames));
     _time = sbx::units::second{0};
     _frames = 0;
+  }
+
+  _rotation += sbx::math::degree{45} * delta_time;
+
+  for (const auto monkey_id : _monkey_ids) {
+    auto monkey = scene.find_node(monkey_id);
+
+    auto& transform = monkey->get_component<sbx::math::transform>();
+
+    transform.set_rotation(sbx::math::vector3::up, _rotation);
   }
 
   if (sbx::devices::input::is_key_pressed(sbx::devices::key::space)) {
