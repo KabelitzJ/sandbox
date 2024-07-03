@@ -36,7 +36,7 @@ application::application()
   // Meshes
 
   const auto monkey_id = graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/suzanne/suzanne.gltf");
-  const auto plane_id = graphics_module.add_asset<sbx::models::mesh>(_generate_plane(sbx::math::vector2u{1u, 1u}, sbx::math::vector2u{20u, 20u}));
+  const auto plane_id = graphics_module.add_asset<sbx::models::mesh>(_generate_plane(sbx::math::vector2u{1u, 1u}, sbx::math::vector2u{1u, 1u}));
   const auto sphere_id = graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/sphere.obj");
   const auto crate_id = graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/crate/crate.gltf");
   const auto cube_id = graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/cube.obj");
@@ -77,10 +77,11 @@ application::application()
   auto plane = scene.create_node("Plane");
 
   plane.add_component<sbx::scenes::static_mesh>(plane_id, prototype_black_id);
-  // plane.add_component<primitive>(line_mesh_id);
 
   auto& plane_transform = plane.get_component<sbx::math::transform>();
-  plane_transform.set_scale(sbx::math::vector3{10.0f, 1.0f, 10.0f});
+  plane_transform.set_scale(sbx::math::vector3{100.0f, 1.0f, 100.0f});
+
+  plane.add_component<sbx::physics::box_collider>(sbx::math::vector3{100.0f, 1.0f, 100.0f});
 
   // Sphere
 
@@ -93,6 +94,8 @@ application::application()
   
   auto& spere_rigidbody = sphere.add_component<sbx::physics::rigidbody>(sbx::units::kilogram{1.0f});
   spere_rigidbody.set_acceleration(sbx::math::vector3{0.0f, -9.81f, 0.0f});
+
+  sphere.add_component<sbx::physics::box_collider>(sbx::math::vector3{1.0f, 1.0f, 1.0f});
 
   // Dragon
 
@@ -245,6 +248,8 @@ auto application::update() -> void  {
     auto velocity = sbx::math::vector3::normalized(sbx::math::vector3{point.x(), 4.0f, point.y()}) * sbx::math::random::next<std::float_t>(20.0f, 25.0f);
 
     spere_rigidbody.set_velocity(velocity);
+
+    sphere.add_component<sbx::physics::box_collider>(sbx::math::vector3{1.0f, 1.0f, 1.0f});
   }
 
   _rotation += sbx::math::degree{45} * delta_time;

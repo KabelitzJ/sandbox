@@ -52,6 +52,7 @@ target_link_libraries(
     libsbx::core
     libsbx::scenes
     libsbx::models
+    libsbx::gizmos
 )
 
 set_target_properties(

@@ -21,6 +21,7 @@
 #include <libsbx/physics/rigidbody.hpp>
 #include <libsbx/physics/box_collider.hpp>
 #include <libsbx/physics/quadtree.hpp>
+#include <libsbx/physics/octtree.hpp>
 
 namespace sbx::physics {
 
@@ -43,11 +44,9 @@ public:
 
     const auto delta_time = core::engine::fixed_delta_time();
 
-    auto tree = quadtree<math::uuid>{box{math::vector2{-100.0f, -100.0f}, math::vector2{100.0f, 100.0f}}};
+    auto tree = octree<math::uuid, 16u, 8u>{physics::volume{math::vector3{-100.0f, -100.0f, -100.0f}, math::vector3{100.0f, 100.0f, 100.0f}}};
 
     auto collider_nodes = scene.query<physics::box_collider>();
-
-    core::logger::debug("collider_nodes: {}", collider_nodes.size());
 
     for (auto& node : collider_nodes) {
       auto& transform = node.get_component<math::transform>();
@@ -59,21 +58,23 @@ public:
       const auto& size = box_collider.size();
       const auto half_size = size / 2.0f;
 
-      const auto min = math::vector2{position.x() - half_size.x(), position.z() - half_size.z()};
-      const auto max = math::vector2{position.x() + half_size.x(), position.z() + half_size.z()};
+      const auto min = math::vector3{position.x() - half_size.x(), position.y() - half_size.y(), position.z() - half_size.z()};
+      const auto max = math::vector3{position.x() + half_size.x(), position.y() + half_size.y(), position.z() + half_size.z()};
 
-      tree.insert(id, box{min, max});
+      tree.insert(id, physics::volume{min, max});
     }
 
-    for (const auto& [first, second] : tree.intersections()) {
-      auto first_node = scene.find_node(first);
-      auto second_node = scene.find_node(second);
+    auto intersections = tree.intersections();
+
+    for (const auto& intersection : intersections) {
+      auto first_node = scene.find_node(intersection.first);
+      auto second_node = scene.find_node(intersection.second);
 
       if (!first_node || !second_node) {
         continue;
       }
 
-      core::logger::debug("intersection {} <-> {}", first_node->get_component<scenes::tag>(), second_node->get_component<scenes::tag>());
+      core::logger::debug("Intersection: {} and {}", first_node->get_component<scenes::tag>(), second_node->get_component<scenes::tag>());
     }
 
     auto rigidbody_nodes = scene.query<rigidbody>();
@@ -98,7 +99,6 @@ public:
   }
 
 private:
-
 
 }; // class physics_module
 
