@@ -19,8 +19,7 @@
 #include <libsbx/models/mesh.hpp>
 
 #include <libsbx/physics/rigidbody.hpp>
-#include <libsbx/physics/box_collider.hpp>
-#include <libsbx/physics/quadtree.hpp>
+#include <libsbx/physics/collider.hpp>
 #include <libsbx/physics/octtree.hpp>
 
 namespace sbx::physics {

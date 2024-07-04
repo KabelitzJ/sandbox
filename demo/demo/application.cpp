@@ -3,6 +3,7 @@
 #include <libsbx/math/color.hpp>
 
 #include <demo/renderer.hpp>
+#include <demo/line.hpp>
 
 namespace demo {
 
@@ -44,7 +45,7 @@ application::application()
   const auto tree_1_id = graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/tree_1/tree_1.gltf");
   const auto dragon_id = graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/dragon/dragon.gltf");
 
-  const auto line_mesh_id = graphics_module.add_asset<line_mesh>(generate_grid(sbx::math::vector2u{11u, 11u}, sbx::math::vector2{1.0f, 1.0f}));
+  // const auto line_mesh_id = graphics_module.add_asset<line_mesh>(generate_grid(sbx::math::vector2u{11u, 11u}, sbx::math::vector2{1.0f, 1.0f}));
 
   _mesh_ids.emplace("monkey", monkey_id);
   _mesh_ids.emplace("plane", plane_id);
@@ -54,7 +55,7 @@ application::application()
   _mesh_ids.emplace("tree_2", tree_2_id);
   _mesh_ids.emplace("tree_1", tree_1_id);
   _mesh_ids.emplace("dragon", dragon_id);
-  _mesh_ids.emplace("line_mesh", line_mesh_id);
+  // _mesh_ids.emplace("line_mesh", line_mesh_id);
 
   // Window
 
