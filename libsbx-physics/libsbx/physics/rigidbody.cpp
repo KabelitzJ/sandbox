@@ -45,6 +45,10 @@ auto rigidbody::is_static() const -> bool {
   return _is_static;
 }
 
+auto rigidbody::set_is_static(bool is_static) -> void {
+  _is_static = is_static;
+}
+
 auto rigidbody::apply_force(const math::vector3& force) -> void {
   _forces += force;
 }

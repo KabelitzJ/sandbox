@@ -7,6 +7,8 @@
 #include <libsbx/math/vector3.hpp>
 #include <libsbx/math/matrix4x4.hpp>
 
+#include <libsbx/physics/octtree.hpp>
+
 namespace sbx::physics {
 
 struct sphere {
@@ -32,30 +34,17 @@ struct box {
 
 using collider = std::variant<sphere, cylinder, capsule, box>;
 
-auto support(const math::vector3& direction, const collider& collider, const math::matrix4x4& model, const math::vector3& position) -> math::vector3;
+auto bounding_volume(const collider& collider, const math::vector3& position) -> volume;
 
-class box_collider {
+struct collider_data {
+  const math::vector3& position;
+  math::matrix4x4 rotation_scale;
+  const collider& collider;
+}; // struct collider_data
 
-public:
+auto support(const math::vector3& direction, const collider_data& collider) -> math::vector3;
 
-  box_collider(const math::vector3& size)
-  : _size{size} { }
-
-  ~box_collider() = default;
-
-  auto size() const -> const math::vector3& {
-    return _size;
-  }
-
-  auto set_size(const math::vector3& size) -> void {
-    _size = size;
-  }
-
-private:
-
-  math::vector3 _size;
-
-}; // class box_collider
+auto gjk(const collider_data& first, const collider_data& second) -> std::optional<math::vector3>;
 
 } // namespace sbx::physics
 

@@ -33,6 +33,8 @@ public:
 
   auto is_static() const -> bool;
 
+  auto set_is_static(bool is_static) -> void;
+
   auto apply_force(const math::vector3& force) -> void;
 
   auto forces() const -> const math::vector3&;

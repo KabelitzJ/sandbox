@@ -37,44 +37,18 @@ public:
   ~physics_module() override = default;
 
   auto update() -> void override {
+    update_rigidbodies();
+    solve_colisions();
+  }
+
+private:
+
+  auto update_rigidbodies() -> void {
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
 
     auto& scene = scenes_module.scene();
 
     const auto delta_time = core::engine::fixed_delta_time();
-
-    auto tree = octree<math::uuid, 16u, 8u>{physics::volume{math::vector3{-100.0f, -100.0f, -100.0f}, math::vector3{100.0f, 100.0f, 100.0f}}};
-
-    auto collider_nodes = scene.query<physics::box_collider>();
-
-    for (auto& node : collider_nodes) {
-      auto& transform = node.get_component<math::transform>();
-      auto& box_collider = node.get_component<physics::box_collider>();
-
-      const auto& id = node.get_component<scenes::id>();
-
-      const auto& position = transform.position();
-      const auto& size = box_collider.size();
-      const auto half_size = size / 2.0f;
-
-      const auto min = math::vector3{position.x() - half_size.x(), position.y() - half_size.y(), position.z() - half_size.z()};
-      const auto max = math::vector3{position.x() + half_size.x(), position.y() + half_size.y(), position.z() + half_size.z()};
-
-      tree.insert(id, physics::volume{min, max});
-    }
-
-    auto intersections = tree.intersections();
-
-    for (const auto& intersection : intersections) {
-      auto first_node = scene.find_node(intersection.first);
-      auto second_node = scene.find_node(intersection.second);
-
-      if (!first_node || !second_node) {
-        continue;
-      }
-
-      core::logger::debug("Intersection: {} and {}", first_node->get_component<scenes::tag>(), second_node->get_component<scenes::tag>());
-    }
 
     auto rigidbody_nodes = scene.query<rigidbody>();
 
@@ -97,7 +71,55 @@ public:
     }
   }
 
-private:
+  auto solve_colisions() -> void {
+    auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
+
+    auto& scene = scenes_module.scene();
+
+    const auto delta_time = core::engine::fixed_delta_time();
+
+    auto tree = octree<math::uuid, 16u, 8u>{physics::volume{math::vector3{-100.0f, -100.0f, -100.0f}, math::vector3{100.0f, 100.0f, 100.0f}}};
+
+    auto collider_nodes = scene.query<physics::collider>();
+
+    for (auto& node : collider_nodes) {
+      auto& transform = node.get_component<math::transform>();
+      auto& collider = node.get_component<physics::collider>();
+
+      const auto& id = node.get_component<scenes::id>();
+
+      const auto& position = transform.position();
+
+      tree.insert(id, bounding_volume(collider, position));
+    }
+
+    auto intersections = tree.intersections();
+
+    for (const auto& intersection : intersections) {
+      auto first_node = scene.find_node(intersection.first);
+      auto second_node = scene.find_node(intersection.second);
+
+      if (!first_node || !second_node) {
+        continue;
+      }
+
+      auto& first_transform = first_node->get_component<math::transform>();
+      const auto& first_collider = first_node->get_component<physics::collider>();
+
+      auto first_rotation_scale = first_transform.rotation().to_matrix() * math::matrix4x4::scaled(math::matrix4x4::identity, first_transform.scale());
+      const auto first_data = physics::collider_data{first_transform.position(), std::move(first_rotation_scale), first_collider}; 
+
+      auto& second_transform = second_node->get_component<math::transform>();
+      const auto& second_collider = second_node->get_component<physics::collider>();
+
+      auto second_rotation_scale = second_transform.rotation().to_matrix() * math::matrix4x4::scaled(math::matrix4x4::identity, second_transform.scale());
+      const auto second_data = physics::collider_data{second_transform.position(), std::move(second_rotation_scale), second_collider};
+
+      if (auto result = gjk(first_data, second_data); result) {
+        core::logger::debug("Collision detected between {} and {}: direction: {}", first_node->get_component<scenes::tag>(), second_node->get_component<scenes::tag>(), *result);
+      }
+    }
+  }
 
 }; // class physics_module
 

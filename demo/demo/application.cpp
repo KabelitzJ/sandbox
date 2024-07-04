@@ -82,7 +82,9 @@ application::application()
   auto& plane_transform = plane.get_component<sbx::math::transform>();
   plane_transform.set_scale(sbx::math::vector3{100.0f, 1.0f, 100.0f});
 
-  plane.add_component<sbx::physics::box_collider>(sbx::math::vector3{100.0f, 1.0f, 100.0f});
+  plane.add_component<sbx::physics::rigidbody>(sbx::units::kilogram{0.0f}, true);
+
+  plane.add_component<sbx::physics::collider>(sbx::physics::box{sbx::math::vector3{-50.0f, -0.1f, -50.0f}, sbx::math::vector3{50.0f, 0.1f, 50.0f}});
 
   // Sphere
 
@@ -96,7 +98,7 @@ application::application()
   auto& spere_rigidbody = sphere.add_component<sbx::physics::rigidbody>(sbx::units::kilogram{1.0f});
   spere_rigidbody.set_acceleration(sbx::math::vector3{0.0f, -9.81f, 0.0f});
 
-  sphere.add_component<sbx::physics::box_collider>(sbx::math::vector3{1.0f, 1.0f, 1.0f});
+  sphere.add_component<sbx::physics::collider>(sbx::physics::sphere{1.0f});
 
   // Dragon
 
@@ -250,7 +252,7 @@ auto application::update() -> void  {
 
     spere_rigidbody.set_velocity(velocity);
 
-    sphere.add_component<sbx::physics::box_collider>(sbx::math::vector3{1.0f, 1.0f, 1.0f});
+    sphere.add_component<sbx::physics::collider>(sbx::physics::sphere{1.0f});
   }
 
   _rotation += sbx::math::degree{45} * delta_time;
