@@ -591,317 +591,554 @@ GJK
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-// class simplex {
+#if 0
 
-// public:
+class simplex {
 
-//   using value_type = math::vector3;
-//   using reference = value_type;
-//   using const_iterator = const value_type*;
+public:
 
-//   simplex()
-//   : _size{0} { }
+  using value_type = math::vector3;
+  using reference = value_type;
+  using const_iterator = const value_type*;
 
-// 	auto operator=(std::initializer_list<value_type> list) -> simplex& {
-// 		_size = 0u;
+  simplex()
+  : _size{0} { }
 
-// 		for (const auto& point : list) {
-// 			_points[_size++] = point;
-//     }
+	auto operator=(std::initializer_list<value_type> list) -> simplex& {
+		_size = 0u;
 
-// 		return *this;
-// 	}
+		for (const auto& point : list) {
+			_points[_size++] = point;
+    }
 
-// 	auto push_front(const value_type& point) -> void {
-// 		_points = { point, _points[0], _points[1], _points[2] };
-// 		_size = std::min(_size + 1u, std::size_t{4});
-// 	}
+		return *this;
+	}
 
-// 	auto operator[](const std::size_t index) -> reference { 
-//     return _points[index]; 
-//   }
+	auto push_front(const value_type& point) -> void {
+		_points = { point, _points[0], _points[1], _points[2] };
+		_size = std::min(_size + 1u, std::size_t{4});
+	}
 
-// 	auto size() const noexcept -> std::size_t { 
-//     return _size; 
-//   }
+	auto operator[](const std::size_t index) -> reference { 
+    return _points[index]; 
+  }
 
-// 	auto begin() const -> const_iterator { 
-//     return _points.begin(); 
-//   }
+	auto size() const noexcept -> std::size_t { 
+    return _size; 
+  }
 
-// 	auto end() const -> const_iterator {
-//     return _points.end() - (4u - _size); 
-//   }
+	auto begin() const -> const_iterator { 
+    return _points.begin(); 
+  }
 
-// private:
+	auto end() const -> const_iterator {
+    return _points.end() - (4u - _size); 
+  }
 
-//   std::array<math::vector3, 4u> _points;
-//   std::size_t _size;
+private:
 
-// }; // class simplex
+  std::array<math::vector3, 4u> _points;
+  std::size_t _size;
 
-// static auto same_direction(const math::vector3& lhs, const math::vector3& rhs) -> bool {
-//   return math::vector3::dot(lhs, rhs) > 0.0f;
-// }
+}; // class simplex
 
-// static auto line(simplex& simplex, math::vector3& direction) -> bool {
-//   auto a = simplex[0];
-// 	auto b = simplex[1];
+static auto same_direction(const math::vector3& lhs, const math::vector3& rhs) -> bool {
+  return math::vector3::dot(lhs, rhs) > 0.0f;
+}
 
-// 	auto ab = b - a;
-// 	auto ao = -a;
+static auto line(simplex& simplex, math::vector3& direction) -> bool {
+  auto a = simplex[0];
+	auto b = simplex[1];
+
+	auto ab = b - a;
+	auto ao = -a;
  
-// 	if (same_direction(ab, ao)) {
-// 		direction = math::vector3::cross(math::vector3::cross(ab, ao), ab);
-// 	} else {
-// 		simplex = { a };
-// 		direction = ao;
-// 	}
+	if (same_direction(ab, ao)) {
+		direction = math::vector3::cross(math::vector3::cross(ab, ao), ab);
+	} else {
+		simplex = { a };
+		direction = ao;
+	}
 
-// 	return false;
-// }
+	return false;
+}
 
-// static auto triangle(simplex& simplex, math::vector3& direction) -> bool {
-//   auto a = simplex[0];
-// 	auto b = simplex[1];
-// 	auto c = simplex[2];
+static auto triangle(simplex& simplex, math::vector3& direction) -> bool {
+  auto a = simplex[0];
+	auto b = simplex[1];
+	auto c = simplex[2];
 
-// 	auto ab = b - a;
-// 	auto ac = c - a;
-// 	auto ao =   - a;
+	auto ab = b - a;
+	auto ac = c - a;
+	auto ao =   - a;
  
-// 	auto abc = math::vector3::cross(ab, ac);
+	auto abc = math::vector3::cross(ab, ac);
  
-// 	if (same_direction(math::vector3::cross(abc, ac), ao)) {
-// 		if (same_direction(ac, ao)) {
-// 			simplex = { a, c };
-// 			direction = math::vector3::cross(math::vector3::cross(ac, ao), ac);
-// 		} else {
-// 			return line(simplex = { a, b }, direction);
-// 		}
-// 	} else {
-// 		if (same_direction(math::vector3::cross(ab, abc), ao)) {
-// 			return line(simplex = { a, b }, direction);
-// 		} else {
-// 			if (same_direction(abc, ao)) {
-// 				direction = abc;
-// 			} else {
-// 				simplex = { a, c, b };
-// 				direction = -abc;
-// 			}
-// 		}
-// 	}
+	if (same_direction(math::vector3::cross(abc, ac), ao)) {
+		if (same_direction(ac, ao)) {
+			simplex = { a, c };
+			direction = math::vector3::cross(math::vector3::cross(ac, ao), ac);
+		} else {
+			return line(simplex = { a, b }, direction);
+		}
+	} else {
+		if (same_direction(math::vector3::cross(ab, abc), ao)) {
+			return line(simplex = { a, b }, direction);
+		} else {
+			if (same_direction(abc, ao)) {
+				direction = abc;
+			} else {
+				simplex = { a, c, b };
+				direction = -abc;
+			}
+		}
+	}
 
-// 	return false;
-// }
+	return false;
+}
 
-// static auto tetrahedron(simplex& simplex, math::vector3& direction) -> bool {
-//   auto a = simplex[0];
-// 	auto b = simplex[1];
-// 	auto c = simplex[2];
-// 	auto d = simplex[3];
+static auto tetrahedron(simplex& simplex, math::vector3& direction) -> bool {
+  auto a = simplex[0];
+	auto b = simplex[1];
+	auto c = simplex[2];
+	auto d = simplex[3];
 
-// 	auto ab = b - a;
-// 	auto ac = c - a;
-// 	auto ad = d - a;
-// 	auto ao =   - a;
+	auto ab = b - a;
+	auto ac = c - a;
+	auto ad = d - a;
+	auto ao =   - a;
  
-// 	auto abc = math::vector3::cross(ab, ac);
-// 	auto acd = math::vector3::cross(ac, ad);
-// 	auto adb = math::vector3::cross(ad, ab);
+	auto abc = math::vector3::cross(ab, ac);
+	auto acd = math::vector3::cross(ac, ad);
+	auto adb = math::vector3::cross(ad, ab);
  
-// 	if (same_direction(abc, ao)) {
-// 		return triangle(simplex = { a, b, c }, direction);
-// 	}
+	if (same_direction(abc, ao)) {
+		return triangle(simplex = { a, b, c }, direction);
+	}
 		
-// 	if (same_direction(acd, ao)) {
-// 		return triangle(simplex = { a, c, d }, direction);
-// 	}
+	if (same_direction(acd, ao)) {
+		return triangle(simplex = { a, c, d }, direction);
+	}
  
-// 	if (same_direction(adb, ao)) {
-// 		return triangle(simplex = { a, d, b }, direction);
-// 	}
+	if (same_direction(adb, ao)) {
+		return triangle(simplex = { a, d, b }, direction);
+	}
  
-// 	return true;
-// }
+	return true;
+}
 
-// static auto next_simplex(simplex& simplex, math::vector3& direction) -> bool {
-//   switch (simplex.size()) {
-//     case 2u: return line(simplex, direction);
-//     case 3u: return triangle(simplex, direction);
-//     case 4u: return tetrahedron(simplex, direction);
-//   }
+static auto next_simplex(simplex& simplex, math::vector3& direction) -> bool {
+  switch (simplex.size()) {
+    case 2u: return line(simplex, direction);
+    case 3u: return triangle(simplex, direction);
+    case 4u: return tetrahedron(simplex, direction);
+  }
 
-//   return false;
-// }
+  return false;
+}
 
-// template<math::unsigned_integral Start, math::unsigned_integral End, math::unsigned_integral Step>
-// static auto stepped_iota(const Start start, const End end, const Step step = Step{1u}) {
-//   return std::ranges::views::iota(0u, (end - start + step - 1) / step) | std::ranges::views::transform([=](auto x) { return x * step + start; });
-// }
+template<math::unsigned_integral Start, math::unsigned_integral End, math::unsigned_integral Step>
+static auto stepped_iota(const Start start, const End end, const Step step = Step{1u}) {
+  return std::ranges::views::iota(0u, (end - start + step - 1) / step) | std::ranges::views::transform([=](auto x) { return x * step + start; });
+}
 
-// auto get_face_normals(const std::vector<math::vector3>& polytope, const std::vector<std::size_t>& faces) -> std::pair<std::vector<math::vector4>, std::size_t> {
-// 	auto normals = std::vector<math::vector4>{};
+auto get_face_normals(const std::vector<math::vector3>& polytope, const std::vector<std::size_t>& faces) -> std::pair<std::vector<math::vector4>, std::size_t> {
+	auto normals = std::vector<math::vector4>{};
 
-// 	auto min_triangle = std::size_t{0};
-// 	auto min_distance = std::numeric_limits<std::float_t>::max();
+	auto min_triangle = std::size_t{0};
+	auto min_distance = std::numeric_limits<std::float_t>::max();
 
-// 	for (auto i : stepped_iota(0u, faces.size(), 3u)) {
-// 		auto a = polytope[faces[i + 0u]];
-// 		auto b = polytope[faces[i + 1u]];
-// 		auto c = polytope[faces[i + 2u]];
+	for (auto i : stepped_iota(0u, faces.size(), 3u)) {
+		auto a = polytope[faces[i + 0u]];
+		auto b = polytope[faces[i + 1u]];
+		auto c = polytope[faces[i + 2u]];
 
-// 		auto normal = math::vector3::normalized(math::vector3::cross(b - a, c - a));
-// 		auto distance = math::vector3::dot(normal, a);
+		auto normal = math::vector3::normalized(math::vector3::cross(b - a, c - a));
+		auto distance = math::vector3::dot(normal, a);
 
-// 		if (distance < 0) {
-// 			normal *= -1.0f;
-// 			distance *= -1.0f;
-// 		}
+		if (distance < 0) {
+			normal *= -1.0f;
+			distance *= -1.0f;
+		}
 
-// 		normals.emplace_back(normal, distance);
+		normals.emplace_back(normal, distance);
 
-// 		if (distance < min_distance) {
-// 			min_triangle = i / 3u;
-// 			min_distance = distance;
-// 		}
-// 	}
+		if (distance < min_distance) {
+			min_triangle = i / 3u;
+			min_distance = distance;
+		}
+	}
 
-// 	return {normals, min_triangle};
-// }
+	return {normals, min_triangle};
+}
 
-// auto add_if_unique_edge(std::vector<std::pair<std::size_t, std::size_t>>& edges, const std::vector<std::size_t>& faces, std::size_t a, std::size_t b) -> void {
-// 	auto reverse = std::find(                     //      0--<--3
-// 		edges.begin(),                              //     / \ B /   A: 2-0
-// 		edges.end(),                                //    / A \ /    B: 0-2
-// 		std::make_pair(faces[b], faces[a])          //   1-->--2
-// 	);
+auto add_if_unique_edge(std::vector<std::pair<std::size_t, std::size_t>>& edges, const std::vector<std::size_t>& faces, std::size_t a, std::size_t b) -> void {
+	auto reverse = std::find(                     //      0--<--3
+		edges.begin(),                              //     / \ B /   A: 2-0
+		edges.end(),                                //    / A \ /    B: 0-2
+		std::make_pair(faces[b], faces[a])          //   1-->--2
+	);
  
-// 	if (reverse != edges.end()) {
-// 		edges.erase(reverse);
-// 	} else {
-// 		edges.emplace_back(faces[a], faces[b]);
-// 	}
-// }
+	if (reverse != edges.end()) {
+		edges.erase(reverse);
+	} else {
+		edges.emplace_back(faces[a], faces[b]);
+	}
+}
 
-// static auto epa(const simplex& simplex, const collider_data& first, const collider_data& second) -> std::optional<collision> {
-//   auto polytope = std::vector<math::vector3>{simplex.begin(), simplex.end()};
+static auto epa(const simplex& simplex, const collider_data& first, const collider_data& second) -> std::optional<math::vector3> {
+  auto polytope = std::vector<math::vector3>{simplex.begin(), simplex.end()};
 
-//   auto faces = std::vector<std::size_t>{
-//     0u, 1u, 2u,
-// 		0u, 3u, 1u,
-// 		0u, 2u, 3u,
-// 		1u, 3u, 2u
-//   };
+  auto faces = std::vector<std::size_t>{
+    0u, 1u, 2u,
+		0u, 3u, 1u,
+		0u, 2u, 3u,
+		1u, 3u, 2u
+  };
 
-//   auto [normals, min_face] = get_face_normals(polytope, faces);
+  auto [normals, min_face] = get_face_normals(polytope, faces);
 
-//   auto min_normal = math::vector3{};
-// 	auto min_distance = std::numeric_limits<std::float_t>::max();
+  auto min_normal = math::vector3{};
+	auto min_distance = std::numeric_limits<std::float_t>::max();
 	
-// 	auto iterations = 0u;
+	auto iterations = 0u;
 
-//   while (min_distance == std::numeric_limits<std::float_t>::max()) {
-//     min_normal   = math::vector3{normals[min_face]};
-//     min_distance = normals[min_face].w();
+  while (min_distance == std::numeric_limits<std::float_t>::max()) {
+    min_normal   = math::vector3{normals[min_face]};
+    min_distance = normals[min_face].w();
 
-//     if (iterations++ > 32u) {
-//       break;
-//     }
+    if (iterations++ > 32u) {
+      break;
+    }
 
-//     auto support = physics::support(first, second, min_normal);
-//     auto distance = math::vector3::dot(min_normal, support);
+    auto support = physics::support(first, second, min_normal);
+    auto distance = math::vector3::dot(min_normal, support);
 
-//     if (std::abs(distance - min_distance) > 0.001f) {
-//       min_distance = std::numeric_limits<std::float_t>::max();
+    if (std::abs(distance - min_distance) > 0.001f) {
+      min_distance = std::numeric_limits<std::float_t>::max();
 
-//       auto unique_edges = std::vector<std::pair<std::size_t, std::size_t>>{};
+      auto unique_edges = std::vector<std::pair<std::size_t, std::size_t>>{};
 
-//       for (auto i = 0u; i < normals.size(); ++i) {
-//         if (same_direction(math::vector3{normals[i]}, support)) {
-//           auto f = i * 3u;
+      for (auto i = 0u; i < normals.size(); ++i) {
+        if (same_direction(math::vector3{normals[i]}, support)) {
+          auto f = i * 3u;
 
-//           add_if_unique_edge(unique_edges, faces, f + 0u, f + 1u);
-//           add_if_unique_edge(unique_edges, faces, f + 1u, f + 2u);
-//           add_if_unique_edge(unique_edges, faces, f + 2u, f + 0u);
+          add_if_unique_edge(unique_edges, faces, f + 0u, f + 1u);
+          add_if_unique_edge(unique_edges, faces, f + 1u, f + 2u);
+          add_if_unique_edge(unique_edges, faces, f + 2u, f + 0u);
 
-//           faces[f + 2u] = faces.back(); faces.pop_back();
-//           faces[f + 1u] = faces.back(); faces.pop_back();
-//           faces[f + 0u] = faces.back(); faces.pop_back();
+          faces[f + 2u] = faces.back(); faces.pop_back();
+          faces[f + 1u] = faces.back(); faces.pop_back();
+          faces[f + 0u] = faces.back(); faces.pop_back();
 
-//           normals[i] = normals.back(); normals.pop_back();
+          normals[i] = normals.back(); normals.pop_back();
 
-//           i--;
-//         }
-//       }
+          i--;
+        }
+      }
 
-//       if (unique_edges.size() == 0u) {
-//         break;
-//       }
+      if (unique_edges.size() == 0u) {
+        break;
+      }
 
-//       auto new_faces = std::vector<std::size_t>{};
+      auto new_faces = std::vector<std::size_t>{};
 
-//       for (auto [edge1, edge2] : unique_edges) {
-//         new_faces.push_back(edge1);
-//         new_faces.push_back(edge2);
-//         new_faces.push_back(polytope.size());
-//       }
+      for (auto [edge1, edge2] : unique_edges) {
+        new_faces.push_back(edge1);
+        new_faces.push_back(edge2);
+        new_faces.push_back(polytope.size());
+      }
 
-//       polytope.push_back(support);
+      polytope.push_back(support);
 
-//       auto [new_normals, new_min_face] = get_face_normals(polytope, new_faces);
+      auto [new_normals, new_min_face] = get_face_normals(polytope, new_faces);
 
-//       float new_min_distance = std::numeric_limits<std::float_t>::max();
+      float new_min_distance = std::numeric_limits<std::float_t>::max();
 
-//       for (auto i : std::views::iota(0u, normals.size())) {
-//         if (normals[i].w() < new_min_distance) {
-//           new_min_distance = normals[i].w();
-//           min_face = i;
-//         }
-//       }
+      for (auto i : std::views::iota(0u, normals.size())) {
+        if (normals[i].w() < new_min_distance) {
+          new_min_distance = normals[i].w();
+          min_face = i;
+        }
+      }
 
-//       if (new_normals[new_min_face].w() < new_min_distance) {
-//         min_face = new_min_face + normals.size();
-//       }
+      if (new_normals[new_min_face].w() < new_min_distance) {
+        min_face = new_min_face + normals.size();
+      }
 
-//       faces.insert(faces.end(), new_faces.begin(), new_faces.end());
-//       normals.insert(normals.end(), new_normals.begin(), new_normals.end());
-//     }
-//   }
+      faces.insert(faces.end(), new_faces.begin(), new_faces.end());
+      normals.insert(normals.end(), new_normals.begin(), new_normals.end());
+    }
+  }
 
-//   if (min_distance == std::numeric_limits<std::float_t>::max()) {
-//     return std::nullopt;
-//   }
+  if (min_distance == std::numeric_limits<std::float_t>::max()) {
+    return std::nullopt;
+  }
 
-//   auto result = collision{};
-//   result.normal = min_normal;
-//   result.depth = min_distance + 0.001f;
+  return min_normal * (min_distance + 0.001f);
+}
 
-//   return result;
-// }
+auto gjk(const collider_data& first, const collider_data& second) -> std::optional<math::vector3> {
+  auto simplex = physics::simplex{};
 
-// auto gjk(const collider_data& first, const collider_data& second) -> std::optional<collision> {
-//   auto simplex = physics::simplex{};
+  auto support = physics::support(first, second, math::vector3{1.0f, 0.0f, 0.0f});
 
-//   auto support = physics::support(first, second, math::vector3{1.0f, 0.0f, 0.0f});
+  simplex.push_front(support);
 
-//   simplex.push_front(support);
+  auto direction = -support;
 
-//   auto direction = -support;
+  for ([[maybe_unused]] auto iteration : std::views::iota(0u, 32u)) {
+    support = physics::support(first, second, direction);
 
-//   for ([[maybe_unused]] auto iteration : std::views::iota(0u, 32u)) {
-//     support = physics::support(first, second, direction);
+    if (math::vector3::dot(support, direction) <= 0.0f) {
+      return std::nullopt;
+    }
 
-//     if (math::vector3::dot(support, direction) <= 0.0f) {
-//       return std::nullopt;
-//     }
+    simplex.push_front(support);
 
-//     simplex.push_front(support);
+    if (next_simplex(simplex, direction)) {
+      return epa(simplex, first, second);
+    }
+  }
 
-//     if (next_simplex(simplex, direction)) {
-//       return epa(simplex, first, second);
-//     }
-//   }
+  return std::nullopt;
+}
 
-//   return std::nullopt;
-// }
+#else
+
+static auto update_simplex3(math::vector3& a, math::vector3& b, math::vector3& c, math::vector3& d, std::uint32_t& dimension, math::vector3& direction) -> void {
+  const auto n = math::vector3::cross(b - a, c - a);
+  const auto ao = -a;
+
+  dimension = 2u;
+
+  if (math::vector3::dot(math::vector3::cross(b - a, n), ao) > 0.0f) {
+    c = a;
+    direction = math::vector3::cross(math::vector3::cross(b - a, ao), b - a);
+    return;
+  } 
+  
+  if (math::vector3::dot(math::vector3::cross(n, c - a), ao) > 0.0f) {
+    b = a;
+    direction = math::vector3::cross(math::vector3::cross(c - a, ao), c - a);
+    return;
+  }
+
+  dimension = 3u;
+
+  if (math::vector3::dot(n, ao) > 0.0f) {
+    d = c;
+    c = b;
+    b = a;
+    direction = n;
+    return;
+  }
+
+  d = b;
+  b = a;
+  direction = -n; 
+}
+
+static auto update_simplex4(math::vector3& a, math::vector3& b, math::vector3& c, math::vector3& d, std::uint32_t& dimension, math::vector3& direction) -> bool {
+  const auto abc = math::vector3::cross(b - a, c - a);
+  const auto acd = math::vector3::cross(c - a, d - a);
+  const auto adb = math::vector3::cross(d - a, b - a);
+
+  const auto ao = -a;
+  dimension = 3u;
+
+  if (math::vector3::dot(abc, ao) > 0.0f) {
+    d = c;
+    c = b;
+    b = a;
+    direction = abc;
+    return false;
+  }
+
+  if (math::vector3::dot(acd, ao) > 0.0f) {
+    b = a;
+    direction = acd;
+    return false;
+  }
+
+  if (math::vector3::dot(adb, ao) > 0.0f) {
+    c = d;
+    d = b;
+    b = a;
+    direction = adb;
+    return false;
+  }
+
+  return true;
+}
+
+static auto expanding_polytope(const math::vector3& a, const math::vector3& b, const math::vector3& c, const math::vector3& d, const collider_data& first, const collider_data& second) -> math::vector3 {
+  static constexpr auto tolerance = 0.0001f;
+  static constexpr auto bias = 0.000001f;
+  static constexpr auto max_faces = 64u;
+  static constexpr auto max_loose_edges = 32u;
+  static constexpr auto max_iterations = 64u;
+
+  auto faces = std::array<std::array<math::vector3, 4u>, max_faces>{};
+
+  //Init with final simplex from GJK
+  faces[0][0] = a;
+  faces[0][1] = b;
+  faces[0][2] = c;
+  faces[0][3] = math::vector3::normalized(math::vector3::cross(b-a, c-a)); //ABC
+  faces[1][0] = a;
+  faces[1][1] = c;
+  faces[1][2] = d;
+  faces[1][3] = math::vector3::normalized(math::vector3::cross(c-a, d-a)); //ACD
+  faces[2][0] = a;
+  faces[2][1] = d;
+  faces[2][2] = b;
+  faces[2][3] = math::vector3::normalized(math::vector3::cross(d-a, b-a)); //ADB
+  faces[3][0] = b;
+  faces[3][1] = d;
+  faces[3][2] = c;
+  faces[3][3] = math::vector3::normalized(math::vector3::cross(d-b, c-b)); //BDC
+
+  auto num_faces = 4u;
+  auto closest_face = 0u;
+
+  for (auto iteration : std::views::iota(0u, max_iterations)) {
+    auto min_distance = math::vector3::dot(faces[0][0], faces[0][3]);
+    closest_face = 0u;
+
+    for (auto i : std::views::iota(1u, num_faces)) {
+      const auto distance = math::vector3::dot(faces[i][0], faces[i][3]);
+
+      if (distance < min_distance) {
+        min_distance = distance;
+        closest_face = i;
+      }
+    }
+
+    auto search_dir = faces[closest_face][3]; 
+    auto p = support(first, second, search_dir);
+
+    if (math::vector3::dot(p, search_dir)- min_distance < tolerance) {
+      return faces[closest_face][3] * math::vector3::dot(p, search_dir);
+    }
+
+    auto loose_edges = std::array<std::array<math::vector3, 2u>, max_loose_edges>{};
+    auto num_loose_edges = 0u;
+
+    //Find all triangles that are facing p
+    for (auto i : std::views::iota(0u, num_faces)) {
+      if (math::vector3::dot(faces[i][3], p - faces[i][0]) > 0) {
+        for (auto j : std::views::iota(0u, 3u)) {
+          auto current_edge = std::array<math::vector3, 2u>{faces[i][j], faces[i][(j + 1) % 3]};
+          auto found_edge = false;
+
+          for (auto k : std::views::iota(0u, num_loose_edges)) {
+            if (loose_edges[k][1]==current_edge[0] && loose_edges[k][0]==current_edge[1]){
+              loose_edges[k][0] = loose_edges[num_loose_edges-1][0];
+              loose_edges[k][1] = loose_edges[num_loose_edges-1][1];
+
+              num_loose_edges--;
+
+              found_edge = true;
+
+              k=num_loose_edges;
+            }
+          }
+
+          if (!found_edge) {
+            if (num_loose_edges >= max_loose_edges) {
+              break;
+            }
+
+            loose_edges[num_loose_edges][0] = current_edge[0];
+            loose_edges[num_loose_edges][1] = current_edge[1];
+
+            num_loose_edges++;
+          }
+        }
+
+        faces[i][0] = faces[num_faces-1][0];
+        faces[i][1] = faces[num_faces-1][1];
+        faces[i][2] = faces[num_faces-1][2];
+        faces[i][3] = faces[num_faces-1][3];
+        num_faces--;
+        i--;
+      }
+    }
+    
+    for (auto i : std::views::iota(0u, num_loose_edges)) {
+      if (num_faces >= max_faces) {
+        break;
+      }
+
+      faces[num_faces][0] = loose_edges[i][0];
+      faces[num_faces][1] = loose_edges[i][1];
+      faces[num_faces][2] = p;
+      faces[num_faces][3] = math::vector3::normalized(math::vector3::cross(loose_edges[i][0]-loose_edges[i][1], loose_edges[i][0]-p));
+  
+      if (math::vector3::dot(faces[num_faces][0], faces[num_faces][3]) + bias < 0.0f) {
+        auto temp = faces[num_faces][0];
+        faces[num_faces][0] = faces[num_faces][1];
+        faces[num_faces][1] = temp;
+        faces[num_faces][3] = -faces[num_faces][3];
+      }
+
+      num_faces++;
+    }
+  }
+
+  return faces[closest_face][3] * math::vector3::dot(faces[closest_face][0], faces[closest_face][3]);
+}
+
+auto gjk(const collider_data& first, const collider_data& second) -> std::optional<math::vector3> {
+  static constexpr auto max_iterations = 64u;
+
+  auto a = math::vector3{};
+  auto b = math::vector3{};
+  auto c = math::vector3{};
+  auto d = math::vector3{};
+
+  auto direction = first.position - second.position;
+
+  c = support(first, second, direction);
+
+  direction = -c;
+  
+  b = support(first, second, direction);
+
+  if (math::vector3::dot(b, direction) <= 0.0f) {
+    return std::nullopt;
+  }
+
+  direction = math::vector3::cross(math::vector3::cross(c - b, -b), c - b);
+
+  if (direction == math::vector3::zero) {
+    direction = math::vector3::cross(c - b, math::vector3::right);
+
+    if (direction == math::vector3::zero) {
+      direction = math::vector3::cross(c - b, math::vector3::forward);
+    }
+  }
+
+  auto dimension = 2u;
+
+  for (auto iteration : std::views::iota(0u, max_iterations)) {
+    a = support(first, second, direction);
+
+    if (math::vector3::dot(a, direction) < 0.0f) {
+      return std::nullopt;
+    }
+
+    dimension++;
+
+    if (dimension == 3u) {
+      update_simplex3(a, b, c, d, dimension, direction);
+    } else if (update_simplex4(a, b, c, d, dimension, direction)) {
+      return expanding_polytope(a, b, c, d, first, second);
+    }
+  }
+
+  return std::nullopt;
+}
+
+#endif // FIRST
