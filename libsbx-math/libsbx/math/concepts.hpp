@@ -33,6 +33,15 @@ inline constexpr bool is_integral_v = is_integral<Type>::value;
 template<typename Type>
 concept integral = is_integral_v<Type>;
 
+template<typename Type>
+struct is_unsigned_integral : std::bool_constant<is_integral_v<Type> && std::is_unsigned_v<Type>> { };
+
+template<typename Type>
+inline constexpr bool is_unsigned_integral_v = is_unsigned_integral<Type>::value;
+
+template<typename Type>
+concept unsigned_integral = is_unsigned_integral_v<Type>;
+
 
 
 template<typename Type>

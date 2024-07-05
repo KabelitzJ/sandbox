@@ -84,21 +84,91 @@ application::application()
 
   plane.add_component<sbx::physics::rigidbody>(sbx::units::kilogram{0.0f}, true);
 
-  plane.add_component<sbx::physics::collider>(sbx::physics::box{sbx::math::vector3{-50.0f, -0.1f, -50.0f}, sbx::math::vector3{50.0f, 0.1f, 50.0f}});
+  plane.add_component<sbx::physics::collider>(sbx::physics::box{sbx::math::vector3{-50.0f, 0.0f, -50.0f}, sbx::math::vector3{50.0f, 0.0f, 50.0f}});
 
-  // Sphere
+  // Test1
 
-  auto sphere = scene.create_node("Sphere");
+  auto test1 = scene.create_node("Test1");
 
-  sphere.add_component<sbx::scenes::static_mesh>(sphere_id, prototype_black_id);
+  test1.add_component<sbx::scenes::static_mesh>(cube_id, white_id, sbx::math::color{1.0f, 0.0f, 0.0f, 1.0f});
+
+  auto& test1_transform = test1.get_component<sbx::math::transform>();
+  test1_transform.set_position(sbx::math::vector3{-30.0f, 1.0f, -25.0f});
+  test1_transform.set_scale(sbx::math::vector3{1.0f, 2.0f, 20.0f});
+
+  test1.add_component<sbx::physics::rigidbody>(sbx::units::kilogram{0.0f}, true);
+
+  test1.add_component<sbx::physics::collider>(sbx::physics::box{sbx::math::vector3{-0.5f, -1.0f, -10.0f}, sbx::math::vector3{0.5f, 1.0f, 10.0f}});
+
+  // Test2
+
+  auto test2 = scene.create_node("Test2");
+
+  test2.add_component<sbx::scenes::static_mesh>(cube_id, white_id, sbx::math::color{1.0f, 0.0f, 0.0f, 1.0f});
+
+  auto& test2_transform = test2.get_component<sbx::math::transform>();
+  test2_transform.set_position(sbx::math::vector3{-10.0f, 1.0f, -25.0f});
+  test2_transform.set_scale(sbx::math::vector3{1.0f, 2.0f, 20.0f});
+
+  test2.add_component<sbx::physics::rigidbody>(sbx::units::kilogram{0.0f}, true);
+
+  test2.add_component<sbx::physics::collider>(sbx::physics::box{sbx::math::vector3{-0.5f, -1.0f, -10.0f}, sbx::math::vector3{0.5f, 1.0f, 10.0f}});
+
+  // Test3
+
+  auto test3 = scene.create_node("Test3");
+
+  test3.add_component<sbx::scenes::static_mesh>(cube_id, white_id, sbx::math::color{1.0f, 0.0f, 0.0f, 1.0f});
+
+  auto& test3_transform = test3.get_component<sbx::math::transform>();
+  test3_transform.set_position(sbx::math::vector3{-20.0f, 1.0f, -15.0f});
+  test3_transform.set_scale(sbx::math::vector3{20.0f, 2.0f, 1.0f});
+
+  test3.add_component<sbx::physics::rigidbody>(sbx::units::kilogram{0.0f}, true);
+
+  test3.add_component<sbx::physics::collider>(sbx::physics::box{sbx::math::vector3{-10.0f, -1.0f, -0.5f}, sbx::math::vector3{10.0f, 1.0f, 0.5f}});
+
+  // Test4
+
+  auto test4 = scene.create_node("Test4");
+
+  test4.add_component<sbx::scenes::static_mesh>(cube_id, white_id, sbx::math::color{1.0f, 0.0f, 0.0f, 1.0f});
+
+  auto& test4_transform = test4.get_component<sbx::math::transform>();
+  test4_transform.set_position(sbx::math::vector3{-20.0f, 1.0f, -35.0f});
+  test4_transform.set_scale(sbx::math::vector3{20.0f, 2.0f, 1.0f});
+
+  test4.add_component<sbx::physics::rigidbody>(sbx::units::kilogram{0.0f}, true);
+
+  test4.add_component<sbx::physics::collider>(sbx::physics::box{sbx::math::vector3{-10.0f, -1.0f, -0.5f}, sbx::math::vector3{10.0f, 1.0f, 0.5f}});
+
+  // Sphere1
+
+  auto sphere1 = scene.create_node("Sphere");
+
+  sphere1.add_component<sbx::scenes::static_mesh>(sphere_id, prototype_black_id);
   
-  auto& sphere_transform = sphere.get_component<sbx::math::transform>();
-  sphere_transform.set_position(sbx::math::vector3{5.0f, 10.0f, 5.0f});
+  auto& sphere1_transform = sphere1.get_component<sbx::math::transform>();
+  sphere1_transform.set_position(sbx::math::vector3{5.0f, 10.0f, 5.0f});
   
-  auto& spere_rigidbody = sphere.add_component<sbx::physics::rigidbody>(sbx::units::kilogram{1.0f});
-  spere_rigidbody.set_acceleration(sbx::math::vector3{0.0f, -9.81f, 0.0f});
+  auto& sphere1_rigidbody = sphere1.add_component<sbx::physics::rigidbody>(sbx::units::kilogram{1.0f});
+  sphere1_rigidbody.set_acceleration(sbx::math::vector3{0.0f, -9.81f, 0.0f});
 
-  sphere.add_component<sbx::physics::collider>(sbx::physics::sphere{1.0f});
+  sphere1.add_component<sbx::physics::collider>(sbx::physics::sphere{1.0f});
+
+  // Sphere2
+
+  auto sphere2 = scene.create_node("Sphere");
+
+  sphere2.add_component<sbx::scenes::static_mesh>(sphere_id, prototype_black_id);
+  
+  auto& sphere2_transform = sphere2.get_component<sbx::math::transform>();
+  sphere2_transform.set_position(sbx::math::vector3{5.0f, 15.0f, 5.0f});
+  
+  auto& sphere2_rigidbody = sphere2.add_component<sbx::physics::rigidbody>(sbx::units::kilogram{1.0f});
+  sphere2_rigidbody.set_acceleration(sbx::math::vector3{0.0f, -9.81f, 0.0f});
+
+  sphere2.add_component<sbx::physics::collider>(sbx::physics::sphere{1.0f});
 
   // Dragon
 
@@ -169,8 +239,10 @@ application::application()
     const auto x = min + static_cast<std::float_t>(i) * spacing;
 
     auto& monkey_transform = monkey.get_component<sbx::math::transform>();
-
     monkey_transform.set_position(sbx::math::vector3{x, 2.0f, 0.0f});
+
+    monkey.add_component<sbx::physics::rigidbody>(sbx::units::kilogram{1.0f}, true);
+    monkey.add_component<sbx::physics::collider>(sbx::physics::sphere{1.0f});
 
     _monkey_ids.push_back(id);
   }
@@ -235,7 +307,7 @@ auto application::update() -> void  {
     transform.set_rotation(sbx::math::vector3::up, _rotation);
   }
 
-  if (sbx::devices::input::is_key_pressed(sbx::devices::key::space)) {
+  if (sbx::devices::input::is_key_down(sbx::devices::key::space)) {
     auto sphere = scene.create_node("Sphere");
 
     sphere.add_component<sbx::scenes::static_mesh>(_mesh_ids["sphere"], _texture_ids["white"], sbx::math::random_color());
@@ -243,14 +315,14 @@ auto application::update() -> void  {
     auto& sphere_transform = sphere.get_component<sbx::math::transform>();
     sphere_transform.set_position(sbx::math::vector3{-20.0f, 3.0f, -25.0f});
 
-    auto& spere_rigidbody = sphere.add_component<sbx::physics::rigidbody>(sbx::units::kilogram{1.0f});
-    spere_rigidbody.set_acceleration(sbx::math::vector3{0.0f, -9.81f, 0.0f});
+    auto& sphere_rigidbody = sphere.add_component<sbx::physics::rigidbody>(sbx::units::kilogram{1.0f});
+    sphere_rigidbody.set_acceleration(sbx::math::vector3{0.0f, -9.81f, 0.0f});
 
-    auto point = sbx::math::random_point_on_circle(sbx::math::vector2::zero, 0.5f);
+    auto point = sbx::math::random_point_on_circle(sbx::math::vector2::zero, 0.25f);
 
-    auto velocity = sbx::math::vector3::normalized(sbx::math::vector3{point.x(), 4.0f, point.y()}) * sbx::math::random::next<std::float_t>(20.0f, 25.0f);
+    auto velocity = sbx::math::vector3::normalized(sbx::math::vector3{point.x(), 4.0f, point.y()}) * sbx::math::random::next<std::float_t>(10.0f, 15.0f);
 
-    spere_rigidbody.set_velocity(velocity);
+    sphere_rigidbody.set_velocity(velocity);
 
     sphere.add_component<sbx::physics::collider>(sbx::physics::sphere{1.0f});
   }

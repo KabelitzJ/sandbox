@@ -65,7 +65,7 @@ private:
 
       rigidbody.add_velocity(total_acceleration * delta_time);
 
-      transform.move_by(rigidbody.velocity() * delta_time);
+      transform.move_by(rigidbody.velocity() * delta_time * 0.95);
 
       rigidbody.reset_forces();
     }
@@ -116,7 +116,41 @@ private:
       const auto second_data = physics::collider_data{second_transform.position(), std::move(second_rotation_scale), second_collider};
 
       if (auto result = gjk(first_data, second_data); result) {
-        core::logger::debug("Collision detected between {} and {}: direction: {}", first_node->get_component<scenes::tag>(), second_node->get_component<scenes::tag>(), *result);
+        auto depth = result->length();
+        auto direction = math::vector3::normalized(*result);
+
+        auto& first_rigidbody = first_node->get_component<physics::rigidbody>();
+        auto& second_rigidbody = second_node->get_component<physics::rigidbody>();
+
+        const auto first_is_static = static_cast<std::uint32_t>(first_rigidbody.is_static());
+        const auto second_is_static = static_cast<std::uint32_t>(second_rigidbody.is_static());
+
+        auto resolution = direction / std::max(1.0f, static_cast<std::float_t>(first_is_static + second_is_static));
+
+        first_transform.move_by(-resolution * depth * (1u - first_is_static));
+        second_transform.move_by(resolution * depth * (1u - second_is_static));
+
+        auto first_velocity = !first_rigidbody.is_static() ? first_rigidbody.velocity() : math::vector3{};
+        auto second_velocity = !second_rigidbody.is_static() ? second_rigidbody.velocity() : math::vector3{};
+
+        auto velocity = second_velocity - first_velocity;
+
+        auto spd = math::vector3::dot(velocity, direction);
+
+        auto first_inv_mass = !first_rigidbody.is_static() ? (1.0f / first_rigidbody.mass()) : 1.0f;
+        auto second_inv_mass = !second_rigidbody.is_static() ? (1.0f / second_rigidbody.mass()) : 1.0f;
+
+        if (spd >= 0.0f) {
+          continue;
+        }
+
+        // Restitution * Restitution
+        auto j = -(1.0f + (0.5f * 0.5f)) * spd / (first_inv_mass + second_inv_mass);
+
+        auto impulse = direction * j;
+
+        first_rigidbody.add_velocity(-(impulse * first_inv_mass));
+        second_rigidbody.add_velocity(impulse * second_inv_mass);
       }
     }
   }
