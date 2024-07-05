@@ -307,7 +307,7 @@ auto application::update() -> void  {
     transform.set_rotation(sbx::math::vector3::up, _rotation);
   }
 
-  if (sbx::devices::input::is_key_down(sbx::devices::key::space)) {
+  if (sbx::devices::input::is_key_pressed(sbx::devices::key::space)) {
     auto sphere = scene.create_node("Sphere");
 
     sphere.add_component<sbx::scenes::static_mesh>(_mesh_ids["sphere"], _texture_ids["white"], sbx::math::random_color());
