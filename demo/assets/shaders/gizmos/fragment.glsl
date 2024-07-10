@@ -42,15 +42,15 @@ void main(void) {
 
   float difference = abs(current_depth - scene_depth);
 
-  float threshold = 0.0004;
+  float threshold = 0.0002;
 
   float normalized_difference = clamp(difference / threshold, 0.0, 1.0);
 
   vec4 intersection = mix(vec4(1.0), vec4(0.0), normalized_difference);
 
-  float rim_intensity = rim_factor(view_direction, in_normal, 4.0);
+  float rim_intensity = rim_factor(view_direction, in_normal, 3.0);
 
   float hex = texture(texture_image, in_uv).r;
 
-  out_color = vec4(in_color.rgb, 0.1) + intersection + vec4(rim_intensity);
+  out_color = vec4(in_color.rgb, 0.1) + (intersection + vec4(rim_intensity)) * hex;
 }

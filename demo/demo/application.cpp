@@ -237,6 +237,10 @@ application::application()
   shield_transform.set_position(sbx::math::vector3{10.0f, 0.0f, 10.0f});
   shield_transform.set_scale(sbx::math::vector3{8.0f, 8.0f, 8.0f});
 
+  // shield.add_component<sbx::physics::rigidbody>(sbx::units::kilogram{0.0f}, true);
+
+  // shield.add_component<sbx::physics::collider>(sbx::physics::sphere{8.0f});
+
   // Monkeys
 
   for (const auto [i, texture_id_entry] : ranges::views::enumerate(_texture_ids)) {
