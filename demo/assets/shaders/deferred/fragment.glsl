@@ -3,6 +3,7 @@
 #include "../common/lighting.glsl"
 #include "../common/material.glsl"
 #include "../common/random.glsl"
+#include "../common/depth.glsl"
 
 #define MAX_IMAGE_ARRAY_SIZE 32
 
@@ -15,6 +16,7 @@ layout(location = 4) in flat uint in_albedo_image_index;
 layout(location = 0) out vec4 out_position;
 layout(location = 1) out vec4 out_normal;
 layout(location = 2) out vec4 out_albedo;
+layout(location = 3) out float out_depth;
 
 layout(binding = 2) uniform sampler albedo_images_sampler;
 layout(binding = 3) uniform texture2D albedo_images[MAX_IMAGE_ARRAY_SIZE];
@@ -23,4 +25,5 @@ void main(void) {
   out_position = vec4(in_position, 1.0);
   out_normal = vec4(in_normal, 1.0);
   out_albedo = texture(sampler2D(albedo_images[in_albedo_image_index], albedo_images_sampler), in_uv) * in_color;
+  out_depth = linearize_depth(gl_FragCoord.z, DEFAULT_NEAR, DEFAULT_FAR);
 }

@@ -38,7 +38,7 @@ public:
 
   auto update() -> void override {
     update_rigidbodies();
-    solve_colisions();
+    solve_collisions();
   }
 
 private:
@@ -71,14 +71,14 @@ private:
     }
   }
 
-  auto solve_colisions() -> void {
+  auto solve_collisions() -> void {
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
 
     auto& scene = scenes_module.scene();
 
     const auto delta_time = core::engine::fixed_delta_time();
 
-    auto tree = octree<math::uuid, 16u, 8u>{physics::volume{math::vector3{-100.0f, -100.0f, -100.0f}, math::vector3{100.0f, 100.0f, 100.0f}}};
+    auto tree = physics::octree<math::uuid, 16u, 8u>{physics::volume{math::vector3{-100.0f, -100.0f, -100.0f}, math::vector3{100.0f, 100.0f, 100.0f}}};
 
     auto collider_nodes = scene.query<physics::collider>();
 

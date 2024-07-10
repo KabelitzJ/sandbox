@@ -3,6 +3,7 @@
 #include "../common/lighting.glsl"
 #include "../common/material.glsl"
 #include "../common/shadow.glsl"
+#include "../common/depth.glsl"
 
 layout(location = 0) in vec2 in_uv;
 
@@ -19,6 +20,7 @@ layout(binding = 1) uniform sampler2D position_image;
 layout(binding = 2) uniform sampler2D normal_image;
 layout(binding = 3) uniform sampler2D albedo_image;
 layout(binding = 4) uniform sampler2D shadow_map_image;
+layout(binding = 5) uniform sampler2D depth_image;
 
 const material DEFAULT_MATERIAL = material(
   vec4(1.0, 1.0, 1.0, 1.0),   // Ambient color
@@ -53,4 +55,6 @@ void main() {
 
   out_color = albedo * lighting;
   // out_color = vec4(vec3(texture(shadow_map_image, in_uv).r), 1.0);
+  // out_color = vec4(vec3(texture(depth_image, in_uv).r), 1.0);
+  // out_color = vec4(normal, 1.0);
 }

@@ -52,14 +52,16 @@ class gizmos_subrenderer final : public graphics::subrenderer {
 
 public:
 
-  gizmos_subrenderer(const std::filesystem::path& path, const graphics::pipeline::stage& stage)
+  gizmos_subrenderer(const std::filesystem::path& path, const graphics::pipeline::stage& stage, const std::string& depth_image)
   : graphics::subrenderer{stage},
+    _depth_image{depth_image},
     _pipeline{path, stage} { }
 
   ~gizmos_subrenderer() override = default;
 
   auto render(graphics::command_buffer& command_buffer) -> void override {
     auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+    auto& devices_module = core::engine::get_module<devices::devices_module>();
 
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
     auto& scene = scenes_module.scene();
@@ -73,6 +75,12 @@ public:
     const auto& camera_transform = camera_node.get_component<math::transform>();
 
     _scene_uniform_handler.push("view", math::matrix4x4::inverted(camera_transform.as_matrix()));
+
+    auto& window = devices_module.window();
+
+    _scene_uniform_handler.push("resolution", math::vector2{window.width(), window.height()});
+
+    _scene_uniform_handler.push("camera_position", camera_transform.position());
 
     for (auto entry = _uniform_data.begin(); entry != _uniform_data.end();) {
       if (_used_uniforms.contains(entry->first)) {
@@ -105,6 +113,8 @@ public:
 
       descriptor_handler.push("uniform_scene", _scene_uniform_handler);
       descriptor_handler.push("buffer_mesh_data", storage_handler);
+      descriptor_handler.push("depth_image", graphics_module.attachment(_depth_image));
+      descriptor_handler.push("texture_image", graphics_module.get_asset<graphics::image2d>(key.texture_id));
 
       if (!descriptor_handler.update(_pipeline)) {
         continue;
@@ -125,13 +135,14 @@ private:
     const auto& gizmo = node.get_component<scenes::gizmo>();
     const auto mesh_id = gizmo.mesh_id();
 
-    const auto key = mesh_key{gizmo.mesh_id(), gizmo.submesh_index()};
+    const auto key = mesh_key{gizmo.mesh_id(), gizmo.submesh_index(), gizmo.texture_id()};
 
     _used_uniforms.insert(key);
 
     auto model = scene.world_transform(node);
+    auto normal = math::matrix4x4::transposed(math::matrix4x4::inverted(model));
 
-    _static_meshes[key].push_back(per_mesh_data{std::move(model), gizmo.tint()});
+    _static_meshes[key].push_back(per_mesh_data{std::move(model), std::move(normal), gizmo.tint()});
   }
 
   struct uniform_data {
@@ -142,10 +153,12 @@ private:
   struct mesh_key {
     math::uuid mesh_id;
     std::uint32_t submesh_index;
+    math::uuid texture_id;
   }; // struct mesh_key
 
   struct per_mesh_data {
     alignas(16) math::matrix4x4 model;
+    alignas(16) math::matrix4x4 normal;
     alignas(16) math::color tint;
   }; // struct per_mesh_data
 
@@ -164,6 +177,8 @@ private:
       return lhs.mesh_id == rhs.mesh_id && lhs.submesh_index == rhs.submesh_index;
     }
   }; // struct mesh_key_equal
+
+  std::string _depth_image;
 
   pipeline _pipeline;
 

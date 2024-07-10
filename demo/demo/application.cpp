@@ -25,6 +25,7 @@ application::application()
   const auto wood_id = graphics_module.add_asset<sbx::graphics::image2d>("demo/assets/textures/wood.png"); 
   const auto white_id = graphics_module.add_asset<sbx::graphics::image2d>("demo/assets/textures/white.png");
   const auto checkerboard_id = graphics_module.add_asset<sbx::graphics::image2d>("demo/assets/textures/checkerboard.jpg");
+  const auto hex_grid_id = graphics_module.add_asset<sbx::graphics::image2d>("demo/assets/textures/hex_grid.png");
 
   _texture_ids.emplace("prototype_white", prototype_white_id);
   _texture_ids.emplace("prototype_black", prototype_black_id);  
@@ -33,6 +34,7 @@ application::application()
   _texture_ids.emplace("wood", wood_id);
   _texture_ids.emplace("white", white_id);
   _texture_ids.emplace("checkerboard", checkerboard_id);
+  _texture_ids.emplace("hex_grid", hex_grid_id);
 
   // Meshes
 
@@ -197,6 +199,10 @@ application::application()
   crate_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
   crate_transform.set_rotation(sbx::math::vector3::up, sbx::math::degree{20});
 
+  crate.add_component<sbx::physics::rigidbody>(sbx::units::kilogram{1.0f}, true);
+
+  crate.add_component<sbx::physics::collider>(sbx::physics::box{sbx::math::vector3{-1.0f, -1.0f, -1.0f}, sbx::math::vector3{1.0f, 1.0f, 1.0f}});
+
   // Tree 1
 
   auto submeshes = std::vector<sbx::scenes::static_mesh::submesh>{};
@@ -220,6 +226,16 @@ application::application()
   auto& tree2_transform = tree2.get_component<sbx::math::transform>();
   tree2_transform.set_position(sbx::math::vector3{8.0f, 0.0f, -4.0f});
   tree2_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
+
+  // Shield
+
+  auto shield = scene.create_node("Shield");
+
+  shield.add_component<sbx::scenes::gizmo>(_mesh_ids["sphere"], 0u, _texture_ids["hex_grid"], sbx::math::color{0.47f, 0.71f, 0.78f, 1.0f});
+
+  auto& shield_transform = shield.get_component<sbx::math::transform>();
+  shield_transform.set_position(sbx::math::vector3{10.0f, 0.0f, 10.0f});
+  shield_transform.set_scale(sbx::math::vector3{8.0f, 8.0f, 8.0f});
 
   // Monkeys
 
@@ -282,6 +298,10 @@ auto application::update() -> void  {
 
   auto& scene = scenes_module.scene();
 
+  auto camera_node = scene.camera();
+
+  auto& camera = camera_node.get_component<sbx::scenes::camera>();
+
   _camera_controller.update();
 
   const auto delta_time = sbx::core::engine::delta_time();
@@ -307,24 +327,28 @@ auto application::update() -> void  {
     transform.set_rotation(sbx::math::vector3::up, _rotation);
   }
 
+  auto& camera_transform = camera_node.get_component<sbx::math::transform>();
+
   if (sbx::devices::input::is_key_pressed(sbx::devices::key::space)) {
     auto sphere = scene.create_node("Sphere");
 
     sphere.add_component<sbx::scenes::static_mesh>(_mesh_ids["sphere"], _texture_ids["white"], sbx::math::random_color());
 
+    const auto& right = camera_transform.right();
+
+    // const auto forward = sbx::math::vector3::normalized(sbx::math::vector3::cross(sbx::math::vector3::up, right));
+    const auto& forward = camera_transform.forward();
+
     auto& sphere_transform = sphere.get_component<sbx::math::transform>();
-    sphere_transform.set_position(sbx::math::vector3{-20.0f, 3.0f, -25.0f});
+    sphere_transform.set_position(camera_transform.position() + forward * 2.0f);
+    sphere_transform.set_scale(sbx::math::vector3{0.5f, 0.5f, 0.5f});
 
     auto& sphere_rigidbody = sphere.add_component<sbx::physics::rigidbody>(sbx::units::kilogram{1.0f});
     sphere_rigidbody.set_acceleration(sbx::math::vector3{0.0f, -9.81f, 0.0f});
 
-    auto point = sbx::math::random_point_on_circle(sbx::math::vector2::zero, 0.25f);
+    sphere_rigidbody.set_velocity(forward * 20.0f);
 
-    auto velocity = sbx::math::vector3::normalized(sbx::math::vector3{point.x(), 4.0f, point.y()}) * sbx::math::random::next<std::float_t>(10.0f, 15.0f);
-
-    sphere_rigidbody.set_velocity(velocity);
-
-    sphere.add_component<sbx::physics::collider>(sbx::physics::sphere{1.0f});
+    sphere.add_component<sbx::physics::collider>(sbx::physics::sphere{0.5f});
   }
 
   _rotation += sbx::math::degree{45} * delta_time;
