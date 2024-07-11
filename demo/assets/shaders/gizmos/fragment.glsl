@@ -48,7 +48,7 @@ void main(void) {
 
   vec4 intersection = mix(vec4(1.0), vec4(0.0), normalized_difference);
 
-  float rim_intensity = rim_factor(view_direction, in_normal, 3.0);
+  float rim_intensity = rim_factor(view_direction, in_normal, 4.0);
 
   float hex = texture(texture_image, in_uv).r;
 
