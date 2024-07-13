@@ -20,7 +20,7 @@ layout(binding = 1) uniform sampler2D position_image;
 layout(binding = 2) uniform sampler2D normal_image;
 layout(binding = 3) uniform sampler2D albedo_image;
 layout(binding = 4) uniform sampler2D shadow_map_image;
-layout(binding = 5) uniform sampler2D depth_image;
+layout(binding = 5) uniform sampler2D normalized_depth_image;
 
 const material DEFAULT_MATERIAL = material(
   vec4(1.0, 1.0, 1.0, 1.0),   // Ambient color

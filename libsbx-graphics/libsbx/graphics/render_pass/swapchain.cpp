@@ -71,7 +71,6 @@ swapchain::swapchain(const std::unique_ptr<swapchain>& old_swapchain)
 	swapchain_create_info.imageArrayLayers = 1;
 	swapchain_create_info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 	swapchain_create_info.preTransform = static_cast<VkSurfaceTransformFlagBitsKHR>(_pre_transform);
-	swapchain_create_info.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
 	swapchain_create_info.compositeAlpha = _composite_alpha;
 	swapchain_create_info.presentMode = _present_mode;
 	swapchain_create_info.clipped = true;

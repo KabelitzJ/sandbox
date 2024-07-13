@@ -38,7 +38,7 @@ renderer::renderer()
       sbx::graphics::attachment{1, "position", sbx::graphics::attachment::type::image, sbx::graphics::format::r32g32b32a32_sfloat, _clear_color},
       sbx::graphics::attachment{2, "normal", sbx::graphics::attachment::type::image, sbx::graphics::format::r32g32b32a32_sfloat, _clear_color},
       sbx::graphics::attachment{3, "albedo", sbx::graphics::attachment::type::image, sbx::graphics::format::r8g8b8a8_unorm, _clear_color},
-      sbx::graphics::attachment{4, "temp", sbx::graphics::attachment::type::image, sbx::graphics::format::r32_sfloat, sbx::math::color{1.0f, 1.0f, 1.0f, 1.0f}}
+      sbx::graphics::attachment{4, "normalized_depth", sbx::graphics::attachment::type::image, sbx::graphics::format::r32_sfloat, sbx::math::color{1.0f, 1.0f, 1.0f, 1.0f}}
     };
 
     auto subpass_bindings = std::vector<sbx::graphics::subpass_binding>{
@@ -75,12 +75,12 @@ auto renderer::initialize() -> void {
     {"normal_image", "normal"},
     {"albedo_image", "albedo"},
     {"shadow_map_image", "shadow_map"},
-    {"depth_image", "temp"}
+    {"normalized_depth_image", "normalized_depth"}
   };
 
   // Render stage 2
   add_subrenderer<sbx::post::resolve_filter<sbx::graphics::empty_vertex>>("demo/assets/shaders/resolve", sbx::graphics::pipeline::stage{2, 0}, std::move(attachment_names));
-  add_subrenderer<sbx::gizmos::gizmos_subrenderer>("demo/assets/shaders/gizmos", sbx::graphics::pipeline::stage{2, 0}, "temp");
+  add_subrenderer<sbx::gizmos::gizmos_subrenderer>("demo/assets/shaders/gizmos", sbx::graphics::pipeline::stage{2, 0}, "normalized_depth");
   add_subrenderer<sbx::ui::ui_subrenderer>("demo/assets/shaders/ui", sbx::graphics::pipeline::stage{2, 0});
 }
 
