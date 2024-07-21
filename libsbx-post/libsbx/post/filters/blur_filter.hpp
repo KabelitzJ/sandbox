@@ -41,7 +41,7 @@ public:
     _push_handler.push("type", type);
 
     descriptor_handler.push("data", _push_handler);
-    descriptor_handler.push("source_image", graphics_module.attachment(_attachment_name));
+    descriptor_handler.push("image", graphics_module.attachment(_attachment_name));
 
     if (!descriptor_handler.update(pipeline)) {
       return;
