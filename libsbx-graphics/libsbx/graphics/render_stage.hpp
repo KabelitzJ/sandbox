@@ -82,22 +82,28 @@ class subpass_binding {
 
 public:
 
-  subpass_binding(std::uint32_t binding, std::vector<std::uint32_t> attachment_bindings) noexcept
+  subpass_binding(std::uint32_t binding, std::vector<std::uint32_t> color_attachments, std::vector<std::uint32_t> input_attachments = {}) noexcept
   : _binding{binding}, 
-    _attachment_bindings{std::move(attachment_bindings)} { }
+    _color_attachments{std::move(color_attachments)},
+    _input_attachments{std::move(input_attachments)} { }
 
   auto binding() const noexcept -> std::uint32_t {
     return _binding;
   }
 
-  auto attachment_bindings() const noexcept -> const std::vector<std::uint32_t>& {
-    return _attachment_bindings;
+  auto color_attachments() const noexcept -> const std::vector<std::uint32_t>& {
+    return _color_attachments;
+  }
+
+  auto input_attachments() const noexcept -> const std::vector<std::uint32_t>& {
+    return _input_attachments;
   }
 
 private:
 
   std::uint32_t _binding;
-  std::vector<std::uint32_t> _attachment_bindings;
+  std::vector<std::uint32_t> _color_attachments;
+  std::vector<std::uint32_t> _input_attachments;
 
 }; // class subpass_binding
 

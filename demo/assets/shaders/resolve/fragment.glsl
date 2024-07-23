@@ -16,11 +16,11 @@ layout(binding = 0) uniform uniform_scene {
   mat4 light_space;
 } scene;
 
-layout(binding = 1) uniform sampler2D position_image; 
-layout(binding = 2) uniform sampler2D normal_image;
-layout(binding = 3) uniform sampler2D albedo_image;
+layout(binding = 1, input_attachment_index = 0) uniform subpassInput position_image; 
+layout(binding = 2, input_attachment_index = 1) uniform subpassInput normal_image;
+layout(binding = 3, input_attachment_index = 2) uniform subpassInput albedo_image;
+
 layout(binding = 4) uniform sampler2D shadow_map_image;
-layout(binding = 5) uniform sampler2D normalized_depth_image;
 
 const material DEFAULT_MATERIAL = material(
   vec4(1.0, 1.0, 1.0, 1.0),   // Ambient color
@@ -37,10 +37,11 @@ const mat4 DEPTH_BIAS = mat4(
 );
 
 void main() {
-  vec3 position = texture(position_image, in_uv).xyz;
+  vec3 position = subpassLoad(position_image).xyz;
+  vec3 normal = subpassLoad(normal_image).xyz;
+  vec4 albedo = subpassLoad(albedo_image);
+
   vec4 light_space_position = (DEPTH_BIAS * scene.light_space) * vec4(position, 1.0);
-  vec3 normal = texture(normal_image, in_uv).xyz;
-  vec4 albedo = texture(albedo_image, in_uv);
 
   vec3 view_direction = normalize(scene.camera_position - position);
   

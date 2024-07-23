@@ -14,13 +14,18 @@ class subpass_description {
 
 public:
 
-  subpass_description(VkPipelineBindPoint bind_point, std::vector<VkAttachmentReference>&& color_attachments, const std::optional<std::uint32_t>& depth_attachment)
-  : _color_attachments{std::move(color_attachments)} {
+  subpass_description(VkPipelineBindPoint bind_point, std::vector<VkAttachmentReference>&& color_attachments, std::vector<VkAttachmentReference>&& input_attachments, const std::optional<std::uint32_t>& depth_attachment)
+  : _color_attachments{std::move(color_attachments)},
+    _input_attachments{std::move(input_attachments)} {
     _description = VkSubpassDescription{};
     _description.pipelineBindPoint = bind_point;
     _description.colorAttachmentCount = static_cast<std::uint32_t>(_color_attachments.size());
     _description.pColorAttachments = _color_attachments.data();
-    _description.pInputAttachments = nullptr;
+    
+    if (!_input_attachments.empty()) {
+      _description.inputAttachmentCount = static_cast<std::uint32_t>(_input_attachments.size());
+      _description.pInputAttachments = _input_attachments.data();
+    }
 
     if (depth_attachment) {
       _depth_attachment.attachment = *depth_attachment;
@@ -38,6 +43,7 @@ private:
 
   VkSubpassDescription _description;
   std::vector<VkAttachmentReference> _color_attachments;
+  std::vector<VkAttachmentReference> _input_attachments;
   VkAttachmentReference _depth_attachment;
 
 }; // class subpass_description
@@ -193,7 +199,7 @@ auto render_stage::rebuild(const swapchain& swapchain) -> void {
 
   for (const auto& attachment : _attachments) {
     if (attachment.image_type() == attachment::type::image) {
-      _color_images.insert({attachment.binding(), std::make_unique<graphics::image2d>(_render_area.extent(), to_vk_enum<VkFormat>(attachment.format()), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_STORAGE_BIT, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_SAMPLE_COUNT_1_BIT)});
+      _color_images.insert({attachment.binding(), std::make_unique<graphics::image2d>(_render_area.extent(), to_vk_enum<VkFormat>(attachment.format()), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_SAMPLE_COUNT_1_BIT)});
     } else {
       _color_images.insert({attachment.binding(), nullptr});
     }
@@ -239,14 +245,15 @@ auto render_stage::_create_render_pass(VkFormat depth_format, VkFormat surface_f
 
   for (const auto& subpass : _subpass_bindings) {
 		auto subpass_color_attachments = std::vector<VkAttachmentReference>{};
+    auto subpass_input_attachments = std::vector<VkAttachmentReference>{};
 
 		auto depth_attachment = std::optional<std::uint32_t>{};
 
-		for (const auto& attachment_binding : subpass.attachment_bindings()) {
-			auto attachment = find_attachment(attachment_binding);
+		for (const auto& color_attachment : subpass.color_attachments()) {
+			auto attachment = find_attachment(color_attachment);
 
 			if (!attachment) {
-				throw std::runtime_error{fmt::format("Failed to find attachment with binding {}", attachment_binding)};
+				throw std::runtime_error{fmt::format("Failed to find attachment with binding {}", color_attachment)};
 			}
 
 			if (attachment->image_type() == attachment::type::depth) {
@@ -261,7 +268,21 @@ auto render_stage::_create_render_pass(VkFormat depth_format, VkFormat surface_f
 			subpass_color_attachments.push_back(attachment_reference);
 		}
 
-		subpasses.push_back(subpass_description{VK_PIPELINE_BIND_POINT_GRAPHICS, std::move(subpass_color_attachments), depth_attachment});
+    for (const auto& input_attachment : subpass.input_attachments()) {
+      auto attachment = find_attachment(input_attachment);
+
+      if (!attachment) {
+        throw std::runtime_error{fmt::format("Failed to find attachment with binding {}", input_attachment)};
+      }
+
+      auto attachment_reference = VkAttachmentReference{};
+      attachment_reference.attachment = attachment->binding();
+      attachment_reference.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+      subpass_input_attachments.push_back(attachment_reference);
+    }
+
+		subpasses.push_back(subpass_description{VK_PIPELINE_BIND_POINT_GRAPHICS, std::move(subpass_color_attachments), std::move(subpass_input_attachments), depth_attachment});
 	}
 
 	auto subpass_descriptions = std::vector<VkSubpassDescription>{};
@@ -336,7 +357,7 @@ auto render_stage::_rebuild_framebuffers(const swapchain& swapchain) -> void {
 
 auto render_stage::_update_subpass_attachment_counts(const graphics::attachment& attachment) -> void {
   for (const auto& subpass : _subpass_bindings) {
-    if (auto bindings = subpass.attachment_bindings(); ranges::contains(bindings, attachment.binding())) {
+    if (auto bindings = subpass.color_attachments(); ranges::contains(bindings, attachment.binding())) {
       _subpass_attachment_counts[subpass.binding()]++;
     }
   }

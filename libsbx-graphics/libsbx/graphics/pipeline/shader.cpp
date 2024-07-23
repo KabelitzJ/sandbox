@@ -216,7 +216,7 @@ auto shader::_create_reflection(const spirv_cross::Compiler& compiler) -> void {
 
     auto image = uniform{binding, 0, 0, data_type::subpass_input, true, false, _stage};
 
-    core::logger::debug("storage image: '{}' binding: {}", name, binding);
+    core::logger::debug("subpass input: '{}' binding: {}", name, binding);
 
     _uniforms.insert({name, image});
   }

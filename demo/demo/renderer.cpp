@@ -39,30 +39,19 @@ renderer::renderer()
       sbx::graphics::attachment{1, "position", sbx::graphics::attachment::type::image, sbx::graphics::format::r32g32b32a32_sfloat, _clear_color},
       sbx::graphics::attachment{2, "normal", sbx::graphics::attachment::type::image, sbx::graphics::format::r32g32b32a32_sfloat, _clear_color},
       sbx::graphics::attachment{3, "albedo", sbx::graphics::attachment::type::image, sbx::graphics::format::r8g8b8a8_unorm, _clear_color},
-      sbx::graphics::attachment{4, "normalized_depth", sbx::graphics::attachment::type::image, sbx::graphics::format::r32_sfloat, sbx::math::color{1.0f, 1.0f, 1.0f, 1.0f}}
+      sbx::graphics::attachment{4, "normalized_depth", sbx::graphics::attachment::type::image, sbx::graphics::format::r32_sfloat, sbx::math::color{1.0f, 1.0f, 1.0f, 1.0f}},
+      sbx::graphics::attachment{5, "resolve", sbx::graphics::attachment::type::image, sbx::graphics::format::r8g8b8a8_unorm, _clear_color}
     };
 
     auto subpass_bindings = std::vector<sbx::graphics::subpass_binding>{
-      sbx::graphics::subpass_binding{0, {0, 1, 2, 3, 4}}
+      sbx::graphics::subpass_binding{0, {0, 1, 2, 3, 4}},
+      sbx::graphics::subpass_binding{1, {5}, {1, 2, 3}}
     };
 
     add_render_stage(std::move(attachments), std::move(subpass_bindings));
   }
 
-  // Render stage 2: Deferred resolve
-  {
-    auto attachments = std::vector<sbx::graphics::attachment>{
-      sbx::graphics::attachment{0, "resolve", sbx::graphics::attachment::type::image, sbx::graphics::format::r8g8b8a8_unorm, _clear_color}
-    };
-
-    auto subpass_bindings = std::vector<sbx::graphics::subpass_binding>{
-      sbx::graphics::subpass_binding{0, {0}},
-    };
-
-    add_render_stage(std::move(attachments), std::move(subpass_bindings));
-  }
-
-  // Render stage 3: FX and UI
+  // Render stage 2: FX and UI
   {
     auto attachments = std::vector<sbx::graphics::attachment>{
       sbx::graphics::attachment{0, "swapchain", sbx::graphics::attachment::type::swapchain, sbx::graphics::format::r8g8b8a8_unorm, _clear_color}
@@ -88,17 +77,16 @@ auto renderer::initialize() -> void {
     {"position_image", "position"},
     {"normal_image", "normal"},
     {"albedo_image", "albedo"},
-    {"shadow_map_image", "shadow_map"},
-    {"normalized_depth_image", "normalized_depth"}
+    {"shadow_map_image", "shadow_map"}
   };
 
   // Render stage 2
-  add_subrenderer<sbx::post::resolve_filter<sbx::graphics::empty_vertex>>("demo/assets/shaders/resolve", sbx::graphics::pipeline::stage{2, 0}, std::move(attachment_names));
+  add_subrenderer<sbx::post::resolve_filter<sbx::graphics::empty_vertex>>("demo/assets/shaders/resolve", sbx::graphics::pipeline::stage{1, 1}, std::move(attachment_names));
 
   // Render stage 3
-  add_subrenderer<sbx::post::fxaa_filter<sbx::graphics::empty_vertex>>("demo/assets/shaders/fxaa", sbx::graphics::pipeline::stage{3, 0}, "resolve");
-  add_subrenderer<sbx::gizmos::gizmos_subrenderer>("demo/assets/shaders/gizmos", sbx::graphics::pipeline::stage{3, 0}, "normalized_depth");
-  add_subrenderer<sbx::ui::ui_subrenderer>("demo/assets/shaders/ui", sbx::graphics::pipeline::stage{3, 0});
+  add_subrenderer<sbx::post::fxaa_filter<sbx::graphics::empty_vertex>>("demo/assets/shaders/fxaa", sbx::graphics::pipeline::stage{2, 0}, "resolve");
+  add_subrenderer<sbx::gizmos::gizmos_subrenderer>("demo/assets/shaders/gizmos", sbx::graphics::pipeline::stage{2, 0}, "normalized_depth");
+  add_subrenderer<sbx::ui::ui_subrenderer>("demo/assets/shaders/ui", sbx::graphics::pipeline::stage{2, 0});
 }
 
 } // namespace demo
