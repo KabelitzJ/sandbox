@@ -26,7 +26,7 @@ const material DEFAULT_MATERIAL = material(
   vec4(1.0, 1.0, 1.0, 1.0),   // Ambient color
   vec4(1.0, 1.0, 1.0, 1.0),   // Diffuse color
   vec4(0.5, 0.5, 0.5, 1.0),   // Specular color
-  32.0                        // Shininess
+  64.0                        // Shininess
 );
 
 const mat4 DEPTH_BIAS = mat4( 
@@ -47,12 +47,12 @@ void main() {
   
   directional_light light = directional_light(scene.light_direction, scene.light_color);
 
-  blinn_phong_result lighting_result = calculate_directional_light_blinn_phong(DEFAULT_MATERIAL, light, normal, view_direction);
+  light_result light_result = calculate_directional_light_blinn_phong(DEFAULT_MATERIAL, light, normal, view_direction);
 
   // float shadow_factor = calculate_shadow_pcf(shadow_map_image, light_space_position, normal, light.direction);
   float shadow_factor = calculate_shadow_random_jitter(shadow_map_image, light_space_position, normal, light.direction);
 
-  vec4 lighting = lighting_result.ambient + (lighting_result.diffuse + lighting_result.specular) * shadow_factor;
+  vec4 lighting = light_result.ambient + (light_result.diffuse + light_result.specular) * shadow_factor;
 
   out_color = albedo * lighting;
   // out_color = vec4(vec3(texture(shadow_map_image, in_uv).r), 1.0);
