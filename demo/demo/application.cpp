@@ -1,5 +1,7 @@
 #include <demo/application.hpp>
 
+#include <nlohmann/json.hpp>
+
 #include <libsbx/math/color.hpp>
 
 #include <demo/renderer.hpp>
@@ -18,31 +20,44 @@ application::application()
 
   // Textures
 
-  const auto prototype_white_id = graphics_module.add_asset<sbx::graphics::image2d>("demo/assets/textures/prototype_white.png");
-  const auto prototype_black_id = graphics_module.add_asset<sbx::graphics::image2d>("demo/assets/textures/prototype_black.png");
-  const auto base_id = graphics_module.add_asset<sbx::graphics::image2d>("demo/assets/textures/base.png");
-  const auto grid_id = graphics_module.add_asset<sbx::graphics::image2d>("demo/assets/textures/grid.png");
-  const auto wood_id = graphics_module.add_asset<sbx::graphics::image2d>("demo/assets/textures/wood.png"); 
-  const auto white_id = graphics_module.add_asset<sbx::graphics::image2d>("demo/assets/textures/white.png");
-  const auto checkerboard_id = graphics_module.add_asset<sbx::graphics::image2d>("demo/assets/textures/checkerboard.jpg");
-  const auto hex_grid_id = graphics_module.add_asset<sbx::graphics::image2d>("demo/assets/textures/hex_grid.png");
+  auto texture_map = nlohmann::json::parse(std::ifstream{"demo/assets/textures/texture_map.json"});
 
-  _texture_ids.emplace("prototype_white", prototype_white_id);
-  _texture_ids.emplace("prototype_black", prototype_black_id);  
-  _texture_ids.emplace("base", base_id);
-  _texture_ids.emplace("grid", grid_id);
-  _texture_ids.emplace("wood", wood_id);
-  _texture_ids.emplace("white", white_id);
-  _texture_ids.emplace("checkerboard", checkerboard_id);
-  _texture_ids.emplace("hex_grid", hex_grid_id);
+  auto textures = texture_map["textures"];
+
+  for (const auto& entry : textures) {
+    const auto name = entry["name"].get<std::string>();
+    const auto path = entry["path"].get<std::string>();
+
+    const auto id = graphics_module.add_asset<sbx::graphics::image2d>(path);
+
+    _texture_ids.emplace(name, id);
+  }
+
+  // const auto prototype_white_id = graphics_module.add_asset<sbx::graphics::image2d>("demo/assets/textures/prototype_white.png");
+  // const auto prototype_black_id = graphics_module.add_asset<sbx::graphics::image2d>("demo/assets/textures/prototype_black.png");
+  // const auto base_id = graphics_module.add_asset<sbx::graphics::image2d>("demo/assets/textures/base.png");
+  // const auto grid_id = graphics_module.add_asset<sbx::graphics::image2d>("demo/assets/textures/grid.png");
+  // const auto wood_id = graphics_module.add_asset<sbx::graphics::image2d>("demo/assets/textures/wood.png"); 
+  // const auto white_id = graphics_module.add_asset<sbx::graphics::image2d>("demo/assets/textures/white.png");
+  // const auto checkerboard_id = graphics_module.add_asset<sbx::graphics::image2d>("demo/assets/textures/checkerboard.jpg");
+  // const auto hex_grid_id = graphics_module.add_asset<sbx::graphics::image2d>("demo/assets/textures/hex_grid.png");
+
+  // _texture_ids.emplace("prototype_white", prototype_white_id);
+  // _texture_ids.emplace("prototype_black", prototype_black_id);  
+  // _texture_ids.emplace("base", base_id);
+  // _texture_ids.emplace("grid", grid_id);
+  // _texture_ids.emplace("wood", wood_id);
+  // _texture_ids.emplace("white", white_id);
+  // _texture_ids.emplace("checkerboard", checkerboard_id);
+  // _texture_ids.emplace("hex_grid", hex_grid_id);
 
   // Meshes
 
   const auto monkey_id = graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/suzanne/suzanne.gltf");
   const auto plane_id = graphics_module.add_asset<sbx::models::mesh>(_generate_plane(sbx::math::vector2u{1u, 1u}, sbx::math::vector2u{1u, 1u}));
-  const auto sphere_id = graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/sphere.obj");
+  const auto sphere_id = graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/sphere/sphere.gltf");
   const auto crate_id = graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/crate/crate.gltf");
-  const auto cube_id = graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/cube.obj");
+  const auto cube_id = graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/cube/cube.gltf");
   const auto tree_2_id = graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/tree_2/tree_2.gltf");
   const auto tree_1_id = graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/tree_1/tree_1.gltf");
   const auto dragon_id = graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/dragon/dragon.gltf");
@@ -79,7 +94,7 @@ application::application()
 
   auto plane = scene.create_node("Plane");
 
-  plane.add_component<sbx::scenes::static_mesh>(plane_id, prototype_black_id);
+  plane.add_component<sbx::scenes::static_mesh>(plane_id, _texture_ids["prototype_black"]);
 
   auto& plane_transform = plane.get_component<sbx::math::transform>();
   plane_transform.set_scale(sbx::math::vector3{100.0f, 1.0f, 100.0f});
@@ -92,7 +107,7 @@ application::application()
 
   auto test1 = scene.create_node("Test1");
 
-  test1.add_component<sbx::scenes::static_mesh>(cube_id, white_id, sbx::math::color{1.0f, 0.0f, 0.0f, 1.0f});
+  test1.add_component<sbx::scenes::static_mesh>(cube_id, _texture_ids["white"], sbx::math::color{1.0f, 0.0f, 0.0f, 1.0f});
 
   auto& test1_transform = test1.get_component<sbx::math::transform>();
   test1_transform.set_position(sbx::math::vector3{-30.0f, 1.0f, -25.0f});
@@ -106,7 +121,7 @@ application::application()
 
   auto test2 = scene.create_node("Test2");
 
-  test2.add_component<sbx::scenes::static_mesh>(cube_id, white_id, sbx::math::color{1.0f, 0.0f, 0.0f, 1.0f});
+  test2.add_component<sbx::scenes::static_mesh>(cube_id, _texture_ids["white"], sbx::math::color{1.0f, 0.0f, 0.0f, 1.0f});
 
   auto& test2_transform = test2.get_component<sbx::math::transform>();
   test2_transform.set_position(sbx::math::vector3{-10.0f, 1.0f, -25.0f});
@@ -120,7 +135,7 @@ application::application()
 
   auto test3 = scene.create_node("Test3");
 
-  test3.add_component<sbx::scenes::static_mesh>(cube_id, white_id, sbx::math::color{1.0f, 0.0f, 0.0f, 1.0f});
+  test3.add_component<sbx::scenes::static_mesh>(cube_id, _texture_ids["white"], sbx::math::color{1.0f, 0.0f, 0.0f, 1.0f});
 
   auto& test3_transform = test3.get_component<sbx::math::transform>();
   test3_transform.set_position(sbx::math::vector3{-20.0f, 1.0f, -15.0f});
@@ -134,7 +149,7 @@ application::application()
 
   auto test4 = scene.create_node("Test4");
 
-  test4.add_component<sbx::scenes::static_mesh>(cube_id, white_id, sbx::math::color{1.0f, 0.0f, 0.0f, 1.0f});
+  test4.add_component<sbx::scenes::static_mesh>(cube_id, _texture_ids["white"], sbx::math::color{1.0f, 0.0f, 0.0f, 1.0f});
 
   auto& test4_transform = test4.get_component<sbx::math::transform>();
   test4_transform.set_position(sbx::math::vector3{-20.0f, 1.0f, -35.0f});
@@ -148,7 +163,7 @@ application::application()
 
   auto sphere1 = scene.create_node("Sphere");
 
-  sphere1.add_component<sbx::scenes::static_mesh>(sphere_id, prototype_black_id);
+  sphere1.add_component<sbx::scenes::static_mesh>(sphere_id, _texture_ids["prototype_black"]);
   
   auto& sphere1_transform = sphere1.get_component<sbx::math::transform>();
   sphere1_transform.set_position(sbx::math::vector3{5.0f, 10.0f, 5.0f});
@@ -162,7 +177,7 @@ application::application()
 
   auto sphere2 = scene.create_node("Sphere");
 
-  sphere2.add_component<sbx::scenes::static_mesh>(sphere_id, prototype_black_id);
+  sphere2.add_component<sbx::scenes::static_mesh>(sphere_id, _texture_ids["prototype_black"]);
   
   auto& sphere2_transform = sphere2.get_component<sbx::math::transform>();
   sphere2_transform.set_position(sbx::math::vector3{5.0f, 15.0f, 5.0f});
@@ -179,8 +194,8 @@ application::application()
   auto dragon_submeshes = std::vector<sbx::scenes::static_mesh::submesh>{};
   // dragon_submeshes.push_back(sbx::scenes::static_mesh::submesh{0, checkerboard_id, sbx::math::color{0.62f, 0.14f, 0.16f, 1.0f}});
   // dragon_submeshes.push_back(sbx::scenes::static_mesh::submesh{1, white_id, sbx::math::color{0.0f, 0.64f, 0.42f, 1.0f}});
-  dragon_submeshes.push_back(sbx::scenes::static_mesh::submesh{0, checkerboard_id, sbx::math::color{1.0f, 1.0f, 1.0f, 1.0f}});
-  dragon_submeshes.push_back(sbx::scenes::static_mesh::submesh{1, white_id, sbx::math::color{0.62f, 0.14f, 0.16f, 1.0f}});
+  dragon_submeshes.push_back(sbx::scenes::static_mesh::submesh{0, _texture_ids["checkerboard"], sbx::math::color{1.0f, 1.0f, 1.0f, 1.0f}});
+  dragon_submeshes.push_back(sbx::scenes::static_mesh::submesh{1, _texture_ids["white"], sbx::math::color{0.62f, 0.14f, 0.16f, 1.0f}});
 
   dragon.add_component<sbx::scenes::static_mesh>(dragon_id, dragon_submeshes);
   
@@ -192,7 +207,7 @@ application::application()
 
   auto crate = scene.create_node("Crate");
 
-  crate.add_component<sbx::scenes::static_mesh>(crate_id, wood_id);
+  crate.add_component<sbx::scenes::static_mesh>(crate_id, _texture_ids["wood"]);
   
   auto& crate_transform = crate.get_component<sbx::math::transform>();
   crate_transform.set_position(sbx::math::vector3{-4.0f, 1.0f, 3.5f});
@@ -206,8 +221,8 @@ application::application()
   // Tree 1
 
   auto submeshes = std::vector<sbx::scenes::static_mesh::submesh>{};
-  submeshes.push_back(sbx::scenes::static_mesh::submesh{0, white_id, sbx::math::color{0.38f, 0.54f, 0.24f, 1.0f}});
-  submeshes.push_back(sbx::scenes::static_mesh::submesh{1, white_id, sbx::math::color{0.47f, 0.37f, 0.24f, 1.0f}});
+  submeshes.push_back(sbx::scenes::static_mesh::submesh{0, _texture_ids["white"], sbx::math::color{0.38f, 0.54f, 0.24f, 1.0f}});
+  submeshes.push_back(sbx::scenes::static_mesh::submesh{1, _texture_ids["white"], sbx::math::color{0.47f, 0.37f, 0.24f, 1.0f}});
 
   auto tree1 = scene.create_node("Tree1");
 
@@ -221,7 +236,7 @@ application::application()
 
   auto tree2 = scene.create_node("Tree2");
 
-  tree2.add_component<sbx::scenes::static_mesh>(tree_2_id, white_id, sbx::math::color{0.38f, 0.54f, 0.24f, 1.0f});
+  tree2.add_component<sbx::scenes::static_mesh>(tree_2_id, _texture_ids["white"], sbx::math::color{0.38f, 0.54f, 0.24f, 1.0f});
   
   auto& tree2_transform = tree2.get_component<sbx::math::transform>();
   tree2_transform.set_position(sbx::math::vector3{8.0f, 0.0f, -4.0f});
@@ -292,6 +307,8 @@ application::application()
   window.show();
 }
 
+struct ball_tag { };
+
 auto application::update() -> void  {
   if (sbx::devices::input::is_key_pressed(sbx::devices::key::escape)) {
     sbx::core::engine::quit();
@@ -353,6 +370,16 @@ auto application::update() -> void  {
     sphere_rigidbody.set_velocity(forward * 20.0f);
 
     sphere.add_component<sbx::physics::collider>(sbx::physics::sphere{0.5f});
+
+    sphere.add_component<ball_tag>();
+  }
+
+  if (sbx::devices::input::is_key_pressed(sbx::devices::key::r)) {
+    auto balls = scene.query<ball_tag>();
+
+    for (const auto& ball : balls) {
+      scene.destroy_node(ball);
+    }
   }
 
   _rotation += sbx::math::degree{45} * delta_time;

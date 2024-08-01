@@ -1,0 +1,40 @@
+{
+  "textures": [
+    {
+      "name": "base",
+      "path": "demo/assets/textures/base.png"
+    },
+    {
+      "name": "checkerboard",
+      "path": "demo/assets/textures/checkerboard.jpg"
+    },
+    {
+      "name": "default",
+      "path": "demo/assets/textures/default.png"
+    },
+    {
+      "name": "grid",
+      "path": "demo/assets/textures/grid.png"
+    },
+    {
+      "name": "hex_grid",
+      "path": "demo/assets/textures/hex_grid.png"
+    },
+    {
+      "name": "prototype_black",
+      "path": "demo/assets/textures/prototype_black.png"
+    },
+    {
+      "name": "prototype_white",
+      "path": "demo/assets/textures/prototype_white.png"
+    },
+    {
+      "name": "white",
+      "path": "demo/assets/textures/white.png"
+    },
+    {
+      "name": "wood",
+      "path": "demo/assets/textures/wood.png"
+    }
+  ]
+}
