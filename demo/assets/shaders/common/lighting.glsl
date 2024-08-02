@@ -4,8 +4,8 @@
 #include "../common/material.glsl"
 
 struct point_light {
-  vec4 color;
   vec3 position;
+  vec4 color;
   float radius;
 }; // point_light
 

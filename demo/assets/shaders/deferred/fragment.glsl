@@ -26,6 +26,6 @@ void main(void) {
   out_position = vec4(in_position, 1.0);
   out_normal = vec4(in_normal, 1.0);
   out_albedo = texture(sampler2D(albedo_images[in_albedo_image_index], albedo_images_sampler), in_uv) * in_color;
-  out_material = vec4(0.0, 0.0, 0.0, 1.0);
+  out_material = vec4(1.0, 1.0, 0.1, 1.0);
   out_depth = linearize_depth(gl_FragCoord.z, DEFAULT_NEAR, DEFAULT_FAR);
 }

@@ -72,21 +72,20 @@ auto renderer::initialize() -> void {
 
   // Render stage 1
   add_subrenderer<sbx::models::mesh_subrenderer>("demo/assets/shaders/deferred", sbx::graphics::pipeline::stage{1, 0});
-  // add_subrenderer<line_subrenderer>("demo/assets/shaders/line", sbx::graphics::pipeline::stage{1, 1});
 
   auto attachment_names = std::unordered_map<std::string, std::string>{
     {"position_image", "position"},
     {"normal_image", "normal"},
     {"albedo_image", "albedo"},
+    {"material_image", "material"},
     {"shadow_map_image", "shadow_map"}
   };
 
-  // Render stage 2
   add_subrenderer<sbx::post::resolve_filter<sbx::graphics::empty_vertex>>("demo/assets/shaders/resolve", sbx::graphics::pipeline::stage{1, 1}, std::move(attachment_names));
 
   // Render stage 2
   add_subrenderer<sbx::post::fxaa_filter<sbx::graphics::empty_vertex>>("demo/assets/shaders/fxaa", sbx::graphics::pipeline::stage{2, 0}, "resolve");
-  add_subrenderer<sbx::gizmos::gizmos_subrenderer>("demo/assets/shaders/gizmos", sbx::graphics::pipeline::stage{2, 0}, "normalized_depth");
+  // add_subrenderer<sbx::gizmos::gizmos_subrenderer>("demo/assets/shaders/gizmos", sbx::graphics::pipeline::stage{2, 0}, "normalized_depth");
   add_subrenderer<sbx::ui::ui_subrenderer>("demo/assets/shaders/ui", sbx::graphics::pipeline::stage{2, 0});
 }
 
