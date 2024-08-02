@@ -43,16 +43,16 @@ public:
     _width = create_info.width;
     _height = create_info.height;
 
-    // auto* monitor = glfwGetPrimaryMonitor();
+    auto* monitor = glfwGetPrimaryMonitor();
 
-    // if (!monitor) {
-    //   throw std::runtime_error{"Could not get primary monitor"};
-    // }
+    if (!monitor) {
+      throw std::runtime_error{"Could not get primary monitor"};
+    }
 
-    // const auto* video_mode = glfwGetVideoMode(monitor);
+    const auto* video_mode = glfwGetVideoMode(monitor);
 
-    // _width = video_mode->width;
-    // _height = video_mode->height;
+    _width = video_mode->width;
+    _height = video_mode->height;
 
     _handle = glfwCreateWindow(static_cast<std::int32_t>(_width), static_cast<std::int32_t>(_height), _title.c_str(), nullptr, nullptr);
 

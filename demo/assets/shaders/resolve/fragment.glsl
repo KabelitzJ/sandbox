@@ -26,7 +26,7 @@ const material DEFAULT_MATERIAL = material(
   vec4(1.0, 1.0, 1.0, 1.0),   // Ambient color
   vec4(1.0, 1.0, 1.0, 1.0),   // Diffuse color
   vec4(0.5, 0.5, 0.5, 1.0),   // Specular color
-  64.0                        // Shininess
+  32.0                        // Shininess
 );
 
 const mat4 DEPTH_BIAS = mat4( 
@@ -35,6 +35,20 @@ const mat4 DEPTH_BIAS = mat4(
 	0.0, 0.0, 1.0, 0.0,
 	0.5, 0.5, 0.0, 1.0
 );
+
+vec4 cel_shading(material material, directional_light light, vec3 normal) {
+  const int CEL_LEVELS = 5;
+  const vec4 SHADOW_COLOR = vec4(0.1, 0.1, 0.1, 1.0);
+
+  float intensity = max(dot(normal, light.direction), 0.0);
+
+  // Calculate the index of the shade based on the intensity
+  float shade_index = floor(intensity * float(CEL_LEVELS));
+  
+  // Calculate the color based on the shade index
+  // return mix(material.ambient, SHADOW_COLOR, shade_index / float(CEL_LEVELS - 1));
+  return material.ambient * (1.0 - shade_index / float(CEL_LEVELS - 1));
+}
 
 void main() {
   vec3 position = subpassLoad(position_image).xyz;
@@ -47,14 +61,16 @@ void main() {
   
   directional_light light = directional_light(scene.light_direction, scene.light_color);
 
-  light_result light_result = calculate_directional_light_blinn_phong(DEFAULT_MATERIAL, light, normal, view_direction);
+  light_result light_result = blinn_phong_shading(DEFAULT_MATERIAL, light, normal, view_direction);
 
   float shadow_factor = calculate_shadow_pcf(shadow_map_image, light_space_position, normal, light.direction);
   // float shadow_factor = calculate_shadow_random_jitter(shadow_map_image, light_space_position, normal, light.direction);
 
   vec4 lighting = light_result.ambient + (light_result.diffuse + light_result.specular) * shadow_factor;
 
-  out_color = albedo * lighting;
+  vec4 cel_color = cel_shading(DEFAULT_MATERIAL, light, normal);
+
+  out_color = albedo * mix(cel_color, lighting, 1.0);
   // out_color = vec4(vec3(texture(shadow_map_image, in_uv).r), 1.0);
   // out_color = vec4(vec3(texture(depth_image, in_uv).r), 1.0);
   // out_color = vec4(normal, 1.0);
