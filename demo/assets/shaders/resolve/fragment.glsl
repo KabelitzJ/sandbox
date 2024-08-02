@@ -49,8 +49,8 @@ void main() {
 
   light_result light_result = calculate_directional_light_blinn_phong(DEFAULT_MATERIAL, light, normal, view_direction);
 
-  // float shadow_factor = calculate_shadow_pcf(shadow_map_image, light_space_position, normal, light.direction);
-  float shadow_factor = calculate_shadow_random_jitter(shadow_map_image, light_space_position, normal, light.direction);
+  float shadow_factor = calculate_shadow_pcf(shadow_map_image, light_space_position, normal, light.direction);
+  // float shadow_factor = calculate_shadow_random_jitter(shadow_map_image, light_space_position, normal, light.direction);
 
   vec4 lighting = light_result.ambient + (light_result.diffuse + light_result.specular) * shadow_factor;
 

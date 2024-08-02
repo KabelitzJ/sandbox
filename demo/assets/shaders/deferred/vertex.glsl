@@ -40,9 +40,6 @@ void main() {
   out_normal = normalize(vec3(data.normal * vec4(in_normal, 1.0)));
   out_uv = in_uv;
 
-  // float brightness = (data.tint.r + data.tint.g + data.tint.b) / 3.0;
-  // brightness = (1.0 - BRIGHTNESS_EFFECT) + BRIGHTNESS_EFFECT * brightness;
-  // out_color = vec4(data.tint.rgb * brightness, 1.0);
   out_color = data.tint;
 
   out_albedo_image_index = data.albedo_image_index;

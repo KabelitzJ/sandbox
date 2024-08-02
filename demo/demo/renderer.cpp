@@ -39,13 +39,14 @@ renderer::renderer()
       sbx::graphics::attachment{1, "position", sbx::graphics::attachment::type::image, sbx::graphics::format::r32g32b32a32_sfloat, _clear_color},
       sbx::graphics::attachment{2, "normal", sbx::graphics::attachment::type::image, sbx::graphics::format::r32g32b32a32_sfloat, _clear_color},
       sbx::graphics::attachment{3, "albedo", sbx::graphics::attachment::type::image, sbx::graphics::format::r8g8b8a8_unorm, _clear_color},
-      sbx::graphics::attachment{4, "normalized_depth", sbx::graphics::attachment::type::image, sbx::graphics::format::r32_sfloat, sbx::math::color{1.0f, 1.0f, 1.0f, 1.0f}},
-      sbx::graphics::attachment{5, "resolve", sbx::graphics::attachment::type::image, sbx::graphics::format::r8g8b8a8_unorm, _clear_color}
+      sbx::graphics::attachment{4, "material", sbx::graphics::attachment::type::image, sbx::graphics::format::r8g8b8a8_unorm, _clear_color},
+      sbx::graphics::attachment{5, "normalized_depth", sbx::graphics::attachment::type::image, sbx::graphics::format::r32_sfloat, sbx::math::color{1.0f, 1.0f, 1.0f, 1.0f}},
+      sbx::graphics::attachment{6, "resolve", sbx::graphics::attachment::type::image, sbx::graphics::format::r8g8b8a8_unorm, _clear_color}
     };
 
     auto subpass_bindings = std::vector<sbx::graphics::subpass_binding>{
-      sbx::graphics::subpass_binding{0, {0, 1, 2, 3, 4}},
-      sbx::graphics::subpass_binding{1, {5}, {1, 2, 3}}
+      sbx::graphics::subpass_binding{0, {0, 1, 2, 3, 4, 5}},
+      sbx::graphics::subpass_binding{1, {6}, {1, 2, 3, 4}}
     };
 
     add_render_stage(std::move(attachments), std::move(subpass_bindings));
