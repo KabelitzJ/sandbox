@@ -41,10 +41,10 @@ const mat4 DEPTH_BIAS = mat4(
 const int POINT_COUNT = 4;
 
 const point_light[] LIGHTS = point_light[POINT_COUNT](
-  point_light(vec3(5.0, 5.0, 3.0), vec4(1.0, 0.0, 0.0, 1.0), 10.0),
-  point_light(vec3(-5.0, 5.0, 3.0), vec4(0.0, 1.0, 0.0, 1.0), 10.0),
-  point_light(vec3(5.0, -5.0, 3.0), vec4(0.0, 0.0, 1.0, 1.0), 10.0),
-  point_light(vec3(-5.0, -5.0, 3.0), vec4(1.0, 1.0, 1.0, 1.0), 10.0)
+  point_light(vec3(15.0, 15.0, 3.0), vec4(1.0, 0.0, 0.0, 1.0), 10.0),
+  point_light(vec3(-15.0, 15.0, 3.0), vec4(0.0, 1.0, 0.0, 1.0), 10.0),
+  point_light(vec3(15.0, -15.0, 3.0), vec4(0.0, 0.0, 1.0, 1.0), 10.0),
+  point_light(vec3(-15.0, -15.0, 3.0), vec4(1.0, 1.0, 1.0, 1.0), 10.0)
   // point_light(vec3(5.0, 5.0, 3.0), vec4(1.0, 1.0, 1.0, 1.0), 10.0),
   // point_light(vec3(-5.0, 5.0, 3.0), vec4(1.0, 1.0, 1.0, 1.0), 10.0),
   // point_light(vec3(5.0, -5.0, 3.0), vec4(1.0, 1.0, 1.0, 1.0), 10.0),
@@ -115,7 +115,7 @@ void main() {
   vec3 N = normalize(normal);
   vec3 V = normalize(scene.camera_position - world_position);
 
-  vec3 F0 = vec3(0.04); 
+  vec3 F0 = vec3(0.77, 0.78, 0.78); 
   F0 = mix(F0, albedo.rgb, metallic);
             
   // reflectance equation
