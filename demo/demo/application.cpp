@@ -66,7 +66,7 @@ application::application()
     _mesh_ids.emplace(name, id);
   }
 
-  _mesh_ids.emplace("plane", graphics_module.add_asset<sbx::models::mesh>(_generate_plane(sbx::math::vector2u{1u, 1u}, sbx::math::vector2u{1u, 1u})));
+  _mesh_ids.emplace("plane", graphics_module.add_asset<sbx::models::mesh>(_generate_plane(sbx::math::vector2u{10u, 10u}, sbx::math::vector2u{10u, 10u})));
 
   // const auto monkey_id = graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/suzanne/suzanne.gltf");
   // const auto sphere_id = graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/sphere/sphere.gltf");
@@ -111,95 +111,95 @@ application::application()
   plane.add_component<sbx::scenes::static_mesh>(_mesh_ids["plane"], _texture_ids["prototype_black"]);
 
   auto& plane_transform = plane.get_component<sbx::math::transform>();
-  plane_transform.set_scale(sbx::math::vector3{100.0f, 1.0f, 100.0f});
+  plane_transform.set_scale(sbx::math::vector3{1.0f, 1.0f, 1.0f});
 
   plane.add_component<sbx::physics::rigidbody>(sbx::units::kilogram{0.0f}, true);
 
   plane.add_component<sbx::physics::collider>(sbx::physics::box{sbx::math::vector3{-50.0f, 0.0f, -50.0f}, sbx::math::vector3{50.0f, 0.0f, 50.0f}});
 
-  // Test1
+  // // Test1
 
-  auto test1 = scene.create_node("Test1");
+  // auto test1 = scene.create_node("Test1");
 
-  test1.add_component<sbx::scenes::static_mesh>(_mesh_ids["cube"], _texture_ids["white"], sbx::math::color{1.0f, 0.0f, 0.0f, 1.0f});
+  // test1.add_component<sbx::scenes::static_mesh>(_mesh_ids["cube"], _texture_ids["white"], sbx::math::color{1.0f, 0.0f, 0.0f, 1.0f});
 
-  auto& test1_transform = test1.get_component<sbx::math::transform>();
-  test1_transform.set_position(sbx::math::vector3{-30.0f, 1.0f, -25.0f});
-  test1_transform.set_scale(sbx::math::vector3{1.0f, 2.0f, 20.0f});
+  // auto& test1_transform = test1.get_component<sbx::math::transform>();
+  // test1_transform.set_position(sbx::math::vector3{-30.0f, 1.0f, -25.0f});
+  // test1_transform.set_scale(sbx::math::vector3{1.0f, 2.0f, 20.0f});
 
-  test1.add_component<sbx::physics::rigidbody>(sbx::units::kilogram{0.0f}, true);
+  // test1.add_component<sbx::physics::rigidbody>(sbx::units::kilogram{0.0f}, true);
 
-  test1.add_component<sbx::physics::collider>(sbx::physics::box{sbx::math::vector3{-0.5f, -1.0f, -10.0f}, sbx::math::vector3{0.5f, 1.0f, 10.0f}});
+  // test1.add_component<sbx::physics::collider>(sbx::physics::box{sbx::math::vector3{-0.5f, -1.0f, -10.0f}, sbx::math::vector3{0.5f, 1.0f, 10.0f}});
 
-  // Test2
+  // // Test2
 
-  auto test2 = scene.create_node("Test2");
+  // auto test2 = scene.create_node("Test2");
 
-  test2.add_component<sbx::scenes::static_mesh>(_mesh_ids["cube"], _texture_ids["white"], sbx::math::color{1.0f, 0.0f, 0.0f, 1.0f});
+  // test2.add_component<sbx::scenes::static_mesh>(_mesh_ids["cube"], _texture_ids["white"], sbx::math::color{1.0f, 0.0f, 0.0f, 1.0f});
 
-  auto& test2_transform = test2.get_component<sbx::math::transform>();
-  test2_transform.set_position(sbx::math::vector3{-10.0f, 1.0f, -25.0f});
-  test2_transform.set_scale(sbx::math::vector3{1.0f, 2.0f, 20.0f});
+  // auto& test2_transform = test2.get_component<sbx::math::transform>();
+  // test2_transform.set_position(sbx::math::vector3{-10.0f, 1.0f, -25.0f});
+  // test2_transform.set_scale(sbx::math::vector3{1.0f, 2.0f, 20.0f});
 
-  test2.add_component<sbx::physics::rigidbody>(sbx::units::kilogram{0.0f}, true);
+  // test2.add_component<sbx::physics::rigidbody>(sbx::units::kilogram{0.0f}, true);
 
-  test2.add_component<sbx::physics::collider>(sbx::physics::box{sbx::math::vector3{-0.5f, -1.0f, -10.0f}, sbx::math::vector3{0.5f, 1.0f, 10.0f}});
+  // test2.add_component<sbx::physics::collider>(sbx::physics::box{sbx::math::vector3{-0.5f, -1.0f, -10.0f}, sbx::math::vector3{0.5f, 1.0f, 10.0f}});
 
-  // Test3
+  // // Test3
 
-  auto test3 = scene.create_node("Test3");
+  // auto test3 = scene.create_node("Test3");
 
-  test3.add_component<sbx::scenes::static_mesh>(_mesh_ids["cube"], _texture_ids["white"], sbx::math::color{1.0f, 0.0f, 0.0f, 1.0f});
+  // test3.add_component<sbx::scenes::static_mesh>(_mesh_ids["cube"], _texture_ids["white"], sbx::math::color{1.0f, 0.0f, 0.0f, 1.0f});
 
-  auto& test3_transform = test3.get_component<sbx::math::transform>();
-  test3_transform.set_position(sbx::math::vector3{-20.0f, 1.0f, -15.0f});
-  test3_transform.set_scale(sbx::math::vector3{20.0f, 2.0f, 1.0f});
+  // auto& test3_transform = test3.get_component<sbx::math::transform>();
+  // test3_transform.set_position(sbx::math::vector3{-20.0f, 1.0f, -15.0f});
+  // test3_transform.set_scale(sbx::math::vector3{20.0f, 2.0f, 1.0f});
 
-  test3.add_component<sbx::physics::rigidbody>(sbx::units::kilogram{0.0f}, true);
+  // test3.add_component<sbx::physics::rigidbody>(sbx::units::kilogram{0.0f}, true);
 
-  test3.add_component<sbx::physics::collider>(sbx::physics::box{sbx::math::vector3{-10.0f, -1.0f, -0.5f}, sbx::math::vector3{10.0f, 1.0f, 0.5f}});
+  // test3.add_component<sbx::physics::collider>(sbx::physics::box{sbx::math::vector3{-10.0f, -1.0f, -0.5f}, sbx::math::vector3{10.0f, 1.0f, 0.5f}});
 
-  // Test4
+  // // Test4
 
-  auto test4 = scene.create_node("Test4");
+  // auto test4 = scene.create_node("Test4");
 
-  test4.add_component<sbx::scenes::static_mesh>(_mesh_ids["cube"], _texture_ids["white"], sbx::math::color{1.0f, 0.0f, 0.0f, 1.0f});
+  // test4.add_component<sbx::scenes::static_mesh>(_mesh_ids["cube"], _texture_ids["white"], sbx::math::color{1.0f, 0.0f, 0.0f, 1.0f});
 
-  auto& test4_transform = test4.get_component<sbx::math::transform>();
-  test4_transform.set_position(sbx::math::vector3{-20.0f, 1.0f, -35.0f});
-  test4_transform.set_scale(sbx::math::vector3{20.0f, 2.0f, 1.0f});
+  // auto& test4_transform = test4.get_component<sbx::math::transform>();
+  // test4_transform.set_position(sbx::math::vector3{-20.0f, 1.0f, -35.0f});
+  // test4_transform.set_scale(sbx::math::vector3{20.0f, 2.0f, 1.0f});
 
-  test4.add_component<sbx::physics::rigidbody>(sbx::units::kilogram{0.0f}, true);
+  // test4.add_component<sbx::physics::rigidbody>(sbx::units::kilogram{0.0f}, true);
 
-  test4.add_component<sbx::physics::collider>(sbx::physics::box{sbx::math::vector3{-10.0f, -1.0f, -0.5f}, sbx::math::vector3{10.0f, 1.0f, 0.5f}});
+  // test4.add_component<sbx::physics::collider>(sbx::physics::box{sbx::math::vector3{-10.0f, -1.0f, -0.5f}, sbx::math::vector3{10.0f, 1.0f, 0.5f}});
 
-  // Sphere1
+  // // Sphere1
 
-  auto sphere1 = scene.create_node("Sphere");
+  // auto sphere1 = scene.create_node("Sphere");
 
-  sphere1.add_component<sbx::scenes::static_mesh>(_mesh_ids["sphere"], _texture_ids["prototype_black"]);
+  // sphere1.add_component<sbx::scenes::static_mesh>(_mesh_ids["sphere"], _texture_ids["prototype_black"]);
   
-  auto& sphere1_transform = sphere1.get_component<sbx::math::transform>();
-  sphere1_transform.set_position(sbx::math::vector3{5.0f, 10.0f, 5.0f});
+  // auto& sphere1_transform = sphere1.get_component<sbx::math::transform>();
+  // sphere1_transform.set_position(sbx::math::vector3{5.0f, 10.0f, 5.0f});
   
-  auto& sphere1_rigidbody = sphere1.add_component<sbx::physics::rigidbody>(sbx::units::kilogram{1.0f});
-  sphere1_rigidbody.set_acceleration(sbx::math::vector3{0.0f, -9.81f, 0.0f});
+  // auto& sphere1_rigidbody = sphere1.add_component<sbx::physics::rigidbody>(sbx::units::kilogram{1.0f});
+  // sphere1_rigidbody.set_acceleration(sbx::math::vector3{0.0f, -9.81f, 0.0f});
 
-  sphere1.add_component<sbx::physics::collider>(sbx::physics::sphere{1.0f});
+  // sphere1.add_component<sbx::physics::collider>(sbx::physics::sphere{1.0f});
 
-  // Sphere2
+  // // Sphere2
 
-  auto sphere2 = scene.create_node("Sphere");
+  // auto sphere2 = scene.create_node("Sphere");
 
-  sphere2.add_component<sbx::scenes::static_mesh>(_mesh_ids["sphere"], _texture_ids["prototype_black"]);
+  // sphere2.add_component<sbx::scenes::static_mesh>(_mesh_ids["sphere"], _texture_ids["prototype_black"]);
   
-  auto& sphere2_transform = sphere2.get_component<sbx::math::transform>();
-  sphere2_transform.set_position(sbx::math::vector3{5.0f, 15.0f, 5.0f});
+  // auto& sphere2_transform = sphere2.get_component<sbx::math::transform>();
+  // sphere2_transform.set_position(sbx::math::vector3{5.0f, 15.0f, 5.0f});
   
-  auto& sphere2_rigidbody = sphere2.add_component<sbx::physics::rigidbody>(sbx::units::kilogram{1.0f});
-  sphere2_rigidbody.set_acceleration(sbx::math::vector3{0.0f, -9.81f, 0.0f});
+  // auto& sphere2_rigidbody = sphere2.add_component<sbx::physics::rigidbody>(sbx::units::kilogram{1.0f});
+  // sphere2_rigidbody.set_acceleration(sbx::math::vector3{0.0f, -9.81f, 0.0f});
 
-  sphere2.add_component<sbx::physics::collider>(sbx::physics::sphere{1.0f});
+  // sphere2.add_component<sbx::physics::collider>(sbx::physics::sphere{1.0f});
 
   // Dragon
 
@@ -213,88 +213,89 @@ application::application()
 
   dragon.add_component<sbx::scenes::static_mesh>(_mesh_ids["dragon"], dragon_submeshes);
   
-  auto& dragon_transform = dragon.get_component<sbx::math::transform>();
-  dragon_transform.set_position(sbx::math::vector3{-7.0f, 1.0f, -7.0f});
-  dragon_transform.set_rotation(sbx::math::vector3::up, sbx::math::degree{45});
+  // auto& dragon_transform = dragon.get_component<sbx::math::transform>();
+  // // dragon_transform.set_position(sbx::math::vector3{-7.0f, 1.0f, -7.0f});
+  // dragon_transform.set_position(sbx::math::vector3{-7.0f, 0.0f, 0.0f});
+  // dragon_transform.set_rotation(sbx::math::vector3::up, sbx::math::degree{45});
 
-  // Crate
+  // // Crate
 
-  auto crate = scene.create_node("Crate");
+  // auto crate = scene.create_node("Crate");
 
-  crate.add_component<sbx::scenes::static_mesh>(_mesh_ids["crate"], _texture_ids["wood"]);
+  // crate.add_component<sbx::scenes::static_mesh>(_mesh_ids["crate"], _texture_ids["wood"]);
   
-  auto& crate_transform = crate.get_component<sbx::math::transform>();
-  crate_transform.set_position(sbx::math::vector3{-4.0f, 1.0f, 3.5f});
-  crate_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
-  crate_transform.set_rotation(sbx::math::vector3::up, sbx::math::degree{20});
+  // auto& crate_transform = crate.get_component<sbx::math::transform>();
+  // crate_transform.set_position(sbx::math::vector3{-4.0f, 1.0f, 3.5f});
+  // crate_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
+  // crate_transform.set_rotation(sbx::math::vector3::up, sbx::math::degree{20});
 
-  crate.add_component<sbx::physics::rigidbody>(sbx::units::kilogram{1.0f}, true);
+  // crate.add_component<sbx::physics::rigidbody>(sbx::units::kilogram{1.0f}, true);
 
-  crate.add_component<sbx::physics::collider>(sbx::physics::box{sbx::math::vector3{-1.0f, -1.0f, -1.0f}, sbx::math::vector3{1.0f, 1.0f, 1.0f}});
+  // crate.add_component<sbx::physics::collider>(sbx::physics::box{sbx::math::vector3{-1.0f, -1.0f, -1.0f}, sbx::math::vector3{1.0f, 1.0f, 1.0f}});
 
-  // Tree 1
+  // // Tree 1
 
-  auto submeshes = std::vector<sbx::scenes::static_mesh::submesh>{};
-  submeshes.push_back(sbx::scenes::static_mesh::submesh{0, _texture_ids["white"], sbx::math::color{0.38f, 0.54f, 0.24f, 1.0f}});
-  submeshes.push_back(sbx::scenes::static_mesh::submesh{1, _texture_ids["white"], sbx::math::color{0.47f, 0.37f, 0.24f, 1.0f}});
+  // auto submeshes = std::vector<sbx::scenes::static_mesh::submesh>{};
+  // submeshes.push_back(sbx::scenes::static_mesh::submesh{0, _texture_ids["white"], sbx::math::color{0.38f, 0.54f, 0.24f, 1.0f}});
+  // submeshes.push_back(sbx::scenes::static_mesh::submesh{1, _texture_ids["white"], sbx::math::color{0.47f, 0.37f, 0.24f, 1.0f}});
 
-  auto tree1 = scene.create_node("Tree1");
+  // auto tree1 = scene.create_node("Tree1");
 
-  tree1.add_component<sbx::scenes::static_mesh>(_mesh_ids["tree_1"], submeshes);
+  // tree1.add_component<sbx::scenes::static_mesh>(_mesh_ids["tree_1"], submeshes);
   
-  auto& tree1_transform = tree1.get_component<sbx::math::transform>();
-  tree1_transform.set_position(sbx::math::vector3{0.0f, 0.0f, -4.0f});
-  tree1_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
+  // auto& tree1_transform = tree1.get_component<sbx::math::transform>();
+  // tree1_transform.set_position(sbx::math::vector3{0.0f, 0.0f, -4.0f});
+  // tree1_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
 
-  // Tree 2
+  // // Tree 2
 
-  auto tree2 = scene.create_node("Tree2");
+  // auto tree2 = scene.create_node("Tree2");
 
-  tree2.add_component<sbx::scenes::static_mesh>(_mesh_ids["tree_2"], _texture_ids["white"], sbx::math::color{0.38f, 0.54f, 0.24f, 1.0f});
+  // tree2.add_component<sbx::scenes::static_mesh>(_mesh_ids["tree_2"], _texture_ids["white"], sbx::math::color{0.38f, 0.54f, 0.24f, 1.0f});
   
-  auto& tree2_transform = tree2.get_component<sbx::math::transform>();
-  tree2_transform.set_position(sbx::math::vector3{8.0f, 0.0f, -4.0f});
-  tree2_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
+  // auto& tree2_transform = tree2.get_component<sbx::math::transform>();
+  // tree2_transform.set_position(sbx::math::vector3{8.0f, 0.0f, -4.0f});
+  // tree2_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
 
-  // Shield
+  // // Shield
 
-  auto shield = scene.create_node("Shield");
+  // auto shield = scene.create_node("Shield");
 
-  shield.add_component<sbx::scenes::gizmo>(_mesh_ids["sphere"], 0u, _texture_ids["hex_grid"], sbx::math::color{0.47f, 0.71f, 0.78f, 1.0f});
+  // shield.add_component<sbx::scenes::gizmo>(_mesh_ids["sphere"], 0u, _texture_ids["hex_grid"], sbx::math::color{0.47f, 0.71f, 0.78f, 1.0f});
 
-  auto& shield_transform = shield.get_component<sbx::math::transform>();
-  shield_transform.set_position(sbx::math::vector3{10.0f, 0.0f, 10.0f});
-  shield_transform.set_scale(sbx::math::vector3{8.0f, 8.0f, 8.0f});
+  // auto& shield_transform = shield.get_component<sbx::math::transform>();
+  // shield_transform.set_position(sbx::math::vector3{10.0f, 0.0f, 10.0f});
+  // shield_transform.set_scale(sbx::math::vector3{8.0f, 8.0f, 8.0f});
 
   // shield.add_component<sbx::physics::rigidbody>(sbx::units::kilogram{0.0f}, true);
 
   // shield.add_component<sbx::physics::collider>(sbx::physics::sphere{8.0f});
 
-  // Monkeys
+  // // Monkeys
 
-  for (const auto [i, texture_id_entry] : ranges::views::enumerate(_texture_ids)) {
-    auto monkey = scene.create_node(fmt::format("Monkey{}", i));
+  // for (const auto [i, texture_id_entry] : ranges::views::enumerate(_texture_ids)) {
+  //   auto monkey = scene.create_node(fmt::format("Monkey{}", i));
 
-    const auto& id = monkey.get_component<sbx::scenes::id>();
+  //   const auto& id = monkey.get_component<sbx::scenes::id>();
 
-    monkey.add_component<sbx::scenes::static_mesh>(_mesh_ids["monkey"], texture_id_entry.second);
+  //   monkey.add_component<sbx::scenes::static_mesh>(_mesh_ids["monkey"], texture_id_entry.second);
     
-    const auto spacing = 3.0f;
+  //   const auto spacing = 3.0f;
 
-    const auto total_length = static_cast<std::float_t>(_texture_ids.size() - 1) * spacing;
+  //   const auto total_length = static_cast<std::float_t>(_texture_ids.size() - 1) * spacing;
 
-    const auto min = -total_length / 2.0f;
+  //   const auto min = -total_length / 2.0f;
 
-    const auto x = min + static_cast<std::float_t>(i) * spacing;
+  //   const auto x = min + static_cast<std::float_t>(i) * spacing;
 
-    auto& monkey_transform = monkey.get_component<sbx::math::transform>();
-    monkey_transform.set_position(sbx::math::vector3{x, 2.0f, 0.0f});
+  //   auto& monkey_transform = monkey.get_component<sbx::math::transform>();
+  //   monkey_transform.set_position(sbx::math::vector3{x, 2.0f, 0.0f});
 
-    monkey.add_component<sbx::physics::rigidbody>(sbx::units::kilogram{1.0f}, true);
-    monkey.add_component<sbx::physics::collider>(sbx::physics::sphere{1.0f});
+  //   monkey.add_component<sbx::physics::rigidbody>(sbx::units::kilogram{1.0f}, true);
+  //   monkey.add_component<sbx::physics::collider>(sbx::physics::sphere{1.0f});
 
-    _monkey_ids.push_back(id);
-  }
+  //   _monkey_ids.push_back(id);
+  // }
 
   // Camera
 
@@ -352,73 +353,73 @@ auto application::update() -> void  {
     _frames = 0;
   }
 
-  _rotation += sbx::math::degree{45} * delta_time;
+  // _rotation += sbx::math::degree{45} * delta_time;
 
-  for (const auto monkey_id : _monkey_ids) {
-    auto monkey = scene.find_node(monkey_id);
+  // for (const auto monkey_id : _monkey_ids) {
+  //   auto monkey = scene.find_node(monkey_id);
 
-    auto& transform = monkey->get_component<sbx::math::transform>();
+  //   auto& transform = monkey->get_component<sbx::math::transform>();
 
-    transform.set_rotation(sbx::math::vector3::up, _rotation);
-  }
+  //   transform.set_rotation(sbx::math::vector3::up, _rotation);
+  // }
 
-  auto& camera_transform = camera_node.get_component<sbx::math::transform>();
+  // auto& camera_transform = camera_node.get_component<sbx::math::transform>();
 
-  if (sbx::devices::input::is_key_pressed(sbx::devices::key::space)) {
-    auto sphere = scene.create_node("Sphere");
+  // if (sbx::devices::input::is_key_pressed(sbx::devices::key::space)) {
+  //   auto sphere = scene.create_node("Sphere");
 
-    sphere.add_component<sbx::scenes::static_mesh>(_mesh_ids["sphere"], _texture_ids["white"], sbx::math::random_color());
+  //   sphere.add_component<sbx::scenes::static_mesh>(_mesh_ids["sphere"], _texture_ids["white"], sbx::math::random_color());
 
-    const auto& right = camera_transform.right();
+  //   const auto& right = camera_transform.right();
 
-    // const auto forward = sbx::math::vector3::normalized(sbx::math::vector3::cross(sbx::math::vector3::up, right));
-    const auto& forward = camera_transform.forward();
+  //   // const auto forward = sbx::math::vector3::normalized(sbx::math::vector3::cross(sbx::math::vector3::up, right));
+  //   const auto& forward = camera_transform.forward();
 
-    auto& sphere_transform = sphere.get_component<sbx::math::transform>();
-    sphere_transform.set_position(camera_transform.position() + forward * 2.0f);
-    sphere_transform.set_scale(sbx::math::vector3{0.5f, 0.5f, 0.5f});
+  //   auto& sphere_transform = sphere.get_component<sbx::math::transform>();
+  //   sphere_transform.set_position(camera_transform.position() + forward * 2.0f);
+  //   sphere_transform.set_scale(sbx::math::vector3{0.5f, 0.5f, 0.5f});
 
-    auto& sphere_rigidbody = sphere.add_component<sbx::physics::rigidbody>(sbx::units::kilogram{1.0f});
-    sphere_rigidbody.set_acceleration(sbx::math::vector3{0.0f, -9.81f, 0.0f});
+  //   auto& sphere_rigidbody = sphere.add_component<sbx::physics::rigidbody>(sbx::units::kilogram{1.0f});
+  //   sphere_rigidbody.set_acceleration(sbx::math::vector3{0.0f, -9.81f, 0.0f});
 
-    sphere_rigidbody.set_velocity(forward * 20.0f);
+  //   sphere_rigidbody.set_velocity(forward * 20.0f);
 
-    sphere.add_component<sbx::physics::collider>(sbx::physics::sphere{0.5f});
+  //   sphere.add_component<sbx::physics::collider>(sbx::physics::sphere{0.5f});
 
-    sphere.add_component<ball_tag>();
-  }
+  //   sphere.add_component<ball_tag>();
+  // }
 
-  if (sbx::devices::input::is_key_pressed(sbx::devices::key::r)) {
-    auto balls = scene.query<ball_tag>();
+  // if (sbx::devices::input::is_key_pressed(sbx::devices::key::r)) {
+  //   auto balls = scene.query<ball_tag>();
 
-    for (const auto& ball : balls) {
-      scene.destroy_node(ball);
-    }
-  }
+  //   for (const auto& ball : balls) {
+  //     scene.destroy_node(ball);
+  //   }
+  // }
 
-  _rotation += sbx::math::degree{45} * delta_time;
+  // _rotation += sbx::math::degree{45} * delta_time;
 
-  for (const auto& monkey_id : _monkey_ids) {
-    auto monkey = scene.find_node(monkey_id);
+  // for (const auto& monkey_id : _monkey_ids) {
+  //   auto monkey = scene.find_node(monkey_id);
 
-    auto& transform = monkey->get_component<sbx::math::transform>();
+  //   auto& transform = monkey->get_component<sbx::math::transform>();
 
-    transform.set_rotation(sbx::math::vector3::up, _rotation);
-  }
+  //   transform.set_rotation(sbx::math::vector3::up, _rotation);
+  // }
 
-  auto to_destroy = std::vector<sbx::scenes::node>{};
+  // auto to_destroy = std::vector<sbx::scenes::node>{};
 
-  for (const auto& node : scene.query<sbx::math::transform>()) {
-    auto& transform = node.get_component<sbx::math::transform>();
+  // for (const auto& node : scene.query<sbx::math::transform>()) {
+  //   auto& transform = node.get_component<sbx::math::transform>();
 
-    if (transform.position().y() < -5.0f) {
-      to_destroy.push_back(node);
-    }
-  }
+  //   if (transform.position().y() < -5.0f) {
+  //     to_destroy.push_back(node);
+  //   }
+  // }
 
-  for (const auto& node : to_destroy) {
-    scene.destroy_node(node);
-  }
+  // for (const auto& node : to_destroy) {
+  //   scene.destroy_node(node);
+  // }
 }
 
 auto application::fixed_update() -> void {
@@ -437,7 +438,7 @@ auto application::_generate_plane(const sbx::math::vector2u& tile_count, const s
     for (auto x = 0u; x < tile_count.x() + 1u; ++x) {
       const auto position = sbx::math::vector3{static_cast<std::float_t>(x * tile_size.x() - offset.x()), 0.0f, static_cast<std::float_t>(y * tile_size.y() - offset.y())};
       const auto normal = sbx::math::vector3::up;
-      const auto uv = sbx::math::vector2{static_cast<std::float_t>(x), static_cast<std::float_t>(y)};
+      const auto uv = sbx::math::vector2{static_cast<std::float_t>(x % 2), static_cast<std::float_t>(y % 2)};
 
       vertices.emplace_back(position, normal, uv);
     }
