@@ -16,7 +16,7 @@ layout(binding = 0) uniform uniform_scene {
   mat4 projection;
 } scene;
 
-layout(binding = 1) buffer buffer_glyphs {
+layout(binding = 1, std430) readonly buffer buffer_glyphs {
   glyph data[];
 } glyphs;
 

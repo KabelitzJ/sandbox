@@ -36,5 +36,6 @@
       "name": "wood",
       "path": "demo/assets/textures/wood.png"
     }
-  ]
+  ],
+  "plane_texture": "prototype_white"
 }

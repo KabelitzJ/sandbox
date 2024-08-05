@@ -29,46 +29,46 @@ float calculate_attenuation(float distance, float radius) {
 
 // Function to calculate lighting from a point light
 light_result calculate_point_light(point_light light, vec3 world_position, vec3 normal, vec3 view_position, material material) {
-  light_result result;
-
   vec3 lightDir = normalize(light.position - world_position);
-  float distance = length(light.position - world_position);
-  float attenuation = calculate_attenuation(distance, light.radius);
-
-  // Ambient component
-  result.ambient = material.albedo * light.color * material.ambient_occlusion * attenuation;
-
-  // Diffuse component
-  float diff = max(dot(normal, lightDir), 0.0);
-  result.diffuse = (1.0 - material.metallic) * material.albedo * diff * light.color * attenuation;
-
-  // Specular component
   vec3 viewDir = normalize(view_position - world_position);
-  vec3 halfDir = normalize(lightDir + viewDir);
-  float spec = pow(max(dot(normal, halfDir), 0.0), 1.0 / (material.roughness * material.roughness));
-  result.specular = material.specular * spec * light.color * attenuation;
+  vec3 halfwayDir = normalize(lightDir + viewDir);
 
-  return result;
+  // ambient
+  float ambientStrength = 0.1;
+  vec4 ambient = ambientStrength * light.color;
+  
+  // diffuse 
+  vec3 norm = normalize(normal);
+  float diff = max(dot(norm, lightDir), 0.0);
+  vec4 diffuse = diff * light.color;
+  
+  // specular
+  float spec = pow(max(dot(normal, halfwayDir), 0.0), 64.0);
+  vec4 specular = spec * light.color;  
+
+  return light_result(ambient, diffuse, specular);
 }
 
 // Function to calculate lighting from a directional light
 light_result calculate_directional_light(directional_light light, vec3 world_position, vec3 normal, vec3 view_position, material material) {
-  float intensity = max(dot(normal, -light.direction), 0.0);
+  vec3 lightDir = normalize(-light.direction);
+  vec3 viewDir = normalize(view_position - world_position);
+  vec3 halfwayDir = normalize(lightDir + viewDir);
 
-  // Calculate the ambient color
-  vec4 ambient = (light.color * 0.1) * material.albedo;
+  // ambient
+  float ambientStrength = 0.1;
+  vec4 ambient = ambientStrength * light.color;
 
-  // Calculate the diffuse color
-  vec4 diffuse = (light.color * 0.5) * (material.albedo * intensity);
+  // diffuse
+  vec3 norm = normalize(normal);
+  float diff = max(dot(norm, lightDir), 0.0);
+  vec4 diffuse = diff * light.color;
 
-  // Calculate the specular color
-  vec3 camera_direction = normalize(vec3(view_position) - world_position);
-  vec3 halfway_direction = normalize(light.direction + camera_direction);
-  float specular_intensity = pow(max(dot(normal, halfway_direction), 0.0), 32);
-  vec4 specular = material.specular * specular_intensity;
+  // specular
+  float spec = pow(max(dot(normal, halfwayDir), 0.0), 64.0);
+  vec4 specular = spec * light.color;
 
-  // Calculate the final color
-  return light_result(ambient,diffuse, specular);
+  return light_result(ambient, diffuse, specular);
 }
 
 #endif // COMMON_LIGHTING_GLSL

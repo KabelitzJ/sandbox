@@ -147,7 +147,7 @@ private:
     alignas(16) math::matrix4x4 model;
     alignas(16) math::matrix4x4 normal;
     alignas(16) math::color tint;
-    alignas(4) std::uint32_t albedo_image_index;
+    alignas(16) std::uint32_t albedo_image_index;
   }; // struct per_mesh_data
 
   struct mesh_key_hash {

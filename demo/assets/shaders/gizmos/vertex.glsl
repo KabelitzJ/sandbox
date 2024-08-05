@@ -25,7 +25,7 @@ layout(binding = 0) uniform uniform_scene {
   vec2 resolution;
 } scene;
 
-layout(binding = 1) buffer buffer_mesh_data {
+layout(binding = 1, std430) readonly buffer buffer_mesh_data {
   per_mesh_data data[];
 } mesh_data;
 

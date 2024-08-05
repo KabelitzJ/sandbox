@@ -18,7 +18,7 @@ layout(binding = 0) uniform uniform_scene {
   uint point_light_count;
 } scene;
 
-layout(binding = 1) buffer buffer_point_lights {
+layout(binding = 1, std430) readonly buffer buffer_point_lights {
   point_light data[];
 } point_lights;
 
@@ -44,10 +44,7 @@ const mat4 DEPTH_BIAS = mat4(
 	0.5, 0.5, 0.0, 1.0
 );
 
-const vec4 GROUND_COLOR = vec4(0.8, 1.0, 0.5, 1.0);
-const vec4 SKY_COLOR = vec4(0.8, 0.8, 1.0, 1.0);
-const float LOWEST_ALPHA = 0.4;
-const float BRIGHTNESS_EFFECT = 0.5;
+vec3 LIGHT_POSITION = vec3(-10.0, 10.0, 10.0);
 
 void main() {
   vec3 world_position = subpassLoad(position_image).xyz;
@@ -59,30 +56,21 @@ void main() {
   float roughness = material.g;
   float ambient_occlusion = material.b;
 
-  vec3 to_camera = normalize(scene.camera_position - world_position);
-  vec3 to_light = normalize(-scene.light_direction);
-  vec3 reflected = reflect(to_camera, normal);
+  vec4 total_light = vec4(0.0);
 
-  float sun_diffuse = max(dot(normal, to_light), 0.0);
-	float sky_diffuse = 0.7 + 0.3 * clamp(normal.y, 0.0, 1.0);
-	float fresnel = pow(1.0 - max(dot(to_camera, normal), 0.0), 2);
-	float sun_specular = pow(max(dot(reflected, -scene.light_direction), 0.0), 2.0) * (0.8 + 5.0 * fresnel);
-	float rim_light = fresnel;
-	float sky_reflection = smoothstep(0.0, 0.6, reflected.y) * (0.4 + 0.6 * fresnel);
+  directional_light light = directional_light(scene.light_direction, scene.light_color);
 
-  vec4 light_space_position = DEPTH_BIAS * scene.light_space * vec4(world_position, 1.0);
+  light_result result = calculate_directional_light(light, world_position, normal, scene.camera_position, DEFAULT_MATERIAL);
 
-  float shadow = calculate_shadow_random_jitter(shadow_map_image, light_space_position, normal, to_light);
+  total_light += (result.ambient + result.diffuse + result.specular) * albedo;
 
-  vec4 lighting = vec4(0.0);
+  for (uint i = 0; i < min(scene.point_light_count, MAX_POINT_LIGHTS); i++) {
+    point_light light = point_lights.data[i];
 
-	lighting += 1.4 * sky_diffuse  * SKY_COLOR;
-	lighting += 1.3 * sun_diffuse * shadow * scene.light_color;
+    light_result result = calculate_point_light(light, world_position, normal, scene.camera_position, DEFAULT_MATERIAL);
 
-	vec4 final_color = albedo * lighting;
-	final_color += 0.03 * sky_reflection * SKY_COLOR * sky_diffuse;
-	final_color += 0.04 * rim_light * SKY_COLOR;
-	final_color += 0.09 * sun_specular * shadow * scene.light_color;
+    total_light += (result.ambient + result.diffuse + result.specular) * albedo;
+  }
 
-	out_color = final_color;
+  out_color = total_light;
 }

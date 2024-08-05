@@ -71,7 +71,7 @@ public:
       const auto& light = node.get_component<scenes::point_light>();
       const auto& transform = node.get_component<math::transform>();
 
-      point_lights.push_back(point_light{light.color(), transform.position(), light.radius()});
+      point_lights.push_back(point_light{transform.position(), light.color(), light.radius()});
       
       ++point_light_count;
 
@@ -104,11 +104,10 @@ public:
 private:
 
   struct point_light {
-  math::color color;
-  math::vector3 position;
-  std::float_t _radius;
-  std::float_t intensity;
-}; // struct point_light
+    alignas(16) math::vector3 position;
+    alignas(16) math::color color;
+    alignas(16) std::float_t radius;
+  }; // struct point_light
 
   std::unordered_map<std::string, std::string> _attachment_names;
 

@@ -95,10 +95,10 @@ private:
   }
 
   struct glyph_data {
-    math::vector2 offset;
-    math::vector2 size;
-    math::vector2 uv_offset;
-    math::vector2 uv_size;
+    alignas(8) math::vector2 offset;
+    alignas(8) math::vector2 size;
+    alignas(8) math::vector2 uv_offset;
+    alignas(8) math::vector2 uv_size;
   }; // struct glyph_data
 
   std::string _text;
