@@ -39,15 +39,7 @@
 
 namespace sbx::models {
 
-struct point_light {
-  math::color color;
-  math::vector3 position;
-  std::float_t intensity;
-}; // struct point_light
-
 class mesh_subrenderer final : public graphics::subrenderer {
-
-  inline static constexpr auto max_point_lights = std::size_t{16};
 
 public:
 
@@ -182,7 +174,6 @@ private:
   std::unordered_map<mesh_key, std::vector<per_mesh_data>, mesh_key_hash, mesh_key_equal> _static_meshes;
 
   graphics::uniform_handler _scene_uniform_handler;
-  graphics::storage_handler _lights_storage_handler;
   graphics::separate_sampler _albedo_images_sampler;
   graphics::separate_image2d_array _albedo_images;
 

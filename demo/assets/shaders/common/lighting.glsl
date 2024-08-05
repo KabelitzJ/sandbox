@@ -9,7 +9,7 @@ struct point_light {
   float radius;
 }; // point_light
 
-const uint MAX_POINT_LIGHTS = 16;
+const uint MAX_POINT_LIGHTS = 32;
 
 struct directional_light {
   vec3 direction;
@@ -22,24 +22,53 @@ struct light_result {
   vec4 specular;
 }; // struct light_result
 
-light_result blinn_phong_shading(material material, directional_light light, vec3 normal, vec3 view_direction) {
+// Function to calculate attenuation based on distance and radius
+float calculate_attenuation(float distance, float radius) {
+  return 1.0 / (1.0 + (distance / radius) * (distance / radius));
+}
+
+// Function to calculate lighting from a point light
+light_result calculate_point_light(point_light light, vec3 world_position, vec3 normal, vec3 view_position, material material) {
   light_result result;
 
-  vec3 light_direction = normalize(-light.direction);
-  vec3 half_direction = normalize(light_direction + view_direction);
-  vec3 reflect_direction = reflect(-light_direction, normal);
+  vec3 lightDir = normalize(light.position - world_position);
+  float distance = length(light.position - world_position);
+  float attenuation = calculate_attenuation(distance, light.radius);
 
-  float ambient_strength = 0.1; // you can adjust this based on your scene
-  result.ambient = material.ambient * ambient_strength;
+  // Ambient component
+  result.ambient = material.albedo * light.color * material.ambient_occlusion * attenuation;
 
-  float diffuse_strength = max(dot(normal, light_direction), 0.0);
-  result.diffuse = material.diffuse * light.color * diffuse_strength;
+  // Diffuse component
+  float diff = max(dot(normal, lightDir), 0.0);
+  result.diffuse = (1.0 - material.metallic) * material.albedo * diff * light.color * attenuation;
 
-  // float specular_strength = pow(max(dot(normal, half_direction), 0.0), material.shininess);
-  float specular_strength = pow(max(dot(normal, reflect_direction), 0.0), material.shininess);
-  result.specular = material.specular * light.color * specular_strength;
+  // Specular component
+  vec3 viewDir = normalize(view_position - world_position);
+  vec3 halfDir = normalize(lightDir + viewDir);
+  float spec = pow(max(dot(normal, halfDir), 0.0), 1.0 / (material.roughness * material.roughness));
+  result.specular = material.specular * spec * light.color * attenuation;
 
   return result;
+}
+
+// Function to calculate lighting from a directional light
+light_result calculate_directional_light(directional_light light, vec3 world_position, vec3 normal, vec3 view_position, material material) {
+  float intensity = max(dot(normal, -light.direction), 0.0);
+
+  // Calculate the ambient color
+  vec4 ambient = (light.color * 0.1) * material.albedo;
+
+  // Calculate the diffuse color
+  vec4 diffuse = (light.color * 0.5) * (material.albedo * intensity);
+
+  // Calculate the specular color
+  vec3 camera_direction = normalize(vec3(view_position) - world_position);
+  vec3 halfway_direction = normalize(light.direction + camera_direction);
+  float specular_intensity = pow(max(dot(normal, halfway_direction), 0.0), 32);
+  vec4 specular = material.specular * specular_intensity;
+
+  // Calculate the final color
+  return light_result(ambient,diffuse, specular);
 }
 
 #endif // COMMON_LIGHTING_GLSL

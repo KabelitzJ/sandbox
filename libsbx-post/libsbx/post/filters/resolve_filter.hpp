@@ -28,6 +28,8 @@ class resolve_filter final : public filter<Vertex> {
 
   using base_type = filter<Vertex>;
 
+  inline static constexpr auto max_point_lights = std::size_t{32};
+
 public:
 
   using vertex_type = base_type::vertex_type;
@@ -60,30 +62,31 @@ public:
     _scene_uniform_handler.push("light_direction", scene_light.direction());
     _scene_uniform_handler.push("light_color", scene_light.color());
 
-    // auto light_nodes = scene.query<scenes::point_light>();
+    auto point_light_nodes = scene.query<scenes::point_light>();
 
-    // auto lights = std::vector<models::point_light>{};
-    // auto point_light_count = std::uint32_t{0};
+    auto point_lights = std::vector<point_light>{};
+    auto point_light_count = std::uint32_t{0};
 
-    // for (const auto& node : light_nodes) {
-    //   const auto& light = node.get_component<scenes::point_light>();
-    //   const auto& transform = node.get_component<math::transform>();
+    for (const auto& node : point_light_nodes) {
+      const auto& light = node.get_component<scenes::point_light>();
+      const auto& transform = node.get_component<math::transform>();
 
-    //   lights.push_back(models::point_light{light.color(), transform.position(), light.radius()});
+      point_lights.push_back(point_light{light.color(), transform.position(), light.radius()});
       
-    //   ++point_light_count;
+      ++point_light_count;
 
-    //   if (point_light_count >= max_point_lights) {
-    //     break;
-    //   }
-    // }
+      if (point_light_count >= max_point_lights) {
+        break;
+      }
+    }
 
-    // _lights_storage_handler.push(std::span<const models::point_light>{lights.data(), point_light_count});
-    // _scene_uniform_handler.push("point_light_count", point_light_count);
+    _point_lights_storage_handler.push(std::span<const point_light>{point_lights.data(), point_light_count});
+    _scene_uniform_handler.push("point_light_count", point_light_count);
 
     pipeline.bind(command_buffer);
 
     descriptor_handler.push("uniform_scene", _scene_uniform_handler);
+    descriptor_handler.push("buffer_point_lights", _point_lights_storage_handler);
 
     for (const auto& [name, attachment] : _attachment_names) {
       descriptor_handler.push(name, graphics_module.attachment(attachment));
@@ -100,8 +103,17 @@ public:
 
 private:
 
+  struct point_light {
+  math::color color;
+  math::vector3 position;
+  std::float_t _radius;
+  std::float_t intensity;
+}; // struct point_light
+
   std::unordered_map<std::string, std::string> _attachment_names;
+
   graphics::uniform_handler _scene_uniform_handler;
+  graphics::storage_handler _point_lights_storage_handler;
 
 }; // class resolve_filter
 
