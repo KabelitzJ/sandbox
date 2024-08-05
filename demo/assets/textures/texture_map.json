@@ -35,7 +35,11 @@
     {
       "name": "wood",
       "path": "demo/assets/textures/wood.png"
+    },
+    {
+      "name": "prototype",
+      "path": "demo/assets/textures/prototype.png"
     }
   ],
-  "plane_texture": "prototype_white"
+  "plane_texture": "prototype_black"
 }
