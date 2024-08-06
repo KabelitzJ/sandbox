@@ -35,7 +35,6 @@ public:
 private:
 
   auto _generate_plane(const sbx::math::vector2u& tile_count, const sbx::math::vector2u& tile_size) -> std::unique_ptr<sbx::models::mesh>;
-  auto _generate_sphere() -> std::unique_ptr<sbx::models::mesh>;
 
   std::unordered_map<sbx::utility::hashed_string, sbx::math::uuid> _texture_ids;
   std::unordered_map<sbx::utility::hashed_string, sbx::math::uuid> _mesh_ids;

@@ -270,9 +270,10 @@ application::application()
   // dragon_submeshes.push_back(sbx::scenes::static_mesh::submesh{1, white_id, sbx::math::color{0.0f, 0.64f, 0.42f, 1.0f}});
   // dragon_submeshes.push_back(sbx::scenes::static_mesh::submesh{0, _texture_ids["checkerboard"], sbx::math::color{1.0f, 1.0f, 1.0f, 1.0f}});
   // dragon_submeshes.push_back(sbx::scenes::static_mesh::submesh{1, _texture_ids["white"], sbx::math::color{0.62f, 0.14f, 0.16f, 1.0f}});
-  dragon_submeshes.push_back(sbx::scenes::static_mesh::submesh{0, sbx::math::color{1.0, 1.0, 1.0, 1.0}, _texture_ids["rust_albedo"], _texture_ids["rust_normal"], _texture_ids["rust_metallic"], _texture_ids["rust_roughness"]});
+  dragon_submeshes.push_back(sbx::scenes::static_mesh::submesh{0, sbx::math::color{1.0, 1.0, 1.0, 1.0}, _texture_ids["checkerboard"]});
+  dragon_submeshes.push_back(sbx::scenes::static_mesh::submesh{1, sbx::math::color{1.0, 1.0, 1.0, 1.0}, _texture_ids["rust_albedo"], _texture_ids["rust_normal"], _texture_ids["rust_metallic"], _texture_ids["rust_roughness"]});
 
-  dragon.add_component<sbx::scenes::static_mesh>(_mesh_ids["sphere"], dragon_submeshes);
+  dragon.add_component<sbx::scenes::static_mesh>(_mesh_ids["dragon"], dragon_submeshes);
   
   // auto& dragon_transform = dragon.get_component<sbx::math::transform>();
   // // dragon_transform.set_position(sbx::math::vector3{-7.0f, 1.0f, -7.0f});
@@ -530,10 +531,6 @@ auto application::_generate_plane(const sbx::math::vector2u& tile_count, const s
   }
 
   return std::make_unique<sbx::models::mesh>(std::move(vertices), std::move(indices));
-}
-
-auto application::_generate_sphere() -> std::unique_ptr<sbx::models::mesh> {
-  return nullptr; 
 }
 
 } // namespace demo

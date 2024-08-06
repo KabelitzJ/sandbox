@@ -13,7 +13,7 @@ layout(location = 2) in vec2 in_uv;
 layout(location = 3) in vec4 in_color;
 layout(location = 4) in flat uint in_albedo_image_index;
 layout(location = 5) in flat uint in_normal_image_index;
-layout(location = 6) in flat uint in_material_image_index;
+layout(location = 6) in flat uint in_metallic_image_index;
 layout(location = 7) in flat uint in_roughness_image_index;
 
 layout(location = 0) out vec4 out_position;
@@ -56,8 +56,8 @@ void main(void) {
     out_albedo = in_color;
   }
 
-  if (in_material_image_index < MAX_IMAGE_ARRAY_SIZE) {
-    out_material.r = texture(sampler2D(images[in_material_image_index], images_sampler), in_uv).r;
+  if (in_metallic_image_index < MAX_IMAGE_ARRAY_SIZE) {
+    out_material.r = texture(sampler2D(images[in_metallic_image_index], images_sampler), in_uv).r;
   } else {
     out_material.r = 0.0;
   }
@@ -65,7 +65,7 @@ void main(void) {
   if (in_roughness_image_index < MAX_IMAGE_ARRAY_SIZE) {
     out_material.g = texture(sampler2D(images[in_roughness_image_index], images_sampler), in_uv).r;
   } else {
-    out_material.g = 0.0;
+    out_material.g = 0.8;
   }
 
   out_material.b = 1.0;

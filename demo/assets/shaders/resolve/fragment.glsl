@@ -80,7 +80,7 @@ vec3 fresnel_schlick(float cosTheta, vec3 F0) {
   return F0 + (1.0 - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
 }
 
-#define PBR 1
+#define PBR 0
 
 void main() {
   vec3 world_position = subpassLoad(position_image).xyz;
@@ -129,7 +129,7 @@ void main() {
     Lo += (kD * albedo.rgb / PI + specular) * radiance * NdotL;
   }
 
-  vec3 ambient = vec3(0.03) * albedo.rgb * ambient_occlusion;
+  vec3 ambient = vec3(0.03) * albedo.rgb * 0.5;
 
   vec3 color = ambient + Lo;
 
