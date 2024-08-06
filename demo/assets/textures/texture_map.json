@@ -39,7 +39,23 @@
     {
       "name": "prototype",
       "path": "demo/assets/textures/prototype.png"
+    },
+    {
+      "name": "rust_albedo",
+      "path": "demo/assets/textures/rust/albedo.png"
+    },
+    {
+      "name": "rust_metallic",
+      "path": "demo/assets/textures/rust/metallic.png"
+    },
+    {
+      "name": "rust_normal",
+      "path": "demo/assets/textures/rust/normal.png"
+    },
+    {
+      "name": "rust_roughness",
+      "path": "demo/assets/textures/rust/roughness.png"
     }
   ],
-  "plane_texture": "prototype_black"
+  "plane_texture": "wood"
 }

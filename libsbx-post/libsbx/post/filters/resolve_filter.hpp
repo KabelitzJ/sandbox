@@ -68,10 +68,14 @@ public:
     auto point_light_count = std::uint32_t{0};
 
     for (const auto& node : point_light_nodes) {
+      const auto model = scene.world_transform(node);
+
       const auto& light = node.get_component<scenes::point_light>();
       const auto& transform = node.get_component<math::transform>();
 
-      point_lights.push_back(point_light{transform.position(), light.color(), light.radius()});
+      const auto position = math::vector3{model[3]};
+
+      point_lights.push_back(point_light{position, light.color(), light.radius()});
       
       ++point_light_count;
 

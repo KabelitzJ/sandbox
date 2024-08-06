@@ -65,10 +65,10 @@ public:
   }
 
   auto light_space() -> math::matrix4x4 {
-    const auto position = _light.direction() * -100.0f;
+    const auto position = _light.direction() * -50.0f;
 
-    const auto view = math::matrix4x4::look_at(position, position + _light.direction() * 100.0f, math::vector3::up);
-    const auto projection = math::matrix4x4::orthographic(-30.0f, 30.0f, -30.0f, 30.0f, 0.1f, 500.0f);
+    const auto view = math::matrix4x4::look_at(position, position + _light.direction() * 50.0f, math::vector3::up);
+    const auto projection = math::matrix4x4::orthographic(-20.0f, 20.0f, -20.0f, 20.0f, 0.1f, 500.0f);
 
     return projection * view;
   }

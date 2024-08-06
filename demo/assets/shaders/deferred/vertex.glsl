@@ -7,7 +7,7 @@ struct per_mesh_data {
   mat4 model;
   mat4 normal;
   vec4 tint;
-  uint albedo_image_index;
+  vec4 image_indices;
 }; // struct per_mesh_data
 
 layout(location = 0) in vec3 in_position;
@@ -19,6 +19,9 @@ layout(location = 1) out vec3 out_normal;
 layout(location = 2) out vec2 out_uv;
 layout(location = 3) out vec4 out_color;
 layout(location = 4) out flat uint out_albedo_image_index;
+layout(location = 5) out flat uint out_normal_image_index;
+layout(location = 6) out flat uint out_material_image_index;
+layout(location = 7) out flat uint out_roughness_image_index;
 
 layout(binding = 0) uniform uniform_scene {
   mat4 view;
@@ -42,7 +45,10 @@ void main() {
 
   out_color = data.tint;
 
-  out_albedo_image_index = data.albedo_image_index;
+  out_albedo_image_index = uint(data.image_indices.x);
+  out_normal_image_index = uint(data.image_indices.y);
+  out_material_image_index = uint(data.image_indices.z);
+  out_roughness_image_index = uint(data.image_indices.w);
 
   gl_Position = scene.projection * scene.view * vec4(out_position, 1.0);
 }

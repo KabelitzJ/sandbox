@@ -108,7 +108,7 @@ application::application()
 
   auto plane = scene.create_node("Plane");
 
-  plane.add_component<sbx::scenes::static_mesh>(_mesh_ids["plane"], _texture_ids[texture_map["plane_texture"].get<std::string>()]);
+  plane.add_component<sbx::scenes::static_mesh>(_mesh_ids["plane"], sbx::math::color{1.0, 1.0, 1.0, 1.0}, _texture_ids[texture_map["plane_texture"].get<std::string>()]);
 
   auto& plane_transform = plane.get_component<sbx::math::transform>();
   plane_transform.set_scale(sbx::math::vector3{1.0f, 1.0f, 1.0f});
@@ -117,44 +117,65 @@ application::application()
 
   plane.add_component<sbx::physics::collider>(sbx::physics::box{sbx::math::vector3{-50.0f, 0.0f, -50.0f}, sbx::math::vector3{50.0f, 0.0f, 50.0f}});
 
+  _plane_id = plane.get_component<sbx::scenes::id>();
+
+  // Light 0
+
+  auto light0 = scene.create_node("Light0");
+
+  _light_id = light0.get_component<sbx::scenes::id>();
+
   // Ligth 1
 
-  auto light1 = scene.create_node("Light1");
+  auto light1 = scene.create_child_node(light0, "Light1");
 
   light1.add_component<sbx::scenes::gizmo>(_mesh_ids["sphere"], 0u, _texture_ids["white"], sbx::math::color{1.0f, 0.0f, 0.0f, 1.0f});
 
   auto& light1_transform = light1.get_component<sbx::math::transform>();
 
   light1_transform.set_position(sbx::math::vector3{5.0f, 5.0f, 5.0f});
-  light1_transform.set_scale(sbx::math::vector3{0.5f, 0.5f, 0.5f});
+  // light1_transform.set_scale(sbx::math::vector3{0.5f, 0.5f, 0.5f});
 
   light1.add_component<sbx::scenes::point_light>(sbx::math::color{1.0f, 0.0f, 0.0f, 1.0f}, 20.0f);
 
   // Ligth 2
 
-  auto light2 = scene.create_node("Light2");
+  auto light2 = scene.create_child_node(light0, "Light2");
 
   light2.add_component<sbx::scenes::gizmo>(_mesh_ids["sphere"], 0u, _texture_ids["white"], sbx::math::color{0.0f, 1.0f, 0.0f, 1.0f});
 
   auto& light2_transform = light2.get_component<sbx::math::transform>();
 
   light2_transform.set_position(sbx::math::vector3{-5.0f, 5.0f, -5.0f});
-  light2_transform.set_scale(sbx::math::vector3{0.5f, 0.5f, 0.5f});
+  // light2_transform.set_scale(sbx::math::vector3{0.5f, 0.5f, 0.5f});
 
   light2.add_component<sbx::scenes::point_light>(sbx::math::color{0.0f, 1.0f, 0.0f, 1.0f}, 20.0f);
 
   // Ligth 3
 
-  auto light3 = scene.create_node("Light3");
+  auto light3 = scene.create_child_node(light0, "Light3");
 
   light3.add_component<sbx::scenes::gizmo>(_mesh_ids["sphere"], 0u, _texture_ids["white"], sbx::math::color{0.0f, 0.0f, 1.0f, 1.0f});
 
   auto& light3_transform = light3.get_component<sbx::math::transform>();
 
   light3_transform.set_position(sbx::math::vector3{5.0f, 5.0f, -5.0f});
-  light3_transform.set_scale(sbx::math::vector3{0.5f, 0.5f, 0.5f});
+  // light3_transform.set_scale(sbx::math::vector3{0.5f, 0.5f, 0.5f});
 
   light3.add_component<sbx::scenes::point_light>(sbx::math::color{0.0f, 0.0f, 1.0f, 1.0f}, 20.0f);
+
+  // Light 4
+
+  auto light4 = scene.create_child_node(light0, "Light4");
+
+  light4.add_component<sbx::scenes::gizmo>(_mesh_ids["sphere"], 0u, _texture_ids["white"], sbx::math::color{1.0f, 1.0f, 0.0f, 1.0f});
+
+  auto& light4_transform = light4.get_component<sbx::math::transform>();
+
+  light4_transform.set_position(sbx::math::vector3{-5.0f, 5.0f, 5.0f});
+  // light4_transform.set_scale(sbx::math::vector3{0.5f, 0.5f, 0.5f});
+
+  light4.add_component<sbx::scenes::point_light>(sbx::math::color{1.0f, 1.0f, 0.0f, 1.0f}, 20.0f);
 
   // // Test1
 
@@ -248,9 +269,10 @@ application::application()
   // dragon_submeshes.push_back(sbx::scenes::static_mesh::submesh{0, checkerboard_id, sbx::math::color{0.62f, 0.14f, 0.16f, 1.0f}});
   // dragon_submeshes.push_back(sbx::scenes::static_mesh::submesh{1, white_id, sbx::math::color{0.0f, 0.64f, 0.42f, 1.0f}});
   // dragon_submeshes.push_back(sbx::scenes::static_mesh::submesh{0, _texture_ids["checkerboard"], sbx::math::color{1.0f, 1.0f, 1.0f, 1.0f}});
-  dragon_submeshes.push_back(sbx::scenes::static_mesh::submesh{1, _texture_ids["white"], sbx::math::color{0.62f, 0.14f, 0.16f, 1.0f}});
+  // dragon_submeshes.push_back(sbx::scenes::static_mesh::submesh{1, _texture_ids["white"], sbx::math::color{0.62f, 0.14f, 0.16f, 1.0f}});
+  dragon_submeshes.push_back(sbx::scenes::static_mesh::submesh{0, sbx::math::color{1.0, 1.0, 1.0, 1.0}, _texture_ids["rust_albedo"], _texture_ids["rust_normal"], _texture_ids["rust_metallic"], _texture_ids["rust_roughness"]});
 
-  dragon.add_component<sbx::scenes::static_mesh>(_mesh_ids["dragon"], dragon_submeshes);
+  dragon.add_component<sbx::scenes::static_mesh>(_mesh_ids["sphere"], dragon_submeshes);
   
   // auto& dragon_transform = dragon.get_component<sbx::math::transform>();
   // // dragon_transform.set_position(sbx::math::vector3{-7.0f, 1.0f, -7.0f});
@@ -392,7 +414,13 @@ auto application::update() -> void  {
     _frames = 0;
   }
 
-  // _rotation += sbx::math::degree{45} * delta_time;
+  _rotation += sbx::math::degree{45} * delta_time;
+
+  auto light0 = scene.find_node(_light_id);
+
+  auto& light0_transform = light0->get_component<sbx::math::transform>();
+
+  light0_transform.set_rotation(sbx::math::vector3::up, _rotation);
 
   // for (const auto monkey_id : _monkey_ids) {
   //   auto monkey = scene.find_node(monkey_id);
@@ -502,6 +530,10 @@ auto application::_generate_plane(const sbx::math::vector2u& tile_count, const s
   }
 
   return std::make_unique<sbx::models::mesh>(std::move(vertices), std::move(indices));
+}
+
+auto application::_generate_sphere() -> std::unique_ptr<sbx::models::mesh> {
+  return nullptr; 
 }
 
 } // namespace demo

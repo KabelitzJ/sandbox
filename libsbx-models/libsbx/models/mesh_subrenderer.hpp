@@ -75,7 +75,7 @@ public:
 
     _used_uniforms.clear();
     _static_meshes.clear();
-    _albedo_images.clear();
+    _images.clear();
 
     auto mesh_nodes = scene.query<scenes::static_mesh>();
 
@@ -97,8 +97,8 @@ public:
 
       descriptor_handler.push("uniform_scene", _scene_uniform_handler);
       descriptor_handler.push("buffer_mesh_data", storage_handler);
-      descriptor_handler.push("albedo_images_sampler", _albedo_images_sampler);
-      descriptor_handler.push("albedo_images", _albedo_images);
+      descriptor_handler.push("images_sampler", _images_sampler);
+      descriptor_handler.push("images", _images);
 
       if (!descriptor_handler.update(_pipeline)) {
         continue;
@@ -127,9 +127,14 @@ private:
       auto model = scene.world_transform(node);
       auto normal = math::matrix4x4::transposed(math::matrix4x4::inverted(model));
 
-      const auto albedo_image_index = _albedo_images.push_back(submesh.texture_id);
+      const auto albedo_image_index = submesh.albedo_texture ? _images.push_back(*submesh.albedo_texture) : graphics::separate_image2d_array::max_size;
+      const auto normal_image_index = submesh.normal_texture ? _images.push_back(*submesh.normal_texture) : graphics::separate_image2d_array::max_size;
+      const auto metallic_image_index = submesh.metallic_texture ? _images.push_back(*submesh.metallic_texture) : graphics::separate_image2d_array::max_size;
+      const auto roughness_image_index = submesh.roughness_texture ? _images.push_back(*submesh.roughness_texture) : graphics::separate_image2d_array::max_size;
 
-      _static_meshes[key].push_back(per_mesh_data{std::move(model), std::move(normal), submesh.tint, albedo_image_index});
+      const auto image_indices = math::vector4{albedo_image_index, normal_image_index, metallic_image_index, roughness_image_index};
+
+      _static_meshes[key].push_back(per_mesh_data{std::move(model), std::move(normal), submesh.tint, image_indices});
     }
   }
 
@@ -147,7 +152,7 @@ private:
     alignas(16) math::matrix4x4 model;
     alignas(16) math::matrix4x4 normal;
     alignas(16) math::color tint;
-    alignas(16) std::uint32_t albedo_image_index;
+    alignas(16) math::vector4 image_indices;
   }; // struct per_mesh_data
 
   struct mesh_key_hash {
@@ -174,8 +179,9 @@ private:
   std::unordered_map<mesh_key, std::vector<per_mesh_data>, mesh_key_hash, mesh_key_equal> _static_meshes;
 
   graphics::uniform_handler _scene_uniform_handler;
-  graphics::separate_sampler _albedo_images_sampler;
-  graphics::separate_image2d_array _albedo_images;
+
+  graphics::separate_sampler _images_sampler;
+  graphics::separate_image2d_array _images;
 
 }; // class mesh_subrenderer
 
