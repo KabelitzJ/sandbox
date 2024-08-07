@@ -33,8 +33,12 @@
       "path": "demo/assets/textures/white.png"
     },
     {
-      "name": "wood",
-      "path": "demo/assets/textures/wood.png"
+      "name": "wood_albedo",
+      "path": "demo/assets/textures/wood/albedo.png"
+    },
+    {
+      "name": "wood_normal",
+      "path": "demo/assets/textures/wood/normal.png"
     },
     {
       "name": "prototype",
@@ -55,7 +59,11 @@
     {
       "name": "rust_roughness",
       "path": "demo/assets/textures/rust/roughness.png"
+    },
+    {
+      "name": "brick_wall_normal_map",
+      "path": "demo/assets/textures/brick_wall_normal_map.png"
     }
   ],
-  "plane_texture": "wood"
+  "plane_texture": "wood_albedo"
 }
