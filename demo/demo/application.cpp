@@ -67,7 +67,6 @@ application::application()
   }
 
   _mesh_ids.emplace("plane", graphics_module.add_asset<sbx::models::mesh>(_generate_plane(sbx::math::vector2u{10u, 10u}, sbx::math::vector2u{10u, 10u})));
-  _mesh_ids.emplace("my_sphere", graphics_module.add_asset<sbx::models::mesh>(_generate_sphere(1.0f, 16u, 32u)));
 
   // const auto monkey_id = graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/suzanne/suzanne.gltf");
   // const auto sphere_id = graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/sphere/sphere.gltf");
@@ -110,7 +109,7 @@ application::application()
   auto plane = scene.create_node("Plane");
 
   auto plane_submeshes = std::vector<sbx::scenes::static_mesh::submesh>{};
-  plane_submeshes.push_back(sbx::scenes::static_mesh::submesh{0, sbx::math::color{1.0, 1.0, 1.0, 1.0}, _texture_ids[texture_map["plane_texture"].get<std::string>()], _texture_ids["wood_normal"]});
+  plane_submeshes.push_back(sbx::scenes::static_mesh::submesh{0, sbx::math::color{1.0, 1.0, 1.0, 1.0}, _texture_ids[texture_map["plane_texture"].get<std::string>()]});
 
   plane.add_component<sbx::scenes::static_mesh>(_mesh_ids["plane"], plane_submeshes);
 
@@ -273,11 +272,11 @@ application::application()
   // dragon_submeshes.push_back(sbx::scenes::static_mesh::submesh{0, checkerboard_id, sbx::math::color{0.62f, 0.14f, 0.16f, 1.0f}});
   // dragon_submeshes.push_back(sbx::scenes::static_mesh::submesh{1, white_id, sbx::math::color{0.0f, 0.64f, 0.42f, 1.0f}});
   // dragon_submeshes.push_back(sbx::scenes::static_mesh::submesh{0, _texture_ids["checkerboard"], sbx::math::color{1.0f, 1.0f, 1.0f, 1.0f}});
-  // dragon_submeshes.push_back(sbx::scenes::static_mesh::submesh{1, _texture_ids["white"], sbx::math::color{0.62f, 0.14f, 0.16f, 1.0f}});
+  dragon_submeshes.push_back(sbx::scenes::static_mesh::submesh{1, sbx::math::color{0.62f, 0.14f, 0.16f, 1.0f}, _texture_ids["white"]});
   // dragon_submeshes.push_back(sbx::scenes::static_mesh::submesh{0, sbx::math::color{1.0, 1.0, 1.0, 1.0}, _texture_ids["checkerboard"]});
-  dragon_submeshes.push_back(sbx::scenes::static_mesh::submesh{0, sbx::math::color{1.0, 0.0, 0.0, 1.0}, _texture_ids["white"], _texture_ids["brick_wall_normal_map"]});
+  // dragon_submeshes.push_back(sbx::scenes::static_mesh::submesh{0, sbx::math::color{1.0, 0.0, 0.0, 1.0}, _texture_ids["white"], _texture_ids["brick_wall_normal_map"]});
 
-  dragon.add_component<sbx::scenes::static_mesh>(_mesh_ids["cube"], dragon_submeshes);
+  dragon.add_component<sbx::scenes::static_mesh>(_mesh_ids["dragon"], dragon_submeshes);
   
   auto& dragon_transform = dragon.get_component<sbx::math::transform>();
   // dragon_transform.set_position(sbx::math::vector3{-7.0f, 1.0f, -7.0f});
@@ -534,48 +533,6 @@ auto application::_generate_plane(const sbx::math::vector2u& tile_count, const s
     indices.emplace_back(i + vertex_count + 1u);
     indices.emplace_back(i + 1u);
   }
-
-  return std::make_unique<sbx::models::mesh>(std::move(vertices), std::move(indices));
-}
-
-auto application::_generate_sphere(std::float_t radius, std::uint32_t rings, std::uint32_t sectors) -> std::unique_ptr<sbx::models::mesh> {
-  auto vertices = std::vector<sbx::models::vertex3d>{};
-  auto indices = std::vector<std::uint32_t>{};
-
-  const float PI = 3.14159265359f;
-
-    for(unsigned int r = 0; r <= rings; ++r) {
-      for(unsigned int s = 0; s <= sectors; ++s) {
-        float y = std::sin(-PI / 2.0 + PI * r / rings);
-        float x = std::cos(2.0 * PI * s / sectors) * std::sin(PI * r / rings);
-        float z = std::sin(2.0 * PI * s / sectors) * std::sin(PI * r / rings);
-
-        float u = static_cast<float>(s) / sectors;
-        float v = static_cast<float>(r) / rings;
-
-        sbx::math::vector3 position = {x * radius, y * radius, z * radius};
-        sbx::math::vector3 normal = {x, y, z};
-        sbx::math::vector2 uv = {u, v};
-
-        sbx::models::vertex3d vertex = {position, normal, uv};
-        vertices.push_back(vertex);
-      }
-    }
-
-    for(unsigned int r = 0; r < rings; ++r) {
-      for(unsigned int s = 0; s < sectors; ++s) {
-        unsigned int first = r * (sectors + 1) + s;
-        unsigned int second = first + sectors + 1;
-
-        indices.push_back(first);
-        indices.push_back(second);
-        indices.push_back(first + 1);
-
-        indices.push_back(second);
-        indices.push_back(second + 1);
-        indices.push_back(first + 1);
-      }
-    }
 
   return std::make_unique<sbx::models::mesh>(std::move(vertices), std::move(indices));
 }
