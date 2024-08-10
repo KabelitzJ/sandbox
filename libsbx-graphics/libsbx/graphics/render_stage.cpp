@@ -65,7 +65,7 @@ render_stage::render_stage(std::vector<graphics::attachment>&& attachments, std:
 
     switch (attachment.image_type()) {
       case attachment::type::image: {
-        clear_value.color = VkClearColorValue{clear_color.r, clear_color.g, clear_color.b, clear_color.a};
+        clear_value.color = VkClearColorValue{clear_color.r(), clear_color.g(), clear_color.b(), clear_color.a()};
 
         _update_subpass_attachment_counts(attachment);
 
@@ -88,7 +88,7 @@ render_stage::render_stage(std::vector<graphics::attachment>&& attachments, std:
 
         _update_subpass_attachment_counts(attachment);
 
-        clear_value.color = VkClearColorValue{clear_color.r, clear_color.g, clear_color.b, clear_color.a};
+        clear_value.color = VkClearColorValue{clear_color.r(), clear_color.g(), clear_color.b(), clear_color.a()};
         _swapchain_attachment = attachment;
 
         break;

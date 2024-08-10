@@ -40,7 +40,7 @@ public:
     swapchain
   }; // enum class type
 
-  attachment(std::uint32_t binding, std::string name, type type, format format = format::r8g8b8a8_unorm, const math::color& clear_color = math::color{0.0f, 0.0f, 0.0f, 1.0f}) noexcept
+  attachment(std::uint32_t binding, std::string name, type type, format format = format::r8g8b8a8_unorm, const math::color& clear_color = math::color::black) noexcept
   : _binding{binding}, 
     _name{std::move(name)}, 
     _type{type},

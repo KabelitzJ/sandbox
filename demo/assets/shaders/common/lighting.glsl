@@ -51,22 +51,22 @@ light_result calculate_point_light(point_light light, vec3 world_position, vec3 
 
 // Function to calculate lighting from a directional light
 light_result calculate_directional_light(directional_light light, vec3 world_position, vec3 normal, vec3 view_position, material material) {
-  vec3 lightDir = normalize(-light.direction);
-  vec3 viewDir = normalize(view_position - world_position);
-  vec3 halfwayDir = normalize(lightDir + viewDir);
+  vec3 light_direction = normalize(-light.direction);
+  vec3 view_direction = normalize(view_position - world_position);
+  vec3 halfway_direction = normalize(light_direction + view_direction);
 
   // ambient
-  float ambientStrength = 0.1;
-  vec4 ambient = ambientStrength * light.color;
+  vec4 ambient = material.albedo * light.color * material.ambient_occlusion;
 
   // diffuse
-  vec3 norm = normalize(normal);
-  float diff = max(dot(norm, lightDir), 0.0);
-  vec4 diffuse = diff * light.color;
+  vec3 normalized_normal = normalize(normal);
+  float diffuse_strength = max(dot(normalized_normal, light_direction), 0.0);
+  vec4 diffuse = diffuse_strength * material.albedo * light.color;
 
   // specular
-  float spec = pow(max(dot(normal, halfwayDir), 0.0), 64.0);
-  vec4 specular = spec * light.color;
+  float roughness_factor = (1.0 - material.roughness);
+  float specular_strength = pow(max(dot(normalized_normal, halfway_direction), 0.0), roughness_factor * 128.0); // assuming 128 as a base shininess
+  vec4 specular = specular_strength * mix(vec4(0.04), material.specular, material.metallic) * light.color;
 
   return light_result(ambient, diffuse, specular);
 }
