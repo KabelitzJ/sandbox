@@ -22,7 +22,7 @@ renderer::renderer()
   {
     auto attachments = std::vector<sbx::graphics::attachment>{
       sbx::graphics::attachment{0, "depth", sbx::graphics::attachment::type::depth},
-      sbx::graphics::attachment{1, "shadow_map", sbx::graphics::attachment::type::image, sbx::graphics::format::r32_sfloat, sbx::math::color{1.0f, 1.0f, 1.0f, 1.0f}}
+      sbx::graphics::attachment{1, "shadow_map", sbx::graphics::attachment::type::image, sbx::graphics::format::r32_sfloat, sbx::math::color::white}
     };
 
     auto subpass_bindings = std::vector<sbx::graphics::subpass_binding>{
@@ -40,7 +40,7 @@ renderer::renderer()
       sbx::graphics::attachment{2, "normal", sbx::graphics::attachment::type::image, sbx::graphics::format::r32g32b32a32_sfloat, _clear_color},
       sbx::graphics::attachment{3, "albedo", sbx::graphics::attachment::type::image, sbx::graphics::format::r8g8b8a8_unorm, _clear_color},
       sbx::graphics::attachment{4, "material", sbx::graphics::attachment::type::image, sbx::graphics::format::r8g8b8a8_unorm, _clear_color},
-      sbx::graphics::attachment{5, "normalized_depth", sbx::graphics::attachment::type::image, sbx::graphics::format::r32_sfloat, sbx::math::color{1.0f, 1.0f, 1.0f, 1.0f}},
+      sbx::graphics::attachment{5, "normalized_depth", sbx::graphics::attachment::type::image, sbx::graphics::format::r32_sfloat, sbx::math::color::white},
       sbx::graphics::attachment{6, "resolve", sbx::graphics::attachment::type::image, sbx::graphics::format::r8g8b8a8_unorm, _clear_color}
     };
 

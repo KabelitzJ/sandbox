@@ -17,6 +17,7 @@
 #include <libsbx/physics/physics.hpp>
 
 #include <demo/camera_controller.hpp>
+#include <demo/terrain.hpp>
 
 namespace demo {
 
@@ -39,10 +40,6 @@ private:
   std::unordered_map<sbx::utility::hashed_string, sbx::math::uuid> _texture_ids;
   std::unordered_map<sbx::utility::hashed_string, sbx::math::uuid> _mesh_ids;
 
-  sbx::math::uuid _plane_id;
-  sbx::math::uuid _light_id;
-  std::vector<sbx::math::uuid> _monkey_ids;
-
   sbx::units::second _time;
   std::uint32_t _frames;
 
@@ -52,6 +49,7 @@ private:
   sbx::math::angle _rotation;
 
   camera_controller _camera_controller;
+  terrain _terrain;
 
 }; // class application
 

@@ -39,6 +39,7 @@ target_sources(
     "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/application.hpp"
     "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/camera_controller.hpp"
     "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/line.hpp"
+    "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/terrain.hpp"
   PRIVATE
     "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/renderer.cpp"
     "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/application.cpp"
