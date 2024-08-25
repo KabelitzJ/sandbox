@@ -13,14 +13,11 @@ layout(location = 2) in vec2 in_uv;
 layout(location = 3) in vec4 in_color;
 layout(location = 4) in flat uint in_albedo_image_index;
 layout(location = 5) in flat uint in_normal_image_index;
-layout(location = 6) in flat uint in_metallic_image_index;
-layout(location = 7) in flat uint in_roughness_image_index;
 
 layout(location = 0) out vec4 out_position;
 layout(location = 1) out vec4 out_normal;
 layout(location = 2) out vec4 out_albedo;
-layout(location = 3) out vec4 out_material;
-layout(location = 4) out float out_depth;
+layout(location = 3) out float out_depth;
 
 layout(binding = 2) uniform sampler images_sampler;
 layout(binding = 3) uniform texture2D images[MAX_IMAGE_ARRAY_SIZE];
@@ -44,31 +41,17 @@ vec3 get_normal_from_map() {
 void main(void) {
   out_position = vec4(in_position, 1.0);
   
-  if (in_normal_image_index < MAX_IMAGE_ARRAY_SIZE) {
-    out_normal = vec4(get_normal_from_map(), 1.0);
-  } else {
-    out_normal = vec4(in_normal, 1.0);
-  }
-
   if (in_albedo_image_index < MAX_IMAGE_ARRAY_SIZE) {
     out_albedo = texture(sampler2D(images[in_albedo_image_index], images_sampler), in_uv) * in_color;
   } else {
     out_albedo = in_color;
   }
 
-  if (in_metallic_image_index < MAX_IMAGE_ARRAY_SIZE) {
-    out_material.r = texture(sampler2D(images[in_metallic_image_index], images_sampler), in_uv).r;
+  if (in_normal_image_index < MAX_IMAGE_ARRAY_SIZE) {
+    out_normal = vec4(get_normal_from_map(), 1.0);
   } else {
-    out_material.r = 0.0;
+    out_normal = vec4(in_normal, 1.0);
   }
-
-  if (in_roughness_image_index < MAX_IMAGE_ARRAY_SIZE) {
-    out_material.g = texture(sampler2D(images[in_roughness_image_index], images_sampler), in_uv).r;
-  } else {
-    out_material.g = 0.8;
-  }
-
-  out_material.b = 1.0;
 
   out_depth = linearize_depth(gl_FragCoord.z, DEFAULT_NEAR, DEFAULT_FAR);
 }

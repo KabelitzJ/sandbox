@@ -13,7 +13,7 @@ class separate_sampler : public descriptor {
 
 public:
 
-  separate_sampler(VkFilter filter = VK_FILTER_LINEAR, VkSamplerAddressMode address_mode = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE) {
+  separate_sampler(VkFilter filter = VK_FILTER_LINEAR, VkSamplerAddressMode address_mode = VK_SAMPLER_ADDRESS_MODE_REPEAT) {
     image::create_image_sampler(_handle, filter, address_mode, false, 1u);
   }
 

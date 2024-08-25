@@ -71,7 +71,6 @@ public:
       const auto model = scene.world_transform(node);
 
       const auto& light = node.get_component<scenes::point_light>();
-      const auto& transform = node.get_component<math::transform>();
 
       const auto position = math::vector3{model[3]};
 

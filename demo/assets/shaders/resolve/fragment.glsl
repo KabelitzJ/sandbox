@@ -25,13 +25,12 @@ layout(binding = 1, std430) readonly buffer buffer_point_lights {
 layout(binding = 2, input_attachment_index = 0) uniform subpassInput position_image; 
 layout(binding = 3, input_attachment_index = 1) uniform subpassInput normal_image;
 layout(binding = 4, input_attachment_index = 2) uniform subpassInput albedo_image;
-layout(binding = 5, input_attachment_index = 3) uniform subpassInput material_image;
 
-layout(binding = 6) uniform sampler2D shadow_map_image;
+layout(binding = 5) uniform sampler2D shadow_map_image;
 
 const material DEFAULT_MATERIAL = material(
   vec4(1.0, 1.0, 1.0, 1.0),     // Ambient color
-  vec4(1.0, 1.0, 1.0, 1.0),  // Specular color
+  vec4(1.0, 1.0, 1.0, 1.0),     // Specular color
   0.7,                          // Metallic
   0.3,                          // Roughness
   0.7                           // Ambient occlusion
@@ -48,11 +47,6 @@ void main() {
   vec3 world_position = subpassLoad(position_image).xyz;
   vec3 normal = normalize(subpassLoad(normal_image).xyz);
   vec4 albedo = subpassLoad(albedo_image);
-  vec3 material = subpassLoad(material_image).rgb;
-
-  float metallic = material.r;
-  float roughness = material.g;
-  float ambient_occlusion = material.b;
 
   vec4 light_space_position = DEPTH_BIAS * scene.light_space * vec4(world_position, 1.0);
 
@@ -64,14 +58,14 @@ void main() {
 
   light_result result = calculate_directional_light(light, world_position, normal, scene.camera_position, DEFAULT_MATERIAL);
 
-  total_light += (result.ambient + (result.diffuse + result.specular) * shadow) * albedo;
+  total_light += (result.ambient + (result.diffuse + result.specular)) * albedo;
 
   for (uint i = 0; i < min(scene.point_light_count, MAX_POINT_LIGHTS); i++) {
     point_light light = point_lights.data[i];
 
     light_result result = calculate_point_light(light, world_position, normal, scene.camera_position, DEFAULT_MATERIAL);
 
-    total_light += (result.ambient + (result.diffuse + result.specular) * shadow) * albedo;
+    total_light += (result.ambient + (result.diffuse + result.specular)) * albedo;
   }
 
   out_color = total_light;

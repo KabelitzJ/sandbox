@@ -83,8 +83,9 @@ public:
       _submit_mesh(node);
     }
 
+    _pipeline.bind(command_buffer);
+
     for (const auto& [key, data] : _static_meshes) {
-      _pipeline.bind(command_buffer);
 
       auto& uniform_data = _uniform_data[key];
 
@@ -129,10 +130,8 @@ private:
 
       const auto albedo_image_index = submesh.albedo_texture ? _images.push_back(*submesh.albedo_texture) : graphics::separate_image2d_array::max_size;
       const auto normal_image_index = submesh.normal_texture ? _images.push_back(*submesh.normal_texture) : graphics::separate_image2d_array::max_size;
-      const auto metallic_image_index = submesh.metallic_texture ? _images.push_back(*submesh.metallic_texture) : graphics::separate_image2d_array::max_size;
-      const auto roughness_image_index = submesh.roughness_texture ? _images.push_back(*submesh.roughness_texture) : graphics::separate_image2d_array::max_size;
 
-      const auto image_indices = math::vector4{albedo_image_index, normal_image_index, metallic_image_index, roughness_image_index};
+      const auto image_indices = math::vector4{albedo_image_index, normal_image_index, 0u, 0u};
 
       _static_meshes[key].push_back(per_mesh_data{std::move(model), std::move(normal), submesh.tint, image_indices});
     }

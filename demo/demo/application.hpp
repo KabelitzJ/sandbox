@@ -17,7 +17,6 @@
 #include <libsbx/physics/physics.hpp>
 
 #include <demo/camera_controller.hpp>
-#include <demo/terrain.hpp>
 
 namespace demo {
 
@@ -37,6 +36,8 @@ private:
 
   auto _generate_plane(const sbx::math::vector2u& tile_count, const sbx::math::vector2u& tile_size) -> std::unique_ptr<sbx::models::mesh>;
 
+  auto _generate_terrain(const sbx::math::vector2u& tile_count, const sbx::math::vector2u& tile_size) -> std::unique_ptr<sbx::models::mesh>;
+
   std::unordered_map<sbx::utility::hashed_string, sbx::math::uuid> _texture_ids;
   std::unordered_map<sbx::utility::hashed_string, sbx::math::uuid> _mesh_ids;
 
@@ -49,7 +50,6 @@ private:
   sbx::math::angle _rotation;
 
   camera_controller _camera_controller;
-  terrain _terrain;
 
 }; // class application
 

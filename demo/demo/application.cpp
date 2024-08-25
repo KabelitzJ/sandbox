@@ -3,15 +3,17 @@
 #include <nlohmann/json.hpp>
 
 #include <libsbx/math/color.hpp>
+#include <libsbx/math/noise.hpp>
 
 #include <demo/renderer.hpp>
 #include <demo/line.hpp>
+
+#include <demo/terrain/terrain_subrenderer.hpp>
 
 namespace demo {
 
 application::application()
 : sbx::core::application{},
-  _terrain{sbx::math::vector2f{0.0f, 0.0f}},
   _rotation{sbx::math::degree{0}} {
   // Renderer
 
@@ -49,7 +51,8 @@ application::application()
     _mesh_ids.emplace(name, id);
   }
 
-  _mesh_ids.emplace("plane", graphics_module.add_asset<sbx::models::mesh>(_generate_plane(sbx::math::vector2u{10u, 10u}, sbx::math::vector2u{10u, 10u})));
+  // _mesh_ids.emplace("plane", graphics_module.add_asset<sbx::models::mesh>(_generate_plane(sbx::math::vector2u{10u, 10u}, sbx::math::vector2u{10u, 10u})));
+  _mesh_ids.emplace("terrain", graphics_module.add_asset<sbx::models::mesh>(_generate_terrain(sbx::math::vector2u{1000u, 1000u}, sbx::math::vector2u{10u, 10u})));
 
   // Window
 
@@ -67,35 +70,25 @@ application::application()
 
   auto& scene = scenes_module.create_scene();
 
-  _terrain.set_texture(_texture_ids["checkerboard"]);
+  // Terrain
 
-  // Plane
+  auto terrain = scene.create_node("Terrain");
 
-  auto plane = scene.create_node("Plane");
+  terrain.add_component<demo::terrain>(_mesh_ids["terrain"], sbx::math::color::white, _texture_ids["grass_albedo"], _texture_ids["grass_normal"]);
 
-  auto plane_submeshes = std::vector<sbx::scenes::static_mesh::submesh>{};
-  plane_submeshes.push_back(sbx::scenes::static_mesh::submesh{0, sbx::math::color::white, _texture_ids[texture_map["plane_texture"].get<std::string>()]});
+  auto& terrain_transform = terrain.get_component<sbx::math::transform>();
+  // terrain_transform.set_scale(sbx::math::vector3{1.0f, 1.0f, 1.0f});
 
-  plane.add_component<sbx::scenes::static_mesh>(_mesh_ids["plane"], plane_submeshes);
+  // terrain.add_component<sbx::physics::rigidbody>(sbx::units::kilogram{0.0f}, true);
 
-  auto& plane_transform = plane.get_component<sbx::math::transform>();
-  plane_transform.set_scale(sbx::math::vector3{1.0f, 1.0f, 1.0f});
-
-  plane.add_component<sbx::physics::rigidbody>(sbx::units::kilogram{0.0f}, true);
-
-  plane.add_component<sbx::physics::collider>(sbx::physics::box{sbx::math::vector3{-50.0f, 0.0f, -50.0f}, sbx::math::vector3{50.0f, 0.0f, 50.0f}});
+  // terrain.add_component<sbx::physics::collider>(sbx::physics::box{sbx::math::vector3{-50.0f, 0.0f, -50.0f}, sbx::math::vector3{50.0f, 0.0f, 50.0f}});
 
   // Dragon
 
   auto dragon = scene.create_node("Dragon");
 
   auto dragon_submeshes = std::vector<sbx::scenes::static_mesh::submesh>{};
-  // dragon_submeshes.push_back(sbx::scenes::static_mesh::submesh{0, checkerboard_id, sbx::math::color{0.62f, 0.14f, 0.16f, 1.0f}});
-  // dragon_submeshes.push_back(sbx::scenes::static_mesh::submesh{1, white_id, sbx::math::color{0.0f, 0.64f, 0.42f, 1.0f}});
-  // dragon_submeshes.push_back(sbx::scenes::static_mesh::submesh{0, _texture_ids["checkerboard"], sbx::math::color{1.0f, 1.0f, 1.0f, 1.0f}});
   dragon_submeshes.push_back(sbx::scenes::static_mesh::submesh{1, sbx::math::color{0.62f, 0.14f, 0.16f, 1.0f}, _texture_ids["white"]});
-  // dragon_submeshes.push_back(sbx::scenes::static_mesh::submesh{0, sbx::math::color::white, _texture_ids["checkerboard"]});
-  // dragon_submeshes.push_back(sbx::scenes::static_mesh::submesh{0, sbx::math::color{1.0, 0.0, 0.0, 1.0}, _texture_ids["white"], _texture_ids["brick_wall_normal_map"]});
 
   dragon.add_component<sbx::scenes::static_mesh>(_mesh_ids["dragon"], dragon_submeshes);
 
@@ -123,8 +116,6 @@ application::application()
 
   window.show();
 }
-
-struct ball_tag { };
 
 auto application::update() -> void  {
   if (sbx::devices::input::is_key_pressed(sbx::devices::key::escape)) {
@@ -196,6 +187,70 @@ auto application::_generate_plane(const sbx::math::vector2u& tile_count, const s
     indices.emplace_back(i);
     indices.emplace_back(i + vertex_count + 1u);
     indices.emplace_back(i + 1u);
+  }
+
+  return std::make_unique<sbx::models::mesh>(std::move(vertices), std::move(indices));
+}
+
+auto application::_generate_terrain(const sbx::math::vector2u& size, const sbx::math::vector2u& tile_size) -> std::unique_ptr<sbx::models::mesh> {
+  auto vertices = std::vector<sbx::models::vertex3d>{};
+  auto indices = std::vector<std::uint32_t>{};
+
+  // Generate vertices
+
+  const auto tile_count = sbx::math::vector2u{size.x() / tile_size.x(), size.y() / tile_size.y()};
+
+  const auto offset = sbx::math::vector2{static_cast<std::float_t>(size.x() / 2.0f), static_cast<std::float_t>(size.y() / 2.0f)};
+
+  for (auto y = 0u; y < tile_count.y() + 1u; ++y) {
+    for (auto x = 0u; x < tile_count.x() + 1u; ++x) {
+      const auto height = sbx::math::noise::fractal(static_cast<std::float_t>(x) / (2.0f * tile_size.x()), static_cast<std::float_t>(y) / (2.0f * tile_size.y()), 4u) * 8.0f;
+
+      const auto position = sbx::math::vector3{static_cast<std::float_t>(x * tile_size.x() - offset.x()), height, static_cast<std::float_t>(y * tile_size.y() - offset.y())};
+      const auto normal = sbx::math::vector3::up;
+      const auto uv = sbx::math::vector2{static_cast<std::float_t>(x), static_cast<std::float_t>(y)};
+
+      vertices.emplace_back(position, normal, uv);
+    }
+  }
+
+  // Calculate indices
+
+  const auto vertex_count = tile_count.x() + 1u;
+
+  for (auto i = 0u; i < vertex_count * vertex_count - vertex_count; ++i) {
+    if ((i + 1u) % vertex_count == 0) {
+      continue;
+    }
+
+    indices.emplace_back(i);
+    indices.emplace_back(i + vertex_count);
+    indices.emplace_back(i + vertex_count + 1u);
+
+    indices.emplace_back(i);
+    indices.emplace_back(i + vertex_count + 1u);
+    indices.emplace_back(i + 1u);
+  }
+
+  // Calculate normals
+
+  for (auto i = 0u; i < indices.size(); i += 3) {
+    const auto index0 = indices[i];
+    const auto index1 = indices[i + 1];
+    const auto index2 = indices[i + 2];
+
+    auto& vertex0 = vertices[index0];
+    auto& vertex1 = vertices[index1];
+    auto& vertex2 = vertices[index2];
+
+    const auto edge1 = vertex1.position - vertex0.position;
+    const auto edge2 = vertex2.position - vertex0.position;
+
+    const auto normal = sbx::math::vector3::normalized(sbx::math::vector3::cross(edge1, edge2));
+
+    vertex0.normal += normal;
+    vertex1.normal += normal;
+    vertex2.normal += normal;
   }
 
   return std::make_unique<sbx::models::mesh>(std::move(vertices), std::move(indices));
