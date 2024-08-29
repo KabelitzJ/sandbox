@@ -21,9 +21,11 @@ struct mesh_data {
 
 class mesh : public graphics::mesh<vertex3d>, public io::loader_factory<mesh, mesh_data> {
 
+  using base = graphics::mesh<vertex3d>;
+
 public:
 
-  using graphics::mesh<vertex3d>::mesh;
+  using base::mesh;
 
   mesh(const std::filesystem::path& path);
 

@@ -52,7 +52,7 @@ application::application()
   }
 
   // _mesh_ids.emplace("plane", graphics_module.add_asset<sbx::models::mesh>(_generate_plane(sbx::math::vector2u{10u, 10u}, sbx::math::vector2u{10u, 10u})));
-  _mesh_ids.emplace("terrain", graphics_module.add_asset<sbx::models::mesh>(_generate_terrain(sbx::math::vector2u{1000u, 1000u}, sbx::math::vector2u{10u, 10u})));
+  _mesh_ids.emplace("terrain", graphics_module.add_asset<demo::mesh>(_generate_terrain(sbx::math::vector2u{1000u, 1000u}, sbx::math::vector2u{10u, 10u})));
 
   // Window
 
@@ -74,7 +74,7 @@ application::application()
 
   auto terrain = scene.create_node("Terrain");
 
-  terrain.add_component<demo::terrain>(_mesh_ids["terrain"], sbx::math::color::white, _texture_ids["grass_albedo"], _texture_ids["grass_normal"]);
+  terrain.add_component<demo::terrain>(_mesh_ids["terrain"], sbx::math::color::white, _texture_ids["grass_albedo"], _texture_ids["grass_normal"], _texture_ids["dirt_albedo"], _texture_ids["dirt_normal"]);
 
   auto& terrain_transform = terrain.get_component<sbx::math::transform>();
   // terrain_transform.set_scale(sbx::math::vector3{1.0f, 1.0f, 1.0f});
@@ -192,43 +192,48 @@ auto application::_generate_plane(const sbx::math::vector2u& tile_count, const s
   return std::make_unique<sbx::models::mesh>(std::move(vertices), std::move(indices));
 }
 
-auto application::_generate_terrain(const sbx::math::vector2u& size, const sbx::math::vector2u& tile_size) -> std::unique_ptr<sbx::models::mesh> {
-  auto vertices = std::vector<sbx::models::vertex3d>{};
-  auto indices = std::vector<std::uint32_t>{};
+auto application::_generate_terrain(const sbx::math::vector2u& size, const sbx::math::vector2u& tile_size) -> std::unique_ptr<demo::mesh> {
+  auto vertices = std::vector<demo::mesh::vertex_type>{};
+  auto indices = std::vector<demo::mesh::index_type>{};
+  auto heights = std::vector<std::float_t>{};
 
   // Generate vertices
 
   const auto tile_count = sbx::math::vector2u{size.x() / tile_size.x(), size.y() / tile_size.y()};
+  const auto vertex_count = sbx::math::vector2u{tile_count.x() + 1u, tile_count.y() + 1u};
 
   const auto offset = sbx::math::vector2{static_cast<std::float_t>(size.x() / 2.0f), static_cast<std::float_t>(size.y() / 2.0f)};
 
-  for (auto y = 0u; y < tile_count.y() + 1u; ++y) {
-    for (auto x = 0u; x < tile_count.x() + 1u; ++x) {
-      const auto height = sbx::math::noise::fractal(static_cast<std::float_t>(x) / (2.0f * tile_size.x()), static_cast<std::float_t>(y) / (2.0f * tile_size.y()), 4u) * 8.0f;
-
-      const auto position = sbx::math::vector3{static_cast<std::float_t>(x * tile_size.x() - offset.x()), height, static_cast<std::float_t>(y * tile_size.y() - offset.y())};
+  for (auto y = 0u; y < vertex_count.y(); ++y) {
+    for (auto x = 0u; x < vertex_count.x(); ++x) {
+      const auto position = sbx::math::vector2{static_cast<std::float_t>(x * tile_size.x() - offset.x()), static_cast<std::float_t>(y * tile_size.y() - offset.y())};
+      const auto index = y * (vertex_count.x()) + x;
       const auto normal = sbx::math::vector3::up;
       const auto uv = sbx::math::vector2{static_cast<std::float_t>(x), static_cast<std::float_t>(y)};
 
-      vertices.emplace_back(position, normal, uv);
+      vertices.emplace_back(position, index, normal, uv);
+
+      const auto height = sbx::math::noise::fractal(static_cast<std::float_t>(x) / (4.0f * tile_size.x()), static_cast<std::float_t>(y) / (4.0f * tile_size.y()), 4u) * 10.0f;
+
+      heights.push_back(height);
     }
   }
 
   // Calculate indices
 
-  const auto vertex_count = tile_count.x() + 1u;
+  const auto count = tile_count.x() + 1u;
 
-  for (auto i = 0u; i < vertex_count * vertex_count - vertex_count; ++i) {
-    if ((i + 1u) % vertex_count == 0) {
+  for (auto i = 0u; i < count * count - count; ++i) {
+    if ((i + 1u) % count == 0) {
       continue;
     }
 
     indices.emplace_back(i);
-    indices.emplace_back(i + vertex_count);
-    indices.emplace_back(i + vertex_count + 1u);
+    indices.emplace_back(i + count);
+    indices.emplace_back(i + count + 1u);
 
     indices.emplace_back(i);
-    indices.emplace_back(i + vertex_count + 1u);
+    indices.emplace_back(i + count + 1u);
     indices.emplace_back(i + 1u);
   }
 
@@ -253,7 +258,7 @@ auto application::_generate_terrain(const sbx::math::vector2u& size, const sbx::
     vertex2.normal += normal;
   }
 
-  return std::make_unique<sbx::models::mesh>(std::move(vertices), std::move(indices));
+  return std::make_unique<demo::mesh>(std::move(vertices), std::move(indices), std::move(heights), vertex_count);
 }
 
 } // namespace demo

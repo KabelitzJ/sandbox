@@ -17,6 +17,7 @@
 
 #include <libsbx/graphics/subrenderer.hpp>
 #include <libsbx/graphics/render_stage.hpp>
+#include <libsbx/graphics/render_graph.hpp>
 
 namespace sbx::graphics {
 
@@ -69,6 +70,8 @@ private:
 
   std::vector<std::unique_ptr<subrenderer>> _subrenderers;
   std::multimap<pipeline::stage, std::size_t> _subrenderer_stages;
+
+  render_graph _graph;
 
 }; // class renderer
 

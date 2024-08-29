@@ -7,6 +7,20 @@
 
 namespace sbx::scenes {
 
+struct plane {
+  math::vector3 normal;
+  std::float_t distance;
+}; // struct plane
+
+class frustum {
+  plane top;
+  plane bottom;
+  plane left;
+  plane right;
+  plane near;
+  plane far;
+}; // class frustum
+
 class camera {
 
 public:
@@ -38,12 +52,18 @@ public:
   }
 
   auto set_aspect_ratio(std::float_t aspect_ratio) noexcept -> void {
-    if (aspect_ratio == _aspect_ratio) {
-      return;
+    if (aspect_ratio != _aspect_ratio) {
+      _aspect_ratio = aspect_ratio;
+      _update_projection();
     }
+  }
 
-    _aspect_ratio = aspect_ratio;
-    _update_projection();
+  auto near_plane() const noexcept -> std::float_t {
+    return _near_plane;
+  }
+
+  auto far_plane() const noexcept -> std::float_t {
+    return _far_plane;
   }
 
   auto projection() const noexcept -> const math::matrix4x4& {

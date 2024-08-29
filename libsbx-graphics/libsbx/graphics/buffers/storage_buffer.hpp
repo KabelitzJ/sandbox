@@ -1,6 +1,8 @@
 #ifndef LIBSBX_GRAPHICS_BUFFERS_STORAGE_BUFFER_HPP_
 #define LIBSBX_GRAPHICS_BUFFERS_STORAGE_BUFFER_HPP_
 
+#include <libsbx/units/bytes.hpp>
+
 #include <libsbx/memory/observer_ptr.hpp>
 
 #include <libsbx/graphics/descriptor/descriptor.hpp>
@@ -13,7 +15,7 @@ class storage_buffer : public buffer_base, public descriptor  {
 
 public:
 
-  inline static constexpr auto max_elements = 512;
+  inline static constexpr auto max_size = units::quantity_cast<units::byte>(units::kibibyte{64});
 
   storage_buffer(VkDeviceSize size, memory::observer_ptr<const void> data = nullptr);
 

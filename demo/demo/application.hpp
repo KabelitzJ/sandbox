@@ -18,6 +18,8 @@
 
 #include <demo/camera_controller.hpp>
 
+#include <demo/terrain/mesh.hpp>
+
 namespace demo {
 
 class application : public sbx::core::application {
@@ -36,7 +38,7 @@ private:
 
   auto _generate_plane(const sbx::math::vector2u& tile_count, const sbx::math::vector2u& tile_size) -> std::unique_ptr<sbx::models::mesh>;
 
-  auto _generate_terrain(const sbx::math::vector2u& tile_count, const sbx::math::vector2u& tile_size) -> std::unique_ptr<sbx::models::mesh>;
+  auto _generate_terrain(const sbx::math::vector2u& tile_count, const sbx::math::vector2u& tile_size) -> std::unique_ptr<demo::mesh>;
 
   std::unordered_map<sbx::utility::hashed_string, sbx::math::uuid> _texture_ids;
   std::unordered_map<sbx::utility::hashed_string, sbx::math::uuid> _mesh_ids;

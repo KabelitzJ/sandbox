@@ -129,14 +129,11 @@ auto shader::_create_reflection(const spirv_cross::Compiler& compiler) -> void {
     const auto storage_buffer_binding = compiler.get_decoration(storage_buffer.id, spv::DecorationBinding);
 
     // Get the size of one element in the storage buffer
-    const auto storage_buffer_element_size = compiler.get_declared_struct_size_runtime_array(type, 1);
+    const auto storage_buffer_element_size = compiler.get_declared_struct_size_runtime_array(type, 1);  
 
-    // Calculate the size in regard to the element size
-    const auto storage_buffer_size = storage_buffer::max_elements * storage_buffer_element_size;
+    auto buffer = uniform_block{storage_buffer_binding, 0u, _stage, uniform_block::type::storage};
 
-    auto buffer = uniform_block{storage_buffer_binding, storage_buffer_size, _stage, uniform_block::type::storage};
-
-    core::logger::debug("uniform block: '{}' binding: {} element_size: {} max_elements: {}", storage_buffer_name, storage_buffer_binding, storage_buffer_element_size, storage_buffer_size / storage_buffer_element_size);
+    core::logger::debug("uniform block: '{}' binding: {} element_size: {}", storage_buffer_name, storage_buffer_binding, storage_buffer_element_size);
 
     _uniform_blocks.insert({storage_buffer_name, buffer});
   }

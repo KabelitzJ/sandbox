@@ -24,8 +24,8 @@ public:
     _max_tilt_angle{sbx::math::degree{89}},
     _target{sbx::math::vector3{0.0f, 2.0f, 0.0f}},
     _zoom{30.0f},
-    _min_zoom{5.0f},
-    _max_zoom{75.0f} { }
+    _min_zoom{2.0f},
+    _max_zoom{90.0f} { }
 
   auto update() -> void {
     const auto delta_time = sbx::core::engine::delta_time();

@@ -31,8 +31,8 @@ layout(binding = 5) uniform sampler2D shadow_map_image;
 const material DEFAULT_MATERIAL = material(
   vec4(1.0, 1.0, 1.0, 1.0),     // Ambient color
   vec4(1.0, 1.0, 1.0, 1.0),     // Specular color
-  0.7,                          // Metallic
-  0.3,                          // Roughness
+  0.4,                          // Metallic
+  0.7,                          // Roughness
   0.7                           // Ambient occlusion
 );
 
