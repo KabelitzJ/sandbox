@@ -61,5 +61,6 @@
 #include <libsbx/utility/type_name.hpp>
 #include <libsbx/utility/zip.hpp>
 #include <libsbx/utility/enum.hpp>
+#include <libsbx/utility/multimap_key_range.hpp>
 
 #endif // LIBSBX_UTILITY_HPP_

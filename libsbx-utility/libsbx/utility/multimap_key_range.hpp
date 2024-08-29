@@ -1,7 +1,7 @@
 #ifndef LIBSBX_UTILITY_MULTIMAP_KEY_RANGE_HPP_
 #define LIBSBX_UTILITY_MULTIMAP_KEY_RANGE_HPP_
 
-#include <utlity>
+#include <utility>
 #include <tuple>
 #include <concepts>
 #include <type_traits>
