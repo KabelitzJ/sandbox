@@ -20,7 +20,7 @@ public:
   camera_controller()
   : _orbit_angle{sbx::math::degree{90}}, 
     _tilt_angle{sbx::math::degree{30}},
-    _min_tilt_angle{sbx::math::degree{1}},
+    _min_tilt_angle{sbx::math::degree{-89}},
     _max_tilt_angle{sbx::math::degree{89}},
     _target{sbx::math::vector3{0.0f, 2.0f, 0.0f}},
     _zoom{30.0f},
@@ -74,6 +74,7 @@ public:
       if (sbx::devices::input::is_mouse_button_down(sbx::devices::mouse_button::right)) {
         _orbit_angle += sbx::math::degree{80.0f * _mouse_position_delta.x() * delta_time.value()};
         _tilt_angle = sbx::math::clamp(_tilt_angle + sbx::math::degree{80.0f * _mouse_position_delta.y() * delta_time.value()}, _min_tilt_angle, _max_tilt_angle);
+        // _tilt_angle = _tilt_angle + sbx::math::degree{80.0f * _mouse_position_delta.y() * delta_time.value()};
       } 
       
       if (sbx::devices::input::is_mouse_button_down(sbx::devices::mouse_button::left)) {
