@@ -7,6 +7,7 @@
 #include <demo/terrain/vertex.hpp>
 #include <demo/terrain/pipeline.hpp>
 #include <demo/terrain/mesh.hpp>
+#include <demo/terrain/planet_generator_task.hpp>
 
 namespace demo {
 
@@ -25,9 +26,10 @@ class terrain_subrenderer final : public sbx::graphics::subrenderer {
 
 public:
 
-  terrain_subrenderer(const std::filesystem::path& path, const sbx::graphics::pipeline::stage& stage)
+  terrain_subrenderer(const std::filesystem::path& path, const sbx::graphics::pipeline::stage& stage, demo::planet_generator_task& planet_generator_task)
   : base{stage},
-    _pipeline{path, stage} { }
+    _pipeline{path, stage},
+    _planet_generator_task{sbx::memory::make_observer(&planet_generator_task)} {}
 
   ~terrain_subrenderer() override = default;
 
@@ -50,6 +52,28 @@ public:
     auto terrain_nodes = scene.query<demo::terrain>();
 
     _pipeline.bind(command_buffer);
+
+    // auto model = sbx::math::matrix4x4::identity;
+    // auto normal = sbx::math::matrix4x4::transposed(sbx::math::matrix4x4::inverted(model));
+
+    // _push_handler.push("model", model);
+    // _push_handler.push("normal", normal);
+    // _push_handler.push("tint", sbx::math::color::red);
+
+    // _descriptor_handler.push("uniform_scene", _scene_uniform_handler);
+    // _descriptor_handler.push("data", _push_handler);
+
+    // if (!_descriptor_handler.update(_pipeline)) {
+    //   return;
+    // }
+
+    // _descriptor_handler.bind_descriptors(command_buffer);
+    // _push_handler.bind(command_buffer, _pipeline);
+
+    // command_buffer.bind_vertex_buffer(0u, _planet_generator_task->vertices());
+    // command_buffer.bind_index_buffer(_planet_generator_task->indices(), 0u, VK_INDEX_TYPE_UINT32);
+
+    // command_buffer.draw_indexed(3840u, 1u, 0u, 0u, 0u);
 
     for (auto& node : terrain_nodes) {
       auto& terrain = node.get_component<demo::terrain>();
@@ -88,6 +112,8 @@ private:
 
 
   pipeline _pipeline;
+
+  sbx::memory::observer_ptr<demo::planet_generator_task> _planet_generator_task;
 
   sbx::graphics::uniform_handler _scene_uniform_handler;
   sbx::graphics::push_handler _push_handler;

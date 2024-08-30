@@ -7,6 +7,7 @@
 #include <libsbx/graphics/renderer.hpp>
 #include <libsbx/graphics/render_stage.hpp>
 #include <libsbx/graphics/subrenderer.hpp>
+#include <libsbx/graphics/task.hpp>
 
 #include <libsbx/graphics/devices/extensions.hpp>
 #include <libsbx/graphics/devices/validation_layers.hpp>
@@ -19,6 +20,7 @@
 #include <libsbx/graphics/pipeline/graphics_pipeline.hpp>
 #include <libsbx/graphics/pipeline/vertex_input_description.hpp>
 #include <libsbx/graphics/pipeline/mesh.hpp>
+#include <libsbx/graphics/pipeline/compute_pipeline.hpp>
 
 #include <libsbx/graphics/commands/command_pool.hpp>
 #include <libsbx/graphics/commands/command_buffer.hpp>

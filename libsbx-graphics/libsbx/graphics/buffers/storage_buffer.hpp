@@ -19,6 +19,8 @@ public:
 
   storage_buffer(VkDeviceSize size, memory::observer_ptr<const void> data = nullptr);
 
+  storage_buffer(VkDeviceSize size, VkBufferUsageFlags additional_usage);
+
   ~storage_buffer() override;
 
   auto update(memory::observer_ptr<const void> data, VkDeviceSize size) -> void;

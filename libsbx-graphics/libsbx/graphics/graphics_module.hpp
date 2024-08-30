@@ -171,9 +171,13 @@ private:
   auto _recreate_attachments() -> void;
 
   struct per_frame_data {
+    // graphics
     VkSemaphore image_available_semaphore{};
     VkSemaphore render_finished_semaphore{};
-    VkFence in_flight_fence{};
+    VkFence graphics_in_flight_fence{};
+    // compute
+    VkSemaphore compute_finished_semaphore{};
+    VkFence compute_in_flight_fence{};
   }; // struct per_frame_data
 
   struct command_pool_key {
@@ -208,7 +212,8 @@ private:
   std::unique_ptr<graphics::swapchain> _swapchain{};
 
   std::vector<per_frame_data> _per_frame_data{};
-  std::vector<std::unique_ptr<graphics::command_buffer>> _command_buffers{};
+  std::vector<std::unique_ptr<graphics::command_buffer>> _graphics_command_buffers{};
+  std::vector<std::unique_ptr<graphics::command_buffer>> _compute_command_buffers{};
 
   std::unique_ptr<graphics::renderer> _renderer{};
 

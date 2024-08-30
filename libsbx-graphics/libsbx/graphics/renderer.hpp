@@ -15,6 +15,7 @@
 
 #include <libsbx/graphics/pipeline/pipeline.hpp>
 
+#include <libsbx/graphics/task.hpp>
 #include <libsbx/graphics/subrenderer.hpp>
 #include <libsbx/graphics/render_stage.hpp>
 #include <libsbx/graphics/render_graph.hpp>
@@ -36,6 +37,12 @@ public:
       if (render_stage == stage) {
         _subrenderers[index]->render(command_buffer);
       }
+    }
+  }
+
+  auto excute_tasks(command_buffer& command_buffer) -> void {
+    for (const auto& task : _tasks) {
+      task->execute(command_buffer);
     }
   }
 
@@ -64,7 +71,17 @@ protected:
     return *static_cast<Type*>(_subrenderers.back().get());
   }
 
+  template<typename Type, typename... Args>
+  requires (std::is_constructible_v<Type, std::filesystem::path, Args...>)
+  auto add_task(const std::filesystem::path& path, Args&&... args) -> Type& {
+    _tasks.push_back(std::make_unique<Type>(path, std::forward<Args>(args)...));
+
+    return *static_cast<Type*>(_tasks.back().get());
+  }
+
 private:
+
+  std::vector<std::unique_ptr<graphics::task>> _tasks;
 
   std::vector<std::unique_ptr<graphics::render_stage>> _render_stages;
 

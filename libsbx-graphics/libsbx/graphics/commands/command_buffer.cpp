@@ -111,7 +111,7 @@ auto command_buffer::submit_idle() -> void {
 	vkDestroyFence(logical_device, fence, nullptr);
 }
 
-auto command_buffer::submit(const VkSemaphore& wait_semaphore, const VkSemaphore &signal_semaphore, const VkFence& fence) -> void {
+auto command_buffer::submit(const std::vector<wait_data>& wait_data, const VkSemaphore &signal_semaphore, const VkFence& fence) -> void {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
   const auto& logical_device = graphics_module.logical_device();
@@ -126,10 +126,21 @@ auto command_buffer::submit(const VkSemaphore& wait_semaphore, const VkSemaphore
 	submit_info.commandBufferCount = 1;
 	submit_info.pCommandBuffers = &_handle;
 
-  if (wait_semaphore) {
-		submit_info.pWaitDstStageMask = &submit_pipeline_stages;
-		submit_info.waitSemaphoreCount = 1;
-		submit_info.pWaitSemaphores = &wait_semaphore;
+  if (!wait_data.empty()) {
+    auto wait_semaphores = std::vector<VkSemaphore>{};
+    wait_semaphores.reserve(wait_data.size());
+
+    auto wait_stages = std::vector<VkPipelineStageFlags>{};
+    wait_stages.reserve(wait_data.size());
+
+    for (const auto& data : wait_data) {
+      wait_semaphores.push_back(data.semaphore);
+      wait_stages.push_back(data.stage);
+    }
+
+		submit_info.waitSemaphoreCount = static_cast<std::uint32_t>(wait_data.size());
+		submit_info.pWaitSemaphores = wait_semaphores.data();
+		submit_info.pWaitDstStageMask = wait_stages.data();
 	}
 
 	if (signal_semaphore) {

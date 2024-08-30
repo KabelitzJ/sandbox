@@ -74,7 +74,6 @@ public:
       if (sbx::devices::input::is_mouse_button_down(sbx::devices::mouse_button::right)) {
         _orbit_angle += sbx::math::degree{80.0f * _mouse_position_delta.x() * delta_time.value()};
         _tilt_angle = sbx::math::clamp(_tilt_angle + sbx::math::degree{80.0f * _mouse_position_delta.y() * delta_time.value()}, _min_tilt_angle, _max_tilt_angle);
-        // _tilt_angle = _tilt_angle + sbx::math::degree{80.0f * _mouse_position_delta.y() * delta_time.value()};
       } 
       
       if (sbx::devices::input::is_mouse_button_down(sbx::devices::mouse_button::left)) {

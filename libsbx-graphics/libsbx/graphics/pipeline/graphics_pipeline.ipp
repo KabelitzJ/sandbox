@@ -51,7 +51,8 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
       const auto stage = _get_stage_from_name(stem);
 
       if (stage == VK_SHADER_STAGE_FLAG_BITS_MAX_ENUM) {
-        throw std::runtime_error{fmt::format("Unsupported shader stage '{}'", stem)};
+        core::logger::warn("Unsupported shader stage '{}' in graphics pipeline '{}'", stem, _name);
+        continue;
       }
 
       _shaders.insert({stage, std::make_unique<shader>(file, stage)});
