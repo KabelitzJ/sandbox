@@ -52,7 +52,8 @@ application::application()
   }
 
   // _mesh_ids.emplace("plane", graphics_module.add_asset<sbx::models::mesh>(_generate_plane(sbx::math::vector2u{10u, 10u}, sbx::math::vector2u{10u, 10u})));
-  _mesh_ids.emplace("terrain", graphics_module.add_asset<demo::mesh>(_generate_terrain(sbx::math::vector2u{1000u, 1000u}, sbx::math::vector2u{10u, 10u})));
+  // _mesh_ids.emplace("terrain", graphics_module.add_asset<demo::mesh>(_generate_terrain(sbx::math::vector2u{1000u, 1000u}, sbx::math::vector2u{10u, 10u})));
+  _mesh_ids.emplace("icosphere", graphics_module.add_asset<sbx::models::mesh>(_generate_icosphere(20.0f, 4u)));
 
   // Window
 
@@ -72,11 +73,11 @@ application::application()
 
   // Terrain
 
-  auto terrain = scene.create_node("Terrain");
+  // auto terrain = scene.create_node("Terrain");
 
-  terrain.add_component<demo::terrain>(_mesh_ids["terrain"], sbx::math::color::white, _texture_ids["grass_albedo"], _texture_ids["grass_normal"], _texture_ids["dirt_albedo"], _texture_ids["dirt_normal"]);
+  // terrain.add_component<demo::terrain>(_mesh_ids["terrain"], sbx::math::color::white, _texture_ids["grass_albedo"], _texture_ids["grass_normal"], _texture_ids["dirt_albedo"], _texture_ids["dirt_normal"]);
 
-  auto& terrain_transform = terrain.get_component<sbx::math::transform>();
+  // auto& terrain_transform = terrain.get_component<sbx::math::transform>();
   // terrain_transform.set_scale(sbx::math::vector3{1.0f, 1.0f, 1.0f});
 
   // terrain.add_component<sbx::physics::rigidbody>(sbx::units::kilogram{0.0f}, true);
@@ -88,9 +89,13 @@ application::application()
   auto dragon = scene.create_node("Dragon");
 
   auto dragon_submeshes = std::vector<sbx::scenes::static_mesh::submesh>{};
-  dragon_submeshes.push_back(sbx::scenes::static_mesh::submesh{1, sbx::math::color{0.62f, 0.14f, 0.16f, 1.0f}, _texture_ids["white"]});
+  dragon_submeshes.push_back(sbx::scenes::static_mesh::submesh{0, sbx::math::color{0.62f, 0.14f, 0.16f, 1.0f}, _texture_ids["white"]});
 
-  dragon.add_component<sbx::scenes::static_mesh>(_mesh_ids["dragon"], dragon_submeshes);
+  dragon.add_component<sbx::scenes::static_mesh>(_mesh_ids["icosphere"], dragon_submeshes);
+
+  auto& dragon_transform = dragon.get_component<sbx::math::transform>();
+  dragon_transform.set_position(sbx::math::vector3{0.0f, 20.0f, 0.0f});
+  // dragon_transform.set_scale(sbx::math::vector3{20.0f, 20.0f, 20.0f});
 
   // Camera
 
@@ -259,6 +264,129 @@ auto application::_generate_terrain(const sbx::math::vector2u& size, const sbx::
   }
 
   return std::make_unique<demo::mesh>(std::move(vertices), std::move(indices), std::move(heights), vertex_count);
+}
+
+static auto _find_midpoint(const std::uint32_t i1, const std::uint32_t i2, std::vector<sbx::models::vertex3d>& vertices, std::unordered_map<std::uint64_t, std::uint32_t>& cache) -> std::uint32_t {
+  const auto is_first_smaller = i1 < i2;
+  const auto smaller_index = is_first_smaller ? i1 : i2;
+  const auto greater_index = is_first_smaller ? i2 : i1;
+  const auto key = (static_cast<std::uint64_t>(smaller_index) << 32) + greater_index;
+
+  if (const auto it = cache.find(key); it != cache.end()) {
+    return it->second;
+  }
+
+  const auto& position1 = vertices[i1].position;
+  const auto& position2 = vertices[i2].position;
+
+  const auto midpoint = sbx::math::vector3::normalized((position1 + position2) / 2.0f);
+
+  auto vertex = sbx::models::vertex3d{};
+  vertex.position = midpoint;
+  vertex.normal = midpoint;
+  vertex.uv = sbx::math::vector2{atan2(midpoint.z(), midpoint.x()) / (2.0f * std::numbers::pi_v<std::float_t>) + 0.5f, asin(midpoint.y()) / std::numbers::pi_v<std::float_t> + 0.5f};
+
+  const auto index = static_cast<std::uint32_t>(vertices.size());
+  vertices.push_back(vertex);
+
+  cache.emplace(key, index);
+
+  return index;
+}
+
+auto application::_generate_icosphere(const std::float_t radius, const std::uint32_t subdivisions) -> std::unique_ptr<sbx::models::mesh> {
+  auto vertices = std::vector<sbx::models::vertex3d>{};
+  auto indices = std::vector<std::uint32_t>{};
+
+  // Generate icosphere
+
+  const auto t = (1.0f + std::sqrt(5.0f)) / 2.0f;
+
+  auto base_positions = std::vector<sbx::math::vector3>{
+    sbx::math::vector3{-1.0f,  t,  0.0f},
+    sbx::math::vector3{ 1.0f,  t,  0.0f},
+    sbx::math::vector3{-1.0f, -t,  0.0f},
+    sbx::math::vector3{ 1.0f, -t,  0.0f},
+    sbx::math::vector3{ 0.0f, -1.0f,  t},
+    sbx::math::vector3{ 0.0f,  1.0f,  t},
+    sbx::math::vector3{ 0.0f, -1.0f, -t},
+    sbx::math::vector3{ 0.0f,  1.0f, -t},
+    sbx::math::vector3{ t,  0.0f, -1.0f},
+    sbx::math::vector3{ t,  0.0f,  1.0f},
+    sbx::math::vector3{-t,  0.0f, -1.0f},
+    sbx::math::vector3{-t,  0.0f,  1.0f}
+  };
+
+  for (const auto& position : base_positions) {
+    auto vertex = sbx::models::vertex3d{};
+
+    vertex.position = sbx::math::vector3::normalized(position);
+    vertex.normal = sbx::math::vector3::normalized(position);
+    vertex.uv = sbx::math::vector2{atan2(position.z(), position.x()) / (2.0f * std::numbers::pi_v<std::float_t>) + 0.5f, asin(position.y()) / std::numbers::pi_v<std::float_t> + 0.5f};
+
+    vertices.push_back(vertex);
+  }
+
+  auto base_indices = std::vector<sbx::math::vector3i>{
+    {0, 11,  5}, {0,  5,  1}, {0,  1,  7}, {0,  7, 10}, {0, 10, 11},
+    {1,  5,  9}, {5, 11,  4}, {11, 10,  2}, {10,  7,  6}, {7,  1,  8},
+    {3,  9,  4}, {3,  4,  2}, {3,  2,  6}, {3,  6,  8}, {3,  8,  9},
+    {4,  9,  5}, {2,  4, 11}, {6,  2, 10}, {8,  6,  7}, {9,  8,  1},
+  };
+
+  for (const auto& face : base_indices) {
+    indices.push_back(face.x());
+    indices.push_back(face.y());
+    indices.push_back(face.z());
+  }
+
+  auto middle_point_cache = std::unordered_map<std::uint64_t, std::uint32_t>{};
+
+  for (auto i = 0u; i < subdivisions; ++i) {
+    auto new_indices = std::vector<std::uint32_t>{};
+
+    for (auto j = 0u; j < indices.size(); j += 3) {
+      const auto i1 = indices[j];
+      const auto i2 = indices[j + 1];
+      const auto i3 = indices[j + 2];
+
+      const auto a = _find_midpoint(i1, i2, vertices, middle_point_cache);
+      const auto b = _find_midpoint(i2, i3, vertices, middle_point_cache);
+      const auto c = _find_midpoint(i3, i1, vertices, middle_point_cache);
+
+      new_indices.push_back(i1);
+      new_indices.push_back(a);
+      new_indices.push_back(c);
+
+      new_indices.push_back(i2);
+      new_indices.push_back(b);
+      new_indices.push_back(a);
+
+      new_indices.push_back(i3);
+      new_indices.push_back(c);
+      new_indices.push_back(b);
+
+      new_indices.push_back(a);
+      new_indices.push_back(b);
+      new_indices.push_back(c);
+    }
+
+    indices = std::move(new_indices);
+  }
+
+  // const auto strength = 0.7f;
+  // const auto roughness = 1.2f;
+  // const auto min_height = 1.0f;
+  // const auto center = sbx::math::vector3::zero;
+
+  for (auto& vertex : vertices) {
+    // const auto noise = sbx::math::noise::fractal(vertex.position * roughness + center, 4.0);
+    // const auto height = (noise + 1.0f) * 0.5f * strength;
+
+    vertex.position += vertex.normal * radius;
+  }
+
+  return std::make_unique<sbx::models::mesh>(std::move(vertices), std::move(indices));
 }
 
 } // namespace demo
