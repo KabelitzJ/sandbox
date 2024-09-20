@@ -70,13 +70,13 @@ renderer::renderer()
 
 auto renderer::initialize() -> void {
   // Task 0
-  auto& planet_generator_task = add_task<demo::planet_generator_task>("demo/assets/shaders/planet_generator");
+  // auto& planet_generator_task = add_task<demo::planet_generator_task>("demo/assets/shaders/planet_generator");
 
   // Render stage 0
   add_subrenderer<sbx::shadows::shadow_subrenderer>("demo/assets/shaders/shadow", sbx::graphics::pipeline::stage{0, 0});
 
   // Render stage 1
-  add_subrenderer<demo::terrain_subrenderer>("demo/assets/shaders/terrain", sbx::graphics::pipeline::stage{1, 0}, planet_generator_task);
+  // add_subrenderer<demo::terrain_subrenderer>("demo/assets/shaders/terrain", sbx::graphics::pipeline::stage{1, 0});
   add_subrenderer<sbx::models::mesh_subrenderer>("demo/assets/shaders/deferred", sbx::graphics::pipeline::stage{1, 0});
 
   auto attachment_names = std::unordered_map<std::string, std::string>{
