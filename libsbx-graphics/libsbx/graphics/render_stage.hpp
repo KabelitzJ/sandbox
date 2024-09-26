@@ -30,6 +30,11 @@ enum class format : std::uint32_t {
   r32g32b32a32_sfloat = VK_FORMAT_R32G32B32A32_SFLOAT
 }; // enum class format
 
+enum class address_mode : std::uint32_t {
+  repeat = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+  clamp_to_edge = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE
+}; // enum class address_mode
+
 class attachment {
 
 public:
@@ -40,12 +45,13 @@ public:
     swapchain
   }; // enum class type
 
-  attachment(std::uint32_t binding, std::string name, type type, format format = format::r8g8b8a8_unorm, const math::color& clear_color = math::color::black) noexcept
+  attachment(const std::uint32_t binding, const std::string& name, type type, const math::color& clear_color = math::color::black, const format format = format::r8g8b8a8_unorm, const address_mode address_mode = address_mode::repeat) noexcept
   : _binding{binding}, 
     _name{std::move(name)}, 
     _type{type},
+    _clear_color{clear_color},
     _format{format}, 
-    _clear_color{clear_color} { }
+    _address_mode{address_mode} { }
 
   auto binding() const noexcept -> std::uint32_t {
     return _binding;
@@ -63,6 +69,10 @@ public:
     return _format;
   }
 
+  auto address_mode() const noexcept -> graphics::address_mode {
+    return _address_mode;
+  }
+
   auto clear_color() const noexcept -> const math::color& {
     return _clear_color;
   }
@@ -73,8 +83,9 @@ private:
   std::string _name;
   type _type;
   bool _is_multi_sampled;
-  graphics::format _format;
   math::color _clear_color;
+  graphics::format _format;
+  graphics::address_mode _address_mode;
 
 }; // class attachment
 

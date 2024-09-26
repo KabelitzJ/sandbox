@@ -15,9 +15,7 @@ struct terrain {
   sbx::math::uuid mesh_id;
   sbx::math::color tint;
   sbx::math::uuid grass_albedo_id;
-  sbx::math::uuid grass_normal_id;
   sbx::math::uuid dirt_albedo_id;
-  sbx::math::uuid dirt_normal_id;
 }; // struct terrain
 
 class terrain_subrenderer final : public sbx::graphics::subrenderer {
@@ -91,9 +89,7 @@ public:
       _descriptor_handler.push("data", _push_handler);
       _descriptor_handler.push("buffer_heightmap", _storage_handler);
       _descriptor_handler.push("grass_albedo_image", graphics_module.get_asset<sbx::graphics::image2d>(terrain.grass_albedo_id));
-      _descriptor_handler.push("grass_normal_image", graphics_module.get_asset<sbx::graphics::image2d>(terrain.grass_normal_id));
       _descriptor_handler.push("dirt_albedo_image", graphics_module.get_asset<sbx::graphics::image2d>(terrain.dirt_albedo_id));
-      _descriptor_handler.push("dirt_normal_image", graphics_module.get_asset<sbx::graphics::image2d>(terrain.dirt_normal_id));
 
       if (!_descriptor_handler.update(_pipeline)) {
         return;

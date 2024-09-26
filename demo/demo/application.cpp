@@ -52,7 +52,7 @@ application::application()
   }
 
   // _mesh_ids.emplace("plane", graphics_module.add_asset<sbx::models::mesh>(_generate_plane(sbx::math::vector2u{10u, 10u}, sbx::math::vector2u{10u, 10u})));
-  _mesh_ids.emplace("terrain", graphics_module.add_asset<demo::mesh>(_generate_terrain(sbx::math::vector2u{1000u, 1000u}, sbx::math::vector2u{10u, 10u})));
+  _mesh_ids.emplace("terrain", graphics_module.add_asset<demo::mesh>(_generate_terrain(sbx::math::vector2u{200u, 200u}, sbx::math::vector2u{10u, 10u})));
   // _mesh_ids.emplace("icosphere", graphics_module.add_asset<sbx::models::mesh>(_generate_icosphere(20.0f, 4u)));
 
   // Window
@@ -75,7 +75,7 @@ application::application()
 
   auto terrain = scene.create_node("Terrain");
 
-  terrain.add_component<demo::terrain>(_mesh_ids["terrain"], sbx::math::color::white, _texture_ids["grass_albedo"], _texture_ids["grass_normal"], _texture_ids["dirt_albedo"], _texture_ids["dirt_normal"]);
+  terrain.add_component<demo::terrain>(_mesh_ids["terrain"], sbx::math::color::white, _texture_ids["grass_albedo"], _texture_ids["dirt_albedo"]);
 
   auto& terrain_transform = terrain.get_component<sbx::math::transform>();
   terrain_transform.set_scale(sbx::math::vector3{1.0f, 1.0f, 1.0f});

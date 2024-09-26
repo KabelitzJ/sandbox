@@ -64,7 +64,7 @@ void main() {
   vec3 halfway_direction = normalize(light_direction + view_direction);
 
   float n_dot_l = dot(normal, halfway_direction);
-  float light_intensity = smoothstep(0, 0.01, n_dot_l);
+  float light_intensity = smoothstep(0, 0.01, n_dot_l * shadow);
 
   vec4 light = scene.light_color * light_intensity;
 

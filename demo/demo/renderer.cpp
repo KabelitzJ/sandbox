@@ -25,7 +25,7 @@ renderer::renderer()
   {
     auto attachments = std::vector<sbx::graphics::attachment>{
       sbx::graphics::attachment{0, "depth", sbx::graphics::attachment::type::depth},
-      sbx::graphics::attachment{1, "shadow_map", sbx::graphics::attachment::type::image, sbx::graphics::format::r32_sfloat, sbx::math::color::white}
+      sbx::graphics::attachment{1, "shadow_map", sbx::graphics::attachment::type::image, sbx::math::color::white, sbx::graphics::format::r32_sfloat, sbx::graphics::address_mode::clamp_to_edge}
     };
 
     auto subpass_bindings = std::vector<sbx::graphics::subpass_binding>{
@@ -39,11 +39,11 @@ renderer::renderer()
   {
     auto attachments = std::vector<sbx::graphics::attachment>{
       sbx::graphics::attachment{0, "depth", sbx::graphics::attachment::type::depth},
-      sbx::graphics::attachment{1, "position", sbx::graphics::attachment::type::image, sbx::graphics::format::r32g32b32a32_sfloat, _clear_color},
-      sbx::graphics::attachment{2, "normal", sbx::graphics::attachment::type::image, sbx::graphics::format::r32g32b32a32_sfloat, _clear_color},
-      sbx::graphics::attachment{3, "albedo", sbx::graphics::attachment::type::image, sbx::graphics::format::r8g8b8a8_unorm, _clear_color},
-      sbx::graphics::attachment{4, "normalized_depth", sbx::graphics::attachment::type::image, sbx::graphics::format::r32_sfloat, sbx::math::color::white},
-      sbx::graphics::attachment{5, "resolve", sbx::graphics::attachment::type::image, sbx::graphics::format::r8g8b8a8_unorm, _clear_color}
+      sbx::graphics::attachment{1, "position", sbx::graphics::attachment::type::image, _clear_color, sbx::graphics::format::r32g32b32a32_sfloat},
+      sbx::graphics::attachment{2, "normal", sbx::graphics::attachment::type::image, _clear_color, sbx::graphics::format::r32g32b32a32_sfloat},
+      sbx::graphics::attachment{3, "albedo", sbx::graphics::attachment::type::image, _clear_color, sbx::graphics::format::r8g8b8a8_unorm},
+      sbx::graphics::attachment{4, "normalized_depth", sbx::graphics::attachment::type::image, sbx::math::color::white, sbx::graphics::format::r32_sfloat},
+      sbx::graphics::attachment{5, "resolve", sbx::graphics::attachment::type::image, _clear_color, sbx::graphics::format::r8g8b8a8_unorm}
     };
 
     auto subpass_bindings = std::vector<sbx::graphics::subpass_binding>{
@@ -57,7 +57,7 @@ renderer::renderer()
   // Render stage 2: FX and UI
   {
     auto attachments = std::vector<sbx::graphics::attachment>{
-      sbx::graphics::attachment{0, "swapchain", sbx::graphics::attachment::type::swapchain, sbx::graphics::format::r8g8b8a8_unorm, _clear_color}
+      sbx::graphics::attachment{0, "swapchain", sbx::graphics::attachment::type::swapchain, _clear_color, sbx::graphics::format::r8g8b8a8_unorm}
     };
 
     auto subpass_bindings = std::vector<sbx::graphics::subpass_binding>{
