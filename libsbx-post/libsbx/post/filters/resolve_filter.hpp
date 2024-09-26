@@ -59,7 +59,7 @@ public:
 
     _scene_uniform_handler.push("light_space", scene.light_space());
 
-    _scene_uniform_handler.push("light_direction", scene_light.direction());
+    _scene_uniform_handler.push("light_direction", sbx::math::vector3::normalized(scene_light.direction()));
     _scene_uniform_handler.push("light_color", scene_light.color());
 
     auto point_light_nodes = scene.query<scenes::point_light>();

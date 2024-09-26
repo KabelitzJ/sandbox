@@ -89,12 +89,13 @@ application::application()
   auto monkey = scene.create_node("Monkey");
 
   auto monkey_submeshes = std::vector<sbx::scenes::static_mesh::submesh>{};
-  monkey_submeshes.push_back(sbx::scenes::static_mesh::submesh{0, sbx::math::color{0.62f, 0.14f, 0.16f, 1.0f}, _texture_ids["white"]});
+  monkey_submeshes.push_back(sbx::scenes::static_mesh::submesh{1, sbx::math::color{0.62f, 0.14f, 0.16f, 1.0f}, _texture_ids["white"]});
 
-  monkey.add_component<sbx::scenes::static_mesh>(_mesh_ids["monkey"], monkey_submeshes);
+  monkey.add_component<sbx::scenes::static_mesh>(_mesh_ids["dragon"], monkey_submeshes);
 
   auto& monkey_transform = monkey.get_component<sbx::math::transform>();
   monkey_transform.set_position(sbx::math::vector3{0.0f, 10.0f, 0.0f});
+  monkey_transform.set_rotation(sbx::math::vector3::up, sbx::math::degree{-45.0f});
   // dragon_transform.set_scale(sbx::math::vector3{20.0f, 20.0f, 20.0f});
 
   // Camera
@@ -244,17 +245,25 @@ auto application::_generate_terrain(const sbx::math::vector2u& size, const sbx::
 
   // Calculate normals
 
-  for (auto i = 0u; i < indices.size(); i += 3) {
-    const auto index0 = indices[i];
-    const auto index1 = indices[i + 1];
-    const auto index2 = indices[i + 2];
+  for (auto i = 0u; i < indices.size(); i += 3u) {
+    const auto& index0 = indices[i];
+    const auto& index1 = indices[i + 1u];
+    const auto& index2 = indices[i + 2u];
+
+    const auto& height0 = heights[index0];
+    const auto& height1 = heights[index1];
+    const auto& height2 = heights[index2];
 
     auto& vertex0 = vertices[index0];
     auto& vertex1 = vertices[index1];
     auto& vertex2 = vertices[index2];
 
-    const auto edge1 = vertex1.position - vertex0.position;
-    const auto edge2 = vertex2.position - vertex0.position;
+    const auto position0 = sbx::math::vector3{vertex0.position.x(), height0, vertex0.position.y()};
+    const auto position1 = sbx::math::vector3{vertex1.position.x(), height1, vertex1.position.y()};
+    const auto position2 = sbx::math::vector3{vertex2.position.x(), height2, vertex2.position.y()};
+
+    const auto edge1 = position1 - position0;
+    const auto edge2 = position2 - position0;
 
     const auto normal = sbx::math::vector3::normalized(sbx::math::vector3::cross(edge1, edge2));
 

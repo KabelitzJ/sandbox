@@ -161,10 +161,9 @@ constexpr auto quantity_cast(const quantity<typename TargetQuantity::dimension_t
 
   using ratio_type = std::conditional_t<std::is_floating_point_v<value_type>, value_type, std::float_t>;
 
-  const auto rat = ratio_conversion_v<ratio_type, to_ratio, FromRatio>;
-  const auto val = static_cast<value_type>(from.value());
+  const auto ratio = ratio_conversion_v<ratio_type, to_ratio, FromRatio>;
 
-  return TargetQuantity{static_cast<value_type>(val * rat)};
+  return TargetQuantity{static_cast<value_type>(from.value()) * static_cast<value_type>(ratio)};
 }
 
 } // namespace sbx::units

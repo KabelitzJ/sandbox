@@ -51,8 +51,8 @@ public:
 
     const auto* video_mode = glfwGetVideoMode(monitor);
 
-    _width = video_mode->width;
-    _height = video_mode->height;
+    _width = static_cast<std::uint32_t>(video_mode->width);
+    _height = static_cast<std::uint32_t>(video_mode->height);
 
     _handle = glfwCreateWindow(static_cast<std::int32_t>(_width), static_cast<std::int32_t>(_height), _title.c_str(), nullptr, nullptr);
 

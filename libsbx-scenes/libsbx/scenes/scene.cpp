@@ -28,7 +28,7 @@ scene::scene()
 : _registry{}, 
   _root{&_registry, _registry.create_entity()},
   _camera{&_registry, _registry.create_entity()},
-  _light{math::vector3{1.0, -1.0, -1.0}, math::color::white} {
+  _light{math::vector3{-1.0, -1.0, -1.0}, math::color::white} {
   // [NOTE] KAJ 2023-10-17 : Initialize root node
   auto& root_id = _root.add_component<scenes::id>();
   _root.add_component<scenes::relationship>(root_id);
