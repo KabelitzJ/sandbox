@@ -76,7 +76,7 @@ auto graphics_module::update() -> void {
 
   compute_command_buffer->begin(VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
 
-  _renderer->excute_tasks(*compute_command_buffer);
+  _renderer->execute_tasks(*compute_command_buffer);
 
   compute_command_buffer->end();
 

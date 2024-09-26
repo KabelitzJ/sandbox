@@ -52,8 +52,8 @@ application::application()
   }
 
   // _mesh_ids.emplace("plane", graphics_module.add_asset<sbx::models::mesh>(_generate_plane(sbx::math::vector2u{10u, 10u}, sbx::math::vector2u{10u, 10u})));
-  // _mesh_ids.emplace("terrain", graphics_module.add_asset<demo::mesh>(_generate_terrain(sbx::math::vector2u{1000u, 1000u}, sbx::math::vector2u{10u, 10u})));
-  _mesh_ids.emplace("icosphere", graphics_module.add_asset<sbx::models::mesh>(_generate_icosphere(20.0f, 4u)));
+  _mesh_ids.emplace("terrain", graphics_module.add_asset<demo::mesh>(_generate_terrain(sbx::math::vector2u{1000u, 1000u}, sbx::math::vector2u{10u, 10u})));
+  // _mesh_ids.emplace("icosphere", graphics_module.add_asset<sbx::models::mesh>(_generate_icosphere(20.0f, 4u)));
 
   // Window
 
@@ -73,28 +73,28 @@ application::application()
 
   // Terrain
 
-  // auto terrain = scene.create_node("Terrain");
+  auto terrain = scene.create_node("Terrain");
 
-  // terrain.add_component<demo::terrain>(_mesh_ids["terrain"], sbx::math::color::white, _texture_ids["grass_albedo"], _texture_ids["grass_normal"], _texture_ids["dirt_albedo"], _texture_ids["dirt_normal"]);
+  terrain.add_component<demo::terrain>(_mesh_ids["terrain"], sbx::math::color::white, _texture_ids["grass_albedo"], _texture_ids["grass_normal"], _texture_ids["dirt_albedo"], _texture_ids["dirt_normal"]);
 
-  // auto& terrain_transform = terrain.get_component<sbx::math::transform>();
-  // terrain_transform.set_scale(sbx::math::vector3{1.0f, 1.0f, 1.0f});
+  auto& terrain_transform = terrain.get_component<sbx::math::transform>();
+  terrain_transform.set_scale(sbx::math::vector3{1.0f, 1.0f, 1.0f});
 
   // terrain.add_component<sbx::physics::rigidbody>(sbx::units::kilogram{0.0f}, true);
 
   // terrain.add_component<sbx::physics::collider>(sbx::physics::box{sbx::math::vector3{-50.0f, 0.0f, -50.0f}, sbx::math::vector3{50.0f, 0.0f, 50.0f}});
 
-  // Dragon
+  // Monkey
 
-  auto dragon = scene.create_node("Dragon");
+  auto monkey = scene.create_node("Monkey");
 
-  auto dragon_submeshes = std::vector<sbx::scenes::static_mesh::submesh>{};
-  dragon_submeshes.push_back(sbx::scenes::static_mesh::submesh{0, sbx::math::color{0.62f, 0.14f, 0.16f, 1.0f}, _texture_ids["white"]});
+  auto monkey_submeshes = std::vector<sbx::scenes::static_mesh::submesh>{};
+  monkey_submeshes.push_back(sbx::scenes::static_mesh::submesh{0, sbx::math::color{0.62f, 0.14f, 0.16f, 1.0f}, _texture_ids["white"]});
 
-  dragon.add_component<sbx::scenes::static_mesh>(_mesh_ids["icosphere"], dragon_submeshes);
+  monkey.add_component<sbx::scenes::static_mesh>(_mesh_ids["monkey"], monkey_submeshes);
 
-  auto& dragon_transform = dragon.get_component<sbx::math::transform>();
-  dragon_transform.set_position(sbx::math::vector3{0.0f, 20.0f, 0.0f});
+  auto& monkey_transform = monkey.get_component<sbx::math::transform>();
+  monkey_transform.set_position(sbx::math::vector3{0.0f, 10.0f, 0.0f});
   // dragon_transform.set_scale(sbx::math::vector3{20.0f, 20.0f, 20.0f});
 
   // Camera

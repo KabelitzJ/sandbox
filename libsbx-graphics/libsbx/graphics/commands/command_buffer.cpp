@@ -126,11 +126,11 @@ auto command_buffer::submit(const std::vector<wait_data>& wait_data, const VkSem
 	submit_info.commandBufferCount = 1;
 	submit_info.pCommandBuffers = &_handle;
 
-  if (!wait_data.empty()) {
-    auto wait_semaphores = std::vector<VkSemaphore>{};
-    wait_semaphores.reserve(wait_data.size());
+  auto wait_stages = std::vector<VkPipelineStageFlags>{};
+  auto wait_semaphores = std::vector<VkSemaphore>{};
 
-    auto wait_stages = std::vector<VkPipelineStageFlags>{};
+  if (!wait_data.empty()) {
+    wait_semaphores.reserve(wait_data.size());
     wait_stages.reserve(wait_data.size());
 
     for (const auto& data : wait_data) {

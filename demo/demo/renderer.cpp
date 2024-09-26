@@ -76,7 +76,7 @@ auto renderer::initialize() -> void {
   add_subrenderer<sbx::shadows::shadow_subrenderer>("demo/assets/shaders/shadow", sbx::graphics::pipeline::stage{0, 0});
 
   // Render stage 1
-  // add_subrenderer<demo::terrain_subrenderer>("demo/assets/shaders/terrain", sbx::graphics::pipeline::stage{1, 0});
+  add_subrenderer<demo::terrain_subrenderer>("demo/assets/shaders/terrain", sbx::graphics::pipeline::stage{1, 0});
   add_subrenderer<sbx::models::mesh_subrenderer>("demo/assets/shaders/deferred", sbx::graphics::pipeline::stage{1, 0});
 
   auto attachment_names = std::unordered_map<std::string, std::string>{

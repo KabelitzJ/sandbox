@@ -26,10 +26,9 @@ class terrain_subrenderer final : public sbx::graphics::subrenderer {
 
 public:
 
-  terrain_subrenderer(const std::filesystem::path& path, const sbx::graphics::pipeline::stage& stage, demo::planet_generator_task& planet_generator_task)
+  terrain_subrenderer(const std::filesystem::path& path, const sbx::graphics::pipeline::stage& stage)
   : base{stage},
-    _pipeline{path, stage},
-    _planet_generator_task{sbx::memory::make_observer(&planet_generator_task)} {}
+    _pipeline{path, stage} { }
 
   ~terrain_subrenderer() override = default;
 
@@ -110,10 +109,7 @@ public:
 
 private:
 
-
   pipeline _pipeline;
-
-  sbx::memory::observer_ptr<demo::planet_generator_task> _planet_generator_task;
 
   sbx::graphics::uniform_handler _scene_uniform_handler;
   sbx::graphics::push_handler _push_handler;

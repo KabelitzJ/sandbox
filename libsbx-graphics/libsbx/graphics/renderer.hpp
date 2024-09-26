@@ -40,7 +40,7 @@ public:
     }
   }
 
-  auto excute_tasks(command_buffer& command_buffer) -> void {
+  auto execute_tasks(command_buffer& command_buffer) -> void {
     for (const auto& task : _tasks) {
       task->execute(command_buffer);
     }
