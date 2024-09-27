@@ -13,6 +13,8 @@
 
 #include <fmt/format.h>
 
+#include <libsbx/utility/enum.hpp>
+
 #include <libsbx/graphics/buffers/buffer.hpp>
 #include <libsbx/graphics/buffers/uniform_handler.hpp>
 
@@ -166,6 +168,19 @@ private:
 }; // class graphics_pipeline
 
 } // namespace sbx::graphics
+
+template<>
+struct sbx::utility::enum_mapping<sbx::graphics::polygon_mode> {
+
+  using entry_type = sbx::utility::entry<sbx::graphics::polygon_mode>;
+
+  static constexpr auto values = std::array<entry_type, 3u>{
+    entry_type{sbx::graphics::polygon_mode::fill, "fill"},
+    entry_type{sbx::graphics::polygon_mode::line, "line"},
+    entry_type{sbx::graphics::polygon_mode::point, "point"}
+  };
+
+}; // struct sbx::utility::enum_mapping
 
 #include <libsbx/graphics/pipeline/graphics_pipeline.ipp>
 

@@ -7,7 +7,7 @@
 
 namespace demo {
 
-class pipeline : public sbx::graphics::graphics_pipeline<demo::vertex> {
+class pipeline : public sbx::graphics::graphics_pipeline<sbx::models::vertex3d> {
 
   inline static constexpr auto pipeline_definition = sbx::graphics::pipeline_definition{
     .uses_depth = true,
@@ -19,14 +19,14 @@ class pipeline : public sbx::graphics::graphics_pipeline<demo::vertex> {
     }
   };
 
-  using base = sbx::graphics::graphics_pipeline<demo::vertex>;
+  using base_type = sbx::graphics::graphics_pipeline<sbx::models::vertex3d>;
 
 public:
 
-  using vertex_type = demo::vertex;
+  using vertex_type = base_type::vertex_type;
 
   pipeline(const std::filesystem::path& path, const sbx::graphics::pipeline::stage& stage)
-  : base{path, stage, pipeline_definition} { }
+  : base_type{path, stage, pipeline_definition} { }
 
   ~pipeline() override = default;
 

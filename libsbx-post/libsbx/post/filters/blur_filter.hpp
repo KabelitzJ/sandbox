@@ -1,6 +1,8 @@
 #ifndef LIBSBX_POST_FILTERS_BLUR_FILTER_HPP_
 #define LIBSBX_POST_FILTERS_BLUR_FILTER_HPP_
 
+#include <libsbx/utility/enum.hpp>
+
 #include <libsbx/math/vector2.hpp>
 
 #include <libsbx/post/filter.hpp>
@@ -8,9 +10,9 @@
 namespace sbx::post {
 
 enum class blur_type : std::uint32_t {
-  gaussian_blur_5 = 0,
-  gaussian_blur_9 = 1,
-  gaussian_blur_13 = 2
+  gaussian_5 = 0,
+  gaussian_9 = 1,
+  gaussian_13 = 2
 }; // enum class blur_type
 
 template<graphics::vertex Vertex, blur_type Type>
@@ -38,7 +40,7 @@ public:
     auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
     
     _push_handler.push("direction", _direction);
-    _push_handler.push("type", type);
+    _push_handler.push("type", utility::to_underlying(type));
 
     descriptor_handler.push("data", _push_handler);
     descriptor_handler.push("image", graphics_module.attachment(_attachment_name));
@@ -63,6 +65,15 @@ private:
   math::vector2 _direction;
 
 }; // class blur_filter
+
+template<graphics::vertex Vertex>
+using blur_filter_gaussian_5 = blur_filter<Vertex, blur_type::gaussian_5>;
+
+template<graphics::vertex Vertex>
+using blur_filter_gaussian_9 = blur_filter<Vertex, blur_type::gaussian_9>;
+
+template<graphics::vertex Vertex>
+using blur_filter_gaussian_13 = blur_filter<Vertex, blur_type::gaussian_13>;
 
 } // namespace sbx::post
 

@@ -57,14 +57,14 @@ void main() {
 
   vec4 light_space_position = DEPTH_BIAS * scene.light_space * vec4(world_position, 1.0);
 
-  float shadow = calculate_shadow_pcf(shadow_map_image, light_space_position, normal, scene.light_direction);
+  float shadow = calculate_shadow_random_jitter(shadow_map_image, light_space_position, normal, scene.light_direction);
 
   vec3 light_direction = normalize(-scene.light_direction);
   vec3 view_direction = normalize(scene.camera_position - world_position);
   vec3 halfway_direction = normalize(light_direction + view_direction);
 
   float n_dot_l = dot(normal, halfway_direction);
-  float light_intensity = smoothstep(0, 0.01, n_dot_l * shadow);
+  float light_intensity = smoothstep(0, 0.01, n_dot_l);
 
   vec4 light = scene.light_color * light_intensity;
 
@@ -76,24 +76,7 @@ void main() {
   float rim_intensity = smoothstep(RIM_STRENGTH - 0.01, RIM_STRENGTH + 0.01, rim_factor);
   vec4 rim = RIM_COLOR * rim_intensity;
 
-  // out_color = vec4(normal, 1.0f);
   out_color = albedo * (AMBIENT_COLOR + light + specular + rim);
 
-  // vec4 total_light = vec4(0.0);
-
-  // directional_light light = directional_light(scene.light_direction, scene.light_color);
-
-  // light_result result = calculate_directional_light(light, world_position, normal, scene.camera_position, DEFAULT_MATERIAL);
-
-  // total_light += (result.ambient + (result.diffuse + result.specular)) * albedo;
-
-  // for (uint i = 0; i < min(scene.point_light_count, MAX_POINT_LIGHTS); i++) {
-  //   point_light light = point_lights.data[i];
-  //
-  //   light_result result = calculate_point_light(light, world_position, normal, scene.camera_position, DEFAULT_MATERIAL);
-  //
-  //   total_light += (result.ambient + (result.diffuse + result.specular)) * albedo;
-  // }
-
-  // out_color = total_light;
+  out_color = albedo * (AMBIENT_COLOR + light);
 }
