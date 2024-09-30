@@ -41,6 +41,8 @@ namespace sbx::models {
 
 class mesh_subrenderer final : public graphics::subrenderer {
 
+  inline static constexpr auto max_point_lights = std::size_t{16};
+
 public:
 
   mesh_subrenderer(const std::filesystem::path& path, const graphics::pipeline::stage& stage)
@@ -64,6 +66,39 @@ public:
     const auto& camera_transform = camera_node.get_component<math::transform>();
 
     _scene_uniform_handler.push("view", math::matrix4x4::inverted(camera_transform.as_matrix()));
+
+    _scene_uniform_handler.push("camera_position", camera_transform.position());
+
+    const auto& scene_light = scene.light();
+
+    _scene_uniform_handler.push("light_space", scene.light_space());
+
+    _scene_uniform_handler.push("light_direction", sbx::math::vector3::normalized(scene_light.direction()));
+    _scene_uniform_handler.push("light_color", scene_light.color());
+
+    auto point_light_nodes = scene.query<scenes::point_light>();
+
+    auto point_lights = std::vector<point_light>{};
+    auto point_light_count = std::uint32_t{0};
+
+    for (const auto& node : point_light_nodes) {
+      const auto model = scene.world_transform(node);
+
+      const auto& light = node.get_component<scenes::point_light>();
+
+      const auto position = math::vector3{model[3]};
+
+      point_lights.push_back(point_light{position, light.color(), light.radius()});
+      
+      ++point_light_count;
+
+      if (point_light_count >= max_point_lights) {
+        break;
+      }
+    }
+
+    _point_lights_storage_handler.push(std::span<const point_light>{point_lights.data(), point_light_count});
+    _scene_uniform_handler.push("point_light_count", point_light_count);
 
     for (auto entry = _uniform_data.begin(); entry != _uniform_data.end();) {
       if (_used_uniforms.contains(entry->first)) {
@@ -98,6 +133,8 @@ public:
 
       descriptor_handler.push("uniform_scene", _scene_uniform_handler);
       descriptor_handler.push("buffer_mesh_data", storage_handler);
+      descriptor_handler.push("buffer_point_lights", _point_lights_storage_handler);
+      descriptor_handler.push("shadow_map_image", graphics_module.attachment("shadow_map"));
       descriptor_handler.push("images_sampler", _images_sampler);
       descriptor_handler.push("images", _images);
 
@@ -170,6 +207,12 @@ private:
     }
   }; // struct mesh_key_equal
 
+  struct point_light {
+    alignas(16) math::vector3 position;
+    alignas(16) math::color color;
+    alignas(16) std::float_t radius;
+  }; // struct point_light
+
   pipeline _pipeline;
 
   std::unordered_map<mesh_key, uniform_data, mesh_key_hash, mesh_key_equal> _uniform_data;
@@ -178,6 +221,7 @@ private:
   std::unordered_map<mesh_key, std::vector<per_mesh_data>, mesh_key_hash, mesh_key_equal> _static_meshes;
 
   graphics::uniform_handler _scene_uniform_handler;
+  graphics::storage_handler _point_lights_storage_handler;
 
   graphics::separate_sampler _images_sampler;
   graphics::separate_image2d_array _images;

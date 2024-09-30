@@ -78,5 +78,5 @@ void main() {
 
   out_color = albedo * (AMBIENT_COLOR + light + specular + rim);
 
-  out_color = albedo * (AMBIENT_COLOR + light);
+  out_color = albedo * (AMBIENT_COLOR + light + specular + rim);
 }
