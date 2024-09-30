@@ -4,6 +4,8 @@
 
 #include <fmt/format.h>
 
+#include <nlohmann/json.hpp>
+
 #include <libsbx/core/logger.hpp>
 #include <libsbx/core/engine.hpp>
 
@@ -24,7 +26,7 @@
 namespace sbx::graphics {
 
 template<vertex Vertex>
-graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, const pipeline::stage& stage, const pipeline_definition& definition)
+graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, const pipeline::stage& stage, const pipeline_definition& default_definition)
 : _bind_point{VK_PIPELINE_BIND_POINT_GRAPHICS},
   _stage{stage} {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
@@ -33,6 +35,8 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
   const auto& render_stage = graphics_module.render_stage(stage);
 
   auto timer = utility::timer{};
+
+  const auto definition = _update_definition(path, default_definition);
 
   _name = path.filename().string();
 
@@ -417,6 +421,47 @@ auto graphics_pipeline<Vertex>::layout() const noexcept -> const VkPipelineLayou
 template<vertex Vertex>
 auto graphics_pipeline<Vertex>::bind_point() const noexcept -> VkPipelineBindPoint {
   return _bind_point;
+}
+
+template<vertex Vertex>
+auto graphics_pipeline<Vertex>::_update_definition(const std::filesystem::path& path, const pipeline_definition default_definition) -> pipeline_definition {
+  if (!std::filesystem::exists(path / "definition.json")) {
+    return default_definition;
+  }
+
+  auto file = std::ifstream{path / "definition.json"};
+
+  if (!file.is_open()) {
+    return default_definition;
+  }
+
+  auto definition = nlohmann::json::parse(file);
+
+  auto result = default_definition;
+
+  if (definition.contains("uses_depth")) {
+    result.uses_depth = definition["uses_depth"].get<bool>();
+  }
+
+  if (definition.contains("uses_transparency")) {
+    result.uses_depth = definition["uses_transparency"].get<bool>();
+  }
+
+  if (definition.contains("rasterization_state")) {
+    auto rasterization_state = definition["rasterization_state"];
+
+    if (rasterization_state.contains("polygon_mode")) {
+      auto polygon_mode = utility::from_string<graphics::polygon_mode>(rasterization_state["polygon_mode"].get<std::string>());
+
+      if (polygon_mode) {
+        result.rasterization_state.polygon_mode = *polygon_mode;
+      } else {
+        core::logger::warn("Could not parse 'sbx::graphics::polygon_mode' value '{}'", rasterization_state["polygon_mode"].get<std::string>());
+      }
+    }
+  }
+
+  return result;
 }
 
 template<vertex Vertex>

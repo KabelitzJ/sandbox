@@ -89,7 +89,7 @@ public:
 
   using vertex_type = Vertex;
 
-  graphics_pipeline(const std::filesystem::path& path, const pipeline::stage& stage, const pipeline_definition& definition = pipeline_definition{});
+  graphics_pipeline(const std::filesystem::path& path, const pipeline::stage& stage, const pipeline_definition& default_definition = pipeline_definition{});
 
   ~graphics_pipeline() override;
 
@@ -140,6 +140,8 @@ public:
   }
 
 private:
+
+  auto _update_definition(const std::filesystem::path& path, const pipeline_definition default_definition) -> pipeline_definition;
 
   auto _get_stage_from_name(const std::string& name) const noexcept -> VkShaderStageFlagBits;
 
