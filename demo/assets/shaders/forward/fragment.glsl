@@ -92,6 +92,8 @@ void main(void) {
   vec3 normal = get_normal();
   vec4 albedo = get_albedo();
 
+  float roughness = in_material.y;
+
   vec4 light_space_position = DEPTH_BIAS * scene.light_space * vec4(world_position, 1.0);
 
   float shadow = calculate_shadow_pcf(shadow_map_image, light_space_position, normal, scene.light_direction);
@@ -108,7 +110,7 @@ void main(void) {
   float n_dot_h = dot(normal, half_direction);
 
   float specular_intensity = smoothstep(0.005, 0.01, pow(n_dot_h * light_intensity, GLOSSINESS * GLOSSINESS));
-  vec4 specular = SPECULAR_COLOR * specular_intensity;
+  vec4 specular = SPECULAR_COLOR * specular_intensity * roughness;
 
   float rim_dot = 1.0 - dot(normal, view_direction);
   float rim_intensity = smoothstep(RIM_STRENGTH - 0.01, RIM_STRENGTH + 0.01, rim_dot * pow(n_dot_l, RIM_THRESHOLD));
