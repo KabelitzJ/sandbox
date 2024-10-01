@@ -26,11 +26,11 @@ public:
   auto load_terrain_in_scene(sbx::scenes::scene& scene) -> void {
     auto& graphics_module = sbx::core::engine::get_module<sbx::graphics::graphics_module>();
 
-    const auto chunk_size = sbx::math::vector2u{20u, 20u};
+    const auto chunk_size = sbx::math::vector2u{50u, 50u};
 
-    _mesh_id = graphics_module.add_asset<sbx::models::mesh>(_generate_plane(chunk_size, sbx::math::vector2u{2u, 2u}));
+    _mesh_id = graphics_module.add_asset<sbx::models::mesh>(_generate_plane(chunk_size, sbx::math::vector2u{10u, 10u}));
 
-    _texture_id = graphics_module.add_asset<sbx::graphics::image2d>("demo/assets/textures/grass/albedo.png");
+    _texture_id = graphics_module.add_asset<sbx::graphics::image2d>("demo/assets/textures/prototype_black.png");
 
     const auto grid = sbx::math::vector2{10.0f, 10.0f};
 

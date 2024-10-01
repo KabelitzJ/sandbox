@@ -55,6 +55,8 @@ public:
 
     _scene_uniform_handler.push("light_space", scene.light_space());
 
+    _scene_uniform_handler.push("time", std::fmod(core::engine::time().value() * 0.5f, 1.0f));
+
     for (auto entry = _uniform_data.begin(); entry != _uniform_data.end();) {
       if (_used_uniforms.contains(entry->first)) {
         ++entry;
@@ -112,8 +114,9 @@ private:
       _used_uniforms.insert(key);
 
       auto model = scene.world_transform(node);
+      auto material = math::vector4{submesh.material.metallic, submesh.material.roughness, submesh.material.flexibility, submesh.material.anchor_height};
 
-      _static_meshes[key].push_back(per_mesh_data{std::move(model)});
+      _static_meshes[key].push_back(per_mesh_data{std::move(model), material});
     }
   }
 
@@ -129,6 +132,7 @@ private:
 
   struct per_mesh_data {
     math::matrix4x4 model;
+    math::vector4 material;
   }; // struct per_mesh_data
 
   struct mesh_key_hash {

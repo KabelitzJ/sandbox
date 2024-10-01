@@ -12,7 +12,7 @@ layout(location = 0) in vec3 in_position;
 layout(location = 1) in vec3 in_normal;
 layout(location = 2) in vec2 in_uv;
 layout(location = 3) in vec4 in_color;
-layout(location = 4) in vec4 in_material;
+layout(location = 4) in vec2 in_material;
 layout(location = 5) in flat uint in_albedo_image_index;
 layout(location = 6) in flat uint in_normal_image_index;
 
@@ -26,6 +26,7 @@ layout(binding = 0) uniform uniform_scene {
   vec4 light_color;
   mat4 light_space;
   uint point_light_count;
+  float time;
 } scene;
 
 layout(binding = 2, std430) readonly buffer buffer_point_lights {
@@ -36,14 +37,6 @@ layout(binding = 3) uniform sampler2D shadow_map_image;
 
 layout(binding = 4) uniform sampler images_sampler;
 layout(binding = 5) uniform texture2D images[MAX_IMAGE_ARRAY_SIZE];
-
-const material DEFAULT_MATERIAL = material(
-  vec4(1.0, 1.0, 1.0, 1.0),     // Ambient color
-  vec4(1.0, 1.0, 1.0, 1.0),     // Specular color
-  0.4,                          // Metallic
-  0.7,                          // Roughness
-  0.7                           // Ambient occlusion
-);
 
 const mat4 DEPTH_BIAS = mat4( 
 	0.5, 0.0, 0.0, 0.0,
@@ -94,8 +87,6 @@ void main(void) {
 
   float metallic = in_material.x;
   float roughness = in_material.y;
-  float ambient_occlusion = in_material.z;
-  float emissive = in_material.w;
 
   vec4 light_space_position = DEPTH_BIAS * scene.light_space * vec4(world_position, 1.0);
 

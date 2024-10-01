@@ -17,8 +17,8 @@ public:
   struct material {
     std::float_t metallic;
     std::float_t roughness;
-    std::float_t ambient_occlusion;
-    std::float_t emissive;
+    std::float_t flexibility;
+    std::float_t anchor_height;
   }; // struct material
 
   struct submesh {
