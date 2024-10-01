@@ -65,14 +65,14 @@ vec3 get_normal() {
 
   vec3 tangent_normal = texture(sampler2D(images[in_normal_image_index], images_sampler), in_uv).xyz * 2.0 - 1.0;
 
-  vec3 Q1  = dFdx(in_position);
-  vec3 Q2  = dFdy(in_position);
+  vec3 Q1 = dFdx(in_position);
+  vec3 Q2 = dFdy(in_position);
   vec2 st1 = dFdx(in_uv);
   vec2 st2 = dFdy(in_uv);
 
-  vec3 N   = normalize(in_normal);
-  vec3 T  = normalize(Q1 * st2.t - Q2 * st1.t);
-  vec3 B  = -normalize(cross(N, T));
+  vec3 N = normalize(in_normal);
+  vec3 T = normalize(Q1 * st2.t - Q2 * st1.t);
+  vec3 B = -normalize(cross(N, T));
   mat3 TBN = mat3(T, B, N);
 
   return normalize(TBN * tangent_normal);
@@ -101,22 +101,7 @@ void main(void) {
 
   out_color = albedo * (result.ambient + result.diffuse + result.specular);
 
-  // vec3 light_direction = normalize(-scene.light_direction);
-  // vec3 view_direction = normalize(scene.camera_position - world_position);
-  // vec3 halfway_direction = normalize(light_direction + view_direction);
+  // Breath of the wild style toon shading
 
-  // float n_dot_l = dot(normal, halfway_direction);
-  // float light_intensity = smoothstep(0, 0.01, n_dot_l * shadow);
-
-  // vec4 light = scene.light_color * light_intensity;
-
-  // float specular_factor = pow(n_dot_l * light_intensity, GLOSSINESS * GLOSSINESS);
-  // float specular_intensity = smoothstep(0.005, 0.01, specular_factor);
-  // vec4 specular = SPECULAR_COLOR * specular_intensity;
-
-  // float rim_factor = (1.0 - dot(view_direction, normal)) * pow(n_dot_l, RIM_THRESHOLD);
-  // float rim_intensity = smoothstep(RIM_STRENGTH - 0.01, RIM_STRENGTH + 0.01, rim_factor);
-  // vec4 rim = RIM_COLOR * rim_intensity;
-
-  // out_color = albedo * (AMBIENT_COLOR + light + specular + rim); // + light + specular + rim);
+  
 }
