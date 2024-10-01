@@ -55,9 +55,7 @@ public:
   auto query() -> std::vector<node> {
     auto view = _registry.create_view<Components...>();
      
-    return view 
-      | ranges::views::transform([&](auto& entity) { return node{&_registry, entity}; })
-      | ranges::to<std::vector>();
+    return view | ranges::views::transform([&](auto& entity) { return node{&_registry, entity}; }) | ranges::to<std::vector>();
   }
 
   auto light() -> directional_light& {
