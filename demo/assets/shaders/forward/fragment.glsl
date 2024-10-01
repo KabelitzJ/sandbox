@@ -92,7 +92,10 @@ void main(void) {
   vec3 normal = get_normal();
   vec4 albedo = get_albedo();
 
+  float metallic = in_material.x;
   float roughness = in_material.y;
+  float ambient_occlusion = in_material.z;
+  float emissive = in_material.w;
 
   vec4 light_space_position = DEPTH_BIAS * scene.light_space * vec4(world_position, 1.0);
 
@@ -109,12 +112,12 @@ void main(void) {
   vec3 half_direction = normalize(light_position + view_direction);
   float n_dot_h = dot(normal, half_direction);
 
-  float specular_intensity = smoothstep(0.005, 0.01, pow(n_dot_h * light_intensity, GLOSSINESS * GLOSSINESS));
-  vec4 specular = SPECULAR_COLOR * specular_intensity * roughness;
+  float specular_intensity = smoothstep(0.005, 0.01, pow(n_dot_h * light_intensity, (1.0 - roughness) * GLOSSINESS * GLOSSINESS));
+  vec4 specular_color = mix(SPECULAR_COLOR, albedo, metallic);
+  vec4 specular = specular_color * specular_intensity;
 
-  float rim_dot = 1.0 - dot(normal, view_direction);
-  float rim_intensity = smoothstep(RIM_STRENGTH - 0.01, RIM_STRENGTH + 0.01, rim_dot * pow(n_dot_l, RIM_THRESHOLD));
+  float rim_intensity = smoothstep(RIM_STRENGTH - 0.01, RIM_STRENGTH + 0.01, (1.0 - dot(normal, view_direction)) * pow(n_dot_l, RIM_THRESHOLD)) * (1.0 - roughness);
   vec4 rim = RIM_COLOR * rim_intensity;
 
-  out_color = albedo * (AMBIENT_COLOR + light + specular);
+  out_color = albedo * (AMBIENT_COLOR + light + specular + rim);
 }

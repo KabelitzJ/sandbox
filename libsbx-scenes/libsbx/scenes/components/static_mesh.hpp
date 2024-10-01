@@ -14,10 +14,17 @@ class static_mesh final {
 
 public:
 
+  struct material {
+    std::float_t metallic;
+    std::float_t roughness;
+    std::float_t ambient_occlusion;
+    std::float_t emissive;
+  }; // struct material
+
   struct submesh {
     std::uint32_t index;
     math::color tint{math::color::white};
-    math::vector4 material{0.0f, 0.0f, 0.0f, 0.0f};
+    material material{0.0f, 1.0f, 0.0f, 0.0f};
     std::optional<math::uuid> albedo_texture{std::nullopt};
     std::optional<math::uuid> normal_texture{std::nullopt};
     std::optional<math::uuid> metallic_texture{std::nullopt};
@@ -28,7 +35,7 @@ public:
   : _mesh_id{mesh_id},
     _submeshes{submeshes} { }
 
-  static_mesh(const math::uuid& mesh_id, const math::color& tint = math::color::white, const math::vector4& material = math::vector4{}, const std::optional<math::uuid>& albedo_texture = std::nullopt)
+  static_mesh(const math::uuid& mesh_id, const math::color& tint = math::color::white, const static_mesh::material& material = static_mesh::material{}, const std::optional<math::uuid>& albedo_texture = std::nullopt)
   : _mesh_id{mesh_id} {
     _submeshes.push_back(submesh{0, tint, material, albedo_texture, std::nullopt, std::nullopt, std::nullopt});
   }

@@ -169,8 +169,9 @@ private:
       const auto normal_image_index = submesh.normal_texture ? _images.push_back(*submesh.normal_texture) : graphics::separate_image2d_array::max_size;
 
       const auto image_indices = math::vector4{albedo_image_index, normal_image_index, 0u, 0u};
+      const auto material = math::vector4{submesh.material.metallic, submesh.material.roughness, submesh.material.ambient_occlusion, submesh.material.emissive};
 
-      _static_meshes[key].push_back(per_mesh_data{std::move(model), std::move(normal), submesh.tint, submesh.material, image_indices});
+      _static_meshes[key].push_back(per_mesh_data{std::move(model), std::move(normal), submesh.tint, material, image_indices});
     }
   }
 
