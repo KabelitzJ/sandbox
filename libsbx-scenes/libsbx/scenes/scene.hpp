@@ -68,7 +68,7 @@ public:
     const auto position = _light.direction() * -40.0f;
 
     const auto view = math::matrix4x4::look_at(position, position + _light.direction() * 40.0f, math::vector3::up);
-    const auto projection = math::matrix4x4::orthographic(-20.0f, 20.0f, -20.0f, 20.0f, 0.1f, 80.0f);
+    const auto projection = math::matrix4x4::orthographic(-20.0f, 20.0f, -20.0f, 20.0f, 0.1f, 500.0f);
 
     return projection * view;
   }

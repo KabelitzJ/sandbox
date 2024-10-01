@@ -42,7 +42,7 @@ public:
 
         _node_id = chunk.get_component<sbx::scenes::id>();
 
-        chunk.add_component<sbx::scenes::static_mesh>(_mesh_id, sbx::math::color::white, _texture_id);
+        chunk.add_component<sbx::scenes::static_mesh>(_mesh_id, sbx::math::color::white, sbx::math::vector4{0.0f, 0.0f, 0.0f, 0.0f}, _texture_id);
 
         const auto position = sbx::math::vector3{x * chunk_size.x() - offset.x(), 0.0f, y * chunk_size.y() - offset.y()};
 

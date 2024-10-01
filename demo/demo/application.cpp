@@ -82,12 +82,13 @@ application::application()
   auto monkey = scene.create_node("Monkey");
 
   auto monkey_submeshes = std::vector<sbx::scenes::static_mesh::submesh>{};
-  monkey_submeshes.push_back(sbx::scenes::static_mesh::submesh{1, sbx::math::color{0.62f, 0.14f, 0.16f, 1.0f}, _texture_ids["white"]});
+  monkey_submeshes.push_back(sbx::scenes::static_mesh::submesh{0, sbx::math::color{0.62f, 0.14f, 0.16f, 1.0f}, sbx::math::vector4{0.0f, 1.0f, 0.0f, 0.0f}, _texture_ids["white"]});
 
-  monkey.add_component<sbx::scenes::static_mesh>(_mesh_ids["dragon"], monkey_submeshes);
+  monkey.add_component<sbx::scenes::static_mesh>(_mesh_ids["sphere"], monkey_submeshes);
 
   auto& monkey_transform = monkey.get_component<sbx::math::transform>();
-  monkey_transform.set_rotation(sbx::math::vector3::up, sbx::math::degree{-45.0f});
+  monkey_transform.set_position(sbx::math::vector3{0.0f, 5.0f, 0.0f});
+  monkey_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
 
   // Camera
 
@@ -120,13 +121,13 @@ auto application::update() -> void  {
     return;
   }
 
-  auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
+  // auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
 
-  auto& scene = scenes_module.scene();
+  // auto& scene = scenes_module.scene();
 
-  auto camera_node = scene.camera();
+  // auto camera_node = scene.camera();
 
-  auto& camera = camera_node.get_component<sbx::scenes::camera>();
+  // auto& camera = camera_node.get_component<sbx::scenes::camera>();
 
   _camera_controller.update();
 

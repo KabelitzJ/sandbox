@@ -170,7 +170,7 @@ private:
 
       const auto image_indices = math::vector4{albedo_image_index, normal_image_index, 0u, 0u};
 
-      _static_meshes[key].push_back(per_mesh_data{std::move(model), std::move(normal), submesh.tint, image_indices});
+      _static_meshes[key].push_back(per_mesh_data{std::move(model), std::move(normal), submesh.tint, submesh.material, image_indices});
     }
   }
 
@@ -188,6 +188,7 @@ private:
     alignas(16) math::matrix4x4 model;
     alignas(16) math::matrix4x4 normal;
     alignas(16) math::color tint;
+    alignas(16) math::vector4 material;
     alignas(16) math::vector4 image_indices;
   }; // struct per_mesh_data
 
