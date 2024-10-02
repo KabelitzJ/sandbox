@@ -73,7 +73,7 @@ render_stage::render_stage(std::vector<graphics::attachment>&& attachments, std:
       }
       case attachment::type::depth: {
         if (_depth_attachment) {
-          throw std::runtime_error{fmt::format("Render stage can at max have one depth attachemnt! Found depth attachemnts at bindings {} and {}", _depth_attachment->binding(), attachment.binding())};
+          throw std::runtime_error{fmt::format("Render stage can at max have one depth attachment! Found depth attachments at bindings {} and {}", _depth_attachment->binding(), attachment.binding())};
         }
 
         clear_value.depthStencil = VkClearDepthStencilValue{1.0f, 0};
@@ -83,7 +83,7 @@ render_stage::render_stage(std::vector<graphics::attachment>&& attachments, std:
       }
       case attachment::type::swapchain: {
         if (_swapchain_attachment) {
-          throw std::runtime_error{fmt::format("Render stage can at max have one swapchain attachemnt! Found swapchain attachemnts at bindings {} and {}", _swapchain_attachment->binding(), attachment.binding())};
+          throw std::runtime_error{fmt::format("Render stage can at max have one swapchain attachment! Found swapchain attachments at bindings {} and {}", _swapchain_attachment->binding(), attachment.binding())};
         }
 
         _update_subpass_attachment_counts(attachment);
