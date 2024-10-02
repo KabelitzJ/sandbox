@@ -20,7 +20,7 @@ public:
   camera_controller()
   : _orbit_angle{sbx::math::degree{90}}, 
     _tilt_angle{sbx::math::degree{30}},
-    _min_tilt_angle{sbx::math::degree{-89}},
+    _min_tilt_angle{sbx::math::degree{1}},
     _max_tilt_angle{sbx::math::degree{89}},
     _target{sbx::math::vector3{0.0f, 2.0f, 0.0f}},
     _zoom{30.0f},
