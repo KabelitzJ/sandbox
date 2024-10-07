@@ -9,6 +9,8 @@
 
 #include <libsbx/scenes/scenes_module.hpp>
 
+#include <demo/terrain/voronoi.hpp>
+
 namespace demo {
 
 class terrain_module final : public sbx::core::module<terrain_module> {
