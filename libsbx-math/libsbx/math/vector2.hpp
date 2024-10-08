@@ -76,6 +76,9 @@ template<scalar Lhs, scalar Rhs>
 [[nodiscard]] constexpr auto operator*(basic_vector2<Lhs> lhs, Rhs scalar) noexcept -> basic_vector2<Lhs>;
 
 template<scalar Lhs, scalar Rhs>
+[[nodiscard]] constexpr auto operator*(Lhs scalar, basic_vector2<Rhs> rhs) noexcept -> basic_vector2<Rhs>;
+
+template<scalar Lhs, scalar Rhs>
 [[nodiscard]] constexpr auto operator*(basic_vector2<Lhs> lhs, const basic_vector2<Rhs>& rhs) noexcept -> basic_vector2<Lhs>;
 
 template<scalar Lhs, scalar Rhs>
