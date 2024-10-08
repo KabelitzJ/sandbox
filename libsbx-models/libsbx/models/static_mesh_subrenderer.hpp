@@ -39,17 +39,17 @@
 
 namespace sbx::models {
 
-class mesh_subrenderer final : public graphics::subrenderer {
+class static_mesh_subrenderer final : public graphics::subrenderer {
 
   inline static constexpr auto max_point_lights = std::size_t{16};
 
 public:
 
-  mesh_subrenderer(const std::filesystem::path& path, const graphics::pipeline::stage& stage)
+  static_mesh_subrenderer(const std::filesystem::path& path, const graphics::pipeline::stage& stage)
   : graphics::subrenderer{stage},
     _pipeline{path, stage} { }
 
-  ~mesh_subrenderer() override = default;
+  ~static_mesh_subrenderer() override = default;
 
   auto render(graphics::command_buffer& command_buffer) -> void override {
     auto& graphics_module = core::engine::get_module<graphics::graphics_module>();

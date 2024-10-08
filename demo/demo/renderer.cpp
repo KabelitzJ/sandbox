@@ -78,7 +78,7 @@ auto renderer::initialize() -> void {
 
   // Render stage 1
   // add_subrenderer<demo::terrain_subrenderer>("demo/assets/shaders/terrain", sbx::graphics::pipeline::stage{1, 0});
-  add_subrenderer<sbx::models::mesh_subrenderer>("demo/assets/shaders/forward", sbx::graphics::pipeline::stage{1, 0});
+  add_subrenderer<sbx::models::static_mesh_subrenderer>("demo/assets/shaders/static_mesh", sbx::graphics::pipeline::stage{1, 0});
 
   // auto attachment_names = std::unordered_map<std::string, std::string>{
   //   {"position_image", "position"},
