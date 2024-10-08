@@ -5,7 +5,7 @@
 
 namespace demo {
 
-// https://github.com/dkotsur/FortuneAlgo/blob/master/FortuneAlgo/FortuneAlgo/Datastruct/DCEL.hpp
+// https://pvigier.github.io/2018/11/18/fortune-algorithm-details.html
 
 } // namespace demo
 
