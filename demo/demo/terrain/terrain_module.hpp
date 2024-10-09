@@ -9,7 +9,7 @@
 
 #include <libsbx/scenes/scenes_module.hpp>
 
-#include <demo/terrain/voronoi.hpp>
+#include <demo/terrain/voronoi.hpp> 
 
 namespace demo {
 

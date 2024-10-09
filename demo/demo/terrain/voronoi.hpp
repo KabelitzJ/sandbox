@@ -279,14 +279,334 @@ struct box {
     const auto direction = destination - origin;
     auto t = std::array<std::float_t, 2u>{};
 
+    // Left
     if (origin.x() < left || destination.x() < left - epsilon) {
       const auto i = result.size();
 
       t[i] = (left - origin.x()) / direction.x();
+
+      if (t[i] > epsilon && t[i] < 1.0 - epsilon) {
+        const auto position = origin + direction * t[i];
+
+        if (position.y() >= bottom - epsilon && position.y() <= top + epsilon) {
+          result.push_back(intersection{side::left, position});
+        }
+      }
     }
+
+    // Right
+    if (origin.x() > right || destination.x() > right + epsilon) {
+      const auto i = result.size();
+
+      t[i] = (right - origin.x()) / direction.x();
+
+      if (t[i] > epsilon && t[i] < 1.0 - epsilon) {
+        const auto position = origin + direction * t[i];
+
+        if (position.y() >= bottom - epsilon && position.y() <= top + epsilon) {
+          result.push_back(intersection{side::right, position});
+        }
+      }
+    }
+
+    // Bottom
+    if (origin.y() < bottom || destination.y() < bottom - epsilon) {
+      const auto i = result.size();
+
+      t[i] = (bottom - origin.y()) / direction.y();
+
+      if (t[i] > epsilon && t[i] < 1.0 - epsilon) {
+        const auto position = origin + direction * t[i];
+
+        if (position.x() >= left - epsilon && position.x() <= right + epsilon) {
+          result.push_back(intersection{side::bottom, position});
+        }
+      }
+    }
+
+    // Top
+    if (origin.y() > top || destination.y() > top + epsilon) {
+      const auto i = result.size();
+
+      t[i] = (top - origin.y()) / direction.y();
+
+      if (t[i] > epsilon && t[i] < 1.0 - epsilon) {
+        const auto position = origin + direction * t[i];
+
+        if (position.x() >= left - epsilon && position.x() <= right + epsilon) {
+          result.push_back(intersection{side::top, position});
+        }
+      }
+    }
+
+    // Sort the intersections by distance
+    if (result.size() == 2u && t[0] > t[1]) {
+      std::swap(result[0], result[1]);
+    }
+
+    return result;
   }
 
 }; // class box
+
+class beach_line {
+
+public:
+
+  beach_line()
+  : _nil{std::make_shared<arc>()},
+    _root{_nil} {
+    _nil->color = arc::color::black;
+  }
+
+  beach_line(const beach_line&) = delete;
+  beach_line(beach_line&&) = delete;
+
+  auto operator=(const beach_line&) -> beach_line& = delete;
+  auto operator=(beach_line&&) -> beach_line& = delete;
+
+  auto create_arc(const std::shared_ptr<site>& site) -> std::shared_ptr<arc> {
+    return std::make_shared<arc>(_nil, _nil, _nil, site, nullptr, nullptr, nullptr, _nil, _nil, arc::color::red);
+  }
+
+  auto is_empty() const -> bool {
+    return is_nil(_root);
+  }
+
+  auto is_nil(const std::shared_ptr<site>& node) const -> bool {
+    return node == _nil;
+  }
+
+  auto set_root(const std::shared_ptr<arc>& node) -> void {
+    _root = node;
+    _root->color = arc::color::black;
+  }
+
+  auto left_most_arc() -> std::shared_ptr<arc> {
+    auto node = _root;
+
+    while (!is_nil(node->previous)) {
+      node = node->previous;
+    }
+
+    return node;
+  }
+
+  auto arc_above(const sbx::math::vector2& point, const std::float_t y) -> std::shared_ptr<arc> {
+    auto node = _root;
+    auto found = false;
+
+    while (!found) {
+      auto left_breakpoint = -std::numeric_limits<std::float_t>::infinity();
+      auto right_breakpoint = std::numeric_limits<std::float_t>::infinity();
+
+      if (!is_nil(node->previous)) {
+        left_breakpoint = _break_point(node->previous->site->position, node->site->position, y);
+      }
+
+      if (!is_nil(node->next)) {
+        right_breakpoint = _break_point(node->site->position, node->next->site->position, y);
+      }
+
+      if (point.x() < left_breakpoint) {
+        node = node->left;
+      } else if (point.x() > right_breakpoint) {
+        node = node->right;
+      } else {
+        found = true;
+      }
+    }
+
+    return node;
+  }
+
+  auto insert_before(const std::shared_ptr<arc>& x, const std::shared_ptr<arc>& y) -> void {
+    if (is_nil(x->left)) {
+      x->left = y;
+      y->parent = x;
+    } else {
+      x->prev->right = y;
+      y->parent = x->prev;
+    }
+
+    y->previous = x->previous;
+
+    if (!is_nil(y->previous)) {
+      y->previous->next = y;
+    }
+
+    y->next = x;
+    x->previous = y;
+
+    _insert_fixup(y);
+  }
+
+  auto insert_after(const std::shared_ptr<arc>& x, const std::shared_ptr<arc>& y) -> void {
+    if (is_nil(x->right)) {
+      x->right = y;
+      y->parent = x;
+    } else {
+      x->next->left = y;
+      y->parent = x->next;
+    }
+
+    y->next = x->next;
+
+    if (!is_nil(y->next)) {
+      y->next->previous = y;
+    }
+
+    y->previous = x;
+    x->next = y;
+
+    _insert_fixup(y);   
+  }
+
+  auto replace(const std::shared_ptr<arc>& x, const std::shared_ptr<arc>& y) -> void {
+    _transplant(x, y);
+
+    y->left = x->left;
+    y->right = x->right;
+  
+    if (!is_nil(y->left)) {
+      y->left->parent = y;
+    }
+
+    if (!is_nil(y->right)) {
+      y->right->parent = y;
+    }
+
+    y->previous = x->previous;
+    y->next = x->next;
+
+    if (!is_nil(y->previous)) {
+      y->previous->next = y;
+    }
+
+    if (!is_nil(y->next)) {
+      y->next->previous = y;
+    }
+
+    y->color = x->color;
+  }
+
+  auto remove(const std::shared_ptr<arc>& z) -> void {
+    auto y = z;
+    auto original_color = y->color;
+    auto x = std::shared_ptr<arc>{};
+
+    if (is_nil(z->left)) {
+      x = z->right;
+      _transplant(z, z->right);
+    } else if (is_nil(z->right)) {
+      x = z->left;
+      _transplant(z, z->left);
+    } else {
+      y = _minimum(z->right);
+      original_color = y->color;
+      x = y->right;
+
+      if (y->parent == z) {
+        x->parent = y;
+      } else {
+        _transplant(y, y->right);
+        y->right = z->right;
+        y->right->parent = y;
+      }
+
+      _transplant(z, y);
+      y->left = z->left;
+      y->left->parent = y;
+      y->color = z->color;
+    }
+
+    if (original_color == arc::color::black) {
+      _remove_fixup(x);
+    }
+
+    if (!is_nil(z->previous)) {
+      z->previous->next = z->next;
+    }
+
+    if (!is_nil(z->next)) {
+      z->next->previous = z->previous;
+    }
+  }
+
+private:
+
+  auto _minimum(const std::shared_ptr<arc>& node) -> std::shared_ptr<arc> {
+    auto current = node;
+
+    while (!is_nil(current->left)) {
+      current = current->left;
+    }
+
+    return current;
+  }
+
+  auto _transplant(const std::shared_ptr<arc>& u, const std::shared_ptr<arc>& v) -> void {
+    if (is_nil(u->parent)) {
+      _root = v;
+    } else (u == u->parent->left) {
+      u->parent->left = v;
+    } else {
+      u->parent->right = v;
+    }
+
+    v->parent = u->parent;
+  }
+
+  auto _insert_fixup(const std::shared_ptr<arc>& node) -> void{
+
+  }
+
+  auto _remove_fixup(const std::shared_ptr<arc>& node) -> void {
+
+  }
+
+  auto _rotate_left(const std::shared_ptr<arc>& node) -> void {
+
+  }
+
+  auto _rotate_right(const std::shared_ptr<arc>& y) -> void {
+    auto x = y->left;
+    y->left = x->right;
+    if (!isNil(x->right))
+        x->right->parent = y;
+    x->parent = y->parent;
+    if (isNil(y->parent))
+        mRoot = x;
+    else if (y->parent->left == y)
+        y->parent->left = x;
+    else
+        y->parent->right = x;
+    x->right = y;
+    y->parent = x;
+  }
+
+  auto _break_point(const sbx::math::vector2& left, const sbx::math::vector2& right, const std::float_t y) -> std::float_t {
+    auto x1 = left.x();
+    auto y1 = left.y();
+    auto x2 = right.x();
+    auto y2 = right.y();
+
+    auto d1 = 1.0f / (2.0f * (y1 - y));
+    auto d2 = 1.0f / (2.0f * (y2 - y));
+
+    auto a = d1 - d2;
+    auto b = 2.0f * (x2 * d2 - x1 * d1);
+    auto c = (y1 * y1 + x1 * x1 - l * l) * d1 - (y2 * y2 + x2 * x2 - l * l) * d2;
+
+    auto delta = b * b - 4.0f * a * c;
+
+    return (-b + std::sqrt(delta)) / (2.0f * a);
+  }
+
+  std::shared_ptr<arc> _nil;
+  std::shared_ptr<arc> _root;
+
+}; // class beach_line
 
 // https://pvigier.github.io/2018/11/18/fortune-algorithm-details.html
 
