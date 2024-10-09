@@ -6,6 +6,8 @@
 #include <list>
 #include <array>
 
+#include <libsbx/memory/observer_ptr.hpp>
+
 #include <libsbx/math/vector2.hpp>
 
 namespace demo {
@@ -132,7 +134,7 @@ struct arc;
 struct site {
   sbx::math::vector2 position;
   std::size_t index;
-  std::shared_ptr<face> face;
+  sbx::memory::observer_ptr<face> face;
 }; // struct site
 
 struct point {
@@ -141,27 +143,27 @@ struct point {
 }; // struct point
 
 struct half_edge {
-  std::shared_ptr<point> start;
-  std::shared_ptr<point> end;
-  std::shared_ptr<half_edge> twin;
-  std::shared_ptr<face> face;
-  std::shared_ptr<half_edge> previous;
-  std::shared_ptr<half_edge> next;
+  sbx::memory::observer_ptr<point> start;
+  sbx::memory::observer_ptr<point> end;
+  sbx::memory::observer_ptr<half_edge> twin;
+  sbx::memory::observer_ptr<face> face;
+  sbx::memory::observer_ptr<half_edge> previous;
+  sbx::memory::observer_ptr<half_edge> next;
   std::list<half_edge>::iterator iterator;
 }; // struct half_edge
 
 struct face {
-  std::shared_ptr<site> site;
-  std::shared_ptr<half_edge> edge;
+  sbx::memory::observer_ptr<site> site;
+  sbx::memory::observer_ptr<half_edge> edge;
 }; // struct face
 
 struct site_event {
 
   std::float_t y;
   std::int32_t index;
-  std::shared_ptr<site> site;
+  sbx::memory::observer_ptr<site> site;
 
-  site_event(const std::shared_ptr<demo::site>& s)
+  site_event(const sbx::memory::observer_ptr<demo::site>& s)
   : y{s->position.y()},
     site{s},
     index{-1} { }
@@ -173,9 +175,9 @@ struct circle_event {
   std::float_t y;
   std::int32_t index;
   sbx::math::vector2 center;
-  std::shared_ptr<arc> arc;
+  sbx::memory::observer_ptr<arc> arc;
 
-  circle_event(const std::float_t y_position, const sbx::math::vector2& c, const std::shared_ptr<demo::arc>& a)
+  circle_event(const std::float_t y_position, const sbx::math::vector2& c, const sbx::memory::observer_ptr<demo::arc>& a)
   : y{y_position},
     center{c},
     arc{a},
@@ -198,17 +200,17 @@ struct arc {
     black
   }; // enum class color
 
-  std::shared_ptr<arc> parent;
-  std::shared_ptr<arc> left;
-  std::shared_ptr<arc> right;
+  sbx::memory::observer_ptr<arc> parent;
+  std::unique_ptr<arc> left;
+  std::unique_ptr<arc> right;
 
-  std::shared_ptr<site> site;
-  std::shared_ptr<half_edge> left_half_edge;
-  std::shared_ptr<half_edge> right_half_edge;
-  std::shared_ptr<event> event;
+  sbx::memory::observer_ptr<site> site;
+  sbx::memory::observer_ptr<half_edge> left_half_edge;
+  sbx::memory::observer_ptr<half_edge> right_half_edge;
+  sbx::memory::observer_ptr<event> event;
 
-  std::shared_ptr<arc> previous;
-  std::shared_ptr<arc> next;
+  sbx::memory::observer_ptr<arc> previous;
+  sbx::memory::observer_ptr<arc> next;
 
   color color;
 
@@ -354,7 +356,7 @@ class beach_line {
 public:
 
   beach_line()
-  : _nil{std::make_shared<arc>()},
+  : _nil{std::make_unique<arc>()},
     _root{_nil} {
     _nil->color = arc::color::black;
   }
@@ -365,7 +367,7 @@ public:
   auto operator=(const beach_line&) -> beach_line& = delete;
   auto operator=(beach_line&&) -> beach_line& = delete;
 
-  auto create_arc(const std::shared_ptr<site>& site) -> std::shared_ptr<arc> {
+  auto create_arc(const sbx::memory::observer_ptr<site>& site) -> sbx::memory::observer_ptr<arc> {
     return std::make_shared<arc>(_nil, _nil, _nil, site, nullptr, nullptr, nullptr, _nil, _nil, arc::color::red);
   }
 
@@ -373,16 +375,16 @@ public:
     return is_nil(_root);
   }
 
-  auto is_nil(const std::shared_ptr<arc>& node) const -> bool {
+  auto is_nil(const sbx::memory::observer_ptr<arc>& node) const -> bool {
     return node == _nil;
   }
 
-  auto set_root(const std::shared_ptr<arc>& node) -> void {
+  auto set_root(const sbx::memory::observer_ptr<arc>& node) -> void {
     _root = node;
     _root->color = arc::color::black;
   }
 
-  auto left_most_arc() -> std::shared_ptr<arc> {
+  auto left_most_arc() -> sbx::memory::observer_ptr<arc> {
     auto node = _root;
 
     while (!is_nil(node->previous)) {
@@ -392,7 +394,7 @@ public:
     return node;
   }
 
-  auto arc_above(const sbx::math::vector2& point, const std::float_t y) -> std::shared_ptr<arc> {
+  auto arc_above(const sbx::math::vector2& point, const std::float_t y) -> sbx::memory::observer_ptr<arc> {
     auto node = _root;
     auto found = false;
 
@@ -420,7 +422,7 @@ public:
     return node;
   }
 
-  auto insert_before(const std::shared_ptr<arc>& x, std::shared_ptr<arc>& y) -> void {
+  auto insert_before(const sbx::memory::observer_ptr<arc>& x, sbx::memory::observer_ptr<arc>& y) -> void {
     if (is_nil(x->left)) {
       x->left = y;
       y->parent = x;
@@ -441,7 +443,7 @@ public:
     _insert_fixup(y);
   }
 
-  auto insert_after(const std::shared_ptr<arc>& x, std::shared_ptr<arc>& y) -> void {
+  auto insert_after(const sbx::memory::observer_ptr<arc>& x, sbx::memory::observer_ptr<arc>& y) -> void {
     if (is_nil(x->right)) {
       x->right = y;
       y->parent = x;
@@ -462,7 +464,7 @@ public:
     _insert_fixup(y);   
   }
 
-  auto replace(const std::shared_ptr<arc>& x, const std::shared_ptr<arc>& y) -> void {
+  auto replace(const sbx::memory::observer_ptr<arc>& x, const sbx::memory::observer_ptr<arc>& y) -> void {
     _transplant(x, y);
 
     y->left = x->left;
@@ -490,10 +492,10 @@ public:
     y->color = x->color;
   }
 
-  auto remove(const std::shared_ptr<arc>& z) -> void {
+  auto remove(const sbx::memory::observer_ptr<arc>& z) -> void {
     auto y = z;
     auto original_color = y->color;
-    auto x = std::shared_ptr<arc>{};
+    auto x = sbx::memory::observer_ptr<arc>{};
 
     if (is_nil(z->left)) {
       x = z->right;
@@ -535,7 +537,7 @@ public:
 
 private:
 
-  auto _minimum(const std::shared_ptr<arc>& node) -> std::shared_ptr<arc> {
+  auto _minimum(const sbx::memory::observer_ptr<arc>& node) -> sbx::memory::observer_ptr<arc> {
     auto current = node;
 
     while (!is_nil(current->left)) {
@@ -545,7 +547,7 @@ private:
     return current;
   }
 
-  auto _transplant(const std::shared_ptr<arc>& u, const std::shared_ptr<arc>& v) -> void {
+  auto _transplant(const sbx::memory::observer_ptr<arc>& u, const sbx::memory::observer_ptr<arc>& v) -> void {
     if (is_nil(u->parent)) {
       _root = v;
     } else if (u == u->parent->left) {
@@ -557,7 +559,7 @@ private:
     v->parent = u->parent;
   }
 
-  auto _insert_fixup(std::shared_ptr<arc>& z) -> void{
+  auto _insert_fixup(sbx::memory::observer_ptr<arc>& z) -> void{
     while (z->parent->color == arc::color::red) {
       if (z->parent == z->parent->parent->left) {
         auto y = z->parent->parent->right;
@@ -602,9 +604,9 @@ private:
     _root->color = arc::color::black;
   }
 
-  auto _remove_fixup(std::shared_ptr<arc>& x) -> void {
+  auto _remove_fixup(sbx::memory::observer_ptr<arc>& x) -> void {
     while (x != _root && x->color == arc::color::black) {
-      auto w = std::shared_ptr<arc>{};
+      auto w = sbx::memory::observer_ptr<arc>{};
 
       if (x == x->parent->left) {
         w = x->parent->right;
@@ -668,7 +670,7 @@ private:
     x->color = arc::color::black;
   }
 
-  auto _rotate_left(const std::shared_ptr<arc>& x) -> void {
+  auto _rotate_left(const sbx::memory::observer_ptr<arc>& x) -> void {
     auto y = x->right;
     x->right = y->left;
 
@@ -690,7 +692,7 @@ private:
     x->parent = y;
   }
 
-  auto _rotate_right(const std::shared_ptr<arc>& y) -> void {
+  auto _rotate_right(const sbx::memory::observer_ptr<arc>& y) -> void {
     auto x = y->left;
     y->left = x->right;
 
@@ -730,10 +732,27 @@ private:
     return (-b + std::sqrt(delta)) / (2.0f * a);
   }
 
-  std::shared_ptr<arc> _nil;
-  std::shared_ptr<arc> _root;
+  std::unique_ptr<arc> _nil;
+  sbx::memory::observer_ptr<arc> _root;
 
 }; // class beach_line
+
+class voronoi_diagram {
+
+public:
+
+private:
+
+  std::vector<site> _sites;
+  std::vector<face> _faces;
+  std::list<point> _points;
+  std::list<half_edge> _half_edges;
+
+  auto _create_point(const sbx::math::vector2& position) -> sbx::memory::observer_ptr<point> {
+
+  }
+
+}; // class voronoi_diagram
 
 // https://pvigier.github.io/2018/11/18/fortune-algorithm-details.html
 
