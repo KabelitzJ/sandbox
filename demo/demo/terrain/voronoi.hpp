@@ -373,7 +373,7 @@ public:
     return is_nil(_root);
   }
 
-  auto is_nil(const std::shared_ptr<site>& node) const -> bool {
+  auto is_nil(const std::shared_ptr<arc>& node) const -> bool {
     return node == _nil;
   }
 
@@ -420,13 +420,13 @@ public:
     return node;
   }
 
-  auto insert_before(const std::shared_ptr<arc>& x, const std::shared_ptr<arc>& y) -> void {
+  auto insert_before(const std::shared_ptr<arc>& x, std::shared_ptr<arc>& y) -> void {
     if (is_nil(x->left)) {
       x->left = y;
       y->parent = x;
     } else {
-      x->prev->right = y;
-      y->parent = x->prev;
+      x->previous->right = y;
+      y->parent = x->previous;
     }
 
     y->previous = x->previous;
@@ -441,7 +441,7 @@ public:
     _insert_fixup(y);
   }
 
-  auto insert_after(const std::shared_ptr<arc>& x, const std::shared_ptr<arc>& y) -> void {
+  auto insert_after(const std::shared_ptr<arc>& x, std::shared_ptr<arc>& y) -> void {
     if (is_nil(x->right)) {
       x->right = y;
       y->parent = x;
@@ -548,7 +548,7 @@ private:
   auto _transplant(const std::shared_ptr<arc>& u, const std::shared_ptr<arc>& v) -> void {
     if (is_nil(u->parent)) {
       _root = v;
-    } else (u == u->parent->left) {
+    } else if (u == u->parent->left) {
       u->parent->left = v;
     } else {
       u->parent->right = v;
@@ -557,30 +557,157 @@ private:
     v->parent = u->parent;
   }
 
-  auto _insert_fixup(const std::shared_ptr<arc>& node) -> void{
-
+  auto _insert_fixup(std::shared_ptr<arc>& z) -> void{
+    while (z->parent->color == arc::color::red) {
+      if (z->parent == z->parent->parent->left) {
+        auto y = z->parent->parent->right;
+        // Case 1
+        if (y->color == arc::color::red) {
+          z->parent->color = arc::color::black;
+          y->color = arc::color::black;
+          z->parent->parent->color = arc::color::red;
+          z = z->parent->parent;
+        } else {
+          // Case 2
+          if (z == z->parent->right) {
+            z = z->parent;
+            _rotate_left(z);
+          }
+          // Case 3
+          z->parent->color = arc::color::black;
+          z->parent->parent->color = arc::color::red;
+          _rotate_right(z->parent->parent);
+        }
+      } else {
+        auto y = z->parent->parent->left;
+        // Case 1
+        if (y->color == arc::color::red) {
+          z->parent->color = arc::color::black;
+          y->color = arc::color::black;
+          z->parent->parent->color = arc::color::red;
+          z = z->parent->parent;
+        } else {
+          // Case 2
+          if (z == z->parent->left) {
+            z = z->parent;
+            _rotate_right(z);
+          }
+          // Case 3
+          z->parent->color = arc::color::black;
+          z->parent->parent->color = arc::color::red;
+          _rotate_left(z->parent->parent);
+        }
+      }
+    }
+    _root->color = arc::color::black;
   }
 
-  auto _remove_fixup(const std::shared_ptr<arc>& node) -> void {
+  auto _remove_fixup(std::shared_ptr<arc>& x) -> void {
+    while (x != _root && x->color == arc::color::black) {
+      auto w = std::shared_ptr<arc>{};
 
+      if (x == x->parent->left) {
+        w = x->parent->right;
+        // Case 1
+        if (w->color == arc::color::red) {
+          w->color = arc::color::black;
+          x->parent->color = arc::color::red;
+          _rotate_left(x->parent);
+          w = x->parent->right;
+        }
+        // Case 2
+        if (w->left->color == arc::color::black && w->right->color == arc::color::black) {
+          w->color = arc::color::red;
+          x = x->parent;
+        } else {
+          // Case 3
+          if (w->right->color == arc::color::black) {
+            w->left->color = arc::color::black;
+            w->color = arc::color::red;
+            _rotate_right(w);
+            w = x->parent->right;
+          }
+          // Case 4
+          w->color = x->parent->color;
+          x->parent->color = arc::color::black;
+          w->right->color = arc::color::black;
+          _rotate_left(x->parent);
+          x = _root;
+        }
+      } else {
+        w = x->parent->left;
+        // Case 1
+        if (w->color == arc::color::red) {
+          w->color = arc::color::black;
+          x->parent->color = arc::color::red;
+          _rotate_right(x->parent);
+          w = x->parent->left;
+        }
+        // Case 2
+        if (w->left->color == arc::color::black && w->right->color == arc::color::black) {
+          w->color = arc::color::red;
+          x = x->parent;
+        } else {
+          // Case 3
+          if (w->left->color == arc::color::black) {
+            w->right->color = arc::color::black;
+            w->color = arc::color::red;
+            _rotate_left(w);
+            w = x->parent->left;
+          }
+          // Case 4
+          w->color = x->parent->color;
+          x->parent->color = arc::color::black;
+          w->left->color = arc::color::black;
+          _rotate_right(x->parent);
+          x = _root;
+        } 
+      }
+    }
+
+    x->color = arc::color::black;
   }
 
-  auto _rotate_left(const std::shared_ptr<arc>& node) -> void {
+  auto _rotate_left(const std::shared_ptr<arc>& x) -> void {
+    auto y = x->right;
+    x->right = y->left;
 
+    if (!is_nil(y->left)) {
+      y->left->parent = x;
+    }
+
+    y->parent = x->parent;
+
+    if (is_nil(x->parent)) {
+      _root = y;
+    } else if (x->parent->left == x) {
+      x->parent->left = y;
+    } else {
+      x->parent->right = y;
+    }
+
+    y->left = x;
+    x->parent = y;
   }
 
   auto _rotate_right(const std::shared_ptr<arc>& y) -> void {
     auto x = y->left;
     y->left = x->right;
-    if (!isNil(x->right))
-        x->right->parent = y;
+
+    if (!is_nil(x->right)) {
+      x->right->parent = y;
+    }
+
     x->parent = y->parent;
-    if (isNil(y->parent))
-        mRoot = x;
-    else if (y->parent->left == y)
-        y->parent->left = x;
-    else
-        y->parent->right = x;
+
+    if (is_nil(y->parent)) {
+      _root = x;
+    } else if (y->parent->left == y) {
+      y->parent->left = x;
+    } else {
+      y->parent->right = x;
+    }
+
     x->right = y;
     y->parent = x;
   }
@@ -596,7 +723,7 @@ private:
 
     auto a = d1 - d2;
     auto b = 2.0f * (x2 * d2 - x1 * d1);
-    auto c = (y1 * y1 + x1 * x1 - l * l) * d1 - (y2 * y2 + x2 * x2 - l * l) * d2;
+    auto c = (y1 * y1 + x1 * x1 - y * y) * d1 - (y2 * y2 + x2 * x2 - y * y) * d2;
 
     auto delta = b * b - 4.0f * a * c;
 
