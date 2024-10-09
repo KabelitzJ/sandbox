@@ -132,14 +132,14 @@ struct half_edge;
 struct arc;
 
 struct site {
-  sbx::math::vector2 position;
   std::size_t index;
+  sbx::math::vector2 position;
   sbx::memory::observer_ptr<face> face;
 }; // struct site
 
 struct point {
   sbx::math::vector2 position;
-  std::list<vertex>::iterator iterator;
+  std::list<point>::iterator iterator;
 }; // struct point
 
 struct half_edge {
@@ -175,9 +175,9 @@ struct circle_event {
   std::float_t y;
   std::int32_t index;
   sbx::math::vector2 center;
-  sbx::memory::observer_ptr<arc> arc;
+  arc* arc;
 
-  circle_event(const std::float_t y_position, const sbx::math::vector2& c, const sbx::memory::observer_ptr<demo::arc>& a)
+  circle_event(const std::float_t y_position, const sbx::math::vector2& c, demo::arc* a)
   : y{y_position},
     center{c},
     arc{a},
@@ -200,17 +200,17 @@ struct arc {
     black
   }; // enum class color
 
-  sbx::memory::observer_ptr<arc> parent;
-  std::unique_ptr<arc> left;
-  std::unique_ptr<arc> right;
+  arc* parent;
+  arc* left;
+  arc* right;
 
-  sbx::memory::observer_ptr<site> site;
-  sbx::memory::observer_ptr<half_edge> left_half_edge;
-  sbx::memory::observer_ptr<half_edge> right_half_edge;
-  sbx::memory::observer_ptr<event> event;
+  site* site;
+  half_edge* left_half_edge;
+  half_edge* right_half_edge;
+  event* event;
 
-  sbx::memory::observer_ptr<arc> previous;
-  sbx::memory::observer_ptr<arc> next;
+  arc* previous;
+  arc* next;
 
   color color;
 
@@ -356,7 +356,7 @@ class beach_line {
 public:
 
   beach_line()
-  : _nil{std::make_unique<arc>()},
+  : _nil{new arc{}},
     _root{_nil} {
     _nil->color = arc::color::black;
   }
@@ -367,24 +367,24 @@ public:
   auto operator=(const beach_line&) -> beach_line& = delete;
   auto operator=(beach_line&&) -> beach_line& = delete;
 
-  auto create_arc(const sbx::memory::observer_ptr<site>& site) -> sbx::memory::observer_ptr<arc> {
-    return std::make_shared<arc>(_nil, _nil, _nil, site, nullptr, nullptr, nullptr, _nil, _nil, arc::color::red);
+  auto create_arc(site* site) -> arc* {
+    return new arc{_nil, _nil, _nil, site, nullptr, nullptr, nullptr, _nil, _nil, arc::color::red};
   }
 
   auto is_empty() const -> bool {
     return is_nil(_root);
   }
 
-  auto is_nil(const sbx::memory::observer_ptr<arc>& node) const -> bool {
+  auto is_nil(arc* node) const -> bool {
     return node == _nil;
   }
 
-  auto set_root(const sbx::memory::observer_ptr<arc>& node) -> void {
+  auto set_root(arc* node) -> void {
     _root = node;
     _root->color = arc::color::black;
   }
 
-  auto left_most_arc() -> sbx::memory::observer_ptr<arc> {
+  auto left_most_arc() -> arc* {
     auto node = _root;
 
     while (!is_nil(node->previous)) {
@@ -394,7 +394,7 @@ public:
     return node;
   }
 
-  auto arc_above(const sbx::math::vector2& point, const std::float_t y) -> sbx::memory::observer_ptr<arc> {
+  auto arc_above(const sbx::math::vector2& point, const std::float_t y) -> arc* {
     auto node = _root;
     auto found = false;
 
@@ -422,7 +422,7 @@ public:
     return node;
   }
 
-  auto insert_before(const sbx::memory::observer_ptr<arc>& x, sbx::memory::observer_ptr<arc>& y) -> void {
+  auto insert_before(arc* x, arc* y) -> void {
     if (is_nil(x->left)) {
       x->left = y;
       y->parent = x;
@@ -443,7 +443,7 @@ public:
     _insert_fixup(y);
   }
 
-  auto insert_after(const sbx::memory::observer_ptr<arc>& x, sbx::memory::observer_ptr<arc>& y) -> void {
+  auto insert_after(arc* x, arc* y) -> void {
     if (is_nil(x->right)) {
       x->right = y;
       y->parent = x;
@@ -464,7 +464,7 @@ public:
     _insert_fixup(y);   
   }
 
-  auto replace(const sbx::memory::observer_ptr<arc>& x, const sbx::memory::observer_ptr<arc>& y) -> void {
+  auto replace(arc* x, arc* y) -> void {
     _transplant(x, y);
 
     y->left = x->left;
@@ -492,10 +492,10 @@ public:
     y->color = x->color;
   }
 
-  auto remove(const sbx::memory::observer_ptr<arc>& z) -> void {
+  auto remove(arc* z) -> void {
     auto y = z;
     auto original_color = y->color;
-    auto x = sbx::memory::observer_ptr<arc>{};
+    auto* x = static_cast<arc*>(nullptr);
 
     if (is_nil(z->left)) {
       x = z->right;
@@ -537,7 +537,7 @@ public:
 
 private:
 
-  auto _minimum(const sbx::memory::observer_ptr<arc>& node) -> sbx::memory::observer_ptr<arc> {
+  auto _minimum(arc* node) -> arc* {
     auto current = node;
 
     while (!is_nil(current->left)) {
@@ -547,7 +547,7 @@ private:
     return current;
   }
 
-  auto _transplant(const sbx::memory::observer_ptr<arc>& u, const sbx::memory::observer_ptr<arc>& v) -> void {
+  auto _transplant(arc* u, arc* v) -> void {
     if (is_nil(u->parent)) {
       _root = v;
     } else if (u == u->parent->left) {
@@ -559,7 +559,7 @@ private:
     v->parent = u->parent;
   }
 
-  auto _insert_fixup(sbx::memory::observer_ptr<arc>& z) -> void{
+  auto _insert_fixup(arc* z) -> void{
     while (z->parent->color == arc::color::red) {
       if (z->parent == z->parent->parent->left) {
         auto y = z->parent->parent->right;
@@ -604,9 +604,9 @@ private:
     _root->color = arc::color::black;
   }
 
-  auto _remove_fixup(sbx::memory::observer_ptr<arc>& x) -> void {
+  auto _remove_fixup(arc* x) -> void {
     while (x != _root && x->color == arc::color::black) {
-      auto w = sbx::memory::observer_ptr<arc>{};
+      auto* w = static_cast<arc*>(nullptr);
 
       if (x == x->parent->left) {
         w = x->parent->right;
@@ -670,7 +670,7 @@ private:
     x->color = arc::color::black;
   }
 
-  auto _rotate_left(const sbx::memory::observer_ptr<arc>& x) -> void {
+  auto _rotate_left(arc* x) -> void {
     auto y = x->right;
     x->right = y->left;
 
@@ -692,7 +692,7 @@ private:
     x->parent = y;
   }
 
-  auto _rotate_right(const sbx::memory::observer_ptr<arc>& y) -> void {
+  auto _rotate_right(arc* y) -> void {
     auto x = y->left;
     y->left = x->right;
 
@@ -732,14 +732,47 @@ private:
     return (-b + std::sqrt(delta)) / (2.0f * a);
   }
 
-  std::unique_ptr<arc> _nil;
-  sbx::memory::observer_ptr<arc> _root;
+  arc* _nil;
+  arc* _root;
 
 }; // class beach_line
 
 class voronoi_diagram {
 
 public:
+
+  voronoi_diagram(const std::vector<sbx::math::vector2>& points) {
+    _sites.reserve(points.size());
+    _faces.reserve(points.size());
+
+    for (auto i : std::views::iota(0u, points.size())) {
+      _sites.push_back(site{i, points[i], nullptr});
+      _faces.push_back(face{&_sites.back(), nullptr});
+      _sites.back().face = &_faces.back();
+    }
+  }
+
+  voronoi_diagram(const voronoi_diagram&) = delete;
+  voronoi_diagram(voronoi_diagram&&) = delete;
+
+  auto operator=(const voronoi_diagram&) -> voronoi_diagram& = delete;
+  auto operator=(voronoi_diagram&&) -> voronoi_diagram& = delete;
+
+  auto sites() const -> const std::vector<site>& {
+    return _sites;
+  }
+
+  auto faces() const -> const std::vector<face>& {
+    return _faces;
+  }
+
+  auto points() const -> const std::list<point>& {
+    return _points;
+  }
+
+  auto half_edges() const -> const std::list<half_edge>& {
+    return _half_edges;
+  }
 
 private:
 
@@ -748,8 +781,28 @@ private:
   std::list<point> _points;
   std::list<half_edge> _half_edges;
 
-  auto _create_point(const sbx::math::vector2& position) -> sbx::memory::observer_ptr<point> {
+  auto _create_point(const sbx::math::vector2& position) -> point*{
 
+  }
+
+  auto _create_corner(const box& box, const box::side side) -> point* {
+
+  }
+
+  auto _create_half_edge(face* face) -> half_edge* {
+
+  }
+
+  auto _link(const box& box, const box::side start, half_edge* half_edge, const box::side end) -> void {
+
+  }
+
+  auto _remove_point(point* point) -> void {
+    _points.erase(point->iterator);
+  }
+
+  auto _remove_half_edge(half_edge* half_edge) -> void {
+    _half_edges.erase(half_edge->iterator);
   }
 
 }; // class voronoi_diagram
