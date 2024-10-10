@@ -68,7 +68,6 @@ private:
     // Generate vertices
 
     const auto tile_count = sbx::math::vector2u{size.x() / tile_size.x(), size.y() / tile_size.y()};
-    const auto vertex_count = sbx::math::vector2u{tile_count.x() + 1u, tile_count.y() + 1u};
 
     const auto offset = sbx::math::vector2{static_cast<std::float_t>(size.x() / 2.0f), static_cast<std::float_t>(size.y() / 2.0f)};
 
@@ -84,19 +83,19 @@ private:
 
     // Calculate indices
 
-    const auto count = tile_count.x() + 1u;
+    const auto vertex_count = tile_count.x() + 1u;
 
-    for (auto i = 0u; i < count * count - count; ++i) {
-      if ((i + 1u) % count == 0) {
+    for (auto i = 0u; i < vertex_count * vertex_count - vertex_count; ++i) {
+      if ((i + 1u) % vertex_count == 0u) {
         continue;
       }
 
       indices.emplace_back(i);
-      indices.emplace_back(i + count);
-      indices.emplace_back(i + count + 1u);
+      indices.emplace_back(i + vertex_count);
+      indices.emplace_back(i + vertex_count + 1u);
 
       indices.emplace_back(i);
-      indices.emplace_back(i + count + 1u);
+      indices.emplace_back(i + vertex_count + 1u);
       indices.emplace_back(i + 1u);
     }
 

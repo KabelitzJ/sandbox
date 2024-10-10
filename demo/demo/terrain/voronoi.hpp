@@ -6,6 +6,8 @@
 #include <list>
 #include <array>
 
+#include <libsbx/utility/enum.hpp>
+
 #include <libsbx/memory/observer_ptr.hpp>
 
 #include <libsbx/math/vector2.hpp>
@@ -14,7 +16,7 @@ namespace demo {
 
 template<typename Type>
 concept priority_queue_element = requires(Type t) {
-  { t.index } -> std::same_as<std::size_t>;
+  { t.index() } -> std::same_as<std::int32_t&>;
   { t < t } -> std::same_as<bool>;
 }; // concept priority_queue_element
 
@@ -47,7 +49,7 @@ public:
   }
 
   auto push(std::unique_ptr<value_type> element) -> void {
-    element->index = _elements.size();
+    element->index() = _elements.size();
     _elements.push_back(std::move(element));
     _shift_up(_elements.size() - 1u);
   }
@@ -90,16 +92,16 @@ private:
     const auto right = _right_child(index);
     auto largest = index;
 
-    if (left < _elements.size() && _elements[left]->priority() > _elements[largest]->priority()) {
+    if (left < _elements.size() && *_elements[largest] < *_elements[left]) {
       largest = left;
     }
 
-    if (right < _elements.size() && _elements[right]->priority() > _elements[largest]->priority()) {
+    if (right < _elements.size() && *_elements[largest] < *_elements[right]) {
       largest = right;
     }
 
     if (largest != index) {
-      _swap(_elements[index], _elements[largest]);
+      _swap(index, largest);
       _shift_down(largest);
     }
   }
@@ -118,8 +120,8 @@ private:
     _elements[left] = std::move(_elements[right]);
     _elements[right] = std::move(temp);
 
-    _elements[left]->index = left;
-    _elements[right]->index = right;
+    _elements[left]->index() = left;
+    _elements[right]->index() = right;
   }
 
   std::vector<std::unique_ptr<value_type>> _elements;
@@ -134,7 +136,7 @@ struct arc;
 struct site {
   std::size_t index;
   sbx::math::vector2 position;
-  sbx::memory::observer_ptr<face> face;
+  face* face;
 }; // struct site
 
 struct point {
@@ -143,27 +145,27 @@ struct point {
 }; // struct point
 
 struct half_edge {
-  sbx::memory::observer_ptr<point> start;
-  sbx::memory::observer_ptr<point> end;
-  sbx::memory::observer_ptr<half_edge> twin;
-  sbx::memory::observer_ptr<face> face;
-  sbx::memory::observer_ptr<half_edge> previous;
-  sbx::memory::observer_ptr<half_edge> next;
+  point* start;
+  point* end;
+  half_edge* twin;
+  face* face;
+  half_edge* previous;
+  half_edge* next;
   std::list<half_edge>::iterator iterator;
 }; // struct half_edge
 
 struct face {
-  sbx::memory::observer_ptr<site> site;
-  sbx::memory::observer_ptr<half_edge> edge;
+  site* site;
+  half_edge* edge;
 }; // struct face
 
 struct site_event {
 
   std::float_t y;
   std::int32_t index;
-  sbx::memory::observer_ptr<site> site;
+  site* site;
 
-  site_event(const sbx::memory::observer_ptr<demo::site>& s)
+  site_event(demo::site* s)
   : y{s->position.y()},
     site{s},
     index{-1} { }
@@ -185,12 +187,72 @@ struct circle_event {
 
 }; // struct circle_event
 
-using event = std::variant<site_event, circle_event>;
+class event {
+
+public:
+
+  event(const site_event& e)
+  : _event{e} { }
+
+  event(const circle_event& e)
+  : _event{e} { }
+
+  auto y() const -> const std::float_t& {
+    if (is_site_event()) {
+      return site_event().y;
+    } else {
+      return circle_event().y;
+    }
+  }
+
+  auto y() -> std::float_t& {
+    if (is_site_event()) {
+      return site_event().y;
+    } else {
+      return circle_event().y;
+    }
+  }
+
+  auto index() -> std::int32_t& {
+    if (is_site_event()) {
+      return site_event().index;
+    } else {
+      return circle_event().index;
+    }
+  }
+
+  auto is_site_event() const -> bool {
+    return std::holds_alternative<demo::site_event>(_event);
+  }
+
+  auto site_event() const -> const demo::site_event& {
+    return std::get<demo::site_event>(_event);
+  }
+
+  auto site_event() -> demo::site_event& {
+    return std::get<demo::site_event>(_event);
+  }
+
+  auto is_circle_event() const -> bool {
+    return std::holds_alternative<demo::circle_event>(_event);
+  }
+
+  auto circle_event() const -> const demo::circle_event& {
+    return std::get<demo::circle_event>(_event);
+  }
+
+  auto circle_event() -> demo::circle_event& {
+    return std::get<demo::circle_event>(_event);
+  }
+
+private:
+
+  std::variant<demo::site_event, demo::circle_event> _event;
+
+}; // class event
 
 auto operator<(const event& left, const event& right) -> bool {
-  return std::visit([](const auto& l, const auto& r) {
-    return l.y < r.y;
-  }, left, right);
+  return left.y() < right.y();
 }
 
 struct arc {
@@ -241,54 +303,54 @@ struct box {
     return point.x() >= left - epsilon && point.x() <= right + epsilon && point.y() >= top - epsilon && point.y() <= bottom + epsilon;
   }
 
-  auto first_intersection(const sbx::math::vector2& origin, const sbx::math::vector2& direction) -> intersection {
+  auto first_intersection(const sbx::math::vector2& start, const sbx::math::vector2& direction) const -> intersection {
     auto result = intersection{};
 
     auto t = std::numeric_limits<std::float_t>::infinity();
 
     if (direction.x() > 0.0f) {
-      t = (right - origin.x()) / direction.x();
+      t = (right - start.x()) / direction.x();
       result.side = side::right;
-      result.position = origin + direction * t;
+      result.position = start + direction * t;
     } else if (direction.x() < 0.0f) {
-      t = (left - origin.x()) / direction.x();
+      t = (left - start.x()) / direction.x();
       result.side = side::left;
-      result.position = origin + direction * t;
+      result.position = start + direction * t;
     }
 
     if (direction.y() > 0.0f) {
-      auto new_t = (top - origin.y()) / direction.y();
+      auto new_t = (top - start.y()) / direction.y();
 
       if (new_t < t) {
         result.side = side::top;
-        result.position = origin + direction * new_t;
+        result.position = start + direction * new_t;
       }
     } else if (direction.y() < 0.0f) {
-      auto new_t = (bottom - origin.y()) / direction.y();
+      auto new_t = (bottom - start.y()) / direction.y();
 
       if (new_t < t) {
         result.side = side::bottom;
-        result.position = origin + direction * new_t;
+        result.position = start + direction * new_t;
       }
     }
 
     return result;
   }
 
-  auto intersections(const sbx::math::vector2& origin, const sbx::math::vector2& destination) -> std::vector<intersection> {
+  auto intersections(const sbx::math::vector2& start, const sbx::math::vector2& end) const -> std::vector<intersection> {
     auto result = std::vector<intersection>{};
 
-    const auto direction = destination - origin;
+    const auto direction = end - start;
     auto t = std::array<std::float_t, 2u>{};
 
     // Left
-    if (origin.x() < left || destination.x() < left - epsilon) {
+    if (start.x() < left || end.x() < left - epsilon) {
       const auto i = result.size();
 
-      t[i] = (left - origin.x()) / direction.x();
+      t[i] = (left - start.x()) / direction.x();
 
       if (t[i] > epsilon && t[i] < 1.0 - epsilon) {
-        const auto position = origin + direction * t[i];
+        const auto position = start + direction * t[i];
 
         if (position.y() >= bottom - epsilon && position.y() <= top + epsilon) {
           result.push_back(intersection{side::left, position});
@@ -297,13 +359,13 @@ struct box {
     }
 
     // Right
-    if (origin.x() > right || destination.x() > right + epsilon) {
+    if (start.x() > right || end.x() > right + epsilon) {
       const auto i = result.size();
 
-      t[i] = (right - origin.x()) / direction.x();
+      t[i] = (right - start.x()) / direction.x();
 
       if (t[i] > epsilon && t[i] < 1.0 - epsilon) {
-        const auto position = origin + direction * t[i];
+        const auto position = start + direction * t[i];
 
         if (position.y() >= bottom - epsilon && position.y() <= top + epsilon) {
           result.push_back(intersection{side::right, position});
@@ -312,13 +374,13 @@ struct box {
     }
 
     // Bottom
-    if (origin.y() < bottom || destination.y() < bottom - epsilon) {
+    if (start.y() < bottom || end.y() < bottom - epsilon) {
       const auto i = result.size();
 
-      t[i] = (bottom - origin.y()) / direction.y();
+      t[i] = (bottom - start.y()) / direction.y();
 
       if (t[i] > epsilon && t[i] < 1.0 - epsilon) {
-        const auto position = origin + direction * t[i];
+        const auto position = start + direction * t[i];
 
         if (position.x() >= left - epsilon && position.x() <= right + epsilon) {
           result.push_back(intersection{side::bottom, position});
@@ -327,13 +389,13 @@ struct box {
     }
 
     // Top
-    if (origin.y() > top || destination.y() > top + epsilon) {
+    if (start.y() > top || end.y() > top + epsilon) {
       const auto i = result.size();
 
-      t[i] = (top - origin.y()) / direction.y();
+      t[i] = (top - start.y()) / direction.y();
 
       if (t[i] > epsilon && t[i] < 1.0 - epsilon) {
-        const auto position = origin + direction * t[i];
+        const auto position = start + direction * t[i];
 
         if (position.x() >= left - epsilon && position.x() <= right + epsilon) {
           result.push_back(intersection{side::top, position});
@@ -494,7 +556,7 @@ public:
 
   auto remove(arc* z) -> void {
     auto y = z;
-    auto original_color = y->color;
+    auto start_color = y->color;
     auto* x = static_cast<arc*>(nullptr);
 
     if (is_nil(z->left)) {
@@ -505,7 +567,7 @@ public:
       _transplant(z, z->left);
     } else {
       y = _minimum(z->right);
-      original_color = y->color;
+      start_color = y->color;
       x = y->right;
 
       if (y->parent == z) {
@@ -522,7 +584,7 @@ public:
       y->color = z->color;
     }
 
-    if (original_color == arc::color::black) {
+    if (start_color == arc::color::black) {
       _remove_fixup(x);
     }
 
@@ -739,6 +801,8 @@ private:
 
 class voronoi_diagram {
 
+  friend class fortune_algorithm;
+
 public:
 
   voronoi_diagram(const std::vector<sbx::math::vector2>& points) {
@@ -762,6 +826,10 @@ public:
     return _sites;
   }
 
+  auto sites() -> std::vector<site>& {
+    return _sites;
+  }
+
   auto faces() const -> const std::vector<face>& {
     return _faces;
   }
@@ -774,6 +842,113 @@ public:
     return _half_edges;
   }
 
+  auto intersect(const box& box) -> bool {
+    auto error = false;
+    auto processed_half_edges = std::unordered_set<half_edge*>{};
+    auto points_to_remove = std::unordered_set<demo::point*>{};
+
+    for (const auto& site : _sites) {
+      auto* half_edge = site.face->edge;
+      auto is_inside = box.contains(half_edge->start->position);
+      auto is_edge_dirty = !is_inside;
+      auto* incoming_half_edge =  static_cast<demo::half_edge*>(nullptr);
+      auto* outgoing_half_edge = static_cast<demo::half_edge*>(nullptr);
+      auto incoming_side = box::side{}; 
+      auto outgoing_side = box::side{};
+  
+      do {
+        const auto intersections = box.intersections(half_edge->start->position, half_edge->end->position);
+        auto next_inside = box.contains(half_edge->end->position);
+        auto* next_half_edge = half_edge->next;
+
+        if (!is_inside && !next_inside) {
+          if (intersections.size() == 0u) {
+            points_to_remove.emplace(half_edge->start);
+            _remove_half_edge(half_edge);
+          } else if (intersections.size() == 2u) {
+            points_to_remove.emplace(half_edge->start);
+
+            if (processed_half_edges.find(half_edge->twin) != processed_half_edges.end()) {
+              half_edge->start = half_edge->twin->end;
+              half_edge->end = half_edge->twin->start;
+            } else {
+              half_edge->start = _create_point(intersections[0].position);
+              half_edge->end = _create_point(intersections[1].position);
+            }
+
+            if (outgoing_half_edge != nullptr) {
+              _link(box, outgoing_half_edge, outgoing_side, half_edge, intersections[0].side);
+            }
+
+            if (incoming_half_edge == nullptr) {
+              incoming_half_edge = half_edge;
+              incoming_side = intersections[0].side;
+            }
+
+            outgoing_half_edge = half_edge;
+            outgoing_side = intersections[1].side;
+            processed_half_edges.emplace(half_edge);
+          } else {
+            error = true;
+          }
+        } else if (is_inside && !next_inside) {
+          if (intersections.size() == 1u) {
+            if (processed_half_edges.find(half_edge->twin) != processed_half_edges.end()) {
+              half_edge->end = half_edge->twin->start;
+            } else {
+              half_edge->end = _create_point(intersections[0].position);
+            }
+
+            outgoing_half_edge = half_edge;
+            outgoing_side = intersections[0].side;
+            processed_half_edges.emplace(half_edge);
+          } else {
+            error = true;
+          }
+        } else if (!is_inside && next_inside) {
+          if (intersections.size() == 1u) {
+            points_to_remove.emplace(half_edge->start);
+            if (processed_half_edges.find(half_edge->twin) != processed_half_edges.end()) {
+              half_edge->start = half_edge->twin->end;
+            } else {
+              half_edge->start = _create_point(intersections[0].position);
+            }
+
+            if (outgoing_half_edge != nullptr) {
+              _link(box, outgoing_half_edge, outgoing_side, half_edge, intersections[0].side);
+            }
+
+            if (incoming_half_edge == nullptr) {
+              incoming_half_edge = half_edge;
+              incoming_side = intersections[0].side;
+            }
+
+            processed_half_edges.emplace(half_edge);
+          } else {
+            error = true;
+          }
+        }
+
+        half_edge = next_half_edge;
+        is_inside = next_inside;
+      } while (half_edge != site.face->edge);
+
+      if (is_edge_dirty && incoming_half_edge != nullptr) {
+        _link(box, outgoing_half_edge, outgoing_side, incoming_half_edge, incoming_side);
+      }
+
+      if (is_edge_dirty) {
+        site.face->edge = incoming_half_edge;
+      }
+    }
+
+    for (auto* vertex : points_to_remove) {
+      _remove_point(vertex);
+    }
+
+    return !error;
+  }
+
 private:
 
   std::vector<site> _sites;
@@ -782,19 +957,64 @@ private:
   std::list<half_edge> _half_edges;
 
   auto _create_point(const sbx::math::vector2& position) -> point*{
+    _points.emplace_back();
+    _points.back().position = position;
+    _points.back().iterator = std::prev(_points.end());
 
+    return &_points.back();
   }
 
   auto _create_corner(const box& box, const box::side side) -> point* {
-
+    switch (side) {
+      case box::side::left: {
+        return _create_point(sbx::math::vector2{box.left, box.top});
+      }
+      case box::side::bottom: {
+        return _create_point(sbx::math::vector2{box.left, box.bottom});
+      }
+      case box::side::right: {
+        return _create_point(sbx::math::vector2{box.right, box.bottom});
+      }
+      case box::side::top: {
+        return _create_point(sbx::math::vector2{box.right, box.top});
+      }
+      default: {
+        return nullptr;
+      }
+    }
   }
 
   auto _create_half_edge(face* face) -> half_edge* {
+    _half_edges.emplace_back();
+    _half_edges.back().face = face;
+    _half_edges.back().iterator = std::prev(_half_edges.end());
 
+    if (face->edge == nullptr) {
+      face->edge = &_half_edges.back();
+    }
+
+    return &_half_edges.back();
   }
 
-  auto _link(const box& box, const box::side start, half_edge* half_edge, const box::side end) -> void {
+  auto _link(const box& box, half_edge* start, const box::side start_side, half_edge* end, const box::side end_side) -> void {
+    auto* half_edge = start;
+    auto side = sbx::utility::to_underlying(start_side);
 
+    while (side != sbx::utility::to_underlying(end_side)) {
+      side = sbx::utility::fast_mod(side + 1u, 4u);
+      half_edge->next = _create_half_edge(start->face);
+      half_edge->next->previous = half_edge;
+      half_edge->next->start = half_edge->end;
+      half_edge->next->end = _create_corner(box, sbx::utility::from_underlying<box::side>(side));
+      half_edge = half_edge->next;
+    }
+
+    half_edge->next = _create_half_edge(start->face);
+    half_edge->next->previous = half_edge;
+    end->previous = half_edge->next;
+    half_edge->next->next = end;
+    half_edge->next->start = half_edge->end;
+    half_edge->next->end = end->start;
   }
 
   auto _remove_point(point* point) -> void {
@@ -806,6 +1026,179 @@ private:
   }
 
 }; // class voronoi_diagram
+
+class fortune_algorithm {
+
+public:
+
+  fortune_algorithm(const std::vector<sbx::math::vector2>& points)
+  : _diagram{points} { }
+
+  ~fortune_algorithm() {
+
+  }
+
+  auto construct() -> void {
+    for (auto& site : _diagram.sites()) {
+      _events.push(std::make_unique<event>(site_event{&site}));
+    }
+
+    while (!_events.is_empty()) {
+      auto event = _events.pop();
+
+      _y_position = event->y();
+
+      if (event->is_site_event()) {
+        _handle_site_event(event->site_event());
+      } else {
+        _handle_circle_event(event->circle_event());
+      }
+    }
+  }
+
+  auto bound(const box& box) -> bool {
+
+  }
+
+  auto diagram() const -> const voronoi_diagram& {
+    return _diagram;
+  }
+
+private:
+
+  struct linked_vertex {
+    half_edge* prev_half_edge;
+    point* position;
+    half_edge* next_half_edge;
+  }; // struct linked_vertex
+
+  auto _handle_site_event(site_event& event) -> void {
+    auto site = event.site;
+
+    // 1. Check if the bach_line is empty
+    if (_beach_line.is_empty()) {
+      _beach_line.set_root(_beach_line.create_arc(site));
+      return;
+    }
+
+    // 2. Look for the arc above the site
+    auto* arc_to_break = _beach_line.arc_above(site->position, _y_position);
+    _delete_event(arc_to_break);
+
+    // 3. Replace this arc by the new arcs
+    auto* middle_arc = _break_arc(arc_to_break, site);
+    auto* left_arc = middle_arc->previous; 
+    auto* right_arc = middle_arc->next;
+
+    // 4. Add an edge in the diagram
+    _add_edge(left_arc, middle_arc);
+    middle_arc->right_half_edge = middle_arc->left_half_edge;
+    right_arc->left_half_edge = left_arc->right_half_edge;
+
+    // 5. Check circle events
+    // Left triplet
+    if (!_beach_line.is_nil(left_arc->previous)) {
+      _add_event(left_arc->previous, left_arc, middle_arc);
+    }
+    // Right triplet
+    if (!_beach_line.is_nil(right_arc->next)) {
+      _add_event(middle_arc, right_arc, right_arc->next);
+    }
+  }
+
+  auto _handle_circle_event(circle_event& event) -> void {
+    auto center = event.center;
+    auto* arc = event.arc;
+
+    // 1. Add vertex
+    auto* position = _diagram._create_point(center);
+
+    // 2. Delete all the events with this arc
+    auto* left_arc = arc->previous;
+    auto* right_arc = arc->next;
+    _delete_event(left_arc);
+    _delete_event(right_arc);
+
+    // 3. Update the beach_line and the diagram
+    _remove_arc(arc, position);
+
+    // 4. Add new circle events
+    // Left triplet
+    if (!_beach_line.is_nil(left_arc->previous)) {
+      _add_event(left_arc->previous, left_arc, right_arc);
+    }
+    // Right triplet
+    if (!_beach_line.is_nil(right_arc->next)) {
+      _add_event(left_arc, right_arc, right_arc->next);
+    }
+  }
+
+  auto _break_arc(demo::arc* arc, demo::site* site) -> demo::arc* {
+    // Create the new subtree
+    auto* middle_arc = _beach_line.create_arc(site);
+    auto* left_arc = _beach_line.create_arc(arc->site);
+    left_arc->left_half_edge = arc->left_half_edge;
+    auto* right_arc = _beach_line.create_arc(arc->site);
+    right_arc->right_half_edge = arc->right_half_edge;
+
+    // Insert the subtree in the beach_line
+    _beach_line.replace(arc, middle_arc);
+    _beach_line.insert_before(middle_arc, left_arc);
+    _beach_line.insert_after(middle_arc, right_arc);
+
+    // Delete old arc
+    delete arc;
+
+    // Return the middle arc
+    return middle_arc;
+  }
+
+  auto _remove_arc(arc* arc, point* position) -> void {
+
+  }
+
+  auto _is_moving_right(const arc* left, const arc* right) -> bool {
+
+  }
+
+  auto _initial_x(const arc* left, const arc* right, const bool is_moving_right) -> std::float_t {
+
+  }
+
+  auto _add_edge(arc* left, arc* right) -> void {
+
+  }
+
+  auto _set_origin(arc* left, arc* right, point* position) -> void {
+
+  }
+
+  auto _set_destination(arc* left, arc* right, point* position) -> void {
+
+  }
+
+  auto _set_previous_half_edge(half_edge* previous, half_edge* next) -> void {
+
+  }
+
+  auto _add_event(arc* left, arc* middle, arc* right) -> void {
+
+  }
+
+  auto _delete_event(arc* arc) -> void {
+
+  }
+
+  auto _compute_convergence_point(const sbx::math::vector2& point1, const sbx::math::vector2& point2, const sbx::math::vector2& point3, std::float_t& y) -> sbx::math::vector2 {
+
+  }
+
+  voronoi_diagram _diagram;
+  beach_line _beach_line;
+  priority_queue<event> _events;
+  std::float_t _y_position;
+
+}; // class fortune_algorithm
 
 // https://pvigier.github.io/2018/11/18/fortune-algorithm-details.html
 

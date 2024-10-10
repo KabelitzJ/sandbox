@@ -12,8 +12,14 @@ namespace sbx::utility {
 
 template<typename Enum>
 requires (std::is_enum_v<Enum>)
-constexpr auto to_underlying(Enum value) -> std::underlying_type_t<Enum> {
+constexpr auto to_underlying(const Enum value) -> std::underlying_type_t<Enum> {
   return static_cast<std::underlying_type_t<Enum>>(value);
+}
+
+template<typename Enum>
+requires (std::is_enum_v<Enum>)
+constexpr auto from_underlying(const std::underlying_type_t<Enum> value) -> Enum {
+  return static_cast<Enum>(value);
 }
 
 template<typename Enum>
