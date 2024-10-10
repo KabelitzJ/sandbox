@@ -75,8 +75,8 @@ public:
 
 private:
 
-  auto _parent(const std::size_t index) const -> std::size_t {
-    return (index - 1u) / 2u;
+  auto _parent(const std::size_t index) const -> std::int32_t {
+    return (index + 1u) / 2u - 1u;
   }
 
   auto _left_child(const std::size_t index) const -> std::size_t {
@@ -834,6 +834,10 @@ public:
     return _faces;
   }
 
+  auto faces() -> std::vector<face>& {
+    return _faces;
+  }
+
   auto points() const -> const std::list<point>& {
     return _points;
   }
@@ -1056,8 +1060,92 @@ public:
     }
   }
 
-  auto bound(const box& box) -> bool {
+  auto bound(box box) -> bool {
+    for (const auto& point : _diagram.points()) {
+      box.left = std::min(point.position.x(), box.left);
+      box.bottom = std::min(point.position.y(), box.bottom);
+      box.right = std::max(point.position.x(), box.right);
+      box.top = std::max(point.position.y(), box.top);
+    }
 
+    auto linked_points = std::list<linked_vertex>{};
+    auto points = std::unordered_map<std::size_t, std::array<linked_vertex*, 8u>>{_diagram.sites().size()};
+
+    if (!_beach_line.is_empty()) {
+      auto* left_arc = _beach_line.left_most_arc();
+      auto* right_arc = left_arc->next;
+      while (!_beach_line.is_nil(right_arc)) {
+        auto direction = sbx::math::vector2::orthogonal(left_arc->site->position - right_arc->site->position);
+        auto origin = (left_arc->site->position + right_arc->site->position) * 0.5f;
+
+        auto intersection = box.first_intersection(origin, direction);
+
+        auto* point = _diagram._create_point(intersection.position);
+        _set_destination(left_arc, right_arc, point);
+
+        if (points.find(left_arc->site->index) == points.end()) {
+          points[left_arc->site->index].fill(nullptr); 
+        }
+
+        if (points.find(right_arc->site->index) == points.end()) {
+          points[right_arc->site->index].fill(nullptr); 
+        }
+
+        linked_points.emplace_back(linked_vertex{nullptr, point, left_arc->right_half_edge});
+        points[left_arc->site->index][2 * static_cast<int>(intersection.side) + 1] = &linked_points.back();
+        linked_points.emplace_back(linked_vertex{right_arc->left_half_edge, point, nullptr});
+        points[right_arc->site->index][2 * static_cast<int>(intersection.side)] = &linked_points.back();
+
+        left_arc = right_arc;
+        right_arc = right_arc->next;
+      }
+    }
+
+    for (auto& [key, cell_vertices] : points) {
+      for (auto i : std::views::iota(0u, 5u)) {
+        auto side = sbx::utility::fast_mod(i, 4u);
+        auto next_side = (side + 1) % 4;
+
+        if (cell_vertices[2 * side] == nullptr && cell_vertices[2 * side + 1] != nullptr) {
+          auto previous_side = (side + 3) % 4;
+          auto* corner = _diagram._create_corner(box, sbx::utility::from_underlying<box::side>(side));
+
+          linked_points.emplace_back(linked_vertex{nullptr, corner, nullptr});
+          cell_vertices[2 * previous_side + 1] = &linked_points.back();
+          cell_vertices[2 * side] = &linked_points.back();
+        } else if (cell_vertices[2 * side] != nullptr && cell_vertices[2 * side + 1] == nullptr) {
+          auto* corner = _diagram._create_corner(box, sbx::utility::from_underlying<box::side>(next_side));
+          linked_points.emplace_back(linked_vertex{nullptr, corner, nullptr});
+          cell_vertices[2 * side + 1] = &linked_points.back();
+          cell_vertices[2 * next_side] = &linked_points.back();
+        }
+      }
+    }
+
+    for (auto& [i, cell_vertices] : points) {
+      for (std::size_t side = 0; side < 4; ++side) {
+        if (cell_vertices[2 * side] != nullptr) {
+          auto* half_edge = _diagram._create_half_edge(&_diagram.faces().at(i));
+          half_edge->start = cell_vertices[2 * side]->position;
+          half_edge->end = cell_vertices[2 * side + 1]->position;
+          cell_vertices[2 * side]->next_half_edge = half_edge;
+          half_edge->previous = cell_vertices[2 * side]->previous_half_edge;
+
+          if (cell_vertices[2 * side]->previous_half_edge != nullptr) {
+            cell_vertices[2 * side]->previous_half_edge->next = half_edge;
+          }
+
+          cell_vertices[2 * side + 1]->previous_half_edge = half_edge;
+          half_edge->next = cell_vertices[2 * side + 1]->next_half_edge;
+
+          if (cell_vertices[2 * side + 1]->next_half_edge != nullptr) {
+            cell_vertices[2 * side + 1]->next_half_edge->previous = half_edge;
+          }
+        }
+      }
+    }
+
+    return true;
   }
 
   auto diagram() const -> const voronoi_diagram& {
@@ -1067,7 +1155,7 @@ public:
 private:
 
   struct linked_vertex {
-    half_edge* prev_half_edge;
+    half_edge* previous_half_edge;
     point* position;
     half_edge* next_half_edge;
   }; // struct linked_vertex
@@ -1154,43 +1242,97 @@ private:
   }
 
   auto _remove_arc(arc* arc, point* position) -> void {
+    _set_destination(arc->previous, arc, position);
+    _set_destination(arc, arc->next, position);
 
+    arc->left_half_edge->next = arc->right_half_edge;
+    arc->right_half_edge->previous = arc->left_half_edge;
+
+    _beach_line.remove(arc);
+
+    auto previous_half_edge = arc->previous->right_half_edge;
+    auto next_half_edge = arc->next->left_half_edge;
+
+    _add_edge(arc->previous, arc->next);
+    _set_origin(arc->previous, arc->next, position);
+    _set_previous_half_edge(arc->previous->right_half_edge, previous_half_edge);
+    _set_previous_half_edge(next_half_edge, arc->next->left_half_edge);
+
+    delete arc;
   }
 
   auto _is_moving_right(const arc* left, const arc* right) -> bool {
-
+    return left->site->position.y() < right->site->position.y();
   }
 
   auto _initial_x(const arc* left, const arc* right, const bool is_moving_right) -> std::float_t {
-
+    return is_moving_right ? left->site->position.x() : right->site->position.x();
   }
 
   auto _add_edge(arc* left, arc* right) -> void {
-
+    left->right_half_edge = _diagram._create_half_edge(left->site->face);
+    right->left_half_edge = _diagram._create_half_edge(right->site->face);
+    left->right_half_edge->twin = right->left_half_edge;
+    right->left_half_edge->twin = left->right_half_edge;
   }
 
   auto _set_origin(arc* left, arc* right, point* position) -> void {
-
+    left->right_half_edge->end = position;
+    right->left_half_edge->start = position;
   }
 
   auto _set_destination(arc* left, arc* right, point* position) -> void {
-
+    left->right_half_edge->start = position;
+    right->left_half_edge->end = position;
   }
 
   auto _set_previous_half_edge(half_edge* previous, half_edge* next) -> void {
-
+    previous->next = next;
+    next->previous = previous;
   }
 
   auto _add_event(arc* left, arc* middle, arc* right) -> void {
+    auto y = std::float_t{};
+    auto convergence_point = _compute_convergence_point(left->site->position, middle->site->position, right->site->position, y);
 
+    auto is_below = y <= _y_position;
+    auto left_breakpoint_moving_right = _is_moving_right(left, middle);
+    auto right_breakpoint_moving_right = _is_moving_right(middle, right);
+    auto left_initial_x = _initial_x(left, middle, left_breakpoint_moving_right);
+    auto right_initial_x = _initial_x(middle, right, right_breakpoint_moving_right);
+    auto is_valid =
+      ((left_breakpoint_moving_right && left_initial_x < convergence_point.x()) ||
+      (!left_breakpoint_moving_right && left_initial_x > convergence_point.x())) &&
+      ((right_breakpoint_moving_right && right_initial_x < convergence_point.x()) ||
+      (!right_breakpoint_moving_right && right_initial_x > convergence_point.x()));
+
+    if (is_valid && is_below) {
+      auto event = std::make_unique<demo::event>(demo::circle_event{y, convergence_point, middle});
+      middle->event = event.get();
+      _events.push(std::move(event));
+    }
   }
 
   auto _delete_event(arc* arc) -> void {
-
+    if (arc->event != nullptr) {
+      _events.remove(arc->event->index());
+      arc->event = nullptr;
+    }
   }
 
   auto _compute_convergence_point(const sbx::math::vector2& point1, const sbx::math::vector2& point2, const sbx::math::vector2& point3, std::float_t& y) -> sbx::math::vector2 {
+    auto v1 = sbx::math::vector2::orthogonal(point1 - point2);
+    auto v2 = sbx::math::vector2::orthogonal(point2 - point3);
 
+    auto delta = 0.5 * (point3 - point1);
+
+    auto t = sbx::math::vector2::determinant(delta, v2) / sbx::math::vector2::determinant(v1, v2);
+    auto center = 0.5 * (point1 + point2) + t * v1;
+    auto r = sbx::math::vector2::distance(center, point1);
+
+    y = center.y() - r;
+
+    return center;
   }
 
   voronoi_diagram _diagram;

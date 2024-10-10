@@ -31,6 +31,21 @@ inline constexpr auto basic_vector2<Type>::normalized(const basic_vector2& vecto
 }
 
 template<scalar Type>
+inline constexpr auto basic_vector2<Type>::orthogonal(const basic_vector2& vector) noexcept -> basic_vector2 {
+  return basic_vector2{-vector.y(), vector.x()};
+}
+
+template<scalar Type>
+inline constexpr auto basic_vector2<Type>::determinant(const basic_vector2& lhs, const basic_vector2& rhs) noexcept -> value_type {
+  return lhs.x() * rhs.y() - lhs.y() * rhs.x();
+}
+
+template<scalar Type>
+inline constexpr auto basic_vector2<Type>::distance(const basic_vector2& lhs, const basic_vector2& rhs) noexcept -> value_type {
+  return (lhs - rhs).length();
+}
+
+template<scalar Type>
 inline constexpr auto basic_vector2<Type>::x() noexcept -> reference {
   return base_type::operator[](x_axis);
 }

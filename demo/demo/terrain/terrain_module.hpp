@@ -28,6 +28,18 @@ public:
   auto load_terrain_in_scene(sbx::scenes::scene& scene) -> void {
     auto& graphics_module = sbx::core::engine::get_module<sbx::graphics::graphics_module>();
 
+    auto points = std::vector<sbx::math::vector2>{};
+
+    for (auto i : std::views::iota(0u, 100u)) {
+      points.emplace_back(sbx::math::vector2{sbx::math::random::next<std::float_t>(-100.0f, 100.0f), sbx::math::random::next<std::float_t>(-100.0f, 100.0f)});
+    }
+
+    auto algorithm = fortune_algorithm{points};
+    algorithm.construct();
+    algorithm.bound(box{-100.0f, 100.0f, 100.0f, -100.0f});
+
+    const auto& diagram = algorithm.diagram();
+
     const auto chunk_size = sbx::math::vector2u{50u, 50u};
 
     _mesh_id = graphics_module.add_asset<sbx::models::mesh>(_generate_plane(chunk_size, sbx::math::vector2u{10u, 10u}));
