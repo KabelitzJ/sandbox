@@ -34,14 +34,16 @@ public:
       points.emplace_back(sbx::math::vector2{sbx::math::random::next<std::float_t>(-100.0f, 100.0f), sbx::math::random::next<std::float_t>(-100.0f, 100.0f)});
     }
 
-    auto algorithm_timer = sbx::utility::timer{};
-
     auto algorithm = fortune_algorithm{points};
 
-    algorithm.construct();
-    algorithm.bound(box{-100.0f, 100.0f, 100.0f, -100.0f});
+    {
+      auto algorithm_timer = sbx::utility::timer{};
 
-    sbx::core::logger::debug("Fortune algorithm took {:.2f} ms", sbx::units::quantity_cast<sbx::units::millisecond>(algorithm_timer.elapsed()).value());
+      algorithm.construct();
+      algorithm.bound(box{-100.0f, 100.0f, 100.0f, -100.0f});
+
+      sbx::core::logger::debug("Fortune algorithm took {:.2f} ms", sbx::units::quantity_cast<sbx::units::millisecond>(algorithm_timer.elapsed()).value());
+    }
 
     const auto& diagram = algorithm.diagram();
 
