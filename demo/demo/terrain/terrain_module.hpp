@@ -1,6 +1,8 @@
 #ifndef DEMO_TERRAIN_TERRAIN_MODULE_HPP_
 #define DEMO_TERRAIN_TERRAIN_MODULE_HPP_
 
+#include <libsbx/units/time.hpp>
+
 #include <libsbx/math/uuid.hpp>
 
 #include <libsbx/core/module.hpp>
@@ -34,11 +36,44 @@ public:
       points.emplace_back(sbx::math::vector2{sbx::math::random::next<std::float_t>(-100.0f, 100.0f), sbx::math::random::next<std::float_t>(-100.0f, 100.0f)});
     }
 
+
     auto algorithm = fortune_algorithm{points};
-    algorithm.construct();
-    algorithm.bound(box{-100.0f, 100.0f, 100.0f, -100.0f});
+
+    {
+      auto timer = sbx::utility::timer{};
+
+      algorithm.construct();
+      algorithm.bound(box{-100.0f, 100.0f, 100.0f, -100.0f});
+
+      sbx::core::logger::debug("Fortune algorithm took {:.2f} ms", sbx::units::quantity_cast<sbx::units::millisecond>(timer.elapsed()).value());
+    }
 
     const auto& diagram = algorithm.diagram();
+
+    auto site = diagram.sites().front();
+
+    auto* half_edge = site.face->edge;
+    auto* current_half_edge = half_edge->previous;
+    auto polygon = std::vector<sbx::math::vector2>{};
+
+    while (current_half_edge != half_edge){
+      auto start = current_half_edge->start->position;
+      auto end = current_half_edge->end->position;
+
+      polygon.push_back(start);
+
+      current_half_edge = current_half_edge->previous;
+    }
+
+    auto polygon_mesh_id = graphics_module.add_asset<sbx::models::mesh>(_generate_polygon(polygon));
+
+    auto polygon_node = scene.create_node("Polygon");
+
+    polygon_node.add_component<sbx::scenes::static_mesh>(polygon_mesh_id, sbx::math::color::white, sbx::scenes::static_mesh::material{0.0f, 1.0f, 0.0f, 0.0f});
+
+    auto& polygon_transform = polygon_node.get_component<sbx::math::transform>();
+
+    polygon_transform.set_position(sbx::math::vector3{0.0f, 5.0f, 0.0f});
 
     const auto chunk_size = sbx::math::vector2u{50u, 50u};
 
@@ -72,6 +107,23 @@ public:
   }
 
 private:
+
+  auto _generate_polygon(const std::vector<sbx::math::vector2>& points) -> std::unique_ptr<sbx::models::mesh> {
+    auto vertices = std::vector<sbx::models::vertex3d>{};
+    auto indices = std::vector<std::uint32_t>{};
+
+    for (const auto& point : points) {
+      vertices.emplace_back(sbx::math::vector3{point.x(), 0.0f, point.y()}, sbx::math::vector3::up, sbx::math::vector2{0.0f, 0.0f});
+    }
+
+    for (auto i = 0u; i < points.size() - 2u; ++i) {
+      indices.emplace_back(0u);
+      indices.emplace_back(i + 1u);
+      indices.emplace_back(i + 2u);
+    }
+
+    return std::make_unique<sbx::models::mesh>(std::move(vertices), std::move(indices));
+  }
 
   auto _generate_plane(const sbx::math::vector2u& size, const sbx::math::vector2u& tile_size) -> std::unique_ptr<sbx::models::mesh> {
     auto vertices = std::vector<sbx::models::vertex3d>{};

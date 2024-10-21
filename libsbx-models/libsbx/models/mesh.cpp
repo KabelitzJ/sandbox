@@ -42,7 +42,7 @@ mesh::mesh(const std::filesystem::path& path)
 
   const auto kb = units::quantity_cast<units::kilobyte>(b);
 
-  core::logger::debug("Loaded mesh: {}, vertices: {}, indices: {}, size: {} kb in {:.2f} ms", path.string(), vertices_count, indices_count, kb.value(), units::quantity_cast<units::millisecond>(timer.elapsed()).value());
+  core::logger::debug("Loaded mesh: {}, vertices: {}, indices: {}, size: {} kb in {:.2f}ms", path.string(), vertices_count, indices_count, kb.value(), units::quantity_cast<units::millisecond>(timer.elapsed()).value());
 }
 
 mesh::~mesh() {

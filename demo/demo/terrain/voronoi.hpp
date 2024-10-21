@@ -1036,14 +1036,14 @@ class fortune_algorithm {
 public:
 
   fortune_algorithm(const std::vector<sbx::math::vector2>& points)
-  : _diagram{points} { }
+  : _diagram{std::make_unique<voronoi_diagram>(points)} { }
 
   ~fortune_algorithm() {
 
   }
 
   auto construct() -> void {
-    for (auto& site : _diagram.sites()) {
+    for (auto& site : _diagram->sites()) {
       _events.push(std::make_unique<event>(site_event{&site}));
     }
 
@@ -1061,7 +1061,7 @@ public:
   }
 
   auto bound(box box) -> bool {
-    for (const auto& point : _diagram.points()) {
+    for (const auto& point : _diagram->points()) {
       box.left = std::min(point.position.x(), box.left);
       box.bottom = std::min(point.position.y(), box.bottom);
       box.right = std::max(point.position.x(), box.right);
@@ -1069,7 +1069,7 @@ public:
     }
 
     auto linked_points = std::list<linked_vertex>{};
-    auto points = std::unordered_map<std::size_t, std::array<linked_vertex*, 8u>>{_diagram.sites().size()};
+    auto points = std::unordered_map<std::size_t, std::array<linked_vertex*, 8u>>{_diagram->sites().size()};
 
     if (!_beach_line.is_empty()) {
       auto* left_arc = _beach_line.left_most_arc();
@@ -1080,7 +1080,7 @@ public:
 
         auto intersection = box.first_intersection(origin, direction);
 
-        auto* point = _diagram._create_point(intersection.position);
+        auto* point = _diagram->_create_point(intersection.position);
         _set_destination(left_arc, right_arc, point);
 
         if (points.find(left_arc->site->index) == points.end()) {
@@ -1108,13 +1108,13 @@ public:
 
         if (cell_vertices[2 * side] == nullptr && cell_vertices[2 * side + 1] != nullptr) {
           auto previous_side = (side + 3) % 4;
-          auto* corner = _diagram._create_corner(box, sbx::utility::from_underlying<box::side>(side));
+          auto* corner = _diagram->_create_corner(box, sbx::utility::from_underlying<box::side>(side));
 
           linked_points.emplace_back(linked_vertex{nullptr, corner, nullptr});
           cell_vertices[2 * previous_side + 1] = &linked_points.back();
           cell_vertices[2 * side] = &linked_points.back();
         } else if (cell_vertices[2 * side] != nullptr && cell_vertices[2 * side + 1] == nullptr) {
-          auto* corner = _diagram._create_corner(box, sbx::utility::from_underlying<box::side>(next_side));
+          auto* corner = _diagram->_create_corner(box, sbx::utility::from_underlying<box::side>(next_side));
           linked_points.emplace_back(linked_vertex{nullptr, corner, nullptr});
           cell_vertices[2 * side + 1] = &linked_points.back();
           cell_vertices[2 * next_side] = &linked_points.back();
@@ -1125,7 +1125,7 @@ public:
     for (auto& [i, cell_vertices] : points) {
       for (std::size_t side = 0; side < 4; ++side) {
         if (cell_vertices[2 * side] != nullptr) {
-          auto* half_edge = _diagram._create_half_edge(&_diagram.faces().at(i));
+          auto* half_edge = _diagram->_create_half_edge(&_diagram->faces().at(i));
           half_edge->start = cell_vertices[2 * side]->position;
           half_edge->end = cell_vertices[2 * side + 1]->position;
           cell_vertices[2 * side]->next_half_edge = half_edge;
@@ -1148,8 +1148,35 @@ public:
     return true;
   }
 
+  auto lloyd_relexation(const std::size_t iteration) -> void {
+    for (auto i : std::views::iota(0u, iteration)) {
+      auto new_points = std::vector<sbx::math::vector2>{};
+
+      for (const auto& site : _diagram->sites()) {
+        auto* half_edge = site.face->edge;
+        auto* current_half_edge = half_edge;
+        auto area = 0.0f;
+        auto centroid = sbx::math::vector2{0.0f, 0.0f};
+
+        do {
+          auto determinant = sbx::math::vector2::determinant(current_half_edge->start->position, current_half_edge->end->position);
+          area += determinant;
+          centroid += (current_half_edge->start->position + current_half_edge->end->position) * determinant;
+          current_half_edge = current_half_edge->next;
+        } while (current_half_edge != half_edge);
+
+        area *= 0.5f;
+        centroid /= 6.0f * area;
+        new_points.push_back(centroid);
+      }
+
+      _diagram = std::make_unique<voronoi_diagram>(new_points);
+      construct();
+    }
+  }
+
   auto diagram() const -> const voronoi_diagram& {
-    return _diagram;
+    return *_diagram;
   }
 
 private:
@@ -1199,7 +1226,7 @@ private:
     auto* arc = event.arc;
 
     // 1. Add vertex
-    auto* position = _diagram._create_point(center);
+    auto* position = _diagram->_create_point(center);
 
     // 2. Delete all the events with this arc
     auto* left_arc = arc->previous;
@@ -1270,8 +1297,8 @@ private:
   }
 
   auto _add_edge(arc* left, arc* right) -> void {
-    left->right_half_edge = _diagram._create_half_edge(left->site->face);
-    right->left_half_edge = _diagram._create_half_edge(right->site->face);
+    left->right_half_edge = _diagram->_create_half_edge(left->site->face);
+    right->left_half_edge = _diagram->_create_half_edge(right->site->face);
     left->right_half_edge->twin = right->left_half_edge;
     right->left_half_edge->twin = left->right_half_edge;
   }
@@ -1335,7 +1362,7 @@ private:
     return center;
   }
 
-  voronoi_diagram _diagram;
+  std::unique_ptr<voronoi_diagram> _diagram;
   beach_line _beach_line;
   priority_queue<event> _events;
   std::float_t _y_position;
