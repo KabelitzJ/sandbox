@@ -47,6 +47,26 @@ public:
 
     const auto& diagram = algorithm.diagram();
 
+    auto polygon = std::vector<sbx::math::vector2>{};
+
+    auto& face = diagram.faces().front();
+
+    auto current_half_edge = face.edge;
+
+    do {
+      polygon.emplace_back(current_half_edge->start->position);
+
+      current_half_edge = current_half_edge->next;
+    } while (current_half_edge != face.edge);
+
+    auto polygon_mesh_id = graphics_module.add_asset<sbx::models::mesh>(_generate_polygon(polygon));
+
+    auto polygon_node = scene.create_node("Polygon");
+
+    // polygon_node.add_component<sbx::scenes::static_mesh>(polygon_mesh_id, sbx::math::color::white, sbx::scenes::static_mesh::material{0.0f, 1.0f, 0.0f, 0.0f}, _texture_id);
+
+    // auto& polygon_transform = polygon_node.get_component<sbx::math::transform>();
+
     const auto chunk_size = sbx::math::vector2u{50u, 50u};
 
     _mesh_id = graphics_module.add_asset<sbx::models::mesh>(_generate_plane(chunk_size, sbx::math::vector2u{10u, 10u}));
@@ -79,6 +99,23 @@ public:
   }
 
 private:
+
+  auto _generate_polygon(const std::vector<sbx::math::vector2>& points) -> std::unique_ptr<sbx::models::mesh> {
+    auto vertices = std::vector<sbx::models::vertex3d>{};
+    auto indices = std::vector<std::uint32_t>{};
+
+    for (const auto& point : points) {
+      vertices.emplace_back(sbx::math::vector3{point.x(), 0.0f, point.y()}, sbx::math::vector3::up, sbx::math::vector2{0.0f, 0.0f});
+    }
+
+    for (auto i = 0u; i < points.size() - 2u; ++i) {
+      indices.emplace_back(0u);
+      indices.emplace_back(i + 1u);
+      indices.emplace_back(i + 2u);
+    }
+
+    return std::make_unique<sbx::models::mesh>(std::move(vertices), std::move(indices));
+  }
 
   auto _generate_plane(const sbx::math::vector2u& size, const sbx::math::vector2u& tile_size) -> std::unique_ptr<sbx::models::mesh> {
     auto vertices = std::vector<sbx::models::vertex3d>{};
