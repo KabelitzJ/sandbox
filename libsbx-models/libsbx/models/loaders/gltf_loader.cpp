@@ -274,7 +274,7 @@ auto gltf_loader::load(const std::filesystem::path& path) -> mesh_data {
       // [NOTE] KAJ 2024-03-20 : Here we get the positions data.
 
       const auto positions_buffer_index = positions_buffer_view["buffer"].get<std::size_t>();
-      const auto positions_byte_offset = positions_buffer_view["byteOffset"].get<std::size_t>();
+      const auto positions_byte_offset = positions_buffer_view.contains("byteOffset") ? positions_buffer_view["byteOffset"].get<std::size_t>() : 0u;
       const auto positions_byte_length = positions_buffer_view["byteLength"].get<std::size_t>();
 
       const auto& positions_buffer = _decode_buffer(positions_buffer_index, path.parent_path(), decoded_buffers, buffers[positions_buffer_index]);
@@ -284,7 +284,7 @@ auto gltf_loader::load(const std::filesystem::path& path) -> mesh_data {
       // [NOTE] KAJ 2024-03-20 : Here we get the normals data.
 
       const auto normals_buffer_index = normals_buffer_view["buffer"].get<std::size_t>();
-      const auto normals_byte_offset = normals_buffer_view["byteOffset"].get<std::size_t>();
+      const auto normals_byte_offset = normals_buffer_view.contains("byteOffset") ? normals_buffer_view["byteOffset"].get<std::size_t>() : 0u;
       const auto normals_byte_length = normals_buffer_view["byteLength"].get<std::size_t>();
 
       const auto& normals_buffer = _decode_buffer(normals_buffer_index, path.parent_path(), decoded_buffers, buffers[normals_buffer_index]);
@@ -294,7 +294,7 @@ auto gltf_loader::load(const std::filesystem::path& path) -> mesh_data {
       // [NOTE] KAJ 2024-03-20 : Here we get the uvs data.
 
       const auto uvs_buffer_index = uvs_buffer_view["buffer"].get<std::size_t>();
-      const auto uvs_byte_offset = uvs_buffer_view["byteOffset"].get<std::size_t>();
+      const auto uvs_byte_offset = uvs_buffer_view.contains("byteOffset") ? uvs_buffer_view["byteOffset"].get<std::size_t>() : 0u;
       const auto uvs_byte_length = uvs_buffer_view["byteLength"].get<std::size_t>();
 
       const auto& uvs_buffer = _decode_buffer(uvs_buffer_index, path.parent_path(), decoded_buffers, buffers[uvs_buffer_index]);
@@ -304,7 +304,7 @@ auto gltf_loader::load(const std::filesystem::path& path) -> mesh_data {
       // [NOTE] KAJ 2024-03-20 : Here we get the indices data.
 
       const auto indices_buffer_index = indices_buffer_view["buffer"].get<std::size_t>();
-      const auto indices_byte_offset = indices_buffer_view["byteOffset"].get<std::size_t>();
+      const auto indices_byte_offset = indices_buffer_view.contains("byteOffset") ? indices_buffer_view["byteOffset"].get<std::size_t>() : 0u;
       const auto indices_byte_length = indices_buffer_view["byteLength"].get<std::size_t>();
 
       const auto& indices_buffer = _decode_buffer(indices_buffer_index, path.parent_path(), decoded_buffers, buffers[indices_buffer_index]);

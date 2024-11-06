@@ -80,8 +80,9 @@ application::application()
   // Trees
 
   auto tree_submeshes = std::vector<sbx::scenes::static_mesh::submesh>{};
-  tree_submeshes.push_back(sbx::scenes::static_mesh::submesh{0, sbx::math::color{0.3f, 0.6f, 0.2f, 1.0f}, sbx::scenes::static_mesh::material{0.2f, 0.5f, 0.2f, 0.0f}, _texture_ids["white"]});
-  tree_submeshes.push_back(sbx::scenes::static_mesh::submesh{1, sbx::math::color{0.4f, 0.2f, 0.1f, 1.0f}, sbx::scenes::static_mesh::material{0.2f, 0.5f, 0.1f, 0.2f}, _texture_ids["white"]});
+  tree_submeshes.push_back(sbx::scenes::static_mesh::submesh{0, sbx::math::color::white, sbx::scenes::static_mesh::material{0.2f, 0.5f, 0.2f, 0.0f}, _texture_ids["birch_albedo"]});
+  // tree_submeshes.push_back(sbx::scenes::static_mesh::submesh{0, sbx::math::color{0.3f, 0.6f, 0.2f, 1.0f}, sbx::scenes::static_mesh::material{0.2f, 0.5f, 0.2f, 0.0f}, _texture_ids["white"]});
+  // tree_submeshes.push_back(sbx::scenes::static_mesh::submesh{1, sbx::math::color{0.4f, 0.2f, 0.1f, 1.0f}, sbx::scenes::static_mesh::material{0.2f, 0.5f, 0.1f, 0.2f}, _texture_ids["white"]});
 
   const auto grid_size = sbx::math::vector2{5.0f, 5.0f};
   const auto cell_size = sbx::math::vector2{10.0f, 10.0f};
@@ -91,13 +92,13 @@ application::application()
     for (auto x : std::views::iota(0u, grid_size.x())) {
       auto tree = scene.create_node(fmt::format("Tree{}{}", x, y));
 
-      tree.add_component<sbx::scenes::static_mesh>(_mesh_ids["tree_1"], tree_submeshes);
+      tree.add_component<sbx::scenes::static_mesh>(_mesh_ids["birch"], tree_submeshes);
 
       const auto position = (sbx::math::vector2{x, y} * cell_size - offset) + (sbx::math::vector2{sbx::math::random::next<std::float_t>(0.0f, 1.0f), sbx::math::random::next<std::float_t>(0.0f, 1.0f)} * cell_size);
 
       auto& tree_transform = tree.get_component<sbx::math::transform>();
       tree_transform.set_position(sbx::math::vector3{position.x(), 0.0f, position.y()});
-      tree_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
+      tree_transform.set_scale(sbx::math::vector3{0.05f, 0.05f, 0.05f});
       tree_transform.set_rotation(sbx::math::vector3::up, sbx::math::degree{sbx::math::random::next<std::float_t>(0.0f, 360.0f)});
     }
   }
