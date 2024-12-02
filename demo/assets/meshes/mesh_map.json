@@ -27,6 +27,10 @@
     {
       "name": "tree_2",
       "path": "demo/assets/meshes/tree_2/tree_2.gltf"
+    },
+    {
+      "name": "birch",
+      "path": "demo/assets/meshes/birch/birch.gltf"
     }
   ]
 }
