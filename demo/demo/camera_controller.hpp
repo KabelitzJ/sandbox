@@ -64,9 +64,9 @@ public:
 
     // Mouse drag camera rotation and movement
 
-    if (sbx::devices::input::is_mouse_button_pressed(sbx::devices::mouse_button::left) || sbx::devices::input::is_mouse_button_pressed(sbx::devices::mouse_button::right)) {
+    if (sbx::devices::input::is_mouse_button_pressed(sbx::devices::mouse_button::middle) || sbx::devices::input::is_mouse_button_pressed(sbx::devices::mouse_button::right)) {
       _last_mouse_position = sbx::devices::input::mouse_position();
-    } else if (sbx::devices::input::is_mouse_button_down(sbx::devices::mouse_button::left) || sbx::devices::input::is_mouse_button_down(sbx::devices::mouse_button::right)) {
+    } else if (sbx::devices::input::is_mouse_button_down(sbx::devices::mouse_button::middle) || sbx::devices::input::is_mouse_button_down(sbx::devices::mouse_button::right)) {
       auto mouse_position = sbx::devices::input::mouse_position();
       _mouse_position_delta = mouse_position - _last_mouse_position;
       _last_mouse_position = mouse_position;
@@ -76,14 +76,14 @@ public:
         _tilt_angle = sbx::math::clamp(_tilt_angle + sbx::math::degree{80.0f * _mouse_position_delta.y() * delta_time.value()}, _min_tilt_angle, _max_tilt_angle);
       } 
       
-      if (sbx::devices::input::is_mouse_button_down(sbx::devices::mouse_button::left)) {
+      if (sbx::devices::input::is_mouse_button_down(sbx::devices::mouse_button::middle)) {
         movement += local_forward * _mouse_position_delta.y();
         movement += local_right * _mouse_position_delta.x();
         is_mouse_movement = true;
       }
 
       // We override 
-    } else if (sbx::devices::input::is_mouse_button_released(sbx::devices::mouse_button::left) || sbx::devices::input::is_mouse_button_released(sbx::devices::mouse_button::right)) {
+    } else if (sbx::devices::input::is_mouse_button_released(sbx::devices::mouse_button::middle) || sbx::devices::input::is_mouse_button_released(sbx::devices::mouse_button::right)) {
       _last_mouse_position = sbx::math::vector2{};
       _mouse_position_delta = sbx::math::vector2{};
     }

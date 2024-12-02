@@ -59,7 +59,7 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
         continue;
       }
 
-      _shaders.insert({stage, std::make_unique<shader>(file, stage)});
+      _shaders.insert({stage, std::make_unique<shader>(file, stage, definition.defines)});
     }
   }
 
@@ -458,6 +458,14 @@ auto graphics_pipeline<Vertex>::_update_definition(const std::filesystem::path& 
       } else {
         core::logger::warn("Could not parse 'sbx::graphics::polygon_mode' value '{}'", rasterization_state["polygon_mode"].get<std::string>());
       }
+    }
+  }
+
+  if (definition.contains("defines")) {
+    auto defines = definition["defines"];
+
+    for (const auto& [key, value] : defines.items()) {
+      result.defines.push_back({key, value});
     }
   }
 

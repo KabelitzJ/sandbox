@@ -90,7 +90,11 @@ void main(void) {
 
   vec4 light_space_position = DEPTH_BIAS * scene.light_space * vec4(world_position, 1.0);
 
+#ifdef ENABLE_SHADOWS
   float shadow = calculate_shadow_pcf(shadow_map_image, light_space_position, normal, scene.light_direction);
+#else
+  float shadow = 1.0;
+#endif
 
   vec3 light_position = normalize(-scene.light_direction);
 

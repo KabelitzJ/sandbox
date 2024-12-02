@@ -80,6 +80,7 @@ struct pipeline_definition {
   bool uses_transparency{false};
   graphics::rasterization_state rasterization_state{};
   graphics::primitive_topology primitive_topology{graphics::primitive_topology::triangle_list};
+  std::vector<graphics::shader::define> defines{};
 }; // struct pipeline_definition
 
 template<vertex Vertex>

@@ -6,5 +6,8 @@
     "cull_mode": "back",
     "front_face": "counter_clockwise"
   },
-  "primitive_topology": "triangle_list"
+  "primitive_topology": "triangle_list",
+  "defines": {
+    "ENABLE_SHADOWS": "1"
+  }
 }

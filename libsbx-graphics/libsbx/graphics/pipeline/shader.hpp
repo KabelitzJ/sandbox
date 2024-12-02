@@ -215,7 +215,12 @@ class uniform_block {
 
   }; // class attribute
 
-  shader(const std::filesystem::path& path, VkShaderStageFlagBits stage);
+  struct define {
+    std::string name{};
+    std::string value{};
+  }; // struct define
+
+  shader(const std::filesystem::path& path, VkShaderStageFlagBits stage, const std::vector<define>& defines = {});
 
   ~shader();
 
