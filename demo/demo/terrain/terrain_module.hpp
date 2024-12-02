@@ -30,51 +30,6 @@ public:
   auto load_terrain_in_scene(sbx::scenes::scene& scene) -> void {
     auto& graphics_module = sbx::core::engine::get_module<sbx::graphics::graphics_module>();
 
-    auto points = std::vector<sbx::math::vector2>{};
-
-    for (auto i : std::views::iota(0u, 100u)) {
-      points.emplace_back(sbx::math::vector2{sbx::math::random::next<std::float_t>(-100.0f, 100.0f), sbx::math::random::next<std::float_t>(-100.0f, 100.0f)});
-    }
-
-
-    auto algorithm = fortune_algorithm{points};
-
-    {
-      auto timer = sbx::utility::timer{};
-
-      algorithm.construct();
-      algorithm.bound(box{-100.0f, 100.0f, 100.0f, -100.0f});
-
-      sbx::core::logger::debug("Fortune algorithm took {:.2f} ms", sbx::units::quantity_cast<sbx::units::millisecond>(timer.elapsed()).value());
-    }
-
-    const auto& diagram = algorithm.diagram();
-
-    // auto site = diagram.sites().front();
-
-    // auto* half_edge = site.face->edge;
-    // auto* current_half_edge = half_edge->previous;
-    // auto polygon = std::vector<sbx::math::vector2>{};
-
-    // while (current_half_edge != half_edge){
-    //   auto start = current_half_edge->start->position;
-    //   auto end = current_half_edge->end->position;
-
-    //   polygon.push_back(start);
-
-    //   current_half_edge = current_half_edge->previous;
-    // }
-
-    // auto polygon_mesh_id = graphics_module.add_asset<sbx::models::mesh>(_generate_polygon(polygon));
-
-    // auto polygon_node = scene.create_node("Polygon");
-
-    // polygon_node.add_component<sbx::scenes::static_mesh>(polygon_mesh_id, sbx::math::color::white, sbx::scenes::static_mesh::material{0.0f, 1.0f, 0.0f, 0.0f});
-
-    // auto& polygon_transform = polygon_node.get_component<sbx::math::transform>();
-
-    // polygon_transform.set_position(sbx::math::vector3{0.0f, 5.0f, 0.0f});
-
     const auto chunk_size = sbx::math::vector2u{50u, 50u};
 
     _mesh_id = graphics_module.add_asset<sbx::models::mesh>(_generate_plane(chunk_size, sbx::math::vector2u{10u, 10u}));

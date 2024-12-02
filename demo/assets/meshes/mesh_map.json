@@ -30,7 +30,7 @@
     },
     {
       "name": "birch",
-      "path": "demo/assets/meshes/birch/birch.gltf"
+      "path": "demo/assets/meshes/my_birch/my_birch.gltf"
     }
   ]
 }

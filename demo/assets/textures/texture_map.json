@@ -79,9 +79,14 @@
     {
       "name": "dirt_normal",
       "path": "demo/assets/textures/dirt/normal.png"
-    },{
-      "name": "birch_albedo",
-      "path": "demo/assets/textures/birch/albedo.png"
+    },
+    {
+      "name": "birch_leafs_albedo",
+      "path": "demo/assets/textures/my_birch/leafs_albedo.png"
+    },
+    {
+      "name": "birch_stem_albedo",
+      "path": "demo/assets/textures/my_birch/stem_albedo.png"
     }
   ],
   "plane_texture": "wood_albedo"
