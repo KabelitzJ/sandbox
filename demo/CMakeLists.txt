@@ -46,16 +46,16 @@ target_sources(
     "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/terrain/terrain_subrenderer.hpp"
     "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/terrain/terrain_module.hpp"
     "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/terrain/voronoi.hpp"
-    "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/imgui/bindings/imgui_impl_vulkan.h"
-    "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/imgui/bindings/imgui_impl_glfw.h"
+    "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/imgui/bindings/1.89.7-docking/imgui_impl_vulkan.h"
+    "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/imgui/bindings/1.89.7-docking/imgui_impl_glfw.h"
   PRIVATE
     "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/renderer.cpp"
     "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/application.cpp"
     "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/line.cpp"
     "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/demo.cpp"
     "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/terrain/vertex.cpp"
-    "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/imgui/bindings/imgui_impl_vulkan.cpp"
-    "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/imgui/bindings/imgui_impl_glfw.cpp"
+    "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/imgui/bindings/1.89.7-docking/imgui_impl_vulkan.cpp"
+    "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/imgui/bindings/1.89.7-docking/imgui_impl_glfw.cpp"
 )
 
 target_include_directories(

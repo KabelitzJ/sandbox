@@ -286,21 +286,26 @@ static bool ImGui_ImplGlfw_ShouldChainCallback(GLFWwindow* window)
 
 void ImGui_ImplGlfw_MouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
 {
+    ImGuiIO& io = ImGui::GetIO();
     ImGui_ImplGlfw_Data* bd = ImGui_ImplGlfw_GetBackendData();
-    if (bd->PrevUserCallbackMousebutton != nullptr && ImGui_ImplGlfw_ShouldChainCallback(window))
+
+    // [NOTE] KAJ 2024-12-02 : We only want to cain call the user callback if we are not capturing the mouse. This should be decided here and not in the user callback.
+    if (bd->PrevUserCallbackMousebutton != nullptr && ImGui_ImplGlfw_ShouldChainCallback(window) && !io.WantCaptureMouse)
         bd->PrevUserCallbackMousebutton(window, button, action, mods);
 
     ImGui_ImplGlfw_UpdateKeyModifiers();
 
-    ImGuiIO& io = ImGui::GetIO();
     if (button >= 0 && button < ImGuiMouseButton_COUNT)
         io.AddMouseButtonEvent(button, action == GLFW_PRESS);
 }
 
 void ImGui_ImplGlfw_ScrollCallback(GLFWwindow* window, double xoffset, double yoffset)
 {
+    ImGuiIO& io = ImGui::GetIO();
     ImGui_ImplGlfw_Data* bd = ImGui_ImplGlfw_GetBackendData();
-    if (bd->PrevUserCallbackScroll != nullptr && ImGui_ImplGlfw_ShouldChainCallback(window))
+
+    // [NOTE] KAJ 2024-12-02 : We only want to cain call the user callback if we are not capturing the mouse. This should be decided here and not in the user callback.
+    if (bd->PrevUserCallbackScroll != nullptr && ImGui_ImplGlfw_ShouldChainCallback(window) && !io.WantCaptureMouse)
         bd->PrevUserCallbackScroll(window, xoffset, yoffset);
 
 #ifdef __EMSCRIPTEN__
@@ -308,7 +313,6 @@ void ImGui_ImplGlfw_ScrollCallback(GLFWwindow* window, double xoffset, double yo
     return;
 #endif
 
-    ImGuiIO& io = ImGui::GetIO();
     io.AddMouseWheelEvent((float)xoffset, (float)yoffset);
 }
 
