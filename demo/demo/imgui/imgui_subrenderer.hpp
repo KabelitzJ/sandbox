@@ -36,6 +36,8 @@ public:
     _io->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
     _io->ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
 
+    _io->IniFilename = nullptr;
+
     ImGui::StyleColorsDark();
 
     auto& device_module = sbx::core::engine::get_module<sbx::devices::devices_module>();
