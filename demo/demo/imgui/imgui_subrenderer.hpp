@@ -34,10 +34,11 @@ public:
 
     ImGui::CreateContext();
 
-    _io = &ImGui::GetIO();
-    _io->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-    _io->ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
-    _io->ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+    auto& io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+    io.IniFilename = ini_file.data();
 
     ImGui::StyleColorsDark();
 
@@ -75,44 +76,11 @@ public:
       ImGui_ImplVulkan_DestroyFontUploadObjects();
     }
 
-    ImGui::LoadIniSettingsFromDisk(ini_file.data());
-
-    // window.on_framebuffer_resized() += [&]([[maybe_unused]] const sbx::devices::framebuffer_resized_event& event) {
-    //   const auto& scene_image = dynamic_cast<const sbx::graphics::image2d&>(graphics_module.attachment("scene"));
-
-    //   // for (const auto& descriptor_set : _descriptor_sets) {
-    //   //   ImGui_ImplVulkan_RemoveTexture(descriptor_set);
-    //   // }
-
-    //   _descriptor_sets.resize(graphics_module.swapchain().image_count());
-
-    //   for (auto i = 0; i < graphics_module.swapchain().image_count(); ++i) {
-    //     _descriptor_sets[i] = ImGui_ImplVulkan_AddTexture(scene_image.sampler(), scene_image.view(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-    //   }
-    // };
-
-    // [TODO] KAJ 2024-12-02 : Fix resizing
-
-    const auto& scene_image = dynamic_cast<const sbx::graphics::image2d&>(graphics_module.attachment("scene"));
-    
-    _descriptor_sets.resize(3);
-
-    for (auto i = 0; i < 3; ++i) {
-      _descriptor_sets[i] = ImGui_ImplVulkan_AddTexture(scene_image.sampler(), scene_image.view(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-    }
-
-    _cout = std::cout.rdbuf();
-    std::cout.rdbuf(_log.rdbuf());
+    // ImGui::LoadIniSettingsFromDisk(ini_file.data());
   }
 
   ~imgui_subrenderer() override {
-    std::cout.rdbuf(_cout);
-
-    ImGui::SaveIniSettingsToDisk(ini_file.data());
-
-    for (const auto& descriptor_set : _descriptor_sets) {
-      ImGui_ImplVulkan_RemoveTexture(descriptor_set);
-    }
+    // ImGui::SaveIniSettingsToDisk(ini_file.data());
 
     ImGui_ImplVulkan_Shutdown();
     ImGui_ImplGlfw_Shutdown();
@@ -120,6 +88,18 @@ public:
   }
 
   auto render(sbx::graphics::command_buffer& command_buffer) -> void override {
+    auto& graphics_module = sbx::core::engine::get_module<sbx::graphics::graphics_module>();
+
+    _pipeline.bind(command_buffer);
+
+    _descriptor_handler.push("sTexture", graphics_module.attachment("scene"));
+
+    if (!_descriptor_handler.update(_pipeline)) {
+      return;
+    }
+
+    _descriptor_handler.bind_descriptors(command_buffer);
+
     ImGui_ImplVulkan_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
@@ -201,76 +181,85 @@ private:
 
   auto _setup_windows() -> void {
     auto& graphics_module = sbx::core::engine::get_module<sbx::graphics::graphics_module>();
+
     // Example Window 1
-    ImGui::Begin("Hierarchy");
-    ImGui::Text("Hello, world!");
-    if (ImGui::Button("Demo Window")) {
-      sbx::core::logger::info("Button pressed");
-      std::cout << "Button pressed" << std::endl;
+    {
+      ImGui::Begin("Hierarchy");
+
+      ImGui::Text("Hello, world!");
+      if (ImGui::Button("Demo Window")) {
+        sbx::core::logger::info("Button pressed");
+      }
+
+      ImGui::End();
     }
-    ImGui::End();
+
+    auto vMax = ImVec2{};
+    auto vMin = ImVec2{};
 
     // Example Window 2
-    ImGui::Begin("Scene");
-    auto current_frame = graphics_module.current_frame();
-    auto available_size = ImGui::GetContentRegionAvail();
-    auto descriptor_set = _descriptor_sets[current_frame];
-    ImGui::Image(descriptor_set, available_size);
-    if (ImGui::IsItemHovered()) {
-      ImGuiIO& io = ImGui::GetIO();
-      io.WantCaptureMouse = false; 
-      io.WantCaptureKeyboard = false;
-    }
-    ImVec2 vMin = ImGui::GetWindowContentRegionMin();
-    ImVec2 vMax = ImGui::GetWindowContentRegionMax();
+    {
+      ImGui::Begin("Scene");
 
-    vMin.x += ImGui::GetWindowPos().x;
-    vMin.y += ImGui::GetWindowPos().y;
-    vMax.x += ImGui::GetWindowPos().x;
-    vMax.y += ImGui::GetWindowPos().y;
-    ImGui::End();
+      auto current_frame = graphics_module.current_frame();
+      auto available_size = ImGui::GetContentRegionAvail();
+
+      ImGui::Image(_descriptor_handler.descriptor_set(), available_size);
+
+      if (ImGui::IsItemHovered()) {
+        ImGuiIO& io = ImGui::GetIO();
+        io.WantCaptureMouse = false; 
+        io.WantCaptureKeyboard = false;
+      }
+
+      vMin = ImGui::GetWindowContentRegionMin();
+      vMax = ImGui::GetWindowContentRegionMax();
+
+      vMin.x += ImGui::GetWindowPos().x;
+      vMin.y += ImGui::GetWindowPos().y;
+      vMax.x += ImGui::GetWindowPos().x;
+      vMax.y += ImGui::GetWindowPos().y;
+
+      ImGui::End();
+    }
 
     // Example Window 3
-    ImGui::Begin("Properties");
-    auto width = vMax.x - vMin.x;
-    auto height = vMax.y - vMin.y;
-    ImGui::Text("Width: %f", width);
-    ImGui::Text("Height: %f", height);
-    ImGui::End();
+    {
+      ImGui::Begin("Properties");
+
+      auto width = vMax.x - vMin.x;
+      auto height = vMax.y - vMin.y;
+
+      ImGui::Text("Width: %f", width);
+      ImGui::Text("Height: %f", height);
+
+      ImGui::End();
+    }
 
     // Example Window 4
-    ImGui::Begin("Log");
-    if (ImGui::Button("Clear"))  {
-      // _clear_console();
-      _logs.clear();
+    {
+      ImGui::Begin("Log");
+    
+      if (ImGui::Button("Clear"))  {
+        sbx::core::logger::info("Clearing log");
+      }
+
+      ImGui::SameLine();
+
+      ImGui::Checkbox("Auto-Scroll", &_has_auto_scroll);
+
+      ImGui::Separator();
+
+      ImGui::BeginChild("ScrollRegion", ImVec2(0, 0), false, ImGuiWindowFlags_HorizontalScrollbar);
+
+      if (_has_auto_scroll && ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) {
+        ImGui::SetScrollHereY(0.999f);
+      }
+
+      ImGui::EndChild();
+
+      ImGui::End();
     }
-
-    ImGui::SameLine();
-    ImGui::Checkbox("Auto-Scroll", &_has_auto_scroll);
-
-    auto lines = _split(_log.str(), "\n");
-    for (const auto& line : lines) {
-      _logs.push_front(line);
-    }
-
-    while (_logs.size() > max_log_lines) {
-      _logs.pop_back();
-    }
-
-    _log.str(std::string{});
-    _log.clear();
-
-    ImGui::BeginChild("ScrollRegion", ImVec2(0, 0), false, ImGuiWindowFlags_HorizontalScrollbar);
-    for (const auto& log : _logs) {
-      ImGui::TextUnformatted(log.c_str());
-    }
-
-    if (_has_auto_scroll && ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) {
-      ImGui::SetScrollHereY(0.999f);
-    }
-
-    ImGui::EndChild();
-    ImGui::End();
   }
 
   auto _save() -> void {
@@ -286,20 +275,13 @@ private:
   }
 
   imgui::pipeline _pipeline;
-
-  ImGuiIO* _io;
+  sbx::graphics::descriptor_handler _descriptor_handler;
 
   bool _show_demo_window;
   sbx::math::color _clear_color;
-
-  std::vector<VkDescriptorSet> _descriptor_sets;
-
   bool _has_auto_scroll;
-  std::deque<std::string> _logs;
-  std::ostringstream _log;
-  std::streambuf* _cout;
 
-};
+}; // class imgui_subrenderer
 
 } // namespace demo
 
