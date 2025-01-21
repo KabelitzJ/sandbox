@@ -58,6 +58,7 @@
 #include <libsbx/math/color.hpp>
 
 #include <libsbx/math/random.hpp>
+#include <libsbx/math/noise.hpp>
 
 #include <libsbx/math/transform.hpp>
 

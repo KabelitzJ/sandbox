@@ -8,13 +8,13 @@ namespace sbx::scenes {
 template<typename Char>
 class basic_tag final : public std::basic_string<Char> {
 
-public:
+  using base = std::basic_string<Char>;
 
-  using super = std::basic_string<Char>;
+public:
 
   template<typename... Args>
   basic_tag(Args&&... args)
-  : super{std::forward<Args>(args)...} { }
+  : base{std::forward<Args>(args)...} { }
 
 }; // class tag
 

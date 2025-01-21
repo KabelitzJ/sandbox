@@ -16,7 +16,7 @@
 
 namespace sbx::graphics {
 
-shader::shader(const std::filesystem::path& path, VkShaderStageFlagBits stage)
+shader::shader(const std::filesystem::path& path, VkShaderStageFlagBits stage, const std::vector<define>& defines)
 : _stage{stage} {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
@@ -129,14 +129,11 @@ auto shader::_create_reflection(const spirv_cross::Compiler& compiler) -> void {
     const auto storage_buffer_binding = compiler.get_decoration(storage_buffer.id, spv::DecorationBinding);
 
     // Get the size of one element in the storage buffer
-    const auto storage_buffer_element_size = compiler.get_declared_struct_size_runtime_array(type, 1);
+    const auto storage_buffer_element_size = compiler.get_declared_struct_size_runtime_array(type, 1);  
 
-    // Calculate the size in regard to the element size
-    const auto storage_buffer_size = storage_buffer::max_elements * storage_buffer_element_size;
+    auto buffer = uniform_block{storage_buffer_binding, 0u, _stage, uniform_block::type::storage};
 
-    auto buffer = uniform_block{storage_buffer_binding, storage_buffer_size, _stage, uniform_block::type::storage};
-
-    core::logger::debug("uniform block: '{}' binding: {} element_size: {} max_elements: {}", storage_buffer_name, storage_buffer_binding, storage_buffer_element_size, storage_buffer_size / storage_buffer_element_size);
+    core::logger::debug("uniform block: '{}' binding: {} element_size: {}", storage_buffer_name, storage_buffer_binding, storage_buffer_element_size);
 
     _uniform_blocks.insert({storage_buffer_name, buffer});
   }
@@ -216,7 +213,7 @@ auto shader::_create_reflection(const spirv_cross::Compiler& compiler) -> void {
 
     auto image = uniform{binding, 0, 0, data_type::subpass_input, true, false, _stage};
 
-    core::logger::debug("storage image: '{}' binding: {}", name, binding);
+    core::logger::debug("subpass input: '{}' binding: {}", name, binding);
 
     _uniforms.insert({name, image});
   }

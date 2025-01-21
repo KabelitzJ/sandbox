@@ -6,5 +6,6 @@
 #include <libsbx/memory/concepts.hpp>
 #include <libsbx/memory/aligned_storage.hpp>
 #include <libsbx/memory/observer_ptr.hpp>
+#include <libsbx/memory/static_vector.hpp>
 
 #endif // LIBSBX_MEMORY_HPP_

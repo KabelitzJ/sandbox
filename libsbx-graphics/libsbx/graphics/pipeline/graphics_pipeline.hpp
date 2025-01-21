@@ -13,6 +13,8 @@
 
 #include <fmt/format.h>
 
+#include <libsbx/utility/enum.hpp>
+
 #include <libsbx/graphics/buffers/buffer.hpp>
 #include <libsbx/graphics/buffers/uniform_handler.hpp>
 
@@ -53,15 +55,32 @@ struct depth_bias {
 
 struct rasterization_state {
   graphics::polygon_mode polygon_mode{polygon_mode::fill};
+  std::float_t line_width{1.0f};
   graphics::cull_mode cull_mode{cull_mode::back};
   graphics::front_face front_face{front_face::counter_clockwise};
   std::optional<graphics::depth_bias> depth_bias{};
 }; // struct rasterization_state
 
+enum class primitive_topology : std::uint8_t {
+  point_list = VK_PRIMITIVE_TOPOLOGY_POINT_LIST,
+  line_list = VK_PRIMITIVE_TOPOLOGY_LINE_LIST,
+  line_strip = VK_PRIMITIVE_TOPOLOGY_LINE_STRIP,
+  triangle_list = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
+  triangle_strip = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP,
+  triangle_fan = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN,
+  line_list_with_adjacency = VK_PRIMITIVE_TOPOLOGY_LINE_LIST_WITH_ADJACENCY,
+  line_strip_with_adjacency = VK_PRIMITIVE_TOPOLOGY_LINE_STRIP_WITH_ADJACENCY,
+  triangle_list_with_adjacency = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST_WITH_ADJACENCY,
+  triangle_strip_with_adjacency = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP_WITH_ADJACENCY,
+  patch_list = VK_PRIMITIVE_TOPOLOGY_PATCH_LIST,
+}; // enum class primitive_topology
+
 struct pipeline_definition {
   bool uses_depth{true};
   bool uses_transparency{false};
   graphics::rasterization_state rasterization_state{};
+  graphics::primitive_topology primitive_topology{graphics::primitive_topology::triangle_list};
+  std::vector<graphics::shader::define> defines{};
 }; // struct pipeline_definition
 
 template<vertex Vertex>
@@ -71,7 +90,7 @@ public:
 
   using vertex_type = Vertex;
 
-  graphics_pipeline(const std::filesystem::path& path, const pipeline::stage& stage, const pipeline_definition& definition = pipeline_definition{});
+  graphics_pipeline(const std::filesystem::path& path, const pipeline::stage& stage, const pipeline_definition& default_definition = pipeline_definition{});
 
   ~graphics_pipeline() override;
 
@@ -123,6 +142,8 @@ public:
 
 private:
 
+  auto _update_definition(const std::filesystem::path& path, const pipeline_definition default_definition) -> pipeline_definition;
+
   auto _get_stage_from_name(const std::string& name) const noexcept -> VkShaderStageFlagBits;
 
   std::unordered_map<VkShaderStageFlagBits, std::unique_ptr<shader>> _shaders{};
@@ -150,6 +171,19 @@ private:
 }; // class graphics_pipeline
 
 } // namespace sbx::graphics
+
+template<>
+struct sbx::utility::enum_mapping<sbx::graphics::polygon_mode> {
+
+  using entry_type = sbx::utility::entry<sbx::graphics::polygon_mode>;
+
+  static constexpr auto values = std::array<entry_type, 3u>{
+    entry_type{sbx::graphics::polygon_mode::fill, "fill"},
+    entry_type{sbx::graphics::polygon_mode::line, "line"},
+    entry_type{sbx::graphics::polygon_mode::point, "point"}
+  };
+
+}; // struct sbx::utility::enum_mapping
 
 #include <libsbx/graphics/pipeline/graphics_pipeline.ipp>
 

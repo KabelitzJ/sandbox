@@ -10,23 +10,6 @@
 
 namespace sbx::utility {
 
-/**
- * This should be used to give primitives a meaningful name
- * 
- * @code{
- * 
- * class pixels : sbx::utility::primitive<std::uint32_t> {
- * 
- * public:
- * 
- *   using super = sbx::utility::primitive<std::uint32_t>;
- * 
- *   using super::super;
- * 
- * }; // class pixels
- * 
- * } 
- */
 template<typename Type, string_literal Unit>
 requires (std::is_arithmetic_v<Type>)
 class primitive {

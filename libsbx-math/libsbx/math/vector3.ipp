@@ -7,8 +7,8 @@ inline constexpr basic_vector3<Type>::basic_vector3(const base_type& base) noexc
 : base_type{base} { }
 
 template<scalar Type>
-template<scalar Other>
-inline constexpr basic_vector3<Type>::basic_vector3(Other x, Other y, Other z) noexcept
+template<scalar X, scalar Y, scalar Z>
+inline constexpr basic_vector3<Type>::basic_vector3(X x, Y y, Z z) noexcept
 : base_type{x, y, z} { }
 
 template<scalar Type>
@@ -40,6 +40,16 @@ inline constexpr auto basic_vector3<Type>::normalized(const basic_vector3& vecto
   }
 
   return vector;
+}
+
+template<scalar Type>
+inline constexpr auto basic_vector3<Type>::reflect(const basic_vector3& vector, const basic_vector3& normal) noexcept -> basic_vector3 {
+  return vector - normal * (dot(vector, normal) * 2);
+}
+
+template<scalar Type>
+inline constexpr auto basic_vector3<Type>::abs(const basic_vector3& vector) noexcept -> basic_vector3 {
+  return basic_vector3{std::abs(vector.x()), std::abs(vector.y()), std::abs(vector.z())};
 }
 
 template<scalar Type>
@@ -102,9 +112,21 @@ inline constexpr auto operator*(basic_vector3<Lhs> lhs, Rhs scalar) noexcept -> 
   return lhs *= scalar;
 }
 
+template<scalar Lhs, std::convertible_to<Lhs> Rhs>
+requires (!is_scalar_v<Rhs>)
+inline constexpr auto operator*(basic_vector3<Lhs> lhs, const Rhs& rhs) noexcept -> basic_vector3<Lhs> {
+  return lhs *= static_cast<Lhs>(rhs);
+}
+
 template<scalar Lhs, scalar Rhs>
 inline constexpr auto operator/(basic_vector3<Lhs> lhs, Rhs scalar) noexcept -> basic_vector3<Lhs> {
   return lhs /= scalar;
+}
+
+template<scalar Lhs, std::convertible_to<Lhs> Rhs>
+requires (!is_scalar_v<Rhs>)
+inline constexpr auto operator/(basic_vector3<Lhs> lhs, const Rhs& rhs) noexcept -> basic_vector3<Lhs> {
+  return lhs /= static_cast<Lhs>(rhs);
 }
 
 } // namespace sbx::math

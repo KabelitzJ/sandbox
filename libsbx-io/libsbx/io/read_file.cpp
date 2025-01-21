@@ -7,9 +7,9 @@
 namespace sbx::io {
 
 
-auto read_file(const std::filesystem::path& path) -> std::vector<char> {
+auto read_file(const std::filesystem::path& path) -> std::vector<std::uint8_t> {
   auto file = std::ifstream{path, std::ios::ate | std::ios::binary};
-  auto content = std::vector<char>{};
+  auto content = std::vector<std::uint8_t>{};
 
   if (!file.is_open()) {
     throw std::runtime_error{fmt::format("Failed to open file: {}", path.string())};
@@ -21,7 +21,7 @@ auto read_file(const std::filesystem::path& path) -> std::vector<char> {
 
   content.resize(size);
 
-  file.read(content.data(), static_cast<std::streamsize>(size));
+  file.read(reinterpret_cast<char*>(content.data()), static_cast<std::streamsize>(size));
 
   file.close();
 

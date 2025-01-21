@@ -13,7 +13,7 @@ static const auto depth_formats = std::vector<VkFormat>{
 };
 
 depth_image::depth_image(const math::vector2u& extent, VkSampleCountFlagBits samples)
-: image{VkExtent3D{extent.x(), extent.y(), 1}, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER, samples, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, find_supported_format(depth_formats, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT), 1, 1} {
+: image{VkExtent3D{extent.x(), extent.y(), 1}, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_REPEAT, samples, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, find_supported_format(depth_formats, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT), 1, 1} {
   if (_format == VK_FORMAT_UNDEFINED) {
     throw std::runtime_error{"Failed to find supported depth format"};
   }

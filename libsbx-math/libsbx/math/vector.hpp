@@ -38,6 +38,10 @@ public:
   constexpr basic_vector(const basic_vector<Size, Other>& other) noexcept
   : _components{utility::make_array<value_type, Size>(other._components)} { }
 
+  constexpr auto data() noexcept -> value_type* {
+    return _components.data();
+  }
+
   [[nodiscard]] constexpr auto operator[](size_type index) noexcept -> reference {
     return _components[index];
   }

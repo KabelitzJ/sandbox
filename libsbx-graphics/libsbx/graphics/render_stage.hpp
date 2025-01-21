@@ -24,22 +24,16 @@ namespace sbx::graphics {
 
 enum class format : std::uint32_t {
   undefined = VK_FORMAT_UNDEFINED,
+  r32_sfloat = VK_FORMAT_R32_SFLOAT,
   r32g32_sfloat = VK_FORMAT_R32G32_SFLOAT,
   r8g8b8a8_unorm = VK_FORMAT_R8G8B8A8_UNORM,
   r32g32b32a32_sfloat = VK_FORMAT_R32G32B32A32_SFLOAT
 }; // enum class format
 
-template<typename Enum>
-requires (std::is_enum_v<Enum>)
-constexpr auto to_underlying(Enum value) -> std::underlying_type_t<Enum> {
-  return static_cast<std::underlying_type_t<Enum>>(value);
-}
-
-template<typename VkEnum, typename Enum>
-requires (std::is_enum_v<VkEnum> && std::is_enum_v<Enum>)
-constexpr auto to_vk_enum(Enum value) -> VkEnum {
-  return static_cast<VkEnum>(value);
-}
+enum class address_mode : std::uint32_t {
+  repeat = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+  clamp_to_edge = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE
+}; // enum class address_mode
 
 class attachment {
 
@@ -51,12 +45,13 @@ public:
     swapchain
   }; // enum class type
 
-  attachment(std::uint32_t binding, std::string name, type type, format format = format::r8g8b8a8_unorm, const math::color& clear_color = math::color{0.0f, 0.0f, 0.0f, 1.0f}) noexcept
+  attachment(const std::uint32_t binding, const std::string& name, type type, const math::color& clear_color = math::color::black, const format format = format::r8g8b8a8_unorm, const address_mode address_mode = address_mode::repeat) noexcept
   : _binding{binding}, 
     _name{std::move(name)}, 
     _type{type},
+    _clear_color{clear_color},
     _format{format}, 
-    _clear_color{clear_color} { }
+    _address_mode{address_mode} { }
 
   auto binding() const noexcept -> std::uint32_t {
     return _binding;
@@ -74,6 +69,10 @@ public:
     return _format;
   }
 
+  auto address_mode() const noexcept -> graphics::address_mode {
+    return _address_mode;
+  }
+
   auto clear_color() const noexcept -> const math::color& {
     return _clear_color;
   }
@@ -84,8 +83,9 @@ private:
   std::string _name;
   type _type;
   bool _is_multi_sampled;
-  graphics::format _format;
   math::color _clear_color;
+  graphics::format _format;
+  graphics::address_mode _address_mode;
 
 }; // class attachment
 
@@ -93,17 +93,21 @@ class subpass_binding {
 
 public:
 
-  subpass_binding(std::uint32_t binding, std::vector<std::uint32_t> attachment_bindings, std::vector<std::uint32_t> input_attachment_bindings = {}) noexcept
+  subpass_binding(std::uint32_t binding, std::vector<std::uint32_t> color_attachments, std::vector<std::uint32_t> input_attachments = {}) noexcept
   : _binding{binding}, 
-    _attachment_bindings{std::move(attachment_bindings)},
-    _input_attachment_bindings{std::move(input_attachment_bindings)} { }
+    _color_attachments{std::move(color_attachments)},
+    _input_attachments{std::move(input_attachments)} { }
 
   auto binding() const noexcept -> std::uint32_t {
     return _binding;
   }
 
-  auto attachment_bindings() const noexcept -> const std::vector<std::uint32_t>& {
-    return _attachment_bindings;
+  auto color_attachments() const noexcept -> const std::vector<std::uint32_t>& {
+    return _color_attachments;
+  }
+
+  auto input_attachments() const noexcept -> const std::vector<std::uint32_t>& {
+    return _input_attachments;
   }
 
   auto input_attachment_bindings() const noexcept -> const std::vector<std::uint32_t>& {
@@ -113,8 +117,8 @@ public:
 private:
 
   std::uint32_t _binding;
-  std::vector<std::uint32_t> _attachment_bindings;
-  std::vector<std::uint32_t> _input_attachment_bindings
+  std::vector<std::uint32_t> _color_attachments;
+  std::vector<std::uint32_t> _input_attachments;
 
 }; // class subpass_binding
 

@@ -3,11 +3,12 @@
 
 #include <libsbx/graphics/pipeline/graphics_pipeline.hpp>
 
-#include <libsbx/shadows/vertex3d.hpp>
+// #include <libsbx/shadows/vertex3d.hpp>
+#include <libsbx/models/vertex3d.hpp>
 
 namespace sbx::shadows {
 
-class pipeline : public graphics::graphics_pipeline<vertex3d> {
+class pipeline : public graphics::graphics_pipeline<models::vertex3d> {
 
   inline static constexpr auto pipeline_definition = graphics::pipeline_definition{
     .uses_depth = true,
@@ -19,10 +20,12 @@ class pipeline : public graphics::graphics_pipeline<vertex3d> {
     }
   };
 
+  using base = graphics::graphics_pipeline<models::vertex3d>;
+
 public:
 
   pipeline(const std::filesystem::path& path, const graphics::pipeline::stage& stage)
-  : graphics::graphics_pipeline<vertex3d>{path, stage, pipeline_definition} { }
+  : base{path, stage, pipeline_definition} { }
 
   ~pipeline() override = default;
 

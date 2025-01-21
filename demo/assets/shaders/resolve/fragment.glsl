@@ -3,6 +3,8 @@
 #include "../common/lighting.glsl"
 #include "../common/material.glsl"
 #include "../common/shadow.glsl"
+#include "../common/depth.glsl"
+#include "../common/constants.glsl"
 
 layout(location = 0) in vec2 in_uv;
 
@@ -13,18 +15,25 @@ layout(binding = 0) uniform uniform_scene {
   vec3 light_direction;
   vec4 light_color;
   mat4 light_space;
-  float time;
+  uint point_light_count;
 } scene;
 
-layout(binding = 1) uniform sampler2D position_image; 
-layout(binding = 2) uniform sampler2D normal_image;
-layout(binding = 3) uniform sampler2D albedo_image;
+layout(binding = 1, std430) readonly buffer buffer_point_lights {
+  point_light data[];
+} point_lights;
+
+layout(binding = 2, input_attachment_index = 0) uniform subpassInput position_image; 
+layout(binding = 3, input_attachment_index = 1) uniform subpassInput normal_image;
+layout(binding = 4, input_attachment_index = 2) uniform subpassInput albedo_image;
+
+layout(binding = 5) uniform sampler2D shadow_map_image;
 
 const material DEFAULT_MATERIAL = material(
-  vec4(1.0, 1.0, 1.0, 1.0),   // Ambient color
-  vec4(1.0, 1.0, 1.0, 1.0),   // Diffuse color
-  vec4(0.5, 0.5, 0.5, 1.0),   // Specular color
-  32.0                        // Shininess
+  vec4(1.0, 1.0, 1.0, 1.0),     // Ambient color
+  vec4(1.0, 1.0, 1.0, 1.0),     // Specular color
+  0.4,                          // Metallic
+  0.7,                          // Roughness
+  0.7                           // Ambient occlusion
 );
 
 const mat4 DEPTH_BIAS = mat4( 
@@ -34,17 +43,40 @@ const mat4 DEPTH_BIAS = mat4(
 	0.5, 0.5, 0.0, 1.0
 );
 
+const vec4 AMBIENT_COLOR = vec4(0.4, 0.4, 0.4, 1.0);
+const vec4 SPECULAR_COLOR = vec4(0.9, 0.9, 0.9, 1.0);
+const float GLOSSINESS = 32.0;
+const vec4 RIM_COLOR = vec4(1.0, 1.0, 1.0, 1.0);
+const float RIM_STRENGTH = 0.716;
+const float RIM_THRESHOLD = 0.1;
+
 void main() {
-  vec3 position = texture(position_image, in_uv).xyz;
-  vec4 light_space_position = (DEPTH_BIAS * scene.light_space) * vec4(position, 1.0);
-  vec3 normal = texture(normal_image, in_uv).xyz;
-  vec4 albedo = texture(albedo_image, in_uv);
+  vec3 world_position = subpassLoad(position_image).xyz;
+  vec3 normal = normalize(subpassLoad(normal_image).xyz);
+  vec4 albedo = subpassLoad(albedo_image);
 
-  vec3 view_direction = normalize(scene.camera_position - position);
-  
-  directional_light light = directional_light(scene.light_direction, scene.light_color);
+  vec4 light_space_position = DEPTH_BIAS * scene.light_space * vec4(world_position, 1.0);
 
-  vec4 lighting = calculate_directional_light_blinn_phong(DEFAULT_MATERIAL, light, normal, view_direction);
+  float shadow = calculate_shadow_random_jitter(shadow_map_image, light_space_position, normal, scene.light_direction);
 
-  out_color = albedo * lighting;
+  vec3 light_direction = normalize(-scene.light_direction);
+  vec3 view_direction = normalize(scene.camera_position - world_position);
+  vec3 halfway_direction = normalize(light_direction + view_direction);
+
+  float n_dot_l = dot(normal, halfway_direction);
+  float light_intensity = smoothstep(0, 0.01, n_dot_l);
+
+  vec4 light = scene.light_color * light_intensity;
+
+  float specular_factor = pow(n_dot_l * light_intensity, GLOSSINESS * GLOSSINESS);
+  float specular_intensity = smoothstep(0.005, 0.01, specular_factor);
+  vec4 specular = SPECULAR_COLOR * specular_intensity;
+
+  float rim_factor = (1.0 - dot(view_direction, normal)) * pow(n_dot_l, RIM_THRESHOLD);
+  float rim_intensity = smoothstep(RIM_STRENGTH - 0.01, RIM_STRENGTH + 0.01, rim_factor);
+  vec4 rim = RIM_COLOR * rim_intensity;
+
+  out_color = albedo * (AMBIENT_COLOR + light + specular + rim);
+
+  out_color = albedo * (AMBIENT_COLOR + light + specular + rim);
 }

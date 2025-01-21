@@ -19,7 +19,7 @@ class storage_handler {
 
 public:
 
-  storage_handler(const std::optional<shader::uniform_block>& uniform_block = std::nullopt);
+  storage_handler(VkBufferUsageFlags additional_usage = 0u, const std::optional<shader::uniform_block>& uniform_block = std::nullopt);
 
   template<typename Type>
   auto push(std::span<const Type> buffer) -> void;
@@ -38,6 +38,7 @@ private:
 
   std::optional<shader::uniform_block> _uniform_block;
   std::unique_ptr<graphics::storage_buffer> _storage_buffer;
+  VkBufferUsageFlags _additional_usage;
 
 }; // class storage_handler
 

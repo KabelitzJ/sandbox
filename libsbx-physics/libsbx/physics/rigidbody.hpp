@@ -3,6 +3,8 @@
 
 #include <cmath>
 
+#include <libsbx/units/mass.hpp>
+
 #include <libsbx/math/vector3.hpp>
 
 namespace sbx::physics {
@@ -11,15 +13,23 @@ class rigidbody {
 
 public:
 
-  rigidbody(std::float_t mass, std::float_t bounce, bool is_static = false);
+  rigidbody(const units::kilogram& mass, bool is_static = false);
 
-  auto mass() const -> std::float_t;
+  auto velocity() const -> const math::vector3&;
 
-  auto set_mass(std::float_t mass) -> void;
+  auto set_velocity(const math::vector3& velocity) -> void;
 
-  auto bounce() const -> std::float_t;
+  auto add_velocity(const math::vector3& velocity) -> void;
 
-  auto set_bounce(std::float_t bounce) -> void;
+  auto acceleration() const -> const math::vector3&;
+
+  auto set_acceleration(const math::vector3& acceleration) -> void;
+
+  auto add_acceleration(const math::vector3& acceleration) -> void;
+
+  auto mass() const -> const units::kilogram&;
+
+  auto set_mass(const units::kilogram& mass) -> void;
 
   auto is_static() const -> bool;
 
@@ -27,23 +37,20 @@ public:
 
   auto apply_force(const math::vector3& force) -> void;
 
-  auto velocity() const -> const math::vector3&;
+  auto forces() const -> const math::vector3&;
 
-  auto set_velocity(const math::vector3& velocity) -> void;
-
-  auto acceleration() const -> const math::vector3&;
-
-  auto set_acceleration(const math::vector3& acceleration) -> void;
+  auto reset_forces() -> void;
 
 private:
 
-  std::float_t _mass;
-  std::float_t _bounce;
-
-  bool _is_static;
 
   math::vector3 _velocity;
   math::vector3 _acceleration;
+  units::kilogram _mass;
+
+  bool _is_static;
+
+  math::vector3 _forces;
 
 }; // class rigidbody
 

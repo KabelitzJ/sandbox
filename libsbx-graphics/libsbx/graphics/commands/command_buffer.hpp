@@ -15,6 +15,11 @@ class command_buffer {
 
 public:
 
+  struct wait_data {
+    VkSemaphore semaphore;
+    VkPipelineStageFlags stage;
+  }; // struct wait_data
+
   command_buffer(bool should_begin = true, VkQueueFlagBits queue_type = VK_QUEUE_GRAPHICS_BIT, VkCommandBufferLevel buffer_level = VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 
   ~command_buffer();
@@ -31,7 +36,7 @@ public:
 
   auto submit_idle() -> void;
 
-  auto submit(const VkSemaphore& wait_semaphore = nullptr, const VkSemaphore &signal_semaphore = nullptr, const VkFence& fence = nullptr) -> void;
+  auto submit(const std::vector<wait_data>& wait_data = {}, const VkSemaphore &signal_semaphore = nullptr, const VkFence& fence = nullptr) -> void;
 
   auto copy_buffer(const VkBuffer& source, const VkBuffer& destination, const VkBufferCopy& region) -> void;
 

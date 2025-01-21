@@ -4,6 +4,8 @@
 
 #include <fmt/format.h>
 
+#include <nlohmann/json.hpp>
+
 #include <libsbx/core/logger.hpp>
 #include <libsbx/core/engine.hpp>
 
@@ -24,7 +26,7 @@
 namespace sbx::graphics {
 
 template<vertex Vertex>
-graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, const pipeline::stage& stage, const pipeline_definition& definition)
+graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, const pipeline::stage& stage, const pipeline_definition& default_definition)
 : _bind_point{VK_PIPELINE_BIND_POINT_GRAPHICS},
   _stage{stage} {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
@@ -33,6 +35,8 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
   const auto& render_stage = graphics_module.render_stage(stage);
 
   auto timer = utility::timer{};
+
+  const auto definition = _update_definition(path, default_definition);
 
   _name = path.filename().string();
 
@@ -51,10 +55,11 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
       const auto stage = _get_stage_from_name(stem);
 
       if (stage == VK_SHADER_STAGE_FLAG_BITS_MAX_ENUM) {
-        throw std::runtime_error{fmt::format("Unsupported shader stage '{}'", stem)};
+        core::logger::warn("Unsupported shader stage '{}' in graphics pipeline '{}'", stem, _name);
+        continue;
       }
 
-      _shaders.insert({stage, std::make_unique<shader>(file, stage)});
+      _shaders.insert({stage, std::make_unique<shader>(file, stage, definition.defines)});
     }
   }
 
@@ -179,10 +184,10 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
   rasterization_state.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
   rasterization_state.depthClampEnable = false;
   rasterization_state.rasterizerDiscardEnable = false;
-  rasterization_state.polygonMode = static_cast<VkPolygonMode>(definition.rasterization_state.polygon_mode);
-  rasterization_state.lineWidth = 1.0f;
-  rasterization_state.cullMode = static_cast<VkCullModeFlags>(definition.rasterization_state.cull_mode);
-  rasterization_state.frontFace = static_cast<VkFrontFace>(definition.rasterization_state.front_face);
+  rasterization_state.polygonMode = to_vk_enum<VkPolygonMode>(definition.rasterization_state.polygon_mode);
+  rasterization_state.lineWidth = definition.rasterization_state.line_width;
+  rasterization_state.cullMode = to_vk_enum<VkCullModeFlags>(definition.rasterization_state.cull_mode);
+  rasterization_state.frontFace = to_vk_enum<VkFrontFace>(definition.rasterization_state.front_face);
 
   if (definition.rasterization_state.depth_bias.has_value()) {
     auto& depth_bias = definition.rasterization_state.depth_bias.value();
@@ -227,8 +232,6 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
 
   auto color_blend_attachments = std::vector<VkPipelineColorBlendAttachmentState>{render_stage.attachment_count(_stage.subpass), color_blend_attachment};
 
-  core::logger::debug("color_blend_attachments: {}", color_blend_attachments.size());
-
   auto color_blend_state = VkPipelineColorBlendStateCreateInfo{};
   color_blend_state.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
   color_blend_state.logicOpEnable = false;
@@ -256,7 +259,7 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
   if (definition.uses_depth) {
     depth_stencil_state.depthTestEnable = true;
     depth_stencil_state.depthWriteEnable = true;
-    depth_stencil_state.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
+    depth_stencil_state.depthCompareOp = VK_COMPARE_OP_LESS;
     depth_stencil_state.depthBoundsTestEnable = false;
     depth_stencil_state.stencilTestEnable = false;
   } else {
@@ -278,7 +281,7 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
 
   auto input_assembly_state = VkPipelineInputAssemblyStateCreateInfo{};
   input_assembly_state.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-  input_assembly_state.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+  input_assembly_state.topology = to_vk_enum<VkPrimitiveTopology>(definition.primitive_topology);
   input_assembly_state.primitiveRestartEnable = false;
 
   auto binding_flags = std::vector<VkDescriptorBindingFlags>{};
@@ -374,7 +377,7 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
 
   validate(vkCreateGraphicsPipelines(logical_device, VK_NULL_HANDLE, 1, &pipeline_create_info, nullptr, &_handle));
 
-  core::logger::debug("Pipeline '{}' created in {:.2f} ms", _name, units::quantity_cast<units::millisecond>(timer.elapsed()).value());
+  core::logger::debug("Pipeline '{}' created in {:.2f}ms", _name, units::quantity_cast<units::millisecond>(timer.elapsed()).value());
 }
 
 template<vertex Vertex>
@@ -418,6 +421,55 @@ auto graphics_pipeline<Vertex>::layout() const noexcept -> const VkPipelineLayou
 template<vertex Vertex>
 auto graphics_pipeline<Vertex>::bind_point() const noexcept -> VkPipelineBindPoint {
   return _bind_point;
+}
+
+template<vertex Vertex>
+auto graphics_pipeline<Vertex>::_update_definition(const std::filesystem::path& path, const pipeline_definition default_definition) -> pipeline_definition {
+  if (!std::filesystem::exists(path / "definition.json")) {
+    return default_definition;
+  }
+
+  auto file = std::ifstream{path / "definition.json"};
+
+  if (!file.is_open()) {
+    return default_definition;
+  }
+
+  auto definition = nlohmann::json::parse(file);
+
+  auto result = default_definition;
+
+  if (definition.contains("uses_depth")) {
+    result.uses_depth = definition["uses_depth"].get<bool>();
+  }
+
+  if (definition.contains("uses_transparency")) {
+    result.uses_depth = definition["uses_transparency"].get<bool>();
+  }
+
+  if (definition.contains("rasterization_state")) {
+    auto rasterization_state = definition["rasterization_state"];
+
+    if (rasterization_state.contains("polygon_mode")) {
+      auto polygon_mode = utility::from_string<graphics::polygon_mode>(rasterization_state["polygon_mode"].get<std::string>());
+
+      if (polygon_mode) {
+        result.rasterization_state.polygon_mode = *polygon_mode;
+      } else {
+        core::logger::warn("Could not parse 'sbx::graphics::polygon_mode' value '{}'", rasterization_state["polygon_mode"].get<std::string>());
+      }
+    }
+  }
+
+  if (definition.contains("defines")) {
+    auto defines = definition["defines"];
+
+    for (const auto& [key, value] : defines.items()) {
+      result.defines.push_back({key, value});
+    }
+  }
+
+  return result;
 }
 
 template<vertex Vertex>

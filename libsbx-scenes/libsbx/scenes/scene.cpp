@@ -28,7 +28,7 @@ scene::scene()
 : _registry{}, 
   _root{&_registry, _registry.create_entity()},
   _camera{&_registry, _registry.create_entity()},
-  _light{math::vector3{1.0, -1.0, 1.0}, math::color{1.0, 1.0, 1.0, 1.0}} {
+  _light{math::vector3{-1.0, -1.0, -1.0}, math::color::white} {
   // [NOTE] KAJ 2023-10-17 : Initialize root node
   auto& root_id = _root.add_component<scenes::id>();
   _root.add_component<scenes::relationship>(root_id);
@@ -51,7 +51,7 @@ scene::scene()
   auto& devices_module = core::engine::get_module<devices::devices_module>();
   auto& window = devices_module.window();
 
-  _camera.add_component<scenes::camera>(math::angle{math::degree{50.0f}}, window.aspect_ratio(), 0.1f, 100.0f);
+  _camera.add_component<scenes::camera>(math::angle{math::degree{50.0f}}, window.aspect_ratio(), 0.1f, 2000.0f);
 
   window.on_framebuffer_resized() += [this](const devices::framebuffer_resized_event& event) {
     auto& camera = _camera.get_component<scenes::camera>();

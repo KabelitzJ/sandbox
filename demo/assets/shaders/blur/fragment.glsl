@@ -2,7 +2,7 @@
 
 layout(location = 0) in vec2 in_uv;
 
-layout(binding = 1) uniform sampler2D source_image;
+layout(binding = 1) uniform sampler2D image;
 
 layout(location = 0) out vec4 out_color;
 
@@ -61,16 +61,16 @@ vec4 gaussian_blur_13(sampler2D image, vec2 uv, vec2 resolution, vec2 direction)
 }
 
 void main() {
-  vec2 resolution = vec2(textureSize(source_image, 0));
+  vec2 resolution = vec2(textureSize(image, 0));
 
   vec4 color = vec4(0.0);
 
   if (data.type == BLUR_TYPE_GAUSSIAN_5) {
-    color = gaussian_blur_5(source_image, in_uv, resolution, data.direction);
+    color = gaussian_blur_5(image, in_uv, resolution, data.direction);
   } else if (data.type == BLUR_TYPE_GAUSSIAN_9) {
-    color = gaussian_blur_9(source_image, in_uv, resolution, data.direction);
+    color = gaussian_blur_9(image, in_uv, resolution, data.direction);
   } else if (data.type == BLUR_TYPE_GAUSSIAN_13) {
-    color = gaussian_blur_13(source_image, in_uv, resolution, data.direction);
+    color = gaussian_blur_13(image, in_uv, resolution, data.direction);
   }
 
   out_color = color;

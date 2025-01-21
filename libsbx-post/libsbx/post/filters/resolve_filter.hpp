@@ -28,6 +28,8 @@ class resolve_filter final : public filter<Vertex> {
 
   using base_type = filter<Vertex>;
 
+  inline static constexpr auto max_point_lights = std::size_t{32};
+
 public:
 
   using vertex_type = base_type::vertex_type;
@@ -46,8 +48,6 @@ public:
 
     auto camera_node = scene.camera();
 
-    auto& camera = camera_node.get_component<scenes::camera>();
-
     auto& pipeline = base_type::pipeline();
     auto& descriptor_handler = base_type::descriptor_handler();
 
@@ -55,47 +55,41 @@ public:
 
     _scene_uniform_handler.push("camera_position", camera_transform.position());
 
-    const auto& scene_light = scene.light();
+    auto& scene_light = scene.light();
 
-    const auto light_direction = scene_light.direction();
+    _scene_uniform_handler.push("light_space", scene.light_space());
 
-    const auto position = light_direction * -30.0f;
-
-    const auto view = math::matrix4x4::look_at(position, position + light_direction, math::vector3::up);
-    const auto projection = math::matrix4x4::orthographic(-10.0f, 10.0f, -10.0f, 10.0f, 0.1f, 100.0f);
-
-    _scene_uniform_handler.push("light_space", math::matrix4x4{projection * view});
-
-    const auto time = std::fmod(core::engine::time().value() * scene.wind_speed(), 1.0f);
-    _scene_uniform_handler.push("time", time);
-
-    _scene_uniform_handler.push("light_direction", light_direction);
+    _scene_uniform_handler.push("light_direction", sbx::math::vector3::normalized(scene_light.direction()));
     _scene_uniform_handler.push("light_color", scene_light.color());
 
-    // auto light_nodes = scene.query<scenes::point_light>();
+    auto point_light_nodes = scene.query<scenes::point_light>();
 
-    // auto lights = std::vector<models::point_light>{};
-    // auto point_light_count = std::uint32_t{0};
+    auto point_lights = std::vector<point_light>{};
+    auto point_light_count = std::uint32_t{0};
 
-    // for (const auto& node : light_nodes) {
-    //   const auto& light = node.get_component<scenes::point_light>();
-    //   const auto& transform = node.get_component<math::transform>();
+    for (const auto& node : point_light_nodes) {
+      const auto model = scene.world_transform(node);
 
-    //   lights.push_back(models::point_light{light.color(), transform.position(), light.radius()});
+      const auto& light = node.get_component<scenes::point_light>();
+
+      const auto position = math::vector3{model[3]};
+
+      point_lights.push_back(point_light{position, light.color(), light.radius()});
       
-    //   ++point_light_count;
+      ++point_light_count;
 
-    //   if (point_light_count >= max_point_lights) {
-    //     break;
-    //   }
-    // }
+      if (point_light_count >= max_point_lights) {
+        break;
+      }
+    }
 
-    // _lights_storage_handler.push(std::span<const models::point_light>{lights.data(), point_light_count});
-    // _scene_uniform_handler.push("point_light_count", point_light_count);
+    _point_lights_storage_handler.push(std::span<const point_light>{point_lights.data(), point_light_count});
+    _scene_uniform_handler.push("point_light_count", point_light_count);
 
     pipeline.bind(command_buffer);
 
     descriptor_handler.push("uniform_scene", _scene_uniform_handler);
+    descriptor_handler.push("buffer_point_lights", _point_lights_storage_handler);
 
     for (const auto& [name, attachment] : _attachment_names) {
       descriptor_handler.push(name, graphics_module.attachment(attachment));
@@ -112,8 +106,16 @@ public:
 
 private:
 
+  struct point_light {
+    alignas(16) math::vector3 position;
+    alignas(16) math::color color;
+    alignas(16) std::float_t radius;
+  }; // struct point_light
+
   std::unordered_map<std::string, std::string> _attachment_names;
+
   graphics::uniform_handler _scene_uniform_handler;
+  graphics::storage_handler _point_lights_storage_handler;
 
 }; // class resolve_filter
 

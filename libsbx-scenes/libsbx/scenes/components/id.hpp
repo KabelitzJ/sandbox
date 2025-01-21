@@ -7,13 +7,14 @@ namespace sbx::scenes {
 
 class id final : public math::uuid {
 
+  using base = math::uuid;
+
 public:
 
-  using super = math::uuid;
 
   template<typename... Args>
   id(Args&&... args)
-  : super{std::forward<Args>(args)...} { }
+  : base{std::forward<Args>(args)...} { }
 
 }; // class id
 

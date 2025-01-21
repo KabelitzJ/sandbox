@@ -11,10 +11,10 @@ class pipeline : public graphics::graphics_pipeline<models::vertex3d> {
 
   inline static constexpr auto pipeline_definition = graphics::pipeline_definition{
     .uses_depth = true,
-    .uses_transparency = false,
+    .uses_transparency = true,
     .rasterization_state = graphics::rasterization_state{
       .polygon_mode = graphics::polygon_mode::fill,
-      .cull_mode = graphics::cull_mode::back,
+      .cull_mode = graphics::cull_mode::none,
       .front_face = graphics::front_face::counter_clockwise
     }
   };

@@ -15,19 +15,22 @@ endif()
 add_library(${CMAKE_PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
 find_package(fmt REQUIRED)
+find_package(range-v3 REQUIRED)
 
 target_sources(
   ${PROJECT_NAME}
   PRIVATE
     "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/physics.cpp"
     "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/rigidbody.cpp"
+    "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/collider.cpp"
   PUBLIC
     FILE_SET HEADERS
     FILES
       "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/physics.hpp"
       "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/physics_module.hpp"
       "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/rigidbody.hpp"
-      "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/box_collider.hpp"
+      "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/collider.hpp"
+      "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/octtree.hpp"
 )
 
 target_include_directories(
@@ -41,6 +44,7 @@ target_link_libraries(
   PUBLIC
     # External dependencies
     fmt::fmt
+    range-v3::range-v3
     # Internal dependencies
     libsbx::units
     libsbx::utility
@@ -48,6 +52,7 @@ target_link_libraries(
     libsbx::core
     libsbx::scenes
     libsbx::models
+    libsbx::gizmos
 )
 
 set_target_properties(

@@ -6,7 +6,7 @@
 
 namespace sbx::io {
 
-auto read_file(const std::filesystem::path& path) -> std::vector<char>;
+auto read_file(const std::filesystem::path& path) -> std::vector<std::uint8_t>;
 
 } // namespace sbx::io
 

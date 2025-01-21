@@ -27,10 +27,12 @@
 #include <libsbx/scenes/components/static_mesh.hpp>
 #include <libsbx/scenes/components/id.hpp>
 #include <libsbx/scenes/components/directional_light.hpp>
+#include <libsbx/scenes/components/tag.hpp>
 
 #include <libsbx/models/mesh.hpp>
+#include <libsbx/models/vertex3d.hpp>
 
-#include <libsbx/shadows/vertex3d.hpp>
+// #include <libsbx/shadows/vertex3d.hpp>
 #include <libsbx/shadows/pipeline.hpp>
 
 namespace sbx::shadows {
@@ -51,19 +53,9 @@ public:
 
     auto& scene = scenes_module.scene();
 
-    auto& scene_light = scene.light();
+    _scene_uniform_handler.push("light_space", scene.light_space());
 
-    auto light_direction = scene_light.direction();
-
-    const auto position = light_direction * -30.0f;
-
-    const auto view = math::matrix4x4::look_at(position, position + light_direction, math::vector3::up);
-    const auto projection = math::matrix4x4::orthographic(-10.0f, 10.0f, -10.0f, 10.0f, 0.1f, 100.0f);
-
-    _scene_uniform_handler.push("light_space", math::matrix4x4{projection * view});
-
-    const auto time = std::fmod(core::engine::time().value() * scene.wind_speed(), 1.0f);
-    _scene_uniform_handler.push("time", time);
+    _scene_uniform_handler.push("time", std::fmod(core::engine::time().value() * 0.5f, 1.0f));
 
     for (auto entry = _uniform_data.begin(); entry != _uniform_data.end();) {
       if (_used_uniforms.contains(entry->first)) {
@@ -98,7 +90,7 @@ public:
       descriptor_handler.push("buffer_mesh_data", storage_handler);
 
       if (!descriptor_handler.update(_pipeline)) {
-        return;
+        continue;
       }
 
       descriptor_handler.bind_descriptors(command_buffer);
@@ -122,8 +114,9 @@ private:
       _used_uniforms.insert(key);
 
       auto model = scene.world_transform(node);
+      auto material = math::vector4{submesh.material.metallic, submesh.material.roughness, submesh.material.flexibility, submesh.material.anchor_height};
 
-      _static_meshes[key].push_back(per_mesh_data{std::move(model)});
+      _static_meshes[key].push_back(per_mesh_data{std::move(model), material});
     }
   }
 
@@ -139,6 +132,7 @@ private:
 
   struct per_mesh_data {
     math::matrix4x4 model;
+    math::vector4 material;
   }; // struct per_mesh_data
 
   struct mesh_key_hash {

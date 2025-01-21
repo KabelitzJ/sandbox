@@ -48,8 +48,8 @@ public:
 
   constexpr basic_vector3(const base_type& base) noexcept;
 
-  template<scalar Other>
-  constexpr basic_vector3(Other x, Other y, Other z) noexcept;
+  template<scalar X, scalar Y, scalar Z>
+  constexpr basic_vector3(X x, Y y, Z z) noexcept;
 
   template<scalar Other, scalar Scalar = Other>
   constexpr basic_vector3(const basic_vector2<Other>& vector, Scalar z = Scalar{0}) noexcept;
@@ -59,6 +59,10 @@ public:
   [[nodiscard]] static constexpr auto dot(const basic_vector3& lhs, const basic_vector3& rhs) noexcept -> length_type;
 
   [[nodiscard]] static constexpr auto normalized(const basic_vector3& vector) noexcept -> basic_vector3;
+
+  [[nodiscard]] static constexpr auto reflect(const basic_vector3& vector, const basic_vector3& normal) noexcept -> basic_vector3;
+
+  [[nodiscard]] static constexpr auto abs(const basic_vector3& vector) noexcept -> basic_vector3;
 
   [[nodiscard]] constexpr operator basic_vector2<Type>() const noexcept;
 
@@ -90,8 +94,16 @@ template<scalar Type>
 template<scalar Lhs, scalar Rhs>
 [[nodiscard]] constexpr auto operator*(basic_vector3<Lhs> lhs, Rhs scalar) noexcept -> basic_vector3<Lhs>;
 
+template<scalar Lhs, std::convertible_to<Lhs> Rhs>
+requires (!is_scalar_v<Rhs>)
+[[nodiscard]] constexpr auto operator*(basic_vector3<Lhs> lhs, const Rhs& rhs) noexcept -> basic_vector3<Lhs>;
+
 template<scalar Lhs, scalar Rhs>
 [[nodiscard]] constexpr auto operator/(basic_vector3<Lhs> lhs, Rhs scalar) noexcept -> basic_vector3<Lhs>;
+
+template<scalar Lhs, std::convertible_to<Lhs> Rhs>
+requires (!is_scalar_v<Rhs>)
+[[nodiscard]] constexpr auto operator/(basic_vector3<Lhs> lhs, const Rhs& rhs) noexcept -> basic_vector3<Lhs>;
 
 using vector3f = basic_vector3<std::float_t>;
 

@@ -110,7 +110,7 @@ auto command_buffer::submit_idle() -> void {
 	vkDestroyFence(logical_device, fence, nullptr);
 }
 
-auto command_buffer::submit(const VkSemaphore& wait_semaphore, const VkSemaphore &signal_semaphore, const VkFence& fence) -> void {
+auto command_buffer::submit(const std::vector<wait_data>& wait_data, const VkSemaphore &signal_semaphore, const VkFence& fence) -> void {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
   const auto& logical_device = graphics_module.logical_device();
@@ -130,7 +130,31 @@ auto command_buffer::submit(const VkSemaphore& wait_semaphore, const VkSemaphore
   submit_info.signalSemaphoreCount = 1;
   submit_info.pSignalSemaphores = &signal_semaphore;
 
-	validate(vkResetFences(logical_device, 1, &fence));
+  auto wait_stages = std::vector<VkPipelineStageFlags>{};
+  auto wait_semaphores = std::vector<VkSemaphore>{};
+
+  if (!wait_data.empty()) {
+    wait_semaphores.reserve(wait_data.size());
+    wait_stages.reserve(wait_data.size());
+
+    for (const auto& data : wait_data) {
+      wait_semaphores.push_back(data.semaphore);
+      wait_stages.push_back(data.stage);
+    }
+
+		submit_info.waitSemaphoreCount = static_cast<std::uint32_t>(wait_data.size());
+		submit_info.pWaitSemaphores = wait_semaphores.data();
+		submit_info.pWaitDstStageMask = wait_stages.data();
+	}
+
+	if (signal_semaphore) {
+		submit_info.signalSemaphoreCount = 1;
+		submit_info.pSignalSemaphores = &signal_semaphore;
+	}
+
+	if (fence) {
+		validate(vkResetFences(logical_device, 1, &fence));
+  }
 
 	validate(vkQueueSubmit(selected_queue, 1, &submit_info, fence));
 }

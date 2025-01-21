@@ -20,6 +20,8 @@ class uuid {
 
 public:
 
+  static const uuid null;
+
   uuid() {
     // Taken from https://www.cryptosys.net/pki/uuid-rfc4122.html
 
@@ -42,6 +44,9 @@ public:
   }
 
 private:
+
+  uuid(std::array<std::uint8_t, 16u>&& bytes)
+  : _bytes{std::move(bytes)} { }
 
   std::array<std::uint8_t, 16u> _bytes;
 

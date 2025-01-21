@@ -2,6 +2,8 @@ project(demo VERSION 0.1.0 LANGUAGES CXX)
 
 message(STATUS "Configuring ${PROJECT_NAME}...")
 
+find_package(imgui REQUIRED)
+
 add_executable(${PROJECT_NAME})
 
 if(WIN32)
@@ -35,12 +37,25 @@ add_dependencies(${PROJECT_NAME} shaders)
 target_sources(
   ${PROJECT_NAME}
   PUBLIC
-    "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/demo_renderer.hpp"
-    "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/demo_application.hpp"
+    "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/renderer.hpp"
+    "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/application.hpp"
+    "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/camera_controller.hpp"
+    "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/line.hpp"
+    "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/terrain/pipeline.hpp"
+    "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/terrain/vertex.hpp"
+    "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/terrain/terrain_subrenderer.hpp"
+    "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/terrain/terrain_module.hpp"
+    "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/terrain/voronoi.hpp"
+    "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/imgui/bindings/imgui_impl_vulkan.h"
+    "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/imgui/bindings/imgui_impl_glfw.h"
   PRIVATE
-    "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/demo_renderer.cpp"
-    "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/demo_application.cpp"
+    "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/renderer.cpp"
+    "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/application.cpp"
+    "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/line.cpp"
     "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/demo.cpp"
+    "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/terrain/vertex.cpp"
+    "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/imgui/bindings/imgui_impl_vulkan.cpp"
+    "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/imgui/bindings/imgui_impl_glfw.cpp"
 )
 
 target_include_directories(
@@ -70,6 +85,7 @@ target_link_libraries(
     libsbx::post
     libsbx::ui
     libsbx::physics
+    imgui::imgui
 )
 
 set_target_properties(

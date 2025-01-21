@@ -157,6 +157,9 @@ inline constexpr auto basic_matrix4x4<Type>::perspective(const basic_angle<value
   result[2][3] = -static_cast<value_type>(1);
   result[3][2] = (near * far) / (near - far);
 
+  //// [NOTE] KAJ 2023-10-11 : Flip the y-axis to match Vulkan's coordinate system.
+  // result[1][1] *= -1;
+
   return result;
 }
 
@@ -167,7 +170,6 @@ inline constexpr auto basic_matrix4x4<Type>::orthographic(const value_type left,
   result[0][0] = static_cast<value_type>(2) / (right - left);
   result[1][1] = static_cast<value_type>(2) / (top - bottom);
   result[2][2] = -static_cast<value_type>(1);
-
   result[3][0] = -(right + left) / (right - left);
   result[3][1] = -(top + bottom) / (top - bottom);
 
@@ -181,11 +183,11 @@ inline constexpr auto basic_matrix4x4<Type>::orthographic(const value_type left,
   auto result = basic_matrix4x4<value_type>::identity;
 
   result[0][0] = static_cast<value_type>(2) / (right - left);
-  result[1][1] = static_cast<value_type>(2) / (top - bottom);
-  result[2][2] = - static_cast<value_type>(1) / (far - near);
-  result[3][0] = - (right + left) / (right - left);
-  result[3][1] = - (top + bottom) / (top - bottom);
-  result[3][2] = - near / (far - near);
+  result[1][1] = -static_cast<value_type>(2) / (top - bottom);
+  result[2][2] = -static_cast<value_type>(1) / (far - near);
+  result[3][0] = -(right + left) / (right - left);
+  result[3][1] = -(top + bottom) / (top - bottom);
+  result[3][2] = -near / (far - near);
 
   return result;
 }

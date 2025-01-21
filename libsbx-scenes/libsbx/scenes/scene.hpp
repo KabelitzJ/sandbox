@@ -33,11 +33,11 @@ class scene {
 
   friend class node;
 
-  using signal_container = std::unordered_map<std::type_index, signals::signal<node&>>;
-
 public:
 
   scene();
+
+  virtual ~scene() = default;
 
   auto create_child_node(node& parent, const std::string& tag = "", const math::transform& transform = math::transform{}) -> node;
 
@@ -55,17 +55,24 @@ public:
   auto query() -> std::vector<node> {
     auto view = _registry.create_view<Components...>();
      
-    return view 
-      | ranges::views::transform([&](auto& entity) { return node{&_registry, entity}; })
-      | ranges::to<std::vector>();
+    return view | ranges::views::transform([&](auto& entity) { return node{&_registry, entity}; }) | ranges::to<std::vector>();
   }
 
   auto light() -> directional_light& {
     return _light;
   }
 
-  auto wind_speed() const -> std::float_t {
-    return _wind_speed;
+  auto root() -> node {
+    return _root;
+  }
+
+  auto light_space() -> math::matrix4x4 {
+    const auto position = _light.direction() * -40.0f;
+
+    const auto view = math::matrix4x4::look_at(position, position + _light.direction() * 40.0f, math::vector3::up);
+    const auto projection = math::matrix4x4::orthographic(-40.0f, 40.0f, -40.0f, 40.0f, 0.1f, 300.0f);
+
+    return projection * view;
   }
 
   auto find_node(const math::uuid& id) -> std::optional<node> {
@@ -95,7 +102,6 @@ private:
   node _camera;
 
   directional_light _light;
-  std::float_t _wind_speed;
 
 }; // class scene
 

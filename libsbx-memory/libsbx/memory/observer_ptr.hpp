@@ -8,6 +8,12 @@
 
 namespace sbx::memory {
 
+template<typename Type, typename Value>
+concept smart_pointer = requires(Type t, Value v) {
+  { Type::value_type} -> std::same_as<Value>;
+  { t.get() } -> std::same_as<Value>;
+}; // concept smart_pointer
+
 /**
  * @brief A non-owning pointer that can be used to observe the value of a pointer.
  * 
@@ -33,6 +39,10 @@ public:
 
   constexpr observer_ptr(pointer value) noexcept
   : _value{value} { }
+
+  template<smart_pointer<value_type> Pointer>
+  constexpr observer_ptr(const Pointer& value) noexcept
+  : _value{value.get()} { }
 
   template<typename Other>
   requires (std::is_convertible_v<Other*, pointer>)
@@ -130,6 +140,11 @@ constexpr auto operator==(const observer_ptr<Type>& lhs, const observer_ptr<Type
   return lhs.get() == rhs.get();
 }
 
+template<typename Type, smart_pointer<Type> Pointer>
+constexpr auto operator==(const observer_ptr<Type>& lhs, const Pointer& rhs) noexcept -> bool {
+  return lhs.get() == rhs.get();
+}
+
 /**
  * @brief Creates an observer pointer from a pointer.
  * 
@@ -149,13 +164,8 @@ constexpr auto make_observer(Type& value) noexcept -> observer_ptr<Type> {
   return observer_ptr<Type>{std::addressof(value)};
 }
 
-template<typename Type>
-constexpr auto make_observer(std::unique_ptr<Type>& value) noexcept -> observer_ptr<Type> {
-  return observer_ptr<Type>{value.get()};
-}
-
-template<typename Type>
-constexpr auto make_observer(std::shared_ptr<Type>& value) noexcept -> observer_ptr<Type> {
+template<typename Type, smart_pointer<Type> Pointer>
+constexpr auto make_observer(Pointer& value) noexcept -> observer_ptr<Type> {
   return observer_ptr<Type>{value.get()};
 }
 

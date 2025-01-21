@@ -53,6 +53,12 @@ public:
 
   [[nodiscard]] static constexpr auto normalized(const basic_vector2& vector) noexcept -> basic_vector2;
 
+  [[nodiscard]] static constexpr auto orthogonal(const basic_vector2& vector) noexcept -> basic_vector2;
+
+  [[nodiscard]] static constexpr auto determinant(const basic_vector2& lhs, const basic_vector2& rhs) noexcept -> value_type;
+
+  [[nodiscard]] static constexpr auto distance(const basic_vector2& lhs, const basic_vector2& rhs) noexcept -> value_type;
+
   [[nodiscard]] constexpr auto x() noexcept -> reference;
 
   [[nodiscard]] constexpr auto x() const noexcept -> const_reference;
@@ -74,6 +80,9 @@ template<scalar Type>
 
 template<scalar Lhs, scalar Rhs>
 [[nodiscard]] constexpr auto operator*(basic_vector2<Lhs> lhs, Rhs scalar) noexcept -> basic_vector2<Lhs>;
+
+template<scalar Lhs, scalar Rhs>
+[[nodiscard]] constexpr auto operator*(Lhs scalar, basic_vector2<Rhs> rhs) noexcept -> basic_vector2<Rhs>;
 
 template<scalar Lhs, scalar Rhs>
 [[nodiscard]] constexpr auto operator*(basic_vector2<Lhs> lhs, const basic_vector2<Rhs>& rhs) noexcept -> basic_vector2<Lhs>;
