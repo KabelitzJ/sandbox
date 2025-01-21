@@ -299,16 +299,18 @@ void ImGui_ImplGlfw_MouseButtonCallback(GLFWwindow* window, int button, int acti
 
 void ImGui_ImplGlfw_ScrollCallback(GLFWwindow* window, double xoffset, double yoffset)
 {
+    ImGuiIO& io = ImGui::GetIO();
+
     ImGui_ImplGlfw_Data* bd = ImGui_ImplGlfw_GetBackendData();
-    if (bd->PrevUserCallbackScroll != nullptr && ImGui_ImplGlfw_ShouldChainCallback(window))
+
+    if (bd->PrevUserCallbackScroll != nullptr && ImGui_ImplGlfw_ShouldChainCallback(window) && !io.WantCaptureMouse)
         bd->PrevUserCallbackScroll(window, xoffset, yoffset);
 
 #ifdef __EMSCRIPTEN__
     // Ignore GLFW events: will be processed in ImGui_ImplEmscripten_WheelCallback().
     return;
 #endif
-
-    ImGuiIO& io = ImGui::GetIO();
+    
     io.AddMouseWheelEvent((float)xoffset, (float)yoffset);
 }
 
