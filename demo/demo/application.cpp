@@ -89,9 +89,11 @@ application::application()
   const auto cell_size = sbx::math::vector2{10.0f, 10.0f};
   const auto offset = grid_size * cell_size * 0.5f;
 
+  auto forrest = scene.create_node("Forrest");
+
   for (auto y : std::views::iota(0u, grid_size.y())) {
     for (auto x : std::views::iota(0u, grid_size.x())) {
-      auto tree = scene.create_node(fmt::format("Tree{}{}", x, y));
+      auto tree = scene.create_child_node(forrest, fmt::format("Tree{}{}", x, y));
 
       tree.add_component<sbx::scenes::static_mesh>(_mesh_ids["birch"], tree_submeshes);
 
@@ -123,16 +125,16 @@ application::application()
 
   // UI
 
-  auto& ui_module = sbx::core::engine::get_module<sbx::ui::ui_module>();
+  // auto& ui_module = sbx::core::engine::get_module<sbx::ui::ui_module>();
 
-  auto& container = ui_module.container();
+  // auto& container = ui_module.container();
 
-  static auto font = sbx::ui::font{"demo/assets/fonts/JetBrainsMono-Medium.ttf", sbx::ui::pixels{16}};
+  // static auto font = sbx::ui::font{"demo/assets/fonts/JetBrainsMono-Medium.ttf", sbx::ui::pixels{16}};
 
-  container.add_widget<sbx::ui::label>("Hello, World!", sbx::math::vector2u{10, 10}, &font, 1.0f, sbx::math::color{1.0f, 0.0f, 0.0f, 1.0f});
+  // container.add_widget<sbx::ui::label>("Hello, World!", sbx::math::vector2u{10, 10}, &font, 1.0f, sbx::math::color{1.0f, 0.0f, 0.0f, 1.0f});
 
-  _delta_time_label = container.add_widget<sbx::ui::label>("Delta: 0", sbx::math::vector2u{10, 40}, &font, 1.0f, sbx::math::color{1.0f, 0.0f, 0.0f, 1.0f});
-  _fps_label = container.add_widget<sbx::ui::label>("FPS: 0", sbx::math::vector2u{10, 70}, &font, 1.0f, sbx::math::color{1.0f, 0.0f, 0.0f, 1.0f});
+  // _delta_time_label = container.add_widget<sbx::ui::label>("Delta: 0", sbx::math::vector2u{10, 40}, &font, 1.0f, sbx::math::color{1.0f, 0.0f, 0.0f, 1.0f});
+  // _fps_label = container.add_widget<sbx::ui::label>("FPS: 0", sbx::math::vector2u{10, 70}, &font, 1.0f, sbx::math::color{1.0f, 0.0f, 0.0f, 1.0f});
 
   window.show();
 }
@@ -155,16 +157,16 @@ auto application::update() -> void  {
 
   const auto delta_time = sbx::core::engine::delta_time();
 
-  _delta_time_label->set_text(fmt::format("Delta: {:.4f}ms", sbx::units::quantity_cast<sbx::units::millisecond>(delta_time).value()));
+  // _delta_time_label->set_text(fmt::format("Delta: {:.4f}ms", sbx::units::quantity_cast<sbx::units::millisecond>(delta_time).value()));
 
-  _time += delta_time;
-  _frames++;
+  // _time += delta_time;
+  // _frames++;
 
-  if (_time >= sbx::units::second{1}) {
-    _fps_label->set_text(fmt::format("FPS: {}", _frames));
-    _time = sbx::units::second{0};
-    _frames = 0;
-  }
+  // if (_time >= sbx::units::second{1}) {
+  //   _fps_label->set_text(fmt::format("FPS: {}", _frames));
+  //   _time = sbx::units::second{0};
+  //   _frames = 0;
+  // }
 
   _rotation += sbx::math::degree{45} * delta_time;
 }

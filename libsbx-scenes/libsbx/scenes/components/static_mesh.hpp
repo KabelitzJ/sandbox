@@ -24,7 +24,7 @@ public:
   struct submesh {
     std::uint32_t index;
     math::color tint{math::color::white};
-    material material{0.0f, 1.0f, 0.0f, 0.0f};
+    static_mesh::material material{0.0f, 1.0f, 0.0f, 0.0f};
     std::optional<math::uuid> albedo_texture{std::nullopt};
     std::optional<math::uuid> normal_texture{std::nullopt};
     std::optional<math::uuid> metallic_texture{std::nullopt};

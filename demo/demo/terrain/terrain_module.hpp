@@ -40,11 +40,13 @@ public:
 
     const auto offset = sbx::math::vector2{chunk_size.x() * grid.x() * 0.5f, chunk_size.y() * grid.y() * 0.5f};
 
+    auto node = scene.create_node("Terrain");
+
+    _node_id = node.get_component<sbx::scenes::id>();
+
     for (auto y = 0u; y < grid.y(); ++y) {
       for (auto x = 0u; x < grid.x(); ++x) {
-        auto chunk = scene.create_node(fmt::format("Chunk{}{}", x, y));
-
-        _node_id = chunk.get_component<sbx::scenes::id>();
+        auto chunk = scene.create_child_node(node, fmt::format("Chunk{}{}", x, y));
 
         chunk.add_component<sbx::scenes::static_mesh>(_mesh_id, sbx::math::color::white, sbx::scenes::static_mesh::material{0.0f, 1.0f, 0.0f, 0.0f}, _texture_id);
 

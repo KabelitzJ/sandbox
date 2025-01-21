@@ -5,7 +5,11 @@
 #include <demo/imgui/bindings/imgui_impl_glfw.h>
 #include <demo/imgui/bindings/imgui_impl_vulkan.h>
 
+#include <libsbx/core/engine.hpp>
+
 #include <libsbx/devices/devices_module.hpp>
+
+#include <libsbx/scenes/scenes_module.hpp>
 
 #include <libsbx/graphics/subrenderer.hpp>
 #include <libsbx/graphics/graphics_module.hpp>
@@ -32,11 +36,10 @@ public:
 
     ImGui::CreateContext();
 
-    _io = &ImGui::GetIO();
-    _io->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-    _io->ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+    ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
 
-    _io->IniFilename = nullptr;
+    ImGui::GetIO().IniFilename = nullptr;
 
     ImGui::StyleColorsDark();
 
@@ -87,30 +90,30 @@ public:
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
-    if (_show_demo_window) {
-      ImGui::ShowDemoWindow(&_show_demo_window);
+    const auto delta_time = sbx::core::engine::delta_time();
+
+    _time += delta_time;
+    ++_frames;
+
+    if (_time >= sbx::units::second{1}) {
+      _fps = _frames;
+      _time = sbx::units::second{0};
+      _frames = 0;
     }
 
-    {
-      static float f = 0.0f;
-      static int counter = 0;
+    auto& scene_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
 
-      ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
+    auto& scene = scene_module.scene();
 
-      ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
-      ImGui::Checkbox("Demo Window", &_show_demo_window);      // Edit bools storing our window open/close state
+    ImGui::Begin("Stats");
+    ImGui::Text("Delta time:  %.3f", sbx::units::quantity_cast<sbx::units::millisecond>(delta_time).value());
+    ImGui::Text("FPS:         %d", _fps);
 
-      ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-      ImGui::ColorEdit3("clear color", (float*)&_clear_color); // Edit 3 floats representing a color
+    auto node = scene.root();
 
-      if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-          counter++;
-      ImGui::SameLine();
-      ImGui::Text("counter = %d", counter);
+    _build_tree(node);
 
-      ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / _io->Framerate, _io->Framerate);
-      ImGui::End();
-    }
+    ImGui::End();
 
     ImGui::Render();
     auto* draw_data = ImGui::GetDrawData();
@@ -120,12 +123,50 @@ public:
 
 private:
 
-  imgui::pipeline _pipeline;
+  auto _build_tree(sbx::scenes::node& node) -> void {
+    auto& scene_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
 
-  ImGuiIO* _io;
+    auto& scene = scene_module.scene();
+
+    const auto& relationship = node.get_component<sbx::scenes::relationship>();
+
+    auto flag = ImGuiTreeNodeFlags{ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_OpenOnArrow};
+
+    if (relationship.children().empty()) {
+      flag |= ImGuiTreeNodeFlags_Leaf;
+    }
+
+    if (node.get_component<sbx::scenes::id>() == _selected_node_id) {
+      flag |= ImGuiTreeNodeFlags_Selected;
+    }
+
+    if (ImGui::TreeNodeEx(node.get_component<sbx::scenes::tag>().data(), flag)) {
+      if (ImGui::IsItemClicked()) {
+        _selected_node_id = node.get_component<sbx::scenes::id>();
+
+        sbx::core::logger::debug("Selected node id {}", _selected_node_id);
+      }
+
+      for (const auto& child_id : relationship.children()) {
+        if (auto child = scene.find_node(child_id); child) {
+          _build_tree(*child);
+        }
+      }
+
+      ImGui::TreePop();
+    } 
+  }
+
+  imgui::pipeline _pipeline;
 
   bool _show_demo_window;
   sbx::math::color _clear_color;
+
+  sbx::units::second _time;
+  std::uint32_t _frames;
+  std::uint32_t _fps;
+
+  sbx::math::uuid _selected_node_id;
 
 };
 

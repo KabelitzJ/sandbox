@@ -62,6 +62,10 @@ public:
     return _light;
   }
 
+  auto root() -> node {
+    return _root;
+  }
+
   auto light_space() -> math::matrix4x4 {
     const auto position = _light.direction() * -40.0f;
 

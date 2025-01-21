@@ -136,34 +136,34 @@ struct arc;
 struct site {
   std::size_t index;
   sbx::math::vector2 position;
-  face* face;
+  demo::face* face;
 }; // struct site
 
 struct point {
   sbx::math::vector2 position;
-  std::list<point>::iterator iterator;
+  std::list<demo::point>::iterator iterator;
 }; // struct point
 
 struct half_edge {
-  point* start;
-  point* end;
-  half_edge* twin;
-  face* face;
-  half_edge* previous;
-  half_edge* next;
+  demo::point* start;
+  demo::point* end;
+  demo::half_edge* twin;
+  demo::face* face;
+  demo::half_edge* previous;
+  demo::half_edge* next;
   std::list<half_edge>::iterator iterator;
 }; // struct half_edge
 
 struct face {
-  site* site;
-  half_edge* edge;
+  demo::site* site;
+  demo::half_edge* edge;
 }; // struct face
 
 struct site_event {
 
   std::float_t y;
   std::int32_t index;
-  site* site;
+  demo::site* site;
 
   site_event(demo::site* s)
   : y{s->position.y()},
@@ -177,7 +177,7 @@ struct circle_event {
   std::float_t y;
   std::int32_t index;
   sbx::math::vector2 center;
-  arc* arc;
+  demo::arc* arc;
 
   circle_event(const std::float_t y_position, const sbx::math::vector2& c, demo::arc* a)
   : y{y_position},
@@ -262,17 +262,17 @@ struct arc {
     black
   }; // enum class color
 
-  arc* parent;
-  arc* left;
-  arc* right;
+  demo::arc* parent;
+  demo::arc* left;
+  demo::arc* right;
 
-  site* site;
-  half_edge* left_half_edge;
-  half_edge* right_half_edge;
-  event* event;
+  demo::site* site;
+  demo::half_edge* left_half_edge;
+  demo::half_edge* right_half_edge;
+  demo::event* event;
 
-  arc* previous;
-  arc* next;
+  demo::arc* previous;
+  demo::arc* next;
 
   color color;
 
@@ -290,7 +290,7 @@ struct box {
   }; // enum class side
 
   struct intersection {
-    side side;
+    box::side side;
     sbx::math::vector2 position;
   }; // struct intersection
 

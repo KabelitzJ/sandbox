@@ -41,11 +41,11 @@ private:
   std::unordered_map<sbx::utility::hashed_string, sbx::math::uuid> _texture_ids;
   std::unordered_map<sbx::utility::hashed_string, sbx::math::uuid> _mesh_ids;
 
-  sbx::units::second _time;
-  std::uint32_t _frames;
+  // sbx::units::second _time;
+  // std::uint32_t _frames;
 
-  sbx::memory::observer_ptr<sbx::ui::label> _fps_label;
-  sbx::memory::observer_ptr<sbx::ui::label> _delta_time_label;
+  // sbx::memory::observer_ptr<sbx::ui::label> _fps_label;
+  // sbx::memory::observer_ptr<sbx::ui::label> _delta_time_label;
 
   sbx::math::angle _rotation;
 
