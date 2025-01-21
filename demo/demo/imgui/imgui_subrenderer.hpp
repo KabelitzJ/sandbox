@@ -2,6 +2,7 @@
 #define DEMO_IMGUI_IMGUI_SUBRENDERER_HPP_
 
 #include <imgui.h>
+
 #include <demo/imgui/bindings/imgui_impl_glfw.h>
 #include <demo/imgui/bindings/imgui_impl_vulkan.h>
 
@@ -30,7 +31,8 @@ public:
   : base{stage},
     _pipeline{path, stage},
     _show_demo_window{false},
-    _clear_color{sbx::math::color::black} {
+    _clear_color{sbx::math::color::black},
+    _selected_node_id{sbx::math::uuid::null} {
     // Initialize ImGui
     IMGUI_CHECKVERSION();
 
@@ -115,6 +117,8 @@ public:
 
     ImGui::End();
 
+    _build_node_preview();
+
     ImGui::Render();
     auto* draw_data = ImGui::GetDrawData();
 
@@ -130,7 +134,8 @@ private:
 
     const auto& relationship = node.get_component<sbx::scenes::relationship>();
 
-    auto flag = ImGuiTreeNodeFlags{ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_OpenOnArrow};
+    auto flag = ImGuiTreeNodeFlags{ImGuiTreeNodeFlags_OpenOnArrow};
+    // auto flag = ImGuiTreeNodeFlags{ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_OpenOnArrow};
 
     if (relationship.children().empty()) {
       flag |= ImGuiTreeNodeFlags_Leaf;
@@ -155,6 +160,81 @@ private:
 
       ImGui::TreePop();
     } 
+  }
+
+  auto _build_node_preview() -> void {
+    auto& scene_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
+
+    auto& scene = scene_module.scene();
+
+    ImGui::Begin("Node");
+
+    if (auto node = scene.find_node(_selected_node_id); node) {
+      if (ImGui::TreeNodeEx("Tag", ImGuiTreeNodeFlags_DefaultOpen)) {
+        static auto buffer = std::array<char, 32u>{};
+        buffer.fill('\0');
+
+        auto& tag = node->get_component<sbx::scenes::tag>();
+
+        std::memcpy(buffer.data(), tag.data(), std::min(tag.size(), buffer.size()));
+
+        if (ImGui::InputText("##label", buffer.data(), buffer.size())) {
+          tag = buffer.data();
+        }
+
+        ImGui::TreePop();
+      }
+
+      if (ImGui::TreeNodeEx("Transform", ImGuiTreeNodeFlags_DefaultOpen)) {
+        auto& transform = node->get_component<sbx::math::transform>();
+
+        ImGui::Text("Position");
+
+        auto& position = transform.position();
+
+        ImGui::Text("x:");
+        ImGui::SameLine();
+        ImGui::SetNextItemWidth(150); // Adjust slider width
+        ImGui::DragFloat("##XPosition", &position.x(), 0.1f);
+
+        ImGui::SameLine();
+        ImGui::Text("y:");
+        ImGui::SameLine();
+        ImGui::SetNextItemWidth(150);
+        ImGui::DragFloat("##YPosition", &position.y(), 0.1f);
+
+        ImGui::SameLine();
+        ImGui::Text("z:");
+        ImGui::SameLine();
+        ImGui::SetNextItemWidth(150);
+        ImGui::DragFloat("##ZPosition", &position.z(), 0.1f);
+
+        ImGui::Text("Scale");
+
+        auto& scale = transform.scale();
+
+        ImGui::Text("x:");
+        ImGui::SameLine();
+        ImGui::SetNextItemWidth(150);
+        ImGui::DragFloat("##XScale", &scale.x(), 0.1f, 0.1f, 10.0f);
+
+        ImGui::SameLine();
+        ImGui::Text("y:");
+        ImGui::SameLine();
+        ImGui::SetNextItemWidth(150);
+        ImGui::DragFloat("##YScale", &scale.y(), 0.1f, 0.1f, 10.0f);
+
+        ImGui::SameLine();
+        ImGui::Text("z:");
+        ImGui::SameLine();
+        ImGui::SetNextItemWidth(150);
+        ImGui::DragFloat("##ZScale", &scale.z(), 0.1f, 0.1f, 10.0f);
+
+        ImGui::TreePop();
+      }
+    }
+
+    ImGui::End();
   }
 
   imgui::pipeline _pipeline;

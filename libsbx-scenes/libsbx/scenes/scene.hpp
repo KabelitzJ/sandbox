@@ -33,11 +33,11 @@ class scene {
 
   friend class node;
 
-  using signal_container = std::unordered_map<std::type_index, signals::signal<node&>>;
-
 public:
 
   scene();
+
+  virtual ~scene() = default;
 
   auto create_child_node(node& parent, const std::string& tag = "", const math::transform& transform = math::transform{}) -> node;
 

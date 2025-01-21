@@ -26,6 +26,10 @@ public:
     return _position;
   }
 
+  auto position() noexcept -> vector3& {
+    return _position;
+  }
+
   auto set_position(const vector3& position) noexcept -> void {
     _position = position;
   }
@@ -49,6 +53,10 @@ public:
   }
 
   auto scale() const noexcept -> const vector3& {
+    return _scale;
+  }
+
+  auto scale() noexcept -> vector3& {
     return _scale;
   }
 
