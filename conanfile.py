@@ -102,7 +102,7 @@ class libsbx_recipe(ConanFile):
     self.requires("openal-soft/1.22.2")
     self.requires("drwav/0.13.12")
     self.requires("drmp3/0.6.34")
-    self.requires("imgui/1.89.4")
+    self.requires("imgui/1.91.5-docking")
 
   def generate(self):
     deps = CMakeDeps(self)

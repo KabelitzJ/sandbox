@@ -4,6 +4,8 @@ message(STATUS "Configuring ${PROJECT_NAME}...")
 
 find_package(imgui REQUIRED)
 
+option(LIBSBX_IMGUI_DOCKING "LIBSBX_IMGUI_DOCKING" ON)
+
 add_executable(${PROJECT_NAME})
 
 if(WIN32)
@@ -34,6 +36,11 @@ endif()
 
 add_dependencies(${PROJECT_NAME} shaders)
 
+set(
+  LIBSBX_IMGUI_TAG
+    $<IF:$<BOOL:${LIBSBX_IMGUI_DOCKING}>,1.89.7-docking,1.89.7>
+)
+
 target_sources(
   ${PROJECT_NAME}
   PUBLIC
@@ -46,16 +53,23 @@ target_sources(
     "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/terrain/terrain_subrenderer.hpp"
     "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/terrain/terrain_module.hpp"
     "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/terrain/voronoi.hpp"
-    "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/imgui/bindings/imgui_impl_vulkan.h"
-    "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/imgui/bindings/imgui_impl_glfw.h"
+    "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/imgui/bindings/${LIBSBX_IMGUI_TAG}/imgui_impl_vulkan.h"
+    "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/imgui/bindings/${LIBSBX_IMGUI_TAG}/imgui_impl_glfw.h"
+    "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/imgui/bindings/imgui.hpp"
   PRIVATE
     "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/renderer.cpp"
     "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/application.cpp"
     "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/line.cpp"
     "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/demo.cpp"
     "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/terrain/vertex.cpp"
-    "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/imgui/bindings/imgui_impl_vulkan.cpp"
-    "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/imgui/bindings/imgui_impl_glfw.cpp"
+    "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/imgui/bindings/${LIBSBX_IMGUI_TAG}/imgui_impl_vulkan.cpp"
+    "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/imgui/bindings/${LIBSBX_IMGUI_TAG}/imgui_impl_glfw.cpp"
+)
+
+target_compile_definitions(
+  ${PROJECT_NAME}
+  PRIVATE
+    LIBSBX_IMGUI_DOCKING=$<IF:$<BOOL:${LIBSBX_IMGUI_DOCKING}>,1,0>
 )
 
 target_include_directories(

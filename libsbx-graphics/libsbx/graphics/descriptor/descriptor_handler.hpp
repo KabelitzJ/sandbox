@@ -75,6 +75,14 @@ public:
     _descriptor_sets[current_frame]->bind(command_buffer);
   }
 
+  auto descriptor_set() const noexcept -> VkDescriptorSet {
+    auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+    const auto current_frame = graphics_module.current_frame();
+
+    return *_descriptor_sets[current_frame];
+  }
+
   auto update(const pipeline& pipeline) -> bool {
     if (_pipeline.get() != &pipeline) {
       _pipeline = &pipeline;
@@ -143,7 +151,7 @@ private:
 
   memory::observer_ptr<const pipeline> _pipeline;
 
-  std::vector<std::unique_ptr<descriptor_set>> _descriptor_sets{};
+  std::vector<std::unique_ptr<graphics::descriptor_set>> _descriptor_sets{};
 
   std::map<std::string, descriptor_entry> _descriptors{};
 

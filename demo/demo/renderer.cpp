@@ -56,6 +56,19 @@ renderer::renderer()
   //   add_render_stage(std::move(attachments), std::move(subpass_bindings));
   // }
 
+  {
+    auto attachments = std::vector<sbx::graphics::attachment>{
+      sbx::graphics::attachment{0, "depth", sbx::graphics::attachment::type::depth},
+      sbx::graphics::attachment{1, "scene", sbx::graphics::attachment::type::image, _clear_color, sbx::graphics::format::r8g8b8a8_unorm}
+    };
+
+    auto subpass_bindings = std::vector<sbx::graphics::subpass_binding>{
+      sbx::graphics::subpass_binding{0, {0, 1}},
+    };
+
+    add_render_stage(std::move(attachments), std::move(subpass_bindings));
+  }
+
   // Render stage 2: FX and UI
   {
     auto attachments = std::vector<sbx::graphics::attachment>{
@@ -94,9 +107,9 @@ auto renderer::initialize() -> void {
   // Render stage 2
   // add_subrenderer<sbx::post::fxaa_filter<sbx::graphics::empty_vertex>>("demo/assets/shaders/fxaa", sbx::graphics::pipeline::stage{2, 0}, "resolve");
   // add_subrenderer<sbx::gizmos::gizmos_subrenderer>("demo/assets/shaders/gizmos", sbx::graphics::pipeline::stage{2, 0}, "normalized_depth");
-  add_subrenderer<sbx::ui::ui_subrenderer>("demo/assets/shaders/ui", sbx::graphics::pipeline::stage{1, 0});
+  // add_subrenderer<sbx::ui::ui_subrenderer>("demo/assets/shaders/ui", sbx::graphics::pipeline::stage{1, 0});
 
-  add_subrenderer<demo::imgui_subrenderer>("demo/assets/shaders/imgui", sbx::graphics::pipeline::stage{1, 0});
+  add_subrenderer<demo::imgui_subrenderer>("demo/assets/shaders/imgui", sbx::graphics::pipeline::stage{2, 0});
 }
 
 } // namespace demo

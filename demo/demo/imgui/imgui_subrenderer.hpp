@@ -3,8 +3,7 @@
 
 #include <imgui.h>
 
-#include <demo/imgui/bindings/imgui_impl_glfw.h>
-#include <demo/imgui/bindings/imgui_impl_vulkan.h>
+#include <demo/imgui/bindings/imgui.hpp>
 
 #include <libsbx/core/engine.hpp>
 
@@ -38,10 +37,11 @@ public:
 
     ImGui::CreateContext();
 
-    ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-    ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
-
-    ImGui::GetIO().IniFilename = nullptr;
+    auto& io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+    io.IniFilename = ini_file.data();
 
     ImGui::StyleColorsDark();
 
@@ -76,22 +76,90 @@ public:
 
       ImGui_ImplVulkan_DestroyFontUploadObjects();
     }
-
-    ImGui::LoadIniSettingsFromDisk(ini_file.data());
   }
 
   ~imgui_subrenderer() override {
-    ImGui::SaveIniSettingsToDisk(ini_file.data());
     ImGui_ImplVulkan_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
   }
 
   auto render(sbx::graphics::command_buffer& command_buffer) -> void override {
+    auto& graphics_module = sbx::core::engine::get_module<sbx::graphics::graphics_module>();
+
+    _pipeline.bind(command_buffer);
+
+    _descriptor_handler.push("sTexture", graphics_module.attachment("scene"));
+
+    if (!_descriptor_handler.update(_pipeline)) {
+      return;
+    }
+
+    _descriptor_handler.bind_descriptors(command_buffer);
+
     ImGui_ImplVulkan_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
+    _setup_dockspace();
+    _setup_windows();
+
+    ImGui::Render();
+    auto* draw_data = ImGui::GetDrawData();
+
+    ImGui_ImplVulkan_RenderDrawData(draw_data, command_buffer);
+  }
+
+private:
+
+  auto _setup_dockspace() -> void {
+    ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDocking;
+    const ImGuiViewport* viewport = ImGui::GetMainViewport();
+    ImGui::SetNextWindowPos(viewport->WorkPos);
+    ImGui::SetNextWindowSize(viewport->WorkSize);
+    ImGui::SetNextWindowViewport(viewport->ID);
+
+    window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+    window_flags |= ImGuiWindowFlags_MenuBar; // Add this flag to enable the menu bar
+    window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+
+    ImGui::Begin("DockSpaceWithMenuBar", nullptr, window_flags);
+    ImGui::PopStyleVar(2);
+
+    if (ImGui::BeginMenuBar()) {
+      if (ImGui::BeginMenu("File")) {
+        if (ImGui::MenuItem("Save", "Ctrl+S")) { 
+          _save(); 
+        }
+        if (ImGui::MenuItem("Load", "Ctrl+L")) { 
+          _load(); 
+        }
+        if (ImGui::MenuItem("Exit")) {
+          sbx::core::engine::quit();
+        }
+        ImGui::EndMenu();
+      }
+
+      if (ImGui::BeginMenu("Edit")) {
+        if (ImGui::MenuItem("Undo", "Ctrl+Z")) { 
+          _undo();
+        }
+        ImGui::EndMenu();
+      }
+      ImGui::EndMenuBar();
+    }
+
+    // Create the dock space
+    ImGuiID dockspace_id = ImGui::GetID("DockSpace");
+    ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_None);
+
+    ImGui::End();
+  }
+
+  auto _foo() -> void {
     const auto delta_time = sbx::core::engine::delta_time();
 
     _time += delta_time;
@@ -107,6 +175,10 @@ public:
 
     auto& scene = scene_module.scene();
 
+    auto& graphics_module = sbx::core::engine::get_module<sbx::graphics::graphics_module>();
+
+    ImGui::DockSpaceOverViewport();
+
     ImGui::Begin("Stats");
     ImGui::Text("Delta time:  %.3f", sbx::units::quantity_cast<sbx::units::millisecond>(delta_time).value());
     ImGui::Text("FPS:         %d", _fps);
@@ -118,14 +190,7 @@ public:
     ImGui::End();
 
     _build_node_preview();
-
-    ImGui::Render();
-    auto* draw_data = ImGui::GetDrawData();
-
-    ImGui_ImplVulkan_RenderDrawData(draw_data, command_buffer);
   }
-
-private:
 
   auto _build_tree(sbx::scenes::node& node) -> void {
     auto& scene_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
@@ -237,7 +302,103 @@ private:
     ImGui::End();
   }
 
+  auto _setup_windows() -> void {
+    auto& graphics_module = sbx::core::engine::get_module<sbx::graphics::graphics_module>();
+
+    // Example Window 1
+    {
+      ImGui::Begin("Hierarchy");
+
+      ImGui::Text("Hello, world!");
+      if (ImGui::Button("Demo Window")) {
+        sbx::core::logger::info("Button pressed");
+      }
+
+      ImGui::End();
+    }
+
+    auto vMax = ImVec2{};
+    auto vMin = ImVec2{};
+
+    // Example Window 2
+    {
+      ImGui::Begin("Scene");
+
+      auto current_frame = graphics_module.current_frame();
+      auto available_size = ImGui::GetContentRegionAvail();
+
+      ImGui::Image(reinterpret_cast<ImTextureID>(_descriptor_handler.descriptor_set()), available_size);
+
+      if (ImGui::IsItemHovered()) {
+        ImGuiIO& io = ImGui::GetIO();
+        io.WantCaptureMouse = false; 
+        io.WantCaptureKeyboard = false;
+      }
+
+      vMin = ImGui::GetWindowContentRegionMin();
+      vMax = ImGui::GetWindowContentRegionMax();
+
+      vMin.x += ImGui::GetWindowPos().x;
+      vMin.y += ImGui::GetWindowPos().y;
+      vMax.x += ImGui::GetWindowPos().x;
+      vMax.y += ImGui::GetWindowPos().y;
+
+      ImGui::End();
+    }
+
+    // Example Window 3
+    {
+      ImGui::Begin("Properties");
+
+      auto width = vMax.x - vMin.x;
+      auto height = vMax.y - vMin.y;
+
+      ImGui::Text("Width: %f", width);
+      ImGui::Text("Height: %f", height);
+
+      ImGui::End();
+    }
+
+    // Example Window 4
+    {
+      ImGui::Begin("Log");
+    
+      if (ImGui::Button("Clear"))  {
+        sbx::core::logger::info("Clearing log");
+      }
+
+      ImGui::SameLine();
+
+      ImGui::Checkbox("Auto-Scroll", &_has_auto_scroll);
+
+      ImGui::Separator();
+
+      ImGui::BeginChild("ScrollRegion", ImVec2(0, 0), false, ImGuiWindowFlags_HorizontalScrollbar);
+
+      if (_has_auto_scroll && ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) {
+        ImGui::SetScrollHereY(0.999f);
+      }
+
+      ImGui::EndChild();
+
+      ImGui::End();
+    }
+  }
+
+  auto _save() -> void {
+    // [TODO] KAJ 2024-12-02 : Implement save
+  }
+
+  auto _load() -> void {
+    // [TODO] KAJ 2024-12-02 : Implement load
+  }
+
+  auto _undo() -> void {
+    // [TODO] KAJ 2024-12-02 : Implement undo
+  }
+
   imgui::pipeline _pipeline;
+  sbx::graphics::descriptor_handler _descriptor_handler;
 
   bool _show_demo_window;
   sbx::math::color _clear_color;
@@ -245,6 +406,8 @@ private:
   sbx::units::second _time;
   std::uint32_t _frames;
   std::uint32_t _fps;
+
+  bool _has_auto_scroll;
 
   sbx::math::uuid _selected_node_id;
 
