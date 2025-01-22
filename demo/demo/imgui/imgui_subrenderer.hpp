@@ -18,6 +18,41 @@
 
 namespace demo {
 
+template<typename Enum>
+requires (std::is_enum_v<Enum>)
+class bit_field {
+
+public:
+
+  using value_type = Enum;
+  using underlying_type = std::underlying_type_t<value_type>;
+
+  constexpr auto set(const value_type value) noexcept -> void {
+    _value |= static_cast<underlying_type>(value);
+  }
+
+  constexpr auto clear(const value_type value) noexcept -> void {
+    _value &= ~static_cast<underlying_type>(value);
+  }
+
+  constexpr auto has(const value_type value) const noexcept -> bool {
+    return _value & static_cast<underlying_type>(value);
+  }
+
+  constexpr auto has_any() const noexcept -> bool {
+    return _value != underlying_type{0};
+  }
+
+  constexpr auto has_none() const noexcept -> bool {
+    return _value == underlying_type{0};
+  }
+
+private:
+
+  underlying_type _value;
+
+}; // class bit_field
+
 class imgui_subrenderer final : public sbx::graphics::subrenderer {
 
   inline static constexpr auto ini_file = std::string_view{"demo/assets/data/imgui.ini"};
@@ -112,6 +147,11 @@ public:
 
 private:
 
+  enum class popup : std::uint16_t {
+    hierarchy_add =    1u << 0u,
+    hierarchy_delete = 1u << 1u,
+  }; // enum class popup
+
   auto _setup_dockspace() -> void {
     ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDocking;
     const ImGuiViewport* viewport = ImGui::GetMainViewport();
@@ -159,37 +199,37 @@ private:
     ImGui::End();
   }
 
-  auto _foo() -> void {
-    const auto delta_time = sbx::core::engine::delta_time();
+  // bool BeginCentered(const char* name) {
+  //   auto& io = ImGui::GetIO();
+  //   auto position = ImVec2{io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f};
 
-    _time += delta_time;
-    ++_frames;
+  //   ImGui::SetNextWindowPos(position, ImGuiCond_FirstUseEver, ImVec2{0.5f, 0.5f});
 
-    if (_time >= sbx::units::second{1}) {
-      _fps = _frames;
-      _time = sbx::units::second{0};
-      _frames = 0;
+  //   const auto flags = ImGuiWindowFlags{ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoDocking};
+
+  //   return ImGui::BeginPopupModal(name, nullptr, flags);
+  // }
+
+  auto _context_menu(sbx::scenes::node& node) -> void {
+    if (ImGui::BeginPopupContextItem("Actions")) {
+      // _selected_node_id = node.get_component<sbx::scenes::id>();
+
+      sbx::core::logger::debug("Selected node id {}", _selected_node_id);
+
+      if (ImGui::MenuItem("Add")) {
+        _open_popups.set(popup::hierarchy_add);
+      }
+
+      if (ImGui::MenuItem("Delete")) {
+        _open_popups.set(popup::hierarchy_delete);
+      }
+
+      if (ImGui::MenuItem("Test")) {
+        // Action for Option 3
+      }
+
+      ImGui::EndPopup();
     }
-
-    auto& scene_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
-
-    auto& scene = scene_module.scene();
-
-    auto& graphics_module = sbx::core::engine::get_module<sbx::graphics::graphics_module>();
-
-    ImGui::DockSpaceOverViewport();
-
-    ImGui::Begin("Stats");
-    ImGui::Text("Delta time:  %.3f", sbx::units::quantity_cast<sbx::units::millisecond>(delta_time).value());
-    ImGui::Text("FPS:         %d", _fps);
-
-    auto node = scene.root();
-
-    _build_tree(node);
-
-    ImGui::End();
-
-    _build_node_preview();
   }
 
   auto _build_tree(sbx::scenes::node& node) -> void {
@@ -210,12 +250,16 @@ private:
       flag |= ImGuiTreeNodeFlags_Selected;
     }
 
-    if (ImGui::TreeNodeEx(node.get_component<sbx::scenes::tag>().data(), flag)) {
+    ImGui::PushID(&node);
+
+    if (ImGui::TreeNodeEx(node.get_component<sbx::scenes::tag>().c_str(), flag)) {
       if (ImGui::IsItemClicked()) {
         _selected_node_id = node.get_component<sbx::scenes::id>();
 
         sbx::core::logger::debug("Selected node id {}", _selected_node_id);
       }
+
+      _context_menu(node);
 
       for (const auto& child_id : relationship.children()) {
         if (auto child = scene.find_node(child_id); child) {
@@ -224,7 +268,9 @@ private:
       }
 
       ImGui::TreePop();
-    } 
+    }
+
+    ImGui::PopID();
   }
 
   auto _build_node_preview() -> void {
@@ -232,11 +278,10 @@ private:
 
     auto& scene = scene_module.scene();
 
-    ImGui::Begin("Node");
+    static auto buffer = std::array<char, 32u>{};
 
     if (auto node = scene.find_node(_selected_node_id); node) {
       if (ImGui::TreeNodeEx("Tag", ImGuiTreeNodeFlags_DefaultOpen)) {
-        static auto buffer = std::array<char, 32u>{};
         buffer.fill('\0');
 
         auto& tag = node->get_component<sbx::scenes::tag>();
@@ -257,62 +302,148 @@ private:
 
         auto& position = transform.position();
 
-        ImGui::Text("x:");
+        ImGui::Text("x");
         ImGui::SameLine();
-        ImGui::SetNextItemWidth(150); // Adjust slider width
+        ImGui::SetNextItemWidth(100); // Adjust slider width
         ImGui::DragFloat("##XPosition", &position.x(), 0.1f);
+        ImGui::SameLine();
 
+        ImGui::Text("y");
         ImGui::SameLine();
-        ImGui::Text("y:");
-        ImGui::SameLine();
-        ImGui::SetNextItemWidth(150);
+        ImGui::SetNextItemWidth(100);
         ImGui::DragFloat("##YPosition", &position.y(), 0.1f);
+        ImGui::SameLine();
 
+        ImGui::Text("z");
         ImGui::SameLine();
-        ImGui::Text("z:");
-        ImGui::SameLine();
-        ImGui::SetNextItemWidth(150);
+        ImGui::SetNextItemWidth(100);
         ImGui::DragFloat("##ZPosition", &position.z(), 0.1f);
 
         ImGui::Text("Scale");
 
         auto& scale = transform.scale();
 
-        ImGui::Text("x:");
+        ImGui::Text("x");
         ImGui::SameLine();
-        ImGui::SetNextItemWidth(150);
+        ImGui::SetNextItemWidth(100);
         ImGui::DragFloat("##XScale", &scale.x(), 0.1f, 0.1f, 10.0f);
+        ImGui::SameLine();
 
+        ImGui::Text("y");
         ImGui::SameLine();
-        ImGui::Text("y:");
-        ImGui::SameLine();
-        ImGui::SetNextItemWidth(150);
+        ImGui::SetNextItemWidth(100);
         ImGui::DragFloat("##YScale", &scale.y(), 0.1f, 0.1f, 10.0f);
+        ImGui::SameLine();
 
+        ImGui::Text("z");
         ImGui::SameLine();
-        ImGui::Text("z:");
-        ImGui::SameLine();
-        ImGui::SetNextItemWidth(150);
+        ImGui::SetNextItemWidth(100);
         ImGui::DragFloat("##ZScale", &scale.z(), 0.1f, 0.1f, 10.0f);
+        ImGui::SameLine();
 
         ImGui::TreePop();
       }
     }
-
-    ImGui::End();
   }
 
   auto _setup_windows() -> void {
     auto& graphics_module = sbx::core::engine::get_module<sbx::graphics::graphics_module>();
 
-    // Example Window 1
     {
       ImGui::Begin("Hierarchy");
 
-      ImGui::Text("Hello, world!");
-      if (ImGui::Button("Demo Window")) {
-        sbx::core::logger::info("Button pressed");
+      auto& scene_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
+
+      auto& scene = scene_module.scene();
+
+      auto root = scene.root();
+
+      _build_tree(root);
+
+      if (_open_popups.has(popup::hierarchy_add)) {
+        _open_popups.clear(popup::hierarchy_add);
+        ImGui::OpenPopup("New Node");
       }
+
+      const auto custom_backdrop_color = ImVec4{0.2f, 0.2f, 0.2f, 0.5f};
+
+      ImGui::PushStyleColor(ImGuiCol_ModalWindowDimBg, custom_backdrop_color);
+
+      if (ImGui::BeginPopupModal("New Node", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+        ImGui::Text("Name");
+        ImGui::InputText("##NodeNameInput", _new_name_buffer.data(), _new_name_buffer.size());
+
+        ImGui::Separator();
+
+        const auto button_width = 75.0f;
+        const auto padding = 10.0f;
+        const auto available_width = ImGui::GetContentRegionAvail().x;
+        const auto total_width = (button_width * 2.0f) + padding;
+
+        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + available_width - total_width);
+
+        if (ImGui::Button("Cancel", ImVec2{button_width, 0})) {
+          ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::SameLine();
+
+        // Buttons: Create and Cancel
+        if (ImGui::Button("Create", ImVec2{button_width, 0})) {
+          if (auto node = scene.find_node(_selected_node_id); node) {
+            scene.create_child_node(*node, std::string{_new_name_buffer.data(), std::strlen(_new_name_buffer.data())});
+          } else {
+            sbx::core::logger::warn("No selected node");
+          }
+
+          _new_name_buffer.fill('\0');
+          ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
+      }
+
+      if (_open_popups.has(popup::hierarchy_delete)) {
+        _open_popups.clear(popup::hierarchy_delete);
+        ImGui::OpenPopup("HeirarchyActionsDelete");
+      }
+
+      if (ImGui::BeginPopupModal("HeirarchyActionsDelete", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+        ImGui::Text("Not implemented");
+
+        if (ImGui::Button("Close")) {
+          ImGui::CloseCurrentPopup();
+        }
+
+        _new_name_buffer.fill('\0');
+        ImGui::EndPopup();
+      }
+
+      ImGui::PopStyleColor();
+
+      ImGui::End();
+    }
+
+    {
+      ImGui::Begin("Stats");
+
+      auto& scene_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
+
+      auto& scene = scene_module.scene();
+
+      const auto delta_time = sbx::core::engine::delta_time();
+
+      _time += delta_time;
+      ++_frames;
+
+      if (_time >= sbx::units::second{1}) {
+        _fps = _frames;
+        _time = sbx::units::second{0};
+        _frames = 0;
+      }
+
+      ImGui::Text("Delta time:  %.3f", sbx::units::quantity_cast<sbx::units::millisecond>(delta_time).value());
+      ImGui::Text("FPS:         %d", _fps);
 
       ImGui::End();
     }
@@ -320,7 +451,6 @@ private:
     auto vMax = ImVec2{};
     auto vMin = ImVec2{};
 
-    // Example Window 2
     {
       ImGui::Begin("Scene");
 
@@ -346,7 +476,6 @@ private:
       ImGui::End();
     }
 
-    // Example Window 3
     {
       ImGui::Begin("Properties");
 
@@ -356,10 +485,11 @@ private:
       ImGui::Text("Width: %f", width);
       ImGui::Text("Height: %f", height);
 
+      _build_node_preview();
+
       ImGui::End();
     }
 
-    // Example Window 4
     {
       ImGui::Begin("Log");
     
@@ -403,11 +533,15 @@ private:
   bool _show_demo_window;
   sbx::math::color _clear_color;
 
+  bit_field<popup> _open_popups;
+
   sbx::units::second _time;
   std::uint32_t _frames;
   std::uint32_t _fps;
 
   bool _has_auto_scroll;
+
+  std::array<char, 32> _new_name_buffer;
 
   sbx::math::uuid _selected_node_id;
 
