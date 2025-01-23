@@ -148,20 +148,28 @@ public:
 private:
 
   enum class popup : std::uint16_t {
-    hierarchy_add =    1u << 0u,
-    hierarchy_delete = 1u << 1u,
+    hierarchy_add_new_node  = 1u << 0u,
+    hierarchy_add_component = 1u << 1u,
+    hierarchy_delete        = 1u << 2u,
   }; // enum class popup
 
   auto _setup_dockspace() -> void {
-    ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDocking;
-    const ImGuiViewport* viewport = ImGui::GetMainViewport();
+    const auto* viewport = ImGui::GetMainViewport();
+
     ImGui::SetNextWindowPos(viewport->WorkPos);
     ImGui::SetNextWindowSize(viewport->WorkSize);
     ImGui::SetNextWindowViewport(viewport->ID);
 
-    window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
-    window_flags |= ImGuiWindowFlags_MenuBar; // Add this flag to enable the menu bar
-    window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+    const auto window_flags = ImGuiWindowFlags{
+      ImGuiWindowFlags_NoDocking |
+      ImGuiWindowFlags_NoTitleBar |
+      ImGuiWindowFlags_NoCollapse |
+      ImGuiWindowFlags_NoResize |
+      ImGuiWindowFlags_NoMove |
+      ImGuiWindowFlags_MenuBar |
+      ImGuiWindowFlags_NoNavFocus |
+      ImGuiWindowFlags_NoBringToFrontOnFocus
+    };
 
     ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
@@ -193,39 +201,38 @@ private:
     }
 
     // Create the dock space
-    ImGuiID dockspace_id = ImGui::GetID("DockSpace");
+    const auto dockspace_id = ImGui::GetID("DockSpace");
     ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_None);
 
     ImGui::End();
   }
 
-  // bool BeginCentered(const char* name) {
-  //   auto& io = ImGui::GetIO();
-  //   auto position = ImVec2{io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f};
-
-  //   ImGui::SetNextWindowPos(position, ImGuiCond_FirstUseEver, ImVec2{0.5f, 0.5f});
-
-  //   const auto flags = ImGuiWindowFlags{ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoDocking};
-
-  //   return ImGui::BeginPopupModal(name, nullptr, flags);
-  // }
-
   auto _context_menu(sbx::scenes::node& node) -> void {
+    auto& scene_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
+
+    auto& scene = scene_module.scene();
+
     if (ImGui::BeginPopupContextItem("Actions")) {
-      // _selected_node_id = node.get_component<sbx::scenes::id>();
+      if (ImGui::BeginMenu("Add")) {
+        if (ImGui::MenuItem("New Node")) {
+          _open_popups.set(popup::hierarchy_add_new_node);
+        }
 
-      sbx::core::logger::debug("Selected node id {}", _selected_node_id);
+        if (ImGui::MenuItem("Component")) {
+          _open_popups.set(popup::hierarchy_add_component);
+        }
 
-      if (ImGui::MenuItem("Add")) {
-        _open_popups.set(popup::hierarchy_add);
+        if (ImGui::MenuItem("Test")) {
+          
+        }
+
+        ImGui::EndMenu();
       }
 
-      if (ImGui::MenuItem("Delete")) {
-        _open_popups.set(popup::hierarchy_delete);
-      }
-
-      if (ImGui::MenuItem("Test")) {
-        // Action for Option 3
+      if (_selected_node_id != scene.root().get_component<sbx::scenes::id>()) {
+        if (ImGui::MenuItem("Delete")) {
+          _open_popups.set(popup::hierarchy_delete);
+        }
       }
 
       ImGui::EndPopup();
@@ -239,8 +246,8 @@ private:
 
     const auto& relationship = node.get_component<sbx::scenes::relationship>();
 
-    auto flag = ImGuiTreeNodeFlags{ImGuiTreeNodeFlags_OpenOnArrow};
-    // auto flag = ImGuiTreeNodeFlags{ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_OpenOnArrow};
+    // auto flag = ImGuiTreeNodeFlags{ImGuiTreeNodeFlags_OpenOnArrow};
+    auto flag = ImGuiTreeNodeFlags{ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_OpenOnArrow};
 
     if (relationship.children().empty()) {
       flag |= ImGuiTreeNodeFlags_Leaf;
@@ -253,7 +260,7 @@ private:
     ImGui::PushID(&node);
 
     if (ImGui::TreeNodeEx(node.get_component<sbx::scenes::tag>().c_str(), flag)) {
-      if (ImGui::IsItemClicked()) {
+      if (ImGui::IsItemClicked(ImGuiMouseButton_Right) || ImGui::IsItemClicked(ImGuiMouseButton_Left)) {
         _selected_node_id = node.get_component<sbx::scenes::id>();
 
         sbx::core::logger::debug("Selected node id {}", _selected_node_id);
@@ -360,20 +367,23 @@ private:
 
       _build_tree(root);
 
-      if (_open_popups.has(popup::hierarchy_add)) {
-        _open_popups.clear(popup::hierarchy_add);
-        ImGui::OpenPopup("New Node");
-      }
-
       const auto custom_backdrop_color = ImVec4{0.2f, 0.2f, 0.2f, 0.5f};
 
       ImGui::PushStyleColor(ImGuiCol_ModalWindowDimBg, custom_backdrop_color);
 
+      if (_open_popups.has(popup::hierarchy_add_new_node)) {
+        _open_popups.clear(popup::hierarchy_add_new_node);
+        ImGui::OpenPopup("New Node");
+      }
+
+      ImGui::SetNextWindowSizeConstraints(ImVec2{200, 120}, ImVec2{FLT_MAX, FLT_MAX});
+
       if (ImGui::BeginPopupModal("New Node", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
         ImGui::Text("Name");
+        ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
         ImGui::InputText("##NodeNameInput", _new_name_buffer.data(), _new_name_buffer.size());
 
-        ImGui::Separator();
+        const auto name = std::string{_new_name_buffer.data(), std::strlen(_new_name_buffer.data())};
 
         const auto button_width = 75.0f;
         const auto padding = 10.0f;
@@ -382,16 +392,25 @@ private:
 
         ImGui::SetCursorPosX(ImGui::GetCursorPosX() + available_width - total_width);
 
+        const auto footer_height = ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeightWithSpacing();
+        ImGui::SetCursorPosY(ImGui::GetWindowContentRegionMax().y - footer_height);
+
+        // ImGui::Separator();
+
         if (ImGui::Button("Cancel", ImVec2{button_width, 0})) {
+          _new_name_buffer.fill('\0');
           ImGui::CloseCurrentPopup();
         }
 
         ImGui::SameLine();
 
-        // Buttons: Create and Cancel
+        if (name.empty()) {
+          ImGui::BeginDisabled();
+        }
+
         if (ImGui::Button("Create", ImVec2{button_width, 0})) {
           if (auto node = scene.find_node(_selected_node_id); node) {
-            scene.create_child_node(*node, std::string{_new_name_buffer.data(), std::strlen(_new_name_buffer.data())});
+            scene.create_child_node(*node, name);
           } else {
             sbx::core::logger::warn("No selected node");
           }
@@ -400,22 +419,65 @@ private:
           ImGui::CloseCurrentPopup();
         }
 
+        if (name.empty()) {
+          ImGui::EndDisabled();
+        }
+
         ImGui::EndPopup();
       }
 
-      if (_open_popups.has(popup::hierarchy_delete)) {
-        _open_popups.clear(popup::hierarchy_delete);
-        ImGui::OpenPopup("HeirarchyActionsDelete");
+      if (_open_popups.has(popup::hierarchy_add_component)) {
+        _open_popups.clear(popup::hierarchy_add_component);
+        ImGui::OpenPopup("Add Component");
       }
 
-      if (ImGui::BeginPopupModal("HeirarchyActionsDelete", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+      if (ImGui::BeginPopupModal("Add Component", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
         ImGui::Text("Not implemented");
 
         if (ImGui::Button("Close")) {
           ImGui::CloseCurrentPopup();
         }
 
-        _new_name_buffer.fill('\0');
+        ImGui::EndPopup();
+      }
+
+      if (_open_popups.has(popup::hierarchy_delete)) {
+        _open_popups.clear(popup::hierarchy_delete);
+        ImGui::OpenPopup("Delete Node");
+      }
+
+      if (ImGui::BeginPopupModal("Delete Node", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+        const auto button_width = 75.0f;
+        const auto padding = 10.0f;
+        const auto available_width = ImGui::GetContentRegionAvail().x;
+        const auto total_width = (button_width * 2.0f) + padding;
+
+        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + available_width - total_width);
+
+        if (auto node = scene.find_node(_selected_node_id); node) {
+          ImGui::Text("Do you want to delete '%s'", node->get_component<sbx::scenes::tag>().c_str());
+
+          ImGui::Separator();
+
+          if (ImGui::Button("Cancel", ImVec2{button_width, 0})) {
+            ImGui::CloseCurrentPopup();
+          }
+
+          ImGui::SameLine();
+
+          if (ImGui::Button("Delete", ImVec2{button_width, 0})) {
+            scene.destroy_node(*node);
+            _selected_node_id = sbx::math::uuid::null;
+            ImGui::CloseCurrentPopup();
+          }
+        } else {
+          ImGui::Text("No node selected (This can be considered a programmer error)");
+
+          if (ImGui::Button("Cancel", ImVec2{button_width, 0})) {
+            ImGui::CloseCurrentPopup();
+          }
+        }
+
         ImGui::EndPopup();
       }
 
