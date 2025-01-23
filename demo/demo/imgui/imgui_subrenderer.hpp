@@ -568,8 +568,8 @@ private:
   sbx::utility::bit_field<popup> _open_popups;
 
   sbx::units::second _time;
-  std::uint32_t _frames;
-  std::uint32_t _fps;
+  std::uint16_t _frames;
+  std::uint16_t _fps;
 
   bool _has_auto_scroll;
 

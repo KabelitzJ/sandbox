@@ -2,6 +2,8 @@
 #define LIBSBX_MATH_UUID_HPP_
 
 #include <cinttypes>
+#include <exception>
+#include <charconv>
 
 #include <fmt/format.h>
 
@@ -13,10 +15,19 @@
 
 namespace sbx::math {
 
+struct invalid_uuid_exception : std::runtime_error {
+
+  invalid_uuid_exception(std::string_view uuid)
+  : std::runtime_error{fmt::format("String '{}' is not a valid uuid", uuid)} { }
+
+}; // struct invalid_uuid_exception
+
 class uuid {
 
   friend struct fmt::formatter<sbx::math::uuid>;
   friend struct std::hash<sbx::math::uuid>;
+
+  struct null_uui_tag { };
 
 public:
 
@@ -37,16 +48,46 @@ public:
     _bytes[8] = 0x80 | (_bytes[8] & 0x3f);
   }
 
+  uuid(std::string_view string) {
+    if (string.size() != 36u) {
+      throw invalid_uuid_exception{string};
+    }
+
+    for (auto i = 0u, offset = 0u; i < _bytes.size(); ++i) {
+
+      if (i == 4u || i == 6u || i == 8u || i == 10u) {
+        ++offset;
+      }
+
+      auto substr = string.substr(i * 2u + offset, 2u);
+      const auto [itr, error] = std::from_chars(substr.data(), substr.data() + 2u, _bytes[i], 16);
+
+      if (error == std::errc::invalid_argument || error == std::errc::result_out_of_range) {
+        throw invalid_uuid_exception{string};
+      }
+    }
+
+  }
+
   ~uuid() = default;
 
   auto operator==(const uuid& other) const noexcept -> bool {
     return std::ranges::equal(_bytes, other._bytes);
   }
 
+  operator std::string() const {
+    return fmt::format(
+      "{:02x}{:02x}{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
+      _bytes[0], _bytes[1], _bytes[2], _bytes[3], _bytes[4], _bytes[5], _bytes[6], _bytes[7],
+      _bytes[8], _bytes[9], _bytes[10], _bytes[11], _bytes[12], _bytes[13], _bytes[14], _bytes[15]
+    );
+  }
+
 private:
 
-  uuid(std::array<std::uint8_t, 16u>&& bytes)
-  : _bytes{std::move(bytes)} { }
+  uuid(null_uui_tag) {
+    _bytes.fill(0x00);
+  }
 
   std::array<std::uint8_t, 16u> _bytes;
 
@@ -64,17 +105,24 @@ struct fmt::formatter<sbx::math::uuid> {
 
   template<typename FormatContext>
   auto format(const sbx::math::uuid& uuid, FormatContext& context) -> decltype(context.out()) {
-    for (const auto [i, byte] : ranges::views::enumerate(uuid._bytes)) {
-      fmt::format_to(context.out(), "{:02x}", byte);
-
-      if (i == 3 || i == 5 || i == 7 || i == 9) {
-        fmt::format_to(context.out(), "-");
-      }
-    }
-
-    return context.out();
+    return fmt::format_to(context.out(), "{}", std::string{uuid});
   }
 }; // struct fmt::formatter<sbx::math::uuid>
+
+template<>
+struct YAML::convert<sbx::math::uuid> {
+
+  static auto encode(const sbx::math::uuid& rhs) -> YAML::Node {
+    return Node{std::string{rhs}};
+  }
+
+  static auto decode(const YAML::Node& node, sbx::math::uuid& rhs) -> bool {
+    rhs = sbx::math::uuid{node.as<std::string>()};
+
+    return true;
+  }
+
+}; // struct YAML::convert<sbx::math::uuid>
 
 template<>
 struct std::hash<sbx::math::uuid> {

@@ -1,0 +1,37 @@
+metadata:
+  version: "0.1.0"
+scene:
+  name: "Test"
+  assets:
+    meshes:
+      - name: "birch"
+        path: "res://meshes/birch/birch.gltf"
+        id: &mesh_birch "d64108c8-9352-4498-ac85-ceecb7dbb552"
+    materials:
+      - name: "default"
+        path: "res://materials/default.mat"
+        id: &material_default "b83331ac-e5ab-47b6-8a88-6eac749ecac2"
+  nodes:
+    - tag: "Camera"
+      id: "1c7f22a2-fc3a-46ba-b0af-128ee145e24e"
+      transform:
+        position: { x: 0.0, y: 3.0, z: 5.0 }
+        rotation: { x: 0.0, y: 0.0, z: 0.0 }
+        scale: { x: 1.0, y: 1.0, z: 1.0 }
+      components:
+        - type: "camera"
+          fov: 75.0
+          near: 0.1
+          far: 100.0
+    - tag: "Tree1"
+      id: "8b15082e-7c36-40f9-9bf1-d70bbea0874f"
+      transform:
+        position: { x: 0.0, y: 0.0, z: 0.0 }
+        rotation: { x: 0.0, y: 0.0, z: 0.0 }
+        scale: { x: 1.0, y: 1.0, z: 1.0 }
+      components:
+        - type: "static_mesh"
+          mesh: *mesh_birch
+          material: *material_default
+
+    
