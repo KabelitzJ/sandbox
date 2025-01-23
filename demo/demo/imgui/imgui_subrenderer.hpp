@@ -5,6 +5,8 @@
 
 #include <demo/imgui/bindings/imgui.hpp>
 
+#include <libsbx/utility/enum.hpp>
+
 #include <libsbx/core/engine.hpp>
 
 #include <libsbx/devices/devices_module.hpp>
@@ -17,41 +19,6 @@
 #include <demo/imgui/pipeline.hpp>
 
 namespace demo {
-
-template<typename Enum>
-requires (std::is_enum_v<Enum>)
-class bit_field {
-
-public:
-
-  using value_type = Enum;
-  using underlying_type = std::underlying_type_t<value_type>;
-
-  constexpr auto set(const value_type value) noexcept -> void {
-    _value |= static_cast<underlying_type>(value);
-  }
-
-  constexpr auto clear(const value_type value) noexcept -> void {
-    _value &= ~static_cast<underlying_type>(value);
-  }
-
-  constexpr auto has(const value_type value) const noexcept -> bool {
-    return _value & static_cast<underlying_type>(value);
-  }
-
-  constexpr auto has_any() const noexcept -> bool {
-    return _value != underlying_type{0};
-  }
-
-  constexpr auto has_none() const noexcept -> bool {
-    return _value == underlying_type{0};
-  }
-
-private:
-
-  underlying_type _value;
-
-}; // class bit_field
 
 class imgui_subrenderer final : public sbx::graphics::subrenderer {
 
@@ -148,9 +115,9 @@ public:
 private:
 
   enum class popup : std::uint16_t {
-    hierarchy_add_new_node  = 1u << 0u,
-    hierarchy_add_component = 1u << 1u,
-    hierarchy_delete        = 1u << 2u,
+    hierarchy_add_new_node = sbx::utility::bit_v<0u>,
+    hierarchy_add_component = sbx::utility::bit_v<1u>,
+    hierarchy_delete = sbx::utility::bit_v<2u>
   }; // enum class popup
 
   auto _setup_dockspace() -> void {
@@ -595,7 +562,7 @@ private:
   bool _show_demo_window;
   sbx::math::color _clear_color;
 
-  bit_field<popup> _open_popups;
+  sbx::utility::bit_field<popup> _open_popups;
 
   sbx::units::second _time;
   std::uint32_t _frames;

@@ -24,6 +24,61 @@ constexpr auto from_underlying(const std::underlying_type_t<Enum> value) -> Enum
 
 template<typename Enum>
 requires (std::is_enum_v<Enum>)
+struct is_bit_field : std::false_type { };
+
+template<typename Enum>
+requires (std::is_enum_v<Enum>)
+inline constexpr auto is_bit_field_v = is_bit_field<Enum>::value;
+
+template<std::size_t Shift>
+struct bit : std::integral_constant<std::size_t, (std::size_t{1} << Shift)> { };
+
+template<std::size_t Shift>
+inline constexpr auto bit_v = bit<Shift>::value;
+
+template<typename Enum>
+requires (std::is_enum_v<Enum>)
+class bit_field {
+
+public:
+
+  using value_type = Enum;
+  using underlying_type = std::underlying_type_t<Enum>;
+
+  constexpr bit_field() noexcept
+  : _value{underlying_type{0}} { }
+
+  constexpr explicit bit_field(const value_type value) noexcept
+  : _value{to_underlying(value)} { }
+
+  constexpr auto set(const value_type value) noexcept -> void {
+    _value |= static_cast<underlying_type>(value);
+  }
+
+  constexpr auto clear(const value_type value) noexcept -> void {
+    _value &= ~static_cast<underlying_type>(value);
+  }
+
+  constexpr auto has(const value_type value) const noexcept -> bool {
+    return _value & static_cast<underlying_type>(value);
+  }
+
+  constexpr auto has_any() const noexcept -> bool {
+    return _value != underlying_type{0};
+  }
+
+  constexpr auto has_none() const noexcept -> bool {
+    return _value == underlying_type{0};
+  }
+
+private:
+
+  underlying_type _value;
+
+}; // class bit_field
+
+template<typename Enum>
+requires (std::is_enum_v<Enum>)
 struct entry {
   Enum value;
   const char* name;
