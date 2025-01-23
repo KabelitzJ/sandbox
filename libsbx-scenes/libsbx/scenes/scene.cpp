@@ -1,5 +1,7 @@
 #include <libsbx/scenes/scene.hpp>
 
+#include <portable-file-dialogs.h>
+
 #include <unordered_map>
 
 #include <libsbx/units/time.hpp>
