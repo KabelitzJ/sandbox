@@ -362,8 +362,6 @@ private:
         const auto footer_height = ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeightWithSpacing();
         ImGui::SetCursorPosY(ImGui::GetWindowContentRegionMax().y - footer_height);
 
-        // ImGui::Separator();
-
         if (ImGui::Button("Cancel", ImVec2{button_width, 0})) {
           _new_name_buffer.fill('\0');
           ImGui::CloseCurrentPopup();
@@ -398,6 +396,8 @@ private:
         ImGui::OpenPopup("Add Component");
       }
 
+      ImGui::SetNextWindowSizeConstraints(ImVec2{200, 120}, ImVec2{FLT_MAX, FLT_MAX});
+
       if (ImGui::BeginPopupModal("Add Component", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
         ImGui::Text("Not implemented");
 
@@ -413,18 +413,21 @@ private:
         ImGui::OpenPopup("Delete Node");
       }
 
+      ImGui::SetNextWindowSizeConstraints(ImVec2{200, 120}, ImVec2{FLT_MAX, FLT_MAX});
+
       if (ImGui::BeginPopupModal("Delete Node", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
         const auto button_width = 75.0f;
         const auto padding = 10.0f;
         const auto available_width = ImGui::GetContentRegionAvail().x;
         const auto total_width = (button_width * 2.0f) + padding;
 
-        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + available_width - total_width);
-
         if (auto node = scene.find_node(_selected_node_id); node) {
           ImGui::Text("Do you want to delete '%s'", node->get_component<sbx::scenes::tag>().c_str());
 
-          ImGui::Separator();
+          ImGui::SetCursorPosX(ImGui::GetCursorPosX() + available_width - total_width);
+
+          const auto footer_height = ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeightWithSpacing();
+          ImGui::SetCursorPosY(ImGui::GetWindowContentRegionMax().y - footer_height);
 
           if (ImGui::Button("Cancel", ImVec2{button_width, 0})) {
             ImGui::CloseCurrentPopup();
