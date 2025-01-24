@@ -35,7 +35,7 @@ class scene {
 
 public:
 
-  scene();
+  scene(const std::filesystem::path& path);
 
   virtual ~scene() = default;
 

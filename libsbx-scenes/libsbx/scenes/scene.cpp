@@ -1,8 +1,10 @@
 #include <libsbx/scenes/scene.hpp>
 
+#include <unordered_map>
+
 #include <portable-file-dialogs.h>
 
-#include <unordered_map>
+#include <yaml-cpp/yaml.h>
 
 #include <libsbx/units/time.hpp>
 
@@ -26,7 +28,7 @@
 
 namespace sbx::scenes {
 
-scene::scene()
+scene::scene(const std::filesystem::path& path)
 : _registry{}, 
   _root{&_registry, _registry.create_entity()},
   _camera{&_registry, _registry.create_entity()},
@@ -59,6 +61,22 @@ scene::scene()
     auto& camera = _camera.get_component<scenes::camera>();
     camera.set_aspect_ratio(static_cast<std::float_t>(event.width) / static_cast<std::float_t>(event.height));
   };
+
+  const auto file = YAML::LoadFile(path.string());
+
+  const auto& scene = file["scene"];
+
+  const auto& assets = scene["assets"];
+
+  const auto& meshes = assets["meshes"];
+
+  for (const auto& mesh : meshes) {
+    const auto& name = mesh["name"];
+    const auto& path = mesh["path"];
+    const auto& id = mesh["id"];
+
+    core::logger::info("Mesh: {} {} {}", name.as<std::string>(), path.as<std::string>(), id.as<std::string>());
+  }
 }
 
 auto scene::create_child_node(node& parent, const std::string& tag, const math::transform& transform) -> node {

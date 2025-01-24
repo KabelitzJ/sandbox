@@ -69,7 +69,7 @@ application::application()
 
   auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
 
-  auto& scene = scenes_module.create_scene();
+  auto& scene = scenes_module.create_scene("demo/assets/scenes/scene.yaml");
 
   // Terrain
 

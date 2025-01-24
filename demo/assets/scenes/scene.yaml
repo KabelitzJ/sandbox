@@ -23,8 +23,27 @@ scene:
           fov: 75.0
           near: 0.1
           far: 100.0
+    - tag: "Forrest"
+      id: "8cc67efd-dce3-4d76-b98c-08901edd5655"
+      transform:
+        position: { x: 0.0, y: 0.0, z: 0.0 }
+        rotation: { x: 0.0, y: 0.0, z: 0.0 }
+        scale: { x: 1.0, y: 1.0, z: 1.0 }
+      children:
+        - "8b15082e-7c36-40f9-9bf1-d70bbea0874f"
+        - "9ea4fe93-923c-4790-b673-147c36148dd3"
     - tag: "Tree1"
       id: "8b15082e-7c36-40f9-9bf1-d70bbea0874f"
+      transform:
+        position: { x: 0.0, y: 0.0, z: 0.0 }
+        rotation: { x: 0.0, y: 0.0, z: 0.0 }
+        scale: { x: 1.0, y: 1.0, z: 1.0 }
+      components:
+        - type: "static_mesh"
+          mesh: *mesh_birch
+          material: *material_default
+    - tag: "Tree2"
+      id: "9ea4fe93-923c-4790-b673-147c36148dd3"
       transform:
         position: { x: 0.0, y: 0.0, z: 0.0 }
         rotation: { x: 0.0, y: 0.0, z: 0.0 }
