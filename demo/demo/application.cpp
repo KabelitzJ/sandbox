@@ -14,14 +14,6 @@
 
 namespace demo {
 
-class demo_scene : public sbx::scenes::scene {
-
-public:
-
-  ~demo_scene() override = default;
-
-}; // class demo_scene
-
 application::application()
 : sbx::core::application{},
   _rotation{sbx::math::degree{0}} {
@@ -77,7 +69,7 @@ application::application()
 
   auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
 
-  auto& scene = scenes_module.create_scene<demo_scene>();
+  auto& scene = scenes_module.create_scene();
 
   // Terrain
 

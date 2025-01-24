@@ -43,16 +43,17 @@ public:
 
   }
 
-  template<typename Type, typename... Args>
-  requires (std::is_base_of_v<scenes::scene, Type> && !std::is_abstract_v<Type> && std::is_constructible_v<Type, Args...>)
+  template<typename Type = scenes::scene, typename... Args>
+  requires ((std::is_base_of_v<scenes::scene, Type> || std::is_same_v<Type, scenes::scene>) && !std::is_abstract_v<Type> && std::is_constructible_v<Type, Args...>)
   auto create_scene(Args&&... args) -> Type& {
     _scene = std::make_unique<Type>(std::forward<Args>(args)...);
 
     return *static_cast<Type*>(_scene.get());
   }
 
-  auto scene() -> scenes::scene& {
-    return *_scene;
+  template<typename Type = scenes::scene>
+  auto scene() -> Type& {
+    return *static_cast<Type*>(_scene.get());
   }
 
 private:

@@ -86,8 +86,10 @@ auto scene::destroy_node(const node& node) -> void {
   const auto& id = node.get_component<scenes::id>();
   const auto& relationship = node.get_component<scenes::relationship>();
 
-  for (auto& child : relationship.children()) {
-    destroy_node(_nodes.at(child));
+  for (auto& child_id : relationship.children()) {
+    if (auto child = find_node(child_id); child) {
+      destroy_node(*child);
+    }
   }
 
   if (auto entry = _nodes.find(id); entry != _nodes.end()) {
