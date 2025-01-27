@@ -7,19 +7,19 @@
 
 namespace sbx::scenes {
 
-struct plane {
-  math::vector3 normal;
-  std::float_t distance;
-}; // struct plane
+// struct plane {
+//   math::vector3 normal;
+//   std::float_t distance;
+// }; // struct plane
 
-class frustum {
-  plane top;
-  plane bottom;
-  plane left;
-  plane right;
-  plane near;
-  plane far;
-}; // class frustum
+// class frustum {
+//   scenes::plane top;
+//   scenes::plane bottom;
+//   scenes::plane left;
+//   scenes::plane right;
+//   scenes::plane near;
+//   scenes::plane far;
+// }; // class frustum
 
 class camera {
 
