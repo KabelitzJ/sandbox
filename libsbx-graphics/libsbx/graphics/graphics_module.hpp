@@ -269,7 +269,7 @@ private:
   };
 
   std::unordered_map<std::type_index, std::unique_ptr<asset_container_base>> _asset_containers;
-  utility::bimap<std::string, math::uuid> _attachment_ids;
+  utility::unordered_bimap<std::string, math::uuid> _attachment_ids;
 
   std::uint32_t _current_frame{};
   bool _is_framebuffer_resized{};

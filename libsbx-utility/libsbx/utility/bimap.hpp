@@ -2,15 +2,19 @@
 #define LIBSBX_UTILITY_BIMAP_HPP_
 
 #include <unordered_map>
+#include <map>
 #include <optional>
 
 namespace sbx::utility {
 
-template<typename Key, typename Value>
-class bimap {
+template<template<typename, typename> typename Map, typename Key, typename Value>
+class basic_bimap {
 
-  using forward_map_type = std::unordered_map<Key, Value>;
-  using reverse_map_type = std::unordered_map<Value, Key>;
+  template<typename K, typename V>
+  using map_type = Map<K, V>;
+
+  using forward_map_type = map_type<Key, Value>;
+  using reverse_map_type = map_type<Value, Key>;
 
 public:
 
@@ -32,17 +36,17 @@ public:
     _reverse.erase(value);
   }
 
-  auto find_key(const value_type& value) -> std::optional<key_type> {
+  auto find_key(const value_type& value) -> std::optional<std::reference_wrapper<key_type>> {
     if (auto entry = _reverse.find(value); entry != _reverse.end()) {
-      return entry->second;
+      return std::ref(entry->second);
     }
 
     return std::nullopt;
   }
 
-  auto find_value(const key_type& key) -> std::optional<value_type> {
+  auto find_value(const key_type& key) -> std::optional<std::reference_wrapper<value_type>> {
     if (auto entry = _forward.find(key); entry != _forward.end()) {
-      return entry->second;
+      return std::ref(entry->second);
     }
 
     return std::nullopt;
@@ -50,10 +54,13 @@ public:
 
 private:
 
-  std::unordered_map<key_type, value_type> _forward;
-  std::unordered_map<value_type, key_type> _reverse;
+  forward_map_type _forward;
+  reverse_map_type _reverse;
 
 }; // class bimap
+
+template<typename Key, typename Value>
+using unordered_bimap = basic_bimap<std::unordered_map, Key, Value>;
 
 } // namespace sbx::utility
 
