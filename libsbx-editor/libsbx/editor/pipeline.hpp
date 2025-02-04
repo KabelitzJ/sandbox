@@ -1,11 +1,11 @@
-#ifndef DEMO_IMGUI_PIPELINE_HPP_
-#define DEMO_IMGUI_PIPELINE_HPP_
+#ifndef LIBSBX_EDITOR_PIPELINE_HPP_
+#define LIBSBX_EDITOR_PIPELINE_HPP_
 
 #include <libsbx/graphics/pipeline/graphics_pipeline.hpp>
 
-#include <demo/terrain/vertex.hpp>
+#include <libsbx/models/vertex3d.hpp>
 
-namespace demo::imgui {
+namespace sbx::editor {
 
 class pipeline : public sbx::graphics::graphics_pipeline<sbx::models::vertex3d> {
 
@@ -32,6 +32,6 @@ public:
 
 }; // class pipeline
 
-} // namespace demo::imgui
+} // namespace sbx::editor
 
-#endif // DEMO_IMGUI_PIPELINE_HPP_
+#endif // LIBSBX_EDITOR_PIPELINE_HPP_

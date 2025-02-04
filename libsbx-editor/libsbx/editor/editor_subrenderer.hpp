@@ -1,9 +1,9 @@
-#ifndef DEMO_IMGUI_IMGUI_SUBRENDERER_HPP_
-#define DEMO_IMGUI_IMGUI_SUBRENDERER_HPP_
+#ifndef LIBSBX_EDITOR_EDITOR_SUBRENDERER_HPP_
+#define LIBSBX_EDITOR_EDITOR_SUBRENDERER_HPP_
 
 #include <imgui.h>
 
-#include <demo/imgui/bindings/imgui.hpp>
+#include <libsbx/editor/bindings/imgui.hpp>
 
 #include <libsbx/utility/enum.hpp>
 
@@ -12,15 +12,19 @@
 #include <libsbx/devices/devices_module.hpp>
 
 #include <libsbx/scenes/scenes_module.hpp>
+#include <libsbx/scenes/components/id.hpp>
+#include <libsbx/scenes/components/relationship.hpp>
+#include <libsbx/scenes/components/tag.hpp>
 
 #include <libsbx/graphics/subrenderer.hpp>
+#include <libsbx/graphics/descriptor/descriptor_handler.hpp>
 #include <libsbx/graphics/graphics_module.hpp>
 
-#include <demo/imgui/pipeline.hpp>
+#include <libsbx/editor/pipeline.hpp>
 
-namespace demo {
+namespace sbx::editor {
 
-class imgui_subrenderer final : public sbx::graphics::subrenderer {
+class editor_subrenderer final : public sbx::graphics::subrenderer {
 
   inline static constexpr auto ini_file = std::string_view{"demo/assets/data/imgui.ini"};
 
@@ -28,7 +32,7 @@ class imgui_subrenderer final : public sbx::graphics::subrenderer {
 
 public:
 
-  imgui_subrenderer(const std::filesystem::path& path, const sbx::graphics::pipeline::stage& stage)
+  editor_subrenderer(const std::filesystem::path& path, const sbx::graphics::pipeline::stage& stage)
   : base{stage},
     _pipeline{path, stage},
     _show_demo_window{false},
@@ -47,6 +51,7 @@ public:
 
     ImGui::StyleColorsDark();
 
+
     auto& device_module = sbx::core::engine::get_module<sbx::devices::devices_module>();
     auto& graphics_module = sbx::core::engine::get_module<sbx::graphics::graphics_module>();
 
@@ -55,6 +60,7 @@ public:
 
     // Connect ImGui to Vulkan
     auto init_info = ImGui_ImplVulkan_InitInfo{};
+    std::memset(&init_info, 0, sizeof(ImGui_ImplVulkan_InitInfo));
     init_info.Instance = graphics_module.instance();
     init_info.PhysicalDevice = graphics_module.physical_device();
     init_info.Device = graphics_module.logical_device();
@@ -80,7 +86,7 @@ public:
     }
   }
 
-  ~imgui_subrenderer() override {
+  ~editor_subrenderer() override {
     ImGui_ImplVulkan_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
@@ -559,13 +565,13 @@ private:
     // [TODO] KAJ 2024-12-02 : Implement undo
   }
 
-  imgui::pipeline _pipeline;
-  sbx::graphics::descriptor_handler _descriptor_handler;
+  pipeline _pipeline;
+  graphics::descriptor_handler _descriptor_handler;
 
   bool _show_demo_window;
-  sbx::math::color _clear_color;
+  math::color _clear_color;
 
-  sbx::utility::bit_field<popup> _open_popups;
+  utility::bit_field<popup> _open_popups;
 
   sbx::units::second _time;
   std::uint16_t _frames;
@@ -575,10 +581,10 @@ private:
 
   std::array<char, 32> _new_name_buffer;
 
-  sbx::math::uuid _selected_node_id;
+  math::uuid _selected_node_id;
 
-};
+}; // class editor_subrenderer
 
-} // namespace demo
+} // namespace sbx::editor
 
-#endif // DEMO_IMGUI_IMGUI_SUBRENDERER_HPP_
+#endif // LIBSBX_EDITOR_EDITOR_SUBRENDERER_HPP_

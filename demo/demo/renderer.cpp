@@ -13,11 +13,10 @@
 #include <libsbx/shadows/shadow_subrenderer.hpp>
 #include <libsbx/ui/ui_subrenderer.hpp>
 #include <libsbx/gizmos/gizmos_subrenderer.hpp>
+#include <libsbx/editor/editor_subrenderer.hpp>
 
 #include <demo/terrain/terrain_subrenderer.hpp>
 #include <demo/terrain/planet_generator_task.hpp>
-
-#include <demo/imgui/imgui_subrenderer.hpp>
 
 namespace demo {
 
@@ -109,7 +108,9 @@ auto renderer::initialize() -> void {
   // add_subrenderer<sbx::gizmos::gizmos_subrenderer>("demo/assets/shaders/gizmos", sbx::graphics::pipeline::stage{2, 0}, "normalized_depth");
   // add_subrenderer<sbx::ui::ui_subrenderer>("demo/assets/shaders/ui", sbx::graphics::pipeline::stage{1, 0});
 
-  add_subrenderer<demo::imgui_subrenderer>("demo/assets/shaders/imgui", sbx::graphics::pipeline::stage{2, 0});
+
+
+  add_subrenderer<sbx::editor::editor_subrenderer>("demo/assets/shaders/editor", sbx::graphics::pipeline::stage{2, 0});
 }
 
 } // namespace demo
