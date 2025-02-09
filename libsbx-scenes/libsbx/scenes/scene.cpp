@@ -17,6 +17,8 @@
 #include <libsbx/devices/devices_module.hpp>
 #include <libsbx/devices/window.hpp>
 
+#include <libsbx/graphics/graphics_module.hpp>
+
 #include <libsbx/scenes/scenes_module.hpp>
 
 #include <libsbx/scenes/components/id.hpp>
@@ -62,21 +64,14 @@ scene::scene(const std::filesystem::path& path)
     camera.set_aspect_ratio(static_cast<std::float_t>(event.width) / static_cast<std::float_t>(event.height));
   };
 
-  const auto file = YAML::LoadFile(path.string());
+  const auto scene = YAML::LoadFile(path.string());
 
-  const auto& scene = file["scene"];
+  const auto& name = scene["name"].as<std::string>();
 
-  const auto& assets = scene["assets"];
+  const auto& metadata = scene["metadata"];
 
-  const auto& meshes = assets["meshes"];
-
-  for (const auto& mesh : meshes) {
-    const auto& name = mesh["name"];
-    const auto& path = mesh["path"];
-    const auto& id = mesh["id"];
-
-    core::logger::info("Mesh: {} {} {}", name.as<std::string>(), path.as<std::string>(), id.as<std::string>());
-  }
+  _load_assets(scene["assets"]);
+  _load_nodes(scene["nodes"]);
 }
 
 auto scene::create_child_node(node& parent, const std::string& tag, const math::transform& transform) -> node {
@@ -134,6 +129,20 @@ auto scene::world_transform(const node& node) -> math::matrix4x4 {
   }
 
   return world * transform.as_matrix();
+}
+
+auto scene::_load_assets(const YAML::Node& assets) -> void {
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+  for (const auto& asset : assets) {
+    const auto& name = asset["name"].as<std::string>();
+    const auto& path = asset["path"].as<std::string>();
+    const auto& id = asset["id"].as<std::string>();
+  }
+}
+
+auto scene::_load_nodes(const YAML::Node& assets) -> void {
+
 }
 
 } // namespace sbx::scenes
