@@ -1,7 +1,6 @@
 import os
 from conan import ConanFile
 from conan.tools.cmake import CMakeDeps, CMakeToolchain, CMake, cmake_layout
-from conan.tools.build import check_max_cppstd, check_min_cppstd
 
 class libsbx_recipe(ConanFile):
   name = "libsbx"
@@ -103,6 +102,8 @@ class libsbx_recipe(ConanFile):
     self.requires("drwav/0.13.12")
     self.requires("drmp3/0.6.34")
     self.requires("imgui/1.91.5-docking")
+    self.requires("implot/0.16-docking")
+    # self.requires("imguizmo/1.83-docking")
     self.requires("portable-file-dialogs/0.1.0")
 
   def generate(self):

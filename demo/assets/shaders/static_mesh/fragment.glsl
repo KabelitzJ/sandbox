@@ -6,6 +6,8 @@
 #include "../common/depth.glsl"
 #include "../common/shadow.glsl"
 
+#define ENABLE_SHADOWS 1
+
 #define MAX_IMAGE_ARRAY_SIZE 64
 
 layout(location = 0) in vec3 in_position;

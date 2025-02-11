@@ -1,7 +1,10 @@
 #ifndef LIBSBX_EDITOR_EDITOR_SUBRENDERER_HPP_
 #define LIBSBX_EDITOR_EDITOR_SUBRENDERER_HPP_
 
+#include <deque>
+
 #include <imgui.h>
+#include <implot.h>
 
 #include <libsbx/editor/bindings/imgui.hpp>
 
@@ -42,6 +45,7 @@ public:
     IMGUI_CHECKVERSION();
 
     ImGui::CreateContext();
+    ImPlot::CreateContext();
 
     auto& io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
@@ -89,6 +93,7 @@ public:
   ~editor_subrenderer() override {
     ImGui_ImplVulkan_Shutdown();
     ImGui_ImplGlfw_Shutdown();
+    ImPlot::DestroyContext();
     ImGui::DestroyContext();
   }
 
@@ -483,6 +488,25 @@ private:
       ImGui::Text("Delta time:  %.3f", sbx::units::quantity_cast<sbx::units::millisecond>(delta_time).value());
       ImGui::Text("FPS:         %d", _fps);
 
+      static constexpr auto max_time = sbx::units::second{5.0f};
+
+      _elapsed += delta_time;
+
+      _deltas.push_back(sbx::units::quantity_cast<sbx::units::millisecond>(delta_time).value());
+      _time_stamps.push_back(_elapsed.value());
+
+      while (!_time_stamps.empty() && (_elapsed - sbx::units::second{_time_stamps.front()} > max_time)) {
+        _deltas.erase(_deltas.begin());
+        _time_stamps.erase(_time_stamps.begin());
+      }
+
+      if (ImPlot::BeginPlot("Delta Time Graph", ImVec2{-1, 150})) {
+        ImPlot::SetupAxes("Time (s)", "Delta Time (ms)", ImPlotAxisFlags_AutoFit, ImPlotAxisFlags_AutoFit);
+        ImPlot::SetupAxisLimits(ImAxis_X1, (_elapsed - max_time).value(), _elapsed.value(), ImGuiCond_Always);
+        ImPlot::PlotShaded("Delta Time", _time_stamps.data(), _deltas.data(), _deltas.size(), 0.0f);
+        ImPlot::EndPlot();
+      }
+
       ImGui::End();
     }
 
@@ -582,6 +606,10 @@ private:
   std::array<char, 32> _new_name_buffer;
 
   math::uuid _selected_node_id;
+
+  std::vector<std::float_t> _deltas;
+  std::vector<std::float_t> _time_stamps;
+  sbx::units::second _elapsed;
 
 }; // class editor_subrenderer
 

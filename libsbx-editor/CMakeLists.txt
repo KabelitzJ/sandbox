@@ -21,6 +21,7 @@ find_package(yaml-cpp REQUIRED)
 find_package(tinyobjloader REQUIRED)
 find_package(nlohmann_json REQUIRED)
 find_package(imgui REQUIRED)
+find_package(implot REQUIRED)
 
 set(LIBSBX_IMGUI_TAG $<IF:$<BOOL:${LIBSBX_EDITOR_DOCKING}>,1.89.7-docking,1.89.7>)
 
@@ -62,6 +63,7 @@ target_link_libraries(
     tinyobjloader::tinyobjloader
     nlohmann_json::nlohmann_json
     imgui::imgui
+    implot::implot
     # Internal dependencies
     libsbx::utility
     libsbx::io
