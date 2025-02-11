@@ -85,15 +85,8 @@ public:
 
 private:
 
-  template<typename Component, typename... Args>
-  auto _add_or_update_component(node& node, Args&&... args) -> void {
-    if (node.has_component<Component>()) {
-      auto& component = node.get_component<Component>();
-      component = Component{std::forward<Args>(args)...};
-    } else {
-      node.add_component<Component>(std::forward<Args>(args)...);
-    }
-  }
+  auto _load_assets(const YAML::Node& assets) -> void;
+  auto _load_nodes(const YAML::Node& nodes) -> void;
 
   std::unordered_map<math::uuid, node> _nodes;
 
