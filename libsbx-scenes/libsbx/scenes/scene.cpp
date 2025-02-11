@@ -2,7 +2,7 @@
 
 #include <unordered_map>
 
-#include <portable-file-dialogs.h>
+// #include <portable-file-dialogs.h>
 
 #include <yaml-cpp/yaml.h>
 
@@ -134,10 +134,16 @@ auto scene::world_transform(const node& node) -> math::matrix4x4 {
 auto scene::_load_assets(const YAML::Node& assets) -> void {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
-  for (const auto& asset : assets) {
-    const auto& name = asset["name"].as<std::string>();
-    const auto& path = asset["path"].as<std::string>();
-    const auto& id = asset["id"].as<std::string>();
+  for (const auto& mesh : assets["meshes"]) {
+    const auto& name = mesh["name"].as<std::string>();
+    const auto& path = mesh["path"].as<std::string>();
+    const auto& id = mesh["id"].as<std::string>();
+  }
+
+  for (const auto& mesh : assets["materials"]) {
+    const auto& name = mesh["name"].as<std::string>();
+    const auto& path = mesh["path"].as<std::string>();
+    const auto& id = mesh["id"].as<std::string>();
   }
 }
 

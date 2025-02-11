@@ -488,7 +488,7 @@ private:
       ImGui::Text("Delta time:  %.3f", sbx::units::quantity_cast<sbx::units::millisecond>(delta_time).value());
       ImGui::Text("FPS:         %d", _fps);
 
-      static constexpr auto max_time = sbx::units::second{5.0f};
+      static constexpr auto max_time = sbx::units::second{5};
 
       _elapsed += delta_time;
 
