@@ -11,7 +11,6 @@
 
 #include <libsbx/memory/concepts.hpp>
 
-#include <libsbx/ecs/component_handle.hpp>
 #include <libsbx/ecs/iterable_adaptor.hpp>
 
 namespace sbx::ecs {

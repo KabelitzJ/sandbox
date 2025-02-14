@@ -15,16 +15,15 @@
 namespace sbx::ecs {
 
 template<typename Key, typename Value, memory::allocator_for<Value> Allocator = std::allocator<Value>>
-class storage : public sparse_set<Key, typename std::allocator_traits<Allocator>::rebind_alloc<Key>> {
+class storage : public basic_sparse_set<Key, memory::rebound_allocator_t<Allocator, Key>> {
 
   using allocator_traits = std::allocator_traits<Allocator>;
-
 
   using container_type = std::vector<Value, Allocator>;
 
 public:
 
-  using base_type = sparse_set<Key, memory::rebound_allocator_t<Allocator, Key>>;
+  using base_type = basic_sparse_set<Key, memory::rebound_allocator_t<Allocator, Key>>;
   using key_type = Key;
   using value_type = Value;
   using reference = value_type&;

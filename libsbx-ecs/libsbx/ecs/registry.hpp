@@ -18,7 +18,6 @@
 #include <libsbx/ecs/sparse_set.hpp>
 #include <libsbx/ecs/storage.hpp>
 #include <libsbx/ecs/view.hpp>
-#include <libsbx/ecs/component_handle.hpp>
 
 namespace sbx::ecs {
 
@@ -112,7 +111,7 @@ class basic_registry {
   using entity_storage_type = std::vector<Entity, Allocator>;
   using free_list_type = std::unordered_set<std::size_t, std::hash<std::size_t>, std::equal_to<std::size_t>, memory::rebound_allocator_t<Allocator, std::size_t>>;
 
-  using basic_storage_type = sparse_set<Entity, Allocator>;
+  using basic_storage_type = basic_sparse_set<Entity, Allocator>;
 
   template<typename Type>
   using storage_type = constness_as_t<storage<Entity, std::remove_const_t<Type>, memory::rebound_allocator_t<Allocator, std::remove_const_t<Type>>>, Type>;
