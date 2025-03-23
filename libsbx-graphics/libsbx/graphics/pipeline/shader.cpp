@@ -4,10 +4,10 @@
 #include <ranges>
 
 #include <libsbx/utility/fast_mod.hpp>
+#include <libsbx/utility/logger.hpp>
 
 #include <libsbx/io/read_file.hpp>
 
-#include <libsbx/core/logger.hpp>
 #include <libsbx/core/engine.hpp>
 
 #include <libsbx/graphics/buffers/storage_buffer.hpp>
@@ -67,7 +67,7 @@ auto shader::_create_reflection(const spirv_cross::Compiler& compiler) -> void {
     const auto uniform_blocks_binding = compiler.get_decoration(uniform_buffer.id, spv::DecorationBinding);
     const auto uniform_blocks_size = compiler.get_declared_struct_size(type);
 
-    core::logger::debug("uniform block: '{}' binding: {} size: {}", uniform_blocks_name, uniform_blocks_binding, uniform_blocks_size);
+    utility::logger<"graphics">::debug("uniform block: '{}' binding: {} size: {}", uniform_blocks_name, uniform_blocks_binding, uniform_blocks_size);
  
     const auto member_count = type.member_types.size();
 
@@ -82,7 +82,7 @@ auto shader::_create_reflection(const spirv_cross::Compiler& compiler) -> void {
       const auto member_size = compiler.get_declared_struct_member_size(type, i);
       const auto member_data_type = _get_data_type(member_type);
 
-      core::logger::debug("  binding: {}\toffset: {}\tsize: {}{}\tdata_type: {}", member_binding, member_offset, member_size, member_size < 10 ? "\t" : "", _data_type_to_string(member_data_type));
+      utility::logger<"graphics">::debug("  binding: {}\toffset: {}\tsize: {}{}\tdata_type: {}", member_binding, member_offset, member_size, member_size < 10 ? "\t" : "", _data_type_to_string(member_data_type));
 
       uniforms.insert({member_name, uniform{member_binding, member_offset, member_size, member_data_type, false, false, _stage}});
     }
@@ -98,7 +98,7 @@ auto shader::_create_reflection(const spirv_cross::Compiler& compiler) -> void {
     const auto uniform_blocks_binding = compiler.get_decoration(push_constant.id, spv::DecorationBinding);
     const auto uniform_blocks_size = compiler.get_declared_struct_size(type);
 
-    core::logger::debug("uniform block: '{}' binding: {} size: {}", uniform_blocks_name, uniform_blocks_binding, uniform_blocks_size);
+    utility::logger<"graphics">::debug("uniform block: '{}' binding: {} size: {}", uniform_blocks_name, uniform_blocks_binding, uniform_blocks_size);
  
     const auto member_count = type.member_types.size();
 
@@ -113,7 +113,7 @@ auto shader::_create_reflection(const spirv_cross::Compiler& compiler) -> void {
       const auto member_size = compiler.get_declared_struct_member_size(type, i);
       const auto member_data_type = _get_data_type(member_type);
 
-      core::logger::debug("  binding: {}\toffset: {}\tsize: {}{}\tdata_type: {}", member_binding, member_offset, member_size, member_size < 10 ? "\t" : "", _data_type_to_string(member_data_type));
+      utility::logger<"graphics">::debug("  binding: {}\toffset: {}\tsize: {}{}\tdata_type: {}", member_binding, member_offset, member_size, member_size < 10 ? "\t" : "", _data_type_to_string(member_data_type));
 
       uniforms.insert({member_name, uniform{member_binding, member_offset, member_size, member_data_type, false, false, _stage}});
     }
@@ -133,7 +133,7 @@ auto shader::_create_reflection(const spirv_cross::Compiler& compiler) -> void {
 
     auto buffer = uniform_block{storage_buffer_binding, 0u, _stage, uniform_block::type::storage};
 
-    core::logger::debug("uniform block: '{}' binding: {} element_size: {}", storage_buffer_name, storage_buffer_binding, storage_buffer_element_size);
+    utility::logger<"graphics">::debug("uniform block: '{}' binding: {} element_size: {}", storage_buffer_name, storage_buffer_binding, storage_buffer_element_size);
 
     _uniform_blocks.insert({storage_buffer_name, buffer});
   }
@@ -146,13 +146,13 @@ auto shader::_create_reflection(const spirv_cross::Compiler& compiler) -> void {
     const auto binding = compiler.get_decoration(image_sampler.id, spv::DecorationBinding);
 
     if (type.array.size() == 0u) {
-      core::logger::debug("image sampler: '{}' binding: {}", name, binding);
+      utility::logger<"graphics">::debug("image sampler: '{}' binding: {}", name, binding);
 
       auto image = uniform{binding, 0, 0, data_type::sampler2d, false, false, _stage};
 
       _uniforms.insert({name, image});
     } else if (type.array.size() == 1u) {
-      core::logger::debug("image sampler[{}]: '{}' binding: {}", type.array[0], name, binding);
+      utility::logger<"graphics">::debug("image sampler[{}]: '{}' binding: {}", type.array[0], name, binding);
 
       auto image = uniform{binding, 0, 32u, data_type::sampler2d_array, false, false, _stage};
 
@@ -167,13 +167,13 @@ auto shader::_create_reflection(const spirv_cross::Compiler& compiler) -> void {
     const auto binding = compiler.get_decoration(separate_image.id, spv::DecorationBinding);
 
     if (type.array.size() == 0u) {
-      core::logger::debug("separate image: '{}' binding: {}", name, binding);
+      utility::logger<"graphics">::debug("separate image: '{}' binding: {}", name, binding);
 
       auto image = uniform{binding, 0, 0, data_type::separate_image2d, false, false, _stage};
 
       _uniforms.insert({name, image});
     } else if (type.array.size() == 1u) {
-      core::logger::debug("separate image[{}]: '{}' binding: {}", type.array[0], name, binding);
+      utility::logger<"graphics">::debug("separate image[{}]: '{}' binding: {}", type.array[0], name, binding);
 
       auto image = uniform{binding, 0, 32u, data_type::separate_image2d_array, false, false, _stage};
 
@@ -187,7 +187,7 @@ auto shader::_create_reflection(const spirv_cross::Compiler& compiler) -> void {
 
     auto sampler = uniform{binding, 0, 0, data_type::separate_sampler, false, false, _stage};
 
-    core::logger::debug("separate sampler: '{}' binding: {}", name, binding);
+    utility::logger<"graphics">::debug("separate sampler: '{}' binding: {}", name, binding);
 
     _uniforms.insert({name, sampler});
   }
@@ -201,7 +201,7 @@ auto shader::_create_reflection(const spirv_cross::Compiler& compiler) -> void {
 
     auto image = uniform{binding, 0, 0, data_type::storage_image, is_readonly, is_writeonly, _stage};
 
-    core::logger::debug("storage image: '{}' binding: {} readonly: {} writeonly: {}", name, binding, is_readonly, is_writeonly);
+    utility::logger<"graphics">::debug("storage image: '{}' binding: {} readonly: {} writeonly: {}", name, binding, is_readonly, is_writeonly);
 
     _uniforms.insert({name, image});
   }
@@ -213,7 +213,7 @@ auto shader::_create_reflection(const spirv_cross::Compiler& compiler) -> void {
 
     auto image = uniform{binding, 0, 0, data_type::subpass_input, true, false, _stage};
 
-    core::logger::debug("subpass input: '{}' binding: {}", name, binding);
+    utility::logger<"graphics">::debug("subpass input: '{}' binding: {}", name, binding);
 
     _uniforms.insert({name, image});
   }

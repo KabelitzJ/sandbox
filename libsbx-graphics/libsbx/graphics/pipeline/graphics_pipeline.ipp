@@ -6,10 +6,11 @@
 
 #include <nlohmann/json.hpp>
 
-#include <libsbx/core/logger.hpp>
+#include <libsbx/utility/timer.hpp>
+#include <libsbx/utility/logger.hpp>
+
 #include <libsbx/core/engine.hpp>
 
-#include <libsbx/utility/timer.hpp>
 
 #include <libsbx/graphics/graphics_module.hpp>
 
@@ -55,7 +56,7 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
       const auto stage = _get_stage_from_name(stem);
 
       if (stage == VK_SHADER_STAGE_FLAG_BITS_MAX_ENUM) {
-        core::logger::warn("Unsupported shader stage '{}' in graphics pipeline '{}'", stem, _name);
+        utility::logger<"graphics">::warn("Unsupported shader stage '{}' in graphics pipeline '{}'", stem, _name);
         continue;
       }
 
@@ -117,7 +118,7 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
         break;
       }
       default: {
-        core::logger::warn("Unsupported uniform block type (sbx::graphics::shader::uniform_block::type): {}", uniform_block.buffer_type());
+        utility::logger<"graphics">::warn("Unsupported uniform block type (sbx::graphics::shader::uniform_block::type): {}", uniform_block.buffer_type());
         continue;
       }
     }
@@ -154,7 +155,7 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
         break;
       }
       default: {
-        core::logger::warn("Unsupported uniform type (sbx::graphics::shader::data_type): {}", uniform.type());
+        utility::logger<"graphics">::warn("Unsupported uniform type (sbx::graphics::shader::data_type): {}", uniform.type());
         continue;
       }
     }
@@ -377,7 +378,7 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
 
   validate(vkCreateGraphicsPipelines(logical_device, VK_NULL_HANDLE, 1, &pipeline_create_info, nullptr, &_handle));
 
-  core::logger::debug("Pipeline '{}' created in {:.2f}ms", _name, units::quantity_cast<units::millisecond>(timer.elapsed()).value());
+  utility::logger<"graphics">::debug("Pipeline '{}' created in {:.2f}ms", _name, units::quantity_cast<units::millisecond>(timer.elapsed()).value());
 }
 
 template<vertex Vertex>
@@ -456,7 +457,7 @@ auto graphics_pipeline<Vertex>::_update_definition(const std::filesystem::path& 
       if (polygon_mode) {
         result.rasterization_state.polygon_mode = *polygon_mode;
       } else {
-        core::logger::warn("Could not parse 'sbx::graphics::polygon_mode' value '{}'", rasterization_state["polygon_mode"].get<std::string>());
+        utility::logger<"graphics">::warn("Could not parse 'sbx::graphics::polygon_mode' value '{}'", rasterization_state["polygon_mode"].get<std::string>());
       }
     }
   }

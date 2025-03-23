@@ -15,6 +15,7 @@ endif()
 add_library(${CMAKE_PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
 find_package(fmt REQUIRED)
+find_package(spdlog REQUIRED)
 
 target_sources(
   ${PROJECT_NAME}
@@ -45,6 +46,7 @@ target_sources(
       "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/type_name.hpp"
       "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/enum.hpp"
       "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/multimap_key_range.hpp"
+      "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/logger.hpp"
 )
 
 target_include_directories(
@@ -58,6 +60,7 @@ target_link_libraries(
   PUBLIC
     # External dependencies
     fmt::fmt
+    spdlog::spdlog
     # Internal dependencies
     libsbx::units
 )
@@ -73,7 +76,7 @@ set_target_properties(
 
 target_compile_definitions(
   ${PROJECT_NAME}
-  PRIVATE
+  PUBLIC
     SBX_CONSTEXPR_ENABLED=${SBX_CONSTEXPR_ENABLED}
 )
 

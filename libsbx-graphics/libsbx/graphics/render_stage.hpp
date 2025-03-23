@@ -8,8 +8,6 @@
 
 #include <vulkan/vulkan.hpp>
 
-#include <libsbx/core/logger.hpp>
-
 #include <libsbx/devices/devices_module.hpp>
 
 #include <libsbx/math/color.hpp>

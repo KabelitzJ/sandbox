@@ -3,8 +3,7 @@
 #include <libsbx/units/bytes.hpp>
 
 #include <libsbx/utility/timer.hpp>
-
-#include <libsbx/core/logger.hpp>
+#include <libsbx/utility/logger.hpp>
 
 namespace sbx::bitmaps {
 
@@ -36,7 +35,7 @@ bitmap::bitmap(const std::filesystem::path& path) {
 
   const auto elapsed = units::quantity_cast<units::millisecond>(timer.elapsed());
 
-  core::logger::debug("Loaded bitmap: {}, width: {}, height: {}, channels: {}, size: {} kb in {:.2f}ms", path.string(), data.width, data.height, data.channels, kb.value(), elapsed.value());
+  utility::logger<"bitmap">::debug("Loaded bitmap: {}, width: {}, height: {}, channels: {}, size: {} kb in {:.2f}ms", path.string(), data.width, data.height, data.channels, kb.value(), elapsed.value());
 }
 
 bitmap::~bitmap() {

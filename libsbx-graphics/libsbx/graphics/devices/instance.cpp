@@ -1,6 +1,5 @@
 #include <libsbx/graphics/devices/instance.hpp>
 
-#include <libsbx/core/logger.hpp>
 #include <libsbx/utility/target.hpp>
 
 #include <libsbx/graphics/graphics_module.hpp>

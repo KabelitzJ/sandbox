@@ -2,10 +2,10 @@
 
 #include <limits>
 
-#include <libsbx/core/logger.hpp>
 #include <libsbx/core/engine.hpp>
 
 #include <libsbx/utility/assert.hpp>
+#include <libsbx/utility/logger.hpp>
 
 #include <libsbx/graphics/graphics_module.hpp>
 
@@ -56,7 +56,7 @@ auto command_buffer::is_running() const noexcept -> bool {
 
 auto command_buffer::begin(VkCommandBufferUsageFlags usage) -> void {
   if (_is_running) {
-    core::logger::warn("Tried to begin recording a command buffer that was already beeing recorded");
+    utility::logger<"graphics">::warn("Tried to begin recording a command buffer that was already beeing recorded");
     return;
   }
 
@@ -71,7 +71,7 @@ auto command_buffer::begin(VkCommandBufferUsageFlags usage) -> void {
 
 auto command_buffer::end() -> void {
   if (!_is_running) {
-    core::logger::warn("Tried to stop recording a command buffer that was not beeing recorded");
+    utility::logger<"graphics">::warn("Tried to stop recording a command buffer that was not beeing recorded");
     return;
   }
 

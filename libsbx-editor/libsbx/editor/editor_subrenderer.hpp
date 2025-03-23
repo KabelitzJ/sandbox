@@ -241,7 +241,7 @@ private:
       if (ImGui::IsItemClicked(ImGuiMouseButton_Right) || ImGui::IsItemClicked(ImGuiMouseButton_Left)) {
         _selected_node_id = node.get_component<sbx::scenes::id>();
 
-        sbx::core::logger::debug("Selected node id {}", _selected_node_id);
+        utility::logger<"editor">::debug("Selected node id {}", _selected_node_id);
       }
 
       _context_menu(node);
@@ -388,7 +388,7 @@ private:
           if (auto node = scene.find_node(_selected_node_id); node) {
             scene.create_child_node(*node, name);
           } else {
-            sbx::core::logger::warn("No selected node");
+            utility::logger<"editor">::warn("No selected node");
           }
 
           _new_name_buffer.fill('\0');
@@ -556,7 +556,7 @@ private:
       ImGui::Begin("Log");
     
       if (ImGui::Button("Clear"))  {
-        sbx::core::logger::info("Clearing log");
+        utility::logger<"editor">::info("Clearing log");
       }
 
       ImGui::SameLine();

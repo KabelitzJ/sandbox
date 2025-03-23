@@ -3,9 +3,9 @@
 #include <fmt/format.h>
 
 #include <libsbx/utility/fast_mod.hpp>
+#include <libsbx/utility/logger.hpp>
 
 #include <libsbx/core/engine.hpp>
-#include <libsbx/core/logger.hpp>
 
 namespace sbx::graphics {
 

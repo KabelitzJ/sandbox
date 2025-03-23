@@ -19,7 +19,6 @@
 #include <libsbx/math/transform.hpp>
 #include <libsbx/math/uuid.hpp>
 
-#include <libsbx/core/logger.hpp>
 #include <libsbx/core/engine.hpp>
 
 #include <libsbx/signals/signal.hpp>

@@ -2,6 +2,8 @@
 
 #include <tiny_obj_loader.h>
 
+#include <libsbx/utility/logger.hpp>
+
 namespace sbx::models {
 
 auto obj_loader::load(const std::filesystem::path& path) -> mesh_data {
@@ -17,11 +19,11 @@ auto obj_loader::load(const std::filesystem::path& path) -> mesh_data {
   const auto result = tinyobj::LoadObj(&attributes, &shapes, &materials, &warning, &error, path.string().c_str(), path.parent_path().string().c_str());
 
   if (!warning.empty()) {
-    core::logger::warn("{}", warning);
+    utility::logger<"models">::warn("{}", warning);
   }
 
   if (!error.empty()) {
-    core::logger::error("{}", error);
+    utility::logger<"models">::error("{}", error);
   }
 
   if (!result) {

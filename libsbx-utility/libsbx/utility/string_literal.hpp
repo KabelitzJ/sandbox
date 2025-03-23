@@ -32,6 +32,7 @@ public:
   using size_type = std::size_t;
   using iterator = const character_type*;
   using string_view_type = std::basic_string_view<character_type>;
+  using string_type = std::basic_string<character_type>;
 
   static constexpr auto npos = std::numeric_limits<size_type>::max();
 
@@ -67,6 +68,10 @@ public:
     return string_view_type{_data.data(), Size};
   }
 
+  constexpr operator string_type() const noexcept {
+    return string_type{_data.data(), Size};
+  }
+
   std::array<character_type, Size - 1> _data;
 
 }; // class basic_string_literal
@@ -89,7 +94,7 @@ struct fmt::formatter<sbx::utility::string_literal<Size>> {
 
   template<typename FormatContext>
   auto format(const sbx::utility::string_literal<Size>& value, FormatContext& context) -> decltype(context.out()) {
-    return fmt::format_to(context.out(), "{}", fmt::join(value._data, ""));
+    return fmt::format_to(context.out(), "{}", std::string{value.data(), value.size()});
   }
 
 }; // struct fmt::formatter<sbx::utility::primitive<Type>>

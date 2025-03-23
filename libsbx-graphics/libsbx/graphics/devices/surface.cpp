@@ -1,6 +1,5 @@
 #include <libsbx/graphics/devices/surface.hpp>
 
-#include <libsbx/core/logger.hpp>
 #include <libsbx/core/engine.hpp>
 
 #include <libsbx/devices/devices_module.hpp>

@@ -7,7 +7,6 @@
 
 #include <libsbx/core/engine.hpp>
 #include <libsbx/core/exit.hpp>
-#include <libsbx/core/logger.hpp>
 
 auto main(int argc, const char** argv) -> int {
   auto args = std::vector<std::string_view>{argv, argv + argc};
@@ -19,7 +18,7 @@ auto main(int argc, const char** argv) -> int {
 
     engine->run(std::move(application));
   } catch(const std::exception& exception) {
-    sbx::core::logger::error("{}", exception.what());
+    sbx::utility::logger<"core">::error("{}", exception.what());
     return sbx::core::exit::failure; 
   }
 

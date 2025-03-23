@@ -1,8 +1,7 @@
 #include <libsbx/graphics/devices/debug_messenger.hpp>
 
 #include <libsbx/utility/target.hpp>
-
-#include <libsbx/core/logger.hpp>
+#include <libsbx/utility/logger.hpp>
 
 namespace sbx::graphics {
 
@@ -47,9 +46,9 @@ auto debug_messenger::create_info() -> VkDebugUtilsMessengerCreateInfoEXT* {
 
 VKAPI_ATTR auto VKAPI_CALL debug_messenger::_debug_callback(VkDebugUtilsMessageSeverityFlagBitsEXT message_severity, [[maybe_unused]] VkDebugUtilsMessageTypeFlagsEXT message_type, const VkDebugUtilsMessengerCallbackDataEXT* callback_data, [[maybe_unused]] void* user_data) -> VkBool32 {
   if (message_severity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) {
-    core::logger::warn("{}", callback_data->pMessage);
+    utility::logger<"graphics">::warn("{}", callback_data->pMessage);
   } else if (message_severity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) {
-    core::logger::error("{}", callback_data->pMessage);
+    utility::logger<"graphics">::error("{}", callback_data->pMessage);
     std::terminate();
   }
 

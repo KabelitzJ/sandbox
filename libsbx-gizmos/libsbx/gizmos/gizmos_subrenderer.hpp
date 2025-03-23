@@ -6,11 +6,11 @@
 #include <ranges>
 #include <algorithm>
 
+#include <libsbx/utility/logger.hpp>
+
 #include <libsbx/math/color.hpp>
 #include <libsbx/math/vector3.hpp>
 #include <libsbx/math/matrix4x4.hpp>
-
-#include <libsbx/core/logger.hpp>
 
 #include <libsbx/graphics/graphics_module.hpp>
 #include <libsbx/graphics/subrenderer.hpp>

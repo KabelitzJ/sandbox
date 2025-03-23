@@ -9,6 +9,7 @@
 #include <libsbx/units/time.hpp>
 
 #include <libsbx/utility/timer.hpp>
+#include <libsbx/utility/logger.hpp>
 
 #include <libsbx/math/angle.hpp>
 #include <libsbx/math/vector3.hpp>
@@ -108,7 +109,7 @@ auto scene::destroy_node(const node& node) -> void {
   if (auto entry = _nodes.find(id); entry != _nodes.end()) {
     entry->second.get_component<scenes::relationship>().remove_child(id);
   } else {
-    core::logger::warn("Node '{}' has invalid parent", node.get_component<scenes::tag>());
+    utility::logger<"scenes">::warn("Node '{}' has invalid parent", node.get_component<scenes::tag>());
   }
 
   _nodes.erase(id);

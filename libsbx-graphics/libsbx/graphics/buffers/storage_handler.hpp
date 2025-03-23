@@ -5,8 +5,6 @@
 #include <optional>
 #include <span>
 
-#include <libsbx/core/logger.hpp>
-
 #include <libsbx/memory/observer_ptr.hpp>
 
 #include <libsbx/graphics/pipeline/shader.hpp>

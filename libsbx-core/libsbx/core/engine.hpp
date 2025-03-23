@@ -19,7 +19,6 @@
 
 #include <libsbx/core/module.hpp>
 #include <libsbx/core/application.hpp>
-#include <libsbx/core/logger.hpp>
 #include <libsbx/core/cli.hpp>
 
 namespace sbx::core {

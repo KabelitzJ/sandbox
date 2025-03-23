@@ -10,7 +10,7 @@
 
 #include <libsbx/core/module.hpp>
 #include <libsbx/core/engine.hpp>
-#include <libsbx/core/logger.hpp>
+#include <libsbx/utility/logger.hpp>
 
 #include <libsbx/scenes/scenes_module.hpp>
 #include <libsbx/scenes/components/tag.hpp>

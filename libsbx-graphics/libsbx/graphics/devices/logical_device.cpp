@@ -1,7 +1,7 @@
 #include <libsbx/graphics/devices/logical_device.hpp>
 
-#include <libsbx/core/logger.hpp>
 #include <libsbx/utility/target.hpp>
+#include <libsbx/utility/logger.hpp>
 
 #include <libsbx/graphics/graphics_module.hpp>
 #include <libsbx/graphics/devices/validation_layers.hpp>
@@ -97,7 +97,7 @@ auto logical_device::_get_queue_family_indices(const physical_device& physical_d
 	vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &device_queue_family_property_count, device_queue_family_properties.data());
 
   for (auto i = std::uint32_t{0}; i < device_queue_family_property_count; ++i) {
-    core::logger::debug("Queue Family {} supports {} queues of type [{}]", i, device_queue_family_properties[i].queueCount, _print_queue_families(device_queue_family_properties[i]));
+    utility::logger<"graphics">::debug("Queue Family {} supports {} queues of type [{}]", i, device_queue_family_properties[i].queueCount, _print_queue_families(device_queue_family_properties[i]));
 
     // [NOTE] KAJ 2023-03-20 : Always pick the queue that is the most specialized for the task i.e. has the least flags other than the one we are looking for
 		if (device_queue_family_properties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) {
@@ -153,25 +153,25 @@ auto logical_device::_get_queue_family_indices(const physical_device& physical_d
 		throw std::runtime_error("Failed to find suitable graphics queue family");
   }
 
-  core::logger::debug("Selected graphics queue family: {}", *result.graphics);
+  utility::logger<"graphics">::debug("Selected graphics queue family: {}", *result.graphics);
 
   if (!result.present) {
     result.present = result.graphics;
   }
 
-  core::logger::debug("Selected present queue family: {}", *result.present);
+  utility::logger<"graphics">::debug("Selected present queue family: {}", *result.present);
 
   if (!result.compute) {
     throw std::runtime_error("Failed to find suitable compute queue family");
   }
 
-  core::logger::debug("Selected compute queue family: {}", *result.compute);
+  utility::logger<"graphics">::debug("Selected compute queue family: {}", *result.compute);
 
   if (!result.transfer) {
     throw std::runtime_error("Failed to find suitable transfer queue family");
   }
 
-  core::logger::debug("Selected transfer queue family: {}", *result.transfer);
+  utility::logger<"graphics">::debug("Selected transfer queue family: {}", *result.transfer);
 
   return result;
 }
@@ -191,13 +191,13 @@ auto logical_device::_get_enabled_features(const physical_device& physical_devic
 		  enabled_features.wideLines = true;
     }
 	} else {
-		core::logger::warn("Selected GPU does not support wireframe pipelines");
+		utility::logger<"graphics">::warn("Selected GPU does not support wireframe pipelines");
 	}
 
 	if (physical_device_features.samplerAnisotropy) {
 		enabled_features.samplerAnisotropy = true;
   } else {
-		core::logger::warn("Selected GPU does not support sampler anisotropy");
+		utility::logger<"graphics">::warn("Selected GPU does not support sampler anisotropy");
   }
 
 	if (physical_device_features.textureCompressionBC) {
@@ -211,55 +211,55 @@ auto logical_device::_get_enabled_features(const physical_device& physical_devic
 	if (physical_device_features.vertexPipelineStoresAndAtomics) {
 		enabled_features.vertexPipelineStoresAndAtomics = true;
   } else {
-		core::logger::warn("Selected GPU does not support vertex pipeline stores and atomics");
+		utility::logger<"graphics">::warn("Selected GPU does not support vertex pipeline stores and atomics");
   }
 
 	if (physical_device_features.fragmentStoresAndAtomics) {
 		enabled_features.fragmentStoresAndAtomics = true;
   } else {
-		core::logger::warn("Selected GPU does not support fragment stores and atomics");
+		utility::logger<"graphics">::warn("Selected GPU does not support fragment stores and atomics");
   }
 
 	if (physical_device_features.shaderStorageImageExtendedFormats) {
 		enabled_features.shaderStorageImageExtendedFormats = true;
   } else {
-		core::logger::warn("Selected GPU does not support shader storage extended formats");
+		utility::logger<"graphics">::warn("Selected GPU does not support shader storage extended formats");
   }
 
 	if (physical_device_features.shaderStorageImageWriteWithoutFormat) {
 		enabled_features.shaderStorageImageWriteWithoutFormat = true;
   } else {
-		core::logger::warn("Selected GPU does not support shader storage write without format");
+		utility::logger<"graphics">::warn("Selected GPU does not support shader storage write without format");
   }
 
   if (physical_device_features.shaderClipDistance) {
 		enabled_features.shaderClipDistance = true;
   } else {
-		core::logger::warn("Selected GPU does not support shader clip distance");
+		utility::logger<"graphics">::warn("Selected GPU does not support shader clip distance");
   }
 
   if (physical_device_features.shaderCullDistance) {
 		enabled_features.shaderCullDistance = true;
   } else {
-		core::logger::warn("Selected GPU does not support shader cull distance");
+		utility::logger<"graphics">::warn("Selected GPU does not support shader cull distance");
   }
 
 	if (physical_device_features.geometryShader) {
 		enabled_features.geometryShader = true;
   } else {
-		core::logger::warn("Selected GPU does not support geometry shaders");
+		utility::logger<"graphics">::warn("Selected GPU does not support geometry shaders");
   }
 
 	if (physical_device_features.tessellationShader) {
 		enabled_features.tessellationShader = true;
   } else {
-		core::logger::warn("Selected GPU does not support tessellation shaders");
+		utility::logger<"graphics">::warn("Selected GPU does not support tessellation shaders");
   }
 
 	if (physical_device_features.multiViewport) {
 		enabled_features.multiViewport = true;
   } else {
-		core::logger::warn("Selected GPU does not support multi viewports");
+		utility::logger<"graphics">::warn("Selected GPU does not support multi viewports");
   }
 
   return enabled_features;

@@ -1,43 +1,7 @@
-/* 
- * Copyright (c) 2022 Jonas Kabelitz
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- * 
- * You should have received a copy of the MIT License along with this program.
- * If not, see <https://opensource.org/licenses/MIT/>.
- */
+#ifndef LIBSBX_UTILITY_LOGGER_HPP_
+#define LIBSBX_UTILITY_LOGGER_HPP_
 
-/**
- * @file libsbx/core/logger.hpp
- */
-
-#ifndef LIBSBX_CORE_LOGGER_HPP_
-#define LIBSBX_CORE_LOGGER_HPP_
-
-/**
- * @ingroup libsbx-core
- */
-
-#include <memory>
-#include <source_location>
-#include <unordered_map>
-#include <type_traits>
+#include <iostream>
 
 #include <fmt/format.h>
 
@@ -46,9 +10,11 @@
 #include <spdlog/sinks/basic_file_sink.h>
 
 #include <libsbx/utility/target.hpp>
+#include <libsbx/utility/string_literal.hpp>
 
-namespace sbx::core {
+namespace sbx::utility {
 
+template<string_literal Tag>
 class logger {
 
 public:
@@ -145,11 +111,11 @@ private:
       sinks.push_back(std::make_shared<spdlog::sinks::stdout_color_sink_mt>());
     }
 
-    auto logger = spdlog::logger{"logger", std::begin(sinks), std::end(sinks)};
+    auto logger = spdlog::logger{Tag, std::begin(sinks), std::end(sinks)};
 
     logger.set_pattern("[%Y-%m-%d %H:%M:%S] [%^%l%$] [%n] : %v");
 
-    if constexpr (utility::build_configuration_v == utility::build_configuration::debug) {
+    if constexpr (build_configuration_v == build_configuration::debug) {
       logger.set_level(spdlog::level::debug);
     } else {
       logger.set_level(spdlog::level::info);
@@ -160,7 +126,7 @@ private:
 
 }; // class logger
 
-} // namespace sbx::core
+} // namespace sbx::utility
 
 // [NOTE] KAJ 2024-01-19 : Enable formatting to underlying type for all enums
 template<typename Type>
@@ -176,4 +142,5 @@ struct fmt::formatter<Type> : public fmt::formatter<std::underlying_type_t<Type>
 
 }; // struct fmt::formatter<Type>
 
-#endif // LIBSBX_CORE_LOGGER_HPP_
+
+#endif // LIBSBX_UTILITY_LOGGER_HPP_

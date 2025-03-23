@@ -5,7 +5,7 @@
 #include <array>
 #include <map>
 
-#include <libsbx/core/logger.hpp>
+#include <libsbx/utility/logger.hpp>
 
 #include <libsbx/graphics/devices/extensions.hpp>
 
@@ -39,7 +39,7 @@ physical_device::physical_device(const instance& instance)
 	vkGetPhysicalDeviceMemoryProperties(_handle, &_memory_properties);
 	_msaa_samples = _get_max_usable_sample_count();
 
-  core::logger::debug("Selected GPU '{}'", _properties.deviceName);
+  utility::logger<"graphics">::debug("Selected GPU '{}'", _properties.deviceName);
 }
 
 physical_device::~physical_device() {
