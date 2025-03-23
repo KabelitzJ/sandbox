@@ -25,11 +25,11 @@ mesh::mesh(const std::filesystem::path& path)
     throw std::runtime_error{"No loader found for extension: " + extension};
   }
 
-  auto& loader = entry->second;
+  auto& [load, unload] = entry->second;
 
   auto timer = utility::timer{};
 
-  auto [vertices, indices, submeshes] = std::invoke(loader, path);
+  auto [vertices, indices, submeshes] = std::invoke(load, path);
 
   const auto vertices_count = vertices.size();
   const auto indices_count = vertices.size();

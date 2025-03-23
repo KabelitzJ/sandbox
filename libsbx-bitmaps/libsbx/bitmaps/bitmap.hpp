@@ -6,6 +6,7 @@
 #include <functional>
 #include <string>
 #include <unordered_map>
+#include <memory>
 
 #include <libsbx/utility/noncopyable.hpp>
 
@@ -16,7 +17,8 @@ namespace sbx::bitmaps {
 struct bitmap_data {
   std::uint32_t width;
   std::uint32_t height;
-  std::uint8_t* buffer;
+  std::uint8_t channels;
+  std::unique_ptr<std::uint8_t> buffer;
 }; // struct bitmap_data
 
 class bitmap : public io::loader_factory<bitmap, bitmap_data>, public utility::noncopyable {
@@ -31,7 +33,8 @@ private:
 
   std::uint32_t _width;
   std::uint32_t _height;
-  std::uint8_t* _buffer;
+  std::uint8_t _channels;
+  std::unique_ptr<std::uint8_t> _buffer;
 
 }; // class bitmap
 

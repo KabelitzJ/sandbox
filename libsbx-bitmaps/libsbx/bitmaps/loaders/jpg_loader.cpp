@@ -1,5 +1,7 @@
 #include <libsbx/bitmaps/loaders/jpg_loader.hpp>
 
+#include <fmt/format.h>
+
 #include <stb_image.h>
 
 namespace sbx::bitmaps {
@@ -7,7 +9,13 @@ namespace sbx::bitmaps {
 auto jpg_loader::load(const std::filesystem::path& path) -> bitmap_data {
   auto data = bitmap_data{};
 
-  // data.buffer = jp
+  stbi_set_flip_vertically_on_load(true);
+
+  data.buffer = std::unique_ptr<std::uint8_t>{stbi_load(path.string().c_str(), reinterpret_cast<int*>(&data.width), reinterpret_cast<int*>(&data.height), reinterpret_cast<int*>(&data.channels), STBI_rgb_alpha)};
+
+  if (!data.buffer) {
+    throw std::runtime_error{fmt::format("Failed to load image: {}", path.string())};
+  }
 
   return data;
 }

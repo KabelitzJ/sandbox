@@ -3,6 +3,8 @@
 .vscode/
 .vs/
 
+!/.vscode/tasks.json
+
 build/
 configs/
 targets/
