@@ -94,7 +94,7 @@ public:
 private:
 
   auto _is_valid() const noexcept -> bool {
-    return !_free_entities->contains(entity_traits::to_id(*_current));
+    return !_free_entities->contains(entity_traits::to_entity(*_current));
   }
 
   iterator_type _current;
@@ -120,7 +120,7 @@ class basic_registry {
 
 public:
 
-  using entity_type = entity_traits::entity_type;
+  using entity_type = entity_traits::value_type;
   using allocator_type = Allocator;
   using size_type = std::size_t;
   using iterator = registry_iterator<entity_type, entity_storage_type, free_list_type>;
@@ -175,7 +175,7 @@ public:
       return _entities.at(index);
     }
 
-    const auto id = static_cast<entity_traits::id_type>(_entities.size());
+    const auto id = static_cast<entity_traits::entity_type>(_entities.size());
 
     auto new_entity = entity_traits::construct(id);
 
@@ -189,13 +189,13 @@ public:
       storage->remove(entity);
     }
 
-    auto index = static_cast<std::size_t>(entity_traits::to_id(entity));
+    auto index = static_cast<std::size_t>(entity_traits::to_entity(entity));
     _free_entities.insert(index);
     _entities.at(index) = entity_traits::next(_entities.at(index));
   }
 
   auto is_valid_entity(const entity_type& entity) const noexcept -> bool {
-    auto index = static_cast<std::size_t>(entity_traits::to_id(entity));
+    auto index = static_cast<std::size_t>(entity_traits::to_entity(entity));
     return index < _entities.size() && entity == _entities.at(index);
   }
 

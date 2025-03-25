@@ -12,6 +12,8 @@
 
 #include <libsbx/memory/concepts.hpp>
 
+#include <libsbx/ecs/detail/sparse_set_iterator.hpp>
+
 namespace sbx::ecs {
 
 enum class deletion_policy : std::uint8_t {
@@ -29,27 +31,31 @@ class basic_sparse_set {
   using entity_traits = entity_traits<Entity>;
 
   using dense_storage_type = std::vector<Entity, Allocator>;
-  using sparse_storage_type = std::vector<typename allocator_traits::pointer, typename allocator_traits::rebind_alloc<allocator_traits::pointer>>;
+  using sparse_storage_type = std::vector<typename allocator_traits::pointer, typename allocator_traits::rebind_alloc<typename allocator_traits::pointer>>;
 
-  inline static constexpr auto max_size = static_cast<std::size_t>(entity_traits::to_id(null_entity));
+  using basic_iterator = detail::sparse_set_iterator<dense_storage_type>;
+
+  inline static constexpr auto max_size = static_cast<std::size_t>(entity_traits::to_entity(null_entity));
 
 public:
 
-  using size_type = std::size_t;
   using allocator_type = Allocator;
-  using entity_type = Entity;
-  using pointer = entity_type*;
-  using const_pointer = const entity_type*;
-  using reference = entity_type&;
-  using const_reference = const entity_type&;
+  using entity_type = entity_traits::value_type;
+  using version_type = entity_traits::version_type;
+  using pointer = typename dense_storage_type::pointer;
+  using reference = typename dense_storage_type::reference;
+  using size_type = std::size_t;
+  using difference_type = std::ptrdiff_t;
+  using iterator = basic_iterator;
+  using const_iterator = basic_iterator;
+  using reverse_iterator = std::reverse_iterator<iterator>;
+  using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
   basic_sparse_set(const deletion_policy policy = deletion_policy::unspecified, const allocator_type& allocator = allocator_type{})
   : _dense{allocator},
     _sparse{allocator},
     _policy{policy},
-    _head{_policy_to_head()} {
-    utility::assert_that(entity_traits::version_mask || _policy != deletion_policy::in_place, "Policy does not support zero-sized versions");
-  }
+    _head{_policy_to_head()} { }
 
   basic_sparse_set(const basic_sparse_set&) = delete;
 
@@ -110,18 +116,193 @@ public:
     return _dense.capacity();
   }
 
+  [[nodiscard]] auto extent() const noexcept -> size_type {
+    return _sparse.size() * entity_type::page_size;
+  }
+
+  [[nodiscard]] auto size() const noexcept -> size_type {
+    return _dense.size();
+  }
+
+  [[nodiscard]] auto is_empty() const noexcept -> bool {
+    return _dense.empty();
+  }
+
+  auto bump(const entity_type entity) -> version_type {
+    auto& element = _sparse_reference(entity);
+
+    utility::assert_that(entity != null_entity && element != tombstone_entity, "Cannot set the required version");
+
+    element = entity_traits::combine(entity_traits::to_integral(element), entity_traits::to_integral(entity));
+    _dense[_entity_to_position(element)] = entity;
+
+    return entity_traits::to_version(entity);
+  }
+
+  [[nodiscard]] auto begin() const noexcept -> iterator {
+    const auto position = static_cast<difference_type>(_dense.size());
+    return iterator{_dense, position};
+  }
+
+  [[nodiscard]] auto cbegin() const noexcept -> const_iterator {
+    return begin();
+  }
+
+  [[nodiscard]] auto end() const noexcept -> iterator {
+    return iterator{_dense, {}};
+  }
+
+  [[nodiscard]] auto cend() const noexcept -> const_iterator {
+    return end();
+  }
+
+  [[nodiscard]] bool contains(const entity_type entity) const noexcept {
+    constexpr auto capacity = entity_traits::entity_mask;
+    constexpr auto mask = entity_traits::to_integral(null_entity) & ~capacity;
+
+    const auto* element = _sparse_pointer(entity);
+
+    return element && (((mask & entity_traits::to_integral(entity)) ^ entity_traits::to_integral(*element)) < capacity);
+  }
+
+  [[nodiscard]] auto find(const entity_type entity) const noexcept -> const_iterator {
+    return contains(entity) ? _to_iterator(entity) : end();
+  }
+
+  [[nodiscard]] auto index(const entity_type entity) const noexcept -> size_type {
+    utility::assert_that(contains(entity), "Set does not contain entity");
+    return _entity_to_position(_sparse_reference(entity));
+  }
+
+  auto erase(const entity_type entity) -> void {
+    const auto it = _to_iterator(entity);
+    pop(it, it + 1u);
+  }
+
+  auto remove(const entity_type entity) -> bool {
+    if (!contains(entity)) {
+      return false;
+    }
+    
+    erase(entity);
+    return true;
+  }
+
+  void clear() {
+    pop_all();
+    _head = _policy_to_head();
+    _dense.clear();
+  }
+
 protected:
 
+  void swap_only(const basic_iterator iterator) {
+    utility::assert_that(_policy == deletion_policy::swap_only, "Deletion policy mismatch");
 
+    const auto position = index(*iterator);
+    bump(entity_traits::next(*iterator));
+    _swap_at(position, _head -= (position < _head));
+  }
+
+  auto swap_and_pop(const basic_iterator iterator) -> void {
+    utility::assert_that(_policy == deletion_policy::swap_and_pop, "Deletion policy mismatch");
+
+    auto& self = _sparse_reference(*iterator);
+    const auto entity = entity_traits::to_entity(self);
+    _sparse_reference(_dense.back()) = entity_traits::combine(entity, entity_traits::to_integral(_dense.back()));
+    _dense[static_cast<size_type>(entity)] = _dense.back();
+
+    utility::assert_that((_dense.back() = null_entity, true), "unnecessary but it helps to detect nasty bugs");
+
+    self = null_entity;
+    _dense.pop_back();
+  }
+
+  auto in_place_pop(const basic_iterator iterator) -> void {
+    utility::assert_that(_policy == deletion_policy::in_place, "Deletion policy mismatch");
+
+    const auto position = entity_to_pos(std::exchange(sparse_ref(*iterator), null_entity));
+    _dense[position] = entity_traits::combine(static_cast<typename entity_traits::entity_type>(std::exchange(_head, position)), tombstone_entity);
+  }
+
+  virtual auto pop(basic_iterator first, basic_iterator last) -> void {
+    if (first == last) {
+      return;
+    }
+
+    switch(_policy) {
+      case deletion_policy::swap_and_pop: {
+        for(; first != last; ++first) {
+          swap_and_pop(first);
+        }
+        break;
+      }
+      case deletion_policy::in_place: {
+        for(; first != last; ++first) {
+          in_place_pop(first);
+        }
+        break;
+      }
+      case deletion_policy::swap_only: {
+        for(; first != last; ++first) {
+          swap_only(first);
+        }
+        break;
+      }
+    }
+  }
+
+  auto pop_all() -> void {
+    for(auto&& element : _dense) {
+      _sparse_reference(element) = null_entity;
+    }
+
+    _head = _policy_to_head();
+    _dense.clear();
+  }
+
+  virtual auto try_emplace(const entity_type entity, const bool force_back) -> basic_iterator {
+    utility::assert_that(entity != null_entity && entity != tombstone_entity, "Invalid element");
+
+    auto& element = _assure_at_least(entity);
+    auto position = size();
+
+    if (_policy == deletion_policy::swap_and_pop) {
+      _dense.push_back(entity);
+      utility::assert_that(element == null_entity, "Slot not available");
+      element = entity_traits::combine(static_cast<typename entity_traits::entity_type>(_dense.size() - 1u), entity_traits::to_integral(entity));
+    } else {
+      if(element == null_entity) {
+        _dense.push_back(entity);
+        element = entity_traits::combine(static_cast<typename entity_traits::entity_type>(_dense.size() - 1u), entity_traits::to_integral(entity));
+      } else {
+        utility::assert_that(!(_entity_to_position(element) < _head), "Slot not available");
+        bump(entity);
+      }
+
+      position = _head++;
+      _swap_at(_entity_to_position(element), position);
+    }
+
+    return --(end() - static_cast<difference_type>(position));
+  }
 
 private:
+
+  [[nodiscard]] virtual auto get_at(const std::size_t) const -> const void* {
+    return nullptr;
+  }
+
+  virtual void swap_or_move([[maybe_unused]] const std::size_t lhs, [[maybe_unused]] const std::size_t rhs) {
+    utility::assert_that((_policy != deletion_policy::swap_only) || ((lhs < _head) == (rhs < _head)), "Cross swapping is not supported");
+  }
 
   [[nodiscard]] auto _policy_to_head() const noexcept -> size_type {
     return static_cast<size_type>(max_size * static_cast<size_type>(_policy != deletion_policy::swap_only));
   }
 
   [[nodiscard]] auto _entity_to_position(const entity_type entity) const noexcept {
-    return static_cast<size_type>(entity_traits::to_id(entity));
+    return static_cast<size_type>(entity_traits::to_entity(entity));
   }
 
   [[nodiscard]] auto _position_to_page(const size_type position) const noexcept {
@@ -132,7 +313,7 @@ private:
     const auto position = _entity_to_position(entity);
     const auto page = _position_to_page(position);
 
-    return (page < _sparse.size() && _sparse[page]) ? (_sparse[page] + utility::fast_mod<entity_traits::page_size>(position)) : nullptr;
+    return (page < _sparse.size() && _sparse[page]) ? (_sparse[page] + utility::fast_mod(entity_traits::page_size, position)) : nullptr;
   }
 
   [[nodiscard]] auto _sparse_reference(const entity_type entity) const -> reference {
@@ -141,11 +322,11 @@ private:
     const auto position = _entity_to_position(entity);
     const auto page = _position_to_page(position);
 
-    return _sparse[page][utility::fast_mod<entity_traits::page_size>(position)];
+    return _sparse[page][utility::fast_mod(entity_traits::page_size, position)];
   }
 
   void _release_sparse_pages() {
-    auto& page_allocator = _dense.get_allocator();
+    auto page_allocator = _dense.get_allocator();
 
     for(auto&& page : _sparse) {
       if(page != nullptr) {
@@ -154,6 +335,10 @@ private:
         page = nullptr;
       }
     }
+  }
+
+  [[nodiscard]] auto _to_iterator(const entity_type entity) const noexcept -> iterator {
+    return --(end() - static_cast<difference_type>(index(entity)));
   }
 
   [[nodiscard]] auto _assure_at_least(const entity_type entity) -> reference {
@@ -166,14 +351,24 @@ private:
 
     if(!_sparse[page]) {
       constexpr auto init = null_entity;
-      auto& page_allocator = _dense.get_allocator();
+      auto page_allocator = _dense.get_allocator();
 
       _sparse[page] = allocator_traits::allocate(page_allocator, entity_traits::page_size);
 
       std::uninitialized_fill(_sparse[page], _sparse[page] + entity_traits::page_size, init);
     }
 
-    return _sparse[page][utility::fast_mod<entity_traits::page_size>(position)];
+    return _sparse[page][utility::fast_mod(entity_traits::page_size, position)];
+  }
+
+  auto _swap_at(const size_type lhs, const size_type rhs) -> void {
+    auto& from = _dense[lhs];
+    auto& to = _dense[rhs];
+
+    _sparse_reference(from) = entity_traits::combine(static_cast<typename entity_traits::entity_type>(rhs), entity_traits::to_integral(from));
+    _sparse_reference(to) = entity_traits::combine(static_cast<typename entity_traits::entity_type>(lhs), entity_traits::to_integral(to));
+
+    std::swap(from, to);
   }
 
   dense_storage_type _dense;
