@@ -7,6 +7,8 @@
 
 #include <libsbx/utility/fast_mod.hpp>
 
+#include <libsbx/ecs/detail/iterable_adaptor.hpp>
+
 namespace sbx::ecs::detail {
 
 template<typename Container, std::size_t Page>
@@ -105,6 +107,60 @@ private:
   difference_type _offset;
 
 }; // class storage_iterator
+
+template<typename Iterator, typename... Other>
+class extended_storage_iterator final {
+
+  template<typename It, typename... Args>
+  friend class extended_storage_iterator;
+
+public:
+
+  using iterator = Iterator;
+  using value_type = decltype(std::tuple_cat(std::make_tuple(*std::declval<Iterator>()), std::forward_as_tuple(*std::declval<Other>()...)));
+  using pointer = input_iterator_pointer<value_type>;
+  using reference = value_type;
+  using difference_type = std::ptrdiff_t;
+  using iterator_category = std::input_iterator_tag;
+  using iterator_concept = std::forward_iterator_tag;
+
+  constexpr extended_storage_iterator()
+  : _values{} { }
+
+  constexpr extended_storage_iterator(iterator base, Other... other)
+  : _values{base, other...} { }
+
+  template<typename... Args, typename = std::enable_if_t<(!std::is_same_v<Other, Args> && ...) && (std::is_constructible_v<Other, Args> && ...)>>
+  constexpr extended_storage_iterator(const extended_storage_iterator<iterator, Args...> &other)
+  : _values{other._values} {}
+
+  constexpr auto operator++() noexcept -> extended_storage_iterator& {
+    return ++std::get<iterator>(_values), (++std::get<Other>(_values), ...), *this;
+  }
+
+  constexpr auto operator++(int) noexcept -> extended_storage_iterator {
+    const auto original = *this;
+    ++(*this);
+    return original;
+  }
+
+  [[nodiscard]] constexpr auto operator->() const noexcept -> pointer {
+    return operator*();
+  }
+
+  [[nodiscard]] constexpr auto operator*() const noexcept -> reference {
+    return {*std::get<iterator>(_values), *std::get<Other>(_values)...};
+  }
+
+  [[nodiscard]] constexpr auto base() const noexcept -> iterator {
+    return std::get<iterator>(_values);
+  }
+
+private:
+
+  std::tuple<iterator, Other...> _values;
+
+}; // class extended_storage_iterator
 
 } // namespace sbx::ecs::detail
 

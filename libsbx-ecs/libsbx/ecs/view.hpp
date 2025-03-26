@@ -10,8 +10,7 @@
 #include <libsbx/utility/type_list.hpp>
 
 #include <libsbx/memory/concepts.hpp>
-
-#include <libsbx/ecs/iterable_adaptor.hpp>
+#include <libsbx/memory/iterable_adaptor.hpp>
 
 namespace sbx::ecs {
 
@@ -80,31 +79,6 @@ private:
 
 }; // class view_iterator
 
-template<typename Type>
-struct input_iterator_pointer final {
-
-  using value_type = Type;
-  using pointer = value_type*;
-  using reference = value_type&;
-
-  constexpr input_iterator_pointer(value_type&& value) noexcept(std::is_nothrow_move_constructible_v<value_type>)
-  : _value{std::move(value)} {}
-
-
-  [[nodiscard]] constexpr pointer operator->() noexcept {
-    return std::addressof(_value);
-  }
-
-  [[nodiscard]] constexpr reference operator*() noexcept {
-    return _value;
-  }
-
-private:
-
-  value_type _value;
-
-}; // struct input_iterator_pointer
-
 template<typename Iterator, typename... Types>
 class extended_view_iterator final {
 
@@ -162,6 +136,20 @@ private:
 
 } // namespace detail
 
+template<typename... Types>
+struct type_list {
+  using type = type_list;
+  static constexpr auto size = sizeof...(Types);
+}; // struct type_list
+
+template<typename... Type>
+struct get_t final: type_list<Type...> {
+  explicit constexpr get_t() = default;
+}; // struct get_t
+
+template<typename... Type>
+inline constexpr get_t<Type...> get{};
+
 template<typename... Containers>
 class basic_view {
 
@@ -182,7 +170,7 @@ public:
   using size_type = std::size_t;
   using base_type = basic_common_type;
   using iterator = detail::view_iterator<base_type, sizeof...(Containers) - 1u>;
-  using iterable = iterable_adaptor<detail::extended_view_iterator<iterator, Containers...>>;
+  using iterable = memory::iterable_adaptor<detail::extended_view_iterator<iterator, Containers...>>;
 
   ~basic_view() = default;
   

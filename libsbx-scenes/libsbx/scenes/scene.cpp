@@ -32,8 +32,8 @@ namespace sbx::scenes {
 
 scene::scene(const std::filesystem::path& path)
 : _registry{}, 
-  _root{&_registry, _registry.create_entity()},
-  _camera{&_registry, _registry.create_entity()},
+  _root{&_registry, _registry.create()},
+  _camera{&_registry, _registry.create()},
   _light{math::vector3{-1.0, -1.0, -1.0}, math::color::white} {
   // [NOTE] KAJ 2023-10-17 : Initialize root node
   auto& root_id = _root.add_component<scenes::id>();
@@ -75,7 +75,7 @@ scene::scene(const std::filesystem::path& path)
 }
 
 auto scene::create_child_node(node& parent, const std::string& tag, const math::transform& transform) -> node {
-  auto node = scenes::node{&_registry, _registry.create_entity()};
+  auto node = scenes::node{&_registry, _registry.create()};
 
   auto& id = node.add_component<scenes::id>();
 
@@ -113,7 +113,7 @@ auto scene::destroy_node(const node& node) -> void {
 
   _nodes.erase(id);
 
-  _registry.destroy_entity(node._entity);
+  _registry.destroy(node._entity);
 }
 
 auto scene::world_transform(const node& node) -> math::matrix4x4 {

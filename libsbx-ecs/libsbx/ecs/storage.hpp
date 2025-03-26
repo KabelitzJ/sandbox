@@ -6,9 +6,11 @@
 #include <limits>
 #include <vector>
 #include <memory>
+#include <functional>
 
 #include <libsbx/memory/concepts.hpp>
 #include <libsbx/memory/observer_ptr.hpp>
+#include <libsbx/memory/iterable_adaptor.hpp>
 
 #include <libsbx/ecs/sparse_set.hpp>
 #include <libsbx/ecs/component.hpp>
@@ -86,32 +88,74 @@ public:
   }
 
   [[nodiscard]] auto get(const entity_type entity) const noexcept -> const value_type& {
-    return element_at(base_type::index(entity));
+    return _element_at(base_type::index(entity));
   }
 
   [[nodiscard]] auto get(const entity_type entity) noexcept -> value_type& {
     return const_cast<value_type&>(std::as_const(*this).get(entity));
   }
 
-  [[nodiscard]] std::tuple<const value_type&> get_as_tuple(const entity_type entity) const noexcept {
+  [[nodiscard]] auto get_as_tuple(const entity_type entity) const noexcept -> std::tuple<const value_type&> {
     return std::forward_as_tuple(get(entity));
   }
 
-  [[nodiscard]] std::tuple<value_type&> get_as_tuple(const entity_type entity) noexcept {
+  [[nodiscard]] auto get_as_tuple(const entity_type entity) noexcept -> std::tuple<value_type&> {
     return std::forward_as_tuple(get(entity));
+  }
+
+  [[nodiscard]] auto begin() noexcept -> iterator {
+    const auto position = static_cast<difference_type>(base_type::size());
+    return iterator{&_container, position};
+  }
+
+  [[nodiscard]] auto end() noexcept -> iterator {
+    return iterator{&_container, {}};
+  }
+
+  template<typename... Args>
+  requires (std::is_constructible_v<value_type, Args...>)
+  auto emplace(const entity_type entity, Args&&... args) -> value_type& {
+    if constexpr(std::is_aggregate_v<value_type> && (sizeof...(Args) != 0u || !std::is_default_constructible_v<value_type>)) {
+      const auto it = _emplace_element(entity, false, Type{std::forward<Args>(args)...});
+      return _element_at(static_cast<size_type>(it.index()));
+    } else {
+      const auto it = _emplace_element(entity, false, std::forward<Args>(args)...);
+      return _element_at(static_cast<size_type>(it.index()));
+    }
+  }
+
+  template<typename Function>
+  requires (std::is_invocable_v<Function, value_type&>)
+  auto patch(const entity_type entity, Function&& function) -> value_type& {
+    const auto index = base_type::index(entity);
+    auto& element = _element_at(index);
+
+    std::invoke(std::forward<Function>(function), element);
+
+    return element;
+  }
+
+  template<typename Iterator>
+  auto insert(iterator first, iterator last, const value_type& value = value_type{}) -> iterator {
+    for(; first != last; ++first) {
+      _emplace_element(*first, true, value);
+    }
+
+    return begin();
   }
 
 protected:
 
   auto pop(underlying_iterator first, underlying_iterator last) -> void override {
-    for(allocator_type allocator{get_allocator()}; first != last; ++first) {
+    auto allocator = get_allocator();
+    for(; first != last; ++first) {
       auto& element = _element_at(base_type::index(*first));
 
       if constexpr(component_traits::in_place_delete) {
         base_type::in_place_pop(first);
         allocator_traits::destroy(allocator, std::addressof(element));
       } else {
-        auto& other = element_at(base_type::size() - 1u);
+        auto& other = _element_at(base_type::size() - 1u);
         [[maybe_unused]] auto unused = std::exchange(element, std::move(other));
         allocator_traits::destroy(allocator, std::addressof(other));
         base_type::swap_and_pop(first);
@@ -135,30 +179,26 @@ protected:
     }
   }
 
-  auto try_emplace([[maybe_unused]] const entity_type entity, [[maybe_unused]] const bool force_back, const void* value) -> underlying_iterator override {
-    if(value != nullptr) {
-      if constexpr(std::is_copy_constructible_v<value_type>) {
-        return _emplace_element(entity, force_back, *static_cast<const value_type *>(value));
-      } else {
-        return base_type::end();
-      }
+  auto try_emplace([[maybe_unused]] const entity_type entity, [[maybe_unused]] const bool force_back) -> underlying_iterator override {
+    if constexpr(std::is_default_constructible_v<value_type>) {
+      return _emplace_element(entity, force_back);
     } else {
-      if constexpr(std::is_default_constructible_v<value_type>) {
-        return _emplace_element(entity, force_back);
-      } else {
-        return base_type::end();
-      }
+      return base_type::end();
     }
   }
 
 private:
 
-  auto _element_at(const std::size_t position) const {
+  auto _element_at(const std::size_t position) const -> const value_type& {
     return _container[position / component_traits::page_size][utility::fast_mod(position, component_traits::page_size)];
   }
 
+  auto _element_at(const std::size_t position) -> value_type& {
+    return const_cast<value_type&>(std::as_const(*this)._element_at(position));
+  }
+
   auto _assure_at_least(const std::size_t position) {
-    const auto index = position / component_traits::age_size;
+    const auto index = position / component_traits::page_size;
 
     if(index >= _container.size()) {
       auto current = _container.size();
@@ -167,7 +207,7 @@ private:
 
       try {
         for(const auto last = _container.size(); current < last; ++current) {
-          _container[current] = alloc_traits::allocate(allocator, component_traits::page_size);
+          _container[current] = allocator_traits::allocate(allocator, component_traits::page_size);
         }
       } catch (...) {
         _container.resize(current);
@@ -179,13 +219,14 @@ private:
   }
 
   template<typename... Args>
-  auto _emplace_element(const entity_type entity, const bool force_back, Args &&...args) {
+  requires (std::is_constructible_v<value_type, Args...>)
+  auto _emplace_element(const entity_type entity, const bool force_back, Args&&... args) {
     const auto iterator = base_type::try_emplace(entity, force_back);
 
     try {
-      auto* element = std::to_address(assure_at_least(static_cast<size_type>(iterator.index())));
+      auto* element = std::to_address(_assure_at_least(static_cast<size_type>(iterator.index())));
       std::uninitialized_construct_using_allocator(element, get_allocator(), std::forward<Args>(args)...);
-    } catch {
+    } catch (...) {
       base_type::pop(iterator, iterator + 1u);
       throw;
     }
@@ -228,6 +269,110 @@ private:
   }
 
   container_type _container;
+
+}; // class basic_storage
+
+template<typename Entity, memory::allocator_for<Entity> Allocator>   
+class basic_storage<Entity, Entity, Allocator> : public basic_sparse_set<Entity, Allocator> { 
+
+  using allocator_traits = std::allocator_traits<Allocator>;
+  using underlying_iterator = typename basic_sparse_set<Entity, Allocator>::basic_iterator;
+  using entity_traits = entity_traits<Entity>;
+
+public:
+
+  using allocator_type = Allocator;
+  using base_type = basic_sparse_set<Entity, Allocator>;
+  using value_type = void;
+  using entity_type = Entity;
+  using size_type = std::size_t;
+  using difference_type = std::ptrdiff_t;
+  using iterable = memory::iterable_adaptor<detail::extended_storage_iterator<typename base_type::iterator>>;
+  using const_iterable = memory::iterable_adaptor<detail::extended_storage_iterator<typename base_type::const_iterator>>;
+
+  static constexpr auto storage_policy = deletion_policy::swap_only;
+
+  basic_storage()
+  : basic_storage{allocator_type{}} { }
+
+  explicit basic_storage(const allocator_type& allocator)
+  : base_type{storage_policy, allocator} {}
+
+  basic_storage(const basic_storage& other) = delete;
+
+  basic_storage(basic_storage&& other) noexcept
+  : base_type{std::move(other)},
+    _placeholder{other._placeholder} {}
+
+  ~basic_storage() override = default;
+
+  auto operator=(const basic_storage& other) -> basic_storage& = delete;
+
+  auto operator=(basic_storage&& other) noexcept -> basic_storage& {
+    _placeholder = other._placeholder;
+    base_type::operator=(std::move(other));
+    return *this;
+  }
+
+  auto generate() -> entity_type {
+    const auto length = base_type::free_list();
+    const auto entity = (length == base_type::size()) ? _next() : base_type::data()[length];
+
+    return *base_type::try_emplace(entity, true);
+  }
+
+  auto generate(const entity_type hint) -> entity_type {
+    if (hint != null_entity && hint != tombstone_entity) {
+      if (const auto current = entity_traits::construct(entity_traits::to_entity(hint), base_type::current(hint)); current == tombstone_entity || !(base_type::index(current) < base_type::free_list())) {
+        return *base_type::try_emplace(hint, true);
+      }
+    }
+
+    return generate();
+  }
+
+  [[nodiscard]] auto each() noexcept -> iterable {
+    return std::as_const(*this).each();
+  }
+
+  [[nodiscard]] auto each() const noexcept -> const_iterable {
+    const auto iterator = base_type::cend();
+    const auto offset = static_cast<difference_type>(base_type::free_list());
+
+    return const_iterable{iterator - offset, iterator};
+  }
+
+protected:
+
+  auto pop_all() -> void override {
+    base_type::pop_all();
+    _placeholder = {};
+  }
+
+  auto try_emplace(const entity_type hint, const bool) -> underlying_iterator override {
+    return base_type::find(generate(hint));
+  }
+
+private:
+
+  auto _from_placeholder() noexcept {
+    const auto entity = entity_traits::combine(static_cast<typename entity_traits::entity_type>(_placeholder), {});
+    utility::assert_that(entity != null_entity, "No more entities available");
+    _placeholder += static_cast<size_type>(entity != null_entity);
+    return entity;
+  }
+
+  auto _next() noexcept {
+    auto entity = _from_placeholder();
+
+    while(base_type::current(entity) != entity_traits::to_version(tombstone_entity) && entity != null_entity) {
+      entity = _from_placeholder();
+    }
+
+    return entity;
+  }
+
+  size_type _placeholder;
 
 }; // class basic_storage
 

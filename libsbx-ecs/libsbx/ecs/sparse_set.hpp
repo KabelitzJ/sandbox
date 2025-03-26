@@ -33,8 +33,6 @@ class basic_sparse_set {
   using dense_storage_type = std::vector<Entity, Allocator>;
   using sparse_storage_type = std::vector<typename allocator_traits::pointer, typename allocator_traits::rebind_alloc<typename allocator_traits::pointer>>;
 
-  using basic_iterator = detail::sparse_set_iterator<dense_storage_type>;
-
   inline static constexpr auto max_size = static_cast<std::size_t>(entity_traits::to_entity(null_entity));
 
 public:
@@ -43,11 +41,12 @@ public:
   using entity_type = entity_traits::value_type;
   using version_type = entity_traits::version_type;
   using pointer = typename dense_storage_type::pointer;
+  using const_pointer = typename dense_storage_type::const_pointer;
   using reference = typename dense_storage_type::reference;
   using size_type = std::size_t;
   using difference_type = std::ptrdiff_t;
-  using iterator = basic_iterator;
-  using const_iterator = basic_iterator;
+  using iterator = detail::sparse_set_iterator<dense_storage_type>;
+  using const_iterator = iterator;
   using reverse_iterator = std::reverse_iterator<iterator>;
   using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
@@ -128,6 +127,18 @@ public:
     return _dense.empty();
   }
 
+  [[nodiscard]] auto is_contiguous() const noexcept -> bool {
+    return (_policy != deletion_policy::in_place) || (_head == max_size);
+  }
+
+  [[nodiscard]] auto data() const noexcept -> const_pointer {
+    return _dense.data();
+  }
+
+  [[nodiscard]] auto data() noexcept -> pointer {
+    return _dense.data();
+  }
+
   auto bump(const entity_type entity) -> version_type {
     auto& element = _sparse_reference(entity);
 
@@ -165,6 +176,13 @@ public:
     return element && (((mask & entity_traits::to_integral(entity)) ^ entity_traits::to_integral(*element)) < capacity);
   }
 
+  [[nodiscard]] auto current(const entity_type entity) const noexcept -> version_type {
+    const auto* element = _sparse_pointer(entity);
+    constexpr auto fallback = entity_traits::to_version(tombstone_entity);
+
+    return element ? entity_traits::to_version(*element) : fallback;
+  }
+
   [[nodiscard]] auto find(const entity_type entity) const noexcept -> const_iterator {
     return contains(entity) ? _to_iterator(entity) : end();
   }
@@ -196,6 +214,8 @@ public:
 
 protected:
 
+  using basic_iterator = iterator;
+
   void swap_only(const basic_iterator iterator) {
     utility::assert_that(_policy == deletion_policy::swap_only, "Deletion policy mismatch");
 
@@ -221,7 +241,7 @@ protected:
   auto in_place_pop(const basic_iterator iterator) -> void {
     utility::assert_that(_policy == deletion_policy::in_place, "Deletion policy mismatch");
 
-    const auto position = entity_to_pos(std::exchange(sparse_ref(*iterator), null_entity));
+    const auto position = _entity_to_position(std::exchange(_sparse_reference(*iterator), null_entity));
     _dense[position] = entity_traits::combine(static_cast<typename entity_traits::entity_type>(std::exchange(_head, position)), tombstone_entity);
   }
 
@@ -252,7 +272,7 @@ protected:
     }
   }
 
-  auto pop_all() -> void {
+  virtual auto pop_all() -> void {
     for(auto&& element : _dense) {
       _sparse_reference(element) = null_entity;
     }
