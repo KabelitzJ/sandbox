@@ -46,6 +46,7 @@ target_link_libraries(
     # Internal dependencies
     libsbx::utility
     libsbx::io
+    libsbx::assets
 )
 
 set_target_properties(
