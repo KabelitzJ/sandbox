@@ -12,7 +12,7 @@
 
 #include <libsbx/io/loader_factory.hpp>
 
-#include <libsbx/assets/asset.hpp>
+// #include <libsbx/assets/asset.hpp>
 
 namespace sbx::bitmaps {
 
@@ -23,7 +23,7 @@ struct bitmap_data {
   std::uint8_t* buffer;
 }; // struct bitmap_data
 
-class bitmap : public io::loader_factory<bitmap, bitmap_data>, public assets::asset<assets::asset_type::texture> {
+class bitmap : public io::loader_factory<bitmap, bitmap_data> { //, public assets::asset<assets::asset_type::texture> {
 
 public:
 
