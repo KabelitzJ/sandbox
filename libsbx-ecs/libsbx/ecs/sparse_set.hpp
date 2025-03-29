@@ -250,21 +250,21 @@ protected:
       return;
     }
 
-    switch(_policy) {
+    switch (_policy) {
       case deletion_policy::swap_and_pop: {
-        for(; first != last; ++first) {
+        for (; first != last; ++first) {
           swap_and_pop(first);
         }
         break;
       }
       case deletion_policy::in_place: {
-        for(; first != last; ++first) {
+        for (; first != last; ++first) {
           in_place_pop(first);
         }
         break;
       }
       case deletion_policy::swap_only: {
-        for(; first != last; ++first) {
+        for (; first != last; ++first) {
           swap_only(first);
         }
         break;
@@ -273,7 +273,7 @@ protected:
   }
 
   virtual auto pop_all() -> void {
-    for(auto&& element : _dense) {
+    for (auto&& element : _dense) {
       _sparse_reference(element) = null_entity;
     }
 
@@ -292,7 +292,7 @@ protected:
       utility::assert_that(element == null_entity, "Slot not available");
       element = entity_traits::combine(static_cast<typename entity_traits::entity_type>(_dense.size() - 1u), entity_traits::to_integral(entity));
     } else {
-      if(element == null_entity) {
+      if (element == null_entity) {
         _dense.push_back(entity);
         element = entity_traits::combine(static_cast<typename entity_traits::entity_type>(_dense.size() - 1u), entity_traits::to_integral(entity));
       } else {
@@ -348,8 +348,8 @@ private:
   void _release_sparse_pages() {
     auto page_allocator = _dense.get_allocator();
 
-    for(auto&& page : _sparse) {
-      if(page != nullptr) {
+    for (auto&& page : _sparse) {
+      if (page != nullptr) {
         std::destroy(page, page + entity_traits::page_size);
         allocator_traits::deallocate(page_allocator, page, entity_traits::page_size);
         page = nullptr;
@@ -365,11 +365,11 @@ private:
     const auto position = _entity_to_position(entity);
     const auto page = _position_to_page(position);
 
-    if(page >= _sparse.size()) {
+    if (page >= _sparse.size()) {
       _sparse.resize(page + 1u, nullptr);
     }
 
-    if(!_sparse[page]) {
+    if (!_sparse[page]) {
       constexpr auto init = null_entity;
       auto page_allocator = _dense.get_allocator();
 

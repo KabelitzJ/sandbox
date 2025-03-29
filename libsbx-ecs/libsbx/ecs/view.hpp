@@ -38,13 +38,13 @@ public:
   : _current{current},
     _end{end},
     _containers{containers} {
-    while(_current != _end && !_is_valid()) {
+    while (_current != _end && !_is_valid()) {
       ++_current;
     }
   }
 
   auto operator++() noexcept -> view_iterator& {
-    while(++_current != _end && !_is_valid()) {}
+    while (++_current != _end && !_is_valid()) {}
     return *this;
   }
 
@@ -87,7 +87,7 @@ public:
   using iterator_type = Iterator;
   using difference_type = std::ptrdiff_t;
   using value_type = decltype(std::tuple_cat(std::make_tuple(*std::declval<Iterator>()), std::declval<Types>().as_tuple({})...));
-  using pointer = input_iterator_pointer<value_type>;
+  using pointer = memory::input_iterator_pointer<value_type>;
   using reference = value_type;
   using iterator_category = std::input_iterator_tag;
 
@@ -199,9 +199,9 @@ public:
 
   template<typename... Types>
   auto get(const entity_type entity) const -> decltype(auto) {
-    if constexpr(sizeof...(Types) == 0) {
+    if constexpr (sizeof...(Types) == 0) {
       return std::apply([entity](auto*... container) { return std::tuple_cat(container->as_tuple(entity)...); }, _containers);
-    } else if constexpr(sizeof...(Types) == 1) {
+    } else if constexpr (sizeof...(Types) == 1) {
       return (storage<index_of<Types>>().get(entity), ...);
     } else {
       return std::tuple_cat(storage<index_of<Types>>().as_tuple(entity)...);

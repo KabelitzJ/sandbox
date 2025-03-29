@@ -81,7 +81,7 @@ public:
   }
 
   auto reserve(const size_type capacity) -> void override {
-    if(capacity != 0u) {
+    if (capacity != 0u) {
       base_type::reserve(capacity);
       _assure_at_least(capacity - 1u);
     }
@@ -115,7 +115,7 @@ public:
   template<typename... Args>
   requires (std::is_constructible_v<value_type, Args...>)
   auto emplace(const entity_type entity, Args&&... args) -> value_type& {
-    if constexpr(std::is_aggregate_v<value_type> && (sizeof...(Args) != 0u || !std::is_default_constructible_v<value_type>)) {
+    if constexpr (std::is_aggregate_v<value_type> && (sizeof...(Args) != 0u || !std::is_default_constructible_v<value_type>)) {
       const auto it = _emplace_element(entity, false, Type{std::forward<Args>(args)...});
       return _element_at(static_cast<size_type>(it.index()));
     } else {
@@ -137,7 +137,7 @@ public:
 
   template<typename Iterator>
   auto insert(iterator first, iterator last, const value_type& value = value_type{}) -> iterator {
-    for(; first != last; ++first) {
+    for (; first != last; ++first) {
       _emplace_element(*first, true, value);
     }
 
@@ -148,10 +148,10 @@ protected:
 
   auto pop(underlying_iterator first, underlying_iterator last) -> void override {
     auto allocator = get_allocator();
-    for(; first != last; ++first) {
+    for (; first != last; ++first) {
       auto& element = _element_at(base_type::index(*first));
 
-      if constexpr(component_traits::in_place_delete) {
+      if constexpr (component_traits::in_place_delete) {
         base_type::in_place_pop(first);
         allocator_traits::destroy(allocator, std::addressof(element));
       } else {
@@ -166,9 +166,9 @@ protected:
   auto pop_all() -> void override {
     auto allocator = get_allocator();
 
-    for(auto first = base_type::begin(); !(first.index() < 0); ++first) {
-      if constexpr(component_traits::in_place_delete) {
-        if(*first != tombstone_entity) {
+    for (auto first = base_type::begin(); !(first.index() < 0); ++first) {
+      if constexpr (component_traits::in_place_delete) {
+        if (*first != tombstone_entity) {
           base_type::in_place_pop(first);
           allocator_traits::destroy(allocator, std::addressof(_element_at(static_cast<size_type>(first.index()))));
         }
@@ -180,7 +180,7 @@ protected:
   }
 
   auto try_emplace([[maybe_unused]] const entity_type entity, [[maybe_unused]] const bool force_back) -> underlying_iterator override {
-    if constexpr(std::is_default_constructible_v<value_type>) {
+    if constexpr (std::is_default_constructible_v<value_type>) {
       return _emplace_element(entity, force_back);
     } else {
       return base_type::end();
@@ -200,13 +200,13 @@ private:
   auto _assure_at_least(const std::size_t position) {
     const auto index = position / component_traits::page_size;
 
-    if(index >= _container.size()) {
+    if (index >= _container.size()) {
       auto current = _container.size();
       auto allocator = get_allocator();
       _container.resize(index + 1u, nullptr);
 
       try {
-        for(const auto last = _container.size(); current < last; ++current) {
+        for (const auto last = _container.size(); current < last; ++current) {
           _container[current] = allocator_traits::allocate(allocator, component_traits::page_size);
         }
       } catch (...) {
@@ -238,9 +238,9 @@ private:
     const auto from = (size + component_traits::page_size - 1u) / component_traits::page_size;
     auto allocator = get_allocator();
 
-    for(auto position = size, length = base_type::size(); position < length; ++position) {
-      if constexpr(component_traits::in_place_delete) {
-        if(base_type::data()[position] != tombstone_entity) {
+    for (auto position = size, length = base_type::size(); position < length; ++position) {
+      if constexpr (component_traits::in_place_delete) {
+        if (base_type::data()[position] != tombstone_entity) {
           allocator_traits::destroy(allocator, std::addressof(_element_at(position)));
         }
       } else {
@@ -248,7 +248,7 @@ private:
       }
     }
 
-    for(auto position = from, last = _container.size(); position < last; ++position) {
+    for (auto position = from, last = _container.size(); position < last; ++position) {
       allocator_traits::deallocate(allocator, _container[position], component_traits::page_size);
     }
 
@@ -365,7 +365,7 @@ private:
   auto _next() noexcept {
     auto entity = _from_placeholder();
 
-    while(base_type::current(entity) != entity_traits::to_version(tombstone_entity) && entity != null_entity) {
+    while (base_type::current(entity) != entity_traits::to_version(tombstone_entity) && entity != null_entity) {
       entity = _from_placeholder();
     }
 

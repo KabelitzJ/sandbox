@@ -150,7 +150,7 @@ public:
   template<typename Callable>
   requires (std::is_invocable_v<Callable, Args...> || (std::is_member_function_pointer_v<Callable> && function_traits<Callable>::is_disconnectable_v))
   auto disconnect(const Callable& callable) -> std::size_t {
-    return disconnect_if([&](const auto& slot) {
+    return disconnect_if ([&](const auto& slot) {
       return slot->has_full_callable(callable);
     });
   }
@@ -158,14 +158,14 @@ public:
   template<typename Object>
   requires (!std::is_invocable_v<Object, Args...> && !std::is_member_function_pointer_v<Object>)
   auto disconnect(const Object& object) -> std::size_t {
-    return disconnect_if([&](const auto& slot) {
+    return disconnect_if ([&](const auto& slot) {
       return slot->has_object(object);
     });
   }
 
   template<typename Callable, typename Object>
   auto disconnect(const Callable& callable, const Object& object) -> std::size_t {
-    return disconnect_if([&] (const auto& slot) {
+    return disconnect_if ([&] (const auto& slot) {
       return slot->has_object(object) && slot->has_callable(callable);
     });
   }
@@ -213,7 +213,7 @@ protected:
 
   template<typename Condition>
   requires (std::is_invocable_r_v<bool, Condition, const slot_ptr&>)
-  auto disconnect_if(Condition&& condition) -> std::size_t {
+  auto disconnect_if (Condition&& condition) -> std::size_t {
     auto lock = lock_type{_mutex};
 
     auto& groups = cow_write(_slots);

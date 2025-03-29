@@ -13,6 +13,7 @@
 
 #include <libsbx/memory/concepts.hpp>
 #include <libsbx/memory/observer_ptr.hpp>
+#include <libsbx/memory/dense_map.hpp>
 
 #include <libsbx/ecs/entity.hpp>
 #include <libsbx/ecs/sparse_set.hpp>
@@ -81,7 +82,7 @@ class basic_registry {
   using base_type = basic_sparse_set<Entity, Allocator>;
   using allocator_traits = std::allocator_traits<Allocator>;
 
-  using pool_container_type = std::unordered_map<std::uint32_t, std::shared_ptr<base_type>, std::identity, std::equal_to<>, memory::rebound_allocator_t<Allocator, std::pair<const std::uint32_t, std::shared_ptr<base_type>>>>;
+  using pool_container_type = memory::dense_map<std::uint32_t, std::shared_ptr<base_type>, std::identity, std::equal_to<>, memory::rebound_allocator_t<Allocator, std::pair<const std::uint32_t, std::shared_ptr<base_type>>>>;
   using entity_traits = entity_traits<Entity>;
 
   template<typename Type>
@@ -164,7 +165,7 @@ public:
 
   template<typename... Type>
   [[nodiscard]] auto get([[maybe_unused]] const entity_type entity) const -> decltype(auto) {
-    if constexpr(sizeof...(Type) == 1u) {
+    if constexpr (sizeof...(Type) == 1u) {
       return (_assure<std::remove_const_t<Type>>()->get(entity), ...);
     } else {
       return std::forward_as_tuple(get<Type>(entity)...);
@@ -173,7 +174,7 @@ public:
 
   template<typename... Type>
   [[nodiscard]] auto get([[maybe_unused]] const entity_type entity) -> decltype(auto) {
-    if constexpr(sizeof...(Type) == 1u) {
+    if constexpr (sizeof...(Type) == 1u) {
       return (static_cast<storage_for_type<Type>&>(_assure<std::remove_const_t<Type>>()).get(entity), ...);
     } else {
       return std::forward_as_tuple(get<Type>(entity)...);
@@ -190,7 +191,7 @@ public:
 
   template<typename... Type>
   [[nodiscard]] auto try_get([[maybe_unused]] const entity_type entity) const {
-    if constexpr(sizeof...(Type) == 1u) {
+    if constexpr (sizeof...(Type) == 1u) {
       const auto* pool = _assure<std::remove_const_t<Type>...>();
       return (pool && pool->contains(entity)) ? std::addressof(pool->get(entity)) : nullptr;
     } else {
@@ -200,7 +201,7 @@ public:
 
   template<typename... Type>
   [[nodiscard]] auto try_get([[maybe_unused]] const entity_type entity) {
-    if constexpr(sizeof...(Type) == 1u) {
+    if constexpr (sizeof...(Type) == 1u) {
       return (const_cast<Type*>(std::as_const(*this).template try_get<Type>(entity)), ...);
     } else {
       return std::make_tuple(try_get<Type>(entity)...);
@@ -240,7 +241,7 @@ private:
   [[nodiscard]] auto& _assure([[maybe_unused]] const std::uint32_t id = type_index<Type>::value()) {
     using storage_type = storage_for_type<Type>;
 
-    if(auto iterator = _pools.find(id); iterator != _pools.cend()) {
+    if (auto iterator = _pools.find(id); iterator != _pools.cend()) {
       return static_cast<storage_type&>(*iterator->second);
     }
 
@@ -249,7 +250,7 @@ private:
 
     auto pool = pool_type{};
 
-    if constexpr(std::is_void_v<Type> && !std::is_constructible_v<storage_allocator_type, allocator_type>) {
+    if constexpr (std::is_void_v<Type> && !std::is_constructible_v<storage_allocator_type, allocator_type>) {
       pool = std::allocate_shared<storage_type>(get_allocator(), storage_allocator_type{});
     } else {
       pool = std::allocate_shared<storage_type>(get_allocator(), get_allocator());
@@ -263,7 +264,7 @@ private:
   template<typename Type>
   requires (std::is_same_v<Type, std::decay_t<Type>> && !std::is_same_v<Type, entity_type>)
   [[nodiscard]] const auto* _assure([[maybe_unused]] const std::uint32_t id = type_index<Type>::value()) const {
-    if(const auto iterator = _pools.find(id); iterator != _pools.cend()) {
+    if (const auto iterator = _pools.find(id); iterator != _pools.cend()) {
       return static_cast<const storage_for_type<Type>*>(iterator->second.get());
     }
 

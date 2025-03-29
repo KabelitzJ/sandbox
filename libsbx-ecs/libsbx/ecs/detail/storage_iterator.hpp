@@ -7,7 +7,7 @@
 
 #include <libsbx/utility/fast_mod.hpp>
 
-#include <libsbx/ecs/detail/iterable_adaptor.hpp>
+#include <libsbx/memory/iterable_adaptor.hpp>
 
 namespace sbx::ecs::detail {
 
@@ -118,7 +118,7 @@ public:
 
   using iterator = Iterator;
   using value_type = decltype(std::tuple_cat(std::make_tuple(*std::declval<Iterator>()), std::forward_as_tuple(*std::declval<Other>()...)));
-  using pointer = input_iterator_pointer<value_type>;
+  using pointer = memory::input_iterator_pointer<value_type>;
   using reference = value_type;
   using difference_type = std::ptrdiff_t;
   using iterator_category = std::input_iterator_tag;

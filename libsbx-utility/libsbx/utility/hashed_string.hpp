@@ -7,6 +7,8 @@
 
 #include <libsbx/utility/hash.hpp>
 
+#include <fmt/format.h>
+
 namespace sbx::utility {
 
 template<character Char, typename Hash = std::uint64_t, typename HashFunction = fnv1a_hash<Char, Hash>>
@@ -93,6 +95,21 @@ inline auto operator""_hs(const wchar_t* string, const std::size_t length) -> ha
 } // namespace literals
 
 } // namespace sbx::utility
+
+template<sbx::utility::character Char, typename Hash, typename HashFunction>
+struct fmt::formatter<sbx::utility::basic_hashed_string<Char, Hash, HashFunction>> {
+
+  template<typename ParseContext>
+  constexpr auto parse(ParseContext& ctx) -> decltype(ctx.begin()) {
+    return ctx.begin();
+  }
+
+  template<typename FormatContext>
+  auto format(const sbx::utility::basic_hashed_string<Char, Hash, HashFunction>& string, FormatContext& ctx) const -> decltype(ctx.out()) {
+    return fmt::format_to(ctx.out(), "{}", string.c_str());
+  }
+
+}; // struct fmt::formatter
 
 template<sbx::utility::character Char, typename Hash, typename HashFunction>
 struct std::hash<sbx::utility::basic_hashed_string<Char, Hash, HashFunction>> {
