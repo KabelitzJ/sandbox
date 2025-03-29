@@ -32,7 +32,8 @@ public:
 
   using allocator_type = Allocator;
   using base_type = underlying_type;
-  using value_type = Type;
+  using element_type = Type;
+  using value_type = element_type;
   using entity_type = Entity;
   using size_type = std::size_t;
   using difference_type = std::ptrdiff_t;
@@ -42,6 +43,8 @@ public:
   using const_iterator = detail::storage_iterator<const container_type, component_traits::page_size>;
   using reverse_iterator = std::reverse_iterator<iterator>;
   using const_reverse_iterator = std::reverse_iterator<const_iterator>;
+  using iterable = memory::iterable_adaptor<detail::extended_storage_iterator<typename base_type::iterator, iterator>>;
+  using const_iterable = memory::iterable_adaptor<detail::extended_storage_iterator<typename base_type::const_iterator, const_iterator>>;
 
   static constexpr auto storage_policy = static_cast<deletion_policy>(component_traits::in_place_delete);
 
@@ -103,9 +106,26 @@ public:
     return std::forward_as_tuple(get(entity));
   }
 
+  [[nodiscard]] auto cbegin() const noexcept -> const_iterator {
+    const auto position = static_cast<difference_type>(base_type::size());
+    return const_iterator{&_container, position};
+  }
+
+  [[nodiscard]] auto begin() const noexcept -> const_iterator {
+    return cbegin();
+  }
+
   [[nodiscard]] auto begin() noexcept -> iterator {
     const auto position = static_cast<difference_type>(base_type::size());
     return iterator{&_container, position};
+  }
+
+  [[nodiscard]] auto cend() const noexcept -> const_iterator {
+    return const_iterator{&_container, {}};
+  }
+
+  [[nodiscard]] auto end() const noexcept -> const_iterator {
+    return cend();
   }
 
   [[nodiscard]] auto end() noexcept -> iterator {
@@ -142,6 +162,14 @@ public:
     }
 
     return begin();
+  }
+
+  [[nodiscard]] auto each() noexcept -> iterable {
+    return iterable{{base_type::begin(), begin()}, {base_type::end(), end()}};
+  }
+
+  [[nodiscard]] auto each() const noexcept -> const_iterable {
+      return const_iterable{{base_type::cbegin(), cbegin()}, {base_type::cend(), cend()}};
   }
 
 protected:
@@ -296,7 +324,8 @@ public:
   : basic_storage{allocator_type{}} { }
 
   explicit basic_storage(const allocator_type& allocator)
-  : base_type{storage_policy, allocator} {}
+  : base_type{storage_policy, allocator},
+    _placeholder{0u} {}
 
   basic_storage(const basic_storage& other) = delete;
 
@@ -315,8 +344,10 @@ public:
   }
 
   auto generate() -> entity_type {
-    const auto length = base_type::free_list();
-    const auto entity = (length == base_type::size()) ? _next() : base_type::data()[length];
+    const auto index = base_type::free_list();
+    // const auto entity = (length == base_type::size()) ? _next() : base_type::data()[length];
+    const auto size = base_type::size();
+    const auto entity = (index == size) ? _next() : base_type::data()[index];
 
     return *base_type::try_emplace(entity, true);
   }

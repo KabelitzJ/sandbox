@@ -218,7 +218,7 @@ public:
 
   template<typename Type, typename... Other>
   [[nodiscard]] auto view() -> basic_view<get_t<storage_for_type<Type>, storage_for_type<Other>...>> {
-    return {_assure<std::remove_const_t<Type>>(), _assure<std::remove_const_t<Other>>()...};
+    return basic_view<get_t<storage_for_type<Type>, storage_for_type<Other>...>>{_assure<std::remove_const_t<Type>>(), _assure<std::remove_const_t<Other>>()...};
   }
 
 private:

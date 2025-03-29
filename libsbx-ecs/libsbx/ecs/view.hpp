@@ -141,6 +141,160 @@ private:
 
 }; // class basic_common_view
 
+template<typename Type, deletion_policy Policy>
+requires (std::is_same_v<std::remove_const_t<std::remove_reference_t<Type>>, Type>)
+class basic_storage_view {
+
+public:
+
+  using common_type = Type;
+  using entity_type = typename common_type::entity_type;
+  using size_type = std::size_t;
+  using difference_type = std::ptrdiff_t;
+  using iterator = std::conditional_t<Policy == deletion_policy::in_place, detail::view_iterator<common_type, true, 1u>, typename common_type::iterator>;
+  using reverse_iterator = std::conditional_t<Policy == deletion_policy::in_place, void, typename common_type::reverse_iterator>;
+
+  [[nodiscard]] auto handle() const noexcept -> const common_type* {
+    return _leading;
+  }
+
+  template<typename..., deletion_policy Pol = Policy>
+  requires (Pol != deletion_policy::in_place)
+  [[nodiscard]] auto size() const noexcept -> size_type {
+    if constexpr (Policy == deletion_policy::swap_and_pop) {
+      return _leading ? _leading->size() : size_type{};
+    } else {
+      static_assert(Policy == deletion_policy::swap_only, "Unexpected storage policy");
+      return _leading ? _leading->free_list() : size_type{};
+    }
+  }
+
+  template<typename..., deletion_policy Pol = Policy>
+  requires (Pol == deletion_policy::in_place)
+  [[nodiscard]] auto size_hint() const noexcept -> size_type {
+      return _leading ? _leading->size() : size_type{};
+  }
+
+  template<typename..., deletion_policy Pol = Policy>
+  requires (Pol != deletion_policy::in_place)
+  [[nodiscard]] auto is_empty() const noexcept -> bool {
+    if constexpr (Policy == deletion_policy::swap_and_pop) {
+      return !_leading || _leading->is_empty();
+    } else {
+      static_assert(Policy == deletion_policy::swap_only, "Unexpected storage policy");
+      return !_leading || (_leading->free_list() == 0u);
+    }
+  }
+
+  [[nodiscard]] auto begin() const noexcept -> iterator {
+    if constexpr (Policy == deletion_policy::swap_and_pop) {
+      return _leading ? _leading->begin() : iterator{};
+    } else if constexpr (Policy == deletion_policy::swap_only) {
+      return _leading ? (_leading->end() - static_cast<difference_type>(_leading->free_list())) : iterator{};
+    } else {
+      static_assert(Policy == deletion_policy::in_place, "Unexpected storage policy");
+      return _leading ? iterator{_leading->begin(), {_leading}, {}, 0u} : iterator{};
+    }
+  }
+
+  [[nodiscard]] auto end() const noexcept -> iterator {
+    if constexpr (Policy == deletion_policy::swap_and_pop || Policy == deletion_policy::swap_only) {
+      return _leading ? _leading->end() : iterator{};
+    } else {
+      static_assert(Policy == deletion_policy::in_place, "Unexpected storage policy");
+      return _leading ? iterator{_leading->end(), {_leading}, {}, 0u} : iterator{};
+    }
+  }
+
+  template<typename..., deletion_policy Pol = Policy>
+  requires (Pol != deletion_policy::in_place)
+  [[nodiscard]] auto rbegin() const noexcept -> reverse_iterator {
+    return _leading ? _leading->rbegin() : reverse_iterator{};
+  }
+
+  template<typename..., deletion_policy Pol = Policy>
+  requires (Pol != deletion_policy::in_place)
+  [[nodiscard]] auto rend() const noexcept -> reverse_iterator {
+    if constexpr (Policy == deletion_policy::swap_and_pop) {
+      return _leading ? _leading->rend() : reverse_iterator{};
+    } else {
+      static_assert(Policy == deletion_policy::swap_only, "Unexpected storage policy");
+      return _leading ? (_leading->rbegin() + static_cast<difference_type>(_leading->free_list())) : reverse_iterator{};
+    }
+  }
+
+  [[nodiscard]] auto front() const noexcept -> entity_type {
+    if constexpr (Policy == deletion_policy::swap_and_pop) {
+      return is_empty() ? null_entity : *_leading->begin();
+    } else if constexpr (Policy == deletion_policy::swap_only) {
+      return is_empty() ? null_entity : *(_leading->end() - static_cast<difference_type>(_leading->free_list()));
+    } else {
+      static_assert(Policy == deletion_policy::in_place, "Unexpected storage policy");
+      const auto it = begin();
+
+      return (it == end()) ? null_entity : *it;
+    }
+  }
+
+  [[nodiscard]] auto back() const noexcept -> entity_type {
+    if constexpr (Policy == deletion_policy::swap_and_pop || Policy == deletion_policy::swap_only) {
+      return is_empty() ? null_entity : *_leading->rbegin();
+    } else {
+      static_assert(Policy == deletion_policy::in_place, "Unexpected storage policy");
+
+      if (_leading) {
+        auto it = _leading->rbegin();
+        const auto last = _leading->rend();
+
+        for(; (it != last) && (*it == tombstone_entity); ++it) { }
+        
+        return it == last ? null_entity : *it;
+      }
+
+      return null_entity;
+    }
+  }
+
+  [[nodiscard]] auto find(const entity_type entity) const noexcept -> iterator {
+    if constexpr (Policy == deletion_policy::swap_and_pop) {
+      return _leading ? _leading->find(entity) : iterator{};
+    } else if constexpr (Policy == deletion_policy::swap_only) {
+      const auto it = _leading ? _leading->find(entity) : iterator{};
+      return _leading && (static_cast<size_type>(it.index()) < _leading->free_list()) ? it : iterator{};
+    } else {
+      return _leading ? iterator{_leading->find(entity), {_leading}, {}, 0u} : iterator{};
+    }
+  }
+
+  [[nodiscard]] explicit operator bool() const noexcept {
+    return (_leading != nullptr);
+  }
+
+  [[nodiscard]] auto contains(const entity_type entity) const noexcept -> bool {
+    if constexpr (Policy == deletion_policy::swap_and_pop || Policy == deletion_policy::in_place) {
+      return _leading && _leading->contains(entity);
+    } else {
+      static_assert(Policy == deletion_policy::swap_only, "Unexpected storage policy");
+      return _leading && _leading->contains(entity) && (_leading->index(entity) < _leading->free_list());
+    }
+  }
+
+protected:
+
+  basic_storage_view() noexcept = default;
+
+  basic_storage_view(const common_type* value) noexcept
+  : _leading{value} {
+    utility::assert_that(_leading->policy() == Policy, "Unexpected storage policy");
+  }
+
+private:
+
+  const common_type* _leading;
+
+}; // class basic_storage_view
+
+
 } // namespace detail
 
 template<typename... Type>
@@ -180,7 +334,7 @@ public:
   : base_type{{&value...}} { }
 
   basic_view(std::tuple<Get&...> value) noexcept
-  : basic_view{std::make_from_tuple<basic_view>(value)} { }
+  : basic_view{std::make_from_tuple<basic_view>(std::tuple_cat(value))} { }
 
   template<typename Type>
   [[nodiscard]] auto* storage() const noexcept {
@@ -194,7 +348,7 @@ public:
 
   template<typename Type>
   auto set_storage(Type& element) noexcept -> void {
-    storage<index_of<typename Type::element_type>>(element);
+    set_storage<index_of<typename Type::element_type>>(element);
   }
 
   template<std::size_t Index, typename Type>
@@ -228,6 +382,87 @@ private:
   template<std::size_t... Index>
   [[nodiscard]] auto _get(const entity_type entity, std::index_sequence<Index...>) const noexcept {
     return std::tuple_cat(storage<Index>()->get_as_tuple(entity)...);
+  }
+
+}; // class basic_view
+
+template<typename Get>
+class basic_view<get_t<Get>> : public detail::basic_storage_view<typename Get::base_type, Get::storage_policy> {
+
+  using base_type = detail::basic_storage_view<typename Get::base_type, Get::storage_policy>;
+
+public:
+
+  using common_type = typename base_type::common_type;
+  using entity_type = typename base_type::entity_type;
+  using size_type = typename base_type::size_type;
+  using difference_type = std::ptrdiff_t;
+  using iterator = typename base_type::iterator;
+  using reverse_iterator = typename base_type::reverse_iterator;
+  using iterable = std::conditional_t<Get::storage_policy == deletion_policy::in_place, memory::iterable_adaptor<detail::extended_view_iterator<iterator, Get>>, decltype(std::declval<Get>().each())>;
+
+  basic_view() noexcept
+  : base_type{} { }
+
+  basic_view(Get& value) noexcept
+  : base_type{&value} { }
+
+  basic_view(std::tuple<Get&> value) noexcept
+  : basic_view{std::get<0>(value)} {}
+
+  template<typename Type = typename Get::element_type>
+  requires (std::is_same_v<std::remove_const_t<Type>, typename Get::element_type>)
+
+  [[nodiscard]] auto* storage() const noexcept {
+    return storage<0>();
+  }
+
+  template<std::size_t Index>
+  requires (Index == 0u)
+  [[nodiscard]] auto* storage() const noexcept {
+    return static_cast<Get*>(const_cast<constness_as_t<common_type, Get>*>(base_type::handle()));
+  }
+
+  void set_storage(Get& element) noexcept {
+    set_storage<0>(element);
+  }
+
+  template<std::size_t Index>
+  requires (Index == 0u)
+  void set_storage(Get& element) noexcept {
+    *this = basic_view{element};
+  }
+
+  [[nodiscard]] Get *operator->() const noexcept {
+    return storage();
+  }
+
+  [[nodiscard]] auto operator[](const entity_type entity) const -> decltype(auto) {
+    return storage()->get(entity);
+  }
+
+  template<typename Element>
+  requires (std::is_same_v<std::remove_const_t<Element>, typename Get::element_type>)
+  [[nodiscard]] auto get(const entity_type entity) const -> decltype(auto) {
+    return get<0>(entity);
+  }
+
+  template<std::size_t... Index>
+  [[nodiscard]] auto get(const entity_type entity) const -> decltype(auto) {
+    if constexpr(sizeof...(Index) == 0) {
+      return storage()->get_as_tuple(entity);
+    } else {
+      return storage<Index...>()->get(entity);
+    }
+  }
+
+  [[nodiscard]] auto each() const noexcept -> iterable {
+    if constexpr(Get::storage_policy == deletion_policy::swap_and_pop || Get::storage_policy == deletion_policy::swap_only) {
+      return base_type::handle() ? storage()->each() : iterable{};
+    } else {
+      static_assert(Get::storage_policy == deletion_policy::in_place, "Unexpected storage policy");
+      return iterable{base_type::begin(), base_type::end()};
+    }
   }
 
 }; // class basic_view

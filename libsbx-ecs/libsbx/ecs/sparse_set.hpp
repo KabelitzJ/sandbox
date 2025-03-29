@@ -287,22 +287,37 @@ protected:
     auto& element = _assure_at_least(entity);
     auto position = size();
 
-    if (_policy == deletion_policy::swap_and_pop) {
-      _dense.push_back(entity);
-      utility::assert_that(element == null_entity, "Slot not available");
-      element = entity_traits::combine(static_cast<typename entity_traits::entity_type>(_dense.size() - 1u), entity_traits::to_integral(entity));
-    } else {
-      if (element == null_entity) {
-        _dense.push_back(entity);
-        element = entity_traits::combine(static_cast<typename entity_traits::entity_type>(_dense.size() - 1u), entity_traits::to_integral(entity));
-      } else {
-        utility::assert_that(!(_entity_to_position(element) < _head), "Slot not available");
-        bump(entity);
+    switch(_policy) {
+      case deletion_policy::in_place: {
+        if(_head != max_size && !force_back) {
+          position = _head;
+          utility::assert_that(element == null_entity, "Slot not available");
+          element = entity_traits::combine(static_cast<typename entity_traits::entity_type>(_head), entity_traits::to_integral(entity));
+          _head = _entity_to_position(std::exchange(_dense[position], entity));
+          break;
+        }
+        [[fallthrough]];
       }
+      case deletion_policy::swap_and_pop: {
+        _dense.push_back(entity);
+        utility::assert_that(element == null_entity, "Slot not available");
+        element = entity_traits::combine(static_cast<typename entity_traits::entity_type>(_dense.size() - 1u), entity_traits::to_integral(entity));
+        break;
+      }
+      case deletion_policy::swap_only: {
+        if(element == null_entity) {
+          _dense.push_back(entity);
+          element = entity_traits::combine(static_cast<typename entity_traits::entity_type>(_dense.size() - 1u), entity_traits::to_integral(entity));
+        } else {
+          utility::assert_that(!(_entity_to_position(element) < _head), "Slot not available");
+          bump(entity);
+        }
 
-      position = _head++;
-      _swap_at(_entity_to_position(element), position);
-    }
+        position = _head++;
+        _swap_at(_entity_to_position(element), position);
+        break;
+      }
+      }
 
     return --(end() - static_cast<difference_type>(position));
   }
@@ -318,7 +333,7 @@ private:
   }
 
   [[nodiscard]] auto _policy_to_head() const noexcept -> size_type {
-    return static_cast<size_type>(max_size * static_cast<size_type>(_policy != deletion_policy::swap_only));
+    return max_size * static_cast<size_type>(_policy != deletion_policy::swap_only);
   }
 
   [[nodiscard]] auto _entity_to_position(const entity_type entity) const noexcept {
@@ -333,7 +348,7 @@ private:
     const auto position = _entity_to_position(entity);
     const auto page = _position_to_page(position);
 
-    return (page < _sparse.size() && _sparse[page]) ? (_sparse[page] + utility::fast_mod(entity_traits::page_size, position)) : nullptr;
+    return (page < _sparse.size() && _sparse[page]) ? (_sparse[page] + utility::fast_mod(position, entity_traits::page_size)) : nullptr;
   }
 
   [[nodiscard]] auto _sparse_reference(const entity_type entity) const -> reference {
@@ -342,7 +357,7 @@ private:
     const auto position = _entity_to_position(entity);
     const auto page = _position_to_page(position);
 
-    return _sparse[page][utility::fast_mod(entity_traits::page_size, position)];
+    return _sparse[page][utility::fast_mod(position, entity_traits::page_size)];
   }
 
   void _release_sparse_pages() {
@@ -378,7 +393,7 @@ private:
       std::uninitialized_fill(_sparse[page], _sparse[page] + entity_traits::page_size, init);
     }
 
-    return _sparse[page][utility::fast_mod(entity_traits::page_size, position)];
+    return _sparse[page][utility::fast_mod(position, entity_traits::page_size)];
   }
 
   auto _swap_at(const size_type lhs, const size_type rhs) -> void {
