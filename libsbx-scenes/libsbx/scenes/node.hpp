@@ -45,6 +45,10 @@ public:
     _registry->remove<Component>(_entity);
   }
 
+  auto is_valid() const -> bool {
+    return _registry->is_valid(_entity);
+  }
+
   friend auto operator==(const node& lhs, const node& rhs) -> bool {
     return lhs._registry == rhs._registry && lhs._entity == rhs._entity;
   }

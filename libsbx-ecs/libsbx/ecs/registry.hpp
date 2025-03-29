@@ -47,19 +47,6 @@ struct type_index {
 
 }; // struct type_index
 
-template<typename To, typename From>
-struct constness_as {
-  using type = std::remove_const_t<To>;
-}; // struct constness_as
-
-template<typename To, typename From>
-struct constness_as<To, const From> {
-  using type = const To;
-}; // struct constness_as
-
-template<typename To, typename From>
-using constness_as_t = typename constness_as<To, From>::type;
-
 template<typename Type, typename Entity = entity, memory::allocator_for<Type> Allocator = std::allocator<Type>>
 struct storage_type {
   using type = basic_storage<Type, Entity, Allocator>;
@@ -225,7 +212,7 @@ public:
   template<typename Type, typename... Other>
   [[nodiscard]] auto view() const -> basic_view<get_t<storage_for_type<const Type>, storage_for_type<const Other>...>> {
     auto element = basic_view<get_t<storage_for_type<const Type>, storage_for_type<const Other>...>>{};
-    [&element](const auto*... current) { ((current ? element.storage(*current) : void()), ...); }(_assure<std::remove_const_t<Other>>()..., _assure<std::remove_const_t<Type>>());
+    [&element](const auto*... current) { ((current ? element.set_storage(*current) : void()), ...); }(_assure<std::remove_const_t<Other>>()..., _assure<std::remove_const_t<Type>>());
     return element;
   }
 

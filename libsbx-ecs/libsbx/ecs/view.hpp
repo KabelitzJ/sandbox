@@ -12,283 +12,231 @@
 #include <libsbx/memory/concepts.hpp>
 #include <libsbx/memory/iterable_adaptor.hpp>
 
+#include <libsbx/ecs/type_list.hpp>
+
+#include <libsbx/ecs/detail/view_iterator.hpp>
+
 namespace sbx::ecs {
 
 namespace detail {
 
-template<typename Container, std::size_t Size>
-class view_iterator {
-
-  using iterator_type = typename Container::const_iterator;
+template<typename Type, bool IsChecked, std::size_t Get>
+requires (std::is_same_v<std::remove_const_t<std::remove_reference_t<Type>>, Type>)
+class basic_common_view {
+  
+  template<typename Return, typename View, typename Other, std::size_t... GetLhs, std::size_t... GetRhs>
+  friend auto view_pack(const View&, const Other&, std::index_sequence<GetLhs...>, std::index_sequence<GetRhs...>) -> Return;
 
 public:
 
-  using value_type = typename iterator_type::value_type;
-  using pointer = typename iterator_type::pointer;
-  using reference = typename iterator_type::reference;
-  using difference_type = typename iterator_type::difference_type;
-  using iterator_category = std::forward_iterator_tag;
+  using common_type = Type;
+  using entity_type = typename Type::entity_type;
+  using size_type = std::size_t;
+  using difference_type = std::ptrdiff_t;
+  using iterator = detail::view_iterator<common_type, IsChecked, Get>;
 
-  constexpr view_iterator() noexcept
-  : _current{},
-    _end{},
-    _containers{} { }
+  auto refresh() noexcept -> void {
+    auto position = static_cast<size_type>(_index != Get) * Get;
 
-  view_iterator(iterator_type current, iterator_type end, std::array<const Container*, Size> containers) noexcept
-  : _current{current},
-    _end{end},
-    _containers{containers} {
-    while (_current != _end && !_is_valid()) {
-      ++_current;
+    for (; position < Get && _pools[position] != nullptr; ++position) { }
+
+    if (position == Get) {
+      _unchecked_refresh();
     }
   }
 
-  auto operator++() noexcept -> view_iterator& {
-    while (++_current != _end && !_is_valid()) {}
-    return *this;
+  [[nodiscard]] auto handle() const noexcept -> const common_type* {
+    return (_index != Get) ? _pools[_index] : nullptr;
   }
 
-  auto operator++(int) noexcept -> view_iterator {
-    auto copy = *this;
-    ++(*this);
-    return copy;
+  [[nodiscard]] auto size_hint() const noexcept -> size_type {
+    return (_index != Get) ? _offset() : size_type{};
   }
 
-  auto operator->() const noexcept -> pointer {
-    return &*_current;
+  [[nodiscard]] auto begin() const noexcept -> iterator {
+    return (_index != Get) ? iterator{_pools[_index]->end() - static_cast<difference_type>(_offset()), _pools, _index} : iterator{};
   }
 
-  auto operator*() const noexcept -> reference {
-    return *(operator->());
+  [[nodiscard]] auto end() const noexcept -> iterator {
+    return (_index != Get) ? iterator{_pools[_index]->end(), _pools, _index} : iterator{};
   }
 
-  template<typename LhsContainer, std::size_t LhsSize, typename RhsContainer, std::size_t RhsSize>
-  friend auto operator==(const view_iterator<LhsContainer, LhsSize>& lhs, const view_iterator<RhsContainer, RhsSize>& rhs) noexcept -> bool {
-    return lhs._current == rhs._current;
-  } 
-
-private:
-
-  auto _is_valid() const noexcept -> bool {
-    return (Size != 0u) && std::apply([entity = *_current](const auto*... container){ return (container->contains(entity) && ...); }, _containers);
+  [[nodiscard]] auto front() const noexcept -> entity_type {
+    const auto it = begin();
+    return it != end() ? *it : null_entity;
   }
 
-  iterator_type _current;
-  iterator_type _end;
-  std::array<const Container*, Size> _containers;
+  [[nodiscard]] auto back() const noexcept -> entity_type {
+    if(_index != Get) {
+      auto it = _pools[_index]->rbegin();
+      const auto last = it + static_cast<difference_type>(_offset());
 
-}; // class view_iterator
+      for (const auto idx = static_cast<difference_type>(_index); it != last && !(detail::all_of(_pools.begin(), _pools.begin() + idx, *it) && detail::all_of(_pools.begin() + idx + 1, _pools.end(), *it)); ++it) { }
 
-template<typename Iterator, typename... Types>
-class extended_view_iterator final {
+      return it == last ? null_entity : *it;
+    }
 
-public:
-
-  using iterator_type = Iterator;
-  using difference_type = std::ptrdiff_t;
-  using value_type = decltype(std::tuple_cat(std::make_tuple(*std::declval<Iterator>()), std::declval<Types>().as_tuple({})...));
-  using pointer = memory::input_iterator_pointer<value_type>;
-  using reference = value_type;
-  using iterator_category = std::input_iterator_tag;
-
-  constexpr extended_view_iterator()
-  : _iterator{},
-    _containers{} {}
-
-  extended_view_iterator(iterator_type iterator, std::tuple<Types*...> containers)
-  : _iterator{iterator},
-    _containers{containers} {}
-
-  extended_view_iterator &operator++() noexcept {
-    ++_iterator;
-    return *this;
+    return null_entity;
   }
 
-  extended_view_iterator operator++(int) noexcept {
-    auto copy = *this;
-    ++(*this); 
-    return copy;
+  [[nodiscard]] auto find(const entity_type entity) const noexcept -> iterator {
+    return contains(entity) ? iterator{_pools[_index]->find(entity), _pools, _index} : end();
   }
 
-  [[nodiscard]] reference operator*() const noexcept {
-    return std::apply([current = *_iterator](auto*... container) { return std::tuple_cat(std::make_tuple(current), container->as_tuple(current)...); }, _containers);
+  [[nodiscard]] explicit operator bool() const noexcept {
+    return (_index != Get); // && detail::is_fully_initialized(filter.begin(), filter.end(), placeholder);
   }
 
-  [[nodiscard]] pointer operator->() const noexcept {
-    return operator*();
+  [[nodiscard]] auto contains(const entity_type entity) const noexcept -> bool {
+    return (_index != Get) && detail::all_of(_pools.begin(), _pools.end(), entity) && _pools[_index]->_index(entity) < _offset();
   }
 
-  [[nodiscard]] constexpr iterator_type base() const noexcept {
-    return _iterator;
+protected:
+
+  basic_common_view() noexcept
+  : _pools{},
+    _index{Get} { }
+
+  basic_common_view(std::array<const Type *, Get> value) noexcept
+  : _pools{value},
+    _index{Get} {
+    _unchecked_refresh();
   }
 
-  template<typename... Lhs, typename... Rhs>
-  friend bool constexpr operator==(const extended_view_iterator<Lhs...>& lhs, const extended_view_iterator<Rhs...>& rhs) noexcept {
-    return lhs._iterator == rhs._iterator;
+  [[nodiscard]] auto pool_at(const size_type position) const noexcept -> const Type* {
+    return _pools[position];
+  }
+
+  auto set_pool_at(const size_type position, const common_type* element) noexcept -> void {
+    utility::assert_that(element != nullptr, "Unexpected element");
+    _pools[position] = element;
+    refresh();
+  }
+
+  auto use(const size_type position) noexcept -> void {
+    _index = (_index != Get) ? position : Get;
   }
 
 private:
 
-  iterator_type _iterator;
-  std::tuple<Types*...> _containers;
+  [[nodiscard]] auto _offset() const noexcept {
+    utility::assert_that(_index != Get, "Invalid view");
+    return (_pools[_index]->policy() == deletion_policy::swap_only) ? _pools[_index]->free_list() : _pools[_index]->size();
+  }
 
-}; // class extended_view_iterator
+  auto _unchecked_refresh() noexcept -> void {
+    _index = 0u;
+
+    if constexpr (Get > 1u) {
+      for (auto position  = 1u; position < Get; ++position) {
+        if (_pools[position]->size() < _pools[_index]->size()) {
+          _index = position;
+        }
+      }
+    }
+  }
+
+  std::array<const common_type*, Get> _pools;
+  size_type _index;
+
+}; // class basic_common_view
 
 } // namespace detail
 
-template<typename... Types>
-struct type_list {
-  using type = type_list;
-  static constexpr auto size = sizeof...(Types);
-}; // struct type_list
-
 template<typename... Type>
-struct get_t final: type_list<Type...> {
+struct get_t final : type_list<Type...> {
   explicit constexpr get_t() = default;
 }; // struct get_t
 
 template<typename... Type>
 inline constexpr get_t<Type...> get{};
 
-template<typename... Containers>
-class basic_view {
+template<typename... Get>
+requires (sizeof...(Get) != 0u)
+class basic_view : public detail::basic_common_view<std::common_type_t<typename Get::base_type...>, detail::tombstone_check_v<Get...>, sizeof...(Get)> {
 
-  using underlying_type = std::common_type_t<typename Containers::key_type...>;
-  using basic_common_type = std::common_type_t<typename Containers::base_type...>;
+  using base_type = detail::basic_common_view<std::common_type_t<typename Get::base_type...>, detail::tombstone_check_v<Get...>, sizeof...(Get)>;
 
-  using container_storage_type = std::tuple<Containers*...>;
+  template<std::size_t Index>
+  using element_at = type_list_element_t<Index, type_list<Get...>>;
 
   template<typename Type>
-  inline static constexpr auto index_of = utility::type_list_index_v<std::remove_const_t<Type>, utility::type_list<typename Containers::value_type...>>; 
-
-  template<typename Entity, memory::allocator_for<Entity> Allocator>
-  friend class basic_registry;
+  inline static constexpr auto index_of = type_list_index_v<std::remove_const_t<Type>, type_list<typename Get::element_type...>>;
 
 public:
 
-  using entity_type = underlying_type;
-  using size_type = std::size_t;
-  using base_type = basic_common_type;
-  using iterator = detail::view_iterator<base_type, sizeof...(Containers) - 1u>;
-  using iterable = memory::iterable_adaptor<detail::extended_view_iterator<iterator, Containers...>>;
+  using common_type = typename base_type::common_type;
+  using entity_type = typename base_type::entity_type;
+  using size_type = typename base_type::size_type;
+  using difference_type = std::ptrdiff_t;
+  using iterator = typename base_type::iterator;
+  using iterable = memory::iterable_adaptor<detail::extended_view_iterator<iterator, Get...>>;
 
-  ~basic_view() = default;
-  
-  auto begin() const noexcept -> iterator {
-    return iterator{handle().begin(), handle().end(), _check()};
-  }
+  basic_view() noexcept
+  : base_type{} { }
 
-  auto end() const noexcept -> iterator {
-    return iterator{handle().end(), handle().end(), _check()};
-  }
 
-  auto handle() const noexcept -> const base_type& {
-    return *_view;
-  }
+  basic_view(Get&...value) noexcept
+  : base_type{{&value...}} { }
+
+  basic_view(std::tuple<Get&...> value) noexcept
+  : basic_view{std::make_from_tuple<basic_view>(value)} { }
 
   template<typename Type>
-  auto storage() const noexcept -> decltype(auto) {
+  [[nodiscard]] auto* storage() const noexcept {
     return storage<index_of<Type>>();
   }
 
   template<std::size_t Index>
-  requires (Index < std::tuple_size_v<container_storage_type>)
-  auto storage() const noexcept -> decltype(auto) {
-    return *std::get<Index>(_containers);
+  [[nodiscard]] auto* storage() const noexcept {
+    return static_cast<element_at<Index>*>(const_cast<constness_as_t<common_type, element_at<Index>>*>(base_type::pool_at(Index)));
   }
 
-  template<typename... Types>
-  auto get(const entity_type entity) const -> decltype(auto) {
-    if constexpr (sizeof...(Types) == 0) {
-      return std::apply([entity](auto*... container) { return std::tuple_cat(container->as_tuple(entity)...); }, _containers);
-    } else if constexpr (sizeof...(Types) == 1) {
-      return (storage<index_of<Types>>().get(entity), ...);
+  template<typename Type>
+  auto set_storage(Type& element) noexcept -> void {
+    storage<index_of<typename Type::element_type>>(element);
+  }
+
+  template<std::size_t Index, typename Type>
+  requires (std::is_convertible_v<Type&, element_at<Index>&>)
+  void set_storage(Type& element) noexcept {
+    base_type::set_pool_at(Index, &element);
+  }
+
+  template<typename Type, typename... Other>
+  [[nodiscard]] auto get(const entity_type entity) const -> decltype(auto) {
+    return get<index_of<Type>, index_of<Other>...>(entity);
+  }
+
+  template<std::size_t... Index>
+  [[nodiscard]] auto get(const entity_type entity) const -> decltype(auto) {
+    if constexpr(sizeof...(Index) == 0) {
+      return _get(entity, std::index_sequence_for<Get...>{});
+    } else if constexpr(sizeof...(Index) == 1) {
+      return (storage<Index>()->get(entity), ...);
     } else {
-      return std::tuple_cat(storage<index_of<Types>>().as_tuple(entity)...);
+      return std::tuple_cat(storage<Index>()->get_as_tuple(entity)...);
     }
   }
-
-  auto each() const noexcept -> iterable {
-    return iterable{detail::extended_view_iterator{begin(), _containers}, detail::extended_view_iterator{end(), _containers}};
+  
+  [[nodiscard]] auto each() const noexcept -> iterable {
+    return {base_type::begin(), base_type::end()};
   }
 
 private:
 
-  basic_view() noexcept = default;
-
-  basic_view(Containers&... containers) noexcept
-  : _containers{&containers...},
-    _view{std::get<0>(_containers)} {
-    ((_view = containers.size() < _view->size() ? &containers : _view), ...);
+  template<std::size_t... Index>
+  [[nodiscard]] auto _get(const entity_type entity, std::index_sequence<Index...>) const noexcept {
+    return std::tuple_cat(storage<Index>()->get_as_tuple(entity)...);
   }
-
-  auto _check() const noexcept -> std::array<const base_type*, sizeof...(Containers) - 1u> {
-    auto result = std::array<const base_type*, sizeof...(Containers) - 1u>{};
-    std::apply([&result, position = 0u, view = _view](const auto*... container) mutable { 
-      ((container == view ? void() : void(result[position++] = container)), ...); 
-    }, _containers);
-    return result;
-  }
-
-  container_storage_type _containers;
-  const base_type* _view;
 
 }; // class basic_view
 
-template<typename Container>
-class basic_view<Container> {
+template<typename... Type>
+basic_view(Type&...storage) -> basic_view<get_t<Type...>>;
 
-  template<typename Entity, memory::allocator_for<Entity> Allocator>
-  friend class basic_registry;
-
-public:
-
-  using entity_type = typename Container::key_type;
-  using size_type = std::size_t;
-  using base_type = typename Container::base_type;
-  using iterator = typename base_type::const_iterator;
-
-  basic_view() noexcept
-  : _container{},
-    _view{} { }
-
-  basic_view(Container& container) noexcept
-  : _container{&container},
-    _view{&container} { }
-
-  auto begin() const noexcept -> iterator {
-    return handle().begin();
-  }
-
-  auto end() const noexcept -> iterator {
-    return handle().end();
-  }
-
-  auto handle() const noexcept -> const base_type& {
-    return *_view;
-  }
-
-  template<typename Type = typename Container::value_type>
-  auto storage() const noexcept -> decltype(auto) {
-    return storage<0>();
-  }
-
-  template<std::size_t Index>
-  auto storage() const noexcept -> decltype(auto) {
-    return *std::get<Index>(_container);
-  }
-
-  template<typename... Types>
-  auto get(const entity_type entity) const -> decltype(auto) {
-    return storage().get(entity);
-  }
-
-private:
-
-  std::tuple<Container*> _container;
-  const base_type* _view;
-
-}; // class basic_view
+template<typename... Get>
+basic_view(std::tuple<Get&...>) -> basic_view<get_t<Get...>>;
 
 } // namespace sbx::ecs
 

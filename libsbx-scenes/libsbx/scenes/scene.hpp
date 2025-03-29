@@ -56,6 +56,13 @@ public:
     auto view = _registry.view<Components...>();
      
     return view | ranges::views::transform([&](auto& entity) { return node{&_registry, entity}; }) | ranges::to<std::vector>();
+
+    // for (auto& entity : view) {
+    //   auto node = scenes::node{&_registry, entity};
+    //   if (node.is_valid()) {
+    //     _nodes[node.id()] = node;
+    //   }
+    // }
   }
 
   auto light() -> directional_light& {
