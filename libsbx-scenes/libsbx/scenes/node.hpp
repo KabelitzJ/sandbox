@@ -22,27 +22,31 @@ public:
 
   template<typename Component, typename... Args>
   auto add_component(Args&&... args) -> Component& {
-    return _registry->add_component<Component>(_entity, std::forward<Args>(args)...);
+    return _registry->emplace<Component>(_entity, std::forward<Args>(args)...);
   }
 
   template<typename Component>
   auto get_component() -> Component& {
-    return _registry->get_component<Component>(_entity);
+    return _registry->get<Component>(_entity);
   }
 
   template<typename Component>
   auto get_component() const -> const Component& {
-    return _registry->get_component<Component>(_entity);
+    return _registry->get<Component>(_entity);
   }
 
   template<typename Component>
   auto has_component() const -> bool {
-    return _registry->has_component<Component>(_entity);
+    return _registry->try_get<Component>(_entity) != nullptr;
   }
 
   template<typename Component>
   auto remove_component() -> void {
-    _registry->remove_component<Component>(_entity);
+    _registry->remove<Component>(_entity);
+  }
+
+  auto is_valid() const -> bool {
+    return _registry->is_valid(_entity);
   }
 
   friend auto operator==(const node& lhs, const node& rhs) -> bool {

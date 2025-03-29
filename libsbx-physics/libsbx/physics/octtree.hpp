@@ -135,7 +135,7 @@ class octree {
       const auto max = outer.max();
       const auto center = (min + max) * 0.5f;
 
-      switch(index) {
+      switch (index) {
         case 0: return volume{min, center};
         case 1: return volume{math::vector3{center.x(), min.y(), min.z()}, math::vector3{max.x(), center.y(), center.z()}};
         case 2: return volume{math::vector3{min.x(), center.y(), min.z()}, math::vector3{center.x(), max.y(), center.z()}};

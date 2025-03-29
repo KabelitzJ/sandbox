@@ -10,298 +10,468 @@
 #include <libsbx/utility/type_list.hpp>
 
 #include <libsbx/memory/concepts.hpp>
+#include <libsbx/memory/iterable_adaptor.hpp>
 
-#include <libsbx/ecs/component_handle.hpp>
-#include <libsbx/ecs/iterable_adaptor.hpp>
+#include <libsbx/ecs/type_list.hpp>
+
+#include <libsbx/ecs/detail/view_iterator.hpp>
 
 namespace sbx::ecs {
 
 namespace detail {
 
-template<typename Container, std::size_t Size>
-class view_iterator {
-
-  using iterator_type = typename Container::const_iterator;
+template<typename Type, bool IsChecked, std::size_t Get>
+requires (std::is_same_v<std::remove_const_t<std::remove_reference_t<Type>>, Type>)
+class basic_common_view {
+  
+  template<typename Return, typename View, typename Other, std::size_t... GetLhs, std::size_t... GetRhs>
+  friend auto view_pack(const View&, const Other&, std::index_sequence<GetLhs...>, std::index_sequence<GetRhs...>) -> Return;
 
 public:
 
-  using value_type = typename iterator_type::value_type;
-  using pointer = typename iterator_type::pointer;
-  using reference = typename iterator_type::reference;
-  using difference_type = typename iterator_type::difference_type;
-  using iterator_category = std::forward_iterator_tag;
+  using common_type = Type;
+  using entity_type = typename Type::entity_type;
+  using size_type = std::size_t;
+  using difference_type = std::ptrdiff_t;
+  using iterator = detail::view_iterator<common_type, IsChecked, Get>;
 
-  constexpr view_iterator() noexcept
-  : _current{},
-    _end{},
-    _containers{} { }
+  auto refresh() noexcept -> void {
+    auto position = static_cast<size_type>(_index != Get) * Get;
 
-  view_iterator(iterator_type current, iterator_type end, std::array<const Container*, Size> containers) noexcept
-  : _current{current},
-    _end{end},
-    _containers{containers} {
-    while(_current != _end && !_is_valid()) {
-      ++_current;
+    for (; position < Get && _pools[position] != nullptr; ++position) { }
+
+    if (position == Get) {
+      _unchecked_refresh();
     }
   }
 
-  auto operator++() noexcept -> view_iterator& {
-    while(++_current != _end && !_is_valid()) {}
-    return *this;
+  [[nodiscard]] auto handle() const noexcept -> const common_type* {
+    return (_index != Get) ? _pools[_index] : nullptr;
   }
 
-  auto operator++(int) noexcept -> view_iterator {
-    auto copy = *this;
-    ++(*this);
-    return copy;
+  [[nodiscard]] auto size_hint() const noexcept -> size_type {
+    return (_index != Get) ? _offset() : size_type{};
   }
 
-  auto operator->() const noexcept -> pointer {
-    return &*_current;
+  [[nodiscard]] auto begin() const noexcept -> iterator {
+    return (_index != Get) ? iterator{_pools[_index]->end() - static_cast<difference_type>(_offset()), _pools, _index} : iterator{};
   }
 
-  auto operator*() const noexcept -> reference {
-    return *(operator->());
+  [[nodiscard]] auto end() const noexcept -> iterator {
+    return (_index != Get) ? iterator{_pools[_index]->end(), _pools, _index} : iterator{};
   }
 
-  template<typename LhsContainer, std::size_t LhsSize, typename RhsContainer, std::size_t RhsSize>
-  friend auto operator==(const view_iterator<LhsContainer, LhsSize>& lhs, const view_iterator<RhsContainer, RhsSize>& rhs) noexcept -> bool {
-    return lhs._current == rhs._current;
-  } 
+  [[nodiscard]] auto front() const noexcept -> entity_type {
+    const auto it = begin();
+    return it != end() ? *it : null_entity;
+  }
+
+  [[nodiscard]] auto back() const noexcept -> entity_type {
+    if(_index != Get) {
+      auto it = _pools[_index]->rbegin();
+      const auto last = it + static_cast<difference_type>(_offset());
+
+      for (const auto idx = static_cast<difference_type>(_index); it != last && !(detail::all_of(_pools.begin(), _pools.begin() + idx, *it) && detail::all_of(_pools.begin() + idx + 1, _pools.end(), *it)); ++it) { }
+
+      return it == last ? null_entity : *it;
+    }
+
+    return null_entity;
+  }
+
+  [[nodiscard]] auto find(const entity_type entity) const noexcept -> iterator {
+    return contains(entity) ? iterator{_pools[_index]->find(entity), _pools, _index} : end();
+  }
+
+  [[nodiscard]] explicit operator bool() const noexcept {
+    return (_index != Get); // && detail::is_fully_initialized(filter.begin(), filter.end(), placeholder);
+  }
+
+  [[nodiscard]] auto contains(const entity_type entity) const noexcept -> bool {
+    return (_index != Get) && detail::all_of(_pools.begin(), _pools.end(), entity) && _pools[_index]->_index(entity) < _offset();
+  }
+
+protected:
+
+  basic_common_view() noexcept
+  : _pools{},
+    _index{Get} { }
+
+  basic_common_view(std::array<const Type *, Get> value) noexcept
+  : _pools{value},
+    _index{Get} {
+    _unchecked_refresh();
+  }
+
+  [[nodiscard]] auto pool_at(const size_type position) const noexcept -> const Type* {
+    return _pools[position];
+  }
+
+  auto set_pool_at(const size_type position, const common_type* element) noexcept -> void {
+    utility::assert_that(element != nullptr, "Unexpected element");
+    _pools[position] = element;
+    refresh();
+  }
+
+  auto use(const size_type position) noexcept -> void {
+    _index = (_index != Get) ? position : Get;
+  }
 
 private:
 
-  auto _is_valid() const noexcept -> bool {
-    return (Size != 0u) && std::apply([entity = *_current](const auto*... container){ return (container->contains(entity) && ...); }, _containers);
+  [[nodiscard]] auto _offset() const noexcept {
+    utility::assert_that(_index != Get, "Invalid view");
+    return (_pools[_index]->policy() == deletion_policy::swap_only) ? _pools[_index]->free_list() : _pools[_index]->size();
   }
 
-  iterator_type _current;
-  iterator_type _end;
-  std::array<const Container*, Size> _containers;
+  auto _unchecked_refresh() noexcept -> void {
+    _index = 0u;
 
-}; // class view_iterator
-
-template<typename Type>
-struct input_iterator_pointer final {
-
-  using value_type = Type;
-  using pointer = value_type*;
-  using reference = value_type&;
-
-  constexpr input_iterator_pointer(value_type&& value) noexcept(std::is_nothrow_move_constructible_v<value_type>)
-  : _value{std::move(value)} {}
-
-
-  [[nodiscard]] constexpr pointer operator->() noexcept {
-    return std::addressof(_value);
+    if constexpr (Get > 1u) {
+      for (auto position  = 1u; position < Get; ++position) {
+        if (_pools[position]->size() < _pools[_index]->size()) {
+          _index = position;
+        }
+      }
+    }
   }
 
-  [[nodiscard]] constexpr reference operator*() noexcept {
-    return _value;
-  }
+  std::array<const common_type*, Get> _pools;
+  size_type _index;
 
-private:
+}; // class basic_common_view
 
-  value_type _value;
-
-}; // struct input_iterator_pointer
-
-template<typename Iterator, typename... Types>
-class extended_view_iterator final {
+template<typename Type, deletion_policy Policy>
+requires (std::is_same_v<std::remove_const_t<std::remove_reference_t<Type>>, Type>)
+class basic_storage_view {
 
 public:
 
-  using iterator_type = Iterator;
+  using common_type = Type;
+  using entity_type = typename common_type::entity_type;
+  using size_type = std::size_t;
   using difference_type = std::ptrdiff_t;
-  using value_type = decltype(std::tuple_cat(std::make_tuple(*std::declval<Iterator>()), std::declval<Types>().as_tuple({})...));
-  using pointer = input_iterator_pointer<value_type>;
-  using reference = value_type;
-  using iterator_category = std::input_iterator_tag;
+  using iterator = std::conditional_t<Policy == deletion_policy::in_place, detail::view_iterator<common_type, true, 1u>, typename common_type::iterator>;
+  using reverse_iterator = std::conditional_t<Policy == deletion_policy::in_place, void, typename common_type::reverse_iterator>;
 
-  constexpr extended_view_iterator()
-  : _iterator{},
-    _containers{} {}
-
-  extended_view_iterator(iterator_type iterator, std::tuple<Types*...> containers)
-  : _iterator{iterator},
-    _containers{containers} {}
-
-  extended_view_iterator &operator++() noexcept {
-    ++_iterator;
-    return *this;
+  [[nodiscard]] auto handle() const noexcept -> const common_type* {
+    return _leading;
   }
 
-  extended_view_iterator operator++(int) noexcept {
-    auto copy = *this;
-    ++(*this); 
-    return copy;
+  template<typename..., deletion_policy Pol = Policy>
+  requires (Pol != deletion_policy::in_place)
+  [[nodiscard]] auto size() const noexcept -> size_type {
+    if constexpr (Policy == deletion_policy::swap_and_pop) {
+      return _leading ? _leading->size() : size_type{};
+    } else {
+      static_assert(Policy == deletion_policy::swap_only, "Unexpected storage policy");
+      return _leading ? _leading->free_list() : size_type{};
+    }
   }
 
-  [[nodiscard]] reference operator*() const noexcept {
-    return std::apply([current = *_iterator](auto*... container) { return std::tuple_cat(std::make_tuple(current), container->as_tuple(current)...); }, _containers);
+  template<typename..., deletion_policy Pol = Policy>
+  requires (Pol == deletion_policy::in_place)
+  [[nodiscard]] auto size_hint() const noexcept -> size_type {
+      return _leading ? _leading->size() : size_type{};
   }
 
-  [[nodiscard]] pointer operator->() const noexcept {
-    return operator*();
+  template<typename..., deletion_policy Pol = Policy>
+  requires (Pol != deletion_policy::in_place)
+  [[nodiscard]] auto is_empty() const noexcept -> bool {
+    if constexpr (Policy == deletion_policy::swap_and_pop) {
+      return !_leading || _leading->is_empty();
+    } else {
+      static_assert(Policy == deletion_policy::swap_only, "Unexpected storage policy");
+      return !_leading || (_leading->free_list() == 0u);
+    }
   }
 
-  [[nodiscard]] constexpr iterator_type base() const noexcept {
-    return _iterator;
+  [[nodiscard]] auto begin() const noexcept -> iterator {
+    if constexpr (Policy == deletion_policy::swap_and_pop) {
+      return _leading ? _leading->begin() : iterator{};
+    } else if constexpr (Policy == deletion_policy::swap_only) {
+      return _leading ? (_leading->end() - static_cast<difference_type>(_leading->free_list())) : iterator{};
+    } else {
+      static_assert(Policy == deletion_policy::in_place, "Unexpected storage policy");
+      return _leading ? iterator{_leading->begin(), {_leading}, {}, 0u} : iterator{};
+    }
   }
 
-  template<typename... Lhs, typename... Rhs>
-  friend bool constexpr operator==(const extended_view_iterator<Lhs...>& lhs, const extended_view_iterator<Rhs...>& rhs) noexcept {
-    return lhs._iterator == rhs._iterator;
+  [[nodiscard]] auto end() const noexcept -> iterator {
+    if constexpr (Policy == deletion_policy::swap_and_pop || Policy == deletion_policy::swap_only) {
+      return _leading ? _leading->end() : iterator{};
+    } else {
+      static_assert(Policy == deletion_policy::in_place, "Unexpected storage policy");
+      return _leading ? iterator{_leading->end(), {_leading}, {}, 0u} : iterator{};
+    }
+  }
+
+  template<typename..., deletion_policy Pol = Policy>
+  requires (Pol != deletion_policy::in_place)
+  [[nodiscard]] auto rbegin() const noexcept -> reverse_iterator {
+    return _leading ? _leading->rbegin() : reverse_iterator{};
+  }
+
+  template<typename..., deletion_policy Pol = Policy>
+  requires (Pol != deletion_policy::in_place)
+  [[nodiscard]] auto rend() const noexcept -> reverse_iterator {
+    if constexpr (Policy == deletion_policy::swap_and_pop) {
+      return _leading ? _leading->rend() : reverse_iterator{};
+    } else {
+      static_assert(Policy == deletion_policy::swap_only, "Unexpected storage policy");
+      return _leading ? (_leading->rbegin() + static_cast<difference_type>(_leading->free_list())) : reverse_iterator{};
+    }
+  }
+
+  [[nodiscard]] auto front() const noexcept -> entity_type {
+    if constexpr (Policy == deletion_policy::swap_and_pop) {
+      return is_empty() ? null_entity : *_leading->begin();
+    } else if constexpr (Policy == deletion_policy::swap_only) {
+      return is_empty() ? null_entity : *(_leading->end() - static_cast<difference_type>(_leading->free_list()));
+    } else {
+      static_assert(Policy == deletion_policy::in_place, "Unexpected storage policy");
+      const auto it = begin();
+
+      return (it == end()) ? null_entity : *it;
+    }
+  }
+
+  [[nodiscard]] auto back() const noexcept -> entity_type {
+    if constexpr (Policy == deletion_policy::swap_and_pop || Policy == deletion_policy::swap_only) {
+      return is_empty() ? null_entity : *_leading->rbegin();
+    } else {
+      static_assert(Policy == deletion_policy::in_place, "Unexpected storage policy");
+
+      if (_leading) {
+        auto it = _leading->rbegin();
+        const auto last = _leading->rend();
+
+        for(; (it != last) && (*it == tombstone_entity); ++it) { }
+        
+        return it == last ? null_entity : *it;
+      }
+
+      return null_entity;
+    }
+  }
+
+  [[nodiscard]] auto find(const entity_type entity) const noexcept -> iterator {
+    if constexpr (Policy == deletion_policy::swap_and_pop) {
+      return _leading ? _leading->find(entity) : iterator{};
+    } else if constexpr (Policy == deletion_policy::swap_only) {
+      const auto it = _leading ? _leading->find(entity) : iterator{};
+      return _leading && (static_cast<size_type>(it.index()) < _leading->free_list()) ? it : iterator{};
+    } else {
+      return _leading ? iterator{_leading->find(entity), {_leading}, {}, 0u} : iterator{};
+    }
+  }
+
+  [[nodiscard]] explicit operator bool() const noexcept {
+    return (_leading != nullptr);
+  }
+
+  [[nodiscard]] auto contains(const entity_type entity) const noexcept -> bool {
+    if constexpr (Policy == deletion_policy::swap_and_pop || Policy == deletion_policy::in_place) {
+      return _leading && _leading->contains(entity);
+    } else {
+      static_assert(Policy == deletion_policy::swap_only, "Unexpected storage policy");
+      return _leading && _leading->contains(entity) && (_leading->index(entity) < _leading->free_list());
+    }
+  }
+
+protected:
+
+  basic_storage_view() noexcept = default;
+
+  basic_storage_view(const common_type* value) noexcept
+  : _leading{value} {
+    utility::assert_that(_leading->policy() == Policy, "Unexpected storage policy");
   }
 
 private:
 
-  iterator_type _iterator;
-  std::tuple<Types*...> _containers;
+  const common_type* _leading;
 
-}; // class extended_view_iterator
+}; // class basic_storage_view
+
 
 } // namespace detail
 
-template<typename... Containers>
-class basic_view {
+template<typename... Type>
+struct get_t final : type_list<Type...> {
+  explicit constexpr get_t() = default;
+}; // struct get_t
 
-  using underlying_type = std::common_type_t<typename Containers::key_type...>;
-  using basic_common_type = std::common_type_t<typename Containers::base_type...>;
+template<typename... Type>
+inline constexpr get_t<Type...> get{};
 
-  using container_storage_type = std::tuple<Containers*...>;
+template<typename... Get>
+requires (sizeof...(Get) != 0u)
+class basic_view : public detail::basic_common_view<std::common_type_t<typename Get::base_type...>, detail::tombstone_check_v<Get...>, sizeof...(Get)> {
+
+  using base_type = detail::basic_common_view<std::common_type_t<typename Get::base_type...>, detail::tombstone_check_v<Get...>, sizeof...(Get)>;
+
+  template<std::size_t Index>
+  using element_at = type_list_element_t<Index, type_list<Get...>>;
 
   template<typename Type>
-  inline static constexpr auto index_of = utility::type_list_index_v<std::remove_const_t<Type>, utility::type_list<typename Containers::value_type...>>; 
-
-  template<typename Entity, memory::allocator_for<Entity> Allocator>
-  friend class basic_registry;
+  inline static constexpr auto index_of = type_list_index_v<std::remove_const_t<Type>, type_list<typename Get::element_type...>>;
 
 public:
 
-  using entity_type = underlying_type;
-  using size_type = std::size_t;
-  using base_type = basic_common_type;
-  using iterator = detail::view_iterator<base_type, sizeof...(Containers) - 1u>;
-  using iterable = iterable_adaptor<detail::extended_view_iterator<iterator, Containers...>>;
+  using common_type = typename base_type::common_type;
+  using entity_type = typename base_type::entity_type;
+  using size_type = typename base_type::size_type;
+  using difference_type = std::ptrdiff_t;
+  using iterator = typename base_type::iterator;
+  using iterable = memory::iterable_adaptor<detail::extended_view_iterator<iterator, Get...>>;
 
-  ~basic_view() = default;
-  
-  auto begin() const noexcept -> iterator {
-    return iterator{handle().begin(), handle().end(), _check()};
-  }
+  basic_view() noexcept
+  : base_type{} { }
 
-  auto end() const noexcept -> iterator {
-    return iterator{handle().end(), handle().end(), _check()};
-  }
 
-  auto handle() const noexcept -> const base_type& {
-    return *_view;
-  }
+  basic_view(Get&...value) noexcept
+  : base_type{{&value...}} { }
+
+  basic_view(std::tuple<Get&...> value) noexcept
+  : basic_view{std::make_from_tuple<basic_view>(std::tuple_cat(value))} { }
 
   template<typename Type>
-  auto storage() const noexcept -> decltype(auto) {
+  [[nodiscard]] auto* storage() const noexcept {
     return storage<index_of<Type>>();
   }
 
   template<std::size_t Index>
-  requires (Index < std::tuple_size_v<container_storage_type>)
-  auto storage() const noexcept -> decltype(auto) {
-    return *std::get<Index>(_containers);
+  [[nodiscard]] auto* storage() const noexcept {
+    return static_cast<element_at<Index>*>(const_cast<constness_as_t<common_type, element_at<Index>>*>(base_type::pool_at(Index)));
   }
 
-  template<typename... Types>
-  auto get(const entity_type entity) const -> decltype(auto) {
-    if constexpr(sizeof...(Types) == 0) {
-      return std::apply([entity](auto*... container) { return std::tuple_cat(container->as_tuple(entity)...); }, _containers);
-    } else if constexpr(sizeof...(Types) == 1) {
-      return (storage<index_of<Types>>().get(entity), ...);
+  template<typename Type>
+  auto set_storage(Type& element) noexcept -> void {
+    set_storage<index_of<typename Type::element_type>>(element);
+  }
+
+  template<std::size_t Index, typename Type>
+  requires (std::is_convertible_v<Type&, element_at<Index>&>)
+  void set_storage(Type& element) noexcept {
+    base_type::set_pool_at(Index, &element);
+  }
+
+  template<typename Type, typename... Other>
+  [[nodiscard]] auto get(const entity_type entity) const -> decltype(auto) {
+    return get<index_of<Type>, index_of<Other>...>(entity);
+  }
+
+  template<std::size_t... Index>
+  [[nodiscard]] auto get(const entity_type entity) const -> decltype(auto) {
+    if constexpr(sizeof...(Index) == 0) {
+      return _get(entity, std::index_sequence_for<Get...>{});
+    } else if constexpr(sizeof...(Index) == 1) {
+      return (storage<Index>()->get(entity), ...);
     } else {
-      return std::tuple_cat(storage<index_of<Types>>().as_tuple(entity)...);
+      return std::tuple_cat(storage<Index>()->get_as_tuple(entity)...);
     }
   }
-
-  auto each() const noexcept -> iterable {
-    return iterable{detail::extended_view_iterator{begin(), _containers}, detail::extended_view_iterator{end(), _containers}};
+  
+  [[nodiscard]] auto each() const noexcept -> iterable {
+    return {base_type::begin(), base_type::end()};
   }
 
 private:
 
-  basic_view() noexcept = default;
-
-  basic_view(Containers&... containers) noexcept
-  : _containers{&containers...},
-    _view{std::get<0>(_containers)} {
-    ((_view = containers.size() < _view->size() ? &containers : _view), ...);
+  template<std::size_t... Index>
+  [[nodiscard]] auto _get(const entity_type entity, std::index_sequence<Index...>) const noexcept {
+    return std::tuple_cat(storage<Index>()->get_as_tuple(entity)...);
   }
-
-  auto _check() const noexcept -> std::array<const base_type*, sizeof...(Containers) - 1u> {
-    auto result = std::array<const base_type*, sizeof...(Containers) - 1u>{};
-    std::apply([&result, position = 0u, view = _view](const auto*... container) mutable { 
-      ((container == view ? void() : void(result[position++] = container)), ...); 
-    }, _containers);
-    return result;
-  }
-
-  container_storage_type _containers;
-  const base_type* _view;
 
 }; // class basic_view
 
-template<typename Container>
-class basic_view<Container> {
+template<typename Get>
+class basic_view<get_t<Get>> : public detail::basic_storage_view<typename Get::base_type, Get::storage_policy> {
 
-  template<typename Entity, memory::allocator_for<Entity> Allocator>
-  friend class basic_registry;
+  using base_type = detail::basic_storage_view<typename Get::base_type, Get::storage_policy>;
 
 public:
 
-  using entity_type = typename Container::key_type;
-  using size_type = std::size_t;
-  using base_type = typename Container::base_type;
-  using iterator = typename base_type::const_iterator;
+  using common_type = typename base_type::common_type;
+  using entity_type = typename base_type::entity_type;
+  using size_type = typename base_type::size_type;
+  using difference_type = std::ptrdiff_t;
+  using iterator = typename base_type::iterator;
+  using reverse_iterator = typename base_type::reverse_iterator;
+  using iterable = std::conditional_t<Get::storage_policy == deletion_policy::in_place, memory::iterable_adaptor<detail::extended_view_iterator<iterator, Get>>, decltype(std::declval<Get>().each())>;
 
   basic_view() noexcept
-  : _container{},
-    _view{} { }
+  : base_type{} { }
 
-  basic_view(Container& container) noexcept
-  : _container{&container},
-    _view{&container} { }
+  basic_view(Get& value) noexcept
+  : base_type{&value} { }
 
-  auto begin() const noexcept -> iterator {
-    return handle().begin();
-  }
+  basic_view(std::tuple<Get&> value) noexcept
+  : basic_view{std::get<0>(value)} {}
 
-  auto end() const noexcept -> iterator {
-    return handle().end();
-  }
+  template<typename Type = typename Get::element_type>
+  requires (std::is_same_v<std::remove_const_t<Type>, typename Get::element_type>)
 
-  auto handle() const noexcept -> const base_type& {
-    return *_view;
-  }
-
-  template<typename Type = typename Container::value_type>
-  auto storage() const noexcept -> decltype(auto) {
+  [[nodiscard]] auto* storage() const noexcept {
     return storage<0>();
   }
 
   template<std::size_t Index>
-  auto storage() const noexcept -> decltype(auto) {
-    return *std::get<Index>(_container);
+  requires (Index == 0u)
+  [[nodiscard]] auto* storage() const noexcept {
+    return static_cast<Get*>(const_cast<constness_as_t<common_type, Get>*>(base_type::handle()));
   }
 
-  template<typename... Types>
-  auto get(const entity_type entity) const -> decltype(auto) {
-    return storage().get(entity);
+  void set_storage(Get& element) noexcept {
+    set_storage<0>(element);
   }
 
-private:
+  template<std::size_t Index>
+  requires (Index == 0u)
+  void set_storage(Get& element) noexcept {
+    *this = basic_view{element};
+  }
 
-  std::tuple<Container*> _container;
-  const base_type* _view;
+  [[nodiscard]] Get *operator->() const noexcept {
+    return storage();
+  }
+
+  [[nodiscard]] auto operator[](const entity_type entity) const -> decltype(auto) {
+    return storage()->get(entity);
+  }
+
+  template<typename Element>
+  requires (std::is_same_v<std::remove_const_t<Element>, typename Get::element_type>)
+  [[nodiscard]] auto get(const entity_type entity) const -> decltype(auto) {
+    return get<0>(entity);
+  }
+
+  template<std::size_t... Index>
+  [[nodiscard]] auto get(const entity_type entity) const -> decltype(auto) {
+    if constexpr(sizeof...(Index) == 0) {
+      return storage()->get_as_tuple(entity);
+    } else {
+      return storage<Index...>()->get(entity);
+    }
+  }
+
+  [[nodiscard]] auto each() const noexcept -> iterable {
+    if constexpr(Get::storage_policy == deletion_policy::swap_and_pop || Get::storage_policy == deletion_policy::swap_only) {
+      return base_type::handle() ? storage()->each() : iterable{};
+    } else {
+      static_assert(Get::storage_policy == deletion_policy::in_place, "Unexpected storage policy");
+      return iterable{base_type::begin(), base_type::end()};
+    }
+  }
 
 }; // class basic_view
+
+template<typename... Type>
+basic_view(Type&...storage) -> basic_view<get_t<Type...>>;
+
+template<typename... Get>
+basic_view(std::tuple<Get&...>) -> basic_view<get_t<Get...>>;
 
 } // namespace sbx::ecs
 
