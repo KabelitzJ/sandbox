@@ -5,6 +5,8 @@
 #include <libsbx/math/color.hpp>
 #include <libsbx/math/noise.hpp>
 
+#include <libsbx/assets/assets_module.hpp>
+
 #include <demo/renderer.hpp>
 #include <demo/line.hpp>
 
@@ -22,6 +24,12 @@ application::application()
   auto& graphics_module = sbx::core::engine::get_module<sbx::graphics::graphics_module>();
 
   graphics_module.set_renderer<renderer>();
+
+  auto& assets_module = sbx::core::engine::get_module<sbx::assets::assets_module>();
+
+  auto result = assets_module.submit([](){
+    std::this_thread::sleep_for(std::chrono::seconds{2});
+  });
 
   // Textures
 
