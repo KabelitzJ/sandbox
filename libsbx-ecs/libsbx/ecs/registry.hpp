@@ -11,6 +11,9 @@
 #include <tuple>
 #include <ranges>
 
+#include <libsbx/utility/type_id.hpp>
+#include <libsbx/utility/concepts.hpp>
+
 #include <libsbx/memory/concepts.hpp>
 #include <libsbx/memory/observer_ptr.hpp>
 #include <libsbx/memory/dense_map.hpp>
@@ -22,31 +25,6 @@
 
 namespace sbx::ecs {
 
-namespace detail {
-
-struct id_generator final {
-  [[nodiscard]] static auto next() noexcept -> std::uint32_t {
-    static auto id = std::uint32_t{};
-    return id++;
-  }
-}; // struct type_index
-
-} // namespace detail
-
-template<typename Type>
-struct type_index {
-
-  [[nodiscard]] static auto value() noexcept -> std::uint32_t {
-    static const auto value = detail::id_generator::next();
-    return value;
-  }
-
-  [[nodiscard]] constexpr operator std::uint32_t() const noexcept {
-    return value();
-  }
-
-}; // struct type_index
-
 template<typename Type, typename Entity = entity, memory::allocator_for<Type> Allocator = std::allocator<Type>>
 struct storage_type {
   using type = basic_storage<Type, Entity, Allocator>;
@@ -57,7 +35,7 @@ using storage_type_t = typename storage_type<Args...>::type;
 
 template<typename Type, typename Entity = entity, memory::allocator_for<std::remove_const_t<Type>> Allocator = std::allocator<std::remove_const_t<Type>>>
 struct storage_for {
-  using type = constness_as_t<storage_type_t<std::remove_const_t<Type>, Entity, Allocator>, Type>;
+  using type = utility::constness_as_t<storage_type_t<std::remove_const_t<Type>, Entity, Allocator>, Type>;
 }; // struct storage_for
 
 template<typename... Args>
@@ -225,7 +203,7 @@ private:
 
   template<typename Type>
   requires (std::is_same_v<Type, std::decay_t<Type>> && !std::is_same_v<Type, entity_type>)
-  [[nodiscard]] auto& _assure([[maybe_unused]] const std::uint32_t id = type_index<Type>::value()) {
+  [[nodiscard]] auto& _assure([[maybe_unused]] const std::uint32_t id = utility::type_id<Type>::value()) {
     using storage_type = storage_for_type<Type>;
 
     if (auto iterator = _pools.find(id); iterator != _pools.cend()) {
@@ -250,7 +228,7 @@ private:
 
   template<typename Type>
   requires (std::is_same_v<Type, std::decay_t<Type>> && !std::is_same_v<Type, entity_type>)
-  [[nodiscard]] const auto* _assure([[maybe_unused]] const std::uint32_t id = type_index<Type>::value()) const {
+  [[nodiscard]] const auto* _assure([[maybe_unused]] const std::uint32_t id = utility::type_id<Type>::value()) const {
     if (const auto iterator = _pools.find(id); iterator != _pools.cend()) {
       return static_cast<const storage_for_type<Type>*>(iterator->second.get());
     }

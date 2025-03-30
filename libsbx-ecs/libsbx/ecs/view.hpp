@@ -12,8 +12,6 @@
 #include <libsbx/memory/concepts.hpp>
 #include <libsbx/memory/iterable_adaptor.hpp>
 
-#include <libsbx/ecs/type_list.hpp>
-
 #include <libsbx/ecs/detail/view_iterator.hpp>
 
 namespace sbx::ecs {
@@ -298,7 +296,7 @@ private:
 } // namespace detail
 
 template<typename... Type>
-struct get_t final : type_list<Type...> {
+struct get_t final : utility::type_list<Type...> {
   explicit constexpr get_t() = default;
 }; // struct get_t
 
@@ -312,10 +310,10 @@ class basic_view : public detail::basic_common_view<std::common_type_t<typename 
   using base_type = detail::basic_common_view<std::common_type_t<typename Get::base_type...>, detail::tombstone_check_v<Get...>, sizeof...(Get)>;
 
   template<std::size_t Index>
-  using element_at = type_list_element_t<Index, type_list<Get...>>;
+  using element_at = utility::type_list_element_t<Index, utility::type_list<Get...>>;
 
   template<typename Type>
-  inline static constexpr auto index_of = type_list_index_v<std::remove_const_t<Type>, type_list<typename Get::element_type...>>;
+  inline static constexpr auto index_of = utility::type_list_index_v<std::remove_const_t<Type>, utility::type_list<typename Get::element_type...>>;
 
 public:
 
@@ -343,7 +341,7 @@ public:
 
   template<std::size_t Index>
   [[nodiscard]] auto* storage() const noexcept {
-    return static_cast<element_at<Index>*>(const_cast<constness_as_t<common_type, element_at<Index>>*>(base_type::pool_at(Index)));
+    return static_cast<element_at<Index>*>(const_cast<utility::constness_as_t<common_type, element_at<Index>>*>(base_type::pool_at(Index)));
   }
 
   template<typename Type>
@@ -420,7 +418,7 @@ public:
   template<std::size_t Index>
   requires (Index == 0u)
   [[nodiscard]] auto* storage() const noexcept {
-    return static_cast<Get*>(const_cast<constness_as_t<common_type, Get>*>(base_type::handle()));
+    return static_cast<Get*>(const_cast<utility::constness_as_t<common_type, Get>*>(base_type::handle()));
   }
 
   void set_storage(Get& element) noexcept {

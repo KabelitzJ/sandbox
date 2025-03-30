@@ -485,27 +485,27 @@ private:
         _frames = 0;
       }
 
-      ImGui::Text("Delta time:  %.3f", sbx::units::quantity_cast<sbx::units::millisecond>(delta_time).value());
+      ImGui::Text("Delta time:  %.3f [ms]", sbx::units::quantity_cast<sbx::units::millisecond>(delta_time).value());
       ImGui::Text("FPS:         %d", _fps);
 
-      static constexpr auto max_time = sbx::units::second{5};
+      // static constexpr auto max_time = sbx::units::second{5};
 
-      _elapsed += delta_time;
+      // _elapsed += delta_time;
 
-      _deltas.push_back(sbx::units::quantity_cast<sbx::units::millisecond>(delta_time).value());
-      _time_stamps.push_back(_elapsed.value());
+      // _deltas.push_back(sbx::units::quantity_cast<sbx::units::millisecond>(delta_time).value());
+      // _time_stamps.push_back(_elapsed.value());
 
-      while (!_time_stamps.empty() && (_elapsed - sbx::units::second{_time_stamps.front()} > max_time)) {
-        _deltas.erase(_deltas.begin());
-        _time_stamps.erase(_time_stamps.begin());
-      }
+      // while (!_time_stamps.empty() && (_elapsed - sbx::units::second{_time_stamps.front()} > max_time)) {
+      //   _deltas.erase(_deltas.begin());
+      //   _time_stamps.erase(_time_stamps.begin());
+      // }
 
-      if (ImPlot::BeginPlot("Delta Time Graph", ImVec2{-1, 150})) {
-        ImPlot::SetupAxes("Time (s)", "Delta Time (ms)", ImPlotAxisFlags_AutoFit, ImPlotAxisFlags_AutoFit);
-        ImPlot::SetupAxisLimits(ImAxis_X1, (_elapsed - max_time).value(), _elapsed.value(), ImGuiCond_Always);
-        ImPlot::PlotShaded("Delta Time", _time_stamps.data(), _deltas.data(), _deltas.size(), 0.0f);
-        ImPlot::EndPlot();
-      }
+      // if (ImPlot::BeginPlot("Delta Time Graph", ImVec2{-1, 150})) {
+      //   ImPlot::SetupAxes("Time (s)", "Delta Time (ms)", ImPlotAxisFlags_AutoFit, ImPlotAxisFlags_AutoFit);
+      //   ImPlot::SetupAxisLimits(ImAxis_X1, (_elapsed - max_time).value(), _elapsed.value(), ImGuiCond_Always);
+      //   ImPlot::PlotShaded("Delta Time", _time_stamps.data(), _deltas.data(), _deltas.size(), 0.0f);
+      //   ImPlot::EndPlot();
+      // }
 
       ImGui::End();
     }

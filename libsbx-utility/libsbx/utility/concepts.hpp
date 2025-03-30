@@ -23,8 +23,6 @@ concept one_of = is_one_of_v<Type, TypeList...>;
 template<typename Type, typename... TypeList>
 concept none_of = !is_one_of_v<Type, TypeList...>;
 
-
-
 template<typename T, typename... Rest>
 struct are_all_unique : std::bool_constant<!(std::is_same_v<T, Rest> || ...) && are_all_unique<Rest...>::value>{};
 
@@ -36,8 +34,6 @@ inline constexpr auto are_all_unique_v = are_all_unique<TypeList...>::value;
 
 template<typename... TypeList>
 concept all_unique = are_all_unique_v<TypeList...>;
-
-
 
 template<typename Type, typename... TypeList>
 struct is_convertible_to_one_of : std::false_type{ };
@@ -66,6 +62,19 @@ inline constexpr auto is_complete_v = is_complete<Type>::value;
 
 template<typename Type>
 concept complete = is_complete_v<Type>;
+
+template<typename To, typename From>
+struct constness_as {
+  using type = std::remove_const_t<To>;
+}; // struct constness_as
+
+template<typename To, typename From>
+struct constness_as<To, const From> {
+  using type = const To;
+}; // struct constness_as
+
+template<typename To, typename From>
+using constness_as_t = typename constness_as<To, From>::type;
 
 } // namespace sbx::utility
 

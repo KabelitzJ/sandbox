@@ -2,12 +2,12 @@
 #define LIBSBX_ECS_DETAIL_VIEW_ITERATOR_HPP_
 
 #include <libsbx/utility/assert.hpp>
+#include <libsbx/utility/type_list.hpp>
 
 #include <libsbx/memory/iterable_adaptor.hpp>
 
 #include <libsbx/ecs/sparse_set.hpp>
 #include <libsbx/ecs/entity.hpp>
-#include <libsbx/ecs/type_list.hpp>
 
 namespace sbx::ecs::detail {
 
@@ -175,7 +175,7 @@ private:
 
   template<std::size_t... Index>
   [[nodiscard]] auto _dereference(std::index_sequence<Index...>) const noexcept {
-    return std::tuple_cat(std::make_tuple(*_iterator), static_cast<Get*>(const_cast<constness_as_t<typename Get::base_type, Get>*>(std::get<Index>(_iterator._pools)))->get_as_tuple(*_iterator)...);
+    return std::tuple_cat(std::make_tuple(*_iterator), static_cast<Get*>(const_cast<utility::constness_as_t<typename Get::base_type, Get>*>(std::get<Index>(_iterator._pools)))->get_as_tuple(*_iterator)...);
   }
 
   Iterator _iterator;

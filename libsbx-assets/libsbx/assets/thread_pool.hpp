@@ -19,21 +19,20 @@
 
 namespace sbx::assets {
 
-template<std::size_t Size = std::thread::hardware_concurrency()>
 class thread_pool final {
 
 public:
 
-  thread_pool()
+  thread_pool(const std::size_t size = std::thread::hardware_concurrency())
   : _is_running{true} {
-    _workers.reserve(Size);
+    _workers.reserve(size);
 
-    for (auto i : std::views::iota(0u, Size)) {
+    for ([[maybe_unusedf]] auto i : std::views::iota(0u, size)) {
       _workers.emplace_back([this](){ _worker(); });
     }
   }
 
-  thraed_pool(const thread_pool&) = delete;
+  thread_pool(const thread_pool&) = delete;
   thread_pool(thread_pool&&) = delete;
 
   ~thread_pool() {
@@ -47,10 +46,6 @@ public:
 
   auto operator=(const thread_pool&) -> thread_pool& = delete;
   auto operator=(thread_pool&&) -> thread_pool& = delete;
-
-  auto size() const noexcept -> std::size_t {
-    return Size;
-  }
 
   template<typename Function, typename... Args>
   requires (std::is_invocable_v<Function, Args...>)
