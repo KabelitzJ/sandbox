@@ -460,6 +460,26 @@ auto graphics_pipeline<Vertex>::_update_definition(const std::filesystem::path& 
         utility::logger<"graphics">::warn("Could not parse 'sbx::graphics::polygon_mode' value '{}'", rasterization_state["polygon_mode"].get<std::string>());
       }
     }
+
+    if (rasterization_state.contains("cull_mode")) {
+      auto cull_mode = utility::from_string<graphics::cull_mode>(rasterization_state["cull_mode"].get<std::string>());
+
+      if (cull_mode) {
+        result.rasterization_state.cull_mode = *cull_mode;
+      } else {
+        utility::logger<"graphics">::warn("Could not parse 'sbx::graphics::cull_mode' value '{}'", rasterization_state["cull_mode"].get<std::string>());
+      }
+    }
+
+    if (rasterization_state.contains("front_face")) {
+      auto front_face = utility::from_string<graphics::front_face>(rasterization_state["front_face"].get<std::string>());
+
+      if (front_face) {
+        result.rasterization_state.front_face = *front_face;
+      } else {
+        utility::logger<"graphics">::warn("Could not parse 'sbx::graphics::front_face' value '{}'", rasterization_state["front_face"].get<std::string>());
+      }
+    }
   }
 
   if (definition.contains("defines")) {

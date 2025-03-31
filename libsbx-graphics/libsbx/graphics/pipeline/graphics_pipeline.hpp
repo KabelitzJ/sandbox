@@ -185,6 +185,32 @@ struct sbx::utility::enum_mapping<sbx::graphics::polygon_mode> {
 
 }; // struct sbx::utility::enum_mapping
 
+template<>
+struct sbx::utility::enum_mapping<sbx::graphics::cull_mode> {
+
+  using entry_type = sbx::utility::entry<sbx::graphics::cull_mode>;
+
+  static constexpr auto values = std::array<entry_type, 4u>{
+    entry_type{sbx::graphics::cull_mode::back, "back"},
+    entry_type{sbx::graphics::cull_mode::front, "front"},
+    entry_type{sbx::graphics::cull_mode::front_and_back, "front_and_back"},
+    entry_type{sbx::graphics::cull_mode::none, "none"}
+  };
+
+}; // struct sbx::utility::enum_mapping
+
+template<>
+struct sbx::utility::enum_mapping<sbx::graphics::front_face> {
+
+  using entry_type = sbx::utility::entry<sbx::graphics::front_face>;
+
+  static constexpr auto values = std::array<entry_type, 2u>{
+    entry_type{sbx::graphics::front_face::clockwise, "clockwise"},
+    entry_type{sbx::graphics::front_face::counter_clockwise, "counter_clockwise"}
+  };
+
+}; // struct sbx::utility::enum_mapping
+
 #include <libsbx/graphics/pipeline/graphics_pipeline.ipp>
 
 #endif // LIBSBX_GRAPHICS_PIPELINE_GRAPHICS_PIPELINE_HPP_
