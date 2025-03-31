@@ -95,7 +95,7 @@ application::application()
   tree_submeshes.push_back(sbx::scenes::static_mesh::submesh{2, sbx::math::color::white, sbx::scenes::static_mesh::material{0.2f, 0.5f, 0.2f, 0.0f}, _texture_ids["tree_4_leaves2"]});
 
   const auto grid_size = sbx::math::vector2{10.0f, 10.0f};
-  const auto cell_size = sbx::math::vector2{15.0f, 15.0f};
+  const auto cell_size = sbx::math::vector2{5.0f, 5.0f};
   const auto offset = grid_size * cell_size * 0.5f;
 
   auto forrest = scene.create_node("Forrest");
