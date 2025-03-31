@@ -23,6 +23,7 @@ const color color::white{1.0f, 1.0f, 1.0f, 1.0f};
 const color color::red{1.0f, 0.0f, 0.0f, 1.0f};
 const color color::green{0.0f, 1.0f, 0.0f, 1.0f};
 const color color::blue{0.0f, 0.0f, 1.0f, 1.0f};
+const color color::transparent{0.0f, 0.0f, 0.0f, 0.0f};
 
 template<component Component>
 auto extract_component(std::uint32_t rgba) noexcept -> std::float_t {

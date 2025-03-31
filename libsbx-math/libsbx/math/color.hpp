@@ -20,6 +20,7 @@ public:
   static const color red;
   static const color green;
   static const color blue;
+  static const color transparent;
 
   color(std::uint32_t rgba) noexcept;
 
