@@ -33,7 +33,7 @@ renderer::renderer()
       sbx::graphics::subpass_binding{0, {0, 1}}
     };
 
-    add_render_stage(std::move(attachments), std::move(subpass_bindings), sbx::graphics::viewport{sbx::math::vector2u{2048, 2048}});
+    add_render_stage(std::move(attachments), std::move(subpass_bindings), sbx::graphics::viewport{sbx::math::vector2u{4096, 4096}});
   }
 
   // Render stage 1: Scene

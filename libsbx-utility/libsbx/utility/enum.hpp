@@ -81,7 +81,7 @@ template<typename Enum>
 requires (std::is_enum_v<Enum>)
 struct entry {
   Enum value;
-  const char* name;
+  std::string_view name;
 }; // struct entry
 
 template<typename Enum>
@@ -97,7 +97,7 @@ concept mapped_enum = requires() {
 
 template<mapped_enum Enum>
 constexpr auto to_string(const Enum value) -> std::string {
-  auto entry = std::ranges::find_if (enum_mapping<Enum>::values, [&value](const auto& entry){ return entry.value == value; });
+  auto entry = std::ranges::find_if(enum_mapping<Enum>::values, [&value](const auto& entry){ return entry.value == value; });
 
   if (entry == std::ranges::end(enum_mapping<Enum>::values)) {
     return "<unknown>";
@@ -107,8 +107,8 @@ constexpr auto to_string(const Enum value) -> std::string {
 }
 
 template<mapped_enum Enum>
-constexpr auto from_string(const std::string& string) -> std::optional<Enum> {
-  auto entry = std::ranges::find_if (enum_mapping<Enum>::values, [&string](const auto& entry){ return entry.name == string; });
+constexpr auto from_string(const std::string& name) -> std::optional<Enum> {
+  auto entry = std::ranges::find_if(enum_mapping<Enum>::values, [&name](const auto& entry){ return entry.name == name; });
 
   if (entry == std::ranges::end(enum_mapping<Enum>::values)) {
     return std::nullopt;
