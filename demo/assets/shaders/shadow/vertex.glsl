@@ -6,11 +6,15 @@
 struct per_mesh_data {
   mat4 model;
   vec4 material; // x: metallic, y: roughness, z: flexiblity, w: anchor height
+  vec4 image_indices;
 }; // struct per_mesh_data
 
 layout(location = 0) in vec3 in_position;
 layout(location = 1) in vec3 in_normal;
 layout(location = 2) in vec2 in_uv;
+
+layout(location = 1) out vec2 out_uv;
+layout(location = 2) out flat uint out_albedo_image_index;
 
 layout(binding = 0) uniform uniform_scene {
   mat4 light_space;
@@ -38,6 +42,9 @@ void main() {
   } else {
     position = world_position;
   }
+
+  out_uv = in_uv;
+  out_albedo_image_index = uint(data.image_indices.x);
 
   gl_Position = scene.light_space * vec4(position, 1.0);
 }

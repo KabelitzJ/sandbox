@@ -116,6 +116,16 @@ public:
 
     auto mesh_nodes = scene.query<scenes::static_mesh>();
 
+    std::ranges::sort(mesh_nodes, [&camera_transform](const auto& lhs, const auto& rhs) {
+      const auto& lhs_transform = lhs.template get_component<math::transform>();
+      const auto& rhs_transform = rhs.template get_component<math::transform>();
+
+      const auto lhs_distance = (camera_transform.position() - lhs_transform.position()).length_squared();
+      const auto rhs_distance = (camera_transform.position() - rhs_transform.position()).length_squared();
+
+      return lhs_distance > rhs_distance;
+    });
+
     for (auto& node : mesh_nodes) {
       _submit_mesh(node);
     }

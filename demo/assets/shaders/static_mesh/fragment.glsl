@@ -6,7 +6,7 @@
 #include "../common/depth.glsl"
 #include "../common/shadow.glsl"
 
-#define ENABLE_SHADOWS 1
+#define ENABLE_SHADOWS 0
 
 #define MAX_IMAGE_ARRAY_SIZE 64
 
@@ -79,13 +79,17 @@ vec4 get_albedo() {
     return in_color;
   }
 
-  return texture(sampler2D(images[in_albedo_image_index], images_sampler), in_uv) * in_color;
+  return texture(sampler2D(images[in_albedo_image_index], images_sampler), in_uv).rgba * in_color;
 }
 
 void main(void) {
   vec3 world_position = in_position;
   vec3 normal = get_normal();
   vec4 albedo = get_albedo();
+
+  if (albedo.a < 0.01) {
+    discard;
+  }
 
   float metallic = in_material.x;
   float roughness = in_material.y;
@@ -102,7 +106,7 @@ void main(void) {
 
   float n_dot_l = dot(light_position, normal);
 
-  float light_intensity = smoothstep(0.0, 0.01, n_dot_l * shadow);
+  float light_intensity = smoothstep(0.0, 0.01, n_dot_l); // add shadow here (ndot_l * shadow)
   vec4 light = scene.light_color * light_intensity;
 
   vec3 view_direction = normalize(scene.camera_position - world_position);
