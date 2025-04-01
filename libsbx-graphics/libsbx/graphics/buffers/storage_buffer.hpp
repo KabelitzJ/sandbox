@@ -15,7 +15,7 @@ class storage_buffer : public buffer_base, public descriptor  {
 
 public:
 
-  inline static constexpr auto max_size = units::quantity_cast<units::byte>(units::kibibyte{64});
+  inline static constexpr auto max_size = units::quantity_cast<units::byte>(units::kibibyte{256});
 
   storage_buffer(VkDeviceSize size, memory::observer_ptr<const void> data = nullptr);
 

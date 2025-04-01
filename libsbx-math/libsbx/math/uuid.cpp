@@ -2,6 +2,6 @@
 
 namespace sbx::math {
 
-const uuid uuid::null{uuid::null_uui_tag{}};
+// const uuid uuid::null(){uuid::null_uui_tag{}};
 
 } // namespace sbx::math

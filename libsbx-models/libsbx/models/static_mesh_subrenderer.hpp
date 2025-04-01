@@ -76,29 +76,29 @@ public:
     _scene_uniform_handler.push("light_direction", sbx::math::vector3::normalized(scene_light.direction()));
     _scene_uniform_handler.push("light_color", scene_light.color());
 
-    auto point_light_nodes = scene.query<scenes::point_light>();
+    // auto point_light_nodes = scene.query<scenes::point_light>();
 
-    auto point_lights = std::vector<point_light>{};
-    auto point_light_count = std::uint32_t{0};
+    // auto point_lights = std::vector<point_light>{};
+    // auto point_light_count = std::uint32_t{0};
 
-    for (const auto& node : point_light_nodes) {
-      const auto model = scene.world_transform(node);
+    // for (const auto& node : point_light_nodes) {
+    //   const auto model = scene.world_transform(node);
 
-      const auto& light = node.get_component<scenes::point_light>();
+    //   const auto& light = node.get_component<scenes::point_light>();
 
-      const auto position = math::vector3{model[3]};
+    //   const auto position = math::vector3{model[3]};
 
-      point_lights.push_back(point_light{position, light.color(), light.radius()});
+    //   point_lights.push_back(point_light{position, light.color(), light.radius()});
       
-      ++point_light_count;
+    //   ++point_light_count;
 
-      if (point_light_count >= max_point_lights) {
-        break;
-      }
-    }
+    //   if (point_light_count >= max_point_lights) {
+    //     break;
+    //   }
+    // }
 
-    _point_lights_storage_handler.push(std::span<const point_light>{point_lights.data(), point_light_count});
-    _scene_uniform_handler.push("point_light_count", point_light_count);
+    // _point_lights_storage_handler.push(std::span<const point_light>{point_lights.data(), point_light_count});
+    _scene_uniform_handler.push("point_light_count", 0u);
 
     _scene_uniform_handler.push("time", std::fmod(core::engine::time().value() * 0.5f, 1.0f));
 
@@ -116,15 +116,15 @@ public:
 
     auto mesh_nodes = scene.query<scenes::static_mesh>();
 
-    std::ranges::sort(mesh_nodes, [&camera_transform](const auto& lhs, const auto& rhs) {
-      const auto& lhs_transform = lhs.template get_component<math::transform>();
-      const auto& rhs_transform = rhs.template get_component<math::transform>();
+    // std::ranges::sort(mesh_nodes, [&camera_transform](const auto& lhs, const auto& rhs) {
+    //   const auto& lhs_transform = lhs.template get_component<math::transform>();
+    //   const auto& rhs_transform = rhs.template get_component<math::transform>();
 
-      const auto lhs_distance = (camera_transform.position() - lhs_transform.position()).length_squared();
-      const auto rhs_distance = (camera_transform.position() - rhs_transform.position()).length_squared();
+    //   const auto lhs_distance = (camera_transform.position() - lhs_transform.position()).length_squared();
+    //   const auto rhs_distance = (camera_transform.position() - rhs_transform.position()).length_squared();
 
-      return lhs_distance > rhs_distance;
-    });
+    //   return lhs_distance > rhs_distance;
+    // });
 
     for (auto& node : mesh_nodes) {
       _submit_mesh(node);

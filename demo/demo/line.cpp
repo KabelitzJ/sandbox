@@ -27,7 +27,7 @@
 //       float x = -half_width + j * dx;
 
 //       const auto position = sbx::math::vector3{x, 0.0f, z};
-//       const auto color = sbx::math::color::white;
+//       const auto color = sbx::math::color::white();
 
 //       vertices.push_back(line_vertex3d{position, color});
 //     }

@@ -22,8 +22,8 @@ public:
   }; // struct material
 
   struct submesh {
-    std::uint32_t index;
-    math::color tint{math::color::white};
+    std::uint32_t index{0};
+    math::color tint{math::color::white()};
     static_mesh::material material{0.0f, 1.0f, 0.0f, 0.0f};
     std::optional<math::uuid> albedo_texture{std::nullopt};
     std::optional<math::uuid> normal_texture{std::nullopt};
@@ -35,9 +35,9 @@ public:
   : _mesh_id{mesh_id},
     _submeshes{submeshes} { }
 
-  static_mesh(const math::uuid& mesh_id, const math::color& tint = math::color::white, const static_mesh::material& material = static_mesh::material{}, const std::optional<math::uuid>& albedo_texture = std::nullopt)
+    static_mesh(const math::uuid& mesh_id, std::uint32_t index = 0, const math::color& tint = math::color::white(), const static_mesh::material& material = static_mesh::material{}, const std::optional<math::uuid>& albedo_texture = std::nullopt)
   : _mesh_id{mesh_id} {
-    _submeshes.push_back(submesh{0, tint, material, albedo_texture, std::nullopt, std::nullopt, std::nullopt});
+    _submeshes.push_back(submesh{index, tint, material, albedo_texture, std::nullopt, std::nullopt, std::nullopt});
   }
 
   auto mesh_id() const noexcept -> math::uuid {

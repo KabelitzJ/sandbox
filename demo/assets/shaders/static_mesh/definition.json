@@ -1,6 +1,6 @@
 {
-  "uses_depth": true,
-  "uses_transparency": true,
+  "depth": "read_write",
+  "uses_transparency": false,
   "rasterization_state": {
     "polygon_mode": "fill",
     "cull_mode": "none",

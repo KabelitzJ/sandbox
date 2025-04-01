@@ -75,8 +75,14 @@ enum class primitive_topology : std::uint8_t {
   patch_list = VK_PRIMITIVE_TOPOLOGY_PATCH_LIST,
 }; // enum class primitive_topology
 
+enum class depth : std::uint8_t {
+  disabled = 0,
+  read_write = 1,
+  read_only = 2
+}; // enum class depth_test
+
 struct pipeline_definition {
-  bool uses_depth{true};
+  graphics::depth depth{depth::read_write};
   bool uses_transparency{false};
   graphics::rasterization_state rasterization_state{};
   graphics::primitive_topology primitive_topology{graphics::primitive_topology::triangle_list};
@@ -181,6 +187,19 @@ struct sbx::utility::enum_mapping<sbx::graphics::polygon_mode> {
     entry_type{sbx::graphics::polygon_mode::fill, "fill"},
     entry_type{sbx::graphics::polygon_mode::line, "line"},
     entry_type{sbx::graphics::polygon_mode::point, "point"}
+  };
+
+}; // struct sbx::utility::enum_mapping
+
+template<>
+struct sbx::utility::enum_mapping<sbx::graphics::depth> {
+
+  using entry_type = sbx::utility::entry<sbx::graphics::depth>;
+
+  static constexpr auto values = std::array<entry_type, 3u>{
+    entry_type{sbx::graphics::depth::disabled, "disabled"},
+    entry_type{sbx::graphics::depth::read_write, "read_write"},
+    entry_type{sbx::graphics::depth::read_only, "read_only"}
   };
 
 }; // struct sbx::utility::enum_mapping

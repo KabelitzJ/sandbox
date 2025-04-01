@@ -30,6 +30,12 @@ class resolve_filter final : public filter<Vertex> {
 
   inline static constexpr auto max_point_lights = std::size_t{32};
 
+  struct point_light_data {
+    alignas(16) math::vector3 position;
+    alignas(16) math::color color;
+    alignas(16) std::float_t radius;
+  }; // struct point_light_data
+
 public:
 
   using vertex_type = base_type::vertex_type;
@@ -64,7 +70,8 @@ public:
 
     auto point_light_nodes = scene.query<scenes::point_light>();
 
-    auto point_lights = std::vector<point_light>{};
+    auto point_lights = std::vector<point_light_data>{};
+    point_lights.reserve(max_point_lights);
     auto point_light_count = std::uint32_t{0};
 
     for (const auto& node : point_light_nodes) {
@@ -74,7 +81,7 @@ public:
 
       const auto position = math::vector3{model[3]};
 
-      point_lights.push_back(point_light{position, light.color(), light.radius()});
+      point_lights.push_back(point_light_data{position, light.color(), light.radius()});
       
       ++point_light_count;
 
@@ -83,7 +90,7 @@ public:
       }
     }
 
-    _point_lights_storage_handler.push(std::span<const point_light>{point_lights.data(), point_light_count});
+    _point_lights_storage_handler.push(std::span<const point_light_data>{point_lights.data(), point_light_count});
     _scene_uniform_handler.push("point_light_count", point_light_count);
 
     pipeline.bind(command_buffer);
@@ -105,12 +112,6 @@ public:
   }
 
 private:
-
-  struct point_light {
-    alignas(16) math::vector3 position;
-    alignas(16) math::color color;
-    alignas(16) std::float_t radius;
-  }; // struct point_light
 
   std::unordered_map<std::string, std::string> _attachment_names;
 

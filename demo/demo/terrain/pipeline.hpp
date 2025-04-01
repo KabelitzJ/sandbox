@@ -10,7 +10,7 @@ namespace demo {
 class pipeline : public sbx::graphics::graphics_pipeline<sbx::models::vertex3d> {
 
   inline static constexpr auto pipeline_definition = sbx::graphics::pipeline_definition{
-    .uses_depth = true,
+    .depth = sbx::graphics::depth::read_write,
     .uses_transparency = false,
     .rasterization_state = sbx::graphics::rasterization_state{
       .polygon_mode = sbx::graphics::polygon_mode::fill,

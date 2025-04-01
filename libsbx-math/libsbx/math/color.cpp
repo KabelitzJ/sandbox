@@ -1,13 +1,14 @@
 #include <libsbx/math/color.hpp>
 
+#include <libsbx/utility/enum.hpp>
+
 namespace sbx::math {
 
-template<std::size_t Shift>
-constexpr auto extract(std::uint32_t rgba) noexcept -> std::uint8_t {
-  return static_cast<std::uint8_t>((rgba >> Shift) & 0xFFu);
+auto extract(std::uint32_t rgba, std::uint8_t shift) noexcept -> std::uint8_t {
+  return static_cast<std::uint8_t>((rgba >> shift) & 0xFFu);
 }
 
-constexpr auto scale(std::uint8_t component) noexcept -> std::float_t {
+auto scale(std::uint8_t component) noexcept -> std::float_t {
   return static_cast<std::float_t>(component) / 255.0f;
 }
 
@@ -18,23 +19,22 @@ enum class component : std::uint8_t {
   alpha = 0u
 }; // enum class component
 
-const color color::black{0.0f, 0.0f, 0.0f, 1.0f};
-const color color::white{1.0f, 1.0f, 1.0f, 1.0f};
-const color color::red{1.0f, 0.0f, 0.0f, 1.0f};
-const color color::green{0.0f, 1.0f, 0.0f, 1.0f};
-const color color::blue{0.0f, 0.0f, 1.0f, 1.0f};
-const color color::transparent{0.0f, 0.0f, 0.0f, 0.0f};
+// const color color::black(){0.0f, 0.0f, 0.0f, 1.0f};
+// const color color::white(){1.0f, 1.0f, 1.0f, 1.0f};
+// const color color::red{1.0f, 0.0f, 0.0f, 1.0f};
+// const color color::green{0.0f, 1.0f, 0.0f, 1.0f};
+// const color color::blue{0.0f, 0.0f, 1.0f, 1.0f};
+// const color color::transparent{0.0f, 0.0f, 0.0f, 0.0f};
 
-template<component Component>
-auto extract_component(std::uint32_t rgba) noexcept -> std::float_t {
-  return scale(extract<static_cast<std::size_t>(Component)>(rgba));
+auto extract_component(std::uint32_t rgba, component component) noexcept -> std::float_t {
+  return scale(extract(rgba, utility::to_underlying(component)));
 }
 
 color::color(std::uint32_t rgba) noexcept
-: _red(extract_component<component::red>(rgba)),
-  _green(extract_component<component::green>(rgba)),
-  _blue(extract_component<component::blue>(rgba)),
-  _alpha(extract_component<component::alpha>(rgba)) { }
+: _red(extract_component(rgba, component::red)),
+  _green(extract_component(rgba, component::green)),
+  _blue(extract_component(rgba, component::blue)),
+  _alpha(extract_component(rgba, component::alpha)) { }
 
 color::color(std::float_t red, std::float_t green, std::float_t blue, std::float_t alpha) noexcept
 : _red(red),

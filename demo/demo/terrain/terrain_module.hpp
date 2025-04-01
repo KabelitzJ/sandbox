@@ -48,7 +48,7 @@ public:
       for (auto x = 0u; x < grid.x(); ++x) {
         auto chunk = scene.create_child_node(node, fmt::format("Chunk{}{}", x, y));
 
-        chunk.add_component<sbx::scenes::static_mesh>(_mesh_id, sbx::math::color::white, sbx::scenes::static_mesh::material{0.0f, 1.0f, 0.0f, 0.0f}, _texture_id);
+        chunk.add_component<sbx::scenes::static_mesh>(_mesh_id, 0u, sbx::math::color::white(), sbx::scenes::static_mesh::material{0.0f, 1.0f, 0.0f, 0.0f}, _texture_id);
 
         const auto position = sbx::math::vector3{x * chunk_size.x() - offset.x(), 0.0f, y * chunk_size.y() - offset.y()};
 

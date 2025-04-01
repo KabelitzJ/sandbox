@@ -40,11 +40,11 @@
 
 namespace sbx::gizmos {
 
-struct point_light {
-  math::color color;
-  math::vector3 position;
-  std::float_t intensity;
-}; // struct point_light
+// struct point_light {
+//   math::color color;
+//   math::vector3 position;
+//   std::float_t intensity;
+// }; // struct point_light
 
 class gizmos_subrenderer final : public graphics::subrenderer {
 

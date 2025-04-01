@@ -21,12 +21,12 @@
 namespace demo {
 
 renderer::renderer()
-: _clear_color{sbx::math::color::black} {
+: _clear_color{sbx::math::color::black()} {
   // Render stage 0: Shadow map
   {
     auto attachments = std::vector<sbx::graphics::attachment>{
       sbx::graphics::attachment{0, "depth", sbx::graphics::attachment::type::depth},
-      sbx::graphics::attachment{1, "shadow_map", sbx::graphics::attachment::type::image, sbx::math::color::white, sbx::graphics::format::r32_sfloat, sbx::graphics::address_mode::clamp_to_edge}
+      sbx::graphics::attachment{1, "shadow_map", sbx::graphics::attachment::type::image, sbx::math::color::white(), sbx::graphics::format::r32_sfloat, sbx::graphics::address_mode::clamp_to_edge}
     };
 
     auto subpass_bindings = std::vector<sbx::graphics::subpass_binding>{

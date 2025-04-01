@@ -39,8 +39,8 @@ public:
   : base{stage},
     _pipeline{path, stage},
     _show_demo_window{false},
-    _clear_color{sbx::math::color::black},
-    _selected_node_id{sbx::math::uuid::null} {
+    _clear_color{sbx::math::color::black()},
+    _selected_node_id{sbx::math::uuid::null()} {
     // Initialize ImGui
     IMGUI_CHECKVERSION();
 
@@ -448,7 +448,7 @@ private:
 
           if (ImGui::Button("Delete", ImVec2{button_width, 0})) {
             scene.destroy_node(*node);
-            _selected_node_id = sbx::math::uuid::null;
+            _selected_node_id = sbx::math::uuid::null();
             ImGui::CloseCurrentPopup();
           }
         } else {

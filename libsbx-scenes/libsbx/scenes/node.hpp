@@ -25,6 +25,11 @@ public:
     return _registry->emplace<Component>(_entity, std::forward<Args>(args)...);
   }
 
+  template<typename Component, typename... Args>
+  auto get_or_add_component(Args&&... args) -> Component& {
+    return _registry->get_or_emplace<Component>(_entity, std::forward<Args>(args)...);
+  }
+
   template<typename Component>
   auto get_component() -> Component& {
     return _registry->get<Component>(_entity);

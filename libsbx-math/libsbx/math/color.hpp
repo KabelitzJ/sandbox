@@ -15,16 +15,29 @@ class color {
 
 public:
 
-  static const color black;
-  static const color white;
-  static const color red;
-  static const color green;
-  static const color blue;
-  static const color transparent;
-
   color(std::uint32_t rgba) noexcept;
 
   color(std::float_t red, std::float_t green, std::float_t blue, std::float_t alpha) noexcept;
+
+  static auto black() noexcept -> color {
+    return color{0.0f, 0.0f, 0.0f, 1.0f};
+  }
+
+  static auto white() noexcept -> color {
+    return color{1.0f, 1.0f, 1.0f, 1.0f};
+  }
+
+  static auto red() noexcept -> color {
+    return color{1.0f, 0.0f, 0.0f, 1.0f};
+  }
+
+  static auto green() noexcept -> color {
+    return color{0.0f, 1.0f, 0.0f, 1.0f};
+  }
+
+  static auto blue() noexcept -> color {
+    return color{0.0f, 0.0f, 1.0f, 1.0f};
+  }
 
   auto r() const noexcept -> const std::float_t&;
 

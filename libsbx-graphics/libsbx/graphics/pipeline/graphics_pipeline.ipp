@@ -213,22 +213,22 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
 
   if (definition.uses_transparency) {
     color_blend_attachment.blendEnable = true;
+    color_blend_attachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
     color_blend_attachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
     color_blend_attachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
     color_blend_attachment.colorBlendOp = VK_BLEND_OP_ADD;
     color_blend_attachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-    color_blend_attachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
-    color_blend_attachment.alphaBlendOp = VK_BLEND_OP_MAX;
-    color_blend_attachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+    color_blend_attachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+    color_blend_attachment.alphaBlendOp = VK_BLEND_OP_ADD;
   } else {
     color_blend_attachment.blendEnable = false;
+    color_blend_attachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
     color_blend_attachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
     color_blend_attachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
     color_blend_attachment.colorBlendOp = VK_BLEND_OP_ADD;
     color_blend_attachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
     color_blend_attachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
     color_blend_attachment.alphaBlendOp = VK_BLEND_OP_ADD;
-    color_blend_attachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
   }
 
   auto color_blend_attachments = std::vector<VkPipelineColorBlendAttachmentState>{render_stage.attachment_count(_stage.subpass), color_blend_attachment};
@@ -256,19 +256,31 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
 
   auto depth_stencil_state = VkPipelineDepthStencilStateCreateInfo{};
   depth_stencil_state.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+  depth_stencil_state.depthBoundsTestEnable = false;
+  depth_stencil_state.stencilTestEnable = false;
 
-  if (definition.uses_depth) {
-    depth_stencil_state.depthTestEnable = true;
-    depth_stencil_state.depthWriteEnable = true;
-    depth_stencil_state.depthCompareOp = VK_COMPARE_OP_LESS;
-    depth_stencil_state.depthBoundsTestEnable = false;
-    depth_stencil_state.stencilTestEnable = false;
-  } else {
-    depth_stencil_state.depthTestEnable = false;
-    depth_stencil_state.depthWriteEnable = false;
-    depth_stencil_state.depthCompareOp = VK_COMPARE_OP_ALWAYS;
-    depth_stencil_state.depthBoundsTestEnable = false;
-    depth_stencil_state.stencilTestEnable = false;
+  switch (definition.depth) {
+    case depth::disabled: {
+      depth_stencil_state.depthTestEnable = false;
+      depth_stencil_state.depthWriteEnable = false;
+      depth_stencil_state.depthCompareOp = VK_COMPARE_OP_ALWAYS;
+      break;
+    }
+    case depth::read_write: {
+      depth_stencil_state.depthTestEnable = true;
+      depth_stencil_state.depthWriteEnable = true;
+      depth_stencil_state.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
+      break;
+    }
+    case depth::read_only: {
+      depth_stencil_state.depthTestEnable = true;
+      depth_stencil_state.depthWriteEnable = false;
+      depth_stencil_state.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
+      break;
+    }
+    default: {
+      throw std::runtime_error{"Unsupported depth test type"};
+    }
   }
 
   const auto [binding_descriptions, attribute_descriptions] = vertex_input<Vertex>::description();
@@ -440,12 +452,18 @@ auto graphics_pipeline<Vertex>::_update_definition(const std::filesystem::path& 
 
   auto result = default_definition;
 
-  if (definition.contains("uses_depth")) {
-    result.uses_depth = definition["uses_depth"].get<bool>();
+  if (definition.contains("depth")) {
+    auto depth = utility::from_string<graphics::depth>(definition["depth"].get<std::string>());
+
+    if (depth) {
+      result.depth = *depth;
+    } else {
+      utility::logger<"graphics">::warn("Could not parse 'sbx::graphics::depth' value '{}'", definition["depth"].get<std::string>());
+    }
   }
 
   if (definition.contains("uses_transparency")) {
-    result.uses_depth = definition["uses_transparency"].get<bool>();
+    result.uses_transparency = definition["uses_transparency"].get<bool>();
   }
 
   if (definition.contains("rasterization_state")) {

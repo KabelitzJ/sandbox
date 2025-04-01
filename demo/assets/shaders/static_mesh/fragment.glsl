@@ -6,7 +6,7 @@
 #include "../common/depth.glsl"
 #include "../common/shadow.glsl"
 
-#define ENABLE_SHADOWS 0
+// #define ENABLE_SHADOWS 0
 
 #define MAX_IMAGE_ARRAY_SIZE 64
 
@@ -87,7 +87,7 @@ void main(void) {
   vec3 normal = get_normal();
   vec4 albedo = get_albedo();
 
-  if (albedo.a < 0.01) {
+  if (albedo.a < 0.8) {
     discard;
   }
 
@@ -96,11 +96,11 @@ void main(void) {
 
   vec4 light_space_position = DEPTH_BIAS * scene.light_space * vec4(world_position, 1.0);
 
-#ifdef ENABLE_SHADOWS
-  float shadow = calculate_shadow_pcf(shadow_map_image, light_space_position, normal, scene.light_direction);
-#else
-  float shadow = 1.0;
-#endif
+// #ifdef ENABLE_SHADOWS
+//   float shadow = calculate_shadow_pcf(shadow_map_image, light_space_position, normal, scene.light_direction);
+// #else
+//   float shadow = 1.0;
+// #endif
 
   vec3 light_position = normalize(-scene.light_direction);
 
@@ -121,4 +121,8 @@ void main(void) {
   vec4 rim = RIM_COLOR * rim_intensity;
 
   out_color = albedo * (AMBIENT_COLOR + light + specular + rim);
+  // out_color = vec4(vec3(albedo.r), 1.0);
+  // out_color = vec4(vec3(albedo), 0.5);
+  // out_color = vec4(vec3(albedo.a), 1.0);
+  // out_color = albedo;
 }

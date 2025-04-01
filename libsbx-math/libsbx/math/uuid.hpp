@@ -31,7 +31,7 @@ class uuid {
 
 public:
 
-  static const uuid null;
+  // static const uuid null;
 
   uuid() {
     // Taken from https://www.cryptosys.net/pki/uuid-rfc4122.html
@@ -70,6 +70,10 @@ public:
   }
 
   ~uuid() = default;
+
+  static auto null() -> uuid {
+    return uuid{null_uui_tag{}};
+  }
 
   auto operator==(const uuid& other) const noexcept -> bool {
     return std::ranges::equal(_bytes, other._bytes);
