@@ -106,6 +106,8 @@ application::application()
 
       tree.add_component<sbx::scenes::static_mesh>(_mesh_ids["tree_4"], tree_submeshes);
 
+      tree.add_component<sbx::scenes::sphere_collider>(sbx::math::vector3::zero, 1.0f);
+
       const auto position = (sbx::math::vector2{x, y} * cell_size - offset) + (sbx::math::vector2{sbx::math::random::next<std::float_t>(0.0f, 1.0f), sbx::math::random::next<std::float_t>(0.0f, 1.0f)} * cell_size);
 
       auto& tree_transform = tree.get_component<sbx::math::transform>();

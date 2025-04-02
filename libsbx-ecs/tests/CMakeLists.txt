@@ -1,32 +1,17 @@
-project(ecs VERSION 0.1.0 LANGUAGES CXX)
+project(ecs-tests VERSION 0.1.0 LANGUAGES CXX)
 
 message(STATUS "Configuring ${PROJECT_NAME}...")
 
-string(TOUPPER ${PROJECT_NAME} PROJECT_NAME_UPPER)
+add_executable(${PROJECT_NAME})
 
-configure_file("${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/version.hpp.in" "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/version.hpp" @ONLY)
-
-if(${SBX_BUILD_SHARED})
-  add_library(${PROJECT_NAME} SHARED)
-else()
-  add_library(${PROJECT_NAME} STATIC)
-endif()
-
-add_library(${CMAKE_PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
+find_package(fmt REQUIRED)
+find_package(GTest REQUIRED)
 
 target_sources(
   ${PROJECT_NAME}
   PRIVATE
-    "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/ecs.cpp"
+    "${PROJECT_SOURCE_DIR}/tests.cpp"
   PUBLIC
-    FILE_SET HEADERS
-    FILES
-      "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/ecs.hpp"
-      "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/entity.hpp"
-      "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/registry.hpp"
-      "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/sparse_set.hpp"
-      "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/storage.hpp"
-      "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/view.hpp"
 )
 
 target_include_directories(
@@ -38,10 +23,11 @@ target_include_directories(
 target_link_libraries(
   ${PROJECT_NAME}
   PUBLIC
+    # External dependencies
+    fmt::fmt
+    gtest::gtest
     # Internal dependencies
-    libsbx::utility
-    libsbx::core
-    libsbx::memory
+    libsbx::ecs
 )
 
 set_target_properties(
@@ -112,6 +98,4 @@ if(MINGW)
   )
 endif()
 
-if(${SBX_BUILD_TESTS})
-  add_subdirectory(tests)
-endif()
+

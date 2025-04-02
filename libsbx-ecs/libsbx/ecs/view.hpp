@@ -28,7 +28,6 @@ class basic_common_view {
 public:
 
   using common_type = Type;
-  using pointer = common_type*;
   using entity_type = typename Type::entity_type;
   using size_type = std::size_t;
   using difference_type = std::ptrdiff_t;
@@ -96,17 +95,17 @@ protected:
   : _pools{},
     _index{Get} { }
 
-  basic_common_view(std::array<const pointer, Get> value) noexcept
+  basic_common_view(std::array<const common_type*, Get> value) noexcept
   : _pools{value},
     _index{Get} {
     _unchecked_refresh();
   }
 
-  [[nodiscard]] auto pool_at(const size_type position) const noexcept -> const pointer {
+  [[nodiscard]] auto pool_at(const size_type position) const noexcept -> const common_type* {
     return _pools[position];
   }
 
-  auto set_pool_at(const size_type position, const pointer element) noexcept -> void {
+  auto set_pool_at(const size_type position, const common_type* element) noexcept -> void {
     utility::assert_that(element != nullptr, "Unexpected element");
     _pools[position] = element;
     refresh();
@@ -135,7 +134,7 @@ private:
     }
   }
 
-  std::array<const pointer, Get> _pools;
+  std::array<const common_type*, Get> _pools;
   size_type _index;
 
 }; // class basic_common_view
@@ -147,14 +146,13 @@ class basic_storage_view {
 public:
 
   using common_type = Type;
-  using pointer = common_type*;
   using entity_type = typename common_type::entity_type;
   using size_type = std::size_t;
   using difference_type = std::ptrdiff_t;
   using iterator = std::conditional_t<Policy == deletion_policy::in_place, detail::view_iterator<common_type, true, 1u>, typename common_type::iterator>;
   using reverse_iterator = std::conditional_t<Policy == deletion_policy::in_place, void, typename common_type::reverse_iterator>;
 
-  [[nodiscard]] auto handle() const noexcept -> const pointer {
+  [[nodiscard]] auto handle() const noexcept -> const common_type* {
     return _leading;
   }
 
@@ -283,14 +281,14 @@ protected:
 
   basic_storage_view() noexcept = default;
 
-  basic_storage_view(const pointer value) noexcept
+  basic_storage_view(const common_type* value) noexcept
   : _leading{value} {
     utility::assert_that(_leading->policy() == Policy, "Unexpected storage policy");
   }
 
 private:
 
-  const pointer _leading;
+  const common_type* _leading;
 
 }; // class basic_storage_view
 

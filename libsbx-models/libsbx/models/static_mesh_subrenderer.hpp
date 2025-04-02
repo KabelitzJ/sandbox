@@ -120,12 +120,21 @@ public:
 
     auto frustum = camera.view_frustum(view);
 
-    auto mesh_nodes = scene.query<scenes::static_mesh, scenes::sphere_collider>();
+    auto mesh_nodes = scene.query<scenes::static_mesh>();
+
+    utility::logger<"models">::debug("Rendering {} static meshes", mesh_nodes.size());
 
     auto visible_nodes = mesh_nodes | std::views::filter([&frustum](const scenes::node& node) {
+      if (!node.has_component<scenes::sphere_collider>()) {
+        return true;
+      }
+      
       const auto& collider = node.get_component<scenes::sphere_collider>();
-      return true;
+
+      return frustum.contains(collider);
     });
+
+    utility::logger<"models">::debug("Visible meshes: {}", std::ranges::distance(std::ranges::begin(visible_nodes), std::ranges::end(visible_nodes)));
 
     // std::ranges::sort(mesh_nodes, [&camera_transform](const auto& lhs, const auto& rhs) {
     //   const auto& lhs_transform = lhs.template get_component<math::transform>();

@@ -67,18 +67,19 @@ class view_iterator final {
 
 public:
 
-using value_type = typename iterator_traits::value_type;
-using pointer = typename iterator_traits::pointer;
-using reference = typename iterator_traits::reference;
-using difference_type = typename iterator_traits::difference_type;
-using iterator_category = std::forward_iterator_tag;
+  using common_type = Type;
+  using value_type = typename iterator_traits::value_type;
+  using pointer = typename iterator_traits::pointer;
+  using reference = typename iterator_traits::reference;
+  using difference_type = typename iterator_traits::difference_type;
+  using iterator_category = std::forward_iterator_tag;
 
   constexpr view_iterator() noexcept
   : _iterator{},
     _pools{},
     _index{} { }
 
-  view_iterator(iterator_type first, std::array<const pointer, Get> value, const std::size_t _index) noexcept
+  view_iterator(iterator_type first, std::array<const common_type*, Get> value, const std::size_t _index) noexcept
   : _iterator{first},
     _pools{value},
     _index{static_cast<difference_type>(_index)} {
@@ -117,8 +118,8 @@ private:
   }
 
   iterator_type _iterator;
+  std::array<const common_type*, Get> _pools;
   difference_type _index;
-  std::array<const pointer, Get> _pools;
 
 }; // class view_iterator
 
