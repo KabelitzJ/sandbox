@@ -21,13 +21,13 @@ static constexpr bool tombstone_check_v = ((sizeof...(Type) == 1u) && ... && (Ty
 //   return &placeholder;
 // }
 
-template<typename Iterator, typename Entity>
+template<std::forward_iterator Iterator, typename Entity>
 [[nodiscard]] auto all_of(Iterator first, const Iterator last, const Entity entity) noexcept -> bool {
   for (; (first != last) && (*first)->contains(entity); ++first) { }
   return first == last;
 }
 
-template<typename Iterator, typename Entity>
+template<std::forward_iterator Iterator, typename Entity>
 [[nodiscard]] auto none_of(Iterator first, const Iterator last, const Entity entity) noexcept -> bool {
   for (; (first != last) && !(*first)->contains(entity); ++first) { }
   return first == last;

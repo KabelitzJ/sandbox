@@ -28,6 +28,7 @@ class basic_common_view {
 public:
 
   using common_type = Type;
+  using pointer = common_type*;
   using entity_type = typename Type::entity_type;
   using size_type = std::size_t;
   using difference_type = std::ptrdiff_t;
@@ -95,17 +96,17 @@ protected:
   : _pools{},
     _index{Get} { }
 
-  basic_common_view(std::array<const Type *, Get> value) noexcept
+  basic_common_view(std::array<const pointer, Get> value) noexcept
   : _pools{value},
     _index{Get} {
     _unchecked_refresh();
   }
 
-  [[nodiscard]] auto pool_at(const size_type position) const noexcept -> const Type* {
+  [[nodiscard]] auto pool_at(const size_type position) const noexcept -> const pointer {
     return _pools[position];
   }
 
-  auto set_pool_at(const size_type position, const common_type* element) noexcept -> void {
+  auto set_pool_at(const size_type position, const pointer element) noexcept -> void {
     utility::assert_that(element != nullptr, "Unexpected element");
     _pools[position] = element;
     refresh();
@@ -134,7 +135,7 @@ private:
     }
   }
 
-  std::array<const common_type*, Get> _pools;
+  std::array<const pointer, Get> _pools;
   size_type _index;
 
 }; // class basic_common_view
@@ -146,13 +147,14 @@ class basic_storage_view {
 public:
 
   using common_type = Type;
+  using pointer = common_type*;
   using entity_type = typename common_type::entity_type;
   using size_type = std::size_t;
   using difference_type = std::ptrdiff_t;
   using iterator = std::conditional_t<Policy == deletion_policy::in_place, detail::view_iterator<common_type, true, 1u>, typename common_type::iterator>;
   using reverse_iterator = std::conditional_t<Policy == deletion_policy::in_place, void, typename common_type::reverse_iterator>;
 
-  [[nodiscard]] auto handle() const noexcept -> const common_type* {
+  [[nodiscard]] auto handle() const noexcept -> const pointer {
     return _leading;
   }
 
@@ -281,14 +283,14 @@ protected:
 
   basic_storage_view() noexcept = default;
 
-  basic_storage_view(const common_type* value) noexcept
+  basic_storage_view(const pointer value) noexcept
   : _leading{value} {
     utility::assert_that(_leading->policy() == Policy, "Unexpected storage policy");
   }
 
 private:
 
-  const common_type* _leading;
+  const pointer _leading;
 
 }; // class basic_storage_view
 
@@ -303,9 +305,12 @@ struct get_t final : utility::type_list<Type...> {
 template<typename... Type>
 inline constexpr get_t<Type...> get{};
 
+template<typename>
+class basic_view;
+
 template<typename... Get>
 requires (sizeof...(Get) != 0u)
-class basic_view : public detail::basic_common_view<std::common_type_t<typename Get::base_type...>, detail::tombstone_check_v<Get...>, sizeof...(Get)> {
+class basic_view<get_t<Get...>> : public detail::basic_common_view<std::common_type_t<typename Get::base_type...>, detail::tombstone_check_v<Get...>, sizeof...(Get)> {
 
   using base_type = detail::basic_common_view<std::common_type_t<typename Get::base_type...>, detail::tombstone_check_v<Get...>, sizeof...(Get)>;
 
@@ -431,7 +436,7 @@ public:
     *this = basic_view{element};
   }
 
-  [[nodiscard]] Get *operator->() const noexcept {
+  [[nodiscard]] auto operator->() const noexcept -> Get* {
     return storage();
   }
 

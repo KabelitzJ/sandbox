@@ -53,8 +53,20 @@ public:
   template<typename... Components>
   auto query() -> std::vector<node> {
     auto view = _registry.view<Components...>();
+
+    auto each = view.each();
+
+    for (auto itr = each.begin(); itr != each.end(); ++itr) {
+      
+    }
+
+    for (auto entity : each) {
+      std::cout << std::type_index{typeid(entity)}.name() << std::endl;
+    }
+
+    static_assert(std::ranges::range<decltype(view.each())>);
      
-    return view | ranges::views::transform([&](auto& entity) { return node{&_registry, entity}; }) | ranges::to<std::vector>();
+    return ranges::views::all(view.each()) | ranges::views::transform([&](auto& entity) { return node{&_registry, entity}; }) | ranges::to<std::vector>();
   }
 
   auto light() -> directional_light& {

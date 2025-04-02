@@ -61,11 +61,15 @@ public:
 
     auto& camera = camera_node.get_component<scenes::camera>();
 
-    _scene_uniform_handler.push("projection", camera.projection());
+    const auto& projection = camera.projection();
+
+    _scene_uniform_handler.push("projection", projection);
 
     const auto& camera_transform = camera_node.get_component<math::transform>();
 
-    _scene_uniform_handler.push("view", math::matrix4x4::inverted(camera_transform.as_matrix()));
+    const auto view = math::matrix4x4::inverted(camera_transform.as_matrix());
+
+    _scene_uniform_handler.push("view", view);
 
     _scene_uniform_handler.push("camera_position", camera_transform.position());
 
@@ -114,7 +118,14 @@ public:
     _static_meshes.clear();
     _images.clear();
 
-    auto mesh_nodes = scene.query<scenes::static_mesh>();
+    auto frustum = camera.view_frustum(view);
+
+    auto mesh_nodes = scene.query<scenes::static_mesh, scenes::sphere_collider>();
+
+    auto visible_nodes = mesh_nodes | std::views::filter([&frustum](const scenes::node& node) {
+      const auto& collider = node.get_component<scenes::sphere_collider>();
+      return true;
+    });
 
     // std::ranges::sort(mesh_nodes, [&camera_transform](const auto& lhs, const auto& rhs) {
     //   const auto& lhs_transform = lhs.template get_component<math::transform>();
@@ -126,7 +137,7 @@ public:
     //   return lhs_distance > rhs_distance;
     // });
 
-    for (auto& node : mesh_nodes) {
+    for (auto& node : visible_nodes) {
       _submit_mesh(node);
     }
 
