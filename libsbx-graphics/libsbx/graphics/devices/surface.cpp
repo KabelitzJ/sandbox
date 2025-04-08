@@ -1,5 +1,9 @@
 #include <libsbx/graphics/devices/surface.hpp>
 
+#include <vulkan/vk_enum_string_helper.h>
+
+#include <libsbx/utility/logger.hpp>
+
 #include <libsbx/core/engine.hpp>
 
 #include <libsbx/devices/devices_module.hpp>
@@ -76,6 +80,8 @@ auto surface::_choose_swap_surface_format(const std::vector<VkSurfaceFormatKHR>&
       return available_format;
     }
   }
+
+  utility::logger<"graphics">::warn("Could not find desired surface format");
 
   return available_formats[0];
 }

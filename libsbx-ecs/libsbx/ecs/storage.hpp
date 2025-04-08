@@ -20,11 +20,11 @@
 namespace sbx::ecs {
 
 template<typename Type, typename Entity, memory::allocator_for<Type> Allocator = std::allocator<Type>>
-class basic_storage : public basic_sparse_set<Entity, typename std::allocator_traits<Allocator>::template rebind_alloc<Entity>> {
+class basic_storage : public basic_sparse_set<Entity, memory::rebound_allocator_t<Allocator, Entity>> {
 
   using allocator_traits = std::allocator_traits<Allocator>;
-  using container_type = std::vector<typename allocator_traits::pointer, typename allocator_traits::template rebind_alloc<typename allocator_traits::pointer>>;
-  using underlying_type = basic_sparse_set<Entity, typename allocator_traits::template rebind_alloc<Entity>>;
+  using container_type = std::vector<typename allocator_traits::pointer, memory::rebound_allocator_t<Allocator, typename allocator_traits::pointer>>;
+  using underlying_type = basic_sparse_set<Entity, memory::rebound_allocator_t<Allocator, Entity>>;
   using underlying_iterator = typename underlying_type::basic_iterator;
   using component_traits = component_traits<Type, Entity>;
 
