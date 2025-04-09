@@ -132,6 +132,10 @@ auto scene::world_transform(const node& node) -> math::matrix4x4 {
   return world * transform.as_matrix();
 }
 
+auto scene::world_position(const node& node) -> math::vector3 {
+  return math::vector3{world_transform(node)[3]};
+}
+
 auto scene::_load_assets(const YAML::Node& assets) -> void {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 

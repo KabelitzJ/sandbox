@@ -124,14 +124,20 @@ public:
 
     utility::logger<"models">::debug("Rendering {} static meshes", mesh_nodes.size());
 
-    auto visible_nodes = mesh_nodes | std::views::filter([&frustum](const scenes::node& node) {
-      if (!node.has_component<scenes::sphere_collider>()) {
+    const auto view_projection = projection * view;
+
+    auto visible_nodes = mesh_nodes | std::views::filter([&scene, &view_projection, &frustum](const scenes::node& node) {
+      if (!node.has_component<scenes::collider>()) {
         return true;
       }
       
-      const auto& collider = node.get_component<scenes::sphere_collider>();
+      const auto& collider = node.get_component<scenes::collider>();
 
-      return frustum.contains(collider);
+      const auto model = scene.world_transform(node);
+
+      const auto mvp = view_projection * model;
+
+      return frustum.intersects(mvp, collider);
     });
 
     utility::logger<"models">::debug("Visible meshes: {}", std::ranges::distance(std::ranges::begin(visible_nodes), std::ranges::end(visible_nodes)));
