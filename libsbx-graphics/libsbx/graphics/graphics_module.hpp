@@ -6,6 +6,8 @@
 #include <vector>
 #include <typeindex>
 
+#include <vk_mem_alloc.h>
+
 #include <libsbx/core/module.hpp>
 #include <libsbx/core/delegate.hpp>
 
@@ -217,6 +219,8 @@ private:
   std::vector<std::unique_ptr<graphics::command_buffer>> _compute_command_buffers{};
 
   std::unique_ptr<graphics::renderer> _renderer{};
+
+  VmaAllocator _allocator;
 
   struct asset_container_base {
     virtual ~asset_container_base() = default;

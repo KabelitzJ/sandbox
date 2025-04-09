@@ -44,11 +44,11 @@ void main() {
 
   vec3 world_position = vec3(data.model * vec4(in_position, 1.0));
 
-  float flexiblity = data.material.z;
+  float flexibility = data.material.z;
   float anchor_height = data.material.w;
 
-  if (flexiblity > 0.0) {
-    out_position = wind_effect(world_position, in_position, scene.time, flexiblity, anchor_height, MAX_ANCHOR_HEIGHT);
+  if (flexibility > 0.0) {
+    out_position = wind_effect(world_position, in_position, scene.time, flexibility, anchor_height, MAX_ANCHOR_HEIGHT);
   } else {
     out_position = world_position;
   }

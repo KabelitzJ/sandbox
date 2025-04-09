@@ -1,6 +1,8 @@
 #ifndef LIBSBX_SCENES_COMPONENTS_CAMERA_HPP_
 #define LIBSBX_SCENES_COMPONENTS_CAMERA_HPP_
 
+#include <variant>
+
 #include <libsbx/math/vector3.hpp>
 #include <libsbx/math/matrix4x4.hpp>
 #include <libsbx/math/angle.hpp>
@@ -12,7 +14,12 @@ struct aabb_collider {
   math::vector3 max;
 }; // struct box_collider
 
-using collider = std::variant<aabb_collider>;
+struct sphere_collider {
+  math::vector3 center;
+  std::float_t radius;
+}; // struct sphere_collider
+
+using collider = std::variant<aabb_collider, sphere_collider>;
 
 class frustum {
 
@@ -82,7 +89,7 @@ private:
 
 }; // struct frustum
 
-class camera {
+class frustum {
 
 public:
 

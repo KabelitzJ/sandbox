@@ -2,6 +2,9 @@
 
 #include <fmt/format.h>
 
+#define VMA_IMPLEMENTATION
+#include "vk_mem_alloc.h"
+
 #include <libsbx/utility/fast_mod.hpp>
 #include <libsbx/utility/logger.hpp>
 
@@ -29,6 +32,18 @@ graphics_module::graphics_module()
   window.on_framebuffer_resized() += [this]([[maybe_unused]] const auto& event) {
     _is_framebuffer_resized = true;
   };
+
+  auto vulkan_functions = VmaVulkanFunctions{};
+  vulkan_functions.vkGetInstanceProcAddr = vkGetInstanceProcAddr;
+  vulkan_functions.vkGetDeviceProcAddr = vkGetDeviceProcAddr;
+
+  auto allocator_info = VmaAllocatorCreateInfo{};
+  allocator_info.physicalDevice = _physical_device->handle();
+  allocator_info.device = _logical_device->handle();
+  allocator_info.instance = _instance->handle();
+  allocator_info.pVulkanFunctions = &vulkan_functions;
+
+  vmaCreateAllocator(&allocator_info, &_allocator);
 }
 
 graphics_module::~graphics_module() {
@@ -55,6 +70,8 @@ graphics_module::~graphics_module() {
   for (const auto& [type, container] : _asset_containers) {
     container->clear();
   }
+
+  vmaDestroyAllocator(_allocator);
 }
 
 auto graphics_module::update() -> void {

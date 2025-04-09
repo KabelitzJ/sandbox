@@ -14,6 +14,11 @@ class basic_matrix {
 
 public:
 
+  enum class direction : std::uint8_t {
+    column = 0u,
+    row = 1u
+  }; // enum class direction
+
   using value_type = Type;
   using reference = value_type&;
   using const_reference = const value_type&;
@@ -38,6 +43,8 @@ public:
 
   template<scalar Other>
   constexpr auto operator/=(Other scalar) noexcept -> basic_matrix&;
+
+  constexpr auto row(const size_type row) const noexcept -> basic_vector<Columns, value_type>;
 
 protected:
 

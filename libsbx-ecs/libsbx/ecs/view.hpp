@@ -303,6 +303,14 @@ struct get_t final : utility::type_list<Type...> {
 template<typename... Type>
 inline constexpr get_t<Type...> get{};
 
+template<typename... Type>
+struct exclude_t final : utility::type_list<Type...> {
+  explicit constexpr exclude_t() = default;
+}; // struct exclude
+
+template<typename... Type>
+inline constexpr exclude_t<Type...> exclude{};
+
 template<typename>
 class basic_view;
 
