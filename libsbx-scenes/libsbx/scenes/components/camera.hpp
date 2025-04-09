@@ -41,35 +41,11 @@ public:
 private:
 
   auto _intersects(const math::matrix4x4& mvp, const aabb_collider& aabb) const noexcept -> bool {
-    const auto corners = std::array<math::vector4, 8u>{
-      math::vector4{aabb.min.x(), aabb.min.y(), aabb.min.z(), 1.0f}, // x y z
-      math::vector4{aabb.max.x(), aabb.min.y(), aabb.min.z(), 1.0f}, // X y z
-      math::vector4{aabb.min.x(), aabb.max.y(), aabb.min.z(), 1.0f}, // x Y z
-      math::vector4{aabb.max.x(), aabb.max.y(), aabb.min.z(), 1.0f}, // X Y z
-
-      math::vector4{aabb.min.x(), aabb.min.y(), aabb.max.z(), 1.0f}, // x y Z
-      math::vector4{aabb.max.x(), aabb.min.y(), aabb.max.z(), 1.0f}, // X y Z
-      math::vector4{aabb.min.x(), aabb.max.y(), aabb.max.z(), 1.0f}, // x Y Z
-      math::vector4{aabb.max.x(), aabb.max.y(), aabb.max.z(), 1.0f}, // X Y Z
-    };
-
-    auto is_inside = false;
-
-    for (const auto& corner : corners) {
-      // Transform vertex
-      auto global_corner = mvp * corner;
-      // Check vertex against clip space bounds
-      is_inside = is_inside || within(global_corner);
-    }
-    return is_inside;
+    return false;
   }
 
-  auto within(const math::vector4& corner) const noexcept -> bool {
-    return within(-corner.w(), corner.x(), corner.w()) && within(-corner.w(), corner.y(), corner.w()) && within(0.0f, corner.z(), corner.w());
-  }
-
-  auto within(std::float_t min, std::float_t value, std::float_t max) const noexcept -> bool {
-    return min <= value && value <= max;
+  auto _intersects(const math::matrix4x4& mvp, const sphere_collider& sphere) const noexcept -> bool {
+    return false;
   }
 
   struct plane {
@@ -89,7 +65,7 @@ private:
 
 }; // struct frustum
 
-class frustum {
+class camera {
 
 public:
 
