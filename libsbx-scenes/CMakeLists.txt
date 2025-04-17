@@ -58,6 +58,7 @@ target_link_libraries(
     # Internal dependencies
     libsbx::utility
     libsbx::math
+    libsbx::memory
     libsbx::ecs
     libsbx::signals
     libsbx::core

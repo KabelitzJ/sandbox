@@ -13,6 +13,8 @@
 
 #include <yaml-cpp/yaml.h>
 
+#include <libsbx/memory/octtree.hpp>
+
 #include <libsbx/ecs/registry.hpp>
 #include <libsbx/ecs/entity.hpp>
 
@@ -92,6 +94,8 @@ private:
   ecs::registry _registry;
   node _root;
   node _camera;
+
+  memory::octree<math::uuid> _octree;
 
   directional_light _light;
 

@@ -35,7 +35,8 @@ scene::scene(const std::filesystem::path& path)
 : _registry{}, 
   _root{&_registry, _registry.create()},
   _camera{&_registry, _registry.create()},
-  _light{math::vector3{-1.0, -1.0, -1.0}, math::color::white()} {
+  _light{math::vector3{-1.0, -1.0, -1.0}, math::color::white()},
+  _octree{math::volume{math::vector3{-1000.0f, -1000.0f, -1000.0f}, math::vector3{1000.0f, 1000.0f, 1000.0f}}} {
   // [NOTE] KAJ 2023-10-17 : Initialize root node
   auto& root_id = _root.add_component<scenes::id>();
   _root.add_component<scenes::relationship>(root_id);

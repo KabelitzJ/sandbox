@@ -1,56 +1,16 @@
 #ifndef LIBSBX_PHYSICS_OCTREE_HPP_
 #define LIBSBX_PHYSICS_OCTREE_HPP_
 
-#include <range/v3/all.hpp>
-
 #include <libsbx/utility/enum.hpp>
 
 #include <libsbx/math/vector2.hpp>
 #include <libsbx/math/vector3.hpp>
 #include <libsbx/math/uuid.hpp>
+#include <libsbx/math/volume.hpp>
 
 #include <libsbx/memory/static_vector.hpp>
 
-namespace sbx::physics {
-
-class volume {
-
-public:
-
-  volume(const math::vector3& min, const math::vector3& max) noexcept
-  : _min{min}, 
-    _max{max} { }
-
-  auto min() const noexcept -> const math::vector3& {
-    return _min;
-  }
-
-  auto max() const noexcept -> const math::vector3& {
-    return _max;
-  }
-
-  auto center() const noexcept -> math::vector3 {
-    return (_min + _max) / 2.0f;
-  }
-
-  auto contains(const math::vector3& point) const noexcept -> bool {
-    return point.x() >= _min.x() && point.x() <= _max.x() && point.y() >= _min.y() && point.y() <= _max.y() && point.z() >= _min.z() && point.z() <= _max.z();
-  }
-
-  auto contains(const volume& other) const noexcept -> bool {
-    return _min.x() <= other.min().x() && _min.y() <= other.min().y() && _min.z() <= other.min().z() && _max.x() >= other.max().x() && _max.y() >= other.max().y() && _max.z() >= other.max().z();
-  }
-
-  auto intersects(const volume& other) const noexcept -> bool {
-    return _min.x() <= other.max().x() && _max.x() >= other.min().x() && _min.y() <= other.max().y() && _max.y() >= other.min().y() && _min.z() <= other.max().z() && _max.z() >= other.min().z();
-  }
-
-private:
-
-  math::vector3 _min;
-  math::vector3 _max;
-
-}; // class volume
+namespace sbx::memory {
 
 template<typename Type, std::size_t Threshold = 16u, std::size_t Depth = 8u>
 class octree {
@@ -64,7 +24,7 @@ class octree {
 
     struct value_type {
       Type value;
-      volume bounds;
+      math::volume bounds;
     }; // struct value_type
 
     inline constexpr static auto null = static_cast<id>(-1);
@@ -88,7 +48,7 @@ class octree {
       values.push_back(std::move(value));
     }
 
-    static auto find_volume(const volume& outer, const volume& inner) noexcept -> std::optional<std::uint32_t> {
+    static auto find_volume(const math::volume& outer, const math::volume& inner) noexcept -> std::optional<std::uint32_t> {
       auto center = outer.center();
 
       if (!outer.contains(inner)) {
@@ -130,20 +90,20 @@ class octree {
       return std::nullopt;
     }
 
-    static auto child_bounds(const volume& outer, const std::uint32_t index) -> volume {
+    static auto child_bounds(const math::volume& outer, const std::uint32_t index) -> math::volume {
       const auto min = outer.min();
       const auto max = outer.max();
       const auto center = (min + max) * 0.5f;
 
       switch (index) {
-        case 0: return volume{min, center};
-        case 1: return volume{math::vector3{center.x(), min.y(), min.z()}, math::vector3{max.x(), center.y(), center.z()}};
-        case 2: return volume{math::vector3{min.x(), center.y(), min.z()}, math::vector3{center.x(), max.y(), center.z()}};
-        case 3: return volume{math::vector3{center.x(), center.y(), min.z()}, math::vector3{max.x(), max.y(), center.z()}};
-        case 4: return volume{math::vector3{min.x(), min.y(), center.z()}, math::vector3{center.x(), center.y(), max.z()}};
-        case 5: return volume{math::vector3{center.x(), min.y(), center.z()}, math::vector3{max.x(), center.y(), max.z()}};
-        case 6: return volume{math::vector3{min.x(), center.y(), center.z()}, math::vector3{center.x(), max.y(), max.z()}};
-        case 7: return volume{center, max};
+        case 0: return math::volume{min, center};
+        case 1: return math::volume{math::vector3{center.x(), min.y(), min.z()}, math::vector3{max.x(), center.y(), center.z()}};
+        case 2: return math::volume{math::vector3{min.x(), center.y(), min.z()}, math::vector3{center.x(), max.y(), center.z()}};
+        case 3: return math::volume{math::vector3{center.x(), center.y(), min.z()}, math::vector3{max.x(), max.y(), center.z()}};
+        case 4: return math::volume{math::vector3{min.x(), min.y(), center.z()}, math::vector3{center.x(), center.y(), max.z()}};
+        case 5: return math::volume{math::vector3{center.x(), min.y(), center.z()}, math::vector3{max.x(), center.y(), max.z()}};
+        case 6: return math::volume{math::vector3{min.x(), center.y(), center.z()}, math::vector3{center.x(), max.y(), max.z()}};
+        case 7: return math::volume{center, max};
       }
 
       throw std::runtime_error("Invalid index");
@@ -165,13 +125,13 @@ public:
   using reference = value_type&;
   using const_reference = const value_type&;
 
-  octree(const volume& bounds) noexcept
+  octree(const math::volume& bounds) noexcept
   : _bounds{bounds},
     _root{0u} {
     _nodes.push_back(node{});
   }
 
-  auto insert(const value_type& value, const volume& bounds) noexcept -> void {
+  auto insert(const value_type& value, const math::volume& bounds) noexcept -> void {
     _insert(_root, _bounds, value, bounds, 0u);
   }
 
@@ -183,9 +143,13 @@ public:
     return intersections;
   }
 
+  auto clear() -> void {
+    _nodes.clear();
+  }
+
 private:
 
-  auto _insert(const node::id node_id, const volume& bounds, const value_type& value, const volume& value_bounds, const std::size_t current_depth) noexcept -> void {
+  auto _insert(const node::id node_id, const math::volume& bounds, const value_type& value, const math::volume& value_bounds, const std::size_t current_depth) noexcept -> void {
     if (!bounds.contains(value_bounds)) {
       return;
     }
@@ -208,7 +172,7 @@ private:
     }
   }
 
-  auto _split(node::id node_id, const volume& bounds) -> void {
+  auto _split(node::id node_id, const math::volume& bounds) -> void {
     const auto current_size = _nodes.size();
 
     for (auto&& [i, child] : ranges::views::enumerate(_nodes[node_id].children)) {
@@ -233,7 +197,7 @@ private:
     _nodes[node_id].values = new_values;
   }
 
-  auto _intersections(node::id node_id, const volume& bounds, std::vector<intersection>& intersections) -> void {
+  auto _intersections(node::id node_id, const math::volume& bounds, std::vector<intersection>& intersections) -> void {
     for (auto i : std::views::iota(0u, _nodes[node_id].values.size())) {
       for (auto j : std::views::iota(0u, i)) {
         if (_nodes[node_id].values[i].bounds.intersects(_nodes[node_id].values[j].bounds)) {
@@ -257,7 +221,7 @@ private:
     }
   }
 
-  auto _intersections_with_descendants(node::id node_id, const value_type& value, const volume& value_bounds, std::vector<intersection>& intersections) -> void {
+  auto _intersections_with_descendants(node::id node_id, const value_type& value, const math::volume& value_bounds, std::vector<intersection>& intersections) -> void {
     for (const auto& [node_value, bound] :  _nodes[node_id].values) {
       if (bound.intersects(value_bounds)) {
         intersections.push_back({value, node_value});
@@ -271,12 +235,12 @@ private:
     }
   }
 
-  volume _bounds;
+  math::volume _bounds;
   node::id _root;
   std::vector<node> _nodes;
 
 }; // class octree
 
-} // namespace sbx::physics
+} // namespace sbx::memory
 
 #endif // LIBSBX_PHYSICS_OCTREE_HPP_
