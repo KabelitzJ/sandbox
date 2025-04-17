@@ -9,63 +9,48 @@
 
 namespace sbx::scenes {
 
+struct aabb_collider {
+  math::vector3 min;
+  math::vector3 max;
+}; // struct box_collider
+
 struct sphere_collider {
   math::vector3 center;
   std::float_t radius;
 }; // struct sphere_collider
 
-struct aabb_collider {
-  math::vector3 min;
-  math::vector3 max;
-}; // struct aabb_collider
-
-using collider = std::variant<sphere_collider, aabb_collider>;
+using collider = std::variant<aabb_collider, sphere_collider>;
 
 class frustum {
 
 public:
 
   frustum(const math::matrix4x4& view_projection) {
-    _planes[0] = _extract_plane(view_projection, 0, 0);
-    _planes[1] = _extract_plane(view_projection, 0, 1);
-    _planes[2] = _extract_plane(view_projection, 1, 0);
-    _planes[3] = _extract_plane(view_projection, 1, 1);
-    _planes[4] = _extract_plane(view_projection, 2, 0);
-    _planes[5] = _extract_plane(view_projection, 2, 1);
+    _planes[0] = _extract_plane(view_projection, 0, 0); // left
+    _planes[1] = _extract_plane(view_projection, 0, 1); // right
+    _planes[2] = _extract_plane(view_projection, 1, 0); // bottom
+    _planes[3] = _extract_plane(view_projection, 1, 1); // top
+    _planes[4] = _extract_plane(view_projection, 2, 0); // near
+    _planes[5] = _extract_plane(view_projection, 2, 1); // far
   }
 
-  auto intersects(const collider& collider) const noexcept -> bool {
-    return std::visit([this](const auto& collider){ return _intersects(collider); }, collider);
-  }
+  auto intersects(const math::matrix4x4& mvp, const collider& collider) const noexcept -> bool {
+    return std::visit([this, &mvp](const auto& value) { return _intersects(mvp, value); }, collider);
+  } 
 
 private:
 
-  auto _intersects(const sphere_collider& sphere) const noexcept -> bool {
-    for (const auto& plane : _planes) {
-      const auto distance = math::vector3::dot(plane.normal, sphere.center) + plane.distance;
-
-      if (distance < -sphere.radius) {
-        return false;
-      }
-    }
-
-    return true;
+  auto _intersects(const math::matrix4x4& mvp, const aabb_collider& aabb) const noexcept -> bool {
+    return false;
   }
 
-  auto _intersects(const aabb_collider& aabb) const noexcept -> bool {
+  auto _intersects(const math::matrix4x4& mvp, const sphere_collider& sphere) const noexcept -> bool {
     return false;
   }
 
   struct plane {
     math::vector3 normal;
     std::float_t distance;
-
-    auto normalize() -> void {
-      const auto length = normal.length();
-
-      normal /= length;
-      distance /= length;
-    }
   }; // struct plane
 
   auto _extract_plane(const math::matrix4x4& matrix, std::size_t row_a, std::size_t row_b) const -> plane {
@@ -76,7 +61,7 @@ private:
     return plane{normal / length, row.w() / length};
   }
 
-  std::array<plane, 6u> _planes;
+  std::array<plane, 6> _planes;
 
 }; // struct frustum
 
@@ -130,9 +115,7 @@ public:
   }
 
   auto view_frustum(const math::matrix4x4& view) const noexcept -> frustum {
-    const auto view_projection = _projection * view;
-
-    return frustum{view_projection};
+    return frustum{_projection * view};
   }
 
 private:

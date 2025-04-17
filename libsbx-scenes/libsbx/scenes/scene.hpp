@@ -52,6 +52,8 @@ public:
 
   auto world_transform(const node& node) -> math::matrix4x4;
 
+  auto world_position(const node& node) -> math::vector3;
+
   template<typename... Components>
   auto query() -> std::vector<node> {
     auto view = _registry.view<Components...>();
