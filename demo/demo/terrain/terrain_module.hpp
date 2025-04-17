@@ -10,6 +10,8 @@
 #include <libsbx/graphics/graphics_module.hpp>
 
 #include <libsbx/scenes/scenes_module.hpp>
+#include <libsbx/scenes/components/camera.hpp>
+#include <libsbx/scenes/components/static_mesh.hpp>
 
 #include <demo/terrain/voronoi.hpp> 
 
@@ -51,6 +53,8 @@ public:
         chunk.add_component<sbx::scenes::static_mesh>(_mesh_id, 0u, sbx::math::color::white(), sbx::scenes::static_mesh::material{0.0f, 1.0f, 0.0f, 0.0f}, _texture_id);
 
         const auto position = sbx::math::vector3{x * chunk_size.x() - offset.x(), 0.0f, y * chunk_size.y() - offset.y()};
+
+        chunk.add_component<sbx::scenes::collider>(sbx::scenes::aabb_collider{sbx::math::vector3{-chunk_size.x() / 2.0f, 0.0f, -chunk_size.y() / 2.0f}, sbx::math::vector3{chunk_size.x() / 2.0f, 0.0f, chunk_size.y() / 2.0f}});
 
         auto& transform = chunk.get_component<sbx::math::transform>();
 
