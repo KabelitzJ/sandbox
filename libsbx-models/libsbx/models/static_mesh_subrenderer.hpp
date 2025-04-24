@@ -9,8 +9,11 @@
 #include <libsbx/math/color.hpp>
 #include <libsbx/math/vector3.hpp>
 #include <libsbx/math/matrix4x4.hpp>
+#include <libsbx/math/volume.hpp>
 
 #include <libsbx/utility/logger.hpp>
+
+#include <libsbx/memory/octtree.hpp>
 
 #include <libsbx/graphics/graphics_module.hpp>
 #include <libsbx/graphics/subrenderer.hpp>
@@ -122,11 +125,9 @@ public:
 
     auto mesh_nodes = scene.query<scenes::static_mesh>();
 
-    utility::logger<"models">::debug("Rendering {} static meshes", mesh_nodes.size());
+    // const auto total_meshes = std::ranges::distance(std::ranges::begin(mesh_nodes), std::ranges::end(mesh_nodes));
 
-    const auto view_projection = projection * view;
-
-    auto visible_nodes = mesh_nodes | std::views::filter([&scene, &view_projection, &frustum](const scenes::node& node) {
+    auto visible_nodes = mesh_nodes | std::views::filter([&scene, &frustum](const scenes::node& node) {
       if (!node.has_component<scenes::collider>()) {
         return true;
       }
@@ -135,22 +136,12 @@ public:
 
       const auto model = scene.world_transform(node);
 
-      const auto mvp = view_projection * model;
-
-      return frustum.intersects(mvp, collider);
+      return frustum.intersects(model, collider);
     });
 
-    utility::logger<"models">::debug("Visible meshes: {}", std::ranges::distance(std::ranges::begin(visible_nodes), std::ranges::end(visible_nodes)));
+    // const auto visible_count = std::ranges::distance(std::ranges::begin(visible_nodes), std::ranges::end(visible_nodes));
 
-    // std::ranges::sort(mesh_nodes, [&camera_transform](const auto& lhs, const auto& rhs) {
-    //   const auto& lhs_transform = lhs.template get_component<math::transform>();
-    //   const auto& rhs_transform = rhs.template get_component<math::transform>();
-
-    //   const auto lhs_distance = (camera_transform.position() - lhs_transform.position()).length_squared();
-    //   const auto rhs_distance = (camera_transform.position() - rhs_transform.position()).length_squared();
-
-    //   return lhs_distance > rhs_distance;
-    // });
+    // utility::logger<"models">::debug("Visible meshes: {}/{}", visible_count, total_meshes);
 
     for (auto& node : visible_nodes) {
       _submit_mesh(node);
