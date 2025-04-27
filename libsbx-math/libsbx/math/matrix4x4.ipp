@@ -311,30 +311,23 @@ template<scalar Lhs, scalar Rhs>
 inline constexpr auto operator*(basic_matrix4x4<Lhs> lhs, const basic_vector4<Rhs>& rhs) noexcept -> basic_vector4<Lhs> {
 
   // [NOTE] KAJ 2022-02-04 : This might become a performance bottleneck in the future. But most matrix multiplications are going to happen on the GPU anyways.
-  // const auto mov0 = rhs[0];
-  // const auto mov1 = rhs[1];
+  const auto mov0 = rhs[0];
+  const auto mov1 = rhs[1];
 
-  // const auto mul0 = lhs[0] * mov0;
-  // const auto mul1 = lhs[1] * mov1;
+  const auto mul0 = lhs[0] * mov0;
+  const auto mul1 = lhs[1] * mov1;
 
-  // const auto add0 = mul0 + mul1;
+  const auto add0 = mul0 + mul1;
 
-  // const auto mov2 = rhs[2];
-  // const auto mov3 = rhs[3];
+  const auto mov2 = rhs[2];
+  const auto mov3 = rhs[3];
 
-  // const auto mul2 = lhs[2] * mov2;
-  // const auto mul3 = lhs[3] * mov3;
+  const auto mul2 = lhs[2] * mov2;
+  const auto mul3 = lhs[3] * mov3;
 
-  // const auto add1 = mul2 + mul3;
+  const auto add1 = mul2 + mul3;
 
-  // return add0 + add1;
-  
-  return basic_vector4<Lhs>{
-    lhs[0][0] * static_cast<Lhs>(rhs[0]) + lhs[0][1] * static_cast<Lhs>(rhs[1]) + lhs[0][2] * static_cast<Lhs>(rhs[2]) + lhs[0][3] * static_cast<Lhs>(rhs[3]),
-    lhs[1][0] * static_cast<Lhs>(rhs[0]) + lhs[1][1] * static_cast<Lhs>(rhs[1]) + lhs[1][2] * static_cast<Lhs>(rhs[2]) + lhs[1][3] * static_cast<Lhs>(rhs[3]),
-    lhs[2][0] * static_cast<Lhs>(rhs[0]) + lhs[2][1] * static_cast<Lhs>(rhs[1]) + lhs[2][2] * static_cast<Lhs>(rhs[2]) + lhs[2][3] * static_cast<Lhs>(rhs[3]),
-    lhs[3][0] * static_cast<Lhs>(rhs[0]) + lhs[3][1] * static_cast<Lhs>(rhs[1]) + lhs[3][2] * static_cast<Lhs>(rhs[2]) + lhs[3][3] * static_cast<Lhs>(rhs[3])
-  };
+  return add0 + add1;
 }
 
 template<scalar Lhs, scalar Rhs>

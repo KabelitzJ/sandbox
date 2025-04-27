@@ -94,8 +94,8 @@ application::application()
   tree_submeshes.push_back(sbx::scenes::static_mesh::submesh{1, sbx::math::color::white(), sbx::scenes::static_mesh::material{0.2f, 0.5f, 0.2f, 0.0f}, _texture_ids["tree_4_leaves1"]});
   tree_submeshes.push_back(sbx::scenes::static_mesh::submesh{2, sbx::math::color::white(), sbx::scenes::static_mesh::material{0.2f, 0.5f, 0.2f, 0.0f}, _texture_ids["tree_4_leaves2"]});
 
-  const auto grid_size = sbx::math::vector2{25.0f, 25.0f};
-  const auto cell_size = sbx::math::vector2{8.0f, 8.0f};
+  const auto grid_size = sbx::math::vector2{15.0f, 15.0f};
+  const auto cell_size = sbx::math::vector2{10.0f, 10.0f};
   const auto offset = grid_size * cell_size * 0.5f;
 
   auto forrest = scene.create_node("Forrest");
@@ -106,7 +106,7 @@ application::application()
 
       tree.add_component<sbx::scenes::static_mesh>(_mesh_ids["tree_4"], tree_submeshes);
 
-      tree.add_component<sbx::scenes::collider>(sbx::scenes::aabb_collider{sbx::math::vector3{-0.5f, 0.0f, -0.5f}, sbx::math::vector3{0.5f, 2.0f, 0.5f}});
+      tree.add_component<sbx::scenes::collider>(sbx::scenes::aabb_collider{sbx::math::vector3{-cell_size.x() / 2.0f, 0.0f, -cell_size.y() / 2.0f}, sbx::math::vector3{cell_size.x() / 2.0f, 5.0f, cell_size.y() / 2.0f}});
 
       const auto position = (sbx::math::vector2{x, y} * cell_size - offset) + (sbx::math::vector2{sbx::math::random::next<std::float_t>(0.0f, 1.0f), sbx::math::random::next<std::float_t>(0.0f, 1.0f)} * cell_size);
 
@@ -119,8 +119,9 @@ application::application()
 
   auto test = scene.create_node("Test");
   auto& test_transform = test.get_component<sbx::math::transform>();
-  test_transform.set_position(sbx::math::vector3{0.0f, 5.0f, 0.0f});
-  test.add_component<sbx::scenes::static_mesh>(_mesh_ids["cube"], 0u, sbx::math::color::white(), sbx::scenes::static_mesh::material{0.0f, 1.0f, 0.0f, 0.0f}, _texture_ids["tree_4_leaves2"]);
+  test_transform.set_position(sbx::math::vector3{15.0f, 5.0f, 0.0f});
+  test.add_component<sbx::scenes::static_mesh>(_mesh_ids["sphere"], 0u, sbx::math::color::red(), sbx::scenes::static_mesh::material{0.0f, 1.0f, 0.0f, 0.0f}, _texture_ids["white"]);
+  test.add_component<sbx::scenes::collider>(sbx::scenes::sphere_collider{sbx::math::vector3::zero, 1.0f});
 
   // Camera
   auto camera = scene.camera();

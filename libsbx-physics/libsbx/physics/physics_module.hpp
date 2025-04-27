@@ -7,20 +7,23 @@
 #include <libsbx/units/time.hpp>
 
 #include <libsbx/math/transform.hpp>
+#include <libsbx/math/volume.hpp>
 
 #include <libsbx/core/module.hpp>
 #include <libsbx/core/engine.hpp>
+
 #include <libsbx/utility/logger.hpp>
 
 #include <libsbx/scenes/scenes_module.hpp>
 #include <libsbx/scenes/components/tag.hpp>
 #include <libsbx/scenes/components/id.hpp>
 
+#include <libsbx/memory/octtree.hpp>
+
 #include <libsbx/models/mesh.hpp>
 
 #include <libsbx/physics/rigidbody.hpp>
 #include <libsbx/physics/collider.hpp>
-#include <libsbx/physics/octtree.hpp>
 
 namespace sbx::physics {
 
@@ -78,7 +81,7 @@ private:
 
     const auto delta_time = core::engine::fixed_delta_time();
 
-    auto tree = physics::octree<math::uuid, 16u, 8u>{physics::volume{math::vector3{-100.0f, -100.0f, -100.0f}, math::vector3{100.0f, 100.0f, 100.0f}}};
+    auto tree = memory::octree<math::uuid, 16u, 8u>{math::volume{math::vector3{-100.0f, -100.0f, -100.0f}, math::vector3{100.0f, 100.0f, 100.0f}}};
 
     auto collider_nodes = scene.query<physics::collider>();
 

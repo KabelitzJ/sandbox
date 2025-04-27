@@ -38,6 +38,39 @@ public:
   constexpr basic_vector(const basic_vector<Size, Other>& other) noexcept
   : _components{utility::make_array<value_type, Size>(other._components)} { }
 
+  template<scalar Lhs = value_type, scalar Rhs = value_type>
+  static constexpr auto min(const basic_vector<Size, Lhs>& lhs, const basic_vector<Size, Rhs>& rhs) noexcept -> basic_vector {
+    auto result = lhs;
+
+    for (auto i : std::views::iota(0u, Size)) {
+      result[i] = std::min(lhs[i], rhs[i]);
+    }
+
+    return result;
+  }
+
+  template<scalar Lhs = value_type, scalar Rhs = value_type>
+  static constexpr auto max(const basic_vector<Size, Lhs>& lhs, const basic_vector<Size, Rhs>& rhs) noexcept -> basic_vector {
+    auto result = lhs;
+
+    for (auto i : std::views::iota(0u, Size)) {
+      result[i] = std::max(lhs[i], rhs[i]);
+    }
+
+    return result;
+  }
+
+  template<scalar Lhs = value_type, scalar Rhs = value_type>
+  static constexpr auto abs(const basic_vector<Size, Lhs>& vector) noexcept -> basic_vector {
+    auto result = vector;
+
+    for (auto i : std::views::iota(0u, Size)) {
+      result[i] = std::abs(vector[i]);
+    }
+
+    return result;
+  }
+
   constexpr auto data() noexcept -> value_type* {
     return _components.data();
   }
