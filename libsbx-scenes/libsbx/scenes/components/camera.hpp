@@ -129,8 +129,6 @@ private:
   std::float_t _near_plane;
   std::float_t _far_plane;
 
-  bool _is_active;
-
   math::matrix4x4 _projection;
 
 }; // class camera
