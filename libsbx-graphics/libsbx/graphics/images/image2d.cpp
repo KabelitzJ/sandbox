@@ -51,40 +51,7 @@ auto image2d::set_pixels(memory::observer_ptr<const std::uint8_t> pixels) -> voi
 }
 
 auto image2d::_load() -> void {
-  switch (_format) {
-    case VK_FORMAT_R8_UNORM:
-    case VK_FORMAT_R8_SRGB:
-    case VK_FORMAT_R16_SFLOAT:
-    case VK_FORMAT_R32_SFLOAT: {
-      _channels = 1;
-      break;
-    }
-    case VK_FORMAT_R8G8_UNORM:
-    case VK_FORMAT_R8G8_SRGB:
-    case VK_FORMAT_R16G16_SFLOAT:
-    case VK_FORMAT_R32G32_SFLOAT: {
-      _channels = 2;
-      break;
-    }
-    case VK_FORMAT_R8G8B8_UNORM:
-    case VK_FORMAT_R8G8B8_SRGB:
-    case VK_FORMAT_R16G16B16_SFLOAT:
-    case VK_FORMAT_R32G32B32_SFLOAT: {
-      _channels = 3;
-      break;
-    }
-    case VK_FORMAT_R8G8B8A8_UNORM:
-    case VK_FORMAT_R8G8B8A8_SRGB:
-    case VK_FORMAT_B8G8R8A8_SRGB:
-    case VK_FORMAT_R16G16B16A16_SFLOAT:
-    case VK_FORMAT_R32G32B32A32_SFLOAT: {
-      _channels = 4;
-      break;
-    }
-    default: {
-      throw std::runtime_error{fmt::format("Unsupported image format: {}", static_cast<std::int32_t>(_format))};
-    }
-  }
+  _channels = channels_from_format(_format);
 
   auto* data = static_cast<std::uint8_t*>(nullptr);
 

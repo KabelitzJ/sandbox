@@ -4,6 +4,8 @@
 
 #include <libsbx/models/models.hpp>
 
+#include <libsbx/scenes/skybox_subrenderer.hpp>
+
 #include <libsbx/graphics/pipeline/vertex_input_description.hpp>
 
 #include <libsbx/post/filters/resolve_filter.hpp>
@@ -67,9 +69,10 @@ renderer::renderer()
 
 auto renderer::initialize() -> void {
   // Render stage 0
-  add_subrenderer<sbx::shadows::shadow_subrenderer>("demo/assets/shaders/shadow", sbx::graphics::pipeline::stage{0, 0});
+  // add_subrenderer<sbx::shadows::shadow_subrenderer>("demo/assets/shaders/shadow", sbx::graphics::pipeline::stage{0, 0});
 
   // Render stage 1
+  add_subrenderer<sbx::scenes::skybox_subrenderer>("demo/assets/shaders/skybox", sbx::graphics::pipeline::stage{1, 0});
   add_subrenderer<sbx::models::static_mesh_subrenderer>("demo/assets/shaders/static_mesh", sbx::graphics::pipeline::stage{1, 0});
 
   // Render stage 2

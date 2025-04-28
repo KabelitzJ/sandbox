@@ -54,6 +54,10 @@ const vec4 RIM_COLOR = vec4(1.0, 1.0, 1.0, 1.0);
 const float RIM_STRENGTH = 0.716;
 const float RIM_THRESHOLD = 0.1;
 
+const vec4 FOG_COLOR = vec4(0.5, 0.5, 0.5, 1.0);
+const float FOG_START = 250.0;
+const float FOG_DENSITY = 0.000;
+
 vec3 get_normal() {
   if (in_normal_image_index >= MAX_IMAGE_ARRAY_SIZE) {
     return normalize(in_normal);
@@ -94,13 +98,19 @@ void main(void) {
   float metallic = in_material.x;
   float roughness = in_material.y;
 
-  vec4 light_space_position = DEPTH_BIAS * scene.light_space * vec4(world_position, 1.0);
+  // vec4 light_space_position = DEPTH_BIAS * scene.light_space * vec4(world_position, 1.0);
 
-// #ifdef ENABLE_SHADOWS
-//   float shadow = calculate_shadow_pcf(shadow_map_image, light_space_position, normal, scene.light_direction);
-// #else
-//   float shadow = 1.0;
-// #endif
+  // #ifdef ENABLE_SHADOWS
+  //   float shadow = calculate_shadow_pcf(shadow_map_image, light_space_position, normal, scene.light_direction);
+  // #else
+  //   float shadow = 1.0;
+  // #endif
+
+  float distance_to_camera = length(world_position - scene.camera_position);
+
+  float adjusted_distance = max(0.0, distance_to_camera - FOG_START);
+
+  float fog_factor = clamp(1.0 - exp(-adjusted_distance * FOG_DENSITY), 0.0, 1.0);
 
   vec3 light_position = normalize(-scene.light_direction);
 
@@ -121,6 +131,8 @@ void main(void) {
   vec4 rim = RIM_COLOR * rim_intensity;
 
   out_color = albedo * (AMBIENT_COLOR + light + specular + rim);
+
+  out_color = mix(out_color, FOG_COLOR, fog_factor);
   // out_color = vec4(vec3(albedo.r), 1.0);
   // out_color = vec4(vec3(albedo), 0.5);
   // out_color = vec4(vec3(albedo.a), 1.0);

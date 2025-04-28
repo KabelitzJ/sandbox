@@ -3,6 +3,8 @@
 #include <cmath>
 #include <ranges>
 
+#include <fmt/format.h>
+
 #include <libsbx/utility/logger.hpp>
 
 #include <libsbx/core/exit.hpp>
@@ -548,6 +550,39 @@ auto image::copy_image(const VkImage& src_image, VkImage& dst_image, VkDeviceMem
 	command_buffer.submit_idle();
 
 	return supports_blit;
+}
+
+auto image::channels_from_format(VkFormat format) -> std::uint8_t {
+  switch (format) {
+    case VK_FORMAT_R8_UNORM:
+    case VK_FORMAT_R8_SRGB:
+    case VK_FORMAT_R16_SFLOAT:
+    case VK_FORMAT_R32_SFLOAT: {
+      return 1;
+    }
+    case VK_FORMAT_R8G8_UNORM:
+    case VK_FORMAT_R8G8_SRGB:
+    case VK_FORMAT_R16G16_SFLOAT:
+    case VK_FORMAT_R32G32_SFLOAT: {
+      return 2;
+    }
+    case VK_FORMAT_R8G8B8_UNORM:
+    case VK_FORMAT_R8G8B8_SRGB:
+    case VK_FORMAT_R16G16B16_SFLOAT:
+    case VK_FORMAT_R32G32B32_SFLOAT: {
+      return 3;
+    }
+    case VK_FORMAT_R8G8B8A8_UNORM:
+    case VK_FORMAT_R8G8B8A8_SRGB:
+    case VK_FORMAT_B8G8R8A8_SRGB:
+    case VK_FORMAT_R16G16B16A16_SFLOAT:
+    case VK_FORMAT_R32G32B32A32_SFLOAT: {
+      return 4;
+    }
+    default: {
+      throw std::runtime_error{fmt::format("Unsupported image format: {}", static_cast<std::int32_t>(format))};
+    }
+  }
 }
 
 auto image::write_descriptor_set(std::uint32_t binding, VkDescriptorType descriptor_type) const noexcept -> graphics::write_descriptor_set {

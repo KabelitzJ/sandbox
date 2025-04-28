@@ -46,6 +46,8 @@ application::application()
   _texture_ids.emplace("tree_4_leaves2", graphics_module.add_asset<sbx::graphics::image2d>("demo/assets/textures/tree_4/leaves2.png"));
   _texture_ids.emplace("tree_4_bark", graphics_module.add_asset<sbx::graphics::image2d>("demo/assets/textures/tree_4/bark.jpg"));
 
+  _texture_ids.emplace("skybox", graphics_module.add_asset<sbx::graphics::cube_image>("demo/assets/skyboxes/clouds"));
+
   // Meshes
 
   auto mesh_map = nlohmann::json::parse(std::ifstream{"demo/assets/meshes/mesh_map.json"});
@@ -126,10 +128,12 @@ application::application()
   // Camera
   auto camera = scene.camera();
 
-  const auto position = sbx::math::vector3{10.0f, 10.0f, 10.0f};
+  camera.add_component<sbx::scenes::skybox>(_texture_ids["skybox"], sbx::math::color::white());
 
-  camera.get_component<sbx::math::transform>().set_position(position);
-  camera.get_component<sbx::math::transform>().look_at(sbx::math::vector3::zero);
+  // const auto position = sbx::math::vector3{10.0f, 10.0f, 10.0f};
+
+  // camera.get_component<sbx::math::transform>().set_position(position);
+  // camera.get_component<sbx::math::transform>().look_at(sbx::math::vector3::zero);
 
   window.show();
 }

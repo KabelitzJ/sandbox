@@ -146,11 +146,15 @@ auto shader::_create_reflection(const spirv_cross::Compiler& compiler) -> void {
     const auto binding = compiler.get_decoration(image_sampler.id, spv::DecorationBinding);
 
     if (type.array.size() == 0u) {
-      utility::logger<"graphics">::debug("image sampler: '{}' binding: {}", name, binding);
-
-      auto image = uniform{binding, 0, 0, data_type::sampler2d, false, false, _stage};
-
-      _uniforms.insert({name, image});
+      if (type.image.dim == spv::Dim::Dim2D) {
+        utility::logger<"graphics">::debug("image2d sampler: '{}' binding: {}", name, binding);
+        auto image = uniform{binding, 0, 0, data_type::sampler2d, false, false, _stage};
+        _uniforms.insert({name, image});
+      } else if (type.image.dim == spv::Dim::DimCube) {
+        utility::logger<"graphics">::debug("image cube sampler: '{}' binding: {}", name, binding);
+        auto image = uniform{binding, 0, 0, data_type::sampler_cube, false, false, _stage};
+        _uniforms.insert({name, image});
+      }
     } else if (type.array.size() == 1u) {
       utility::logger<"graphics">::debug("image sampler[{}]: '{}' binding: {}", type.array[0], name, binding);
 
@@ -314,7 +318,13 @@ auto shader::_get_data_type(const spirv_cross::SPIRType& type) -> data_type {
     }
   } else if (type.basetype == spirv_cross::SPIRType::SampledImage) {
     if (type.array.size() == 0u) {
-      return data_type::sampler2d;
+      if (type.image.dim == spv::Dim::Dim2D) {
+        return data_type::sampler2d;
+      } else if (type.image.dim == spv::Dim::DimCube) {
+        return data_type::sampler_cube;
+      } else {
+        return data_type::unknown;
+      }
     } else if (type.array.size() == 1u) {
       return data_type::sampler2d_array;
     } else {
@@ -363,6 +373,7 @@ auto shader::_data_type_to_string(data_type type) -> std::string {
     case data_type::umat4: return "umat4";
     case data_type::sampler2d: return "sampler2d";
     case data_type::sampler2d_array: return "sampler2d_array";
+    case data_type::sampler_cube: return "sampler_cube";
     case data_type::separate_sampler: return "separate_sampler";
     case data_type::separate_image2d: return "separate_image2d";
     case data_type::separate_image2d_array: return "separate_image2d_array";
