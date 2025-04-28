@@ -3,6 +3,7 @@
 
 #include <libsbx/math/concepts.hpp>
 #include <libsbx/math/vector3.hpp>
+#include <libsbx/math/matrix4x4.hpp>
 
 namespace sbx::math {
 
@@ -18,6 +19,19 @@ public:
   : _min{min}, 
     _max{max} { }
 
+  static auto transformed(const basic_volume& volume, const math::matrix4x4& matrix) -> basic_volume {
+    auto min = math::vector3{std::numeric_limits<std::float_t>::max()};
+    auto max = math::vector3{std::numeric_limits<std::float_t>::lowest()};
+
+    for (const auto& corner : volume.corners()) {
+      const auto transformed = math::vector3{matrix * math::vector4{corner, 1.0f}};
+      min = math::vector3::min(min, transformed);
+      max = math::vector3::max(max, transformed);
+    }
+
+    return basic_volume{min, max};
+  }
+
   auto min() const noexcept -> const vector_type& {
     return _min;
   }
@@ -28,6 +42,19 @@ public:
 
   auto center() const noexcept -> vector_type {
     return (_min + _max) / 2.0f;
+  }
+
+  auto corners() const noexcept -> std::array<math::vector3, 8u> {
+    return std::array<math::vector3, 8u>{
+      math::vector3{_min.x(), _min.y(), _min.z()},
+      math::vector3{_min.x(), _min.y(), _max.z()},
+      math::vector3{_min.x(), _max.y(), _min.z()},
+      math::vector3{_min.x(), _max.y(), _max.z()},
+      math::vector3{_max.x(), _min.y(), _min.z()},
+      math::vector3{_max.x(), _min.y(), _max.z()},
+      math::vector3{_max.x(), _max.y(), _min.z()},
+      math::vector3{_max.x(), _max.y(), _max.z()}
+    };
   }
 
   auto contains(const vector_type& point) const noexcept -> bool {
@@ -49,7 +76,9 @@ private:
 
 }; // class basic_volume
 
-using volume = basic_volume<std::float_t>;
+using volumef = basic_volume<std::float_t>;
+
+using volume = volumef;
 
 } // namespace sbx::math
 

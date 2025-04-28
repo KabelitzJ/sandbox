@@ -95,14 +95,14 @@ public:
     auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
     auto vertices = std::vector<vertex3d>{
-      vertex3d{math::vector3{-100.0f,  100.0f, -100.0f}}, // 0
-      vertex3d{math::vector3{-100.0f, -100.0f, -100.0f}}, // 1
-      vertex3d{math::vector3{ 100.0f, -100.0f, -100.0f}}, // 2
-      vertex3d{math::vector3{ 100.0f,  100.0f, -100.0f}}, // 3
-      vertex3d{math::vector3{-100.0f,  100.0f,  100.0f}}, // 4
-      vertex3d{math::vector3{-100.0f, -100.0f,  100.0f}}, // 5
-      vertex3d{math::vector3{ 100.0f, -100.0f,  100.0f}}, // 6
-      vertex3d{math::vector3{ 100.0f,  100.0f,  100.0f}}  // 7
+      vertex3d{math::vector3{-10.0f,  10.0f, -10.0f}}, // 0
+      vertex3d{math::vector3{-10.0f, -10.0f, -10.0f}}, // 1
+      vertex3d{math::vector3{ 10.0f, -10.0f, -10.0f}}, // 2
+      vertex3d{math::vector3{ 10.0f,  10.0f, -10.0f}}, // 3
+      vertex3d{math::vector3{-10.0f,  10.0f,  10.0f}}, // 4
+      vertex3d{math::vector3{-10.0f, -10.0f,  10.0f}}, // 5
+      vertex3d{math::vector3{ 10.0f, -10.0f,  10.0f}}, // 6
+      vertex3d{math::vector3{ 10.0f,  10.0f,  10.0f}}  // 7
     };
 
     auto indices = std::vector<std::uint32_t>{

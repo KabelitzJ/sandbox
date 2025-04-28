@@ -5,56 +5,27 @@
 
 #include <libsbx/math/vector3.hpp>
 #include <libsbx/math/matrix4x4.hpp>
-#include <libsbx/math/angle.hpp>
+#include <libsbx/math/volume.hpp>
+#include <libsbx/math/sphere.hpp>
+#include <libsbx/math/plane.hpp>
+
+#include <libsbx/memory/static_vector.hpp>
 
 namespace sbx::scenes {
 
-struct aabb_collider {
-  math::vector3 min;
-  math::vector3 max;
-
-  auto center() const noexcept -> math::vector3 {
-    return (min + max) * 0.5f;
-  }
-
-  auto corners() const noexcept -> std::array<math::vector3, 8u> {
-    return std::array<math::vector3, 8u>{
-      math::vector3{min.x(), min.y(), min.z()},
-      math::vector3{min.x(), min.y(), max.z()},
-      math::vector3{min.x(), max.y(), min.z()},
-      math::vector3{min.x(), max.y(), max.z()},
-      math::vector3{max.x(), min.y(), min.z()},
-      math::vector3{max.x(), min.y(), max.z()},
-      math::vector3{max.x(), max.y(), min.z()},
-      math::vector3{max.x(), max.y(), max.z()}
-    };
-  }
-
-  static auto transformed(const aabb_collider& aabb, const math::matrix4x4& model) -> aabb_collider {
-    auto result = aabb_collider{};
-
-    result.min = math::vector3{std::numeric_limits<std::float_t>::max()};
-    result.max = math::vector3{std::numeric_limits<std::float_t>::lowest()};
-
-    for (const auto& corner : aabb.corners()) {
-      const auto transformed = math::vector3{model * math::vector4{corner, 1.0f}};
-      result.min = math::vector3::min(result.min, transformed);
-      result.max = math::vector3::max(result.max, transformed);
-    }
-
-    return result;
-  }
-
-}; // struct box_collider
-
-struct sphere_collider {
-  math::vector3 center;
-  std::float_t radius;
-}; // struct sphere_collider
+using aabb_collider = math::volume;
+using sphere_collider = math::sphere;
 
 using collider = std::variant<aabb_collider, sphere_collider>;
 
 class frustum {
+
+  inline static constexpr auto left_plane = std::size_t{0u};
+  inline static constexpr auto right_plane = std::size_t{0u};
+  inline static constexpr auto top_plane = std::size_t{1u};
+  inline static constexpr auto bottom_plane = std::size_t{1u};
+  inline static constexpr auto near_plane = std::size_t{2u};
+  inline static constexpr auto far_plane = std::size_t{2u};
 
 public:
 
@@ -62,54 +33,56 @@ public:
     const auto& m = view_projection;
 
     // Right
-    _planes[0].normal = math::vector3{m[0][3] - m[0][0], m[1][3] - m[1][0], m[2][3] - m[2][0]};
-    _planes[0].distance = m[3][3] - m[3][0];
-    _planes[0].normalize();
+    {
+      const auto normal = math::vector3{m[0][3] - m[0][0], m[1][3] - m[1][0], m[2][3] - m[2][0]};
+      const auto distance = m[3][3] - m[3][0];
+      _planes.push_back(math::plane{normal, distance}.normalize());
+    }
 
     // Left
-    _planes[1].normal = math::vector3{m[0][3] + m[0][0], m[1][3] + m[1][0], m[2][3] + m[2][0]};
-    _planes[1].distance = m[3][3] + m[3][0];
-    _planes[1].normalize();
+    {
+      const auto normal = math::vector3{m[0][3] + m[0][0], m[1][3] + m[1][0], m[2][3] + m[2][0]};
+      const auto distance = m[3][3] + m[3][0];
+      _planes.push_back(math::plane{normal, distance}.normalize());
+    }
 
     // Bottom
-    _planes[2].normal = math::vector3{m[0][3] + m[0][1], m[1][3] + m[1][1], m[2][3] + m[2][1]};
-    _planes[2].distance = m[3][3] + m[3][1];
-    _planes[2].normalize();
+    {
+      const auto normal = math::vector3{m[0][3] + m[0][1], m[1][3] + m[1][1], m[2][3] + m[2][1]};
+      const auto distance = m[3][3] + m[3][1];
+      _planes.push_back(math::plane{normal, distance}.normalize());
+    }
 
     // Top
-    _planes[3].normal = math::vector3{m[0][3] - m[0][1], m[1][3] - m[1][1], m[2][3] - m[2][1]};
-    _planes[3].distance = m[3][3] - m[3][1];
-    _planes[3].normalize();
+    {
+      const auto normal = math::vector3{m[0][3] - m[0][1], m[1][3] - m[1][1], m[2][3] - m[2][1]};
+      const auto distance = m[3][3] - m[3][1];
+      _planes.push_back(math::plane{normal, distance}.normalize());
+    }
 
     // Far
-    _planes[4].normal = math::vector3{m[0][3] - m[0][2], m[1][3] - m[1][2], m[2][3] - m[2][2]};
-    _planes[4].distance = m[3][3] - m[3][2];
-    _planes[4].normalize();
+    {
+      const auto normal = math::vector3{m[0][3] - m[0][2], m[1][3] - m[1][2], m[2][3] - m[2][2]};
+      const auto distance = m[3][3] - m[3][2];
+      _planes.push_back(math::plane{normal, distance}.normalize());
+    }
 
     // Near
-    _planes[5].normal = math::vector3{m[0][3] + m[0][2], m[1][3] + m[1][2], m[2][3] + m[2][2]};
-    _planes[5].distance = m[3][3] + m[3][2];
-    _planes[5].normalize();
-
-
-    // _planes[0] = _extract_plane<plane::left>(view_projection);
-    // _planes[1] = _extract_plane<plane::right>(view_projection);
-    // _planes[2] = _extract_plane<plane::top>(view_projection);
-    // _planes[3] = _extract_plane<plane::bottom>(view_projection);
-    // _planes[4] = _extract_plane<plane::near>(view_projection);
-    // _planes[5] = _extract_plane<plane::far>(view_projection);
+    {
+      const auto normal = math::vector3{m[0][3] + m[0][2], m[1][3] + m[1][2], m[2][3] + m[2][2]};
+      const auto distance = m[3][3] + m[3][2];
+      _planes.push_back(math::plane{normal, distance}.normalize());
+    }
   }
 
   auto intersects(const math::matrix4x4& model, const collider& collider) const noexcept -> bool {
-    return std::visit([this, &model](const auto& value) { return _intersects(model, value); }, collider);
+    return std::visit([this, &model](const auto& value) { return _intersects(std::decay_t<decltype(value)>::transformed(value, model)); }, collider);
   } 
 
 private:
 
-  auto _intersects(const math::matrix4x4& model, const aabb_collider& aabb) const noexcept -> bool {
-    const auto transformed = aabb_collider::transformed(aabb, model);
-
-    const auto corners = transformed.corners();
+  auto _intersects(const aabb_collider& aabb) const noexcept -> bool {
+    const auto corners = aabb.corners();
 
     for (const auto& plane : _planes) {
       auto outside_count = 0u;
@@ -128,11 +101,9 @@ private:
     return true;
   }
 
-  auto _intersects(const math::matrix4x4& model, const sphere_collider& sphere) const noexcept -> bool {
-    const auto center = math::vector3{model * math::vector4{sphere.center, 1.0f}};
-
+  auto _intersects(const sphere_collider& sphere) const noexcept -> bool {
     for (const auto& plane : _planes) {
-      if (plane.distance_to_point(center) < -sphere.radius) {
+      if (plane.distance_to_point(sphere.center()) < -sphere.radius()) {
         return false;
       }
     }
@@ -140,52 +111,18 @@ private:
     return true;
   }
 
-  struct plane {
-
-    inline static constexpr auto left = std::size_t{0u};
-    inline static constexpr auto right = std::size_t{0u};
-    inline static constexpr auto top = std::size_t{1u};
-    inline static constexpr auto bottom = std::size_t{1u};
-    inline static constexpr auto near = std::size_t{2u};
-    inline static constexpr auto far = std::size_t{2u};
-
-    math::vector3 normal;
-    std::float_t distance;
-
-    auto distance_to_point(const math::vector3& point) const noexcept -> std::float_t {
-      return math::vector3::dot(normal, point) + distance;
-    } 
-
-    auto signed_distance(const math::vector3& point) const noexcept -> std::float_t {
-      return math::vector3::dot(normal, point) - distance;
-    }
-
-    auto normalize() -> void {
-      const auto length = normal.length();
-      normal /= length;
-      distance /= length;
-    }
-
-  }; // struct plane
-
   template<std::size_t Side>
-  auto _extract_plane(const math::matrix4x4& matrix) const -> plane {
-    constexpr auto negate = (Side == plane::right || Side == plane::top || Side == plane::far);
+  auto _extract_plane(const math::matrix4x4& matrix) const -> math::plane {
+    constexpr auto negate = (Side == right_plane || Side == top_plane || Side == far_plane);
 
     const auto column = matrix[3] + (negate ? -matrix[Side] : matrix[Side]);
     const auto normal = math::vector3{column};
     const auto length = normal.length();
   
-    return plane{normal / length, column.w() / length};
+    return math::plane{normal / length, column.w() / length};
   }
 
-  auto _make_plane(const math::vector3& normal, const math::vector3& point_on_plane) -> plane {
-    const auto normalized = math::vector3::normalized(normal);
-    float distance = -math::vector3::dot(normalized, point_on_plane);
-    return plane{normalized, distance};
-  }
-
-  std::array<plane, 6u> _planes;
+  memory::static_vector<math::plane, 6u> _planes;
 
 }; // struct frustum
 

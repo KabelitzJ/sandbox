@@ -32,13 +32,13 @@ public:
   auto load_terrain_in_scene(sbx::scenes::scene& scene) -> void {
     auto& graphics_module = sbx::core::engine::get_module<sbx::graphics::graphics_module>();
 
-    const auto chunk_size = sbx::math::vector2u{50u, 50u};
+    const auto chunk_size = sbx::math::vector2u{100u, 100u};
 
-    _mesh_id = graphics_module.add_asset<sbx::models::mesh>(_generate_plane(chunk_size, sbx::math::vector2u{10u, 10u}));
+    _mesh_id = graphics_module.add_asset<sbx::models::mesh>(_generate_plane(chunk_size, sbx::math::vector2u{25u, 25u}));
 
     _texture_id = graphics_module.add_asset<sbx::graphics::image2d>("demo/assets/textures/prototype_black.png");
 
-    const auto grid = sbx::math::vector2{10.0f, 10.0f};
+    const auto grid = sbx::math::vector2{5.0f, 5.0f};
 
     const auto offset = sbx::math::vector2{chunk_size.x() * grid.x() * 0.5f, chunk_size.y() * grid.y() * 0.5f};
 
