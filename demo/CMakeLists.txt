@@ -2,6 +2,8 @@ project(demo VERSION 0.1.0 LANGUAGES CXX)
 
 message(STATUS "Configuring ${PROJECT_NAME}...")
 
+find_package(easy_profiler REQUIRED)
+
 add_executable(${PROJECT_NAME})
 
 if(WIN32)
@@ -66,6 +68,8 @@ target_include_directories(
 
 target_link_libraries(
   ${PROJECT_NAME}
+  PUBLIC
+    easy_profiler
   PRIVATE
     libsbx::units
     libsbx::utility

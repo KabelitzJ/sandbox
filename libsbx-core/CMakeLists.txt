@@ -1,5 +1,8 @@
 project(core VERSION 0.1.0 LANGUAGES CXX)
 
+set(BUILD_WITH_EASY_PROFILER 1 CACHE STRING "BUILD_WITH_EASY_PROFILER" FORCE)
+set(EASY_OPTION_LOG 1 CACHE STRING "EASY_OPTION_LOG" FORCE)
+
 message(STATUS "Configuring ${PROJECT_NAME}...")
 
 string(TOUPPER ${PROJECT_NAME} PROJECT_NAME_UPPER)
@@ -17,6 +20,7 @@ add_library(${CMAKE_PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 find_package(fmt REQUIRED)
 find_package(spdlog REQUIRED)
 find_package(range-v3 REQUIRED)
+find_package(easy_profiler REQUIRED)
 
 target_sources(
   ${PROJECT_NAME}
@@ -51,6 +55,7 @@ target_link_libraries(
     fmt::fmt
     spdlog::spdlog
     range-v3::range-v3
+    easy_profiler
     # Internal dependencies
     libsbx::utility
     libsbx::units
@@ -70,6 +75,7 @@ target_compile_definitions(
   ${PROJECT_NAME}
   PUBLIC
     SBX_CONSTEXPR_ENABLED=${SBX_CONSTEXPR_ENABLED}
+    BUILD_WITH_EASY_PROFILER
 )
 
 target_compile_features(

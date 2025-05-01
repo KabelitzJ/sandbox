@@ -5,6 +5,8 @@
 
 !/.vscode/tasks.json
 
+*.profile
+
 build/
 configs/
 targets/

@@ -2,6 +2,8 @@
 
 #include <nlohmann/json.hpp>
 
+#include <easy/profiler.h>
+
 #include <libsbx/math/color.hpp>
 #include <libsbx/math/noise.hpp>
 

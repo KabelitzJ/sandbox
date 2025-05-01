@@ -11,6 +11,8 @@
 #include <chrono>
 #include <ranges>
 
+#include <easy/profiler.h>
+
 #include <libsbx/utility/concepts.hpp>
 #include <libsbx/utility/noncopyable.hpp>
 #include <libsbx/utility/assert.hpp>
@@ -106,19 +108,33 @@ public:
 
       fixed_accumulator += _instance->_delta_time;
 
+      EASY_BLOCK("application update");
       application->update();
+      EASY_END_BLOCK;
 
+      EASY_BLOCK("stage pre");
       _update_stage(stage::pre);
+      EASY_END_BLOCK;
+
+      EASY_BLOCK("stage normal");
       _update_stage(stage::normal);
+      EASY_END_BLOCK;
+
+      EASY_BLOCK("stage post");
       _update_stage(stage::post);
+      EASY_END_BLOCK;
 
       while (fixed_accumulator >= fixed_delta_time()) {
+        EASY_BLOCK("stage fixed");
         application->fixed_update();
         _update_stage(stage::fixed);
+        EASY_END_BLOCK;
         fixed_accumulator -= fixed_delta_time();
       }
 
+      EASY_BLOCK("stage rendering");
       _update_stage(stage::rendering);
+      EASY_END_BLOCK;
     }
   }
 
