@@ -32,13 +32,13 @@ public:
   auto load_terrain_in_scene(sbx::scenes::scene& scene) -> void {
     auto& graphics_module = sbx::core::engine::get_module<sbx::graphics::graphics_module>();
 
-    const auto chunk_size = sbx::math::vector2u{100u, 100u};
+    const auto chunk_size = sbx::math::vector2u{20u, 20u};
 
-    _mesh_id = graphics_module.add_asset<sbx::models::mesh>(_generate_plane(chunk_size, sbx::math::vector2u{25u, 25u}));
+    _mesh_id = graphics_module.add_asset<sbx::models::mesh>(_generate_plane(chunk_size, sbx::math::vector2u{5u, 5u}));
 
-    _texture_id = graphics_module.add_asset<sbx::graphics::image2d>("demo/assets/textures/prototype_black.png");
+    _texture_id = graphics_module.add_asset<sbx::graphics::image2d>("demo/assets/textures/grass/albedo.png");
 
-    const auto grid = sbx::math::vector2{5.0f, 5.0f};
+    const auto grid = sbx::math::vector2{15.0f, 15.0f};
 
     const auto offset = sbx::math::vector2{chunk_size.x() * grid.x() * 0.5f, chunk_size.y() * grid.y() * 0.5f};
 
@@ -86,18 +86,20 @@ private:
     return std::make_unique<sbx::models::mesh>(std::move(vertices), std::move(indices));
   }
 
-  auto _generate_plane(const sbx::math::vector2u& size, const sbx::math::vector2u& tile_size) -> std::unique_ptr<sbx::models::mesh> {
+  auto _generate_plane(const sbx::math::vector2u& size, const sbx::math::vector2u& subdivisions) -> std::unique_ptr<sbx::models::mesh> {
     auto vertices = std::vector<sbx::models::vertex3d>{};
     auto indices = std::vector<std::uint32_t>{};
 
-    // Generate vertices
+    const auto x_vertices = subdivisions.x() + 1u;
+    const auto y_vertices = subdivisions.y() + 1u;
 
-    const auto tile_count = sbx::math::vector2u{size.x() / tile_size.x(), size.y() / tile_size.y()};
-
+    const auto tile_size = sbx::math::vector2{static_cast<std::float_t>(size.x() / subdivisions.x()), static_cast<std::float_t>(size.y() / subdivisions.y())};
+    
     const auto offset = sbx::math::vector2{static_cast<std::float_t>(size.x() / 2.0f), static_cast<std::float_t>(size.y() / 2.0f)};
-
-    for (auto y = 0u; y < tile_count.y() + 1u; ++y) {
-      for (auto x = 0u; x < tile_count.x() + 1u; ++x) {
+    
+    // Generate vertices
+    for (auto y = 0u; y < subdivisions.y() + 1u; ++y) {
+      for (auto x = 0u; x < subdivisions.x() + 1u; ++x) {
         const auto position = sbx::math::vector3{static_cast<std::float_t>(x * tile_size.x() - offset.x()), 0.0f, static_cast<std::float_t>(y * tile_size.y() - offset.y())};
         const auto normal = sbx::math::vector3::up;
         const auto uv = sbx::math::vector2{static_cast<std::float_t>(x % 2), static_cast<std::float_t>(y % 2)};
@@ -108,7 +110,7 @@ private:
 
     // Calculate indices
 
-    const auto vertex_count = tile_count.x() + 1u;
+    const auto vertex_count = subdivisions.x() + 1u;
 
     for (auto i = 0u; i < vertex_count * vertex_count - vertex_count; ++i) {
       if ((i + 1u) % vertex_count == 0u) {

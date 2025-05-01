@@ -14,6 +14,8 @@ namespace sbx::graphics {
 
 buffer_base::buffer_base(size_type size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, memory::observer_ptr<const void> memory)
 : _size{size} {
+  utility::assert_that(size > 0, "Buffer size must be greater than 0.");
+
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
   const auto& physical_device = graphics_module.physical_device();

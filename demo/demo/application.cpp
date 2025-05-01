@@ -42,9 +42,9 @@ application::application()
     _texture_ids.emplace(name, id);
   }
 
-  _texture_ids.emplace("tree_4_leaves1", graphics_module.add_asset<sbx::graphics::image2d>("demo/assets/textures/tree_4/leaves1.png"));
-  _texture_ids.emplace("tree_4_leaves2", graphics_module.add_asset<sbx::graphics::image2d>("demo/assets/textures/tree_4/leaves2.png"));
-  _texture_ids.emplace("tree_4_bark", graphics_module.add_asset<sbx::graphics::image2d>("demo/assets/textures/tree_4/bark.jpg"));
+  _texture_ids.emplace("tree_1_leaves1", graphics_module.add_asset<sbx::graphics::image2d>("demo/assets/textures/tree_1/leaves1.png"));
+  _texture_ids.emplace("tree_1_leaves2", graphics_module.add_asset<sbx::graphics::image2d>("demo/assets/textures/tree_1/leaves2.png"));
+  _texture_ids.emplace("tree_1_bark", graphics_module.add_asset<sbx::graphics::image2d>("demo/assets/textures/tree_1/bark.jpg"));
 
   _texture_ids.emplace("skybox", graphics_module.add_asset<sbx::graphics::cube_image>("demo/assets/skyboxes/clouds"));
 
@@ -63,7 +63,11 @@ application::application()
     _mesh_ids.emplace(name, id);
   }
 
-  _mesh_ids.emplace("tree_4", graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/tree_4/tree_4.gltf"));
+  _mesh_ids.emplace("tree_1_1", graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/tree_1_1/tree_1_1.gltf"));
+  _mesh_ids.emplace("tree_1_2", graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/tree_1_2/tree_1_2.gltf"));
+  _mesh_ids.emplace("tree_1_3", graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/tree_1_3/tree_1_3.gltf"));
+  _mesh_ids.emplace("tree_1_4", graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/tree_1_4/tree_1_4.gltf"));
+  _mesh_ids.emplace("bush_5", graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/bush_5/bush_5.gltf"));
 
   // _mesh_ids.emplace("icosphere", graphics_module.add_asset<sbx::models::mesh>(_generate_icosphere(20.0f, 4u)));
 
@@ -92,12 +96,12 @@ application::application()
   // Trees
 
   auto tree_submeshes = std::vector<sbx::scenes::static_mesh::submesh>{};
-  tree_submeshes.push_back(sbx::scenes::static_mesh::submesh{0, sbx::math::color::white(), sbx::scenes::static_mesh::material{0.2f, 0.5f, 0.2f, 0.8f}, _texture_ids["tree_4_bark"]});
-  tree_submeshes.push_back(sbx::scenes::static_mesh::submesh{1, sbx::math::color::white(), sbx::scenes::static_mesh::material{0.2f, 0.5f, 0.2f, 0.0f}, _texture_ids["tree_4_leaves1"]});
-  tree_submeshes.push_back(sbx::scenes::static_mesh::submesh{2, sbx::math::color::white(), sbx::scenes::static_mesh::material{0.2f, 0.5f, 0.2f, 0.0f}, _texture_ids["tree_4_leaves2"]});
+  tree_submeshes.push_back(sbx::scenes::static_mesh::submesh{0, sbx::math::color::white(), sbx::scenes::static_mesh::material{0.2f, 0.5f, 0.2f, 0.8f}, _texture_ids["tree_1_bark"]});
+  tree_submeshes.push_back(sbx::scenes::static_mesh::submesh{1, sbx::math::color::white(), sbx::scenes::static_mesh::material{0.2f, 0.5f, 0.2f, 0.0f}, _texture_ids["tree_1_leaves1"]});
+  tree_submeshes.push_back(sbx::scenes::static_mesh::submesh{2, sbx::math::color::white(), sbx::scenes::static_mesh::material{0.2f, 0.5f, 0.2f, 0.0f}, _texture_ids["tree_1_leaves2"]});
 
-  const auto grid_size = sbx::math::vector2{15.0f, 15.0f};
-  const auto cell_size = sbx::math::vector2{10.0f, 10.0f};
+  const auto grid_size = sbx::math::vector2{25.0f, 25.0f};
+  const auto cell_size = sbx::math::vector2{8.0f, 8.0f};
   const auto offset = grid_size * cell_size * 0.5f;
 
   auto forrest = scene.create_node("Forrest");
@@ -106,7 +110,7 @@ application::application()
     for (auto x : std::views::iota(0u, grid_size.x())) {
       auto tree = scene.create_child_node(forrest, fmt::format("Tree{}{}", x, y));
 
-      tree.add_component<sbx::scenes::static_mesh>(_mesh_ids["tree_4"], tree_submeshes);
+      tree.add_component<sbx::scenes::static_mesh>(_mesh_ids[fmt::format("tree_1_{}", sbx::math::random::next<std::uint8_t>(1, 4))], tree_submeshes);
 
       tree.add_component<sbx::scenes::collider>(sbx::scenes::aabb_collider{sbx::math::vector3{-cell_size.x() / 2.0f, 0.0f, -cell_size.y() / 2.0f}, sbx::math::vector3{cell_size.x() / 2.0f, 5.0f, cell_size.y() / 2.0f}});
 
@@ -116,6 +120,21 @@ application::application()
       tree_transform.set_position(sbx::math::vector3{position.x(), 0.0f, position.y()});
       // tree_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
       tree_transform.set_rotation(sbx::math::vector3::up, sbx::math::degree{sbx::math::random::next<std::float_t>(0.0f, 360.0f)});
+
+      if (sbx::math::random::next<std::float_t>(0.0f, 1.0f) >= 0.5f) {
+        auto bush = scene.create_child_node(forrest, fmt::format("Bush{}{}", x, y));
+  
+        bush.add_component<sbx::scenes::static_mesh>(_mesh_ids["bush_5"], tree_submeshes);
+  
+        bush.add_component<sbx::scenes::collider>(sbx::scenes::aabb_collider{sbx::math::vector3{-cell_size.x() / 2.0f, 0.0f, -cell_size.y() / 2.0f}, sbx::math::vector3{cell_size.x() / 2.0f, 5.0f, cell_size.y() / 2.0f}});
+  
+        const auto bush_position = (sbx::math::vector2{x, y} * cell_size - offset) + (sbx::math::vector2{sbx::math::random::next<std::float_t>(0.0f, 1.0f), sbx::math::random::next<std::float_t>(0.0f, 1.0f)} * cell_size);
+  
+        auto& bush_transform = bush.get_component<sbx::math::transform>();
+        bush_transform.set_position(sbx::math::vector3{bush_position.x(), 0.0f, bush_position.y()});
+        // bush_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
+        bush_transform.set_rotation(sbx::math::vector3::up, sbx::math::degree{sbx::math::random::next<std::float_t>(0.0f, 360.0f)});
+      }
     }
   }
 

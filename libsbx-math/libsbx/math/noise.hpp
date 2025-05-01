@@ -253,10 +253,11 @@ private:
     return ((h & 1) ? -u : u) + ((h & 2) ? -2.0f * v : 2.0f * v);
   }
 
-  static constexpr float grad(int32_t hash, float x, float y, float z) {
-    int h = hash & 15;     // Convert low 4 bits of hash code into 12 simple
-    float u = h < 8 ? x : y; // gradient directions, and compute dot product.
-    float v = h < 4 ? y : h == 12 || h == 14 ? x : z; // Fix repeats at h = 12 to 15
+  static constexpr float grad(std::int32_t hash, std::float_t x, std::float_t y, std::float_t z) {
+    const auto h = hash & 15;
+    const auto u = h < 8 ? x : y; 
+    const auto v = h < 4 ? y : h == 12 || h == 14 ? x : z;
+
     return ((h & 1) ? -u : u) + ((h & 2) ? -v : v);
   }
 
