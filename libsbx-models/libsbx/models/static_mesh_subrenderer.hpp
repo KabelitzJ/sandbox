@@ -6,6 +6,8 @@
 #include <ranges>
 #include <algorithm>
 
+#include <easy/profiler.h>
+
 #include <libsbx/math/color.hpp>
 #include <libsbx/math/vector3.hpp>
 #include <libsbx/math/matrix4x4.hpp>
@@ -55,6 +57,8 @@ public:
   ~static_mesh_subrenderer() override = default;
 
   auto render(graphics::command_buffer& command_buffer) -> void override {
+    EASY_FUNCTION();
+
     auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
@@ -121,6 +125,8 @@ public:
     _static_meshes.clear();
     _images.clear();
 
+    EASY_BLOCK("frustum culling");
+
     auto frustum = camera.view_frustum(view);
 
     auto mesh_nodes = scene.query<scenes::static_mesh>();
@@ -137,15 +143,23 @@ public:
       const auto model = scene.world_transform(node);
 
       return frustum.intersects(model, collider);
-    });
+    }) | ranges::to<std::vector<scenes::node>>();
+
+    EASY_END_BLOCK;
 
     // const auto visible_count = std::ranges::distance(std::ranges::begin(visible_nodes), std::ranges::end(visible_nodes));
 
     // utility::logger<"models">::debug("Visible meshes: {}/{}", visible_count, total_meshes);
 
+    EASY_BLOCK("submit meshes");
+
     for (auto& node : visible_nodes) {
       _submit_mesh(node);
     }
+
+    EASY_END_BLOCK;
+
+    EASY_BLOCK("render meshes");
 
     _pipeline.bind(command_buffer);
 
@@ -175,11 +189,14 @@ public:
 
       mesh.render_submesh(command_buffer, key.submesh_index, static_cast<std::uint32_t>(data.size()));
     }
+
+    EASY_END_BLOCK;
   }
 
 private:
 
   auto _submit_mesh(scenes::node& node) -> void {
+    EASY_FUNCTION();
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
     auto& scene = scenes_module.scene();
 
@@ -187,6 +204,7 @@ private:
     const auto mesh_id = static_mesh.mesh_id();
 
     for (const auto& submesh : static_mesh.submeshes()) {
+      EASY_BLOCK("submit submesh");
       const auto key = mesh_key{mesh_id, submesh.index};
 
       _used_uniforms.insert(key);
@@ -201,6 +219,7 @@ private:
       const auto material = math::vector4{submesh.material.metallic, submesh.material.roughness, submesh.material.flexibility, submesh.material.anchor_height};
 
       _static_meshes[key].push_back(per_mesh_data{std::move(model), std::move(normal), submesh.tint, material, image_indices});
+      EASY_END_BLOCK;
     }
   }
 
