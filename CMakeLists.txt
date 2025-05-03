@@ -34,6 +34,9 @@ message(STATUS "SBX_BUILD_TESTS: ${SBX_BUILD_TESTS}")
 option(SBX_CONSTEXPR_ENABLED "Enable constexpr" On)
 message(STATUS "SBX_CONSTEXPR_ENABLED: ${SBX_CONSTEXPR_ENABLED}")
 
+option(SBX_USE_PROFILER "Use profiler" On)
+message(STATUS "SBX_USE_PROFILER: ${SBX_USE_PROFILER}")
+
 add_subdirectory(libsbx-units)
 add_subdirectory(libsbx-utility)
 add_subdirectory(libsbx-io)

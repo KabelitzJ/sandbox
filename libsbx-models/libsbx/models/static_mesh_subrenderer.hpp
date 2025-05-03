@@ -125,25 +125,44 @@ public:
     _static_meshes.clear();
     _images.clear();
 
-    EASY_BLOCK("frustum culling");
+    EASY_BLOCK("building frustum");
 
     auto frustum = camera.view_frustum(view);
+
+    EASY_END_BLOCK;
+
+    EASY_BLOCK("submit meshes");
 
     auto mesh_nodes = scene.query<scenes::static_mesh>();
 
     // const auto total_meshes = std::ranges::distance(std::ranges::begin(mesh_nodes), std::ranges::end(mesh_nodes));
 
-    auto visible_nodes = mesh_nodes | std::views::filter([&scene, &frustum](const scenes::node& node) {
-      if (!node.has_component<scenes::collider>()) {
-        return true;
-      }
+    // auto visible_nodes = mesh_nodes | std::views::filter([&scene, &frustum](const scenes::node& node) {
+    //   if (!node.has_component<scenes::collider>()) {
+    //     return true;
+    //   }
       
+    //   const auto& collider = node.get_component<scenes::collider>();
+
+    //   const auto model = scene.world_transform(node);
+
+    //   return frustum.intersects(model, collider);
+    // }) | ranges::to<std::vector<scenes::node>>();
+
+    for (const auto& node : mesh_nodes) {
+      if (!node.has_component<scenes::collider>()) {
+        _submit_mesh(node);
+        continue;
+      } 
+
       const auto& collider = node.get_component<scenes::collider>();
 
       const auto model = scene.world_transform(node);
 
-      return frustum.intersects(model, collider);
-    }) | ranges::to<std::vector<scenes::node>>();
+      if (frustum.intersects(model, collider)) {
+        _submit_mesh(node);
+      }
+    }
 
     EASY_END_BLOCK;
 
@@ -151,13 +170,13 @@ public:
 
     // utility::logger<"models">::debug("Visible meshes: {}/{}", visible_count, total_meshes);
 
-    EASY_BLOCK("submit meshes");
+    // EASY_BLOCK("submit meshes");
 
-    for (auto& node : visible_nodes) {
-      _submit_mesh(node);
-    }
+    // for (auto& node : visible_nodes) {
+    //   _submit_mesh(node);
+    // }
 
-    EASY_END_BLOCK;
+    // EASY_END_BLOCK;
 
     EASY_BLOCK("render meshes");
 
@@ -195,7 +214,7 @@ public:
 
 private:
 
-  auto _submit_mesh(scenes::node& node) -> void {
+  auto _submit_mesh(const scenes::node& node) -> void {
     EASY_FUNCTION();
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
     auto& scene = scenes_module.scene();

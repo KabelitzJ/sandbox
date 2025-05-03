@@ -16,6 +16,7 @@ add_library(${CMAKE_PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
 find_package(fmt REQUIRED)
 find_package(spdlog REQUIRED)
+find_package(easy_profiler REQUIRED)
 
 target_sources(
   ${PROJECT_NAME}
@@ -61,6 +62,7 @@ target_link_libraries(
     # External dependencies
     fmt::fmt
     spdlog::spdlog
+    easy_profiler
     # Internal dependencies
     libsbx::units
 )
@@ -78,6 +80,8 @@ target_compile_definitions(
   ${PROJECT_NAME}
   PUBLIC
     SBX_CONSTEXPR_ENABLED=${SBX_CONSTEXPR_ENABLED}
+    SBX_USE_PROFILER=${SBX_USE_PROFILER}
+    $<$<BOOL:${SBX_USE_PROFILER}>:BUILD_WITH_EASY_PROFILER>
 )
 
 target_compile_features(

@@ -6,6 +6,8 @@
 
 #include <yaml-cpp/yaml.h>
 
+#include <easy/profiler.h>
+
 #include <libsbx/units/time.hpp>
 
 #include <libsbx/utility/timer.hpp>
@@ -119,6 +121,10 @@ auto scene::destroy_node(const node& node) -> void {
 }
 
 auto scene::world_transform(const node& node) -> math::matrix4x4 {
+  EASY_FUNCTION();
+
+  // [TODO] KAJ 2025-05-03 : FIX THIS! THE PERFORMANCE IS TERRIBLE!
+
   auto& transform = node.get_component<math::transform>();
   auto& relationship = node.get_component<scenes::relationship>();
 
@@ -134,6 +140,8 @@ auto scene::world_transform(const node& node) -> math::matrix4x4 {
 }
 
 auto scene::world_position(const node& node) -> math::vector3 {
+  EASY_FUNCTION();
+
   return math::vector3{world_transform(node)[3]};
 }
 
