@@ -2,25 +2,13 @@
 #define LIBSBX_SCENES_SCENE_MODULE_HPP_
 
 #include <memory>
-
-#include <yaml-cpp/yaml.h>
-
-#include <libsbx/math/color.hpp>
-#include <libsbx/math/vector3.hpp>
-#include <libsbx/math/transform.hpp>
+#include <optional>
+#include <utility>
+#include <filesystem>
 
 #include <libsbx/core/module.hpp>
 
-#include <libsbx/devices/devices_module.hpp>
-
-#include <libsbx/graphics/images/image2d.hpp>
-
 #include <libsbx/scenes/scene.hpp>
-
-#include <libsbx/scenes/components/static_mesh.hpp>
-#include <libsbx/scenes/components/point_light.hpp>
-#include <libsbx/scenes/components/directional_light.hpp>
-#include <libsbx/scenes/components/camera.hpp>
 
 namespace sbx::scenes {
 
@@ -32,33 +20,19 @@ class scenes_module final : public core::module<scenes_module> {
 
 public:
 
-  scenes_module()
-  : _scene{nullptr} {
-    
-  }
+  scenes_module();
 
-  ~scenes_module() override = default;
+  ~scenes_module() override;
 
-  auto update() -> void override {
+  auto update() -> void override;
 
-  }
+  auto load_scene(const std::filesystem::path& path) -> scenes::scene&;
 
-  template<typename Type = scenes::scene, typename... Args>
-  requires ((std::is_base_of_v<scenes::scene, Type> || std::is_same_v<Type, scenes::scene>) && !std::is_abstract_v<Type> && std::is_constructible_v<Type, Args...>)
-  auto create_scene(Args&&... args) -> Type& {
-    _scene = std::make_unique<Type>(std::forward<Args>(args)...);
-
-    return *static_cast<Type*>(_scene.get());
-  }
-
-  template<typename Type = scenes::scene>
-  auto scene() -> Type& {
-    return *static_cast<Type*>(_scene.get());
-  }
+  auto scene() -> scenes::scene&;
 
 private:
 
-  std::unique_ptr<scenes::scene> _scene;
+  std::optional<scenes::scene> _scene;
 
 }; // class scene_modules
 

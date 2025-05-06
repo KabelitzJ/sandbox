@@ -2,6 +2,7 @@
 #define LIBSBX_SCENES_HIERARCHY_MODULE_HPP_
 
 #include <libsbx/core/module.hpp>
+#include <libsbx/core/engine.hpp>
 
 #include <libsbx/scenes/scenes_module.hpp>
 

@@ -62,6 +62,12 @@ public:
   using difference_type = std::ptrdiff_t;
   using common_type = base_type;
 
+  template<typename Type, typename... Other>
+  using view_type = basic_view<get_t<storage_for_type<Type>, storage_for_type<Other>...>>;
+
+  template<typename Type, typename... Other>
+  using const_view_type = basic_view<get_t<storage_for_type<const Type>, storage_for_type<const Other>...>>;
+
   basic_registry()
   : basic_registry{allocator_type{}} { }
 
@@ -203,15 +209,15 @@ public:
   }
 
   template<typename Type, typename... Other>
-  [[nodiscard]] auto view() const -> basic_view<get_t<storage_for_type<const Type>, storage_for_type<const Other>...>> {
-    auto element = basic_view<get_t<storage_for_type<const Type>, storage_for_type<const Other>...>>{};
-    [&element](const auto*... current) { ((current ? element.set_storage(*current) : void()), ...); }(_assure<std::remove_const_t<Other>>()..., _assure<std::remove_const_t<Type>>());
-    return element;
+  [[nodiscard]] auto view() const -> const_view_type<Type, Other...> {
+    auto view = const_view_type<Type, Other...>{};
+    [&view](const auto*... current) { ((current ? view.set_storage(*current) : void()), ...); }(_assure<std::remove_const_t<Other>>()..., _assure<std::remove_const_t<Type>>());
+    return view;
   }
 
   template<typename Type, typename... Other>
-  [[nodiscard]] auto view() -> basic_view<get_t<storage_for_type<Type>, storage_for_type<Other>...>> {
-    return basic_view<get_t<storage_for_type<Type>, storage_for_type<Other>...>>{_assure<std::remove_const_t<Type>>(), _assure<std::remove_const_t<Other>>()...};
+  [[nodiscard]] auto view() -> view_type<Type, Other...> {
+    return view_type<Type, Other...>{_assure<std::remove_const_t<Type>>(), _assure<std::remove_const_t<Other>>()...};
   }
 
 private:

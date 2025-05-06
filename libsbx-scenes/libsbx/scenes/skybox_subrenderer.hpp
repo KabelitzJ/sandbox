@@ -14,6 +14,7 @@
 #include <libsbx/graphics/buffers/uniform_handler.hpp>
 
 #include <libsbx/scenes/components/skybox.hpp>
+#include <libsbx/scenes/components/camera.hpp>
 
 namespace sbx::scenes {
 
