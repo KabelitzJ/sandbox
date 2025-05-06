@@ -1,6 +1,8 @@
 #ifndef LIBSBX_MATH_UUID_HPP_
 #define LIBSBX_MATH_UUID_HPP_
 
+#if defined(SBX_MATH_UUID_USE_V4)
+
 #include <cinttypes>
 #include <exception>
 #include <charconv>
@@ -140,6 +142,79 @@ struct std::hash<sbx::math::uuid> {
     return seed;
   }
 }; // struct std::hash<sbx::math::uuid>
+
+#else // SBX_MATH_UUID_USE_V4
+
+#include <cinttypes>
+#include <concepts>
+
+#include <fmt/format.h>
+
+#include <libsbx/math/random.hpp>
+
+#if !defined(SBX_MATH_UUID_TYPE)
+#define SBX_MATH_UUID_TYPE std::uint64_t
+#endif
+
+namespace sbx::math {
+
+template<std::unsigned_integral Type>
+class basic_uuid {
+
+  friend struct fmt::formatter<sbx::math::basic_uuid<Type>>;
+  friend struct std::hash<sbx::math::basic_uuid<Type>>;
+
+public:
+
+  using value_type = Type;
+
+  basic_uuid()
+  : _value{random::next<value_type>()} { }
+
+  static auto null() -> basic_uuid {
+    return basic_uuid{0u};
+  }
+
+  auto operator==(const basic_uuid& other) const noexcept -> bool {
+    return _value == other._value;
+  }
+
+private:
+
+  basic_uuid(const value_type value)
+  : _value{value} { }
+
+  value_type _value;
+
+}; // class uuid
+
+using uuid = basic_uuid<std::uint64_t>;
+
+} // namespace sbx::math
+
+template<std::unsigned_integral Type>
+struct fmt::formatter<sbx::math::basic_uuid<Type>> {
+
+  template<typename ParseContext>
+  constexpr auto parse(ParseContext& context) -> decltype(context.begin()) {
+    return context.begin();
+  }
+
+  template<typename FormatContext>
+  auto format(const sbx::math::basic_uuid<Type>& uuid, FormatContext& context) -> decltype(context.out()) {
+    return fmt::format_to(context.out(), "{}", uuid._value);
+  }
+}; // struct fmt::formatter<sbx::math::uuid>
+
+
+template<std::unsigned_integral Type>
+struct std::hash<sbx::math::basic_uuid<Type>> {
+  auto operator()(const sbx::math::basic_uuid<Type>& uuid) const noexcept -> std::size_t {
+    return uuid._value;
+  }
+}; // struct std::hash<sbx::math::uuid>
+
+#endif // SBX_MATH_UUID_USE_V4
 
 #endif // LIBSBX_MATH_UUID_HPP_
 

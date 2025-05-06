@@ -3,6 +3,8 @@
 
 #include <libsbx/core/module.hpp>
 
+#include <libsbx/scenes/scenes_module.hpp>
+
 namespace sbx::scenes {
 
 class heirarchy_module final : public core::module<heirarchy_module> {
@@ -20,7 +22,9 @@ public:
   ~heirarchy_module() override = default;
 
   auto update() -> void override {
+    auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
 
+    auto& scene = scenes_module.scene();
   }
 
 }; // class heirarchy_module

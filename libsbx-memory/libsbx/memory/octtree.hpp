@@ -1,6 +1,8 @@
 #ifndef LIBSBX_PHYSICS_OCTREE_HPP_
 #define LIBSBX_PHYSICS_OCTREE_HPP_
 
+#include <range/v3/all.hpp>
+
 #include <libsbx/utility/enum.hpp>
 
 #include <libsbx/math/vector2.hpp>
