@@ -153,10 +153,6 @@ struct std::hash<sbx::math::uuid> {
 
 #include <libsbx/math/random.hpp>
 
-#if !defined(SBX_MATH_UUID_TYPE)
-#define SBX_MATH_UUID_TYPE std::uint64_t
-#endif
-
 namespace sbx::math {
 
 template<std::unsigned_integral Type>
