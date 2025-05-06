@@ -35,9 +35,9 @@ private:
   enum class stage : std::uint8_t {
     pre,
     normal,
-    post,
     fixed,
-    rendering,
+    post,
+    rendering
   }; // enum class stage
 
   template<typename... Types>

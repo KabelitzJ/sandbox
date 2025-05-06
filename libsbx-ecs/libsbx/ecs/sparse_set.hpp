@@ -28,7 +28,7 @@ class basic_sparse_set {
 
   using allocator_traits = std::allocator_traits<Allocator>;
 
-  using entity_traits = entity_traits<Entity>;
+  using entity_traits = ecs::entity_traits<Entity>;
 
   using dense_storage_type = std::vector<Entity, Allocator>;
   using sparse_storage_type = std::vector<typename allocator_traits::pointer, typename allocator_traits::rebind_alloc<typename allocator_traits::pointer>>;

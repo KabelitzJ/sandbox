@@ -48,7 +48,7 @@ class basic_registry {
   using allocator_traits = std::allocator_traits<Allocator>;
 
   using pool_container_type = memory::dense_map<std::uint32_t, std::shared_ptr<base_type>, std::identity, std::equal_to<>, memory::rebound_allocator_t<Allocator, std::pair<const std::uint32_t, std::shared_ptr<base_type>>>>;
-  using entity_traits = entity_traits<Entity>;
+  using entity_traits = ecs::entity_traits<Entity>;
 
   template<typename Type>
   using storage_for_type = storage_for_t<Type, Entity, memory::rebound_allocator_t<Allocator, std::remove_const_t<Type>>>;

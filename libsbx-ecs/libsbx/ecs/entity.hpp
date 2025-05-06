@@ -53,6 +53,12 @@ struct basic_entity_traits<Type> : basic_entity_traits<std::underlying_type_t<Ty
   using value_type = Type;
 };
 
+template<typename Type>
+requires (std::is_class_v<Type>)
+struct basic_entity_traits<Type> : basic_entity_traits<typename Type::entity_type> {
+  using value_type = Type;
+};
+
 /**
  * @brief Entity traits
  *
@@ -105,7 +111,7 @@ struct entity_traits : basic_entity_traits<Type> {
   }
 
   static constexpr auto next(const value_type value) noexcept -> value_type {
-    const auto version = to_version(value) + 1;
+    const auto version = to_version(value) + 1u;
     return construct(to_integral(value), static_cast<version_type>(version + (version == version_mask)));
   }
 
@@ -129,14 +135,14 @@ struct entity_traits : basic_entity_traits<Type> {
 
 enum class entity : std::uint32_t { };
 
-struct null_entity_t {
+struct basic_null_entity {
 
   template<typename Entity>
   [[nodiscard]] constexpr operator Entity() const noexcept {
     return entity_traits<Entity>::construct(entity_traits<Entity>::entity_mask, entity_traits<Entity>::version_mask);
   }
 
-  [[nodiscard]] constexpr auto operator==([[maybe_unused]] const null_entity_t other) const noexcept -> bool {
+  [[nodiscard]] constexpr auto operator==([[maybe_unused]] const basic_null_entity other) const noexcept -> bool {
     return true;
   }
 
@@ -145,18 +151,18 @@ struct null_entity_t {
     return entity_traits<Entity>::to_entity(entity) == entity_traits<Entity>::to_entity(*this);
   }
 
-}; // struct null_entity
+}; // struct basic_null_entity
 
-inline constexpr auto null_entity = null_entity_t{};
+inline constexpr auto null_entity = basic_null_entity{};
 
-struct tombstone_entity_t {
+struct basic_tombstone_entity {
 
   template<typename Entity>
   [[nodiscard]] constexpr operator Entity() const noexcept {
     return entity_traits<Entity>::construct(entity_traits<Entity>::entity_mask, entity_traits<Entity>::version_mask);
   }
 
-  [[nodiscard]] constexpr auto operator==([[maybe_unused]] const tombstone_entity_t other) const noexcept -> bool {
+  [[nodiscard]] constexpr auto operator==([[maybe_unused]] const basic_tombstone_entity other) const noexcept -> bool {
     return true;
   }
 
@@ -169,9 +175,9 @@ struct tombstone_entity_t {
     }
   }
 
-}; // struct tombstone_entity
+}; // struct basic_tombstone_entity
 
-inline constexpr auto tombstone_entity = tombstone_entity_t{};
+inline constexpr auto tombstone_entity = basic_tombstone_entity{};
 
 } // namespace sbx::ecs
 
