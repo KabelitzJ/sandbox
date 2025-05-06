@@ -33,41 +33,44 @@ public:
 
   // static const uuid null;
 
-  uuid() {
+  using value_type = std::uint64_t;
+
+  uuid()
+  : _value{random::next<value_type>()} { 
     // Taken from https://www.cryptosys.net/pki/uuid-rfc4122.html
 
-    // 1. Generate 16 random bytes (=128 bits)
-    for (auto& byte : _bytes) {
-      byte = random::next<std::uint8_t>();
-    }
+    // // 1. Generate 16 random bytes (=128 bits)
+    // for (auto& byte : _bytes) {
+    //   byte = random::next<std::uint8_t>();
+    // }
 
     // 2. Adjust certain bits according to RFC 4122 section 4.4 as follows:
     //   (a) set the four most significant bits of the 7th byte to 0100'B, so the high nibble is "4"
     //   (b) set the two most significant bits of the 9th byte to 10'B, so the high nibble will be one of "8", "9", "A" or "B"
-    _bytes[6] = 0x40 | (_bytes[6] & 0xf);
-    _bytes[8] = 0x80 | (_bytes[8] & 0x3f);
+    // _bytes[6] = 0x40 | (_bytes[6] & 0xf);
+    // _bytes[8] = 0x80 | (_bytes[8] & 0x3f);
   }
 
-  uuid(std::string_view string) {
-    if (string.size() != 36u) {
-      throw invalid_uuid_exception{string};
-    }
+  // uuid(std::string_view string) {
+  //   if (string.size() != 36u) {
+  //     throw invalid_uuid_exception{string};
+  //   }
 
-    for (auto i = 0u, offset = 0u; i < _bytes.size(); ++i) {
+  //   for (auto i = 0u, offset = 0u; i < _bytes.size(); ++i) {
 
-      if (i == 4u || i == 6u || i == 8u || i == 10u) {
-        ++offset;
-      }
+  //     if (i == 4u || i == 6u || i == 8u || i == 10u) {
+  //       ++offset;
+  //     }
 
-      auto substr = string.substr(i * 2u + offset, 2u);
-      const auto [itr, error] = std::from_chars(substr.data(), substr.data() + 2u, _bytes[i], 16);
+  //     auto substr = string.substr(i * 2u + offset, 2u);
+  //     const auto [itr, error] = std::from_chars(substr.data(), substr.data() + 2u, _bytes[i], 16);
 
-      if (error == std::errc::invalid_argument || error == std::errc::result_out_of_range) {
-        throw invalid_uuid_exception{string};
-      }
-    }
+  //     if (error == std::errc::invalid_argument || error == std::errc::result_out_of_range) {
+  //       throw invalid_uuid_exception{string};
+  //     }
+  //   }
 
-  }
+  // }
 
   ~uuid() = default;
 
@@ -76,24 +79,28 @@ public:
   }
 
   auto operator==(const uuid& other) const noexcept -> bool {
-    return std::ranges::equal(_bytes, other._bytes);
+    return _value == other._value;
   }
 
-  operator std::string() const {
-    return fmt::format(
-      "{:02x}{:02x}{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
-      _bytes[0], _bytes[1], _bytes[2], _bytes[3], _bytes[4], _bytes[5], _bytes[6], _bytes[7],
-      _bytes[8], _bytes[9], _bytes[10], _bytes[11], _bytes[12], _bytes[13], _bytes[14], _bytes[15]
-    );
+  // operator std::string() const {
+  //   return fmt::format(
+  //     "{:02x}{:02x}{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
+  //     _bytes[0], _bytes[1], _bytes[2], _bytes[3], _bytes[4], _bytes[5], _bytes[6], _bytes[7],
+  //     _bytes[8], _bytes[9], _bytes[10], _bytes[11], _bytes[12], _bytes[13], _bytes[14], _bytes[15]
+  //   );
+  // }
+
+  operator value_type() const {
+    return _value;
   }
 
 private:
 
-  uuid(null_uui_tag) {
-    _bytes.fill(0x00);
-  }
+  uuid(null_uui_tag)
+  : _value{0} { }
 
-  std::array<std::uint8_t, 16u> _bytes;
+  // std::array<std::uint8_t, 16u> _bytes;
+  value_type _value;
 
 }; // class uuid
 
@@ -109,35 +116,29 @@ struct fmt::formatter<sbx::math::uuid> {
 
   template<typename FormatContext>
   auto format(const sbx::math::uuid& uuid, FormatContext& context) -> decltype(context.out()) {
-    return fmt::format_to(context.out(), "{}", std::string{uuid});
+    return fmt::format_to(context.out(), "{}", static_cast<sbx::math::uuid::value_type>(uuid));
   }
 }; // struct fmt::formatter<sbx::math::uuid>
 
-template<>
-struct YAML::convert<sbx::math::uuid> {
+// template<>
+// struct YAML::convert<sbx::math::uuid> {
 
-  static auto encode(const sbx::math::uuid& rhs) -> YAML::Node {
-    return Node{std::string{rhs}};
-  }
+//   static auto encode(const sbx::math::uuid& rhs) -> YAML::Node {
+//     return Node{std::string{rhs}};
+//   }
 
-  static auto decode(const YAML::Node& node, sbx::math::uuid& rhs) -> bool {
-    rhs = sbx::math::uuid{node.as<std::string>()};
+//   static auto decode(const YAML::Node& node, sbx::math::uuid& rhs) -> bool {
+//     rhs = sbx::math::uuid{node.as<std::string>()};
 
-    return true;
-  }
+//     return true;
+//   }
 
-}; // struct YAML::convert<sbx::math::uuid>
+// }; // struct YAML::convert<sbx::math::uuid>
 
 template<>
 struct std::hash<sbx::math::uuid> {
   auto operator()(const sbx::math::uuid& uuid) const noexcept -> std::size_t {
-    auto seed = std::size_t{0};
-
-    for (const auto& byte : uuid._bytes) {
-      sbx::utility::hash_combine(seed, byte);
-    }
-
-    return seed;
+    return static_cast<sbx::math::uuid::value_type>(uuid);
   }
 }; // struct std::hash<sbx::math::uuid>
 

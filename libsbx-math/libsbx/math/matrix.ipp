@@ -12,6 +12,12 @@ inline constexpr basic_matrix<Columns, Rows, Type>::basic_matrix(Other value) no
 
 template<std::size_t Columns, std::size_t Rows, scalar Type>
 requires (Columns > 1u && Rows > 1u)
+template<scalar Other>
+inline constexpr basic_matrix<Columns, Rows, Type>::basic_matrix(const basic_matrix<Columns, Rows, Other>& other) noexcept
+: _columns{utility::make_array<column_type, Columns>(other._columns)} { }
+
+template<std::size_t Columns, std::size_t Rows, scalar Type>
+requires (Columns > 1u && Rows > 1u)
 inline constexpr auto basic_matrix<Columns, Rows, Type>::operator[](size_type index) noexcept -> column_type& {
   return _columns[index];
 }
