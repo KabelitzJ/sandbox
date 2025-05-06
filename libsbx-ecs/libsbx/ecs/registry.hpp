@@ -129,6 +129,21 @@ public:
   }
 
   template<typename... Type>
+  [[nodiscard]] auto all_of([[maybe_unused]] const entity_type entity) const -> bool {
+    if constexpr(sizeof...(Type) == 1u) {
+      auto* pool = _assure<std::remove_const_t<Type>...>();
+      return pool && pool->contains(entity);
+    } else {
+      return (all_of<Type>(entity) && ...);
+    }
+  }
+
+  template<typename... Type>
+  [[nodiscard]] bool any_of([[maybe_unused]] const entity_type entity) const {
+    return (all_of<Type>(entity) || ...);
+  }
+
+  template<typename... Type>
   [[nodiscard]] auto get([[maybe_unused]] const entity_type entity) const -> decltype(auto) {
     if constexpr (sizeof...(Type) == 1u) {
       return (_assure<std::remove_const_t<Type>>()->get(entity), ...);
@@ -155,7 +170,7 @@ public:
   }
 
   template<typename... Type>
-  [[nodiscard]] auto try_get([[maybe_unused]] const entity_type entity) const {
+  [[nodiscard]] auto try_get([[maybe_unused]] const entity_type entity) const -> decltype(auto) {
     if constexpr (sizeof...(Type) == 1u) {
       const auto* pool = _assure<std::remove_const_t<Type>...>();
       return (pool && pool->contains(entity)) ? std::addressof(pool->get(entity)) : nullptr;
@@ -165,7 +180,7 @@ public:
   }
 
   template<typename... Type>
-  [[nodiscard]] auto try_get([[maybe_unused]] const entity_type entity) {
+  [[nodiscard]] auto try_get([[maybe_unused]] const entity_type entity) -> decltype(auto) {
     if constexpr (sizeof...(Type) == 1u) {
       return (const_cast<Type*>(std::as_const(*this).template try_get<Type>(entity)), ...);
     } else {
@@ -174,7 +189,7 @@ public:
   }
 
   template<typename... Type>
-  void clear() {
+  auto clear() -> void {
     if constexpr (sizeof...(Type) == 0u) {
       for (auto position = _pools.size(); position; --position) {
         _pools.begin()[static_cast<typename pool_container_type::difference_type>(position - 1u)].second->clear();
@@ -203,7 +218,7 @@ private:
 
   template<typename Type>
   requires (std::is_same_v<Type, std::decay_t<Type>> && !std::is_same_v<Type, entity_type>)
-  [[nodiscard]] auto& _assure([[maybe_unused]] const std::uint32_t id = utility::type_id<Type>::value()) {
+  [[nodiscard]] auto _assure([[maybe_unused]] const std::uint32_t id = utility::type_id<Type>::value()) -> storage_for_type<Type>& {
     using storage_type = storage_for_type<Type>;
 
     if (auto iterator = _pools.find(id); iterator != _pools.cend()) {
@@ -228,7 +243,7 @@ private:
 
   template<typename Type>
   requires (std::is_same_v<Type, std::decay_t<Type>> && !std::is_same_v<Type, entity_type>)
-  [[nodiscard]] const auto* _assure([[maybe_unused]] const std::uint32_t id = utility::type_id<Type>::value()) const {
+  [[nodiscard]] auto _assure([[maybe_unused]] const std::uint32_t id = utility::type_id<Type>::value()) const -> const storage_for_type<Type>* {
     if (const auto iterator = _pools.find(id); iterator != _pools.cend()) {
       return static_cast<const storage_for_type<Type>*>(iterator->second.get());
     }

@@ -18,6 +18,8 @@ class node {
 
 public:
 
+  static const node null;
+
   ~node() = default;
 
   template<typename Component, typename... Args>
@@ -52,6 +54,10 @@ public:
 
   auto is_valid() const -> bool {
     return _registry->is_valid(_entity);
+  }
+
+  operator bool() const noexcept {
+    return *this != null;
   }
 
   friend auto operator==(const node& lhs, const node& rhs) -> bool {

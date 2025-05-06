@@ -4,20 +4,26 @@
 
 class node {
 
+  friend struct sbx::ecs::entity_traits<node>;
+
 public:
 
   inline static constexpr auto null = sbx::ecs::null_entity;
 
   using entity_type = std::uint32_t;
 
-  constexpr node(const entity_type value) noexcept 
-  : _value{value} { }
-
   constexpr operator entity_type() const noexcept {
     return _value;
   }
 
+  constexpr operator bool() const noexcept {
+    return _value != null;
+  }
+
 private:
+
+  constexpr node(const entity_type value) noexcept 
+  : _value{value} { }
 
   entity_type _value;
 
@@ -44,6 +50,10 @@ TEST(libsbx_math_registry, initialize) {
   auto& h2 = registry.emplace<hierarchy>(e2);
   auto& h3 = registry.emplace<hierarchy>(e3);
   auto& h4 = registry.emplace<hierarchy>(e4);
+
+  if (h1.parent) {
+
+  }
 }
 
 auto main(int argc, char* argv[]) -> int {
