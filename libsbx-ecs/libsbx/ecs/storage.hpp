@@ -26,7 +26,7 @@ class basic_storage : public basic_sparse_set<Entity, memory::rebound_allocator_
   using container_type = std::vector<typename allocator_traits::pointer, memory::rebound_allocator_t<Allocator, typename allocator_traits::pointer>>;
   using underlying_type = basic_sparse_set<Entity, memory::rebound_allocator_t<Allocator, Entity>>;
   using underlying_iterator = typename underlying_type::basic_iterator;
-  using component_traits = component_traits<Type, Entity>;
+  using component_traits = ecs::component_traits<Type, Entity>;
 
 public:
 
@@ -305,7 +305,7 @@ class basic_storage<Entity, Entity, Allocator> : public basic_sparse_set<Entity,
 
   using allocator_traits = std::allocator_traits<Allocator>;
   using underlying_iterator = typename basic_sparse_set<Entity, Allocator>::basic_iterator;
-  using entity_traits = entity_traits<Entity>;
+  using entity_traits = ecs::entity_traits<Entity>;
 
 public:
 

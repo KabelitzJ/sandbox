@@ -5,6 +5,7 @@
 
 #include <libsbx/scenes/scenes_module.hpp>
 #include <libsbx/scenes/scene.hpp>
+#include <libsbx/scenes/hierarchy_module.hpp>
 
 #include <libsbx/scenes/skybox_subrenderer.hpp>
 

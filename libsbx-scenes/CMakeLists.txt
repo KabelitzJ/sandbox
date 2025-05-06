@@ -133,3 +133,7 @@ if(MINGW)
       -Wl,--disable-dynamicbase,--default-image-base-low
   )
 endif()
+
+if(${SBX_BUILD_TESTS})
+  add_subdirectory(tests)
+endif()
