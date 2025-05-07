@@ -27,6 +27,7 @@
 
 #include <libsbx/scenes/node.hpp>
 #include <libsbx/scenes/components/directional_light.hpp>
+#include <libsbx/scenes/components/id.hpp>
 
 namespace sbx::scenes {
 
@@ -36,36 +37,73 @@ class scene {
 
 public:
 
+  using node_type = node;
+  using registry_type = ecs::basic_registry<node_type>;
+
+  template<typename Type, typename... Other>
+  using query_result = registry_type::view_type<Type, Other...>;
+
+  template<typename Type, typename... Other>
+  using const_query_result = registry_type::const_view_type<Type, Other...>;
+
   scene(const std::filesystem::path& path);
 
   virtual ~scene() = default;
 
-  auto create_child_node(node& parent, const std::string& tag = "", const math::transform& transform = math::transform{}) -> node;
+  auto create_child_node(const node_type parent, const std::string& tag = "", const math::transform& transform = math::transform{}) -> node_type;
 
-  auto create_node(const std::string& tag = "", const math::transform& transform = math::transform{}) -> node;  
+  auto create_node(const std::string& tag = "", const math::transform& transform = math::transform{}) -> node_type;  
 
-  auto destroy_node(const node& node) -> void;
+  auto destroy_node(const node_type node) -> void;
 
   auto camera() -> node {
     return _camera;
   }
 
-  auto world_transform(const node& node) -> math::matrix4x4;
+  auto world_transform(const node_type node) -> math::matrix4x4;
 
-  auto world_position(const node& node) -> math::vector3;
+  auto world_position(const node_type node) -> math::vector3;
 
-  template<typename... Components>
-  auto query() -> std::vector<node> {
-    auto view = _registry.view<Components...>();
+  template<typename Type, typename... Other>
+  auto query() -> query_result<Type, Other...> {
+    return _registry.view<Type, Other...>();
+  }
 
-    return view | ranges::views::transform([&](auto& entity) { return node{&_registry, entity}; }) | ranges::to<std::vector>();
+  template<typename Type, typename... Other>
+  auto query() const -> const_query_result<Type, Other...> {
+    return _registry.view<Type, Other...>();
+  }
+
+  template<typename Component>
+  auto has_component(const node_type node) const -> bool {
+    return _registry.all_of<Component>(node);
+  }
+
+  template<typename Component, typename... Args>
+  auto add_component(const node_type node, Args&&... args) -> Component& {
+    return _registry.emplace<Component>(node, std::forward<Args>(args)...);
+  }
+
+  template<typename Component>
+  auto get_component(const node_type node) const -> const Component& {
+    return _registry.get<Component>(node);
+  }
+
+  template<typename Component>
+  auto get_component(const node_type node) -> Component& {
+    return _registry.get<Component>(node);
+  }
+
+  template<typename Component, typename... Args>
+  auto get_or_add_component(const node_type node, Args&&... args) -> Component& {
+    return _registry.get_or_emplace(node, std::forward<Args>(args)...);
   }
 
   auto light() -> directional_light& {
     return _light;
   }
 
-  auto root() -> node {
+  auto root() -> node_type {
     return _root;
   }
 
@@ -78,12 +116,12 @@ public:
     return projection * view;
   }
 
-  auto find_node(const math::uuid& id) -> std::optional<node> {
+  auto find_node(const scenes::id& id) -> node_type {
     if (auto entry = _nodes.find(id); entry != _nodes.end()) {
       return entry->second;
     } 
       
-    return std::nullopt;
+    return node_type::null;
   }
 
 private:
@@ -91,11 +129,11 @@ private:
   auto _load_assets(const YAML::Node& assets) -> void;
   auto _load_nodes(const YAML::Node& nodes) -> void;
 
-  std::unordered_map<math::uuid, node> _nodes;
+  std::unordered_map<math::uuid, node_type> _nodes;
 
-  ecs::registry _registry;
-  node _root;
-  node _camera;
+  registry_type _registry;
+  node_type _root;
+  node_type _camera;
 
   memory::octree<math::uuid> _octree;
 

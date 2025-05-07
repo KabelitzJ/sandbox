@@ -145,7 +145,7 @@ public:
   }
 
   template<typename... Type>
-  [[nodiscard]] bool any_of([[maybe_unused]] const entity_type entity) const {
+  [[nodiscard]] auto any_of([[maybe_unused]] const entity_type entity) const -> bool {
     return (all_of<Type>(entity) || ...);
   }
 

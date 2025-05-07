@@ -168,11 +168,11 @@ public:
   basic_uuid()
   : _value{random::next<value_type>()} { }
 
-  static auto null() -> basic_uuid {
+  static constexpr auto null() -> basic_uuid {
     return basic_uuid{0u};
   }
 
-  auto operator==(const basic_uuid& other) const noexcept -> bool {
+  constexpr auto operator==(const basic_uuid& other) const noexcept -> bool {
     return _value == other._value;
   }
 

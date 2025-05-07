@@ -36,7 +36,7 @@ public:
 
     auto camera = scene.camera();
 
-    auto& transform = camera.get_component<sbx::math::transform>();
+    auto& transform = scene.get_component<sbx::math::transform>(camera);
 
     // WASD movement
 

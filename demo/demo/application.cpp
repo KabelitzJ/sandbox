@@ -112,13 +112,13 @@ application::application()
     for (auto x : std::views::iota(0u, grid_size.x())) {
       auto tree = scene.create_child_node(forrest, fmt::format("Tree{}{}", x, y));
 
-      tree.add_component<sbx::scenes::static_mesh>(_mesh_ids[fmt::format("tree_1_{}", sbx::math::random::next<std::uint8_t>(1, 4))], tree_submeshes);
+      scene.add_component<sbx::scenes::static_mesh>(tree, _mesh_ids[fmt::format("tree_1_{}", sbx::math::random::next<std::uint8_t>(1, 4))], tree_submeshes);
 
-      tree.add_component<sbx::scenes::collider>(sbx::scenes::aabb_collider{sbx::math::vector3{-cell_size.x() / 2.0f, 0.0f, -cell_size.y() / 2.0f}, sbx::math::vector3{cell_size.x() / 2.0f, 5.0f, cell_size.y() / 2.0f}});
+      scene.add_component<sbx::scenes::collider>(tree, sbx::scenes::aabb_collider{sbx::math::vector3{-cell_size.x() / 2.0f, 0.0f, -cell_size.y() / 2.0f}, sbx::math::vector3{cell_size.x() / 2.0f, 5.0f, cell_size.y() / 2.0f}});
 
       const auto position = (sbx::math::vector2{x, y} * cell_size - offset) + (sbx::math::vector2{sbx::math::random::next<std::float_t>(0.0f, 1.0f), sbx::math::random::next<std::float_t>(0.0f, 1.0f)} * cell_size);
 
-      auto& tree_transform = tree.get_component<sbx::math::transform>();
+      auto& tree_transform = scene.get_component<sbx::math::transform>(tree);
       tree_transform.set_position(sbx::math::vector3{position.x(), 0.0f, position.y()});
       // tree_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
       tree_transform.set_rotation(sbx::math::vector3::up, sbx::math::degree{sbx::math::random::next<std::float_t>(0.0f, 360.0f)});
@@ -126,13 +126,13 @@ application::application()
       if (sbx::math::random::next<std::float_t>(0.0f, 1.0f) >= 0.5f) {
         auto bush = scene.create_child_node(forrest, fmt::format("Bush{}{}", x, y));
   
-        bush.add_component<sbx::scenes::static_mesh>(_mesh_ids["bush_5"], tree_submeshes);
+        scene.add_component<sbx::scenes::static_mesh>(bush, _mesh_ids["bush_5"], tree_submeshes);
   
-        bush.add_component<sbx::scenes::collider>(sbx::scenes::aabb_collider{sbx::math::vector3{-cell_size.x() / 2.0f, 0.0f, -cell_size.y() / 2.0f}, sbx::math::vector3{cell_size.x() / 2.0f, 5.0f, cell_size.y() / 2.0f}});
+        scene.add_component<sbx::scenes::collider>(bush, sbx::scenes::aabb_collider{sbx::math::vector3{-cell_size.x() / 2.0f, 0.0f, -cell_size.y() / 2.0f}, sbx::math::vector3{cell_size.x() / 2.0f, 5.0f, cell_size.y() / 2.0f}});
   
         const auto bush_position = (sbx::math::vector2{x, y} * cell_size - offset) + (sbx::math::vector2{sbx::math::random::next<std::float_t>(0.0f, 1.0f), sbx::math::random::next<std::float_t>(0.0f, 1.0f)} * cell_size);
   
-        auto& bush_transform = bush.get_component<sbx::math::transform>();
+        auto& bush_transform = scene.get_component<sbx::math::transform>(bush);
         bush_transform.set_position(sbx::math::vector3{bush_position.x(), 0.0f, bush_position.y()});
         // bush_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
         bush_transform.set_rotation(sbx::math::vector3::up, sbx::math::degree{sbx::math::random::next<std::float_t>(0.0f, 360.0f)});
@@ -141,15 +141,15 @@ application::application()
   }
 
   auto test = scene.create_node("Test");
-  auto& test_transform = test.get_component<sbx::math::transform>();
+  auto& test_transform = scene.get_component<sbx::math::transform>(test);
   test_transform.set_position(sbx::math::vector3{15.0f, 5.0f, 0.0f});
-  test.add_component<sbx::scenes::static_mesh>(_mesh_ids["sphere"], 0u, sbx::math::color::red(), sbx::scenes::static_mesh::material{0.0f, 1.0f, 0.0f, 0.0f}, _texture_ids["white"]);
-  test.add_component<sbx::scenes::collider>(sbx::scenes::sphere_collider{sbx::math::vector3::zero, 1.0f});
+  scene.add_component<sbx::scenes::static_mesh>(test, _mesh_ids["sphere"], 0u, sbx::math::color::red(), sbx::scenes::static_mesh::material{0.0f, 1.0f, 0.0f, 0.0f}, _texture_ids["white"]);
+  scene.add_component<sbx::scenes::collider>(test, sbx::scenes::sphere_collider{sbx::math::vector3::zero, 1.0f});
 
   // Camera
   auto camera = scene.camera();
 
-  camera.add_component<sbx::scenes::skybox>(_texture_ids["skybox"], sbx::math::color::white());
+  scene.add_component<sbx::scenes::skybox>(camera, _texture_ids["skybox"], sbx::math::color::white());
 
   // const auto position = sbx::math::vector3{10.0f, 10.0f, 10.0f};
 

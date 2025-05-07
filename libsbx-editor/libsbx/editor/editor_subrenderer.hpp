@@ -185,7 +185,7 @@ private:
     ImGui::End();
   }
 
-  auto _context_menu(sbx::scenes::node& node) -> void {
+  auto _context_menu(const sbx::scenes::node node) -> void {
     auto& scene_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
 
     auto& scene = scene_module.scene();
@@ -207,7 +207,7 @@ private:
         ImGui::EndMenu();
       }
 
-      if (_selected_node_id != scene.root().get_component<sbx::scenes::id>()) {
+      if (_selected_node_id != scene.get_component<sbx::scenes::id>(scene.root())) {
         if (ImGui::MenuItem("Delete")) {
           _open_popups.set(popup::hierarchy_delete);
         }
@@ -217,12 +217,12 @@ private:
     }
   }
 
-  auto _build_tree(sbx::scenes::node& node) -> void {
+  auto _build_tree(const sbx::scenes::node node) -> void {
     auto& scene_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
 
     auto& scene = scene_module.scene();
 
-    const auto& relationship = node.get_component<sbx::scenes::relationship>();
+    const auto& relationship = scene.get_component<sbx::scenes::relationship>(node);
 
     // auto flag = ImGuiTreeNodeFlags{ImGuiTreeNodeFlags_OpenOnArrow};
     auto flag = ImGuiTreeNodeFlags{ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_OpenOnArrow};
@@ -231,15 +231,15 @@ private:
       flag |= ImGuiTreeNodeFlags_Leaf;
     }
 
-    if (node.get_component<sbx::scenes::id>() == _selected_node_id) {
+    if (scene.get_component<sbx::scenes::id>(node) == _selected_node_id) {
       flag |= ImGuiTreeNodeFlags_Selected;
     }
 
     ImGui::PushID(&node);
 
-    if (ImGui::TreeNodeEx(node.get_component<sbx::scenes::tag>().c_str(), flag)) {
+    if (ImGui::TreeNodeEx(scene.get_component<sbx::scenes::tag>(node).c_str(), flag)) {
       if (ImGui::IsItemClicked(ImGuiMouseButton_Right) || ImGui::IsItemClicked(ImGuiMouseButton_Left)) {
-        _selected_node_id = node.get_component<sbx::scenes::id>();
+        _selected_node_id = scene.get_component<sbx::scenes::id>(node);
 
         utility::logger<"editor">::debug("Selected node id {}", _selected_node_id);
       }
@@ -248,7 +248,7 @@ private:
 
       for (const auto& child_id : relationship.children()) {
         if (auto child = scene.find_node(child_id); child) {
-          _build_tree(*child);
+          _build_tree(child);
         }
       }
 
@@ -269,7 +269,7 @@ private:
       if (ImGui::TreeNodeEx("Tag", ImGuiTreeNodeFlags_DefaultOpen)) {
         buffer.fill('\0');
 
-        auto& tag = node->get_component<sbx::scenes::tag>();
+        auto& tag = scene.get_component<sbx::scenes::tag>(node);
 
         std::memcpy(buffer.data(), tag.data(), std::min(tag.size(), buffer.size()));
 
@@ -281,7 +281,7 @@ private:
       }
 
       if (ImGui::TreeNodeEx("Transform", ImGuiTreeNodeFlags_DefaultOpen)) {
-        auto& transform = node->get_component<sbx::math::transform>();
+        auto& transform = scene.get_component<sbx::math::transform>(node);
 
         ImGui::Text("Position");
 
@@ -386,7 +386,7 @@ private:
 
         if (ImGui::Button("Create", ImVec2{button_width, 0})) {
           if (auto node = scene.find_node(_selected_node_id); node) {
-            scene.create_child_node(*node, name);
+            scene.create_child_node(node, name);
           } else {
             utility::logger<"editor">::warn("No selected node");
           }
@@ -433,7 +433,7 @@ private:
         const auto total_width = (button_width * 2.0f) + padding;
 
         if (auto node = scene.find_node(_selected_node_id); node) {
-          ImGui::Text("Do you want to delete '%s'", node->get_component<sbx::scenes::tag>().c_str());
+          ImGui::Text("Do you want to delete '%s'", scene.get_component<sbx::scenes::tag>(node).c_str());
 
           ImGui::SetCursorPosX(ImGui::GetCursorPosX() + available_width - total_width);
 
@@ -447,7 +447,7 @@ private:
           ImGui::SameLine();
 
           if (ImGui::Button("Delete", ImVec2{button_width, 0})) {
-            scene.destroy_node(*node);
+            scene.destroy_node(node);
             _selected_node_id = sbx::math::uuid::null();
             ImGui::CloseCurrentPopup();
           }

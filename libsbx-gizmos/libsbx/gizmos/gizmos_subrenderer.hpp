@@ -68,11 +68,11 @@ public:
 
     auto camera_node = scene.camera();
 
-    auto& camera = camera_node.get_component<scenes::camera>();
+    auto& camera = scene.get_component<scenes::camera>(camera_node);
 
     _scene_uniform_handler.push("projection", camera.projection());
 
-    const auto& camera_transform = camera_node.get_component<math::transform>();
+    const auto& camera_transform = scene.get_component<math::transform>(camera_node);
 
     _scene_uniform_handler.push("view", math::matrix4x4::inverted(camera_transform.as_matrix()));
 
@@ -93,9 +93,9 @@ public:
     _used_uniforms.clear();
     _static_meshes.clear();
 
-    auto gizmo_nodes = scene.query<scenes::gizmo>();
+    auto gizmo_query = scene.query<scenes::gizmo>();
 
-    for (auto& node : gizmo_nodes) {
+    for (const auto node : gizmo_query) {
       _submit_mesh(node);
     }
 
@@ -128,11 +128,11 @@ public:
 
 private:
 
-  auto _submit_mesh(scenes::node& node) -> void {
+  auto _submit_mesh(const scenes::node node) -> void {
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
     auto& scene = scenes_module.scene();
 
-    const auto& gizmo = node.get_component<scenes::gizmo>();
+    const auto& gizmo = scene.get_component<scenes::gizmo>(node);
     const auto mesh_id = gizmo.mesh_id();
 
     const auto key = mesh_key{gizmo.mesh_id(), gizmo.submesh_index(), gizmo.texture_id()};

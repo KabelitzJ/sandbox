@@ -35,36 +35,36 @@ namespace sbx::scenes {
 
 scene::scene(const std::filesystem::path& path)
 : _registry{}, 
-  _root{&_registry, _registry.create()},
-  _camera{&_registry, _registry.create()},
+  _root{_registry.create()},
+  _camera{_registry.create()},
   _light{math::vector3{-1.0, -1.0, -1.0}, math::color::white()},
   _octree{math::volume{math::vector3{-1000.0f, -1000.0f, -1000.0f}, math::vector3{1000.0f, 1000.0f, 1000.0f}}} {
   // [NOTE] KAJ 2023-10-17 : Initialize root node
-  auto& root_id = _root.add_component<scenes::id>();
-  _root.add_component<scenes::relationship>(root_id);
-  _root.add_component<math::transform>();
-  _root.add_component<scenes::tag>("ROOT");
-
+  const auto& root_id = add_component<scenes::id>(_root);
   _nodes.insert({root_id, _root});
 
+  add_component<scenes::relationship>(_root, math::uuid::null());
+  add_component<math::transform>(_root);
+  add_component<scenes::tag>(_root, "ROOT");
+
   // [NOTE] KAJ 2023-10-17 : Initialize camera node
-  auto& camera_id = _camera.add_component<scenes::id>();
+  const auto& camera_id = add_component<scenes::id>(_camera);
 
   _nodes.insert({camera_id, _camera});
 
-  _camera.add_component<scenes::relationship>(root_id);
-  _root.get_component<scenes::relationship>().add_child(camera_id);
+  add_component<scenes::relationship>(_camera, root_id);
+  get_component<scenes::relationship>(_root).add_child(camera_id);
 
-  _camera.add_component<math::transform>();
-  _camera.add_component<scenes::tag>("Camera");
+  add_component<math::transform>(_camera);
+  add_component<scenes::tag>(_camera, "Camera");
 
   auto& devices_module = core::engine::get_module<devices::devices_module>();
   auto& window = devices_module.window();
 
-  _camera.add_component<scenes::camera>(math::angle{math::degree{50.0f}}, window.aspect_ratio(), 0.1f, 2000.0f);
+  add_component<scenes::camera>(_camera, math::angle{math::degree{50.0f}}, window.aspect_ratio(), 0.1f, 2000.0f);
 
   window.on_framebuffer_resized() += [this](const devices::framebuffer_resized_event& event) {
-    auto& camera = _camera.get_component<scenes::camera>();
+    auto& camera = get_component<scenes::camera>(_camera);
     camera.set_aspect_ratio(static_cast<std::float_t>(event.width) / static_cast<std::float_t>(event.height));
   };
 
@@ -78,68 +78,68 @@ scene::scene(const std::filesystem::path& path)
   _load_nodes(scene["nodes"]);
 }
 
-auto scene::create_child_node(node& parent, const std::string& tag, const math::transform& transform) -> node {
-  auto node = scenes::node{&_registry, _registry.create()};
+auto scene::create_child_node(const node_type parent, const std::string& tag, const math::transform& transform) -> node_type {
+  auto node = _registry.create();
 
-  auto& id = node.add_component<scenes::id>();
+  const auto& id = add_component<scenes::id>(node);
 
   _nodes.insert({id, node});
 
-  node.add_component<scenes::relationship>(parent.get_component<scenes::id>());
-  parent.get_component<scenes::relationship>().add_child(id);
+  add_component<scenes::relationship>(node, get_component<scenes::id>(parent));
+  get_component<scenes::relationship>(parent).add_child(id);
 
-  node.add_component<math::transform>(transform);
+  add_component<math::transform>(node, transform);
 
-  node.add_component<scenes::tag>(!tag.empty() ? tag : scenes::tag{"Node"});
+  add_component<scenes::tag>(node, !tag.empty() ? tag : scenes::tag{"Node"});
 
   return node;
 }
 
-auto scene::create_node(const std::string& tag, const math::transform& transform) -> node {
+auto scene::create_node(const std::string& tag, const math::transform& transform) -> node_type {
   return create_child_node(_root, tag, transform);
 }
 
-auto scene::destroy_node(const node& node) -> void {
-  const auto& id = node.get_component<scenes::id>();
-  const auto& relationship = node.get_component<scenes::relationship>();
+auto scene::destroy_node(const node_type node) -> void {
+  const auto& id = get_component<scenes::id>(node);
+  const auto& relationship = get_component<scenes::relationship>(node);
 
   for (auto& child_id : relationship.children()) {
-    if (auto child = find_node(child_id); child) {
-      destroy_node(*child);
+    if (auto child = find_node(child_id); child != node::null) {
+      destroy_node(child);
     }
   }
 
   if (auto entry = _nodes.find(id); entry != _nodes.end()) {
-    entry->second.get_component<scenes::relationship>().remove_child(id);
+    get_component<scenes::relationship>(entry->second).remove_child(id);
   } else {
-    utility::logger<"scenes">::warn("Node '{}' has invalid parent", node.get_component<scenes::tag>());
+    utility::logger<"scenes">::warn("Node '{}' has invalid parent", get_component<scenes::tag>(node));
   }
 
   _nodes.erase(id);
 
-  _registry.destroy(node._entity);
+  _registry.destroy(node);
 }
 
-auto scene::world_transform(const node& node) -> math::matrix4x4 {
+auto scene::world_transform(const node_type node) -> math::matrix4x4 {
   EASY_FUNCTION();
 
   // [TODO] KAJ 2025-05-03 : FIX THIS! THE PERFORMANCE IS TERRIBLE!
 
-  auto& transform = node.get_component<math::transform>();
-  auto& relationship = node.get_component<scenes::relationship>();
+  const auto& transform = get_component<math::transform>(node);
+  const auto& relationship = get_component<scenes::relationship>(node);
 
-  auto& parent = _nodes.at(relationship.parent());
+  const auto parent = _nodes.at(relationship.parent());
 
   auto world = math::matrix4x4::identity;
 
-  if (parent.get_component<scenes::id>() != _root.get_component<scenes::id>()) {
+  if (get_component<scenes::id>(parent) != get_component<scenes::id>(_root)) {
     world = world_transform(parent);
   }
 
   return world * transform.as_matrix();
 }
 
-auto scene::world_position(const node& node) -> math::vector3 {
+auto scene::world_position(const node_type node) -> math::vector3 {
   EASY_FUNCTION();
 
   return math::vector3{world_transform(node)[3]};

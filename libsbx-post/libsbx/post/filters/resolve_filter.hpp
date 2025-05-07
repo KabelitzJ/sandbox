@@ -57,7 +57,7 @@ public:
     auto& pipeline = base_type::pipeline();
     auto& descriptor_handler = base_type::descriptor_handler();
 
-    const auto& camera_transform = camera_node.get_component<math::transform>();
+    const auto& camera_transform = scene.get_component<math::transform>(camera_node);
 
     _scene_uniform_handler.push("camera_position", camera_transform.position());
 
@@ -77,7 +77,7 @@ public:
     for (const auto& node : point_light_nodes) {
       const auto model = scene.world_transform(node);
 
-      const auto& light = node.get_component<scenes::point_light>();
+      const auto& light = scene.get_component<scenes::point_light>(node);
 
       const auto position = math::vector3{model[3]};
 

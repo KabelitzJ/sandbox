@@ -69,9 +69,9 @@ public:
     _static_meshes.clear();
     _images.clear();
 
-    auto mesh_nodes = scene.query<scenes::static_mesh>();
+    auto mesh_query = scene.query<scenes::static_mesh>();
 
-    for (auto& node : mesh_nodes) {
+    for (const auto node : mesh_query) {
       _submit_mesh(node);
     }
 
@@ -105,11 +105,11 @@ public:
 
 private:
 
-  auto _submit_mesh(scenes::node& node) -> void {
+  auto _submit_mesh(const scenes::node node) -> void {
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
     auto& scene = scenes_module.scene();
 
-    const auto& static_mesh = node.get_component<scenes::static_mesh>();
+    const auto& static_mesh = scene.get_component<scenes::static_mesh>(node);
     const auto mesh_id = static_mesh.mesh_id();
 
     for (const auto& submesh : static_mesh.submeshes()) {

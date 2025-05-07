@@ -32,20 +32,20 @@ public:
 
     auto camera_node = scene.camera();
 
-    auto& camera = camera_node.get_component<sbx::scenes::camera>();
+    auto& camera = scene.get_component<sbx::scenes::camera>(camera_node);
 
     _scene_uniform_handler.push("projection", camera.projection());
 
-    const auto& camera_transform = camera_node.get_component<sbx::math::transform>();
+    const auto& camera_transform = scene.get_component<sbx::math::transform>(camera_node);
 
     _scene_uniform_handler.push("view", sbx::math::matrix4x4::inverted(camera_transform.as_matrix()));
 
-    auto chunk_nodes = scene.query<demo::chunk>();
+    auto chunk_query = scene.query<demo::chunk>();
 
     _pipeline.bind(command_buffer);
 
-    for (const auto& node : chunk_nodes) {
-      const auto& chunk = node.get_component<demo::chunk>();
+    for (const auto node : chunk_query) {
+      const auto& chunk = scene.get_component<demo::chunk>(node);
       const auto& mesh = graphics_module.get_asset<sbx::models::mesh>(chunk.mesh_id);
 
       const auto model = scene.world_transform(node);

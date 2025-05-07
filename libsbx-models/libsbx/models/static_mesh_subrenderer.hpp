@@ -66,13 +66,13 @@ public:
 
     auto camera_node = scene.camera();
 
-    auto& camera = camera_node.get_component<scenes::camera>();
+    auto& camera = scene.get_component<scenes::camera>(camera_node);
 
     const auto& projection = camera.projection();
 
     _scene_uniform_handler.push("projection", projection);
 
-    const auto& camera_transform = camera_node.get_component<math::transform>();
+    const auto& camera_transform = scene.get_component<math::transform>(camera_node);
 
     const auto view = math::matrix4x4::inverted(camera_transform.as_matrix());
 
@@ -133,7 +133,7 @@ public:
 
     EASY_BLOCK("submit meshes");
 
-    auto mesh_nodes = scene.query<scenes::static_mesh>();
+    auto mesh_query = scene.query<scenes::static_mesh>();
 
     // const auto total_meshes = std::ranges::distance(std::ranges::begin(mesh_nodes), std::ranges::end(mesh_nodes));
 
@@ -149,13 +149,13 @@ public:
     //   return frustum.intersects(model, collider);
     // }) | ranges::to<std::vector<scenes::node>>();
 
-    for (const auto& node : mesh_nodes) {
-      if (!node.has_component<scenes::collider>()) {
+    for (const auto node : mesh_query) {
+      if (!scene.has_component<scenes::collider>(node)) {
         _submit_mesh(node);
         continue;
       } 
 
-      const auto& collider = node.get_component<scenes::collider>();
+      const auto& collider = scene.get_component<scenes::collider>(node);
 
       const auto model = scene.world_transform(node);
 
@@ -214,12 +214,12 @@ public:
 
 private:
 
-  auto _submit_mesh(const scenes::node& node) -> void {
+  auto _submit_mesh(const scenes::node node) -> void {
     EASY_FUNCTION();
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
     auto& scene = scenes_module.scene();
 
-    const auto& static_mesh = node.get_component<scenes::static_mesh>();
+    const auto& static_mesh = scene.get_component<scenes::static_mesh>(node);
     const auto mesh_id = static_mesh.mesh_id();
 
     for (const auto& submesh : static_mesh.submeshes()) {

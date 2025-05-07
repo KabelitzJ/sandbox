@@ -6,74 +6,101 @@
 #include <libsbx/ecs/registry.hpp>
 #include <libsbx/ecs/entity.hpp>
 
-#include <libsbx/signals/signal.hpp>
+// #include <libsbx/signals/signal.hpp>
 
-#include <libsbx/memory/observer_ptr.hpp>
+// #include <libsbx/memory/observer_ptr.hpp>
 
 namespace sbx::scenes {
 
+// class node {
+
+//   friend class scene;
+
+// public:
+
+//   static const node null;
+
+//   ~node() = default;
+
+//   template<typename Component, typename... Args>
+//   auto add_component(Args&&... args) -> Component& {
+//     return _registry->emplace<Component>(_entity, std::forward<Args>(args)...);
+//   }
+
+//   template<typename Component, typename... Args>
+//   auto get_or_add_component(Args&&... args) -> Component& {
+//     return _registry->get_or_emplace<Component>(_entity, std::forward<Args>(args)...);
+//   }
+
+//   template<typename Component>
+//   auto get_component() -> Component& {
+//     return _registry->get<Component>(_entity);
+//   }
+
+//   template<typename Component>
+//   auto get_component() const -> const Component& {
+//     return _registry->get<Component>(_entity);
+//   }
+
+//   template<typename Component>
+//   auto has_component() const -> bool {
+//     return _registry->try_get<Component>(_entity) != nullptr;
+//   }
+
+//   template<typename Component>
+//   auto remove_component() -> void {
+//     _registry->remove<Component>(_entity);
+//   }
+
+//   auto is_valid() const -> bool {
+//     return _registry->is_valid(_entity);
+//   }
+
+//   operator bool() const noexcept {
+//     return *this != null;
+//   }
+
+//   friend auto operator==(const node& lhs, const node& rhs) -> bool {
+//     return lhs._registry == rhs._registry && lhs._entity == rhs._entity;
+//   }
+
+// private:
+
+//   node(memory::observer_ptr<ecs::registry> registry, ecs::entity entity)
+//   : _registry{registry},
+//     _entity{entity} { }
+
+//   memory::observer_ptr<ecs::registry> _registry;
+//   ecs::entity _entity;
+
+// }; // class node
+
 class node {
 
-  friend class scene;
+  friend struct sbx::ecs::entity_traits<node>;
 
 public:
 
-  static const node null;
+  inline static constexpr auto null = sbx::ecs::null_entity;
 
-  ~node() = default;
+  using entity_type = std::uint32_t;
 
-  template<typename Component, typename... Args>
-  auto add_component(Args&&... args) -> Component& {
-    return _registry->emplace<Component>(_entity, std::forward<Args>(args)...);
+  constexpr operator entity_type() const noexcept {
+    return _value;
   }
 
-  template<typename Component, typename... Args>
-  auto get_or_add_component(Args&&... args) -> Component& {
-    return _registry->get_or_emplace<Component>(_entity, std::forward<Args>(args)...);
-  }
-
-  template<typename Component>
-  auto get_component() -> Component& {
-    return _registry->get<Component>(_entity);
-  }
-
-  template<typename Component>
-  auto get_component() const -> const Component& {
-    return _registry->get<Component>(_entity);
-  }
-
-  template<typename Component>
-  auto has_component() const -> bool {
-    return _registry->try_get<Component>(_entity) != nullptr;
-  }
-
-  template<typename Component>
-  auto remove_component() -> void {
-    _registry->remove<Component>(_entity);
-  }
-
-  auto is_valid() const -> bool {
-    return _registry->is_valid(_entity);
-  }
-
-  operator bool() const noexcept {
-    return *this != null;
-  }
-
-  friend auto operator==(const node& lhs, const node& rhs) -> bool {
-    return lhs._registry == rhs._registry && lhs._entity == rhs._entity;
+  constexpr operator bool() const noexcept {
+    return _value != null;
   }
 
 private:
 
-  node(memory::observer_ptr<ecs::registry> registry, ecs::entity entity)
-  : _registry{registry},
-    _entity{entity} { }
+  constexpr node(const entity_type value) noexcept 
+  : _value{value} { }
 
-  memory::observer_ptr<ecs::registry> _registry;
-  ecs::entity _entity;
+  entity_type _value;
 
-}; // class node
+}; // struct node
 
 } // namespace sbx::scenes
 

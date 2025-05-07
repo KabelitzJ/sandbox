@@ -137,17 +137,17 @@ public:
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
     auto& scene = scenes_module.scene();
 
-    const auto& camera_node = scene.camera();
-
-    if (!camera_node.has_component<scenes::skybox>()) {
+    const auto camera_node = scene.camera();
+    
+    if (!scene.has_component<scenes::skybox>(camera_node)) {
       utility::logger<"scenes">::warn("Skybox subrenderer: No camera node with skybox component found");
       return;
     }
 
-    const auto& skybox = camera_node.get_component<scenes::skybox>();
+    const auto& skybox = scene.get_component<scenes::skybox>(camera_node);
 
-    const auto& camera = camera_node.get_component<scenes::camera>();
-    const auto& camera_transform = camera_node.get_component<math::transform>();
+    const auto& camera = scene.get_component<scenes::camera>(camera_node);
+    const auto& camera_transform = scene.get_component<math::transform>(camera_node);
 
     const auto& projection = camera.projection();
     _scene_uniform_handler.push("projection", projection);

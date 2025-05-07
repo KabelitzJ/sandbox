@@ -44,19 +44,19 @@ public:
 
     auto node = scene.create_node("Terrain");
 
-    _node_id = node.get_component<sbx::scenes::id>();
+    _node_id = scene.get_component<sbx::scenes::id>(node);
 
     for (auto y = 0u; y < grid.y(); ++y) {
       for (auto x = 0u; x < grid.x(); ++x) {
         auto chunk = scene.create_child_node(node, fmt::format("Chunk{}{}", x, y));
 
-        chunk.add_component<sbx::scenes::static_mesh>(_mesh_id, 0u, sbx::math::color::white(), sbx::scenes::static_mesh::material{0.0f, 1.0f, 0.0f, 0.0f}, _texture_id);
+        scene.add_component<sbx::scenes::static_mesh>(chunk, _mesh_id, 0u, sbx::math::color::white(), sbx::scenes::static_mesh::material{0.0f, 1.0f, 0.0f, 0.0f}, _texture_id);
 
         const auto position = sbx::math::vector3{x * chunk_size.x() - offset.x(), 0.0f, y * chunk_size.y() - offset.y()};
 
         // chunk.add_component<sbx::scenes::collider>(sbx::scenes::aabb_collider{sbx::math::vector3{-chunk_size.x() / 2.0f, 0.0f, -chunk_size.y() / 2.0f}, sbx::math::vector3{chunk_size.x() / 2.0f, 1.0f, chunk_size.y() / 2.0f}});
 
-        auto& transform = chunk.get_component<sbx::math::transform>();
+        auto& transform = scene.get_component<sbx::math::transform>(chunk);
 
         transform.set_position(position);
       }
