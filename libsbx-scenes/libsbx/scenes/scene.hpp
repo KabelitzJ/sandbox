@@ -65,6 +65,8 @@ public:
 
   auto world_transform(const node_type node) -> math::matrix4x4;
 
+  auto world_normal(const node_type node) -> math::matrix4x4;
+
   auto world_position(const node_type node) -> math::vector3;
 
   template<typename Type, typename... Other, typename... Exclude>

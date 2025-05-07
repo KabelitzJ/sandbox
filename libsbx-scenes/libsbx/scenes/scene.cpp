@@ -167,7 +167,17 @@ auto scene::world_transform(const node_type node) -> math::matrix4x4 {
   //   world = world_transform(parent);
   // }
 
-  return global_transform.matrix * transform.as_matrix();
+  return global_transform.model;
+}
+
+auto scene::world_normal(const node_type node) -> math::matrix4x4 {
+  EASY_FUNCTION();
+
+  utility::assert_that(has_component<scenes::global_transform>(node), "Node has no global_transform component");
+
+  const auto& global_transform = get_component<scenes::global_transform>(node);
+
+  return global_transform.normal;
 }
 
 auto scene::world_position(const node_type node) -> math::vector3 {

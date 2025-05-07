@@ -37,6 +37,7 @@
 #include <libsbx/scenes/components/camera.hpp>
 #include <libsbx/scenes/components/tag.hpp>
 #include <libsbx/scenes/components/point_light.hpp>
+#include <libsbx/scenes/components/global_transform.hpp>
 
 #include <libsbx/models/vertex3d.hpp>
 #include <libsbx/models/pipeline.hpp>
@@ -162,9 +163,11 @@ public:
     for (auto&& [node, static_mesh, collider] : mesh_query_collider.each()) {
       const auto model = scene.world_transform(node);
 
+      EASY_BLOCK("testing frustum");
       if (frustum.intersects(model, collider)) {
         _submit_mesh(node, static_mesh);
       }
+      EASY_END_BLOCK;
     }
 
     EASY_END_BLOCK;
@@ -230,8 +233,7 @@ private:
 
       _used_uniforms.insert(key);
 
-      auto model = scene.world_transform(node);
-      auto normal = math::matrix4x4::transposed(math::matrix4x4::inverted(model));
+      const auto& global_transform = scene.get_component<const scenes::global_transform>(node);
 
       const auto albedo_image_index = submesh.albedo_texture ? _images.push_back(*submesh.albedo_texture) : graphics::separate_image2d_array::max_size;
       const auto normal_image_index = submesh.normal_texture ? _images.push_back(*submesh.normal_texture) : graphics::separate_image2d_array::max_size;
@@ -239,7 +241,7 @@ private:
       const auto image_indices = math::vector4{albedo_image_index, normal_image_index, 0u, 0u};
       const auto material = math::vector4{submesh.material.metallic, submesh.material.roughness, submesh.material.flexibility, submesh.material.anchor_height};
 
-      _static_meshes[key].push_back(per_mesh_data{std::move(model), std::move(normal), submesh.tint, material, image_indices});
+      _static_meshes[key].push_back(per_mesh_data{global_transform.model, global_transform.normal, submesh.tint, material, image_indices});
       EASY_END_BLOCK;
     }
   }

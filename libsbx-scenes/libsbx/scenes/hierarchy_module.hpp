@@ -66,14 +66,15 @@ public:
       const auto is_dirty = is_parent_dirty || transform.is_dirty();
 
       if (is_dirty) {
-        global_transform.matrix = parent_matrix * transform.as_matrix();
+        global_transform.model = parent_matrix * transform.as_matrix();
+        global_transform.normal = math::matrix4x4::transposed(math::matrix4x4::inverted(global_transform.model));
         transform.clear_is_dirty();
       }
 
       auto child = hierarchy.first_child;
 
       while (child != node::null) {
-        stack.push_back({child, global_transform.matrix, is_dirty});
+        stack.push_back({child, global_transform.model, is_dirty});
         child = scene.get_component<const scenes::hierarchy>(child).next_sibling;
       }
     }
