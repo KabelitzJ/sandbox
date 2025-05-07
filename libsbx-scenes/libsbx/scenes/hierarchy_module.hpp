@@ -1,6 +1,8 @@
 #ifndef LIBSBX_SCENES_HIERARCHY_MODULE_HPP_
 #define LIBSBX_SCENES_HIERARCHY_MODULE_HPP_
 
+#include <easy/profiler.h>
+
 #include <libsbx/core/module.hpp>
 #include <libsbx/core/engine.hpp>
 
@@ -40,6 +42,8 @@ public:
 
     auto root = scene.root();
 
+    EASY_BLOCK("updating global transforms");
+
     auto stack = std::vector<stack_entry>{};
     stack.reserve(256u);
 
@@ -73,6 +77,8 @@ public:
         child = scene.get_component<const scenes::hierarchy>(child).next_sibling;
       }
     }
+
+    EASY_END_BLOCK;
   }
 
 }; // class hierarchy_module

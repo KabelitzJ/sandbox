@@ -131,9 +131,17 @@ public:
 
     EASY_END_BLOCK;
 
-    EASY_BLOCK("submit meshes");
+    EASY_BLOCK("submit meshes no collider");
 
-    auto mesh_query = scene.query<scenes::static_mesh>();
+    auto mesh_query_no_collider = scene.query<const scenes::static_mesh>(scenes::scene::query_filter<scenes::collider>);
+
+    for (auto&& [node, static_mesh] : mesh_query_no_collider.each()) {
+      _submit_mesh(node, static_mesh);
+    }
+
+    EASY_END_BLOCK;
+
+    EASY_BLOCK("submit meshes collider");
 
     // const auto total_meshes = std::ranges::distance(std::ranges::begin(mesh_nodes), std::ranges::end(mesh_nodes));
 
@@ -149,18 +157,13 @@ public:
     //   return frustum.intersects(model, collider);
     // }) | ranges::to<std::vector<scenes::node>>();
 
-    for (const auto node : mesh_query) {
-      if (!scene.has_component<scenes::collider>(node)) {
-        _submit_mesh(node);
-        continue;
-      } 
+    auto mesh_query_collider = scene.query<const scenes::static_mesh, const scenes::collider>();
 
-      const auto& collider = scene.get_component<scenes::collider>(node);
-
+    for (auto&& [node, static_mesh, collider] : mesh_query_collider.each()) {
       const auto model = scene.world_transform(node);
 
       if (frustum.intersects(model, collider)) {
-        _submit_mesh(node);
+        _submit_mesh(node, static_mesh);
       }
     }
 
@@ -214,12 +217,11 @@ public:
 
 private:
 
-  auto _submit_mesh(const scenes::node node) -> void {
+  auto _submit_mesh(const scenes::node node, const scenes::static_mesh& static_mesh) -> void {
     EASY_FUNCTION();
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
     auto& scene = scenes_module.scene();
 
-    const auto& static_mesh = scene.get_component<scenes::static_mesh>(node);
     const auto mesh_id = static_mesh.mesh_id();
 
     for (const auto& submesh : static_mesh.submeshes()) {
