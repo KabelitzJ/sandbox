@@ -26,6 +26,8 @@ public:
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
 
     auto& scene = scenes_module.scene();
+
+    auto query = scene.query<std::uint32_t>(scene::query_filter<std::uint64_t>);
   }
 
 }; // class heirarchy_module

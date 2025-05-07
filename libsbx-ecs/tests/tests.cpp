@@ -38,6 +38,9 @@ struct hierarchy {
   node previous_sibling{node::null};
 }; // struct hierarchy
 
+struct keep_tag { };
+struct exclude_tag { };
+
 TEST(libsbx_math_registry, initialize) {
   auto registry = registry_type{};
 
@@ -46,14 +49,29 @@ TEST(libsbx_math_registry, initialize) {
   auto e3 = registry.create();
   auto e4 = registry.create();
 
-  auto& h1 = registry.emplace<hierarchy>(e1);
-  auto& h2 = registry.emplace<hierarchy>(e2);
-  auto& h3 = registry.emplace<hierarchy>(e3);
-  auto& h4 = registry.emplace<hierarchy>(e4);
+  registry.destroy(e4);
 
-  if (h1.parent) {
+  e4 = registry.create();
 
+  registry.emplace<keep_tag>(e1);
+
+  registry.emplace<keep_tag>(e2);
+  registry.emplace<exclude_tag>(e2);
+
+  registry.emplace<keep_tag>(e3);
+
+  registry.emplace<keep_tag>(e4);
+
+  auto kept = 0u;
+
+  // auto view = registry.view<keep_tag>();
+  auto view = registry.view<keep_tag>(sbx::ecs::exclude<exclude_tag>);
+
+  for (const auto node : view) {
+    kept++;
   }
+
+  EXPECT_EQ(kept, 3u);
 }
 
 auto main(int argc, char* argv[]) -> int {

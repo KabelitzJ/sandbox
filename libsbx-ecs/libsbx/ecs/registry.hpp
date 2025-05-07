@@ -62,11 +62,11 @@ public:
   using difference_type = std::ptrdiff_t;
   using common_type = base_type;
 
-  template<typename Type, typename... Other>
-  using view_type = basic_view<get_t<storage_for_type<Type>, storage_for_type<Other>...>>;
+  // template<typename... Get, typename... Exclude>
+  // using view_type = basic_view<get_t<storage_for_type<Get>...>, exclude_t<storage_for_type<Exclude>...>>;
 
-  template<typename Type, typename... Other>
-  using const_view_type = basic_view<get_t<storage_for_type<const Type>, storage_for_type<const Other>...>>;
+  // template<typename Type, typename... Other, typename... Exclude>
+  // using const_view_type = view_type<const Type, const Other..., const Exclude...>;
 
   basic_registry()
   : basic_registry{allocator_type{}} { }
@@ -208,16 +208,16 @@ public:
     }
   }
 
-  template<typename Type, typename... Other>
-  [[nodiscard]] auto view() const -> const_view_type<Type, Other...> {
-    auto view = const_view_type<Type, Other...>{};
-    [&view](const auto*... current) { ((current ? view.set_storage(*current) : void()), ...); }(_assure<std::remove_const_t<Other>>()..., _assure<std::remove_const_t<Type>>());
+  template<typename Type, typename... Other, typename... Exclude>
+  [[nodiscard]] auto view(exclude_t<Exclude...> = exclude_t{}) const -> basic_view<get_t<storage_for_type<const Type>, storage_for_type<const Other>...>, exclude_t<storage_for_type<const Exclude>...>> {
+    auto view = basic_view<get_t<storage_for_type<const Type>, storage_for_type<const Other>...>, exclude_t<storage_for_type<const Exclude>...>>{};
+    [&view](const auto* ...current) { ((current ? view.set_storage(*current) : void()), ...); }(_assure<std::remove_const_t<Exclude>>()..., _assure<std::remove_const_t<Other>>()..., _assure<std::remove_const_t<Type>>());
     return view;
   }
 
-  template<typename Type, typename... Other>
-  [[nodiscard]] auto view() -> view_type<Type, Other...> {
-    return view_type<Type, Other...>{_assure<std::remove_const_t<Type>>(), _assure<std::remove_const_t<Other>>()...};
+  template<typename Type, typename... Other, typename... Exclude>
+  [[nodiscard]] auto view(exclude_t<Exclude...> = exclude_t{}) -> basic_view<get_t<storage_for_type<Type>, storage_for_type<Other>...>, exclude_t<storage_for_type<Exclude>...>> {
+    return basic_view<get_t<storage_for_type<Type>, storage_for_type<Other>...>, exclude_t<storage_for_type<Exclude>...>>{_assure<std::remove_const_t<Type>>(), _assure<std::remove_const_t<Other>>()..., _assure<std::remove_const_t<Exclude>>()...};
   }
 
 private:

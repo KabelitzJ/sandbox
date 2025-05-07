@@ -40,11 +40,14 @@ public:
   using node_type = node;
   using registry_type = ecs::basic_registry<node_type>;
 
-  template<typename Type, typename... Other>
-  using query_result = registry_type::view_type<Type, Other...>;
+  // template<typename... Get, typename... Exclude>
+  // using query_result = ecs::basic_view
 
-  template<typename Type, typename... Other>
-  using const_query_result = registry_type::const_view_type<Type, Other...>;
+  // template<typename Type, typename... Other>
+  // using const_query_result = registry_type::const_view_type<Type, Other...>;
+
+  template<typename... Exclude>
+  inline static constexpr auto query_filter = ecs::exclude<Exclude...>;
 
   scene(const std::filesystem::path& path);
 
@@ -64,14 +67,14 @@ public:
 
   auto world_position(const node_type node) -> math::vector3;
 
-  template<typename Type, typename... Other>
-  auto query() -> query_result<Type, Other...> {
-    return _registry.view<Type, Other...>();
+  template<typename Type, typename... Other, typename... Exclude>
+  auto query(ecs::exclude_t<Exclude...> = ecs::exclude_t{}) -> decltype(auto) {
+    return _registry.view<Type, Other..., Exclude...>();
   }
 
-  template<typename Type, typename... Other>
-  auto query() const -> const_query_result<Type, Other...> {
-    return _registry.view<Type, Other...>();
+  template<typename Type, typename... Other, typename... Exclude>
+  auto query(ecs::exclude_t<Exclude...> = ecs::exclude_t{}) const -> decltype(auto) {
+    return _registry.view<Type, Other..., Exclude...>();
   }
 
   template<typename Component>

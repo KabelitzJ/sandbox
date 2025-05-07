@@ -300,6 +300,88 @@ private:
 
 }; // class basic_storage
 
+template<typename Type, typename Entity, memory::allocator_for<Type> Allocator>
+requires (component_traits<Type, Entity>::page_size == 0u)
+class basic_storage<Type, Entity, Allocator> : public basic_sparse_set<Entity, memory::rebound_allocator_t<Allocator, Entity>> {
+
+  using allocator_traits = std::allocator_traits<Allocator>;
+  using component_traits = ecs::component_traits<Type, Entity>;
+
+public:
+
+  using allocator_type = Allocator;
+  using base_type = basic_sparse_set<Entity, memory::rebound_allocator_t<Allocator, Entity>>;
+  using element_type = Type;
+  using value_type = void;
+  using entity_type = Entity;
+  using size_type = std::size_t;
+  using difference_type = std::ptrdiff_t;
+  using iterable = memory::iterable_adaptor<detail::extended_storage_iterator<typename base_type::iterator>>;
+  using const_iterable = memory::iterable_adaptor<detail::extended_storage_iterator<typename base_type::const_iterator>>;
+
+  using reverse_iterable = memory::iterable_adaptor<detail::extended_storage_iterator<typename base_type::reverse_iterator>>;
+  using const_reverse_iterable = memory::iterable_adaptor<detail::extended_storage_iterator<typename base_type::const_reverse_iterator>>;
+
+  static constexpr auto storage_policy = static_cast<deletion_policy>(component_traits::in_place_delete);
+
+  basic_storage()
+  : basic_storage{allocator_type{}} { }
+
+  explicit basic_storage(const allocator_type& allocator)
+  : base_type{storage_policy, allocator} { }
+
+  basic_storage(const basic_storage& other) = delete;
+
+  basic_storage(basic_storage&& other) noexcept = default;
+
+  basic_storage(basic_storage&& other, const allocator_type& allocator)
+  : base_type{std::move(other), allocator} { }
+
+  ~basic_storage() override = default;
+
+  auto operator=(const basic_storage& other) -> basic_storage& = delete;
+
+  auto operator=(basic_storage&& other) noexcept -> basic_storage& = default;
+
+  [[nodiscard]] constexpr auto get_allocator() const noexcept -> allocator_type {
+    if constexpr(std::is_void_v<element_type> && !std::is_constructible_v<allocator_type, typename base_type::allocator_type>) {
+      return allocator_type{};
+    } else {
+      return allocator_type{base_type::get_allocator()};
+    }
+  }
+
+  auto get([[maybe_unused]] const entity_type entity) const noexcept -> void {
+    utility::assert_that(base_type::contains(entity), "Invalid entity");
+  }
+
+  [[nodiscard]] auto get_as_tuple([[maybe_unused]] const entity_type entity) const noexcept -> std::tuple<> {
+    utility::assert_that(base_type::contains(entity), "Invalid entity");
+    return std::tuple{};
+  }
+
+  template<typename... Args>
+  auto emplace(const entity_type entity, Args&& ...) -> void {
+    base_type::try_emplace(entity, false);
+  }
+
+  template<typename Function>
+  requires (std::is_invocable_v<Function>)
+  void patch([[maybe_unused]] const entity_type entity, Function&& function) {
+    utility::assert_that(base_type::contains(entity), "Invalid entity");
+    std::invoke(std::forward<Function>(function));
+  }
+
+  [[nodiscard]] auto each() noexcept -> iterable {
+    return iterable{base_type::begin(), base_type::end()};
+  }
+
+  [[nodiscard]] auto each() const noexcept -> const_iterable {
+    return const_iterable{base_type::cbegin(), base_type::cend()};
+  }
+
+}; // class basic_storage
+
 template<typename Entity, memory::allocator_for<Entity> Allocator>   
 class basic_storage<Entity, Entity, Allocator> : public basic_sparse_set<Entity, Allocator> { 
 

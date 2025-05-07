@@ -53,7 +53,7 @@ template<typename Result, typename View, typename Other, std::size_t... GetLhs, 
   return element;
 }
 
-template<typename Type, bool IsChecked, std::size_t Get>
+template<typename Type, bool IsChecked, std::size_t Get, std::size_t Exclude>
 class view_iterator final {
 
   template<typename, typename...>
@@ -79,11 +79,12 @@ public:
     _pools{},
     _index{} { }
 
-  view_iterator(iterator_type first, std::array<const common_type*, Get> value, const std::size_t _index) noexcept
+  view_iterator(iterator_type first, std::array<const common_type*, Get> value, std::array<const common_type*, Exclude> filter, const std::size_t _index) noexcept
   : _iterator{first},
     _pools{value},
+    _filter{filter},
     _index{static_cast<difference_type>(_index)} {
-    utility::assert_that((Get != 1u) || _pools[0u]->policy() == deletion_policy::in_place, "Non in-place storage view iterator");
+    utility::assert_that((Get != 1u) || (Exclude != 0u) || _pools[0u]->policy() == deletion_policy::in_place, "Non in-place storage view iterator");
     _seek_next();
   }
 
@@ -110,7 +111,9 @@ public:
 private:
 
   [[nodiscard]] auto _is_valid(const value_type entity) const noexcept -> bool {
-    return (!IsChecked || (entity != tombstone_entity)) && ((Get == 1u) || (detail::all_of(_pools.begin(), _pools.begin() + _index, entity) && detail::all_of(_pools.begin() + _index + 1, _pools.end(), entity)));
+    return (!IsChecked || (entity != tombstone_entity)) 
+        && ((Get == 1u) || (detail::all_of(_pools.begin(), _pools.begin() + _index, entity) && detail::all_of(_pools.begin() + _index + 1, _pools.end(), entity)))
+        && ((Exclude == 0u) || detail::none_of(_filter.begin(), _filter.end(), entity));
   }
 
   auto _seek_next() -> void {
@@ -119,6 +122,7 @@ private:
 
   iterator_type _iterator;
   std::array<const common_type*, Get> _pools;
+  std::array<const common_type*, Exclude> _filter;
   difference_type _index;
 
 }; // class view_iterator

@@ -18,7 +18,7 @@ namespace sbx::ecs {
 
 namespace detail {
 
-template<typename Type, bool IsChecked, std::size_t Get>
+template<typename Type, bool IsChecked, std::size_t Get, std::size_t Exclude>
 requires (std::is_same_v<std::remove_const_t<std::remove_reference_t<Type>>, Type>)
 class basic_common_view {
   
@@ -31,7 +31,7 @@ public:
   using entity_type = typename Type::entity_type;
   using size_type = std::size_t;
   using difference_type = std::ptrdiff_t;
-  using iterator = detail::view_iterator<common_type, IsChecked, Get>;
+  using iterator = detail::view_iterator<common_type, IsChecked, Get, Exclude>;
 
   auto refresh() noexcept -> void {
     auto position = static_cast<size_type>(_index != Get) * Get;
@@ -52,11 +52,11 @@ public:
   }
 
   [[nodiscard]] auto begin() const noexcept -> iterator {
-    return (_index != Get) ? iterator{_pools[_index]->end() - static_cast<difference_type>(_offset()), _pools, _index} : iterator{};
+    return (_index != Get) ? iterator{_pools[_index]->end() - static_cast<difference_type>(_offset()), _pools, _filter, _index} : iterator{};
   }
 
   [[nodiscard]] auto end() const noexcept -> iterator {
-    return (_index != Get) ? iterator{_pools[_index]->end(), _pools, _index} : iterator{};
+    return (_index != Get) ? iterator{_pools[_index]->end(), _pools, _filter, _index} : iterator{};
   }
 
   [[nodiscard]] auto front() const noexcept -> entity_type {
@@ -95,8 +95,9 @@ protected:
   : _pools{},
     _index{Get} { }
 
-  basic_common_view(std::array<const common_type*, Get> value) noexcept
-  : _pools{value},
+  basic_common_view(std::array<const common_type*, Get> pools, std::array<const common_type*, Exclude> filter) noexcept
+  : _pools{pools},
+    _filter{filter},
     _index{Get} {
     _unchecked_refresh();
   }
@@ -135,6 +136,7 @@ private:
   }
 
   std::array<const common_type*, Get> _pools;
+  std::array<const common_type*, Exclude> _filter;
   size_type _index;
 
 }; // class basic_common_view
@@ -149,7 +151,7 @@ public:
   using entity_type = typename common_type::entity_type;
   using size_type = std::size_t;
   using difference_type = std::ptrdiff_t;
-  using iterator = std::conditional_t<Policy == deletion_policy::in_place, detail::view_iterator<common_type, true, 1u>, typename common_type::iterator>;
+  using iterator = std::conditional_t<Policy == deletion_policy::in_place, detail::view_iterator<common_type, true, 1u, 0u>, typename common_type::iterator>;
   using reverse_iterator = std::conditional_t<Policy == deletion_policy::in_place, void, typename common_type::reverse_iterator>;
 
   [[nodiscard]] auto handle() const noexcept -> const common_type* {
@@ -311,20 +313,20 @@ struct exclude_t final : utility::type_list<Type...> {
 template<typename... Type>
 inline constexpr exclude_t<Type...> exclude{};
 
-template<typename>
+template<typename, typename>
 class basic_view;
 
-template<typename... Get>
+template<typename... Get, typename... Exclude>
 requires (sizeof...(Get) != 0u)
-class basic_view<get_t<Get...>> : public detail::basic_common_view<std::common_type_t<typename Get::base_type...>, detail::tombstone_check_v<Get...>, sizeof...(Get)> {
+class basic_view<get_t<Get...>, exclude_t<Exclude...>> : public detail::basic_common_view<std::common_type_t<typename Get::base_type...>, detail::tombstone_check_v<Get...>, sizeof...(Get), sizeof...(Exclude)> {
 
-  using base_type = detail::basic_common_view<std::common_type_t<typename Get::base_type...>, detail::tombstone_check_v<Get...>, sizeof...(Get)>;
+  using base_type = detail::basic_common_view<std::common_type_t<typename Get::base_type...>, detail::tombstone_check_v<Get...>, sizeof...(Get), sizeof...(Exclude)>;
 
   template<std::size_t Index>
-  using element_at = utility::type_list_element_t<Index, utility::type_list<Get...>>;
+  using element_at = utility::type_list_element_t<Index, utility::type_list<Get..., Exclude...>>;
 
   template<typename Type>
-  inline static constexpr auto index_of = utility::type_list_index_v<std::remove_const_t<Type>, utility::type_list<typename Get::element_type...>>;
+  inline static constexpr auto index_of = utility::type_list_index_v<std::remove_const_t<Type>, utility::type_list<typename Get::element_type..., typename Exclude::element_type...>>;
 
 public:
 
@@ -339,11 +341,11 @@ public:
   : base_type{} { }
 
 
-  basic_view(Get&...value) noexcept
-  : base_type{{&value...}} { }
+  basic_view(Get&... pools, Exclude&... filter) noexcept
+  : base_type{{&pools...}, {&filter...}} { }
 
-  basic_view(std::tuple<Get&...> value) noexcept
-  : basic_view{std::make_from_tuple<basic_view>(std::tuple_cat(value))} { }
+  basic_view(std::tuple<Get&...> pools, std::tuple<Exclude&...> filter = {}) noexcept
+  : basic_view{std::make_from_tuple<basic_view>(std::tuple_cat(pools, filter))} { }
 
   template<typename Type>
   [[nodiscard]] auto* storage() const noexcept {
@@ -396,7 +398,7 @@ private:
 }; // class basic_view
 
 template<typename Get>
-class basic_view<get_t<Get>> : public detail::basic_storage_view<typename Get::base_type, Get::storage_policy> {
+class basic_view<get_t<Get>, exclude_t<>> : public detail::basic_storage_view<typename Get::base_type, Get::storage_policy> {
 
   using base_type = detail::basic_storage_view<typename Get::base_type, Get::storage_policy>;
 
@@ -477,10 +479,10 @@ public:
 }; // class basic_view
 
 template<typename... Type>
-basic_view(Type&...storage) -> basic_view<get_t<Type...>>;
+basic_view(Type&...storage) -> basic_view<get_t<Type...>, exclude_t<>>;
 
-template<typename... Get>
-basic_view(std::tuple<Get&...>) -> basic_view<get_t<Get...>>;
+template<typename... Get, typename... Exclude>
+basic_view(std::tuple<Get&...>, std::tuple<Exclude&...> = {}) -> basic_view<get_t<Get...>, exclude_t<Exclude...>>;
 
 } // namespace sbx::ecs
 
