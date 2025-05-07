@@ -141,7 +141,7 @@ class extended_view_iterator final {
 public:
 
   using iterator_type = Iterator;
-  using value_type = decltype(std::tuple_cat(std::make_tuple(*std::declval<Iterator>()), std::declval<Get>().get_as_tuple({})...));
+  using value_type = decltype(std::tuple_cat(std::make_tuple(*std::declval<Iterator>()), std::declval<Get>().get_as_tuple(std::declval<typename Get::entity_type>())...));
   using pointer = memory::input_iterator_pointer<value_type>;
   using reference = value_type;
   using difference_type = std::ptrdiff_t;

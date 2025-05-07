@@ -69,12 +69,12 @@ public:
 
   template<typename Type, typename... Other, typename... Exclude>
   auto query(ecs::exclude_t<Exclude...> = ecs::exclude_t{}) -> decltype(auto) {
-    return _registry.view<Type, Other..., Exclude...>();
+    return _registry.view<Type, Other...>(ecs::exclude<Exclude...>);
   }
 
   template<typename Type, typename... Other, typename... Exclude>
   auto query(ecs::exclude_t<Exclude...> = ecs::exclude_t{}) const -> decltype(auto) {
-    return _registry.view<Type, Other..., Exclude...>();
+    return _registry.view<Type, Other...>(ecs::exclude<Exclude...>);
   }
 
   template<typename Component>

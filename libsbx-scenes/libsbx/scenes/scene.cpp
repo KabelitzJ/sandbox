@@ -12,6 +12,7 @@
 
 #include <libsbx/utility/timer.hpp>
 #include <libsbx/utility/logger.hpp>
+#include <libsbx/utility/target.hpp>
 
 #include <libsbx/math/angle.hpp>
 #include <libsbx/math/vector3.hpp>
@@ -60,6 +61,7 @@ scene::scene(const std::filesystem::path& path)
   get_component<scenes::relationship>(_root).add_child(camera_id);
 
   add_component<scenes::hierarchy>(_camera, _root);
+  get_component<scenes::hierarchy>(_root).first_child = _camera;
   add_component<scenes::global_transform>(_camera);
 
   add_component<math::transform>(_camera);
@@ -150,6 +152,12 @@ auto scene::world_transform(const node_type node) -> math::matrix4x4 {
 
   const auto& transform = get_component<math::transform>(node);
   const auto& global_transform = get_component<scenes::global_transform>(node);
+
+  if constexpr (utility::build_configuration_v == utility::build_configuration::debug) {
+    if (transform.is_dirty()) {
+      utility::logger<"scenes">::warn("Node '{}' has dirty transform", get_component<scenes::tag>(node));
+    }
+  }
 
   // const auto parent = _nodes.at(relationship.parent());
 

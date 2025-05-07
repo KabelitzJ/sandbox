@@ -425,6 +425,15 @@ public:
     return *this;
   }
 
+  auto get([[maybe_unused]] const entity_type entity) const noexcept -> void {
+    utility::assert_that(base_type::index(entity) < base_type::free_list(), "The requested entity is not alive");
+  }
+
+  [[nodiscard]] auto get_as_tuple([[maybe_unused]] const entity_type entity) const noexcept -> std::tuple<> {
+    utility::assert_that(base_type::index(entity) < base_type::free_list(), "The requested entity is not alive");
+    return std::tuple{};
+  }
+
   auto generate() -> entity_type {
     const auto index = base_type::free_list();
     // const auto entity = (length == base_type::size()) ? _next() : base_type::data()[length];

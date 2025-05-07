@@ -95,7 +95,7 @@ public:
 
 private:
 
-  constexpr node(const entity_type value) noexcept 
+  explicit constexpr node(const entity_type value) noexcept 
   : _value{value} { }
 
   entity_type _value;

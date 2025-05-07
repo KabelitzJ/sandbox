@@ -133,7 +133,7 @@ public:
 
     EASY_BLOCK("submit meshes no collider");
 
-    auto mesh_query_no_collider = scene.query<const scenes::static_mesh>(scenes::scene::query_filter<scenes::collider>);
+    auto mesh_query_no_collider = scene.query<const scenes::static_mesh>(ecs::exclude<scenes::collider>);
 
     for (auto&& [node, static_mesh] : mesh_query_no_collider.each()) {
       _submit_mesh(node, static_mesh);
