@@ -30,6 +30,8 @@
 #include <libsbx/scenes/components/camera.hpp>
 #include <libsbx/scenes/components/static_mesh.hpp>
 #include <libsbx/scenes/components/point_light.hpp>
+#include <libsbx/scenes/components/global_transform.hpp>
+#include <libsbx/scenes/components/hierarchy.hpp>
 
 namespace sbx::scenes {
 
@@ -46,6 +48,8 @@ scene::scene(const std::filesystem::path& path)
   add_component<scenes::relationship>(_root, math::uuid::null());
   add_component<math::transform>(_root);
   add_component<scenes::tag>(_root, "ROOT");
+  add_component<scenes::hierarchy>(_root);
+  add_component<scenes::global_transform>(_root);
 
   // [NOTE] KAJ 2023-10-17 : Initialize camera node
   const auto& camera_id = add_component<scenes::id>(_camera);
@@ -54,6 +58,9 @@ scene::scene(const std::filesystem::path& path)
 
   add_component<scenes::relationship>(_camera, root_id);
   get_component<scenes::relationship>(_root).add_child(camera_id);
+
+  add_component<scenes::hierarchy>(_camera, _root);
+  add_component<scenes::global_transform>(_camera);
 
   add_component<math::transform>(_camera);
   add_component<scenes::tag>(_camera, "Camera");
@@ -87,6 +94,20 @@ auto scene::create_child_node(const node_type parent, const std::string& tag, co
 
   add_component<scenes::relationship>(node, get_component<scenes::id>(parent));
   get_component<scenes::relationship>(parent).add_child(id);
+
+  auto& hierarchy = add_component<scenes::hierarchy>(node, parent);
+
+  auto& parent_hierarchy = get_component<scenes::hierarchy>(parent);
+
+  if (parent_hierarchy.first_child != node::null) {
+    auto& first_child_hierarchy = get_component<scenes::hierarchy>(parent_hierarchy.first_child);
+    first_child_hierarchy.previous_sibling = node;
+    hierarchy.next_sibling = parent_hierarchy.first_child;
+  } 
+
+  parent_hierarchy.first_child = node;
+
+  add_component<scenes::global_transform>(node);
 
   add_component<math::transform>(node, transform);
 
@@ -125,18 +146,20 @@ auto scene::world_transform(const node_type node) -> math::matrix4x4 {
 
   // [TODO] KAJ 2025-05-03 : FIX THIS! THE PERFORMANCE IS TERRIBLE!
 
+  utility::assert_that(has_component<scenes::global_transform>(node), "Node has no global_transform component");
+
   const auto& transform = get_component<math::transform>(node);
-  const auto& relationship = get_component<scenes::relationship>(node);
+  const auto& global_transform = get_component<scenes::global_transform>(node);
 
-  const auto parent = _nodes.at(relationship.parent());
+  // const auto parent = _nodes.at(relationship.parent());
 
-  auto world = math::matrix4x4::identity;
+  // auto world = math::matrix4x4::identity;
 
-  if (get_component<scenes::id>(parent) != get_component<scenes::id>(_root)) {
-    world = world_transform(parent);
-  }
+  // if (get_component<scenes::id>(parent) != get_component<scenes::id>(_root)) {
+  //   world = world_transform(parent);
+  // }
 
-  return world * transform.as_matrix();
+  return global_transform.matrix * transform.as_matrix();
 }
 
 auto scene::world_position(const node_type node) -> math::vector3 {
