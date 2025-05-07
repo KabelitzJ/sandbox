@@ -19,6 +19,7 @@ find_package(yaml-cpp REQUIRED)
 find_package(range-v3 REQUIRED)
 find_package(sol2 REQUIRED)
 find_package(portable-file-dialogs REQUIRED)
+find_package(easy_profiler REQUIRED)
 
 target_sources(
   ${PROJECT_NAME}
@@ -58,6 +59,7 @@ target_link_libraries(
     range-v3::range-v3
     sol2::sol2
     portable-file-dialogs::portable-file-dialogs
+    easy_profiler
     # Internal dependencies
     libsbx::utility
     libsbx::math
@@ -80,8 +82,9 @@ set_target_properties(
 
 target_compile_definitions(
   ${PROJECT_NAME}
-  PRIVATE
+  PUBLIC
     SBX_CONSTEXPR_ENABLED=${SBX_CONSTEXPR_ENABLED}
+    BUILD_WITH_EASY_PROFILER
 )
 
 target_compile_features(
