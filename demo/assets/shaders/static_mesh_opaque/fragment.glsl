@@ -132,7 +132,7 @@ void main(void) {
 
   out_color = albedo * (AMBIENT_COLOR + light + specular + rim);
 
-  out_color = mix(out_color, FOG_COLOR, fog_factor);
+  // out_color = mix(out_color, FOG_COLOR, fog_factor);
   // out_color = vec4(vec3(albedo.r), 1.0);
   // out_color = vec4(vec3(albedo), 0.5);
   // out_color = vec4(vec3(albedo.a), 1.0);

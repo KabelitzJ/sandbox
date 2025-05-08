@@ -8,6 +8,8 @@
 
 #include <easy/profiler.h>
 
+#include <fmt/format.h>
+
 #include <libsbx/math/color.hpp>
 #include <libsbx/math/vector3.hpp>
 #include <libsbx/math/matrix4x4.hpp>
@@ -53,7 +55,8 @@ public:
 
   static_mesh_subrenderer(const std::filesystem::path& path, const graphics::pipeline::stage& stage)
   : graphics::subrenderer{stage},
-    _pipeline{path, stage} { }
+    _opaque_pipeline{fmt::format("{}_{}", path.string(), "opaque"), stage},
+    _transparent_pipeline{fmt::format("{}_{}", path.string(), "transparent"), stage} { }
 
   ~static_mesh_subrenderer() override = default;
 
@@ -169,7 +172,7 @@ public:
 
     EASY_BLOCK("render meshes");
 
-    _pipeline.bind(command_buffer);
+    _opaque_pipeline.bind(command_buffer);
 
     for (const auto& [key, data] : _static_meshes) {
 
@@ -189,7 +192,7 @@ public:
       descriptor_handler.push("images_sampler", _images_sampler);
       descriptor_handler.push("images", _images);
 
-      if (!descriptor_handler.update(_pipeline)) {
+      if (!descriptor_handler.update(_opaque_pipeline)) {
         continue;
       }
 
@@ -269,7 +272,11 @@ private:
     alignas(16) std::float_t radius;
   }; // struct point_light
 
-  pipeline _pipeline;
+  using opaque_pipeline = pipeline<false>;
+  using transparent_pipeline = pipeline<false>;
+
+  opaque_pipeline _opaque_pipeline;
+  transparent_pipeline _transparent_pipeline;
 
   std::unordered_map<mesh_key, uniform_data, mesh_key_hash, mesh_key_equal> _uniform_data;
   std::unordered_set<mesh_key, mesh_key_hash, mesh_key_equal> _used_uniforms;

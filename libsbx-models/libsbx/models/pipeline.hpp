@@ -13,11 +13,12 @@
 
 namespace sbx::models {
 
+template<bool UsesTransparency>
 class pipeline : public graphics::graphics_pipeline<vertex3d> {
 
   inline static constexpr auto pipeline_definition = graphics::pipeline_definition{
-    .depth = graphics::depth::read_write,
-    .uses_transparency = true,
+    .depth = UsesTransparency ? graphics::depth::read_only : graphics::depth::read_write,
+    .uses_transparency = UsesTransparency,
     .rasterization_state = graphics::rasterization_state{
       .polygon_mode = graphics::polygon_mode::fill,
       .cull_mode = graphics::cull_mode::back,
