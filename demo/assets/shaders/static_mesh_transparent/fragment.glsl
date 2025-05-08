@@ -91,9 +91,9 @@ void main(void) {
   vec3 normal = get_normal();
   vec4 albedo = get_albedo();
 
-  if (albedo.a < 0.8) {
-    discard;
-  }
+  // if (albedo.a < 0.8) {
+  //   discard;
+  // }
 
   float metallic = in_material.x;
   float roughness = in_material.y;

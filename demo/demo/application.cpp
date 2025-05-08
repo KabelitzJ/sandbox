@@ -98,9 +98,9 @@ application::application()
   // Trees
 
   auto tree_submeshes = std::vector<sbx::scenes::static_mesh::submesh>{};
-  tree_submeshes.push_back(sbx::scenes::static_mesh::submesh{0, sbx::math::color::white(), sbx::scenes::static_mesh::material{0.2f, 0.5f, 0.2f, 0.8f}, _texture_ids["tree_1_bark"]});
-  tree_submeshes.push_back(sbx::scenes::static_mesh::submesh{1, sbx::math::color::white(), sbx::scenes::static_mesh::material{0.2f, 0.5f, 0.2f, 0.0f}, _texture_ids["tree_1_leaves1"]});
-  tree_submeshes.push_back(sbx::scenes::static_mesh::submesh{2, sbx::math::color::white(), sbx::scenes::static_mesh::material{0.2f, 0.5f, 0.2f, 0.0f}, _texture_ids["tree_1_leaves2"]});
+  tree_submeshes.push_back(sbx::scenes::static_mesh::submesh{0u, false, sbx::math::color::white(), sbx::scenes::static_mesh::material{0.2f, 0.5f, 0.2f, 0.8f}, _texture_ids["tree_1_bark"]});
+  tree_submeshes.push_back(sbx::scenes::static_mesh::submesh{1u, false, sbx::math::color::white(), sbx::scenes::static_mesh::material{0.2f, 0.5f, 0.2f, 0.0f}, _texture_ids["tree_1_leaves1"]});
+  tree_submeshes.push_back(sbx::scenes::static_mesh::submesh{2u, false, sbx::math::color::white(), sbx::scenes::static_mesh::material{0.2f, 0.5f, 0.2f, 0.0f}, _texture_ids["tree_1_leaves2"]});
 
   const auto grid_size = sbx::math::vector2{25.0f, 25.0f};
   const auto cell_size = sbx::math::vector2{8.0f, 8.0f};
@@ -143,8 +143,15 @@ application::application()
   auto test = scene.create_node("Test");
   auto& test_transform = scene.get_component<sbx::math::transform>(test);
   test_transform.set_position(sbx::math::vector3{15.0f, 5.0f, 0.0f});
-  scene.add_component<sbx::scenes::static_mesh>(test, _mesh_ids["sphere"], 0u, sbx::math::color::red(), sbx::scenes::static_mesh::material{0.0f, 1.0f, 0.0f, 0.0f}, _texture_ids["white"]);
+  scene.add_component<sbx::scenes::static_mesh>(test, _mesh_ids["sphere"], 0u, true, sbx::math::color::red(), sbx::scenes::static_mesh::material{0.0f, 1.0f, 0.0f, 0.0f}, _texture_ids["tree_1_leaves1"]);
   scene.add_component<sbx::scenes::collider>(test, sbx::scenes::sphere_collider{sbx::math::vector3::zero, 1.0f});
+
+  auto test2 = scene.create_node("Test2");
+  auto& test2_transform = scene.get_component<sbx::math::transform>(test2);
+  test2_transform.set_position(sbx::math::vector3{15.0f, 5.0f, 0.0f});
+  test2_transform.set_scale(sbx::math::vector3{4.0f, 4.0f, 4.0f});
+  scene.add_component<sbx::scenes::static_mesh>(test2, _mesh_ids["tree_1_2"], 2u, true, sbx::math::color::red(), sbx::scenes::static_mesh::material{0.0f, 1.0f, 0.0f, 0.0f}, _texture_ids["tree_1_leaves2"]);
+  scene.add_component<sbx::scenes::collider>(test2, sbx::scenes::sphere_collider{sbx::math::vector3::zero, 1.0f});
 
   // Camera
   auto camera = scene.camera();
