@@ -13,6 +13,7 @@
 
 #include <libsbx/utility/type_id.hpp>
 #include <libsbx/utility/concepts.hpp>
+#include <libsbx/utility/algorithm.hpp>
 
 #include <libsbx/memory/concepts.hpp>
 #include <libsbx/memory/observer_ptr.hpp>
@@ -218,6 +219,19 @@ public:
   template<typename Type, typename... Other, typename... Exclude>
   [[nodiscard]] auto view(exclude_t<Exclude...> = exclude_t{}) -> basic_view<get_t<storage_for_type<Type>, storage_for_type<Other>...>, exclude_t<storage_for_type<Exclude>...>> {
     return basic_view<get_t<storage_for_type<Type>, storage_for_type<Other>...>, exclude_t<storage_for_type<Exclude>...>>{_assure<std::remove_const_t<Type>>(), _assure<std::remove_const_t<Other>>()..., _assure<std::remove_const_t<Exclude>>()...};
+  }
+
+  template<typename Type, typename Compare, typename Sort = utility::std_sort, typename... Args>
+  auto sort(Compare compare, Sort sort = Sort{}, Args&&... args) -> void {
+    // utility::assert_that(!owned<Type>(), "Cannot sort owned storage");
+    auto& pool = _assure<Type>();
+
+    if constexpr(std::is_invocable_v<Compare, decltype(pool.get(std::declval<entity_type>())), decltype(pool.get(std::declval<entity_type>()))>) {
+      auto component_compare = [&pool, compare = std::move(compare)](const auto lhs, const auto rhs) { return compare(std::as_const(pool.get(lhs)), std::as_const(pool.get(rhs))); };
+      pool.sort(std::move(component_compare), std::move(sort), std::forward<Args>(args)...);
+    } else {
+      pool.sort(std::move(compare), std::move(sort), std::forward<Args>(args)...);
+    }
   }
 
 private:

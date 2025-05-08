@@ -74,8 +74,9 @@ public:
     _scene_uniform_handler.push("projection", projection);
 
     const auto& camera_transform = scene.get_component<math::transform>(camera_node);
+    const auto& camera_global_transform = scene.get_component<scenes::global_transform>(camera_node);
 
-    const auto view = math::matrix4x4::inverted(camera_transform.as_matrix());
+    const auto view = math::matrix4x4::inverted(camera_global_transform.model);
 
     _scene_uniform_handler.push("view", view);
 
@@ -126,6 +127,14 @@ public:
     _static_meshes.clear();
     _images.clear();
 
+    // EASY_BLOCK("sorting by camera distance");
+
+    // scene.sort<math::transform>([&camera_global_transform, &scene](const auto& lhs, const auto& rhs) {
+    //   return true;
+    // });
+
+    // EASY_END_BLOCK;
+
     EASY_BLOCK("building frustum");
 
     auto frustum = camera.view_frustum(view);
@@ -144,20 +153,6 @@ public:
 
     EASY_BLOCK("submit meshes collider");
 
-    // const auto total_meshes = std::ranges::distance(std::ranges::begin(mesh_nodes), std::ranges::end(mesh_nodes));
-
-    // auto visible_nodes = mesh_nodes | std::views::filter([&scene, &frustum](const scenes::node& node) {
-    //   if (!node.has_component<scenes::collider>()) {
-    //     return true;
-    //   }
-      
-    //   const auto& collider = node.get_component<scenes::collider>();
-
-    //   const auto model = scene.world_transform(node);
-
-    //   return frustum.intersects(model, collider);
-    // }) | ranges::to<std::vector<scenes::node>>();
-
     auto mesh_query_collider = scene.query<const scenes::static_mesh, const scenes::collider>();
 
     for (auto&& [node, static_mesh, collider] : mesh_query_collider.each()) {
@@ -171,18 +166,6 @@ public:
     }
 
     EASY_END_BLOCK;
-
-    // const auto visible_count = std::ranges::distance(std::ranges::begin(visible_nodes), std::ranges::end(visible_nodes));
-
-    // utility::logger<"models">::debug("Visible meshes: {}/{}", visible_count, total_meshes);
-
-    // EASY_BLOCK("submit meshes");
-
-    // for (auto& node : visible_nodes) {
-    //   _submit_mesh(node);
-    // }
-
-    // EASY_END_BLOCK;
 
     EASY_BLOCK("render meshes");
 

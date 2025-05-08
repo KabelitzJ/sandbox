@@ -79,6 +79,11 @@ public:
     return _registry.view<Type, Other...>(ecs::exclude<Exclude...>);
   }
 
+  template<typename Type, typename Compare, typename Sort = utility::std_sort, typename... Args>
+  auto sort(Compare compare, Sort sort = Sort{}, Args&&... args) -> void {
+    _registry.sort<Type>(std::move(compare), std::move(sort), std::forward<Args>(args)...);
+  }
+
   template<typename Component>
   auto has_component(const node_type node) const -> bool {
     return _registry.all_of<Component>(node);

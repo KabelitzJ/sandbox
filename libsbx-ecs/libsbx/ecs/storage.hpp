@@ -217,6 +217,20 @@ protected:
 
 private:
 
+  auto _swap_or_move([[maybe_unused]] const std::size_t from, [[maybe_unused]] const std::size_t to) -> void override {
+    static constexpr auto is_pinned_type = !(std::is_move_constructible_v<Type> && std::is_move_assignable_v<Type>);
+
+    utility::assert_that((from + 1u) && !is_pinned_type, "Pinned type");
+
+    if constexpr(!is_pinned_type) {
+      if constexpr(component_traits::in_place_delete) {
+        (base_type::operator[](to) == tombstone_entity) ? _move_to(from, to) : _swap_at(from, to);
+      } else {
+        _swap_at(from, to);
+      }
+    }
+  }
+
   auto _element_at(const std::size_t position) const -> const value_type& {
     return _container[position / component_traits::page_size][utility::fast_mod(position, component_traits::page_size)];
   }

@@ -6,9 +6,12 @@
 #include <unordered_map>
 #include <type_traits>
 #include <utility>
+#include <iterator>
+#include <algorithm>
 
 #include <libsbx/utility/assert.hpp>
 #include <libsbx/utility/fast_mod.hpp>
+#include <libsbx/utility/algorithm.hpp>
 
 #include <libsbx/memory/concepts.hpp>
 
@@ -206,6 +209,35 @@ public:
     return true;
   }
 
+  template<typename Compare, typename Sort = utility::std_sort, typename... Args>
+  auto sort(Compare compare, Sort sort = Sort{}, Args&&... args) -> void {
+    const auto length = (_policy == deletion_policy::swap_only) ? _head : _dense.size();
+    sort_n(length, std::move(compare), std::move(sort), std::forward<Args>(args)...);
+  }
+
+  template<typename Compare, typename Sort = utility::std_sort, typename... Args>
+  void sort_n(const size_type length, Compare compare, Sort sort = Sort{}, Args&&... args) {
+    utility::assert_that((_policy != deletion_policy::in_place) || (_head == max_size), "Sorting with tombstones not allowed");
+    utility::assert_that(!(length > _dense.size()), "Length exceeds the number of elements");
+
+    sort(_dense.rend() - static_cast<difference_type>(length), _dense.rend(), std::move(compare), std::forward<Args>(args)...);
+
+    for(auto position = 0u; position < length; ++position) {
+      auto current = position;
+      auto next = index(_dense[current]);
+
+      while(current != next) {
+        const auto idx = index(_dense[next]);
+        const auto entity = _dense[current];
+
+        _swap_or_move(next, idx);
+        const auto element = static_cast<typename entity_traits::entity_type>(current);
+        _sparse_reference(entity) = entity_traits::combine(element, entity_traits::to_integral(_dense[current]));
+        current = std::exchange(next, idx);
+      }
+    }
+  }
+
   void clear() {
     pop_all();
     _head = _policy_to_head();
@@ -328,8 +360,8 @@ private:
     return nullptr;
   }
 
-  virtual void swap_or_move([[maybe_unused]] const std::size_t lhs, [[maybe_unused]] const std::size_t rhs) {
-    utility::assert_that((_policy != deletion_policy::swap_only) || ((lhs < _head) == (rhs < _head)), "Cross swapping is not supported");
+  virtual auto _swap_or_move([[maybe_unused]] const std::size_t from, [[maybe_unused]] const std::size_t to) -> void {
+    utility::assert_that((_policy != deletion_policy::swap_only) || ((from < _head) == (to < _head)), "Cross swapping is not supported");
   }
 
   [[nodiscard]] auto _policy_to_head() const noexcept -> size_type {
