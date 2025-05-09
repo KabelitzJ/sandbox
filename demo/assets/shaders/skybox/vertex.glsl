@@ -9,6 +9,7 @@ layout(binding = 0) uniform uniform_scene {
 
 layout(binding = 1) uniform uniform_object {
   mat4 model;
+  vec4 tint;
 } object;
 
 layout(location = 0) out vec3 out_position;

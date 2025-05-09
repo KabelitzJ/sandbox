@@ -83,7 +83,7 @@ vec4 get_albedo() {
     return in_color;
   }
 
-  return texture(sampler2D(images[in_albedo_image_index], images_sampler), in_uv).rgba * in_color;
+  return texture(sampler2D(images[in_albedo_image_index], images_sampler), in_uv) * in_color;
 }
 
 void main(void) {

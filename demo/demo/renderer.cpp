@@ -23,7 +23,7 @@
 namespace demo {
 
 renderer::renderer()
-: _clear_color{sbx::math::color::black()} {
+: _clear_color{sbx::math::color::blue()} {
   // Render stage 0: Shadow map
   {
     auto attachments = std::vector<sbx::graphics::attachment>{

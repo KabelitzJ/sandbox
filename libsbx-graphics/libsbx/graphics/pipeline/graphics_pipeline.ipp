@@ -268,7 +268,7 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
     case depth::disabled: {
       depth_stencil_state.depthTestEnable = false;
       depth_stencil_state.depthWriteEnable = false;
-      depth_stencil_state.depthCompareOp = VK_COMPARE_OP_ALWAYS;
+      depth_stencil_state.depthCompareOp = VK_COMPARE_OP_LESS;
       break;
     }
     case depth::read_write: {

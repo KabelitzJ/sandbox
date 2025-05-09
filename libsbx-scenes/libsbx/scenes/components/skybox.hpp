@@ -9,7 +9,7 @@ namespace sbx::scenes {
 
 struct skybox {
   math::uuid cube_image;
-  math::color tint;
+  math::color tint{math::color::white()};
 }; // struct skybox
 
 } // namespace sbx::scenes

@@ -55,8 +55,8 @@ public:
 
   static_mesh_subrenderer(const std::filesystem::path& path, const graphics::pipeline::stage& stage)
   : graphics::subrenderer{stage},
-    _opaque_pipeline{fmt::format("{}_{}", path.string(), "opaque"), stage},
-    _transparent_pipeline{fmt::format("{}_{}", path.string(), "transparent"), stage} { }
+    _opaque_pipeline_data{fmt::format("{}_{}", path.string(), "opaque"), stage},
+    _transparent_pipeline_data{fmt::format("{}_{}", path.string(), "transparent"), stage} { }
 
   ~static_mesh_subrenderer() override = default;
 
@@ -118,17 +118,8 @@ public:
 
     _scene_uniform_handler.push("time", std::fmod(core::engine::time().value() * 0.5f, 1.0f));
 
-    for (auto entry = _uniform_data.begin(); entry != _uniform_data.end();) {
-      if (_used_uniforms.contains(entry->first)) {
-        ++entry;
-      } else {
-        entry = _uniform_data.erase(entry);
-      }
-    }
-
-    _used_uniforms.clear();
-    _opaque_static_meshes.clear();
-    _transparent_static_meshes.clear();
+    _opaque_pipeline_data.clear();
+    _transparent_pipeline_data.clear();
     _images.clear();
 
     // EASY_BLOCK("sorting by camera distance");
@@ -173,7 +164,7 @@ public:
 
     EASY_BLOCK("render opaque meshes");
 
-    _render_static_meshes(command_buffer, _opaque_pipeline, _opaque_static_meshes);
+    _render_static_meshes(command_buffer, _opaque_pipeline_data);
 
     // _opaque_pipeline.bind(command_buffer);
 
@@ -208,7 +199,7 @@ public:
 
     EASY_BLOCK("render transparent meshes");
 
-    _render_static_meshes(command_buffer, _transparent_pipeline, _transparent_static_meshes);
+    _render_static_meshes(command_buffer, _transparent_pipeline_data);
 
     EASY_END_BLOCK
   }
@@ -255,20 +246,44 @@ private:
     alignas(16) std::float_t radius;
   }; // struct point_light
 
-  using opaque_pipeline = pipeline<false>;
-  using transparent_pipeline = pipeline<true>;
+  template<bool UsesTransparency>
+  struct per_pipeline_data {
+    pipeline<UsesTransparency> pipeline;
+    std::unordered_map<mesh_key, uniform_data, mesh_key_hash, mesh_key_equal> uniform_data;
+    std::unordered_set<mesh_key, mesh_key_hash, mesh_key_equal> used_uniforms;
+    std::unordered_map<mesh_key, std::vector<per_mesh_data>, mesh_key_hash, mesh_key_equal> static_mashes;
 
-  using static_mash_map = std::unordered_map<mesh_key, std::vector<per_mesh_data>, mesh_key_hash, mesh_key_equal>;
+    template<typename... Args>
+    per_pipeline_data(Args&&... args)
+    : pipeline{std::forward<Args>(args)...} { }
+
+    auto clear() -> void {
+      for (auto entry = uniform_data.begin(); entry != uniform_data.end();) {
+        if (used_uniforms.contains(entry->first)) {
+          ++entry;
+        } else {
+          entry = uniform_data.erase(entry);
+        }
+      }
+
+      used_uniforms.clear();
+      static_mashes.clear();
+    }
+
+  }; // struct per_pipeline_data
+
+  using opaque_pipeline_data = per_pipeline_data<false>;
+  using transparent_pipeline_data = per_pipeline_data<true>;
 
   template<bool UsesTransparency>
-  auto _render_static_meshes(graphics::command_buffer& command_buffer, pipeline<UsesTransparency>& pipeline, static_mash_map& static_mashes) -> void {
+  auto _render_static_meshes(graphics::command_buffer& command_buffer, per_pipeline_data<UsesTransparency>& per_pipeline_data) -> void {
     auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
-    pipeline.bind(command_buffer);
+    per_pipeline_data.pipeline.bind(command_buffer);
 
-    for (const auto& [key, data] : static_mashes) {
+    for (const auto& [key, data] : per_pipeline_data.static_mashes) {
 
-      auto& uniform_data = _uniform_data[key];
+      auto& uniform_data = per_pipeline_data.uniform_data[key];
 
       auto& descriptor_handler = uniform_data.descriptor_handler;
       auto& storage_handler = uniform_data.storage_handler;
@@ -284,7 +299,7 @@ private:
       descriptor_handler.push("images_sampler", _images_sampler);
       descriptor_handler.push("images", _images);
 
-      if (!descriptor_handler.update(pipeline)) {
+      if (!descriptor_handler.update(per_pipeline_data.pipeline)) {
         continue;
       }
 
@@ -305,7 +320,8 @@ private:
       EASY_BLOCK("submit submesh");
       const auto key = mesh_key{mesh_id, submesh.index};
 
-      _used_uniforms.insert(key);
+      auto& set = submesh.uses_transparency ? _transparent_pipeline_data.used_uniforms : _opaque_pipeline_data.used_uniforms;
+      set.insert(key);
 
       const auto& global_transform = scene.get_component<const scenes::global_transform>(node);
 
@@ -315,21 +331,23 @@ private:
       const auto image_indices = math::vector4{albedo_image_index, normal_image_index, 0u, 0u};
       const auto material = math::vector4{submesh.material.metallic, submesh.material.roughness, submesh.material.flexibility, submesh.material.anchor_height};
 
-      auto& map = submesh.uses_transparency ? _transparent_static_meshes : _opaque_static_meshes;
-
+      auto& map = submesh.uses_transparency ? _transparent_pipeline_data.static_mashes : _opaque_pipeline_data.static_mashes;
       map[key].push_back(per_mesh_data{global_transform.model, global_transform.normal, submesh.tint, material, image_indices});
       EASY_END_BLOCK;
     }
   }
 
-  opaque_pipeline _opaque_pipeline;
-  transparent_pipeline _transparent_pipeline;
+  // opaque_pipeline _opaque_pipeline;
+  // transparent_pipeline _transparent_pipeline;
 
-  std::unordered_map<mesh_key, uniform_data, mesh_key_hash, mesh_key_equal> _uniform_data;
-  std::unordered_set<mesh_key, mesh_key_hash, mesh_key_equal> _used_uniforms;
+  opaque_pipeline_data _opaque_pipeline_data;
+  transparent_pipeline_data _transparent_pipeline_data;
 
-  static_mash_map _opaque_static_meshes;
-  static_mash_map _transparent_static_meshes;
+  // std::unordered_map<mesh_key, uniform_data, mesh_key_hash, mesh_key_equal> _uniform_data;
+  // std::unordered_set<mesh_key, mesh_key_hash, mesh_key_equal> _used_uniforms;
+
+  // static_mash_map _opaque_static_meshes;
+  // static_mash_map _transparent_static_meshes;
 
   graphics::uniform_handler _scene_uniform_handler;
   graphics::storage_handler _point_lights_storage_handler;

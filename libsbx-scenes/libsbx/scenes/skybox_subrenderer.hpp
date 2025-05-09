@@ -157,6 +157,7 @@ public:
 
     const auto model = scene.world_transform(camera_node);
     _object_uniform_handler.push("model", model);
+    _object_uniform_handler.push("tint", skybox.tint);
 
     _pipeline.bind(command_buffer);
 
