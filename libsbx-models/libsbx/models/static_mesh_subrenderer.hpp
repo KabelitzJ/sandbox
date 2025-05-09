@@ -248,8 +248,8 @@ private:
 
   template<bool UsesTransparency>
   struct per_pipeline_data {
-    pipeline<UsesTransparency> pipeline;
-    std::unordered_map<mesh_key, uniform_data, mesh_key_hash, mesh_key_equal> uniform_data;
+    models::pipeline<UsesTransparency> pipeline;
+    std::unordered_map<mesh_key, static_mesh_subrenderer::uniform_data, mesh_key_hash, mesh_key_equal> uniform_data;
     std::unordered_set<mesh_key, mesh_key_hash, mesh_key_equal> used_uniforms;
     std::unordered_map<mesh_key, std::vector<per_mesh_data>, mesh_key_hash, mesh_key_equal> static_mashes;
 

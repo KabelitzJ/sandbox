@@ -1,6 +1,7 @@
 #include <libsbx/graphics/devices/instance.hpp>
 
 #include <libsbx/utility/target.hpp>
+#include <libsbx/utility/logger.hpp>
 
 #include <libsbx/graphics/graphics_module.hpp>
 #include <libsbx/graphics/devices/extensions.hpp>
@@ -10,13 +11,24 @@
 namespace sbx::graphics {
 
 instance::instance() {
+  if (vkEnumerateInstanceVersion) {
+    auto api_version = VK_API_VERSION_1_0;
+    vkEnumerateInstanceVersion(&api_version);
+    utility::logger<"graphics">::info("Latest available Vulkan API verion: {}.{}.{}", VK_VERSION_MAJOR(api_version), VK_VERSION_MINOR(api_version), VK_VERSION_PATCH(api_version));
+  }
+
+
+  auto api_version = VK_API_VERSION_1_3;
+
+  utility::logger<"graphics">::info("Used Vulkan API verion: {}.{}.{}", VK_VERSION_MAJOR(api_version), VK_VERSION_MINOR(api_version), VK_VERSION_PATCH(api_version));
+
   auto app_info = VkApplicationInfo{};
   app_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
   app_info.pApplicationName = "Demo";
   app_info.applicationVersion = VK_MAKE_VERSION(0, 1, 0);
   app_info.pEngineName = "Sandbox";
   app_info.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-  app_info.apiVersion = VK_API_VERSION_1_3;
+  app_info.apiVersion = api_version;
 
   const auto extentions = extensions::instance();
   const auto layers = validation_layers::instance();

@@ -69,7 +69,7 @@ public:
   }
 
   constexpr operator string_type() const noexcept {
-    return string_type{_data.data(), Size};
+    return (Size != 0u) ? string_type{_data.data(), Size} : std::string{};
   }
 
   std::array<character_type, Size - 1> _data;
