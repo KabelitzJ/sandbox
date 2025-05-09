@@ -8,8 +8,17 @@ auto storage_handler::push(std::span<const Type> buffer) -> void {
     return;
   }
 
-  if (buffer.size() * sizeof(Type) > _storage_buffer->size()) {
-    throw std::runtime_error{fmt::format("Buffer size ({} * {} = {}) is larger than storage buffer size ({})", buffer.size(), sizeof(Type), buffer.size() * sizeof(Type), _storage_buffer->size())};
+  const auto required_size = buffer.size() * sizeof(Type);
+
+  if (required_size > storage_buffer::max_size) {
+    throw std::runtime_error{fmt::format("Buffer size ({} * {} = {}) is larger than storage buffer size ({})", buffer.size(), sizeof(Type), buffer.size() * sizeof(Type), storage_buffer::max_size)};
+  }
+
+  if (required_size > _storage_buffer->size()) {
+    _storage_buffer = std::make_unique<graphics::storage_buffer>(required_size, _additional_usage);
+    // [NOTE] KAJ 2025-05-10 : Maybe we need to return here...
+    // [NOTE] KAJ 2025-05-19 : We DO have to...
+    return;
   }
 
   _storage_buffer->update(buffer.data(), buffer.size() * sizeof(Type));

@@ -17,15 +17,16 @@ class buffer_base : public utility::noncopyable {
 
 public:
 
+  using handle_type = VkBuffer;
   using size_type = VkDeviceSize;
 
   buffer_base(size_type size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, memory::observer_ptr<const void> memory = nullptr);
 
   virtual ~buffer_base();
 
-  auto handle() const noexcept -> const VkBuffer&;
+  auto handle() const noexcept -> const handle_type&;
 
-  operator const VkBuffer&() const noexcept;
+  operator const handle_type&() const noexcept;
 
   auto memory() const noexcept -> const VkDeviceMemory&;
 
@@ -41,8 +42,8 @@ protected:
 
 private:
 
-  VkBuffer _handle{};
-  VkDeviceSize _size{};
+  handle_type _handle{};
+  size_type _size{};
   VkDeviceMemory _memory{};
 
 }; // class buffer_base

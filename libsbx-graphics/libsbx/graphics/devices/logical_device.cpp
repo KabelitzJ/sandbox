@@ -79,7 +79,7 @@ logical_device::operator const VkDevice&() const noexcept {
   return _handle;
 }
 
-auto logical_device::enabled_features() const -> const VkPhysicalDeviceFeatures& {
+auto logical_device::enabled_features() const -> const physical_device::device_features& {
   return _enabled_features;
 }
 
@@ -176,90 +176,134 @@ auto logical_device::_get_queue_family_indices(const physical_device& physical_d
   return result;
 }
 
-auto logical_device::_get_enabled_features(const physical_device& physical_device) const -> VkPhysicalDeviceFeatures {
+auto logical_device::_get_enabled_features(const physical_device& physical_device) const -> physical_device::device_features {
   const auto& physical_device_features = physical_device.features();
-	auto enabled_features = VkPhysicalDeviceFeatures{};
+  
+  auto& available_core_features = physical_device_features.core.features;
+  auto& available_vulkan11_features = physical_device_features.vulkan11;
+  auto& available_vulkan12_features = physical_device_features.vulkan12;
+  auto& available_vulkan13_features = physical_device_features.vulkan13;
+  auto& available_device_address_features = physical_device_features.device_address;
+  auto& available_descriptor_indexing_features = physical_device_features.descriptor_indexing;
 
-	if (physical_device_features.sampleRateShading) {
-		enabled_features.sampleRateShading = true;
+	auto enabled_features = physical_device::device_features{};
+
+  auto& enabled_core_features = enabled_features.core.features;
+  auto& enabled_vulkan11_features = enabled_features.vulkan11;
+  auto& enabled_vulkan12_features = enabled_features.vulkan12;
+  auto& enabled_vulkan13_features = enabled_features.vulkan13;
+  auto& enabled_device_address_features = enabled_features.device_address; 
+  auto& enabled_descriptor_indexing_features = enabled_features.descriptor_indexing; 
+
+	if (available_core_features.sampleRateShading) {
+		enabled_core_features.sampleRateShading = true;
   }
 
-	if (physical_device_features.fillModeNonSolid) {
-		enabled_features.fillModeNonSolid = true;
+	if (available_core_features.fillModeNonSolid) {
+		enabled_core_features.fillModeNonSolid = true;
 
-		if (physical_device_features.wideLines) {
-		  enabled_features.wideLines = true;
+		if (available_core_features.wideLines) {
+		  enabled_core_features.wideLines = true;
     }
 	} else {
 		utility::logger<"graphics">::warn("Selected GPU does not support wireframe pipelines");
 	}
 
-	if (physical_device_features.samplerAnisotropy) {
-		enabled_features.samplerAnisotropy = true;
+	if (available_core_features.samplerAnisotropy) {
+		enabled_core_features.samplerAnisotropy = true;
   } else {
 		utility::logger<"graphics">::warn("Selected GPU does not support sampler anisotropy");
   }
 
-	if (physical_device_features.textureCompressionBC) {
-		enabled_features.textureCompressionBC = true;
-  } else if (physical_device_features.textureCompressionASTC_LDR) {
-		enabled_features.textureCompressionASTC_LDR = true;
-  } else if (physical_device_features.textureCompressionETC2) {
-		enabled_features.textureCompressionETC2 = true;
+	if (available_core_features.textureCompressionBC) {
+		enabled_core_features.textureCompressionBC = true;
+    utility::logger<"graphics">::debug("Selected GPU supports BC texture compression");
+  } else if (available_core_features.textureCompressionASTC_LDR) {
+		enabled_core_features.textureCompressionASTC_LDR = true;
+    utility::logger<"graphics">::debug("Selected GPU supports ASTC_LDR texture compression");
+  } else if (available_core_features.textureCompressionETC2) {
+		enabled_core_features.textureCompressionETC2 = true;
+    utility::logger<"graphics">::debug("Selected GPU supports ETC2 texture compression");
+  } else {
+    utility::logger<"graphics">::warn("Selected GPU does not support texture compression");
   }
 
-	if (physical_device_features.vertexPipelineStoresAndAtomics) {
-		enabled_features.vertexPipelineStoresAndAtomics = true;
+	if (available_core_features.vertexPipelineStoresAndAtomics) {
+		enabled_core_features.vertexPipelineStoresAndAtomics = true;
   } else {
 		utility::logger<"graphics">::warn("Selected GPU does not support vertex pipeline stores and atomics");
   }
 
-	if (physical_device_features.fragmentStoresAndAtomics) {
-		enabled_features.fragmentStoresAndAtomics = true;
+	if (available_core_features.fragmentStoresAndAtomics) {
+		enabled_core_features.fragmentStoresAndAtomics = true;
   } else {
 		utility::logger<"graphics">::warn("Selected GPU does not support fragment stores and atomics");
   }
 
-	if (physical_device_features.shaderStorageImageExtendedFormats) {
-		enabled_features.shaderStorageImageExtendedFormats = true;
+	if (available_core_features.shaderStorageImageExtendedFormats) {
+		enabled_core_features.shaderStorageImageExtendedFormats = true;
   } else {
 		utility::logger<"graphics">::warn("Selected GPU does not support shader storage extended formats");
   }
 
-	if (physical_device_features.shaderStorageImageWriteWithoutFormat) {
-		enabled_features.shaderStorageImageWriteWithoutFormat = true;
+	if (available_core_features.shaderStorageImageWriteWithoutFormat) {
+		enabled_core_features.shaderStorageImageWriteWithoutFormat = true;
   } else {
 		utility::logger<"graphics">::warn("Selected GPU does not support shader storage write without format");
   }
 
-  if (physical_device_features.shaderClipDistance) {
-		enabled_features.shaderClipDistance = true;
+  if (available_core_features.shaderClipDistance) {
+		enabled_core_features.shaderClipDistance = true;
   } else {
 		utility::logger<"graphics">::warn("Selected GPU does not support shader clip distance");
   }
 
-  if (physical_device_features.shaderCullDistance) {
-		enabled_features.shaderCullDistance = true;
+  if (available_core_features.shaderCullDistance) {
+		enabled_core_features.shaderCullDistance = true;
   } else {
 		utility::logger<"graphics">::warn("Selected GPU does not support shader cull distance");
   }
 
-	if (physical_device_features.geometryShader) {
-		enabled_features.geometryShader = true;
+	if (available_core_features.geometryShader) {
+		enabled_core_features.geometryShader = true;
   } else {
 		utility::logger<"graphics">::warn("Selected GPU does not support geometry shaders");
   }
 
-	if (physical_device_features.tessellationShader) {
-		enabled_features.tessellationShader = true;
+	if (available_core_features.tessellationShader) {
+		enabled_core_features.tessellationShader = true;
   } else {
 		utility::logger<"graphics">::warn("Selected GPU does not support tessellation shaders");
   }
 
-	if (physical_device_features.multiViewport) {
-		enabled_features.multiViewport = true;
+	if (available_core_features.multiViewport) {
+		enabled_core_features.multiViewport = true;
   } else {
 		utility::logger<"graphics">::warn("Selected GPU does not support multi viewports");
+  }
+
+  if (available_descriptor_indexing_features.shaderSampledImageArrayNonUniformIndexing) {
+    enabled_descriptor_indexing_features.shaderSampledImageArrayNonUniformIndexing = true;
+  } else {
+    utility::logger<"graphics">::warn("Selected GPU does not support sampled image array non uniform indexing");
+  }
+
+  if (available_descriptor_indexing_features.runtimeDescriptorArray) {
+    enabled_descriptor_indexing_features.runtimeDescriptorArray = true;
+  } else {
+    utility::logger<"graphics">::warn("Selected GPU does not support runtime descriptor array");
+  }
+
+  if (available_descriptor_indexing_features.descriptorBindingVariableDescriptorCount) {
+    enabled_descriptor_indexing_features.descriptorBindingVariableDescriptorCount = true;
+  } else {
+    utility::logger<"graphics">::warn("Selected GPU does not support descriptor binding variable descriptor count");
+  }
+
+  if (available_descriptor_indexing_features.descriptorBindingPartiallyBound) {
+    enabled_descriptor_indexing_features.descriptorBindingPartiallyBound = true;
+  } else {
+    utility::logger<"graphics">::warn("Selected GPU does not support descriptor binding partially bound");
   }
 
   return enabled_features;
@@ -309,23 +353,16 @@ auto logical_device::_create_logical_device(const physical_device& physical_devi
   const auto instance_validation_layers = validation_layers::instance();
   const auto device_extensions = extensions::device();
 
-  auto physical_device_descriptor_indexing_features = VkPhysicalDeviceDescriptorIndexingFeatures {};
-  physical_device_descriptor_indexing_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES;
-  physical_device_descriptor_indexing_features.shaderSampledImageArrayNonUniformIndexing = true;
-  physical_device_descriptor_indexing_features.runtimeDescriptorArray = true;
-  physical_device_descriptor_indexing_features.descriptorBindingVariableDescriptorCount = true;
-  physical_device_descriptor_indexing_features.descriptorBindingPartiallyBound = true;
-
 	auto device_create_info = VkDeviceCreateInfo{};
 	device_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-  device_create_info.pNext = &physical_device_descriptor_indexing_features;
+  device_create_info.pNext = &_enabled_features.core;
 	device_create_info.queueCreateInfoCount = static_cast<std::uint32_t>(queue_create_infos.size());
 	device_create_info.pQueueCreateInfos = queue_create_infos.data();
   device_create_info.enabledLayerCount = static_cast<std::uint32_t>(instance_validation_layers.size());
   device_create_info.ppEnabledLayerNames = instance_validation_layers.data();
 	device_create_info.enabledExtensionCount = static_cast<std::uint32_t>(device_extensions.size());
 	device_create_info.ppEnabledExtensionNames = device_extensions.data();
-	device_create_info.pEnabledFeatures = &_enabled_features;
+	device_create_info.pEnabledFeatures = nullptr;
 
 	validate(vkCreateDevice(physical_device, &device_create_info, nullptr, &_handle));
 

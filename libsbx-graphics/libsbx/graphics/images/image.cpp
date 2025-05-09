@@ -170,7 +170,7 @@ auto image::create_image_sampler(VkSampler& sampler, VkFilter filter, VkSamplerA
   sampler_create_info.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
   sampler_create_info.mipLodBias = 0.0f;
   sampler_create_info.anisotropyEnable = anisotropic;
-  sampler_create_info.maxAnisotropy = (anisotropic && logical_device.enabled_features().samplerAnisotropy) ? std::min(anisotropy, physical_device.properties().limits.maxSamplerAnisotropy) : 1.0f;
+  sampler_create_info.maxAnisotropy = (anisotropic && logical_device.enabled_features().core.features.samplerAnisotropy) ? std::min(anisotropy, physical_device.properties().limits.maxSamplerAnisotropy) : 1.0f;
   sampler_create_info.compareEnable = VK_FALSE;
   sampler_create_info.compareOp = VK_COMPARE_OP_ALWAYS;
   sampler_create_info.minLod = 0.0f;
