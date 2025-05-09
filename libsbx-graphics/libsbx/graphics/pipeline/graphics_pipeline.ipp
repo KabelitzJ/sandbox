@@ -196,7 +196,7 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
   rasterization_state.frontFace = to_vk_enum<VkFrontFace>(definition.rasterization_state.front_face);
 
   if (definition.rasterization_state.depth_bias.has_value()) {
-    auto& depth_bias = definition.rasterization_state.depth_bias.value();
+    const auto& depth_bias = definition.rasterization_state.depth_bias.value();
 
     rasterization_state.depthBiasEnable = true;
     rasterization_state.depthBiasConstantFactor = depth_bias.constant_factor;
