@@ -111,7 +111,7 @@ auto command_buffer::submit_idle() -> void {
 	vkDestroyFence(logical_device, fence, nullptr);
 }
 
-auto command_buffer::submit(const std::vector<wait_data>& wait_data, const VkSemaphore &signal_semaphore, const VkFence& fence) -> void {
+auto command_buffer::submit(const std::vector<wait_data>& wait_data, const VkSemaphore& signal_semaphore, const VkFence& fence) -> void {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
   const auto& logical_device = graphics_module.logical_device();

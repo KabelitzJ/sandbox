@@ -19,7 +19,7 @@ auto storage_handler::storage_buffer() const noexcept -> const graphics::storage
 auto storage_handler::update(const std::optional<shader::uniform_block>& uniform_block) -> bool {
   if (_uniform_block != uniform_block) {
     _uniform_block = uniform_block;
-    const auto size = _storage_buffer->size();
+    const auto size = _storage_buffer ? _storage_buffer->size() : graphics::storage_buffer::min_size;
     _storage_buffer = std::make_unique<graphics::storage_buffer>(size, _additional_usage);
 
     return false; 

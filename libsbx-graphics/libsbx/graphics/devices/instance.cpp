@@ -11,14 +11,11 @@
 namespace sbx::graphics {
 
 instance::instance() {
-  if (vkEnumerateInstanceVersion) {
-    auto api_version = VK_API_VERSION_1_0;
-    vkEnumerateInstanceVersion(&api_version);
-    utility::logger<"graphics">::info("Latest available Vulkan API verion: {}.{}.{}", VK_VERSION_MAJOR(api_version), VK_VERSION_MINOR(api_version), VK_VERSION_PATCH(api_version));
-  }
+  auto api_version = VK_API_VERSION_1_0;
+  vkEnumerateInstanceVersion(&api_version);
+  utility::logger<"graphics">::info("Latest available Vulkan API verion: {}.{}.{}", VK_VERSION_MAJOR(api_version), VK_VERSION_MINOR(api_version), VK_VERSION_PATCH(api_version));
 
-
-  auto api_version = VK_API_VERSION_1_3;
+  api_version = VK_API_VERSION_1_3;
 
   utility::logger<"graphics">::info("Used Vulkan API verion: {}.{}.{}", VK_VERSION_MAJOR(api_version), VK_VERSION_MINOR(api_version), VK_VERSION_PATCH(api_version));
 

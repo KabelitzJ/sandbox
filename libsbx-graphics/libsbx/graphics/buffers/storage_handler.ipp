@@ -18,7 +18,7 @@ auto storage_handler::push(std::span<const Type> buffer) -> void {
     _storage_buffer = std::make_unique<graphics::storage_buffer>(required_size, _additional_usage);
     // [NOTE] KAJ 2025-05-10 : Maybe we need to return here...
     // [NOTE] KAJ 2025-05-19 : We DO have to...
-    return;
+    // return;
   }
 
   _storage_buffer->update(buffer.data(), buffer.size() * sizeof(Type));

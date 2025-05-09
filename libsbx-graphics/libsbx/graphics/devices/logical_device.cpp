@@ -183,8 +183,8 @@ auto logical_device::_get_enabled_features(const physical_device& physical_devic
   auto& available_vulkan11_features = physical_device_features.vulkan11;
   auto& available_vulkan12_features = physical_device_features.vulkan12;
   auto& available_vulkan13_features = physical_device_features.vulkan13;
-  auto& available_device_address_features = physical_device_features.device_address;
-  auto& available_descriptor_indexing_features = physical_device_features.descriptor_indexing;
+  // auto& available_device_address_features = physical_device_features.device_address;
+  // auto& available_descriptor_indexing_features = physical_device_features.descriptor_indexing;
 
 	auto enabled_features = physical_device::device_features{};
 
@@ -192,8 +192,8 @@ auto logical_device::_get_enabled_features(const physical_device& physical_devic
   auto& enabled_vulkan11_features = enabled_features.vulkan11;
   auto& enabled_vulkan12_features = enabled_features.vulkan12;
   auto& enabled_vulkan13_features = enabled_features.vulkan13;
-  auto& enabled_device_address_features = enabled_features.device_address; 
-  auto& enabled_descriptor_indexing_features = enabled_features.descriptor_indexing; 
+  // auto& enabled_device_address_features = enabled_features.device_address; 
+  // auto& enabled_descriptor_indexing_features = enabled_features.descriptor_indexing; 
 
 	if (available_core_features.sampleRateShading) {
 		enabled_core_features.sampleRateShading = true;
@@ -282,26 +282,32 @@ auto logical_device::_get_enabled_features(const physical_device& physical_devic
 		utility::logger<"graphics">::warn("Selected GPU does not support multi viewports");
   }
 
-  if (available_descriptor_indexing_features.shaderSampledImageArrayNonUniformIndexing) {
-    enabled_descriptor_indexing_features.shaderSampledImageArrayNonUniformIndexing = true;
+  if (available_vulkan12_features.bufferDeviceAddress) {
+    enabled_vulkan12_features.bufferDeviceAddress = true;
+  } else {
+    utility::logger<"graphics">::warn("Selected GPU does not support buffer device address");
+  }
+
+  if (available_vulkan12_features.shaderSampledImageArrayNonUniformIndexing) {
+    enabled_vulkan12_features.shaderSampledImageArrayNonUniformIndexing = true;
   } else {
     utility::logger<"graphics">::warn("Selected GPU does not support sampled image array non uniform indexing");
   }
 
-  if (available_descriptor_indexing_features.runtimeDescriptorArray) {
-    enabled_descriptor_indexing_features.runtimeDescriptorArray = true;
+  if (available_vulkan12_features.runtimeDescriptorArray) {
+    enabled_vulkan12_features.runtimeDescriptorArray = true;
   } else {
     utility::logger<"graphics">::warn("Selected GPU does not support runtime descriptor array");
   }
 
-  if (available_descriptor_indexing_features.descriptorBindingVariableDescriptorCount) {
-    enabled_descriptor_indexing_features.descriptorBindingVariableDescriptorCount = true;
+  if (available_vulkan12_features.descriptorBindingVariableDescriptorCount) {
+    enabled_vulkan12_features.descriptorBindingVariableDescriptorCount = true;
   } else {
     utility::logger<"graphics">::warn("Selected GPU does not support descriptor binding variable descriptor count");
   }
 
-  if (available_descriptor_indexing_features.descriptorBindingPartiallyBound) {
-    enabled_descriptor_indexing_features.descriptorBindingPartiallyBound = true;
+  if (available_vulkan12_features.descriptorBindingPartiallyBound) {
+    enabled_vulkan12_features.descriptorBindingPartiallyBound = true;
   } else {
     utility::logger<"graphics">::warn("Selected GPU does not support descriptor binding partially bound");
   }
