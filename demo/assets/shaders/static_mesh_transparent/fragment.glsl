@@ -1,10 +1,10 @@
 #version 450 core
 
-#include "../common/lighting.glsl"
-#include "../common/material.glsl"
-#include "../common/random.glsl"
-#include "../common/depth.glsl"
-#include "../common/shadow.glsl"
+#include <libsbx/common/lighting.glsl>
+#include <libsbx/common/material.glsl>
+#include <libsbx/common/random.glsl>
+#include <libsbx/common/depth.glsl>
+#include <libsbx/common/shadow.glsl>
 
 // #define ENABLE_SHADOWS 0
 

@@ -1,9 +1,9 @@
 #version 450 core
 
-#include "../common/lighting.glsl"
-#include "../common/material.glsl"
-#include "../common/random.glsl"
-#include "../common/depth.glsl"
+#include <libsbx/common/lighting.glsl>
+#include <libsbx/common/material.glsl>
+#include <libsbx/common/random.glsl>
+#include <libsbx/common/depth.glsl>
 
 layout(location = 0) in vec3 in_position;
 layout(location = 1) in vec3 in_normal;

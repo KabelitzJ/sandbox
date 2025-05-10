@@ -1,7 +1,7 @@
 #version 450 core
 
-#include "../common/wind.glsl"
-#include "../common/constants.glsl"
+#include <libsbx/common/wind.glsl>
+#include <libsbx/common/constants.glsl>
 
 struct per_mesh_data {
   mat4 model;

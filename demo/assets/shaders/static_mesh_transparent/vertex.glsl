@@ -1,6 +1,6 @@
 #version 450 core
 
-#include "../common/wind.glsl"
+#include <libsbx/common/wind.glsl>
 
 struct per_mesh_data {
   mat4 model;

@@ -1,7 +1,7 @@
 #ifndef COMMON_LIGHTING_GLSL
 #define COMMON_LIGHTING_GLSL
 
-#include "../common/material.glsl"
+#include <libsbx/common/material.glsl>
 
 struct point_light {
   vec3 position;

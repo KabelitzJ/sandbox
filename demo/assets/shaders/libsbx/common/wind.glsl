@@ -1,7 +1,7 @@
 #ifndef COMMON_WIND_GLSL_
 #define COMMON_WIND_GLSL_
 
-#include "../common/constants.glsl"
+#include <libsbx/common/constants.glsl>
 
 vec3 wind_effect(vec3 world_position, vec3 position, float time, float flexibility, float anchor_height, float max_anchor_height){
 	float height_from_anchor = max(0.0, position.y - (anchor_height * max_anchor_height));

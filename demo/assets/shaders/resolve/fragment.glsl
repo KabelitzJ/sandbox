@@ -1,10 +1,10 @@
 #version 450 core
 
-#include "../common/lighting.glsl"
-#include "../common/material.glsl"
-#include "../common/shadow.glsl"
-#include "../common/depth.glsl"
-#include "../common/constants.glsl"
+#include <libsbx/common/lighting.glsl>
+#include <libsbx/common/material.glsl>
+#include <libsbx/common/shadow.glsl>
+#include <libsbx/common/depth.glsl>
+#include <libsbx/common/constants.glsl>
 
 layout(location = 0) in vec2 in_uv;
 

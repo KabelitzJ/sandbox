@@ -1,7 +1,7 @@
 #ifndef COMMON_SHADOW_GLSL_
 #define COMMON_SHADOW_GLSL_
 
-#include "../common/random.glsl"
+#include <libsbx/common/random.glsl>
 
 const int PCF_COUNT = 4;
 const float RADIUS = 0.0004;

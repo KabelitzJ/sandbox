@@ -61,7 +61,7 @@ function compile_shader {
 $shaders = Get-ChildItem -Directory "$directory"
 
 foreach ($shader in $shaders) {
-  if ((Split-Path "$shader" -Leaf) -eq "common") {
+  if ((Split-Path "$shader" -Leaf) -eq "libsbx") {
     continue
   }
 

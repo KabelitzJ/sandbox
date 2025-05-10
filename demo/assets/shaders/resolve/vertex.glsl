@@ -1,6 +1,6 @@
 #version 450 core
 
-#include "../common/quad.glsl"
+#include <libsbx/common/quad.glsl>
 
 layout(location = 0) out vec2 out_uv;
 

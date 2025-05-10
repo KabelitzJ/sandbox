@@ -1,6 +1,6 @@
 #version 450 core
 
-#include "../common/constants.glsl"
+#include <libsbx/common/constants.glsl>
 
 
 layout(location = 0) in vec3 in_position;
