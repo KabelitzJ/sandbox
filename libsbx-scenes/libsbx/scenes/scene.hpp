@@ -33,7 +33,7 @@ namespace sbx::scenes {
 
 class scene {
 
-  friend class node;
+  // friend class node;
 
 public:
 

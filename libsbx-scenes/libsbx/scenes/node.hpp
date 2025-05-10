@@ -75,32 +75,36 @@ namespace sbx::scenes {
 
 // }; // class node
 
-class node {
+// class node {
 
-  friend struct sbx::ecs::entity_traits<node>;
+//   friend struct sbx::ecs::entity_traits<node>;
 
-public:
+// public:
 
-  inline static constexpr auto null = sbx::ecs::null_entity;
+//   inline static constexpr auto null = sbx::ecs::null_entity;
 
-  using entity_type = std::uint32_t;
+//   using entity_type = std::uint32_t;
 
-  constexpr operator entity_type() const noexcept {
-    return _value;
-  }
+//   constexpr operator entity_type() const noexcept {
+//     return _value;
+//   }
 
-  constexpr operator bool() const noexcept {
-    return _value != null;
-  }
+//   constexpr operator bool() const noexcept {
+//     return _value != null;
+//   }
 
-private:
+// private:
 
-  explicit constexpr node(const entity_type value) noexcept 
-  : _value{value} { }
+//   explicit constexpr node(const entity_type value) noexcept 
+//   : _value{value} { }
 
-  entity_type _value;
+//   entity_type _value;
 
-}; // struct node
+// }; // struct node
+
+enum class node : std::uint32_t {
+  null = ecs::null_entity
+}; // enum class node
 
 } // namespace sbx::scenes
 

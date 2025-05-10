@@ -247,7 +247,7 @@ private:
       _context_menu(node);
 
       for (const auto& child_id : relationship.children()) {
-        if (auto child = scene.find_node(child_id); child) {
+        if (auto child = scene.find_node(child_id); child != scenes::node::null) {
           _build_tree(child);
         }
       }
@@ -265,7 +265,7 @@ private:
 
     static auto buffer = std::array<char, 32u>{};
 
-    if (auto node = scene.find_node(_selected_node_id); node) {
+    if (auto node = scene.find_node(_selected_node_id); node != scenes::node::null) {
       if (ImGui::TreeNodeEx("Tag", ImGuiTreeNodeFlags_DefaultOpen)) {
         buffer.fill('\0');
 
@@ -385,7 +385,7 @@ private:
         }
 
         if (ImGui::Button("Create", ImVec2{button_width, 0})) {
-          if (auto node = scene.find_node(_selected_node_id); node) {
+          if (auto node = scene.find_node(_selected_node_id); node != scenes::node::null) {
             scene.create_child_node(node, name);
           } else {
             utility::logger<"editor">::warn("No selected node");
@@ -432,7 +432,7 @@ private:
         const auto available_width = ImGui::GetContentRegionAvail().x;
         const auto total_width = (button_width * 2.0f) + padding;
 
-        if (auto node = scene.find_node(_selected_node_id); node) {
+        if (auto node = scene.find_node(_selected_node_id); node != scenes::node::null) {
           ImGui::Text("Do you want to delete '%s'", scene.get_component<sbx::scenes::tag>(node).c_str());
 
           ImGui::SetCursorPosX(ImGui::GetCursorPosX() + available_width - total_width);

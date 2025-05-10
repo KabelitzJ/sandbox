@@ -28,7 +28,7 @@
 namespace sbx::graphics {
 
 template<vertex Vertex>
-graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, const pipeline::stage& stage, const pipeline_definition& default_definition)
+graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, const pipeline::stage& stage, const pipeline_definition& default_definition, const VkSpecializationInfo* specialization_info)
 : _bind_point{VK_PIPELINE_BIND_POINT_GRAPHICS},
   _stage{stage} {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
@@ -82,6 +82,7 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
     shader_stage.stage = stage;
     shader_stage.module = *shader;
     shader_stage.pName = "main";
+    shader_stage.pSpecializationInfo = specialization_info;
 
     shader_stages.push_back(shader_stage);
 

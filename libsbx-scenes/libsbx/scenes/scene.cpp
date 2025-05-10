@@ -123,6 +123,7 @@ auto scene::create_node(const std::string& tag, const math::transform& transform
 }
 
 auto scene::destroy_node(const node_type node) -> void {
+  // [TODO] KAJ 2025-05-10 : Fix this using heirarchy component and a stack
   const auto& id = get_component<scenes::id>(node);
   const auto& relationship = get_component<scenes::relationship>(node);
 
@@ -132,7 +133,7 @@ auto scene::destroy_node(const node_type node) -> void {
     }
   }
 
-  if (auto entry = _nodes.find(id); entry != _nodes.end()) {
+  if (auto entry = _nodes.find(relationship.parent()); entry != _nodes.end()) {
     get_component<scenes::relationship>(entry->second).remove_child(id);
   } else {
     utility::logger<"scenes">::warn("Node '{}' has invalid parent", get_component<scenes::tag>(node));

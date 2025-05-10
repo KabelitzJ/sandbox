@@ -13,7 +13,7 @@
 
 namespace sbx::models {
 
-template<bool UsesTransparency>
+template<bool UsesTransparency, graphics::cull_mode CullMode>
 class pipeline : public graphics::graphics_pipeline<vertex3d> {
 
   inline static constexpr auto pipeline_definition = graphics::pipeline_definition{
@@ -21,7 +21,7 @@ class pipeline : public graphics::graphics_pipeline<vertex3d> {
     .uses_transparency = UsesTransparency,
     .rasterization_state = graphics::rasterization_state{
       .polygon_mode = graphics::polygon_mode::fill,
-      .cull_mode = graphics::cull_mode::back,
+      .cull_mode = CullMode,
       .front_face = graphics::front_face::counter_clockwise
     }
   };
@@ -32,8 +32,8 @@ public:
 
   using vertex_type = vertex3d;
 
-  pipeline(const std::filesystem::path& path, const graphics::pipeline::stage& stage)
-  : base_type{path, stage, pipeline_definition} { }
+  pipeline(const std::filesystem::path& path, const graphics::pipeline::stage& stage, const VkSpecializationInfo* specialization_info)
+  : base_type{path, stage, pipeline_definition, specialization_info} { }
 
   ~pipeline() override = default;
 

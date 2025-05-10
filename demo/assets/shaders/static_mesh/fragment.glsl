@@ -20,6 +20,8 @@ layout(location = 6) in flat uint in_normal_image_index;
 
 layout(location = 0) out vec4 out_color;
 
+layout(constant_id = 0) const bool use_transparency = false;
+
 layout(binding = 0) uniform uniform_scene {
   mat4 view;
   mat4 projection;
@@ -91,7 +93,7 @@ void main(void) {
   vec3 normal = get_normal();
   vec4 albedo = get_albedo();
 
-  if (albedo.a < 0.5) {
+  if (!use_transparency && albedo.a < 0.5) {
     discard;
   }
 
@@ -130,7 +132,11 @@ void main(void) {
   float rim_intensity = smoothstep(RIM_STRENGTH - 0.01, RIM_STRENGTH + 0.01, (1.0 - dot(normal, view_direction)) * pow(n_dot_l, RIM_THRESHOLD)) * (1.0 - roughness);
   vec4 rim = RIM_COLOR * rim_intensity;
 
-  out_color = vec4(vec3(albedo * (AMBIENT_COLOR + light + specular + rim)), 1.0); // Enforce 1.0 alpha
+  if (use_transparency) {
+    out_color = vec4(vec3(albedo * (AMBIENT_COLOR + light + specular + rim)), albedo.a);
+  } else {
+    out_color = vec4(vec3(albedo * (AMBIENT_COLOR + light + specular + rim)), 1.0);
+  }
 
   // out_color = mix(out_color, FOG_COLOR, fog_factor);
   // out_color = vec4(vec3(albedo.r), 1.0);

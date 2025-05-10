@@ -19,6 +19,7 @@ find_package(yaml-cpp REQUIRED)
 find_package(tinyobjloader REQUIRED)
 find_package(nlohmann_json REQUIRED)
 find_package(base64 REQUIRED)
+find_package(tsl-robin-map REQUIRED)
 
 target_sources(
   ${PROJECT_NAME}
@@ -56,6 +57,7 @@ target_link_libraries(
     tinyobjloader::tinyobjloader
     nlohmann_json::nlohmann_json
     aklomp::base64
+    tsl::robin_map
     # Internal dependencies
     libsbx::utility
     libsbx::io

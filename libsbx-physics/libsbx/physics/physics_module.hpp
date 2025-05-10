@@ -102,7 +102,7 @@ private:
       auto first_node = scene.find_node(intersection.first);
       auto second_node = scene.find_node(intersection.second);
 
-      if (!first_node || !second_node) {
+      if (first_node == scenes::node::null || second_node == scenes::node::null) {
         continue;
       }
 
