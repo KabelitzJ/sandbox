@@ -1,9 +1,10 @@
 .bdep/
 .build2/local/
-.vscode/
 .vs/
 
-!/.vscode/tasks.json
+.vscode/
+!.vscode/tasks.json
+!.vscode/c_cpp_properties.json
 
 *.profile
 *.prof
