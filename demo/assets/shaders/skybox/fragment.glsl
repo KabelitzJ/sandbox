@@ -1,4 +1,4 @@
-#version 450
+#version 450 core
 
 layout(binding = 1) uniform uniform_object {
   mat4 model;

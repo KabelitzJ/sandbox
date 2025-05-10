@@ -1,4 +1,4 @@
-#version 450
+#version 450 core
 
 #include "../common/lighting.glsl"
 #include "../common/material.glsl"
