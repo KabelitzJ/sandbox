@@ -9,28 +9,8 @@
       "path": "demo/assets/meshes/cube/cube.gltf"
     },
     {
-      "name": "dragon",
-      "path": "demo/assets/meshes/dragon/dragon.gltf"
-    },
-    {
       "name": "sphere",
       "path": "demo/assets/meshes/sphere/sphere.gltf"
-    },
-    {
-      "name": "monkey",
-      "path": "demo/assets/meshes/suzanne/suzanne.gltf"
-    },
-    {
-      "name": "tree_1",
-      "path": "demo/assets/meshes/tree_1/tree_1.gltf"
-    },
-    {
-      "name": "tree_2",
-      "path": "demo/assets/meshes/tree_2/tree_2.gltf"
-    },
-    {
-      "name": "birch",
-      "path": "demo/assets/meshes/my_birch/my_birch.gltf"
     }
   ]
 }
