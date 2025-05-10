@@ -17,7 +17,7 @@ public:
 
   color(std::uint32_t rgba) noexcept;
 
-  color(std::float_t red, std::float_t green, std::float_t blue, std::float_t alpha) noexcept;
+  color(std::float_t red, std::float_t green, std::float_t blue, std::float_t alpha = 1.0f) noexcept;
 
   static auto black() noexcept -> color {
     return color{0.0f, 0.0f, 0.0f, 1.0f};
@@ -37,6 +37,18 @@ public:
 
   static auto blue() noexcept -> color {
     return color{0.0f, 0.0f, 1.0f, 1.0f};
+  }
+
+  static auto magenta() noexcept -> color {
+    return color{1.0f, 0.0f, 1.0f, 1.0f};
+  }
+
+  static auto yellow() noexcept -> color {
+    return color{1.0f, 1.0f, 0.0f, 1.0f};
+  }
+
+  static auto cyan() noexcept -> color {
+    return color{0.0f, 1.0f, 1.0f, 1.0f};
   }
 
   auto r() const noexcept -> const std::float_t&;

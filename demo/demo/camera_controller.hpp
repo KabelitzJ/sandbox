@@ -112,7 +112,7 @@ public:
 
     auto scroll = sbx::devices::input::scroll_delta();
 
-    _zoom = std::clamp(_zoom - 5.0f * scroll.y(), _min_zoom, _max_zoom);
+    _zoom = std::clamp(_zoom - 2.5f * scroll.y(), _min_zoom, _max_zoom);
 
     // Calculate camera position
 

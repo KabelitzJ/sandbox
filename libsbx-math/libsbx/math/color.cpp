@@ -31,16 +31,16 @@ auto extract_component(std::uint32_t rgba, component component) noexcept -> std:
 }
 
 color::color(std::uint32_t rgba) noexcept
-: _red(extract_component(rgba, component::red)),
-  _green(extract_component(rgba, component::green)),
-  _blue(extract_component(rgba, component::blue)),
-  _alpha(extract_component(rgba, component::alpha)) { }
+: _red{extract_component(rgba, component::red)},
+  _green{extract_component(rgba, component::green)},
+  _blue{extract_component(rgba, component::blue)},
+  _alpha{extract_component(rgba, component::alpha)} { }
 
 color::color(std::float_t red, std::float_t green, std::float_t blue, std::float_t alpha) noexcept
-: _red(red),
-  _green(green),
-  _blue(blue),
-  _alpha(alpha) { }
+: _red{red},
+  _green{green},
+  _blue{blue},
+  _alpha{alpha} { }
 
 auto color::r() const noexcept -> const std::float_t& {
   return _red;

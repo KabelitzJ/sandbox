@@ -199,15 +199,23 @@ public:
 
     auto mesh_query_collider = scene.query<const scenes::static_mesh, const scenes::collider>();
 
+    auto successfull_culls = std::size_t{0};
+    auto failed_culls = std::size_t{0};
+
     for (auto&& [node, static_mesh, collider] : mesh_query_collider.each()) {
       const auto model = scene.world_transform(node);
 
       EASY_BLOCK("testing frustum");
       if (frustum.intersects(model, collider)) {
         _submit_mesh(node, static_mesh);
+        ++failed_culls;
+      } else {
+        ++successfull_culls;
       }
       EASY_END_BLOCK;
     }
+
+    utility::logger<"model">::info("Culls: {}/{}", successfull_culls, failed_culls);
 
     EASY_END_BLOCK;
 
