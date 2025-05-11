@@ -49,8 +49,7 @@ public:
 
   debug_subrenderer(const std::filesystem::path& path, const sbx::graphics::pipeline::stage& stage)
   : sbx::graphics::subrenderer{stage},
-    _pipeline{path, stage},
-    _storage_handler{VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT} { }
+    _pipeline{path, stage} { }
 
   ~debug_subrenderer() override {
 
