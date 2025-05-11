@@ -13,7 +13,7 @@ class swapchain {
 
 public:
 
-  static constexpr auto max_frames_in_flight = std::uint32_t{3};
+  static constexpr auto max_frames_in_flight = std::uint32_t{2};
 
   swapchain(const std::unique_ptr<swapchain>& old_swapchain = nullptr);
 

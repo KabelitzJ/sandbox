@@ -1,29 +1,27 @@
 #version 450 core
 
-struct per_mesh_data {
-  mat4 model;
-  vec4 tint;
-}; // struct per_mesh_data
+#extension GL_EXT_buffer_reference: enable
 
-layout(location = 0) in vec3 in_position;
+struct vertex {
+  vec4 position;
+  vec4 color;
+}; // struct vertex
 
-layout(location = 0) out vec3 out_position;
-layout(location = 1) out vec4 out_color;
+layout(location = 0) out vec4 out_color;
 
-layout(binding = 0) uniform uniform_scene {
-  mat4 view;
-  mat4 projection;
-} scene;
+layout(std430, buffer_reference) readonly buffer vertex_buffer {
+  vertex vertices[];
+};
 
-layout(binding = 1, std430) readonly buffer buffer_mesh_data {
-  per_mesh_data data[];
-} mesh_data;
+layout(push_constant) uniform push_data {
+	mat4 mvp;
+  vertex_buffer vertex_buffer;
+} push;
 
 void main() {
-  const per_mesh_data data = mesh_data.data[gl_InstanceIndex];
+  vertex vertex = push.vertex_buffer.vertices[gl_VertexIndex];
 
-  out_position = vec3(data.model * vec4(in_position, 1.0));
-  out_color = data.tint;
+  out_color = vertex.color;
 
-  gl_Position = scene.projection * scene.view * vec4(out_position, 1.0);
+  gl_Position = push.mvp * vertex.position; 
 }
