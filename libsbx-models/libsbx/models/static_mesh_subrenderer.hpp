@@ -73,13 +73,16 @@ class static_mesh_subrenderer final : public graphics::subrenderer {
     return &specialization_info;
   }
 
+  inline static constexpr auto transparency_disabled = std::uint32_t{0u};
+  inline static constexpr auto transparency_enabled = std::uint32_t{1u};
+
 public:
 
   static_mesh_subrenderer(const std::filesystem::path& path, const graphics::pipeline::stage& stage)
   : graphics::subrenderer{stage},
-    _opaque_pipeline_data{path, stage, _specialization_info<std::uint32_t>(0u)},
-    _transparent_back_pipeline_data{path, stage, _specialization_info<std::uint32_t>(1u)},
-    _transparent_front_pipeline_data{path, stage, _specialization_info<std::uint32_t>(1u)} { }
+    _opaque_pipeline_data{path, stage, _specialization_info(transparency_disabled)},
+    _transparent_back_pipeline_data{path, stage, _specialization_info(transparency_enabled)},
+    _transparent_front_pipeline_data{path, stage, _specialization_info(transparency_enabled)} { }
 
   ~static_mesh_subrenderer() override = default;
 
@@ -199,23 +202,15 @@ public:
 
     auto mesh_query_collider = scene.query<const scenes::static_mesh, const scenes::collider>();
 
-    auto successfull_culls = std::size_t{0};
-    auto failed_culls = std::size_t{0};
-
     for (auto&& [node, static_mesh, collider] : mesh_query_collider.each()) {
       const auto model = scene.world_transform(node);
 
       EASY_BLOCK("testing frustum");
       if (frustum.intersects(model, collider)) {
         _submit_mesh(node, static_mesh);
-        ++failed_culls;
-      } else {
-        ++successfull_culls;
       }
       EASY_END_BLOCK;
     }
-
-    utility::logger<"model">::info("Culls: {}/{}", successfull_culls, failed_culls);
 
     EASY_END_BLOCK;
 
