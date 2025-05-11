@@ -28,4 +28,8 @@ auto storage_handler::update(const std::optional<shader::uniform_block>& uniform
   return true;
 }
 
+auto storage_handler::buffer_address() const noexcept -> std::uint64_t {
+  return _storage_buffer ? _storage_buffer->address() : 0u;
+}
+
 } // namespace sbx::graphics

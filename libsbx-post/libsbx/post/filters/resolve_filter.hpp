@@ -57,6 +57,8 @@ public:
     auto& pipeline = base_type::pipeline();
     auto& descriptor_handler = base_type::descriptor_handler();
 
+    pipeline.bind(command_buffer);
+
     const auto& camera_transform = scene.get_component<math::transform>(camera_node);
 
     _scene_uniform_handler.push("camera_position", camera_transform.position());
@@ -92,8 +94,6 @@ public:
 
     _point_lights_storage_handler.push(std::span<const point_light_data>{point_lights.data(), point_light_count});
     _scene_uniform_handler.push("point_light_count", point_light_count);
-
-    pipeline.bind(command_buffer);
 
     descriptor_handler.push("uniform_scene", _scene_uniform_handler);
     descriptor_handler.push("buffer_point_lights", _point_lights_storage_handler);

@@ -32,6 +32,8 @@ public:
 
   auto update(const std::optional<shader::uniform_block>& uniform_block) -> bool;
 
+  auto buffer_address() const noexcept -> std::uint64_t;
+
 private:
 
   std::optional<shader::uniform_block> _uniform_block;

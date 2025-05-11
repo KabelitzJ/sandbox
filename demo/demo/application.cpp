@@ -16,6 +16,8 @@
 #include <demo/terrain/terrain_module.hpp>
 #include <demo/terrain/chunk.hpp>
 
+#include <demo/debug_subrenderer.hpp>
+
 namespace demo {
 
 application::application()
@@ -172,6 +174,8 @@ auto application::update() -> void  {
   const auto delta_time = sbx::core::engine::delta_time();
 
   _rotation += sbx::math::degree{45} * delta_time;
+
+  debug_subrenderer::add_line(sbx::math::vector3::zero, sbx::math::vector3{0.0f, 1.0f, 0.0f}, sbx::math::color::red());
 }
 
 auto application::fixed_update() -> void {

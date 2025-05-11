@@ -40,8 +40,13 @@ buffer_base::buffer_base(size_type size, VkBufferUsageFlags usage, VkMemoryPrope
   auto memory_requirements = VkMemoryRequirements{};
   vkGetBufferMemoryRequirements(logical_device, _handle, &memory_requirements);
 
+  auto memory_allocate_flags_info = VkMemoryAllocateFlagsInfo{};
+  memory_allocate_flags_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_FLAGS_INFO;
+  memory_allocate_flags_info.flags = (usage & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT) ? VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_BIT : 0;
+
   auto allocation_info = VkMemoryAllocateInfo{};
   allocation_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+  allocation_info.pNext = &memory_allocate_flags_info;
   allocation_info.allocationSize = memory_requirements.size;
   allocation_info.memoryTypeIndex = physical_device.find_memory_type(memory_requirements.memoryTypeBits, properties);
 
@@ -67,6 +72,16 @@ buffer_base::buffer_base(size_type size, VkBufferUsageFlags usage, VkMemoryPrope
   }
 
   validate(vkBindBufferMemory(logical_device, _handle, _memory, 0));
+
+  if (usage & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT) {
+    auto buffer_device_address_info = VkBufferDeviceAddressInfo{};
+    buffer_device_address_info.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
+    buffer_device_address_info.buffer = _handle;
+
+    _address = vkGetBufferDeviceAddress(logical_device, &buffer_device_address_info);
+  } else {
+    _address = 0u;
+  }
 }
 
 buffer_base::~buffer_base() {
@@ -90,6 +105,10 @@ buffer_base::operator const VkBuffer&() const noexcept {
 
 auto buffer_base::memory() const noexcept -> const VkDeviceMemory& {
   return _memory;
+}
+
+auto buffer_base::address() const noexcept -> std::uint64_t {
+  return _address;
 }
 
 auto buffer_base::size() const noexcept -> std::size_t {

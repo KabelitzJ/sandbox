@@ -30,6 +30,8 @@ public:
 
   auto memory() const noexcept -> const VkDeviceMemory&;
 
+  auto address() const noexcept -> std::uint64_t;
+
   virtual auto size() const noexcept -> size_type;
 
   virtual auto write(memory::observer_ptr<const void> data, size_type size, size_type offset = 0) -> void;
@@ -45,6 +47,7 @@ private:
   handle_type _handle{};
   size_type _size{};
   VkDeviceMemory _memory{};
+  std::uint64_t _address{};
 
 }; // class buffer_base
 

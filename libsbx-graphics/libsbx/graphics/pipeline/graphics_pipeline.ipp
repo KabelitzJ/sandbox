@@ -504,6 +504,26 @@ auto graphics_pipeline<Vertex>::_update_definition(const std::filesystem::path& 
         utility::logger<"graphics">::warn("Could not parse 'sbx::graphics::front_face' value '{}'", rasterization_state["front_face"].get<std::string>());
       }
     }
+
+    // if (rasterization_state.contains("depth_bias")) {
+    //   auto depth_bias = rasterization_state["depth_bias"];
+
+    //   if (depth_bias.contains("constant_factor")) {
+    //     result.rasterization_state.depth_bias->constant_factor = depth_bias["constant_factor"].get<std::float_t>();
+    //   }
+
+    //   if (depth_bias.contains("clamp")) {
+    //     result.rasterization_state.depth_bias->clamp = depth_bias["clamp"].get<std::float_t>();
+    //   }
+
+    //   if (depth_bias.contains("slope_factor")) {
+    //     result.rasterization_state.depth_bias->slope_factor = depth_bias["slope_factor"].get<std::float_t>();
+    //   }
+    // }
+
+    if (rasterization_state.contains("line_width")) {
+      result.rasterization_state.line_width = rasterization_state["line_width"].get<std::float_t>();
+    }
   }
 
   if (definition.contains("defines")) {

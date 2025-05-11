@@ -39,6 +39,8 @@ public:
 
     auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
     
+    pipeline.bind(command_buffer);
+
     _push_handler.push("direction", _direction);
     _push_handler.push("type", utility::to_underlying(type));
 
@@ -48,8 +50,6 @@ public:
     if (!descriptor_handler.update(pipeline)) {
       return;
     }
-
-    pipeline.bind(command_buffer);
 
     descriptor_handler.bind_descriptors(command_buffer);
     _push_handler.bind(command_buffer, pipeline);
