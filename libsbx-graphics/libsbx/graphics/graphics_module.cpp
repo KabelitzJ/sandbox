@@ -1,5 +1,7 @@
 #include <libsbx/graphics/graphics_module.hpp>
 
+#include <ranges>
+
 #include <fmt/format.h>
 
 #define VMA_IMPLEMENTATION
@@ -55,11 +57,13 @@ graphics_module::~graphics_module() {
 
   for (const auto& frame_data : _per_frame_data) {
     vkDestroyFence(*_logical_device, frame_data.graphics_in_flight_fence, nullptr);
-    vkDestroySemaphore(*_logical_device, frame_data.render_finished_semaphore, nullptr);
-    vkDestroySemaphore(*_logical_device, frame_data.image_available_semaphore, nullptr);
-
     vkDestroyFence(*_logical_device, frame_data.compute_in_flight_fence, nullptr);
+    vkDestroySemaphore(*_logical_device, frame_data.image_available_semaphore, nullptr);
     vkDestroySemaphore(*_logical_device, frame_data.compute_finished_semaphore, nullptr);
+  }
+
+  for (const auto& image_data : _per_image_data) {
+    vkDestroySemaphore(*_logical_device, image_data.render_finished_semaphore, nullptr);
   }
 
   // [NOTE] KAJ 2023-02-19 : Command buffers must be freed before the command pools
@@ -91,13 +95,13 @@ auto graphics_module::update() -> void {
 
   auto& compute_command_buffer = _compute_command_buffers[_current_frame];
 
-  compute_command_buffer->begin(VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
+  compute_command_buffer.begin(VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
 
-  _renderer->execute_tasks(*compute_command_buffer);
+  _renderer->execute_tasks(compute_command_buffer);
 
-  compute_command_buffer->end();
+  compute_command_buffer.end();
 
-  compute_command_buffer->submit({}, frame_data.compute_finished_semaphore, frame_data.compute_in_flight_fence);
+  compute_command_buffer.submit({}, frame_data.compute_finished_semaphore, frame_data.compute_in_flight_fence);
 
   // compute_command_buffer->submit()
 
@@ -126,24 +130,25 @@ auto graphics_module::update() -> void {
 
   auto stage = pipeline::stage{};
 
-  for (const auto& render_stage : _renderer->render_stages()) {
-    _start_render_pass(*render_stage);
+  auto& command_buffer = _graphics_command_buffers[_current_frame];
+  vkResetCommandBuffer(command_buffer, 0);
 
-    auto& command_buffer = _graphics_command_buffers[_current_frame];
+  for (const auto& render_stage : _renderer->render_stages()) {
+    _start_render_pass(*render_stage, command_buffer);
 
     const auto& subpasses = render_stage->subpasses();
 
     for (const auto& subpass : subpasses) {
       stage.subpass = subpass.binding();
 
-      _renderer->render(stage, *command_buffer);
+      _renderer->render(stage, command_buffer);
 
       if (subpass.binding() != subpasses.back().binding()) {
-        vkCmdNextSubpass(*command_buffer, VK_SUBPASS_CONTENTS_INLINE);
+        vkCmdNextSubpass(command_buffer, VK_SUBPASS_CONTENTS_INLINE);
       }
     }
 
-    _end_render_pass(*render_stage);
+    _end_render_pass(*render_stage, command_buffer);
 
     stage.renderpass++;
   }
@@ -199,11 +204,9 @@ auto graphics_module::attachment(const std::string& name) const -> const descrip
   throw std::runtime_error{fmt::format("No attachment with name '{}' found", name)};
 }
 
-auto graphics_module::_start_render_pass(graphics::render_stage& render_stage) -> void {
-  const auto& command_buffer = _graphics_command_buffers[_current_frame];
-
-  if (!command_buffer->is_running()) {
-    command_buffer->begin(VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
+auto graphics_module::_start_render_pass(graphics::render_stage& render_stage, graphics::command_buffer& command_buffer) -> void {
+  if (!command_buffer.is_running()) {
+    command_buffer.begin(VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
   }
 
   const auto& area = render_stage.render_area();
@@ -223,13 +226,13 @@ auto graphics_module::_start_render_pass(graphics::render_stage& render_stage) -
 	viewport.minDepth = 0.0f;
 	viewport.maxDepth = 1.0f;
 
-	command_buffer->set_viewport(viewport);
+	command_buffer.set_viewport(viewport);
 
 	auto scissor = VkRect2D{};
 	scissor.offset = render_area.offset;
 	scissor.extent = render_area.extent;
   
-  command_buffer->set_scissor(scissor);
+  command_buffer.set_scissor(scissor);
 
   const auto& clear_values = render_stage.clear_values();
 
@@ -241,31 +244,30 @@ auto graphics_module::_start_render_pass(graphics::render_stage& render_stage) -
 	render_pass_begin_info.clearValueCount = static_cast<std::uint32_t>(clear_values.size());
 	render_pass_begin_info.pClearValues = clear_values.data();
 
-  command_buffer->begin_render_pass(render_pass_begin_info, VK_SUBPASS_CONTENTS_INLINE);
+  command_buffer.begin_render_pass(render_pass_begin_info, VK_SUBPASS_CONTENTS_INLINE);
 }
 
-auto graphics_module::_end_render_pass(graphics::render_stage& render_stage) -> void {
-  const auto& frame_data = _per_frame_data[_current_frame];
+auto graphics_module::_end_render_pass(graphics::render_stage& render_stage, graphics::command_buffer& command_buffer) -> void {
+  auto& frame_data = _per_frame_data[_current_frame];
+  auto& image_data = _per_image_data[_swapchain->active_image_index()];
 
-  auto& command_buffer = _graphics_command_buffers[_current_frame];
-
-  command_buffer->end_render_pass();
+  command_buffer.end_render_pass();
 
   if (!render_stage.has_swapchain_attachment()) {
     return;
   }
 
   // Submit the command buffer to the graphics queue and draw the on the image
-  command_buffer->end();
+  command_buffer.end();
 
   auto wait_semaphores = std::vector<command_buffer::wait_data>{};
   wait_semaphores.push_back({frame_data.image_available_semaphore, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT});
   wait_semaphores.push_back({frame_data.compute_finished_semaphore, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT});
 
-  command_buffer->submit(wait_semaphores, frame_data.render_finished_semaphore, frame_data.graphics_in_flight_fence);
+  command_buffer.submit(wait_semaphores, image_data.render_finished_semaphore, frame_data.graphics_in_flight_fence);
 
   // Present the image to the screen
-  const auto result = _swapchain->present(frame_data.render_finished_semaphore);
+  const auto result = _swapchain->present(image_data.render_finished_semaphore);
 
   if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || _is_framebuffer_resized) {
     // _is_framebuffer_resized = false;
@@ -289,6 +291,7 @@ auto graphics_module::_recreate_swapchain() -> void {
   _swapchain = std::make_unique<graphics::swapchain>(_swapchain);
 
   _recreate_per_frame_data();
+  _recreate_per_image_data();
   _recreate_command_buffers();
 
   for (const auto& render_stage : _renderer->render_stages()) {
@@ -297,16 +300,15 @@ auto graphics_module::_recreate_swapchain() -> void {
 
   _recreate_attachments();
 
+  _current_frame = 0;
   _is_framebuffer_resized = false;
 }
 
 auto graphics_module::_recreate_per_frame_data() -> void {
   for (const auto& data : _per_frame_data) {
     vkDestroyFence(*_logical_device, data.graphics_in_flight_fence, nullptr);
-    vkDestroySemaphore(*_logical_device, data.image_available_semaphore, nullptr);
-    vkDestroySemaphore(*_logical_device, data.render_finished_semaphore, nullptr);
-
     vkDestroyFence(*_logical_device, data.compute_in_flight_fence, nullptr);
+    vkDestroySemaphore(*_logical_device, data.image_available_semaphore, nullptr);
     vkDestroySemaphore(*_logical_device, data.compute_finished_semaphore, nullptr);
   }
 
@@ -321,25 +323,40 @@ auto graphics_module::_recreate_per_frame_data() -> void {
 
   for (auto& data : _per_frame_data) {
     validate(vkCreateSemaphore(*_logical_device, &semaphore_create_info, nullptr, &data.image_available_semaphore));
-    validate(vkCreateSemaphore(*_logical_device, &semaphore_create_info, nullptr, &data.render_finished_semaphore));
-    validate(vkCreateFence(*_logical_device, &fence_create_info, nullptr, &data.graphics_in_flight_fence));
-
     validate(vkCreateSemaphore(*_logical_device, &semaphore_create_info, nullptr, &data.compute_finished_semaphore));
+    validate(vkCreateFence(*_logical_device, &fence_create_info, nullptr, &data.graphics_in_flight_fence));
     validate(vkCreateFence(*_logical_device, &fence_create_info, nullptr, &data.compute_in_flight_fence));
   }
 }
 
-auto graphics_module::_recreate_command_buffers() -> void {
-  _graphics_command_buffers.resize(swapchain::max_frames_in_flight);
-
-  for (auto& command_buffer : _graphics_command_buffers) {
-    command_buffer = std::make_unique<graphics::command_buffer>(false, VK_QUEUE_GRAPHICS_BIT);
+auto graphics_module::_recreate_per_image_data() -> void {
+  for (auto& data : _per_image_data) {
+    vkDestroySemaphore(*_logical_device, data.render_finished_semaphore, nullptr);
   }
 
-  _compute_command_buffers.resize(swapchain::max_frames_in_flight);
+  _per_image_data.resize(_swapchain->image_count());
 
-  for (auto& command_buffer : _compute_command_buffers) {
-    command_buffer = std::make_unique<graphics::command_buffer>(false, VK_QUEUE_GRAPHICS_BIT);
+  auto semaphore_create_info = VkSemaphoreCreateInfo{};
+  semaphore_create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+  for (auto& data : _per_image_data) {
+    validate(vkCreateSemaphore(*_logical_device, &semaphore_create_info, nullptr, &data.render_finished_semaphore));
+  }
+}
+
+auto graphics_module::_recreate_command_buffers() -> void {
+  _graphics_command_buffers.clear();
+  _graphics_command_buffers.reserve(swapchain::max_frames_in_flight);
+
+  for (auto i : std::views::iota(0u, swapchain::max_frames_in_flight)) {
+    _graphics_command_buffers.emplace_back(false, VK_QUEUE_GRAPHICS_BIT);
+  }
+
+  _compute_command_buffers.clear();
+  _compute_command_buffers.reserve(swapchain::max_frames_in_flight);
+
+  for (auto i : std::views::iota(0u, swapchain::max_frames_in_flight)) {
+    _compute_command_buffers.emplace_back(false, VK_QUEUE_COMPUTE_BIT);
   }
 }
 

@@ -35,11 +35,30 @@ command_buffer::command_buffer(bool should_begin, VkQueueFlagBits queue_type, Vk
   }
 }
 
-command_buffer::~command_buffer() {
-  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+command_buffer::command_buffer(command_buffer&& other) noexcept
+: _command_pool{std::move(other._command_pool)},
+  _handle{std::exchange(other._handle, nullptr)},
+  _queue_type{other._queue_type},
+  _is_running{std::exchange(other._is_running, false)} { }
 
-  auto& logical_device = graphics_module.logical_device();
-  vkFreeCommandBuffers(logical_device, *_command_pool, 1, &_handle);
+command_buffer::~command_buffer() {
+  if (_handle != nullptr) {
+    auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+  
+    auto& logical_device = graphics_module.logical_device();
+    vkFreeCommandBuffers(logical_device, *_command_pool, 1, &_handle);
+  }
+}
+
+auto command_buffer::operator=(command_buffer&& other) noexcept -> command_buffer& {
+  if (this != &other) {
+    _command_pool = std::move(other._command_pool);
+    _handle = std::exchange(other._handle, nullptr);
+    _queue_type = other._queue_type;
+    _is_running = std::exchange(other._is_running, false);
+  }
+
+  return *this;
 }
 
 auto command_buffer::handle() const noexcept -> const VkCommandBuffer& {

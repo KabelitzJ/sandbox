@@ -22,7 +22,15 @@ public:
 
   command_buffer(bool should_begin = true, VkQueueFlagBits queue_type = VK_QUEUE_GRAPHICS_BIT, VkCommandBufferLevel buffer_level = VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 
+  command_buffer(const command_buffer&) = delete;
+
+  command_buffer(command_buffer&&) noexcept;
+
   ~command_buffer();
+
+  auto operator=(const command_buffer&) -> command_buffer& = delete;
+
+  auto operator=(command_buffer&&) noexcept -> command_buffer&;
 
   auto handle() const noexcept -> const VkCommandBuffer&;
 
