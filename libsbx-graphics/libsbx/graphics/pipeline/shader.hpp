@@ -57,14 +57,19 @@ public:
 
   public:
 
-    explicit uniform(std::uint32_t binding, std::uint32_t offset, std::uint32_t size, data_type type, bool is_readonly, bool is_writeonly, VkShaderStageFlags stage_flags)
-    : _binding{binding},
+    explicit uniform(std::uint32_t set, std::uint32_t binding, std::uint32_t offset, std::uint32_t size, data_type type, bool is_readonly, bool is_writeonly, VkShaderStageFlags stage_flags)
+    : _set{set},
+      _binding{binding},
       _offset{offset},
       _size{size},
       _type{type},
       _is_readonly{is_readonly},
       _is_writeonly{is_writeonly},
       _stage_flags{stage_flags} { }
+
+    auto set() const noexcept -> std::uint32_t {
+      return _set;
+    }
 
     auto binding() const noexcept -> std::uint32_t {
       return _binding;
@@ -104,6 +109,7 @@ public:
 
   private:
 
+    std::uint32_t _set{};
     std::uint32_t _binding{};
     std::uint32_t _offset{};
     std::uint32_t _size{};
@@ -124,12 +130,21 @@ class uniform_block {
       push
     }; // enum class type
 
-    explicit uniform_block(std::uint32_t binding, std::uint32_t size, VkShaderStageFlags stage_flags, type type, std::map<std::string, uniform> uniforms = {})
-    : _binding{binding},
+    explicit uniform_block(type type, std::uint32_t set, std::uint32_t binding, std::uint32_t size, VkShaderStageFlags stage_flags, std::map<std::string, uniform> uniforms = {})
+    : _type{type},
+      _set{set},
+      _binding{binding},
       _size{size},
       _stage_flags{stage_flags},
-      _type{type},
       _uniforms{std::move(uniforms)} { }
+
+    auto buffer_type() const noexcept -> type {
+      return _type;
+    }
+
+    auto set() const noexcept -> std::uint32_t {
+      return _set;
+    }
 
     auto binding() const noexcept -> std::uint32_t {
       return _binding;
@@ -145,10 +160,6 @@ class uniform_block {
 
     auto add_stage_flag(VkShaderStageFlags stage) noexcept -> void {
       _stage_flags |= stage;
-    }
-
-    auto buffer_type() const noexcept -> type {
-      return _type;
     }
 
     auto uniforms() const noexcept -> const std::map<std::string, uniform>& {
@@ -169,10 +180,11 @@ class uniform_block {
 
   private:
 
+    type _type{};
+    std::uint32_t _set{};
     std::uint32_t _binding{};
     std::uint32_t _size{};
     VkShaderStageFlags _stage_flags{};
-    type _type{};
     std::map<std::string, uniform> _uniforms{};
 
   }; // class uniform_block

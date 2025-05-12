@@ -22,7 +22,7 @@ layout(location = 4) out vec2 out_material;
 layout(location = 5) out flat uint out_albedo_image_index;
 layout(location = 6) out flat uint out_normal_image_index;
 
-layout(binding = 0) uniform uniform_scene {
+layout(set = 1, binding = 1) uniform uniform_scene {
   mat4 view;
   mat4 projection;
   vec3 camera_position;

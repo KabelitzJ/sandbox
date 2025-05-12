@@ -364,7 +364,7 @@ private:
       descriptor_handler.push("uniform_scene", _scene_uniform_handler);
       descriptor_handler.push("buffer_mesh_data", storage_handler);
       descriptor_handler.push("buffer_point_lights", _point_lights_storage_handler);
-      descriptor_handler.push("shadow_map_image", graphics_module.attachment("shadow_map"));
+      // descriptor_handler.push("shadow_map_image", graphics_module.attachment("shadow_map"));
       descriptor_handler.push("images_sampler", _images_sampler);
       descriptor_handler.push("images", _images);
 
