@@ -73,8 +73,8 @@ auto renderer::initialize() -> void {
   // add_subrenderer<sbx::shadows::shadow_subrenderer>("demo/assets/shaders/shadow", sbx::graphics::pipeline::stage{0, 0});
 
   // Render stage 1
-  add_subrenderer<sbx::scenes::skybox_subrenderer>("demo/assets/shaders/skybox", sbx::graphics::pipeline::stage{1, 0});
-  add_subrenderer<sbx::models::static_mesh_subrenderer>("demo/assets/shaders/static_mesh", sbx::graphics::pipeline::stage{1, 0});
+  // add_subrenderer<sbx::scenes::skybox_subrenderer>("demo/assets/shaders/skybox", sbx::graphics::pipeline::stage{1, 0});
+  // add_subrenderer<sbx::models::static_mesh_subrenderer>("demo/assets/shaders/static_mesh", sbx::graphics::pipeline::stage{1, 0});
 
   add_subrenderer<demo::debug_subrenderer>("demo/assets/shaders/debug", sbx::graphics::pipeline::stage{1, 0});
 
