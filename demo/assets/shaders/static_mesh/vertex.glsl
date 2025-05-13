@@ -35,23 +35,18 @@ layout(set = 0, binding = 0) uniform uniform_scene {
   float time;
 } scene;
 
-// layout(set = 1, binding = 0, std430) readonly buffer buffer_mesh_data {
-//   per_mesh_data data[];
-// } mesh_data;
-
-layout(std430, buffer_reference, buffer_reference_align = 8) readonly buffer per_mesh_data_buffer {
-	per_mesh_data data[];
-};
+layout(set = 0, binding = 1, std430) readonly buffer buffer_mesh_data {
+  per_mesh_data data[];
+} mesh_data;
 
 layout(push_constant) uniform push_data {
-	per_mesh_data_buffer per_mesh_data_buffer;
-} data;
+	uint offset;
+} push;
 
 const float MAX_ANCHOR_HEIGHT = 2.0;
 
 void main() {
-  // const per_mesh_data data = mesh_data.data[gl_InstanceIndex];
-  const per_mesh_data mesh_data = data.per_mesh_data_buffer.data[gl_InstanceIndex];
+  const per_mesh_data mesh_data = mesh_data.data[gl_InstanceIndex + push.offset];
 
   vec3 world_position = vec3(mesh_data.model * vec4(in_position, 1.0));
 

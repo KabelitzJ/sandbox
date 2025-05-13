@@ -190,6 +190,9 @@ public:
 
     EASY_BLOCK("submit meshes no collider");
 
+    _opaque_meshes = 0u;
+    _transparent_meshes = 0u;
+
     auto mesh_query_no_collider = scene.query<const scenes::static_mesh>(ecs::exclude<scenes::collider>);
 
     for (auto&& [node, static_mesh] : mesh_query_no_collider.each()) {
@@ -336,8 +339,10 @@ private:
 
       if (submesh.uses_transparency) {
         _transparent_static_meshes[key].push_back(per_mesh_data{global_transform.model, global_transform.normal, submesh.tint, material, image_indices});
+        _transparent_meshes++;
       } else {
         _opaque_static_meshes[key].push_back(per_mesh_data{global_transform.model, global_transform.normal, submesh.tint, material, image_indices});
+        _opaque_meshes++;
       }
 
       EASY_END_BLOCK;
@@ -358,31 +363,59 @@ private:
     descriptor_handler.push("images_sampler", _images_sampler);
     descriptor_handler.push("images", _images);
 
+    const auto& static_meshes = UsesTransparency ? _transparent_static_meshes : _opaque_static_meshes;
+
+    auto global_per_mesh_data = std::vector<per_mesh_data>{};
+    global_per_mesh_data.reserve(UsesTransparency ? _transparent_meshes : _opaque_meshes);
+
+    auto offsets = map_type<mesh_key, std::size_t, mesh_key_hash, mesh_key_equal>{};
+
+    auto current_offset = std::size_t{0};
+
+    for (const auto& [key, data] : static_meshes) {
+      offsets[key] = current_offset;
+
+      global_per_mesh_data.insert(global_per_mesh_data.end(), data.begin(), data.end());
+      // auto& uniform_data = per_pipeline_data.uniform_data[key];
+
+      // auto& storage_handler = uniform_data.storage_handler;
+
+      // storage_handler.push(std::span<const per_mesh_data>{data});
+      // storage_handler.update(per_pipeline_data.pipeline.descriptor_block("per_mesh_data_buffer"));
+
+      // auto& mesh = graphics_module.get_asset<models::mesh>(key.mesh_id);
+
+      // _push_handler.push("per_mesh_data_buffer", storage_handler.buffer_address());
+
+      // descriptor_handler.push("data", _push_handler);
+
+      // // descriptor_handler.update_set(1u);
+      // // descriptor_handler.bind_descriptors(command_buffer, 1u);
+
+      // _push_handler.bind(command_buffer, per_pipeline_data.pipeline);
+
+      // mesh.render_submesh(command_buffer, key.submesh_index, static_cast<std::uint32_t>(data.size()));
+    }
+
+    _per_mesh_data.push(std::span<const per_mesh_data>{global_per_mesh_data});
+
+    descriptor_handler.push("buffer_mesh_data", _per_mesh_data);
+
     descriptor_handler.update_set(0);
 
     descriptor_handler.bind_descriptors(command_buffer, 0u);
 
-    const auto& static_meshes = UsesTransparency ? _transparent_static_meshes : _opaque_static_meshes;
-
     for (const auto& [key, data] : static_meshes) {
-
-      auto& uniform_data = per_pipeline_data.uniform_data[key];
-
-      auto& storage_handler = uniform_data.storage_handler;
-
-      storage_handler.push(std::span<const per_mesh_data>{data});
-      storage_handler.update(per_pipeline_data.pipeline.descriptor_block("per_mesh_data_buffer"));
-
-      auto& mesh = graphics_module.get_asset<models::mesh>(key.mesh_id);
-
-      _push_handler.push("per_mesh_data_buffer", storage_handler.buffer_address());
+      _push_handler.push("offset", offsets[key]);
 
       descriptor_handler.push("data", _push_handler);
 
-      // descriptor_handler.update_set(1u);
-      // descriptor_handler.bind_descriptors(command_buffer, 1u);
+      // // descriptor_handler.update_set(1u);
+      // // descriptor_handler.bind_descriptors(command_buffer, 1u);
 
       _push_handler.bind(command_buffer, per_pipeline_data.pipeline);
+
+      auto& mesh = graphics_module.get_asset<models::mesh>(key.mesh_id);
 
       mesh.render_submesh(command_buffer, key.submesh_index, static_cast<std::uint32_t>(data.size()));
     }
@@ -390,6 +423,9 @@ private:
 
   map_type<mesh_key, std::vector<per_mesh_data>, mesh_key_hash, mesh_key_equal> _opaque_static_meshes;
   map_type<mesh_key, std::vector<per_mesh_data>, mesh_key_hash, mesh_key_equal> _transparent_static_meshes;
+
+  std::size_t _opaque_meshes{};
+  std::size_t _transparent_meshes{};
 
   // tsl::robin_map
 
@@ -399,6 +435,7 @@ private:
 
   graphics::uniform_handler _scene_uniform_handler;
   graphics::storage_handler _point_lights_storage_handler;
+  graphics::storage_handler _per_mesh_data;
   graphics::push_handler _push_handler;
 
   graphics::separate_sampler _images_sampler;
