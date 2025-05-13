@@ -71,7 +71,7 @@ public:
   auto bind_descriptors(command_buffer& command_buffer, const std::uint32_t set) -> void {
     auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
-    const auto current_frame = graphics_module.swapchain().active_image_index();
+    const auto current_frame = graphics_module.current_frame();
 
     auto& descriptor_sets = _descriptor_sets_per_frame[current_frame];
 
@@ -81,7 +81,7 @@ public:
   auto descriptor_set(const std::uint32_t set) const noexcept -> VkDescriptorSet {
     auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
-    const auto current_frame = graphics_module.swapchain().active_image_index();
+    const auto current_frame = graphics_module.current_frame();
 
     auto& descriptor_sets = _descriptor_sets_per_frame[current_frame];
 
@@ -106,7 +106,7 @@ public:
     if (_was_changed) {
       auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
-      const auto current_frame = graphics_module.swapchain().active_image_index();
+      const auto current_frame = graphics_module.current_frame();
 
       auto& descriptor_sets = _descriptor_sets_per_frame[current_frame];
 
@@ -192,7 +192,7 @@ private:
 
   memory::observer_ptr<pipeline> _pipeline;
 
-  std::array<std::vector<std::unique_ptr<graphics::descriptor_set>>, 3u> _descriptor_sets_per_frame{};
+  std::array<std::vector<std::unique_ptr<graphics::descriptor_set>>, graphics::swapchain::max_frames_in_flight> _descriptor_sets_per_frame{};
 
   std::vector<std::map<std::string, descriptor_entry>> _descriptors;
 
