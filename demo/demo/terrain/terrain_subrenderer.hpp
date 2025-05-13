@@ -44,6 +44,11 @@ public:
 
     _pipeline.bind(command_buffer);
 
+    _descriptor_handler.push("uniform_scene", _scene_uniform_handler);
+
+    _descriptor_handler.update_set(0u);
+    _descriptor_handler.bind_descriptors(command_buffer, 0u);
+
     for (const auto node : chunk_query) {
       const auto& chunk = scene.get_component<demo::chunk>(node);
       const auto& mesh = graphics_module.get_asset<sbx::models::mesh>(chunk.mesh_id);
@@ -57,14 +62,14 @@ public:
       _push_handler.push("land_color", chunk.land_color);
       _push_handler.push("mountain_color", chunk.mountain_color);
 
-      _descriptor_handler.push("uniform_scene", _scene_uniform_handler);
       _descriptor_handler.push("push", _push_handler);
 
-      if (!_descriptor_handler.update(_pipeline)) {
-        return;
-      }
+      // if (!_descriptor_handler.update(_pipeline)) {
+      //   return;
+      // }
 
-      _descriptor_handler.bind_descriptors(command_buffer);
+      _descriptor_handler.update_set(1u);
+      _descriptor_handler.bind_descriptors(command_buffer, 1u);
       _push_handler.bind(command_buffer, _pipeline);
 
       mesh.render(command_buffer);

@@ -13,11 +13,13 @@ class descriptor_set {
 
 public:
 
-  explicit descriptor_set(const pipeline& pipeline) noexcept;
+  explicit descriptor_set(const pipeline& pipeline, const std::uint32_t set) noexcept;
 
   ~descriptor_set();
 
   static auto update(const std::vector<VkWriteDescriptorSet>& write_descriptor_sets) -> void;
+
+  auto set() const noexcept -> std::uint32_t;
 
   auto handle() const noexcept -> VkDescriptorSet;
 
@@ -27,6 +29,7 @@ public:
 
 private:
 
+  std::uint32_t _set;
   VkPipelineLayout _pipeline_layout;
   VkPipelineBindPoint _pipeline_bind_point;
   VkDescriptorPool _descriptor_pool;

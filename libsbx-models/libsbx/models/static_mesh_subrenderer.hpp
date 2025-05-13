@@ -281,12 +281,14 @@ private:
   template<bool UsesTransparency, graphics::cull_mode CullMode>
   struct per_pipeline_data {
     models::pipeline<UsesTransparency, CullMode> pipeline;
+    graphics::descriptor_handler descriptor_handler;
     map_type<mesh_key, static_mesh_subrenderer::uniform_data, mesh_key_hash, mesh_key_equal> uniform_data;
     set_type<mesh_key, mesh_key_hash, mesh_key_equal> used_uniforms;
 
     template<typename... Args>
     per_pipeline_data(Args&&... args)
-    : pipeline{std::forward<Args>(args)...} { }
+    : pipeline{std::forward<Args>(args)...},
+      descriptor_handler{pipeline} { }
 
     auto clear() -> void {
       for (auto entry = uniform_data.begin(); entry != uniform_data.end();) {
@@ -348,31 +350,39 @@ private:
 
     per_pipeline_data.pipeline.bind(command_buffer);
 
+    auto& descriptor_handler = per_pipeline_data.descriptor_handler;
+
+    descriptor_handler.push("uniform_scene", _scene_uniform_handler);
+    descriptor_handler.push("buffer_point_lights", _point_lights_storage_handler);
+    // descriptor_handler.push("shadow_map_image", graphics_module.attachment("shadow_map"));
+    descriptor_handler.push("images_sampler", _images_sampler);
+    descriptor_handler.push("images", _images);
+
+    descriptor_handler.update_set(0);
+
+    descriptor_handler.bind_descriptors(command_buffer, 0u);
+
     const auto& static_meshes = UsesTransparency ? _transparent_static_meshes : _opaque_static_meshes;
 
     for (const auto& [key, data] : static_meshes) {
 
       auto& uniform_data = per_pipeline_data.uniform_data[key];
 
-      auto& descriptor_handler = uniform_data.descriptor_handler;
       auto& storage_handler = uniform_data.storage_handler;
 
       storage_handler.push(std::span<const per_mesh_data>{data});
+      storage_handler.update(per_pipeline_data.pipeline.descriptor_block("per_mesh_data_buffer"));
 
       auto& mesh = graphics_module.get_asset<models::mesh>(key.mesh_id);
 
-      descriptor_handler.push("uniform_scene", _scene_uniform_handler);
-      descriptor_handler.push("buffer_mesh_data", storage_handler);
-      descriptor_handler.push("buffer_point_lights", _point_lights_storage_handler);
-      // descriptor_handler.push("shadow_map_image", graphics_module.attachment("shadow_map"));
-      descriptor_handler.push("images_sampler", _images_sampler);
-      descriptor_handler.push("images", _images);
+      _push_handler.push("per_mesh_data_buffer", storage_handler.buffer_address());
 
-      if (!descriptor_handler.update(per_pipeline_data.pipeline)) {
-        continue;
-      }
+      descriptor_handler.push("data", _push_handler);
 
-      descriptor_handler.bind_descriptors(command_buffer);
+      // descriptor_handler.update_set(1u);
+      // descriptor_handler.bind_descriptors(command_buffer, 1u);
+
+      _push_handler.bind(command_buffer, per_pipeline_data.pipeline);
 
       mesh.render_submesh(command_buffer, key.submesh_index, static_cast<std::uint32_t>(data.size()));
     }
@@ -389,6 +399,7 @@ private:
 
   graphics::uniform_handler _scene_uniform_handler;
   graphics::storage_handler _point_lights_storage_handler;
+  graphics::push_handler _push_handler;
 
   graphics::separate_sampler _images_sampler;
   graphics::separate_image2d_array _images;

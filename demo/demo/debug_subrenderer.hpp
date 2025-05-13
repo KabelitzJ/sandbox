@@ -94,11 +94,12 @@ public:
     _descriptor_handler.push("buffer_vertex_data", _storage_handler);
     _descriptor_handler.push("push", _push_handler);
 
-    if (!_descriptor_handler.update(_pipeline)) {
-      return;
-    }
+    // if (!_descriptor_handler.update(_pipeline)) {
+    //   return;
+    // }
 
-    _descriptor_handler.bind_descriptors(command_buffer);
+    _descriptor_handler.update_set(0u);
+    _descriptor_handler.bind_descriptors(command_buffer, 0u);
     _push_handler.bind(command_buffer, _pipeline);
 
     command_buffer.draw(_lines.size(), 1, 0, 0);

@@ -1,4 +1,6 @@
-#version 450 core 
+#version 450 core
+
+#extension GL_EXT_buffer_reference : enable
 
 #include <libsbx/common/wind.glsl>
 
@@ -22,7 +24,7 @@ layout(location = 4) out vec2 out_material;
 layout(location = 5) out flat uint out_albedo_image_index;
 layout(location = 6) out flat uint out_normal_image_index;
 
-layout(set = 1, binding = 1) uniform uniform_scene {
+layout(set = 0, binding = 0) uniform uniform_scene {
   mat4 view;
   mat4 projection;
   vec3 camera_position;
@@ -33,19 +35,28 @@ layout(set = 1, binding = 1) uniform uniform_scene {
   float time;
 } scene;
 
-layout(binding = 1, std430) readonly buffer buffer_mesh_data {
-  per_mesh_data data[];
-} mesh_data;
+// layout(set = 1, binding = 0, std430) readonly buffer buffer_mesh_data {
+//   per_mesh_data data[];
+// } mesh_data;
+
+layout(std430, buffer_reference, buffer_reference_align = 8) readonly buffer per_mesh_data_buffer {
+	per_mesh_data data[];
+};
+
+layout(push_constant) uniform push_data {
+	per_mesh_data_buffer per_mesh_data_buffer;
+} data;
 
 const float MAX_ANCHOR_HEIGHT = 2.0;
 
 void main() {
-  const per_mesh_data data = mesh_data.data[gl_InstanceIndex];
+  // const per_mesh_data data = mesh_data.data[gl_InstanceIndex];
+  const per_mesh_data mesh_data = data.per_mesh_data_buffer.data[gl_InstanceIndex];
 
-  vec3 world_position = vec3(data.model * vec4(in_position, 1.0));
+  vec3 world_position = vec3(mesh_data.model * vec4(in_position, 1.0));
 
-  float flexibility = data.material.z;
-  float anchor_height = data.material.w;
+  float flexibility = mesh_data.material.z;
+  float anchor_height = mesh_data.material.w;
 
   if (flexibility > 0.0) {
     out_position = wind_effect(world_position, in_position, scene.time, flexibility, anchor_height, MAX_ANCHOR_HEIGHT);
@@ -53,14 +64,14 @@ void main() {
     out_position = world_position;
   }
 
-  out_normal = normalize(vec3(data.normal * vec4(in_normal, 1.0)));
+  out_normal = normalize(vec3(mesh_data.normal * vec4(in_normal, 1.0)));
   out_uv = in_uv;
 
-  out_color = data.tint;
-  out_material = data.material.xy;
+  out_color = mesh_data.tint;
+  out_material = mesh_data.material.xy;
 
-  out_albedo_image_index = uint(data.image_indices.x);
-  out_normal_image_index = uint(data.image_indices.y);
+  out_albedo_image_index = uint(mesh_data.image_indices.x);
+  out_normal_image_index = uint(mesh_data.image_indices.y);
 
   gl_Position = scene.projection * scene.view * vec4(out_position, 1.0);
 }

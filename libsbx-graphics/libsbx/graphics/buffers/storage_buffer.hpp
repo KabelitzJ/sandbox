@@ -26,6 +26,11 @@ public:
 
   auto update(memory::observer_ptr<const void> data, VkDeviceSize size) -> void;
 
+  template<typename Type>
+  auto update(std::span<const Type> buffer) -> void {
+    update(buffer.data(), buffer.size());
+  }
+
   auto write_descriptor_set(std::uint32_t binding, VkDescriptorType descriptor_type) const noexcept -> graphics::write_descriptor_set override;
 
   static auto create_descriptor_set_layout_binding(std::uint32_t binding, VkDescriptorType descriptor_type, VkShaderStageFlags stage_flags) noexcept -> VkDescriptorSetLayoutBinding;

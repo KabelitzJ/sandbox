@@ -104,11 +104,12 @@ public:
 
     _descriptor_handler.push("sTexture", graphics_module.attachment("scene"));
 
-    if (!_descriptor_handler.update(_pipeline)) {
-      return;
-    }
+    // if (!_descriptor_handler.update(_pipeline)) {
+    //   return;
+    // }
 
-    _descriptor_handler.bind_descriptors(command_buffer);
+    _descriptor_handler.update_set(0u);
+    _descriptor_handler.bind_descriptors(command_buffer, 0u);
 
     ImGui_ImplVulkan_NewFrame();
     ImGui_ImplGlfw_NewFrame();
@@ -519,7 +520,7 @@ private:
       auto current_frame = graphics_module.current_frame();
       auto available_size = ImGui::GetContentRegionAvail();
 
-      ImGui::Image(reinterpret_cast<ImTextureID>(_descriptor_handler.descriptor_set()), available_size);
+      ImGui::Image(reinterpret_cast<ImTextureID>(_descriptor_handler.descriptor_set(0u)), available_size);
 
       if (ImGui::IsItemHovered()) {
         ImGuiIO& io = ImGui::GetIO();

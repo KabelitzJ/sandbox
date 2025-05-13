@@ -44,11 +44,11 @@ shader::~shader() {
   vkDestroyShaderModule(logical_device, _handle, nullptr);
 }
 
-auto shader::handle() const noexcept -> const VkShaderModule& {
+auto shader::handle() const noexcept -> VkShaderModule {
   return _handle;
 }
 
-shader::operator const VkShaderModule&() const noexcept {
+shader::operator VkShaderModule() const noexcept {
   return _handle;
 }
 

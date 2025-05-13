@@ -130,7 +130,9 @@ class uniform_block {
       push
     }; // enum class type
 
-    explicit uniform_block(type type, std::uint32_t set, std::uint32_t binding, std::uint32_t size, VkShaderStageFlags stage_flags, std::map<std::string, uniform> uniforms = {})
+    using uniform_map = std::map<std::string, uniform>;
+
+    explicit uniform_block(type type, std::uint32_t set, std::uint32_t binding, std::uint32_t size, VkShaderStageFlags stage_flags, uniform_map uniforms = {})
     : _type{type},
       _set{set},
       _binding{binding},
@@ -162,7 +164,7 @@ class uniform_block {
       _stage_flags |= stage;
     }
 
-    auto uniforms() const noexcept -> const std::map<std::string, uniform>& {
+    auto uniforms() const noexcept -> const uniform_map& {
       return _uniforms;
     }
 
@@ -185,7 +187,7 @@ class uniform_block {
     std::uint32_t _binding{};
     std::uint32_t _size{};
     VkShaderStageFlags _stage_flags{};
-    std::map<std::string, uniform> _uniforms{};
+    uniform_map _uniforms{};
 
   }; // class uniform_block
 
@@ -237,9 +239,9 @@ class uniform_block {
 
   ~shader();
 
-  auto handle() const noexcept -> const VkShaderModule&;
+  auto handle() const noexcept -> VkShaderModule;
 
-  operator const VkShaderModule&() const noexcept;
+  operator VkShaderModule() const noexcept;
 
   auto stage() const noexcept -> VkShaderStageFlagBits;
 

@@ -103,16 +103,16 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
     }
   }
 
-  auto descriptor_set_layout_bindings = std::vector<VkDescriptorSetLayoutBinding>{};
+  auto descriptor_set_layout_bindings = std::map<std::uint32_t, std::vector<VkDescriptorSetLayoutBinding>>{};
 
   for (const auto& [name, uniform_block] : _uniform_blocks) {
     switch (uniform_block.buffer_type()) {
       case shader::uniform_block::type::uniform: {
-        descriptor_set_layout_bindings.push_back(uniform_buffer::create_descriptor_set_layout_binding(uniform_block.binding(), VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, uniform_block.stage_flags()));
+        descriptor_set_layout_bindings[uniform_block.set()].push_back(uniform_buffer::create_descriptor_set_layout_binding(uniform_block.binding(), VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, uniform_block.stage_flags()));
         break;
       }
       case shader::uniform_block::type::storage: {
-        descriptor_set_layout_bindings.push_back(storage_buffer::create_descriptor_set_layout_binding(uniform_block.binding(), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, uniform_block.stage_flags()));
+        descriptor_set_layout_bindings[uniform_block.set()].push_back(storage_buffer::create_descriptor_set_layout_binding(uniform_block.binding(), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, uniform_block.stage_flags()));
         break;
       }
       case shader::uniform_block::type::push: {
@@ -125,39 +125,39 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
       }
     }
 
-    _descriptor_bindings.insert({name, uniform_block.binding()});
+    _descriptor_bindings.emplace(name, descriptor_id{uniform_block.set(), uniform_block.binding()});
     _descriptor_sizes.insert({name, uniform_block.size()});
   }
 
   for (const auto& [name, uniform] : _uniforms) {
     switch (uniform.type()) {
       case shader::data_type::sampler2d: {
-        descriptor_set_layout_bindings.push_back(image2d::create_descriptor_set_layout_binding(uniform.binding(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, uniform.stage_flags()));
+        descriptor_set_layout_bindings[uniform.set()].push_back(image2d::create_descriptor_set_layout_binding(uniform.binding(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, uniform.stage_flags()));
         break;
       }
       case shader::data_type::sampler2d_array: {
-        descriptor_set_layout_bindings.push_back(image2d_array::create_descriptor_set_layout_binding(uniform.binding(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, uniform.stage_flags()));
+        descriptor_set_layout_bindings[uniform.set()].push_back(image2d_array::create_descriptor_set_layout_binding(uniform.binding(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, uniform.stage_flags()));
         break;
       }
       case shader::data_type::sampler_cube: {
-        descriptor_set_layout_bindings.push_back(cube_image::create_descriptor_set_layout_binding(uniform.binding(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, uniform.stage_flags()));
+        descriptor_set_layout_bindings[uniform.set()].push_back(cube_image::create_descriptor_set_layout_binding(uniform.binding(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, uniform.stage_flags()));
         break;
       }
       case shader::data_type::separate_sampler: {
-        descriptor_set_layout_bindings.push_back(separate_sampler::create_descriptor_set_layout_binding(uniform.binding(), VK_DESCRIPTOR_TYPE_SAMPLER, uniform.stage_flags()));
+        descriptor_set_layout_bindings[uniform.set()].push_back(separate_sampler::create_descriptor_set_layout_binding(uniform.binding(), VK_DESCRIPTOR_TYPE_SAMPLER, uniform.stage_flags()));
         break;
       }
       case shader::data_type::separate_image2d_array: {
-        descriptor_set_layout_bindings.push_back(separate_image2d_array::create_descriptor_set_layout_binding(uniform.binding(), VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, uniform.stage_flags()));
+        descriptor_set_layout_bindings[uniform.set()].push_back(separate_image2d_array::create_descriptor_set_layout_binding(uniform.binding(), VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, uniform.stage_flags()));
         _has_variable_descriptors = true;
         break;
       }
       case shader::data_type::storage_image: {
-        descriptor_set_layout_bindings.push_back(image::create_descriptor_set_layout_binding(uniform.binding(), VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, uniform.stage_flags()));
+        descriptor_set_layout_bindings[uniform.set()].push_back(image::create_descriptor_set_layout_binding(uniform.binding(), VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, uniform.stage_flags()));
         break;
       }
       case shader::data_type::subpass_input: {
-        descriptor_set_layout_bindings.push_back(image::create_descriptor_set_layout_binding(uniform.binding(), VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, uniform.stage_flags()));
+        descriptor_set_layout_bindings[uniform.set()].push_back(image::create_descriptor_set_layout_binding(uniform.binding(), VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, uniform.stage_flags()));
         break;
       }
       default: {
@@ -166,20 +166,25 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
       }
     }
 
-    _descriptor_bindings.insert({name, uniform.binding()});
+    _descriptor_bindings.emplace(name, descriptor_id{uniform.set(), uniform.binding()});
     _descriptor_sizes.insert({name, uniform.size()});
   }
 
-  std::ranges::sort(descriptor_set_layout_bindings, [](const auto& lhs, const auto& rhs) {
-    return lhs.binding < rhs.binding;
-  });
-
-  for (const auto& descriptor : descriptor_set_layout_bindings) {
-    _descriptor_type_at_binding.insert({descriptor.binding, descriptor.descriptorType});
+  for (auto& [set, descriptors] : descriptor_set_layout_bindings) {
+    std::ranges::sort(descriptors, [](const auto& lhs, const auto& rhs) {
+      return lhs.binding < rhs.binding;
+    });
   }
 
-  for (const auto& descriptor : descriptor_set_layout_bindings) {
-    _descriptor_count_at_binding.insert({descriptor.binding, descriptor.descriptorCount});
+  const auto biggest_set = descriptor_set_layout_bindings.rbegin()->first;
+
+  _descriptor_count_in_set.resize(biggest_set + 1u);
+  
+  for (auto& [set, descriptors] : descriptor_set_layout_bindings) {
+    for (const auto& descriptor : descriptors) {
+      _descriptor_type_at_binding.emplace(descriptor_id{set, descriptor.binding}, descriptor.descriptorType);
+      _descriptor_count_in_set[set].push_back(descriptor.descriptorCount);
+    }
   }
 
   auto viewport_state = VkPipelineViewportStateCreateInfo{};
@@ -303,28 +308,33 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
   input_assembly_state.topology = to_vk_enum<VkPrimitiveTopology>(definition.primitive_topology);
   input_assembly_state.primitiveRestartEnable = false;
 
-  auto binding_flags = std::vector<VkDescriptorBindingFlags>{};
+  _descriptor_set_layouts.resize(biggest_set + 1u, VK_NULL_HANDLE);
+  
+  for (const auto& [set, descriptors] : descriptor_set_layout_bindings) {
+    auto binding_flags = std::vector<VkDescriptorBindingFlags>{};
 
-  for (const auto& descriptor_set_layout_binding : descriptor_set_layout_bindings) {
-    if (descriptor_set_layout_binding.descriptorCount > 1u) {
-      binding_flags.push_back(VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT | VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT);
-    } else {
-      binding_flags.push_back(0u);
+    for (const auto& descriptor : descriptors) {
+      if (descriptor.descriptorCount > 1u) {
+        binding_flags.push_back(VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT | VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT);
+      } else {
+        binding_flags.push_back(0u);
+      }
     }
+
+    auto descriptor_set_layout_binding_flags_create_info = VkDescriptorSetLayoutBindingFlagsCreateInfo{};
+    descriptor_set_layout_binding_flags_create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
+    descriptor_set_layout_binding_flags_create_info.bindingCount = static_cast<std::uint32_t>(binding_flags.size());
+    descriptor_set_layout_binding_flags_create_info.pBindingFlags = binding_flags.data();
+  
+    auto descriptor_set_layout_create_info = VkDescriptorSetLayoutCreateInfo{};
+    descriptor_set_layout_create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    descriptor_set_layout_create_info.pNext = &descriptor_set_layout_binding_flags_create_info;
+    descriptor_set_layout_create_info.bindingCount = static_cast<std::uint32_t>(descriptors.size());
+    descriptor_set_layout_create_info.pBindings = descriptors.data();
+  
+    validate(vkCreateDescriptorSetLayout(logical_device, &descriptor_set_layout_create_info, nullptr, &_descriptor_set_layouts[set]));
   }
 
-  auto descriptor_set_layout_binding_flags_create_info = VkDescriptorSetLayoutBindingFlagsCreateInfo{};
-  descriptor_set_layout_binding_flags_create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
-  descriptor_set_layout_binding_flags_create_info.bindingCount = static_cast<std::uint32_t>(binding_flags.size());
-  descriptor_set_layout_binding_flags_create_info.pBindingFlags = binding_flags.data();
-
-  auto descriptor_set_layout_create_info = VkDescriptorSetLayoutCreateInfo{};
-  descriptor_set_layout_create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-  descriptor_set_layout_create_info.pNext = &descriptor_set_layout_binding_flags_create_info;
-  descriptor_set_layout_create_info.bindingCount = static_cast<std::uint32_t>(descriptor_set_layout_bindings.size());
-  descriptor_set_layout_create_info.pBindings = descriptor_set_layout_bindings.data();
-
-  validate(vkCreateDescriptorSetLayout(logical_device, &descriptor_set_layout_create_info, nullptr, &_descriptor_set_layout));
 
   // [NOTE] KAJ 2023-09-13 : Workaround
   auto descriptor_pool_sizes = std::vector<VkDescriptorPoolSize>{
@@ -369,8 +379,8 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
 
   auto pipeline_layout_create_info = VkPipelineLayoutCreateInfo{};
   pipeline_layout_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-  pipeline_layout_create_info.setLayoutCount = 1;
-  pipeline_layout_create_info.pSetLayouts = &_descriptor_set_layout;
+  pipeline_layout_create_info.setLayoutCount = static_cast<std::uint32_t>(_descriptor_set_layouts.size());
+  pipeline_layout_create_info.pSetLayouts = _descriptor_set_layouts.data();
   pipeline_layout_create_info.pushConstantRangeCount = static_cast<std::uint32_t>(push_constant_ranges.size());
   pipeline_layout_create_info.pPushConstantRanges = push_constant_ranges.data();
 
@@ -410,7 +420,10 @@ graphics_pipeline<Vertex>::~graphics_pipeline() {
   logical_device.wait_idle();
 
   vkDestroyDescriptorPool(logical_device, _descriptor_pool, nullptr);
-  vkDestroyDescriptorSetLayout(logical_device, _descriptor_set_layout, nullptr);
+
+  for (const auto& layout : _descriptor_set_layouts) {
+    vkDestroyDescriptorSetLayout(logical_device, layout, nullptr);
+  }
 
   vkDestroyPipelineLayout(logical_device, _layout, nullptr);
 
@@ -418,22 +431,22 @@ graphics_pipeline<Vertex>::~graphics_pipeline() {
 }
 
 template<vertex Vertex>
-auto graphics_pipeline<Vertex>::handle() const noexcept -> const VkPipeline& {
+auto graphics_pipeline<Vertex>::handle() const noexcept -> VkPipeline {
   return _handle;
 }
 
 template<vertex Vertex>
-auto graphics_pipeline<Vertex>::descriptor_set_layout() const noexcept -> const VkDescriptorSetLayout& {
-  return _descriptor_set_layout;
+auto graphics_pipeline<Vertex>::descriptor_set_layouts() const noexcept -> const std::vector<VkDescriptorSetLayout>& {
+  return _descriptor_set_layouts;
 }
 
 template<vertex Vertex>
-auto graphics_pipeline<Vertex>::descriptor_pool() const noexcept -> const VkDescriptorPool& {
+auto graphics_pipeline<Vertex>::descriptor_pool() const noexcept -> VkDescriptorPool {
   return _descriptor_pool;
 }
 
 template<vertex Vertex>
-auto graphics_pipeline<Vertex>::layout() const noexcept -> const VkPipelineLayout& {
+auto graphics_pipeline<Vertex>::layout() const noexcept -> VkPipelineLayout {
   return _layout;
 }
 

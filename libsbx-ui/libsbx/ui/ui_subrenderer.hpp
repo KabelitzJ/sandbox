@@ -30,7 +30,8 @@ public:
 
   ui_subrenderer(const std::filesystem::path& path, const graphics::pipeline::stage& stage)
   : graphics::subrenderer{stage},
-    _pipeline{path, stage} {
+    _pipeline{path, stage},
+    _descriptor_handler{_pipeline} {
     auto vertices = std::vector<vertex2d>{
       vertex2d{math::vector2f{1.0f, 1.0f}, math::vector2f{1.0f, 0.0f}},
       vertex2d{math::vector2f{0.0f, 1.0f}, math::vector2f{0.0f, 0.0f}},
@@ -72,6 +73,11 @@ public:
 
     _used_uniforms.clear();
 
+    _descriptor_handler.push("uniform_scene", _scene_uniform_handler);
+
+    _descriptor_handler.update_set(0u);
+    _descriptor_handler.bind_descriptors(command_buffer, 0u);
+
     for (const auto& widget : widgets) {
       _used_uniforms.insert(widget->id());
       _render_widget(*widget, command_buffer);
@@ -90,18 +96,21 @@ private:
     auto& uniform_data = _uniform_data[id];
 
     auto& uniform_handler = uniform_data.uniform_handler;
-    auto& descriptor_handler = uniform_data.descriptor_handler;
+    // auto& descriptor_handler = uniform_data.descriptor_handler;
     auto& storage_handler = uniform_data.storage_handler;
 
-    widget.update(descriptor_handler, uniform_handler, storage_handler);
+    widget.update(_descriptor_handler, uniform_handler, storage_handler);
 
-    descriptor_handler.push("uniform_scene", _scene_uniform_handler);
+    _descriptor_handler.update_set(1u);
+    _descriptor_handler.bind_descriptors(command_buffer, 1u);
 
-    if (!descriptor_handler.update(_pipeline)) {
-      return;
-    }
+    // descriptor_handler.push("uniform_scene", _scene_uniform_handler);
 
-    descriptor_handler.bind_descriptors(command_buffer);
+    // if (!descriptor_handler.update(_pipeline)) {
+    //   return;
+    // }
+
+    // descriptor_handler.bind_descriptors(command_buffer);
 
     auto& mesh = graphics_module.get_asset<ui::mesh>(_mesh_id);
 
@@ -115,6 +124,7 @@ private:
   }; // struct uniform_data
 
   pipeline _pipeline;
+  graphics::descriptor_handler _descriptor_handler;
 
   math::uuid _mesh_id;
 

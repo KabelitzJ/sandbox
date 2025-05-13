@@ -74,16 +74,16 @@ compute_pipeline::compute_pipeline(const std::filesystem::path& path)
     }
   }
 
-  auto descriptor_set_layout_bindings = std::vector<VkDescriptorSetLayoutBinding>{};
+  auto descriptor_set_layout_bindings = std::map<std::uint32_t, std::vector<VkDescriptorSetLayoutBinding>>{};
 
   for (const auto& [name, uniform_block] : _uniform_blocks) {
     switch (uniform_block.buffer_type()) {
       case shader::uniform_block::type::uniform: {
-        descriptor_set_layout_bindings.push_back(uniform_buffer::create_descriptor_set_layout_binding(uniform_block.binding(), VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, uniform_block.stage_flags()));
+        descriptor_set_layout_bindings[uniform_block.set()].push_back(uniform_buffer::create_descriptor_set_layout_binding(uniform_block.binding(), VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, uniform_block.stage_flags()));
         break;
       }
       case shader::uniform_block::type::storage: {
-        descriptor_set_layout_bindings.push_back(storage_buffer::create_descriptor_set_layout_binding(uniform_block.binding(), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, uniform_block.stage_flags()));
+        descriptor_set_layout_bindings[uniform_block.set()].push_back(storage_buffer::create_descriptor_set_layout_binding(uniform_block.binding(), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, uniform_block.stage_flags()));
         break;
       }
       case shader::uniform_block::type::push: {
@@ -96,14 +96,14 @@ compute_pipeline::compute_pipeline(const std::filesystem::path& path)
       }
     }
 
-    _descriptor_bindings.insert({name, uniform_block.binding()});
+    _descriptor_bindings.emplace(name, descriptor_id{uniform_block.set(), uniform_block.binding()});
     _descriptor_sizes.insert({name, uniform_block.size()});
   }
 
   for (const auto& [name, uniform] : _uniforms) {
     switch (uniform.type()) {
       case shader::data_type::storage_image: {
-        descriptor_set_layout_bindings.push_back(image::create_descriptor_set_layout_binding(uniform.binding(), VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, uniform.stage_flags()));
+        descriptor_set_layout_bindings[uniform.set()].push_back(image::create_descriptor_set_layout_binding(uniform.binding(), VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, uniform.stage_flags()));
         break;
       }
       default: {
@@ -113,24 +113,33 @@ compute_pipeline::compute_pipeline(const std::filesystem::path& path)
     }
   }
 
-  std::ranges::sort(descriptor_set_layout_bindings, [](const auto& lhs, const auto& rhs) {
-    return lhs.binding < rhs.binding;
-  });
-
-  for (const auto& descriptor : descriptor_set_layout_bindings) {
-    _descriptor_type_at_binding.insert({descriptor.binding, descriptor.descriptorType});
+  for (auto& [set, descriptors] : descriptor_set_layout_bindings) {
+    std::ranges::sort(descriptors, [](const auto& lhs, const auto& rhs) {
+      return lhs.binding < rhs.binding;
+    });
   }
 
-  for (const auto& descriptor : descriptor_set_layout_bindings) {
-    _descriptor_count_at_binding.insert({descriptor.binding, descriptor.descriptorCount});
+  const auto biggest_set = descriptor_set_layout_bindings.rbegin()->first;
+
+  _descriptor_count_in_set.resize(biggest_set + 1u);
+  
+  for (auto& [set, descriptors] : descriptor_set_layout_bindings) {
+    for (const auto& descriptor : descriptors) {
+      _descriptor_type_at_binding.emplace(descriptor_id{set, descriptor.binding}, descriptor.descriptorType);
+      _descriptor_count_in_set[set].push_back(descriptor.descriptorCount);
+    }
   }
 
-  auto descriptor_set_layout_create_info = VkDescriptorSetLayoutCreateInfo{};
-  descriptor_set_layout_create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-  descriptor_set_layout_create_info.bindingCount = static_cast<std::uint32_t>(descriptor_set_layout_bindings.size());
-  descriptor_set_layout_create_info.pBindings = descriptor_set_layout_bindings.data();
+  _descriptor_set_layouts.resize(biggest_set, VK_NULL_HANDLE);
 
-  validate(vkCreateDescriptorSetLayout(logical_device, &descriptor_set_layout_create_info, nullptr, &_descriptor_set_layout));
+  for (const auto& [set, descriptors] : descriptor_set_layout_bindings) {
+    auto descriptor_set_layout_create_info = VkDescriptorSetLayoutCreateInfo{};
+    descriptor_set_layout_create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    descriptor_set_layout_create_info.bindingCount = static_cast<std::uint32_t>(descriptors.size());
+    descriptor_set_layout_create_info.pBindings = descriptors.data();
+  
+    validate(vkCreateDescriptorSetLayout(logical_device, &descriptor_set_layout_create_info, nullptr, &_descriptor_set_layouts[set]));
+  }
 
   auto descriptor_pool_sizes = std::vector<VkDescriptorPoolSize>{
     VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 2048},
@@ -168,8 +177,8 @@ compute_pipeline::compute_pipeline(const std::filesystem::path& path)
 
   auto pipeline_layout_create_info = VkPipelineLayoutCreateInfo{};
   pipeline_layout_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-  pipeline_layout_create_info.setLayoutCount = 1;
-  pipeline_layout_create_info.pSetLayouts = &_descriptor_set_layout;
+  pipeline_layout_create_info.setLayoutCount = static_cast<std::uint32_t>(_descriptor_set_layouts.size());
+  pipeline_layout_create_info.pSetLayouts = _descriptor_set_layouts.data();
   pipeline_layout_create_info.pushConstantRangeCount = static_cast<std::uint32_t>(push_constant_ranges.size());
   pipeline_layout_create_info.pPushConstantRanges = push_constant_ranges.data();
 
@@ -197,7 +206,10 @@ compute_pipeline::~compute_pipeline() {
   logical_device.wait_idle();
 
   vkDestroyDescriptorPool(logical_device, _descriptor_pool, nullptr);
-  vkDestroyDescriptorSetLayout(logical_device, _descriptor_set_layout, nullptr);
+  
+  for (const auto& layout : _descriptor_set_layouts) {
+    vkDestroyDescriptorSetLayout(logical_device, layout, nullptr);
+  }
 
   vkDestroyPipelineLayout(logical_device, _layout, nullptr);
 

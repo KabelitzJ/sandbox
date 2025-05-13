@@ -6,6 +6,8 @@
 #include <vector>
 #include <optional>
 
+#include <range/v3/all.hpp>
+
 #include <libsbx/memory/observer_ptr.hpp>
 
 #include <libsbx/graphics/buffers/uniform_handler.hpp>
@@ -26,17 +28,16 @@ public:
 
   descriptor_handler() = default;
 
-  explicit descriptor_handler(const pipeline& pipeline)
-  : _pipeline{&pipeline} {
-    _descriptor_sets.resize(graphics::swapchain::max_frames_in_flight);
-
-    for (auto& descriptor_set : _descriptor_sets) {
-      descriptor_set = std::make_unique<graphics::descriptor_set>(pipeline);
-    }
+  explicit descriptor_handler(pipeline& pipeline)
+  : _pipeline{&pipeline},
+    _was_changed{true} {
+    _recreate_descriptor_sets();
   }
 
   ~descriptor_handler() {
-    _descriptor_sets.clear();
+    for (auto& descriptor_sets : _descriptor_sets_per_frame) {
+      descriptor_sets.clear();
+    }
   }
 
   template<typename Descriptor>
@@ -67,56 +68,66 @@ public:
     }
   }
 
-  auto bind_descriptors(command_buffer& command_buffer) -> void {
+  auto bind_descriptors(command_buffer& command_buffer, const std::uint32_t set) -> void {
     auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
-    const auto current_frame = graphics_module.current_frame();
+    const auto current_frame = graphics_module.swapchain().active_image_index();
 
-    _descriptor_sets[current_frame]->bind(command_buffer);
+    auto& descriptor_sets = _descriptor_sets_per_frame[current_frame];
+
+    descriptor_sets[set]->bind(command_buffer);
   }
 
-  auto descriptor_set() const noexcept -> VkDescriptorSet {
+  auto descriptor_set(const std::uint32_t set) const noexcept -> VkDescriptorSet {
     auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
-    const auto current_frame = graphics_module.current_frame();
+    const auto current_frame = graphics_module.swapchain().active_image_index();
 
-    return *_descriptor_sets[current_frame];
+    auto& descriptor_sets = _descriptor_sets_per_frame[current_frame];
+
+    return *descriptor_sets[set];
   }
 
-  auto update(const pipeline& pipeline) -> bool {
+  auto update_pipeline(pipeline& pipeline) -> bool {
     if (_pipeline.get() != &pipeline) {
       _pipeline = &pipeline;
 
-      _descriptors.clear();
+      _recreate_descriptor_sets();
 
-      _descriptor_sets.resize(graphics::swapchain::max_frames_in_flight);
-
-      for (auto& descriptor_set : _descriptor_sets) {
-        descriptor_set = std::make_unique<graphics::descriptor_set>(pipeline);
-      }
+      _was_changed = false;
 
       return false;
     }
 
-    auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+    return true;
+  }
 
-    const auto current_frame = graphics_module.current_frame();
+  auto update_set(const std::uint32_t set) -> bool {
+    if (_was_changed) {
+      auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
-    auto& descriptor_set = _descriptor_sets[current_frame];
+      const auto current_frame = graphics_module.swapchain().active_image_index();
 
-    auto write_descriptor_sets = std::vector<VkWriteDescriptorSet>{};
-    write_descriptor_sets.reserve(_descriptors.size());
+      auto& descriptor_sets = _descriptor_sets_per_frame[current_frame];
 
-    for (const auto& [name, descriptor] : _descriptors) {
-      auto write_descriptor_set = descriptor.write_descriptor_set.handle();
-      write_descriptor_set.dstSet = *descriptor_set;
+      auto& descriptor_set = descriptor_sets[set];
 
-      write_descriptor_sets.push_back(write_descriptor_set);
+      auto write_descriptor_sets = std::vector<VkWriteDescriptorSet>{};
+      write_descriptor_sets.reserve(_descriptors[set].size());
+
+      for (const auto& [name, descriptor] : _descriptors[set]) {
+        auto write_descriptor_set = descriptor.write_descriptor_set.handle();
+        write_descriptor_set.dstSet = *descriptor_set;
+
+        write_descriptor_sets.push_back(write_descriptor_set);
+      }
+
+      descriptor_set->update(write_descriptor_sets);
+
+      _was_changed = false;
     }
 
-    descriptor_set->update(write_descriptor_sets);
-
-    _descriptors.clear();
+    // _descriptors[set].clear();
 
     return true;
   }
@@ -132,28 +143,60 @@ private:
   template<typename Descriptor>
   requires (std::is_base_of_v<descriptor, Descriptor>)
   auto _push(const std::string& name, const Descriptor& descriptor) -> void {
-    auto binding = _pipeline->find_descriptor_binding(name);
+    auto descriptor_id = _pipeline->find_descriptor_binding(name);
 
-    if (!binding) {
+    if (!descriptor_id) {
       throw std::runtime_error(fmt::format("Failed to find descriptor binding for descriptor '{}'", name));
     }
 
-    auto descriptor_type = _pipeline->find_descriptor_type_at_binding(*binding);
+    auto entry = _descriptors[descriptor_id->set].find(name);
+
+    if (entry != _descriptors[descriptor_id->set].end()) {
+      if (entry->second.descriptor.get() == std::addressof(descriptor)) {
+        return;
+      }
+
+      _descriptors[descriptor_id->set].erase(entry);
+    }
+
+    auto descriptor_type = _pipeline->find_descriptor_type_at_binding(*descriptor_id);
 
     if (!descriptor_type) {
       throw std::runtime_error(fmt::format("Failed to find descriptor type for descriptor '{}'", name));
     }
 
-    auto write_descriptor_set = descriptor.write_descriptor_set(*binding, *descriptor_type);
+    auto write_descriptor_set = descriptor.write_descriptor_set(descriptor_id->binding, *descriptor_type);
 
-    _descriptors.insert({name, descriptor_entry{std::addressof(descriptor), std::move(write_descriptor_set), *binding}});
+    _descriptors[descriptor_id->set].emplace(name, descriptor_entry{std::addressof(descriptor), std::move(write_descriptor_set), descriptor_id->binding});
+
+    _was_changed = true;
   }
 
-  memory::observer_ptr<const pipeline> _pipeline;
+  auto _recreate_descriptor_sets() -> void {
+    const auto& descriptor_set_layouts = _pipeline->descriptor_set_layouts();
 
-  std::vector<std::unique_ptr<graphics::descriptor_set>> _descriptor_sets{};
+    _descriptors.clear();
+    _descriptors.resize(descriptor_set_layouts.size());
 
-  std::map<std::string, descriptor_entry> _descriptors{};
+    for (auto& descriptor_sets : _descriptor_sets_per_frame) {
+
+      for (auto&& [id, set] : ranges::views::enumerate(descriptor_set_layouts)) {
+        if (set == VK_NULL_HANDLE) {
+          descriptor_sets.push_back(nullptr);
+        } else {
+          descriptor_sets.push_back(std::make_unique<graphics::descriptor_set>(*_pipeline, id));
+        }
+      }
+    }
+  }
+
+  memory::observer_ptr<pipeline> _pipeline;
+
+  std::array<std::vector<std::unique_ptr<graphics::descriptor_set>>, 3u> _descriptor_sets_per_frame{};
+
+  std::vector<std::map<std::string, descriptor_entry>> _descriptors;
+
+  bool _was_changed;
 
 }; // class descriptor_handler
 

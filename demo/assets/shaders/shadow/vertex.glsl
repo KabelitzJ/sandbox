@@ -16,12 +16,12 @@ layout(location = 2) in vec2 in_uv;
 layout(location = 1) out vec2 out_uv;
 layout(location = 2) out flat uint out_albedo_image_index;
 
-layout(binding = 0) uniform uniform_scene {
+layout(set = 0, binding = 0) uniform uniform_scene {
   mat4 light_space;
   float time;
 } scene;
 
-layout(binding = 1, std430) readonly buffer buffer_mesh_data {
+layout(set = 1, binding = 0, std430) readonly buffer buffer_mesh_data {
   per_mesh_data data[];
 } mesh_data;
 

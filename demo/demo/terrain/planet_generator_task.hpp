@@ -15,6 +15,7 @@ public:
 
   planet_generator_task(const std::filesystem::path& path)
   : _pipeline{path},
+    _descriptor_handler{_pipeline},
     _output_vertex_storage_handler{VK_BUFFER_USAGE_VERTEX_BUFFER_BIT},
     _output_index_storage_handler{VK_BUFFER_USAGE_INDEX_BUFFER_BIT} { }
 
@@ -30,11 +31,12 @@ public:
     _descriptor_handler.push("buffer_out_vertices", _output_vertex_storage_handler);
     _descriptor_handler.push("buffer_out_indices", _output_index_storage_handler);
 
-    if (!_descriptor_handler.update(_pipeline)) {
-      return;
-    }
+    // if (!_descriptor_handler.update(_pipeline)) {
+    //   return;
+    // }
 
-    _descriptor_handler.bind_descriptors(command_buffer);
+    _descriptor_handler.update_set(0u);
+    _descriptor_handler.bind_descriptors(command_buffer, 0u);
 
     _pipeline.dispatch(command_buffer, {1u, 1u, 1u});
   }
@@ -50,11 +52,11 @@ public:
 private:
 
   sbx::graphics::compute_pipeline _pipeline;
+  sbx::graphics::descriptor_handler _descriptor_handler;
 
   sbx::graphics::uniform_handler _uniform_handler;
   sbx::graphics::storage_handler _output_vertex_storage_handler;
   sbx::graphics::storage_handler _output_index_storage_handler;
-  sbx::graphics::descriptor_handler _descriptor_handler;
 
 }; // class planet_generator_task
 

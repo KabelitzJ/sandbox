@@ -92,7 +92,8 @@ public:
 
   skybox_subrenderer(const std::filesystem::path& path, const graphics::pipeline::stage& stage)
   : graphics::subrenderer{stage},
-    _pipeline{path, stage} {
+    _pipeline{path, stage},
+    _descriptor_handler{_pipeline} {
     auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
     auto vertices = std::vector<vertex3d>{
@@ -165,11 +166,11 @@ public:
     _descriptor_handler.push("uniform_object", _object_uniform_handler);
     _descriptor_handler.push("skybox", graphics_module.get_asset<graphics::cube_image>(skybox.cube_image));
 
-    if (!_descriptor_handler.update(_pipeline)) {
-      return;
-    }
+    // if (!_descriptor_handler.update(_pipeline)) {
+    //   return;
+    // }
 
-    _descriptor_handler.bind_descriptors(command_buffer);
+    _descriptor_handler.bind_descriptors(command_buffer, 0u);
 
     auto& mesh = graphics_module.get_asset<scenes::mesh>(_skybox_id);
 

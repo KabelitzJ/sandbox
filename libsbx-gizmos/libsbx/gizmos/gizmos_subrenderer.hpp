@@ -55,7 +55,8 @@ public:
   gizmos_subrenderer(const std::filesystem::path& path, const graphics::pipeline::stage& stage, const std::string& depth_image)
   : graphics::subrenderer{stage},
     _depth_image{depth_image},
-    _pipeline{path, stage} { }
+    _pipeline{path, stage},
+    _descriptor_handler{_pipeline} { }
 
   ~gizmos_subrenderer() override = default;
 
@@ -99,28 +100,34 @@ public:
       _submit_mesh(node);
     }
 
+    _pipeline.bind(command_buffer);
+
+    _descriptor_handler.push("uniform_scene", _scene_uniform_handler);
+    _descriptor_handler.push("depth_image", graphics_module.attachment(_depth_image));
+    
+    _descriptor_handler.update_set(0u);
+    _descriptor_handler.bind_descriptors(command_buffer, 0u);
+    
     for (const auto& [key, data] : _static_meshes) {
-      _pipeline.bind(command_buffer);
-
+      
       auto& uniform_data = _uniform_data[key];
-
-      auto& descriptor_handler = uniform_data.descriptor_handler;
+      
+      // auto& descriptor_handler = uniform_data.descriptor_handler;
       auto& storage_handler = uniform_data.storage_handler;
-
+      
       storage_handler.push(std::span<const per_mesh_data>{data});
-
+      
       auto& mesh = graphics_module.get_asset<models::mesh>(key.mesh_id);
+      
+      _descriptor_handler.push("buffer_mesh_data", storage_handler);
+      _descriptor_handler.push("texture_image", graphics_module.get_asset<graphics::image2d>(key.texture_id));
 
-      descriptor_handler.push("uniform_scene", _scene_uniform_handler);
-      descriptor_handler.push("buffer_mesh_data", storage_handler);
-      descriptor_handler.push("depth_image", graphics_module.attachment(_depth_image));
-      descriptor_handler.push("texture_image", graphics_module.get_asset<graphics::image2d>(key.texture_id));
+      // if (!descriptor_handler.update(_pipeline)) {
+      //   continue;
+      // }
 
-      if (!descriptor_handler.update(_pipeline)) {
-        continue;
-      }
-
-      descriptor_handler.bind_descriptors(command_buffer);
+      _descriptor_handler.update_set(1u);
+      _descriptor_handler.bind_descriptors(command_buffer, 1u);
 
       mesh.render_submesh(command_buffer, key.submesh_index, static_cast<std::uint32_t>(data.size()));
     }
@@ -181,6 +188,7 @@ private:
   std::string _depth_image;
 
   pipeline _pipeline;
+  graphics::descriptor_handler _descriptor_handler;
 
   std::unordered_map<mesh_key, uniform_data, mesh_key_hash, mesh_key_equal> _uniform_data;
   std::unordered_set<mesh_key, mesh_key_hash, mesh_key_equal> _used_uniforms;

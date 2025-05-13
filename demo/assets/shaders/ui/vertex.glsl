@@ -12,11 +12,11 @@ layout(location = 1) in vec2 in_uv;
 
 layout(location = 0) out vec2 out_uv;
 
-layout(binding = 0) uniform uniform_scene {
+layout(set = 0, binding = 0) uniform uniform_scene {
   mat4 projection;
 } scene;
 
-layout(binding = 1, std430) readonly buffer buffer_glyphs {
+layout(set = 1, binding = 0, std430) readonly buffer buffer_glyphs {
   glyph data[];
 } glyphs;
 
