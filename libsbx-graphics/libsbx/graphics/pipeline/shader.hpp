@@ -57,14 +57,19 @@ public:
 
   public:
 
-    explicit uniform(std::uint32_t binding, std::uint32_t offset, std::uint32_t size, data_type type, bool is_readonly, bool is_writeonly, VkShaderStageFlags stage_flags)
-    : _binding{binding},
+    explicit uniform(std::uint32_t set, std::uint32_t binding, std::uint32_t offset, std::uint32_t size, data_type type, bool is_readonly, bool is_writeonly, VkShaderStageFlags stage_flags)
+    : _set{set},
+      _binding{binding},
       _offset{offset},
       _size{size},
       _type{type},
       _is_readonly{is_readonly},
       _is_writeonly{is_writeonly},
       _stage_flags{stage_flags} { }
+
+    auto set() const noexcept -> std::uint32_t {
+      return _set;
+    }
 
     auto binding() const noexcept -> std::uint32_t {
       return _binding;
@@ -99,11 +104,12 @@ public:
     }
 
     auto operator==(const uniform& other) const noexcept -> bool {
-      return _binding == other._binding && _offset == other._offset && _size == other._size && _type == other._type && _is_readonly == other._is_readonly && _is_writeonly == other._is_writeonly && _stage_flags == other._stage_flags;
+      return _set == other._set && _binding == other._binding && _offset == other._offset && _size == other._size && _type == other._type && _is_readonly == other._is_readonly && _is_writeonly == other._is_writeonly && _stage_flags == other._stage_flags;
     }
 
   private:
 
+    std::uint32_t _set{};
     std::uint32_t _binding{};
     std::uint32_t _offset{};
     std::uint32_t _size{};
@@ -124,12 +130,17 @@ class uniform_block {
       push
     }; // enum class type
 
-    explicit uniform_block(std::uint32_t binding, std::uint32_t size, VkShaderStageFlags stage_flags, type type, std::map<std::string, uniform> uniforms = {})
-    : _binding{binding},
+    explicit uniform_block(std::uint32_t set, std::uint32_t binding, std::uint32_t size, VkShaderStageFlags stage_flags, type type, std::map<std::string, uniform> uniforms = {})
+    : _set{set},
+      _binding{binding},
       _size{size},
       _stage_flags{stage_flags},
       _type{type},
       _uniforms{std::move(uniforms)} { }
+
+    auto set() const noexcept -> std::uint32_t {
+      return _set;
+    }
 
     auto binding() const noexcept -> std::uint32_t {
       return _binding;
@@ -164,11 +175,12 @@ class uniform_block {
     }
 
     auto operator==(const uniform_block& other) const noexcept -> bool {
-      return _binding == other._binding && _size == other._size && _stage_flags == other._stage_flags && _type == other._type && _uniforms == other._uniforms;
+      return _set == other._set && _binding == other._binding && _size == other._size && _stage_flags == other._stage_flags && _type == other._type && _uniforms == other._uniforms;
     }
 
   private:
 
+    std::uint32_t _set{};
     std::uint32_t _binding{};
     std::uint32_t _size{};
     VkShaderStageFlags _stage_flags{};
@@ -221,22 +233,32 @@ class uniform_block {
     std::string value{};
   }; // struct define
 
+  using handle_type = VkShaderModule;
+
   shader(const std::filesystem::path& path, VkShaderStageFlagBits stage, const std::vector<define>& defines = {});
 
   ~shader();
 
-  auto handle() const noexcept -> const VkShaderModule&;
+  auto handle() const noexcept -> handle_type;
 
-  operator const VkShaderModule&() const noexcept;
+  operator handle_type() const noexcept;
 
   auto stage() const noexcept -> VkShaderStageFlagBits;
 
-  auto uniforms() const noexcept -> const std::map<std::string, uniform>& {
-    return _uniforms;
+  auto set_uniforms() const noexcept -> const std::vector<std::unordered_map<std::string, uniform>>& {
+    return _set_uniforms;
   }
 
-  auto uniform_blocks() const noexcept -> const std::map<std::string, uniform_block>& {
-    return _uniform_blocks;
+  auto set_uniform_blocks() const noexcept -> const std::vector<std::unordered_map<std::string, uniform_block>>& {
+    return _set_uniform_blocks;
+  }
+
+  auto uniforms(std::uint32_t set) const noexcept -> const std::unordered_map<std::string, uniform>& {
+    return _set_uniforms[set];
+  }
+
+  auto uniform_blocks(std::uint32_t set) const noexcept -> const std::unordered_map<std::string, uniform_block>& {
+    return _set_uniform_blocks[set];
   }
 
 private:
@@ -247,11 +269,11 @@ private:
 
   auto _data_type_to_string(data_type type) -> std::string;
 
-  std::map<std::string, uniform> _uniforms{};
-  std::map<std::string, uniform_block> _uniform_blocks{};
+  std::vector<std::unordered_map<std::string, uniform>> _set_uniforms{};
+  std::vector<std::unordered_map<std::string, uniform_block>> _set_uniform_blocks{};
 
   VkShaderStageFlagBits _stage{};
-  VkShaderModule _handle{};
+  handle_type _handle{};
 
 }; // class shader
 

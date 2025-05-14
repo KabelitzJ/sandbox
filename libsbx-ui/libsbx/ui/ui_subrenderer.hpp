@@ -87,11 +87,11 @@ private:
 
     _pipeline.bind(command_buffer);
 
-    auto& uniform_data = _uniform_data[id];
+    auto [entry, inserted] = _uniform_data.try_emplace(id, 1u);
 
-    auto& uniform_handler = uniform_data.uniform_handler;
-    auto& descriptor_handler = uniform_data.descriptor_handler;
-    auto& storage_handler = uniform_data.storage_handler;
+    auto& descriptor_handler = entry->second.descriptor_handler;
+    auto& storage_handler = entry->second.storage_handler;
+    auto& uniform_handler = entry->second.uniform_handler;
 
     widget.update(descriptor_handler, uniform_handler, storage_handler);
 
@@ -112,6 +112,9 @@ private:
     graphics::descriptor_handler descriptor_handler;
     graphics::uniform_handler uniform_handler;
     graphics::storage_handler storage_handler;
+
+    uniform_data(std::uint32_t set)
+    : descriptor_handler{set} { }
   }; // struct uniform_data
 
   pipeline _pipeline;

@@ -75,13 +75,14 @@ public:
       _submit_mesh(node);
     }
 
+    _pipeline.bind(command_buffer);
+    
     for (const auto& [key, data] : _static_meshes) {
-      _pipeline.bind(command_buffer);
 
-      auto& uniform_data = _uniform_data[key];
+      auto [entry, inserted] = _uniform_data.try_emplace(key, 1u);
 
-      auto& descriptor_handler = uniform_data.descriptor_handler;
-      auto& storage_handler = uniform_data.storage_handler;
+      auto& descriptor_handler = entry->second.descriptor_handler;
+      auto& storage_handler = entry->second.storage_handler;
 
       storage_handler.push(std::span<const per_mesh_data>{data});
 

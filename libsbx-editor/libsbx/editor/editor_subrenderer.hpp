@@ -38,6 +38,7 @@ public:
   editor_subrenderer(const std::filesystem::path& path, const sbx::graphics::pipeline::stage& stage)
   : base{stage},
     _pipeline{path, stage},
+    _descriptor_handler{_pipeline, 0u},
     _show_demo_window{false},
     _clear_color{sbx::math::color::black()},
     _selected_node_id{sbx::math::uuid::null()} {

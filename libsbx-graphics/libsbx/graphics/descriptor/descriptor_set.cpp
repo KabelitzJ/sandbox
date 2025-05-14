@@ -13,8 +13,9 @@
 
 namespace sbx::graphics {
 
-descriptor_set::descriptor_set(const pipeline& pipeline) noexcept
-: _pipeline_layout{pipeline.layout()},
+descriptor_set::descriptor_set(const pipeline& pipeline, std::uint32_t set) noexcept
+: _set{set},
+  _pipeline_layout{pipeline.layout()},
   _pipeline_bind_point{pipeline.bind_point()},
   _descriptor_pool{pipeline.descriptor_pool()} {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
@@ -22,11 +23,11 @@ descriptor_set::descriptor_set(const pipeline& pipeline) noexcept
   auto& logical_device = graphics_module.logical_device();
 
   auto descriptor_set_layouts = std::array<VkDescriptorSetLayout, 1u>{};
-  descriptor_set_layouts[0] = pipeline.descriptor_set_layout();
+  descriptor_set_layouts[0] = pipeline.descriptor_set_layout(_set);
 
-  const auto& descriptor_counts = pipeline.descriptor_counts();
+  const auto& descriptor_counts = pipeline.descriptor_counts(_set);
 
-  const auto has_variable_descriptors = ranges::any_of(descriptor_counts, [](const auto& entry){ return entry.second > 1u; });
+  const auto has_variable_descriptors = ranges::any_of(descriptor_counts, [](const auto& counts){ return counts > 1u; });
 
   auto counts = std::array<std::uint32_t, 1u>{};
   counts[0] = 32u;
@@ -73,7 +74,7 @@ descriptor_set::operator VkDescriptorSet() const noexcept {
 }
 
 auto descriptor_set::bind(command_buffer& command_buffer) const noexcept -> void {
-  vkCmdBindDescriptorSets(command_buffer, _pipeline_bind_point, _pipeline_layout, 0, 1, &_descriptor_set, 0, nullptr);
+  vkCmdBindDescriptorSets(command_buffer, _pipeline_bind_point, _pipeline_layout, _set, 1, &_descriptor_set, 0, nullptr);
 }
 
 } // namespace sbx::graphics

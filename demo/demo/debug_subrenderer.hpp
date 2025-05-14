@@ -49,7 +49,8 @@ public:
 
   debug_subrenderer(const std::filesystem::path& path, const sbx::graphics::pipeline::stage& stage)
   : sbx::graphics::subrenderer{stage},
-    _pipeline{path, stage} { }
+    _pipeline{path, stage},
+    _descriptor_handler{_pipeline, 0u} { }
 
   ~debug_subrenderer() override {
 

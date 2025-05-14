@@ -44,11 +44,11 @@ shader::~shader() {
   vkDestroyShaderModule(logical_device, _handle, nullptr);
 }
 
-auto shader::handle() const noexcept -> const VkShaderModule& {
+auto shader::handle() const noexcept -> handle_type {
   return _handle;
 }
 
-shader::operator const VkShaderModule&() const noexcept {
+shader::operator handle_type() const noexcept {
   return _handle;
 }
 
@@ -64,10 +64,11 @@ auto shader::_create_reflection(const spirv_cross::Compiler& compiler) -> void {
     const auto& type = compiler.get_type(uniform_buffer.type_id);
 
     const auto& uniform_blocks_name = uniform_buffer.name;
+    const auto uniform_blocks_set = compiler.get_decoration(uniform_buffer.id, spv::DecorationDescriptorSet);
     const auto uniform_blocks_binding = compiler.get_decoration(uniform_buffer.id, spv::DecorationBinding);
     const auto uniform_blocks_size = compiler.get_declared_struct_size(type);
 
-    utility::logger<"graphics">::debug("uniform block: '{}' binding: {} size: {}", uniform_blocks_name, uniform_blocks_binding, uniform_blocks_size);
+    utility::logger<"graphics">::debug("uniform block: '{}' set: {} binding: {} size: {}", uniform_blocks_name, uniform_blocks_set, uniform_blocks_binding, uniform_blocks_size);
  
     const auto member_count = type.member_types.size();
 
@@ -77,6 +78,7 @@ auto shader::_create_reflection(const spirv_cross::Compiler& compiler) -> void {
       const auto& member_type = compiler.get_type(type.member_types[i]);
       const auto& member_name = compiler.get_member_name(type.self, i);
 
+      const auto member_set = compiler.get_member_decoration(type.self, i, spv::DecorationDescriptorSet);
       const auto member_binding = compiler.get_member_decoration(type.self, i, spv::DecorationBinding);
       const auto member_offset = compiler.type_struct_member_offset(type, i);
       const auto member_size = compiler.get_declared_struct_member_size(type, i);
@@ -84,10 +86,12 @@ auto shader::_create_reflection(const spirv_cross::Compiler& compiler) -> void {
 
       utility::logger<"graphics">::debug("  binding: {}\toffset: {}\tsize: {}{}\tdata_type: {}", member_binding, member_offset, member_size, member_size < 10 ? "\t" : "", _data_type_to_string(member_data_type));
 
-      uniforms.insert({member_name, uniform{member_binding, member_offset, member_size, member_data_type, false, false, _stage}});
+      uniforms.emplace(member_name, uniform{member_set, member_binding, member_offset, member_size, member_data_type, false, false, _stage});
     }
 
-    _uniform_blocks.insert({uniform_blocks_name, uniform_block{uniform_blocks_binding, uniform_blocks_size, _stage, uniform_block::type::uniform, std::move(uniforms)}});
+    _set_uniform_blocks.resize(std::max(_set_uniform_blocks.size(), static_cast<std::size_t>(uniform_blocks_set + 1u)));
+
+    _set_uniform_blocks[uniform_blocks_set].emplace(uniform_blocks_name, uniform_block{uniform_blocks_set, uniform_blocks_binding, uniform_blocks_size, _stage, uniform_block::type::uniform, std::move(uniforms)});
   }
 
   // Reflection for push constants
@@ -95,10 +99,11 @@ auto shader::_create_reflection(const spirv_cross::Compiler& compiler) -> void {
     const auto& type = compiler.get_type(push_constant.type_id);
 
     const auto& uniform_blocks_name = push_constant.name;
+    const auto uniform_blocks_set = compiler.get_decoration(push_constant.id, spv::DecorationDescriptorSet);
     const auto uniform_blocks_binding = compiler.get_decoration(push_constant.id, spv::DecorationBinding);
     const auto uniform_blocks_size = compiler.get_declared_struct_size(type);
 
-    utility::logger<"graphics">::debug("uniform block: '{}' binding: {} size: {}", uniform_blocks_name, uniform_blocks_binding, uniform_blocks_size);
+    utility::logger<"graphics">::debug("push constant: '{}' set: {} binding: {} size: {}", uniform_blocks_name, uniform_blocks_set, uniform_blocks_binding, uniform_blocks_size);
  
     const auto member_count = type.member_types.size();
 
@@ -108,6 +113,7 @@ auto shader::_create_reflection(const spirv_cross::Compiler& compiler) -> void {
       const auto& member_type = compiler.get_type(type.member_types[i]);
       const auto& member_name = compiler.get_member_name(type.self, i);
 
+      const auto member_set = compiler.get_member_decoration(type.self, i, spv::DecorationDescriptorSet);
       const auto member_binding = compiler.get_member_decoration(type.self, i, spv::DecorationBinding);
       const auto member_offset = compiler.type_struct_member_offset(type, i);
       const auto member_size = compiler.get_declared_struct_member_size(type, i);
@@ -115,10 +121,12 @@ auto shader::_create_reflection(const spirv_cross::Compiler& compiler) -> void {
 
       utility::logger<"graphics">::debug("  binding: {}\toffset: {}\tsize: {}{}\tdata_type: {}", member_binding, member_offset, member_size, member_size < 10 ? "\t" : "", _data_type_to_string(member_data_type));
 
-      uniforms.insert({member_name, uniform{member_binding, member_offset, member_size, member_data_type, false, false, _stage}});
+      uniforms.insert({member_name, uniform{member_set, member_binding, member_offset, member_size, member_data_type, false, false, _stage}});
     }
 
-    _uniform_blocks.insert({uniform_blocks_name, uniform_block{uniform_blocks_binding, uniform_blocks_size, _stage, uniform_block::type::push, std::move(uniforms)}});
+    _set_uniform_blocks.resize(std::max(_set_uniform_blocks.size(), static_cast<std::size_t>(uniform_blocks_set + 1u)));
+
+    _set_uniform_blocks[uniform_blocks_set].emplace(uniform_blocks_name, uniform_block{uniform_blocks_set, uniform_blocks_binding, uniform_blocks_size, _stage, uniform_block::type::push, std::move(uniforms)});
   }
 
   // Reflection for storage buffers
@@ -126,16 +134,17 @@ auto shader::_create_reflection(const spirv_cross::Compiler& compiler) -> void {
     const auto& type = compiler.get_type(storage_buffer.type_id);
 
     const auto& storage_buffer_name = storage_buffer.name;
+    const auto storage_buffer_set = compiler.get_decoration(storage_buffer.id, spv::DecorationDescriptorSet);
     const auto storage_buffer_binding = compiler.get_decoration(storage_buffer.id, spv::DecorationBinding);
 
     // Get the size of one element in the storage buffer
     const auto storage_buffer_element_size = compiler.get_declared_struct_size_runtime_array(type, 1);  
 
-    auto buffer = uniform_block{storage_buffer_binding, 0u, _stage, uniform_block::type::storage};
+    utility::logger<"graphics">::debug("storage buffer: '{}' set: {} binding: {} element_size: {}", storage_buffer_name, storage_buffer_set, storage_buffer_binding, storage_buffer_element_size);
 
-    utility::logger<"graphics">::debug("uniform block: '{}' binding: {} element_size: {}", storage_buffer_name, storage_buffer_binding, storage_buffer_element_size);
+    _set_uniform_blocks.resize(std::max(_set_uniform_blocks.size(), static_cast<std::size_t>(storage_buffer_set + 1u)));
 
-    _uniform_blocks.insert({storage_buffer_name, buffer});
+    _set_uniform_blocks[storage_buffer_set].emplace(storage_buffer_name, uniform_block{storage_buffer_set, storage_buffer_binding, 0u, _stage, uniform_block::type::storage});
   }
 
   // Reflection for image samplers
@@ -143,24 +152,22 @@ auto shader::_create_reflection(const spirv_cross::Compiler& compiler) -> void {
     const auto& type = compiler.get_type(image_sampler.type_id);
 
     const auto& name = image_sampler.name;
+    const auto set = compiler.get_decoration(image_sampler.id, spv::DecorationDescriptorSet);
     const auto binding = compiler.get_decoration(image_sampler.id, spv::DecorationBinding);
+
+    _set_uniforms.resize(std::max(_set_uniforms.size(), static_cast<std::size_t>(set + 1u)));
 
     if (type.array.size() == 0u) {
       if (type.image.dim == spv::Dim::Dim2D) {
         utility::logger<"graphics">::debug("image2d sampler: '{}' binding: {}", name, binding);
-        auto image = uniform{binding, 0, 0, data_type::sampler2d, false, false, _stage};
-        _uniforms.insert({name, image});
+        _set_uniforms[set].emplace(name, uniform{set, binding, 0, 0, data_type::sampler2d, false, false, _stage});
       } else if (type.image.dim == spv::Dim::DimCube) {
         utility::logger<"graphics">::debug("image cube sampler: '{}' binding: {}", name, binding);
-        auto image = uniform{binding, 0, 0, data_type::sampler_cube, false, false, _stage};
-        _uniforms.insert({name, image});
+        _set_uniforms[set].emplace(name, uniform{set, binding, 0, 0, data_type::sampler_cube, false, false, _stage});
       }
     } else if (type.array.size() == 1u) {
       utility::logger<"graphics">::debug("image sampler[{}]: '{}' binding: {}", type.array[0], name, binding);
-
-      auto image = uniform{binding, 0, 32u, data_type::sampler2d_array, false, false, _stage};
-
-      _uniforms.insert({name, image});
+      _set_uniforms[set].emplace(name, uniform{set, binding, 0, 32u, data_type::sampler2d_array, false, false, _stage});
     }
   }
 
@@ -168,58 +175,56 @@ auto shader::_create_reflection(const spirv_cross::Compiler& compiler) -> void {
     const auto& type = compiler.get_type(separate_image.type_id);
 
     const auto& name = separate_image.name;
+    const auto set = compiler.get_decoration(separate_image.id, spv::DecorationDescriptorSet);
     const auto binding = compiler.get_decoration(separate_image.id, spv::DecorationBinding);
+
+    _set_uniforms.resize(std::max(_set_uniforms.size(), static_cast<std::size_t>(set + 1u)));
 
     if (type.array.size() == 0u) {
       utility::logger<"graphics">::debug("separate image: '{}' binding: {}", name, binding);
-
-      auto image = uniform{binding, 0, 0, data_type::separate_image2d, false, false, _stage};
-
-      _uniforms.insert({name, image});
+      _set_uniforms[set].emplace(name, uniform{set, binding, 0, 0, data_type::separate_image2d, false, false, _stage});
     } else if (type.array.size() == 1u) {
       utility::logger<"graphics">::debug("separate image[{}]: '{}' binding: {}", type.array[0], name, binding);
-
-      auto image = uniform{binding, 0, 32u, data_type::separate_image2d_array, false, false, _stage};
-
-      _uniforms.insert({name, image});
+      _set_uniforms[set].emplace(name, uniform{set, binding, 0, 32u, data_type::separate_image2d_array, false, false, _stage});
     }
   }
 
   for (const auto& separate_sampler : resources.separate_samplers) {
     const auto& name = separate_sampler.name;
+    const auto set = compiler.get_decoration(separate_sampler.id, spv::DecorationDescriptorSet);
     const auto binding = compiler.get_decoration(separate_sampler.id, spv::DecorationBinding);
 
-    auto sampler = uniform{binding, 0, 0, data_type::separate_sampler, false, false, _stage};
+    _set_uniforms.resize(std::max(_set_uniforms.size(), static_cast<std::size_t>(set + 1u)));
 
     utility::logger<"graphics">::debug("separate sampler: '{}' binding: {}", name, binding);
 
-    _uniforms.insert({name, sampler});
+    _set_uniforms[set].emplace(name, uniform{set, binding, 0, 0, data_type::separate_sampler, false, false, _stage});
   }
 
   // Reflection for storage images
   for (const auto& storage_image : resources.storage_images) {
     const auto& name = storage_image.name;
+    const auto set = compiler.get_decoration(storage_image.id, spv::DecorationDescriptorSet);
     const auto binding = compiler.get_decoration(storage_image.id, spv::DecorationBinding);
     const auto is_readonly = compiler.get_decoration(storage_image.id, spv::DecorationNonWritable) == 1;
     const auto is_writeonly = compiler.get_decoration(storage_image.id, spv::DecorationNonReadable) == 1;
 
-    auto image = uniform{binding, 0, 0, data_type::storage_image, is_readonly, is_writeonly, _stage};
+    _set_uniforms.resize(std::max(_set_uniforms.size(), static_cast<std::size_t>(set + 1u)));
 
     utility::logger<"graphics">::debug("storage image: '{}' binding: {} readonly: {} writeonly: {}", name, binding, is_readonly, is_writeonly);
 
-    _uniforms.insert({name, image});
+    _set_uniforms[set].emplace(name, uniform{set, binding, 0, 0, data_type::storage_image, is_readonly, is_writeonly, _stage});
   }
 
   // Reflection for subpass inputs
   for (const auto& storage_image : resources.subpass_inputs) {
     const auto& name = storage_image.name;
+    const auto set = compiler.get_decoration(storage_image.id, spv::DecorationDescriptorSet);
     const auto binding = compiler.get_decoration(storage_image.id, spv::DecorationBinding);
-
-    auto image = uniform{binding, 0, 0, data_type::subpass_input, true, false, _stage};
 
     utility::logger<"graphics">::debug("subpass input: '{}' binding: {}", name, binding);
 
-    _uniforms.insert({name, image});
+    _set_uniforms[set].emplace(name, uniform{set, binding, 0, 0, data_type::subpass_input, true, false, _stage});
   }
 }
 

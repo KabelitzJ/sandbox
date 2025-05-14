@@ -24,19 +24,19 @@ class descriptor_handler {
 
 public:
 
-  descriptor_handler() = default;
+  descriptor_handler(std::uint32_t set)
+  : _set{set} { }
 
-  explicit descriptor_handler(const pipeline& pipeline)
-  : _pipeline{&pipeline} {
-    _descriptor_sets.resize(graphics::swapchain::max_frames_in_flight);
-
-    for (auto& descriptor_set : _descriptor_sets) {
-      descriptor_set = std::make_unique<graphics::descriptor_set>(pipeline);
-    }
+  explicit descriptor_handler(const pipeline& pipeline, std::uint32_t set)
+  : _pipeline{&pipeline},
+    _set{set} {
+    _recreate_descriptor_sets();
   }
 
   ~descriptor_handler() {
-    _descriptor_sets.clear();
+    for (auto& descriptor_set : _descriptor_sets) {
+      descriptor_set.reset();
+    }
   }
 
   template<typename Descriptor>
@@ -49,21 +49,21 @@ public:
 
   auto push(const std::string& name, uniform_handler& uniform_handler) -> void {
     if (_pipeline) {
-      uniform_handler.update(_pipeline->descriptor_block(name));
+      uniform_handler.update(_pipeline->descriptor_block(name, _set));
       _push(name, uniform_handler.uniform_buffer());
     }
   }
 
   auto push(const std::string& name, storage_handler& storage_handler) -> void {
     if (_pipeline) {
-      storage_handler.update(_pipeline->descriptor_block(name));
+      storage_handler.update(_pipeline->descriptor_block(name, _set));
       _push(name, storage_handler.storage_buffer());
     }
   }
 
   auto push(const std::string& name, push_handler& push_handler) -> void {
     if (_pipeline) {
-      push_handler.update(_pipeline->descriptor_block(name));
+      push_handler.update(_pipeline->descriptor_block(name, _set));
     }
   }
 
@@ -89,11 +89,7 @@ public:
 
       _descriptors.clear();
 
-      _descriptor_sets.resize(graphics::swapchain::max_frames_in_flight);
-
-      for (auto& descriptor_set : _descriptor_sets) {
-        descriptor_set = std::make_unique<graphics::descriptor_set>(pipeline);
-      }
+      _recreate_descriptor_sets();
 
       return false;
     }
@@ -114,7 +110,7 @@ public:
       write_descriptor_sets.push_back(write_descriptor_set);
     }
 
-    descriptor_set->update(write_descriptor_sets);
+    graphics::descriptor_set::update(write_descriptor_sets);
 
     _descriptors.clear();
 
@@ -132,13 +128,13 @@ private:
   template<typename Descriptor>
   requires (std::is_base_of_v<descriptor, Descriptor>)
   auto _push(const std::string& name, const Descriptor& descriptor) -> void {
-    auto binding = _pipeline->find_descriptor_binding(name);
+    auto binding = _pipeline->find_descriptor_binding(name, _set);
 
     if (!binding) {
       throw std::runtime_error(fmt::format("Failed to find descriptor binding for descriptor '{}'", name));
     }
 
-    auto descriptor_type = _pipeline->find_descriptor_type_at_binding(*binding);
+    auto descriptor_type = _pipeline->find_descriptor_type_at_binding(_set, *binding);
 
     if (!descriptor_type) {
       throw std::runtime_error(fmt::format("Failed to find descriptor type for descriptor '{}'", name));
@@ -149,9 +145,17 @@ private:
     _descriptors.insert({name, descriptor_entry{std::addressof(descriptor), std::move(write_descriptor_set), *binding}});
   }
 
+  auto _recreate_descriptor_sets() -> void {
+    for (auto& descriptor_set : _descriptor_sets) {
+      descriptor_set = std::make_unique<graphics::descriptor_set>(*_pipeline, _set);
+    }
+  }
+
+  std::uint32_t _set;
+
   memory::observer_ptr<const pipeline> _pipeline;
 
-  std::vector<std::unique_ptr<graphics::descriptor_set>> _descriptor_sets{};
+  std::array<std::unique_ptr<graphics::descriptor_set>, graphics::swapchain::max_frames_in_flight> _descriptor_sets{};
 
   std::map<std::string, descriptor_entry> _descriptors{};
 

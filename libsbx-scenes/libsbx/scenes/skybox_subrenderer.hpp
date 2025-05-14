@@ -92,7 +92,8 @@ public:
 
   skybox_subrenderer(const std::filesystem::path& path, const graphics::pipeline::stage& stage)
   : graphics::subrenderer{stage},
-    _pipeline{path, stage} {
+    _pipeline{path, stage},
+    _descriptor_handler{_pipeline, 0u} {
     auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
     auto vertices = std::vector<vertex3d>{

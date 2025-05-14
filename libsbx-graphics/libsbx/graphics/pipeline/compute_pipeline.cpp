@@ -1,5 +1,7 @@
 #include <libsbx/graphics/pipeline/compute_pipeline.hpp>
 
+#include <range/v3/all.hpp>
+
 #include <libsbx/utility/timer.hpp>
 #include <libsbx/utility/logger.hpp>
 
@@ -58,79 +60,112 @@ compute_pipeline::compute_pipeline(const std::filesystem::path& path)
   shader_stage.module = *_shader;
   shader_stage.pName = "main";
 
-  for (const auto& [name, uniform] : _shader->uniforms()) {
-    if (auto entry = _uniforms.find(name); entry != _uniforms.end()) {
-      entry->second.add_stage_flag(uniform.stage_flags());
-    } else {
-      _uniforms.insert({name, uniform});
-    }
-  }
+  // [NOTE] 2025-05-14: Create or append uniforms
+  for (auto&& [i, set] : ranges::views::enumerate(_shader->set_uniforms())) {
+    _set_data.resize(std::max(_set_data.size(), i + 1u));
 
-  for (const auto& [name, uniform_block] : _shader->uniform_blocks()) {
-    if (auto entry = _uniform_blocks.find(name); entry != _uniform_blocks.end()) {
-      entry->second.add_stage_flag(uniform_block.stage_flags());
-    } else {
-      _uniform_blocks.insert({name, uniform_block});
-    }
-  }
+    auto& set_uniforms = _set_data[i].uniforms;
 
-  auto descriptor_set_layout_bindings = std::vector<VkDescriptorSetLayoutBinding>{};
-
-  for (const auto& [name, uniform_block] : _uniform_blocks) {
-    switch (uniform_block.buffer_type()) {
-      case shader::uniform_block::type::uniform: {
-        descriptor_set_layout_bindings.push_back(uniform_buffer::create_descriptor_set_layout_binding(uniform_block.binding(), VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, uniform_block.stage_flags()));
-        break;
-      }
-      case shader::uniform_block::type::storage: {
-        descriptor_set_layout_bindings.push_back(storage_buffer::create_descriptor_set_layout_binding(uniform_block.binding(), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, uniform_block.stage_flags()));
-        break;
-      }
-      case shader::uniform_block::type::push: {
-        // [NOTE] KAJ 2024-01-19 : We dont need descriptor sets for push constants but we still want to add them the the bindings and sizes
-        break;
-      }
-      default: {
-        utility::logger<"graphics">::warn("Unsupported uniform block type (sbx::graphics::shader::uniform_block::type): {}", uniform_block.buffer_type());
-        continue;
+    for (const auto& [name, uniform] : set) {
+      if (auto entry = set_uniforms.find(name); entry != set_uniforms.end()) {
+        entry->second.add_stage_flag(uniform.stage_flags());
+      } else {
+        set_uniforms.insert({name, uniform});
       }
     }
-
-    _descriptor_bindings.insert({name, uniform_block.binding()});
-    _descriptor_sizes.insert({name, uniform_block.size()});
   }
+    
+  for (auto&& [i, set] : ranges::views::enumerate(_shader->set_uniform_blocks())) {
+    _set_data.resize(std::max(_set_data.size(), i + 1u));
 
-  for (const auto& [name, uniform] : _uniforms) {
-    switch (uniform.type()) {
-      case shader::data_type::storage_image: {
-        descriptor_set_layout_bindings.push_back(image::create_descriptor_set_layout_binding(uniform.binding(), VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, uniform.stage_flags()));
-        break;
-      }
-      default: {
-        utility::logger<"graphics">::warn("Unsupported uniform type (sbx::graphics::shader::data_type): {}", uniform.type());
-        continue;
+    auto& set_uniform_blocks = _set_data[i].uniform_blocks;
+
+    for (const auto& [name, uniform_block] : set) {
+      if (auto entry = set_uniform_blocks.find(name); entry != set_uniform_blocks.end()) {
+        entry->second.add_stage_flag(uniform_block.stage_flags());
+      } else {
+        set_uniform_blocks.insert({name, uniform_block});
       }
     }
   }
 
-  std::ranges::sort(descriptor_set_layout_bindings, [](const auto& lhs, const auto& rhs) {
-    return lhs.binding < rhs.binding;
-  });
+  auto descriptor_set_layout_bindings = std::vector<std::vector<VkDescriptorSetLayoutBinding>>{};
+  descriptor_set_layout_bindings.resize(_set_data.size());
 
-  for (const auto& descriptor : descriptor_set_layout_bindings) {
-    _descriptor_type_at_binding.insert({descriptor.binding, descriptor.descriptorType});
+  for (auto&& [set, set_data] : ranges::view::enumerate(_set_data)) {
+    descriptor_set_layout_bindings[set].resize(set_data.uniform_blocks.size() + set_data.uniforms.size());
   }
 
-  for (const auto& descriptor : descriptor_set_layout_bindings) {
-    _descriptor_count_at_binding.insert({descriptor.binding, descriptor.descriptorCount});
+  for (auto& set_data : _set_data) {
+    for (const auto& [name, uniform_block] : set_data.uniform_blocks) {
+      auto& descriptor_set_layout_binding = descriptor_set_layout_bindings[uniform_block.set()];
+
+      switch (uniform_block.buffer_type()) {
+        case shader::uniform_block::type::uniform: {
+          descriptor_set_layout_binding[uniform_block.binding()] = uniform_buffer::create_descriptor_set_layout_binding(uniform_block.binding(), VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, uniform_block.stage_flags());
+          break;
+        }
+        case shader::uniform_block::type::storage: {
+          descriptor_set_layout_binding[uniform_block.binding()] = storage_buffer::create_descriptor_set_layout_binding(uniform_block.binding(), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, uniform_block.stage_flags());
+          break;
+        }
+        case shader::uniform_block::type::push: {
+          // [NOTE] KAJ 2024-01-19 : We dont need descriptor sets for push constants but we still want to add them the the bindings and sizes
+          break;
+        }
+        default: {
+          utility::logger<"graphics">::warn("Unsupported uniform block type (sbx::graphics::shader::uniform_block::type): {}", uniform_block.buffer_type());
+          continue;
+        }
+      }
+
+      set_data.descriptor_bindings.insert({name, uniform_block.binding()});
+      set_data.descriptor_sizes.insert({name, uniform_block.size()});
+    }
   }
 
-  auto descriptor_set_layout_create_info = VkDescriptorSetLayoutCreateInfo{};
-  descriptor_set_layout_create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-  descriptor_set_layout_create_info.bindingCount = static_cast<std::uint32_t>(descriptor_set_layout_bindings.size());
-  descriptor_set_layout_create_info.pBindings = descriptor_set_layout_bindings.data();
+  for (auto& set_data : _set_data) {
+    for (const auto& [name, uniform] : set_data.uniforms) {
+      auto& descriptor_set_layout_binding = descriptor_set_layout_bindings[uniform.set()];
 
-  validate(vkCreateDescriptorSetLayout(logical_device, &descriptor_set_layout_create_info, nullptr, &_descriptor_set_layout));
+      switch (uniform.type()) {
+        case shader::data_type::storage_image: {
+          descriptor_set_layout_binding[uniform.binding()] = image::create_descriptor_set_layout_binding(uniform.binding(), VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, uniform.stage_flags());
+          break;
+        }
+        default: {
+          utility::logger<"graphics">::warn("Unsupported uniform type (sbx::graphics::shader::data_type): {}", uniform.type());
+          continue;
+        }
+      }
+
+      set_data.descriptor_bindings.insert({name, uniform.binding()});
+      set_data.descriptor_sizes.insert({name, uniform.size()});
+    }
+  }
+
+  // std::ranges::sort(descriptor_set_layout_bindings, [](const auto& lhs, const auto& rhs) {
+  //   return lhs.binding < rhs.binding;
+  // });
+
+  for (auto&& [set, descriptors] : ranges::views::enumerate(descriptor_set_layout_bindings)) {
+    _set_data[set].binding_data.resize(descriptors.size());
+
+    for (auto&& [binding, descriptor] : ranges::views::enumerate(descriptors)) {
+      _set_data[set].binding_data[binding].descriptor_type = descriptor.descriptorType;
+      _set_data[set].binding_data[binding].descriptor_count = descriptor.descriptorCount;
+    }
+  }
+
+  for (auto&& [set, descriptor_set_layout_binding] : ranges::views::enumerate(descriptor_set_layout_bindings)) {
+    auto descriptor_set_layout_create_info = VkDescriptorSetLayoutCreateInfo{};
+    descriptor_set_layout_create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    descriptor_set_layout_create_info.bindingCount = static_cast<std::uint32_t>(descriptor_set_layout_binding.size());
+    descriptor_set_layout_create_info.pBindings = descriptor_set_layout_binding.data();
+  
+    validate(vkCreateDescriptorSetLayout(logical_device, &descriptor_set_layout_create_info, nullptr, &_set_data[set].layout));
+  }
+
 
   auto descriptor_pool_sizes = std::vector<VkDescriptorPoolSize>{
     VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 2048},
@@ -151,25 +186,34 @@ compute_pipeline::compute_pipeline(const std::filesystem::path& path)
 
   auto current_offset = std::uint32_t{0u};
 
-  for (const auto& [name, uniform] : _uniform_blocks) {
-    if (uniform.buffer_type() != shader::uniform_block::type::push) {
-      continue;
+  for (const auto& set_data : _set_data) {
+    for (const auto& [name, uniform] : set_data.uniform_blocks) {
+      if (uniform.buffer_type() != shader::uniform_block::type::push) {
+        continue;
+      }
+
+      auto push_constant_range = VkPushConstantRange{};
+      push_constant_range.stageFlags = uniform.stage_flags();
+      push_constant_range.offset = current_offset;
+      push_constant_range.size = uniform.size();
+
+      push_constant_ranges.push_back(push_constant_range);
+
+      current_offset += push_constant_range.size;
     }
+  }
 
-    auto push_constant_range = VkPushConstantRange{};
-    push_constant_range.stageFlags = uniform.stage_flags();
-    push_constant_range.offset = current_offset;
-    push_constant_range.size = uniform.size();
+  auto layouts = std::vector<VkDescriptorSetLayout>{};
+  layouts.reserve(_set_data.size());
 
-    push_constant_ranges.push_back(push_constant_range);
-
-    current_offset += push_constant_range.size;
+  for (const auto& set_data : _set_data) {
+    layouts.push_back(set_data.layout);
   }
 
   auto pipeline_layout_create_info = VkPipelineLayoutCreateInfo{};
   pipeline_layout_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-  pipeline_layout_create_info.setLayoutCount = 1;
-  pipeline_layout_create_info.pSetLayouts = &_descriptor_set_layout;
+  pipeline_layout_create_info.setLayoutCount = static_cast<std::uint32_t>(layouts.size());
+  pipeline_layout_create_info.pSetLayouts = layouts.data();
   pipeline_layout_create_info.pushConstantRangeCount = static_cast<std::uint32_t>(push_constant_ranges.size());
   pipeline_layout_create_info.pPushConstantRanges = push_constant_ranges.data();
 
@@ -197,7 +241,10 @@ compute_pipeline::~compute_pipeline() {
   logical_device.wait_idle();
 
   vkDestroyDescriptorPool(logical_device, _descriptor_pool, nullptr);
-  vkDestroyDescriptorSetLayout(logical_device, _descriptor_set_layout, nullptr);
+
+  for (const auto& set_data : _set_data) {
+    vkDestroyDescriptorSetLayout(logical_device, set_data.layout, nullptr);
+  }
 
   vkDestroyPipelineLayout(logical_device, _layout, nullptr);
 

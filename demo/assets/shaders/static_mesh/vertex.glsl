@@ -22,7 +22,7 @@ layout(location = 4) out vec2 out_material;
 layout(location = 5) out flat uint out_albedo_image_index;
 layout(location = 6) out flat uint out_normal_image_index;
 
-layout(binding = 0) uniform uniform_scene {
+layout(set = 0, binding = 0) uniform uniform_scene {
   mat4 view;
   mat4 projection;
   vec3 camera_position;
@@ -33,7 +33,7 @@ layout(binding = 0) uniform uniform_scene {
   float time;
 } scene;
 
-layout(binding = 1, std430) readonly buffer buffer_mesh_data {
+layout(set = 1, binding = 0, std430) readonly buffer buffer_mesh_data {
   per_mesh_data data[];
 } mesh_data;
 
