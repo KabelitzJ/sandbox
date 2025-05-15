@@ -141,7 +141,7 @@ public:
     // }
 
     // _point_lights_storage_handler.push(std::span<const point_light>{point_lights.data(), point_light_count});
-    _scene_uniform_handler.push("point_light_count", 0u);
+    // _scene_uniform_handler.push("point_light_count", 0u);
 
     _scene_uniform_handler.push("time", std::fmod(core::engine::time().value() * 0.5f, 1.0f));
 
@@ -354,8 +354,8 @@ private:
     per_pipeline_data.pipeline.bind(command_buffer);
 
     _scene_descriptor_handler.push("uniform_scene", _scene_uniform_handler);
-    _scene_descriptor_handler.push("buffer_point_lights", _point_lights_storage_handler);
-    _scene_descriptor_handler.push("shadow_map_image", graphics_module.attachment("shadow_map"));
+    // _scene_descriptor_handler.push("buffer_point_lights", _point_lights_storage_handler);
+    // _scene_descriptor_handler.push("shadow_map_image", graphics_module.attachment("shadow_map"));
     _scene_descriptor_handler.push("images_sampler", _images_sampler);
     _scene_descriptor_handler.push("images", _images);
 
@@ -401,7 +401,7 @@ private:
   transparent_back_pipeline_data _transparent_back_pipeline_data;
 
   graphics::uniform_handler _scene_uniform_handler;
-  graphics::storage_handler _point_lights_storage_handler;
+  // graphics::storage_handler _point_lights_storage_handler;
   graphics::separate_sampler _images_sampler;
   graphics::separate_image2d_array _images;
   graphics::descriptor_handler _scene_descriptor_handler;

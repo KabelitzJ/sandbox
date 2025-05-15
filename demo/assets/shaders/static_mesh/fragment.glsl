@@ -32,18 +32,18 @@ layout(set = 0, binding = 0) uniform uniform_scene {
   vec3 light_direction;
   vec4 light_color;
   mat4 light_space;
-  uint point_light_count;
+  // uint point_light_count;
   float time;
 } scene;
 
-layout(set = 0, binding = 1, std430) readonly buffer buffer_point_lights {
-  point_light data[];
-} point_lights;
+// layout(set = 0, binding = 1, std430) readonly buffer buffer_point_lights {
+//   point_light data[];
+// } point_lights;
 
-layout(set = 0, binding = 2) uniform sampler2D shadow_map_image;
+// layout(set = 0, binding = 2) uniform sampler2D shadow_map_image;
 
-layout(set = 0, binding = 3) uniform sampler images_sampler;
-layout(set = 0, binding = 4) uniform texture2D images[MAX_IMAGE_ARRAY_SIZE];
+layout(set = 0, binding = 1) uniform sampler images_sampler;
+layout(set = 0, binding = 2) uniform texture2D images[MAX_IMAGE_ARRAY_SIZE];
 
 const mat4 DEPTH_BIAS = mat4( 
 	0.5, 0.0, 0.0, 0.0,
