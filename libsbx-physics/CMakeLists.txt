@@ -47,6 +47,7 @@ target_link_libraries(
     # Internal dependencies
     libsbx::units
     libsbx::utility
+    libsbx::containers
     libsbx::math
     libsbx::core
     libsbx::scenes

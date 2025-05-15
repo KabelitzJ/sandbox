@@ -74,6 +74,7 @@ target_link_libraries(
     libsbx::units
     libsbx::utility
     libsbx::io
+    libsbx::containers
     libsbx::assets
     libsbx::bitmaps
     libsbx::math

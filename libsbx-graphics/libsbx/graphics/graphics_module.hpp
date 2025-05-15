@@ -17,7 +17,6 @@
 
 #include <libsbx/utility/hash.hpp>
 #include <libsbx/utility/concepts.hpp>
-#include <libsbx/utility/bimap.hpp>
 
 #include <libsbx/graphics/devices/instance.hpp>
 #include <libsbx/graphics/devices/physical_device.hpp>
@@ -281,7 +280,6 @@ private:
   };
 
   std::unordered_map<std::type_index, std::unique_ptr<asset_container_base>> _asset_containers;
-  utility::unordered_bimap<std::string, math::uuid> _attachment_ids;
 
   std::uint32_t _current_frame{};
   bool _is_framebuffer_resized{};

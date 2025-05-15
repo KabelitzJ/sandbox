@@ -17,7 +17,8 @@
 
 #include <libsbx/memory/concepts.hpp>
 #include <libsbx/memory/observer_ptr.hpp>
-#include <libsbx/memory/dense_map.hpp>
+
+#include <libsbx/containers/dense_map.hpp>
 
 #include <libsbx/ecs/entity.hpp>
 #include <libsbx/ecs/sparse_set.hpp>
@@ -48,7 +49,7 @@ class basic_registry {
   using base_type = basic_sparse_set<Entity, Allocator>;
   using allocator_traits = std::allocator_traits<Allocator>;
 
-  using pool_container_type = memory::dense_map<std::uint32_t, std::shared_ptr<base_type>, std::identity, std::equal_to<>, memory::rebound_allocator_t<Allocator, std::pair<const std::uint32_t, std::shared_ptr<base_type>>>>;
+  using pool_container_type = containers::dense_map<std::uint32_t, std::shared_ptr<base_type>, std::identity, std::equal_to<>, memory::rebound_allocator_t<Allocator, std::pair<const std::uint32_t, std::shared_ptr<base_type>>>>;
   using entity_traits = ecs::entity_traits<Entity>;
 
   template<typename Type>

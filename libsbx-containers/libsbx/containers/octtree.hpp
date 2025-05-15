@@ -1,5 +1,5 @@
-#ifndef LIBSBX_PHYSICS_OCTREE_HPP_
-#define LIBSBX_PHYSICS_OCTREE_HPP_
+#ifndef LIBSBX_CONTAINERS_OCTREE_HPP_
+#define LIBSBX_CONTAINERS_OCTREE_HPP_
 
 #include <range/v3/all.hpp>
 
@@ -10,9 +10,9 @@
 #include <libsbx/math/uuid.hpp>
 #include <libsbx/math/volume.hpp>
 
-#include <libsbx/memory/static_vector.hpp>
+#include <libsbx/containers/static_vector.hpp>
 
-namespace sbx::memory {
+namespace sbx::containers {
 
 template<typename Type, std::size_t Threshold = 16u, std::size_t Depth = 8u>
 class octree {
@@ -243,6 +243,6 @@ private:
 
 }; // class octree
 
-} // namespace sbx::memory
+} // namespace sbx::containers
 
-#endif // LIBSBX_PHYSICS_OCTREE_HPP_
+#endif // LIBSBX_CONTAINERS_OCTREE_HPP_

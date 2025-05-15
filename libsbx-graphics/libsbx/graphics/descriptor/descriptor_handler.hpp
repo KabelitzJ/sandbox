@@ -24,6 +24,9 @@ class descriptor_handler {
 
 public:
 
+  inline static constexpr auto global_set_id = std::uint32_t{0u};
+  inline static constexpr auto per_draw_call_set_id = std::uint32_t{1u};
+
   descriptor_handler(std::uint32_t set)
   : _set{set},
     _has_changed{true} { }

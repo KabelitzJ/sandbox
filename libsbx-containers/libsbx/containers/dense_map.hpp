@@ -1,5 +1,5 @@
-#ifndef LIBSBX_MEMORY_DENSE_MAP_HPP_
-#define LIBSBX_MEMORY_DENSE_MAP_HPP_
+#ifndef LIBSBX_CONTAINERS_DENSE_MAP_HPP_
+#define LIBSBX_CONTAINERS_DENSE_MAP_HPP_
 
 #include <memory>
 #include <vector>
@@ -10,10 +10,11 @@
 #include <libsbx/utility/assert.hpp>
 
 #include <libsbx/memory/iterable_adaptor.hpp>
-#include <libsbx/memory/compressed_pair.hpp>
 #include <libsbx/memory/concepts.hpp>
 
-namespace sbx::memory {
+#include <libsbx/containers/compressed_pair.hpp>
+
+namespace sbx::containers {
 
 namespace detail {
 
@@ -69,7 +70,7 @@ class dense_map_iterator final {
 public:
 
   using value_type = std::pair<first_type, second_type>;
-  using pointer = input_iterator_pointer<value_type>;
+  using pointer = memory::input_iterator_pointer<value_type>;
   using reference = value_type;
   using difference_type = std::ptrdiff_t;
   using iterator_category = std::input_iterator_tag;
@@ -171,7 +172,7 @@ public:
 
   using value_type = std::pair<first_type, second_type>;
   using size_type = std::size_t;
-  using pointer = input_iterator_pointer<value_type>;
+  using pointer = memory::input_iterator_pointer<value_type>;
   using reference = value_type;
   using difference_type = std::ptrdiff_t;
   using iterator_category = std::input_iterator_tag;
@@ -592,9 +593,9 @@ private:
 
 }; // class dense_map
 
-} // namespace sbx::memory
+} // namespace sbx::containers
 
 template<typename Key, typename Value, typename Allocator>
-struct std::uses_allocator<sbx::memory::detail::dense_map_node<Key, Value>, Allocator> : std::true_type { };
+struct std::uses_allocator<sbx::containers::detail::dense_map_node<Key, Value>, Allocator> : std::true_type { };
 
-#endif // LIBSBX_MEMORY_DENSE_MAP_HPP_
+#endif // LIBSBX_CONTAINERS_DENSE_MAP_HPP_

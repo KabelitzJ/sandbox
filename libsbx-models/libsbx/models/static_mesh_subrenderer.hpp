@@ -20,8 +20,6 @@
 
 #include <libsbx/utility/logger.hpp>
 
-#include <libsbx/memory/octtree.hpp>
-
 #include <libsbx/graphics/graphics_module.hpp>
 #include <libsbx/graphics/subrenderer.hpp>
 #include <libsbx/graphics/pipeline/pipeline.hpp>

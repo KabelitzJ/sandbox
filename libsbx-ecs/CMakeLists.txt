@@ -42,6 +42,7 @@ target_link_libraries(
     libsbx::utility
     libsbx::core
     libsbx::memory
+    libsbx::containers
 )
 
 set_target_properties(

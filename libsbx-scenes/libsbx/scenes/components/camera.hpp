@@ -9,7 +9,7 @@
 #include <libsbx/math/sphere.hpp>
 #include <libsbx/math/plane.hpp>
 
-#include <libsbx/memory/static_vector.hpp>
+#include <libsbx/containers/static_vector.hpp>
 
 namespace sbx::scenes {
 
@@ -122,7 +122,7 @@ private:
     return math::plane{normal / length, column.w() / length};
   }
 
-  memory::static_vector<math::plane, 6u> _planes;
+  containers::static_vector<math::plane, 6u> _planes;
 
 }; // struct frustum
 

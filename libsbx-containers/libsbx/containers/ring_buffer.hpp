@@ -1,10 +1,10 @@
-#ifndef LIBSBX_MEMORY_RING_BUFFER_HPP_
-#define LIBSBX_MEMORY_RING_BUFFER_HPP_
+#ifndef LIBSBX_CONTAINERS_RING_BUFFER_HPP_
+#define LIBSBX_CONTAINERS_RING_BUFFER_HPP_
 
 #include <memory>
 #include <utility>
 
-namespace sbx::memory {
+namespace sbx::containers {
 
 template<typename Type, std::size_t Capacity>
 class ring_buffer {
@@ -54,6 +54,6 @@ private:
 
 }; // class ring_buffer
 
-} // namespace sbx::memory
+} // namespace sbx::containers
 
-#endif // LIBSBX_MEMORY_RING_BUFFER_HPP_
+#endif // LIBSBX_CONTAINERS_RING_BUFFER_HPP_

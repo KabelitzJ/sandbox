@@ -1,11 +1,11 @@
-#ifndef LIBSBX_UTILITY_BIMAP_HPP_
-#define LIBSBX_UTILITY_BIMAP_HPP_
+#ifndef LIBSBX_CONTAINERS_BIMAP_HPP_
+#define LIBSBX_CONTAINERS_BIMAP_HPP_
 
 #include <unordered_map>
 #include <map>
 #include <optional>
 
-namespace sbx::utility {
+namespace sbx::containers {
 
 template<template<typename, typename> typename Map, typename Key, typename Value>
 class basic_bimap {
@@ -62,6 +62,6 @@ private:
 template<typename Key, typename Value>
 using unordered_bimap = basic_bimap<std::unordered_map, Key, Value>;
 
-} // namespace sbx::utility
+} // namespace sbx::containers
 
-#endif // LIBSBX_UTILITY_BIMAP_HPP_
+#endif // LIBSBX_CONTAINERS_BIMAP_HPP_

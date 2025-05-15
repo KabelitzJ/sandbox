@@ -1,10 +1,10 @@
-#ifndef LIBSBX_MEMORY_COMPRESSED_PAIR_HPP_
-#define LIBSBX_MEMORY_COMPRESSED_PAIR_HPP_
+#ifndef LIBSBX_CONTAINERS_COMPRESSED_PAIR_HPP_
+#define LIBSBX_CONTAINERS_COMPRESSED_PAIR_HPP_
 
 #include <type_traits>
 #include <utility>
 
-namespace sbx::memory {
+namespace sbx::containers {
 
 namespace detail {
 
@@ -170,14 +170,14 @@ constexpr auto swap(compressed_pair<First, Second>& lhs, compressed_pair<First, 
   lhs.swap(rhs);
 }
 
-} // namespace sbx::memory
+} // namespace sbx::containers
 
 template<typename First, typename Second>
-struct std::tuple_size<sbx::memory::compressed_pair<First, Second>> : std::integral_constant<std::size_t, 2u> { };
+struct std::tuple_size<sbx::containers::compressed_pair<First, Second>> : std::integral_constant<std::size_t, 2u> { };
 
 template<std::size_t Index, typename First, typename Second>
-struct std::tuple_element<Index, sbx::memory::compressed_pair<First, Second>> : std::conditional<Index == 0u, First, Second> {
+struct std::tuple_element<Index, sbx::containers::compressed_pair<First, Second>> : std::conditional<Index == 0u, First, Second> {
   static_assert(Index < 2u, "Index out of bounds");
 }; // struct std::tuple_element
 
-#endif // LIBSBX_MEMORY_COMPRESSED_PAIR_HPP_
+#endif // LIBSBX_CONTAINERS_COMPRESSED_PAIR_HPP_

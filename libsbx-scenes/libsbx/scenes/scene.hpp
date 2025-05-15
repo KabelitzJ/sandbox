@@ -13,7 +13,7 @@
 
 #include <yaml-cpp/yaml.h>
 
-#include <libsbx/memory/octtree.hpp>
+#include <libsbx/containers/octtree.hpp>
 
 #include <libsbx/ecs/registry.hpp>
 #include <libsbx/ecs/entity.hpp>
@@ -145,7 +145,7 @@ private:
   node_type _root;
   node_type _camera;
 
-  memory::octree<math::uuid> _octree;
+  containers::octree<math::uuid> _octree;
 
   directional_light _light;
 

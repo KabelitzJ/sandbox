@@ -1,5 +1,5 @@
-#ifndef LIBSBX_MEMORY_STATIC_VECTOR_HPP_
-#define LIBSBX_MEMORY_STATIC_VECTOR_HPP_
+#ifndef LIBSBX_CONTAINERS_STATIC_VECTOR_HPP_
+#define LIBSBX_CONTAINERS_STATIC_VECTOR_HPP_
 
 #include <memory>
 #include <type_traits>
@@ -12,7 +12,7 @@
 
 #include <libsbx/memory/aligned_storage.hpp>
 
-namespace sbx::memory {
+namespace sbx::containers {
 
 /**
  * @brief static_vector implementation inspired by https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0843r2.html
@@ -217,7 +217,7 @@ private:
   }
 
   size_type _size;
-  std::array<storage_for_t<Type>, Capacity> _buffer;
+  std::array<memory::storage_for_t<Type>, Capacity> _buffer;
 
 }; // class static_vector
 
@@ -231,6 +231,6 @@ auto swap(static_vector<Type, Capacity>& lhs, static_vector<Type, Capacity>& rhs
   lhs.swap(rhs);
 }
 
-} // namespace sbx::memory
+} // namespace sbx::containers
 
-#endif // LIBSBX_MEMORY_STATIC_VECTOR_HPP_
+#endif // LIBSBX_CONTAINERS_STATIC_VECTOR_HPP_
