@@ -4,6 +4,9 @@
 #include <cstddef>
 #include <iterator>
 #include <type_traits>
+#include <ranges>
+
+#include <range/v3/all.hpp>
 
 namespace sbx::utility {
 
@@ -24,6 +27,12 @@ concept iterable = requires(Type t) {
   { std::begin(t) } -> std::same_as<typename Type::const_iterator>;
   { std::end(t) } -> std::same_as<typename Type::const_iterator>;
 } || std::is_array_v<Type>;
+
+template<template<typename> typename To, ranges::input_range Range, std::invocable<const ranges::range_value_t<Range>&> Fn>
+requires (ranges::output_range<To<std::invoke_result_t<Fn, const ranges::range_value_t<Range>&>>, std::invoke_result_t<Fn, const ranges::range_value_t<Range>&>>)
+auto map_to(Range&& range, Fn&& fn) -> To<std::invoke_result_t<Fn, const ranges::range_value_t<Range>&>> {
+  return std::forward<Range>(range) | ranges::views::transform(std::forward<Fn>(fn)) | ranges::to<To>();
+}
 
 } // namespace sbx::utility
 

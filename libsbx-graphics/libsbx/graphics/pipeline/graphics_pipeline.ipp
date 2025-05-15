@@ -10,9 +10,9 @@
 
 #include <libsbx/utility/timer.hpp>
 #include <libsbx/utility/logger.hpp>
+#include <libsbx/utility/iterator.hpp>
 
 #include <libsbx/core/engine.hpp>
-
 
 #include <libsbx/graphics/graphics_module.hpp>
 
@@ -28,11 +28,6 @@
 #include <libsbx/graphics/render_pass/swapchain.hpp>
 
 namespace sbx::graphics {
-
-template<template<typename> typename To, typename Range, typename Fn>
-auto extract_to(Range&& range, Fn&& fn) -> To<std::invoke_result_t<Fn, const ranges::range_value_t<Range>&>> {
-  return range | ranges::views::transform(std::forward<Fn>(fn)) | ranges::to<To>();
-}
 
 template<vertex Vertex>
 graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, const pipeline::stage& stage, const pipeline_definition& default_definition, const VkSpecializationInfo* specialization_info)
@@ -123,12 +118,8 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
     }
   }
 
-  auto descriptor_set_layout_bindings = std::vector<std::vector<VkDescriptorSetLayoutBinding>>{};
+  auto descriptor_set_layout_bindings = std::vector<std::unordered_map<std::uint32_t, VkDescriptorSetLayoutBinding>>{};
   descriptor_set_layout_bindings.resize(_set_data.size());
-
-  for (auto&& [set, set_data] : ranges::view::enumerate(_set_data)) {
-    descriptor_set_layout_bindings[set].resize(set_data.uniform_blocks.size() + set_data.uniforms.size());
-  }
 
   for (auto& set_data : _set_data) {
     for (const auto& [name, uniform_block] : set_data.uniform_blocks) {
@@ -214,7 +205,7 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
   for (auto&& [set, descriptors] : ranges::views::enumerate(descriptor_set_layout_bindings)) {
     _set_data[set].binding_data.resize(descriptors.size());
     
-    for (auto&& [binding, descriptor] : ranges::views::enumerate(descriptors)) {
+    for (auto&& [binding, descriptor] : descriptors) {
       _set_data[set].binding_data[binding].descriptor_type = descriptor.descriptorType;
       _set_data[set].binding_data[binding].descriptor_count = descriptor.descriptorCount;
     }
@@ -349,13 +340,15 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
   for (auto&& [set, descriptor_set_layout_binding] : ranges::views::enumerate(descriptor_set_layout_bindings)) {
     auto binding_flags = std::vector<VkDescriptorBindingFlags>{};
 
-    for (const auto& binding : descriptor_set_layout_binding) {
+    for (const auto& [id, binding] : descriptor_set_layout_binding) {
       if (binding.descriptorCount > 1u) {
         binding_flags.push_back(VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT | VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT);
       } else {
         binding_flags.push_back(0u);
       }
     }
+
+    const auto bindings = utility::map_to<std::vector>(descriptor_set_layout_binding, [](const auto& entry) -> VkDescriptorSetLayoutBinding { return entry.second; });
 
     auto descriptor_set_layout_binding_flags_create_info = VkDescriptorSetLayoutBindingFlagsCreateInfo{};
     descriptor_set_layout_binding_flags_create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
@@ -365,8 +358,8 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
     auto descriptor_set_layout_create_info = VkDescriptorSetLayoutCreateInfo{};
     descriptor_set_layout_create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
     descriptor_set_layout_create_info.pNext = &descriptor_set_layout_binding_flags_create_info;
-    descriptor_set_layout_create_info.bindingCount = static_cast<std::uint32_t>(descriptor_set_layout_binding.size());
-    descriptor_set_layout_create_info.pBindings = descriptor_set_layout_binding.data();
+    descriptor_set_layout_create_info.bindingCount = static_cast<std::uint32_t>(bindings.size());
+    descriptor_set_layout_create_info.pBindings = bindings.data();
 
     validate(vkCreateDescriptorSetLayout(logical_device, &descriptor_set_layout_create_info, nullptr, &_set_data[set].layout));
   }
@@ -414,16 +407,7 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
     }
   }
 
-  // auto layouts = std::vector<VkDescriptorSetLayout>{};
-  // layouts.reserve(_set_data.size());
-
-  // for (const auto& set_data : _set_data) {
-  //   layouts.push_back(set_data.layout);
-  // }
-
-  // const auto layouts = _set_data | ranges::views::transform([](const auto& set_data){ return set_data.layout; }) | ranges::to<std::vector>();
-
-  const auto layouts = extract_to<std::vector>(_set_data, [](const auto& set_data) -> VkDescriptorSetLayout { return set_data.layout; });
+  const auto layouts = utility::map_to<std::vector>(_set_data, [](const auto& set_data) -> VkDescriptorSetLayout { return set_data.layout; });
 
   auto pipeline_layout_create_info = VkPipelineLayoutCreateInfo{};
   pipeline_layout_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;

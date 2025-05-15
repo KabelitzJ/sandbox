@@ -7,5 +7,15 @@ auto main(int argc, char* argv[]) -> int {
 
   auto task_graph = sbx::containers::task_graph{"render_graph"};
 
+  auto [a, b, c] = task_graph.emplace(
+    [](){},
+    [](){},
+    [](){}
+  );
+
+  a.precede(b, c);
+
+  c.succeed(b);
+
   return RUN_ALL_TESTS();
 }

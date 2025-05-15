@@ -50,6 +50,7 @@ class graph_node;
 class graph_base;
 class graph_builder;
 class task;
+class sub_graph;
 
 class graph_base : std::vector<std::unique_ptr<graph_node>> {
 
@@ -71,6 +72,8 @@ public:
   auto operator=(graph_base&& other) -> graph_base& = default;
 
 private:
+
+  auto _reserve(const std::size_t capacity) -> void;
 
   auto _erase(graph_node* node) -> void;
 
@@ -112,6 +115,16 @@ class graph_node {
     
     std::function<void()> work;
   }; // struct static_task
+
+  struct sub_graph {
+    
+    template<typename Callable>
+    sub_graph(Callable&& callable);
+    
+    std::function<void(sub_graph&)> work;
+    graph_base graph;
+  }; // struct sub_graph
+  
   
   using task_handle = std::variant<placeholder_task, static_task>;
 
@@ -197,6 +210,24 @@ private:
 
 }; // class graph_builder
 
+class sub_graph : public graph_builder {
+
+public:
+
+private:
+
+  sub_graph(graph_node* parent, graph_base& graph)
+  : graph_builder{graph},
+    _parent{parent} { }
+
+  graph_node* _parent;
+
+}; // class subgraph
+
+auto graph_base::_reserve(const std::size_t capacity) -> void {
+  base::reserve(capacity);
+}
+
 auto graph_base::_erase(graph_node* node) -> void {
   base::erase(std::remove_if(base::begin(), base::end(), [&](auto& entry){ return entry.get() == node; }), base::end() );
 } 
@@ -209,6 +240,10 @@ auto graph_base::_emplace_back(Args&&... args) -> graph_node* {
 
 template<typename Callable>
 graph_node::static_task::static_task(Callable&& callable)
+: work{std::forward<Callable>(callable)} { }
+
+template<typename Callable>
+graph_node::sub_graph::sub_graph(Callable&& callable)
 : work{std::forward<Callable>(callable)} { }
 
 graph_node::graph_node()
@@ -303,6 +338,7 @@ auto graph_builder::emplace(Callable&& callable) -> task {
 template<typename... Callables>
 requires (sizeof...(Callables) > 1u)
 auto graph_builder::emplace(Callables&&... callables) -> decltype(auto) {
+  _graph.reserve(sizeof...(Callables));
   return std::make_tuple(emplace(std::forward<Callables>(callables))...);
 }
 
