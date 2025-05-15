@@ -29,6 +29,11 @@
 
 namespace sbx::graphics {
 
+template<template<typename> typename To, typename Range, typename Fn>
+auto extract_to(Range&& range, Fn&& fn) -> To<std::invoke_result_t<Fn, const ranges::range_value_t<Range>&>> {
+  return range | ranges::views::transform(std::forward<Fn>(fn)) | ranges::to<To>();
+}
+
 template<vertex Vertex>
 graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, const pipeline::stage& stage, const pipeline_definition& default_definition, const VkSpecializationInfo* specialization_info)
 : _bind_point{VK_PIPELINE_BIND_POINT_GRAPHICS},
@@ -409,12 +414,16 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
     }
   }
 
-  auto layouts = std::vector<VkDescriptorSetLayout>{};
-  layouts.reserve(_set_data.size());
+  // auto layouts = std::vector<VkDescriptorSetLayout>{};
+  // layouts.reserve(_set_data.size());
 
-  for (const auto& set_data : _set_data) {
-    layouts.push_back(set_data.layout);
-  }
+  // for (const auto& set_data : _set_data) {
+  //   layouts.push_back(set_data.layout);
+  // }
+
+  // const auto layouts = _set_data | ranges::views::transform([](const auto& set_data){ return set_data.layout; }) | ranges::to<std::vector>();
+
+  const auto layouts = extract_to<std::vector>(_set_data, [](const auto& set_data) -> VkDescriptorSetLayout { return set_data.layout; });
 
   auto pipeline_layout_create_info = VkPipelineLayoutCreateInfo{};
   pipeline_layout_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;

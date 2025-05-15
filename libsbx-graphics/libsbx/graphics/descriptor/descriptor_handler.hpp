@@ -25,11 +25,13 @@ class descriptor_handler {
 public:
 
   descriptor_handler(std::uint32_t set)
-  : _set{set} { }
+  : _set{set},
+    _has_changed{true} { }
 
   explicit descriptor_handler(const pipeline& pipeline, std::uint32_t set)
   : _pipeline{&pipeline},
-    _set{set} {
+    _set{set},
+    _has_changed{true} {
     _recreate_descriptor_sets();
   }
 
@@ -94,25 +96,28 @@ public:
       return false;
     }
 
-    auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+    if (_has_changed) {
+      auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
-    const auto current_frame = graphics_module.current_frame();
+      const auto current_frame = graphics_module.current_frame();
 
-    auto& descriptor_set = _descriptor_sets[current_frame];
+      auto& descriptor_set = _descriptor_sets[current_frame];
 
-    auto write_descriptor_sets = std::vector<VkWriteDescriptorSet>{};
-    write_descriptor_sets.reserve(_descriptors.size());
+      auto write_descriptor_sets = std::vector<VkWriteDescriptorSet>{};
+      write_descriptor_sets.reserve(_descriptors.size());
 
-    for (const auto& [name, descriptor] : _descriptors) {
-      auto write_descriptor_set = descriptor.write_descriptor_set.handle();
-      write_descriptor_set.dstSet = *descriptor_set;
+      for (const auto& [name, descriptor] : _descriptors) {
+        auto write_descriptor_set = descriptor.write_descriptor_set.handle();
+        write_descriptor_set.dstSet = *descriptor_set;
 
-      write_descriptor_sets.push_back(write_descriptor_set);
+        write_descriptor_sets.push_back(write_descriptor_set);
+      }
+
+      graphics::descriptor_set::update(write_descriptor_sets);
+
+      _has_changed = false;
     }
 
-    graphics::descriptor_set::update(write_descriptor_sets);
-
-    _descriptors.clear();
 
     return true;
   }
@@ -142,13 +147,18 @@ private:
 
     auto write_descriptor_set = descriptor.write_descriptor_set(*binding, *descriptor_type);
 
-    _descriptors.insert({name, descriptor_entry{std::addressof(descriptor), std::move(write_descriptor_set), *binding}});
+    _descriptors.insert_or_assign(name, descriptor_entry{std::addressof(descriptor), std::move(write_descriptor_set), *binding});
+    _has_changed = true;
   }
 
   auto _recreate_descriptor_sets() -> void {
+    _descriptors.clear();
+
     for (auto& descriptor_set : _descriptor_sets) {
       descriptor_set = std::make_unique<graphics::descriptor_set>(*_pipeline, _set);
     }
+
+    _has_changed = false;
   }
 
   std::uint32_t _set;
@@ -158,6 +168,7 @@ private:
   std::array<std::unique_ptr<graphics::descriptor_set>, graphics::swapchain::max_frames_in_flight> _descriptor_sets{};
 
   std::map<std::string, descriptor_entry> _descriptors{};
+  bool _has_changed{};
 
 }; // class descriptor_handler
 

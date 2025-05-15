@@ -13,13 +13,15 @@ layout(binding = 1) uniform uniform_object {
 } object;
 
 layout(location = 0) out vec3 out_position;
+layout(location = 1) out vec4 out_color;
 
 void main() {
   mat4 view_no_translation = mat4(mat3(scene.view));
 
   vec4 position = scene.projection * view_no_translation * vec4(in_position, 1.0);
 
-  gl_Position = position.xyww;
-
   out_position = in_position;
+  out_color = object.tint;
+
+  gl_Position = position.xyww;
 }
