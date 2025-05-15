@@ -12,7 +12,6 @@
 #include <GLFW/glfw3.h>
 
 #include <libsbx/core/module.hpp>
-#include <libsbx/core/logger.hpp>
 #include <libsbx/core/engine.hpp>
 
 #include <libsbx/units/time.hpp>

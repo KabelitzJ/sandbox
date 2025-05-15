@@ -2,14 +2,17 @@
 
 #include <unordered_set>
 
+#include <range/v3/all.hpp>
+
 #include <fmt/format.h>
 
 #include <nlohmann/json.hpp>
 
-#include <libsbx/core/logger.hpp>
+#include <libsbx/utility/timer.hpp>
+#include <libsbx/utility/logger.hpp>
+
 #include <libsbx/core/engine.hpp>
 
-#include <libsbx/utility/timer.hpp>
 
 #include <libsbx/graphics/graphics_module.hpp>
 
@@ -18,6 +21,7 @@
 
 #include <libsbx/graphics/images/image2d.hpp>
 #include <libsbx/graphics/images/image2d_array.hpp>
+#include <libsbx/graphics/images/cube_image.hpp>
 #include <libsbx/graphics/images/separate_sampler.hpp>
 #include <libsbx/graphics/images/separate_image2d_array.hpp>
 
@@ -25,8 +29,13 @@
 
 namespace sbx::graphics {
 
+template<template<typename> typename To, typename Range, typename Fn>
+auto extract_to(Range&& range, Fn&& fn) -> To<std::invoke_result_t<Fn, const ranges::range_value_t<Range>&>> {
+  return range | ranges::views::transform(std::forward<Fn>(fn)) | ranges::to<To>();
+}
+
 template<vertex Vertex>
-graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, const pipeline::stage& stage, const pipeline_definition& default_definition)
+graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, const pipeline::stage& stage, const pipeline_definition& default_definition, const VkSpecializationInfo* specialization_info)
 : _bind_point{VK_PIPELINE_BIND_POINT_GRAPHICS},
   _stage{stage} {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
@@ -55,7 +64,7 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
       const auto stage = _get_stage_from_name(stem);
 
       if (stage == VK_SHADER_STAGE_FLAG_BITS_MAX_ENUM) {
-        core::logger::warn("Unsupported shader stage '{}' in graphics pipeline '{}'", stem, _name);
+        utility::logger<"graphics">::warn("Unsupported shader stage '{}' in graphics pipeline '{}'", stem, _name);
         continue;
       }
 
@@ -80,100 +89,141 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
     shader_stage.stage = stage;
     shader_stage.module = *shader;
     shader_stage.pName = "main";
+    shader_stage.pSpecializationInfo = specialization_info;
 
     shader_stages.push_back(shader_stage);
 
-    for (const auto& [name, uniform] : shader->uniforms()) {
-      if (auto entry = _uniforms.find(name); entry != _uniforms.end()) {
-        entry->second.add_stage_flag(uniform.stage_flags());
-      } else {
-        _uniforms.insert({name, uniform});
+    // [NOTE] 2025-05-14: Create or append uniforms
+    for (auto&& [i, set] : ranges::views::enumerate(shader->set_uniforms())) {
+      _set_data.resize(std::max(_set_data.size(), i + 1u));
+
+      auto& set_uniforms = _set_data[i].uniforms;
+
+      for (const auto& [name, uniform] : set) {
+        if (auto entry = set_uniforms.find(name); entry != set_uniforms.end()) {
+          entry->second.add_stage_flag(uniform.stage_flags());
+        } else {
+          set_uniforms.insert({name, uniform});
+        }
       }
     }
     
-    for (const auto& [name, uniform_block] : shader->uniform_blocks()) {
-      if (auto entry = _uniform_blocks.find(name); entry != _uniform_blocks.end()) {
-        entry->second.add_stage_flag(uniform_block.stage_flags());
-      } else {
-        _uniform_blocks.insert({name, uniform_block});
+    for (auto&& [i, set] : ranges::views::enumerate(shader->set_uniform_blocks())) {
+      _set_data.resize(std::max(_set_data.size(), i + 1u));
+
+      auto& set_uniform_blocks = _set_data[i].uniform_blocks;
+
+      for (const auto& [name, uniform_block] : set) {
+        if (auto entry = set_uniform_blocks.find(name); entry != set_uniform_blocks.end()) {
+          entry->second.add_stage_flag(uniform_block.stage_flags());
+        } else {
+          set_uniform_blocks.insert({name, uniform_block});
+        }
       }
     }
   }
 
-  auto descriptor_set_layout_bindings = std::vector<VkDescriptorSetLayoutBinding>{};
+  auto descriptor_set_layout_bindings = std::vector<std::vector<VkDescriptorSetLayoutBinding>>{};
+  descriptor_set_layout_bindings.resize(_set_data.size());
 
-  for (const auto& [name, uniform_block] : _uniform_blocks) {
-    switch (uniform_block.buffer_type()) {
-      case shader::uniform_block::type::uniform: {
-        descriptor_set_layout_bindings.push_back(uniform_buffer::create_descriptor_set_layout_binding(uniform_block.binding(), VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, uniform_block.stage_flags()));
-        break;
+  for (auto&& [set, set_data] : ranges::view::enumerate(_set_data)) {
+    descriptor_set_layout_bindings[set].resize(set_data.uniform_blocks.size() + set_data.uniforms.size());
+  }
+
+  for (auto& set_data : _set_data) {
+    for (const auto& [name, uniform_block] : set_data.uniform_blocks) {
+      auto& descriptor_set_layout_binding = descriptor_set_layout_bindings[uniform_block.set()];
+
+      switch (uniform_block.buffer_type()) {
+        case shader::uniform_block::type::uniform: {
+          descriptor_set_layout_binding[uniform_block.binding()] = uniform_buffer::create_descriptor_set_layout_binding(uniform_block.binding(), VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, uniform_block.stage_flags());
+          break;
+        }
+        case shader::uniform_block::type::storage: {
+          descriptor_set_layout_binding[uniform_block.binding()] = storage_buffer::create_descriptor_set_layout_binding(uniform_block.binding(), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, uniform_block.stage_flags());
+          break;
+        }
+        case shader::uniform_block::type::push: {
+          // [NOTE] KAJ 2024-01-19 : We dont need descriptor sets for push constants but we still want to add them the the bindings and sizes
+          break;
+        }
+        default: {
+          utility::logger<"graphics">::warn("Unsupported uniform block type (sbx::graphics::shader::uniform_block::type): {}", uniform_block.buffer_type());
+          continue;
+        }
       }
-      case shader::uniform_block::type::storage: {
-        descriptor_set_layout_bindings.push_back(storage_buffer::create_descriptor_set_layout_binding(uniform_block.binding(), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, uniform_block.stage_flags()));
-        break;
-      }
-      case shader::uniform_block::type::push: {
-        // [NOTE] KAJ 2024-01-19 : We dont need descriptor sets for push constants but we still want to add them the the bindings and sizes
-        break;
-      }
-      default: {
-        core::logger::warn("Unsupported uniform block type (sbx::graphics::shader::uniform_block::type): {}", uniform_block.buffer_type());
-        continue;
-      }
+
+      set_data.descriptor_bindings.insert({name, uniform_block.binding()});
+      set_data.descriptor_sizes.insert({name, uniform_block.size()});
     }
 
-    _descriptor_bindings.insert({name, uniform_block.binding()});
-    _descriptor_sizes.insert({name, uniform_block.size()});
-  }
+    for (const auto& [name, uniform] : set_data.uniforms) {
+      auto& descriptor_set_layout_binding = descriptor_set_layout_bindings[uniform.set()];
 
-  for (const auto& [name, uniform] : _uniforms) {
-    switch (uniform.type()) {
-      case shader::data_type::sampler2d: {
-        descriptor_set_layout_bindings.push_back(image::create_descriptor_set_layout_binding(uniform.binding(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, uniform.stage_flags()));
-        break;
+      switch (uniform.type()) {
+        case shader::data_type::sampler2d: {
+          descriptor_set_layout_binding[uniform.binding()] = image2d::create_descriptor_set_layout_binding(uniform.binding(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, uniform.stage_flags());
+          break;
+        }
+        case shader::data_type::sampler2d_array: {
+          descriptor_set_layout_binding[uniform.binding()] = image2d_array::create_descriptor_set_layout_binding(uniform.binding(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, uniform.stage_flags());
+          break;
+        }
+        case shader::data_type::sampler_cube: {
+          descriptor_set_layout_binding[uniform.binding()] = cube_image::create_descriptor_set_layout_binding(uniform.binding(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, uniform.stage_flags());
+          break;
+        }
+        case shader::data_type::separate_sampler: {
+          descriptor_set_layout_binding[uniform.binding()] = separate_sampler::create_descriptor_set_layout_binding(uniform.binding(), VK_DESCRIPTOR_TYPE_SAMPLER, uniform.stage_flags());
+          break;
+        }
+        case shader::data_type::separate_image2d_array: {
+          descriptor_set_layout_binding[uniform.binding()] = separate_image2d_array::create_descriptor_set_layout_binding(uniform.binding(), VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, uniform.stage_flags());
+          _has_variable_descriptors = true;
+          break;
+        }
+        case shader::data_type::storage_image: {
+          descriptor_set_layout_binding[uniform.binding()] = image::create_descriptor_set_layout_binding(uniform.binding(), VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, uniform.stage_flags());
+          break;
+        }
+        case shader::data_type::subpass_input: {
+          descriptor_set_layout_binding[uniform.binding()] = image::create_descriptor_set_layout_binding(uniform.binding(), VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, uniform.stage_flags());
+          break;
+        }
+        default: {
+          utility::logger<"graphics">::warn("Unsupported uniform type (sbx::graphics::shader::data_type): {}", uniform.type());
+          continue;
+        }
       }
-      case shader::data_type::sampler2d_array: {
-        descriptor_set_layout_bindings.push_back(image2d_array::create_descriptor_set_layout_binding(uniform.binding(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, uniform.stage_flags()));
-        break;
-      }
-      case shader::data_type::separate_sampler: {
-        descriptor_set_layout_bindings.push_back(separate_sampler::create_descriptor_set_layout_binding(uniform.binding(), VK_DESCRIPTOR_TYPE_SAMPLER, uniform.stage_flags()));
-        break;
-      }
-      case shader::data_type::separate_image2d_array: {
-        descriptor_set_layout_bindings.push_back(separate_image2d_array::create_descriptor_set_layout_binding(uniform.binding(), VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, uniform.stage_flags()));
-        _has_variable_descriptors = true;
-        break;
-      }
-      case shader::data_type::storage_image: {
-        descriptor_set_layout_bindings.push_back(image::create_descriptor_set_layout_binding(uniform.binding(), VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, uniform.stage_flags()));
-        break;
-      }
-      case shader::data_type::subpass_input: {
-        descriptor_set_layout_bindings.push_back(image::create_descriptor_set_layout_binding(uniform.binding(), VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, uniform.stage_flags()));
-        break;
-      }
-      default: {
-        core::logger::warn("Unsupported uniform type (sbx::graphics::shader::data_type): {}", uniform.type());
-        continue;
-      }
+
+      set_data.descriptor_bindings.insert({name, uniform.binding()});
+      set_data.descriptor_sizes.insert({name, uniform.size()});
     }
-
-    _descriptor_bindings.insert({name, uniform.binding()});
-    _descriptor_sizes.insert({name, uniform.size()});
   }
 
-  std::ranges::sort(descriptor_set_layout_bindings, [](const auto& lhs, const auto& rhs) {
-    return lhs.binding < rhs.binding;
-  });
+  // std::ranges::sort(descriptor_set_layout_bindings, [](const auto& lhs, const auto& rhs) {
+  //   return lhs.binding < rhs.binding;
+  // });
 
-  for (const auto& descriptor : descriptor_set_layout_bindings) {
-    _descriptor_type_at_binding.insert({descriptor.binding, descriptor.descriptorType});
+  // for (auto& set_data : _set_data) {
+  //   std::ranges::sort(set_data.binding_data, [](const auto& lhs, const auto& rhs) {
+  //     return lhs.binding < rhs.binding;
+  //   );
+  // }
+
+  for (auto&& [set, descriptors] : ranges::views::enumerate(descriptor_set_layout_bindings)) {
+    _set_data[set].binding_data.resize(descriptors.size());
+    
+    for (auto&& [binding, descriptor] : ranges::views::enumerate(descriptors)) {
+      _set_data[set].binding_data[binding].descriptor_type = descriptor.descriptorType;
+      _set_data[set].binding_data[binding].descriptor_count = descriptor.descriptorCount;
+    }
   }
 
-  for (const auto& descriptor : descriptor_set_layout_bindings) {
-    _descriptor_count_at_binding.insert({descriptor.binding, descriptor.descriptorCount});
-  }
+  // for (const auto& set : descriptor_set_layout_bindings) {
+  //   for (const auto& descriptor : set) {
+  //   }
+  // }
 
   auto viewport_state = VkPipelineViewportStateCreateInfo{};
   viewport_state.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -190,7 +240,7 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
   rasterization_state.frontFace = to_vk_enum<VkFrontFace>(definition.rasterization_state.front_face);
 
   if (definition.rasterization_state.depth_bias.has_value()) {
-    auto& depth_bias = definition.rasterization_state.depth_bias.value();
+    const auto& depth_bias = definition.rasterization_state.depth_bias.value();
 
     rasterization_state.depthBiasEnable = true;
     rasterization_state.depthBiasConstantFactor = depth_bias.constant_factor;
@@ -212,22 +262,22 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
 
   if (definition.uses_transparency) {
     color_blend_attachment.blendEnable = true;
+    color_blend_attachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
     color_blend_attachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
     color_blend_attachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
     color_blend_attachment.colorBlendOp = VK_BLEND_OP_ADD;
     color_blend_attachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-    color_blend_attachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
-    color_blend_attachment.alphaBlendOp = VK_BLEND_OP_MAX;
-    color_blend_attachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+    color_blend_attachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+    color_blend_attachment.alphaBlendOp = VK_BLEND_OP_ADD;
   } else {
     color_blend_attachment.blendEnable = false;
+    color_blend_attachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
     color_blend_attachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
     color_blend_attachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
     color_blend_attachment.colorBlendOp = VK_BLEND_OP_ADD;
     color_blend_attachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
     color_blend_attachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
     color_blend_attachment.alphaBlendOp = VK_BLEND_OP_ADD;
-    color_blend_attachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
   }
 
   auto color_blend_attachments = std::vector<VkPipelineColorBlendAttachmentState>{render_stage.attachment_count(_stage.subpass), color_blend_attachment};
@@ -255,19 +305,31 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
 
   auto depth_stencil_state = VkPipelineDepthStencilStateCreateInfo{};
   depth_stencil_state.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+  depth_stencil_state.depthBoundsTestEnable = false;
+  depth_stencil_state.stencilTestEnable = false;
 
-  if (definition.uses_depth) {
-    depth_stencil_state.depthTestEnable = true;
-    depth_stencil_state.depthWriteEnable = true;
-    depth_stencil_state.depthCompareOp = VK_COMPARE_OP_LESS;
-    depth_stencil_state.depthBoundsTestEnable = false;
-    depth_stencil_state.stencilTestEnable = false;
-  } else {
-    depth_stencil_state.depthTestEnable = false;
-    depth_stencil_state.depthWriteEnable = false;
-    depth_stencil_state.depthCompareOp = VK_COMPARE_OP_ALWAYS;
-    depth_stencil_state.depthBoundsTestEnable = false;
-    depth_stencil_state.stencilTestEnable = false;
+  switch (definition.depth) {
+    case depth::disabled: {
+      depth_stencil_state.depthTestEnable = false;
+      depth_stencil_state.depthWriteEnable = false;
+      depth_stencil_state.depthCompareOp = VK_COMPARE_OP_LESS;
+      break;
+    }
+    case depth::read_write: {
+      depth_stencil_state.depthTestEnable = true;
+      depth_stencil_state.depthWriteEnable = true;
+      depth_stencil_state.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
+      break;
+    }
+    case depth::read_only: {
+      depth_stencil_state.depthTestEnable = true;
+      depth_stencil_state.depthWriteEnable = false;
+      depth_stencil_state.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
+      break;
+    }
+    default: {
+      throw std::runtime_error{"Unsupported depth test type"};
+    }
   }
 
   const auto [binding_descriptions, attribute_descriptions] = vertex_input<Vertex>::description();
@@ -284,28 +346,30 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
   input_assembly_state.topology = to_vk_enum<VkPrimitiveTopology>(definition.primitive_topology);
   input_assembly_state.primitiveRestartEnable = false;
 
-  auto binding_flags = std::vector<VkDescriptorBindingFlags>{};
+  for (auto&& [set, descriptor_set_layout_binding] : ranges::views::enumerate(descriptor_set_layout_bindings)) {
+    auto binding_flags = std::vector<VkDescriptorBindingFlags>{};
 
-  for (const auto& descriptor_set_layout_binding : descriptor_set_layout_bindings) {
-    if (descriptor_set_layout_binding.descriptorCount > 1u) {
-      binding_flags.push_back(VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT | VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT);
-    } else {
-      binding_flags.push_back(0u);
+    for (const auto& binding : descriptor_set_layout_binding) {
+      if (binding.descriptorCount > 1u) {
+        binding_flags.push_back(VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT | VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT);
+      } else {
+        binding_flags.push_back(0u);
+      }
     }
+
+    auto descriptor_set_layout_binding_flags_create_info = VkDescriptorSetLayoutBindingFlagsCreateInfo{};
+    descriptor_set_layout_binding_flags_create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
+    descriptor_set_layout_binding_flags_create_info.bindingCount = static_cast<std::uint32_t>(binding_flags.size());
+    descriptor_set_layout_binding_flags_create_info.pBindingFlags = binding_flags.data();
+
+    auto descriptor_set_layout_create_info = VkDescriptorSetLayoutCreateInfo{};
+    descriptor_set_layout_create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    descriptor_set_layout_create_info.pNext = &descriptor_set_layout_binding_flags_create_info;
+    descriptor_set_layout_create_info.bindingCount = static_cast<std::uint32_t>(descriptor_set_layout_binding.size());
+    descriptor_set_layout_create_info.pBindings = descriptor_set_layout_binding.data();
+
+    validate(vkCreateDescriptorSetLayout(logical_device, &descriptor_set_layout_create_info, nullptr, &_set_data[set].layout));
   }
-
-  auto descriptor_set_layout_binding_flags_create_info = VkDescriptorSetLayoutBindingFlagsCreateInfo{};
-  descriptor_set_layout_binding_flags_create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
-  descriptor_set_layout_binding_flags_create_info.bindingCount = static_cast<std::uint32_t>(binding_flags.size());
-  descriptor_set_layout_binding_flags_create_info.pBindingFlags = binding_flags.data();
-
-  auto descriptor_set_layout_create_info = VkDescriptorSetLayoutCreateInfo{};
-  descriptor_set_layout_create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-  descriptor_set_layout_create_info.pNext = &descriptor_set_layout_binding_flags_create_info;
-  descriptor_set_layout_create_info.bindingCount = static_cast<std::uint32_t>(descriptor_set_layout_bindings.size());
-  descriptor_set_layout_create_info.pBindings = descriptor_set_layout_bindings.data();
-
-  validate(vkCreateDescriptorSetLayout(logical_device, &descriptor_set_layout_create_info, nullptr, &_descriptor_set_layout));
 
   // [NOTE] KAJ 2023-09-13 : Workaround
   auto descriptor_pool_sizes = std::vector<VkDescriptorPoolSize>{
@@ -333,25 +397,38 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
 
   auto current_offset = std::uint32_t{0u};
 
-  for (const auto& [name, uniform] : _uniform_blocks) {
-    if (uniform.buffer_type() != shader::uniform_block::type::push) {
-      continue;
+  for (const auto& set_data : _set_data) {
+    for (const auto& [name, uniform] : set_data.uniform_blocks) {
+      if (uniform.buffer_type() != shader::uniform_block::type::push) {
+        continue;
+      }
+
+      auto push_constant_range = VkPushConstantRange{};
+      push_constant_range.stageFlags = uniform.stage_flags();
+      push_constant_range.offset = current_offset;
+      push_constant_range.size = uniform.size();
+
+      push_constant_ranges.push_back(push_constant_range);
+
+      current_offset += push_constant_range.size;
     }
-
-    auto push_constant_range = VkPushConstantRange{};
-    push_constant_range.stageFlags = uniform.stage_flags();
-    push_constant_range.offset = current_offset;
-    push_constant_range.size = uniform.size();
-
-    push_constant_ranges.push_back(push_constant_range);
-
-    current_offset += push_constant_range.size;
   }
+
+  // auto layouts = std::vector<VkDescriptorSetLayout>{};
+  // layouts.reserve(_set_data.size());
+
+  // for (const auto& set_data : _set_data) {
+  //   layouts.push_back(set_data.layout);
+  // }
+
+  // const auto layouts = _set_data | ranges::views::transform([](const auto& set_data){ return set_data.layout; }) | ranges::to<std::vector>();
+
+  const auto layouts = extract_to<std::vector>(_set_data, [](const auto& set_data) -> VkDescriptorSetLayout { return set_data.layout; });
 
   auto pipeline_layout_create_info = VkPipelineLayoutCreateInfo{};
   pipeline_layout_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-  pipeline_layout_create_info.setLayoutCount = 1;
-  pipeline_layout_create_info.pSetLayouts = &_descriptor_set_layout;
+  pipeline_layout_create_info.setLayoutCount = static_cast<std::uint32_t>(layouts.size());
+  pipeline_layout_create_info.pSetLayouts = layouts.data();
   pipeline_layout_create_info.pushConstantRangeCount = static_cast<std::uint32_t>(push_constant_ranges.size());
   pipeline_layout_create_info.pPushConstantRanges = push_constant_ranges.data();
 
@@ -359,6 +436,7 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
   
   auto pipeline_create_info = VkGraphicsPipelineCreateInfo{};
   pipeline_create_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+  pipeline_create_info.flags = VK_PIPELINE_CREATE_ALLOW_DERIVATIVES_BIT;
   pipeline_create_info.stageCount = static_cast<std::uint32_t>(shader_stages.size());
   pipeline_create_info.pStages = shader_stages.data();
   pipeline_create_info.pVertexInputState = &vertex_input_state;
@@ -377,7 +455,7 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
 
   validate(vkCreateGraphicsPipelines(logical_device, VK_NULL_HANDLE, 1, &pipeline_create_info, nullptr, &_handle));
 
-  core::logger::debug("Pipeline '{}' created in {:.2f}ms", _name, units::quantity_cast<units::millisecond>(timer.elapsed()).value());
+  utility::logger<"graphics">::debug("Pipeline '{}' created in {:.2f}ms", _name, units::quantity_cast<units::millisecond>(timer.elapsed()).value());
 }
 
 template<vertex Vertex>
@@ -391,7 +469,10 @@ graphics_pipeline<Vertex>::~graphics_pipeline() {
   logical_device.wait_idle();
 
   vkDestroyDescriptorPool(logical_device, _descriptor_pool, nullptr);
-  vkDestroyDescriptorSetLayout(logical_device, _descriptor_set_layout, nullptr);
+  
+  for (const auto& set_data : _set_data) {
+    vkDestroyDescriptorSetLayout(logical_device, set_data.layout, nullptr);
+  }
 
   vkDestroyPipelineLayout(logical_device, _layout, nullptr);
 
@@ -399,22 +480,22 @@ graphics_pipeline<Vertex>::~graphics_pipeline() {
 }
 
 template<vertex Vertex>
-auto graphics_pipeline<Vertex>::handle() const noexcept -> const VkPipeline& {
+auto graphics_pipeline<Vertex>::handle() const noexcept -> VkPipeline {
   return _handle;
 }
 
 template<vertex Vertex>
-auto graphics_pipeline<Vertex>::descriptor_set_layout() const noexcept -> const VkDescriptorSetLayout& {
-  return _descriptor_set_layout;
+auto graphics_pipeline<Vertex>::descriptor_set_layout(std::uint32_t set) const noexcept -> VkDescriptorSetLayout {
+  return _set_data[set].layout;
 }
 
 template<vertex Vertex>
-auto graphics_pipeline<Vertex>::descriptor_pool() const noexcept -> const VkDescriptorPool& {
+auto graphics_pipeline<Vertex>::descriptor_pool() const noexcept -> VkDescriptorPool {
   return _descriptor_pool;
 }
 
 template<vertex Vertex>
-auto graphics_pipeline<Vertex>::layout() const noexcept -> const VkPipelineLayout& {
+auto graphics_pipeline<Vertex>::layout() const noexcept -> VkPipelineLayout {
   return _layout;
 }
 
@@ -439,12 +520,18 @@ auto graphics_pipeline<Vertex>::_update_definition(const std::filesystem::path& 
 
   auto result = default_definition;
 
-  if (definition.contains("uses_depth")) {
-    result.uses_depth = definition["uses_depth"].get<bool>();
+  if (definition.contains("depth")) {
+    auto depth = utility::from_string<graphics::depth>(definition["depth"].get<std::string>());
+
+    if (depth) {
+      result.depth = *depth;
+    } else {
+      utility::logger<"graphics">::warn("Could not parse 'sbx::graphics::depth' value '{}'", definition["depth"].get<std::string>());
+    }
   }
 
   if (definition.contains("uses_transparency")) {
-    result.uses_depth = definition["uses_transparency"].get<bool>();
+    result.uses_transparency = definition["uses_transparency"].get<bool>();
   }
 
   if (definition.contains("rasterization_state")) {
@@ -456,8 +543,48 @@ auto graphics_pipeline<Vertex>::_update_definition(const std::filesystem::path& 
       if (polygon_mode) {
         result.rasterization_state.polygon_mode = *polygon_mode;
       } else {
-        core::logger::warn("Could not parse 'sbx::graphics::polygon_mode' value '{}'", rasterization_state["polygon_mode"].get<std::string>());
+        utility::logger<"graphics">::warn("Could not parse 'sbx::graphics::polygon_mode' value '{}'", rasterization_state["polygon_mode"].get<std::string>());
       }
+    }
+
+    if (rasterization_state.contains("cull_mode")) {
+      auto cull_mode = utility::from_string<graphics::cull_mode>(rasterization_state["cull_mode"].get<std::string>());
+
+      if (cull_mode) {
+        result.rasterization_state.cull_mode = *cull_mode;
+      } else {
+        utility::logger<"graphics">::warn("Could not parse 'sbx::graphics::cull_mode' value '{}'", rasterization_state["cull_mode"].get<std::string>());
+      }
+    }
+
+    if (rasterization_state.contains("front_face")) {
+      auto front_face = utility::from_string<graphics::front_face>(rasterization_state["front_face"].get<std::string>());
+
+      if (front_face) {
+        result.rasterization_state.front_face = *front_face;
+      } else {
+        utility::logger<"graphics">::warn("Could not parse 'sbx::graphics::front_face' value '{}'", rasterization_state["front_face"].get<std::string>());
+      }
+    }
+
+    // if (rasterization_state.contains("depth_bias")) {
+    //   auto depth_bias = rasterization_state["depth_bias"];
+
+    //   if (depth_bias.contains("constant_factor")) {
+    //     result.rasterization_state.depth_bias->constant_factor = depth_bias["constant_factor"].get<std::float_t>();
+    //   }
+
+    //   if (depth_bias.contains("clamp")) {
+    //     result.rasterization_state.depth_bias->clamp = depth_bias["clamp"].get<std::float_t>();
+    //   }
+
+    //   if (depth_bias.contains("slope_factor")) {
+    //     result.rasterization_state.depth_bias->slope_factor = depth_bias["slope_factor"].get<std::float_t>();
+    //   }
+    // }
+
+    if (rasterization_state.contains("line_width")) {
+      result.rasterization_state.line_width = rasterization_state["line_width"].get<std::float_t>();
     }
   }
 

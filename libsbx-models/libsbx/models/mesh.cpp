@@ -2,7 +2,8 @@
 
 #include <libsbx/units/bytes.hpp>
 
-#include <libsbx/core/logger.hpp>
+#include <libsbx/utility/logger.hpp>
+
 #include <libsbx/core/engine.hpp>
 
 #include <libsbx/utility/timer.hpp>
@@ -25,11 +26,11 @@ mesh::mesh(const std::filesystem::path& path)
     throw std::runtime_error{"No loader found for extension: " + extension};
   }
 
-  auto& loader = entry->second;
+  auto& [load, unload] = entry->second;
 
   auto timer = utility::timer{};
 
-  auto [vertices, indices, submeshes] = std::invoke(loader, path);
+  auto [vertices, indices, submeshes] = std::invoke(load, path);
 
   const auto vertices_count = vertices.size();
   const auto indices_count = vertices.size();
@@ -42,7 +43,7 @@ mesh::mesh(const std::filesystem::path& path)
 
   const auto kb = units::quantity_cast<units::kilobyte>(b);
 
-  core::logger::debug("Loaded mesh: {}, vertices: {}, indices: {}, size: {} kb in {:.2f}ms", path.string(), vertices_count, indices_count, kb.value(), units::quantity_cast<units::millisecond>(timer.elapsed()).value());
+  utility::logger<"models">::debug("Loaded mesh: {}, vertices: {}, indices: {}, size: {} kb in {:.2f}ms", path.string(), vertices_count, indices_count, kb.value(), units::quantity_cast<units::millisecond>(timer.elapsed()).value());
 }
 
 mesh::~mesh() {

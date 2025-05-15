@@ -6,8 +6,7 @@
 
 #include <libsbx/math/vector3.hpp>
 #include <libsbx/math/matrix4x4.hpp>
-
-#include <libsbx/physics/octtree.hpp>
+#include <libsbx/math/volume.hpp>
 
 namespace sbx::physics {
 
@@ -34,7 +33,7 @@ struct box {
 
 using collider = std::variant<sphere, cylinder, capsule, box>;
 
-auto bounding_volume(const collider& collider, const math::vector3& position) -> volume;
+auto bounding_volume(const collider& collider, const math::vector3& position) -> math::volume;
 
 struct collider_data {
   const math::vector3& position;

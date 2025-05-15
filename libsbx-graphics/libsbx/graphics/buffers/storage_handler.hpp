@@ -5,8 +5,6 @@
 #include <optional>
 #include <span>
 
-#include <libsbx/core/logger.hpp>
-
 #include <libsbx/memory/observer_ptr.hpp>
 
 #include <libsbx/graphics/pipeline/shader.hpp>
@@ -33,6 +31,8 @@ public:
   auto storage_buffer() const noexcept -> const graphics::storage_buffer&;
 
   auto update(const std::optional<shader::uniform_block>& uniform_block) -> bool;
+
+  auto buffer_address() const noexcept -> std::uint64_t;
 
 private:
 

@@ -2,10 +2,10 @@
 
 #include <limits>
 
-#include <libsbx/core/logger.hpp>
 #include <libsbx/core/engine.hpp>
 
 #include <libsbx/utility/assert.hpp>
+#include <libsbx/utility/logger.hpp>
 
 #include <libsbx/graphics/graphics_module.hpp>
 
@@ -35,11 +35,30 @@ command_buffer::command_buffer(bool should_begin, VkQueueFlagBits queue_type, Vk
   }
 }
 
-command_buffer::~command_buffer() {
-  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+command_buffer::command_buffer(command_buffer&& other) noexcept
+: _command_pool{std::move(other._command_pool)},
+  _handle{std::exchange(other._handle, nullptr)},
+  _queue_type{other._queue_type},
+  _is_running{std::exchange(other._is_running, false)} { }
 
-  auto& logical_device = graphics_module.logical_device();
-  vkFreeCommandBuffers(logical_device, *_command_pool, 1, &_handle);
+command_buffer::~command_buffer() {
+  if (_handle != nullptr) {
+    auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+  
+    auto& logical_device = graphics_module.logical_device();
+    vkFreeCommandBuffers(logical_device, *_command_pool, 1, &_handle);
+  }
+}
+
+auto command_buffer::operator=(command_buffer&& other) noexcept -> command_buffer& {
+  if (this != &other) {
+    _command_pool = std::move(other._command_pool);
+    _handle = std::exchange(other._handle, nullptr);
+    _queue_type = other._queue_type;
+    _is_running = std::exchange(other._is_running, false);
+  }
+
+  return *this;
 }
 
 auto command_buffer::handle() const noexcept -> const VkCommandBuffer& {
@@ -56,7 +75,7 @@ auto command_buffer::is_running() const noexcept -> bool {
 
 auto command_buffer::begin(VkCommandBufferUsageFlags usage) -> void {
   if (_is_running) {
-    core::logger::warn("Tried to begin recording a command buffer that was already beeing recorded");
+    utility::logger<"graphics">::warn("Tried to begin recording a command buffer that was already beeing recorded");
     return;
   }
 
@@ -71,7 +90,7 @@ auto command_buffer::begin(VkCommandBufferUsageFlags usage) -> void {
 
 auto command_buffer::end() -> void {
   if (!_is_running) {
-    core::logger::warn("Tried to stop recording a command buffer that was not beeing recorded");
+    utility::logger<"graphics">::warn("Tried to stop recording a command buffer that was not beeing recorded");
     return;
   }
 
@@ -110,7 +129,7 @@ auto command_buffer::submit_idle() -> void {
 	vkDestroyFence(logical_device, fence, nullptr);
 }
 
-auto command_buffer::submit(const std::vector<wait_data>& wait_data, const VkSemaphore &signal_semaphore, const VkFence& fence) -> void {
+auto command_buffer::submit(const std::vector<wait_data>& wait_data, const VkSemaphore& signal_semaphore, const VkFence& fence) -> void {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
   const auto& logical_device = graphics_module.logical_device();

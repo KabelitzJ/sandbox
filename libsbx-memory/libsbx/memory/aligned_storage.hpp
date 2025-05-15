@@ -19,7 +19,10 @@ using aligned_storage_t = typename aligned_storage<Size, Alignment>::type;
 
 template<typename Type>
 struct storage_for {
-  using type = alignas(alignof(Type)) std::byte[sizeof(Type)];
+  // using type = alignas(alignof(Type)) std::byte[sizeof(Type)];
+  struct alignas(alignof(Type)) type {
+    std::byte data[sizeof(Type)];
+  }; // struct type
 }; // struct storage_for
 
 template<typename Type>

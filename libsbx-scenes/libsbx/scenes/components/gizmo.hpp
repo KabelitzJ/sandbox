@@ -10,7 +10,7 @@ class gizmo final {
 
 public:
 
-  gizmo(math::uuid mesh_id, std::uint32_t submesh_index, math::uuid texture_id, math::color tint = math::color::white)
+  gizmo(math::uuid mesh_id, std::uint32_t submesh_index, math::uuid texture_id, math::color tint = math::color::white())
   : _mesh_id{mesh_id},
     _submesh_index{submesh_index},
     _texture_id{texture_id},

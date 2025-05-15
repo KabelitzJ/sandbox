@@ -3,7 +3,10 @@
 #include <cmath>
 #include <ranges>
 
-#include <libsbx/core/logger.hpp>
+#include <fmt/format.h>
+
+#include <libsbx/utility/logger.hpp>
+
 #include <libsbx/core/exit.hpp>
 
 #include <libsbx/graphics/graphics_module.hpp>
@@ -167,7 +170,7 @@ auto image::create_image_sampler(VkSampler& sampler, VkFilter filter, VkSamplerA
   sampler_create_info.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
   sampler_create_info.mipLodBias = 0.0f;
   sampler_create_info.anisotropyEnable = anisotropic;
-  sampler_create_info.maxAnisotropy = (anisotropic && logical_device.enabled_features().samplerAnisotropy) ? std::min(anisotropy, physical_device.properties().limits.maxSamplerAnisotropy) : 1.0f;
+  sampler_create_info.maxAnisotropy = (anisotropic && logical_device.enabled_features().core.features.samplerAnisotropy) ? std::min(anisotropy, physical_device.properties().limits.maxSamplerAnisotropy) : 1.0f;
   sampler_create_info.compareEnable = VK_FALSE;
   sampler_create_info.compareOp = VK_COMPARE_OP_ALWAYS;
   sampler_create_info.minLod = 0.0f;
@@ -480,7 +483,7 @@ auto image::copy_image(const VkImage& src_image, VkImage& dst_image, VkDeviceMem
 	vkGetPhysicalDeviceFormatProperties(physical_device, surface.format().format, &format_properties);
 
 	if (!(format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_BLIT_SRC_BIT)) {
-		core::logger::warn("Device does not support blitting from optimal tiled images, using copy instead of blit");
+		utility::logger<"graphics">::warn("Device does not support blitting from optimal tiled images, using copy instead of blit");
 		supports_blit = false;
 	}
 
@@ -488,7 +491,7 @@ auto image::copy_image(const VkImage& src_image, VkImage& dst_image, VkDeviceMem
 	vkGetPhysicalDeviceFormatProperties(physical_device, src_format, &format_properties);
 
 	if (!(format_properties.linearTilingFeatures & VK_FORMAT_FEATURE_BLIT_DST_BIT)) {
-		core::logger::warn("Device does not support blitting to linear tiled images, using copy instead of blit");
+		utility::logger<"graphics">::warn("Device does not support blitting to linear tiled images, using copy instead of blit");
 		supports_blit = false;
 	}
 
@@ -547,6 +550,39 @@ auto image::copy_image(const VkImage& src_image, VkImage& dst_image, VkDeviceMem
 	command_buffer.submit_idle();
 
 	return supports_blit;
+}
+
+auto image::channels_from_format(VkFormat format) -> std::uint8_t {
+  switch (format) {
+    case VK_FORMAT_R8_UNORM:
+    case VK_FORMAT_R8_SRGB:
+    case VK_FORMAT_R16_SFLOAT:
+    case VK_FORMAT_R32_SFLOAT: {
+      return 1;
+    }
+    case VK_FORMAT_R8G8_UNORM:
+    case VK_FORMAT_R8G8_SRGB:
+    case VK_FORMAT_R16G16_SFLOAT:
+    case VK_FORMAT_R32G32_SFLOAT: {
+      return 2;
+    }
+    case VK_FORMAT_R8G8B8_UNORM:
+    case VK_FORMAT_R8G8B8_SRGB:
+    case VK_FORMAT_R16G16B16_SFLOAT:
+    case VK_FORMAT_R32G32B32_SFLOAT: {
+      return 3;
+    }
+    case VK_FORMAT_R8G8B8A8_UNORM:
+    case VK_FORMAT_R8G8B8A8_SRGB:
+    case VK_FORMAT_B8G8R8A8_SRGB:
+    case VK_FORMAT_R16G16B16A16_SFLOAT:
+    case VK_FORMAT_R32G32B32A32_SFLOAT: {
+      return 4;
+    }
+    default: {
+      throw std::runtime_error{fmt::format("Unsupported image format: {}", static_cast<std::int32_t>(format))};
+    }
+  }
 }
 
 auto image::write_descriptor_set(std::uint32_t binding, VkDescriptorType descriptor_type) const noexcept -> graphics::write_descriptor_set {

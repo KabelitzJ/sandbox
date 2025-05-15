@@ -8,7 +8,7 @@ storage_handler::storage_handler(VkBufferUsageFlags additional_usage, const std:
 : _uniform_block{uniform_block},
   _additional_usage{additional_usage} {
   if (_uniform_block) {
-    _storage_buffer = std::make_unique<graphics::storage_buffer>(graphics::storage_buffer::max_size, _additional_usage);
+    _storage_buffer = std::make_unique<graphics::storage_buffer>(graphics::storage_buffer::min_size, _additional_usage);
   }
 }
 
@@ -19,12 +19,17 @@ auto storage_handler::storage_buffer() const noexcept -> const graphics::storage
 auto storage_handler::update(const std::optional<shader::uniform_block>& uniform_block) -> bool {
   if (_uniform_block != uniform_block) {
     _uniform_block = uniform_block;
-    _storage_buffer = std::make_unique<graphics::storage_buffer>(graphics::storage_buffer::max_size, _additional_usage);
+    const auto size = _storage_buffer ? _storage_buffer->size() : graphics::storage_buffer::min_size;
+    _storage_buffer = std::make_unique<graphics::storage_buffer>(size, _additional_usage);
 
     return false; 
   }
 
   return true;
+}
+
+auto storage_handler::buffer_address() const noexcept -> std::uint64_t {
+  return _storage_buffer ? _storage_buffer->address() : 0u;
 }
 
 } // namespace sbx::graphics

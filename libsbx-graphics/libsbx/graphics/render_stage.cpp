@@ -116,7 +116,7 @@ auto render_stage::attachments() const noexcept -> const std::vector<graphics::a
 }
 
 auto render_stage::find_attachment(const std::string& name) const noexcept -> std::optional<graphics::attachment> {
-  auto entry = std::find_if(_attachments.begin(), _attachments.end(), [&name](const graphics::attachment& attachment) {
+  auto entry = std::find_if (_attachments.begin(), _attachments.end(), [&name](const graphics::attachment& attachment) {
     return attachment.name() == name;
   });
 
@@ -128,7 +128,7 @@ auto render_stage::find_attachment(const std::string& name) const noexcept -> st
 }
 
 auto render_stage::find_attachment(std::uint32_t binding) const noexcept -> std::optional<graphics::attachment> {
-  auto entry = std::find_if(_attachments.begin(), _attachments.end(), [&binding](const graphics::attachment& attachment) {
+  auto entry = std::find_if (_attachments.begin(), _attachments.end(), [&binding](const graphics::attachment& attachment) {
     return attachment.binding() == binding;
   });
 

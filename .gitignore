@@ -1,7 +1,15 @@
 .bdep/
 .build2/local/
-.vscode/
 .vs/
+
+.vscode/
+!.vscode/tasks.json
+!.vscode/c_cpp_properties.json
+
+*.profile
+*.prof
+
+*.log
 
 build/
 configs/

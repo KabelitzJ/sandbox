@@ -10,7 +10,7 @@
 
 #include <fmt/format.h>
 
-#include <libsbx/core/logger.hpp>
+#include <libsbx/utility/logger.hpp>
 
 #include <libsbx/utility/timer.hpp>
 
@@ -102,7 +102,7 @@ font::font(const std::filesystem::path& path, pixels height) {
 
   _atlas = std::make_unique<ui::atlas>(atlas_size.x(), atlas_size.y(), atlas_data);
 
-  core::logger::debug("Created font atlas for font '{}' in {} ({}x{}) in {:.2f}ms", path.string(), height, atlas_size.x(), atlas_size.y(), units::quantity_cast<units::millisecond>(timer.elapsed()).value());
+  utility::logger<"ui">::debug("Created font atlas for font '{}' in {} ({}x{}) in {:.2f}ms", path.string(), height, atlas_size.x(), atlas_size.y(), units::quantity_cast<units::millisecond>(timer.elapsed()).value());
 }
 
 font::~font() {

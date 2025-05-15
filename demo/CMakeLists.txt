@@ -2,7 +2,7 @@ project(demo VERSION 0.1.0 LANGUAGES CXX)
 
 message(STATUS "Configuring ${PROJECT_NAME}...")
 
-find_package(imgui REQUIRED)
+find_package(easy_profiler REQUIRED)
 
 add_executable(${PROJECT_NAME})
 
@@ -46,16 +46,18 @@ target_sources(
     "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/terrain/terrain_subrenderer.hpp"
     "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/terrain/terrain_module.hpp"
     "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/terrain/voronoi.hpp"
-    "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/imgui/bindings/imgui_impl_vulkan.h"
-    "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/imgui/bindings/imgui_impl_glfw.h"
   PRIVATE
     "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/renderer.cpp"
     "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/application.cpp"
     "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/line.cpp"
     "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/demo.cpp"
     "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/terrain/vertex.cpp"
-    "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/imgui/bindings/imgui_impl_vulkan.cpp"
-    "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/imgui/bindings/imgui_impl_glfw.cpp"
+)
+
+target_compile_definitions(
+  ${PROJECT_NAME}
+  PRIVATE
+    LIBSBX_IMGUI_DOCKING=$<IF:$<BOOL:${LIBSBX_IMGUI_DOCKING}>,1,0>
 )
 
 target_include_directories(
@@ -66,10 +68,13 @@ target_include_directories(
 
 target_link_libraries(
   ${PROJECT_NAME}
+  PUBLIC
+    easy_profiler
   PRIVATE
     libsbx::units
     libsbx::utility
     libsbx::io
+    libsbx::assets
     libsbx::bitmaps
     libsbx::math
     libsbx::memory
@@ -85,7 +90,7 @@ target_link_libraries(
     libsbx::post
     libsbx::ui
     libsbx::physics
-    imgui::imgui
+    libsbx::editor
 )
 
 set_target_properties(

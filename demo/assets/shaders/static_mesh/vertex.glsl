@@ -1,6 +1,6 @@
-#version 450
+#version 450 core 
 
-#include "../common/wind.glsl"
+#include <libsbx/common/wind.glsl>
 
 struct per_mesh_data {
   mat4 model;
@@ -22,18 +22,18 @@ layout(location = 4) out vec2 out_material;
 layout(location = 5) out flat uint out_albedo_image_index;
 layout(location = 6) out flat uint out_normal_image_index;
 
-layout(binding = 0) uniform uniform_scene {
+layout(set = 0, binding = 0) uniform uniform_scene {
   mat4 view;
   mat4 projection;
   vec3 camera_position;
   vec3 light_direction;
   vec4 light_color;
   mat4 light_space;
-  uint point_light_count;
+  // uint point_light_count;
   float time;
 } scene;
 
-layout(binding = 1, std430) readonly buffer buffer_mesh_data {
+layout(set = 1, binding = 0, std430) readonly buffer buffer_mesh_data {
   per_mesh_data data[];
 } mesh_data;
 
@@ -44,11 +44,11 @@ void main() {
 
   vec3 world_position = vec3(data.model * vec4(in_position, 1.0));
 
-  float flexiblity = data.material.z;
+  float flexibility = data.material.z;
   float anchor_height = data.material.w;
 
-  if (flexiblity > 0.0) {
-    out_position = wind_effect(world_position, in_position, scene.time, flexiblity, anchor_height, MAX_ANCHOR_HEIGHT);
+  if (flexibility > 0.0) {
+    out_position = wind_effect(world_position, in_position, scene.time, flexibility, anchor_height, MAX_ANCHOR_HEIGHT);
   } else {
     out_position = world_position;
   }

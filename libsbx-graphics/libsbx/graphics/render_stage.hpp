@@ -8,8 +8,6 @@
 
 #include <vulkan/vulkan.hpp>
 
-#include <libsbx/core/logger.hpp>
-
 #include <libsbx/devices/devices_module.hpp>
 
 #include <libsbx/math/color.hpp>
@@ -27,6 +25,7 @@ enum class format : std::uint32_t {
   r32_sfloat = VK_FORMAT_R32_SFLOAT,
   r32g32_sfloat = VK_FORMAT_R32G32_SFLOAT,
   r8g8b8a8_unorm = VK_FORMAT_R8G8B8A8_UNORM,
+  b8g8r8a8_srgb = VK_FORMAT_B8G8R8A8_SRGB,
   r32g32b32a32_sfloat = VK_FORMAT_R32G32B32A32_SFLOAT
 }; // enum class format
 
@@ -45,7 +44,7 @@ public:
     swapchain
   }; // enum class type
 
-  attachment(const std::uint32_t binding, const std::string& name, type type, const math::color& clear_color = math::color::black, const format format = format::r8g8b8a8_unorm, const address_mode address_mode = address_mode::repeat) noexcept
+  attachment(const std::uint32_t binding, const std::string& name, type type, const math::color& clear_color = math::color::black(), const format format = format::r8g8b8a8_unorm, const address_mode address_mode = address_mode::repeat) noexcept
   : _binding{binding}, 
     _name{std::move(name)}, 
     _type{type},

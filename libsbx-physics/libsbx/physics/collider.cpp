@@ -4,23 +4,23 @@
 
 namespace sbx::physics {
 
-static auto bounding_volume(const sphere& sphere, const math::vector3& position) -> volume {
-  return volume{position - math::vector3{sphere.radius, sphere.radius, sphere.radius}, position + math::vector3{sphere.radius, sphere.radius, sphere.radius}};
+static auto bounding_volume(const sphere& sphere, const math::vector3& position) -> math::volume {
+  return math::volume{position - math::vector3{sphere.radius, sphere.radius, sphere.radius}, position + math::vector3{sphere.radius, sphere.radius, sphere.radius}};
 }
 
-static auto bounding_volume(const cylinder& cylinder, const math::vector3& position) -> volume {
-  return volume{position - math::vector3{cylinder.radius, cylinder.base, cylinder.radius}, position + math::vector3{cylinder.radius, cylinder.cap, cylinder.radius}};
+static auto bounding_volume(const cylinder& cylinder, const math::vector3& position) -> math::volume {
+  return math::volume{position - math::vector3{cylinder.radius, cylinder.base, cylinder.radius}, position + math::vector3{cylinder.radius, cylinder.cap, cylinder.radius}};
 }
 
-static auto bounding_volume(const capsule& capsule, const math::vector3& position) -> volume {
-  return volume{position - math::vector3{capsule.radius, capsule.base - capsule.radius, capsule.radius}, position + math::vector3{capsule.radius, capsule.cap + capsule.radius, capsule.radius}};
+static auto bounding_volume(const capsule& capsule, const math::vector3& position) -> math::volume {
+  return math::volume{position - math::vector3{capsule.radius, capsule.base - capsule.radius, capsule.radius}, position + math::vector3{capsule.radius, capsule.cap + capsule.radius, capsule.radius}};
 }
 
-static auto bounding_volume(const box& box, const math::vector3& position) -> volume {
-  return volume{position + box.min, position + box.max};
+static auto bounding_volume(const box& box, const math::vector3& position) -> math::volume {
+  return math::volume{position + box.min, position + box.max};
 }
 
-auto bounding_volume(const collider& collider, const math::vector3& position) -> volume {
+auto bounding_volume(const collider& collider, const math::vector3& position) -> math::volume {
   return std::visit([&](const auto& shape) { return bounding_volume(shape, position); }, collider);
 }
 

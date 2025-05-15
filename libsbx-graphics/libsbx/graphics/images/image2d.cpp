@@ -6,8 +6,7 @@
 #include <fmt/format.h>
 
 #include <libsbx/utility/timer.hpp>
-
-#include <libsbx/core/logger.hpp>
+#include <libsbx/utility/logger.hpp>
 
 #include <libsbx/graphics/graphics_module.hpp>
 
@@ -52,39 +51,7 @@ auto image2d::set_pixels(memory::observer_ptr<const std::uint8_t> pixels) -> voi
 }
 
 auto image2d::_load() -> void {
-  switch (_format) {
-    case VK_FORMAT_R8_UNORM:
-    case VK_FORMAT_R8_SRGB:
-    case VK_FORMAT_R16_SFLOAT:
-    case VK_FORMAT_R32_SFLOAT: {
-      _channels = 1;
-      break;
-    }
-    case VK_FORMAT_R8G8_UNORM:
-    case VK_FORMAT_R8G8_SRGB:
-    case VK_FORMAT_R16G16_SFLOAT:
-    case VK_FORMAT_R32G32_SFLOAT: {
-      _channels = 2;
-      break;
-    }
-    case VK_FORMAT_R8G8B8_UNORM:
-    case VK_FORMAT_R8G8B8_SRGB:
-    case VK_FORMAT_R16G16B16_SFLOAT:
-    case VK_FORMAT_R32G32B32_SFLOAT: {
-      _channels = 3;
-      break;
-    }
-    case VK_FORMAT_R8G8B8A8_UNORM:
-    case VK_FORMAT_R8G8B8A8_SRGB:
-    case VK_FORMAT_R16G16B16A16_SFLOAT:
-    case VK_FORMAT_R32G32B32A32_SFLOAT: {
-      _channels = 4;
-      break;
-    }
-    default: {
-      throw std::runtime_error{fmt::format("Unsupported image format: {}", static_cast<std::int32_t>(_format))};
-    }
-  }
+  _channels = channels_from_format(_format);
 
   auto* data = static_cast<std::uint8_t*>(nullptr);
 
@@ -96,7 +63,9 @@ auto image2d::_load() -> void {
     // [NOTE] KAJ 2023-07-28 : Force 4 channels (RGBA) and ignore the original image's channels.
     data = stbi_load(_path.string().c_str(), reinterpret_cast<std::int32_t*>(&_extent.width), reinterpret_cast<std::int32_t*>(&_extent.height), nullptr, STBI_rgb_alpha);
 
-    core::logger::debug("Loaded image: {} ({}x{}) in {:.2f}ms", _path.string(), _extent.width, _extent.height, units::quantity_cast<units::millisecond>(timer.elapsed()).value());
+    const auto elapsed = units::quantity_cast<units::millisecond>(timer.elapsed());
+
+    utility::logger<"graphics">::debug("Loaded image: {} ({}x{}) in {:.2f}ms", _path.string(), _extent.width, _extent.height, elapsed.value());
 
     if (!data) {
       throw std::runtime_error{fmt::format("Failed to load image: {}", _path.string())};

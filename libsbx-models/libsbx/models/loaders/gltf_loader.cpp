@@ -190,14 +190,14 @@ auto gltf_loader::load(const std::filesystem::path& path) -> mesh_data {
 
     auto submesh = graphics::submesh{};
 
-    submesh.index_offset = static_cast<std::uint32_t>(data.indices.size());
-
     // [NOTE] KAJ 2023-11-22 : This is a offset into the vertex buffer. We dont want to use this.
     submesh.vertex_offset = 0u;
 
     const auto& primitives = mesh["primitives"];
     
     for (const auto& primitive : primitives) {
+      submesh.index_offset = static_cast<std::uint32_t>(data.indices.size());
+      
       const auto& attributes = primitive["attributes"];
 
       // [NOTE] KAJ 2024-03-20 : We need to check if the mesh contains the required attributes.

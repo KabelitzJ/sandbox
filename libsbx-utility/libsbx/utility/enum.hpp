@@ -22,11 +22,111 @@ constexpr auto from_underlying(const std::underlying_type_t<Enum> value) -> Enum
   return static_cast<Enum>(value);
 }
 
+template<auto... Values>
+requires (std::is_enum_v<decltype(Values)> && ...)
+struct enum_list {
+
+  inline static constexpr auto values = std::array{Values...};
+
+  inline static constexpr auto contains(const typename decltype(values)::value_type value) noexcept -> bool {
+    for (auto entry : values) {
+      if (entry == value) {
+        return true;
+      }
+    }
+  
+    return false;
+  }
+
+  inline static constexpr auto size() noexcept -> std::size_t { 
+    return values.size(); 
+  }
+
+  inline static constexpr auto is_empty() noexcept -> std::size_t { 
+    return size() == 0u;
+  }
+
+}; // struct enum_list
+
+template<>
+struct enum_list<> {
+
+  template<typename Type>
+  requires (std::is_enum_v<Type>)
+  inline static constexpr auto contains(const Type value) noexcept -> bool {
+    return false;
+  }
+
+  inline static constexpr auto size() noexcept -> std::size_t { 
+    return 0u; 
+  }
+
+  inline static constexpr auto is_empty() noexcept -> std::size_t { 
+    return true;
+  }
+
+}; // struct enum_list
+
+template<typename Enum>
+requires (std::is_enum_v<Enum>)
+struct is_bit_field : std::false_type { };
+
+template<typename Enum>
+requires (std::is_enum_v<Enum>)
+inline constexpr auto is_bit_field_v = is_bit_field<Enum>::value;
+
+template<std::size_t Shift>
+struct bit : std::integral_constant<std::size_t, (std::size_t{1} << Shift)> { };
+
+template<std::size_t Shift>
+inline constexpr auto bit_v = bit<Shift>::value;
+
+template<typename Enum>
+requires (std::is_enum_v<Enum>)
+class bit_field {
+
+public:
+
+  using value_type = Enum;
+  using underlying_type = std::underlying_type_t<Enum>;
+
+  constexpr bit_field() noexcept
+  : _value{underlying_type{0}} { }
+
+  constexpr explicit bit_field(const value_type value) noexcept
+  : _value{to_underlying(value)} { }
+
+  constexpr auto set(const value_type value) noexcept -> void {
+    _value |= static_cast<underlying_type>(value);
+  }
+
+  constexpr auto clear(const value_type value) noexcept -> void {
+    _value &= ~static_cast<underlying_type>(value);
+  }
+
+  constexpr auto has(const value_type value) const noexcept -> bool {
+    return _value & static_cast<underlying_type>(value);
+  }
+
+  constexpr auto has_any() const noexcept -> bool {
+    return _value != underlying_type{0};
+  }
+
+  constexpr auto has_none() const noexcept -> bool {
+    return _value == underlying_type{0};
+  }
+
+private:
+
+  underlying_type _value;
+
+}; // class bit_field
+
 template<typename Enum>
 requires (std::is_enum_v<Enum>)
 struct entry {
   Enum value;
-  const char* name;
+  std::string_view name;
 }; // struct entry
 
 template<typename Enum>
@@ -52,8 +152,8 @@ constexpr auto to_string(const Enum value) -> std::string {
 }
 
 template<mapped_enum Enum>
-constexpr auto from_string(const std::string& string) -> std::optional<Enum> {
-  auto entry = std::ranges::find_if(enum_mapping<Enum>::values, [&string](const auto& entry){ return entry.name == string; });
+constexpr auto from_string(const std::string& name) -> std::optional<Enum> {
+  auto entry = std::ranges::find_if(enum_mapping<Enum>::values, [&name](const auto& entry){ return entry.name == name; });
 
   if (entry == std::ranges::end(enum_mapping<Enum>::values)) {
     return std::nullopt;

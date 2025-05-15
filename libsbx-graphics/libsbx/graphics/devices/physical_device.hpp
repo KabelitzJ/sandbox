@@ -17,6 +17,28 @@ class physical_device : public utility::noncopyable {
 
 public:
 
+  struct device_features {
+    VkPhysicalDeviceFeatures2 core{};
+    VkPhysicalDeviceVulkan11Features vulkan11{};
+    VkPhysicalDeviceVulkan12Features vulkan12{};
+    VkPhysicalDeviceVulkan13Features vulkan13{};
+
+    device_features() {
+      vulkan13.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
+      vulkan13.pNext = nullptr;
+
+      vulkan12.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
+      vulkan12.pNext = &vulkan13;
+
+      vulkan11.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES;
+      vulkan11.pNext = &vulkan12;
+
+      core.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+      core.pNext = &vulkan11;
+    }
+
+  }; // struct features
+
   physical_device(const instance& instance);
 
   ~physical_device();
@@ -27,7 +49,7 @@ public:
 
 	auto properties() const -> const VkPhysicalDeviceProperties&;
 
-	auto features() const -> const VkPhysicalDeviceFeatures&;
+	auto features() const -> const device_features&;
 
 	auto memory_properties() const -> const VkPhysicalDeviceMemoryProperties&;
 
@@ -47,7 +69,8 @@ private:
 
   VkPhysicalDevice _handle{};
   VkPhysicalDeviceProperties _properties{};
-	VkPhysicalDeviceFeatures _features{};
+	// VkPhysicalDeviceFeatures2 _features{};
+  device_features _features;
 	VkPhysicalDeviceMemoryProperties _memory_properties{};
   VkSampleCountFlagBits _msaa_samples{};
 

@@ -62,4 +62,8 @@
 
 #include <libsbx/math/transform.hpp>
 
+#include <libsbx/math/volume.hpp>
+#include <libsbx/math/sphere.hpp>
+#include <libsbx/math/plane.hpp>
+
 #endif // LIBSBX_MATH_HPP_

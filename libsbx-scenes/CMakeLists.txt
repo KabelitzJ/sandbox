@@ -18,17 +18,21 @@ find_package(fmt REQUIRED)
 find_package(yaml-cpp REQUIRED)
 find_package(range-v3 REQUIRED)
 find_package(sol2 REQUIRED)
+find_package(portable-file-dialogs REQUIRED)
+find_package(easy_profiler REQUIRED)
 
 target_sources(
   ${PROJECT_NAME}
   PRIVATE
     "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/scenes.cpp"
+    "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/scenes_module.cpp"
     "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/scene.cpp"
   PUBLIC
     FILE_SET HEADERS
     FILES
       "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/scenes.hpp"
       "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/scenes_module.hpp"
+      "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/hierarchy_module.hpp"
       "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/scene.hpp"
       "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/components/id.hpp"
       "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/components/tag.hpp"
@@ -37,6 +41,7 @@ target_sources(
       "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/components/camera.hpp"
       "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/components/point_light.hpp"
       "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/components/directional_light.hpp"
+      "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/components/hierarchy.hpp"
 )
 
 target_include_directories(
@@ -53,9 +58,12 @@ target_link_libraries(
     yaml-cpp
     range-v3::range-v3
     sol2::sol2
+    portable-file-dialogs::portable-file-dialogs
+    easy_profiler
     # Internal dependencies
     libsbx::utility
     libsbx::math
+    libsbx::memory
     libsbx::ecs
     libsbx::signals
     libsbx::core
@@ -74,8 +82,9 @@ set_target_properties(
 
 target_compile_definitions(
   ${PROJECT_NAME}
-  PRIVATE
+  PUBLIC
     SBX_CONSTEXPR_ENABLED=${SBX_CONSTEXPR_ENABLED}
+    BUILD_WITH_EASY_PROFILER
 )
 
 target_compile_features(
@@ -129,4 +138,8 @@ if(MINGW)
     PUBLIC
       -Wl,--disable-dynamicbase,--default-image-base-low
   )
+endif()
+
+if(${SBX_BUILD_TESTS})
+  add_subdirectory(tests)
 endif()

@@ -67,20 +67,22 @@ public:
 
     _used_uniforms.clear();
     _static_meshes.clear();
+    _images.clear();
 
-    auto mesh_nodes = scene.query<scenes::static_mesh>();
+    auto mesh_query = scene.query<scenes::static_mesh>();
 
-    for (auto& node : mesh_nodes) {
+    for (const auto node : mesh_query) {
       _submit_mesh(node);
     }
 
+    _pipeline.bind(command_buffer);
+    
     for (const auto& [key, data] : _static_meshes) {
-      _pipeline.bind(command_buffer);
 
-      auto& uniform_data = _uniform_data[key];
+      auto [entry, inserted] = _uniform_data.try_emplace(key, 1u);
 
-      auto& descriptor_handler = uniform_data.descriptor_handler;
-      auto& storage_handler = uniform_data.storage_handler;
+      auto& descriptor_handler = entry->second.descriptor_handler;
+      auto& storage_handler = entry->second.storage_handler;
 
       storage_handler.push(std::span<const per_mesh_data>{data});
 
@@ -88,6 +90,9 @@ public:
 
       descriptor_handler.push("uniform_scene", _scene_uniform_handler);
       descriptor_handler.push("buffer_mesh_data", storage_handler);
+      descriptor_handler.push("images_sampler", _images_sampler);
+      descriptor_handler.push("images", _images);
+
 
       if (!descriptor_handler.update(_pipeline)) {
         continue;
@@ -101,11 +106,11 @@ public:
 
 private:
 
-  auto _submit_mesh(scenes::node& node) -> void {
+  auto _submit_mesh(const scenes::node node) -> void {
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
     auto& scene = scenes_module.scene();
 
-    const auto& static_mesh = node.get_component<scenes::static_mesh>();
+    const auto& static_mesh = scene.get_component<scenes::static_mesh>(node);
     const auto mesh_id = static_mesh.mesh_id();
 
     for (const auto& submesh : static_mesh.submeshes()) {
@@ -114,9 +119,13 @@ private:
       _used_uniforms.insert(key);
 
       auto model = scene.world_transform(node);
+      
+      const auto albedo_image_index = submesh.albedo_texture ? _images.push_back(*submesh.albedo_texture) : graphics::separate_image2d_array::max_size;
+
+      const auto image_indices = math::vector4{albedo_image_index, 0u, 0u, 0u};
       auto material = math::vector4{submesh.material.metallic, submesh.material.roughness, submesh.material.flexibility, submesh.material.anchor_height};
 
-      _static_meshes[key].push_back(per_mesh_data{std::move(model), material});
+      _static_meshes[key].push_back(per_mesh_data{std::move(model), material, image_indices});
     }
   }
 
@@ -131,8 +140,9 @@ private:
   }; // struct mesh_key
 
   struct per_mesh_data {
-    math::matrix4x4 model;
-    math::vector4 material;
+    alignas(16) math::matrix4x4 model;
+    alignas(16) math::vector4 material;
+    alignas(16) math::vector4 image_indices;
   }; // struct per_mesh_data
 
   struct mesh_key_hash {
@@ -159,6 +169,9 @@ private:
   std::unordered_map<mesh_key, std::vector<per_mesh_data>, mesh_key_hash, mesh_key_equal> _static_meshes;
 
   graphics::uniform_handler _scene_uniform_handler;
+
+  graphics::separate_sampler _images_sampler;
+  graphics::separate_image2d_array _images;
 
 }; // class shadow_subrenderer
 

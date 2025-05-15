@@ -13,7 +13,7 @@
 
 #include <fmt/format.h>
 
-#include <libsbx/core/logger.hpp>
+#include <libsbx/utility/logger.hpp>
 
 namespace sbx::core {
 
@@ -35,7 +35,7 @@ public:
       const auto pos = arg.find_first_of("=");
 
       if (pos == std::string::npos) {
-        logger::warn("Could not parse argument: '{}'", arg);
+        utility::logger<"core">::warn("Could not parse argument: '{}'", arg);
         continue;
       }
 

@@ -5,6 +5,9 @@
 
 #include <libsbx/scenes/scenes_module.hpp>
 #include <libsbx/scenes/scene.hpp>
+#include <libsbx/scenes/hierarchy_module.hpp>
+
+#include <libsbx/scenes/skybox_subrenderer.hpp>
 
 #include <libsbx/scenes/components/id.hpp>
 #include <libsbx/scenes/components/tag.hpp>
@@ -14,5 +17,7 @@
 #include <libsbx/scenes/components/point_light.hpp>
 #include <libsbx/scenes/components/directional_light.hpp>
 #include <libsbx/scenes/components/gizmo.hpp>
+#include <libsbx/scenes/components/skybox.hpp>
+#include <libsbx/scenes/components/hierarchy.hpp>
 
 #endif // LIBSBX_SCENE_HPP_

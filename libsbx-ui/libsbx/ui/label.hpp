@@ -6,7 +6,7 @@
 
 #include <libsbx/memory/observer_ptr.hpp>
 
-#include <libsbx/core/logger.hpp>
+#include <libsbx/utility/logger.hpp>
 #include <libsbx/core/engine.hpp>
 
 #include <libsbx/math/color.hpp>
@@ -25,7 +25,7 @@ class label : public widget {
 
 public:
 
-  label(const std::string& text, const math::vector2u& position, memory::observer_ptr<const font> font, std::float_t scale = 1.0f, const math::color& color = math::color::white)
+  label(const std::string& text, const math::vector2u& position, memory::observer_ptr<const font> font, std::float_t scale = 1.0f, const math::color& color = math::color::white())
   : widget{position},
     _text{text},
     _font{font},

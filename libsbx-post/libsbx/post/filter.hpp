@@ -19,7 +19,7 @@ template<graphics::vertex Vertex>
 class filter : public graphics::subrenderer {
 
   inline static constexpr auto pipeline_definition = graphics::pipeline_definition{
-    .uses_depth = false,
+    .depth = graphics::depth::disabled,
     .uses_transparency = false,
     .rasterization_state = graphics::rasterization_state{
       .polygon_mode = graphics::polygon_mode::fill,

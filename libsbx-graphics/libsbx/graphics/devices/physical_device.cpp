@@ -5,7 +5,7 @@
 #include <array>
 #include <map>
 
-#include <libsbx/core/logger.hpp>
+#include <libsbx/utility/logger.hpp>
 
 #include <libsbx/graphics/devices/extensions.hpp>
 
@@ -35,11 +35,17 @@ physical_device::physical_device(const instance& instance)
   }
 
   vkGetPhysicalDeviceProperties(_handle, &_properties);
-	vkGetPhysicalDeviceFeatures(_handle, &_features);
+
+  // auto vulkan12_features = VkPhysicalDeviceVulkan12Features{};
+  // vulkan12_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
+  // vulkan12_features.bufferDeviceAddress = true;
+
+  vkGetPhysicalDeviceFeatures2(_handle, &_features.core);
+	// vkGetPhysicalDeviceFeatures(_handle, &_features);
 	vkGetPhysicalDeviceMemoryProperties(_handle, &_memory_properties);
 	_msaa_samples = _get_max_usable_sample_count();
 
-  core::logger::debug("Selected GPU '{}'", _properties.deviceName);
+  utility::logger<"graphics">::debug("Selected GPU '{}'", _properties.deviceName);
 }
 
 physical_device::~physical_device() {
@@ -58,7 +64,7 @@ auto physical_device::properties() const -> const VkPhysicalDeviceProperties& {
   return _properties;
 }
 
-auto physical_device::features() const -> const VkPhysicalDeviceFeatures& {
+auto physical_device::features() const -> const device_features& {
   return _features;
 }
 

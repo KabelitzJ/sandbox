@@ -88,7 +88,7 @@ public:
   }
 
   auto cbegin() const noexcept -> const_iterator {
-    return _ptr(0u);
+    return begin();
   }
 
   auto end() noexcept -> iterator {
@@ -100,7 +100,7 @@ public:
   }
 
   auto cend() const noexcept -> const_iterator {
-    return _ptr(_size);
+    return end();
   }
 
   auto front() noexcept -> reference {
@@ -201,23 +201,23 @@ public:
     using std::swap;
 
     swap(_size, other._size);
-    swap(_data, other._data);
+    swap(_buffer, other._buffer);
   }
 
 private:
 
   auto _ptr(const size_type index) noexcept -> pointer {
-    utility::assert_that(index <= _size, "index is out of range");
-    return std::launder(reinterpret_cast<pointer>(_data[index]));
+    // utility::assert_that(index < Capacity, "index is out of range");
+    return std::launder(reinterpret_cast<pointer>(_buffer.data() + index));
   }
 
   auto _ptr(const size_type index) const noexcept -> const_pointer {
-    utility::assert_that(index <= _size, "index is out of range");
-    return std::launder(reinterpret_cast<const_pointer>(_data[index]));
+    // utility::assert_that(index < Capacity, "index is out of range");
+    return std::launder(reinterpret_cast<const_pointer>(_buffer.data() + index));
   }
 
   size_type _size;
-  std::array<storage_for_t<Type>, Capacity> _data;
+  std::array<storage_for_t<Type>, Capacity> _buffer;
 
 }; // class static_vector
 

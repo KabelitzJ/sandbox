@@ -1,70 +1,6 @@
 {
   "textures": [
     {
-      "name": "base",
-      "path": "demo/assets/textures/base.png"
-    },
-    {
-      "name": "checkerboard",
-      "path": "demo/assets/textures/checkerboard.jpg"
-    },
-    {
-      "name": "default",
-      "path": "demo/assets/textures/default.png"
-    },
-    {
-      "name": "grid",
-      "path": "demo/assets/textures/grid.png"
-    },
-    {
-      "name": "hex_grid",
-      "path": "demo/assets/textures/hex_grid.png"
-    },
-    {
-      "name": "prototype_black",
-      "path": "demo/assets/textures/prototype_black.png"
-    },
-    {
-      "name": "prototype_white",
-      "path": "demo/assets/textures/prototype_white.png"
-    },
-    {
-      "name": "white",
-      "path": "demo/assets/textures/white.png"
-    },
-    {
-      "name": "wood_albedo",
-      "path": "demo/assets/textures/wood/albedo.png"
-    },
-    {
-      "name": "wood_normal",
-      "path": "demo/assets/textures/wood/normal.png"
-    },
-    {
-      "name": "prototype",
-      "path": "demo/assets/textures/prototype.png"
-    },
-    {
-      "name": "rust_albedo",
-      "path": "demo/assets/textures/rust/albedo.png"
-    },
-    {
-      "name": "rust_metallic",
-      "path": "demo/assets/textures/rust/metallic.png"
-    },
-    {
-      "name": "rust_normal",
-      "path": "demo/assets/textures/rust/normal.png"
-    },
-    {
-      "name": "rust_roughness",
-      "path": "demo/assets/textures/rust/roughness.png"
-    },
-    {
-      "name": "brick_wall_normal_map",
-      "path": "demo/assets/textures/brick_wall_normal_map.png"
-    },
-    {
       "name": "grass_albedo",
       "path": "demo/assets/textures/grass/albedo.png"
     },
@@ -79,14 +15,6 @@
     {
       "name": "dirt_normal",
       "path": "demo/assets/textures/dirt/normal.png"
-    },
-    {
-      "name": "birch_leafs_albedo",
-      "path": "demo/assets/textures/my_birch/leafs_albedo.png"
-    },
-    {
-      "name": "birch_stem_albedo",
-      "path": "demo/assets/textures/my_birch/stem_albedo.png"
     }
   ],
   "plane_texture": "wood_albedo"

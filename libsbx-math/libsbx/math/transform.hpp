@@ -18,7 +18,8 @@ public:
   : _position{position}, 
     _rotation{rotation}, 
     _scale{scale},
-    _rotation_matrix{_rotation.to_matrix()} { }
+    _rotation_matrix{_rotation.to_matrix()},
+    _is_dirty{true} { }
 
   ~transform() = default;
 
@@ -27,15 +28,18 @@ public:
   }
 
   auto position() noexcept -> vector3& {
+    _is_dirty = true;
     return _position;
   }
 
   auto set_position(const vector3& position) noexcept -> void {
     _position = position;
+    _is_dirty = true;
   }
 
   auto move_by(const vector3& offset) noexcept -> void {
     _position += offset;
+    _is_dirty = true;
   }
 
   auto rotation() const noexcept -> const quaternion& {
@@ -45,23 +49,28 @@ public:
   auto set_rotation(const quaternion& rotation) noexcept -> void {
     _rotation = rotation;
     _rotation_matrix = _rotation.to_matrix();
+    _is_dirty = true;
   }
 
   auto set_rotation(const vector3& axis, const angle& angle) noexcept -> void {
     _rotation = quaternion{axis, angle};
     _rotation_matrix = _rotation.to_matrix();
+    _is_dirty = true;
+  }
+
+  auto scale() noexcept -> vector3& {
+    _is_dirty = true;
+    return _scale;
   }
 
   auto scale() const noexcept -> const vector3& {
     return _scale;
   }
 
-  auto scale() noexcept -> vector3& {
-    return _scale;
-  }
 
   auto set_scale(const vector3& scale) noexcept -> void {
     _scale = scale;
+    _is_dirty = true;
   }
 
   auto forward() const noexcept -> vector3 {
@@ -80,6 +89,7 @@ public:
     auto result = matrix4x4::look_at(_position, target, vector3::up);
     _rotation = quaternion{result};
     _rotation_matrix = _rotation.to_matrix();
+    _is_dirty = true;
   }
 
   auto as_matrix() const -> matrix4x4 {
@@ -89,6 +99,14 @@ public:
     return translation * _rotation_matrix * scale;
   }
 
+  auto is_dirty() const noexcept -> bool {
+    return _is_dirty;
+  }
+
+  auto clear_is_dirty() noexcept -> void {
+    _is_dirty = false;
+  }
+
 private:
 
   vector3 _position;
@@ -96,6 +114,8 @@ private:
   vector3 _scale;
 
   matrix4x4 _rotation_matrix;
+
+  bool _is_dirty;
 
 }; // class transform
 

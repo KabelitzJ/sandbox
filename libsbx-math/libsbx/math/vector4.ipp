@@ -11,8 +11,8 @@ inline constexpr basic_vector4<Type>::basic_vector4(const base_type& base) noexc
 : base_type{base} { }
 
 template<scalar Type>
-template<scalar Other>
-inline constexpr basic_vector4<Type>::basic_vector4(Other x, Other y, Other z, Other w) noexcept
+template<scalar XOther, scalar YOther, scalar ZOther, scalar WOther>
+inline constexpr basic_vector4<Type>::basic_vector4(XOther x, YOther y, ZOther z, WOther w) noexcept
 : base_type{x, y, z, w} { }
 
 template<scalar Type>

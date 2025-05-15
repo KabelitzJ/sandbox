@@ -7,20 +7,23 @@
 #include <libsbx/units/time.hpp>
 
 #include <libsbx/math/transform.hpp>
+#include <libsbx/math/volume.hpp>
 
 #include <libsbx/core/module.hpp>
 #include <libsbx/core/engine.hpp>
-#include <libsbx/core/logger.hpp>
+
+#include <libsbx/utility/logger.hpp>
 
 #include <libsbx/scenes/scenes_module.hpp>
 #include <libsbx/scenes/components/tag.hpp>
 #include <libsbx/scenes/components/id.hpp>
 
+#include <libsbx/memory/octtree.hpp>
+
 #include <libsbx/models/mesh.hpp>
 
 #include <libsbx/physics/rigidbody.hpp>
 #include <libsbx/physics/collider.hpp>
-#include <libsbx/physics/octtree.hpp>
 
 namespace sbx::physics {
 
@@ -50,16 +53,16 @@ private:
 
     const auto delta_time = core::engine::fixed_delta_time();
 
-    auto rigidbody_nodes = scene.query<rigidbody>();
+    auto rigidbody_query = scene.query<rigidbody>();
 
-    for (auto& node : rigidbody_nodes) {
-      auto& rigidbody = node.get_component<physics::rigidbody>();
+    for (const auto node : rigidbody_query) {
+      auto& rigidbody = scene.get_component<physics::rigidbody>(node);
 
       if (rigidbody.is_static()) {
         continue;
       }
 
-      auto& transform = node.get_component<math::transform>();
+      auto& transform = scene.get_component<math::transform>(node);
 
       const auto total_acceleration = rigidbody.acceleration() + (rigidbody.forces() / rigidbody.mass());
 
@@ -78,15 +81,15 @@ private:
 
     const auto delta_time = core::engine::fixed_delta_time();
 
-    auto tree = physics::octree<math::uuid, 16u, 8u>{physics::volume{math::vector3{-100.0f, -100.0f, -100.0f}, math::vector3{100.0f, 100.0f, 100.0f}}};
+    auto tree = memory::octree<math::uuid, 16u, 8u>{math::volume{math::vector3{-100.0f, -100.0f, -100.0f}, math::vector3{100.0f, 100.0f, 100.0f}}};
 
-    auto collider_nodes = scene.query<physics::collider>();
+    auto collider_query = scene.query<physics::collider>();
 
-    for (auto& node : collider_nodes) {
-      auto& transform = node.get_component<math::transform>();
-      auto& collider = node.get_component<physics::collider>();
+    for (const auto node : collider_query) {
+      auto& transform = scene.get_component<math::transform>(node);
+      auto& collider = scene.get_component<physics::collider>(node);
 
-      const auto& id = node.get_component<scenes::id>();
+      const auto& id = scene.get_component<scenes::id>(node);
 
       const auto& position = transform.position();
 
@@ -99,18 +102,18 @@ private:
       auto first_node = scene.find_node(intersection.first);
       auto second_node = scene.find_node(intersection.second);
 
-      if (!first_node || !second_node) {
+      if (first_node == scenes::node::null || second_node == scenes::node::null) {
         continue;
       }
 
-      auto& first_transform = first_node->get_component<math::transform>();
-      const auto& first_collider = first_node->get_component<physics::collider>();
+      auto& first_transform = scene.get_component<math::transform>(first_node);
+      const auto& first_collider = scene.get_component<physics::collider>(first_node);
 
       auto first_rotation_scale = first_transform.rotation().to_matrix() * math::matrix4x4::scaled(math::matrix4x4::identity, first_transform.scale());
       const auto first_data = physics::collider_data{first_transform.position(), std::move(first_rotation_scale), first_collider}; 
 
-      auto& second_transform = second_node->get_component<math::transform>();
-      const auto& second_collider = second_node->get_component<physics::collider>();
+      auto& second_transform = scene.get_component<math::transform>(second_node);
+      const auto& second_collider = scene.get_component<physics::collider>(second_node);
 
       auto second_rotation_scale = second_transform.rotation().to_matrix() * math::matrix4x4::scaled(math::matrix4x4::identity, second_transform.scale());
       const auto second_data = physics::collider_data{second_transform.position(), std::move(second_rotation_scale), second_collider};
@@ -119,8 +122,8 @@ private:
         auto depth = result->length();
         auto direction = math::vector3::normalized(*result);
 
-        auto& first_rigidbody = first_node->get_component<physics::rigidbody>();
-        auto& second_rigidbody = second_node->get_component<physics::rigidbody>();
+        auto& first_rigidbody = scene.get_component<physics::rigidbody>(first_node);
+        auto& second_rigidbody = scene.get_component<physics::rigidbody>(second_node);
 
         const auto first_is_static = static_cast<std::uint32_t>(first_rigidbody.is_static());
         const auto second_is_static = static_cast<std::uint32_t>(second_rigidbody.is_static());

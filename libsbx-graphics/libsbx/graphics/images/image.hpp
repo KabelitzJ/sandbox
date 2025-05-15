@@ -51,6 +51,8 @@ public:
 
 	static auto copy_image(const VkImage& src_image, VkImage& dst_image, VkDeviceMemory& dst_image_memory, VkFormat src_format, const VkExtent3D& extent, VkImageLayout src_image_layout, std::uint32_t mip_level, std::uint32_t array_layer) -> bool;
 
+  static auto channels_from_format(VkFormat format) -> std::uint8_t;
+
   auto write_descriptor_set(std::uint32_t binding, VkDescriptorType descriptor_type) const noexcept -> graphics::write_descriptor_set override;
 
   auto extent() const noexcept -> const VkExtent3D&;

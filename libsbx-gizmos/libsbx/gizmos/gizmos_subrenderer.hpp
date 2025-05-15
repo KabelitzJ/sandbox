@@ -6,11 +6,11 @@
 #include <ranges>
 #include <algorithm>
 
+#include <libsbx/utility/logger.hpp>
+
 #include <libsbx/math/color.hpp>
 #include <libsbx/math/vector3.hpp>
 #include <libsbx/math/matrix4x4.hpp>
-
-#include <libsbx/core/logger.hpp>
 
 #include <libsbx/graphics/graphics_module.hpp>
 #include <libsbx/graphics/subrenderer.hpp>
@@ -40,11 +40,11 @@
 
 namespace sbx::gizmos {
 
-struct point_light {
-  math::color color;
-  math::vector3 position;
-  std::float_t intensity;
-}; // struct point_light
+// struct point_light {
+//   math::color color;
+//   math::vector3 position;
+//   std::float_t intensity;
+// }; // struct point_light
 
 class gizmos_subrenderer final : public graphics::subrenderer {
 
@@ -68,11 +68,11 @@ public:
 
     auto camera_node = scene.camera();
 
-    auto& camera = camera_node.get_component<scenes::camera>();
+    auto& camera = scene.get_component<scenes::camera>(camera_node);
 
     _scene_uniform_handler.push("projection", camera.projection());
 
-    const auto& camera_transform = camera_node.get_component<math::transform>();
+    const auto& camera_transform = scene.get_component<math::transform>(camera_node);
 
     _scene_uniform_handler.push("view", math::matrix4x4::inverted(camera_transform.as_matrix()));
 
@@ -93,19 +93,20 @@ public:
     _used_uniforms.clear();
     _static_meshes.clear();
 
-    auto gizmo_nodes = scene.query<scenes::gizmo>();
+    auto gizmo_query = scene.query<scenes::gizmo>();
 
-    for (auto& node : gizmo_nodes) {
+    for (const auto node : gizmo_query) {
       _submit_mesh(node);
     }
 
+    _pipeline.bind(command_buffer);
+    
     for (const auto& [key, data] : _static_meshes) {
-      _pipeline.bind(command_buffer);
 
-      auto& uniform_data = _uniform_data[key];
+      auto [entry, inserted] = _uniform_data.try_emplace(key, 1u);
 
-      auto& descriptor_handler = uniform_data.descriptor_handler;
-      auto& storage_handler = uniform_data.storage_handler;
+      auto& descriptor_handler = entry->second.descriptor_handler;
+      auto& storage_handler = entry->second.storage_handler;
 
       storage_handler.push(std::span<const per_mesh_data>{data});
 
@@ -128,11 +129,11 @@ public:
 
 private:
 
-  auto _submit_mesh(scenes::node& node) -> void {
+  auto _submit_mesh(const scenes::node node) -> void {
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
     auto& scene = scenes_module.scene();
 
-    const auto& gizmo = node.get_component<scenes::gizmo>();
+    const auto& gizmo = scene.get_component<scenes::gizmo>(node);
     const auto mesh_id = gizmo.mesh_id();
 
     const auto key = mesh_key{gizmo.mesh_id(), gizmo.submesh_index(), gizmo.texture_id()};

@@ -11,7 +11,6 @@ class id final : public math::uuid {
 
 public:
 
-
   template<typename... Args>
   id(Args&&... args)
   : base{std::forward<Args>(args)...} { }

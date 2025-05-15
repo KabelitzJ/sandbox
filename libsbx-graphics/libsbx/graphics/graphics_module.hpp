@@ -6,6 +6,8 @@
 #include <vector>
 #include <typeindex>
 
+#include <vk_mem_alloc.h>
+
 #include <libsbx/core/module.hpp>
 #include <libsbx/core/delegate.hpp>
 
@@ -15,6 +17,7 @@
 
 #include <libsbx/utility/hash.hpp>
 #include <libsbx/utility/concepts.hpp>
+#include <libsbx/utility/bimap.hpp>
 
 #include <libsbx/graphics/devices/instance.hpp>
 #include <libsbx/graphics/devices/physical_device.hpp>
@@ -158,15 +161,17 @@ public:
 
 private:
 
-  auto _start_render_pass(graphics::render_stage& render_stage) -> void;
+  auto _start_render_pass(graphics::render_stage& render_stage, graphics::command_buffer& command_buffer) -> void;
 
-  auto _end_render_pass(graphics::render_stage& render_stage) -> void;
+  auto _end_render_pass(graphics::render_stage& render_stage, graphics::command_buffer& command_buffer) -> void;
 
   auto _reset_render_stages() -> void;
 
   auto _recreate_swapchain() -> void;
 
   auto _recreate_per_frame_data() -> void;
+
+  auto _recreate_per_image_data() -> void;
 
   auto _recreate_command_buffers() -> void;
 
@@ -175,12 +180,15 @@ private:
   struct per_frame_data {
     // graphics
     VkSemaphore image_available_semaphore{};
-    VkSemaphore render_finished_semaphore{};
     VkFence graphics_in_flight_fence{};
     // compute
     VkSemaphore compute_finished_semaphore{};
     VkFence compute_in_flight_fence{};
   }; // struct per_frame_data
+  
+  struct per_image_data {
+    VkSemaphore render_finished_semaphore{};
+  }; // struct per_image_data
 
   struct command_pool_key {
     VkQueueFlagBits queue_type;
@@ -214,10 +222,15 @@ private:
   std::unique_ptr<graphics::swapchain> _swapchain{};
 
   std::vector<per_frame_data> _per_frame_data{};
-  std::vector<std::unique_ptr<graphics::command_buffer>> _graphics_command_buffers{};
-  std::vector<std::unique_ptr<graphics::command_buffer>> _compute_command_buffers{};
+  std::vector<per_image_data> _per_image_data{};
+  // std::vector<std::unique_ptr<graphics::command_buffer>> _graphics_command_buffers{};
+  // std::vector<std::unique_ptr<graphics::command_buffer>> _compute_command_buffers{};
+  std::vector<graphics::command_buffer> _graphics_command_buffers{};
+  std::vector<graphics::command_buffer> _compute_command_buffers{};
 
   std::unique_ptr<graphics::renderer> _renderer{};
+
+  VmaAllocator _allocator;
 
   struct asset_container_base {
     virtual ~asset_container_base() = default;
@@ -270,6 +283,7 @@ private:
   };
 
   std::unordered_map<std::type_index, std::unique_ptr<asset_container_base>> _asset_containers;
+  utility::unordered_bimap<std::string, math::uuid> _attachment_ids;
 
   std::uint32_t _current_frame{};
   bool _is_framebuffer_resized{};

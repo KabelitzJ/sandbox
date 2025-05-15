@@ -40,29 +40,29 @@ public:
     vkCmdBindPipeline(command_buffer, bind_point(), handle());
   }
 
-  operator const VkPipeline&() const noexcept {
+  operator VkPipeline() const noexcept {
     return handle();
   }
 
-  virtual auto handle() const noexcept -> const VkPipeline& = 0;
+  virtual auto handle() const noexcept -> VkPipeline = 0;
 
   virtual auto has_variable_descriptors() const noexcept -> bool = 0;
 
-  virtual auto descriptor_counts() const noexcept -> const std::unordered_map<std::uint32_t, std::uint32_t>& = 0;
+  virtual auto descriptor_counts(std::uint32_t set) const noexcept -> std::vector<std::uint32_t> = 0;
 
-  virtual auto descriptor_set_layout() const noexcept -> const VkDescriptorSetLayout& = 0;
+  virtual auto descriptor_set_layout(std::uint32_t set) const noexcept -> VkDescriptorSetLayout = 0;
 
-  virtual auto descriptor_pool() const noexcept -> const VkDescriptorPool& = 0;
+  virtual auto descriptor_pool() const noexcept -> VkDescriptorPool = 0;
 
-  virtual auto layout() const noexcept -> const VkPipelineLayout& = 0;
+  virtual auto layout() const noexcept -> VkPipelineLayout = 0;
 
   virtual auto bind_point() const noexcept -> VkPipelineBindPoint = 0;
 
-  virtual auto descriptor_block(const std::string& name) const -> const shader::uniform_block& = 0;
+  virtual auto descriptor_block(const std::string& name, std::uint32_t set) const -> const shader::uniform_block& = 0;
 
-  virtual auto find_descriptor_binding(const std::string& name) const -> std::optional<std::uint32_t> = 0;
+  virtual auto find_descriptor_binding(const std::string& name, std::uint32_t set) const -> std::optional<std::uint32_t> = 0;
 
-  virtual auto find_descriptor_type_at_binding(std::uint32_t binding) const -> std::optional<VkDescriptorType> = 0;
+  virtual auto find_descriptor_type_at_binding(std::uint32_t set, std::uint32_t binding) const -> std::optional<VkDescriptorType> = 0;
 
 }; // class pipeline
 

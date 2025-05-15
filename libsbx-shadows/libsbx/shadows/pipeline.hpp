@@ -11,7 +11,7 @@ namespace sbx::shadows {
 class pipeline : public graphics::graphics_pipeline<models::vertex3d> {
 
   inline static constexpr auto pipeline_definition = graphics::pipeline_definition{
-    .uses_depth = true,
+    .depth = graphics::depth::read_write,
     .uses_transparency = false,
     .rasterization_state = graphics::rasterization_state{
       .polygon_mode = graphics::polygon_mode::fill,

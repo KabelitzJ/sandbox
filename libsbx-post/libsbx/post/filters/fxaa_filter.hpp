@@ -26,13 +26,13 @@ public:
 
     auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
+    pipeline.bind(command_buffer);
+
     descriptor_handler.push("image", graphics_module.attachment(_attachment_name));
 
     if (!descriptor_handler.update(pipeline)) {
       return;
     }
-
-    pipeline.bind(command_buffer);
 
     descriptor_handler.bind_descriptors(command_buffer);
 

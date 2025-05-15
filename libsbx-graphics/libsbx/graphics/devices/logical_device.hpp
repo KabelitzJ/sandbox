@@ -64,7 +64,7 @@ public:
 
   operator const VkDevice&() const noexcept;
 
-  auto enabled_features() const -> const VkPhysicalDeviceFeatures&;
+  auto enabled_features() const -> const physical_device::device_features&;
 
   template<queue::type Type>
   auto queue() const -> const graphics::queue& {
@@ -84,12 +84,12 @@ private:
 
   auto _get_queue_family_indices(const physical_device& physical_device) const -> queue_family_indices;
 
-  auto _get_enabled_features(const physical_device& physical_device) const -> VkPhysicalDeviceFeatures;
+  auto _get_enabled_features(const physical_device& physical_device) const -> physical_device::device_features;
 
   auto _create_logical_device(const physical_device& physical_device) -> void;
 
   VkDevice _handle{};
-  VkPhysicalDeviceFeatures _enabled_features{};
+  physical_device::device_features _enabled_features{};
   std::unordered_map<queue::type, graphics::queue> _queues{};
 
 }; // class logical_device

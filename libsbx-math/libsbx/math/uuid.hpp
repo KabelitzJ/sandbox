@@ -1,7 +1,11 @@
 #ifndef LIBSBX_MATH_UUID_HPP_
 #define LIBSBX_MATH_UUID_HPP_
 
+#if defined(SBX_MATH_UUID_USE_V4)
+
 #include <cinttypes>
+#include <exception>
+#include <charconv>
 
 #include <fmt/format.h>
 
@@ -13,42 +17,92 @@
 
 namespace sbx::math {
 
+struct invalid_uuid_exception : std::runtime_error {
+
+  invalid_uuid_exception(std::string_view uuid)
+  : std::runtime_error{fmt::format("String '{}' is not a valid uuid", uuid)} { }
+
+}; // struct invalid_uuid_exception
+
 class uuid {
 
   friend struct fmt::formatter<sbx::math::uuid>;
   friend struct std::hash<sbx::math::uuid>;
 
+  struct null_uui_tag { };
+
 public:
 
-  static const uuid null;
+  // static const uuid null;
 
-  uuid() {
+  using value_type = std::uint64_t;
+
+  uuid()
+  : _value{random::next<value_type>()} { 
     // Taken from https://www.cryptosys.net/pki/uuid-rfc4122.html
 
-    // 1. Generate 16 random bytes (=128 bits)
-    for (auto& byte : _bytes) {
-      byte = random::next<std::uint8_t>();
-    }
+    // // 1. Generate 16 random bytes (=128 bits)
+    // for (auto& byte : _bytes) {
+    //   byte = random::next<std::uint8_t>();
+    // }
 
     // 2. Adjust certain bits according to RFC 4122 section 4.4 as follows:
     //   (a) set the four most significant bits of the 7th byte to 0100'B, so the high nibble is "4"
     //   (b) set the two most significant bits of the 9th byte to 10'B, so the high nibble will be one of "8", "9", "A" or "B"
-    _bytes[6] = 0x40 | (_bytes[6] & 0xf);
-    _bytes[8] = 0x80 | (_bytes[8] & 0x3f);
+    // _bytes[6] = 0x40 | (_bytes[6] & 0xf);
+    // _bytes[8] = 0x80 | (_bytes[8] & 0x3f);
   }
+
+  // uuid(std::string_view string) {
+  //   if (string.size() != 36u) {
+  //     throw invalid_uuid_exception{string};
+  //   }
+
+  //   for (auto i = 0u, offset = 0u; i < _bytes.size(); ++i) {
+
+  //     if (i == 4u || i == 6u || i == 8u || i == 10u) {
+  //       ++offset;
+  //     }
+
+  //     auto substr = string.substr(i * 2u + offset, 2u);
+  //     const auto [itr, error] = std::from_chars(substr.data(), substr.data() + 2u, _bytes[i], 16);
+
+  //     if (error == std::errc::invalid_argument || error == std::errc::result_out_of_range) {
+  //       throw invalid_uuid_exception{string};
+  //     }
+  //   }
+
+  // }
 
   ~uuid() = default;
 
+  static auto null() -> uuid {
+    return uuid{null_uui_tag{}};
+  }
+
   auto operator==(const uuid& other) const noexcept -> bool {
-    return std::ranges::equal(_bytes, other._bytes);
+    return _value == other._value;
+  }
+
+  // operator std::string() const {
+  //   return fmt::format(
+  //     "{:02x}{:02x}{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
+  //     _bytes[0], _bytes[1], _bytes[2], _bytes[3], _bytes[4], _bytes[5], _bytes[6], _bytes[7],
+  //     _bytes[8], _bytes[9], _bytes[10], _bytes[11], _bytes[12], _bytes[13], _bytes[14], _bytes[15]
+  //   );
+  // }
+
+  operator value_type() const {
+    return _value;
   }
 
 private:
 
-  uuid(std::array<std::uint8_t, 16u>&& bytes)
-  : _bytes{std::move(bytes)} { }
+  uuid(null_uui_tag)
+  : _value{0} { }
 
-  std::array<std::uint8_t, 16u> _bytes;
+  // std::array<std::uint8_t, 16u> _bytes;
+  value_type _value;
 
 }; // class uuid
 
@@ -64,30 +118,100 @@ struct fmt::formatter<sbx::math::uuid> {
 
   template<typename FormatContext>
   auto format(const sbx::math::uuid& uuid, FormatContext& context) -> decltype(context.out()) {
-    for (const auto [i, byte] : ranges::views::enumerate(uuid._bytes)) {
-      fmt::format_to(context.out(), "{:02x}", byte);
-
-      if (i == 3 || i == 5 || i == 7 || i == 9) {
-        fmt::format_to(context.out(), "-");
-      }
-    }
-
-    return context.out();
+    return fmt::format_to(context.out(), "{}", static_cast<sbx::math::uuid::value_type>(uuid));
   }
 }; // struct fmt::formatter<sbx::math::uuid>
+
+// template<>
+// struct YAML::convert<sbx::math::uuid> {
+
+//   static auto encode(const sbx::math::uuid& rhs) -> YAML::Node {
+//     return Node{std::string{rhs}};
+//   }
+
+//   static auto decode(const YAML::Node& node, sbx::math::uuid& rhs) -> bool {
+//     rhs = sbx::math::uuid{node.as<std::string>()};
+
+//     return true;
+//   }
+
+// }; // struct YAML::convert<sbx::math::uuid>
 
 template<>
 struct std::hash<sbx::math::uuid> {
   auto operator()(const sbx::math::uuid& uuid) const noexcept -> std::size_t {
-    auto seed = std::size_t{0};
-
-    for (const auto& byte : uuid._bytes) {
-      sbx::utility::hash_combine(seed, byte);
-    }
-
-    return seed;
+    return static_cast<sbx::math::uuid::value_type>(uuid);
   }
 }; // struct std::hash<sbx::math::uuid>
+
+#else // SBX_MATH_UUID_USE_V4
+
+#include <cinttypes>
+#include <concepts>
+
+#include <fmt/format.h>
+
+#include <libsbx/math/random.hpp>
+
+namespace sbx::math {
+
+template<std::unsigned_integral Type>
+class basic_uuid {
+
+  friend struct fmt::formatter<sbx::math::basic_uuid<Type>>;
+  friend struct std::hash<sbx::math::basic_uuid<Type>>;
+
+public:
+
+  using value_type = Type;
+
+  basic_uuid()
+  : _value{random::next<value_type>()} { }
+
+  static constexpr auto null() -> basic_uuid {
+    return basic_uuid{0u};
+  }
+
+  constexpr auto operator==(const basic_uuid& other) const noexcept -> bool {
+    return _value == other._value;
+  }
+
+private:
+
+  basic_uuid(const value_type value)
+  : _value{value} { }
+
+  value_type _value;
+
+}; // class uuid
+
+using uuid = basic_uuid<std::uint64_t>;
+
+} // namespace sbx::math
+
+template<std::unsigned_integral Type>
+struct fmt::formatter<sbx::math::basic_uuid<Type>> {
+
+  template<typename ParseContext>
+  constexpr auto parse(ParseContext& context) -> decltype(context.begin()) {
+    return context.begin();
+  }
+
+  template<typename FormatContext>
+  auto format(const sbx::math::basic_uuid<Type>& uuid, FormatContext& context) -> decltype(context.out()) {
+    return fmt::format_to(context.out(), "{}", uuid._value);
+  }
+}; // struct fmt::formatter<sbx::math::uuid>
+
+
+template<std::unsigned_integral Type>
+struct std::hash<sbx::math::basic_uuid<Type>> {
+  auto operator()(const sbx::math::basic_uuid<Type>& uuid) const noexcept -> std::size_t {
+    return uuid._value;
+  }
+}; // struct std::hash<sbx::math::uuid>
+
+#endif // SBX_MATH_UUID_USE_V4
 
 #endif // LIBSBX_MATH_UUID_HPP_
 

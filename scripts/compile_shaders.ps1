@@ -1,5 +1,11 @@
 param(
-  [string]$directory
+  [Parameter(Mandatory = $true)]
+  [ValidateNotNullOrEmpty()]
+  [string]$directory,
+
+  [string]$vulkan_version = "1.3",
+  [string]$spv_version = "1.5",
+  [string]$std = "450 core"
 )
 
 if ($directory -eq "") {
@@ -43,7 +49,7 @@ function compile_shader {
 
       Write-Host "  Building stage: '$stage'"
 
-      & "$glslc" -fshader-stage="$stage" -c "$file" -o "$output"
+      & "$glslc" -fshader-stage="$stage" -c "$file" -o "$output" --target-env="vulkan$vulkan_version" --target-spv="spv$spv_version" -std="$std" -I"$directory"
     }
   }
 
@@ -55,7 +61,7 @@ function compile_shader {
 $shaders = Get-ChildItem -Directory "$directory"
 
 foreach ($shader in $shaders) {
-  if ((Split-Path "$shader" -Leaf) -eq "common") {
+  if ((Split-Path "$shader" -Leaf) -eq "libsbx") {
     continue
   }
 
