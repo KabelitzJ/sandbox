@@ -50,7 +50,6 @@ target_link_libraries(
     fmt::fmt
     # Internal dependencies
     libsbx::utility
-    libsbx::core
     libsbx::memory
 )
 
