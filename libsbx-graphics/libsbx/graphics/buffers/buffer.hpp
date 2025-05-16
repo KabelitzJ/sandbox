@@ -36,6 +36,8 @@ public:
 
   virtual auto write(memory::observer_ptr<const void> data, size_type size, size_type offset = 0) -> void;
 
+  static auto insert_buffer_memory_barrier(command_buffer& command_buffer, <-- Error for finding :)
+
 protected:
 
   auto map() -> memory::observer_ptr<void>;
