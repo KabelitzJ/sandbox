@@ -8,6 +8,8 @@
 #include <libsbx/scenes/hierarchy_module.hpp>
 
 #include <libsbx/scenes/skybox_subrenderer.hpp>
+#include <libsbx/scenes/debug_subrenderer.hpp>
+#include <libsbx/scenes/grid_subrenderer.hpp>
 
 #include <libsbx/scenes/components/id.hpp>
 #include <libsbx/scenes/components/tag.hpp>

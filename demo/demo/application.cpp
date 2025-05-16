@@ -16,7 +16,7 @@
 #include <demo/terrain/terrain_module.hpp>
 #include <demo/terrain/chunk.hpp>
 
-#include <demo/debug_subrenderer.hpp>
+#include <libsbx/scenes/debug_subrenderer.hpp>
 
 namespace demo {
 
@@ -175,15 +175,15 @@ auto application::update() -> void  {
 
   _rotation += sbx::math::degree{45} * delta_time;
 
-  debug_subrenderer::add_line(sbx::math::vector3{-1.0f, 0.0f, 1.0f}, sbx::math::vector3{1.0f, 0.0f, 1.0f}, sbx::math::color::red());
-  debug_subrenderer::add_line(sbx::math::vector3{-1.0f, 0.0f, -1.0f}, sbx::math::vector3{1.0f, 0.0f, -1.0f}, sbx::math::color::red());
-  debug_subrenderer::add_line(sbx::math::vector3{-1.0f, 0.0f, 1.0f}, sbx::math::vector3{-1.0f, 0.0f, -1.0f}, sbx::math::color::red());
-  debug_subrenderer::add_line(sbx::math::vector3{1.0f, 0.0f, 1.0f}, sbx::math::vector3{1.0f, 0.0f, -1.0f}, sbx::math::color::red());
+  sbx::scenes::debug_subrenderer::add_line(sbx::math::vector3{-1.0f, 0.0f, 1.0f}, sbx::math::vector3{1.0f, 0.0f, 1.0f}, sbx::math::color::red());
+  sbx::scenes::debug_subrenderer::add_line(sbx::math::vector3{-1.0f, 0.0f, -1.0f}, sbx::math::vector3{1.0f, 0.0f, -1.0f}, sbx::math::color::red());
+  sbx::scenes::debug_subrenderer::add_line(sbx::math::vector3{-1.0f, 0.0f, 1.0f}, sbx::math::vector3{-1.0f, 0.0f, -1.0f}, sbx::math::color::red());
+  sbx::scenes::debug_subrenderer::add_line(sbx::math::vector3{1.0f, 0.0f, 1.0f}, sbx::math::vector3{1.0f, 0.0f, -1.0f}, sbx::math::color::red());
 
-  debug_subrenderer::add_line(sbx::math::vector3{-1.0f, 0.0f, -1.0f}, sbx::math::vector3{0.0f, 1.0f, 0.0f}, sbx::math::color{0.0f, 1.0f, 0.0f, 0.5f});
-  debug_subrenderer::add_line(sbx::math::vector3{1.0f, 0.0f, -1.0f}, sbx::math::vector3{0.0f, 1.0f, 0.0f}, sbx::math::color{0.0f, 1.0f, 0.0f, 0.5f});
-  debug_subrenderer::add_line(sbx::math::vector3{-1.0f, 0.0f, 1.0f}, sbx::math::vector3{0.0f, 1.0f, 0.0f}, sbx::math::color{0.0f, 1.0f, 0.0f, 0.5f});
-  debug_subrenderer::add_line(sbx::math::vector3{1.0f, 0.0f, 1.0f}, sbx::math::vector3{0.0f, 1.0f, 0.0f}, sbx::math::color{0.0f, 1.0f, 0.0f, 0.5f});
+  sbx::scenes::debug_subrenderer::add_line(sbx::math::vector3{-1.0f, 0.0f, -1.0f}, sbx::math::vector3{0.0f, 1.0f, 0.0f}, sbx::math::color{0.0f, 1.0f, 0.0f, 0.5f});
+  sbx::scenes::debug_subrenderer::add_line(sbx::math::vector3{1.0f, 0.0f, -1.0f}, sbx::math::vector3{0.0f, 1.0f, 0.0f}, sbx::math::color{0.0f, 1.0f, 0.0f, 0.5f});
+  sbx::scenes::debug_subrenderer::add_line(sbx::math::vector3{-1.0f, 0.0f, 1.0f}, sbx::math::vector3{0.0f, 1.0f, 0.0f}, sbx::math::color{0.0f, 1.0f, 0.0f, 0.5f});
+  sbx::scenes::debug_subrenderer::add_line(sbx::math::vector3{1.0f, 0.0f, 1.0f}, sbx::math::vector3{0.0f, 1.0f, 0.0f}, sbx::math::color{0.0f, 1.0f, 0.0f, 0.5f});
 }
 
 auto application::fixed_update() -> void {

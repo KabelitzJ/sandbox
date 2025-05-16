@@ -35,6 +35,16 @@ function compile_shader {
   for file in $files; do
     # Get the file name without the extension
     stage=$(basename $file .glsl)
+
+    case "$stage" in
+      vertex|fragment|compute|geometry|tesselation)
+        echo "Found stage: $stage"
+        ;;
+      *)
+        continue
+      ;;
+    esac
+
     output="$binary_dir/$stage.spv"
 
     # Compile the shader
