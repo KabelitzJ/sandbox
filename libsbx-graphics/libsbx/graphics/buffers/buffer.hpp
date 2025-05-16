@@ -47,6 +47,7 @@ private:
   handle_type _handle{};
   size_type _size{};
   VkDeviceMemory _memory{};
+  VkBufferUsageFlags _usage{};
   std::uint64_t _address{};
 
 }; // class buffer_base

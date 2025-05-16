@@ -1,6 +1,8 @@
 #ifndef LIBSBX_SCENES_DEBUG_SUBRENDERER_HPP_
 #define LIBSBX_SCENES_DEBUG_SUBRENDERER_HPP_
 
+#include <optional>
+
 #include <libsbx/math/vector4.hpp>
 #include <libsbx/math/color.hpp>
 
@@ -47,7 +49,8 @@ public:
   debug_subrenderer(const std::filesystem::path& path, const sbx::graphics::pipeline::stage& stage)
   : sbx::graphics::subrenderer{stage},
     _pipeline{path, stage},
-    _storage_handler{VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT},
+    _push_handler{_pipeline.descriptor_block("push", 0u)},
+    _storage_buffer{std::make_optional<graphics::storage_buffer>(graphics::storage_buffer::min_size, VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT)},
     _descriptor_handler{_pipeline, 0u} { }
 
   ~debug_subrenderer() override {
@@ -77,11 +80,16 @@ public:
     
     _pipeline.bind(command_buffer);
 
-    _storage_handler.push(std::span<const scenes_module::line>{lines.data(), lines.size()});
+    if (lines.size() * sizeof(scenes_module::line) > _storage_buffer->size()) {
+      _storage_buffer.emplace(lines.size() * sizeof(scenes_module::line), VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT);
+    }
+
+    _storage_buffer->update(lines.data(), lines.size() * sizeof(scenes_module::line));
 
     _push_handler.push("mvp", projection * view);
+    _push_handler.push("vertex_data", _storage_buffer->address());
 
-    _descriptor_handler.push("buffer_vertex_data", _storage_handler);
+    // _descriptor_handler.push("buffer_vertex_data", _storage_handler);
     _descriptor_handler.push("push", _push_handler);
 
     if (!_descriptor_handler.update(_pipeline)) {
@@ -93,7 +101,7 @@ public:
 
     command_buffer.draw(lines.size(), 1, 0, 0);
 
-    scenes_module.debug_lines();
+    scenes_module.clear_debug_lines();
   }
 
 private:
@@ -101,7 +109,8 @@ private:
   pipeline _pipeline;
 
   sbx::graphics::push_handler _push_handler;
-  sbx::graphics::storage_handler _storage_handler;
+
+  std::optional<graphics::storage_buffer> _storage_buffer;
 
   sbx::graphics::descriptor_handler _descriptor_handler;
 

@@ -9,16 +9,17 @@ struct vertex {
 
 layout(location = 0) out vec4 out_color;
 
-layout(binding = 0, std430) readonly buffer buffer_vertex_data {
+layout(buffer_reference, buffer_reference_align = 8, std430) readonly buffer buffer_reference_vertex_data {
   vertex vertices[];
-} vertex_data;
+};
 
 layout(push_constant) uniform push_data {
 	mat4 mvp;
+  buffer_reference_vertex_data vertex_data;
 } push;
 
 void main() {
-  vertex vertex = vertex_data.vertices[gl_VertexIndex];
+  vertex vertex = push.vertex_data.vertices[gl_VertexIndex];
 
   out_color = vertex.color;
 

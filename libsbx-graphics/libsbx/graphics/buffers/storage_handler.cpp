@@ -2,6 +2,8 @@
 
 #include <fmt/format.h>
 
+#include <libsbx/utility/logger.hpp>
+
 namespace sbx::graphics {
 
 storage_handler::storage_handler(VkBufferUsageFlags additional_usage, const std::optional<shader::uniform_block>& uniform_block)
@@ -29,6 +31,10 @@ auto storage_handler::update(const std::optional<shader::uniform_block>& uniform
 }
 
 auto storage_handler::buffer_address() const noexcept -> std::uint64_t {
+  if (!_storage_buffer) {
+    utility::logger<"storage_handler">::warn("Trying to get address of storage_handler that has no storage_buffer");
+  }
+
   return _storage_buffer ? _storage_buffer->address() : 0u;
 }
 

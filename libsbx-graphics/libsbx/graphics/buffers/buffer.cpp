@@ -13,7 +13,8 @@
 namespace sbx::graphics {
 
 buffer_base::buffer_base(size_type size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, memory::observer_ptr<const void> memory)
-: _size{size} {
+: _size{size},
+  _usage{usage} {
   utility::assert_that(size > 0, "Buffer size must be greater than 0.");
 
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
@@ -30,7 +31,7 @@ buffer_base::buffer_base(size_type size, VkBufferUsageFlags usage, VkMemoryPrope
   auto buffer_create_info = VkBufferCreateInfo{};
   buffer_create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
   buffer_create_info.size = _size;
-  buffer_create_info.usage = usage;
+  buffer_create_info.usage = _usage;
   buffer_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
   buffer_create_info.queueFamilyIndexCount = static_cast<std::uint32_t>(queue_family_indices.size());
   buffer_create_info.pQueueFamilyIndices = queue_family_indices.data();
@@ -42,7 +43,7 @@ buffer_base::buffer_base(size_type size, VkBufferUsageFlags usage, VkMemoryPrope
 
   auto memory_allocate_flags_info = VkMemoryAllocateFlagsInfo{};
   memory_allocate_flags_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_FLAGS_INFO;
-  memory_allocate_flags_info.flags = (usage & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT) ? VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_BIT : 0;
+  memory_allocate_flags_info.flags = (_usage & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT) ? VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_BIT : 0;
 
   auto allocation_info = VkMemoryAllocateInfo{};
   allocation_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
@@ -58,7 +59,7 @@ buffer_base::buffer_base(size_type size, VkBufferUsageFlags usage, VkMemoryPrope
     std::memcpy(mapped_memory.get(), memory.get(), _size);
 
     // [NOTE] KAJ 2023-07-28 : If the memory is not host coherent, we need to flush it.
-    if (!(usage & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)) {
+    if (!(_usage & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)) {
       auto flush_range = VkMappedMemoryRange{};
       flush_range.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
       flush_range.memory = _memory;
@@ -73,7 +74,7 @@ buffer_base::buffer_base(size_type size, VkBufferUsageFlags usage, VkMemoryPrope
 
   validate(vkBindBufferMemory(logical_device, _handle, _memory, 0));
 
-  if (usage & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT) {
+  if (_usage & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT) {
     auto buffer_device_address_info = VkBufferDeviceAddressInfo{};
     buffer_device_address_info.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
     buffer_device_address_info.buffer = _handle;
@@ -108,6 +109,7 @@ auto buffer_base::memory() const noexcept -> const VkDeviceMemory& {
 }
 
 auto buffer_base::address() const noexcept -> std::uint64_t {
+  utility::assert_that((_usage & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT), "Attempting to get address of buffer that was not created with VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT set");
   return _address;
 }
 
