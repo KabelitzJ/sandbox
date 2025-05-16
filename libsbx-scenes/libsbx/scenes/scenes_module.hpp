@@ -6,6 +6,9 @@
 #include <utility>
 #include <filesystem>
 
+#include <libsbx/math/vector4.hpp>
+#include <libsbx/math/color.hpp>
+
 #include <libsbx/core/module.hpp>
 
 #include <libsbx/scenes/scene.hpp>
@@ -20,6 +23,11 @@ class scenes_module final : public core::module<scenes_module> {
 
 public:
 
+  struct line {
+    sbx::math::vector4 position;
+    sbx::math::color color;
+  }; // struct line
+
   scenes_module();
 
   ~scenes_module() override;
@@ -30,9 +38,31 @@ public:
 
   auto scene() -> scenes::scene&;
 
+  auto debug_lines() const -> const std::vector<line>& {
+    return _debug_lines;
+  }
+
+  auto clear_debug_lines() -> void {
+    _debug_lines.clear();
+  }
+
+  auto add_debug_line(const sbx::math::vector3& start, const sbx::math::vector3& end, const sbx::math::color& color) -> void {
+    _debug_lines.push_back(line{
+      .position = sbx::math::vector4{start, 1.0f},
+      .color = color
+    });
+
+    _debug_lines.push_back(line{
+      .position = sbx::math::vector4{end, 1.0f},
+      .color = color
+    });
+  }
+
 private:
 
   std::optional<scenes::scene> _scene;
+
+  std::vector<line> _debug_lines{};
 
 }; // class scene_modules
 

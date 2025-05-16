@@ -10,6 +10,8 @@
 #include <libsbx/graphics/buffers/storage_handler.hpp>
 #include <libsbx/graphics/descriptor/descriptor_handler.hpp>
 
+#include <libsbx/scenes/scenes_module.hpp>
+
 namespace sbx::scenes {
 
 class debug_subrenderer final : public sbx::graphics::subrenderer {
@@ -42,38 +44,25 @@ class debug_subrenderer final : public sbx::graphics::subrenderer {
 
 public:
 
-  struct line {
-    sbx::math::vector4 position;
-    sbx::math::color color;
-  }; // struct line
-
   debug_subrenderer(const std::filesystem::path& path, const sbx::graphics::pipeline::stage& stage)
   : sbx::graphics::subrenderer{stage},
     _pipeline{path, stage},
+    _storage_handler{VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT},
     _descriptor_handler{_pipeline, 0u} { }
 
   ~debug_subrenderer() override {
 
   }
 
-  static auto add_line(const sbx::math::vector3& start, const sbx::math::vector3& end, const sbx::math::color& color) -> void {
-    _lines.push_back(line{
-      .position = sbx::math::vector4{start, 1.0f},
-      .color = color
-    });
-
-    _lines.push_back(line{
-      .position = sbx::math::vector4{end, 1.0f},
-      .color = color
-    });
-  }
-
   auto render(sbx::graphics::command_buffer& command_buffer) -> void override {
-    if (_lines.empty()) {
+    auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
+
+    const auto& lines = scenes_module.debug_lines();
+
+    if (lines.empty()) {
       return;
     }
 
-    auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
     auto& scene = scenes_module.scene();
 
     auto camera_node = scene.camera();
@@ -88,7 +77,7 @@ public:
     
     _pipeline.bind(command_buffer);
 
-    _storage_handler.push(std::span<const line>{_lines});
+    _storage_handler.push(std::span<const scenes_module::line>{lines.data(), lines.size()});
 
     _push_handler.push("mvp", projection * view);
 
@@ -102,9 +91,9 @@ public:
     _descriptor_handler.bind_descriptors(command_buffer);
     _push_handler.bind(command_buffer, _pipeline);
 
-    command_buffer.draw(_lines.size(), 1, 0, 0);
+    command_buffer.draw(lines.size(), 1, 0, 0);
 
-    _lines.clear();
+    scenes_module.debug_lines();
   }
 
 private:
@@ -115,8 +104,6 @@ private:
   sbx::graphics::storage_handler _storage_handler;
 
   sbx::graphics::descriptor_handler _descriptor_handler;
-
-  inline static auto _lines = std::vector<line>{};
 
 }; // class debug_subrenderer
 
