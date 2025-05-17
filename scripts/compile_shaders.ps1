@@ -36,15 +36,23 @@ function compile_shader {
 
   $shader_name = Split-Path "$path" -Leaf
 
+
   Write-Host "Compiling shader: '$shader_name'"
 
   $binary_dir = "$path\bin"
 
   New-Item -ItemType "Directory" -Path "$binary_dir" -Force | Out-Null
 
+  $available_stages = @("vertex", "fragment", "geometry", "compute", "tessellation_control", "tessellation_evaluation")
+
   foreach ($file in $files) {
     if (Test-Path -Path "$file" -PathType Leaf) {
       $stage = (Get-Item "$file").BaseName
+
+      if ($available_stages -notcontains $stage) {
+        continue
+      }
+
       $output = "$binary_dir\$stage.spv"
 
       Write-Host "  Building stage: '$stage'"
