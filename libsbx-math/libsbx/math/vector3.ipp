@@ -112,6 +112,11 @@ inline constexpr auto operator*(basic_vector3<Lhs> lhs, Rhs scalar) noexcept -> 
   return lhs *= scalar;
 }
 
+template<scalar Lhs, scalar Rhs>
+inline constexpr auto operator*(Lhs scalar, basic_vector3<Rhs> rhs) noexcept -> basic_vector3<Rhs> {
+  return rhs *= scalar;
+}
+
 template<scalar Lhs, std::convertible_to<Lhs> Rhs>
 requires (!is_scalar_v<Rhs>)
 inline constexpr auto operator*(basic_vector3<Lhs> lhs, const Rhs& rhs) noexcept -> basic_vector3<Lhs> {

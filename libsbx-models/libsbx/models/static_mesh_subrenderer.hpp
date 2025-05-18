@@ -13,6 +13,8 @@
 #include <tsl/robin_map.h>
 #include <tsl/robin_set.h>
 
+#include <libsbx/containers/octtree.hpp>
+
 #include <libsbx/math/color.hpp>
 #include <libsbx/math/vector3.hpp>
 #include <libsbx/math/matrix4x4.hpp>
@@ -201,8 +203,18 @@ public:
 
     auto mesh_query_collider = scene.query<const scenes::static_mesh, const scenes::collider>();
 
+    auto tree = containers::octtree<scenes::node>{math::volume{
+      math::vector3{-300.0f, -100.0f, -300.0f},
+      math::vector3{300.0f, 100.0f, 300.0f}
+    }};
+
     for (auto&& [node, static_mesh, collider] : mesh_query_collider.each()) {
       const auto model = scene.world_transform(node);
+
+      const auto volume = scenes::to_volume(collider);
+      const auto transformed_volume = math::volume::transformed(volume, model);
+
+      tree.insert(node, transformed_volume);
 
       EASY_BLOCK("testing frustum");
       if (frustum.intersects(model, collider)) {

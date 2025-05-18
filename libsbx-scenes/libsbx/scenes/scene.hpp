@@ -145,7 +145,7 @@ private:
   node_type _root;
   node_type _camera;
 
-  containers::octree<math::uuid> _octree;
+  containers::octtree<math::uuid> _octtree;
 
   directional_light _light;
 

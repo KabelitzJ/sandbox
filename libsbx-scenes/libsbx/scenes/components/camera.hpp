@@ -8,6 +8,7 @@
 #include <libsbx/math/volume.hpp>
 #include <libsbx/math/sphere.hpp>
 #include <libsbx/math/plane.hpp>
+#include <libsbx/math/box.hpp>
 
 #include <libsbx/containers/static_vector.hpp>
 
@@ -18,7 +19,12 @@ using sphere_collider = math::sphere;
 
 using collider = std::variant<aabb_collider, sphere_collider>;
 
-class frustum {
+auto to_volume(const collider& collider) -> math::volume;
+
+auto to_volume(const aabb_collider& collider) -> math::volume;
+auto to_volume(const sphere_collider& collider) -> math::volume;
+
+class frustum : public math::box {
 
   inline static constexpr auto left_plane = std::size_t{0u};
   inline static constexpr auto right_plane = std::size_t{0u};
@@ -29,51 +35,8 @@ class frustum {
 
 public:
 
-  frustum(const math::matrix4x4& view_projection) {
-    const auto& m = view_projection;
-
-    // Right
-    {
-      const auto normal = math::vector3{m[0][3] - m[0][0], m[1][3] - m[1][0], m[2][3] - m[2][0]};
-      const auto distance = m[3][3] - m[3][0];
-      _planes.push_back(math::plane{normal, distance}.normalize());
-    }
-
-    // Left
-    {
-      const auto normal = math::vector3{m[0][3] + m[0][0], m[1][3] + m[1][0], m[2][3] + m[2][0]};
-      const auto distance = m[3][3] + m[3][0];
-      _planes.push_back(math::plane{normal, distance}.normalize());
-    }
-
-    // Bottom
-    {
-      const auto normal = math::vector3{m[0][3] + m[0][1], m[1][3] + m[1][1], m[2][3] + m[2][1]};
-      const auto distance = m[3][3] + m[3][1];
-      _planes.push_back(math::plane{normal, distance}.normalize());
-    }
-
-    // Top
-    {
-      const auto normal = math::vector3{m[0][3] - m[0][1], m[1][3] - m[1][1], m[2][3] - m[2][1]};
-      const auto distance = m[3][3] - m[3][1];
-      _planes.push_back(math::plane{normal, distance}.normalize());
-    }
-
-    // Far
-    {
-      const auto normal = math::vector3{m[0][3] - m[0][2], m[1][3] - m[1][2], m[2][3] - m[2][2]};
-      const auto distance = m[3][3] - m[3][2];
-      _planes.push_back(math::plane{normal, distance}.normalize());
-    }
-
-    // Near
-    {
-      const auto normal = math::vector3{m[0][3] + m[0][2], m[1][3] + m[1][2], m[2][3] + m[2][2]};
-      const auto distance = m[3][3] + m[3][2];
-      _planes.push_back(math::plane{normal, distance}.normalize());
-    }
-  }
+  frustum(const math::matrix4x4& view_projection)
+  : math::box{_extract_planes(view_projection)} { }
 
   auto intersects(const math::matrix4x4& model, const collider& collider) const noexcept -> bool {
     return std::visit([this, &model](const auto& value) { return _intersects(std::decay_t<decltype(value)>::transformed(value, model)); }, collider);
@@ -81,10 +44,36 @@ public:
 
 private:
 
+  static auto _extract_planes(const math::matrix4x4& matrix) -> std::array<math::plane, 6u> {
+    return std::array<math::plane, 6u>{
+      _extract_plane<right_plane>(matrix),
+      _extract_plane<left_plane>(matrix),
+      _extract_plane<bottom_plane>(matrix),
+      _extract_plane<top_plane>(matrix),
+      _extract_plane<far_plane>(matrix),
+      _extract_plane<near_plane>(matrix)
+    };
+  }
+
+  template<std::size_t Side>
+  static auto _extract_plane(const math::matrix4x4& matrix) -> math::plane {
+    constexpr auto sign = (Side == right_plane || Side == top_plane || Side == far_plane) ? -1.0f : 1.0f;
+
+    const auto normal = math::vector3{
+      matrix[0][3] + sign * matrix[0][Side], 
+      matrix[1][3] + sign * matrix[1][Side], 
+      matrix[2][3] + sign * matrix[2][Side]
+    };
+
+    const auto distance = matrix[3][3] - matrix[3][Side];
+
+    return math::plane{normal, distance}.normalize();
+  }
+
   auto _intersects(const aabb_collider& aabb) const noexcept -> bool {
     const auto corners = aabb.corners();
 
-    for (const auto& plane : _planes) {
+    for (const auto& plane : planes()) {
       auto outside_count = 0u;
 
       for (const auto& corner : corners) {
@@ -102,7 +91,7 @@ private:
   }
 
   auto _intersects(const sphere_collider& sphere) const noexcept -> bool {
-    for (const auto& plane : _planes) {
+    for (const auto& plane : planes()) {
       if (plane.distance_to_point(sphere.center()) < -sphere.radius()) {
         return false;
       }
@@ -110,19 +99,6 @@ private:
 
     return true;
   }
-
-  template<std::size_t Side>
-  auto _extract_plane(const math::matrix4x4& matrix) const -> math::plane {
-    constexpr auto negate = (Side == right_plane || Side == top_plane || Side == far_plane);
-
-    const auto column = matrix[3] + (negate ? -matrix[Side] : matrix[Side]);
-    const auto normal = math::vector3{column};
-    const auto length = normal.length();
-  
-    return math::plane{normal / length, column.w() / length};
-  }
-
-  containers::static_vector<math::plane, 6u> _planes;
 
 }; // struct frustum
 
