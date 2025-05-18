@@ -17,6 +17,7 @@ add_library(${CMAKE_PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 find_package(Vulkan REQUIRED)
 find_package(SPIRV-Headers REQUIRED)
 find_package(spirv-cross REQUIRED)
+find_package(spirv-tools REQUIRED)
 find_package(stb REQUIRED)
 find_package(range-v3 REQUIRED)
 find_package(fmt REQUIRED)
@@ -117,10 +118,12 @@ target_link_libraries(
     # External dependencies
     Vulkan::Vulkan
     SPIRV-Headers::SPIRV-Headers
-    spirv-cross-core
-    spirv-cross-cpp
-    spirv-cross-reflect
-    spirv-cross-glsl
+    spirv-cross::spirv-cross
+    spirv-tools::spirv-tools
+    # spirv-cross-core
+    # spirv-cross-cpp
+    # spirv-cross-reflect
+    # spirv-cross-glsl
     stb::stb
     range-v3::range-v3
     fmt::fmt

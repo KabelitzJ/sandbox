@@ -57,7 +57,7 @@ function compile_shader {
 
       Write-Host "  Building stage: '$stage'"
 
-      & "$glslc" -fshader-stage="$stage" -c "$file" -o "$output" --target-env="vulkan$vulkan_version" --target-spv="spv$spv_version" -std="$std" -I"$directory"
+      & "$glslc" -fshader-stage="$stage" -c "$file" -o "$output" --target-env="vulkan1.3" --target-spv="spv1.5" -std="450 core" -I"$directory"
     }
   }
 

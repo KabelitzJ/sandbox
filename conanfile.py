@@ -74,7 +74,7 @@ class libsbx_recipe(ConanFile):
 
     is_compiler_multi_config = self.settings.compiler == "msvc"
 
-    self.folders.build = os.path.join("build", str(self.settings.compiler), str(self.settings.arch))
+    self.folders.build = os.path.join("build", str(self.settings.arch), str(self.settings.compiler))
 
     if not is_compiler_multi_config:
       self.folders.build = os.path.join(self.folders.build, str(self.settings.build_type).lower())
@@ -84,21 +84,22 @@ class libsbx_recipe(ConanFile):
   def requirements(self):
     self.requires("fmt/10.0.0")
     self.requires("spdlog/1.11.0")
-    self.requires("glm/cci.20230113")
+    self.requires("glm/1.0.1")
     self.requires("yaml-cpp/0.7.0")
     self.requires("nlohmann_json/3.11.3")
     self.requires("base64/0.5.2")
     self.requires("glfw/3.3.8")
     self.requires("sol2/3.3.1")
     self.requires("tinyobjloader/2.0.0-rc10")
-    self.requires("spirv-cross/1.3.243.0")
-    self.requires("spirv-headers/1.5.4")
+    self.requires("spirv-cross/cci.20211113")
+    self.requires("spirv-headers/1.4.309.0")
+    self.requires("spirv-tools/1.4.309.0")
     self.requires("vulkan-memory-allocator/cci.20231120")
     self.requires("stb/cci.20230920")
     self.requires("range-v3/0.12.0")
     self.requires("freetype/2.13.0")
     self.requires("gtest/1.14.0")
-    self.requires("openal-soft/1.22.2")
+    # self.requires("openal-soft/1.22.2")
     self.requires("drwav/0.13.12")
     self.requires("drmp3/0.6.34")
     self.requires("imgui/1.91.5-docking")
