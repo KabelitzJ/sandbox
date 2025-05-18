@@ -17,7 +17,7 @@ add_library(${CMAKE_PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 find_package(fmt REQUIRED)
 find_package(yaml-cpp REQUIRED)
 find_package(range-v3 REQUIRED)
-find_package(sol2 REQUIRED)
+# find_package(sol2 REQUIRED)
 find_package(portable-file-dialogs REQUIRED)
 find_package(easy_profiler REQUIRED)
 
@@ -57,7 +57,7 @@ target_link_libraries(
     fmt::fmt
     yaml-cpp
     range-v3::range-v3
-    sol2::sol2
+    # sol2::sol2
     portable-file-dialogs::portable-file-dialogs
     easy_profiler
     # Internal dependencies

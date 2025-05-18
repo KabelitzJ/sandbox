@@ -15,14 +15,11 @@ endif()
 add_library(${CMAKE_PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
 find_package(Vulkan REQUIRED)
-find_package(SPIRV-Headers REQUIRED)
 find_package(spirv-cross REQUIRED)
-find_package(spirv-tools REQUIRED)
 find_package(stb REQUIRED)
 find_package(range-v3 REQUIRED)
 find_package(fmt REQUIRED)
 find_package(vulkan-memory-allocator REQUIRED)
-find_package(nlohmann_json REQUIRED)
 find_package(nlohmann_json REQUIRED)
 
 option(GLFW_BUILD_EXAMPLES "Build the GLFW example programs" OFF)
@@ -117,13 +114,7 @@ target_link_libraries(
   PUBLIC
     # External dependencies
     Vulkan::Vulkan
-    SPIRV-Headers::SPIRV-Headers
     spirv-cross::spirv-cross
-    spirv-tools::spirv-tools
-    # spirv-cross-core
-    # spirv-cross-cpp
-    # spirv-cross-reflect
-    # spirv-cross-glsl
     stb::stb
     range-v3::range-v3
     fmt::fmt
