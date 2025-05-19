@@ -1,5 +1,5 @@
-#ifndef LIBSBX_CONTAINERS_OCTTREE_HPP_
-#define LIBSBX_CONTAINERS_OCTTREE_HPP_
+#ifndef LIBSBX_CONTAINERS_OCTREE_HPP_
+#define LIBSBX_CONTAINERS_OCTREE_HPP_
 
 #include <range/v3/all.hpp>
 
@@ -15,7 +15,7 @@
 namespace sbx::containers {
 
 template<typename Type, std::size_t Threshold = 16u, std::size_t Depth = 8u>
-class octtree {
+class octree {
 
   inline static constexpr auto threshold = Threshold;
   inline static constexpr auto depth = Depth;
@@ -127,7 +127,7 @@ public:
   using reference = value_type&;
   using const_reference = const value_type&;
 
-  octtree(const math::volume& bounds) noexcept
+  octree(const math::volume& bounds) noexcept
   : _bounds{bounds},
     _root{0u} {
     _nodes.push_back(node{});
@@ -241,8 +241,8 @@ private:
   node::id _root;
   std::vector<node> _nodes;
 
-}; // class octtree
+}; // class octree
 
 } // namespace sbx::containers
 
-#endif // LIBSBX_CONTAINERS_OCTTREE_HPP_
+#endif // LIBSBX_CONTAINERS_OCTREE_HPP_

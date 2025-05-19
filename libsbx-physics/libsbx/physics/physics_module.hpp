@@ -18,7 +18,7 @@
 #include <libsbx/scenes/components/tag.hpp>
 #include <libsbx/scenes/components/id.hpp>
 
-#include <libsbx/containers/octtree.hpp>
+#include <libsbx/containers/octree.hpp>
 
 #include <libsbx/models/mesh.hpp>
 
@@ -81,7 +81,7 @@ private:
 
     const auto delta_time = core::engine::fixed_delta_time();
 
-    auto tree = containers::octtree<math::uuid, 16u, 8u>{math::volume{math::vector3{-100.0f, -100.0f, -100.0f}, math::vector3{100.0f, 100.0f, 100.0f}}};
+    auto tree = containers::octree<math::uuid, 16u, 8u>{math::volume{math::vector3{-100.0f, -100.0f, -100.0f}, math::vector3{100.0f, 100.0f, 100.0f}}};
 
     auto collider_query = scene.query<physics::collider>();
 

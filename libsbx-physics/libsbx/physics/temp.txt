@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-octtree
+octree
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -100,14 +100,14 @@ public:
     }
 };
 
-// octtree class
+// octree class
 template<typename T, typename U, size_t threshold, size_t max_depth>
-class octtree {
+class octree {
 private:
     std::vector<octtreeNode<T, U>> nodes;
 
 public:
-    octtree(const BoundingBox<T>& bounding_box) {
+    octree(const BoundingBox<T>& bounding_box) {
         nodes.emplace_back(bounding_box);
     }
 
@@ -231,21 +231,21 @@ private:
 
 int main() {
     BoundingBox<float> root_bounding_box(Vector3<float>(0.0f, 0.0f, 0.0f), Vector3<float>(1.0f, 1.0f, 1.0f));
-    octtree<float, Vector3<float>, 4, 5> octtree(root_bounding_box);
+    octree<float, Vector3<float>, 4, 5> octree(root_bounding_box);
 
-    octtree.insert(Vector3<float>(0.1f, 0.1f, 0.1f), BoundingBox<float>(Vector3<float>(0.1f, 0.1f, 0.1f), Vector3<float>(0.2f, 0.2f, 0.2f)));
-    octtree.insert(Vector3<float>(0.15f, 0.15f, 0.15f), BoundingBox<float>(Vector3<float>(0.15f, 0.15f, 0.15f), Vector3<float>(0.25f, 0.25f, 0.25f)));
-    octtree.insert(Vector3<float>(0.3f, 0.3f, 0.3f), BoundingBox<float>(Vector3<float>(0.3f, 0.3f, 0.3f), Vector3<float>(0.4f, 0.4f, 0.4f)));
-    octtree.insert(Vector3<float>(0.35f, 0.35f, 0.35f), BoundingBox<float>(Vector3<float>(0.35f, 0.35f, 0.35f), Vector3<float>(0.45f, 0.45f, 0.45f)));
+    octree.insert(Vector3<float>(0.1f, 0.1f, 0.1f), BoundingBox<float>(Vector3<float>(0.1f, 0.1f, 0.1f), Vector3<float>(0.2f, 0.2f, 0.2f)));
+    octree.insert(Vector3<float>(0.15f, 0.15f, 0.15f), BoundingBox<float>(Vector3<float>(0.15f, 0.15f, 0.15f), Vector3<float>(0.25f, 0.25f, 0.25f)));
+    octree.insert(Vector3<float>(0.3f, 0.3f, 0.3f), BoundingBox<float>(Vector3<float>(0.3f, 0.3f, 0.3f), Vector3<float>(0.4f, 0.4f, 0.4f)));
+    octree.insert(Vector3<float>(0.35f, 0.35f, 0.35f), BoundingBox<float>(Vector3<float>(0.35f, 0.35f, 0.35f), Vector3<float>(0.45f, 0.45f, 0.45f)));
 
-    auto result = octtree.query(BoundingBox<float>(Vector3<float>(0.2f, 0.2f, 0.2f), Vector3<float>(0.3f, 0.3f, 0.3f)));
+    auto result = octree.query(BoundingBox<float>(Vector3<float>(0.2f, 0.2f, 0.2f), Vector3<float>(0.3f, 0.3f, 0.3f)));
 
     std::cout << "Query results:" << std::endl;
     for (const auto& value : result) {
         std::cout << "(" << value.x << ", " << value.y << ", " << value.z << ")" << std::endl;
     }
 
-    auto intersections_result = octtree.intersections();
+    auto intersections_result = octree.intersections();
     std::cout << "Intersections:" << std::endl;
     for (const auto& pair : intersections_result) {
         std::cout << "Intersection between (" << pair.first.x << ", " << pair.first.y << ", " << pair.first.z << ") and ("

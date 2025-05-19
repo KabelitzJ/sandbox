@@ -6,7 +6,7 @@
 
 namespace sbx::memory {
 
-template<typename Iterator, typename Sentinel = Iterator>
+template<std::forward_iterator Iterator, std::sentinel_for<Iterator> Sentinel = Iterator>
 class iterable_adaptor final {
 
 public:

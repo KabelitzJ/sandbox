@@ -60,7 +60,7 @@ class view_iterator final {
   friend class extended_view_iterator;
 
   template<typename LhsType, auto... LhsArgs, typename RhsType, auto... RhsArgs>
-  friend constexpr bool operator==(const view_iterator<LhsType, LhsArgs...> &, const view_iterator<RhsType, RhsArgs...> &) noexcept;
+  friend constexpr bool operator==(const view_iterator<LhsType, LhsArgs...>&, const view_iterator<RhsType, RhsArgs...>&) noexcept;
 
   using iterator_type = typename Type::const_iterator;
   using iterator_traits = std::iterator_traits<iterator_type>;

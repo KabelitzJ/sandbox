@@ -13,7 +13,7 @@
 #include <tsl/robin_map.h>
 #include <tsl/robin_set.h>
 
-#include <libsbx/containers/octtree.hpp>
+#include <libsbx/containers/octree.hpp>
 
 #include <libsbx/math/color.hpp>
 #include <libsbx/math/vector3.hpp>
@@ -203,7 +203,7 @@ public:
 
     auto mesh_query_collider = scene.query<const scenes::static_mesh, const scenes::collider>();
 
-    auto tree = containers::octtree<scenes::node>{math::volume{
+    auto tree = containers::octree<scenes::node>{math::volume{
       math::vector3{-300.0f, -100.0f, -300.0f},
       math::vector3{300.0f, 100.0f, 300.0f}
     }};

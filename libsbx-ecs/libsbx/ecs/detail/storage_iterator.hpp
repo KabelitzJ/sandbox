@@ -108,11 +108,19 @@ private:
 
 }; // class storage_iterator
 
+template<typename Lhs, typename Rhs, std::size_t Page>
+[[nodiscard]] constexpr bool operator==(const storage_iterator<Lhs, Page>& lhs, const storage_iterator<Rhs, Page>& rhs) noexcept {
+  return lhs.index() == rhs.index();
+}
+
 template<typename Iterator, typename... Other>
 class extended_storage_iterator final {
 
   template<typename It, typename... Args>
   friend class extended_storage_iterator;
+
+  template<typename... Lhs, typename... Rhs>
+  friend constexpr bool operator==(const extended_storage_iterator<Lhs...>&, const extended_storage_iterator<Rhs...>&) noexcept;
 
 public:
 
@@ -161,6 +169,11 @@ private:
   std::tuple<iterator, Other...> _values;
 
 }; // class extended_storage_iterator
+
+template<typename... Lhs, typename... Rhs>
+[[nodiscard]] constexpr bool operator==(const extended_storage_iterator<Lhs...>& lhs, const extended_storage_iterator<Rhs...>& rhs) noexcept {
+  return std::get<0>(lhs._values) == std::get<0>(rhs._values);
+}
 
 } // namespace sbx::ecs::detail
 
