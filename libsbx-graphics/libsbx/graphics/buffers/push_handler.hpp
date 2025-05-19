@@ -17,6 +17,8 @@ class push_handler {
 
 public:
 
+  push_handler(const pipeline& pipeline);
+
   push_handler(const std::optional<shader::uniform_block>& uniform_block = std::nullopt);
 
   template<typename Type>

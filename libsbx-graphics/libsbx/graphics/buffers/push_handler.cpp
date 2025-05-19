@@ -1,6 +1,17 @@
 #include <libsbx/graphics/buffers/push_handler.hpp>
 
+#include <libsbx/utility/logger.hpp>
+
 namespace sbx::graphics {
+
+push_handler::push_handler(const pipeline& pipeline)
+: _uniform_block{pipeline.push_constant()} {
+  if (_uniform_block) {
+    utility::logger<"graphics">::debug("Push constant block");
+    _data = std::make_unique<std::uint8_t[]>(_uniform_block->size());
+    utility::logger<"graphics">::debug("Push constant block size: {}", _uniform_block->size());
+  }
+}
 
 push_handler::push_handler(const std::optional<shader::uniform_block>& uniform_block)
 : _uniform_block{uniform_block} {

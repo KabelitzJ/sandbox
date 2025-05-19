@@ -58,6 +58,44 @@ public:
     });
   }
 
+  auto add_debug_plane(const sbx::math::vector3& origin, const sbx::math::vector3& v1, const sbx::math::vector3& v2, std::uint32_t n1, std::uint32_t n2, std::float_t s1, std::float_t s2, const sbx::math::color& color, const sbx::math::color& outline) -> void {
+    add_debug_line(origin - s1 / 2.0f * v1 - s2 / 2.0f * v2, origin - s1 / 2.0f * v1 + s2 / 2.0f * v2, outline);
+    add_debug_line(origin + s1 / 2.0f * v1 - s2 / 2.0f * v2, origin + s1 / 2.0f * v1 + s2 / 2.0f * v2, outline);
+    add_debug_line(origin - s1 / 2.0f * v1 + s2 / 2.0f * v2, origin + s1 / 2.0f * v1 + s2 / 2.0f * v2, outline);
+    add_debug_line(origin - s1 / 2.0f * v1 - s2 / 2.0f * v2, origin + s1 / 2.0f * v1 - s2 / 2.0f * v2, outline);
+
+    for (int i = 1; i < n1; i++) {
+      const auto t = ((std::float_t)i - (std::float_t)n1 / 2.0f) * s1/(std::float_t)n1;
+      const auto o1 = origin + t * v1;
+      add_debug_line(o1 - s2 / 2.0f * v2, o1 + s2 / 2.0f * v2, color);
+    }
+
+    for (int i = 1; i < n2; i++) {
+      const auto t = ((std::float_t)i - (std::float_t)n2 / 2.0f) * s2/(std::float_t)n2;
+      const auto o2 = origin + t * v2;
+      add_debug_line(o2 - s1 / 2.0f * v1, o2 + s1 / 2.0f * v1, color);
+    }
+  }
+
+  auto add_debug_volume(const math::matrix4x4& matrix, const math::volume& volume, const sbx::math::color& color) -> void {
+    const auto transformed = math::volume::transformed(volume, matrix);
+
+    const auto corners = transformed.corners();
+
+    add_debug_line(corners[0], corners[1], color);
+    add_debug_line(corners[2], corners[3], color);
+    add_debug_line(corners[4], corners[5], color);
+    add_debug_line(corners[6], corners[7], color);
+    add_debug_line(corners[0], corners[2], color);
+    add_debug_line(corners[1], corners[3], color);
+    add_debug_line(corners[4], corners[6], color);
+    add_debug_line(corners[5], corners[7], color);
+    add_debug_line(corners[0], corners[4], color);
+    add_debug_line(corners[1], corners[5], color);
+    add_debug_line(corners[2], corners[6], color);
+    add_debug_line(corners[3], corners[7], color);
+  }
+
 private:
 
   std::optional<scenes::scene> _scene;

@@ -20,6 +20,14 @@ public:
     VkPipelineStageFlags stage;
   }; // struct wait_data
 
+  struct buffer_barrier_data {
+    std::vector<VkBuffer> buffers;
+    VkPipelineStageFlags src_stage_mask;
+    VkPipelineStageFlags dst_stage_mask;
+    VkAccessFlags src_access_mask;
+    VkAccessFlags dst_access_mask;
+  }; // struct buffer_barrier
+
   command_buffer(bool should_begin = true, VkQueueFlagBits queue_type = VK_QUEUE_GRAPHICS_BIT, VkCommandBufferLevel buffer_level = VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 
   command_buffer(const command_buffer&) = delete;
@@ -47,6 +55,8 @@ public:
   auto submit(const std::vector<wait_data>& wait_data = {}, const VkSemaphore &signal_semaphore = nullptr, const VkFence& fence = nullptr) -> void;
 
   auto copy_buffer(const VkBuffer& source, const VkBuffer& destination, const VkBufferCopy& region) -> void;
+
+  auto buffer_barrier(const buffer_barrier_data& buffer_barrier_data) -> void;
 
   auto set_viewport(const VkViewport& viewport) -> void;
 

@@ -7,6 +7,7 @@
 #include <libsbx/scenes/skybox_subrenderer.hpp>
 #include <libsbx/scenes/debug_subrenderer.hpp>
 #include <libsbx/scenes/grid_subrenderer.hpp>
+#include <libsbx/scenes/frustum_culling_task.hpp>
 
 #include <libsbx/graphics/pipeline/vertex_input_description.hpp>
 
@@ -71,6 +72,8 @@ renderer::renderer()
 }
 
 auto renderer::initialize() -> void {
+  add_task<sbx::scenes::frustum_culling_task>("demo/assets/shaders/frustum_culling");
+
   // Render stage 0
   // add_subrenderer<sbx::shadows::shadow_subrenderer>("demo/assets/shaders/shadow", sbx::graphics::pipeline::stage{0, 0});
 

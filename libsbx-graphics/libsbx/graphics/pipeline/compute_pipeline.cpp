@@ -4,6 +4,7 @@
 
 #include <libsbx/utility/timer.hpp>
 #include <libsbx/utility/logger.hpp>
+#include <libsbx/utility/iterator.hpp>
 
 #include <libsbx/core/engine.hpp>
 
@@ -89,12 +90,8 @@ compute_pipeline::compute_pipeline(const std::filesystem::path& path)
     }
   }
 
-  auto descriptor_set_layout_bindings = std::vector<std::vector<VkDescriptorSetLayoutBinding>>{};
+  auto descriptor_set_layout_bindings = std::vector<std::unordered_map<std::uint32_t, VkDescriptorSetLayoutBinding>>{};
   descriptor_set_layout_bindings.resize(_set_data.size());
-
-  for (auto&& [set, set_data] : ranges::view::enumerate(_set_data)) {
-    descriptor_set_layout_bindings[set].resize(set_data.uniform_blocks.size() + set_data.uniforms.size());
-  }
 
   for (auto& set_data : _set_data) {
     for (const auto& [name, uniform_block] : set_data.uniform_blocks) {
@@ -111,6 +108,11 @@ compute_pipeline::compute_pipeline(const std::filesystem::path& path)
         }
         case shader::uniform_block::type::push: {
           // [NOTE] KAJ 2024-01-19 : We dont need descriptor sets for push constants but we still want to add them the the bindings and sizes
+          if (_push_constant) {
+            utility::logger<"graphics">::warn("Multiple push constant blocks found in shader '{}'", _name);
+          }
+
+          _push_constant = uniform_block;
           break;
         }
         default: {
@@ -151,17 +153,19 @@ compute_pipeline::compute_pipeline(const std::filesystem::path& path)
   for (auto&& [set, descriptors] : ranges::views::enumerate(descriptor_set_layout_bindings)) {
     _set_data[set].binding_data.resize(descriptors.size());
 
-    for (auto&& [binding, descriptor] : ranges::views::enumerate(descriptors)) {
+    for (auto&& [binding, descriptor] : descriptors) {
       _set_data[set].binding_data[binding].descriptor_type = descriptor.descriptorType;
       _set_data[set].binding_data[binding].descriptor_count = descriptor.descriptorCount;
     }
   }
 
   for (auto&& [set, descriptor_set_layout_binding] : ranges::views::enumerate(descriptor_set_layout_bindings)) {
+    const auto bindings = utility::map_to<std::vector>(descriptor_set_layout_binding, [](const auto& entry) -> VkDescriptorSetLayoutBinding { return entry.second; });
+
     auto descriptor_set_layout_create_info = VkDescriptorSetLayoutCreateInfo{};
     descriptor_set_layout_create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-    descriptor_set_layout_create_info.bindingCount = static_cast<std::uint32_t>(descriptor_set_layout_binding.size());
-    descriptor_set_layout_create_info.pBindings = descriptor_set_layout_binding.data();
+    descriptor_set_layout_create_info.bindingCount = static_cast<std::uint32_t>(bindings.size());
+    descriptor_set_layout_create_info.pBindings = bindings.data();
   
     validate(vkCreateDescriptorSetLayout(logical_device, &descriptor_set_layout_create_info, nullptr, &_set_data[set].layout));
   }
@@ -203,12 +207,7 @@ compute_pipeline::compute_pipeline(const std::filesystem::path& path)
     }
   }
 
-  auto layouts = std::vector<VkDescriptorSetLayout>{};
-  layouts.reserve(_set_data.size());
-
-  for (const auto& set_data : _set_data) {
-    layouts.push_back(set_data.layout);
-  }
+  const auto layouts = utility::map_to<std::vector>(_set_data, [](const auto& set_data) -> VkDescriptorSetLayout { return set_data.layout; });
 
   auto pipeline_layout_create_info = VkPipelineLayoutCreateInfo{};
   pipeline_layout_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;

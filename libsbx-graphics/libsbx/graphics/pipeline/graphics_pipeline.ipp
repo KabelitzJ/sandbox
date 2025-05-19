@@ -136,6 +136,12 @@ graphics_pipeline<Vertex>::graphics_pipeline(const std::filesystem::path& path, 
         }
         case shader::uniform_block::type::push: {
           // [NOTE] KAJ 2024-01-19 : We dont need descriptor sets for push constants but we still want to add them the the bindings and sizes
+          if (_push_constant.has_value()) {
+            utility::logger<"graphics">::warn("Multiple push constant blocks found in shader '{}'", _name);
+          }
+
+          _push_constant = uniform_block;
+
           break;
         }
         default: {

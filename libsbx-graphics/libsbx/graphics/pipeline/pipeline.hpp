@@ -60,6 +60,8 @@ public:
 
   virtual auto descriptor_block(const std::string& name, std::uint32_t set) const -> const shader::uniform_block& = 0;
 
+  virtual auto push_constant() const noexcept -> const std::optional<shader::uniform_block>& = 0;
+
   virtual auto find_descriptor_binding(const std::string& name, std::uint32_t set) const -> std::optional<std::uint32_t> = 0;
 
   virtual auto find_descriptor_type_at_binding(std::uint32_t set, std::uint32_t binding) const -> std::optional<VkDescriptorType> = 0;

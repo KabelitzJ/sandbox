@@ -177,15 +177,7 @@ auto application::update() -> void  {
 
   _rotation += sbx::math::degree{45} * delta_time;
 
-  scenes_module.add_debug_line(sbx::math::vector3{-1.0f, 0.0f, 1.0f}, sbx::math::vector3{1.0f, 0.0f, 1.0f}, sbx::math::color::red());
-  scenes_module.add_debug_line(sbx::math::vector3{-1.0f, 0.0f, -1.0f}, sbx::math::vector3{1.0f, 0.0f, -1.0f}, sbx::math::color::red());
-  scenes_module.add_debug_line(sbx::math::vector3{-1.0f, 0.0f, 1.0f}, sbx::math::vector3{-1.0f, 0.0f, -1.0f}, sbx::math::color::red());
-  scenes_module.add_debug_line(sbx::math::vector3{1.0f, 0.0f, 1.0f}, sbx::math::vector3{1.0f, 0.0f, -1.0f}, sbx::math::color::red());
-
-  scenes_module.add_debug_line(sbx::math::vector3{-1.0f, 0.0f, -1.0f}, sbx::math::vector3{0.0f, 1.0f, 0.0f}, sbx::math::color{0.0f, 1.0f, 0.0f, 0.5f});
-  scenes_module.add_debug_line(sbx::math::vector3{1.0f, 0.0f, -1.0f}, sbx::math::vector3{0.0f, 1.0f, 0.0f}, sbx::math::color{0.0f, 1.0f, 0.0f, 0.5f});
-  scenes_module.add_debug_line(sbx::math::vector3{-1.0f, 0.0f, 1.0f}, sbx::math::vector3{0.0f, 1.0f, 0.0f}, sbx::math::color{0.0f, 1.0f, 0.0f, 0.5f});
-  scenes_module.add_debug_line(sbx::math::vector3{1.0f, 0.0f, 1.0f}, sbx::math::vector3{0.0f, 1.0f, 0.0f}, sbx::math::color{0.0f, 1.0f, 0.0f, 0.5f});
+  scenes_module.add_debug_volume(sbx::math::matrix4x4::rotated(sbx::math::matrix4x4::identity, sbx::math::vector3::up, _rotation), sbx::math::volume{sbx::math::vector3{-1.0f, -1.0f, -1.0f}, sbx::math::vector3{1.0f, 1.0f, 1.0f}}, sbx::math::color::red());
 }
 
 auto application::fixed_update() -> void {

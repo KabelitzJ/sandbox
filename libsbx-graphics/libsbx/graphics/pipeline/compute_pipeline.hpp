@@ -64,6 +64,10 @@ public:
     throw std::runtime_error(fmt::format("Failed to find descriptor block '{}' in graphics pipeline '{}'", name, _name));
   }
 
+  auto push_constant() const noexcept -> const std::optional<shader::uniform_block>& override {
+    return _push_constant;
+  }
+
   auto find_descriptor_binding(const std::string& name, std::uint32_t set) const -> std::optional<std::uint32_t> override {
     if (auto it = _set_data[set].descriptor_bindings.find(name); it != _set_data[set].descriptor_bindings.end()) {
       return it->second;
@@ -105,6 +109,7 @@ private:
   std::unique_ptr<shader> _shader;
 
   std::vector<per_set_data> _set_data;
+  std::optional<shader::uniform_block> _push_constant;
 
   std::string _name;
   VkPipelineLayout _layout;

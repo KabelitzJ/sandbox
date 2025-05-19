@@ -35,7 +35,8 @@ public:
 
   filter(const std::filesystem::path& path, const graphics::pipeline::stage& stage)
   : graphics::subrenderer{stage},
-    _pipeline{path, stage, pipeline_definition} { }
+    _pipeline{path, stage, pipeline_definition},
+    _descriptor_handler{_pipeline, 0u} { }
 
   virtual ~filter() override = default;
 

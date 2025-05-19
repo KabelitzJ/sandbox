@@ -49,7 +49,7 @@ public:
   debug_subrenderer(const std::filesystem::path& path, const sbx::graphics::pipeline::stage& stage)
   : sbx::graphics::subrenderer{stage},
     _pipeline{path, stage},
-    _push_handler{_pipeline.descriptor_block("push", 0u)},
+    _push_handler{_pipeline},
     _storage_buffer{std::make_optional<graphics::storage_buffer>(graphics::storage_buffer::min_size, VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT)},
     _descriptor_handler{_pipeline, 0u} { }
 

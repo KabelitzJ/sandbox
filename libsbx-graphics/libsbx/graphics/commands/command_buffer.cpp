@@ -178,6 +178,27 @@ auto command_buffer::copy_buffer(const VkBuffer& source, const VkBuffer& destina
   vkCmdCopyBuffer(_handle, source, destination, 1, &region);
 }
 
+auto command_buffer::buffer_barrier(const buffer_barrier_data& data) -> void {
+  auto buffer_barrier_info = std::vector<VkBufferMemoryBarrier>{};
+  buffer_barrier_info.reserve(data.buffers.size());
+
+  for (const auto& buffer : data.buffers) {
+    auto buffer_barrier = VkBufferMemoryBarrier{};
+    buffer_barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+    buffer_barrier.srcAccessMask = data.src_access_mask;
+    buffer_barrier.dstAccessMask = data.dst_access_mask;
+    buffer_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    buffer_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    buffer_barrier.buffer = buffer;
+    buffer_barrier.offset = 0u;
+    buffer_barrier.size = std::numeric_limits<VkDeviceSize>::max();
+
+    buffer_barrier_info.push_back(buffer_barrier);
+  }
+
+  vkCmdPipelineBarrier(_handle, data.src_stage_mask, data.dst_stage_mask, 0, 0, nullptr, static_cast<std::uint32_t>(buffer_barrier_info.size()), buffer_barrier_info.data(), 0, nullptr);
+}
+
 auto command_buffer::set_viewport(const VkViewport& viewport) -> void {
   vkCmdSetViewport(_handle, 0, 1, &viewport);
 }

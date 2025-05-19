@@ -21,6 +21,7 @@ public:
   terrain_subrenderer(const std::filesystem::path& path, const sbx::graphics::pipeline::stage& stage)
   : base{stage},
     _pipeline{path, stage},
+    _push_handler{_pipeline},
     _descriptor_handler{_pipeline, 0u} { }
 
   ~terrain_subrenderer() override = default;
