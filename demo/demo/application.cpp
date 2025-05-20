@@ -142,12 +142,15 @@ application::application()
   //   }
   // }
 
-  auto test = scene.create_node("Test");
-  auto& test_transform = scene.get_component<sbx::math::transform>(test);
-  test_transform.set_position(sbx::math::vector3{0.0f, 0.0f, 0.0f});
-  test_transform.set_scale(sbx::math::vector3{1.0f, 1.0f, 1.0f});
-  // test_transform.set_rotation(sbx::math::vector3::normalized(sbx::math::vector3::up + sbx::math::vector3::right), sbx::math::degree{sbx::math::random::next<std::float_t>(0.0f, 360.0f)});
-  scene.add_component<sbx::scenes::static_mesh>(test, _mesh_ids["cube"], 0u, sbx::math::color::white(), sbx::scenes::static_mesh::material{0.0f, 1.0f, 0.0f, 0.0f}, _texture_ids["prototype"]);
+  for (auto i = -6; i <= 6; ++i) {
+    auto test = scene.create_node("Test");
+    auto& test_transform = scene.get_component<sbx::math::transform>(test);
+    test_transform.set_position(sbx::math::vector3{i, 0.0f, 0.0f});
+    test_transform.set_scale(sbx::math::vector3{1.0f, 1.0f, 1.0f});
+    test_transform.set_rotation(sbx::math::vector3::up, sbx::math::degree{45});
+    scene.add_component<sbx::scenes::static_mesh>(test, _mesh_ids["cube"], 0u, sbx::math::color::white(), sbx::scenes::static_mesh::material{0.0f, 1.0f, 0.0f, 0.0f}, _texture_ids["prototype"]);
+  }
+
   // scene.add_component<sbx::scenes::collider>(test, sbx::scenes::sphere_collider{sbx::math::vector3::zero, 1.0f});
 
   // Camera

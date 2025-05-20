@@ -93,7 +93,7 @@ public:
   constexpr bit_field() noexcept
   : _value{underlying_type{0}} { }
 
-  constexpr explicit bit_field(const value_type value) noexcept
+  constexpr bit_field(const value_type value) noexcept
   : _value{to_underlying(value)} { }
 
   constexpr auto set(const value_type value) noexcept -> void {
@@ -114,6 +114,10 @@ public:
 
   constexpr auto has_none() const noexcept -> bool {
     return _value == underlying_type{0};
+  }
+
+  constexpr auto operator*() const noexcept -> value_type {
+    return from_underlying<value_type>(_value);
   }
 
 private:
@@ -163,5 +167,18 @@ constexpr auto from_string(const std::string& name) -> std::optional<Enum> {
 }
 
 } // namespace sbx::utility
+
+template<typename Type>
+requires (sbx::utility::is_bit_field_v<Type>)
+constexpr auto operator|(const Type lhs, const Type rhs) -> Type {
+  return sbx::utility::from_underlying<Type>(sbx::utility::to_underlying(lhs) | sbx::utility::to_underlying(rhs));
+}
+
+
+template<typename Type>
+requires (sbx::utility::is_bit_field_v<Type>)
+constexpr auto operator&(const Type lhs, const Type rhs) -> Type {
+  return sbx::utility::from_underlying<Type>(sbx::utility::to_underlying(lhs) & sbx::utility::to_underlying(rhs));
+}
 
 #endif // LIBSBX_UTILITY_ENUM_HPP_
