@@ -20,6 +20,8 @@
 
 namespace demo {
 
+struct rotator { };
+
 application::application()
 : sbx::core::application{},
   _rotation{sbx::math::degree{0}} {
@@ -142,13 +144,16 @@ application::application()
   //   }
   // }
 
-  for (auto i = -6; i <= 6; ++i) {
-    auto test = scene.create_node("Test");
-    auto& test_transform = scene.get_component<sbx::math::transform>(test);
-    test_transform.set_position(sbx::math::vector3{i, 0.0f, 0.0f});
-    test_transform.set_scale(sbx::math::vector3{1.0f, 1.0f, 1.0f});
-    test_transform.set_rotation(sbx::math::vector3::up, sbx::math::degree{45});
-    scene.add_component<sbx::scenes::static_mesh>(test, _mesh_ids["cube"], 0u, sbx::math::color::white(), sbx::scenes::static_mesh::material{0.0f, 1.0f, 0.0f, 0.0f}, _texture_ids["prototype"]);
+  for (auto y = -9; y <= 9; y = y + 3) {
+    for (auto x = -9; x <= 9; x = x + 3) {
+      auto test = scene.create_node("Test");
+      auto& test_transform = scene.get_component<sbx::math::transform>(test);
+      test_transform.set_position(sbx::math::vector3{x, sbx::math::random::next<std::float_t>(-5.0f, 5.0f), y});
+      test_transform.set_scale(sbx::math::vector3{1.0f, 1.0f, 1.0f});
+      test_transform.set_rotation(sbx::math::vector3::up, sbx::math::degree{45});
+      scene.add_component<rotator>(test);
+      scene.add_component<sbx::scenes::static_mesh>(test, _mesh_ids["cube"], 0u, sbx::math::color::white(), sbx::scenes::static_mesh::material{0.0f, 1.0f, 0.0f, 0.0f}, _texture_ids["prototype"]);
+    }
   }
 
   // scene.add_component<sbx::scenes::collider>(test, sbx::scenes::sphere_collider{sbx::math::vector3::zero, 1.0f});
@@ -173,12 +178,28 @@ auto application::update() -> void  {
   }
 
   auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
+  auto& scene = scenes_module.scene();
 
   _camera_controller.update();
 
   const auto delta_time = sbx::core::engine::delta_time();
 
   _rotation += sbx::math::degree{45} * delta_time;
+
+  auto q = scene.query<sbx::math::transform, rotator, sbx::scenes::global_transform>();
+
+  auto tree = sbx::containers::octree<sbx::scenes::node, 2, 2>{sbx::math::volume{sbx::math::vector3{-10}, sbx::math::vector3{10}}};
+
+  for (auto&& [n, t, g] : q.each()) {
+    const auto v = sbx::math::volume::transformed(sbx::math::volume{sbx::math::vector3{-1}, sbx::math::vector3{1}}, g.model);
+
+    tree.insert(n, v);
+    t.set_rotation(sbx::math::vector3::up, _rotation);
+  }
+
+  tree.for_each_volume([&](const auto& v){
+    scenes_module.add_debug_volume(sbx::math::matrix4x4::identity, v, sbx::math::color::green());
+  });
 
   // scenes_module.add_debug_volume(sbx::math::matrix4x4::rotated(sbx::math::matrix4x4::identity, sbx::math::vector3::up, _rotation), sbx::math::volume{sbx::math::vector3{-1.0f, -1.0f, -1.0f}, sbx::math::vector3{1.0f, 1.0f, 1.0f}}, sbx::math::color::red());
 }

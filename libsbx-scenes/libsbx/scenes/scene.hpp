@@ -90,7 +90,7 @@ public:
   }
 
   template<typename Component, typename... Args>
-  auto add_component(const node_type node, Args&&... args) -> Component& {
+  auto add_component(const node_type node, Args&&... args) -> decltype(auto) {
     return _registry.emplace<Component>(node, std::forward<Args>(args)...);
   }
 

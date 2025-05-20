@@ -149,6 +149,12 @@ public:
     _nodes.clear();
   }
 
+  template<typename Fn>
+  requires (std::is_invocable_v<Fn, const math::volume&>)
+  auto for_each_volume(Fn&& fn) -> void {
+    _for_each_volume(_root, _bounds, std::forward<Fn>(fn));
+  }
+
 private:
 
   auto _insert(const node::id node_id, const math::volume& bounds, const value_type& value, const math::volume& value_bounds, const std::size_t current_depth) noexcept -> void {
@@ -233,6 +239,20 @@ private:
     if (!_nodes[node_id].is_leaf()) {
       for (const auto& child : _nodes[node_id].children) {
         _intersections_with_descendants(child, value, value_bounds, intersections);
+      }
+    }
+  }
+
+  template<typename Fn>
+  auto _for_each_volume(node::id node_id, const math::volume& bounds, Fn&& fn) -> void {
+    std::invoke(fn, bounds);
+
+    if (!_nodes[node_id].is_leaf()) {
+      for (auto i = 0u; i < _nodes[node_id].children.size(); ++i) {
+        const auto child_id = _nodes[node_id].child_at(i);
+        const auto child_volume = node::child_bounds(bounds, i);
+        
+        _for_each_volume(child_id, child_volume, std::forward<Fn>(fn));
       }
     }
   }
