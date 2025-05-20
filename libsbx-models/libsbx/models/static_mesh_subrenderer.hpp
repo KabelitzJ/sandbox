@@ -321,8 +321,6 @@ private:
       _draw_commands = std::make_unique<graphics::storage_buffer>(_static_meshes.size() * sizeof(VkDrawIndexedIndirectCommand), VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT);
     }
 
-    auto offset = std::uint32_t{0};
-
     for (const auto& [key, data] : _static_meshes) {
       // auto& uniform_data = per_pipeline_data.uniform_data[key];
 
@@ -343,15 +341,13 @@ private:
 
       descriptor_handler.bind_descriptors(command_buffer);
 
-      // mesh.render_submesh(command_buffer, key.submesh_index, static_cast<std::uint32_t>(data.size()));
+      mesh.render_submesh(command_buffer, key.submesh_index, static_cast<std::uint32_t>(data.size()));
 
-      mesh.bind(command_buffer);
-      mesh.render_submesh_indirect(*_draw_commands, offset, key.submesh_index, static_cast<std::uint32_t>(data.size()));
+      // mesh.bind(command_buffer);
+      // mesh.render_submesh_indirect(*_draw_commands, 0u, key.submesh_index, static_cast<std::uint32_t>(data.size()));
 
-      offset++;
+      // command_buffer.draw_indexed_indirect(*_draw_commands, 0u, 1u, sizeof(VkDrawIndexedIndirectCommand));
     }
-
-    command_buffer.draw_indexed_indirect(*_draw_commands, 0, offset, sizeof(VkDrawIndexedIndirectCommand));
   }
 
   map_type<mesh_key, std::vector<per_mesh_data>, mesh_key_hash, mesh_key_equal> _static_meshes;

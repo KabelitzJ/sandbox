@@ -101,60 +101,60 @@ application::application()
 
   // Trees
 
-  // auto tree_submeshes = std::vector<sbx::scenes::static_mesh::submesh>{};
-  // tree_submeshes.push_back(sbx::scenes::static_mesh::submesh{0u, sbx::math::color::white(), sbx::scenes::static_mesh::material{0.2f, 0.5f, 0.1f, 0.8f}, _texture_ids["tree_1_bark"]});
-  // tree_submeshes.push_back(sbx::scenes::static_mesh::submesh{1u, sbx::math::color::white(), sbx::scenes::static_mesh::material{0.2f, 0.5f, 0.1f, 0.0f}, _texture_ids["tree_1_leaves1"]});
-  // tree_submeshes.push_back(sbx::scenes::static_mesh::submesh{2u, sbx::math::color::white(), sbx::scenes::static_mesh::material{0.2f, 0.5f, 0.1f, 0.0f}, _texture_ids["tree_1_leaves2"]});
+  auto tree_submeshes = std::vector<sbx::scenes::static_mesh::submesh>{};
+  tree_submeshes.push_back(sbx::scenes::static_mesh::submesh{0u, sbx::math::color::white(), sbx::scenes::static_mesh::material{0.2f, 0.5f, 0.1f, 0.8f}, _texture_ids["tree_1_bark"]});
+  tree_submeshes.push_back(sbx::scenes::static_mesh::submesh{1u, sbx::math::color::white(), sbx::scenes::static_mesh::material{0.2f, 0.5f, 0.1f, 0.0f}, _texture_ids["tree_1_leaves1"]});
+  tree_submeshes.push_back(sbx::scenes::static_mesh::submesh{2u, sbx::math::color::white(), sbx::scenes::static_mesh::material{0.2f, 0.5f, 0.1f, 0.0f}, _texture_ids["tree_1_leaves2"]});
 
-  // const auto grid_size = sbx::math::vector2{25.0f, 25.0f};
-  // const auto cell_size = sbx::math::vector2{8.0f, 8.0f};
-  // const auto offset = grid_size * cell_size * 0.5f;
+  const auto grid_size = sbx::math::vector2{25.0f, 25.0f};
+  const auto cell_size = sbx::math::vector2{8.0f, 8.0f};
+  const auto offset = grid_size * cell_size * 0.5f;
 
-  // auto forrest = scene.create_node("Forrest");
+  auto forrest = scene.create_node("Forrest");
 
-  // for (auto y : std::views::iota(0u, grid_size.y())) {
-  //   for (auto x : std::views::iota(0u, grid_size.x())) {
-  //     auto tree = scene.create_child_node(forrest, fmt::format("Tree{}{}", x, y));
+  for (auto y : std::views::iota(0u, grid_size.y())) {
+    for (auto x : std::views::iota(0u, grid_size.x())) {
+      auto tree = scene.create_child_node(forrest, fmt::format("Tree{}{}", x, y));
 
-  //     scene.add_component<sbx::scenes::static_mesh>(tree, _mesh_ids[fmt::format("tree_1_{}", sbx::math::random::next<std::uint8_t>(1, 4))], tree_submeshes);
+      scene.add_component<sbx::scenes::static_mesh>(tree, _mesh_ids[fmt::format("tree_1_{}", sbx::math::random::next<std::uint8_t>(1, 4))], tree_submeshes);
 
-  //     scene.add_component<sbx::scenes::collider>(tree, sbx::scenes::aabb_collider{sbx::math::vector3{-cell_size.x() / 2.0f, 0.0f, -cell_size.y() / 2.0f}, sbx::math::vector3{cell_size.x() / 2.0f, 5.0f, cell_size.y() / 2.0f}});
+      scene.add_component<sbx::scenes::collider>(tree, sbx::scenes::aabb_collider{sbx::math::vector3{-cell_size.x() / 2.0f, 0.0f, -cell_size.y() / 2.0f}, sbx::math::vector3{cell_size.x() / 2.0f, 5.0f, cell_size.y() / 2.0f}});
 
-  //     const auto position = (sbx::math::vector2{x, y} * cell_size - offset) + (sbx::math::vector2{sbx::math::random::next<std::float_t>(0.0f, 1.0f), sbx::math::random::next<std::float_t>(0.0f, 1.0f)} * cell_size);
+      const auto position = (sbx::math::vector2{x, y} * cell_size - offset) + (sbx::math::vector2{sbx::math::random::next<std::float_t>(0.0f, 1.0f), sbx::math::random::next<std::float_t>(0.0f, 1.0f)} * cell_size);
 
-  //     auto& tree_transform = scene.get_component<sbx::math::transform>(tree);
-  //     tree_transform.set_position(sbx::math::vector3{position.x(), 0.0f, position.y()});
-  //     // tree_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
-  //     tree_transform.set_rotation(sbx::math::vector3::up, sbx::math::degree{sbx::math::random::next<std::float_t>(0.0f, 360.0f)});
+      auto& tree_transform = scene.get_component<sbx::math::transform>(tree);
+      tree_transform.set_position(sbx::math::vector3{position.x(), 0.0f, position.y()});
+      // tree_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
+      tree_transform.set_rotation(sbx::math::vector3::up, sbx::math::degree{sbx::math::random::next<std::float_t>(0.0f, 360.0f)});
 
-  //     if (sbx::math::random::next<std::float_t>(0.0f, 1.0f) >= 0.5f) {
-  //       auto bush = scene.create_child_node(forrest, fmt::format("Bush{}{}", x, y));
+      if (sbx::math::random::next<std::float_t>(0.0f, 1.0f) >= 0.5f) {
+        auto bush = scene.create_child_node(forrest, fmt::format("Bush{}{}", x, y));
   
-  //       scene.add_component<sbx::scenes::static_mesh>(bush, _mesh_ids["bush_5"], tree_submeshes);
+        scene.add_component<sbx::scenes::static_mesh>(bush, _mesh_ids["bush_5"], tree_submeshes);
   
-  //       scene.add_component<sbx::scenes::collider>(bush, sbx::scenes::aabb_collider{sbx::math::vector3{-cell_size.x() / 2.0f, 0.0f, -cell_size.y() / 2.0f}, sbx::math::vector3{cell_size.x() / 2.0f, 5.0f, cell_size.y() / 2.0f}});
+        scene.add_component<sbx::scenes::collider>(bush, sbx::scenes::aabb_collider{sbx::math::vector3{-cell_size.x() / 2.0f, 0.0f, -cell_size.y() / 2.0f}, sbx::math::vector3{cell_size.x() / 2.0f, 5.0f, cell_size.y() / 2.0f}});
   
-  //       const auto bush_position = (sbx::math::vector2{x, y} * cell_size - offset) + (sbx::math::vector2{sbx::math::random::next<std::float_t>(0.0f, 1.0f), sbx::math::random::next<std::float_t>(0.0f, 1.0f)} * cell_size);
+        const auto bush_position = (sbx::math::vector2{x, y} * cell_size - offset) + (sbx::math::vector2{sbx::math::random::next<std::float_t>(0.0f, 1.0f), sbx::math::random::next<std::float_t>(0.0f, 1.0f)} * cell_size);
   
-  //       auto& bush_transform = scene.get_component<sbx::math::transform>(bush);
-  //       bush_transform.set_position(sbx::math::vector3{bush_position.x(), 0.0f, bush_position.y()});
-  //       // bush_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
-  //       bush_transform.set_rotation(sbx::math::vector3::up, sbx::math::degree{sbx::math::random::next<std::float_t>(0.0f, 360.0f)});
-  //     }
-  //   }
-  // }
-
-  for (auto y = -9; y <= 9; y = y + 3) {
-    for (auto x = -9; x <= 9; x = x + 3) {
-      auto test = scene.create_node("Test");
-      auto& test_transform = scene.get_component<sbx::math::transform>(test);
-      test_transform.set_position(sbx::math::vector3{x, sbx::math::random::next<std::float_t>(-5.0f, 5.0f), y});
-      test_transform.set_scale(sbx::math::vector3{1.0f, 1.0f, 1.0f});
-      test_transform.set_rotation(sbx::math::vector3::up, sbx::math::degree{45});
-      scene.add_component<rotator>(test);
-      scene.add_component<sbx::scenes::static_mesh>(test, _mesh_ids["cube"], 0u, sbx::math::color::white(), sbx::scenes::static_mesh::material{0.0f, 1.0f, 0.0f, 0.0f}, _texture_ids["prototype"]);
+        auto& bush_transform = scene.get_component<sbx::math::transform>(bush);
+        bush_transform.set_position(sbx::math::vector3{bush_position.x(), 0.0f, bush_position.y()});
+        // bush_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
+        bush_transform.set_rotation(sbx::math::vector3::up, sbx::math::degree{sbx::math::random::next<std::float_t>(0.0f, 360.0f)});
+      }
     }
   }
+
+  // for (auto y = -9; y <= 9; y = y + 3) {
+  //   for (auto x = -9; x <= 9; x = x + 3) {
+  //     auto test = scene.create_node("Test");
+  //     auto& test_transform = scene.get_component<sbx::math::transform>(test);
+  //     test_transform.set_position(sbx::math::vector3{x, sbx::math::random::next<std::float_t>(-5.0f, 5.0f), y});
+  //     test_transform.set_scale(sbx::math::vector3{1.0f, 1.0f, 1.0f});
+  //     test_transform.set_rotation(sbx::math::vector3::up, sbx::math::degree{45});
+  //     scene.add_component<rotator>(test);
+  //     scene.add_component<sbx::scenes::static_mesh>(test, _mesh_ids["cube"], 0u, sbx::math::color::white(), sbx::scenes::static_mesh::material{0.0f, 1.0f, 0.0f, 0.0f}, _texture_ids["prototype"]);
+  //   }
+  // }
 
   // scene.add_component<sbx::scenes::collider>(test, sbx::scenes::sphere_collider{sbx::math::vector3::zero, 1.0f});
 
@@ -186,20 +186,20 @@ auto application::update() -> void  {
 
   _rotation += sbx::math::degree{45} * delta_time;
 
-  auto q = scene.query<sbx::math::transform, rotator, sbx::scenes::global_transform>();
+  // auto q = scene.query<sbx::math::transform, rotator, sbx::scenes::global_transform>();
 
-  auto tree = sbx::containers::octree<sbx::scenes::node, 2, 2>{sbx::math::volume{sbx::math::vector3{-10}, sbx::math::vector3{10}}};
+  // auto tree = sbx::containers::octree<sbx::scenes::node, 2, 2>{sbx::math::volume{sbx::math::vector3{-10}, sbx::math::vector3{10}}};
 
-  for (auto&& [n, t, g] : q.each()) {
-    const auto v = sbx::math::volume::transformed(sbx::math::volume{sbx::math::vector3{-1}, sbx::math::vector3{1}}, g.model);
+  // for (auto&& [n, t, g] : q.each()) {
+  //   const auto v = sbx::math::volume::transformed(sbx::math::volume{sbx::math::vector3{-1}, sbx::math::vector3{1}}, g.model);
 
-    tree.insert(n, v);
-    t.set_rotation(sbx::math::vector3::up, _rotation);
-  }
+  //   tree.insert(n, v);
+  //   t.set_rotation(sbx::math::vector3::up, _rotation);
+  // }
 
-  tree.for_each_volume([&](const auto& v){
-    scenes_module.add_debug_volume(sbx::math::matrix4x4::identity, v, sbx::math::color::green());
-  });
+  // tree.for_each_volume([&](const auto& v){
+  //   scenes_module.add_debug_volume(sbx::math::matrix4x4::identity, v, sbx::math::color::green());
+  // });
 
   // scenes_module.add_debug_volume(sbx::math::matrix4x4::rotated(sbx::math::matrix4x4::identity, sbx::math::vector3::up, _rotation), sbx::math::volume{sbx::math::vector3{-1.0f, -1.0f, -1.0f}, sbx::math::vector3{1.0f, 1.0f, 1.0f}}, sbx::math::color::red());
 }
