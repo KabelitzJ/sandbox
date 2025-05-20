@@ -21,6 +21,10 @@ public:
 
   operator const VkWriteDescriptorSet&() const noexcept;
 
+  operator bool() const noexcept {
+    return _write_descriptor_set.descriptorCount > 0u;
+  }
+
 private:
 
   VkWriteDescriptorSet _write_descriptor_set;

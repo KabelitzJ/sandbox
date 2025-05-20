@@ -66,11 +66,11 @@ public:
     }
   }
 
-  auto push(const std::string& name, push_handler& push_handler) -> void {
-    if (_pipeline) {
-      push_handler.update(_pipeline->descriptor_block(name, _set));
-    }
-  }
+  // auto push(const std::string& name, push_handler& push_handler) -> void {
+  //   if (_pipeline) {
+  //     push_handler.update(_pipeline->descriptor_block(name, _set));
+  //   }
+  // }
 
   auto bind_descriptors(command_buffer& command_buffer) -> void {
     auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
@@ -150,8 +150,11 @@ private:
 
     auto write_descriptor_set = descriptor.write_descriptor_set(*binding, *descriptor_type);
 
-    _descriptors.insert_or_assign(name, descriptor_entry{std::addressof(descriptor), std::move(write_descriptor_set), *binding});
-    _has_changed = true;
+    if (write_descriptor_set) {
+      _descriptors.insert_or_assign(name, descriptor_entry{std::addressof(descriptor), std::move(write_descriptor_set), *binding});
+      _has_changed = true;
+    }
+
   }
 
   auto _recreate_descriptor_sets() -> void {

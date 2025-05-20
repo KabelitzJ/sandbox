@@ -73,7 +73,7 @@ public:
     _push_handler.push("camera_position", camera_position);
     _push_handler.push("origin", sbx::math::vector4::zero);
 
-    _descriptor_handler.push("push", _push_handler);
+    // _descriptor_handler.push("push", _push_handler);
 
     if (!_descriptor_handler.update(_pipeline)) {
       return;

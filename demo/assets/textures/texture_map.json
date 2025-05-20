@@ -15,6 +15,10 @@
     {
       "name": "dirt_normal",
       "path": "demo/assets/textures/dirt/normal.png"
+    },
+    {
+      "name": "prototype",
+      "path": "demo/assets/textures/base.png"
     }
   ],
   "plane_texture": "wood_albedo"
