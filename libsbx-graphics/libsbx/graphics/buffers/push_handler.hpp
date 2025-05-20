@@ -19,7 +19,7 @@ public:
 
   push_handler(const pipeline& pipeline);
 
-  push_handler(const std::optional<shader::uniform_block>& uniform_block = std::nullopt);
+  // push_handler(const std::optional<shader::uniform_block>& uniform_block = std::nullopt);
 
   template<typename Type>
 	auto push(const Type& object, std::size_t size, std::size_t offset) -> void;
@@ -27,7 +27,7 @@ public:
   template<typename Type>
 	auto push(const std::string& uniform_name, const Type& object, std::size_t size = 0) -> void;
 
-  auto update(const std::optional<shader::uniform_block>& uniform_block) -> bool;
+  // auto update(const std::optional<shader::uniform_block>& uniform_block) -> bool;
 
   auto bind(command_buffer& command_buffer, const pipeline& pipeline) -> void;
 

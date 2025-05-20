@@ -90,7 +90,7 @@ public:
     _push_handler.push("vertex_data", _storage_buffer->address());
 
     // _descriptor_handler.push("buffer_vertex_data", _storage_handler);
-    _descriptor_handler.push("push", _push_handler);
+    // _descriptor_handler.push("push", _push_handler);
 
     if (!_descriptor_handler.update(_pipeline)) {
       return;

@@ -80,10 +80,9 @@ public:
 
   static_mesh_subrenderer(const std::filesystem::path& path, const graphics::pipeline::stage& stage)
   : graphics::subrenderer{stage},
-    _opaque_pipeline_data{path, stage, _specialization_info(transparency_disabled)},
-    _transparent_back_pipeline_data{path, stage, _specialization_info(transparency_enabled)},
-    _transparent_front_pipeline_data{path, stage, _specialization_info(transparency_enabled)},
-    _scene_descriptor_handler{0u} { }
+    _pipeline{path, stage, _specialization_info(transparency_disabled)},
+    _draw_commands{std::make_unique<graphics::storage_buffer>(graphics::storage_buffer::min_size, VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT)},
+    _scene_descriptor_handler{_pipeline, 0u} { }
 
   ~static_mesh_subrenderer() override = default;
 
@@ -149,29 +148,17 @@ public:
 
     EASY_BLOCK("clearing old data");
 
-    EASY_BLOCK("clearing _opaque_pipeline_data");
-    _opaque_pipeline_data.clear();
-    EASY_END_BLOCK;
+    for (auto entry = _uniform_data.begin(); entry != _uniform_data.end();) {
+      if (_used_uniforms.contains(entry->first)) {
+        ++entry;
+      } else {
+        entry = _uniform_data.erase(entry);
+      }
+    }
 
-    EASY_BLOCK("clearing _transparent_back_pipeline_data");
-    _transparent_back_pipeline_data.clear();
-    EASY_END_BLOCK;
-
-    EASY_BLOCK("clearing _transparent_front_pipeline_data");
-    _transparent_front_pipeline_data.clear();
-    EASY_END_BLOCK;
-
-    EASY_BLOCK("clearing _opaque_static_meshes");
-    _opaque_static_meshes.clear();
-    EASY_END_BLOCK;
-
-    EASY_BLOCK("clearing _transparent_static_meshes");
-    _transparent_static_meshes.clear();
-    EASY_END_BLOCK;
-
-    EASY_BLOCK("clearing _images");
+    _used_uniforms.clear();
+    _static_meshes.clear();
     _images.clear();
-    EASY_END_BLOCK;
 
     EASY_END_BLOCK;
 
@@ -227,16 +214,9 @@ public:
 
     EASY_BLOCK("render opaque meshes");
 
-    _render_static_meshes(command_buffer, _opaque_pipeline_data);
+    _render_static_meshes(command_buffer);
 
     EASY_END_BLOCK;
-
-    // EASY_BLOCK("render transparent meshes");
-
-    // _render_static_meshes(command_buffer, _transparent_back_pipeline_data);
-    // _render_static_meshes(command_buffer, _transparent_front_pipeline_data);
-
-    // EASY_END_BLOCK
   }
 
 private:
@@ -251,8 +231,8 @@ private:
     graphics::descriptor_handler descriptor_handler;
     graphics::storage_handler storage_handler;
 
-    uniform_data(std::uint32_t set)
-    : descriptor_handler{set} { }
+    uniform_data(const graphics::pipeline& pipeline, std::uint32_t set)
+    : descriptor_handler{pipeline, set} { }
 
   }; // struct uniform_data
 
@@ -293,34 +273,6 @@ private:
   using set_type = std::unordered_set<Args...>;
   // using set_type = tsl::robin_set<Args...>;
 
-  template<bool UsesTransparency, graphics::cull_mode CullMode>
-  struct per_pipeline_data {
-    models::pipeline<UsesTransparency, CullMode> pipeline;
-    map_type<mesh_key, static_mesh_subrenderer::uniform_data, mesh_key_hash, mesh_key_equal> uniform_data;
-    set_type<mesh_key, mesh_key_hash, mesh_key_equal> used_uniforms;
-
-    template<typename... Args>
-    per_pipeline_data(Args&&... args)
-    : pipeline{std::forward<Args>(args)...} { }
-
-    auto clear() -> void {
-      for (auto entry = uniform_data.begin(); entry != uniform_data.end();) {
-        if (used_uniforms.contains(entry->first)) {
-          ++entry;
-        } else {
-          entry = uniform_data.erase(entry);
-        }
-      }
-
-      used_uniforms.clear();
-    }
-
-  }; // struct per_pipeline_data
-
-  using opaque_pipeline_data = per_pipeline_data<false, graphics::cull_mode::back>;
-  using transparent_front_pipeline_data = per_pipeline_data<true, graphics::cull_mode::back>;
-  using transparent_back_pipeline_data = per_pipeline_data<true, graphics::cull_mode::front>;
-
   auto _submit_mesh(const scenes::node node, const scenes::static_mesh& static_mesh) -> void {
     EASY_FUNCTION();
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
@@ -332,12 +284,7 @@ private:
       EASY_BLOCK("submit submesh");
       const auto key = mesh_key{mesh_id, submesh.index};
 
-      if (submesh.uses_transparency) {
-        _transparent_back_pipeline_data.used_uniforms.insert(key);
-        _transparent_front_pipeline_data.used_uniforms.insert(key);
-      } else {
-        _opaque_pipeline_data.used_uniforms.insert(key);
-      }
+      _used_uniforms.insert(key);
 
       const auto& global_transform = scene.get_component<const scenes::global_transform>(node);
 
@@ -347,21 +294,16 @@ private:
       const auto image_indices = math::vector4{albedo_image_index, normal_image_index, 0u, 0u};
       const auto material = math::vector4{submesh.material.metallic, submesh.material.roughness, submesh.material.flexibility, submesh.material.anchor_height};
 
-      if (submesh.uses_transparency) {
-        _transparent_static_meshes[key].push_back(per_mesh_data{global_transform.model, global_transform.normal, submesh.tint, material, image_indices});
-      } else {
-        _opaque_static_meshes[key].push_back(per_mesh_data{global_transform.model, global_transform.normal, submesh.tint, material, image_indices});
-      }
+      _static_meshes[key].push_back(per_mesh_data{global_transform.model, global_transform.normal, submesh.tint, material, image_indices});
 
       EASY_END_BLOCK;
     }
   }
 
-  template<bool UsesTransparency, graphics::cull_mode CullMode>
-  auto _render_static_meshes(graphics::command_buffer& command_buffer, per_pipeline_data<UsesTransparency, CullMode>& per_pipeline_data) -> void {
+  auto _render_static_meshes(graphics::command_buffer& command_buffer) -> void {
     auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
-    per_pipeline_data.pipeline.bind(command_buffer);
+    _pipeline.bind(command_buffer);
 
     _scene_descriptor_handler.push("uniform_scene", _scene_uniform_handler);
     // _scene_descriptor_handler.push("buffer_point_lights", _point_lights_storage_handler);
@@ -369,18 +311,22 @@ private:
     _scene_descriptor_handler.push("images_sampler", _images_sampler);
     _scene_descriptor_handler.push("images", _images);
 
-    if (!_scene_descriptor_handler.update(per_pipeline_data.pipeline)) {
+    if (!_scene_descriptor_handler.update(_pipeline)) {
       return;
     }
 
     _scene_descriptor_handler.bind_descriptors(command_buffer);
 
-    const auto& static_meshes = UsesTransparency ? _transparent_static_meshes : _opaque_static_meshes;
+    if (_draw_commands->size() < _static_meshes.size() * sizeof(VkDrawIndexedIndirectCommand)) {
+      _draw_commands = std::make_unique<graphics::storage_buffer>(_static_meshes.size() * sizeof(VkDrawIndexedIndirectCommand), VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT);
+    }
 
-    for (const auto& [key, data] : static_meshes) {
+    auto offset = std::uint32_t{0};
+
+    for (const auto& [key, data] : _static_meshes) {
       // auto& uniform_data = per_pipeline_data.uniform_data[key];
 
-      auto [entry, inserted] = per_pipeline_data.uniform_data.try_emplace(key, 1u);
+      auto [entry, inserted] = _uniform_data.try_emplace(key, _pipeline, 1u);
 
       auto& descriptor_handler = entry->second.descriptor_handler;
       auto& storage_handler = entry->second.storage_handler;
@@ -391,27 +337,31 @@ private:
 
       descriptor_handler.push("buffer_mesh_data", storage_handler);
 
-      if (!descriptor_handler.update(per_pipeline_data.pipeline)) {
+      if (!descriptor_handler.update(_pipeline)) {
         continue;
       }
 
       descriptor_handler.bind_descriptors(command_buffer);
 
-      mesh.render_submesh(command_buffer, key.submesh_index, static_cast<std::uint32_t>(data.size()));
+      // mesh.render_submesh(command_buffer, key.submesh_index, static_cast<std::uint32_t>(data.size()));
+
+      mesh.bind(command_buffer);
+      mesh.render_submesh_indirect(*_draw_commands, offset, key.submesh_index, static_cast<std::uint32_t>(data.size()));
+
+      offset++;
     }
+
+    command_buffer.draw_indexed_indirect(*_draw_commands, 0, offset, sizeof(VkDrawIndexedIndirectCommand));
   }
 
-  map_type<mesh_key, std::vector<per_mesh_data>, mesh_key_hash, mesh_key_equal> _opaque_static_meshes;
-  map_type<mesh_key, std::vector<per_mesh_data>, mesh_key_hash, mesh_key_equal> _transparent_static_meshes;
+  map_type<mesh_key, std::vector<per_mesh_data>, mesh_key_hash, mesh_key_equal> _static_meshes;
 
-  // tsl::robin_map
-
-  opaque_pipeline_data _opaque_pipeline_data;
-  transparent_front_pipeline_data _transparent_front_pipeline_data;
-  transparent_back_pipeline_data _transparent_back_pipeline_data;
+  models::pipeline<false, graphics::cull_mode::back> _pipeline;
+  map_type<mesh_key, static_mesh_subrenderer::uniform_data, mesh_key_hash, mesh_key_equal> _uniform_data;
+  set_type<mesh_key, mesh_key_hash, mesh_key_equal> _used_uniforms;
 
   graphics::uniform_handler _scene_uniform_handler;
-  // graphics::storage_handler _point_lights_storage_handler;
+  std::unique_ptr<graphics::storage_buffer> _draw_commands;
   graphics::separate_sampler _images_sampler;
   graphics::separate_image2d_array _images;
   graphics::descriptor_handler _scene_descriptor_handler;

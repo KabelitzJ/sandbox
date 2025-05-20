@@ -8,6 +8,7 @@
 #include <libsbx/graphics/graphics_module.hpp>
 
 #include <libsbx/graphics/buffers/buffer.hpp>
+#include <libsbx/graphics/buffers/storage_buffer.hpp>
 
 #include <libsbx/graphics/pipeline/vertex_input_description.hpp>
 
@@ -47,19 +48,35 @@ public:
   }
 
   auto render(graphics::command_buffer& command_buffer, std::uint32_t instance_count = 1u) const -> void {
-    command_buffer.bind_vertex_buffer(0, *_vertex_buffer);
-    command_buffer.bind_index_buffer(*_index_buffer, 0, VK_INDEX_TYPE_UINT32);
+    bind(command_buffer);
 
     command_buffer.draw_indexed(static_cast<std::uint32_t>(_index_buffer->size()), instance_count, 0, 0, 0);
   }
 
   auto render_submesh(graphics::command_buffer& command_buffer, std::uint32_t submesh_index, std::uint32_t instance_count = 1u) const -> void {
-    command_buffer.bind_vertex_buffer(0, *_vertex_buffer);
-    command_buffer.bind_index_buffer(*_index_buffer, 0, VK_INDEX_TYPE_UINT32);
+    bind(command_buffer);
 
     const auto& submesh = _submeshes.at(submesh_index);
 
     command_buffer.draw_indexed(submesh.index_count, instance_count, submesh.index_offset, 0, 0);
+  }
+
+  auto bind(graphics::command_buffer& command_buffer) const -> void {
+    command_buffer.bind_vertex_buffer(0, *_vertex_buffer);
+    command_buffer.bind_index_buffer(*_index_buffer, 0, VK_INDEX_TYPE_UINT32);
+  }
+
+  auto render_submesh_indirect(graphics::storage_buffer& buffer, std::uint32_t offset, std::uint32_t submesh_index, std::uint32_t instance_count = 1u) const -> void {
+    const auto& submesh = _submeshes.at(submesh_index);
+
+    auto command = VkDrawIndexedIndirectCommand{};
+    command.indexCount = submesh.index_count,
+    command.instanceCount = instance_count,
+    command.firstIndex = submesh.index_offset,
+    command.vertexOffset = 0u,
+    command.firstInstance = 0u,
+
+    buffer.update(&command, sizeof(VkDrawIndexedIndirectCommand), offset * sizeof(VkDrawIndexedIndirectCommand));
   }
 
   auto submeshes() const noexcept -> const std::vector<submesh>& {

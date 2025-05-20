@@ -24,7 +24,7 @@ public:
 
   ~storage_buffer() override;
 
-  auto update(memory::observer_ptr<const void> data, VkDeviceSize size) -> void;
+  auto update(memory::observer_ptr<const void> data, VkDeviceSize size, std::size_t offset = 0u) -> void;
 
   auto write_descriptor_set(std::uint32_t binding, VkDescriptorType descriptor_type) const noexcept -> graphics::write_descriptor_set override;
 

@@ -96,7 +96,7 @@ void main(void) {
   vec3 normal = get_normal();
   vec4 albedo = get_albedo();
 
-  if (transparency == TRANSPARENCY_DISABLED && albedo.a < 0.5) {
+  if (albedo.a < 0.5) {
     discard;
   }
 
@@ -135,12 +135,8 @@ void main(void) {
   float rim_intensity = smoothstep(RIM_STRENGTH - 0.01, RIM_STRENGTH + 0.01, (1.0 - dot(normal, view_direction)) * pow(n_dot_l, RIM_THRESHOLD)) * (1.0 - roughness);
   vec4 rim = RIM_COLOR * rim_intensity;
 
-  if (transparency == TRANSPARENCY_ENABLED) {
-    out_color = vec4(vec3(albedo * (AMBIENT_COLOR + light + specular + rim)), albedo.a);
-  } else {
-    out_color = vec4(vec3(albedo * (AMBIENT_COLOR + light + specular + rim)), 1.0);
-  }
-
+  out_color = vec4(vec3(albedo * (AMBIENT_COLOR + light + specular + rim)), 1.0);
+ 
   // out_color = mix(out_color, FOG_COLOR, fog_factor);
   // out_color = vec4(vec3(albedo.r), 1.0);
   // out_color = vec4(vec3(albedo), 0.5);

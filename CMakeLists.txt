@@ -19,9 +19,9 @@ set(CMAKE_C_EXTENSIONS OFF)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-if (NOT DEFINED ENV{VULKAN_SDK})
-  message(FATAL_ERROR "VULKAN_SDK environment variable not set. Please set it to the path of your Vulkan SDK installation.")
-endif()
+# if (NOT DEFINED ENV{VULKAN_SDK})
+#   message(FATAL_ERROR "VULKAN_SDK environment variable not set. Please set it to the path of your Vulkan SDK installation.")
+# endif()
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_BINARY_DIR}" "${CMAKE_BINARY_DIR}/dependencies")
 list(APPEND CMAKE_PREFIX_PATH "${CMAKE_BINARY_DIR}" "${CMAKE_BINARY_DIR}/dependencies")

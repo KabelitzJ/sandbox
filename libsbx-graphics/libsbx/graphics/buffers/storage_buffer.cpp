@@ -22,8 +22,8 @@ storage_buffer::~storage_buffer() {
   buffer_base::unmap();
 }
 
-auto storage_buffer::update(memory::observer_ptr<const void> data, VkDeviceSize size) -> void {
-  std::memcpy(static_cast<std::uint8_t*>(_mapped_memory.get()), data.get(), size);
+auto storage_buffer::update(memory::observer_ptr<const void> data, VkDeviceSize size, std::size_t offset) -> void {
+  std::memcpy(static_cast<std::uint8_t*>(_mapped_memory.get()) + offset, data.get(), size);
 }
 
 auto storage_buffer::write_descriptor_set(std::uint32_t binding, VkDescriptorType descriptor_type) const noexcept -> graphics::write_descriptor_set {
