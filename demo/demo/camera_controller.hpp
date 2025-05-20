@@ -9,6 +9,8 @@
 
 #include <libsbx/core/engine.hpp>
 
+#include <libsbx/devices/input.hpp>
+
 #include <libsbx/scenes/components/camera.hpp>
 
 namespace demo {
@@ -103,7 +105,9 @@ public:
     movement.normalize();
 
     if (is_mouse_movement) {
-      movement *= _zoom * 0.3f;
+      movement *= _zoom * 1.3f;
+    } else if (sbx::devices::input::is_key_down(sbx::devices::key::left_shift)) {
+      movement *= 5.0f;
     }
 
     _target += movement * camera_speed * delta_time.value();
