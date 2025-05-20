@@ -7,9 +7,7 @@ namespace sbx::graphics {
 push_handler::push_handler(const pipeline& pipeline)
 : _uniform_block{pipeline.push_constant()} {
   if (_uniform_block) {
-    utility::logger<"graphics">::debug("Push constant block");
     _data = std::make_unique<std::uint8_t[]>(_uniform_block->size());
-    utility::logger<"graphics">::debug("Push constant block size: {}", _uniform_block->size());
   }
 }
 

@@ -72,7 +72,7 @@ renderer::renderer()
 }
 
 auto renderer::initialize() -> void {
-  add_task<sbx::scenes::frustum_culling_task>("demo/assets/shaders/frustum_culling");
+  // add_task<sbx::scenes::frustum_culling_task>("demo/assets/shaders/frustum_culling");
 
   // Render stage 0
   // add_subrenderer<sbx::shadows::shadow_subrenderer>("demo/assets/shaders/shadow", sbx::graphics::pipeline::stage{0, 0});

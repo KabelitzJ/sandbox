@@ -177,7 +177,21 @@ auto application::update() -> void  {
 
   _rotation += sbx::math::degree{45} * delta_time;
 
-  scenes_module.add_debug_volume(sbx::math::matrix4x4::rotated(sbx::math::matrix4x4::identity, sbx::math::vector3::up, _rotation), sbx::math::volume{sbx::math::vector3{-1.0f, -1.0f, -1.0f}, sbx::math::vector3{1.0f, 1.0f, 1.0f}}, sbx::math::color::red());
+  // scenes_module.add_debug_volume(sbx::math::matrix4x4::rotated(sbx::math::matrix4x4::identity, sbx::math::vector3::up, _rotation), sbx::math::volume{sbx::math::vector3{-1.0f, -1.0f, -1.0f}, sbx::math::vector3{1.0f, 1.0f, 1.0f}}, sbx::math::color::red());
+
+  auto& scene = scenes_module.scene();
+
+  auto query = scene.query<const sbx::scenes::collider>();
+
+  for (auto&& [node, collider] : query.each()) {
+    const auto& transform = scene.get_component<const sbx::math::transform>(node);
+    const auto& global_transform = scene.get_component<const sbx::scenes::global_transform>(node);
+
+    const auto volume = sbx::scenes::to_volume(collider);
+    // const auto transformed = sbx::math::volume::transformed(volume, global_transform.model);
+
+    scenes_module.add_debug_volume(global_transform.model, volume, sbx::math::color::green());
+  }
 }
 
 auto application::fixed_update() -> void {
