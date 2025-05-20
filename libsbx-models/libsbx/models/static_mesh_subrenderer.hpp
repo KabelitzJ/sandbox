@@ -81,6 +81,7 @@ public:
   static_mesh_subrenderer(const std::filesystem::path& path, const graphics::pipeline::stage& stage)
   : graphics::subrenderer{stage},
     _pipeline{path, stage, _specialization_info(transparency_disabled)},
+    _draw_commands{std::make_unique<graphics::storage_buffer>(graphics::storage_buffer::min_size, VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT)},
     _scene_descriptor_handler{_pipeline, 0u} { }
 
   ~static_mesh_subrenderer() override = default;
@@ -216,13 +217,6 @@ public:
     _render_static_meshes(command_buffer);
 
     EASY_END_BLOCK;
-
-    // EASY_BLOCK("render transparent meshes");
-
-    // _render_static_meshes(command_buffer, _transparent_back_pipeline_data);
-    // _render_static_meshes(command_buffer, _transparent_front_pipeline_data);
-
-    // EASY_END_BLOCK
   }
 
 private:
@@ -323,6 +317,12 @@ private:
 
     _scene_descriptor_handler.bind_descriptors(command_buffer);
 
+    if (_draw_commands->size() < _static_meshes.size() * sizeof(VkDrawIndexedIndirectCommand)) {
+      _draw_commands = std::make_unique<graphics::storage_buffer>(_static_meshes.size() * sizeof(VkDrawIndexedIndirectCommand), VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT);
+    }
+
+    auto offset = std::uint32_t{0};
+
     for (const auto& [key, data] : _static_meshes) {
       // auto& uniform_data = per_pipeline_data.uniform_data[key];
 
@@ -343,8 +343,15 @@ private:
 
       descriptor_handler.bind_descriptors(command_buffer);
 
-      mesh.render_submesh(command_buffer, key.submesh_index, static_cast<std::uint32_t>(data.size()));
+      // mesh.render_submesh(command_buffer, key.submesh_index, static_cast<std::uint32_t>(data.size()));
+
+      mesh.bind(command_buffer);
+      mesh.render_submesh_indirect(*_draw_commands, offset, key.submesh_index, static_cast<std::uint32_t>(data.size()));
+
+      offset++;
     }
+
+    command_buffer.draw_indexed_indirect(*_draw_commands, 0, offset, sizeof(VkDrawIndexedIndirectCommand));
   }
 
   map_type<mesh_key, std::vector<per_mesh_data>, mesh_key_hash, mesh_key_equal> _static_meshes;
@@ -354,7 +361,7 @@ private:
   set_type<mesh_key, mesh_key_hash, mesh_key_equal> _used_uniforms;
 
   graphics::uniform_handler _scene_uniform_handler;
-  // graphics::storage_handler _point_lights_storage_handler;
+  std::unique_ptr<graphics::storage_buffer> _draw_commands;
   graphics::separate_sampler _images_sampler;
   graphics::separate_image2d_array _images;
   graphics::descriptor_handler _scene_descriptor_handler;
