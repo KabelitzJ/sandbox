@@ -13,7 +13,13 @@
 namespace sbx::models {
 
 mesh::mesh(const std::filesystem::path& path)
-: graphics::mesh<vertex3d>{} {
+: base{_load(path)} { }
+
+mesh::~mesh() {
+
+}
+
+auto mesh::_load(const std::filesystem::path& path) -> mesh_data {
   if (!std::filesystem::exists(path)) {
     throw std::runtime_error{"Mesh file not found: " + path.string()};
   }
@@ -30,24 +36,18 @@ mesh::mesh(const std::filesystem::path& path)
 
   auto timer = utility::timer{};
 
-  auto [vertices, indices, submeshes] = std::invoke(load, path);
+  auto data = std::invoke(load, path);
 
-  const auto vertices_count = vertices.size();
-  const auto indices_count = vertices.size();
-
-  _upload_vertices(std::move(vertices), std::move(indices));
-
-  _submeshes = std::move(submeshes);
+  const auto vertices_count = data.vertices.size();
+  const auto indices_count = data.indices.size();
 
   const auto b = units::byte{vertices_count * sizeof(vertex3d)};
 
   const auto kb = units::quantity_cast<units::kilobyte>(b);
 
   utility::logger<"models">::debug("Loaded mesh: {}, vertices: {}, indices: {}, size: {} kb in {:.2f}ms", path.string(), vertices_count, indices_count, kb.value(), units::quantity_cast<units::millisecond>(timer.elapsed()).value());
-}
 
-mesh::~mesh() {
-
+  return data;
 }
 
 } // namespace sbx::models

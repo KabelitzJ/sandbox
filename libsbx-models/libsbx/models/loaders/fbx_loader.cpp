@@ -4,8 +4,8 @@
 
 namespace sbx::models {
 
-auto fbx_loader::load(const std::filesystem::path& path) -> mesh_data {
-  auto data = mesh_data{};
+auto fbx_loader::load(const std::filesystem::path& path) -> mesh::mesh_data {
+  auto data = mesh::mesh_data{};
 
   return data;
 }

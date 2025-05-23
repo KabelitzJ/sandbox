@@ -82,6 +82,7 @@ public:
   : graphics::subrenderer{stage},
     _pipeline{path, stage, _specialization_info(transparency_disabled)},
     _draw_commands{std::make_unique<graphics::storage_buffer>(graphics::storage_buffer::min_size, VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT)},
+    _push_handler{_pipeline},
     _scene_descriptor_handler{_pipeline, 0u} { }
 
   ~static_mesh_subrenderer() override = default;
@@ -335,11 +336,14 @@ private:
 
       descriptor_handler.push("buffer_mesh_data", storage_handler);
 
+      _push_handler.push("vertex_buffer", mesh.address());
+
       if (!descriptor_handler.update(_pipeline)) {
         continue;
       }
 
       descriptor_handler.bind_descriptors(command_buffer);
+      _push_handler.bind(command_buffer, _pipeline);
 
       mesh.render_submesh(command_buffer, key.submesh_index, static_cast<std::uint32_t>(data.size()));
 
@@ -357,6 +361,7 @@ private:
   set_type<mesh_key, mesh_key_hash, mesh_key_equal> _used_uniforms;
 
   graphics::uniform_handler _scene_uniform_handler;
+  graphics::push_handler _push_handler;
   std::unique_ptr<graphics::storage_buffer> _draw_commands;
   graphics::separate_sampler _images_sampler;
   graphics::separate_image2d_array _images;

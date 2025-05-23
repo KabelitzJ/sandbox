@@ -13,23 +13,23 @@
 
 namespace sbx::models {
 
-struct mesh_data {
-  std::vector<vertex3d> vertices;
-  std::vector<std::uint32_t> indices;
-  std::vector<graphics::submesh> submeshes;
-}; // struct mesh_data
-
-class mesh : public graphics::mesh<vertex3d>, public io::loader_factory<mesh, mesh_data> {
+class mesh : public graphics::mesh<vertex3d>, public io::loader_factory<mesh, graphics::mesh<vertex3d>::mesh_data> {
 
   using base = graphics::mesh<vertex3d>;
 
 public:
+
+  using mesh_data = graphics::mesh<vertex3d>::mesh_data;
 
   using base::mesh;
 
   mesh(const std::filesystem::path& path);
 
   ~mesh() override;
+
+private:
+
+  auto _load(const std::filesystem::path& path) -> mesh_data;
 
 }; // class mesh
 

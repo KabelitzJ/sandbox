@@ -14,7 +14,7 @@
 namespace sbx::models {
 
 template<bool UsesTransparency, graphics::cull_mode CullMode>
-class pipeline : public graphics::graphics_pipeline<vertex3d> {
+class pipeline : public graphics::graphics_pipeline<graphics::empty_vertex> {
 
   inline static constexpr auto pipeline_definition = graphics::pipeline_definition{
     .depth = UsesTransparency ? graphics::depth::read_only : graphics::depth::read_write,
@@ -26,11 +26,11 @@ class pipeline : public graphics::graphics_pipeline<vertex3d> {
     }
   };
 
-  using base_type = graphics::graphics_pipeline<vertex3d>;
+  using base_type = graphics::graphics_pipeline<graphics::empty_vertex>;
 
 public:
 
-  using vertex_type = vertex3d;
+  using vertex_type = graphics::empty_vertex;
 
   pipeline(const std::filesystem::path& path, const graphics::pipeline::stage& stage, const VkSpecializationInfo* specialization_info)
   : base_type{path, stage, pipeline_definition, specialization_info} { }

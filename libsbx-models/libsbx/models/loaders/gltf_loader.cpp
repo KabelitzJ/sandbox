@@ -99,8 +99,8 @@ static auto _decode_buffer(std::size_t index, const std::filesystem::path& path,
   return buffers.insert({index, std::move(buffer)}).first->second;
 }
 
-auto gltf_loader::load(const std::filesystem::path& path) -> mesh_data {
-  auto data = mesh_data{};
+auto gltf_loader::load(const std::filesystem::path& path) -> mesh::mesh_data {
+  auto data = mesh::mesh_data{};
 
   auto decoded_buffers = std::unordered_map<std::size_t, std::vector<std::uint8_t>>{};
 

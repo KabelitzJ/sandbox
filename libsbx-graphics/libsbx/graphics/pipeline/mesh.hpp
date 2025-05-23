@@ -15,7 +15,7 @@
 namespace sbx::graphics {
 
 template<typename Type>
-using vertex_buffer = basic_buffer<Type, (VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT), VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT>;
+using vertex_buffer = basic_buffer<Type, (VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT), VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT>;
 
 template<typename Type>
 using index_buffer = basic_buffer<Type, (VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT), VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT>;
@@ -37,11 +37,28 @@ public:
   using index_type = std::uint32_t;
   using index_buffer_type = index_buffer<index_type>;
 
-  mesh(std::vector<vertex_type>&& vertices, std::vector<index_type>&& indices) {
+  struct mesh_data {
+    std::vector<vertex_type> vertices;
+    std::vector<index_type> indices;
+    std::vector<submesh> submeshes;
+  }; // struct mesh_data
+
+  mesh(std::vector<vertex_type>&& vertices, std::vector<index_type>&& indices)
+  : _vertex_buffer{vertices.size()},
+    _index_buffer{indices.size()} {
     _submeshes.push_back(submesh{static_cast<std::uint32_t>(indices.size()), 0, 0});
     
     _upload_vertices(std::move(vertices), std::move(indices));
   }
+
+  mesh(mesh_data&& mesh_data)
+  : _vertex_buffer{mesh_data.vertices.size()},
+    _index_buffer{mesh_data.indices.size()},
+    _submeshes{std::move(mesh_data.submeshes)} {
+    _upload_vertices(std::move(mesh_data.vertices), std::move(mesh_data.indices));
+  }
+
+  mesh(const mesh& other) noexcept = delete;
 
   virtual ~mesh() {
 
@@ -50,7 +67,7 @@ public:
   auto render(graphics::command_buffer& command_buffer, std::uint32_t instance_count = 1u) const -> void {
     bind(command_buffer);
 
-    command_buffer.draw_indexed(static_cast<std::uint32_t>(_index_buffer->size()), instance_count, 0, 0, 0);
+    command_buffer.draw_indexed(static_cast<std::uint32_t>(_index_buffer.size()), instance_count, 0, 0, 0);
   }
 
   auto render_submesh(graphics::command_buffer& command_buffer, std::uint32_t submesh_index, std::uint32_t instance_count = 1u) const -> void {
@@ -61,9 +78,13 @@ public:
     command_buffer.draw_indexed(submesh.index_count, instance_count, submesh.index_offset, 0, 0);
   }
 
+  auto address() const -> std::uint64_t {
+    return _vertex_buffer.address();
+  }
+
   auto bind(graphics::command_buffer& command_buffer) const -> void {
-    command_buffer.bind_vertex_buffer(0, *_vertex_buffer);
-    command_buffer.bind_index_buffer(*_index_buffer, 0, VK_INDEX_TYPE_UINT32);
+    // command_buffer.bind_vertex_buffer(0, _vertex_buffer);
+    command_buffer.bind_index_buffer(_index_buffer, 0, VK_INDEX_TYPE_UINT32);
   }
 
   auto render_submesh_indirect(graphics::storage_buffer& buffer, std::uint32_t offset, std::uint32_t submesh_index, std::uint32_t instance_count = 1u) const -> void {
@@ -85,9 +106,9 @@ public:
 
 protected:
 
-  mesh()
-  : _vertex_buffer{nullptr},
-    _index_buffer{nullptr} { }
+  // mesh()
+  // : _vertex_buffer{nullptr},
+  //   _index_buffer{nullptr} { }
 
   auto _upload_vertices(std::vector<vertex_type>&& vertices, std::vector<index_type>&& indices) -> void {
     auto vertex_buffer_size = sizeof(vertex_type) * vertices.size();
@@ -101,8 +122,8 @@ protected:
     staging_buffer.write(vertices.data(), vertex_buffer_size);
     staging_buffer.write(indices.data(), index_buffer_size, vertex_buffer_size);
 
-    _vertex_buffer = std::make_unique<vertex_buffer_type>(vertices.size());
-    _index_buffer = std::make_unique<index_buffer_type>(indices.size());
+    // _vertex_buffer = std::make_unique<vertex_buffer_type>(vertices.size());
+    // _index_buffer = std::make_unique<index_buffer_type>(indices.size());
 
     auto command_buffer = graphics::command_buffer{true, VK_QUEUE_TRANSFER_BIT};
 
@@ -112,7 +133,7 @@ protected:
       copy_region.dstOffset = 0;
       copy_region.srcOffset = 0;
 
-      command_buffer.copy_buffer(staging_buffer, *_vertex_buffer, copy_region);
+      command_buffer.copy_buffer(staging_buffer, _vertex_buffer, copy_region);
     }
 
     {
@@ -121,15 +142,15 @@ protected:
       copy_region.dstOffset = 0;
       copy_region.srcOffset = vertex_buffer_size;
 
-      command_buffer.copy_buffer(staging_buffer, *_index_buffer, copy_region);
+      command_buffer.copy_buffer(staging_buffer, _index_buffer, copy_region);
     }
 
     command_buffer.submit_idle();
   }
 
-  std::unique_ptr<vertex_buffer_type> _vertex_buffer{};
-  std::unique_ptr<index_buffer_type> _index_buffer{};
-  std::vector<submesh> _submeshes{};
+  vertex_buffer_type _vertex_buffer;
+  index_buffer_type _index_buffer;
+  std::vector<submesh> _submeshes;
 
 }; // class mesh
 

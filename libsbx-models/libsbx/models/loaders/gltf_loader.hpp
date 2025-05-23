@@ -11,7 +11,7 @@ class gltf_loader : public mesh::loader<gltf_loader> {
 
 public:
 
-  static auto load(const std::filesystem::path& path) -> mesh_data;
+  static auto load(const std::filesystem::path& path) -> mesh::mesh_data;
 
 private:
 

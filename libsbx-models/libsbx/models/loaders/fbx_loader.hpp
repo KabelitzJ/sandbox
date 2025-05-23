@@ -13,7 +13,7 @@ class fbx_loader : public mesh::loader<fbx_loader> {
 
 public:
 
-  static auto load(const std::filesystem::path& path) -> mesh_data;
+  static auto load(const std::filesystem::path& path) -> mesh::mesh_data;
 
 }; // class fbx_loader
 
