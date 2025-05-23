@@ -44,6 +44,7 @@ graphics_module::graphics_module()
   allocator_info.device = _logical_device->handle();
   allocator_info.instance = _instance->handle();
   allocator_info.pVulkanFunctions = &vulkan_functions;
+  allocator_info.flags = VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
 
   vmaCreateAllocator(&allocator_info, &_allocator);
 }

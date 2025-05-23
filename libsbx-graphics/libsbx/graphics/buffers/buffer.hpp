@@ -5,6 +5,8 @@
 #include <span>
 #include <cinttypes>
 
+#include <vk_mem_alloc.h>
+
 #include <vulkan/vulkan.hpp>
 
 #include <libsbx/utility/noncopyable.hpp>
@@ -46,11 +48,14 @@ protected:
 
 private:
 
-  handle_type _handle{};
-  size_type _size{};
-  VkDeviceMemory _memory{};
-  VkBufferUsageFlags _usage{};
-  std::uint64_t _address{};
+  // handle_type _handle{};
+  // size_type _size{};
+  // VkDeviceMemory _memory{};
+  // VkBufferUsageFlags _usage{};
+  VkBuffer _handle;
+  VmaAllocation _allocation;
+  VmaAllocationInfo _info;
+  std::uint64_t _address;
 
 }; // class buffer_base
 

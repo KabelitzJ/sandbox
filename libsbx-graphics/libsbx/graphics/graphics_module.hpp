@@ -156,6 +156,10 @@ public:
     return static_cast<asset_container<Type>*>(container->second.get())->get(id);
   }
 
+  auto allocator() const noexcept -> VmaAllocator {
+    return _allocator;
+  }
+
 private:
 
   auto _start_render_pass(graphics::render_stage& render_stage, graphics::command_buffer& command_buffer) -> void;
