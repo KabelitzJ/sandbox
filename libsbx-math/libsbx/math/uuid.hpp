@@ -176,6 +176,11 @@ public:
     return _value == other._value;
   }
 
+  constexpr auto operator<(const basic_uuid& other) const noexcept -> bool {
+    return _value < other._value;
+  }
+
+
 private:
 
   basic_uuid(const value_type value)

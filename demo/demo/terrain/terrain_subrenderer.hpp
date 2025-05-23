@@ -69,6 +69,7 @@ public:
       _descriptor_handler.bind_descriptors(command_buffer);
       _push_handler.bind(command_buffer, _pipeline);
 
+      mesh.bind(command_buffer);
       mesh.render(command_buffer);
     }
 

@@ -65,14 +65,10 @@ public:
   }
 
   auto render(graphics::command_buffer& command_buffer, std::uint32_t instance_count = 1u) const -> void {
-    bind(command_buffer);
-
     command_buffer.draw_indexed(static_cast<std::uint32_t>(_index_buffer.size()), instance_count, 0, 0, 0);
   }
 
   auto render_submesh(graphics::command_buffer& command_buffer, std::uint32_t submesh_index, std::uint32_t instance_count = 1u) const -> void {
-    bind(command_buffer);
-
     const auto& submesh = _submeshes.at(submesh_index);
 
     command_buffer.draw_indexed(submesh.index_count, instance_count, submesh.index_offset, 0, 0);

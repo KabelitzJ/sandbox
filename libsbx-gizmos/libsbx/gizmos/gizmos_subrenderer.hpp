@@ -123,6 +123,7 @@ public:
 
       descriptor_handler.bind_descriptors(command_buffer);
 
+      mesh.bind(command_buffer);
       mesh.render_submesh(command_buffer, key.submesh_index, static_cast<std::uint32_t>(data.size()));
     }
   }

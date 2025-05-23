@@ -86,11 +86,13 @@ void main() {
   float flexibility = data.material.z;
   float anchor_height = data.material.w;
 
-  if (flexibility > 0.0) {
-    out_position = wind_effect(world_position, in_position, scene.time, flexibility, anchor_height, MAX_ANCHOR_HEIGHT);
-  } else {
-    out_position = world_position;
-  }
+  // if (flexibility > 0.0) {
+  //   out_position = wind_effect(world_position, in_position, scene.time, flexibility, anchor_height, MAX_ANCHOR_HEIGHT);
+  // } else {
+  //   out_position = world_position;
+  // }
+
+  out_position = world_position;
 
   out_normal = normalize(vec3(data.normal * vec4(in_normal, 1.0)));
   out_uv = in_uv;

@@ -174,6 +174,7 @@ public:
 
     auto& mesh = graphics_module.get_asset<scenes::mesh>(_skybox_id);
 
+    mesh.bind(command_buffer);
     mesh.render(command_buffer, 1u);
   }
 

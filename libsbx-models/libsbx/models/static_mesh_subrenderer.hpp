@@ -266,6 +266,12 @@ private:
     }
   }; // struct mesh_key_equal
 
+  struct mesh_key_less {
+    auto operator()(const mesh_key& lhs, const mesh_key& rhs) const noexcept -> bool {
+      return lhs.mesh_id < rhs.mesh_id || (lhs.mesh_id == rhs.mesh_id && lhs.submesh_index < rhs.submesh_index);
+    }
+  }; // struct mesh_key_equal
+
   template<typename... Args>
   using map_type = std::unordered_map<Args...>;
   // using map_type = tsl::robin_map<Args...>;
@@ -322,6 +328,9 @@ private:
       _draw_commands = std::make_unique<graphics::storage_buffer>(_static_meshes.size() * sizeof(VkDrawIndexedIndirectCommand), VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT);
     }
 
+    auto current_mesh_id = math::uuid::null();
+    auto offset = 0;
+
     for (const auto& [key, data] : _static_meshes) {
       // auto& uniform_data = per_pipeline_data.uniform_data[key];
 
@@ -345,20 +354,30 @@ private:
       descriptor_handler.bind_descriptors(command_buffer);
       _push_handler.bind(command_buffer, _pipeline);
 
+      // if (current_mesh_id != key.mesh_id) {
+      //   mesh.bind(command_buffer);
+      //   current_mesh_id = key.mesh_id;
+      // }
+
+      mesh.bind(command_buffer);
+
       mesh.render_submesh(command_buffer, key.submesh_index, static_cast<std::uint32_t>(data.size()));
 
-      // mesh.bind(command_buffer);
-      // mesh.render_submesh_indirect(*_draw_commands, 0u, key.submesh_index, static_cast<std::uint32_t>(data.size()));
+      // [TODO] Figure out how to do indirect draw calls when the push constants and descriptors change
 
+      // mesh.bind(command_buffer);
+      // mesh.render_submesh_indirect(*_draw_commands, offset, key.submesh_index, static_cast<std::uint32_t>(data.size()));
+      // offset++;
       // command_buffer.draw_indexed_indirect(*_draw_commands, 0u, 1u, sizeof(VkDrawIndexedIndirectCommand));
     }
+
   }
 
-  map_type<mesh_key, std::vector<per_mesh_data>, mesh_key_hash, mesh_key_equal> _static_meshes;
+  std::map<mesh_key, std::vector<per_mesh_data>, mesh_key_less> _static_meshes;
 
   models::pipeline<false, graphics::cull_mode::back> _pipeline;
-  map_type<mesh_key, static_mesh_subrenderer::uniform_data, mesh_key_hash, mesh_key_equal> _uniform_data;
-  set_type<mesh_key, mesh_key_hash, mesh_key_equal> _used_uniforms;
+  std::unordered_map<mesh_key, static_mesh_subrenderer::uniform_data, mesh_key_hash, mesh_key_equal> _uniform_data;
+  std::unordered_set<mesh_key, mesh_key_hash, mesh_key_equal> _used_uniforms;
 
   graphics::uniform_handler _scene_uniform_handler;
   graphics::push_handler _push_handler;

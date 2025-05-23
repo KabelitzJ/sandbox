@@ -58,6 +58,7 @@ public:
   }
 
   auto render(graphics::command_buffer& command_buffer, const mesh& mesh) -> void override {
+    mesh.bind(command_buffer);
     mesh.render(command_buffer, static_cast<std::uint32_t>(_glyph_data.size()));
   }
 
