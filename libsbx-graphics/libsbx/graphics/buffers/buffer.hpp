@@ -38,7 +38,7 @@ public:
 
   virtual auto write(memory::observer_ptr<const void> data, size_type size, size_type offset = 0) -> void;
 
-  // static auto insert_buffer_memory_barrier(command_buffer& command_buffer, <-- Error for finding :)
+  // static auto insert_buffer_memory_barrier(command_buffer& command_buffer, buffer_base&  <-- We maybe need this
 
 protected:
 
@@ -49,12 +49,12 @@ protected:
 private:
 
   // handle_type _handle{};
-  // size_type _size{};
+  size_type _size{};
   // VkDeviceMemory _memory{};
-  // VkBufferUsageFlags _usage{};
+  VkBufferUsageFlags _usage{};
   VkBuffer _handle;
   VmaAllocation _allocation;
-  VmaAllocationInfo _info;
+  // VmaAllocationInfo _info;
   std::uint64_t _address;
 
 }; // class buffer_base

@@ -8,6 +8,7 @@
 #include <vulkan/vulkan.hpp>
 
 #include <libsbx/utility/noncopyable.hpp>
+#include <libsbx/utility/enum.hpp>
 
 #include <libsbx/graphics/devices/instance.hpp>
 #include <libsbx/graphics/devices/physical_device.hpp>
@@ -21,10 +22,10 @@ class queue : public utility::noncopyable {
 public:
 
   enum class type : std::uint32_t {
-    graphics,
-    present,
-    compute,
-    transfer
+    graphics = 0,
+    present = 1,
+    compute = 2,
+    transfer = 3
   }; // enum class type
 
   queue(queue&& other) noexcept = default;
@@ -42,6 +43,10 @@ public:
   auto wait_idle() const -> void;
 
 private:
+
+  queue()
+  : _handle{VK_NULL_HANDLE},
+    _family{0xFFFFFFFF} { }
 
   queue(const VkQueue& handle, std::uint32_t family)
   : _handle{handle},
@@ -68,7 +73,7 @@ public:
 
   template<queue::type Type>
   auto queue() const -> const graphics::queue& {
-    return _queues.at(Type);
+    return _queues.at(utility::to_underlying(Type));
   }
 
   auto wait_idle() const -> void;
@@ -82,6 +87,15 @@ private:
     std::optional<std::uint32_t> transfer{};
   }; // struct queue_family_indices
 
+  template<queue::type Type>
+  auto _get_queue(const std::uint32_t queue_family_index) -> void {
+    auto handle = VkQueue{};
+
+    vkGetDeviceQueue(_handle, queue_family_index, 0, &handle);
+
+    _queues.at(utility::to_underlying(Type)) = graphics::queue{handle, queue_family_index};
+  }
+
   auto _get_queue_family_indices(const physical_device& physical_device) const -> queue_family_indices;
 
   auto _get_enabled_features(const physical_device& physical_device) const -> physical_device::device_features;
@@ -90,7 +104,8 @@ private:
 
   VkDevice _handle{};
   physical_device::device_features _enabled_features{};
-  std::unordered_map<queue::type, graphics::queue> _queues{};
+  // std::unordered_map<queue::type, graphics::queue> _queues{};
+  std::array<graphics::queue, 4u> _queues{};
 
 }; // class logical_device
 

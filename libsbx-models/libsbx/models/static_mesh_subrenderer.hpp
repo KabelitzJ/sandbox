@@ -197,18 +197,21 @@ public:
     // }};
 
     for (auto&& [node, static_mesh, collider] : mesh_query_collider.each()) {
-      const auto model = scene.world_transform(node);
+    // for (const auto node : mesh_query_collider) {
+    //   auto&& [static_mesh, collider] = mesh_query_collider.get<const scenes::static_mesh, const scenes::collider>(node);
+      // const auto model = scene.world_transform(node);
 
-      const auto volume = scenes::to_volume(collider);
-      const auto transformed_volume = math::volume::transformed(volume, model);
+
+      // const auto volume = scenes::to_volume(collider);
+      // const auto transformed_volume = math::volume::transformed(volume, model);
 
       // tree.insert(node, transformed_volume);
 
-      EASY_BLOCK("testing frustum");
-      if (frustum.intersects(model, collider)) {
-        _submit_mesh(node, static_mesh);
-      }
-      EASY_END_BLOCK;
+      _submit_mesh(node, static_mesh);
+      // EASY_BLOCK("testing frustum");
+      // if (frustum.intersects(model, collider)) {
+      // }
+      // EASY_END_BLOCK;
     }
 
     EASY_END_BLOCK;

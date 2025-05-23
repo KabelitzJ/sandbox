@@ -22,34 +22,6 @@ struct vertex3d {
   math::vector3 position;
 }; // struct vertex3d
 
-} // namespace sbx::scenes
-
-template<>
-struct sbx::graphics::vertex_input<sbx::scenes::vertex3d> {
-  static auto description() -> sbx::graphics::vertex_input_description {
-    auto binding_descriptions = std::vector<VkVertexInputBindingDescription>{};
-
-    binding_descriptions.push_back(VkVertexInputBindingDescription{
-      .binding = 0,
-      .stride = sizeof(sbx::scenes::vertex3d),
-      .inputRate = VK_VERTEX_INPUT_RATE_VERTEX
-    });
-
-    auto attribute_descriptions = std::vector<VkVertexInputAttributeDescription>{};
-
-    attribute_descriptions.push_back(VkVertexInputAttributeDescription{
-      .location = 0,
-      .binding = 0,
-      .format = VK_FORMAT_R32G32B32_SFLOAT,
-      .offset = offsetof(sbx::scenes::vertex3d, position)
-    });
-
-    return sbx::graphics::vertex_input_description{std::move(binding_descriptions), std::move(attribute_descriptions)};
-  }
-}; // struct sbx::graphics::vertex_input<sbx::models::vertex3d>
-
-namespace sbx::scenes {
-
 class mesh : public graphics::mesh<vertex3d> {
 
 public:
@@ -63,7 +35,7 @@ public:
 
 class skybox_subrenderer : public sbx::graphics::subrenderer {
 
-  class pipeline : public graphics::graphics_pipeline<vertex3d> {
+  class pipeline : public graphics::graphics_pipeline<graphics::empty_vertex> {
 
     inline static constexpr auto pipeline_definition = graphics::pipeline_definition{
       .depth = graphics::depth::read_write,
@@ -75,11 +47,11 @@ class skybox_subrenderer : public sbx::graphics::subrenderer {
       }
     };
   
-    using base_type = graphics::graphics_pipeline<vertex3d>;
+    using base_type = graphics::graphics_pipeline<graphics::empty_vertex>;
   
   public:
   
-    using vertex_type = vertex3d;
+    using vertex_type = graphics::empty_vertex;
   
     pipeline(const std::filesystem::path& path, const graphics::pipeline::stage& stage)
     : base_type{path, stage, pipeline_definition} { }
@@ -93,7 +65,8 @@ public:
   skybox_subrenderer(const std::filesystem::path& path, const graphics::pipeline::stage& stage)
   : graphics::subrenderer{stage},
     _pipeline{path, stage},
-    _descriptor_handler{_pipeline, 0u} {
+    _descriptor_handler{_pipeline, 0u},
+    _push_handler{_pipeline} {
     auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
     auto vertices = std::vector<vertex3d>{
@@ -157,22 +130,24 @@ public:
     _scene_uniform_handler.push("view", view);
 
     const auto model = scene.world_transform(camera_node);
-    _object_uniform_handler.push("model", model);
-    _object_uniform_handler.push("tint", skybox.tint);
+    _scene_uniform_handler.push("model", model);
+    _scene_uniform_handler.push("tint", skybox.tint);
+
+    auto& mesh = graphics_module.get_asset<scenes::mesh>(_skybox_id);
 
     _pipeline.bind(command_buffer);
 
     _descriptor_handler.push("uniform_scene", _scene_uniform_handler);
-    _descriptor_handler.push("uniform_object", _object_uniform_handler);
     _descriptor_handler.push("skybox", graphics_module.get_asset<graphics::cube_image>(skybox.cube_image));
+
+    _push_handler.push("vertex_buffer", mesh.address());
 
     if (!_descriptor_handler.update(_pipeline)) {
       return;
     }
 
     _descriptor_handler.bind_descriptors(command_buffer);
-
-    auto& mesh = graphics_module.get_asset<scenes::mesh>(_skybox_id);
+    _push_handler.bind(command_buffer, _pipeline);
 
     mesh.bind(command_buffer);
     mesh.render(command_buffer, 1u);
@@ -186,7 +161,7 @@ private:
   graphics::descriptor_handler _descriptor_handler;
 
   graphics::uniform_handler _scene_uniform_handler;
-  graphics::uniform_handler _object_uniform_handler;
+  graphics::push_handler _push_handler;
 
 }; // class skybox_subrenderer
 

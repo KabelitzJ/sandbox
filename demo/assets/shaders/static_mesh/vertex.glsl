@@ -1,6 +1,6 @@
 #version 450 core 
 
-#extension GL_EXT_buffer_reference: enable
+#extension GL_EXT_buffer_reference : enable
 
 #include <libsbx/common/wind.glsl>
 

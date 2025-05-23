@@ -378,19 +378,12 @@ auto logical_device::_create_logical_device(const physical_device& physical_devi
 
 	validate(vkCreateDevice(physical_device, &device_create_info, nullptr, &_handle));
 
-  auto handle = VkQueue{};
+  _get_queue<queue::type::graphics>(graphics_queue_family_index);
+  _get_queue<queue::type::present>(present_queue_family_index);
+  _get_queue<queue::type::compute>(compute_queue_family_index);
+  _get_queue<queue::type::transfer>(transfer_queue_family_index);
 
-  vkGetDeviceQueue(_handle, graphics_queue_family_index, 0, &handle);
-  _queues.emplace(queue::type::graphics, graphics::queue{handle, graphics_queue_family_index});
-
-  vkGetDeviceQueue(_handle, present_queue_family_index, 0, &handle);
-  _queues.emplace(queue::type::present, graphics::queue{handle, present_queue_family_index});
-
-  vkGetDeviceQueue(_handle, compute_queue_family_index, 0, &handle);
-  _queues.emplace(queue::type::compute, graphics::queue{handle, compute_queue_family_index});
-
-  vkGetDeviceQueue(_handle, transfer_queue_family_index, 0, &handle);
-  _queues.emplace(queue::type::transfer, graphics::queue{handle, transfer_queue_family_index});
+  utility::logger<"graphics">::debug("Created logical device with {} unique queues", queue_create_infos.size());
 }
 
 } // namespace sbx::graphics

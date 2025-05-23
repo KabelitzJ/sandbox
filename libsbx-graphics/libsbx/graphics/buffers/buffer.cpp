@@ -12,7 +12,9 @@
 
 namespace sbx::graphics {
 
-buffer_base::buffer_base(size_type size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, memory::observer_ptr<const void> memory) {
+buffer_base::buffer_base(size_type size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, memory::observer_ptr<const void> memory)
+: _size{size},
+  _usage{usage} {
   utility::assert_that(size > 0, "Buffer size must be greater than 0.");
 
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
@@ -21,8 +23,8 @@ buffer_base::buffer_base(size_type size, VkBufferUsageFlags usage, VkMemoryPrope
 
   auto buffer_create_info = VkBufferCreateInfo{};
   buffer_create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-  buffer_create_info.size = size;
-  buffer_create_info.usage = usage;
+  buffer_create_info.size = _size;
+  buffer_create_info.usage = _usage;
   buffer_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
   auto allocation_create_info = VmaAllocationCreateInfo{};
@@ -39,7 +41,7 @@ buffer_base::buffer_base(size_type size, VkBufferUsageFlags usage, VkMemoryPrope
     allocation_create_info.requiredFlags |= VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
   }
 
-  validate(vmaCreateBuffer(allocator, &buffer_create_info, &allocation_create_info, &_handle, &_allocation, &_info));
+  validate(vmaCreateBuffer(allocator, &buffer_create_info, &allocation_create_info, &_handle, &_allocation, nullptr));
 
   if (memory) {
     auto* mapped_memory = static_cast<void*>(nullptr);
@@ -79,12 +81,12 @@ buffer_base::operator const VkBuffer&() const noexcept {
 }
 
 auto buffer_base::address() const noexcept -> std::uint64_t {
-  // utility::assert_that((_usage & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT), "Attempting to get address of buffer that was not created with VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT set");
+  utility::assert_that((_usage & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT), "Attempting to get address of buffer that was not created with VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT set");
   return _address;
 }
 
 auto buffer_base::size() const noexcept -> std::size_t {
-  return _info.size;
+  return _size;
 }
 
 auto buffer_base::map() -> memory::observer_ptr<void> {

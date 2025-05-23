@@ -5,7 +5,7 @@ layout(location = 1) in vec4 in_color;
 
 layout(location = 0) out vec4 out_color;
 
-layout(binding = 2) uniform samplerCube skybox;
+layout(binding = 1) uniform samplerCube skybox;
 
 const float FOG_DISTANCE = 400.0;
 const float FOG_DENSITY = 0.000;
