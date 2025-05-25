@@ -222,6 +222,8 @@ auto shader::_create_reflection(const spirv_cross::Compiler& compiler) -> void {
     const auto set = compiler.get_decoration(storage_image.id, spv::DecorationDescriptorSet);
     const auto binding = compiler.get_decoration(storage_image.id, spv::DecorationBinding);
 
+    _set_uniforms.resize(std::max(_set_uniforms.size(), static_cast<std::size_t>(set + 1u)));
+
     utility::logger<"graphics">::debug("subpass input: '{}' binding: {}", name, binding);
 
     _set_uniforms[set].emplace(name, uniform{set, binding, 0, 0, data_type::subpass_input, true, false, _stage});

@@ -35,10 +35,6 @@ vec2 uv_from_vertex(vertex vertex) {
   return vec2(vertex.uv_x, vertex.uv_y);
 }
 
-// layout(location = 0) in vec3 in_position;
-// layout(location = 1) in vec3 in_normal;
-// layout(location = 2) in vec2 in_uv;
-
 layout(location = 0) out vec3 out_position;
 layout(location = 1) out vec3 out_normal;
 layout(location = 2) out vec2 out_uv;
