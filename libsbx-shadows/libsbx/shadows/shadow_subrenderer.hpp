@@ -16,10 +16,16 @@
 
 #include <libsbx/graphics/subrenderer.hpp>
 #include <libsbx/graphics/graphics_module.hpp>
+
 #include <libsbx/graphics/images/image.hpp>
+#include <libsbx/graphics/images/separate_sampler.hpp>
+#include <libsbx/graphics/images/separate_image2d_array.hpp>
 #include <libsbx/graphics/images/depth_image.hpp>
+
 #include <libsbx/graphics/buffers/push_handler.hpp>
+
 #include <libsbx/graphics/buffers/uniform_handler.hpp>
+
 #include <libsbx/graphics/descriptor/descriptor_handler.hpp>
 
 #include <libsbx/scenes/scenes_module.hpp>

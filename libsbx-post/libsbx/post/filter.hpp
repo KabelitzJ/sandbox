@@ -25,13 +25,14 @@ class filter : public graphics::subrenderer {
       .polygon_mode = graphics::polygon_mode::fill,
       .cull_mode = graphics::cull_mode::none,
       .front_face = graphics::front_face::counter_clockwise
-    }
+    },
+    .vertex_input = graphics::vertex_input<Vertex>::description(),
   };
 
 public:
 
   using vertex_type = Vertex;
-  using pipeline_type = graphics::graphics_pipeline<vertex_type>;
+  using pipeline_type = graphics::graphics_pipeline;
 
   filter(const std::filesystem::path& path, const graphics::pipeline::stage& stage)
   : graphics::subrenderer{stage},

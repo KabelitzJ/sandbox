@@ -14,7 +14,7 @@ namespace sbx::scenes {
 
 class grid_subrenderer final : public sbx::graphics::subrenderer {
 
-  class pipeline : public sbx::graphics::graphics_pipeline<sbx::graphics::empty_vertex> {
+  class pipeline : public sbx::graphics::graphics_pipeline {
 
     inline static constexpr auto pipeline_definition = sbx::graphics::pipeline_definition{
       .depth = sbx::graphics::depth::read_only,
@@ -26,11 +26,9 @@ class grid_subrenderer final : public sbx::graphics::subrenderer {
       }
     };
   
-    using base_type = sbx::graphics::graphics_pipeline<sbx::graphics::empty_vertex>;
+    using base_type = sbx::graphics::graphics_pipeline;
   
   public:
-  
-    using vertex_type = sbx::graphics::empty_vertex;
   
     pipeline(const std::filesystem::path& path, const sbx::graphics::pipeline::stage& stage)
     : base_type{path, stage, pipeline_definition} { }

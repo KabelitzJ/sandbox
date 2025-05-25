@@ -45,7 +45,7 @@ target_sources(
     "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/terrain/vertex.hpp"
     "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/terrain/terrain_subrenderer.hpp"
     "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/terrain/terrain_module.hpp"
-    "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/terrain/voronoi.hpp"
+    # "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/terrain/voronoi.hpp"
   PRIVATE
     "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/renderer.cpp"
     "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/application.cpp"

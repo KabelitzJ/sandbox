@@ -87,14 +87,12 @@ struct pipeline_definition {
   graphics::rasterization_state rasterization_state{};
   graphics::primitive_topology primitive_topology{graphics::primitive_topology::triangle_list};
   std::vector<graphics::shader::define> defines{};
+  vertex_input_description vertex_input{};
 }; // struct pipeline_definition
 
-template<vertex Vertex>
 class graphics_pipeline : public pipeline {
 
 public:
-
-  using vertex_type = Vertex;
 
   graphics_pipeline(const std::filesystem::path& path, const pipeline::stage& stage, const pipeline_definition& default_definition = pipeline_definition{}, const VkSpecializationInfo* specialization_info = nullptr);
 
@@ -246,7 +244,5 @@ struct sbx::utility::enum_mapping<sbx::graphics::front_face> {
   };
 
 }; // struct sbx::utility::enum_mapping
-
-#include <libsbx/graphics/pipeline/graphics_pipeline.ipp>
 
 #endif // LIBSBX_GRAPHICS_PIPELINE_GRAPHICS_PIPELINE_HPP_

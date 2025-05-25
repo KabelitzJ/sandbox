@@ -7,19 +7,20 @@
 
 namespace sbx::gizmos {
 
-class pipeline : public graphics::graphics_pipeline<models::vertex3d> {
+class pipeline : public graphics::graphics_pipeline {
 
-  inline static constexpr auto pipeline_definition = graphics::pipeline_definition{
+  inline static const auto pipeline_definition = graphics::pipeline_definition{
     .depth = graphics::depth::read_write,
     .uses_transparency = true,
     .rasterization_state = graphics::rasterization_state{
       .polygon_mode = graphics::polygon_mode::fill,
       .cull_mode = graphics::cull_mode::none,
       .front_face = graphics::front_face::counter_clockwise
-    }
+    },
+    .vertex_input = graphics::vertex_input<models::vertex3d>::description()
   };
 
-  using base = graphics::graphics_pipeline<models::vertex3d>;
+  using base = graphics::graphics_pipeline;
 
 public:
 

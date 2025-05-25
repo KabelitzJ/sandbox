@@ -13,7 +13,7 @@
 #include <libsbx/scenes/components/camera.hpp>
 #include <libsbx/scenes/components/static_mesh.hpp>
 
-#include <demo/terrain/voronoi.hpp> 
+// #include <demo/terrain/voronoi.hpp> 
 
 namespace demo {
 

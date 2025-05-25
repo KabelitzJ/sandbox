@@ -35,7 +35,7 @@ public:
 
 class skybox_subrenderer : public sbx::graphics::subrenderer {
 
-  class pipeline : public graphics::graphics_pipeline<graphics::empty_vertex> {
+  class pipeline : public graphics::graphics_pipeline {
 
     inline static constexpr auto pipeline_definition = graphics::pipeline_definition{
       .depth = graphics::depth::read_write,
@@ -47,11 +47,9 @@ class skybox_subrenderer : public sbx::graphics::subrenderer {
       }
     };
   
-    using base_type = graphics::graphics_pipeline<graphics::empty_vertex>;
+    using base_type = graphics::graphics_pipeline;
   
   public:
-  
-    using vertex_type = graphics::empty_vertex;
   
     pipeline(const std::filesystem::path& path, const graphics::pipeline::stage& stage)
     : base_type{path, stage, pipeline_definition} { }
