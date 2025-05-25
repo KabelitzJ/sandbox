@@ -34,28 +34,41 @@ public:
   using iterator = pointer;
   using const_iterator = const_pointer;
 
-  static_vector() noexcept
+  constexpr static_vector() noexcept
   : _size{0u} { }
 
-  static_vector(const static_vector& other) noexcept
+  constexpr static_vector(const static_vector& other) noexcept
   : _size{other._size} {
     for (auto i : std::views::iota(0u, _size)) {
       std::construct_at(_ptr(i), other[i]);
     }
   }
 
-  static_vector(static_vector&& other) noexcept
+  constexpr static_vector(static_vector&& other) noexcept
   : _size{other._size} {
     for (auto i : std::views::iota(0u, _size)) {
       std::construct_at(_ptr(i), std::move(other[i]));
     }
   }
 
-  ~static_vector() noexcept {
+  constexpr static_vector(std::initializer_list<value_type> values) noexcept
+  : _size{values.size()} {
+    utility::assert_that(_size <= Capacity, "initializer list size exceeds capacity");
+    
+    for (auto value : values) {
+      if constexpr (std::is_move_constructible_v<Type>) {
+        push_back(std::move(value));
+      } else {
+        push_back(value);
+      }
+    }
+  }
+
+  constexpr ~static_vector() noexcept {
     clear();
   }
 
-  auto operator=(static_vector other) noexcept -> static_vector& {
+  constexpr auto operator=(static_vector other) noexcept -> static_vector& {
     if (this != &other) {
       other.swap(*this);
     }
@@ -63,7 +76,7 @@ public:
     return *this;
   }
 
-  auto size() const noexcept -> size_type {
+  constexpr auto size() const noexcept -> size_type {
     return _size;
   }
 
@@ -71,87 +84,83 @@ public:
     return Capacity;
   }
 
-  auto is_empty() const noexcept -> bool {
+  constexpr auto is_empty() const noexcept -> bool {
     return _size == 0u;
   }
 
-  auto is_full() const noexcept -> bool {
+  constexpr auto is_full() const noexcept -> bool {
     return _size == Capacity;
   }
 
-  auto begin() noexcept -> iterator {
+  constexpr auto begin() noexcept -> iterator {
     return _ptr(0u);
   }
 
-  auto begin() const noexcept -> const_iterator {
+  constexpr auto begin() const noexcept -> const_iterator {
     return _ptr(0u);
   }
 
-  auto cbegin() const noexcept -> const_iterator {
+  constexpr auto cbegin() const noexcept -> const_iterator {
     return begin();
   }
 
-  auto end() noexcept -> iterator {
+  constexpr auto end() noexcept -> iterator {
     return _ptr(_size);
   }
 
-  auto end() const noexcept -> const_iterator {
+  constexpr auto end() const noexcept -> const_iterator {
     return _ptr(_size);
   }
 
-  auto cend() const noexcept -> const_iterator {
+  constexpr auto cend() const noexcept -> const_iterator {
     return end();
   }
 
-  auto front() noexcept -> reference {
+  constexpr auto front() noexcept -> reference {
     return *begin();
   }
 
-  auto front() const noexcept -> const_reference {
+  constexpr auto front() const noexcept -> const_reference {
     return *begin();
   }
 
-  auto back() noexcept -> reference {
+  constexpr auto back() noexcept -> reference {
     return *std::prev(end());
   }
 
-  auto back() const noexcept -> const_reference {
+  constexpr auto back() const noexcept -> const_reference {
     return *std::prev(end());
   }
 
-  auto operator[](const size_type index) noexcept -> reference {
+  constexpr auto operator[](const size_type index) noexcept -> reference {
     return *_ptr(index);
   }
 
-  auto operator[](const size_type index) const noexcept -> const_reference {
+  constexpr auto operator[](const size_type index) const noexcept -> const_reference {
     return *_ptr(index);
   }
 
-  auto at(const size_type index) -> reference {
-    if (index >= _size) {
-      throw std::out_of_range(fmt::format("static_vector::at: index {} is out of range size {}", index, _size));
-    }
+  constexpr auto at(const size_type index) -> reference {
+    utility::assert_that(index < _size, "index is out of range");
     
     return *_ptr(index);
   }
 
-  auto at(const size_type index) const -> const_reference {
-    if (index >= _size) {
-      throw std::out_of_range(fmt::format("static_vector::at: index {} is out of range size {}", index, _size));
-    }
+  constexpr auto at(const size_type index) const -> const_reference {
+    utility::assert_that(index < _size, "index is out of range");
     
     return *_ptr(index);
   }
 
-  auto data() noexcept -> pointer {
+  constexpr auto data() noexcept -> pointer {
     return _ptr(0u);
   }
 
-  auto data() const noexcept -> const_pointer {
+  constexpr auto data() const noexcept -> const_pointer {
     return _ptr(0u);
   }
 
-  auto push_back(const value_type& value) noexcept -> void {
+  constexpr auto push_back(const value_type& value) noexcept -> void {
     if (is_full()) {
       return;
     }
@@ -160,7 +169,7 @@ public:
     ++_size;
   }
 
-  auto push_back(value_type&& value) noexcept -> void {
+  constexpr auto push_back(value_type&& value) noexcept -> void {
     if (is_full()) {
       return;
     }
@@ -171,7 +180,7 @@ public:
 
   template<typename... Args>
   requires (std::is_constructible_v<Type, Args...>)
-  auto emplace_back(Args&&... args) noexcept -> void {
+  constexpr auto emplace_back(Args&&... args) noexcept -> void {
     if (is_full()) {
       return;
     }
@@ -180,7 +189,7 @@ public:
     ++_size;
   }
 
-  auto pop_back() noexcept -> void {
+  constexpr auto pop_back() noexcept -> void {
     if (is_empty()) {
       return;
     }
@@ -189,7 +198,7 @@ public:
     --_size;
   }
 
-  auto clear() noexcept -> void {
+  constexpr auto clear() noexcept -> void {
     for (auto i : std::views::iota(0u, _size)) {
       std::destroy_at(_ptr(i));
     }
@@ -197,7 +206,7 @@ public:
     _size = 0u;
   }
 
-  auto swap(static_vector& other) -> void {
+  constexpr auto swap(static_vector& other) -> void {
     using std::swap;
 
     swap(_size, other._size);
@@ -206,12 +215,12 @@ public:
 
 private:
 
-  auto _ptr(const size_type index) noexcept -> pointer {
+  constexpr auto _ptr(const size_type index) noexcept -> pointer {
     // utility::assert_that(index < Capacity, "index is out of range");
     return std::launder(reinterpret_cast<pointer>(_buffer.data() + index));
   }
 
-  auto _ptr(const size_type index) const noexcept -> const_pointer {
+  constexpr auto _ptr(const size_type index) const noexcept -> const_pointer {
     // utility::assert_that(index < Capacity, "index is out of range");
     return std::launder(reinterpret_cast<const_pointer>(_buffer.data() + index));
   }

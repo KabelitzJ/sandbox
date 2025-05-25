@@ -18,7 +18,7 @@ namespace sbx::post {
 template<graphics::vertex Vertex>
 class filter : public graphics::subrenderer {
 
-  inline static constexpr auto pipeline_definition = graphics::pipeline_definition{
+  inline static const auto pipeline_definition = graphics::pipeline_definition{
     .depth = graphics::depth::disabled,
     .uses_transparency = false,
     .rasterization_state = graphics::rasterization_state{

@@ -20,7 +20,7 @@ class debug_subrenderer final : public sbx::graphics::subrenderer {
 
   class pipeline : public sbx::graphics::graphics_pipeline {
 
-    inline static constexpr auto pipeline_definition = sbx::graphics::pipeline_definition{
+    inline static const auto pipeline_definition = sbx::graphics::pipeline_definition{
       .depth = sbx::graphics::depth::read_only,
       .uses_transparency = true,
       .rasterization_state = sbx::graphics::rasterization_state{

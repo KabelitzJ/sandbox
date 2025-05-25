@@ -16,7 +16,7 @@
 
 namespace sbx::graphics {
 
-shader::shader(const std::filesystem::path& path, VkShaderStageFlagBits stage, const std::vector<define>& defines)
+shader::shader(const std::filesystem::path& path, VkShaderStageFlagBits stage, const containers::static_vector<define, 10u>& defines)
 : _stage{stage} {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 

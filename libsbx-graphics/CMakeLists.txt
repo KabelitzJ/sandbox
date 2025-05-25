@@ -122,6 +122,7 @@ target_link_libraries(
     nlohmann_json::nlohmann_json
     # Internal dependencies
     libsbx::utility
+    libsbx::containers
     libsbx::io
     libsbx::math
     libsbx::core

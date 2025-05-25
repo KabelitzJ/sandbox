@@ -37,7 +37,7 @@ class skybox_subrenderer : public sbx::graphics::subrenderer {
 
   class pipeline : public graphics::graphics_pipeline {
 
-    inline static constexpr auto pipeline_definition = graphics::pipeline_definition{
+    inline static const auto pipeline_definition = graphics::pipeline_definition{
       .depth = graphics::depth::read_write,
       .uses_transparency = false,
       .rasterization_state = graphics::rasterization_state{

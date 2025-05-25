@@ -15,6 +15,8 @@
 
 #include <libsbx/utility/enum.hpp>
 
+#include <libsbx/containers/static_vector.hpp>
+
 #include <libsbx/graphics/buffers/buffer.hpp>
 #include <libsbx/graphics/buffers/uniform_handler.hpp>
 
@@ -86,7 +88,7 @@ struct pipeline_definition {
   bool uses_transparency{false};
   graphics::rasterization_state rasterization_state{};
   graphics::primitive_topology primitive_topology{graphics::primitive_topology::triangle_list};
-  std::vector<graphics::shader::define> defines{};
+  containers::static_vector<graphics::shader::define, 10u> defines{};
   vertex_input_description vertex_input{};
 }; // struct pipeline_definition
 

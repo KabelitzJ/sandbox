@@ -12,6 +12,8 @@
 
 #include <libsbx/utility/noncopyable.hpp>
 
+#include <libsbx/containers/static_vector.hpp>
+
 namespace sbx::graphics {
 
 class shader : public utility::noncopyable {
@@ -235,7 +237,7 @@ class uniform_block {
 
   using handle_type = VkShaderModule;
 
-  shader(const std::filesystem::path& path, VkShaderStageFlagBits stage, const std::vector<define>& defines = {});
+  shader(const std::filesystem::path& path, VkShaderStageFlagBits stage, const containers::static_vector<define, 10u>& defines = {});
 
   ~shader();
 

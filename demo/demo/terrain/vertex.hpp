@@ -25,45 +25,43 @@ template<>
 struct sbx::graphics::vertex_input<demo::vertex> {
 
   static auto description() -> sbx::graphics::vertex_input_description {
-    auto binding_descriptions = std::vector<VkVertexInputBindingDescription>{};
+    auto result = sbx::graphics::vertex_input_description{};
 
-    binding_descriptions.push_back(VkVertexInputBindingDescription{
+    result.binding_descriptions.push_back(VkVertexInputBindingDescription{
       .binding = 0,
       .stride = sizeof(demo::vertex),
       .inputRate = VK_VERTEX_INPUT_RATE_VERTEX
     });
 
-    auto attribute_descriptions = std::vector<VkVertexInputAttributeDescription>{};
-
-    attribute_descriptions.push_back(VkVertexInputAttributeDescription{
+    result.attribute_descriptions.push_back(VkVertexInputAttributeDescription{
       .location = 0,
       .binding = 0,
       .format = VK_FORMAT_R32G32_SFLOAT,
       .offset = offsetof(demo::vertex, position)
     });
 
-    attribute_descriptions.push_back(VkVertexInputAttributeDescription{
+    result.attribute_descriptions.push_back(VkVertexInputAttributeDescription{
       .location = 1,
       .binding = 0,
       .format = VK_FORMAT_R32_UINT,
       .offset = offsetof(demo::vertex, height_index)
     });
 
-    attribute_descriptions.push_back(VkVertexInputAttributeDescription{
+    result.attribute_descriptions.push_back(VkVertexInputAttributeDescription{
       .location = 2,
       .binding = 0,
       .format = VK_FORMAT_R32G32B32_SFLOAT,
       .offset = offsetof(demo::vertex, normal)
     });
 
-    attribute_descriptions.push_back(VkVertexInputAttributeDescription{
+    result.attribute_descriptions.push_back(VkVertexInputAttributeDescription{
       .location = 3,
       .binding = 0,
       .format = VK_FORMAT_R32G32_SFLOAT,
       .offset = offsetof(demo::vertex, uv)
     });
 
-    return sbx::graphics::vertex_input_description{std::move(binding_descriptions), std::move(attribute_descriptions)};
+    return result;
   }
 
 }; // struct sbx::graphics::vertex_input

@@ -5,11 +5,13 @@
 
 #include <vulkan/vulkan.hpp>
 
+#include <libsbx/containers/static_vector.hpp>
+
 namespace sbx::graphics {
 
 struct vertex_input_description {
-  std::vector<VkVertexInputBindingDescription> binding_descriptions;
-  std::vector<VkVertexInputAttributeDescription> attribute_descriptions;
+  containers::static_vector<VkVertexInputBindingDescription, 2u> binding_descriptions;
+  containers::static_vector<VkVertexInputAttributeDescription, 5u> attribute_descriptions;
 }; // struct vertex_input
 
 template<typename Vertex>
