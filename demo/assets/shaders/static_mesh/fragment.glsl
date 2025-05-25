@@ -20,11 +20,6 @@ layout(location = 6) in flat uint in_normal_image_index;
 
 layout(location = 0) out vec4 out_color;
 
-#define TRANSPARENCY_DISABLED 0
-#define TRANSPARENCY_ENABLED 1
-
-layout(constant_id = 0) const uint transparency = TRANSPARENCY_DISABLED;
-
 layout(set = 0, binding = 0) uniform uniform_scene {
   mat4 view;
   mat4 projection;
@@ -45,23 +40,25 @@ layout(set = 0, binding = 0) uniform uniform_scene {
 layout(set = 0, binding = 1) uniform sampler images_sampler;
 layout(set = 0, binding = 2) uniform texture2D images[MAX_IMAGE_ARRAY_SIZE];
 
-const mat4 DEPTH_BIAS = mat4( 
-	0.5, 0.0, 0.0, 0.0,
-	0.0, 0.5, 0.0, 0.0,
-	0.0, 0.0, 1.0, 0.0,
-	0.5, 0.5, 0.0, 1.0
-);
-
 const vec4 AMBIENT_COLOR = vec4(0.4, 0.4, 0.4, 1.0);
 const vec4 SPECULAR_COLOR = vec4(0.9, 0.9, 0.9, 1.0);
 const float GLOSSINESS = 32.0;
+
 const vec4 RIM_COLOR = vec4(1.0, 1.0, 1.0, 1.0);
 const float RIM_STRENGTH = 0.716;
 const float RIM_THRESHOLD = 0.1;
 
 const vec4 FOG_COLOR = vec4(0.5, 0.5, 0.5, 1.0);
 const float FOG_START = 250.0;
-const float FOG_DENSITY = 0.000;
+const float FOG_DENSITY = 0.002;
+
+vec4 get_albedo() {
+  if (in_albedo_image_index >= MAX_IMAGE_ARRAY_SIZE) {
+    return in_color;
+  }
+
+  return texture(sampler2D(images[in_albedo_image_index], images_sampler), in_uv).rgba * in_color;
+}
 
 vec3 get_normal() {
   if (in_normal_image_index >= MAX_IMAGE_ARRAY_SIZE) {
@@ -83,63 +80,32 @@ vec3 get_normal() {
   return normalize(TBN * tangent_normal);
 }
 
-vec4 get_albedo() {
-  if (in_albedo_image_index >= MAX_IMAGE_ARRAY_SIZE) {
-    return in_color;
-  }
-
-  return texture(sampler2D(images[in_albedo_image_index], images_sampler), in_uv).rgba * in_color;
-}
-
 void main(void) {
   vec3 world_position = in_position;
-  vec3 normal = get_normal();
   vec4 albedo = get_albedo();
 
   if (albedo.a < 0.5) {
     discard;
   }
 
+  vec3 normal = get_normal();
+
   float metallic = in_material.x;
   float roughness = in_material.y;
 
-  // vec4 light_space_position = DEPTH_BIAS * scene.light_space * vec4(world_position, 1.0);
+  vec3 N = normalize(normal);
+  vec3 L = normalize(-scene.light_direction);
+  vec3 V = normalize(scene.camera_position - world_position);
+  vec3 H = normalize(L + V);
+  
+  float diffuse_strength = max(dot(N, L), 0.0);
+  float specular_strength = pow(max(dot(N, H), 0.0), 16.0);
 
-  // #ifdef ENABLE_SHADOWS
-  //   float shadow = calculate_shadow_pcf(shadow_map_image, light_space_position, normal, scene.light_direction);
-  // #else
-  //   float shadow = 1.0;
-  // #endif
+  vec4 ambient = AMBIENT_COLOR * albedo;
+  vec4 diffuse = diffuse_strength * albedo * scene.light_color;
+  vec4 specular = SPECULAR_COLOR * specular_strength * albedo;
 
-  float distance_to_camera = length(world_position - scene.camera_position);
+  vec4 color = ambient + diffuse + specular;
 
-  float adjusted_distance = max(0.0, distance_to_camera - FOG_START);
-
-  float fog_factor = clamp(1.0 - exp(-adjusted_distance * FOG_DENSITY), 0.0, 1.0);
-
-  vec3 light_position = normalize(-scene.light_direction);
-
-  float n_dot_l = dot(light_position, normal);
-
-  float light_intensity = smoothstep(0.0, 0.01, n_dot_l); // add shadow here (ndot_l * shadow)
-  vec4 light = scene.light_color * light_intensity;
-
-  vec3 view_direction = normalize(scene.camera_position - world_position);
-  vec3 half_direction = normalize(light_position + view_direction);
-  float n_dot_h = dot(normal, half_direction);
-
-  float specular_intensity = smoothstep(0.005, 0.01, pow(n_dot_h * light_intensity, (1.0 - roughness) * GLOSSINESS * GLOSSINESS));
-  vec4 specular_color = mix(SPECULAR_COLOR, albedo, metallic);
-  vec4 specular = specular_color * specular_intensity;
-
-  float rim_intensity = smoothstep(RIM_STRENGTH - 0.01, RIM_STRENGTH + 0.01, (1.0 - dot(normal, view_direction)) * pow(n_dot_l, RIM_THRESHOLD)) * (1.0 - roughness);
-  vec4 rim = RIM_COLOR * rim_intensity;
-
-  out_color = vec4(vec3(albedo * (AMBIENT_COLOR + light + specular + rim)), 1.0);
- 
-  // out_color = mix(out_color, FOG_COLOR, fog_factor);
-  // out_color = vec4(vec3(albedo.r), 1.0);
-  // out_color = vec4(vec3(albedo), 0.5);
-  // out_color = vec4(vec3(albedo.a), 1.0);
-  // out_color = albedo;
+  out_color = color;
 }

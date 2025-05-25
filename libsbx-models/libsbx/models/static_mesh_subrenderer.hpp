@@ -80,7 +80,7 @@ public:
 
   static_mesh_subrenderer(const std::filesystem::path& path, const graphics::pipeline::stage& stage)
   : graphics::subrenderer{stage},
-    _pipeline{path, stage, _specialization_info(transparency_disabled)},
+    _pipeline{path, stage},
     _draw_commands{std::make_unique<graphics::storage_buffer>(graphics::storage_buffer::min_size, VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT)},
     _push_handler{_pipeline},
     _scene_descriptor_handler{_pipeline, 0u} { }
@@ -378,7 +378,7 @@ private:
 
   std::map<mesh_key, std::vector<per_mesh_data>, mesh_key_less> _static_meshes;
 
-  models::pipeline<false, graphics::cull_mode::back> _pipeline;
+  pipeline _pipeline;
   std::unordered_map<mesh_key, static_mesh_subrenderer::uniform_data, mesh_key_hash, mesh_key_equal> _uniform_data;
   std::unordered_set<mesh_key, mesh_key_hash, mesh_key_equal> _used_uniforms;
 

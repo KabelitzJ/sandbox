@@ -37,6 +37,7 @@ public:
     _mesh_id = graphics_module.add_asset<sbx::models::mesh>(_generate_plane(chunk_size, sbx::math::vector2u{5u, 5u}));
 
     _texture_id = graphics_module.add_asset<sbx::graphics::image2d>("demo/assets/textures/grass/albedo.png");
+    _normal_texture_id = graphics_module.add_asset<sbx::graphics::image2d>("demo/assets/textures/grass/normal.png");
 
     const auto grid = sbx::math::vector2{15.0f, 15.0f};
 
@@ -50,7 +51,21 @@ public:
       for (auto x = 0u; x < grid.x(); ++x) {
         auto chunk = scene.create_child_node(node, fmt::format("Chunk{}{}", x, y));
 
-        scene.add_component<sbx::scenes::static_mesh>(chunk, _mesh_id, 0u, sbx::math::color::white(), sbx::scenes::static_mesh::material{0.0f, 1.0f, 0.0f, 0.0f}, _texture_id);
+        auto submeshes = std::vector<sbx::scenes::static_mesh::submesh>{};
+
+        submeshes.emplace_back(sbx::scenes::static_mesh::submesh{
+          .index = 0u,
+          .tint = sbx::math::color::white(),
+          .material = sbx::scenes::static_mesh::material{
+            .metallic = 0.0f,
+            .roughness = 1.0f,
+            .flexibility = 0.0f,
+            .anchor_height = 0.0f
+          },
+          .albedo_texture = _texture_id
+        });
+
+        scene.add_component<sbx::scenes::static_mesh>(chunk, _mesh_id, submeshes);
 
         const auto position = sbx::math::vector3{x * chunk_size.x() - offset.x(), 0.0f, y * chunk_size.y() - offset.y()};
 
@@ -131,6 +146,7 @@ private:
 
   sbx::math::uuid _mesh_id;
   sbx::math::uuid _texture_id;
+  sbx::math::uuid _normal_texture_id;
   sbx::math::uuid _node_id;
 
 }; // class terrain_module
