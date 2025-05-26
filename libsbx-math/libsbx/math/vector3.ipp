@@ -53,6 +53,11 @@ inline constexpr auto basic_vector3<Type>::abs(const basic_vector3& vector) noex
 }
 
 template<scalar Type>
+inline constexpr auto basic_vector3<Type>::distance(const basic_vector3& lhs, const basic_vector3& rhs) noexcept -> value_type {
+  return (lhs - rhs).length();
+}
+
+template<scalar Type>
 inline constexpr basic_vector3<Type>::operator basic_vector2<Type>() const noexcept {
   return basic_vector2<Type>{x(), y()};
 }

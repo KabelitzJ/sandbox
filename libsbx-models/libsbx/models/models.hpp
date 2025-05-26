@@ -11,5 +11,6 @@
 #include <libsbx/models/loaders/obj_loader.hpp>
 #include <libsbx/models/loaders/gltf_loader.hpp>
 #include <libsbx/models/loaders/fbx_loader.hpp>
+#include <libsbx/models/loaders/sbxmsh_loader.hpp>
 
 #endif // LIBSBX_MODELS_HPP_

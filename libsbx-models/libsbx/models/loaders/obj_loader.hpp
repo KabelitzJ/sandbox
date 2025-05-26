@@ -1,5 +1,5 @@
-#ifndef LIBSBX_MODLES_LOADERS_OBJ_LOADER_HPP_
-#define LIBSBX_MODLES_LOADERS_OBJ_LOADER_HPP_
+#ifndef LIBSBX_MODELS_LOADERS_OBJ_LOADER_HPP_
+#define LIBSBX_MODELS_LOADERS_OBJ_LOADER_HPP_
 
 #include <libsbx/models/mesh.hpp>
 
@@ -17,4 +17,4 @@ public:
 
 } // namespace sbx::models
 
-#endif // LIBSBX_MODLES_LOADERS_OBJ_LOADER_HPP_
+#endif // LIBSBX_MODELS_LOADERS_OBJ_LOADER_HPP_

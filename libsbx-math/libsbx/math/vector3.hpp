@@ -64,6 +64,8 @@ public:
 
   [[nodiscard]] static constexpr auto abs(const basic_vector3& vector) noexcept -> basic_vector3;
 
+  [[nodiscard]] static constexpr auto distance(const basic_vector3& lhs, const basic_vector3& rhs) noexcept -> value_type;
+
   [[nodiscard]] constexpr operator basic_vector2<Type>() const noexcept;
 
   [[nodiscard]] constexpr auto x() noexcept -> reference;

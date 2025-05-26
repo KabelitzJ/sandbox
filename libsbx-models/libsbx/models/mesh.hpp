@@ -5,6 +5,9 @@
 
 #include <libsbx/utility/hash.hpp>
 
+#include <libsbx/math/volume.hpp>
+#include <libsbx/math/sphere.hpp>
+
 #include <libsbx/io/loader_factory.hpp>
 
 #include <libsbx/graphics/pipeline/mesh.hpp>
@@ -19,6 +22,18 @@ class mesh : public graphics::mesh<vertex3d>, public io::loader_factory<mesh, gr
 
 public:
 
+  struct file_header {
+    std::uint32_t magic;
+    std::uint32_t version;
+    std::uint32_t index_type_size;
+    std::uint32_t index_count;
+    std::uint32_t vertex_type_size;
+    std::uint32_t vertex_count;
+    std::uint32_t submesh_count;
+  }; // struct file_header
+
+  static_assert(sizeof(file_header) == 7 * sizeof(std::uint32_t), "File header size mismatch");
+
   using mesh_data = graphics::mesh<vertex3d>::mesh_data;
 
   using base::mesh;
@@ -29,7 +44,9 @@ public:
 
 private:
 
-  auto _load(const std::filesystem::path& path) -> mesh_data;
+  static auto _load(const std::filesystem::path& path) -> mesh_data;
+
+  static auto _process(const std::filesystem::path& path, const mesh_data& data) -> void;
 
 }; // class mesh
 
