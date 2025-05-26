@@ -50,31 +50,115 @@ auto image2d::set_pixels(memory::observer_ptr<const std::uint8_t> pixels) -> voi
   }
 }
 
+struct file_header {
+  std::uint32_t magic;
+  std::uint32_t version;
+  std::uint32_t width;
+  std::uint32_t height;
+  std::uint32_t channels;
+}; // struct file_header
+
+struct image_data {
+  file_header header;
+  std::uint8_t* pixels;
+}; // struct image_data
+
+auto write_image(const std::filesystem::path& path, const image_data& data) -> void {
+  auto output_file = std::ofstream{path, std::ios::binary};
+
+  if (!output_file.is_open()) {
+    throw std::runtime_error{fmt::format("Failed to open image file for writing: {}", path.string())};
+  }
+
+  auto header = file_header{};
+  header.magic = 69u;
+  header.version = 1u;
+  header.width = data.header.width;
+  header.height = data.header.height;
+  header.channels = data.header.channels;
+
+  output_file.write(reinterpret_cast<const char*>(&header), sizeof(file_header));
+  output_file.write(reinterpret_cast<const char*>(data.pixels), data.header.width * data.header.height * data.header.channels);
+
+  output_file.close();
+}
+
+auto read_image(const std::filesystem::path& path) -> image_data {
+  if (!std::filesystem::exists(path)) {
+    throw std::runtime_error{fmt::format("Image file not found: {}", path.string())};
+  }
+
+  auto result = image_data{};
+
+  auto input_file = std::ifstream{path, std::ios::binary};
+
+  if (!input_file.is_open()) {
+    throw std::runtime_error{fmt::format("Failed to open image file: {}", path.string())};
+  }
+
+  auto header = file_header{};
+
+  input_file.read(reinterpret_cast<char*>(&header), sizeof(file_header));
+
+  if (header.magic != 69u) {
+    throw std::runtime_error{fmt::format("Invalid magic number in image file: {}", path.string())};
+  }
+
+  if (header.version != 1u) {
+    throw std::runtime_error{fmt::format("Unsupported image file version: {} in file: {}", header.version, path.string())};
+  }
+
+  result.header = header;
+  result.pixels = new std::uint8_t[header.width * header.height * header.channels];
+  input_file.read(reinterpret_cast<char*>(result.pixels), header.width * header.height * header.channels);
+
+  input_file.close();
+
+  return result;
+}
+
 auto image2d::_load() -> void {
+  // [TODO] KAJ 2025-05-26 : This code is absolutely terrible, it should be refactored to use a more robust image loading system.
+  const auto needs_processing = !std::filesystem::exists(std::filesystem::path{_path}.replace_extension(".sbximg"));
+
   _channels = channels_from_format(_format);
 
-  auto* data = static_cast<std::uint8_t*>(nullptr);
+  auto data = image_data{};
 
   if (!_path.empty()) {
     auto timer = utility::timer{};
 
-    stbi_set_flip_vertically_on_load(true);
-
-    // [NOTE] KAJ 2023-07-28 : Force 4 channels (RGBA) and ignore the original image's channels.
-    data = stbi_load(_path.string().c_str(), reinterpret_cast<std::int32_t*>(&_extent.width), reinterpret_cast<std::int32_t*>(&_extent.height), nullptr, STBI_rgb_alpha);
+    if (!needs_processing) {
+      data = read_image(std::filesystem::path{_path}.replace_extension(".sbximg"));
+      _extent.width = data.header.width;
+      _extent.height = data.header.height;
+    } else {
+      stbi_set_flip_vertically_on_load(true);
+  
+      // [NOTE] KAJ 2023-07-28 : Force 4 channels (RGBA) and ignore the original image's channels.
+      data.pixels = stbi_load(_path.string().c_str(), reinterpret_cast<std::int32_t*>(&_extent.width), reinterpret_cast<std::int32_t*>(&_extent.height), nullptr, STBI_rgb_alpha);
+  
+      if (!data.pixels) {
+        throw std::runtime_error{fmt::format("Failed to load image: {}", _path.string())};
+      }
+  
+      if (_extent.width == 0 || _extent.height == 0) {
+        throw std::runtime_error{fmt::format("Image '{}' has invalid dimensions: {}x{}", _path.string(), _extent.width, _extent.height)};
+      }
+  
+      data.header.magic = 69u;
+      data.header.version = 1u;
+      data.header.width = _extent.width;
+      data.header.height = _extent.height;
+      data.header.channels = 4u;
+      write_image(std::filesystem::path{_path}.replace_extension(".sbximg"), data);
+    }
 
     const auto elapsed = units::quantity_cast<units::millisecond>(timer.elapsed());
-
+  
     utility::logger<"graphics">::debug("Loaded image: {} ({}x{}) in {:.2f}ms", _path.string(), _extent.width, _extent.height, elapsed.value());
-
-    if (!data) {
-      throw std::runtime_error{fmt::format("Failed to load image: {}", _path.string())};
-    }
   }
 
-  if (_extent.width == 0 || _extent.height == 0) {
-    return;
-  }
 
   _mip_levels = _mipmap ? mip_levels(_extent) : 1;
 
@@ -82,23 +166,27 @@ auto image2d::_load() -> void {
   create_image_sampler(_sampler, _filter, _address_mode, _anisotropic, _mip_levels);
   create_image_view(_handle, _view, VK_IMAGE_VIEW_TYPE_2D, _format, VK_IMAGE_ASPECT_COLOR_BIT, _mip_levels, 0, _array_layers, 0);
 
-  if (data || _mipmap) {
+  if (data.pixels || _mipmap) {
     transition_image_layout(_handle, _format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_ASPECT_COLOR_BIT, _mip_levels, 0, _array_layers, 0);
   }
 
-  if (data) {
+  if (data.pixels) {
     // [NOTE] KAJ 2023-07-28 : Since we loaded the image with STBI_rgb_alpha, we need to multiply the buffer size by 4.
-    auto buffer_size = _extent.width * _extent.height * 4;
-    auto staging_buffer = graphics::staging_buffer{std::span{data, buffer_size}};
+    const auto buffer_size = _extent.width * _extent.height * 4u;
+    auto staging_buffer = graphics::staging_buffer{std::span{data.pixels, buffer_size}};
 
     copy_buffer_to_image(staging_buffer, _handle, _extent, _array_layers, 0);
 
-    stbi_image_free(data);
+    if (needs_processing) {
+      stbi_image_free(data.pixels);
+    } else {
+      delete[] data.pixels;
+    }
   }
 
   if (_mipmap) {
     create_mipmaps(_handle, _extent, _format, _layout, _mip_levels, 0, _array_layers);
-  } else if (data) {
+  } else if (data.pixels) {
     transition_image_layout(_handle, _format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, _layout, VK_IMAGE_ASPECT_COLOR_BIT, _mip_levels, 0, _array_layers, 0);
   } else {
     transition_image_layout(_handle, _format, VK_IMAGE_LAYOUT_UNDEFINED, _layout, VK_IMAGE_ASPECT_COLOR_BIT, _mip_levels, 0, _array_layers, 0);
