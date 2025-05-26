@@ -168,7 +168,11 @@ application::application()
   // camera.get_component<sbx::math::transform>().set_position(position);
   // camera.get_component<sbx::math::transform>().look_at(sbx::math::vector3::zero);
 
-  window.show();
+  const auto& cli = sbx::core::engine::cli();
+
+  if (auto hide_window = cli.argument<bool>("hide-window"); !hide_window) {
+    window.show();
+  }
 }
 
 auto application::update() -> void  {

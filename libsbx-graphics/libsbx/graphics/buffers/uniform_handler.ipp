@@ -2,8 +2,6 @@
 
 #include <libsbx/core/engine.hpp>
 
-#include <libsbx/graphics/graphics_module.hpp>
-
 namespace sbx::graphics {
 
 template<typename Type>

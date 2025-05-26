@@ -40,9 +40,9 @@ public:
 
   auto operator=(command_buffer&&) noexcept -> command_buffer&;
 
-  auto handle() const noexcept -> const VkCommandBuffer&;
+  auto handle() const noexcept -> VkCommandBuffer;
 
-  operator const VkCommandBuffer&() const noexcept;
+  operator VkCommandBuffer() const noexcept;
 
   auto is_running() const noexcept -> bool;
 

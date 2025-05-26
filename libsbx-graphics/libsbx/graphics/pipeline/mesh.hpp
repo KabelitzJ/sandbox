@@ -5,10 +5,10 @@
 #include <vector>
 #include <string>
 
-#include <libsbx/graphics/graphics_module.hpp>
-
 #include <libsbx/graphics/buffers/buffer.hpp>
 #include <libsbx/graphics/buffers/storage_buffer.hpp>
+
+#include <libsbx/graphics/commands/command_buffer.hpp>
 
 #include <libsbx/graphics/pipeline/vertex_input_description.hpp>
 
@@ -151,5 +151,7 @@ protected:
 }; // class mesh
 
 } // namespace sbx::graphics
+
+#include <libsbx/graphics/pipeline/mesh.ipp>
 
 #endif // LIBSBX_GRAPHICS_PIPELINE_MESH_HPP_

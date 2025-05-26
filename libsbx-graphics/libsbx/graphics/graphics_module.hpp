@@ -30,6 +30,8 @@
 
 #include <libsbx/graphics/pipeline/pipeline.hpp>
 #include <libsbx/graphics/pipeline/shader.hpp>
+#include <libsbx/graphics/pipeline/graphics_pipeline.hpp>
+#include <libsbx/graphics/pipeline/compute_pipeline.hpp>
 
 #include <libsbx/graphics/buffers/buffer.hpp>
 
@@ -347,6 +349,22 @@ private:
     }
   }; // struct command_pool_key_equal
 
+
+  static_assert(std::is_class_v<graphics::graphics_pipeline>, "graphics_pipeline is not a class in sbx::graphics");
+
+  template<typename Type>
+  auto _storage() -> resource_storage<Type>& {
+    if constexpr (std::is_same_v<Type, shader>) {
+      return _shaders;
+    } else if constexpr (std::is_same_v<Type, graphics_pipeline>) {
+      return _graphics_pipelines;
+    } else if constexpr (std::is_same_v<Type, compute_pipeline>) {
+      return _compute_pipelines;
+    }
+
+    throw std::runtime_error{"Invalid resource type"};
+  }
+
   std::unique_ptr<graphics::instance> _instance{};
   std::unique_ptr<graphics::physical_device> _physical_device{};
   std::unique_ptr<graphics::logical_device> _logical_device{};
@@ -370,7 +388,9 @@ private:
 
   VmaAllocator _allocator;
 
-  resource_storage<graphics::buffer_base> _buffers;
+  resource_storage<graphics::shader> _shaders;
+  resource_storage<graphics::graphics_pipeline> _graphics_pipelines;
+  resource_storage<graphics::compute_pipeline> _compute_pipelines;
 
   struct asset_container_base {
     virtual ~asset_container_base() = default;

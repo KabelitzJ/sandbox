@@ -5,8 +5,9 @@
 namespace sbx::graphics {
 
 uniform_buffer::uniform_buffer(VkDeviceSize size, memory::observer_ptr<void> data)
-: buffer_base{size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, data},
-  _mapped_memory{buffer_base::map()} {}
+: buffer_base{size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, data} {
+  map();
+}
 
 uniform_buffer::~uniform_buffer() {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();

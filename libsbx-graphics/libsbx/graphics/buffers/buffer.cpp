@@ -89,7 +89,7 @@ auto buffer_base::size() const noexcept -> std::size_t {
   return _size;
 }
 
-auto buffer_base::map() -> memory::observer_ptr<void> {
+auto buffer_base::map() -> void {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
   auto allocator = graphics_module.allocator();
@@ -98,7 +98,7 @@ auto buffer_base::map() -> memory::observer_ptr<void> {
 
   validate(vmaMapMemory(allocator, _allocation, &mapped_memory));
 
-  return memory::observer_ptr<void>{mapped_memory};
+  _mapped_memory.reset(mapped_memory);
 }
 
 auto buffer_base::unmap() -> void {
@@ -106,15 +106,15 @@ auto buffer_base::unmap() -> void {
 
   auto allocator = graphics_module.allocator();
 
-  const auto& logical_device = graphics_module.logical_device();
-
   vmaUnmapMemory(allocator, _allocation);
+
+  _mapped_memory.reset();
 }
 
 auto buffer_base::write(memory::observer_ptr<const void> data, size_type size, size_type offset) -> void {
-  auto mapped_memory = map();
+  map();
 
-  std::memcpy(static_cast<std::uint8_t*>(mapped_memory.get()) + offset, data.get(), size);
+  std::memcpy(static_cast<std::uint8_t*>(_mapped_memory.get()) + offset, data.get(), size);
 
   unmap();
 }

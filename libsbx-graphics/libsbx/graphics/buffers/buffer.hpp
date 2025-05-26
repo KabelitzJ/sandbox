@@ -42,9 +42,11 @@ public:
 
 protected:
 
-  auto map() -> memory::observer_ptr<void>;
+  auto map() -> void;
 
   auto unmap() -> void;
+
+  memory::observer_ptr<void> _mapped_memory;
 
 private:
 

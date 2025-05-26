@@ -61,11 +61,11 @@ auto command_buffer::operator=(command_buffer&& other) noexcept -> command_buffe
   return *this;
 }
 
-auto command_buffer::handle() const noexcept -> const VkCommandBuffer& {
+auto command_buffer::handle() const noexcept -> VkCommandBuffer {
   return _handle;
 }
 
-command_buffer::operator const VkCommandBuffer&() const noexcept {
+command_buffer::operator VkCommandBuffer() const noexcept {
   return _handle;
 }
 

@@ -30,10 +30,6 @@ public:
 
   static auto create_descriptor_set_layout_binding(std::uint32_t binding, VkDescriptorType descriptor_type, VkShaderStageFlags stage_flags) noexcept -> VkDescriptorSetLayoutBinding;
 
-private:
-
-  memory::observer_ptr<void> _mapped_memory;
-
 }; // class storage_buffer
 
 } // namespace sbx::graphics

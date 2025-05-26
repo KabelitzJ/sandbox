@@ -5,12 +5,14 @@
 namespace sbx::graphics {
 
 storage_buffer::storage_buffer(VkDeviceSize size, memory::observer_ptr<const void> data)
-: buffer_base{size, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, data}, 
-  _mapped_memory{buffer_base::map()} { }
+: buffer_base{size, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, data} {
+  map();
+}
 
 storage_buffer::storage_buffer(VkDeviceSize size, VkBufferUsageFlags additional_usage)
-: buffer_base{size, additional_usage | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT}, 
-  _mapped_memory{buffer_base::map()} { }
+: buffer_base{size, additional_usage | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT} {
+  map();
+}
 
 storage_buffer::~storage_buffer() {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
