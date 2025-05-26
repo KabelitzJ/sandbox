@@ -101,7 +101,7 @@ public:
 
   template<typename... Args>
   requires (std::is_constructible_v<value_type, Args...>)
-  auto add(Args&&... args) -> handle_type {
+  auto emplace(Args&&... args) -> handle_type {
     if (!_free_handles.empty()) {
       const auto handle = _free_handles.back();
       _free_handles.pop_back();
@@ -295,6 +295,12 @@ public:
     return static_cast<asset_container<Type>*>(container->second.get())->get(id);
   }
 
+  template<typename Type, typename... Args>
+  requires (std::is_constructible_v<Type, Args...>)
+  auto add_resource(Args&&... args) -> resource_handle<Type> {
+    return _storage<Type>().emplace(std::forward<Args>(args)...);
+  }
+
   auto allocator() const noexcept -> VmaAllocator {
     return _allocator;
   }
@@ -360,9 +366,11 @@ private:
       return _graphics_pipelines;
     } else if constexpr (std::is_same_v<Type, compute_pipeline>) {
       return _compute_pipelines;
+    } else if constexpr (std::is_same_v<Type, buffer>) {
+      return _buffers;
     }
 
-    throw std::runtime_error{"Invalid resource type"};
+    utility::assert_that(false, "Invalid resource type");
   }
 
   std::unique_ptr<graphics::instance> _instance{};
@@ -391,6 +399,7 @@ private:
   resource_storage<graphics::shader> _shaders;
   resource_storage<graphics::graphics_pipeline> _graphics_pipelines;
   resource_storage<graphics::compute_pipeline> _compute_pipelines;
+  resource_storage<graphics::buffer> _buffers;
 
   struct asset_container_base {
     virtual ~asset_container_base() = default;

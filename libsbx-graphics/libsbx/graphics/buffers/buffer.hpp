@@ -15,22 +15,20 @@
 
 namespace sbx::graphics {
 
-class buffer_base : public utility::noncopyable {
+class buffer : public utility::noncopyable {
 
 public:
 
   using handle_type = VkBuffer;
   using size_type = VkDeviceSize;
 
-  buffer_base(size_type size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, memory::observer_ptr<const void> memory = nullptr);
+  buffer(size_type size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, memory::observer_ptr<const void> memory = nullptr);
 
-  virtual ~buffer_base();
+  virtual ~buffer();
 
-  auto handle() const noexcept -> const handle_type&;
+  auto handle() const noexcept -> handle_type;
 
-  operator const handle_type&() const noexcept;
-
-  auto memory() const noexcept -> const VkDeviceMemory&;
+  operator handle_type() const noexcept;
 
   auto address() const noexcept -> std::uint64_t;
 
@@ -38,7 +36,7 @@ public:
 
   virtual auto write(memory::observer_ptr<const void> data, size_type size, size_type offset = 0) -> void;
 
-  // static auto insert_buffer_memory_barrier(command_buffer& command_buffer, buffer_base&  <-- We maybe need this
+  // static auto insert_buffer_memory_barrier(command_buffer& command_buffer, buffer&  <-- We maybe need this
 
 protected:
 
@@ -59,25 +57,25 @@ private:
   // VmaAllocationInfo _info;
   std::uint64_t _address;
 
-}; // class buffer_base
+}; // class buffer
 
 template<typename Type, VkBufferUsageFlags Usage, VkMemoryPropertyFlags Properties>
-class basic_buffer : public buffer_base {
+class typed_buffer : public buffer {
 
-  using base_type = buffer_base;
+  using base_type = buffer;
 
 public:
 
   using value_type = Type;
   using size_type = base_type::size_type;
 
-  basic_buffer(std::span<const Type> elements, VkMemoryPropertyFlags properties = 0, VkBufferUsageFlags usage = 0u)
+  typed_buffer(std::span<const Type> elements, VkMemoryPropertyFlags properties = 0, VkBufferUsageFlags usage = 0u)
   : base_type{elements.size() * sizeof(Type), (usage | Usage) , (properties | Properties), elements.data()} { }
 
-  basic_buffer(size_type size, VkMemoryPropertyFlags properties = 0, VkBufferUsageFlags usage = 0u)
+  typed_buffer(size_type size, VkMemoryPropertyFlags properties = 0, VkBufferUsageFlags usage = 0u)
   : base_type{size * sizeof(Type), (usage | Usage) , (properties | Properties), nullptr} { }
 
-  ~basic_buffer() override = default;
+  ~typed_buffer() override = default;
 
   auto size() const noexcept -> VkDeviceSize override {
     return size_in_bytes() / sizeof(Type);
@@ -87,9 +85,9 @@ public:
     return base_type::size();
   }
 
-}; // class basic_buffer
+}; // class typed_buffer
 
-using staging_buffer = basic_buffer<std::uint8_t, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, (VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)>;
+using staging_buffer = typed_buffer<std::uint8_t, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, (VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)>;
 
 } // namespace sbx::graphics
 

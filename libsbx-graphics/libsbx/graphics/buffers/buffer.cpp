@@ -12,7 +12,7 @@
 
 namespace sbx::graphics {
 
-buffer_base::buffer_base(size_type size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, memory::observer_ptr<const void> memory)
+buffer::buffer(size_type size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, memory::observer_ptr<const void> memory)
 : _size{size},
   _usage{usage} {
   utility::assert_that(size > 0, "Buffer size must be greater than 0.");
@@ -60,7 +60,7 @@ buffer_base::buffer_base(size_type size, VkBufferUsageFlags usage, VkMemoryPrope
   }
 }
 
-buffer_base::~buffer_base() {
+buffer::~buffer() {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
   auto allocator = graphics_module.allocator();
@@ -72,24 +72,24 @@ buffer_base::~buffer_base() {
   vmaDestroyBuffer(allocator, _handle, _allocation);
 }
 
-auto buffer_base::handle() const noexcept -> const VkBuffer& {
+auto buffer::handle() const noexcept -> VkBuffer {
   return _handle;
 }
 
-buffer_base::operator const VkBuffer&() const noexcept {
+buffer::operator VkBuffer() const noexcept {
   return _handle;
 }
 
-auto buffer_base::address() const noexcept -> std::uint64_t {
+auto buffer::address() const noexcept -> std::uint64_t {
   utility::assert_that((_usage & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT), "Attempting to get address of buffer that was not created with VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT set");
   return _address;
 }
 
-auto buffer_base::size() const noexcept -> std::size_t {
+auto buffer::size() const noexcept -> std::size_t {
   return _size;
 }
 
-auto buffer_base::map() -> void {
+auto buffer::map() -> void {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
   auto allocator = graphics_module.allocator();
@@ -101,7 +101,7 @@ auto buffer_base::map() -> void {
   _mapped_memory.reset(mapped_memory);
 }
 
-auto buffer_base::unmap() -> void {
+auto buffer::unmap() -> void {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
   auto allocator = graphics_module.allocator();
@@ -111,7 +111,7 @@ auto buffer_base::unmap() -> void {
   _mapped_memory.reset();
 }
 
-auto buffer_base::write(memory::observer_ptr<const void> data, size_type size, size_type offset) -> void {
+auto buffer::write(memory::observer_ptr<const void> data, size_type size, size_type offset) -> void {
   map();
 
   std::memcpy(static_cast<std::uint8_t*>(_mapped_memory.get()) + offset, data.get(), size);

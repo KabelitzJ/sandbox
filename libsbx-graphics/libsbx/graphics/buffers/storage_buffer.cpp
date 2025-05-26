@@ -5,12 +5,12 @@
 namespace sbx::graphics {
 
 storage_buffer::storage_buffer(VkDeviceSize size, memory::observer_ptr<const void> data)
-: buffer_base{size, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, data} {
+: buffer{size, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, data} {
   map();
 }
 
 storage_buffer::storage_buffer(VkDeviceSize size, VkBufferUsageFlags additional_usage)
-: buffer_base{size, additional_usage | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT} {
+: buffer{size, additional_usage | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT} {
   map();
 }
 
@@ -21,7 +21,7 @@ storage_buffer::~storage_buffer() {
 
   logical_device.wait_idle();
   
-  buffer_base::unmap();
+  buffer::unmap();
 }
 
 auto storage_buffer::update(memory::observer_ptr<const void> data, VkDeviceSize size, std::size_t offset) -> void {

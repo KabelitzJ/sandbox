@@ -11,7 +11,7 @@
 
 namespace sbx::graphics {
 
-class uniform_buffer : public buffer_base, public descriptor {
+class uniform_buffer : public buffer, public descriptor {
 
 public:
 
