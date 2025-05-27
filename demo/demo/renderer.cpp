@@ -79,39 +79,24 @@ renderer::renderer()
 
 auto renderer::initialize() -> void {
   auto& graphics_module = sbx::core::engine::get_module<sbx::graphics::graphics_module>();
-  auto& logical_device = graphics_module.logical_device();
 
   // Compute stage
 
   auto& frustum_culling_task = add_task<sbx::scenes::frustum_culling_task>("demo/assets/shaders/frustum_culling");
 
-  auto& draw_commands_buffer = graphics_module.get_resource<sbx::graphics::buffer>(frustum_culling_task.draw_commands_buffer());
+  const auto draw_commands_buffer = frustum_culling_task.draw_commands_buffer();
 
   // Compute -> Graphics ownership transfer
 
-  graphics_module.release_ownership({
-    .src_stage_mask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT,
-    .src_access_mask = VK_ACCESS_2_SHADER_WRITE_BIT,
-    .src_queue_family = logical_device.queue<sbx::graphics::queue::type::compute>().family(),
-    .dst_queue_family = logical_device.queue<sbx::graphics::queue::type::graphics>().family(),
-    .buffer = draw_commands_buffer
-  });
-
-  graphics_module.acquire_ownership({
-    .dst_stage_mask = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT,
-    .dst_access_mask = VK_ACCESS_2_SHADER_READ_BIT,
-    .src_queue_family = logical_device.queue<sbx::graphics::queue::type::graphics>().family(),
-    .dst_queue_family = logical_device.queue<sbx::graphics::queue::type::compute>().family(),
-    .buffer = draw_commands_buffer
-  });
-
+  graphics_module.transfer_ownership<sbx::graphics::queue::type::compute, sbx::graphics::queue::type::graphics>(draw_commands_buffer);
+    
   // Render stage 0
   // add_subrenderer<sbx::shadows::shadow_subrenderer>("demo/assets/shaders/shadow", sbx::graphics::pipeline::stage{0, 0});
 
   // Render stage 1
   add_subrenderer<sbx::scenes::skybox_subrenderer>("demo/assets/shaders/skybox", sbx::graphics::pipeline::stage{0, 0});
   add_subrenderer<sbx::scenes::grid_subrenderer>("demo/assets/shaders/grid", sbx::graphics::pipeline::stage{0, 0});
-  add_subrenderer<sbx::models::static_mesh_subrenderer>("demo/assets/shaders/deferred", sbx::graphics::pipeline::stage{0, 0}, frustum_culling_task.draw_commands_buffer());
+  add_subrenderer<sbx::models::static_mesh_subrenderer>("demo/assets/shaders/deferred", sbx::graphics::pipeline::stage{0, 0}, draw_commands_buffer);
   add_subrenderer<sbx::scenes::debug_subrenderer>("demo/assets/shaders/debug", sbx::graphics::pipeline::stage{0, 0});
   
   // add_subrenderer<sbx::models::static_mesh_subrenderer>("demo/assets/shaders/static_mesh", sbx::graphics::pipeline::stage{0, 0});

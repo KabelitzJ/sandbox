@@ -180,12 +180,25 @@ public:
     return _allocator;
   }
 
-  auto acquire_ownership(const command_buffer::acquire_ownership_data& data) -> void {
-    _acquire_ownership_data.push_back(data);
-  }
+  template<queue::type Source, queue::type Destination>
+  auto transfer_ownership(const resource_handle<buffer>& handle) -> void {
+    auto& buffer = get_resource<graphics::buffer>(handle);
 
-  auto release_ownership(const command_buffer::release_ownership_data& data) -> void {
-    _release_ownership_data.push_back(data);
+    _release_ownership_data.push_back(command_buffer::release_ownership_data{
+      .src_stage_mask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT,
+      .src_access_mask = VK_ACCESS_2_SHADER_WRITE_BIT,
+      .src_queue_family = _logical_device->queue<Source>().family(),
+      .dst_queue_family = _logical_device->queue<Destination>().family(),
+      .buffer = buffer
+    });
+
+    _acquire_ownership_data.push_back(command_buffer::acquire_ownership_data{
+      .dst_stage_mask = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT,
+      .dst_access_mask = VK_ACCESS_2_SHADER_READ_BIT,
+      .src_queue_family = _logical_device->queue<Source>().family(),
+      .dst_queue_family = _logical_device->queue<Destination>().family(),
+      .buffer = buffer
+    });
   }
 
 private:
