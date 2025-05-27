@@ -180,6 +180,14 @@ public:
     return _allocator;
   }
 
+  auto acquire_ownership(const command_buffer::acquire_ownership_data& data) -> void {
+    _acquire_ownership_data.push_back(data);
+  }
+
+  auto release_ownership(const command_buffer::release_ownership_data& data) -> void {
+    _release_ownership_data.push_back(data);
+  }
+
 private:
 
   auto _start_render_pass(graphics::render_stage& render_stage, graphics::command_buffer& command_buffer) -> void;
@@ -307,6 +315,9 @@ private:
   resource_storage<graphics::compute_pipeline> _compute_pipelines;
   resource_storage<graphics::buffer> _buffers;
   resource_storage<graphics::image2d> _images;
+
+  std::vector<command_buffer::acquire_ownership_data> _acquire_ownership_data;
+  std::vector<command_buffer::release_ownership_data> _release_ownership_data;
 
   struct asset_container_base {
     virtual ~asset_container_base() = default;

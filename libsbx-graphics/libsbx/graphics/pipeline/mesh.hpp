@@ -68,6 +68,10 @@ public:
 
   auto submeshes() const noexcept -> const std::vector<submesh>&;
 
+  auto submesh_bounds(std::uint32_t submesh_index) const -> math::volume {
+    return _submeshes.at(submesh_index).bounds;
+  }
+
 protected:
 
   // mesh()

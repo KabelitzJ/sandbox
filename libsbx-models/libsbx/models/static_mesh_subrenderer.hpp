@@ -37,12 +37,15 @@
 #include <libsbx/scenes/scenes_module.hpp>
 #include <libsbx/scenes/scene.hpp>
 #include <libsbx/scenes/node.hpp>
+#include <libsbx/scenes/frustum_culling_task.hpp>
+
 #include <libsbx/scenes/components/static_mesh.hpp>
 #include <libsbx/scenes/components/id.hpp>
 #include <libsbx/scenes/components/camera.hpp>
 #include <libsbx/scenes/components/tag.hpp>
 #include <libsbx/scenes/components/point_light.hpp>
 #include <libsbx/scenes/components/global_transform.hpp>
+
 
 #include <libsbx/models/vertex3d.hpp>
 #include <libsbx/models/pipeline.hpp>
@@ -78,10 +81,10 @@ class static_mesh_subrenderer final : public graphics::subrenderer {
 
 public:
 
-  static_mesh_subrenderer(const std::filesystem::path& path, const graphics::pipeline::stage& stage)
+  static_mesh_subrenderer(const std::filesystem::path& path, const graphics::pipeline::stage& stage, const graphics::resource_handle<graphics::buffer>& draw_commands_buffer = {})
   : graphics::subrenderer{stage},
     _pipeline{path, stage},
-    _draw_commands{std::make_unique<graphics::storage_buffer>(graphics::storage_buffer::min_size, VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT)},
+    _draw_commands_buffer{draw_commands_buffer},
     _push_handler{_pipeline},
     _scene_descriptor_handler{_pipeline, 0u} { }
 
@@ -89,6 +92,8 @@ public:
 
   auto render(graphics::command_buffer& command_buffer) -> void override {
     EASY_FUNCTION();
+
+    auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
     auto& scene = scenes_module.scene();
@@ -327,10 +332,6 @@ private:
 
     _scene_descriptor_handler.bind_descriptors(command_buffer);
 
-    if (_draw_commands->size() < _static_meshes.size() * sizeof(VkDrawIndexedIndirectCommand)) {
-      _draw_commands = std::make_unique<graphics::storage_buffer>(_static_meshes.size() * sizeof(VkDrawIndexedIndirectCommand), VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT);
-    }
-
     auto current_mesh_id = math::uuid::null();
     auto offset = 0;
 
@@ -384,7 +385,7 @@ private:
 
   graphics::uniform_handler _scene_uniform_handler;
   graphics::push_handler _push_handler;
-  std::unique_ptr<graphics::storage_buffer> _draw_commands;
+  graphics::resource_handle<graphics::buffer> _draw_commands_buffer;
   graphics::separate_sampler _images_sampler;
   graphics::separate_image2d_array _images;
   graphics::descriptor_handler _scene_descriptor_handler;

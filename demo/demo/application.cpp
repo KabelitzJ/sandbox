@@ -190,22 +190,13 @@ auto application::update() -> void  {
 
   _rotation += sbx::math::degree{45} * delta_time;
 
-  // auto q = scene.query<sbx::math::transform, rotator, sbx::scenes::global_transform>();
+  auto q = scene.query<sbx::math::transform, rotator, sbx::scenes::global_transform>();
 
-  // auto tree = sbx::containers::octree<sbx::scenes::node, 2, 2>{sbx::math::volume{sbx::math::vector3{-10}, sbx::math::vector3{10}}};
+  for (auto&& [n, t, g] : q.each()) {
+    const auto v = sbx::math::volume::transformed(sbx::math::volume{sbx::math::vector3{-1}, sbx::math::vector3{1}}, g.model);
 
-  // for (auto&& [n, t, g] : q.each()) {
-  //   const auto v = sbx::math::volume::transformed(sbx::math::volume{sbx::math::vector3{-1}, sbx::math::vector3{1}}, g.model);
-
-  //   tree.insert(n, v);
-  //   t.set_rotation(sbx::math::vector3::up, _rotation);
-  // }
-
-  // tree.for_each_volume([&](const auto& v){
-  //   scenes_module.add_debug_volume(sbx::math::matrix4x4::identity, v, sbx::math::color::green());
-  // });
-
-  // scenes_module.add_debug_volume(sbx::math::matrix4x4::rotated(sbx::math::matrix4x4::identity, sbx::math::vector3::up, _rotation), sbx::math::volume{sbx::math::vector3{-1.0f, -1.0f, -1.0f}, sbx::math::vector3{1.0f, 1.0f, 1.0f}}, sbx::math::color::red());
+    t.set_rotation(sbx::math::vector3::up, _rotation);
+  }
 }
 
 auto application::fixed_update() -> void {

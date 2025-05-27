@@ -32,6 +32,8 @@ public:
 
   auto address() const noexcept -> std::uint64_t;
 
+  auto resize(const size_type new_size) -> void;
+
   virtual auto size() const noexcept -> size_type;
 
   virtual auto write(memory::observer_ptr<const void> data, size_type size, size_type offset = 0) -> void;
@@ -48,13 +50,13 @@ protected:
 
 private:
 
-  // handle_type _handle{};
-  size_type _size{};
-  // VkDeviceMemory _memory{};
-  VkBufferUsageFlags _usage{};
+  size_type _size;
+
+  VkBufferUsageFlags _usage;
+  VkMemoryPropertyFlags _properties;
+
   VkBuffer _handle;
   VmaAllocation _allocation;
-  // VmaAllocationInfo _info;
   std::uint64_t _address;
 
 }; // class buffer

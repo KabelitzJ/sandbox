@@ -106,6 +106,8 @@ auto graphics_module::update() -> void {
 
   _renderer->execute_tasks(compute_command_buffer);
 
+  compute_command_buffer.release_ownership(_release_ownership_data);
+
   compute_command_buffer.end();
 
   compute_command_buffer.submit({}, frame_data.compute_finished_semaphore, frame_data.compute_in_flight_fence);
@@ -139,6 +141,10 @@ auto graphics_module::update() -> void {
 
   auto& command_buffer = _graphics_command_buffers[_current_frame];
   vkResetCommandBuffer(command_buffer, 0);
+
+  command_buffer.begin(VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
+
+  command_buffer.acquire_ownership(_acquire_ownership_data);
 
   for (const auto& render_stage : _renderer->render_stages()) {
     _start_render_pass(*render_stage, command_buffer);
