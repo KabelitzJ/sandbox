@@ -188,12 +188,16 @@ auto gltf_loader::load(const std::filesystem::path& path) -> mesh::mesh_data {
       mesh_name = mesh["name"].get<std::string>();
     }
 
+    auto submesh = graphics::submesh{};
+
     // [NOTE] KAJ 2023-11-22 : This is a offset into the vertex buffer. We dont want to use this.
-    // submesh.vertex_offset = 0u;
+    submesh.vertex_offset = 0u;
 
     const auto& primitives = mesh["primitives"];
     
     for (const auto& primitive : primitives) {
+      submesh.index_offset = static_cast<std::uint32_t>(data.indices.size());
+
       const auto& attributes = primitive["attributes"];
 
       // [NOTE] KAJ 2024-03-20 : We need to check if the mesh contains the required attributes.
@@ -247,12 +251,7 @@ auto gltf_loader::load(const std::filesystem::path& path) -> mesh::mesh_data {
         positions_accessor_max[2u].get<std::float_t>()
       };
 
-      auto submesh = graphics::submesh{
-        .index_count = 0u,
-        .index_offset = static_cast<std::uint32_t>(data.indices.size()),
-        .vertex_offset = 0u,
-        .bounds = {min, max}
-      };
+      submesh.bounds = math::volume{min, max};
 
       if (normals_accessor["componentType"].get<std::size_t>() != component_type::floating_point.id || normals_accessor["type"].get<std::string>() != "VEC3") {
         throw std::runtime_error{"Invalid component type or type for normals accessor"};

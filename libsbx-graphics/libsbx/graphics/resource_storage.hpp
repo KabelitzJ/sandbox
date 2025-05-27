@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <memory>
+#include <unordered_set>
 
 #include <libsbx/memory/aligned_storage.hpp>
 

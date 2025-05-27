@@ -18,6 +18,8 @@ public:
   using plane_type = basic_plane<value_type>;
   using size_type = std::size_t;
 
+  basic_box() noexcept = default;
+
   basic_box(const std::array<plane_type, 6u>& planes) noexcept
   : _planes{planes} { }
 

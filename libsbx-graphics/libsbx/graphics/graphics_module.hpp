@@ -306,6 +306,7 @@ private:
   resource_storage<graphics::graphics_pipeline> _graphics_pipelines;
   resource_storage<graphics::compute_pipeline> _compute_pipelines;
   resource_storage<graphics::buffer> _buffers;
+  resource_storage<graphics::image2d> _images;
 
   struct asset_container_base {
     virtual ~asset_container_base() = default;

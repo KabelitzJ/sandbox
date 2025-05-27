@@ -76,6 +76,12 @@ graphics_module::~graphics_module() {
     container->clear();
   }
 
+  _buffers.clear();
+  _shaders.clear();
+  _graphics_pipelines.clear();
+  _compute_pipelines.clear();
+  _images.clear();
+
   vmaDestroyAllocator(_allocator);
 }
 

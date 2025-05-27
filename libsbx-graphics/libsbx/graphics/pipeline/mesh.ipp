@@ -5,7 +5,7 @@
 namespace sbx::graphics {
 
 template<vertex Vertex>
-mesh<Vertex>::mesh(std::vector<vertex_type>&& vertices, std::vector<index_type>&& indices) {
+mesh<Vertex>::mesh(std::vector<vertex_type>&& vertices, std::vector<index_type>&& indices, const math::volume& bounds) {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
   _vertex_buffer = graphics_module.add_resource<buffer>(
@@ -20,7 +20,7 @@ mesh<Vertex>::mesh(std::vector<vertex_type>&& vertices, std::vector<index_type>&
     VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
   );
 
-  _submeshes.push_back(submesh{static_cast<std::uint32_t>(indices.size()), 0, 0});
+  _submeshes.push_back(submesh{static_cast<std::uint32_t>(indices.size()), 0, 0, bounds});
   
   _upload_vertices(std::move(vertices), std::move(indices));
 }
@@ -54,9 +54,9 @@ template<vertex Vertex>
 auto mesh<Vertex>::render(graphics::command_buffer& command_buffer, std::uint32_t instance_count) const -> void {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
-  auto index_buffer = graphics_module.get_resource<buffer>(_index_buffer); 
+  auto& index_buffer = graphics_module.get_resource<buffer>(_index_buffer); 
 
-  command_buffer.draw_indexed(static_cast<std::uint32_t>(index_buffer.size()), instance_count, 0, 0, 0);
+  command_buffer.draw_indexed(static_cast<std::uint32_t>(index_buffer.size() / sizeof(index_type)), instance_count, 0, 0, 0);
 }
 
 template<vertex Vertex>
@@ -70,7 +70,7 @@ template<vertex Vertex>
 auto mesh<Vertex>::address() const -> std::uint64_t {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
-  auto vertex_buffer = graphics_module.get_resource<buffer>(_vertex_buffer); 
+  auto& vertex_buffer = graphics_module.get_resource<buffer>(_vertex_buffer); 
 
   return vertex_buffer.address();
 }
@@ -79,7 +79,7 @@ template<vertex Vertex>
 auto mesh<Vertex>::bind(graphics::command_buffer& command_buffer) const -> void {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
-  auto index_buffer = graphics_module.get_resource<buffer>(_index_buffer); 
+  auto& index_buffer = graphics_module.get_resource<buffer>(_index_buffer); 
 
   // command_buffer.bind_vertex_buffer(0, _vertex_buffer);
   command_buffer.bind_index_buffer(index_buffer, 0, VK_INDEX_TYPE_UINT32);
@@ -108,8 +108,8 @@ template<vertex Vertex>
 auto mesh<Vertex>::_upload_vertices(std::vector<vertex_type>&& vertices, std::vector<index_type>&& indices) -> void {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
-  auto vertex_buffer_size = sizeof(vertex_type) * vertices.size();
-  auto index_buffer_size = sizeof(index_type) * indices.size();
+  auto vertex_buffer_size = vertices.size() * sizeof(vertex_type);
+  auto index_buffer_size = indices.size() * sizeof(index_type);
 
   auto staging_buffer_size = vertex_buffer_size + index_buffer_size;
 
@@ -124,8 +124,8 @@ auto mesh<Vertex>::_upload_vertices(std::vector<vertex_type>&& vertices, std::ve
 
   auto command_buffer = graphics::command_buffer{true, VK_QUEUE_TRANSFER_BIT};
 
-  auto index_buffer = graphics_module.get_resource<buffer>(_index_buffer);
-  auto vertex_buffer = graphics_module.get_resource<buffer>(_vertex_buffer); 
+  auto& index_buffer = graphics_module.get_resource<buffer>(_index_buffer);
+  auto& vertex_buffer = graphics_module.get_resource<buffer>(_vertex_buffer); 
 
   {
     auto copy_region = VkBufferCopy{};

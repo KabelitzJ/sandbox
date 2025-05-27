@@ -48,7 +48,7 @@ public:
     std::vector<submesh> submeshes;
   }; // struct mesh_data
 
-  mesh(std::vector<vertex_type>&& vertices, std::vector<index_type>&& indices);
+  mesh(std::vector<vertex_type>&& vertices, std::vector<index_type>&& indices, const math::volume& bounds = math::volume{});
 
   mesh(mesh_data&& mesh_data);
 
