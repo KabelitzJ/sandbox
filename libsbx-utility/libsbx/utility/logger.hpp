@@ -2,6 +2,7 @@
 #define LIBSBX_UTILITY_LOGGER_HPP_
 
 #include <iostream>
+#include <optional>
 
 #include <fmt/format.h>
 
@@ -138,6 +139,23 @@ struct fmt::formatter<Type> : public fmt::formatter<std::underlying_type_t<Type>
   template<typename FormatContext>
   auto format(const Type& value, FormatContext& context) -> decltype(auto) {
     return base_type::format(static_cast<std::underlying_type_t<Type>>(value), context);
+  }
+
+}; // struct fmt::formatter
+
+// [NOTE] KAJ 2025-05-27 : Enable formatting for optionals
+template<typename Type>
+struct fmt::formatter<std::optional<Type>> : public fmt::formatter<Type> {
+
+  using base_type = fmt::formatter<Type>;
+
+  template<typename FormatContext>
+  auto format(const std::optional<Type>& value, FormatContext& context) -> decltype(auto) {
+    if (value) {
+      return base_type::format(*value, context);
+    }
+
+    return fmt::format_to(context.out(), "[empty optional]");
   }
 
 }; // struct fmt::formatter<Type>
