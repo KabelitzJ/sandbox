@@ -14,6 +14,8 @@ public:
   using value_type = Type;
   using vector_type = basic_vector3<value_type>;
 
+  basic_plane() noexcept = default;
+
   basic_plane(const vector_type& normal, const value_type distance) noexcept
   : _normal{normal}, 
     _distance{distance} { }

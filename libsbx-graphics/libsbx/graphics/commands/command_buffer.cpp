@@ -187,16 +187,96 @@ auto command_buffer::buffer_barrier(const buffer_barrier_data& data) -> void {
     buffer_barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
     buffer_barrier.srcAccessMask = data.src_access_mask;
     buffer_barrier.dstAccessMask = data.dst_access_mask;
-    buffer_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    buffer_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    buffer_barrier.srcQueueFamilyIndex = data.src_queue_family;
+    buffer_barrier.dstQueueFamilyIndex = data.dst_queue_family;
     buffer_barrier.buffer = buffer;
     buffer_barrier.offset = 0u;
-    buffer_barrier.size = std::numeric_limits<VkDeviceSize>::max();
+    buffer_barrier.size = VK_WHOLE_SIZE;
 
     buffer_barrier_info.push_back(buffer_barrier);
   }
 
   vkCmdPipelineBarrier(_handle, data.src_stage_mask, data.dst_stage_mask, 0, 0, nullptr, static_cast<std::uint32_t>(buffer_barrier_info.size()), buffer_barrier_info.data(), 0, nullptr);
+}
+
+auto command_buffer::memory_dependency(const VkMemoryBarrier2& memory_barrier) -> void {
+  auto dependency_info = VkDependencyInfo{
+    .sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
+    .memoryBarrierCount = 1u,
+    .pMemoryBarriers = &memory_barrier,
+  };
+
+  vkCmdPipelineBarrier2(_handle, &dependency_info);
+}
+
+auto command_buffer::release_ownership(const std::vector<release_ownership_data>& releases) -> void {
+  if (releases.empty()) {
+    return;
+  }
+
+  auto barriers = std::vector<VkBufferMemoryBarrier2>{};
+  barriers.reserve(releases.size());
+
+  for (const auto& data : releases) {
+    auto buffer_barrier = VkBufferMemoryBarrier2{
+      .sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2,
+      .pNext = nullptr,
+      .srcStageMask = data.src_stage_mask,
+      .srcAccessMask = data.src_access_mask,
+      .dstStageMask = VK_PIPELINE_STAGE_2_NONE,
+      .dstAccessMask = 0u,
+      .srcQueueFamilyIndex = data.src_queue_family,
+      .dstQueueFamilyIndex = data.dst_queue_family,
+      .buffer = data.buffer,
+      .offset = data.offset,
+      .size = data.size,
+    };
+
+    barriers.push_back(buffer_barrier);
+  }
+
+  auto dependency_info = VkDependencyInfo{
+    .sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
+    .bufferMemoryBarrierCount = static_cast<std::uint32_t>(barriers.size()),
+    .pBufferMemoryBarriers = barriers.data(),
+  };
+
+  vkCmdPipelineBarrier2(_handle, &dependency_info);
+}
+
+auto command_buffer::acquire_ownership(const std::vector<acquire_ownership_data>& acquires) -> void {
+  if (acquires.empty()) {
+    return;
+  }
+
+  auto barriers = std::vector<VkBufferMemoryBarrier2>{};
+  barriers.reserve(acquires.size());
+
+  for (const auto& data : acquires) {
+    auto buffer_barrier = VkBufferMemoryBarrier2{
+      .sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2,
+      .pNext = nullptr,
+      .srcStageMask = VK_PIPELINE_STAGE_2_NONE,
+      .srcAccessMask = 0u,
+      .dstStageMask = data.dst_stage_mask,
+      .dstAccessMask = data.dst_access_mask,
+      .srcQueueFamilyIndex = data.src_queue_family,
+      .dstQueueFamilyIndex = data.dst_queue_family,
+      .buffer = data.buffer,
+      .offset = data.offset,
+      .size = data.size,
+    };
+
+    barriers.push_back(buffer_barrier);
+  }
+
+  auto dependency_info = VkDependencyInfo{
+    .sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
+    .bufferMemoryBarrierCount = static_cast<std::uint32_t>(barriers.size()),
+    .pBufferMemoryBarriers = barriers.data(),
+  };
+
+  vkCmdPipelineBarrier2(_handle, &dependency_info);
 }
 
 auto command_buffer::set_viewport(const VkViewport& viewport) -> void {

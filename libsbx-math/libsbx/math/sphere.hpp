@@ -14,6 +14,8 @@ public:
   using value_type = Type;
   using vector_type = basic_vector3<value_type>;
 
+  basic_sphere() noexcept = default;
+
   basic_sphere(const vector_type& center, const value_type radius) noexcept
   : _center{center}, 
     _radius{radius} { }

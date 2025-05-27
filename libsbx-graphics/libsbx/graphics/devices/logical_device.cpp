@@ -318,6 +318,12 @@ auto logical_device::_get_enabled_features(const physical_device& physical_devic
     utility::logger<"graphics">::warn("Selected GPU does not support descriptor binding partially bound");
   }
 
+  if (available_vulkan13_features.synchronization2) {
+    enabled_vulkan13_features.synchronization2 = true;
+  } else {
+    utility::logger<"graphics">::warn("Selected GPU does not support synchronization 2");
+  }
+
   return enabled_features;
 }
 

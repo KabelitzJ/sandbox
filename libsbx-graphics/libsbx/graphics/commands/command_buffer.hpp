@@ -26,7 +26,29 @@ public:
     VkPipelineStageFlags dst_stage_mask;
     VkAccessFlags src_access_mask;
     VkAccessFlags dst_access_mask;
+    std::uint32_t src_queue_family;
+    std::uint32_t dst_queue_family;
   }; // struct buffer_barrier
+
+  struct release_ownership_data {
+    VkPipelineStageFlags2 src_stage_mask;
+    VkAccessFlags2 src_access_mask;
+    std::uint32_t src_queue_family;
+    std::uint32_t dst_queue_family;
+    VkBuffer buffer;
+    VkDeviceSize size{VK_WHOLE_SIZE};
+    VkDeviceSize offset{0};
+  }; // struct release_ownership_data
+
+  struct acquire_ownership_data {
+    VkPipelineStageFlags2 dst_stage_mask;
+    VkAccessFlags2 dst_access_mask;
+    std::uint32_t src_queue_family;
+    std::uint32_t dst_queue_family;
+    VkBuffer buffer;
+    VkDeviceSize size{VK_WHOLE_SIZE};
+    VkDeviceSize offset{0};
+  }; // struct acquire_ownership_data
 
   command_buffer(bool should_begin = true, VkQueueFlagBits queue_type = VK_QUEUE_GRAPHICS_BIT, VkCommandBufferLevel buffer_level = VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 
@@ -57,6 +79,12 @@ public:
   auto copy_buffer(const VkBuffer& source, const VkBuffer& destination, const VkBufferCopy& region) -> void;
 
   auto buffer_barrier(const buffer_barrier_data& buffer_barrier_data) -> void;
+
+  auto memory_dependency(const VkMemoryBarrier2& memory_barrier) -> void;
+
+  auto release_ownership(const std::vector<release_ownership_data>& releases) -> void;
+
+  auto acquire_ownership(const std::vector<acquire_ownership_data>& acquires) -> void;
 
   auto set_viewport(const VkViewport& viewport) -> void;
 
