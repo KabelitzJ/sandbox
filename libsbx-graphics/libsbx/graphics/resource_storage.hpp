@@ -4,6 +4,10 @@
 #include <vector>
 #include <memory>
 #include <unordered_set>
+#include <filesystem>
+
+#include <libsbx/utility/hash.hpp>
+#include <libsbx/utility/assert.hpp>
 
 #include <libsbx/memory/aligned_storage.hpp>
 
@@ -159,5 +163,18 @@ private:
 }; // class resource_storage
 
 } // namespace sbx::graphics
+
+template<typename Type>
+struct std::hash<sbx::graphics::resource_handle<Type>> {
+
+  auto operator()(const sbx::graphics::resource_handle<Type>& handle) const noexcept -> std::size_t {
+    auto hash = std::size_t{};
+
+    sbx::utility::hash_combine(hash, handle.handle(), handle.generation());
+
+    return hash;
+  }
+
+}; // struct std::hash
 
 #endif // LIBSBX_GRAPHICS_RESOURSE_STORAGE_HPP_

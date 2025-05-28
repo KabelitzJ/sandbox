@@ -35,6 +35,9 @@
 
 #include <libsbx/graphics/buffers/buffer.hpp>
 
+#include <libsbx/graphics/images/image2d.hpp>
+#include <libsbx/graphics/images/cube_image.hpp>
+
 #include <libsbx/graphics/renderer.hpp>
 #include <libsbx/graphics/render_stage.hpp>
 
@@ -265,13 +268,9 @@ private:
     } else if constexpr (std::is_same_v<Type, buffer>) {
       return _buffers;
     } else if constexpr (std::is_same_v<Type, image2d>) {
-      return _buffers;
-    } else if constexpr (std::is_same_v<Type, shader>) {
-      return _buffers;
-    } else if constexpr (std::is_same_v<Type, graphics_pipeline>) {
-      return _buffers;
-    } else if constexpr (std::is_same_v<Type, compute_pipeline>) {
-      return _buffers;
+      return _images;
+    } else if constexpr (std::is_same_v<Type, cube_image>) {
+      return _cube_image;
     }
 
     utility::assert_that(false, "Invalid resource type");
@@ -288,13 +287,9 @@ private:
     } else if constexpr (std::is_same_v<Type, buffer>) {
       return _buffers;
     } else if constexpr (std::is_same_v<Type, image2d>) {
-      return _buffers;
-    } else if constexpr (std::is_same_v<Type, shader>) {
-      return _buffers;
-    } else if constexpr (std::is_same_v<Type, graphics_pipeline>) {
-      return _buffers;
-    } else if constexpr (std::is_same_v<Type, compute_pipeline>) {
-      return _buffers;
+      return _images;
+    } else if constexpr (std::is_same_v<Type, cube_image>) {
+      return _cube_image;
     }
 
     utility::assert_that(false, "Invalid resource type");
@@ -328,6 +323,7 @@ private:
   resource_storage<graphics::compute_pipeline> _compute_pipelines;
   resource_storage<graphics::buffer> _buffers;
   resource_storage<graphics::image2d> _images;
+  resource_storage<graphics::cube_image> _cube_image;
 
   std::vector<command_buffer::acquire_ownership_data> _acquire_ownership_data;
   std::vector<command_buffer::release_ownership_data> _release_ownership_data;
@@ -390,14 +386,5 @@ private:
 }; // class graphics_module
 
 } // namespace sbx::graphics
-
-template<typename Type>
-struct std::hash<sbx::graphics::resource_handle<Type>> {
-  auto operator()(const sbx::graphics::resource_handle<Type>& handle) const noexcept -> std::size_t {
-    auto hash = std::size_t{0};
-    sbx::utility::hash_combine(hash, handle.handle(), handle.generation());
-    return hash;
-  }
-};
 
 #endif // LIBSBX_GRAPHICS_GRAPHICS_MODULE_HPP_

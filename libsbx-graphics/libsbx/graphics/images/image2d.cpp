@@ -1,6 +1,5 @@
 #include <libsbx/graphics/images/image2d.hpp>
 
-#define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
 #include <fmt/format.h>

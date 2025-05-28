@@ -82,8 +82,8 @@ protected:
 
   // vertex_buffer_type _vertex_buffer;
   // index_buffer_type _index_buffer;
-  resource_handle<buffer> _vertex_buffer;
-  resource_handle<buffer> _index_buffer;
+  buffer_handle _vertex_buffer;
+  buffer_handle _index_buffer;
   std::vector<submesh> _submeshes;
 
 }; // class mesh

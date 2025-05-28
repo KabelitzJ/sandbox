@@ -4,9 +4,11 @@
 #include <vector>
 #include <unordered_map>
 
-#include <libsbx/math/uuid.hpp>
+#include <libsbx/graphics/resource_storage.hpp>
 
 #include <libsbx/graphics/descriptor/descriptor.hpp>
+
+#include <libsbx/graphics/images/image2d.hpp>
 
 namespace sbx::graphics {
 
@@ -16,6 +18,8 @@ public:
 
   inline static constexpr auto max_size = std::uint32_t{64u};
 
+  using handle_type = resource_handle<image2d>;
+
   separate_image2d_array();
 
   ~separate_image2d_array();
@@ -24,14 +28,14 @@ public:
 
   auto write_descriptor_set(std::uint32_t binding, VkDescriptorType descriptor_type) const noexcept -> graphics::write_descriptor_set override;
 
-  auto push_back(const math::uuid& id) -> std::uint32_t;
+  auto push_back(const handle_type& handle) -> std::uint32_t;
 
   auto clear() -> void;
 
 private:
 
-  std::vector<math::uuid> _image_ids;
-  std::unordered_map<math::uuid, std::uint32_t> _id_to_indices;
+  std::vector<handle_type> _image_ids;
+  std::unordered_map<handle_type, std::uint32_t> _id_to_indices;
 
 }; // class separate_image2d_array
 

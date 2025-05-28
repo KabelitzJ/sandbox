@@ -136,7 +136,7 @@ public:
     _pipeline.bind(command_buffer);
 
     _descriptor_handler.push("uniform_scene", _scene_uniform_handler);
-    _descriptor_handler.push("skybox", graphics_module.get_asset<graphics::cube_image>(skybox.cube_image));
+    _descriptor_handler.push("skybox", graphics_module.get_resource<graphics::cube_image>(skybox.cube_image));
 
     _push_handler.push("vertex_buffer", mesh.address());
 

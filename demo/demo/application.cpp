@@ -43,16 +43,16 @@ application::application()
     const auto name = entry["name"].get<std::string>();
     const auto path = entry["path"].get<std::string>();
 
-    const auto id = graphics_module.add_asset<sbx::graphics::image2d>(path);
+    const auto id = graphics_module.add_resource<sbx::graphics::image2d>(path);
 
-    _texture_ids.emplace(name, id);
+    _image_ids.emplace(name, id);
   }
 
-  _texture_ids.emplace("tree_1_leaves1", graphics_module.add_asset<sbx::graphics::image2d>("demo/assets/textures/tree_1/leaves1.png"));
-  _texture_ids.emplace("tree_1_leaves2", graphics_module.add_asset<sbx::graphics::image2d>("demo/assets/textures/tree_1/leaves2.png"));
-  _texture_ids.emplace("tree_1_bark", graphics_module.add_asset<sbx::graphics::image2d>("demo/assets/textures/tree_1/bark.jpg"));
+  _image_ids.emplace("tree_1_leaves1", graphics_module.add_resource<sbx::graphics::image2d>("demo/assets/textures/tree_1/leaves1.png"));
+  _image_ids.emplace("tree_1_leaves2", graphics_module.add_resource<sbx::graphics::image2d>("demo/assets/textures/tree_1/leaves2.png"));
+  _image_ids.emplace("tree_1_bark", graphics_module.add_resource<sbx::graphics::image2d>("demo/assets/textures/tree_1/bark.jpg"));
 
-  _texture_ids.emplace("skybox", graphics_module.add_asset<sbx::graphics::cube_image>("demo/assets/skyboxes/clouds"));
+  _cube_image_ids.emplace("skybox", graphics_module.add_resource<sbx::graphics::cube_image>("demo/assets/skyboxes/clouds"));
 
   // Meshes
 
@@ -102,9 +102,9 @@ application::application()
   // Trees
 
   auto tree_submeshes = std::vector<sbx::scenes::static_mesh::submesh>{};
-  tree_submeshes.push_back(sbx::scenes::static_mesh::submesh{0u, sbx::math::color::white(), sbx::scenes::static_mesh::material{0.2f, 0.5f, 0.1f, 0.8f}, _texture_ids["tree_1_bark"]});
-  tree_submeshes.push_back(sbx::scenes::static_mesh::submesh{1u, sbx::math::color::white(), sbx::scenes::static_mesh::material{0.2f, 0.5f, 0.1f, 0.0f}, _texture_ids["tree_1_leaves1"]});
-  tree_submeshes.push_back(sbx::scenes::static_mesh::submesh{2u, sbx::math::color::white(), sbx::scenes::static_mesh::material{0.2f, 0.5f, 0.1f, 0.0f}, _texture_ids["tree_1_leaves2"]});
+  tree_submeshes.push_back(sbx::scenes::static_mesh::submesh{0u, sbx::math::color::white(), sbx::scenes::static_mesh::material{0.2f, 0.5f, 0.1f, 0.8f}, _image_ids["tree_1_bark"]});
+  tree_submeshes.push_back(sbx::scenes::static_mesh::submesh{1u, sbx::math::color::white(), sbx::scenes::static_mesh::material{0.2f, 0.5f, 0.1f, 0.0f}, _image_ids["tree_1_leaves1"]});
+  tree_submeshes.push_back(sbx::scenes::static_mesh::submesh{2u, sbx::math::color::white(), sbx::scenes::static_mesh::material{0.2f, 0.5f, 0.1f, 0.0f}, _image_ids["tree_1_leaves2"]});
 
   const auto grid_size = sbx::math::vector2{25.0f, 25.0f};
   const auto cell_size = sbx::math::vector2{8.0f, 8.0f};
@@ -152,7 +152,7 @@ application::application()
       test_transform.set_scale(sbx::math::vector3{1.0f, 1.0f, 1.0f});
       test_transform.set_rotation(sbx::math::vector3::up, sbx::math::degree{45});
       scene.add_component<rotator>(test);
-      scene.add_component<sbx::scenes::static_mesh>(test, _mesh_ids["cube"], 0u, sbx::math::color::white(), sbx::scenes::static_mesh::material{0.0f, 1.0f, 0.0f, 0.0f}, _texture_ids["prototype"]);
+      scene.add_component<sbx::scenes::static_mesh>(test, _mesh_ids["cube"], 0u, sbx::math::color::white(), sbx::scenes::static_mesh::material{0.0f, 1.0f, 0.0f, 0.0f}, _image_ids["prototype"]);
     }
   }
 
@@ -161,7 +161,7 @@ application::application()
   // Camera
   auto camera = scene.camera();
 
-  scene.add_component<sbx::scenes::skybox>(camera, _texture_ids["skybox"]);
+  scene.add_component<sbx::scenes::skybox>(camera, _cube_image_ids["skybox"]);
 
   // const auto position = sbx::math::vector3{10.0f, 10.0f, 10.0f};
 

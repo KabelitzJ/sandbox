@@ -32,8 +32,6 @@ public:
     std::uint32_t submesh_count;
   }; // struct file_header
 
-  static_assert(sizeof(file_header) == 7 * sizeof(std::uint32_t), "File header size mismatch");
-
   using mesh_data = graphics::mesh<vertex3d>::mesh_data;
 
   using base::mesh;

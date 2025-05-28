@@ -3,6 +3,9 @@
 #include <cmath>
 #include <ranges>
 
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
+
 #include <fmt/format.h>
 
 #include <libsbx/utility/logger.hpp>

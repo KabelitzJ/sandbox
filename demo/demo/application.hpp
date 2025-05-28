@@ -38,7 +38,8 @@ private:
 
   // auto _generate_icosphere(const std::float_t radius, const std::uint32_t subdivisions) -> std::unique_ptr<sbx::models::mesh>;
 
-  std::unordered_map<sbx::utility::hashed_string, sbx::math::uuid> _texture_ids;
+  std::unordered_map<sbx::utility::hashed_string, sbx::graphics::image_handle> _image_ids;
+  std::unordered_map<sbx::utility::hashed_string, sbx::graphics::cube_image_handle> _cube_image_ids;
   std::unordered_map<sbx::utility::hashed_string, sbx::math::uuid> _mesh_ids;
 
   // sbx::units::second _time;

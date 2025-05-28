@@ -29,7 +29,7 @@ auto separate_image2d_array::write_descriptor_set(std::uint32_t binding, VkDescr
   auto descriptor_image_infos = std::vector<VkDescriptorImageInfo>{};
 
   for (const auto id : _image_ids) {
-    auto& image = graphics_module.get_asset<graphics::image2d>(id);
+    auto& image = graphics_module.get_resource<graphics::image2d>(id);
 
     auto descriptor_image_info = VkDescriptorImageInfo{};
     descriptor_image_info.imageLayout = image.layout();
@@ -49,19 +49,19 @@ auto separate_image2d_array::write_descriptor_set(std::uint32_t binding, VkDescr
   return graphics::write_descriptor_set{descriptor_write, descriptor_image_infos};
 }
 
-auto separate_image2d_array::push_back(const math::uuid& id) -> std::uint32_t {
+auto separate_image2d_array::push_back(const handle_type& handle) -> std::uint32_t {
   if (_image_ids.size() > max_size) {
     throw std::runtime_error{"separate_image2d_array::push_back: max_size exceeded"};
   }
 
-  if (const auto entry = _id_to_indices.find(id); entry != _id_to_indices.cend()) {
+  if (const auto entry = _id_to_indices.find(handle); entry != _id_to_indices.cend()) {
     return entry->second;
   }
 
   const auto index = static_cast<std::uint32_t>(_image_ids.size());
 
-  _image_ids.push_back(id);
-  _id_to_indices.insert({id, index});
+  _image_ids.push_back(handle);
+  _id_to_indices.emplace(handle, index);
 
   return index;
 }

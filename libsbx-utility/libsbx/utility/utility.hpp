@@ -45,22 +45,24 @@
 
 #include <libsbx/utility/assert.hpp>
 #include <libsbx/utility/bitmask.hpp>
+#include <libsbx/utility/compression.hpp>
 #include <libsbx/utility/concepts.hpp>
 #include <libsbx/utility/enable_private_constructor.hpp>
+#include <libsbx/utility/enum.hpp>
 #include <libsbx/utility/expected.hpp>
 #include <libsbx/utility/fast_mod.hpp>
 #include <libsbx/utility/hash.hpp>
 #include <libsbx/utility/hashed_string.hpp>
 #include <libsbx/utility/iterator.hpp>
 #include <libsbx/utility/make_array.hpp>
+#include <libsbx/utility/multimap_key_range.hpp>
 #include <libsbx/utility/overload.hpp>
 #include <libsbx/utility/primitive.hpp>
+#include <libsbx/utility/small_string.hpp>
 #include <libsbx/utility/string_literal.hpp>
 #include <libsbx/utility/target.hpp>
 #include <libsbx/utility/timer.hpp>
 #include <libsbx/utility/type_name.hpp>
 #include <libsbx/utility/zip.hpp>
-#include <libsbx/utility/enum.hpp>
-#include <libsbx/utility/multimap_key_range.hpp>
 
 #endif // LIBSBX_UTILITY_HPP_

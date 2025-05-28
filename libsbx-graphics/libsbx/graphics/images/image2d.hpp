@@ -7,6 +7,7 @@
 
 #include <libsbx/math/vector2.hpp>
 
+#include <libsbx/graphics/resource_storage.hpp>
 
 #include <libsbx/graphics/images/image.hpp>
 
@@ -36,6 +37,8 @@ private:
   std::filesystem::path _path;
 
 }; // class image2d
+
+using image_handle = resource_handle<image2d>;
 
 } // namespace sbx::graphics
 

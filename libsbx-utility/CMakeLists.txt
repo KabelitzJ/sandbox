@@ -18,12 +18,14 @@ find_package(fmt REQUIRED)
 find_package(spdlog REQUIRED)
 find_package(easy_profiler REQUIRED)
 find_package(range-v3 REQUIRED)
+find_package(lz4 REQUIRED)
 
 target_sources(
   ${PROJECT_NAME}
   PRIVATE
     "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/utility.cpp"
     "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/timer.cpp"
+    "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/compression.cpp"
   PUBLIC
     FILE_SET HEADERS
     FILES
@@ -49,6 +51,7 @@ target_sources(
       "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/enum.hpp"
       "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/multimap_key_range.hpp"
       "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/logger.hpp"
+      "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/compression.hpp"
 )
 
 target_include_directories(
@@ -65,6 +68,7 @@ target_link_libraries(
     spdlog::spdlog
     range-v3::range-v3
     easy_profiler
+    lz4::lz4
     # Internal dependencies
     libsbx::units
 )

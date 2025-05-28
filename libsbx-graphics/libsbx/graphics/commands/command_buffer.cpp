@@ -200,11 +200,10 @@ auto command_buffer::buffer_barrier(const buffer_barrier_data& data) -> void {
 }
 
 auto command_buffer::memory_dependency(const VkMemoryBarrier2& memory_barrier) -> void {
-  auto dependency_info = VkDependencyInfo{
-    .sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
-    .memoryBarrierCount = 1u,
-    .pMemoryBarriers = &memory_barrier,
-  };
+  auto dependency_info = VkDependencyInfo{};
+  dependency_info.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO;
+  dependency_info.memoryBarrierCount = 1u;
+  dependency_info.pMemoryBarriers = &memory_barrier;
 
   vkCmdPipelineBarrier2(_handle, &dependency_info);
 }
@@ -218,28 +217,23 @@ auto command_buffer::release_ownership(const std::vector<release_ownership_data>
   barriers.reserve(releases.size());
 
   for (const auto& data : releases) {
-    auto buffer_barrier = VkBufferMemoryBarrier2{
-      .sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2,
-      .pNext = nullptr,
-      .srcStageMask = data.src_stage_mask,
-      .srcAccessMask = data.src_access_mask,
-      .dstStageMask = VK_PIPELINE_STAGE_2_NONE,
-      .dstAccessMask = 0u,
-      .srcQueueFamilyIndex = data.src_queue_family,
-      .dstQueueFamilyIndex = data.dst_queue_family,
-      .buffer = data.buffer,
-      .offset = data.offset,
-      .size = data.size,
-    };
+    auto buffer_barrier = VkBufferMemoryBarrier2{ };
+    buffer_barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2;
+    buffer_barrier.srcStageMask = data.src_stage_mask;
+    buffer_barrier.srcAccessMask = data.src_access_mask;
+    buffer_barrier.srcQueueFamilyIndex = data.src_queue_family;
+    buffer_barrier.dstQueueFamilyIndex = data.dst_queue_family;
+    buffer_barrier.buffer = data.buffer;
+    buffer_barrier.offset = data.offset;
+    buffer_barrier.size = data.size;
 
     barriers.push_back(buffer_barrier);
   }
 
-  auto dependency_info = VkDependencyInfo{
-    .sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
-    .bufferMemoryBarrierCount = static_cast<std::uint32_t>(barriers.size()),
-    .pBufferMemoryBarriers = barriers.data(),
-  };
+  auto dependency_info = VkDependencyInfo{};
+  dependency_info.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO;
+  dependency_info.bufferMemoryBarrierCount = static_cast<std::uint32_t>(barriers.size());
+  dependency_info.pBufferMemoryBarriers = barriers.data();
 
   vkCmdPipelineBarrier2(_handle, &dependency_info);
 }
@@ -253,28 +247,23 @@ auto command_buffer::acquire_ownership(const std::vector<acquire_ownership_data>
   barriers.reserve(acquires.size());
 
   for (const auto& data : acquires) {
-    auto buffer_barrier = VkBufferMemoryBarrier2{
-      .sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2,
-      .pNext = nullptr,
-      .srcStageMask = VK_PIPELINE_STAGE_2_NONE,
-      .srcAccessMask = 0u,
-      .dstStageMask = data.dst_stage_mask,
-      .dstAccessMask = data.dst_access_mask,
-      .srcQueueFamilyIndex = data.src_queue_family,
-      .dstQueueFamilyIndex = data.dst_queue_family,
-      .buffer = data.buffer,
-      .offset = data.offset,
-      .size = data.size,
-    };
+    auto buffer_barrier = VkBufferMemoryBarrier2{};
+    buffer_barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2;
+    buffer_barrier.dstStageMask = data.dst_stage_mask;
+    buffer_barrier.dstAccessMask = data.dst_access_mask;
+    buffer_barrier.srcQueueFamilyIndex = data.src_queue_family;
+    buffer_barrier.dstQueueFamilyIndex = data.dst_queue_family;
+    buffer_barrier.buffer = data.buffer;
+    buffer_barrier.offset = data.offset;
+    buffer_barrier.size = data.size;
 
     barriers.push_back(buffer_barrier);
   }
 
-  auto dependency_info = VkDependencyInfo{
-    .sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
-    .bufferMemoryBarrierCount = static_cast<std::uint32_t>(barriers.size()),
-    .pBufferMemoryBarriers = barriers.data(),
-  };
+  auto dependency_info = VkDependencyInfo{};
+  dependency_info.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO;
+  dependency_info.bufferMemoryBarrierCount = static_cast<std::uint32_t>(barriers.size());
+  dependency_info.pBufferMemoryBarriers = barriers.data();
 
   vkCmdPipelineBarrier2(_handle, &dependency_info);
 }

@@ -36,20 +36,18 @@ public:
 
     _mesh_id = graphics_module.add_asset<sbx::models::mesh>(_generate_plane(chunk_size, sbx::math::vector2u{5u, 5u}));
 
-    _texture_id = graphics_module.add_asset<sbx::graphics::image2d>("demo/assets/textures/grass/albedo.png");
-    _normal_texture_id = graphics_module.add_asset<sbx::graphics::image2d>("demo/assets/textures/grass/normal.png");
+    _texture_id = graphics_module.add_resource<sbx::graphics::image2d>("demo/assets/textures/grass/albedo.png");
+    _normal_texture_id = graphics_module.add_resource<sbx::graphics::image2d>("demo/assets/textures/grass/normal.png");
 
     const auto grid = sbx::math::vector2{15.0f, 15.0f};
 
     const auto offset = sbx::math::vector2{chunk_size.x() * grid.x() * 0.5f, chunk_size.y() * grid.y() * 0.5f};
 
-    auto node = scene.create_node("Terrain");
-
-    _node_id = scene.get_component<sbx::scenes::id>(node);
+    _node = scene.create_node("Terrain");
 
     for (auto y = 0u; y < grid.y(); ++y) {
       for (auto x = 0u; x < grid.x(); ++x) {
-        auto chunk = scene.create_child_node(node, fmt::format("Chunk{}{}", x, y));
+        auto chunk = scene.create_child_node(_node, fmt::format("Chunk{}{}", x, y));
 
         auto submeshes = std::vector<sbx::scenes::static_mesh::submesh>{};
 
@@ -145,9 +143,9 @@ private:
   }
 
   sbx::math::uuid _mesh_id;
-  sbx::math::uuid _texture_id;
-  sbx::math::uuid _normal_texture_id;
-  sbx::math::uuid _node_id;
+  sbx::graphics::image_handle _texture_id;
+  sbx::graphics::image_handle _normal_texture_id;
+  sbx::scenes::node _node;
 
 }; // class terrain_module
 

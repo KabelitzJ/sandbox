@@ -108,6 +108,7 @@ class libsbx_recipe(ConanFile):
     self.requires("portable-file-dialogs/0.1.0")
     self.requires("easy_profiler/2.1.0")
     self.requires("tsl-robin-map/1.3.0")
+    self.requires("lz4/1.10.0")
 
   def generate(self):
     deps = CMakeDeps(self)

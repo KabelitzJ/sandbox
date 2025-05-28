@@ -7,6 +7,9 @@
 #include <libsbx/math/color.hpp>
 #include <libsbx/math/uuid.hpp> 
 
+#include <libsbx/graphics/resource_storage.hpp>
+
+#include <libsbx/graphics/images/image2d.hpp>
 
 namespace sbx::scenes {
 
@@ -25,19 +28,19 @@ public:
     std::uint32_t index{0};
     math::color tint{math::color::white()};
     static_mesh::material material{0.0f, 1.0f, 0.0f, 0.0f};
-    std::optional<math::uuid> albedo_texture{std::nullopt};
-    std::optional<math::uuid> normal_texture{std::nullopt};
-    std::optional<math::uuid> metallic_texture{std::nullopt};
-    std::optional<math::uuid> roughness_texture{std::nullopt};
+    graphics::image_handle albedo_texture{};
+    graphics::image_handle normal_texture{};
+    graphics::image_handle metallic_texture{};
+    graphics::image_handle roughness_texture{};
   }; // struct submesh
 
   static_mesh(math::uuid mesh_id, const std::vector<submesh>& submeshes)
   : _mesh_id{mesh_id},
     _submeshes{submeshes} { }
 
-    static_mesh(const math::uuid& mesh_id, std::uint32_t index = 0, const math::color& tint = math::color::white(), const static_mesh::material& material = static_mesh::material{}, const std::optional<math::uuid>& albedo_texture = std::nullopt)
+    static_mesh(const math::uuid& mesh_id, std::uint32_t index = 0, const math::color& tint = math::color::white(), const static_mesh::material& material = static_mesh::material{}, const graphics::image_handle& albedo_texture = {})
   : _mesh_id{mesh_id} {
-    _submeshes.push_back(submesh{index, tint, material, albedo_texture, std::nullopt, std::nullopt, std::nullopt});
+    _submeshes.push_back(submesh{index, tint, material, albedo_texture});
   }
 
   auto mesh_id() const noexcept -> math::uuid {

@@ -13,6 +13,8 @@
 
 #include <libsbx/memory/observer_ptr.hpp>
 
+#include <libsbx/graphics/resource_storage.hpp>
+
 namespace sbx::graphics {
 
 class buffer : public utility::noncopyable {
@@ -60,6 +62,8 @@ private:
   std::uint64_t _address;
 
 }; // class buffer
+
+using buffer_handle = resource_handle<buffer>;
 
 template<typename Type, VkBufferUsageFlags Usage, VkMemoryPropertyFlags Properties>
 class typed_buffer : public buffer {

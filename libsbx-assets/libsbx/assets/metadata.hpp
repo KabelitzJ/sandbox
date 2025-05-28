@@ -3,6 +3,8 @@
 
 #include <filesystem>
 
+#include <libsbx/utility/hashed_string.hpp>
+
 #include <libsbx/math/uuid.hpp>
 
 namespace sbx::assets {

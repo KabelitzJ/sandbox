@@ -5,10 +5,12 @@
 #include <libsbx/math/color.hpp>
 #include <libsbx/math/vector3.hpp>
 
+#include <libsbx/graphics/images/cube_image.hpp>
+
 namespace sbx::scenes {
 
 struct skybox {
-  math::uuid cube_image;
+  graphics::cube_image_handle cube_image;
   math::color tint{math::color::white()};
 }; // struct skybox
 
