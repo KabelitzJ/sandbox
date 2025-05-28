@@ -24,7 +24,7 @@ depth_image::depth_image(const math::vector2u& extent, VkSampleCountFlagBits sam
     aspect_mask |= VK_IMAGE_ASPECT_STENCIL_BIT;
   }
 
-  create_image(_handle, _memory, _extent, _format, _samples, VK_IMAGE_TILING_OPTIMAL, _usage, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, 1, 1, VK_IMAGE_TYPE_2D);
+  create_image(_handle, _allocation, _extent, _format, _samples, VK_IMAGE_TILING_OPTIMAL, _usage, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, 1, 1, VK_IMAGE_TYPE_2D);
 	create_image_sampler(_sampler, _filter, _address_mode, false, 1);
 	create_image_view(_handle, _view, VK_IMAGE_VIEW_TYPE_2D, _format, VK_IMAGE_ASPECT_DEPTH_BIT, 1, 0, 1, 0);
 	transition_image_layout(_handle, _format, VK_IMAGE_LAYOUT_UNDEFINED, _layout, aspect_mask, 1, 0, 1, 0);
