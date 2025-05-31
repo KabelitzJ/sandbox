@@ -118,7 +118,7 @@ auto read_image(const std::filesystem::path& path) -> image_data {
 
 auto image2d::_load() -> void {
   // [TODO] KAJ 2025-05-26 : This code is absolutely terrible, it should be refactored to use a more robust image loading system.
-  const auto needs_processing = !std::filesystem::exists(std::filesystem::path{_path}.replace_extension(".sbximg"));
+  // const auto needs_processing = !std::filesystem::exists(std::filesystem::path{_path}.replace_extension(".sbximg"));
 
   _channels = channels_from_format(_format);
 
@@ -127,31 +127,31 @@ auto image2d::_load() -> void {
   if (!_path.empty()) {
     auto timer = utility::timer{};
 
-    if (!needs_processing) {
-      data = read_image(std::filesystem::path{_path}.replace_extension(".sbximg"));
-      _extent.width = data.header.width;
-      _extent.height = data.header.height;
-    } else {
-      stbi_set_flip_vertically_on_load(true);
-  
-      // [NOTE] KAJ 2023-07-28 : Force 4 channels (RGBA) and ignore the original image's channels.
-      data.pixels = stbi_load(_path.string().c_str(), reinterpret_cast<std::int32_t*>(&_extent.width), reinterpret_cast<std::int32_t*>(&_extent.height), nullptr, STBI_rgb_alpha);
-  
-      if (!data.pixels) {
-        throw std::runtime_error{fmt::format("Failed to load image: {}", _path.string())};
-      }
-  
-      if (_extent.width == 0 || _extent.height == 0) {
-        throw std::runtime_error{fmt::format("Image '{}' has invalid dimensions: {}x{}", _path.string(), _extent.width, _extent.height)};
-      }
-  
-      data.header.magic = 69u;
-      data.header.version = 1u;
-      data.header.width = _extent.width;
-      data.header.height = _extent.height;
-      data.header.channels = 4u;
-      write_image(std::filesystem::path{_path}.replace_extension(".sbximg"), data);
+    // if (!needs_processing) {
+    //   data = read_image(std::filesystem::path{_path}.replace_extension(".sbximg"));
+    //   _extent.width = data.header.width;
+    //   _extent.height = data.header.height;
+    // } else {
+    stbi_set_flip_vertically_on_load(true);
+
+    // [NOTE] KAJ 2023-07-28 : Force 4 channels (RGBA) and ignore the original image's channels.
+    data.pixels = stbi_load(_path.string().c_str(), reinterpret_cast<std::int32_t*>(&_extent.width), reinterpret_cast<std::int32_t*>(&_extent.height), nullptr, STBI_rgb_alpha);
+
+    if (!data.pixels) {
+      throw std::runtime_error{fmt::format("Failed to load image: {}", _path.string())};
     }
+
+    if (_extent.width == 0 || _extent.height == 0) {
+      throw std::runtime_error{fmt::format("Image '{}' has invalid dimensions: {}x{}", _path.string(), _extent.width, _extent.height)};
+    }
+
+    // data.header.magic = 69u;
+    // data.header.version = 1u;
+    // data.header.width = _extent.width;
+    // data.header.height = _extent.height;
+    // data.header.channels = 4u;
+    // write_image(std::filesystem::path{_path}.replace_extension(".sbximg"), data);
+    // }
 
     const auto elapsed = units::quantity_cast<units::millisecond>(timer.elapsed());
   
@@ -176,11 +176,11 @@ auto image2d::_load() -> void {
 
     copy_buffer_to_image(staging_buffer, _handle, _extent, _array_layers, 0);
 
-    if (needs_processing) {
-      stbi_image_free(data.pixels);
-    } else {
-      delete[] data.pixels;
-    }
+    // if (needs_processing) {
+    stbi_image_free(data.pixels);
+    // } else {
+    //   delete[] data.pixels;
+    // }
   }
 
   if (_mipmap) {

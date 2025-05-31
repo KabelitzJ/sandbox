@@ -2,12 +2,13 @@
 
 #include <libsbx/core/engine.hpp>
 
-#include <libsbx/models/models.hpp>
 
 #include <libsbx/scenes/skybox_subrenderer.hpp>
 #include <libsbx/scenes/debug_subrenderer.hpp>
 #include <libsbx/scenes/grid_subrenderer.hpp>
-#include <libsbx/scenes/frustum_culling_task.hpp>
+
+#include <libsbx/models/models.hpp>
+#include <libsbx/models/frustum_culling_task.hpp>
 
 #include <libsbx/graphics/pipeline/vertex_input_description.hpp>
 
@@ -82,7 +83,7 @@ auto renderer::initialize() -> void {
 
   // Compute stage
 
-  auto& frustum_culling_task = add_task<sbx::scenes::frustum_culling_task>("demo/assets/shaders/frustum_culling");
+  auto& frustum_culling_task = add_task<sbx::models::frustum_culling_task>("demo/assets/shaders/frustum_culling");
 
   const auto draw_commands_buffer = frustum_culling_task.draw_commands_buffer();
 

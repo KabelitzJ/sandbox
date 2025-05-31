@@ -31,9 +31,10 @@ auto mesh::_load(const std::filesystem::path& path) -> mesh_data {
     throw std::runtime_error{"Mesh file not found: " + path.string()};
   }
 
-  const auto needs_processing = !std::filesystem::exists(std::filesystem::path{path}.replace_extension(".sbxmsh"));
+  // const auto needs_processing = !std::filesystem::exists(std::filesystem::path{path}.replace_extension(".sbxmsh"));
 
-  const auto actual_path = needs_processing ? path : std::filesystem::path{path}.replace_extension(".sbxmsh"); 
+  // const auto actual_path = needs_processing ? path : std::filesystem::path{path}.replace_extension(".sbxmsh"); 
+  const auto actual_path = path;
 
   const auto extension = actual_path.extension().string();
 
@@ -49,9 +50,9 @@ auto mesh::_load(const std::filesystem::path& path) -> mesh_data {
 
   auto data = std::invoke(load, actual_path);
 
-  if (needs_processing) {
-    _process(actual_path, data);
-  }
+  // if (needs_processing) {
+  //   _process(actual_path, data);
+  // }
 
   const auto vertices_count = data.vertices.size();
   const auto indices_count = data.indices.size();

@@ -214,6 +214,10 @@ auto gltf_loader::load(const std::filesystem::path& path) -> mesh::mesh_data {
         throw std::runtime_error{fmt::format("Mesh '{}' in file '{}' does not contain the attribute 'TEXCOORD_0'", mesh_name, path.string())};
       }
 
+      if (!attributes.contains("TANGENT")) {
+        throw std::runtime_error{fmt::format("Mesh '{}' in file '{}' does not contain the attribute 'TANGENT'", mesh_name, path.string())};
+      }
+
       if (!primitive.contains("indices")) {
         throw std::runtime_error{fmt::format("Mesh '{}' in file '{}' does not contain the attribute 'indices'", mesh_name, path.string())};
       }
@@ -221,6 +225,7 @@ auto gltf_loader::load(const std::filesystem::path& path) -> mesh::mesh_data {
       const auto positions_index = primitive["attributes"]["POSITION"].get<std::size_t>();
       const auto normals_index = primitive["attributes"]["NORMAL"].get<std::size_t>();
       const auto uvs_index = primitive["attributes"]["TEXCOORD_0"].get<std::size_t>();
+      const auto tangents_index = primitive["attributes"]["TANGENT"].get<std::size_t>();
       const auto indices_index = primitive["indices"].get<std::size_t>();
 
       // [NOTE] KAJ 2024-03-20 : Here we get the accessors for the positions, normals, uvs and indices.
@@ -228,6 +233,7 @@ auto gltf_loader::load(const std::filesystem::path& path) -> mesh::mesh_data {
       const auto& positions_accessor = accessors[positions_index];
       const auto& normals_accessor = accessors[normals_index];
       const auto& uvs_accessor = accessors[uvs_index];
+      const auto& tangents_accessor = accessors[tangents_index];
       const auto& indices_accessor = accessors[indices_index];
 
       // [NOTE] KAJ 2024-03-20 : We need to check if the accessors have the correct component type and type
@@ -261,6 +267,10 @@ auto gltf_loader::load(const std::filesystem::path& path) -> mesh::mesh_data {
         throw std::runtime_error{"Invalid component type or type for uvs accessor"};
       }
 
+      if (tangents_accessor["componentType"].get<std::size_t>() != component_type::floating_point.id || tangents_accessor["type"].get<std::string>() != "VEC4") {
+        throw std::runtime_error{"Invalid component type or type for tangents accessor"};
+      }
+
       // [TODO] KAJ 2024-03-20 : We should enable different component types for the indices accessor. For now we only support std::uint16_t.
 
       if ((indices_accessor["componentType"].get<std::size_t>() != component_type::unsigned_short.id && indices_accessor["componentType"].get<std::size_t>() != component_type::unsigned_int.id) || indices_accessor["type"].get<std::string>() != "SCALAR") {
@@ -270,15 +280,17 @@ auto gltf_loader::load(const std::filesystem::path& path) -> mesh::mesh_data {
       const auto positions_count = positions_accessor["count"].get<std::size_t>();
       const auto normals_count = normals_accessor["count"].get<std::size_t>();
       const auto uvs_count = uvs_accessor["count"].get<std::size_t>();
+      const auto tangents_count = tangents_accessor["count"].get<std::size_t>();
       const auto indices_count = indices_accessor["count"].get<std::size_t>();
 
-      if (positions_count != normals_count || positions_count != uvs_count) {
+      if (positions_count != normals_count || positions_count != uvs_count || positions_count != tangents_count) {
         throw std::runtime_error{"Mismatching counts for positions, normals and uvs accessors"};
       }
 
       const auto positions_buffer_view_index = positions_accessor["bufferView"].get<std::size_t>();
       const auto normals_buffer_view_index = normals_accessor["bufferView"].get<std::size_t>();
       const auto uvs_buffer_view_index = uvs_accessor["bufferView"].get<std::size_t>();
+      const auto tangents_buffer_view_index = tangents_accessor["bufferView"].get<std::size_t>();
       const auto indices_buffer_view_index = indices_accessor["bufferView"].get<std::size_t>();
 
       // [NOTE] KAJ 2024-03-20 : Here we get the buffer views for the positions, normals, uvs and indices.
@@ -286,6 +298,7 @@ auto gltf_loader::load(const std::filesystem::path& path) -> mesh::mesh_data {
       const auto& positions_buffer_view = buffer_views[positions_buffer_view_index];
       const auto& normals_buffer_view = buffer_views[normals_buffer_view_index];
       const auto& uvs_buffer_view = buffer_views[uvs_buffer_view_index];
+      const auto& tangents_buffer_view = buffer_views[tangents_buffer_view_index];
       const auto& indices_buffer_view = buffer_views[indices_buffer_view_index];
 
       // [NOTE] KAJ 2024-03-20 : Here we get the positions data.
@@ -318,6 +331,16 @@ auto gltf_loader::load(const std::filesystem::path& path) -> mesh::mesh_data {
 
       const auto* uvs_data = reinterpret_cast<const math::vector2*>(uvs_buffer.data() + uvs_byte_offset);
 
+      // [NOTE] KAJ 2024-03-20 : Here we get the tangents data.
+
+      const auto tangents_buffer_index = tangents_buffer_view["buffer"].get<std::size_t>();
+      const auto tangents_byte_offset = tangents_buffer_view.contains("byteOffset") ? tangents_buffer_view["byteOffset"].get<std::size_t>() : 0u;
+      const auto tangents_byte_length = tangents_buffer_view["byteLength"].get<std::size_t>();
+
+      const auto& tangents_buffer = _decode_buffer(tangents_buffer_index, path.parent_path(), decoded_buffers, buffers[tangents_buffer_index]);
+
+      const auto* tangents_data = reinterpret_cast<const math::vector4*>(tangents_buffer.data() + tangents_byte_offset);
+
       // [NOTE] KAJ 2024-03-20 : Here we get the indices data.
 
       const auto indices_buffer_index = indices_buffer_view["buffer"].get<std::size_t>();
@@ -337,9 +360,10 @@ auto gltf_loader::load(const std::filesystem::path& path) -> mesh::mesh_data {
       for (auto i = 0; i < positions_count; ++i) {
         const auto& position = transform * math::vector4{positions_data[i]};
         const auto& normal = transform * math::vector4{normals_data[i]};
+        const auto& tangent = transform * math::vector4{tangents_data[i]};
         const auto& uv = uvs_data[i];
 
-        data.vertices.push_back(models::vertex3d{position, normal, uv});
+        data.vertices.push_back(models::vertex3d{position, normal, tangent, uv});
       }
 
       data.indices.reserve(data.indices.size() + indices_count);

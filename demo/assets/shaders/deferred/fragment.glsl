@@ -12,11 +12,12 @@
 
 layout(location = 0) in vec3 in_position;
 layout(location = 1) in vec3 in_normal;
-layout(location = 2) in vec2 in_uv;
-layout(location = 3) in vec4 in_color;
-layout(location = 4) in vec2 in_material;
-layout(location = 5) in flat uint in_albedo_image_index;
-layout(location = 6) in flat uint in_normal_image_index;
+layout(location = 2) in mat3 in_tbn; // Needs 3 locations slots (2, 3, 4)
+layout(location = 5) in vec2 in_uv;
+layout(location = 6) in vec4 in_color;
+layout(location = 7) in vec2 in_material;
+layout(location = 8) in flat uint in_albedo_image_index;
+layout(location = 9) in flat uint in_normal_image_index;
 
 layout(location = 0) out vec4 out_albedo;
 layout(location = 1) out vec4 out_position;
@@ -69,19 +70,9 @@ vec3 get_normal() {
     return normalize(in_normal);
   }
 
-  vec3 tangent_normal = texture(sampler2D(images[in_normal_image_index], images_sampler), in_uv).xyz * 2.0 - 1.0;
+  vec3 normal = texture(sampler2D(images[in_normal_image_index], images_sampler), in_uv).rgb * 2.0 - 1.0;
 
-  vec3 Q1 = dFdx(in_position);
-  vec3 Q2 = dFdy(in_position);
-  vec2 st1 = dFdx(in_uv);
-  vec2 st2 = dFdy(in_uv);
-
-  vec3 N = normalize(in_normal);
-  vec3 T = normalize(Q1 * st2.t - Q2 * st1.t);
-  vec3 B = -normalize(cross(N, T));
-  mat3 TBN = mat3(T, B, N);
-
-  return normalize(TBN * tangent_normal);
+  return normalize(in_tbn * normal);
 }
 
 void main(void) {

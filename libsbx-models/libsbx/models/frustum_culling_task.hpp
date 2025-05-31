@@ -1,5 +1,5 @@
-#ifndef LIBSBX_SCENES_FRUSTUM_CULLING_TASK_HPP_
-#define LIBSBX_SCENES_FRUSTUM_CULLING_TASK_HPP_
+#ifndef LIBSBX_MODELS_FRUSTUM_CULLING_TASK_HPP_
+#define LIBSBX_MODELS_FRUSTUM_CULLING_TASK_HPP_
 
 #include <libsbx/graphics/task.hpp>
 #include <libsbx/graphics/graphics_module.hpp>
@@ -12,7 +12,7 @@
 
 #include <libsbx/graphics/descriptor/descriptor_handler.hpp>
 
-namespace sbx::scenes {
+namespace sbx::models {
 
 class frustum_culling_task final : public graphics::task {
 
@@ -104,6 +104,6 @@ private:
 
 }; // class frustum_culling_task
 
-} // namespace sbx::scenes
+} // namespace sbx::models
 
-#endif // LIBSBX_SCENES_FRUSTUM_CULLING_TASK_HPP_
+#endif // LIBSBX_MODELS_FRUSTUM_CULLING_TASK_HPP_
