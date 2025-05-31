@@ -549,6 +549,7 @@ private:
 
       ImGui::Text("Width: %f", width);
       ImGui::Text("Height: %f", height);
+      ImGui::Text("Aspect Ratio: %f", width / height);
 
       _build_node_preview();
 
@@ -645,6 +646,8 @@ private:
   std::array<char, 32> _new_name_buffer;
 
   math::uuid _selected_node_id;
+
+  math::vector2u _viewport_size;
 
   std::vector<std::float_t> _deltas;
   std::vector<std::float_t> _time_stamps;
