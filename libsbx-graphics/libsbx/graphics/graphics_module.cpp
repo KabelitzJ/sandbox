@@ -113,15 +113,7 @@ auto graphics_module::update() -> void {
 
   compute_command_buffer.submit({}, frame_data.compute_finished_semaphore, frame_data.compute_in_flight_fence);
 
-  // compute_command_buffer->submit()
-
-  auto capabilities = VkSurfaceCapabilitiesKHR{};
-
-  validate(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(*_physical_device, *_surface, &capabilities));
-
-  const auto extent = capabilities.currentExtent;
-
-  if (_is_framebuffer_resized || _swapchain->is_outdated(extent)) {
+  if (_is_framebuffer_resized || _swapchain->is_outdated(_surface->extent())) {
     _recreate_swapchain();
     return;
   }

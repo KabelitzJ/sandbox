@@ -27,6 +27,8 @@ public:
 
   auto format() const noexcept -> const VkSurfaceFormatKHR&;
 
+  auto extent() const noexcept -> VkExtent2D;
+
 private:
 
   auto _choose_swap_surface_format(const std::vector<VkSurfaceFormatKHR>& available_formats) -> VkSurfaceFormatKHR;
