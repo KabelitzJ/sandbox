@@ -27,7 +27,7 @@ public:
 
   auto format() const noexcept -> const VkSurfaceFormatKHR&;
 
-  auto extent() const noexcept -> VkExtent2D;
+  auto current_extent() const noexcept -> VkExtent2D;
 
 private:
 

@@ -58,9 +58,12 @@ public:
 
     _setup_style();
 
-
     auto& device_module = sbx::core::engine::get_module<sbx::devices::devices_module>();
     auto& graphics_module = sbx::core::engine::get_module<sbx::graphics::graphics_module>();
+
+    graphics_module.set_dynamic_size_callback([&]() -> sbx::math::vector2u {
+      return _viewport_size;
+    });
 
     // Connect ImGui to GLFW
     ImGui_ImplGlfw_InitForVulkan(device_module.window(), true);
@@ -546,6 +549,8 @@ private:
 
       auto width = vMax.x - vMin.x;
       auto height = vMax.y - vMin.y;
+
+      _viewport_size = sbx::math::vector2u{static_cast<std::uint32_t>(width), static_cast<std::uint32_t>(height)};
 
       ImGui::Text("Width: %f", width);
       ImGui::Text("Height: %f", height);

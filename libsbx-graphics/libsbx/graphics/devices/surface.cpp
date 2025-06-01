@@ -74,7 +74,7 @@ auto surface::format() const noexcept -> const VkSurfaceFormatKHR& {
   return _format;
 }
 
-auto surface::extent() const noexcept -> VkExtent2D {
+auto surface::current_extent() const noexcept -> VkExtent2D {
   return capabilities().currentExtent;
 }
 

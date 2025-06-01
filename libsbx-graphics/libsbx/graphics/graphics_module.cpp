@@ -113,7 +113,7 @@ auto graphics_module::update() -> void {
 
   compute_command_buffer.submit({}, frame_data.compute_finished_semaphore, frame_data.compute_in_flight_fence);
 
-  if (_is_framebuffer_resized || _swapchain->is_outdated(_surface->extent())) {
+  if (_is_framebuffer_resized || _swapchain->is_outdated(_surface->current_extent())) {
     _recreate_swapchain();
     return;
   }
