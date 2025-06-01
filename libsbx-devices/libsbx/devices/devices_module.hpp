@@ -16,6 +16,8 @@
 
 #include <libsbx/units/time.hpp>
 
+#include <libsbx/memory/aligned_storage.hpp>
+
 #include <libsbx/devices/window.hpp>
 #include <libsbx/devices/input.hpp>
 
@@ -36,11 +38,14 @@ public:
       throw std::runtime_error{"Glfw does not support vulkan"};
     }
 
-    _window = std::make_unique<devices::window>(window_create_info{"Demo", 1280, 720});
+    // _window = std::make_unique<devices::window>(window_create_info{"Demo", 1280, 720});
+    // std::construct_at(std::launder(reinterpret_cast<devices::window*>(&_window)), window_create_info{"Demo", 1280, 720});
+    // _window.construct(window_create_info{"Demo", 1280, 720});
+    _window.construct(window_create_info{"Demo", 1280, 720});
   }
 
   ~devices_module() override {
-    _window.reset();
+    _window.destroy();
 
     glfwTerminate();
   }
@@ -66,7 +71,7 @@ public:
 
 private:
 
-  std::unique_ptr<devices::window> _window{};
+  memory::constructible<devices::window> _window;
 
 }; // class devices_module
 
