@@ -5,6 +5,8 @@
 
 #include <vulkan/vulkan.hpp>
 
+#include <vk_mem_alloc.h>
+
 #include <libsbx/utility/noncopyable.hpp>
 
 #include <libsbx/math/vector2.hpp>
@@ -33,7 +35,7 @@ public:
 
   static auto has_stencil_component(VkFormat format) noexcept -> bool;
 
-  static auto create_image(VkImage& image, VkDeviceMemory& memory, const VkExtent3D& extent, VkFormat format, VkSampleCountFlagBits samples, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, std::uint32_t mip_levels, std::uint32_t array_layers, VkImageType type) -> void;
+  static auto create_image(VkImage& image, VmaAllocation& allocation, const VkExtent3D& extent, VkFormat format, VkSampleCountFlagBits samples, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, std::uint32_t mip_levels, std::uint32_t array_layers, VkImageType type) -> void;
 
   static auto create_image_view(const VkImage& image, VkImageView& image_view, VkImageViewType type, VkFormat format, VkImageAspectFlags image_aspect, std::uint32_t mip_levels, std::uint32_t base_mip_level, std::uint32_t layer_count, std::uint32_t base_array_layer) -> void;
 
@@ -49,7 +51,7 @@ public:
 
   static auto copy_buffer_to_image(const VkBuffer& buffer, const VkImage& image, const VkExtent3D& extent, std::uint32_t layer_count, std::uint32_t base_array_layer) -> void;
 
-	static auto copy_image(const VkImage& src_image, VkImage& dst_image, VkDeviceMemory& dst_image_memory, VkFormat src_format, const VkExtent3D& extent, VkImageLayout src_image_layout, std::uint32_t mip_level, std::uint32_t array_layer) -> bool;
+	static auto copy_image(const VkImage& src_image, VkImage& dst_image, VmaAllocation& dst_allocation, VkFormat src_format, const VkExtent3D& extent, VkImageLayout src_image_layout, std::uint32_t mip_level, std::uint32_t array_layer) -> bool;
 
   static auto channels_from_format(VkFormat format) -> std::uint8_t;
 
@@ -75,15 +77,15 @@ public:
 
   auto layout() const noexcept -> VkImageLayout;
 
-  auto handle() const noexcept -> const VkImage&;
+  auto handle() const noexcept -> VkImage;
 
-  operator const VkImage&() const noexcept;
+  operator VkImage() const noexcept;
 
-  auto view() const noexcept -> const VkImageView&;
+  auto view() const noexcept -> VkImageView;
 
-  auto memory() const noexcept -> const VkDeviceMemory&;
+  // auto memory() const noexcept -> const VkDeviceMemory&;
 
-  auto sampler() const noexcept -> const VkSampler&;
+  auto sampler() const noexcept -> VkSampler;
 
 protected:
 
@@ -100,7 +102,8 @@ protected:
   std::uint32_t _array_layers;
 
   VkImage _handle;
-  VkDeviceMemory _memory;
+  VmaAllocation _allocation;
+  // VkDeviceMemory _memory;
   VkImageView _view;
   VkSampler _sampler;
 

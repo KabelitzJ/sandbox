@@ -37,7 +37,6 @@
 #include <libsbx/scenes/scenes_module.hpp>
 #include <libsbx/scenes/scene.hpp>
 #include <libsbx/scenes/node.hpp>
-#include <libsbx/scenes/frustum_culling_task.hpp>
 
 #include <libsbx/scenes/components/static_mesh.hpp>
 #include <libsbx/scenes/components/id.hpp>

@@ -83,7 +83,7 @@ auto cube_image::_load() -> void {
 
   _mip_levels = _mipmap ? mip_levels(_extent) : 1;
 
-  create_image(_handle, _memory, _extent, _format, _samples, VK_IMAGE_TILING_OPTIMAL, _usage, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, _mip_levels, _array_layers, VK_IMAGE_TYPE_2D);
+  create_image(_handle, _allocation, _extent, _format, _samples, VK_IMAGE_TILING_OPTIMAL, _usage, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, _mip_levels, _array_layers, VK_IMAGE_TYPE_2D);
   create_image_sampler(_sampler, _filter, _address_mode, _anisotropic, _mip_levels);
   create_image_view(_handle, _view, VK_IMAGE_VIEW_TYPE_CUBE, _format, VK_IMAGE_ASPECT_COLOR_BIT, _mip_levels, 0, _array_layers, 0);
 

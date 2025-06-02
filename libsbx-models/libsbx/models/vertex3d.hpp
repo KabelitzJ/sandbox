@@ -12,14 +12,15 @@
 
 namespace sbx::models {
 
-struct vertex3d {
+struct alignas(alignof(std::float_t)) vertex3d {
   math::vector3 position;
   math::vector3 normal;
+  math::vector4 tangent;
   math::vector2 uv;
 }; // struct vertex
 
 constexpr auto operator==(const vertex3d& lhs, const vertex3d& rhs) noexcept -> bool {
-  return lhs.position == rhs.position && lhs.normal == rhs.normal && lhs.uv == rhs.uv;
+  return lhs.position == rhs.position && lhs.normal == rhs.normal && lhs.tangent == rhs.tangent && lhs.uv == rhs.uv;
 }
 
 } // namespace sbx::models
@@ -52,6 +53,13 @@ struct sbx::graphics::vertex_input<sbx::models::vertex3d> {
     result.attribute_descriptions.push_back(VkVertexInputAttributeDescription{
       .location = 2,
       .binding = 0,
+      .format = VK_FORMAT_R32G32B32A32_SFLOAT,
+      .offset = offsetof(sbx::models::vertex3d, tangent)
+    });
+
+    result.attribute_descriptions.push_back(VkVertexInputAttributeDescription{
+      .location = 3,
+      .binding = 0,
       .format = VK_FORMAT_R32G32_SFLOAT,
       .offset = offsetof(sbx::models::vertex3d, uv)
     });
@@ -64,7 +72,7 @@ template<>
 struct std::hash<sbx::models::vertex3d> {
   auto operator()(const sbx::models::vertex3d& vertex) const noexcept -> std::size_t {
     auto hash = std::size_t{0};
-    sbx::utility::hash_combine(hash, vertex.position, vertex.normal, vertex.uv);
+    sbx::utility::hash_combine(hash, vertex.position, vertex.normal, vertex.tangent, vertex.uv);
     return hash;
   }
 }; // struct std::hash<vertex3d>

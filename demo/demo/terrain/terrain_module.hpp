@@ -82,22 +82,22 @@ public:
 
 private:
 
-  auto _generate_polygon(const std::vector<sbx::math::vector2>& points) -> std::unique_ptr<sbx::models::mesh> {
-    auto vertices = std::vector<sbx::models::vertex3d>{};
-    auto indices = std::vector<std::uint32_t>{};
+  // auto _generate_polygon(const std::vector<sbx::math::vector2>& points) -> std::unique_ptr<sbx::models::mesh> {
+  //   auto vertices = std::vector<sbx::models::vertex3d>{};
+  //   auto indices = std::vector<std::uint32_t>{};
 
-    for (const auto& point : points) {
-      vertices.emplace_back(sbx::math::vector3{point.x(), 0.0f, point.y()}, sbx::math::vector3::up, sbx::math::vector2{0.0f, 0.0f});
-    }
+  //   for (const auto& point : points) {
+  //     vertices.emplace_back(sbx::math::vector3{point.x(), 0.0f, point.y()}, sbx::math::vector3::up, sbx::math::vector2{0.0f, 0.0f});
+  //   }
 
-    for (auto i = 0u; i < points.size() - 2u; ++i) {
-      indices.emplace_back(0u);
-      indices.emplace_back(i + 1u);
-      indices.emplace_back(i + 2u);
-    }
+  //   for (auto i = 0u; i < points.size() - 2u; ++i) {
+  //     indices.emplace_back(0u);
+  //     indices.emplace_back(i + 1u);
+  //     indices.emplace_back(i + 2u);
+  //   }
 
-    return std::make_unique<sbx::models::mesh>(std::move(vertices), std::move(indices));
-  }
+  //   return std::make_unique<sbx::models::mesh>(std::move(vertices), std::move(indices));
+  // }
 
   auto _generate_plane(const sbx::math::vector2u& size, const sbx::math::vector2u& subdivisions) -> std::unique_ptr<sbx::models::mesh> {
     auto vertices = std::vector<sbx::models::vertex3d>{};
@@ -115,9 +115,10 @@ private:
       for (auto x = 0u; x < subdivisions.x() + 1u; ++x) {
         const auto position = sbx::math::vector3{static_cast<std::float_t>(x * tile_size.x() - offset.x()), 0.0f, static_cast<std::float_t>(y * tile_size.y() - offset.y())};
         const auto normal = sbx::math::vector3::up;
+        const auto tangent = sbx::math::vector3::right;
         const auto uv = sbx::math::vector2{static_cast<std::float_t>(x % 2), static_cast<std::float_t>(y % 2)};
 
-        vertices.emplace_back(position, normal, uv);
+        vertices.emplace_back(position, normal, tangent, uv);
       }
     }
 

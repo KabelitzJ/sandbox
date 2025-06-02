@@ -27,7 +27,7 @@ public:
     _target{sbx::math::vector3{0.0f, 2.0f, 0.0f}},
     _zoom{30.0f},
     _min_zoom{2.0f},
-    _max_zoom{90.0f} { }
+    _max_zoom{150.0f} { }
 
   auto update() -> void {
     const auto delta_time = sbx::core::engine::delta_time();
@@ -66,26 +66,26 @@ public:
 
     // Mouse drag camera rotation and movement
 
-    if (sbx::devices::input::is_mouse_button_pressed(sbx::devices::mouse_button::middle) || sbx::devices::input::is_mouse_button_pressed(sbx::devices::mouse_button::right)) {
+    if (sbx::devices::input::is_mouse_button_pressed(sbx::devices::mouse_button::right) || sbx::devices::input::is_mouse_button_pressed(sbx::devices::mouse_button::middle)) {
       _last_mouse_position = sbx::devices::input::mouse_position();
-    } else if (sbx::devices::input::is_mouse_button_down(sbx::devices::mouse_button::middle) || sbx::devices::input::is_mouse_button_down(sbx::devices::mouse_button::right)) {
+    } else if (sbx::devices::input::is_mouse_button_down(sbx::devices::mouse_button::right) || sbx::devices::input::is_mouse_button_down(sbx::devices::mouse_button::middle)) {
       auto mouse_position = sbx::devices::input::mouse_position();
       _mouse_position_delta = mouse_position - _last_mouse_position;
       _last_mouse_position = mouse_position;
 
-      if (sbx::devices::input::is_mouse_button_down(sbx::devices::mouse_button::right)) {
+      if (sbx::devices::input::is_mouse_button_down(sbx::devices::mouse_button::middle)) {
         _orbit_angle += sbx::math::degree{80.0f * _mouse_position_delta.x() * delta_time.value()};
         _tilt_angle = sbx::math::clamp(_tilt_angle + sbx::math::degree{80.0f * _mouse_position_delta.y() * delta_time.value()}, _min_tilt_angle, _max_tilt_angle);
       } 
       
-      if (sbx::devices::input::is_mouse_button_down(sbx::devices::mouse_button::middle)) {
+      if (sbx::devices::input::is_mouse_button_down(sbx::devices::mouse_button::right)) {
         movement += local_forward * _mouse_position_delta.y();
         movement += local_right * _mouse_position_delta.x();
         is_mouse_movement = true;
       }
 
       // We override 
-    } else if (sbx::devices::input::is_mouse_button_released(sbx::devices::mouse_button::middle) || sbx::devices::input::is_mouse_button_released(sbx::devices::mouse_button::right)) {
+    } else if (sbx::devices::input::is_mouse_button_released(sbx::devices::mouse_button::right) || sbx::devices::input::is_mouse_button_released(sbx::devices::mouse_button::middle)) {
       _last_mouse_position = sbx::math::vector2{};
       _mouse_position_delta = sbx::math::vector2{};
     }
@@ -105,7 +105,7 @@ public:
     movement.normalize();
 
     if (is_mouse_movement) {
-      movement *= _zoom * 1.3f;
+      movement *= _zoom * 0.8f;
     } else if (sbx::devices::input::is_key_down(sbx::devices::key::left_shift)) {
       movement *= 5.0f;
     }
@@ -116,7 +116,7 @@ public:
 
     auto scroll = sbx::devices::input::scroll_delta();
 
-    _zoom = std::clamp(_zoom - 2.5f * scroll.y(), _min_zoom, _max_zoom);
+    _zoom = std::clamp(_zoom - 4.0f * scroll.y(), _min_zoom, _max_zoom);
 
     // Calculate camera position
 

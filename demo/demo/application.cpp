@@ -190,11 +190,9 @@ auto application::update() -> void  {
 
   _rotation += sbx::math::degree{45} * delta_time;
 
-  auto q = scene.query<sbx::math::transform, rotator, sbx::scenes::global_transform>();
+  auto q = scene.query<sbx::math::transform, rotator>();
 
-  for (auto&& [n, t, g] : q.each()) {
-    const auto v = sbx::math::volume::transformed(sbx::math::volume{sbx::math::vector3{-1}, sbx::math::vector3{1}}, g.model);
-
+  for (auto&& [n, t] : q.each()) {
     t.set_rotation(sbx::math::vector3::up, _rotation);
   }
 }

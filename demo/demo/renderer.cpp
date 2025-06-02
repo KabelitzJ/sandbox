@@ -2,12 +2,13 @@
 
 #include <libsbx/core/engine.hpp>
 
-#include <libsbx/models/models.hpp>
 
 #include <libsbx/scenes/skybox_subrenderer.hpp>
 #include <libsbx/scenes/debug_subrenderer.hpp>
 #include <libsbx/scenes/grid_subrenderer.hpp>
-#include <libsbx/scenes/frustum_culling_task.hpp>
+
+#include <libsbx/models/models.hpp>
+#include <libsbx/models/frustum_culling_task.hpp>
 
 #include <libsbx/graphics/pipeline/vertex_input_description.hpp>
 
@@ -52,7 +53,7 @@ renderer::renderer()
       sbx::graphics::attachment{3, "normal", sbx::graphics::attachment::type::image, _clear_color, sbx::graphics::format::r32g32b32a32_sfloat},
       sbx::graphics::attachment{4, "material", sbx::graphics::attachment::type::image, _clear_color, sbx::graphics::format::r8g8b8a8_unorm},
       sbx::graphics::attachment{5, "normalized_depth", sbx::graphics::attachment::type::image, sbx::math::color{1.0f, 1.0f, 1.0f, 1.0f}, sbx::graphics::format::r32_sfloat},
-      sbx::graphics::attachment{6, "scene", sbx::graphics::attachment::type::image, _clear_color, sbx::graphics::format::r8g8b8a8_unorm}
+      sbx::graphics::attachment{6, "swapchain", sbx::graphics::attachment::type::swapchain, _clear_color, sbx::graphics::format::r8g8b8a8_unorm}
     };
 
     auto subpass_bindings = std::vector<sbx::graphics::subpass_binding>{
@@ -64,17 +65,17 @@ renderer::renderer()
   }
 
   // Render stage 2: FX and UI
-  {
-    auto attachments = std::vector<sbx::graphics::attachment>{
-      sbx::graphics::attachment{0, "swapchain", sbx::graphics::attachment::type::swapchain, _clear_color, sbx::graphics::format::r8g8b8a8_unorm}
-    };
+  // {
+  //   auto attachments = std::vector<sbx::graphics::attachment>{
+  //     sbx::graphics::attachment{0, "swapchain", sbx::graphics::attachment::type::swapchain, _clear_color, sbx::graphics::format::r8g8b8a8_unorm}
+  //   };
 
-    auto subpass_bindings = std::vector<sbx::graphics::subpass_binding>{
-      sbx::graphics::subpass_binding{0, {0}},
-    };
+  //   auto subpass_bindings = std::vector<sbx::graphics::subpass_binding>{
+  //     sbx::graphics::subpass_binding{0, {0}},
+  //   };
 
-    add_render_stage(std::move(attachments), std::move(subpass_bindings));
-  }
+  //   add_render_stage(std::move(attachments), std::move(subpass_bindings));
+  // }
 }
 
 auto renderer::initialize() -> void {
@@ -82,7 +83,7 @@ auto renderer::initialize() -> void {
 
   // Compute stage
 
-  auto& frustum_culling_task = add_task<sbx::scenes::frustum_culling_task>("demo/assets/shaders/frustum_culling");
+  auto& frustum_culling_task = add_task<sbx::models::frustum_culling_task>("demo/assets/shaders/frustum_culling");
 
   const auto draw_commands_buffer = frustum_culling_task.draw_commands_buffer();
 
@@ -111,7 +112,7 @@ auto renderer::initialize() -> void {
   add_subrenderer<sbx::post::resolve_filter>("demo/assets/shaders/resolve", sbx::graphics::pipeline::stage{0, 1}, std::move(attachment_names));
 
   // // Render stage 2
-  add_subrenderer<sbx::editor::editor_subrenderer>("demo/assets/shaders/editor", sbx::graphics::pipeline::stage{1, 0});
+  // add_subrenderer<sbx::editor::editor_subrenderer>("demo/assets/shaders/editor", sbx::graphics::pipeline::stage{1, 0});
 }
 
 } // namespace demo

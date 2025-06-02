@@ -1,8 +1,10 @@
-#ifndef LIBSBX_SCENES_FRUSTUM_CULLING_TASK_HPP_
-#define LIBSBX_SCENES_FRUSTUM_CULLING_TASK_HPP_
+#ifndef LIBSBX_MODELS_FRUSTUM_CULLING_TASK_HPP_
+#define LIBSBX_MODELS_FRUSTUM_CULLING_TASK_HPP_
 
 #include <libsbx/graphics/task.hpp>
 #include <libsbx/graphics/graphics_module.hpp>
+
+#include <libsbx/math/transform.hpp>
 
 #include <libsbx/graphics/pipeline/compute_pipeline.hpp>
 
@@ -12,7 +14,12 @@
 
 #include <libsbx/graphics/descriptor/descriptor_handler.hpp>
 
-namespace sbx::scenes {
+#include <libsbx/scenes/scenes_module.hpp>
+
+#include <libsbx/scenes/components/camera.hpp>
+#include <libsbx/scenes/components/global_transform.hpp>
+
+namespace sbx::models {
 
 class frustum_culling_task final : public graphics::task {
 
@@ -32,13 +39,13 @@ public:
 
   frustum_culling_task(const std::filesystem::path& path)
   : _pipeline{path},
-    _push_handler{_pipeline},
-    _bounding_box_buffer{std::make_optional<graphics::storage_buffer>(graphics::storage_buffer::min_size, VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT)},
-    _draw_data_buffer{std::make_optional<graphics::storage_buffer>(graphics::storage_buffer::min_size, VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT)},
-    _frustum_buffer{std::make_optional<graphics::storage_buffer>(std::max(sizeof(frustum_buffer), graphics::storage_buffer::min_size.value()), VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT)} {
+    _push_handler{_pipeline} {
     auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
     _draw_commands_buffer = graphics_module.add_resource<graphics::buffer>(graphics::storage_buffer::min_size, usage, properties);
+    _bounding_box_buffer = graphics_module.add_resource<graphics::buffer>(graphics::storage_buffer::min_size, usage, properties);
+    _draw_data_buffer = graphics_module.add_resource<graphics::buffer>(graphics::storage_buffer::min_size, usage, properties);
+    _frustum_buffer = graphics_module.add_resource<graphics::buffer>(sizeof(frustum_buffer), usage, properties);
   }
 
   ~frustum_culling_task() override = default;
@@ -49,10 +56,27 @@ public:
 
   auto execute(graphics::command_buffer& command_buffer) -> void override {
     auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+    auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
 
     auto& logical_device = graphics_module.logical_device();
 
     auto& draw_commands_buffer = graphics_module.get_resource<graphics::buffer>(_draw_commands_buffer);
+    auto& bounding_box_buffer = graphics_module.get_resource<graphics::buffer>(_bounding_box_buffer);
+    auto& draw_data_buffer = graphics_module.get_resource<graphics::buffer>(_draw_data_buffer);
+    auto& frustum_buffer = graphics_module.get_resource<graphics::buffer>(_frustum_buffer);
+
+    auto& scene = scenes_module.scene();
+
+    auto camera_node = scene.camera();
+
+    auto& transform = scene.get_component<math::transform>(camera_node);
+    auto& global_transform = scene.get_component<scenes::global_transform>(camera_node);
+
+    const auto view = math::matrix4x4::inverted(global_transform.model);
+
+    auto& camera = scene.get_component<scenes::camera>(camera_node);
+
+    auto frustum = camera.view_frustum(view);
 
     _pipeline.bind(command_buffer);
 
@@ -64,9 +88,9 @@ public:
     // _descriptor_handler.push("buffer_out_indices", _output_index_storage_handler);
 
     _push_handler.push("draw_commands", draw_commands_buffer.address());
-    _push_handler.push("draw_data", _draw_data_buffer->address());
-    _push_handler.push("bounding_boxes", _bounding_box_buffer->address());
-    _push_handler.push("frustum", _frustum_buffer->address());
+    _push_handler.push("draw_data", draw_data_buffer.address());
+    _push_handler.push("bounding_boxes", bounding_box_buffer.address());
+    _push_handler.push("frustum", frustum_buffer.address());
 
     // if (!_descriptor_handler.update(_pipeline)) {
     //   return;
@@ -77,33 +101,30 @@ public:
 
     _pipeline.dispatch(command_buffer, {32u, 1u, 1u});
 
-    const auto buffer_memory_barrier = graphics::command_buffer::release_ownership_data{
-      .src_stage_mask = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-      .src_access_mask = VK_ACCESS_SHADER_WRITE_BIT,
-      .src_queue_family = logical_device.queue<graphics::queue::type::compute>().family(),
-      .dst_queue_family = logical_device.queue<graphics::queue::type::graphics>().family(),
-      .buffer = draw_commands_buffer
-    };
+    // const auto buffer_memory_barrier = graphics::command_buffer::release_ownership_data{
+    //   .src_stage_mask = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+    //   .src_access_mask = VK_ACCESS_SHADER_WRITE_BIT,
+    //   .src_queue_family = logical_device.queue<graphics::queue::type::compute>().family(),
+    //   .dst_queue_family = logical_device.queue<graphics::queue::type::graphics>().family(),
+    //   .buffer = draw_commands_buffer
+    // };
 
-    command_buffer.release_ownership({buffer_memory_barrier});
+    // command_buffer.release_ownership({buffer_memory_barrier});
   }
 
 private:
 
   graphics::compute_pipeline _pipeline;
 
-  // sbx::graphics::uniform_handler _uniform_handler;
-  std::optional<graphics::storage_buffer> _bounding_box_buffer;
-  std::optional<graphics::storage_buffer> _draw_data_buffer;
-  // std::optional<graphics::storage_buffer> _draw_command_buffer;
-  graphics::resource_handle<graphics::buffer> _draw_commands_buffer;
-  std::optional<graphics::storage_buffer> _frustum_buffer;
-  // sbx::graphics::storage_handler _output_index_storage_handler;
+  graphics::buffer_handle _bounding_box_buffer;
+  graphics::buffer_handle _draw_data_buffer;
+  graphics::buffer_handle _draw_commands_buffer;
+  graphics::buffer_handle _frustum_buffer;
+
   graphics::push_handler _push_handler;
-  // graphics::descriptor_handler _descriptor_handler;
 
 }; // class frustum_culling_task
 
-} // namespace sbx::scenes
+} // namespace sbx::models
 
-#endif // LIBSBX_SCENES_FRUSTUM_CULLING_TASK_HPP_
+#endif // LIBSBX_MODELS_FRUSTUM_CULLING_TASK_HPP_

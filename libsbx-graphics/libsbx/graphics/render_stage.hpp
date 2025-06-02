@@ -119,17 +119,25 @@ private:
 
 class viewport {
 
+  enum class type {
+    fixed,
+    window,
+    dynamic
+  }; // enum class type
+
 public:
 
-  viewport() noexcept
-  : _scale{1.0f, 1.0f}, 
-    _offset{0, 0}, 
-    _size{std::nullopt} { }
+  static auto fixed(const math::vector2u& size) -> viewport {
+    return viewport{type::fixed, math::vector2f{1.0f, 1.0f}, math::vector2i{0, 0}, size};
+  }
 
-  viewport(const math::vector2u& size) noexcept
-  : _scale{1.0f, 1.0f}, 
-    _offset{0, 0}, 
-    _size{size} { }
+  static auto window() -> viewport {
+    return viewport{type::window, math::vector2f{1.0f, 1.0f}, math::vector2i{0, 0}, std::nullopt};
+  }
+
+  static auto dynamic() -> viewport {
+    throw std::runtime_error{"Dynamic viewport not implemented"};
+  }
 
   auto scale() const noexcept -> const math::vector2f& {
     return _scale;
@@ -155,8 +163,37 @@ public:
     _size = size;
   }
 
+  auto is_fixed() const noexcept -> bool {
+    return _type == type::fixed;
+  }
+
+  auto is_window() const noexcept -> bool {
+    return _type == type::window;
+  }
+
+  auto is_dynamic() const noexcept -> bool {
+    return _type == type::dynamic;
+  }
+
 private:
 
+  // viewport() noexcept
+  // : _scale{1.0f, 1.0f}, 
+  //   _offset{0, 0}, 
+  //   _size{std::nullopt} { }
+
+  // viewport(const math::vector2u& size) noexcept
+  // : _scale{1.0f, 1.0f}, 
+  //   _offset{0, 0}, 
+  //   _size{size} { }
+
+  viewport(const type type, const math::vector2f& scale, const math::vector2i& offset, const std::optional<math::vector2u>& size = std::nullopt) noexcept
+  : _type{type},
+    _scale{scale}, 
+    _offset{offset}, 
+    _size{size} { }
+
+  type _type;
   math::vector2f _scale;
   math::vector2i _offset;
   std::optional<math::vector2u> _size;
@@ -212,7 +249,7 @@ class render_stage {
 
 public:
 
-  render_stage(std::vector<attachment>&& attachments, std::vector<subpass_binding>&& subpass_bindings, const graphics::viewport& viewport = graphics::viewport{});
+  render_stage(std::vector<attachment>&& attachments, std::vector<subpass_binding>&& subpass_bindings, const graphics::viewport& viewport = graphics::viewport::window());
 
   ~render_stage();
 

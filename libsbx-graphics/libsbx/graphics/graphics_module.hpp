@@ -18,6 +18,8 @@
 #include <libsbx/utility/hash.hpp>
 #include <libsbx/utility/concepts.hpp>
 
+#include <libsbx/signals/signal.hpp>
+
 #include <libsbx/graphics/devices/instance.hpp>
 #include <libsbx/graphics/devices/physical_device.hpp>
 #include <libsbx/graphics/devices/logical_device.hpp>
@@ -204,6 +206,12 @@ public:
     });
   }
 
+  template<typename Callable>
+  requires (std::is_invocable_r_v<math::vector2u, Callable>)
+  auto set_dynamic_size_callback(Callable&& callback) -> void {
+    _dynamic_size_callback = std::forward<Callable>(callback);
+  }
+
 private:
 
   auto _start_render_pass(graphics::render_stage& render_stage, graphics::command_buffer& command_buffer) -> void;
@@ -382,6 +390,8 @@ private:
 
   std::uint32_t _current_frame{};
   bool _is_framebuffer_resized{};
+
+  core::delegate<math::vector2u()> _dynamic_size_callback;
 
 }; // class graphics_module
 

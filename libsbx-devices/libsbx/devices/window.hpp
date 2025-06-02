@@ -54,7 +54,12 @@ public:
     _width = static_cast<std::uint32_t>(video_mode->width);
     _height = static_cast<std::uint32_t>(video_mode->height);
 
-    _handle = glfwCreateWindow(static_cast<std::int32_t>(_width), static_cast<std::int32_t>(_height), _title.c_str(), nullptr, nullptr);
+    glfwWindowHint(GLFW_RED_BITS, video_mode->redBits);
+    glfwWindowHint(GLFW_GREEN_BITS, video_mode->greenBits);
+    glfwWindowHint(GLFW_BLUE_BITS, video_mode->blueBits);
+    glfwWindowHint(GLFW_REFRESH_RATE, video_mode->refreshRate);
+
+    _handle = glfwCreateWindow(static_cast<std::int32_t>(_width), static_cast<std::int32_t>(_height), _title.c_str(), monitor, nullptr);
 
     if (!_handle) {
       throw std::runtime_error{"Could not create glfw window"};
