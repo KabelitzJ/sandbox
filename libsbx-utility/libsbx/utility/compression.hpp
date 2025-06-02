@@ -24,17 +24,27 @@ enum class compression_type : std::uint8_t {
 
 template<compression_type Type>
 struct basic_compressor {
-  [[nodiscard]] auto compress(std::span<const char> input) -> std::vector<char>;
-  [[nodiscard]] auto decompress(std::span<const char> input, const std::size_t original_size) -> std::vector<char>;
+  [[nodiscard]] static auto compress(std::span<const char> input) -> std::vector<char>;
+  [[nodiscard]] static auto decompress(std::span<const char> input, const std::size_t original_size) -> std::vector<char>;
 }; // struct basic_compressor
 
 template<>
 struct basic_compressor<compression_type::lz4> {
-  [[nodiscard]] auto compress(std::span<const char> input) -> std::vector<char>;
-  [[nodiscard]] auto decompress(std::span<const char> input, const std::size_t original_size) -> std::vector<char>;
+  [[nodiscard]] static auto compress(std::span<const char> input) -> std::vector<char>;
+  [[nodiscard]] static auto decompress(std::span<const char> input, const std::size_t original_size) -> std::vector<char>;
 }; // struct basic_compressor
 
 using compressor = basic_compressor<compression_type::lz4>;
+
+template<typename Type, compression_type CompressionType = compression_type::lz4>
+auto compress(std::span<const Type> input) -> std::vector<char> {
+  return basic_compressor<CompressionType>::compress({reinterpret_cast<const char*>(input.data()), input.size() * sizeof(Type)});
+}
+
+template<typename Type, compression_type CompressionType = compression_type::lz4>
+auto decompress(std::span<const char> input, const std::size_t original_size) -> std::vector<Type> {
+  return basic_compressor<CompressionType>::decompress({reinterpret_cast<const char*>(input.data()), input.size() * sizeof(Type)}, original_size * sizeof(Type));
+}
 
 } // namespace sbx::utility
 
