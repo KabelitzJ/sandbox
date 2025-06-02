@@ -171,7 +171,6 @@ public:
     _used_uniforms.clear();
     _static_meshes.clear();
     _images.clear();
-    _node_to_index.clear();
 
     EASY_END_BLOCK;
 
