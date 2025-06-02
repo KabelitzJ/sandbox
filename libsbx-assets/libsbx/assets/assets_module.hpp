@@ -1,6 +1,8 @@
 #ifndef LIBSBX_ASSETS_ASSETS_MODULE_HPP_
 #define LIBSBX_ASSETS_ASSETS_MODULE_HPP_
 
+#include <libsbx/utility/compression.hpp>
+
 #include <libsbx/core/module.hpp>
 
 #include <libsbx/assets/thread_pool.hpp>
@@ -20,7 +22,7 @@ public:
   ~assets_module() override = default;
 
   auto update() -> void override {
-
+    
   }
 
   template<typename Function, typename... Args>
