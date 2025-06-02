@@ -9,6 +9,8 @@
 
 #include <libsbx/graphics/buffers/buffer.hpp>
 
+#include <libsbx/graphics/resource_storage.hpp>
+
 namespace sbx::graphics {
 
 class storage_buffer : public buffer, public descriptor  {
@@ -31,6 +33,8 @@ public:
   static auto create_descriptor_set_layout_binding(std::uint32_t binding, VkDescriptorType descriptor_type, VkShaderStageFlags stage_flags) noexcept -> VkDescriptorSetLayoutBinding;
 
 }; // class storage_buffer
+
+using storage_buffer_handle = resource_handle<storage_buffer>;
 
 } // namespace sbx::graphics
 

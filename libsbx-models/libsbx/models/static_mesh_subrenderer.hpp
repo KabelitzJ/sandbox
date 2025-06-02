@@ -78,14 +78,21 @@ class static_mesh_subrenderer final : public graphics::subrenderer {
   inline static constexpr auto transparency_disabled = std::uint32_t{0u};
   inline static constexpr auto transparency_enabled = std::uint32_t{1u};
 
+  inline static constexpr auto usage = (VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
+  inline static constexpr auto properties = (VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+
 public:
 
   static_mesh_subrenderer(const std::filesystem::path& path, const graphics::pipeline::stage& stage, const graphics::resource_handle<graphics::buffer>& draw_commands_buffer = {})
   : graphics::subrenderer{stage},
     _pipeline{path, stage},
-    _draw_commands_buffer{draw_commands_buffer},
+    _culled_draw_commands_buffer{draw_commands_buffer},
     _push_handler{_pipeline},
-    _scene_descriptor_handler{_pipeline, 0u} { }
+    _scene_descriptor_handler{_pipeline, 0u} {
+    auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+    _draw_commands_buffer = graphics_module.add_resource<graphics::buffer>(graphics::storage_buffer::min_size, usage, properties);
+  }
 
   ~static_mesh_subrenderer() override = default;
 
@@ -164,6 +171,7 @@ public:
     _used_uniforms.clear();
     _static_meshes.clear();
     _images.clear();
+    _node_to_index.clear();
 
     EASY_END_BLOCK;
 
@@ -325,6 +333,12 @@ private:
     _scene_descriptor_handler.push("images_sampler", _images_sampler);
     _scene_descriptor_handler.push("images", _images);
 
+    auto& draw_commands_buffer = graphics_module.get_resource<graphics::buffer>(_draw_commands_buffer);
+
+    if (draw_commands_buffer.size() <= _static_meshes.size() * sizeof(VkDrawIndexedIndirectCommand)) {
+      draw_commands_buffer.resize(_static_meshes.size() * sizeof(VkDrawIndexedIndirectCommand));
+    }
+
     if (!_scene_descriptor_handler.update(_pipeline)) {
       return;
     }
@@ -378,16 +392,22 @@ private:
 
   std::map<mesh_key, std::vector<per_mesh_data>, mesh_key_less> _static_meshes;
 
-  pipeline _pipeline;
   std::unordered_map<mesh_key, static_mesh_subrenderer::uniform_data, mesh_key_hash, mesh_key_equal> _uniform_data;
   std::unordered_set<mesh_key, mesh_key_hash, mesh_key_equal> _used_uniforms;
 
+  std::unordered_map<scenes::node, std::uint32_t> c;
+
+  pipeline _pipeline;
+
+  graphics::buffer_handle _culled_draw_commands_buffer;
+  graphics::buffer_handle _draw_commands_buffer;
+
+  graphics::descriptor_handler _scene_descriptor_handler;
   graphics::uniform_handler _scene_uniform_handler;
   graphics::push_handler _push_handler;
-  graphics::resource_handle<graphics::buffer> _draw_commands_buffer;
+
   graphics::separate_sampler _images_sampler;
   graphics::separate_image2d_array _images;
-  graphics::descriptor_handler _scene_descriptor_handler;
 
 }; // class mesh_subrenderer
 

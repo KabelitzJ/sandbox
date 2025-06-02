@@ -36,6 +36,7 @@
 #include <libsbx/graphics/pipeline/compute_pipeline.hpp>
 
 #include <libsbx/graphics/buffers/buffer.hpp>
+#include <libsbx/graphics/buffers/storage_buffer.hpp>
 
 #include <libsbx/graphics/images/image2d.hpp>
 #include <libsbx/graphics/images/cube_image.hpp>
@@ -275,6 +276,8 @@ private:
       return _compute_pipelines;
     } else if constexpr (std::is_same_v<Type, buffer>) {
       return _buffers;
+    } else if constexpr (std::is_same_v<Type, storage_buffer>) {
+      return _storage_buffers;
     } else if constexpr (std::is_same_v<Type, image2d>) {
       return _images;
     } else if constexpr (std::is_same_v<Type, cube_image>) {
@@ -294,6 +297,8 @@ private:
       return _compute_pipelines;
     } else if constexpr (std::is_same_v<Type, buffer>) {
       return _buffers;
+    } else if constexpr (std::is_same_v<Type, storage_buffer>) {
+      return _storage_buffers;
     } else if constexpr (std::is_same_v<Type, image2d>) {
       return _images;
     } else if constexpr (std::is_same_v<Type, cube_image>) {
@@ -330,6 +335,7 @@ private:
   resource_storage<graphics::graphics_pipeline> _graphics_pipelines;
   resource_storage<graphics::compute_pipeline> _compute_pipelines;
   resource_storage<graphics::buffer> _buffers;
+  resource_storage<graphics::storage_buffer> _storage_buffers;
   resource_storage<graphics::image2d> _images;
   resource_storage<graphics::cube_image> _cube_image;
 
