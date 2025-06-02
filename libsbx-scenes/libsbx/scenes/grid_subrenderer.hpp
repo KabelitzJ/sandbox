@@ -78,7 +78,7 @@ public:
     }
 
     _descriptor_handler.bind_descriptors(command_buffer);
-    _push_handler.bind(command_buffer, _pipeline);
+    _push_handler.bind(command_buffer);
 
     command_buffer.draw(6u, 1u, 0u, 0u);
   }

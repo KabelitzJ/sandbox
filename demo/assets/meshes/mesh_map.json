@@ -11,6 +11,14 @@
     {
       "name": "sphere",
       "path": "demo/assets/meshes/sphere/sphere.gltf"
+    },
+    {
+      "name": "plane",
+      "path": "demo/assets/meshes/plane/plane.gltf"
+    },
+    {
+      "name": "tri",
+      "path": "demo/assets/meshes/tri/tri.gltf"
     }
   ]
 }

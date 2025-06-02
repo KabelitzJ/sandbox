@@ -77,6 +77,7 @@ graphics_module::~graphics_module() {
   }
 
   _buffers.clear();
+  _storage_buffers.clear();
   _shaders.clear();
   _graphics_pipelines.clear();
   _compute_pipelines.clear();

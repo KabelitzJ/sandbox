@@ -1,16 +1,20 @@
-#version 450 core 
+#version 460 core 
 
 #extension GL_EXT_buffer_reference : enable
+#extension GL_EXT_debug_printf : enable
 
 #include <libsbx/common/wind.glsl>
 
-struct per_mesh_data {
+struct transform_data {
   mat4 model;
   mat4 normal;
+}; // struct transform_data
+
+struct instance_data {
   vec4 tint;
   vec4 material; // x: metallic, y: roughness, z: flexiblity, w: anchor height
-  vec4 image_indices;
-}; // struct per_mesh_data
+  vec4 image_indices; // x: albedo image index, y: normal image index, z: transform data index, w: unused
+}; // struct instance_data
 
 struct vertex {
 	float position_x;
@@ -52,13 +56,23 @@ layout(location = 7) out vec2 out_material;
 layout(location = 8) out flat uint out_albedo_image_index;
 layout(location = 9) out flat uint out_normal_image_index;
 
-layout(buffer_reference, std430) readonly buffer vertex_buffer { 
-	vertex vertices[];
-}; // buffer vertex_buffer
+layout(buffer_reference, std430) readonly buffer vertex_buffer_reference { 
+	vertex data[];
+}; // buffer vertex_buffer_reference
+
+layout(buffer_reference, std430) readonly buffer transform_data_buffer_reference {
+  transform_data data[];
+}; // buffer transform_data_buffer_reference
+
+layout(buffer_reference, std430) readonly buffer instance_data_buffer_reference {
+  instance_data data[];
+}; // buffer instance_data_buffer_reference
 
 layout(push_constant) uniform constants {	
-	vertex_buffer vertex_buffer;
-} push_constants;
+	vertex_buffer_reference vertex_buffer;
+  transform_data_buffer_reference transform_data_buffer;
+  instance_data_buffer_reference instance_data_buffer;
+};
 
 layout(set = 0, binding = 0) uniform uniform_scene {
   mat4 view;
@@ -71,26 +85,30 @@ layout(set = 0, binding = 0) uniform uniform_scene {
   float time;
 } scene;
 
-layout(set = 1, binding = 0, std430) readonly buffer buffer_mesh_data {
-  per_mesh_data data[];
-} mesh_data;
+// layout(set = 1, binding = 0, std430) readonly buffer buffer_mesh_data {
+//   per_mesh_data data[];
+// } mesh_data;
 
 const float MAX_ANCHOR_HEIGHT = 2.0;
 
 void main() {
-  const per_mesh_data data = mesh_data.data[gl_InstanceIndex];
+  instance_data instance_data = instance_data_buffer.data[gl_InstanceIndex];
 
-  vertex vertex = push_constants.vertex_buffer.vertices[gl_VertexIndex];
+  uint transform_data_index = uint(instance_data.image_indices.z);
+
+  transform_data transform_data = transform_data_buffer.data[transform_data_index];
+
+  vertex vertex = vertex_buffer.data[gl_VertexIndex];
 
   vec3 in_position = position_from_vertex(vertex);
   vec3 in_normal = normal_from_vertex(vertex);
   vec4 in_tangent = tangent_from_vertex(vertex);
   vec2 in_uv = uv_from_vertex(vertex);
 
-  vec3 world_position = vec3(data.model * vec4(in_position, 1.0));
+  vec3 world_position = vec3(transform_data.model * vec4(in_position, 1.0));
 
-  float flexibility = data.material.z;
-  float anchor_height = data.material.w;
+  float flexibility = instance_data.material.z;
+  float anchor_height = instance_data.material.w;
 
   // if (flexibility > 0.0) {
   //   out_position = wind_effect(world_position, in_position, scene.time, flexibility, anchor_height, MAX_ANCHOR_HEIGHT);
@@ -100,21 +118,21 @@ void main() {
 
   out_position = world_position;
 
-  out_normal = normalize(vec3(data.normal * vec4(in_normal, 1.0)));
+  out_normal = normalize(vec3(transform_data.normal * vec4(in_normal, 1.0)));
 
-  vec3 T = normalize(vec3(data.model * in_tangent));
-  vec3 N = normalize(vec3(data.model * vec4(in_normal, 0.0)));
+  vec3 T = normalize(vec3(transform_data.model * in_tangent));
+  vec3 N = normalize(vec3(transform_data.model * vec4(in_normal, 0.0)));
   vec3 B = cross(N, T) * in_tangent.w; // w: sign of the tangent
 
   out_tbn = mat3(T, B, N);
 
   out_uv = in_uv;
 
-  out_color = data.tint;
-  out_material = data.material.xy;
+  out_color = instance_data.tint;
+  out_material = instance_data.material.xy;
 
-  out_albedo_image_index = uint(data.image_indices.x);
-  out_normal_image_index = uint(data.image_indices.y);
+  out_albedo_image_index = uint(instance_data.image_indices.x);
+  out_normal_image_index = uint(instance_data.image_indices.y);
 
   gl_Position = scene.projection * scene.view * vec4(out_position, 1.0);
 }

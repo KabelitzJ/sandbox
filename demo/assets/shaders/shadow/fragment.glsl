@@ -1,4 +1,4 @@
-#version 450 core
+#version 460 core
 
 #define MAX_IMAGE_ARRAY_SIZE 64
 

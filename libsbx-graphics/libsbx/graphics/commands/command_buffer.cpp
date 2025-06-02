@@ -303,8 +303,8 @@ auto command_buffer::draw_indirect(VkBuffer buffer, std::uint32_t offset, std::u
   vkCmdDrawIndirect(_handle, buffer, offset, count, stride);
 }
 
-auto command_buffer::draw_indexed_indirect(VkBuffer buffer, std::uint32_t offset, std::uint32_t count, std::uint32_t stride) -> void {
-  vkCmdDrawIndexedIndirect(_handle, buffer, offset, count, stride);
+auto command_buffer::draw_indexed_indirect(VkBuffer buffer, std::uint32_t offset, std::uint32_t count) -> void {
+  vkCmdDrawIndexedIndirect(_handle, buffer, offset * sizeof(VkDrawIndexedIndirectCommand), count, sizeof(VkDrawIndexedIndirectCommand));
 }
 
 auto command_buffer::begin_render_pass(const VkRenderPassBeginInfo& renderpass_begin_info, VkSubpassContents subpass_contents) -> void {

@@ -5,7 +5,8 @@
 namespace sbx::graphics {
 
 push_handler::push_handler(const pipeline& pipeline)
-: _uniform_block{pipeline.push_constant()} {
+: _uniform_block{pipeline.push_constant()},
+  _pipeline_layout{pipeline.layout()} {
   if (_uniform_block) {
     _data = std::make_unique<std::uint8_t[]>(_uniform_block->size());
   }
@@ -29,8 +30,8 @@ push_handler::push_handler(const pipeline& pipeline)
 //   return true;
 // }
 
-auto push_handler::bind(command_buffer& command_buffer, const pipeline& pipeline) -> void {
-  vkCmdPushConstants(command_buffer, pipeline.layout(), _uniform_block->stage_flags(), 0, _uniform_block->size(), _data.get());
+auto push_handler::bind(command_buffer& command_buffer) -> void {
+  vkCmdPushConstants(command_buffer, _pipeline_layout, _uniform_block->stage_flags(), 0, _uniform_block->size(), _data.get());
 }
 
 } // namespace sbx::graphics

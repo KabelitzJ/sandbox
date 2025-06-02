@@ -1,4 +1,4 @@
-#version 450 core
+#version 460 core
 
 struct glyph {
   vec2 offset;

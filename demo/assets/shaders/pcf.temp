@@ -1,6 +1,6 @@
 VERT
 
-#version 450 core
+#version 460 core
 
 #include "../common/wind.glsl"
 #include "../common/constants.glsl"
@@ -66,7 +66,7 @@ void main() {
 
 FRAG
 
-#version 450 core
+#version 460 core
 
 #include "../common/random.glsl"
 

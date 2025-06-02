@@ -29,12 +29,13 @@ public:
 
   // auto update(const std::optional<shader::uniform_block>& uniform_block) -> bool;
 
-  auto bind(command_buffer& command_buffer, const pipeline& pipeline) -> void;
+  auto bind(command_buffer& command_buffer) -> void;
 
 private:
 
   std::optional<shader::uniform_block> _uniform_block;
   std::unique_ptr<std::uint8_t[]> _data;
+  VkPipelineLayout _pipeline_layout;
 
 }; // class push_handler
 

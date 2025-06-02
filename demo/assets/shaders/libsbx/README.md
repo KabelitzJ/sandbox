@@ -11,7 +11,7 @@ To use the functions in this library, include the appropriate header files in yo
 For example, to use the `libsbx/common/constants.glsl` file, you would include it like this:
 
 ```glsl
-#version 450 core
+#version 460 core
 
 #include <libsbx/common/constants.glsl>
 

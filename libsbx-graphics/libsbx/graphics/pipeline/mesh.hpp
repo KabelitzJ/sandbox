@@ -66,10 +66,10 @@ public:
 
   auto render_submesh_indirect(graphics::storage_buffer& buffer, std::uint32_t offset, std::uint32_t submesh_index, std::uint32_t instance_count = 1u) const -> void;
 
-  auto submeshes() const noexcept -> const std::vector<submesh>&;
+  auto submeshes() const noexcept -> const std::vector<graphics::submesh>&;
 
-  auto submesh_bounds(std::uint32_t submesh_index) const -> math::volume {
-    return _submeshes.at(submesh_index).bounds;
+  auto submesh(std::uint32_t submesh_index) const -> const graphics::submesh& {
+    return _submeshes.at(submesh_index);
   }
 
 protected:
@@ -84,7 +84,7 @@ protected:
   // index_buffer_type _index_buffer;
   buffer_handle _vertex_buffer;
   buffer_handle _index_buffer;
-  std::vector<submesh> _submeshes;
+  std::vector<graphics::submesh> _submeshes;
 
 }; // class mesh
 

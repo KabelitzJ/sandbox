@@ -58,8 +58,13 @@ auto buffer::resize(const size_type new_size) -> void {
 
   auto allocator = graphics_module.allocator();
 
+  const auto was_mapped = _mapped_memory != nullptr;
+
   // Destroy the old buffer
-  vmaDestroyBuffer(allocator, _handle, _allocation);
+  if (_handle != VK_NULL_HANDLE) {   
+    unmap();
+    vmaDestroyBuffer(allocator, _handle, _allocation);
+  }
 
   // Create a new buffer with the new size
   _size = new_size;
@@ -77,7 +82,7 @@ auto buffer::resize(const size_type new_size) -> void {
   if (_properties & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) {
     allocation_create_info.flags |= VMA_ALLOCATION_CREATE_MAPPED_BIT | VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT;
     allocation_create_info.requiredFlags |= VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
-    allocation_create_info.preferredFlags |= VK_MEMORY_PROPERTY_HOST_COHERENT_BIT | VK_MEMORY_PROPERTY_HOST_CACHED_BIT;
+    allocation_create_info.preferredFlags |= VK_MEMORY_PROPERTY_HOST_COHERENT_BIT; // | VK_MEMORY_PROPERTY_HOST_CACHED_BIT;
   }
 
   if (_properties & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT) {
@@ -85,6 +90,10 @@ auto buffer::resize(const size_type new_size) -> void {
   }
 
   validate(vmaCreateBuffer(allocator, &buffer_create_info, &allocation_create_info, &_handle, &_allocation, nullptr));
+
+  if (was_mapped) {
+    map();
+  }
 
   if (_usage & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT) {
     auto buffer_device_address_info = VkBufferDeviceAddressInfo{};

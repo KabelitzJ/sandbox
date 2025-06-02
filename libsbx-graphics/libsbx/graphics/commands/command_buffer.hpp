@@ -100,7 +100,7 @@ public:
 
   auto draw_indirect(VkBuffer buffer, std::uint32_t offset, std::uint32_t count, std::uint32_t stride) -> void;
 
-  auto draw_indexed_indirect(VkBuffer buffer, std::uint32_t offset, std::uint32_t count, std::uint32_t stride) -> void;
+  auto draw_indexed_indirect(VkBuffer buffer, std::uint32_t offset, std::uint32_t count) -> void;
 
   auto begin_render_pass(const VkRenderPassBeginInfo& renderpass_begin_info, VkSubpassContents subpass_contents) -> void;
 

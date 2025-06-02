@@ -140,10 +140,16 @@ constexpr auto operator==(const observer_ptr<Type>& lhs, const observer_ptr<Type
   return lhs.get() == rhs.get();
 }
 
+template<typename Type>
+constexpr auto operator==(const observer_ptr<Type>& lhs, std::nullptr_t) noexcept -> bool {
+  return lhs.get() == nullptr;
+}
+
 template<typename Type, smart_pointer<Type> Pointer>
 constexpr auto operator==(const observer_ptr<Type>& lhs, const Pointer& rhs) noexcept -> bool {
   return lhs.get() == rhs.get();
 }
+
 
 /**
  * @brief Creates an observer pointer from a pointer.

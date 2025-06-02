@@ -95,7 +95,7 @@ public:
     }
 
     _descriptor_handler.bind_descriptors(command_buffer);
-    _push_handler.bind(command_buffer, _pipeline);
+    _push_handler.bind(command_buffer);
 
     command_buffer.draw(lines.size(), 1, 0, 0);
 

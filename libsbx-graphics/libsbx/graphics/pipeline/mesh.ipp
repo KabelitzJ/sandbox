@@ -20,7 +20,7 @@ mesh<Vertex>::mesh(std::vector<vertex_type>&& vertices, std::vector<index_type>&
     VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
   );
 
-  _submeshes.push_back(submesh{static_cast<std::uint32_t>(indices.size()), 0, 0, bounds});
+  _submeshes.push_back(graphics::submesh{static_cast<std::uint32_t>(indices.size()), 0, 0, bounds});
   
   _upload_vertices(std::move(vertices), std::move(indices));
 }
@@ -100,7 +100,7 @@ auto mesh<Vertex>::render_submesh_indirect(graphics::storage_buffer& buffer, std
 }
 
 template<vertex Vertex>
-auto mesh<Vertex>::submeshes() const noexcept -> const std::vector<submesh>& {
+auto mesh<Vertex>::submeshes() const noexcept -> const std::vector<graphics::submesh>& {
   return _submeshes;
 }
 

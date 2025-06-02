@@ -13,6 +13,10 @@
 #include <tsl/robin_map.h>
 #include <tsl/robin_set.h>
 
+#include <range/v3/view/enumerate.hpp>
+
+#include <libsbx/utility/logger.hpp>
+
 #include <libsbx/containers/octree.hpp>
 
 #include <libsbx/math/color.hpp>
@@ -78,9 +82,6 @@ class static_mesh_subrenderer final : public graphics::subrenderer {
   inline static constexpr auto transparency_disabled = std::uint32_t{0u};
   inline static constexpr auto transparency_enabled = std::uint32_t{1u};
 
-  inline static constexpr auto usage = (VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
-  inline static constexpr auto properties = (VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-
 public:
 
   static_mesh_subrenderer(const std::filesystem::path& path, const graphics::pipeline::stage& stage, const graphics::resource_handle<graphics::buffer>& draw_commands_buffer = {})
@@ -91,7 +92,9 @@ public:
     _scene_descriptor_handler{_pipeline, 0u} {
     auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
-    _draw_commands_buffer = graphics_module.add_resource<graphics::buffer>(graphics::storage_buffer::min_size, usage, properties);
+    _draw_commands_buffer = graphics_module.add_resource<graphics::storage_buffer>(graphics::storage_buffer::min_size, VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT);
+    _transform_data_buffer = graphics_module.add_resource<graphics::storage_buffer>(graphics::storage_buffer::min_size, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT);
+    _instance_data_buffer = graphics_module.add_resource<graphics::storage_buffer>(graphics::storage_buffer::min_size, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT);
   }
 
   ~static_mesh_subrenderer() override = default;
@@ -130,57 +133,26 @@ public:
     _scene_uniform_handler.push("light_direction", sbx::math::vector3::normalized(scene_light.direction()));
     _scene_uniform_handler.push("light_color", scene_light.color());
 
-    // auto point_light_nodes = scene.query<scenes::point_light>();
-
-    // auto point_lights = std::vector<point_light>{};
-    // auto point_light_count = std::uint32_t{0};
-
-    // for (const auto& node : point_light_nodes) {
-    //   const auto model = scene.world_transform(node);
-
-    //   const auto& light = node.get_component<scenes::point_light>();
-
-    //   const auto position = math::vector3{model[3]};
-
-    //   point_lights.push_back(point_light{position, light.color(), light.radius()});
-      
-    //   ++point_light_count;
-
-    //   if (point_light_count >= max_point_lights) {
-    //     break;
-    //   }
-    // }
-
-    // _point_lights_storage_handler.push(std::span<const point_light>{point_lights.data(), point_light_count});
-    // _scene_uniform_handler.push("point_light_count", 0u);
-
     _scene_uniform_handler.push("time", std::fmod(core::engine::time().value() * 0.5f, 1.0f));
 
     EASY_END_BLOCK;
 
     EASY_BLOCK("clearing old data");
 
-    for (auto entry = _uniform_data.begin(); entry != _uniform_data.end();) {
-      if (_used_uniforms.contains(entry->first)) {
-        ++entry;
-      } else {
-        entry = _uniform_data.erase(entry);
-      }
-    }
+    // for (auto entry = _uniform_data.begin(); entry != _uniform_data.end();) {
+    //   if (_used_uniforms.contains(entry->first)) {
+    //     ++entry;
+    //   } else {
+    //     entry = _uniform_data.erase(entry);
+    //   }
+    // }
 
-    _used_uniforms.clear();
-    _static_meshes.clear();
+    // _used_uniforms.clear();
+    _submesh_instances.clear();
+    _transform_data.clear();
     _images.clear();
 
     EASY_END_BLOCK;
-
-    // EASY_BLOCK("sorting by camera distance");
-
-    // scene.sort<math::transform>([&camera_global_transform, &scene](const auto& lhs, const auto& rhs) {
-    //   return true;
-    // });
-
-    // EASY_END_BLOCK;
 
     EASY_BLOCK("building frustum");
 
@@ -202,27 +174,9 @@ public:
 
     auto mesh_query_collider = scene.query<const scenes::static_mesh, const scenes::collider>();
 
-    // auto tree = containers::octree<scenes::node>{math::volume{
-    //   math::vector3{-300.0f, -100.0f, -300.0f},
-    //   math::vector3{300.0f, 100.0f, 300.0f}
-    // }};
 
     for (auto&& [node, static_mesh, collider] : mesh_query_collider.each()) {
-    // for (const auto node : mesh_query_collider) {
-    //   auto&& [static_mesh, collider] = mesh_query_collider.get<const scenes::static_mesh, const scenes::collider>(node);
-      // const auto model = scene.world_transform(node);
-
-
-      // const auto volume = scenes::to_volume(collider);
-      // const auto transformed_volume = math::volume::transformed(volume, model);
-
-      // tree.insert(node, transformed_volume);
-
       _submit_mesh(node, static_mesh);
-      // EASY_BLOCK("testing frustum");
-      // if (frustum.intersects(model, collider)) {
-      // }
-      // EASY_END_BLOCK;
     }
 
     EASY_END_BLOCK;
@@ -242,57 +196,44 @@ private:
     alignas(16) std::float_t radius;
   }; // struct point_light
 
-  struct uniform_data {
-    graphics::descriptor_handler descriptor_handler;
-    graphics::storage_handler storage_handler;
+  // struct uniform_data {
+  //   graphics::descriptor_handler descriptor_handler;
+  //   graphics::storage_handler storage_handler;
 
-    uniform_data(const graphics::pipeline& pipeline, std::uint32_t set)
-    : descriptor_handler{pipeline, set} { }
+  //   uniform_data(const graphics::pipeline& pipeline, std::uint32_t set)
+  //   : descriptor_handler{pipeline, set} { }
 
-  }; // struct uniform_data
+  // }; // struct uniform_data
 
-  struct mesh_key {
-    math::uuid mesh_id;
-    std::uint32_t submesh_index;
-  }; // struct mesh_key
+  template<typename Type, std::size_t Size, std::size_t Alignment>
+  struct layout_requirements {
+    inline static constexpr auto value = sizeof(Type) == Size && alignof(Type) == Alignment;
+  }; // struct layout_requirements
 
-  struct per_mesh_data {
+  struct transform_data {
     alignas(16) math::matrix4x4 model;
     alignas(16) math::matrix4x4 normal;
+  }; // struct transform_data
+
+  static_assert(layout_requirements<transform_data, 128, 16>::value, "transform_data does not meet layout requirements");
+
+  struct instance_data {
     alignas(16) math::color tint;
     alignas(16) math::vector4 material;
     alignas(16) math::vector4 image_indices;
-  }; // struct per_mesh_data
+  }; // struct instance_data
 
-  struct mesh_key_hash {
-    auto operator()(const mesh_key& key) const noexcept -> std::size_t {
-      auto seed = std::size_t{0};
+  static_assert(layout_requirements<instance_data, 48, 16>::value, "instance_data does not meet layout requirements");
 
-      utility::hash_combine(seed, key.mesh_id, key.submesh_index);
+  // struct render_data {
+  //   std::vector<transform_data> transforms;
+    
+  // }; // struct render_data
 
-      return seed;
-    }
-  }; // struct mesh_key_hash
-
-  struct mesh_key_equal {
-    auto operator()(const mesh_key& lhs, const mesh_key& rhs) const noexcept -> bool {
-      return lhs.mesh_id == rhs.mesh_id && lhs.submesh_index == rhs.submesh_index;
-    }
-  }; // struct mesh_key_equal
-
-  struct mesh_key_less {
-    auto operator()(const mesh_key& lhs, const mesh_key& rhs) const noexcept -> bool {
-      return lhs.mesh_id < rhs.mesh_id || (lhs.mesh_id == rhs.mesh_id && lhs.submesh_index < rhs.submesh_index);
-    }
-  }; // struct mesh_key_equal
-
-  template<typename... Args>
-  using map_type = std::unordered_map<Args...>;
-  // using map_type = tsl::robin_map<Args...>;
-
-  template<typename... Args>
-  using set_type = std::unordered_set<Args...>;
-  // using set_type = tsl::robin_set<Args...>;
+  struct draw_command_range {
+    std::uint32_t offset;
+    std::uint32_t count;
+  }; // struct draw_command_range
 
   auto _submit_mesh(const scenes::node node, const scenes::static_mesh& static_mesh) -> void {
     EASY_FUNCTION();
@@ -301,21 +242,26 @@ private:
 
     const auto mesh_id = static_mesh.mesh_id();
 
+    const auto& global_transform = scene.get_component<const scenes::global_transform>(node);
+
+    const auto transform_data_index = static_cast<std::uint32_t>(_transform_data.size());
+    _transform_data.emplace_back(global_transform.model, global_transform.normal);
+
+    auto& instances = _submesh_instances[mesh_id];
+
     for (const auto& submesh : static_mesh.submeshes()) {
       EASY_BLOCK("submit submesh");
-      const auto key = mesh_key{mesh_id, submesh.index};
+      // _used_uniforms.insert(mesh_id);
 
-      _used_uniforms.insert(key);
-
-      const auto& global_transform = scene.get_component<const scenes::global_transform>(node);
 
       const auto albedo_image_index = submesh.albedo_texture ? _images.push_back(submesh.albedo_texture) : graphics::separate_image2d_array::max_size;
       const auto normal_image_index = submesh.normal_texture ? _images.push_back(submesh.normal_texture) : graphics::separate_image2d_array::max_size;
 
-      const auto image_indices = math::vector4{albedo_image_index, normal_image_index, 0u, 0u};
+      const auto image_indices = math::vector4{albedo_image_index, normal_image_index, transform_data_index, 0u};
       const auto material = math::vector4{submesh.material.metallic, submesh.material.roughness, submesh.material.flexibility, submesh.material.anchor_height};
 
-      _static_meshes[key].push_back(per_mesh_data{global_transform.model, global_transform.normal, submesh.tint, material, image_indices});
+      instances.resize(submesh.index + 1u);
+      instances[submesh.index].push_back(instance_data{submesh.tint, material, image_indices});
 
       EASY_END_BLOCK;
     }
@@ -332,74 +278,130 @@ private:
     _scene_descriptor_handler.push("images_sampler", _images_sampler);
     _scene_descriptor_handler.push("images", _images);
 
-    auto& draw_commands_buffer = graphics_module.get_resource<graphics::buffer>(_draw_commands_buffer);
-
-    if (draw_commands_buffer.size() <= _static_meshes.size() * sizeof(VkDrawIndexedIndirectCommand)) {
-      draw_commands_buffer.resize(_static_meshes.size() * sizeof(VkDrawIndexedIndirectCommand));
-    }
-
     if (!_scene_descriptor_handler.update(_pipeline)) {
       return;
     }
 
     _scene_descriptor_handler.bind_descriptors(command_buffer);
 
-    auto current_mesh_id = math::uuid::null();
-    auto offset = 0;
+    auto draw_commands = std::vector<VkDrawIndexedIndirectCommand>{};
+    auto instance_data = std::vector<static_mesh_subrenderer::instance_data>{};
+    auto draw_ranges = std::unordered_map<math::uuid, draw_command_range>{};
 
-    for (const auto& [key, data] : _static_meshes) {
-      // auto& uniform_data = per_pipeline_data.uniform_data[key];
+    auto base_instance = std::uint32_t{0u};
+    // auto draw_command_offset = std::uint32_t{0u};
 
-      auto [entry, inserted] = _uniform_data.try_emplace(key, _pipeline, 1u);
+    EASY_BLOCK("build draw commands");
 
-      auto& descriptor_handler = entry->second.descriptor_handler;
-      auto& storage_handler = entry->second.storage_handler;
+    for (const auto& [mesh_id, submesh] : _submesh_instances) {
+      auto& mesh = graphics_module.get_asset<models::mesh>(mesh_id);
 
-      storage_handler.push(std::span<const per_mesh_data>{data});
+      auto range = draw_command_range{};
+      range.offset = static_cast<uint32_t>(draw_commands.size());
 
-      auto& mesh = graphics_module.get_asset<models::mesh>(key.mesh_id);
+      for (const auto& [submesh_index, instances] : ranges::views::enumerate(submesh)) {
+        if (instances.empty()) {
+          continue;
+        }
 
-      descriptor_handler.push("buffer_mesh_data", storage_handler);
+        const auto submesh = mesh.submesh(submesh_index);
 
-      _push_handler.push("vertex_buffer", mesh.address());
+        const auto instance_count = static_cast<std::uint32_t>(instances.size());
 
-      if (!descriptor_handler.update(_pipeline)) {
-        continue;
+        auto command = VkDrawIndexedIndirectCommand{};
+        command.indexCount = submesh.index_count;
+        command.instanceCount = instance_count;
+        command.firstIndex = submesh.index_offset;
+        command.vertexOffset = submesh.vertex_offset;
+        command.firstInstance = base_instance;
+        // command.firstInstance = 0u;
+
+        draw_commands.push_back(command);
+        instance_data.insert(instance_data.end(), instances.begin(), instances.end());
+
+        base_instance += instance_count;
+        range.count++;
       }
 
-      descriptor_handler.bind_descriptors(command_buffer);
-      _push_handler.bind(command_buffer, _pipeline);
-
-      // if (current_mesh_id != key.mesh_id) {
-      //   mesh.bind(command_buffer);
-      //   current_mesh_id = key.mesh_id;
-      // }
-
-      mesh.bind(command_buffer);
-
-      mesh.render_submesh(command_buffer, key.submesh_index, static_cast<std::uint32_t>(data.size()));
-
-      // [TODO] Figure out how to do indirect draw calls when the push constants and descriptors change
-
-      // mesh.bind(command_buffer);
-      // mesh.render_submesh_indirect(*_draw_commands, offset, key.submesh_index, static_cast<std::uint32_t>(data.size()));
-      // offset++;
-      // command_buffer.draw_indexed_indirect(*_draw_commands, 0u, 1u, sizeof(VkDrawIndexedIndirectCommand));
+      if (range.count > 0) {
+        draw_ranges.emplace(mesh_id, range);
+      }
     }
 
+    EASY_END_BLOCK;
+
+    if (draw_commands.empty()) {
+      return;
+    }
+
+    EASY_BLOCK("upload draw commands");
+
+    // Resize and update the draw commands buffer
+    auto& draw_commands_buffer = graphics_module.get_resource<graphics::storage_buffer>(_draw_commands_buffer);
+
+    const auto required_draw_commands_buffer_size = static_cast<std::uint32_t>(draw_commands.size() * sizeof(VkDrawIndexedIndirectCommand));
+
+    if (draw_commands_buffer.size() < required_draw_commands_buffer_size) {
+      draw_commands_buffer.resize(required_draw_commands_buffer_size * 1.5f);
+    }
+
+    draw_commands_buffer.update(draw_commands.data(), required_draw_commands_buffer_size);
+
+    // Resize and update the transform data buffer
+    auto& transform_data_buffer = graphics_module.get_resource<graphics::storage_buffer>(_transform_data_buffer);
+
+    const auto required_transform_data_buffer_size = static_cast<std::uint32_t>(_transform_data.size() * sizeof(static_mesh_subrenderer::transform_data));
+
+    if (transform_data_buffer.size() < required_transform_data_buffer_size) {
+      transform_data_buffer.resize(required_transform_data_buffer_size * 1.5f);
+    }
+
+    transform_data_buffer.update(_transform_data.data(), required_transform_data_buffer_size);
+
+    // Resize and update the instance data buffer
+    auto& instance_data_buffer = graphics_module.get_resource<graphics::storage_buffer>(_instance_data_buffer);
+
+    const auto required_instance_data_buffer_size = static_cast<std::uint32_t>(instance_data.size() * sizeof(static_mesh_subrenderer::instance_data));
+
+    if (instance_data_buffer.size() < required_instance_data_buffer_size) {
+      instance_data_buffer.resize(required_instance_data_buffer_size * 1.5f);
+    }
+
+    instance_data_buffer.update(instance_data.data(), required_instance_data_buffer_size);
+
+    // [NOTE] KAJ 2025-06-03 : instance_data.size() und _transform_data.size() dont add up. _transform_data.size() should be smaller.
+
+    for (const auto& [mesh_id, range] : draw_ranges) {
+      auto& mesh = graphics_module.get_asset<models::mesh>(mesh_id);
+      
+      mesh.bind(command_buffer);
+      
+      _push_handler.push("transform_data_buffer", transform_data_buffer.address());
+      _push_handler.push("instance_data_buffer", instance_data_buffer.address());
+      _push_handler.push("vertex_buffer", mesh.address());
+
+      _push_handler.bind(command_buffer);
+
+      command_buffer.draw_indexed_indirect(draw_commands_buffer, range.offset, range.count);
+    }
+
+    EASY_END_BLOCK;
   }
 
-  std::map<mesh_key, std::vector<per_mesh_data>, mesh_key_less> _static_meshes;
+  std::unordered_map<math::uuid, std::vector<std::vector<instance_data>>> _submesh_instances;
+  std::vector<transform_data> _transform_data;
 
-  std::unordered_map<mesh_key, static_mesh_subrenderer::uniform_data, mesh_key_hash, mesh_key_equal> _uniform_data;
-  std::unordered_set<mesh_key, mesh_key_hash, mesh_key_equal> _used_uniforms;
 
-  std::unordered_map<scenes::node, std::uint32_t> c;
+  // std::unordered_map<math::uuid, static_mesh_subrenderer::uniform_data> _uniform_data;
+  // std::unordered_set<math::uuid> _used_uniforms;
 
   pipeline _pipeline;
 
   graphics::buffer_handle _culled_draw_commands_buffer;
-  graphics::buffer_handle _draw_commands_buffer;
+  graphics::storage_buffer_handle _draw_commands_buffer;
+  graphics::storage_buffer_handle _transform_data_buffer;
+  graphics::storage_buffer_handle _instance_data_buffer;
+
 
   graphics::descriptor_handler _scene_descriptor_handler;
   graphics::uniform_handler _scene_uniform_handler;

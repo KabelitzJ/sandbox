@@ -59,7 +59,7 @@ public:
     glfwWindowHint(GLFW_BLUE_BITS, video_mode->blueBits);
     glfwWindowHint(GLFW_REFRESH_RATE, video_mode->refreshRate);
 
-    _handle = glfwCreateWindow(static_cast<std::int32_t>(_width), static_cast<std::int32_t>(_height), _title.c_str(), monitor, nullptr);
+    _handle = glfwCreateWindow(static_cast<std::int32_t>(_width), static_cast<std::int32_t>(_height), _title.c_str(), nullptr, nullptr);
 
     if (!_handle) {
       throw std::runtime_error{"Could not create glfw window"};

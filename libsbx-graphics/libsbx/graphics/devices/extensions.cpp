@@ -6,7 +6,8 @@ auto extensions::device() -> std::vector<const char*> {
   auto required_extensions = std::vector<const char*>{
     VK_KHR_SWAPCHAIN_EXTENSION_NAME,
     VK_KHR_PUSH_DESCRIPTOR_EXTENSION_NAME,
-    VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME
+    VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME,
+    VK_KHR_SHADER_DRAW_PARAMETERS_EXTENSION_NAME
   };
 
   return required_extensions;
@@ -31,6 +32,13 @@ auto extensions::instance() -> std::vector<const char*> {
   available_extensions.resize(available_extention_count);
 
   vkEnumerateInstanceExtensionProperties(nullptr, &available_extention_count, available_extensions.data());
+
+  if constexpr (utility::build_configuration_v == utility::build_configuration::debug) {
+    utility::logger<"graphics">::debug("Available instance extension:");
+    for (const auto& extension : available_extensions) {
+      utility::logger<"graphics">::debug("\t{}", std::string_view{extension.extensionName});
+    }
+  }
 
   for (const auto* extension : required_extensions) {
     auto found = false;

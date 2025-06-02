@@ -37,9 +37,9 @@ def compile_shader(glslc_path: str, shader_dir: Path, shader_root_dir: Path):
       f"-fshader-stage={stage}",
       "-c", str(file),
       "-o", str(output),
-      "--target-env=vulkan1.3",
+      "--target-env=vulkan1.4",
       "--target-spv=spv1.5",
-      "-std=450core",
+      "-std=460core",
       f"-I{shader_root_dir}"
     ]
 

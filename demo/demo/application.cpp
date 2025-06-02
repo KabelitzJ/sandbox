@@ -144,8 +144,8 @@ application::application()
     }
   }
 
-  for (auto y = -9; y <= 9; y = y + 3) {
-    for (auto x = -9; x <= 9; x = x + 3) {
+  for (auto y = -3; y <= 3; y = y + 3) {
+    for (auto x = -3; x <= 3; x = x + 3) {
       auto test = scene.create_node("Test");
       auto& test_transform = scene.get_component<sbx::math::transform>(test);
       test_transform.set_position(sbx::math::vector3{x, sbx::math::random::next<std::float_t>(-5.0f, 5.0f), y});

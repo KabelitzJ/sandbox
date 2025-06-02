@@ -169,7 +169,7 @@
 //       }
 
 //       descriptor_handler.bind_descriptors(command_buffer);
-//       push_handler.bind(command_buffer, _pipeline);
+//       push_handler.bind(command_buffer);
 
 //       mesh.render(command_buffer);
 //     }

@@ -288,6 +288,12 @@ auto logical_device::_get_enabled_features(const physical_device& physical_devic
     utility::logger<"graphics">::warn("Selected GPU does not support multi draw indirect");
   }
 
+  if (available_vulkan11_features.shaderDrawParameters) {
+    enabled_vulkan11_features.shaderDrawParameters = true;
+  } else {
+    utility::logger<"graphics">::warn("Selected GPU does not support shader draw parameters");
+  }
+
   if (available_vulkan12_features.bufferDeviceAddress) {
     enabled_vulkan12_features.bufferDeviceAddress = true;
   } else {

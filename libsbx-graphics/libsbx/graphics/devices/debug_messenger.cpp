@@ -31,10 +31,17 @@ auto debug_messenger::create(const instance& target, const VkAllocationCallbacks
 
 auto debug_messenger::create_info() -> VkDebugUtilsMessengerCreateInfoEXT* {
   if constexpr (utility::build_configuration_v == utility::build_configuration::debug) {
-    static auto create_info = VkDebugUtilsMessengerCreateInfoEXT{};
+    static auto validation_feature_enables = std::array<VkValidationFeatureEnableEXT, 1u>{VK_VALIDATION_FEATURE_ENABLE_DEBUG_PRINTF_EXT};
 
+    static auto validation_features = VkValidationFeaturesEXT{};
+    validation_features.sType = VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT;
+    validation_features.enabledValidationFeatureCount = static_cast<std::uint32_t>(validation_feature_enables.size());
+    validation_features.pEnabledValidationFeatures = validation_feature_enables.data();
+
+    static auto create_info = VkDebugUtilsMessengerCreateInfoEXT{};
     create_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-    create_info.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+    create_info.pNext = &validation_features;
+    create_info.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
     create_info.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
     create_info.pfnUserCallback = _debug_callback;
 
@@ -44,11 +51,28 @@ auto debug_messenger::create_info() -> VkDebugUtilsMessengerCreateInfoEXT* {
   }
 }
 
+static auto message_type_to_string(const VkDebugUtilsMessageTypeFlagsEXT message_type) -> std::string_view {
+  switch (message_type) {
+    case VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT:
+      return "General";
+    case VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT:
+      return "Validation";
+    case VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT:
+      return "Performance";
+    default:
+      return "Unknown";
+  }
+}
+
 VKAPI_ATTR auto VKAPI_CALL debug_messenger::_debug_callback(VkDebugUtilsMessageSeverityFlagBitsEXT message_severity, [[maybe_unused]] VkDebugUtilsMessageTypeFlagsEXT message_type, const VkDebugUtilsMessengerCallbackDataEXT* callback_data, [[maybe_unused]] void* user_data) -> VkBool32 {
-  if (message_severity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) {
-    utility::logger<"graphics">::warn("{}", callback_data->pMessage);
+  const auto message_type_str = message_type_to_string(message_type);
+
+  if (message_severity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT) {
+    utility::logger<"graphics">::info("{}: {}", message_type_str, callback_data->pMessage);
+  } else if (message_severity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) {
+    utility::logger<"graphics">::warn("{}: {}", message_type_str, callback_data->pMessage);
   } else if (message_severity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) {
-    utility::logger<"graphics">::error("{}", callback_data->pMessage);
+    utility::logger<"graphics">::error("{}: {}", message_type_str, callback_data->pMessage);
     std::terminate();
   }
 
