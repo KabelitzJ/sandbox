@@ -162,22 +162,16 @@ public:
 
     EASY_BLOCK("submit meshes no collider");
 
-    auto mesh_query_no_collider = scene.query<const scenes::static_mesh>(ecs::exclude<scenes::collider>);
+    auto mesh_query = scene.query<const scenes::static_mesh>();
 
-    for (auto&& [node, static_mesh] : mesh_query_no_collider.each()) {
+    auto static_meshes = 0;
+
+    for (auto&& [node, static_mesh] : mesh_query.each()) {
       _submit_mesh(node, static_mesh);
+      static_meshes++;
     }
 
-    EASY_END_BLOCK;
-
-    EASY_BLOCK("submit meshes collider");
-
-    auto mesh_query_collider = scene.query<const scenes::static_mesh, const scenes::collider>();
-
-
-    for (auto&& [node, static_mesh, collider] : mesh_query_collider.each()) {
-      _submit_mesh(node, static_mesh);
-    }
+    utility::logger<"models">::debug("static_meshes submitted: {}", static_meshes);
 
     EASY_END_BLOCK;
 
@@ -260,7 +254,7 @@ private:
       const auto image_indices = math::vector4{albedo_image_index, normal_image_index, transform_data_index, 0u};
       const auto material = math::vector4{submesh.material.metallic, submesh.material.roughness, submesh.material.flexibility, submesh.material.anchor_height};
 
-      instances.resize(submesh.index + 1u);
+      instances.resize(std::max(instances.size(), static_cast<std::size_t>(submesh.index + 1u)));
       instances[submesh.index].push_back(instance_data{submesh.tint, material, image_indices});
 
       EASY_END_BLOCK;

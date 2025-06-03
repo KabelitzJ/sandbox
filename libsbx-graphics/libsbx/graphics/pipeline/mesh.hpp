@@ -45,7 +45,7 @@ public:
   struct mesh_data {
     std::vector<vertex_type> vertices;
     std::vector<index_type> indices;
-    std::vector<submesh> submeshes;
+    std::vector<graphics::submesh> submeshes;
   }; // struct mesh_data
 
   mesh(std::vector<vertex_type>&& vertices, std::vector<index_type>&& indices, const math::volume& bounds = math::volume{});
