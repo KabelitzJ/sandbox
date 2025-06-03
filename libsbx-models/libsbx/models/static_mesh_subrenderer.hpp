@@ -25,6 +25,9 @@
 #include <libsbx/math/volume.hpp>
 
 #include <libsbx/utility/logger.hpp>
+#include <libsbx/utility/timer.hpp>
+
+#include <libsbx/core/engine.hpp>
 
 #include <libsbx/graphics/graphics_module.hpp>
 #include <libsbx/graphics/subrenderer.hpp>
@@ -102,6 +105,10 @@ public:
   auto render(graphics::command_buffer& command_buffer) -> void override {
     EASY_FUNCTION();
 
+    auto big_timer = utility::scoped_timer{[](const auto measurement){
+      core::engine::profiler().submit("static_mesh_subrenderer", measurement);
+    }};
+
     auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
@@ -160,24 +167,33 @@ public:
 
     EASY_END_BLOCK;
 
-    EASY_BLOCK("submit meshes no collider");
+    EASY_BLOCK("submit meshes");
 
-    auto mesh_query = scene.query<const scenes::static_mesh>();
+    // [NOTE] KAJ 2025-06-04 : Submitting all static meshes
+    {
+      auto timer = utility::scoped_timer{[](const auto measurement){
+        core::engine::profiler().submit("static_mesh_subrenderer::submit", measurement);
+      }};
 
-    auto static_meshes = 0;
-
-    for (auto&& [node, static_mesh] : mesh_query.each()) {
-      _submit_mesh(node, static_mesh);
-      static_meshes++;
+      auto mesh_query = scene.query<const scenes::static_mesh>();
+  
+      for (auto&& [node, static_mesh] : mesh_query.each()) {
+        _submit_mesh(node, static_mesh);
+      }
     }
-
-    utility::logger<"models">::debug("static_meshes submitted: {}", static_meshes);
 
     EASY_END_BLOCK;
 
     EASY_BLOCK("render opaque meshes");
 
-    _render_static_meshes(command_buffer);
+    // [NOTE] KAJ 2025-06-04 : Rendering all static meshes
+    {
+      auto timer = utility::scoped_timer{[](const auto measurement){
+        core::engine::profiler().submit("static_mesh_subrenderer::render", measurement);
+      }};
+
+      _render_static_meshes(command_buffer);
+    }
 
     EASY_END_BLOCK;
   }

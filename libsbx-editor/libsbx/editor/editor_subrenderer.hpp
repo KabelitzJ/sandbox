@@ -492,8 +492,43 @@ private:
         _frames = 0;
       }
 
-      ImGui::Text("Delta time:  %.3f [ms]", sbx::units::quantity_cast<sbx::units::millisecond>(delta_time).value());
-      ImGui::Text("FPS:         %d", _fps);
+      if (ImGui::CollapsingHeader("Frame", ImGuiTreeNodeFlags_DefaultOpen)) {
+        ImGui::Text("Delta time:  %.3f [ms]", units::quantity_cast<sbx::units::millisecond>(delta_time).value());
+        ImGui::Text("FPS:         %d", _fps);
+      }
+
+      if (ImGui::CollapsingHeader("Profiler", ImGuiTreeNodeFlags_DefaultOpen)) {
+        static auto filter_buffer = std::array<char, 64u>{};
+
+        // [TODO] KAJ 2025-06-03 : Filtering is not yet implemented
+        ImGui::InputTextWithHint("##profiler_filter", "Filter...", filter_buffer.data(), filter_buffer.size());
+
+        core::engine::profiler().for_each([](const auto& group_name, const auto& group){
+          if (ImGui::TreeNodeEx(group_name.c_str(), ImGuiTreeNodeFlags_DefaultOpen)) {
+            if (group.overall.value() > 0.0f) {
+              const auto ms = units::quantity_cast<sbx::units::millisecond>(group.overall);
+
+              ImGui::Text("total:");
+              ImGui::SameLine();
+              ImGui::PushStyleColor(ImGuiCol_Text, _get_color_for_time(ms));
+              ImGui::Text("\t%.2f %s", ms.value(), "ms");
+              ImGui::PopStyleColor();
+            }
+
+            for (const auto& [name, measurement] : group.entries) {
+              const auto ms = units::quantity_cast<sbx::units::millisecond>(measurement);
+
+              ImGui::Text(name.c_str());
+              ImGui::SameLine();
+              ImGui::PushStyleColor(ImGuiCol_Text, _get_color_for_time(ms));
+              ImGui::Text("\t%.2f %s", ms.value(), "ms");
+              ImGui::PopStyleColor();
+            }
+
+            ImGui::TreePop();
+          }
+        });
+      }
 
       // static constexpr auto max_time = sbx::units::second{5};
 
@@ -621,6 +656,34 @@ private:
     colors[ImGuiCol_Header] = ImVec4(0.20f, 0.25f, 0.29f, 0.55f);
     colors[ImGuiCol_Separator] = ImVec4(0.20f, 0.25f, 0.29f, 1.00f);
     colors[ImGuiCol_WindowBg] = ImVec4(0.11f, 0.15f, 0.17f, 0.20f);
+  }
+
+  static auto _lerp_color(const ImVec4& a, const ImVec4& b, std::float_t t) {
+    return ImVec4{
+      a.x + (b.x - a.x) * t,
+      a.y + (b.y - a.y) * t,
+      a.z + (b.z - a.z) * t,
+      a.w + (b.w - a.w) * t
+    };
+  }
+
+  static auto _get_color_for_time(const units::millisecond ms) -> ImVec4 {
+    static constexpr auto green  = ImVec4{0.40f, 0.85f, 0.40f, 1.0f};
+    static constexpr auto yellow = ImVec4{0.95f, 0.85f, 0.20f, 1.0f};
+    static constexpr auto orange = ImVec4{0.95f, 0.55f, 0.15f, 1.0f};
+    static constexpr auto red    = ImVec4{0.90f, 0.25f, 0.25f, 1.0f};
+
+    if (ms <= 10.0f) {
+      return green;
+    } else if (ms <= 16.66f) {
+      const auto t = (ms - 10.0f) / (16.66f - 10.0f);
+      return _lerp_color(green, yellow, t);
+    } else if (ms <= 33.33f) {
+      const auto t = (ms - 16.66f) / (33.33f - 16.66f);
+      return _lerp_color(yellow, red, t);
+    } else {
+      return red;
+    }
   }
 
   auto _save() -> void {

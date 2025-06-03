@@ -27,7 +27,7 @@ public:
   : _is_running{true} {
     _workers.reserve(size);
 
-    for ([[maybe_unusedf]] auto i : std::views::iota(0u, size)) {
+    for ([[maybe_unused]] auto i : std::views::iota(0u, size)) {
       _workers.emplace_back([this](){ _worker(); });
     }
   }

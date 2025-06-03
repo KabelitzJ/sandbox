@@ -104,6 +104,7 @@ class libsbx_recipe(ConanFile):
     self.requires("drmp3/0.6.34")
     self.requires("imgui/1.91.5-docking")
     self.requires("implot/0.16-docking")
+    self.requires("imnodes/0.5.0-docking")
     # self.requires("imguizmo/1.83-docking")
     self.requires("portable-file-dialogs/0.1.0")
     self.requires("easy_profiler/2.1.0")

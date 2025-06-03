@@ -20,54 +20,68 @@ public:
   using size_type = HashFunction::size_type;
   using hash_type = HashFunction::hash_type;
 
-  basic_hashed_string()
+  inline static constexpr auto npos = std::basic_string<char_type>::npos;
+
+  constexpr basic_hashed_string()
   : _string{},
     _hash{} {}
 
-  basic_hashed_string(const char_type* string, const size_type length)
+  constexpr basic_hashed_string(const char_type* string, const size_type length)
   : _string{string, length},
     _hash{HashFunction{}(_string)} {}
 
   template<std::size_t Size>
-  basic_hashed_string(const char_type (&string)[Size])
+  constexpr basic_hashed_string(const char_type (&string)[Size])
   : _string{string, Size - 1},
     _hash{HashFunction{}(_string)} {}
 
-  basic_hashed_string(const std::basic_string<char_type>& string)
+  constexpr basic_hashed_string(const std::basic_string<char_type>& string)
   : _string{string},
     _hash{HashFunction{}(_string)} {}
 
-  basic_hashed_string(const basic_hashed_string& other) = default;
+  constexpr basic_hashed_string(const basic_hashed_string& other) = default;
 
-  basic_hashed_string(basic_hashed_string&& other) noexcept = default;
+  constexpr basic_hashed_string(basic_hashed_string&& other) noexcept = default;
 
-  ~basic_hashed_string() = default;
+  constexpr ~basic_hashed_string() = default;
 
-  auto operator=(const basic_hashed_string& other) -> basic_hashed_string& = default;
+  constexpr auto operator=(const basic_hashed_string& other) -> basic_hashed_string& = default;
 
-  auto operator=(basic_hashed_string&& other) noexcept -> basic_hashed_string& = default;
+  constexpr auto operator=(basic_hashed_string&& other) noexcept -> basic_hashed_string& = default;
 
-  auto operator==(const basic_hashed_string& other) const noexcept -> bool {
+  constexpr auto operator==(const basic_hashed_string& other) const noexcept -> bool {
     return _hash == other._hash;
   }
 
-  auto data() const noexcept -> const char_type* {
+  constexpr auto data() const noexcept -> const char_type* {
     return _string.data();
   }
 
-  auto size() const noexcept -> size_type {
+  constexpr auto size() const noexcept -> size_type {
     return _string.size();
   }
 
-  auto hash() const noexcept -> hash_type {
+  constexpr auto hash() const noexcept -> hash_type {
     return _hash;
   }
 
-  auto c_str() const noexcept -> const char_type* {
+  constexpr auto c_str() const noexcept -> const char_type* {
     return _string.c_str();
   }
 
-  operator hash_type() const noexcept {
+  constexpr auto str() const noexcept -> const std::basic_string<char_type>& {
+    return _string;
+  }
+
+  constexpr auto rfind(std::basic_string_view<char_type> string) const noexcept -> size_type {
+    return _string.rfind(string);
+  }
+
+  constexpr auto substr(const size_type position = 0, const size_type count = npos) const -> std::basic_string<char_type> {
+    return _string.substr(position, count);
+  }
+
+  constexpr operator hash_type() const noexcept {
     return _hash;
   }
 
@@ -84,11 +98,11 @@ using hashed_wstring = basic_hashed_string<wchar_t>;
 
 namespace literals {
 
-inline auto operator""_hs(const char* string, const std::size_t length) -> hashed_string {
+inline constexpr auto operator""_hs(const char* string, const std::size_t length) -> hashed_string {
   return hashed_string{string, length};
 }
 
-inline auto operator""_hs(const wchar_t* string, const std::size_t length) -> hashed_wstring {
+inline constexpr auto operator""_hs(const wchar_t* string, const std::size_t length) -> hashed_wstring {
   return hashed_wstring{string, length};
 }
 
