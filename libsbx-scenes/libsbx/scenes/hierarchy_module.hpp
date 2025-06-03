@@ -3,8 +3,11 @@
 
 #include <easy/profiler.h>
 
+#include <libsbx/utility/timer.hpp>
+
 #include <libsbx/core/module.hpp>
 #include <libsbx/core/engine.hpp>
+#include <libsbx/core/profiler.hpp>
 
 #include <libsbx/math/transform.hpp>
 
@@ -36,6 +39,10 @@ public:
   ~hierarchy_module() override = default;
 
   auto update() -> void override {
+    auto timer = utility::scoped_timer{[](const auto& measurement) {
+      core::engine::profiler().submit("hierarchy_module::update", measurement);
+    }};
+
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
 
     auto& scene = scenes_module.scene();

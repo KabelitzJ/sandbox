@@ -381,13 +381,14 @@ private:
 
     // [NOTE] KAJ 2025-06-03 : instance_data.size() und _transform_data.size() dont add up. _transform_data.size() should be smaller.
 
+    _push_handler.push("transform_data_buffer", transform_data_buffer.address());
+    _push_handler.push("instance_data_buffer", instance_data_buffer.address());
+
     for (const auto& [mesh_id, range] : draw_ranges) {
       auto& mesh = graphics_module.get_asset<models::mesh>(mesh_id);
       
       mesh.bind(command_buffer);
       
-      _push_handler.push("transform_data_buffer", transform_data_buffer.address());
-      _push_handler.push("instance_data_buffer", instance_data_buffer.address());
       _push_handler.push("vertex_buffer", mesh.address());
 
       _push_handler.bind(command_buffer);

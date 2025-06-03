@@ -512,7 +512,7 @@ private:
             if (group.overall.value() > 0.0f) {
               const auto ms = units::quantity_cast<sbx::units::millisecond>(group.overall);
 
-              ImGui::Text("total:");
+              ImGui::Text("total");
               ImGui::SameLine();
               ImGui::PushStyleColor(ImGuiCol_Text, _get_color_for_time(ms));
               ImGui::Text("\t%.2f %s", ms.value(), "ms");
