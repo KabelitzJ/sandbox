@@ -58,6 +58,7 @@ public:
     io.IniFilename = ini_file.data();
 
     ImGui::StyleColorsDark();
+    ImNodes::StyleColorsDark();
 
     _setup_style();
 
@@ -562,20 +563,87 @@ private:
 
       static auto links = std::vector<std::pair<std::int32_t, std::int32_t>>{};
 
-      ImNodes::BeginNode(0);
-      ImNodes::BeginNodeTitleBar();
-      ImGui::TextUnformatted("add");
-      ImNodes::EndNodeTitleBar();
-      ImNodes::BeginOutputAttribute(1);
-      ImGui::Text("out");
-      ImNodes::EndOutputAttribute();
-      ImNodes::EndNode();
+      static auto color = ImVec4{1.0f, 0.0f, 0.0f, 1.0f};
 
-      ImNodes::BeginNode(2);
+      if (ImNodes::IsEditorHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right)) {
+        ImGui::OpenPopup("editor_context_menu");
+      }
+
+      ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(12, 12));
+
+      if (ImGui::BeginPopup("editor_context_menu")) {
+        if (ImGui::MenuItem("Color")) {
+          
+        }
+        if (ImGui::MenuItem("Add")) {
+
+        }
+        if (ImGui::MenuItem("Subtract")) {
+
+        }
+        if (ImGui::MenuItem("Multiply")) {
+
+        }
+        if (ImGui::MenuItem("Remap")) {
+
+        }
+        ImGui::EndPopup();
+      }
+
+      ImGui::PopStyleVar();
+
+      ImNodes::PushColorStyle(ImNodesCol_TitleBar, IM_COL32(250, 0, 0, 255));
+      ImNodes::PushColorStyle(ImNodesCol_TitleBarSelected, IM_COL32(255, 0, 0, 255));
+      ImNodes::PushColorStyle(ImNodesCol_TitleBarHovered, IM_COL32(255, 0, 0, 255));
+      ImNodes::BeginNode(0);
+
+      ImNodes::BeginNodeTitleBar();
+      ImGui::TextUnformatted("Color");
+      ImNodes::EndNodeTitleBar();
+
+      ImNodes::BeginOutputAttribute(1);
+      ImGui::SetNextItemWidth(150);
+      ImGui::DragFloat("##red", &color.x, 0.001f, 0.0f, 1.0f);
+      ImGui::SameLine();
+      ImGui::Text("  Red");
+      ImNodes::EndOutputAttribute();  
+
+      ImNodes::BeginOutputAttribute(2);
+      ImGui::SetNextItemWidth(150);
+      ImGui::DragFloat("##green", &color.y, 0.001f, 0.0f, 1.0f);
+      ImGui::SameLine();
+      ImGui::Text("Green");
+      ImNodes::EndOutputAttribute();
+
+      ImNodes::BeginOutputAttribute(3);
+      ImGui::SetNextItemWidth(150);
+      ImGui::DragFloat("##blue", &color.z, 0.001f, 0.0f, 1.0f);
+      ImGui::SameLine();
+      ImGui::Text(" Blue");
+      ImNodes::EndOutputAttribute();
+
+      ImNodes::BeginOutputAttribute(4);
+      ImGui::SetNextItemWidth(150);
+      ImGui::DragFloat("##alpha", &color.w, 0.001f, 0.0f, 1.0f);
+      ImGui::SameLine();
+      ImGui::Text("Alpha");
+      ImNodes::EndOutputAttribute();
+
+      ImGui::Dummy(ImVec2(0.0f, 10.0f));
+
+      ImGui::SetNextItemWidth(200);
+      ImGui::ColorPicker4("##color_picker", &color.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_NoLabel | ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoSidePreview);
+
+      ImNodes::EndNode();
+      ImNodes::PopColorStyle();
+      ImNodes::PopColorStyle();
+      ImNodes::PopColorStyle();
+
+      ImNodes::BeginNode(5);
       ImNodes::BeginNodeTitleBar();
       ImGui::TextUnformatted("add");
       ImNodes::EndNodeTitleBar();
-      ImNodes::BeginInputAttribute(3);
+      ImNodes::BeginInputAttribute(6);
       ImGui::Text("in");
       ImNodes::EndOutputAttribute();
       ImNodes::EndNode();
@@ -584,6 +652,8 @@ private:
         const auto link = links[i];
         ImNodes::Link(i, link.first, link.second);
       }
+
+      ImNodes::MiniMap(0.2f, ImNodesMiniMapLocation_BottomRight);
 
       ImNodes::EndNodeEditor();
 

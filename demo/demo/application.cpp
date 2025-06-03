@@ -148,7 +148,7 @@ application::application()
     for (auto x = -3; x <= 3; x = x + 3) {
       auto test = scene.create_node("Test");
       auto& test_transform = scene.get_component<sbx::math::transform>(test);
-      test_transform.set_position(sbx::math::vector3{x, sbx::math::random::next<std::float_t>(-5.0f, 5.0f), y});
+      test_transform.set_position(sbx::math::vector3{x, sbx::math::random::next<std::float_t>(2.0f, 4.0f), y});
       test_transform.set_scale(sbx::math::vector3{1.0f, 1.0f, 1.0f});
       test_transform.set_rotation(sbx::math::vector3::up, sbx::math::degree{45});
       scene.add_component<rotator>(test);

@@ -45,35 +45,35 @@ public:
 
     _node = scene.create_node("Terrain");
 
-    // for (auto y = 0u; y < grid.y(); ++y) {
-    //   for (auto x = 0u; x < grid.x(); ++x) {
-    //     auto chunk = scene.create_child_node(_node, fmt::format("Chunk{}{}", x, y));
+    for (auto y = 0u; y < grid.y(); ++y) {
+      for (auto x = 0u; x < grid.x(); ++x) {
+        auto chunk = scene.create_child_node(_node, fmt::format("Chunk{}{}", x, y));
 
-    //     auto submeshes = std::vector<sbx::scenes::static_mesh::submesh>{};
+        auto submeshes = std::vector<sbx::scenes::static_mesh::submesh>{};
 
-    //     submeshes.emplace_back(sbx::scenes::static_mesh::submesh{
-    //       .index = 0u,
-    //       .tint = sbx::math::color::white(),
-    //       .material = sbx::scenes::static_mesh::material{
-    //         .metallic = 0.0f,
-    //         .roughness = 1.0f,
-    //         .flexibility = 0.0f,
-    //         .anchor_height = 0.0f
-    //       },
-    //       .albedo_texture = _texture_id
-    //     });
+        submeshes.emplace_back(sbx::scenes::static_mesh::submesh{
+          .index = 0u,
+          .tint = sbx::math::color::white(),
+          .material = sbx::scenes::static_mesh::material{
+            .metallic = 0.0f,
+            .roughness = 1.0f,
+            .flexibility = 0.0f,
+            .anchor_height = 0.0f
+          },
+          .albedo_texture = _texture_id
+        });
 
-    //     scene.add_component<sbx::scenes::static_mesh>(chunk, _mesh_id, submeshes);
+        scene.add_component<sbx::scenes::static_mesh>(chunk, _mesh_id, submeshes);
 
-    //     const auto position = sbx::math::vector3{x * chunk_size.x() - offset.x(), 0.0f, y * chunk_size.y() - offset.y()};
+        const auto position = sbx::math::vector3{x * chunk_size.x() - offset.x(), 0.0f, y * chunk_size.y() - offset.y()};
 
-    //     // chunk.add_component<sbx::scenes::collider>(sbx::scenes::aabb_collider{sbx::math::vector3{-chunk_size.x() / 2.0f, 0.0f, -chunk_size.y() / 2.0f}, sbx::math::vector3{chunk_size.x() / 2.0f, 1.0f, chunk_size.y() / 2.0f}});
+        // chunk.add_component<sbx::scenes::collider>(sbx::scenes::aabb_collider{sbx::math::vector3{-chunk_size.x() / 2.0f, 0.0f, -chunk_size.y() / 2.0f}, sbx::math::vector3{chunk_size.x() / 2.0f, 1.0f, chunk_size.y() / 2.0f}});
 
-    //     auto& transform = scene.get_component<sbx::math::transform>(chunk);
+        auto& transform = scene.get_component<sbx::math::transform>(chunk);
 
-    //     transform.set_position(position);
-    //   }
-    // }
+        transform.set_position(position);
+      }
+    }
   }
 
   auto update() -> void override {
