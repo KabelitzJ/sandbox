@@ -4,6 +4,7 @@
 #include <deque>
 
 #include <imgui.h>
+#include <imnodes.h>
 #include <implot.h>
 
 #include <libsbx/editor/bindings/imgui.hpp>
@@ -47,6 +48,7 @@ public:
     IMGUI_CHECKVERSION();
 
     ImGui::CreateContext();
+    ImNodes::CreateContext();
     ImPlot::CreateContext();
 
     auto& io = ImGui::GetIO();
@@ -101,6 +103,7 @@ public:
     ImGui_ImplVulkan_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImPlot::DestroyContext();
+    ImNodes::DestroyContext();
     ImGui::DestroyContext();
   }
 
@@ -548,6 +551,48 @@ private:
       //   ImPlot::PlotShaded("Delta Time", _time_stamps.data(), _deltas.data(), _deltas.size(), 0.0f);
       //   ImPlot::EndPlot();
       // }
+
+      ImGui::End();
+    }
+
+    {
+      ImGui::Begin("Nodes");
+
+      ImNodes::BeginNodeEditor();
+
+      static auto links = std::vector<std::pair<std::int32_t, std::int32_t>>{};
+
+      ImNodes::BeginNode(0);
+      ImNodes::BeginNodeTitleBar();
+      ImGui::TextUnformatted("add");
+      ImNodes::EndNodeTitleBar();
+      ImNodes::BeginOutputAttribute(1);
+      ImGui::Text("out");
+      ImNodes::EndOutputAttribute();
+      ImNodes::EndNode();
+
+      ImNodes::BeginNode(2);
+      ImNodes::BeginNodeTitleBar();
+      ImGui::TextUnformatted("add");
+      ImNodes::EndNodeTitleBar();
+      ImNodes::BeginInputAttribute(3);
+      ImGui::Text("in");
+      ImNodes::EndOutputAttribute();
+      ImNodes::EndNode();
+
+      for (auto i = 0; i < links.size(); ++i) {
+        const auto link = links[i];
+        ImNodes::Link(i, link.first, link.second);
+      }
+
+      ImNodes::EndNodeEditor();
+
+      auto start = 0;
+      auto end = 0;
+
+      if (ImNodes::IsLinkCreated(&start, &end)) {
+        links.emplace_back(start, end);
+      }
 
       ImGui::End();
     }
