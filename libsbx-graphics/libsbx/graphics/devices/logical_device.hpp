@@ -88,10 +88,10 @@ private:
   }; // struct queue_family_indices
 
   template<queue::type Type>
-  auto _get_queue(const std::uint32_t queue_family_index) -> void {
+  auto _get_queue(const std::uint32_t queue_family_index, std::uint32_t index = 0u) -> void {
     auto handle = VkQueue{};
 
-    vkGetDeviceQueue(_handle, queue_family_index, 0, &handle);
+    vkGetDeviceQueue(_handle, queue_family_index, index, &handle);
 
     _queues.at(utility::to_underlying(Type)) = graphics::queue{handle, queue_family_index};
   }

@@ -5,6 +5,8 @@
 #include <vector>
 #include <typeindex>
 
+#include <easy/profiler.h>
+
 #include <libsbx/utility/noncopyable.hpp>
 #include <libsbx/utility/concepts.hpp>
 #include <libsbx/utility/hash.hpp>
@@ -31,11 +33,14 @@ public:
   virtual auto initialize() -> void = 0;
 
   auto render(const pipeline::stage& stage, command_buffer& command_buffer) -> void {
+    const auto stage_name = fmt::format("Render Stage: {}.{}", stage.renderpass, stage.subpass);
+    EASY_BLOCK(stage_name.c_str(), profiler::colors::LightBlue);
     for (const auto& [render_stage, index] : _subrenderer_stages) {
       if (render_stage == stage) {
         _subrenderers[index]->render(command_buffer);
       }
     }
+    EASY_END_BLOCK;
   }
 
   auto execute_tasks(command_buffer& command_buffer) -> void {

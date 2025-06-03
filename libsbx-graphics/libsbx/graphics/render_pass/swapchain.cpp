@@ -37,7 +37,7 @@ swapchain::swapchain(const std::unique_ptr<swapchain>& old_swapchain)
 
   _present_mode = _choose_present_mode();
 
-  auto desired_image_count = surface_capabilities.minImageCount + 1;
+  auto desired_image_count = surface_capabilities.minImageCount + 3u;
 
 	if (surface_capabilities.maxImageCount > 0 && desired_image_count > surface_capabilities.maxImageCount) {
 		desired_image_count = surface_capabilities.maxImageCount;

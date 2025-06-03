@@ -102,6 +102,8 @@ auto graphics_module::update() -> void {
 
   validate(vkWaitForFences(_logical_device->handle(), 1, &frame_data.compute_in_flight_fence, true, std::numeric_limits<std::uint64_t>::max()));
 
+  EASY_BLOCK("compute");
+
   auto& compute_command_buffer = _compute_command_buffers[_current_frame];
 
   compute_command_buffer.begin(VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
@@ -114,13 +116,17 @@ auto graphics_module::update() -> void {
 
   compute_command_buffer.submit({}, frame_data.compute_finished_semaphore, frame_data.compute_in_flight_fence);
 
+  EASY_END_BLOCK;
+
   if (_is_framebuffer_resized || _swapchain->is_outdated(_surface->current_extent())) {
     _recreate_swapchain();
     return;
   }
 
+  EASY_BLOCK("wait for image");
   // Get the next image in the swapchain (back/front buffer)
   const auto result = _swapchain->acquire_next_image(frame_data.image_available_semaphore, frame_data.graphics_in_flight_fence);
+  EASY_END_BLOCK;
   
   if (result == VK_ERROR_OUT_OF_DATE_KHR) {
     _recreate_swapchain();
@@ -130,6 +136,8 @@ auto graphics_module::update() -> void {
   }
 
   // [NOTE] KAJ 2023-02-19 : Drawing happens here
+
+  EASY_BLOCK("draw");
 
   auto stage = pipeline::stage{};
 
@@ -159,6 +167,8 @@ auto graphics_module::update() -> void {
 
     stage.renderpass++;
   }
+
+  EASY_END_BLOCK;
 }
 
 auto graphics_module::instance() -> graphics::instance&  {
