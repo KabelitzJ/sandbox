@@ -35,8 +35,9 @@ class editor_subrenderer final : public sbx::graphics::subrenderer {
 
 public:
 
-  editor_subrenderer(const std::filesystem::path& path, const sbx::graphics::pipeline::stage& stage)
+  editor_subrenderer(const std::filesystem::path& path, const sbx::graphics::pipeline::stage& stage, const std::string& attachment_name)
   : base{stage},
+    _attachment_name{attachment_name},
     _pipeline{path, stage},
     _descriptor_handler{_pipeline, 0u},
     _show_demo_window{false},
@@ -108,7 +109,7 @@ public:
 
     _pipeline.bind(command_buffer);
 
-    _descriptor_handler.push("sTexture", graphics_module.attachment("scene"));
+    _descriptor_handler.push("sTexture", graphics_module.attachment(_attachment_name));
 
     if (!_descriptor_handler.update(_pipeline)) {
       return;
@@ -633,6 +634,8 @@ private:
   auto _undo() -> void {
     // [TODO] KAJ 2024-12-02 : Implement undo
   }
+
+  std::string _attachment_name;
 
   pipeline _pipeline;
   graphics::descriptor_handler _descriptor_handler;
