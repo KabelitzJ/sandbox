@@ -479,6 +479,33 @@ private:
     }
 
     {
+      ImGui::Begin("Settings");
+
+      auto& settings = core::engine::settings();
+
+      settings.for_each([](const auto& group_name, auto& group) {
+        if (ImGui::CollapsingHeader(group_name.c_str(), ImGuiTreeNodeFlags_DefaultOpen)) {
+          for (const auto& entry : group.entries) {
+            if (std::holds_alternative<bool>(entry.value)) {
+              ImGui::Checkbox(entry.name.c_str(), &std::get<bool>(entry.value));
+            } else if (std::holds_alternative<std::uint32_t>(entry.value)) {
+              ImGui::DragScalar(entry.name.c_str(), ImGuiDataType_U32, &std::get<std::uint32_t>(entry.value), 1.0f);
+            } else if (std::holds_alternative<std::int32_t>(entry.value)) {
+              ImGui::DragScalar(entry.name.c_str(), ImGuiDataType_S32, &std::get<std::int32_t>(entry.value), 1.0f);
+            } else if (std::holds_alternative<std::float_t>(entry.value)) {
+              ImGui::DragScalar(entry.name.c_str(), ImGuiDataType_Float, &std::get<std::float_t>(entry.value), 0.1f);
+            } else if (std::holds_alternative<std::string>(entry.value)) {
+              auto& str = std::get<std::string>(entry.value);
+              ImGui::InputText(entry.name.c_str(), str.data(), str.size());
+            }
+          }
+        }
+      });
+
+      ImGui::End();
+    }
+
+    {
       ImGui::Begin("Stats");
 
       auto& scene_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
@@ -497,8 +524,18 @@ private:
       }
 
       if (ImGui::CollapsingHeader("Frame", ImGuiTreeNodeFlags_DefaultOpen)) {
-        ImGui::Text("Delta time:  %.3f [ms]", units::quantity_cast<sbx::units::millisecond>(delta_time).value());
-        ImGui::Text("FPS:         %d", _fps);
+        const auto ms = units::quantity_cast<sbx::units::millisecond>(delta_time);
+        ImGui::Text("Delta time");
+        ImGui::SameLine();
+        ImGui::PushStyleColor(ImGuiCol_Text, _get_color_for_time(ms));
+        ImGui::Text("  %.3f [ms]", ms.value());
+        ImGui::PopStyleColor();
+        ImGui::SameLine();
+        ImGui::PushStyleColor(ImGuiCol_PlotHistogram, _get_color_for_time(ms));
+        ImGui::ProgressBar(ms.value() / 16.66, ImVec2(200, 15));
+        ImGui::PopStyleColor();
+
+        ImGui::Text("FPS          %d", _fps);
       }
 
       if (ImGui::CollapsingHeader("Profiler", ImGuiTreeNodeFlags_DefaultOpen)) {
@@ -515,7 +552,7 @@ private:
               ImGui::Text("total");
               ImGui::SameLine();
               ImGui::PushStyleColor(ImGuiCol_Text, _get_color_for_time(ms));
-              ImGui::Text("\t%.2f %s", ms.value(), "ms");
+              ImGui::Text("\t%.3f [ms]", ms.value());
               ImGui::PopStyleColor();
             }
 
@@ -525,7 +562,7 @@ private:
               ImGui::Text(name.c_str());
               ImGui::SameLine();
               ImGui::PushStyleColor(ImGuiCol_Text, _get_color_for_time(ms));
-              ImGui::Text("\t%.2f %s", ms.value(), "ms");
+              ImGui::Text("\t%.3f [ms]", ms.value());
               ImGui::PopStyleColor();
             }
 

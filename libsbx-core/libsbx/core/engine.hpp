@@ -23,6 +23,7 @@
 #include <libsbx/core/application.hpp>
 #include <libsbx/core/cli.hpp>
 #include <libsbx/core/profiler.hpp>
+#include <libsbx/core/settings.hpp>
 
 namespace sbx::core {
 
@@ -75,6 +76,10 @@ public:
 
   static auto profiler() noexcept -> core::profiler& {
     return _instance->_profiler;
+  }
+
+  static auto settings() noexcept -> core::settings& {
+    return _instance->_settings;
   }
 
   template<typename Module>
@@ -191,6 +196,7 @@ private:
   // std::vector<std::string_view> _args{};
   core::cli _cli;
   core::profiler _profiler;
+  core::settings _settings;
 
   std::map<std::type_index, module_base*> _modules{};
   std::map<stage, std::vector<std::type_index>> _module_by_stage{};

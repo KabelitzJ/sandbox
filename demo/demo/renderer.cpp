@@ -9,6 +9,7 @@
 
 #include <libsbx/models/models.hpp>
 #include <libsbx/models/frustum_culling_task.hpp>
+#include <libsbx/models/foliage_task.hpp>
 
 #include <libsbx/graphics/pipeline/vertex_input_description.hpp>
 
@@ -84,12 +85,12 @@ auto renderer::initialize() -> void {
   // Compute stage
 
   auto& frustum_culling_task = add_task<sbx::models::frustum_culling_task>("demo/assets/shaders/frustum_culling");
-
-  const auto draw_commands_buffer = frustum_culling_task.draw_commands_buffer();
+  auto& foliage_task = add_task<sbx::models::foliage_task>("demo/assets/shaders/foliage");
 
   // Compute -> Graphics ownership transfer
 
-  graphics_module.transfer_ownership<sbx::graphics::queue::type::compute, sbx::graphics::queue::type::graphics>(draw_commands_buffer);
+  graphics_module.transfer_ownership<sbx::graphics::queue::type::compute, sbx::graphics::queue::type::graphics>(frustum_culling_task.draw_commands_buffer());
+  graphics_module.transfer_ownership<sbx::graphics::queue::type::compute, sbx::graphics::queue::type::graphics>(foliage_task.draw_commands_buffer());
     
   // Render stage 0
   // add_subrenderer<sbx::shadows::shadow_subrenderer>("demo/assets/shaders/shadow", sbx::graphics::pipeline::stage{0, 0});
@@ -97,7 +98,7 @@ auto renderer::initialize() -> void {
   // Render stage 1
   add_subrenderer<sbx::scenes::skybox_subrenderer>("demo/assets/shaders/skybox", sbx::graphics::pipeline::stage{0, 0});
   add_subrenderer<sbx::scenes::grid_subrenderer>("demo/assets/shaders/grid", sbx::graphics::pipeline::stage{0, 0});
-  add_subrenderer<sbx::models::static_mesh_subrenderer>("demo/assets/shaders/deferred", sbx::graphics::pipeline::stage{0, 0}, draw_commands_buffer);
+  add_subrenderer<sbx::models::static_mesh_subrenderer>("demo/assets/shaders/deferred", sbx::graphics::pipeline::stage{0, 0}, frustum_culling_task.draw_commands_buffer());
   add_subrenderer<sbx::scenes::debug_subrenderer>("demo/assets/shaders/debug", sbx::graphics::pipeline::stage{0, 0});
   
   // add_subrenderer<sbx::models::static_mesh_subrenderer>("demo/assets/shaders/static_mesh", sbx::graphics::pipeline::stage{0, 0});
