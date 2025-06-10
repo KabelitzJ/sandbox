@@ -347,7 +347,7 @@ auto logical_device::_create_logical_device(const physical_device& physical_devi
   auto graphics_queue_create_info = VkDeviceQueueCreateInfo{};
   graphics_queue_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
   graphics_queue_create_info.queueFamilyIndex = graphics_queue_family_index;
-  graphics_queue_create_info.queueCount = (present_queue_family_index == graphics_queue_family_index) ? 2u : 1u;
+  graphics_queue_create_info.queueCount = (present_queue_family_index != graphics_queue_family_index) ? 2u : 1u;
   graphics_queue_create_info.pQueuePriorities = &queue_priorities;
 
   queue_create_infos.emplace_back(graphics_queue_create_info);
@@ -391,7 +391,7 @@ auto logical_device::_create_logical_device(const physical_device& physical_devi
 	validate(vkCreateDevice(physical_device, &device_create_info, nullptr, &_handle));
 
   _get_queue<queue::type::graphics>(graphics_queue_family_index);
-  _get_queue<queue::type::present>(present_queue_family_index, graphics_queue_family_index == present_queue_family_index ? 1u : 0u);
+  _get_queue<queue::type::present>(present_queue_family_index);
   _get_queue<queue::type::compute>(compute_queue_family_index);
   _get_queue<queue::type::transfer>(transfer_queue_family_index);
 
