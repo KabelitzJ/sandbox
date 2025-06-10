@@ -66,7 +66,7 @@ struct sbx::graphics::vertex_input<sbx::models::vertex3d> {
 
     return result;
   }
-}; // struct sbx::graphics::vertex_input<sbx::models::vertex3d>
+}; // struct sbx::graphics::vertex_input
 
 template<>
 struct std::hash<sbx::models::vertex3d> {
