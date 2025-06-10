@@ -26,7 +26,7 @@ def compile_shader(glslc_path: str, shader_dir: Path, shader_root_dir: Path):
   for file in files:
     stage = file.stem  # filename without .glsl
 
-    if stage not in ["vertex", "fragment", "compute", "geometry", "tesselation"]:
+    if stage not in ["vertex", "fragment", "compute", "geometry", "tesscontrol", "tesseval"]:
       continue
 
     print(f"Found stage: {stage}")

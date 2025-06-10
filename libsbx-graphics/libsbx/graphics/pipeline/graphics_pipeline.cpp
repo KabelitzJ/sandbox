@@ -57,7 +57,10 @@ graphics_pipeline::graphics_pipeline(const std::filesystem::path& path, const pi
 
       const auto stage = _get_stage_from_name(stem);
 
-      if (stage == VK_SHADER_STAGE_FLAG_BITS_MAX_ENUM) {
+      if (stage == VK_SHADER_STAGE_COMPUTE_BIT) {
+        // [NOTE] : Allow compute and graphics pipelines in same folder
+        continue;
+      } else if (stage == VK_SHADER_STAGE_FLAG_BITS_MAX_ENUM) {
         utility::logger<"graphics">::warn("Unsupported shader stage '{}' in graphics pipeline '{}'", stem, _name);
         continue;
       }
@@ -586,7 +589,13 @@ auto graphics_pipeline::_get_stage_from_name(const std::string& name) const noex
     return VK_SHADER_STAGE_VERTEX_BIT;
   } else if (name == "fragment") {
     return VK_SHADER_STAGE_FRAGMENT_BIT;
-  } 
+  } else if (name == "tesscontrol") {
+    return VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT;
+  } else if (name == "tesseval") {
+    return VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
+  } else if (name == "compute") {
+    return VK_SHADER_STAGE_COMPUTE_BIT;
+  }
   
   return VK_SHADER_STAGE_FLAG_BITS_MAX_ENUM;
 }
