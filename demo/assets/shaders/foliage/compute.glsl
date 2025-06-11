@@ -37,15 +37,6 @@ layout(push_constant) uniform push_constants {
 void main() {
   uint idx = gl_GlobalInvocationID.x;
 
-  // if (idx == 0) {
-  //   draw_command.vertex_count = 6;
-  //   draw_command.instance_count = 0;
-  //   draw_command.first_vertex = 0;
-  //   draw_command.first_instance = 0;
-  // }
-
-  // barrier();
-
   if (idx >= blade_count) {
     return;
   }
@@ -53,11 +44,11 @@ void main() {
   grass_blade blade = in_blades.data[idx];
   vec3 world_position = blade.position_bend.xyz;
 
-  // vec4 clip = view_projection * vec4(world_position, 1.0);
+  vec4 clip = view_projection * vec4(world_position, 1.0);
 
-  // if (abs(clip.x) > clip.w || abs(clip.y) > clip.w || clip.z < 0.0 || clip.z > clip.w) {
-  //   return;
-  // }
+  if (abs(clip.x) > clip.w || abs(clip.y) > clip.w || clip.z < 0.0 || clip.z > clip.w) {
+    return;
+  }
 
   uint output_idx = atomicAdd(draw_command.instance_count, 1);
 
