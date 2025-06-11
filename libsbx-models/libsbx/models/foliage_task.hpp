@@ -34,7 +34,7 @@ class foliage_task final : public graphics::task {
   using base = graphics::task;
 
   inline static constexpr auto usage = (VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
-  inline static constexpr auto properties = (VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+  inline static constexpr auto properties = (VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
   inline static constexpr auto count = 256u;
 
@@ -46,18 +46,18 @@ public:
     _blades{_generate_blades(math::vector3::zero, 10.0f, count)} {
     auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
-    _grass_input_buffer = graphics_module.add_resource<graphics::buffer>(count * sizeof(grass_blade), usage, properties, _blades.data());
-    _grass_output_buffer = graphics_module.add_resource<graphics::buffer>(count * sizeof(grass_blade), usage, properties);
-    _draw_command_buffer = graphics_module.add_resource<graphics::buffer>(sizeof(VkDrawIndirectCommand), usage, properties);
+    _grass_input_buffer = graphics_module.add_resource<graphics::storage_buffer>(count * sizeof(grass_blade), VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT, _blades.data());
+    _grass_output_buffer = graphics_module.add_resource<graphics::storage_buffer>(count * sizeof(grass_blade), VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT);
+    _draw_command_buffer = graphics_module.add_resource<graphics::storage_buffer>(sizeof(VkDrawIndirectCommand), (VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT));
   }
 
   ~foliage_task() override = default;
 
-  auto grass_output_buffer() -> graphics::resource_handle<graphics::buffer> {
+  auto grass_output_buffer() -> graphics::storage_buffer_handle {
     return _grass_output_buffer;
   }
 
-  auto draw_command_buffer() -> graphics::resource_handle<graphics::buffer> {
+  auto draw_command_buffer() -> graphics::storage_buffer_handle {
     return _draw_command_buffer;
   }
 
@@ -67,9 +67,9 @@ public:
 
     auto& logical_device = graphics_module.logical_device();
 
-    auto& grass_input_buffer = graphics_module.get_resource<graphics::buffer>(_grass_input_buffer);
-    auto& grass_output_buffer = graphics_module.get_resource<graphics::buffer>(_grass_output_buffer);
-    auto& draw_command_buffer = graphics_module.get_resource<graphics::buffer>(_draw_command_buffer);
+    auto& grass_input_buffer = graphics_module.get_resource<graphics::storage_buffer>(_grass_input_buffer);
+    auto& grass_output_buffer = graphics_module.get_resource<graphics::storage_buffer>(_grass_output_buffer);
+    auto& draw_command_buffer = graphics_module.get_resource<graphics::storage_buffer>(_draw_command_buffer);
 
     auto& scene = scenes_module.scene();
 
@@ -129,9 +129,9 @@ private:
 
   // graphics::buffer_handle _bounding_box_buffer;
   // graphics::buffer_handle _draw_data_buffer;
-  graphics::buffer_handle _grass_input_buffer;
-  graphics::buffer_handle _grass_output_buffer;
-  graphics::buffer_handle _draw_command_buffer;  
+  graphics::storage_buffer_handle _grass_input_buffer;
+  graphics::storage_buffer_handle _grass_output_buffer;
+  graphics::storage_buffer_handle _draw_command_buffer;  
   // graphics::buffer_handle _frustum_buffer;
 
   graphics::push_handler _push_handler;

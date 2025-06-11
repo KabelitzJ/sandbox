@@ -205,4 +205,12 @@ private:
 
 } // namespace sbx::core
 
+#define CONCAT_INTERNAL(x, y) x##y
+#define CONCAT(x, y) CONCAT_INTERNAL(x, y)
+
+#define SBX_SCOPED_TIMER(name) \
+  auto CONCAT(__scoped_timer_, __LINE__) = sbx::utility::scoped_timer{[=](const auto& measurement) { \
+    sbx::core::engine::profiler().submit(name, measurement); \
+  }}
+
 #endif // LIBSBX_CORE_ENGINE_HPP_

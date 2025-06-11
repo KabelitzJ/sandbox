@@ -186,9 +186,10 @@ public:
     return _allocator;
   }
 
-  template<queue::type Source, queue::type Destination>
-  auto transfer_ownership(const resource_handle<buffer>& handle) -> void {
-    auto& buffer = get_resource<graphics::buffer>(handle);
+  template<queue::type Source, queue::type Destination, typename Type>
+  requires (std::is_same_v<Type, graphics::buffer> || std::is_same_v<Type, graphics::storage_buffer>)
+  auto transfer_ownership(const resource_handle<Type>& handle) -> void {
+    auto& buffer = get_resource<Type>(handle);
 
     _release_ownership_data.push_back(command_buffer::release_ownership_data{
       .src_stage_mask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT,

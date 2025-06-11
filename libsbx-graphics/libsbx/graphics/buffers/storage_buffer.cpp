@@ -9,8 +9,8 @@ storage_buffer::storage_buffer(VkDeviceSize size, memory::observer_ptr<const voi
   map();
 }
 
-storage_buffer::storage_buffer(VkDeviceSize size, VkBufferUsageFlags additional_usage)
-: buffer{size, additional_usage | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT} {
+storage_buffer::storage_buffer(VkDeviceSize size, VkBufferUsageFlags additional_usage, memory::observer_ptr<const void> data)
+: buffer{size, additional_usage | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, data} {
   map();
 }
 

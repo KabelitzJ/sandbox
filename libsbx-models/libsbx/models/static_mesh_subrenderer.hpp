@@ -96,8 +96,8 @@ public:
     auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
     _draw_commands_buffer = graphics_module.add_resource<graphics::storage_buffer>(graphics::storage_buffer::min_size, VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT);
-    _transform_data_buffer = graphics_module.add_resource<graphics::storage_buffer>(graphics::storage_buffer::min_size, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT);
-    _instance_data_buffer = graphics_module.add_resource<graphics::storage_buffer>(graphics::storage_buffer::min_size, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT);
+    _transform_data_buffer = graphics_module.add_resource<graphics::storage_buffer>(graphics::storage_buffer::min_size, VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT);
+    _instance_data_buffer = graphics_module.add_resource<graphics::storage_buffer>(graphics::storage_buffer::min_size, VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT);
   }
 
   ~static_mesh_subrenderer() override = default;
@@ -105,9 +105,7 @@ public:
   auto render(graphics::command_buffer& command_buffer) -> void override {
     EASY_FUNCTION();
 
-    auto big_timer = utility::scoped_timer{[](const auto measurement){
-      core::engine::profiler().submit("static_mesh_subrenderer", measurement);
-    }};
+    SBX_SCOPED_TIMER("static_mesh_subrenderer");
 
     auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
@@ -171,9 +169,7 @@ public:
 
     // [NOTE] KAJ 2025-06-04 : Submitting all static meshes
     {
-      auto timer = utility::scoped_timer{[](const auto measurement){
-        core::engine::profiler().submit("static_mesh_subrenderer::submit", measurement);
-      }};
+      SBX_SCOPED_TIMER("static_mesh_subrenderer::submit");
 
       auto mesh_query = scene.query<const scenes::static_mesh>();
   
@@ -188,10 +184,8 @@ public:
 
     // [NOTE] KAJ 2025-06-04 : Rendering all static meshes
     {
-      auto timer = utility::scoped_timer{[](const auto measurement){
-        core::engine::profiler().submit("static_mesh_subrenderer::render", measurement);
-      }};
-
+      SBX_SCOPED_TIMER("static_mesh_subrenderer::render");
+      
       _render_static_meshes(command_buffer);
     }
 

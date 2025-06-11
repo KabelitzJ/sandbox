@@ -22,7 +22,7 @@ public:
 
   storage_buffer(VkDeviceSize size, memory::observer_ptr<const void> data = nullptr);
 
-  storage_buffer(VkDeviceSize size, VkBufferUsageFlags additional_usage);
+  storage_buffer(VkDeviceSize size, VkBufferUsageFlags additional_usage, memory::observer_ptr<const void> data = nullptr);
 
   ~storage_buffer() override;
 

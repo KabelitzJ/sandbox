@@ -44,7 +44,7 @@ class foliage_subrenderer final : public sbx::graphics::subrenderer {
 
 public:
 
-  foliage_subrenderer(const std::filesystem::path& path, const sbx::graphics::pipeline::stage& stage, const graphics::buffer_handle& grass_buffer, const graphics::buffer_handle& draw_command_buffer)
+  foliage_subrenderer(const std::filesystem::path& path, const sbx::graphics::pipeline::stage& stage, const graphics::storage_buffer_handle& grass_buffer, const graphics::storage_buffer_handle& draw_command_buffer)
   : sbx::graphics::subrenderer{stage},
     _pipeline{path, stage},
     _push_handler{_pipeline},
@@ -73,8 +73,8 @@ public:
 
     const auto time = core::engine::time();
 
-    auto& grass_buffer = graphics_module.get_resource<graphics::buffer>(_grass_buffer);
-    auto& draw_command_buffer = graphics_module.get_resource<graphics::buffer>(_draw_command_buffer);
+    auto& grass_buffer = graphics_module.get_resource<graphics::storage_buffer>(_grass_buffer);
+    auto& draw_command_buffer = graphics_module.get_resource<graphics::storage_buffer>(_draw_command_buffer);
     
     _pipeline.bind(command_buffer);
 
@@ -93,8 +93,8 @@ private:
 
   sbx::graphics::push_handler _push_handler;
 
-  graphics::buffer_handle _grass_buffer;
-  graphics::buffer_handle _draw_command_buffer;
+  graphics::storage_buffer_handle _grass_buffer;
+  graphics::storage_buffer_handle _draw_command_buffer;
 
 }; // class debug_subrenderer
 
