@@ -33,21 +33,18 @@ class foliage_task final : public graphics::task {
 
   using base = graphics::task;
 
-  inline static constexpr auto usage = (VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
-  inline static constexpr auto properties = (VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-
-  inline static constexpr auto count = 256u;
+  inline static constexpr auto count = 1u << 16u;
 
 public:
 
   foliage_task(const std::filesystem::path& path)
   : _pipeline{path},
     _push_handler{_pipeline},
-    _blades{_generate_blades(math::vector3::zero, 10.0f, count)} {
+    _blades{_generate_blades(math::vector3::zero, 20.0f, count)} {
     auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
-    _grass_input_buffer = graphics_module.add_resource<graphics::storage_buffer>(count * sizeof(grass_blade), VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT, _blades.data());
-    _grass_output_buffer = graphics_module.add_resource<graphics::storage_buffer>(count * sizeof(grass_blade), VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT);
+    _grass_input_buffer = graphics_module.add_resource<graphics::storage_buffer>(_blades.size() * sizeof(grass_blade), VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT, _blades.data());
+    _grass_output_buffer = graphics_module.add_resource<graphics::storage_buffer>(_blades.size() * sizeof(grass_blade), VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT);
     _draw_command_buffer = graphics_module.add_resource<graphics::storage_buffer>(sizeof(VkDrawIndirectCommand), (VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT));
   }
 
@@ -94,6 +91,16 @@ public:
 
     _push_handler.bind(command_buffer);
 
+    // vkCmdFillBuffer(command_buffer, draw_command_buffer, 0, sizeof(VkDrawIndirectCommand), 0);
+    // command_buffer.fill_buffer(draw_command_buffer, 0, sizeof(VkDrawIndirectCommand), 0);
+    auto draw_command = VkDrawIndirectCommand{};
+    draw_command.vertexCount = 6u;
+    draw_command.instanceCount = 0u;
+    draw_command.firstVertex = 0u;
+    draw_command.firstInstance = 0u;
+
+    draw_command_buffer.update(&draw_command, sizeof(VkDrawIndirectCommand), 0);
+
     const auto blade_count = static_cast<std::uint32_t>(_blades.size());
     const auto local_size_x = 64u;
     const auto workgroup_count = (blade_count + local_size_x - 1u) / local_size_x;
@@ -103,20 +110,21 @@ public:
 
 private:
 
-  auto _generate_blades(const math::vector3& center, std::float_t radius, std::size_t count, std::float_t min_height = 0.4f, std::float_t max_height = 1.2f) -> std::vector<grass_blade> {
+  auto _generate_blades(const math::vector3& center, std::float_t radius, std::size_t count, std::float_t min_height = 0.2f, std::float_t max_height = 0.8f) -> std::vector<grass_blade> {
     auto blades = std::vector<grass_blade>{};
     blades.reserve(count);
 
     for (auto i = 0; i < count; ++i) {
       auto position = center + math::vector3{math::random::next<std::float_t>(-radius, radius), 0.0f, math::random::next<std::float_t>(-radius, radius)};
 
-      auto blade = grass_blade{};
-      blade.position_bend = math::vector4{position, math::random::next<std::float_t>(0.0f, 0.3f)};
-      blade.size_animation_pitch = math::vector4{
-        math::random::next<std::float_t>(0.03f, 0.07f),
-        math::random::next<std::float_t>(min_height, max_height),
-        math::random::next<std::float_t>(-0.4f, 0.4f),
-        math::random::next<std::float_t>(0.0f, std::numbers::phi_v<std::float_t>)
+      auto blade = grass_blade{
+        .position_bend = math::vector4{position, math::random::next<std::float_t>(0.01f, 0.3f)},
+        .size_animation_pitch = math::vector4{
+          math::random::next<std::float_t>(0.03f, 0.07f),                                 // width
+          math::random::next<std::float_t>(min_height, max_height),                       // height
+          math::random::next<std::float_t>(-0.4f, 0.4f),                                  // animation
+          math::random::next<std::float_t>(0.0f, 2.0f * std::numbers::pi_v<std::float_t>) // pitch
+        }
       };
 
       blades.push_back(blade);

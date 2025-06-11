@@ -28,7 +28,7 @@ class foliage_subrenderer final : public sbx::graphics::subrenderer {
         .cull_mode = sbx::graphics::cull_mode::none,
         .front_face = sbx::graphics::front_face::counter_clockwise
       },
-      .primitive_topology = sbx::graphics::primitive_topology::line_list
+      .primitive_topology = sbx::graphics::primitive_topology::triangle_list
     };
   
     using base_type = sbx::graphics::graphics_pipeline;
@@ -71,8 +71,6 @@ public:
 
     const auto view = sbx::math::matrix4x4::inverted(camera_global_transform.model);
 
-    const auto time = core::engine::time();
-
     auto& grass_buffer = graphics_module.get_resource<graphics::storage_buffer>(_grass_buffer);
     auto& draw_command_buffer = graphics_module.get_resource<graphics::storage_buffer>(_draw_command_buffer);
     
@@ -80,7 +78,7 @@ public:
 
     _push_handler.push("blades", grass_buffer.address());
     _push_handler.push("view_projection", projection * view);
-    _push_handler.push("global_time", time.value());
+    _push_handler.push("global_time", core::engine::time().value());
 
     _push_handler.bind(command_buffer);
 

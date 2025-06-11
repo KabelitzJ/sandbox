@@ -315,6 +315,10 @@ auto command_buffer::end_render_pass() -> void {
   vkCmdEndRenderPass(_handle);
 }
 
+auto command_buffer::fill_buffer(const VkBuffer& buffer, VkDeviceSize offset, VkDeviceSize size, std::uint32_t data) -> void {
+  vkCmdFillBuffer(_handle, buffer, offset, size, data);
+}
+
 auto command_buffer::_queue() const -> const graphics::queue& {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 

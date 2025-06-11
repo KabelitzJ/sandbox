@@ -86,13 +86,13 @@ auto renderer::initialize() -> void {
   // Compute stage
 
   auto& frustum_culling_task = add_task<sbx::models::frustum_culling_task>("demo/assets/shaders/frustum_culling");
-  // auto& foliage_task = add_task<sbx::models::foliage_task>("demo/assets/shaders/foliage");
+  auto& foliage_task = add_task<sbx::models::foliage_task>("demo/assets/shaders/foliage");
 
   // Compute -> Graphics ownership transfer
 
   graphics_module.transfer_ownership<sbx::graphics::queue::type::compute, sbx::graphics::queue::type::graphics>(frustum_culling_task.draw_commands_buffer());
-  // graphics_module.transfer_ownership<sbx::graphics::queue::type::compute, sbx::graphics::queue::type::graphics>(foliage_task.grass_output_buffer());
-  // graphics_module.transfer_ownership<sbx::graphics::queue::type::compute, sbx::graphics::queue::type::graphics>(foliage_task.draw_command_buffer());
+  graphics_module.transfer_ownership<sbx::graphics::queue::type::compute, sbx::graphics::queue::type::graphics>(foliage_task.grass_output_buffer());
+  graphics_module.transfer_ownership<sbx::graphics::queue::type::compute, sbx::graphics::queue::type::graphics>(foliage_task.draw_command_buffer());
     
   // Render stage 0
   // add_subrenderer<sbx::shadows::shadow_subrenderer>("demo/assets/shaders/shadow", sbx::graphics::pipeline::stage{0, 0});
@@ -102,8 +102,6 @@ auto renderer::initialize() -> void {
   add_subrenderer<sbx::scenes::grid_subrenderer>("demo/assets/shaders/grid", sbx::graphics::pipeline::stage{0, 0});
   add_subrenderer<sbx::models::static_mesh_subrenderer>("demo/assets/shaders/deferred", sbx::graphics::pipeline::stage{0, 0}, frustum_culling_task.draw_commands_buffer());
   add_subrenderer<sbx::scenes::debug_subrenderer>("demo/assets/shaders/debug", sbx::graphics::pipeline::stage{0, 0});
-  
-  // add_subrenderer<sbx::models::static_mesh_subrenderer>("demo/assets/shaders/static_mesh", sbx::graphics::pipeline::stage{0, 0});
 
   auto attachment_names = std::unordered_map<std::string, std::string>{
     {"albedo_image", "albedo"},
@@ -113,8 +111,7 @@ auto renderer::initialize() -> void {
   };
 
   add_subrenderer<sbx::post::resolve_filter>("demo/assets/shaders/resolve", sbx::graphics::pipeline::stage{0, 1}, std::move(attachment_names));
-
-  // add_subrenderer<sbx::models::foliage_subrenderer>("demo/assets/shaders/foliage", sbx::graphics::pipeline::stage{0, 1}, foliage_task.grass_output_buffer(), foliage_task.draw_command_buffer());
+  add_subrenderer<sbx::models::foliage_subrenderer>("demo/assets/shaders/foliage", sbx::graphics::pipeline::stage{0, 1}, foliage_task.grass_output_buffer(), foliage_task.draw_command_buffer());
 
   // // Render stage 2
   add_subrenderer<sbx::editor::editor_subrenderer>("demo/assets/shaders/editor", sbx::graphics::pipeline::stage{1, 0}, "resolve");

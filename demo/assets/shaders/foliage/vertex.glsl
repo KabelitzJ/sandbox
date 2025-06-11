@@ -38,10 +38,10 @@ void main() {
 	vec3 base_position = blade.position_bend.xyz;
 	float bend = blade.position_bend.w;
 
-	float width  = blade.size_animation_pitch.x;
+	float width = blade.size_animation_pitch.x;
 	float height = blade.size_animation_pitch.y;
-	float pitch  = blade.size_animation_pitch.z;
-	float animation   = blade.size_animation_pitch.w;
+	float animation = blade.size_animation_pitch.z;
+	float pitch = blade.size_animation_pitch.w;
 
 	vec2 quad_uv = quad_vertices[vertex_id];
 
