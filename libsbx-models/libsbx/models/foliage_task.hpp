@@ -1,10 +1,13 @@
 #ifndef LIBSBX_MODELS_FOLIAGE_TASK_HPP_
 #define LIBSBX_MODELS_FOLIAGE_TASK_HPP_
 
+#include <numbers>
+
 #include <libsbx/graphics/task.hpp>
 #include <libsbx/graphics/graphics_module.hpp>
 
 #include <libsbx/math/transform.hpp>
+#include <libsbx/math/random.hpp>
 
 #include <libsbx/graphics/pipeline/compute_pipeline.hpp>
 
@@ -21,6 +24,11 @@
 
 namespace sbx::models {
 
+struct grass_blade {
+  math::vector4 position_bend;
+  math::vector4 size_animation_pitch;
+}; // struct grass_blade
+
 class foliage_task final : public graphics::task {
 
   using base = graphics::task;
@@ -28,23 +36,29 @@ class foliage_task final : public graphics::task {
   inline static constexpr auto usage = (VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
   inline static constexpr auto properties = (VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
+  inline static constexpr auto count = 256u;
+
 public:
 
   foliage_task(const std::filesystem::path& path)
   : _pipeline{path},
-    _push_handler{_pipeline} {
+    _push_handler{_pipeline},
+    _blades{_generate_blades(math::vector3::zero, 10.0f, count)} {
     auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
-    _draw_commands_buffer = graphics_module.add_resource<graphics::buffer>(graphics::storage_buffer::min_size, usage, properties);
-    // _bounding_box_buffer = graphics_module.add_resource<graphics::buffer>(graphics::storage_buffer::min_size, usage, properties);
-    // _draw_data_buffer = graphics_module.add_resource<graphics::buffer>(graphics::storage_buffer::min_size, usage, properties);
-    // _frustum_buffer = graphics_module.add_resource<graphics::buffer>(sizeof(frustum_buffer), usage, properties);
+    _grass_input_buffer = graphics_module.add_resource<graphics::buffer>(count * sizeof(grass_blade), usage, properties, _blades.data());
+    _grass_output_buffer = graphics_module.add_resource<graphics::buffer>(count * sizeof(grass_blade), usage, properties);
+    _draw_command_buffer = graphics_module.add_resource<graphics::buffer>(sizeof(VkDrawIndirectCommand), usage, properties);
   }
 
   ~foliage_task() override = default;
 
-  auto draw_commands_buffer() -> graphics::resource_handle<graphics::buffer> {
-    return _draw_commands_buffer;
+  auto grass_output_buffer() -> graphics::resource_handle<graphics::buffer> {
+    return _grass_output_buffer;
+  }
+
+  auto draw_command_buffer() -> graphics::resource_handle<graphics::buffer> {
+    return _draw_command_buffer;
   }
 
   auto execute(graphics::command_buffer& command_buffer) -> void override {
@@ -53,53 +67,76 @@ public:
 
     auto& logical_device = graphics_module.logical_device();
 
-    auto& draw_commands_buffer = graphics_module.get_resource<graphics::buffer>(_draw_commands_buffer);
-    // auto& bounding_box_buffer = graphics_module.get_resource<graphics::buffer>(_bounding_box_buffer);
-    // auto& draw_data_buffer = graphics_module.get_resource<graphics::buffer>(_draw_data_buffer);
-    // auto& frustum_buffer = graphics_module.get_resource<graphics::buffer>(_frustum_buffer);
+    auto& grass_input_buffer = graphics_module.get_resource<graphics::buffer>(_grass_input_buffer);
+    auto& grass_output_buffer = graphics_module.get_resource<graphics::buffer>(_grass_output_buffer);
+    auto& draw_command_buffer = graphics_module.get_resource<graphics::buffer>(_draw_command_buffer);
 
-    // auto& scene = scenes_module.scene();
+    auto& scene = scenes_module.scene();
 
-    // auto camera_node = scene.camera();
+    auto camera_node = scene.camera();
 
-    // auto& transform = scene.get_component<math::transform>(camera_node);
-    // auto& global_transform = scene.get_component<scenes::global_transform>(camera_node);
+    auto& transform = scene.get_component<math::transform>(camera_node);
+    auto& global_transform = scene.get_component<scenes::global_transform>(camera_node);
 
-    // const auto view = math::matrix4x4::inverted(global_transform.model);
+    const auto view = math::matrix4x4::inverted(global_transform.model);
 
-    // auto& camera = scene.get_component<scenes::camera>(camera_node);
+    auto& camera = scene.get_component<scenes::camera>(camera_node);
 
-    // auto frustum = camera.view_frustum(view);
+    const auto& projection = camera.projection();
 
     _pipeline.bind(command_buffer);
 
-    // _uniform_handler.push("model", math::matrix4x4::identity);
-    // _uniform_handler.push("subdivisions", 6u);
-
-    // _descriptor_handler.push("uniform_parameters", _uniform_handler);
-    // _descriptor_handler.push("buffer_out_vertices", _output_vertex_storage_handler);
-    // _descriptor_handler.push("buffer_out_indices", _output_index_storage_handler);
-
-    _push_handler.push("draw_commands", draw_commands_buffer.address());
-    // _push_handler.push("draw_data", draw_data_buffer.address());
-    // _push_handler.push("bounding_boxes", bounding_box_buffer.address());
-    // _push_handler.push("frustum", frustum_buffer.address());
+    _push_handler.push("in_blades", grass_input_buffer.address());
+    _push_handler.push("out_blades", grass_output_buffer.address());
+    _push_handler.push("draw_command", draw_command_buffer.address());
+    _push_handler.push("view_projection", projection * view);
+    _push_handler.push("blade_count", count);
 
     _push_handler.bind(command_buffer);
 
-    _pipeline.dispatch(command_buffer, {32u, 1u, 1u});
+    const auto blade_count = static_cast<std::uint32_t>(_blades.size());
+    const auto local_size_x = 64u;
+    const auto workgroup_count = (blade_count + local_size_x - 1u) / local_size_x;
+
+    _pipeline.dispatch(command_buffer, {workgroup_count, 1u, 1u});
   }
 
 private:
+
+  auto _generate_blades(const math::vector3& center, std::float_t radius, std::size_t count, std::float_t min_height = 0.4f, std::float_t max_height = 1.2f) -> std::vector<grass_blade> {
+    auto blades = std::vector<grass_blade>{};
+    blades.reserve(count);
+
+    for (auto i = 0; i < count; ++i) {
+      auto position = center + math::vector3{math::random::next<std::float_t>(-radius, radius), 0.0f, math::random::next<std::float_t>(-radius, radius)};
+
+      auto blade = grass_blade{};
+      blade.position_bend = math::vector4{position, math::random::next<std::float_t>(0.0f, 0.3f)};
+      blade.size_animation_pitch = math::vector4{
+        math::random::next<std::float_t>(0.03f, 0.07f),
+        math::random::next<std::float_t>(min_height, max_height),
+        math::random::next<std::float_t>(-0.4f, 0.4f),
+        math::random::next<std::float_t>(0.0f, std::numbers::phi_v<std::float_t>)
+      };
+
+      blades.push_back(blade);
+    }
+
+    return blades;
+  }
 
   graphics::compute_pipeline _pipeline;
 
   // graphics::buffer_handle _bounding_box_buffer;
   // graphics::buffer_handle _draw_data_buffer;
-  graphics::buffer_handle _draw_commands_buffer;
+  graphics::buffer_handle _grass_input_buffer;
+  graphics::buffer_handle _grass_output_buffer;
+  graphics::buffer_handle _draw_command_buffer;  
   // graphics::buffer_handle _frustum_buffer;
 
   graphics::push_handler _push_handler;
+
+  std::vector<grass_blade> _blades;
 
 }; // class frustum_culling_task
 

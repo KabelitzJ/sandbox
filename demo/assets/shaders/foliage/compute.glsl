@@ -1,51 +1,53 @@
 #version 460 core
 
-#extension GL_EXT_buffer_reference: enable
+#extension GL_EXT_buffer_reference : enable
 
-#include <libsbx/common/random.glsl>
+#include <libsbx/common/vk.glsl>
 
-struct draw_indexed_indirect_command {
-  uint count;
-  uint instance_count;
-  uint first_index;
-  int base_vertex;
-  uint base_instance;
-}; // struct draw_indexed_indirect_command
+layout(local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
 
 struct grass_blade {
-	// holds position(displacement from the center) of the blade
-	// and a value determining how much it will bend
-	vec4 position_bend;
-	// holds width and height multiplier
-	// and pitch angle
-	// and a term used for animation
-	vec4 size_animation_pitch;
+	vec4 position_bend;         // xyz = position, w = bend amount
+	vec4 size_animation_pitch;  // x = width, y = height, z = pitch angle, w = animation term
 };
 
-layout(local_size_x = 32) in;
-
-layout(std430, buffer_reference) buffer draw_command_buffer {
-  draw_indexed_indirect_command data[];
+layout(buffer_reference, std430) readonly buffer grass_input_reference {
+  grass_blade data[];
 };
 
-layout(push_constant) uniform push_data {
-  draw_command_buffer draw_commands;
-  vec3 center;
-  vec2 size;
-} push;
+layout(buffer_reference, std430) writeonly buffer grass_output_reference {
+  grass_blade data[];
+};
+
+layout(buffer_reference, std430) buffer draw_command_reference {
+  vk_draw_indirect_command command;
+};
+
+layout(push_constant) uniform push_constants {
+  grass_input_reference in_blades;
+  grass_output_reference out_blades;
+  draw_command_reference draw_command;
+  mat4 view_projection;
+  uint blade_count;
+};
 
 void main() {
-  const uvec2 idx = gl_GlobalInvocationID.xy;
+  uint idx = gl_GlobalInvocationID.x;
 
-  vec3 position = push.center;
+  if (idx >= blade_count) {
+    return;
+  }
 
-  vec3 random_offset = random_3d(uvec3(idx, 378294));
+  grass_blade blade = in_blades.data[idx];
+  vec3 world_position = blade.position_bend.xyz;
 
-  position.x += (push.size.x / 2) - random_offset.x * push.size.x;
-  position.z += (push.size.y / 2) - random_offset.y * push.size.y;
+  vec4 clip = view_projection * vec4(world_position, 1.0);
 
-  vec2 bottom_left_corner = push.center.xz - (push.size.xy / 2.0);
-  vec2 upper_right_corner = push.center.xz + (push.size.xy / 2.0);
+  if (abs(clip.x) > clip.w || abs(clip.y) > clip.w || clip.z < 0.0 || clip.z > clip.w) {
+    return;
+  }
 
-  vec2 uv = position.xz / (upper_right_corner - bottom_left_corner);
+  uint output_idx = atomicAdd(draw_command.command.instance_count, 1);
+
+  out_blades.data[output_idx] = blade;
 }

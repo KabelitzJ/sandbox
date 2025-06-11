@@ -103,7 +103,7 @@ public:
     _storage.emplace_back();
     std::construct_at(_ptr(handle), std::forward<Args>(args)...);
 
-    _generations.push_back(1u);
+    _generations.push_back(0u);
 
     return handle_type{handle, _generations[handle]};
   }

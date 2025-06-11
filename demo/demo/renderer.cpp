@@ -6,11 +6,11 @@
 #include <libsbx/scenes/skybox_subrenderer.hpp>
 #include <libsbx/scenes/debug_subrenderer.hpp>
 #include <libsbx/scenes/grid_subrenderer.hpp>
-#include <libsbx/scenes/grass_subrenderer.hpp>
 
 #include <libsbx/models/models.hpp>
 #include <libsbx/models/frustum_culling_task.hpp>
 #include <libsbx/models/foliage_task.hpp>
+#include <libsbx/models/foliage_subrenderer.hpp>
 
 #include <libsbx/graphics/pipeline/vertex_input_description.hpp>
 
@@ -91,7 +91,8 @@ auto renderer::initialize() -> void {
   // Compute -> Graphics ownership transfer
 
   graphics_module.transfer_ownership<sbx::graphics::queue::type::compute, sbx::graphics::queue::type::graphics>(frustum_culling_task.draw_commands_buffer());
-  graphics_module.transfer_ownership<sbx::graphics::queue::type::compute, sbx::graphics::queue::type::graphics>(foliage_task.draw_commands_buffer());
+  graphics_module.transfer_ownership<sbx::graphics::queue::type::compute, sbx::graphics::queue::type::graphics>(foliage_task.grass_output_buffer());
+  graphics_module.transfer_ownership<sbx::graphics::queue::type::compute, sbx::graphics::queue::type::graphics>(foliage_task.draw_command_buffer());
     
   // Render stage 0
   // add_subrenderer<sbx::shadows::shadow_subrenderer>("demo/assets/shaders/shadow", sbx::graphics::pipeline::stage{0, 0});
@@ -113,7 +114,7 @@ auto renderer::initialize() -> void {
 
   add_subrenderer<sbx::post::resolve_filter>("demo/assets/shaders/resolve", sbx::graphics::pipeline::stage{0, 1}, std::move(attachment_names));
 
-  add_subrenderer<sbx::scenes::grass_subrenderer>("demo/assets/shaders/grass", sbx::graphics::pipeline::stage{0, 1});
+  add_subrenderer<sbx::models::foliage_subrenderer>("demo/assets/shaders/foliage", sbx::graphics::pipeline::stage{0, 1}, foliage_task.grass_output_buffer(), foliage_task.draw_command_buffer());
 
   // // Render stage 2
   add_subrenderer<sbx::editor::editor_subrenderer>("demo/assets/shaders/editor", sbx::graphics::pipeline::stage{1, 0}, "resolve");

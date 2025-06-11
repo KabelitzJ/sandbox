@@ -98,7 +98,7 @@ public:
 
   auto draw_indexed(std::uint32_t index_count, std::uint32_t instance_count, std::uint32_t first_index, std::int32_t vertex_offset, std::uint32_t first_instance) -> void;
 
-  auto draw_indirect(VkBuffer buffer, std::uint32_t offset, std::uint32_t count, std::uint32_t stride) -> void;
+  auto draw_indirect(VkBuffer buffer, std::uint32_t offset, std::uint32_t count) -> void;
 
   auto draw_indexed_indirect(VkBuffer buffer, std::uint32_t offset, std::uint32_t count) -> void;
 
