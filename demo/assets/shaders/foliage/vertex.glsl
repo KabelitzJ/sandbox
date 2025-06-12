@@ -21,6 +21,8 @@ layout(push_constant) uniform push_constants {
 };
 
 void main() {
+	grass_blade blade = 
+
   out_v0 = vec4((model * vec4(v0.xyz, 1.f)).xyz, v0.w);
   out_v1 = vec4((model * vec4(v1.xyz, 1.f)).xyz, v1.w);
   out_v2 = vec4((model * vec4(v2.xyz, 1.f)).xyz, v2.w);
