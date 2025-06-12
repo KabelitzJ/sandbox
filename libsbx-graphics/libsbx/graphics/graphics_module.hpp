@@ -188,7 +188,7 @@ public:
 
   template<queue::type Source, queue::type Destination, typename Type>
   requires (std::is_same_v<Type, graphics::buffer> || std::is_same_v<Type, graphics::storage_buffer>)
-  auto transfer_ownership(const resource_handle<Type>& handle) -> void {
+  auto transfer_ownership(const resource_handle<Type>& handle, const VkPipelineStageFlagBits2 stage = VK_PIPELINE_STAGE_2_DRAW_INDIRECT_BIT) -> void {
     auto& buffer = get_resource<Type>(handle);
 
     _release_ownership_data.push_back(command_buffer::release_ownership_data{
@@ -200,8 +200,8 @@ public:
     });
 
     _acquire_ownership_data.push_back(command_buffer::acquire_ownership_data{
-      .dst_stage_mask = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT,
-      .dst_access_mask = VK_ACCESS_2_SHADER_READ_BIT,
+      .dst_stage_mask = stage,
+      .dst_access_mask = _access_mask_from_stage(stage),
       .src_queue_family = _logical_device->queue<Source>().family(),
       .dst_queue_family = _logical_device->queue<Destination>().family(),
       .buffer = buffer
@@ -215,6 +215,27 @@ public:
   }
 
 private:
+
+  static constexpr auto _access_mask_from_stage(VkPipelineStageFlagBits2 stage) -> VkAccessFlagBits2 {
+    switch (stage) {
+      case VK_PIPELINE_STAGE_2_DRAW_INDIRECT_BIT: {
+        return VK_ACCESS_2_INDIRECT_COMMAND_READ_BIT;
+      }
+      case VK_PIPELINE_STAGE_2_VERTEX_SHADER_BIT:
+      case VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT:
+      case VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT:
+      case VK_PIPELINE_STAGE_2_MESH_SHADER_BIT_EXT:
+      case VK_PIPELINE_STAGE_2_TASK_SHADER_BIT_EXT: {
+        return VK_ACCESS_2_SHADER_READ_BIT;
+      }
+      case VK_PIPELINE_STAGE_2_TRANSFER_BIT: {
+        return VK_ACCESS_2_TRANSFER_READ_BIT;
+      }
+      default: {
+        return VK_ACCESS_2_MEMORY_READ_BIT;
+      }
+    }
+  }
 
   auto _start_render_pass(graphics::render_stage& render_stage, graphics::command_buffer& command_buffer) -> void;
 
