@@ -1,15 +1,20 @@
 #version 460 core
+
+#extension GL_ARB_separate_shader_objects : enable
 #extension GL_EXT_buffer_reference : enable
 
 #include <foliage/grass_blade.glsl>
 
-layout(location = 0) in vec2 in_uv;
-layout(location = 1) in float in_wind;
+// Declare fragment shader inputs
+layout(location = 0) in vec4 position;
+layout(location = 1) in vec4 normal;
+layout(location = 2) in vec2 uv;
 
-layout(location = 0) out vec4 out_color;
+layout(location = 0) out vec4 outColor;
 
 layout(push_constant) uniform push_constants {
 	grass_buffer_reference blades;
+	mat4 model;
 	mat4 view_projection;
 	vec4 green_bottom;
 	vec4 green_top;
@@ -17,23 +22,18 @@ layout(push_constant) uniform push_constants {
 };
 
 void main() {
-	// Alpha fade near tip
-	float fade = smoothstep(0.6, 1.0, in_uv.y);
-	float alpha = 1.0 - fade;
+  // Compute fragment color
+  vec3 dark_green = vec3(0.2, 0.4, 0.0);
+  vec3 light_green = vec3(0.4, 0.8, 0.0);
+  vec3 light = normalize(vec3(1.0, 1.0, 1.0));
 
-	// Color gradient from bottom to top
-	vec3 gradient_color = mix(green_bottom.rgb, green_top.rgb, in_uv.y);
+  // 1. compute color; mixing from dark to light green
+  vec3 color = mix(dark_green, light_green, uv.y);
 
-	// Add wind shimmer
-	vec3 shimmer_color = mix(gradient_color, gradient_color * 1.2, in_wind * 0.5 + 0.5);
+  // 2. compute lambertian shading
+  float lambert_diffuse = dot(vec3(normal), light);
+  float lambert_ambient = 0.4;
+  float light_intensity = clamp(lambert_diffuse, 0, 1) + lambert_ambient;
 
-	// Fake shadow near base
-	float shadow = smoothstep(0.0, 0.4, in_uv.y);
-	vec3 shaded_color = shimmer_color * mix(0.6, 1.0, shadow);
-
-	out_color = vec4(shaded_color, alpha);
-
-	if (alpha < 0.1) {
-		discard;
-	}
+  outColor = vec4(light_intensity * color, 1.0);
 }
