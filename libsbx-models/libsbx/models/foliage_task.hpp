@@ -91,10 +91,8 @@ public:
 
     _push_handler.bind(command_buffer);
 
-    // vkCmdFillBuffer(command_buffer, draw_command_buffer, 0, sizeof(VkDrawIndirectCommand), 0);
-    // command_buffer.fill_buffer(draw_command_buffer, 0, sizeof(VkDrawIndirectCommand), 0);
     auto draw_command = VkDrawIndirectCommand{};
-    draw_command.vertexCount = 6u;
+    draw_command.vertexCount = 3u;
     draw_command.instanceCount = 0u;
     draw_command.firstVertex = 0u;
     draw_command.firstInstance = 0u;

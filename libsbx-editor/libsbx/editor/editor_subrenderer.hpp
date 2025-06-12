@@ -486,16 +486,19 @@ private:
       settings.for_each([](const auto& group_name, auto& group) {
         if (ImGui::CollapsingHeader(group_name.c_str(), ImGuiTreeNodeFlags_DefaultOpen)) {
           for (const auto& entry : group.entries) {
-            if (std::holds_alternative<bool>(entry.value)) {
-              ImGui::Checkbox(entry.name.c_str(), &std::get<bool>(entry.value));
-            } else if (std::holds_alternative<std::uint32_t>(entry.value)) {
-              ImGui::DragScalar(entry.name.c_str(), ImGuiDataType_U32, &std::get<std::uint32_t>(entry.value), 1.0f);
-            } else if (std::holds_alternative<std::int32_t>(entry.value)) {
-              ImGui::DragScalar(entry.name.c_str(), ImGuiDataType_S32, &std::get<std::int32_t>(entry.value), 1.0f);
-            } else if (std::holds_alternative<std::float_t>(entry.value)) {
-              ImGui::DragScalar(entry.name.c_str(), ImGuiDataType_Float, &std::get<std::float_t>(entry.value), 0.1f);
-            } else if (std::holds_alternative<std::string>(entry.value)) {
-              auto& str = std::get<std::string>(entry.value);
+            if (std::holds_alternative<bool>(entry.value.entry)) {
+              ImGui::Checkbox(entry.name.c_str(), &std::get<bool>(entry.value.entry));
+            } else if (std::holds_alternative<std::uint32_t>(entry.value.entry)) {
+              ImGui::DragScalar(entry.name.c_str(), ImGuiDataType_U32, &std::get<std::uint32_t>(entry.value.entry), 1.0f);
+            } else if (std::holds_alternative<std::int32_t>(entry.value.entry)) {
+              ImGui::DragScalar(entry.name.c_str(), ImGuiDataType_S32, &std::get<std::int32_t>(entry.value.entry), 1.0f);
+            } else if (std::holds_alternative<std::float_t>(entry.value.entry)) {
+              const auto* min = std::holds_alternative<std::float_t>(entry.value.min) ? &std::get<std::float_t>(entry.value.min) : nullptr;
+              const auto* max = std::holds_alternative<std::float_t>(entry.value.max) ? &std::get<std::float_t>(entry.value.max) : nullptr;
+
+              ImGui::DragScalar(entry.name.c_str(), ImGuiDataType_Float, &std::get<std::float_t>(entry.value.entry), 0.001f, min, max);
+            } else if (std::holds_alternative<std::string>(entry.value.entry)) {
+              auto& str = std::get<std::string>(entry.value.entry);
               ImGui::InputText(entry.name.c_str(), str.data(), str.size());
             }
           }

@@ -2,31 +2,23 @@
 
 #extension GL_EXT_buffer_reference : enable
 
+#include <foliage/grass_blade.glsl>
+
 layout(location = 0) out vec2 out_uv;
 layout(location = 1) out float out_wind;
 
-struct grass_blade {
-	vec4 position_bend;         // xyz = position, w = bend amount
-	vec4 size_animation_pitch;  // x = width, y = height, z = pitch angle, w = animation term
-};
-
-layout(buffer_reference, std430) readonly buffer grass_reference {
-	grass_blade data[];
-};
-
 layout(push_constant) uniform push_constants {
-	grass_reference blades;
+	grass_buffer_reference blades;
 	mat4 view_projection;
+	vec4 green_bottom;
+	vec4 green_top;
 	float global_time;
 };
 
-vec2 quad_vertices[6] = vec2[](
-	vec2(-0.5, 0.0),
-	vec2( 0.5, 0.0),
-	vec2(-0.5, 1.0),
-	vec2(-0.5, 1.0),
-	vec2( 0.5, 0.0),
-	vec2( 0.5, 1.0)
+vec2 triangle_vertices[3] = vec2[](
+	vec2( 0.0, 1.0),  // tip
+	vec2(-0.5, 0.0),  // left base
+	vec2( 0.5, 0.0)   // right base
 );
 
 void main() {
@@ -37,24 +29,22 @@ void main() {
 
 	vec3 base_position = blade.position_bend.xyz;
 	float bend = blade.position_bend.w;
-
 	float width = blade.size_animation_pitch.x;
 	float height = blade.size_animation_pitch.y;
 	float animation = blade.size_animation_pitch.z;
 	float pitch = blade.size_animation_pitch.w;
 
-	vec2 quad_uv = quad_vertices[vertex_id];
+	vec2 uv = triangle_vertices[vertex_id];
+	vec3 offset = vec3(uv.x * width, uv.y * height, 0.0);
 
-	vec3 offset = vec3(quad_uv.x * width, quad_uv.y * height, 0.0);
-
-	// Apply pitch rotation (around x-axis)
+	// Apply pitch rotation (around Y axis)
 	float cos_pitch = cos(pitch);
 	float sin_pitch = sin(pitch);
 
 	offset = vec3(
-		offset.x,
-		offset.y * cos_pitch - offset.z * sin_pitch,
-		offset.y * sin_pitch + offset.z * cos_pitch
+		offset.x * cos_pitch + offset.z * sin_pitch,
+		offset.y,
+	  -offset.x * sin_pitch + offset.z * cos_pitch
 	);
 
 	// Apply wind sway
@@ -65,6 +55,6 @@ void main() {
 
 	gl_Position = view_projection * vec4(world_position, 1.0);
 
-	out_uv = quad_uv;
+	out_uv = uv;
 	out_wind = sway;
 }

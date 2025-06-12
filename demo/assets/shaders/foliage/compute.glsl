@@ -4,12 +4,9 @@
 
 #include <libsbx/common/vk.glsl>
 
-layout(local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
+#include <foliage/grass_blade.glsl>
 
-struct grass_blade {
-	vec4 position_bend;         // xyz = position, w = bend amount
-	vec4 size_animation_pitch;  // x = width, y = height, z = pitch angle, w = animation term
-};
+layout(local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
 
 layout(buffer_reference, std430) readonly buffer grass_input_reference {
   grass_blade data[];

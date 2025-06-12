@@ -49,7 +49,19 @@ public:
     _pipeline{path, stage},
     _push_handler{_pipeline},
     _grass_buffer{grass_buffer},
-    _draw_command_buffer{draw_command_buffer} { }
+    _draw_command_buffer{draw_command_buffer} {
+    auto& settings = core::engine::settings(); 
+
+    settings.set("foliage_task::green_top_r", 0.2f, 0.0f, 1.0f);
+    settings.set("foliage_task::green_top_g", 0.5f, 0.0f, 1.0f);
+    settings.set("foliage_task::green_top_b", 0.2f, 0.0f, 1.0f);
+    settings.set("foliage_task::green_top_a", 1.0f, 0.0f, 1.0f);
+
+    settings.set("foliage_task::green_bottom_r", 0.2f, 0.0f, 1.0f);
+    settings.set("foliage_task::green_bottom_g", 0.5f, 0.0f, 1.0f);
+    settings.set("foliage_task::green_bottom_b", 0.2f, 0.0f, 1.0f);
+    settings.set("foliage_task::green_bottom_a", 1.0f, 0.0f, 1.0f);
+  }
 
   ~foliage_subrenderer() override {
 
@@ -73,12 +85,31 @@ public:
 
     auto& grass_buffer = graphics_module.get_resource<graphics::storage_buffer>(_grass_buffer);
     auto& draw_command_buffer = graphics_module.get_resource<graphics::storage_buffer>(_draw_command_buffer);
+
+    // [TODO] : Implement color / vectors as settings
+    auto& settings = core::engine::settings(); 
+
+    auto green_bottom = math::color{
+      *settings.get<std::float_t>("foliage_task::green_bottom_r"),
+      *settings.get<std::float_t>("foliage_task::green_bottom_g"),
+      *settings.get<std::float_t>("foliage_task::green_bottom_b"),
+      *settings.get<std::float_t>("foliage_task::green_bottom_a")
+    };
+
+    auto green_top = math::color{
+      *settings.get<std::float_t>("foliage_task::green_top_r"),
+      *settings.get<std::float_t>("foliage_task::green_top_g"),
+      *settings.get<std::float_t>("foliage_task::green_top_b"),
+      *settings.get<std::float_t>("foliage_task::green_top_a")
+    };
     
     _pipeline.bind(command_buffer);
 
     _push_handler.push("blades", grass_buffer.address());
     _push_handler.push("view_projection", projection * view);
     _push_handler.push("global_time", core::engine::time().value());
+    _push_handler.push("green_bottom", green_bottom);
+    _push_handler.push("green_top", green_top);
 
     _push_handler.bind(command_buffer);
 

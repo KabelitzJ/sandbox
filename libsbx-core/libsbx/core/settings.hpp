@@ -18,7 +18,13 @@ class settings {
 
 public:
 
-  using value_type = std::variant<bool, std::uint32_t, std::int32_t, std::float_t, std::string>;
+  using entry_type = std::variant<std::monostate, bool, std::uint32_t, std::int32_t, std::float_t, std::string>;
+
+  struct value_type {
+    entry_type entry;
+    entry_type min;
+    entry_type max;
+  };
 
   struct group_entry {
     utility::hashed_string name;
@@ -34,28 +40,33 @@ public:
 
   template<setting_type Type>
   auto set(const utility::hashed_string& key, const Type& value) -> void {
-    _settings[key] = value;
+    _settings[key] = value_type{value, std::in_place_type<std::monostate>, std::in_place_type<std::monostate>};
+  }
+
+  template<setting_type Type>
+  auto set(const utility::hashed_string& key, const Type& value, const Type& min, const Type& max) -> void {
+    _settings[key] = value_type{value, min, max};
   }
 
   template<setting_type Type>
   auto get(const utility::hashed_string& key) const -> memory::observer_ptr<const Type> {
     if (auto entry = _settings.find(key); entry != _settings.end()) {
-      return std::get_if<Type>(&entry->second);
+      return std::get_if<Type>(&entry->second.entry);
     }
 
     return nullptr;
   }
 
-  template<setting_type Type>
-  auto get_or_set(const utility::hashed_string& key, const Type& default_value) -> memory::observer_ptr<Type> {
-    if (auto entry = _settings.find(key); entry != _settings.end()) {
-      return std::get_if<Type>(&entry->second);
-    }
+  // template<setting_type Type>
+  // auto get_or_set(const utility::hashed_string& key, const Type& default_value) -> memory::observer_ptr<const Type> {
+  //   if (auto entry = _settings.find(key); entry != _settings.end()) {
+  //     return std::get_if<Type>(&entry->second);
+  //   }
 
-    set(key, default_value);
+  //   set(key, default_value);
     
-    return get<Type>(key);
-  }
+  //   return get<Type>(key);
+  // }
 
   template<typename Callable>
   requires (std::is_invocable_v<Callable, const utility::hashed_string&, group&>)
