@@ -72,10 +72,10 @@ public:
 
     auto camera_node = scene.camera();
 
-    auto& transform = scene.get_component<math::transform>(camera_node);
-    auto& global_transform = scene.get_component<scenes::global_transform>(camera_node);
+    auto& camera_transform = scene.get_component<math::transform>(camera_node);
+    auto& camera_global_transform = scene.get_component<scenes::global_transform>(camera_node);
 
-    const auto view = math::matrix4x4::inverted(global_transform.model);
+    const auto view = math::matrix4x4::inverted(camera_global_transform.model);
 
     auto& camera = scene.get_component<scenes::camera>(camera_node);
 
@@ -87,6 +87,7 @@ public:
     _push_handler.push("out_blades", grass_output_buffer.address());
     _push_handler.push("draw_command", draw_command_buffer.address());
     _push_handler.push("view_projection", projection * view);
+    _push_handler.push("camera_position", camera_global_transform.model * math::vector4{camera_transform.position()});
     _push_handler.push("blade_count", count);
 
     _push_handler.bind(command_buffer);

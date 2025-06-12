@@ -129,7 +129,7 @@ public:
 
     _scene_uniform_handler.push("view", view);
 
-    _scene_uniform_handler.push("camera_position", camera_transform.position());
+    _scene_uniform_handler.push("camera_position", camera_global_transform.model * math::vector4{camera_transform.position()});
 
     const auto& scene_light = scene.light();
 
