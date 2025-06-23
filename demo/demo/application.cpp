@@ -137,8 +137,6 @@ application::application()
 
       scene.add_component<sbx::scenes::static_mesh>(tree, _mesh_ids[fmt::format("maple_tree_{}", sbx::math::random::next<std::uint32_t>(1, 4))], tree_submeshes);
 
-      scene.add_component<sbx::scenes::collider>(tree, sbx::scenes::aabb_collider{sbx::math::vector3{-cell_size.x() / 2.0f, 0.0f, -cell_size.y() / 2.0f}, sbx::math::vector3{cell_size.x() / 2.0f, 5.0f, cell_size.y() / 2.0f}});
-
       const auto position = (sbx::math::vector2{x, y} * cell_size - offset) + (sbx::math::vector2{sbx::math::random::next<std::float_t>(0.0f, 1.0f), sbx::math::random::next<std::float_t>(0.0f, 1.0f)} * cell_size);
 
       auto& tree_transform = scene.get_component<sbx::math::transform>(tree);
@@ -197,8 +195,6 @@ application::application()
       scene.add_component<sbx::scenes::static_mesh>(test, _mesh_ids["cube"], 0u, sbx::math::color{0.39f, 0.44f, 0.56f, 1.0f}, sbx::scenes::static_mesh::material{0.0f, 1.0f, 0.0f, 0.0f});
     }
   }
-
-  // scene.add_component<sbx::scenes::collider>(test, sbx::scenes::sphere_collider{sbx::math::vector3::zero, 1.0f});
 
   // Camera
   auto camera = scene.camera();
