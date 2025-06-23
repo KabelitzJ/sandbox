@@ -228,10 +228,10 @@ auto application::update() -> void  {
 
   _rotation += sbx::math::degree{45} * delta_time;
 
-  auto q = scene.query<sbx::math::transform, rotator>();
+  auto query = scene.query<sbx::math::transform, rotator>();
 
-  for (auto&& [n, t] : q.each()) {
-    t.set_rotation(sbx::math::vector3::up, _rotation);
+  for (auto&& [node, transform] : query.each()) {
+    transform.set_rotation(sbx::math::vector3::up, _rotation);
   }
 }
 

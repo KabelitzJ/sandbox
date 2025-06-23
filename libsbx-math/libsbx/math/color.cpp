@@ -78,4 +78,38 @@ auto operator==(const color& lhs, const color& rhs) noexcept -> bool {
   return lhs.r() == rhs.r() && lhs.g() == rhs.g() && lhs.b() == rhs.b() && lhs.a() == rhs.a();
 }
 
+auto operator*(color lhs, const std::float_t value) -> color {
+  return color{lhs.r() * value, lhs.g() * value, lhs.b() * value, lhs.a()};
+}
+
 } // namespace sbx::math
+
+auto YAML::convert<sbx::math::color>::encode(const sbx::math::color& color) -> Node {
+  auto node = Node{};
+
+  node["r"] = color.r();
+  node["g"] = color.g();
+  node["b"] = color.b();
+  node["a"] = color.a();
+
+  return node;
+}
+
+auto YAML::convert<sbx::math::color>::decode(const Node& node, sbx::math::color& color) -> bool {
+  if (!node.IsMap() || node.size() != 4) {
+    return false;
+  }
+
+  color.r() = node["r"].as<std::float_t>();
+  color.g() = node["g"].as<std::float_t>();
+  color.b() = node["b"].as<std::float_t>();
+  color.a() = node["a"].as<std::float_t>();
+
+  return true;
+}
+
+auto std::hash<sbx::math::color>::operator()(const sbx::math::color& color) const noexcept -> std::size_t {
+  auto hash = std::size_t{0};
+  sbx::utility::hash_combine(hash, color.r(), color.g(), color.b(), color.a());
+  return hash;
+}

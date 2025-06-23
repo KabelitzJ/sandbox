@@ -248,7 +248,7 @@ private:
       if (!frustum.intersects(global_transform.model, bounds)) {
         return;
       }
-      
+
       EASY_END_BLOCK
 
       culled_all_submeshes = false;

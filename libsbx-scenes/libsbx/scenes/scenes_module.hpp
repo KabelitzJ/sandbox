@@ -96,6 +96,87 @@ public:
     add_debug_line(corners[3], corners[7], color);
   }
 
+  auto add_debug_frustum(const math::matrix4x4& view, const math::matrix4x4& projection, const sbx::math::color& color) -> void {
+    const auto corners = std::array<sbx::math::vector3, 8u>{ 
+      math::vector3(-1, -1, -1),
+      math::vector3(+1, -1, -1),
+      math::vector3(+1, +1, -1),
+      math::vector3(-1, +1, -1),
+      math::vector3(-1, -1, +1),
+      math::vector3(+1, -1, +1),
+      math::vector3(+1, +1, +1),
+      math::vector3(-1, +1, +1)
+    };
+
+    auto points = std::array<sbx::math::vector3, 8u>{};
+
+    for (auto i = 0u; i < 8u; ++i) {
+      auto q = math::matrix4x4::inverted(view) * math::matrix4x4::inverted(projection) * math::vector4{corners[i]};
+      points[i] = math::vector3{q.x() / q.w(), q.y() / q.w(), q.z() / q.w()};
+    }
+
+    add_debug_line(points[0], points[4], color);
+    add_debug_line(points[1], points[5], color);
+    add_debug_line(points[2], points[6], color);
+    add_debug_line(points[3], points[7], color);
+
+    add_debug_line(points[0], points[1], color);
+    add_debug_line(points[1], points[2], color);
+    add_debug_line(points[2], points[3], color);
+    add_debug_line(points[3], points[0], color);
+    add_debug_line(points[0], points[2], color);
+    add_debug_line(points[1], points[3], color);
+
+    add_debug_line(points[4], points[5], color);
+    add_debug_line(points[5], points[6], color);
+    add_debug_line(points[6], points[7], color);
+    add_debug_line(points[7], points[4], color);
+    add_debug_line(points[4], points[6], color);
+    add_debug_line(points[5], points[7], color);
+
+    const auto grid_color = color * 0.7f;
+    const int grid_lines = 100;
+
+    auto p1 = points[0];
+    auto p2 = points[1];
+    auto s1 = (points[4]-points[0]) / static_cast<std::float_t>(grid_lines);
+    auto s2 = (points[5]-points[1]) / static_cast<std::float_t>(grid_lines);
+
+    for (int i = 0; i != grid_lines; i++, p1 += s1, p2 += s2) {
+      add_debug_line(p1, p2, grid_color);
+    }
+
+    p1 = points[2];
+    p2 = points[3];
+
+    s1 = (points[6]-points[2]) / static_cast<std::float_t>(grid_lines);
+    s2 = (points[7]-points[3]) / static_cast<std::float_t>(grid_lines);
+
+    for (int i = 0; i != grid_lines; i++, p1 += s1, p2 += s2) {
+      add_debug_line(p1, p2, grid_color);
+    }
+
+    p1 = points[0];
+    p2 = points[3];
+
+    s1 = (points[4]-points[0]) / static_cast<std::float_t>(grid_lines);
+    s2 = (points[7]-points[3]) / static_cast<std::float_t>(grid_lines);
+
+    for (int i = 0; i != grid_lines; i++, p1 += s1, p2 += s2) {
+      add_debug_line(p1, p2, grid_color);
+    }
+
+    p1 = points[1];
+    p2 = points[2];
+
+    s1 = (points[5]-points[1]) / static_cast<std::float_t>(grid_lines);
+    s2 = (points[6]-points[2]) / static_cast<std::float_t>(grid_lines);
+
+    for (int i = 0; i != grid_lines; i++, p1 += s1, p2 += s2) {
+      add_debug_line(p1, p2, grid_color);
+    }
+  }
+
 private:
 
   std::optional<scenes::scene> _scene;
