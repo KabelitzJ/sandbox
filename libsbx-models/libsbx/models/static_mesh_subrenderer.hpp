@@ -26,6 +26,7 @@
 
 #include <libsbx/utility/logger.hpp>
 #include <libsbx/utility/timer.hpp>
+#include <libsbx/utility/layout.hpp>
 
 #include <libsbx/core/engine.hpp>
 
@@ -209,17 +210,12 @@ private:
 
   // }; // struct uniform_data
 
-  template<typename Type, std::size_t Size, std::size_t Alignment>
-  struct layout_requirements {
-    inline static constexpr auto value = sizeof(Type) == Size && alignof(Type) == Alignment;
-  }; // struct layout_requirements
-
   struct transform_data {
     alignas(16) math::matrix4x4 model;
     alignas(16) math::matrix4x4 normal;
   }; // struct transform_data
 
-  static_assert(layout_requirements<transform_data, 128, 16>::value, "transform_data does not meet layout requirements");
+  static_assert(utility::layout_requirements_v<transform_data, 128u, 16u>, "transform_data does not meet layout requirements");
 
   struct instance_data {
     alignas(16) math::color tint;
@@ -227,7 +223,7 @@ private:
     alignas(16) math::vector4 image_indices;
   }; // struct instance_data
 
-  static_assert(layout_requirements<instance_data, 48, 16>::value, "instance_data does not meet layout requirements");
+  static_assert(utility::layout_requirements_v<instance_data, 48u, 16u>, "instance_data does not meet layout requirements");
 
   // struct render_data {
   //   std::vector<transform_data> transforms;
@@ -342,38 +338,15 @@ private:
 
     // Resize and update the draw commands buffer
     auto& draw_commands_buffer = graphics_module.get_resource<graphics::storage_buffer>(_draw_commands_buffer);
-
-    const auto required_draw_commands_buffer_size = static_cast<std::uint32_t>(draw_commands.size() * sizeof(VkDrawIndexedIndirectCommand));
-
-    if (draw_commands_buffer.size() < required_draw_commands_buffer_size) {
-      draw_commands_buffer.resize(required_draw_commands_buffer_size * 1.5f);
-    }
-
-    draw_commands_buffer.update(draw_commands.data(), required_draw_commands_buffer_size);
+    update_buffer(draw_commands, draw_commands_buffer);
 
     // Resize and update the transform data buffer
     auto& transform_data_buffer = graphics_module.get_resource<graphics::storage_buffer>(_transform_data_buffer);
-
-    const auto required_transform_data_buffer_size = static_cast<std::uint32_t>(_transform_data.size() * sizeof(static_mesh_subrenderer::transform_data));
-
-    if (transform_data_buffer.size() < required_transform_data_buffer_size) {
-      transform_data_buffer.resize(required_transform_data_buffer_size * 1.5f);
-    }
-
-    transform_data_buffer.update(_transform_data.data(), required_transform_data_buffer_size);
+    update_buffer(_transform_data, transform_data_buffer);
 
     // Resize and update the instance data buffer
     auto& instance_data_buffer = graphics_module.get_resource<graphics::storage_buffer>(_instance_data_buffer);
-
-    const auto required_instance_data_buffer_size = static_cast<std::uint32_t>(instance_data.size() * sizeof(static_mesh_subrenderer::instance_data));
-
-    if (instance_data_buffer.size() < required_instance_data_buffer_size) {
-      instance_data_buffer.resize(required_instance_data_buffer_size * 1.5f);
-    }
-
-    instance_data_buffer.update(instance_data.data(), required_instance_data_buffer_size);
-
-    // [NOTE] KAJ 2025-06-03 : instance_data.size() und _transform_data.size() dont add up. _transform_data.size() should be smaller.
+    update_buffer(instance_data, instance_data_buffer);
 
     _push_handler.push("transform_data_buffer", transform_data_buffer.address());
     _push_handler.push("instance_data_buffer", instance_data_buffer.address());
@@ -391,6 +364,17 @@ private:
     }
 
     EASY_END_BLOCK;
+  }
+
+  template<typename Type>
+  static auto update_buffer(const std::vector<Type>& buffer, graphics::storage_buffer& storage_buffer) -> void {
+    const auto required_size = static_cast<std::uint32_t>(buffer.size() * sizeof(Type));
+
+    if (storage_buffer.size() < required_size) {
+      storage_buffer.resize(required_size * 1.5f);
+    }
+
+    storage_buffer.update(buffer.data(), required_size);
   }
 
   std::unordered_map<math::uuid, std::vector<std::vector<instance_data>>> _submesh_instances;

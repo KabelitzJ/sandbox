@@ -54,6 +54,7 @@
 #include <libsbx/utility/hash.hpp>
 #include <libsbx/utility/hashed_string.hpp>
 #include <libsbx/utility/iterator.hpp>
+#include <libsbx/utility/layout.hpp>
 #include <libsbx/utility/make_array.hpp>
 #include <libsbx/utility/multimap_key_range.hpp>
 #include <libsbx/utility/overload.hpp>
