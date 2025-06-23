@@ -4,6 +4,7 @@
 #include <libsbx/units/time.hpp>
 
 #include <libsbx/math/uuid.hpp>
+#include <libsbx/math/volume.hpp>
 
 #include <libsbx/core/module.hpp>
 
@@ -140,7 +141,13 @@ private:
       indices.emplace_back(i + 1u);
     }
 
-    return std::make_unique<sbx::models::mesh>(std::move(vertices), std::move(indices));
+    const auto half_width = static_cast<std::float_t>(size.x()) / 2.0f;
+    const auto half_height = static_cast<std::float_t>(size.y()) / 2.0f;
+
+    const auto min = sbx::math::vector3{-half_width, 0.0f, -half_height};
+    const auto max = sbx::math::vector3{half_width, 0.0f, half_height};
+
+    return std::make_unique<sbx::models::mesh>(std::move(vertices), std::move(indices), sbx::math::volume{min, max});
   }
 
   sbx::math::uuid _mesh_id;

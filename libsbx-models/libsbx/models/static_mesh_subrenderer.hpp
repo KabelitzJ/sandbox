@@ -145,15 +145,6 @@ public:
 
     EASY_BLOCK("clearing old data");
 
-    // for (auto entry = _uniform_data.begin(); entry != _uniform_data.end();) {
-    //   if (_used_uniforms.contains(entry->first)) {
-    //     ++entry;
-    //   } else {
-    //     entry = _uniform_data.erase(entry);
-    //   }
-    // }
-
-    // _used_uniforms.clear();
     _submesh_instances.clear();
     _transform_data.clear();
     _images.clear();
@@ -175,7 +166,7 @@ public:
       auto mesh_query = scene.query<const scenes::static_mesh>();
   
       for (auto&& [node, static_mesh] : mesh_query.each()) {
-        _submit_mesh(node, static_mesh);
+        _submit_mesh(node, static_mesh, frustum);
       }
     }
 
@@ -225,18 +216,15 @@ private:
 
   static_assert(utility::layout_requirements_v<instance_data, 48u, 16u>, "instance_data does not meet layout requirements");
 
-  // struct render_data {
-  //   std::vector<transform_data> transforms;
-    
-  // }; // struct render_data
-
   struct draw_command_range {
     std::uint32_t offset;
     std::uint32_t count;
   }; // struct draw_command_range
 
-  auto _submit_mesh(const scenes::node node, const scenes::static_mesh& static_mesh) -> void {
+  auto _submit_mesh(const scenes::node node, const scenes::static_mesh& static_mesh, const scenes::frustum& frustum) -> void {
     EASY_FUNCTION();
+    auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
     auto& scene = scenes_module.scene();
 
@@ -245,14 +233,27 @@ private:
     const auto& global_transform = scene.get_component<const scenes::global_transform>(node);
 
     const auto transform_data_index = static_cast<std::uint32_t>(_transform_data.size());
-    _transform_data.emplace_back(global_transform.model, global_transform.normal);
 
     auto& instances = _submesh_instances[mesh_id];
 
-    for (const auto& submesh : static_mesh.submeshes()) {
-      EASY_BLOCK("submit submesh");
-      // _used_uniforms.insert(mesh_id);
+    auto culled_all_submeshes = true;
 
+    for (const auto& submesh : static_mesh.submeshes()) {
+      auto& mesh = graphics_module.get_asset<models::mesh>(mesh_id);
+
+      auto& bounds = mesh.submesh(submesh.index).bounds;
+
+      EASY_BLOCK("frustum check");
+      
+      if (!frustum.intersects(global_transform.model, bounds)) {
+        return;
+      }
+      
+      EASY_END_BLOCK
+
+      culled_all_submeshes = false;
+
+      EASY_BLOCK("submit submesh");
 
       const auto albedo_image_index = submesh.albedo_texture ? _images.push_back(submesh.albedo_texture) : graphics::separate_image2d_array::max_size;
       const auto normal_image_index = submesh.normal_texture ? _images.push_back(submesh.normal_texture) : graphics::separate_image2d_array::max_size;
@@ -264,6 +265,11 @@ private:
       instances[submesh.index].push_back(instance_data{submesh.tint, material, image_indices});
 
       EASY_END_BLOCK;
+    }
+
+    // [NOTE] KAJ 2025-06-23 : Only actually add the transform data if we didnt cull all submeshes of the model.
+    if (!culled_all_submeshes) {
+      _transform_data.emplace_back(global_transform.model, global_transform.normal);
     }
   }
 
@@ -289,7 +295,6 @@ private:
     auto draw_ranges = std::unordered_map<math::uuid, draw_command_range>{};
 
     auto base_instance = std::uint32_t{0u};
-    // auto draw_command_offset = std::uint32_t{0u};
 
     EASY_BLOCK("build draw commands");
 

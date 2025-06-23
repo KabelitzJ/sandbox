@@ -39,9 +39,7 @@ public:
   ~hierarchy_module() override = default;
 
   auto update() -> void override {
-    auto timer = utility::scoped_timer{[](const auto& measurement) {
-      core::engine::profiler().submit("hierarchy_module::update", measurement);
-    }};
+    SBX_SCOPED_TIMER("hierarchy_module");
 
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
 
