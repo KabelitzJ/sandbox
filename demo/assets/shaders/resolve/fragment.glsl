@@ -30,9 +30,6 @@ layout(set = 0, binding = 5, input_attachment_index = 3) uniform subpassInput ma
 const vec4 AMBIENT_COLOR = vec4(0.4, 0.4, 0.4, 1.0);
 const vec4 SPECULAR_COLOR = vec4(0.9, 0.9, 0.9, 1.0);
 const float GLOSSINESS = 32.0;
-const vec4 RIM_COLOR = vec4(1.0, 1.0, 1.0, 1.0);
-const float RIM_STRENGTH = 0.716;
-const float RIM_THRESHOLD = 0.1;
 
 void main() {
   vec3 world_position = subpassLoad(position_image).xyz;
@@ -43,16 +40,19 @@ void main() {
   float metallic = material.x;
   float roughness = material.y;
 
-  vec3 N = normalize(normal);
-  vec3 L = normalize(-scene.light_direction);
-  vec3 V = normalize(scene.camera_position - world_position);
-  vec3 H = normalize(L + V);
+  vec3 light_direction = normalize(-scene.light_direction);
+  vec3 view_direction = normalize(scene.camera_position - world_position);
+  vec3 half_direction = normalize(light_direction + view_direction);
   
-  float diffuse_strength = max(dot(N, L), 0.0);
-  float specular_strength = pow(max(dot(N, H), 0.0), 32.0);
-
+  // Ambient color
   vec4 ambient = AMBIENT_COLOR * albedo;
+
+  // Diffuse color
+  float diffuse_strength = max(dot(normal, light_direction), 0.0);
   vec4 diffuse = diffuse_strength * albedo * scene.light_color;
+
+  // Specular highlight
+  float specular_strength = pow(max(dot(normal, half_direction), 0.0), 32.0);
   vec4 specular = SPECULAR_COLOR * specular_strength * albedo;
 
   vec4 color = ambient + diffuse + specular;
