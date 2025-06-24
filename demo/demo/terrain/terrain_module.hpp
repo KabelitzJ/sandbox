@@ -114,7 +114,7 @@ private:
       for (auto x = 0u; x < subdivisions.x() + 1u; ++x) {
         const auto position = sbx::math::vector3{static_cast<std::float_t>(x * tile_size.x() - offset.x()), 0.0f, static_cast<std::float_t>(y * tile_size.y() - offset.y())};
         const auto normal = sbx::math::vector3::up;
-        const auto tangent = sbx::math::vector3::right;
+        const auto tangent = sbx::math::vector4(1.0f, 0.0f, 0.0f, 1.0f);
         const auto uv = sbx::math::vector2{static_cast<std::float_t>(x % 2), static_cast<std::float_t>(y % 2)};
 
         vertices.emplace_back(position, normal, tangent, uv);
@@ -142,8 +142,8 @@ private:
     const auto half_width = static_cast<std::float_t>(size.x()) / 2.0f;
     const auto half_height = static_cast<std::float_t>(size.y()) / 2.0f;
 
-    const auto min = sbx::math::vector3{-half_width, 0.0f, -half_height};
-    const auto max = sbx::math::vector3{half_width, 0.0f, half_height};
+    const auto min = sbx::math::vector3{-half_width, -0.1f, -half_height};
+    const auto max = sbx::math::vector3{half_width, 0.1f, half_height};
 
     return std::make_unique<sbx::models::mesh>(std::move(vertices), std::move(indices), sbx::math::volume{min, max});
   }

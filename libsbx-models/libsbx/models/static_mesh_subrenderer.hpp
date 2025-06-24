@@ -169,7 +169,7 @@ public:
     SBX_SCOPED_TIMER_BLOCK("static_mesh_subrenderer::submit") {
       auto mesh_query = scene.query<const scenes::static_mesh, const scenes::global_transform>();
 
-      auto tree = containers::octree<cull_data>{math::volume{math::vector3{-1000.0f, -1000.0f, -1000.0f}, math::vector3{1000.0f, 1000.0f, 1000.0f}}};
+      auto tree = containers::octree<cull_data>{math::volume{math::vector3{-300.0f}, math::vector3{300.0f}}};
 
       SBX_SCOPED_TIMER_BLOCK("static_mesh_subrenderer::build_tree") {
         for (auto&& [node, static_mesh, global_transform] : mesh_query.each()) {

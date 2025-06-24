@@ -219,6 +219,8 @@ auto application::update() -> void  {
     return;
   }
 
+  auto& graphics_module = sbx::core::engine::get_module<sbx::graphics::graphics_module>();
+
   auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
   auto& scene = scenes_module.scene();
 
@@ -233,6 +235,34 @@ auto application::update() -> void  {
   for (auto&& [node, transform] : query.each()) {
     transform.set_rotation(sbx::math::vector3::up, _rotation);
   }
+
+  // auto q = scene.query<sbx::math::transform, sbx::scenes::static_mesh, sbx::scenes::global_transform>();
+
+  // auto tree = sbx::containers::octree<sbx::scenes::node>{sbx::math::volume{sbx::math::vector3{-100}, sbx::math::vector3{100}}};
+
+  // auto i = 0;
+
+  // for (auto&& [n, t, s, g] : q.each()) {
+  //   auto& mesh = graphics_module.get_asset<sbx::models::mesh>(s.mesh_id());
+
+  //   const auto v = sbx::math::volume::transformed(mesh.bounds(), g.model);
+
+  //   tree.insert(n, v);
+  //   // t.set_rotation(sbx::math::vector3::up, _rotation);
+
+  //   ++i;
+  // }
+
+  // sbx::utility::logger<"demo">::debug("i: {}", i);
+  
+  // i = 0;
+
+  // tree.for_each_volume([&](const auto& v){
+  //   ++i;
+  //   scenes_module.add_debug_volume(sbx::math::matrix4x4::identity, v, sbx::math::color::green());
+  // });
+
+  // sbx::utility::logger<"demo">::debug("i2: {}", i);
 }
 
 auto application::fixed_update() -> void {
