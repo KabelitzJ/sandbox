@@ -71,6 +71,10 @@ public:
     return _min.x() <= other.max().x() && _max.x() >= other.min().x() && _min.y() <= other.max().y() && _max.y() >= other.min().y() && _min.z() <= other.max().z() && _max.z() >= other.min().z();
   }
 
+  auto diagonal_length() const noexcept -> value_type {
+    return (_max - _min).length();
+  }
+
 private:
 
   vector_type _min;

@@ -169,24 +169,28 @@ public:
     SBX_SCOPED_TIMER_BLOCK("static_mesh_subrenderer::submit") {
       auto mesh_query = scene.query<const scenes::static_mesh, const scenes::global_transform>();
 
-      auto tree = containers::octree<cull_data>{math::volume{math::vector3{-300.0f}, math::vector3{300.0f}}};
-
-      SBX_SCOPED_TIMER_BLOCK("static_mesh_subrenderer::build_tree") {
-        for (auto&& [node, static_mesh, global_transform] : mesh_query.each()) {
-          const auto mesh_id = static_mesh.mesh_id();
-          const auto& mesh = graphics_module.get_asset<models::mesh>(mesh_id);
-
-          tree.insert(cull_data{node, memory::make_observer(static_mesh),  memory::make_observer(global_transform.model)}, mesh.bounds());
-        }
+      for (auto&& [node, static_mesh, global_transform] : mesh_query.each()) {
+        _submit_mesh(node, static_mesh);
       }
 
-      SBX_SCOPED_TIMER_BLOCK("static_mesh_subrenderer::culling") {
-        for (const auto& entry : tree.inside(frustum)) {
-          if (frustum.intersects(*entry.value.model, entry.bounds)) {
-            _submit_mesh(entry.value.node, *entry.value.static_mesh);
-          }
-        }
-      }
+      // auto tree = containers::octree<cull_data>{math::volume{math::vector3{-300.0f}, math::vector3{300.0f}}};
+
+      // SBX_SCOPED_TIMER_BLOCK("static_mesh_subrenderer::build_tree") {
+      //   for (auto&& [node, static_mesh, global_transform] : mesh_query.each()) {
+      //     const auto mesh_id = static_mesh.mesh_id();
+      //     const auto& mesh = graphics_module.get_asset<models::mesh>(mesh_id);
+
+      //     tree.insert(cull_data{node, memory::make_observer(static_mesh),  memory::make_observer(global_transform.model)}, mesh.bounds());
+      //   }
+      // }
+
+      // SBX_SCOPED_TIMER_BLOCK("static_mesh_subrenderer::culling") {
+      //   for (const auto& entry : tree.inside(frustum)) {
+      //     if (frustum.intersects(*entry.value.model, entry.bounds)) {
+      //       _submit_mesh(entry.value.node, *entry.value.static_mesh);
+      //     }
+      //   }
+      // }
     }
 
     EASY_END_BLOCK;

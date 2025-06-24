@@ -34,7 +34,7 @@ public:
       auto outside_count = 0u;
 
       for (const auto& corner : corners) {
-        if (plane.distance_to_point(corner) < 0.0f) {
+        if (plane.distance_to_point(corner) < -volume.diagonal_length() * 0.5f) {
           ++outside_count;
         }
       }
