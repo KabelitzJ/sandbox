@@ -161,8 +161,8 @@ public:
 
     struct cull_data {
       scenes::node node;
-      const scenes::static_mesh* static_mesh;
-      const math::matrix4x4* model;
+      memory::observer_ptr<const scenes::static_mesh> static_mesh;
+      memory::observer_ptr<const math::matrix4x4> model;
     }; // struct cull_data
 
     // [NOTE] KAJ 2025-06-04 : Submitting all static meshes
@@ -176,7 +176,7 @@ public:
           const auto mesh_id = static_mesh.mesh_id();
           const auto& mesh = graphics_module.get_asset<models::mesh>(mesh_id);
 
-          tree.insert(cull_data{node, &static_mesh, &global_transform.model}, mesh.bounds());
+          tree.insert(cull_data{node, memory::make_observer(static_mesh),  memory::make_observer(global_transform.model)}, mesh.bounds());
         }
       }
 
