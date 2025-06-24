@@ -183,6 +183,17 @@ application::application()
 
   // Cubes
 
+  auto height_map = std::vector<std::float_t>{};
+  height_map.resize(100 * 100);
+
+  for (auto y = 0; y < 100; ++y) {
+    for (auto x = 0; x < 100; ++x) {
+      height_map[x + y * 100] = sbx::math::noise::fractal(x * 0.05f, y * 0.05f, 5);
+    }
+  }
+
+  _image_ids.emplace("height_map", graphics_module.add_resource<sbx::graphics::image2d>(sbx::math::vector2u{100, 100}, VK_FORMAT_R32_SFLOAT, reinterpret_cast<const std::uint8_t*>(height_map.data())));
+
   for (auto y = -3; y <= 3; y = y + 3) {
     for (auto x = -3; x <= 3; x = x + 3) {
       auto test = scene.create_node("Test");
@@ -192,7 +203,7 @@ application::application()
       test_transform.set_rotation(sbx::math::vector3::up, sbx::math::degree{45});
       scene.add_component<rotator>(test);
       // scene.add_component<sbx::scenes::static_mesh>(test, _mesh_ids["sphere"], 0u, sbx::math::color{1.0f, 0.6f, 0.6f, 1.0f}, sbx::scenes::static_mesh::material{0.0f, 1.0f, 0.0f, 0.0f});
-      scene.add_component<sbx::scenes::static_mesh>(test, _mesh_ids["cube"], 0u, sbx::math::color{0.39f, 0.44f, 0.56f, 1.0f}, sbx::scenes::static_mesh::material{0.0f, 1.0f, 0.0f, 0.0f});
+      scene.add_component<sbx::scenes::static_mesh>(test, _mesh_ids["cube"], 0u, sbx::math::color{0.39f, 0.44f, 0.56f, 1.0f}, sbx::scenes::static_mesh::material{0.0f, 1.0f, 0.0f, 0.0f}, _image_ids["height_map"]);
     }
   }
 

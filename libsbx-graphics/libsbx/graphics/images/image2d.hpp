@@ -21,7 +21,7 @@ public:
 
   image2d(const std::filesystem::path& path, VkFilter filter = VK_FILTER_LINEAR, VkSamplerAddressMode address_mode = VK_SAMPLER_ADDRESS_MODE_REPEAT, bool anisotropic = false, bool mipmap = false);
 
-  image2d(const math::vector2u& extent, VkFormat format , memory::observer_ptr<const std::uint8_t> pixels);
+  image2d(const math::vector2u& extent, VkFormat format, memory::observer_ptr<const std::uint8_t> pixels);
 
   ~image2d() override = default;
 

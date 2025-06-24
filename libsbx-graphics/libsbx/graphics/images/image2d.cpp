@@ -34,8 +34,38 @@ image2d::image2d(const math::vector2u& extent, VkFormat format , memory::observe
   set_pixels(pixels);
 }
 
+static auto bytes_per_channel(VkFormat format) -> std::uint8_t {
+  switch (format) {
+    case VK_FORMAT_R8_UNORM:
+    case VK_FORMAT_R8_SRGB:
+    case VK_FORMAT_R8G8_UNORM:
+    case VK_FORMAT_R8G8_SRGB:
+    case VK_FORMAT_R8G8B8_UNORM:
+    case VK_FORMAT_R8G8B8_SRGB:
+    case VK_FORMAT_R8G8B8A8_UNORM:
+    case VK_FORMAT_R8G8B8A8_SRGB:
+    case VK_FORMAT_B8G8R8A8_SRGB: {
+      return 1;
+    }
+    case VK_FORMAT_R16_SFLOAT:
+    case VK_FORMAT_R16G16_SFLOAT:
+    case VK_FORMAT_R16G16B16_SFLOAT:
+    case VK_FORMAT_R16G16B16A16_SFLOAT: {
+      return 2;
+    }
+    case VK_FORMAT_R32_SFLOAT:
+    case VK_FORMAT_R32G32_SFLOAT:
+    case VK_FORMAT_R32G32B32A32_SFLOAT: {
+      return 4;
+    }
+    default: {
+      throw std::runtime_error{fmt::format("Unsupported image format: {}", static_cast<std::int32_t>(format))};
+    }
+  }
+}
+
 auto image2d::set_pixels(memory::observer_ptr<const std::uint8_t> pixels) -> void {
-  auto buffer_size = _extent.width * _extent.height * _channels;
+  auto buffer_size = _extent.width * _extent.height * _channels * bytes_per_channel(_format);
   auto staging_buffer = graphics::staging_buffer{std::span{pixels.get(), buffer_size}};
 
   transition_image_layout(_handle, _format, _layout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_ASPECT_COLOR_BIT, _mip_levels, 0, _array_layers, 0);
