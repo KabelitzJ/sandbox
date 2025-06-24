@@ -5,7 +5,8 @@
 namespace sbx::graphics {
 
 template<vertex Vertex>
-mesh<Vertex>::mesh(std::vector<vertex_type>&& vertices, std::vector<index_type>&& indices, const math::volume& bounds) {
+mesh<Vertex>::mesh(std::vector<vertex_type>&& vertices, std::vector<index_type>&& indices, const math::volume& bounds)
+: _bounds{bounds} {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
   _vertex_buffer = graphics_module.add_resource<buffer>(
@@ -27,7 +28,8 @@ mesh<Vertex>::mesh(std::vector<vertex_type>&& vertices, std::vector<index_type>&
 
 template<vertex Vertex>
 mesh<Vertex>::mesh(mesh_data&& mesh_data)
-: _submeshes{std::move(mesh_data.submeshes)} {
+: _submeshes{std::move(mesh_data.submeshes)},
+  _bounds{_calculate_bounds_from_submeshes()} {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
   _vertex_buffer = graphics_module.add_resource<buffer>(
@@ -146,6 +148,19 @@ auto mesh<Vertex>::_upload_vertices(std::vector<vertex_type>&& vertices, std::ve
   }
 
   command_buffer.submit_idle();
+}
+
+template<vertex Vertex>
+auto mesh<Vertex>::_calculate_bounds_from_submeshes() const -> math::volume {
+  auto min = _submeshes[0].bounds.min();
+  auto max = _submeshes[0].bounds.max();
+
+  for (auto i = 1u; i < _submeshes.size(); ++i) {
+    min = math::vector3::min(min, _submeshes[i].bounds.min());
+    max = math::vector3::max(max, _submeshes[i].bounds.max());
+  }
+
+  return math::volume{min, max};
 }
 
 } // namespace sbx::graphics

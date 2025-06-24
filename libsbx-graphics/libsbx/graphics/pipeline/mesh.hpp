@@ -72,6 +72,10 @@ public:
     return _submeshes.at(submesh_index);
   }
 
+  auto bounds() const -> const math::volume& {
+    return _bounds;
+  }
+
 protected:
 
   // mesh()
@@ -80,11 +84,14 @@ protected:
 
   auto _upload_vertices(std::vector<vertex_type>&& vertices, std::vector<index_type>&& indices) -> void;
 
+  auto _calculate_bounds_from_submeshes() const -> math::volume; 
+
   // vertex_buffer_type _vertex_buffer;
   // index_buffer_type _index_buffer;
   buffer_handle _vertex_buffer;
   buffer_handle _index_buffer;
   std::vector<graphics::submesh> _submeshes;
+  math::volume _bounds;
 
 }; // class mesh
 

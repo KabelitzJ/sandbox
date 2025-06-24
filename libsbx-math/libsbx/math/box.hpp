@@ -16,6 +16,7 @@ public:
 
   using value_type = Type;
   using plane_type = basic_plane<value_type>;
+  using volume_type = basic_volume<value_type>;
   using size_type = std::size_t;
 
   basic_box() noexcept = default;
@@ -25,6 +26,26 @@ public:
 
   basic_box(std::array<plane_type, 6u>&& planes) noexcept
   : _planes{std::move(planes)} { }
+
+  auto intersects(const volume_type& volume) const -> bool {
+    const auto corners = volume.corners();
+
+    for (const auto& plane : planes()) {
+      auto outside_count = 0u;
+
+      for (const auto& corner : corners) {
+        if (plane.distance_to_point(corner) < 0.0f) {
+          ++outside_count;
+        }
+      }
+
+      if (outside_count == 8u) {
+        return false;
+      }
+    }
+
+    return true;
+  }
 
   auto planes() const noexcept -> const std::array<plane_type, 6u>& {
     return _planes;

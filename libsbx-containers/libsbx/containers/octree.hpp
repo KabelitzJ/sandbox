@@ -9,6 +9,7 @@
 #include <libsbx/math/vector3.hpp>
 #include <libsbx/math/uuid.hpp>
 #include <libsbx/math/volume.hpp>
+#include <libsbx/math/box.hpp>
 
 #include <libsbx/containers/static_vector.hpp>
 
@@ -123,6 +124,11 @@ public:
     Type second;
   }; // struct intersection
 
+  struct inside_result {
+    const Type& value;
+    const math::volume& bounds;
+  }; // struct inside_result
+
   using value_type = Type;
   using reference = value_type&;
   using const_reference = const value_type&;
@@ -143,6 +149,14 @@ public:
     _intersections(_root, _bounds, intersections);
 
     return intersections;
+  }
+
+  auto inside(const math::box& box) -> std::vector<inside_result> {
+    auto inside = std::vector<inside_result>{};
+
+    _inside(_root, _bounds, box, inside);
+
+    return inside;
   }
 
   auto clear() -> void {
@@ -253,6 +267,30 @@ private:
         const auto child_volume = node::child_bounds(bounds, i);
         
         _for_each_volume(child_id, child_volume, std::forward<Fn>(fn));
+      }
+    }
+  }
+
+  auto _inside(node::id node_id, const math::volume& bounds, const math::box& box, std::vector<inside_result>& inside) -> void {
+    // Early-out if node's bounding volume doesn't intersect the box
+    if (!box.intersects(bounds)) {
+      return;
+    }
+
+    // Check all values in this node
+    for (const auto& [value, value_bounds] : _nodes[node_id].values) {
+      if (box.intersects(value_bounds)) {
+        inside.push_back({value, value_bounds});
+      }
+    }
+
+    // Recurse into children if not a leaf
+    if (!_nodes[node_id].is_leaf()) {
+      for (auto i : std::views::iota(0u, _nodes[node_id].children.size())) {
+        auto child_id = _nodes[node_id].child_at(i);
+        auto child_bounds = node::child_bounds(bounds, i);
+
+        _inside(child_id, child_bounds, box, inside);
       }
     }
   }

@@ -159,14 +159,33 @@ public:
 
     EASY_BLOCK("submit meshes");
 
-    // [NOTE] KAJ 2025-06-04 : Submitting all static meshes
-    {
-      SBX_SCOPED_TIMER("static_mesh_subrenderer::submit");
+    struct cull_data {
+      scenes::node node;
+      const scenes::static_mesh* static_mesh;
+      const math::matrix4x4* model;
+    }; // struct cull_data
 
-      auto mesh_query = scene.query<const scenes::static_mesh>();
-  
-      for (auto&& [node, static_mesh] : mesh_query.each()) {
-        _submit_mesh(node, static_mesh, frustum);
+    // [NOTE] KAJ 2025-06-04 : Submitting all static meshes
+    SBX_SCOPED_TIMER_BLOCK("static_mesh_subrenderer::submit") {
+      auto mesh_query = scene.query<const scenes::static_mesh, const scenes::global_transform>();
+
+      auto tree = containers::octree<cull_data>{math::volume{math::vector3{-1000.0f, -1000.0f, -1000.0f}, math::vector3{1000.0f, 1000.0f, 1000.0f}}};
+
+      SBX_SCOPED_TIMER_BLOCK("static_mesh_subrenderer::build_tree") {
+        for (auto&& [node, static_mesh, global_transform] : mesh_query.each()) {
+          const auto mesh_id = static_mesh.mesh_id();
+          const auto& mesh = graphics_module.get_asset<models::mesh>(mesh_id);
+
+          tree.insert(cull_data{node, &static_mesh, &global_transform.model}, mesh.bounds());
+        }
+      }
+
+      SBX_SCOPED_TIMER_BLOCK("static_mesh_subrenderer::culling") {
+        for (const auto& entry : tree.inside(frustum)) {
+          if (frustum.intersects(*entry.value.model, entry.bounds)) {
+            _submit_mesh(entry.value.node, *entry.value.static_mesh);
+          }
+        }
       }
     }
 
@@ -175,9 +194,7 @@ public:
     EASY_BLOCK("render opaque meshes");
 
     // [NOTE] KAJ 2025-06-04 : Rendering all static meshes
-    {
-      SBX_SCOPED_TIMER("static_mesh_subrenderer::render");
-      
+    SBX_SCOPED_TIMER_BLOCK("static_mesh_subrenderer::render"){
       _render_static_meshes(command_buffer);
     }
 
@@ -221,7 +238,7 @@ private:
     std::uint32_t count;
   }; // struct draw_command_range
 
-  auto _submit_mesh(const scenes::node node, const scenes::static_mesh& static_mesh, const scenes::frustum& frustum) -> void {
+  auto _submit_mesh(const scenes::node node, const scenes::static_mesh& static_mesh) -> void {
     EASY_FUNCTION();
     auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
@@ -233,26 +250,11 @@ private:
     const auto& global_transform = scene.get_component<const scenes::global_transform>(node);
 
     const auto transform_data_index = static_cast<std::uint32_t>(_transform_data.size());
+    _transform_data.emplace_back(global_transform.model, global_transform.normal);
 
     auto& instances = _submesh_instances[mesh_id];
 
-    auto culled_all_submeshes = true;
-
     for (const auto& submesh : static_mesh.submeshes()) {
-      auto& mesh = graphics_module.get_asset<models::mesh>(mesh_id);
-
-      auto& bounds = mesh.submesh(submesh.index).bounds;
-
-      EASY_BLOCK("frustum check");
-      
-      if (!frustum.intersects(global_transform.model, bounds)) {
-        return;
-      }
-
-      EASY_END_BLOCK
-
-      culled_all_submeshes = false;
-
       EASY_BLOCK("submit submesh");
 
       const auto albedo_image_index = submesh.albedo_texture ? _images.push_back(submesh.albedo_texture) : graphics::separate_image2d_array::max_size;
@@ -265,11 +267,6 @@ private:
       instances[submesh.index].push_back(instance_data{submesh.tint, material, image_indices});
 
       EASY_END_BLOCK;
-    }
-
-    // [NOTE] KAJ 2025-06-23 : Only actually add the transform data if we didnt cull all submeshes of the model.
-    if (!culled_all_submeshes) {
-      _transform_data.emplace_back(global_transform.model, global_transform.normal);
     }
   }
 

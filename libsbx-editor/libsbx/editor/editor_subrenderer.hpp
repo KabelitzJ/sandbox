@@ -555,7 +555,7 @@ private:
               ImGui::Text("total");
               ImGui::SameLine();
               ImGui::PushStyleColor(ImGuiCol_Text, _get_color_for_time(ms));
-              ImGui::Text("\t%.3f [ms]", ms.value());
+              ImGui::Text("%.3f [ms]", ms.value());
               ImGui::PopStyleColor();
             }
 
@@ -565,7 +565,7 @@ private:
               ImGui::Text(name.c_str());
               ImGui::SameLine();
               ImGui::PushStyleColor(ImGuiCol_Text, _get_color_for_time(ms));
-              ImGui::Text("\t%.3f [ms]", ms.value());
+              ImGui::Text("%.3f [ms]", ms.value());
               ImGui::PopStyleColor();
             }
 

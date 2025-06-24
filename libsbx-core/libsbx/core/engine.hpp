@@ -213,4 +213,7 @@ private:
     sbx::core::engine::profiler().submit(name, measurement); \
   }}
 
+#define SBX_SCOPED_TIMER_BLOCK(name) \
+  if (auto CONCAT(__scoped_timer_, __LINE__) = sbx::utility::scoped_timer{[=](const auto& measurement) { sbx::core::engine::profiler().submit(name, measurement); }}; true)
+
 #endif // LIBSBX_CORE_ENGINE_HPP_
