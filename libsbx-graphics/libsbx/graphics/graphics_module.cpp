@@ -88,6 +88,8 @@ graphics_module::~graphics_module() {
 }
 
 auto graphics_module::update() -> void {
+  SBX_SCOPED_TIMER("graphics_module");
+
   auto& devices_module = core::engine::get_module<devices::devices_module>();
 
   const auto& window = devices_module.window();
@@ -123,16 +125,18 @@ auto graphics_module::update() -> void {
     return;
   }
 
-  EASY_BLOCK("wait for image");
-  // Get the next image in the swapchain (back/front buffer)
-  const auto result = _swapchain->acquire_next_image(frame_data.image_available_semaphore, frame_data.graphics_in_flight_fence);
-  EASY_END_BLOCK;
-  
-  if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-    _recreate_swapchain();
-    return;
-  } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
-    throw std::runtime_error{"Failed to acquire swapchain image"};
+  SBX_SCOPED_TIMER_BLOCK("graphics_module::acquire_next_image") {
+    // Get the next image in the swapchain (back/front buffer)
+    EASY_BLOCK("wait for image");
+    const auto result = _swapchain->acquire_next_image(frame_data.image_available_semaphore, frame_data.graphics_in_flight_fence);
+    EASY_END_BLOCK;
+    
+    if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+      _recreate_swapchain();
+      return;
+    } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+      throw std::runtime_error{"Failed to acquire swapchain image"};
+    }
   }
 
   // [NOTE] KAJ 2023-02-19 : Drawing happens here

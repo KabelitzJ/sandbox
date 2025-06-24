@@ -533,7 +533,7 @@ private:
         ImGui::PushStyleColor(ImGuiCol_Text, _get_color_for_time(ms));
         ImGui::Text("  %.3f [ms]", ms.value());
         ImGui::PopStyleColor();
-        ImGui::SameLine();
+        // ImGui::SameLine();
         ImGui::PushStyleColor(ImGuiCol_PlotHistogram, _get_color_for_time(ms));
         ImGui::ProgressBar(ms.value() / 16.66, ImVec2(200, 15));
         ImGui::PopStyleColor();
@@ -542,31 +542,48 @@ private:
       }
 
       if (ImGui::CollapsingHeader("Profiler", ImGuiTreeNodeFlags_DefaultOpen)) {
-        static auto filter_buffer = std::array<char, 64u>{};
+        // static auto filter_buffer = std::array<char, 64u>{};
 
-        // [TODO] KAJ 2025-06-03 : Filtering is not yet implemented
-        ImGui::InputTextWithHint("##profiler_filter", "Filter...", filter_buffer.data(), filter_buffer.size());
+        // // [TODO] KAJ 2025-06-03 : Filtering is not yet implemented
+        // ImGui::InputTextWithHint("##profiler_filter", "Filter...", filter_buffer.data(), filter_buffer.size());
 
         core::engine::profiler().for_each([](const auto& group_name, const auto& group){
           if (ImGui::TreeNodeEx(group_name.c_str(), ImGuiTreeNodeFlags_DefaultOpen)) {
-            if (group.overall.value() > 0.0f) {
-              const auto ms = units::quantity_cast<sbx::units::millisecond>(group.overall);
+            if (ImGui::BeginTable("group_table", 2, ImGuiTableFlags_SizingFixedFit)) {
+              // Optional: Table header
+              // ImGui::TableSetupColumn("Name");
+              // ImGui::TableSetupColumn("Time (ms)");
+              // ImGui::TableHeadersRow();
 
-              ImGui::Text("total");
-              ImGui::SameLine();
-              ImGui::PushStyleColor(ImGuiCol_Text, _get_color_for_time(ms));
-              ImGui::Text("%.3f [ms]", ms.value());
-              ImGui::PopStyleColor();
-            }
+              // [1] Add total if available
+              if (group.overall.value() > 0.0f) {
+                const auto ms = units::quantity_cast<sbx::units::millisecond>(group.overall);
 
-            for (const auto& [name, measurement] : group.entries) {
-              const auto ms = units::quantity_cast<sbx::units::millisecond>(measurement);
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::Text("total");
 
-              ImGui::Text(name.c_str());
-              ImGui::SameLine();
-              ImGui::PushStyleColor(ImGuiCol_Text, _get_color_for_time(ms));
-              ImGui::Text("%.3f [ms]", ms.value());
-              ImGui::PopStyleColor();
+                ImGui::TableSetColumnIndex(1);
+                ImGui::PushStyleColor(ImGuiCol_Text, _get_color_for_time(ms));
+                ImGui::Text("%.3f [ms]", ms.value());
+                ImGui::PopStyleColor();
+              }
+
+              // [2] Add entries
+              for (const auto& [name, measurement] : group.entries) {
+                const auto ms = units::quantity_cast<sbx::units::millisecond>(measurement);
+
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::Text("%s", name.c_str());
+
+                ImGui::TableSetColumnIndex(1);
+                ImGui::PushStyleColor(ImGuiCol_Text, _get_color_for_time(ms));
+                ImGui::Text("%.3f [ms]", ms.value());
+                ImGui::PopStyleColor();
+              }
+
+              ImGui::EndTable();
             }
 
             ImGui::TreePop();
