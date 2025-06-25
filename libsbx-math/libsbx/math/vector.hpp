@@ -71,6 +71,18 @@ public:
     return result;
   }
 
+  template<size_type Axis, scalar Other = value_type>
+  requires (Axis < Size)
+  [[nodiscard]] static constexpr auto splat(const basic_vector<Size, Other>& vector) noexcept -> basic_vector<Size, Other> {
+    auto result = basic_vector<Size, Other>{};
+
+    for (auto i : std::views::iota(0u, Size)) {
+      result[i] = vector[Axis];
+    }
+
+    return result;
+  }
+
   constexpr auto data() noexcept -> value_type* {
     return _components.data();
   }

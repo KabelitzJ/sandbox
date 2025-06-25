@@ -33,6 +33,16 @@ inline constexpr basic_matrix4x4<Type>::basic_matrix4x4(
 : base_type{column_type{x0, y0, z0, w0}, column_type{x1, y1, z1, w1}, column_type{x2, y2, z2, w2}, column_type{x3, y3, z3, w3}} { }
 
 template<scalar Type>
+template<scalar Other>
+inline constexpr basic_matrix4x4<Type>::basic_matrix4x4(const Other v00, const Other v11, const Other v22, const Other v33) noexcept
+: base_type{
+  column_type{v00, value_type{0}, value_type{0}, value_type{0}},
+  column_type{value_type{0}, v11, value_type{0}, value_type{0}},
+  column_type{value_type{0}, value_type{0}, v22, value_type{0}},
+  column_type{value_type{0}, value_type{0}, value_type{0}, v33}
+} { }
+
+template<scalar Type>
 inline constexpr auto basic_matrix4x4<Type>::transposed(const basic_matrix4x4& matrix) noexcept -> basic_matrix4x4<Type> {
   auto result = basic_matrix4x4<value_type>{};
 
@@ -309,7 +319,6 @@ inline constexpr auto operator*(basic_matrix4x4<Lhs> lhs, Rhs scalar) noexcept -
 
 template<scalar Lhs, scalar Rhs>
 inline constexpr auto operator*(basic_matrix4x4<Lhs> lhs, const basic_vector4<Rhs>& rhs) noexcept -> basic_vector4<Lhs> {
-
   // [NOTE] KAJ 2022-02-04 : This might become a performance bottleneck in the future. But most matrix multiplications are going to happen on the GPU anyways.
   const auto mov0 = rhs[0];
   const auto mov1 = rhs[1];

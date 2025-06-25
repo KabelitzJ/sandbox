@@ -66,6 +66,18 @@ public:
 
   [[nodiscard]] static constexpr auto distance(const basic_vector3& lhs, const basic_vector3& rhs) noexcept -> value_type;
 
+  [[nodiscard]] static constexpr auto splat_x(const basic_vector3& vector) noexcept -> basic_vector3 {
+    return base_type::template splat<x_axis>(vector);
+  }
+
+  [[nodiscard]] static constexpr auto splat_y(const basic_vector3& vector) noexcept -> basic_vector3 {
+    return base_type::template splat<y_axis>(vector);
+  }
+
+  [[nodiscard]] static constexpr auto splat_z(const basic_vector3& vector) noexcept -> basic_vector3 {
+    return base_type::template splat<z_axis>(vector);
+  }
+
   [[nodiscard]] constexpr operator basic_vector2<Type>() const noexcept;
 
   [[nodiscard]] constexpr auto x() noexcept -> reference;
@@ -102,6 +114,9 @@ template<scalar Lhs, scalar Rhs>
 template<scalar Lhs, std::convertible_to<Lhs> Rhs>
 requires (!is_scalar_v<Rhs>)
 [[nodiscard]] constexpr auto operator*(basic_vector3<Lhs> lhs, const Rhs& rhs) noexcept -> basic_vector3<Lhs>;
+
+template<scalar Lhs, scalar Rhs>
+[[nodiscard]] constexpr auto operator*(basic_vector3<Lhs> lhs, const basic_vector3<Rhs>& rhs) noexcept -> basic_vector3<Lhs>;
 
 template<scalar Lhs, scalar Rhs>
 [[nodiscard]] constexpr auto operator/(basic_vector3<Lhs> lhs, Rhs scalar) noexcept -> basic_vector3<Lhs>;

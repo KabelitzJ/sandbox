@@ -3,7 +3,13 @@
 
 #include <variant>
 
+#include <array>
+#include <cstdint>
+
+#include <libsbx/utility/enum.hpp>
+
 #include <libsbx/math/vector3.hpp>
+#include <libsbx/math/matrix3x3.hpp>
 #include <libsbx/math/matrix4x4.hpp>
 #include <libsbx/math/volume.hpp>
 #include <libsbx/math/sphere.hpp>
@@ -101,6 +107,144 @@ private:
   }
 
 }; // struct frustum
+
+// class frustum {
+
+//   inline static constexpr auto left = std::uint8_t{0u};
+//   inline static constexpr auto right = std::uint8_t{1u};
+//   inline static constexpr auto bottom = std::uint8_t{2u};
+//   inline static constexpr auto top = std::uint8_t{3u};
+//   inline static constexpr auto near = std::uint8_t{4u};
+//   inline static constexpr auto far = std::uint8_t{5u};
+//   inline static constexpr auto count = std::uint8_t{6u};
+//   inline static constexpr auto combinations = count * (count - 1u) / 2u;
+
+// public:
+
+//   frustum(const math::matrix4x4& view_projection) {
+//     const auto transposed = math::matrix4x4::transposed(view_projection);
+//     _planes[left]   = transposed[3] + transposed[0];
+//     _planes[right]  = transposed[3] - transposed[0];
+//     _planes[bottom] = transposed[3] + transposed[1];
+//     _planes[top]    = transposed[3] - transposed[1];
+//     _planes[near]   = transposed[3] + transposed[2];
+//     _planes[far]    = transposed[3] - transposed[2];
+
+//     const auto crosses = std::array<math::vector3, combinations> {
+//       math::vector3::cross(math::vector3{_planes[left]}, math::vector3{_planes[right]}),
+//       math::vector3::cross(math::vector3{_planes[left]}, math::vector3{_planes[bottom]}),
+//       math::vector3::cross(math::vector3{_planes[left]}, math::vector3{_planes[top]}),
+//       math::vector3::cross(math::vector3{_planes[left]}, math::vector3{_planes[near]}),
+//       math::vector3::cross(math::vector3{_planes[left]}, math::vector3{_planes[far]}),
+//       math::vector3::cross(math::vector3{_planes[right]}, math::vector3{_planes[bottom]}),
+//       math::vector3::cross(math::vector3{_planes[right]}, math::vector3{_planes[top]}),
+//       math::vector3::cross(math::vector3{_planes[right]}, math::vector3{_planes[near]}),
+//       math::vector3::cross(math::vector3{_planes[right]}, math::vector3{_planes[far]}),
+//       math::vector3::cross(math::vector3{_planes[bottom]}, math::vector3{_planes[top]}),
+//       math::vector3::cross(math::vector3{_planes[bottom]}, math::vector3{_planes[near]}),
+//       math::vector3::cross(math::vector3{_planes[bottom]}, math::vector3{_planes[far]}),
+//       math::vector3::cross(math::vector3{_planes[top]}, math::vector3{_planes[near]}),
+//       math::vector3::cross(math::vector3{_planes[top]}, math::vector3{_planes[far]}),
+//       math::vector3::cross(math::vector3{_planes[near]}, math::vector3{_planes[far]})
+//     };
+
+//     _corners[0] = _intersection<left, bottom, near>(crosses);
+//     _corners[1] = _intersection<left, top, near>(crosses);
+//     _corners[2] = _intersection<right, bottom, near>(crosses);
+//     _corners[3] = _intersection<right, top, near>(crosses);
+//     _corners[4] = _intersection<left, bottom, far>(crosses);
+//     _corners[5] = _intersection<left, top, far>(crosses);
+//     _corners[6] = _intersection<right, bottom, far>(crosses);
+//     _corners[7] = _intersection<right, top, far>(crosses);
+//   }
+
+//   auto intersects(const math::matrix4x4& model, const math::volume& volume) const noexcept -> bool {
+//     const auto transformed = math::volume::transformed(volume, model);
+
+//     const auto& min = transformed.min();
+//     const auto& max = transformed.max();
+
+//     // check box outside/inside of frustum
+//     for (const auto& plane : _planes) {
+//       if (
+//         (math::vector3::dot(plane, math::vector4(min.x(), min.y(), min.z(), 1.0f)) < 0.0f) &&
+//         (math::vector3::dot(plane, math::vector4(max.x(), min.y(), min.z(), 1.0f)) < 0.0f) &&
+//         (math::vector3::dot(plane, math::vector4(min.x(), max.y(), min.z(), 1.0f)) < 0.0f) &&
+//         (math::vector3::dot(plane, math::vector4(max.x(), max.y(), min.z(), 1.0f)) < 0.0f) &&
+//         (math::vector3::dot(plane, math::vector4(min.x(), min.y(), max.z(), 1.0f)) < 0.0f) &&
+//         (math::vector3::dot(plane, math::vector4(max.x(), min.y(), max.z(), 1.0f)) < 0.0f) &&
+//         (math::vector3::dot(plane, math::vector4(min.x(), max.y(), max.z(), 1.0f)) < 0.0f) &&
+//         (math::vector3::dot(plane, math::vector4(max.x(), max.y(), max.z(), 1.0f)) < 0.0f)
+//       ) {
+//         return false;
+//       }
+//     }
+
+//     // check frustum outside/inside box
+//     // auto out = 0u;
+
+//     // out = 0; for (int i = 0; i<8; i++) out += ((_corners[i].x() > max.x()) ? 1 : 0); if (out == 8) return false;
+//     // out = 0; for (int i = 0; i<8; i++) out += ((_corners[i].x() < min.x()) ? 1 : 0); if (out == 8) return false;
+//     // out = 0; for (int i = 0; i<8; i++) out += ((_corners[i].y() > max.y()) ? 1 : 0); if (out == 8) return false;
+//     // out = 0; for (int i = 0; i<8; i++) out += ((_corners[i].y() < min.y()) ? 1 : 0); if (out == 8) return false;
+//     // out = 0; for (int i = 0; i<8; i++) out += ((_corners[i].z() > max.z()) ? 1 : 0); if (out == 8) return false;
+//     // out = 0; for (int i = 0; i<8; i++) out += ((_corners[i].z() < min.z()) ? 1 : 0); if (out == 8) return false;
+
+//     if (
+//       _check_corners<true>(max.x()) || 
+//       _check_corners<false>(min.x()) ||
+//       _check_corners<true>(max.y()) || 
+//       _check_corners<false>(min.y()) ||
+//       _check_corners<true>(max.z()) || 
+//       _check_corners<false>(min.z())
+//     ) {
+//       return false;
+//     }
+
+//     return true;
+//   }
+
+// private:
+
+//   template<std::uint8_t I, std::uint8_t J>
+//   static constexpr auto ij2k() noexcept -> std::uint8_t {
+//     return I * (9 - I) / 2 + J - 1;
+//   }
+
+//   template<std::uint8_t A, std::uint8_t B, std::uint8_t C>
+//   auto _intersection(const std::array<math::vector3, combinations>& crosses) noexcept -> math::vector3 {
+//     const auto D = math::vector3::dot(math::vector3{_planes[A]}, crosses[ij2k<B, C>()]);
+
+//     const auto& cross1 = crosses[ij2k<B, C>()];
+//     const auto& cross2 = crosses[ij2k<A, C>()];
+//     const auto& cross3 = crosses[ij2k<A, B>()];
+
+//     const auto m = math::matrix3x3{cross1, cross2, cross3};
+
+//     const auto v = math::vector3{_planes[A].w(), _planes[B].w(), _planes[C].w()};
+
+// 	  return (m * v) * (-1.0f / D);
+//   }
+
+//   template<bool GreaterThan>
+//   auto _check_corners(const std::float_t value) const noexcept -> bool {
+//     auto out = 0u;
+
+//     for (const auto& corner : _corners) {
+//       if constexpr (GreaterThan) {
+//         out += (corner.x() > value) ? 1u : 0u;
+//       } else {
+//         out += (corner.x() < value) ? 1u : 0u;
+//       }
+//     }
+
+//     return (out == 8u);
+//   }
+
+//   std::array<math::vector4, count> _planes;
+//   std::array<math::vector3, 8u> _corners;
+
+// }; // class frustum
 
 class camera {
 

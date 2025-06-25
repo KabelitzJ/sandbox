@@ -50,6 +50,7 @@
 #include <libsbx/math/vector4.hpp>
 
 #include <libsbx/math/matrix.hpp>
+#include <libsbx/math/matrix3x3.hpp>
 #include <libsbx/math/matrix4x4.hpp>
 
 #include <libsbx/math/quaternion.hpp>

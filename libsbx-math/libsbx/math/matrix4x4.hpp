@@ -65,6 +65,9 @@ public:
     Other w0, Other w1, Other w2, Other w3
   ) noexcept;
 
+  template<scalar Other>
+  constexpr basic_matrix4x4(const Other v00, const Other v11, const Other v22, const Other v33) noexcept;
+
 //   // -- Static member functions --
 
   [[nodiscard]] constexpr static auto transposed(const basic_matrix4x4& matrix) noexcept -> basic_matrix4x4;

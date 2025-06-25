@@ -159,11 +159,11 @@ public:
 
     EASY_BLOCK("submit meshes");
 
-    struct cull_data {
-      scenes::node node;
-      memory::observer_ptr<const scenes::static_mesh> static_mesh;
-      memory::observer_ptr<const math::matrix4x4> model;
-    }; // struct cull_data
+    // struct cull_data {
+    //   scenes::node node;
+    //   memory::observer_ptr<const scenes::static_mesh> static_mesh;
+    //   memory::observer_ptr<const math::matrix4x4> model;
+    // }; // struct cull_data
 
     // [NOTE] KAJ 2025-06-04 : Submitting all static meshes
     SBX_SCOPED_TIMER_BLOCK("static_mesh_subrenderer::submit") {
