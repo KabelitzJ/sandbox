@@ -85,6 +85,8 @@ class frustum : public math::box {
   inline static constexpr auto near_plane = std::size_t{2u};
   inline static constexpr auto far_plane = std::size_t{2u};
 
+  inline static constexpr auto margin = std::float_t{0.5f};
+
 public:
 
   frustum(const math::matrix4x4& view_projection)
@@ -122,18 +124,32 @@ private:
   }
 
   auto _intersects(const aabb_collider& aabb) const noexcept -> bool {
-    const auto corners = aabb.corners();
+    // const auto corners = aabb.corners();
+
+    // for (const auto& plane : planes()) {
+    //   auto outside_count = 0u;
+
+    //   for (const auto& corner : corners) {
+    //     if (plane.distance_to_point(corner) < 0.0f) {
+    //       ++outside_count;
+    //     }
+    //   }
+
+    //   if (outside_count == 8u) {
+    //     return false;
+    //   }
+    // }
+
+    // return true;
 
     for (const auto& plane : planes()) {
-      auto outside_count = 0u;
+      const auto vp = math::vector3{
+        (plane.normal().x() >= 0 ? aabb.max().x() : aabb.min().x()),
+        (plane.normal().y() >= 0 ? aabb.max().y() : aabb.min().y()),
+        (plane.normal().z() >= 0 ? aabb.max().z() : aabb.min().z())
+      };
 
-      for (const auto& corner : corners) {
-        if (plane.distance_to_point(corner) < 0.0f) {
-          ++outside_count;
-        }
-      }
-
-      if (outside_count == 8u) {
+      if (plane.distance_to_point(vp) < -margin) {
         return false;
       }
     }
