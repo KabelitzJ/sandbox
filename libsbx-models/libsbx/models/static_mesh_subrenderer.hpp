@@ -169,24 +169,24 @@ public:
     SBX_SCOPED_TIMER_BLOCK("static_mesh_subrenderer::submit") {
       auto mesh_query = scene.query<const scenes::static_mesh, const scenes::global_transform>();
 
-      auto a = 0;
-      auto b = 0;
+      auto total = 0;
+      auto after_cull = 0;
 
       for (auto&& [node, static_mesh, global_transform] : mesh_query.each()) {
         const auto mesh_id = static_mesh.mesh_id();
         const auto& mesh = graphics_module.get_asset<models::mesh>(mesh_id);
 
-        ++a;
+        ++total;
 
         if (frustum.intersects(global_transform.model, mesh.bounds())) {
           _submit_mesh(node, static_mesh);
-          ++b;
+          ++after_cull;
         }
       }
 
-      utility::logger<"static_mesh_subrenderer">::debug("total: {} culled: {}", a, b);
+      utility::logger<"static_mesh_subrenderer">::debug("total: {} after_cull: {}", total, after_cull);
 
-      // auto tree = containers::octree<cull_data>{math::volume{math::vector3{-300.0f}, math::vector3{300.0f}}};
+      // auto tree = containers::octree<cull_data>{math::volume{math::vector3{-500.0f}, math::vector3{500.0f}}};
 
       // SBX_SCOPED_TIMER_BLOCK("static_mesh_subrenderer::build_tree") {
       //   for (auto&& [node, static_mesh, global_transform] : mesh_query.each()) {

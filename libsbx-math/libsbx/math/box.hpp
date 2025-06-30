@@ -28,18 +28,14 @@ public:
   : _planes{std::move(planes)} { }
 
   auto intersects(const volume_type& volume) const -> bool {
-    const auto corners = volume.corners();
-
     for (const auto& plane : planes()) {
-      auto outside_count = 0u;
+      const auto vp = math::vector3{
+        (plane.normal().x() >= 0 ? volume.max().x() : volume.min().x()),
+        (plane.normal().y() >= 0 ? volume.max().y() : volume.min().y()),
+        (plane.normal().z() >= 0 ? volume.max().z() : volume.min().z())
+      };
 
-      for (const auto& corner : corners) {
-        if (plane.distance_to_point(corner) < -volume.diagonal_length() * 0.5f) {
-          ++outside_count;
-        }
-      }
-
-      if (outside_count == 8u) {
+      if (plane.distance_to_point(vp) < -0.5f) {
         return false;
       }
     }

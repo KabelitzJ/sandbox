@@ -216,7 +216,7 @@ private:
       }
     }
 
-    _nodes[node_id].values = new_values;
+    _nodes[node_id].values = std::move(new_values);
   }
 
   auto _intersections(node::id node_id, const math::volume& bounds, std::vector<intersection>& intersections) -> void {
