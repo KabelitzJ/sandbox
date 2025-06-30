@@ -20,6 +20,10 @@ public:
   : _normal{normal}, 
     _distance{distance} { }
 
+  basic_plane(const basic_vector4<value_type>& plane) noexcept
+  : _normal{plane.x(), plane.y(), plane.z()},
+    _distance{plane.w()} { }
+
   auto normal() const noexcept -> const vector_type& {
     return _normal;
   }

@@ -30,6 +30,52 @@ auto to_volume(const collider& collider) -> math::volume;
 auto to_volume(const aabb_collider& collider) -> math::volume;
 auto to_volume(const sphere_collider& collider) -> math::volume;
 
+// class frustum {
+
+// public:
+
+//   frustum(const math::matrix4x4& view_projection) {
+//     const auto m = math::matrix4x4::transposed(view_projection);
+
+//     _planes[0] = m[3] + m[0];
+//     _planes[1] = m[3] - m[0];
+//     _planes[2] = m[3] + m[1];
+//     _planes[3] = m[3] - m[1];
+//     _planes[4] = m[3] + m[2];
+//     _planes[5] = m[3] - m[2];
+
+//     for (auto& plane : _planes) {
+//       plane.normalize();
+//     }
+//   }
+
+//   auto intersects(const math::matrix4x4& model, const math::volume& volume) const noexcept -> bool {
+//     const auto v = math::volume::transformed(volume, model);
+
+//     for (const auto& plane : _planes) {
+//       const auto& n = plane.normal();
+//       const auto d = plane.distance();
+
+//       auto vp = math::vector3{
+//         (n.x() >= 0 ? volume.max().x() : volume.min().x()),
+//         (n.y() >= 0 ? volume.max().y() : volume.min().y()),
+//         (n.z() >= 0 ? volume.max().z() : volume.min().z())
+//       };
+
+//       if (math::vector3::dot(n, vp) + d < 0.0f) {
+//         return false;
+//       }
+//     }
+
+//     return true;
+//   } 
+
+// private:
+
+//   std::array<math::plane, 6u> _planes;
+
+// }; // class frustum
+
 class frustum : public math::box {
 
   inline static constexpr auto left_plane = std::size_t{0u};
@@ -65,15 +111,14 @@ private:
   static auto _extract_plane(const math::matrix4x4& matrix) -> math::plane {
     constexpr auto sign = (Side == right_plane || Side == top_plane || Side == far_plane) ? -1.0f : 1.0f;
 
-    const auto normal = math::vector3{
+    const auto plane = math::vector4{
       matrix[0][3] + sign * matrix[0][Side], 
       matrix[1][3] + sign * matrix[1][Side], 
-      matrix[2][3] + sign * matrix[2][Side]
+      matrix[2][3] + sign * matrix[2][Side],
+      matrix[3][3] + sign * matrix[3][Side]
     };
 
-    const auto distance = matrix[3][3] - matrix[3][Side];
-
-    return math::plane{normal, distance}.normalize();
+    return math::plane{plane}.normalize();
   }
 
   auto _intersects(const aabb_collider& aabb) const noexcept -> bool {
@@ -181,25 +226,25 @@ private:
 //     }
 
 //     // check frustum outside/inside box
-//     // auto out = 0u;
+//     auto out = 0u;
 
-//     // out = 0; for (int i = 0; i<8; i++) out += ((_corners[i].x() > max.x()) ? 1 : 0); if (out == 8) return false;
-//     // out = 0; for (int i = 0; i<8; i++) out += ((_corners[i].x() < min.x()) ? 1 : 0); if (out == 8) return false;
-//     // out = 0; for (int i = 0; i<8; i++) out += ((_corners[i].y() > max.y()) ? 1 : 0); if (out == 8) return false;
-//     // out = 0; for (int i = 0; i<8; i++) out += ((_corners[i].y() < min.y()) ? 1 : 0); if (out == 8) return false;
-//     // out = 0; for (int i = 0; i<8; i++) out += ((_corners[i].z() > max.z()) ? 1 : 0); if (out == 8) return false;
-//     // out = 0; for (int i = 0; i<8; i++) out += ((_corners[i].z() < min.z()) ? 1 : 0); if (out == 8) return false;
+//     out = 0; for (int i = 0; i<8; i++) out += ((_corners[i].x() > max.x()) ? 1 : 0); if (out == 8) return false;
+//     out = 0; for (int i = 0; i<8; i++) out += ((_corners[i].x() < min.x()) ? 1 : 0); if (out == 8) return false;
+//     out = 0; for (int i = 0; i<8; i++) out += ((_corners[i].y() > max.y()) ? 1 : 0); if (out == 8) return false;
+//     out = 0; for (int i = 0; i<8; i++) out += ((_corners[i].y() < min.y()) ? 1 : 0); if (out == 8) return false;
+//     out = 0; for (int i = 0; i<8; i++) out += ((_corners[i].z() > max.z()) ? 1 : 0); if (out == 8) return false;
+//     out = 0; for (int i = 0; i<8; i++) out += ((_corners[i].z() < min.z()) ? 1 : 0); if (out == 8) return false;
 
-//     if (
-//       _check_corners<true>(max.x()) || 
-//       _check_corners<false>(min.x()) ||
-//       _check_corners<true>(max.y()) || 
-//       _check_corners<false>(min.y()) ||
-//       _check_corners<true>(max.z()) || 
-//       _check_corners<false>(min.z())
-//     ) {
-//       return false;
-//     }
+//     // if (
+//     //   _check_corners<true>(max.x()) || 
+//     //   _check_corners<false>(min.x()) ||
+//     //   _check_corners<true>(max.y()) || 
+//     //   _check_corners<false>(min.y()) ||
+//     //   _check_corners<true>(max.z()) || 
+//     //   _check_corners<false>(min.z())
+//     // ) {
+//     //   return false;
+//     // }
 
 //     return true;
 //   }
