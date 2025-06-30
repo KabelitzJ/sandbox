@@ -124,6 +124,8 @@ private:
   }
 
   auto _intersects(const aabb_collider& aabb) const noexcept -> bool {
+    // Corner test
+
     // const auto corners = aabb.corners();
 
     // for (const auto& plane : planes()) {
@@ -141,6 +143,8 @@ private:
     // }
 
     // return true;
+
+    // p-vertex test
 
     for (const auto& plane : planes()) {
       const auto vp = math::vector3{
