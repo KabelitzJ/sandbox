@@ -173,15 +173,15 @@ public:
       auto after_cull = 0;
 
       for (auto&& [node, static_mesh, global_transform] : mesh_query.each()) {
-        const auto mesh_id = static_mesh.mesh_id();
-        const auto& mesh = graphics_module.get_asset<models::mesh>(mesh_id);
+        // const auto mesh_id = static_mesh.mesh_id();
+        // const auto& mesh = graphics_module.get_asset<models::mesh>(mesh_id);
 
-        ++total;
+        // ++total;
 
-        if (frustum.intersects(global_transform.model, mesh.bounds())) {
-          _submit_mesh(node, static_mesh);
-          ++after_cull;
-        }
+        // if (frustum.intersects(global_transform.model, mesh.bounds())) {
+        //   ++after_cull;
+        // }
+        _submit_mesh(node, static_mesh);
       }
 
       utility::logger<"static_mesh_subrenderer">::debug("total: {} after_cull: {}", total, after_cull);

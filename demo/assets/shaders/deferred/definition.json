@@ -2,7 +2,7 @@
   "depth": "read_write",
   "uses_transparency": false,
   "rasterization_state": {
-    "polygon_mode": "fill",
+    "polygon_mode": "line",
     "cull_mode": "none",
     "front_face": "counter_clockwise"
   },

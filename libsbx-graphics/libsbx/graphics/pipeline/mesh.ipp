@@ -5,6 +5,28 @@
 namespace sbx::graphics {
 
 template<vertex Vertex>
+mesh<Vertex>::mesh(const std::vector<vertex_type>& vertices, const std::vector<index_type>& indices, const math::volume& bounds)
+: _bounds{bounds} {
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+  _vertex_buffer = graphics_module.add_resource<buffer>(
+    (vertices.size() * sizeof(vertex_type)),
+    (VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT), 
+    VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+  );
+
+  _index_buffer = graphics_module.add_resource<buffer>(
+    (indices.size() * sizeof(index_type)),
+    (VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT),
+    VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+  );
+
+  _submeshes.push_back(graphics::submesh{static_cast<std::uint32_t>(indices.size()), 0, 0, bounds});
+  
+  _upload_vertices(vertices, indices);
+}
+
+template<vertex Vertex>
 mesh<Vertex>::mesh(std::vector<vertex_type>&& vertices, std::vector<index_type>&& indices, const math::volume& bounds)
 : _bounds{bounds} {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
@@ -104,6 +126,11 @@ auto mesh<Vertex>::render_submesh_indirect(graphics::storage_buffer& buffer, std
 template<vertex Vertex>
 auto mesh<Vertex>::submeshes() const noexcept -> const std::vector<graphics::submesh>& {
   return _submeshes;
+}
+
+template<vertex Vertex>
+auto mesh<Vertex>::_upload_vertices(const std::vector<vertex_type>& vertices, const std::vector<index_type>& indices) -> void {
+
 }
 
 template<vertex Vertex>

@@ -48,6 +48,8 @@ public:
     std::vector<graphics::submesh> submeshes;
   }; // struct mesh_data
 
+  mesh(const std::vector<vertex_type>& vertices, const std::vector<index_type>& indices, const math::volume& bounds = math::volume{});
+
   mesh(std::vector<vertex_type>&& vertices, std::vector<index_type>&& indices, const math::volume& bounds = math::volume{});
 
   mesh(mesh_data&& mesh_data);
@@ -81,6 +83,8 @@ protected:
   // mesh()
   // : _vertex_buffer{nullptr},
   //   _index_buffer{nullptr} { }
+
+  auto _upload_vertices(const std::vector<vertex_type>& vertices, const std::vector<index_type>& indices) -> void;
 
   auto _upload_vertices(std::vector<vertex_type>&& vertices, std::vector<index_type>&& indices) -> void;
 
