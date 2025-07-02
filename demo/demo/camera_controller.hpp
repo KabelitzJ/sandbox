@@ -22,7 +22,7 @@ public:
   camera_controller()
   : _orbit_angle{sbx::math::degree{90}}, 
     _tilt_angle{sbx::math::degree{30}},
-    _min_tilt_angle{sbx::math::degree{1}},
+    _min_tilt_angle{sbx::math::degree{-89}},
     _max_tilt_angle{sbx::math::degree{89}},
     _target{sbx::math::vector3{0.0f, 0.0f, 0.0f}},
     _zoom{100.0f},
@@ -49,22 +49,22 @@ public:
     const auto local_right = sbx::math::vector3::cross(sbx::math::vector3::up, transform.forward()).normalize();
 
     if (sbx::devices::input::is_key_down(sbx::devices::key::w)) {
-      _tilt_angle = sbx::math::clamp(_tilt_angle + sbx::math::degree{80.0f * _mouse_position_delta.y() * delta_time.value()}, _min_tilt_angle, _max_tilt_angle);
+      _tilt_angle = sbx::math::clamp(_tilt_angle + sbx::math::degree{45.0f * delta_time.value()}, _min_tilt_angle, _max_tilt_angle);
       // movement += local_forward;
     }
 
     if (sbx::devices::input::is_key_down(sbx::devices::key::s)) {
-      _tilt_angle = sbx::math::clamp(_tilt_angle - sbx::math::degree{80.0f * _mouse_position_delta.y() * delta_time.value()}, _min_tilt_angle, _max_tilt_angle);
+      _tilt_angle = sbx::math::clamp(_tilt_angle - sbx::math::degree{45.0f * delta_time.value()}, _min_tilt_angle, _max_tilt_angle);
       // movement -= local_forward;
     }
 
     if (sbx::devices::input::is_key_down(sbx::devices::key::a)) {
-      _orbit_angle -= sbx::math::degree{45.0f * delta_time.value()};
+      _orbit_angle += sbx::math::degree{45.0f * delta_time.value()};
       // movement += local_right;
     }
 
     if (sbx::devices::input::is_key_down(sbx::devices::key::d)) {
-      _orbit_angle += sbx::math::degree{45.0f * delta_time.value()};
+      _orbit_angle -= sbx::math::degree{45.0f * delta_time.value()};
       // movement -= local_right;
     }
 
@@ -96,13 +96,13 @@ public:
 
     // QE camera rotation
 
-    if (sbx::devices::input::is_key_down(sbx::devices::key::q)) {
-      _orbit_angle -= sbx::math::degree{45.0f * delta_time.value()};
-    }
+    // if (sbx::devices::input::is_key_down(sbx::devices::key::q)) {
+    //   _orbit_angle -= sbx::math::degree{45.0f * delta_time.value()};
+    // }
 
-    if (sbx::devices::input::is_key_down(sbx::devices::key::e)) {
-      _orbit_angle += sbx::math::degree{45.0f * delta_time.value()};
-    }
+    // if (sbx::devices::input::is_key_down(sbx::devices::key::e)) {
+    //   _orbit_angle += sbx::math::degree{45.0f * delta_time.value()};
+    // }
 
     auto camera_speed = 10.0f;
 

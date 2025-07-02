@@ -278,7 +278,7 @@ private:
       const auto normal = sbx::math::vector3::normalized(center_position);
       const auto tangent = sbx::math::vector4{1.0f, 0.0f, 0.0f, 1.0f};
 
-      const auto noise = sbx::math::noise::fractal(center_position / radius, 3u);
+      const auto noise = sbx::math::noise::fractal(center_position / radius * 1.1, 3u);
 
       const auto encoded_uv = sbx::math::vector2{0.0f, noise};
 
