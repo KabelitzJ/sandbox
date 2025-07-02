@@ -43,62 +43,62 @@ public:
     _texture_id = graphics_module.add_resource<sbx::graphics::image2d>("demo/assets/textures/grass/albedo.png");
     _normal_texture_id = graphics_module.add_resource<sbx::graphics::image2d>("demo/assets/textures/grass/normal.png");
 
-    // const auto grid = sbx::math::vector2{12.0f, 12.0f};
+    const auto grid = sbx::math::vector2{12.0f, 12.0f};
 
-    // const auto offset = sbx::math::vector2{chunk_size.x() * grid.x() * 0.5f, chunk_size.y() * grid.y() * 0.5f};
+    const auto offset = sbx::math::vector2{chunk_size.x() * grid.x() * 0.5f, chunk_size.y() * grid.y() * 0.5f};
 
-    // _node = scene.create_node("Terrain");
+    _node = scene.create_node("Terrain");
 
-    // for (auto y = 0u; y < grid.y(); ++y) {
-    //   for (auto x = 0u; x < grid.x(); ++x) {
-    //     auto chunk = scene.create_child_node(_node, fmt::format("Chunk{}{}", x, y));
+    for (auto y = 0u; y < grid.y(); ++y) {
+      for (auto x = 0u; x < grid.x(); ++x) {
+        auto chunk = scene.create_child_node(_node, fmt::format("Chunk{}{}", x, y));
 
-    //     auto submeshes = std::vector<sbx::scenes::static_mesh::submesh>{};
+        auto submeshes = std::vector<sbx::scenes::static_mesh::submesh>{};
 
-    //     submeshes.emplace_back(sbx::scenes::static_mesh::submesh{
-    //       .index = 0u,
-    //       .tint = sbx::math::color::white(),
-    //       .material = sbx::scenes::static_mesh::material{
-    //         .metallic = 0.0f,
-    //         .roughness = 1.0f,
-    //         .flexibility = 0.0f,
-    //         .anchor_height = 0.0f
-    //       },
-    //       .albedo_texture = _texture_id
-    //     });
+        submeshes.emplace_back(sbx::scenes::static_mesh::submesh{
+          .index = 0u,
+          .tint = sbx::math::color::white(),
+          .material = sbx::scenes::static_mesh::material{
+            .metallic = 0.0f,
+            .roughness = 1.0f,
+            .flexibility = 0.0f,
+            .anchor_height = 0.0f
+          },
+          .albedo_texture = _texture_id
+        });
 
-    //     scene.add_component<sbx::scenes::static_mesh>(chunk, _mesh_id, submeshes);
+        scene.add_component<sbx::scenes::static_mesh>(chunk, _mesh_id, submeshes);
 
-    //     const auto position = sbx::math::vector3{x * chunk_size.x() - offset.x(), 0.0f, y * chunk_size.y() - offset.y()};
+        const auto position = sbx::math::vector3{x * chunk_size.x() - offset.x(), 0.0f, y * chunk_size.y() - offset.y()};
 
-    //     auto& transform = scene.get_component<sbx::math::transform>(chunk);
+        auto& transform = scene.get_component<sbx::math::transform>(chunk);
 
-    //     transform.set_position(position);
-    //   }
-    // }
+        transform.set_position(position);
+      }
+    }
 
     // auto icosphere_tile_mesh = demo::icosphere_tile_mesh{4u, 0.02f};
     // _planet_id = graphics_module.add_asset<sbx::models::mesh>(std::make_unique<sbx::models::mesh>(icosphere_tile_mesh.get_vertices(), icosphere_tile_mesh.get_indices(), icosphere_tile_mesh.get_bounds()));
 
-    _planet_id = graphics_module.add_asset<sbx::models::mesh>(_generate_icosphere(50.0f, 5u, 0.1f));
+    // _planet_id = graphics_module.add_asset<sbx::models::mesh>(_generate_icosphere(50.0f, 5u, 0.1f));
 
-    auto planet = scene.create_node("Planet");
-    auto planet_submeshes = std::vector<sbx::scenes::static_mesh::submesh>{};
-    planet_submeshes.emplace_back(sbx::scenes::static_mesh::submesh{
-      .index = 0u,
-      .tint = sbx::math::color::red(),
-      .material = sbx::scenes::static_mesh::material{
-        .metallic = 0.0f,
-        .roughness = 1.0f,
-        .flexibility = 0.0f,
-        .anchor_height = 0.0f
-      }
-    });
+    // auto planet = scene.create_node("Planet");
+    // auto planet_submeshes = std::vector<sbx::scenes::static_mesh::submesh>{};
+    // planet_submeshes.emplace_back(sbx::scenes::static_mesh::submesh{
+    //   .index = 0u,
+    //   .tint = sbx::math::color::red(),
+    //   .material = sbx::scenes::static_mesh::material{
+    //     .metallic = 0.0f,
+    //     .roughness = 1.0f,
+    //     .flexibility = 0.0f,
+    //     .anchor_height = 0.0f
+    //   }
+    // });
 
-    scene.add_component<sbx::scenes::static_mesh>(planet, _planet_id, planet_submeshes);
+    // scene.add_component<sbx::scenes::static_mesh>(planet, _planet_id, planet_submeshes);
 
-    auto& planet_transform = scene.get_component<sbx::math::transform>(planet);
-    planet_transform.set_position(sbx::math::vector3{0.0f, 0.0f, 0.0f});
+    // auto& planet_transform = scene.get_component<sbx::math::transform>(planet);
+    // planet_transform.set_position(sbx::math::vector3{0.0f, 0.0f, 0.0f});
   }
 
   auto update() -> void override {

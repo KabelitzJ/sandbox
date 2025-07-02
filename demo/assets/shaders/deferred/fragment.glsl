@@ -76,13 +76,11 @@ vec3 get_normal() {
 }
 
 void main(void) {
-  // vec4 albedo = get_albedo();
+  vec4 albedo = get_albedo();
 
-  // if (albedo.a < 0.8) {
-  //   discard;
-  // }
-
-  vec4 albedo = vec4(in_uv, 0.0, 1.0);
+  if (albedo.a < 0.8) {
+    discard;
+  }
 
   out_albedo = albedo;
   out_position = vec4(in_position, 1.0);

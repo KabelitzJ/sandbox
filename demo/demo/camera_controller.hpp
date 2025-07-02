@@ -22,12 +22,12 @@ public:
   camera_controller()
   : _orbit_angle{sbx::math::degree{90}}, 
     _tilt_angle{sbx::math::degree{30}},
-    _min_tilt_angle{sbx::math::degree{-89}},
+    _min_tilt_angle{sbx::math::degree{2}},
     _max_tilt_angle{sbx::math::degree{89}},
     _target{sbx::math::vector3{0.0f, 0.0f, 0.0f}},
-    _zoom{100.0f},
-    _min_zoom{55.0f},
-    _max_zoom{300.0f} { }
+    _zoom{30.0f},
+    _min_zoom{2.0f},
+    _max_zoom{120.0f} { }
 
   auto update() -> void {
     const auto delta_time = sbx::core::engine::delta_time();
@@ -49,23 +49,23 @@ public:
     const auto local_right = sbx::math::vector3::cross(sbx::math::vector3::up, transform.forward()).normalize();
 
     if (sbx::devices::input::is_key_down(sbx::devices::key::w)) {
-      _tilt_angle = sbx::math::clamp(_tilt_angle + sbx::math::degree{45.0f * delta_time.value()}, _min_tilt_angle, _max_tilt_angle);
-      // movement += local_forward;
+      // _tilt_angle = sbx::math::clamp(_tilt_angle + sbx::math::degree{45.0f * delta_time.value()}, _min_tilt_angle, _max_tilt_angle);
+      movement += local_forward;
     }
 
     if (sbx::devices::input::is_key_down(sbx::devices::key::s)) {
-      _tilt_angle = sbx::math::clamp(_tilt_angle - sbx::math::degree{45.0f * delta_time.value()}, _min_tilt_angle, _max_tilt_angle);
-      // movement -= local_forward;
+      // _tilt_angle = sbx::math::clamp(_tilt_angle - sbx::math::degree{45.0f * delta_time.value()}, _min_tilt_angle, _max_tilt_angle);
+      movement -= local_forward;
     }
 
     if (sbx::devices::input::is_key_down(sbx::devices::key::a)) {
-      _orbit_angle += sbx::math::degree{45.0f * delta_time.value()};
-      // movement += local_right;
+      // _orbit_angle += sbx::math::degree{45.0f * delta_time.value()};
+      movement += local_right;
     }
 
     if (sbx::devices::input::is_key_down(sbx::devices::key::d)) {
-      _orbit_angle -= sbx::math::degree{45.0f * delta_time.value()};
-      // movement -= local_right;
+      // _orbit_angle -= sbx::math::degree{45.0f * delta_time.value()};
+      movement -= local_right;
     }
 
     // Mouse drag camera rotation and movement
@@ -96,13 +96,13 @@ public:
 
     // QE camera rotation
 
-    // if (sbx::devices::input::is_key_down(sbx::devices::key::q)) {
-    //   _orbit_angle -= sbx::math::degree{45.0f * delta_time.value()};
-    // }
+    if (sbx::devices::input::is_key_down(sbx::devices::key::q)) {
+      _orbit_angle -= sbx::math::degree{45.0f * delta_time.value()};
+    }
 
-    // if (sbx::devices::input::is_key_down(sbx::devices::key::e)) {
-    //   _orbit_angle += sbx::math::degree{45.0f * delta_time.value()};
-    // }
+    if (sbx::devices::input::is_key_down(sbx::devices::key::e)) {
+      _orbit_angle += sbx::math::degree{45.0f * delta_time.value()};
+    }
 
     auto camera_speed = 10.0f;
 
@@ -114,7 +114,7 @@ public:
       movement *= 5.0f;
     }
 
-    // _target += movement * camera_speed * delta_time.value();
+    _target += movement * camera_speed * delta_time.value();
 
     // Zoom
 
