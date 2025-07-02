@@ -24,10 +24,10 @@ public:
     _tilt_angle{sbx::math::degree{30}},
     _min_tilt_angle{sbx::math::degree{1}},
     _max_tilt_angle{sbx::math::degree{89}},
-    _target{sbx::math::vector3{0.0f, 2.0f, 0.0f}},
-    _zoom{30.0f},
-    _min_zoom{2.0f},
-    _max_zoom{150.0f} { }
+    _target{sbx::math::vector3{0.0f, 0.0f, 0.0f}},
+    _zoom{100.0f},
+    _min_zoom{55.0f},
+    _max_zoom{300.0f} { }
 
   auto update() -> void {
     const auto delta_time = sbx::core::engine::delta_time();
@@ -49,19 +49,23 @@ public:
     const auto local_right = sbx::math::vector3::cross(sbx::math::vector3::up, transform.forward()).normalize();
 
     if (sbx::devices::input::is_key_down(sbx::devices::key::w)) {
-      movement += local_forward;
+      _tilt_angle = sbx::math::clamp(_tilt_angle + sbx::math::degree{80.0f * _mouse_position_delta.y() * delta_time.value()}, _min_tilt_angle, _max_tilt_angle);
+      // movement += local_forward;
     }
 
     if (sbx::devices::input::is_key_down(sbx::devices::key::s)) {
-      movement -= local_forward;
+      _tilt_angle = sbx::math::clamp(_tilt_angle - sbx::math::degree{80.0f * _mouse_position_delta.y() * delta_time.value()}, _min_tilt_angle, _max_tilt_angle);
+      // movement -= local_forward;
     }
 
     if (sbx::devices::input::is_key_down(sbx::devices::key::a)) {
-      movement += local_right;
+      _orbit_angle -= sbx::math::degree{45.0f * delta_time.value()};
+      // movement += local_right;
     }
 
     if (sbx::devices::input::is_key_down(sbx::devices::key::d)) {
-      movement -= local_right;
+      _orbit_angle += sbx::math::degree{45.0f * delta_time.value()};
+      // movement -= local_right;
     }
 
     // Mouse drag camera rotation and movement
@@ -110,13 +114,13 @@ public:
       movement *= 5.0f;
     }
 
-    _target += movement * camera_speed * delta_time.value();
+    // _target += movement * camera_speed * delta_time.value();
 
     // Zoom
 
     auto scroll = sbx::devices::input::scroll_delta();
 
-    _zoom = std::clamp(_zoom - 4.0f * scroll.y(), _min_zoom, _max_zoom);
+    _zoom = std::clamp(_zoom - 5.0f * scroll.y(), _min_zoom, _max_zoom);
 
     // Calculate camera position
 

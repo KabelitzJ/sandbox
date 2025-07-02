@@ -363,6 +363,18 @@ constexpr auto operator-(basic_angle<LhsType> lhs, const basic_angle<RhsType>& r
 
 template<floating_point LhsType, floating_point RhsType>
 requires (std::is_convertible_v<RhsType, LhsType>)
+constexpr auto operator-(basic_angle<LhsType> lhs, const basic_degree<RhsType>& rhs) noexcept -> basic_angle<LhsType> {
+  return lhs -= basic_angle<LhsType>(rhs);
+}
+
+template<floating_point LhsType, floating_point RhsType>
+requires (std::is_convertible_v<RhsType, LhsType>)
+constexpr auto operator-(basic_angle<LhsType> lhs, const basic_radian<RhsType>& rhs) noexcept -> basic_angle<LhsType> {
+  return lhs -= basic_angle<LhsType>(rhs);
+}
+
+template<floating_point LhsType, floating_point RhsType>
+requires (std::is_convertible_v<RhsType, LhsType>)
 constexpr auto operator*(basic_angle<LhsType> lhs, const RhsType rhs) noexcept -> basic_angle<LhsType> {
   return lhs *= rhs;
 }

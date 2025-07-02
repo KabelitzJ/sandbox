@@ -169,9 +169,6 @@ public:
     SBX_SCOPED_TIMER_BLOCK("static_mesh_subrenderer::submit") {
       auto mesh_query = scene.query<const scenes::static_mesh, const scenes::global_transform>();
 
-      auto total = 0;
-      auto after_cull = 0;
-
       for (auto&& [node, static_mesh, global_transform] : mesh_query.each()) {
         // const auto mesh_id = static_mesh.mesh_id();
         // const auto& mesh = graphics_module.get_asset<models::mesh>(mesh_id);
@@ -183,8 +180,6 @@ public:
         // }
         _submit_mesh(node, static_mesh);
       }
-
-      utility::logger<"static_mesh_subrenderer">::debug("total: {} after_cull: {}", total, after_cull);
 
       // auto tree = containers::octree<cull_data>{math::volume{math::vector3{-500.0f}, math::vector3{500.0f}}};
 
