@@ -58,7 +58,7 @@ mesh_source::mesh_source(const std::filesystem::path& path) {
 
       const auto& attributes = primitive["attributes"];
 
-      for (const auto& attribute : attributes) {
+      for (const auto& [name, index] : attributes.items()) {
         
       }
     }
