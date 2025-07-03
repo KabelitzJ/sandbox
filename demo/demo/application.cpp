@@ -9,6 +9,8 @@
 
 #include <libsbx/assets/assets_module.hpp>
 
+#include <libsbx/mesh/mesh_source.hpp>
+
 #include <demo/renderer.hpp>
 #include <demo/line.hpp>
 
@@ -206,6 +208,8 @@ application::application()
   //     scene.add_component<sbx::scenes::static_mesh>(test, _mesh_ids["cube"], 0u, sbx::math::color{0.39f, 0.44f, 0.56f, 1.0f}, sbx::scenes::static_mesh::material{0.0f, 1.0f, 0.0f, 0.0f}, _image_ids["height_map"]);
   //   }
   // }
+
+  auto source = sbx::mesh::mesh_source{"demo/assets/meshes/maple_tree_1/maple_tree_1.gltf"};
 
   // Camera
   auto camera = scene.camera();

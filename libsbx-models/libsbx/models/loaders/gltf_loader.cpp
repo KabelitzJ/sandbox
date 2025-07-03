@@ -114,7 +114,7 @@ auto gltf_loader::load(const std::filesystem::path& path) -> mesh::mesh_data {
   const auto& buffer_views = json["bufferViews"];
   const auto& buffers = json["buffers"];
 
-  auto unique_vertices = std::unordered_map<vertex3d, std::uint32_t>{};
+  // auto unique_vertices = std::unordered_map<vertex3d, std::uint32_t>{};
 
   for (const auto& node : nodes) {
     if (!node.contains("mesh")) {
