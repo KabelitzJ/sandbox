@@ -8,8 +8,12 @@
 #include <memory>
 #include <span>
 
+#include <nlohmann/json.hpp>
+
 #include <libsbx/utility/hashed_string.hpp>
 #include <libsbx/utility/enum.hpp>
+
+#include <libsbx/graphics/pipeline/mesh.hpp>
 
 namespace sbx::mesh {
 
@@ -28,22 +32,29 @@ public:
     count
   }; // struct attribute_type
 
-  enum class accessor_type : std::uint8_t {
+  enum class component_type : std::uint16_t {
+    signed_byte,
+    unsigned_byte,
+    signed_short,
+    unsigned_short,
+    unsigned_int,
+    floating_point
+  }; // struct component_type
+
+  enum class data_type : std::uint8_t {
+    scalar,
     vec2,
     vec3,
-    vec4
-  }; // struct accessor_type
-
-  enum class component_type : std::uint8_t {
-    floating_point,
-    unsigned_byte,
-    unsigned_int
-  }; // enum class component_type
+    vec4,
+    mat2,
+    mat3,
+    mat4
+  }; // struct type
 
   struct attribute {
-    attribute_type type;
-    std::uint32_t component_count;
-    std::uint32_t component_size;
+    // attribute_type attribute_type;
+    mesh_source::component_type component_type;
+    mesh_source::data_type data_type;
     std::vector<std::uint8_t> buffer;
   }; // struct attribute
 
@@ -63,7 +74,7 @@ public:
 
 private:
 
-  auto _load_attribute(const attribute_type type) -> void;
+  auto _load_attribute(const std::string& name, const std::size_t index, const nlohmann::json& json, const std::filesystem::path& path, std::unordered_map<std::size_t, std::vector<std::uint8_t>>& decoded_buffers) -> void;
 
   std::array<attribute, utility::to_underlying(attribute_type::count)>  _attributes;
   std::vector<graphics::submesh> _submeshes;

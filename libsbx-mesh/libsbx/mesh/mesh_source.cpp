@@ -9,6 +9,10 @@
 
 #include <nlohmann/json.hpp>
 
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+
 #include <libsbx/io/read_file.hpp>
 
 #include <libsbx/math/vector2.hpp>  
@@ -23,50 +27,28 @@ namespace sbx::mesh {
 mesh_source::mesh_source(const std::filesystem::path& path) {
   auto file = std::ifstream{path};
 
-  auto json = nlohmann::json::parse(file);
+  auto importer = Assimp::Importer{};
 
-  const auto& nodes = json["nodes"];
-  const auto& meshes = json["meshes"];
-  const auto& accessors = json["accessors"];
-  const auto& buffer_views = json["bufferViews"];
-  const auto& buffers = json["buffers"];
-  
-  for (const auto& node : nodes) {
-    if (!node.contains("mesh")) {
-      continue;
-    }
+  const auto* scene = importer.ReadFile(
+    path.string(),
+    aiProcess_Triangulate |
+    aiProcess_GenNormals |
+    aiProcess_JoinIdenticalVertices |
+    aiProcess_LimitBoneWeights |
+    aiProcess_ImproveCacheLocality |
+    aiProcess_CalcTangentSpace |
+    aiProcess_ValidateDataStructure
+  );
 
-    const auto mesh_index = node["mesh"].get<std::size_t>();
-
-    const auto& mesh = meshes[mesh_index];
-
-    auto mesh_name = path.stem().string();
-
-    if (mesh.contains("name")) {
-      mesh_name = mesh["name"].get<std::string>();
-    }
-
-    auto submesh = graphics::submesh{};
-
-    // [NOTE] KAJ 2023-11-22 : This is a offset into the vertex buffer. We dont want to use this.
-    submesh.vertex_offset = 0u;
-
-    const auto& primitives = mesh["primitives"];
-    
-    for (const auto& primitive : primitives) {
-      submesh.index_offset = static_cast<std::uint32_t>(_indices.size());
-
-      const auto& attributes = primitive["attributes"];
-
-      for (const auto& [name, index] : attributes.items()) {
-        
-      }
-    }
+  if (!scene || !scene->HasMeshes()) {
+    throw std::runtime_error("Failed to load mesh from " + path.string());
   }
-}
 
-auto mesh_source::_load_attribute(const attribute_type type) -> void {
+  for (auto i = 0; i < scene->mNumMeshes; ++i) {
+    const auto* mesh = scene->mMeshes[i];
 
+    
+  }
 }
 
 } // namespace sbx::mesh
