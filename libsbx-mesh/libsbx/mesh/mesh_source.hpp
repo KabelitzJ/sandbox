@@ -29,7 +29,6 @@ public:
     color_0,
     joints_0,
     weights_0,
-    count
   }; // struct attribute_type
 
   enum class component_type : std::uint16_t {
@@ -60,8 +59,12 @@ public:
 
   mesh_source(const std::filesystem::path& path);
 
-  auto attribute_buffer(const attribute_type type) const -> const std::vector<std::uint8_t>& {
-    return _attributes[utility::to_underlying(type)].buffer;
+  auto find_attribute(const attribute_type type) const -> const attribute& {
+    if (const auto entry = _attributes.find(type); entry != _attributes.cend()) {
+      return entry->second;
+    }
+
+    throw std::runtime_error{fmt::format("Mesh does not have attribute '{}", utility::to_underlying(type))};
   }
 
   auto submeshes() const -> const std::vector<graphics::submesh>& {
@@ -74,11 +77,9 @@ public:
 
 private:
 
-  auto _load_attribute(const std::string& name, const std::size_t index, const nlohmann::json& json, const std::filesystem::path& path, std::unordered_map<std::size_t, std::vector<std::uint8_t>>& decoded_buffers) -> void;
-
-  std::array<attribute, utility::to_underlying(attribute_type::count)>  _attributes;
-  std::vector<graphics::submesh> _submeshes;
+  std::unordered_map<attribute_type, attribute>  _attributes;
   std::vector<std::uint32_t> _indices;
+  std::vector<graphics::submesh> _submeshes;
 
 }; // class mesh_source
 

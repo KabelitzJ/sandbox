@@ -44,7 +44,7 @@ mesh_source::mesh_source(const std::filesystem::path& path) {
     throw std::runtime_error("Failed to load mesh from " + path.string());
   }
 
-  for (auto i = 0; i < scene->mNumMeshes; ++i) {
+  for (auto i = 0u; i < scene->mNumMeshes; ++i) {
     const auto* mesh = scene->mMeshes[i];
 
     
