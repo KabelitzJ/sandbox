@@ -59,13 +59,9 @@ public:
 
   mesh_source(const std::filesystem::path& path);
 
-  auto find_attribute(const attribute_type type) const -> const attribute& {
-    if (const auto entry = _attributes.find(type); entry != _attributes.cend()) {
-      return entry->second;
-    }
-
-    throw std::runtime_error{fmt::format("Mesh does not have attribute '{}", utility::to_underlying(type))};
-  }
+  auto positions() const -> const std::vector<math::vector3>& {
+    return _positions; 
+  } 
 
   auto submeshes() const -> const std::vector<graphics::submesh>& {
     return _submeshes;
@@ -77,7 +73,12 @@ public:
 
 private:
 
-  std::unordered_map<attribute_type, attribute>  _attributes;
+  
+  std::vector<math::vector3> _positions;
+  std::vector<math::vector3> _normals;
+  std::vector<math::vector2> _uvs;
+  std::vector<math::vector3> _tangents;
+  std::vector<math::vector3> _bitangents;
   std::vector<std::uint32_t> _indices;
   std::vector<graphics::submesh> _submeshes;
 
