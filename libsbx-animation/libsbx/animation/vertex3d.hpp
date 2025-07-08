@@ -17,10 +17,12 @@ struct alignas(alignof(std::float_t)) vertex3d {
   math::vector3 normal;
   math::vector4 tangent;
   math::vector2 uv;
+  math::vector4u bone_ids;
+  math::vector4 bone_weights;
 }; // struct vertex
 
 constexpr auto operator==(const vertex3d& lhs, const vertex3d& rhs) noexcept -> bool {
-  return lhs.position == rhs.position && lhs.normal == rhs.normal && lhs.tangent == rhs.tangent && lhs.uv == rhs.uv;
+  return lhs.position == rhs.position && lhs.normal == rhs.normal && lhs.tangent == rhs.tangent && lhs.uv == rhs.uv && lhs.bone_ids == rhs.bone_ids && lhs.bone_weights == rhs.bone_weights;
 }
 
 } // namespace sbx::animation
@@ -64,6 +66,20 @@ struct sbx::graphics::vertex_input<sbx::animation::vertex3d> {
       .offset = offsetof(sbx::animation::vertex3d, uv)
     });
 
+    result.attribute_descriptions.push_back(VkVertexInputAttributeDescription{
+      .location = 4,
+      .binding = 0,
+      .format = VK_FORMAT_R32G32B32A32_UINT,
+      .offset = offsetof(sbx::animation::vertex3d, bone_ids)
+    });
+
+    result.attribute_descriptions.push_back(VkVertexInputAttributeDescription{
+      .location = 5,
+      .binding = 0,
+      .format = VK_FORMAT_R32G32B32_SFLOAT,
+      .offset = offsetof(sbx::animation::vertex3d, bone_weights)
+    });
+
     return result;
   }
 }; // struct sbx::graphics::vertex_input
@@ -72,7 +88,7 @@ template<>
 struct std::hash<sbx::animation::vertex3d> {
   auto operator()(const sbx::animation::vertex3d& vertex) const noexcept -> std::size_t {
     auto hash = std::size_t{0};
-    sbx::utility::hash_combine(hash, vertex.position, vertex.normal, vertex.tangent, vertex.uv);
+    sbx::utility::hash_combine(hash, vertex.position, vertex.normal, vertex.tangent, vertex.uv, vertex.bone_ids, vertex.bone_weights);
     return hash;
   }
 }; // struct std::hash<vertex3d>
