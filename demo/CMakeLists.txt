@@ -95,6 +95,7 @@ target_link_libraries(
     libsbx::graphics
     libsbx::scenes
     libsbx::models
+    libsbx::animation
     libsbx::shadows
     libsbx::post
     libsbx::ui

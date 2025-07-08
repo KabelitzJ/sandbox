@@ -1,5 +1,5 @@
-#ifndef LIBSBX_MODELS_MESH_SUBRENDERER_HPP_
-#define LIBSBX_MODELS_MESH_SUBRENDERER_HPP_
+#ifndef LIBSBX_MODELS_STATIC_MESH_SUBRENDERER_HPP_
+#define LIBSBX_MODELS_STATIC_MESH_SUBRENDERER_HPP_
 
 #include <filesystem>
 #include <unordered_set>
@@ -62,36 +62,35 @@ namespace sbx::models {
 
 class static_mesh_subrenderer final : public graphics::subrenderer {
 
-  inline static constexpr auto max_point_lights = std::size_t{16};
+  // inline static constexpr auto max_point_lights = std::size_t{16};
 
-  template<typename Type>
-  requires (std::is_trivially_copyable_v<Type>)
-  auto _specialization_info(const Type& value) -> const VkSpecializationInfo* {
-    static auto specialization_map_entry = VkSpecializationMapEntry{};
-    specialization_map_entry.constantID = 0u;
-    specialization_map_entry.offset = 0u;
-    specialization_map_entry.size = sizeof(Type);
+  // template<typename Type>
+  // requires (std::is_trivially_copyable_v<Type>)
+  // auto _specialization_info(const Type& value) -> const VkSpecializationInfo* {
+  //   static auto specialization_map_entry = VkSpecializationMapEntry{};
+  //   specialization_map_entry.constantID = 0u;
+  //   specialization_map_entry.offset = 0u;
+  //   specialization_map_entry.size = sizeof(Type);
 
-    static auto specialization_data = Type{value};
+  //   static auto specialization_data = Type{value};
 
-    static auto specialization_info = VkSpecializationInfo{};
-    specialization_info.mapEntryCount = 1u;
-    specialization_info.pMapEntries = &specialization_map_entry;
-    specialization_info.dataSize = sizeof(Type);
-    specialization_info.pData = &specialization_data;
+  //   static auto specialization_info = VkSpecializationInfo{};
+  //   specialization_info.mapEntryCount = 1u;
+  //   specialization_info.pMapEntries = &specialization_map_entry;
+  //   specialization_info.dataSize = sizeof(Type);
+  //   specialization_info.pData = &specialization_data;
 
-    return &specialization_info;
-  }
+  //   return &specialization_info;
+  // }
 
-  inline static constexpr auto transparency_disabled = std::uint32_t{0u};
-  inline static constexpr auto transparency_enabled = std::uint32_t{1u};
+  // inline static constexpr auto transparency_disabled = std::uint32_t{0u};
+  // inline static constexpr auto transparency_enabled = std::uint32_t{1u};
 
 public:
 
-  static_mesh_subrenderer(const std::filesystem::path& path, const graphics::pipeline::stage& stage, const graphics::resource_handle<graphics::buffer>& draw_commands_buffer = {})
+  static_mesh_subrenderer(const std::filesystem::path& path, const graphics::pipeline::stage& stage)
   : graphics::subrenderer{stage},
     _pipeline{path, stage},
-    _culled_draw_commands_buffer{draw_commands_buffer},
     _push_handler{_pipeline},
     _scene_descriptor_handler{_pipeline, 0u} {
     auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
@@ -220,15 +219,6 @@ private:
     alignas(16) math::color color;
     alignas(16) std::float_t radius;
   }; // struct point_light
-
-  // struct uniform_data {
-  //   graphics::descriptor_handler descriptor_handler;
-  //   graphics::storage_handler storage_handler;
-
-  //   uniform_data(const graphics::pipeline& pipeline, std::uint32_t set)
-  //   : descriptor_handler{pipeline, set} { }
-
-  // }; // struct uniform_data
 
   struct transform_data {
     alignas(16) math::matrix4x4 model;
@@ -394,13 +384,8 @@ private:
   std::unordered_map<math::uuid, std::vector<std::vector<instance_data>>> _submesh_instances;
   std::vector<transform_data> _transform_data;
 
-
-  // std::unordered_map<math::uuid, static_mesh_subrenderer::uniform_data> _uniform_data;
-  // std::unordered_set<math::uuid> _used_uniforms;
-
   pipeline _pipeline;
 
-  graphics::buffer_handle _culled_draw_commands_buffer;
   graphics::storage_buffer_handle _draw_commands_buffer;
   graphics::storage_buffer_handle _transform_data_buffer;
   graphics::storage_buffer_handle _instance_data_buffer;
@@ -417,4 +402,4 @@ private:
 
 } // namespace sbx::models
 
-#endif // LIBSBX_MODELS_MESH_SUBRENDERER_HPP_
+#endif // LIBSBX_MODELS_STATIC_MESH_SUBRENDERER_HPP_
