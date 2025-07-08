@@ -135,7 +135,7 @@ inline constexpr auto operator*(Lhs lhs, basic_matrix<Columns, Rows, Rhs> rhs) n
 
 template<typename Matrix>
 inline constexpr auto from_array(std::span<typename Matrix::value_type, Matrix::columns * Matrix::rows> array) -> Matrix {
-  return Matrix{*reinterpret_cast<Matrix*>(array.data())}
+  return Matrix{*reinterpret_cast<Matrix*>(array.data())};
 }
 
 } // namespace sbx::math

@@ -110,6 +110,7 @@ class libsbx_recipe(ConanFile):
     self.requires("easy_profiler/2.1.0")
     self.requires("tsl-robin-map/1.3.0")
     self.requires("lz4/1.10.0")
+    self.requires("assimp/5.4.3")
 
   def generate(self):
     deps = CMakeDeps(self)
