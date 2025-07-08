@@ -80,6 +80,9 @@ template<std::size_t Columns, std::size_t Rows, scalar Lhs, scalar Rhs>
 template<std::size_t Columns, std::size_t Rows, scalar Lhs, scalar Rhs>
 [[nodiscard]] constexpr auto operator*(Lhs lhs, basic_matrix<Columns, Rows, Rhs> rhs) noexcept -> basic_matrix<Columns, Rows, Rhs>;
 
+template<std::size_t Columns, std::size_t Rows, scalar Type>
+[[nodiscard]] constexpr auto from_array(std::span<Type, Columns * Rows> array) -> basic_matrix<Columns, Rows, Type>;
+
 } // namespace sbx::math
 
 #include <libsbx/math/matrix.ipp>

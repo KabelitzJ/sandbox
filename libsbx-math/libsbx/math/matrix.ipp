@@ -133,4 +133,9 @@ inline constexpr auto operator*(Lhs lhs, basic_matrix<Columns, Rows, Rhs> rhs) n
   return rhs *= lhs;
 }
 
+template<std::size_t Columns, std::size_t Rows, scalar Type>
+inline constexpr auto from_array(std::span<Type, Columns * Rows> array) -> basic_matrix<Columns, Rows, Type> {
+  basic_matrix<Columns, Rows, Type>{*reinterpret_cast<basic_matrix<Columns, Rows, Type>*>(array.data())};
+}
+
 } // namespace sbx::math
