@@ -99,6 +99,67 @@ static auto _decode_buffer(std::size_t index, const std::filesystem::path& path,
   return buffers.insert({index, std::move(buffer)}).first->second;
 }
 
+static auto _get_transform(const nlohmann::json& node) -> math::matrix4x4 {
+  auto transform = math::matrix4x4::identity;
+
+  if (node.contains("translation")) {
+    const auto& translation = node["translation"];
+    const auto x = translation[0].get<std::double_t>();
+    const auto z = translation[1].get<std::double_t>();
+    const auto y = translation[2].get<std::double_t>();
+
+    transform = transform * math::matrix4x4::translated(math::matrix4x4::identity, math::vector3{x, y, z});
+  }
+
+  if (node.contains("rotation")) {
+    const auto& rotation = node["rotation"];
+    const auto x = rotation[0].get<std::double_t>();
+    const auto z = rotation[1].get<std::double_t>();
+    const auto y = rotation[2].get<std::double_t>();
+    const auto w = rotation[3].get<std::double_t>();
+
+    transform = transform * math::quaternion{x, y, z, w}.to_matrix();
+  }
+
+  if (node.contains("scale")) {
+    const auto& scale = node["scale"];
+    const auto x = scale[0].get<std::double_t>();
+    const auto z = scale[1].get<std::double_t>();
+    const auto y = scale[2].get<std::double_t>();
+
+    transform = transform * math::matrix4x4::scaled(math::matrix4x4::identity, math::vector3{x, y, z});
+  }
+
+  if (node.contains("matrix")) {
+    const auto& matrix = node["matrix"];
+    const auto m00 = matrix[0].get<std::double_t>();
+    const auto m01 = matrix[1].get<std::double_t>();
+    const auto m02 = matrix[2].get<std::double_t>();
+    const auto m03 = matrix[3].get<std::double_t>();
+    const auto m10 = matrix[4].get<std::double_t>();
+    const auto m11 = matrix[5].get<std::double_t>();
+    const auto m12 = matrix[6].get<std::double_t>();
+    const auto m13 = matrix[7].get<std::double_t>();
+    const auto m20 = matrix[8].get<std::double_t>();
+    const auto m21 = matrix[9].get<std::double_t>();
+    const auto m22 = matrix[10].get<std::double_t>();
+    const auto m23 = matrix[11].get<std::double_t>();
+    const auto m30 = matrix[12].get<std::double_t>();
+    const auto m31 = matrix[13].get<std::double_t>();
+    const auto m32 = matrix[14].get<std::double_t>();
+    const auto m33 = matrix[15].get<std::double_t>();
+
+    transform = math::matrix4x4{
+      m00, m10, m20, m30,
+      m01, m11, m21, m31,
+      m02, m12, m22, m32,
+      m03, m13, m23, m33,
+    };
+  }
+
+  return transform;
+}
+
 auto gltf_loader::load(const std::filesystem::path& path) -> mesh::mesh_data {
   auto data = mesh::mesh_data{};
 
@@ -123,62 +184,7 @@ auto gltf_loader::load(const std::filesystem::path& path) -> mesh::mesh_data {
 
     const auto mesh_index = node["mesh"].get<std::size_t>();
 
-    auto transform = math::matrix4x4::identity;
-
-    if (node.contains("translation")) {
-      const auto& translation = node["translation"];
-      const auto x = translation[0].get<std::double_t>();
-      const auto z = translation[1].get<std::double_t>();
-      const auto y = translation[2].get<std::double_t>();
-
-      transform = transform * math::matrix4x4::translated(math::matrix4x4::identity, math::vector3{x, y, z});
-    }
-
-    if (node.contains("rotation")) {
-      const auto& rotation = node["rotation"];
-      const auto x = rotation[0].get<std::double_t>();
-      const auto z = rotation[1].get<std::double_t>();
-      const auto y = rotation[2].get<std::double_t>();
-      const auto w = rotation[3].get<std::double_t>();
-
-      transform = transform * math::quaternion{x, y, z, w}.to_matrix();
-    }
-
-    if (node.contains("scale")) {
-      const auto& scale = node["scale"];
-      const auto x = scale[0].get<std::double_t>();
-      const auto z = scale[1].get<std::double_t>();
-      const auto y = scale[2].get<std::double_t>();
-
-      transform = transform * math::matrix4x4::scaled(math::matrix4x4::identity, math::vector3{x, y, z});
-    }
-
-    if (node.contains("matrix")) {
-      const auto& matrix = node["matrix"];
-      const auto m00 = matrix[0].get<std::double_t>();
-      const auto m01 = matrix[1].get<std::double_t>();
-      const auto m02 = matrix[2].get<std::double_t>();
-      const auto m03 = matrix[3].get<std::double_t>();
-      const auto m10 = matrix[4].get<std::double_t>();
-      const auto m11 = matrix[5].get<std::double_t>();
-      const auto m12 = matrix[6].get<std::double_t>();
-      const auto m13 = matrix[7].get<std::double_t>();
-      const auto m20 = matrix[8].get<std::double_t>();
-      const auto m21 = matrix[9].get<std::double_t>();
-      const auto m22 = matrix[10].get<std::double_t>();
-      const auto m23 = matrix[11].get<std::double_t>();
-      const auto m30 = matrix[12].get<std::double_t>();
-      const auto m31 = matrix[13].get<std::double_t>();
-      const auto m32 = matrix[14].get<std::double_t>();
-      const auto m33 = matrix[15].get<std::double_t>();
-
-      transform = math::matrix4x4{
-        m00, m10, m20, m30,
-        m01, m11, m21, m31,
-        m02, m12, m22, m32,
-        m03, m13, m23, m33,
-      };
-    }
+    const auto transform = _get_transform(node);
 
     const auto& mesh = meshes[mesh_index];
 
@@ -367,12 +373,14 @@ auto gltf_loader::load(const std::filesystem::path& path) -> mesh::mesh_data {
       }
 
       data.indices.reserve(data.indices.size() + indices_count);
-
-      for (auto i = 0u; i < indices_count; ++i) {
-        // [NOTE] KAJ 2024-03-20 : We need to add the current vertices_count since we pack all vertices into one buffer
-        if (indices_accessor["componentType"].get<std::size_t>() == component_type::unsigned_short.id) {
+      
+      // [NOTE] KAJ 2024-03-20 : We need to add the current vertices_count since we pack all vertices into one buffer
+      if (indices_accessor["componentType"].get<std::size_t>() == component_type::unsigned_short.id) {
+        for (auto i = 0u; i < indices_count; ++i) {
           data.indices.push_back(vertices_count + static_cast<std::uint32_t>(_parse_index<std::uint16_t>(indices_data, i)));
-        } else {
+        }
+      } else {
+        for (auto i = 0u; i < indices_count; ++i) {
           data.indices.push_back(vertices_count + _parse_index<std::uint32_t>(indices_data, i));
         }
       }
