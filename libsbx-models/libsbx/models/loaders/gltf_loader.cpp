@@ -228,10 +228,10 @@ auto gltf_loader::load(const std::filesystem::path& path) -> mesh::mesh_data {
         throw std::runtime_error{fmt::format("Mesh '{}' in file '{}' does not contain the attribute 'indices'", mesh_name, path.string())};
       }
 
-      const auto positions_index = primitive["attributes"]["POSITION"].get<std::size_t>();
-      const auto normals_index = primitive["attributes"]["NORMAL"].get<std::size_t>();
-      const auto uvs_index = primitive["attributes"]["TEXCOORD_0"].get<std::size_t>();
-      const auto tangents_index = primitive["attributes"]["TANGENT"].get<std::size_t>();
+      const auto positions_index = attributes["POSITION"].get<std::size_t>();
+      const auto normals_index = attributes["NORMAL"].get<std::size_t>();
+      const auto uvs_index = attributes["TEXCOORD_0"].get<std::size_t>();
+      const auto tangents_index = attributes["TANGENT"].get<std::size_t>();
       const auto indices_index = primitive["indices"].get<std::size_t>();
 
       // [NOTE] KAJ 2024-03-20 : Here we get the accessors for the positions, normals, uvs and indices.
