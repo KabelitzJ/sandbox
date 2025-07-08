@@ -19,6 +19,9 @@ public:
     row = 1u
   }; // enum class direction
 
+  inline static constexpr auto columns = Columns;
+  inline static constexpr auto rows = Rows;
+
   using value_type = Type;
   using reference = value_type&;
   using const_reference = const value_type&;
@@ -80,8 +83,8 @@ template<std::size_t Columns, std::size_t Rows, scalar Lhs, scalar Rhs>
 template<std::size_t Columns, std::size_t Rows, scalar Lhs, scalar Rhs>
 [[nodiscard]] constexpr auto operator*(Lhs lhs, basic_matrix<Columns, Rows, Rhs> rhs) noexcept -> basic_matrix<Columns, Rows, Rhs>;
 
-template<std::size_t Columns, std::size_t Rows, scalar Type>
-[[nodiscard]] constexpr auto from_array(std::span<Type, Columns * Rows> array) -> basic_matrix<Columns, Rows, Type>;
+template<typename Matrix>
+[[nodiscard]] constexpr auto from_array(std::span<typename Matrix::value_type, Matrix::columns * Matrix::rows> array) -> Matrix;
 
 } // namespace sbx::math
 
