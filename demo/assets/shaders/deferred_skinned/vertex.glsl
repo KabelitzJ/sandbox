@@ -3,7 +3,7 @@
 #extension GL_EXT_buffer_reference : enable
 #extension GL_EXT_debug_printf : enable
 
-#include <libsbx/common/wind.glsl>
+#define MAX_BONES 64;
 
 struct transform_data {
   mat4 model;
@@ -29,6 +29,14 @@ struct vertex {
   float tangent_w; // w: sign of the tangent
 	float uv_x;
 	float uv_y;
+  uint bone_index_x;
+  uint bone_index_y;
+  uint bone_index_z;
+  uint bone_index_w;
+  float bone_weight_x;
+  float bone_weight_y;
+  float bone_weight_z;
+  float bone_weight_w;
 }; // struct vertex
 
 vec3 position_from_vertex(vertex vertex) {
@@ -45,6 +53,14 @@ vec4 tangent_from_vertex(vertex vertex) {
 
 vec2 uv_from_vertex(vertex vertex) {
   return vec2(vertex.uv_x, vertex.uv_y);
+}
+
+uvec4 bone_indices_from_vertex(vertex vertex) {
+  return uvec4(vertex.bone_index_x, vertex.bone_index_y, vertex.bone_index_z, vertex.bone_index_w);
+}
+
+vec4 bone_weights_from_vertex(vertex vertex) {
+  return vec4(vertex.bone_weight_x, vertex.bone_weight_y, vertex.bone_weight_z, vertex.bone_weight_w);
 }
 
 layout(location = 0) out vec3 out_position;
@@ -68,10 +84,15 @@ layout(buffer_reference, std430) readonly buffer instance_data_buffer_reference 
   instance_data data[];
 }; // buffer instance_data_buffer_reference
 
+layout(buffer_reference, std430) readonly buffer bone_matrices_buffer_reference {
+  mat4 data[];
+}; // buffer bone_matrices_buffer_reference
+
 layout(push_constant) uniform constants {	
 	vertex_buffer_reference vertex_buffer;
   transform_data_buffer_reference transform_data_buffer;
   instance_data_buffer_reference instance_data_buffer;
+  bone_matrices_buffer_reference bone_matrices_buffer;
 };
 
 layout(set = 0, binding = 0) uniform uniform_scene {
@@ -104,24 +125,26 @@ void main() {
   vec3 in_normal = normal_from_vertex(vertex);
   vec4 in_tangent = tangent_from_vertex(vertex);
   vec2 in_uv = uv_from_vertex(vertex);
+  uvec4 in_bone_indices = bone_indices_from_vertex(vertex);
+  vec4 in_bone_weights = bone_weights_from_vertex(vertex);
 
-  vec3 world_position = vec3(transform_data.model * vec4(in_position, 1.0));
+  mat4 skinning_matrix = 
+    in_bone_weights.x * bone_matrices_buffer.data[in_bone_indices.x] +
+    in_bone_weights.y * bone_matrices_buffer.data[in_bone_indices.y] +
+    in_bone_weights.z * bone_matrices_buffer.data[in_bone_indices.z] +
+    in_bone_weights.w * bone_matrices_buffer.data[in_bone_indices.w];
 
-  float flexibility = instance_data.material.z;
-  float anchor_height = instance_data.material.w;
+  vec3 skinned_position = vec3(skinning_matrix * vec4(in_position, 1.0));
+  vec3 skinned_normal = normalize(vec3(skinning_matrix * vec4(in_normal, 0.0)));
 
-  // if (flexibility > 0.0) {
-  //   out_position = wind_effect(world_position, in_position, scene.time, flexibility, anchor_height, MAX_ANCHOR_HEIGHT);
-  // } else {
-  //   out_position = world_position;
-  // }
+  vec3 world_position = vec3(transform_data.model * vec4(skinned_position, 1.0));
 
   out_position = world_position;
 
-  out_normal = normalize(vec3(transform_data.normal * vec4(in_normal, 1.0)));
+  out_normal = normalize(vec3(transform_data.normal * vec4(skinned_normal, 1.0)));
 
   vec3 T = normalize(vec3(transform_data.model * in_tangent));
-  vec3 N = normalize(vec3(transform_data.model * vec4(in_normal, 0.0)));
+  vec3 N = normalize(vec3(transform_data.model * vec4(skinned_normal, 1.0)));
   vec3 B = cross(N, T) * in_tangent.w; // w: sign of the tangent
 
   out_tbn = mat3(T, B, N);

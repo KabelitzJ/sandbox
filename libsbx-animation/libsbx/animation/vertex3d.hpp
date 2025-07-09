@@ -15,8 +15,8 @@ namespace sbx::animation {
 struct alignas(alignof(std::float_t)) vertex3d {
   math::vector3 position;
   math::vector3 normal;
-  math::vector4 tangent;
   math::vector2 uv;
+  math::vector4 tangent;
   math::vector4u bone_ids;
   math::vector4 bone_weights;
 }; // struct vertex

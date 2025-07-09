@@ -232,7 +232,17 @@ static auto _load_node(const aiNode* node, const aiScene* scene, mesh::mesh_data
 auto gltf_loader::load(const std::filesystem::path& path) -> mesh::mesh_data {
   auto data = mesh::mesh_data{};
 
-  static constexpr auto import_flags = aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_CalcTangentSpace | aiProcess_JoinIdenticalVertices | aiProcess_ImproveCacheLocality;
+  static const auto import_flags =
+    aiProcess_CalcTangentSpace |        // Create binormals/tangents just in case
+    aiProcess_Triangulate |             // Make sure we're triangles
+    aiProcess_SortByPType |             // Split meshes by primitive type
+    aiProcess_GenNormals |              // Make sure we have legit normals
+    aiProcess_GenUVCoords |             // Convert UVs if required
+    aiProcess_OptimizeMeshes |          // Batch draws where possible
+    aiProcess_JoinIdenticalVertices |
+    aiProcess_LimitBoneWeights |        // If more than N (=4) bone weights, discard least influencing bones and renormalise sum to 1
+    aiProcess_GlobalScale |             // e.g. convert cm to m for fbx import (and other formats where cm is native)
+    aiProcess_ValidateDataStructure;    // Validation 
 
   auto importer = Assimp::Importer{};
 

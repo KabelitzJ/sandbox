@@ -17,6 +17,10 @@
 #include <demo/terrain/chunk.hpp>
 
 #include <libsbx/scenes/debug_subrenderer.hpp>
+#include <libsbx/scenes/components/static_mesh.hpp>
+#include <libsbx/scenes/components/skinned_mesh.hpp>
+
+#include <libsbx/animation/mesh.hpp>
 
 namespace demo {
 
@@ -58,6 +62,8 @@ application::application()
   
   _image_ids.emplace("rocks", graphics_module.add_resource<sbx::graphics::image2d>("demo/assets/textures/rocks/rocks.png"));
 
+  _image_ids.emplace("fox", graphics_module.add_resource<sbx::graphics::image2d>("demo/assets/textures/fox/albedo.png"));
+
   _cube_image_ids.emplace("skybox", graphics_module.add_resource<sbx::graphics::cube_image>("demo/assets/skyboxes/clouds"));
 
   // Meshes
@@ -92,6 +98,8 @@ application::application()
   _mesh_ids.emplace("rock_4", graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/rock_4/rock_4.gltf"));
   _mesh_ids.emplace("rock_5", graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/rock_5/rock_5.gltf"));
 
+  _mesh_ids.emplace("fox", graphics_module.add_asset<sbx::animation::mesh>("demo/assets/meshes/fox/fox.gltf"));
+
   // _mesh_ids.emplace("icosphere", graphics_module.add_asset<sbx::models::mesh>(_generate_icosphere(20.0f, 4u)));
 
   // Window
@@ -115,6 +123,19 @@ application::application()
   auto& terrain_module = sbx::core::engine::get_module<demo::terrain_module>();
 
   terrain_module.load_terrain_in_scene(scene);
+
+  // Animated Fox
+
+  auto fox = scene.create_node("Fox");
+
+  auto fox_submeshes = std::vector<sbx::scenes::skinned_mesh::submesh>{};
+  fox_submeshes.push_back(sbx::scenes::skinned_mesh::submesh{0u, sbx::math::color::white(), sbx::scenes::skinned_mesh::material{0.2f, 0.5f, 0.1f, 0.8f}, _image_ids["fox"]});
+
+  scene.add_component<sbx::scenes::skinned_mesh>(fox, _mesh_ids["fox"], fox_submeshes);
+
+  auto& fox_transform = scene.get_component<sbx::math::transform>(fox);
+  fox_transform.set_position(sbx::math::vector3{0.0f, 10.0f, 0.0f});
+  fox_transform.set_scale(sbx::math::vector3{0.1f, 0.1f, 0.1f});
 
   // Trees
 

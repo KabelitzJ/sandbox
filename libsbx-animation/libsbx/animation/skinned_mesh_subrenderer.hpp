@@ -46,7 +46,7 @@
 #include <libsbx/scenes/scene.hpp>
 #include <libsbx/scenes/node.hpp>
 
-#include <libsbx/scenes/components/static_mesh.hpp>
+#include <libsbx/scenes/components/skinned_mesh.hpp>
 #include <libsbx/scenes/components/id.hpp>
 #include <libsbx/scenes/components/camera.hpp>
 #include <libsbx/scenes/components/tag.hpp>
@@ -71,9 +71,12 @@ public:
     _scene_descriptor_handler{_pipeline, 0u} {
     auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
+    _bone_matrices.resize(skeleton::max_bones, math::matrix4x4::identity);
+
     _draw_commands_buffer = graphics_module.add_resource<graphics::storage_buffer>(graphics::storage_buffer::min_size, VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT);
     _transform_data_buffer = graphics_module.add_resource<graphics::storage_buffer>(graphics::storage_buffer::min_size, VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT);
     _instance_data_buffer = graphics_module.add_resource<graphics::storage_buffer>(graphics::storage_buffer::min_size, VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT);
+    _bone_matrices_buffer = graphics_module.add_resource<graphics::storage_buffer>(skeleton::max_bones * sizeof(math::matrix4x4), VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT);
   }
 
   ~skinned_mesh_subrenderer() override = default;
@@ -83,22 +86,229 @@ public:
 
     SBX_SCOPED_TIMER("skinned_mesh_subrenderer");
 
-    std::this_thread::sleep_for(std::chrono::milliseconds{2});
+    auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+    auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
+
+    auto& scene = scenes_module.scene();
+
+    const auto camera_node = scene.camera();
+
+    auto& camera = scene.get_component<scenes::camera>(camera_node);
+
+    const auto& projection = camera.projection();
+
+    _scene_uniform_handler.push("projection", projection);
+
+    const auto& camera_transform = scene.get_component<math::transform>(camera_node);
+    const auto& camera_global_transform = scene.get_component<scenes::global_transform>(camera_node);
+
+    const auto view = math::matrix4x4::inverted(camera_global_transform.model);
+
+    _scene_uniform_handler.push("view", view);
+
+    _scene_uniform_handler.push("camera_position", camera_transform.position());
+
+    const auto& scene_light = scene.light();
+
+    _scene_uniform_handler.push("light_direction", sbx::math::vector3::normalized(scene_light.direction()));
+    _scene_uniform_handler.push("light_color", scene_light.color());
+
+    _scene_uniform_handler.push("time", std::fmod(core::engine::time().value() * 0.5f, 1.0f));
+
+    _images.clear();
+
+    std::ranges::fill(_bone_matrices, math::matrix4x4::identity);
+
+    SBX_SCOPED_TIMER_BLOCK("skinned_mesh_subrenderer::submit") {
+      auto mesh_query = scene.query<const scenes::skinned_mesh, const scenes::global_transform>();
+
+      for (auto&& [node, skinned_mesh, global_transform] : mesh_query.each()) {
+        _submit_mesh(node, skinned_mesh);
+      }
+    }
+
+    SBX_SCOPED_TIMER_BLOCK("static_mesh_subrenderer::render"){
+      _render_skinned_meshes(command_buffer);
+    }
   }
 
 private:
 
+  struct transform_data {
+    alignas(16) math::matrix4x4 model;
+    alignas(16) math::matrix4x4 normal;
+  }; // struct transform_data
 
+  static_assert(utility::layout_requirements_v<transform_data, 128u, 16u>, "transform_data does not meet layout requirements");
 
+  struct instance_data {
+    alignas(16) math::color tint;
+    alignas(16) math::vector4 material;
+    alignas(16) math::vector4 image_indices;
+  }; // struct instance_data
 
-  // std::unordered_map<math::uuid, std::vector<std::vector<instance_data>>> _submesh_instances;
-  // std::vector<transform_data> _transform_data;
+  static_assert(utility::layout_requirements_v<instance_data, 48u, 16u>, "instance_data does not meet layout requirements");
+
+  struct draw_command_range {
+    std::uint32_t offset;
+    std::uint32_t count;
+  }; // struct draw_command_range
+
+  auto _submit_mesh(const scenes::node node, const scenes::skinned_mesh& skinned_mesh) -> void {
+    EASY_FUNCTION();
+    auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+    auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
+    auto& scene = scenes_module.scene();
+
+    const auto mesh_id = skinned_mesh.mesh_id();
+
+    const auto& global_transform = scene.get_component<const scenes::global_transform>(node);
+
+    const auto transform_data_index = static_cast<std::uint32_t>(_transform_data.size());
+    _transform_data.emplace_back(global_transform.model, global_transform.normal);
+
+    auto& instances = _submesh_instances[mesh_id];
+
+    for (const auto& submesh : skinned_mesh.submeshes()) {
+      EASY_BLOCK("submit submesh");
+
+      const auto albedo_image_index = submesh.albedo_texture ? _images.push_back(submesh.albedo_texture) : graphics::separate_image2d_array::max_size;
+      const auto normal_image_index = submesh.normal_texture ? _images.push_back(submesh.normal_texture) : graphics::separate_image2d_array::max_size;
+
+      const auto image_indices = math::vector4{albedo_image_index, normal_image_index, transform_data_index, 0u};
+      const auto material = math::vector4{submesh.material.metallic, submesh.material.roughness, submesh.material.flexibility, submesh.material.anchor_height};
+
+      instances.resize(std::max(instances.size(), static_cast<std::size_t>(submesh.index + 1u)));
+      instances[submesh.index].push_back(instance_data{submesh.tint, material, image_indices});
+
+      EASY_END_BLOCK;
+    }
+  }
+
+  auto _render_skinned_meshes(graphics::command_buffer& command_buffer) -> void {
+    auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+    _pipeline.bind(command_buffer);
+
+    _scene_descriptor_handler.push("uniform_scene", _scene_uniform_handler);
+    // _scene_descriptor_handler.push("buffer_point_lights", _point_lights_storage_handler);
+    // _scene_descriptor_handler.push("shadow_map_image", graphics_module.attachment("shadow_map"));
+    _scene_descriptor_handler.push("images_sampler", _images_sampler);
+    _scene_descriptor_handler.push("images", _images);
+
+    if (!_scene_descriptor_handler.update(_pipeline)) {
+      return;
+    }
+
+    _scene_descriptor_handler.bind_descriptors(command_buffer);
+
+    auto draw_commands = std::vector<VkDrawIndexedIndirectCommand>{};
+    auto instance_data = std::vector<skinned_mesh_subrenderer::instance_data>{};
+    auto draw_ranges = std::unordered_map<math::uuid, draw_command_range>{};
+
+    auto base_instance = std::uint32_t{0u};
+
+    EASY_BLOCK("build draw commands");
+
+    for (const auto& [mesh_id, submesh] : _submesh_instances) {
+      auto& mesh = graphics_module.get_asset<animation::mesh>(mesh_id);
+
+      auto range = draw_command_range{};
+      range.offset = static_cast<uint32_t>(draw_commands.size());
+
+      for (const auto& [submesh_index, instances] : ranges::views::enumerate(submesh)) {
+        if (instances.empty()) {
+          continue;
+        }
+
+        const auto submesh = mesh.submesh(submesh_index);
+
+        const auto instance_count = static_cast<std::uint32_t>(instances.size());
+
+        auto command = VkDrawIndexedIndirectCommand{};
+        command.indexCount = submesh.index_count;
+        command.instanceCount = instance_count;
+        command.firstIndex = submesh.index_offset;
+        command.vertexOffset = submesh.vertex_offset;
+        command.firstInstance = base_instance;
+        // command.firstInstance = 0u;
+
+        draw_commands.push_back(command);
+        instance_data.insert(instance_data.end(), instances.begin(), instances.end());
+
+        base_instance += instance_count;
+        range.count++;
+      }
+
+      if (range.count > 0) {
+        draw_ranges.emplace(mesh_id, range);
+      }
+    }
+
+    EASY_END_BLOCK;
+
+    if (draw_commands.empty()) {
+      return;
+    }
+
+    EASY_BLOCK("upload draw commands");
+
+    // Resize and update the draw commands buffer
+    auto& draw_commands_buffer = graphics_module.get_resource<graphics::storage_buffer>(_draw_commands_buffer);
+    update_buffer(draw_commands, draw_commands_buffer);
+
+    // Resize and update the transform data buffer
+    auto& transform_data_buffer = graphics_module.get_resource<graphics::storage_buffer>(_transform_data_buffer);
+    update_buffer(_transform_data, transform_data_buffer);
+
+    // Resize and update the instance data buffer
+    auto& instance_data_buffer = graphics_module.get_resource<graphics::storage_buffer>(_instance_data_buffer);
+    update_buffer(instance_data, instance_data_buffer);
+
+    auto& bone_matrices_buffer = graphics_module.get_resource<graphics::storage_buffer>(_bone_matrices_buffer);
+    update_buffer(_bone_matrices, bone_matrices_buffer);
+
+    _push_handler.push("transform_data_buffer", transform_data_buffer.address());
+    _push_handler.push("instance_data_buffer", instance_data_buffer.address());
+    _push_handler.push("bone_matrices_buffer", bone_matrices_buffer.address());
+
+    for (const auto& [mesh_id, range] : draw_ranges) {
+      auto& mesh = graphics_module.get_asset<animation::mesh>(mesh_id);
+      
+      mesh.bind(command_buffer);
+      
+      _push_handler.push("vertex_buffer", mesh.address());
+
+      _push_handler.bind(command_buffer);
+
+      command_buffer.draw_indexed_indirect(draw_commands_buffer, range.offset, range.count);
+    }
+
+    EASY_END_BLOCK;
+  }
+
+  template<typename Type>
+  static auto update_buffer(const std::vector<Type>& buffer, graphics::storage_buffer& storage_buffer) -> void {
+    const auto required_size = static_cast<std::uint32_t>(buffer.size() * sizeof(Type));
+
+    if (storage_buffer.size() < required_size) {
+      storage_buffer.resize(required_size * 1.5f);
+    }
+
+    storage_buffer.update(buffer.data(), required_size);
+  }
+
+  std::unordered_map<math::uuid, std::vector<std::vector<instance_data>>> _submesh_instances;
+  std::vector<transform_data> _transform_data;
+  std::vector<math::matrix4x4> _bone_matrices;
 
   pipeline _pipeline;
 
   graphics::storage_buffer_handle _draw_commands_buffer;
   graphics::storage_buffer_handle _transform_data_buffer;
   graphics::storage_buffer_handle _instance_data_buffer;
+  graphics::storage_buffer_handle _bone_matrices_buffer;
 
   graphics::descriptor_handler _scene_descriptor_handler;
   graphics::uniform_handler _scene_uniform_handler;
@@ -107,7 +317,7 @@ private:
   graphics::separate_sampler _images_sampler;
   graphics::separate_image2d_array _images;
 
-}; // class mesh_subrenderer
+}; // class skinned_mesh_subrenderer
 
 } // namespace sbx::animation
 

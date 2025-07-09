@@ -8,6 +8,4 @@
 
 #include <libsbx/animation/skinned_mesh_subrenderer.hpp>
 
-#include <libsbx/animation/loaders/gltf_loader.hpp>
-
 #endif // LIBSBX_ANIMATION_HPP_
