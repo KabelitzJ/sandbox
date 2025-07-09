@@ -76,7 +76,7 @@ public:
     _draw_commands_buffer = graphics_module.add_resource<graphics::storage_buffer>(graphics::storage_buffer::min_size, VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT);
     _transform_data_buffer = graphics_module.add_resource<graphics::storage_buffer>(graphics::storage_buffer::min_size, VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT);
     _instance_data_buffer = graphics_module.add_resource<graphics::storage_buffer>(graphics::storage_buffer::min_size, VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT);
-    _bone_matrices_buffer = graphics_module.add_resource<graphics::storage_buffer>(skeleton::max_bones * sizeof(math::matrix4x4), VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT);
+    _bone_matrices_buffer = graphics_module.add_resource<graphics::storage_buffer>(graphics::storage_buffer::min_size, VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT);
   }
 
   ~skinned_mesh_subrenderer() override = default;
@@ -145,9 +145,10 @@ private:
     alignas(16) math::color tint;
     alignas(16) math::vector4 material;
     alignas(16) math::vector4 image_indices;
+    alignas(16) std::uint32_t bone_matrices_offset;
   }; // struct instance_data
 
-  static_assert(utility::layout_requirements_v<instance_data, 48u, 16u>, "instance_data does not meet layout requirements");
+  static_assert(utility::layout_requirements_v<instance_data, 64u, 16u>, "instance_data does not meet layout requirements");
 
   struct draw_command_range {
     std::uint32_t offset;

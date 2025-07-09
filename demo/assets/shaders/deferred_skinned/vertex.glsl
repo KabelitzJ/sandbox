@@ -14,6 +14,7 @@ struct instance_data {
   vec4 tint;
   vec4 material; // x: metallic, y: roughness, z: flexiblity, w: anchor height
   vec4 image_indices; // x: albedo image index, y: normal image index, z: transform data index, w: unused
+  uint bone_matrices_offset;
 }; // struct instance_data
 
 struct vertex {
@@ -23,12 +24,12 @@ struct vertex {
 	float normal_x;
 	float normal_y;
 	float normal_z;
+	float uv_x;
+	float uv_y;
   float tangent_x;
   float tangent_y;
   float tangent_z;
   float tangent_w; // w: sign of the tangent
-	float uv_x;
-	float uv_y;
   uint bone_index_x;
   uint bone_index_y;
   uint bone_index_z;
@@ -128,11 +129,21 @@ void main() {
   uvec4 in_bone_indices = bone_indices_from_vertex(vertex);
   vec4 in_bone_weights = bone_weights_from_vertex(vertex);
 
-  mat4 skinning_matrix = 
-    in_bone_weights.x * bone_matrices_buffer.data[in_bone_indices.x] +
-    in_bone_weights.y * bone_matrices_buffer.data[in_bone_indices.y] +
-    in_bone_weights.z * bone_matrices_buffer.data[in_bone_indices.z] +
-    in_bone_weights.w * bone_matrices_buffer.data[in_bone_indices.w];
+  // mat4 skinning_matrix = 
+  //   in_bone_weights.x * bone_matrices_buffer.data[in_bone_indices.x] +
+  //   in_bone_weights.y * bone_matrices_buffer.data[in_bone_indices.y] +
+  //   in_bone_weights.z * bone_matrices_buffer.data[in_bone_indices.z] +
+  //   in_bone_weights.w * bone_matrices_buffer.data[in_bone_indices.w];
+
+  mat4 skinning_matrix = mat4(1.0);
+
+  for (int i = 0; i < 4; ++i) {
+    float weight = in_bone_weights[i];
+    uint index = in_bone_indices[i];
+    uint offset = instance_data.bone_matrices_offset;
+
+    skinning_matrix += weight * bone_matrices_buffer.data[offset + index];
+  } 
 
   vec3 skinned_position = vec3(skinning_matrix * vec4(in_position, 1.0));
   vec3 skinned_normal = normalize(vec3(skinning_matrix * vec4(in_normal, 0.0)));
