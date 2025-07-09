@@ -82,7 +82,7 @@ public:
     init_info.Queue = graphics_module.logical_device().queue<sbx::graphics::queue::type::graphics>();
     init_info.DescriptorPool = _pipeline.descriptor_pool();
     init_info.Subpass = 0;
-    init_info.MinImageCount = 2u;
+    init_info.MinImageCount = 3u;
     init_info.ImageCount = graphics_module.swapchain().image_count();
     init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
 

@@ -102,7 +102,7 @@ class libsbx_recipe(ConanFile):
     # self.requires("openal-soft/1.22.2")
     self.requires("drwav/0.13.12")
     self.requires("drmp3/0.6.34")
-    self.requires("imgui/1.91.5-docking")
+    self.requires("imgui/1.90.5-docking")
     self.requires("implot/0.16-docking")
     self.requires("imnodes/0.5.0-docking")
     # self.requires("imguizmo/1.83-docking")
