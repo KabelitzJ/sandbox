@@ -37,6 +37,7 @@ public:
 
 private:
 
+  // [TODO] KAJ 2025-07-10 : Passing the skeleton as a parameter here is a quick and dirty solution until I habe implemented a propper mesh loading framwork
   static auto _load(const std::filesystem::path& path) -> mesh_data;
 
   animations::skeleton _skeleton;

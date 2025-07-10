@@ -36,26 +36,8 @@ layout(set = 0, binding = 0) uniform uniform_scene {
   float time;
 } scene;
 
-// layout(set = 0, binding = 1, std430) readonly buffer buffer_point_lights {
-//   point_light data[];
-// } point_lights;
-
-// layout(set = 0, binding = 2) uniform sampler2D shadow_map_image;
-
 layout(set = 0, binding = 1) uniform sampler images_sampler;
 layout(set = 0, binding = 2) uniform texture2D images[MAX_IMAGE_ARRAY_SIZE];
-
-const vec4 AMBIENT_COLOR = vec4(0.4, 0.4, 0.4, 1.0);
-const vec4 SPECULAR_COLOR = vec4(0.9, 0.9, 0.9, 1.0);
-const float GLOSSINESS = 32.0;
-
-const vec4 RIM_COLOR = vec4(1.0, 1.0, 1.0, 1.0);
-const float RIM_STRENGTH = 0.716;
-const float RIM_THRESHOLD = 0.1;
-
-const vec4 FOG_COLOR = vec4(0.5, 0.5, 0.5, 1.0);
-const float FOG_START = 250.0;
-const float FOG_DENSITY = 0.002;
 
 vec4 get_albedo() {
   if (in_albedo_image_index >= MAX_IMAGE_ARRAY_SIZE) {

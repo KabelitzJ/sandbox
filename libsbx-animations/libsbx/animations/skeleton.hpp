@@ -3,6 +3,9 @@
 
 #include <string>
 #include <cstdint>
+#include <unordered_map>
+
+#include <libsbx/utility/logger.hpp>
 
 #include <libsbx/math/matrix4x4.hpp>
 
@@ -13,20 +16,27 @@ class skeleton {
 public:
 
   struct bone {
-    std::string name;
+    inline static constexpr auto null = std::uint32_t{0xFFFFFFFF};
+
     std::uint32_t parent_id;
     math::matrix4x4 inverse_bind_matrix;
   }; // struct bone
 
   inline static constexpr auto max_bones = std::uint32_t{64u};
 
-  skeleton() = default;
+  skeleton() {
+    _bones.reserve(32u);
+    _bone_names.reserve(32);
+  }
 
-  // auto name() const -> const std::string& {
-  //   return _name;
-  // }
+  auto bone_index(const std::string& name) const -> std::uint32_t {
+    auto entry = _bone_names.find(name);
 
-  auto add_bone(const bone& bone) -> void {
+    return (entry != _bone_names.cend()) ? entry->second : bone::null;
+  }
+
+  auto add_bone(const std::string& name, const bone& bone) -> void {
+    _bone_names.emplace(name, static_cast<std::uint32_t>(_bones.size()));
     _bones.push_back(bone);
   }
 
@@ -36,8 +46,8 @@ public:
 
 private:
 
-  // std::string _name;
   std::vector<bone> _bones;
+  std::unordered_map<std::string, std::uint32_t> _bone_names;
 
 }; // class skeleton
 

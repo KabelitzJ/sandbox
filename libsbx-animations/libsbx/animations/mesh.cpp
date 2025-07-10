@@ -27,8 +27,11 @@
 
 namespace sbx::animations {
 
+static auto loaded_skeleton = animations::skeleton{};
+
 mesh::mesh(const std::filesystem::path& path)
-: base{_load(path)} { }
+: base{_load(path)},
+  _skeleton{std::move(loaded_skeleton)} { }
 
 mesh::~mesh() {
 
@@ -151,6 +154,31 @@ static auto _load_node(const aiNode* node, const aiScene* scene, mesh::mesh_data
   }
 }
 
+/**
+ * @note bone_map and bone_offsets need to be populated by calling _load_node(scene->mRootNode, scene, data, bone_map, bone_offsets) before calling this function!
+ */
+static auto _build_skeleton_hierarchy(const aiNode* node, const std::string& parent_name, const bone_map& bone_map, const bone_offsets& bone_offsets, animations::skeleton& skeleton) -> void {
+  const auto node_name = std::string{node->mName.C_Str()};
+
+  const auto is_bone = bone_map.contains(node_name);
+  auto parent_id = animations::skeleton::max_bones;
+
+  if (is_bone) {
+    if (!parent_name.empty() && bone_map.contains(parent_name)) {
+      parent_id = bone_map.at(parent_name);
+    }
+
+    const auto bone_id = bone_map.at(node_name);
+    const auto& inverse_bind_matrix = bone_offsets.at(bone_id);
+
+    skeleton.add_bone(node_name, {parent_id, inverse_bind_matrix});
+  }
+
+  for (auto i = 0u; i < node->mNumChildren; ++i) {
+    _build_skeleton_hierarchy(node->mChildren[i], node_name, bone_map, bone_offsets, skeleton);
+  }
+}
+
 auto mesh::_load(const std::filesystem::path& path) -> mesh_data {
   if (!std::filesystem::exists(path)) {
     throw std::runtime_error{"Mesh file not found: " + path.string()};
@@ -184,6 +212,10 @@ auto mesh::_load(const std::filesystem::path& path) -> mesh_data {
   auto bone_offsets = animations::bone_offsets{};
 
   _load_node(scene->mRootNode, scene, data, bone_map, bone_offsets);
+
+  loaded_skeleton = animations::skeleton{};
+
+  _build_skeleton_hierarchy(scene->mRootNode, "", bone_map, bone_offsets, loaded_skeleton);
 
   const auto vertices_count = data.vertices.size();
   const auto indices_count = data.indices.size();
