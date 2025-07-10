@@ -13,8 +13,7 @@ struct transform_data {
 struct instance_data {
   vec4 tint;
   vec4 material; // x: metallic, y: roughness, z: flexiblity, w: anchor height
-  vec4 image_indices; // x: albedo image index, y: normal image index, z: transform data index, w: unused
-  uint bone_matrices_offset;
+  uvec4 payload; // x: albedo image index, y: normal image index, z: transform data index, w: bone matrices offset
 }; // struct instance_data
 
 struct vertex {
@@ -116,7 +115,10 @@ const float MAX_ANCHOR_HEIGHT = 2.0;
 void main() {
   instance_data instance_data = instance_data_buffer.data[gl_InstanceIndex];
 
-  uint transform_data_index = uint(instance_data.image_indices.z);
+  uint albedo_image_index = uint(instance_data.payload.x);
+  uint normal_image_index = uint(instance_data.payload.y);
+  uint transform_data_index = uint(instance_data.payload.z);
+  uint bone_matrices_offset = uint(instance_data.payload.w);
 
   transform_data transform_data = transform_data_buffer.data[transform_data_index];
 
@@ -140,9 +142,8 @@ void main() {
   for (int i = 0; i < 4; ++i) {
     float weight = in_bone_weights[i];
     uint index = in_bone_indices[i];
-    uint offset = instance_data.bone_matrices_offset;
 
-    skinning_matrix += weight * bone_matrices_buffer.data[offset + index];
+    skinning_matrix += weight * bone_matrices_buffer.data[bone_matrices_offset + index];
   } 
 
   vec3 skinned_position = vec3(skinning_matrix * vec4(in_position, 1.0));
@@ -165,8 +166,8 @@ void main() {
   out_color = instance_data.tint;
   out_material = instance_data.material.xy;
 
-  out_albedo_image_index = uint(instance_data.image_indices.x);
-  out_normal_image_index = uint(instance_data.image_indices.y);
+  out_albedo_image_index = albedo_image_index;
+  out_normal_image_index = normal_image_index;
 
   gl_Position = scene.projection * scene.view * vec4(out_position, 1.0);
 }

@@ -144,11 +144,10 @@ private:
   struct instance_data {
     alignas(16) math::color tint;
     alignas(16) math::vector4 material;
-    alignas(16) math::vector4 image_indices;
-    alignas(16) std::uint32_t bone_matrices_offset;
+    alignas(16) math::vector4u payload; // x: albedo image index, y: normal image index, y: instance data index, w: bone matrices offset
   }; // struct instance_data
 
-  static_assert(utility::layout_requirements_v<instance_data, 64u, 16u>, "instance_data does not meet layout requirements");
+  static_assert(utility::layout_requirements_v<instance_data, 48u , 16u>, "instance_data does not meet layout requirements");
 
   struct draw_command_range {
     std::uint32_t offset;
@@ -177,11 +176,11 @@ private:
       const auto albedo_image_index = submesh.albedo_texture ? _images.push_back(submesh.albedo_texture) : graphics::separate_image2d_array::max_size;
       const auto normal_image_index = submesh.normal_texture ? _images.push_back(submesh.normal_texture) : graphics::separate_image2d_array::max_size;
 
-      const auto image_indices = math::vector4{albedo_image_index, normal_image_index, transform_data_index, 0u};
+      const auto payload = math::vector4u{albedo_image_index, normal_image_index, transform_data_index, 0u};
       const auto material = math::vector4{submesh.material.metallic, submesh.material.roughness, submesh.material.flexibility, submesh.material.anchor_height};
 
       instances.resize(std::max(instances.size(), static_cast<std::size_t>(submesh.index + 1u)));
-      instances[submesh.index].push_back(instance_data{submesh.tint, material, image_indices});
+      instances[submesh.index].push_back(instance_data{submesh.tint, material, payload});
 
       EASY_END_BLOCK;
     }
