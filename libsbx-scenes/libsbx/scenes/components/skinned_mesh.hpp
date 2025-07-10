@@ -13,6 +13,12 @@
 
 namespace sbx::scenes {
 
+struct animation_state {
+  float current_time = 0.0f;
+  float speed = 1.0f;
+  bool looping = true;
+}; // struct animation_state
+
 class skinned_mesh final {
 
 public:
@@ -34,17 +40,23 @@ public:
     graphics::image_handle roughness_texture{};
   }; // struct submesh
 
-  skinned_mesh(math::uuid mesh_id, const std::vector<submesh>& submeshes)
+  skinned_mesh(math::uuid mesh_id, math::uuid animation_id, const std::vector<submesh>& submeshes)
   : _mesh_id{mesh_id},
+    _animation_id{animation_id},
     _submeshes{submeshes} { }
 
-  skinned_mesh(const math::uuid& mesh_id, std::uint32_t index = 0, const math::color& tint = math::color::white(), const skinned_mesh::material& material = skinned_mesh::material{}, const graphics::image_handle& albedo_texture = {})
-  : _mesh_id{mesh_id} {
+  skinned_mesh(const math::uuid& mesh_id, math::uuid animation_id, std::uint32_t index = 0, const math::color& tint = math::color::white(), const skinned_mesh::material& material = skinned_mesh::material{}, const graphics::image_handle& albedo_texture = {})
+  : _mesh_id{mesh_id},
+    _animation_id{animation_id} {
     _submeshes.push_back(submesh{index, tint, material, albedo_texture});
   }
 
   auto mesh_id() const noexcept -> math::uuid {
     return _mesh_id;
+  }
+
+  auto animation_id() const noexcept -> math::uuid {
+    return _animation_id;
   }
 
   auto submeshes() const noexcept -> const std::vector<submesh>& {
@@ -58,6 +70,7 @@ public:
 private:
 
   math::uuid _mesh_id;
+  math::uuid _animation_id;
   std::vector<submesh> _submeshes;
 
 }; // class skinned_mesh

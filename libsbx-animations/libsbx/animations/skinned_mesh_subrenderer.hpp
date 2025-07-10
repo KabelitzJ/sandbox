@@ -122,10 +122,10 @@ public:
     std::ranges::fill(_bone_matrices, math::matrix4x4::identity);
 
     SBX_SCOPED_TIMER_BLOCK("skinned_mesh_subrenderer::submit") {
-      auto mesh_query = scene.query<const scenes::skinned_mesh, const scenes::global_transform>();
+      auto mesh_query = scene.query<const scenes::skinned_mesh, scenes::animation_state>();
 
-      for (auto&& [node, skinned_mesh, global_transform] : mesh_query.each()) {
-        _submit_mesh(node, skinned_mesh);
+      for (auto&& [node, skinned_mesh, animation_state] : mesh_query.each()) {
+        _submit_mesh(node, skinned_mesh, animation_state);
       }
     }
 
@@ -156,7 +156,7 @@ private:
     std::uint32_t count;
   }; // struct draw_command_range
 
-  auto _submit_mesh(const scenes::node node, const scenes::skinned_mesh& skinned_mesh) -> void {
+  auto _submit_mesh(const scenes::node node, const scenes::skinned_mesh& skinned_mesh, scenes::animation_state& animation_state) -> void {
     EASY_FUNCTION();
     auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
@@ -164,6 +164,37 @@ private:
     auto& scene = scenes_module.scene();
 
     const auto mesh_id = skinned_mesh.mesh_id();
+
+    auto& mesh = graphics_module.get_asset<animations::mesh>(mesh_id);
+    auto& animation = graphics_module.get_asset<animations::animation>(skinned_mesh.animation_id());
+
+    auto& skeleton = mesh.skeleton();
+
+    const auto ticks_per_second = (animation.ticks_per_second > 0.0f)
+      ? animation.ticks_per_second
+      : 25.0f; // fallback if not set
+
+    utility::logger<"asd">::debug("ticks_per_second {}", ticks_per_second);
+    utility::logger<"asd">::debug("animation_state.current_time {}", animation_state.current_time);
+
+    // Advance current time in TICKS
+    animation_state.current_time += core::engine::delta_time().value() * animation_state.speed * ticks_per_second;
+
+    utility::logger<"asd">::debug("animation_state.current_time {}", animation_state.current_time);
+    utility::logger<"asd">::debug("animation_state.duration {}", 150.0f);
+
+    // Wrap if looping
+    if (animation_state.looping && animation_state.current_time > 150.0f) {
+      animation_state.current_time = std::fmod(animation_state.current_time, 150.0f);
+    }
+
+    utility::logger<"asd">::debug("animation_state.current_time {}", animation_state.current_time);
+
+    auto bone_matrices = skeleton.evaluate_pose(animation, animation_state.current_time);
+
+    const auto bone_matrices_offset = _bone_matrices.size();
+
+    _bone_matrices.insert(_bone_matrices.end(), bone_matrices.begin(), bone_matrices.end());
 
     const auto& global_transform = scene.get_component<const scenes::global_transform>(node);
 
@@ -178,7 +209,7 @@ private:
       const auto albedo_image_index = submesh.albedo_texture ? _images.push_back(submesh.albedo_texture) : graphics::separate_image2d_array::max_size;
       const auto normal_image_index = submesh.normal_texture ? _images.push_back(submesh.normal_texture) : graphics::separate_image2d_array::max_size;
 
-      const auto payload = math::vector4u{albedo_image_index, normal_image_index, transform_data_index, 0u};
+      const auto payload = math::vector4u{albedo_image_index, normal_image_index, transform_data_index, bone_matrices_offset};
       const auto material = math::vector4{submesh.material.metallic, submesh.material.roughness, submesh.material.flexibility, submesh.material.anchor_height};
 
       instances.resize(std::max(instances.size(), static_cast<std::size_t>(submesh.index + 1u)));

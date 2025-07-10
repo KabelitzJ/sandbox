@@ -78,6 +78,10 @@ public:
     return base_type::template splat<z_axis>(vector);
   }
 
+  [[nodiscard]] static constexpr auto lerp(const basic_vector3& start, const basic_vector3& end, const value_type t) noexcept -> basic_vector3 {
+    return start * (1.0f - t) + end * t;
+  }
+
   [[nodiscard]] constexpr operator basic_vector2<Type>() const noexcept;
 
   [[nodiscard]] constexpr auto x() noexcept -> reference;

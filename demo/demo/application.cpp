@@ -21,12 +21,11 @@
 #include <libsbx/scenes/components/skinned_mesh.hpp>
 
 #include <libsbx/animations/mesh.hpp>
+#include <libsbx/animations/animation.hpp>
 
 namespace demo {
 
 struct rotator { };
-
-struct walker { };
 
 application::application()
 : sbx::core::application{},
@@ -102,6 +101,8 @@ application::application()
 
   _mesh_ids.emplace("fox", graphics_module.add_asset<sbx::animations::mesh>("demo/assets/meshes/fox/fox.gltf"));
 
+  const auto animation_id = graphics_module.add_asset<sbx::animations::animation>("demo/assets/meshes/fox/fox.gltf");
+
   // _mesh_ids.emplace("icosphere", graphics_module.add_asset<sbx::models::mesh>(_generate_icosphere(20.0f, 4u)));
 
   // Window
@@ -133,13 +134,13 @@ application::application()
   auto fox_submeshes = std::vector<sbx::scenes::skinned_mesh::submesh>{};
   fox_submeshes.push_back(sbx::scenes::skinned_mesh::submesh{0u, sbx::math::color::white(), sbx::scenes::skinned_mesh::material{0.2f, 0.5f, 0.1f, 0.8f}, _image_ids["fox"]});
 
-  scene.add_component<sbx::scenes::skinned_mesh>(fox, _mesh_ids["fox"], fox_submeshes);
+  scene.add_component<sbx::scenes::skinned_mesh>(fox, _mesh_ids["fox"], animation_id, fox_submeshes);
+
+  scene.add_component<sbx::scenes::animation_state>(fox);
 
   auto& fox_transform = scene.get_component<sbx::math::transform>(fox);
   fox_transform.set_position(sbx::math::vector3{0.0f, 10.0f, 0.0f});
   fox_transform.set_scale(sbx::math::vector3{0.1f, 0.1f, 0.1f});
-
-  scene.add_component<walker>(fox);
 
   // Trees
 
@@ -270,12 +271,6 @@ auto application::update() -> void  {
 
   for (auto&& [node, transform] : query_rotator.each()) {
     transform.set_rotation(sbx::math::vector3::up, _rotation);
-  }
-
-  auto query_walker = scene.query<sbx::math::transform, walker>();
-
-  for (auto&& [node, transform] : query_walker.each()) {
-    transform.move_by(sbx::math::vector3::right * sbx::core::engine::delta_time().value());
   }
 
   // auto q = scene.query<sbx::math::transform, sbx::scenes::static_mesh, sbx::scenes::global_transform>();

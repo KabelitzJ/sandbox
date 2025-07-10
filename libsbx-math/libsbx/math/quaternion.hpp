@@ -62,7 +62,43 @@ public:
   constexpr basic_quaternion(const vector_type_for<Complex>& axis, const basic_angle<Scalar>& angle) noexcept;
 
   template<floating_point Other = value_type>
-  constexpr basic_quaternion(const matrix_type_for<Other>& matrix) noexcept;  
+  constexpr basic_quaternion(const matrix_type_for<Other>& matrix) noexcept;
+
+  [[nodiscard]] static constexpr auto dot(const basic_quaternion& lhs, const basic_quaternion& rhs) noexcept -> value_type {
+    return vector_type::dot(lhs.complex(), rhs.complex()) + lhs.w() * rhs.w();
+  }
+
+  [[nodiscard]] static constexpr auto lerp(const basic_quaternion& start, const basic_quaternion& end, const value_type t) noexcept -> basic_quaternion {
+    return start * (1.0f - t) + end * t;
+  }
+
+  [[nodiscard]] static constexpr auto slerp(const basic_quaternion& start, basic_quaternion end, const value_type t) noexcept -> basic_quaternion {
+    auto dot = basic_quaternion::dot(start, end);
+
+    // Ensure shortest path
+    if (dot < 0.0f) {
+      end = -end;
+      dot = -dot;
+    }
+
+    const auto dot_threshold = 0.9995f;
+
+    if (dot > dot_threshold) {
+      // If very close, use linear interpolation to avoid divide-by-zero
+      auto result = basic_quaternion::lerp(start, end, t);
+      return result.normalize();
+    }
+
+    const auto theta_0 = std::acos(dot);      // angle between input vectors
+    const auto theta = theta_0 * t;      // angle for t
+    const auto sin_theta = std::sin(theta);
+    const auto sin_theta_0 = std::sin(theta_0);
+
+    const auto s0 = std::cos(theta) - dot * sin_theta / sin_theta_0;
+    const auto s1 = sin_theta / sin_theta_0;
+
+    return start * s0 + end * s1;
+  }
 
   [[nodiscard]] constexpr operator matrix_type() const noexcept;
 

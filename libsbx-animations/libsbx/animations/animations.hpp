@@ -5,6 +5,7 @@
 
 #include <libsbx/animations/vertex3d.hpp>
 #include <libsbx/animations/mesh.hpp>
+#include <libsbx/animations/animation.hpp>
 
 #include <libsbx/animations/skinned_mesh_subrenderer.hpp>
 
