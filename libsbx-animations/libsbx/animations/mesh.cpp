@@ -215,6 +215,8 @@ auto mesh::_load(const std::filesystem::path& path) -> mesh_data {
 
   loaded_skeleton = animations::skeleton{};
 
+  loaded_skeleton.set_scene_root_transform(_convert_mat4(scene->mRootNode->mTransformation));
+
   _build_skeleton_hierarchy(scene->mRootNode, "", bone_map, bone_offsets, loaded_skeleton);
 
   const auto vertices_count = data.vertices.size();

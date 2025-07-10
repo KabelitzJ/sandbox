@@ -170,25 +170,15 @@ private:
 
     auto& skeleton = mesh.skeleton();
 
-    const auto ticks_per_second = (animation.ticks_per_second > 0.0f)
-      ? animation.ticks_per_second
-      : 25.0f; // fallback if not set
-
-    utility::logger<"asd">::debug("ticks_per_second {}", ticks_per_second);
-    utility::logger<"asd">::debug("animation_state.current_time {}", animation_state.current_time);
+    const auto ticks_per_second = (animation.ticks_per_second > 0.0f) ? animation.ticks_per_second : 25.0f; // fallback if not set
 
     // Advance current time in TICKS
     animation_state.current_time += core::engine::delta_time().value() * animation_state.speed * ticks_per_second;
-
-    utility::logger<"asd">::debug("animation_state.current_time {}", animation_state.current_time);
-    utility::logger<"asd">::debug("animation_state.duration {}", 150.0f);
 
     // Wrap if looping
     if (animation_state.looping && animation_state.current_time > 150.0f) {
       animation_state.current_time = std::fmod(animation_state.current_time, 150.0f);
     }
-
-    utility::logger<"asd">::debug("animation_state.current_time {}", animation_state.current_time);
 
     auto bone_matrices = skeleton.evaluate_pose(animation, animation_state.current_time);
 
@@ -289,18 +279,18 @@ private:
 
     // Resize and update the draw commands buffer
     auto& draw_commands_buffer = graphics_module.get_resource<graphics::storage_buffer>(_draw_commands_buffer);
-    update_buffer(draw_commands, draw_commands_buffer);
+    update_buffer(draw_commands_buffer, draw_commands);
 
     // Resize and update the transform data buffer
     auto& transform_data_buffer = graphics_module.get_resource<graphics::storage_buffer>(_transform_data_buffer);
-    update_buffer(_transform_data, transform_data_buffer);
+    update_buffer(transform_data_buffer, _transform_data);
 
     // Resize and update the instance data buffer
     auto& instance_data_buffer = graphics_module.get_resource<graphics::storage_buffer>(_instance_data_buffer);
-    update_buffer(instance_data, instance_data_buffer);
+    update_buffer(instance_data_buffer, instance_data);
 
     auto& bone_matrices_buffer = graphics_module.get_resource<graphics::storage_buffer>(_bone_matrices_buffer);
-    update_buffer(_bone_matrices, bone_matrices_buffer);
+    update_buffer(bone_matrices_buffer, _bone_matrices);
 
     _push_handler.push("transform_data_buffer", transform_data_buffer.address());
     _push_handler.push("instance_data_buffer", instance_data_buffer.address());
@@ -322,7 +312,7 @@ private:
   }
 
   template<typename Type>
-  static auto update_buffer(const std::vector<Type>& buffer, graphics::storage_buffer& storage_buffer) -> void {
+  static auto update_buffer(graphics::storage_buffer& storage_buffer, const std::vector<Type>& buffer) -> void {
     const auto required_size = static_cast<std::uint32_t>(buffer.size() * sizeof(Type));
 
     if (storage_buffer.size() < required_size) {

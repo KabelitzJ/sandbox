@@ -37,6 +37,15 @@ public:
     return (entry != _bone_names.cend()) ? entry->second : bone::null;
   }
 
+  auto set_scene_root_transform(const math::matrix4x4& transform) -> void {
+    _scene_root_transform = transform;
+    _inverse_scene_root_transform = math::matrix4x4::inverted(_scene_root_transform);
+  }
+
+  auto scene_root_transform() const -> const math::matrix4x4& {
+    return _scene_root_transform;
+  }
+
   auto add_bone(const std::string& name, const bone& bone) -> void {
     _bone_names.emplace(name, static_cast<std::uint32_t>(_bones.size()));
     _bone_ids_to_names.push_back(name);
@@ -50,8 +59,6 @@ public:
   auto evaluate_pose(const animation& animation, std::float_t time) const -> std::vector<math::matrix4x4> {
     auto final_bones = std::vector<math::matrix4x4>{};
     final_bones.resize(_bones.size(), math::matrix4x4::identity);
-
-    utility::logger<"asd">::debug("{}", time);
 
     std::unordered_map<std::string, animation::bone_track> track_map;
     for (const auto& track : animation.tracks) {
@@ -118,6 +125,8 @@ public:
 
 private:
 
+  math::matrix4x4 _scene_root_transform;
+  math::matrix4x4 _inverse_scene_root_transform;
   std::vector<bone> _bones;
   std::vector<std::string> _bone_ids_to_names;
   std::unordered_map<std::string, std::uint32_t> _bone_names;
