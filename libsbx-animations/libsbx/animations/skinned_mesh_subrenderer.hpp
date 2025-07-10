@@ -1,5 +1,5 @@
-#ifndef LIBSBX_ANIMATION_SKINNED_MESH_SUBRENDERER_HPP_
-#define LIBSBX_ANIMATION_SKINNED_MESH_SUBRENDERER_HPP_
+#ifndef LIBSBX_ANIMATIONS_SKINNED_MESH_SUBRENDERER_HPP_
+#define LIBSBX_ANIMATIONS_SKINNED_MESH_SUBRENDERER_HPP_
 
 #include <filesystem>
 #include <unordered_set>
@@ -54,11 +54,11 @@
 #include <libsbx/scenes/components/global_transform.hpp>
 
 
-#include <libsbx/animation/vertex3d.hpp>
-#include <libsbx/animation/pipeline.hpp>
-#include <libsbx/animation/mesh.hpp>
+#include <libsbx/animations/vertex3d.hpp>
+#include <libsbx/animations/pipeline.hpp>
+#include <libsbx/animations/mesh.hpp>
 
-namespace sbx::animation {
+namespace sbx::animations {
 
 class skinned_mesh_subrenderer final : public graphics::subrenderer {
 
@@ -115,6 +115,8 @@ public:
 
     _scene_uniform_handler.push("time", std::fmod(core::engine::time().value() * 0.5f, 1.0f));
 
+    _submesh_instances.clear();
+    _transform_data.clear();
     _images.clear();
 
     std::ranges::fill(_bone_matrices, math::matrix4x4::identity);
@@ -212,7 +214,7 @@ private:
     EASY_BLOCK("build draw commands");
 
     for (const auto& [mesh_id, submesh] : _submesh_instances) {
-      auto& mesh = graphics_module.get_asset<animation::mesh>(mesh_id);
+      auto& mesh = graphics_module.get_asset<animations::mesh>(mesh_id);
 
       auto range = draw_command_range{};
       range.offset = static_cast<uint32_t>(draw_commands.size());
@@ -274,7 +276,7 @@ private:
     _push_handler.push("bone_matrices_buffer", bone_matrices_buffer.address());
 
     for (const auto& [mesh_id, range] : draw_ranges) {
-      auto& mesh = graphics_module.get_asset<animation::mesh>(mesh_id);
+      auto& mesh = graphics_module.get_asset<animations::mesh>(mesh_id);
       
       mesh.bind(command_buffer);
       
@@ -321,4 +323,4 @@ private:
 
 } // namespace sbx::animation
 
-#endif // LIBSBX_ANIMATION_SKINNED_MESH_SUBRENDERER_HPP_
+#endif // LIBSBX_ANIMATIONS_SKINNED_MESH_SUBRENDERER_HPP_

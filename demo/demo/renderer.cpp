@@ -12,7 +12,7 @@
 #include <libsbx/models/foliage_task.hpp>
 #include <libsbx/models/foliage_subrenderer.hpp>
 
-#include <libsbx/animation/skinned_mesh_subrenderer.hpp>
+#include <libsbx/animations/skinned_mesh_subrenderer.hpp>
 
 #include <libsbx/graphics/pipeline/vertex_input_description.hpp>
 
@@ -104,7 +104,7 @@ auto renderer::initialize() -> void {
   add_subrenderer<sbx::scenes::skybox_subrenderer>("demo/assets/shaders/skybox", sbx::graphics::pipeline::stage{0, 0});
   add_subrenderer<sbx::scenes::grid_subrenderer>("demo/assets/shaders/grid", sbx::graphics::pipeline::stage{0, 0});
   add_subrenderer<sbx::models::static_mesh_subrenderer>("demo/assets/shaders/deferred_static", sbx::graphics::pipeline::stage{0, 0});
-  add_subrenderer<sbx::animation::skinned_mesh_subrenderer>("demo/assets/shaders/deferred_skinned", sbx::graphics::pipeline::stage{0, 0});
+  add_subrenderer<sbx::animations::skinned_mesh_subrenderer>("demo/assets/shaders/deferred_skinned", sbx::graphics::pipeline::stage{0, 0});
   add_subrenderer<sbx::scenes::debug_subrenderer>("demo/assets/shaders/debug", sbx::graphics::pipeline::stage{0, 0});
 
   auto attachment_names = std::unordered_map<std::string, std::string>{

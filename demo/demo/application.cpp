@@ -20,11 +20,13 @@
 #include <libsbx/scenes/components/static_mesh.hpp>
 #include <libsbx/scenes/components/skinned_mesh.hpp>
 
-#include <libsbx/animation/mesh.hpp>
+#include <libsbx/animations/mesh.hpp>
 
 namespace demo {
 
 struct rotator { };
+
+struct walker { };
 
 application::application()
 : sbx::core::application{},
@@ -98,7 +100,7 @@ application::application()
   _mesh_ids.emplace("rock_4", graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/rock_4/rock_4.gltf"));
   _mesh_ids.emplace("rock_5", graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/rock_5/rock_5.gltf"));
 
-  _mesh_ids.emplace("fox", graphics_module.add_asset<sbx::animation::mesh>("demo/assets/meshes/fox/fox.gltf"));
+  _mesh_ids.emplace("fox", graphics_module.add_asset<sbx::animations::mesh>("demo/assets/meshes/fox/fox.gltf"));
 
   // _mesh_ids.emplace("icosphere", graphics_module.add_asset<sbx::models::mesh>(_generate_icosphere(20.0f, 4u)));
 
@@ -136,6 +138,8 @@ application::application()
   auto& fox_transform = scene.get_component<sbx::math::transform>(fox);
   fox_transform.set_position(sbx::math::vector3{0.0f, 10.0f, 0.0f});
   fox_transform.set_scale(sbx::math::vector3{0.1f, 0.1f, 0.1f});
+
+  scene.add_component<walker>(fox);
 
   // Trees
 
@@ -262,10 +266,16 @@ auto application::update() -> void  {
 
   _rotation += sbx::math::degree{45} * delta_time;
 
-  auto query = scene.query<sbx::math::transform, rotator>();
+  auto query_rotator = scene.query<sbx::math::transform, rotator>();
 
-  for (auto&& [node, transform] : query.each()) {
+  for (auto&& [node, transform] : query_rotator.each()) {
     transform.set_rotation(sbx::math::vector3::up, _rotation);
+  }
+
+  auto query_walker = scene.query<sbx::math::transform, walker>();
+
+  for (auto&& [node, transform] : query_walker.each()) {
+    transform.move_by(sbx::math::vector3::right * sbx::core::engine::delta_time().value());
   }
 
   // auto q = scene.query<sbx::math::transform, sbx::scenes::static_mesh, sbx::scenes::global_transform>();

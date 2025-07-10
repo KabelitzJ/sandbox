@@ -1,12 +1,12 @@
-#ifndef LIBSBX_ANIMATION_SKELETON_HPP_
-#define LIBSBX_ANIMATION_SKELETON_HPP_
+#ifndef LIBSBX_ANIMATIONS_SKELETON_HPP_
+#define LIBSBX_ANIMATIONS_SKELETON_HPP_
 
 #include <string>
 #include <cstdint>
 
 #include <libsbx/math/matrix4x4.hpp>
 
-namespace sbx::animation {
+namespace sbx::animations {
 
 class skeleton {
 
@@ -43,4 +43,4 @@ private:
 
 } // namespace sbx::animation
 
-#endif // LIBSBX_ANIMATION_SKELETON_HPP_
+#endif // LIBSBX_ANIMATIONS_SKELETON_HPP_

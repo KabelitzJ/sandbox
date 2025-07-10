@@ -1,5 +1,5 @@
-#ifndef LIBSBX_ANIMATION_VERTEX3D_HPP_
-#define LIBSBX_ANIMATION_VERTEX3D_HPP_
+#ifndef LIBSBX_ANIMATIONS_VERTEX3D_HPP_
+#define LIBSBX_ANIMATIONS_VERTEX3D_HPP_
 
 #include <utility>
 
@@ -10,7 +10,7 @@
 
 #include <libsbx/graphics/pipeline/vertex_input_description.hpp>
 
-namespace sbx::animation {
+namespace sbx::animations {
 
 struct alignas(alignof(std::float_t)) vertex3d {
   math::vector3 position;
@@ -28,13 +28,13 @@ constexpr auto operator==(const vertex3d& lhs, const vertex3d& rhs) noexcept -> 
 } // namespace sbx::animation
 
 template<>
-struct sbx::graphics::vertex_input<sbx::animation::vertex3d> {
+struct sbx::graphics::vertex_input<sbx::animations::vertex3d> {
   static auto description() -> sbx::graphics::vertex_input_description {
     auto result = vertex_input_description{};
 
     result.binding_descriptions.push_back(VkVertexInputBindingDescription{
       .binding = 0,
-      .stride = sizeof(sbx::animation::vertex3d),
+      .stride = sizeof(sbx::animations::vertex3d),
       .inputRate = VK_VERTEX_INPUT_RATE_VERTEX
     });
 
@@ -42,42 +42,42 @@ struct sbx::graphics::vertex_input<sbx::animation::vertex3d> {
       .location = 0,
       .binding = 0,
       .format = VK_FORMAT_R32G32B32_SFLOAT,
-      .offset = offsetof(sbx::animation::vertex3d, position)
+      .offset = offsetof(sbx::animations::vertex3d, position)
     });
 
     result.attribute_descriptions.push_back(VkVertexInputAttributeDescription{
       .location = 1,
       .binding = 0,
       .format = VK_FORMAT_R32G32B32_SFLOAT,
-      .offset = offsetof(sbx::animation::vertex3d, normal)
+      .offset = offsetof(sbx::animations::vertex3d, normal)
     });
 
     result.attribute_descriptions.push_back(VkVertexInputAttributeDescription{
       .location = 2,
       .binding = 0,
       .format = VK_FORMAT_R32G32B32A32_SFLOAT,
-      .offset = offsetof(sbx::animation::vertex3d, tangent)
+      .offset = offsetof(sbx::animations::vertex3d, tangent)
     });
 
     result.attribute_descriptions.push_back(VkVertexInputAttributeDescription{
       .location = 3,
       .binding = 0,
       .format = VK_FORMAT_R32G32_SFLOAT,
-      .offset = offsetof(sbx::animation::vertex3d, uv)
+      .offset = offsetof(sbx::animations::vertex3d, uv)
     });
 
     result.attribute_descriptions.push_back(VkVertexInputAttributeDescription{
       .location = 4,
       .binding = 0,
       .format = VK_FORMAT_R32G32B32A32_UINT,
-      .offset = offsetof(sbx::animation::vertex3d, bone_ids)
+      .offset = offsetof(sbx::animations::vertex3d, bone_ids)
     });
 
     result.attribute_descriptions.push_back(VkVertexInputAttributeDescription{
       .location = 5,
       .binding = 0,
       .format = VK_FORMAT_R32G32B32_SFLOAT,
-      .offset = offsetof(sbx::animation::vertex3d, bone_weights)
+      .offset = offsetof(sbx::animations::vertex3d, bone_weights)
     });
 
     return result;
@@ -85,12 +85,12 @@ struct sbx::graphics::vertex_input<sbx::animation::vertex3d> {
 }; // struct sbx::graphics::vertex_input
 
 template<>
-struct std::hash<sbx::animation::vertex3d> {
-  auto operator()(const sbx::animation::vertex3d& vertex) const noexcept -> std::size_t {
+struct std::hash<sbx::animations::vertex3d> {
+  auto operator()(const sbx::animations::vertex3d& vertex) const noexcept -> std::size_t {
     auto hash = std::size_t{0};
     sbx::utility::hash_combine(hash, vertex.position, vertex.normal, vertex.tangent, vertex.uv, vertex.bone_ids, vertex.bone_weights);
     return hash;
   }
 }; // struct std::hash<vertex3d>
 
-#endif // LIBSBX_ANIMATION_VERTEX3D_HPP_
+#endif // LIBSBX_ANIMATIONS_VERTEX3D_HPP_

@@ -1,5 +1,5 @@
-#ifndef LIBSBX_ANIMATION_MESH_HPP_
-#define LIBSBX_ANIMATION_MESH_HPP_
+#ifndef LIBSBX_ANIMATIONS_MESH_HPP_
+#define LIBSBX_ANIMATIONS_MESH_HPP_
 
 #include <filesystem>
 
@@ -12,10 +12,10 @@
 
 #include <libsbx/graphics/pipeline/mesh.hpp>
 
-#include <libsbx/animation/vertex3d.hpp>
-#include <libsbx/animation/skeleton.hpp>
+#include <libsbx/animations/vertex3d.hpp>
+#include <libsbx/animations/skeleton.hpp>
 
-namespace sbx::animation {
+namespace sbx::animations {
 
 class mesh : public graphics::mesh<vertex3d> {
 
@@ -31,7 +31,7 @@ public:
 
   ~mesh() override;
 
-  auto skeleton() const -> const animation::skeleton& {
+  auto skeleton() const -> const animations::skeleton& {
     return _skeleton;
   }
 
@@ -39,10 +39,10 @@ private:
 
   static auto _load(const std::filesystem::path& path) -> mesh_data;
 
-  animation::skeleton _skeleton;
+  animations::skeleton _skeleton;
 
 }; // class mesh
 
 } // namespace sbx::animation
 
-#endif // LIBSBX_ANIMATION_MESH_HPP_
+#endif // LIBSBX_ANIMATIONS_MESH_HPP_

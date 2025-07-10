@@ -1,5 +1,5 @@
-#ifndef LIBSBX_ANIMATION_PIPELINE_HPP_
-#define LIBSBX_ANIMATION_PIPELINE_HPP_
+#ifndef LIBSBX_ANIMATIONS_PIPELINE_HPP_
+#define LIBSBX_ANIMATIONS_PIPELINE_HPP_
 
 #include <fstream>
 
@@ -9,9 +9,9 @@
 
 #include <libsbx/graphics/pipeline/graphics_pipeline.hpp>
 
-#include <libsbx/animation/vertex3d.hpp>
+#include <libsbx/animations/vertex3d.hpp>
 
-namespace sbx::animation {
+namespace sbx::animations {
 
 class pipeline : public graphics::graphics_pipeline {
 
@@ -39,4 +39,4 @@ public:
 
 } // namespace sbx::animation
 
-#endif // LIBSBX_ANIMATION_PIPELINE_HPP_
+#endif // LIBSBX_ANIMATIONS_PIPELINE_HPP_

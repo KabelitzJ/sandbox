@@ -1,4 +1,4 @@
-#include <libsbx/animation/mesh.hpp>
+#include <libsbx/animations/mesh.hpp>
 
 #include <filesystem>
 #include <fstream>
@@ -25,7 +25,7 @@
 
 #include <libsbx/graphics/graphics_module.hpp>
 
-namespace sbx::animation {
+namespace sbx::animations {
 
 mesh::mesh(const std::filesystem::path& path)
 : base{_load(path)} { }
@@ -180,8 +180,8 @@ auto mesh::_load(const std::filesystem::path& path) -> mesh_data {
     throw std::runtime_error{fmt::format("Error loading mesh '{}': {}", path.string(), importer.GetErrorString())};
   }
 
-  auto bone_map = animation::bone_map{};
-  auto bone_offsets = animation::bone_offsets{};
+  auto bone_map = animations::bone_map{};
+  auto bone_offsets = animations::bone_offsets{};
 
   _load_node(scene->mRootNode, scene, data, bone_map, bone_offsets);
 
