@@ -173,7 +173,7 @@ private:
     const auto ticks_per_second = (animation.ticks_per_second > 0.0f) ? animation.ticks_per_second : 25.0f; // fallback if not set
 
     // Advance current time in TICKS
-    animation_state.current_time += core::engine::delta_time().value() * animation_state.speed * ticks_per_second;
+    animation_state.current_time += (core::engine::delta_time().value() * animation_state.speed) * ticks_per_second;
 
     // Wrap if looping
     if (animation_state.looping && animation_state.current_time > 150.0f) {

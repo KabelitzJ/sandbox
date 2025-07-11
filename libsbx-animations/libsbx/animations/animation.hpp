@@ -37,31 +37,7 @@ public:
   float ticks_per_second = 25.0f;
   std::vector<bone_track> tracks;
 
-  auto track_for_bone(const std::string& bone_name) const -> const bone_track* {
-    return nullptr;
-  }
-
-  static auto _convert_vec2(const aiVector2D& vector) -> math::vector2 {
-    return math::vector2{vector.x, vector.y};
-  }
-
-  static auto _convert_vec3(const aiVector3D& vector) -> math::vector3 {
-    return math::vector3{vector.x, vector.y, vector.z};
-  }
-
-  static auto _convert_mat4(const aiMatrix4x4& matrix) -> math::matrix4x4 {
-    auto result = math::matrix4x4{};
-
-    //the a,b,c,d in assimp is the row ; the 1,2,3,4 is the column
-    result[0][0] = matrix.a1; result[1][0] = matrix.a2; result[2][0] = matrix.a3; result[3][0] = matrix.a4;
-    result[0][1] = matrix.b1; result[1][1] = matrix.b2; result[2][1] = matrix.b3; result[3][1] = matrix.b4;
-    result[0][2] = matrix.c1; result[1][2] = matrix.c2; result[2][2] = matrix.c3; result[3][2] = matrix.c4;
-    result[0][3] = matrix.d1; result[1][3] = matrix.d2; result[2][3] = matrix.d3; result[3][3] = matrix.d4;
-
-    return result;
-  }
-
-  static auto load_animation_clip(const std::filesystem::path& path) -> animation {
+  animation(const std::filesystem::path& path) {
     static const auto import_flags =
       aiProcess_CalcTangentSpace |        // Create binormals/tangents just in case
       aiProcess_Triangulate |             // Make sure we're triangles
@@ -82,12 +58,10 @@ public:
       throw std::runtime_error{fmt::format("Error loading mesh '{}': {}", path.string(), importer.GetErrorString())};
     }
 
-    auto clip = animation{};
-
     const aiAnimation* anim = scene->mAnimations[0]; // or all animations
-    clip.name = anim->mName.C_Str();
-    clip.duration = anim->mDuration > 0.0 ? static_cast<float>(anim->mDuration) : 150.0f;
-    clip.ticks_per_second = anim->mTicksPerSecond > 0.0 ? static_cast<float>(anim->mTicksPerSecond) : 25.0f;
+    this->name = anim->mName.C_Str();
+    this->duration = anim->mDuration > 0.0 ? static_cast<float>(anim->mDuration) : 150.0f;
+    this->ticks_per_second = anim->mTicksPerSecond > 0.0 ? static_cast<float>(anim->mTicksPerSecond) : 25.0f;
 
     for (unsigned i = 0; i < anim->mNumChannels; ++i) {
       const aiNodeAnim* channel = anim->mChannels[i];
@@ -110,10 +84,32 @@ public:
         track.keyframes.push_back(frame);
       }
 
-      clip.tracks.push_back(std::move(track));
+      this->tracks.push_back(std::move(track));
     }
+  }
 
-    return clip;
+  auto track_for_bone(const std::string& bone_name) const -> const bone_track* {
+    return nullptr;
+  }
+
+  static auto _convert_vec2(const aiVector2D& vector) -> math::vector2 {
+    return math::vector2{vector.x, vector.y};
+  }
+
+  static auto _convert_vec3(const aiVector3D& vector) -> math::vector3 {
+    return math::vector3{vector.x, vector.y, vector.z};
+  }
+
+  static auto _convert_mat4(const aiMatrix4x4& matrix) -> math::matrix4x4 {
+    auto result = math::matrix4x4{};
+
+    //the a,b,c,d in assimp is the row ; the 1,2,3,4 is the column
+    result[0][0] = matrix.a1; result[1][0] = matrix.a2; result[2][0] = matrix.a3; result[3][0] = matrix.a4;
+    result[0][1] = matrix.b1; result[1][1] = matrix.b2; result[2][1] = matrix.b3; result[3][1] = matrix.b4;
+    result[0][2] = matrix.c1; result[1][2] = matrix.c2; result[2][2] = matrix.c3; result[3][2] = matrix.c4;
+    result[0][3] = matrix.d1; result[1][3] = matrix.d2; result[2][3] = matrix.d3; result[3][3] = matrix.d4;
+
+    return result;
   }
 
 private:
