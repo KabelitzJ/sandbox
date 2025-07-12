@@ -59,8 +59,12 @@ public:
 
   auto destroy_node(const node_type node) -> void;
 
-  auto camera() -> node {
+  auto camera() -> node_type {
     return _camera;
+  }
+
+  auto set_active_camera(const node_type camera) -> void {
+    _camera = camera;
   }
 
   auto world_transform(const node_type node) -> math::matrix4x4;

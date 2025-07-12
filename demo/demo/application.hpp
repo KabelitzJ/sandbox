@@ -17,6 +17,7 @@
 #include <libsbx/physics/physics.hpp>
 
 #include <demo/camera_controller.hpp>
+#include <demo/player_controller.hpp>
 
 #include <demo/terrain/mesh.hpp>
 
@@ -50,7 +51,10 @@ private:
 
   sbx::math::angle _rotation;
 
+  sbx::scenes::node _player;
+
   camera_controller _camera_controller;
+  player_controller _player_controller;
 
 }; // class application
 

@@ -65,17 +65,17 @@ scene::scene(const std::filesystem::path& path)
   add_component<scenes::global_transform>(_camera);
 
   add_component<math::transform>(_camera);
-  add_component<scenes::tag>(_camera, "Camera");
+  add_component<scenes::tag>(_camera, "CAMERA");
 
   auto& devices_module = core::engine::get_module<devices::devices_module>();
   auto& window = devices_module.window();
 
   add_component<scenes::camera>(_camera, math::angle{math::degree{50.0f}}, window.aspect_ratio(), 0.1f, 2000.0f);
 
-  window.on_framebuffer_resized() += [this](const devices::framebuffer_resized_event& event) {
-    auto& camera = get_component<scenes::camera>(_camera);
-    camera.set_aspect_ratio(static_cast<std::float_t>(event.width) / static_cast<std::float_t>(event.height));
-  };
+  // window.on_framebuffer_resized() += [this](const devices::framebuffer_resized_event& event) {
+  //   auto& camera = get_component<scenes::camera>(_camera);
+  //   camera.set_aspect_ratio(static_cast<std::float_t>(event.width) / static_cast<std::float_t>(event.height));
+  // };
 
   const auto scene = YAML::LoadFile(path.string());
 
@@ -126,11 +126,16 @@ auto scene::destroy_node(const node_type node) -> void {
   // [TODO] KAJ 2025-05-10 : Fix this using heirarchy component and a stack
   const auto& id = get_component<scenes::id>(node);
   const auto& relationship = get_component<scenes::relationship>(node);
+  const auto& hierarchy = get_component<scenes::hierarchy>(node);
 
-  for (auto& child_id : relationship.children()) {
-    if (auto child = find_node(child_id); child != node::null) {
-      destroy_node(child);
-    }
+  // for (auto& child_id : relationship.children()) {
+  //   if (auto child = find_node(child_id); child != node::null) {
+  //     destroy_node(child);
+  //   }
+  // }
+
+  for (auto child = hierarchy.first_child; child != node::null; child = get_component<scenes::hierarchy>(child).next_sibling) {
+    destroy_node(child);
   }
 
   if (auto entry = _nodes.find(relationship.parent()); entry != _nodes.end()) {

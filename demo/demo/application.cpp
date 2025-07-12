@@ -29,7 +29,7 @@ struct rotator { };
 
 application::application()
 : sbx::core::application{},
-  _rotation{sbx::math::degree{0}} {
+  _rotation{sbx::math::degree{0}} { 
   // Renderer
 
   auto& graphics_module = sbx::core::engine::get_module<sbx::graphics::graphics_module>();
@@ -99,6 +99,8 @@ application::application()
   _mesh_ids.emplace("rock_4", graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/rock_4/rock_4.gltf"));
   _mesh_ids.emplace("rock_5", graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/rock_5/rock_5.gltf"));
 
+  _mesh_ids.emplace("player", graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/player/player.gltf"));
+
   _mesh_ids.emplace("fox", graphics_module.add_asset<sbx::animations::mesh>("demo/assets/meshes/fox/fox.gltf"));
 
   const auto animation_id = graphics_module.add_asset<sbx::animations::animation>("demo/assets/meshes/fox/fox.gltf");
@@ -126,6 +128,29 @@ application::application()
   auto& terrain_module = sbx::core::engine::get_module<demo::terrain_module>();
 
   terrain_module.load_terrain_in_scene(scene);
+
+  // Player
+
+  _player = scene.create_node("Player");
+
+  auto player_submeshes = std::vector<sbx::scenes::static_mesh::submesh>{};
+  player_submeshes.emplace_back(sbx::scenes::static_mesh::submesh{0u, sbx::math::color::red(), sbx::scenes::static_mesh::material{0.0f, 1.0f, 0.0f, 0.0f}});
+
+  scene.add_component<sbx::scenes::static_mesh>(_player, _mesh_ids["player"], player_submeshes);
+
+  auto& player_transform = scene.get_component<sbx::math::transform>(_player);
+  player_transform.set_position(sbx::math::vector3{0.0f, 1.0f, 0.0f});
+  player_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
+
+  // Camera
+
+  auto camera = scene.create_child_node(_player, "Camera");
+
+  scene.add_component<sbx::scenes::camera>(camera, sbx::math::angle{sbx::math::degree{50.0f}}, window.aspect_ratio(), 0.1f, 1000.0f);
+
+  scene.add_component<sbx::scenes::skybox>(camera, _cube_image_ids["skybox"]);
+
+  scene.set_active_camera(camera);
 
   // Animated Fox
 
@@ -234,9 +259,9 @@ application::application()
   // }
 
   // Camera
-  auto camera = scene.camera();
+  // auto camera = scene.camera();
 
-  scene.add_component<sbx::scenes::skybox>(camera, _cube_image_ids["skybox"]);
+  // scene.add_component<sbx::scenes::skybox>(camera, _cube_image_ids["skybox"]);
 
   // const auto position = sbx::math::vector3{10.0f, 10.0f, 10.0f};
 
@@ -261,8 +286,9 @@ auto application::update() -> void  {
   auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
   auto& scene = scenes_module.scene();
 
-  _camera_controller.update();
-
+  _player_controller.update(_player);
+  _camera_controller.update(_player);
+    
   const auto delta_time = sbx::core::engine::delta_time();
 
   _rotation += sbx::math::degree{45} * delta_time;
@@ -272,34 +298,6 @@ auto application::update() -> void  {
   for (auto&& [node, transform] : query_rotator.each()) {
     transform.set_rotation(sbx::math::vector3::up, _rotation);
   }
-
-  // auto q = scene.query<sbx::math::transform, sbx::scenes::static_mesh, sbx::scenes::global_transform>();
-
-  // auto tree = sbx::containers::octree<sbx::scenes::node>{sbx::math::volume{sbx::math::vector3{-100}, sbx::math::vector3{100}}};
-
-  // auto i = 0;
-
-  // for (auto&& [n, t, s, g] : q.each()) {
-  //   auto& mesh = graphics_module.get_asset<sbx::models::mesh>(s.mesh_id());
-
-  //   const auto v = sbx::math::volume::transformed(mesh.bounds(), g.model);
-
-  //   tree.insert(n, v);
-  //   // t.set_rotation(sbx::math::vector3::up, _rotation);
-
-  //   ++i;
-  // }
-
-  // sbx::utility::logger<"demo">::debug("i: {}", i);
-  
-  // i = 0;
-
-  // tree.for_each_volume([&](const auto& v){
-  //   ++i;
-  //   scenes_module.add_debug_volume(sbx::math::matrix4x4::identity, v, sbx::math::color::green());
-  // });
-
-  // sbx::utility::logger<"demo">::debug("i2: {}", i);
 }
 
 auto application::fixed_update() -> void {

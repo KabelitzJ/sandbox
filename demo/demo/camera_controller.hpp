@@ -20,16 +20,13 @@ class camera_controller {
 public:
 
   camera_controller()
-  : _orbit_angle{sbx::math::degree{90}}, 
-    _tilt_angle{sbx::math::degree{30}},
-    _min_tilt_angle{sbx::math::degree{2}},
-    _max_tilt_angle{sbx::math::degree{89}},
-    _target{sbx::math::vector3{0.0f, 0.0f, 0.0f}},
+  : _orbit_angle{sbx::math::degree{90}},
+    _tilt_angle{sbx::math::degree{65}},
     _zoom{30.0f},
     _min_zoom{2.0f},
     _max_zoom{120.0f} { }
 
-  auto update() -> void {
+  auto update(const sbx::scenes::node player) -> void {
     const auto delta_time = sbx::core::engine::delta_time();
 
     auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
@@ -40,56 +37,19 @@ public:
 
     auto& transform = scene.get_component<sbx::math::transform>(camera);
 
-    // WASD movement
-
-    auto movement = sbx::math::vector3{};
-    auto is_mouse_movement = false;
-
-    const auto local_forward = sbx::math::vector3::cross(sbx::math::vector3::up, transform.right()).normalize();
-    const auto local_right = sbx::math::vector3::cross(sbx::math::vector3::up, transform.forward()).normalize();
-
-    if (sbx::devices::input::is_key_down(sbx::devices::key::w)) {
-      // _tilt_angle = sbx::math::clamp(_tilt_angle + sbx::math::degree{45.0f * delta_time.value()}, _min_tilt_angle, _max_tilt_angle);
-      movement += local_forward;
-    }
-
-    if (sbx::devices::input::is_key_down(sbx::devices::key::s)) {
-      // _tilt_angle = sbx::math::clamp(_tilt_angle - sbx::math::degree{45.0f * delta_time.value()}, _min_tilt_angle, _max_tilt_angle);
-      movement -= local_forward;
-    }
-
-    if (sbx::devices::input::is_key_down(sbx::devices::key::a)) {
-      // _orbit_angle += sbx::math::degree{45.0f * delta_time.value()};
-      movement += local_right;
-    }
-
-    if (sbx::devices::input::is_key_down(sbx::devices::key::d)) {
-      // _orbit_angle -= sbx::math::degree{45.0f * delta_time.value()};
-      movement -= local_right;
-    }
+    const auto& player_transform = scene.get_component<sbx::math::transform>(player);
 
     // Mouse drag camera rotation and movement
 
-    if (sbx::devices::input::is_mouse_button_pressed(sbx::devices::mouse_button::right) || sbx::devices::input::is_mouse_button_pressed(sbx::devices::mouse_button::middle)) {
+    if (sbx::devices::input::is_mouse_button_pressed(sbx::devices::mouse_button::middle)) {
       _last_mouse_position = sbx::devices::input::mouse_position();
-    } else if (sbx::devices::input::is_mouse_button_down(sbx::devices::mouse_button::right) || sbx::devices::input::is_mouse_button_down(sbx::devices::mouse_button::middle)) {
+    } else if (sbx::devices::input::is_mouse_button_down(sbx::devices::mouse_button::middle)) {
       auto mouse_position = sbx::devices::input::mouse_position();
       _mouse_position_delta = mouse_position - _last_mouse_position;
       _last_mouse_position = mouse_position;
 
-      if (sbx::devices::input::is_mouse_button_down(sbx::devices::mouse_button::middle)) {
-        _orbit_angle += sbx::math::degree{80.0f * _mouse_position_delta.x() * delta_time.value()};
-        _tilt_angle = sbx::math::clamp(_tilt_angle + sbx::math::degree{80.0f * _mouse_position_delta.y() * delta_time.value()}, _min_tilt_angle, _max_tilt_angle);
-      } 
-      
-      if (sbx::devices::input::is_mouse_button_down(sbx::devices::mouse_button::right)) {
-        movement += local_forward * _mouse_position_delta.y();
-        movement += local_right * _mouse_position_delta.x();
-        is_mouse_movement = true;
-      }
-
-      // We override 
-    } else if (sbx::devices::input::is_mouse_button_released(sbx::devices::mouse_button::right) || sbx::devices::input::is_mouse_button_released(sbx::devices::mouse_button::middle)) {
+      _orbit_angle += sbx::math::degree{80.0f * _mouse_position_delta.x() * delta_time.value()};
+    } else if (sbx::devices::input::is_mouse_button_released(sbx::devices::mouse_button::middle)) {
       _last_mouse_position = sbx::math::vector2{};
       _mouse_position_delta = sbx::math::vector2{};
     }
@@ -103,18 +63,6 @@ public:
     if (sbx::devices::input::is_key_down(sbx::devices::key::e)) {
       _orbit_angle += sbx::math::degree{45.0f * delta_time.value()};
     }
-
-    auto camera_speed = 10.0f;
-
-    movement.normalize();
-
-    if (is_mouse_movement) {
-      movement *= _zoom * 0.8f;
-    } else if (sbx::devices::input::is_key_down(sbx::devices::key::left_shift)) {
-      movement *= 5.0f;
-    }
-
-    _target += movement * camera_speed * delta_time.value();
 
     // Zoom
 
@@ -134,22 +82,14 @@ public:
     const auto x = std::cos(orbit_angle_rad) * radius;
     const auto z = std::sin(orbit_angle_rad) * radius;
 
-    transform.set_position(_target + sbx::math::vector3{x, height, z});
-    transform.look_at(_target);
-
-  }
-
-  auto target() const noexcept -> const sbx::math::vector3& {
-    return _target;
+    transform.set_position(sbx::math::vector3{x, height, z});
+    transform.look_at(sbx::math::vector3::zero);
   }
 
 private:
 
   sbx::math::angle _orbit_angle;
   sbx::math::angle _tilt_angle;
-  sbx::math::angle _min_tilt_angle;
-  sbx::math::angle _max_tilt_angle;
-  sbx::math::vector3 _target;
   std::float_t _zoom;
   std::float_t _min_zoom;
   std::float_t _max_zoom;

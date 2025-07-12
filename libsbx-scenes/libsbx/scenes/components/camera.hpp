@@ -18,6 +18,11 @@
 
 #include <libsbx/containers/static_vector.hpp>
 
+#include <libsbx/core/engine.hpp>
+
+#include <libsbx/devices/devices_module.hpp>
+#include <libsbx/devices/window.hpp>
+
 namespace sbx::scenes {
 
 using aabb_collider = math::volume;
@@ -321,6 +326,14 @@ public:
     _near_plane{near_plane},
     _far_plane{far_plane} {
     _update_projection();
+
+    auto& devices_module = core::engine::get_module<devices::devices_module>();
+
+    auto& window = devices_module.window();
+
+    window.on_framebuffer_resized() += [this](const devices::framebuffer_resized_event& event) {
+      set_aspect_ratio(static_cast<std::float_t>(event.width) / static_cast<std::float_t>(event.height));
+    };
   }
 
 
