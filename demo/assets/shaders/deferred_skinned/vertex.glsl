@@ -137,17 +137,20 @@ void main() {
   //   in_bone_weights.z * bone_matrices_buffer.data[in_bone_indices.z] +
   //   in_bone_weights.w * bone_matrices_buffer.data[in_bone_indices.w];
 
-  mat4 skinning_matrix = mat4(1.0);
+  // mat4 skinning_matrix = mat4(1.0);
 
-  for (int i = 0; i < 4; ++i) {
-    float weight = in_bone_weights[i];
-    uint index = in_bone_indices[i];
+  // for (int i = 0; i < 4; ++i) {
+  //   float weight = in_bone_weights[i];
+  //   uint index = in_bone_indices[i];
   
-    skinning_matrix += weight * bone_matrices_buffer.data[bone_matrices_offset + index];
-  } 
+  //   skinning_matrix += weight * bone_matrices_buffer.data[bone_matrices_offset + index];
+  // } 
 
-  vec3 skinned_position = vec3(skinning_matrix * vec4(in_position, 1.0));
-  vec3 skinned_normal = normalize(vec3(skinning_matrix * vec4(in_normal, 0.0)));
+  // vec3 skinned_position = vec3(skinning_matrix * vec4(in_position, 1.0));
+  // vec3 skinned_normal = normalize(vec3(skinning_matrix * vec4(in_normal, 0.0)));
+
+  vec3 skinned_position = in_position;
+  vec3 skinned_normal = in_normal;
 
   vec3 world_position = vec3(transform_data.model * vec4(skinned_position, 1.0));
 
