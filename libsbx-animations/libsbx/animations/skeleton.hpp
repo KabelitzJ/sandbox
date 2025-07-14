@@ -85,7 +85,7 @@ public:
         EASY_BLOCK("skeleton::sample_position_rotation_scale");
 
         const auto& position = track.position_spline.sample(time);
-        const auto& rotation = track.rotation_spline.sample(time);
+        const auto& rotation = math::quaternion::normalized(track.rotation_spline.sample(time));
         const auto& scale = track.scale_spline.sample(time);
 
         EASY_END_BLOCK;

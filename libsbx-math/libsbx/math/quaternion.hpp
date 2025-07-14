@@ -16,6 +16,7 @@
 #include <libsbx/math/matrix4x4.hpp>
 #include <libsbx/math/angle.hpp>
 #include <libsbx/math/algorithm.hpp>
+#include <libsbx/math/constants.hpp>
 
 namespace sbx::math {
 
@@ -65,6 +66,16 @@ public:
   template<floating_point Other = value_type>
   constexpr basic_quaternion(const matrix_type_for<Other>& matrix) noexcept;
 
+  [[nodiscard]] static constexpr auto normalized(const basic_quaternion& quat) noexcept -> basic_quaternion {
+    const auto length_squared = quat.length_squared();
+
+    if (!comparision_traits<length_type>::equal(length_squared, static_cast<length_type>(0))) {
+      return quat / std::sqrt(length_squared);
+    }
+
+    return quat;
+  }
+
   [[nodiscard]] static constexpr auto dot(const basic_quaternion& lhs, const basic_quaternion& rhs) noexcept -> value_type {
     return vector_type::dot(lhs.complex(), rhs.complex()) + lhs.w() * rhs.w();
   }
@@ -86,7 +97,7 @@ public:
 		}
 
 		// Perform a linear interpolation when cos_theta is close to 1 to avoid side effect of sin(angle) becoming a zero denominator
-		if(cos_theta > static_cast<Type>(1) - std::numeric_limits<Type>::epsilon()) {
+		if(cos_theta > static_cast<Type>(1) - epsilon_v<value_type>) {
 			// Linear interpolation
 			return basic_quaternion{
 				mix(start.x(), temp.x(), t),

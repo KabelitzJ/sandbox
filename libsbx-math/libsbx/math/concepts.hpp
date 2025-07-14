@@ -53,33 +53,6 @@ inline constexpr bool is_scalar_v = is_scalar<Type>::value;
 template<typename Type>
 concept scalar = is_scalar_v<Type>;
 
-
-
-template<typename>
-struct comparision_traits;
-
-template<integral Type>
-struct comparision_traits<Type> {
-
-  template<scalar Other>
-  inline static constexpr auto equal(Type lhs, Other rhs) noexcept -> bool {
-    return lhs == static_cast<Type>(rhs);
-  }
-
-}; // template<integral Type>
-
-template<floating_point Type>
-struct comparision_traits<Type> {
-
-  inline static constexpr auto epsilon = std::numeric_limits<Type>::epsilon();
-
-  template<scalar Other>
-  inline static constexpr auto equal(Type lhs, Other rhs) noexcept -> bool {
-    return std::abs(lhs - static_cast<Type>(rhs)) <= epsilon;
-  }
-
-}; // template<floating_point Type>
-
 } // namespace sbx::math
 
 #endif // LIBSBX_MATH_CONCEPTS_HPP_

@@ -11,6 +11,7 @@
 #include <libsbx/utility/hash.hpp>
 
 #include <libsbx/math/concepts.hpp>
+#include <libsbx/math/traits.hpp>
 
 namespace sbx::math {
 

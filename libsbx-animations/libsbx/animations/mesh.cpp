@@ -59,6 +59,7 @@ static auto _convert_mat4(const aiMatrix4x4& matrix) -> math::matrix4x4 {
 
 using bone_map = std::unordered_map<std::string, std::uint32_t>;
 using bone_offsets = std::vector<math::matrix4x4>;
+using transform_map = std::unordered_map<std::string, math::matrix4x4>;
 
 static auto _load_mesh(const aiMesh* mesh, mesh::mesh_data& data, bone_map& bone_map, bone_offsets& bone_offsets) -> void {
   if (!mesh->HasNormals()) {
@@ -154,10 +155,22 @@ static auto _load_node(const aiNode* node, const aiScene* scene, mesh::mesh_data
   }
 }
 
+static void _collect_global_transforms(const aiNode* node, const math::matrix4x4& parent_transform, transform_map& transforms) {
+  const std::string node_name = node->mName.C_Str();
+  const auto local_transform = _convert_mat4(node->mTransformation);
+  const auto global_transform = parent_transform * local_transform;
+
+  transforms[node_name] = global_transform;
+
+  for (unsigned int i = 0; i < node->mNumChildren; ++i) {
+    _collect_global_transforms(node->mChildren[i], global_transform, transforms);
+  }
+}
+
 /**
  * @note bone_map and bone_offsets need to be populated by calling _load_node(scene->mRootNode, scene, data, bone_map, bone_offsets) before calling this function!
  */
-static auto _build_skeleton_hierarchy(const aiNode* node, const std::string& parent_name, const bone_map& bone_map, const bone_offsets& bone_offsets, animations::skeleton& skeleton) -> void {
+static auto _build_skeleton_hierarchy(const aiNode* node, const std::string& parent_name, const bone_map& bone_map, const bone_offsets& bone_offsets, const transform_map& transforms, animations::skeleton& skeleton) -> void {
   const auto node_name = std::string{node->mName.C_Str()};
 
   const auto is_bone = bone_map.contains(node_name);
@@ -171,13 +184,16 @@ static auto _build_skeleton_hierarchy(const aiNode* node, const std::string& par
     const auto bone_id = bone_map.at(node_name);
     const auto& inverse_bind_matrix = bone_offsets.at(bone_id);
 
-    const auto local_bind_matrix = _convert_mat4(node->mTransformation);
+    const auto& node_global = transforms.at(node_name);
+    const auto parent_global = (!parent_name.empty() && transforms.contains(parent_name)) ? transforms.at(parent_name) : math::matrix4x4::identity;
+
+    const auto local_bind_matrix = math::matrix4x4::inverted(parent_global) * node_global;
 
     skeleton.add_bone(node_name, {parent_id, local_bind_matrix, inverse_bind_matrix});
   }
 
   for (auto i = 0u; i < node->mNumChildren; ++i) {
-    _build_skeleton_hierarchy(node->mChildren[i], node_name, bone_map, bone_offsets, skeleton);
+    _build_skeleton_hierarchy(node->mChildren[i], node_name, bone_map, bone_offsets, transforms, skeleton);
   }
 }
 
@@ -200,7 +216,8 @@ auto mesh::_load(const std::filesystem::path& path) -> mesh_data {
     aiProcess_JoinIdenticalVertices |
     aiProcess_LimitBoneWeights |        // If more than N (=4) bone weights, discard least influencing bones and renormalise sum to 1
     aiProcess_GlobalScale |             // e.g. convert cm to m for fbx import (and other formats where cm is native)
-    aiProcess_ValidateDataStructure;    // Validation 
+    aiProcess_ValidateDataStructure |   // Validation 
+    aiProcess_OptimizeGraph; 
 
   auto importer = Assimp::Importer{};
 
@@ -217,9 +234,13 @@ auto mesh::_load(const std::filesystem::path& path) -> mesh_data {
 
   loaded_skeleton = animations::skeleton{};
 
-  _build_skeleton_hierarchy(scene->mRootNode, "", bone_map, bone_offsets, loaded_skeleton);
+  auto global_transforms = transform_map{};
+  _collect_global_transforms(scene->mRootNode, math::matrix4x4::identity, global_transforms);
 
-  loaded_skeleton.set_inverse_root_transform(math::matrix4x4::inverted(_convert_mat4(scene->mRootNode->mTransformation)));
+  _build_skeleton_hierarchy(scene->mRootNode, "", bone_map, bone_offsets, global_transforms, loaded_skeleton);
+
+  const auto& root_name = std::string{scene->mRootNode->mName.C_Str()};
+  loaded_skeleton.set_inverse_root_transform(math::matrix4x4::inverted(global_transforms[root_name]));
 
   const auto vertices_count = data.vertices.size();
   const auto indices_count = data.indices.size();

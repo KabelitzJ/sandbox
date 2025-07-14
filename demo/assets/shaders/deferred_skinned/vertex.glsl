@@ -140,7 +140,7 @@ void main() {
   uvec4 in_bone_indices = bone_indices_from_vertex(vertex);
   vec4 in_bone_weights = bone_weights_from_vertex(vertex);
 
-  in_bone_weights /= (in_bone_weights.x + in_bone_weights.y + in_bone_weights.z + in_bone_weights.w);
+  // in_bone_weights /= (in_bone_weights.x + in_bone_weights.y + in_bone_weights.z + in_bone_weights.w);
 
   mat4 skinning_matrix = calculate_skinning_matrix(in_bone_indices, in_bone_weights, bone_matrices_offset);
 

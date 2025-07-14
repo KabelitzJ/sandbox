@@ -6,6 +6,7 @@
 
 #include <libsbx/math/vector3.hpp>
 #include <libsbx/math/quaternion.hpp>
+#include <libsbx/math/constants.hpp>
 
 #include <libsbx/core/engine.hpp>
 
@@ -34,7 +35,8 @@ public:
 
     const auto i = entry - _timestamps.begin();
 
-    const auto t = (time - _timestamps[i - 1]) / (_timestamps[i] - _timestamps[i - 1]);
+    const auto dt = _timestamps[i] - _timestamps[i - 1];
+    const auto t = (dt > math::epsilonf) ? (time - _timestamps[i - 1]) / dt : 0.0f;
 
     if constexpr (std::is_same_v<Type, math::quaternion>) {
       return math::quaternion::slerp(_values[i - 1], _values[i], t);
