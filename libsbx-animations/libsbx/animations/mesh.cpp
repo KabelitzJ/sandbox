@@ -161,7 +161,7 @@ static auto _build_skeleton_hierarchy(const aiNode* node, const std::string& par
   const auto node_name = std::string{node->mName.C_Str()};
 
   const auto is_bone = bone_map.contains(node_name);
-  auto parent_id = animations::skeleton::max_bones;
+  auto parent_id = animations::skeleton::bone::null;
 
   if (is_bone) {
     if (!parent_name.empty() && bone_map.contains(parent_name)) {
@@ -214,8 +214,6 @@ auto mesh::_load(const std::filesystem::path& path) -> mesh_data {
   _load_node(scene->mRootNode, scene, data, bone_map, bone_offsets);
 
   loaded_skeleton = animations::skeleton{};
-
-  loaded_skeleton.set_scene_root_transform(_convert_mat4(scene->mRootNode->mTransformation));
 
   _build_skeleton_hierarchy(scene->mRootNode, "", bone_map, bone_offsets, loaded_skeleton);
 
