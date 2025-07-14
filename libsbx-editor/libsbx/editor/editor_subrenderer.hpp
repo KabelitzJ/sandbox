@@ -25,6 +25,7 @@
 #include <libsbx/graphics/graphics_module.hpp>
 
 #include <libsbx/editor/pipeline.hpp>
+#include <libsbx/editor/themes.hpp>
 
 namespace sbx::editor {
 
@@ -43,7 +44,8 @@ public:
     _descriptor_handler{_pipeline, 0u},
     _show_demo_window{false},
     _clear_color{sbx::math::color::black()},
-    _selected_node_id{sbx::math::uuid::null()} {
+    _selected_node_id{sbx::math::uuid::null()},
+    _editor_theme{} {
     // Initialize ImGui
     IMGUI_CHECKVERSION();
 
@@ -60,7 +62,9 @@ public:
     ImGui::StyleColorsDark();
     ImNodes::StyleColorsDark();
 
-    _setup_style();
+    // _setup_style();
+
+    _editor_theme.applyTheme("Bess Dark");
 
     auto& device_module = sbx::core::engine::get_module<sbx::devices::devices_module>();
     auto& graphics_module = sbx::core::engine::get_module<sbx::graphics::graphics_module>();
@@ -186,6 +190,16 @@ private:
         }
         ImGui::EndMenu();
       }
+
+      if (ImGui::BeginMenu("Settings")) {
+        for (const auto& [name, action] : _editor_theme.getThemes()) {
+          if (ImGui::MenuItem(name.c_str())) {
+            action();
+          }
+        }
+        ImGui::EndMenu();
+      }
+
       ImGui::EndMenuBar();
     }
 
@@ -974,6 +988,8 @@ private:
   std::vector<std::float_t> _deltas;
   std::vector<std::float_t> _time_stamps;
   sbx::units::second _elapsed;
+
+  editor::themes _editor_theme;
 
 }; // class editor_subrenderer
 
