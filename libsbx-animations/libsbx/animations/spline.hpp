@@ -4,6 +4,8 @@
 #include <vector>
 #include <algorithm>
 
+#include <libsbx/utility/assert.hpp>
+
 #include <libsbx/math/vector3.hpp>
 #include <libsbx/math/quaternion.hpp>
 #include <libsbx/math/constants.hpp>

@@ -84,7 +84,18 @@ public:
     return start * (1.0f - t) + end * t;
   }
 
+  /**
+   * @brief Spherical linear interpolation between two quaternions.
+   * 
+   * @param start The starting quaternion. 
+   * @param end The ending quaternion.
+   * @param t The interpolation factor [0.0f, 1.0f].
+   * 
+   * @return A new quaternion that is the result of the spherical linear interpolation. 
+   */
   [[nodiscard]] static constexpr auto slerp(const basic_quaternion& start, basic_quaternion end, const value_type t) noexcept -> basic_quaternion {
+    utility::assert_that(t >= 0.0f && t <= 1.0f, "Interpolation factor out of bounds in quaternion slerp");
+
     auto temp = end;
 
 		auto cos_theta = dot(start, end);
