@@ -192,10 +192,13 @@ private:
       }
 
       if (ImGui::BeginMenu("Settings")) {
-        for (const auto& [name, action] : _editor_theme.getThemes()) {
-          if (ImGui::MenuItem(name.c_str())) {
-            action();
+        if (ImGui::BeginMenu("Theme")) {
+          for (const auto& [name, action] : _editor_theme.getThemes()) {
+            if (ImGui::MenuItem(name.c_str())) {
+              action();
+            }
           }
+          ImGui::EndMenu();
         }
         ImGui::EndMenu();
       }
