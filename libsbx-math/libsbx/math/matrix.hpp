@@ -33,7 +33,7 @@ public:
 
   template<scalar Other = value_type>
   constexpr basic_matrix(const basic_matrix<Columns, Rows, Other>& other) noexcept;
-  
+
   [[nodiscard]] constexpr auto operator[](size_type index) noexcept -> column_type&;
 
   [[nodiscard]] constexpr auto operator[](size_type index) const noexcept -> const column_type&;

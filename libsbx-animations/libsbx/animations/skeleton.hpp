@@ -4,6 +4,7 @@
 #include <string>
 #include <cstdint>
 #include <unordered_map>
+#include <cmath>
 
 #include <libsbx/utility/logger.hpp>
 
@@ -44,11 +45,18 @@ public:
     _bones.push_back(bone);
   }
 
+  auto set_inverse_root_transform(const math::matrix4x4& inverse_root_transform) -> void {
+    _inverse_root_transform = inverse_root_transform;
+  }
+
   auto bones() const -> const std::vector<bone>& {
     return _bones;
   }
 
   auto evaluate_pose(const animation& animation, std::float_t time) const -> std::vector<math::matrix4x4> {
+    EASY_FUNCTION();
+    SBX_SCOPED_TIMER("skeleton::evaluate_pose");
+
     auto final_bones = std::vector<math::matrix4x4>{};
     final_bones.resize(_bones.size(), math::matrix4x4::identity);
 
@@ -59,34 +67,46 @@ public:
       const auto& bone = _bones[bone_id];
       const std::string& bone_name = _bone_ids_to_names[bone_id];
 
-      utility::logger<"animations">::debug("name {}", bone_name);
-
       math::matrix4x4 local_transform = math::matrix4x4::identity;
 
       const auto& track_map = animation.track_map;
 
+      EASY_BLOCK("skeleton::find_track");
+
+      auto it = track_map.find(bone_name);
+
+      EASY_END_BLOCK;
+
       // Sample animation track if present
-      if (const auto it = track_map.find(bone_name); it != track_map.cend()) {
+      if (it != track_map.cend()) {
+        EASY_BLOCK("skeleton::sample_track");
         const auto& track = it->second;
 
-        utility::logger<"animations">::debug("  time {}", time);
+        EASY_BLOCK("skeleton::sample_position_rotation_scale");
 
         const auto& position = track.position_spline.sample(time);
         const auto& rotation = track.rotation_spline.sample(time);
-        const auto& scale = track.scale_spline.sample(time); // NOTE: scale is NAN... FIX THIS
+        const auto& scale = track.scale_spline.sample(time);
 
-        utility::logger<"animations">::debug("  position {}", position);
-        utility::logger<"animations">::debug("  rotation {}", rotation);
-        utility::logger<"animations">::debug("  scale {}", scale);
+        EASY_END_BLOCK;
+
+        EASY_BLOCK("skeleton::calculate_local_transform");
 
         const auto translation_matrix = math::matrix4x4::translated(math::matrix4x4::identity, position);
         const auto rotation_matrix = rotation.to_matrix();
         const auto scale_matrix = math::matrix4x4::scaled(math::matrix4x4::identity, scale);
 
+        EASY_END_BLOCK;
+
         local_transform = translation_matrix * rotation_matrix * scale_matrix;
+        EASY_END_BLOCK;
       } else {
+        EASY_BLOCK("skeleton::default_transform");
         local_transform = bone.local_bind_matrix;
+        EASY_END_BLOCK;
       }
+
+      EASY_BLOCK("skeleton::local_transform");
 
       // Compute global transform
       math::matrix4x4 parent_transform = (bone.parent_id != skeleton::bone::null) ? global_transforms[bone.parent_id] : math::matrix4x4::identity;
@@ -96,7 +116,8 @@ public:
       global_transforms[bone_id] = global_transform;
 
       // Final bone matrix
-      final_bones[bone_id] = global_transform * bone.inverse_bind_matrix;
+      final_bones[bone_id] = _inverse_root_transform * global_transform * bone.inverse_bind_matrix;
+      EASY_END_BLOCK;
     }
 
     return final_bones;
@@ -107,6 +128,7 @@ private:
   std::vector<bone> _bones;
   std::vector<std::string> _bone_ids_to_names;
   std::unordered_map<std::string, std::uint32_t> _bone_names;
+  math::matrix4x4 _inverse_root_transform;
 
 }; // class skeleton
 

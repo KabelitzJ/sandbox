@@ -58,8 +58,8 @@ public:
 
     const aiAnimation* anim = scene->mAnimations[0]; // or all animations
     this->name = anim->mName.C_Str();
-    this->duration = anim->mDuration > 0.0 ? static_cast<float>(anim->mDuration) : 150.0f;
     this->ticks_per_second = anim->mTicksPerSecond > 0.0 ? static_cast<float>(anim->mTicksPerSecond) : 25.0f;
+    this->duration = (anim->mDuration > 0.0 ? static_cast<float>(anim->mDuration) : 150.0f) / this->ticks_per_second;
 
     for (unsigned i = 0; i < anim->mNumChannels; ++i) {
       const aiNodeAnim* channel = anim->mChannels[i];
@@ -67,21 +67,21 @@ public:
       track.bone_name = channel->mNodeName.C_Str();
 
       for (unsigned k = 0; k < channel->mNumPositionKeys; ++k) {
-        const auto time = static_cast<float>(channel->mPositionKeys[k].mTime);
+        const auto time = static_cast<float>(channel->mPositionKeys[k].mTime / this->ticks_per_second);
         const auto position = _convert_vec3(channel->mPositionKeys[k].mValue);
 
         track.position_spline.add(time, position);
       }
 
       for (unsigned k = 0; k < channel->mNumRotationKeys; ++k) {
-        const auto time = static_cast<float>(channel->mRotationKeys[k].mTime);
+        const auto time = static_cast<float>(channel->mRotationKeys[k].mTime / this->ticks_per_second);
         const auto rotation = _convert_quat(channel->mRotationKeys[k].mValue);
 
         track.rotation_spline.add(time, rotation);
       }
 
       for (unsigned k = 0; k < channel->mNumScalingKeys; ++k) {
-        const auto time = static_cast<float>(channel->mScalingKeys[k].mTime);
+        const auto time = static_cast<float>(channel->mScalingKeys[k].mTime / this->ticks_per_second);
         const auto scale = _convert_vec3(channel->mScalingKeys[k].mValue);
 
         track.scale_spline.add(time, scale);

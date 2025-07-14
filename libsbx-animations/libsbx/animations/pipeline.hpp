@@ -20,7 +20,7 @@ class pipeline : public graphics::graphics_pipeline {
     .uses_transparency = false,
     .rasterization_state = graphics::rasterization_state{
       .polygon_mode = graphics::polygon_mode::fill,
-      .cull_mode = graphics::cull_mode::back,
+      .cull_mode = graphics::cull_mode::none,
       .front_face = graphics::front_face::counter_clockwise
     },
     // .vertex_input = graphics::vertex_input<models::vertex3d>::description()

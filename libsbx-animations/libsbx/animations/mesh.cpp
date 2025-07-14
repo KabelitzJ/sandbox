@@ -219,6 +219,8 @@ auto mesh::_load(const std::filesystem::path& path) -> mesh_data {
 
   _build_skeleton_hierarchy(scene->mRootNode, "", bone_map, bone_offsets, loaded_skeleton);
 
+  loaded_skeleton.set_inverse_root_transform(math::matrix4x4::inverted(_convert_mat4(scene->mRootNode->mTransformation)));
+
   const auto vertices_count = data.vertices.size();
   const auto indices_count = data.indices.size();
 
