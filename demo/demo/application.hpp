@@ -54,7 +54,7 @@ private:
   sbx::scenes::node _player;
 
   camera_controller _camera_controller;
-  player_controller _player_controller;
+  // player_controller _player_controller;
 
 }; // class application
 

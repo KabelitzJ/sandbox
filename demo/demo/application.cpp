@@ -139,18 +139,18 @@ application::application()
   scene.add_component<sbx::scenes::static_mesh>(_player, _mesh_ids["player"], player_submeshes);
 
   auto& player_transform = scene.get_component<sbx::math::transform>(_player);
-  player_transform.set_position(sbx::math::vector3{0.0f, 1.0f, 0.0f});
+  player_transform.set_position(sbx::math::vector3{0.0f, 1.0f, -4.0f});
   player_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
 
-  // Camera
+  // // Camera
 
-  auto camera = scene.create_child_node(_player, "Camera");
+  // auto camera = scene.create_child_node(_player, "Camera");
 
-  scene.add_component<sbx::scenes::camera>(camera, sbx::math::angle{sbx::math::degree{50.0f}}, window.aspect_ratio(), 0.1f, 1000.0f);
+  // scene.add_component<sbx::scenes::camera>(camera, sbx::math::angle{sbx::math::degree{50.0f}}, window.aspect_ratio(), 0.1f, 1000.0f);
 
-  scene.add_component<sbx::scenes::skybox>(camera, _cube_image_ids["skybox"]);
+  // scene.add_component<sbx::scenes::skybox>(camera, _cube_image_ids["skybox"]);
 
-  scene.set_active_camera(camera);
+  // scene.set_active_camera(camera);
 
   // Animated Fox
 
@@ -259,9 +259,9 @@ application::application()
   // }
 
   // Camera
-  // auto camera = scene.camera();
+  auto camera = scene.camera();
 
-  // scene.add_component<sbx::scenes::skybox>(camera, _cube_image_ids["skybox"]);
+  scene.add_component<sbx::scenes::skybox>(camera, _cube_image_ids["skybox"]);
 
   // const auto position = sbx::math::vector3{10.0f, 10.0f, 10.0f};
 
@@ -286,8 +286,7 @@ auto application::update() -> void  {
   auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
   auto& scene = scenes_module.scene();
 
-  _player_controller.update(_player);
-  _camera_controller.update(_player);
+  _camera_controller.update();
     
   const auto delta_time = sbx::core::engine::delta_time();
 
