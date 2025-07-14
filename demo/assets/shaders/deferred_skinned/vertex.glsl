@@ -112,6 +112,21 @@ layout(set = 0, binding = 0) uniform uniform_scene {
 
 const float MAX_ANCHOR_HEIGHT = 2.0;
 
+vec3 apply_bone_transform(vec4 point, uvec4 bone_indices, vec4 bone_weights, uint bone_matrices_offset) {
+  vec3 result = vec3(0.0);
+
+  for (int i = 0; i < 4; ++i) {
+    float weight = bone_weights[i];
+    uint index = bone_indices[i];
+
+    mat4x4 bone_transform = bone_matrices_buffer.data[bone_matrices_offset + index];
+
+    result += weight * vec3(bone_transform * point);
+  }
+
+  return result;
+}
+
 void main() {
   instance_data instance_data = instance_data_buffer.data[gl_InstanceIndex];
 
@@ -131,6 +146,8 @@ void main() {
   uvec4 in_bone_indices = bone_indices_from_vertex(vertex);
   vec4 in_bone_weights = bone_weights_from_vertex(vertex);
 
+  in_bone_weights /= (in_bone_weights.x + in_bone_weights.y + in_bone_weights.z + in_bone_weights.w);
+
   // mat4 skinning_matrix = 
   //   in_bone_weights.x * bone_matrices_buffer.data[in_bone_indices.x] +
   //   in_bone_weights.y * bone_matrices_buffer.data[in_bone_indices.y] +
@@ -142,15 +159,15 @@ void main() {
   // for (int i = 0; i < 4; ++i) {
   //   float weight = in_bone_weights[i];
   //   uint index = in_bone_indices[i];
-  
+
   //   skinning_matrix += weight * bone_matrices_buffer.data[bone_matrices_offset + index];
   // } 
 
   // vec3 skinned_position = vec3(skinning_matrix * vec4(in_position, 1.0));
   // vec3 skinned_normal = normalize(vec3(skinning_matrix * vec4(in_normal, 0.0)));
 
-  vec3 skinned_position = in_position;
-  vec3 skinned_normal = in_normal;
+  vec3 skinned_position = apply_bone_transform(vec4(in_position, 1.0), in_bone_indices, in_bone_weights, bone_matrices_offset);
+  vec3 skinned_normal = normalize(apply_bone_transform(vec4(in_normal, 0.0), in_bone_indices, in_bone_weights, bone_matrices_offset));
 
   vec3 world_position = vec3(transform_data.model * vec4(skinned_position, 1.0));
 

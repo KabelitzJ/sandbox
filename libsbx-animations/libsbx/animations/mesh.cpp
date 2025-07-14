@@ -124,7 +124,7 @@ static auto _load_mesh(const aiMesh* mesh, mesh::mesh_data& data, bone_map& bone
       bone_id = entry->second;
     } else {
       bone_id = static_cast<std::uint32_t>(bone_map.size());
-      bone_map[bone_name] = bone_id;
+      bone_map.emplace(bone_name, bone_id);
       bone_offsets.push_back(_convert_mat4(bone->mOffsetMatrix));
     }
 
@@ -171,7 +171,9 @@ static auto _build_skeleton_hierarchy(const aiNode* node, const std::string& par
     const auto bone_id = bone_map.at(node_name);
     const auto& inverse_bind_matrix = bone_offsets.at(bone_id);
 
-    skeleton.add_bone(node_name, {parent_id, inverse_bind_matrix});
+    const auto local_bind_matrix = _convert_mat4(node->mTransformation);
+
+    skeleton.add_bone(node_name, {parent_id, local_bind_matrix, inverse_bind_matrix});
   }
 
   for (auto i = 0u; i < node->mNumChildren; ++i) {

@@ -14,28 +14,26 @@
 #include <libsbx/math/vector3.hpp>
 #include <libsbx/math/quaternion.hpp>
 
+#include <libsbx/animations/spline.hpp>
+
 namespace sbx::animations {
 
 class animation {
 
 public:
 
-  struct keyframe {
-    float time; // in seconds
-    math::vector3 position;
-    math::vector3 scale;
-    math::quaternion rotation; // use quaternion for rotation
-  };
-
   struct bone_track {
-    std::string bone_name; // or bone_id
-    std::vector<keyframe> keyframes;
+    std::string bone_name;
+    spline<math::vector3> position_spline;
+    spline<math::quaternion> rotation_spline;
+    spline<math::vector3> scale_spline;
   };
 
   std::string name;
   float duration = 0.0f;
   float ticks_per_second = 25.0f;
   std::vector<bone_track> tracks;
+  std::unordered_map<std::string, animation::bone_track> track_map;
 
   animation(const std::filesystem::path& path) {
     static const auto import_flags =
@@ -69,22 +67,31 @@ public:
       track.bone_name = channel->mNodeName.C_Str();
 
       for (unsigned k = 0; k < channel->mNumPositionKeys; ++k) {
-        animation::keyframe frame;
-        frame.time = static_cast<float>(channel->mPositionKeys[k].mTime);
-        frame.position = _convert_vec3(channel->mPositionKeys[k].mValue);
-        frame.scale = (channel->mNumScalingKeys > k) ? _convert_vec3(channel->mScalingKeys[k].mValue) : math::vector3{1.0f};
+        const auto time = static_cast<float>(channel->mPositionKeys[k].mTime);
+        const auto position = _convert_vec3(channel->mPositionKeys[k].mValue);
 
-        if (channel->mNumRotationKeys > k) {
-          const auto& r = channel->mRotationKeys[k].mValue;
-          frame.rotation = math::quaternion{r.x, r.y, r.z, r.w};
-        } else {
-          frame.rotation = math::quaternion::identity;
-        }
+        track.position_spline.add(time, position);
+      }
 
-        track.keyframes.push_back(frame);
+      for (unsigned k = 0; k < channel->mNumRotationKeys; ++k) {
+        const auto time = static_cast<float>(channel->mRotationKeys[k].mTime);
+        const auto rotation = _convert_quat(channel->mRotationKeys[k].mValue);
+
+        track.rotation_spline.add(time, rotation);
+      }
+
+      for (unsigned k = 0; k < channel->mNumScalingKeys; ++k) {
+        const auto time = static_cast<float>(channel->mScalingKeys[k].mTime);
+        const auto scale = _convert_vec3(channel->mScalingKeys[k].mValue);
+
+        track.scale_spline.add(time, scale);
       }
 
       this->tracks.push_back(std::move(track));
+    }
+
+    for (const auto& track : tracks) {
+      track_map[track.bone_name] = track;
     }
   }
 
@@ -100,6 +107,10 @@ public:
     return math::vector3{vector.x, vector.y, vector.z};
   }
 
+  static auto _convert_quat(const aiQuaternion& quaternion) -> math::quaternion {
+    return math::quaternion{quaternion.x, quaternion.y, quaternion.z, quaternion.w};
+  }
+
   static auto _convert_mat4(const aiMatrix4x4& matrix) -> math::matrix4x4 {
     auto result = math::matrix4x4{};
 
@@ -111,8 +122,6 @@ public:
 
     return result;
   }
-
-private:
 
 }; // class animation
 

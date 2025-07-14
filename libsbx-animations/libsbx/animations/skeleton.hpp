@@ -21,6 +21,7 @@ public:
     inline static constexpr auto null = std::uint32_t{0xFFFFFFFF};
 
     std::uint32_t parent_id;
+    math::matrix4x4 local_bind_matrix;
     math::matrix4x4 inverse_bind_matrix;
   }; // struct bone
 
@@ -51,64 +52,51 @@ public:
     auto final_bones = std::vector<math::matrix4x4>{};
     final_bones.resize(_bones.size(), math::matrix4x4::identity);
 
-    std::unordered_map<std::string, animation::bone_track> track_map;
-    for (const auto& track : animation.tracks) {
-      track_map[track.bone_name] = track;
-    }
+    auto global_transforms = std::vector<math::matrix4x4>{};
+    global_transforms.resize(_bones.size(), math::matrix4x4::identity);
 
-    std::function<void(std::uint32_t, const math::matrix4x4&)> evaluate_bone = [&](std::uint32_t bone_id, const math::matrix4x4& parent_transform) {
+    for (std::uint32_t bone_id = 0; bone_id < _bones.size(); ++bone_id) {
       const auto& bone = _bones[bone_id];
-
-      // Get animation track
       const std::string& bone_name = _bone_ids_to_names[bone_id];
-      const auto it = track_map.find(bone_name);
+
+      utility::logger<"animations">::debug("name {}", bone_name);
+
       math::matrix4x4 local_transform = math::matrix4x4::identity;
 
-      if (it != track_map.end()) {
+      const auto& track_map = animation.track_map;
+
+      // Sample animation track if present
+      if (const auto it = track_map.find(bone_name); it != track_map.cend()) {
         const auto& track = it->second;
-        const auto& keys = track.keyframes;
 
-        // Find two surrounding keyframes
-        std::size_t k1 = 0, k2 = 0;
-        for (std::size_t i = 0; i + 1 < keys.size(); ++i) {
-          if (keys[i].time <= time && time < keys[i + 1].time) {
-            k1 = i;
-            k2 = i + 1;
-            break;
-          }
-        }
+        utility::logger<"animations">::debug("  time {}", time);
 
-        const auto& a = keys[k1];
-        const auto& b = keys[k2];
-        const float t = (time - a.time) / (b.time - a.time);
+        const auto& position = track.position_spline.sample(time);
+        const auto& rotation = track.rotation_spline.sample(time);
+        const auto& scale = track.scale_spline.sample(time); // NOTE: scale is NAN... FIX THIS
 
-        const auto position = math::vector3::lerp(a.position, b.position, t);
-        const auto scale = math::vector3::lerp(a.scale, b.scale, t);
-        const auto rotation = math::quaternion::slerp(a.rotation, b.rotation, t);
+        utility::logger<"animations">::debug("  position {}", position);
+        utility::logger<"animations">::debug("  rotation {}", rotation);
+        utility::logger<"animations">::debug("  scale {}", scale);
 
         const auto translation_matrix = math::matrix4x4::translated(math::matrix4x4::identity, position);
         const auto rotation_matrix = rotation.to_matrix();
         const auto scale_matrix = math::matrix4x4::scaled(math::matrix4x4::identity, scale);
 
         local_transform = translation_matrix * rotation_matrix * scale_matrix;
+      } else {
+        local_transform = bone.local_bind_matrix;
       }
 
-      auto global_transform = parent_transform * local_transform;
-      
+      // Compute global transform
+      math::matrix4x4 parent_transform = (bone.parent_id != skeleton::bone::null) ? global_transforms[bone.parent_id] : math::matrix4x4::identity;
+
+      const math::matrix4x4 global_transform = parent_transform * local_transform;
+
+      global_transforms[bone_id] = global_transform;
+
+      // Final bone matrix
       final_bones[bone_id] = global_transform * bone.inverse_bind_matrix;
-
-      for (std::uint32_t child_id = 0; child_id < _bones.size(); ++child_id) {
-        if (_bones[child_id].parent_id == bone_id) {
-          evaluate_bone(child_id, global_transform);
-        }
-      }
-    };
-
-    // Start from roots (parent_id == max_bones)
-    for (std::uint32_t i = 0; i < _bones.size(); ++i) {
-      if (_bones[i].parent_id == skeleton::max_bones) {
-        evaluate_bone(i, math::matrix4x4::identity);
-      }
     }
 
     return final_bones;

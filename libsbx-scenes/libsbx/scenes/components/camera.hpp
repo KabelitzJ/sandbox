@@ -99,7 +99,7 @@ public:
 
   auto intersects(const math::matrix4x4& model, const collider& collider) const noexcept -> bool {
     return std::visit([this, &model](const auto& value) { return _intersects(std::decay_t<decltype(value)>::transformed(value, model)); }, collider);
-  } 
+  }
 
 private:
 

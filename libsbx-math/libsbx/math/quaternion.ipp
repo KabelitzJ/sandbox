@@ -287,8 +287,13 @@ inline constexpr auto operator-(basic_quaternion<Type> quat) noexcept -> basic_q
 }
 
 template<floating_point Lhs, floating_point Rhs>
-inline constexpr auto operator*(basic_quaternion<Lhs> lhs, Rhs scalar) noexcept -> basic_quaternion<Lhs> {
-  return lhs *= scalar;
+inline constexpr auto operator*(basic_quaternion<Lhs> lhs, Rhs rhs) noexcept -> basic_quaternion<Lhs> {
+  return lhs *= rhs;
+}
+
+template<floating_point Lhs, floating_point Rhs>
+inline constexpr auto operator*(Lhs lhs, basic_quaternion<Rhs> rhs) noexcept -> basic_quaternion<Rhs> {
+  return rhs *= lhs;
 }
 
 template<floating_point Lhs, floating_point Rhs>
@@ -297,8 +302,8 @@ inline constexpr auto operator*(basic_quaternion<Lhs> lhs, const basic_quaternio
 }
 
 template<floating_point Lhs, floating_point Rhs>
-inline constexpr auto operator/(basic_quaternion<Lhs> lhs, Rhs scalar) noexcept -> basic_quaternion<Lhs> {
-  return lhs /= scalar;
+inline constexpr auto operator/(basic_quaternion<Lhs> lhs, Rhs rhs) noexcept -> basic_quaternion<Lhs> {
+  return lhs /= rhs;
 }
 
 } // namespace sbx::math

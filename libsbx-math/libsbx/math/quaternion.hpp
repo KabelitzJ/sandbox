@@ -15,6 +15,7 @@
 #include <libsbx/math/vector4.hpp>
 #include <libsbx/math/matrix4x4.hpp>
 #include <libsbx/math/angle.hpp>
+#include <libsbx/math/algorithm.hpp>
 
 namespace sbx::math {
 
@@ -73,31 +74,35 @@ public:
   }
 
   [[nodiscard]] static constexpr auto slerp(const basic_quaternion& start, basic_quaternion end, const value_type t) noexcept -> basic_quaternion {
-    auto dot = basic_quaternion::dot(start, end);
+    auto temp = end;
 
-    // Ensure shortest path
-    if (dot < 0.0f) {
-      end = -end;
-      dot = -dot;
-    }
+		auto cos_theta = dot(start, end);
 
-    const auto dot_threshold = 0.9995f;
+		// If cosTheta < 0, the interpolation will take the long way around the sphere.
+		// To fix this, one quat must be negated.
+		if(cos_theta < static_cast<Type>(0)) {
+			temp = -end;
+			cos_theta = -cos_theta;
+		}
 
-    if (dot > dot_threshold) {
-      // If very close, use linear interpolation to avoid divide-by-zero
-      auto result = basic_quaternion::lerp(start, end, t);
-      return result.normalize();
-    }
+		// Perform a linear interpolation when cos_theta is close to 1 to avoid side effect of sin(angle) becoming a zero denominator
+		if(cos_theta > static_cast<Type>(1) - std::numeric_limits<Type>::epsilon()) {
+			// Linear interpolation
+			return basic_quaternion{
+				mix(start.x(), temp.x(), t),
+				mix(start.y(), temp.y(), t),
+				mix(start.z(), temp.z(), t),
+        mix(start.w(), temp.w(), t)
+      };
+		} else {
+			// Essential Mathematics, page 467
+			const auto angle = std::acos(cos_theta);
 
-    const auto theta_0 = std::acos(dot);      // angle between input vectors
-    const auto theta = theta_0 * t;      // angle for t
-    const auto sin_theta = std::sin(theta);
-    const auto sin_theta_0 = std::sin(theta_0);
+      const auto x = start * std::sin((static_cast<Type>(1) - t) * angle);
+      const auto y = temp * std::sin(t * angle);
 
-    const auto s0 = std::cos(theta) - dot * sin_theta / sin_theta_0;
-    const auto s1 = sin_theta / sin_theta_0;
-
-    return start * s0 + end * s1;
+			return (x + y) / std::sin(angle);
+		}
   }
 
   [[nodiscard]] constexpr operator matrix_type() const noexcept;
@@ -169,13 +174,16 @@ template<floating_point Type>
 [[nodiscard]] constexpr auto operator-(basic_quaternion<Type> quaternion) noexcept -> basic_quaternion<Type>;
 
 template<floating_point Lhs, floating_point Rhs>
-[[nodiscard]] constexpr auto operator*(basic_quaternion<Lhs> lhs, Rhs scalar) noexcept -> basic_quaternion<Lhs>;
+[[nodiscard]] constexpr auto operator*(basic_quaternion<Lhs> lhs, Rhs rhs) noexcept -> basic_quaternion<Lhs>;
+
+template<floating_point Lhs, floating_point Rhs>
+[[nodiscard]] constexpr auto operator*(Lhs lhs, basic_quaternion<Rhs> rhs) noexcept -> basic_quaternion<Rhs>;
 
 template<floating_point Lhs, floating_point Rhs>
 [[nodiscard]] constexpr auto operator*(basic_quaternion<Lhs> lhs, const basic_quaternion<Rhs>& rhs) noexcept -> basic_quaternion<Lhs>;
 
 template<floating_point Lhs, floating_point Rhs>
-[[nodiscard]] constexpr auto operator/(basic_quaternion<Lhs> lhs, Rhs scalar) noexcept -> basic_quaternion<Lhs>;
+[[nodiscard]] constexpr auto operator/(basic_quaternion<Lhs> lhs, Rhs rhs) noexcept -> basic_quaternion<Lhs>;
 
 /** @brief Type alias for a quaternion with 32 bit floating-point components. */
 using quaternionf = basic_quaternion<std::float_t>;
