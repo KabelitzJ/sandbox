@@ -1,6 +1,7 @@
 #ifndef LIBSBX_MODELS_STATIC_MESH_SUBRENDERER_HPP_
 #define LIBSBX_MODELS_STATIC_MESH_SUBRENDERER_HPP_
 
+#include <cstddef>
 #include <filesystem>
 #include <unordered_set>
 #include <ranges>
@@ -375,7 +376,7 @@ private:
     const auto required_size = static_cast<std::uint32_t>(buffer.size() * sizeof(Type));
 
     if (storage_buffer.size() < required_size) {
-      storage_buffer.resize(required_size * 1.5f);
+      storage_buffer.resize(static_cast<std::size_t>(required_size * 1.5f));
     }
 
     storage_buffer.update(buffer.data(), required_size);
