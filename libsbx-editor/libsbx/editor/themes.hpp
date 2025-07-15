@@ -15,7 +15,8 @@ public:
 
   auto apply_theme(const std::string& theme) -> void;
   auto add_theme(const std::string& name, const std::function<void()>& callback) -> void;
-  auto get_themes() const -> std::vector<std::string>; 
+  auto get_themes() const -> std::vector<std::string>;
+  auto get_active_theme() const -> const std::string&;
 
 private:
 
@@ -31,6 +32,7 @@ private:
   static auto apply_color_correction() -> void;
 
   std::unordered_map<std::string, std::function<void()>> _themes;
+  std::string _active_theme;
 
 }; // class themes
 

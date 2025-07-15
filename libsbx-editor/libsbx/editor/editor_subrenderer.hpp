@@ -27,6 +27,8 @@
 
 #include <libsbx/editor/pipeline.hpp>
 #include <libsbx/editor/themes.hpp>
+#include <libsbx/editor/fonts.hpp>
+#include <libsbx/editor/dialog.hpp>
 
 namespace sbx::editor {
 
@@ -61,8 +63,6 @@ public:
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     io.IniFilename = ini_file.data();
 
-    io.Fonts->AddFontFromFileTTF("demo/assets/fonts/JetBrainsMono-Medium.ttf", 16.0f);
-
     // ImGui::StyleColorsDark();
     ImNodes::StyleColorsDark();
 
@@ -71,6 +71,12 @@ public:
     _editor_theme.add_theme("Custom", [this]() { _setup_style(); });
 
     _editor_theme.apply_theme("Bess Dark");
+
+    _editor_font.load_font("Roboto", "demo/assets/fonts/Roboto-Regular.ttf", 16.0f);
+    _editor_font.load_font("Geist", "demo/assets/fonts/Geist-Regular.ttf", 16.0f);
+    _editor_font.load_font("JetBrainsMono", "demo/assets/fonts/JetBrainsMono-Medium.ttf", 16.0f);
+
+    _editor_font.set_active_font("Geist");
 
     auto& device_module = sbx::core::engine::get_module<sbx::devices::devices_module>();
     auto& graphics_module = sbx::core::engine::get_module<sbx::graphics::graphics_module>();
@@ -149,9 +155,10 @@ public:
 private:
 
   enum class popup : std::uint16_t {
-    hierarchy_add_new_node = sbx::utility::bit_v<0u>,
-    hierarchy_add_component = sbx::utility::bit_v<1u>,
-    hierarchy_delete = sbx::utility::bit_v<2u>
+    hierarchy_add_new_node = utility::bit_v<0u>,
+    hierarchy_add_component = utility::bit_v<1u>,
+    hierarchy_delete = utility::bit_v<2u>,
+    settings = utility::bit_v<3u>
   }; // enum class popup
 
   auto _setup_dockspace() -> void {
@@ -200,14 +207,7 @@ private:
       }
 
       if (ImGui::BeginMenu("Settings")) {
-        if (ImGui::BeginMenu("Theme")) {
-          for (const auto& theme : _editor_theme.get_themes()) {
-            if (ImGui::MenuItem(theme.c_str())) {
-              _editor_theme.apply_theme(theme);
-            }
-          }
-          ImGui::EndMenu();
-        }
+        _open_popups.set(popup::settings);
         ImGui::EndMenu();
       }
 
@@ -371,6 +371,127 @@ private:
     auto& graphics_module = sbx::core::engine::get_module<sbx::graphics::graphics_module>();
 
     {
+      if (_open_popups.has(popup::settings)) {
+        _open_popups.clear(popup::settings);
+        ImGui::OpenPopup("Settings");
+      }
+
+      const auto custom_backdrop_color = ImVec4{0.2f, 0.2f, 0.2f, 0.5f};
+
+      ImGui::PushStyleColor(ImGuiCol_ModalWindowDimBg, custom_backdrop_color);
+
+      ImGui::SetNextWindowSizeConstraints(ImVec2{600, 400}, ImVec2{800, 600});
+
+      if (ImGui::BeginPopupModal("Settings", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+        static const auto categories = std::array<std::string_view, 4u>{ "General", "Display", "Audio", "Controls" };
+        static auto selected_category = std::uint32_t{0u};
+
+        // === Row: Sidebar + Content ===
+        const auto sidebar_width = 150.0f;
+        const auto spacing = ImGui::GetStyle().ItemSpacing.x;
+
+        const auto content_start = ImGui::GetCursorScreenPos();
+        const auto total_content_width = ImGui::GetContentRegionAvail().x;
+
+        // Begin Sidebar
+        if (ImGui::BeginChild("CategorySidebar", ImVec2(sidebar_width, 0), ImGuiChildFlags_Border)) {
+          for (auto i = 0u; i < categories.size(); ++i) {
+            if (ImGui::Selectable(categories[i].data(), selected_category == i)) {
+              selected_category = i;
+            }
+          }
+          ImGui::EndChild();
+        }
+
+        // Sidebar and content on same line
+        ImGui::SameLine();
+
+        // Begin Settings Content
+        const auto content_width = total_content_width - sidebar_width - spacing;
+
+        if (ImGui::BeginChild("SettingsContent", ImVec2(0, 0), ImGuiChildFlags_None)) {
+          switch (selected_category) {
+            case 0: { // General
+              const auto available_fonts = _editor_font.get_fonts();
+              const auto& active_font = _editor_font.get_active_font();
+
+              ImGui::Text("Font");
+              if (ImGui::BeginCombo("##FontSelector", active_font.c_str())) {
+                for (const auto& font : available_fonts) {
+                  const auto is_selected = (font == active_font);
+
+                  if (ImGui::Selectable(font.c_str(), is_selected)) {
+                    // utility::logger<"editor">::debug("Changing font to {}", font);
+                    _editor_font.set_active_font(font);
+                  }
+
+                  if (is_selected) {
+                    ImGui::SetItemDefaultFocus();
+                  }
+                }
+                
+                ImGui::EndCombo();
+              }
+
+              ImGui::Separator();
+
+              const auto available_themes = _editor_theme.get_themes();
+              const auto& active_theme = _editor_theme.get_active_theme();
+
+              ImGui::Text("Theme");
+              if (ImGui::BeginCombo("##ThemeSelector", active_theme.c_str())) {
+                for (const auto& theme : available_themes) {
+                  const auto is_selected = (theme == active_theme);
+                  if (ImGui::Selectable(theme.c_str(), is_selected)) {
+                    // utility::logger<"editor">::debug("Changing theme to {}", theme);
+                    _editor_theme.apply_theme(theme);
+                  }
+                  if (is_selected) {
+                    ImGui::SetItemDefaultFocus();
+                  }
+                }
+                ImGui::EndCombo();
+              }
+              break;
+            }
+            default: {
+              ImGui::Text("Not implemented yet");
+              break;
+            }
+          }
+          ImGui::EndChild();
+        }
+
+        // === Now the buttons ===
+        // Add vertical spacing between children and footer buttons
+        ImGui::Dummy(ImVec2(0.0f, 10.0f));
+
+        // Right-align buttons
+        const auto button_width = 75.0f;
+        const auto button_spacing = 10.0f;
+        const auto total_button_width = (button_width * 2.0f) + button_spacing;
+
+        // Align cursor X to the right
+        const auto button_x = ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x - total_button_width;
+        ImGui::SetCursorPosX(button_x);
+
+        if (ImGui::Button("Cancel", ImVec2(button_width, 0))) {
+          ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::SameLine();
+
+        if (ImGui::Button("Apply", ImVec2(button_width, 0))) {
+          ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
+      }
+
+      ImGui::PopStyleColor();
+    }
+
+    {
       ImGui::Begin("Hierarchy");
 
       auto& scene_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
@@ -389,6 +510,29 @@ private:
         _open_popups.clear(popup::hierarchy_add_new_node);
         ImGui::OpenPopup("New Node");
       }
+
+      // dialog(
+      //   "New Node",
+      //   [&]() -> bool {
+      //     ImGui::Text("Name");
+      //     ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+      //     ImGui::InputText("##NodeNameInput", _new_name_buffer.data(), _new_name_buffer.size());
+
+      //     const auto name = std::string{_new_name_buffer.data(), std::strlen(_new_name_buffer.data())};
+
+      //     return !name.empty();
+      //   },
+      //   [&]() {
+      //     if (auto node = scene.find_node(_selected_node_id); node != scenes::node::null) {
+      //       scene.create_child_node(node, std::string{_new_name_buffer.data()});
+      //     } else {
+      //       utility::logger<"editor">::warn("No selected node");
+      //     }
+
+      //     _new_name_buffer.fill('\0');
+      //   },
+      //   []() { /* No action on cancel */ }
+      // );
 
       ImGui::SetNextWindowSizeConstraints(ImVec2{200, 120}, ImVec2{FLT_MAX, FLT_MAX});
 
@@ -504,7 +648,7 @@ private:
     }
 
     {
-      ImGui::Begin("Settings");
+      ImGui::Begin("Variables");
 
       auto& settings = core::engine::settings();
 
@@ -727,12 +871,25 @@ private:
       ImNodes::PopColorStyle();
 
       ImNodes::BeginNode(5);
+
       ImNodes::BeginNodeTitleBar();
       ImGui::TextUnformatted("add");
       ImNodes::EndNodeTitleBar();
+
       ImNodes::BeginInputAttribute(6);
       ImGui::Text("in");
+      ImNodes::EndInputAttribute();
+
+      ImGui::Dummy(ImVec2(20.0f, 0.0f));
+
+      ImNodes::BeginOutputAttribute(7);
+      ImGui::Text("out");
       ImNodes::EndOutputAttribute();
+
+      ImNodes::BeginInputAttribute(8);
+      ImGui::Text("in");
+      ImNodes::EndInputAttribute();
+
       ImNodes::EndNode();
 
       for (auto i = 0; i < links.size(); ++i) {
@@ -763,7 +920,9 @@ private:
       auto current_frame = graphics_module.current_frame();
       auto available_size = ImGui::GetContentRegionAvail();
 
+      ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{0, 0});
       ImGui::Image(reinterpret_cast<ImTextureID>(_descriptor_handler.descriptor_set()), available_size);
+      ImGui::PopStyleVar();
 
       if (ImGui::IsItemHovered()) {
         ImGuiIO& io = ImGui::GetIO();
@@ -814,7 +973,7 @@ private:
 
       ImGui::Separator();
 
-      ImGui::BeginChild("ScrollRegion", ImVec2(0, 0), false, ImGuiWindowFlags_HorizontalScrollbar);
+      ImGui::BeginChild("ScrollRegion", ImVec2(0, 0), ImGuiChildFlags_None, ImGuiWindowFlags_HorizontalScrollbar);
 
       for (const auto& [msg, level] : lines) {
         ImGui::PushStyleColor(ImGuiCol_Text, _log_color(level));
@@ -1021,6 +1180,7 @@ private:
   sbx::units::second _elapsed;
 
   editor::themes _editor_theme;
+  editor::fonts _editor_font;
 
 }; // class editor_subrenderer
 

@@ -27,6 +27,7 @@ auto themes::apply_theme(const std::string& theme) -> void {
     return;
   }
 
+  _active_theme = theme;
   std::invoke(_themes[theme]);
   apply_color_correction();
 }
@@ -37,6 +38,10 @@ auto themes::add_theme(const std::string& name, const std::function<void()>& cal
 
 auto themes::get_themes() const -> std::vector<std::string> {
   return _themes | ranges::views::keys | ranges::to<std::vector>;
+}
+
+auto themes::get_active_theme() const -> const std::string& {
+  return _active_theme;
 }
 
 auto themes::set_bess_dark_colors() -> void {
