@@ -10,6 +10,7 @@
 #include <libsbx/editor/bindings/imgui.hpp>
 
 #include <libsbx/utility/enum.hpp>
+#include <libsbx/utility/logger.hpp>
 
 #include <libsbx/core/engine.hpp>
 
@@ -45,7 +46,8 @@ public:
     _show_demo_window{false},
     _clear_color{sbx::math::color::black()},
     _selected_node_id{sbx::math::uuid::null()},
-    _editor_theme{} {
+    _editor_theme{},
+    _has_auto_scroll{true} {
     // Initialize ImGui
     IMGUI_CHECKVERSION();
 
@@ -65,6 +67,8 @@ public:
     ImNodes::StyleColorsDark();
 
     // _setup_style();
+
+    _editor_theme.add_theme("Custom", [this]() { _setup_style(); });
 
     _editor_theme.apply_theme("Bess Dark");
 
@@ -115,6 +119,8 @@ public:
   }
 
   auto render(sbx::graphics::command_buffer& command_buffer) -> void override {
+    SBX_SCOPED_TIMER("editor_subrenderer");
+   
     auto& graphics_module = sbx::core::engine::get_module<sbx::graphics::graphics_module>();
 
     _pipeline.bind(command_buffer);
@@ -795,9 +801,11 @@ private:
 
     {
       ImGui::Begin("Log");
+
+      const auto lines = utility::detail::sink()->lines();
     
       if (ImGui::Button("Clear"))  {
-        utility::logger<"editor">::info("Clearing log");
+        utility::detail::sink()->clear();
       }
 
       ImGui::SameLine();
@@ -808,8 +816,14 @@ private:
 
       ImGui::BeginChild("ScrollRegion", ImVec2(0, 0), false, ImGuiWindowFlags_HorizontalScrollbar);
 
+      for (const auto& [msg, level] : lines) {
+        ImGui::PushStyleColor(ImGuiCol_Text, _log_color(level));
+        ImGui::TextUnformatted(msg.c_str());
+        ImGui::PopStyleColor();
+      }
+
       if (_has_auto_scroll && ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) {
-        ImGui::SetScrollHereY(0.999f);
+        ImGui::SetScrollHereY(1.0f);
       }
 
       ImGui::EndChild();
@@ -926,6 +940,18 @@ private:
     // style.GrabMinSize = 10.0f;
     // style.DockingSeparatorSize = 1.0f;
     // style.SeparatorTextBorderSize = 2.0f;
+  }
+
+  static auto _log_color(const spdlog::level::level_enum level) -> ImVec4 {
+    switch (level) {
+      case spdlog::level::trace:    return ImVec4(0.5f, 0.5f, 0.5f, 1.0f);
+      case spdlog::level::debug:    return ImVec4(0.3f, 0.7f, 1.0f, 1.0f);
+      case spdlog::level::info:     return ImVec4(0.3f, 1.0f, 0.3f, 1.0f);
+      case spdlog::level::warn:     return ImVec4(1.0f, 0.8f, 0.2f, 1.0f);
+      case spdlog::level::err:      return ImVec4(1.0f, 0.3f, 0.3f, 1.0f);
+      case spdlog::level::critical: return ImVec4(1.0f, 0.1f, 0.1f, 1.0f);
+      default:                      return ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+    }
   }
 
   static auto _lerp_color(const ImVec4& a, const ImVec4& b, std::float_t t) {
