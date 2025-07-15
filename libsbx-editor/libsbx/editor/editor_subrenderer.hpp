@@ -59,12 +59,14 @@ public:
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     io.IniFilename = ini_file.data();
 
-    ImGui::StyleColorsDark();
+    io.Fonts->AddFontFromFileTTF("demo/assets/fonts/JetBrainsMono-Medium.ttf", 16.0f);
+
+    // ImGui::StyleColorsDark();
     ImNodes::StyleColorsDark();
 
     // _setup_style();
 
-    _editor_theme.applyTheme("Bess Dark");
+    _editor_theme.apply_theme("Bess Dark");
 
     auto& device_module = sbx::core::engine::get_module<sbx::devices::devices_module>();
     auto& graphics_module = sbx::core::engine::get_module<sbx::graphics::graphics_module>();
@@ -193,9 +195,9 @@ private:
 
       if (ImGui::BeginMenu("Settings")) {
         if (ImGui::BeginMenu("Theme")) {
-          for (const auto& [name, action] : _editor_theme.getThemes()) {
-            if (ImGui::MenuItem(name.c_str())) {
-              action();
+          for (const auto& theme : _editor_theme.get_themes()) {
+            if (ImGui::MenuItem(theme.c_str())) {
+              _editor_theme.apply_theme(theme);
             }
           }
           ImGui::EndMenu();

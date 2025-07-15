@@ -13,20 +13,23 @@ public:
 
   themes();
 
-  void applyTheme(const std::string &theme);
-  void addTheme(const std::string &name, const std::function<void()> &callback);
-  const std::unordered_map<std::string, std::function<void()>> &getThemes() const;
+  auto apply_theme(const std::string& theme) -> void;
+  auto add_theme(const std::string& name, const std::function<void()>& callback) -> void;
+  auto get_themes() const -> std::vector<std::string>; 
 
 private:
 
-  static void set_dark_theme_colors();
-  static void set_catpuccin_mocha_colors();
-  static void set_fluent_ui_colors();
-  static void set_bess_dark_colors();
-  static void set_modern_dark_colors();
+  static auto set_dark_theme_colors() -> void;
+  static auto set_catpuccin_mocha_colors() -> void;
+  static auto set_fluent_ui_colors() -> void;
+  static auto set_bess_dark_colors() -> void;
+  static auto set_modern_dark_colors() -> void;
+  static auto set_moonlight_colors() -> void;
+  static auto set_blueish_colors() -> void;
 
-  // theme name and a void callback
-  std::unordered_map<std::string, std::function<void()>> m_themes = {};
+  static auto apply_color_correction() -> void;
+
+  std::unordered_map<std::string, std::function<void()>> _themes;
 
 }; // class themes
 
