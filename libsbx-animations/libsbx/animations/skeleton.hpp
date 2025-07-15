@@ -128,6 +128,7 @@ private:
   std::vector<bone> _bones;
   std::vector<std::string> _bone_ids_to_names;
   std::unordered_map<std::string, std::uint32_t> _bone_names;
+  
   math::matrix4x4 _inverse_root_transform;
 
 }; // class skeleton
