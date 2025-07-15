@@ -76,7 +76,7 @@ public:
     _editor_font.load_font("Geist", "demo/assets/fonts/Geist-Regular.ttf", 16.0f);
     _editor_font.load_font("JetBrainsMono", "demo/assets/fonts/JetBrainsMono-Medium.ttf", 16.0f);
 
-    _editor_font.set_active_font("Geist");
+    _editor_font.set_active_font("Roboto");
 
     auto& device_module = sbx::core::engine::get_module<sbx::devices::devices_module>();
     auto& graphics_module = sbx::core::engine::get_module<sbx::graphics::graphics_module>();
