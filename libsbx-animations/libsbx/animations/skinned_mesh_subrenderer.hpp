@@ -117,21 +117,22 @@ public:
 
     _submesh_instances.clear();
     _transform_data.clear();
+    _bone_matrices.clear();
     _images.clear();
 
     std::ranges::fill(_bone_matrices, math::matrix4x4::identity);
 
-    // SBX_SCOPED_TIMER_BLOCK("skinned_mesh_subrenderer::submit") {
-    //   auto mesh_query = scene.query<const scenes::skinned_mesh, scenes::animation_state>();
+    SBX_SCOPED_TIMER_BLOCK("skinned_mesh_subrenderer::submit") {
+      auto mesh_query = scene.query<const scenes::skinned_mesh, scenes::animation_state>();
 
-    //   for (auto&& [node, skinned_mesh, animation_state] : mesh_query.each()) {
-    //     _submit_mesh(node, skinned_mesh, animation_state);
-    //   }
-    // }
+      for (auto&& [node, skinned_mesh, animation_state] : mesh_query.each()) {
+        _submit_mesh(node, skinned_mesh, animation_state);
+      }
+    }
 
-    // SBX_SCOPED_TIMER_BLOCK("static_mesh_subrenderer::render"){
-    //   _render_skinned_meshes(command_buffer);
-    // }
+    SBX_SCOPED_TIMER_BLOCK("static_mesh_subrenderer::render"){
+      _render_skinned_meshes(command_buffer);
+    }
   }
 
 private:

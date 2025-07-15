@@ -19,6 +19,7 @@ themes::themes() {
   _themes["Fluent UI"] = [this]() { set_fluent_ui_colors(); };
   _themes["Moonlight"] = [this]() { set_moonlight_colors(); };
   _themes["Blueish"] = [this]() { set_blueish_colors(); };
+  _themes["Foo"] = [this]() { set_foo_colors(); };
  }
 
 auto themes::apply_theme(const std::string& theme) -> void {
@@ -37,15 +38,6 @@ auto themes::add_theme(const std::string& name, const std::function<void()>& cal
 auto themes::get_themes() const -> std::vector<std::string> {
   return _themes | ranges::views::keys | ranges::to<std::vector>;
 }
-
-// static auto blend_colors(const ImVec4& base, const ImVec4& accent, std::float_t blend_factor) -> ImVec4 {
-//   return ImVec4{
-//     base.x * (1.0f - blend_factor) + accent.x * blend_factor,
-//     base.y * (1.0f - blend_factor) + accent.y * blend_factor,
-//     base.z * (1.0f - blend_factor) + accent.z * blend_factor,
-//     base.w
-//   };
-// }
 
 auto themes::set_bess_dark_colors() -> void {
   ImGuiStyle& style = ImGui::GetStyle();
@@ -377,7 +369,6 @@ auto themes::set_moonlight_colors() -> void {
   // Moonlight style by deathsu/madam-herta
   // https://github.com/Madam-Herta/Moonlight/
 	ImGuiStyle& style = ImGui::GetStyle();
-  ImVec4* colors = style.Colors;
 	
 	style.Alpha = 1.0f;
 	style.DisabledAlpha = 1.0f;
@@ -518,6 +509,103 @@ auto themes::set_blueish_colors() -> void {
   colors[ImGuiCol_TabActive]              = ImVec4(0.20f, 0.52f, 0.85f, 1.00f);
   colors[ImGuiCol_TabUnfocused]           = mid_blue;
   colors[ImGuiCol_TabUnfocusedActive]     = highlight_blue;
+}
+
+auto themes::set_foo_colors() -> void {
+  ImGuiStyle& style = ImGui::GetStyle();
+  ImVec4* colors = style.Colors;
+
+	// Color palette
+	ImVec4 _black = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
+	ImVec4 _white = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
+	ImVec4 _grey = ImVec4(0.60f, 0.60f, 0.60f, 0.35f);
+	ImVec4 _dark = ImVec4(0.08f, 0.08f, 0.08f, 1.00f);
+	ImVec4 _darkgrey = ImVec4(0.23f, 0.23f, 0.23f, 0.35f);
+	ImVec4 _lighgrey = ImVec4(0.40f, 0.40f, 0.40f, 1.00f);
+
+	// Color array
+	colors[ImGuiCol_Text] = _white;
+	colors[ImGuiCol_TextDisabled] = _grey;
+	colors[ImGuiCol_WindowBg] = _dark;
+	colors[ImGuiCol_ChildBg] = _dark;
+	colors[ImGuiCol_PopupBg] = _dark;
+	colors[ImGuiCol_Border] = _grey;
+	colors[ImGuiCol_BorderShadow] = _black;
+	colors[ImGuiCol_FrameBg] = _darkgrey;
+	colors[ImGuiCol_FrameBgHovered] = _grey;
+	colors[ImGuiCol_FrameBgActive] = _grey;
+	colors[ImGuiCol_TitleBg] = _darkgrey;
+	colors[ImGuiCol_TitleBgActive] = _darkgrey;
+	colors[ImGuiCol_TitleBgCollapsed] = _darkgrey;
+	colors[ImGuiCol_MenuBarBg] = _darkgrey;
+	colors[ImGuiCol_ScrollbarBg] = _darkgrey;
+	colors[ImGuiCol_ScrollbarGrabHovered] = _grey;
+	colors[ImGuiCol_ScrollbarGrabActive] = _grey;
+	colors[ImGuiCol_CheckMark] = _lighgrey;
+	colors[ImGuiCol_SliderGrab] = _lighgrey;
+	colors[ImGuiCol_SliderGrabActive] = _white;
+	colors[ImGuiCol_Button] = _darkgrey;
+	colors[ImGuiCol_ButtonHovered] = _grey;
+	colors[ImGuiCol_ButtonActive] = _darkgrey;
+	colors[ImGuiCol_Header] = _darkgrey;
+	colors[ImGuiCol_HeaderHovered] = _grey;
+	colors[ImGuiCol_HeaderActive] = _grey;
+	colors[ImGuiCol_Separator] = _grey;
+	colors[ImGuiCol_SeparatorHovered] = _grey;
+	colors[ImGuiCol_SeparatorActive] = _grey;
+	colors[ImGuiCol_ResizeGrip] = _darkgrey;
+	colors[ImGuiCol_ResizeGripHovered] = _grey;
+	colors[ImGuiCol_ResizeGripActive] = _grey;
+	colors[ImGuiCol_Tab] = _darkgrey;
+	colors[ImGuiCol_TabHovered] = _grey;
+	colors[ImGuiCol_TabActive] = _grey;
+	colors[ImGuiCol_TabUnfocused] = _grey;
+	colors[ImGuiCol_TabUnfocused] = _grey;
+	colors[ImGuiCol_TabUnfocusedActive] = _grey;
+	colors[ImGuiCol_DockingPreview] = _grey;
+	colors[ImGuiCol_DockingEmptyBg] = _grey;
+	colors[ImGuiCol_PlotLines] = _white;
+	colors[ImGuiCol_PlotLinesHovered] = _grey;
+	colors[ImGuiCol_PlotHistogram] = _white;
+	colors[ImGuiCol_PlotHistogramHovered] = _grey;
+	colors[ImGuiCol_TableHeaderBg] = _dark;
+	colors[ImGuiCol_TableBorderStrong] = _darkgrey;
+	colors[ImGuiCol_TableBorderLight] = _grey;
+	colors[ImGuiCol_TableRowBg] = _black;
+	colors[ImGuiCol_TableRowBgAlt] = _white;
+	colors[ImGuiCol_TextSelectedBg] = _darkgrey;
+	colors[ImGuiCol_DragDropTarget] = _darkgrey;
+	colors[ImGuiCol_NavHighlight] = _grey;
+	colors[ImGuiCol_NavWindowingHighlight] = _grey;
+	colors[ImGuiCol_NavWindowingDimBg] = _grey;
+	colors[ImGuiCol_ModalWindowDimBg] = _grey;
+
+	// Style
+	style.FrameRounding = 3;
+	style.WindowPadding = ImVec2(10.0f, 10.0f);
+	style.FramePadding = ImVec2(10.00f, 10.00f);
+	style.CellPadding = ImVec2(10.00f, 5.00f);
+	style.ItemSpacing = ImVec2(10.00f, 5.00f);
+	style.ItemInnerSpacing = ImVec2(5.00f, 5.00f);
+	style.TouchExtraPadding = ImVec2(0.00f, 0.00f);
+	style.IndentSpacing = 15;
+	style.ScrollbarSize = 18;
+	style.GrabMinSize = 10;
+	style.WindowBorderSize = 0;
+	style.ChildBorderSize = 0;
+	style.PopupBorderSize = 0;
+	style.FrameBorderSize = 0;
+	style.TabBorderSize = 0;
+	style.WindowRounding = 5;
+	style.ChildRounding = 5;
+	style.PopupRounding = 0;
+	style.ScrollbarRounding = 5;
+	style.GrabRounding = 0;
+	style.LogSliderDeadzone = 0;
+	style.TabRounding = 0;
+	style.WindowTitleAlign = ImVec2(0.50f, 0.50f);
+	style.WindowMenuButtonPosition = -1;
+	style.ColorButtonPosition = 0;
 }
 
 auto themes::apply_color_correction() -> void {

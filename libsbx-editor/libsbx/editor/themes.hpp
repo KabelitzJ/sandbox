@@ -26,6 +26,7 @@ private:
   static auto set_modern_dark_colors() -> void;
   static auto set_moonlight_colors() -> void;
   static auto set_blueish_colors() -> void;
+  static auto set_foo_colors() -> void;
 
   static auto apply_color_correction() -> void;
 
