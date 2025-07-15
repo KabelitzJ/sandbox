@@ -92,8 +92,6 @@ struct logger_instance {
 
     auto logger = spdlog::logger{"logger", std::begin(sinks), std::end(sinks)};
 
-    std::cout << "logger constructor called\n";
-
     logger.set_pattern("[%Y-%m-%d %H:%M:%S] [%^%l%$] %v");
 
     if constexpr (build_configuration_v == build_configuration::debug) {
