@@ -190,7 +190,7 @@ private:
     auto temp = std::vector<math::matrix4x4>{};
     temp.resize(bone_matrices.size(), math::matrix4x4::identity);
 
-    utility::append(_bone_matrices, std::move(bone_matrices));
+    utility::append(_bone_matrices, std::move(temp));
 
     const auto& global_transform = scene.get_component<const scenes::global_transform>(node);
 
