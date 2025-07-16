@@ -301,6 +301,11 @@ auto image::transition_image_layout(const VkImage& image, VkFormat format, VkIma
       barrier.srcAccessMask = 0;
       break;
     }
+    case VK_IMAGE_LAYOUT_GENERAL: {
+      // General can be written or read — safest is to assume both
+      barrier.srcAccessMask = VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT;
+      break;
+    }
     case VK_IMAGE_LAYOUT_PREINITIALIZED: {
       barrier.srcAccessMask = VK_ACCESS_HOST_WRITE_BIT;
       break;
@@ -326,13 +331,17 @@ auto image::transition_image_layout(const VkImage& image, VkFormat format, VkIma
       break;
     }
     default: {
-      throw std::runtime_error("Unsupported image layout transition source");
+      throw std::runtime_error{fmt::format("Unsupported image layout transition source: {}", src_image_layout)};
     }
 	}
 
   switch (dst_image_layout) {
     case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL: {
       barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+      break;
+    }
+    case VK_IMAGE_LAYOUT_GENERAL: {
+      barrier.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT;
       break;
     }
     case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL: {
@@ -356,7 +365,7 @@ auto image::transition_image_layout(const VkImage& image, VkFormat format, VkIma
       break;
     }
     default: {
-      throw std::runtime_error("Unsupported image layout transition destination");
+      throw std::runtime_error{fmt::format("Unsupported image layout transition destination: {}", dst_image_layout)};
     }
 	}
 
@@ -384,6 +393,11 @@ auto image::transition_image_layout(command_buffer& command_buffer, const VkImag
       barrier.srcAccessMask = 0;
       break;
     }
+    case VK_IMAGE_LAYOUT_GENERAL: {
+      // General can be written or read — safest is to assume both
+      barrier.srcAccessMask = VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT;
+      break;
+    }
     case VK_IMAGE_LAYOUT_PREINITIALIZED: {
       barrier.srcAccessMask = VK_ACCESS_HOST_WRITE_BIT;
       break;
@@ -409,13 +423,17 @@ auto image::transition_image_layout(command_buffer& command_buffer, const VkImag
       break;
     }
     default: {
-      throw std::runtime_error("Unsupported image layout transition source");
+      throw std::runtime_error{fmt::format("Unsupported image layout transition source: {}", src_image_layout)};
     }
 	}
 
   switch (dst_image_layout) {
     case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL: {
       barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+      break;
+    }
+    case VK_IMAGE_LAYOUT_GENERAL: {
+      barrier.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT;
       break;
     }
     case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL: {
@@ -439,7 +457,7 @@ auto image::transition_image_layout(command_buffer& command_buffer, const VkImag
       break;
     }
     default: {
-      throw std::runtime_error("Unsupported image layout transition destination");
+      throw std::runtime_error{fmt::format("Unsupported image layout transition destination: {}", dst_image_layout)};
     }
 	}
 
@@ -482,6 +500,27 @@ auto image::copy_buffer_to_image(const VkBuffer& buffer, const VkImage& image, c
 	vkCmdCopyBufferToImage(command_buffer, buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 
 	command_buffer.submit_idle();
+}
+
+auto image::copy_image_to_buffer(const VkImage& image, VkFormat format, const VkBuffer& buffer, const VkOffset3D& offset, const VkExtent3D& extent, std::uint32_t layer_count, std::uint32_t base_array_layer) -> void {
+  auto command_buffer = graphics::command_buffer{};
+
+  transition_image_layout(command_buffer, image, format, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_ASPECT_COLOR_BIT, 1, 0, layer_count, base_array_layer);
+
+  auto region = VkBufferImageCopy{};
+  region.bufferOffset = 0;
+  region.bufferRowLength = 0;
+  region.bufferImageHeight = 0;
+  region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+  region.imageSubresource.mipLevel = 0;
+  region.imageSubresource.baseArrayLayer = base_array_layer;
+  region.imageSubresource.layerCount = layer_count;
+  region.imageOffset = offset;
+  region.imageExtent = extent;
+
+  vkCmdCopyImageToBuffer(command_buffer, image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, buffer, 1, &region);
+
+  command_buffer.submit_idle();
 }
 
 auto image::copy_image(const VkImage& src_image, VkImage& dst_image, VmaAllocation& dst_allocation, VkFormat src_format, const VkExtent3D& extent, VkImageLayout src_image_layout, std::uint32_t mip_level, std::uint32_t array_layer) -> bool {

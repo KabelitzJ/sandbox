@@ -187,6 +187,8 @@ application::application()
   women_transform.set_position(sbx::math::vector3{0.0f, 2.0f, 5.0f});
   // women_transform.set_scale(sbx::math::vector3{0.1f, 0.1f, 0.1f});
 
+  _selection_buffer = graphics_module.add_resource<sbx::graphics::storage_buffer>(sbx::graphics::storage_buffer::min_size);
+
   // Trees
 
   auto tree_submeshes = std::vector<sbx::scenes::static_mesh::submesh>{};
@@ -295,6 +297,31 @@ application::application()
   }
 }
 
+// [NOTE] : This might or might not me a great thing :D
+static auto select_object_ids_in_rect(const sbx::graphics::image2d& image, VkFormat format, sbx::graphics::storage_buffer& buffer, int x0, int y0, int width, int height) -> std::unordered_set<uint64_t> {
+  const auto buffer_size = width * height * sizeof(std::uint32_t) * 2;
+
+  if (buffer.size() < buffer_size) {
+    buffer.resize(static_cast<std::size_t>(static_cast<std::float_t>(buffer_size) * 1.5f));
+  }
+
+  VkOffset3D offset = { x0, y0, 0 };
+  VkExtent3D extent = { static_cast<uint32_t>(width), static_cast<uint32_t>(height), 1 };
+  sbx::graphics::image::copy_image_to_buffer(image, format, buffer, offset, extent, 1, 0);
+
+  std::unordered_set<std::uint64_t> ids;
+
+  for (uint32_t i = 0; i < width * height; ++i) {
+    std::uint64_t id = (std::uint64_t(buffer.read<std::uint32_t>(i * 2 + 0)) << 32) | std::uint64_t(buffer.read<std::uint32_t>(i * 2 + 1));
+    
+    if (id != 0) {
+      ids.insert(id);
+    }
+  }
+
+  return ids;
+}
+
 auto application::update() -> void  {
   if (sbx::devices::input::is_key_pressed(sbx::devices::key::escape)) {
     sbx::core::engine::quit();
@@ -317,6 +344,19 @@ auto application::update() -> void  {
   for (auto&& [node, transform] : query_rotator.each()) {
     transform.set_rotation(sbx::math::vector3::up, _rotation);
   }
+
+  // const auto& image = static_cast<const sbx::graphics::image2d&>(graphics_module.attachment("object_id"));
+  // auto& buffer = graphics_module.get_resource<sbx::graphics::storage_buffer>(_selection_buffer);
+
+  // static auto start = sbx::math::vector2u{0, 0};
+
+  // auto ids = select_object_ids_in_rect(image, VK_FORMAT_R32G32_UINT, buffer, 100, 100, 300, 300);
+
+  // for (const auto id : ids) {
+  //   sbx::utility::logger<"demo">::info("object id: {}", id);
+  // }
+
+  // sbx::utility::logger<"demo">::info("object id: {}", sbx::devices::input::mouse_position());
 }
 
 auto application::fixed_update() -> void {

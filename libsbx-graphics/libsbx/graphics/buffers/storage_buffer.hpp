@@ -28,6 +28,11 @@ public:
 
   auto update(memory::observer_ptr<const void> data, VkDeviceSize size, std::size_t offset = 0u) -> void;
 
+  template<typename Type>
+  auto read(const std::size_t index) const -> const Type& {
+    return *(static_cast<const Type*>(_mapped_memory.get()) + index * sizeof(Type));
+  }
+
   auto write_descriptor_set(std::uint32_t binding, VkDescriptorType descriptor_type) const noexcept -> graphics::write_descriptor_set override;
 
   static auto create_descriptor_set_layout_binding(std::uint32_t binding, VkDescriptorType descriptor_type, VkShaderStageFlags stage_flags) noexcept -> VkDescriptorSetLayoutBinding;

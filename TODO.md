@@ -18,3 +18,17 @@
 
 ## libsbx-scenes
 - [ ] Implement node removal with hierarchy component -> remove relationship component
+
+## Hint
+
+### Windows
+
+```sh
+cmake --build ... -j$env:NUMBER_OF_PROCESSORS
+```
+
+### Unix
+
+```sh
+cmake --build ... -j$(nproc)
+```

@@ -17,13 +17,13 @@ layout(location = 5) in vec2 in_uv;
 layout(location = 6) in vec4 in_color;
 layout(location = 7) in vec2 in_material;
 layout(location = 8) in flat uvec2 in_image_indices;
-layout(location = 9) in flat uvec2 in_selection;
+layout(location = 9) in flat uvec2 in_object_id;
 
 layout(location = 0) out vec4 out_albedo;
 layout(location = 1) out vec4 out_position;
 layout(location = 2) out vec4 out_normal;
 layout(location = 3) out vec4 out_material;
-layout(location = 4) out uvec2 out_selection;
+layout(location = 4) out uvec2 out_object_id;
 layout(location = 5) out float out_depth;
 
 layout(set = 0, binding = 0) uniform uniform_scene {
@@ -73,6 +73,6 @@ void main(void) {
   out_position = vec4(in_position, 1.0);
   out_normal = vec4(get_normal(), 0.0);
   out_material = vec4(in_material, 0.0, 0.0);
-  out_selection = in_selection;
+  out_object_id = in_object_id;
   out_depth = linearize_depth(gl_FragCoord.z, DEFAULT_NEAR, DEFAULT_FAR);
 }

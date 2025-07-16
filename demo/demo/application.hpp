@@ -56,6 +56,8 @@ private:
   camera_controller _camera_controller;
   // player_controller _player_controller;
 
+  sbx::graphics::storage_buffer_handle _selection_buffer;
+
 }; // class application
 
 } // namespace demo
