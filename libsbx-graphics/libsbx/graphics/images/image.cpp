@@ -571,14 +571,18 @@ auto image::channels_from_format(VkFormat format) -> std::uint8_t {
   switch (format) {
     case VK_FORMAT_R8_UNORM:
     case VK_FORMAT_R8_SRGB:
+    case VK_FORMAT_R8_UINT:
     case VK_FORMAT_R16_SFLOAT:
-    case VK_FORMAT_R32_SFLOAT: {
+    case VK_FORMAT_R32_SFLOAT:
+    case VK_FORMAT_R32_UINT:
+    case VK_FORMAT_R64_UINT: {
       return 1;
     }
     case VK_FORMAT_R8G8_UNORM:
     case VK_FORMAT_R8G8_SRGB:
     case VK_FORMAT_R16G16_SFLOAT:
-    case VK_FORMAT_R32G32_SFLOAT: {
+    case VK_FORMAT_R32G32_SFLOAT:
+    case VK_FORMAT_R32G32_UINT: {
       return 2;
     }
     case VK_FORMAT_R8G8B8_UNORM:

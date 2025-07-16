@@ -180,6 +180,9 @@ public:
     return _value < other._value;
   }
 
+  constexpr auto value() const noexcept -> value_type {
+    return _value;
+  }
 
 private:
 

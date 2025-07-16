@@ -53,10 +53,12 @@ render_stage::render_stage(std::vector<graphics::attachment>&& attachments, std:
   _subpass_bindings{std::move(subpass_bindings)},
   _viewport{viewport},
   _render_pass{nullptr},
-  _subpass_attachment_counts{} {
+  _subpass_attachment_counts{},
+  _subpass_attachments{} {
   auto attachment_counts = _subpass_bindings.size();
 
   _subpass_attachment_counts.resize(attachment_counts, 0u);
+  _subpass_attachments.resize(attachment_counts);
 
   for (const auto& attachment : _attachments) {
     auto clear_value = VkClearValue{};
@@ -145,6 +147,10 @@ auto render_stage::subpasses() const noexcept -> const std::vector<subpass_bindi
 
 auto render_stage::attachment_count(std::uint32_t subpass) const -> std::uint32_t {
   return _subpass_attachment_counts[subpass];
+}
+
+auto render_stage::subpass_attachments(std::uint32_t subpass) const -> const std::vector<std::uint32_t>& {
+  return _subpass_attachments[subpass];
 }
 
 auto render_stage::clear_values() const noexcept -> const std::vector<VkClearValue>& {
@@ -359,6 +365,7 @@ auto render_stage::_update_subpass_attachment_counts(const graphics::attachment&
   for (const auto& subpass : _subpass_bindings) {
     if (auto bindings = subpass.color_attachments(); ranges::contains(bindings, attachment.binding())) {
       _subpass_attachment_counts[subpass.binding()]++;
+      _subpass_attachments[subpass.binding()].push_back(attachment.binding());
     }
   }
 }

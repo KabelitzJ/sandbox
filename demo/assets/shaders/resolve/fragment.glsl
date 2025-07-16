@@ -26,16 +26,22 @@ layout(set = 0, binding = 2, input_attachment_index = 0) uniform subpassInput al
 layout(set = 0, binding = 3, input_attachment_index = 1) uniform subpassInput position_image; 
 layout(set = 0, binding = 4, input_attachment_index = 2) uniform subpassInput normal_image;
 layout(set = 0, binding = 5, input_attachment_index = 3) uniform subpassInput material_image;
+layout(set = 0, binding = 6, input_attachment_index = 4) uniform usubpassInput selection_image;
 
 const vec4 AMBIENT_COLOR = vec4(0.4, 0.4, 0.4, 1.0);
 const vec4 SPECULAR_COLOR = vec4(0.9, 0.9, 0.9, 1.0);
 const float GLOSSINESS = 32.0;
+
+float uint_to_float(uint value) {
+  return float(value) / 4294967295.0;
+}
 
 void main() {
   vec3 world_position = subpassLoad(position_image).xyz;
   vec3 normal = normalize(subpassLoad(normal_image).xyz);
   vec4 albedo = subpassLoad(albedo_image);
   vec2 material = subpassLoad(material_image).xy;
+  uvec2 selection = subpassLoad(selection_image).xy;
 
   float metallic = material.x;
   float roughness = material.y;
@@ -57,5 +63,5 @@ void main() {
 
   vec4 color = ambient + diffuse + specular;
 
-  out_color = color;
+  out_color = vec4(uint_to_float(selection.x), uint_to_float(selection.y), 0.0, 1.0);
 }

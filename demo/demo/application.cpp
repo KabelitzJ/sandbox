@@ -65,6 +65,8 @@ application::application()
 
   _image_ids.emplace("fox", graphics_module.add_resource<sbx::graphics::image2d>("demo/assets/textures/fox/albedo.png"));
 
+  _image_ids.emplace("women", graphics_module.add_resource<sbx::graphics::image2d>("demo/assets/textures/women/albedo.png"));
+
   _cube_image_ids.emplace("skybox", graphics_module.add_resource<sbx::graphics::cube_image>("demo/assets/skyboxes/clouds"));
 
   // Meshes
@@ -103,7 +105,10 @@ application::application()
 
   _mesh_ids.emplace("fox", graphics_module.add_asset<sbx::animations::mesh>("demo/assets/meshes/fox/fox.gltf"));
 
-  const auto animation_id = graphics_module.add_asset<sbx::animations::animation>("demo/assets/meshes/fox/fox.gltf");
+  _mesh_ids.emplace("women", graphics_module.add_asset<sbx::animations::mesh>("demo/assets/meshes/women/women.gltf"));
+
+  const auto fox_animation_id = graphics_module.add_asset<sbx::animations::animation>("demo/assets/meshes/fox/fox.gltf");
+  const auto women_animation_id = graphics_module.add_asset<sbx::animations::animation>("demo/assets/meshes/women/women.gltf");
 
   // _mesh_ids.emplace("icosphere", graphics_module.add_asset<sbx::models::mesh>(_generate_icosphere(20.0f, 4u)));
 
@@ -154,18 +159,31 @@ application::application()
 
   // Animated Fox
 
-  auto fox = scene.create_node("Fox");
+  // auto fox = scene.create_node("Fox");
 
-  auto fox_submeshes = std::vector<sbx::scenes::skinned_mesh::submesh>{};
-  fox_submeshes.push_back(sbx::scenes::skinned_mesh::submesh{0u, sbx::math::color::white(), sbx::scenes::skinned_mesh::material{0.2f, 0.5f, 0.1f, 0.8f}, _image_ids["fox"]});
+  // auto fox_submeshes = std::vector<sbx::scenes::skinned_mesh::submesh>{};
+  // fox_submeshes.push_back(sbx::scenes::skinned_mesh::submesh{0u, sbx::math::color::white(), sbx::scenes::skinned_mesh::material{0.2f, 0.5f, 0.1f, 0.8f}, _image_ids["fox"]});
 
-  scene.add_component<sbx::scenes::skinned_mesh>(fox, _mesh_ids["fox"], animation_id, fox_submeshes);
+  // scene.add_component<sbx::scenes::skinned_mesh>(fox, _mesh_ids["fox"], fox_animation_id, fox_submeshes);
 
-  scene.add_component<sbx::scenes::animation_state>(fox);
+  // scene.add_component<sbx::scenes::animation_state>(fox);
 
-  auto& fox_transform = scene.get_component<sbx::math::transform>(fox);
-  fox_transform.set_position(sbx::math::vector3{0.0f, 10.0f, 0.0f});
-  fox_transform.set_scale(sbx::math::vector3{0.1f, 0.1f, 0.1f});
+  // auto& fox_transform = scene.get_component<sbx::math::transform>(fox);
+  // fox_transform.set_position(sbx::math::vector3{0.0f, 10.0f, 0.0f});
+  // fox_transform.set_scale(sbx::math::vector3{0.1f, 0.1f, 0.1f});
+
+  auto women = scene.create_node("Women");
+
+  auto women_submeshes = std::vector<sbx::scenes::skinned_mesh::submesh>{};
+  women_submeshes.push_back(sbx::scenes::skinned_mesh::submesh{0u, sbx::math::color::white(), sbx::scenes::skinned_mesh::material{0.2f, 0.5f, 0.1f, 0.8f}, _image_ids["women"]});
+
+  scene.add_component<sbx::scenes::skinned_mesh>(women, _mesh_ids["women"], women_animation_id, women_submeshes);
+
+  scene.add_component<sbx::scenes::animation_state>(women);
+
+  auto& women_transform = scene.get_component<sbx::math::transform>(women);
+  women_transform.set_position(sbx::math::vector3{0.0f, 2.0f, 5.0f});
+  women_transform.set_scale(sbx::math::vector3{0.1f, 0.1f, 0.1f});
 
   // Trees
 

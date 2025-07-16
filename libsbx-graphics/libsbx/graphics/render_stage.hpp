@@ -23,7 +23,10 @@ namespace sbx::graphics {
 enum class format : std::uint32_t {
   undefined = VK_FORMAT_UNDEFINED,
   r32_sfloat = VK_FORMAT_R32_SFLOAT,
+  r32_uint = VK_FORMAT_R32_UINT,
+  r64_uint = VK_FORMAT_R64_UINT,
   r32g32_sfloat = VK_FORMAT_R32G32_SFLOAT,
+  r32g32_uint = VK_FORMAT_R32G32_UINT,
   r8g8b8a8_unorm = VK_FORMAT_R8G8B8A8_UNORM,
   b8g8r8a8_srgb = VK_FORMAT_B8G8R8A8_SRGB,
   r32g32b32a32_sfloat = VK_FORMAT_R32G32B32A32_SFLOAT
@@ -263,6 +266,8 @@ public:
 
   auto attachment_count(std::uint32_t subpass) const -> std::uint32_t;
 
+  auto subpass_attachments(std::uint32_t subpass) const -> const std::vector<std::uint32_t>&;
+
   auto clear_values() const noexcept -> const std::vector<VkClearValue>&;
 
   auto has_depth_attachment() const noexcept -> bool;
@@ -311,6 +316,7 @@ private:
 
   std::vector<VkClearValue> _clear_values;
   std::vector<std::uint32_t> _subpass_attachment_counts;
+  std::vector<std::vector<std::uint32_t>> _subpass_attachments;
   std::optional<graphics::attachment> _depth_attachment;
   std::optional<graphics::attachment> _swapchain_attachment;
 

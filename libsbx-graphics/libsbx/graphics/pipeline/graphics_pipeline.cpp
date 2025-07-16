@@ -257,29 +257,42 @@ graphics_pipeline::graphics_pipeline(const std::filesystem::path& path, const pi
   multisample_state.sampleShadingEnable = false;
   multisample_state.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 
-  auto color_blend_attachment = VkPipelineColorBlendAttachmentState{};
+  auto color_blend_attachment_enabled = VkPipelineColorBlendAttachmentState{};
+  color_blend_attachment_enabled.blendEnable = true;
+  color_blend_attachment_enabled.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+  color_blend_attachment_enabled.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+  color_blend_attachment_enabled.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+  color_blend_attachment_enabled.colorBlendOp = VK_BLEND_OP_ADD;
+  color_blend_attachment_enabled.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+  color_blend_attachment_enabled.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+  color_blend_attachment_enabled.alphaBlendOp = VK_BLEND_OP_ADD;
 
-  if (definition.uses_transparency) {
-    color_blend_attachment.blendEnable = true;
-    color_blend_attachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-    color_blend_attachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
-    color_blend_attachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-    color_blend_attachment.colorBlendOp = VK_BLEND_OP_ADD;
-    color_blend_attachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-    color_blend_attachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-    color_blend_attachment.alphaBlendOp = VK_BLEND_OP_ADD;
-  } else {
-    color_blend_attachment.blendEnable = false;
-    color_blend_attachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-    color_blend_attachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
-    color_blend_attachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
-    color_blend_attachment.colorBlendOp = VK_BLEND_OP_ADD;
-    color_blend_attachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-    color_blend_attachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-    color_blend_attachment.alphaBlendOp = VK_BLEND_OP_ADD;
+  auto color_blend_attachment_disabled = VkPipelineColorBlendAttachmentState{};
+  color_blend_attachment_disabled.blendEnable = false;
+  color_blend_attachment_disabled.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+  color_blend_attachment_disabled.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
+  color_blend_attachment_disabled.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
+  color_blend_attachment_disabled.colorBlendOp = VK_BLEND_OP_ADD;
+  color_blend_attachment_disabled.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+  color_blend_attachment_disabled.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+  color_blend_attachment_disabled.alphaBlendOp = VK_BLEND_OP_ADD;
+
+  // auto color_blend_attachments = std::vector<VkPipelineColorBlendAttachmentState>{render_stage.attachment_count(_stage.subpass), color_blend_attachment};
+
+  const auto subpass_attachments = render_stage.subpass_attachments(_stage.subpass);
+
+  auto color_blend_attachments = std::vector<VkPipelineColorBlendAttachmentState>{};
+  color_blend_attachments.reserve(subpass_attachments.size());
+
+  for (const auto& attachment_id : subpass_attachments) {
+    const auto attachment = render_stage.find_attachment(attachment_id);
+
+    if (!definition.uses_transparency || attachment->format() == graphics::format::r32_uint || attachment->format() == graphics::format::r64_uint || attachment->format() == graphics::format::r32g32_uint) {
+      color_blend_attachments.push_back(color_blend_attachment_disabled);
+    } else {
+      color_blend_attachments.push_back(color_blend_attachment_enabled);
+    }
   }
-
-  auto color_blend_attachments = std::vector<VkPipelineColorBlendAttachmentState>{render_stage.attachment_count(_stage.subpass), color_blend_attachment};
 
   auto color_blend_state = VkPipelineColorBlendStateCreateInfo{};
   color_blend_state.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;

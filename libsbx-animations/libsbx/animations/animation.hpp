@@ -56,6 +56,12 @@ public:
       throw std::runtime_error{fmt::format("Error loading mesh '{}': {}", path.string(), importer.GetErrorString())};
     }
 
+    for (auto i = 0u; i < scene->mNumAnimations; ++i) {
+      const auto* anim = scene->mAnimations[i];
+
+      utility::logger<"animations">::debug("Animation: {}", anim->mName.C_Str());
+    }
+
     const aiAnimation* anim = scene->mAnimations[1]; // or all animations
     this->name = anim->mName.C_Str();
     this->ticks_per_second = anim->mTicksPerSecond > 0.0 ? static_cast<float>(anim->mTicksPerSecond) : 25.0f;

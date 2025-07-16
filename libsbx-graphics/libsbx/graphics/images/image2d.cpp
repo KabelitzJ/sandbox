@@ -54,6 +54,7 @@ static auto bytes_per_channel(VkFormat format) -> std::uint8_t {
       return 2;
     }
     case VK_FORMAT_R32_SFLOAT:
+    case VK_FORMAT_R32_UINT:
     case VK_FORMAT_R32G32_SFLOAT:
     case VK_FORMAT_R32G32B32A32_SFLOAT: {
       return 4;

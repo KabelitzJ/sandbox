@@ -282,6 +282,12 @@ auto logical_device::_get_enabled_features(const physical_device& physical_devic
 		utility::logger<"graphics">::warn("Selected GPU does not support multi viewports");
   }
 
+  if (available_core_features.independentBlend) {
+    enabled_core_features.independentBlend = true;
+  } else {
+    utility::logger<"graphics">::warn("Selected GPU does not support independent  blend");
+  }
+
   if (available_core_features.multiDrawIndirect) {
     enabled_core_features.multiDrawIndirect = true;
   } else {

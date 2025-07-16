@@ -58,6 +58,18 @@ public:
     });
   }
 
+  auto add_coordinate_arrows(const math::matrix4x4& transform, std::float_t length = 2.0f, std::float_t tip_size = 0.2f) -> void {
+    const auto origin = math::vector3{transform[3]};
+
+    const auto x_axis = math::vector3::normalized(transform[0]);
+    const auto y_axis = math::vector3::normalized(transform[1]);
+    const auto z_axis = math::vector3::normalized(transform[2]);
+
+    add_debug_line(origin, origin + x_axis * length, math::color::red());
+    add_debug_line(origin, origin + y_axis * length, math::color::green());
+    add_debug_line(origin, origin + z_axis * length, math::color::blue());
+  }
+
   auto add_debug_plane(const sbx::math::vector3& origin, const sbx::math::vector3& v1, const sbx::math::vector3& v2, std::uint32_t n1, std::uint32_t n2, std::float_t s1, std::float_t s2, const sbx::math::color& color, const sbx::math::color& outline) -> void {
     add_debug_line(origin - s1 / 2.0f * v1 - s2 / 2.0f * v2, origin - s1 / 2.0f * v1 + s2 / 2.0f * v2, outline);
     add_debug_line(origin + s1 / 2.0f * v1 - s2 / 2.0f * v2, origin + s1 / 2.0f * v1 + s2 / 2.0f * v2, outline);

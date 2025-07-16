@@ -13,7 +13,8 @@ struct transform_data {
 struct instance_data {
   vec4 tint;
   vec4 material; // x: metallic, y: roughness, z: flexiblity, w: anchor height
-  vec4 image_indices; // x: albedo image index, y: normal image index, z: transform data index, w: unused
+  uvec4 image_indices; // x: albedo image index, y: normal image index, z: transform data index, w: unused
+  uvec4 selection; // x: upper 32 bit of id, y: lower 32 bit of id, z: unused, w: unused
 }; // struct instance_data
 
 struct vertex {
@@ -53,8 +54,8 @@ layout(location = 2) out mat3 out_tbn; // Needs 3 locations slots (2, 3, 4)
 layout(location = 5) out vec2 out_uv;
 layout(location = 6) out vec4 out_color;
 layout(location = 7) out vec2 out_material;
-layout(location = 8) out flat uint out_albedo_image_index;
-layout(location = 9) out flat uint out_normal_image_index;
+layout(location = 8) out flat uvec2 out_image_indices;
+layout(location = 9) out flat uvec2 out_selection;
 
 layout(buffer_reference, std430) readonly buffer vertex_buffer_reference { 
 	vertex data[];
@@ -131,8 +132,8 @@ void main() {
   out_color = instance_data.tint;
   out_material = instance_data.material.xy;
 
-  out_albedo_image_index = uint(instance_data.image_indices.x);
-  out_normal_image_index = uint(instance_data.image_indices.y);
+  out_image_indices = instance_data.image_indices.xy;
+  out_selection = instance_data.selection.xy;
 
   gl_Position = scene.projection * scene.view * vec4(out_position, 1.0);
 }
