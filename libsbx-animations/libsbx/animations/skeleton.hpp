@@ -7,6 +7,7 @@
 #include <cmath>
 
 #include <libsbx/utility/logger.hpp>
+#include <libsbx/utility/hashed_string.hpp>
 
 #include <libsbx/math/matrix4x4.hpp>
 
@@ -65,7 +66,7 @@ public:
 
     for (std::uint32_t bone_id = 0; bone_id < _bones.size(); ++bone_id) {
       const auto& bone = _bones[bone_id];
-      const std::string& bone_name = _bone_ids_to_names[bone_id];
+      const auto& bone_name = _bone_ids_to_names[bone_id];
 
       math::matrix4x4 local_transform = math::matrix4x4::identity;
 
@@ -126,8 +127,8 @@ public:
 private:
 
   std::vector<bone> _bones;
-  std::vector<std::string> _bone_ids_to_names;
-  std::unordered_map<std::string, std::uint32_t> _bone_names;
+  std::vector<utility::hashed_string> _bone_ids_to_names;
+  std::unordered_map<utility::hashed_string, std::uint32_t> _bone_names;
   
   math::matrix4x4 _inverse_root_transform;
 

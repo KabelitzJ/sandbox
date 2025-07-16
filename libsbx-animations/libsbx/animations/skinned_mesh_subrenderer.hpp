@@ -170,23 +170,27 @@ private:
     const auto mesh_id = skinned_mesh.mesh_id();
 
     auto& mesh = graphics_module.get_asset<animations::mesh>(mesh_id);
-    // auto& animation = graphics_module.get_asset<animations::animation>(skinned_mesh.animation_id());
+    auto& animation = graphics_module.get_asset<animations::animation>(skinned_mesh.animation_id());
 
-    // auto& skeleton = mesh.skeleton();
+    auto& skeleton = mesh.skeleton();
 
-    // // Advance current time in TICKS
-    // animation_state.current_time += (core::engine::delta_time().value() * animation_state.speed);
+    // Advance current time in TICKS
+    animation_state.current_time += (core::engine::delta_time().value() * animation_state.speed);
 
-    // // Wrap if looping
-    // if (animation_state.looping && animation_state.current_time > animation.duration) {
-    //   animation_state.current_time = std::fmod(animation_state.current_time, animation.duration);
-    // }
+    // Wrap if looping
+    if (animation_state.looping && animation_state.current_time > animation.duration) {
+      animation_state.current_time = std::fmod(animation_state.current_time, animation.duration);
+    }
 
-    // auto bone_matrices = skeleton.evaluate_pose(animation, animation_state.current_time);
+    auto bone_matrices = skeleton.evaluate_pose(animation, animation_state.current_time);
 
-    // const auto bone_matrices_offset = _bone_matrices.size();
+    // [NOTE] : Get this offset befor appending the new matrices to get the offset into the big array in the shader
+    const auto bone_matrices_offset = _bone_matrices.size();
 
-    // utility::append(_bone_matrices, std::move(bone_matrices));
+    auto temp = std::vector<math::matrix4x4>{};
+    temp.resize(bone_matrices.size(), math::matrix4x4::identity);
+
+    utility::append(_bone_matrices, std::move(bone_matrices));
 
     const auto& global_transform = scene.get_component<const scenes::global_transform>(node);
 
@@ -206,7 +210,7 @@ private:
       const auto albedo_image_index = submesh.albedo_texture ? _images.push_back(submesh.albedo_texture) : graphics::separate_image2d_array::max_size;
       const auto normal_image_index = submesh.normal_texture ? _images.push_back(submesh.normal_texture) : graphics::separate_image2d_array::max_size;
 
-      const auto payload = math::vector4u{albedo_image_index, normal_image_index, transform_data_index, 0u};
+      const auto payload = math::vector4u{albedo_image_index, normal_image_index, transform_data_index, bone_matrices_offset};
       const auto material = math::vector4{submesh.material.metallic, submesh.material.roughness, submesh.material.flexibility, submesh.material.anchor_height};
       const auto selection = math::vector4u{upper_id, lower_id, 0u, 0u};
 

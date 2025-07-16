@@ -92,6 +92,11 @@ private:
 
 }; // class basic_hashed_string
 
+template<character Char, typename Hash = std::uint64_t, typename HashFunction = fnv1a_hash<Char, Hash>>
+constexpr auto operator==(const basic_hashed_string<Char, Hash, HashFunction>& lhs, const basic_hashed_string<Char, Hash, HashFunction>& rhs) noexcept -> bool {
+  return lhs.hash() == rhs.hash();
+}
+
 using hashed_string = basic_hashed_string<char>;
 
 using hashed_wstring = basic_hashed_string<wchar_t>;

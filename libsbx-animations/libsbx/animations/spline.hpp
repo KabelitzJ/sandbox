@@ -47,6 +47,10 @@ public:
     }
   }
 
+  auto size() const noexcept -> std::size_t {
+    return _timestamps.size();
+  }
+
 private:
 
   std::vector<std::float_t> _timestamps;

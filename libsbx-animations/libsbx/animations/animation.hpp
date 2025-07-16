@@ -10,6 +10,7 @@
 #include <assimp/postprocess.h>
 
 #include <libsbx/utility/logger.hpp>
+#include <libsbx/utility/hashed_string.hpp>
 
 #include <libsbx/math/vector3.hpp>
 #include <libsbx/math/quaternion.hpp>
@@ -23,7 +24,6 @@ class animation {
 public:
 
   struct bone_track {
-    std::string bone_name;
     spline<math::vector3> position_spline;
     spline<math::quaternion> rotation_spline;
     spline<math::vector3> scale_spline;
@@ -32,8 +32,8 @@ public:
   std::string name;
   float duration = 0.0f;
   float ticks_per_second = 25.0f;
-  std::vector<bone_track> tracks;
-  std::unordered_map<std::string, animation::bone_track> track_map;
+  // std::vector<bone_track> tracks;
+  std::unordered_map<utility::hashed_string, bone_track> track_map;
 
   animation(const std::filesystem::path& path) {
     static const auto import_flags =
@@ -56,12 +56,6 @@ public:
       throw std::runtime_error{fmt::format("Error loading mesh '{}': {}", path.string(), importer.GetErrorString())};
     }
 
-    for (auto i = 0u; i < scene->mNumAnimations; ++i) {
-      const auto* anim = scene->mAnimations[i];
-
-      utility::logger<"animations">::debug("Animation: {}", anim->mName.C_Str());
-    }
-
     const aiAnimation* anim = scene->mAnimations[0]; // or all animations
     this->name = anim->mName.C_Str();
     this->ticks_per_second = anim->mTicksPerSecond > 0.0 ? static_cast<float>(anim->mTicksPerSecond) : 25.0f;
@@ -70,7 +64,7 @@ public:
     for (unsigned i = 0; i < anim->mNumChannels; ++i) {
       const aiNodeAnim* channel = anim->mChannels[i];
       animation::bone_track track;
-      track.bone_name = channel->mNodeName.C_Str();
+      const auto bone_name = std::string{channel->mNodeName.C_Str()};
 
       for (unsigned k = 0; k < channel->mNumPositionKeys; ++k) {
         const auto time = static_cast<float>(channel->mPositionKeys[k].mTime / this->ticks_per_second);
@@ -93,11 +87,7 @@ public:
         track.scale_spline.add(time, scale);
       }
 
-      this->tracks.push_back(std::move(track));
-    }
-
-    for (const auto& track : tracks) {
-      track_map[track.bone_name] = track;
+      track_map.emplace(bone_name, std::move(track));
     }
   }
 
