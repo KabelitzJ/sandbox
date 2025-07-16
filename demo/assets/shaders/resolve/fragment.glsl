@@ -63,5 +63,5 @@ void main() {
 
   vec4 color = ambient + diffuse + specular;
 
-  out_color = vec4(uint_to_float(selection.x), uint_to_float(selection.y), 0.0, 1.0);
+  out_color = color;
 }
