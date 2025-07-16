@@ -5,6 +5,7 @@
 #include <unordered_set>
 #include <ranges>
 #include <algorithm>
+#include <iterator>
 
 #include <easy/profiler.h>
 
@@ -27,6 +28,7 @@
 #include <libsbx/utility/logger.hpp>
 #include <libsbx/utility/timer.hpp>
 #include <libsbx/utility/layout.hpp>
+#include <libsbx/utility/iterator.hpp>
 
 #include <libsbx/core/engine.hpp>
 
@@ -120,7 +122,7 @@ public:
     _bone_matrices.clear();
     _images.clear();
 
-    std::ranges::fill(_bone_matrices, math::matrix4x4::identity);
+    // std::ranges::fill(_bone_matrices, math::matrix4x4::identity);
 
     SBX_SCOPED_TIMER_BLOCK("skinned_mesh_subrenderer::submit") {
       auto mesh_query = scene.query<const scenes::skinned_mesh, scenes::animation_state>();
@@ -183,7 +185,7 @@ private:
 
     const auto bone_matrices_offset = _bone_matrices.size();
 
-    _bone_matrices.insert(_bone_matrices.end(), bone_matrices.begin(), bone_matrices.end());
+    utility::append(_bone_matrices, std::move(bone_matrices));
 
     const auto& global_transform = scene.get_component<const scenes::global_transform>(node);
 
@@ -233,13 +235,13 @@ private:
 
     EASY_BLOCK("build draw commands");
 
-    for (const auto& [mesh_id, submesh] : _submesh_instances) {
+    for (auto&& [mesh_id, submesh] : _submesh_instances) {
       auto& mesh = graphics_module.get_asset<animations::mesh>(mesh_id);
 
       auto range = draw_command_range{};
       range.offset = static_cast<uint32_t>(draw_commands.size());
 
-      for (const auto& [submesh_index, instances] : ranges::views::enumerate(submesh)) {
+      for (auto&& [submesh_index, instances] : ranges::views::enumerate(submesh)) {
         if (instances.empty()) {
           continue;
         }
@@ -257,7 +259,9 @@ private:
         // command.firstInstance = 0u;
 
         draw_commands.push_back(command);
-        instance_data.insert(instance_data.end(), instances.begin(), instances.end());
+
+        utility::append(instance_data, std::move(instances));
+        // instance_data.insert(instance_data.end(), instances.begin(), instances.end());
 
         base_instance += instance_count;
         range.count++;

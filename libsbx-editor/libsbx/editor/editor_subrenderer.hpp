@@ -29,6 +29,7 @@
 #include <libsbx/editor/themes.hpp>
 #include <libsbx/editor/fonts.hpp>
 #include <libsbx/editor/dialog.hpp>
+#include <libsbx/editor/menu_bar.hpp>
 
 namespace sbx::editor {
 
@@ -77,6 +78,41 @@ public:
     _editor_font.load_font("JetBrainsMono", "demo/assets/fonts/JetBrainsMono-Medium.ttf", 16.0f);
 
     _editor_font.set_active_font("Roboto");
+
+    auto project_menu_new = editor::menu_item{};
+    project_menu_new.title = "New...";
+    project_menu_new.separator_after = true;
+    project_menu_new.on_click = [this]() { utility::logger<"editor">::debug("Project::New clicked"); };
+
+    auto project_menu_open = editor::menu_item{};
+    project_menu_open.title = "Open...";
+    project_menu_open.short_cut = "Ctrl+O";
+    project_menu_open.separator_after = true;
+    project_menu_open.on_click = [this]() { utility::logger<"editor">::debug("Project::Open clicked"); };
+
+    auto project_menu_save = editor::menu_item{};
+    project_menu_save.title = "Save";
+    project_menu_save.short_cut = "Ctrl+S";
+    project_menu_save.on_click = [this]() { utility::logger<"editor">::debug("Project::Save clicked"); };
+
+    auto project_menu_save_as = editor::menu_item{};
+    project_menu_save_as.title = "Save As...";
+    project_menu_save_as.separator_after = true;
+    project_menu_save_as.on_click = [this]() { utility::logger<"editor">::debug("Project::SaveAs clicked"); };
+
+    auto project_menu_preferences = editor::menu_item{};
+    project_menu_preferences.title = "Preferences";
+    project_menu_preferences.on_click = [this]() { _open_popups.set(popup::menu_preferences); };
+
+    auto project_menu = editor::menu{};
+    project_menu.title = "Project";
+    project_menu.items.push_back(project_menu_new);
+    project_menu.items.push_back(project_menu_open);
+    project_menu.items.push_back(project_menu_save);
+    project_menu.items.push_back(project_menu_save_as);
+    project_menu.items.push_back(project_menu_preferences);
+
+    _menu.push_back(project_menu);
 
     auto& device_module = sbx::core::engine::get_module<sbx::devices::devices_module>();
     auto& graphics_module = sbx::core::engine::get_module<sbx::graphics::graphics_module>();
@@ -158,7 +194,7 @@ private:
     hierarchy_add_new_node = utility::bit_v<0u>,
     hierarchy_add_component = utility::bit_v<1u>,
     hierarchy_delete = utility::bit_v<2u>,
-    settings = utility::bit_v<3u>
+    menu_preferences = utility::bit_v<3u>
   }; // enum class popup
 
   auto _setup_dockspace() -> void {
@@ -185,34 +221,7 @@ private:
     ImGui::Begin("DockSpaceWithMenuBar", nullptr, window_flags);
     ImGui::PopStyleVar(2);
 
-    if (ImGui::BeginMenuBar()) {
-      if (ImGui::BeginMenu("File")) {
-        if (ImGui::MenuItem("Save", "Ctrl+S")) { 
-          _save(); 
-        }
-        if (ImGui::MenuItem("Load", "Ctrl+L")) { 
-          _load(); 
-        }
-        if (ImGui::MenuItem("Exit")) {
-          sbx::core::engine::quit();
-        }
-        ImGui::EndMenu();
-      }
-
-      if (ImGui::BeginMenu("Edit")) {
-        if (ImGui::MenuItem("Undo", "Ctrl+Z")) { 
-          _undo();
-        }
-        ImGui::EndMenu();
-      }
-
-      if (ImGui::BeginMenu("Settings")) {
-        _open_popups.set(popup::settings);
-        ImGui::EndMenu();
-      }
-
-      ImGui::EndMenuBar();
-    }
+    add_menu_bar(_menu);
 
     // Create the dock space
     const auto dockspace_id = ImGui::GetID("DockSpace");
@@ -371,8 +380,8 @@ private:
     auto& graphics_module = sbx::core::engine::get_module<sbx::graphics::graphics_module>();
 
     {
-      if (_open_popups.has(popup::settings)) {
-        _open_popups.clear(popup::settings);
+      if (_open_popups.has(popup::menu_preferences)) {
+        _open_popups.clear(popup::menu_preferences);
         ImGui::OpenPopup("Settings");
       }
 
@@ -382,7 +391,7 @@ private:
 
       ImGui::SetNextWindowSizeConstraints(ImVec2{600, 400}, ImVec2{800, 600});
 
-      if (ImGui::BeginPopupModal("Settings", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+      if (ImGui::BeginPopupModal("Preferences", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
         static const auto categories = std::array<std::string_view, 4u>{ "General", "Display", "Audio", "Controls" };
         static auto selected_category = std::uint32_t{0u};
 
@@ -1178,6 +1187,8 @@ private:
   std::vector<std::float_t> _deltas;
   std::vector<std::float_t> _time_stamps;
   sbx::units::second _elapsed;
+
+  std::vector<editor::menu> _menu;
 
   editor::themes _editor_theme;
   editor::fonts _editor_font;

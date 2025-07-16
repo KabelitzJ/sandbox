@@ -28,6 +28,7 @@
 #include <libsbx/utility/logger.hpp>
 #include <libsbx/utility/timer.hpp>
 #include <libsbx/utility/layout.hpp>
+#include <libsbx/utility/iterator.hpp>
 
 #include <libsbx/core/engine.hpp>
 
@@ -298,13 +299,13 @@ private:
 
     EASY_BLOCK("build draw commands");
 
-    for (const auto& [mesh_id, submesh] : _submesh_instances) {
+    for (auto&& [mesh_id, submesh] : _submesh_instances) {
       auto& mesh = graphics_module.get_asset<models::mesh>(mesh_id);
 
       auto range = draw_command_range{};
       range.offset = static_cast<uint32_t>(draw_commands.size());
 
-      for (const auto& [submesh_index, instances] : ranges::views::enumerate(submesh)) {
+      for (auto&& [submesh_index, instances] : ranges::views::enumerate(submesh)) {
         if (instances.empty()) {
           continue;
         }
@@ -322,7 +323,9 @@ private:
         // command.firstInstance = 0u;
 
         draw_commands.push_back(command);
-        instance_data.insert(instance_data.end(), instances.begin(), instances.end());
+
+        utility::append(instance_data, std::move(instances));
+        // instance_data.insert(instance_data.end(), instances.begin(), instances.end());
 
         base_instance += instance_count;
         range.count++;

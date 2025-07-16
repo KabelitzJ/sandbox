@@ -1,10 +1,11 @@
 #ifndef LIBSBX_UTILITY_ITERATOR_HPP_
 #define LIBSBX_UTILITY_ITERATOR_HPP_
 
+#include <concepts>
 #include <cstddef>
 #include <iterator>
-#include <type_traits>
 #include <ranges>
+#include <type_traits>
 
 #include <range/v3/all.hpp>
 
@@ -33,6 +34,20 @@ requires (ranges::output_range<To<std::invoke_result_t<Fn, const ranges::range_v
 auto map_to(Range&& range, Fn&& fn) -> To<std::invoke_result_t<Fn, const ranges::range_value_t<Range>&>> {
   return std::forward<Range>(range) | ranges::views::transform(std::forward<Fn>(fn)) | ranges::to<To>();
 }
+
+template<std::movable Type>
+auto append(std::vector<Type>& destination, std::vector<Type>&& source) -> void {
+  destination.reserve(destination.size() + source.size());
+  destination.insert(destination.end(), std::make_move_iterator(source.begin()), std::make_move_iterator(source.end()));
+  source.clear();
+}
+
+template<std::copyable Type>
+auto append(std::vector<Type>& destination, const std::vector<Type>& source) -> void {
+  destination.reserve(destination.size() + source.size());
+  destination.insert(destination.end(), source.begin(), source.end());
+}
+
 
 } // namespace sbx::utility
 
