@@ -27,7 +27,7 @@ public:
     _target{sbx::math::vector3{0.0f, 0.0f, 0.0f}},
     _zoom{30.0f},
     _min_zoom{2.0f},
-    _max_zoom{120.0f} { }
+    _max_zoom{200.0f} { }
 
   auto update() -> void {
     const auto delta_time = sbx::core::engine::delta_time();
@@ -101,7 +101,12 @@ public:
 
     auto scroll = sbx::devices::input::scroll_delta();
 
-    _zoom = std::clamp(_zoom - 5.0f * scroll.y(), _min_zoom, _max_zoom);
+    const auto base_scroll_speed = 5.0f;
+    const auto zoom_influence = 0.2f; // smaller = less influence
+
+    const auto scale_factor = base_scroll_speed * std::pow(_zoom, zoom_influence);
+
+    _zoom = std::clamp(_zoom - scale_factor * scroll.y(), _min_zoom, _max_zoom);
 
     // Calculate camera position
 
