@@ -62,7 +62,7 @@ public:
       utility::logger<"animations">::debug("Animation: {}", anim->mName.C_Str());
     }
 
-    const aiAnimation* anim = scene->mAnimations[1]; // or all animations
+    const aiAnimation* anim = scene->mAnimations[0]; // or all animations
     this->name = anim->mName.C_Str();
     this->ticks_per_second = anim->mTicksPerSecond > 0.0 ? static_cast<float>(anim->mTicksPerSecond) : 25.0f;
     this->duration = (anim->mDuration > 0.0 ? static_cast<float>(anim->mDuration) : 150.0f) / this->ticks_per_second;

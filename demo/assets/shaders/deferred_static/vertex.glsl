@@ -13,7 +13,7 @@ struct transform_data {
 struct instance_data {
   vec4 tint;
   vec4 material; // x: metallic, y: roughness, z: flexiblity, w: anchor height
-  uvec4 image_indices; // x: albedo image index, y: normal image index, z: transform data index, w: unused
+  uvec4 payload; // x: albedo image index, y: normal image index, z: transform data index, w: unused
   uvec4 selection; // x: upper 32 bit of id, y: lower 32 bit of id, z: unused, w: unused
 }; // struct instance_data
 
@@ -95,7 +95,8 @@ const float MAX_ANCHOR_HEIGHT = 2.0;
 void main() {
   instance_data instance_data = instance_data_buffer.data[gl_InstanceIndex];
 
-  uint transform_data_index = uint(instance_data.image_indices.z);
+  uvec2 image_indices = instance_data.payload.xy;
+  uint transform_data_index = uint(instance_data.payload.z);
 
   transform_data transform_data = transform_data_buffer.data[transform_data_index];
 
@@ -132,7 +133,7 @@ void main() {
   out_color = instance_data.tint;
   out_material = instance_data.material.xy;
 
-  out_image_indices = instance_data.image_indices.xy;
+  out_image_indices = image_indices;
   out_selection = instance_data.selection.xy;
 
   gl_Position = scene.projection * scene.view * vec4(out_position, 1.0);

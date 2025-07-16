@@ -150,9 +150,10 @@ private:
     alignas(16) math::color tint;
     alignas(16) math::vector4 material;
     alignas(16) math::vector4u payload; // x: albedo image index, y: normal image index, y: instance data index, w: bone matrices offset
+    alignas(16) math::vector4u selection;
   }; // struct instance_data
 
-  static_assert(utility::layout_requirements_v<instance_data, 48u , 16u>, "instance_data does not meet layout requirements");
+  static_assert(utility::layout_requirements_v<instance_data, 64u, 16u>, "instance_data does not meet layout requirements");
 
   struct draw_command_range {
     std::uint32_t offset;
@@ -169,25 +170,30 @@ private:
     const auto mesh_id = skinned_mesh.mesh_id();
 
     auto& mesh = graphics_module.get_asset<animations::mesh>(mesh_id);
-    auto& animation = graphics_module.get_asset<animations::animation>(skinned_mesh.animation_id());
+    // auto& animation = graphics_module.get_asset<animations::animation>(skinned_mesh.animation_id());
 
-    auto& skeleton = mesh.skeleton();
+    // auto& skeleton = mesh.skeleton();
 
-    // Advance current time in TICKS
-    animation_state.current_time += (core::engine::delta_time().value() * animation_state.speed);
+    // // Advance current time in TICKS
+    // animation_state.current_time += (core::engine::delta_time().value() * animation_state.speed);
 
-    // Wrap if looping
-    if (animation_state.looping && animation_state.current_time > animation.duration) {
-      animation_state.current_time = std::fmod(animation_state.current_time, animation.duration);
-    }
+    // // Wrap if looping
+    // if (animation_state.looping && animation_state.current_time > animation.duration) {
+    //   animation_state.current_time = std::fmod(animation_state.current_time, animation.duration);
+    // }
 
-    auto bone_matrices = skeleton.evaluate_pose(animation, animation_state.current_time);
+    // auto bone_matrices = skeleton.evaluate_pose(animation, animation_state.current_time);
 
-    const auto bone_matrices_offset = _bone_matrices.size();
+    // const auto bone_matrices_offset = _bone_matrices.size();
 
-    utility::append(_bone_matrices, std::move(bone_matrices));
+    // utility::append(_bone_matrices, std::move(bone_matrices));
 
     const auto& global_transform = scene.get_component<const scenes::global_transform>(node);
+
+    const auto& id = scene.get_component<const scenes::id>(node);
+
+    const auto upper_id = static_cast<std::uint32_t>(id.value() >> 32u);
+    const auto lower_id = static_cast<std::uint32_t>(id.value() & 0xFFFFFFFF);
 
     const auto transform_data_index = static_cast<std::uint32_t>(_transform_data.size());
     _transform_data.emplace_back(global_transform.model, global_transform.normal);
@@ -200,11 +206,12 @@ private:
       const auto albedo_image_index = submesh.albedo_texture ? _images.push_back(submesh.albedo_texture) : graphics::separate_image2d_array::max_size;
       const auto normal_image_index = submesh.normal_texture ? _images.push_back(submesh.normal_texture) : graphics::separate_image2d_array::max_size;
 
-      const auto payload = math::vector4u{albedo_image_index, normal_image_index, transform_data_index, bone_matrices_offset};
+      const auto payload = math::vector4u{albedo_image_index, normal_image_index, transform_data_index, 0u};
       const auto material = math::vector4{submesh.material.metallic, submesh.material.roughness, submesh.material.flexibility, submesh.material.anchor_height};
+      const auto selection = math::vector4u{upper_id, lower_id, 0u, 0u};
 
       instances.resize(std::max(instances.size(), static_cast<std::size_t>(submesh.index + 1u)));
-      instances[submesh.index].push_back(instance_data{submesh.tint, material, payload});
+      instances[submesh.index].push_back(instance_data{submesh.tint, material, payload, selection});
 
       EASY_END_BLOCK;
     }

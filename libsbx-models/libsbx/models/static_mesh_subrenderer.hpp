@@ -232,7 +232,7 @@ private:
   struct instance_data {
     alignas(16) math::color tint;
     alignas(16) math::vector4 material;
-    alignas(16) math::vector4u image_indices;
+    alignas(16) math::vector4u payload; // x: albedo image index, y: normal image index, y: instance data index, w: bone matrices offset
     alignas(16) math::vector4u selection;
   }; // struct instance_data
 
@@ -270,11 +270,11 @@ private:
       const auto normal_image_index = submesh.normal_texture ? _images.push_back(submesh.normal_texture) : graphics::separate_image2d_array::max_size;
 
       const auto material = math::vector4{submesh.material.metallic, submesh.material.roughness, submesh.material.flexibility, submesh.material.anchor_height};
-      const auto image_indices = math::vector4u{albedo_image_index, normal_image_index, transform_data_index, 0u};
+      const auto payload = math::vector4u{albedo_image_index, normal_image_index, transform_data_index, 0u};
       const auto selection = math::vector4u{upper_id, lower_id, 0u, 0u};
 
       instances.resize(std::max(instances.size(), static_cast<std::size_t>(submesh.index + 1u)));
-      instances[submesh.index].push_back(instance_data{submesh.tint, material, image_indices, selection});
+      instances[submesh.index].push_back(instance_data{submesh.tint, material, payload, selection});
 
       EASY_END_BLOCK;
     }

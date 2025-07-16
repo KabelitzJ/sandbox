@@ -14,6 +14,7 @@ struct instance_data {
   vec4 tint;
   vec4 material; // x: metallic, y: roughness, z: flexiblity, w: anchor height
   uvec4 payload; // x: albedo image index, y: normal image index, z: transform data index, w: bone matrices offset
+  uvec4 selection; // x: upper 32 bit of id, y: lower 32 bit of id, z: unused, w: unused
 }; // struct instance_data
 
 struct vertex {
@@ -164,7 +165,7 @@ void main() {
   out_material = instance_data.material.xy;
 
   out_image_indices = image_indices;
-  out_selection = uvec2(0);
+  out_selection = instance_data.selection.xy;
 
   gl_Position = scene.projection * scene.view * vec4(out_position, 1.0);
 }

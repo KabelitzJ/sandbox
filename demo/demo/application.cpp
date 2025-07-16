@@ -138,14 +138,14 @@ application::application()
 
   _player = scene.create_node("Player");
 
-  auto player_submeshes = std::vector<sbx::scenes::static_mesh::submesh>{};
-  player_submeshes.emplace_back(sbx::scenes::static_mesh::submesh{0u, sbx::math::color::red(), sbx::scenes::static_mesh::material{0.0f, 1.0f, 0.0f, 0.0f}});
+  // auto player_submeshes = std::vector<sbx::scenes::static_mesh::submesh>{};
+  // player_submeshes.emplace_back(sbx::scenes::static_mesh::submesh{0u, sbx::math::color::red(), sbx::scenes::static_mesh::material{0.0f, 1.0f, 0.0f, 0.0f}});
 
-  scene.add_component<sbx::scenes::static_mesh>(_player, _mesh_ids["player"], player_submeshes);
+  // scene.add_component<sbx::scenes::static_mesh>(_player, _mesh_ids["player"], player_submeshes);
 
-  auto& player_transform = scene.get_component<sbx::math::transform>(_player);
-  player_transform.set_position(sbx::math::vector3{0.0f, 1.0f, -4.0f});
-  player_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
+  // auto& player_transform = scene.get_component<sbx::math::transform>(_player);
+  // player_transform.set_position(sbx::math::vector3{0.0f, 1.0f, -4.0f});
+  // player_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
 
   // // Camera
 
@@ -159,7 +159,7 @@ application::application()
 
   // Animated Fox
 
-  // auto fox = scene.create_node("Fox");
+  auto fox = scene.create_node("Fox");
 
   // auto fox_submeshes = std::vector<sbx::scenes::skinned_mesh::submesh>{};
   // fox_submeshes.push_back(sbx::scenes::skinned_mesh::submesh{0u, sbx::math::color::white(), sbx::scenes::skinned_mesh::material{0.2f, 0.5f, 0.1f, 0.8f}, _image_ids["fox"]});
@@ -183,7 +183,7 @@ application::application()
 
   auto& women_transform = scene.get_component<sbx::math::transform>(women);
   women_transform.set_position(sbx::math::vector3{0.0f, 2.0f, 5.0f});
-  women_transform.set_scale(sbx::math::vector3{0.1f, 0.1f, 0.1f});
+  // women_transform.set_scale(sbx::math::vector3{0.1f, 0.1f, 0.1f});
 
   // Trees
 
