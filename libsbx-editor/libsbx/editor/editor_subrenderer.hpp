@@ -518,15 +518,23 @@ private:
 
       if (ImGui::BeginPopupModal("About", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
         ImGui::Text("Sandbox Game Engine");
-        ImGui::Text("A simple game engine for educational purposes.");
-        ImGui::Text("Version: v" SBX_CORE_VERSION_STRING "+" SBX_CORE_TIMESTAMP_STRING);
+        ImGui::Text("Copyright (C) 2025 KAJDEV");
 
+        ImGui::Dummy(ImVec2(0.0f, 5.0f));
         ImGui::Separator();
+        ImGui::Dummy(ImVec2(0.0f, 5.0f));
 
-        ImGui::Text("Developed by:");
-        ImGui::BulletText("KAJDEV");
+        ImGui::Text("A simple game engine for educational purposes.");
+        ImGui::Text("Written in C++20 with a Vulkan backend.");
 
-        ImGui::Dummy(ImVec2(0.0f, 10.0f));
+        ImGui::Dummy(ImVec2(0.0f, 5.0f));
+        ImGui::Separator();
+        ImGui::Dummy(ImVec2(0.0f, 5.0f));
+
+        ImGui::Text("Version: v" SBX_CORE_VERSION_STRING "+" SBX_CORE_TIMESTAMP_STRING);
+        ImGui::Text("License: MIT License");
+
+        ImGui::Dummy(ImVec2(0.0f, 5.0f));
 
         // Right-align buttons
         const auto button_width = 75.0f;

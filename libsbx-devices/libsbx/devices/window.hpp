@@ -9,8 +9,11 @@
 #include <unordered_set>
 #include <cmath>
 
+#include <libsbx/utility/target.hpp>
+
 #include <libsbx/core/concepts.hpp>
 #include <libsbx/core/delegate.hpp>
+#include <libsbx/core/version.hpp>
 
 #include <libsbx/math/vector2.hpp>
 
@@ -39,9 +42,12 @@ public:
     glfwWindowHint(GLFW_VISIBLE, false);
     // glfwWindowHint(GLFW_DECORATED, false);
 
-    _title = create_info.title;
     _width = create_info.width;
     _height = create_info.height;
+
+    if (utility::build_configuration_v == utility::build_configuration::debug) {
+      _title = fmt::format("{} [Debug] v"SBX_CORE_VERSION_STRING"+"SBX_CORE_TIMESTAMP_STRING, create_info.title);
+    }
 
     auto* monitor = glfwGetPrimaryMonitor();
 
@@ -100,6 +106,11 @@ public:
 
   auto set_title(const std::string& title) -> void {
     _title = title;
+
+    if (utility::build_configuration_v == utility::build_configuration::debug) {
+      _title = fmt::format("{} [Debug] v"SBX_CORE_VERSION_STRING"+"SBX_CORE_TIMESTAMP_STRING, _title);
+    }
+
     glfwSetWindowTitle(_handle, _title.c_str());
   }
 
