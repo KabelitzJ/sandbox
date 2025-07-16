@@ -71,7 +71,7 @@ layout(location = 5) out vec2 out_uv;
 layout(location = 6) out vec4 out_color;
 layout(location = 7) out vec2 out_material;
 layout(location = 8) out flat uvec2 out_image_indices;
-layout(location = 9) out flat uvec2 out_selection;
+layout(location = 9) out flat uvec2 out_object_id;
 
 layout(buffer_reference, std430) readonly buffer vertex_buffer_reference { 
 	vertex data[];
@@ -165,7 +165,7 @@ void main() {
   out_material = instance_data.material.xy;
 
   out_image_indices = image_indices;
-  out_selection = instance_data.selection.xy;
+  out_object_id = instance_data.selection.xy;
 
   gl_Position = scene.projection * scene.view * vec4(out_position, 1.0);
 }

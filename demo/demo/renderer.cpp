@@ -56,7 +56,7 @@ renderer::renderer()
       sbx::graphics::attachment{2, "position", sbx::graphics::attachment::type::image, _clear_color, sbx::graphics::format::r32g32b32a32_sfloat},
       sbx::graphics::attachment{3, "normal", sbx::graphics::attachment::type::image, _clear_color, sbx::graphics::format::r32g32b32a32_sfloat},
       sbx::graphics::attachment{4, "material", sbx::graphics::attachment::type::image, _clear_color, sbx::graphics::format::r8g8b8a8_unorm},
-      sbx::graphics::attachment{5, "selection", sbx::graphics::attachment::type::image, _clear_color, sbx::graphics::format::r32g32_uint},
+      sbx::graphics::attachment{5, "object_id", sbx::graphics::attachment::type::image, _clear_color, sbx::graphics::format::r32g32_uint},
       sbx::graphics::attachment{6, "normalized_depth", sbx::graphics::attachment::type::image, sbx::math::color{1.0f, 1.0f, 1.0f, 1.0f}, sbx::graphics::format::r32_sfloat},
       sbx::graphics::attachment{7, "resolve", sbx::graphics::attachment::type::image, _clear_color, sbx::graphics::format::r8g8b8a8_unorm}
     };
@@ -112,7 +112,7 @@ auto renderer::initialize() -> void {
     {"position_image", "position"},
     {"normal_image", "normal"},
     {"material_image", "material"},
-    {"selection_image", "selection"}
+    {"object_id_image", "object_id"}
   };
 
   add_subrenderer<sbx::post::resolve_filter>("demo/assets/shaders/resolve", sbx::graphics::pipeline::stage{0, 1}, std::move(attachment_names));
