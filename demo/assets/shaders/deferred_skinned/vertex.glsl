@@ -94,6 +94,7 @@ layout(push_constant) uniform constants {
   transform_data_buffer_reference transform_data_buffer;
   instance_data_buffer_reference instance_data_buffer;
   bone_matrices_buffer_reference bone_matrices_buffer;
+  uint bone_to_track;
 };
 
 layout(set = 0, binding = 0) uniform uniform_scene {
@@ -113,13 +114,19 @@ layout(set = 0, binding = 0) uniform uniform_scene {
 
 const float MAX_ANCHOR_HEIGHT = 2.0;
 
+#define SKINNING 0 // 0: no skinning, 1: skinning enabled
+
 mat4 calculate_skinning_matrix(uvec4 bone_indices, vec4 bone_weights, uint bone_matrices_offset) {
+#if (SKINNING == 1)
   return mat4(
     bone_weights.x * bone_matrices_buffer.data[bone_indices.x + bone_matrices_offset] +
     bone_weights.y * bone_matrices_buffer.data[bone_indices.y + bone_matrices_offset] +
     bone_weights.z * bone_matrices_buffer.data[bone_indices.z + bone_matrices_offset] +
     bone_weights.w * bone_matrices_buffer.data[bone_indices.w + bone_matrices_offset]
   );
+#else
+  return mat4(1.0);
+#endif
 }
 
 void main() {
@@ -140,7 +147,7 @@ void main() {
   uvec4 in_bone_indices = bone_indices_from_vertex(vertex);
   vec4 in_bone_weights = bone_weights_from_vertex(vertex);
 
-  // in_bone_weights /= (in_bone_weights.x + in_bone_weights.y + in_bone_weights.z + in_bone_weights.w);
+  in_bone_weights /= (in_bone_weights.x + in_bone_weights.y + in_bone_weights.z + in_bone_weights.w);
 
   mat4 skinning_matrix = calculate_skinning_matrix(in_bone_indices, in_bone_weights, bone_matrices_offset);
 
@@ -161,6 +168,23 @@ void main() {
 
   out_uv = in_uv;
 
+  // vec4 color = vec4(0.0, 0.0, 0.0, 1.0);
+
+  // for (int i = 0; i < 4; ++i) {
+  //   if (in_bone_indices[i] == bone_to_track) {
+  //     if (in_bone_weights[i] > 0.0 && in_bone_weights[i] <= 0.3) {
+  //       color = vec4(0.0, 1.0, 0.0, 1.0);
+  //     } else if (in_bone_weights[i] > 0.3 && in_bone_weights[i] <= 0.6) {
+  //       color = vec4(1.0, 1.0, 0.0, 1.0);
+  //     } else if (in_bone_weights[i] > 0.6 && in_bone_weights[i] <= 1.0) {
+  //       color = vec4(1.0, 0.0, 0.0, 1.0);
+  //     }
+
+  //     break;
+  //   }
+  // }
+
+  // out_color = color;
   out_color = instance_data.tint;
   out_material = instance_data.material.xy;
 

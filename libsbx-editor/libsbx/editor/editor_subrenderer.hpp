@@ -13,6 +13,7 @@
 #include <libsbx/utility/logger.hpp>
 
 #include <libsbx/core/engine.hpp>
+#include <libsbx/core/version.hpp>
 
 #include <libsbx/devices/devices_module.hpp>
 
@@ -114,6 +115,16 @@ public:
 
     _menu.push_back(project_menu);
 
+    auto help_menu_about = editor::menu_item{};
+    help_menu_about.title = "About";
+    help_menu_about.on_click = [this]() { _open_popups.set(popup::menu_about); };
+
+    auto help_menu = editor::menu{};
+    help_menu.title = "Help";
+    help_menu.items.push_back(help_menu_about);
+
+    _menu.push_back(help_menu);
+
     auto& device_module = sbx::core::engine::get_module<sbx::devices::devices_module>();
     auto& graphics_module = sbx::core::engine::get_module<sbx::graphics::graphics_module>();
 
@@ -194,7 +205,8 @@ private:
     hierarchy_add_new_node = utility::bit_v<0u>,
     hierarchy_add_component = utility::bit_v<1u>,
     hierarchy_delete = utility::bit_v<2u>,
-    menu_preferences = utility::bit_v<3u>
+    menu_preferences = utility::bit_v<3u>,
+    menu_about = utility::bit_v<4u>,
   }; // enum class popup
 
   auto _setup_dockspace() -> void {
@@ -382,7 +394,7 @@ private:
     {
       if (_open_popups.has(popup::menu_preferences)) {
         _open_popups.clear(popup::menu_preferences);
-        ImGui::OpenPopup("Settings");
+        ImGui::OpenPopup("Preferences");
       }
 
       const auto custom_backdrop_color = ImVec4{0.2f, 0.2f, 0.2f, 0.5f};
@@ -491,6 +503,41 @@ private:
         ImGui::SameLine();
 
         if (ImGui::Button("Apply", ImVec2(button_width, 0))) {
+          ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
+      }
+
+      if (_open_popups.has(popup::menu_about)) {
+        _open_popups.clear(popup::menu_about);
+        ImGui::OpenPopup("About");
+      }
+
+      ImGui::SetNextWindowSizeConstraints(ImVec2{400, 200}, ImVec2{FLT_MAX, FLT_MAX});
+
+      if (ImGui::BeginPopupModal("About", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+        ImGui::Text("Sandbox Game Engine");
+        ImGui::Text("A simple game engine for educational purposes.");
+        ImGui::Text("Version: v" SBX_CORE_VERSION_STRING "+" SBX_CORE_TIMESTAMP_STRING);
+
+        ImGui::Separator();
+
+        ImGui::Text("Developed by:");
+        ImGui::BulletText("KAJDEV");
+
+        ImGui::Dummy(ImVec2(0.0f, 10.0f));
+
+        // Right-align buttons
+        const auto button_width = 75.0f;
+        const auto button_spacing = 10.0f;
+        const auto total_button_width = (button_width * 1.0f) + button_spacing;
+
+        // Align cursor X to the right
+        const auto button_x = ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x - total_button_width;
+        ImGui::SetCursorPosX(button_x);
+
+        if (ImGui::Button("Close", ImVec2(button_width, 0))) {
           ImGui::CloseCurrentPopup();
         }
 

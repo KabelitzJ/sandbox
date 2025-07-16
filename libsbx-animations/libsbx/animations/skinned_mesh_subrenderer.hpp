@@ -32,6 +32,8 @@
 
 #include <libsbx/core/engine.hpp>
 
+#include <libsbx/devices/input.hpp>
+
 #include <libsbx/graphics/graphics_module.hpp>
 #include <libsbx/graphics/subrenderer.hpp>
 #include <libsbx/graphics/pipeline/pipeline.hpp>
@@ -87,6 +89,14 @@ public:
     EASY_FUNCTION();
 
     SBX_SCOPED_TIMER("skinned_mesh_subrenderer");
+
+    if (devices::input::is_key_pressed(devices::key::up)) {
+      _bone_to_track = (_bone_to_track + 1) % skeleton::max_bones;
+      utility::logger<"animations">::debug("Tracking bone: {}", _bone_to_track);
+    } else if (devices::input::is_key_pressed(devices::key::down)) {
+      _bone_to_track = (_bone_to_track + skeleton::max_bones - 1) % skeleton::max_bones;
+      utility::logger<"animations">::debug("Tracking bone: {}", _bone_to_track);
+    }
 
     auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
@@ -187,10 +197,7 @@ private:
     // [NOTE] : Get this offset befor appending the new matrices to get the offset into the big array in the shader
     const auto bone_matrices_offset = _bone_matrices.size();
 
-    auto temp = std::vector<math::matrix4x4>{};
-    temp.resize(bone_matrices.size(), math::matrix4x4::identity);
-
-    utility::append(_bone_matrices, std::move(temp));
+    utility::append(_bone_matrices, std::move(bone_matrices));
 
     const auto& global_transform = scene.get_component<const scenes::global_transform>(node);
 
@@ -309,6 +316,7 @@ private:
     _push_handler.push("transform_data_buffer", transform_data_buffer.address());
     _push_handler.push("instance_data_buffer", instance_data_buffer.address());
     _push_handler.push("bone_matrices_buffer", bone_matrices_buffer.address());
+    _push_handler.push("bone_to_track", _bone_to_track);
 
     for (const auto& [mesh_id, range] : draw_ranges) {
       auto& mesh = graphics_module.get_asset<animations::mesh>(mesh_id);
@@ -353,6 +361,8 @@ private:
 
   graphics::separate_sampler _images_sampler;
   graphics::separate_image2d_array _images;
+
+  std::uint32_t _bone_to_track;
 
 }; // class skinned_mesh_subrenderer
 

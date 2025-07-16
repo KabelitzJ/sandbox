@@ -169,8 +169,8 @@ application::application()
   scene.add_component<sbx::scenes::animation_state>(fox);
 
   auto& fox_transform = scene.get_component<sbx::math::transform>(fox);
-  fox_transform.set_position(sbx::math::vector3{0.0f, 10.0f, 0.0f});
-  fox_transform.set_scale(sbx::math::vector3{0.1f, 0.1f, 0.1f});
+  fox_transform.set_position(sbx::math::vector3{0.0f, 0.0f, 0.0f});
+  fox_transform.set_scale(sbx::math::vector3{0.06f, 0.06f, 0.06f});
 
   // Animated Women
 
@@ -184,8 +184,8 @@ application::application()
   scene.add_component<sbx::scenes::animation_state>(women);
 
   auto& women_transform = scene.get_component<sbx::math::transform>(women);
-  women_transform.set_position(sbx::math::vector3{0.0f, 2.0f, 5.0f});
-  // women_transform.set_scale(sbx::math::vector3{0.1f, 0.1f, 0.1f});
+  women_transform.set_position(sbx::math::vector3{0.0f, 0.0f, 6.0f});
+  women_transform.set_scale(sbx::math::vector3{1.5f, 1.5f, 1.5f});
 
   _selection_buffer = graphics_module.add_resource<sbx::graphics::storage_buffer>(sbx::graphics::storage_buffer::min_size);
 
