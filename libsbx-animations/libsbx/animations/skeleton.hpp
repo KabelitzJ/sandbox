@@ -68,7 +68,7 @@ public:
       const auto& bone = _bones[bone_id];
       const auto& bone_name = _bone_ids_to_names[bone_id];
 
-      math::matrix4x4 local_transform = math::matrix4x4::identity;
+      math::matrix4x4 local_transform = bone.local_bind_matrix;
 
       const auto& track_map = animation.track_map;
 
@@ -100,10 +100,6 @@ public:
         EASY_END_BLOCK;
 
         local_transform = translation_matrix * rotation_matrix * scale_matrix;
-        EASY_END_BLOCK;
-      } else {
-        EASY_BLOCK("skeleton::default_transform");
-        local_transform = bone.local_bind_matrix;
         EASY_END_BLOCK;
       }
 
