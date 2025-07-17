@@ -282,7 +282,11 @@ private:
     const auto& relationship = scene.get_component<sbx::scenes::relationship>(node);
 
     // auto flag = ImGuiTreeNodeFlags{ImGuiTreeNodeFlags_OpenOnArrow};
-    auto flag = ImGuiTreeNodeFlags{ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_OpenOnArrow};
+    auto flag = ImGuiTreeNodeFlags{ImGuiTreeNodeFlags_OpenOnArrow};
+
+    if (relationship.parent() == sbx::math::uuid::null()) {
+      flag |= ImGuiTreeNodeFlags_DefaultOpen;
+    }
 
     if (relationship.children().empty()) {
       flag |= ImGuiTreeNodeFlags_Leaf;
