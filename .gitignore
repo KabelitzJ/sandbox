@@ -9,6 +9,7 @@
 compile_commands.json
 
 .cache
+.env*
 
 *.profile
 *.prof
