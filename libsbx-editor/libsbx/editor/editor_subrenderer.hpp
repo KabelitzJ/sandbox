@@ -392,15 +392,15 @@ private:
     auto& graphics_module = sbx::core::engine::get_module<sbx::graphics::graphics_module>();
 
     {
-      if (_open_popups.has(popup::menu_preferences)) {
-        _open_popups.clear(popup::menu_preferences);
-        ImGui::OpenPopup("Preferences");
-      }
-
       const auto custom_backdrop_color = ImVec4{0.2f, 0.2f, 0.2f, 0.5f};
 
       ImGui::PushStyleColor(ImGuiCol_ModalWindowDimBg, custom_backdrop_color);
 
+      if (_open_popups.has(popup::menu_preferences)) {
+        _open_popups.clear(popup::menu_preferences);
+        ImGui::OpenPopup("Preferences");
+      }
+      
       ImGui::SetNextWindowSizeConstraints(ImVec2{600, 400}, ImVec2{800, 600});
 
       if (ImGui::BeginPopupModal("Preferences", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
@@ -514,7 +514,7 @@ private:
         ImGui::OpenPopup("About");
       }
 
-      ImGui::SetNextWindowSizeConstraints(ImVec2{400, 200}, ImVec2{FLT_MAX, FLT_MAX});
+      ImGui::SetNextWindowSizeConstraints(ImVec2{600, 200}, ImVec2{FLT_MAX, FLT_MAX});
 
       if (ImGui::BeginPopupModal("About", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
         ImGui::Text("Sandbox Game Engine");
@@ -524,25 +524,57 @@ private:
         ImGui::Separator();
         ImGui::Dummy(ImVec2(0.0f, 5.0f));
 
-        ImGui::Text("A simple game engine for educational purposes.");
-        ImGui::Text("Written in C++20 with a Vulkan backend.");
+        ImGuiStyle& style = ImGui::GetStyle();
+        const auto saved_padding_x = style.WindowPadding.x;
+
+        // Match outer padding (optional tweak)
+        style.WindowPadding.x = 0.0f;
+
+        const auto child_size = ImVec2(ImGui::GetContentRegionAvail().x, 200.0f);
+
+        if (ImGui::BeginChild("AboutTextRegion", child_size, true, ImGuiWindowFlags_AlwaysVerticalScrollbar)) {
+          ImGui::TextWrapped("This game engine is a custom-built Vulkan-based engine designed from the ground up in modern C++20.");
+          ImGui::TextWrapped("It features a fully custom math library, a component-based ECS architecture inspired by EnTT, and a scene");
+          ImGui::TextWrapped("hierarchy system for organizing game objects in a flexible and scalable way.");
+
+          ImGui::Dummy(ImVec2(0.0f, 2.0f));
+
+          ImGui::TextWrapped("Rendering is handled using a forward renderer with support for GPU-driven rendering techniques, including");
+          ImGui::TextWrapped("indirect draw calls and compute shader-based culling. Assets like meshes and textures are loaded via a custom");
+          ImGui::TextWrapped("asset pipeline, with support for glTF model imports and custom binary formats.");
+
+          ImGui::Dummy(ImVec2(0.0f, 2.0f));
+
+          ImGui::TextWrapped("The engine is modular and data-driven, with a descriptor system for resource binding, a render graph for");
+          ImGui::TextWrapped("pass scheduling, and support for advanced features like skeletal animation, PBR materials, and dynamic terrain.");
+          ImGui::TextWrapped("It is designed to serve as a flexible foundation for both sandbox experimentation and full game development.");
+        
+          ImGui::EndChild();
+        }
+
+        style.WindowPadding.x = saved_padding_x;
 
         ImGui::Dummy(ImVec2(0.0f, 5.0f));
         ImGui::Separator();
         ImGui::Dummy(ImVec2(0.0f, 5.0f));
 
         ImGui::Text("Version: v" SBX_CORE_VERSION_STRING "+" SBX_COMPILE_TIMESTAMP);
+        ImGui::Text("Branch: " SBX_BRANCH);
+        ImGui::Text("Commit: " SBX_COMMIT_HASH);
+
+        ImGui::Dummy(ImVec2(0.0f, 5.0f));
+        ImGui::Separator();
+        ImGui::Dummy(ImVec2(0.0f, 5.0f));
+
         ImGui::Text("License: MIT License");
 
         ImGui::Dummy(ImVec2(0.0f, 5.0f));
 
         // Right-align buttons
         const auto button_width = 75.0f;
-        const auto button_spacing = 10.0f;
-        const auto total_button_width = (button_width * 1.0f) + button_spacing;
 
         // Align cursor X to the right
-        const auto button_x = ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x - total_button_width;
+        const auto button_x = ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x - button_width;
         ImGui::SetCursorPosX(button_x);
 
         if (ImGui::Button("Close", ImVec2(button_width, 0))) {
