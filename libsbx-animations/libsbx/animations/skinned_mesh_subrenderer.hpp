@@ -195,7 +195,7 @@ private:
     auto bone_matrices = skeleton.evaluate_pose(animation, animation_state.current_time);
 
     // [NOTE] : Get this offset befor appending the new matrices to get the offset into the big array in the shader
-    const auto bone_matrices_offset = _bone_matrices.size();
+    const auto bone_matrices_offset = static_cast<std::uint32_t>(_bone_matrices.size());
 
     utility::append(_bone_matrices, std::move(bone_matrices));
 

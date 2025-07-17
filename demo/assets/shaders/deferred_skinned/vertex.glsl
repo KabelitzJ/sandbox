@@ -114,16 +114,15 @@ layout(set = 0, binding = 0) uniform uniform_scene {
 
 const float MAX_ANCHOR_HEIGHT = 2.0;
 
-#define SKINNING 0 // 0: no skinning, 1: skinning enabled
+#define SKINNING 1 // 0: no skinning, 1: skinning enabled
 
 mat4 calculate_skinning_matrix(uvec4 bone_indices, vec4 bone_weights, uint bone_matrices_offset) {
 #if (SKINNING == 1)
-  return mat4(
-    bone_weights.x * bone_matrices_buffer.data[bone_indices.x + bone_matrices_offset] +
-    bone_weights.y * bone_matrices_buffer.data[bone_indices.y + bone_matrices_offset] +
-    bone_weights.z * bone_matrices_buffer.data[bone_indices.z + bone_matrices_offset] +
-    bone_weights.w * bone_matrices_buffer.data[bone_indices.w + bone_matrices_offset]
-  );
+  mat4 result = bone_weights[0] * bone_matrices_buffer.data[bone_indices[0] + bone_matrices_offset];
+  result += bone_weights[1] * bone_matrices_buffer.data[bone_indices[1] + bone_matrices_offset];
+  result += bone_weights[2] * bone_matrices_buffer.data[bone_indices[2] + bone_matrices_offset];
+  result += bone_weights[3] * bone_matrices_buffer.data[bone_indices[3] + bone_matrices_offset];
+  return result;
 #else
   return mat4(1.0);
 #endif

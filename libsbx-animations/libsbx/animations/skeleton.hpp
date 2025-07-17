@@ -109,15 +109,12 @@ public:
 
       EASY_BLOCK("skeleton::local_transform");
 
-      // Compute global transform
-      math::matrix4x4 parent_transform = (bone.parent_id != skeleton::bone::null) ? global_transforms[bone.parent_id] : math::matrix4x4::identity;
+      const auto global_transform = (bone.parent_id != skeleton::bone::null) ? global_transforms[bone.parent_id] * local_transform : local_transform;
 
-      const math::matrix4x4 global_transform = parent_transform * local_transform;
-
-      global_transforms[bone_id] = global_transform;
-
-      // Final bone matrix
       final_bones[bone_id] = _inverse_root_transform * global_transform * bone.inverse_bind_matrix;
+
+      global_transforms[bone_id] = std::move(global_transform);
+
       EASY_END_BLOCK;
     }
 

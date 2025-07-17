@@ -90,8 +90,7 @@ static auto _load_mesh(const aiMesh* mesh, mesh::mesh_data& data, bone_map& bone
   data.indices.reserve(data.indices.size() + mesh->mNumFaces * 3);
 
   for (auto i = 0u; i < mesh->mNumVertices; ++i) {
-    vertex3d vertex{};
-
+    auto vertex = vertex3d{};
     vertex.position = _convert_vec3(mesh->mVertices[i]);
     vertex.normal = _convert_vec3(mesh->mNormals[i]);
     vertex.uv = _convert_vec3(mesh->mTextureCoords[0][i]);
@@ -119,27 +118,10 @@ static auto _load_mesh(const aiMesh* mesh, mesh::mesh_data& data, bone_map& bone
     const auto* bone = mesh->mBones[i];
     const auto bone_name = std::string{bone->mName.C_Str()};
 
-    auto bone_id = std::uint32_t{};
-
-    if (auto entry = bone_map.find(bone_name); entry != bone_map.end()) {
-      bone_id = entry->second;
-    } else {
-      bone_id = static_cast<std::uint32_t>(bone_map.size());
+    if (bone_map.find(bone_name) == bone_map.end()) {
+      auto bone_id = static_cast<std::uint32_t>(bone_offsets.size());
       bone_map.emplace(bone_name, bone_id);
       bone_offsets.push_back(_convert_mat4(bone->mOffsetMatrix));
-    }
-
-    for (auto j = 0u; j < bone->mNumWeights; ++j) {
-      const auto& weight = bone->mWeights[j];
-      auto& vertex = data.vertices[vertices_count + weight.mVertexId];
-
-      for (int k = 0; k < 4; ++k) {
-        if (vertex.bone_weights[k] == 0.0f) {
-          vertex.bone_ids[k] = bone_id;
-          vertex.bone_weights[k]  = weight.mWeight;
-          break;
-        }
-      }
     }
   }
 }
@@ -155,22 +137,10 @@ static auto _load_node(const aiNode* node, const aiScene* scene, mesh::mesh_data
   }
 }
 
-static void _collect_global_transforms(const aiNode* node, const math::matrix4x4& parent_transform, transform_map& transforms) {
-  const std::string node_name = node->mName.C_Str();
-  const auto local_transform = _convert_mat4(node->mTransformation);
-  const auto global_transform = parent_transform * local_transform;
-
-  transforms[node_name] = global_transform;
-
-  for (unsigned int i = 0; i < node->mNumChildren; ++i) {
-    _collect_global_transforms(node->mChildren[i], global_transform, transforms);
-  }
-}
-
 /**
  * @note bone_map and bone_offsets need to be populated by calling _load_node(scene->mRootNode, scene, data, bone_map, bone_offsets) before calling this function!
  */
-static auto _build_skeleton_hierarchy(const aiNode* node, const std::string& parent_name, const bone_map& bone_map, const bone_offsets& bone_offsets, const transform_map& transforms, animations::skeleton& skeleton) -> void {
+static auto _build_skeleton_hierarchy(const aiNode* node, const std::string& parent_name, const bone_map& bone_map, const bone_offsets& bone_offsets, animations::skeleton& skeleton) -> void {
   const auto node_name = std::string{node->mName.C_Str()};
 
   const auto is_bone = bone_map.contains(node_name);
@@ -184,16 +154,45 @@ static auto _build_skeleton_hierarchy(const aiNode* node, const std::string& par
     const auto bone_id = bone_map.at(node_name);
     const auto& inverse_bind_matrix = bone_offsets.at(bone_id);
 
-    const auto& node_global = transforms.at(node_name);
-    const auto parent_global = (!parent_name.empty() && transforms.contains(parent_name)) ? transforms.at(parent_name) : math::matrix4x4::identity;
-
-    const auto local_bind_matrix = math::matrix4x4::inverted(parent_global) * node_global;
+    const auto local_bind_matrix = _convert_mat4(node->mTransformation);
 
     skeleton.add_bone(node_name, {parent_id, local_bind_matrix, inverse_bind_matrix});
   }
 
   for (auto i = 0u; i < node->mNumChildren; ++i) {
-    _build_skeleton_hierarchy(node->mChildren[i], node_name, bone_map, bone_offsets, transforms, skeleton);
+    _build_skeleton_hierarchy(node->mChildren[i], node_name, bone_map, bone_offsets, skeleton);
+  }
+}
+
+static auto _apply_weights(const aiScene* scene, mesh::mesh_data& data, const bone_map& bone_map) -> void {
+  for (auto i = 0u; i < scene->mNumMeshes; ++i) {
+    const auto* mesh = scene->mMeshes[i];
+    const auto& submesh = data.submeshes[i];
+
+    for (auto j = 0u; j < mesh->mNumBones; ++j) {
+      const auto* bone = mesh->mBones[j];
+
+      auto itr = bone_map.find(bone->mName.C_Str());
+
+      if (itr == bone_map.end()) {
+        continue;
+      }
+
+      auto id = itr->second;
+
+      for (auto k = 0u; k < bone->mNumWeights; ++k) {
+        const auto& weight = bone->mWeights[k];
+        auto& vertex = data.vertices[weight.mVertexId + submesh.vertex_offset];
+
+        for (int l = 0; l < 4; ++l) {
+          if (vertex.bone_weights[l] == 0.0f) {
+            vertex.bone_ids[l] = id;
+            vertex.bone_weights[l]  = weight.mWeight;
+            break;
+          }
+        }
+      }
+    }
   }
 }
 
@@ -210,7 +209,7 @@ auto mesh::_load(const std::filesystem::path& path) -> mesh_data {
     aiProcess_CalcTangentSpace |        // Create binormals/tangents just in case
     aiProcess_Triangulate |             // Make sure we're triangles
     aiProcess_SortByPType |             // Split meshes by primitive type
-    aiProcess_GenNormals |              // Make sure we have legit normals
+    aiProcess_GenSmoothNormals |              // Make sure we have legit normals
     aiProcess_GenUVCoords |             // Convert UVs if required
     aiProcess_OptimizeMeshes |          // Batch draws where possible
     aiProcess_JoinIdenticalVertices |
@@ -231,16 +230,14 @@ auto mesh::_load(const std::filesystem::path& path) -> mesh_data {
   auto bone_offsets = animations::bone_offsets{};
 
   _load_node(scene->mRootNode, scene, data, bone_map, bone_offsets);
+  _apply_weights(scene, data, bone_map);
 
   loaded_skeleton = animations::skeleton{};
 
-  auto global_transforms = transform_map{};
-  _collect_global_transforms(scene->mRootNode, math::matrix4x4::identity, global_transforms);
-
-  _build_skeleton_hierarchy(scene->mRootNode, "", bone_map, bone_offsets, global_transforms, loaded_skeleton);
+  _build_skeleton_hierarchy(scene->mRootNode, "", bone_map, bone_offsets, loaded_skeleton);
 
   const auto& root_name = std::string{scene->mRootNode->mName.C_Str()};
-  loaded_skeleton.set_inverse_root_transform(math::matrix4x4::inverted(global_transforms[root_name]));
+  loaded_skeleton.set_inverse_root_transform(math::matrix4x4::inverted(_convert_mat4(scene->mRootNode->mTransformation)));
 
   const auto vertices_count = data.vertices.size();
   const auto indices_count = data.indices.size();
