@@ -26,17 +26,6 @@ layout(location = 3) out vec4 out_material;
 layout(location = 4) out uvec2 out_object_id;
 layout(location = 5) out float out_depth;
 
-layout(set = 0, binding = 0) uniform uniform_scene {
-  mat4 view;
-  mat4 projection;
-  vec3 camera_position;
-  vec3 light_direction;
-  vec4 light_color;
-  mat4 light_space;
-  // uint point_light_count;
-  float time;
-} scene;
-
 layout(set = 0, binding = 1) uniform sampler images_sampler;
 layout(set = 0, binding = 2) uniform texture2D images[MAX_IMAGE_ARRAY_SIZE];
 

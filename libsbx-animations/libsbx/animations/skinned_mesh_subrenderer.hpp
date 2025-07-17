@@ -159,7 +159,7 @@ private:
   struct instance_data {
     alignas(16) math::color tint;
     alignas(16) math::vector4 material;
-    alignas(16) math::vector4u payload; // x: albedo image index, y: normal image index, y: instance data index, w: bone matrices offset
+    alignas(16) math::vector4u payload; // x: albedo image index, y: normal image index, y: transform data index, w: bone matrices offset
     alignas(16) math::vector4u selection;
   }; // struct instance_data
 

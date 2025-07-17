@@ -108,20 +108,24 @@ layout(set = 0, binding = 0) uniform uniform_scene {
   float time;
 } scene;
 
-// layout(set = 1, binding = 0, std430) readonly buffer buffer_mesh_data {
-//   per_mesh_data data[];
-// } mesh_data;
-
-const float MAX_ANCHOR_HEIGHT = 2.0;
-
-#define SKINNING 1 // 0: no skinning, 1: skinning enabled
+// 0: no skinning
+// 1: skinning enabled
+#define SKINNING 1
 
 mat4 calculate_skinning_matrix(uvec4 bone_indices, vec4 bone_weights, uint bone_matrices_offset) {
 #if (SKINNING == 1)
-  mat4 result = bone_weights[0] * bone_matrices_buffer.data[bone_indices[0] + bone_matrices_offset];
-  result += bone_weights[1] * bone_matrices_buffer.data[bone_indices[1] + bone_matrices_offset];
-  result += bone_weights[2] * bone_matrices_buffer.data[bone_indices[2] + bone_matrices_offset];
-  result += bone_weights[3] * bone_matrices_buffer.data[bone_indices[3] + bone_matrices_offset];
+  // mat4 result = bone_weights[0] * bone_matrices_buffer.data[bone_indices[0] + bone_matrices_offset];
+  // result += bone_weights[1] * bone_matrices_buffer.data[bone_indices[1] + bone_matrices_offset];
+  // result += bone_weights[2] * bone_matrices_buffer.data[bone_indices[2] + bone_matrices_offset];
+  // result += bone_weights[3] * bone_matrices_buffer.data[bone_indices[3] + bone_matrices_offset];
+  // return result;
+
+  mat4 result = mat4(0.0);
+
+  for (int i = 0; i < 4; ++i) {
+    result += bone_weights[i] * bone_matrices_buffer.data[bone_indices[i] + bone_matrices_offset];
+  }
+
   return result;
 #else
   return mat4(1.0);
@@ -146,7 +150,7 @@ void main() {
   uvec4 in_bone_indices = bone_indices_from_vertex(vertex);
   vec4 in_bone_weights = bone_weights_from_vertex(vertex);
 
-  in_bone_weights /= (in_bone_weights.x + in_bone_weights.y + in_bone_weights.z + in_bone_weights.w);
+  // in_bone_weights /= (in_bone_weights.x + in_bone_weights.y + in_bone_weights.z + in_bone_weights.w);
 
   mat4 skinning_matrix = calculate_skinning_matrix(in_bone_indices, in_bone_weights, bone_matrices_offset);
 
@@ -159,7 +163,7 @@ void main() {
 
   out_normal = normalize(vec3(transform_data.normal * vec4(skinned_normal, 0.0)));
 
-  vec3 T = normalize(vec3(transform_data.model * in_tangent));
+  vec3 T = normalize(vec3(transform_data.model * vec4(in_tangent.xyz, 0.0)));
   vec3 N = normalize(vec3(transform_data.model * vec4(skinned_normal, 0.0)));
   vec3 B = cross(N, T) * in_tangent.w; // w: sign of the tangent
 
@@ -167,7 +171,7 @@ void main() {
 
   out_uv = in_uv;
 
-  // vec4 color = vec4(0.0, 0.0, 0.0, 1.0);
+  vec4 color = vec4(0.0, 0.0, 0.0, 1.0);
 
   // for (int i = 0; i < 4; ++i) {
   //   if (in_bone_indices[i] == bone_to_track) {
@@ -190,5 +194,5 @@ void main() {
   out_image_indices = image_indices;
   out_object_id = instance_data.selection.xy;
 
-  gl_Position = scene.projection * scene.view * vec4(out_position, 1.0);
+  gl_Position = scene.projection * scene.view * vec4(world_position, 1.0);
 }

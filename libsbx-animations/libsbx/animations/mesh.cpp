@@ -226,13 +226,13 @@ auto mesh::_load(const std::filesystem::path& path) -> mesh_data {
     throw std::runtime_error{fmt::format("Error loading mesh '{}': {}", path.string(), importer.GetErrorString())};
   }
 
+  loaded_skeleton = animations::skeleton{};
+
   auto bone_map = animations::bone_map{};
   auto bone_offsets = animations::bone_offsets{};
 
   _load_node(scene->mRootNode, scene, data, bone_map, bone_offsets);
   _apply_weights(scene, data, bone_map);
-
-  loaded_skeleton = animations::skeleton{};
 
   _build_skeleton_hierarchy(scene->mRootNode, "", bone_map, bone_offsets, loaded_skeleton);
 
