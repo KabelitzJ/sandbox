@@ -112,9 +112,9 @@ void main() {
 
   out_normal = normalize(vec3(transform_data.normal * vec4(in_normal, 0.0)));
 
-  vec3 T = normalize(vec3(transform_data.model * vec4(in_tangent.xyz, 0.0)));
-  vec3 N = normalize(vec3(transform_data.model * vec4(in_normal, 0.0)));
-  vec3 B = cross(N, T) * in_tangent.w; // w: sign of the tangent
+  vec3 T = normalize(vec3(transform_data.normal * vec4(in_tangent.xyz, 0.0)));
+  vec3 N = normalize(vec3(transform_data.normal * vec4(in_normal, 0.0)));
+  vec3 B = cross(T, N) * in_tangent.w; // w: sign of the tangent
 
   out_tbn = mat3(T, B, N);
 
