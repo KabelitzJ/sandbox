@@ -43,7 +43,29 @@ option(SBX_USE_PROFILER "Use profiler" On)
 message(STATUS "SBX_USE_PROFILER: ${SBX_USE_PROFILER}")
 
 string(TIMESTAMP COMPILE_TIMESTAMP %Y%m%d-%H%M%S)
-set(SBX_COMPILE_TIMESTAMP ${COMPILE_TIMESTAMP} CACHE STRING "Compile timestamp" FORCE)
+set(SBX_COMPILE_TIMESTAMP "\"${COMPILE_TIMESTAMP}\"" CACHE STRING "Compile timestamp" FORCE)
+
+add_compile_definitions(SBX_COMPILE_TIMESTAMP=${SBX_COMPILE_TIMESTAMP})
+
+# Get current commit hash
+execute_process(
+  COMMAND git rev-parse --short HEAD
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  OUTPUT_VARIABLE GIT_COMMIT_HASH
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+# Get current branch name
+execute_process(
+  COMMAND git rev-parse --abbrev-ref HEAD
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  OUTPUT_VARIABLE GIT_BRANCH
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+# Optionally print them
+message(STATUS "Git branch: ${GIT_BRANCH}")
+message(STATUS "Git commit: ${GIT_COMMIT_HASH}")
 
 add_subdirectory(libsbx-units)
 add_subdirectory(libsbx-utility)

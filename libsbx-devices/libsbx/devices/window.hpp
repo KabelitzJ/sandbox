@@ -46,7 +46,7 @@ public:
     _height = create_info.height;
 
     if (utility::build_configuration_v == utility::build_configuration::debug) {
-      _title = fmt::format("{} [Debug] v"SBX_CORE_VERSION_STRING"+"SBX_CORE_TIMESTAMP_STRING, create_info.title);
+      _title = fmt::format("{} [Debug] v" SBX_CORE_VERSION_STRING "+" SBX_COMPILE_TIMESTAMP, create_info.title);
     }
 
     auto* monitor = glfwGetPrimaryMonitor();
@@ -108,7 +108,7 @@ public:
     _title = title;
 
     if (utility::build_configuration_v == utility::build_configuration::debug) {
-      _title = fmt::format("{} [Debug] v"SBX_CORE_VERSION_STRING"+"SBX_CORE_TIMESTAMP_STRING, _title);
+      _title = fmt::format("{} [Debug] v" SBX_CORE_VERSION_STRING "+" SBX_COMPILE_TIMESTAMP, _title);
     }
 
     glfwSetWindowTitle(_handle, _title.c_str());

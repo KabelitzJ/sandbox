@@ -531,7 +531,7 @@ private:
         ImGui::Separator();
         ImGui::Dummy(ImVec2(0.0f, 5.0f));
 
-        ImGui::Text("Version: v" SBX_CORE_VERSION_STRING "+" SBX_CORE_TIMESTAMP_STRING);
+        ImGui::Text("Version: v" SBX_CORE_VERSION_STRING "+" SBX_COMPILE_TIMESTAMP);
         ImGui::Text("License: MIT License");
 
         ImGui::Dummy(ImVec2(0.0f, 5.0f));
