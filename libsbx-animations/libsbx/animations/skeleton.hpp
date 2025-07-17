@@ -121,6 +121,14 @@ public:
     return final_bones;
   }
 
+  auto bone_count() const -> std::uint32_t {
+    return _bones.size();
+  }
+
+  auto name_for_bone(std::size_t i) -> std::string {
+    return _bone_ids_to_names[i].str();
+  }
+
 private:
 
   std::vector<bone> _bones;

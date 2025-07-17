@@ -13,6 +13,7 @@
 #include <libsbx/units/bytes.hpp>
 
 #include <libsbx/utility/logger.hpp>
+#include <libsbx/utility/exception.hpp>
 
 #include <libsbx/math/vector2.hpp>
 #include <libsbx/math/vector3.hpp>
@@ -89,6 +90,10 @@ static auto _load_mesh(const aiMesh* mesh, mesh::mesh_data& data, bone_map& bone
   data.vertices.reserve(data.vertices.size() + mesh->mNumVertices);
   data.indices.reserve(data.indices.size() + mesh->mNumFaces * 3);
 
+  // [TODO] : Vertices are probably not in local bind pose space....
+
+  utility::logger<"animations">::debug("vertex0: {} {} {}", mesh->mVertices[0].x, mesh->mVertices[0].y, mesh->mVertices[0].z);
+
   for (auto i = 0u; i < mesh->mNumVertices; ++i) {
     auto vertex = vertex3d{};
     vertex.position = _convert_vec3(mesh->mVertices[i]);
@@ -140,29 +145,67 @@ static auto _load_node(const aiNode* node, const aiScene* scene, mesh::mesh_data
 /**
  * @note bone_map and bone_offsets need to be populated by calling _load_node(scene->mRootNode, scene, data, bone_map, bone_offsets) before calling this function!
  */
-static auto _build_skeleton_hierarchy(const aiNode* node, const std::string& parent_name, const bone_map& bone_map, const bone_offsets& bone_offsets, animations::skeleton& skeleton) -> void {
-  const auto node_name = std::string{node->mName.C_Str()};
+// static auto _build_skeleton_hierarchy(const aiNode* node, const std::string& parent_name, const bone_map& bone_map, const bone_offsets& bone_offsets, animations::skeleton& skeleton) -> void {
+//   const auto node_name = std::string{node->mName.C_Str()};
 
-  const auto is_bone = bone_map.contains(node_name);
-  auto parent_id = animations::skeleton::bone::null;
+//   const auto is_bone = bone_map.contains(node_name);
+//   auto parent_id = animations::skeleton::bone::null;
 
-  if (is_bone) {
-    if (!parent_name.empty() && bone_map.contains(parent_name)) {
-      parent_id = bone_map.at(parent_name);
+//   if (is_bone) {
+//     if (!parent_name.empty() && bone_map.contains(parent_name)) {
+//       parent_id = bone_map.at(parent_name);
+//     }
+
+//     const auto bone_id = bone_map.at(node_name);
+//     const auto& inverse_bind_matrix = bone_offsets.at(bone_id);
+
+//     const auto local_bind_matrix = _convert_mat4(node->mTransformation);
+
+//     skeleton.add_bone(node_name, {parent_id, local_bind_matrix, inverse_bind_matrix});
+//   }
+
+//   for (auto i = 0u; i < node->mNumChildren; ++i) {
+//     _build_skeleton_hierarchy(node->mChildren[i], node_name, bone_map, bone_offsets, skeleton);
+//   }
+// }
+
+static auto _build_skeleton_hierarchy(const aiScene* scene, const bone_map& bone_map, const bone_offsets& bone_offsets, animations::skeleton& skeleton) -> void {
+  // Build ordered bone name list by bone ID
+  auto ordered_names = std::vector<std::string>{};
+  ordered_names.resize(bone_map.size());
+
+  for (const auto& [name, id] : bone_map) {
+    ordered_names.at(id) = name;
+  }
+
+  // Add each bone in the same order used in vertex weights
+  for (auto id = 0; id < ordered_names.size(); ++id) {
+    const auto& name = ordered_names[id];
+
+    const auto* node = scene->mRootNode->FindNode(aiString(name.c_str()));
+
+    if (!node) {
+      throw utility::runtime_error{"Cannot find aiNode for bone '{}", name};
     }
 
-    const auto bone_id = bone_map.at(node_name);
-    const auto& inverse_bind_matrix = bone_offsets.at(bone_id);
+    auto parent_id = animations::skeleton::bone::null;
+
+    if (node->mParent) {
+      const auto parent_name = node->mParent->mName.C_Str();
+      auto it = bone_map.find(parent_name);
+      
+      if (it != bone_map.end()) {
+        parent_id = it->second;
+      }
+    }
 
     const auto local_bind_matrix = _convert_mat4(node->mTransformation);
+    const auto inverse_bind_matrix = bone_offsets.at(id);
 
-    skeleton.add_bone(node_name, {parent_id, local_bind_matrix, inverse_bind_matrix});
-  }
-
-  for (auto i = 0u; i < node->mNumChildren; ++i) {
-    _build_skeleton_hierarchy(node->mChildren[i], node_name, bone_map, bone_offsets, skeleton);
+    skeleton.add_bone(name, {parent_id, local_bind_matrix, inverse_bind_matrix});
   }
 }
+
 
 static auto _apply_weights(const aiScene* scene, mesh::mesh_data& data, const bone_map& bone_map) -> void {
   for (auto i = 0u; i < scene->mNumMeshes; ++i) {
@@ -175,7 +218,7 @@ static auto _apply_weights(const aiScene* scene, mesh::mesh_data& data, const bo
       auto itr = bone_map.find(bone->mName.C_Str());
 
       if (itr == bone_map.end()) {
-        continue;
+        throw utility::runtime_error{"Invalid bone name '{}", bone->mName.C_Str()};
       }
 
       auto id = itr->second;
@@ -192,6 +235,14 @@ static auto _apply_weights(const aiScene* scene, mesh::mesh_data& data, const bo
           }
         }
       }
+    }
+  }
+
+  for (auto& vertex : data.vertices) {
+    const auto weight_sum = vertex.bone_weights.x() + vertex.bone_weights.y() + vertex.bone_weights.z() + vertex.bone_weights.w();
+
+    if (weight_sum > 0.0f) {
+      vertex.bone_weights /= weight_sum;
     }
   }
 }
@@ -233,11 +284,10 @@ auto mesh::_load(const std::filesystem::path& path) -> mesh_data {
 
   _load_node(scene->mRootNode, scene, data, bone_map, bone_offsets);
   _apply_weights(scene, data, bone_map);
+  _build_skeleton_hierarchy(scene, bone_map, bone_offsets, loaded_skeleton);
 
-  _build_skeleton_hierarchy(scene->mRootNode, "", bone_map, bone_offsets, loaded_skeleton);
-
-  const auto& root_name = std::string{scene->mRootNode->mName.C_Str()};
-  loaded_skeleton.set_inverse_root_transform(math::matrix4x4::inverted(_convert_mat4(scene->mRootNode->mTransformation)));
+  // loaded_skeleton.set_inverse_root_transform(math::matrix4x4::inverted(_convert_mat4(scene->mRootNode->mTransformation)));
+  loaded_skeleton.set_inverse_root_transform(math::matrix4x4::identity);
 
   const auto vertices_count = data.vertices.size();
   const auto indices_count = data.indices.size();
