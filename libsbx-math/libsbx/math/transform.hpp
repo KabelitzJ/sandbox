@@ -86,8 +86,9 @@ public:
   }
 
   auto look_at(const vector3& target) noexcept -> void {
+    // [TODO] : Figure out how to directly construct the rotation_matrix
     auto result = matrix4x4::look_at(_position, target, vector3::up);
-    _rotation = quaternion{result};
+    _rotation = quaternion{math::matrix4x4::inverted(result)};
     _rotation_matrix = _rotation.to_matrix();
     _is_dirty = true;
   }

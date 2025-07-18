@@ -30,8 +30,8 @@ public:
   };
 
   std::string name;
-  float duration = 0.0f;
-  float ticks_per_second = 25.0f;
+  std::float_t duration = 0.0f;
+  std::float_t ticks_per_second = 25.0f;
   // std::vector<bone_track> tracks;
   std::unordered_map<utility::hashed_string, bone_track> track_map;
 

@@ -2,6 +2,7 @@
 #define LIBSBX_MATH_CONSTANTS_HPP_
 
 #include <cstdint>
+#include <cmath>
 #include <limits>
 #include <numbers>
 
@@ -12,9 +13,9 @@ namespace sbx::math {
 template<floating_point Type>
 inline constexpr auto epsilon_v = std::numeric_limits<Type>::epsilon();
 
-inline constexpr auto epsilonf = std::numeric_limits<std::float_t>::epsilon();
+inline constexpr auto epsilonf = epsilon_v<std::float_t>;
 
-inline constexpr auto epsilond = std::numeric_limits<std::double_t>::epsilon();
+inline constexpr auto epsilond = epsilon_v<std::double_t>;
 
 } // namespace sbx::math
 

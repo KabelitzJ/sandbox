@@ -7,7 +7,7 @@
 
 #include <libsbx/utility/hash.hpp>
 
-#include <libsbx/math/vector4.hpp>
+// #include <libsbx/math/vector4.hpp>
 
 namespace sbx::math {
 

@@ -16,6 +16,7 @@
 #include <libsbx/math/vector3.hpp>
 #include <libsbx/math/vector4.hpp>
 #include <libsbx/math/matrix.hpp>
+#include <libsbx/math/matrix3x3.hpp>
 #include <libsbx/math/angle.hpp>
 
 namespace sbx::math {
@@ -67,6 +68,10 @@ public:
 
   template<scalar Other>
   constexpr basic_matrix4x4(const Other v00, const Other v11, const Other v22, const Other v33) noexcept;
+
+  template<scalar Other>
+  constexpr basic_matrix4x4(const basic_matrix3x3<Other>& other) noexcept
+  : base_type{column_type{other[0], 0}, column_type{other[1], 0}, column_type{other[2], 0}, column_type{0, 0, 0, 1}} { }
 
 //   // -- Static member functions --
 

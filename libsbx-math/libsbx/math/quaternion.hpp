@@ -11,12 +11,12 @@
 #include <fmt/format.h>
 
 #include <libsbx/math/concepts.hpp>
+#include <libsbx/math/constants.hpp>
+#include <libsbx/math/algorithm.hpp>
 #include <libsbx/math/vector3.hpp>
 #include <libsbx/math/vector4.hpp>
 #include <libsbx/math/matrix4x4.hpp>
 #include <libsbx/math/angle.hpp>
-#include <libsbx/math/algorithm.hpp>
-#include <libsbx/math/constants.hpp>
 
 namespace sbx::math {
 
@@ -66,18 +66,24 @@ public:
   template<floating_point Other = value_type>
   constexpr basic_quaternion(const matrix_type_for<Other>& matrix) noexcept;
 
-  [[nodiscard]] static constexpr auto normalized(const basic_quaternion& quat) noexcept -> basic_quaternion {
-    const auto length_squared = quat.length_squared();
+  template<floating_point Other = value_type>
+  [[nodiscard]] static constexpr auto wxyz(Other w, Other x, Other y, Other z) noexcept -> basic_quaternion {
+    return basic_quaternion{x, y, z, w};
+  }
 
-    if (!comparision_traits<length_type>::equal(length_squared, static_cast<length_type>(0))) {
-      return quat / std::sqrt(length_squared);
+  [[nodiscard]] static constexpr auto normalized(const basic_quaternion& quaternion) noexcept -> basic_quaternion {
+    const auto length = quaternion.length();
+
+		if(length <= static_cast<value_type>(0)) {
+      return basic_quaternion{static_cast<value_type>(0), static_cast<value_type>(0), static_cast<value_type>(0), static_cast<value_type>(1)};
     }
 
-    return quat;
+		const auto one_over_length = static_cast<value_type>(1) / length;
+		return basic_quaternion{quaternion.x() * one_over_length, quaternion.y() * one_over_length, quaternion.z() * one_over_length, quaternion.w() * one_over_length};
   }
 
   [[nodiscard]] static constexpr auto dot(const basic_quaternion& lhs, const basic_quaternion& rhs) noexcept -> value_type {
-    return vector_type::dot(lhs.complex(), rhs.complex()) + lhs.w() * rhs.w();
+    return lhs.x() * rhs.x() + lhs.y() * rhs.y() + lhs.z() * rhs.z() + lhs.w() * rhs.w();
   }
 
   [[nodiscard]] static constexpr auto lerp(const basic_quaternion& start, const basic_quaternion& end, const value_type t) noexcept -> basic_quaternion {
@@ -93,37 +99,33 @@ public:
    * 
    * @return A new quaternion that is the result of the spherical linear interpolation. 
    */
-  [[nodiscard]] static constexpr auto slerp(const basic_quaternion& start, basic_quaternion end, const value_type t) noexcept -> basic_quaternion {
-    utility::assert_that(t >= 0.0f && t <= 1.0f, "Interpolation factor out of bounds in quaternion slerp");
+  [[nodiscard]] static constexpr auto slerp(const basic_quaternion& x, basic_quaternion y, const value_type a) noexcept -> basic_quaternion {
+    utility::assert_that(a >= 0.0f && a <= 1.0f, "Interpolation factor out of bounds in quaternion slerp");
 
-    auto temp = end;
+    auto z = y;
 
-		auto cos_theta = dot(start, end);
+		auto cos_theta = dot(x, y);
 
-		// If cosTheta < 0, the interpolation will take the long way around the sphere.
+		// If cos_theta < 0, the interpolation will take the long way around the sphere.
 		// To fix this, one quat must be negated.
-		if(cos_theta < static_cast<Type>(0)) {
-			temp = -end;
+		if(cos_theta < static_cast<value_type>(0)) {
+			z = -y;
 			cos_theta = -cos_theta;
 		}
 
 		// Perform a linear interpolation when cos_theta is close to 1 to avoid side effect of sin(angle) becoming a zero denominator
-		if(cos_theta > static_cast<Type>(1) - epsilon_v<value_type>) {
+		if(cos_theta > static_cast<value_type>(1) - math::epsilon_v<value_type>) {
 			// Linear interpolation
-			return basic_quaternion{
-				mix(start.x(), temp.x(), t),
-				mix(start.y(), temp.y(), t),
-				mix(start.z(), temp.z(), t),
-        mix(start.w(), temp.w(), t)
-      };
+			return basic_quaternion::wxyz(
+				math::mix(x.w(), z.w(), a),
+				math::mix(x.x(), z.x(), a),
+				math::mix(x.y(), z.y(), a),
+				math::mix(x.z(), z.z(), a)
+      );
 		} else {
 			// Essential Mathematics, page 467
 			const auto angle = std::acos(cos_theta);
-
-      const auto x = start * std::sin((static_cast<Type>(1) - t) * angle);
-      const auto y = temp * std::sin(t * angle);
-
-			return (x + y) / std::sin(angle);
+			return (std::sin((static_cast<value_type>(1) - a) * angle) * x + std::sin(a * angle) * z) / std::sin(angle);
 		}
   }
 

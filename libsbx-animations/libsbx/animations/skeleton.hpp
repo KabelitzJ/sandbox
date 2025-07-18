@@ -68,7 +68,7 @@ public:
       const auto& bone = _bones[bone_id];
       const auto& bone_name = _bone_ids_to_names[bone_id];
 
-      math::matrix4x4 local_transform = bone.local_bind_matrix;
+      auto local_transform = bone.local_bind_matrix;
 
       const auto& track_map = animation.track_map;
 
@@ -85,9 +85,9 @@ public:
 
         EASY_BLOCK("skeleton::sample_position_rotation_scale");
 
-        const auto& position = track.position_spline.sample(time);
-        const auto& rotation = math::quaternion::normalized(track.rotation_spline.sample(time));
-        const auto& scale = track.scale_spline.sample(time);
+        const auto position = track.position_spline.sample(time);
+        const auto rotation = math::quaternion::normalized(track.rotation_spline.sample(time));
+        const auto scale = track.scale_spline.sample(time);
 
         EASY_END_BLOCK;
 
@@ -107,7 +107,7 @@ public:
 
       const auto global_transform = (bone.parent_id != skeleton::bone::null) ? global_transforms[bone.parent_id] * local_transform : local_transform;
 
-      final_bones[bone_id] = _inverse_root_transform * global_transform * bone.inverse_bind_matrix;
+      final_bones[bone_id] = global_transform * bone.inverse_bind_matrix;
 
       global_transforms[bone_id] = std::move(global_transform);
 

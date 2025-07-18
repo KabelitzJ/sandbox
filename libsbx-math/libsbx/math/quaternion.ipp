@@ -110,29 +110,27 @@ template<floating_point Type>
 constexpr auto basic_quaternion<Type>::to_matrix() const noexcept -> matrix_type {
   auto matrix = matrix_type::identity;
 
-  const auto xx = _complex.x() * _complex.x();
-  const auto xy = _complex.x() * _complex.y();
-  const auto xz = _complex.x() * _complex.z();
-  const auto xw = _complex.x() * _scalar;
+  const auto xx = x() * x();
+  const auto yy = y() * y();
+  const auto zz = z() * z();
+  const auto xy = x() * y();
+  const auto xz = x() * z();
+  const auto yz = y() * z();
+  const auto wx = w() * x();
+  const auto wy = w() * y();
+  const auto wz = w() * z();
 
-  const auto yy = _complex.y() * _complex.y();
-  const auto yz = _complex.y() * _complex.z();
-  const auto yw = _complex.y() * _scalar;
+  matrix[0][0] = 1.0f - 2.0f * (yy + zz);
+  matrix[0][1] = 2.0f * (xy + wz);
+  matrix[0][2] = 2.0f * (xz - wy);
 
-  const auto zz = _complex.z() * _complex.z();
-  const auto zw = _complex.z() * _scalar;
+  matrix[1][0] = 2.0f * (xy - wz);
+  matrix[1][1] = 1.0f - 2.0f * (xx + zz);
+  matrix[1][2] = 2.0f * (yz + wx);
 
-  matrix[0][0] = 1 - 2 * (yy + zz);
-  matrix[0][1] = 2 * (xy - zw);
-  matrix[0][2] = 2 * (xz + yw);
-
-  matrix[1][0] = 2 * (xy + zw);
-  matrix[1][1] = 1 - 2 * (xx + zz);
-  matrix[1][2] = 2 * (yz - xw);
-
-  matrix[2][0] = 2 * (xz - yw);
-  matrix[2][1] = 2 * (yz + xw);
-  matrix[2][2] = 1 - 2 * (xx + yy);
+  matrix[2][0] = 2.0f * (xz + wy);
+  matrix[2][1] = 2.0f * (yz - wx);
+  matrix[2][2] = 1.0f - 2.0f * (xx + yy);
 
   return matrix;
 }
@@ -252,7 +250,7 @@ inline constexpr auto basic_quaternion<Type>::length_squared() const noexcept ->
 
 template<floating_point Type>
 inline constexpr auto basic_quaternion<Type>::length() const noexcept -> length_type {
-  return std::sqrt(length_squared());
+  return std::sqrt(dot(*this, *this));
 }
 
 template<floating_point Type>

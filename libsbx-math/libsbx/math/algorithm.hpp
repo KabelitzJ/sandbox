@@ -6,8 +6,8 @@
 namespace sbx::math {
 
 template<floating_point Type>
-inline constexpr auto mix(const Type start, const Type end, const Type factor) -> Type {
-  return start * (static_cast<Type>(1) - factor) + end * factor;
+inline constexpr auto mix(const Type x, const Type y, const Type a) -> Type {
+  return x * (static_cast<Type>(1) - a) + y * a;
 }
 
 } // namespace sbx::math

@@ -12,6 +12,8 @@
 
 #include <libsbx/math/concepts.hpp>
 #include <libsbx/math/traits.hpp>
+#include <libsbx/math/constants.hpp>
+#include <libsbx/math/algorithm.hpp>
 
 namespace sbx::math {
 
@@ -83,6 +85,16 @@ public:
 
     return result;
   }
+
+  [[nodiscard]] static constexpr auto lerp(const basic_vector& x, const basic_vector& y, const value_type a) noexcept -> basic_vector {
+    auto result = basic_vector{};
+
+    for (auto i : std::views::iota(0u, Size)) {
+      result[i] = math::mix(x[i], y[i], a);
+    }
+
+    return result;
+  } 
 
   constexpr auto data() noexcept -> value_type* {
     return _components.data();

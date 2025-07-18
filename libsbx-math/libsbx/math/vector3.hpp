@@ -78,19 +78,19 @@ public:
     return base_type::template splat<z_axis>(vector);
   }
 
-  /**
-   * @brief Linearly interpolates between two vectors.
-   * 
-   * @param start The starting vector.
-   * @param end The ending vector.
-   * @param t The interpolation factor [0.0f, 1.0f].
-   * 
-   * @return A new vector that is the result of the linear interpolation.
-   */
-  [[nodiscard]] static constexpr auto lerp(const basic_vector3& start, const basic_vector3& end, const value_type t) noexcept -> basic_vector3 {
-    utility::assert_that(t >= 0.0f && t <= 1.0f, "Interpolation factor out of bounds in vector3 lerp");
-    return start * (1.0f - t) + end * t;
-  }
+  // /**
+  //  * @brief Linearly interpolates between two vectors.
+  //  * 
+  //  * @param start The starting vector.
+  //  * @param end The ending vector.
+  //  * @param t The interpolation factor [0.0f, 1.0f].
+  //  * 
+  //  * @return A new vector that is the result of the linear interpolation.
+  //  */
+  // [[nodiscard]] static constexpr auto lerp(const basic_vector3& start, const basic_vector3& end, const value_type t) noexcept -> basic_vector3 {
+  //   utility::assert_that(t >= 0.0f && t <= 1.0f, "Interpolation factor out of bounds in vector3 lerp");
+  //   return start * (1.0f - t) + end * t;
+  // }
 
   [[nodiscard]] constexpr operator basic_vector2<Type>() const noexcept;
 

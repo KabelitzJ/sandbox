@@ -84,7 +84,7 @@ class libsbx_recipe(ConanFile):
   def requirements(self):
     self.requires("fmt/10.0.0")
     self.requires("spdlog/1.11.0")
-    # self.requires("glm/1.0.1")
+    self.requires("glm/1.0.1")
     self.requires("yaml-cpp/0.7.0")
     self.requires("nlohmann_json/3.11.3")
     self.requires("base64/0.5.2")
