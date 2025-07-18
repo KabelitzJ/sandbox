@@ -72,10 +72,6 @@ graphics_module::~graphics_module() {
   _compute_command_buffers.clear();
   _command_pools.clear();
 
-  for (const auto& [type, container] : _asset_containers) {
-    container->clear();
-  }
-
   _buffers.clear();
   _storage_buffers.clear();
   _shaders.clear();

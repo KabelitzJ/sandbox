@@ -46,6 +46,8 @@
 #include <libsbx/graphics/images/separate_image2d_array.hpp>
 #include <libsbx/graphics/images/separate_sampler.hpp>
 
+#include <libsbx/assets/assets_module.hpp>
+
 #include <libsbx/scenes/scenes_module.hpp>
 #include <libsbx/scenes/scene.hpp>
 #include <libsbx/scenes/node.hpp>
@@ -56,7 +58,6 @@
 #include <libsbx/scenes/components/tag.hpp>
 #include <libsbx/scenes/components/point_light.hpp>
 #include <libsbx/scenes/components/global_transform.hpp>
-
 
 #include <libsbx/animations/vertex3d.hpp>
 #include <libsbx/animations/pipeline.hpp>
@@ -172,6 +173,7 @@ private:
 
   auto _submit_mesh(const scenes::node node, const scenes::skinned_mesh& skinned_mesh, scenes::animation_state& animation_state) -> void {
     EASY_FUNCTION();
+    auto& assets_module = core::engine::get_module<assets::assets_module>();
     auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
@@ -179,8 +181,8 @@ private:
 
     const auto mesh_id = skinned_mesh.mesh_id();
 
-    auto& mesh = graphics_module.get_asset<animations::mesh>(mesh_id);
-    auto& animation = graphics_module.get_asset<animations::animation>(skinned_mesh.animation_id());
+    auto& mesh = assets_module.get_asset<animations::mesh>(mesh_id);
+    auto& animation = assets_module.get_asset<animations::animation>(skinned_mesh.animation_id());
 
     auto& skeleton = mesh.skeleton();
 
@@ -229,6 +231,7 @@ private:
   }
 
   auto _render_skinned_meshes(graphics::command_buffer& command_buffer) -> void {
+    auto& assets_module = core::engine::get_module<assets::assets_module>();
     auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
     _pipeline.bind(command_buffer);
@@ -254,7 +257,7 @@ private:
     EASY_BLOCK("build draw commands");
 
     for (auto&& [mesh_id, submesh] : _submesh_instances) {
-      auto& mesh = graphics_module.get_asset<animations::mesh>(mesh_id);
+      auto& mesh = assets_module.get_asset<animations::mesh>(mesh_id);
 
       auto range = draw_command_range{};
       range.offset = static_cast<uint32_t>(draw_commands.size());
@@ -319,7 +322,7 @@ private:
     _push_handler.push("bone_to_track", _bone_to_track);
 
     for (const auto& [mesh_id, range] : draw_ranges) {
-      auto& mesh = graphics_module.get_asset<animations::mesh>(mesh_id);
+      auto& mesh = assets_module.get_asset<animations::mesh>(mesh_id);
       
       mesh.bind(command_buffer);
       

@@ -109,64 +109,6 @@ public:
   auto attachment(const std::string& name) const -> const descriptor&;
 
   template<typename Type, typename... Args>
-  auto add_asset(Args&&... args) -> math::uuid {
-    const auto id = math::uuid{};
-    const auto type = std::type_index{typeid(Type)};
-
-    auto container = _asset_containers.find(type);
-
-    if (container == _asset_containers.end()) {
-      container = _asset_containers.insert({type, std::make_unique<asset_container<Type>>()}).first;
-    }
-
-    static_cast<asset_container<Type>*>(container->second.get())->add(id, std::forward<Args>(args)...);
-
-    return id;
-  }
-
-  template<typename Type>
-  auto add_asset(std::unique_ptr<Type>&& asset) -> math::uuid {
-    const auto id = math::uuid{};
-    const auto type = std::type_index{typeid(Type)};
-
-    auto container = _asset_containers.find(type);
-
-    if (container == _asset_containers.end()) {
-      container = _asset_containers.insert({type, std::make_unique<asset_container<Type>>()}).first;
-    }
-
-    static_cast<asset_container<Type>*>(container->second.get())->add(id, std::move(asset));
-
-    return id;
-  }
-
-  template<typename Type>
-  auto get_asset(const math::uuid& id) const -> const Type& {
-    const auto type = std::type_index{typeid(Type)};
-
-    auto container = _asset_containers.find(type);
-
-    if (container == _asset_containers.end()) {
-      throw std::runtime_error{"Asset does not exist"};
-    }
-
-    return static_cast<const asset_container<Type>*>(container->second.get())->get(id);
-  }
-
-  template<typename Type>
-  auto get_asset(const math::uuid& id) -> Type& {
-    const auto type = std::type_index{typeid(Type)};
-
-    auto container = _asset_containers.find(type);
-
-    if (container == _asset_containers.end()) {
-      throw std::runtime_error{"Asset does not exist"};
-    }
-
-    return static_cast<asset_container<Type>*>(container->second.get())->get(id);
-  }
-
-  template<typename Type, typename... Args>
   requires (std::is_constructible_v<Type, Args...>)
   auto add_resource(Args&&... args) -> resource_handle<Type> {
     return _storage<Type>().emplace(std::forward<Args>(args)...);
@@ -363,58 +305,6 @@ private:
 
   std::vector<command_buffer::acquire_ownership_data> _acquire_ownership_data;
   std::vector<command_buffer::release_ownership_data> _release_ownership_data;
-
-  struct asset_container_base {
-    virtual ~asset_container_base() = default;
-    virtual auto remove(const math::uuid& id) -> void = 0;
-    virtual auto clear() -> void = 0;
-  };
-
-  template<typename Type>
-  class asset_container : public asset_container_base {
-
-  public:
-
-    asset_container() {
-
-    }
-
-    ~asset_container() override {
-
-    }
-
-    auto remove(const math::uuid& id) -> void override {
-      _assets.erase(id);
-    }
-
-    auto clear() -> void override {
-      _assets.clear();
-    }
-
-    template<typename... Args>
-    auto add(const math::uuid& id, Args&&... args) -> void {
-      _assets.insert({id, std::make_unique<Type>(std::forward<Args>(args)...)});
-    }
-
-    auto add(const math::uuid& id, std::unique_ptr<Type>&& asset) -> void {
-      _assets.insert({id, std::move(asset)});
-    }
-
-    auto get(const math::uuid& id) const -> const Type& {
-      return *_assets.at(id);
-    }
-
-    auto get(const math::uuid& id) -> Type& {
-      return *_assets.at(id);
-    }
-
-  private:
-
-    std::unordered_map<math::uuid, std::unique_ptr<Type>> _assets;
-
-  };
-
-  std::unordered_map<std::type_index, std::unique_ptr<asset_container_base>> _asset_containers;
 
   std::uint32_t _current_frame{};
   bool _is_framebuffer_resized{};

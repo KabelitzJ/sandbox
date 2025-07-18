@@ -4,6 +4,8 @@
 #include <libsbx/graphics/subrenderer.hpp>
 #include <libsbx/graphics/pipeline/graphics_pipeline.hpp>
 
+#include <libsbx/assets/assets_module.hpp>
+
 #include <demo/terrain/vertex.hpp>
 #include <demo/terrain/pipeline.hpp>
 #include <demo/terrain/mesh.hpp>
@@ -27,6 +29,7 @@ public:
   ~terrain_subrenderer() override = default;
 
   auto render(sbx::graphics::command_buffer& command_buffer) -> void override {
+    auto& assets_module = sbx::core::engine::get_module<sbx::assets::assets_module>();
     auto& graphics_module = sbx::core::engine::get_module<sbx::graphics::graphics_module>();
     auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
 
@@ -48,7 +51,7 @@ public:
 
     for (const auto node : chunk_query) {
       const auto& chunk = scene.get_component<demo::chunk>(node);
-      const auto& mesh = graphics_module.get_asset<sbx::models::mesh>(chunk.mesh_id);
+      const auto& mesh = assets_module.get_asset<sbx::models::mesh>(chunk.mesh_id);
 
       const auto model = scene.world_transform(node);
       const auto normal = sbx::math::matrix4x4::transposed(sbx::math::matrix4x4::inverted(model));

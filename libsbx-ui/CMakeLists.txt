@@ -62,6 +62,7 @@ target_link_libraries(
     libsbx::signals
     libsbx::graphics
     libsbx::models
+    libsbx::assets
 )
 
 set_target_properties(

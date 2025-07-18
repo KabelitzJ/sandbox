@@ -13,6 +13,8 @@
 
 #include <libsbx/graphics/buffers/uniform_handler.hpp>
 
+#include <libsbx/assets/assets_module.hpp>
+
 #include <libsbx/scenes/components/skybox.hpp>
 #include <libsbx/scenes/components/camera.hpp>
 
@@ -65,7 +67,7 @@ public:
     _pipeline{path, stage},
     _descriptor_handler{_pipeline, 0u},
     _push_handler{_pipeline} {
-    auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+    auto& assets_module = core::engine::get_module<assets::assets_module>();
 
     auto vertices = std::vector<vertex3d>{
       vertex3d{math::vector3{-10.0f,  10.0f, -10.0f}}, // 0
@@ -99,12 +101,13 @@ public:
       6, 2, 1
     };
 
-    _skybox_id = graphics_module.add_asset<scenes::mesh>(std::move(vertices), std::move(indices));
+    _skybox_id = assets_module.add_asset<scenes::mesh>(std::move(vertices), std::move(indices));
   }
 
   ~skybox_subrenderer() override = default;
 
   auto render(graphics::command_buffer& command_buffer) -> void override {
+    auto& assets_module = core::engine::get_module<assets::assets_module>();
     auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
     auto& scene = scenes_module.scene();
@@ -131,7 +134,7 @@ public:
     _scene_uniform_handler.push("model", model);
     _scene_uniform_handler.push("tint", skybox.tint);
 
-    auto& mesh = graphics_module.get_asset<scenes::mesh>(_skybox_id);
+    auto& mesh = assets_module.get_asset<scenes::mesh>(_skybox_id);
 
     _pipeline.bind(command_buffer);
 

@@ -44,6 +44,8 @@
 #include <libsbx/graphics/images/separate_image2d_array.hpp>
 #include <libsbx/graphics/images/separate_sampler.hpp>
 
+#include <libsbx/assets/assets_module.hpp>
+
 #include <libsbx/scenes/scenes_module.hpp>
 #include <libsbx/scenes/scene.hpp>
 #include <libsbx/scenes/node.hpp>
@@ -172,7 +174,7 @@ public:
 
       for (auto&& [node, static_mesh, global_transform] : mesh_query.each()) {
         // const auto mesh_id = static_mesh.mesh_id();
-        // const auto& mesh = graphics_module.get_asset<models::mesh>(mesh_id);
+        // const auto& mesh = assets_module.get_asset<models::mesh>(mesh_id);
 
         // ++total;
 
@@ -187,7 +189,7 @@ public:
       // SBX_SCOPED_TIMER_BLOCK("static_mesh_subrenderer::build_tree") {
       //   for (auto&& [node, static_mesh, global_transform] : mesh_query.each()) {
       //     const auto mesh_id = static_mesh.mesh_id();
-      //     const auto& mesh = graphics_module.get_asset<models::mesh>(mesh_id);
+      //     const auto& mesh = assets_module.get_asset<models::mesh>(mesh_id);
 
       //     tree.insert(cull_data{node, memory::make_observer(static_mesh),  memory::make_observer(global_transform.model)}, mesh.bounds());
       //   }
@@ -281,6 +283,7 @@ private:
   }
 
   auto _render_static_meshes(graphics::command_buffer& command_buffer) -> void {
+    auto& assets_module = core::engine::get_module<assets::assets_module>();
     auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
     _pipeline.bind(command_buffer);
@@ -306,7 +309,7 @@ private:
     EASY_BLOCK("build draw commands");
 
     for (auto&& [mesh_id, submesh] : _submesh_instances) {
-      auto& mesh = graphics_module.get_asset<models::mesh>(mesh_id);
+      auto& mesh = assets_module.get_asset<models::mesh>(mesh_id);
 
       auto range = draw_command_range{};
       range.offset = static_cast<uint32_t>(draw_commands.size());
@@ -366,7 +369,7 @@ private:
     _push_handler.push("instance_data_buffer", instance_data_buffer.address());
 
     for (const auto& [mesh_id, range] : draw_ranges) {
-      auto& mesh = graphics_module.get_asset<models::mesh>(mesh_id);
+      auto& mesh = assets_module.get_asset<models::mesh>(mesh_id);
       
       mesh.bind(command_buffer);
       

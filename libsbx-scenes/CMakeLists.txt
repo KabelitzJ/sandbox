@@ -71,6 +71,7 @@ target_link_libraries(
     libsbx::core
     libsbx::devices
     libsbx::graphics
+    libsbx::assets
 )
 
 set_target_properties(

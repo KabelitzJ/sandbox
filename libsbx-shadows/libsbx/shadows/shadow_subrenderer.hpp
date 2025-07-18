@@ -28,6 +28,8 @@
 
 #include <libsbx/graphics/descriptor/descriptor_handler.hpp>
 
+#include <libsbx/assets/assets_module.hpp>
+
 #include <libsbx/scenes/scenes_module.hpp>
 #include <libsbx/scenes/components/camera.hpp>
 #include <libsbx/scenes/components/static_mesh.hpp>
@@ -54,6 +56,7 @@ public:
   ~shadow_subrenderer() override = default;
 
   auto render(graphics::command_buffer& command_buffer) -> void override {
+    auto& assets_module = core::engine::get_module<assets::assets_module>();
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
     auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
@@ -92,7 +95,7 @@ public:
 
       storage_handler.push(std::span<const per_mesh_data>{data});
 
-      auto& mesh = graphics_module.get_asset<models::mesh>(key.mesh_id);
+      auto& mesh = assets_module.get_asset<models::mesh>(key.mesh_id);
 
       descriptor_handler.push("uniform_scene", _scene_uniform_handler);
       descriptor_handler.push("buffer_mesh_data", storage_handler);

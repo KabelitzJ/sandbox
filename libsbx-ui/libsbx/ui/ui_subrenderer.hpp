@@ -17,6 +17,8 @@
 
 #include <libsbx/graphics/buffers/uniform_handler.hpp>
 
+#include <libsbx/assets/assets_module.hpp>
+
 #include <libsbx/ui/vertex2d.hpp>
 #include <libsbx/ui/mesh.hpp>
 #include <libsbx/ui/pipeline.hpp>
@@ -31,6 +33,8 @@ public:
   ui_subrenderer(const std::filesystem::path& path, const graphics::pipeline::stage& stage)
   : graphics::subrenderer{stage},
     _pipeline{path, stage} {
+    auto& assets_module = core::engine::get_module<assets::assets_module>();
+
     auto vertices = std::vector<vertex2d>{
       vertex2d{math::vector2f{1.0f, 1.0f}, math::vector2f{1.0f, 0.0f}},
       vertex2d{math::vector2f{0.0f, 1.0f}, math::vector2f{0.0f, 0.0f}},
@@ -43,10 +47,8 @@ public:
       2, 1, 3
     };
 
-    auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
-
     // _mesh = std::make_unique<mesh>(std::move(vertices), std::move(indices));
-    _mesh_id = graphics_module.add_asset<mesh>(std::move(vertices), std::move(indices));
+    _mesh_id = assets_module.add_asset<mesh>(std::move(vertices), std::move(indices));
   }
 
   ~ui_subrenderer() override = default;
@@ -81,6 +83,7 @@ public:
 private:
 
   auto _render_widget(widget& widget, graphics::command_buffer& command_buffer) -> void {
+    auto& assets_module = core::engine::get_module<assets::assets_module>();
     auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
     const auto& id = widget.id();
@@ -103,7 +106,7 @@ private:
 
     descriptor_handler.bind_descriptors(command_buffer);
 
-    auto& mesh = graphics_module.get_asset<ui::mesh>(_mesh_id);
+    auto& mesh = assets_module.get_asset<ui::mesh>(_mesh_id);
 
     widget.render(command_buffer, mesh);
   }

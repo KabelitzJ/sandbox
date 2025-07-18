@@ -159,7 +159,7 @@
 
 //       push_handler.push("model", transform.as_matrix());
 
-//       auto& mesh = graphics_module.get_asset<line_mesh>(primitive.mesh_id);
+//       auto& mesh = assets_module.get_asset<line_mesh>(primitive.mesh_id);
 
 //       descriptor_handler.push("data", push_handler);
 //       descriptor_handler.push("uniform_scene", _scene_uniform_handler);

@@ -24,6 +24,8 @@
 #include <libsbx/graphics/images/separate_image2d_array.hpp>
 #include <libsbx/graphics/images/separate_sampler.hpp>
 
+#include <libsbx/assets/assets_module.hpp>
+
 #include <libsbx/scenes/scenes_module.hpp>
 #include <libsbx/scenes/scene.hpp>
 #include <libsbx/scenes/node.hpp>
@@ -60,6 +62,7 @@ public:
   ~gizmos_subrenderer() override = default;
 
   auto render(graphics::command_buffer& command_buffer) -> void override {
+    auto& assets_module = core::engine::get_module<assets::assets_module>();
     auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
     auto& devices_module = core::engine::get_module<devices::devices_module>();
 
@@ -110,12 +113,12 @@ public:
 
       storage_handler.push(std::span<const per_mesh_data>{data});
 
-      auto& mesh = graphics_module.get_asset<models::mesh>(key.mesh_id);
+      auto& mesh = assets_module.get_asset<models::mesh>(key.mesh_id);
 
       descriptor_handler.push("uniform_scene", _scene_uniform_handler);
       descriptor_handler.push("buffer_mesh_data", storage_handler);
       descriptor_handler.push("depth_image", graphics_module.attachment(_depth_image));
-      descriptor_handler.push("texture_image", graphics_module.get_asset<graphics::image2d>(key.texture_id));
+      descriptor_handler.push("texture_image", assets_module.get_asset<graphics::image2d>(key.texture_id));
 
       if (!descriptor_handler.update(_pipeline)) {
         continue;

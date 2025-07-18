@@ -13,6 +13,8 @@
 
 #include <libsbx/graphics/graphics_module.hpp>
 
+#include <libsbx/assets/assets_module.hpp>
+
 #include <libsbx/scenes/scenes_module.hpp>
 #include <libsbx/scenes/components/camera.hpp>
 #include <libsbx/scenes/components/static_mesh.hpp>
@@ -34,11 +36,12 @@ public:
   ~terrain_module() override = default;
 
   auto load_terrain_in_scene(sbx::scenes::scene& scene) -> void {
+    auto& assets_module = sbx::core::engine::get_module<sbx::assets::assets_module>();
     auto& graphics_module = sbx::core::engine::get_module<sbx::graphics::graphics_module>();
 
     const auto chunk_size = sbx::math::vector2u{25u, 25u};
 
-    _mesh_id = graphics_module.add_asset<sbx::models::mesh>(_generate_plane(chunk_size, sbx::math::vector2u{5u, 5u}));
+    _mesh_id = assets_module.add_asset<sbx::models::mesh>(_generate_plane(chunk_size, sbx::math::vector2u{5u, 5u}));
 
     _texture_id = graphics_module.add_resource<sbx::graphics::image2d>("demo/assets/textures/grass/albedo.png");
     _normal_texture_id = graphics_module.add_resource<sbx::graphics::image2d>("demo/assets/textures/grass/normal.png");
@@ -78,9 +81,9 @@ public:
     }
 
     // auto icosphere_tile_mesh = demo::icosphere_tile_mesh{4u, 0.02f};
-    // _planet_id = graphics_module.add_asset<sbx::models::mesh>(std::make_unique<sbx::models::mesh>(icosphere_tile_mesh.get_vertices(), icosphere_tile_mesh.get_indices(), icosphere_tile_mesh.get_bounds()));
+    // _planet_id = assets_module.add_asset<sbx::models::mesh>(std::make_unique<sbx::models::mesh>(icosphere_tile_mesh.get_vertices(), icosphere_tile_mesh.get_indices(), icosphere_tile_mesh.get_bounds()));
 
-    // _planet_id = graphics_module.add_asset<sbx::models::mesh>(_generate_icosphere(50.0f, 5u, 0.1f));
+    // _planet_id = assets_module.add_asset<sbx::models::mesh>(_generate_icosphere(50.0f, 5u, 0.1f));
 
     // auto planet = scene.create_node("Planet");
     // auto planet_submeshes = std::vector<sbx::scenes::static_mesh::submesh>{};

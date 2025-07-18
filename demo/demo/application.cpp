@@ -81,40 +81,40 @@ application::application()
     const auto name = entry["name"].get<std::string>();
     const auto path = entry["path"].get<std::string>();
 
-    const auto id = graphics_module.add_asset<sbx::models::mesh>(path);
+    const auto id = assets_module.add_asset<sbx::models::mesh>(path);
 
     _mesh_ids.emplace(name, id);
   }
 
-  _mesh_ids.emplace("tree_1_1", graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/tree_1_1/tree_1_1.gltf"));
-  _mesh_ids.emplace("tree_1_2", graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/tree_1_2/tree_1_2.gltf"));
-  _mesh_ids.emplace("tree_1_3", graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/tree_1_3/tree_1_3.gltf"));
-  _mesh_ids.emplace("tree_1_4", graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/tree_1_4/tree_1_4.gltf"));
-  _mesh_ids.emplace("bush_5", graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/bush_5/bush_5.gltf"));
+  _mesh_ids.emplace("tree_1_1", assets_module.add_asset<sbx::models::mesh>("demo/assets/meshes/tree_1_1/tree_1_1.gltf"));
+  _mesh_ids.emplace("tree_1_2", assets_module.add_asset<sbx::models::mesh>("demo/assets/meshes/tree_1_2/tree_1_2.gltf"));
+  _mesh_ids.emplace("tree_1_3", assets_module.add_asset<sbx::models::mesh>("demo/assets/meshes/tree_1_3/tree_1_3.gltf"));
+  _mesh_ids.emplace("tree_1_4", assets_module.add_asset<sbx::models::mesh>("demo/assets/meshes/tree_1_4/tree_1_4.gltf"));
+  _mesh_ids.emplace("bush_5", assets_module.add_asset<sbx::models::mesh>("demo/assets/meshes/bush_5/bush_5.gltf"));
 
-  _mesh_ids.emplace("maple_tree_1", graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/maple_tree_1/maple_tree_1.gltf"));
-  _mesh_ids.emplace("maple_tree_2", graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/maple_tree_2/maple_tree_2.gltf"));
-  _mesh_ids.emplace("maple_tree_3", graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/maple_tree_3/maple_tree_3.gltf"));
-  _mesh_ids.emplace("maple_tree_4", graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/maple_tree_4/maple_tree_4.gltf"));
+  _mesh_ids.emplace("maple_tree_1", assets_module.add_asset<sbx::models::mesh>("demo/assets/meshes/maple_tree_1/maple_tree_1.gltf"));
+  _mesh_ids.emplace("maple_tree_2", assets_module.add_asset<sbx::models::mesh>("demo/assets/meshes/maple_tree_2/maple_tree_2.gltf"));
+  _mesh_ids.emplace("maple_tree_3", assets_module.add_asset<sbx::models::mesh>("demo/assets/meshes/maple_tree_3/maple_tree_3.gltf"));
+  _mesh_ids.emplace("maple_tree_4", assets_module.add_asset<sbx::models::mesh>("demo/assets/meshes/maple_tree_4/maple_tree_4.gltf"));
 
-  _mesh_ids.emplace("rock_1", graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/rock_1/rock_1.gltf"));
-  _mesh_ids.emplace("rock_2", graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/rock_2/rock_2.gltf"));
-  _mesh_ids.emplace("rock_3", graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/rock_3/rock_3.gltf"));
-  _mesh_ids.emplace("rock_4", graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/rock_4/rock_4.gltf"));
-  _mesh_ids.emplace("rock_5", graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/rock_5/rock_5.gltf"));
+  _mesh_ids.emplace("rock_1", assets_module.add_asset<sbx::models::mesh>("demo/assets/meshes/rock_1/rock_1.gltf"));
+  _mesh_ids.emplace("rock_2", assets_module.add_asset<sbx::models::mesh>("demo/assets/meshes/rock_2/rock_2.gltf"));
+  _mesh_ids.emplace("rock_3", assets_module.add_asset<sbx::models::mesh>("demo/assets/meshes/rock_3/rock_3.gltf"));
+  _mesh_ids.emplace("rock_4", assets_module.add_asset<sbx::models::mesh>("demo/assets/meshes/rock_4/rock_4.gltf"));
+  _mesh_ids.emplace("rock_5", assets_module.add_asset<sbx::models::mesh>("demo/assets/meshes/rock_5/rock_5.gltf"));
 
-  _mesh_ids.emplace("player", graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/player/player.gltf"));
+  _mesh_ids.emplace("player", assets_module.add_asset<sbx::models::mesh>("demo/assets/meshes/player/player.gltf"));
 
-  _mesh_ids.emplace("fox", graphics_module.add_asset<sbx::animations::mesh>("demo/assets/meshes/fox/fox.gltf"));
-  _mesh_ids.emplace("fox_static", graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/fox/fox.gltf"));
+  _mesh_ids.emplace("fox", assets_module.add_asset<sbx::animations::mesh>("demo/assets/meshes/fox/fox.gltf"));
+  _mesh_ids.emplace("fox_static", assets_module.add_asset<sbx::models::mesh>("demo/assets/meshes/fox/fox.gltf"));
 
-  _mesh_ids.emplace("women", graphics_module.add_asset<sbx::animations::mesh>("demo/assets/meshes/women/women.gltf"));
-  _mesh_ids.emplace("women_static", graphics_module.add_asset<sbx::models::mesh>("demo/assets/meshes/women/women.gltf"));
+  _mesh_ids.emplace("women", assets_module.add_asset<sbx::animations::mesh>("demo/assets/meshes/women/women.gltf"));
+  _mesh_ids.emplace("women_static", assets_module.add_asset<sbx::models::mesh>("demo/assets/meshes/women/women.gltf"));
 
-  const auto fox_animation_id = graphics_module.add_asset<sbx::animations::animation>("demo/assets/meshes/fox/fox.gltf", "Walk");
-  const auto women_animation_id = graphics_module.add_asset<sbx::animations::animation>("demo/assets/meshes/women/women.gltf", "Walking");
+  const auto fox_animation_id = assets_module.add_asset<sbx::animations::animation>("demo/assets/meshes/fox/fox.gltf", "Walk");
+  const auto women_animation_id = assets_module.add_asset<sbx::animations::animation>("demo/assets/meshes/women/women.gltf", "Walking");
 
-  // _mesh_ids.emplace("icosphere", graphics_module.add_asset<sbx::models::mesh>(_generate_icosphere(20.0f, 4u)));
+  // _mesh_ids.emplace("icosphere", assets_module.add_asset<sbx::models::mesh>(_generate_icosphere(20.0f, 4u)));
 
   // Window
 
