@@ -163,40 +163,40 @@ application::application()
 
   // Animated Fox
 
-  auto fox1 = scene.create_node("Fox");
+  // auto fox1 = scene.create_node("Fox");
 
-  auto fox1_submeshes = std::vector<sbx::scenes::skinned_mesh::submesh>{};
-  fox1_submeshes.push_back(sbx::scenes::skinned_mesh::submesh{0u, sbx::math::color::white(), sbx::scenes::skinned_mesh::material{0.2f, 0.5f, 0.1f, 0.8f}, _image_ids["fox"]});
+  // auto fox1_submeshes = std::vector<sbx::scenes::skinned_mesh::submesh>{};
+  // fox1_submeshes.push_back(sbx::scenes::skinned_mesh::submesh{0u, sbx::math::color::white(), sbx::scenes::skinned_mesh::material{0.2f, 0.5f, 0.1f, 0.8f}, _image_ids["fox"]});
 
-  scene.add_component<sbx::scenes::skinned_mesh>(fox1, _mesh_ids["fox"], fox_animation_id, fox1_submeshes);
+  // scene.add_component<sbx::scenes::skinned_mesh>(fox1, _mesh_ids["fox"], fox_animation_id, fox1_submeshes);
 
-  scene.add_component<sbx::scenes::animation_state>(fox1);
+  // scene.add_component<sbx::scenes::animation_state>(fox1);
 
-  scene.add_component<walker>(fox1);
+  // scene.add_component<walker>(fox1);
 
 
-  auto& fox1_transform = scene.get_component<sbx::math::transform>(fox1);
-  fox1_transform.set_position(sbx::math::vector3{0.0f, 0.0f, 0.0f});
-  fox1_transform.set_scale(sbx::math::vector3{0.06f, 0.06f, 0.06f});
+  // auto& fox1_transform = scene.get_component<sbx::math::transform>(fox1);
+  // fox1_transform.set_position(sbx::math::vector3{0.0f, 0.0f, 0.0f});
+  // // fox1_transform.set_scale(sbx::math::vector3{0.06f, 0.06f, 0.06f});
 
-  // Static Fox
+  // // Static Fox
 
-  auto fox2 = scene.create_node("Fox");
+  // auto fox2 = scene.create_node("Fox");
 
-  auto fox2_submeshes = std::vector<sbx::scenes::static_mesh::submesh>{};
-  fox2_submeshes.push_back(sbx::scenes::static_mesh::submesh{0u, sbx::math::color::white(), sbx::scenes::static_mesh::material{0.2f, 0.5f, 0.1f, 0.8f}, _image_ids["fox"]});
+  // auto fox2_submeshes = std::vector<sbx::scenes::static_mesh::submesh>{};
+  // fox2_submeshes.push_back(sbx::scenes::static_mesh::submesh{0u, sbx::math::color::white(), sbx::scenes::static_mesh::material{0.2f, 0.5f, 0.1f, 0.8f}, _image_ids["fox"]});
 
-  scene.add_component<sbx::scenes::static_mesh>(fox2, _mesh_ids["fox_static"], fox2_submeshes);
+  // scene.add_component<sbx::scenes::static_mesh>(fox2, _mesh_ids["fox_static"], fox2_submeshes);
 
-  scene.add_component<sbx::scenes::animation_state>(fox2);
+  // scene.add_component<sbx::scenes::animation_state>(fox2);
 
-  auto& fox2_transform = scene.get_component<sbx::math::transform>(fox2);
-  fox2_transform.set_position(sbx::math::vector3{3.0f, 0.0f, -3.0f});
-  // fox2_transform.set_scale(sbx::math::vector3{0.06f, 0.06f, 0.06f});
+  // auto& fox2_transform = scene.get_component<sbx::math::transform>(fox2);
+  // fox2_transform.set_position(sbx::math::vector3{3.0f, 0.0f, -3.0f});
+  // // fox2_transform.set_scale(sbx::math::vector3{0.06f, 0.06f, 0.06f});
 
   // Animated Women
 
-  auto women1 = scene.create_node("Women");
+  auto women1 = scene.create_node("AnimatedWomen");
 
   auto women1_submeshes = std::vector<sbx::scenes::skinned_mesh::submesh>{};
   women1_submeshes.push_back(sbx::scenes::skinned_mesh::submesh{0u, sbx::math::color::white(), sbx::scenes::skinned_mesh::material{0.2f, 0.5f, 0.1f, 0.8f}, _image_ids["women"]});
@@ -209,11 +209,11 @@ application::application()
 
   auto& women1_transform = scene.get_component<sbx::math::transform>(women1);
   women1_transform.set_position(sbx::math::vector3{0.0f, 0.0f, 6.0f});
-  women1_transform.set_scale(sbx::math::vector3{0.01f, 0.01f, 0.01f});
+  // women1_transform.set_scale(sbx::math::vector3{0.01f, 0.01f, 0.01f});
 
   // Static Women
 
-  auto women2 = scene.create_node("Women");
+  auto women2 = scene.create_node("StaticWomen");
 
   auto women2_submeshes = std::vector<sbx::scenes::static_mesh::submesh>{};
   women2_submeshes.push_back(sbx::scenes::static_mesh::submesh{0u, sbx::math::color::white(), sbx::scenes::static_mesh::material{0.2f, 0.5f, 0.1f, 0.8f}, _image_ids["women"]});
