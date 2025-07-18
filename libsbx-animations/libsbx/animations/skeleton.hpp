@@ -70,7 +70,7 @@ public:
 
       auto local_transform = bone.local_bind_matrix;
 
-      const auto& track_map = animation.track_map;
+      const auto& track_map = animation.track_map();
 
       EASY_BLOCK("skeleton::find_track");
 

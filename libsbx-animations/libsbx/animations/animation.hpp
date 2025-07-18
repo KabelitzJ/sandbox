@@ -11,6 +11,8 @@
 
 #include <libsbx/utility/logger.hpp>
 #include <libsbx/utility/hashed_string.hpp>
+#include <libsbx/utility/exception.hpp>
+#include <libsbx/utility/timer.hpp>
 
 #include <libsbx/math/vector3.hpp>
 #include <libsbx/math/quaternion.hpp>
@@ -27,15 +29,9 @@ public:
     spline<math::vector3> position_spline;
     spline<math::quaternion> rotation_spline;
     spline<math::vector3> scale_spline;
-  };
+  }; // struct bone_track
 
-  std::string name;
-  std::float_t duration = 0.0f;
-  std::float_t ticks_per_second = 25.0f;
-  // std::vector<bone_track> tracks;
-  std::unordered_map<utility::hashed_string, bone_track> track_map;
-
-  animation(const std::filesystem::path& path) {
+  animation(const std::filesystem::path& path, const std::string& name) {
     static const auto import_flags =
       aiProcess_CalcTangentSpace |        // Create binormals/tangents just in case
       aiProcess_Triangulate |             // Make sure we're triangles
@@ -50,53 +46,78 @@ public:
 
     auto importer = Assimp::Importer{};
 
+    auto timer = utility::timer{};
+
     const auto* scene = importer.ReadFile(path.string(), import_flags);
 
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
       throw std::runtime_error{fmt::format("Error loading mesh '{}': {}", path.string(), importer.GetErrorString())};
     }
 
-    const aiAnimation* anim = scene->mAnimations[0]; // or all animations
-    this->name = anim->mName.C_Str();
+    auto index = scene->mNumAnimations;
 
-    utility::logger<"animations">::debug("Loaded animation: '{}'", this->name);
+    for (auto i = 0; i < scene->mNumAnimations; ++i) {
+      const auto animation_name = std::string{scene->mAnimations[i]->mName.C_Str()};
 
-    this->ticks_per_second = anim->mTicksPerSecond > 0.0 ? static_cast<float>(anim->mTicksPerSecond) : 25.0f;
-    this->duration = (anim->mDuration > 0.0 ? static_cast<float>(anim->mDuration) : 150.0f) / this->ticks_per_second;
+      if (animation_name == name) {
+        index = i;
+        break;
+      }
+    }
 
-    for (unsigned i = 0; i < anim->mNumChannels; ++i) {
-      const aiNodeAnim* channel = anim->mChannels[i];
-      animation::bone_track track;
+    if (index == scene->mNumAnimations) {
+      throw utility::runtime_error{"No animatiton '{}' in file {}", name, path.string()};
+    }
+
+    const auto* animation = scene->mAnimations[index]; // or all animations
+    _name = animation->mName.C_Str();
+
+    _ticks_per_second = animation->mTicksPerSecond > 0.0 ? static_cast<std::float_t>(animation->mTicksPerSecond) : 25.0f;
+    _duration = (animation->mDuration > 0.0 ? static_cast<std::float_t>(animation->mDuration) : 150.0f) / _ticks_per_second;
+
+    for (auto i = 0u; i < animation->mNumChannels; ++i) {
+      const auto* channel = animation->mChannels[i];
+      
+      auto track = bone_track{};
+      
       const auto bone_name = std::string{channel->mNodeName.C_Str()};
 
-      for (unsigned k = 0; k < channel->mNumPositionKeys; ++k) {
-        const auto time = static_cast<float>(channel->mPositionKeys[k].mTime / this->ticks_per_second);
+      for (auto k = 0u; k < channel->mNumPositionKeys; ++k) {
+        const auto time = static_cast<std::float_t>(channel->mPositionKeys[k].mTime / _ticks_per_second);
         const auto position = _convert_vec3(channel->mPositionKeys[k].mValue);
 
         track.position_spline.add(time, position);
       }
 
-      for (unsigned k = 0; k < channel->mNumRotationKeys; ++k) {
-        const auto time = static_cast<float>(channel->mRotationKeys[k].mTime / this->ticks_per_second);
+      for (auto k = 0u; k < channel->mNumRotationKeys; ++k) {
+        const auto time = static_cast<std::float_t>(channel->mRotationKeys[k].mTime / _ticks_per_second);
         const auto rotation = _convert_quat(channel->mRotationKeys[k].mValue);
 
         track.rotation_spline.add(time, rotation);
       }
 
-      for (unsigned k = 0; k < channel->mNumScalingKeys; ++k) {
-        const auto time = static_cast<float>(channel->mScalingKeys[k].mTime / this->ticks_per_second);
+      for (auto k = 0u; k < channel->mNumScalingKeys; ++k) {
+        const auto time = static_cast<std::float_t>(channel->mScalingKeys[k].mTime / _ticks_per_second);
         const auto scale = _convert_vec3(channel->mScalingKeys[k].mValue);
 
         track.scale_spline.add(time, scale);
       }
 
-      track_map.emplace(bone_name, std::move(track));
+      _track_map.emplace(bone_name, std::move(track));
     }
+
+    utility::logger<"animations">::debug("Loaded animation: {} '{}' in {:.2f}ms", path, _name, units::quantity_cast<units::millisecond>(timer.elapsed()).value());
   }
 
-  auto track_for_bone(const std::string& bone_name) const -> const bone_track* {
-    return nullptr;
+  auto track_map() const noexcept -> const std::unordered_map<utility::hashed_string, bone_track>& {
+    return _track_map;
   }
+
+  auto duration() const noexcept -> std::float_t {
+    return _duration;
+  }
+
+private:
 
   static auto _convert_vec2(const aiVector2D& vector) -> math::vector2 {
     return math::vector2{vector.x, vector.y};
@@ -114,13 +135,34 @@ public:
     auto result = math::matrix4x4{};
 
     //the a,b,c,d in assimp is the row ; the 1,2,3,4 is the column
-    result[0][0] = matrix.a1; result[1][0] = matrix.a2; result[2][0] = matrix.a3; result[3][0] = matrix.a4;
-    result[0][1] = matrix.b1; result[1][1] = matrix.b2; result[2][1] = matrix.b3; result[3][1] = matrix.b4;
-    result[0][2] = matrix.c1; result[1][2] = matrix.c2; result[2][2] = matrix.c3; result[3][2] = matrix.c4;
-    result[0][3] = matrix.d1; result[1][3] = matrix.d2; result[2][3] = matrix.d3; result[3][3] = matrix.d4;
+    result[0][0] = matrix.a1;
+    result[0][1] = matrix.b1;
+    result[0][2] = matrix.c1;
+    result[0][3] = matrix.d1;
+
+    result[1][0] = matrix.a2;
+    result[1][1] = matrix.b2;
+    result[1][2] = matrix.c2;
+    result[1][3] = matrix.d2;
+
+    result[2][0] = matrix.a3;
+    result[2][1] = matrix.b3;
+    result[2][2] = matrix.c3;
+    result[2][3] = matrix.d3;
+
+    result[3][0] = matrix.a4;
+    result[3][1] = matrix.b4;
+    result[3][2] = matrix.c4;
+    result[3][3] = matrix.d4;
 
     return result;
   }
+
+  std::string _name;
+  std::float_t _duration = 0.0f;
+  std::float_t _ticks_per_second = 25.0f;
+
+  std::unordered_map<utility::hashed_string, bone_track> _track_map;
 
 }; // class animation
 

@@ -188,8 +188,8 @@ private:
     animation_state.current_time += (core::engine::delta_time().value() * animation_state.speed);
 
     // Wrap if looping
-    if (animation_state.looping && animation_state.current_time > animation.duration) {
-      animation_state.current_time = std::fmod(animation_state.current_time, animation.duration);
+    if (animation_state.looping && animation_state.current_time > animation.duration()) {
+      animation_state.current_time = std::fmod(animation_state.current_time, animation.duration());
     }
 
     auto bone_matrices = skeleton.evaluate_pose(animation, animation_state.current_time);
