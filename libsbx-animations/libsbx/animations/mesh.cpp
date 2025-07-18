@@ -28,11 +28,8 @@
 
 namespace sbx::animations {
 
-static auto loaded_skeleton = animations::skeleton{};
-
 mesh::mesh(const std::filesystem::path& path)
-: base{_load(path)},
-  _skeleton{std::move(loaded_skeleton)} { }
+: mesh{_load(path)} { }
 
 mesh::~mesh() {
 
@@ -216,14 +213,16 @@ static auto _apply_weights(const aiScene* scene, mesh::mesh_data& data, const bo
   }
 }
 
-auto mesh::_load(const std::filesystem::path& path) -> mesh_data {
+auto mesh::_load(const std::filesystem::path& path) -> skinned_mesh_data {
   if (!std::filesystem::exists(path)) {
     throw std::runtime_error{"Mesh file not found: " + path.string()};
   }
 
   auto timer = utility::timer{};
 
-  auto data = mesh::mesh_data{};
+  // auto data = skinned_mesh_data{};
+  auto mesh_data = mesh::mesh_data{};
+  auto skeleton = animations::skeleton{};
 
   static const auto import_flags =
     aiProcess_CalcTangentSpace |        // Create binormals/tangents just in case
@@ -246,19 +245,22 @@ auto mesh::_load(const std::filesystem::path& path) -> mesh_data {
     throw std::runtime_error{fmt::format("Error loading mesh '{}': {}", path.string(), importer.GetErrorString())};
   }
 
-  loaded_skeleton = animations::skeleton{};
-
   auto bone_map = animations::bone_map{};
   auto bone_offsets = animations::bone_offsets{};
 
-  _load_node(scene->mRootNode, scene, data, bone_map, bone_offsets);
-  _apply_weights(scene, data, bone_map);
-  _build_skeleton_hierarchy(scene, bone_map, bone_offsets, loaded_skeleton);
+  _load_node(scene->mRootNode, scene, mesh_data, bone_map, bone_offsets);
+  _apply_weights(scene, mesh_data, bone_map);
 
-  loaded_skeleton.set_inverse_root_transform(math::matrix4x4::inverted(_convert_mat4(scene->mRootNode->mTransformation)));
+  skeleton.reserve(bone_map.size());
 
-  const auto vertices_count = data.vertices.size();
-  const auto indices_count = data.indices.size();
+  _build_skeleton_hierarchy(scene, bone_map, bone_offsets, skeleton);
+
+  skeleton.shrink_to_fit();
+
+  skeleton.set_inverse_root_transform(math::matrix4x4::inverted(_convert_mat4(scene->mRootNode->mTransformation)));
+
+  const auto vertices_count = mesh_data.vertices.size();
+  const auto indices_count = mesh_data.indices.size();
 
   const auto b = units::byte{vertices_count * sizeof(vertex3d)};
 
@@ -266,7 +268,7 @@ auto mesh::_load(const std::filesystem::path& path) -> mesh_data {
 
   utility::logger<"models">::debug("Loaded mesh: {}, vertices: {}, indices: {}, size: {} kb in {:.2f}ms", path.string(), vertices_count, indices_count, kb.value(), units::quantity_cast<units::millisecond>(timer.elapsed()).value());
 
-  return data;
+  return skinned_mesh_data{std::move(mesh_data), std::move(skeleton)};
 }
 
 } // namespace sbx::animation

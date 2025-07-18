@@ -5,6 +5,7 @@
 #include <optional>
 #include <mutex>
 #include <deque>
+#include <filesystem>
 
 #include <fmt/format.h>
 
@@ -230,6 +231,18 @@ struct fmt::formatter<std::optional<Type>> : public fmt::formatter<Type> {
     }
 
     return fmt::format_to(context.out(), "[empty optional]");
+  }
+
+}; // struct fmt::formatter<Type>
+
+template<>
+struct fmt::formatter<std::filesystem::path> : public fmt::formatter<std::filesystem::path::string_type> {
+
+  using base_type = fmt::formatter<std::filesystem::path::string_type>;
+
+  template<typename FormatContext>
+  auto format(const std::filesystem::path& value, FormatContext& context) -> decltype(auto) {
+    return base_type::format(value.string(), context);
   }
 
 }; // struct fmt::formatter<Type>

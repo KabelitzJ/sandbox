@@ -104,7 +104,7 @@ auto renderer::initialize() -> void {
   // Render stage 1
   add_subrenderer<sbx::scenes::skybox_subrenderer>("demo/assets/shaders/skybox", sbx::graphics::pipeline::stage{0, 0});
   add_subrenderer<sbx::scenes::grid_subrenderer>("demo/assets/shaders/grid", sbx::graphics::pipeline::stage{0, 0});
-  // add_subrenderer<sbx::models::static_mesh_subrenderer>("demo/assets/shaders/deferred_static", sbx::graphics::pipeline::stage{0, 0});
+  add_subrenderer<sbx::models::static_mesh_subrenderer>("demo/assets/shaders/deferred_static", sbx::graphics::pipeline::stage{0, 0});
   add_subrenderer<sbx::animations::skinned_mesh_subrenderer>("demo/assets/shaders/deferred_skinned", sbx::graphics::pipeline::stage{0, 0});
 
   auto attachment_names = std::unordered_map<std::string, std::string>{

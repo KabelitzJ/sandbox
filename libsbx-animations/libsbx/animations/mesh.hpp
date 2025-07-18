@@ -37,8 +37,17 @@ public:
 
 private:
 
+  struct skinned_mesh_data {
+    base::mesh_data mesh_data;
+    animations::skeleton skeleton;
+  }; // struct skinned_mesh_data
+
+  mesh(skinned_mesh_data&& data)
+  : base{std::move(data.mesh_data)},
+    _skeleton{data.skeleton} { }
+
   // [TODO] KAJ 2025-07-10 : Passing the skeleton as a parameter here is a quick and dirty solution until I habe implemented a propper mesh loading framwork
-  static auto _load(const std::filesystem::path& path) -> mesh_data;
+  auto _load(const std::filesystem::path& path) -> skinned_mesh_data;
 
   animations::skeleton _skeleton;
 

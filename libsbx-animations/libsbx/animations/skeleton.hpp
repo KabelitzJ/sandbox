@@ -29,20 +29,20 @@ public:
 
   inline static constexpr auto max_bones = std::uint32_t{64u};
 
-  skeleton() {
-    _bones.reserve(32u);
-    _bone_names.reserve(32);
+  skeleton() = default;
+
+  auto reserve(const std::size_t size) -> void {
+    _bones.reserve(size);
+    _bone_names.reserve(size);
   }
 
-  auto bone_index(const std::string& name) const -> std::uint32_t {
-    auto entry = _bone_names.find(name);
-
-    return (entry != _bone_names.cend()) ? entry->second : bone::null;
+  auto shrink_to_fit() -> void {
+    _bones.shrink_to_fit();
+    _bone_names.shrink_to_fit();
   }
 
   auto add_bone(const std::string& name, const bone& bone) -> void {
-    _bone_names.emplace(name, static_cast<std::uint32_t>(_bones.size()));
-    _bone_ids_to_names.push_back(name);
+    _bone_names.push_back(name);
     _bones.push_back(bone);
   }
 
@@ -66,7 +66,7 @@ public:
 
     for (std::uint32_t bone_id = 0; bone_id < _bones.size(); ++bone_id) {
       const auto& bone = _bones[bone_id];
-      const auto& bone_name = _bone_ids_to_names[bone_id];
+      const auto& bone_name = _bone_names[bone_id];
 
       auto local_transform = bone.local_bind_matrix;
 
@@ -107,7 +107,7 @@ public:
 
       const auto global_transform = (bone.parent_id != skeleton::bone::null) ? global_transforms[bone.parent_id] * local_transform : local_transform;
 
-      final_bones[bone_id] = global_transform * bone.inverse_bind_matrix;
+      final_bones[bone_id] = _inverse_root_transform * global_transform * bone.inverse_bind_matrix;
 
       global_transforms[bone_id] = std::move(global_transform);
 
@@ -122,14 +122,13 @@ public:
   }
 
   auto name_for_bone(std::size_t i) -> std::string {
-    return _bone_ids_to_names[i].str();
+    return _bone_names[i].str();
   }
 
 private:
 
   std::vector<bone> _bones;
-  std::vector<utility::hashed_string> _bone_ids_to_names;
-  std::unordered_map<utility::hashed_string, std::uint32_t> _bone_names;
+  std::vector<utility::hashed_string> _bone_names;
   
   math::matrix4x4 _inverse_root_transform;
 

@@ -106,7 +106,7 @@ public:
       _track_map.emplace(bone_name, std::move(track));
     }
 
-    utility::logger<"animations">::debug("Loaded animation: {} '{}' in {:.2f}ms", path, _name, units::quantity_cast<units::millisecond>(timer.elapsed()).value());
+    utility::logger<"animations">::debug("Loaded animation: {} '{}' in {:.2f}ms", path.string(), _name, units::quantity_cast<units::millisecond>(timer.elapsed()).value());
   }
 
   auto track_map() const noexcept -> const std::unordered_map<utility::hashed_string, bone_track>& {
