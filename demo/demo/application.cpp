@@ -111,6 +111,9 @@ application::application()
   _mesh_ids.emplace("women", assets_module.add_asset<sbx::animations::mesh>("demo/assets/meshes/women/women.gltf"));
   _mesh_ids.emplace("women_static", assets_module.add_asset<sbx::models::mesh>("demo/assets/meshes/women/women.gltf"));
 
+  // _mesh_ids.emplace("man", assets_module.add_asset<sbx::animations::mesh>("demo/assets/meshes/man/man.gltf"));
+  _mesh_ids.emplace("man_static", assets_module.add_asset<sbx::models::mesh>("demo/assets/meshes/man/man.gltf"));
+
   const auto fox_animation_id = assets_module.add_asset<sbx::animations::animation>("demo/assets/meshes/fox/fox.gltf", "Walk");
   const auto women_animation_id = assets_module.add_asset<sbx::animations::animation>("demo/assets/meshes/women/women.gltf", "Walking");
 
@@ -161,7 +164,7 @@ application::application()
 
   // scene.set_active_camera(camera);
 
-  // Animated Fox
+  // // Animated Fox
 
   // auto fox1 = scene.create_node("Fox");
 
@@ -194,37 +197,35 @@ application::application()
   // fox2_transform.set_position(sbx::math::vector3{3.0f, 0.0f, -3.0f});
   // // fox2_transform.set_scale(sbx::math::vector3{0.06f, 0.06f, 0.06f});
 
-  // Animated Women
+  // Animated Man
 
-  auto women1 = scene.create_node("AnimatedWomen");
+  // auto man1 = scene.create_node("AnimatedMan");
 
-  auto women1_submeshes = std::vector<sbx::scenes::skinned_mesh::submesh>{};
-  women1_submeshes.push_back(sbx::scenes::skinned_mesh::submesh{0u, sbx::math::color::white(), sbx::scenes::skinned_mesh::material{0.2f, 0.5f, 0.1f, 0.8f}, _image_ids["women"]});
+  // auto man1_submeshes = std::vector<sbx::scenes::skinned_mesh::submesh>{};
+  // man1_submeshes.push_back(sbx::scenes::skinned_mesh::submesh{0u, sbx::math::color::white(), sbx::scenes::skinned_mesh::material{0.2f, 0.5f, 0.1f, 0.8f}, _image_ids["man"]});
 
-  scene.add_component<sbx::scenes::skinned_mesh>(women1, _mesh_ids["women"], women_animation_id, women1_submeshes);
+  // scene.add_component<sbx::scenes::skinned_mesh>(man1, _mesh_ids["man"], man1_animation_id, man1_submeshes);
 
-  scene.add_component<sbx::scenes::animation_state>(women1, 0.0f, 1.0f, true);
+  // scene.add_component<sbx::scenes::animation_state>(man1, 0.0f, 1.0f, true);
 
-  scene.add_component<walker>(women1);
+  // scene.add_component<walker>(man1);
 
-  auto& women1_transform = scene.get_component<sbx::math::transform>(women1);
-  women1_transform.set_position(sbx::math::vector3{0.0f, 0.0f, 6.0f});
-  // women1_transform.set_scale(sbx::math::vector3{0.01f, 0.01f, 0.01f});
+  // auto& man1_transform = scene.get_component<sbx::math::transform>(man1);
+  // man1_transform.set_position(sbx::math::vector3{0.0f, 0.0f, 6.0f});
+  // // man1_transform.set_scale(sbx::math::vector3{0.01f, 0.01f, 0.01f});
 
-  // Static Women
+  // Static Man
 
-  auto women2 = scene.create_node("StaticWomen");
+  auto man2 = scene.create_node("StaticMan");
 
-  auto women2_submeshes = std::vector<sbx::scenes::static_mesh::submesh>{};
-  women2_submeshes.push_back(sbx::scenes::static_mesh::submesh{0u, sbx::math::color::white(), sbx::scenes::static_mesh::material{0.2f, 0.5f, 0.1f, 0.8f}, _image_ids["women"]});
+  auto man2_submeshes = std::vector<sbx::scenes::static_mesh::submesh>{};
+  man2_submeshes.push_back(sbx::scenes::static_mesh::submesh{0u, sbx::math::color::white(), sbx::scenes::static_mesh::material{0.2f, 0.5f, 0.1f, 0.8f}, _image_ids["man"]});
 
-  scene.add_component<sbx::scenes::static_mesh>(women2, _mesh_ids["women_static"], women2_submeshes);
+  scene.add_component<sbx::scenes::static_mesh>(man2, _mesh_ids["man_static"], man2_submeshes);
 
-  scene.add_component<sbx::scenes::animation_state>(women2);
-
-  auto& women2_transform = scene.get_component<sbx::math::transform>(women2);
-  women2_transform.set_position(sbx::math::vector3{5.0f, 0.0f, 6.0f});
-  // women2_transform.set_scale(sbx::math::vector3{0.01f, 0.01f, 0.01f});
+  auto& man2_transform = scene.get_component<sbx::math::transform>(man2);
+  man2_transform.set_position(sbx::math::vector3{5.0f, 0.0f, 6.0f});
+  // man2_transform.set_scale(sbx::math::vector3{0.01f, 0.01f, 0.01f});
 
   _selection_buffer = graphics_module.add_resource<sbx::graphics::storage_buffer>(sbx::graphics::storage_buffer::min_size);
 

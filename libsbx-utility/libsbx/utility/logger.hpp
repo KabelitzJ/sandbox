@@ -242,7 +242,7 @@ struct fmt::formatter<std::filesystem::path> : public fmt::formatter<std::filesy
 
   template<typename FormatContext>
   auto format(const std::filesystem::path& value, FormatContext& context) -> decltype(auto) {
-    return base_type::format(value.string(), context);
+    return fmt::format_to(context.out(), "{}", value.string());
   }
 
 }; // struct fmt::formatter<Type>
