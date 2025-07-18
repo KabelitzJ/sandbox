@@ -48,6 +48,20 @@ renderer::renderer()
   //   add_render_stage(std::move(attachments), std::move(subpass_bindings), sbx::graphics::viewport{sbx::math::vector2u{2048, 2048}});
   // }
 
+  // Render stage 0: Preview
+  {
+    auto attachments = std::vector<sbx::graphics::attachment>{
+      sbx::graphics::attachment{0, "depth", sbx::graphics::attachment::type::depth},
+      sbx::graphics::attachment{1, "preview", sbx::graphics::attachment::type::image, _clear_color, sbx::graphics::format::r8g8b8a8_unorm}
+    };
+
+    auto subpass_bindings = std::vector<sbx::graphics::subpass_binding>{
+      sbx::graphics::subpass_binding{0, {0, 1}}
+    };
+
+    add_render_stage(std::move(attachments), std::move(subpass_bindings));
+  }
+
   // Render stage 1: Scene
   {
     auto attachments = std::vector<sbx::graphics::attachment>{
@@ -102,10 +116,10 @@ auto renderer::initialize() -> void {
   // add_subrenderer<sbx::shadows::shadow_subrenderer>("demo/assets/shaders/shadow", sbx::graphics::pipeline::stage{0, 0});
 
   // Render stage 1
-  add_subrenderer<sbx::scenes::skybox_subrenderer>("demo/assets/shaders/skybox", sbx::graphics::pipeline::stage{0, 0});
-  add_subrenderer<sbx::scenes::grid_subrenderer>("demo/assets/shaders/grid", sbx::graphics::pipeline::stage{0, 0});
-  add_subrenderer<sbx::models::static_mesh_subrenderer>("demo/assets/shaders/deferred_static", sbx::graphics::pipeline::stage{0, 0});
-  add_subrenderer<sbx::animations::skinned_mesh_subrenderer>("demo/assets/shaders/deferred_skinned", sbx::graphics::pipeline::stage{0, 0});
+  add_subrenderer<sbx::scenes::skybox_subrenderer>("demo/assets/shaders/skybox", sbx::graphics::pipeline::stage{1, 0});
+  add_subrenderer<sbx::scenes::grid_subrenderer>("demo/assets/shaders/grid", sbx::graphics::pipeline::stage{1, 0});
+  add_subrenderer<sbx::models::static_mesh_subrenderer>("demo/assets/shaders/deferred_static", sbx::graphics::pipeline::stage{1, 0});
+  add_subrenderer<sbx::animations::skinned_mesh_subrenderer>("demo/assets/shaders/deferred_skinned", sbx::graphics::pipeline::stage{1, 0});
 
   auto attachment_names = std::unordered_map<std::string, std::string>{
     {"albedo_image", "albedo"},
@@ -115,13 +129,13 @@ auto renderer::initialize() -> void {
     {"object_id_image", "object_id"}
   };
 
-  add_subrenderer<sbx::post::resolve_filter>("demo/assets/shaders/resolve", sbx::graphics::pipeline::stage{0, 1}, std::move(attachment_names));
+  add_subrenderer<sbx::post::resolve_filter>("demo/assets/shaders/resolve", sbx::graphics::pipeline::stage{1, 1}, std::move(attachment_names));
 
-  add_subrenderer<sbx::scenes::debug_subrenderer>("demo/assets/shaders/debug", sbx::graphics::pipeline::stage{0, 2});
+  add_subrenderer<sbx::scenes::debug_subrenderer>("demo/assets/shaders/debug", sbx::graphics::pipeline::stage{1, 2});
   // add_subrenderer<sbx::models::foliage_subrenderer>("demo/assets/shaders/foliage", sbx::graphics::pipeline::stage{0, 2}, foliage_task.grass_output_buffer(), foliage_task.draw_command_buffer());
 
   // // Render stage 2
-  add_subrenderer<sbx::editor::editor_subrenderer>("demo/assets/shaders/editor", sbx::graphics::pipeline::stage{1, 0}, "resolve");
+  add_subrenderer<sbx::editor::editor_subrenderer>("demo/assets/shaders/editor", sbx::graphics::pipeline::stage{2, 0}, "resolve");
 }
 
 } // namespace demo
