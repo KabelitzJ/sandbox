@@ -7,6 +7,7 @@
 #include <memory>
 
 #include <libsbx/utility/compression.hpp>
+#include <libsbx/utility/exception.hpp>
 
 #include <libsbx/math/uuid.hpp>
 
@@ -141,11 +142,23 @@ private:
     }
 
     auto get(const math::uuid& id) const -> const Type& {
-      return *_assets.at(id);
+      const auto entry = _assets.find(id);
+
+      if (entry == _assets.end()) {
+        throw utility::runtime_error{"Asset with ID '{}' not found", id};
+      }
+
+      return *entry->second;
     }
 
     auto get(const math::uuid& id) -> Type& {
-      return *_assets.at(id);
+      auto entry = _assets.find(id);
+
+      if (entry == _assets.end()) {
+        throw utility::runtime_error{"Asset with ID '{}' not found", id};
+      }
+
+      return *entry->second;
     }
 
   private:
