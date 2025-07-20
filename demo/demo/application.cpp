@@ -71,6 +71,9 @@ application::application()
 
   _cube_image_ids.emplace("skybox", graphics_module.add_resource<sbx::graphics::cube_image>("demo/assets/skyboxes/clouds"));
 
+  _image_ids.emplace("t_90a_albedo", graphics_module.add_resource<sbx::graphics::image2d>("demo/assets/textures/tank/t_90a_albedo.png"));
+  _image_ids.emplace("t_90_50_cal_albedo", graphics_module.add_resource<sbx::graphics::image2d>("demo/assets/textures/tank/t_90_50_cal_albedo.png"));
+
   // Meshes
 
   auto mesh_map = nlohmann::json::parse(std::ifstream{"demo/assets/meshes/mesh_map.json"});
@@ -116,6 +119,8 @@ application::application()
 
   const auto fox_animation_id = assets_module.add_asset<sbx::animations::animation>("demo/assets/meshes/fox/fox.gltf", "Walk");
   const auto women_animation_id = assets_module.add_asset<sbx::animations::animation>("demo/assets/meshes/women/women.gltf", "Walking");
+
+  _mesh_ids.emplace("tank", assets_module.add_asset<sbx::models::mesh>("demo/assets/meshes/tank/tank.gltf"));
 
   // _mesh_ids.emplace("icosphere", assets_module.add_asset<sbx::models::mesh>(_generate_icosphere(20.0f, 4u)));
 
@@ -228,6 +233,34 @@ application::application()
   // man2_transform.set_scale(sbx::math::vector3{0.01f, 0.01f, 0.01f});
 
   _selection_buffer = graphics_module.add_resource<sbx::graphics::storage_buffer>(sbx::graphics::storage_buffer::min_size);
+
+  // Tank
+
+  // auto tank = scene.create_node("Tank");
+
+  // auto tank_submeshes = std::vector<sbx::scenes::static_mesh::submesh>{};
+
+  // const auto& tank_mesh = assets_module.get_asset<sbx::models::mesh>(_mesh_ids["tank"]);
+
+  // const auto submeshes = tank_mesh.submeshes();
+
+  // for (const auto& submesh : submeshes) {
+  //   sbx::utility::logger<"demo">::info("Tank submesh: {}", submesh.name.str());
+  // }
+  
+  // for (auto i = 0u; i < submeshes.size(); ++i) {
+  //   tank_submeshes.push_back(sbx::scenes::static_mesh::submesh{i, sbx::math::color::white(), sbx::scenes::static_mesh::material{0.2f, 0.5f, 0.1f, 0.8f}, _image_ids["t_90a_albedo"]});
+  // }
+
+  // tank_submeshes[4] = sbx::scenes::static_mesh::submesh{4u, sbx::math::color::white(), sbx::scenes::static_mesh::material{0.2f, 0.5f, 0.1f, 0.8f}, _image_ids["t_90_40_cal_albedo"]};
+  // tank_submeshes[5] = sbx::scenes::static_mesh::submesh{5u, sbx::math::color::white(), sbx::scenes::static_mesh::material{0.2f, 0.5f, 0.1f, 0.8f}, _image_ids["t_90_50_cal_albedo"]};
+  // tank_submeshes[6] = sbx::scenes::static_mesh::submesh{6u, sbx::math::color::white(), sbx::scenes::static_mesh::material{0.2f, 0.5f, 0.1f, 0.8f}, _image_ids["t_90_50_cal_albedo"]};
+
+  // scene.add_component<sbx::scenes::static_mesh>(tank, _mesh_ids["tank"], tank_submeshes);
+
+  // auto& tank_transform = scene.get_component<sbx::math::transform>(tank);
+  // tank_transform.set_position(sbx::math::vector3{0.0f, 0.0f, 10.0f});
+  // // tank_transform.set_scale(sbx::math::vector3{0.1f, 0.1f, 0.1f});
 
   // Trees
 

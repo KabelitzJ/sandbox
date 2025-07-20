@@ -59,7 +59,7 @@ using bone_map = std::unordered_map<std::string, std::uint32_t>;
 using bone_offsets = std::vector<math::matrix4x4>;
 using transform_map = std::unordered_map<std::string, math::matrix4x4>;
 
-static auto _load_mesh(const aiMesh* mesh, mesh::mesh_data& data, bone_map& bone_map, bone_offsets& bone_offsets) -> void {
+static auto _load_mesh(const aiMesh* mesh, const math::matrix4x4& transform, mesh::mesh_data& data, bone_map& bone_map, bone_offsets& bone_offsets) -> void {
   if (!mesh->HasNormals()) {
     throw std::runtime_error{fmt::format("Mesh '{}' does not have normals", mesh->mName.C_Str())};
   }
@@ -79,8 +79,6 @@ static auto _load_mesh(const aiMesh* mesh, mesh::mesh_data& data, bone_map& bone
   auto submesh = graphics::submesh{};
   submesh.vertex_offset = 0u;
   submesh.index_offset = data.indices.size();
-
-  submesh.bounds = math::volume{_convert_vec3(mesh->mAABB.mMin), _convert_vec3(mesh->mAABB.mMax)};
 
   const auto vertices_count = data.vertices.size();
 
@@ -110,6 +108,12 @@ static auto _load_mesh(const aiMesh* mesh, mesh::mesh_data& data, bone_map& bone
 
   submesh.index_count = data.indices.size() - submesh.index_offset;
 
+  const auto submesh_index = data.submeshes.size();
+
+  submesh.bounds = math::volume{_convert_vec3(mesh->mAABB.mMin), _convert_vec3(mesh->mAABB.mMax)};
+  submesh.transform = transform;
+  submesh.name = utility::hashed_string{mesh->mName.C_Str()};
+
   data.submeshes.push_back(submesh);
 
   for (auto i = 0u; i < mesh->mNumBones; ++i) {
@@ -124,14 +128,14 @@ static auto _load_mesh(const aiMesh* mesh, mesh::mesh_data& data, bone_map& bone
   }
 }
 
-static auto _load_node(const aiNode* node, const aiScene* scene, mesh::mesh_data& data, bone_map& bone_map, bone_offsets& bone_offsets) -> void {
+static auto _load_node(const aiNode* node, const aiScene* scene, const math::matrix4x4& transform, mesh::mesh_data& data, bone_map& bone_map, bone_offsets& bone_offsets) -> void {
   for (unsigned int i = 0; i < node->mNumMeshes; ++i) {
     const auto* mesh = scene->mMeshes[node->mMeshes[i]];
-    _load_mesh(mesh, data, bone_map, bone_offsets);
+    _load_mesh(mesh, transform, data, bone_map, bone_offsets);
   }
 
   for (unsigned int i = 0; i < node->mNumChildren; ++i) {
-    _load_node(node->mChildren[i], scene, data, bone_map, bone_offsets);
+    _load_node(node->mChildren[i], scene, transform, data, bone_map, bone_offsets);
   }
 }
 
@@ -248,7 +252,7 @@ auto mesh::_load(const std::filesystem::path& path) -> skinned_mesh_data {
   auto bone_map = animations::bone_map{};
   auto bone_offsets = animations::bone_offsets{};
 
-  _load_node(scene->mRootNode, scene, mesh_data, bone_map, bone_offsets);
+  _load_node(scene->mRootNode, scene, math::matrix4x4::identity, mesh_data, bone_map, bone_offsets);
   _apply_weights(scene, mesh_data, bone_map);
 
   skeleton.reserve(bone_map.size());
@@ -258,6 +262,9 @@ auto mesh::_load(const std::filesystem::path& path) -> skinned_mesh_data {
   skeleton.shrink_to_fit();
 
   skeleton.set_inverse_root_transform(math::matrix4x4::inverted(_convert_mat4(scene->mRootNode->mTransformation)));
+
+  // [NOTE] KAJ 2024-03-20 : We need to calculate the bounds of the mesh from the submeshes.
+  mesh_data.bounds = math::volume{math::vector3::zero, math::vector3::zero};
 
   const auto vertices_count = mesh_data.vertices.size();
   const auto indices_count = mesh_data.indices.size();

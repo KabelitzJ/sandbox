@@ -34,6 +34,14 @@ public:
   template<scalar Other = value_type>
   constexpr basic_matrix(const basic_matrix<Columns, Rows, Other>& other) noexcept;
 
+  constexpr basic_matrix(const basic_matrix& other) noexcept = default;
+
+  constexpr basic_matrix(basic_matrix&& other) noexcept = default;
+
+  auto operator=(const basic_matrix& other) noexcept -> basic_matrix& = default;
+
+  auto operator=(basic_matrix&& other) noexcept -> basic_matrix& = default;
+
   [[nodiscard]] constexpr auto operator[](size_type index) noexcept -> column_type&;
 
   [[nodiscard]] constexpr auto operator[](size_type index) const noexcept -> const column_type&;

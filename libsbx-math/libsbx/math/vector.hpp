@@ -41,6 +41,14 @@ public:
   constexpr basic_vector(const basic_vector<Size, Other>& other) noexcept
   : _components{utility::make_array<value_type, Size>(other._components)} { }
 
+  constexpr basic_vector(const basic_vector& other) noexcept = default;
+
+  constexpr basic_vector(basic_vector&& other) noexcept = default;
+
+  auto operator=(const basic_vector& other) noexcept -> basic_vector& = default;
+
+  auto operator=(basic_vector&& other) noexcept -> basic_vector& = default;
+
   template<scalar Lhs = value_type, scalar Rhs = value_type>
   static constexpr auto min(const basic_vector<Size, Lhs>& lhs, const basic_vector<Size, Rhs>& rhs) noexcept -> basic_vector {
     auto result = lhs;

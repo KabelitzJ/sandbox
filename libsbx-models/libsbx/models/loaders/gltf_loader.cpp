@@ -165,14 +165,30 @@ namespace sbx::models {
 // }
 
 static auto _convert_vec2(const aiVector2D& vector) -> math::vector2 {
-  return {vector.x, vector.y};
+  return math::vector2{vector.x, vector.y};
 }
 
 static auto _convert_vec3(const aiVector3D& vector) -> math::vector3 {
-  return {vector.x, vector.y, vector.z};
+  return math::vector3{vector.x, vector.y, vector.z};
 }
 
-static auto _load_mesh(const aiMesh* mesh, mesh::mesh_data& data) -> void {
+static auto _convert_vec4(const aiVector3D& vector, const std::float_t w) -> math::vector4 {
+  return math::vector4{vector.x, vector.y, vector.z, w};
+}
+
+static auto _convert_mat4(const aiMatrix4x4& matrix) -> math::matrix4x4 {
+  auto result = math::matrix4x4{};
+
+  //the a,b,c,d in assimp is the row ; the 1,2,3,4 is the column
+  result[0][0] = matrix.a1; result[1][0] = matrix.a2; result[2][0] = matrix.a3; result[3][0] = matrix.a4;
+  result[0][1] = matrix.b1; result[1][1] = matrix.b2; result[2][1] = matrix.b3; result[3][1] = matrix.b4;
+  result[0][2] = matrix.c1; result[1][2] = matrix.c2; result[2][2] = matrix.c3; result[3][2] = matrix.c4;
+  result[0][3] = matrix.d1; result[1][3] = matrix.d2; result[2][3] = matrix.d3; result[3][3] = matrix.d4;
+
+  return result;
+}
+
+static auto _load_mesh(const aiMesh* mesh, mesh::mesh_data& data, const math::matrix4x4& transform) -> void {
   if (!mesh->HasNormals()) {
     throw std::runtime_error{fmt::format("Mesh '{}' does not have normals", mesh->mName.C_Str())};
   }
@@ -189,18 +205,16 @@ static auto _load_mesh(const aiMesh* mesh, mesh::mesh_data& data) -> void {
   submesh.vertex_offset = 0u;
   submesh.index_offset = data.indices.size();
 
-  submesh.bounds = math::volume{_convert_vec3(mesh->mAABB.mMin), _convert_vec3(mesh->mAABB.mMax)};
-
   const auto vertices_count = data.vertices.size();
 
   data.vertices.reserve(vertices_count + mesh->mNumVertices);
 
   for (auto i = 0u; i < mesh->mNumVertices; ++i) {
     auto vertex = models::vertex3d{};
-    vertex.position = _convert_vec3(mesh->mVertices[i]);
-    vertex.normal = _convert_vec3(mesh->mNormals[i]);
+    vertex.position = transform * _convert_vec4(mesh->mVertices[i], 1.0f);
+    vertex.normal = transform * _convert_vec4(mesh->mNormals[i], 0.0f);
     vertex.uv = _convert_vec3(mesh->mTextureCoords[0][i]);
-    vertex.tangent = _convert_vec3(mesh->mTangents[i]);
+    vertex.tangent = transform * _convert_vec4(mesh->mTangents[i], 0.0f);
 
     data.vertices.push_back(vertex);
   }
@@ -216,16 +230,24 @@ static auto _load_mesh(const aiMesh* mesh, mesh::mesh_data& data) -> void {
 
   submesh.index_count = data.indices.size() - submesh.index_offset;
 
+  const auto submesh_index = data.submeshes.size();
+
+  submesh.bounds = math::volume{_convert_vec3(mesh->mAABB.mMin), _convert_vec3(mesh->mAABB.mMax)};
+  submesh.transform = transform;
+  submesh.name = utility::hashed_string{mesh->mName.C_Str()};
+
   data.submeshes.push_back(submesh);
 }
 
-static auto _load_node(const aiNode* node, const aiScene* scene, mesh::mesh_data& data) -> void {
+static auto _load_node(const aiNode* node, const aiScene* scene, mesh::mesh_data& data, const math::matrix4x4& transform) -> void {
+  const auto node_transform = transform * _convert_mat4(node->mTransformation);
+
   for (auto i = 0u; i < node->mNumMeshes; ++i) {
-    _load_mesh(scene->mMeshes[node->mMeshes[i]], data);
+    _load_mesh(scene->mMeshes[node->mMeshes[i]], data, node_transform);
   }
 
   for (auto i = 0u; i < node->mNumChildren; ++i) {
-    _load_node(node->mChildren[i], scene, data);
+    _load_node(node->mChildren[i], scene, data, node_transform);
   }
 }
 
@@ -242,7 +264,8 @@ auto gltf_loader::load(const std::filesystem::path& path) -> mesh::mesh_data {
     aiProcess_JoinIdenticalVertices |
     aiProcess_LimitBoneWeights |        // If more than N (=4) bone weights, discard least influencing bones and renormalise sum to 1
     aiProcess_GlobalScale |             // e.g. convert cm to m for fbx import (and other formats where cm is native)
-    aiProcess_ValidateDataStructure;    // Validation 
+    aiProcess_ValidateDataStructure |   // Validation
+    aiProcess_ImproveCacheLocality;     // Improve cache locality
 
   auto importer = Assimp::Importer{};
 
@@ -252,7 +275,10 @@ auto gltf_loader::load(const std::filesystem::path& path) -> mesh::mesh_data {
     throw std::runtime_error{fmt::format("Error loading mesh '{}': {}", path.string(), importer.GetErrorString())};
   }
 
-  _load_node(scene->mRootNode, scene, data);
+  _load_node(scene->mRootNode, scene, data, math::matrix4x4::identity);
+
+  // [NOTE] KAJ 2024-03-20 : We need to calculate the bounds of the mesh from the submeshes.
+  data.bounds = math::volume{math::vector3::zero, math::vector3::zero};
 
   return data;
 }

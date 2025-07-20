@@ -73,7 +73,15 @@ public:
   constexpr basic_matrix4x4(const basic_matrix3x3<Other>& other) noexcept
   : base_type{column_type{other[0], 0}, column_type{other[1], 0}, column_type{other[2], 0}, column_type{0, 0, 0, 1}} { }
 
-//   // -- Static member functions --
+  constexpr basic_matrix4x4(const basic_matrix4x4& other) noexcept = default;
+
+  constexpr basic_matrix4x4(basic_matrix4x4&& other) noexcept = default;
+
+  auto operator=(const basic_matrix4x4& other) noexcept -> basic_matrix4x4& = default;
+
+  auto operator=(basic_matrix4x4&& other) noexcept -> basic_matrix4x4& = default;
+
+  // -- Static member functions --
 
   [[nodiscard]] constexpr static auto transposed(const basic_matrix4x4& matrix) noexcept -> basic_matrix4x4;
 

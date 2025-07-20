@@ -21,8 +21,8 @@ mesh<Vertex>::mesh(const std::vector<vertex_type>& vertices, const std::vector<i
     VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
   );
 
-  _submeshes.push_back(graphics::submesh{static_cast<std::uint32_t>(indices.size()), 0, 0, bounds});
-  
+  _submeshes.push_back(graphics::submesh{static_cast<std::uint32_t>(indices.size()), 0, 0, bounds, math::matrix4x4::identity, utility::hashed_string{"mesh"}});
+
   _upload_vertices(vertices, indices);
 }
 
@@ -43,7 +43,7 @@ mesh<Vertex>::mesh(std::vector<vertex_type>&& vertices, std::vector<index_type>&
     VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
   );
 
-  _submeshes.push_back(graphics::submesh{static_cast<std::uint32_t>(indices.size()), 0, 0, bounds});
+  _submeshes.push_back(graphics::submesh{static_cast<std::uint32_t>(indices.size()), 0, 0, bounds, math::matrix4x4::identity, utility::hashed_string{"mesh"}});
   
   _upload_vertices(std::move(vertices), std::move(indices));
 }
@@ -51,7 +51,7 @@ mesh<Vertex>::mesh(std::vector<vertex_type>&& vertices, std::vector<index_type>&
 template<vertex Vertex>
 mesh<Vertex>::mesh(mesh_data&& mesh_data)
 : _submeshes{std::move(mesh_data.submeshes)},
-  _bounds{_calculate_bounds_from_submeshes()} {
+  _bounds{_calculate_bounds_from_submeshes(std::move(mesh_data.bounds))} {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
   _vertex_buffer = graphics_module.add_resource<buffer>(
@@ -178,8 +178,12 @@ auto mesh<Vertex>::_upload_vertices(std::vector<vertex_type>&& vertices, std::ve
 }
 
 template<vertex Vertex>
-auto mesh<Vertex>::_calculate_bounds_from_submeshes() const -> math::volume {
-  auto min = _submeshes[0].bounds.min();
+auto mesh<Vertex>::_calculate_bounds_from_submeshes(math::volume&& bounds) const -> math::volume {
+  if (bounds.min() != math::vector3::zero && bounds.max() != math::vector3::zero) {
+    return bounds;
+  }
+
+  auto min = _submeshes[0].bounds.max();
   auto max = _submeshes[0].bounds.max();
 
   for (auto i = 1u; i < _submeshes.size(); ++i) {

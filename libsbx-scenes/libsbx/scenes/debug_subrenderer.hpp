@@ -97,7 +97,7 @@ public:
     _descriptor_handler.bind_descriptors(command_buffer);
     _push_handler.bind(command_buffer);
 
-    command_buffer.draw(lines.size(), 1, 0, 0);
+    command_buffer.draw(static_cast<std::uint32_t>(lines.size()), 1u, 0u, 0u);
 
     scenes_module.clear_debug_lines();
   }

@@ -76,15 +76,17 @@ public:
     add_debug_line(origin - s1 / 2.0f * v1 + s2 / 2.0f * v2, origin + s1 / 2.0f * v1 + s2 / 2.0f * v2, outline);
     add_debug_line(origin - s1 / 2.0f * v1 - s2 / 2.0f * v2, origin + s1 / 2.0f * v1 - s2 / 2.0f * v2, outline);
 
-    for (int i = 1; i < n1; i++) {
-      const auto t = ((std::float_t)i - (std::float_t)n1 / 2.0f) * s1/(std::float_t)n1;
+    for (auto i = 1u; i < n1; i++) {
+      const auto t = (static_cast<std::float_t>(i) - static_cast<std::float_t>(n1) / 2.0f) * s1/static_cast<std::float_t>(n1);
       const auto o1 = origin + t * v1;
+
       add_debug_line(o1 - s2 / 2.0f * v2, o1 + s2 / 2.0f * v2, color);
     }
 
-    for (int i = 1; i < n2; i++) {
-      const auto t = ((std::float_t)i - (std::float_t)n2 / 2.0f) * s2/(std::float_t)n2;
+    for (auto i = 1u; i < n2; i++) {
+      const auto t = (static_cast<std::float_t>(i) - static_cast<std::float_t>(n2) / 2.0f) * s2/static_cast<std::float_t>(n2);
       const auto o2 = origin + t * v2;
+
       add_debug_line(o2 - s1 / 2.0f * v1, o2 + s1 / 2.0f * v1, color);
     }
   }
