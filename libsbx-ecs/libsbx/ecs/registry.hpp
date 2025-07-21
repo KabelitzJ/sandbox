@@ -14,6 +14,9 @@
 #include <libsbx/utility/type_id.hpp>
 #include <libsbx/utility/concepts.hpp>
 #include <libsbx/utility/algorithm.hpp>
+#include <libsbx/utility/logger.hpp>
+#include <libsbx/utility/hashed_string.hpp>
+#include <libsbx/utility/assert.hpp>
 
 #include <libsbx/memory/concepts.hpp>
 #include <libsbx/memory/observer_ptr.hpp>
@@ -24,6 +27,8 @@
 #include <libsbx/ecs/sparse_set.hpp>
 #include <libsbx/ecs/storage.hpp>
 #include <libsbx/ecs/view.hpp>
+
+#include <libsbx/ecs/detail/registry_storage_iterator.hpp>
 
 namespace sbx::ecs {
 
@@ -63,6 +68,8 @@ public:
   using size_type = std::size_t;
   using difference_type = std::ptrdiff_t;
   using common_type = base_type;
+  using iterable = memory::iterable_adaptor<detail::registry_storage_iterator<typename pool_container_type::iterator>>;
+  using const_iterable = memory::iterable_adaptor<detail::registry_storage_iterator<typename pool_container_type::const_iterator>>;
 
   // template<typename... Get, typename... Exclude>
   // using view_type = basic_view<get_t<storage_for_type<Get>...>, exclude_t<storage_for_type<Exclude>...>>;
@@ -233,6 +240,14 @@ public:
     } else {
       pool.sort(std::move(compare), std::move(sort), std::forward<Args>(args)...);
     }
+  }
+
+  [[nodiscard]] auto storage() noexcept -> iterable {
+    return iterable{_pools.begin(), _pools.end()};
+  }
+
+  [[nodiscard]] auto storage() const noexcept -> const_iterable {
+    return const_iterable{_pools.cbegin(), _pools.cend()};
   }
 
 private:
