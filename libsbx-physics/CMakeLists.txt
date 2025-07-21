@@ -16,6 +16,7 @@ add_library(${CMAKE_PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
 find_package(fmt REQUIRED)
 find_package(range-v3 REQUIRED)
+find_package(Bullet REQUIRED)
 
 target_sources(
   ${PROJECT_NAME}
@@ -44,6 +45,7 @@ target_link_libraries(
     # External dependencies
     fmt::fmt
     range-v3::range-v3
+    Bullet::Bullet
     # Internal dependencies
     libsbx::units
     libsbx::utility

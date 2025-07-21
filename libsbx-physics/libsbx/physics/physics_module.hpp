@@ -4,6 +4,8 @@
 #include <cmath>
 #include <optional>
 
+#include <btBulletDynamicsCommon.h>
+
 #include <libsbx/units/time.hpp>
 
 #include <libsbx/math/transform.hpp>
@@ -34,15 +36,52 @@ class physics_module : public core::module<physics_module> {
 public:
 
   physics_module() {
+    _collision_configuration = new btDefaultCollisionConfiguration();
 
+    ///use the default collision dispatcher. For parallel processing you can use a diffent dispatcher (see Extras/BulletMultiThreaded)
+    _dispatcher = new btCollisionDispatcher{_collision_configuration};
+
+    ///btDbvtBroadphase is a good general purpose broadphase. You can also try out btAxis3Sweep.
+    _overlapping_pair_cache = new btDbvtBroadphase{};
+
+    ///the default constraint solver. For parallel processing you can use a different solver (see Extras/BulletMultiThreaded)
+    _solver = new btSequentialImpulseConstraintSolver{};
+
+    _dynamics_world = new btDiscreteDynamicsWorld{_dispatcher, _overlapping_pair_cache, _solver, _collision_configuration};
+
+    set_gravity(math::vector3{0.0f, -10.0f, 0.0f});
   }
 
-  ~physics_module() override = default;
+  ~physics_module() override {
+    delete _dynamics_world;
+
+    delete _solver;
+
+    delete _overlapping_pair_cache;
+
+    delete _dispatcher;
+
+    delete _collision_configuration;
+  }
+
+  auto set_gravity(const math::vector3& gravity) -> void {
+    _dynamics_world->setGravity(_convert_vec3(gravity));
+  }
 
   auto update() -> void override {
     update_rigidbodies();
     solve_collisions();
   }
+
+  auto _convert_vec3(const math::vector3& vector) -> btVector3 {
+    return btVector3{vector.x(), vector.y(), vector.z()};
+  }
+
+  btDiscreteDynamicsWorld* _dynamics_world;
+  btDefaultCollisionConfiguration* _collision_configuration;
+  btCollisionDispatcher* _dispatcher;
+  btBroadphaseInterface*  _overlapping_pair_cache;
+  btSequentialImpulseConstraintSolver* _solver;
 
 private:
 

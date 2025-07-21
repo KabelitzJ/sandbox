@@ -111,6 +111,7 @@ class libsbx_recipe(ConanFile):
     self.requires("tsl-robin-map/1.3.0")
     self.requires("lz4/1.10.0")
     self.requires("assimp/5.4.3")
+    self.requires("bullet3/3.25")
 
   def generate(self):
     deps = CMakeDeps(self)
