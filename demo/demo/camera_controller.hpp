@@ -6,6 +6,7 @@
 #include <libsbx/math/vector3.hpp>
 #include <libsbx/math/transform.hpp>
 #include <libsbx/math/angle.hpp>
+#include <libsbx/math/smooth_value.hpp>
 
 #include <libsbx/core/engine.hpp>
 
@@ -19,6 +20,9 @@ class camera_controller {
 
 public:
 
+  using zoom_type = sbx::math::proportional_smooth_value;
+  using tilt_type = sbx::math::basic_linear_smooth_value<sbx::math::degree>;
+
   camera_controller()
   : _orbit_angle{sbx::math::degree{90}}, 
     _tilt_angle{sbx::math::degree{30}},
@@ -26,7 +30,7 @@ public:
     _max_tilt_angle{sbx::math::degree{89}},
     _target{sbx::math::vector3{0.0f, 0.0f, 0.0f}},
     _zoom{30.0f},
-    _min_zoom{2.0f},
+    _min_zoom{10.0f},
     _max_zoom{200.0f} { }
 
   auto update() -> void {
@@ -73,7 +77,11 @@ public:
       _last_mouse_position = mouse_position;
 
       _orbit_angle += sbx::math::degree{80.0f * _mouse_position_delta.x() * delta_time.value()};
-      _tilt_angle = sbx::math::clamp(_tilt_angle + sbx::math::degree{80.0f * _mouse_position_delta.y() * delta_time.value()}, _min_tilt_angle, _max_tilt_angle);
+
+      const auto offset = sbx::math::degree{80.0f * _mouse_position_delta.y() * delta_time.value()};
+
+      _tilt_angle = tilt_type::clamp(_tilt_angle + offset, _min_tilt_angle.to_degrees(), _max_tilt_angle.to_degrees());
+      _tilt_angle.update(delta_time, sbx::math::degree{90});
     } else if (sbx::devices::input::is_mouse_button_released(sbx::devices::mouse_button::middle)) {
       _last_mouse_position = sbx::math::vector2{};
       _mouse_position_delta = sbx::math::vector2{};
@@ -101,16 +109,19 @@ public:
 
     auto scroll = sbx::devices::input::scroll_delta();
 
-    const auto base_scroll_speed = 5.0f;
-    const auto zoom_influence = 0.2f; // smaller = less influence
+    static constexpr auto base_scroll_speed = 5.0f;
+    static constexpr auto zoom_influence = 0.2f; // smaller = less influence
 
-    const auto scale_factor = base_scroll_speed * std::pow(_zoom, zoom_influence);
+    const auto offset = base_scroll_speed * std::pow(_zoom, zoom_influence) * scroll.y();
 
-    _zoom = std::clamp(_zoom - scale_factor * scroll.y(), _min_zoom, _max_zoom);
+    _zoom = zoom_type::clamp(_zoom - offset, _min_zoom, _max_zoom);
+    _zoom.update(delta_time, 10.0f);
+
+    sbx::utility::logger<"demo">::info("_tilt_angle: {}", _tilt_angle.value().value());
 
     // Calculate camera position
 
-    const auto tilt_angle_rad = _tilt_angle.to_radians().value();
+    const auto tilt_angle_rad = sbx::math::to_radians(_tilt_angle.value()).value();
 
     const auto radius = std::cos(tilt_angle_rad) * _zoom;
     const auto height = std::sin(tilt_angle_rad) * _zoom;
@@ -131,11 +142,11 @@ public:
 private:
 
   sbx::math::angle _orbit_angle;
-  sbx::math::angle _tilt_angle;
+  tilt_type _tilt_angle;
   sbx::math::angle _min_tilt_angle;
   sbx::math::angle _max_tilt_angle;
   sbx::math::vector3 _target;
-  std::float_t _zoom;
+  zoom_type _zoom;
   std::float_t _min_zoom;
   std::float_t _max_zoom;
   sbx::math::vector2 _last_mouse_position;

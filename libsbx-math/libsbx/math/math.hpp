@@ -61,6 +61,8 @@
 #include <libsbx/math/random.hpp>
 #include <libsbx/math/noise.hpp>
 
+#include <libsbx/math/smooth_value.hpp>
+
 #include <libsbx/math/transform.hpp>
 
 #include <libsbx/math/volume.hpp>

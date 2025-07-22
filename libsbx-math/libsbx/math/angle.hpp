@@ -6,6 +6,7 @@
 #include <numbers>
 
 #include <libsbx/math/concepts.hpp>
+#include <libsbx/math/smooth_value.hpp>
 
 namespace sbx::math {
 
@@ -133,6 +134,20 @@ constexpr auto clamp(const basic_degree<Type>& value, const basic_degree<Type>& 
 }
 
 using degree = basic_degree<std::float_t>;
+
+template<floating_point Type>
+struct is_smoothable<basic_degree<Type>> : std::true_type { };
+
+template<floating_point Type>
+struct comparision_traits<basic_degree<Type>> {
+
+  using base_trait = comparision_traits<Type>;
+
+  inline static constexpr auto equal(const basic_degree<Type>& lhs, const basic_degree<Type>& rhs) noexcept -> bool {
+    return base_trait::equal(lhs.value(), rhs.value());
+  }
+
+}; // template<floating_point Type>
 
 template<floating_point Type>
 class basic_radian {
