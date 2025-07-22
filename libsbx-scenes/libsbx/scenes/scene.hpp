@@ -28,6 +28,7 @@
 #include <libsbx/scenes/node.hpp>
 #include <libsbx/scenes/components/directional_light.hpp>
 #include <libsbx/scenes/components/id.hpp>
+#include <libsbx/scenes/components/selection_tag.hpp>
 
 namespace sbx::scenes {
 
@@ -53,9 +54,9 @@ public:
 
   virtual ~scene() = default;
 
-  auto create_child_node(const node_type parent, const std::string& tag = "", const math::transform& transform = math::transform{}) -> node_type;
+  auto create_child_node(const node_type parent, const std::string& tag = "", const math::transform& transform = math::transform{}, const selection_tag& selection_tag = selection_tag::null) -> node_type;
 
-  auto create_node(const std::string& tag = "", const math::transform& transform = math::transform{}) -> node_type;  
+  auto create_node(const std::string& tag = "", const math::transform& transform = math::transform{}, const selection_tag& selection_tag = selection_tag::null) -> node_type;  
 
   auto destroy_node(const node_type node) -> void;
 

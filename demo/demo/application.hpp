@@ -50,44 +50,33 @@ public:
     tank_submeshes.push_back(sbx::scenes::static_mesh::submesh{tank_mesh.submesh_index("track_l"), sbx::math::color::white(), sbx::scenes::static_mesh::material{0.2f, 0.5f, 0.1f, 0.8f}, image_ids["bmp_tracks_albedo"]});
     tank_submeshes.push_back(sbx::scenes::static_mesh::submesh{tank_mesh.submesh_index("track_r"), sbx::math::color::white(), sbx::scenes::static_mesh::material{0.2f, 0.5f, 0.1f, 0.8f}, image_ids["bmp_tracks_albedo"]});
 
-    _root = scene.create_node("Tank");
+    const auto selection_tag = sbx::scenes::selection_tag{};
+
+    _root = scene.create_node("Tank", sbx::math::transform{}, selection_tag);
     scene.get_component<sbx::math::transform>(_root) = transform;
 
-    _hull = scene.create_child_node(_root, "Hull");
+    _hull = scene.create_child_node(_root, "Hull", sbx::math::transform{tank_mesh.submesh_local_transform("hull") * sbx::math::vector4{0, 0, 0, 1}}, selection_tag);
     scene.add_component<sbx::scenes::static_mesh>(_hull, mesh_ids["bmp"], sbx::utility::subrange(tank_submeshes, sbx::utility::offset_count{3u, 1u}));
-    auto& tank_hull_transform = scene.get_component<sbx::math::transform>(_hull);
-    tank_hull_transform.set_position(tank_mesh.submesh_local_transform("hull") * sbx::math::vector4{0, 0, 0, 1});
 
-    _turret = scene.create_child_node(_root, "Turret");
+    _turret = scene.create_child_node(_root, "Turret", sbx::math::transform{tank_mesh.submesh_local_transform("turret") * sbx::math::vector4{0, 0, 0, 1}}, selection_tag);
     scene.add_component<sbx::scenes::static_mesh>(_turret, mesh_ids["bmp"], sbx::utility::subrange(tank_submeshes, sbx::utility::offset_count{0u, 1u}));
-    auto& turret_transform = scene.get_component<sbx::math::transform>(_turret);
-    turret_transform.set_position(tank_mesh.submesh_local_transform("turret") * sbx::math::vector4{0, 0, 0, 1});
 
-    _gun_primary = scene.create_child_node(_turret, "GunPrimary");
+    _gun_primary = scene.create_child_node(_turret, "GunPrimary", sbx::math::transform{tank_mesh.submesh_local_transform("gun_primary") * sbx::math::vector4{0, 0, 0, 1}}, selection_tag);
     scene.add_component<sbx::scenes::static_mesh>(_gun_primary, mesh_ids["bmp"], sbx::utility::subrange(tank_submeshes, sbx::utility::offset_count{1u, 1u}));
-    auto& gun_primary_transform = scene.get_component<sbx::math::transform>(_gun_primary);
-    gun_primary_transform.set_position(tank_mesh.submesh_local_transform("gun_primary") * sbx::math::vector4{0, 0, 0, 1});
 
-    _gun_secondary = scene.create_child_node(_turret, "GunSecondary");
+    _gun_secondary = scene.create_child_node(_turret, "GunSecondary", sbx::math::transform{tank_mesh.submesh_local_transform("gun_secondary") * sbx::math::vector4{0, 0, 0, 1}}, selection_tag);
     scene.add_component<sbx::scenes::static_mesh>(_gun_secondary, mesh_ids["bmp"], sbx::utility::subrange(tank_submeshes, sbx::utility::offset_count{2u, 1u}));
-    auto& gun_secondary_transform = scene.get_component<sbx::math::transform>(_gun_secondary);
-    gun_secondary_transform.set_position(tank_mesh.submesh_local_transform("gun_secondary") * sbx::math::vector4{0, 0, 0, 1});
 
-    _track_l = scene.create_child_node(_root, "TrackL");
+    _track_l = scene.create_child_node(_root, "TrackL", sbx::math::transform{tank_mesh.submesh_local_transform("track_l") * sbx::math::vector4{0, 0, 0, 1}}, selection_tag);
     scene.add_component<sbx::scenes::static_mesh>(_track_l, mesh_ids["bmp"], sbx::utility::subrange(tank_submeshes, sbx::utility::offset_count{4u, 1u}));
-    auto& track_l_transform = scene.get_component<sbx::math::transform>(_track_l);
-    track_l_transform.set_position(tank_mesh.submesh_local_transform("track_l") * sbx::math::vector4{0, 0, 0, 1});
 
-    _track_r = scene.create_child_node(_root, "TrackR");
+
+    _track_r = scene.create_child_node(_root, "TrackR", sbx::math::transform{tank_mesh.submesh_local_transform("track_r") * sbx::math::vector4{0, 0, 0, 1}}, selection_tag);
     scene.add_component<sbx::scenes::static_mesh>(_track_r, mesh_ids["bmp"], sbx::utility::subrange(tank_submeshes, sbx::utility::offset_count{5u, 1u}));
-    auto& track_r_transform = scene.get_component<sbx::math::transform>(_track_r);
-    track_r_transform.set_position(tank_mesh.submesh_local_transform("track_r") * sbx::math::vector4{0, 0, 0, 1});
 
-    _gun_primary_tip = scene.create_child_node(_gun_primary, "GunPrimaryTip");
+
+    _gun_primary_tip = scene.create_child_node(_gun_primary, "GunPrimaryTip", sbx::math::transform{sbx::math::vector3{-10.5f, -0.1f, -0.9f}, sbx::math::quaternion::identity, sbx::math::vector3{0.5f, 0.5f, 0.5f}}, selection_tag);
     scene.add_component<sbx::scenes::static_mesh>(_gun_primary_tip, mesh_ids["cube"], 0u, sbx::math::color::red());
-    auto& tank_gun_primary_tip_transform = scene.get_component<sbx::math::transform>(_gun_primary_tip);
-    tank_gun_primary_tip_transform.set_position(sbx::math::vector3{-10.5f, -0.1f, -0.9f});
-    tank_gun_primary_tip_transform.set_scale(sbx::math::vector3{0.5f, 0.5f, 0.5f});
   }
 
   ~tank() {

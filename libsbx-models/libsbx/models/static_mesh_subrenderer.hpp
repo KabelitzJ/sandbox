@@ -56,6 +56,7 @@
 #include <libsbx/scenes/components/tag.hpp>
 #include <libsbx/scenes/components/point_light.hpp>
 #include <libsbx/scenes/components/global_transform.hpp>
+#include <libsbx/scenes/components/selection_tag.hpp>
 
 
 #include <libsbx/models/vertex3d.hpp>
@@ -255,10 +256,10 @@ private:
     const auto mesh_id = static_mesh.mesh_id();
 
     const auto& global_transform = scene.get_component<const scenes::global_transform>(node);
-    const auto& id = scene.get_component<const scenes::id>(node);
+    const auto selection_tag = scene.has_component<const scenes::selection_tag>(node) ? scene.get_component<const scenes::selection_tag>(node) : scenes::selection_tag::null;
 
-    const auto upper_id = static_cast<std::uint32_t>(id.value() >> 32u);
-    const auto lower_id = static_cast<std::uint32_t>(id.value() & 0xFFFFFFFF);
+    const auto upper_id = static_cast<std::uint32_t>(selection_tag.value() >> 32u);
+    const auto lower_id = static_cast<std::uint32_t>(selection_tag.value() & 0xFFFFFFFF);
 
     const auto transform_data_index = static_cast<std::uint32_t>(_transform_data.size());
     _transform_data.emplace_back(global_transform.model, global_transform.normal);
