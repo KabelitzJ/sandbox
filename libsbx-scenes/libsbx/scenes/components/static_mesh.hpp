@@ -55,6 +55,11 @@ public:
     return _submeshes;
   }
 
+  auto submesh_at(const std::uint32_t index) -> submesh& {
+    utility::assert_that(index < _submeshes.size(), "Submesh index out of bounds");
+    return _submeshes[index];
+  }
+
 private:
 
   math::uuid _mesh_id;

@@ -143,7 +143,7 @@ public:
     _scene_uniform_handler.push("light_direction", sbx::math::vector3::normalized(scene_light.direction()));
     _scene_uniform_handler.push("light_color", scene_light.color());
 
-    _scene_uniform_handler.push("time", std::fmod(core::engine::time().value() * 0.5f, 1.0f));
+    _scene_uniform_handler.push("time", core::engine::time().value());
 
     EASY_END_BLOCK;
 

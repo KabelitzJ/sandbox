@@ -61,12 +61,7 @@ public:
         submeshes.emplace_back(sbx::scenes::static_mesh::submesh{
           .index = 0u,
           .tint = sbx::math::color::white(),
-          .material = sbx::scenes::static_mesh::material{
-            .metallic = 0.0f,
-            .roughness = 1.0f,
-            .flexibility = 0.0f,
-            .anchor_height = 0.0f
-          },
+          .material = sbx::scenes::static_mesh::material{},
           .albedo_texture = _texture_id
         });
 

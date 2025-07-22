@@ -12,7 +12,7 @@ struct transform_data {
 
 struct instance_data {
   vec4 tint;
-  vec4 material; // x: metallic, y: roughness, z: flexiblity, w: anchor height
+  vec4 material; // x: metallic, y: roughness, z: texture scroll x, w: texture scroll y
   uvec4 payload; // x: albedo image index, y: normal image index, z: transform data index, w: unused
   uvec4 selection; // x: upper 32 bit of id, y: lower 32 bit of id, z: unused, w: unused
 }; // struct instance_data
@@ -105,8 +105,8 @@ void main() {
 
   vec3 world_position = vec3(transform_data.model * vec4(in_position, 1.0));
 
-  float flexibility = instance_data.material.z;
-  float anchor_height = instance_data.material.w;
+  float texture_scroll_x = instance_data.material.z;
+  float texture_scroll_y = instance_data.material.w;
 
   out_position = world_position;
 
@@ -118,7 +118,7 @@ void main() {
 
   out_tbn = mat3(T, B, N);
 
-  out_uv = in_uv;
+  out_uv = in_uv + vec2(texture_scroll_x, texture_scroll_y) * scene.time;
 
   out_color = instance_data.tint;
   out_material = instance_data.material.xy;

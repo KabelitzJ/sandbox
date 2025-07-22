@@ -40,7 +40,7 @@ public:
 
   template<setting_type Type>
   auto set(const utility::hashed_string& key, const Type& value) -> void {
-    _settings[key] = value_type{value, std::in_place_type<std::monostate>, std::in_place_type<std::monostate>};
+    _settings[key] = value_type{value, std::monostate{}, std::monostate{}};
   }
 
   template<setting_type Type>
