@@ -117,8 +117,6 @@ public:
     _zoom = zoom_type::clamp(_zoom - offset, _min_zoom, _max_zoom);
     _zoom.update(delta_time, 10.0f);
 
-    sbx::utility::logger<"demo">::info("_tilt_angle: {}", _tilt_angle.value().value());
-
     // Calculate camera position
 
     const auto tilt_angle_rad = sbx::math::to_radians(_tilt_angle.value()).value();

@@ -150,6 +150,11 @@ struct comparision_traits<basic_degree<Type>> {
 }; // template<floating_point Type>
 
 template<floating_point Type>
+inline constexpr auto mix(const basic_degree<Type> x, const basic_degree<Type> y, const Type a) -> basic_degree<Type> {
+  return basic_degree<Type>{x.value() * (static_cast<Type>(1) - a) + y.value() * a};
+}
+
+template<floating_point Type>
 class basic_radian {
 
 public:

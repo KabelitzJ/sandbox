@@ -46,12 +46,13 @@ public:
   : _current{value},
     _target{value} { }
 
-  basic_smooth_value(const value_type current, const value_type target)
-  : _current{current},
-    _target{target} { }
-
   static constexpr auto clamp(const basic_smooth_value& value, const value_type min, const value_type max) -> basic_smooth_value {
     return basic_smooth_value{value._current, std::clamp(value._target, min, max)};
+  }
+
+  template<floating_point Ratio>
+  static constexpr auto lerp(const basic_smooth_value& x, const basic_smooth_value& y, const Ratio ratio) -> basic_smooth_value {
+    return basic_smooth_value{x._current, mix(x._target, y._target, ratio)};
   }
 
   constexpr auto operator=(const value_type value) -> basic_smooth_value& {
@@ -136,6 +137,10 @@ public:
 
 
 private:
+
+  basic_smooth_value(const value_type current, const value_type target)
+  : _current{current},
+    _target{target} { }
 
   constexpr auto _compute_step(const value_type difference, const value_type base_speed, const units::second& delta_time) const -> value_type {
     switch (mode) {
