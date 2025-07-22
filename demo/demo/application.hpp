@@ -37,6 +37,16 @@ public:
 
 private:
 
+  struct tank_data {
+    sbx::scenes::node root;
+    sbx::scenes::node hull;
+    sbx::scenes::node turret;
+    sbx::scenes::node gun_primary;
+    sbx::scenes::node gun_secondary;
+    sbx::scenes::node track_l;
+    sbx::scenes::node track_r;
+  }; // struct tank_data
+
   // auto _generate_icosphere(const std::float_t radius, const std::uint32_t subdivisions) -> std::unique_ptr<sbx::models::mesh>;
 
   std::unordered_map<sbx::utility::hashed_string, sbx::graphics::image_handle> _image_ids;
@@ -57,6 +67,8 @@ private:
   // player_controller _player_controller;
 
   sbx::graphics::storage_buffer_handle _selection_buffer;
+
+  tank_data _tank_data;
 
 }; // class application
 
