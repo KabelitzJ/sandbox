@@ -23,6 +23,10 @@ public:
 
   ~transform() = default;
 
+  auto operator=(const matrix4x4& matrix) -> transform& {
+    return *this;
+  }
+
   auto position() const noexcept -> const vector3& {
     return _position;
   }

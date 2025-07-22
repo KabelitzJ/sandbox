@@ -188,7 +188,7 @@ static auto _convert_mat4(const aiMatrix4x4& matrix) -> math::matrix4x4 {
   return result;
 }
 
-static auto _load_mesh(const aiMesh* mesh, mesh::mesh_data& data, const math::matrix4x4& transform) -> void {
+static auto _load_mesh(const aiMesh* mesh, mesh::mesh_data& data, const math::matrix4x4& local_transform) -> void {
   if (!mesh->HasNormals()) {
     throw std::runtime_error{fmt::format("Mesh '{}' does not have normals", mesh->mName.C_Str())};
   }
@@ -211,10 +211,10 @@ static auto _load_mesh(const aiMesh* mesh, mesh::mesh_data& data, const math::ma
 
   for (auto i = 0u; i < mesh->mNumVertices; ++i) {
     auto vertex = models::vertex3d{};
-    vertex.position = transform * _convert_vec4(mesh->mVertices[i], 1.0f);
-    vertex.normal = transform * _convert_vec4(mesh->mNormals[i], 0.0f);
+    vertex.position = _convert_vec4(mesh->mVertices[i], 1.0f);
+    vertex.normal = _convert_vec4(mesh->mNormals[i], 0.0f);
     vertex.uv = _convert_vec3(mesh->mTextureCoords[0][i]);
-    vertex.tangent = transform * _convert_vec4(mesh->mTangents[i], 0.0f);
+    vertex.tangent = _convert_vec4(mesh->mTangents[i], 0.0f);
 
     data.vertices.push_back(vertex);
   }
@@ -233,21 +233,21 @@ static auto _load_mesh(const aiMesh* mesh, mesh::mesh_data& data, const math::ma
   const auto submesh_index = data.submeshes.size();
 
   submesh.bounds = math::volume{_convert_vec3(mesh->mAABB.mMin), _convert_vec3(mesh->mAABB.mMax)};
-  submesh.transform = transform;
+  submesh.local_transform = local_transform;
   submesh.name = utility::hashed_string{mesh->mName.C_Str()};
 
   data.submeshes.push_back(submesh);
 }
 
-static auto _load_node(const aiNode* node, const aiScene* scene, mesh::mesh_data& data, const math::matrix4x4& transform) -> void {
-  const auto node_transform = transform * _convert_mat4(node->mTransformation);
+static auto _load_node(const aiNode* node, const aiScene* scene, mesh::mesh_data& data) -> void {
+  const auto local_transform = _convert_mat4(node->mTransformation);
 
   for (auto i = 0u; i < node->mNumMeshes; ++i) {
-    _load_mesh(scene->mMeshes[node->mMeshes[i]], data, node_transform);
+    _load_mesh(scene->mMeshes[node->mMeshes[i]], data, local_transform);
   }
 
   for (auto i = 0u; i < node->mNumChildren; ++i) {
-    _load_node(node->mChildren[i], scene, data, node_transform);
+    _load_node(node->mChildren[i], scene, data);
   }
 }
 
@@ -275,7 +275,7 @@ auto gltf_loader::load(const std::filesystem::path& path) -> mesh::mesh_data {
     throw std::runtime_error{fmt::format("Error loading mesh '{}': {}", path.string(), importer.GetErrorString())};
   }
 
-  _load_node(scene->mRootNode, scene, data, math::matrix4x4::identity);
+  _load_node(scene->mRootNode, scene, data);
 
   // [NOTE] KAJ 2024-03-20 : We need to calculate the bounds of the mesh from the submeshes.
   data.bounds = math::volume{math::vector3::zero, math::vector3::zero};

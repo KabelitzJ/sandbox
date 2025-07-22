@@ -33,17 +33,12 @@ struct submesh {
   std::uint32_t index_offset;
   std::uint32_t vertex_offset;
   math::volume bounds;
-  math::matrix4x4 transform;
+  math::matrix4x4 local_transform;
   utility::hashed_string name;
 }; // struct submesh
 
 template<vertex Vertex>
 class mesh {
-
-  static_assert(std::is_copy_assignable_v<math::matrix4x4>, "The matrix4x4 type must be copy assignable for mesh operations.");
-  static_assert(std::is_copy_constructible_v<math::matrix4x4>, "The matrix4x4 type must be copy constructible for mesh operations.");
-  static_assert(std::is_move_assignable_v<math::matrix4x4>, "The matrix4x4 type must be move assignable for mesh operations.");
-  static_assert(std::is_move_constructible_v<math::matrix4x4>, "The matrix4x4 type must be move constructible for mesh operations.");
 
 public:
 
@@ -83,10 +78,6 @@ public:
 
   auto submeshes() const noexcept -> const std::vector<graphics::submesh>&;
 
-  auto submesh(std::uint32_t submesh_index) const -> const graphics::submesh& {
-    return _submeshes.at(submesh_index);
-  }
-
   auto submesh_index(const utility::hashed_string& name) const -> std::uint32_t {
     const auto entry = std::ranges::find(_submeshes, name, &graphics::submesh::name);
 
@@ -97,12 +88,28 @@ public:
     return std::distance(_submeshes.begin(), entry);
   }
 
+  auto submesh(std::uint32_t submesh_index) const -> const graphics::submesh& {
+    return _submeshes.at(submesh_index);
+  }
+
+  auto submesh(const utility::hashed_string& name) const -> const graphics::submesh& {
+    return _submeshes.at(submesh_index(name));
+  }
+
   auto submesh_bounds(std::uint32_t submesh_index) const -> const math::volume& {
     return _submeshes.at(submesh_index).bounds;
   }
 
-  auto submesh_transform(std::uint32_t submesh_index) const -> const math::matrix4x4& {
-    return _submeshes.at(submesh_index).transform;
+  auto submesh_bounds(const utility::hashed_string& name) const -> const math::volume& {
+    return _submeshes.at(submesh_index(name)).bounds;
+  }
+
+  auto submesh_local_transform(std::uint32_t submesh_index) const -> const math::matrix4x4& {
+    return _submeshes.at(submesh_index).local_transform;
+  }
+
+  auto submesh_local_transform(const utility::hashed_string& name) const -> const math::matrix4x4& {
+    return _submeshes.at(submesh_index(name)).local_transform;
   }
 
   auto submesh_names() const -> std::unordered_map<utility::hashed_string, std::uint32_t> {

@@ -111,7 +111,7 @@ static auto _load_mesh(const aiMesh* mesh, const math::matrix4x4& transform, mes
   const auto submesh_index = data.submeshes.size();
 
   submesh.bounds = math::volume{_convert_vec3(mesh->mAABB.mMin), _convert_vec3(mesh->mAABB.mMax)};
-  submesh.transform = transform;
+  submesh.local_transform = transform;
   submesh.name = utility::hashed_string{mesh->mName.C_Str()};
 
   data.submeshes.push_back(submesh);

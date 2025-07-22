@@ -64,7 +64,7 @@ enum class key : std::int32_t {
   tab = GLFW_KEY_TAB,
   backspace = GLFW_KEY_BACKSPACE,
   insert = GLFW_KEY_INSERT,
-  delete_ = GLFW_KEY_DELETE,
+  del = GLFW_KEY_DELETE,
   right = GLFW_KEY_RIGHT,
   left = GLFW_KEY_LEFT,
   down = GLFW_KEY_DOWN,

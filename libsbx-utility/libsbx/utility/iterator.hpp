@@ -6,6 +6,7 @@
 #include <iterator>
 #include <ranges>
 #include <type_traits>
+#include <algorithm>
 
 #include <range/v3/all.hpp>
 
@@ -35,17 +36,153 @@ auto map_to(Range&& range, Fn&& fn) -> To<std::invoke_result_t<Fn, const ranges:
   return std::forward<Range>(range) | ranges::views::transform(std::forward<Fn>(fn)) | ranges::to<To>();
 }
 
+/**
+ * @brief Appends elements from a source vector to a destination vector by moving them.
+ *
+ * @tparam Type A movable type stored in the vector.
+ *
+ * @param destination The vector to which elements will be appended.
+ * @param source The vector from which elements will be moved. It will be cleared after the operation.
+ *
+ * @note The source vector will be left empty after this call.
+ */
 template<std::movable Type>
 auto append(std::vector<Type>& destination, std::vector<Type>&& source) -> void {
   destination.reserve(destination.size() + source.size());
-  destination.insert(destination.end(), std::make_move_iterator(source.begin()), std::make_move_iterator(source.end()));
+  std::move(std::make_move_iterator(source.begin()), std::make_move_iterator(source.end()), std::back_inserter(destination));
   source.clear();
 }
 
+/**
+ * @brief Appends elements from a source vector to a destination vector by copying them.
+ *
+ * @tparam Type A copyable type stored in the vector.
+ * 
+ * @param destination The vector to which elements will be appended.
+ * @param source The vector from which elements will be copied. It remains unchanged.
+ */
 template<std::copyable Type>
 auto append(std::vector<Type>& destination, const std::vector<Type>& source) -> void {
   destination.reserve(destination.size() + source.size());
-  destination.insert(destination.end(), source.begin(), source.end());
+  std::copy(source.begin(), source.end(), std::back_inserter(destination));
+}
+
+/**
+ * @brief Concept for a range descriptor that calculates a start/end subrange from a given size.
+ */
+template<typename Type>
+concept range_descriptor = requires(const Type& descriptor, const std::size_t size) {
+  { descriptor.is_valid(size) } -> std::same_as<bool>;
+  { descriptor.start(size) } -> std::same_as<std::size_t>;
+  { descriptor.end(size) } -> std::same_as<std::size_t>;
+}; // concept range_descriptor
+
+/**
+ * @brief Range specified by an offset and a count.
+ */
+struct offset_count {
+
+  std::size_t offset;
+  std::size_t count;
+
+  constexpr auto is_valid(const std::size_t size) const -> bool {
+    return offset <= size;
+  }
+
+  constexpr auto start([[maybe_unused]] const std::size_t size) const -> std::size_t {
+    return offset;
+  }
+
+  constexpr auto end(const std::size_t size) const -> std::size_t {
+    return std::min(offset + count, size);
+  }
+
+}; // struct offset_count
+
+/**
+ * @brief Range specified by an explicit start and end index.
+ */
+struct start_end {
+
+  std::size_t begin_index;
+  std::size_t end_index;
+
+  constexpr auto is_valid(const std::size_t size) const -> bool {
+    return begin_index <= end_index && end_index <= size;
+  }
+
+  constexpr auto start([[maybe_unused]] const std::size_t size) const -> std::size_t {
+    return begin_index;
+  }
+
+  constexpr auto end(const std::size_t size) const -> std::size_t {
+    return end_index;
+  }
+
+}; // struct start_end
+
+/**
+ * @brief Extracts a subrange of elements from the given vector by moving them into a new vector.
+ *
+ * @tparam Type A movable type stored in the vector.
+ * @tparam Range A type satisfying the range_descriptor concept.
+ *
+ * @param vector The source vector, which will be cleared after moving the subrange.
+ * @param range A descriptor specifying the subrange.
+ *
+ * @return A new vector with copied elements, or empty if the range is invalid.
+ *
+ * @note The source vector will be cleared after this operation.
+ */
+template<std::movable Type, range_descriptor Range>
+auto subrange(std::vector<Type>&& vector, const Range& range) -> std::vector<Type> {
+  const auto size = vector.size();
+
+  if (!range.is_valid(size)) {
+    return {};
+  }
+
+  const auto start = range.start(size);
+  const auto end = range.end(size);
+
+  auto result = std::vector<Type>{};
+  result.reserve(end - start);
+
+  std::move(std::make_move_iterator(vector.begin() + start), std::make_move_iterator(vector.begin() + end), std::back_inserter(result));
+
+  vector.clear();
+
+  return result;
+}
+
+/**
+ * @brief Extracts a subrange of elements from the given vector by copying them into a new vector.
+ *
+ * @tparam Type A copyable type stored in the vector.
+ * @tparam Range A type satisfying the range_descriptor concept.
+ *
+ * @param vector The source vector to copy elements from. It remains unchanged.
+ * @param range A descriptor specifying the subrange.
+ *
+ * @return A new vector with moved elements, or empty if the range is invalid.
+ */
+template<std::copyable Type, range_descriptor Range>
+auto subrange(const std::vector<Type>& vector, const Range& range) -> std::vector<Type> {
+  const auto size = vector.size();
+
+  if (!range.is_valid(size)) {
+    return {};
+  }
+
+  const auto start = range.start(size);
+  const auto end = range.end(size);
+
+  auto result = std::vector<Type>{};
+  result.reserve(end - start);
+
+  std::copy(vector.begin() + start, vector.begin() + end, std::back_inserter(result));
+
+  return result;
 }
 
 

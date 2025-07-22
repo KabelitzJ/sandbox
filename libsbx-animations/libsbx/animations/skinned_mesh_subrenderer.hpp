@@ -91,14 +91,6 @@ public:
 
     SBX_SCOPED_TIMER("skinned_mesh_subrenderer");
 
-    if (devices::input::is_key_pressed(devices::key::up)) {
-      _bone_to_track = (_bone_to_track + 1) % skeleton::max_bones;
-      utility::logger<"animations">::debug("Tracking bone: {}", _bone_to_track);
-    } else if (devices::input::is_key_pressed(devices::key::down)) {
-      _bone_to_track = (_bone_to_track + skeleton::max_bones - 1) % skeleton::max_bones;
-      utility::logger<"animations">::debug("Tracking bone: {}", _bone_to_track);
-    }
-
     auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
 

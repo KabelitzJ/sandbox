@@ -16,6 +16,8 @@
 #include <demo/terrain/terrain_module.hpp>
 #include <demo/terrain/chunk.hpp>
 
+#include <libsbx/devices/input.hpp>
+
 #include <libsbx/scenes/debug_subrenderer.hpp>
 #include <libsbx/scenes/components/static_mesh.hpp>
 #include <libsbx/scenes/components/skinned_mesh.hpp>
@@ -28,17 +30,6 @@ namespace demo {
 struct rotator { };
 
 struct walker { };
-
-template<typename Type>
-auto subrange(const std::vector<Type>& vector, const std::size_t offset, const std::size_t count) -> std::vector<Type> {
-  if (offset >= vector.size()) {
-    return {};
-  }
-
-  const auto end = std::min(offset + count, vector.size());
-
-  return {vector.begin() + offset, vector.begin() + end};
-}
 
 application::application()
 : sbx::core::application{},
@@ -251,40 +242,7 @@ application::application()
 
   // Tank
 
-  auto& tank_mesh = assets_module.get_asset<sbx::models::mesh>(_mesh_ids["bmp"]);
-
-  auto tank_submeshes = std::vector<sbx::scenes::static_mesh::submesh>{};
-  tank_submeshes.push_back(sbx::scenes::static_mesh::submesh{tank_mesh.submesh_index("turret"), sbx::math::color::white(), sbx::scenes::static_mesh::material{0.2f, 0.5f, 0.1f, 0.8f}, _image_ids["bmp_body1_albedo"]});
-  tank_submeshes.push_back(sbx::scenes::static_mesh::submesh{tank_mesh.submesh_index("gun_primary"), sbx::math::color::white(), sbx::scenes::static_mesh::material{0.2f, 0.5f, 0.1f, 0.8f}, _image_ids["bmp_body1_albedo"]});
-  tank_submeshes.push_back(sbx::scenes::static_mesh::submesh{tank_mesh.submesh_index("gun_secondary"), sbx::math::color::white(), sbx::scenes::static_mesh::material{0.2f, 0.5f, 0.1f, 0.8f}, _image_ids["bmp_body1_albedo"]});
-
-  tank_submeshes.push_back(sbx::scenes::static_mesh::submesh{tank_mesh.submesh_index("hull"), sbx::math::color::white(), sbx::scenes::static_mesh::material{0.2f, 0.5f, 0.1f, 0.8f}, _image_ids["bmp_body2_albedo"]});
-
-  tank_submeshes.push_back(sbx::scenes::static_mesh::submesh{tank_mesh.submesh_index("track_l"), sbx::math::color::white(), sbx::scenes::static_mesh::material{0.2f, 0.5f, 0.1f, 0.8f}, _image_ids["bmp_tracks_albedo"]});
-  tank_submeshes.push_back(sbx::scenes::static_mesh::submesh{tank_mesh.submesh_index("track_r"), sbx::math::color::white(), sbx::scenes::static_mesh::material{0.2f, 0.5f, 0.1f, 0.8f}, _image_ids["bmp_tracks_albedo"]});
-
-  _tank_data.root = scene.create_node("Tank");
-
-  _tank_data.hull = scene.create_child_node(_tank_data.root, "Hull");
-  scene.add_component<sbx::scenes::static_mesh>(_tank_data.hull, _mesh_ids["bmp"], subrange(tank_submeshes, 3u, 1u));
-
-  _tank_data.turret = scene.create_child_node(_tank_data.hull, "Turret");
-  scene.add_component<sbx::scenes::static_mesh>(_tank_data.turret, _mesh_ids["bmp"], subrange(tank_submeshes, 0u, 1u));
-
-  auto& turret_transform = scene.get_component<sbx::math::transform>(_tank_data.turret);
-  turret_transform.set_position(sbx::math::vector3{0.0f, 1.0f, 0.0f});
-
-  _tank_data.gun_primary = scene.create_child_node(_tank_data.turret, "GunPrimary");
-  scene.add_component<sbx::scenes::static_mesh>(_tank_data.gun_primary, _mesh_ids["bmp"], subrange(tank_submeshes, 1u, 1u));
-
-  _tank_data.gun_secondary = scene.create_child_node(_tank_data.turret, "GunSecondary");
-  scene.add_component<sbx::scenes::static_mesh>(_tank_data.gun_secondary, _mesh_ids["bmp"], subrange(tank_submeshes, 2u, 1u));
-
-  _tank_data.track_l = scene.create_child_node(_tank_data.hull, "TrackL");
-  scene.add_component<sbx::scenes::static_mesh>(_tank_data.track_l, _mesh_ids["bmp"], subrange(tank_submeshes, 4u, 1u));
-
-  _tank_data.track_r = scene.create_child_node(_tank_data.hull, "TrackR");
-  scene.add_component<sbx::scenes::static_mesh>(_tank_data.track_r, _mesh_ids["bmp"], subrange(tank_submeshes, 5u, 1u));
+  _tanks.emplace_back(sbx::math::transform{sbx::math::vector3::zero, sbx::math::quaternion::identity, sbx::math::vector3{0.5}}, _mesh_ids, _image_ids);
 
   // auto& tank_transform = scene.get_component<sbx::math::transform>(tank);
   // tank_transform.set_position(sbx::math::vector3{0.0f, 0.0f, 10.0f});
@@ -452,28 +410,9 @@ auto application::update() -> void  {
     transform.move_by(transform.forward() * delta_time * 2.0f);
   }
 
-  static auto gun_elevation = sbx::math::degree{0.0f};
-  static auto direction = 1;
-
-  gun_elevation += sbx::math::degree{45} * delta_time * direction;
-
-  if (gun_elevation > sbx::math::degree{45}) {
-    direction = -1;
-  } else if (gun_elevation <= sbx::math::degree{0}) {
-    direction = 1;
+  for (auto& tank : _tanks) {
+    tank.update();
   }
-
-  // auto tank_transform = scene.get_component<sbx::math::transform>(_tank_data.root);
-  // tank_transform.move_by(sbx::math::vector3::forward * delta_time * 5.0f);
-
-  // auto& tank_turret_transform = scene.get_component<sbx::math::transform>(_tank_data.turret);
-  // tank_turret_transform.set_rotation(sbx::math::vector3::up, _rotation);
-
-  auto& tank_gun_primary_transform = scene.get_component<sbx::math::transform>(_tank_data.gun_primary);
-  tank_gun_primary_transform.set_rotation(sbx::math::vector3::forward, gun_elevation);
-
-  auto& tank_gun_secondary_transform = scene.get_component<sbx::math::transform>(_tank_data.gun_secondary);
-  tank_gun_secondary_transform.set_rotation(sbx::math::vector3::forward, gun_elevation);
 
   // const auto& image = static_cast<const sbx::graphics::image2d&>(graphics_module.attachment("object_id"));
   // auto& buffer = graphics_module.get_resource<sbx::graphics::storage_buffer>(_selection_buffer);
