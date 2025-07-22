@@ -84,18 +84,28 @@ public:
       return sbx::math::quaternion{sbx::math::vector3::right, sbx::math::angle{sbx::math::degree{sbx::math::random::next<std::float_t>()}}};
     };
 
-    _wheel_r_01 = scene.create_child_node(_track_r, "WheelR01", sbx::math::transform{tank_mesh.submesh_local_transform("wheel_r_01") * sbx::math::vector4{0, 0, 0, 1}, random_rotation()}, selection_tag);
-    scene.add_component<sbx::scenes::static_mesh>(_wheel_r_01, mesh_ids["bmp"], tank_mesh.submesh_index("wheel_r_01"), sbx::math::color::white(), sbx::scenes::static_mesh::material{}, image_ids["bmp_body2_albedo"]);
-    _wheel_r_02 = scene.create_child_node(_track_r, "WheelR02", sbx::math::transform{tank_mesh.submesh_local_transform("wheel_r_02") * sbx::math::vector4{0, 0, 0, 1}, random_rotation()}, selection_tag);
-    scene.add_component<sbx::scenes::static_mesh>(_wheel_r_02, mesh_ids["bmp"], tank_mesh.submesh_index("wheel_r_02"), sbx::math::color::white(), sbx::scenes::static_mesh::material{}, image_ids["bmp_body2_albedo"]);
-    _wheel_r_03 = scene.create_child_node(_track_r, "WheelR03", sbx::math::transform{tank_mesh.submesh_local_transform("wheel_r_03") * sbx::math::vector4{0, 0, 0, 1}, random_rotation()}, selection_tag);
-    scene.add_component<sbx::scenes::static_mesh>(_wheel_r_03, mesh_ids["bmp"], tank_mesh.submesh_index("wheel_r_03"), sbx::math::color::white(), sbx::scenes::static_mesh::material{}, image_ids["bmp_body2_albedo"]);
-    _wheel_r_04 = scene.create_child_node(_track_r, "WheelR04", sbx::math::transform{tank_mesh.submesh_local_transform("wheel_r_04") * sbx::math::vector4{0, 0, 0, 1}, random_rotation()}, selection_tag);
-    scene.add_component<sbx::scenes::static_mesh>(_wheel_r_04, mesh_ids["bmp"], tank_mesh.submesh_index("wheel_r_04"), sbx::math::color::white(), sbx::scenes::static_mesh::material{}, image_ids["bmp_body2_albedo"]);
-    _wheel_r_05 = scene.create_child_node(_track_r, "WheelR05", sbx::math::transform{tank_mesh.submesh_local_transform("wheel_r_05") * sbx::math::vector4{0, 0, 0, 1}, random_rotation()}, selection_tag);
-    scene.add_component<sbx::scenes::static_mesh>(_wheel_r_05, mesh_ids["bmp"], tank_mesh.submesh_index("wheel_r_05"), sbx::math::color::white(), sbx::scenes::static_mesh::material{}, image_ids["bmp_body2_albedo"]);
-    _wheel_r_06 = scene.create_child_node(_track_r, "WheelR06", sbx::math::transform{tank_mesh.submesh_local_transform("wheel_r_06") * sbx::math::vector4{0, 0, 0, 1}, random_rotation()}, selection_tag);
-    scene.add_component<sbx::scenes::static_mesh>(_wheel_r_06, mesh_ids["bmp"], tank_mesh.submesh_index("wheel_r_06"), sbx::math::color::white(), sbx::scenes::static_mesh::material{}, image_ids["bmp_body2_albedo"]);
+    for (auto i : std::ranges::views::iota(0u, _wheels_r.size())) {
+      const auto name = fmt::format("WheelR{}", i + 1);
+      const auto tag = fmt::format("wheel_r_{:02}", i + 1);
+
+      auto& wheel_node = _wheels_r[i];
+
+      wheel_node = scene.create_child_node(_track_r, name, sbx::math::transform{tank_mesh.submesh_local_transform(tag) * sbx::math::vector4{0, 0, 0, 1}, random_rotation()}, selection_tag);
+      scene.add_component<sbx::scenes::static_mesh>(wheel_node, mesh_ids["bmp"], tank_mesh.submesh_index(tag), sbx::math::color::white(), sbx::scenes::static_mesh::material{}, image_ids["bmp_body2_albedo"]);
+    }
+
+    // _wheel_r_01 = scene.create_child_node(_track_r, "WheelR01", sbx::math::transform{tank_mesh.submesh_local_transform("wheel_r_01") * sbx::math::vector4{0, 0, 0, 1}, random_rotation()}, selection_tag);
+    // scene.add_component<sbx::scenes::static_mesh>(_wheel_r_01, mesh_ids["bmp"], tank_mesh.submesh_index("wheel_r_01"), sbx::math::color::white(), sbx::scenes::static_mesh::material{}, image_ids["bmp_body2_albedo"]);
+    // _wheel_r_02 = scene.create_child_node(_track_r, "WheelR02", sbx::math::transform{tank_mesh.submesh_local_transform("wheel_r_02") * sbx::math::vector4{0, 0, 0, 1}, random_rotation()}, selection_tag);
+    // scene.add_component<sbx::scenes::static_mesh>(_wheel_r_02, mesh_ids["bmp"], tank_mesh.submesh_index("wheel_r_02"), sbx::math::color::white(), sbx::scenes::static_mesh::material{}, image_ids["bmp_body2_albedo"]);
+    // _wheel_r_03 = scene.create_child_node(_track_r, "WheelR03", sbx::math::transform{tank_mesh.submesh_local_transform("wheel_r_03") * sbx::math::vector4{0, 0, 0, 1}, random_rotation()}, selection_tag);
+    // scene.add_component<sbx::scenes::static_mesh>(_wheel_r_03, mesh_ids["bmp"], tank_mesh.submesh_index("wheel_r_03"), sbx::math::color::white(), sbx::scenes::static_mesh::material{}, image_ids["bmp_body2_albedo"]);
+    // _wheel_r_04 = scene.create_child_node(_track_r, "WheelR04", sbx::math::transform{tank_mesh.submesh_local_transform("wheel_r_04") * sbx::math::vector4{0, 0, 0, 1}, random_rotation()}, selection_tag);
+    // scene.add_component<sbx::scenes::static_mesh>(_wheel_r_04, mesh_ids["bmp"], tank_mesh.submesh_index("wheel_r_04"), sbx::math::color::white(), sbx::scenes::static_mesh::material{}, image_ids["bmp_body2_albedo"]);
+    // _wheel_r_05 = scene.create_child_node(_track_r, "WheelR05", sbx::math::transform{tank_mesh.submesh_local_transform("wheel_r_05") * sbx::math::vector4{0, 0, 0, 1}, random_rotation()}, selection_tag);
+    // scene.add_component<sbx::scenes::static_mesh>(_wheel_r_05, mesh_ids["bmp"], tank_mesh.submesh_index("wheel_r_05"), sbx::math::color::white(), sbx::scenes::static_mesh::material{}, image_ids["bmp_body2_albedo"]);
+    // _wheel_r_06 = scene.create_child_node(_track_r, "WheelR06", sbx::math::transform{tank_mesh.submesh_local_transform("wheel_r_06") * sbx::math::vector4{0, 0, 0, 1}, random_rotation()}, selection_tag);
+    // scene.add_component<sbx::scenes::static_mesh>(_wheel_r_06, mesh_ids["bmp"], tank_mesh.submesh_index("wheel_r_06"), sbx::math::color::white(), sbx::scenes::static_mesh::material{}, image_ids["bmp_body2_albedo"]);
 
     _gun_primary_tip = scene.create_child_node(_gun_primary, "GunPrimaryTip", sbx::math::transform{sbx::math::vector3{0.9f, -0.1f, -10.5f}, sbx::math::quaternion::identity, sbx::math::vector3{0.5f, 0.5f, 0.5f}}, selection_tag);
     scene.add_component<sbx::scenes::static_mesh>(_gun_primary_tip, mesh_ids["cube"], 0u, sbx::math::color::red());
@@ -176,23 +186,28 @@ public:
     auto& tank_track_r_static_mesh = scene.get_component<sbx::scenes::static_mesh>(_track_r);
     tank_track_r_static_mesh.submesh_at(0u).material.flexibility = -movement.length() * movement_direction * 3.0f;
 
-    auto& tank_wheel_r_01_transform = scene.get_component<sbx::math::transform>(_wheel_r_01);
-    tank_wheel_r_01_transform.set_rotation(sbx::math::vector3::right, _wheel_rotation);
+    for (auto i : std::ranges::views::iota(0u, _wheels_r.size())) {
+      auto& wheel_transform = scene.get_component<sbx::math::transform>(_wheels_r[i]);
+      wheel_transform.set_rotation(sbx::math::vector3::right, _wheel_rotation);
+    }
 
-    auto& tank_wheel_r_02_transform = scene.get_component<sbx::math::transform>(_wheel_r_02);
-    tank_wheel_r_02_transform.set_rotation(sbx::math::vector3::right, _wheel_rotation);
+    // auto& tank_wheel_r_01_transform = scene.get_component<sbx::math::transform>(_wheel_r_01);
+    // tank_wheel_r_01_transform.set_rotation(sbx::math::vector3::right, _wheel_rotation);
 
-    auto& tank_wheel_r_03_transform = scene.get_component<sbx::math::transform>(_wheel_r_03);
-    tank_wheel_r_03_transform.set_rotation(sbx::math::vector3::right, _wheel_rotation);
+    // auto& tank_wheel_r_02_transform = scene.get_component<sbx::math::transform>(_wheel_r_02);
+    // tank_wheel_r_02_transform.set_rotation(sbx::math::vector3::right, _wheel_rotation);
 
-    auto& tank_wheel_r_04_transform = scene.get_component<sbx::math::transform>(_wheel_r_04);
-    tank_wheel_r_04_transform.set_rotation(sbx::math::vector3::right, _wheel_rotation);
+    // auto& tank_wheel_r_03_transform = scene.get_component<sbx::math::transform>(_wheel_r_03);
+    // tank_wheel_r_03_transform.set_rotation(sbx::math::vector3::right, _wheel_rotation);
 
-    auto& tank_wheel_r_05_transform = scene.get_component<sbx::math::transform>(_wheel_r_05);
-    tank_wheel_r_05_transform.set_rotation(sbx::math::vector3::right, _wheel_rotation);
+    // auto& tank_wheel_r_04_transform = scene.get_component<sbx::math::transform>(_wheel_r_04);
+    // tank_wheel_r_04_transform.set_rotation(sbx::math::vector3::right, _wheel_rotation);
 
-    auto& tank_wheel_r_06_transform = scene.get_component<sbx::math::transform>(_wheel_r_06);
-    tank_wheel_r_06_transform.set_rotation(sbx::math::vector3::right, _wheel_rotation);
+    // auto& tank_wheel_r_05_transform = scene.get_component<sbx::math::transform>(_wheel_r_05);
+    // tank_wheel_r_05_transform.set_rotation(sbx::math::vector3::right, _wheel_rotation);
+
+    // auto& tank_wheel_r_06_transform = scene.get_component<sbx::math::transform>(_wheel_r_06);
+    // tank_wheel_r_06_transform.set_rotation(sbx::math::vector3::right, _wheel_rotation);
   }
 
 private:
@@ -209,12 +224,13 @@ private:
   sbx::scenes::node _track_l;
 
   sbx::scenes::node _track_r;
-  sbx::scenes::node _wheel_r_01;
-  sbx::scenes::node _wheel_r_02;
-  sbx::scenes::node _wheel_r_03;
-  sbx::scenes::node _wheel_r_04;
-  sbx::scenes::node _wheel_r_05;
-  sbx::scenes::node _wheel_r_06;
+  std::array<sbx::scenes::node, 6u> _wheels_r;
+  // sbx::scenes::node _wheel_r_01;
+  // sbx::scenes::node _wheel_r_02;
+  // sbx::scenes::node _wheel_r_03;
+  // sbx::scenes::node _wheel_r_04;
+  // sbx::scenes::node _wheel_r_05;
+  // sbx::scenes::node _wheel_r_06;
 
   sbx::math::degree _turret_rotation;
   sbx::math::degree _gun_elevation;
