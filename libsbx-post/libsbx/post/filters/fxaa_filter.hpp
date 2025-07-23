@@ -11,10 +11,9 @@ class fxaa_filter final : public filter {
 
 public:
 
-  fxaa_filter(const std::filesystem::path& path, const graphics::pipeline::stage& stage, const std::string& in_image, const std::string& out_image)
+  fxaa_filter(const std::filesystem::path& path, const graphics::pipeline::stage& stage, const std::string& in_image)
   : base_type{path, stage},
-    _in_image{in_image},
-    _out_image{out_image} { }
+    _in_image{in_image} { }
 
   ~fxaa_filter() override = default;
 
@@ -27,7 +26,6 @@ public:
     pipeline.bind(command_buffer);
 
     descriptor_handler.push("in_image", graphics_module.attachment(_in_image));
-    descriptor_handler.push("out_image", graphics_module.attachment(_out_image));
 
     if (!descriptor_handler.update(pipeline)) {
       return;

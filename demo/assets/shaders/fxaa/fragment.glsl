@@ -3,9 +3,8 @@
 layout(location = 0) in vec2 in_uv;
 
 layout(set = 0, binding = 0) uniform sampler2D in_image;
-layout(set = 0, binding = 1, rgba8) uniform writeonly image2D out_image;
 
-// layout(location = 0) out vec4 out_color;
+layout(location = 0) out vec4 out_color;
 
 const float EDGE_THRESHOLD_MIN = 0.0312;
 const float EDGE_THRESHOLD_MAX = 0.125;
@@ -48,9 +47,7 @@ void main() {
 
   float lumaB = dot(rgbB, vec3(0.299, 0.587, 0.114));
 
-  vec4 result = (lumaB < lumaMin || lumaB > lumaMax) ? vec4(rgbA, 1.0) : vec4(rgbB, 1.0);
-
-  imageStore(out_image, ivec2(in_uv * imageSize(out_image)), result);
+  out_color = (lumaB < lumaMin || lumaB > lumaMax) ? vec4(rgbA, 1.0) : vec4(rgbB, 1.0);
 }
 
 // void main() {
