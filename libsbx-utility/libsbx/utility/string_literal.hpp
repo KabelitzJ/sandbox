@@ -8,6 +8,8 @@
 
 #include <fmt/format.h>
 
+#include <libsbx/utility/hash.hpp>
+
 namespace sbx::utility {
 
 namespace detail {
@@ -64,6 +66,10 @@ public:
     return _data[index];
   }
 
+  constexpr auto hash() const noexcept -> std::size_t {
+    return fnv1a_hash<character_type, std::size_t>{}({_data.data(), _data.size()});
+  }
+
   constexpr operator string_view_type() const noexcept {
     return string_view_type{_data.data(), Size};
   }
@@ -98,5 +104,14 @@ struct fmt::formatter<sbx::utility::string_literal<Size>> {
   }
 
 }; // struct fmt::formatter<sbx::utility::primitive<Type>>
+
+template<typename Character, size_t Size>
+struct std::hash<sbx::utility::basic_string_literal<Character, Size>> {
+
+  auto operator()(const sbx::utility::basic_string_literal<Character, Size>& literal) const noexcept -> std::size_t {
+    return sbx::utility::fnv1a_hash<Character, std::size_t>{}(literal._data);
+  }
+
+}; // struct std::hash
 
 #endif // LIBSBX_UTILITY_STRING_LITERAL_HPP_
