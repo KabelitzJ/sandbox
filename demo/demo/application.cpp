@@ -31,6 +31,11 @@ struct rotator { };
 
 struct walker { };
 
+template<sbx::utility::string_literal Name>
+auto get_string_id() -> std::size_t {
+  return Name.hash();
+}
+
 application::application()
 : sbx::core::application{},
   _rotation{sbx::math::degree{0}} { 
@@ -354,6 +359,8 @@ application::application()
   if (auto hide_window = cli.argument<bool>("hide-window"); !hide_window) {
     window.show();
   }
+
+  sbx::utility::logger<"demo">::info("string id: {}", get_string_id<"foobar">());
 }
 
 // [NOTE] : This might or might not me a great thing :D
