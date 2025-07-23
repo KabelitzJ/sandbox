@@ -37,7 +37,7 @@ class resolve_filter final : public filter {
 
 public:
 
-  resolve_filter(const std::filesystem::path& path, const graphics::pipeline::stage& stage, std::unordered_map<std::string, std::string>&& attachment_names)
+  resolve_filter(const std::filesystem::path& path, const graphics::render_graph::pass& pass, std::unordered_map<std::string, std::string>&& attachment_names)
   : base_type{path, stage},
     _attachment_names{std::move(attachment_names)} { }
 

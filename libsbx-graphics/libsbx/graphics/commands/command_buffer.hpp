@@ -108,6 +108,14 @@ public:
 
   auto fill_buffer(const VkBuffer& buffer, VkDeviceSize offset, VkDeviceSize size, std::uint32_t data) -> void;
 
+  auto begin_rendering(const VkRenderingInfo& rendering_info) -> void {
+    vkCmdBeginRendering(_handle, &rendering_info);
+  }
+
+  auto end_rendering() -> void {
+    vkCmdEndRendering(_handle);
+  }
+
 private:
 
   auto _queue() const -> const graphics::queue&;

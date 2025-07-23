@@ -34,19 +34,19 @@ class debug_subrenderer final : public sbx::graphics::subrenderer {
     using base_type = sbx::graphics::graphics_pipeline;
   
   public:
-  
-    pipeline(const std::filesystem::path& path, const sbx::graphics::pipeline::stage& stage)
-    : base_type{path, stage, pipeline_definition} { }
-  
+
+    pipeline(const std::filesystem::path& path, const sbx::graphics::render_graph::pass& pass)
+    : base_type{path, pass, pipeline_definition} { }
+
     ~pipeline() override = default;
   
   }; // class pipeline
 
 public:
 
-  debug_subrenderer(const std::filesystem::path& path, const sbx::graphics::pipeline::stage& stage)
-  : sbx::graphics::subrenderer{stage},
-    _pipeline{path, stage},
+  debug_subrenderer(const std::filesystem::path& path, const sbx::graphics::render_graph::pass& pass)
+  : sbx::graphics::subrenderer{pass},
+    _pipeline{path, pass},
     _push_handler{_pipeline},
     _storage_buffer{std::make_optional<graphics::storage_buffer>(graphics::storage_buffer::min_size, VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT)},
     _descriptor_handler{_pipeline, 0u} { }

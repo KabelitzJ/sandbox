@@ -11,7 +11,7 @@ class fxaa_filter final : public filter {
 
 public:
 
-  fxaa_filter(const std::filesystem::path& path, const graphics::pipeline::stage& stage, const std::string& in_image)
+  fxaa_filter(const std::filesystem::path& path, const graphics::render_graph::pass& pass, const std::string& in_image)
   : base_type{path, stage},
     _in_image{in_image} { }
 

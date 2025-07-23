@@ -30,7 +30,7 @@ class ui_subrenderer : public graphics::subrenderer {
 
 public:
 
-  ui_subrenderer(const std::filesystem::path& path, const graphics::pipeline::stage& stage)
+  ui_subrenderer(const std::filesystem::path& path, const graphics::render_graph::pass& pass)
   : graphics::subrenderer{stage},
     _pipeline{path, stage} {
     auto& assets_module = core::engine::get_module<assets::assets_module>();

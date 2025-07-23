@@ -53,8 +53,8 @@ class skybox_subrenderer : public sbx::graphics::subrenderer {
   
   public:
   
-    pipeline(const std::filesystem::path& path, const graphics::pipeline::stage& stage)
-    : base_type{path, stage, pipeline_definition} { }
+    pipeline(const std::filesystem::path& path, const graphics::render_graph::pass& pass)
+    : base_type{path, pass, pipeline_definition} { }
   
     ~pipeline() override = default;
   
@@ -62,9 +62,9 @@ class skybox_subrenderer : public sbx::graphics::subrenderer {
 
 public:
 
-  skybox_subrenderer(const std::filesystem::path& path, const graphics::pipeline::stage& stage)
-  : graphics::subrenderer{stage},
-    _pipeline{path, stage},
+  skybox_subrenderer(const std::filesystem::path& path, const graphics::render_graph::pass& pass)
+  : graphics::subrenderer{pass},
+    _pipeline{path, pass},
     _descriptor_handler{_pipeline, 0u},
     _push_handler{_pipeline} {
     auto& assets_module = core::engine::get_module<assets::assets_module>();

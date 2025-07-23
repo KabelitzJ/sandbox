@@ -16,9 +16,11 @@ namespace sbx::graphics {
 
 class compute_pipeline : public pipeline {
 
+  using base = pipeline;
+
 public:
 
-  compute_pipeline(const std::filesystem::path& path);
+  compute_pipeline(const std::filesystem::path& path, const render_graph::pass& pass);
 
   ~compute_pipeline() override;
 

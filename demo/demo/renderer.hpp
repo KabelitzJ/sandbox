@@ -12,13 +12,15 @@ namespace demo {
 
 class renderer : public sbx::graphics::renderer {
 
+  using base = sbx::graphics::renderer;
+
 public:
 
   renderer();
 
   ~renderer() override = default;
 
-  auto initialize() -> void override;
+  // auto initialize() -> void override;
 
 private:
 

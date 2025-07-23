@@ -24,7 +24,7 @@ public:
 
   inline static constexpr auto type = Type;
 
-  blur_filter(const std::filesystem::path& path, const graphics::pipeline::stage& stage, const std::string& attachment_name, const math::vector2& direction)
+  blur_filter(const std::filesystem::path& path, const graphics::render_graph::pass& pass, const std::string& attachment_name, const math::vector2& direction)
   : base_type{path, stage},
     _push_handler{base_type::pipeline()},
     _attachment_name{attachment_name},

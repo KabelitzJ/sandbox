@@ -30,7 +30,7 @@ class pipeline : public graphics::graphics_pipeline {
 
 public:
 
-  pipeline(const std::filesystem::path& path, const graphics::pipeline::stage& stage)
+  pipeline(const std::filesystem::path& path, const graphics::render_graph::pass& pass)
   : base_type{path, stage, pipeline_definition} { }
 
   ~pipeline() override = default;

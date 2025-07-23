@@ -96,11 +96,10 @@ public:
   requires (std::is_constructible_v<Renderer, Args...>)
   auto set_renderer(Args&&... args) -> void {
     _renderer = std::make_unique<Renderer>(std::forward<Args>(args)...);
-    _reset_render_stages();
-    _renderer->initialize();
+    _recreate_swapchain();
   }
 
-  auto render_stage(const pipeline::stage& stage) -> graphics::render_stage&;
+  // auto render_stage(const pipeline::stage& stage) -> graphics::render_stage&;
   
   auto current_frame() const noexcept -> std::uint32_t {
     return _current_frame;
@@ -179,9 +178,9 @@ private:
     }
   }
 
-  auto _start_render_pass(graphics::render_stage& render_stage, graphics::command_buffer& command_buffer) -> void;
+  // auto _start_render_pass(graphics::render_stage& render_stage, graphics::command_buffer& command_buffer) -> void;
 
-  auto _end_render_pass(graphics::render_stage& render_stage, graphics::command_buffer& command_buffer) -> void;
+  // auto _end_render_pass(graphics::render_stage& render_stage, graphics::command_buffer& command_buffer) -> void;
 
   auto _reset_render_stages() -> void;
 

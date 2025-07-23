@@ -69,7 +69,7 @@ class skinned_mesh_subrenderer final : public graphics::subrenderer {
 
 public:
 
-  skinned_mesh_subrenderer(const std::filesystem::path& path, const graphics::pipeline::stage& stage)
+  skinned_mesh_subrenderer(const std::filesystem::path& path, const graphics::render_graph::pass& pass)
   : graphics::subrenderer{stage},
     _pipeline{path, stage},
     _push_handler{_pipeline},

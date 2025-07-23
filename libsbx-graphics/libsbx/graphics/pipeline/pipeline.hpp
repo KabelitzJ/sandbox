@@ -13,26 +13,16 @@
 
 #include <libsbx/graphics/pipeline/shader.hpp>
 
+#include <libsbx/graphics/render_graph.hpp>
+
 namespace sbx::graphics {
 
 class pipeline : public utility::noncopyable {
 
 public:
 
-  struct stage {
-    std::uint32_t renderpass;
-    std::uint32_t subpass;
-
-    auto operator==(const stage& rhs) const noexcept -> bool {
-      return renderpass == rhs.renderpass && subpass == rhs.subpass;
-    }
-
-    auto operator<(const stage& rhs) const noexcept -> bool {
-      return renderpass < rhs.renderpass || (renderpass == rhs.renderpass && subpass < rhs.subpass);
-    }
-  }; // struct stage 
-
-  pipeline() = default;
+  pipeline(const render_graph::pass& pass)
+  : _pass{pass} { }
 
   virtual ~pipeline() = default;
 
@@ -66,17 +56,12 @@ public:
 
   virtual auto find_descriptor_type_at_binding(std::uint32_t set, std::uint32_t binding) const -> std::optional<VkDescriptorType> = 0;
 
+protected:
+
+  render_graph::pass _pass;
+
 }; // class pipeline
 
 } // namespace sbx::graphics
-
-template<>
-struct std::hash<sbx::graphics::pipeline::stage> {
-  auto operator()(const sbx::graphics::pipeline::stage& stage) const noexcept -> std::size_t {
-    auto hash = std::size_t{0};
-    sbx::utility::hash_combine(hash, stage.renderpass, stage.subpass);
-    return hash;
-  }
-}; // struct std::hash<sbx::graphics::pipeline::stage>
 
 #endif // LIBSBX_GRAPHICS_PIPELINE_PIPELINE_HPP_

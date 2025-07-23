@@ -98,23 +98,23 @@ auto graphics_module::update() -> void {
 
   // [NOTE] KAJ 2023-02-19 : Compute happens here
 
-  validate(vkWaitForFences(_logical_device->handle(), 1, &frame_data.compute_in_flight_fence, true, std::numeric_limits<std::uint64_t>::max()));
+  // validate(vkWaitForFences(_logical_device->handle(), 1, &frame_data.compute_in_flight_fence, true, std::numeric_limits<std::uint64_t>::max()));
 
-  EASY_BLOCK("compute");
+  // EASY_BLOCK("compute");
 
-  auto& compute_command_buffer = _compute_command_buffers[_current_frame];
+  // auto& compute_command_buffer = _compute_command_buffers[_current_frame];
 
-  compute_command_buffer.begin(VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
+  // compute_command_buffer.begin(VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
 
-  _renderer->execute_tasks(compute_command_buffer);
+  // _renderer->execute_tasks(compute_command_buffer);
 
-  compute_command_buffer.release_ownership(_release_ownership_data);
+  // compute_command_buffer.release_ownership(_release_ownership_data);
 
-  compute_command_buffer.end();
+  // compute_command_buffer.end();
 
-  compute_command_buffer.submit({}, frame_data.compute_finished_semaphore, frame_data.compute_in_flight_fence);
+  // compute_command_buffer.submit({}, frame_data.compute_finished_semaphore, frame_data.compute_in_flight_fence);
 
-  EASY_END_BLOCK;
+  // EASY_END_BLOCK;
 
   if (_is_framebuffer_resized || _swapchain->is_outdated(_surface->current_extent())) {
     _recreate_swapchain();
@@ -139,34 +139,46 @@ auto graphics_module::update() -> void {
 
   EASY_BLOCK("draw");
 
-  auto stage = pipeline::stage{};
-
   auto& command_buffer = _graphics_command_buffers[_current_frame];
   vkResetCommandBuffer(command_buffer, 0);
 
   command_buffer.begin(VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
 
-  command_buffer.acquire_ownership(_acquire_ownership_data);
+  auto rendering_info = VkRenderingInfo{};
+  rendering_info.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
+  rendering_info.renderArea.offset = {0, 0};
+  rendering_info.renderArea.extent = _swapchain->extent();
+  rendering_info.layerCount = 1;
+  rendering_info.colorAttachmentCount = 1;
+  rendering_info.pColorAttachments = nullptr;
+  rendering_info.pDepthAttachment = nullptr;
+  rendering_info.pStencilAttachment = nullptr;
 
-  for (const auto& render_stage : _renderer->render_stages()) {
-    _start_render_pass(*render_stage, command_buffer);
+  command_buffer.begin_rendering(rendering_info);
 
-    const auto& subpasses = render_stage->subpasses();
+  _renderer->render(command_buffer);
 
-    for (const auto& subpass : subpasses) {
-      stage.subpass = subpass.binding();
+  // command_buffer.acquire_ownership(_acquire_ownership_data);
 
-      _renderer->render(stage, command_buffer);
+  // for (const auto& render_stage : _renderer->render_stages()) {
+  //   _start_render_pass(*render_stage, command_buffer);
 
-      if (subpass.binding() != subpasses.back().binding()) {
-        vkCmdNextSubpass(command_buffer, VK_SUBPASS_CONTENTS_INLINE);
-      }
-    }
+  //   const auto& subpasses = render_stage->subpasses();
 
-    _end_render_pass(*render_stage, command_buffer);
+  //   for (const auto& subpass : subpasses) {
+  //     stage.subpass = subpass.binding();
 
-    stage.renderpass++;
-  }
+  //     _renderer->render(stage, command_buffer);
+
+  //     if (subpass.binding() != subpasses.back().binding()) {
+  //       vkCmdNextSubpass(command_buffer, VK_SUBPASS_CONTENTS_INLINE);
+  //     }
+  //   }
+
+  //   _end_render_pass(*render_stage, command_buffer);
+
+  //   stage.renderpass++;
+  // }
 
   EASY_END_BLOCK;
 }
@@ -201,14 +213,6 @@ auto graphics_module::swapchain() -> graphics::swapchain& {
   return *_swapchain;
 };
 
-auto graphics_module::render_stage(const pipeline::stage& stage) -> graphics::render_stage& {
-  if (!_renderer) {
-    throw std::runtime_error{"No renderer set"};
-  }
-
-  return _renderer->render_stage(stage);
-}
-
 auto graphics_module::attachment(const std::string& name) const -> const descriptor& {
   if (!_renderer) {
     throw std::runtime_error{"No renderer set"};
@@ -221,7 +225,7 @@ auto graphics_module::attachment(const std::string& name) const -> const descrip
   throw std::runtime_error{fmt::format("No attachment with name '{}' found", name)};
 }
 
-auto graphics_module::_start_render_pass(graphics::render_stage& render_stage, graphics::command_buffer& command_buffer) -> void {
+// auto graphics_module::_start_render_pass(graphics::render_stage& render_stage, graphics::command_buffer& command_buffer) -> void {
   // if (!command_buffer.is_running()) {
   //   command_buffer.begin(VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
   // }
@@ -262,43 +266,39 @@ auto graphics_module::_start_render_pass(graphics::render_stage& render_stage, g
 	// render_pass_begin_info.pClearValues = clear_values.data();
 
   // command_buffer.begin_render_pass(render_pass_begin_info, VK_SUBPASS_CONTENTS_INLINE);
-}
+// }
 
-auto graphics_module::_end_render_pass(graphics::render_stage& render_stage, graphics::command_buffer& command_buffer) -> void {
-  auto& frame_data = _per_frame_data[_current_frame];
-  auto& image_data = _per_image_data[_swapchain->active_image_index()];
+// auto graphics_module::_end_render_pass(graphics::render_stage& render_stage, graphics::command_buffer& command_buffer) -> void {
+//   auto& frame_data = _per_frame_data[_current_frame];
+//   auto& image_data = _per_image_data[_swapchain->active_image_index()];
 
-  command_buffer.end_render_pass();
+//   command_buffer.end_render_pass();
 
-  if (!render_stage.has_swapchain_attachment()) {
-    return;
-  }
+//   if (!render_stage.has_swapchain_attachment()) {
+//     return;
+//   }
 
-  // Submit the command buffer to the graphics queue and draw the on the image
-  command_buffer.end();
+//   // Submit the command buffer to the graphics queue and draw the on the image
+//   command_buffer.end();
 
-  auto wait_semaphores = std::vector<command_buffer::wait_data>{};
-  wait_semaphores.push_back({frame_data.image_available_semaphore, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT});
-  wait_semaphores.push_back({frame_data.compute_finished_semaphore, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT});
+//   auto wait_semaphores = std::vector<command_buffer::wait_data>{};
+//   wait_semaphores.push_back({frame_data.image_available_semaphore, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT});
+//   wait_semaphores.push_back({frame_data.compute_finished_semaphore, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT});
 
-  command_buffer.submit(wait_semaphores, image_data.render_finished_semaphore, frame_data.graphics_in_flight_fence);
+//   command_buffer.submit(wait_semaphores, image_data.render_finished_semaphore, frame_data.graphics_in_flight_fence);
 
-  // Present the image to the screen
-  const auto result = _swapchain->present(image_data.render_finished_semaphore);
+//   // Present the image to the screen
+//   const auto result = _swapchain->present(image_data.render_finished_semaphore);
 
-  if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || _is_framebuffer_resized) {
-    // _is_framebuffer_resized = false;
-    _recreate_swapchain();
-  } else if (result != VK_SUCCESS) {
-    throw std::runtime_error{"Failed to present swapchain image"};
-  }
+//   if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || _is_framebuffer_resized) {
+//     // _is_framebuffer_resized = false;
+//     _recreate_swapchain();
+//   } else if (result != VK_SUCCESS) {
+//     throw std::runtime_error{"Failed to present swapchain image"};
+//   }
 
-  _current_frame = utility::fast_mod(_current_frame + 1, swapchain::max_frames_in_flight);
-}
-
-auto graphics_module::_reset_render_stages() -> void {
-  _recreate_swapchain();
-}
+//   _current_frame = utility::fast_mod(_current_frame + 1, swapchain::max_frames_in_flight);
+// }
 
 auto graphics_module::_recreate_swapchain() -> void {
   auto& devices_module = core::engine::get_module<devices::devices_module>();
@@ -375,10 +375,10 @@ auto graphics_module::_recreate_command_buffers() -> void {
 auto graphics_module::_recreate_attachments() -> void {
   _attachments.clear();
 
-  for (const auto& render_stage : _renderer->render_stages()) {
-    const auto& descriptors = render_stage->descriptors();
-    _attachments.insert(descriptors.begin(), descriptors.end());
-  }
+  // for (const auto& render_stage : _renderer->render_stages()) {
+  //   const auto& descriptors = render_stage->descriptors();
+  //   _attachments.insert(descriptors.begin(), descriptors.end());
+  // }
 }
 
 } // namespace sbx::graphics

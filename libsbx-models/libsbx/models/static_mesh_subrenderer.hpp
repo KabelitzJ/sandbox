@@ -93,9 +93,9 @@ class static_mesh_subrenderer final : public graphics::subrenderer {
 
 public:
 
-  static_mesh_subrenderer(const std::filesystem::path& path, const graphics::pipeline::stage& stage)
-  : graphics::subrenderer{stage},
-    _pipeline{path, stage},
+  static_mesh_subrenderer(const std::filesystem::path& path, const graphics::render_graph::pass& pass)
+  : graphics::subrenderer{pass},
+    _pipeline{path, pass},
     _push_handler{_pipeline},
     _scene_descriptor_handler{_pipeline, 0u} {
     auto& graphics_module = core::engine::get_module<graphics::graphics_module>();

@@ -29,6 +29,8 @@
 
 #include <libsbx/graphics/images/image2d.hpp>
 
+#include <libsbx/graphics/render_graph.hpp>
+
 namespace sbx::graphics {
 
 enum class polygon_mode : std::uint8_t {
@@ -94,9 +96,11 @@ struct pipeline_definition {
 
 class graphics_pipeline : public pipeline {
 
+  using base = pipeline;
+
 public:
 
-  graphics_pipeline(const std::filesystem::path& path, const pipeline::stage& stage, const pipeline_definition& default_definition = pipeline_definition{}, const VkSpecializationInfo* specialization_info = nullptr);
+  graphics_pipeline(const std::filesystem::path& path, const render_graph::pass& pass, const pipeline_definition& default_definition = pipeline_definition{}, const VkSpecializationInfo* specialization_info = nullptr);
 
   ~graphics_pipeline() override;
 
@@ -123,10 +127,6 @@ public:
   auto layout() const noexcept -> VkPipelineLayout override;
 
   auto bind_point() const noexcept -> VkPipelineBindPoint override;
-
-  auto stage() const noexcept -> const pipeline::stage& {
-    return _stage;
-  }
 
   auto descriptor_block(const std::string& name, std::uint32_t set) const -> const shader::uniform_block& override {
     if (auto it = _set_data[set].uniform_blocks.find(name); it != _set_data[set].uniform_blocks.end()) {
@@ -185,9 +185,7 @@ private:
   VkPipelineLayout _layout{};
   VkPipeline _handle{};
   VkPipelineBindPoint _bind_point{};
-  bool _has_variable_descriptors;
-
-  pipeline::stage _stage{};
+  bool _has_variable_descriptors{};
 
   VkDescriptorPool _descriptor_pool{};
 

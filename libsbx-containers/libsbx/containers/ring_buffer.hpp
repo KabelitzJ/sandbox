@@ -44,7 +44,7 @@ public:
 
 private:
 
-  auto _ptr_at(std::size_t) -> Type* {
+  auto _ptr_at(std::size_t i) -> Type* {
     return reinterpret_cast<Type*>(_buffer + i);
   }
 

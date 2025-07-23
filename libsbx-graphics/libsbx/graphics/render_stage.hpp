@@ -1,320 +1,320 @@
-#ifndef LIBSBX_GRAPHICS_RENDER_STAGE_HPP_
-#define LIBSBX_GRAPHICS_RENDER_STAGE_HPP_
-
-#include <string>
-#include <cinttypes>
-#include <optional>
-#include <vector>
+// #ifndef LIBSBX_GRAPHICS_RENDER_STAGE_HPP_
+// #define LIBSBX_GRAPHICS_RENDER_STAGE_HPP_
+
+// #include <string>
+// #include <cinttypes>
+// #include <optional>
+// #include <vector>
 
-#include <vulkan/vulkan.hpp>
-
-#include <libsbx/devices/devices_module.hpp>
+// #include <vulkan/vulkan.hpp>
+
+// #include <libsbx/devices/devices_module.hpp>
 
-#include <libsbx/math/color.hpp>
-#include <libsbx/math/vector2.hpp>
-
-#include <libsbx/graphics/images/depth_image.hpp>
-#include <libsbx/graphics/images/image2d.hpp>
+// #include <libsbx/math/color.hpp>
+// #include <libsbx/math/vector2.hpp>
+
+// #include <libsbx/graphics/images/depth_image.hpp>
+// #include <libsbx/graphics/images/image2d.hpp>
 
-#include <libsbx/graphics/render_pass/swapchain.hpp>
+// #include <libsbx/graphics/render_pass/swapchain.hpp>
 
-namespace sbx::graphics {
+// namespace sbx::graphics {
 
-enum class format : std::uint32_t {
-  undefined = VK_FORMAT_UNDEFINED,
-  r32_sfloat = VK_FORMAT_R32_SFLOAT,
-  r32_uint = VK_FORMAT_R32_UINT,
-  r64_uint = VK_FORMAT_R64_UINT,
-  r32g32_sfloat = VK_FORMAT_R32G32_SFLOAT,
-  r32g32_uint = VK_FORMAT_R32G32_UINT,
-  r8g8b8a8_unorm = VK_FORMAT_R8G8B8A8_UNORM,
-  b8g8r8a8_srgb = VK_FORMAT_B8G8R8A8_SRGB,
-  r32g32b32a32_sfloat = VK_FORMAT_R32G32B32A32_SFLOAT
-}; // enum class format
+// enum class format : std::uint32_t {
+//   undefined = VK_FORMAT_UNDEFINED,
+//   r32_sfloat = VK_FORMAT_R32_SFLOAT,
+//   r32_uint = VK_FORMAT_R32_UINT,
+//   r64_uint = VK_FORMAT_R64_UINT,
+//   r32g32_sfloat = VK_FORMAT_R32G32_SFLOAT,
+//   r32g32_uint = VK_FORMAT_R32G32_UINT,
+//   r8g8b8a8_unorm = VK_FORMAT_R8G8B8A8_UNORM,
+//   b8g8r8a8_srgb = VK_FORMAT_B8G8R8A8_SRGB,
+//   r32g32b32a32_sfloat = VK_FORMAT_R32G32B32A32_SFLOAT
+// }; // enum class format
 
-enum class address_mode : std::uint32_t {
-  repeat = VK_SAMPLER_ADDRESS_MODE_REPEAT,
-  clamp_to_edge = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE
-}; // enum class address_mode
+// enum class address_mode : std::uint32_t {
+//   repeat = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+//   clamp_to_edge = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE
+// }; // enum class address_mode
 
-class attachment {
+// class attachment {
 
-public:
+// public:
 
-  enum class type {
-    image,
-    depth,
-    storage,
-    swapchain
-  }; // enum class type
+//   enum class type {
+//     image,
+//     depth,
+//     storage,
+//     swapchain
+//   }; // enum class type
 
-  attachment(const std::uint32_t binding, const std::string& name, type type, const math::color& clear_color = math::color::black(), const format format = format::r8g8b8a8_unorm, const address_mode address_mode = address_mode::repeat) noexcept
-  : _binding{binding}, 
-    _name{std::move(name)}, 
-    _type{type},
-    _clear_color{clear_color},
-    _format{format}, 
-    _address_mode{address_mode} { }
+//   attachment(const std::uint32_t binding, const std::string& name, type type, const math::color& clear_color = math::color::black(), const format format = format::r8g8b8a8_unorm, const address_mode address_mode = address_mode::repeat) noexcept
+//   : _binding{binding}, 
+//     _name{std::move(name)}, 
+//     _type{type},
+//     _clear_color{clear_color},
+//     _format{format}, 
+//     _address_mode{address_mode} { }
 
-  auto binding() const noexcept -> std::uint32_t {
-    return _binding;
-  }
+//   auto binding() const noexcept -> std::uint32_t {
+//     return _binding;
+//   }
 
-  auto name() const noexcept -> const std::string& {
-    return _name;
-  }
+//   auto name() const noexcept -> const std::string& {
+//     return _name;
+//   }
 
-  auto image_type() const noexcept -> type {
-    return _type;
-  }
+//   auto image_type() const noexcept -> type {
+//     return _type;
+//   }
 
-  auto format() const noexcept -> graphics::format {
-    return _format;
-  }
+//   auto format() const noexcept -> graphics::format {
+//     return _format;
+//   }
 
-  auto address_mode() const noexcept -> graphics::address_mode {
-    return _address_mode;
-  }
+//   auto address_mode() const noexcept -> graphics::address_mode {
+//     return _address_mode;
+//   }
 
-  auto clear_color() const noexcept -> const math::color& {
-    return _clear_color;
-  }
+//   auto clear_color() const noexcept -> const math::color& {
+//     return _clear_color;
+//   }
 
-private:
+// private:
 
-  std::uint32_t _binding;
-  std::string _name;
-  type _type;
-  bool _is_multi_sampled;
-  math::color _clear_color;
-  graphics::format _format;
-  graphics::address_mode _address_mode;
+//   std::uint32_t _binding;
+//   std::string _name;
+//   type _type;
+//   bool _is_multi_sampled;
+//   math::color _clear_color;
+//   graphics::format _format;
+//   graphics::address_mode _address_mode;
 
-}; // class attachment
+// }; // class attachment
 
-class subpass_binding {
+// class subpass_binding {
 
-public:
+// public:
 
-  subpass_binding(std::uint32_t binding, std::vector<std::uint32_t> color_attachments, std::vector<std::uint32_t> input_attachments = {}) noexcept
-  : _binding{binding}, 
-    _color_attachments{std::move(color_attachments)},
-    _input_attachments{std::move(input_attachments)} { }
+//   subpass_binding(std::uint32_t binding, std::vector<std::uint32_t> color_attachments, std::vector<std::uint32_t> input_attachments = {}) noexcept
+//   : _binding{binding}, 
+//     _color_attachments{std::move(color_attachments)},
+//     _input_attachments{std::move(input_attachments)} { }
 
-  auto binding() const noexcept -> std::uint32_t {
-    return _binding;
-  }
+//   auto binding() const noexcept -> std::uint32_t {
+//     return _binding;
+//   }
 
-  auto color_attachments() const noexcept -> const std::vector<std::uint32_t>& {
-    return _color_attachments;
-  }
+//   auto color_attachments() const noexcept -> const std::vector<std::uint32_t>& {
+//     return _color_attachments;
+//   }
 
-  auto input_attachments() const noexcept -> const std::vector<std::uint32_t>& {
-    return _input_attachments;
-  }
+//   auto input_attachments() const noexcept -> const std::vector<std::uint32_t>& {
+//     return _input_attachments;
+//   }
 
-private:
+// private:
 
-  std::uint32_t _binding;
-  std::vector<std::uint32_t> _color_attachments;
-  std::vector<std::uint32_t> _input_attachments;
+//   std::uint32_t _binding;
+//   std::vector<std::uint32_t> _color_attachments;
+//   std::vector<std::uint32_t> _input_attachments;
 
-}; // class subpass_binding
+// }; // class subpass_binding
 
-class viewport {
+// class viewport {
 
-  enum class type {
-    fixed,
-    window,
-    dynamic
-  }; // enum class type
+//   enum class type {
+//     fixed,
+//     window,
+//     dynamic
+//   }; // enum class type
 
-public:
+// public:
 
-  static auto fixed(const math::vector2u& size) -> viewport {
-    return viewport{type::fixed, math::vector2f{1.0f, 1.0f}, math::vector2i{0, 0}, size};
-  }
+//   static auto fixed(const math::vector2u& size) -> viewport {
+//     return viewport{type::fixed, math::vector2f{1.0f, 1.0f}, math::vector2i{0, 0}, size};
+//   }
 
-  static auto window() -> viewport {
-    return viewport{type::window, math::vector2f{1.0f, 1.0f}, math::vector2i{0, 0}, std::nullopt};
-  }
+//   static auto window() -> viewport {
+//     return viewport{type::window, math::vector2f{1.0f, 1.0f}, math::vector2i{0, 0}, std::nullopt};
+//   }
 
-  static auto dynamic() -> viewport {
-    throw std::runtime_error{"Dynamic viewport not implemented"};
-  }
+//   static auto dynamic() -> viewport {
+//     throw std::runtime_error{"Dynamic viewport not implemented"};
+//   }
 
-  auto scale() const noexcept -> const math::vector2f& {
-    return _scale;
-  }
+//   auto scale() const noexcept -> const math::vector2f& {
+//     return _scale;
+//   }
 
-  auto set_scale(const math::vector2f& scale) noexcept -> void {
-    _scale = scale;
-  }
+//   auto set_scale(const math::vector2f& scale) noexcept -> void {
+//     _scale = scale;
+//   }
 
-  auto offset() const noexcept -> const math::vector2i& {
-    return _offset;
-  }
+//   auto offset() const noexcept -> const math::vector2i& {
+//     return _offset;
+//   }
 
-  auto set_offset(const math::vector2i& offset) noexcept -> void {
-    _offset = offset;
-  }
+//   auto set_offset(const math::vector2i& offset) noexcept -> void {
+//     _offset = offset;
+//   }
 
-  auto size() const noexcept -> const std::optional<math::vector2u>& {
-    return _size;
-  }
+//   auto size() const noexcept -> const std::optional<math::vector2u>& {
+//     return _size;
+//   }
 
-  auto set_size(const math::vector2u& size) noexcept -> void {
-    _size = size;
-  }
+//   auto set_size(const math::vector2u& size) noexcept -> void {
+//     _size = size;
+//   }
 
-  auto is_fixed() const noexcept -> bool {
-    return _type == type::fixed;
-  }
+//   auto is_fixed() const noexcept -> bool {
+//     return _type == type::fixed;
+//   }
 
-  auto is_window() const noexcept -> bool {
-    return _type == type::window;
-  }
+//   auto is_window() const noexcept -> bool {
+//     return _type == type::window;
+//   }
 
-  auto is_dynamic() const noexcept -> bool {
-    return _type == type::dynamic;
-  }
+//   auto is_dynamic() const noexcept -> bool {
+//     return _type == type::dynamic;
+//   }
 
-private:
+// private:
 
-  // viewport() noexcept
-  // : _scale{1.0f, 1.0f}, 
-  //   _offset{0, 0}, 
-  //   _size{std::nullopt} { }
+//   // viewport() noexcept
+//   // : _scale{1.0f, 1.0f}, 
+//   //   _offset{0, 0}, 
+//   //   _size{std::nullopt} { }
 
-  // viewport(const math::vector2u& size) noexcept
-  // : _scale{1.0f, 1.0f}, 
-  //   _offset{0, 0}, 
-  //   _size{size} { }
+//   // viewport(const math::vector2u& size) noexcept
+//   // : _scale{1.0f, 1.0f}, 
+//   //   _offset{0, 0}, 
+//   //   _size{size} { }
 
-  viewport(const type type, const math::vector2f& scale, const math::vector2i& offset, const std::optional<math::vector2u>& size = std::nullopt) noexcept
-  : _type{type},
-    _scale{scale}, 
-    _offset{offset}, 
-    _size{size} { }
+//   viewport(const type type, const math::vector2f& scale, const math::vector2i& offset, const std::optional<math::vector2u>& size = std::nullopt) noexcept
+//   : _type{type},
+//     _scale{scale}, 
+//     _offset{offset}, 
+//     _size{size} { }
 
-  type _type;
-  math::vector2f _scale;
-  math::vector2i _offset;
-  std::optional<math::vector2u> _size;
+//   type _type;
+//   math::vector2f _scale;
+//   math::vector2i _offset;
+//   std::optional<math::vector2u> _size;
 
-}; // class viewport
+// }; // class viewport
 
-class render_area {
+// class render_area {
 
-public:
+// public:
 
-  render_area(const math::vector2u& extent = math::vector2u{}, const math::vector2i& offset = math::vector2i{}) noexcept
-  : _extent{extent}, 
-    _offset{offset}, 
-    _aspect_ratio{static_cast<std::float_t>(extent.x()) / static_cast<std::float_t>(extent.y())} { }
+//   render_area(const math::vector2u& extent = math::vector2u{}, const math::vector2i& offset = math::vector2i{}) noexcept
+//   : _extent{extent}, 
+//     _offset{offset}, 
+//     _aspect_ratio{static_cast<std::float_t>(extent.x()) / static_cast<std::float_t>(extent.y())} { }
 
-  auto operator==(const render_area& other) const noexcept -> bool {
-    return _extent == other._extent && _offset == other._offset;
-  }
+//   auto operator==(const render_area& other) const noexcept -> bool {
+//     return _extent == other._extent && _offset == other._offset;
+//   }
 
-  auto extent() const noexcept -> const math::vector2u& {
-    return _extent;
-  }
+//   auto extent() const noexcept -> const math::vector2u& {
+//     return _extent;
+//   }
 
-  auto set_extent(const math::vector2u& extent) noexcept -> void {
-    _extent = extent;
-  }
+//   auto set_extent(const math::vector2u& extent) noexcept -> void {
+//     _extent = extent;
+//   }
 
-  auto offset() const noexcept -> const math::vector2i& {
-    return _offset;
-  }
+//   auto offset() const noexcept -> const math::vector2i& {
+//     return _offset;
+//   }
 
-  auto set_offset(const math::vector2i& offset) noexcept -> void {
-    _offset = offset;
-  }
+//   auto set_offset(const math::vector2i& offset) noexcept -> void {
+//     _offset = offset;
+//   }
 
-  auto aspect_ratio() const noexcept -> std::float_t {
-    return _aspect_ratio;
-  }
+//   auto aspect_ratio() const noexcept -> std::float_t {
+//     return _aspect_ratio;
+//   }
 
-  auto set_aspect_ratio(std::float_t aspect_ratio) noexcept -> void {
-    _aspect_ratio = aspect_ratio;
-  }
+//   auto set_aspect_ratio(std::float_t aspect_ratio) noexcept -> void {
+//     _aspect_ratio = aspect_ratio;
+//   }
 
-private:
+// private:
 
-  math::vector2u _extent;
-  math::vector2i _offset;
-  std::float_t _aspect_ratio;
+//   math::vector2u _extent;
+//   math::vector2i _offset;
+//   std::float_t _aspect_ratio;
 
-}; // class render_area
+// }; // class render_area
 
-class render_stage {
+// class render_stage {
 
-public:
+// public:
 
-  render_stage(std::vector<attachment>&& attachments, std::vector<subpass_binding>&& subpass_bindings, const graphics::viewport& viewport = graphics::viewport::window());
+//   render_stage(std::vector<attachment>&& attachments, std::vector<subpass_binding>&& subpass_bindings, const graphics::viewport& viewport = graphics::viewport::window());
 
-  ~render_stage();
+//   ~render_stage();
 
-  auto attachments() const noexcept -> const std::vector<graphics::attachment>&;
+//   auto attachments() const noexcept -> const std::vector<graphics::attachment>&;
 
-  auto find_attachment(const std::string& name) const noexcept -> std::optional<graphics::attachment>;
+//   auto find_attachment(const std::string& name) const noexcept -> std::optional<graphics::attachment>;
 
-  auto find_attachment(std::uint32_t binding) const noexcept -> std::optional<graphics::attachment>;
+//   auto find_attachment(std::uint32_t binding) const noexcept -> std::optional<graphics::attachment>;
 
-  auto subpasses() const noexcept -> const std::vector<subpass_binding>&;
+//   auto subpasses() const noexcept -> const std::vector<subpass_binding>&;
 
-  auto attachment_count(std::uint32_t subpass) const -> std::uint32_t;
+//   auto attachment_count(std::uint32_t subpass) const -> std::uint32_t;
 
-  auto subpass_attachments(std::uint32_t subpass) const -> const std::vector<std::uint32_t>&;
+//   auto subpass_attachments(std::uint32_t subpass) const -> const std::vector<std::uint32_t>&;
 
-  auto clear_values() const noexcept -> const std::vector<VkClearValue>&;
+//   auto clear_values() const noexcept -> const std::vector<VkClearValue>&;
 
-  auto has_depth_attachment() const noexcept -> bool;
+//   auto has_depth_attachment() const noexcept -> bool;
 
-  auto has_swapchain_attachment() const noexcept -> bool;
+//   auto has_swapchain_attachment() const noexcept -> bool;
 
-  auto viewport() const noexcept -> const viewport&;
+//   auto viewport() const noexcept -> const viewport&;
 
-  auto render_area() const noexcept -> const render_area&;
+//   auto render_area() const noexcept -> const render_area&;
 
-  auto descriptor(const std::string& name) const noexcept -> memory::observer_ptr<const graphics::descriptor>;
+//   auto descriptor(const std::string& name) const noexcept -> memory::observer_ptr<const graphics::descriptor>;
 
-  auto descriptors() const noexcept -> const std::map<std::string, memory::observer_ptr<const graphics::descriptor>>&;
+//   auto descriptors() const noexcept -> const std::map<std::string, memory::observer_ptr<const graphics::descriptor>>&;
 
-private:
+// private:
 
-  auto _update_subpass_attachment_counts(const graphics::attachment& attachment) -> void;
+//   auto _update_subpass_attachment_counts(const graphics::attachment& attachment) -> void;
 
-  auto _create_attachment_descriptions(VkFormat depth_format, VkFormat surface_format) -> std::vector<VkAttachmentDescription>;
+//   auto _create_attachment_descriptions(VkFormat depth_format, VkFormat surface_format) -> std::vector<VkAttachmentDescription>;
 
-  auto _create_subpass_dependencies() -> std::vector<VkSubpassDependency>;
+//   auto _create_subpass_dependencies() -> std::vector<VkSubpassDependency>;
 
-  std::vector<graphics::attachment> _attachments;
-  std::vector<subpass_binding> _subpass_bindings;
+//   std::vector<graphics::attachment> _attachments;
+//   std::vector<subpass_binding> _subpass_bindings;
 
-  graphics::viewport _viewport;
+//   graphics::viewport _viewport;
 
-  // VkRenderPass _render_pass;
+//   // VkRenderPass _render_pass;
 
-  std::map<std::string, memory::observer_ptr<const graphics::descriptor>> _descriptors;
+//   std::map<std::string, memory::observer_ptr<const graphics::descriptor>> _descriptors;
 
-  std::unique_ptr<graphics::depth_image> _depth_image;
-  std::unordered_map<std::uint32_t, std::unique_ptr<graphics::image2d>> _color_images;
+//   std::unique_ptr<graphics::depth_image> _depth_image;
+//   std::unordered_map<std::uint32_t, std::unique_ptr<graphics::image2d>> _color_images;
 
-  // std::vector<VkFramebuffer> _framebuffers;
+//   // std::vector<VkFramebuffer> _framebuffers;
 
-  std::vector<VkClearValue> _clear_values;
-  std::vector<std::uint32_t> _subpass_attachment_counts;
-  std::vector<std::vector<std::uint32_t>> _subpass_attachments;
-  std::optional<graphics::attachment> _depth_attachment;
-  std::optional<graphics::attachment> _swapchain_attachment;
+//   std::vector<VkClearValue> _clear_values;
+//   std::vector<std::uint32_t> _subpass_attachment_counts;
+//   std::vector<std::vector<std::uint32_t>> _subpass_attachments;
+//   std::optional<graphics::attachment> _depth_attachment;
+//   std::optional<graphics::attachment> _swapchain_attachment;
 
-  graphics::render_area _render_area;
+//   graphics::render_area _render_area;
 
-}; // class render_stage
+// }; // class render_stage
 
-} // namespace sbx::graphics
+// } // namespace sbx::graphics
 
-#endif // LIBSBX_GRAPHICS_RENDER_STAGE_HPP_
+// #endif // LIBSBX_GRAPHICS_RENDER_STAGE_HPP_

@@ -29,13 +29,12 @@
 
 namespace sbx::graphics {
 
-graphics_pipeline::graphics_pipeline(const std::filesystem::path& path, const pipeline::stage& stage, const pipeline_definition& default_definition, const VkSpecializationInfo* specialization_info)
-: _bind_point{VK_PIPELINE_BIND_POINT_GRAPHICS},
-  _stage{stage} {
+graphics_pipeline::graphics_pipeline(const std::filesystem::path& path, const render_graph::pass& pass, const pipeline_definition& default_definition, const VkSpecializationInfo* specialization_info)
+: base{pass},
+  _bind_point{VK_PIPELINE_BIND_POINT_GRAPHICS} {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
   const auto& logical_device = graphics_module.logical_device();
-  const auto& render_stage = graphics_module.render_stage(stage);
 
   auto timer = utility::timer{};
 
@@ -279,15 +278,13 @@ graphics_pipeline::graphics_pipeline(const std::filesystem::path& path, const pi
 
   // auto color_blend_attachments = std::vector<VkPipelineColorBlendAttachmentState>{render_stage.attachment_count(_stage.subpass), color_blend_attachment};
 
-  const auto subpass_attachments = render_stage.subpass_attachments(_stage.subpass);
+  const auto& attachments = _pass.attachments();
 
   auto color_blend_attachments = std::vector<VkPipelineColorBlendAttachmentState>{};
-  color_blend_attachments.reserve(subpass_attachments.size());
+  color_blend_attachments.reserve(attachments.size());
 
-  for (const auto& attachment_id : subpass_attachments) {
-    const auto attachment = render_stage.find_attachment(attachment_id);
-
-    if (!definition.uses_transparency || attachment->format() == graphics::format::r32_uint || attachment->format() == graphics::format::r64_uint || attachment->format() == graphics::format::r32g32_uint) {
+  for (const auto& attachment : attachments) {
+    if (!definition.uses_transparency || attachment.format() == graphics::format::r32_uint || attachment.format() == graphics::format::r64_uint || attachment.format() == graphics::format::r32g32_uint) {
       color_blend_attachments.push_back(color_blend_attachment_disabled);
     } else {
       color_blend_attachments.push_back(color_blend_attachment_enabled);
@@ -305,10 +302,24 @@ graphics_pipeline::graphics_pipeline(const std::filesystem::path& path, const pi
   color_blend_state.blendConstants[2] = 0.0f;
   color_blend_state.blendConstants[3] = 0.0f;
 
-  auto dynamic_states = std::array<VkDynamicState, 2>{
+  auto color_formats = std::vector<VkFormat>{};
+  color_formats.reserve(attachments.size());
+
+  auto depth_format = VK_FORMAT_UNDEFINED;
+
+  for (const auto& attachment : attachments) {
+    if (attachment.image_type() == render_graph::attachment::type::depth) {
+      depth_format = to_vk_enum<VkFormat>(attachment.format());
+    } else {
+      color_formats.push_back(to_vk_enum<VkFormat>(attachment.format()));
+    }
+  }
+
+  auto dynamic_states = std::array<VkDynamicState, 2u>{
     VK_DYNAMIC_STATE_VIEWPORT,
     VK_DYNAMIC_STATE_SCISSOR
   };
+
 
   auto dynamic_state = VkPipelineDynamicStateCreateInfo{};
   dynamic_state.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
@@ -439,13 +450,13 @@ graphics_pipeline::graphics_pipeline(const std::filesystem::path& path, const pi
 
   validate(vkCreatePipelineLayout(logical_device, &pipeline_layout_create_info, nullptr, &_layout));
 
-  auto rendering_info = VkPipelineRenderingCreateInfo{}
-  rendering_info.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO,
-  rendering_info.colorAttachmentCount = 1,
-  rendering_info.pColorAttachmentFormats = &color_format, // e.g. VK_FORMAT_B8G8R8A8_UNORM
-  rendering_info.depthAttachmentFormat = VK_FORMAT_D32_SFLOAT,
-  rendering_info.stencilAttachmentFormat = VK_FORMAT_UNDEFINED
-  
+  auto rendering_info = VkPipelineRenderingCreateInfo{};
+  rendering_info.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
+  rendering_info.colorAttachmentCount = static_cast<std::uint32_t>(color_formats.size());
+  rendering_info.pColorAttachmentFormats = color_formats.data();
+  rendering_info.depthAttachmentFormat = depth_format;
+  rendering_info.stencilAttachmentFormat = depth_format;
+
   auto pipeline_create_info = VkGraphicsPipelineCreateInfo{};
   pipeline_create_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
   pipeline_create_info.flags = VK_PIPELINE_CREATE_ALLOW_DERIVATIVES_BIT;
@@ -460,8 +471,8 @@ graphics_pipeline::graphics_pipeline(const std::filesystem::path& path, const pi
   pipeline_create_info.pColorBlendState = &color_blend_state;
   pipeline_create_info.pDynamicState = &dynamic_state;
   pipeline_create_info.layout = _layout;
-  pipeline_create_info.renderPass = nullptr;
-  pipeline_create_info.subpass = stage.subpass;
+  // pipeline_create_info.renderPass = nullptr;
+  // pipeline_create_info.subpass = stage.subpass;
   pipeline_create_info.basePipelineIndex = -1;
   pipeline_create_info.basePipelineHandle = VK_NULL_HANDLE;
 

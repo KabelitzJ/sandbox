@@ -54,10 +54,10 @@ class gizmos_subrenderer final : public graphics::subrenderer {
 
 public:
 
-  gizmos_subrenderer(const std::filesystem::path& path, const graphics::pipeline::stage& stage, const std::string& depth_image)
-  : graphics::subrenderer{stage},
+  gizmos_subrenderer(const std::filesystem::path& path, const graphics::render_graph::pass& pass, const std::string& depth_image)
+  : graphics::subrenderer{pass},
     _depth_image{depth_image},
-    _pipeline{path, stage} { }
+    _pipeline{path, pass} { }
 
   ~gizmos_subrenderer() override = default;
 

@@ -16,7 +16,7 @@ class default_filter final : public filter {
 
 public:
 
-  default_filter(const std::filesystem::path& path, const graphics::pipeline::stage& stage, const std::string& attachment_name)
+  default_filter(const std::filesystem::path& path, const graphics::render_graph::pass& pass, const std::string& attachment_name)
   : base_type{path, stage},
     _attachment_name{attachment_name} { }
 
