@@ -35,9 +35,9 @@ public:
   auto render(const pipeline::stage& stage, command_buffer& command_buffer) -> void {
     const auto stage_name = fmt::format("Render Stage: {}.{}", stage.renderpass, stage.subpass);
     EASY_BLOCK(stage_name.c_str(), profiler::colors::LightBlue);
-    for (const auto& [render_stage, index] : _subrenderer_stages) {
+    for (auto& [render_stage, subrenderer] : _subrenderers) {
       if (render_stage == stage) {
-        _subrenderers[index]->render(command_buffer);
+        subrenderer->render(command_buffer);
       }
     }
     EASY_END_BLOCK;
@@ -67,11 +67,11 @@ protected:
   template<typename Type, typename... Args>
   requires (std::is_constructible_v<Type, const std::filesystem::path&, const pipeline::stage&, Args...>)
   auto add_subrenderer(const std::filesystem::path& path, const pipeline::stage& stage, Args&&... args) -> Type& {
-    _subrenderer_stages.insert({stage, _subrenderers.size()});
+    auto result = _subrenderers.insert({stage, std::make_unique<Type>(path, stage, std::forward<Args>(args)...)});
 
-    _subrenderers.push_back(std::make_unique<Type>(path, stage, std::forward<Args>(args)...));
+    // _subrenderers.push_back(std::make_unique<Type>(path, stage, std::forward<Args>(args)...));
 
-    return *static_cast<Type*>(_subrenderers.back().get());
+    return *static_cast<Type*>(result->second.get());
   }
 
   template<typename Type, typename... Args>
@@ -88,8 +88,7 @@ private:
 
   std::vector<std::unique_ptr<graphics::render_stage>> _render_stages;
 
-  std::vector<std::unique_ptr<subrenderer>> _subrenderers;
-  std::multimap<pipeline::stage, std::size_t> _subrenderer_stages;
+  std::multimap<pipeline::stage, std::unique_ptr<subrenderer>> _subrenderers;
 
   render_graph _graph;
 
