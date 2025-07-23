@@ -279,21 +279,11 @@ public:
 
   auto render_area() const noexcept -> const render_area&;
 
-  auto render_pass() const noexcept -> const VkRenderPass&;
-
-  auto rebuild(const swapchain& swapchain) -> void;
-
-  auto framebuffer(std::uint32_t index) noexcept -> const VkFramebuffer&;
-
   auto descriptor(const std::string& name) const noexcept -> memory::observer_ptr<const graphics::descriptor>;
 
   auto descriptors() const noexcept -> const std::map<std::string, memory::observer_ptr<const graphics::descriptor>>&;
 
 private:
-
-  auto _create_render_pass(VkFormat depth_format, VkFormat surface_format) -> void;
-
-  auto _rebuild_framebuffers(const swapchain& swapchain) -> void;
 
   auto _update_subpass_attachment_counts(const graphics::attachment& attachment) -> void;
 
@@ -306,14 +296,14 @@ private:
 
   graphics::viewport _viewport;
 
-  VkRenderPass _render_pass;
+  // VkRenderPass _render_pass;
 
   std::map<std::string, memory::observer_ptr<const graphics::descriptor>> _descriptors;
 
   std::unique_ptr<graphics::depth_image> _depth_image;
   std::unordered_map<std::uint32_t, std::unique_ptr<graphics::image2d>> _color_images;
 
-  std::vector<VkFramebuffer> _framebuffers;
+  // std::vector<VkFramebuffer> _framebuffers;
 
   std::vector<VkClearValue> _clear_values;
   std::vector<std::uint32_t> _subpass_attachment_counts;

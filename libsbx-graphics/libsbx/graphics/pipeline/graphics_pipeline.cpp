@@ -438,6 +438,13 @@ graphics_pipeline::graphics_pipeline(const std::filesystem::path& path, const pi
   pipeline_layout_create_info.pPushConstantRanges = push_constant_ranges.data();
 
   validate(vkCreatePipelineLayout(logical_device, &pipeline_layout_create_info, nullptr, &_layout));
+
+  auto rendering_info = VkPipelineRenderingCreateInfo{}
+  rendering_info.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO,
+  rendering_info.colorAttachmentCount = 1,
+  rendering_info.pColorAttachmentFormats = &color_format, // e.g. VK_FORMAT_B8G8R8A8_UNORM
+  rendering_info.depthAttachmentFormat = VK_FORMAT_D32_SFLOAT,
+  rendering_info.stencilAttachmentFormat = VK_FORMAT_UNDEFINED
   
   auto pipeline_create_info = VkGraphicsPipelineCreateInfo{};
   pipeline_create_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -453,7 +460,7 @@ graphics_pipeline::graphics_pipeline(const std::filesystem::path& path, const pi
   pipeline_create_info.pColorBlendState = &color_blend_state;
   pipeline_create_info.pDynamicState = &dynamic_state;
   pipeline_create_info.layout = _layout;
-  pipeline_create_info.renderPass = render_stage.render_pass();
+  pipeline_create_info.renderPass = nullptr;
   pipeline_create_info.subpass = stage.subpass;
   pipeline_create_info.basePipelineIndex = -1;
   pipeline_create_info.basePipelineHandle = VK_NULL_HANDLE;

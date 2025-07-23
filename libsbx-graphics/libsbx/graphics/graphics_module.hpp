@@ -286,8 +286,6 @@ private:
 
   std::vector<per_frame_data> _per_frame_data{};
   std::vector<per_image_data> _per_image_data{};
-  // std::vector<std::unique_ptr<graphics::command_buffer>> _graphics_command_buffers{};
-  // std::vector<std::unique_ptr<graphics::command_buffer>> _compute_command_buffers{};
   std::vector<graphics::command_buffer> _graphics_command_buffers{};
   std::vector<graphics::command_buffer> _compute_command_buffers{};
 

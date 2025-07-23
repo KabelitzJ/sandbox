@@ -52,7 +52,6 @@ render_stage::render_stage(std::vector<graphics::attachment>&& attachments, std:
 : _attachments{std::move(attachments)}, 
   _subpass_bindings{std::move(subpass_bindings)},
   _viewport{viewport},
-  _render_pass{nullptr},
   _subpass_attachment_counts{},
   _subpass_attachments{} {
   auto attachment_counts = _subpass_bindings.size();
@@ -106,12 +105,6 @@ render_stage::~render_stage() {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
   auto& logical_device = graphics_module.logical_device();
-
-  for (const auto& framebuffer : _framebuffers) {
-    vkDestroyFramebuffer(logical_device, framebuffer, nullptr);
-  }
-
-  vkDestroyRenderPass(logical_device, _render_pass, nullptr);
 }
 
 auto render_stage::attachments() const noexcept -> const std::vector<graphics::attachment>& {
@@ -174,65 +167,6 @@ auto render_stage::render_area() const noexcept -> const class render_area& {
   return _render_area;
 }
 
-auto render_stage::render_pass() const noexcept -> const VkRenderPass& {
-  return _render_pass;
-}
-
-auto render_stage::rebuild(const swapchain& swapchain) -> void {
-  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
-
-  // [TODO] KAJ 2023-06-14 : This looks a bit scuffed. Maybe try to understand what it actually does and rewrite it.
-  _render_area.set_offset(_viewport.offset());
-
-  const auto extent = swapchain.extent();
-  const auto size = _viewport.size() ? *_viewport.size() : math::vector2u{extent.width, extent.height};
-
-  _render_area.set_extent(math::vector2u{_viewport.scale() * size});
-
-  _render_area.set_aspect_ratio(static_cast<std::float_t>(_render_area.extent().x()) / static_cast<std::float_t>(_render_area.extent().y()));
-  _render_area.set_extent(_render_area.extent() + _render_area.offset());
-  
-  auto& surface = graphics_module.surface();
-
-  if (_depth_attachment) {
-    _depth_image = std::make_unique<graphics::depth_image>(_render_area.extent(), VK_SAMPLE_COUNT_1_BIT);
-  }
-
-  if (!_render_pass) {
-    _create_render_pass(_depth_image ? _depth_image->format() : VK_FORMAT_UNDEFINED, surface.format().format);
-  }
-
-  _color_images.clear();
-
-  for (const auto& attachment : _attachments) {
-    if (attachment.image_type() == attachment::type::image) {
-      _color_images.insert({attachment.binding(), std::make_unique<graphics::image2d>(_render_area.extent(), to_vk_enum<VkFormat>(attachment.format()), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT, VK_FILTER_LINEAR, to_vk_enum<VkSamplerAddressMode>(attachment.address_mode()), VK_SAMPLE_COUNT_1_BIT)});
-    } else if (attachment.image_type() == attachment::type::storage) {
-      _color_images.insert({attachment.binding(), std::make_unique<graphics::image2d>(_render_area.extent(), to_vk_enum<VkFormat>(attachment.format()), VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT, VK_FILTER_LINEAR, to_vk_enum<VkSamplerAddressMode>(attachment.address_mode()), VK_SAMPLE_COUNT_1_BIT)});
-    } else {
-      _color_images.insert({attachment.binding(), nullptr});
-    }
-  }
-
-  _rebuild_framebuffers(swapchain);
-
-  _descriptors.clear();
-
-  auto where = _descriptors.end();
-
-  for (const auto& attachment : _attachments) {
-    if (attachment.image_type() == attachment::type::depth) {
-      where = _descriptors.insert(where, {attachment.name(), _depth_image.get()});
-    } else {
-      where = _descriptors.insert(where, {attachment.name(), _color_images[attachment.binding()].get()});
-    }
-  }
-}
-
-auto render_stage::framebuffer(std::uint32_t index) noexcept -> const VkFramebuffer& {
-  return _framebuffers[index];
-}
-
 auto render_stage::descriptor(const std::string& name) const noexcept -> memory::observer_ptr<const graphics::descriptor> {
   if (auto it = _descriptors.find(name); it != _descriptors.end()) {
     return it->second;
@@ -243,125 +177,6 @@ auto render_stage::descriptor(const std::string& name) const noexcept -> memory:
 
 auto render_stage::descriptors() const noexcept -> const std::map<std::string, memory::observer_ptr<const graphics::descriptor>>& {
   return _descriptors;
-}
-
-auto render_stage::_create_render_pass(VkFormat depth_format, VkFormat surface_format) -> void {
-  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
-
-  auto& logical_device = graphics_module.logical_device();
-
-  auto subpasses = std::vector<subpass_description>{};
-
-  for (const auto& subpass : _subpass_bindings) {
-		auto subpass_color_attachments = std::vector<VkAttachmentReference>{};
-    auto subpass_input_attachments = std::vector<VkAttachmentReference>{};
-
-		auto depth_attachment = std::optional<std::uint32_t>{};
-
-		for (const auto& color_attachment : subpass.color_attachments()) {
-			auto attachment = find_attachment(color_attachment);
-
-			if (!attachment) {
-				throw std::runtime_error{fmt::format("Failed to find attachment with binding {}", color_attachment)};
-			}
-
-			if (attachment->image_type() == attachment::type::depth) {
-				depth_attachment = attachment->binding();
-				continue;
-			}
-
-			auto attachment_reference = VkAttachmentReference{};
-			attachment_reference.attachment = attachment->binding();
-			attachment_reference.layout = (attachment->image_type() == attachment::type::image) ? VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL : VK_IMAGE_LAYOUT_GENERAL;
-
-			subpass_color_attachments.push_back(attachment_reference);
-		}
-
-    for (const auto& input_attachment : subpass.input_attachments()) {
-      auto attachment = find_attachment(input_attachment);
-
-      if (!attachment) {
-        throw std::runtime_error{fmt::format("Failed to find attachment with binding {}", input_attachment)};
-      }
-
-      auto attachment_reference = VkAttachmentReference{};
-      attachment_reference.attachment = attachment->binding();
-      attachment_reference.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-
-      subpass_input_attachments.push_back(attachment_reference);
-    }
-
-		subpasses.push_back(subpass_description{VK_PIPELINE_BIND_POINT_GRAPHICS, std::move(subpass_color_attachments), std::move(subpass_input_attachments), depth_attachment});
-	}
-
-	auto subpass_descriptions = std::vector<VkSubpassDescription>{};
-	subpass_descriptions.reserve(subpasses.size());
-
-	for (const auto& subpass : subpasses) {
-		subpass_descriptions.emplace_back(subpass.description());
-	}
-
-  const auto attachments_descriptions = _create_attachment_descriptions(depth_format, surface_format);
-  const auto subpass_dependencies = _create_subpass_dependencies();
-
-	auto render_pass_create_info = VkRenderPassCreateInfo{};
-	render_pass_create_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-	render_pass_create_info.attachmentCount = static_cast<std::uint32_t>(attachments_descriptions.size());
-	render_pass_create_info.pAttachments = attachments_descriptions.data();
-	render_pass_create_info.subpassCount = static_cast<std::uint32_t>(subpass_descriptions.size());
-	render_pass_create_info.pSubpasses = subpass_descriptions.data();
-	render_pass_create_info.dependencyCount = static_cast<std::uint32_t>(subpass_dependencies.size());
-	render_pass_create_info.pDependencies = subpass_dependencies.data();
-
-	validate(vkCreateRenderPass(logical_device, &render_pass_create_info, nullptr, &_render_pass));
-}
-
-auto render_stage::_rebuild_framebuffers(const swapchain& swapchain) -> void {
-  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
-
-  auto& logical_device = graphics_module.logical_device();
-
-  for (const auto& framebuffer : _framebuffers) {
-    vkDestroyFramebuffer(logical_device, framebuffer, nullptr);
-  }
-
-  _framebuffers.clear();
-  _framebuffers.resize(swapchain.image_count());
-
-  for (auto i = 0u; i < _framebuffers.size(); ++i) {
-    auto attachments = std::vector<VkImageView>{};
-
-    for (const auto& attachment : _attachments) {
-      switch (attachment.image_type()) {
-        case attachment::type::image: {
-          attachments.push_back(_color_images[attachment.binding()]->view());
-          break;
-        }
-        case attachment::type::depth: {
-          attachments.push_back(_depth_image->view());
-          break;
-        }
-        case attachment::type::swapchain: {
-          attachments.push_back(swapchain.image_view(i));
-          break;
-        }
-        default: {
-          break;
-        }
-      }
-    }
-
-    auto framebuffer_create_info = VkFramebufferCreateInfo{};
-    framebuffer_create_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-    framebuffer_create_info.renderPass = _render_pass;
-    framebuffer_create_info.attachmentCount = static_cast<std::uint32_t>(attachments.size());
-    framebuffer_create_info.pAttachments = attachments.data();
-    framebuffer_create_info.width = _render_area.extent().x();
-    framebuffer_create_info.height = _render_area.extent().y();
-    framebuffer_create_info.layers = 1;
-
-    validate(vkCreateFramebuffer(logical_device, &framebuffer_create_info, nullptr, &_framebuffers[i]));
-  }
 }
 
 auto render_stage::_update_subpass_attachment_counts(const graphics::attachment& attachment) -> void {

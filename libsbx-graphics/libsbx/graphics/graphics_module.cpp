@@ -222,46 +222,46 @@ auto graphics_module::attachment(const std::string& name) const -> const descrip
 }
 
 auto graphics_module::_start_render_pass(graphics::render_stage& render_stage, graphics::command_buffer& command_buffer) -> void {
-  if (!command_buffer.is_running()) {
-    command_buffer.begin(VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
-  }
+  // if (!command_buffer.is_running()) {
+  //   command_buffer.begin(VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
+  // }
 
-  const auto& area = render_stage.render_area();
+  // const auto& area = render_stage.render_area();
 
-  const auto& offset = area.offset();
-  const auto& extent = area.extent();
+  // const auto& offset = area.offset();
+  // const auto& extent = area.extent();
 
-  auto render_area = VkRect2D{};
-  render_area.offset = VkOffset2D{offset.x(), offset.y()};
-  render_area.extent = VkExtent2D{extent.x(), extent.y()};
+  // auto render_area = VkRect2D{};
+  // render_area.offset = VkOffset2D{offset.x(), offset.y()};
+  // render_area.extent = VkExtent2D{extent.x(), extent.y()};
 
-  auto viewport = VkViewport{};
-	viewport.x = 0.0f;
-	viewport.y = 0.0f;
-	viewport.width = static_cast<std::float_t>(render_area.extent.width);
-	viewport.height = static_cast<std::float_t>(render_area.extent.height);
-	viewport.minDepth = 0.0f;
-	viewport.maxDepth = 1.0f;
+  // auto viewport = VkViewport{};
+	// viewport.x = 0.0f;
+	// viewport.y = 0.0f;
+	// viewport.width = static_cast<std::float_t>(render_area.extent.width);
+	// viewport.height = static_cast<std::float_t>(render_area.extent.height);
+	// viewport.minDepth = 0.0f;
+	// viewport.maxDepth = 1.0f;
 
-	command_buffer.set_viewport(viewport);
+	// command_buffer.set_viewport(viewport);
 
-	auto scissor = VkRect2D{};
-	scissor.offset = render_area.offset;
-	scissor.extent = render_area.extent;
+	// auto scissor = VkRect2D{};
+	// scissor.offset = render_area.offset;
+	// scissor.extent = render_area.extent;
   
-  command_buffer.set_scissor(scissor);
+  // command_buffer.set_scissor(scissor);
 
-  const auto& clear_values = render_stage.clear_values();
+  // const auto& clear_values = render_stage.clear_values();
 
-  auto render_pass_begin_info = VkRenderPassBeginInfo{};
-	render_pass_begin_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-	render_pass_begin_info.renderPass = render_stage.render_pass();
-	render_pass_begin_info.framebuffer = render_stage.framebuffer(_swapchain->active_image_index());
-	render_pass_begin_info.renderArea = render_area;
-	render_pass_begin_info.clearValueCount = static_cast<std::uint32_t>(clear_values.size());
-	render_pass_begin_info.pClearValues = clear_values.data();
+  // auto render_pass_begin_info = VkRenderPassBeginInfo{};
+	// render_pass_begin_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+	// render_pass_begin_info.renderPass = render_stage.render_pass();
+	// render_pass_begin_info.framebuffer = render_stage.framebuffer(_swapchain->active_image_index());
+	// render_pass_begin_info.renderArea = render_area;
+	// render_pass_begin_info.clearValueCount = static_cast<std::uint32_t>(clear_values.size());
+	// render_pass_begin_info.pClearValues = clear_values.data();
 
-  command_buffer.begin_render_pass(render_pass_begin_info, VK_SUBPASS_CONTENTS_INLINE);
+  // command_buffer.begin_render_pass(render_pass_begin_info, VK_SUBPASS_CONTENTS_INLINE);
 }
 
 auto graphics_module::_end_render_pass(graphics::render_stage& render_stage, graphics::command_buffer& command_buffer) -> void {
@@ -310,11 +310,6 @@ auto graphics_module::_recreate_swapchain() -> void {
   _recreate_per_frame_data();
   _recreate_per_image_data();
   _recreate_command_buffers();
-
-  for (const auto& render_stage : _renderer->render_stages()) {
-    render_stage->rebuild(*_swapchain);
-  }
-
   _recreate_attachments();
 
   _current_frame = 0;
