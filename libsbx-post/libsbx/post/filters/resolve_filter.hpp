@@ -23,10 +23,9 @@
 
 namespace sbx::post {
 
-// template<graphics::vertex Vertex>
-class resolve_filter final : public filter<graphics::empty_vertex> {
+class resolve_filter final : public filter {
 
-  using base_type = filter<graphics::empty_vertex>;
+  using base_type = filter;
 
   inline static constexpr auto max_point_lights = std::size_t{32};
 
@@ -37,8 +36,6 @@ class resolve_filter final : public filter<graphics::empty_vertex> {
   }; // struct point_light_data
 
 public:
-
-  using pipeline_type = base_type::pipeline_type;
 
   resolve_filter(const std::filesystem::path& path, const graphics::pipeline::stage& stage, std::unordered_map<std::string, std::string>&& attachment_names)
   : base_type{path, stage},
@@ -107,7 +104,7 @@ public:
 
     descriptor_handler.bind_descriptors(command_buffer);
 
-    command_buffer.draw(6, 1, 0, 0);
+    command_buffer.draw(3, 1, 0, 0);
   }
 
 private:

@@ -66,7 +66,8 @@ render_stage::render_stage(std::vector<graphics::attachment>&& attachments, std:
     auto clear_color = attachment.clear_color();
 
     switch (attachment.image_type()) {
-      case attachment::type::image: {
+      case attachment::type::image:
+      case attachment::type::storage: {
         clear_value.color = VkClearColorValue{clear_color.r(), clear_color.g(), clear_color.b(), clear_color.a()};
 
         _update_subpass_attachment_counts(attachment);
@@ -206,6 +207,8 @@ auto render_stage::rebuild(const swapchain& swapchain) -> void {
   for (const auto& attachment : _attachments) {
     if (attachment.image_type() == attachment::type::image) {
       _color_images.insert({attachment.binding(), std::make_unique<graphics::image2d>(_render_area.extent(), to_vk_enum<VkFormat>(attachment.format()), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT, VK_FILTER_LINEAR, to_vk_enum<VkSamplerAddressMode>(attachment.address_mode()), VK_SAMPLE_COUNT_1_BIT)});
+    } else if (attachment.image_type() == attachment::type::storage) {
+      _color_images.insert({attachment.binding(), std::make_unique<graphics::image2d>(_render_area.extent(), to_vk_enum<VkFormat>(attachment.format()), VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT, VK_FILTER_LINEAR, to_vk_enum<VkSamplerAddressMode>(attachment.address_mode()), VK_SAMPLE_COUNT_1_BIT)});
     } else {
       _color_images.insert({attachment.binding(), nullptr});
     }
@@ -269,7 +272,7 @@ auto render_stage::_create_render_pass(VkFormat depth_format, VkFormat surface_f
 
 			auto attachment_reference = VkAttachmentReference{};
 			attachment_reference.attachment = attachment->binding();
-			attachment_reference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+			attachment_reference.layout = (attachment->image_type() == attachment::type::image) ? VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL : VK_IMAGE_LAYOUT_GENERAL;
 
 			subpass_color_attachments.push_back(attachment_reference);
 		}
@@ -386,6 +389,11 @@ auto render_stage::_create_attachment_descriptions(VkFormat depth_format, VkForm
       case attachment::type::image: {
         attachment_description.format = to_vk_enum<VkFormat>(attachment.format());
         attachment_description.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        break;
+      }
+      case attachment::type::storage: {
+        attachment_description.format = to_vk_enum<VkFormat>(attachment.format());
+        attachment_description.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
         break;
       }
       case attachment::type::depth: {

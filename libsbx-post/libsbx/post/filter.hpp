@@ -15,7 +15,6 @@
 
 namespace sbx::post {
 
-template<graphics::vertex Vertex>
 class filter : public graphics::subrenderer {
 
   inline static const auto pipeline_definition = graphics::pipeline_definition{
@@ -25,13 +24,11 @@ class filter : public graphics::subrenderer {
       .polygon_mode = graphics::polygon_mode::fill,
       .cull_mode = graphics::cull_mode::none,
       .front_face = graphics::front_face::counter_clockwise
-    },
-    .vertex_input = graphics::vertex_input<Vertex>::description(),
+    }
   };
 
 public:
 
-  using vertex_type = Vertex;
   using pipeline_type = graphics::graphics_pipeline;
 
   filter(const std::filesystem::path& path, const graphics::pipeline::stage& stage)

@@ -9,15 +9,12 @@
 
 namespace sbx::post {
 
-template<graphics::vertex Vertex, std::size_t Id>
-class default_filter final : public filter<Vertex> {
+template<std::size_t Id>
+class default_filter final : public filter {
 
-  using base_type = filter<Vertex>;
+  using base_type = filter;
 
 public:
-
-  using vertex_type = base_type::vertex_type;
-  using pipeline_type = base_type::pipeline_type;
 
   default_filter(const std::filesystem::path& path, const graphics::pipeline::stage& stage, const std::string& attachment_name)
   : base_type{path, stage},
@@ -41,7 +38,7 @@ public:
 
     descriptor_handler.bind_descriptors(command_buffer);
 
-    command_buffer.draw(6, 1, 0, 0);
+    command_buffer.draw(3, 1, 0, 0);
   }
 
 private:

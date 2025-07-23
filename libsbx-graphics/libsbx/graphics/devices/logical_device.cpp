@@ -336,6 +336,12 @@ auto logical_device::_get_enabled_features(const physical_device& physical_devic
     utility::logger<"graphics">::warn("Selected GPU does not support synchronization 2");
   }
 
+  if (available_vulkan13_features.dynamicRendering) {
+    enabled_vulkan13_features.dynamicRendering = true;
+  } else {
+    utility::logger<"graphics">::warn("Selected GPU does not support dynamice rendering 2");
+  }
+
   return enabled_features;
 }
 

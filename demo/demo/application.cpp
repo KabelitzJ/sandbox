@@ -148,9 +148,9 @@ application::application()
 
   // Terrain
 
-  auto& terrain_module = sbx::core::engine::get_module<demo::terrain_module>();
+  // auto& terrain_module = sbx::core::engine::get_module<demo::terrain_module>();
 
-  terrain_module.load_terrain_in_scene(scene);
+  // terrain_module.load_terrain_in_scene(scene);
 
   // Player
 
@@ -250,33 +250,33 @@ application::application()
 
   // Trees
 
-  auto tree_submeshes = std::vector<sbx::scenes::static_mesh::submesh>{};
-  tree_submeshes.push_back(sbx::scenes::static_mesh::submesh{0u, sbx::math::color::white(), sbx::scenes::static_mesh::material{}, _image_ids["maple_tree_bark"], _image_ids["maple_tree_bark_normal"]});
-  tree_submeshes.push_back(sbx::scenes::static_mesh::submesh{1u, sbx::math::color::white(), sbx::scenes::static_mesh::material{}, _image_ids["maple_tree_leaves"]});
+  // auto tree_submeshes = std::vector<sbx::scenes::static_mesh::submesh>{};
+  // tree_submeshes.push_back(sbx::scenes::static_mesh::submesh{0u, sbx::math::color::white(), sbx::scenes::static_mesh::material{}, _image_ids["maple_tree_bark"], _image_ids["maple_tree_bark_normal"]});
+  // tree_submeshes.push_back(sbx::scenes::static_mesh::submesh{1u, sbx::math::color::white(), sbx::scenes::static_mesh::material{}, _image_ids["maple_tree_leaves"]});
 
-  auto maple_tree = scene.create_node("MapleTree");
-  scene.add_component<sbx::scenes::static_mesh>(maple_tree, _mesh_ids["maple_tree_4"], tree_submeshes);
+  // auto maple_tree = scene.create_node("MapleTree");
+  // scene.add_component<sbx::scenes::static_mesh>(maple_tree, _mesh_ids["maple_tree_4"], tree_submeshes);
 
-  const auto grid_size = sbx::math::vector2{15.0f, 15.0f};
-  const auto cell_size = sbx::math::vector2{15.0f, 15.0f};
-  const auto offset = grid_size * cell_size * 0.5f;
+  // const auto grid_size = sbx::math::vector2{15.0f, 15.0f};
+  // const auto cell_size = sbx::math::vector2{15.0f, 15.0f};
+  // const auto offset = grid_size * cell_size * 0.5f;
 
-  auto forrest = scene.create_node("Forrest");
+  // auto forrest = scene.create_node("Forrest");
 
-  for (auto y : std::views::iota(0u, grid_size.y())) {
-    for (auto x : std::views::iota(0u, grid_size.x())) {
-      auto tree = scene.create_child_node(forrest, fmt::format("Tree{}{}", x, y));
+  // for (auto y : std::views::iota(0u, grid_size.y())) {
+  //   for (auto x : std::views::iota(0u, grid_size.x())) {
+  //     auto tree = scene.create_child_node(forrest, fmt::format("Tree{}{}", x, y));
 
-      scene.add_component<sbx::scenes::static_mesh>(tree, _mesh_ids[fmt::format("maple_tree_{}", sbx::math::random::next<std::uint32_t>(1, 4))], tree_submeshes);
+  //     scene.add_component<sbx::scenes::static_mesh>(tree, _mesh_ids[fmt::format("maple_tree_{}", sbx::math::random::next<std::uint32_t>(1, 4))], tree_submeshes);
 
-      const auto position = (sbx::math::vector2{x, y} * cell_size - offset) + (sbx::math::vector2{sbx::math::random::next<std::float_t>(0.0f, 1.0f), sbx::math::random::next<std::float_t>(0.0f, 1.0f)} * cell_size);
+  //     const auto position = (sbx::math::vector2{x, y} * cell_size - offset) + (sbx::math::vector2{sbx::math::random::next<std::float_t>(0.0f, 1.0f), sbx::math::random::next<std::float_t>(0.0f, 1.0f)} * cell_size);
 
-      auto& tree_transform = scene.get_component<sbx::math::transform>(tree);
-      tree_transform.set_position(sbx::math::vector3{position.x(), 0.0f, position.y()});
-      // tree_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
-      tree_transform.set_rotation(sbx::math::vector3::up, sbx::math::degree{sbx::math::random::next<std::float_t>(0.0f, 360.0f)});
-    }
-  }
+  //     auto& tree_transform = scene.get_component<sbx::math::transform>(tree);
+  //     tree_transform.set_position(sbx::math::vector3{position.x(), 0.0f, position.y()});
+  //     // tree_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
+  //     tree_transform.set_rotation(sbx::math::vector3::up, sbx::math::degree{sbx::math::random::next<std::float_t>(0.0f, 360.0f)});
+  //   }
+  // }
 
   // Rocks
 

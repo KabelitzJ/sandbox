@@ -15,14 +15,12 @@ enum class blur_type : std::uint32_t {
   gaussian_13 = 2
 }; // enum class blur_type
 
-template<graphics::vertex Vertex, blur_type Type>
-class blur_filter final : public filter<Vertex> {
+template<blur_type Type>
+class blur_filter final : public filter {
 
-  using base_type = filter<Vertex>;
+  using base_type = filter;
 
 public:
-
-  using vertex_type = base_type::vertex_type;
 
   inline static constexpr auto type = Type;
 
@@ -45,7 +43,6 @@ public:
     _push_handler.push("direction", _direction);
     _push_handler.push("type", utility::to_underlying(type));
 
-    descriptor_handler.push("data", _push_handler);
     descriptor_handler.push("image", graphics_module.attachment(_attachment_name));
 
     if (!descriptor_handler.update(pipeline)) {
@@ -53,9 +50,9 @@ public:
     }
 
     descriptor_handler.bind_descriptors(command_buffer);
-    _push_handler.bind(command_buffer, pipeline);
+    _push_handler.bind(command_buffer);
 
-    command_buffer.draw(6, 1, 0, 0);
+    command_buffer.draw(3, 1, 0, 0);
   }
 
 private:
@@ -67,14 +64,11 @@ private:
 
 }; // class blur_filter
 
-template<graphics::vertex Vertex>
-using blur_filter_gaussian_5 = blur_filter<Vertex, blur_type::gaussian_5>;
+using blur_filter_gaussian_5 = blur_filter<blur_type::gaussian_5>;
 
-template<graphics::vertex Vertex>
-using blur_filter_gaussian_9 = blur_filter<Vertex, blur_type::gaussian_9>;
+using blur_filter_gaussian_9 = blur_filter<blur_type::gaussian_9>;
 
-template<graphics::vertex Vertex>
-using blur_filter_gaussian_13 = blur_filter<Vertex, blur_type::gaussian_13>;
+using blur_filter_gaussian_13 = blur_filter<blur_type::gaussian_13>;
 
 } // namespace sbx::post
 

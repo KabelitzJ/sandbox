@@ -44,6 +44,7 @@ public:
   enum class type {
     image,
     depth,
+    storage,
     swapchain
   }; // enum class type
 

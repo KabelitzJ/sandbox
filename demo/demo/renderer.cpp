@@ -84,7 +84,21 @@ renderer::renderer()
     add_render_stage(std::move(attachments), std::move(subpass_bindings));
   }
 
-  // Render stage 2: FX and UI
+  // Render stage 2: Post
+  // {
+  //   auto attachments = std::vector<sbx::graphics::attachment>{
+  //     sbx::graphics::attachment{0, "post0", sbx::graphics::attachment::type::storage, _clear_color, sbx::graphics::format::r8g8b8a8_unorm},
+  //     sbx::graphics::attachment{1, "post1", sbx::graphics::attachment::type::storage, _clear_color, sbx::graphics::format::r8g8b8a8_unorm}
+  //   };
+
+  //   auto subpass_bindings = std::vector<sbx::graphics::subpass_binding>{
+  //     sbx::graphics::subpass_binding{0, {0, 1}}
+  //   };
+
+  //   add_render_stage(std::move(attachments), std::move(subpass_bindings));
+  // }
+
+  // Render stage 3: FX and UI
   {
     auto attachments = std::vector<sbx::graphics::attachment>{
       sbx::graphics::attachment{0, "swapchain", sbx::graphics::attachment::type::swapchain, _clear_color, sbx::graphics::format::r8g8b8a8_unorm}
@@ -132,7 +146,9 @@ auto renderer::initialize() -> void {
   add_subrenderer<sbx::post::resolve_filter>("demo/assets/shaders/resolve", sbx::graphics::pipeline::stage{1, 1}, std::move(attachment_names));
 
   add_subrenderer<sbx::scenes::debug_subrenderer>("demo/assets/shaders/debug", sbx::graphics::pipeline::stage{1, 2});
-  // add_subrenderer<sbx::models::foliage_subrenderer>("demo/assets/shaders/foliage", sbx::graphics::pipeline::stage{0, 2}, foliage_task.grass_output_buffer(), foliage_task.draw_command_buffer());
+  // add_subrenderer<sbx::models::foliage_subrenderer>("demo/assets/shaders/foliage", sbx::graphics::pipeline::stage{1, 2}, foliage_task.grass_output_buffer(), foliage_task.draw_command_buffer());
+
+  // add_subrenderer<sbx::post::fxaa_filter>("demo/assets/shaders/fxaa", sbx::graphics::pipeline::stage{2, 0}, "resolve", "post0");
 
   // // Render stage 2
   add_subrenderer<sbx::editor::editor_subrenderer>("demo/assets/shaders/editor", sbx::graphics::pipeline::stage{2, 0}, "resolve");

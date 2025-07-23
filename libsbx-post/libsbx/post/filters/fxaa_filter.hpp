@@ -5,18 +5,16 @@
 
 namespace sbx::post {
 
-template<graphics::vertex Vertex>
-class fxaa_filter final : public filter<Vertex> {
+class fxaa_filter final : public filter {
 
-  using base_type = filter<Vertex>;
+  using base_type = filter;
 
 public:
 
-  using vertex_type = base_type::vertex_type;
-
-  fxaa_filter(const std::filesystem::path& path, const graphics::pipeline::stage& stage, const std::string& attachment_name)
+  fxaa_filter(const std::filesystem::path& path, const graphics::pipeline::stage& stage, const std::string& in_image, const std::string& out_image)
   : base_type{path, stage},
-    _attachment_name{attachment_name} { }
+    _in_image{in_image},
+    _out_image{out_image} { }
 
   ~fxaa_filter() override = default;
 
@@ -28,7 +26,8 @@ public:
 
     pipeline.bind(command_buffer);
 
-    descriptor_handler.push("image", graphics_module.attachment(_attachment_name));
+    descriptor_handler.push("in_image", graphics_module.attachment(_in_image));
+    descriptor_handler.push("out_image", graphics_module.attachment(_out_image));
 
     if (!descriptor_handler.update(pipeline)) {
       return;
@@ -36,12 +35,13 @@ public:
 
     descriptor_handler.bind_descriptors(command_buffer);
 
-    command_buffer.draw(6, 1, 0, 0);
+    command_buffer.draw(3, 1, 0, 0);
   }
 
 private:
 
-  std::string _attachment_name;
+  std::string _in_image;
+  std::string _out_image;
 
 }; // class blur_filter
 

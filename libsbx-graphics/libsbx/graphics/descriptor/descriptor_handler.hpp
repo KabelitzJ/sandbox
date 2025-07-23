@@ -78,7 +78,8 @@ private:
     auto descriptor_type = _pipeline->find_descriptor_type_at_binding(_set, *binding);
 
     if (!descriptor_type) {
-      throw std::runtime_error(fmt::format("Failed to find descriptor type for descriptor '{}'", name));
+
+      throw std::runtime_error(fmt::format("Failed to find descriptor type for descriptor '{}' set: {} binding {}", name, _set, *binding));
     }
 
     auto write_descriptor_set = descriptor.write_descriptor_set(*binding, *descriptor_type);
