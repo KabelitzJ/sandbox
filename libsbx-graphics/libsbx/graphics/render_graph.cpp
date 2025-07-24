@@ -1,82 +1,85 @@
-// #include <libsbx/graphics/render_graph.hpp>
+#include <libsbx/graphics/render_graph.hpp>
 
-// namespace sbx::graphics {
+#include <libsbx/utility/logger.hpp>
 
-// namespace detail {
+#include <libsbx/math/color.hpp>
 
-// auto graph_base::_reserve(const std::size_t capacity) -> void {
-//   base::reserve(capacity);
-// }
+namespace sbx::graphics {
 
-// auto graph_base::_erase(graph_node* node) -> void {
-//   base::erase(std::remove_if(base::begin(), base::end(), [&](auto& entry){ return entry.get() == node; }), base::end() );
-// } 
+attachment::attachment(const utility::hashed_string& name, type type, const math::color& clear_color, const graphics::format format, const graphics::address_mode address_mode) noexcept
+: _name{std::move(name)}, 
+  _type{type},
+  _clear_color{clear_color},
+  _format{format}, 
+  _address_mode{address_mode} { }
 
-// // graph_node::graph_node()
-// // : _data{nullptr},
-// //   _parent{nullptr},
-// //   _num_successors{0u} { }
+auto attachment::name() const noexcept -> const utility::hashed_string& {
+  return _name;
+}
 
-// // auto graph_node::num_successors() const -> std::size_t {
-// //   return _num_successors;
-// // }
+auto attachment::image_type() const noexcept -> type {
+  return _type;
+}
 
-// // auto graph_node::num_predecessors() const -> std::size_t {
-// //   return _edges.size() - _num_successors;
-// // }
+auto attachment::format() const noexcept -> graphics::format {
+  return _format;
+}
 
-// auto graph_node::name() const -> const std::string& {
-//   return _name;
-// }
+auto attachment::address_mode() const noexcept -> graphics::address_mode {
+  return _address_mode;
+}
 
-// auto graph_node::inputs() const -> const std::vector<std::string>& {
-//   return _inputs;
-// }
+auto attachment::clear_color() const noexcept -> const math::color& {
+  return _clear_color;
+}
 
-// auto graph_node::outputs() const -> const std::vector<attachment>& {
-//   return _outputs;
-// }
+namespace detail {
 
-// // auto graph_node::_precede(graph_node* node) -> void {
-// //   _edges.push_back(node);
-// //   std::swap(_edges[_num_successors++], _edges[_edges.size() - 1]);
-// //   node->_edges.push_back(this);
-// // }
+graphics_node::graphics_node(const utility::hashed_string& name)
+: _name{name} { }
 
-// // auto graph_node::_remove_successors(graph_node* node) -> void {
-// //   auto sit = std::remove(_edges.begin(), _edges.begin() + _num_successors, node);
-// //   size_t new_num_successors = std::distance(_edges.begin(), sit);
-// //   std::move(_edges.begin() + _num_successors, _edges.end(), sit);
-// //   _edges.resize(_edges.size() - (_num_successors - new_num_successors));
-// //   _num_successors = new_num_successors;
-// // }
+compute_node::compute_node(const utility::hashed_string& name)
+: _name{name} { }
 
-// // auto graph_node::_remove_predecessors(graph_node* node) -> void {
-// //   _edges.erase(std::remove(_edges.begin() + _num_successors, _edges.end(), node), _edges.end());
-// // }
+auto graph_base::reserve(const std::size_t size) -> void {
+  _nodes.reserve(size);
+}
 
-// // auto pass::name() const -> const std::string& {
-// //   return _node->name();
-// // }
+auto graphics_pass::name() const -> const utility::hashed_string& {
+  return _node._name;
+}
 
-// // auto pass::num_predecessors() const -> std::size_t {
-// //   return _node->num_predecessors();
-// // }
+auto graphics_pass::attachments() const -> const std::vector<attachment>& {
+  return _node._outputs;
+}
 
-// // auto pass::num_successors() const -> std::size_t {
-// //   return _node->num_predecessors();
-// // }
+graphics_pass::graphics_pass(graphics_node& node)
+: _node{node} { }
 
-// // pass::pass(graph_node* node)
-// // : _node{node} { }
+compute_pass::compute_pass(compute_node& node)
+: _node{node} { }
 
-// graph_builder::graph_builder(graph_base& graph)
-// : _graph{graph} { }
+auto context::graphics_pass(const utility::hashed_string& name) -> detail::graphics_pass {
+  return detail::graphics_pass{_graph.emplace_back<detail::graphics_node>(name)};
+}
 
-// } // namespace detail
+auto context::compute_pass(const utility::hashed_string& name) -> detail::compute_pass {
+  return detail::compute_pass{_graph.emplace_back<detail::compute_node>(name)};
+}
 
-// render_graph::render_graph(const std::string& name)
-// : base{_graph},
-//   _name{name} { }
+context::context(graph_base& graph)
+: _graph{graph} { }
 
-// } // namespace sbx::graphics
+graph_builder::graph_builder(graph_base& graph)
+: _graph{graph} { }
+
+auto graph_builder::build() -> void {
+  utility::logger<"graphics">::info("build");
+}
+
+} // namespace detail
+
+render_graph::render_graph() 
+: base{_graph} { }
+
+} // namespace sbx::graphics

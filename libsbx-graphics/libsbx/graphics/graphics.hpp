@@ -5,7 +5,6 @@
 
 #include <libsbx/graphics/graphics_module.hpp>
 #include <libsbx/graphics/renderer.hpp>
-#include <libsbx/graphics/render_stage.hpp>
 #include <libsbx/graphics/subrenderer.hpp>
 #include <libsbx/graphics/task.hpp>
 

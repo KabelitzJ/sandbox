@@ -17,7 +17,6 @@
 
 #include <libsbx/graphics/task.hpp>
 #include <libsbx/graphics/subrenderer.hpp>
-#include <libsbx/graphics/render_stage.hpp>
 #include <libsbx/graphics/render_graph.hpp>
 
 namespace sbx::graphics {

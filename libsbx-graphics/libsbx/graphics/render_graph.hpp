@@ -48,32 +48,17 @@ public:
     swapchain
   }; // enum class type
 
-  attachment(const utility::hashed_string& name, type type, const math::color& clear_color = math::color::black(), const format format = format::r8g8b8a8_unorm, const address_mode address_mode = address_mode::repeat) noexcept
-  : _name{std::move(name)}, 
-    _type{type},
-    _clear_color{clear_color},
-    _format{format}, 
-    _address_mode{address_mode} { }
+  attachment(const utility::hashed_string& name, type type, const math::color& clear_color = math::color::black(), const format format = format::r8g8b8a8_unorm, const address_mode address_mode = address_mode::repeat) noexcept;
 
-  auto name() const noexcept -> const utility::hashed_string& {
-    return _name;
-  }
+  auto name() const noexcept -> const utility::hashed_string&;
 
-  auto image_type() const noexcept -> type {
-    return _type;
-  }
+  auto image_type() const noexcept -> type;
 
-  auto format() const noexcept -> graphics::format {
-    return _format;
-  }
+  auto format() const noexcept -> graphics::format;
 
-  auto address_mode() const noexcept -> graphics::address_mode {
-    return _address_mode;
-  }
+  auto address_mode() const noexcept -> graphics::address_mode;
 
-  auto clear_color() const noexcept -> const math::color& {
-    return _clear_color;
-  }
+  auto clear_color() const noexcept -> const math::color&;
 
 private:
 
@@ -94,20 +79,15 @@ class graphics_node {
 
 public:
 
-  graphics_node(const utility::hashed_string& name)
-  : _name{name} { }
+  graphics_node(const utility::hashed_string& name);
 
-  template<typename... Names>
-  requires (... && (std::is_same_v<std::remove_cvref_t<Names>, utility::hashed_string> || std::is_constructible_v<utility::hashed_string, Names>))
-  void uses(Names&&... names) {
-    (_inputs.emplace_back(std::forward<Names>(names)), ...);
-  }
+  // template<typename... Names>
+  // requires (... && (std::is_same_v<std::remove_cvref_t<Names>, utility::hashed_string> || std::is_constructible_v<utility::hashed_string, Names>))
+  // auto uses(Names&&... names) -> void;
 
-  template<typename... Args>
-  requires std::is_constructible_v<attachment, Args...>
-  void produces(Args&&... args) {
-    _outputs.emplace_back(std::forward<Args>(args)...);
-  }
+  // template<typename... Args>
+  // requires (std::is_constructible_v<attachment, Args...>)
+  // auto produces(Args&&... args) -> void;
 
 private:
 
@@ -124,8 +104,7 @@ class compute_node {
 
 public:
 
-  compute_node(const utility::hashed_string& name)
-  : _name{name} { }
+  compute_node(const utility::hashed_string& name);
 
 private:
 
@@ -138,14 +117,9 @@ class graph_base  {
 public:
 
   template<typename Type, typename... Args>
-  auto emplace_back(Args&&... args) -> Type& {
-    _nodes.emplace_back(std::in_place_type_t<Type>{}, std::forward<Args>(args)...);
-    return std::get<Type>(_nodes.back());
-  }
+  auto emplace_back(Args&&... args) -> Type&;
 
-  auto reserve(const std::size_t size) -> void {
-    _nodes.reserve(size);
-  }
+  auto reserve(const std::size_t size) -> void;
 
 private:
 
@@ -161,28 +135,19 @@ public:
 
   template<typename... Names>
   requires (... && (std::is_same_v<std::remove_cvref_t<Names>, utility::hashed_string> || std::is_constructible_v<utility::hashed_string, Names>))
-  void uses(Names&&... names) {
-    (_node._inputs.emplace_back(std::forward<Names>(names)), ...);
-  }
+  auto uses(Names&&... names) -> void;
 
   template<typename... Args>
   requires (std::is_constructible_v<attachment, Args...>)
-  void produces(Args&&... args) {
-    _node._outputs.emplace_back(std::forward<Args>(args)...);
-  }
+  auto produces(Args&&... args) -> void;
 
-  auto name() const -> const utility::hashed_string& {
-    return _node._name;
-  }
+  auto name() const -> const utility::hashed_string&;
 
-  auto attachments() const -> const std::vector<attachment>& {
-    return _node._outputs;
-  }
+  auto attachments() const -> const std::vector<attachment>&;
 
 private:
 
-  graphics_pass(graphics_node& node)
-  : _node{node} { }
+  graphics_pass(graphics_node& node);
 
   graphics_node& _node;
 
@@ -196,8 +161,7 @@ public:
 
 private:
 
-  compute_pass(compute_node& node)
-  : _node{node} { }
+  compute_pass(compute_node& node);
 
   compute_node& _node;
 
@@ -209,18 +173,13 @@ class context {
 
 public:
 
-  auto graphics_pass(const utility::hashed_string& name) -> detail::graphics_pass {
-    return detail::graphics_pass{_graph.emplace_back<detail::graphics_node>(name)};
-  }
+  auto graphics_pass(const utility::hashed_string& name) -> detail::graphics_pass;
 
-  auto compute_pass(const utility::hashed_string& name) -> detail::compute_pass {
-    return detail::compute_pass{_graph.emplace_back<detail::compute_node>(name)};
-  }
+  auto compute_pass(const utility::hashed_string& name) -> detail::compute_pass;
 
 private:
 
-  context(graph_base& graph)
-  : _graph{graph} { }
+  context(graph_base& graph); 
 
   graph_base& _graph;
 
@@ -230,33 +189,21 @@ class graph_builder {
 
 public:
 
-  graph_builder(graph_base& graph)
-  : _graph{graph} { }
+  graph_builder(graph_base& graph);
 
   template <typename Callable>
   requires (std::is_invocable_r_v<graphics_pass, Callable, context&>)
-  auto emplace(Callable&& callable) -> graphics_pass {
-    auto ctx = context{_graph};
-    return std::invoke(callable, ctx);
-  }
+  auto emplace(Callable&& callable) -> graphics_pass;
 
   template <typename Callable>
   requires (std::is_invocable_r_v<compute_pass, Callable, context&>)
-  auto emplace(Callable&& callable) -> compute_pass {
-    auto ctx = context{_graph};
-    return std::invoke(callable, ctx);
-  }
+  auto emplace(Callable&& callable) -> compute_pass;
 
   template<typename... Callables>
   requires (sizeof...(Callables) > 1u)
-  auto emplace(Callables&&... callables) -> decltype(auto) {
-    _graph.reserve(sizeof...(callables));
-    return std::tuple{emplace(std::forward<Callables>(callables))...};
-  }
+  auto emplace(Callables&&... callables) -> decltype(auto);
 
-  auto build() -> void {
-    utility::logger<"graphics">::info("build");
-  }
+  auto build() -> void;
 
 private:
 
@@ -276,8 +223,7 @@ public:
   using compute_pass = detail::compute_pass;
   using context = detail::context;
 
-  render_graph() 
-  : base{_graph} { }
+  render_graph();
 
 private:
 

@@ -42,7 +42,6 @@
 #include <libsbx/graphics/images/cube_image.hpp>
 
 #include <libsbx/graphics/renderer.hpp>
-#include <libsbx/graphics/render_stage.hpp>
 
 #include <libsbx/graphics/resource_storage.hpp>
 
