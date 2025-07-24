@@ -1,5 +1,7 @@
 #include <libsbx/graphics/images/depth_image.hpp>
 
+#include <libsbx/utility/logger.hpp>
+
 #include <libsbx/graphics/graphics_module.hpp>
 
 namespace sbx::graphics {
@@ -22,6 +24,8 @@ depth_image::depth_image(const math::vector2u& extent, VkSampleCountFlagBits sam
 
   if (has_stencil_component(_format)) {
     aspect_mask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+  } else {
+    utility::logger<"graphics">::warn("Depth format '{}' does not have a stencil component", _format);
   }
 
   create_image(_handle, _allocation, _extent, _format, _samples, VK_IMAGE_TILING_OPTIMAL, _usage, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, 1, 1, VK_IMAGE_TYPE_2D);
