@@ -13,20 +13,20 @@ class subrenderer {
 
 public:
 
-  subrenderer(const render_graph::pass& pass)
+  subrenderer(const render_graph::graphics_pass& pass)
   : _pass{pass} { }
 
   virtual ~subrenderer() = default;
 
   virtual auto render(command_buffer& command_buffer) -> void = 0;
 
-  auto pass() const noexcept -> const render_graph::pass& {
+  auto pass() const noexcept -> const render_graph::graphics_pass& {
     return _pass;
   }
 
 private:
 
-  render_graph::pass _pass;
+  render_graph::graphics_pass _pass;
 
 }; // class subrenderer
 

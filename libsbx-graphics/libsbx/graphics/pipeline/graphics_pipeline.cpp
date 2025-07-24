@@ -29,8 +29,9 @@
 
 namespace sbx::graphics {
 
-graphics_pipeline::graphics_pipeline(const std::filesystem::path& path, const render_graph::pass& pass, const pipeline_definition& default_definition, const VkSpecializationInfo* specialization_info)
-: base{pass},
+graphics_pipeline::graphics_pipeline(const std::filesystem::path& path, const render_graph::graphics_pass& pass, const pipeline_definition& default_definition, const VkSpecializationInfo* specialization_info)
+: base{},
+  _pass{pass},
   _bind_point{VK_PIPELINE_BIND_POINT_GRAPHICS} {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 

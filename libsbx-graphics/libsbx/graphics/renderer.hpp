@@ -65,8 +65,8 @@ public:
 protected:
 
   template<typename Type, typename... Args>
-  requires (std::is_constructible_v<Type, const std::filesystem::path&, const render_graph::pass&, Args...>)
-  auto add_subrenderer(const std::filesystem::path& path, const render_graph::pass& pass, Args&&... args) -> Type& {
+  requires (std::is_constructible_v<Type, const std::filesystem::path&, const render_graph::graphics_pass&, Args...>)
+  auto add_subrenderer(const std::filesystem::path& path, const render_graph::graphics_pass& pass, Args&&... args) -> Type& {
     auto result = _subrenderers.insert({pass.name(), std::make_unique<Type>(path, pass, std::forward<Args>(args)...)});
 
     return *static_cast<Type*>(result->second.get());

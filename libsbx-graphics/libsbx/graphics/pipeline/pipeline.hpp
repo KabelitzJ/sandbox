@@ -21,8 +21,7 @@ class pipeline : public utility::noncopyable {
 
 public:
 
-  pipeline(const render_graph::pass& pass)
-  : _pass{pass} { }
+  pipeline() { }
 
   virtual ~pipeline() = default;
 
@@ -55,10 +54,6 @@ public:
   virtual auto find_descriptor_binding(const std::string& name, std::uint32_t set) const -> std::optional<std::uint32_t> = 0;
 
   virtual auto find_descriptor_type_at_binding(std::uint32_t set, std::uint32_t binding) const -> std::optional<VkDescriptorType> = 0;
-
-protected:
-
-  render_graph::pass _pass;
 
 }; // class pipeline
 

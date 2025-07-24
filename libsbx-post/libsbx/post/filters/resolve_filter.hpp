@@ -37,7 +37,7 @@ class resolve_filter final : public filter {
 
 public:
 
-  resolve_filter(const std::filesystem::path& path, const graphics::render_graph::pass& pass, std::vector<std::pair<std::string, std::string>>&& attachment_names)
+  resolve_filter(const std::filesystem::path& path, const graphics::render_graph::graphics_pass& pass, std::vector<std::pair<std::string, std::string>>&& attachment_names)
   : base_type{path, pass},
     _attachment_names{std::move(attachment_names)} { }
 

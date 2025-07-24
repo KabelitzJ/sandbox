@@ -49,7 +49,7 @@ class shadow_subrenderer : public graphics::subrenderer {
 
 public:
 
-  shadow_subrenderer(const std::filesystem::path& path, const graphics::render_graph::pass& pass)
+  shadow_subrenderer(const std::filesystem::path& path, const graphics::render_graph::graphics_pass& pass)
   : graphics::subrenderer{pass},
     _pipeline{path, pass} { }
 

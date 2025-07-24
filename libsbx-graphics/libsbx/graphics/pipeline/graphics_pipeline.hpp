@@ -100,7 +100,7 @@ class graphics_pipeline : public pipeline {
 
 public:
 
-  graphics_pipeline(const std::filesystem::path& path, const render_graph::pass& pass, const pipeline_definition& default_definition = pipeline_definition{}, const VkSpecializationInfo* specialization_info = nullptr);
+  graphics_pipeline(const std::filesystem::path& path, const render_graph::graphics_pass& pass, const pipeline_definition& default_definition = pipeline_definition{}, const VkSpecializationInfo* specialization_info = nullptr);
 
   ~graphics_pipeline() override;
 
@@ -175,6 +175,8 @@ private:
   auto _update_definition(const std::filesystem::path& path, const pipeline_definition default_definition) -> pipeline_definition;
 
   auto _get_stage_from_name(const std::string& name) const noexcept -> VkShaderStageFlagBits;
+
+  render_graph::graphics_pass _pass;
 
   std::unordered_map<VkShaderStageFlagBits, std::unique_ptr<shader>> _shaders{};
 

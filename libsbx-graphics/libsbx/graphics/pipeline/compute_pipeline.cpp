@@ -15,8 +15,9 @@
 
 namespace sbx::graphics {
 
-compute_pipeline::compute_pipeline(const std::filesystem::path& path, const render_graph::pass& pass)
-: base{pass},
+compute_pipeline::compute_pipeline(const std::filesystem::path& path, const render_graph::compute_pass& pass)
+: base{},
+  _pass{pass},
   _bind_point{VK_PIPELINE_BIND_POINT_COMPUTE} {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 

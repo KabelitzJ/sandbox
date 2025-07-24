@@ -31,7 +31,7 @@ public:
 
   using pipeline_type = graphics::graphics_pipeline;
 
-  filter(const std::filesystem::path& path, const graphics::render_graph::pass& pass)
+  filter(const std::filesystem::path& path, const graphics::render_graph::graphics_pass& pass)
   : graphics::subrenderer{pass},
     _pipeline{path, pass, pipeline_definition},
     _descriptor_handler{_pipeline, 0u} { }

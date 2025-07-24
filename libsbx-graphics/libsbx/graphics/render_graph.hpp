@@ -157,17 +157,12 @@ public:
     swapchain
   }; // enum class type
 
-  attachment(const std::uint32_t binding, const std::string& name, type type, const math::color& clear_color = math::color::black(), const format format = format::r8g8b8a8_unorm, const address_mode address_mode = address_mode::repeat) noexcept
-  : _binding{binding}, 
-    _name{std::move(name)}, 
+  attachment(const std::string& name, type type, const math::color& clear_color = math::color::black(), const format format = format::r8g8b8a8_unorm, const address_mode address_mode = address_mode::repeat) noexcept
+  : _name{std::move(name)}, 
     _type{type},
     _clear_color{clear_color},
     _format{format}, 
     _address_mode{address_mode} { }
-
-  auto binding() const noexcept -> std::uint32_t {
-    return _binding;
-  }
 
   auto name() const noexcept -> const std::string& {
     return _name;
@@ -191,7 +186,6 @@ public:
 
 private:
 
-  std::uint32_t _binding;
   std::string _name;
   type _type;
   bool _is_multi_sampled;
@@ -204,7 +198,7 @@ private:
 class graph_node {
   
   friend class graph_builder;
-  friend class pass;
+  friend class graphics_pass;
 
   struct graphics_pass_node {
 
@@ -259,40 +253,44 @@ private:
   std::vector<graph_node*> _edges;
   node_handle _handle;
 
-  std::vector<attachment> _attachments;
+  std::vector<attachment> _outputs;
+  std::vector<std::string> _inputs;
 
 }; // class graph_node
 
-class pass {
+// class pass {
 
-  friend class graph_builder;
+//   friend class graph_builder;
 
-public:
+// public:
 
-  auto name() const -> const std::string&;
+//   auto name() const -> const std::string&;
 
-  auto num_predecessors() const -> std::size_t;
-  auto num_successors() const -> std::size_t;
+//   auto num_predecessors() const -> std::size_t;
+//   auto num_successors() const -> std::size_t;
 
-  template<typename... Passes>
-  auto precede(Passes&&... passes) -> pass&;
+//   // template<typename... Passes>
+//   // auto precede(Passes&&... passes) -> pass&;
 
-  template<typename... Passes>
-  auto succeed(Passes&&... passes) -> pass&;
+//   // template<typename... Passes>
+//   // auto succeed(Passes&&... passes) -> pass&;
 
-  auto attachments() const -> const std::vector<attachment>& {
-    return _node->attachments();
-  }
+//   auto attachments() const -> const std::vector<attachment>& {
+//     return _node->attachments();
+//   }
 
-private:
+// private:
 
-  pass(graph_node* node);
+//   pass(graph_node* node);
 
-  graph_node* _node;
+//   graph_node* _node;
 
-}; // class pass
+// }; // class pass
 
 class graph_builder {
+
+  friend class graphics_pass;
+  friend class compute_pass;
 
 public:
 
@@ -300,11 +298,11 @@ public:
 
   template <typename Callable>
   requires (is_graphics_pass_v<Callable>)
-  auto emplace(Callable&& callable) -> pass;
+  auto emplace(Callable&& callable) -> graphics_pass;
 
   template <typename Callable>
   requires (is_compute_pass_v<Callable>)
-  auto emplace(Callable&& callable) -> pass;
+  auto emplace(Callable&& callable) -> compute_pass;
 
   template<typename... Callables>
   requires (sizeof...(Callables) > 1u)
@@ -314,27 +312,59 @@ protected:
 
   graph_base& _graph;
 
+  auto foo() -> void {
+    for (auto& node : _graph) {
+
+    }
+  }
+
 private:
 
 }; // class graph_builder
 
 class graphics_pass {
 
+  friend class graph_builder;
+
 public:
 
-  auto input(const std::string& name) -> void {
-    // _inputs.emplace_back(std::forward<Args>(args)...);
-  }
+  template<typename... Names>
+  requires (... && (std::is_same_v<std::decay_t<Names>, std::string> || std::is_constructible_v<std::string, Names>))
+  auto input(Names&&... names) -> void;
 
   template<typename... Args>
   requires (std::is_constructible_v<attachment, Args...>)
-  auto output(Args&&... args) -> void {
-    // _outputs.emplace_back(std::forward<Args>(args)...);
+  auto output(Args&&... args) -> void;
+
+  auto name() const noexcept -> const std::string& {
+    return _node->name();
   }
+
+  auto attachments() const -> const std::vector<attachment>& {
+    return _node->_outputs;
+  }
+
+private:
+
+  graphics_pass(graph_node* node)
+  : _node{node} { }
+
+  graph_node* _node;
 
 }; // class graphics_pass
 
 class compute_pass {
+
+  friend class graph_builder;
+
+public:
+
+private:
+
+  compute_pass(graph_node* node)
+  : _node{node} { }
+
+  graph_node* _node;
 
 }; // class compute_pass
 
@@ -368,7 +398,6 @@ class render_graph : public detail::graph_builder {
 
 public:
 
-  using pass = detail::pass;
   using graphics_pass = detail::graphics_pass;
   using compute_pass = detail::compute_pass;
   using attachment = detail::attachment;

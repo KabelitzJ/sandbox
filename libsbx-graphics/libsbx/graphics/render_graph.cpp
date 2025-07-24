@@ -30,7 +30,7 @@ auto graph_node::name() const -> const std::string& {
 }
 
 auto graph_node::attachments() const -> const std::vector<attachment>& {
-  return _attachments;
+  return _outputs;
 }
 
 auto graph_node::_precede(graph_node* node) -> void {
@@ -51,20 +51,20 @@ auto graph_node::_remove_predecessors(graph_node* node) -> void {
   _edges.erase(std::remove(_edges.begin() + _num_successors, _edges.end(), node), _edges.end());
 }
 
-auto pass::name() const -> const std::string& {
-  return _node->name();
-}
+// auto pass::name() const -> const std::string& {
+//   return _node->name();
+// }
 
-auto pass::num_predecessors() const -> std::size_t {
-  return _node->num_predecessors();
-}
+// auto pass::num_predecessors() const -> std::size_t {
+//   return _node->num_predecessors();
+// }
 
-auto pass::num_successors() const -> std::size_t {
-  return _node->num_predecessors();
-}
+// auto pass::num_successors() const -> std::size_t {
+//   return _node->num_predecessors();
+// }
 
-pass::pass(graph_node* node)
-: _node{node} { }
+// pass::pass(graph_node* node)
+// : _node{node} { }
 
 graph_builder::graph_builder(graph_base& graph)
 : _graph{graph} { }
