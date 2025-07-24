@@ -26,8 +26,7 @@ class renderer : utility::noncopyable {
 
 public:
 
-  renderer(const std::string& name)
-  : _graph{name} { }
+  renderer() = default;
 
   virtual ~renderer() = default;
 
@@ -72,6 +71,22 @@ protected:
     return *static_cast<Type*>(result->second.get());
   }
 
+  template<typename... Callables>
+  requires (sizeof...(Callables) > 1u)
+  auto create_graph(Callables&&... callables) -> decltype(auto) {
+    utility::logger<"graphics">::info("create_graph1");
+
+    auto passes = _graph.emplace(std::forward<Callables>(callables)...);
+    
+    utility::logger<"graphics">::info("create_graph2");
+
+    _graph.build();
+
+    utility::logger<"graphics">::info("create_graph3");
+
+    return passes;
+  }
+
   // template<typename Type, typename... Args>
   // requires (std::is_constructible_v<Type, std::filesystem::path, Args...>)
   // auto add_task(const std::filesystem::path& path, Args&&... args) -> Type& {
@@ -79,10 +94,6 @@ protected:
 
   //   return *static_cast<Type*>(_tasks.back().get());
   // }
-
-  auto graph() noexcept -> render_graph& {
-    return _graph;
-  }
 
 private:
 

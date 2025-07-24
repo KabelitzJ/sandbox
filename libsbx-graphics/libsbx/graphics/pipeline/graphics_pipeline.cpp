@@ -309,7 +309,7 @@ graphics_pipeline::graphics_pipeline(const std::filesystem::path& path, const re
   auto depth_format = VK_FORMAT_UNDEFINED;
 
   for (const auto& attachment : attachments) {
-    if (attachment.image_type() == render_graph::attachment::type::depth) {
+    if (attachment.image_type() == attachment::type::depth) {
       depth_format = to_vk_enum<VkFormat>(attachment.format());
     } else {
       color_formats.push_back(to_vk_enum<VkFormat>(attachment.format()));

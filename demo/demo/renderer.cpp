@@ -33,8 +33,7 @@ namespace demo {
 
 
 renderer::renderer()
-: base{"Demo Renderer"},
-  _clear_color{sbx::math::color::black()} {
+: _clear_color{sbx::math::color::black()} {
   // Render stage 0: Shadow map
   // {
   //   auto attachments = std::vector<sbx::graphics::attachment>{
@@ -49,29 +48,33 @@ renderer::renderer()
   //   add_render_stage(std::move(attachments), std::move(subpass_bindings), sbx::graphics::viewport{sbx::math::vector2u{2048, 2048}});
   // }
 
-  auto [deferred, resolve] = graph().emplace(
-    [&](sbx::graphics::render_graph::context& context) -> sbx::graphics::render_graph::graphics_pass& {
-      auto& deferred_pass = context.graphics_pass("deferred");
+  using namespace sbx::utility::literals;
 
-      deferred_pass.output("depth", sbx::graphics::render_graph::attachment::type::depth);
-      deferred_pass.output("albedo", sbx::graphics::render_graph::attachment::type::image, _clear_color, sbx::graphics::format::r8g8b8a8_unorm);
-      deferred_pass.output("position", sbx::graphics::render_graph::attachment::type::image, _clear_color, sbx::graphics::format::r32g32b32a32_sfloat);
-      deferred_pass.output("normal", sbx::graphics::render_graph::attachment::type::image, _clear_color, sbx::graphics::format::r32g32b32a32_sfloat);
-      deferred_pass.output("material", sbx::graphics::render_graph::attachment::type::image, _clear_color, sbx::graphics::format::r8g8b8a8_unorm);
-      deferred_pass.output("object_id", sbx::graphics::render_graph::attachment::type::image, _clear_color, sbx::graphics::format::r32g32_uint);
-      deferred_pass.output("normalized_depth", sbx::graphics::render_graph::attachment::type::image, sbx::math::color{1.0f, 1.0f, 1.0f, 1.0f}, sbx::graphics::format::r32_sfloat);
+  auto [deferred, resolve] = create_graph(
+    [&](sbx::graphics::render_graph::context& context) -> sbx::graphics::render_graph::graphics_pass& {
+      auto& deferred_pass = context.graphics_pass("deferred"_hs);
+
+      deferred_pass.produces("depth"_hs, sbx::graphics::attachment::type::depth);
+      deferred_pass.produces("albedo"_hs, sbx::graphics::attachment::type::image, _clear_color, sbx::graphics::format::r8g8b8a8_unorm);
+      deferred_pass.produces("position"_hs, sbx::graphics::attachment::type::image, _clear_color, sbx::graphics::format::r32g32b32a32_sfloat);
+      deferred_pass.produces("normal"_hs, sbx::graphics::attachment::type::image, _clear_color, sbx::graphics::format::r32g32b32a32_sfloat);
+      deferred_pass.produces("material"_hs, sbx::graphics::attachment::type::image, _clear_color, sbx::graphics::format::r8g8b8a8_unorm);
+      deferred_pass.produces("object_id"_hs, sbx::graphics::attachment::type::image, _clear_color, sbx::graphics::format::r32g32_uint);
+      deferred_pass.produces("normalized_depth"_hs, sbx::graphics::attachment::type::image, sbx::math::color{1.0f, 1.0f, 1.0f, 1.0f}, sbx::graphics::format::r32_sfloat);
+
+      sbx::utility::logger<"demo">::info("deferred pass");
 
       return deferred_pass;
     },
     [&](sbx::graphics::render_graph::context& context) -> sbx::graphics::render_graph::graphics_pass& {
-      using namespace std::string_literals;      
+      auto& resolve_pass = context.graphics_pass("resolve"_hs);
 
-      auto& resolve_pass = context.graphics_pass("resolve");
+      resolve_pass.uses("albedo"_hs, "position"_hs, "normal"_hs, "material"_hs, "object_id"_hs);
 
-      resolve_pass.input("albedo", "position", "normal", "material", "object_id");
+      resolve_pass.produces("swapchain"_hs, sbx::graphics::attachment::type::swapchain, _clear_color, sbx::graphics::format::r8g8b8a8_unorm);
 
-      resolve_pass.output("swapchain", sbx::graphics::render_graph::attachment::type::swapchain, _clear_color, sbx::graphics::format::r8g8b8a8_unorm);
-      
+      sbx::utility::logger<"demo">::info("resolve pass");
+
       return resolve_pass;
     }
   );

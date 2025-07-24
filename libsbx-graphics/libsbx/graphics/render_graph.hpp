@@ -11,123 +11,14 @@
 
 #include <vulkan/vulkan.h>
 
+#include <libsbx/utility/logger.hpp>
+#include <libsbx/utility/hashed_string.hpp>
+
 #include <libsbx/math/color.hpp>
 
 #include <libsbx/memory/observer_ptr.hpp>
 
 namespace sbx::graphics {
-
-namespace detail {
-
-// enum class node_state : std::uint32_t {
-//   none           = 0x00000000,
-//   conditioned    = 0x10000000,
-//   preempted      = 0x20000000,
-//   retain_subflow = 0x40000000,
-//   joined_subflow = 0x80000000
-// }; // enum class node_state
-
-// enum class error_state : std::uint32_t {
-//   none      = 0x00000000,
-//   exception = 0x10000000,
-//   cancelled = 0x20000000,
-//   anchored  = 0x40000000
-// }; // enum class node_state
-
-template<typename T, typename>
-struct get_index;
-
-template<std::size_t I, typename... Ts>
-struct get_index_impl {};
-
-template<std::size_t I, typename T, typename... Ts>
-struct get_index_impl<I, T, T, Ts...> : std::integral_constant<std::size_t, I>{};
-
-template<std::size_t I, typename T, typename U, typename... Ts>
-struct get_index_impl<I, T, U, Ts...> : get_index_impl<I+1u, T, Ts...>{};
-
-template<typename T, typename... Ts>
-struct get_index<T, std::variant<Ts...>> : get_index_impl<0u, T, Ts...>{};
-
-template<typename T, typename... Ts>
-constexpr auto get_index_v = get_index<T, Ts...>::value;
-
-class graph_node;
-class graph_base;
-class graph_builder;
-class task;
-class sub_graph;
-class graph_context;
-class graphics_pass;
-class compute_pass;
-
-class graph_base : std::vector<std::unique_ptr<graph_node>> {
-
-  friend class graph_node;
-  friend class graph_builder;
-
-  using base = std::vector<std::unique_ptr<graph_node>>;
-
-public:
-
-  graph_base() = default;
-
-  graph_base(const graph_base& other) = delete;
-
-  graph_base(graph_base&& other) = default;
-
-  auto operator=(const graph_base& other) -> graph_base& = delete;
-
-  auto operator=(graph_base&& other) -> graph_base& = default;
-
-private:
-
-  auto _reserve(const std::size_t capacity) -> void;
-
-  auto _erase(graph_node* node) -> void;
-
-  template<typename... Args>
-  auto _emplace_back(Args&&... args) -> graph_node*;
-
-}; // class graph_base
-
-struct graphics_pass_parameters {
-  std::string name;
-  void* data;
-}; // struct graphics_pass_parameters
-
-struct default_graphics_pass_parameters { };
-
-template<typename Type>
-constexpr bool is_graphics_pass_params_v = std::is_same_v<std::decay_t<Type>, graphics_pass_parameters> || std::is_same_v<std::decay_t<Type>, default_graphics_pass_parameters> || std::is_constructible_v<std::string, Type>;
-
-template<typename Callable, typename = void>
-struct is_graphics_pass : std::false_type{ };
-
-template<typename Callable>
-struct is_graphics_pass<Callable, std::enable_if_t<std::is_invocable_r_v<graphics_pass&, Callable, graph_context&>>> : std::true_type { };
-
-template <typename Callable>
-constexpr bool is_graphics_pass_v = is_graphics_pass<Callable>::value;
-
-struct compute_pass_parameters {
-  std::string name;
-  void* data;
-}; // struct graphics_pass_parameters
-
-struct default_compute_pass_parameters { };
-
-template<typename Type>
-constexpr bool is_compute_pass_params_v = std::is_same_v<std::decay_t<Type>, compute_pass_parameters> || std::is_same_v<std::decay_t<Type>, default_compute_pass_parameters> || std::is_constructible_v<std::string, Type>;
-
-template<typename Callable, typename = void>
-struct is_compute_pass : std::false_type{ };
-
-template<typename Callable>
-struct is_compute_pass<Callable, std::enable_if_t<std::is_invocable_r_v<compute_pass&, Callable, graph_context&>>> : std::true_type { };
-
-template <typename Callable>
-constexpr bool is_compute_pass_v = is_compute_pass<Callable>::value;
 
 enum class format : std::uint32_t {
   undefined = VK_FORMAT_UNDEFINED,
@@ -157,14 +48,14 @@ public:
     swapchain
   }; // enum class type
 
-  attachment(const std::string& name, type type, const math::color& clear_color = math::color::black(), const format format = format::r8g8b8a8_unorm, const address_mode address_mode = address_mode::repeat) noexcept
+  attachment(const utility::hashed_string& name, type type, const math::color& clear_color = math::color::black(), const format format = format::r8g8b8a8_unorm, const address_mode address_mode = address_mode::repeat) noexcept
   : _name{std::move(name)}, 
     _type{type},
     _clear_color{clear_color},
     _format{format}, 
     _address_mode{address_mode} { }
 
-  auto name() const noexcept -> const std::string& {
+  auto name() const noexcept -> const utility::hashed_string& {
     return _name;
   }
 
@@ -172,11 +63,11 @@ public:
     return _type;
   }
 
-  auto format() const noexcept -> detail::format {
+  auto format() const noexcept -> graphics::format {
     return _format;
   }
 
-  auto address_mode() const noexcept -> detail::address_mode {
+  auto address_mode() const noexcept -> graphics::address_mode {
     return _address_mode;
   }
 
@@ -186,231 +77,160 @@ public:
 
 private:
 
-  std::string _name;
+  utility::hashed_string _name;
   type _type;
   bool _is_multi_sampled;
   math::color _clear_color;
-  detail::format _format;
-  detail::address_mode _address_mode;
+  graphics::format _format;
+  graphics::address_mode _address_mode;
 
 }; // class attachment
 
-class graph_node {
+namespace detail {
   
-  friend class graph_builder;
-  friend class graphics_pass;
-
-  struct graphics_pass_node {
-
-    template<typename Callable>
-    graphics_pass_node(Callable&& callable);
-    
-    std::function<void(graph_context&)> work;
-  }; // struct graphics_pass_node
-
-  struct compute_pass_node {
-
-    template<typename Callable>
-    compute_pass_node(Callable&& callable);
-
-    std::function<void(graph_context&)> work;
-  }; // struct compute_pass_node
-
-  using node_handle = std::variant<std::monostate, graphics_pass_node, compute_pass_node>;
-
-public:
-
-  inline static constexpr auto placeholder = get_index_v<std::monostate, node_handle>;
-  inline static constexpr auto graphics_pass = get_index_v<graphics_pass_node, node_handle>;
-  inline static constexpr auto compute_pass = get_index_v<compute_pass_node, node_handle>;
-
-  graph_node();
-  
-  template<typename... Args>
-  graph_node(const graphics_pass_parameters& parameters, graph_node* parent, Args&&...);
-  
-  template<typename... Args>
-  graph_node(const default_graphics_pass_parameters& parameters, graph_node* parent, Args&&...);
-
-  auto num_successors() const -> std::size_t;
-  auto num_predecessors() const -> std::size_t;
-
-  auto name() const -> const std::string&;
-
-  auto attachments() const -> const std::vector<attachment>&;
-
-private:
-
-  auto _precede(graph_node* node) -> void;
-  auto _remove_successors(graph_node* node) -> void;
-  auto _remove_predecessors(graph_node* node) -> void;
-
-  // node_state _state;
-  std::string _name;
-  void* _data;
-  graph_node* _parent;
-  std::size_t _num_successors;
-  std::vector<graph_node*> _edges;
-  node_handle _handle;
-
-  std::vector<attachment> _outputs;
-  std::vector<std::string> _inputs;
-
-}; // class graph_node
-
-// class pass {
-
-//   friend class graph_builder;
-
-// public:
-
-//   auto name() const -> const std::string&;
-
-//   auto num_predecessors() const -> std::size_t;
-//   auto num_successors() const -> std::size_t;
-
-//   // template<typename... Passes>
-//   // auto precede(Passes&&... passes) -> pass&;
-
-//   // template<typename... Passes>
-//   // auto succeed(Passes&&... passes) -> pass&;
-
-//   auto attachments() const -> const std::vector<attachment>& {
-//     return _node->attachments();
-//   }
-
-// private:
-
-//   pass(graph_node* node);
-
-//   graph_node* _node;
-
-// }; // class pass
-
-class graph_builder {
-
-  friend class graphics_pass;
-  friend class compute_pass;
-
-public:
-
-  graph_builder(graph_base& graph);
-
-  template <typename Callable>
-  requires (is_graphics_pass_v<Callable>)
-  auto emplace(Callable&& callable) -> graphics_pass;
-
-  template <typename Callable>
-  requires (is_compute_pass_v<Callable>)
-  auto emplace(Callable&& callable) -> compute_pass;
-
-  template<typename... Callables>
-  requires (sizeof...(Callables) > 1u)
-  auto emplace(Callables&&... callables) -> decltype(auto);
-
-protected:
-
-  graph_base& _graph;
-
-  auto foo() -> void {
-    for (auto& node : _graph) {
-
-    }
-  }
-
-private:
-
-}; // class graph_builder
-
 class graphics_pass {
 
-  friend class graph_builder;
-
 public:
 
+  graphics_pass(const utility::hashed_string& name)
+  : _name(name) { }
+
   template<typename... Names>
-  requires (... && (std::is_same_v<std::decay_t<Names>, std::string> || std::is_constructible_v<std::string, Names>))
-  auto input(Names&&... names) -> void;
+  requires (... && (std::is_same_v<std::remove_cvref_t<Names>, utility::hashed_string> || std::is_constructible_v<utility::hashed_string, Names>))
+  void uses(Names&&... names) {
+    (_inputs.emplace_back(std::forward<Names>(names)), ...);
+  }
 
   template<typename... Args>
-  requires (std::is_constructible_v<attachment, Args...>)
-  auto output(Args&&... args) -> void;
+  requires std::is_constructible_v<attachment, Args...>
+  void produces(Args&&... args) {
+    _outputs.emplace_back(std::forward<Args>(args)...);
+  }
 
-  auto name() const noexcept -> const std::string& {
-    return _node->name();
+  auto name() const -> const utility::hashed_string& {
+    return _name;
   }
 
   auto attachments() const -> const std::vector<attachment>& {
-    return _node->_outputs;
+    return _outputs;
   }
 
 private:
 
-  graphics_pass(graph_node* node)
-  : _node{node} { }
+  utility::hashed_string _name;
 
-  graph_node* _node;
+  std::vector<utility::hashed_string> _inputs;
+  std::vector<attachment> _outputs;
 
 }; // class graphics_pass
 
 class compute_pass {
 
+public:
+
+  compute_pass(const utility::hashed_string& name)
+  : _name(name) { }
+
+private:
+
+  utility::hashed_string _name;
+
+}; // class compute_pass
+
+class graph_base  {
+
+public:
+
+  template<typename Type>
+  auto emplace_back(Type&& pass) -> Type& {
+    _nodes.emplace_back(std::forward<Type>(pass));
+    return std::get<Type>(_nodes.back());
+  }
+
+private:
+
+  std::vector<std::variant<graphics_pass, compute_pass>> _nodes;
+
+}; // class graph_base
+
+class context {
+
   friend class graph_builder;
 
 public:
 
+  auto graphics_pass(const utility::hashed_string& name) -> graphics_pass& {
+    return _graph.emplace_back(detail::graphics_pass{name});
+  }
+
+  auto compute_pass(const utility::hashed_string& name) -> compute_pass& {
+    return _graph.emplace_back(detail::compute_pass{name});
+  }
+
 private:
 
-  compute_pass(graph_node* node)
-  : _node{node} { }
+  context(graph_base& graph)
+  : _graph{graph} { }
 
-  graph_node* _node;
+  graph_base& _graph;
 
-}; // class compute_pass
+}; // class context
 
-class graph_context {
+class graph_builder {
 
 public:
 
-  auto graphics_pass(const std::string& name) -> detail::graphics_pass& {
-    return _graphics_pass;
+  graph_builder(graph_base& graph)
+  : _graph{graph} { }
+
+  template <typename Callable>
+  requires (std::is_invocable_r_v<graphics_pass&, Callable, context&>)
+  auto emplace(Callable&& callable) -> graphics_pass& {
+    auto ctx = context{_graph};
+    return std::invoke(callable, ctx);
   }
 
-  auto compute_pass(const std::string& name) -> detail::compute_pass& {
-    return _compute_pass;
+  template <typename Callable>
+  requires (std::is_invocable_r_v<compute_pass&, Callable, context&>)
+  auto emplace(Callable&& callable) -> compute_pass& {
+    auto ctx = context{_graph};
+    return std::invoke(callable, ctx);
+  }
+
+  template<typename... Callables>
+  requires (sizeof...(Callables) > 1u)
+  auto emplace(Callables&&... callables) -> decltype(auto) {
+    return std::tuple{emplace(std::forward<Callables>(callables))...};
+  }
+
+  auto build() -> void {
+    utility::logger<"graphics">::info("build");
   }
 
 private:
 
-  detail::graphics_pass _graphics_pass;
-  detail::compute_pass _compute_pass;
+  graph_base& _graph;
 
-}; // class graph_context
+}; // class graph_builder
 
-} // namespace detail 
-
-using format = detail::format;
-using address_mode = detail::address_mode;
+} // namespace detail
 
 class render_graph : public detail::graph_builder {
 
-  using base = detail::graph_builder; 
+  using base = detail::graph_builder;
 
 public:
 
   using graphics_pass = detail::graphics_pass;
   using compute_pass = detail::compute_pass;
-  using attachment = detail::attachment;
-  using context = detail::graph_context;
+  using context = detail::context;
 
-  render_graph(const std::string& name);
+  render_graph() 
+  : base{_graph} { }
 
 private:
 
   detail::graph_base _graph;
-  std::string _name;
-
-  std::vector<attachment> _attachments;
 
 }; // class render_graph
 
