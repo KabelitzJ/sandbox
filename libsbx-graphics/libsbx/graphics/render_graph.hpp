@@ -81,14 +81,6 @@ public:
 
   graphics_node(const utility::hashed_string& name);
 
-  // template<typename... Names>
-  // requires (... && (std::is_same_v<std::remove_cvref_t<Names>, utility::hashed_string> || std::is_constructible_v<utility::hashed_string, Names>))
-  // auto uses(Names&&... names) -> void;
-
-  // template<typename... Args>
-  // requires (std::is_constructible_v<attachment, Args...>)
-  // auto produces(Args&&... args) -> void;
-
 private:
 
   utility::hashed_string _name;
