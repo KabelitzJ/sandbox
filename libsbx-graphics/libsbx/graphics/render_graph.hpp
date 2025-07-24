@@ -95,9 +95,7 @@ class graphics_node {
 public:
 
   graphics_node(const utility::hashed_string& name)
-  : _name(name) { }
-
-  graphics_node(const graphics_node& other) = delete;
+  : _name{name} { }
 
   template<typename... Names>
   requires (... && (std::is_same_v<std::remove_cvref_t<Names>, utility::hashed_string> || std::is_constructible_v<utility::hashed_string, Names>))
@@ -127,28 +125,13 @@ class compute_node {
 public:
 
   compute_node(const utility::hashed_string& name)
-  : _name(name) { }
-
-  compute_node(const compute_node& other) = delete;
+  : _name{name} { }
 
 private:
 
   utility::hashed_string _name;
 
 }; // class compute_node
-
-class compute_pass {
-
-public:
-
-  compute_pass(const utility::hashed_string& name)
-  : _name(name) { }
-
-private:
-
-  utility::hashed_string _name;
-
-}; // class compute_pass
 
 class graph_base  {
 
@@ -160,9 +143,13 @@ public:
     return std::get<Type>(_nodes.back());
   }
 
+  auto reserve(const std::size_t size) -> void {
+    _nodes.reserve(size);
+  }
+
 private:
 
-  std::vector<std::variant<graphics_node, compute_pass>> _nodes;
+  std::vector<std::variant<graphics_node, compute_node>> _nodes;
 
 }; // class graph_base
 
@@ -171,6 +158,18 @@ class graphics_pass {
   friend class context;
 
 public:
+
+  template<typename... Names>
+  requires (... && (std::is_same_v<std::remove_cvref_t<Names>, utility::hashed_string> || std::is_constructible_v<utility::hashed_string, Names>))
+  void uses(Names&&... names) {
+    (_node._inputs.emplace_back(std::forward<Names>(names)), ...);
+  }
+
+  template<typename... Args>
+  requires (std::is_constructible_v<attachment, Args...>)
+  void produces(Args&&... args) {
+    _node._outputs.emplace_back(std::forward<Args>(args)...);
+  }
 
   auto name() const -> const utility::hashed_string& {
     return _node._name;
@@ -235,15 +234,15 @@ public:
   : _graph{graph} { }
 
   template <typename Callable>
-  requires (std::is_invocable_r_v<graphics_pass&, Callable, context&>)
-  auto emplace(Callable&& callable) -> graphics_pass& {
+  requires (std::is_invocable_r_v<graphics_pass, Callable, context&>)
+  auto emplace(Callable&& callable) -> graphics_pass {
     auto ctx = context{_graph};
     return std::invoke(callable, ctx);
   }
 
   template <typename Callable>
-  requires (std::is_invocable_r_v<compute_pass&, Callable, context&>)
-  auto emplace(Callable&& callable) -> compute_pass& {
+  requires (std::is_invocable_r_v<compute_pass, Callable, context&>)
+  auto emplace(Callable&& callable) -> compute_pass {
     auto ctx = context{_graph};
     return std::invoke(callable, ctx);
   }
@@ -251,6 +250,7 @@ public:
   template<typename... Callables>
   requires (sizeof...(Callables) > 1u)
   auto emplace(Callables&&... callables) -> decltype(auto) {
+    _graph.reserve(sizeof...(callables));
     return std::tuple{emplace(std::forward<Callables>(callables))...};
   }
 

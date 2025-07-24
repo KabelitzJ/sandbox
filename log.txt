@@ -1,0 +1,39 @@
+[  1%] Compiling shaders for demo...
+[  2%] Built target units
+[  6%] Built target utility
+[  8%] Built target memory
+[  9%] Built target signals
+[ 13%] Built target core
+[ 15%] Built target io
+[ 19%] Built target math
+[ 21%] Built target containers
+[ 23%] Built target math-tests
+[ 25%] Built target assets
+[ 28%] Built target devices
+[ 29%] Built target containers-tests
+[ 32%] Built target bitmaps
+[ 34%] Built target ecs
+[ 35%] Built target ecs-tests
+[ 36%] Building CXX object libsbx-graphics/CMakeFiles/graphics.dir/libsbx/graphics/buffers/buffer.cpp.obj
+[ 37%] Building CXX object libsbx-graphics/CMakeFiles/graphics.dir/libsbx/graphics/buffers/uniform_buffer.cpp.obj
+[ 38%] Building CXX object libsbx-graphics/CMakeFiles/graphics.dir/libsbx/graphics/buffers/uniform_handler.cpp.obj
+[ 38%] Building CXX object libsbx-graphics/CMakeFiles/graphics.dir/libsbx/graphics/buffers/storage_buffer.cpp.obj
+[ 39%] Building CXX object libsbx-graphics/CMakeFiles/graphics.dir/libsbx/graphics/buffers/push_handler.cpp.obj
+[ 40%] Building CXX object libsbx-graphics/CMakeFiles/graphics.dir/libsbx/graphics/commands/command_buffer.cpp.obj
+[ 41%] Building CXX object libsbx-graphics/CMakeFiles/graphics.dir/libsbx/graphics/commands/command_pool.cpp.obj
+[ 42%] Building CXX object libsbx-graphics/CMakeFiles/graphics.dir/libsbx/graphics/devices/instance.cpp.obj
+[ 44%] Building CXX object libsbx-graphics/CMakeFiles/graphics.dir/libsbx/graphics/devices/logical_device.cpp.obj
+[ 44%] Building CXX object libsbx-graphics/CMakeFiles/graphics.dir/libsbx/graphics/devices/surface.cpp.obj
+[ 44%] Building CXX object libsbx-graphics/CMakeFiles/graphics.dir/libsbx/graphics/images/image.cpp.obj
+[ 45%] Building CXX object libsbx-graphics/CMakeFiles/graphics.dir/libsbx/graphics/images/depth_image.cpp.obj
+[ 46%] Building CXX object libsbx-graphics/CMakeFiles/graphics.dir/libsbx/graphics/images/image2d.cpp.obj
+[ 47%] Building CXX object libsbx-graphics/CMakeFiles/graphics.dir/libsbx/graphics/images/image2d_array.cpp.obj
+[ 48%] Building CXX object libsbx-graphics/CMakeFiles/graphics.dir/libsbx/graphics/images/separate_sampler.cpp.obj
+[ 49%] Building CXX object libsbx-graphics/CMakeFiles/graphics.dir/libsbx/graphics/pipeline/shader.cpp.obj
+[ 50%] Building CXX object libsbx-graphics/CMakeFiles/graphics.dir/libsbx/graphics/pipeline/compute_pipeline.cpp.obj
+[ 51%] Building CXX object libsbx-graphics/CMakeFiles/graphics.dir/libsbx/graphics/pipeline/graphics_pipeline.cpp.obj
+[ 50%] Building CXX object libsbx-graphics/CMakeFiles/graphics.dir/libsbx/graphics/images/separate_image2d_array.cpp.obj
+[ 52%] Building CXX object libsbx-graphics/CMakeFiles/graphics.dir/libsbx/graphics/descriptor/descriptor_handler.cpp.obj
+[ 53%] Building CXX object libsbx-graphics/CMakeFiles/graphics.dir/libsbx/graphics/graphics_module.cpp.obj
+[ 53%] Building CXX object libsbx-graphics/CMakeFiles/graphics.dir/libsbx/graphics/descriptor/descriptor_set.cpp.obj
+[ 54%] Building CXX object libsbx-graphics/CMakeFiles/graphics.dir/libsbx/graphics/render_pass/swapchain.cpp.obj

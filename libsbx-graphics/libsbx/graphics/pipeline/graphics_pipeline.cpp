@@ -21,6 +21,7 @@
 
 #include <libsbx/graphics/images/image2d.hpp>
 #include <libsbx/graphics/images/image2d_array.hpp>
+#include <libsbx/graphics/images/depth_image.hpp>
 #include <libsbx/graphics/images/cube_image.hpp>
 #include <libsbx/graphics/images/separate_sampler.hpp>
 #include <libsbx/graphics/images/separate_image2d_array.hpp>
@@ -285,6 +286,10 @@ graphics_pipeline::graphics_pipeline(const std::filesystem::path& path, const re
   color_blend_attachments.reserve(attachments.size());
 
   for (const auto& attachment : attachments) {
+    if (attachment.image_type() == attachment::type::depth) {
+      continue;
+    }
+
     if (!definition.uses_transparency || attachment.format() == graphics::format::r32_uint || attachment.format() == graphics::format::r64_uint || attachment.format() == graphics::format::r32g32_uint) {
       color_blend_attachments.push_back(color_blend_attachment_disabled);
     } else {
@@ -310,7 +315,7 @@ graphics_pipeline::graphics_pipeline(const std::filesystem::path& path, const re
 
   for (const auto& attachment : attachments) {
     if (attachment.image_type() == attachment::type::depth) {
-      depth_format = to_vk_enum<VkFormat>(attachment.format());
+      depth_format = depth_image::format();
     } else {
       color_formats.push_back(to_vk_enum<VkFormat>(attachment.format()));
     }
@@ -461,6 +466,7 @@ graphics_pipeline::graphics_pipeline(const std::filesystem::path& path, const re
   auto pipeline_create_info = VkGraphicsPipelineCreateInfo{};
   pipeline_create_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
   pipeline_create_info.flags = VK_PIPELINE_CREATE_ALLOW_DERIVATIVES_BIT;
+  pipeline_create_info.pNext = &rendering_info;
   pipeline_create_info.stageCount = static_cast<std::uint32_t>(shader_stages.size());
   pipeline_create_info.pStages = shader_stages.data();
   pipeline_create_info.pVertexInputState = &vertex_input_state;

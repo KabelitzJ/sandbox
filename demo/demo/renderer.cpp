@@ -51,8 +51,8 @@ renderer::renderer()
   using namespace sbx::utility::literals;
 
   auto [deferred, resolve] = create_graph(
-    [&](sbx::graphics::render_graph::context& context) -> sbx::graphics::render_graph::graphics_pass& {
-      auto& deferred_pass = context.graphics_pass("deferred"_hs);
+    [&](sbx::graphics::render_graph::context& context) -> sbx::graphics::render_graph::graphics_pass {
+      auto deferred_pass = context.graphics_pass("deferred"_hs);
 
       deferred_pass.produces("depth"_hs, sbx::graphics::attachment::type::depth);
       deferred_pass.produces("albedo"_hs, sbx::graphics::attachment::type::image, _clear_color, sbx::graphics::format::r8g8b8a8_unorm);
@@ -66,8 +66,8 @@ renderer::renderer()
 
       return deferred_pass;
     },
-    [&](sbx::graphics::render_graph::context& context) -> sbx::graphics::render_graph::graphics_pass& {
-      auto& resolve_pass = context.graphics_pass("resolve"_hs);
+    [&](sbx::graphics::render_graph::context& context) -> sbx::graphics::render_graph::graphics_pass {
+      auto resolve_pass = context.graphics_pass("resolve"_hs);
 
       resolve_pass.uses("albedo"_hs, "position"_hs, "normal"_hs, "material"_hs, "object_id"_hs);
 
