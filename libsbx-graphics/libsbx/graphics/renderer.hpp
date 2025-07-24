@@ -48,18 +48,6 @@ public:
     }
   }
 
-  // auto add_render_stage(std::vector<attachment>&& attachments, std::vector<subpass_binding>&& subpass_bindings, const viewport& viewport = graphics::viewport::window()) -> void {
-  //   _render_stages.push_back(std::make_unique<graphics::render_stage>(std::move(attachments), std::move(subpass_bindings), viewport));
-  // }
-
-  // auto render_stages() const noexcept -> const std::vector<std::unique_ptr<graphics::render_stage>>& {
-  //   return _render_stages;
-  // }
-
-  // auto render_stage(const pipeline::stage& stage) -> graphics::render_stage& {
-  //   return *_render_stages.at(stage.renderpass);
-  // }
-
 protected:
 
   template<typename Type, typename... Args>
@@ -73,15 +61,9 @@ protected:
   template<typename... Callables>
   requires (sizeof...(Callables) > 1u)
   auto create_graph(Callables&&... callables) -> decltype(auto) {
-    utility::logger<"graphics">::info("create_graph1");
-
     auto passes = _graph.emplace(std::forward<Callables>(callables)...);
-    
-    utility::logger<"graphics">::info("create_graph2");
 
     _graph.build();
-
-    utility::logger<"graphics">::info("create_graph3");
 
     return passes;
   }

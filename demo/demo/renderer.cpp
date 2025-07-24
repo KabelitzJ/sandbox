@@ -48,8 +48,6 @@ renderer::renderer()
       deferred_pass.produces("object_id"_hs, sbx::graphics::attachment::type::image, _clear_color, sbx::graphics::format::r32g32_uint);
       deferred_pass.produces("normalized_depth"_hs, sbx::graphics::attachment::type::image, sbx::math::color{1.0f, 1.0f, 1.0f, 1.0f}, sbx::graphics::format::r32_sfloat);
 
-      sbx::utility::logger<"demo">::info("deferred pass");
-
       return deferred_pass;
     },
     [&](sbx::graphics::render_graph::context& context) -> sbx::graphics::render_graph::graphics_pass {
@@ -58,8 +56,6 @@ renderer::renderer()
       resolve_pass.uses("albedo"_hs, "position"_hs, "normal"_hs, "material"_hs, "object_id"_hs);
 
       resolve_pass.produces("swapchain"_hs, sbx::graphics::attachment::type::swapchain, _clear_color, sbx::graphics::format::r8g8b8a8_unorm);
-
-      sbx::utility::logger<"demo">::info("resolve pass");
 
       return resolve_pass;
     }

@@ -18,6 +18,9 @@
 
 #include <libsbx/memory/observer_ptr.hpp>
 
+#include <libsbx/graphics/images/image2d.hpp>
+#include <libsbx/graphics/images/depth_image.hpp>
+
 namespace sbx::graphics {
 
 enum class format : std::uint32_t {
@@ -76,6 +79,7 @@ namespace detail {
 class graphics_node {
 
   friend class graphics_pass;
+  friend class graph_builder;
 
 public:
 
@@ -92,7 +96,8 @@ private:
 
 class compute_node {
 
-  friend class graphics_pass;
+  friend class compute_pass;
+  friend class graph_builder;
 
 public:
 
@@ -105,6 +110,8 @@ private:
 }; // class compute_node
 
 class graph_base  {
+
+  friend class graph_builder;
 
 public:
 
@@ -199,7 +206,12 @@ public:
 
 private:
 
+  auto _create_attachment(const attachment& attachment) -> void;
+
   graph_base& _graph;
+
+  std::vector<image2d> _color_images;
+  std::vector<depth_image> _depth_images;
 
 }; // class graph_builder
 

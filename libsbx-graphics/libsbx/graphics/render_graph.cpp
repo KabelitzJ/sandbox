@@ -74,7 +74,16 @@ graph_builder::graph_builder(graph_base& graph)
 : _graph{graph} { }
 
 auto graph_builder::build() -> void {
-  utility::logger<"graphics">::info("build");
+  for (const auto& node : _graph._nodes) {
+    if (std::holds_alternative<graphics_node>(node)) {
+      const auto& graphics_node = std::get<detail::graphics_node>(node);
+
+      
+    } else if (std::holds_alternative<compute_node>(node)) {
+      const auto& compute_node = std::get<detail::compute_node>(node);
+
+    }
+  }
 }
 
 } // namespace detail

@@ -4,18 +4,6 @@ namespace sbx::graphics {
 
 namespace detail {
 
-// template<typename... Names>
-// requires (... && (std::is_same_v<std::remove_cvref_t<Names>, utility::hashed_string> || std::is_constructible_v<utility::hashed_string, Names>))
-// void graphics_node::uses(Names&&... names) {
-//   (_inputs.emplace_back(std::forward<Names>(names)), ...);
-// }
-
-// template<typename... Args>
-// requires std::is_constructible_v<attachment, Args...>
-// void graphics_node::produces(Args&&... args) {
-//   _outputs.emplace_back(std::forward<Args>(args)...);
-// }
-
 template<typename Type, typename... Args>
 auto graph_base::emplace_back(Args&&... args) -> Type& {
   _nodes.emplace_back(std::in_place_type_t<Type>{}, std::forward<Args>(args)...);
