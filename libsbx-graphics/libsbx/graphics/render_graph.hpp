@@ -88,12 +88,16 @@ private:
 
 namespace detail {
   
-class graphics_pass {
+class graphics_node {
+
+  friend class graphics_pass;
 
 public:
 
-  graphics_pass(const utility::hashed_string& name)
+  graphics_node(const utility::hashed_string& name)
   : _name(name) { }
+
+  graphics_node(const graphics_node& other) = delete;
 
   template<typename... Names>
   requires (... && (std::is_same_v<std::remove_cvref_t<Names>, utility::hashed_string> || std::is_constructible_v<utility::hashed_string, Names>))
@@ -107,14 +111,6 @@ public:
     _outputs.emplace_back(std::forward<Args>(args)...);
   }
 
-  auto name() const -> const utility::hashed_string& {
-    return _name;
-  }
-
-  auto attachments() const -> const std::vector<attachment>& {
-    return _outputs;
-  }
-
 private:
 
   utility::hashed_string _name;
@@ -122,7 +118,24 @@ private:
   std::vector<utility::hashed_string> _inputs;
   std::vector<attachment> _outputs;
 
-}; // class graphics_pass
+}; // class graphics_node
+
+class compute_node {
+
+  friend class graphics_pass;
+
+public:
+
+  compute_node(const utility::hashed_string& name)
+  : _name(name) { }
+
+  compute_node(const compute_node& other) = delete;
+
+private:
+
+  utility::hashed_string _name;
+
+}; // class compute_node
 
 class compute_pass {
 
@@ -141,17 +154,55 @@ class graph_base  {
 
 public:
 
-  template<typename Type>
-  auto emplace_back(Type&& pass) -> Type& {
-    _nodes.emplace_back(std::forward<Type>(pass));
+  template<typename Type, typename... Args>
+  auto emplace_back(Args&&... args) -> Type& {
+    _nodes.emplace_back(std::in_place_type_t<Type>{}, std::forward<Args>(args)...);
     return std::get<Type>(_nodes.back());
   }
 
 private:
 
-  std::vector<std::variant<graphics_pass, compute_pass>> _nodes;
+  std::vector<std::variant<graphics_node, compute_pass>> _nodes;
 
 }; // class graph_base
+
+class graphics_pass {
+
+  friend class context;
+
+public:
+
+  auto name() const -> const utility::hashed_string& {
+    return _node._name;
+  }
+
+  auto attachments() const -> const std::vector<attachment>& {
+    return _node._outputs;
+  }
+
+private:
+
+  graphics_pass(graphics_node& node)
+  : _node{node} { }
+
+  graphics_node& _node;
+
+}; // class graphics_pass
+
+class compute_pass {
+
+  friend class context;
+
+public:
+
+private:
+
+  compute_pass(compute_node& node)
+  : _node{node} { }
+
+  compute_node& _node;
+
+}; // class compute_pass
 
 class context {
 
@@ -159,12 +210,12 @@ class context {
 
 public:
 
-  auto graphics_pass(const utility::hashed_string& name) -> graphics_pass& {
-    return _graph.emplace_back(detail::graphics_pass{name});
+  auto graphics_pass(const utility::hashed_string& name) -> detail::graphics_pass {
+    return detail::graphics_pass{_graph.emplace_back<detail::graphics_node>(name)};
   }
 
-  auto compute_pass(const utility::hashed_string& name) -> compute_pass& {
-    return _graph.emplace_back(detail::compute_pass{name});
+  auto compute_pass(const utility::hashed_string& name) -> detail::compute_pass {
+    return detail::compute_pass{_graph.emplace_back<detail::compute_node>(name)};
   }
 
 private:
