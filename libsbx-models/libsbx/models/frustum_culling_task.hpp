@@ -37,8 +37,8 @@ class frustum_culling_task final : public graphics::task {
 
 public:
 
-  frustum_culling_task(const std::filesystem::path& path)
-  : _pipeline{path},
+  frustum_culling_task(const std::filesystem::path& path, const graphics::render_graph::pass& pass)
+  : _pipeline{path, pass},
     _push_handler{_pipeline} {
     auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 

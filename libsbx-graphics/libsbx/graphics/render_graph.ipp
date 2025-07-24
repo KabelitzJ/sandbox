@@ -51,6 +51,12 @@ auto graph_builder::emplace(Callable&& callable) -> pass {
   return pass{_graph._emplace_back(default_graphics_pass_parameters{}, nullptr, std::in_place_type_t<graph_node::graphics_pass_node>{}, std::forward<Callable>(callable) )};
 }
 
+template <typename Callable>
+requires (is_compute_pass_v<Callable>)
+auto graph_builder::emplace(Callable&& callable) -> pass {
+  return pass{_graph._emplace_back(default_compute_pass_parameters{}, nullptr, std::in_place_type_t<graph_node::compute_pass_node>{}, std::forward<Callable>(callable) )};
+}
+
 template<typename... Callables>
 requires (sizeof...(Callables) > 1u)
 auto graph_builder::emplace(Callables&&... callables) -> decltype(auto) {

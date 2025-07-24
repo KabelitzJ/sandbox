@@ -148,8 +148,10 @@ public:
     init_info.MinImageCount = 3u;
     init_info.ImageCount = graphics_module.swapchain().image_count();
     init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+    init_info.UseDynamicRendering = true,
+    init_info.ColorAttachmentFormat = VK_FORMAT_R8G8B8A8_UNORM;
 
-    ImGui_ImplVulkan_Init(&init_info, graphics_module.render_stage(stage).render_pass());
+    ImGui_ImplVulkan_Init(&init_info, nullptr);
 
     // Upload fonts
     {

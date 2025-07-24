@@ -7,6 +7,9 @@
 #include <memory>
 #include <unordered_map>
 #include <optional>
+#include <functional>
+
+#include <vulkan/vulkan.h>
 
 #include <libsbx/math/color.hpp>
 
@@ -55,6 +58,8 @@ class graph_builder;
 class task;
 class sub_graph;
 class graph_context;
+class graphics_pass;
+class compute_pass;
 
 class graph_base : std::vector<std::unique_ptr<graph_node>> {
 
@@ -100,10 +105,29 @@ template<typename Callable, typename = void>
 struct is_graphics_pass : std::false_type{ };
 
 template<typename Callable>
-struct is_graphics_pass<Callable, std::enable_if_t<std::is_invocable_v<Callable, graph_context&>>> : std::is_same<std::invoke_result_t<Callable>, void> { };
+struct is_graphics_pass<Callable, std::enable_if_t<std::is_invocable_r_v<graphics_pass&, Callable, graph_context&>>> : std::true_type { };
 
 template <typename Callable>
 constexpr bool is_graphics_pass_v = is_graphics_pass<Callable>::value;
+
+struct compute_pass_parameters {
+  std::string name;
+  void* data;
+}; // struct graphics_pass_parameters
+
+struct default_compute_pass_parameters { };
+
+template<typename Type>
+constexpr bool is_compute_pass_params_v = std::is_same_v<std::decay_t<Type>, compute_pass_parameters> || std::is_same_v<std::decay_t<Type>, default_compute_pass_parameters> || std::is_constructible_v<std::string, Type>;
+
+template<typename Callable, typename = void>
+struct is_compute_pass : std::false_type{ };
+
+template<typename Callable>
+struct is_compute_pass<Callable, std::enable_if_t<std::is_invocable_r_v<compute_pass&, Callable, graph_context&>>> : std::true_type { };
+
+template <typename Callable>
+constexpr bool is_compute_pass_v = is_compute_pass<Callable>::value;
 
 enum class format : std::uint32_t {
   undefined = VK_FORMAT_UNDEFINED,
@@ -278,6 +302,10 @@ public:
   requires (is_graphics_pass_v<Callable>)
   auto emplace(Callable&& callable) -> pass;
 
+  template <typename Callable>
+  requires (is_compute_pass_v<Callable>)
+  auto emplace(Callable&& callable) -> pass;
+
   template<typename... Callables>
   requires (sizeof...(Callables) > 1u)
   auto emplace(Callables&&... callables) -> decltype(auto);
@@ -341,6 +369,8 @@ class render_graph : public detail::graph_builder {
 public:
 
   using pass = detail::pass;
+  using graphics_pass = detail::graphics_pass;
+  using compute_pass = detail::compute_pass;
   using attachment = detail::attachment;
   using context = detail::graph_context;
 

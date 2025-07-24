@@ -37,8 +37,8 @@ class resolve_filter final : public filter {
 
 public:
 
-  resolve_filter(const std::filesystem::path& path, const graphics::render_graph::pass& pass, std::unordered_map<std::string, std::string>&& attachment_names)
-  : base_type{path, stage},
+  resolve_filter(const std::filesystem::path& path, const graphics::render_graph::pass& pass, std::vector<std::pair<std::string, std::string>>&& attachment_names)
+  : base_type{path, pass},
     _attachment_names{std::move(attachment_names)} { }
 
   ~resolve_filter() override = default;
@@ -109,7 +109,7 @@ public:
 
 private:
 
-  std::unordered_map<std::string, std::string> _attachment_names;
+  std::vector<std::pair<std::string, std::string>> _attachment_names;
 
   graphics::uniform_handler _scene_uniform_handler;
   graphics::storage_handler _point_lights_storage_handler;

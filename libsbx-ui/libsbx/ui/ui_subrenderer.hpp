@@ -31,8 +31,8 @@ class ui_subrenderer : public graphics::subrenderer {
 public:
 
   ui_subrenderer(const std::filesystem::path& path, const graphics::render_graph::pass& pass)
-  : graphics::subrenderer{stage},
-    _pipeline{path, stage} {
+  : graphics::subrenderer{pass},
+    _pipeline{path, pass} {
     auto& assets_module = core::engine::get_module<assets::assets_module>();
 
     auto vertices = std::vector<vertex2d>{

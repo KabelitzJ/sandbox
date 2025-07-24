@@ -22,11 +22,17 @@ layout(set = 0, binding = 1, std430) readonly buffer buffer_point_lights {
   point_light data[];
 } point_lights;
 
-layout(set = 0, binding = 2, input_attachment_index = 0) uniform subpassInput albedo_image;
-layout(set = 0, binding = 3, input_attachment_index = 1) uniform subpassInput position_image; 
-layout(set = 0, binding = 4, input_attachment_index = 2) uniform subpassInput normal_image;
-layout(set = 0, binding = 5, input_attachment_index = 3) uniform subpassInput material_image;
-layout(set = 0, binding = 6, input_attachment_index = 4) uniform usubpassInput object_id_image;
+// layout(set = 0, binding = 2, input_attachment_index = 0) uniform subpassInput albedo_image;
+// layout(set = 0, binding = 3, input_attachment_index = 1) uniform subpassInput position_image; 
+// layout(set = 0, binding = 4, input_attachment_index = 2) uniform subpassInput normal_image;
+// layout(set = 0, binding = 5, input_attachment_index = 3) uniform subpassInput material_image;
+// layout(set = 0, binding = 6, input_attachment_index = 4) uniform usubpassInput object_id_image;
+
+layout(set = 0, binding = 2) uniform sampler2D albedo_image;
+layout(set = 0, binding = 3) uniform sampler2D position_image; 
+layout(set = 0, binding = 4) uniform sampler2D normal_image;
+layout(set = 0, binding = 5) uniform sampler2D material_image;
+layout(set = 0, binding = 6) uniform usampler2D object_id_image;
 
 const vec4 AMBIENT_COLOR = vec4(0.4, 0.4, 0.4, 1.0);
 const vec4 SPECULAR_COLOR = vec4(0.9, 0.9, 0.9, 1.0);
@@ -37,11 +43,11 @@ float uint_to_float(uint value) {
 }
 
 void main() {
-  vec3 world_position = subpassLoad(position_image).xyz;
-  vec3 normal = normalize(subpassLoad(normal_image).xyz);
-  vec4 albedo = subpassLoad(albedo_image);
-  vec2 material = subpassLoad(material_image).xy;
-  uvec2 object_id = subpassLoad(object_id_image).xy;
+  vec3 world_position = texture(position_image, in_uv).xyz;
+  vec3 normal = normalize(texture(normal_image, in_uv).xyz);
+  vec4 albedo = texture(albedo_image, in_uv);
+  vec2 material = texture(material_image, in_uv).xy;
+  uvec2 object_id = texture(object_id_image, in_uv).xy;
 
   float metallic = material.x;
   float roughness = material.y;

@@ -24,8 +24,8 @@ class pipeline : public sbx::graphics::graphics_pipeline {
 
 public:
 
-  pipeline(const std::filesystem::path& path, const sbx::graphics::pipeline::stage& stage)
-  : base_type{path, stage, pipeline_definition} { }
+  pipeline(const std::filesystem::path& path, const sbx::graphics::render_graph::pass& pass)
+  : base_type{path, pass, pipeline_definition} { }
 
   ~pipeline() override = default;
 

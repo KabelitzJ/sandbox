@@ -49,16 +49,8 @@ renderer::renderer()
   //   add_render_stage(std::move(attachments), std::move(subpass_bindings), sbx::graphics::viewport{sbx::math::vector2u{2048, 2048}});
   // }
 
-  auto [shadow, deferred, resolve, post, editor] = graph().emplace(
-    [&](auto& context) {
-      auto& shadow_pass = context.graphics_pass("shadow");
-
-      shadow_pass.output(0, "depth", sbx::graphics::render_graph::attachment::type::depth);
-      shadow_pass.output(1, "shadow_map", sbx::graphics::render_graph::attachment::type::image, sbx::math::color::white(), sbx::graphics::format::r32_sfloat, sbx::graphics::address_mode::clamp_to_edge);
-
-      return shadow_pass;
-    },
-    [&](auto& context) {
+  auto [deferred, resolve] = graph().emplace(
+    [&](sbx::graphics::render_graph::context& context) -> sbx::graphics::render_graph::graphics_pass& {
       auto& deferred_pass = context.graphics_pass("deferred");
 
       deferred_pass.output(0, "depth", sbx::graphics::render_graph::attachment::type::depth);
@@ -71,7 +63,7 @@ renderer::renderer()
 
       return deferred_pass;
     },
-    [&](auto& context) {
+    [&](sbx::graphics::render_graph::context& context) -> sbx::graphics::render_graph::graphics_pass& {
       auto& resolve_pass = context.graphics_pass("resolve");
 
       resolve_pass.input("albedo");
@@ -80,35 +72,26 @@ renderer::renderer()
       resolve_pass.input("material");
       resolve_pass.input("object_id");
 
-      resolve_pass.output(0, "resolve", sbx::graphics::render_graph::attachment::type::image, _clear_color, sbx::graphics::format::r8g8b8a8_unorm);
-
+      resolve_pass.output(0, "swapchain", sbx::graphics::render_graph::attachment::type::swapchain, _clear_color, sbx::graphics::format::r8g8b8a8_unorm);
+      
       return resolve_pass;
-    },
-    [&](auto& context) {
-      auto& post_pass = context.graphics_pass("post");
-
-      post_pass.input("resolve");
-
-      post_pass.output(0, "fxaa", sbx::graphics::render_graph::attachment::type::image, _clear_color, sbx::graphics::format::r8g8b8a8_unorm);
-
-      return post_pass;
-    },
-    [&](auto& context) {
-      auto& editor_pass = context.graphics_pass("editor");
-
-      editor_pass.input("fxaa");
-
-      editor_pass.output(0, "swapchain", sbx::graphics::render_graph::attachment::type::swapchain, _clear_color, sbx::graphics::format::r8g8b8a8_unorm);
-
-      return editor_pass;
     }
   );
 
-  resolve.precede(shadow, deferred);
-  post.precede(resolve);
-  editor.precede(post);
+  resolve.precede(deferred);
 
   add_subrenderer<sbx::scenes::skybox_subrenderer>("demo/assets/shaders/skybox", deferred);
+  add_subrenderer<sbx::models::static_mesh_subrenderer>("demo/assets/shaders/deferred_static", deferred);
+
+  auto attachment_names = std::vector<std::pair<std::string, std::string>>{
+    {"albedo_image", "albedo"},
+    {"position_image", "position"},
+    {"normal_image", "normal"},
+    {"material_image", "material"},
+    {"object_id_image", "object_id"}
+  };
+
+  add_subrenderer<sbx::post::resolve_filter>("demo/assets/shaders/resolve", resolve, std::move(attachment_names));
 
   // // Render stage 0: Preview
   // {

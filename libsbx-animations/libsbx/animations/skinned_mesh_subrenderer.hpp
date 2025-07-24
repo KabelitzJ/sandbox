@@ -70,8 +70,8 @@ class skinned_mesh_subrenderer final : public graphics::subrenderer {
 public:
 
   skinned_mesh_subrenderer(const std::filesystem::path& path, const graphics::render_graph::pass& pass)
-  : graphics::subrenderer{stage},
-    _pipeline{path, stage},
+  : graphics::subrenderer{pass},
+    _pipeline{path, pass},
     _push_handler{_pipeline},
     _scene_descriptor_handler{_pipeline, 0u} {
     auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
