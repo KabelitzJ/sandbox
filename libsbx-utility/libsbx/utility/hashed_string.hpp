@@ -69,6 +69,10 @@ public:
     return _string.c_str();
   }
 
+  constexpr auto is_empty() const noexcept -> bool {
+    return _string.empty();
+  }
+
   constexpr auto str() const noexcept -> const std::basic_string<char_type>& {
     return _string;
   }

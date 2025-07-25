@@ -20,13 +20,27 @@ auto graph_base::emplace_back(Args&&... args) -> Type& {
 
 template<typename... Names>
 requires (... && (std::is_same_v<std::remove_cvref_t<Names>, utility::hashed_string> || std::is_constructible_v<utility::hashed_string, Names>))
-void graphics_pass::uses(Names&&... names) {
+auto graphics_pass::uses(Names&&... names) -> void {
   (_node._inputs.emplace_back(std::forward<Names>(names)), ...);
 }
 
+// template<typename... Args>
+// requires (std::is_constructible_v<attachment, Args...>)
+// auto patch_attachment(Args&&... args) -> attachment {
+//   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+//   auto value = attachment{std::forward<Args>(args)...};
+
+//   if (value.image_type() == attachment::type::swapchain) {
+//     value.format = graphics_module.surface().format();
+//   }
+
+//   return value;
+// }
+
 template<typename... Args>
 requires (std::is_constructible_v<attachment, Args...>)
-void graphics_pass::produces(Args&&... args) {
+auto graphics_pass::produces(Args&&... args) -> void {
   _node._outputs.emplace_back(std::forward<Args>(args)...);
 }
 

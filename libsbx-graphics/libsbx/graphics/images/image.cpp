@@ -182,7 +182,7 @@ auto image::create_image_sampler(VkSampler& sampler, VkFilter filter, VkSamplerA
   sampler_create_info.addressModeU = address_mode;
   sampler_create_info.addressModeV = address_mode;
   sampler_create_info.addressModeW = address_mode;
-  sampler_create_info.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+  sampler_create_info.mipmapMode = (filter == VK_FILTER_LINEAR) ? VK_SAMPLER_MIPMAP_MODE_LINEAR : VK_SAMPLER_MIPMAP_MODE_NEAREST;
   sampler_create_info.mipLodBias = 0.0f;
   sampler_create_info.anisotropyEnable = anisotropic;
   sampler_create_info.maxAnisotropy = (anisotropic && logical_device.enabled_features().core.features.samplerAnisotropy) ? std::min(anisotropy, physical_device.properties().limits.maxSamplerAnisotropy) : 1.0f;
@@ -301,6 +301,10 @@ auto image::transition_image_layout(const VkImage& image, VkFormat format, VkIma
       barrier.srcAccessMask = 0;
       break;
     }
+    case VK_IMAGE_LAYOUT_PRESENT_SRC_KHR: {
+      barrier.srcAccessMask = 0;  // No specific access mask required
+      break;
+    }
     case VK_IMAGE_LAYOUT_GENERAL: {
       // General can be written or read — safest is to assume both
       barrier.srcAccessMask = VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT;
@@ -342,6 +346,10 @@ auto image::transition_image_layout(const VkImage& image, VkFormat format, VkIma
     }
     case VK_IMAGE_LAYOUT_GENERAL: {
       barrier.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT;
+      break;
+    }
+    case VK_IMAGE_LAYOUT_PRESENT_SRC_KHR: {
+      barrier.dstAccessMask = 0;  // No specific access mask required
       break;
     }
     case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL: {
@@ -398,6 +406,10 @@ auto image::transition_image_layout(command_buffer& command_buffer, const VkImag
       barrier.srcAccessMask = VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT;
       break;
     }
+    case VK_IMAGE_LAYOUT_PRESENT_SRC_KHR: {
+      barrier.srcAccessMask = 0;  // No specific access mask required
+      break;
+    }
     case VK_IMAGE_LAYOUT_PREINITIALIZED: {
       barrier.srcAccessMask = VK_ACCESS_HOST_WRITE_BIT;
       break;
@@ -434,6 +446,10 @@ auto image::transition_image_layout(command_buffer& command_buffer, const VkImag
     }
     case VK_IMAGE_LAYOUT_GENERAL: {
       barrier.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT;
+      break;
+    }
+    case VK_IMAGE_LAYOUT_PRESENT_SRC_KHR: {
+      barrier.dstAccessMask = 0;  // No specific access mask required
       break;
     }
     case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL: {

@@ -61,6 +61,7 @@ swapchain::swapchain(const std::unique_ptr<swapchain>& old_swapchain)
   validate(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physical_device, surface, &capabilities));
 
   _extent = capabilities.currentExtent;
+  _format = surface_format.format;
 
 	auto swapchain_create_info = VkSwapchainCreateInfoKHR{};
 	swapchain_create_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;

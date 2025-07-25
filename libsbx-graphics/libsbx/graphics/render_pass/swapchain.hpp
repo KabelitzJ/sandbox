@@ -47,6 +47,10 @@ public:
 
   auto present(const VkSemaphore& wait_semaphore = nullptr) -> VkResult;
 
+  auto formt() const noexcept -> VkFormat {
+    return _format;
+  }
+
 private:
 
   auto _choose_present_mode() const -> VkPresentModeKHR;

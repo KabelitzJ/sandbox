@@ -31,7 +31,7 @@ public:
 
   // virtual auto initialize() -> void = 0;
 
-  auto render(command_buffer& command_buffer, VkImageView swapchain) -> void {
+  auto render(command_buffer& command_buffer, const swapchain& swapchain) -> void {
     _graph.execute(command_buffer, swapchain, [this, &command_buffer](const auto& pass) {
       for (auto& subrenderer : _subrenderers[pass]) {
         subrenderer->render(command_buffer);
@@ -45,8 +45,12 @@ public:
     }
   }
 
-  auto resize(VkImage swapchain, VkImageView swapchain_view) -> void {
-    _graph.resize(swapchain, swapchain_view);
+  auto resize() -> void {
+    _graph.resize();
+  }
+
+  auto attachment(const std::string& name) const -> const descriptor& {
+    return _graph.attachment(name);
   }
 
 protected:

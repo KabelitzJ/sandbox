@@ -55,13 +55,14 @@ renderer::renderer()
 
       resolve_pass.uses("albedo"_hs, "position"_hs, "normal"_hs, "material"_hs, "object_id"_hs);
 
-      resolve_pass.produces("swapchain"_hs, sbx::graphics::attachment::type::swapchain, _clear_color, sbx::graphics::format::r8g8b8a8_unorm);
+      resolve_pass.produces("swapchain"_hs, sbx::graphics::attachment::type::swapchain, _clear_color, sbx::graphics::format::b8g8r8a8_srgb);
 
       return resolve_pass;
     }
   );
 
   add_subrenderer<sbx::scenes::skybox_subrenderer>("demo/assets/shaders/skybox", deferred);
+  add_subrenderer<sbx::scenes::grid_subrenderer>("demo/assets/shaders/grid", deferred);
   add_subrenderer<sbx::models::static_mesh_subrenderer>("demo/assets/shaders/deferred_static", deferred);
 
   auto attachment_names = std::vector<std::pair<std::string, std::string>>{

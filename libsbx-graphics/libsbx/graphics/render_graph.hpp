@@ -23,6 +23,8 @@
 #include <libsbx/graphics/images/image2d.hpp>
 #include <libsbx/graphics/images/depth_image.hpp>
 
+#include <libsbx/graphics/render_pass/swapchain.hpp>
+
 namespace sbx::graphics {
 
 enum class format : std::uint32_t {
@@ -236,24 +238,24 @@ public:
 
   auto build() -> void;
 
-  auto resize(VkImage swapchain, VkImageView swapchain_view) -> void;
+  auto resize() -> void;
+
+  auto attachment(const std::string& name) const -> const descriptor&;
 
   template<typename Callable>
-  auto execute(command_buffer& command_buffer, VkImageView swapchain, Callable&& callable) -> void {
+  auto execute(command_buffer& command_buffer, const swapchain& swapchain, Callable&& callable) -> void {
     for (const auto& instruction : _instructions) {
       std::visit(overload{
-        [this, &command_buffer](const transition_instruction& instruction) {
-          utility::logger<"graphics">::info("instruction: {}", instruction.attachment.str());
-
-          for (const auto& [name, state] : _attachment_states) {
-            utility::logger<"graphics">::info("state: {}", name.str());
-          }
-
+        [this, &command_buffer, &swapchain](const transition_instruction& instruction) {
           auto& state = _attachment_states.at(instruction.attachment);
 
-          image::transition_image_layout(command_buffer, state.image, state.format, instruction.old_layout, instruction.new_layout, state.is_depth ? (VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT) : VK_IMAGE_ASPECT_COLOR_BIT, 1, 0, 1, 0);
+          if (state.type == attachment::type::swapchain) {
+            image::transition_image_layout(command_buffer, swapchain.image(swapchain.active_image_index()), swapchain.formt(), instruction.old_layout, instruction.new_layout, VK_IMAGE_ASPECT_COLOR_BIT, 1, 0, 1, 0);
+          } else {
+            image::transition_image_layout(command_buffer, state.image, state.format, instruction.old_layout, instruction.new_layout, (state.type == attachment::type::depth) ? (VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT) : VK_IMAGE_ASPECT_COLOR_BIT, 1, 0, 1, 0);
+          }
         },
-        [this, &command_buffer, &callable](const pass_instruction& instruction) {
+        [this, &command_buffer, &swapchain, &callable](const pass_instruction& instruction) {
           const auto& area = _pass_render_areas[instruction.pass_name];
 
           const auto& offset = area.offset();
@@ -286,26 +288,39 @@ public:
             const auto& state = _attachment_states[attachment];
             const auto& clear_value = _clear_values[attachment];
 
-            if (!state.is_depth) {
-              color_attachments.push_back(VkRenderingAttachmentInfo{
-                .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
-                .imageView = state.view,
-                .imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-                .resolveMode = VK_RESOLVE_MODE_NONE,
-                .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
-                .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
-                .clearValue = clear_value
-              });
-            } else {
-              depth_attachment = VkRenderingAttachmentInfo{
-                .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
-                .imageView = state.view,
-                .imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-                .resolveMode = VK_RESOLVE_MODE_NONE,
-                .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
-                .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
-                .clearValue = clear_value
-              };
+            if (state.type == attachment::type::image) {
+              auto rendering_attachment_info = VkRenderingAttachmentInfo{};
+              rendering_attachment_info.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+              rendering_attachment_info.imageView = state.view;
+              rendering_attachment_info.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+              rendering_attachment_info.resolveMode = VK_RESOLVE_MODE_NONE;
+              rendering_attachment_info.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+              rendering_attachment_info.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+              rendering_attachment_info.clearValue = clear_value;
+
+              color_attachments.push_back(rendering_attachment_info);
+            } else if (state.type == attachment::type::depth) {
+              auto rendering_attachment_info = VkRenderingAttachmentInfo{};
+              rendering_attachment_info.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+              rendering_attachment_info.imageView = state.view;
+              rendering_attachment_info.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+              rendering_attachment_info.resolveMode = VK_RESOLVE_MODE_NONE;
+              rendering_attachment_info.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+              rendering_attachment_info.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+              rendering_attachment_info.clearValue = clear_value;
+
+              depth_attachment = rendering_attachment_info;
+            } else if (state.type == attachment::type::swapchain) {
+              auto rendering_attachment_info = VkRenderingAttachmentInfo{};
+              rendering_attachment_info.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+              rendering_attachment_info.imageView = swapchain.image_view(swapchain.active_image_index());
+              rendering_attachment_info.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+              rendering_attachment_info.resolveMode = VK_RESOLVE_MODE_NONE;
+              rendering_attachment_info.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+              rendering_attachment_info.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+              rendering_attachment_info.clearValue = clear_value;
+
+              color_attachments.push_back(rendering_attachment_info);
             }
           }
 
@@ -336,14 +351,14 @@ private:
     VkImageLayout current_layout = VK_IMAGE_LAYOUT_UNDEFINED;
     VkFormat format;
     VkExtent2D extent;
-    bool is_depth = false;
+    attachment::type type;
   }; // struct attachment_state
 
   auto _update_viewports() -> void;
 
   auto _clear_attachments() -> void;
 
-  auto _create_attachments(const graphics_node& node, VkImage swapchain, VkImageView swapchain_view) -> void;
+  auto _create_attachments(const graphics_node& node) -> void;
 
   graph_base& _graph;
 

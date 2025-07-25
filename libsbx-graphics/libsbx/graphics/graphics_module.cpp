@@ -147,13 +147,13 @@ auto graphics_module::update() -> void {
   // Needs to be acquired AFTER acquire_next_image!
   auto& image_data = _per_image_data[_swapchain->active_image_index()];
 
-  _renderer->render(command_buffer, _swapchain->image_view(_swapchain->active_image_index()));
+  _renderer->render(command_buffer, *_swapchain);
 
   command_buffer.end();
 
   auto wait_semaphores = std::vector<command_buffer::wait_data>{};
   wait_semaphores.push_back({frame_data.image_available_semaphore, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT});
-  wait_semaphores.push_back({frame_data.compute_finished_semaphore, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT});
+  // wait_semaphores.push_back({frame_data.compute_finished_semaphore, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT});
 
   command_buffer.submit(wait_semaphores, image_data.render_finished_semaphore, frame_data.graphics_in_flight_fence);
 
@@ -228,11 +228,7 @@ auto graphics_module::attachment(const std::string& name) const -> const descrip
     throw std::runtime_error{"No renderer set"};
   }
 
-  if (auto entry = _attachments.find(name); entry != _attachments.end()) {
-    return *entry->second;
-  }
-
-  throw std::runtime_error{fmt::format("No attachment with name '{}' found", name)};
+  return _renderer->attachment(name);
 }
 
 // auto graphics_module::_start_render_pass(const utility::hashed_string& pass, graphics::command_buffer& command_buffer) -> void {

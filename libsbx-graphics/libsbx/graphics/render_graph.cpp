@@ -9,6 +9,8 @@
 
 #include <libsbx/graphics/graphics_module.hpp>
 
+#include <libsbx/graphics/descriptor/descriptor.hpp>
+
 namespace sbx::graphics {
 
 attachment::attachment(const utility::hashed_string& name, type type, const math::color& clear_color, const graphics::format format, const graphics::address_mode address_mode) noexcept
@@ -132,6 +134,8 @@ auto graph_builder::build() -> void {
     }
   }
 
+  auto swapchain_attachment_name = utility::hashed_string{};
+
   for (const auto& pass_name : sorted_passes) {
     auto node = std::ranges::find_if(_graph._graphics_nodes, [&](const auto& n) {
       return n._name == pass_name;
@@ -172,6 +176,10 @@ auto graph_builder::build() -> void {
         });
 
         attachment_state.current_layout = target_layout;
+      } 
+      
+      if (output.image_type() == attachment::type::swapchain) {
+        swapchain_attachment_name = output.name();
       }
 
       attachments.push_back(output.name());
@@ -182,16 +190,38 @@ auto graph_builder::build() -> void {
       .attachments = attachments
     });
   }
+
+  if (swapchain_attachment_name.is_empty()) {
+    throw utility::runtime_error("Render graph does not containe swapchain attachment");
+  }
+
+  _instructions.emplace_back(transition_instruction{
+    .attachment = swapchain_attachment_name,
+    .old_layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+    .new_layout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
+  });
 }
 
-auto graph_builder::resize(VkImage swapchain, VkImageView swapchain_view) -> void {
+auto graph_builder::resize() -> void {
   _update_viewports();
 
   _clear_attachments();
 
   for (const auto& node : _graph._graphics_nodes) {
-    _create_attachments(node, swapchain, swapchain_view);
+    _create_attachments(node);
   }
+}
+
+auto graph_builder::attachment(const std::string& name) const -> const descriptor& {
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+  if (auto entry = _color_images.find(name); entry != _color_images.end()) {
+    return graphics_module.get_resource<image2d>(entry->second);
+  } else if (auto entry = _depth_images.find(name); entry != _depth_images.end()) {
+    return graphics_module.get_resource<depth_image>(entry->second);
+  }
+
+  throw utility::runtime_error{"No Attachment '{}' found", name};
 }
 
 auto graph_builder::_update_viewports() -> void {
@@ -233,7 +263,7 @@ auto graph_builder::_clear_attachments() -> void {
   _attachment_states.clear();
 }
 
-auto graph_builder::_create_attachments(const graphics_node& node, VkImage swapchain, VkImageView swapchain_view) -> void {
+auto graph_builder::_create_attachments(const graphics_node& node) -> void {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
   _pass_render_areas[node._name] = node._render_area;
@@ -247,7 +277,13 @@ auto graph_builder::_create_attachments(const graphics_node& node, VkImage swapc
           throw utility::runtime_error{"Attachment '{}' has duplicate name in render graph", attachment.name().str()};
         }
 
-        const auto handle = graphics_module.add_resource<image2d>(extent, to_vk_enum<VkFormat>(attachment.format()), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT, VK_FILTER_LINEAR, to_vk_enum<VkSamplerAddressMode>(attachment.address_mode()), VK_SAMPLE_COUNT_1_BIT);
+        auto filter = VK_FILTER_LINEAR;
+
+        if (attachment.format() == format::r32_uint || attachment.format() == format::r64_uint || attachment.format() == format::r32g32_uint) {
+          filter = VK_FILTER_NEAREST;
+        }
+
+        const auto handle = graphics_module.add_resource<image2d>(extent, to_vk_enum<VkFormat>(attachment.format()), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT, filter, to_vk_enum<VkSamplerAddressMode>(attachment.address_mode()), VK_SAMPLE_COUNT_1_BIT);
         const auto& image = graphics_module.get_resource<image2d>(handle);
         
         _color_images.emplace(attachment.name(), handle);
@@ -258,7 +294,7 @@ auto graph_builder::_create_attachments(const graphics_node& node, VkImage swapc
           // .format = to_vk_enum<VkFormat>(attachment.format()),
           .format = image.format(),
           .extent = VkExtent2D{extent.x(), extent.y()},
-          .is_depth = false
+          .type = attachment::type::image
         });
         _clear_values.emplace(attachment.name(), VkClearValue{
           .color = {
@@ -289,7 +325,7 @@ auto graph_builder::_create_attachments(const graphics_node& node, VkImage swapc
           // .format = to_vk_enum<VkFormat>(attachment.format()),
           .format = image.format(),
           .extent = VkExtent2D{extent.x(), extent.y()},
-          .is_depth = true
+          .type = attachment::type::depth
         });
         _clear_values.emplace(attachment.name(), VkClearValue{
           .depthStencil {
@@ -306,18 +342,22 @@ auto graph_builder::_create_attachments(const graphics_node& node, VkImage swapc
       }
       case attachment::type::swapchain: {
         _attachment_states.emplace(attachment.name(), attachment_state{
-          .image = swapchain,
-          .view = swapchain_view,
+          .image = nullptr,
+          .view = nullptr,
           .current_layout = VK_IMAGE_LAYOUT_UNDEFINED,
           // .format = to_vk_enum<VkFormat>(attachment.format()),
-          .format = image.format(),
+          .format = VK_FORMAT_UNDEFINED,
           .extent = VkExtent2D{extent.x(), extent.y()},
-          .is_depth = true
+          .type = attachment::type::swapchain
         });
         _clear_values.emplace(attachment.name(), VkClearValue{
-          .depthStencil {
-            .depth = 1.0f,
-            .stencil = 0
+          .color = {
+            .float32 = {
+              attachment.clear_color().r(), 
+              attachment.clear_color().g(), 
+              attachment.clear_color().b(), 
+              attachment.clear_color().a()
+            }
           }
         });
 
