@@ -8,6 +8,9 @@ struct overload : Types... {
   using Types::operator()...;
 }; // struct overload
 
+template<typename... Types>
+overload(Types...) -> overload<Types...>;
+
 } // namespace sbx::utility
 
 #endif // LIBSBX_UTILITY_OVERLOAD_HPP_

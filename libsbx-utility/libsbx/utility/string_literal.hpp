@@ -88,6 +88,11 @@ using string_literal = basic_string_literal<char, Size>;
 template<std::size_t Size>
 using wstring_literal = basic_string_literal<wchar_t, Size>;
 
+template<string_literal String>
+constexpr auto string_id() noexcept -> std::size_t {
+  return String.hash();
+}
+
 } // namespace sbx::utility
 
 template<std::size_t Size>

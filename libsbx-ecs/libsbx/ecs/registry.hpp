@@ -32,6 +32,20 @@
 
 namespace sbx::ecs {
 
+namespace detail {
+
+struct ecs_type_id_scope { };
+
+} // namespace detail
+
+/**
+ * @brief A scoped type ID generator for the libsbx-ecs scope.
+ *
+ * @tparam Type The type for which the ID is generated.
+ */
+template<typename Type>
+using type_id = utility::scoped_type_id<detail::ecs_type_id_scope, Type>;
+
 template<typename Type, typename Entity = entity, memory::allocator_for<Type> Allocator = std::allocator<Type>>
 struct storage_type {
   using type = basic_storage<Type, Entity, Allocator>;
@@ -254,7 +268,7 @@ private:
 
   template<typename Type>
   requires (std::is_same_v<Type, std::decay_t<Type>> && !std::is_same_v<Type, entity_type>)
-  [[nodiscard]] auto _assure([[maybe_unused]] const std::uint32_t id = utility::type_id<Type>::value()) -> storage_for_type<Type>& {
+  [[nodiscard]] auto _assure([[maybe_unused]] const std::uint32_t id = type_id<Type>::value()) -> storage_for_type<Type>& {
     using storage_type = storage_for_type<Type>;
 
     if (auto iterator = _pools.find(id); iterator != _pools.cend()) {
@@ -279,7 +293,7 @@ private:
 
   template<typename Type>
   requires (std::is_same_v<Type, std::decay_t<Type>> && !std::is_same_v<Type, entity_type>)
-  [[nodiscard]] auto _assure([[maybe_unused]] const std::uint32_t id = utility::type_id<Type>::value()) const -> const storage_for_type<Type>* {
+  [[nodiscard]] auto _assure([[maybe_unused]] const std::uint32_t id = type_id<Type>::value()) const -> const storage_for_type<Type>* {
     if (const auto iterator = _pools.find(id); iterator != _pools.cend()) {
       return static_cast<const storage_for_type<Type>*>(iterator->second.get());
     }
