@@ -36,7 +36,7 @@ renderer::renderer()
 : _clear_color{sbx::math::color::black()} {
   using namespace sbx::utility::literals;
 
-  auto [deferred, resolve, editor] = create_graph(
+  auto [deferred, resolve, post, editor] = create_graph(
     [&](sbx::graphics::render_graph::context& context) -> sbx::graphics::render_graph::graphics_pass {
       auto deferred_pass = context.graphics_pass("deferred"_hs);
 
@@ -60,9 +60,18 @@ renderer::renderer()
       return resolve_pass;
     },
     [&](sbx::graphics::render_graph::context& context) -> sbx::graphics::render_graph::graphics_pass {
+      auto post_pass = context.graphics_pass("post"_hs);
+
+      post_pass.uses("resolve"_hs);
+
+      post_pass.produces("post"_hs, sbx::graphics::attachment::type::image, _clear_color, sbx::graphics::format::r8g8b8a8_unorm);
+
+      return post_pass;
+    },
+    [&](sbx::graphics::render_graph::context& context) -> sbx::graphics::render_graph::graphics_pass {
       auto editor_pass = context.graphics_pass("editor"_hs);
 
-      editor_pass.uses("resolve"_hs);
+      editor_pass.uses("post"_hs);
 
       editor_pass.produces("swapchain"_hs, sbx::graphics::attachment::type::swapchain, _clear_color, sbx::graphics::format::b8g8r8a8_srgb);
 
@@ -73,6 +82,7 @@ renderer::renderer()
   add_subrenderer<sbx::scenes::skybox_subrenderer>("demo/assets/shaders/skybox", deferred);
   add_subrenderer<sbx::scenes::grid_subrenderer>("demo/assets/shaders/grid", deferred);
   add_subrenderer<sbx::models::static_mesh_subrenderer>("demo/assets/shaders/deferred_static", deferred);
+  add_subrenderer<sbx::animations::skinned_mesh_subrenderer>("demo/assets/shaders/deferred_skinned", deferred);
 
   auto attachment_names = std::vector<std::pair<std::string, std::string>>{
     {"albedo_image", "albedo"},
@@ -84,7 +94,9 @@ renderer::renderer()
 
   add_subrenderer<sbx::post::resolve_filter>("demo/assets/shaders/resolve", resolve, std::move(attachment_names));
 
-  add_subrenderer<sbx::editor::editor_subrenderer>("demo/assets/shaders/editor", editor, "resolve");
+  add_subrenderer<sbx::post::fxaa_filter>("demo/assets/shaders/fxaa", post, "resolve");
+
+  add_subrenderer<sbx::editor::editor_subrenderer>("demo/assets/shaders/editor", editor, "post");
 }
 
 } // namespace demo

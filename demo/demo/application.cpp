@@ -182,21 +182,21 @@ application::application()
 
   // Animated Fox
 
-  // auto fox1 = scene.create_node("Fox");
+  auto fox1 = scene.create_node("Fox");
 
-  // auto fox1_submeshes = std::vector<sbx::scenes::skinned_mesh::submesh>{};
-  // fox1_submeshes.push_back(sbx::scenes::skinned_mesh::submesh{0u, sbx::math::color::white(), sbx::scenes::skinned_mesh::material{0.2f, 0.5f, 0.1f, 0.8f}, _image_ids["fox"]});
+  auto fox1_submeshes = std::vector<sbx::scenes::skinned_mesh::submesh>{};
+  fox1_submeshes.push_back(sbx::scenes::skinned_mesh::submesh{0u, sbx::math::color::white(), sbx::scenes::skinned_mesh::material{}, _image_ids["fox"]});
 
-  // scene.add_component<sbx::scenes::skinned_mesh>(fox1, _mesh_ids["fox"], fox_animation_id, fox1_submeshes);
+  scene.add_component<sbx::scenes::skinned_mesh>(fox1, _mesh_ids["fox"], fox_animation_id, fox1_submeshes);
 
-  // scene.add_component<sbx::scenes::animation_state>(fox1);
+  scene.add_component<sbx::scenes::animation_state>(fox1);
 
-  // scene.add_component<walker>(fox1);
+  scene.add_component<walker>(fox1);
 
 
-  // auto& fox1_transform = scene.get_component<sbx::math::transform>(fox1);
-  // fox1_transform.set_position(sbx::math::vector3{0.0f, 0.0f, 0.0f});
-  // fox1_transform.set_scale(sbx::math::vector3{0.06f, 0.06f, 0.06f});
+  auto& fox1_transform = scene.get_component<sbx::math::transform>(fox1);
+  fox1_transform.set_position(sbx::math::vector3{0.0f, 0.0f, 0.0f});
+  fox1_transform.set_scale(sbx::math::vector3{0.06f, 0.06f, 0.06f});
 
   // Static Fox
 
@@ -255,94 +255,94 @@ application::application()
 
   // Trees
 
-  // auto tree_submeshes = std::vector<sbx::scenes::static_mesh::submesh>{};
-  // tree_submeshes.push_back(sbx::scenes::static_mesh::submesh{0u, sbx::math::color::white(), sbx::scenes::static_mesh::material{}, _image_ids["maple_tree_bark"], _image_ids["maple_tree_bark_normal"]});
-  // tree_submeshes.push_back(sbx::scenes::static_mesh::submesh{1u, sbx::math::color::white(), sbx::scenes::static_mesh::material{}, _image_ids["maple_tree_leaves"]});
+  auto tree_submeshes = std::vector<sbx::scenes::static_mesh::submesh>{};
+  tree_submeshes.push_back(sbx::scenes::static_mesh::submesh{0u, sbx::math::color::white(), sbx::scenes::static_mesh::material{}, _image_ids["maple_tree_bark"], _image_ids["maple_tree_bark_normal"]});
+  tree_submeshes.push_back(sbx::scenes::static_mesh::submesh{1u, sbx::math::color::white(), sbx::scenes::static_mesh::material{}, _image_ids["maple_tree_leaves"]});
 
-  // auto maple_tree = scene.create_node("MapleTree");
-  // scene.add_component<sbx::scenes::static_mesh>(maple_tree, _mesh_ids["maple_tree_4"], tree_submeshes);
+  auto maple_tree = scene.create_node("MapleTree");
+  scene.add_component<sbx::scenes::static_mesh>(maple_tree, _mesh_ids["maple_tree_4"], tree_submeshes);
 
-  // const auto grid_size = sbx::math::vector2{15.0f, 15.0f};
-  // const auto cell_size = sbx::math::vector2{15.0f, 15.0f};
-  // const auto offset = grid_size * cell_size * 0.5f;
+  const auto grid_size = sbx::math::vector2{15.0f, 15.0f};
+  const auto cell_size = sbx::math::vector2{15.0f, 15.0f};
+  const auto offset = grid_size * cell_size * 0.5f;
 
-  // auto forrest = scene.create_node("Forrest");
+  auto forrest = scene.create_node("Forrest");
 
-  // for (auto y : std::views::iota(0u, grid_size.y())) {
-  //   for (auto x : std::views::iota(0u, grid_size.x())) {
-  //     auto tree = scene.create_child_node(forrest, fmt::format("Tree{}{}", x, y));
+  for (auto y : std::views::iota(0u, grid_size.y())) {
+    for (auto x : std::views::iota(0u, grid_size.x())) {
+      auto tree = scene.create_child_node(forrest, fmt::format("Tree{}{}", x, y));
 
-  //     scene.add_component<sbx::scenes::static_mesh>(tree, _mesh_ids[fmt::format("maple_tree_{}", sbx::math::random::next<std::uint32_t>(1, 4))], tree_submeshes);
+      scene.add_component<sbx::scenes::static_mesh>(tree, _mesh_ids[fmt::format("maple_tree_{}", sbx::math::random::next<std::uint32_t>(1, 4))], tree_submeshes);
 
-  //     const auto position = (sbx::math::vector2{x, y} * cell_size - offset) + (sbx::math::vector2{sbx::math::random::next<std::float_t>(0.0f, 1.0f), sbx::math::random::next<std::float_t>(0.0f, 1.0f)} * cell_size);
+      const auto position = (sbx::math::vector2{x, y} * cell_size - offset) + (sbx::math::vector2{sbx::math::random::next<std::float_t>(0.0f, 1.0f), sbx::math::random::next<std::float_t>(0.0f, 1.0f)} * cell_size);
 
-  //     auto& tree_transform = scene.get_component<sbx::math::transform>(tree);
-  //     tree_transform.set_position(sbx::math::vector3{position.x(), 0.0f, position.y()});
-  //     // tree_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
-  //     tree_transform.set_rotation(sbx::math::vector3::up, sbx::math::degree{sbx::math::random::next<std::float_t>(0.0f, 360.0f)});
-  //   }
-  // }
+      auto& tree_transform = scene.get_component<sbx::math::transform>(tree);
+      tree_transform.set_position(sbx::math::vector3{position.x(), 0.0f, position.y()});
+      // tree_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
+      tree_transform.set_rotation(sbx::math::vector3::up, sbx::math::degree{sbx::math::random::next<std::float_t>(0.0f, 360.0f)});
+    }
+  }
 
   // Rocks
 
-  // auto rock_submeshes = std::vector<sbx::scenes::static_mesh::submesh>{};
-  // rock_submeshes.push_back(sbx::scenes::static_mesh::submesh{0u, sbx::math::color::white(), sbx::scenes::static_mesh::material{0.2f, 0.5f, 0.1f, 0.8f}, _image_ids["rocks"]});
+  auto rock_submeshes = std::vector<sbx::scenes::static_mesh::submesh>{};
+  rock_submeshes.push_back(sbx::scenes::static_mesh::submesh{0u, sbx::math::color::white(), sbx::scenes::static_mesh::material{}, _image_ids["rocks"]});
 
-  // auto rock_1 = scene.create_node("Rock1");
-  // scene.add_component<sbx::scenes::static_mesh>(rock_1, _mesh_ids["rock_1"], rock_submeshes);
-  // auto& rock_1_transform = scene.get_component<sbx::math::transform>(rock_1);
-  // rock_1_transform.set_position(sbx::math::vector3{-6.0f, 0.0f, 0.0f});
-  // rock_1_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
+  auto rock_1 = scene.create_node("Rock1");
+  scene.add_component<sbx::scenes::static_mesh>(rock_1, _mesh_ids["rock_1"], rock_submeshes);
+  auto& rock_1_transform = scene.get_component<sbx::math::transform>(rock_1);
+  rock_1_transform.set_position(sbx::math::vector3{-6.0f, 0.0f, 0.0f});
+  rock_1_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
 
-  // auto rock_2 = scene.create_node("Rock2");
-  // scene.add_component<sbx::scenes::static_mesh>(rock_2, _mesh_ids["rock_2"], rock_submeshes);
-  // auto& rock_2_transform = scene.get_component<sbx::math::transform>(rock_2);
-  // rock_2_transform.set_position(sbx::math::vector3{-3.0f, 0.0f, 0.0f});
-  // rock_2_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
+  auto rock_2 = scene.create_node("Rock2");
+  scene.add_component<sbx::scenes::static_mesh>(rock_2, _mesh_ids["rock_2"], rock_submeshes);
+  auto& rock_2_transform = scene.get_component<sbx::math::transform>(rock_2);
+  rock_2_transform.set_position(sbx::math::vector3{-3.0f, 0.0f, 0.0f});
+  rock_2_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
 
-  // auto rock_3 = scene.create_node("Rock3");
-  // scene.add_component<sbx::scenes::static_mesh>(rock_3, _mesh_ids["rock_3"], rock_submeshes);
-  // auto& rock_3_transform = scene.get_component<sbx::math::transform>(rock_3);
-  // rock_3_transform.set_position(sbx::math::vector3{0.0f, 0.0f, 0.0f});
-  // rock_3_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
+  auto rock_3 = scene.create_node("Rock3");
+  scene.add_component<sbx::scenes::static_mesh>(rock_3, _mesh_ids["rock_3"], rock_submeshes);
+  auto& rock_3_transform = scene.get_component<sbx::math::transform>(rock_3);
+  rock_3_transform.set_position(sbx::math::vector3{0.0f, 0.0f, 0.0f});
+  rock_3_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
 
-  // auto rock_4 = scene.create_node("Rock4");
-  // scene.add_component<sbx::scenes::static_mesh>(rock_4, _mesh_ids["rock_4"], rock_submeshes);
-  // auto& rock_4_transform = scene.get_component<sbx::math::transform>(rock_4);
-  // rock_4_transform.set_position(sbx::math::vector3{3.0f, 0.0f, 0.0f});
-  // rock_4_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
+  auto rock_4 = scene.create_node("Rock4");
+  scene.add_component<sbx::scenes::static_mesh>(rock_4, _mesh_ids["rock_4"], rock_submeshes);
+  auto& rock_4_transform = scene.get_component<sbx::math::transform>(rock_4);
+  rock_4_transform.set_position(sbx::math::vector3{3.0f, 0.0f, 0.0f});
+  rock_4_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
 
-  // auto rock_5 = scene.create_node("Rock5");
-  // scene.add_component<sbx::scenes::static_mesh>(rock_5, _mesh_ids["rock_5"], rock_submeshes);
-  // auto& rock_5_transform = scene.get_component<sbx::math::transform>(rock_5);
-  // rock_5_transform.set_position(sbx::math::vector3{6.0f, 0.0f, 0.0f});
-  // rock_5_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
+  auto rock_5 = scene.create_node("Rock5");
+  scene.add_component<sbx::scenes::static_mesh>(rock_5, _mesh_ids["rock_5"], rock_submeshes);
+  auto& rock_5_transform = scene.get_component<sbx::math::transform>(rock_5);
+  rock_5_transform.set_position(sbx::math::vector3{6.0f, 0.0f, 0.0f});
+  rock_5_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
 
   // Cubes
 
-  // auto height_map = std::vector<std::float_t>{};
-  // height_map.resize(100 * 100);
+  auto height_map = std::vector<std::float_t>{};
+  height_map.resize(100 * 100);
 
-  // for (auto y = 0; y < 100; ++y) {
-  //   for (auto x = 0; x < 100; ++x) {
-  //     height_map[x + y * 100] = sbx::math::noise::fractal(x * 0.05f, y * 0.05f, 5);
-  //   }
-  // }
+  for (auto y = 0; y < 100; ++y) {
+    for (auto x = 0; x < 100; ++x) {
+      height_map[x + y * 100] = sbx::math::noise::fractal(x * 0.05f, y * 0.05f, 5);
+    }
+  }
 
-  // _image_ids.emplace("height_map", graphics_module.add_resource<sbx::graphics::image2d>(sbx::math::vector2u{100, 100}, VK_FORMAT_R32_SFLOAT, reinterpret_cast<const std::uint8_t*>(height_map.data())));
+  _image_ids.emplace("height_map", graphics_module.add_resource<sbx::graphics::image2d>(sbx::math::vector2u{100, 100}, VK_FORMAT_R32_SFLOAT, reinterpret_cast<const std::uint8_t*>(height_map.data())));
 
-  // for (auto y = -3; y <= 3; y = y + 3) {
-  //   for (auto x = -3; x <= 3; x = x + 3) {
-  //     auto test = scene.create_node("Test");
-  //     auto& test_transform = scene.get_component<sbx::math::transform>(test);
-  //     test_transform.set_position(sbx::math::vector3{x, sbx::math::random::next<std::float_t>(6.0f, 8.0f), y});
-  //     test_transform.set_scale(sbx::math::vector3{1.0f, 1.0f, 1.0f});
-  //     test_transform.set_rotation(sbx::math::vector3::up, sbx::math::degree{45});
-  //     scene.add_component<rotator>(test);
-  //     // scene.add_component<sbx::scenes::static_mesh>(test, _mesh_ids["sphere"], 0u, sbx::math::color{1.0f, 0.6f, 0.6f, 1.0f}, sbx::scenes::static_mesh::material{0.0f, 1.0f, 0.0f, 0.0f});
-  //     scene.add_component<sbx::scenes::static_mesh>(test, _mesh_ids["cube"], 0u, sbx::math::color{0.39f, 0.44f, 0.56f, 1.0f}, sbx::scenes::static_mesh::material{0.0f, 1.0f, 0.0f, 0.0f}, _image_ids["height_map"]);
-  //   }
-  // }
+  for (auto y = -3; y <= 3; y = y + 3) {
+    for (auto x = -3; x <= 3; x = x + 3) {
+      auto test = scene.create_node("Test");
+      auto& test_transform = scene.get_component<sbx::math::transform>(test);
+      test_transform.set_position(sbx::math::vector3{x, sbx::math::random::next<std::float_t>(6.0f, 8.0f), y});
+      test_transform.set_scale(sbx::math::vector3{1.0f, 1.0f, 1.0f});
+      test_transform.set_rotation(sbx::math::vector3::up, sbx::math::degree{45});
+      scene.add_component<rotator>(test);
+      // scene.add_component<sbx::scenes::static_mesh>(test, _mesh_ids["sphere"], 0u, sbx::math::color{1.0f, 0.6f, 0.6f, 1.0f}, sbx::scenes::static_mesh::material{0.0f, 1.0f, 0.0f, 0.0f});
+      scene.add_component<sbx::scenes::static_mesh>(test, _mesh_ids["cube"], 0u, sbx::math::color{0.39f, 0.44f, 0.56f, 1.0f}, sbx::scenes::static_mesh::material{0.0f, 1.0f, 0.0f, 0.0f}, _image_ids["height_map"]);
+    }
+  }
 
   // Camera
   auto camera = scene.camera();
