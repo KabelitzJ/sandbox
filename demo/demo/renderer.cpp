@@ -36,7 +36,7 @@ renderer::renderer()
 : _clear_color{sbx::math::color::black()} {
   using namespace sbx::utility::literals;
 
-  auto [deferred, resolve] = create_graph(
+  auto [deferred, resolve, editor] = create_graph(
     [&](sbx::graphics::render_graph::context& context) -> sbx::graphics::render_graph::graphics_pass {
       auto deferred_pass = context.graphics_pass("deferred"_hs);
 
@@ -55,9 +55,18 @@ renderer::renderer()
 
       resolve_pass.uses("albedo"_hs, "position"_hs, "normal"_hs, "material"_hs, "object_id"_hs);
 
-      resolve_pass.produces("swapchain"_hs, sbx::graphics::attachment::type::swapchain, _clear_color, sbx::graphics::format::b8g8r8a8_srgb);
+      resolve_pass.produces("resolve"_hs, sbx::graphics::attachment::type::image, _clear_color, sbx::graphics::format::r8g8b8a8_unorm);
 
       return resolve_pass;
+    },
+    [&](sbx::graphics::render_graph::context& context) -> sbx::graphics::render_graph::graphics_pass {
+      auto editor_pass = context.graphics_pass("editor"_hs);
+
+      editor_pass.uses("resolve"_hs);
+
+      editor_pass.produces("swapchain"_hs, sbx::graphics::attachment::type::swapchain, _clear_color, sbx::graphics::format::b8g8r8a8_srgb);
+
+      return editor_pass;
     }
   );
 
@@ -74,6 +83,8 @@ renderer::renderer()
   };
 
   add_subrenderer<sbx::post::resolve_filter>("demo/assets/shaders/resolve", resolve, std::move(attachment_names));
+
+  add_subrenderer<sbx::editor::editor_subrenderer>("demo/assets/shaders/editor", editor, "resolve");
 }
 
 } // namespace demo

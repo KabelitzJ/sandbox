@@ -135,6 +135,16 @@ public:
     // Connect ImGui to GLFW
     ImGui_ImplGlfw_InitForVulkan(device_module.window(), true);
 
+    auto& surface = graphics_module.surface();
+
+    const auto surface_capabilities = surface.capabilities();
+
+    auto desired_image_count = surface_capabilities.minImageCount + 3u;
+
+    if (surface_capabilities.maxImageCount > 0 && desired_image_count > surface_capabilities.maxImageCount) {
+      desired_image_count = surface_capabilities.maxImageCount;
+    }
+
     // Connect ImGui to Vulkan
     auto init_info = ImGui_ImplVulkan_InitInfo{};
     std::memset(&init_info, 0, sizeof(ImGui_ImplVulkan_InitInfo));
@@ -146,10 +156,10 @@ public:
     init_info.DescriptorPool = _pipeline.descriptor_pool();
     init_info.Subpass = 0;
     init_info.MinImageCount = 3u;
-    init_info.ImageCount = graphics_module.swapchain().image_count();
+    init_info.ImageCount = desired_image_count;
     init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
-    init_info.UseDynamicRendering = true,
-    init_info.ColorAttachmentFormat = VK_FORMAT_R8G8B8A8_UNORM;
+    init_info.UseDynamicRendering = true;
+    init_info.ColorAttachmentFormat = VK_FORMAT_B8G8R8A8_SRGB;
 
     ImGui_ImplVulkan_Init(&init_info, nullptr);
 
