@@ -5,6 +5,8 @@
 
 #include <vulkan/vulkan.h>
 
+#include <libsbx/graphics/resource_storage.hpp>
+
 #include <libsbx/graphics/images/image.hpp>
 
 namespace sbx::graphics {
@@ -20,6 +22,8 @@ public:
   static auto format() -> VkFormat;
 
 }; // class depth_image
+
+using depth_image_handle = resource_handle<depth_image>;
 
 } // sbx::graphics
 

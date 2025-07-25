@@ -144,19 +144,29 @@ auto graphics_module::update() -> void {
 
   command_buffer.begin(VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
 
-  auto rendering_info = VkRenderingInfo{};
-  rendering_info.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
-  rendering_info.renderArea.offset = {0, 0};
-  rendering_info.renderArea.extent = _swapchain->extent();
-  rendering_info.layerCount = 1;
-  rendering_info.colorAttachmentCount = 1;
-  rendering_info.pColorAttachments = nullptr;
-  rendering_info.pDepthAttachment = nullptr;
-  rendering_info.pStencilAttachment = nullptr;
+  // Needs to be acquired AFTER acquire_next_image!
+  auto& image_data = _per_image_data[_swapchain->active_image_index()];
 
-  command_buffer.begin_rendering(rendering_info);
+  _renderer->render(command_buffer, _swapchain->image_view(_swapchain->active_image_index()));
 
-  _renderer->render(command_buffer);
+  command_buffer.end();
+
+  auto wait_semaphores = std::vector<command_buffer::wait_data>{};
+  wait_semaphores.push_back({frame_data.image_available_semaphore, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT});
+  wait_semaphores.push_back({frame_data.compute_finished_semaphore, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT});
+
+  command_buffer.submit(wait_semaphores, image_data.render_finished_semaphore, frame_data.graphics_in_flight_fence);
+
+  // Present the image to the screen
+  const auto result = _swapchain->present(image_data.render_finished_semaphore);
+
+  if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || _is_framebuffer_resized) {
+    _recreate_swapchain();
+  } else if (result != VK_SUCCESS) {
+    throw std::runtime_error{"Failed to present swapchain image"};
+  }
+
+  _current_frame = utility::fast_mod(_current_frame + 1, swapchain::max_frames_in_flight);
 
   // command_buffer.acquire_ownership(_acquire_ownership_data);
 
@@ -225,50 +235,50 @@ auto graphics_module::attachment(const std::string& name) const -> const descrip
   throw std::runtime_error{fmt::format("No attachment with name '{}' found", name)};
 }
 
-// auto graphics_module::_start_render_pass(graphics::render_stage& render_stage, graphics::command_buffer& command_buffer) -> void {
-  // if (!command_buffer.is_running()) {
-  //   command_buffer.begin(VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
-  // }
+// auto graphics_module::_start_render_pass(const utility::hashed_string& pass, graphics::command_buffer& command_buffer) -> void {
+//   if (!command_buffer.is_running()) {
+//     command_buffer.begin(VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
+//   }
 
-  // const auto& area = render_stage.render_area();
+//   const auto& area = render_stage.render_area();
 
-  // const auto& offset = area.offset();
-  // const auto& extent = area.extent();
+//   const auto& offset = area.offset();
+//   const auto& extent = area.extent();
 
-  // auto render_area = VkRect2D{};
-  // render_area.offset = VkOffset2D{offset.x(), offset.y()};
-  // render_area.extent = VkExtent2D{extent.x(), extent.y()};
+//   auto render_area = VkRect2D{};
+//   render_area.offset = VkOffset2D{offset.x(), offset.y()};
+//   render_area.extent = VkExtent2D{extent.x(), extent.y()};
 
-  // auto viewport = VkViewport{};
-	// viewport.x = 0.0f;
-	// viewport.y = 0.0f;
-	// viewport.width = static_cast<std::float_t>(render_area.extent.width);
-	// viewport.height = static_cast<std::float_t>(render_area.extent.height);
-	// viewport.minDepth = 0.0f;
-	// viewport.maxDepth = 1.0f;
+//   auto viewport = VkViewport{};
+// 	viewport.x = 0.0f;
+// 	viewport.y = 0.0f;
+// 	viewport.width = static_cast<std::float_t>(render_area.extent.width);
+// 	viewport.height = static_cast<std::float_t>(render_area.extent.height);
+// 	viewport.minDepth = 0.0f;
+// 	viewport.maxDepth = 1.0f;
 
-	// command_buffer.set_viewport(viewport);
+// 	command_buffer.set_viewport(viewport);
 
-	// auto scissor = VkRect2D{};
-	// scissor.offset = render_area.offset;
-	// scissor.extent = render_area.extent;
+// 	auto scissor = VkRect2D{};
+// 	scissor.offset = render_area.offset;
+// 	scissor.extent = render_area.extent;
   
-  // command_buffer.set_scissor(scissor);
+//   command_buffer.set_scissor(scissor);
 
-  // const auto& clear_values = render_stage.clear_values();
+//   const auto& clear_values = render_stage.clear_values();
 
-  // auto render_pass_begin_info = VkRenderPassBeginInfo{};
-	// render_pass_begin_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-	// render_pass_begin_info.renderPass = render_stage.render_pass();
-	// render_pass_begin_info.framebuffer = render_stage.framebuffer(_swapchain->active_image_index());
-	// render_pass_begin_info.renderArea = render_area;
-	// render_pass_begin_info.clearValueCount = static_cast<std::uint32_t>(clear_values.size());
-	// render_pass_begin_info.pClearValues = clear_values.data();
+//   auto render_pass_begin_info = VkRenderPassBeginInfo{};
+// 	render_pass_begin_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+// 	render_pass_begin_info.renderPass = render_stage.render_pass();
+// 	render_pass_begin_info.framebuffer = render_stage.framebuffer(_swapchain->active_image_index());
+// 	render_pass_begin_info.renderArea = render_area;
+// 	render_pass_begin_info.clearValueCount = static_cast<std::uint32_t>(clear_values.size());
+// 	render_pass_begin_info.pClearValues = clear_values.data();
 
-  // command_buffer.begin_render_pass(render_pass_begin_info, VK_SUBPASS_CONTENTS_INLINE);
+//   command_buffer.begin_render_pass(render_pass_begin_info, VK_SUBPASS_CONTENTS_INLINE);
 // }
 
-// auto graphics_module::_end_render_pass(graphics::render_stage& render_stage, graphics::command_buffer& command_buffer) -> void {
+// auto graphics_module::_end_render_pass(const utility::hashed_string& pass, graphics::command_buffer& command_buffer) -> void {
 //   auto& frame_data = _per_frame_data[_current_frame];
 //   auto& image_data = _per_image_data[_swapchain->active_image_index()];
 
@@ -311,6 +321,8 @@ auto graphics_module::_recreate_swapchain() -> void {
   _recreate_per_image_data();
   _recreate_command_buffers();
   _recreate_attachments();
+
+  _renderer->resize();
 
   _current_frame = 0;
   _is_framebuffer_resized = false;

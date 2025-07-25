@@ -25,7 +25,7 @@ private:
 
   std::uint32_t _width;
   std::uint32_t _height;
-  graphics::image_handle _image_id;
+  graphics::image2d_handle _image_id;
 
 }; // class atlas
 

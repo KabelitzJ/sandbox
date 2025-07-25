@@ -28,17 +28,17 @@ public:
     std::uint32_t index{0};
     math::color tint{math::color::white()};
     static_mesh::material material{0.0f, 1.0f, 0.0f, 0.0f};
-    graphics::image_handle albedo_texture{};
-    graphics::image_handle normal_texture{};
-    graphics::image_handle metallic_texture{};
-    graphics::image_handle roughness_texture{};
+    graphics::image2d_handle albedo_texture{};
+    graphics::image2d_handle normal_texture{};
+    graphics::image2d_handle metallic_texture{};
+    graphics::image2d_handle roughness_texture{};
   }; // struct submesh
 
   static_mesh(math::uuid mesh_id, const std::vector<submesh>& submeshes)
   : _mesh_id{mesh_id},
     _submeshes{submeshes} { }
 
-    static_mesh(const math::uuid& mesh_id, std::uint32_t index = 0, const math::color& tint = math::color::white(), const static_mesh::material& material = static_mesh::material{}, const graphics::image_handle& albedo_texture = {})
+    static_mesh(const math::uuid& mesh_id, std::uint32_t index = 0, const math::color& tint = math::color::white(), const static_mesh::material& material = static_mesh::material{}, const graphics::image2d_handle& albedo_texture = {})
   : _mesh_id{mesh_id} {
     _submeshes.push_back(submesh{index, tint, material, albedo_texture});
   }

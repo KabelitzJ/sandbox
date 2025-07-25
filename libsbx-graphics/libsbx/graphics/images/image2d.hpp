@@ -38,7 +38,7 @@ private:
 
 }; // class image2d
 
-using image_handle = resource_handle<image2d>;
+using image2d_handle = resource_handle<image2d>;
 
 } // namespace sbx::graphics
 

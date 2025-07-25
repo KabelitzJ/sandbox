@@ -35,7 +35,7 @@ private:
 
 }; // class cube_image
 
-using cube_image_handle = resource_handle<cube_image>;
+using cube_image2d_handle = resource_handle<cube_image>;
 
 } // namespace sbx::graphics
 

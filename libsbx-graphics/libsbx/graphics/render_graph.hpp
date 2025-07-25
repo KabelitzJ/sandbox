@@ -18,6 +18,8 @@
 
 #include <libsbx/memory/observer_ptr.hpp>
 
+#include <libsbx/graphics/viewport.hpp>
+
 #include <libsbx/graphics/images/image2d.hpp>
 #include <libsbx/graphics/images/depth_image.hpp>
 
@@ -83,11 +85,14 @@ class graphics_node {
 
 public:
 
-  graphics_node(const utility::hashed_string& name);
+  graphics_node(const utility::hashed_string& name, const viewport& viewport = viewport::window());
 
 private:
 
   utility::hashed_string _name;
+
+  viewport _viewport;
+  render_area _render_area;
 
   std::vector<utility::hashed_string> _inputs;
   std::vector<attachment> _outputs;
@@ -118,11 +123,12 @@ public:
   template<typename Type, typename... Args>
   auto emplace_back(Args&&... args) -> Type&;
 
-  auto reserve(const std::size_t size) -> void;
+  auto reserve(const std::size_t graphics, const std::size_t compute) -> void;
 
 private:
 
-  std::vector<std::variant<graphics_node, compute_node>> _nodes;
+  std::vector<graphics_node> _graphics_nodes;
+  std::vector<compute_node> _compute_nodes;
 
 }; // class graph_base
 
@@ -184,11 +190,37 @@ private:
 
 }; // class context
 
+struct transition_instruction {
+  utility::hashed_string attachment;
+  VkImageLayout old_layout;
+  VkImageLayout new_layout;
+}; // struct transition_instruction
+
+struct pass_instruction {
+  utility::hashed_string pass_name;
+  std::vector<utility::hashed_string> attachments;
+}; // struct pass_instruction
+
+using instruction = std::variant<transition_instruction, pass_instruction>;
+
+template<typename... Callables>
+struct overload : Callables... {
+  using Callables::operator()...;
+};
+
+// deduction guide
+template<typename... Callables>
+overload(Callables...) -> overload<Callables...>;
+
 class graph_builder {
 
 public:
 
   graph_builder(graph_base& graph);
+
+  virtual ~graph_builder() {
+    _clear_attachments();
+  }
 
   template <typename Callable>
   requires (std::is_invocable_r_v<graphics_pass, Callable, context&>)
@@ -204,14 +236,126 @@ public:
 
   auto build() -> void;
 
+  auto resize(VkImage swapchain, VkImageView swapchain_view) -> void;
+
+  template<typename Callable>
+  auto execute(command_buffer& command_buffer, VkImageView swapchain, Callable&& callable) -> void {
+    for (const auto& instruction : _instructions) {
+      std::visit(overload{
+        [this, &command_buffer](const transition_instruction& instruction) {
+          utility::logger<"graphics">::info("instruction: {}", instruction.attachment.str());
+
+          for (const auto& [name, state] : _attachment_states) {
+            utility::logger<"graphics">::info("state: {}", name.str());
+          }
+
+          auto& state = _attachment_states.at(instruction.attachment);
+
+          image::transition_image_layout(command_buffer, state.image, state.format, instruction.old_layout, instruction.new_layout, state.is_depth ? (VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT) : VK_IMAGE_ASPECT_COLOR_BIT, 1, 0, 1, 0);
+        },
+        [this, &command_buffer, &callable](const pass_instruction& instruction) {
+          const auto& area = _pass_render_areas[instruction.pass_name];
+
+          const auto& offset = area.offset();
+          const auto& extent = area.extent();
+
+          auto render_area = VkRect2D{};
+          render_area.offset = VkOffset2D{offset.x(), offset.y()};
+          render_area.extent = VkExtent2D{extent.x(), extent.y()};
+
+          auto viewport = VkViewport{};
+          viewport.x = 0.0f;
+          viewport.y = 0.0f;
+          viewport.width = static_cast<std::float_t>(render_area.extent.width);
+          viewport.height = static_cast<std::float_t>(render_area.extent.height);
+          viewport.minDepth = 0.0f;
+          viewport.maxDepth = 1.0f;
+
+          command_buffer.set_viewport(viewport);
+
+          auto scissor = VkRect2D{};
+          scissor.offset = render_area.offset;
+          scissor.extent = render_area.extent;
+          
+          command_buffer.set_scissor(scissor);
+
+          auto color_attachments = std::vector<VkRenderingAttachmentInfo>{};
+          auto depth_attachment = std::optional<VkRenderingAttachmentInfo>{};
+
+          for (const auto& attachment : instruction.attachments) {
+            const auto& state = _attachment_states[attachment];
+            const auto& clear_value = _clear_values[attachment];
+
+            if (!state.is_depth) {
+              color_attachments.push_back(VkRenderingAttachmentInfo{
+                .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
+                .imageView = state.view,
+                .imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                .resolveMode = VK_RESOLVE_MODE_NONE,
+                .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
+                .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+                .clearValue = clear_value
+              });
+            } else {
+              depth_attachment = VkRenderingAttachmentInfo{
+                .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
+                .imageView = state.view,
+                .imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+                .resolveMode = VK_RESOLVE_MODE_NONE,
+                .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
+                .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+                .clearValue = clear_value
+              };
+            }
+          }
+
+          auto rendering_info = VkRenderingInfo{};
+          rendering_info.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
+          rendering_info.renderArea = render_area;
+          rendering_info.layerCount = 1;
+          rendering_info.colorAttachmentCount = static_cast<std::uint32_t>(color_attachments.size());
+          rendering_info.pColorAttachments = color_attachments.data();
+          rendering_info.pDepthAttachment = depth_attachment.has_value() ? &depth_attachment.value() : nullptr;
+          rendering_info.pStencilAttachment = depth_attachment.has_value() ? &depth_attachment.value() : nullptr;
+
+          command_buffer.begin_rendering(rendering_info);
+
+          std::invoke(callable, instruction.pass_name);
+
+          command_buffer.end_rendering();
+        }
+      }, instruction);
+    }
+  }
+
 private:
 
-  auto _create_attachment(const attachment& attachment) -> void;
+  struct attachment_state {
+    VkImage image;
+    VkImageView view;
+    VkImageLayout current_layout = VK_IMAGE_LAYOUT_UNDEFINED;
+    VkFormat format;
+    VkExtent2D extent;
+    bool is_depth = false;
+  }; // struct attachment_state
+
+  auto _update_viewports() -> void;
+
+  auto _clear_attachments() -> void;
+
+  auto _create_attachments(const graphics_node& node, VkImage swapchain, VkImageView swapchain_view) -> void;
 
   graph_base& _graph;
 
-  std::vector<image2d> _color_images;
-  std::vector<depth_image> _depth_images;
+  std::unordered_map<utility::hashed_string, image2d_handle> _color_images;
+  std::unordered_map<utility::hashed_string, depth_image_handle> _depth_images;
+  std::unordered_map<utility::hashed_string, VkClearValue> _clear_values;
+
+  std::vector<instruction> _instructions;
+
+  std::unordered_map<utility::hashed_string, attachment_state> _attachment_states;
+
+  std::unordered_map<utility::hashed_string, render_area> _pass_render_areas;
 
 }; // class graph_builder
 
@@ -228,6 +372,8 @@ public:
   using context = detail::context;
 
   render_graph();
+
+  ~render_graph() override = default;
 
 private:
 

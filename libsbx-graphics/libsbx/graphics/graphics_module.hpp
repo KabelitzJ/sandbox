@@ -122,6 +122,11 @@ public:
     return _storage<Type>().get(handle);
   }
 
+  template<typename Type>
+  auto remove_resource(const resource_handle<Type>& handle) -> void {
+    return _storage<Type>().remove(handle);
+  }
+
   auto allocator() const noexcept -> VmaAllocator {
     return _allocator;
   }
@@ -177,9 +182,9 @@ private:
     }
   }
 
-  // auto _start_render_pass(graphics::render_stage& render_stage, graphics::command_buffer& command_buffer) -> void;
+  // auto _start_render_pass(const utility::hashed_string& pass, graphics::command_buffer& command_buffer) -> void;
 
-  // auto _end_render_pass(graphics::render_stage& render_stage, graphics::command_buffer& command_buffer) -> void;
+  // auto _end_render_pass(const utility::hashed_string& pass, graphics::command_buffer& command_buffer) -> void;
 
   auto _reset_render_stages() -> void;
 
@@ -242,6 +247,8 @@ private:
       return _storage_buffers;
     } else if constexpr (std::is_same_v<Type, image2d>) {
       return _images;
+    } else if constexpr (std::is_same_v<Type, depth_image>) {
+      return _depth_images;
     } else if constexpr (std::is_same_v<Type, cube_image>) {
       return _cube_image;
     }
@@ -263,6 +270,8 @@ private:
       return _storage_buffers;
     } else if constexpr (std::is_same_v<Type, image2d>) {
       return _images;
+    } else if constexpr (std::is_same_v<Type, depth_image>) {
+      return _depth_images;
     } else if constexpr (std::is_same_v<Type, cube_image>) {
       return _cube_image;
     }
@@ -297,6 +306,7 @@ private:
   resource_storage<graphics::buffer> _buffers;
   resource_storage<graphics::storage_buffer> _storage_buffers;
   resource_storage<graphics::image2d> _images;
+  resource_storage<graphics::depth_image> _depth_images;
   resource_storage<graphics::cube_image> _cube_image;
 
   std::vector<command_buffer::acquire_ownership_data> _acquire_ownership_data;

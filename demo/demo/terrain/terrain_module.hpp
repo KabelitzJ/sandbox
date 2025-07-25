@@ -331,8 +331,8 @@ private:
 
   sbx::math::uuid _mesh_id;
   sbx::math::uuid _planet_id;
-  sbx::graphics::image_handle _texture_id;
-  sbx::graphics::image_handle _normal_texture_id;
+  sbx::graphics::image2d_handle _texture_id;
+  sbx::graphics::image2d_handle _normal_texture_id;
   sbx::scenes::node _node;
 
 }; // class terrain_module

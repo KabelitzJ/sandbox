@@ -31,15 +31,12 @@ public:
 
   // virtual auto initialize() -> void = 0;
 
-  auto render(command_buffer& command_buffer) -> void {
-    // const auto stage_name = fmt::format("Render Stage: {}.{}", stage.renderpass, stage.subpass);
-    // EASY_BLOCK(stage_name.c_str(), profiler::colors::LightBlue);
-    // for (auto& [render_stage, subrenderer] : _subrenderers) {
-    //   if (render_stage == stage) {
-    //     subrenderer->render(command_buffer);
-    //   }
-    // }
-    // EASY_END_BLOCK;
+  auto render(command_buffer& command_buffer, VkImageView swapchain) -> void {
+    _graph.execute(command_buffer, swapchain, [this, &command_buffer](const auto& pass) {
+      for (auto& subrenderer : _subrenderers[pass]) {
+        subrenderer->render(command_buffer);
+      }
+    });
   }
 
   auto execute_tasks(command_buffer& command_buffer) -> void {
@@ -48,14 +45,20 @@ public:
     }
   }
 
+  auto resize(VkImage swapchain, VkImageView swapchain_view) -> void {
+    _graph.resize(swapchain, swapchain_view);
+  }
+
 protected:
 
   template<typename Type, typename... Args>
   requires (std::is_constructible_v<Type, const std::filesystem::path&, const render_graph::graphics_pass&, Args...>)
   auto add_subrenderer(const std::filesystem::path& path, const render_graph::graphics_pass& pass, Args&&... args) -> Type& {
-    auto result = _subrenderers.insert({pass.name(), std::make_unique<Type>(path, pass, std::forward<Args>(args)...)});
+    auto& subrenderers = _subrenderers[pass.name()];
 
-    return *static_cast<Type*>(result->second.get());
+    subrenderers.emplace_back(std::make_unique<Type>(path, pass, std::forward<Args>(args)...));
+
+    return *static_cast<Type*>(subrenderers.back().get());
   }
 
   template<typename... Callables>
@@ -80,7 +83,7 @@ private:
 
   std::vector<std::unique_ptr<graphics::task>> _tasks;
 
-  std::multimap<utility::hashed_string, std::unique_ptr<subrenderer>> _subrenderers;
+  std::unordered_map<utility::hashed_string, std::vector<std::unique_ptr<subrenderer>>> _subrenderers;
 
   render_graph _graph;
 

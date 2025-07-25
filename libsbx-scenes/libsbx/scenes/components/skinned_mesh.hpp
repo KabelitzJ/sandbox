@@ -34,10 +34,10 @@ public:
     std::uint32_t index{0};
     math::color tint{math::color::white()};
     skinned_mesh::material material{0.0f, 1.0f, 0.0f, 0.0f};
-    graphics::image_handle albedo_texture{};
-    graphics::image_handle normal_texture{};
-    graphics::image_handle metallic_texture{};
-    graphics::image_handle roughness_texture{};
+    graphics::image2d_handle albedo_texture{};
+    graphics::image2d_handle normal_texture{};
+    graphics::image2d_handle metallic_texture{};
+    graphics::image2d_handle roughness_texture{};
   }; // struct submesh
 
   skinned_mesh(math::uuid mesh_id, math::uuid animation_id, const std::vector<submesh>& submeshes)
@@ -45,7 +45,7 @@ public:
     _animation_id{animation_id},
     _submeshes{submeshes} { }
 
-  skinned_mesh(const math::uuid& mesh_id, math::uuid animation_id, std::uint32_t index = 0, const math::color& tint = math::color::white(), const skinned_mesh::material& material = skinned_mesh::material{}, const graphics::image_handle& albedo_texture = {})
+  skinned_mesh(const math::uuid& mesh_id, math::uuid animation_id, std::uint32_t index = 0, const math::color& tint = math::color::white(), const skinned_mesh::material& material = skinned_mesh::material{}, const graphics::image2d_handle& albedo_texture = {})
   : _mesh_id{mesh_id},
     _animation_id{animation_id} {
     _submeshes.push_back(submesh{index, tint, material, albedo_texture});
