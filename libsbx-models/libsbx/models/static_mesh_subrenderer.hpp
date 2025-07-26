@@ -242,12 +242,6 @@ public:
 
 private:
 
-  struct point_light {
-    alignas(16) math::vector3 position;
-    alignas(16) math::color color;
-    alignas(16) std::float_t radius;
-  }; // struct point_light
-
   struct transform_data {
     alignas(16) math::matrix4x4 model;
     alignas(16) math::matrix4x4 normal;
@@ -313,8 +307,6 @@ private:
     _pipeline.bind(command_buffer);
 
     _scene_descriptor_handler.push("uniform_scene", _scene_uniform_handler);
-    // _scene_descriptor_handler.push("buffer_point_lights", _point_lights_storage_handler);
-    // _scene_descriptor_handler.push("shadow_map_image", graphics_module.attachment("shadow_map"));
     _scene_descriptor_handler.push("images_sampler", _images_sampler);
     _scene_descriptor_handler.push("images", _images);
 

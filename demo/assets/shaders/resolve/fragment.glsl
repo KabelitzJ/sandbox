@@ -42,12 +42,16 @@ float uint_to_float(uint value) {
   return float(value) / 4294967295.0;
 }
 
+uvec4 utexture(usampler2D image, ivec2 uv) {
+  return texelFetch(image, uv, 0);
+}
+
 void main() {
   vec3 world_position = texture(position_image, in_uv).xyz;
   vec3 normal = normalize(texture(normal_image, in_uv).xyz);
   vec4 albedo = texture(albedo_image, in_uv);
   vec2 material = texture(material_image, in_uv).xy;
-  uvec2 object_id = texelFetch(object_id_image, ivec2(gl_FragCoord.xy), 0).xy;
+  uvec2 object_id = utexture(object_id_image, ivec2(gl_FragCoord.xy)).xy;
 
   float metallic = material.x;
   float roughness = material.y;
