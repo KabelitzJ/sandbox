@@ -46,7 +46,7 @@ vec3 get_normal() {
     return normalize(in_normal);
   }
 
-  vec3 normal = texture(sampler2D(images[normal_image_index], images_sampler), in_uv).rgb * 2.0 - 1.0;
+  vec3 normal = texture(sampler2D(images[normal_image_index], images_sampler), in_uv).xyz;
 
   return normalize(in_tbn * normal);
 }

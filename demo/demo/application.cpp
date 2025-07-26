@@ -77,8 +77,11 @@ application::application()
   _image_ids.emplace("t_90_50_cal_albedo", graphics_module.add_resource<sbx::graphics::image2d>("demo/assets/textures/tank/t_90_50_cal_albedo.png"));
 
   _image_ids.emplace("bmp_body1_albedo", graphics_module.add_resource<sbx::graphics::image2d>("demo/assets/textures/bmp/body1_albedo.png"));
+  _image_ids.emplace("bmp_body1_normal", graphics_module.add_resource<sbx::graphics::image2d>("demo/assets/textures/bmp/body1_normal.png"));
   _image_ids.emplace("bmp_body2_albedo", graphics_module.add_resource<sbx::graphics::image2d>("demo/assets/textures/bmp/body2_albedo.png"));
+  _image_ids.emplace("bmp_body2_normal", graphics_module.add_resource<sbx::graphics::image2d>("demo/assets/textures/bmp/body2_normal.png"));
   _image_ids.emplace("bmp_tracks_albedo", graphics_module.add_resource<sbx::graphics::image2d>("demo/assets/textures/bmp/tracks_albedo.png"));
+  _image_ids.emplace("bmp_tracks_normal", graphics_module.add_resource<sbx::graphics::image2d>("demo/assets/textures/bmp/tracks_normal.png"));
 
   // Meshes
 

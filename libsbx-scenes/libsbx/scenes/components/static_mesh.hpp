@@ -38,9 +38,9 @@ public:
   : _mesh_id{mesh_id},
     _submeshes{submeshes} { }
 
-    static_mesh(const math::uuid& mesh_id, std::uint32_t index = 0, const math::color& tint = math::color::white(), const static_mesh::material& material = static_mesh::material{}, const graphics::image2d_handle& albedo_texture = {})
+  static_mesh(const math::uuid& mesh_id, std::uint32_t index = 0, const math::color& tint = math::color::white(), const static_mesh::material& material = static_mesh::material{}, const graphics::image2d_handle& albedo_texture = {}, const graphics::image2d_handle& normal_texture = {})
   : _mesh_id{mesh_id} {
-    _submeshes.push_back(submesh{index, tint, material, albedo_texture});
+    _submeshes.push_back(submesh{index, tint, material, albedo_texture, normal_texture});
   }
 
   auto mesh_id() const noexcept -> math::uuid {
