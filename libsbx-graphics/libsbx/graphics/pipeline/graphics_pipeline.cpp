@@ -265,7 +265,7 @@ graphics_pipeline::graphics_pipeline(const std::filesystem::path& path, const re
   color_blend_attachment_enabled.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
   color_blend_attachment_enabled.colorBlendOp = VK_BLEND_OP_ADD;
   color_blend_attachment_enabled.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-  color_blend_attachment_enabled.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+  color_blend_attachment_enabled.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
   color_blend_attachment_enabled.alphaBlendOp = VK_BLEND_OP_ADD;
 
   auto color_blend_attachment_disabled = VkPipelineColorBlendAttachmentState{};

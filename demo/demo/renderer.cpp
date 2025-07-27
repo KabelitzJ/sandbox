@@ -33,7 +33,7 @@ namespace demo {
 
 
 renderer::renderer()
-: _clear_color{sbx::math::color::black()} {
+: _clear_color{sbx::math::color::white()} {
   using namespace sbx::utility::literals;
 
   auto [deferred, resolve, post, editor] = create_graph(
@@ -46,7 +46,7 @@ renderer::renderer()
       deferred_pass.produces("normal"_hs, sbx::graphics::attachment::type::image, _clear_color, sbx::graphics::format::r32g32b32a32_sfloat);
       deferred_pass.produces("material"_hs, sbx::graphics::attachment::type::image, _clear_color, sbx::graphics::format::r8g8b8a8_unorm);
       deferred_pass.produces("object_id"_hs, sbx::graphics::attachment::type::image, _clear_color, sbx::graphics::format::r32g32_uint);
-      deferred_pass.produces("normalized_depth"_hs, sbx::graphics::attachment::type::image, sbx::math::color{1.0f, 1.0f, 1.0f, 1.0f}, sbx::graphics::format::r32_sfloat);
+      deferred_pass.produces("normalized_depth"_hs, sbx::graphics::attachment::type::image, _clear_color, sbx::graphics::format::r32_sfloat);
 
       deferred_pass.add_draw_list<sbx::models::static_mesh_draw_list>("static_mesh");
 

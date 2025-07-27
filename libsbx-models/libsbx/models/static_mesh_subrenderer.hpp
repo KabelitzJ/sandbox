@@ -71,7 +71,7 @@ class static_mesh_subrenderer final : public graphics::subrenderer {
 
     inline static const auto pipeline_definition = graphics::pipeline_definition{
       .depth = graphics::depth::read_write,
-      .uses_transparency = false,
+      .uses_transparency = true,
       .rasterization_state = graphics::rasterization_state{
         .polygon_mode = graphics::polygon_mode::fill,
         .cull_mode = graphics::cull_mode::back,
