@@ -44,6 +44,13 @@ auto graphics_pass::produces(Args&&... args) -> void {
   _node._outputs.emplace_back(std::forward<Args>(args)...);
 }
 
+template<typename Type, typename... Args>
+requires (std::is_constructible_v<Type, Args...>)
+auto graphics_pass::add_draw_list(const utility::hashed_string& name, Args&&... args) -> Type& {
+  auto result = _node._draw_lists.emplace(name, std::make_unique<Type>(std::forward<Args>(args)...));
+  return *static_cast<Type*>(result.first->second.get());
+}
+
 template <typename Callable>
 requires (std::is_invocable_r_v<graphics_pass, Callable, context&>)
 auto graph_builder::emplace(Callable&& callable) -> graphics_pass {

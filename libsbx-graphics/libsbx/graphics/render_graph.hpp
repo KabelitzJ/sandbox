@@ -19,6 +19,7 @@
 #include <libsbx/memory/observer_ptr.hpp>
 
 #include <libsbx/graphics/viewport.hpp>
+#include <libsbx/graphics/draw_list.hpp>
 
 #include <libsbx/graphics/images/image2d.hpp>
 #include <libsbx/graphics/images/depth_image.hpp>
@@ -99,6 +100,8 @@ private:
   std::vector<utility::hashed_string> _inputs;
   std::vector<attachment> _outputs;
 
+  std::unordered_map<utility::hashed_string, std::unique_ptr<graphics::draw_list>> _draw_lists;
+
 }; // class graphics_node
 
 class compute_node {
@@ -148,9 +151,15 @@ public:
   requires (std::is_constructible_v<attachment, Args...>)
   auto produces(Args&&... args) -> void;
 
+  template<typename Type, typename... Args>
+  requires (std::is_constructible_v<Type, Args...>)
+  auto add_draw_list(const utility::hashed_string& name, Args&&... args) -> Type&;
+
   auto name() const -> const utility::hashed_string&;
 
   auto attachments() const -> const std::vector<attachment>&;
+
+  auto draw_list(const utility::hashed_string& name) const -> const std::unique_ptr<graphics::draw_list>&;
 
 private:
 
@@ -199,7 +208,7 @@ struct transition_instruction {
 }; // struct transition_instruction
 
 struct pass_instruction {
-  utility::hashed_string pass_name;
+  graphics_node& node;
   std::vector<utility::hashed_string> attachments;
 }; // struct pass_instruction
 
@@ -256,7 +265,7 @@ public:
           }
         },
         [this, &command_buffer, &swapchain, &callable](const pass_instruction& instruction) {
-          const auto& area = _pass_render_areas[instruction.pass_name];
+          const auto& area = _pass_render_areas[instruction.node._name];
 
           const auto& offset = area.offset();
           const auto& extent = area.extent();
@@ -333,9 +342,14 @@ public:
           rendering_info.pDepthAttachment = depth_attachment.has_value() ? &depth_attachment.value() : nullptr;
           rendering_info.pStencilAttachment = depth_attachment.has_value() ? &depth_attachment.value() : nullptr;
 
+          for (auto& [name, draw_list] : instruction.node._draw_lists) {
+            draw_list->clear();
+            draw_list->update();
+          }
+
           command_buffer.begin_rendering(rendering_info);
 
-          std::invoke(callable, instruction.pass_name);
+          std::invoke(callable, instruction.node._name);
 
           command_buffer.end_rendering();
         }

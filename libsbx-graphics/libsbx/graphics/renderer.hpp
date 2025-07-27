@@ -18,6 +18,7 @@
 #include <libsbx/graphics/task.hpp>
 #include <libsbx/graphics/subrenderer.hpp>
 #include <libsbx/graphics/render_graph.hpp>
+#include <libsbx/graphics/draw_list.hpp>
 
 namespace sbx::graphics {
 
@@ -32,8 +33,8 @@ public:
   // virtual auto initialize() -> void = 0;
 
   auto render(command_buffer& command_buffer, const swapchain& swapchain) -> void {
-    _graph.execute(command_buffer, swapchain, [this, &command_buffer](const auto& pass) {
-      for (auto& subrenderer : _subrenderers[pass]) {
+    _graph.execute(command_buffer, swapchain, [this, &command_buffer](const auto& pass_name) {
+      for (auto& subrenderer : _subrenderers.at(pass_name)) {
         subrenderer->render(command_buffer);
       }
     });

@@ -18,7 +18,7 @@ public:
 
   inline static constexpr auto max_size = std::uint32_t{64u};
 
-  using handle_type = resource_handle<image2d>;
+  using handle_type = image2d_handle;
 
   separate_image2d_array();
 

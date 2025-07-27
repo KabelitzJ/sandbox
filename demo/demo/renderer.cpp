@@ -48,6 +48,8 @@ renderer::renderer()
       deferred_pass.produces("object_id"_hs, sbx::graphics::attachment::type::image, _clear_color, sbx::graphics::format::r32g32_uint);
       deferred_pass.produces("normalized_depth"_hs, sbx::graphics::attachment::type::image, sbx::math::color{1.0f, 1.0f, 1.0f, 1.0f}, sbx::graphics::format::r32_sfloat);
 
+      deferred_pass.add_draw_list<sbx::models::static_mesh_draw_list>("static_mesh");
+
       return deferred_pass;
     },
     [&](sbx::graphics::render_graph::context& context) -> sbx::graphics::render_graph::graphics_pass {

@@ -1,0 +1,76 @@
+#ifndef LIBSBX_GRAPHICS_DRAW_LIST_HPP_
+#define LIBSBX_GRAPHICS_DRAW_LIST_HPP_
+
+#include <cstddef>
+#include <cstdint>
+
+#include <libsbx/utility/hashed_string.hpp>
+
+#include <libsbx/math/uuid.hpp>
+
+#include <libsbx/graphics/buffers/storage_buffer.hpp>
+#include <libsbx/graphics/images/image2d.hpp>
+#include <libsbx/graphics/images/separate_sampler.hpp>
+#include <libsbx/graphics/images/separate_image2d_array.hpp>
+
+namespace sbx::graphics {
+
+struct draw_command_range {
+  std::uint32_t offset;
+  std::uint32_t count;
+}; // struct draw_command_range
+
+class draw_list {
+
+public:
+
+  using storage_buffer_container = std::unordered_map<utility::hashed_string, storage_buffer_handle>;
+  using draw_command_range_container = std::unordered_map<math::uuid, draw_command_range>;
+
+  draw_list() = default;
+
+  virtual ~draw_list();
+
+  virtual auto update() -> void = 0;
+
+  auto buffers() const noexcept -> const storage_buffer_container&;
+
+  auto buffer(const utility::hashed_string& name) const -> const storage_buffer&;
+
+  auto images() const noexcept -> const separate_image2d_array&;
+
+  auto sampler() const noexcept -> const separate_sampler&;
+
+  auto draw_ranges() const noexcept -> const draw_command_range_container&;
+
+  auto clear() -> void;
+
+protected:
+
+  auto create_buffer(const utility::hashed_string& name, VkDeviceSize size, VkBufferUsageFlags additional_usage = 0) -> void;
+
+  auto get_buffer(const utility::hashed_string& name) -> storage_buffer&;
+
+  auto get_buffer(const utility::hashed_string& name) const -> const storage_buffer&;
+
+  template<typename Type>
+  auto update_buffer(const std::vector<Type>& buffer, const utility::hashed_string& name) -> void;
+
+  auto add_image(const image2d_handle& handle) -> std::uint32_t;
+
+  auto push_draw_command_range(const math::uuid& id, const draw_command_range& range) -> void;
+
+private:
+
+  storage_buffer_container _buffers;
+  separate_image2d_array _images;
+  separate_sampler _sampler;
+  draw_command_range_container _draw_ranges;
+
+}; // class draw_list
+
+} // namespace sbx::graphics
+
+#include <libsbx/graphics/draw_list.ipp>
+
+#endif // LIBSBX_GRAPHICS_DRAW_LIST_HPP_
