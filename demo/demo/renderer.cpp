@@ -36,7 +36,7 @@ renderer::renderer()
 : _clear_color{sbx::math::color::white()} {
   using namespace sbx::utility::literals;
 
-  auto [deferred, resolve, post, editor] = create_graph(
+  auto [deferred, transparency, resolve, post, editor] = create_graph(
     [&](sbx::graphics::render_graph::context& context) -> sbx::graphics::render_graph::graphics_pass {
       auto deferred_pass = context.graphics_pass("deferred"_hs);
 
@@ -53,9 +53,17 @@ renderer::renderer()
       return deferred_pass;
     },
     [&](sbx::graphics::render_graph::context& context) -> sbx::graphics::render_graph::graphics_pass {
+      auto transparency_pass = context.graphics_pass("transparency"_hs);
+
+      transparency_pass.produces("accumulation"_hs, sbx::graphics::attachment::type::image, sbx::math::color{0.0, 0.0, 0.0, 0.0}, sbx::graphics::format::r32g32b32a32_sfloat);
+      transparency_pass.produces("revealage"_hs, sbx::graphics::attachment::type::image, sbx::math::color{1.0, 0.0, 0.0, 0.0}, sbx::graphics::format::r32_sfloat);
+
+      return transparency_pass;
+    },
+    [&](sbx::graphics::render_graph::context& context) -> sbx::graphics::render_graph::graphics_pass {
       auto resolve_pass = context.graphics_pass("resolve"_hs);
 
-      resolve_pass.uses("albedo"_hs, "position"_hs, "normal"_hs, "material"_hs, "object_id"_hs);
+      resolve_pass.uses("albedo"_hs, "position"_hs, "normal"_hs, "material"_hs, "object_id"_hs, "accumulation"_hs, "revealage"_hs);
 
       resolve_pass.produces("resolve"_hs, sbx::graphics::attachment::type::image, _clear_color, sbx::graphics::format::r8g8b8a8_unorm);
 
