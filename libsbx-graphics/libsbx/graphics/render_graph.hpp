@@ -13,6 +13,7 @@
 
 #include <libsbx/utility/logger.hpp>
 #include <libsbx/utility/hashed_string.hpp>
+#include <libsbx/utility/enum.hpp>
 
 #include <libsbx/math/color.hpp>
 
@@ -30,6 +31,7 @@ namespace sbx::graphics {
 
 enum class format : std::uint32_t {
   undefined = VK_FORMAT_UNDEFINED,
+  r16_sfloat = VK_FORMAT_R16_SFLOAT,
   r32_sfloat = VK_FORMAT_R32_SFLOAT,
   r32_uint = VK_FORMAT_R32_UINT,
   r64_uint = VK_FORMAT_R64_UINT,
@@ -37,6 +39,7 @@ enum class format : std::uint32_t {
   r32g32_uint = VK_FORMAT_R32G32_UINT,
   r8g8b8a8_unorm = VK_FORMAT_R8G8B8A8_UNORM,
   b8g8r8a8_srgb = VK_FORMAT_B8G8R8A8_SRGB,
+  r16g16b16a16_sfloat = VK_FORMAT_R16G16B16A16_SFLOAT,
   r32g32b32a32_sfloat = VK_FORMAT_R32G32B32A32_SFLOAT
 }; // enum class format
 
@@ -44,6 +47,61 @@ enum class address_mode : std::uint32_t {
   repeat = VK_SAMPLER_ADDRESS_MODE_REPEAT,
   clamp_to_edge = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE
 }; // enum class address_mode
+
+enum class blend_factor : std::uint32_t {
+  zero = VK_BLEND_FACTOR_ZERO,
+  one = VK_BLEND_FACTOR_ONE,
+  source_color = VK_BLEND_FACTOR_SRC_COLOR,
+  one_minus_source_color = VK_BLEND_FACTOR_ONE_MINUS_SRC_COLOR,
+  source_alpha = VK_BLEND_FACTOR_SRC_ALPHA,
+  one_minus_source_alpha = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+  destination_color = VK_BLEND_FACTOR_DST_COLOR,
+  one_minus_destination_color = VK_BLEND_FACTOR_ONE_MINUS_DST_COLOR,
+  destination_alpha = VK_BLEND_FACTOR_DST_ALPHA,
+  one_minus_destination_alpha = VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA,
+  constant_color = VK_BLEND_FACTOR_CONSTANT_COLOR,
+  one_minus_constant_color = VK_BLEND_FACTOR_ONE_MINUS_CONSTANT_COLOR,
+  constant_alpha = VK_BLEND_FACTOR_CONSTANT_ALPHA,
+  one_minus_constant_alpha = VK_BLEND_FACTOR_ONE_MINUS_CONSTANT_ALPHA,
+  source_alpha_saturate = VK_BLEND_FACTOR_SRC_ALPHA_SATURATE,
+  source1_color = VK_BLEND_FACTOR_SRC1_COLOR,
+  one_minus_source1_color = VK_BLEND_FACTOR_ONE_MINUS_SRC1_COLOR,
+  source1_alpha = VK_BLEND_FACTOR_SRC1_ALPHA,
+  one_minus_source1_alpha = VK_BLEND_FACTOR_ONE_MINUS_SRC1_ALPHA
+}; // enum class blend_factor
+
+enum class blend_operation : std::uint32_t {
+  add = VK_BLEND_OP_ADD,
+  subtract = VK_BLEND_OP_SUBTRACT,
+  reverse_subtract = VK_BLEND_OP_REVERSE_SUBTRACT,
+  min = VK_BLEND_OP_MIN,
+  max = VK_BLEND_OP_MAX
+}; // enum class blend_operation
+
+enum class color_component : std::uint32_t {
+  r = VK_COLOR_COMPONENT_R_BIT,
+  g = VK_COLOR_COMPONENT_G_BIT,
+  b = VK_COLOR_COMPONENT_B_BIT,
+  a = VK_COLOR_COMPONENT_A_BIT
+}; // enum class color_component
+
+inline constexpr auto operator|(const color_component lhs, const color_component rhs) noexcept -> color_component {
+  return static_cast<color_component>(static_cast<std::underlying_type_t<color_component>>(lhs) | static_cast<std::underlying_type_t<color_component>>(rhs));
+}
+
+inline constexpr auto operator&(const color_component lhs, const color_component rhs) noexcept -> color_component {
+  return static_cast<color_component>(static_cast<std::underlying_type_t<color_component>>(lhs) & static_cast<std::underlying_type_t<color_component>>(rhs));
+}
+
+struct blend_state {
+  blend_factor color_source{blend_factor::one};
+  blend_factor color_destination{blend_factor::zero};
+  blend_operation color_operation{blend_operation::add};
+  blend_factor alpha_source{blend_factor::one};
+  blend_factor alpha_destination{blend_factor::zero};
+  blend_operation alpha_operation{blend_operation::add};
+  color_component color_write_mask{color_component::r | color_component::g | color_component::b | color_component::a};
+}; // struct blend_state
 
 class attachment {
 
@@ -56,7 +114,7 @@ public:
     swapchain
   }; // enum class type
 
-  attachment(const utility::hashed_string& name, type type, const math::color& clear_color = math::color::black(), const format format = format::r8g8b8a8_unorm, const address_mode address_mode = address_mode::repeat) noexcept;
+  attachment(const utility::hashed_string& name, type type, const math::color& clear_color = math::color::black(), const format format = format::r8g8b8a8_unorm, const graphics::blend_state& blend_state = graphics::blend_state{}, const address_mode address_mode = address_mode::repeat) noexcept;
 
   auto name() const noexcept -> const utility::hashed_string&;
 
@@ -68,6 +126,8 @@ public:
 
   auto clear_color() const noexcept -> const math::color&;
 
+  auto blend_state() const noexcept -> const graphics::blend_state&;
+
 private:
 
   utility::hashed_string _name;
@@ -76,6 +136,7 @@ private:
   math::color _clear_color;
   graphics::format _format;
   graphics::address_mode _address_mode;
+  graphics::blend_state _blend_state;
 
 }; // class attachment
 

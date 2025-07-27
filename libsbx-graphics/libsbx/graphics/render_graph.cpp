@@ -13,12 +13,13 @@
 
 namespace sbx::graphics {
 
-attachment::attachment(const utility::hashed_string& name, type type, const math::color& clear_color, const graphics::format format, const graphics::address_mode address_mode) noexcept
+attachment::attachment(const utility::hashed_string& name, type type, const math::color& clear_color, const graphics::format format, const graphics::blend_state& blend_state, const graphics::address_mode address_mode) noexcept
 : _name{std::move(name)}, 
   _type{type},
   _clear_color{clear_color},
   _format{format}, 
-  _address_mode{address_mode} { }
+  _address_mode{address_mode},
+  _blend_state{blend_state} { }
 
 auto attachment::name() const noexcept -> const utility::hashed_string& {
   return _name;
@@ -38,6 +39,10 @@ auto attachment::address_mode() const noexcept -> graphics::address_mode {
 
 auto attachment::clear_color() const noexcept -> const math::color& {
   return _clear_color;
+}
+
+auto attachment::blend_state() const noexcept -> const graphics::blend_state& {
+  return _blend_state;
 }
 
 namespace detail {

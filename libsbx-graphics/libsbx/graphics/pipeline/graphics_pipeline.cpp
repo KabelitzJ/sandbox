@@ -285,17 +285,24 @@ graphics_pipeline::graphics_pipeline(const std::filesystem::path& path, const re
   auto color_blend_attachments = std::vector<VkPipelineColorBlendAttachmentState>{};
   color_blend_attachments.reserve(attachments.size());
 
-  for (const auto& attachment : attachments) {
-    if (attachment.image_type() == attachment::type::depth) {
-      continue;
-    }
+  if (!definition.uses_transparency) {
+    const auto color_attachments = std::ranges::count_if(attachments, [](const auto& attachment) {
+      return attachment.image_type() != attachment::type::depth;
+    });
 
-    if (!definition.uses_transparency || attachment.format() == graphics::format::r32_uint || attachment.format() == graphics::format::r64_uint || attachment.format() == graphics::format::r32g32_uint) {
-      color_blend_attachments.push_back(color_blend_attachment_disabled);
-    } else {
-      color_blend_attachments.push_back(color_blend_attachment_enabled);
+    std::fill_n(std::back_inserter(color_blend_attachments), color_attachments, color_blend_attachment_disabled);
+  } else {
+    const auto filer = std::views::filter([](const auto& attachment) { return attachment.image_type() != attachment::type::depth; });
+
+    for (const auto& attachment : attachments | filer) {
+      if (!definition.uses_transparency || attachment.format() == graphics::format::r32_uint || attachment.format() == graphics::format::r64_uint || attachment.format() == graphics::format::r32g32_uint) {
+        color_blend_attachments.push_back(color_blend_attachment_disabled);
+      } else {
+        color_blend_attachments.push_back(color_blend_attachment_enabled);
+      }
     }
   }
+
 
   auto color_blend_state = VkPipelineColorBlendStateCreateInfo{};
   color_blend_state.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
