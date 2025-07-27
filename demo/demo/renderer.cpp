@@ -42,6 +42,7 @@ renderer::renderer()
 
       deferred_pass.produces("depth"_hs, sbx::graphics::attachment::type::depth);
       deferred_pass.produces("albedo"_hs, sbx::graphics::attachment::type::image, _clear_color, sbx::graphics::format::r8g8b8a8_unorm);
+      deferred_pass.produces("alpha"_hs, sbx::graphics::attachment::type::image, _clear_color, sbx::graphics::format::r32_sfloat);
       deferred_pass.produces("position"_hs, sbx::graphics::attachment::type::image, _clear_color, sbx::graphics::format::r32g32b32a32_sfloat);
       deferred_pass.produces("normal"_hs, sbx::graphics::attachment::type::image, _clear_color, sbx::graphics::format::r32g32b32a32_sfloat);
       deferred_pass.produces("material"_hs, sbx::graphics::attachment::type::image, _clear_color, sbx::graphics::format::r8g8b8a8_unorm);
@@ -55,7 +56,7 @@ renderer::renderer()
     [&](sbx::graphics::render_graph::context& context) -> sbx::graphics::render_graph::graphics_pass {
       auto resolve_pass = context.graphics_pass("resolve"_hs);
 
-      resolve_pass.uses("albedo"_hs, "position"_hs, "normal"_hs, "material"_hs, "object_id"_hs);
+      resolve_pass.uses("albedo"_hs, "alpha"_hs, "position"_hs, "normal"_hs, "material"_hs, "object_id"_hs);
 
       resolve_pass.produces("resolve"_hs, sbx::graphics::attachment::type::image, _clear_color, sbx::graphics::format::r8g8b8a8_unorm);
 
@@ -88,6 +89,7 @@ renderer::renderer()
 
   auto attachment_names = std::vector<std::pair<std::string, std::string>>{
     {"albedo_image", "albedo"},
+    {"alpha_image", "alpha"},
     {"position_image", "position"},
     {"normal_image", "normal"},
     {"material_image", "material"},
