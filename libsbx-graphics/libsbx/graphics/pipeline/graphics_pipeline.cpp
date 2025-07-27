@@ -295,10 +295,22 @@ graphics_pipeline::graphics_pipeline(const std::filesystem::path& path, const re
     const auto filer = std::views::filter([](const auto& attachment) { return attachment.image_type() != attachment::type::depth; });
 
     for (const auto& attachment : attachments | filer) {
-      if (!definition.uses_transparency || attachment.format() == graphics::format::r32_uint || attachment.format() == graphics::format::r64_uint || attachment.format() == graphics::format::r32g32_uint) {
+      if (attachment.format() == graphics::format::r32_uint || attachment.format() == graphics::format::r64_uint || attachment.format() == graphics::format::r32g32_uint) {
         color_blend_attachments.push_back(color_blend_attachment_disabled);
       } else {
-        color_blend_attachments.push_back(color_blend_attachment_enabled);
+        const auto& blend_state = attachment.blend_state();
+
+        auto color_blend_attachment = VkPipelineColorBlendAttachmentState{};
+        color_blend_attachment.blendEnable = true;
+        color_blend_attachment.colorWriteMask = to_vk_enum<VkColorComponentFlags>(blend_state.color_write_mask);
+        color_blend_attachment.srcColorBlendFactor = to_vk_enum<VkBlendFactor>(blend_state.color_source);
+        color_blend_attachment.dstColorBlendFactor = to_vk_enum<VkBlendFactor>(blend_state.color_destination);
+        color_blend_attachment.colorBlendOp = to_vk_enum<VkBlendOp>(blend_state.color_operation);
+        color_blend_attachment.srcAlphaBlendFactor = to_vk_enum<VkBlendFactor>(blend_state.alpha_source);
+        color_blend_attachment.dstAlphaBlendFactor = to_vk_enum<VkBlendFactor>(blend_state.alpha_destination);
+        color_blend_attachment.alphaBlendOp = to_vk_enum<VkBlendOp>(blend_state.alpha_operation);
+
+        color_blend_attachments.push_back(color_blend_attachment);
       }
     }
   }

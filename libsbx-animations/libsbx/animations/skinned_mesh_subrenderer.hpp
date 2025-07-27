@@ -70,10 +70,10 @@ class skinned_mesh_subrenderer final : public graphics::subrenderer {
 
     inline static const auto pipeline_definition = graphics::pipeline_definition{
       .depth = graphics::depth::read_write,
-      .uses_transparency = true,
+      .uses_transparency = false,
       .rasterization_state = graphics::rasterization_state{
         .polygon_mode = graphics::polygon_mode::fill,
-        .cull_mode = graphics::cull_mode::none,
+        .cull_mode = graphics::cull_mode::back,
         .front_face = graphics::front_face::counter_clockwise
       },
       // .vertex_input = graphics::vertex_input<models::vertex3d>::description()

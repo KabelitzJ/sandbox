@@ -29,11 +29,10 @@ layout(set = 0, binding = 1, std430) readonly buffer buffer_point_lights {
 // layout(set = 0, binding = 6, input_attachment_index = 4) uniform usubpassInput object_id_image;
 
 layout(set = 0, binding = 2) uniform sampler2D albedo_image;
-layout(set = 0, binding = 3) uniform sampler2D alpha_image;
-layout(set = 0, binding = 4) uniform sampler2D position_image; 
-layout(set = 0, binding = 5) uniform sampler2D normal_image;
-layout(set = 0, binding = 6) uniform sampler2D material_image;
-layout(set = 0, binding = 7) uniform usampler2D object_id_image;
+layout(set = 0, binding = 3) uniform sampler2D position_image; 
+layout(set = 0, binding = 4) uniform sampler2D normal_image;
+layout(set = 0, binding = 5) uniform sampler2D material_image;
+layout(set = 0, binding = 6) uniform usampler2D object_id_image;
 
 const vec4 AMBIENT_COLOR = vec4(0.4, 0.4, 0.4, 1.0);
 const vec4 SPECULAR_COLOR = vec4(0.9, 0.9, 0.9, 1.0);
@@ -48,11 +47,7 @@ uvec2 get_object_id() {
 }
 
 void main() {
-  vec4 temp = texture(albedo_image, in_uv);
-  float alpha = texture(alpha_image, in_uv).r;
-
-  vec4 albedo = vec4(temp.rgb / max(alpha, 1e-5), alpha);
-
+  vec4 albedo = texture(albedo_image, in_uv);
   vec3 world_position = texture(position_image, in_uv).xyz;
   vec3 normal = normalize(texture(normal_image, in_uv).xyz);
   vec2 material = texture(material_image, in_uv).xy;
@@ -76,9 +71,7 @@ void main() {
   float specular_strength = pow(max(dot(normal, half_direction), 0.0), 32.0);
   vec4 specular = SPECULAR_COLOR * specular_strength * albedo;
 
-  vec4 color = ambient + diffuse + specular;
-
-  out_color = albedo;
+  out_color = ambient + diffuse + specular;
 
   // out_color = vec4(uint_to_float(object_id.x), uint_to_float(object_id.y), 0.0, 1.0);
 }

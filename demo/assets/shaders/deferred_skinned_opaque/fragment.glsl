@@ -20,12 +20,11 @@ layout(location = 8) in flat uvec2 in_image_indices;
 layout(location = 9) in flat uvec2 in_object_id;
 
 layout(location = 0) out vec4 out_albedo;
-layout(location = 1) out float out_alpha;
-layout(location = 2) out vec4 out_position;
-layout(location = 3) out vec4 out_normal;
-layout(location = 4) out vec4 out_material;
-layout(location = 5) out uvec2 out_object_id;
-layout(location = 6) out float out_depth;
+layout(location = 1) out vec4 out_position;
+layout(location = 2) out vec4 out_normal;
+layout(location = 3) out vec4 out_material;
+layout(location = 4) out uvec2 out_object_id;
+layout(location = 5) out float out_depth;
 
 layout(set = 0, binding = 1) uniform sampler images_sampler;
 layout(set = 0, binding = 2) uniform texture2D images[MAX_IMAGE_ARRAY_SIZE];
@@ -47,19 +46,13 @@ vec3 get_normal() {
     return normalize(in_normal);
   }
 
-  vec3 normal = texture(sampler2D(images[normal_image_index], images_sampler), in_uv).xyz;
+  vec3 normal = texture(sampler2D(images[normal_image_index], images_sampler), in_uv).rgb * 2.0 - 1.0;
 
   return normalize(in_tbn * normal);
 }
 
 void main(void) {
-  vec4 albedo = get_albedo();
-  float alpha = albedo.a;
-
-  float weight = 1.0;
-
-  out_albedo = vec4(albedo.rgb * alpha, alpha) * weight;
-  out_alpha = alpha;
+  out_albedo = get_albedo();
   out_position = vec4(in_position, 1.0);
   out_normal = vec4(get_normal(), 0.0);
   out_material = vec4(in_material, 0.0, 0.0);

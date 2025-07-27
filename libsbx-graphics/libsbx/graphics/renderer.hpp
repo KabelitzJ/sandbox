@@ -34,8 +34,10 @@ public:
 
   auto render(command_buffer& command_buffer, const swapchain& swapchain) -> void {
     _graph.execute(command_buffer, swapchain, [this, &command_buffer](const auto& pass_name) {
-      for (auto& subrenderer : _subrenderers.at(pass_name)) {
-        subrenderer->render(command_buffer);
+      if (auto entry = _subrenderers.find(pass_name); entry != _subrenderers.end()) {
+        for (auto& subrenderer : entry->second) {
+          subrenderer->render(command_buffer);
+        }
       }
     });
   }

@@ -63,11 +63,7 @@ enum class blend_factor : std::uint32_t {
   one_minus_constant_color = VK_BLEND_FACTOR_ONE_MINUS_CONSTANT_COLOR,
   constant_alpha = VK_BLEND_FACTOR_CONSTANT_ALPHA,
   one_minus_constant_alpha = VK_BLEND_FACTOR_ONE_MINUS_CONSTANT_ALPHA,
-  source_alpha_saturate = VK_BLEND_FACTOR_SRC_ALPHA_SATURATE,
-  source1_color = VK_BLEND_FACTOR_SRC1_COLOR,
-  one_minus_source1_color = VK_BLEND_FACTOR_ONE_MINUS_SRC1_COLOR,
-  source1_alpha = VK_BLEND_FACTOR_SRC1_ALPHA,
-  one_minus_source1_alpha = VK_BLEND_FACTOR_ONE_MINUS_SRC1_ALPHA
+  source_alpha_saturate = VK_BLEND_FACTOR_SRC_ALPHA_SATURATE
 }; // enum class blend_factor
 
 enum class blend_operation : std::uint32_t {
@@ -94,8 +90,8 @@ inline constexpr auto operator&(const color_component lhs, const color_component
 }
 
 struct blend_state {
-  blend_factor color_source{blend_factor::one};
-  blend_factor color_destination{blend_factor::zero};
+  blend_factor color_source{blend_factor::source_alpha};
+  blend_factor color_destination{blend_factor::one_minus_source_alpha};
   blend_operation color_operation{blend_operation::add};
   blend_factor alpha_source{blend_factor::one};
   blend_factor alpha_destination{blend_factor::zero};
