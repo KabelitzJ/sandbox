@@ -43,17 +43,16 @@ float uint_to_float(uint value) {
   return float(value) / 4294967295.0;
 }
 
-float get_alpha() {
-  return texture(alpha_image, in_uv).r;
-}
-
 uvec2 get_object_id() {
   return texelFetch(object_id_image, ivec2(gl_FragCoord.xy), 0).xy;
 }
 
 void main() {
-  vec4 albedo = texture(albedo_image, in_uv);
-  float alpha = get_alpha();
+  vec4 temp = texture(albedo_image, in_uv);
+  float alpha = texture(alpha_image, in_uv).r;
+
+  vec4 albedo = vec4(temp.rgb / max(alpha, 1e-5), alpha);
+
   vec3 world_position = texture(position_image, in_uv).xyz;
   vec3 normal = normalize(texture(normal_image, in_uv).xyz);
   vec2 material = texture(material_image, in_uv).xy;
@@ -79,7 +78,7 @@ void main() {
 
   vec4 color = ambient + diffuse + specular;
 
-  out_color = color;
+  out_color = albedo;
 
   // out_color = vec4(uint_to_float(object_id.x), uint_to_float(object_id.y), 0.0, 1.0);
 }

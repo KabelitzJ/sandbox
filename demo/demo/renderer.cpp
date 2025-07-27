@@ -41,7 +41,7 @@ renderer::renderer()
       auto deferred_pass = context.graphics_pass("deferred"_hs);
 
       deferred_pass.produces("depth"_hs, sbx::graphics::attachment::type::depth);
-      deferred_pass.produces("albedo"_hs, sbx::graphics::attachment::type::image, _clear_color, sbx::graphics::format::r8g8b8a8_unorm);
+      deferred_pass.produces("albedo"_hs, sbx::graphics::attachment::type::image, _clear_color, sbx::graphics::format::r32g32b32a32_sfloat);
       deferred_pass.produces("alpha"_hs, sbx::graphics::attachment::type::image, _clear_color, sbx::graphics::format::r32_sfloat);
       deferred_pass.produces("position"_hs, sbx::graphics::attachment::type::image, _clear_color, sbx::graphics::format::r32g32b32a32_sfloat);
       deferred_pass.produces("normal"_hs, sbx::graphics::attachment::type::image, _clear_color, sbx::graphics::format::r32g32b32a32_sfloat);
