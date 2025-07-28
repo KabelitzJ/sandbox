@@ -3,6 +3,8 @@
 
 #include <numbers>
 
+#include <libsbx/ecs/meta.hpp>
+
 #include <libsbx/math/vector3.hpp>
 #include <libsbx/math/matrix4x4.hpp>
 #include <libsbx/math/angle.hpp>
@@ -125,5 +127,14 @@ private:
 }; // class transform
 
 } // namespace sbx::math
+
+template<>
+struct sbx::ecs::meta<sbx::math::transform> {
+  auto operator()(const utility::hashed_string& tag, sbx::math::transform& value) -> void {
+    if (tag == "save") {
+      
+    }
+  }
+}; // sbx::ecs::meta
 
 #endif // LIBSBX_SCENES_COMPONENTS_TRANSFORM_HPP_

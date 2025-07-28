@@ -272,14 +272,9 @@ public:
     return _entities.end();
   }
 
-  template<typename Type, typename Callable>
-  requires (std::is_invocable_r_v<void, Callable, const entity_type, Type&>)
-  auto add_meta(const utility::hashed_string& tag, Callable&& callable) -> void {
-    _assure<Type>().add_meta(tag, std::forward<Callable>(callable));
-  }
-
-  auto invoke(const utility::hashed_string& tag) -> void {
-    for (const auto entity : _entities) {
+  template<typename Callable>
+  auto invoke(const utility::hashed_string& tag, Callable&& callable) -> void {
+    for (const auto entity : _entities | ranges::views::filter(std::forward<Callable>(callable))) {
       for (auto&& [type, storage] : storage()) {
         storage.invoke(tag, entity);
       }

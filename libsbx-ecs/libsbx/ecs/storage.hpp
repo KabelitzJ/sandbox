@@ -8,12 +8,15 @@
 #include <memory>
 #include <functional>
 
+#include <libsbx/utility/type_name.hpp>
+
 #include <libsbx/memory/concepts.hpp>
 #include <libsbx/memory/observer_ptr.hpp>
 #include <libsbx/memory/iterable_adaptor.hpp>
 
 #include <libsbx/ecs/sparse_set.hpp>
 #include <libsbx/ecs/component.hpp>
+#include <libsbx/ecs/meta.hpp>
 
 #include <libsbx/ecs/detail/storage_iterator.hpp>
 
@@ -185,10 +188,8 @@ public:
 protected:
 
   auto call(const utility::hashed_string& tag, const entity_type entity) -> void override {
-    auto& functions = base_type::meta();
-
-    if (auto entry = functions.find(tag); entry != functions.end()) {
-      std::invoke(entry->second, entity, static_cast<void*>(std::addressof(get(entity))));
+    if constexpr (has_meta_v<value_type>) {
+      std::invoke(meta<value_type>{}, tag, get(entity));
     }
   }
 

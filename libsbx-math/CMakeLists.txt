@@ -72,6 +72,7 @@ target_link_libraries(
     libsbx::utility
     libsbx::core
     libsbx::io
+    libsbx::ecs
 )
 
 set_target_properties(

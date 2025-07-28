@@ -247,20 +247,16 @@ public:
   }
 
   auto invoke(const utility::hashed_string& tag, const entity_type entity) -> void {
-    call(tag, entity);
+    if (contains(entity)) {
+      call(tag, entity);
+    }
   }
 
 protected:
 
   using basic_iterator = iterator;
 
-  using meta_callback = std::function<void(const entity_type, void*)>;
-
-  auto meta() -> std::unordered_map<utility::hashed_string, meta_callback>& {
-    return _meta;
-  }
-
-  virtual auto call(const utility::hashed_string& tag, const entity_type entity) -> void {
+  virtual auto call([[maybe_unused]] const utility::hashed_string& tag, [[maybe_unused]] const entity_type entity) -> void {
 
   }
 
@@ -458,8 +454,6 @@ private:
   sparse_storage_type _sparse;
   deletion_policy _policy;
   size_type _head;
-
-  std::unordered_map<utility::hashed_string, meta_callback> _meta;
 
 }; // class sparse_set
 

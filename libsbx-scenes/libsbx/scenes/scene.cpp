@@ -195,6 +195,10 @@ auto scene::world_position(const node_type node) -> math::vector3 {
 }
 
 auto scene::save(const std::filesystem::path& path)-> void {
+  _registry.invoke("save", [this](const auto node) {
+    return (node != _root);
+  });
+
   auto emitter = YAML::Emitter{};
 
   utility::logger<"scenes">::debug("Serializing scene '{}' to {}", _name, path.string());
