@@ -11,11 +11,14 @@
 #include <chrono>
 #include <ranges>
 
+#include <range/v3/all.hpp>
+
 #include <easy/profiler.h>
 
 #include <libsbx/utility/concepts.hpp>
 #include <libsbx/utility/noncopyable.hpp>
 #include <libsbx/utility/assert.hpp>
+#include <libsbx/utility/type_name.hpp>
 
 #include <libsbx/units/time.hpp>
 
@@ -41,14 +44,14 @@ public:
 
     _instance = this;
 
-    for (const auto& [type, factory] : module_manager::_factories()) {
-      _create_module(type, factory);
+    for (auto&& [type, factory] : module_manager::_factories() | ranges::views::filter([](const auto& entry) { return entry.has_value(); }) | ranges::views::enumerate) {
+      _create_module(type, *factory);
     }
   }
 
   ~engine() {
-    for (const auto& entry : _modules | std::views::reverse) {
-      _destroy_module(entry.first);
+    for (auto&& [type, entry] : _modules | ranges::views::enumerate | std::views::reverse) {
+      _destroy_module(type);
     }
 
     _instance = nullptr;
@@ -85,13 +88,15 @@ public:
   template<typename Module>
   requires (std::is_base_of_v<module_base, Module>)
   [[nodiscard]] static auto get_module() -> Module& {
-    const auto type = std::type_index{typeid(Module)};
+    const auto type = type_id<Module>::value();
 
-    if (auto entry = _instance->_modules.find(type); entry != _instance->_modules.end()) {
-      return *static_cast<Module*>(entry->second);
+    auto& modules = _instance->_modules;
+
+    if (type >= modules.size() || !modules[type]) {
+      throw std::runtime_error{fmt::format("Failed to find module '{}'", utility::type_name<Module>())};
     }
 
-    throw std::runtime_error{fmt::format("Failed to find module '{}'", typeid(Module).name())};
+    return *static_cast<Module*>(modules[type]);
   }
 
   auto run(std::unique_ptr<application> application) -> void {
@@ -150,32 +155,36 @@ public:
 
 private:
 
-  auto _create_module(const std::type_index& type, const module_factory& factory) -> void {
-    if (_modules.contains(type)) {
+  auto _create_module(const std::uint32_t type, const module_factory& factory) -> void {
+    if (type < _modules.size() && _modules[type]) {
       return;
     }
 
     for (const auto& dependency : factory.dependencies) {
-      _create_module(dependency, module_manager::_factories().at(dependency));
+      _create_module(dependency, *module_manager::_factories().at(dependency));
     }
 
-    _modules.insert({type, std::invoke(factory.create)});
+    if (type >= _modules.size()) {
+      _modules.resize(std::max(_modules.size(), static_cast<std::size_t>(type + 1u)));
+    }
+
+    _modules[type] = std::invoke(factory.create);
     _module_by_stage[factory.stage].push_back(type);
   }
 
-  auto _destroy_module(const std::type_index& type) -> void {
-    if (!_modules.at(type)) {
+  auto _destroy_module(const std::uint32_t type) -> void {
+    if (type >= _modules.size() || !_modules.at(type)) {
       return;
     }
 
     auto& factory = module_manager::_factories().at(type);
 
-    for (const auto& dependency : factory.dependencies) {
+    for (const auto& dependency : factory->dependencies) {
       _destroy_module(dependency);
     }
 
     auto* module_instance = _modules.at(type);
-    std::invoke(factory.destroy, module_instance);
+    std::invoke(factory->destroy, module_instance);
     _modules.at(type) = nullptr;
   }
 
@@ -198,8 +207,8 @@ private:
   core::profiler _profiler;
   core::settings _settings;
 
-  std::map<std::type_index, module_base*> _modules{};
-  std::map<stage, std::vector<std::type_index>> _module_by_stage{};
+  std::vector<module_base*> _modules{};
+  std::map<stage, std::vector<std::uint32_t>> _module_by_stage{};
 
 }; // class engine
 
