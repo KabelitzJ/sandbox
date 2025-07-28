@@ -264,6 +264,28 @@ public:
     return const_iterable{_pools.cbegin(), _pools.cend()};
   }
 
+  [[nodiscard]] auto begin() const -> decltype(auto) {
+    return _entities.begin();
+  }
+
+  [[nodiscard]] auto end() const -> decltype(auto) {
+    return _entities.end();
+  }
+
+  template<typename Type, typename Callable>
+  requires (std::is_invocable_r_v<void, Callable, const entity_type, Type&>)
+  auto add_meta(const utility::hashed_string& tag, Callable&& callable) -> void {
+    _assure<Type>().add_meta(tag, std::forward<Callable>(callable));
+  }
+
+  auto invoke(const utility::hashed_string& tag) -> void {
+    for (const auto entity : _entities) {
+      for (auto&& [type, storage] : storage()) {
+        storage.invoke(tag, entity);
+      }
+    }
+  }
+
 private:
 
   template<typename Type>

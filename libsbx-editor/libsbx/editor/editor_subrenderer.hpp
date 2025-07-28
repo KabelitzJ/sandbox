@@ -80,6 +80,8 @@ public:
 
     _editor_font.set_active_font("Roboto");
 
+    auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
+
     auto project_menu_new = editor::menu_item{};
     project_menu_new.title = "New...";
     project_menu_new.separator_after = true;
@@ -94,7 +96,11 @@ public:
     auto project_menu_save = editor::menu_item{};
     project_menu_save.title = "Save";
     project_menu_save.short_cut = "Ctrl+S";
-    project_menu_save.on_click = [this]() { utility::logger<"editor">::debug("Project::Save clicked"); };
+    project_menu_save.on_click = [this, &scenes_module]() { 
+      utility::logger<"editor">::debug("Project::Save clicked");
+      
+      scenes_module.save_scene("demo/assets/scenes/test.yaml");
+    };
 
     auto project_menu_save_as = editor::menu_item{};
     project_menu_save_as.title = "Save As...";

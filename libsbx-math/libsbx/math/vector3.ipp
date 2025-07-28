@@ -171,28 +171,28 @@ inline auto fmt::formatter<sbx::math::basic_vector3<Type>>::format(const sbx::ma
   }
 }
 
-template<sbx::math::scalar Type>
-inline auto YAML::convert<sbx::math::basic_vector3<Type>>::encode(const sbx::math::basic_vector3<Type>& rhs) -> YAML::Node {
-  auto node = Node{};
+// template<sbx::math::scalar Type>
+// inline auto YAML::convert<sbx::math::basic_vector3<Type>>::encode(const sbx::math::basic_vector3<Type>& rhs) -> YAML::Node {
+//   auto node = Node{};
 
-  node.SetStyle(YAML::EmitterStyle::Flow);
+//   node.SetStyle(YAML::EmitterStyle::Flow);
 
-  node["x"] = rhs.x();
-  node["y"] = rhs.y();
-  node["z"] = rhs.z();
+//   node["x"] = rhs.x();
+//   node["y"] = rhs.y();
+//   node["z"] = rhs.z();
 
-  return node;
-}
+//   return node;
+// }
 
-template<sbx::math::scalar Type>
-inline auto YAML::convert<sbx::math::basic_vector3<Type>>::decode(const YAML::Node& node, sbx::math::basic_vector3<Type>& rhs) -> bool {
-  if (!node.IsMap()) {
-    return false;
-  }
+// template<sbx::math::scalar Type>
+// inline auto YAML::convert<sbx::math::basic_vector3<Type>>::decode(const YAML::Node& node, sbx::math::basic_vector3<Type>& rhs) -> bool {
+//   if (!node.IsMap()) {
+//     return false;
+//   }
 
-  rhs.x() = node["x"].as<Type>();
-  rhs.y() = node["y"].as<Type>();
-  rhs.z() = node["z"].as<Type>();
+//   rhs.x() = node["x"].as<Type>();
+//   rhs.y() = node["y"].as<Type>();
+//   rhs.z() = node["z"].as<Type>();
 
-  return true;
-}
+//   return true;
+// }

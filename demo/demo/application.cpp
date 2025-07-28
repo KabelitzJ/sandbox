@@ -251,6 +251,8 @@ application::application()
   }
 
   sbx::utility::logger<"demo">::info("string id: {}", sbx::utility::string_id<"foobar">());
+
+  scenes_module.save_scene("demo/assets/scenes/test.yaml");
 }
 
 // [NOTE] : This might or might not me a great thing :D

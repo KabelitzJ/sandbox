@@ -38,6 +38,12 @@ public:
 
   auto scene() -> scenes::scene&;
 
+  auto save_scene(const std::filesystem::path& path) -> void {
+    if (_scene) {
+      _scene->save(path);
+    }
+  }
+
   auto debug_lines() const -> const std::vector<line>& {
     return _debug_lines;
   }

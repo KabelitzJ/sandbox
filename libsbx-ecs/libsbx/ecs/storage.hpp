@@ -169,10 +169,28 @@ public:
   }
 
   [[nodiscard]] auto each() const noexcept -> const_iterable {
-      return const_iterable{{base_type::cbegin(), cbegin()}, {base_type::cend(), cend()}};
+    return const_iterable{{base_type::cbegin(), cbegin()}, {base_type::cend(), cend()}};
+  }
+
+  template<typename Callable>
+  requires (std::is_invocable_r_v<void, Callable, const entity_type, Type&>)
+  auto add_meta(const utility::hashed_string& tag, Callable&& callable) -> void {
+    auto& functions = base_type::meta();
+
+    functions[tag] = [c = std::forward<Callable>(callable)](const entity_type entity, void* value) {
+      std::invoke(c, entity, *static_cast<Type*>(value));
+    };
   }
 
 protected:
+
+  auto call(const utility::hashed_string& tag, const entity_type entity) -> void override {
+    auto& functions = base_type::meta();
+
+    if (auto entry = functions.find(tag); entry != functions.end()) {
+      std::invoke(entry->second, entity, static_cast<void*>(std::addressof(get(entity))));
+    }
+  }
 
   auto pop(underlying_iterator first, underlying_iterator last) -> void override {
     auto allocator = get_allocator();

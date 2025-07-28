@@ -20,6 +20,8 @@
 
 #include <libsbx/math/transform.hpp>
 #include <libsbx/math/uuid.hpp>
+#include <libsbx/math/vector3.hpp>
+#include <libsbx/math/quaternion.hpp>
 
 #include <libsbx/core/engine.hpp>
 
@@ -29,6 +31,8 @@
 #include <libsbx/scenes/components/directional_light.hpp>
 #include <libsbx/scenes/components/id.hpp>
 #include <libsbx/scenes/components/selection_tag.hpp>
+#include <libsbx/scenes/components/tag.hpp>
+#include <libsbx/scenes/components/hierarchy.hpp>
 
 namespace sbx::scenes {
 
@@ -139,7 +143,134 @@ public:
     return node_type::null;
   }
 
+  auto save(const std::filesystem::path& path)-> void {
+    auto emitter = YAML::Emitter{};
+
+    utility::logger<"scenes">::debug("Serializing scene '{}' to {}", _name, path.string());
+
+    emitter << YAML::BeginMap;
+
+    emitter << YAML::Key << "name";
+    emitter << YAML::Value << (!_name.empty() ? _name : "Scene");
+
+    emitter << YAML::Key << "assets";
+    emitter << YAML::Value << YAML::BeginMap;
+
+    _save_assets(emitter);
+
+    emitter << YAML::EndMap;
+
+    emitter << YAML::Key << "nodes";
+    emitter << YAML::Value << YAML::BeginSeq;
+
+    for (const auto node : _registry) {
+      _save_node(emitter, node);
+    }
+
+    emitter << YAML::EndSeq;
+
+    emitter << YAML::EndMap;
+
+    auto stream = std::ofstream{path};
+
+    stream << emitter.c_str();
+  }
+
 private:
+
+  auto _save_assets(YAML::Emitter& emitter) -> void {
+    emitter << YAML::Key << "meshes";
+    emitter << YAML::Value << YAML::BeginSeq;
+
+    _save_meshes(emitter);
+
+    emitter << YAML::EndSeq;
+
+    emitter << YAML::Key << "textures";
+    emitter << YAML::Value << YAML::BeginSeq;
+
+    _save_textures(emitter);
+
+    emitter << YAML::EndSeq;
+  }
+
+  auto _save_meshes(YAML::Emitter& emitter) -> void {
+    emitter << YAML::Anchor("bmp");
+    emitter << YAML::BeginMap;
+    emitter << YAML::Key << "name";
+    emitter << YAML::Value << "bmp";
+    emitter << YAML::Key << "path";
+    emitter << YAML::Value << "demo/assets/meshes/tank/bmp.gltf";
+    emitter << YAML::EndMap;
+  }
+
+  auto _save_textures(YAML::Emitter& emitter) -> void {
+    emitter << YAML::Anchor("bmp_body1_albedo");
+    emitter << YAML::BeginMap;
+    emitter << YAML::Key << "name";
+    emitter << YAML::Value << "bmp_body1_albedo";
+    emitter << YAML::Key << "path";
+    emitter << YAML::Value << "demo/assets/textures/bmp/body1_albedo.png";
+    emitter << YAML::EndMap;
+
+    emitter << YAML::Anchor("bmp_body1_normal");
+    emitter << YAML::BeginMap;
+    emitter << YAML::Key << "name";
+    emitter << YAML::Value << "bmp_body1_normal";
+    emitter << YAML::Key << "path";
+    emitter << YAML::Value << "demo/assets/textures/bmp/body1_normal.png";
+    emitter << YAML::EndMap;
+  }
+
+  auto _save_node(YAML::Emitter& emitter, const node_type node) -> void {
+    emitter << YAML::BeginMap;
+
+    const auto& tag = get_component<scenes::tag>(node);
+
+    emitter << YAML::Key << "tag";
+    emitter << YAML::Value << tag.str();
+
+    const auto& id = get_component<scenes::id>(node);
+
+    emitter << YAML::Key << "id";
+    emitter << YAML::Value << id.value();
+
+    emitter << YAML::Key << "components";
+    emitter << YAML::Value << YAML::BeginSeq;
+
+    _save_components(emitter, node);
+
+    emitter << YAML::EndSeq;
+
+    emitter << YAML::EndMap;
+  }
+  
+  auto _save_components(YAML::Emitter& emitter, const node_type node) -> void {
+    // Trasform
+    const auto& transform = get_component<math::transform>(node);
+    
+    emitter << YAML::BeginMap;
+
+    emitter << YAML::Key << "type" << YAML::Value << "transform";
+    emitter << YAML::Key << "position" << YAML::Value << transform.position();
+    emitter << YAML::Key << "rotation" << YAML::Value << transform.rotation();
+    emitter << YAML::Key << "scale" << YAML::Value << transform.scale();
+
+    emitter << YAML::EndMap;
+
+    // Hierarchy
+    const auto& hierarchy = get_component<scenes::hierarchy>(node);
+
+    emitter << YAML::BeginMap;
+
+    // We maybe dont need to store children as we can resolve dependencies by the parent alone
+    emitter << YAML::Key << "type" << YAML::Value << "hierarchy";
+    emitter << YAML::Key << "parent" << YAML::Value << (hierarchy.parent != node_type::null ? get_component<scenes::id>(hierarchy.parent).value() : math::uuid::null().value());
+
+    emitter << YAML::EndMap;
+
+    // Other
+  }
 
   auto _load_assets(const YAML::Node& assets) -> void;
   auto _load_nodes(const YAML::Node& nodes) -> void;
@@ -149,6 +280,8 @@ private:
   registry_type _registry;
   node_type _root;
   node_type _camera;
+
+  std::string _name;
 
   containers::octree<math::uuid> _octtree;
 

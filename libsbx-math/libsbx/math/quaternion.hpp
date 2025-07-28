@@ -234,6 +234,11 @@ struct YAML::convert<sbx::math::basic_quaternion<Type>> {
 }; // struct YAML::convert
 
 template<sbx::math::floating_point Type>
+auto operator<<(YAML::Emitter& out, const sbx::math::basic_quaternion<Type>& quaternion) -> YAML::Emitter& {
+  return out << YAML::convert<sbx::math::basic_quaternion<Type>>::encode(quaternion);
+}
+
+template<sbx::math::floating_point Type>
 struct fmt::formatter<sbx::math::basic_quaternion<Type>> {
 
   template<typename ParseContext>

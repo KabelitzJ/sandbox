@@ -8,10 +8,12 @@
 #include <utility>
 #include <iterator>
 #include <algorithm>
+#include <functional>
 
 #include <libsbx/utility/assert.hpp>
 #include <libsbx/utility/fast_mod.hpp>
 #include <libsbx/utility/algorithm.hpp>
+#include <libsbx/utility/hashed_string.hpp>
 
 #include <libsbx/memory/concepts.hpp>
 
@@ -216,7 +218,7 @@ public:
   }
 
   template<typename Compare, typename Sort = utility::std_sort, typename... Args>
-  void sort_n(const size_type length, Compare compare, Sort sort = Sort{}, Args&&... args) {
+  auto sort_n(const size_type length, Compare compare, Sort sort = Sort{}, Args&&... args) -> void {
     utility::assert_that((_policy != deletion_policy::in_place) || (_head == max_size), "Sorting with tombstones not allowed");
     utility::assert_that(!(length > _dense.size()), "Length exceeds the number of elements");
 
@@ -238,15 +240,29 @@ public:
     }
   }
 
-  void clear() {
+  auto clear() -> void {
     pop_all();
     _head = _policy_to_head();
     _dense.clear();
   }
 
+  auto invoke(const utility::hashed_string& tag, const entity_type entity) -> void {
+    call(tag, entity);
+  }
+
 protected:
 
   using basic_iterator = iterator;
+
+  using meta_callback = std::function<void(const entity_type, void*)>;
+
+  auto meta() -> std::unordered_map<utility::hashed_string, meta_callback>& {
+    return _meta;
+  }
+
+  virtual auto call(const utility::hashed_string& tag, const entity_type entity) -> void {
+
+  }
 
   void swap_only(const basic_iterator iterator) {
     utility::assert_that(_policy == deletion_policy::swap_only, "Deletion policy mismatch");
@@ -442,6 +458,8 @@ private:
   sparse_storage_type _sparse;
   deletion_policy _policy;
   size_type _head;
+
+  std::unordered_map<utility::hashed_string, meta_callback> _meta;
 
 }; // class sparse_set
 

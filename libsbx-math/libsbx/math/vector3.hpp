@@ -170,11 +170,36 @@ struct fmt::formatter<sbx::math::basic_vector3<Type>> {
 template<sbx::math::scalar Type>
 struct YAML::convert<sbx::math::basic_vector3<Type>> {
 
-  static auto encode(const sbx::math::basic_vector3<Type>& rhs) -> YAML::Node;
+  static auto encode(const sbx::math::basic_vector3<Type>& rhs) -> YAML::Node {
+    auto node = Node{};
 
-  static auto decode(const YAML::Node& node, sbx::math::basic_vector3<Type>& rhs) -> bool;
+    node.SetStyle(YAML::EmitterStyle::Flow);
+
+    node["x"] = rhs.x();
+    node["y"] = rhs.y();
+    node["z"] = rhs.z();
+
+    return node;
+  }
+
+  static auto decode(const YAML::Node& node, sbx::math::basic_vector3<Type>& rhs) -> bool {
+    if (!node.IsMap()) {
+      return false;
+    }
+
+    rhs.x() = node["x"].as<Type>();
+    rhs.y() = node["y"].as<Type>();
+    rhs.z() = node["z"].as<Type>();
+
+    return true;
+  }
 
 }; // struct YAML::convert<sbx::math::basic_vector3<Type>>
+
+template<sbx::math::scalar Type>
+auto operator<<(YAML::Emitter& out, const sbx::math::basic_vector3<Type>& vector) -> YAML::Emitter& {
+  return out << YAML::convert<sbx::math::basic_vector3<Type>>::encode(vector);
+}
 
 #include <libsbx/math/vector3.ipp>
 
