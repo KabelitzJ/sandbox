@@ -14,7 +14,7 @@ struct id_generator final {
     static auto id = std::uint32_t{};
     return id++;
   }
-}; // struct type_index
+}; // struct id_generator
 
 struct default_type_id_scope { };
 

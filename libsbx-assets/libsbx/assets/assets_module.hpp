@@ -8,6 +8,8 @@
 
 #include <libsbx/utility/compression.hpp>
 #include <libsbx/utility/exception.hpp>
+#include <libsbx/utility/type_id.hpp>
+#include <libsbx/utility/iterator.hpp>
 
 #include <libsbx/math/uuid.hpp>
 
@@ -17,6 +19,21 @@
 #include <libsbx/assets/metadata.hpp>
 
 namespace sbx::assets {
+
+
+namespace detail {
+
+struct assets_type_id_scope { };
+
+} // namespace detail
+
+/**
+ * @brief A scoped type ID generator for the libsbx-assets scope.
+ *
+ * @tparam Type The type for which the ID is generated.
+ */
+template<typename Type>
+using type_id = utility::scoped_type_id<detail::assets_type_id_scope, Type>;
 
 class assets_module : public core::module<assets_module> {
 
@@ -28,7 +45,7 @@ public:
   : _thread_pool{std::thread::hardware_concurrency()} { }
 
   ~assets_module() override {
-    for (const auto& [type, container] : _containers) {
+    for (const auto& container : _containers) {
       container->clear();
     }
   }
@@ -46,15 +63,17 @@ public:
   template<typename Type, typename... Args>
   auto add_asset(Args&&... args) -> math::uuid {
     const auto id = math::uuid{};
-    const auto type = std::type_index{typeid(Type)};
+    const auto type = type_id<Type>::value();
 
-    auto entry = _containers.find(type);
-
-    if (entry == _containers.end()) {
-      entry = _containers.insert({type, std::make_unique<container<Type>>()}).first;
+    if (type >= _containers.size()) {
+      _containers.resize(std::max(_containers.size(), static_cast<std::size_t>(type + 1u)));
     }
 
-    static_cast<container<Type>*>(entry->second.get())->add(id, std::forward<Args>(args)...);
+    if (!_containers[type]) {
+      _containers[type] = std::make_unique<container<Type>>();
+    }
+
+    static_cast<container<Type>*>(_containers[type].get())->add(id, std::forward<Args>(args)...);
 
     return id;
   }
@@ -62,43 +81,43 @@ public:
   template<typename Type>
   auto add_asset(std::unique_ptr<Type>&& asset) -> math::uuid {
     const auto id = math::uuid{};
-    const auto type = std::type_index{typeid(Type)};
+    const auto type = type_id<Type>::value();
 
-    auto entry = _containers.find(type);
+    utility::logger<"assets">::info("type: {}", type);
 
-    if (entry == _containers.end()) {
-      entry = _containers.insert({type, std::make_unique<container<Type>>()}).first;
+    if (type >= _containers.size()) {
+      _containers.resize(std::max(_containers.size(), static_cast<std::size_t>(type + 1u)));
     }
 
-    static_cast<container<Type>*>(entry->second.get())->add(id, std::move(asset));
+    if (!_containers[type]) {
+      _containers[type] = std::make_unique<container<Type>>();
+    }
+
+    static_cast<container<Type>*>(_containers[type].get())->add(id, std::move(asset));
 
     return id;
   }
 
   template<typename Type>
   auto get_asset(const math::uuid& id) const -> const Type& {
-    const auto type = std::type_index{typeid(Type)};
+    const auto type = type_id<Type>::value();
 
-    auto entry = _containers.find(type);
-
-    if (entry == _containers.end()) {
+    if (type >= _containers.size() || !_containers[type]) {
       throw std::runtime_error{"Asset does not exist"};
     }
 
-    return static_cast<const container<Type>*>(entry->second.get())->get(id);
+    return static_cast<const container<Type>*>(_containers[type].get())->get(id);
   }
 
   template<typename Type>
   auto get_asset(const math::uuid& id) -> Type& {
-    const auto type = std::type_index{typeid(Type)};
+    const auto type = type_id<Type>::value();
 
-    auto entry = _containers.find(type);
-
-    if (entry == _containers.end()) {
+    if (type >= _containers.size() || !_containers[type]) {
       throw std::runtime_error{"Asset does not exist"};
     }
 
-    return static_cast<container<Type>*>(entry->second.get())->get(id);
+    return static_cast<container<Type>*>(_containers[type].get())->get(id);
   }
 
 private:
@@ -167,7 +186,7 @@ private:
 
   };
 
-  std::unordered_map<std::type_index, std::unique_ptr<container_base>> _containers;
+  std::vector<std::unique_ptr<container_base>> _containers;
 
 }; // class assets_module
 

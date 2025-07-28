@@ -44,23 +44,6 @@ application::application()
 
   // Textures
 
-  auto texture_map = nlohmann::json::parse(std::ifstream{"demo/assets/textures/texture_map.json"});
-
-  auto textures = texture_map["textures"];
-
-  for (const auto& entry : textures) {
-    const auto name = entry["name"].get<std::string>();
-    const auto path = entry["path"].get<std::string>();
-
-    const auto id = graphics_module.add_resource<sbx::graphics::image2d>(path);
-
-    _image_ids.emplace(name, id);
-  }
-
-  _image_ids.emplace("tree_1_leaves1", graphics_module.add_resource<sbx::graphics::image2d>("demo/assets/textures/tree_1/leaves1.png"));
-  _image_ids.emplace("tree_1_leaves2", graphics_module.add_resource<sbx::graphics::image2d>("demo/assets/textures/tree_1/leaves2.png"));
-  _image_ids.emplace("tree_1_bark", graphics_module.add_resource<sbx::graphics::image2d>("demo/assets/textures/tree_1/bark.jpg"));
-
   _image_ids.emplace("maple_tree_bark", graphics_module.add_resource<sbx::graphics::image2d>("demo/assets/textures/maple_tree/bark.png"));
   _image_ids.emplace("maple_tree_bark_normal", graphics_module.add_resource<sbx::graphics::image2d>("demo/assets/textures/maple_tree/bark_normal.png"));
   _image_ids.emplace("maple_tree_leaves", graphics_module.add_resource<sbx::graphics::image2d>("demo/assets/textures/maple_tree/leaves.png"));
@@ -73,9 +56,6 @@ application::application()
 
   _cube_image_ids.emplace("skybox", graphics_module.add_resource<sbx::graphics::cube_image>("demo/assets/skyboxes/clouds"));
 
-  _image_ids.emplace("t_90a_albedo", graphics_module.add_resource<sbx::graphics::image2d>("demo/assets/textures/tank/t_90a_albedo.png"));
-  _image_ids.emplace("t_90_50_cal_albedo", graphics_module.add_resource<sbx::graphics::image2d>("demo/assets/textures/tank/t_90_50_cal_albedo.png"));
-
   _image_ids.emplace("bmp_body1_albedo", graphics_module.add_resource<sbx::graphics::image2d>("demo/assets/textures/bmp/body1_albedo.png"));
   _image_ids.emplace("bmp_body1_normal", graphics_module.add_resource<sbx::graphics::image2d>("demo/assets/textures/bmp/body1_normal.png"));
   _image_ids.emplace("bmp_body2_albedo", graphics_module.add_resource<sbx::graphics::image2d>("demo/assets/textures/bmp/body2_albedo.png"));
@@ -83,26 +63,10 @@ application::application()
   _image_ids.emplace("bmp_tracks_albedo", graphics_module.add_resource<sbx::graphics::image2d>("demo/assets/textures/bmp/tracks_albedo.png"));
   _image_ids.emplace("bmp_tracks_normal", graphics_module.add_resource<sbx::graphics::image2d>("demo/assets/textures/bmp/tracks_normal.png"));
 
+  _image_ids.emplace("cerberus_albedo", graphics_module.add_resource<sbx::graphics::image2d>("demo/assets/textures/cerberus/albedo.png"));
+  _image_ids.emplace("cerberus_normal", graphics_module.add_resource<sbx::graphics::image2d>("demo/assets/textures/cerberus/normal.png"));
+
   // Meshes
-
-  auto mesh_map = nlohmann::json::parse(std::ifstream{"demo/assets/meshes/mesh_map.json"});
-
-  auto meshes = mesh_map["meshes"];
-
-  for (const auto& entry : meshes) {
-    const auto name = entry["name"].get<std::string>();
-    const auto path = entry["path"].get<std::string>();
-
-    const auto id = assets_module.add_asset<sbx::models::mesh>(path);
-
-    _mesh_ids.emplace(name, id);
-  }
-
-  _mesh_ids.emplace("tree_1_1", assets_module.add_asset<sbx::models::mesh>("demo/assets/meshes/tree_1_1/tree_1_1.gltf"));
-  _mesh_ids.emplace("tree_1_2", assets_module.add_asset<sbx::models::mesh>("demo/assets/meshes/tree_1_2/tree_1_2.gltf"));
-  _mesh_ids.emplace("tree_1_3", assets_module.add_asset<sbx::models::mesh>("demo/assets/meshes/tree_1_3/tree_1_3.gltf"));
-  _mesh_ids.emplace("tree_1_4", assets_module.add_asset<sbx::models::mesh>("demo/assets/meshes/tree_1_4/tree_1_4.gltf"));
-  _mesh_ids.emplace("bush_5", assets_module.add_asset<sbx::models::mesh>("demo/assets/meshes/bush_5/bush_5.gltf"));
 
   _mesh_ids.emplace("maple_tree_1", assets_module.add_asset<sbx::models::mesh>("demo/assets/meshes/maple_tree_1/maple_tree_1.gltf"));
   _mesh_ids.emplace("maple_tree_2", assets_module.add_asset<sbx::models::mesh>("demo/assets/meshes/maple_tree_2/maple_tree_2.gltf"));
@@ -114,8 +78,6 @@ application::application()
   _mesh_ids.emplace("rock_3", assets_module.add_asset<sbx::models::mesh>("demo/assets/meshes/rock_3/rock_3.gltf"));
   _mesh_ids.emplace("rock_4", assets_module.add_asset<sbx::models::mesh>("demo/assets/meshes/rock_4/rock_4.gltf"));
   _mesh_ids.emplace("rock_5", assets_module.add_asset<sbx::models::mesh>("demo/assets/meshes/rock_5/rock_5.gltf"));
-
-  _mesh_ids.emplace("player", assets_module.add_asset<sbx::models::mesh>("demo/assets/meshes/player/player.gltf"));
 
   _mesh_ids.emplace("fox", assets_module.add_asset<sbx::animations::mesh>("demo/assets/meshes/fox/fox.gltf"));
   _mesh_ids.emplace("fox_static", assets_module.add_asset<sbx::models::mesh>("demo/assets/meshes/fox/fox.gltf"));
@@ -131,7 +93,9 @@ application::application()
 
   _mesh_ids.emplace("bmp", assets_module.add_asset<sbx::models::mesh>("demo/assets/meshes/tank/bmp.gltf"));
 
-  // _mesh_ids.emplace("icosphere", assets_module.add_asset<sbx::models::mesh>(_generate_icosphere(20.0f, 4u)));
+  _mesh_ids.emplace("cube", assets_module.add_asset<sbx::models::mesh>("demo/assets/meshes/cube/cube.gltf"));
+
+  // _mesh_ids.emplace("cerberus", assets_module.add_asset<sbx::models::mesh>("demo/assets/meshes/cerberus/cerberus.fbx"));
 
   // Window
 
@@ -155,29 +119,6 @@ application::application()
 
   // terrain_module.load_terrain_in_scene(scene);
 
-  // Player
-
-  _player = scene.create_node("Player");
-
-  // auto player_submeshes = std::vector<sbx::scenes::static_mesh::submesh>{};
-  // player_submeshes.emplace_back(sbx::scenes::static_mesh::submesh{0u, sbx::math::color::red(), sbx::scenes::static_mesh::material{0.0f, 1.0f, 0.0f, 0.0f}});
-
-  // scene.add_component<sbx::scenes::static_mesh>(_player, _mesh_ids["player"], player_submeshes);
-
-  // auto& player_transform = scene.get_component<sbx::math::transform>(_player);
-  // player_transform.set_position(sbx::math::vector3{0.0f, 1.0f, -4.0f});
-  // player_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
-
-  // // Camera
-
-  // auto camera = scene.create_child_node(_player, "Camera");
-
-  // scene.add_component<sbx::scenes::camera>(camera, sbx::math::angle{sbx::math::degree{50.0f}}, window.aspect_ratio(), 0.1f, 1000.0f);
-
-  // scene.add_component<sbx::scenes::skybox>(camera, _cube_image_ids["skybox"]);
-
-  // scene.set_active_camera(camera);
-
   // Animated Fox
 
   auto fox1 = scene.create_node("Fox");
@@ -196,60 +137,11 @@ application::application()
   fox1_transform.set_position(sbx::math::vector3{0.0f, 0.0f, 0.0f});
   fox1_transform.set_scale(sbx::math::vector3{0.06f, 0.06f, 0.06f});
 
-  // Static Fox
-
-  // auto fox2 = scene.create_node("Fox");
-
-  // auto fox2_submeshes = std::vector<sbx::scenes::static_mesh::submesh>{};
-  // fox2_submeshes.push_back(sbx::scenes::static_mesh::submesh{0u, sbx::math::color::white(), sbx::scenes::static_mesh::material{0.2f, 0.5f, 0.1f, 0.8f}, _image_ids["fox"]});
-
-  // scene.add_component<sbx::scenes::static_mesh>(fox2, _mesh_ids["fox_static"], fox2_submeshes);
-
-  // scene.add_component<sbx::scenes::animation_state>(fox2);
-
-  // auto& fox2_transform = scene.get_component<sbx::math::transform>(fox2);
-  // fox2_transform.set_position(sbx::math::vector3{3.0f, 0.0f, -3.0f});
-  // fox2_transform.set_scale(sbx::math::vector3{0.06f, 0.06f, 0.06f});
-
-  // Animated Man
-
-  // auto man1 = scene.create_node("AnimatedMan");
-
-  // auto man1_submeshes = std::vector<sbx::scenes::skinned_mesh::submesh>{};
-  // man1_submeshes.push_back(sbx::scenes::skinned_mesh::submesh{0u, sbx::math::color::white(), sbx::scenes::skinned_mesh::material{0.2f, 0.5f, 0.1f, 0.8f}, _image_ids["man"]});
-
-  // scene.add_component<sbx::scenes::skinned_mesh>(man1, _mesh_ids["man"], man1_animation_id, man1_submeshes);
-
-  // scene.add_component<sbx::scenes::animation_state>(man1, 0.0f, 1.0f, true);
-
-  // scene.add_component<walker>(man1);
-
-  // auto& man1_transform = scene.get_component<sbx::math::transform>(man1);
-  // man1_transform.set_position(sbx::math::vector3{0.0f, 0.0f, 6.0f});
-  // // man1_transform.set_scale(sbx::math::vector3{0.01f, 0.01f, 0.01f});
-
-  // Static Man
-
-  // auto man2 = scene.create_node("StaticMan");
-
-  // auto man2_submeshes = std::vector<sbx::scenes::static_mesh::submesh>{};
-  // man2_submeshes.push_back(sbx::scenes::static_mesh::submesh{0u, sbx::math::color::white(), sbx::scenes::static_mesh::material{0.2f, 0.5f, 0.1f, 0.8f}, _image_ids["man"]});
-
-  // scene.add_component<sbx::scenes::static_mesh>(man2, _mesh_ids["man_static"], man2_submeshes);
-
-  // auto& man2_transform = scene.get_component<sbx::math::transform>(man2);
-  // man2_transform.set_position(sbx::math::vector3{5.0f, 0.0f, 6.0f});
-  // man2_transform.set_scale(sbx::math::vector3{0.01f, 0.01f, 0.01f});
-
   _selection_buffer = graphics_module.add_resource<sbx::graphics::storage_buffer>(sbx::graphics::storage_buffer::min_size);
 
   // Tank
 
   _tanks.emplace_back(sbx::math::transform{sbx::math::vector3::zero, sbx::math::quaternion::identity, sbx::math::vector3{0.5}}, _mesh_ids, _image_ids);
-
-  // auto& tank_transform = scene.get_component<sbx::math::transform>(tank);
-  // tank_transform.set_position(sbx::math::vector3{0.0f, 0.0f, 10.0f});
-  // // tank_transform.set_scale(sbx::math::vector3{0.1f, 0.1f, 0.1f});
 
   // Trees
 
