@@ -24,9 +24,8 @@ image2d::image2d(const math::vector2u& extent, VkFormat format, VkImageLayout la
 image2d::image2d(const std::filesystem::path& path, VkFilter filter, VkSamplerAddressMode address_mode, bool anisotropic, bool mipmap)
 : image{VkExtent3D{0, 0, 1}, filter, address_mode, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, (VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT), VK_FORMAT_R8G8B8A8_SRGB, 1, 1},
   _anisotropic{anisotropic},
-  _mipmap{mipmap},
-  _path{path} {
-  _load();
+  _mipmap{mipmap} {
+  _load(path);
 }
 
 image2d::image2d(const math::vector2u& extent, VkFormat format , memory::observer_ptr<const std::uint8_t> pixels)
@@ -93,100 +92,33 @@ struct image_data {
   std::uint8_t* pixels;
 }; // struct image_data
 
-auto write_image(const std::filesystem::path& path, const image_data& data) -> void {
-  auto output_file = std::ofstream{path, std::ios::binary};
-
-  if (!output_file.is_open()) {
-    throw std::runtime_error{fmt::format("Failed to open image file for writing: {}", path.string())};
-  }
-
-  auto header = file_header{};
-  header.magic = 69u;
-  header.version = 1u;
-  header.width = data.header.width;
-  header.height = data.header.height;
-  header.channels = data.header.channels;
-
-  output_file.write(reinterpret_cast<const char*>(&header), sizeof(file_header));
-  output_file.write(reinterpret_cast<const char*>(data.pixels), data.header.width * data.header.height * data.header.channels);
-
-  output_file.close();
-}
-
-auto read_image(const std::filesystem::path& path) -> image_data {
-  if (!std::filesystem::exists(path)) {
-    throw std::runtime_error{fmt::format("Image file not found: {}", path.string())};
-  }
-
-  auto result = image_data{};
-
-  auto input_file = std::ifstream{path, std::ios::binary};
-
-  if (!input_file.is_open()) {
-    throw std::runtime_error{fmt::format("Failed to open image file: {}", path.string())};
-  }
-
-  auto header = file_header{};
-
-  input_file.read(reinterpret_cast<char*>(&header), sizeof(file_header));
-
-  if (header.magic != 69u) {
-    throw std::runtime_error{fmt::format("Invalid magic number in image file: {}", path.string())};
-  }
-
-  if (header.version != 1u) {
-    throw std::runtime_error{fmt::format("Unsupported image file version: {} in file: {}", header.version, path.string())};
-  }
-
-  result.header = header;
-  result.pixels = new std::uint8_t[header.width * header.height * header.channels];
-  input_file.read(reinterpret_cast<char*>(result.pixels), header.width * header.height * header.channels);
-
-  input_file.close();
-
-  return result;
-}
-
-auto image2d::_load() -> void {
+auto image2d::_load(const std::filesystem::path& path) -> void {
   // [TODO] KAJ 2025-05-26 : This code is absolutely terrible, it should be refactored to use a more robust image loading system.
-  // const auto needs_processing = !std::filesystem::exists(std::filesystem::path{_path}.replace_extension(".sbximg"));
+  // const auto needs_processing = !std::filesystem::exists(std::filesystem::path{path}.replace_extension(".sbximg"));
 
   _channels = channels_from_format(_format);
 
   auto data = image_data{};
 
-  if (!_path.empty()) {
+  if (!path.empty()) {
     auto timer = utility::timer{};
 
-    // if (!needs_processing) {
-    //   data = read_image(std::filesystem::path{_path}.replace_extension(".sbximg"));
-    //   _extent.width = data.header.width;
-    //   _extent.height = data.header.height;
-    // } else {
     stbi_set_flip_vertically_on_load(true);
 
     // [NOTE] KAJ 2023-07-28 : Force 4 channels (RGBA) and ignore the original image's channels.
-    data.pixels = stbi_load(_path.string().c_str(), reinterpret_cast<std::int32_t*>(&_extent.width), reinterpret_cast<std::int32_t*>(&_extent.height), nullptr, STBI_rgb_alpha);
+    data.pixels = stbi_load(path.string().c_str(), reinterpret_cast<std::int32_t*>(&_extent.width), reinterpret_cast<std::int32_t*>(&_extent.height), nullptr, STBI_rgb_alpha);
 
     if (!data.pixels) {
-      throw std::runtime_error{fmt::format("Failed to load image: {}", _path.string())};
+      throw std::runtime_error{fmt::format("Failed to load image: {}", path.string())};
     }
 
     if (_extent.width == 0 || _extent.height == 0) {
-      throw std::runtime_error{fmt::format("Image '{}' has invalid dimensions: {}x{}", _path.string(), _extent.width, _extent.height)};
+      throw std::runtime_error{fmt::format("Image '{}' has invalid dimensions: {}x{}", path.string(), _extent.width, _extent.height)};
     }
-
-    // data.header.magic = 69u;
-    // data.header.version = 1u;
-    // data.header.width = _extent.width;
-    // data.header.height = _extent.height;
-    // data.header.channels = 4u;
-    // write_image(std::filesystem::path{_path}.replace_extension(".sbximg"), data);
-    // }
 
     const auto elapsed = units::quantity_cast<units::millisecond>(timer.elapsed());
   
-    utility::logger<"graphics">::debug("Loaded image: {} ({}x{}) in {:.2f}ms", _path.string(), _extent.width, _extent.height, elapsed.value());
+    utility::logger<"graphics">::debug("Loaded image: {} ({}x{}) in {:.2f}ms", path.string(), _extent.width, _extent.height, elapsed.value());
   }
 
 
@@ -207,11 +139,7 @@ auto image2d::_load() -> void {
 
     copy_buffer_to_image(staging_buffer, _handle, _extent, _array_layers, 0);
 
-    // if (needs_processing) {
     stbi_image_free(data.pixels);
-    // } else {
-    //   delete[] data.pixels;
-    // }
   }
 
   if (_mipmap) {

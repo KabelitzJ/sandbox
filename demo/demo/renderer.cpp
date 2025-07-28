@@ -30,8 +30,6 @@
 
 namespace demo {
 
-
-
 renderer::renderer()
 : _clear_color{sbx::math::color::white()} {
   using namespace sbx::utility::literals;
