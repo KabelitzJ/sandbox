@@ -91,6 +91,8 @@ auto buffer::resize(const size_type new_size) -> void {
 
   validate(vmaCreateBuffer(allocator, &buffer_create_info, &allocation_create_info, &_handle, &_allocation, nullptr));
 
+  vmaSetAllocationName(allocator, _allocation, name().c_str());
+
   if (was_mapped) {
     map();
   }

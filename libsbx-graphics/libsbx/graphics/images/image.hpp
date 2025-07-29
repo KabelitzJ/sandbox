@@ -89,6 +89,10 @@ public:
 
   auto sampler() const noexcept -> VkSampler;
 
+  virtual auto name() const noexcept -> std::string {
+    return "Image";
+  }
+
 protected:
 
   VkExtent3D _extent;

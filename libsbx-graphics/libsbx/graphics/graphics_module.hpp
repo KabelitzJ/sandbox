@@ -250,7 +250,7 @@ private:
     } else if constexpr (std::is_same_v<Type, depth_image>) {
       return _depth_images;
     } else if constexpr (std::is_same_v<Type, cube_image>) {
-      return _cube_image;
+      return _cube_images;
     }
 
     utility::assert_that(false, "Invalid resource type");
@@ -273,7 +273,7 @@ private:
     } else if constexpr (std::is_same_v<Type, depth_image>) {
       return _depth_images;
     } else if constexpr (std::is_same_v<Type, cube_image>) {
-      return _cube_image;
+      return _cube_images;
     }
 
     utility::assert_that(false, "Invalid resource type");
@@ -307,7 +307,7 @@ private:
   resource_storage<graphics::storage_buffer> _storage_buffers;
   resource_storage<graphics::image2d> _images;
   resource_storage<graphics::depth_image> _depth_images;
-  resource_storage<graphics::cube_image> _cube_image;
+  resource_storage<graphics::cube_image> _cube_images;
 
   std::vector<command_buffer::acquire_ownership_data> _acquire_ownership_data;
   std::vector<command_buffer::release_ownership_data> _release_ownership_data;

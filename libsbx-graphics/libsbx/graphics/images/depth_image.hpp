@@ -21,6 +21,10 @@ public:
 
   static auto format() -> VkFormat;
 
+  auto name() const noexcept -> std::string override {
+    return "Depth Image";
+  }
+
 }; // class depth_image
 
 using depth_image_handle = resource_handle<depth_image>;

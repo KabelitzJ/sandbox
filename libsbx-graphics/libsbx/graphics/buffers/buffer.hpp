@@ -42,6 +42,10 @@ public:
 
   // static auto insert_buffer_memory_barrier(command_buffer& command_buffer, buffer&  <-- We maybe need this
 
+  virtual auto name() const noexcept -> std::string {
+    return "Buffer";
+  }
+
 protected:
 
   auto map() -> void;

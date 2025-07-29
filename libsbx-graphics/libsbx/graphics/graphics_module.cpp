@@ -78,7 +78,8 @@ graphics_module::~graphics_module() {
   _graphics_pipelines.clear();
   _compute_pipelines.clear();
   _images.clear();
-  _cube_image.clear();
+  _depth_images.clear();
+  _cube_images.clear();
 
   vmaDestroyAllocator(_allocator);
 }

@@ -21,6 +21,10 @@ public:
 
   ~cube_image() override;
 
+  auto name() const noexcept -> std::string override {
+    return "Cube Image";
+  }
+
 private:
 
   auto _load() -> void;

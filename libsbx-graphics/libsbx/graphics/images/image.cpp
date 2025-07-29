@@ -147,6 +147,8 @@ auto image::create_image(VkImage& image, VmaAllocation& allocation, const VkExte
   allocation_create_info.priority = 1.0f;
 
   validate(vmaCreateImage(allocator, &image_create_info, &allocation_create_info, &image, &allocation, nullptr));
+
+  // vmaSetAllocationName(allocator, allocation, name().c_str());
 }
 
 auto image::create_image_view(const VkImage& image, VkImageView& image_view, VkImageViewType type, VkFormat format, VkImageAspectFlags image_aspect, std::uint32_t mip_levels, std::uint32_t base_mip_level, std::uint32_t layer_count, std::uint32_t base_array_layer) -> void {

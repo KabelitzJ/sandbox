@@ -121,7 +121,7 @@ application::application()
 
   auto fox1 = scene.create_node("Fox");
 
-  scene.add_material<sbx::scenes::material>("fox", sbx::scenes::material_type::transparent, sbx::math::color{1.0f, 1.0f, 1.0f, 0.1f}, 0.0f, 1.0f, scene.get_image("fox"));
+  scene.add_material<sbx::scenes::material>("fox", sbx::scenes::material_type::opaque, sbx::math::color{1.0f, 1.0f, 1.0f, 0.1f}, 0.0f, 1.0f, scene.get_image("fox"));
 
   scene.add_component<sbx::scenes::static_mesh>(fox1, scene.get_mesh("fox_static"), scene.get_material("fox"));
 
@@ -138,8 +138,8 @@ application::application()
 
   // Trees
 
-  scene.add_material<sbx::scenes::material>("maple_tree_bark", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 1.0f, scene.get_image("maple_tree_bark"), scene.get_image("maple_tree_bark_normal"));
-  scene.add_material<sbx::scenes::material>("maple_tree_leaves", sbx::scenes::material_type::transparent, sbx::math::color::white(), 0.0f, 1.0f, scene.get_image("maple_tree_leaves"));
+  scene.add_material<sbx::scenes::material>("maple_tree_bark", sbx::scenes::material_type::opaque, sbx::math::color{1.0f, 1.0f, 1.0f, 0.1f}, 0.0f, 1.0f, scene.get_image("maple_tree_bark"), scene.get_image("maple_tree_bark_normal"));
+  scene.add_material<sbx::scenes::material>("maple_tree_leaves", sbx::scenes::material_type::opaque, sbx::math::color{1.0f, 1.0f, 1.0f, 0.1f}, 0.0f, 1.0f, scene.get_image("maple_tree_leaves"));
 
   auto maple_tree = scene.create_node("MapleTree");
   scene.add_component<sbx::scenes::static_mesh>(maple_tree, scene.get_mesh("maple_tree_4"), std::vector<sbx::scenes::static_mesh::submesh>{{0u, scene.get_material("maple_tree_bark")}, {1u, scene.get_material("maple_tree_leaves")}});

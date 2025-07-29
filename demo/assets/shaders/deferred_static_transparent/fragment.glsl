@@ -46,25 +46,6 @@ vec4 get_albedo() {
   return texture(sampler2D(images[albedo_image_index], images_sampler), in_uv).rgba * in_color;
 }
 
-/// @param color Regular RGB reflective color of fragment, not pre-multiplied
-/// @param alpha Alpha value of fragment
-/// param wsZ Window-space-z value == gl_FragCoord.z
-void write_pixel(vec3 color, float alpha, float wsZ) {
-  float ndcZ = 2.0 * wsZ - 1.0;
-
-  // linearize depth for proper depth weighting
-  //See: https://stackoverflow.com/questions/7777913/how-to-render-depth-linearly-in-modern-opengl-with-gl-fragcoord-z-in-fragment-sh
-  //or: https://stackoverflow.com/questions/11277501/how-to-recover-view-space-position-given-view-space-depth-value-and-ndc-xy
-  float linearZ = (scene.projection[2][2] + 1.0) * wsZ / (scene.projection[2][2] + ndcZ);
-  float tmp = (1.0 - linearZ) * alpha;
-
-  //float tmp = (1.0 - wsZ * 0.99) * alpha * 10.0; // <-- original weighting function from paper #2
-  float w = clamp(tmp * tmp * tmp * tmp * tmp * tmp, 1e-5, 1e4);
-
-  out_accumulation = vec4(color * alpha* w, alpha);
-  out_revealage = alpha * w;
-}
-
 vec3 get_normal() {
   uint normal_image_index = in_image_indices.y;
 
@@ -77,8 +58,22 @@ vec3 get_normal() {
   return normalize(in_tbn * normal);
 }
 
+void writePixel(vec3 color, float alpha, float wsZ) {
+  float ndcZ = 2.0 * wsZ - 1.0;
+  // linearize depth for proper depth weighting
+  //See: https://stackoverflow.com/questions/7777913/how-to-render-depth-linearly-in-modern-opengl-with-gl-fragcoord-z-in-fragment-sh
+  //or: https://stackoverflow.com/questions/11277501/how-to-recover-view-space-position-given-view-space-depth-value-and-ndc-xy
+  float linearZ = (scene.projection[2][2] + 1.0) * wsZ / (scene.projection[2][2] + ndcZ);
+  float tmp = (1.0 - linearZ) * alpha;
+  //float tmp = (1.0 - wsZ * 0.99) * alpha * 10.0; // <-- original weighting function from paper #2
+  float w = clamp(tmp * tmp * tmp * tmp * tmp * tmp, 0.0001, 1000.0);
+
+  out_accumulation = vec4(color * alpha * w, alpha);
+  out_revealage = alpha * w;
+}
+
 void main(void) {
   vec4 albedo = get_albedo();
 
-  write_pixel(albedo.rgb, albedo.a, gl_FragCoord.z);
+  writePixel(albedo.rgb, albedo.a, gl_FragCoord.z);
 }

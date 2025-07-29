@@ -74,6 +74,7 @@ template<>
 struct static_mesh_subrenderer_traits<scenes::material_type::opaque> {
   inline static constexpr auto depth = graphics::depth::read_write;
   inline static constexpr auto uses_transparency = false;
+  inline static constexpr auto cull_mode = graphics::cull_mode::back;
   inline static const auto scope = utility::hashed_string{"opaque"};
   inline static const auto instance_data_buffer_name = static_mesh_draw_list::opaque_instance_data_buffer_name;
   inline static const auto draw_commands_buffer_name = static_mesh_draw_list::opaque_draw_commands_buffer_name;
@@ -83,6 +84,7 @@ template<>
 struct static_mesh_subrenderer_traits<scenes::material_type::masked> {
   inline static constexpr auto depth = graphics::depth::read_write;
   inline static constexpr auto uses_transparency = false;
+  inline static constexpr auto cull_mode = graphics::cull_mode::none;
   inline static const auto scope = utility::hashed_string{"masked"};
   inline static const auto instance_data_buffer_name = static_mesh_draw_list::opaque_instance_data_buffer_name;
   inline static const auto draw_commands_buffer_name = static_mesh_draw_list::opaque_draw_commands_buffer_name;
@@ -92,6 +94,7 @@ template<>
 struct static_mesh_subrenderer_traits<scenes::material_type::transparent> {
   inline static constexpr auto depth = graphics::depth::read_only;
   inline static constexpr auto uses_transparency = true;
+  inline static constexpr auto cull_mode = graphics::cull_mode::none;
   inline static const auto scope = utility::hashed_string{"transparent"};
   inline static const auto instance_data_buffer_name = static_mesh_draw_list::transparent_instance_data_buffer_name;
   inline static const auto draw_commands_buffer_name = static_mesh_draw_list::transparent_draw_commands_buffer_name;
@@ -111,7 +114,7 @@ class static_mesh_subrenderer final : public graphics::subrenderer {
       .uses_transparency = traits::uses_transparency,
       .rasterization_state = graphics::rasterization_state{
         .polygon_mode = graphics::polygon_mode::fill,
-        .cull_mode = graphics::cull_mode::back,
+        .cull_mode = traits::cull_mode,
         .front_face = graphics::front_face::counter_clockwise
       },
       // .vertex_input = graphics::vertex_input<models::vertex3d>::description()

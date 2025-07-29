@@ -33,6 +33,10 @@ public:
     return *(static_cast<const Type*>(_mapped_memory.get()) + index * sizeof(Type));
   }
 
+  auto name() const noexcept -> std::string override {
+    return "Storage Buffer";
+  }
+
   auto write_descriptor_set(std::uint32_t binding, VkDescriptorType descriptor_type) const noexcept -> graphics::write_descriptor_set override;
 
   static auto create_descriptor_set_layout_binding(std::uint32_t binding, VkDescriptorType descriptor_type, VkShaderStageFlags stage_flags) noexcept -> VkDescriptorSetLayoutBinding;

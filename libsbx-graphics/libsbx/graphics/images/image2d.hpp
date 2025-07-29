@@ -27,6 +27,10 @@ public:
 
   auto set_pixels(memory::observer_ptr<const std::uint8_t> pixels) -> void;
 
+  auto name() const noexcept -> std::string override {
+    return "Image 2D";
+  }
+
 private:
 
   auto _load(const std::filesystem::path& path = {}) -> void;

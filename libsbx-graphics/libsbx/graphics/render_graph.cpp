@@ -291,9 +291,9 @@ auto graph_builder::_create_attachments(const graphics_node& node) -> void {
   for (const auto& attachment : node._outputs) {
     switch (attachment.image_type()) {
       case attachment::type::image: {
-        // if (_color_images.contains(attachment.name())) {
-        //   throw utility::runtime_error{"Attachment '{}' has duplicate name in render graph", attachment.name().str()};
-        // }
+        if (_color_images.contains(attachment.name())) {
+          break;
+        }
 
         auto filter = VK_FILTER_LINEAR;
 
@@ -328,9 +328,9 @@ auto graph_builder::_create_attachments(const graphics_node& node) -> void {
         break;
       }
       case attachment::type::depth: {
-        // if (_depth_images.contains(attachment.name())) {
-        //   throw utility::runtime_error{"Attachment '{}' has duplicate name in render graph", attachment.name().str()};
-        // }
+        if (_depth_images.contains(attachment.name())) {
+          break;
+        }
 
         const auto handle = graphics_module.add_resource<depth_image>(node._render_area.extent(), VK_SAMPLE_COUNT_1_BIT);
         const auto& image = graphics_module.get_resource<depth_image>(handle);
