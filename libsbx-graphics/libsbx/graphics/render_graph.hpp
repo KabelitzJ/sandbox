@@ -128,7 +128,6 @@ private:
 
   utility::hashed_string _name;
   type _type;
-  bool _is_multi_sampled;
   math::color _clear_color;
   graphics::format _format;
   graphics::address_mode _address_mode;
