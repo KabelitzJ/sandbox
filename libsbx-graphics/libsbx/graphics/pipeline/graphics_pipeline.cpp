@@ -280,7 +280,7 @@ graphics_pipeline::graphics_pipeline(const std::filesystem::path& path, const re
 
   // auto color_blend_attachments = std::vector<VkPipelineColorBlendAttachmentState>{render_stage.attachment_count(_stage.subpass), color_blend_attachment};
 
-  const auto& attachments = _pass.attachments();
+  const auto& attachments = _pass.outputs();
 
   auto color_blend_attachments = std::vector<VkPipelineColorBlendAttachmentState>{};
   color_blend_attachments.reserve(attachments.size());

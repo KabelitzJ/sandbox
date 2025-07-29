@@ -65,13 +65,50 @@
 
 namespace sbx::models {
 
+namespace detail {
+
+template<scenes::material_type Type>
+struct static_mesh_subrenderer_traits;
+
+template<>
+struct static_mesh_subrenderer_traits<scenes::material_type::opaque> {
+  inline static constexpr auto depth = graphics::depth::read_write;
+  inline static constexpr auto uses_transparency = false;
+  inline static const auto scope = utility::hashed_string{"opaque"};
+  inline static const auto instance_data_buffer_name = static_mesh_draw_list::opaque_instance_data_buffer_name;
+  inline static const auto draw_commands_buffer_name = static_mesh_draw_list::opaque_draw_commands_buffer_name;
+}; // struct static_mesh_subrenderer_traits
+
+template<>
+struct static_mesh_subrenderer_traits<scenes::material_type::masked> {
+  inline static constexpr auto depth = graphics::depth::read_write;
+  inline static constexpr auto uses_transparency = false;
+  inline static const auto scope = utility::hashed_string{"masked"};
+  inline static const auto instance_data_buffer_name = static_mesh_draw_list::opaque_instance_data_buffer_name;
+  inline static const auto draw_commands_buffer_name = static_mesh_draw_list::opaque_draw_commands_buffer_name;
+}; // struct static_mesh_subrenderer_traits
+
+template<>
+struct static_mesh_subrenderer_traits<scenes::material_type::transparent> {
+  inline static constexpr auto depth = graphics::depth::read_only;
+  inline static constexpr auto uses_transparency = true;
+  inline static const auto scope = utility::hashed_string{"transparent"};
+  inline static const auto instance_data_buffer_name = static_mesh_draw_list::transparent_instance_data_buffer_name;
+  inline static const auto draw_commands_buffer_name = static_mesh_draw_list::transparent_draw_commands_buffer_name;
+}; // struct static_mesh_subrenderer_traits
+
+} // namespace detail
+
+template<scenes::material_type Type>
 class static_mesh_subrenderer final : public graphics::subrenderer {
+
+  using traits = detail::static_mesh_subrenderer_traits<Type>;
 
   class pipeline : public graphics::graphics_pipeline {
 
     inline static const auto pipeline_definition = graphics::pipeline_definition{
-      .depth = graphics::depth::read_write,
-      .uses_transparency = false,
+      .depth = traits::depth,
+      .uses_transparency = traits::uses_transparency,
       .rasterization_state = graphics::rasterization_state{
         .polygon_mode = graphics::polygon_mode::fill,
         .cull_mode = graphics::cull_mode::back,
@@ -157,9 +194,9 @@ public:
     _scene_descriptor_handler.bind_descriptors(command_buffer);
 
     _push_handler.push("transform_data_buffer", draw_list->buffer(static_mesh_draw_list::transform_data_buffer_name).address());
-    _push_handler.push("instance_data_buffer", draw_list->buffer(static_mesh_draw_list::instance_data_buffer_name).address());
+    _push_handler.push("instance_data_buffer", draw_list->buffer(traits::instance_data_buffer_name).address());
 
-    for (const auto& [mesh_id, range] : draw_list->draw_ranges()) {
+    for (const auto& [mesh_id, range] : draw_list->draw_ranges(traits::scope)) {
       auto& mesh = assets_module.get_asset<models::mesh>(mesh_id);
       
       mesh.bind(command_buffer);
@@ -168,7 +205,7 @@ public:
 
       _push_handler.bind(command_buffer);
 
-      command_buffer.draw_indexed_indirect(draw_list->buffer(static_mesh_draw_list::draw_commands_buffer_name), range.offset, range.count);
+      command_buffer.draw_indexed_indirect(draw_list->buffer(traits::draw_commands_buffer_name), range.offset, range.count);
     }
   }
 

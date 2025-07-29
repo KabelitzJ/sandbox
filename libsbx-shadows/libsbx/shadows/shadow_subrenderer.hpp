@@ -123,20 +123,20 @@ private:
     const auto& static_mesh = scene.get_component<scenes::static_mesh>(node);
     const auto mesh_id = static_mesh.mesh_id();
 
-    for (const auto& submesh : static_mesh.submeshes()) {
-      const auto key = mesh_key{mesh_id, submesh.index};
+    // for (const auto& submesh : static_mesh.submeshes()) {
+    //   const auto key = mesh_key{mesh_id, submesh.index};
 
-      _used_uniforms.insert(key);
+    //   _used_uniforms.insert(key);
 
-      auto model = scene.world_transform(node);
+    //   auto model = scene.world_transform(node);
       
-      const auto albedo_image_index = submesh.albedo_texture ? _images.push_back(submesh.albedo_texture) : graphics::separate_image2d_array::max_size;
+    //   const auto albedo_image_index = submesh.albedo_texture ? _images.push_back(submesh.albedo_texture) : graphics::separate_image2d_array::max_size;
 
-      const auto image_indices = math::vector4{albedo_image_index, 0u, 0u, 0u};
-      auto material = math::vector4{submesh.material.metallic, submesh.material.roughness, submesh.material.flexibility, submesh.material.anchor_height};
+    //   const auto image_indices = math::vector4{albedo_image_index, 0u, 0u, 0u};
+    //   auto material = math::vector4{submesh.material.metallic, submesh.material.roughness, submesh.material.flexibility, submesh.material.anchor_height};
 
-      _static_meshes[key].push_back(per_mesh_data{std::move(model), material, image_indices});
-    }
+    //   _static_meshes[key].push_back(per_mesh_data{std::move(model), material, image_indices});
+    // }
   }
 
   struct uniform_data {

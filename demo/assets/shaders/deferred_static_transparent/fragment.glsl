@@ -19,13 +19,19 @@ layout(location = 7) in vec2 in_material;
 layout(location = 8) in flat uvec2 in_image_indices;
 layout(location = 9) in flat uvec2 in_object_id;
 
-layout(location = 0) out vec4 out_albedo;
-layout(location = 1) out float out_alpha;
-layout(location = 2) out vec4 out_position;
-layout(location = 3) out vec4 out_normal;
-layout(location = 4) out vec4 out_material;
-layout(location = 5) out uvec2 out_object_id;
-layout(location = 6) out float out_depth;
+layout(location = 0) out vec4 out_accumulation;
+layout(location = 1) out float out_revealage;
+
+layout(set = 0, binding = 0) uniform uniform_scene {
+  mat4 view;
+  mat4 projection;
+  vec3 camera_position;
+  vec3 light_direction;
+  vec4 light_color;
+  mat4 light_space;
+  // uint point_light_count;
+  float time;
+} scene;
 
 layout(set = 0, binding = 1) uniform sampler images_sampler;
 layout(set = 0, binding = 2) uniform texture2D images[MAX_IMAGE_ARRAY_SIZE];
@@ -38,6 +44,25 @@ vec4 get_albedo() {
   }
 
   return texture(sampler2D(images[albedo_image_index], images_sampler), in_uv).rgba * in_color;
+}
+
+/// @param color Regular RGB reflective color of fragment, not pre-multiplied
+/// @param alpha Alpha value of fragment
+/// param wsZ Window-space-z value == gl_FragCoord.z
+void write_pixel(vec3 color, float alpha, float wsZ) {
+  float ndcZ = 2.0 * wsZ - 1.0;
+
+  // linearize depth for proper depth weighting
+  //See: https://stackoverflow.com/questions/7777913/how-to-render-depth-linearly-in-modern-opengl-with-gl-fragcoord-z-in-fragment-sh
+  //or: https://stackoverflow.com/questions/11277501/how-to-recover-view-space-position-given-view-space-depth-value-and-ndc-xy
+  float linearZ = (scene.projection[2][2] + 1.0) * wsZ / (scene.projection[2][2] + ndcZ);
+  float tmp = (1.0 - linearZ) * alpha;
+
+  //float tmp = (1.0 - wsZ * 0.99) * alpha * 10.0; // <-- original weighting function from paper #2
+  float w = clamp(tmp * tmp * tmp * tmp * tmp * tmp, 1e-5, 1e4);
+
+  out_accumulation = vec4(color * alpha* w, alpha);
+  out_revealage = alpha * w;
 }
 
 vec3 get_normal() {
@@ -55,14 +80,5 @@ vec3 get_normal() {
 void main(void) {
   vec4 albedo = get_albedo();
 
-  // float weight = max(min(1.0, max(max(albedo.r, albedo.g), albedo.b) * albedo.a), albedo.a);
-  float weight = clamp(pow(min(1.0, albedo.a * 10.0) + 0.01, 3.0) * 1e8 * pow(1.0 - gl_FragCoord.z * 0.9, 3.0), 1e-2, 3e3);
-
-  out_albedo = vec4(albedo.rgb * albedo.a, albedo.a) * weight;
-  out_alpha = albedo.a;
-  out_position = vec4(in_position, 1.0);
-  out_normal = vec4(get_normal(), 0.0);
-  out_material = vec4(in_material, 0.0, 0.0);
-  out_object_id = in_object_id;
-  out_depth = linearize_depth(gl_FragCoord.z, DEFAULT_NEAR, DEFAULT_FAR);
+  write_pixel(albedo.rgb, albedo.a, gl_FragCoord.z);
 }

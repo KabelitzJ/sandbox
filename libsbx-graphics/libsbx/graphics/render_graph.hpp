@@ -157,8 +157,6 @@ private:
   std::vector<utility::hashed_string> _inputs;
   std::vector<attachment> _outputs;
 
-  std::unordered_map<utility::hashed_string, std::unique_ptr<graphics::draw_list>> _draw_lists;
-
 }; // class graphics_node
 
 class compute_node {
@@ -179,6 +177,7 @@ private:
 class graph_base  {
 
   friend class graph_builder;
+  friend class graphics_pass;
 
 public:
 
@@ -191,6 +190,7 @@ private:
 
   std::vector<graphics_node> _graphics_nodes;
   std::vector<compute_node> _compute_nodes;
+  std::unordered_map<utility::hashed_string, std::unique_ptr<graphics::draw_list>> _draw_lists;
 
 }; // class graph_base
 
@@ -208,20 +208,23 @@ public:
   requires (std::is_constructible_v<attachment, Args...>)
   auto produces(Args&&... args) -> void;
 
-  template<typename Type, typename... Args>
-  requires (std::is_constructible_v<Type, Args...>)
-  auto add_draw_list(const utility::hashed_string& name, Args&&... args) -> Type&;
+  // template<typename Type, typename... Args>
+  // requires (std::is_constructible_v<Type, Args...>)
+  // auto add_draw_list(const utility::hashed_string& name, Args&&... args) -> Type&;
 
   auto name() const -> const utility::hashed_string&;
 
-  auto attachments() const -> const std::vector<attachment>&;
+  auto inputs() const -> const std::vector<utility::hashed_string>& ;
+
+  auto outputs() const -> const std::vector<attachment>&;
 
   auto draw_list(const utility::hashed_string& name) const -> const std::unique_ptr<graphics::draw_list>&;
 
 private:
 
-  graphics_pass(graphics_node& node);
+  graphics_pass(graph_base& graph, graphics_node& node);
 
+  graph_base& _graph;
   graphics_node& _node;
 
 }; // class graphics_pass
@@ -302,6 +305,13 @@ public:
   requires (sizeof...(Callables) > 1u)
   auto emplace(Callables&&... callables) -> decltype(auto);
 
+  template<typename Type, typename... Args>
+  requires (std::is_constructible_v<Type, Args...>)
+  auto add_draw_list(const utility::hashed_string& name, Args&&... args) -> Type& {
+    auto result = _graph._draw_lists.emplace(name, std::make_unique<Type>(std::forward<Args>(args)...));
+    return *static_cast<Type*>(result.first->second.get());
+  }
+
   auto build() -> void;
 
   auto resize() -> void;
@@ -310,6 +320,11 @@ public:
 
   template<typename Callable>
   auto execute(command_buffer& command_buffer, const swapchain& swapchain, Callable&& callable) -> void {
+    for (auto& [key, draw_list] : _graph._draw_lists) {
+      draw_list->clear();
+      draw_list->update();
+    }
+
     for (const auto& instruction : _instructions) {
       std::visit(overload{
         [this, &command_buffer, &swapchain](const transition_instruction& instruction) {
@@ -398,11 +413,6 @@ public:
           rendering_info.pColorAttachments = color_attachments.data();
           rendering_info.pDepthAttachment = depth_attachment.has_value() ? &depth_attachment.value() : nullptr;
           rendering_info.pStencilAttachment = depth_attachment.has_value() ? &depth_attachment.value() : nullptr;
-
-          for (auto& [name, draw_list] : instruction.node._draw_lists) {
-            draw_list->clear();
-            draw_list->update();
-          }
 
           command_buffer.begin_rendering(rendering_info);
 

@@ -52,28 +52,28 @@ public:
 
     _node = scene.create_node("Terrain");
 
-    for (auto y = 0u; y < grid.y(); ++y) {
-      for (auto x = 0u; x < grid.x(); ++x) {
-        auto chunk = scene.create_child_node(_node, fmt::format("Chunk{}{}", x, y));
+    // for (auto y = 0u; y < grid.y(); ++y) {
+    //   for (auto x = 0u; x < grid.x(); ++x) {
+    //     auto chunk = scene.create_child_node(_node, fmt::format("Chunk{}{}", x, y));
 
-        auto submeshes = std::vector<sbx::scenes::static_mesh::submesh>{};
+    //     auto submeshes = std::vector<sbx::scenes::static_mesh::submesh>{};
 
-        submeshes.emplace_back(sbx::scenes::static_mesh::submesh{
-          .index = 0u,
-          .tint = sbx::math::color::white(),
-          .material = sbx::scenes::static_mesh::material{},
-          .albedo_texture = _texture_id
-        });
+    //     submeshes.emplace_back(sbx::scenes::static_mesh::submesh{
+    //       .index = 0u,
+    //       .tint = sbx::math::color::white(),
+    //       .material = sbx::scenes::static_mesh::material{},
+    //       .albedo_texture = _texture_id
+    //     });
 
-        scene.add_component<sbx::scenes::static_mesh>(chunk, _mesh_id, submeshes);
+    //     scene.add_component<sbx::scenes::static_mesh>(chunk, _mesh_id, submeshes);
 
-        const auto position = sbx::math::vector3{x * chunk_size.x() - offset.x(), 0.0f, y * chunk_size.y() - offset.y()};
+    //     const auto position = sbx::math::vector3{x * chunk_size.x() - offset.x(), 0.0f, y * chunk_size.y() - offset.y()};
 
-        auto& transform = scene.get_component<sbx::math::transform>(chunk);
+    //     auto& transform = scene.get_component<sbx::math::transform>(chunk);
 
-        transform.set_position(position);
-      }
-    }
+    //     transform.set_position(position);
+    //   }
+    // }
 
     // auto icosphere_tile_mesh = demo::icosphere_tile_mesh{4u, 0.02f};
     // _planet_id = assets_module.add_asset<sbx::models::mesh>(std::make_unique<sbx::models::mesh>(icosphere_tile_mesh.get_vertices(), icosphere_tile_mesh.get_indices(), icosphere_tile_mesh.get_bounds()));

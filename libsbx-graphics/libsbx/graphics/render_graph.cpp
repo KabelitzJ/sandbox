@@ -63,26 +63,31 @@ auto graphics_pass::name() const -> const utility::hashed_string& {
   return _node._name;
 }
 
-auto graphics_pass::attachments() const -> const std::vector<attachment>& {
+auto graphics_pass::inputs() const -> const std::vector<utility::hashed_string>& {
+  return _node._inputs;
+}
+
+auto graphics_pass::outputs() const -> const std::vector<attachment>& {
   return _node._outputs;
 }
 
 auto graphics_pass::draw_list(const utility::hashed_string& name) const -> const std::unique_ptr<graphics::draw_list>& {
-  if (auto entry = _node._draw_lists.find(name); entry != _node._draw_lists.end()) {
+  if (auto entry = _graph._draw_lists.find(name); entry != _graph._draw_lists.end()) {
     return entry->second;
   }
 
   throw utility::runtime_error{"Draw list with name '{}' not found in graphics pass '{}'", name.str(), _node._name.str()};
 }
 
-graphics_pass::graphics_pass(graphics_node& node)
-: _node{node} { }
+graphics_pass::graphics_pass(graph_base& graph, graphics_node& node)
+: _graph{graph},
+  _node{node} { }
 
 compute_pass::compute_pass(compute_node& node)
 : _node{node} { }
 
 auto context::graphics_pass(const utility::hashed_string& name) -> detail::graphics_pass {
-  return detail::graphics_pass{_graph.emplace_back<detail::graphics_node>(name)};
+  return detail::graphics_pass{_graph, _graph.emplace_back<detail::graphics_node>(name)};
 }
 
 auto context::compute_pass(const utility::hashed_string& name) -> detail::compute_pass {
@@ -286,9 +291,9 @@ auto graph_builder::_create_attachments(const graphics_node& node) -> void {
   for (const auto& attachment : node._outputs) {
     switch (attachment.image_type()) {
       case attachment::type::image: {
-        if (_color_images.contains(attachment.name())) {
-          throw utility::runtime_error{"Attachment '{}' has duplicate name in render graph", attachment.name().str()};
-        }
+        // if (_color_images.contains(attachment.name())) {
+        //   throw utility::runtime_error{"Attachment '{}' has duplicate name in render graph", attachment.name().str()};
+        // }
 
         auto filter = VK_FILTER_LINEAR;
 
@@ -323,9 +328,9 @@ auto graph_builder::_create_attachments(const graphics_node& node) -> void {
         break;
       }
       case attachment::type::depth: {
-        if (_depth_images.contains(attachment.name())) {
-          throw utility::runtime_error{"Attachment '{}' has duplicate name in render graph", attachment.name().str()};
-        }
+        // if (_depth_images.contains(attachment.name())) {
+        //   throw utility::runtime_error{"Attachment '{}' has duplicate name in render graph", attachment.name().str()};
+        // }
 
         const auto handle = graphics_module.add_resource<depth_image>(node._render_area.extent(), VK_SAMPLE_COUNT_1_BIT);
         const auto& image = graphics_module.get_resource<depth_image>(handle);

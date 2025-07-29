@@ -5,6 +5,7 @@
 #include <cstdint>
 
 #include <libsbx/utility/hashed_string.hpp>
+#include <libsbx/utility/logger.hpp>
 
 #include <libsbx/math/uuid.hpp>
 
@@ -41,7 +42,7 @@ public:
 
   auto sampler() const noexcept -> const separate_sampler&;
 
-  auto draw_ranges() const noexcept -> const draw_command_range_container&;
+  auto draw_ranges(const utility::hashed_string& name) const noexcept -> const draw_command_range_container&;
 
   auto clear() -> void;
 
@@ -58,14 +59,14 @@ protected:
 
   auto add_image(const image2d_handle& handle) -> std::uint32_t;
 
-  auto push_draw_command_range(const math::uuid& id, const draw_command_range& range) -> void;
+  auto push_draw_command_range(const utility::hashed_string& name, const math::uuid& id, const draw_command_range& range) -> void;
 
 private:
 
   storage_buffer_container _buffers;
   separate_image2d_array _images;
   separate_sampler _sampler;
-  draw_command_range_container _draw_ranges;
+  std::unordered_map<utility::hashed_string, draw_command_range_container> _draw_ranges;
 
 }; // class draw_list
 

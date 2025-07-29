@@ -1,5 +1,7 @@
 #include <libsbx/graphics/draw_list.hpp>
 
+#include <libsbx/utility/exception.hpp>
+
 #include <libsbx/graphics/graphics_module.hpp>
 
 namespace sbx::graphics {
@@ -32,12 +34,19 @@ auto draw_list::sampler() const noexcept -> const separate_sampler& {
   return _sampler;
 }
 
-auto draw_list::draw_ranges() const noexcept -> const draw_command_range_container& {
-  return _draw_ranges;
+auto draw_list::draw_ranges(const utility::hashed_string& name) const noexcept -> const draw_command_range_container& {
+  if (const auto entry = _draw_ranges.find(name); entry != _draw_ranges.end()) {
+    return entry->second;
+  }
+
+  throw utility::runtime_error{"No draw range '{}' in draw list", name.str()};
 }
 
 auto draw_list::clear() -> void {
-  _draw_ranges.clear();
+  for (auto& [name, range] : _draw_ranges) {
+    range.clear();
+  }
+
   _images.clear();
 }
 
@@ -71,8 +80,8 @@ auto draw_list::add_image(const image2d_handle& handle) -> std::uint32_t {
   return _images.push_back(handle);
 }
 
-auto draw_list::push_draw_command_range(const math::uuid& id, const draw_command_range& range) -> void {
-  _draw_ranges.emplace(id, range);
+auto draw_list::push_draw_command_range(const utility::hashed_string& name, const math::uuid& id, const draw_command_range& range) -> void {
+  _draw_ranges[name].emplace(id, range);
 }
 
 } // namespace sbx::graphics

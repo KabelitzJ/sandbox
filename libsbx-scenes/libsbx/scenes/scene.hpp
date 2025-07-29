@@ -187,6 +187,21 @@ public:
     return _mesh_ids.at(name);
   }
 
+  template<typename Material, typename... Args>
+  auto add_material(const utility::hashed_string& name, Args&&... args) -> void {
+    auto& assets_module = sbx::core::engine::get_module<sbx::assets::assets_module>();
+
+    _materials_ids.emplace(name, assets_module.add_asset<Material>(std::forward<Args>(args)...));
+  }
+
+  auto get_material(const utility::hashed_string& name) -> math::uuid {
+    if (auto entry = _materials_ids.find(name); entry != _materials_ids.end()) {
+      return entry->second;
+    }
+
+    throw utility::runtime_error{"Material '{}' is not loaded in scene '{}'", name.str(), _name};
+  }
+
 private:
 
   auto _save_assets(YAML::Emitter& emitter) -> void;
@@ -218,6 +233,7 @@ private:
   std::unordered_map<utility::hashed_string, graphics::image2d_handle> _image_ids;
   std::unordered_map<utility::hashed_string, graphics::cube_image2d_handle> _cube_image_ids;
   std::unordered_map<utility::hashed_string, math::uuid> _mesh_ids;
+  std::unordered_map<utility::hashed_string, math::uuid> _materials_ids;
 
 }; // class scene
 

@@ -118,7 +118,7 @@ void main() {
 
   out_tbn = mat3(T, B, N);
 
-  out_uv = in_uv + vec2(texture_scroll_x, texture_scroll_y) * scene.time;
+  out_uv = in_uv; // + vec2(texture_scroll_x, texture_scroll_y) * scene.time;
 
   out_color = instance_data.tint;
   out_material = instance_data.material.xy;

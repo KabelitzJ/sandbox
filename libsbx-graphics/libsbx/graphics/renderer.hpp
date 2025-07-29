@@ -68,6 +68,12 @@ protected:
     return *static_cast<Type*>(subrenderers.back().get());
   }
 
+  template<typename Type, typename... Args>
+  requires (std::is_constructible_v<Type, Args...>)
+  auto add_draw_list(const utility::hashed_string& name, Args&&... args) -> Type& {
+    return _graph.add_draw_list<Type>(name, std::forward<Args>(args)...);
+  }
+
   template<typename... Callables>
   requires (sizeof...(Callables) > 1u)
   auto create_graph(Callables&&... callables) -> decltype(auto) {
