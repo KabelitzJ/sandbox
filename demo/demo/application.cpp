@@ -67,7 +67,8 @@ application::application()
 
   scene.add_image("helmet_albedo", "demo/assets/textures/helmet/albedo.jpg");
   scene.add_image("helmet_normal", "demo/assets/textures/helmet/normal.jpg");
-  scene.add_image("helmet_metal_roughness", "demo/assets/textures/helmet/metal_roughness.jpg");
+  scene.add_image("helmet_mr", "demo/assets/textures/helmet/mr.jpg");
+  scene.add_image("helmet_ao", "demo/assets/textures/helmet/ao.jpg");
 
   scene.add_image("checkerboard", "demo/assets/textures/checkerboard.jpg");
 
