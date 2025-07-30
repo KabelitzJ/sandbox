@@ -83,6 +83,9 @@ public:
   inline static const auto opaque_draw_commands_buffer_name = utility::hashed_string{"opaque_draw_commands"};
   inline static const auto opaque_instance_data_buffer_name = utility::hashed_string{"opaque_instance_data"};
 
+  inline static const auto masked_draw_commands_buffer_name = utility::hashed_string{"masked_draw_commands"};
+  inline static const auto masked_instance_data_buffer_name = utility::hashed_string{"masked_instance_data"};
+
   inline static const auto transparent_draw_commands_buffer_name = utility::hashed_string{"transparent_draw_commands"};
   inline static const auto transparent_instance_data_buffer_name = utility::hashed_string{"transparent_instance_data"};
 
@@ -92,6 +95,9 @@ public:
     create_buffer(opaque_draw_commands_buffer_name, graphics::storage_buffer::min_size, VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT);
     create_buffer(opaque_instance_data_buffer_name, graphics::storage_buffer::min_size, VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT);
 
+    create_buffer(masked_draw_commands_buffer_name, graphics::storage_buffer::min_size, VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT);
+    create_buffer(masked_instance_data_buffer_name, graphics::storage_buffer::min_size, VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT);
+
     create_buffer(transparent_draw_commands_buffer_name, graphics::storage_buffer::min_size, VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT);
     create_buffer(transparent_instance_data_buffer_name, graphics::storage_buffer::min_size, VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT);
 
@@ -100,6 +106,7 @@ public:
 
   auto update() -> void override {
     _opaque_submesh_instances.clear();
+    _masked_submesh_instances.clear();
     _transparent_submesh_instances.clear();
     _transform_data.clear();
 
@@ -114,6 +121,7 @@ public:
 
     // [TODO] : Need to change this to a more abstract system
     _build_draw_commands(_opaque_submesh_instances, "opaque", opaque_draw_commands_buffer_name, opaque_instance_data_buffer_name);
+    _build_draw_commands(_masked_submesh_instances, "masked", masked_draw_commands_buffer_name, masked_instance_data_buffer_name);
     _build_draw_commands(_transparent_submesh_instances, "transparent", transparent_draw_commands_buffer_name, transparent_instance_data_buffer_name);
 
     update_buffer(_transform_data, transform_data_buffer_name);
@@ -139,9 +147,6 @@ private:
     const auto transform_data_index = static_cast<std::uint32_t>(_transform_data.size());
     _transform_data.emplace_back(global_transform.model, global_transform.normal);
 
-    auto& opaque_instances = _opaque_submesh_instances[mesh_id];
-    auto& transparent_instances = _transparent_submesh_instances[mesh_id];
-
     for (const auto& submesh : static_mesh.submeshes()) {
       const auto& material = assets_module.get_asset<scenes::material>(submesh.material);
 
@@ -152,12 +157,33 @@ private:
       const auto payload = math::vector4u{albedo_image_index, normal_image_index, transform_data_index, 0u};
       const auto selection = math::vector4u{upper_id, lower_id, 0u, 0u};
 
-      if (material.type == scenes::material_type::opaque) {
-        opaque_instances.resize(std::max(opaque_instances.size(), static_cast<std::size_t>(submesh.index + 1u)));
-        opaque_instances[submesh.index].push_back(instance_data{material.base_color, material_data, payload, selection});
-      } else {
-        transparent_instances.resize(std::max(transparent_instances.size(), static_cast<std::size_t>(submesh.index + 1u)));
-        transparent_instances[submesh.index].push_back(instance_data{material.base_color, material_data, payload, selection});
+      switch (material.type) {
+        case scenes::material_type::opaque: {
+          auto& opaque_instances = _opaque_submesh_instances[mesh_id];
+
+          opaque_instances.resize(std::max(opaque_instances.size(), static_cast<std::size_t>(submesh.index + 1u)));
+          opaque_instances[submesh.index].push_back(instance_data{material.base_color, material_data, payload, selection});
+
+          break;
+        }
+        case scenes::material_type::masked: {
+          auto& masked_instances = _masked_submesh_instances[mesh_id];
+
+          masked_instances.resize(std::max(masked_instances.size(), static_cast<std::size_t>(submesh.index + 1u)));
+          masked_instances[submesh.index].push_back(instance_data{material.base_color, material_data, payload, selection});
+
+          break;
+        }
+        case scenes::material_type::transparent: {
+          auto& transparent_instances = _transparent_submesh_instances[mesh_id];
+
+          transparent_instances.resize(std::max(transparent_instances.size(), static_cast<std::size_t>(submesh.index + 1u)));
+          transparent_instances[submesh.index].push_back(instance_data{material.base_color, material_data, payload, selection});
+          break;
+        }
+        default: {
+          throw utility::runtime_error{"Unknown material type"};
+        }
       }
     }
   }
@@ -217,7 +243,9 @@ private:
   }
 
   std::unordered_map<math::uuid, std::vector<std::vector<instance_data>>> _opaque_submesh_instances;
+  std::unordered_map<math::uuid, std::vector<std::vector<instance_data>>> _masked_submesh_instances;
   std::unordered_map<math::uuid, std::vector<std::vector<instance_data>>> _transparent_submesh_instances;
+
   std::vector<transform_data> _transform_data;
 
 }; // class static_mesh_draw_list

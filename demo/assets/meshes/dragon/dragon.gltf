@@ -36,7 +36,7 @@
 	"nodes":[
 		{
 			"mesh":0,
-			"name":"Cloth Backdrop",
+			"name":"cloth",
 			"scale":[
 				3.5,
 				3.5,
@@ -50,7 +50,7 @@
 		},
 		{
 			"mesh":1,
-			"name":"Dragon",
+			"name":"dragon",
 			"rotation":[
 				0.70710688829422,
 				0,
@@ -71,7 +71,7 @@
 	],
 	"materials":[
 		{
-			"name":"Cloth Backdrop",
+			"name":"cloth",
 			"pbrMetallicRoughness":{
 				"metallicFactor":0,
 				"roughnessFactor":0.4934999942779541
@@ -129,7 +129,7 @@
 	],
 	"meshes":[
 		{
-			"name":"Cloth Backdrop",
+			"name":"cloth",
 			"primitives":[
 				{
 					"attributes":{
@@ -144,7 +144,7 @@
 			]
 		},
 		{
-			"name":"Dragon",
+			"name":"dragon",
 			"primitives":[
 				{
 					"attributes":{

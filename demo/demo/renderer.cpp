@@ -121,6 +121,7 @@ renderer::renderer()
   add_subrenderer<sbx::scenes::skybox_subrenderer>("demo/assets/shaders/skybox", deferred);
   add_subrenderer<sbx::scenes::grid_subrenderer>("demo/assets/shaders/grid", deferred);
   add_subrenderer<sbx::models::opaque_static_mesh_subrenderer>("demo/assets/shaders/deferred_static_opaque", deferred);
+  add_subrenderer<sbx::models::masked_static_mesh_subrenderer>("demo/assets/shaders/deferred_static_masked", deferred);
   add_subrenderer<sbx::animations::skinned_mesh_subrenderer>("demo/assets/shaders/deferred_skinned_opaque", deferred);
 
   // Transparency pass

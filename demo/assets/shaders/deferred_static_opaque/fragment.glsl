@@ -36,7 +36,9 @@ vec4 get_albedo() {
     return in_color;
   }
 
-  return texture(sampler2D(images[albedo_image_index], images_sampler), in_uv).rgba * in_color;
+  vec4 sampled = texture(sampler2D(images[albedo_image_index], images_sampler), in_uv).rgba;
+
+  return vec4(sampled.rgb * in_color.rgb, 1.0);
 }
 
 vec3 get_normal() {

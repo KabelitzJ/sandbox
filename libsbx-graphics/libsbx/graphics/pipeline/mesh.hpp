@@ -8,6 +8,7 @@
 
 #include <libsbx/utility/hashed_string.hpp>
 #include <libsbx/utility/exception.hpp>
+#include <libsbx/utility/assert.hpp>
 
 #include <libsbx/math/volume.hpp>
 
@@ -89,27 +90,28 @@ public:
   }
 
   auto submesh(std::uint32_t submesh_index) const -> const graphics::submesh& {
+    utility::assert_that(submesh_index < _submeshes.size(), fmt::format("Trying to access out of bounds submesh {} of mesh with {} submeshes", submesh_index, _submeshes.size()));
     return _submeshes.at(submesh_index);
   }
 
   auto submesh(const utility::hashed_string& name) const -> const graphics::submesh& {
-    return _submeshes.at(submesh_index(name));
+    return submesh(submesh_index(name));
   }
 
   auto submesh_bounds(std::uint32_t submesh_index) const -> const math::volume& {
-    return _submeshes.at(submesh_index).bounds;
+    return submesh(submesh_index).bounds;
   }
 
   auto submesh_bounds(const utility::hashed_string& name) const -> const math::volume& {
-    return _submeshes.at(submesh_index(name)).bounds;
+    return submesh(submesh_index(name)).bounds;
   }
 
   auto submesh_local_transform(std::uint32_t submesh_index) const -> const math::matrix4x4& {
-    return _submeshes.at(submesh_index).local_transform;
+    return submesh(submesh_index).local_transform;
   }
 
   auto submesh_local_transform(const utility::hashed_string& name) const -> const math::matrix4x4& {
-    return _submeshes.at(submesh_index(name)).local_transform;
+    return submesh(submesh_index(name)).local_transform;
   }
 
   auto submesh_names() const -> std::unordered_map<utility::hashed_string, std::uint32_t> {

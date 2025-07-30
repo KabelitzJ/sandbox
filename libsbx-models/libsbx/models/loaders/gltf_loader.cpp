@@ -211,10 +211,10 @@ static auto _load_mesh(const aiMesh* mesh, mesh::mesh_data& data, const math::ma
 
   for (auto i = 0u; i < mesh->mNumVertices; ++i) {
     auto vertex = models::vertex3d{};
-    vertex.position = _convert_vec4(mesh->mVertices[i], 1.0f);
-    vertex.normal = _convert_vec4(mesh->mNormals[i], 0.0f);
+    vertex.position = local_transform * _convert_vec4(mesh->mVertices[i], 1.0f);
+    vertex.normal = local_transform * _convert_vec4(mesh->mNormals[i], 0.0f);
     vertex.uv = _convert_vec3(mesh->mTextureCoords[0][i]);
-    vertex.tangent = _convert_vec4(mesh->mTangents[i], 0.0f);
+    vertex.tangent = local_transform * _convert_vec4(mesh->mTangents[i], 0.0f);
 
     data.vertices.push_back(vertex);
   }

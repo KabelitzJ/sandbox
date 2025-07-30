@@ -69,6 +69,8 @@ application::application()
   scene.add_image("helmet_normal", "demo/assets/textures/helmet/normal.jpg");
   scene.add_image("helmet_metal_roughness", "demo/assets/textures/helmet/metal_roughness.jpg");
 
+  scene.add_image("checkerboard", "demo/assets/textures/checkerboard.jpg");
+
   scene.add_cube_image("skybox", "demo/assets/skyboxes/clouds");
 
   // Meshes
@@ -94,6 +96,8 @@ application::application()
 
   scene.add_mesh<sbx::models::mesh>("helmet", "demo/assets/meshes/helmet/helmet.gltf");
 
+  scene.add_mesh<sbx::models::mesh>("dragon", "demo/assets/meshes/dragon/dragon.gltf");
+
   scene.add_mesh<sbx::models::mesh>("cube", "demo/assets/meshes/cube/cube.gltf");
 
   // Window
@@ -112,6 +116,22 @@ application::application()
 
   // terrain_module.load_terrain_in_scene(scene);
 
+  // Dragon
+  auto& dragon_mesh = assets_module.get_asset<sbx::models::mesh>(scene.get_mesh("dragon"));
+
+  auto dragon = scene.create_node("Dragon"); //, sbx::math::transform{dragon_mesh.submesh_local_transform("dragon") * sbx::math::vector4{0, 0, 0, 1}});
+
+  scene.add_material<sbx::scenes::material>("cloth", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 1.0f, scene.get_image("checkerboard"));
+  scene.add_material<sbx::scenes::material>("dragon", sbx::scenes::material_type::transparent, sbx::math::color{0.0f, 0.6588f, 0.4196f, 0.8f}, 0.0f, 1.0f);
+
+  scene.add_component<sbx::scenes::static_mesh>(dragon, scene.get_mesh("dragon"), std::vector<sbx::scenes::static_mesh::submesh>{{0u, scene.get_material("cloth")}, {1u, scene.get_material("dragon")}});
+
+  auto& dragon_transform = scene.get_component<sbx::math::transform>(dragon);
+  dragon_transform.set_position(sbx::math::vector3{-8.0f, 0.0f, 4.0f});
+  dragon_transform.set_rotation(sbx::math::vector3::up, sbx::math::degree{45});
+  dragon_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
+
+
   // Helmet
   auto helmet = scene.create_node("Helmet");
 
@@ -124,6 +144,7 @@ application::application()
   helmet_transform.set_rotation(sbx::math::vector3::right, sbx::math::degree{90});
   helmet_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
 
+
   // Box1
   auto box1 = scene.create_node("Box1");
 
@@ -133,6 +154,7 @@ application::application()
 
   auto& box1_transform = scene.get_component<sbx::math::transform>(box1);
   box1_transform.set_position(sbx::math::vector3{6.0f, 0.0f, 6.0f});
+
 
   // Box2
   auto box2 = scene.create_node("Box2");
@@ -144,7 +166,8 @@ application::application()
   auto& box2_transform = scene.get_component<sbx::math::transform>(box2);
   box2_transform.set_position(sbx::math::vector3{6.0f, 0.0f, 7.0f});
 
-  // Box4
+
+  // Box3
   auto box3 = scene.create_node("Box3");
 
   scene.add_material<sbx::scenes::material>("box3", sbx::scenes::material_type::transparent, sbx::math::color{0.0f, 0.0f, 1.0f, 0.5f}, 0.0f, 1.0f);
@@ -156,14 +179,13 @@ application::application()
 
   _selection_buffer = graphics_module.add_resource<sbx::graphics::storage_buffer>(sbx::graphics::storage_buffer::min_size);
 
-  // Animated Fox
 
+  // Fox
   auto fox1 = scene.create_node("Fox");
 
   scene.add_material<sbx::scenes::material>("fox", sbx::scenes::material_type::transparent, sbx::math::color{1.0f, 1.0f, 1.0f, 0.3f}, 0.0f, 1.0f, scene.get_image("fox_albedo"));
 
   scene.add_component<sbx::scenes::static_mesh>(fox1, scene.get_mesh("fox_static"), scene.get_material("fox"));
-
 
   auto& fox1_transform = scene.get_component<sbx::math::transform>(fox1);
   fox1_transform.set_position(sbx::math::vector3{0.0f, 0.0f, 0.0f});
@@ -171,14 +193,9 @@ application::application()
 
   _selection_buffer = graphics_module.add_resource<sbx::graphics::storage_buffer>(sbx::graphics::storage_buffer::min_size);
 
-  // Tank
-
-  // _tanks.emplace_back(sbx::math::transform{sbx::math::vector3::zero, sbx::math::quaternion::identity, sbx::math::vector3{0.5}});
-
-  // Trees
-
+  // Tree
   scene.add_material<sbx::scenes::material>("maple_tree_bark", sbx::scenes::material_type::opaque, sbx::math::color{1.0f, 1.0f, 1.0f, 0.1f}, 0.0f, 1.0f, scene.get_image("maple_tree_bark"), scene.get_image("maple_tree_bark_normal"));
-  scene.add_material<sbx::scenes::material>("maple_tree_leaves", sbx::scenes::material_type::opaque, sbx::math::color{1.0f, 1.0f, 1.0f, 0.1f}, 0.0f, 1.0f, scene.get_image("maple_tree_leaves"));
+  scene.add_material<sbx::scenes::material>("maple_tree_leaves", sbx::scenes::material_type::masked, sbx::math::color::white(), 0.0f, 1.0f, scene.get_image("maple_tree_leaves"));
 
   auto maple_tree = scene.create_node("MapleTree");
   scene.add_component<sbx::scenes::static_mesh>(maple_tree, scene.get_mesh("maple_tree_4"), std::vector<sbx::scenes::static_mesh::submesh>{{0u, scene.get_material("maple_tree_bark")}, {1u, scene.get_material("maple_tree_leaves")}});
@@ -186,6 +203,10 @@ application::application()
   auto& maple_tree_transform = scene.get_component<sbx::math::transform>(maple_tree);
   maple_tree_transform.set_position(sbx::math::vector3{5.0f, 0.0f, 0.0f});
   maple_tree_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
+
+  // Tank
+
+  // _tanks.emplace_back(sbx::math::transform{sbx::math::vector3::zero, sbx::math::quaternion::identity, sbx::math::vector3{0.5}});
 
   // const auto grid_size = sbx::math::vector2{15.0f, 15.0f};
   // const auto cell_size = sbx::math::vector2{15.0f, 15.0f};

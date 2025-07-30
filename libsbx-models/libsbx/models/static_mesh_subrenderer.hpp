@@ -86,8 +86,8 @@ struct static_mesh_subrenderer_traits<scenes::material_type::masked> {
   inline static constexpr auto uses_transparency = false;
   inline static constexpr auto cull_mode = graphics::cull_mode::none;
   inline static const auto scope = utility::hashed_string{"masked"};
-  inline static const auto instance_data_buffer_name = static_mesh_draw_list::opaque_instance_data_buffer_name;
-  inline static const auto draw_commands_buffer_name = static_mesh_draw_list::opaque_draw_commands_buffer_name;
+  inline static const auto instance_data_buffer_name = static_mesh_draw_list::masked_instance_data_buffer_name;
+  inline static const auto draw_commands_buffer_name = static_mesh_draw_list::masked_draw_commands_buffer_name;
 }; // struct static_mesh_subrenderer_traits
 
 template<>
@@ -223,6 +223,8 @@ private:
 }; // class mesh_subrenderer
 
 using opaque_static_mesh_subrenderer = static_mesh_subrenderer<scenes::material_type::opaque>;
+
+using masked_static_mesh_subrenderer = static_mesh_subrenderer<scenes::material_type::masked>;
 
 using transparent_static_mesh_subrenderer = static_mesh_subrenderer<scenes::material_type::transparent>;
 

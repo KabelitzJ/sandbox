@@ -35,11 +35,13 @@ auto draw_list::sampler() const noexcept -> const separate_sampler& {
 }
 
 auto draw_list::draw_ranges(const utility::hashed_string& name) const noexcept -> const draw_command_range_container& {
+  static const auto placeholder = draw_command_range_container{};
+
   if (const auto entry = _draw_ranges.find(name); entry != _draw_ranges.end()) {
     return entry->second;
   }
 
-  throw utility::runtime_error{"No draw range '{}' in draw list", name.str()};
+  return placeholder;
 }
 
 auto draw_list::clear() -> void {
