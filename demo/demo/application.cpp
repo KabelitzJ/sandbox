@@ -54,7 +54,7 @@ application::application()
   
   scene.add_image("rocks", "demo/assets/textures/rocks/rocks.png");
 
-  scene.add_image("fox", "demo/assets/textures/fox/albedo.png");
+  scene.add_image("fox_albedo", "demo/assets/textures/fox/albedo.png");
 
   scene.add_image("women", "demo/assets/textures/women/albedo.png");
 
@@ -64,6 +64,10 @@ application::application()
   scene.add_image("bmp_body2_normal", "demo/assets/textures/bmp/body2_normal.png");
   scene.add_image("bmp_tracks_albedo", "demo/assets/textures/bmp/tracks_albedo.png");
   scene.add_image("bmp_tracks_normal", "demo/assets/textures/bmp/tracks_normal.png");
+
+  scene.add_image("helmet_albedo", "demo/assets/textures/helmet/albedo.jpg");
+  scene.add_image("helmet_normal", "demo/assets/textures/helmet/normal.jpg");
+  scene.add_image("helmet_metal_roughness", "demo/assets/textures/helmet/metal_roughness.jpg");
 
   scene.add_cube_image("skybox", "demo/assets/skyboxes/clouds");
 
@@ -88,6 +92,8 @@ application::application()
 
   scene.add_mesh<sbx::models::mesh>("bmp", "demo/assets/meshes/tank/bmp.gltf");
 
+  scene.add_mesh<sbx::models::mesh>("helmet", "demo/assets/meshes/helmet/helmet.gltf");
+
   scene.add_mesh<sbx::models::mesh>("cube", "demo/assets/meshes/cube/cube.gltf");
 
   // Window
@@ -105,6 +111,18 @@ application::application()
   // auto& terrain_module = sbx::core::engine::get_module<demo::terrain_module>();
 
   // terrain_module.load_terrain_in_scene(scene);
+
+  // Helmet
+  auto helmet = scene.create_node("Helmet");
+
+  scene.add_material<sbx::scenes::material>("helmet", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 1.0f, scene.get_image("helmet_albedo"), scene.get_image("helmet_normal"));
+
+  scene.add_component<sbx::scenes::static_mesh>(helmet, scene.get_mesh("helmet"), scene.get_material("helmet"));
+
+  auto& helmet_transform = scene.get_component<sbx::math::transform>(helmet);
+  helmet_transform.set_position(sbx::math::vector3{0.0f, 6.0f, 0.0f});
+  helmet_transform.set_rotation(sbx::math::vector3::right, sbx::math::degree{90});
+  helmet_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
 
   // Box1
   auto box1 = scene.create_node("Box1");
@@ -142,7 +160,7 @@ application::application()
 
   auto fox1 = scene.create_node("Fox");
 
-  scene.add_material<sbx::scenes::material>("fox", sbx::scenes::material_type::transparent, sbx::math::color{1.0f, 1.0f, 1.0f, 0.3f}, 0.0f, 1.0f, scene.get_image("fox"));
+  scene.add_material<sbx::scenes::material>("fox", sbx::scenes::material_type::transparent, sbx::math::color{1.0f, 1.0f, 1.0f, 0.3f}, 0.0f, 1.0f, scene.get_image("fox_albedo"));
 
   scene.add_component<sbx::scenes::static_mesh>(fox1, scene.get_mesh("fox_static"), scene.get_material("fox"));
 
