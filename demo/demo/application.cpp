@@ -106,6 +106,38 @@ application::application()
 
   // terrain_module.load_terrain_in_scene(scene);
 
+  // Box1
+  auto box1 = scene.create_node("Box1");
+
+  scene.add_material<sbx::scenes::material>("box1", sbx::scenes::material_type::transparent, sbx::math::color{1.0f, 0.0f, 0.0f, 0.5f}, 0.0f, 1.0f);
+
+  scene.add_component<sbx::scenes::static_mesh>(box1, scene.get_mesh("cube"), scene.get_material("box1"));
+
+  auto& box1_transform = scene.get_component<sbx::math::transform>(box1);
+  box1_transform.set_position(sbx::math::vector3{6.0f, 0.0f, 6.0f});
+
+  // Box2
+  auto box2 = scene.create_node("Box2");
+
+  scene.add_material<sbx::scenes::material>("box2", sbx::scenes::material_type::opaque, sbx::math::color{0.0f, 1.0f, 0.0f, 0.5f}, 0.0f, 1.0f);
+
+  scene.add_component<sbx::scenes::static_mesh>(box2, scene.get_mesh("cube"), scene.get_material("box2"));
+
+  auto& box2_transform = scene.get_component<sbx::math::transform>(box2);
+  box2_transform.set_position(sbx::math::vector3{6.0f, 0.0f, 7.0f});
+
+  // Box4
+  auto box3 = scene.create_node("Box3");
+
+  scene.add_material<sbx::scenes::material>("box3", sbx::scenes::material_type::transparent, sbx::math::color{0.0f, 0.0f, 1.0f, 0.5f}, 0.0f, 1.0f);
+
+  scene.add_component<sbx::scenes::static_mesh>(box3, scene.get_mesh("cube"), scene.get_material("box3"));
+
+  auto& box3_transform = scene.get_component<sbx::math::transform>(box3);
+  box3_transform.set_position(sbx::math::vector3{6.0f, 0.0f, 8.0f});
+
+  _selection_buffer = graphics_module.add_resource<sbx::graphics::storage_buffer>(sbx::graphics::storage_buffer::min_size);
+
   // Animated Fox
 
   auto fox1 = scene.create_node("Fox");
