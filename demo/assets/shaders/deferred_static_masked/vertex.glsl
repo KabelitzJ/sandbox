@@ -12,8 +12,8 @@ struct transform_data {
 
 struct instance_data {
   vec4 tint;
-  vec4 material; // x: metallic, y: roughness, z: texture scroll x, w: texture scroll y
-  uvec4 payload; // x: albedo image index, y: normal image index, z: transform data index, w: unused
+  vec4 material; // x: metallic, y: roughness, z: ambient occlusion, w: unused
+  uvec4 payload; // x: albedo image index, y: normal image index, y: mrao image index, w: instance data index
   uvec4 selection; // x: upper 32 bit of id, y: lower 32 bit of id, z: unused, w: unused
 }; // struct instance_data
 
@@ -53,8 +53,8 @@ layout(location = 1) out vec3 out_normal;
 layout(location = 2) out mat3 out_tbn; // Needs 3 locations slots (2, 3, 4)
 layout(location = 5) out vec2 out_uv;
 layout(location = 6) out vec4 out_color;
-layout(location = 7) out vec2 out_material;
-layout(location = 8) out flat uvec2 out_image_indices;
+layout(location = 7) out vec3 out_material;
+layout(location = 8) out flat uvec3 out_image_indices;
 layout(location = 9) out flat uvec2 out_object_id;
 
 layout(buffer_reference, std430) readonly buffer vertex_buffer_reference { 
@@ -91,8 +91,8 @@ const float MAX_ANCHOR_HEIGHT = 2.0;
 void main() {
   instance_data instance_data = instance_data_buffer.data[gl_InstanceIndex];
 
-  uvec2 image_indices = instance_data.payload.xy;
-  uint transform_data_index = uint(instance_data.payload.z);
+  uvec3 image_indices = instance_data.payload.xyz;
+  uint transform_data_index = uint(instance_data.payload.w);
 
   transform_data transform_data = transform_data_buffer.data[transform_data_index];
 
@@ -105,9 +105,6 @@ void main() {
 
   vec3 world_position = vec3(transform_data.model * vec4(in_position, 1.0));
 
-  float texture_scroll_x = instance_data.material.z;
-  float texture_scroll_y = instance_data.material.w;
-
   out_position = world_position;
 
   out_normal = normalize(vec3(transform_data.normal * vec4(in_normal, 0.0)));
@@ -118,10 +115,10 @@ void main() {
 
   out_tbn = mat3(T, B, N);
 
-  out_uv = in_uv + vec2(texture_scroll_x, texture_scroll_y) * scene.time;
+  out_uv = in_uv;
 
   out_color = instance_data.tint;
-  out_material = instance_data.material.xy;
+  out_material = instance_data.material.xyz;
 
   out_image_indices = image_indices;
   out_object_id = instance_data.selection.xy;

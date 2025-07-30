@@ -15,8 +15,8 @@ layout(location = 1) in vec3 in_normal;
 layout(location = 2) in mat3 in_tbn; // Needs 3 locations slots (2, 3, 4)
 layout(location = 5) in vec2 in_uv;
 layout(location = 6) in vec4 in_color;
-layout(location = 7) in vec2 in_material;
-layout(location = 8) in flat uvec2 in_image_indices;
+layout(location = 7) in vec3 in_material;
+layout(location = 8) in flat uvec3 in_image_indices;
 layout(location = 9) in flat uvec2 in_object_id;
 
 layout(location = 0) out vec4 out_accum;

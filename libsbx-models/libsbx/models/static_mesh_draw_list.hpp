@@ -71,8 +71,8 @@ struct transform_data {
 
 struct instance_data {
   alignas(16) math::color tint;
-  alignas(16) math::vector4 material;
-  alignas(16) math::vector4u payload; // x: albedo image index, y: normal image index, y: instance data index, w: unused
+  alignas(16) math::vector4 material; // x: metallic, y: roughness, z: ambient occlusion, w: unused
+  alignas(16) math::vector4u payload; // x: albedo image index, y: normal image index, y: mrao image index, w: instance data index
   alignas(16) math::vector4u selection; // x: upper 32 bit of id, y: lower 32 bit of id, z: unused, w: unused
 }; // struct instance_data
 
@@ -152,9 +152,10 @@ private:
 
       const auto albedo_image_index = material.albedo ? add_image(material.albedo) : graphics::separate_image2d_array::max_size;
       const auto normal_image_index = material.normal ? add_image(material.normal) : graphics::separate_image2d_array::max_size;
+      const auto mrao_image_index = material.mrao ? add_image(material.mrao) : graphics::separate_image2d_array::max_size;
 
-      const auto material_data = math::vector4{material.metallic, material.roughness, 0.0f, 0.0f};
-      const auto payload = math::vector4u{albedo_image_index, normal_image_index, transform_data_index, 0u};
+      const auto material_data = math::vector4{material.metallic, material.roughness, material.amnient_occlusion, 0.0f};
+      const auto payload = math::vector4u{albedo_image_index, normal_image_index, mrao_image_index, transform_data_index};
       const auto selection = math::vector4u{upper_id, lower_id, 0u, 0u};
 
       switch (material.type) {
