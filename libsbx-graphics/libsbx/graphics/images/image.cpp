@@ -52,7 +52,7 @@ image::~image() {
 
   auto& logical_device = graphics_module.logical_device();
 
-  auto allocator = graphics_module.allocator();
+  auto& allocator = graphics_module.allocator();
 
   vkDestroyImageView(logical_device, _view, nullptr);
   vkDestroySampler(logical_device, _sampler, nullptr);
@@ -111,7 +111,7 @@ auto image::create_image(VkImage& image, VmaAllocation& allocation, const VkExte
   auto& physical_device = graphics_module.physical_device();
   auto& logical_device = graphics_module.logical_device();
 
-  auto allocator = graphics_module.allocator();
+  auto& allocator = graphics_module.allocator();
 
   auto image_create_info = VkImageCreateInfo{};
   image_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;

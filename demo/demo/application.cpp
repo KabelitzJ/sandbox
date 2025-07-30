@@ -58,8 +58,6 @@ application::application()
 
   scene.add_image("women", "demo/assets/textures/women/albedo.png");
 
-  scene.add_cube_image("skybox", "demo/assets/skyboxes/clouds");
-
   scene.add_image("bmp_body1_albedo", "demo/assets/textures/bmp/body1_albedo.png");
   scene.add_image("bmp_body1_normal", "demo/assets/textures/bmp/body1_normal.png");
   scene.add_image("bmp_body2_albedo", "demo/assets/textures/bmp/body2_albedo.png");
@@ -67,8 +65,7 @@ application::application()
   scene.add_image("bmp_tracks_albedo", "demo/assets/textures/bmp/tracks_albedo.png");
   scene.add_image("bmp_tracks_normal", "demo/assets/textures/bmp/tracks_normal.png");
 
-  scene.add_image("cerberus_albedo", "demo/assets/textures/cerberus/albedo.png");
-  scene.add_image("cerberus_normal", "demo/assets/textures/cerberus/normal.png");
+  scene.add_cube_image("skybox", "demo/assets/skyboxes/clouds");
 
   // Meshes
 
@@ -76,12 +73,6 @@ application::application()
   scene.add_mesh<sbx::models::mesh>("maple_tree_2", "demo/assets/meshes/maple_tree_2/maple_tree_2.gltf");
   scene.add_mesh<sbx::models::mesh>("maple_tree_3", "demo/assets/meshes/maple_tree_3/maple_tree_3.gltf");
   scene.add_mesh<sbx::models::mesh>("maple_tree_4", "demo/assets/meshes/maple_tree_4/maple_tree_4.gltf");
-
-  scene.add_mesh<sbx::models::mesh>("rock_1", "demo/assets/meshes/rock_1/rock_1.gltf");
-  scene.add_mesh<sbx::models::mesh>("rock_2", "demo/assets/meshes/rock_2/rock_2.gltf");
-  scene.add_mesh<sbx::models::mesh>("rock_3", "demo/assets/meshes/rock_3/rock_3.gltf");
-  scene.add_mesh<sbx::models::mesh>("rock_4", "demo/assets/meshes/rock_4/rock_4.gltf");
-  scene.add_mesh<sbx::models::mesh>("rock_5", "demo/assets/meshes/rock_5/rock_5.gltf");
 
   scene.add_mesh<sbx::animations::mesh>("fox", "demo/assets/meshes/fox/fox.gltf");
   scene.add_mesh<sbx::models::mesh>("fox_static", "demo/assets/meshes/fox/fox.gltf");
@@ -98,8 +89,6 @@ application::application()
   scene.add_mesh<sbx::models::mesh>("bmp", "demo/assets/meshes/tank/bmp.gltf");
 
   scene.add_mesh<sbx::models::mesh>("cube", "demo/assets/meshes/cube/cube.gltf");
-
-  // _mesh_ids.emplace("cerberus", "demo/assets/meshes/cerberus/cerberus.fbx");
 
   // Window
 

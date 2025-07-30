@@ -29,7 +29,7 @@ buffer::buffer(size_type size, VkBufferUsageFlags usage, VkMemoryPropertyFlags p
 buffer::~buffer() {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
-  auto allocator = graphics_module.allocator();
+  auto& allocator = graphics_module.allocator();
 
   const auto& logical_device = graphics_module.logical_device();
 
@@ -56,7 +56,7 @@ auto buffer::resize(const size_type new_size) -> void {
 
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
-  auto allocator = graphics_module.allocator();
+  auto& allocator = graphics_module.allocator();
 
   const auto was_mapped = _mapped_memory != nullptr;
 
@@ -114,7 +114,7 @@ auto buffer::size() const noexcept -> std::size_t {
 auto buffer::map() -> void {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
-  auto allocator = graphics_module.allocator();
+  auto& allocator = graphics_module.allocator();
 
   auto* mapped_memory = static_cast<void*>(nullptr);
 
@@ -126,7 +126,7 @@ auto buffer::map() -> void {
 auto buffer::unmap() -> void {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
-  auto allocator = graphics_module.allocator();
+  auto& allocator = graphics_module.allocator();
 
   vmaUnmapMemory(allocator, _allocation);
 

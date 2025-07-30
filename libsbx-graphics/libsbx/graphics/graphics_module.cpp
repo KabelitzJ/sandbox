@@ -4,9 +4,6 @@
 
 #include <fmt/format.h>
 
-#define VMA_IMPLEMENTATION
-#include "vk_mem_alloc.h"
-
 #include <libsbx/utility/fast_mod.hpp>
 #include <libsbx/utility/logger.hpp>
 
@@ -26,7 +23,8 @@ graphics_module::graphics_module()
 : _instance{std::make_unique<graphics::instance>()},
   _physical_device{std::make_unique<graphics::physical_device>(*_instance)},
   _logical_device{std::make_unique<graphics::logical_device>(*_physical_device)},
-  _surface{std::make_unique<graphics::surface>(*_instance, *_physical_device, *_logical_device)} {
+  _surface{std::make_unique<graphics::surface>(*_instance, *_physical_device, *_logical_device)},
+  _allocator{*_instance, *_physical_device, *_logical_device} {
   auto& devices_module = core::engine::get_module<devices::devices_module>();
 
   auto& window = devices_module.window();
@@ -34,19 +32,6 @@ graphics_module::graphics_module()
   window.on_framebuffer_resized() += [this]([[maybe_unused]] const auto& event) {
     _is_framebuffer_resized = true;
   };
-
-  auto vulkan_functions = VmaVulkanFunctions{};
-  vulkan_functions.vkGetInstanceProcAddr = vkGetInstanceProcAddr;
-  vulkan_functions.vkGetDeviceProcAddr = vkGetDeviceProcAddr;
-
-  auto allocator_info = VmaAllocatorCreateInfo{};
-  allocator_info.physicalDevice = _physical_device->handle();
-  allocator_info.device = _logical_device->handle();
-  allocator_info.instance = _instance->handle();
-  allocator_info.pVulkanFunctions = &vulkan_functions;
-  allocator_info.flags = VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
-
-  vmaCreateAllocator(&allocator_info, &_allocator);
 }
 
 graphics_module::~graphics_module() {
@@ -80,8 +65,6 @@ graphics_module::~graphics_module() {
   _images.clear();
   _depth_images.clear();
   _cube_images.clear();
-
-  vmaDestroyAllocator(_allocator);
 }
 
 auto graphics_module::update() -> void {

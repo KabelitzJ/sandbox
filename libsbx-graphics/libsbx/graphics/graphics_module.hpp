@@ -6,8 +6,6 @@
 #include <vector>
 #include <typeindex>
 
-#include <vk_mem_alloc.h>
-
 #include <libsbx/core/module.hpp>
 #include <libsbx/core/delegate.hpp>
 
@@ -23,6 +21,7 @@
 #include <libsbx/graphics/devices/instance.hpp>
 #include <libsbx/graphics/devices/physical_device.hpp>
 #include <libsbx/graphics/devices/logical_device.hpp>
+#include <libsbx/graphics/devices/allocator.hpp>
 #include <libsbx/graphics/devices/surface.hpp>
 
 #include <libsbx/graphics/commands/command_pool.hpp>
@@ -127,7 +126,7 @@ public:
     return _storage<Type>().remove(handle);
   }
 
-  auto allocator() const noexcept -> VmaAllocator {
+  auto allocator() const noexcept -> const graphics::allocator& {
     return _allocator;
   }
 
@@ -298,8 +297,6 @@ private:
 
   std::unique_ptr<graphics::renderer> _renderer{};
 
-  VmaAllocator _allocator;
-
   resource_storage<graphics::shader> _shaders;
   resource_storage<graphics::graphics_pipeline> _graphics_pipelines;
   resource_storage<graphics::compute_pipeline> _compute_pipelines;
@@ -308,6 +305,8 @@ private:
   resource_storage<graphics::image2d> _images;
   resource_storage<graphics::depth_image> _depth_images;
   resource_storage<graphics::cube_image> _cube_images;
+
+  graphics::allocator _allocator;
 
   std::vector<command_buffer::acquire_ownership_data> _acquire_ownership_data;
   std::vector<command_buffer::release_ownership_data> _release_ownership_data;
