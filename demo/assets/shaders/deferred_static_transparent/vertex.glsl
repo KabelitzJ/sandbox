@@ -3,8 +3,6 @@
 #extension GL_EXT_buffer_reference : enable
 #extension GL_EXT_debug_printf : enable
 
-#include <libsbx/common/wind.glsl>
-
 struct transform_data {
   mat4 model;
   mat4 normal;
@@ -85,8 +83,6 @@ layout(set = 0, binding = 0) uniform uniform_scene {
   // uint point_light_count;
   float time;
 } scene;
-
-const float MAX_ANCHOR_HEIGHT = 2.0;
 
 void main() {
   instance_data instance_data = instance_data_buffer.data[gl_InstanceIndex];

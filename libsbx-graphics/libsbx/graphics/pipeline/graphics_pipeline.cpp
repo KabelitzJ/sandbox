@@ -345,7 +345,6 @@ graphics_pipeline::graphics_pipeline(const std::filesystem::path& path, const re
     VK_DYNAMIC_STATE_SCISSOR
   };
 
-
   auto dynamic_state = VkPipelineDynamicStateCreateInfo{};
   dynamic_state.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
   dynamic_state.dynamicStateCount = static_cast<std::uint32_t>(dynamic_states.size());
@@ -360,7 +359,7 @@ graphics_pipeline::graphics_pipeline(const std::filesystem::path& path, const re
     case depth::disabled: {
       depth_stencil_state.depthTestEnable = false;
       depth_stencil_state.depthWriteEnable = false;
-      depth_stencil_state.depthCompareOp = VK_COMPARE_OP_LESS;
+      depth_stencil_state.depthCompareOp = VK_COMPARE_OP_ALWAYS;
       break;
     }
     case depth::read_write: {

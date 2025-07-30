@@ -324,6 +324,11 @@ public:
       draw_list->update();
     }
 
+    // Reset clear states so we can correctly set loadOp
+    for (auto& [key, state] : _attachment_states) {
+      state.is_first_use = true;
+    }
+
     for (const auto& instruction : _instructions) {
       std::visit(overload{
         [this, &command_buffer, &swapchain](const transition_instruction& instruction) {
@@ -365,8 +370,15 @@ public:
           auto depth_attachment = std::optional<VkRenderingAttachmentInfo>{};
 
           for (const auto& attachment : instruction.attachments) {
-            const auto& state = _attachment_states[attachment];
             const auto& clear_value = _clear_values[attachment];
+            auto& state = _attachment_states[attachment];
+
+            auto load_operation = VK_ATTACHMENT_LOAD_OP_LOAD;
+
+            if (state.is_first_use) {
+              load_operation = VK_ATTACHMENT_LOAD_OP_CLEAR;
+              state.is_first_use = false;
+            }
 
             if (state.type == attachment::type::image) {
               auto rendering_attachment_info = VkRenderingAttachmentInfo{};
@@ -374,7 +386,7 @@ public:
               rendering_attachment_info.imageView = state.view;
               rendering_attachment_info.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
               rendering_attachment_info.resolveMode = VK_RESOLVE_MODE_NONE;
-              rendering_attachment_info.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+              rendering_attachment_info.loadOp = load_operation;
               rendering_attachment_info.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
               rendering_attachment_info.clearValue = clear_value;
 
@@ -385,7 +397,7 @@ public:
               rendering_attachment_info.imageView = state.view;
               rendering_attachment_info.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
               rendering_attachment_info.resolveMode = VK_RESOLVE_MODE_NONE;
-              rendering_attachment_info.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+              rendering_attachment_info.loadOp = load_operation;
               rendering_attachment_info.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
               rendering_attachment_info.clearValue = clear_value;
 
@@ -396,7 +408,7 @@ public:
               rendering_attachment_info.imageView = swapchain.image_view(swapchain.active_image_index());
               rendering_attachment_info.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
               rendering_attachment_info.resolveMode = VK_RESOLVE_MODE_NONE;
-              rendering_attachment_info.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+              rendering_attachment_info.loadOp = load_operation;
               rendering_attachment_info.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
               rendering_attachment_info.clearValue = clear_value;
 
@@ -432,6 +444,7 @@ private:
     VkFormat format;
     VkExtent2D extent;
     attachment::type type;
+    bool is_first_use;
   }; // struct attachment_state
 
   auto _update_viewports() -> void;

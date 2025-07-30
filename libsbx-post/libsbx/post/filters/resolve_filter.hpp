@@ -18,11 +18,13 @@
 #include <libsbx/scenes/node.hpp>
 #include <libsbx/scenes/components/camera.hpp>
 #include <libsbx/scenes/components/point_light.hpp>
+#include <libsbx/scenes/components/static_mesh.hpp>
 
 #include <libsbx/post/filter.hpp>
 
 namespace sbx::post {
 
+template<scenes::material_type Type>
 class resolve_filter final : public filter {
 
   using base_type = filter;
@@ -35,10 +37,20 @@ class resolve_filter final : public filter {
     alignas(16) std::float_t radius;
   }; // struct point_light_data
 
+  inline static const auto pipeline_definition = graphics::pipeline_definition{
+    .depth = graphics::depth::disabled,
+    .uses_transparency = (Type == scenes::material_type::transparent),
+    .rasterization_state = graphics::rasterization_state{
+      .polygon_mode = graphics::polygon_mode::fill,
+      .cull_mode = graphics::cull_mode::none,
+      .front_face = graphics::front_face::counter_clockwise
+    }
+  };
+
 public:
 
   resolve_filter(const std::filesystem::path& path, const graphics::render_graph::graphics_pass& pass, std::vector<std::pair<std::string, std::string>>&& attachment_names)
-  : base_type{path, pass},
+  : base_type{path, pass, pipeline_definition},
     _attachment_names{std::move(attachment_names)} { }
 
   ~resolve_filter() override = default;
@@ -115,6 +127,10 @@ private:
   graphics::storage_handler _point_lights_storage_handler;
 
 }; // class resolve_filter
+
+using resolve_opaque_filter = resolve_filter<scenes::material_type::opaque>;
+
+using resolve_transparent_filter = resolve_filter<scenes::material_type::transparent>;
 
 } // namespace sbx::post
 

@@ -222,6 +222,10 @@ private:
 
 }; // class mesh_subrenderer
 
+using opaque_static_mesh_subrenderer = static_mesh_subrenderer<scenes::material_type::opaque>;
+
+using transparent_static_mesh_subrenderer = static_mesh_subrenderer<scenes::material_type::transparent>;
+
 } // namespace sbx::models
 
 #endif // LIBSBX_MODELS_STATIC_MESH_SUBRENDERER_HPP_

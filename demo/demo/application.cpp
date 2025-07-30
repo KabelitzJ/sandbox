@@ -110,7 +110,7 @@ application::application()
 
   auto fox1 = scene.create_node("Fox");
 
-  scene.add_material<sbx::scenes::material>("fox", sbx::scenes::material_type::opaque, sbx::math::color{1.0f, 1.0f, 1.0f, 0.1f}, 0.0f, 1.0f, scene.get_image("fox"));
+  scene.add_material<sbx::scenes::material>("fox", sbx::scenes::material_type::transparent, sbx::math::color{1.0f, 1.0f, 1.0f, 0.3f}, 0.0f, 1.0f, scene.get_image("fox"));
 
   scene.add_component<sbx::scenes::static_mesh>(fox1, scene.get_mesh("fox_static"), scene.get_material("fox"));
 

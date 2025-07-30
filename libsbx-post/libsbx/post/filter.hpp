@@ -17,7 +17,7 @@ namespace sbx::post {
 
 class filter : public graphics::subrenderer {
 
-  inline static const auto pipeline_definition = graphics::pipeline_definition{
+  inline static const auto default_pipeline_definition = graphics::pipeline_definition{
     .depth = graphics::depth::disabled,
     .uses_transparency = false,
     .rasterization_state = graphics::rasterization_state{
@@ -31,7 +31,7 @@ public:
 
   using pipeline_type = graphics::graphics_pipeline;
 
-  filter(const std::filesystem::path& path, const graphics::render_graph::graphics_pass& pass)
+  filter(const std::filesystem::path& path, const graphics::render_graph::graphics_pass& pass, const graphics::pipeline_definition& pipeline_definition = default_pipeline_definition)
   : graphics::subrenderer{pass},
     _pipeline{path, pass, pipeline_definition},
     _descriptor_handler{_pipeline, 0u} { }

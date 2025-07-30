@@ -19,7 +19,7 @@ layout(location = 7) in vec2 in_material;
 layout(location = 8) in flat uvec2 in_image_indices;
 layout(location = 9) in flat uvec2 in_object_id;
 
-layout(location = 0) out vec4 out_accumulation;
+layout(location = 0) out vec4 out_accum;
 layout(location = 1) out float out_revealage;
 
 layout(set = 0, binding = 0) uniform uniform_scene {
@@ -58,22 +58,11 @@ vec3 get_normal() {
   return normalize(in_tbn * normal);
 }
 
-void writePixel(vec3 color, float alpha, float wsZ) {
-  float ndcZ = 2.0 * wsZ - 1.0;
-  // linearize depth for proper depth weighting
-  //See: https://stackoverflow.com/questions/7777913/how-to-render-depth-linearly-in-modern-opengl-with-gl-fragcoord-z-in-fragment-sh
-  //or: https://stackoverflow.com/questions/11277501/how-to-recover-view-space-position-given-view-space-depth-value-and-ndc-xy
-  float linearZ = (scene.projection[2][2] + 1.0) * wsZ / (scene.projection[2][2] + ndcZ);
-  float tmp = (1.0 - linearZ) * alpha;
-  //float tmp = (1.0 - wsZ * 0.99) * alpha * 10.0; // <-- original weighting function from paper #2
-  float w = clamp(tmp * tmp * tmp * tmp * tmp * tmp, 0.0001, 1000.0);
-
-  out_accumulation = vec4(color * alpha * w, alpha);
-  out_revealage = alpha * w;
-}
-
 void main(void) {
   vec4 albedo = get_albedo();
 
-  writePixel(albedo.rgb, albedo.a, gl_FragCoord.z);
+  float weight = clamp(pow(min(1.0, albedo.a * 10.0) + 0.01, 3.0) * 1e8 * pow(1.0 - gl_FragCoord.z * 0.9, 3.0), 1e-2, 3e3);
+
+  out_accum = vec4(albedo.rgb * albedo.a, albedo.a) * weight;
+  out_revealage = albedo.a;
 }

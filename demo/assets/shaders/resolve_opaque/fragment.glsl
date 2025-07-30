@@ -22,12 +22,6 @@ layout(set = 0, binding = 1, std430) readonly buffer buffer_point_lights {
   point_light data[];
 } point_lights;
 
-// layout(set = 0, binding = 2, input_attachment_index = 0) uniform subpassInput albedo_image;
-// layout(set = 0, binding = 3, input_attachment_index = 1) uniform subpassInput position_image; 
-// layout(set = 0, binding = 4, input_attachment_index = 2) uniform subpassInput normal_image;
-// layout(set = 0, binding = 5, input_attachment_index = 3) uniform subpassInput material_image;
-// layout(set = 0, binding = 6, input_attachment_index = 4) uniform usubpassInput object_id_image;
-
 layout(set = 0, binding = 2) uniform sampler2D albedo_image;
 layout(set = 0, binding = 3) uniform sampler2D position_image; 
 layout(set = 0, binding = 4) uniform sampler2D normal_image;

@@ -305,6 +305,7 @@ auto graph_builder::_create_attachments(const graphics_node& node) -> void {
         const auto& image = graphics_module.get_resource<image2d>(handle);
         
         _color_images.emplace(attachment.name(), handle);
+
         _attachment_states.emplace(attachment.name(), attachment_state{
           .image = image.handle(),
           .view = image.view(),
@@ -312,8 +313,10 @@ auto graph_builder::_create_attachments(const graphics_node& node) -> void {
           // .format = to_vk_enum<VkFormat>(attachment.format()),
           .format = image.format(),
           .extent = VkExtent2D{extent.x(), extent.y()},
-          .type = attachment::type::image
+          .type = attachment::type::image,
+          .is_first_use = false
         });
+
         _clear_values.emplace(attachment.name(), VkClearValue{
           .color = {
             .float32 = {
@@ -336,6 +339,7 @@ auto graph_builder::_create_attachments(const graphics_node& node) -> void {
         const auto& image = graphics_module.get_resource<depth_image>(handle);
         
         _depth_images.emplace(attachment.name(), handle);
+
         _attachment_states.emplace(attachment.name(), attachment_state{
           .image = image.handle(),
           .view = image.view(),
@@ -343,8 +347,10 @@ auto graph_builder::_create_attachments(const graphics_node& node) -> void {
           // .format = to_vk_enum<VkFormat>(attachment.format()),
           .format = image.format(),
           .extent = VkExtent2D{extent.x(), extent.y()},
-          .type = attachment::type::depth
+          .type = attachment::type::depth,
+          .is_first_use = false
         });
+
         _clear_values.emplace(attachment.name(), VkClearValue{
           .depthStencil {
             .depth = 1.0f,
@@ -366,8 +372,10 @@ auto graph_builder::_create_attachments(const graphics_node& node) -> void {
           // .format = to_vk_enum<VkFormat>(attachment.format()),
           .format = VK_FORMAT_UNDEFINED,
           .extent = VkExtent2D{extent.x(), extent.y()},
-          .type = attachment::type::swapchain
+          .type = attachment::type::swapchain,
+          .is_first_use = false
         });
+        
         _clear_values.emplace(attachment.name(), VkClearValue{
           .color = {
             .float32 = {
