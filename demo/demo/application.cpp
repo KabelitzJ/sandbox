@@ -70,9 +70,13 @@ application::application()
   scene.add_image("helmet_normal", "demo/assets/textures/helmet/normal.jpg");
   scene.add_image("helmet_mrao", "demo/assets/textures/helmet/mrao.jpg");
 
+  scene.add_image("grass3_albedo", "demo/assets/textures/grass3/albedo.png");
+  scene.add_image("grass3_normal", "demo/assets/textures/grass3/normal.png");
+  scene.add_image("grass3_mrao", "demo/assets/textures/grass3/mrao.png");
+
   scene.add_image("checkerboard", "demo/assets/textures/checkerboard.jpg");
 
-  scene.add_cube_image("skybox", "demo/assets/skyboxes/prototype");
+  scene.add_cube_image("skybox", "demo/assets/skyboxes/stylized2");
 
   // Meshes
 
@@ -114,9 +118,9 @@ application::application()
 
   // Terrain
 
-  // auto& terrain_module = sbx::core::engine::get_module<demo::terrain_module>();
+  auto& terrain_module = sbx::core::engine::get_module<demo::terrain_module>();
 
-  // terrain_module.load_terrain_in_scene(scene);
+  terrain_module.load_terrain_in_scene();
 
   // Circling point lights
 
@@ -151,7 +155,7 @@ application::application()
   scene.add_component<sbx::scenes::static_mesh>(dragon, scene.get_mesh("dragon"), std::vector<sbx::scenes::static_mesh::submesh>{{0u, scene.get_material("cloth")}, {1u, scene.get_material("dragon")}});
 
   auto& dragon_transform = scene.get_component<sbx::math::transform>(dragon);
-  dragon_transform.set_position(sbx::math::vector3{-8.0f, 0.0f, 4.0f});
+  dragon_transform.set_position(sbx::math::vector3{-8.0f, 2.0f, 4.0f});
   dragon_transform.set_rotation(sbx::math::vector3::up, sbx::math::degree{45});
   dragon_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
 
@@ -177,7 +181,7 @@ application::application()
   scene.add_component<sbx::scenes::static_mesh>(box1, scene.get_mesh("cube"), scene.get_material("box1"));
 
   auto& box1_transform = scene.get_component<sbx::math::transform>(box1);
-  box1_transform.set_position(sbx::math::vector3{6.0f, 0.0f, 6.0f});
+  box1_transform.set_position(sbx::math::vector3{6.0f, 1.0f, 6.0f});
 
 
   // Box2
@@ -188,7 +192,7 @@ application::application()
   scene.add_component<sbx::scenes::static_mesh>(box2, scene.get_mesh("cube"), scene.get_material("box2"));
 
   auto& box2_transform = scene.get_component<sbx::math::transform>(box2);
-  box2_transform.set_position(sbx::math::vector3{6.0f, 0.0f, 7.0f});
+  box2_transform.set_position(sbx::math::vector3{6.0f, 1.0f, 7.0f});
 
 
   // Box3
@@ -199,7 +203,7 @@ application::application()
   scene.add_component<sbx::scenes::static_mesh>(box3, scene.get_mesh("cube"), scene.get_material("box3"));
 
   auto& box3_transform = scene.get_component<sbx::math::transform>(box3);
-  box3_transform.set_position(sbx::math::vector3{6.0f, 0.0f, 8.0f});
+  box3_transform.set_position(sbx::math::vector3{6.0f, 1.0f, 8.0f});
 
   _selection_buffer = graphics_module.add_resource<sbx::graphics::storage_buffer>(sbx::graphics::storage_buffer::min_size);
 
@@ -218,15 +222,37 @@ application::application()
   _selection_buffer = graphics_module.add_resource<sbx::graphics::storage_buffer>(sbx::graphics::storage_buffer::min_size);
 
   // Tree
-  scene.add_material<sbx::scenes::material>("maple_tree_bark", sbx::scenes::material_type::opaque, sbx::math::color{1.0f, 1.0f, 1.0f, 0.1f}, 0.0f, 0.5f, 1.0f, scene.get_image("maple_tree_bark"), scene.get_image("maple_tree_bark_normal"));
-  scene.add_material<sbx::scenes::material>("maple_tree_leaves", sbx::scenes::material_type::masked, sbx::math::color::white(), 0.0f, 0.5f, 1.0f, scene.get_image("maple_tree_leaves"));
+  // scene.add_material<sbx::scenes::material>("maple_tree_bark", sbx::scenes::material_type::opaque, sbx::math::color{1.0f, 1.0f, 1.0f, 0.1f}, 0.0f, 0.5f, 1.0f, scene.get_image("maple_tree_bark"), scene.get_image("maple_tree_bark_normal"));
+  // scene.add_material<sbx::scenes::material>("maple_tree_leaves", sbx::scenes::material_type::masked, sbx::math::color::white(), 0.0f, 0.5f, 1.0f, scene.get_image("maple_tree_leaves"));
 
-  auto maple_tree = scene.create_node("MapleTree");
-  scene.add_component<sbx::scenes::static_mesh>(maple_tree, scene.get_mesh("maple_tree_4"), std::vector<sbx::scenes::static_mesh::submesh>{{0u, scene.get_material("maple_tree_bark")}, {1u, scene.get_material("maple_tree_leaves")}});
+  // auto maple_tree = scene.create_node("MapleTree");
+  // scene.add_component<sbx::scenes::static_mesh>(maple_tree, scene.get_mesh("maple_tree_4"), std::vector<sbx::scenes::static_mesh::submesh>{{0u, scene.get_material("maple_tree_bark")}, {1u, scene.get_material("maple_tree_leaves")}});
 
-  auto& maple_tree_transform = scene.get_component<sbx::math::transform>(maple_tree);
-  maple_tree_transform.set_position(sbx::math::vector3{5.0f, 0.0f, 0.0f});
-  maple_tree_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
+  // auto& maple_tree_transform = scene.get_component<sbx::math::transform>(maple_tree);
+  // maple_tree_transform.set_position(sbx::math::vector3{5.0f, 0.0f, 0.0f});
+  // maple_tree_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
+
+  // Cube
+
+  auto cube = scene.create_node("Cube");
+
+  scene.add_material<sbx::scenes::material>("grass3", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 0.5f, 1.0f, scene.get_image("grass3_albedo"), scene.get_image("grass3_normal"), scene.get_image("grass3_mrao"));
+
+  scene.add_component<sbx::scenes::static_mesh>(cube, scene.get_mesh("cube"), scene.get_material("grass3"));
+
+  auto& cube_transform = scene.get_component<sbx::math::transform>(cube);
+  cube_transform.set_position(sbx::math::vector3{0.0f, 5.0f, 5.0f});
+  cube_transform.set_rotation(sbx::math::vector3::right, sbx::math::degree{45});
+  cube_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
+
+  auto& cube_rigidbody = scene.add_component<sbx::physics::rigidbody>(cube, sbx::units::kilogram{1.0f});
+  cube_rigidbody.set_acceleration(sbx::math::vector3{0.0f, -9.81f, 0.0f});
+
+  scene.add_component<sbx::physics::collider>(cube, sbx::physics::box{sbx::math::vector3{-1.0f, -1.0f, -1.0f}, sbx::math::vector3{1.0f, 1.0f, 1.0f}});
+
+  auto floor = scene.create_node("Floor");
+  scene.add_component<sbx::physics::rigidbody>(floor, sbx::units::kilogram{0.0f}, true);
+  scene.add_component<sbx::physics::collider>(floor, sbx::physics::box{sbx::math::vector3{-10.0f, -0.1f, -10.0f}, sbx::math::vector3{10.0f, 0.1f, 10.0f}});
 
   // Tank
 

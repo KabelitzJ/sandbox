@@ -69,6 +69,8 @@ public:
   }
 
   auto update() -> void override {
+    SBX_SCOPED_TIMER("physics_module");
+
     update_rigidbodies();
     solve_collisions();
   }
@@ -86,17 +88,17 @@ public:
 private:
 
   auto update_rigidbodies() -> void {
+    SBX_SCOPED_TIMER("physics_module::update_rigidbodies");
+
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
 
     auto& scene = scenes_module.scene();
 
     const auto delta_time = core::engine::fixed_delta_time();
 
-    auto rigidbody_query = scene.query<rigidbody>();
+    auto rigidbody_query = scene.query<physics::rigidbody>();
 
-    for (const auto node : rigidbody_query) {
-      auto& rigidbody = scene.get_component<physics::rigidbody>(node);
-
+    for (auto&& [node, rigidbody]  : rigidbody_query.each()) {
       if (rigidbody.is_static()) {
         continue;
       }
@@ -114,6 +116,8 @@ private:
   }
 
   auto solve_collisions() -> void {
+    SBX_SCOPED_TIMER("physics_module::solve_collisions");
+
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
 
     auto& scene = scenes_module.scene();

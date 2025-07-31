@@ -35,45 +35,37 @@ public:
 
   ~terrain_module() override = default;
 
-  auto load_terrain_in_scene(sbx::scenes::scene& scene) -> void {
+  auto load_terrain_in_scene() -> void {
     auto& assets_module = sbx::core::engine::get_module<sbx::assets::assets_module>();
     auto& graphics_module = sbx::core::engine::get_module<sbx::graphics::graphics_module>();
-
+    auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
+    
+    auto& scene = scenes_module.scene();
+    
     const auto chunk_size = sbx::math::vector2u{25u, 25u};
 
-    _mesh_id = assets_module.add_asset<sbx::models::mesh>(_generate_plane(chunk_size, sbx::math::vector2u{5u, 5u}));
+    scene.add_mesh<sbx::models::mesh>("terrain", _generate_plane(chunk_size, sbx::math::vector2u{5u, 5u}));
 
-    _texture_id = graphics_module.add_resource<sbx::graphics::image2d>("demo/assets/textures/grass/albedo.png");
-    _normal_texture_id = graphics_module.add_resource<sbx::graphics::image2d>("demo/assets/textures/grass/normal.png");
+    scene.add_image("prototype", "demo/assets/textures/prototype_black.png");
 
-    const auto grid = sbx::math::vector2{12.0f, 12.0f};
+    const auto grid = sbx::math::vector2{20.0f, 20.0f};
 
     const auto offset = sbx::math::vector2{chunk_size.x() * grid.x() * 0.5f, chunk_size.y() * grid.y() * 0.5f};
 
     _node = scene.create_node("Terrain");
 
-    // for (auto y = 0u; y < grid.y(); ++y) {
-    //   for (auto x = 0u; x < grid.x(); ++x) {
-    //     auto chunk = scene.create_child_node(_node, fmt::format("Chunk{}{}", x, y));
+    scene.add_material<sbx::scenes::material>("terrain", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 0.0f, 0.2f, scene.get_image("prototype"));
 
-    //     auto submeshes = std::vector<sbx::scenes::static_mesh::submesh>{};
+    for (auto y = 0u; y < grid.y(); ++y) {
+      for (auto x = 0u; x < grid.x(); ++x) {
+        auto chunk = scene.create_child_node(_node, fmt::format("Chunk{}{}", x, y));
 
-    //     submeshes.emplace_back(sbx::scenes::static_mesh::submesh{
-    //       .index = 0u,
-    //       .tint = sbx::math::color::white(),
-    //       .material = sbx::scenes::static_mesh::material{},
-    //       .albedo_texture = _texture_id
-    //     });
+        scene.add_component<sbx::scenes::static_mesh>(chunk, scene.get_mesh("terrain"), scene.get_material("terrain"));
 
-    //     scene.add_component<sbx::scenes::static_mesh>(chunk, _mesh_id, submeshes);
-
-    //     const auto position = sbx::math::vector3{x * chunk_size.x() - offset.x(), 0.0f, y * chunk_size.y() - offset.y()};
-
-    //     auto& transform = scene.get_component<sbx::math::transform>(chunk);
-
-    //     transform.set_position(position);
-    //   }
-    // }
+        auto& transform = scene.get_component<sbx::math::transform>(chunk);
+        transform.set_position(sbx::math::vector3{x * chunk_size.x() - offset.x(), 0.0f, y * chunk_size.y() - offset.y()});
+      }
+    }
 
     // auto icosphere_tile_mesh = demo::icosphere_tile_mesh{4u, 0.02f};
     // _planet_id = assets_module.add_asset<sbx::models::mesh>(std::make_unique<sbx::models::mesh>(icosphere_tile_mesh.get_vertices(), icosphere_tile_mesh.get_indices(), icosphere_tile_mesh.get_bounds()));
