@@ -215,6 +215,8 @@ private:
 
   std::vector<tank> _tanks;
 
+  sbx::scenes::node _light_center;
+
 }; // class application
 
 } // namespace demo

@@ -424,6 +424,41 @@ constexpr auto to_radians(const basic_degree<Type>& degree) noexcept -> basic_ra
   return basic_angle<Type>{degree}.to_radians();
 }
 
+template<floating_point Type>
+constexpr auto sin(const basic_angle<Type>& angle) noexcept -> Type {
+  return std::sin(angle.to_radians().value());
+}
+
+template<floating_point Type>
+constexpr auto sin(const basic_degree<Type>& degree) noexcept -> Type {
+  return sin(basic_angle<Type>{degree});
+}
+
+template<floating_point Type>
+constexpr auto sin(const basic_radian<Type>& radian) noexcept -> Type {
+  return sin(basic_angle<Type>{radian});
+}
+
+template<floating_point Type>
+constexpr auto cos(const basic_angle<Type>& angle) noexcept -> Type {
+  return std::cos(angle.to_radians().value());
+}
+
+template<floating_point Type>
+constexpr auto cos(const basic_degree<Type>& degree) noexcept -> Type {
+  return cos(basic_angle<Type>{degree});
+}
+
+template<floating_point Type>
+constexpr auto cos(const basic_radian<Type>& radian) noexcept -> Type {
+  return cos(basic_angle<Type>{radian});
+}
+
+template<floating_point Type>
+constexpr auto tan(const basic_angle<Type>& angle) noexcept -> Type {
+  return std::tan(angle.to_radians().value());
+}
+
 namespace literals {
 
 constexpr auto operator""_deg(long double value) noexcept -> degree {

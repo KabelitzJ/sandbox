@@ -44,28 +44,62 @@ void main() {
   vec4 albedo = texture(albedo_image, in_uv);
   vec3 world_position = texture(position_image, in_uv).xyz;
   vec3 normal = normalize(texture(normal_image, in_uv).xyz);
-  vec2 material = texture(material_image, in_uv).xy;
-  uvec2 object_id = get_object_id().xy;
+  vec3 material = texture(material_image, in_uv).xyz;
 
   float metallic = material.x;
   float roughness = material.y;
+  float ambient_occlusion = material.z;
 
-  vec3 light_direction = normalize(-scene.light_direction);
   vec3 view_direction = normalize(scene.camera_position - world_position);
+
+  // Directional light
+  vec3 light_direction = normalize(-scene.light_direction);
   vec3 half_direction = normalize(light_direction + view_direction);
-  
-  // Ambient color
-  vec4 ambient = AMBIENT_COLOR * albedo;
 
-  // Diffuse color
   float diffuse_strength = max(dot(normal, light_direction), 0.0);
-  vec4 diffuse = diffuse_strength * albedo * scene.light_color;
+  vec4 diffuse = diffuse_strength * albedo * scene.light_color * (1.0 - metallic);
 
-  // Specular highlight
-  float specular_strength = pow(max(dot(normal, half_direction), 0.0), 32.0);
-  vec4 specular = SPECULAR_COLOR * specular_strength * albedo;
+  float shininess = mix(256.0, 2.0, roughness);
+  float specular_strength = pow(max(dot(normal, half_direction), 0.0), shininess);
+  vec3 specular_color = mix(SPECULAR_COLOR.rgb, albedo.rgb, metallic);
+  vec4 specular = vec4(specular_color * specular_strength, 1.0);
 
-  out_color = ambient + diffuse + specular;
+  // Point lights
+  vec3 point_diffuse = vec3(0.0);
+  vec3 point_specular = vec3(0.0);
 
-  // out_color = vec4(uint_to_float(object_id.x), uint_to_float(object_id.y), 0.0, 1.0);
+  for (uint i = 0u; i < scene.point_light_count; ++i) {
+    point_light light = point_lights.data[i];
+
+    vec3 to_light = light.position - world_position;
+    float distance = length(to_light);
+    vec3 light_dir = normalize(to_light);
+
+    // Attenuation: fade with distance (smoothstep for soft edge)
+    float attenuation = clamp(1.0 - distance / light.radius, 0.0, 1.0);
+    // quadratic falloff (optional for realism)
+    attenuation *= attenuation;
+
+    // Intensity from color.a (if used, otherwise just use 1.0)
+    float intensity = light.color.a;
+
+    // Diffuse
+    float diff = max(dot(normal, light_dir), 0.0);
+    point_diffuse += diff * albedo.rgb * light.color.rgb * intensity * attenuation * (1.0 - metallic);
+
+    // Specular
+    vec3 half_dir = normalize(light_dir + view_direction);
+    float spec = pow(max(dot(normal, half_dir), 0.0), shininess);
+    vec3 spec_col = mix(SPECULAR_COLOR.rgb, albedo.rgb, metallic);
+
+    point_specular += spec_col * spec * light.color.rgb * intensity * attenuation;
+  }
+
+  // Ambient (with AO)
+  vec4 ambient = AMBIENT_COLOR * albedo * ambient_occlusion;
+
+  // Final color
+  vec3 total = ambient.rgb + diffuse.rgb + specular.rgb + point_diffuse + point_specular;
+
+  out_color = vec4(total, albedo.a);
 }

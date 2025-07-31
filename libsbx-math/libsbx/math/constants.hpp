@@ -17,6 +17,17 @@ inline constexpr auto epsilonf = epsilon_v<std::float_t>;
 
 inline constexpr auto epsilond = epsilon_v<std::double_t>;
 
+inline constexpr auto epsilon = epsilonf;
+
+template<floating_point Type>
+inline constexpr auto pi_v = std::numbers::pi_v<Type>;
+
+inline constexpr auto pif = pi_v<std::float_t>;
+
+inline constexpr auto pid = pi_v<std::double_t>;
+
+inline constexpr auto pi = pif;
+
 } // namespace sbx::math
 
 #endif // LIBSBX_MATH_CONSTANTS_HPP_

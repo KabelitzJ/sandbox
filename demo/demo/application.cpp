@@ -6,6 +6,7 @@
 
 #include <libsbx/math/color.hpp>
 #include <libsbx/math/noise.hpp>
+#include <libsbx/math/constants.hpp>
 
 #include <libsbx/assets/assets_module.hpp>
 
@@ -67,8 +68,7 @@ application::application()
 
   scene.add_image("helmet_albedo", "demo/assets/textures/helmet/albedo.jpg");
   scene.add_image("helmet_normal", "demo/assets/textures/helmet/normal.jpg");
-  scene.add_image("helmet_mr", "demo/assets/textures/helmet/mr.jpg");
-  scene.add_image("helmet_ao", "demo/assets/textures/helmet/ao.jpg");
+  scene.add_image("helmet_mrao", "demo/assets/textures/helmet/mrao.jpg");
 
   scene.add_image("checkerboard", "demo/assets/textures/checkerboard.jpg");
 
@@ -100,6 +100,7 @@ application::application()
   scene.add_mesh<sbx::models::mesh>("dragon", "demo/assets/meshes/dragon/dragon.gltf");
 
   scene.add_mesh<sbx::models::mesh>("cube", "demo/assets/meshes/cube/cube.gltf");
+  scene.add_mesh<sbx::models::mesh>("sphere", "demo/assets/meshes/sphere/sphere.gltf");
 
   // Window
 
@@ -117,13 +118,35 @@ application::application()
 
   // terrain_module.load_terrain_in_scene(scene);
 
+  // Circling point lights
+
+  _light_center = scene.create_node("LightCenter", sbx::math::transform{sbx::math::vector3{0.0f, 10.0f, 0.0f}});
+
+  scene.add_material<sbx::scenes::material>("light", sbx::scenes::material_type::transparent, sbx::math::color{1.0f, 1.0f, 1.0f, 0.5f}, 0.0f, 0.5f, 1.0f);
+
+  const auto radius = 20.0f;
+  const auto light_count = 8;
+
+  for (auto i = 0; i < light_count; ++i) {
+    auto angle = sbx::math::radian{2.0f * sbx::math::pi / static_cast<std::float_t>(light_count) * static_cast<std::float_t>(i)};
+
+    auto light = scene.create_child_node(_light_center, fmt::format("Light{}", i), sbx::math::transform{sbx::math::vector3{radius * sbx::math::cos(angle), 0.0f, radius * sbx::math::sin(angle)}});
+
+    scene.add_component<sbx::scenes::point_light>(light, sbx::math::random_color(), 50.0f);
+
+    scene.add_component<sbx::scenes::static_mesh>(light, scene.get_mesh("sphere"), scene.get_material("light"));
+    
+    auto& light_transform = scene.get_component<sbx::math::transform>(light);
+    light_transform.set_scale(sbx::math::vector3{0.2f, 0.2f, 0.2f});
+  }
+
   // Dragon
   auto& dragon_mesh = assets_module.get_asset<sbx::models::mesh>(scene.get_mesh("dragon"));
 
   auto dragon = scene.create_node("Dragon"); //, sbx::math::transform{dragon_mesh.submesh_local_transform("dragon") * sbx::math::vector4{0, 0, 0, 1}});
 
-  scene.add_material<sbx::scenes::material>("cloth", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 1.0f, 1.0f, scene.get_image("checkerboard"));
-  scene.add_material<sbx::scenes::material>("dragon", sbx::scenes::material_type::transparent, sbx::math::color{0.0f, 0.6588f, 0.4196f, 0.8f}, 0.0f, 1.0f, 1.0f);
+  scene.add_material<sbx::scenes::material>("cloth", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 0.5f, 1.0f, scene.get_image("checkerboard"));
+  scene.add_material<sbx::scenes::material>("dragon", sbx::scenes::material_type::transparent, sbx::math::color{0.0f, 0.6588f, 0.4196f, 0.8f}, 0.0f, 0.5f, 1.0f);
 
   scene.add_component<sbx::scenes::static_mesh>(dragon, scene.get_mesh("dragon"), std::vector<sbx::scenes::static_mesh::submesh>{{0u, scene.get_material("cloth")}, {1u, scene.get_material("dragon")}});
 
@@ -136,20 +159,20 @@ application::application()
   // Helmet
   auto helmet = scene.create_node("Helmet");
 
-  scene.add_material<sbx::scenes::material>("helmet", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 1.0f, 1.0f, scene.get_image("helmet_albedo"), scene.get_image("helmet_normal"));
+  scene.add_material<sbx::scenes::material>("helmet", sbx::scenes::material_type::opaque, sbx::math::color::white(), 1.0f, 1.0f, 1.0f, scene.get_image("helmet_albedo"), scene.get_image("helmet_normal"), scene.get_image("helmet_mrao"));
 
   scene.add_component<sbx::scenes::static_mesh>(helmet, scene.get_mesh("helmet"), scene.get_material("helmet"));
 
   auto& helmet_transform = scene.get_component<sbx::math::transform>(helmet);
   helmet_transform.set_position(sbx::math::vector3{0.0f, 6.0f, 0.0f});
-  helmet_transform.set_rotation(sbx::math::vector3::right, sbx::math::degree{90});
+  // helmet_transform.set_rotation(sbx::math::vector3::right, sbx::math::degree{90});
   helmet_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
 
 
   // Box1
   auto box1 = scene.create_node("Box1");
 
-  scene.add_material<sbx::scenes::material>("box1", sbx::scenes::material_type::transparent, sbx::math::color{1.0f, 0.0f, 0.0f, 0.5f}, 0.0f, 1.0f, 1.0f);
+  scene.add_material<sbx::scenes::material>("box1", sbx::scenes::material_type::transparent, sbx::math::color{1.0f, 0.0f, 0.0f, 0.5f}, 0.0f, 0.5f, 1.0f);
 
   scene.add_component<sbx::scenes::static_mesh>(box1, scene.get_mesh("cube"), scene.get_material("box1"));
 
@@ -160,7 +183,7 @@ application::application()
   // Box2
   auto box2 = scene.create_node("Box2");
 
-  scene.add_material<sbx::scenes::material>("box2", sbx::scenes::material_type::opaque, sbx::math::color{0.0f, 1.0f, 0.0f, 0.5f}, 0.0f, 1.0f, 1.0f);
+  scene.add_material<sbx::scenes::material>("box2", sbx::scenes::material_type::opaque, sbx::math::color{0.0f, 1.0f, 0.0f, 0.5f}, 0.0f, 0.5f, 1.0f);
 
   scene.add_component<sbx::scenes::static_mesh>(box2, scene.get_mesh("cube"), scene.get_material("box2"));
 
@@ -171,7 +194,7 @@ application::application()
   // Box3
   auto box3 = scene.create_node("Box3");
 
-  scene.add_material<sbx::scenes::material>("box3", sbx::scenes::material_type::transparent, sbx::math::color{0.0f, 0.0f, 1.0f, 0.5f}, 0.0f, 1.0f, 1.0f);
+  scene.add_material<sbx::scenes::material>("box3", sbx::scenes::material_type::transparent, sbx::math::color{0.0f, 0.0f, 1.0f, 0.5f}, 0.0f, 0.5f, 1.0f);
 
   scene.add_component<sbx::scenes::static_mesh>(box3, scene.get_mesh("cube"), scene.get_material("box3"));
 
@@ -184,7 +207,7 @@ application::application()
   // Fox
   auto fox1 = scene.create_node("Fox");
 
-  scene.add_material<sbx::scenes::material>("fox", sbx::scenes::material_type::transparent, sbx::math::color{1.0f, 1.0f, 1.0f, 0.3f}, 0.0f, 1.0f, 1.0f, scene.get_image("fox_albedo"));
+  scene.add_material<sbx::scenes::material>("fox", sbx::scenes::material_type::transparent, sbx::math::color{1.0f, 1.0f, 1.0f, 0.3f}, 0.0f, 0.5f, 1.0f, scene.get_image("fox_albedo"));
 
   scene.add_component<sbx::scenes::static_mesh>(fox1, scene.get_mesh("fox_static"), scene.get_material("fox"));
 
@@ -195,8 +218,8 @@ application::application()
   _selection_buffer = graphics_module.add_resource<sbx::graphics::storage_buffer>(sbx::graphics::storage_buffer::min_size);
 
   // Tree
-  scene.add_material<sbx::scenes::material>("maple_tree_bark", sbx::scenes::material_type::opaque, sbx::math::color{1.0f, 1.0f, 1.0f, 0.1f}, 0.0f, 1.0f, 1.0f, scene.get_image("maple_tree_bark"), scene.get_image("maple_tree_bark_normal"));
-  scene.add_material<sbx::scenes::material>("maple_tree_leaves", sbx::scenes::material_type::masked, sbx::math::color::white(), 0.0f, 1.0f, 1.0f, scene.get_image("maple_tree_leaves"));
+  scene.add_material<sbx::scenes::material>("maple_tree_bark", sbx::scenes::material_type::opaque, sbx::math::color{1.0f, 1.0f, 1.0f, 0.1f}, 0.0f, 0.5f, 1.0f, scene.get_image("maple_tree_bark"), scene.get_image("maple_tree_bark_normal"));
+  scene.add_material<sbx::scenes::material>("maple_tree_leaves", sbx::scenes::material_type::masked, sbx::math::color::white(), 0.0f, 0.5f, 1.0f, scene.get_image("maple_tree_leaves"));
 
   auto maple_tree = scene.create_node("MapleTree");
   scene.add_component<sbx::scenes::static_mesh>(maple_tree, scene.get_mesh("maple_tree_4"), std::vector<sbx::scenes::static_mesh::submesh>{{0u, scene.get_material("maple_tree_bark")}, {1u, scene.get_material("maple_tree_leaves")}});
@@ -365,6 +388,9 @@ auto application::update() -> void  {
   for (auto&& [node, transform] : query_walker.each()) {
     transform.move_by(transform.forward() * delta_time * 2.0f);
   }
+
+  auto& light_center_transform = scene.get_component<sbx::math::transform>(_light_center);
+  light_center_transform.set_rotation(sbx::math::vector3::up, _rotation);
 
   // for (auto& tank : _tanks) {
   //   tank.update();

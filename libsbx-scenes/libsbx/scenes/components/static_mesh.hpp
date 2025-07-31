@@ -24,7 +24,7 @@ struct material {
   math::color base_color;
   std::float_t metallic;
   std::float_t roughness;
-  std::float_t amnient_occlusion;
+  std::float_t ambient_occlusion;
   graphics::image2d_handle albedo;
   graphics::image2d_handle normal;
   graphics::image2d_handle mrao; // metallic, roughness, amnient occlusion
