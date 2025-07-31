@@ -1,11 +1,14 @@
 #include <libsbx/graphics/pipeline/mesh.hpp>
 
+#include <range/v3/all.hpp>
+
 #include <libsbx/graphics/graphics_module.hpp>
 
 namespace sbx::graphics {
 
-template<vertex Vertex>
-mesh<Vertex>::mesh(const std::vector<vertex_type>& vertices, const std::vector<index_type>& indices, const math::volume& bounds)
+template<vertex Vertex, std::uint32_t LOD>
+requires (LOD >= 1u)
+mesh<Vertex, LOD>::mesh(const std::vector<vertex_type>& vertices, const std::vector<index_type>& indices, const math::volume& bounds) requires (LOD == 1u)
 : _bounds{bounds} {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
@@ -15,19 +18,20 @@ mesh<Vertex>::mesh(const std::vector<vertex_type>& vertices, const std::vector<i
     VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
   );
 
-  _index_buffer = graphics_module.add_resource<buffer>(
+  _index_buffers[0] = graphics_module.add_resource<buffer>(
     (indices.size() * sizeof(index_type)),
     (VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT),
     VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
   );
 
-  _submeshes.push_back(graphics::submesh{static_cast<std::uint32_t>(indices.size()), 0, 0, bounds, math::matrix4x4::identity, utility::hashed_string{"mesh"}});
+  _submeshes.push_back(graphics::submesh<LOD>{{static_cast<std::uint32_t>(indices.size()), 0, 0}, bounds, math::matrix4x4::identity, utility::hashed_string{"mesh"}});
 
   _upload_vertices(vertices, indices);
 }
 
-template<vertex Vertex>
-mesh<Vertex>::mesh(std::vector<vertex_type>&& vertices, std::vector<index_type>&& indices, const math::volume& bounds)
+template<vertex Vertex, std::uint32_t LOD>
+requires (LOD >= 1u)
+mesh<Vertex, LOD>::mesh(std::vector<vertex_type>&& vertices, std::vector<index_type>&& indices, const math::volume& bounds) requires (LOD == 1u)
 : _bounds{bounds} {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
@@ -37,19 +41,20 @@ mesh<Vertex>::mesh(std::vector<vertex_type>&& vertices, std::vector<index_type>&
     VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
   );
 
-  _index_buffer = graphics_module.add_resource<buffer>(
+  _index_buffers[0] = graphics_module.add_resource<buffer>(
     (indices.size() * sizeof(index_type)),
     (VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT),
     VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
   );
 
-  _submeshes.push_back(graphics::submesh{static_cast<std::uint32_t>(indices.size()), 0, 0, bounds, math::matrix4x4::identity, utility::hashed_string{"mesh"}});
+  _submeshes.push_back(graphics::submesh<LOD>{{static_cast<std::uint32_t>(indices.size()), 0, 0}, bounds, math::matrix4x4::identity, utility::hashed_string{"mesh"}});
   
   _upload_vertices(std::move(vertices), std::move(indices));
 }
 
-template<vertex Vertex>
-mesh<Vertex>::mesh(mesh_data&& mesh_data)
+template<vertex Vertex, std::uint32_t LOD>
+requires (LOD >= 1u)
+mesh<Vertex, LOD>::mesh(mesh_data&& mesh_data)
 : _submeshes{std::move(mesh_data.submeshes)},
   _bounds{_calculate_bounds_from_submeshes(std::move(mesh_data.bounds))} {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
@@ -60,38 +65,51 @@ mesh<Vertex>::mesh(mesh_data&& mesh_data)
     VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
   );
 
-  _index_buffer = graphics_module.add_resource<buffer>(
-    (mesh_data.indices.size() * sizeof(index_type)),
-    (VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT),
-    VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
-  );
+  for (auto&& [i, index_buffer] : ranges::views::enumerate(_index_buffers)) {
+    index_buffer = graphics_module.add_resource<buffer>(
+      (mesh_data.indices[i].size() * sizeof(index_type)),
+      (VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT),
+      VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+    );
+
+  }
 
   _upload_vertices(std::move(mesh_data.vertices), std::move(mesh_data.indices));
 }
 
-template<vertex Vertex>
-mesh<Vertex>::~mesh() {
-
-}
-
-template<vertex Vertex>
-auto mesh<Vertex>::render(graphics::command_buffer& command_buffer, std::uint32_t instance_count) const -> void {
+template<vertex Vertex, std::uint32_t LOD>
+requires (LOD >= 1u)
+mesh<Vertex, LOD>::~mesh() {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
-  auto& index_buffer = graphics_module.get_resource<buffer>(_index_buffer); 
+  graphics_module.remove_resource(_vertex_buffer);
+
+  for (const auto& index_buffer : _index_buffers) {
+    graphics_module.remove_resource(index_buffer);
+  }
+}
+
+template<vertex Vertex, std::uint32_t LOD>
+requires (LOD >= 1u)
+auto mesh<Vertex, LOD>::render(graphics::command_buffer& command_buffer, std::uint32_t instance_count, const std::uint32_t lod) const -> void {
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+  auto& index_buffer = graphics_module.get_resource<buffer>(_index_buffers[lod]); 
 
   command_buffer.draw_indexed(static_cast<std::uint32_t>(index_buffer.size() / sizeof(index_type)), instance_count, 0, 0, 0);
 }
 
-template<vertex Vertex>
-auto mesh<Vertex>::render_submesh(graphics::command_buffer& command_buffer, std::uint32_t submesh_index, std::uint32_t instance_count) const -> void {
+template<vertex Vertex, std::uint32_t LOD>
+requires (LOD >= 1u)
+auto mesh<Vertex, LOD>::render_submesh(graphics::command_buffer& command_buffer, std::uint32_t submesh_index, std::uint32_t instance_count, const std::uint32_t lod) const -> void {
   const auto& submesh = _submeshes.at(submesh_index);
 
-  command_buffer.draw_indexed(submesh.index_count, instance_count, submesh.index_offset, 0, 0);
+  command_buffer.draw_indexed(submesh.lod[lod].index_count, instance_count, submesh.lod[lod].index_offset, 0, 0);
 }
 
-template<vertex Vertex>
-auto mesh<Vertex>::address() const -> std::uint64_t {
+template<vertex Vertex, std::uint32_t LOD>
+requires (LOD >= 1u)
+auto mesh<Vertex, LOD>::address() const -> std::uint64_t {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
   auto& vertex_buffer = graphics_module.get_resource<buffer>(_vertex_buffer); 
@@ -99,42 +117,47 @@ auto mesh<Vertex>::address() const -> std::uint64_t {
   return vertex_buffer.address();
 }
 
-template<vertex Vertex>
-auto mesh<Vertex>::bind(graphics::command_buffer& command_buffer) const -> void {
+template<vertex Vertex, std::uint32_t LOD>
+requires (LOD >= 1u)
+auto mesh<Vertex, LOD>::bind(graphics::command_buffer& command_buffer, const std::uint32_t lod) const -> void {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
-  auto& index_buffer = graphics_module.get_resource<buffer>(_index_buffer); 
+  auto& index_buffer = graphics_module.get_resource<buffer>(_index_buffers[lod]); 
 
   // command_buffer.bind_vertex_buffer(0, _vertex_buffer);
   command_buffer.bind_index_buffer(index_buffer, 0, VK_INDEX_TYPE_UINT32);
 }
 
-template<vertex Vertex>
-auto mesh<Vertex>::render_submesh_indirect(graphics::storage_buffer& buffer, std::uint32_t offset, std::uint32_t submesh_index, std::uint32_t instance_count) const -> void {
+template<vertex Vertex, std::uint32_t LOD>
+requires (LOD >= 1u)
+auto mesh<Vertex, LOD>::render_submesh_indirect(graphics::storage_buffer& buffer, std::uint32_t offset, std::uint32_t submesh_index, std::uint32_t instance_count, const std::uint32_t lod) const -> void {
   const auto& submesh = _submeshes.at(submesh_index);
 
   auto command = VkDrawIndexedIndirectCommand{};
-  command.indexCount = submesh.index_count,
+  command.indexCount = submesh.lod[lod].index_count,
   command.instanceCount = instance_count,
-  command.firstIndex = submesh.index_offset,
+  command.firstIndex = submesh.lod[lod].index_offset,
   command.vertexOffset = 0u,
   command.firstInstance = 0u,
 
   buffer.update(&command, sizeof(VkDrawIndexedIndirectCommand), offset * sizeof(VkDrawIndexedIndirectCommand));
 }
 
-template<vertex Vertex>
-auto mesh<Vertex>::submeshes() const noexcept -> const std::vector<graphics::submesh>& {
+template<vertex Vertex, std::uint32_t LOD>
+requires (LOD >= 1u)
+auto mesh<Vertex, LOD>::submeshes(const std::uint32_t lod) const noexcept -> const std::vector<graphics::submesh<LOD>>& {
   return _submeshes;
 }
 
-template<vertex Vertex>
-auto mesh<Vertex>::_upload_vertices(const std::vector<vertex_type>& vertices, const std::vector<index_type>& indices) -> void {
+template<vertex Vertex, std::uint32_t LOD>
+requires (LOD >= 1u)
+auto mesh<Vertex, LOD>::_upload_vertices(const std::vector<vertex_type>& vertices, const std::vector<index_type>& indices) -> void requires (LOD == 1u) {
 
 }
 
-template<vertex Vertex>
-auto mesh<Vertex>::_upload_vertices(std::vector<vertex_type>&& vertices, std::vector<index_type>&& indices) -> void {
+template<vertex Vertex, std::uint32_t LOD>
+requires (LOD >= 1u)
+auto mesh<Vertex, LOD>::_upload_vertices(std::vector<vertex_type>&& vertices, std::vector<index_type>&& indices) -> void requires (LOD == 1u) {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
   auto vertex_buffer_size = vertices.size() * sizeof(vertex_type);
@@ -149,11 +172,11 @@ auto mesh<Vertex>::_upload_vertices(std::vector<vertex_type>&& vertices, std::ve
   staging_buffer.write(indices.data(), index_buffer_size, vertex_buffer_size);
 
   // _vertex_buffer = std::make_unique<vertex_buffer_type>(vertices.size());
-  // _index_buffer = std::make_unique<index_buffer_type>(indices.size());
+  // _index_buffers = std::make_unique<index_buffer_type>(indices.size());
 
   auto command_buffer = graphics::command_buffer{true, VK_QUEUE_TRANSFER_BIT};
 
-  auto& index_buffer = graphics_module.get_resource<buffer>(_index_buffer);
+  auto& index_buffer = graphics_module.get_resource<buffer>(_index_buffers[0]);
   auto& vertex_buffer = graphics_module.get_resource<buffer>(_vertex_buffer); 
 
   {
@@ -177,8 +200,63 @@ auto mesh<Vertex>::_upload_vertices(std::vector<vertex_type>&& vertices, std::ve
   command_buffer.submit_idle();
 }
 
-template<vertex Vertex>
-auto mesh<Vertex>::_calculate_bounds_from_submeshes(math::volume&& bounds) const -> math::volume {
+template<vertex Vertex, std::uint32_t LOD>
+requires (LOD >= 1u)
+auto mesh<Vertex, LOD>::_upload_vertices(const std::vector<vertex_type>& vertices, std::array<std::vector<index_type>, LOD>&& indices) -> void {
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+  const auto vertex_buffer_size = vertices.size() * sizeof(vertex_type);
+
+  auto index_offsets = std::array<std::size_t, LOD>{};
+  auto index_sizes = std::array<std::size_t, LOD>{};
+  auto total_index_size = std::size_t{0};
+
+  for (auto lod = 0u; lod < LOD; ++lod) {
+    index_sizes[lod] = indices[lod].size() * sizeof(index_type);
+    index_offsets[lod] = total_index_size;
+    total_index_size += index_sizes[lod];
+  }
+
+  const auto staging_buffer_size = vertex_buffer_size + total_index_size;
+
+  auto staging_buffer = graphics::staging_buffer{staging_buffer_size};
+
+  staging_buffer.write(vertices.data(), vertex_buffer_size);
+
+  for (auto lod = 0u; lod < LOD; ++lod) {
+    staging_buffer.write(indices[lod].data(), index_sizes[lod], vertex_buffer_size + index_offsets[lod]);
+  }
+
+  auto command_buffer = graphics::command_buffer{true, VK_QUEUE_TRANSFER_BIT};
+
+  {
+    auto& vertex_buffer = graphics_module.get_resource<buffer>(_vertex_buffer);
+
+    auto region = VkBufferCopy{};
+    region.srcOffset = 0;
+    region.dstOffset = 0;
+    region.size = vertex_buffer_size;
+
+    command_buffer.copy_buffer(staging_buffer, vertex_buffer, region);
+  }
+
+  for (auto lod = 0u; lod < LOD; ++lod) {
+    auto& index_buffer = graphics_module.get_resource<buffer>(_index_buffers[lod]);
+
+    auto region = VkBufferCopy{};
+    region.srcOffset = vertex_buffer_size + index_offsets[lod];
+    region.dstOffset = 0;
+    region.size = index_sizes[lod];
+
+    command_buffer.copy_buffer(staging_buffer, index_buffer, region);
+  }
+
+  command_buffer.submit_idle();
+}
+
+template<vertex Vertex, std::uint32_t LOD>
+requires (LOD >= 1u)
+auto mesh<Vertex, LOD>::_calculate_bounds_from_submeshes(math::volume&& bounds) const -> math::volume {
   if (bounds.min() != math::vector3::zero && bounds.max() != math::vector3::zero) {
     return bounds;
   }

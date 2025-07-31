@@ -41,6 +41,11 @@ constexpr auto make_array_impl(std::index_sequence<Indices...>, const std::array
   return std::array<Type, sizeof...(Indices)>{ static_cast<Type>(array[Indices])... };
 }
 
+template<typename Type, std::size_t... Indices, typename Callable>
+constexpr auto make_array_impl(std::index_sequence<Indices...>, Callable&& callable) -> std::array<Type, sizeof...(Indices)> {
+  return std::array<Type, sizeof...(Indices)>{ static_cast<Type>(std::invoke(callable, Indices))... };
+}
+
 } // namespace detail
 
 template<typename Type, std::size_t Size, std::convertible_to<Type>... Args>
@@ -62,6 +67,12 @@ constexpr auto make_array(const Other& value) -> std::array<Type, Size> {
 template<typename Type, std::size_t Size, std::convertible_to<Type> Other = Type>
 constexpr auto make_array(const std::array<Other, Size>& array) -> std::array<Type, Size> {
   return detail::make_array_impl<Type>(std::make_index_sequence<Size>(), array);
+}
+
+template<typename Type, std::size_t Size, typename Callable>
+requires (std::is_invocable_r_v<Type, Callable, const std::size_t>)
+constexpr auto make_array(Callable&& callable) -> std::array<Type, Size> {
+  return detail::make_array_impl<Type>(std::make_index_sequence<Size>(), std::forward<Callable>(callable));
 }
 
 } // namespace sbx::utility

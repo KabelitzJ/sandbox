@@ -16,38 +16,34 @@
 
 namespace sbx::models {
 
-class mesh : public graphics::mesh<vertex3d>, public io::loader_factory<mesh, graphics::mesh<vertex3d>::mesh_data> {
+template<std::uint32_t LOD = 1u>
+requires (LOD >= 1u)
+class lod_mesh : public graphics::mesh<vertex3d, LOD> {
 
-  using base = graphics::mesh<vertex3d>;
+  using base = graphics::mesh<vertex3d, LOD>;
 
 public:
 
-  struct file_header {
-    std::uint32_t magic;
-    std::uint32_t version;
-    std::uint32_t index_type_size;
-    std::uint32_t index_count;
-    std::uint32_t vertex_type_size;
-    std::uint32_t vertex_count;
-    std::uint32_t submesh_count;
-  }; // struct file_header
-
-  using mesh_data = graphics::mesh<vertex3d>::mesh_data;
+  using mesh_data = base::mesh_data;
 
   using base::mesh;
 
-  mesh(const std::filesystem::path& path);
+  lod_mesh(const std::filesystem::path& path);
 
-  ~mesh() override;
+  ~lod_mesh() override;
 
 private:
 
   static auto _load(const std::filesystem::path& path) -> mesh_data;
 
-  static auto _process(const std::filesystem::path& path, const mesh_data& data) -> void;
+  // static auto _process(const std::filesystem::path& path, const mesh_data& data) -> void;
 
 }; // class mesh
 
+using mesh = lod_mesh<1u>;
+
 } // namespace sbx::models
+
+#include <libsbx/models/mesh.ipp>
 
 #endif // LIBSBX_MODELS_MESH_HPP_

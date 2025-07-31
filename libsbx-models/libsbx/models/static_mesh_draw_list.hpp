@@ -214,10 +214,10 @@ private:
         const auto instance_count = static_cast<std::uint32_t>(instances.size());
 
         auto command = VkDrawIndexedIndirectCommand{};
-        command.indexCount = submesh.index_count;
+        command.indexCount = submesh.lod[0].index_count;
         command.instanceCount = instance_count;
-        command.firstIndex = submesh.index_offset;
-        command.vertexOffset = submesh.vertex_offset;
+        command.firstIndex = submesh.lod[0].index_offset;
+        command.vertexOffset = submesh.lod[0].vertex_offset;
         command.firstInstance = base_instance;
         // command.firstInstance = 0u;
 

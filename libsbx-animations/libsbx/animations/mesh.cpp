@@ -76,14 +76,14 @@ static auto _load_mesh(const aiMesh* mesh, const math::matrix4x4& transform, mes
     throw std::runtime_error{fmt::format("Mesh '{}' does not have bones", mesh->mName.C_Str())};
   }
 
-  auto submesh = graphics::submesh{};
-  submesh.vertex_offset = 0u;
-  submesh.index_offset = data.indices.size();
+  auto submesh = graphics::submesh<1>{};
+  submesh.lod[0].vertex_offset = 0u;
+  submesh.lod[0].index_offset = data.indices.size();
 
   const auto vertices_count = data.vertices.size();
 
   data.vertices.reserve(data.vertices.size() + mesh->mNumVertices);
-  data.indices.reserve(data.indices.size() + mesh->mNumFaces * 3);
+  data.indices[0].reserve(data.indices.size() + mesh->mNumFaces * 3);
 
   for (auto i = 0u; i < mesh->mNumVertices; ++i) {
     auto vertex = vertex3d{};
@@ -101,12 +101,12 @@ static auto _load_mesh(const aiMesh* mesh, const math::matrix4x4& transform, mes
   }
 
   for (auto i = 0u; i < mesh->mNumFaces; ++i) {
-    data.indices.push_back(vertices_count + mesh->mFaces[i].mIndices[0]);
-    data.indices.push_back(vertices_count + mesh->mFaces[i].mIndices[1]);
-    data.indices.push_back(vertices_count + mesh->mFaces[i].mIndices[2]);
+    data.indices[0].push_back(vertices_count + mesh->mFaces[i].mIndices[0]);
+    data.indices[0].push_back(vertices_count + mesh->mFaces[i].mIndices[1]);
+    data.indices[0].push_back(vertices_count + mesh->mFaces[i].mIndices[2]);
   }
 
-  submesh.index_count = data.indices.size() - submesh.index_offset;
+  submesh.lod[0].index_count = data.indices.size() - submesh.lod[0].index_offset;
 
   const auto submesh_index = data.submeshes.size();
 
@@ -195,7 +195,7 @@ static auto _apply_weights(const aiScene* scene, mesh::mesh_data& data, const bo
 
       for (auto k = 0u; k < bone->mNumWeights; ++k) {
         const auto& weight = bone->mWeights[k];
-        auto& vertex = data.vertices[weight.mVertexId + submesh.vertex_offset];
+        auto& vertex = data.vertices[weight.mVertexId + submesh.lod[0].vertex_offset];
 
         for (int l = 0; l < 4; ++l) {
           if (vertex.bone_weights[l] == 0.0f) {

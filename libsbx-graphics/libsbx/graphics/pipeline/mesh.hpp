@@ -9,6 +9,7 @@
 #include <libsbx/utility/hashed_string.hpp>
 #include <libsbx/utility/exception.hpp>
 #include <libsbx/utility/assert.hpp>
+#include <libsbx/utility/make_array.hpp>
 
 #include <libsbx/math/volume.hpp>
 
@@ -29,16 +30,27 @@ namespace sbx::graphics {
 // template<typename Type>
 // using index_buffer = typed_buffer<Type, (VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT), VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT>;
 
-struct submesh {
+struct lod_data {
   std::uint32_t index_count;
   std::uint32_t index_offset;
   std::uint32_t vertex_offset;
+}; // struct lod_data
+
+template<std::uint32_t N>
+struct submesh {
+  std::array<lod_data, N> lod;
   math::volume bounds;
   math::matrix4x4 local_transform;
   utility::hashed_string name;
 }; // struct submesh
 
-template<vertex Vertex>
+template<std::uint32_t N>
+struct lod_traits {
+  inline static constexpr auto reduction_factors = utility::make_array<std::float_t, N>([](const auto i) { 1.0f / std::pow(2.0f, static_cast<std::float_t>(i)); });
+}; // struct lod_traits
+
+template<vertex Vertex, std::uint32_t LOD = 1u>
+requires (LOD >= 1u)
 class mesh {
 
 public:
@@ -49,38 +61,37 @@ public:
   using index_type = std::uint32_t;
   // using index_buffer_type = index_buffer<index_type>;
 
+  inline static constexpr auto lod = LOD;
+
   struct mesh_data {
     std::vector<vertex_type> vertices;
-    std::vector<index_type> indices;
-    std::vector<graphics::submesh> submeshes;
-    // std::vector<math::volume> submesh_bounds;
-    // std::vector<math::matrix4x4> submesh_transforms;
-    // std::unordered_map<utility::hashed_string, std::uint32_t> submesh_names;
+    std::array<std::vector<index_type>, LOD> indices;
+    std::vector<graphics::submesh<LOD>> submeshes;
     math::volume bounds;
   }; // struct mesh_data
 
-  mesh(const std::vector<vertex_type>& vertices, const std::vector<index_type>& indices, const math::volume& bounds = math::volume{});
+  mesh(const std::vector<vertex_type>& vertices, const std::vector<index_type>& indices, const math::volume& bounds = math::volume{}) requires (LOD == 1u);
 
-  mesh(std::vector<vertex_type>&& vertices, std::vector<index_type>&& indices, const math::volume& bounds = math::volume{});
+  mesh(std::vector<vertex_type>&& vertices, std::vector<index_type>&& indices, const math::volume& bounds = math::volume{}) requires (LOD == 1u);
 
   mesh(const mesh& other) noexcept = delete;
 
   virtual ~mesh();
 
-  auto render(graphics::command_buffer& command_buffer, std::uint32_t instance_count = 1u) const -> void;
+  auto render(graphics::command_buffer& command_buffer, std::uint32_t instance_count = 1u, const std::uint32_t lod = 0u) const -> void;
 
-  auto render_submesh(graphics::command_buffer& command_buffer, std::uint32_t submesh_index, std::uint32_t instance_count = 1u) const -> void;
+  auto render_submesh(graphics::command_buffer& command_buffer, std::uint32_t submesh_index, std::uint32_t instance_count = 1u, const std::uint32_t lod = 0u) const -> void;
 
   auto address() const -> std::uint64_t;
 
-  auto bind(graphics::command_buffer& command_buffer) const -> void;
+  auto bind(graphics::command_buffer& command_buffer, const std::uint32_t lod = 0u) const -> void;
 
-  auto render_submesh_indirect(graphics::storage_buffer& buffer, std::uint32_t offset, std::uint32_t submesh_index, std::uint32_t instance_count = 1u) const -> void;
+  auto render_submesh_indirect(graphics::storage_buffer& buffer, std::uint32_t offset, std::uint32_t submesh_index, std::uint32_t instance_count = 1u, const std::uint32_t lod = 0u) const -> void;
 
-  auto submeshes() const noexcept -> const std::vector<graphics::submesh>&;
+  auto submeshes(const std::uint32_t lod = 0u) const noexcept -> const std::vector<graphics::submesh<LOD>>&;
 
-  auto submesh_index(const utility::hashed_string& name) const -> std::uint32_t {
-    const auto entry = std::ranges::find(_submeshes, name, &graphics::submesh::name);
+  auto submesh_index(const utility::hashed_string& name, const std::uint32_t lod = 0u) const -> std::uint32_t {
+    const auto entry = std::ranges::find(_submeshes, name, &graphics::submesh<LOD>::name);
 
     if  (entry == _submeshes.end()) {
       throw utility::runtime_error{"Submesh '{}' not found", name.str()};
@@ -89,29 +100,29 @@ public:
     return std::distance(_submeshes.begin(), entry);
   }
 
-  auto submesh(std::uint32_t submesh_index) const -> const graphics::submesh& {
+  auto submesh(std::uint32_t submesh_index, const std::uint32_t lod = 0u) const -> const graphics::submesh<LOD>& {
     utility::assert_that(submesh_index < _submeshes.size(), fmt::format("Trying to access out of bounds submesh {} of mesh with {} submeshes", submesh_index, _submeshes.size()));
     return _submeshes.at(submesh_index);
   }
 
-  auto submesh(const utility::hashed_string& name) const -> const graphics::submesh& {
-    return submesh(submesh_index(name));
+  auto submesh(const utility::hashed_string& name, const std::uint32_t lod = 0u) const -> const graphics::submesh<LOD>& {
+    return submesh(submesh_index(name, lod), lod);
   }
 
-  auto submesh_bounds(std::uint32_t submesh_index) const -> const math::volume& {
-    return submesh(submesh_index).bounds;
+  auto submesh_bounds(std::uint32_t submesh_index, const std::uint32_t lod = 0u) const -> const math::volume& {
+    return submesh(submesh_index, lod).bounds;
   }
 
-  auto submesh_bounds(const utility::hashed_string& name) const -> const math::volume& {
-    return submesh(submesh_index(name)).bounds;
+  auto submesh_bounds(const utility::hashed_string& name, const std::uint32_t lod = 0u) const -> const math::volume& {
+    return submesh(submesh_index(name), lod).bounds;
   }
 
-  auto submesh_local_transform(std::uint32_t submesh_index) const -> const math::matrix4x4& {
-    return submesh(submesh_index).local_transform;
+  auto submesh_local_transform(std::uint32_t submesh_index, const std::uint32_t lod = 0u) const -> const math::matrix4x4& {
+    return submesh(submesh_index, lod).local_transform;
   }
 
-  auto submesh_local_transform(const utility::hashed_string& name) const -> const math::matrix4x4& {
-    return submesh(submesh_index(name)).local_transform;
+  auto submesh_local_transform(const utility::hashed_string& name, const std::uint32_t lod = 0u) const -> const math::matrix4x4& {
+    return submesh(submesh_index(name, lod), lod).local_transform;
   }
 
   auto submesh_names() const -> std::unordered_map<utility::hashed_string, std::uint32_t> {
@@ -130,23 +141,23 @@ public:
 
 protected:
 
+  struct lod_data {
+    buffer_handle index_buffer;
+  }; // struct lod_data
+
   mesh(mesh_data&& mesh_data);
 
-  auto _upload_vertices(const std::vector<vertex_type>& vertices, const std::vector<index_type>& indices) -> void;
+  auto _upload_vertices(const std::vector<vertex_type>& vertices, const std::vector<index_type>& indices) -> void requires (LOD == 1u);
 
-  auto _upload_vertices(std::vector<vertex_type>&& vertices, std::vector<index_type>&& indices) -> void;
+  auto _upload_vertices(std::vector<vertex_type>&& vertices, std::vector<index_type>&& indices) -> void requires (LOD == 1u);
+
+  auto _upload_vertices(const std::vector<vertex_type>& vertices, std::array<std::vector<index_type>, LOD>&& indices) -> void;
 
   auto _calculate_bounds_from_submeshes(math::volume&& bounds) const -> math::volume;
 
-  // vertex_buffer_type _vertex_buffer;
-  // index_buffer_type _index_buffer;
   buffer_handle _vertex_buffer;
-  buffer_handle _index_buffer;
-
-  std::vector<graphics::submesh> _submeshes;
-  // std::vector<math::volume> _submesh_bounds;
-  // std::vector<math::matrix4x4> _submesh_transforms;
-  // std::unordered_map<utility::hashed_string, std::uint32_t> _submesh_names;
+  std::array<buffer_handle, LOD> _index_buffers;
+  std::vector<graphics::submesh<LOD>> _submeshes;
 
   math::volume _bounds;
 
