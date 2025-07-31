@@ -100,9 +100,6 @@ void main() {
     point_specular += spec_col * spec * light.color.rgb * intensity * attenuation;
   }
 
-  // Ambient (with AO)
-  vec4 ambient = AMBIENT_COLOR * albedo * ambient_occlusion;
-
   // Final color
   vec3 total = ambient.rgb + diffuse.rgb + specular.rgb + point_diffuse + point_specular;
 
