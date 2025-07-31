@@ -14,6 +14,8 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
+#include <meshoptimizer.h>
+
 #include <libsbx/io/read_file.hpp>
 
 #include <libsbx/utility/iterator.hpp>
@@ -226,15 +228,43 @@ static auto _load_mesh(const aiMesh* mesh, mesh::mesh_data& data, const math::ma
     vertices.push_back(vertex);
   }
 
-  // [NOTE] KAJ 2025-07-08 : We need to add vertices_count since all submeshes are stored in one vertex buffer
+  // [NOTE] KAJ 2025-07-08 : We need to keep "local" indices here and update them after meshoptimizer has used them
   for (auto i = 0u; i < mesh->mNumFaces; ++i) {
-    indices.push_back(vertices_count + mesh->mFaces[i].mIndices[0]);
-    indices.push_back(vertices_count + mesh->mFaces[i].mIndices[1]);
-    indices.push_back(vertices_count + mesh->mFaces[i].mIndices[2]);
+    indices.push_back(mesh->mFaces[i].mIndices[0]);
+    indices.push_back(mesh->mFaces[i].mIndices[1]);
+    indices.push_back(mesh->mFaces[i].mIndices[2]);
   }
 
-  utility::append(data.vertices, vertices);
-  utility::append(data.indices, indices);
+  // Step 1: Generate remap to deduplicate vertices and index
+  auto remap = std::vector<std::uint32_t>{};
+  remap.resize(indices.size());
+
+  const auto vertex_count = meshopt_generateVertexRemap(remap.data(), indices.data(), indices.size(), vertices.data(), vertices.size(), sizeof(models::vertex3d));
+
+  // Step 2: Apply the remap to create a unique vertex buffer and remapped indices
+  auto unique_vertices = std::vector<models::vertex3d>{};
+  unique_vertices.resize(vertex_count);
+
+  auto remapped_indices = std::vector<std::uint32_t>{};
+  remapped_indices.resize(indices.size());
+
+  meshopt_remapVertexBuffer(unique_vertices.data(), vertices.data(), vertices.size(), sizeof(models::vertex3d), remap.data());
+  meshopt_remapIndexBuffer(remapped_indices.data(), indices.data(), indices.size(), remap.data());
+
+  // Step 3: Optimize index buffer for GPU vertex cache
+  meshopt_optimizeVertexCache(remapped_indices.data(), remapped_indices.data(), remapped_indices.size(), vertex_count);
+
+  // Step 4: Overdraw optimization
+  meshopt_optimizeOverdraw(remapped_indices.data(), remapped_indices.data(), remapped_indices.size(), &unique_vertices[0].position.x(), vertex_count, sizeof(models::vertex3d), 1.05f);
+
+  // Step 5: Vertex fetch optimization
+  meshopt_optimizeVertexFetch(unique_vertices.data(), remapped_indices.data(), remapped_indices.size(), unique_vertices.data(), vertex_count, sizeof(models::vertex3d));
+
+  // [NOTE] KAJ 2025-07-08 : Apply the "global" index offset here
+  std::transform(remapped_indices.begin(), remapped_indices.end(), remapped_indices.begin(), [vertices_count](const auto index) { return index + vertices_count; });
+
+  utility::append(data.vertices, unique_vertices);
+  utility::append(data.indices, remapped_indices);
   submesh.bounds = math::volume{_convert_vec3(mesh->mAABB.mMin), _convert_vec3(mesh->mAABB.mMax)};
   submesh.local_transform = local_transform;
   submesh.name = utility::hashed_string{mesh->mName.C_Str()};
