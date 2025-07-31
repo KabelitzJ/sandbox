@@ -121,16 +121,13 @@ auto _load_mesh(const aiMesh* mesh, typename lod_mesh<LOD>::mesh_data& data, con
   submesh.name = utility::hashed_string{mesh->mName.C_Str()};
 
   {
-    auto base_indices_offset = base_indices; // copy
-    std::transform(base_indices_offset.begin(), base_indices_offset.end(), base_indices_offset.begin(), [vertex_offset](auto i) { return i + vertex_offset; });
-
     const auto index_offset = static_cast<std::uint32_t>(data.indices[0].size());
-    utility::append(data.indices[0], base_indices_offset);
+    utility::append(data.indices[0], base_indices);
 
     submesh.lod[0] = {
       .index_count  = static_cast<std::uint32_t>(base_indices.size()),
       .index_offset = index_offset,
-      .vertex_offset = 0u // vertex_offset
+      .vertex_offset = vertex_offset
     };
   }
 
@@ -144,16 +141,13 @@ auto _load_mesh(const aiMesh* mesh, typename lod_mesh<LOD>::mesh_data& data, con
 
     lod_indices.resize(simplified_count);
 
-    auto lod_indices_offset = lod_indices;
-    std::transform(lod_indices_offset.begin(), lod_indices_offset.end(), lod_indices_offset.begin(), [vertex_offset](auto i) { return i + vertex_offset; });
-
     const auto index_offset = static_cast<std::uint32_t>(data.indices[lod].size());
-    utility::append(data.indices[lod], lod_indices_offset);
+    utility::append(data.indices[lod], lod_indices);
 
     submesh.lod[lod] = {
       .index_count  = static_cast<std::uint32_t>(lod_indices.size()),
       .index_offset = index_offset,
-      .vertex_offset = 0u // vertex_offset
+      .vertex_offset = vertex_offset
     };
   }
 
