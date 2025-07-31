@@ -17,6 +17,7 @@
 #include <range/v3/view/enumerate.hpp>
 
 #include <libsbx/utility/logger.hpp>
+#include <libsbx/utility/hash.hpp>
 
 #include <libsbx/containers/octree.hpp>
 
@@ -129,6 +130,8 @@ public:
 
 private:
 
+  using instance_data_container = graphics::mesh_key_container<std::vector<std::vector<instance_data>>>;
+
   auto _submit_mesh(const scenes::node node, const scenes::static_mesh& static_mesh) -> void {
     auto& assets_module = core::engine::get_module<assets::assets_module>();
     auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
@@ -147,6 +150,8 @@ private:
     const auto transform_data_index = static_cast<std::uint32_t>(_transform_data.size());
     _transform_data.emplace_back(global_transform.model, global_transform.normal);
 
+    const auto key = graphics::mesh_key{static_mesh.mesh_id(), static_mesh.lod()};
+
     for (const auto& submesh : static_mesh.submeshes()) {
       const auto& material = assets_module.get_asset<scenes::material>(submesh.material);
 
@@ -160,7 +165,7 @@ private:
 
       switch (material.type) {
         case scenes::material_type::opaque: {
-          auto& opaque_instances = _opaque_submesh_instances[mesh_id];
+          auto& opaque_instances = _opaque_submesh_instances[key];
 
           opaque_instances.resize(std::max(opaque_instances.size(), static_cast<std::size_t>(submesh.index + 1u)));
           opaque_instances[submesh.index].push_back(instance_data{material.base_color, material_data, payload, selection});
@@ -168,7 +173,7 @@ private:
           break;
         }
         case scenes::material_type::masked: {
-          auto& masked_instances = _masked_submesh_instances[mesh_id];
+          auto& masked_instances = _masked_submesh_instances[key];
 
           masked_instances.resize(std::max(masked_instances.size(), static_cast<std::size_t>(submesh.index + 1u)));
           masked_instances[submesh.index].push_back(instance_data{material.base_color, material_data, payload, selection});
@@ -176,7 +181,7 @@ private:
           break;
         }
         case scenes::material_type::transparent: {
-          auto& transparent_instances = _transparent_submesh_instances[mesh_id];
+          auto& transparent_instances = _transparent_submesh_instances[key];
 
           transparent_instances.resize(std::max(transparent_instances.size(), static_cast<std::size_t>(submesh.index + 1u)));
           transparent_instances[submesh.index].push_back(instance_data{material.base_color, material_data, payload, selection});
@@ -189,7 +194,7 @@ private:
     }
   }
 
-  auto _build_draw_commands(std::unordered_map<math::uuid, std::vector<std::vector<instance_data>>>& submesh_instances, const utility::hashed_string& name, const utility::hashed_string& draw_commands_name, const utility::hashed_string& instances_name) -> void {
+  auto _build_draw_commands(instance_data_container& submesh_instances, const utility::hashed_string& name, const utility::hashed_string& draw_commands_name, const utility::hashed_string& instances_name) -> void {
     auto& assets_module = core::engine::get_module<assets::assets_module>();
     auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
@@ -198,8 +203,8 @@ private:
 
     auto base_instance = std::uint32_t{0u};
 
-    for (auto&& [mesh_id, submesh] : submesh_instances) {
-      auto& mesh = assets_module.get_asset<models::mesh>(mesh_id);
+    for (auto&& [key, submesh] : submesh_instances) {
+      auto& mesh = assets_module.get_asset<models::mesh>(key.mesh_id);
 
       auto range = graphics::draw_command_range{};
       range.offset = static_cast<uint32_t>(draw_commands.size());
@@ -214,10 +219,10 @@ private:
         const auto instance_count = static_cast<std::uint32_t>(instances.size());
 
         auto command = VkDrawIndexedIndirectCommand{};
-        command.indexCount = submesh.lod[0].index_count;
+        command.indexCount = submesh.lod[key.lod].index_count;
         command.instanceCount = instance_count;
-        command.firstIndex = submesh.lod[0].index_offset;
-        command.vertexOffset = submesh.lod[0].vertex_offset;
+        command.firstIndex = submesh.lod[key.lod].index_offset;
+        command.vertexOffset = submesh.lod[key.lod].vertex_offset;
         command.firstInstance = base_instance;
         // command.firstInstance = 0u;
 
@@ -231,7 +236,7 @@ private:
       }
 
       if (range.count > 0) {
-        push_draw_command_range(name, mesh_id, range);
+        push_draw_command_range(name, key, range);
       }
     }
 
@@ -243,9 +248,9 @@ private:
     update_buffer(instance_data, instances_name);
   }
 
-  std::unordered_map<math::uuid, std::vector<std::vector<instance_data>>> _opaque_submesh_instances;
-  std::unordered_map<math::uuid, std::vector<std::vector<instance_data>>> _masked_submesh_instances;
-  std::unordered_map<math::uuid, std::vector<std::vector<instance_data>>> _transparent_submesh_instances;
+  instance_data_container _opaque_submesh_instances;
+  instance_data_container _masked_submesh_instances;
+  instance_data_container _transparent_submesh_instances;
 
   std::vector<transform_data> _transform_data;
 

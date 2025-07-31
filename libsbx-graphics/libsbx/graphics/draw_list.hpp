@@ -21,12 +21,36 @@ struct draw_command_range {
   std::uint32_t count;
 }; // struct draw_command_range
 
+struct mesh_key {
+  math::uuid mesh_id;
+  std::uint32_t lod;
+}; // struct mesh_key
+
+struct mesh_key_equal {
+  auto operator()(const mesh_key& lhs, const mesh_key& rhs) const noexcept -> bool {
+    return lhs.mesh_id == rhs.mesh_id && lhs.lod == rhs.lod;
+  }
+}; // struct mesh_key_equal
+
+struct mesh_key_hash {
+  auto operator()(const mesh_key& value) const noexcept -> std::size_t {
+    auto seed = std::size_t{0};
+
+    utility::hash_combine(seed, value.mesh_id, value.lod);
+
+    return seed;
+  }
+}; // struct mesh_key_equal
+
+template<typename Value>
+using mesh_key_container = std::unordered_map<mesh_key, Value, mesh_key_hash, mesh_key_equal>;
+
 class draw_list {
 
 public:
 
   using storage_buffer_container = std::unordered_map<utility::hashed_string, storage_buffer_handle>;
-  using draw_command_range_container = std::unordered_map<math::uuid, draw_command_range>;
+  using draw_command_range_container =  mesh_key_container<draw_command_range>;
 
   draw_list() = default;
 
@@ -59,7 +83,7 @@ protected:
 
   auto add_image(const image2d_handle& handle) -> std::uint32_t;
 
-  auto push_draw_command_range(const utility::hashed_string& name, const math::uuid& id, const draw_command_range& range) -> void;
+  auto push_draw_command_range(const utility::hashed_string& name, const mesh_key& id, const draw_command_range& range) -> void;
 
 private:
 

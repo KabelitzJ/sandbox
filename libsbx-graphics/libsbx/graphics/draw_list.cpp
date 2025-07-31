@@ -82,7 +82,7 @@ auto draw_list::add_image(const image2d_handle& handle) -> std::uint32_t {
   return _images.push_back(handle);
 }
 
-auto draw_list::push_draw_command_range(const utility::hashed_string& name, const math::uuid& id, const draw_command_range& range) -> void {
+auto draw_list::push_draw_command_range(const utility::hashed_string& name, const mesh_key& id, const draw_command_range& range) -> void {
   _draw_ranges[name].emplace(id, range);
 }
 

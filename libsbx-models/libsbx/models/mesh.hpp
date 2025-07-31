@@ -16,11 +16,9 @@
 
 namespace sbx::models {
 
-template<std::uint32_t LOD = 1u>
-requires (LOD >= 1u)
-class lod_mesh : public graphics::mesh<vertex3d, LOD> {
+class mesh : public graphics::mesh<vertex3d> {
 
-  using base = graphics::mesh<vertex3d, LOD>;
+  using base = graphics::mesh<vertex3d>;
 
 public:
 
@@ -28,22 +26,24 @@ public:
 
   using base::mesh;
 
-  lod_mesh(const std::filesystem::path& path);
+  mesh(const std::filesystem::path& path, const std::uint32_t lod = 1u);
 
-  ~lod_mesh() override;
+  ~mesh() override;
+
+  auto lod() const noexcept -> std::uint32_t {
+    return _lod;
+  }
 
 private:
 
-  static auto _load(const std::filesystem::path& path) -> mesh_data;
+  static auto _load(const std::filesystem::path& path, const std::uint32_t lod) -> mesh_data;
 
   // static auto _process(const std::filesystem::path& path, const mesh_data& data) -> void;
 
+  std::uint32_t _lod;
+
 }; // class mesh
 
-using mesh = lod_mesh<1u>;
-
 } // namespace sbx::models
-
-#include <libsbx/models/mesh.ipp>
 
 #endif // LIBSBX_MODELS_MESH_HPP_

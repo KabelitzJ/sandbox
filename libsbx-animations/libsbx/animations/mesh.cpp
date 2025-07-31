@@ -76,11 +76,15 @@ static auto _load_mesh(const aiMesh* mesh, const math::matrix4x4& transform, mes
     throw std::runtime_error{fmt::format("Mesh '{}' does not have bones", mesh->mName.C_Str())};
   }
 
-  auto submesh = graphics::submesh<1>{};
+  auto submesh = graphics::submesh{};
+
+  submesh.lod.resize(1u);
   submesh.lod[0].vertex_offset = 0u;
   submesh.lod[0].index_offset = data.indices.size();
 
   const auto vertices_count = data.vertices.size();
+
+  data.indices.resize(1u);
 
   data.vertices.reserve(data.vertices.size() + mesh->mNumVertices);
   data.indices[0].reserve(data.indices.size() + mesh->mNumFaces * 3);

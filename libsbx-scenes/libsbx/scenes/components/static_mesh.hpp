@@ -39,20 +39,27 @@ public:
     math::uuid material;
   }; // struct submesh
 
-  static_mesh(math::uuid mesh_id, math::uuid material)
+  static_mesh(const math::uuid& mesh_id, const math::uuid& material, const std::uint32_t lod = 0u)
   : _mesh_id{mesh_id},
+    _lod{lod},
     _submeshes{{0, material}} { }
 
-  static_mesh(math::uuid mesh_id, const std::vector<submesh>& submeshes)
+  static_mesh(const math::uuid& mesh_id, const std::vector<submesh>& submeshes, const std::uint32_t lod = 0u)
   : _mesh_id{mesh_id},
+    _lod{lod},
     _submeshes{submeshes} { }
 
-  static_mesh(math::uuid mesh_id, std::initializer_list<submesh> submeshes)
+  static_mesh(const math::uuid& mesh_id, std::initializer_list<submesh> submeshes, const std::uint32_t lod = 0u)
   : _mesh_id{mesh_id},
+  _lod{lod},
     _submeshes{submeshes} { }
 
-  auto mesh_id() const noexcept -> math::uuid {
+  auto mesh_id() const noexcept -> const math::uuid& {
     return _mesh_id;
+  }
+
+  auto lod() const noexcept -> std::uint32_t {
+    return _lod;
   }
 
   auto submeshes() const noexcept -> const std::vector<submesh>& {
@@ -62,6 +69,7 @@ public:
 private:
 
   math::uuid _mesh_id;
+  std::uint32_t _lod;
   std::vector<submesh> _submeshes;
 
 }; // class static_mesh

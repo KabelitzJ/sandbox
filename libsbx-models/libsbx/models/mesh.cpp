@@ -28,19 +28,19 @@ namespace sbx::models {
 
 namespace detail {
 
-inline auto _convert_vec2(const aiVector2D& vector) -> math::vector2 {
+static auto _convert_vec2(const aiVector2D& vector) -> math::vector2 {
   return math::vector2{vector.x, vector.y};
 }
 
-inline auto _convert_vec3(const aiVector3D& vector) -> math::vector3 {
+static auto _convert_vec3(const aiVector3D& vector) -> math::vector3 {
   return math::vector3{vector.x, vector.y, vector.z};
 }
 
-inline auto _convert_vec4(const aiVector3D& vector, const std::float_t w) -> math::vector4 {
+static auto _convert_vec4(const aiVector3D& vector, const std::float_t w) -> math::vector4 {
   return math::vector4{vector.x, vector.y, vector.z, w};
 }
 
-inline auto _convert_mat4(const aiMatrix4x4& matrix) -> math::matrix4x4 {
+static auto _convert_mat4(const aiMatrix4x4& matrix) -> math::matrix4x4 {
   auto result = math::matrix4x4{};
 
   //the a,b,c,d in assimp is the row ; the 1,2,3,4 is the column
@@ -52,8 +52,7 @@ inline auto _convert_mat4(const aiMatrix4x4& matrix) -> math::matrix4x4 {
   return result;
 }
 
-template<std::uint32_t LOD>
-auto _load_mesh(const aiMesh* mesh, typename lod_mesh<LOD>::mesh_data& data, const math::matrix4x4& local_transform) -> void {
+static auto _load_mesh(const aiMesh* mesh, mesh::mesh_data& data, const math::matrix4x4& local_transform, const std::uint32_t lod) -> void {
   if (!mesh->HasNormals()) {
     throw std::runtime_error{fmt::format("Mesh '{}' does not have normals", mesh->mName.C_Str())};
   }
@@ -115,13 +114,16 @@ auto _load_mesh(const aiMesh* mesh, typename lod_mesh<LOD>::mesh_data& data, con
   utility::append(data.vertices, base_vertices);
 
   // --- Prepare submesh metadata
-  auto submesh = graphics::submesh<LOD>{};
+  auto submesh = graphics::submesh{};
   submesh.bounds = math::volume{_convert_vec3(mesh->mAABB.mMin), _convert_vec3(mesh->mAABB.mMax)};
   submesh.local_transform = local_transform;
   submesh.name = utility::hashed_string{mesh->mName.C_Str()};
+  submesh.lod.resize(lod);
 
+  // Add base lod indices
   {
     const auto index_offset = static_cast<std::uint32_t>(data.indices[0].size());
+
     utility::append(data.indices[0], base_indices);
 
     submesh.lod[0] = {
@@ -131,20 +133,24 @@ auto _load_mesh(const aiMesh* mesh, typename lod_mesh<LOD>::mesh_data& data, con
     };
   }
 
-  for (auto lod = 1u; lod < LOD; ++lod) {
-    const auto target_ratio = graphics::lod_traits<LOD>::reduction_factors[lod];
+  // Add 1-n lod indices
+  for (auto i = 1u; i < lod; ++i) {
+    const auto target_ratio = graphics::lod_traits::reduction_factor(i);
 
-    auto lod_indices = std::vector<std::uint32_t>(base_indices.size());
+    auto lod_indices = std::vector<std::uint32_t>{};
+    lod_indices.resize(base_indices.size());
+
     const auto target_index_count = static_cast<std::size_t>(target_ratio * base_indices.size());
 
     const auto simplified_count = meshopt_simplify(lod_indices.data(), base_indices.data(), base_indices.size(), &base_vertices[0].position.x(), base_vertices.size(), sizeof(models::vertex3d), target_index_count, 1e-2f);
 
     lod_indices.resize(simplified_count);
 
-    const auto index_offset = static_cast<std::uint32_t>(data.indices[lod].size());
-    utility::append(data.indices[lod], lod_indices);
+    const auto index_offset = static_cast<std::uint32_t>(data.indices[i].size());
 
-    submesh.lod[lod] = {
+    utility::append(data.indices[i], lod_indices);
+
+    submesh.lod[i] = {
       .index_count  = static_cast<std::uint32_t>(lod_indices.size()),
       .index_offset = index_offset,
       .vertex_offset = vertex_offset
@@ -154,35 +160,29 @@ auto _load_mesh(const aiMesh* mesh, typename lod_mesh<LOD>::mesh_data& data, con
   data.submeshes.push_back(submesh);
 }
 
-template<std::uint32_t LOD>
-auto _load_node(const aiNode* node, const aiScene* scene, typename lod_mesh<LOD>::mesh_data& data) -> void {
+static auto _load_node(const aiNode* node, const aiScene* scene, mesh::mesh_data& data, const std::uint32_t lod) -> void {
   const auto local_transform = _convert_mat4(node->mTransformation);
 
   for (auto i = 0u; i < node->mNumMeshes; ++i) {
-    _load_mesh<LOD>(scene->mMeshes[node->mMeshes[i]], data, local_transform);
+    _load_mesh(scene->mMeshes[node->mMeshes[i]], data, local_transform, lod);
   }
 
   for (auto i = 0u; i < node->mNumChildren; ++i) {
-    _load_node<LOD>(node->mChildren[i], scene, data);
+    _load_node(node->mChildren[i], scene, data, lod);
   }
 }
 
 } // namespace detail
 
-template<std::uint32_t LOD>
-requires (LOD >= 1u)
-lod_mesh<LOD>::lod_mesh(const std::filesystem::path& path)
-: base{_load(path)} { }
+mesh::mesh(const std::filesystem::path& path, const std::uint32_t lod)
+: base{_load(path, lod)},
+  _lod{lod} { }
 
-template<std::uint32_t LOD>
-requires (LOD >= 1u)
-lod_mesh<LOD>::~lod_mesh() {
+mesh::~mesh() {
 
 }
 
-template<std::uint32_t LOD>
-requires (LOD >= 1u)
-auto lod_mesh<LOD>::_load(const std::filesystem::path& path) -> mesh_data {
+auto mesh::_load(const std::filesystem::path& path, const std::uint32_t lod) -> mesh_data {
   // [TODO] KAJ 2025-05-26 : Clean this up with two dedicated functions for loading and processing.
   if (!std::filesystem::exists(path)) {
     throw std::runtime_error{"Mesh file not found: " + path.string()};
@@ -190,7 +190,8 @@ auto lod_mesh<LOD>::_load(const std::filesystem::path& path) -> mesh_data {
 
   auto timer = utility::timer{};
 
-  auto data = lod_mesh<LOD>::mesh_data{};
+  auto data = mesh::mesh_data{};
+  data.indices.resize(lod);
 
   static const auto import_flags =
     aiProcess_CalcTangentSpace |        // Create binormals/tangents just in case
@@ -213,7 +214,7 @@ auto lod_mesh<LOD>::_load(const std::filesystem::path& path) -> mesh_data {
     throw std::runtime_error{fmt::format("Error loading mesh '{}': {}", path.string(), importer.GetErrorString())};
   }
 
-  detail::_load_node<LOD>(scene->mRootNode, scene, data);
+  detail::_load_node(scene->mRootNode, scene, data, lod);
 
   // [NOTE] KAJ 2024-03-20 : We need to calculate the bounds of the mesh from the submeshes.
   data.bounds = math::volume{math::vector3::zero, math::vector3::zero};

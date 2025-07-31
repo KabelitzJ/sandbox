@@ -36,6 +36,29 @@ auto map_to(Range&& range, Fn&& fn) -> To<std::invoke_result_t<Fn, const ranges:
   return std::forward<Range>(range) | ranges::views::transform(std::forward<Fn>(fn)) | ranges::to<To>();
 }
 
+template<std::copyable To, std::copyable From, typename Callable>
+requires (std::is_invocable_r_v<To, Callable, const From&>)
+auto transform(const std::vector<From>& vector, Callable&& callable) -> std::vector<To> {
+  auto result = std::vector<To>{};
+  result.reserve(vector.size());
+
+  std::transform(vector.begin(), vector.end(), std::back_inserter(result), std::forward<Callable>(callable));
+
+  return result;
+}
+
+template<std::movable To, std::movable From, typename Callable>
+requires (std::is_invocable_r_v<To, Callable, From&&>)
+auto transform(std::vector<From>&& vector, Callable&& callable) -> std::vector<To> {
+  auto result = std::vector<To>{};
+  result.reserve(vector.size());
+
+  std::transform(std::make_move_iterator(vector.begin()), std::make_move_iterator(vector.end()), std::back_inserter(result), std::forward<Callable>(callable));
+  vector.clear();
+
+  return result;
+}
+
 /**
  * @brief Appends elements from a source vector to a destination vector by moving them.
  *

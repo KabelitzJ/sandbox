@@ -79,7 +79,8 @@ application::application()
   scene.add_mesh<sbx::models::mesh>("maple_tree_1", "demo/assets/meshes/maple_tree_1/maple_tree_1.gltf");
   scene.add_mesh<sbx::models::mesh>("maple_tree_2", "demo/assets/meshes/maple_tree_2/maple_tree_2.gltf");
   scene.add_mesh<sbx::models::mesh>("maple_tree_3", "demo/assets/meshes/maple_tree_3/maple_tree_3.gltf");
-  scene.add_mesh<sbx::models::mesh>("maple_tree_4", "demo/assets/meshes/maple_tree_4/maple_tree_4.gltf");
+
+  scene.add_mesh<sbx::models::mesh>("maple_tree_4", "demo/assets/meshes/maple_tree_4/maple_tree_4.gltf", 4u);
 
   scene.add_mesh<sbx::animations::mesh>("fox", "demo/assets/meshes/fox/fox.gltf");
   scene.add_mesh<sbx::models::mesh>("fox_static", "demo/assets/meshes/fox/fox.gltf");
@@ -194,16 +195,38 @@ application::application()
 
   _selection_buffer = graphics_module.add_resource<sbx::graphics::storage_buffer>(sbx::graphics::storage_buffer::min_size);
 
-  // Tree
+  // Trees
   scene.add_material<sbx::scenes::material>("maple_tree_bark", sbx::scenes::material_type::opaque, sbx::math::color{1.0f, 1.0f, 1.0f, 0.1f}, 0.0f, 0.5f, 1.0f, scene.get_image("maple_tree_bark"), scene.get_image("maple_tree_bark_normal"));
   scene.add_material<sbx::scenes::material>("maple_tree_leaves", sbx::scenes::material_type::masked, sbx::math::color::white(), 0.0f, 0.5f, 1.0f, scene.get_image("maple_tree_leaves"));
 
-  auto maple_tree = scene.create_node("MapleTree");
-  scene.add_component<sbx::scenes::static_mesh>(maple_tree, scene.get_mesh("maple_tree_4"), std::vector<sbx::scenes::static_mesh::submesh>{{0u, scene.get_material("maple_tree_bark")}, {1u, scene.get_material("maple_tree_leaves")}});
+  auto maple_tree1 = scene.create_node("MapleTree1");
+  scene.add_component<sbx::scenes::static_mesh>(maple_tree1, scene.get_mesh("maple_tree_4"), std::vector<sbx::scenes::static_mesh::submesh>{{0u, scene.get_material("maple_tree_bark")}, {1u, scene.get_material("maple_tree_leaves")}}, 0u);
 
-  auto& maple_tree_transform = scene.get_component<sbx::math::transform>(maple_tree);
-  maple_tree_transform.set_position(sbx::math::vector3{5.0f, 0.0f, 0.0f});
-  maple_tree_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
+  auto& maple_tree1_transform = scene.get_component<sbx::math::transform>(maple_tree1);
+  maple_tree1_transform.set_position(sbx::math::vector3{5.0f, 0.0f, 0.0f});
+  maple_tree1_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
+
+  auto maple_tree2 = scene.create_node("MapleTree2");
+  scene.add_component<sbx::scenes::static_mesh>(maple_tree2, scene.get_mesh("maple_tree_4"), std::vector<sbx::scenes::static_mesh::submesh>{{0u, scene.get_material("maple_tree_bark")}, {1u, scene.get_material("maple_tree_leaves")}}, 1u);
+
+  auto& maple_tree2_transform = scene.get_component<sbx::math::transform>(maple_tree2);
+  maple_tree2_transform.set_position(sbx::math::vector3{10.0f, 0.0f, 0.0f});
+  maple_tree2_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
+
+  auto maple_tree3 = scene.create_node("MapleTree3");
+  scene.add_component<sbx::scenes::static_mesh>(maple_tree3, scene.get_mesh("maple_tree_4"), std::vector<sbx::scenes::static_mesh::submesh>{{0u, scene.get_material("maple_tree_bark")}, {1u, scene.get_material("maple_tree_leaves")}}, 2u);
+
+  auto& maple_tree3_transform = scene.get_component<sbx::math::transform>(maple_tree3);
+  maple_tree3_transform.set_position(sbx::math::vector3{15.0f, 0.0f, 0.0f});
+  maple_tree3_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
+
+  auto maple_tree4 = scene.create_node("MapleTree4");
+  scene.add_component<sbx::scenes::static_mesh>(maple_tree4, scene.get_mesh("maple_tree_4"), std::vector<sbx::scenes::static_mesh::submesh>{{0u, scene.get_material("maple_tree_bark")}, {1u, scene.get_material("maple_tree_leaves")}}, 3u);
+
+  auto& maple_tree4_transform = scene.get_component<sbx::math::transform>(maple_tree4);
+  maple_tree4_transform.set_position(sbx::math::vector3{20.0f, 0.0f, 0.0f});
+  maple_tree4_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
+
 
   // Tank
 

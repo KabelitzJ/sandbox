@@ -199,10 +199,10 @@ public:
     _push_handler.push("transform_data_buffer", draw_list->buffer(static_mesh_draw_list::transform_data_buffer_name).address());
     _push_handler.push("instance_data_buffer", draw_list->buffer(traits::instance_data_buffer_name).address());
 
-    for (const auto& [mesh_id, range] : draw_list->draw_ranges(traits::scope)) {
-      auto& mesh = assets_module.get_asset<models::mesh>(mesh_id);
+    for (const auto& [key, range] : draw_list->draw_ranges(traits::scope)) {
+      auto& mesh = assets_module.get_asset<models::mesh>(key.mesh_id);
       
-      mesh.bind(command_buffer);
+      mesh.bind(command_buffer, key.lod);
       
       _push_handler.push("vertex_buffer", mesh.address());
 
