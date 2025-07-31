@@ -56,9 +56,14 @@ void main() {
   vec3 light_direction = normalize(-scene.light_direction);
   vec3 half_direction = normalize(light_direction + view_direction);
 
+  // Ambient with AO
+  vec4 ambient = AMBIENT_COLOR * albedo * ambient_occlusion;
+
+  // Diffuse: suppressed for metals
   float diffuse_strength = max(dot(normal, light_direction), 0.0);
   vec4 diffuse = diffuse_strength * albedo * scene.light_color * (1.0 - metallic);
 
+  // Specular: affected by roughness and metallic
   float shininess = mix(256.0, 2.0, roughness);
   float specular_strength = pow(max(dot(normal, half_direction), 0.0), shininess);
   vec3 specular_color = mix(SPECULAR_COLOR.rgb, albedo.rgb, metallic);

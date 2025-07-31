@@ -72,7 +72,7 @@ application::application()
 
   scene.add_image("checkerboard", "demo/assets/textures/checkerboard.jpg");
 
-  scene.add_cube_image("skybox", "demo/assets/skyboxes/clouds");
+  scene.add_cube_image("skybox", "demo/assets/skyboxes/prototype");
 
   // Meshes
 
@@ -146,7 +146,7 @@ application::application()
   auto dragon = scene.create_node("Dragon"); //, sbx::math::transform{dragon_mesh.submesh_local_transform("dragon") * sbx::math::vector4{0, 0, 0, 1}});
 
   scene.add_material<sbx::scenes::material>("cloth", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 0.5f, 1.0f, scene.get_image("checkerboard"));
-  scene.add_material<sbx::scenes::material>("dragon", sbx::scenes::material_type::transparent, sbx::math::color{0.0f, 0.6588f, 0.4196f, 0.8f}, 0.0f, 0.5f, 1.0f);
+  scene.add_material<sbx::scenes::material>("dragon", sbx::scenes::material_type::transparent, sbx::math::color{0.0f, 0.6588f, 0.4196f, 0.6f}, 0.0f, 0.5f, 1.0f);
 
   scene.add_component<sbx::scenes::static_mesh>(dragon, scene.get_mesh("dragon"), std::vector<sbx::scenes::static_mesh::submesh>{{0u, scene.get_material("cloth")}, {1u, scene.get_material("dragon")}});
 
@@ -159,7 +159,7 @@ application::application()
   // Helmet
   auto helmet = scene.create_node("Helmet");
 
-  scene.add_material<sbx::scenes::material>("helmet", sbx::scenes::material_type::opaque, sbx::math::color::white(), 1.0f, 1.0f, 1.0f, scene.get_image("helmet_albedo"), scene.get_image("helmet_normal"), scene.get_image("helmet_mrao"));
+  scene.add_material<sbx::scenes::material>("helmet", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 0.5f, 1.0f, scene.get_image("helmet_albedo"), scene.get_image("helmet_normal"));
 
   scene.add_component<sbx::scenes::static_mesh>(helmet, scene.get_mesh("helmet"), scene.get_material("helmet"));
 

@@ -21,16 +21,13 @@ find_package(nlohmann_json REQUIRED)
 find_package(base64 REQUIRED)
 find_package(tsl-robin-map REQUIRED)
 find_package(assimp REQUIRED)
+find_package(meshoptimizer REQUIRED)
 
 target_sources(
   ${PROJECT_NAME}
   PRIVATE
     "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/models.cpp"    
-    "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/mesh.cpp"      
-    "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/loaders/obj_loader.cpp"
-    "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/loaders/gltf_loader.cpp"
-    "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/loaders/fbx_loader.cpp"
-    "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/loaders/sbxmsh_loader.cpp"
+    "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/mesh.cpp"
   PUBLIC
     FILE_SET HEADERS
     FILES
@@ -38,10 +35,6 @@ target_sources(
       "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/mesh.hpp"
       "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/static_mesh_subrenderer.hpp"
       "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/vertex3d.hpp"
-      "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/loaders/obj_loader.hpp"
-      "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/loaders/gltf_loader.hpp"
-      "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/loaders/fbx_loader.hpp"
-      "${PROJECT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}/${PROJECT_NAME}/loaders/sbxmsh_loader.hpp"
 )
 
 target_include_directories(
@@ -61,6 +54,7 @@ target_link_libraries(
     aklomp::base64
     tsl::robin_map
     assimp::assimp
+    meshoptimizer::meshoptimizer
     # Internal dependencies
     libsbx::utility
     libsbx::io

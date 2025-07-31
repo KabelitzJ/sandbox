@@ -112,6 +112,7 @@ class libsbx_recipe(ConanFile):
     self.requires("lz4/1.10.0")
     self.requires("assimp/5.4.3")
     self.requires("bullet3/3.25")
+    self.requires("meshoptimizer/0.23")
 
   def generate(self):
     deps = CMakeDeps(self)
