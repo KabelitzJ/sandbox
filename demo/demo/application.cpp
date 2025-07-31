@@ -72,7 +72,7 @@ application::application()
 
   scene.add_image("checkerboard", "demo/assets/textures/checkerboard.jpg");
 
-  scene.add_cube_image("skybox", "demo/assets/skyboxes/clouds");
+  scene.add_cube_image("skybox", "demo/assets/skyboxes/prototype");
 
   // Meshes
 
