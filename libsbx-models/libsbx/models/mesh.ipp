@@ -66,76 +66,98 @@ auto _load_mesh(const aiMesh* mesh, typename lod_mesh<LOD>::mesh_data& data, con
     throw std::runtime_error{fmt::format("Mesh '{}' does not have tangents", mesh->mName.C_Str())};
   }
 
-  const auto vertices_count = data.vertices.size();
-  
-  auto vertices = std::vector<models::vertex3d>{};
-  vertices.reserve(mesh->mNumVertices);
+  const auto vertex_offset = static_cast<std::uint32_t>(data.vertices.size());
 
-  auto indices = std::vector<std::uint32_t>{};
-  indices.reserve(mesh->mNumFaces * 3u);
+  // --- Collect raw vertices
+  auto raw_vertices = std::vector<models::vertex3d>{};
+  raw_vertices.reserve(mesh->mNumVertices);
 
   for (auto i = 0u; i < mesh->mNumVertices; ++i) {
     auto vertex = models::vertex3d{};
     vertex.position = local_transform * _convert_vec4(mesh->mVertices[i], 1.0f);
-    vertex.normal = local_transform * _convert_vec4(mesh->mNormals[i], 0.0f);
-    vertex.uv = _convert_vec3(mesh->mTextureCoords[0][i]);
-    vertex.tangent = local_transform * _convert_vec4(mesh->mTangents[i], 0.0f);
-
-    vertices.push_back(vertex);
+    vertex.normal   = local_transform * _convert_vec4(mesh->mNormals[i], 0.0f);
+    vertex.uv       = _convert_vec3(mesh->mTextureCoords[0][i]);
+    vertex.tangent  = local_transform * _convert_vec4(mesh->mTangents[i], 0.0f);
+    raw_vertices.push_back(vertex);
   }
 
-  // [NOTE] KAJ 2025-07-08 : We need to keep "local" indices here and update them after meshoptimizer has used them
+  // --- Collect raw indices
+  auto raw_indices = std::vector<std::uint32_t>{};
+  raw_indices.reserve(mesh->mNumFaces * 3u);
+
   for (auto i = 0u; i < mesh->mNumFaces; ++i) {
-    indices.push_back(mesh->mFaces[i].mIndices[0]);
-    indices.push_back(mesh->mFaces[i].mIndices[1]);
-    indices.push_back(mesh->mFaces[i].mIndices[2]);
+    raw_indices.push_back(mesh->mFaces[i].mIndices[0]);
+    raw_indices.push_back(mesh->mFaces[i].mIndices[1]);
+    raw_indices.push_back(mesh->mFaces[i].mIndices[2]);
   }
 
-  // Step 1: Generate remap to deduplicate vertices and index
-  auto remap = std::vector<std::uint32_t>{};
-  remap.resize(indices.size());
+  // --- Deduplicate and optimize base LOD (local indices)
+  auto remap = std::vector<std::uint32_t>(raw_indices.size());
+  const auto unique_vertex_count = meshopt_generateVertexRemap(
+    remap.data(),
+    raw_indices.data(),
+    raw_indices.size(),
+    raw_vertices.data(),
+    raw_vertices.size(),
+    sizeof(models::vertex3d)
+  );
 
-  const auto vertex_count = meshopt_generateVertexRemap(remap.data(), indices.data(), indices.size(), vertices.data(), vertices.size(), sizeof(models::vertex3d));
+  auto base_vertices = std::vector<models::vertex3d>(unique_vertex_count);
+  auto base_indices = std::vector<std::uint32_t>(raw_indices.size());
 
-  // Step 2: Apply the remap to create a unique vertex buffer and remapped indices
-  auto unique_vertices = std::vector<models::vertex3d>{};
-  unique_vertices.resize(vertex_count);
+  meshopt_remapVertexBuffer(base_vertices.data(), raw_vertices.data(), raw_vertices.size(), sizeof(models::vertex3d), remap.data());
+  meshopt_remapIndexBuffer(base_indices.data(), raw_indices.data(), raw_indices.size(), remap.data());
 
-  auto remapped_indices = std::vector<std::uint32_t>{};
-  remapped_indices.resize(indices.size());
+  meshopt_optimizeVertexCache(base_indices.data(), base_indices.data(), base_indices.size(), unique_vertex_count);
+  meshopt_optimizeOverdraw(base_indices.data(), base_indices.data(), base_indices.size(), &base_vertices[0].position.x(), base_vertices.size(), sizeof(models::vertex3d), 1.05f);
+  meshopt_optimizeVertexFetch(base_vertices.data(), base_indices.data(), base_indices.size(), base_vertices.data(), base_vertices.size(), sizeof(models::vertex3d));
 
-  meshopt_remapVertexBuffer(unique_vertices.data(), vertices.data(), vertices.size(), sizeof(models::vertex3d), remap.data());
-  meshopt_remapIndexBuffer(remapped_indices.data(), indices.data(), indices.size(), remap.data());
+  utility::append(data.vertices, base_vertices);
 
-  // Step 3: Optimize index buffer for GPU vertex cache
-  meshopt_optimizeVertexCache(remapped_indices.data(), remapped_indices.data(), remapped_indices.size(), vertex_count);
+  // --- Prepare submesh metadata
+  auto submesh = graphics::submesh<LOD>{};
+  submesh.bounds = math::volume{_convert_vec3(mesh->mAABB.mMin), _convert_vec3(mesh->mAABB.mMax)};
+  submesh.local_transform = local_transform;
+  submesh.name = utility::hashed_string{mesh->mName.C_Str()};
 
-  // Step 4: Overdraw optimization
-  meshopt_optimizeOverdraw(remapped_indices.data(), remapped_indices.data(), remapped_indices.size(), &unique_vertices[0].position.x(), vertex_count, sizeof(models::vertex3d), 1.05f);
+  {
+    auto base_indices_offset = base_indices; // copy
+    std::transform(base_indices_offset.begin(), base_indices_offset.end(), base_indices_offset.begin(), [vertex_offset](auto i) { return i + vertex_offset; });
 
-  // Step 5: Vertex fetch optimization
-  meshopt_optimizeVertexFetch(unique_vertices.data(), remapped_indices.data(), remapped_indices.size(), unique_vertices.data(), vertex_count, sizeof(models::vertex3d));
+    const auto index_offset = static_cast<std::uint32_t>(data.indices[0].size());
+    utility::append(data.indices[0], base_indices_offset);
 
-  // [NOTE] KAJ 2025-07-08 : Apply the "global" index offset here
-  std::transform(remapped_indices.begin(), remapped_indices.end(), remapped_indices.begin(), [vertices_count](const auto index) { return index + vertices_count; });
-
-  utility::append(data.vertices, unique_vertices);
-
-  for (auto lod = 0; lod < LOD; ++lod) {
-    auto submesh = graphics::submesh<LOD>{};
-    submesh.lod[lod].vertex_offset = 0u;
-    submesh.lod[lod].index_offset = data.indices[lod].size();
-    submesh.lod[lod].index_count = mesh->mNumFaces * 3u;
-  
-    utility::append(data.indices[lod], remapped_indices);
-
-    submesh.bounds = math::volume{_convert_vec3(mesh->mAABB.mMin), _convert_vec3(mesh->mAABB.mMax)};
-    submesh.local_transform = local_transform;
-    submesh.name = utility::hashed_string{mesh->mName.C_Str()};
-  
-    data.submeshes.push_back(submesh);
+    submesh.lod[0] = {
+      .index_count  = static_cast<std::uint32_t>(base_indices.size()),
+      .index_offset = index_offset,
+      .vertex_offset = 0u // vertex_offset
+    };
   }
 
+  for (auto lod = 1u; lod < LOD; ++lod) {
+    const auto target_ratio = graphics::lod_traits<LOD>::reduction_factors[lod];
+
+    auto lod_indices = std::vector<std::uint32_t>(base_indices.size());
+    const auto target_index_count = static_cast<std::size_t>(target_ratio * base_indices.size());
+
+    const auto simplified_count = meshopt_simplify(lod_indices.data(), base_indices.data(), base_indices.size(), &base_vertices[0].position.x(), base_vertices.size(), sizeof(models::vertex3d), target_index_count, 1e-2f);
+
+    lod_indices.resize(simplified_count);
+
+    auto lod_indices_offset = lod_indices;
+    std::transform(lod_indices_offset.begin(), lod_indices_offset.end(), lod_indices_offset.begin(), [vertex_offset](auto i) { return i + vertex_offset; });
+
+    const auto index_offset = static_cast<std::uint32_t>(data.indices[lod].size());
+    utility::append(data.indices[lod], lod_indices_offset);
+
+    submesh.lod[lod] = {
+      .index_count  = static_cast<std::uint32_t>(lod_indices.size()),
+      .index_offset = index_offset,
+      .vertex_offset = 0u // vertex_offset
+    };
+  }
+
+  data.submeshes.push_back(submesh);
 }
 
 template<std::uint32_t LOD>

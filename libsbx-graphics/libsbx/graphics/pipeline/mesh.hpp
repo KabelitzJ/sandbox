@@ -44,9 +44,9 @@ struct submesh {
   utility::hashed_string name;
 }; // struct submesh
 
-template<std::uint32_t N>
+template<std::size_t N>
 struct lod_traits {
-  inline static constexpr auto reduction_factors = utility::make_array<std::float_t, N>([](const auto i) { 1.0f / std::pow(2.0f, static_cast<std::float_t>(i)); });
+  inline static constexpr auto reduction_factors = utility::make_array<std::float_t, N>([](const std::size_t i) -> std::float_t { return 1.0f / std::pow(2.0f, static_cast<std::float_t>(i)); });
 }; // struct lod_traits
 
 template<vertex Vertex, std::uint32_t LOD = 1u>
