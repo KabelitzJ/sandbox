@@ -38,9 +38,9 @@ vec4 get_albedo() {
     return in_color;
   }
 
-  vec4 sampled = texture(sampler2D(images[albedo_image_index], images_sampler), in_uv).rgba;
+  vec4 color = texture(sampler2D(images[albedo_image_index], images_sampler), in_uv).rgba;
 
-  return vec4(sampled.rgb * in_color.rgb, sampled.a);
+  return vec4(color.rgb * in_color.rgb, color.a);
 }
 
 vec3 get_normal() {
@@ -50,9 +50,9 @@ vec3 get_normal() {
     return normalize(in_normal);
   }
 
-  vec3 sampled = texture(sampler2D(images[normal_image_index], images_sampler), in_uv).xyz;
+  vec3 normal = texture(sampler2D(images[normal_image_index], images_sampler), in_uv).xyz;
 
-  return normalize(in_tbn * sampled);
+  return normalize(in_tbn * normal);
 }
 
 vec3 get_material() {
@@ -62,9 +62,7 @@ vec3 get_material() {
     return in_material;
   }
 
-  vec3 sampled = texture(sampler2D(images[material_image_index], images_sampler), in_uv).rgb;
-
-  return vec3(sampled * in_material);
+  return texture(sampler2D(images[material_image_index], images_sampler), in_uv).rgb;
 }
 
 void main(void) {

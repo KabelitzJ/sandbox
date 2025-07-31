@@ -16,6 +16,8 @@
 
 #include <libsbx/io/read_file.hpp>
 
+#include <libsbx/utility/iterator.hpp>
+
 #include <libsbx/math/vector2.hpp>  
 #include <libsbx/math/vector3.hpp>
 #include <libsbx/math/matrix4x4.hpp>
@@ -204,10 +206,15 @@ static auto _load_mesh(const aiMesh* mesh, mesh::mesh_data& data, const math::ma
   auto submesh = graphics::submesh{};
   submesh.vertex_offset = 0u;
   submesh.index_offset = data.indices.size();
+  submesh.index_count = mesh->mNumFaces * 3u;
 
   const auto vertices_count = data.vertices.size();
 
-  data.vertices.reserve(vertices_count + mesh->mNumVertices);
+  auto vertices = std::vector<models::vertex3d>{};
+  vertices.reserve(mesh->mNumVertices);
+
+  auto indices = std::vector<std::uint32_t>{};
+  indices.reserve(mesh->mNumFaces * 3u);
 
   for (auto i = 0u; i < mesh->mNumVertices; ++i) {
     auto vertex = models::vertex3d{};
@@ -216,22 +223,18 @@ static auto _load_mesh(const aiMesh* mesh, mesh::mesh_data& data, const math::ma
     vertex.uv = _convert_vec3(mesh->mTextureCoords[0][i]);
     vertex.tangent = local_transform * _convert_vec4(mesh->mTangents[i], 0.0f);
 
-    data.vertices.push_back(vertex);
+    vertices.push_back(vertex);
   }
-
-  data.indices.reserve(data.indices.size() + mesh->mNumFaces * 3u);
 
   // [NOTE] KAJ 2025-07-08 : We need to add vertices_count since all submeshes are stored in one vertex buffer
   for (auto i = 0u; i < mesh->mNumFaces; ++i) {
-    data.indices.push_back(vertices_count + mesh->mFaces[i].mIndices[0]);
-    data.indices.push_back(vertices_count + mesh->mFaces[i].mIndices[1]);
-    data.indices.push_back(vertices_count + mesh->mFaces[i].mIndices[2]);
+    indices.push_back(vertices_count + mesh->mFaces[i].mIndices[0]);
+    indices.push_back(vertices_count + mesh->mFaces[i].mIndices[1]);
+    indices.push_back(vertices_count + mesh->mFaces[i].mIndices[2]);
   }
 
-  submesh.index_count = data.indices.size() - submesh.index_offset;
-
-  const auto submesh_index = data.submeshes.size();
-
+  utility::append(data.vertices, vertices);
+  utility::append(data.indices, indices);
   submesh.bounds = math::volume{_convert_vec3(mesh->mAABB.mMin), _convert_vec3(mesh->mAABB.mMax)};
   submesh.local_transform = local_transform;
   submesh.name = utility::hashed_string{mesh->mName.C_Str()};

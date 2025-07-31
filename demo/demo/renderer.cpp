@@ -136,7 +136,6 @@ renderer::renderer()
     {"object_id_image", "object_id"}
   };
 
-  // Resolve  pass
   add_subrenderer<sbx::post::resolve_opaque_filter>("demo/assets/shaders/resolve_opaque", resolve, std::move(resolve_opaque_attachment_names));
 
   auto resolve_transparent_attachment_names = std::vector<std::pair<std::string, std::string>>{
@@ -144,7 +143,6 @@ renderer::renderer()
     {"revealage_image", "revealage"}
   };
 
-  // Resolve  pass
   add_subrenderer<sbx::post::resolve_transparent_filter>("demo/assets/shaders/resolve_transparet", resolve, std::move(resolve_transparent_attachment_names));
 
   // Post-processing pass

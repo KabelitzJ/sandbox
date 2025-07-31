@@ -2,6 +2,8 @@
 
 #include <tiny_obj_loader.h>
 
+#include <meshoptimizer.h>
+
 #include <libsbx/utility/logger.hpp>
 
 namespace sbx::models {

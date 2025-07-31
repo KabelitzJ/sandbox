@@ -21,10 +21,10 @@ enum class material_type : std::uint8_t {
 
 struct material {
   material_type type;
-  math::color base_color;
-  std::float_t metallic;
-  std::float_t roughness;
-  std::float_t amnient_occlusion;
+  math::color base_color{math::color::white()};
+  std::float_t metallic{0.0f};
+  std::float_t roughness{0.5f};
+  std::float_t amnient_occlusion{1.0f};
   graphics::image2d_handle albedo;
   graphics::image2d_handle normal;
   graphics::image2d_handle mrao; // metallic, roughness, amnient occlusion

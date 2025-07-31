@@ -21,6 +21,7 @@ find_package(nlohmann_json REQUIRED)
 find_package(base64 REQUIRED)
 find_package(tsl-robin-map REQUIRED)
 find_package(assimp REQUIRED)
+find_package(meshoptimizer REQUIRED)
 
 target_sources(
   ${PROJECT_NAME}
@@ -61,6 +62,7 @@ target_link_libraries(
     aklomp::base64
     tsl::robin_map
     assimp::assimp
+    meshoptimizer::meshoptimizer
     # Internal dependencies
     libsbx::utility
     libsbx::io

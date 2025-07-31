@@ -44,26 +44,28 @@ void main() {
   vec4 albedo = texture(albedo_image, in_uv);
   vec3 world_position = texture(position_image, in_uv).xyz;
   vec3 normal = normalize(texture(normal_image, in_uv).xyz);
-  vec2 material = texture(material_image, in_uv).xy;
-  uvec2 object_id = get_object_id().xy;
+  vec3 material = texture(material_image, in_uv).xyz;
 
   float metallic = material.x;
   float roughness = material.y;
+  float ambient_occlusion = material.z;
 
   vec3 light_direction = normalize(-scene.light_direction);
   vec3 view_direction = normalize(scene.camera_position - world_position);
   vec3 half_direction = normalize(light_direction + view_direction);
-  
-  // Ambient color
-  vec4 ambient = AMBIENT_COLOR * albedo;
 
-  // Diffuse color
+  // Ambient with AO
+  vec4 ambient = AMBIENT_COLOR * albedo * ambient_occlusion;
+
+  // Diffuse: suppressed for metals
   float diffuse_strength = max(dot(normal, light_direction), 0.0);
-  vec4 diffuse = diffuse_strength * albedo * scene.light_color;
+  vec4 diffuse = diffuse_strength * albedo * scene.light_color * (1.0 - metallic);
 
-  // Specular highlight
-  float specular_strength = pow(max(dot(normal, half_direction), 0.0), 32.0);
-  vec4 specular = SPECULAR_COLOR * specular_strength * albedo;
+  // Specular: affected by roughness and metallic
+  float shininess = mix(256.0, 2.0, roughness);
+  float specular_strength = pow(max(dot(normal, half_direction), 0.0), shininess);
+  vec3 specular_color = mix(SPECULAR_COLOR.rgb, albedo.rgb, metallic);
+  vec4 specular = vec4(specular_color * specular_strength, 1.0);
 
   out_color = ambient + diffuse + specular;
 
