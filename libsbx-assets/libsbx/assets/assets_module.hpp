@@ -83,8 +83,6 @@ public:
     const auto id = math::uuid{};
     const auto type = type_id<Type>::value();
 
-    utility::logger<"assets">::info("type: {}", type);
-
     if (type >= _containers.size()) {
       _containers.resize(std::max(_containers.size(), static_cast<std::size_t>(type + 1u)));
     }
