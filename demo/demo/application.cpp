@@ -138,10 +138,10 @@ application::application()
 
     scene.add_component<sbx::scenes::point_light>(light, sbx::math::random_color(), 50.0f);
 
-    scene.add_component<sbx::scenes::static_mesh>(light, scene.get_mesh("sphere"), scene.get_material("light"));
+    // scene.add_component<sbx::scenes::static_mesh>(light, scene.get_mesh("sphere"), scene.get_material("light"));
     
-    auto& light_transform = scene.get_component<sbx::math::transform>(light);
-    light_transform.set_scale(sbx::math::vector3{0.2f, 0.2f, 0.2f});
+    // auto& light_transform = scene.get_component<sbx::math::transform>(light);
+    // light_transform.set_scale(sbx::math::vector3{0.2f, 0.2f, 0.2f});
   }
 
   // Dragon

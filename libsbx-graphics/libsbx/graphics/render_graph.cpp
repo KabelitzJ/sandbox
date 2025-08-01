@@ -14,12 +14,20 @@
 namespace sbx::graphics {
 
 attachment::attachment(const utility::hashed_string& name, type type, const math::color& clear_color, const graphics::format format, const graphics::blend_state& blend_state, const graphics::address_mode address_mode) noexcept
-: _name{std::move(name)}, 
+: _name{name}, 
   _type{type},
   _clear_color{clear_color},
   _format{format}, 
   _address_mode{address_mode},
   _blend_state{blend_state} { }
+
+attachment::attachment(const utility::hashed_string& name, type type, const math::color& clear_color, const graphics::format format, const graphics::address_mode address_mode) noexcept
+: _name{name}, 
+  _type{type},
+  _clear_color{clear_color},
+  _format{format}, 
+  _address_mode{address_mode},
+  _blend_state{} { }
 
 auto attachment::name() const noexcept -> const utility::hashed_string& {
   return _name;
@@ -86,8 +94,8 @@ graphics_pass::graphics_pass(graph_base& graph, graphics_node& node)
 compute_pass::compute_pass(compute_node& node)
 : _node{node} { }
 
-auto context::graphics_pass(const utility::hashed_string& name) -> detail::graphics_pass {
-  return detail::graphics_pass{_graph, _graph.emplace_back<detail::graphics_node>(name)};
+auto context::graphics_pass(const utility::hashed_string& name, const viewport& viewport) -> detail::graphics_pass {
+  return detail::graphics_pass{_graph, _graph.emplace_back<detail::graphics_node>(name, viewport)};
 }
 
 auto context::compute_pass(const utility::hashed_string& name) -> detail::compute_pass {

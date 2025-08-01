@@ -32,7 +32,15 @@ namespace demo {
 
 renderer::renderer()
 : _clear_color{sbx::math::color::white()} {
-  auto [deferred, transparency, resolve, post, editor] = create_graph(
+  auto [shadow, deferred, transparency, resolve, post, editor] = create_graph(
+    [&](sbx::graphics::render_graph::context& context) -> sbx::graphics::render_graph::graphics_pass {
+      auto shadow_pass = context.graphics_pass("shadow", sbx::graphics::viewport::fixed(4096u, 4096u));
+
+      shadow_pass.produces("shadow_depth", sbx::graphics::attachment::type::depth);
+      shadow_pass.produces("shadow", sbx::graphics::attachment::type::image, sbx::math::color{1.0f, 0.0f, 0.0f, 1.0}, sbx::graphics::format::r32_sfloat, sbx::graphics::address_mode::clamp_to_edge);
+
+      return shadow_pass;
+    },
     [&](sbx::graphics::render_graph::context& context) -> sbx::graphics::render_graph::graphics_pass {
       auto deferred_pass = context.graphics_pass("deferred");
 
@@ -88,7 +96,7 @@ renderer::renderer()
         .color_write_mask = sbx::graphics::color_component::r | sbx::graphics::color_component::g | sbx::graphics::color_component::b | sbx::graphics::color_component::a
       };
 
-      resolve_pass.uses("albedo", "position", "normal", "material", "object_id", "accum", "revealage");
+      resolve_pass.uses("shadow", "albedo", "position", "normal", "material", "object_id", "accum", "revealage");
 
       resolve_pass.produces("depth", sbx::graphics::attachment::type::depth);
       resolve_pass.produces("resolve", sbx::graphics::attachment::type::image, _clear_color, sbx::graphics::format::r32g32b32a32_sfloat, resolve_blend);
@@ -117,6 +125,9 @@ renderer::renderer()
 
   add_draw_list<sbx::models::static_mesh_draw_list>("static_mesh");
 
+  // Shadow pass
+  add_subrenderer<sbx::shadows::shadow_subrenderer>("demo/assets/shaders/shadow", shadow);
+
   // Deferred rendering pass
   add_subrenderer<sbx::models::opaque_static_mesh_subrenderer>("demo/assets/shaders/deferred_static_opaque", deferred);
   add_subrenderer<sbx::models::masked_static_mesh_subrenderer>("demo/assets/shaders/deferred_static_masked", deferred);
@@ -128,6 +139,7 @@ renderer::renderer()
   
   // Resolve pass
   auto resolve_opaque_attachment_names = std::vector<std::pair<std::string, std::string>>{
+    {"shadow_image", "shadow"},
     {"albedo_image", "albedo"},
     {"position_image", "position"},
     {"normal_image", "normal"},

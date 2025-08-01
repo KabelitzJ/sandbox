@@ -131,7 +131,6 @@ private:
 
   auto _submit_mesh(const scenes::node node, const scenes::static_mesh& static_mesh) -> void {
     auto& assets_module = core::engine::get_module<assets::assets_module>();
-    auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
     auto& scene = scenes_module.scene();
@@ -191,7 +190,6 @@ private:
 
   auto _build_draw_commands(std::unordered_map<math::uuid, std::vector<std::vector<instance_data>>>& submesh_instances, const utility::hashed_string& name, const utility::hashed_string& draw_commands_name, const utility::hashed_string& instances_name) -> void {
     auto& assets_module = core::engine::get_module<assets::assets_module>();
-    auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
     auto draw_commands = std::vector<VkDrawIndexedIndirectCommand>{};
     auto instance_data = std::vector<models::instance_data>{};

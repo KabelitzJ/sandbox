@@ -46,7 +46,7 @@ public:
 
     scene.add_mesh<sbx::models::mesh>("terrain", _generate_plane(chunk_size, sbx::math::vector2u{5u, 5u}));
 
-    scene.add_image("prototype", "demo/assets/textures/prototype_black.png");
+    scene.add_image("prototype", "demo/assets/textures/prototype_white.png");
 
     const auto grid = sbx::math::vector2{20.0f, 20.0f};
 

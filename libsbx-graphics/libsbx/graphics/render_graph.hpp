@@ -112,6 +112,8 @@ public:
 
   attachment(const utility::hashed_string& name, type type, const math::color& clear_color = math::color::black(), const format format = format::r8g8b8a8_unorm, const graphics::blend_state& blend_state = graphics::blend_state{}, const address_mode address_mode = address_mode::repeat) noexcept;
 
+  attachment(const utility::hashed_string& name, type type, const math::color& clear_color, const format format, const address_mode address_mode) noexcept;
+
   auto name() const noexcept -> const utility::hashed_string&;
 
   auto image_type() const noexcept -> type;
@@ -248,7 +250,7 @@ class context {
 
 public:
 
-  auto graphics_pass(const utility::hashed_string& name) -> detail::graphics_pass;
+  auto graphics_pass(const utility::hashed_string& name, const viewport& viewport = viewport::window()) -> detail::graphics_pass;
 
   auto compute_pass(const utility::hashed_string& name) -> detail::compute_pass;
 

@@ -21,6 +21,10 @@ public:
     return viewport{type::fixed, math::vector2f{1.0f, 1.0f}, math::vector2i{0, 0}, size};
   }
 
+  static auto fixed(const std::uint32_t width, const std::uint32_t height) -> viewport {
+    return viewport{type::fixed, math::vector2f{1.0f, 1.0f}, math::vector2i{0, 0}, math::vector2u{width, height}};
+  }
+
   static auto window() -> viewport {
     return viewport{type::window, math::vector2f{1.0f, 1.0f}, math::vector2i{0, 0}, std::nullopt};
   }

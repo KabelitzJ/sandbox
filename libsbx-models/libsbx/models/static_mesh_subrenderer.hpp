@@ -146,7 +146,6 @@ public:
 
     SBX_SCOPED_TIMER("static_mesh_subrenderer");
 
-    auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
     auto& assets_module = core::engine::get_module<assets::assets_module>();
 
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
@@ -216,9 +215,9 @@ private:
 
   pipeline _pipeline;
 
+  graphics::push_handler _push_handler;
   graphics::descriptor_handler _scene_descriptor_handler;
   graphics::uniform_handler _scene_uniform_handler;
-  graphics::push_handler _push_handler;
 
 }; // class mesh_subrenderer
 

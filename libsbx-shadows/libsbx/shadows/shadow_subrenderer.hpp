@@ -39,26 +39,50 @@
 
 #include <libsbx/models/mesh.hpp>
 #include <libsbx/models/vertex3d.hpp>
-
-// #include <libsbx/shadows/vertex3d.hpp>
-#include <libsbx/shadows/pipeline.hpp>
+#include <libsbx/models/static_mesh_draw_list.hpp>
 
 namespace sbx::shadows {
 
 class shadow_subrenderer : public graphics::subrenderer {
 
+  class pipeline : public graphics::graphics_pipeline {
+
+    inline static const auto pipeline_definition = graphics::pipeline_definition{
+      .depth = graphics::depth::read_write,
+      .uses_transparency = false,
+      .rasterization_state = graphics::rasterization_state{
+        .polygon_mode = graphics::polygon_mode::fill,
+        .cull_mode = graphics::cull_mode::front,
+        .front_face = graphics::front_face::counter_clockwise
+      }
+    };
+
+    using base = graphics::graphics_pipeline;
+
+  public:
+
+    pipeline(const std::filesystem::path& path, const graphics::render_graph::graphics_pass& pass)
+    : base{path, pass, pipeline_definition} { }
+
+    ~pipeline() override = default;
+
+  }; // class pipeline
+
 public:
 
   shadow_subrenderer(const std::filesystem::path& path, const graphics::render_graph::graphics_pass& pass)
   : graphics::subrenderer{pass},
-    _pipeline{path, pass} { }
+    _pipeline{path, pass},
+    _push_handler{_pipeline},
+    _scene_descriptor_handler{_pipeline, 0u} { }
 
   ~shadow_subrenderer() override = default;
 
   auto render(graphics::command_buffer& command_buffer) -> void override {
+    SBX_SCOPED_TIMER("shadow_subrenderer");
+
     auto& assets_module = core::engine::get_module<assets::assets_module>();
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
-    auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
     auto& scene = scenes_module.scene();
 
@@ -66,122 +90,41 @@ public:
 
     _scene_uniform_handler.push("time", std::fmod(core::engine::time().value() * 0.5f, 1.0f));
 
-    for (auto entry = _uniform_data.begin(); entry != _uniform_data.end();) {
-      if (_used_uniforms.contains(entry->first)) {
-        ++entry;
-      } else {
-        entry = _uniform_data.erase(entry);
-      }
-    }
-
-    _used_uniforms.clear();
-    _static_meshes.clear();
-    _images.clear();
-
-    auto mesh_query = scene.query<scenes::static_mesh>();
-
-    for (const auto node : mesh_query) {
-      _submit_mesh(node);
-    }
+    auto& draw_list = pass().draw_list("static_mesh");
 
     _pipeline.bind(command_buffer);
+
+    _scene_descriptor_handler.push("uniform_scene", _scene_uniform_handler);
     
-    for (const auto& [key, data] : _static_meshes) {
+    if (!_scene_descriptor_handler.update(_pipeline)) {
+      return;
+    }
 
-      auto [entry, inserted] = _uniform_data.try_emplace(key, 1u);
+    _scene_descriptor_handler.bind_descriptors(command_buffer);
 
-      auto& descriptor_handler = entry->second.descriptor_handler;
-      auto& storage_handler = entry->second.storage_handler;
+    _push_handler.push("transform_data_buffer", draw_list->buffer(models::static_mesh_draw_list::transform_data_buffer_name).address());
+    _push_handler.push("instance_data_buffer", draw_list->buffer(models::static_mesh_draw_list::opaque_instance_data_buffer_name).address());
 
-      storage_handler.push(std::span<const per_mesh_data>{data});
-
-      auto& mesh = assets_module.get_asset<models::mesh>(key.mesh_id);
-
-      descriptor_handler.push("uniform_scene", _scene_uniform_handler);
-      descriptor_handler.push("buffer_mesh_data", storage_handler);
-      descriptor_handler.push("images_sampler", _images_sampler);
-      descriptor_handler.push("images", _images);
-
-
-      if (!descriptor_handler.update(_pipeline)) {
-        continue;
-      }
-
-      descriptor_handler.bind_descriptors(command_buffer);
-
+    for (const auto& [mesh_id, range] : draw_list->draw_ranges("opaque")) {
+      auto& mesh = assets_module.get_asset<models::mesh>(mesh_id);
+      
       mesh.bind(command_buffer);
-      mesh.render_submesh(command_buffer, key.submesh_index, static_cast<std::uint32_t>(data.size()));
+      
+      _push_handler.push("vertex_buffer", mesh.address());
+
+      _push_handler.bind(command_buffer);
+
+      command_buffer.draw_indexed_indirect(draw_list->buffer(models::static_mesh_draw_list::opaque_draw_commands_buffer_name), range.offset, range.count);
     }
   }
 
 private:
 
-  auto _submit_mesh(const scenes::node node) -> void {
-    auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
-    auto& scene = scenes_module.scene();
-
-    const auto& static_mesh = scene.get_component<scenes::static_mesh>(node);
-    const auto mesh_id = static_mesh.mesh_id();
-
-    // for (const auto& submesh : static_mesh.submeshes()) {
-    //   const auto key = mesh_key{mesh_id, submesh.index};
-
-    //   _used_uniforms.insert(key);
-
-    //   auto model = scene.world_transform(node);
-      
-    //   const auto albedo_image_index = submesh.albedo_texture ? _images.push_back(submesh.albedo_texture) : graphics::separate_image2d_array::max_size;
-
-    //   const auto image_indices = math::vector4{albedo_image_index, 0u, 0u, 0u};
-    //   auto material = math::vector4{submesh.material.metallic, submesh.material.roughness, submesh.material.flexibility, submesh.material.anchor_height};
-
-    //   _static_meshes[key].push_back(per_mesh_data{std::move(model), material, image_indices});
-    // }
-  }
-
-  struct uniform_data {
-    graphics::descriptor_handler descriptor_handler;
-    graphics::storage_handler storage_handler;
-  }; // struct uniform_data
-
-  struct mesh_key {
-    math::uuid mesh_id;
-    std::uint32_t submesh_index;
-  }; // struct mesh_key
-
-  struct per_mesh_data {
-    alignas(16) math::matrix4x4 model;
-    alignas(16) math::vector4 material;
-    alignas(16) math::vector4 image_indices;
-  }; // struct per_mesh_data
-
-  struct mesh_key_hash {
-    auto operator()(const mesh_key& key) const noexcept -> std::size_t {
-      auto seed = std::size_t{0};
-
-      utility::hash_combine(seed, key.mesh_id, key.submesh_index);
-
-      return seed;
-    }
-  }; // struct mesh_key_hash
-
-  struct mesh_key_equal {
-    auto operator()(const mesh_key& lhs, const mesh_key& rhs) const noexcept -> bool {
-      return lhs.mesh_id == rhs.mesh_id && lhs.submesh_index == rhs.submesh_index;
-    }
-  }; // struct mesh_key_equal
-
   pipeline _pipeline;
 
-  std::unordered_map<mesh_key, uniform_data, mesh_key_hash, mesh_key_equal> _uniform_data;
-  std::unordered_set<mesh_key, mesh_key_hash, mesh_key_equal> _used_uniforms;
-
-  std::unordered_map<mesh_key, std::vector<per_mesh_data>, mesh_key_hash, mesh_key_equal> _static_meshes;
-
+  graphics::push_handler _push_handler;
+  graphics::descriptor_handler _scene_descriptor_handler;
   graphics::uniform_handler _scene_uniform_handler;
-
-  graphics::separate_sampler _images_sampler;
-  graphics::separate_image2d_array _images;
 
 }; // class shadow_subrenderer
 
