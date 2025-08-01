@@ -118,15 +118,14 @@ renderer::renderer()
   add_draw_list<sbx::models::static_mesh_draw_list>("static_mesh");
 
   // Deferred rendering pass
-  add_subrenderer<sbx::scenes::skybox_subrenderer>("demo/assets/shaders/skybox", deferred);
   add_subrenderer<sbx::models::opaque_static_mesh_subrenderer>("demo/assets/shaders/deferred_static_opaque", deferred);
   add_subrenderer<sbx::models::masked_static_mesh_subrenderer>("demo/assets/shaders/deferred_static_masked", deferred);
   add_subrenderer<sbx::animations::skinned_mesh_subrenderer>("demo/assets/shaders/deferred_skinned_opaque", deferred);
   // add_subrenderer<sbx::scenes::grid_subrenderer>("demo/assets/shaders/grid", deferred);
-
+  
   // Transparency pass
   add_subrenderer<sbx::models::transparent_static_mesh_subrenderer>("demo/assets/shaders/deferred_static_transparent", transparency);
-
+  
   // Resolve pass
   auto resolve_opaque_attachment_names = std::vector<std::pair<std::string, std::string>>{
     {"albedo_image", "albedo"},
@@ -137,6 +136,8 @@ renderer::renderer()
   };
 
   add_subrenderer<sbx::post::resolve_opaque_filter>("demo/assets/shaders/resolve_opaque", resolve, std::move(resolve_opaque_attachment_names));
+
+  add_subrenderer<sbx::scenes::skybox_subrenderer>("demo/assets/shaders/skybox", resolve);
 
   auto resolve_transparent_attachment_names = std::vector<std::pair<std::string, std::string>>{
     {"accum_image", "accum"},

@@ -118,7 +118,7 @@ void main() {
   out_uv = in_uv;
 
   out_color = instance_data.tint;
-  out_material = instance_data.material.xyz;
+  out_material = instance_data.material.rgb;
 
   out_image_indices = image_indices;
   out_object_id = instance_data.selection.xy;

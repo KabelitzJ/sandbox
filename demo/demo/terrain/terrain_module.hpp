@@ -54,7 +54,7 @@ public:
 
     _node = scene.create_node("Terrain");
 
-    scene.add_material<sbx::scenes::material>("terrain", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 0.0f, 0.2f, scene.get_image("prototype"));
+    scene.add_material<sbx::scenes::material>("terrain", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 0.5f, 1.0f, scene.get_image("prototype"));
 
     for (auto y = 0u; y < grid.y(); ++y) {
       for (auto x = 0u; x < grid.x(); ++x) {
