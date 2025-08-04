@@ -3,19 +3,22 @@
 
 #include <optional>
 
+#include <libsbx/utility/enum.hpp>
+
 #include <libsbx/math/vector2.hpp>
 
 namespace sbx::graphics {
 
 class viewport {
-
-  enum class type {
-    fixed,
-    window,
-    dynamic
-  }; // enum class type
-
+  
 public:
+
+  enum class type : std::uint8_t {
+    fixed = utility::bit_v<0>,
+    window = utility::bit_v<1>,
+    dynamic = utility::bit_v<2>,
+    all = fixed | window | dynamic
+  }; // enum class type
 
   static auto fixed(const math::vector2u& size) -> viewport {
     return viewport{type::fixed, math::vector2f{1.0f, 1.0f}, math::vector2i{0, 0}, size};
@@ -30,7 +33,7 @@ public:
   }
 
   static auto dynamic() -> viewport {
-    throw std::runtime_error{"Dynamic viewport not implemented"};
+    return viewport{type::dynamic, math::vector2f{1.0f, 1.0f}, math::vector2i{0, 0}, std::nullopt};
   }
 
   auto scale() const noexcept -> const math::vector2f& {
@@ -69,6 +72,10 @@ public:
     return _type == type::dynamic;
   }
 
+  auto is_type(const type flags) const noexcept -> bool {
+    return utility::to_underlying(flags) & utility::to_underlying(_type);
+  }
+
 private:
 
   viewport(const type type, const math::vector2f& scale, const math::vector2i& offset, const std::optional<math::vector2u>& size = std::nullopt) noexcept
@@ -83,6 +90,10 @@ private:
   std::optional<math::vector2u> _size;
 
 }; // class viewport
+
+inline constexpr auto operator|(const viewport::type lhs, const viewport::type rhs) noexcept -> const viewport::type {
+  return utility::from_underlying<viewport::type>(utility::to_underlying(lhs) | utility::to_underlying(rhs));
+}
 
 class render_area {
 

@@ -24,13 +24,19 @@ graphics_module::graphics_module()
   _physical_device{std::make_unique<graphics::physical_device>(*_instance)},
   _logical_device{std::make_unique<graphics::logical_device>(*_physical_device)},
   _surface{std::make_unique<graphics::surface>(*_instance, *_physical_device, *_logical_device)},
-  _allocator{*_instance, *_physical_device, *_logical_device} {
+  _allocator{*_instance, *_physical_device, *_logical_device},
+  _is_framebuffer_resized{true},
+  _is_viewport_resized{true} {
   auto& devices_module = core::engine::get_module<devices::devices_module>();
 
   auto& window = devices_module.window();
 
   window.on_framebuffer_resized() += [this]([[maybe_unused]] const auto& event) {
     _is_framebuffer_resized = true;
+  };
+
+  _dynamic_size_callback = [this]() {
+    return math::vector2u{_surface->current_extent().width, _surface->current_extent().height};
   };
 }
 
@@ -102,6 +108,15 @@ auto graphics_module::update() -> void {
 
   if (_is_framebuffer_resized || _swapchain->is_outdated(_surface->current_extent())) {
     _recreate_swapchain();
+    return;
+  }
+
+  auto viewport = std::invoke(_dynamic_size_callback);
+
+  if (viewport != _viewport) {
+    _viewport = viewport;
+    _recreate_viewport();
+
     return;
   }
 
@@ -290,9 +305,14 @@ auto graphics_module::attachment(const std::string& name) const -> const descrip
 //   _current_frame = utility::fast_mod(_current_frame + 1, swapchain::max_frames_in_flight);
 // }
 
-auto graphics_module::_recreate_swapchain() -> void {
-  auto& devices_module = core::engine::get_module<devices::devices_module>();
+auto graphics_module::_recreate_viewport() -> void {
+  _logical_device->wait_idle();
 
+  _renderer->resize(viewport::type::dynamic);
+    _on_viewport_changed.emit(_viewport);
+}
+
+auto graphics_module::_recreate_swapchain() -> void {
   _logical_device->wait_idle();
 
   _swapchain = std::make_unique<graphics::swapchain>(_swapchain);
@@ -302,7 +322,11 @@ auto graphics_module::_recreate_swapchain() -> void {
   _recreate_command_buffers();
   _recreate_attachments();
 
-  _renderer->resize();
+  _viewport = std::invoke(_dynamic_size_callback);
+
+  _renderer->resize(viewport::type::window | viewport::type::dynamic);
+
+  _on_viewport_changed.emit(_viewport);
 
   _current_frame = 0;
   _is_framebuffer_resized = false;

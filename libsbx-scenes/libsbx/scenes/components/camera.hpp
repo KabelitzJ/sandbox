@@ -20,8 +20,10 @@
 
 #include <libsbx/core/engine.hpp>
 
-#include <libsbx/devices/devices_module.hpp>
-#include <libsbx/devices/window.hpp>
+// #include <libsbx/devices/devices_module.hpp>
+// #include <libsbx/devices/window.hpp>
+
+#include <libsbx/graphics/graphics_module.hpp>
 
 namespace sbx::scenes {
 
@@ -327,12 +329,10 @@ public:
     _far_plane{far_plane} {
     _update_projection();
 
-    auto& devices_module = core::engine::get_module<devices::devices_module>();
+    auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
-    auto& window = devices_module.window();
-
-    window.on_framebuffer_resized() += [this](const devices::framebuffer_resized_event& event) {
-      set_aspect_ratio(static_cast<std::float_t>(event.width) / static_cast<std::float_t>(event.height));
+    graphics_module.on_viewport_changed() += [this](const math::vector2u& event) {
+      set_aspect_ratio(static_cast<std::float_t>(event.x()) / static_cast<std::float_t>(event.y()));
     };
   }
 

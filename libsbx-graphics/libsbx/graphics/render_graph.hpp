@@ -291,7 +291,7 @@ public:
   graph_builder(graph_base& graph);
 
   virtual ~graph_builder() {
-    _clear_attachments();
+    _clear_all_attachments();
   }
 
   template <typename Callable>
@@ -315,7 +315,7 @@ public:
 
   auto build() -> void;
 
-  auto resize() -> void;
+  auto resize(const viewport::type flags) -> void;
 
   auto attachment(const std::string& name) const -> const descriptor&;
 
@@ -451,9 +451,11 @@ private:
 
   auto _update_viewports() -> void;
 
-  auto _clear_attachments() -> void;
+  auto _clear_all_attachments() -> void;
 
-  auto _create_attachments(const graphics_node& node) -> void;
+  auto _clear_attachments(const viewport::type flags) -> void;
+
+  auto _create_attachments(const viewport::type flags, const graphics_node& node) -> void;
 
   graph_base& _graph;
 

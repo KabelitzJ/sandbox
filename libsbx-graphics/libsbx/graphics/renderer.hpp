@@ -19,6 +19,7 @@
 #include <libsbx/graphics/subrenderer.hpp>
 #include <libsbx/graphics/render_graph.hpp>
 #include <libsbx/graphics/draw_list.hpp>
+#include <libsbx/graphics/viewport.hpp>
 
 namespace sbx::graphics {
 
@@ -48,8 +49,8 @@ public:
     }
   }
 
-  auto resize() -> void {
-    _graph.resize();
+  auto resize(const viewport::type flags) -> void {
+    _graph.resize(flags);
   }
 
   auto attachment(const std::string& name) const -> const descriptor& {

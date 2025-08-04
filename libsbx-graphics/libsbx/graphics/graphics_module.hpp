@@ -158,6 +158,14 @@ public:
     _dynamic_size_callback = std::forward<Callable>(callback);
   }
 
+  auto dynamic_viewport() const -> const math::vector2u& {
+    return _viewport;
+  }
+
+  auto on_viewport_changed() -> signals::signal<const math::vector2u&>& {
+    return _on_viewport_changed;
+  }
+
 private:
 
   static constexpr auto _access_mask_from_stage(VkPipelineStageFlagBits2 stage) -> VkAccessFlagBits2 {
@@ -186,6 +194,8 @@ private:
   // auto _end_render_pass(const utility::hashed_string& pass, graphics::command_buffer& command_buffer) -> void;
 
   auto _reset_render_stages() -> void;
+
+  auto _recreate_viewport() -> void;
 
   auto _recreate_swapchain() -> void;
 
@@ -313,6 +323,11 @@ private:
 
   std::uint32_t _current_frame{};
   bool _is_framebuffer_resized{};
+  bool _is_viewport_resized{};
+
+  math::vector2u _viewport{};
+
+  signals::signal<const math::vector2u&> _on_viewport_changed;
 
   core::delegate<math::vector2u()> _dynamic_size_callback;
 

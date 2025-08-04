@@ -228,13 +228,13 @@ auto graph_builder::build() -> void {
   });
 }
 
-auto graph_builder::resize() -> void {
+auto graph_builder::resize(const viewport::type flags) -> void {
   _update_viewports();
 
-  _clear_attachments();
+  _clear_attachments(flags);
 
   for (const auto& node : _graph._graphics_nodes) {
-    _create_attachments(node);
+    _create_attachments(flags, node);
   }
 }
 
@@ -256,13 +256,15 @@ auto graph_builder::_update_viewports() -> void {
   const auto& surface = graphics_module.surface();
   const auto surface_extent = math::vector2u{surface.current_extent().width, surface.current_extent().height};
 
+  const auto viewport_extent = graphics_module.dynamic_viewport();
+
   for (auto& node : _graph._graphics_nodes) {
     const auto& viewport = node._viewport;
     auto& render_area = node._render_area;
 
     render_area.set_offset(viewport.offset());
 
-    const auto size = viewport.size() ? *viewport.size() : surface_extent;
+    const auto size = viewport.is_fixed() ? *viewport.size() : (viewport.is_window() ? surface_extent : viewport_extent);
 
     render_area.set_extent(math::vector2u{viewport.scale() * size});
 
@@ -271,7 +273,7 @@ auto graph_builder::_update_viewports() -> void {
   }
 }
 
-auto graph_builder::_clear_attachments() -> void {
+auto graph_builder::_clear_all_attachments() -> void {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
   for (const auto& [key, handle] : _color_images) {
@@ -289,7 +291,57 @@ auto graph_builder::_clear_attachments() -> void {
   _attachment_states.clear();
 }
 
-auto graph_builder::_create_attachments(const graphics_node& node) -> void {
+auto graph_builder::_clear_attachments(const viewport::type flags) -> void {
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+  for (auto& node : _graph._graphics_nodes) {
+    const auto& viewport = node._viewport;
+
+    if (!viewport.is_type(flags) && !viewport.is_fixed()) {
+      continue;
+    }
+
+    for (const auto& attachment : node._outputs) {
+      switch (attachment.image_type()) {
+        case attachment::type::image: {
+          auto entry = _color_images.find(attachment.name());
+
+          if (entry != _color_images.end()) {
+            graphics_module.remove_resource<image2d>(entry->second);
+            _color_images.erase(entry);
+            _attachment_states.erase(attachment.name());
+          }
+
+          break;
+        }
+        case attachment::type::depth: {
+          auto entry = _depth_images.find(attachment.name());
+
+          if (entry != _depth_images.end()) {
+            graphics_module.remove_resource<depth_image>(entry->second);
+            _depth_images.erase(entry);
+            _attachment_states.erase(attachment.name());
+          }
+
+          break;
+        }
+        case attachment::type::storage: {
+          utility::logger<"graphics">::warn("Storage image attachments not implemented");
+          break;
+        }
+        case attachment::type::swapchain: {
+          _attachment_states.erase(attachment.name());
+          break;
+        }
+        default: {
+          throw utility::runtime_error{"Invalid image type '{}", utility::to_underlying(attachment.image_type())};
+        }
+      }
+    }
+  }
+}
+
+auto graph_builder::_create_attachments(const viewport::type flags, const graphics_node& node) -> void {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
   _pass_render_areas[node._name] = node._render_area;
