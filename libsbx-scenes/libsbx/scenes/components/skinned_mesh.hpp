@@ -11,6 +11,8 @@
 
 #include <libsbx/graphics/images/image2d.hpp>
 
+#include <libsbx/scenes/components/static_mesh.hpp>
+
 namespace sbx::scenes {
 
 struct animation_state {

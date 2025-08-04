@@ -76,6 +76,11 @@ application::application()
 
   scene.add_image("checkerboard", "demo/assets/textures/checkerboard.jpg");
 
+  scene.add_image("body_albedo", "demo/assets/textures/soldier/body_albedo.png");
+  scene.add_image("head_albedo", "demo/assets/textures/soldier/head_albedo.png");
+  scene.add_image("backpack_albedo", "demo/assets/textures/soldier/backpack_albedo.png");
+  scene.add_image("helmet_albedo", "demo/assets/textures/soldier/helmet_albedo.png");
+
   scene.add_cube_image("skybox", "demo/assets/skyboxes/stylized2");
 
   // Meshes
@@ -106,6 +111,10 @@ application::application()
   scene.add_mesh<sbx::models::mesh>("cube", "demo/assets/meshes/cube/cube.gltf");
   scene.add_mesh<sbx::models::mesh>("sphere", "demo/assets/meshes/sphere/sphere.gltf");
 
+  scene.add_mesh<sbx::models::mesh>("soldier", "demo/assets/meshes/soldier/soldier.gltf");
+
+  // const auto soldier_animation_id = assets_module.add_asset<sbx::animations::animation>("demo/assets/meshes/soldier/soldier.gltf", "mixamo.com");
+
   // Window
 
   auto& devices_module = sbx::core::engine::get_module<sbx::devices::devices_module>();
@@ -121,6 +130,49 @@ application::application()
   auto& terrain_module = sbx::core::engine::get_module<demo::terrain_module>();
 
   terrain_module.load_terrain_in_scene();
+
+  // Soldier
+
+  
+  scene.add_material<sbx::scenes::material>("soldier_body", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 0.5f, 1.0f, scene.get_image("body_albedo"));
+  scene.add_material<sbx::scenes::material>("soldier_head", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 0.5f, 1.0f, scene.get_image("head_albedo"));
+  scene.add_material<sbx::scenes::material>("soldier_backpack", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 0.5f, 1.0f, scene.get_image("backpack_albedo"));
+  scene.add_material<sbx::scenes::material>("soldier_helmet", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 0.5f, 1.0f, scene.get_image("helmet_albedo"));
+  
+  scene.add_material<sbx::scenes::material>("default", sbx::scenes::material_type::opaque, sbx::math::color::red(), 0.0f, 0.5f, 1.0f, scene.get_image("checkerboard"));
+  
+  auto soldier1 = scene.create_node("Soldier");
+
+  scene.add_component<sbx::scenes::static_mesh>(soldier1, scene.get_mesh("soldier"), std::vector<sbx::scenes::static_mesh::submesh>{{0, scene.get_material("soldier_backpack")}});
+
+  auto& soldier_transform = scene.get_component<sbx::math::transform>(soldier1);
+  soldier_transform.set_position(sbx::math::vector3{6.0f, 0.0f, -5.0f});
+  soldier_transform.set_scale(sbx::math::vector3{3.0f, 3.0f, 3.0f});
+
+  auto soldier2 = scene.create_node("Soldier2");
+
+  scene.add_component<sbx::scenes::static_mesh>(soldier2, scene.get_mesh("soldier"), std::vector<sbx::scenes::static_mesh::submesh>{{1, scene.get_material("soldier_body")}});
+
+  auto& soldier2_transform = scene.get_component<sbx::math::transform>(soldier2);
+  soldier2_transform.set_position(sbx::math::vector3{8.0f, 0.0f, -5.0f});
+  soldier2_transform.set_scale(sbx::math::vector3{3.0f, 3.0f, 3.0f});
+
+  auto soldier3 = scene.create_node("Soldier3");
+
+  scene.add_component<sbx::scenes::static_mesh>(soldier3, scene.get_mesh("soldier"), std::vector<sbx::scenes::static_mesh::submesh>{{2, scene.get_material("default")}});
+
+  auto& soldier3_transform = scene.get_component<sbx::math::transform>(soldier3);
+  soldier3_transform.set_position(sbx::math::vector3{10.0f, 0.0f, -5.0f});
+  soldier3_transform.set_scale(sbx::math::vector3{3.0f, 3.0f, 3.0f});
+
+  auto soldier4 = scene.create_node("Soldier4");
+
+  scene.add_component<sbx::scenes::static_mesh>(soldier4, scene.get_mesh("soldier"), std::vector<sbx::scenes::static_mesh::submesh>{{3, scene.get_material("default")}});
+
+  auto& soldier4_transform = scene.get_component<sbx::math::transform>(soldier4);
+  soldier4_transform.set_position(sbx::math::vector3{12.0f, 0.0f, -5.0f});
+  soldier4_transform.set_scale(sbx::math::vector3{3.0f, 3.0f, 3.0f});
+
 
   // Circling point lights
 
