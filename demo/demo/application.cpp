@@ -81,6 +81,10 @@ application::application()
   scene.add_image("backpack_albedo", "demo/assets/textures/soldier/backpack_albedo.png");
   scene.add_image("helmet_albedo", "demo/assets/textures/soldier/helmet_albedo.png");
 
+  scene.add_image("rust_albedo", "demo/assets/textures/rust/albedo.png");
+  scene.add_image("rust_normal", "demo/assets/textures/rust/normal.png");
+  scene.add_image("rust_mrao", "demo/assets/textures/rust/mrao.png");
+
   scene.add_cube_image("skybox", "demo/assets/skyboxes/stylized2");
 
   // Meshes
@@ -288,7 +292,7 @@ application::application()
 
   auto cube = scene.create_node("Cube");
 
-  scene.add_material<sbx::scenes::material>("grass3", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 0.5f, 1.0f, scene.get_image("grass3_albedo"), scene.get_image("grass3_normal"), scene.get_image("grass3_mrao"));
+  scene.add_material<sbx::scenes::material>("grass3", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 0.5f, 1.0f, scene.get_image("rust_albedo"), scene.get_image("rust_normal"), scene.get_image("rust_mrao"));
 
   scene.add_component<sbx::scenes::static_mesh>(cube, scene.get_mesh("cube"), scene.get_material("grass3"));
 
@@ -305,6 +309,22 @@ application::application()
   auto floor = scene.create_node("Floor");
   scene.add_component<sbx::physics::rigidbody>(floor, sbx::units::kilogram{0.0f}, true);
   scene.add_component<sbx::physics::collider>(floor, sbx::physics::box{sbx::math::vector3{-10.0f, -0.1f, -10.0f}, sbx::math::vector3{10.0f, 0.1f, 10.0f}});
+
+  for (auto y = 0; y < 5; ++y) {
+    for (auto x = 0; x < 5; ++x) {
+      auto sphere = scene.create_node(fmt::format("Sphere{}{}", x, y));
+
+      const auto material_name = fmt::format("sphere_{}_{}_material", x, y);
+
+      scene.add_material<sbx::scenes::material>(material_name, sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.2f * x, 0.2 * y, 1.0f);
+
+      scene.add_component<sbx::scenes::static_mesh>(sphere, scene.get_mesh("sphere"), scene.get_material(material_name));
+
+      auto& sphere_transform = scene.get_component<sbx::math::transform>(sphere);
+      sphere_transform.set_position(sbx::math::vector3{x * 3, y * 3 + 5, -15.0f});
+      sphere_transform.set_scale(sbx::math::vector3{1.0f, 1.0f, 1.0f});
+    }
+  }
 
   // Tank
 
