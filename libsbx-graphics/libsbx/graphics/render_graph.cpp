@@ -366,7 +366,7 @@ auto graph_builder::_create_attachments(const viewport::type flags, const graphi
         
         _color_images.emplace(attachment.name(), handle);
 
-        _attachment_states.emplace(attachment.name(), attachment_state{
+        _attachment_states.insert_or_assign(attachment.name(), attachment_state{
           .image = image.handle(),
           .view = image.view(),
           .current_layout = VK_IMAGE_LAYOUT_UNDEFINED,
@@ -377,7 +377,7 @@ auto graph_builder::_create_attachments(const viewport::type flags, const graphi
           .is_first_use = false
         });
 
-        _clear_values.emplace(attachment.name(), VkClearValue{
+        _clear_values.insert_or_assign(attachment.name(), VkClearValue{
           .color = {
             .float32 = {
               attachment.clear_color().r(), 
@@ -400,7 +400,7 @@ auto graph_builder::_create_attachments(const viewport::type flags, const graphi
         
         _depth_images.emplace(attachment.name(), handle);
 
-        _attachment_states.emplace(attachment.name(), attachment_state{
+        _attachment_states.insert_or_assign(attachment.name(), attachment_state{
           .image = image.handle(),
           .view = image.view(),
           .current_layout = VK_IMAGE_LAYOUT_UNDEFINED,
@@ -411,7 +411,7 @@ auto graph_builder::_create_attachments(const viewport::type flags, const graphi
           .is_first_use = false
         });
 
-        _clear_values.emplace(attachment.name(), VkClearValue{
+        _clear_values.insert_or_assign(attachment.name(), VkClearValue{
           .depthStencil {
             .depth = 1.0f,
             .stencil = 0
