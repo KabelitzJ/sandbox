@@ -37,10 +37,28 @@ renderer::renderer()
       auto shadow_pass = context.graphics_pass("shadow", sbx::graphics::viewport::fixed(2048u, 2048u));
 
       shadow_pass.produces("shadow_depth", sbx::graphics::attachment::type::depth);
-      shadow_pass.produces("shadow", sbx::graphics::attachment::type::image, sbx::math::color{1.0f, 0.0f, 0.0f, 1.0}, sbx::graphics::format::r32_sfloat, sbx::graphics::address_mode::clamp_to_edge);
+      shadow_pass.produces("shadow", sbx::graphics::attachment::type::image, sbx::math::color{1.0f, 1.0f, 0.0f, 1.0}, sbx::graphics::format::r32g32_sfloat, sbx::graphics::address_mode::clamp_to_edge);
 
       return shadow_pass;
     },
+    // [&](sbx::graphics::render_graph::context& context) -> sbx::graphics::render_graph::graphics_pass {
+    //   auto blur_h_shadow_pass = context.graphics_pass("blur_h_shadow", sbx::graphics::viewport::fixed(2048u, 2048u));
+
+    //   blur_h_shadow_pass.uses("shadow");
+
+    //   blur_h_shadow_pass.produces("blur_h_shadow", sbx::graphics::attachment::type::image, sbx::math::color{1.0f, 1.0f, 0.0f, 1.0}, sbx::graphics::format::r32g32_sfloat, sbx::graphics::address_mode::clamp_to_edge);
+
+    //   return blur_h_shadow_pass;
+    // },
+    // [&](sbx::graphics::render_graph::context& context) -> sbx::graphics::render_graph::graphics_pass {
+    //   auto blur_v_shadow_pass = context.graphics_pass("blur_v_shadow", sbx::graphics::viewport::fixed(2048u, 2048u));
+
+    //   blur_v_shadow_pass.uses("blur_h_shadow");
+
+    //   blur_v_shadow_pass.produces("blur_v_shadow", sbx::graphics::attachment::type::image, sbx::math::color{1.0f, 1.0f, 0.0f, 1.0}, sbx::graphics::format::r32g32_sfloat, sbx::graphics::address_mode::clamp_to_edge);
+
+    //   return blur_v_shadow_pass;
+    // },
     [&](sbx::graphics::render_graph::context& context) -> sbx::graphics::render_graph::graphics_pass {
       auto deferred_pass = context.graphics_pass("deferred");
 
@@ -127,6 +145,8 @@ renderer::renderer()
 
   // Shadow pass
   add_subrenderer<sbx::shadows::shadow_subrenderer>("demo/assets/shaders/shadow", shadow);
+  // add_subrenderer<sbx::post::blur_filter_gaussian_5>("demo/assets/shaders/blur", blur_h_shadow, "shadow", sbx::math::vector2{1.0f, 0.0f});
+  // add_subrenderer<sbx::post::blur_filter_gaussian_5>("demo/assets/shaders/blur", blur_v_shadow, "blur_h_shadow", sbx::math::vector2{0.0f, 1.0f});
 
   // Deferred rendering pass
   add_subrenderer<sbx::models::opaque_static_mesh_subrenderer>("demo/assets/shaders/deferred_static_opaque", deferred);

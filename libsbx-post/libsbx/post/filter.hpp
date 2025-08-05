@@ -17,23 +17,13 @@ namespace sbx::post {
 
 class filter : public graphics::subrenderer {
 
-  inline static const auto default_pipeline_definition = graphics::pipeline_definition{
-    .depth = graphics::depth::disabled,
-    .uses_transparency = false,
-    .rasterization_state = graphics::rasterization_state{
-      .polygon_mode = graphics::polygon_mode::fill,
-      .cull_mode = graphics::cull_mode::none,
-      .front_face = graphics::front_face::counter_clockwise
-    }
-  };
-
 public:
 
   using pipeline_type = graphics::graphics_pipeline;
 
-  filter(const std::filesystem::path& path, const graphics::render_graph::graphics_pass& pass, const graphics::pipeline_definition& pipeline_definition = default_pipeline_definition)
+  filter(const std::filesystem::path& path, const graphics::render_graph::graphics_pass& pass, const graphics::pipeline_definition& pipeline_definition = default_pipeline_definition, const VkSpecializationInfo* specialization_info = nullptr)
   : graphics::subrenderer{pass},
-    _pipeline{path, pass, pipeline_definition},
+    _pipeline{path, pass, pipeline_definition, specialization_info},
     _descriptor_handler{_pipeline, 0u} { }
 
   virtual ~filter() override = default;
@@ -80,6 +70,18 @@ public:
 
     return false;
   }
+
+protected:
+
+  inline static const auto default_pipeline_definition = graphics::pipeline_definition{
+    .depth = graphics::depth::disabled,
+    .uses_transparency = false,
+    .rasterization_state = graphics::rasterization_state{
+      .polygon_mode = graphics::polygon_mode::fill,
+      .cull_mode = graphics::cull_mode::none,
+      .front_face = graphics::front_face::counter_clockwise
+    }
+  };
 
 private:
 

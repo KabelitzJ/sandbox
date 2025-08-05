@@ -32,6 +32,13 @@ layout(set = 0, binding = 7) uniform sampler2D shadow_image;
 // === Constants ===
 const vec3 DEFAULT_F0 = vec3(0.04);
 
+mat4 BIAS_MATRIX = mat4(
+  0.5, 0.0, 0.0, 0.0,
+  0.0, 0.5, 0.0, 0.0,
+  0.0, 0.0, 0.5, 0.0,
+  0.5, 0.5, 0.5, 1.0
+);
+
 // === Fresnel Schlick Approximation ===
 vec3 fresnel_schlick(float cos_theta, vec3 f0) {
   return f0 + (1.0 - f0) * pow(1.0 - cos_theta, 5.0);
@@ -66,9 +73,8 @@ float geometry_smith(vec3 n, vec3 v, vec3 l, float roughness) {
 
 // === Shadow Calculation ===
 float calculate_shadow(vec3 world_position, vec3 normal) {
-  vec4 shadow_coord = scene.light_space * vec4(world_position, 1.0);
-  shadow_coord /= shadow_coord.w;
-  shadow_coord = shadow_coord * 0.5 + 0.5;
+  vec4 shadow_coord = BIAS_MATRIX * scene.light_space * vec4(world_position, 1.0);
+  vec3 normalized_shadow_coord = shadow_coord.xyz / shadow_coord.w;
 
   float bias = max(0.0005 * (1.0 - dot(normal, normalize(scene.light_direction))), 0.0001);
   float shadow = 0.0;
@@ -77,8 +83,8 @@ float calculate_shadow(vec3 world_position, vec3 normal) {
   for (int x = -1; x <= 1; ++x) {
     for (int y = -1; y <= 1; ++y) {
       vec2 offset = vec2(x, y) * texel_size;
-      float pcf_depth = texture(shadow_image, shadow_coord.xy + offset).r;
-      shadow += (shadow_coord.z - bias > pcf_depth) ? 0.0 : 1.0;
+      float pcf_depth = texture(shadow_image, normalized_shadow_coord.xy + offset).r;
+      shadow += (normalized_shadow_coord.z - bias > pcf_depth) ? 0.0 : 1.0;
     }
   }
 

@@ -188,10 +188,13 @@ public:
 
     static constexpr float z_mult = 10.0f;
 
-    const auto min_z = min.z() < 0.0f ? min.z() * z_mult : min.z() / z_mult;
-    const auto max_z = max.z() < 0.0f ? max.z() * z_mult : max.z() / z_mult;
+    // const auto min_z = min.z() < 0.0f ? min.z() * z_mult : min.z() / z_mult;
+    // const auto max_z = max.z() < 0.0f ? max.z() * z_mult : max.z() / z_mult;
 
-    auto light_projection = math::matrix4x4::orthographic(min.x(), max.x(), min.y(), max.y(), -max_z, -min_z);
+    const auto min_z = std::min(min.z() * z_mult, min.z() / z_mult);
+    const auto max_z = std::max(max.z() * z_mult, max.z() / z_mult);
+
+    auto light_projection = math::matrix4x4::orthographic(min.x() - 10.0f, max.x() + 10.0f, min.y() - 10.0f, max.y() + 10.0f, -max_z, -min_z);
 
     return light_projection * light_view;
   }
