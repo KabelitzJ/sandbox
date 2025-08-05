@@ -108,6 +108,10 @@ public:
     return _components.data();
   }
 
+  constexpr auto data() const noexcept -> const value_type* {
+    return _components.data();
+  }
+
   [[nodiscard]] constexpr auto operator[](size_type index) noexcept -> reference {
     return _components[index];
   }

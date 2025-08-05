@@ -82,6 +82,10 @@ public:
     return _value;
   }
 
+  constexpr auto data() noexcept -> value_type* {
+    return &_value;
+  }
+
 private:
 
   value_type _value{};
@@ -216,6 +220,10 @@ public:
 
   constexpr operator value_type() const noexcept {
     return _value;
+  }
+
+  constexpr auto data() noexcept -> value_type* {
+    return &_value;
   }
 
 private:

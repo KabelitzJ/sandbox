@@ -6,6 +6,7 @@
 #include <imgui.h>
 #include <imnodes.h>
 #include <implot.h>
+// #include <ImGuizmo.h>
 
 #include <libsbx/editor/bindings/imgui.hpp>
 
@@ -206,7 +207,13 @@ public:
 
     ImGui_ImplVulkan_NewFrame();
     ImGui_ImplGlfw_NewFrame();
+
     ImGui::NewFrame();
+
+    // ImGuizmo::BeginFrame();
+
+    // ImGuizmo::SetDrawlist();
+    // ImGuizmo::SetRect(0, 0, ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y);
 
     _setup_dockspace();
     _setup_windows();
@@ -768,6 +775,39 @@ private:
     {
       ImGui::Begin("Variables");
 
+      auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
+
+      auto& scene = scenes_module.scene();
+
+      auto camera_node = scene.camera();
+
+      auto& global_light = scene.light();
+
+      if (ImGui::CollapsingHeader("Global Light", ImGuiTreeNodeFlags_DefaultOpen)) {
+        ImGui::Text("Color");
+
+        ImGui::PushItemWidth(200.0f);
+        ImGui::ColorPicker4("##color_picker", &global_light.color().r(), ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel | ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoSidePreview);
+        ImGui::PopItemWidth();
+
+        // auto direction = global_light.direction();
+
+        // static auto sun_angle = 45.0f * std::numbers::pi_v<std::float_t> / static_cast<std::float_t>(180);
+        static auto sun_angle = math::to_radians(math::degree{70.0f});
+
+        ImGui::Text("Sun Angle");
+        ImGui::SliderAngle("##sun_angle", sun_angle.data(), 0.0f, 180.0f);
+
+        // Compute direction from angle
+        const auto x = math::cos(sun_angle + math::to_radians(math::degree{180.0f}));
+        const auto y = math::sin(sun_angle + math::to_radians(math::degree{180.0f}));
+        const auto z = -0.5f;
+
+        const auto direction = math::vector3::normalized(math::vector3{x, y, z});
+
+        global_light.set_direction(direction);
+      }
+
       auto& settings = core::engine::settings();
 
       settings.for_each([](const auto& group_name, auto& group) {
@@ -1035,12 +1075,43 @@ private:
     {
       ImGui::Begin("Scene");
 
-      auto current_frame = graphics_module.current_frame();
+      // ImGuizmo::SetDrawlist();
+
+      // const auto window_position = ImGui::GetWindowPos();
+      // const auto window_size = ImGui::GetWindowSize();
+
+      // ImGuizmo::SetRect(window_position.x, window_position.y, window_size.x, window_size.y);
+
       auto available_size = ImGui::GetContentRegionAvail();
 
       ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{0, 0});
       ImGui::Image(reinterpret_cast<ImTextureID>(_descriptor_handler.descriptor_set()), available_size);
       ImGui::PopStyleVar();
+
+      // auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
+
+      // auto& scene = scenes_module.scene();
+
+      // auto camera_node = scene.camera();
+
+      // auto& global_light = scene.light();
+
+      // auto direction = math::vector3::normalized(global_light.direction());
+
+      // const auto origin = math::vector3::zero;
+      // const auto up = math::vector3::up;
+
+      // auto light_matrix = math::matrix4x4::inverted(math::matrix4x4::look_at(origin, origin + direction, up));
+
+      // const auto& camera = scene.get_component<scenes::camera>(camera_node);
+      // const auto& camera_transform = scene.get_component<math::transform>(camera_node);
+
+      // const auto camera_view = math::matrix4x4::inverted(camera_transform.as_matrix());
+      // const auto camera_projection = camera.projection(0.1f, 100.0f);
+
+      // ImGuizmo::Manipulate(camera_view.data(), camera_projection.data(), ImGuizmo::ROTATE, ImGuizmo::WORLD, light_matrix.data());
+
+      // global_light.set_direction(-math::vector3{light_matrix[2]});
 
       if (ImGui::IsItemHovered()) {
         ImGuiIO& io = ImGui::GetIO();

@@ -60,6 +60,14 @@ public:
 
   constexpr auto row(const size_type row) const noexcept -> basic_vector<Columns, value_type>;
 
+  constexpr auto data() noexcept -> value_type* {
+    return _columns[0].data();
+  }
+
+  constexpr auto data() const noexcept -> const value_type* {
+    return _columns[0].data();
+  }
+
 protected:
 
   template<scalar Other>

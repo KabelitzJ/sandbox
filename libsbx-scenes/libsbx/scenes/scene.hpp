@@ -188,9 +188,6 @@ public:
 
     static constexpr float z_mult = 10.0f;
 
-    // const auto min_z = min.z() < 0.0f ? min.z() * z_mult : min.z() / z_mult;
-    // const auto max_z = max.z() < 0.0f ? max.z() * z_mult : max.z() / z_mult;
-
     const auto min_z = std::min(min.z() * z_mult, min.z() / z_mult);
     const auto max_z = std::max(max.z() * z_mult, max.z() / z_mult);
 
