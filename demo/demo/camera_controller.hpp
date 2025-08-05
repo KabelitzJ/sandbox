@@ -30,7 +30,7 @@ public:
     _max_tilt_angle{sbx::math::degree{89}},
     _target{sbx::math::vector3{0.0f, 0.0f, 0.0f}},
     _zoom{30.0f},
-    _min_zoom{10.0f},
+    _min_zoom{3.0f},
     _max_zoom{200.0f} { }
 
   auto update() -> void {
