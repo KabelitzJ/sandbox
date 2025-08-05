@@ -151,7 +151,7 @@ public:
 
     // auto frustum_corners_world = std::array<math::vector3, 8>{};
 
-    const auto frustum_corners_clip = std::array<math::vector4, 8>{
+    static constexpr auto frustum_corners_clip = std::array<math::vector4, 8u>{
       math::vector4{-1, -1, -1, 1},
       math::vector4{ 1, -1, -1, 1},
       math::vector4{ 1,  1, -1, 1},
@@ -159,7 +159,7 @@ public:
       math::vector4{-1, -1,  1, 1},
       math::vector4{ 1, -1,  1, 1},
       math::vector4{ 1,  1,  1, 1},
-      math::vector4{-1,  1,  1, 1},
+      math::vector4{-1,  1,  1, 1}
     };
 
     const auto to_world_transform = [&inverse_view_projection](const auto& corner) {
@@ -170,13 +170,7 @@ public:
 
     const auto frustum_corners_world = frustum_corners_clip | ranges::views::transform(to_world_transform) | ranges::to<std::vector>();
 
-    for (int i = 0; i < 8; ++i) {
-      utility::logger<"scenes">::debug("corner[{}]: {}", i, frustum_corners_world[i]);
-    }
-
     const auto center = std::accumulate(frustum_corners_world.begin(), frustum_corners_world.end(), math::vector3::zero) / 8.0f;
-
-    utility::logger<"scenes">::debug("center: {}", center);
 
     const auto light_position = center - _light.direction() * 20.0f; // Move back along light dir
     const auto light_view = math::matrix4x4::look_at(light_position, center, math::vector3::up);
@@ -190,21 +184,16 @@ public:
       };
     };
 
-    const auto [min, max] = std::accumulate(frustum_corners_world.begin(), frustum_corners_world.end(), std::pair{math::vector3{std::numeric_limits<std::float_t>::max()}, math::vector3{-std::numeric_limits<std::float_t>::max()}}, min_max_transform);
+    const auto [min, max] = std::accumulate(frustum_corners_world.begin(), frustum_corners_world.end(), std::pair{math::vector3{std::numeric_limits<std::float_t>::max()}, math::vector3{std::numeric_limits<std::float_t>::lowest()}}, min_max_transform);
 
-    utility::logger<"scenes">::debug("min: {} max: {}", min, max);
+    static constexpr float z_mult = 10.0f;
 
-    auto light_projection = math::matrix4x4::orthographic(min.x(), max.x(), min.y(), max.y(), -max.z(), -min.z());
-    // const auto light_projection = math::matrix4x4::orthographic(-40.0f, 40.0f, -40.0f, 40.0f, 0.1f, 300.0f);
+    const auto min_z = min.z() < 0.0f ? min.z() * z_mult : min.z() / z_mult;
+    const auto max_z = max.z() < 0.0f ? max.z() * z_mult : max.z() / z_mult;
+
+    auto light_projection = math::matrix4x4::orthographic(min.x(), max.x(), min.y(), max.y(), -max_z, -min_z);
 
     return light_projection * light_view;
-
-    // const auto position = _light.direction() * -20.0f;
-
-    // const auto light_view = math::matrix4x4::look_at(position, position + _light.direction() * 20.0f, math::vector3::up);
-    // const auto light_projection = math::matrix4x4::orthographic(-40.0f, 40.0f, -40.0f, 40.0f, 0.1f, 300.0f);
-
-    // return light_projection * light_view;
   }
 
   auto find_node(const scenes::id& id) -> node_type {
