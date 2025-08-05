@@ -8,6 +8,9 @@
 #include <vector>
 #include <typeindex>
 #include <filesystem>
+#include <numbers>
+#include <algorithm>
+#include <ranges>
 
 #include <range/v3/all.hpp>
 
@@ -16,6 +19,7 @@
 #include <libsbx/assets/assets_module.hpp>
 
 #include <libsbx/utility/hashed_string.hpp>
+#include <libsbx/utility/iterator.hpp>
 
 #include <libsbx/containers/octree.hpp>
 
@@ -42,6 +46,7 @@
 #include <libsbx/scenes/components/selection_tag.hpp>
 #include <libsbx/scenes/components/tag.hpp>
 #include <libsbx/scenes/components/hierarchy.hpp>
+#include <libsbx/scenes/components/camera.hpp>
 
 namespace sbx::scenes {
 
@@ -136,12 +141,70 @@ public:
   }
 
   auto light_space() -> math::matrix4x4 {
-    const auto position = _light.direction() * -20.0f;
+    const auto& camera = get_component<scenes::camera>(_camera);
+    const auto& camera_transform = get_component<math::transform>(_camera);
 
-    const auto view = math::matrix4x4::look_at(position, position + _light.direction() * 20.0f, math::vector3::up);
-    const auto projection = math::matrix4x4::orthographic(-40.0f, 40.0f, -40.0f, 40.0f, 0.1f, 300.0f);
+    const auto camera_view = math::matrix4x4::inverted(camera_transform.as_matrix());
+    const auto camera_projection = camera.projection(0.1f, 100.0f);
 
-    return projection * view;
+    const auto inverse_view_projection = math::matrix4x4::inverted(camera_projection * camera_view);
+
+    // auto frustum_corners_world = std::array<math::vector3, 8>{};
+
+    const auto frustum_corners_clip = std::array<math::vector4, 8>{
+      math::vector4{-1, -1, -1, 1},
+      math::vector4{ 1, -1, -1, 1},
+      math::vector4{ 1,  1, -1, 1},
+      math::vector4{-1,  1, -1, 1},
+      math::vector4{-1, -1,  1, 1},
+      math::vector4{ 1, -1,  1, 1},
+      math::vector4{ 1,  1,  1, 1},
+      math::vector4{-1,  1,  1, 1},
+    };
+
+    const auto to_world_transform = [&inverse_view_projection](const auto& corner) {
+      const auto frustum_corner = inverse_view_projection * corner;
+
+      return math::vector3{frustum_corner} / frustum_corner.w();
+    };
+
+    const auto frustum_corners_world = frustum_corners_clip | ranges::views::transform(to_world_transform) | ranges::to<std::vector>();
+
+    for (int i = 0; i < 8; ++i) {
+      utility::logger<"scenes">::debug("corner[{}]: {}", i, frustum_corners_world[i]);
+    }
+
+    const auto center = std::accumulate(frustum_corners_world.begin(), frustum_corners_world.end(), math::vector3::zero) / 8.0f;
+
+    utility::logger<"scenes">::debug("center: {}", center);
+
+    const auto light_position = center - _light.direction() * 20.0f; // Move back along light dir
+    const auto light_view = math::matrix4x4::look_at(light_position, center, math::vector3::up);
+
+    const auto min_max_transform = [&light_view](const auto& bounds, const auto& corner) {
+      const auto corner_light_space = light_view * math::vector4(corner, 1.0f);
+
+      return std::pair{
+        math::vector3::min(bounds.first, math::vector3(corner_light_space)),
+        math::vector3::max(bounds.second, math::vector3(corner_light_space))
+      };
+    };
+
+    const auto [min, max] = std::accumulate(frustum_corners_world.begin(), frustum_corners_world.end(), std::pair{math::vector3{std::numeric_limits<std::float_t>::max()}, math::vector3{-std::numeric_limits<std::float_t>::max()}}, min_max_transform);
+
+    utility::logger<"scenes">::debug("min: {} max: {}", min, max);
+
+    auto light_projection = math::matrix4x4::orthographic(min.x(), max.x(), min.y(), max.y(), -max.z(), -min.z());
+    // const auto light_projection = math::matrix4x4::orthographic(-40.0f, 40.0f, -40.0f, 40.0f, 0.1f, 300.0f);
+
+    return light_projection * light_view;
+
+    // const auto position = _light.direction() * -20.0f;
+
+    // const auto light_view = math::matrix4x4::look_at(position, position + _light.direction() * 20.0f, math::vector3::up);
+    // const auto light_projection = math::matrix4x4::orthographic(-40.0f, 40.0f, -40.0f, 40.0f, 0.1f, 300.0f);
+
+    // return light_projection * light_view;
   }
 
   auto find_node(const scenes::id& id) -> node_type {

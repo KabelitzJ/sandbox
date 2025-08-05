@@ -373,6 +373,10 @@ public:
     return _projection;
   }
 
+  auto projection(const std::float_t near, const std::float_t far) const noexcept -> math::matrix4x4 {
+    return math::matrix4x4::perspective(_field_of_view, _aspect_ratio, near, far);
+  }
+
   auto view_frustum(const math::matrix4x4& view) const noexcept -> frustum {
     return frustum{_projection * view};
   }

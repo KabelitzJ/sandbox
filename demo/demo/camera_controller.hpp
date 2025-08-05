@@ -109,7 +109,7 @@ public:
 
     auto scroll = sbx::devices::input::scroll_delta();
 
-    static constexpr auto base_scroll_speed = 5.0f;
+    static constexpr auto base_scroll_speed = 2.0f;
     static constexpr auto zoom_influence = 0.2f; // smaller = less influence
 
     const auto offset = base_scroll_speed * std::pow(_zoom, zoom_influence) * scroll.y();

@@ -20,7 +20,6 @@
 #include <libsbx/graphics/buffers/storage_buffer.hpp>
 
 #include <libsbx/graphics/images/image2d.hpp>
-#include <libsbx/graphics/images/image2d_array.hpp>
 #include <libsbx/graphics/images/depth_image.hpp>
 #include <libsbx/graphics/images/cube_image.hpp>
 #include <libsbx/graphics/images/separate_sampler.hpp>
@@ -166,7 +165,7 @@ graphics_pipeline::graphics_pipeline(const std::filesystem::path& path, const re
           break;
         }
         case shader::data_type::sampler2d_array: {
-          descriptor_set_layout_binding[uniform.binding()] = image2d_array::create_descriptor_set_layout_binding(uniform.binding(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, uniform.stage_flags());
+          descriptor_set_layout_binding[uniform.binding()] = image2d::create_descriptor_set_layout_binding(uniform.binding(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, uniform.stage_flags());
           break;
         }
         case shader::data_type::sampler_cube: {

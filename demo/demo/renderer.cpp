@@ -34,7 +34,7 @@ renderer::renderer()
 : _clear_color{sbx::math::color::white()} {
   auto [shadow, deferred, transparency, resolve, post, editor] = create_graph(
     [&](sbx::graphics::render_graph::context& context) -> sbx::graphics::render_graph::graphics_pass {
-      auto shadow_pass = context.graphics_pass("shadow", sbx::graphics::viewport::fixed(4096u, 4096u));
+      auto shadow_pass = context.graphics_pass("shadow", sbx::graphics::viewport::fixed(2048u, 2048u));
 
       shadow_pass.produces("shadow_depth", sbx::graphics::attachment::type::depth);
       shadow_pass.produces("shadow", sbx::graphics::attachment::type::image, sbx::math::color{1.0f, 0.0f, 0.0f, 1.0}, sbx::graphics::format::r32_sfloat, sbx::graphics::address_mode::clamp_to_edge);
