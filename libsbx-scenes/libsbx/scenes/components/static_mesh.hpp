@@ -39,15 +39,15 @@ public:
     math::uuid material;
   }; // struct submesh
 
-  static_mesh(math::uuid mesh_id, math::uuid material)
+  static_mesh(const math::uuid mesh_id, const math::uuid material)
   : _mesh_id{mesh_id},
     _submeshes{{0, material}} { }
 
-  static_mesh(math::uuid mesh_id, const std::vector<submesh>& submeshes)
+  static_mesh(const math::uuid mesh_id, const std::vector<submesh>& submeshes)
   : _mesh_id{mesh_id},
     _submeshes{submeshes} { }
 
-  static_mesh(math::uuid mesh_id, std::initializer_list<submesh> submeshes)
+  static_mesh(const math::uuid mesh_id, std::initializer_list<submesh> submeshes)
   : _mesh_id{mesh_id},
     _submeshes{submeshes} { }
 

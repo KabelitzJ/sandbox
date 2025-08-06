@@ -70,7 +70,7 @@ scene::scene(const std::filesystem::path& path)
   auto& devices_module = core::engine::get_module<devices::devices_module>();
   auto& window = devices_module.window();
 
-  add_component<scenes::camera>(_camera, math::angle{math::degree{60.0f}}, window.aspect_ratio(), 0.1f, 200.0f);
+  add_component<scenes::camera>(_camera, math::angle{math::degree{60.0f}}, window.aspect_ratio(), 0.1f, 1000.0f);
 
   // window.on_framebuffer_resized() += [this](const devices::framebuffer_resized_event& event) {
   //   auto& camera = get_component<scenes::camera>(_camera);

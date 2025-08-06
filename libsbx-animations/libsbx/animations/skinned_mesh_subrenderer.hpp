@@ -149,6 +149,16 @@ public:
 
     // std::ranges::fill(_bone_matrices, math::matrix4x4::identity);
 
+    // if (devices::input::is_key_pressed(devices::key::up)) {
+    //   _bone_to_track = (_bone_to_track + 1) % skeleton::max_bones;
+
+    //   utility::logger<"animations">::debug("bone_to_track: {}", _bone_to_track);
+    // } else if (devices::input::is_key_pressed(devices::key::down)) {
+    //   _bone_to_track = (_bone_to_track + skeleton::max_bones - 1) % skeleton::max_bones;
+
+    //   utility::logger<"animations">::debug("bone_to_track: {}", _bone_to_track);
+    // }
+
     SBX_SCOPED_TIMER_BLOCK("skinned_mesh_subrenderer::submit") {
       auto mesh_query = scene.query<const scenes::skinned_mesh, scenes::animation_state>();
 

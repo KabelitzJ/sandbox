@@ -61,7 +61,9 @@ uvec4 bone_indices_from_vertex(vertex vertex) {
 }
 
 vec4 bone_weights_from_vertex(vertex vertex) {
-  return vec4(vertex.bone_weight_x, vertex.bone_weight_y, vertex.bone_weight_z, vertex.bone_weight_w);
+  vec4 weights = vec4(vertex.bone_weight_x, vertex.bone_weight_y, vertex.bone_weight_z, vertex.bone_weight_w);
+
+  return weights / (weights.x + weights.y + weights.z + weights.w);
 }
 
 layout(location = 0) out vec3 out_position;
@@ -149,8 +151,6 @@ void main() {
   vec2 in_uv = uv_from_vertex(vertex);
   uvec4 in_bone_indices = bone_indices_from_vertex(vertex);
   vec4 in_bone_weights = bone_weights_from_vertex(vertex);
-
-  // in_bone_weights /= (in_bone_weights.x + in_bone_weights.y + in_bone_weights.z + in_bone_weights.w);
 
   mat4 skinning_matrix = calculate_skinning_matrix(in_bone_indices, in_bone_weights, bone_matrices_offset);
 

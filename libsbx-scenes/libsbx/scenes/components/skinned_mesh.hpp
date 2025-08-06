@@ -30,10 +30,15 @@ public:
     math::uuid material;
   }; // struct submesh
 
-  skinned_mesh(math::uuid mesh_id, math::uuid animation_id, const std::vector<submesh>& submeshes)
+  skinned_mesh(const math::uuid mesh_id, const math::uuid animation_id, const std::vector<submesh>& submeshes)
   : _mesh_id{mesh_id},
     _animation_id{animation_id},
     _submeshes{submeshes} { }
+
+  skinned_mesh(const math::uuid mesh_id, const math::uuid animation_id, const math::uuid material)
+  : _mesh_id{mesh_id},
+    _animation_id{animation_id},
+    _submeshes{{0, material}} { }
 
   auto mesh_id() const noexcept -> math::uuid {
     return _mesh_id;

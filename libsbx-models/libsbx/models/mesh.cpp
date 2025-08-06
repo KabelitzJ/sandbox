@@ -63,7 +63,7 @@ static auto _load_mesh(const aiMesh* mesh, mesh::mesh_data& data, const math::ma
   }
 
   auto submesh = graphics::submesh{};
-  submesh.vertex_offset = 0u;
+  submesh.vertex_offset = data.vertices.size();
   submesh.index_offset = data.indices.size();
   submesh.index_count = mesh->mNumFaces * 3u;
 
@@ -118,10 +118,11 @@ static auto _load_mesh(const aiMesh* mesh, mesh::mesh_data& data, const math::ma
   meshopt_optimizeVertexFetch(unique_vertices.data(), remapped_indices.data(), remapped_indices.size(), unique_vertices.data(), vertex_count, sizeof(models::vertex3d));
 
   // [NOTE] KAJ 2025-07-08 : Apply the "global" index offset here
-  std::transform(remapped_indices.begin(), remapped_indices.end(), remapped_indices.begin(), [vertices_count](const auto index) { return index + vertices_count; });
+  // std::transform(remapped_indices.begin(), remapped_indices.end(), remapped_indices.begin(), [vertices_count](const auto index) { return index + vertices_count; });
 
   utility::append(data.vertices, unique_vertices);
   utility::append(data.indices, remapped_indices);
+
   submesh.bounds = math::volume{_convert_vec3(mesh->mAABB.mMin), _convert_vec3(mesh->mAABB.mMax)};
   submesh.local_transform = local_transform;
   submesh.name = utility::hashed_string{mesh->mName.C_Str()};
