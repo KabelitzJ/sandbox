@@ -136,26 +136,54 @@ application::application()
 
   // Soldier
 
-  auto soldier = scene.create_node("Soldier");
-
+  
   scene.add_material<sbx::scenes::material>("soldier_body", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 0.9f, 1.0f, scene.get_image("soldier_body_albedo"));
   scene.add_material<sbx::scenes::material>("soldier_head", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 0.9f, 1.0f, scene.get_image("soldier_head_albedo"));
   scene.add_material<sbx::scenes::material>("soldier_backpack", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 0.9f, 1.0f, scene.get_image("soldier_backpack_albedo"));
   scene.add_material<sbx::scenes::material>("soldier_helmet", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 0.9f, 1.0f, scene.get_image("soldier_helmet_albedo"));
+  
+  // auto soldier_submeshes = std::vector<sbx::scenes::skinned_mesh::submesh>{
+    //   {0u, scene.get_material("soldier_body")},
+    //   {1u, scene.get_material("soldier_helmet")},
+    //   {2u, scene.get_material("soldier_backpack")},
+    //   {3u, scene.get_material("soldier_head")}
+    // };
 
-  auto soldier_submeshes = std::vector<sbx::scenes::skinned_mesh::submesh>{
-    {0u, scene.get_material("soldier_body")},
-    {1u, scene.get_material("soldier_helmet")},
-    {2u, scene.get_material("soldier_backpack")},
-    {3u, scene.get_material("soldier_head")}
-  };
+  auto soldier1 = scene.create_node("Soldier");
 
-  scene.add_component<sbx::scenes::skinned_mesh>(soldier, scene.get_mesh("soldier"), soldier_animation_id, soldier_submeshes);
-  scene.add_component<sbx::scenes::animation_state>(soldier, 0.0f, 1.0f, true);
+  scene.add_component<sbx::scenes::skinned_mesh>(soldier1, scene.get_mesh("soldier"), soldier_animation_id, std::vector<sbx::scenes::skinned_mesh::submesh>{{0u, scene.get_material("soldier_body")}});  
+  scene.add_component<sbx::scenes::animation_state>(soldier1, 0.0f, 1.0f, true);
 
-  auto& soldier_transform = scene.get_component<sbx::math::transform>(soldier);
+  auto& soldier_transform = scene.get_component<sbx::math::transform>(soldier1);
   soldier_transform.set_position(sbx::math::vector3{7, 0, 3});
   soldier_transform.set_scale(sbx::math::vector3{4, 4, 4});
+
+  auto soldier2 = scene.create_node("Soldier2");
+
+  scene.add_component<sbx::scenes::skinned_mesh>(soldier2, scene.get_mesh("soldier"), soldier_animation_id, std::vector<sbx::scenes::skinned_mesh::submesh>{{1u, scene.get_material("soldier_helmet")}});  
+  scene.add_component<sbx::scenes::animation_state>(soldier2, 0.0f, 1.0f, true);
+
+  auto& soldier2_transform = scene.get_component<sbx::math::transform>(soldier2);
+  soldier2_transform.set_position(sbx::math::vector3{10, 0, 3});
+  soldier2_transform.set_scale(sbx::math::vector3{4, 4, 4});
+
+  auto soldier3 = scene.create_node("Soldier3");
+
+  scene.add_component<sbx::scenes::skinned_mesh>(soldier3, scene.get_mesh("soldier"), soldier_animation_id, std::vector<sbx::scenes::skinned_mesh::submesh>{{2u, scene.get_material("soldier_backpack")}});  
+  scene.add_component<sbx::scenes::animation_state>(soldier3, 0.0f, 1.0f, true);
+
+  auto& soldier3_transform = scene.get_component<sbx::math::transform>(soldier3);
+  soldier3_transform.set_position(sbx::math::vector3{13, 0, 3});
+  soldier3_transform.set_scale(sbx::math::vector3{4, 4, 4});
+
+  auto soldier4 = scene.create_node("Soldier4");
+
+  scene.add_component<sbx::scenes::skinned_mesh>(soldier4, scene.get_mesh("soldier"), soldier_animation_id, std::vector<sbx::scenes::skinned_mesh::submesh>{{3u, scene.get_material("soldier_head")}});  
+  scene.add_component<sbx::scenes::animation_state>(soldier4, 0.0f, 1.0f, true);
+
+  auto& soldier4_transform = scene.get_component<sbx::math::transform>(soldier4);
+  soldier4_transform.set_position(sbx::math::vector3{16, 0, 3});
+  soldier4_transform.set_scale(sbx::math::vector3{4, 4, 4});
 
   // auto soldier_submeshes = std::vector<sbx::scenes::static_mesh::submesh>{
   //   {0u, scene.get_material("soldier_body")},
@@ -170,22 +198,26 @@ application::application()
 
   _light_center = scene.create_node("LightCenter", sbx::math::transform{sbx::math::vector3{0.0f, 10.0f, 0.0f}});
 
-  scene.add_material<sbx::scenes::material>("light", sbx::scenes::material_type::transparent, sbx::math::color{1.0f, 1.0f, 1.0f, 0.5f}, 0.0f, 0.5f, 1.0f);
-
+  
   const auto radius = 20.0f;
   const auto light_count = 8;
-
+  
   for (auto i = 0; i < light_count; ++i) {
     auto angle = sbx::math::radian{2.0f * sbx::math::pi / static_cast<std::float_t>(light_count) * static_cast<std::float_t>(i)};
 
+    const auto material_name = fmt::format("Light{}", i);
+    const auto color = sbx::math::random_color();
+
+    scene.add_material<sbx::scenes::material>(material_name, sbx::scenes::material_type::transparent, color, 0.0f, 0.5f, 1.0f);
+
     auto light = scene.create_child_node(_light_center, fmt::format("Light{}", i), sbx::math::transform{sbx::math::vector3{radius * sbx::math::cos(angle), 0.0f, radius * sbx::math::sin(angle)}});
 
-    scene.add_component<sbx::scenes::point_light>(light, sbx::math::random_color(), 50.0f);
+    scene.add_component<sbx::scenes::point_light>(light, color, 50.0f);
 
-    // scene.add_component<sbx::scenes::static_mesh>(light, scene.get_mesh("sphere"), scene.get_material("light"));
-    
-    // auto& light_transform = scene.get_component<sbx::math::transform>(light);
-    // light_transform.set_scale(sbx::math::vector3{0.2f, 0.2f, 0.2f});
+    scene.add_component<sbx::scenes::static_mesh>(light, scene.get_mesh("sphere"), scene.get_material(material_name));
+
+    auto& light_transform = scene.get_component<sbx::math::transform>(light);
+    light_transform.set_scale(sbx::math::vector3{0.2f, 0.2f, 0.2f});
   }
 
   // Dragon
@@ -459,7 +491,7 @@ auto application::update() -> void  {
   auto& scene = scenes_module.scene();
 
   if (sbx::devices::input::is_key_pressed(sbx::devices::key::space)) {
-    const int grid_size = 1;
+    const int grid_size = 5;
     const float spacing = 2.5f; // Adjust spacing based on cube size
     const sbx::math::vector3 base_position{0.0f, 20.0f, 5.0f};
 

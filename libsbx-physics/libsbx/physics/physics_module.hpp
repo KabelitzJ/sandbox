@@ -140,9 +140,6 @@ private:
       } else {
         rigidbody.wake();
       }
-
-
-      utility::logger<"physics">::debug("Sleep counter: {}, Vel: {}, AngVel: {}", rigidbody.sleep_counter(), rigidbody.velocity().length(), rigidbody.angular_velocity().length());
     }
   }
 
@@ -194,8 +191,6 @@ private:
         if (clamped_depth < penetration_epsilon) {
           continue;
         }
-
-        utility::logger<"physics">::debug("depth: {}, clamped_depth: {}", depth, clamped_depth);
 
         auto& rb1 = scene.get_component<physics::rigidbody>(first_node);
         auto& rb2 = scene.get_component<physics::rigidbody>(second_node);
@@ -249,8 +244,6 @@ private:
 
         const auto impulse = direction * clamped_j;
 
-        utility::logger<"physics">::debug("spd: {}, j: {}, clamped_j: {}", spd, j, clamped_j);
-
         if (!static1) {
           rb1.add_velocity(-impulse * m1_inv);
           rb1.apply_angular_impulse(-impulse, r1);
@@ -285,8 +278,6 @@ private:
           }
 
           const auto friction_impulse = tangent * jt;
-
-          utility::logger<"physics">::debug("jt: {}", jt);
 
           if (!static1) {
             rb1.add_velocity(-friction_impulse * m1_inv);
