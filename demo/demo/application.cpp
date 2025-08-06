@@ -117,7 +117,7 @@ application::application()
 
   scene.add_mesh<sbx::models::mesh>("soldier", "demo/assets/meshes/soldier/soldier.gltf");
 
-  // const auto soldier_animation_id = assets_module.add_asset<sbx::animations::animation>("demo/assets/meshes/soldier/soldier.gltf", "mixamo.com");
+  // const auto soldier_animation_id = assets_module.add_asset<sbx::animations::animation>("demo/assets/meshes/soldier/soldier.gltf", "Wafe");
 
   // Window
 
@@ -144,11 +144,21 @@ application::application()
   scene.add_material<sbx::scenes::material>("soldier_backpack", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 0.9f, 1.0f, scene.get_image("soldier_backpack_albedo"));
   scene.add_material<sbx::scenes::material>("soldier_helmet", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 0.9f, 1.0f, scene.get_image("soldier_helmet_albedo"));
 
+  // auto soldier_submeshes = std::vector<sbx::scenes::skinned_mesh::submesh>{
+  //   {0u, scene.get_material("soldier_body")},
+  //   {1u, scene.get_material("soldier_helmet")},
+  //   {2u, scene.get_material("soldier_backpack")},
+  //   {3u, scene.get_material("soldier_head")}
+  // };
+
+  // scene.add_component<sbx::scenes::skinned_mesh>(soldier, scene.get_mesh("soldier"), soldier_animation_id, soldier_submeshes);
+  // scene.add_component<sbx::scenes::animation_state>(soldier, 0.0f, 1.0f, true);
+
   auto soldier_submeshes = std::vector<sbx::scenes::static_mesh::submesh>{
-    {0u, scene.get_material("soldier_backpack")},
-    {1u, scene.get_material("soldier_body")},
-    {2u, scene.get_material("soldier_head")},
-    {3u, scene.get_material("soldier_helmet")}
+    {0u, scene.get_material("soldier_body")},
+    {1u, scene.get_material("soldier_head")},
+    {2u, scene.get_material("soldier_helmet")},
+    {3u, scene.get_material("soldier_backpack")}
   };
 
   scene.add_component<sbx::scenes::static_mesh>(soldier, scene.get_mesh("soldier"), soldier_submeshes);

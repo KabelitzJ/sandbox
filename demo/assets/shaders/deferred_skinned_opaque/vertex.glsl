@@ -12,7 +12,7 @@ struct transform_data {
 
 struct instance_data {
   vec4 tint;
-  vec4 material; // x: metallic, y: roughness, z: flexiblity, w: anchor height
+  vec4 material; // x: metallic, y: roughness, z: ambient occlusion, w: unused
   uvec4 payload; // x: albedo image index, y: normal image index, z: transform data index, w: bone matrices offset
   uvec4 selection; // x: upper 32 bit of id, y: lower 32 bit of id, z: unused, w: unused
 }; // struct instance_data
@@ -69,7 +69,7 @@ layout(location = 1) out vec3 out_normal;
 layout(location = 2) out mat3 out_tbn; // Needs 3 locations slots (2, 3, 4)
 layout(location = 5) out vec2 out_uv;
 layout(location = 6) out vec4 out_color;
-layout(location = 7) out vec2 out_material;
+layout(location = 7) out vec3 out_material;
 layout(location = 8) out flat uvec2 out_image_indices;
 layout(location = 9) out flat uvec2 out_object_id;
 
@@ -189,7 +189,7 @@ void main() {
 
   // out_color = color;
   out_color = instance_data.tint;
-  out_material = instance_data.material.xy;
+  out_material = instance_data.material.rgb;
 
   out_image_indices = image_indices;
   out_object_id = instance_data.selection.xy;

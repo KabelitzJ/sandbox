@@ -794,14 +794,18 @@ private:
 
         // static auto sun_angle = 45.0f * std::numbers::pi_v<std::float_t> / static_cast<std::float_t>(180);
         static auto sun_angle = math::to_radians(math::degree{70.0f});
+        static auto tilt = 0.5f;
 
         ImGui::Text("Sun Angle");
         ImGui::SliderAngle("##sun_angle", sun_angle.data(), 0.0f, 180.0f);
 
+        ImGui::Text("Tilt");
+        ImGui::SliderFloat("##tilt", &tilt, 0.0f, 1.0f);
+
         // Compute direction from angle
         const auto x = math::cos(sun_angle + math::to_radians(math::degree{180.0f}));
         const auto y = math::sin(sun_angle + math::to_radians(math::degree{180.0f}));
-        const auto z = -0.5f;
+        const auto z = -tilt;
 
         const auto direction = math::vector3::normalized(math::vector3{x, y, z});
 

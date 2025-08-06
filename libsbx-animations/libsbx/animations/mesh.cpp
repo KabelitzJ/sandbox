@@ -43,6 +43,10 @@ static auto _convert_vec3(const aiVector3D& vector) -> math::vector3 {
   return math::vector3{vector.x, vector.y, vector.z};
 }
 
+static auto _convert_vec4(const aiVector3D& vector, const std::float_t w) -> math::vector4 {
+  return math::vector4{vector.x, vector.y, vector.z, w};
+}
+
 static auto _convert_mat4(const aiMatrix4x4& matrix) -> math::matrix4x4 {
   auto result = math::matrix4x4{};
 
@@ -72,9 +76,9 @@ static auto _load_mesh(const aiMesh* mesh, const math::matrix4x4& transform, mes
     throw std::runtime_error{fmt::format("Mesh '{}' does not have tangents", mesh->mName.C_Str())};
   }
 
-  if (!mesh->HasBones()) {
-    throw std::runtime_error{fmt::format("Mesh '{}' does not have bones", mesh->mName.C_Str())};
-  }
+  // if (!mesh->HasBones()) {
+  //   throw std::runtime_error{fmt::format("Mesh '{}' does not have bones", mesh->mName.C_Str())};
+  // }
 
   auto submesh = graphics::submesh{};
   submesh.vertex_offset = 0u;
@@ -87,10 +91,10 @@ static auto _load_mesh(const aiMesh* mesh, const math::matrix4x4& transform, mes
 
   for (auto i = 0u; i < mesh->mNumVertices; ++i) {
     auto vertex = vertex3d{};
-    vertex.position = _convert_vec3(mesh->mVertices[i]);
-    vertex.normal = _convert_vec3(mesh->mNormals[i]);
+    vertex.position = transform * _convert_vec4(mesh->mVertices[i], 1.0f);
+    vertex.normal = transform * _convert_vec4(mesh->mNormals[i], 0.0f);
     vertex.uv = _convert_vec3(mesh->mTextureCoords[0][i]);
-    vertex.tangent = _convert_vec3(mesh->mTangents[i]);
+    vertex.tangent = transform * _convert_vec4(mesh->mTangents[i], 0.0f);
 
     for (auto j = 0; j < 4; ++j) {
       vertex.bone_ids[j] = 0;
@@ -111,7 +115,7 @@ static auto _load_mesh(const aiMesh* mesh, const math::matrix4x4& transform, mes
   const auto submesh_index = data.submeshes.size();
 
   submesh.bounds = math::volume{_convert_vec3(mesh->mAABB.mMin), _convert_vec3(mesh->mAABB.mMax)};
-  submesh.local_transform = transform;
+  submesh.local_transform = math::matrix4x4::identity;
   submesh.name = utility::hashed_string{mesh->mName.C_Str()};
 
   data.submeshes.push_back(submesh);
@@ -129,13 +133,16 @@ static auto _load_mesh(const aiMesh* mesh, const math::matrix4x4& transform, mes
 }
 
 static auto _load_node(const aiNode* node, const aiScene* scene, const math::matrix4x4& transform, mesh::mesh_data& data, bone_map& bone_map, bone_offsets& bone_offsets) -> void {
+  const auto local_transform = _convert_mat4(node->mTransformation);
+  const auto global_transform = transform * local_transform;
+
   for (unsigned int i = 0; i < node->mNumMeshes; ++i) {
     const auto* mesh = scene->mMeshes[node->mMeshes[i]];
-    _load_mesh(mesh, transform, data, bone_map, bone_offsets);
+    _load_mesh(mesh, global_transform, data, bone_map, bone_offsets);
   }
 
   for (unsigned int i = 0; i < node->mNumChildren; ++i) {
-    _load_node(node->mChildren[i], scene, transform, data, bone_map, bone_offsets);
+    _load_node(node->mChildren[i], scene, global_transform, data, bone_map, bone_offsets);
   }
 }
 

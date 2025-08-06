@@ -15,7 +15,7 @@ layout(location = 1) in vec3 in_normal;
 layout(location = 2) in mat3 in_tbn; // Needs 3 locations slots (2, 3, 4)
 layout(location = 5) in vec2 in_uv;
 layout(location = 6) in vec4 in_color;
-layout(location = 7) in vec2 in_material;
+layout(location = 7) in vec3 in_material;
 layout(location = 8) in flat uvec2 in_image_indices;
 layout(location = 9) in flat uvec2 in_object_id;
 
@@ -36,7 +36,9 @@ vec4 get_albedo() {
     return in_color;
   }
 
-  return texture(sampler2D(images[albedo_image_index], images_sampler), in_uv).rgba * in_color;
+  vec4 color = texture(sampler2D(images[albedo_image_index], images_sampler), in_uv).rgba;
+
+  return vec4(color.rgb * in_color.rgb, 1.0);
 }
 
 vec3 get_normal() {
@@ -46,16 +48,27 @@ vec3 get_normal() {
     return normalize(in_normal);
   }
 
-  vec3 normal = texture(sampler2D(images[normal_image_index], images_sampler), in_uv).rgb * 2.0 - 1.0;
+  vec3 normal = texture(sampler2D(images[normal_image_index], images_sampler), in_uv).xyz;
 
   return normalize(in_tbn * normal);
+}
+
+vec3 get_material() {
+  // uint material_image_index = in_image_indices.z;
+
+  // if (material_image_index >= MAX_IMAGE_ARRAY_SIZE) {
+  //   return in_material;
+  // }
+
+  // return texture(sampler2D(images[material_image_index], images_sampler), in_uv).rgb;
+  return in_material.rgb;
 }
 
 void main(void) {
   out_albedo = get_albedo();
   out_position = vec4(in_position, 1.0);
   out_normal = vec4(get_normal(), 0.0);
-  out_material = vec4(in_material, 0.0, 0.0);
+  out_material = vec4(get_material(), 0.0);
   out_object_id = in_object_id;
   out_depth = linearize_depth(gl_FragCoord.z, DEFAULT_NEAR, DEFAULT_FAR);
 }

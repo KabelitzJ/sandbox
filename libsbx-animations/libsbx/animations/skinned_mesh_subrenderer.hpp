@@ -230,15 +230,17 @@ private:
     for (const auto& submesh : skinned_mesh.submeshes()) {
       EASY_BLOCK("submit submesh");
 
-      const auto albedo_image_index = submesh.albedo_texture ? _images.push_back(submesh.albedo_texture) : graphics::separate_image2d_array::max_size;
-      const auto normal_image_index = submesh.normal_texture ? _images.push_back(submesh.normal_texture) : graphics::separate_image2d_array::max_size;
+      const auto& material = assets_module.get_asset<scenes::material>(submesh.material);
 
+      const auto albedo_image_index = material.albedo ? _images.push_back(material.albedo) : graphics::separate_image2d_array::max_size;
+      const auto normal_image_index = material.normal ? _images.push_back(material.normal) : graphics::separate_image2d_array::max_size;
+
+      const auto material_data = math::vector4{material.metallic, material.roughness, material.ambient_occlusion, 0.0f};
       const auto payload = math::vector4u{albedo_image_index, normal_image_index, transform_data_index, bone_matrices_offset};
-      const auto material = math::vector4{submesh.material.metallic, submesh.material.roughness, submesh.material.flexibility, submesh.material.anchor_height};
       const auto selection = math::vector4u{upper_id, lower_id, 0u, 0u};
 
       instances.resize(std::max(instances.size(), static_cast<std::size_t>(submesh.index + 1u)));
-      instances[submesh.index].push_back(instance_data{submesh.tint, material, payload, selection});
+      instances[submesh.index].push_back(instance_data{material.base_color, material_data, payload, selection});
 
       EASY_END_BLOCK;
     }

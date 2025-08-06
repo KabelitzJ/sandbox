@@ -129,15 +129,15 @@ static auto _load_mesh(const aiMesh* mesh, mesh::mesh_data& data, const math::ma
   data.submeshes.push_back(submesh);
 }
 
-static auto _load_node(const aiNode* node, const aiScene* scene, mesh::mesh_data& data) -> void {
-  const auto local_transform = _convert_mat4(node->mTransformation);
+static auto _load_node(const aiNode* node, const aiScene* scene, mesh::mesh_data& data, const math::matrix4x4& parent_transform) -> void {
+  const auto local_transform = parent_transform * _convert_mat4(node->mTransformation);
 
   for (auto i = 0u; i < node->mNumMeshes; ++i) {
     _load_mesh(scene->mMeshes[node->mMeshes[i]], data, local_transform);
   }
 
   for (auto i = 0u; i < node->mNumChildren; ++i) {
-    _load_node(node->mChildren[i], scene, data);
+    _load_node(node->mChildren[i], scene, data, local_transform);
   }
 }
 
@@ -178,7 +178,7 @@ auto mesh::_load(const std::filesystem::path& path) -> mesh_data {
     throw std::runtime_error{fmt::format("Error loading mesh '{}': {}", path.string(), importer.GetErrorString())};
   }
 
-  _load_node(scene->mRootNode, scene, data);
+  _load_node(scene->mRootNode, scene, data, math::matrix4x4::identity);
 
   // [NOTE] KAJ 2024-03-20 : We need to calculate the bounds of the mesh from the submeshes.
   data.bounds = math::volume{math::vector3::zero, math::vector3::zero};
