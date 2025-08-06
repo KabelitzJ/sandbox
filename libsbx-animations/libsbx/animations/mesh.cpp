@@ -77,9 +77,9 @@ static auto _load_mesh(const aiMesh* mesh, mesh::mesh_data& data, bone_map& bone
     throw std::runtime_error{fmt::format("Mesh '{}' does not have tangents", mesh->mName.C_Str())};
   }
 
-  // if (!mesh->HasBones()) {
-  //   throw std::runtime_error{fmt::format("Mesh '{}' does not have bones", mesh->mName.C_Str())};
-  // }
+  if (!mesh->HasBones()) {
+    throw std::runtime_error{fmt::format("Mesh '{}' does not have bones", mesh->mName.C_Str())};
+  }
 
   auto submesh = graphics::submesh{};
   submesh.vertex_offset = static_cast<std::uint32_t>(data.vertices.size());
@@ -96,11 +96,8 @@ static auto _load_mesh(const aiMesh* mesh, mesh::mesh_data& data, bone_map& bone
     vertex.normal = _convert_vec4(mesh->mNormals[i], 0.0f);
     vertex.tangent = _convert_vec4(mesh->mTangents[i], 0.0f);
     vertex.uv = _convert_vec3(mesh->mTextureCoords[0][i]);
-
-    for (auto j = 0; j < 4; ++j) {
-      vertex.bone_ids[j] = 0;
-      vertex.bone_weights[j] = 0.0f;
-    }
+    vertex.bone_weights = math::vector4{0.0f, 0.0f, 0.0f, 0.0f};
+    vertex.bone_ids = math::vector4u{0u, 0u, 0u, 0u};
 
     data.vertices.push_back(vertex);
   }

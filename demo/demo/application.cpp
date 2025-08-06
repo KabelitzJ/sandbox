@@ -143,11 +143,21 @@ application::application()
   scene.add_material<sbx::scenes::material>("soldier_helmet", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 0.9f, 1.0f, scene.get_image("soldier_helmet_albedo"));
   
   // auto soldier_submeshes = std::vector<sbx::scenes::skinned_mesh::submesh>{
-    //   {0u, scene.get_material("soldier_body")},
-    //   {1u, scene.get_material("soldier_helmet")},
-    //   {2u, scene.get_material("soldier_backpack")},
-    //   {3u, scene.get_material("soldier_head")}
-    // };
+  //   {0u, scene.get_material("soldier_backpack")},
+  //   {1u, scene.get_material("soldier_body")},
+  //   {2u, scene.get_material("soldier_head")},
+  //   {3u, scene.get_material("soldier_helmet")}
+  // };
+
+  // auto soldier = scene.create_node("Soldier");
+
+  // scene.add_component<sbx::scenes::skinned_mesh>(soldier, scene.get_mesh("soldier"), soldier_animation_id, soldier_submeshes);
+  // scene.add_component<sbx::scenes::animation_state>(soldier, 0.0f, 1.0f, true);
+
+  // auto& soldier_transform = scene.get_component<sbx::math::transform>(soldier);
+  // soldier_transform.set_position(sbx::math::vector3{5, 0, 3});
+  // soldier_transform.set_scale(sbx::math::vector3{4, 4, 4});
+
 
   auto soldier1 = scene.create_node("Soldier");
 
