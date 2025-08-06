@@ -91,7 +91,7 @@ private:
 
 }; // class viewport
 
-inline constexpr auto operator|(const viewport::type lhs, const viewport::type rhs) noexcept -> const viewport::type {
+inline constexpr auto operator|(const viewport::type lhs, const viewport::type rhs) noexcept -> viewport::type {
   return utility::from_underlying<viewport::type>(utility::to_underlying(lhs) | utility::to_underlying(rhs));
 }
 

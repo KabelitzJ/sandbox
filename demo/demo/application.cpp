@@ -279,25 +279,25 @@ application::application()
 
   // Cube
 
-  auto cube = scene.create_node("Cube");
+  // auto cube = scene.create_node("Cube");
 
   scene.add_material<sbx::scenes::material>("grass3", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 0.5f, 1.0f, scene.get_image("rust_albedo"), scene.get_image("rust_normal"), scene.get_image("rust_mrao"));
 
-  scene.add_component<sbx::scenes::static_mesh>(cube, scene.get_mesh("cube"), scene.get_material("grass3"));
+  // scene.add_component<sbx::scenes::static_mesh>(cube, scene.get_mesh("cube"), scene.get_material("grass3"));
 
-  auto& cube_transform = scene.get_component<sbx::math::transform>(cube);
-  cube_transform.set_position(sbx::math::vector3{0.0f, 5.0f, 5.0f});
-  cube_transform.set_rotation(sbx::math::vector3::right, sbx::math::degree{45});
-  cube_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
+  // auto& cube_transform = scene.get_component<sbx::math::transform>(cube);
+  // cube_transform.set_position(sbx::math::vector3{0.0f, 5.0f, 5.0f});
+  // cube_transform.set_rotation(sbx::math::vector3::right, sbx::math::degree{45});
+  // cube_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
 
-  auto& cube_rigidbody = scene.add_component<sbx::physics::rigidbody>(cube, sbx::units::kilogram{1.0f});
-  cube_rigidbody.set_acceleration(sbx::math::vector3{0.0f, -9.81f, 0.0f});
+  // auto& cube_rigidbody = scene.add_component<sbx::physics::rigidbody>(cube, sbx::units::kilogram{1.0f});
+  // cube_rigidbody.set_constant_acceleration(sbx::math::vector3{0.0f, -9.81f, 0.0f});
 
-  scene.add_component<sbx::physics::collider>(cube, sbx::physics::box{sbx::math::vector3{-1.0f, -1.0f, -1.0f}, sbx::math::vector3{1.0f, 1.0f, 1.0f}});
+  // scene.add_component<sbx::physics::collider>(cube, sbx::physics::box{sbx::math::vector3{-1.0f, -1.0f, -1.0f}, sbx::math::vector3{1.0f, 1.0f, 1.0f}});
 
   auto floor = scene.create_node("Floor");
-  scene.add_component<sbx::physics::rigidbody>(floor, sbx::units::kilogram{0.0f}, true);
-  scene.add_component<sbx::physics::collider>(floor, sbx::physics::box{sbx::math::vector3{-10.0f, -0.1f, -10.0f}, sbx::math::vector3{10.0f, 0.1f, 10.0f}});
+  scene.add_component<sbx::physics::rigidbody>(floor);
+  scene.add_component<sbx::physics::collider>(floor, sbx::physics::box{sbx::math::vector3{-100.0f, -0.1f, -100.0f}, sbx::math::vector3{100.0f, 0.1f, 100.0f}});
 
   for (auto y = 0; y < 5; ++y) {
     for (auto x = 0; x < 5; ++x) {
@@ -457,6 +457,30 @@ auto application::update() -> void  {
 
   auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
   auto& scene = scenes_module.scene();
+
+  if (sbx::devices::input::is_key_pressed(sbx::devices::key::space)) {
+    const int grid_size = 1;
+    const float spacing = 2.5f; // Adjust spacing based on cube size
+    const sbx::math::vector3 base_position{0.0f, 20.0f, 5.0f};
+
+    for (int x = 0; x < grid_size; ++x) {
+      for (int z = 0; z < grid_size; ++z) {
+        auto cube = scene.create_node("Cube");
+
+        scene.add_component<sbx::scenes::static_mesh>(cube, scene.get_mesh("cube"), scene.get_material("grass3"));
+
+        auto& transform = scene.get_component<sbx::math::transform>(cube);
+        transform.set_position(base_position + sbx::math::vector3{0.0f, x * spacing, z * spacing});
+        transform.set_rotation(sbx::math::vector3::right, sbx::math::degree{45});
+        transform.set_scale(sbx::math::vector3{1.0f, 1.0f, 1.0f});
+
+        auto& rigidbody = scene.add_component<sbx::physics::rigidbody>(cube, sbx::units::kilogram{1.0f});
+        rigidbody.set_constant_acceleration({0.0f, -9.81f, 0.0f});
+
+        scene.add_component<sbx::physics::collider>(cube, sbx::physics::box{sbx::math::vector3{-1.0f}, sbx::math::vector3{1.0f}});
+      }
+    }
+  }
 
   _camera_controller.update();
     

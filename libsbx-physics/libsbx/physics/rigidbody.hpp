@@ -6,6 +6,8 @@
 #include <libsbx/units/mass.hpp>
 
 #include <libsbx/math/vector3.hpp>
+#include <libsbx/math/matrix3x3.hpp>
+#include <libsbx/math/quaternion.hpp>
 
 namespace sbx::physics {
 
@@ -13,44 +15,74 @@ class rigidbody {
 
 public:
 
-  rigidbody(const units::kilogram& mass, bool is_static = false);
+  static constexpr auto linear_sleep_threshold = 0.05f;
+  static constexpr auto angular_sleep_threshold = 0.05f;
+  static constexpr auto sleep_frame_threshold = std::uint32_t{60};
 
+  explicit rigidbody(const units::kilogram& mass = units::kilogram{0.0f});
+
+  // Linear motion
   auto velocity() const -> const math::vector3&;
-
   auto set_velocity(const math::vector3& velocity) -> void;
-
   auto add_velocity(const math::vector3& velocity) -> void;
 
-  auto acceleration() const -> const math::vector3&;
-
-  auto set_acceleration(const math::vector3& acceleration) -> void;
-
-  auto add_acceleration(const math::vector3& acceleration) -> void;
-
   auto mass() const -> const units::kilogram&;
-
+  auto inverse_mass() const -> std::float_t;
   auto set_mass(const units::kilogram& mass) -> void;
-
   auto is_static() const -> bool;
 
-  auto set_is_static(bool is_static) -> void;
+  auto apply_acceleration(const math::vector3& acceleration) -> void;
+  auto add_constant_acceleration(const math::vector3& acceleration) -> void;
+  auto set_constant_acceleration(const math::vector3& acceleration) -> void;
+  auto clear_constant_forces() -> void;
+  auto constant_forces() const -> const math::vector3&;
+  auto dynamic_forces() const -> const math::vector3&;
+  auto clear_dynamic_forces() -> void;
 
-  auto apply_force(const math::vector3& force) -> void;
+  // Angular motion
+  auto angular_velocity() const -> const math::vector3&;
+  auto set_angular_velocity(const math::vector3& angular_velocity) -> void;
+  auto add_angular_velocity(const math::vector3& angular_velocity) -> void;
 
-  auto forces() const -> const math::vector3&;
+  auto apply_torque(const math::vector3& torque) -> void;
+  auto clear_torque() -> void;
+  auto torque() const -> const math::vector3&;
 
-  auto reset_forces() -> void;
+  auto inertia() const -> std::float_t;
+  auto set_inertia(std::float_t inertia) -> void;
+
+  auto apply_angular_impulse(const math::vector3& impulse_world, const math::vector3& contact_vector) -> void;
+
+  auto inverse_inertia_tensor_world() const -> const math::matrix3x3&;
+  auto set_inverse_inertia_tensor_local(const math::matrix3x3& inverse_tensor) -> void;
+  auto update_inertia_tensor_world(const math::quaternion& rotation) -> void;
+
+  auto is_sleeping() const noexcept -> bool;
+
+  auto increment_sleep() -> bool;
+
+  auto wake() -> void;
+
+  auto sleep_counter() -> std::uint32_t {
+    return _sleep_counter;
+  }
 
 private:
 
-
+  // Linear
   math::vector3 _velocity;
-  math::vector3 _acceleration;
   units::kilogram _mass;
+  math::vector3 _constant_forces;
+  math::vector3 _dynamic_forces;
 
-  bool _is_static;
+  // Angular
+  math::vector3 _angular_velocity;
+  math::vector3 _torque;
+  std::float_t _inertia; // Optional: still used for scalar inertia (e.g., spheres)
+  math::matrix3x3 _inverse_inertia_tensor_local;
+  math::matrix3x3 _inverse_inertia_tensor_world;
 
-  math::vector3 _forces;
+  std::uint32_t _sleep_counter;
 
 }; // class rigidbody
 

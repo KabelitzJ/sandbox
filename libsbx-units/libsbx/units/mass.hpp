@@ -7,13 +7,13 @@ namespace sbx::units {
 
 namespace detail {
 
-struct weight_tag { };
+struct mass_tag { };
 
 } // namespace detail
 
-using kilogram = quantity<detail::weight_tag, std::float_t, std::kilo>;
-using gram = quantity<detail::weight_tag, std::float_t>;
-using milligram = quantity<detail::weight_tag, std::float_t, std::milli>;
+using kilogram = quantity<detail::mass_tag, std::float_t, std::kilo>;
+using gram = quantity<detail::mass_tag, std::float_t>;
+using milligram = quantity<detail::mass_tag, std::float_t, std::milli>;
 
 namespace literals {
 

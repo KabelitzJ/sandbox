@@ -269,9 +269,6 @@ auto mesh::_load(const std::filesystem::path& path) -> skinned_mesh_data {
   const auto root_transform = _convert_mat4(scene->mRootNode->mTransformation);
   const auto inverse_root_transform = math::matrix4x4::inverted(root_transform);
 
-  utility::logger<"mesh">::debug("Root transform: {}", root_transform);
-  utility::logger<"mesh">::debug("Inverse root transform: {}", inverse_root_transform);
-
   _load_node(scene->mRootNode, scene, mesh_data, bone_map, bone_offsets);
   _apply_weights(scene, mesh_data, bone_map);
 

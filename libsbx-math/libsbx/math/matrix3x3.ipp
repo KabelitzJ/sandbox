@@ -54,4 +54,17 @@ inline constexpr auto operator*(basic_matrix3x3<Lhs> lhs, const basic_vector3<Rh
   return basic_vector3<Lhs>{lhs[0] * basic_vector3<Rhs>::splat_x(rhs) + lhs[1] * basic_vector3<Rhs>::splat_y(rhs) + lhs[2] * basic_vector3<Rhs>::splat_z(rhs)};
 }
 
+template<scalar Lhs, scalar Rhs>
+inline constexpr auto operator*(basic_matrix3x3<Lhs> lhs, const basic_matrix3x3<Rhs>& rhs) noexcept -> basic_matrix3x3<Lhs> {
+  auto result = basic_matrix3x3<Lhs>{};
+
+  for (auto column = 0; column < 3; ++column) {
+    for (auto row = 0; row < 3; ++row) {
+      result[column][row] = lhs[0][row] * rhs[column][0] + lhs[1][row] * rhs[column][1] + lhs[2][row] * rhs[column][2];
+    }
+  }
+
+  return result;
+}
+
 }; // namespace sbx::math

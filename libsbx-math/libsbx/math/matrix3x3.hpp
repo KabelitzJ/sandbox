@@ -67,7 +67,23 @@ public:
 
 //   // -- Static member functions --
 
-  // [[nodiscard]] constexpr static auto transposed(const basic_matrix3x3& matrix) noexcept -> basic_matrix3x3;
+  [[nodiscard]] constexpr static auto transposed(const basic_matrix3x3& matrix) noexcept -> basic_matrix3x3 {
+    auto result = basic_matrix3x3<value_type>{};
+
+    result[0][0] = matrix[0][0];
+    result[0][1] = matrix[1][0];
+    result[0][2] = matrix[2][0];
+
+    result[1][0] = matrix[0][1];
+    result[1][1] = matrix[1][1];
+    result[1][2] = matrix[2][1];
+
+    result[2][0] = matrix[0][2];
+    result[2][1] = matrix[1][2];
+    result[2][2] = matrix[2][2];
+
+    return result;
+  }
 
   // [[nodiscard]] constexpr static auto inverted(const basic_matrix3x3& matrix) -> basic_matrix3x3;
 
@@ -99,8 +115,8 @@ public:
 template<scalar Lhs, scalar Rhs>
 [[nodiscard]] constexpr auto operator*(basic_matrix3x3<Lhs> lhs, const basic_vector3<Rhs>& rhs) noexcept -> basic_vector3<Lhs>;
 
-// template<scalar Lhs, scalar Rhs>
-// [[nodiscard]] constexpr auto operator*(basic_matrix3x3<Lhs> lhs, const basic_matrix3x3<Rhs>& rhs) noexcept -> basic_matrix3x3<Lhs>;
+template<scalar Lhs, scalar Rhs>
+[[nodiscard]] constexpr auto operator*(basic_matrix3x3<Lhs> lhs, const basic_matrix3x3<Rhs>& rhs) noexcept -> basic_matrix3x3<Lhs>;
 
 // template<scalar Lhs, scalar Rhs>
 // [[nodiscard]] constexpr auto operator/(basic_matrix3x3<Lhs> lhs, Rhs scalar) noexcept -> basic_matrix3x3<Lhs>;
