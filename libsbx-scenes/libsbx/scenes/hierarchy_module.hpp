@@ -54,12 +54,6 @@ public:
 
     stack.push_back({root, math::matrix4x4::identity, false});
 
-    // auto query = scene.query<const scenes::hierarchy, const math::transform, scenes::global_transform>();
-
-    // for (const auto node : query) {
-    //   auto [hierarchy, transform, global_transform] = query.get(node);
-    // }
-
     while (!stack.empty()) {
       const auto [current, parent_matrix, is_parent_dirty] = stack.back();
       stack.pop_back();
@@ -71,6 +65,7 @@ public:
       const auto is_dirty = is_parent_dirty || transform.is_dirty();
 
       if (is_dirty) {
+        global_transform.parent = parent_matrix;
         global_transform.model = parent_matrix * transform.as_matrix();
         global_transform.normal = math::matrix4x4::transposed(math::matrix4x4::inverted(global_transform.model));
         transform.clear_is_dirty();

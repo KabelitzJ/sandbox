@@ -116,6 +116,28 @@ public:
     add_debug_line(corners[3], corners[7], color);
   }
 
+  auto add_debug_box(const math::matrix4x4& matrix, const math::volume& volume, const sbx::math::color& color) -> void {
+    auto corners = std::vector<math::vector3>{};
+    corners.reserve(8u);
+
+    for (const auto& corner : volume.corners()) {
+      corners.push_back(math::vector3{matrix * math::vector4{corner, 1.0f}});
+    }
+
+    add_debug_line(corners[0], corners[1], color);
+    add_debug_line(corners[2], corners[3], color);
+    add_debug_line(corners[4], corners[5], color);
+    add_debug_line(corners[6], corners[7], color);
+    add_debug_line(corners[0], corners[2], color);
+    add_debug_line(corners[1], corners[3], color);
+    add_debug_line(corners[4], corners[6], color);
+    add_debug_line(corners[5], corners[7], color);
+    add_debug_line(corners[0], corners[4], color);
+    add_debug_line(corners[1], corners[5], color);
+    add_debug_line(corners[2], corners[6], color);
+    add_debug_line(corners[3], corners[7], color);
+  }
+
   auto add_debug_frustum(const math::matrix4x4& view, const math::matrix4x4& projection, const sbx::math::color& color) -> void {
     const auto corners = std::array<sbx::math::vector3, 8u>{ 
       math::vector3(-1, -1, -1),

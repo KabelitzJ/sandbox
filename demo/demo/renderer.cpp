@@ -178,6 +178,8 @@ renderer::renderer()
 
   add_subrenderer<sbx::post::resolve_transparent_filter>("demo/assets/shaders/resolve_transparet", resolve, std::move(resolve_transparent_attachment_names));
 
+  add_subrenderer<sbx::scenes::debug_subrenderer>("demo/assets/shaders/debug", resolve);
+
   // Post-processing pass
   add_subrenderer<sbx::post::fxaa_filter>("demo/assets/shaders/fxaa", post, "resolve");
 

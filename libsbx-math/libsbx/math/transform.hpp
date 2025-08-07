@@ -14,6 +14,8 @@ namespace sbx::math {
 
 class transform final {
 
+  friend auto matrix_cast(const transform& transform) -> math::matrix4x4;
+
 public:
 
   transform(const vector3& position = vector3::zero, const quaternion& rotation = quaternion::identity, const vector3& scale = vector3::one)
@@ -125,6 +127,13 @@ private:
   bool _is_dirty;
 
 }; // class transform
+
+inline auto matrix_cast(const transform& transform) -> math::matrix4x4 {
+  const auto translation = matrix4x4::translated(matrix4x4::identity, transform._position);
+  const auto scale = matrix4x4::scaled(matrix4x4::identity, transform._scale);
+
+  return translation * transform._rotation_matrix * scale;
+}
 
 } // namespace sbx::math
 

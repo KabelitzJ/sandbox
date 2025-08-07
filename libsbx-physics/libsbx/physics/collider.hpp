@@ -43,9 +43,20 @@ struct collider_data {
 
 auto find_furthest_point(const collider_data& collider, const math::vector3& direction) -> math::vector3;
 
-auto support(const collider_data& first, const collider_data& second, const math::vector3& direction) -> math::vector3;
+struct minkowski_vertex {
+  math::vector3 minkowski_point; // point_a - point_b
+  math::vector3 point_a;         // Support point on shape A
+}; // struct minkowski_vertex 
 
-auto gjk(const collider_data& first, const collider_data& second) -> std::optional<math::vector3>;
+auto support(const collider_data& first, const collider_data& second, const math::vector3& direction) -> minkowski_vertex;
+
+struct collision_manifold {
+  math::vector3 normal;
+  float depth{0.0f};
+  std::vector<math::vector3> contact_points;
+}; // struct collision_manifold
+
+auto gjk(const collider_data& first, const collider_data& second) -> std::optional<collision_manifold>;
 
 } // namespace sbx::physics
 

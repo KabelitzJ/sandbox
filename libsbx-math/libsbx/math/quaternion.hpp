@@ -209,6 +209,11 @@ template<floating_point Lhs, floating_point Rhs>
 template<floating_point Lhs, floating_point Rhs>
 [[nodiscard]] constexpr auto operator/(basic_quaternion<Lhs> lhs, Rhs rhs) noexcept -> basic_quaternion<Lhs>;
 
+template<floating_point Type>
+inline constexpr auto matrix_cast(const basic_quaternion<Type>& quaternion) -> basic_quaternion<Type>::matrix_type {
+  return quaternion.to_matrix();
+}
+
 /** @brief Type alias for a quaternion with 32 bit floating-point components. */
 using quaternionf = basic_quaternion<std::float_t>;
 

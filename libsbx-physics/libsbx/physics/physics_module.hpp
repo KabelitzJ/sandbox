@@ -3,30 +3,26 @@
 
 #include <cmath>
 #include <optional>
+#include <vector>
 
-#include <btBulletDynamicsCommon.h>
-
-#include <libsbx/units/time.hpp>
-
-#include <libsbx/math/transform.hpp>
-#include <libsbx/math/volume.hpp>
-#include <libsbx/math/constants.hpp>
-
-#include <libsbx/core/module.hpp>
 #include <libsbx/core/engine.hpp>
-
-#include <libsbx/utility/logger.hpp>
-
-#include <libsbx/scenes/scenes_module.hpp>
-#include <libsbx/scenes/components/tag.hpp>
-#include <libsbx/scenes/components/id.hpp>
+#include <libsbx/core/module.hpp>
 
 #include <libsbx/containers/octree.hpp>
 
-#include <libsbx/models/mesh.hpp>
+#include <libsbx/math/constants.hpp>
+#include <libsbx/math/transform.hpp>
+#include <libsbx/math/volume.hpp>
 
-#include <libsbx/physics/rigidbody.hpp>
 #include <libsbx/physics/collider.hpp>
+#include <libsbx/physics/rigidbody.hpp>
+
+#include <libsbx/scenes/components/global_transform.hpp>
+#include <libsbx/scenes/components/id.hpp>
+#include <libsbx/scenes/components/tag.hpp>
+#include <libsbx/scenes/scenes_module.hpp>
+
+#include <libsbx/utility/logger.hpp>
 
 namespace sbx::physics {
 
@@ -36,75 +32,75 @@ class physics_module : public core::module<physics_module> {
 
 public:
 
-  physics_module() {
+  physics_module() = default;
 
-  }
-
-  ~physics_module() override {
-
-  }
+  ~physics_module() override = default;
 
   auto update() -> void override {
     SBX_SCOPED_TIMER("physics_module");
 
     update_rigidbodies();
-    solve_collisions();
+
+    // 1. Broad Phase: Use a spatial partition to find potential collision pairs
+    const auto potential_pairs = broad_phase();
+
+    // 2. Narrow Phase: Use GJK to confirm collisions and get manifolds
+    const auto collistions = narrow_phase(potential_pairs);
+
+    // 3. Resolution: Apply impulses to resolve collisions
+    for (const auto& collistion : collistions) {
+      resolve_collision(collistion);
+    }
   }
 
 private:
 
-  constexpr static auto motion_epsilon = 0.0001f; // for velocity, angular velocity
-  constexpr static auto impulse_epsilon = 0.01f; // for collision impulses
-  constexpr static auto penetration_epsilon = 0.0001f; // for GJK penetration resolution
+  // --- Physics Constants ---
+  static constexpr auto linear_damping = 0.92f;
+  static constexpr auto angular_damping = 0.90f;
+  static constexpr auto restitution = 0.1f;
+  static constexpr auto friction_coefficient = 0.6f;
+  static constexpr auto max_angular_velocity = 30.0f;
+  
+  static constexpr auto motion_epsilon = 1e-4f;
+  static constexpr auto penetration_epsilon = 1e-4f;
+  static constexpr auto impulse_epsilon = 1e-4f;
 
+  // --- Rigidbody Integration ---
+  
   auto update_rigidbodies() -> void {
     SBX_SCOPED_TIMER("physics_module::update_rigidbodies");
 
-    auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
-    auto& scene = scenes_module.scene();
-
+    auto& scene = core::engine::get_module<scenes::scenes_module>().scene();
     const auto delta_time = core::engine::fixed_delta_time();
 
-    auto rigidbody_query = scene.query<physics::rigidbody, math::transform>();
+    auto query = scene.query<physics::rigidbody, math::transform>();
 
-    constexpr float linear_damping = 0.98f;
-    constexpr float angular_damping = 0.95f;
-
-    for (auto&& [node, rigidbody, transform] : rigidbody_query.each()) {
+    for (auto&& [node, rigidbody, transform] : query.each()) {
       if (rigidbody.is_static() || rigidbody.is_sleeping()) {
         continue;
       }
 
-      // === LINEAR ===
-
+      // Linear motion (integration using symplectic Euler)
       const auto total_force = rigidbody.constant_forces() + rigidbody.dynamic_forces();
       const auto acceleration = total_force * rigidbody.inverse_mass();
-
+      
       rigidbody.add_velocity(acceleration * delta_time);
-      rigidbody.set_velocity(rigidbody.velocity() * linear_damping);
-
+      rigidbody.set_velocity(rigidbody.velocity() * std::pow(linear_damping, delta_time));
       transform.move_by(rigidbody.velocity() * delta_time);
-
       rigidbody.clear_dynamic_forces();
 
-      // === ANGULAR ===
-
-      // 1. Update world-space inverse inertia tensor
+      // Angular motion
       rigidbody.update_inertia_tensor_world(transform.rotation());
-
-      // 2. Convert torque to angular acceleration
       const auto angular_acceleration = rigidbody.inverse_inertia_tensor_world() * rigidbody.torque();
 
       rigidbody.add_angular_velocity(angular_acceleration * delta_time);
-      rigidbody.set_angular_velocity(rigidbody.angular_velocity() * angular_damping);
-
-      constexpr float max_angular_velocity = 10.0f;
-
-      if (rigidbody.angular_velocity().length() > max_angular_velocity) {
+      rigidbody.set_angular_velocity(rigidbody.angular_velocity() * std::pow(angular_damping, delta_time));
+      
+      if (rigidbody.angular_velocity().length_squared() > max_angular_velocity * max_angular_velocity) {
         rigidbody.set_angular_velocity(math::vector3::normalized(rigidbody.angular_velocity()) * max_angular_velocity);
       }
-
-      // 3. Integrate rotation using angular velocity
+      
       const auto& w = rigidbody.angular_velocity();
       const auto angle = w.length() * delta_time;
 
@@ -114,11 +110,10 @@ private:
 
         transform.set_rotation(math::quaternion::normalized(delta_rotation * transform.rotation()));
       }
-
+      
       rigidbody.clear_torque();
 
-      // Clamp small motion
-
+      // De-penning and sleep logic
       if (rigidbody.velocity().length_squared() < motion_epsilon) {
         rigidbody.set_velocity(math::vector3::zero);
       }
@@ -127,12 +122,9 @@ private:
         rigidbody.set_angular_velocity(math::vector3::zero);
       }
 
-      // Check for sleeping
+      const bool is_still = rigidbody.velocity().length_squared() < rigidbody::linear_sleep_threshold && rigidbody.angular_velocity().length_squared() < rigidbody::angular_sleep_threshold;
 
-      const bool below_linear = rigidbody.velocity().length_squared() < rigidbody::linear_sleep_threshold;
-      const bool below_angular = rigidbody.angular_velocity().length_squared() < rigidbody::angular_sleep_threshold;
-
-      if (below_linear && below_angular) {
+      if (is_still) {
         if (rigidbody.increment_sleep()) {
           rigidbody.set_velocity(math::vector3::zero);
           rigidbody.set_angular_velocity(math::vector3::zero);
@@ -143,158 +135,171 @@ private:
     }
   }
 
-  auto solve_collisions() -> void {
-    SBX_SCOPED_TIMER("physics_module::solve_collisions");
+  // --- Collision Pipeline ---
+  
+  struct collision_pair {
+    scenes::node first;
+    scenes::node second;
+  }; // struct collision_pair
 
+  auto broad_phase() -> std::vector<collision_pair> {
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
     auto& scene = scenes_module.scene();
 
-    const auto delta_time = core::engine::fixed_delta_time();
+    auto tree = containers::octree<math::uuid, 16u, 8u>{math::volume{math::vector3{-100.0f}, math::vector3{100.0f}}};
+    auto query = scene.query<const physics::collider, const math::transform, const scenes::global_transform, const scenes::id>();
 
-    auto tree = containers::octree<math::uuid, 16u, 8u>{math::volume{math::vector3{-100.0f, -100.0f, -100.0f}, math::vector3{100.0f, 100.0f, 100.0f}}};
+    for (auto&& [node, collider, transform, global_transform, id] : query.each()) {
+      const auto volume = bounding_volume(collider, global_transform.parent * math::vector4{transform.position(), 1.0f});
 
-    auto collider_query = scene.query<const physics::collider, const math::transform, const scenes::id>();
+      if (std::holds_alternative<physics::box>(collider)) {
+        const auto& box = std::get<physics::box>(collider);
+       scenes_module.add_debug_box(global_transform.parent * transform.as_matrix(), math::volume{box.min, box.max}, math::color::red());
+      }
 
-    for (auto&& [node, collider, transform, id] : collider_query.each()) {
-      tree.insert(id, bounding_volume(collider, transform.position()));
+      tree.insert(id, volume);
     }
 
-    auto intersections = tree.intersections();
+    auto pairs = std::vector<collision_pair>{};
 
-    for (const auto& [first_id, second_id] : intersections) {
-      auto first_node = scene.find_node(first_id);
-      auto second_node = scene.find_node(second_id);
+    for (const auto& [first_id, second_id] : tree.intersections()) {
+      pairs.emplace_back(scene.find_node(first_id), scene.find_node(second_id));
+    }
+    
+    return pairs;
+  }
 
-      if (first_node == scenes::node::null || second_node == scenes::node::null) {
+  struct collistion {
+    collision_pair nodes;
+    collision_manifold manifold;
+  }; // struct collistion
+
+  auto narrow_phase(const std::vector<collision_pair>& pairs) -> std::vector<collistion> {
+    auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
+    auto& scene = scenes_module.scene();
+
+    auto collistions = std::vector<collistion>{};
+
+    for (const auto& pair : pairs) {
+      if (pair.first == scenes::node::null || pair.second == scenes::node::null) {
         continue;
       }
 
-      auto& first_transform = scene.get_component<math::transform>(first_node);
-      const auto& first_collider = scene.get_component<physics::collider>(first_node);
+      auto& rb1 = scene.get_component<physics::rigidbody>(pair.first);
+      auto& rb2 = scene.get_component<physics::rigidbody>(pair.second);
 
-      auto& second_transform = scene.get_component<math::transform>(second_node);
-      const auto& second_collider = scene.get_component<physics::collider>(second_node);
-
-      const auto first_rotation_scale = first_transform.rotation().to_matrix() * math::matrix4x4::scaled(math::matrix4x4::identity, first_transform.scale());
-      const auto second_rotation_scale = second_transform.rotation().to_matrix() * math::matrix4x4::scaled(math::matrix4x4::identity, second_transform.scale());
-
-      const auto first_data = collider_data{first_transform.position(), first_rotation_scale, first_collider};
-      const auto second_data = collider_data{second_transform.position(), second_rotation_scale, second_collider};
-
-      if (auto result = gjk(first_data, second_data); result) {
-        const auto direction = math::vector3::normalized(*result);
-        const auto depth = result->length();
-
-        constexpr float max_penetration_resolution = 0.5f;
-        const float clamped_depth = std::min(depth, max_penetration_resolution);
-
-        if (clamped_depth < penetration_epsilon) {
-          continue;
-        }
-
-        auto& rb1 = scene.get_component<physics::rigidbody>(first_node);
-        auto& rb2 = scene.get_component<physics::rigidbody>(second_node);
-
-        const auto m1_inv = rb1.inverse_mass();
-        const auto m2_inv = rb2.inverse_mass();
-
-        const bool static1 = rb1.is_static();
-        const bool static2 = rb2.is_static();
-
-        // Position resolution
-        const auto resolution = direction / std::max(1.0f, float(static1 + static2));
-
-        first_transform.move_by(-resolution * clamped_depth * (1 - static1));
-        second_transform.move_by(resolution * clamped_depth * (1 - static2));
-
-        const auto v1 = static1 ? math::vector3{} : rb1.velocity();
-        const auto v2 = static2 ? math::vector3{} : rb2.velocity();
-
-        const auto relative_velocity = v2 - v1;
-        const auto spd = math::vector3::dot(relative_velocity, direction);
-
-        if (spd >= 0.0f) {
-          continue;
-        }
-
-        // --- Angular impulse logic ---
-
-        const auto contact_point = (first_transform.position() + second_transform.position()) * 0.5f;
-        const auto r1 = contact_point - first_transform.position();
-        const auto r2 = contact_point - second_transform.position();
-
-        const auto r1xn = math::vector3::cross(r1, direction);
-        const auto r2xn = math::vector3::cross(r2, direction);
-
-        const auto I1_inv = rb1.inverse_inertia_tensor_world();
-        const auto I2_inv = rb2.inverse_inertia_tensor_world();
-
-        const auto denom = m1_inv + m2_inv + math::vector3::dot(direction, math::vector3::cross(I1_inv * r1xn, r1) + math::vector3::cross(I2_inv * r2xn, r2));
-
-        constexpr auto restitution = 0.00f;
-
-        const auto j = -(1.0f + restitution) * spd / denom;
-
-        constexpr auto max_impulse = 1.0f;
-        const float clamped_j = std::clamp(j, -max_impulse, max_impulse);
-
-        if (std::abs(clamped_j) < 0.00001f) {
-          continue;
-        }
-
-        const auto impulse = direction * clamped_j;
-
-        if (!static1) {
-          rb1.add_velocity(-impulse * m1_inv);
-          rb1.apply_angular_impulse(-impulse, r1);
-
-          if (impulse.length_squared() > impulse_epsilon) {
-            rb1.wake();
-          }
-        }
-
-        if (!static2) {
-          rb2.add_velocity(impulse * m2_inv);
-          rb2.apply_angular_impulse(impulse, r2);
-
-          if (impulse.length_squared() > impulse_epsilon) {
-            rb2.wake();
-          }
-        }
-
-        // Friction impulse
-        auto tangent = relative_velocity - direction * math::vector3::dot(relative_velocity, direction);
-
-        if (tangent.length_squared() > motion_epsilon) {
-          tangent = math::vector3::normalized(tangent);
-
-          constexpr float friction = 2.0f;
-
-          const auto vt = math::vector3::dot(relative_velocity, tangent);
-          const auto jt = std::clamp(-vt / (m1_inv + m2_inv), -clamped_j * friction, clamped_j * friction);
-
-          if (jt == 0.0f) {
-            continue;
-          }
-
-          const auto friction_impulse = tangent * jt;
-
-          if (!static1) {
-            rb1.add_velocity(-friction_impulse * m1_inv);
-            rb1.apply_angular_impulse(-friction_impulse, r1);
-          }
-          
-          if (!static2) {
-            rb2.add_velocity(friction_impulse * m2_inv);
-            rb2.apply_angular_impulse(friction_impulse, r2);
-          }
-
-          if (friction_impulse.length_squared() > impulse_epsilon) {
-            rb1.wake();
-            rb2.wake();
-          }
-        }
+      // Skip static-static collisions
+      if (rb1.is_static() && rb2.is_static()) {
+        continue;
       }
+
+      const auto& t1 = scene.get_component<math::transform>(pair.first);
+      const auto& c1 = scene.get_component<physics::collider>(pair.first);
+      const auto rs1 = math::matrix_cast(t1.rotation()) * math::matrix4x4::scaled(math::matrix4x4::identity, t1.scale());
+      const auto d1 = collider_data{t1.position(), rs1, c1};
+      
+      const auto& t2 = scene.get_component<math::transform>(pair.second);
+      const auto& c2 = scene.get_component<physics::collider>(pair.second);
+      const auto rs2 = math::matrix_cast(t2.rotation()) * math::matrix4x4::scaled(math::matrix4x4::identity, t2.scale());
+      const auto d2 = collider_data{t2.position(), rs2, c2};
+
+      // [TODO] Update your GJK function to return a collision_manifold
+      if (auto manifold = gjk(d1, d2); manifold) {
+        collistions.push_back(collistion{pair, *manifold});
+      }
+    }
+    
+    return collistions;
+  }
+
+  auto resolve_collision(const collistion& collistion) -> void {
+    auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
+    auto& scene = scenes_module.scene();
+
+    const auto& nodes = collistion.nodes;
+    const auto& manifold = collistion.manifold;
+
+    auto& t1 = scene.get_component<math::transform>(nodes.first);
+    auto& rb1 = scene.get_component<physics::rigidbody>(nodes.first);
+    
+    auto& t2 = scene.get_component<math::transform>(nodes.second);
+    auto& rb2 = scene.get_component<physics::rigidbody>(nodes.second);
+
+    // --- 1. Resolve Penetration ---
+    // This creates a small "dead zone" where we don't apply a push-out force.
+    constexpr float penetration_slop = 0.02f; // e.g., 20mm. Adjust as needed.
+    const float resolution_depth = std::max(0.0f, manifold.depth - penetration_slop);
+
+    const float total_inverse_mass = rb1.inverse_mass() + rb2.inverse_mass();
+
+    if (total_inverse_mass > 0.0f) {
+      const auto resolution = manifold.normal * (manifold.depth / total_inverse_mass);
+
+      t1.move_by(-resolution * rb1.inverse_mass());
+      t2.move_by(resolution * rb2.inverse_mass());
+    }
+
+    // --- 2. Resolve Velocity (Impulse) ---
+    for (const auto& contact_point : manifold.contact_points) {
+      const auto r1 = contact_point - t1.position();
+      const auto r2 = contact_point - t2.position();
+
+      const auto v1 = rb1.velocity() + math::vector3::cross(rb1.angular_velocity(), r1);
+      const auto v2 = rb2.velocity() + math::vector3::cross(rb2.angular_velocity(), r2);
+      
+      const auto relative_velocity = v2 - v1;
+      const auto velocity_along_normal = math::vector3::dot(relative_velocity, manifold.normal);
+
+      // Do not resolve if objects are already moving apart
+      if (velocity_along_normal > 0.0f) {
+        continue;
+      }
+
+      const auto r1_cross_n = math::vector3::cross(r1, manifold.normal);
+      const auto r2_cross_n = math::vector3::cross(r2, manifold.normal);
+
+      const auto inverse_mass_sum = rb1.inverse_mass() + rb2.inverse_mass() + math::vector3::dot(r1_cross_n, rb1.inverse_inertia_tensor_world() * r1_cross_n) + math::vector3::dot(r2_cross_n, rb2.inverse_inertia_tensor_world() * r2_cross_n);
+      
+      if (inverse_mass_sum < math::epsilonf) {
+        continue;
+      }
+
+      // --- Normal Impulse ---
+      auto j = -(1.0f + restitution) * velocity_along_normal;
+
+      j /= inverse_mass_sum;
+      j /= static_cast<float>(manifold.contact_points.size()); // Distribute impulse over contact points
+
+      const auto impulse = manifold.normal * j;
+
+      apply_impulse(rb1, -impulse, r1);
+      apply_impulse(rb2, impulse, r2);
+
+      // --- Friction Impulse ---
+      const auto tangent = math::vector3::normalized(relative_velocity - manifold.normal * velocity_along_normal);
+      auto jt = -math::vector3::dot(relative_velocity, tangent);
+
+      jt /= inverse_mass_sum;
+      jt /= static_cast<float>(manifold.contact_points.size());
+
+      const auto friction_impulse = tangent * std::clamp(jt, -j * friction_coefficient, j * friction_coefficient);
+
+      apply_impulse(rb1, -friction_impulse, r1);
+      apply_impulse(rb2, friction_impulse, r2);
+    }
+  }
+
+  // [CLEANUP] Helper function to apply impulses and wake bodies, reducing code duplication.
+  auto apply_impulse(rigidbody& body, const math::vector3& impulse, const math::vector3& contact_vector) -> void {
+    if (body.is_static()) {
+      return;
+    }
+    
+    body.add_velocity(impulse * body.inverse_mass());
+    body.add_angular_velocity(body.inverse_inertia_tensor_world() * math::vector3::cross(contact_vector, impulse));
+
+    if (impulse.length_squared() > impulse_epsilon) {
+      body.wake();
     }
   }
 

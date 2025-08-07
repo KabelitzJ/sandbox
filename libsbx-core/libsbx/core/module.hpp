@@ -51,6 +51,7 @@ private:
   enum class stage : std::uint8_t {
     pre,
     normal,
+    pre_fixed,
     fixed,
     post,
     rendering

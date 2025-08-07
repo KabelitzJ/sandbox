@@ -515,7 +515,7 @@ auto application::update() -> void  {
   auto& scene = scenes_module.scene();
 
   if (sbx::devices::input::is_key_pressed(sbx::devices::key::space)) {
-    const int grid_size = 5;
+    const int grid_size = 1;
     const float spacing = 2.5f; // Adjust spacing based on cube size
     const sbx::math::vector3 base_position{0.0f, 20.0f, 5.0f};
 
@@ -533,7 +533,7 @@ auto application::update() -> void  {
         auto& rigidbody = scene.add_component<sbx::physics::rigidbody>(cube, sbx::units::kilogram{1.0f});
         rigidbody.set_constant_acceleration({0.0f, -9.81f, 0.0f});
 
-        scene.add_component<sbx::physics::collider>(cube, sbx::physics::box{sbx::math::vector3{-1.0f}, sbx::math::vector3{1.0f}});
+        scene.add_component<sbx::physics::collider>(cube, sbx::physics::box{sbx::math::vector3{-0.5f}, sbx::math::vector3{0.5f}});
       }
     }
   }
