@@ -28,6 +28,15 @@ inline constexpr auto pid = pi_v<std::double_t>;
 
 inline constexpr auto pi = pif;
 
+template<floating_point Type>
+inline constexpr auto two_pi_v = static_cast<Type>(2) * pi_v<Type>;
+
+inline constexpr auto two_pif = two_pi_v<std::float_t>;
+
+inline constexpr auto two_pid = two_pi_v<std::double_t>;
+
+inline constexpr auto two_pi = pif;
+
 } // namespace sbx::math
 
 #endif // LIBSBX_MATH_CONSTANTS_HPP_

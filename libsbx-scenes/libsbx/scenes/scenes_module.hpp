@@ -138,6 +138,32 @@ public:
     add_debug_line(corners[3], corners[7], color);
   }
 
+  auto add_debug_circle(const math::vector3& center, const std::float_t radius, const math::vector3& normal, const math::color& color, const std::uint32_t segments = 32) -> void {
+    // Orthonormal basis: find two perpendicular vectors to the normal
+    const auto up = std::abs(math::vector3::dot(normal, math::vector3::up)) < 0.99f ? math::vector3::up : math::vector3::right;
+    const auto tangent = math::vector3::normalized(math::vector3::cross(normal, up));
+    const auto bitangent = math::vector3::normalized(math::vector3::cross(normal, tangent));
+    
+    for (int i = 0; i < segments; ++i) {
+      float theta0 = (2.0f * math::two_pi) * (static_cast<float>(i) / segments);
+      float theta1 = (2.0f * math::two_pi) * (static_cast<float>(i + 1) / segments);
+
+      const auto point0 = center + (tangent * std::cos(theta0) + bitangent * std::sin(theta0)) * radius;
+      const auto point1 = center + (tangent * std::cos(theta1) + bitangent * std::sin(theta1)) * radius;
+
+      add_debug_line(point0, point1, color);
+    }
+  }
+
+  auto add_debug_sphere(const math::vector3& center, const std::float_t radius, const math::color& color, const std::uint32_t segments = 32) -> void {
+    // XY Plane
+    add_debug_circle(center, radius, math::vector3::backward, color, segments);
+    // YZ Plane
+    add_debug_circle(center, radius, math::vector3::right, color, segments);
+    // XZ Plane
+    add_debug_circle(center, radius, math::vector3::up, color, segments);
+  }
+
   auto add_debug_frustum(const math::matrix4x4& view, const math::matrix4x4& projection, const sbx::math::color& color) -> void {
     const auto corners = std::array<sbx::math::vector3, 8u>{ 
       math::vector3(-1, -1, -1),

@@ -526,14 +526,15 @@ auto application::update() -> void  {
         scene.add_component<sbx::scenes::static_mesh>(cube, scene.get_mesh("cube"), scene.get_material("grass3"));
 
         auto& transform = scene.get_component<sbx::math::transform>(cube);
-        transform.set_position(base_position + sbx::math::vector3{0.0f, x * spacing, z * spacing});
-        transform.set_rotation(sbx::math::vector3::right, sbx::math::degree{45});
+        transform.set_position(base_position + sbx::math::vector3{x * spacing, 0.0f, z * spacing});
+        transform.set_rotation(sbx::math::vector3{1.0, 0.0, 1.0}, sbx::math::degree{45});
         transform.set_scale(sbx::math::vector3{1.0f, 1.0f, 1.0f});
 
         auto& rigidbody = scene.add_component<sbx::physics::rigidbody>(cube, sbx::units::kilogram{1.0f});
         rigidbody.set_constant_acceleration({0.0f, -9.81f, 0.0f});
 
         scene.add_component<sbx::physics::collider>(cube, sbx::physics::box{sbx::math::vector3{-0.5f}, sbx::math::vector3{0.5f}});
+        // scene.add_component<sbx::physics::collider>(cube, sbx::physics::sphere{0.5f});
       }
     }
   }

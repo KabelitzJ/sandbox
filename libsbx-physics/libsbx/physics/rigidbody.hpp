@@ -15,9 +15,9 @@ class rigidbody {
 
 public:
 
-  static constexpr auto linear_sleep_threshold = 0.05f;
-  static constexpr auto angular_sleep_threshold = 0.05f;
-  static constexpr auto sleep_frame_threshold = std::uint32_t{60};
+  static constexpr auto linear_sleep_threshold = 0.02f;
+  static constexpr auto angular_sleep_threshold = 0.02f;
+  static constexpr auto sleep_frame_threshold = std::uint32_t{15};
 
   explicit rigidbody(const units::kilogram& mass = units::kilogram{0.0f});
 

@@ -152,11 +152,12 @@ auto rigidbody::apply_angular_impulse(const math::vector3& impulse_world, const 
 }
 
 auto rigidbody::is_sleeping() const noexcept -> bool { 
-  return _sleep_counter >= sleep_frame_threshold;
+  return is_static() || _sleep_counter >= sleep_frame_threshold;
 }
 
 auto rigidbody::increment_sleep() -> bool {
-  ++_sleep_counter;
+  _sleep_counter = std::min(_sleep_counter + 1u, sleep_frame_threshold);
+  utility::logger<"physics">::debug("Incrementing sleep counter: {}", _sleep_counter);
 
   return is_sleeping();
 }

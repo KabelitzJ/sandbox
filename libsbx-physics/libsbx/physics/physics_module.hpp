@@ -56,15 +56,17 @@ public:
 private:
 
   // --- Physics Constants ---
-  static constexpr auto linear_damping = 0.92f;
-  static constexpr auto angular_damping = 0.90f;
+  static constexpr auto linear_damping = 0.90f;
+  static constexpr auto angular_damping = 0.88f;
   static constexpr auto restitution = 0.1f;
   static constexpr auto friction_coefficient = 0.6f;
   static constexpr auto max_angular_velocity = 30.0f;
+  static constexpr auto baumgarte_bias_factor = 0.005f;
+  static constexpr auto penetration_slop = 0.01f; // e.g., 10mm. Adjust as needed.
   
-  static constexpr auto motion_epsilon = 1e-4f;
+  static constexpr auto motion_epsilon = 1e-3f;
   static constexpr auto penetration_epsilon = 1e-4f;
-  static constexpr auto impulse_epsilon = 1e-4f;
+  static constexpr auto impulse_epsilon = 1e-2f;
 
   // --- Rigidbody Integration ---
   
@@ -122,14 +124,16 @@ private:
         rigidbody.set_angular_velocity(math::vector3::zero);
       }
 
-      const bool is_still = rigidbody.velocity().length_squared() < rigidbody::linear_sleep_threshold && rigidbody.angular_velocity().length_squared() < rigidbody::angular_sleep_threshold;
+      const auto is_still = rigidbody.velocity().length_squared() < rigidbody::linear_sleep_threshold && rigidbody.angular_velocity().length_squared() < rigidbody::angular_sleep_threshold;
 
       if (is_still) {
         if (rigidbody.increment_sleep()) {
           rigidbody.set_velocity(math::vector3::zero);
           rigidbody.set_angular_velocity(math::vector3::zero);
+
+          utility::logger<"physics">::debug("Rigidbody went to sleep");
         }
-      } else {
+      } else if (rigidbody.velocity().length_squared() > rigidbody::linear_sleep_threshold * 4 || rigidbody.angular_velocity().length_squared() > rigidbody::angular_sleep_threshold * 4) {
         rigidbody.wake();
       }
     }
@@ -154,7 +158,10 @@ private:
 
       if (std::holds_alternative<physics::box>(collider)) {
         const auto& box = std::get<physics::box>(collider);
-       scenes_module.add_debug_box(global_transform.parent * transform.as_matrix(), math::volume{box.min, box.max}, math::color::red());
+        scenes_module.add_debug_box(global_transform.parent * transform.as_matrix(), math::volume{box.min, box.max}, math::color::red());
+      } else if (std::holds_alternative<physics::sphere>(collider)) {
+        const auto& sphere = std::get<physics::sphere>(collider);
+        scenes_module.add_debug_sphere(global_transform.parent * math::vector4{transform.position(), 1.0f}, sphere.radius, math::color::red());
       }
 
       tree.insert(id, volume);
@@ -216,8 +223,14 @@ private:
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
     auto& scene = scenes_module.scene();
 
+    const auto delta_time = core::engine::fixed_delta_time();
+
     const auto& nodes = collistion.nodes;
     const auto& manifold = collistion.manifold;
+
+    if (manifold.contact_points.empty()) {
+      return;
+    }
 
     auto& t1 = scene.get_component<math::transform>(nodes.first);
     auto& rb1 = scene.get_component<physics::rigidbody>(nodes.first);
@@ -225,16 +238,30 @@ private:
     auto& t2 = scene.get_component<math::transform>(nodes.second);
     auto& rb2 = scene.get_component<physics::rigidbody>(nodes.second);
 
+    utility::logger<"physics">::debug("rb1.is_sleeping() {} rb2.is_sleeping() {}", rb1.is_sleeping(), rb2.is_sleeping());
+    utility::logger<"physics">::debug("rb1.is_static() {} rb2.is_static() {}", rb1.is_static(), rb2.is_static());
+
+    if (rb1.is_sleeping() && rb2.is_sleeping()) {
+      return;
+    }
+
     // --- 1. Resolve Penetration ---
     // This creates a small "dead zone" where we don't apply a push-out force.
-    constexpr float penetration_slop = 0.02f; // e.g., 20mm. Adjust as needed.
     const float resolution_depth = std::max(0.0f, manifold.depth - penetration_slop);
 
     const float total_inverse_mass = rb1.inverse_mass() + rb2.inverse_mass();
 
     if (total_inverse_mass > 0.0f) {
+      const auto avg_contact = std::accumulate(manifold.contact_points.begin(), manifold.contact_points.end(), math::vector3::zero) / static_cast<std::float_t>(manifold.contact_points.size());
+
+      // Compute vectors from centers to contact
+      const auto r1 = avg_contact - t1.position();
+      const auto r2 = avg_contact - t2.position();
+
+      // Calculate resolution vector
       const auto resolution = manifold.normal * (manifold.depth / total_inverse_mass);
 
+      // Apply positional correction
       t1.move_by(-resolution * rb1.inverse_mass());
       t2.move_by(resolution * rb2.inverse_mass());
     }
@@ -265,10 +292,19 @@ private:
       }
 
       // --- Normal Impulse ---
-      auto j = -(1.0f + restitution) * velocity_along_normal;
+      const auto penetration_bias = std::max(manifold.depth - penetration_slop, 0.0f);
+      // const auto baumgarte_bias = -std::min(0.0f, velocity_along_normal + baumgarte_bias_factor * std::max(manifold.depth - penetration_slop, 0.0f) / delta_time);
+      const auto baumgarte_bias = baumgarte_bias_factor * penetration_bias / delta_time;
 
+      auto j = (-(1.0f + restitution) * velocity_along_normal) - baumgarte_bias;
+
+      j = std::max(j, 0.0f);
       j /= inverse_mass_sum;
-      j /= static_cast<float>(manifold.contact_points.size()); // Distribute impulse over contact points
+      j /= static_cast<std::float_t>(manifold.contact_points.size()); // Distribute impulse over contact points
+
+      if (std::abs(j) < 1e-6f) {
+        continue; // Ignore tiny normal impulses
+      }
 
       const auto impulse = manifold.normal * j;
 
@@ -280,16 +316,27 @@ private:
       auto jt = -math::vector3::dot(relative_velocity, tangent);
 
       jt /= inverse_mass_sum;
-      jt /= static_cast<float>(manifold.contact_points.size());
+      jt /= static_cast<std::float_t>(manifold.contact_points.size());
 
       const auto friction_impulse = tangent * std::clamp(jt, -j * friction_coefficient, j * friction_coefficient);
 
       apply_impulse(rb1, -friction_impulse, r1);
       apply_impulse(rb2, friction_impulse, r2);
+
+      if (rb1.velocity().length_squared() < rigidbody::linear_sleep_threshold * rigidbody::linear_sleep_threshold && rb1.angular_velocity().length_squared() < rigidbody::angular_sleep_threshold * rigidbody::angular_sleep_threshold) {
+        rb1.increment_sleep();
+      } else {
+        rb1.wake();
+      }
+
+      if (rb2.velocity().length_squared() < rigidbody::linear_sleep_threshold * rigidbody::linear_sleep_threshold && rb2.angular_velocity().length_squared() < rigidbody::angular_sleep_threshold * rigidbody::angular_sleep_threshold) {
+        rb2.increment_sleep();
+      } else {
+        rb2.wake();
+      }
     }
   }
 
-  // [CLEANUP] Helper function to apply impulses and wake bodies, reducing code duplication.
   auto apply_impulse(rigidbody& body, const math::vector3& impulse, const math::vector3& contact_vector) -> void {
     if (body.is_static()) {
       return;
