@@ -1,5 +1,5 @@
-#ifndef LIBSBX_SCENES_HIERARCHY_MODULE_HPP_
-#define LIBSBX_SCENES_HIERARCHY_MODULE_HPP_
+#ifndef LIBSBX_PHYSICS_POST_TRANSFORM_MODULE_HPP_
+#define LIBSBX_PHYSICS_POST_TRANSFORM_MODULE_HPP_
 
 #include <easy/profiler.h>
 
@@ -16,13 +16,15 @@
 #include <libsbx/scenes/components/hierarchy.hpp>
 #include <libsbx/scenes/components/global_transform.hpp>
 
-namespace sbx::scenes {
+#include <libsbx/physics/physics_module.hpp>
 
-class hierarchy_module final : public core::module<hierarchy_module> {
+namespace sbx::physics {
+
+class post_transform_module final : public core::module<post_transform_module> {
 
   friend class scene;
 
-  inline static const auto is_registered = register_module(stage::post);
+  inline static const auto is_registered = register_module(stage::fixed, dependencies<physics::physics_module>{});
 
   struct stack_entry {
     scenes::node node;
@@ -32,14 +34,14 @@ class hierarchy_module final : public core::module<hierarchy_module> {
 
 public:
 
-  hierarchy_module() {
+  post_transform_module() {
     
   }
 
-  ~hierarchy_module() override = default;
+  ~post_transform_module() override = default;
 
   auto update() -> void override {
-    SBX_SCOPED_TIMER("hierarchy_module");
+    SBX_SCOPED_TIMER("post_transform_module");
 
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
 
@@ -73,7 +75,7 @@ public:
 
       auto child = hierarchy.first_child;
 
-      while (child != node::null) {
+      while (child != scenes::node::null) {
         stack.push_back({child, global_transform.model, is_dirty});
         child = scene.get_component<const scenes::hierarchy>(child).next_sibling;
       }
@@ -82,8 +84,8 @@ public:
     EASY_END_BLOCK;
   }
 
-}; // class hierarchy_module
+}; // class post_transform_module
 
-} // namespace sbx::scenes
+} // namespace sbx::physics
 
-#endif // LIBSBX_SCENES_HIERARCHY_MODULE_HPP_
+#endif // LIBSBX_PHYSICS_POST_TRANSFORM_MODULE_HPP_

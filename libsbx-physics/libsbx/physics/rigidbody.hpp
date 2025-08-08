@@ -48,9 +48,6 @@ public:
   auto clear_torque() -> void;
   auto torque() const -> const math::vector3&;
 
-  auto inertia() const -> std::float_t;
-  auto set_inertia(std::float_t inertia) -> void;
-
   auto apply_angular_impulse(const math::vector3& impulse_world, const math::vector3& contact_vector) -> void;
 
   auto inverse_inertia_tensor_world() const -> const math::matrix3x3&;
@@ -78,7 +75,6 @@ private:
   // Angular
   math::vector3 _angular_velocity;
   math::vector3 _torque;
-  std::float_t _inertia; // Optional: still used for scalar inertia (e.g., spheres)
   math::matrix3x3 _inverse_inertia_tensor_local;
   math::matrix3x3 _inverse_inertia_tensor_world;
 

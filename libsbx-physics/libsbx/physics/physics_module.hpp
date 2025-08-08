@@ -13,9 +13,7 @@
 #include <libsbx/math/constants.hpp>
 #include <libsbx/math/transform.hpp>
 #include <libsbx/math/volume.hpp>
-
-#include <libsbx/physics/collider.hpp>
-#include <libsbx/physics/rigidbody.hpp>
+#include <libsbx/math/matrix_cast.hpp>
 
 #include <libsbx/scenes/components/global_transform.hpp>
 #include <libsbx/scenes/components/id.hpp>
@@ -23,6 +21,10 @@
 #include <libsbx/scenes/scenes_module.hpp>
 
 #include <libsbx/utility/logger.hpp>
+
+#include <libsbx/physics/collider.hpp>
+#include <libsbx/physics/rigidbody.hpp>
+
 
 namespace sbx::physics {
 
@@ -41,13 +43,9 @@ public:
 
     update_rigidbodies();
 
-    // 1. Broad Phase: Use a spatial partition to find potential collision pairs
     const auto potential_pairs = broad_phase();
-
-    // 2. Narrow Phase: Use GJK to confirm collisions and get manifolds
     const auto collistions = narrow_phase(potential_pairs);
 
-    // 3. Resolution: Apply impulses to resolve collisions
     for (const auto& collistion : collistions) {
       resolve_collision(collistion);
     }
@@ -67,8 +65,6 @@ private:
   static constexpr auto motion_epsilon = 1e-3f;
   static constexpr auto penetration_epsilon = 1e-4f;
   static constexpr auto impulse_epsilon = 1e-2f;
-
-  // --- Rigidbody Integration ---
   
   auto update_rigidbodies() -> void {
     SBX_SCOPED_TIMER("physics_module::update_rigidbodies");
@@ -83,7 +79,6 @@ private:
         continue;
       }
 
-      // Linear motion (integration using symplectic Euler)
       const auto total_force = rigidbody.constant_forces() + rigidbody.dynamic_forces();
       const auto acceleration = total_force * rigidbody.inverse_mass();
       
@@ -92,7 +87,6 @@ private:
       transform.move_by(rigidbody.velocity() * delta_time);
       rigidbody.clear_dynamic_forces();
 
-      // Angular motion
       rigidbody.update_inertia_tensor_world(transform.rotation());
       const auto angular_acceleration = rigidbody.inverse_inertia_tensor_world() * rigidbody.torque();
 
@@ -115,7 +109,6 @@ private:
       
       rigidbody.clear_torque();
 
-      // De-penning and sleep logic
       if (rigidbody.velocity().length_squared() < motion_epsilon) {
         rigidbody.set_velocity(math::vector3::zero);
       }
@@ -138,8 +131,6 @@ private:
       }
     }
   }
-
-  // --- Collision Pipeline ---
   
   struct collision_pair {
     scenes::node first;
@@ -158,7 +149,7 @@ private:
 
       if (std::holds_alternative<physics::box>(collider)) {
         const auto& box = std::get<physics::box>(collider);
-        scenes_module.add_debug_box(global_transform.parent * transform.as_matrix(), math::volume{box.min, box.max}, math::color::red());
+        scenes_module.add_debug_box(global_transform.parent * math::matrix_cast<4, 4>(transform), math::volume{box.min, box.max}, math::color::red());
       } else if (std::holds_alternative<physics::sphere>(collider)) {
         const auto& sphere = std::get<physics::sphere>(collider);
         scenes_module.add_debug_sphere(global_transform.parent * math::vector4{transform.position(), 1.0f}, sphere.radius, math::color::red());
@@ -195,22 +186,20 @@ private:
       auto& rb1 = scene.get_component<physics::rigidbody>(pair.first);
       auto& rb2 = scene.get_component<physics::rigidbody>(pair.second);
 
-      // Skip static-static collisions
       if (rb1.is_static() && rb2.is_static()) {
         continue;
       }
 
       const auto& t1 = scene.get_component<math::transform>(pair.first);
       const auto& c1 = scene.get_component<physics::collider>(pair.first);
-      const auto rs1 = math::matrix_cast(t1.rotation()) * math::matrix4x4::scaled(math::matrix4x4::identity, t1.scale());
+      const auto rs1 = math::matrix_cast<4, 4>(t1.rotation()) * math::matrix4x4::scaled(math::matrix4x4::identity, t1.scale());
       const auto d1 = collider_data{t1.position(), rs1, c1};
       
       const auto& t2 = scene.get_component<math::transform>(pair.second);
       const auto& c2 = scene.get_component<physics::collider>(pair.second);
-      const auto rs2 = math::matrix_cast(t2.rotation()) * math::matrix4x4::scaled(math::matrix4x4::identity, t2.scale());
+      const auto rs2 = math::matrix_cast<4, 4>(t2.rotation()) * math::matrix4x4::scaled(math::matrix4x4::identity, t2.scale());
       const auto d2 = collider_data{t2.position(), rs2, c2};
 
-      // [TODO] Update your GJK function to return a collision_manifold
       if (auto manifold = gjk(d1, d2); manifold) {
         collistions.push_back(collistion{pair, *manifold});
       }
@@ -245,8 +234,6 @@ private:
       return;
     }
 
-    // --- 1. Resolve Penetration ---
-    // This creates a small "dead zone" where we don't apply a push-out force.
     const float resolution_depth = std::max(0.0f, manifold.depth - penetration_slop);
 
     const float total_inverse_mass = rb1.inverse_mass() + rb2.inverse_mass();
@@ -254,7 +241,6 @@ private:
     if (total_inverse_mass > 0.0f) {
       const auto avg_contact = std::accumulate(manifold.contact_points.begin(), manifold.contact_points.end(), math::vector3::zero) / static_cast<std::float_t>(manifold.contact_points.size());
 
-      // Compute vectors from centers to contact
       const auto r1 = avg_contact - t1.position();
       const auto r2 = avg_contact - t2.position();
 
@@ -266,7 +252,6 @@ private:
       t2.move_by(resolution * rb2.inverse_mass());
     }
 
-    // --- 2. Resolve Velocity (Impulse) ---
     for (const auto& contact_point : manifold.contact_points) {
       const auto r1 = contact_point - t1.position();
       const auto r2 = contact_point - t2.position();
@@ -277,7 +262,6 @@ private:
       const auto relative_velocity = v2 - v1;
       const auto velocity_along_normal = math::vector3::dot(relative_velocity, manifold.normal);
 
-      // Do not resolve if objects are already moving apart
       if (velocity_along_normal > 0.0f) {
         continue;
       }
@@ -291,9 +275,7 @@ private:
         continue;
       }
 
-      // --- Normal Impulse ---
       const auto penetration_bias = std::max(manifold.depth - penetration_slop, 0.0f);
-      // const auto baumgarte_bias = -std::min(0.0f, velocity_along_normal + baumgarte_bias_factor * std::max(manifold.depth - penetration_slop, 0.0f) / delta_time);
       const auto baumgarte_bias = baumgarte_bias_factor * penetration_bias / delta_time;
 
       auto j = (-(1.0f + restitution) * velocity_along_normal) - baumgarte_bias;
@@ -303,7 +285,7 @@ private:
       j /= static_cast<std::float_t>(manifold.contact_points.size()); // Distribute impulse over contact points
 
       if (std::abs(j) < 1e-6f) {
-        continue; // Ignore tiny normal impulses
+        continue;
       }
 
       const auto impulse = manifold.normal * j;
@@ -311,7 +293,6 @@ private:
       apply_impulse(rb1, -impulse, r1);
       apply_impulse(rb2, impulse, r2);
 
-      // --- Friction Impulse ---
       const auto tangent = math::vector3::normalized(relative_velocity - manifold.normal * velocity_along_normal);
       auto jt = -math::vector3::dot(relative_velocity, tangent);
 

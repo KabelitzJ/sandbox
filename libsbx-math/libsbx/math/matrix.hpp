@@ -28,8 +28,10 @@ public:
   using size_type = std::size_t;
   using column_type = basic_vector<Rows, Type>;
 
+  constexpr basic_matrix() noexcept;
+
   template<scalar Other = value_type>
-  constexpr basic_matrix(Other value = Other{0}) noexcept;
+  constexpr basic_matrix(const Other value) noexcept;
 
   template<scalar Other = value_type>
   constexpr basic_matrix(const basic_matrix<Columns, Rows, Other>& other) noexcept;
@@ -76,13 +78,19 @@ protected:
   template<typename... Args>
   constexpr basic_matrix(Args&&... args) noexcept;
 
-  constexpr static auto identity() noexcept -> basic_matrix;
+  constexpr static auto identity(const value_type value = static_cast<value_type>(1)) noexcept -> basic_matrix;
 
 private:
 
   std::array<column_type, Columns> _columns;
 
 }; // class basic_matrix
+
+template<std::size_t Columns, std::size_t Rows, scalar Type>
+struct concrete_matrix;
+
+template<std::size_t Columns, std::size_t Rows, scalar Type>
+using concrete_matrix_t = typename concrete_matrix<Columns, Rows, Type>::type;
 
 template<std::size_t Columns, std::size_t Rows, scalar Lhs, scalar Rhs>
 [[nodiscard]] constexpr auto operator==(const basic_matrix<Columns, Rows, Lhs>& lhs, const basic_matrix<Columns, Rows, Rhs>& rhs) noexcept -> bool;

@@ -4,6 +4,8 @@
 #include <libsbx/graphics/subrenderer.hpp>
 #include <libsbx/graphics/pipeline/graphics_pipeline.hpp>
 
+#include <libsbx/math/matrix_cast.hpp>
+
 #include <libsbx/assets/assets_module.hpp>
 
 #include <demo/terrain/vertex.hpp>
@@ -43,7 +45,7 @@ public:
 
     const auto& camera_transform = scene.get_component<sbx::math::transform>(camera_node);
 
-    _scene_uniform_handler.push("view", sbx::math::matrix4x4::inverted(camera_transform.as_matrix()));
+    _scene_uniform_handler.push("view", sbx::math::matrix4x4::inverted(sbx::math::matrix_cast<4, 4>(camera_transform)));
 
     auto chunk_query = scene.query<demo::chunk>();
 

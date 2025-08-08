@@ -121,6 +121,11 @@ template<scalar Lhs, scalar Rhs>
 // template<scalar Lhs, scalar Rhs>
 // [[nodiscard]] constexpr auto operator/(basic_matrix3x3<Lhs> lhs, Rhs scalar) noexcept -> basic_matrix3x3<Lhs>;
 
+template<scalar Type>
+struct concrete_matrix<3, 3, Type> {
+  using type = basic_matrix3x3<Type>;
+}; // struct concrete_matrix
+
 using matrix3x3f = basic_matrix3x3<std::float_t>;
 
 using matrix3x3i = basic_matrix3x3<std::int32_t>;

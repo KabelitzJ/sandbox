@@ -135,8 +135,8 @@ public:
       _update_stage(stage::normal);
       EASY_END_BLOCK;
 
-      EASY_BLOCK("stage pre_fixed");
-      _update_stage(stage::pre_fixed);
+      EASY_BLOCK("stage post");
+      _update_stage(stage::post);
       EASY_END_BLOCK;
 
       while (fixed_accumulator >= fixed_delta_time()) {
@@ -146,10 +146,6 @@ public:
         fixed_accumulator -= fixed_delta_time();
         EASY_END_BLOCK;
       }
-
-      EASY_BLOCK("stage post");
-      _update_stage(stage::post);
-      EASY_END_BLOCK;
 
       EASY_BLOCK("stage rendering");
       _update_stage(stage::rendering);

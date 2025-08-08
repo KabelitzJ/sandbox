@@ -76,7 +76,7 @@ public:
 
     const auto& camera_transform = scene.get_component<math::transform>(camera_node);
 
-    _scene_uniform_handler.push("view", math::matrix4x4::inverted(camera_transform.as_matrix()));
+    _scene_uniform_handler.push("view", math::matrix4x4::inverted(math::matrix_cast<4, 4>(camera_transform)));
 
     auto& window = devices_module.window();
 

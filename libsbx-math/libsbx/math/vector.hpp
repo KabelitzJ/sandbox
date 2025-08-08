@@ -248,6 +248,12 @@ template<std::size_t Size, scalar Lhs, scalar Rhs>
   return lhs /= scalar;
 }
 
+template<std::size_t Size, scalar Type>
+struct concrete_vector;
+
+template<std::size_t Size, scalar Type>
+using concrete_vector_t = typename concrete_vector<Size, Type>::type;
+
 } // namespace sbx::math
 
 #endif // LIBSBX_MATH_VECTOR_HPP_

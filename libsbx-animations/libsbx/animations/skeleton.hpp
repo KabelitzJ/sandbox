@@ -10,6 +10,7 @@
 #include <libsbx/utility/hashed_string.hpp>
 
 #include <libsbx/math/matrix4x4.hpp>
+#include <libsbx/math/matrix_cast.hpp>
 
 #include <libsbx/animations/animation.hpp>
 
@@ -94,7 +95,7 @@ public:
         EASY_BLOCK("skeleton::calculate_local_transform");
 
         const auto translation_matrix = math::matrix4x4::translated(math::matrix4x4::identity, position);
-        const auto rotation_matrix = rotation.to_matrix();
+        const auto rotation_matrix = math::matrix_cast<4, 4>(rotation);
         const auto scale_matrix = math::matrix4x4::scaled(math::matrix4x4::identity, scale);
 
         EASY_END_BLOCK;

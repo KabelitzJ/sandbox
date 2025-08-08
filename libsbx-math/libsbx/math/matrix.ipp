@@ -6,9 +6,14 @@ namespace sbx::math {
 
 template<std::size_t Columns, std::size_t Rows, scalar Type>
 requires (Columns > 1u && Rows > 1u)
+inline constexpr basic_matrix<Columns, Rows, Type>::basic_matrix() noexcept
+: _columns{utility::make_array<column_type, Columns>(static_cast<value_type>(0))} { }
+
+template<std::size_t Columns, std::size_t Rows, scalar Type>
+requires (Columns > 1u && Rows > 1u)
 template<scalar Other>
-inline constexpr basic_matrix<Columns, Rows, Type>::basic_matrix(Other value) noexcept
-: _columns{utility::make_array<column_type, Columns>(column_type{value})} { }
+inline constexpr basic_matrix<Columns, Rows, Type>::basic_matrix(const Other value) noexcept
+: basic_matrix{identity(value)} { }
 
 template<std::size_t Columns, std::size_t Rows, scalar Type>
 requires (Columns > 1u && Rows > 1u)
@@ -92,11 +97,11 @@ inline constexpr basic_matrix<Columns, Rows, Type>::basic_matrix(Args&&... args)
 
 template<std::size_t Columns, std::size_t Rows, scalar Type>
 requires (Columns > 1u && Rows > 1u)
-inline constexpr auto basic_matrix<Columns, Rows, Type>::identity() noexcept -> basic_matrix {
+inline constexpr auto basic_matrix<Columns, Rows, Type>::identity(const value_type value) noexcept -> basic_matrix {
   auto matrix = basic_matrix{};
 
   for (auto i : std::views::iota(0u, Columns)) {
-    matrix[i][i] = value_type{1};
+    matrix[i][i] = value;
   }
 
   return matrix;

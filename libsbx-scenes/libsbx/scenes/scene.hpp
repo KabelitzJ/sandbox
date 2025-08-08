@@ -30,6 +30,7 @@
 #include <libsbx/math/uuid.hpp>
 #include <libsbx/math/vector3.hpp>
 #include <libsbx/math/quaternion.hpp>
+#include <libsbx/math/matrix_cast.hpp>
 
 #include <libsbx/core/engine.hpp>
 
@@ -144,7 +145,7 @@ public:
     const auto& camera = get_component<scenes::camera>(_camera);
     const auto& camera_transform = get_component<math::transform>(_camera);
 
-    const auto camera_view = math::matrix4x4::inverted(camera_transform.as_matrix());
+    const auto camera_view = math::matrix4x4::inverted(math::matrix_cast<4, 4>(camera_transform));
     const auto camera_projection = camera.projection(0.1f, 100.0f);
 
     const auto inverse_view_projection = math::matrix4x4::inverted(camera_projection * camera_view);

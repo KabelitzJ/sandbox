@@ -1,5 +1,7 @@
 #include <libsbx/physics/rigidbody.hpp>
 
+#include <libsbx/math/matrix_cast.hpp>
+
 namespace sbx::physics {
 
 rigidbody::rigidbody(const units::kilogram& mass)
@@ -9,7 +11,6 @@ rigidbody::rigidbody(const units::kilogram& mass)
   _dynamic_forces{math::vector3::zero},
   _angular_velocity{math::vector3::zero},
   _torque{math::vector3::zero},
-  _inertia{1.0f},
   _inverse_inertia_tensor_local{math::matrix3x3::identity},
   _inverse_inertia_tensor_world{math::matrix3x3::identity},
   _sleep_counter{0u} { }
@@ -21,19 +22,13 @@ auto rigidbody::velocity() const -> const math::vector3& {
 }
 
 auto rigidbody::set_velocity(const math::vector3& velocity) -> void {
-  _velocity = velocity;
-
-  if (_velocity.length_squared() < 0.00001f) {
-    _velocity = math::vector3::zero;
-  }
+  _velocity = (velocity.length_squared() < 1e-6f) ? math::vector3::zero : velocity;
+  wake();
 }
 
 auto rigidbody::add_velocity(const math::vector3& velocity) -> void {
-  _velocity += velocity;
-
-  if (_velocity.length_squared() < 0.00001f) {
-    _velocity = math::vector3::zero;
-  }
+  _velocity += (velocity.length_squared() < 1e-6f) ? math::vector3::zero : velocity;
+  wake();
 }
 
 auto rigidbody::mass() const -> const units::kilogram& {
@@ -90,19 +85,13 @@ auto rigidbody::angular_velocity() const -> const math::vector3& {
 }
 
 auto rigidbody::set_angular_velocity(const math::vector3& angular_velocity) -> void {
-  _angular_velocity = angular_velocity;
-
-  if (_angular_velocity.length_squared() < 0.00001f) {
-    _angular_velocity = math::vector3::zero;
-  }
+  _angular_velocity = (angular_velocity.length_squared() < 1e-6f) ? math::vector3::zero : angular_velocity;
+  wake();
 }
 
 auto rigidbody::add_angular_velocity(const math::vector3& angular_velocity) -> void {
-  _angular_velocity += angular_velocity;
-
-  if (_angular_velocity.length_squared() < 0.00001f) {
-    _angular_velocity = math::vector3::zero;
-  }
+  _angular_velocity += (angular_velocity.length_squared() < 1e-6f) ? math::vector3::zero : angular_velocity;
+  wake();
 }
 
 auto rigidbody::apply_torque(const math::vector3& torque) -> void {
@@ -118,14 +107,6 @@ auto rigidbody::torque() const -> const math::vector3& {
   return _torque;
 }
 
-auto rigidbody::inertia() const -> std::float_t {
-  return _inertia;
-}
-
-auto rigidbody::set_inertia(std::float_t inertia) -> void {
-  _inertia = inertia;
-}
-
 // === INERTIA TENSOR ===
 
 auto rigidbody::set_inverse_inertia_tensor_local(const math::matrix3x3& inverse_tensor) -> void {
@@ -137,7 +118,7 @@ auto rigidbody::inverse_inertia_tensor_world() const -> const math::matrix3x3& {
 }
 
 auto rigidbody::update_inertia_tensor_world(const math::quaternion& quaternion) -> void {
-  const auto rotation = math::matrix_cast(quaternion.to_matrix());
+  const auto rotation = math::matrix_cast<3u, 3u>(math::quaternion::normalized(quaternion));
 
   _inverse_inertia_tensor_world = rotation * _inverse_inertia_tensor_local * math::matrix3x3::transposed(rotation);
 }
