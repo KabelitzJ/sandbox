@@ -44,11 +44,10 @@ public:
     update_rigidbodies();
 
     const auto potential_pairs = broad_phase();
-    const auto collistions = narrow_phase(potential_pairs);
+    const auto collisions = narrow_phase(potential_pairs);
 
-    for (const auto& collistion : collistions) {
-      resolve_collision(collistion);
-    }
+    resolve_collision(collisions);
+    resolve_positions(collisions);
   }
 
 private:
@@ -72,12 +71,15 @@ private:
     auto& scene = core::engine::get_module<scenes::scenes_module>().scene();
     const auto delta_time = core::engine::fixed_delta_time();
 
-    auto query = scene.query<physics::rigidbody, math::transform>();
+    auto query = scene.query<physics::rigidbody, math::transform, scenes::tag>();
 
-    for (auto&& [node, rigidbody, transform] : query.each()) {
+    for (auto&& [node, rigidbody, transform, tag] : query.each()) {
       if (rigidbody.is_static() || rigidbody.is_sleeping()) {
+        // utility::logger<"physics">::debug("{}: {} {}", tag, rigidbody.is_static(), rigidbody.is_sleeping());
         continue;
       }
+
+      // utility::logger<"physics">::debug("{}: {}", tag, rigidbody.sleep_counter());
 
       const auto total_force = rigidbody.constant_forces() + rigidbody.dynamic_forces();
       const auto acceleration = total_force * rigidbody.inverse_mass();
@@ -87,7 +89,7 @@ private:
       transform.move_by(rigidbody.velocity() * delta_time);
       rigidbody.clear_dynamic_forces();
 
-      rigidbody.update_inertia_tensor_world(transform.rotation());
+      rigidbody.update_inertia_tensor_world(math::matrix_cast<3, 3>(transform.rotation()));
       const auto angular_acceleration = rigidbody.inverse_inertia_tensor_world() * rigidbody.torque();
 
       rigidbody.add_angular_velocity(angular_acceleration * delta_time);
@@ -123,8 +125,6 @@ private:
         if (rigidbody.increment_sleep()) {
           rigidbody.set_velocity(math::vector3::zero);
           rigidbody.set_angular_velocity(math::vector3::zero);
-
-          utility::logger<"physics">::debug("Rigidbody went to sleep");
         }
       } else if (rigidbody.velocity().length_squared() > rigidbody::linear_sleep_threshold * 4 || rigidbody.angular_velocity().length_squared() > rigidbody::angular_sleep_threshold * 4) {
         rigidbody.wake();
@@ -167,16 +167,16 @@ private:
     return pairs;
   }
 
-  struct collistion {
+  struct collision {
     collision_pair nodes;
     collision_manifold manifold;
-  }; // struct collistion
+  }; // struct collision
 
-  auto narrow_phase(const std::vector<collision_pair>& pairs) -> std::vector<collistion> {
+  auto narrow_phase(const std::vector<collision_pair>& pairs) -> std::vector<collision> {
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
     auto& scene = scenes_module.scene();
 
-    auto collistions = std::vector<collistion>{};
+    auto collisions = std::vector<collision>{};
 
     for (const auto& pair : pairs) {
       if (pair.first == scenes::node::null || pair.second == scenes::node::null) {
@@ -201,119 +201,114 @@ private:
       const auto d2 = collider_data{t2.position(), rs2, c2};
 
       if (auto manifold = gjk(d1, d2); manifold) {
-        collistions.push_back(collistion{pair, *manifold});
+        collisions.push_back(collision{pair, *manifold});
       }
     }
     
-    return collistions;
+    return collisions;
   }
 
-  auto resolve_collision(const collistion& collistion) -> void {
+  auto resolve_collision(const std::vector<collision>& collisions) -> void {
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
     auto& scene = scenes_module.scene();
 
     const auto delta_time = core::engine::fixed_delta_time();
 
-    const auto& nodes = collistion.nodes;
-    const auto& manifold = collistion.manifold;
+    for (const auto& [nodes, manifold] : collisions) {
+      if (manifold.contact_points.empty()) {
+        continue;
+      }
 
-    if (manifold.contact_points.empty()) {
-      return;
-    }
-
-    auto& t1 = scene.get_component<math::transform>(nodes.first);
-    auto& rb1 = scene.get_component<physics::rigidbody>(nodes.first);
-    
-    auto& t2 = scene.get_component<math::transform>(nodes.second);
-    auto& rb2 = scene.get_component<physics::rigidbody>(nodes.second);
-
-    utility::logger<"physics">::debug("rb1.is_sleeping() {} rb2.is_sleeping() {}", rb1.is_sleeping(), rb2.is_sleeping());
-    utility::logger<"physics">::debug("rb1.is_static() {} rb2.is_static() {}", rb1.is_static(), rb2.is_static());
-
-    if (rb1.is_sleeping() && rb2.is_sleeping()) {
-      return;
-    }
-
-    const float resolution_depth = std::max(0.0f, manifold.depth - penetration_slop);
-
-    const float total_inverse_mass = rb1.inverse_mass() + rb2.inverse_mass();
-
-    if (total_inverse_mass > 0.0f) {
-      const auto avg_contact = std::accumulate(manifold.contact_points.begin(), manifold.contact_points.end(), math::vector3::zero) / static_cast<std::float_t>(manifold.contact_points.size());
-
-      const auto r1 = avg_contact - t1.position();
-      const auto r2 = avg_contact - t2.position();
-
-      // Calculate resolution vector
-      const auto resolution = manifold.normal * (manifold.depth / total_inverse_mass);
-
-      // Apply positional correction
-      t1.move_by(-resolution * rb1.inverse_mass());
-      t2.move_by(resolution * rb2.inverse_mass());
-    }
-
-    for (const auto& contact_point : manifold.contact_points) {
-      const auto r1 = contact_point - t1.position();
-      const auto r2 = contact_point - t2.position();
-
-      const auto v1 = rb1.velocity() + math::vector3::cross(rb1.angular_velocity(), r1);
-      const auto v2 = rb2.velocity() + math::vector3::cross(rb2.angular_velocity(), r2);
+      auto& t1 = scene.get_component<math::transform>(nodes.first);
+      auto& rb1 = scene.get_component<physics::rigidbody>(nodes.first);
       
-      const auto relative_velocity = v2 - v1;
-      const auto velocity_along_normal = math::vector3::dot(relative_velocity, manifold.normal);
+      auto& t2 = scene.get_component<math::transform>(nodes.second);
+      auto& rb2 = scene.get_component<physics::rigidbody>(nodes.second);
 
-      if (velocity_along_normal > 0.0f) {
+      if (rb1.is_sleeping() && rb2.is_sleeping()) {
         continue;
       }
 
-      const auto r1_cross_n = math::vector3::cross(r1, manifold.normal);
-      const auto r2_cross_n = math::vector3::cross(r2, manifold.normal);
+      for (const auto& contact_point : manifold.contact_points) {
+        const auto r1 = contact_point - t1.position();
+        const auto r2 = contact_point - t2.position();
 
-      const auto inverse_mass_sum = rb1.inverse_mass() + rb2.inverse_mass() + math::vector3::dot(r1_cross_n, rb1.inverse_inertia_tensor_world() * r1_cross_n) + math::vector3::dot(r2_cross_n, rb2.inverse_inertia_tensor_world() * r2_cross_n);
-      
-      if (inverse_mass_sum < math::epsilonf) {
-        continue;
-      }
+        const auto v1 = rb1.velocity() + math::vector3::cross(rb1.angular_velocity(), r1);
+        const auto v2 = rb2.velocity() + math::vector3::cross(rb2.angular_velocity(), r2);
+        
+        const auto relative_velocity = v2 - v1;
+        const auto velocity_along_normal = math::vector3::dot(relative_velocity, manifold.normal);
 
-      const auto penetration_bias = std::max(manifold.depth - penetration_slop, 0.0f);
-      const auto baumgarte_bias = baumgarte_bias_factor * penetration_bias / delta_time;
+        if (velocity_along_normal > 0.0f) {
+          continue;
+        }
 
-      auto j = (-(1.0f + restitution) * velocity_along_normal) - baumgarte_bias;
+        const auto r1_cross_n = math::vector3::cross(r1, manifold.normal);
+        const auto r2_cross_n = math::vector3::cross(r2, manifold.normal);
 
-      j = std::max(j, 0.0f);
-      j /= inverse_mass_sum;
-      j /= static_cast<std::float_t>(manifold.contact_points.size()); // Distribute impulse over contact points
+        const auto inverse_mass_sum = rb1.inverse_mass() + rb2.inverse_mass() + math::vector3::dot(r1_cross_n, rb1.inverse_inertia_tensor_world() * r1_cross_n) + math::vector3::dot(r2_cross_n, rb2.inverse_inertia_tensor_world() * r2_cross_n);
+        
+        if (inverse_mass_sum < math::epsilonf) {
+          continue;
+        }
 
-      if (std::abs(j) < 1e-6f) {
-        continue;
-      }
+        const auto penetration_bias = std::max(manifold.depth - penetration_slop, 0.0f);
+        const auto baumgarte_bias = baumgarte_bias_factor * penetration_bias / delta_time;
 
-      const auto impulse = manifold.normal * j;
+        auto j = (-(1.0f + restitution) * velocity_along_normal) - baumgarte_bias;
 
-      apply_impulse(rb1, -impulse, r1);
-      apply_impulse(rb2, impulse, r2);
+        j = std::max(j, 0.0f);
+        j /= inverse_mass_sum;
+        j /= static_cast<std::float_t>(manifold.contact_points.size()); // Distribute impulse over contact points
 
-      const auto tangent = math::vector3::normalized(relative_velocity - manifold.normal * velocity_along_normal);
-      auto jt = -math::vector3::dot(relative_velocity, tangent);
+        if (std::abs(j) < 1e-6f) {
+          continue;
+        }
 
-      jt /= inverse_mass_sum;
-      jt /= static_cast<std::float_t>(manifold.contact_points.size());
+        const auto impulse = manifold.normal * j;
 
-      const auto friction_impulse = tangent * std::clamp(jt, -j * friction_coefficient, j * friction_coefficient);
+        apply_impulse(rb1, -impulse, r1);
+        apply_impulse(rb2, impulse, r2);
 
-      apply_impulse(rb1, -friction_impulse, r1);
-      apply_impulse(rb2, friction_impulse, r2);
+        auto tangent = relative_velocity - manifold.normal * velocity_along_normal;
+        float tangent_len2 = tangent.length_squared();
 
-      if (rb1.velocity().length_squared() < rigidbody::linear_sleep_threshold * rigidbody::linear_sleep_threshold && rb1.angular_velocity().length_squared() < rigidbody::angular_sleep_threshold * rigidbody::angular_sleep_threshold) {
-        rb1.increment_sleep();
-      } else {
-        rb1.wake();
-      }
+        if (tangent_len2 < 1e-8f) {
+          continue;
+        }
 
-      if (rb2.velocity().length_squared() < rigidbody::linear_sleep_threshold * rigidbody::linear_sleep_threshold && rb2.angular_velocity().length_squared() < rigidbody::angular_sleep_threshold * rigidbody::angular_sleep_threshold) {
-        rb2.increment_sleep();
-      } else {
-        rb2.wake();
+        tangent /= std::sqrt(tangent_len2);
+
+        const auto r1_cross_t = math::vector3::cross(r1, tangent);
+        const auto r2_cross_t = math::vector3::cross(r2, tangent);
+
+        float inv_mass_sum_t = rb1.inverse_mass() + rb2.inverse_mass() + math::vector3::dot(r1_cross_t, rb1.inverse_inertia_tensor_world() * r1_cross_t) + math::vector3::dot(r2_cross_t, rb2.inverse_inertia_tensor_world() * r2_cross_t);
+
+        if (inv_mass_sum_t < math::epsilonf) {
+          continue;
+        }
+
+        auto jt = -math::vector3::dot(relative_velocity, tangent);
+        jt /= inv_mass_sum_t;
+        jt /= static_cast<std::float_t>(manifold.contact_points.size());
+
+        const float maxF = j * friction_coefficient;
+        const auto friction_impulse = tangent * std::clamp(jt, -maxF, maxF);
+
+        apply_impulse(rb1, -friction_impulse, r1);
+        apply_impulse(rb2,  friction_impulse, r2);
+
+        if (rb1.velocity().length_squared() < rigidbody::linear_sleep_threshold * rigidbody::linear_sleep_threshold && rb1.angular_velocity().length_squared() < rigidbody::angular_sleep_threshold * rigidbody::angular_sleep_threshold) {
+          rb1.increment_sleep();
+        } else {
+          rb1.wake();
+        }
+
+        if (rb2.velocity().length_squared() < rigidbody::linear_sleep_threshold * rigidbody::linear_sleep_threshold && rb2.angular_velocity().length_squared() < rigidbody::angular_sleep_threshold * rigidbody::angular_sleep_threshold) {
+          rb2.increment_sleep();
+        } else {
+          rb2.wake();
+        }
       }
     }
   }
@@ -328,6 +323,47 @@ private:
 
     if (impulse.length_squared() > impulse_epsilon) {
       body.wake();
+    }
+  }
+
+  auto resolve_positions(const std::vector<collision>& collisions) -> void {
+    auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
+    auto& scene = scenes_module.scene();
+
+    const auto delta_time = core::engine::fixed_delta_time();
+
+    for (const auto& [nodes, manifold] : collisions) {
+      auto& t1 = scene.get_component<math::transform>(nodes.first);
+      auto& rb1 = scene.get_component<physics::rigidbody>(nodes.first);
+      
+      auto& t2 = scene.get_component<math::transform>(nodes.second);
+      auto& rb2 = scene.get_component<physics::rigidbody>(nodes.second);
+
+      if (rb1.is_sleeping() && rb2.is_sleeping()) {
+        continue;
+      }
+
+      const float resolution_depth = std::max(0.0f, manifold.depth - penetration_slop);
+
+      const float total_inverse_mass = rb1.inverse_mass() + rb2.inverse_mass();
+
+      if (total_inverse_mass > 0.0f) {
+        const auto avg_contact = std::accumulate(manifold.contact_points.begin(), manifold.contact_points.end(), math::vector3::zero) / static_cast<std::float_t>(manifold.contact_points.size());
+
+        const auto r1 = avg_contact - t1.position();
+        const auto r2 = avg_contact - t2.position();
+
+        // Calculate resolution vector
+        const auto resolution = manifold.normal * (resolution_depth / total_inverse_mass);
+
+        if (!rb1.is_static()) {
+          t1.move_by(-resolution * rb1.inverse_mass());
+        }
+
+        if (!rb2.is_static()) {
+          t2.move_by(resolution * rb2.inverse_mass());
+        }
+      }
     }
   }
 

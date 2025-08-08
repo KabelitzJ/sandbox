@@ -39,9 +39,9 @@ using value_type_t = value_type_or_t<Type, std::float_t>;
 namespace detail {
 
 template<scalar Type>
-struct matrix_cast_impl<3, 3, basic_matrix<4, 4, Type>> {
-  [[nodiscard]] static constexpr auto invoke(const basic_matrix<4, 4, Type>& matrix) -> concrete_matrix_t<3, 3, Type> {
-    return concrete_matrix_t<3, 3, Type>{
+struct matrix_cast_impl<3, 3, basic_matrix4x4<Type>> {
+  [[nodiscard]] static constexpr auto invoke(const basic_matrix4x4<Type>& matrix) -> basic_matrix3x3<Type> {
+    return basic_matrix3x3<Type>{
       static_cast<Type>(matrix[0][0]), static_cast<Type>(matrix[1][0]), static_cast<Type>(matrix[2][0]),
       static_cast<Type>(matrix[0][1]), static_cast<Type>(matrix[1][1]), static_cast<Type>(matrix[2][1]),
       static_cast<Type>(matrix[0][2]), static_cast<Type>(matrix[1][2]), static_cast<Type>(matrix[2][2])
@@ -50,9 +50,9 @@ struct matrix_cast_impl<3, 3, basic_matrix<4, 4, Type>> {
 };
 
 template<scalar Type>
-struct matrix_cast_impl<4, 4, basic_matrix<3, 3, Type>> {
-  [[nodiscard]] static constexpr auto invoke(const basic_matrix<3, 3, Type>& matrix) -> concrete_matrix_t<4, 4, Type> {
-    return concrete_matrix_t<4, 4, Type>{
+struct matrix_cast_impl<4, 4, basic_matrix3x3<Type>> {
+  [[nodiscard]] static constexpr auto invoke(const basic_matrix<3, 3, Type>& matrix) -> basic_matrix4x4<Type> {
+    return basic_matrix4x4<Type>{
       static_cast<Type>(matrix[0][0]), static_cast<Type>(matrix[1][0]), static_cast<Type>(matrix[2][0]), static_cast<Type>(0),
       static_cast<Type>(matrix[0][1]), static_cast<Type>(matrix[1][1]), static_cast<Type>(matrix[2][1]), static_cast<Type>(0),
       static_cast<Type>(matrix[0][2]), static_cast<Type>(matrix[1][2]), static_cast<Type>(matrix[2][2]), static_cast<Type>(0),
@@ -63,8 +63,8 @@ struct matrix_cast_impl<4, 4, basic_matrix<3, 3, Type>> {
 
 template<scalar Type>
 struct matrix_cast_impl<4, 4, basic_quaternion<Type>> {
-  [[nodiscard]] static constexpr auto invoke(const basic_quaternion<Type>& quaternion) -> concrete_matrix_t<4, 4, Type> {
-    auto matrix = concrete_matrix_t<4, 4, Type>{1.0f};
+  [[nodiscard]] static constexpr auto invoke(const basic_quaternion<Type>& quaternion) -> basic_matrix4x4<Type> {
+    auto matrix = basic_matrix4x4<Type>::identity;
 
     const auto xx = quaternion.x() * quaternion.x();
     const auto yy = quaternion.y() * quaternion.y();
@@ -94,14 +94,14 @@ struct matrix_cast_impl<4, 4, basic_quaternion<Type>> {
 
 template<scalar Type>
 struct matrix_cast_impl<3, 3, basic_quaternion<Type>> {
-  [[nodiscard]] static constexpr auto invoke(const basic_quaternion<Type>& quaternion) -> concrete_matrix_t<3, 3, Type> {
-    return detail::matrix_cast_impl<3, 3, basic_matrix<4, 4, Type>>::invoke(detail::matrix_cast_impl<4, 4, basic_quaternion<Type>>::invoke(quaternion));
+  [[nodiscard]] static constexpr auto invoke(const basic_quaternion<Type>& quaternion) -> basic_matrix3x3<Type> {
+    return detail::matrix_cast_impl<3, 3, basic_matrix4x4<Type>>::invoke(detail::matrix_cast_impl<4, 4, basic_quaternion<Type>>::invoke(quaternion));
   }
 };
 
 template<>
 struct matrix_cast_impl<4, 4, transform> {
-  [[nodiscard]] static constexpr auto invoke(const transform& transform) -> concrete_matrix_t<4, 4, std::float_t> {
+  [[nodiscard]] static constexpr auto invoke(const transform& transform) -> matrix4x4 {
     const auto translation = matrix4x4::translated(matrix4x4::identity, transform._position);
     const auto scale = matrix4x4::scaled(matrix4x4::identity, transform._scale);
 
@@ -111,12 +111,12 @@ struct matrix_cast_impl<4, 4, transform> {
 
 } // namespace detail
 
-template<std::size_t C, std::size_t R, typename From>
-requires (dispatcher_for<detail::matrix_cast_impl<C, R, std::remove_cvref_t<From>>, concrete_matrix_t<C, R, value_type_t<From>>, From>)
-[[nodiscard]] constexpr auto matrix_cast(const From& from) -> concrete_matrix_t<C, R, value_type_t<From>> {
-  return detail::matrix_cast_impl<C, R, std::remove_cvref_t<From>>::invoke(from);
+template<std::size_t Columns, std::size_t Rows, typename From>
+requires (dispatcher_for<detail::matrix_cast_impl<Columns, Rows, std::remove_cvref_t<From>>, concrete_matrix_t<Columns, Rows, value_type_t<From>>, From>)
+[[nodiscard]] constexpr auto matrix_cast(const From& from) -> concrete_matrix_t<Columns, Rows, value_type_t<From>> {
+  return detail::matrix_cast_impl<Columns, Rows, std::remove_cvref_t<From>>::invoke(from);
 }
 
 } // namespace sbx::math
 
-#endif LIBSBX_MATH_MATRIX_CAST_HPP_
+#endif // LIBSBX_MATH_MATRIX_CAST_HPP_

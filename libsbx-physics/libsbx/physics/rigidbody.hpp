@@ -50,9 +50,11 @@ public:
 
   auto apply_angular_impulse(const math::vector3& impulse_world, const math::vector3& contact_vector) -> void;
 
+  auto apply_impulse_at(const math::vector3& impulse_world, const math::vector3& contact_vector) -> void;
+
   auto inverse_inertia_tensor_world() const -> const math::matrix3x3&;
   auto set_inverse_inertia_tensor_local(const math::matrix3x3& inverse_tensor) -> void;
-  auto update_inertia_tensor_world(const math::quaternion& rotation) -> void;
+  auto update_inertia_tensor_world(const math::matrix3x3& rotation) -> void;
 
   auto is_sleeping() const noexcept -> bool;
 

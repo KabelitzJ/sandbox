@@ -9,11 +9,17 @@ static auto bounding_volume(const sphere& sphere, const math::vector3& position)
 }
 
 static auto bounding_volume(const cylinder& cylinder, const math::vector3& position) -> math::volume {
-  return math::volume{position - math::vector3{cylinder.radius, cylinder.base, cylinder.radius}, position + math::vector3{cylinder.radius, cylinder.cap, cylinder.radius}};
+  const auto min = position + math::vector3{-cylinder.radius, cylinder.base, -cylinder.radius};
+  const auto max = position + math::vector3{ cylinder.radius, cylinder.cap,  cylinder.radius};
+
+  return math::volume{min, max};
 }
 
 static auto bounding_volume(const capsule& capsule, const math::vector3& position) -> math::volume {
-  return math::volume{position - math::vector3{capsule.radius, capsule.base - capsule.radius, capsule.radius}, position + math::vector3{capsule.radius, capsule.cap + capsule.radius, capsule.radius}};
+  const auto min = position + math::vector3{-capsule.radius, capsule.base - capsule.radius, -capsule.radius};
+  const auto max = position + math::vector3{ capsule.radius, capsule.cap  + capsule.radius,  capsule.radius};
+
+  return math::volume{min, max};
 }
 
 static auto bounding_volume(const box& box, const math::vector3& position) -> math::volume {

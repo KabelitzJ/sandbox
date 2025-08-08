@@ -117,9 +117,7 @@ auto rigidbody::inverse_inertia_tensor_world() const -> const math::matrix3x3& {
   return _inverse_inertia_tensor_world;
 }
 
-auto rigidbody::update_inertia_tensor_world(const math::quaternion& quaternion) -> void {
-  const auto rotation = math::matrix_cast<3u, 3u>(math::quaternion::normalized(quaternion));
-
+auto rigidbody::update_inertia_tensor_world(const math::matrix3x3& rotation) -> void {
   _inverse_inertia_tensor_world = rotation * _inverse_inertia_tensor_local * math::matrix3x3::transposed(rotation);
 }
 
@@ -132,13 +130,23 @@ auto rigidbody::apply_angular_impulse(const math::vector3& impulse_world, const 
   wake();
 }
 
+auto rigidbody::apply_impulse_at(const math::vector3& impulse_world, const math::vector3& contact_vector) -> void {
+  // Linear v
+  _velocity += impulse_world * inverse_mass();
+
+  // Angular v: τ = r × J
+  const auto torque_impulse = math::vector3::cross(contact_vector, impulse_world);
+  _angular_velocity += _inverse_inertia_tensor_world * torque_impulse;
+
+  wake();
+}
+
 auto rigidbody::is_sleeping() const noexcept -> bool { 
   return is_static() || _sleep_counter >= sleep_frame_threshold;
 }
 
 auto rigidbody::increment_sleep() -> bool {
   _sleep_counter = std::min(_sleep_counter + 1u, sleep_frame_threshold);
-  utility::logger<"physics">::debug("Incrementing sleep counter: {}", _sleep_counter);
 
   return is_sleeping();
 }

@@ -101,40 +101,6 @@ inline constexpr basic_quaternion<Type>::basic_quaternion(const matrix_type_for<
   }
 }
 
-// template<floating_point Type>
-// inline constexpr basic_quaternion<Type>::operator matrix_type() const noexcept {
-//   return to_matrix();
-// }
-
-// template<floating_point Type>
-// constexpr auto basic_quaternion<Type>::to_matrix() const noexcept -> matrix_type {
-//   auto matrix = matrix_type::identity;
-
-//   const auto xx = x() * x();
-//   const auto yy = y() * y();
-//   const auto zz = z() * z();
-//   const auto xy = x() * y();
-//   const auto xz = x() * z();
-//   const auto yz = y() * z();
-//   const auto wx = w() * x();
-//   const auto wy = w() * y();
-//   const auto wz = w() * z();
-
-//   matrix[0][0] = 1.0f - 2.0f * (yy + zz);
-//   matrix[0][1] = 2.0f * (xy + wz);
-//   matrix[0][2] = 2.0f * (xz - wy);
-
-//   matrix[1][0] = 2.0f * (xy - wz);
-//   matrix[1][1] = 1.0f - 2.0f * (xx + zz);
-//   matrix[1][2] = 2.0f * (yz + wx);
-
-//   matrix[2][0] = 2.0f * (xz + wy);
-//   matrix[2][1] = 2.0f * (yz - wx);
-//   matrix[2][2] = 1.0f - 2.0f * (xx + yy);
-
-//   return matrix;
-// }
-
 template<floating_point Type>
 template<floating_point Other>
 inline constexpr auto basic_quaternion<Type>::operator+=(const basic_quaternion<Other>& other) noexcept -> basic_quaternion& {

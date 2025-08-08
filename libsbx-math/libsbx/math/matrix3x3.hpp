@@ -13,6 +13,7 @@
 #include <fmt/format.h>
 
 #include <libsbx/math/concepts.hpp>
+#include <libsbx/math/fwd.hpp>
 #include <libsbx/math/vector3.hpp>
 #include <libsbx/math/vector4.hpp>
 #include <libsbx/math/matrix.hpp>
@@ -83,6 +84,14 @@ public:
     result[2][2] = matrix[2][2];
 
     return result;
+  }
+
+  [[nodiscard]] constexpr static auto abs(const basic_matrix3x3& matrix) noexcept -> basic_matrix3x3 {
+    return basic_matrix3x3{
+      column_type::abs(matrix[0]),
+      column_type::abs(matrix[1]),
+      column_type::abs(matrix[2])
+    };
   }
 
   // [[nodiscard]] constexpr static auto inverted(const basic_matrix3x3& matrix) -> basic_matrix3x3;

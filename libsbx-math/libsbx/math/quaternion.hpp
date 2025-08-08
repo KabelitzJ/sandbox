@@ -129,10 +129,6 @@ public:
 		}
   }
 
-  // [[nodiscard]] constexpr operator matrix_type() const noexcept;
-
-  // [[nodiscard]] constexpr auto to_matrix() const noexcept -> matrix_type;
-
   template<floating_point Other = value_type>
   constexpr auto operator+=(const basic_quaternion<Other>& other) noexcept -> basic_quaternion&;
 

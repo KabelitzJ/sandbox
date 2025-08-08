@@ -86,12 +86,6 @@ private:
 
 }; // class basic_matrix
 
-template<std::size_t Columns, std::size_t Rows, scalar Type>
-struct concrete_matrix;
-
-template<std::size_t Columns, std::size_t Rows, scalar Type>
-using concrete_matrix_t = typename concrete_matrix<Columns, Rows, Type>::type;
-
 template<std::size_t Columns, std::size_t Rows, scalar Lhs, scalar Rhs>
 [[nodiscard]] constexpr auto operator==(const basic_matrix<Columns, Rows, Lhs>& lhs, const basic_matrix<Columns, Rows, Rhs>& rhs) noexcept -> bool;
 
