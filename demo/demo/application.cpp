@@ -114,6 +114,7 @@ application::application()
   scene.add_mesh<sbx::models::mesh>("sphere", "demo/assets/meshes/sphere/sphere.gltf");
 
   scene.add_mesh<sbx::animations::mesh>("soldier", "demo/assets/meshes/soldier/soldier.gltf");
+  scene.add_mesh<sbx::models::mesh>("soldier_static", "demo/assets/meshes/soldier/soldier.gltf");
 
   const auto fox_animation_id = assets_module.add_asset<sbx::animations::animation>("demo/assets/meshes/fox/fox.gltf", "Walk");
   const auto women_animation_id = assets_module.add_asset<sbx::animations::animation>("demo/assets/meshes/women/women.gltf", "Walking");
@@ -157,10 +158,10 @@ application::application()
   scene.add_material<sbx::scenes::material>("soldier_helmet", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 0.9f, 1.0f, scene.get_image("soldier_helmet_albedo"));
   
   auto soldier_submeshes = std::vector<sbx::scenes::skinned_mesh::submesh>{
-    {0u, scene.get_material("soldier_backpack")},
-    {1u, scene.get_material("soldier_body")},
-    {2u, scene.get_material("soldier_head")},
-    {3u, scene.get_material("soldier_helmet")}
+    {0u, scene.get_material("soldier_body")},
+    {1u, scene.get_material("soldier_head")},
+    {2u, scene.get_material("soldier_helmet")},
+    {3u, scene.get_material("soldier_backpack")}
   };
 
   auto soldier = scene.create_node("Soldier");
@@ -172,6 +173,20 @@ application::application()
   soldier_transform.set_position(sbx::math::vector3{5.0f, 0.0f, 3.0f});
   soldier_transform.set_scale(sbx::math::vector3{3.0f});
 
+  // auto soldier = scene.create_node("Soldier");
+
+  // auto soldier_submeshes = std::vector<sbx::scenes::static_mesh::submesh>{
+  //   {0u, scene.get_material("soldier_body")},
+  //   {1u, scene.get_material("soldier_head")},
+  //   {2u, scene.get_material("soldier_helmet")},
+  //   {3u, scene.get_material("soldier_backpack")}
+  // };
+
+  // scene.add_component<sbx::scenes::static_mesh>(soldier, scene.get_mesh("soldier_static"), soldier_submeshes);
+
+  // auto& soldier_transform = scene.get_component<sbx::math::transform>(soldier);
+  // soldier_transform.set_position(sbx::math::vector3{5.0f, 0.0f, 3.0f});
+  // soldier_transform.set_scale(sbx::math::vector3{3.0f});
 
   // auto soldier1 = scene.create_node("Soldier");
 

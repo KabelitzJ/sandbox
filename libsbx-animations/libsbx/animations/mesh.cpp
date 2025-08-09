@@ -147,6 +147,7 @@ static auto _build_skeleton_hierarchy(const aiScene* scene, const bone_map& bone
   ordered_names.resize(bone_map.size());
 
   for (const auto& [name, id] : bone_map) {
+    utility::logger<"animations">::debug("Bone '{}' has id {}", name, id);
     ordered_names.at(id) = name;
   }
 
