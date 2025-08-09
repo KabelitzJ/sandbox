@@ -118,7 +118,7 @@ application::application()
 
   const auto fox_animation_id = assets_module.add_asset<sbx::animations::animation>("demo/assets/meshes/fox/fox.gltf", "Walk");
   const auto women_animation_id = assets_module.add_asset<sbx::animations::animation>("demo/assets/meshes/women/women.gltf", "Walking");
-  const auto soldier_animation_id = assets_module.add_asset<sbx::animations::animation>("demo/assets/meshes/soldier/soldier.gltf", "Kneel");
+  const auto soldier_animation_id = assets_module.add_asset<sbx::animations::animation>("demo/assets/meshes/soldier/soldier.gltf", "IdleStanding");
   const auto player_animation_id = assets_module.add_asset<sbx::animations::animation>("demo/assets/meshes/player/player.gltf", "ArmatureAction");
 
   // Window
