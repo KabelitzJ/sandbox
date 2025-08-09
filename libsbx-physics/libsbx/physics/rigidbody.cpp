@@ -11,11 +11,8 @@ rigidbody::rigidbody(const units::kilogram& mass)
   _dynamic_forces{math::vector3::zero},
   _angular_velocity{math::vector3::zero},
   _torque{math::vector3::zero},
-  _inverse_inertia_tensor_local{math::matrix3x3::identity},
-  _inverse_inertia_tensor_world{math::matrix3x3::identity},
-  _sleep_counter{0u} { }
-
-// === LINEAR ===
+  _inverse_inertia_tensor_local{math::matrix3x3::zero},
+  _inverse_inertia_tensor_world{math::matrix3x3::zero} { }
 
 auto rigidbody::velocity() const -> const math::vector3& {
   return _velocity;
@@ -23,12 +20,10 @@ auto rigidbody::velocity() const -> const math::vector3& {
 
 auto rigidbody::set_velocity(const math::vector3& velocity) -> void {
   _velocity = (velocity.length_squared() < 1e-6f) ? math::vector3::zero : velocity;
-  wake();
 }
 
 auto rigidbody::add_velocity(const math::vector3& velocity) -> void {
   _velocity += (velocity.length_squared() < 1e-6f) ? math::vector3::zero : velocity;
-  wake();
 }
 
 auto rigidbody::mass() const -> const units::kilogram& {
@@ -49,17 +44,14 @@ auto rigidbody::is_static() const -> bool {
 
 auto rigidbody::apply_acceleration(const math::vector3& acceleration) -> void {
   _dynamic_forces += acceleration * _mass;
-  wake();
 }
 
 auto rigidbody::add_constant_acceleration(const math::vector3& acceleration) -> void {
   _constant_forces += acceleration * _mass;
-  wake();
 }
 
 auto rigidbody::set_constant_acceleration(const math::vector3& acceleration) -> void {
   _constant_forces = acceleration * _mass;
-  wake();
 }
 
 auto rigidbody::clear_constant_forces() -> void {
@@ -86,17 +78,14 @@ auto rigidbody::angular_velocity() const -> const math::vector3& {
 
 auto rigidbody::set_angular_velocity(const math::vector3& angular_velocity) -> void {
   _angular_velocity = (angular_velocity.length_squared() < 1e-6f) ? math::vector3::zero : angular_velocity;
-  wake();
 }
 
 auto rigidbody::add_angular_velocity(const math::vector3& angular_velocity) -> void {
   _angular_velocity += (angular_velocity.length_squared() < 1e-6f) ? math::vector3::zero : angular_velocity;
-  wake();
 }
 
 auto rigidbody::apply_torque(const math::vector3& torque) -> void {
   _torque += torque;
-  wake();
 }
 
 auto rigidbody::clear_torque() -> void {
@@ -127,7 +116,6 @@ auto rigidbody::apply_angular_impulse(const math::vector3& impulse_world, const 
   const auto angular_impulse = math::vector3::cross(contact_vector, impulse_world);
 
   _angular_velocity += _inverse_inertia_tensor_world * angular_impulse;
-  wake();
 }
 
 auto rigidbody::apply_impulse_at(const math::vector3& impulse_world, const math::vector3& contact_vector) -> void {
@@ -137,22 +125,6 @@ auto rigidbody::apply_impulse_at(const math::vector3& impulse_world, const math:
   // Angular v: τ = r × J
   const auto torque_impulse = math::vector3::cross(contact_vector, impulse_world);
   _angular_velocity += _inverse_inertia_tensor_world * torque_impulse;
-
-  wake();
-}
-
-auto rigidbody::is_sleeping() const noexcept -> bool { 
-  return is_static() || _sleep_counter >= sleep_frame_threshold;
-}
-
-auto rigidbody::increment_sleep() -> bool {
-  _sleep_counter = std::min(_sleep_counter + 1u, sleep_frame_threshold);
-
-  return is_sleeping();
-}
-
-auto rigidbody::wake() -> void {
-  _sleep_counter = 0;
 }
 
 } // namespace sbx::physics

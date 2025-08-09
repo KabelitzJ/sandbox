@@ -49,11 +49,11 @@ public:
 
   constexpr basic_matrix3x3(const base_type& base) noexcept;
 
-  template<scalar Other>
+  template<typename Column>
   constexpr basic_matrix3x3(
-    const column_type_for<Other>& column0,
-    const column_type_for<Other>& column1,
-    const column_type_for<Other>& column2
+    Column&& column0,
+    Column&& column1,
+    Column&& column2
   ) noexcept;
 
   template<scalar Other>

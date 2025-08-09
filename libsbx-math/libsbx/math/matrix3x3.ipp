@@ -13,13 +13,13 @@ inline constexpr basic_matrix3x3<Type>::basic_matrix3x3(const base_type& base) n
 : base_type{base} { }
 
 template<scalar Type>
-template<scalar Other>
+template<typename Column>
 inline constexpr basic_matrix3x3<Type>::basic_matrix3x3(
-  const column_type_for<Other>& column0,
-  const column_type_for<Other>& column1,
-  const column_type_for<Other>& column2
+  Column&& column0,
+  Column&& column1,
+  Column&& column2
 ) noexcept
-: base_type{column0, column1, column2} { }
+: base_type{std::forward<Column>(column0), std::forward<Column>(column1), std::forward<Column>(column2)} { }
 
 template<scalar Type>
 template<scalar Other>

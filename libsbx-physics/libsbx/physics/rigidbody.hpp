@@ -15,10 +15,6 @@ class rigidbody {
 
 public:
 
-  static constexpr auto linear_sleep_threshold = 0.02f;
-  static constexpr auto angular_sleep_threshold = 0.02f;
-  static constexpr auto sleep_frame_threshold = std::uint32_t{15};
-
   explicit rigidbody(const units::kilogram& mass = units::kilogram{0.0f});
 
   // Linear motion
@@ -49,22 +45,11 @@ public:
   auto torque() const -> const math::vector3&;
 
   auto apply_angular_impulse(const math::vector3& impulse_world, const math::vector3& contact_vector) -> void;
-
   auto apply_impulse_at(const math::vector3& impulse_world, const math::vector3& contact_vector) -> void;
 
   auto inverse_inertia_tensor_world() const -> const math::matrix3x3&;
   auto set_inverse_inertia_tensor_local(const math::matrix3x3& inverse_tensor) -> void;
   auto update_inertia_tensor_world(const math::matrix3x3& rotation) -> void;
-
-  auto is_sleeping() const noexcept -> bool;
-
-  auto increment_sleep() -> bool;
-
-  auto wake() -> void;
-
-  auto sleep_counter() -> std::uint32_t {
-    return _sleep_counter;
-  }
 
 private:
 
@@ -79,8 +64,6 @@ private:
   math::vector3 _torque;
   math::matrix3x3 _inverse_inertia_tensor_local;
   math::matrix3x3 _inverse_inertia_tensor_world;
-
-  std::uint32_t _sleep_counter;
 
 }; // class rigidbody
 
