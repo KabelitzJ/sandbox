@@ -354,8 +354,7 @@ application::application()
       }
 
       return false;
-    },
-    false
+    }
   });
 
   fox_animator.add_transition({
@@ -366,8 +365,7 @@ application::application()
       }
 
       return false;
-    },
-    false
+    }
   });
 
   // Walk ↔ Run thresholds
@@ -379,8 +377,7 @@ application::application()
       }
 
       return false;
-    },
-    false
+    }
   });
 
   fox_animator.add_transition({
@@ -391,8 +388,7 @@ application::application()
       }
 
       return false;
-    },
-    false
+    }
   });
 
   // Survey → Walk when starting to move
@@ -404,15 +400,10 @@ application::application()
       }
 
       return false;
-    },
-    false
+    }
   });
 
   fox_animator.play("Survey", true);
-
-  auto& settings = sbx::core::engine::settings();
-
-  settings.set<std::float_t>("fox_speed", 0.0f, 0.0f, 2.5f);
 
   auto& fox1_transform = scene.get_component<sbx::math::transform>(fox1);
   fox1_transform.set_position(sbx::math::vector3{0.0f, 0.0f, 0.0f});
