@@ -240,6 +240,17 @@ public:
     return _mesh_ids.at(name);
   }
 
+  template<typename Mesh, typename... Args>
+  auto add_animation(const utility::hashed_string& name, Args&&... args) -> void {
+    auto& assets_module = sbx::core::engine::get_module<sbx::assets::assets_module>();
+
+    _animation_ids.emplace(name, assets_module.add_asset<Mesh>(std::forward<Args>(args)...));
+  }
+
+  auto get_animation(const utility::hashed_string& name) -> math::uuid {
+    return _animation_ids.at(name);
+  }
+
   template<typename Material, typename... Args>
   auto add_material(const utility::hashed_string& name, Args&&... args) -> void {
     auto& assets_module = sbx::core::engine::get_module<sbx::assets::assets_module>();
@@ -286,6 +297,7 @@ private:
   std::unordered_map<utility::hashed_string, graphics::image2d_handle> _image_ids;
   std::unordered_map<utility::hashed_string, graphics::cube_image2d_handle> _cube_image_ids;
   std::unordered_map<utility::hashed_string, math::uuid> _mesh_ids;
+  std::unordered_map<utility::hashed_string, math::uuid> _animation_ids;
   std::unordered_map<utility::hashed_string, math::uuid> _materials_ids;
 
 }; // class scene

@@ -116,10 +116,15 @@ application::application()
   scene.add_mesh<sbx::animations::mesh>("soldier", "demo/assets/meshes/soldier/soldier.gltf");
   scene.add_mesh<sbx::models::mesh>("soldier_static", "demo/assets/meshes/soldier/soldier.gltf");
 
-  const auto fox_animation_id = assets_module.add_asset<sbx::animations::animation>("demo/assets/meshes/fox/fox.gltf", "Walk");
-  const auto women_animation_id = assets_module.add_asset<sbx::animations::animation>("demo/assets/meshes/women/women.gltf", "Walking");
-  const auto soldier_animation_id = assets_module.add_asset<sbx::animations::animation>("demo/assets/meshes/soldier/soldier.gltf", "IdleStanding");
-  const auto player_animation_id = assets_module.add_asset<sbx::animations::animation>("demo/assets/meshes/player/player.gltf", "ArmatureAction");
+  // Animations
+
+  scene.add_animation<sbx::animations::animation>("Walk", "demo/assets/meshes/fox/fox.gltf", "Walk");
+  scene.add_animation<sbx::animations::animation>("Survey", "demo/assets/meshes/fox/fox.gltf", "Survey");
+  scene.add_animation<sbx::animations::animation>("Run", "demo/assets/meshes/fox/fox.gltf", "Run");
+
+  scene.add_animation<sbx::animations::animation>("Walking", "demo/assets/meshes/women/women.gltf", "Walking");
+  scene.add_animation<sbx::animations::animation>("IdleStanding", "demo/assets/meshes/soldier/soldier.gltf", "IdleStanding");
+  scene.add_animation<sbx::animations::animation>("ArmatureAction", "demo/assets/meshes/player/player.gltf", "ArmatureAction");
 
   // Window
 
@@ -166,7 +171,7 @@ application::application()
 
   auto soldier = scene.create_node("Soldier");
 
-  scene.add_component<sbx::scenes::skinned_mesh>(soldier, scene.get_mesh("soldier"), soldier_animation_id, soldier_submeshes);
+  scene.add_component<sbx::scenes::skinned_mesh>(soldier, scene.get_mesh("soldier"), scene.get_animation("Walking"), soldier_submeshes);
   scene.add_component<sbx::scenes::animation_state>(soldier, 0.0f, 1.0f, true);
 
   auto& soldier_transform = scene.get_component<sbx::math::transform>(soldier);
@@ -328,7 +333,7 @@ application::application()
 
   scene.add_material<sbx::scenes::material>("fox", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 1.0f, 1.0f, scene.get_image("fox_albedo"));
 
-  scene.add_component<sbx::scenes::skinned_mesh>(fox1, scene.get_mesh("fox"), fox_animation_id, scene.get_material("fox"));
+  scene.add_component<sbx::scenes::skinned_mesh>(fox1, scene.get_mesh("fox"), scene.get_animation("Walk"), scene.get_material("fox"));
   scene.add_component<sbx::scenes::animation_state>(fox1, 0.0f, 1.0f, true);
 
   auto& fox1_transform = scene.get_component<sbx::math::transform>(fox1);
