@@ -400,6 +400,10 @@ application::application()
 
   fox_animator.play("Survey", true);
 
+  auto& settings = sbx::core::engine::settings();
+
+  settings.set<std::float_t>("fox_speed", 0.0f, 0.0f, 2.5f);
+
   auto& fox1_transform = scene.get_component<sbx::math::transform>(fox1);
   fox1_transform.set_position(sbx::math::vector3{0.0f, 0.0f, 0.0f});
   fox1_transform.set_scale(sbx::math::vector3{0.06f, 0.06f, 0.06f});
@@ -623,18 +627,18 @@ auto application::update() -> void  {
     }
   }
 
-  
   static auto fox_speed = 0.0f;
+  static auto direction = 1;
 
-  if (sbx::devices::input::is_key_pressed(sbx::devices::key::up)) {
-    fox_speed += 0.2f;
-  } else if (sbx::devices::input::is_key_pressed(sbx::devices::key::down)) {
-    fox_speed -= 0.2f;
+  fox_speed += direction * 0.2f;
+
+  if (fox_speed > 2.5f) {
+    fox_speed = 2.5f;
+    direction = -1;
+  } else if (fox_speed < 0.0f) {
+    fox_speed == 0.0f;
+    direction = 1;
   }
-
-  fox_speed = std::clamp(fox_speed, 0.0f, 2.0f);
-
-  sbx::utility::logger<"demo">::info("fox_speed: {}", fox_speed);
 
   auto& fox_animator = scene.get_component<sbx::animations::animator>(fox1);
   fox_animator.set_float("speed", fox_speed);

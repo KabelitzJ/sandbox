@@ -127,15 +127,15 @@ struct decompose_result {
   auto result = decompose_result{};
 
   // Extract translation
-  result.position = { matrix[3][0], matrix[3][1], matrix[3][2] };
+  result.position = vector3{matrix[3][0], matrix[3][1], matrix[3][2]};
 
   // Extract scale factors
-  result.scale.x() = math::vector3(matrix[0][0], matrix[0][1], matrix[0][2]).length();
-  result.scale.y() = math::vector3(matrix[1][0], matrix[1][1], matrix[1][2]).length();
-  result.scale.z() = math::vector3(matrix[2][0], matrix[2][1], matrix[2][2]).length();
+  result.scale.x() = vector3{matrix[0][0], matrix[0][1], matrix[0][2]}.length();
+  result.scale.y() = vector3{matrix[1][0], matrix[1][1], matrix[1][2]}.length();
+  result.scale.z() = vector3{matrix[2][0], matrix[2][1], matrix[2][2]}.length();
 
   // Normalize the rotation part of the matrix
-  auto rotation_matrix = math::matrix4x4{matrix};
+  auto rotation_matrix = matrix4x4{matrix};
   rotation_matrix[0][0] /= result.scale.x();
   rotation_matrix[0][1] /= result.scale.x();
   rotation_matrix[0][2] /= result.scale.x();
