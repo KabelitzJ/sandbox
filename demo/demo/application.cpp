@@ -348,20 +348,24 @@ application::application()
 
   fox_animator.add_transition({
     "Walk", "Survey", 0.20f,
-    [&](const sbx::animations::animator& a){
-      const auto& p = a.get_parameters().float_values;
-      const auto it = p.find("speed");
-      return it != p.end() && it->second <= 0.05f;
+    [](const sbx::animations::animator& animator){
+      if (auto value = animator.float_parameter("speed"); value) {
+        return *value <= 0.05f;
+      }
+
+      return false;
     },
     false
   });
 
   fox_animator.add_transition({
     "Run", "Survey", 0.25f,
-    [&](const sbx::animations::animator& a){
-      const auto& p = a.get_parameters().float_values;
-      const auto it = p.find("speed");
-      return it != p.end() && it->second <= 0.05f;
+    [](const sbx::animations::animator& animator){
+      if (auto value = animator.float_parameter("speed"); value) {
+        return *value <= 0.05f;
+      }
+
+      return false;
     },
     false
   });
@@ -369,20 +373,24 @@ application::application()
   // Walk ↔ Run thresholds
   fox_animator.add_transition({
     "Walk", "Run", 0.15f,
-    [&](const sbx::animations::animator& a){
-      const auto& p = a.get_parameters().float_values;
-      const auto it = p.find("speed");
-      return it != p.end() && it->second >= 2.0f;
+    [](const sbx::animations::animator& animator){
+      if (auto value = animator.float_parameter("speed"); value) {
+        return *value >= 2.0f;
+      }
+
+      return false;
     },
     false
   });
 
   fox_animator.add_transition({
     "Run", "Walk", 0.15f,
-    [&](const sbx::animations::animator& a){
-      const auto& p = a.get_parameters().float_values;
-      const auto it = p.find("speed");
-      return it != p.end() && it->second < 2.0f && it->second > 0.05f;
+    [](const sbx::animations::animator& animator){
+      if (auto value = animator.float_parameter("speed"); value) {
+        return *value < 2.0f && *value > 0.05f;
+      }
+
+      return false;
     },
     false
   });
@@ -390,10 +398,12 @@ application::application()
   // Survey → Walk when starting to move
   fox_animator.add_transition({
     "Survey", "Walk", 0.20f,
-    [&](const sbx::animations::animator& a){
-      const auto& p = a.get_parameters().float_values;
-      const auto it = p.find("speed");
-      return it != p.end() && it->second > 0.05f && it->second < 2.0f;
+    [](const sbx::animations::animator& animator){
+      if (auto value = animator.float_parameter("speed"); value) {
+        return *value > 0.05f && *value < 2.0f;
+      }
+
+      return false;
     },
     false
   });
