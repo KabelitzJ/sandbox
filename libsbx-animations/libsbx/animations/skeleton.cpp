@@ -92,8 +92,8 @@ auto skeleton::bone_count() const -> std::uint32_t {
   return _bones.size();
 }
 
-auto skeleton::name_for_bone(std::size_t i) -> std::string {
-  return _bone_names[i].str();
+auto skeleton::name_for_bone(const std::size_t index) const -> const utility::hashed_string& {
+  return _bone_names[index];
 }
 
 } // namespace sbx::animations

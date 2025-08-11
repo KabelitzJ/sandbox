@@ -185,6 +185,14 @@ auto subrange(const std::vector<Type>& vector, const Range& range) -> std::vecto
   return result;
 }
 
+template<std::copyable Type>
+auto make_vector(const std::size_t size, const Type& value = Type{}) -> std::vector<Type> {
+  auto result = std::vector<Type>{};
+
+  result.resize(size, value);
+
+  return result;
+}
 
 } // namespace sbx::utility
 

@@ -46,7 +46,7 @@ public:
 
   auto bone_count() const -> std::uint32_t;
 
-  auto name_for_bone(std::size_t i) -> std::string;
+  auto name_for_bone(const std::size_t index) const -> const utility::hashed_string&;
 
 private:
 

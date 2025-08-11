@@ -25,6 +25,7 @@
 
 #include <libsbx/animations/mesh.hpp>
 #include <libsbx/animations/animation.hpp>
+#include <libsbx/animations/animator.hpp>
 
 namespace demo {
 
@@ -171,7 +172,7 @@ application::application()
 
   auto soldier = scene.create_node("Soldier");
 
-  scene.add_component<sbx::scenes::skinned_mesh>(soldier, scene.get_mesh("soldier"), scene.get_animation("Walking"), soldier_submeshes);
+  scene.add_component<sbx::scenes::skinned_mesh>(soldier, scene.get_mesh("soldier"), scene.get_animation("IdleStanding"), soldier_submeshes);
   scene.add_component<sbx::scenes::animation_state>(soldier, 0.0f, 1.0f, true);
 
   auto& soldier_transform = scene.get_component<sbx::math::transform>(soldier);
@@ -334,7 +335,7 @@ application::application()
   scene.add_material<sbx::scenes::material>("fox", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 1.0f, 1.0f, scene.get_image("fox_albedo"));
 
   scene.add_component<sbx::scenes::skinned_mesh>(fox1, scene.get_mesh("fox"), scene.get_animation("Walk"), scene.get_material("fox"));
-  scene.add_component<sbx::scenes::animation_state>(fox1, 0.0f, 1.0f, true);
+  auto& fox_animator = scene.add_component<sbx::animations::animator>(fox1);
 
   auto& fox1_transform = scene.get_component<sbx::math::transform>(fox1);
   fox1_transform.set_position(sbx::math::vector3{0.0f, 0.0f, 0.0f});
