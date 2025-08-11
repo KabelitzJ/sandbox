@@ -60,6 +60,7 @@
 
 #include <libsbx/animations/vertex3d.hpp>
 #include <libsbx/animations/mesh.hpp>
+#include <libsbx/animations/animator.hpp>
 
 namespace sbx::animations {
 
@@ -160,10 +161,10 @@ public:
     // }
 
     SBX_SCOPED_TIMER_BLOCK("skinned_mesh_subrenderer::submit") {
-      auto mesh_query = scene.query<const scenes::skinned_mesh, scenes::animation_state>();
+      auto mesh_query = scene.query<const scenes::skinned_mesh, animations::animator>();
 
-      for (auto&& [node, skinned_mesh, animation_state] : mesh_query.each()) {
-        _submit_mesh(node, skinned_mesh, animation_state);
+      for (auto&& [node, skinned_mesh, animator] : mesh_query.each()) {
+        _submit_mesh(node, skinned_mesh, animator);
       }
     }
 
@@ -195,7 +196,7 @@ private:
     std::uint32_t count;
   }; // struct draw_command_range
 
-  auto _submit_mesh(const scenes::node node, const scenes::skinned_mesh& skinned_mesh, scenes::animation_state& animation_state) -> void {
+  auto _submit_mesh(const scenes::node node, const scenes::skinned_mesh& skinned_mesh, animator& animator) -> void {
     EASY_FUNCTION();
     auto& assets_module = core::engine::get_module<assets::assets_module>();
     auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
@@ -210,15 +211,7 @@ private:
 
     auto& skeleton = mesh.skeleton();
 
-    // Advance current time in TICKS
-    animation_state.current_time += (core::engine::delta_time().value() * animation_state.speed);
-
-    // Wrap if looping
-    if (animation_state.looping && animation_state.current_time > animation.duration()) {
-      animation_state.current_time = std::fmod(animation_state.current_time, animation.duration());
-    }
-
-    auto bone_matrices = skeleton.evaluate_pose(animation, animation_state.current_time);
+    const auto bone_matrices = animator.evaluate_pose(skeleton);
 
     // [NOTE] : Get this offset befor appending the new matrices to get the offset into the big array in the shader
     const auto bone_matrices_offset = static_cast<std::uint32_t>(_bone_matrices.size());

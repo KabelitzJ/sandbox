@@ -16,6 +16,7 @@
 #include <libsbx/assets/assets.hpp>
 #include <libsbx/ui/ui.hpp>
 #include <libsbx/physics/physics.hpp>
+#include <libsbx/animations/animations.hpp>
 
 #include <demo/camera_controller.hpp>
 #include <demo/player_controller.hpp>

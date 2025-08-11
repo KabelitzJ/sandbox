@@ -33,6 +33,8 @@ struct rotator { };
 
 struct walker { };
 
+static auto fox1 = sbx::scenes::node{};
+
 application::application()
 : sbx::core::application{},
   _rotation{sbx::math::degree{0}} { 
@@ -330,12 +332,73 @@ application::application()
 
 
   // Fox
-  auto fox1 = scene.create_node("Fox");
+  fox1 = scene.create_node("Fox");
 
   scene.add_material<sbx::scenes::material>("fox", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 1.0f, 1.0f, scene.get_image("fox_albedo"));
 
   scene.add_component<sbx::scenes::skinned_mesh>(fox1, scene.get_mesh("fox"), scene.get_animation("Walk"), scene.get_material("fox"));
+
   auto& fox_animator = scene.add_component<sbx::animations::animator>(fox1);
+
+  fox_animator.add_state({"Walk", scene.get_animation("Walk"), true, 1.0f });
+  fox_animator.add_state({"Survey", scene.get_animation("Survey"), true, 1.0f });
+  fox_animator.add_state({"Run", scene.get_animation("Run"), true, 1.0f });
+
+  fox_animator.set_float("speed", 0.0f);   // will be updated every frame
+
+  fox_animator.add_transition({
+    "Walk", "Survey", 0.20f,
+    [&](const sbx::animations::animator& a){
+      const auto& p = a.get_parameters().float_values;
+      const auto it = p.find("speed");
+      return it != p.end() && it->second <= 0.05f;
+    },
+    false
+  });
+
+  fox_animator.add_transition({
+    "Run", "Survey", 0.25f,
+    [&](const sbx::animations::animator& a){
+      const auto& p = a.get_parameters().float_values;
+      const auto it = p.find("speed");
+      return it != p.end() && it->second <= 0.05f;
+    },
+    false
+  });
+
+  // Walk ↔ Run thresholds
+  fox_animator.add_transition({
+    "Walk", "Run", 0.15f,
+    [&](const sbx::animations::animator& a){
+      const auto& p = a.get_parameters().float_values;
+      const auto it = p.find("speed");
+      return it != p.end() && it->second >= 2.0f;
+    },
+    false
+  });
+
+  fox_animator.add_transition({
+    "Run", "Walk", 0.15f,
+    [&](const sbx::animations::animator& a){
+      const auto& p = a.get_parameters().float_values;
+      const auto it = p.find("speed");
+      return it != p.end() && it->second < 2.0f && it->second > 0.05f;
+    },
+    false
+  });
+
+  // Survey → Walk when starting to move
+  fox_animator.add_transition({
+    "Survey", "Walk", 0.20f,
+    [&](const sbx::animations::animator& a){
+      const auto& p = a.get_parameters().float_values;
+      const auto it = p.find("speed");
+      return it != p.end() && it->second > 0.05f && it->second < 2.0f;
+    },
+    false
+  });
+
+  fox_animator.play("Survey", true);
 
   auto& fox1_transform = scene.get_component<sbx::math::transform>(fox1);
   fox1_transform.set_position(sbx::math::vector3{0.0f, 0.0f, 0.0f});
@@ -559,6 +622,25 @@ auto application::update() -> void  {
       }
     }
   }
+
+  
+  static auto fox_speed = 0.0f;
+
+  if (sbx::devices::input::is_key_pressed(sbx::devices::key::up)) {
+    fox_speed += 0.2f;
+  } else if (sbx::devices::input::is_key_pressed(sbx::devices::key::down)) {
+    fox_speed -= 0.2f;
+  }
+
+  fox_speed = std::clamp(fox_speed, 0.0f, 2.0f);
+
+  sbx::utility::logger<"demo">::info("fox_speed: {}", fox_speed);
+
+  auto& fox_animator = scene.get_component<sbx::animations::animator>(fox1);
+  fox_animator.set_float("speed", fox_speed);
+
+  auto& fox_transform = scene.get_component<sbx::math::transform>(fox1);
+  fox_transform.set_rotation(sbx::math::vector3::up, _rotation);
 
   _camera_controller.update();
     

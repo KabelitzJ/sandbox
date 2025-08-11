@@ -38,6 +38,8 @@ public:
 
   auto add_bone(const std::string& name, const bone& bone) -> void;
 
+  auto inverse_root_transform() const -> const math::matrix4x4&;
+  
   auto set_inverse_root_transform(const math::matrix4x4& inverse_root_transform) -> void;
 
   auto bones() const -> const std::vector<bone>&;

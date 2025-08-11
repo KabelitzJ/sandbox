@@ -18,6 +18,8 @@
 
 #include <libsbx/assets/assets_module.hpp>
 
+#include <libsbx/animations/skeleton.hpp>
+
 namespace sbx::animations {
 
 struct bone_transform {
@@ -29,7 +31,7 @@ struct bone_transform {
 inline auto lerp_bone_transform(const bone_transform& a, const bone_transform& b, const std::float_t time) -> bone_transform {
   return bone_transform{
     math::vector3::lerp(a.position, b.position, time),
-    math::quaternion::slerp(a.rotation, b.rotation,time ),
+    math::quaternion::slerp(a.rotation, b.rotation,time),
     math::vector3::lerp(a.scale, b.scale, time)
   };
 }
@@ -51,15 +53,20 @@ inline auto sample_clip_locals(const skeleton& skeleton, const math::uuid& anima
 
     auto transform = bone_transform{};
 
-    transform.rotation = math::quaternion::identity;
-    transform.scale = {1,1,1};
-
     if (entry != tracks.end()) {
       const auto& track = entry->second;
 
       transform.position = track.position_spline.sample(time);
       transform.rotation = math::quaternion::normalized(track.rotation_spline.sample(time));
       transform.scale = track.scale_spline.sample(time);
+    } else {
+      const auto& bind_matrix = bones[i].local_bind_matrix;
+
+      const auto [position, rotation, scale] = math::decompose(bind_matrix);
+
+      transform.position = position;
+      transform.rotation = rotation;
+      transform.scale = scale;
     }
 
     locals[i] = transform;
@@ -68,7 +75,7 @@ inline auto sample_clip_locals(const skeleton& skeleton, const math::uuid& anima
   return locals;
 }
 
-inline auto locals_to_final_matrices(const skeleton& skeleton, const std::vector<bone_transform>& local_transforms, const math::matrix4x4& inverse_root_transform) -> std::vector<math::matrix4x4> {
+inline auto locals_to_final_matrices(const skeleton& skeleton, const std::vector<bone_transform>& local_transforms) -> std::vector<math::matrix4x4> {
   const auto bone_count = skeleton.bone_count();
 
   auto global_matrices = utility::make_vector<math::matrix4x4>(bone_count, math::matrix4x4::identity);
@@ -87,8 +94,8 @@ inline auto locals_to_final_matrices(const skeleton& skeleton, const std::vector
 
     const auto global_matrix = (bones[bone_index].parent_id != skeleton::bone::null) ? global_matrices[bones[bone_index].parent_id] * local_matrix : local_matrix;
 
-    global_matrices[bone_index] = global_matrix;
-    final_matrices[bone_index] = inverse_root_transform * global_matrix * bones[bone_index].inverse_bind_matrix;
+    final_matrices[bone_index] = skeleton.inverse_root_transform() * global_matrix * bones[bone_index].inverse_bind_matrix;
+    global_matrices[bone_index] = std::move(global_matrix);
   }
 
   return final_matrices;
@@ -126,8 +133,8 @@ public:
     _state_map[new_state.name] = new_state;
   }
 
-  auto add_transition(transition&& new_transition) -> void {
-    _transitions.push_back(std::move(new_transition));
+  auto add_transition(transition&& transition) -> void {
+    _transitions.push_back(std::move(transition));
   }
 
   auto set_bool(const utility::hashed_string& key, bool value) -> void { 
@@ -197,7 +204,7 @@ public:
         }
 
         if (rule.has_exit_time) {
-          const std::float_t normalized_time = get_normalized_time(_current_state, _current_state_time);
+          const std::float_t normalized_time = _get_normalized_time(_current_state, _current_state_time);
 
           if (normalized_time + 1e-6f < rule.exit_time_normalized) {
             continue;
@@ -231,7 +238,7 @@ public:
     }
   }
 
-  auto evaluate(const skeleton& skeleton, const math::matrix4x4& inverse_root_transform) -> std::vector<math::matrix4x4> {
+  auto evaluate_pose(const skeleton& skeleton) -> std::vector<math::matrix4x4> {
     if (!_has_valid_clip(_current_state)) {
       return utility::make_vector<math::matrix4x4>(skeleton.bone_count(), math::matrix4x4::identity);
     }
@@ -248,21 +255,11 @@ public:
         blended_locals[i] = lerp_bone_transform(current_locals[i], next_locals[i], blend_factor);
       }
 
-      return locals_to_final_matrices(skeleton, blended_locals, inverse_root_transform);
+      return locals_to_final_matrices(skeleton, blended_locals);
     } else {
       auto current_locals = sample_clip_locals(skeleton, _current_state.animation_id, _current_state_time);
-      return locals_to_final_matrices(skeleton, current_locals, inverse_root_transform);
+      return locals_to_final_matrices(skeleton, current_locals);
     }
-  }
-
-  auto get_normalized_time(const state& state, const std::float_t time) const -> std::float_t {
-    const auto duration = _get_clip_duration(state.animation_id);
-
-    if (duration <= 1e-6f) {
-      return 0.0f;
-    }
-
-    return std::fmod(std::max(time, 0.0f), duration) / duration;
   }
 
   auto get_current_state_name() const -> const utility::hashed_string& { 
@@ -299,6 +296,16 @@ private:
     const auto& clip = assets_module.get_asset<animations::animation>(animation_id);
 
     return clip.duration();
+  }
+
+  static auto _get_normalized_time(const state& state, const std::float_t time) -> std::float_t {
+    const auto duration = _get_clip_duration(state.animation_id);
+
+    if (duration <= 1e-6f) {
+      return 0.0f;
+    }
+
+    return std::fmod(std::max(time, 0.0f), duration) / duration;
   }
 
   auto _wrap_state_time(const state& state, std::float_t time) const -> std::float_t {

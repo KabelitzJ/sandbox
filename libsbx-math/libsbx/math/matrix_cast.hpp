@@ -117,6 +117,42 @@ requires (dispatcher_for<detail::matrix_cast_impl<Columns, Rows, std::remove_cvr
   return detail::matrix_cast_impl<Columns, Rows, std::remove_cvref_t<From>>::invoke(from);
 }
 
+struct decompose_result {
+  vector3 position;
+  quaternion rotation;
+  vector3 scale;
+}; // struct decompose_result
+
+[[nodiscard]] constexpr auto decompose(const matrix4x4& matrix) noexcept -> decompose_result {
+  auto result = decompose_result{};
+
+  // Extract translation
+  result.position = { matrix[3][0], matrix[3][1], matrix[3][2] };
+
+  // Extract scale factors
+  result.scale.x() = math::vector3(matrix[0][0], matrix[0][1], matrix[0][2]).length();
+  result.scale.y() = math::vector3(matrix[1][0], matrix[1][1], matrix[1][2]).length();
+  result.scale.z() = math::vector3(matrix[2][0], matrix[2][1], matrix[2][2]).length();
+
+  // Normalize the rotation part of the matrix
+  auto rotation_matrix = math::matrix4x4{matrix};
+  rotation_matrix[0][0] /= result.scale.x();
+  rotation_matrix[0][1] /= result.scale.x();
+  rotation_matrix[0][2] /= result.scale.x();
+
+  rotation_matrix[1][0] /= result.scale.y();
+  rotation_matrix[1][1] /= result.scale.y();
+  rotation_matrix[1][2] /= result.scale.y();
+
+  rotation_matrix[2][0] /= result.scale.z();
+  rotation_matrix[2][1] /= result.scale.z();
+  rotation_matrix[2][2] /= result.scale.z();
+
+  result.rotation = quaternion{rotation_matrix};
+
+  return result;
+}
+
 } // namespace sbx::math
 
 #endif // LIBSBX_MATH_MATRIX_CAST_HPP_
