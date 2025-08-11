@@ -19,6 +19,7 @@
 #include <libsbx/utility/noncopyable.hpp>
 #include <libsbx/utility/assert.hpp>
 #include <libsbx/utility/type_name.hpp>
+#include <libsbx/utility/timer.hpp>
 
 #include <libsbx/units/time.hpp>
 
