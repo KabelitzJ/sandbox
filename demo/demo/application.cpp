@@ -175,7 +175,11 @@ application::application()
   auto soldier = scene.create_node("Soldier");
 
   scene.add_component<sbx::scenes::skinned_mesh>(soldier, scene.get_mesh("soldier"), scene.get_animation("IdleStanding"), soldier_submeshes);
-  scene.add_component<sbx::scenes::animation_state>(soldier, 0.0f, 1.0f, true);
+
+  auto& soldier_animator = scene.add_component<sbx::animations::animator>(soldier);
+  soldier_animator.add_state({"IdleStanding", scene.get_animation("IdleStanding"), true, 1.0f});
+
+  soldier_animator.play("IdleStanding", true);
 
   auto& soldier_transform = scene.get_component<sbx::math::transform>(soldier);
   soldier_transform.set_position(sbx::math::vector3{5.0f, 0.0f, 3.0f});
@@ -593,6 +597,8 @@ static auto select_object_ids_in_rect(const sbx::graphics::image2d& image, VkFor
 }
 
 auto application::update() -> void  {
+  const auto delta_time = sbx::core::engine::delta_time();
+
   if (sbx::devices::input::is_key_pressed(sbx::devices::key::escape)) {
     sbx::core::engine::quit();
     return;
@@ -631,7 +637,7 @@ auto application::update() -> void  {
   static auto fox_speed = 0.0f;
   static auto direction = 1;
 
-  fox_speed += direction * 0.2f;
+  fox_speed += direction * 0.2f * delta_time;
 
   if (fox_speed > 2.5f) {
     fox_speed = 2.5f;
@@ -648,8 +654,6 @@ auto application::update() -> void  {
   fox_transform.set_rotation(sbx::math::vector3::up, _rotation);
 
   _camera_controller.update();
-    
-  const auto delta_time = sbx::core::engine::delta_time();
 
   _rotation += sbx::math::degree{45} * delta_time;
 
