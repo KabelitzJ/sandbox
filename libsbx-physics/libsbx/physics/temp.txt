@@ -1147,25 +1147,21 @@ auto gjk(const collider_data& first, const collider_data& second) -> std::option
 
 
 
-static auto _get_translation(const math::matrix4x4& matrix) -> math::vector3 {
+static auto get_translation(const math::matrix4x4& matrix) -> math::vector3 {
     return { matrix[3].x(), matrix[3].y(), matrix[3].z() };
   }
 
-  static auto _get_rotation(const math::matrix4x4& matrix) -> math::matrix3x3 {
+  static auto get_rotation(const math::matrix4x4& matrix) -> math::quaternion {
     const math::vector3 col0 = { matrix[0].x(), matrix[0].y(), matrix[0].z() };
     const math::vector3 col1 = { matrix[1].x(), matrix[1].y(), matrix[1].z() };
     const math::vector3 col2 = { matrix[2].x(), matrix[2].y(), matrix[2].z() };
 
-    return math::matrix3x3{col0, col1, col2};
+    const auto rotation_matrix = math::matrix3x3{math::vector3::normalized(col0), math::vector3::normalized(col1), math::vector3::normalized(col2)};
+
+    return math::quaternion{rotation_matrix};
   }
 
-  static auto _get_normalized_rotation(const math::matrix4x4& matrix) -> math::matrix3x3 {
-    const auto rotation = _get_rotation(matrix);
-
-    return math::matrix3x3{math::vector3::normalized(rotation[0]), math::vector3::normalized(rotation[1]), math::vector3::normalized(rotation[2])};
-  }
-
-  static auto _from_angular_velocity(const math::vector3& angular_velocity, const units::second delta_time) -> math::quaternion {
+  static auto from_angular_velocity(const math::vector3& angular_velocity, const units::second delta_time) -> math::quaternion {
     const auto angle = angular_velocity.length() * delta_time;
 
     if (angle < 1e-6f) {
@@ -1177,7 +1173,7 @@ static auto _get_translation(const math::matrix4x4& matrix) -> math::vector3 {
     return math::quaternion{axis, math::angle{math::radian{angle}}};
   }
 
-  auto _integrate_rigidbodies() -> void {
+  auto integrate_rigidbodies() -> void {
     SBX_SCOPED_TIMER("physics_module::integrate_rigidbodies");
 
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
@@ -1192,10 +1188,11 @@ static auto _get_translation(const math::matrix4x4& matrix) -> math::vector3 {
         continue;
       }
 
-      const auto world_position = _get_translation(global_transform.model);
-      const auto world_rotation = _get_normalized_rotation(global_transform.model);
+      const auto world_position = get_translation(global_transform.model);
+      const auto world_rotation = get_rotation(global_transform.model);
+      const auto rotation_matrix = math::matrix_cast<3, 3>(world_rotation);
 
-      rigidbody.update_inertia_tensor_world(world_rotation);
+      rigidbody.update_inertia_tensor_world(rotation_matrix);
 
       // Linear motion
       const auto inverse_mass = rigidbody.inverse_mass();
@@ -1209,7 +1206,7 @@ static auto _get_translation(const math::matrix4x4& matrix) -> math::vector3 {
       const auto angular_acceleration = rigidbody.inverse_inertia_tensor_world() * rigidbody.torque();
       rigidbody.add_angular_velocity(angular_acceleration * delta_time);
 
-      const auto delta_rotation = _from_angular_velocity(rigidbody.angular_velocity(), delta_time);
+      const auto delta_rotation = from_angular_velocity(rigidbody.angular_velocity(), delta_time);
       transform.set_rotation(math::quaternion::normalized(delta_rotation * transform.rotation()));
 
       rigidbody.clear_dynamic_forces();
