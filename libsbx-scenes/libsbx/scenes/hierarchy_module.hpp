@@ -65,7 +65,6 @@ public:
       const auto is_dirty = is_parent_dirty || transform.is_dirty();
 
       if (is_dirty) {
-        global_transform.parent = parent_matrix;
         global_transform.model = parent_matrix * math::matrix_cast<4, 4>(transform);
         global_transform.normal = math::matrix4x4::transposed(math::matrix4x4::inverted(global_transform.model));
         transform.clear_is_dirty();

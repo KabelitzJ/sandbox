@@ -148,6 +148,10 @@ public:
         EASY_END_BLOCK;
       }
 
+      EASY_BLOCK("stage post_fixed");
+      _update_stage(stage::post_fixed);
+      EASY_END_BLOCK;
+
       EASY_BLOCK("stage rendering");
       _update_stage(stage::rendering);
       EASY_END_BLOCK;

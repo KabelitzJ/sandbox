@@ -446,7 +446,7 @@ application::application()
 
   auto floor = scene.create_node("Floor");
   scene.add_component<sbx::physics::rigidbody>(floor);
-  // scene.add_component<sbx::physics::collider>(floor, sbx::physics::box{sbx::math::vector3{-100.0f, -0.1f, -100.0f}, sbx::math::vector3{100.0f, 0.1f, 100.0f}});
+  scene.add_component<sbx::physics::collider>(floor, sbx::physics::box{sbx::math::vector3{50.0f, 1.0f, 50.0f}});
 
   for (auto y = 0; y < 5; ++y) {
     for (auto x = 0; x < 5; ++x) {
@@ -628,8 +628,8 @@ auto application::update() -> void  {
         auto& rigidbody = scene.add_component<sbx::physics::rigidbody>(cube, sbx::units::kilogram{1.0f});
         rigidbody.set_constant_acceleration({0.0f, -9.81f, 0.0f});
 
-        // scene.add_component<sbx::physics::collider>(cube, sbx::physics::box{sbx::math::vector3{-0.5f}, sbx::math::vector3{0.5f}});
-        // scene.add_component<sbx::physics::collider>(cube, sbx::physics::sphere{0.5f});
+        const auto& collider = scene.add_component<sbx::physics::collider>(cube, sbx::physics::box{sbx::math::vector3{0.5f}});
+        rigidbody.set_inverse_inertia_tensor_local(sbx::physics::local_inverse_inertia(rigidbody.mass(), collider));
       }
     }
   }

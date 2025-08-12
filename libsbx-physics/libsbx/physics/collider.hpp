@@ -16,7 +16,7 @@ struct box {
 
 using collider = std::variant<box>;
 
-inline auto compute_inverse_inertia_tensor(const box& box, const units::kilogram& mass) -> math::matrix3x3 {
+inline auto local_inverse_inertia(const units::kilogram& mass, const box& box) -> math::matrix3x3 {
   const float m = std::max(mass.value(), 0.0001f);
   const float w = box.half_extents.x();
   const float h = box.half_extents.y();
@@ -29,8 +29,8 @@ inline auto compute_inverse_inertia_tensor(const box& box, const units::kilogram
   };
 }
 
-inline auto compute_inverse_inertia_tensor(const collider& collider, const units::kilogram& mass) -> math::matrix3x3 {
-  return std::visit([&](const auto& shape) { return compute_inverse_inertia_tensor(shape, mass); }, collider);
+inline auto local_inverse_inertia(const units::kilogram& mass, const collider& collider) -> math::matrix3x3 {
+  return std::visit([&](const auto& shape) { return local_inverse_inertia(mass, shape); }, collider);
 }
 
 } // namespace sbx::physics

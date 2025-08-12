@@ -118,6 +118,10 @@ public:
     return basic_quaternion{x, y, z, w};
   }
 
+  [[nodiscard]] static constexpr auto conjugate(const basic_quaternion& quaternion) noexcept -> basic_quaternion {
+    return basic_quaternion{-quaternion.complex(), quaternion.scalar()};
+  }
+
   [[nodiscard]] static constexpr auto normalized(const basic_quaternion& quaternion) noexcept -> basic_quaternion {
     const auto length = quaternion.length();
 

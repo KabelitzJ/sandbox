@@ -53,6 +53,7 @@ private:
     normal,
     post,
     fixed,
+    post_fixed,
     rendering
   }; // enum class stage
 
