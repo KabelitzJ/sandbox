@@ -31,7 +31,7 @@ auto rigidbody::mass() const -> const units::kilogram& {
 }
 
 auto rigidbody::inverse_mass() const -> std::float_t {
-  return is_static() ? 0.0f : 1.0f / std::max(_mass.value(), 0.0001f);
+  return is_static() ? 0.0f : 1.0f / _mass.value();
 }
 
 auto rigidbody::set_mass(const units::kilogram& mass) -> void {
