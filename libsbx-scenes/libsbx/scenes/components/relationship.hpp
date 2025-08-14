@@ -6,43 +6,45 @@
 #include <vector>
 #include <ranges>
 
+#include <libsbx/scenes/node.hpp>
+
 namespace sbx::scenes {
 
 class relationship final {
 
 public:
 
-  relationship(math::uuid parent)
+  relationship(const node parent)
   : _parent{parent} { }
 
-  auto parent() const noexcept -> math::uuid {
+  auto parent() const noexcept -> node {
     return _parent;
   }
 
-  auto set_parent(math::uuid parent) noexcept -> void {
+  auto set_parent(const node parent) noexcept -> void {
     _parent = parent;
   }
 
-  auto children() const noexcept -> const std::vector<math::uuid>& {
+  auto children() const noexcept -> const std::vector<node>& {
     return _children;
   }
 
-  auto children() noexcept -> std::vector<math::uuid>& {
+  auto children() noexcept -> std::vector<node>& {
     return _children;
   }
 
-  auto add_child(math::uuid child) -> void {
+  auto add_child(const node child) -> void {
     _children.push_back(child);
   }
 
-  auto remove_child(math::uuid child) -> void {
+  auto remove_child(const node child) -> void {
     std::ranges::remove(_children, child);
   }
 
 private:
 
-  math::uuid _parent;
-  std::vector<math::uuid> _children;
+  node _parent;
+  std::vector<node> _children;
 
 }; // class relationship
 

@@ -13,7 +13,7 @@
 
 #include <libsbx/scenes/scenes_module.hpp>
 
-#include <libsbx/scenes/components/hierarchy.hpp>
+#include <libsbx/scenes/components/relationship.hpp>
 #include <libsbx/scenes/components/global_transform.hpp>
 
 namespace sbx::scenes {
@@ -60,7 +60,7 @@ public:
 
       auto& transform = scene.get_component<math::transform>(current);
       auto& global_transform = scene.get_component<scenes::global_transform>(current);
-      const auto& hierarchy = scene.get_component<const scenes::hierarchy>(current);
+      const auto& relationship = scene.get_component<const scenes::relationship>(current);
 
       const auto is_dirty = is_parent_dirty || transform.is_dirty();
 
@@ -71,11 +71,10 @@ public:
         transform.clear_is_dirty();
       }
 
-      auto child = hierarchy.first_child;
-
-      while (child != node::null) {
-        stack.push_back({child, global_transform.model, is_dirty});
-        child = scene.get_component<const scenes::hierarchy>(child).next_sibling;
+      for (const auto child : relationship.children()) {
+        if (child != scenes::node::null) {
+          stack.push_back({child, global_transform.model, is_dirty});
+        }
       }
     }
 

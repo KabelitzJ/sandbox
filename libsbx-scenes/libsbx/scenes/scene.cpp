@@ -32,7 +32,6 @@
 #include <libsbx/scenes/components/static_mesh.hpp>
 #include <libsbx/scenes/components/point_light.hpp>
 #include <libsbx/scenes/components/global_transform.hpp>
-#include <libsbx/scenes/components/hierarchy.hpp>
 
 namespace sbx::scenes {
 
@@ -46,10 +45,9 @@ scene::scene(const std::filesystem::path& path)
   const auto& root_id = add_component<scenes::id>(_root);
   _nodes.insert({root_id, _root});
 
-  add_component<scenes::relationship>(_root, math::uuid::null());
+  add_component<scenes::relationship>(_root, node_type::null);
   add_component<math::transform>(_root);
   add_component<scenes::tag>(_root, "ROOT");
-  add_component<scenes::hierarchy>(_root);
   add_component<scenes::global_transform>(_root);
 
   // [NOTE] KAJ 2023-10-17 : Initialize camera node
@@ -57,11 +55,9 @@ scene::scene(const std::filesystem::path& path)
 
   _nodes.insert({camera_id, _camera});
 
-  add_component<scenes::relationship>(_camera, root_id);
-  get_component<scenes::relationship>(_root).add_child(camera_id);
+  add_component<scenes::relationship>(_camera, _root);
+  get_component<scenes::relationship>(_root).add_child(_camera);
 
-  add_component<scenes::hierarchy>(_camera, _root);
-  get_component<scenes::hierarchy>(_root).first_child = _camera;
   add_component<scenes::global_transform>(_camera);
 
   add_component<math::transform>(_camera);
@@ -94,20 +90,8 @@ auto scene::create_child_node(const node_type parent, const std::string& tag, co
 
   _nodes.insert({id, node});
 
-  add_component<scenes::relationship>(node, get_component<scenes::id>(parent));
-  get_component<scenes::relationship>(parent).add_child(id);
-
-  auto& hierarchy = add_component<scenes::hierarchy>(node, parent);
-
-  auto& parent_hierarchy = get_component<scenes::hierarchy>(parent);
-
-  if (parent_hierarchy.first_child != node::null) {
-    auto& first_child_hierarchy = get_component<scenes::hierarchy>(parent_hierarchy.first_child);
-    first_child_hierarchy.previous_sibling = node;
-    hierarchy.next_sibling = parent_hierarchy.first_child;
-  } 
-
-  parent_hierarchy.first_child = node;
+  add_component<scenes::relationship>(node, parent);
+  get_component<scenes::relationship>(parent).add_child(node);
 
   add_component<scenes::global_transform>(node);
 
@@ -128,22 +112,11 @@ auto scene::destroy_node(const node_type node) -> void {
   // [TODO] KAJ 2025-05-10 : Fix this using heirarchy component and a stack
   const auto& id = get_component<scenes::id>(node);
   const auto& relationship = get_component<scenes::relationship>(node);
-  const auto& hierarchy = get_component<scenes::hierarchy>(node);
 
-  // for (auto& child_id : relationship.children()) {
-  //   if (auto child = find_node(child_id); child != node::null) {
-  //     destroy_node(child);
-  //   }
-  // }
-
-  for (auto child = hierarchy.first_child; child != node::null; child = get_component<scenes::hierarchy>(child).next_sibling) {
-    destroy_node(child);
-  }
-
-  if (auto entry = _nodes.find(relationship.parent()); entry != _nodes.end()) {
-    get_component<scenes::relationship>(entry->second).remove_child(id);
-  } else {
-    utility::logger<"scenes">::warn("Node '{}' has invalid parent", get_component<scenes::tag>(node));
+  for (auto& child : relationship.children()) {
+    if (child != node::null) {
+      destroy_node(child);
+    }
   }
 
   _nodes.erase(id);
@@ -332,13 +305,13 @@ auto scene::_save_components(YAML::Emitter& emitter, const node_type node) -> vo
   emitter << YAML::EndMap;
 
   // Hierarchy
-  const auto& hierarchy = get_component<scenes::hierarchy>(node);
+  const auto& relationship = get_component<scenes::relationship>(node);
 
   emitter << YAML::BeginMap;
 
   // We maybe dont need to store children as we can resolve dependencies by the parent alone
   emitter << YAML::Key << "type" << YAML::Value << "hierarchy";
-  emitter << YAML::Key << "parent" << YAML::Value << (hierarchy.parent != node_type::null ? get_component<scenes::id>(hierarchy.parent).value() : math::uuid::null().value());
+  emitter << YAML::Key << "parent" << YAML::Value << (relationship.parent() != node_type::null ? get_component<scenes::id>(relationship.parent()).value() : math::uuid::null().value());
 
   emitter << YAML::EndMap;
 

@@ -46,7 +46,6 @@
 #include <libsbx/scenes/components/id.hpp>
 #include <libsbx/scenes/components/selection_tag.hpp>
 #include <libsbx/scenes/components/tag.hpp>
-#include <libsbx/scenes/components/hierarchy.hpp>
 #include <libsbx/scenes/components/camera.hpp>
 
 namespace sbx::scenes {

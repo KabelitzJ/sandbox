@@ -73,7 +73,7 @@ public:
 
     _editor_theme.add_theme("Custom", [this]() { _setup_style(); });
 
-    _editor_theme.apply_theme("Bess Dark");
+    _editor_theme.apply_theme("Bar");
 
     _editor_font.load_font("Roboto", "demo/assets/fonts/Roboto-Regular.ttf", 16.0f);
     _editor_font.load_font("Geist", "demo/assets/fonts/Geist-Regular.ttf", 16.0f);
@@ -302,7 +302,7 @@ private:
     // auto flag = ImGuiTreeNodeFlags{ImGuiTreeNodeFlags_OpenOnArrow};
     auto flag = ImGuiTreeNodeFlags{ImGuiTreeNodeFlags_OpenOnArrow};
 
-    if (relationship.parent() == sbx::math::uuid::null()) {
+    if (relationship.parent() == sbx::scenes::node::null) {
       flag |= ImGuiTreeNodeFlags_DefaultOpen;
     }
 
@@ -325,8 +325,8 @@ private:
 
       _context_menu(node);
 
-      for (const auto& child_id : relationship.children()) {
-        if (auto child = scene.find_node(child_id); child != scenes::node::null) {
+      for (const auto& child : relationship.children()) {
+        if (child != scenes::node::null) {
           _build_tree(child);
         }
       }
