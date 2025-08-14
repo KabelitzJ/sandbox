@@ -166,20 +166,12 @@ public:
     init_info.ImageCount = desired_image_count;
     init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
     init_info.UseDynamicRendering = true;
-    init_info.ColorAttachmentFormat = VK_FORMAT_B8G8R8A8_SRGB;
+    // init_info.ColorAttachmentFormat = VK_FORMAT_B8G8R8A8_SRGB;
 
-    ImGui_ImplVulkan_Init(&init_info, nullptr);
+    ImGui_ImplVulkan_Init(&init_info);
 
     // Upload fonts
-    {
-      auto command_buffer = sbx::graphics::command_buffer{true};
-
-      ImGui_ImplVulkan_CreateFontsTexture(command_buffer);
-
-      command_buffer.submit_idle();
-
-      ImGui_ImplVulkan_DestroyFontUploadObjects();
-    }
+    ImGui_ImplVulkan_CreateFontsTexture();
   }
 
   ~editor_subrenderer() override {
