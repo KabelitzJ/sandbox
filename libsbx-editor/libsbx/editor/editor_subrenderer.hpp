@@ -16,6 +16,8 @@
 #include <libsbx/core/engine.hpp>
 #include <libsbx/core/version.hpp>
 
+#include <libsbx/assets/assets_module.hpp>
+
 #include <libsbx/devices/devices_module.hpp>
 
 #include <libsbx/scenes/scenes_module.hpp>
@@ -41,6 +43,8 @@ class editor_subrenderer final : public sbx::graphics::subrenderer {
 
   using base = sbx::graphics::subrenderer;
 
+  std::string _actual_ini_file;
+
 public:
 
   editor_subrenderer(const std::filesystem::path& path, const sbx::graphics::render_graph::graphics_pass& pass, const std::string& attachment_name)
@@ -60,11 +64,15 @@ public:
     ImNodes::CreateContext();
     ImPlot::CreateContext();
 
+    auto& assets_module = core::engine::get_module<assets::assets_module>();
+
+    _actual_ini_file = assets_module.resolve_path(ini_file).string();
+
     auto& io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-    io.IniFilename = ini_file.data();
+    io.IniFilename = _actual_ini_file.data();
 
     // ImGui::StyleColorsDark();
     ImNodes::StyleColorsDark();
