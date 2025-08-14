@@ -283,7 +283,7 @@ application::application()
 
   auto dragon = scene.create_node("Dragon"); //, sbx::scenes::transform{dragon_mesh.submesh_local_transform("dragon") * sbx::math::vector4{0, 0, 0, 1}});
 
-  scene.add_material<sbx::scenes::material>("cloth", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 0.5f, 1.0f, scene.get_image("checkerboard"));
+  scene.add_material<sbx::scenes::material>("cloth", sbx::scenes::material_type::opaque, sbx::math::color::blue(), 0.0f, 1.0f, 1.0f, scene.get_image("checkerboard"));
   scene.add_material<sbx::scenes::material>("dragon", sbx::scenes::material_type::transparent, sbx::math::color{0.0f, 0.6588f, 0.4196f, 0.6f}, 0.0f, 0.5f, 1.0f);
 
   scene.add_component<sbx::scenes::static_mesh>(dragon, scene.get_mesh("dragon"), std::vector<sbx::scenes::static_mesh::submesh>{{0u, scene.get_material("cloth")}, {1u, scene.get_material("dragon")}});
@@ -345,7 +345,7 @@ application::application()
   // Fox
   fox1 = scene.create_node("Fox");
 
-  scene.add_material<sbx::scenes::material>("fox", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 1.0f, 1.0f, scene.get_image("fox_albedo"));
+  scene.add_material<sbx::scenes::material>("fox", sbx::scenes::material_type::opaque, sbx::math::color::white(), 1.0f, 0.5f, 1.0f, scene.get_image("fox_albedo"));
 
   scene.add_component<sbx::scenes::skinned_mesh>(fox1, scene.get_mesh("fox"), scene.get_animation("Walk"), scene.get_material("fox"));
 
