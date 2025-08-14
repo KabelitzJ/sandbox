@@ -26,7 +26,6 @@
 #include <libsbx/ecs/registry.hpp>
 #include <libsbx/ecs/entity.hpp>
 
-#include <libsbx/math/transform.hpp>
 #include <libsbx/math/uuid.hpp>
 #include <libsbx/math/vector3.hpp>
 #include <libsbx/math/quaternion.hpp>
@@ -47,6 +46,7 @@
 #include <libsbx/scenes/components/selection_tag.hpp>
 #include <libsbx/scenes/components/tag.hpp>
 #include <libsbx/scenes/components/camera.hpp>
+#include <libsbx/scenes/components/transform.hpp>
 
 namespace sbx::scenes {
 
@@ -72,9 +72,9 @@ public:
 
   virtual ~scene() = default;
 
-  auto create_child_node(const node_type parent, const std::string& tag = "", const math::transform& transform = math::transform{}, const selection_tag& selection_tag = selection_tag::null) -> node_type;
+  auto create_child_node(const node_type parent, const std::string& tag = "", const scenes::transform& transform = scenes::transform{}, const selection_tag& selection_tag = selection_tag::null) -> node_type;
 
-  auto create_node(const std::string& tag = "", const math::transform& transform = math::transform{}, const selection_tag& selection_tag = selection_tag::null) -> node_type;  
+  auto create_node(const std::string& tag = "", const scenes::transform& transform = scenes::transform{}, const selection_tag& selection_tag = selection_tag::null) -> node_type;  
 
   auto destroy_node(const node_type node) -> void;
 
@@ -142,9 +142,9 @@ public:
 
   auto light_space() -> math::matrix4x4 {
     const auto& camera = get_component<scenes::camera>(_camera);
-    const auto& camera_transform = get_component<math::transform>(_camera);
+    const auto& camera_transform = get_component<scenes::transform>(_camera);
 
-    const auto camera_view = math::matrix4x4::inverted(math::matrix_cast<4, 4>(camera_transform));
+    const auto camera_view = math::matrix4x4::inverted(camera_transform.local_transform());
     const auto camera_projection = camera.projection(0.1f, 100.0f);
 
     const auto inverse_view_projection = math::matrix4x4::inverted(camera_projection * camera_view);

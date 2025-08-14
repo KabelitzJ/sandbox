@@ -63,8 +63,6 @@
 
 #include <libsbx/math/smooth_value.hpp>
 
-#include <libsbx/math/transform.hpp>
-
 #include <libsbx/math/volume.hpp>
 #include <libsbx/math/sphere.hpp>
 #include <libsbx/math/plane.hpp>

@@ -46,7 +46,7 @@ scene::scene(const std::filesystem::path& path)
   _nodes.insert({root_id, _root});
 
   add_component<scenes::relationship>(_root, node_type::null);
-  add_component<math::transform>(_root);
+  add_component<scenes::transform>(_root);
   add_component<scenes::tag>(_root, "ROOT");
   add_component<scenes::global_transform>(_root);
 
@@ -60,7 +60,7 @@ scene::scene(const std::filesystem::path& path)
 
   add_component<scenes::global_transform>(_camera);
 
-  add_component<math::transform>(_camera);
+  add_component<scenes::transform>(_camera);
   add_component<scenes::tag>(_camera, "CAMERA");
 
   auto& devices_module = core::engine::get_module<devices::devices_module>();
@@ -83,7 +83,7 @@ scene::scene(const std::filesystem::path& path)
   _load_nodes(scene["nodes"]);
 }
 
-auto scene::create_child_node(const node_type parent, const std::string& tag, const math::transform& transform, const selection_tag& selection_tag) -> node_type {
+auto scene::create_child_node(const node_type parent, const std::string& tag, const scenes::transform& transform, const selection_tag& selection_tag) -> node_type {
   auto node = _registry.create();
 
   const auto& id = add_component<scenes::id>(node);
@@ -95,7 +95,7 @@ auto scene::create_child_node(const node_type parent, const std::string& tag, co
 
   add_component<scenes::global_transform>(node);
 
-  add_component<math::transform>(node, transform);
+  add_component<scenes::transform>(node, transform);
 
   add_component<scenes::tag>(node, !tag.empty() ? tag : scenes::tag{"Node"});
 
@@ -104,7 +104,7 @@ auto scene::create_child_node(const node_type parent, const std::string& tag, co
   return node;
 }
 
-auto scene::create_node(const std::string& tag, const math::transform& transform, const selection_tag& selection_tag) -> node_type {
+auto scene::create_node(const std::string& tag, const scenes::transform& transform, const selection_tag& selection_tag) -> node_type {
   return create_child_node(_root, tag, transform, selection_tag);
 }
 
@@ -131,7 +131,7 @@ auto scene::world_transform(const node_type node) -> math::matrix4x4 {
 
   utility::assert_that(has_component<scenes::global_transform>(node), "Node has no global_transform component");
 
-  const auto& transform = get_component<math::transform>(node);
+  const auto& transform = get_component<scenes::transform>(node);
   const auto& global_transform = get_component<scenes::global_transform>(node);
 
   if constexpr (utility::build_configuration_v == utility::build_configuration::debug) {
@@ -293,7 +293,7 @@ auto scene::_save_node(YAML::Emitter& emitter, const node_type node) -> void {
 
 auto scene::_save_components(YAML::Emitter& emitter, const node_type node) -> void {
   // Trasform
-  const auto& transform = get_component<math::transform>(node);
+  const auto& transform = get_component<scenes::transform>(node);
   
   emitter << YAML::BeginMap;
 

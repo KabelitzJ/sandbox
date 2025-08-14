@@ -130,7 +130,7 @@
 
 //     _scene_uniform_handler.push("projection", camera.projection());
 
-//     const auto& camera_transform = camera_node.get_component<sbx::math::transform>();
+//     const auto& camera_transform = camera_node.get_component<sbx::scenes::transform>();
 
 //     _scene_uniform_handler.push("view", sbx::math::matrix4x4::inverted(camera_transform.as_matrix()));
 
@@ -149,7 +149,7 @@
 //     for (const auto& node : primitive_nodes) {
 //       auto& primitive = node.get_component<demo::primitive>();
 //       auto& id = node.get_component<sbx::scenes::id>();
-//       auto& transform = node.get_component<sbx::math::transform>();
+//       auto& transform = node.get_component<sbx::scenes::transform>();
 
 //       _used_uniforms.insert(id);
 

@@ -4,7 +4,7 @@
 #include <libsbx/math/uuid.hpp>
 #include <libsbx/math/vector2.hpp>
 #include <libsbx/math/vector3.hpp>
-#include <libsbx/math/transform.hpp>
+#include <libsbx/scenes/components/transform.hpp>
 #include <libsbx/math/angle.hpp>
 #include <libsbx/math/smooth_value.hpp>
 
@@ -42,7 +42,7 @@ public:
 
     auto camera = scene.camera();
 
-    auto& transform = scene.get_component<sbx::math::transform>(camera);
+    auto& transform = scene.get_component<sbx::scenes::transform>(camera);
 
     // WASD movement
 

@@ -11,7 +11,6 @@
 #include <libsbx/math/matrix3x3.hpp>
 #include <libsbx/math/matrix4x4.hpp>
 #include <libsbx/math/quaternion.hpp>
-#include <libsbx/math/transform.hpp>
 
 namespace sbx::math {
 
@@ -99,15 +98,15 @@ struct matrix_cast_impl<3, 3, basic_quaternion<Type>> {
   }
 };
 
-template<>
-struct matrix_cast_impl<4, 4, transform> {
-  [[nodiscard]] static constexpr auto invoke(const transform& transform) -> matrix4x4 {
-    const auto translation = matrix4x4::translated(matrix4x4::identity, transform._position);
-    const auto scale = matrix4x4::scaled(matrix4x4::identity, transform._scale);
+// template<>
+// struct matrix_cast_impl<4, 4, transform> {
+//   [[nodiscard]] static constexpr auto invoke(const transform& transform) -> matrix4x4 {
+//     const auto translation = matrix4x4::translated(matrix4x4::identity, transform._position);
+//     const auto scale = matrix4x4::scaled(matrix4x4::identity, transform._scale);
 
-    return translation *transform. _rotation_matrix * scale;
-  }
-};
+//     return translation *transform. _rotation_matrix * scale;
+//   }
+// };
 
 } // namespace detail
 

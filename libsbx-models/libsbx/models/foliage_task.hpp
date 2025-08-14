@@ -6,7 +6,7 @@
 #include <libsbx/graphics/task.hpp>
 #include <libsbx/graphics/graphics_module.hpp>
 
-#include <libsbx/math/transform.hpp>
+#include <libsbx/scenes/components/transform.hpp>
 #include <libsbx/math/random.hpp>
 
 #include <libsbx/graphics/pipeline/compute_pipeline.hpp>
@@ -72,7 +72,7 @@ public:
 
     auto camera_node = scene.camera();
 
-    auto& transform = scene.get_component<math::transform>(camera_node);
+    auto& transform = scene.get_component<scenes::transform>(camera_node);
     auto& global_transform = scene.get_component<scenes::global_transform>(camera_node);
 
     const auto view = math::matrix4x4::inverted(global_transform.model);

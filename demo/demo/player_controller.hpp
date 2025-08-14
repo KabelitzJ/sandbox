@@ -2,7 +2,7 @@
 #define DEMO_PLAYER_CONTROLLER_HPP_
 
 #include <libsbx/math/vector3.hpp>
-#include <libsbx/math/transform.hpp>
+#include <libsbx/scenes/components/transform.hpp>
 
 #include <libsbx/core/engine.hpp>
 
@@ -31,9 +31,9 @@ public:
     const auto delta_time = sbx::core::engine::delta_time();
     auto movement = sbx::math::vector3{};
 
-    auto& transform = scene.get_component<sbx::math::transform>(player);
+    auto& transform = scene.get_component<sbx::scenes::transform>(player);
 
-    const auto& camera_transform = scene.get_component<sbx::math::transform>(camera);
+    const auto& camera_transform = scene.get_component<sbx::scenes::transform>(camera);
 
     const auto local_forward = sbx::math::vector3::cross(sbx::math::vector3::up, camera_transform.right()).normalize();
     const auto local_right = sbx::math::vector3::cross(sbx::math::vector3::up, camera_transform.forward()).normalize();

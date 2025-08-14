@@ -360,7 +360,7 @@ private:
       }
 
       if (ImGui::TreeNodeEx("Transform", ImGuiTreeNodeFlags_DefaultOpen)) {
-        auto& transform = scene.get_component<sbx::math::transform>(node);
+        auto& transform = scene.get_component<sbx::scenes::transform>(node);
 
         ImGui::Text("Position");
 
@@ -1101,7 +1101,7 @@ private:
       // auto light_matrix = math::matrix4x4::inverted(math::matrix4x4::look_at(origin, origin + direction, up));
 
       // const auto& camera = scene.get_component<scenes::camera>(camera_node);
-      // const auto& camera_transform = scene.get_component<math::transform>(camera_node);
+      // const auto& camera_transform = scene.get_component<scenes::transform>(camera_node);
 
       // const auto camera_view = math::matrix4x4::inverted(camera_transform.as_matrix());
       // const auto camera_projection = camera.projection(0.1f, 100.0f);

@@ -9,12 +9,12 @@
 #include <libsbx/core/engine.hpp>
 #include <libsbx/core/profiler.hpp>
 
-#include <libsbx/math/transform.hpp>
 
 #include <libsbx/scenes/scenes_module.hpp>
 
 #include <libsbx/scenes/components/relationship.hpp>
 #include <libsbx/scenes/components/global_transform.hpp>
+#include <libsbx/scenes/components/transform.hpp>
 
 namespace sbx::scenes {
 
@@ -58,7 +58,7 @@ public:
       const auto [current, parent_matrix, is_parent_dirty] = stack.back();
       stack.pop_back();
 
-      auto& transform = scene.get_component<math::transform>(current);
+      auto& transform = scene.get_component<scenes::transform>(current);
       auto& global_transform = scene.get_component<scenes::global_transform>(current);
       const auto& relationship = scene.get_component<const scenes::relationship>(current);
 
@@ -66,7 +66,7 @@ public:
 
       if (is_dirty) {
         global_transform.parent = parent_matrix; 
-        global_transform.model = parent_matrix * math::matrix_cast<4, 4>(transform);
+        global_transform.model = parent_matrix * transform.local_transform();
         global_transform.normal = math::matrix4x4::transposed(math::matrix4x4::inverted(global_transform.model));
         transform.clear_is_dirty();
       }

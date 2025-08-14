@@ -11,7 +11,7 @@
 #include <libsbx/containers/octree.hpp>
 
 #include <libsbx/math/constants.hpp>
-#include <libsbx/math/transform.hpp>
+#include <libsbx/scenes/components/transform.hpp>
 #include <libsbx/math/volume.hpp>
 
 #include <libsbx/physics/collider.hpp>
@@ -102,7 +102,7 @@ private:
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
     auto& scene = scenes_module.scene();
 
-    auto query = scene.query<math::transform, const scenes::global_transform, physics::rigidbody>();
+    auto query = scene.query<scenes::transform, const scenes::global_transform, physics::rigidbody>();
 
     const auto delta_time = core::engine::fixed_delta_time();
 
@@ -149,7 +149,7 @@ private:
     auto& scene = scenes_module.scene();
 
     auto tree = containers::octree<math::uuid, 16u, 8u>{math::volume{math::vector3{-100.0f}, math::vector3{100.0f}}};
-    auto query = scene.query<const physics::collider, const math::transform, const scenes::global_transform, const scenes::id>();
+    auto query = scene.query<const physics::collider, const scenes::transform, const scenes::global_transform, const scenes::id>();
 
     for (auto&& [node, collider, transform, global_transform, id] : query.each()) {
       const auto volume = bounding_volume(collider, get_translation(global_transform.model));
@@ -198,12 +198,12 @@ private:
         continue;
       }
 
-      const auto& t1 = scene.get_component<math::transform>(pair.first);
+      const auto& t1 = scene.get_component<scenes::transform>(pair.first);
       const auto& c1 = scene.get_component<physics::collider>(pair.first);
       const auto rs1 = math::matrix_cast<4, 4>(t1.rotation()) * math::matrix4x4::scaled(math::matrix4x4::identity, t1.scale());
       const auto d1 = collider_data{t1.position(), rs1, c1};
       
-      const auto& t2 = scene.get_component<math::transform>(pair.second);
+      const auto& t2 = scene.get_component<scenes::transform>(pair.second);
       const auto& c2 = scene.get_component<physics::collider>(pair.second);
       const auto rs2 = math::matrix_cast<4, 4>(t2.rotation()) * math::matrix4x4::scaled(math::matrix4x4::identity, t2.scale());
       const auto d2 = collider_data{t2.position(), rs2, c2};
@@ -230,10 +230,10 @@ private:
       return;
     }
 
-    auto& t1 = scene.get_component<math::transform>(nodes.first);
+    auto& t1 = scene.get_component<scenes::transform>(nodes.first);
     auto& rb1 = scene.get_component<physics::rigidbody>(nodes.first);
     
-    auto& t2 = scene.get_component<math::transform>(nodes.second);
+    auto& t2 = scene.get_component<scenes::transform>(nodes.second);
     auto& rb2 = scene.get_component<physics::rigidbody>(nodes.second);
 
     // --- 1. Resolve Penetration ---

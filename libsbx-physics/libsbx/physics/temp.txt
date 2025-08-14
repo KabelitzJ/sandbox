@@ -1179,7 +1179,7 @@ static auto get_translation(const math::matrix4x4& matrix) -> math::vector3 {
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
     auto& scene = scenes_module.scene();
 
-    auto query = scene.query<math::transform, const scenes::global_transform, physics::rigidbody>();
+    auto query = scene.query<scenes::transform, const scenes::global_transform, physics::rigidbody>();
 
     const auto delta_time = core::engine::fixed_delta_time();
 

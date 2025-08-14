@@ -4,7 +4,7 @@
 #include <string>
 #include <unordered_map>
 
-#include <libsbx/math/transform.hpp>
+#include <libsbx/scenes/components/transform.hpp>
 
 #include <libsbx/graphics/graphics_module.hpp>
 #include <libsbx/graphics/buffers/uniform_buffer.hpp>
@@ -67,7 +67,7 @@ public:
 
     pipeline.bind(command_buffer);
 
-    const auto& camera_transform = scene.get_component<math::transform>(camera_node);
+    const auto& camera_transform = scene.get_component<scenes::transform>(camera_node);
 
     _scene_uniform_handler.push("camera_position", camera_transform.position());
 

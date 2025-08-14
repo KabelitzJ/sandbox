@@ -181,7 +181,7 @@ application::application()
 
   soldier_animator.play("IdleStanding", true);
 
-  auto& soldier_transform = scene.get_component<sbx::math::transform>(soldier);
+  auto& soldier_transform = scene.get_component<sbx::scenes::transform>(soldier);
   soldier_transform.set_position(sbx::math::vector3{5.0f, 0.0f, 3.0f});
   soldier_transform.set_scale(sbx::math::vector3{3.0f});
 
@@ -196,7 +196,7 @@ application::application()
 
   // scene.add_component<sbx::scenes::static_mesh>(soldier, scene.get_mesh("soldier_static"), soldier_submeshes);
 
-  // auto& soldier_transform = scene.get_component<sbx::math::transform>(soldier);
+  // auto& soldier_transform = scene.get_component<sbx::scenes::transform>(soldier);
   // soldier_transform.set_position(sbx::math::vector3{5.0f, 0.0f, 3.0f});
   // soldier_transform.set_scale(sbx::math::vector3{3.0f});
 
@@ -205,7 +205,7 @@ application::application()
   // scene.add_component<sbx::scenes::skinned_mesh>(soldier1, scene.get_mesh("soldier"), soldier_animation_id, std::vector<sbx::scenes::skinned_mesh::submesh>{{0u, scene.get_material("soldier_body")}});  
   // scene.add_component<sbx::scenes::animation_state>(soldier1, 0.0f, 1.0f, true);
 
-  // auto& soldier_transform = scene.get_component<sbx::math::transform>(soldier1);
+  // auto& soldier_transform = scene.get_component<sbx::scenes::transform>(soldier1);
   // soldier_transform.set_position(sbx::math::vector3{7, 0, 3});
   // soldier_transform.set_scale(sbx::math::vector3{4, 4, 4});
 
@@ -214,7 +214,7 @@ application::application()
   // scene.add_component<sbx::scenes::skinned_mesh>(soldier2, scene.get_mesh("soldier"), soldier_animation_id, std::vector<sbx::scenes::skinned_mesh::submesh>{{1u, scene.get_material("soldier_helmet")}});  
   // scene.add_component<sbx::scenes::animation_state>(soldier2, 0.0f, 1.0f, true);
 
-  // auto& soldier2_transform = scene.get_component<sbx::math::transform>(soldier2);
+  // auto& soldier2_transform = scene.get_component<sbx::scenes::transform>(soldier2);
   // soldier2_transform.set_position(sbx::math::vector3{10, 0, 3});
   // soldier2_transform.set_scale(sbx::math::vector3{4, 4, 4});
 
@@ -223,7 +223,7 @@ application::application()
   // scene.add_component<sbx::scenes::skinned_mesh>(soldier3, scene.get_mesh("soldier"), soldier_animation_id, std::vector<sbx::scenes::skinned_mesh::submesh>{{2u, scene.get_material("soldier_backpack")}});  
   // scene.add_component<sbx::scenes::animation_state>(soldier3, 0.0f, 1.0f, true);
 
-  // auto& soldier3_transform = scene.get_component<sbx::math::transform>(soldier3);
+  // auto& soldier3_transform = scene.get_component<sbx::scenes::transform>(soldier3);
   // soldier3_transform.set_position(sbx::math::vector3{13, 0, 3});
   // soldier3_transform.set_scale(sbx::math::vector3{4, 4, 4});
 
@@ -232,7 +232,7 @@ application::application()
   // scene.add_component<sbx::scenes::skinned_mesh>(soldier4, scene.get_mesh("soldier"), soldier_animation_id, std::vector<sbx::scenes::skinned_mesh::submesh>{{3u, scene.get_material("soldier_head")}});  
   // scene.add_component<sbx::scenes::animation_state>(soldier4, 0.0f, 1.0f, true);
 
-  // auto& soldier4_transform = scene.get_component<sbx::math::transform>(soldier4);
+  // auto& soldier4_transform = scene.get_component<sbx::scenes::transform>(soldier4);
   // soldier4_transform.set_position(sbx::math::vector3{16, 0, 3});
   // soldier4_transform.set_scale(sbx::math::vector3{4, 4, 4});
 
@@ -247,7 +247,7 @@ application::application()
 
   // Circling point lights
 
-  _light_center = scene.create_node("LightCenter", sbx::math::transform{sbx::math::vector3{0.0f, 10.0f, 0.0f}});
+  _light_center = scene.create_node("LightCenter", sbx::scenes::transform{sbx::math::vector3{0.0f, 10.0f, 0.0f}});
 
   
   const auto radius = 20.0f;
@@ -261,27 +261,27 @@ application::application()
 
     scene.add_material<sbx::scenes::material>(material_name, sbx::scenes::material_type::transparent, color, 0.0f, 0.5f, 1.0f);
 
-    auto light = scene.create_child_node(_light_center, fmt::format("Light{}", i), sbx::math::transform{sbx::math::vector3{radius * sbx::math::cos(angle), 0.0f, radius * sbx::math::sin(angle)}});
+    auto light = scene.create_child_node(_light_center, fmt::format("Light{}", i), sbx::scenes::transform{sbx::math::vector3{radius * sbx::math::cos(angle), 0.0f, radius * sbx::math::sin(angle)}});
 
     scene.add_component<sbx::scenes::point_light>(light, color, 50.0f);
 
     scene.add_component<sbx::scenes::static_mesh>(light, scene.get_mesh("sphere"), scene.get_material(material_name));
 
-    auto& light_transform = scene.get_component<sbx::math::transform>(light);
+    auto& light_transform = scene.get_component<sbx::scenes::transform>(light);
     light_transform.set_scale(sbx::math::vector3{0.2f, 0.2f, 0.2f});
   }
 
   // Dragon
   auto& dragon_mesh = assets_module.get_asset<sbx::models::mesh>(scene.get_mesh("dragon"));
 
-  auto dragon = scene.create_node("Dragon"); //, sbx::math::transform{dragon_mesh.submesh_local_transform("dragon") * sbx::math::vector4{0, 0, 0, 1}});
+  auto dragon = scene.create_node("Dragon"); //, sbx::scenes::transform{dragon_mesh.submesh_local_transform("dragon") * sbx::math::vector4{0, 0, 0, 1}});
 
   scene.add_material<sbx::scenes::material>("cloth", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 0.5f, 1.0f, scene.get_image("checkerboard"));
   scene.add_material<sbx::scenes::material>("dragon", sbx::scenes::material_type::transparent, sbx::math::color{0.0f, 0.6588f, 0.4196f, 0.6f}, 0.0f, 0.5f, 1.0f);
 
   scene.add_component<sbx::scenes::static_mesh>(dragon, scene.get_mesh("dragon"), std::vector<sbx::scenes::static_mesh::submesh>{{0u, scene.get_material("cloth")}, {1u, scene.get_material("dragon")}});
 
-  auto& dragon_transform = scene.get_component<sbx::math::transform>(dragon);
+  auto& dragon_transform = scene.get_component<sbx::scenes::transform>(dragon);
   dragon_transform.set_position(sbx::math::vector3{-8.0f, 2.0f, 4.0f});
   dragon_transform.set_rotation(sbx::math::vector3::up, sbx::math::degree{45});
   dragon_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
@@ -294,7 +294,7 @@ application::application()
 
   scene.add_component<sbx::scenes::static_mesh>(helmet, scene.get_mesh("helmet"), scene.get_material("helmet"));
 
-  auto& helmet_transform = scene.get_component<sbx::math::transform>(helmet);
+  auto& helmet_transform = scene.get_component<sbx::scenes::transform>(helmet);
   helmet_transform.set_position(sbx::math::vector3{0.0f, 6.0f, 0.0f});
   // helmet_transform.set_rotation(sbx::math::vector3::right, sbx::math::degree{90});
   helmet_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
@@ -307,7 +307,7 @@ application::application()
 
   scene.add_component<sbx::scenes::static_mesh>(box1, scene.get_mesh("cube"), scene.get_material("box1"));
 
-  auto& box1_transform = scene.get_component<sbx::math::transform>(box1);
+  auto& box1_transform = scene.get_component<sbx::scenes::transform>(box1);
   box1_transform.set_position(sbx::math::vector3{6.0f, 1.0f, 6.0f});
 
 
@@ -318,7 +318,7 @@ application::application()
 
   scene.add_component<sbx::scenes::static_mesh>(box2, scene.get_mesh("cube"), scene.get_material("box2"));
 
-  auto& box2_transform = scene.get_component<sbx::math::transform>(box2);
+  auto& box2_transform = scene.get_component<sbx::scenes::transform>(box2);
   box2_transform.set_position(sbx::math::vector3{6.0f, 1.0f, 7.0f});
 
 
@@ -329,7 +329,7 @@ application::application()
 
   scene.add_component<sbx::scenes::static_mesh>(box3, scene.get_mesh("cube"), scene.get_material("box3"));
 
-  auto& box3_transform = scene.get_component<sbx::math::transform>(box3);
+  auto& box3_transform = scene.get_component<sbx::scenes::transform>(box3);
   box3_transform.set_position(sbx::math::vector3{6.0f, 1.0f, 8.0f});
 
   _selection_buffer = graphics_module.add_resource<sbx::graphics::storage_buffer>(sbx::graphics::storage_buffer::min_size);
@@ -409,7 +409,7 @@ application::application()
 
   fox_animator.play("Survey", true);
 
-  auto& fox1_transform = scene.get_component<sbx::math::transform>(fox1);
+  auto& fox1_transform = scene.get_component<sbx::scenes::transform>(fox1);
   fox1_transform.set_position(sbx::math::vector3{0.0f, 0.0f, 0.0f});
   fox1_transform.set_scale(sbx::math::vector3{0.06f, 0.06f, 0.06f});
 
@@ -422,7 +422,7 @@ application::application()
   // auto maple_tree = scene.create_node("MapleTree");
   // scene.add_component<sbx::scenes::static_mesh>(maple_tree, scene.get_mesh("maple_tree_4"), std::vector<sbx::scenes::static_mesh::submesh>{{0u, scene.get_material("maple_tree_bark")}, {1u, scene.get_material("maple_tree_leaves")}});
 
-  // auto& maple_tree_transform = scene.get_component<sbx::math::transform>(maple_tree);
+  // auto& maple_tree_transform = scene.get_component<sbx::scenes::transform>(maple_tree);
   // maple_tree_transform.set_position(sbx::math::vector3{5.0f, 0.0f, 0.0f});
   // maple_tree_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
 
@@ -434,7 +434,7 @@ application::application()
 
   // scene.add_component<sbx::scenes::static_mesh>(cube, scene.get_mesh("cube"), scene.get_material("grass3"));
 
-  // auto& cube_transform = scene.get_component<sbx::math::transform>(cube);
+  // auto& cube_transform = scene.get_component<sbx::scenes::transform>(cube);
   // cube_transform.set_position(sbx::math::vector3{0.0f, 5.0f, 5.0f});
   // cube_transform.set_rotation(sbx::math::vector3::right, sbx::math::degree{45});
   // cube_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
@@ -458,7 +458,7 @@ application::application()
 
       scene.add_component<sbx::scenes::static_mesh>(sphere, scene.get_mesh("sphere"), scene.get_material(material_name));
 
-      auto& sphere_transform = scene.get_component<sbx::math::transform>(sphere);
+      auto& sphere_transform = scene.get_component<sbx::scenes::transform>(sphere);
       sphere_transform.set_position(sbx::math::vector3{x * 3, y * 3 + 5, -15.0f});
       sphere_transform.set_scale(sbx::math::vector3{1.0f, 1.0f, 1.0f});
     }
@@ -466,7 +466,7 @@ application::application()
 
   // Tank
 
-  // _tanks.emplace_back(sbx::math::transform{sbx::math::vector3::zero, sbx::math::quaternion::identity, sbx::math::vector3{0.5}});
+  // _tanks.emplace_back(sbx::scenes::transform{sbx::math::vector3::zero, sbx::math::quaternion::identity, sbx::math::vector3{0.5}});
 
   // const auto grid_size = sbx::math::vector2{15.0f, 15.0f};
   // const auto cell_size = sbx::math::vector2{15.0f, 15.0f};
@@ -482,7 +482,7 @@ application::application()
 
   //     const auto position = (sbx::math::vector2{x, y} * cell_size - offset) + (sbx::math::vector2{sbx::math::random::next<std::float_t>(0.0f, 1.0f), sbx::math::random::next<std::float_t>(0.0f, 1.0f)} * cell_size);
 
-  //     auto& tree_transform = scene.get_component<sbx::math::transform>(tree);
+  //     auto& tree_transform = scene.get_component<sbx::scenes::transform>(tree);
   //     tree_transform.set_position(sbx::math::vector3{position.x(), 0.0f, position.y()});
   //     // tree_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
   //     tree_transform.set_rotation(sbx::math::vector3::up, sbx::math::degree{sbx::math::random::next<std::float_t>(0.0f, 360.0f)});
@@ -496,31 +496,31 @@ application::application()
 
   // auto rock_1 = scene.create_node("Rock1");
   // scene.add_component<sbx::scenes::static_mesh>(rock_1, scene.get_mesh("rock_1"), rock_submeshes);
-  // auto& rock_1_transform = scene.get_component<sbx::math::transform>(rock_1);
+  // auto& rock_1_transform = scene.get_component<sbx::scenes::transform>(rock_1);
   // rock_1_transform.set_position(sbx::math::vector3{-6.0f, 0.0f, 0.0f});
   // rock_1_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
 
   // auto rock_2 = scene.create_node("Rock2");
   // scene.add_component<sbx::scenes::static_mesh>(rock_2, scene.get_mesh("rock_2"), rock_submeshes);
-  // auto& rock_2_transform = scene.get_component<sbx::math::transform>(rock_2);
+  // auto& rock_2_transform = scene.get_component<sbx::scenes::transform>(rock_2);
   // rock_2_transform.set_position(sbx::math::vector3{-3.0f, 0.0f, 0.0f});
   // rock_2_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
 
   // auto rock_3 = scene.create_node("Rock3");
   // scene.add_component<sbx::scenes::static_mesh>(rock_3, scene.get_mesh("rock_3"), rock_submeshes);
-  // auto& rock_3_transform = scene.get_component<sbx::math::transform>(rock_3);
+  // auto& rock_3_transform = scene.get_component<sbx::scenes::transform>(rock_3);
   // rock_3_transform.set_position(sbx::math::vector3{0.0f, 0.0f, 0.0f});
   // rock_3_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
 
   // auto rock_4 = scene.create_node("Rock4");
   // scene.add_component<sbx::scenes::static_mesh>(rock_4, scene.get_mesh("rock_4"), rock_submeshes);
-  // auto& rock_4_transform = scene.get_component<sbx::math::transform>(rock_4);
+  // auto& rock_4_transform = scene.get_component<sbx::scenes::transform>(rock_4);
   // rock_4_transform.set_position(sbx::math::vector3{3.0f, 0.0f, 0.0f});
   // rock_4_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
 
   // auto rock_5 = scene.create_node("Rock5");
   // scene.add_component<sbx::scenes::static_mesh>(rock_5, scene.get_mesh("rock_5"), rock_submeshes);
-  // auto& rock_5_transform = scene.get_component<sbx::math::transform>(rock_5);
+  // auto& rock_5_transform = scene.get_component<sbx::scenes::transform>(rock_5);
   // rock_5_transform.set_position(sbx::math::vector3{6.0f, 0.0f, 0.0f});
   // rock_5_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
 
@@ -540,7 +540,7 @@ application::application()
   // for (auto y = -3; y <= 3; y = y + 3) {
   //   for (auto x = -3; x <= 3; x = x + 3) {
   //     auto test = scene.create_node("Test");
-  //     auto& test_transform = scene.get_component<sbx::math::transform>(test);
+  //     auto& test_transform = scene.get_component<sbx::scenes::transform>(test);
   //     test_transform.set_position(sbx::math::vector3{x, sbx::math::random::next<std::float_t>(6.0f, 8.0f), y});
   //     test_transform.set_scale(sbx::math::vector3{1.0f, 1.0f, 1.0f});
   //     test_transform.set_rotation(sbx::math::vector3::up, sbx::math::degree{45});
@@ -557,8 +557,8 @@ application::application()
 
   // const auto position = sbx::math::vector3{10.0f, 10.0f, 10.0f};
 
-  // camera.get_component<sbx::math::transform>().set_position(position);
-  // camera.get_component<sbx::math::transform>().look_at(sbx::math::vector3::zero);
+  // camera.get_component<sbx::scenes::transform>().set_position(position);
+  // camera.get_component<sbx::scenes::transform>().look_at(sbx::math::vector3::zero);
 
   const auto& cli = sbx::core::engine::cli();
 
@@ -620,7 +620,7 @@ auto application::update() -> void  {
 
         scene.add_component<sbx::scenes::static_mesh>(cube, scene.get_mesh("cube"), scene.get_material("grass3"));
 
-        auto& transform = scene.get_component<sbx::math::transform>(cube);
+        auto& transform = scene.get_component<sbx::scenes::transform>(cube);
         transform.set_position(base_position + sbx::math::vector3{x * spacing, 0.0f, z * spacing});
         transform.set_rotation(sbx::math::vector3{1.0, 0.0, 1.0}, sbx::math::degree{45});
         transform.set_scale(sbx::math::vector3{1.0f, 1.0f, 1.0f});
@@ -650,26 +650,26 @@ auto application::update() -> void  {
   auto& fox_animator = scene.get_component<sbx::animations::animator>(fox1);
   fox_animator.set_float("speed", fox_speed);
 
-  auto& fox_transform = scene.get_component<sbx::math::transform>(fox1);
+  auto& fox_transform = scene.get_component<sbx::scenes::transform>(fox1);
   fox_transform.set_rotation(sbx::math::vector3::up, _rotation);
 
   _camera_controller.update();
 
   _rotation += sbx::math::degree{45} * delta_time;
 
-  auto query_rotator = scene.query<sbx::math::transform, rotator>();
+  auto query_rotator = scene.query<sbx::scenes::transform, rotator>();
 
   for (auto&& [node, transform] : query_rotator.each()) {
     transform.set_rotation(sbx::math::vector3::up, _rotation);
   }
 
-  auto query_walker = scene.query<sbx::math::transform, walker>();
+  auto query_walker = scene.query<sbx::scenes::transform, walker>();
 
   for (auto&& [node, transform] : query_walker.each()) {
     transform.move_by(transform.forward() * delta_time * 2.0f);
   }
 
-  auto& light_center_transform = scene.get_component<sbx::math::transform>(_light_center);
+  auto& light_center_transform = scene.get_component<sbx::scenes::transform>(_light_center);
   light_center_transform.set_rotation(sbx::math::vector3::up, _rotation);
 
   // for (auto& tank : _tanks) {

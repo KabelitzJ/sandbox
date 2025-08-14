@@ -62,7 +62,7 @@ public:
 
         scene.add_component<sbx::scenes::static_mesh>(chunk, scene.get_mesh("terrain"), scene.get_material("terrain"));
 
-        auto& transform = scene.get_component<sbx::math::transform>(chunk);
+        auto& transform = scene.get_component<sbx::scenes::transform>(chunk);
         transform.set_position(sbx::math::vector3{x * chunk_size.x() - offset.x(), 0.0f, y * chunk_size.y() - offset.y()});
       }
     }
@@ -87,7 +87,7 @@ public:
 
     // scene.add_component<sbx::scenes::static_mesh>(planet, _planet_id, planet_submeshes);
 
-    // auto& planet_transform = scene.get_component<sbx::math::transform>(planet);
+    // auto& planet_transform = scene.get_component<sbx::scenes::transform>(planet);
     // planet_transform.set_position(sbx::math::vector3{0.0f, 0.0f, 0.0f});
   }
 
