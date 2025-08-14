@@ -98,6 +98,13 @@ class graphics_pipeline : public pipeline {
 
   using base = pipeline;
 
+  struct rendering_create_info {
+    VkPipelineRenderingCreateInfo info;
+    std::vector<VkFormat> color_formats;
+    VkFormat depth_format;
+    VkFormat stencil_format;
+  }; // struct rendering_create_info
+
 public:
 
   graphics_pipeline(const std::filesystem::path& path, const render_graph::graphics_pass& pass, const pipeline_definition& default_definition = pipeline_definition{}, const VkSpecializationInfo* specialization_info = nullptr);
@@ -156,6 +163,10 @@ public:
     return _set_data[set].binding_data[binding].descriptor_type;
   }
 
+  auto rendering_info() -> const rendering_create_info& {
+    return _rendering_info;
+  }
+
 private:
 
   struct per_binding_data {
@@ -188,6 +199,8 @@ private:
   VkPipeline _handle{};
   VkPipelineBindPoint _bind_point{};
   bool _has_variable_descriptors{};
+
+  rendering_create_info _rendering_info;
 
   VkDescriptorPool _descriptor_pool{};
 

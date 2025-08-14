@@ -326,16 +326,17 @@ graphics_pipeline::graphics_pipeline(const std::filesystem::path& path, const re
   color_blend_state.blendConstants[2] = 0.0f;
   color_blend_state.blendConstants[3] = 0.0f;
 
-  auto color_formats = std::vector<VkFormat>{};
-  color_formats.reserve(attachments.size());
+  _rendering_info.color_formats.reserve(attachments.size());
 
-  auto depth_format = VK_FORMAT_UNDEFINED;
+  _rendering_info.depth_format = VK_FORMAT_UNDEFINED;
+  _rendering_info.stencil_format = VK_FORMAT_UNDEFINED;
 
   for (const auto& attachment : attachments) {
     if (attachment.image_type() == attachment::type::depth) {
-      depth_format = depth_image::format();
+      _rendering_info.depth_format = depth_image::format();
+      _rendering_info.stencil_format = depth_image::format();
     } else {
-      color_formats.push_back(to_vk_enum<VkFormat>(attachment.format()));
+      _rendering_info.color_formats.push_back(to_vk_enum<VkFormat>(attachment.format()));
     }
   }
 
@@ -473,17 +474,17 @@ graphics_pipeline::graphics_pipeline(const std::filesystem::path& path, const re
 
   validate(vkCreatePipelineLayout(logical_device, &pipeline_layout_create_info, nullptr, &_layout));
 
-  auto rendering_info = VkPipelineRenderingCreateInfo{};
-  rendering_info.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
-  rendering_info.colorAttachmentCount = static_cast<std::uint32_t>(color_formats.size());
-  rendering_info.pColorAttachmentFormats = color_formats.data();
-  rendering_info.depthAttachmentFormat = depth_format;
-  rendering_info.stencilAttachmentFormat = depth_format;
+  _rendering_info.info = VkPipelineRenderingCreateInfo{};
+  _rendering_info.info.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
+  _rendering_info.info.colorAttachmentCount = static_cast<std::uint32_t>(_rendering_info.color_formats.size());
+  _rendering_info.info.pColorAttachmentFormats = _rendering_info.color_formats.data();
+  _rendering_info.info.depthAttachmentFormat = _rendering_info.depth_format;
+  _rendering_info.info.stencilAttachmentFormat = _rendering_info.stencil_format;
 
   auto pipeline_create_info = VkGraphicsPipelineCreateInfo{};
   pipeline_create_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
   pipeline_create_info.flags = VK_PIPELINE_CREATE_ALLOW_DERIVATIVES_BIT;
-  pipeline_create_info.pNext = &rendering_info;
+  pipeline_create_info.pNext = &_rendering_info.info;
   pipeline_create_info.stageCount = static_cast<std::uint32_t>(shader_stages.size());
   pipeline_create_info.pStages = shader_stages.data();
   pipeline_create_info.pVertexInputState = &vertex_input_state;

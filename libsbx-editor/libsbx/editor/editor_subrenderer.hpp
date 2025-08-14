@@ -166,6 +166,7 @@ public:
     init_info.ImageCount = desired_image_count;
     init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
     init_info.UseDynamicRendering = true;
+    init_info.PipelineRenderingCreateInfo = _pipeline.rendering_info().info;
     // init_info.ColorAttachmentFormat = VK_FORMAT_B8G8R8A8_SRGB;
 
     ImGui_ImplVulkan_Init(&init_info);
