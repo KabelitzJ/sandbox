@@ -64,6 +64,7 @@ target_link_libraries(
     libsbx::core
     libsbx::graphics
     libsbx::scenes
+    libsbx::assets
 )
 
 set_target_properties(

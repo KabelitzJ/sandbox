@@ -8,6 +8,8 @@
 
 #include <libsbx/core/engine.hpp>
 
+#include <libsbx/assets/assets_module.hpp>
+
 #include <libsbx/graphics/graphics_module.hpp>
 #include <libsbx/graphics/buffers/uniform_buffer.hpp>
 #include <libsbx/graphics/buffers/storage_buffer.hpp>
@@ -19,15 +21,18 @@ compute_pipeline::compute_pipeline(const std::filesystem::path& path, const rend
 : base{},
   _pass{pass},
   _bind_point{VK_PIPELINE_BIND_POINT_COMPUTE} {
+  auto& assets_module = core::engine::get_module<assets::assets_module>();
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
   const auto& logical_device = graphics_module.logical_device();
 
   auto timer = utility::timer{};
 
-  _name = path.filename().string();
+  const auto resolved_path = assets_module.resolve_path(path);
 
-  const auto binary_path = path / "bin";
+  _name = resolved_path.filename().string();
+
+  const auto binary_path = resolved_path / "bin";
 
   if (!std::filesystem::exists(binary_path) && !std::filesystem::is_directory(binary_path)) {
     throw std::runtime_error{fmt::format("Path '{}' does not exist", binary_path.string())};

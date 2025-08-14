@@ -1,5 +1,7 @@
 #include <libsbx/scenes/scenes_module.hpp>
 
+#include <libsbx/assets/assets_module.hpp>
+
 #include <libsbx/scenes/scene.hpp>
 
 namespace sbx::scenes {
@@ -16,7 +18,9 @@ auto scenes_module::update() -> void {
 }
 
 auto scenes_module::load_scene(const std::filesystem::path& path) -> scenes::scene& {
-  _scene.emplace(path);
+  auto& assets_module = core::engine::get_module<assets::assets_module>();
+
+  _scene.emplace(assets_module.resolve_path(path));
 
   return *_scene;
 }

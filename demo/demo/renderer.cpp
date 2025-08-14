@@ -144,18 +144,18 @@ renderer::renderer()
   add_draw_list<sbx::models::static_mesh_draw_list>("static_mesh");
 
   // Shadow pass
-  add_subrenderer<sbx::shadows::shadow_subrenderer>("demo/assets/shaders/shadow", shadow);
-  // add_subrenderer<sbx::post::blur_filter_gaussian_5>("demo/assets/shaders/blur", blur_h_shadow, "shadow", sbx::math::vector2{1.0f, 0.0f});
-  // add_subrenderer<sbx::post::blur_filter_gaussian_5>("demo/assets/shaders/blur", blur_v_shadow, "blur_h_shadow", sbx::math::vector2{0.0f, 1.0f});
+  add_subrenderer<sbx::shadows::shadow_subrenderer>("res://shaders/shadow", shadow);
+  // add_subrenderer<sbx::post::blur_filter_gaussian_5>("res://shaders/blur", blur_h_shadow, "shadow", sbx::math::vector2{1.0f, 0.0f});
+  // add_subrenderer<sbx::post::blur_filter_gaussian_5>("res://shaders/blur", blur_v_shadow, "blur_h_shadow", sbx::math::vector2{0.0f, 1.0f});
 
   // Deferred rendering pass
-  add_subrenderer<sbx::models::opaque_static_mesh_subrenderer>("demo/assets/shaders/deferred_static_opaque", deferred);
-  add_subrenderer<sbx::models::masked_static_mesh_subrenderer>("demo/assets/shaders/deferred_static_masked", deferred);
-  add_subrenderer<sbx::animations::skinned_mesh_subrenderer>("demo/assets/shaders/deferred_skinned_opaque", deferred);
-  // add_subrenderer<sbx::scenes::grid_subrenderer>("demo/assets/shaders/grid", deferred);
+  add_subrenderer<sbx::models::opaque_static_mesh_subrenderer>("res://shaders/deferred_static_opaque", deferred);
+  add_subrenderer<sbx::models::masked_static_mesh_subrenderer>("res://shaders/deferred_static_masked", deferred);
+  add_subrenderer<sbx::animations::skinned_mesh_subrenderer>("res://shaders/deferred_skinned_opaque", deferred);
+  // add_subrenderer<sbx::scenes::grid_subrenderer>("res://shaders/grid", deferred);
   
   // Transparency pass
-  add_subrenderer<sbx::models::transparent_static_mesh_subrenderer>("demo/assets/shaders/deferred_static_transparent", transparency);
+  add_subrenderer<sbx::models::transparent_static_mesh_subrenderer>("res://shaders/deferred_static_transparent", transparency);
   
   // Resolve pass
   auto resolve_opaque_attachment_names = std::vector<std::pair<std::string, std::string>>{
@@ -167,24 +167,24 @@ renderer::renderer()
     {"object_id_image", "object_id"}
   };
 
-  add_subrenderer<sbx::post::resolve_opaque_filter>("demo/assets/shaders/resolve_opaque", resolve, std::move(resolve_opaque_attachment_names));
+  add_subrenderer<sbx::post::resolve_opaque_filter>("res://shaders/resolve_opaque", resolve, std::move(resolve_opaque_attachment_names));
 
-  add_subrenderer<sbx::scenes::skybox_subrenderer>("demo/assets/shaders/skybox", resolve);
+  add_subrenderer<sbx::scenes::skybox_subrenderer>("res://shaders/skybox", resolve);
 
   auto resolve_transparent_attachment_names = std::vector<std::pair<std::string, std::string>>{
     {"accum_image", "accum"},
     {"revealage_image", "revealage"}
   };
 
-  add_subrenderer<sbx::post::resolve_transparent_filter>("demo/assets/shaders/resolve_transparet", resolve, std::move(resolve_transparent_attachment_names));
+  add_subrenderer<sbx::post::resolve_transparent_filter>("res://shaders/resolve_transparet", resolve, std::move(resolve_transparent_attachment_names));
 
-  add_subrenderer<sbx::scenes::debug_subrenderer>("demo/assets/shaders/debug", resolve);
+  add_subrenderer<sbx::scenes::debug_subrenderer>("res://shaders/debug", resolve);
 
   // Post-processing pass
-  add_subrenderer<sbx::post::fxaa_filter>("demo/assets/shaders/fxaa", post, "resolve");
+  add_subrenderer<sbx::post::fxaa_filter>("res://shaders/fxaa", post, "resolve");
 
   // Editor pass
-  add_subrenderer<sbx::editor::editor_subrenderer>("demo/assets/shaders/editor", editor, "post");
+  add_subrenderer<sbx::editor::editor_subrenderer>("res://shaders/editor", editor, "post");
 }
 
 } // namespace demo

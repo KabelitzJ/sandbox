@@ -39,95 +39,102 @@ application::application()
 : sbx::core::application{},
   _rotation{sbx::math::degree{0}} { 
   // Renderer
+  const auto& cli = sbx::core::engine::cli();
+
+  auto& assets_module = sbx::core::engine::get_module<sbx::assets::assets_module>();
+
+  if (auto assets = cli.argument<std::string>("assets"); assets) {
+    assets_module.set_asset_root(*assets);
+  } else {
+    assets_module.set_asset_root("demo/assets");
+  }
 
   auto& graphics_module = sbx::core::engine::get_module<sbx::graphics::graphics_module>();
 
   graphics_module.set_renderer<renderer>();
 
-  auto& assets_module = sbx::core::engine::get_module<sbx::assets::assets_module>();
-
   auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
 
-  auto& scene = scenes_module.load_scene("demo/assets/scenes/scene.yaml");
+  auto& scene = scenes_module.load_scene("res://scenes/scene.yaml");
 
   // Textures
 
-  scene.add_image("maple_tree_bark", "demo/assets/textures/maple_tree/bark.png");
-  scene.add_image("maple_tree_bark_normal", "demo/assets/textures/maple_tree/bark_normal.png");
-  scene.add_image("maple_tree_leaves", "demo/assets/textures/maple_tree/leaves.png");
+  scene.add_image("maple_tree_bark", "res://textures/maple_tree/bark.png");
+  scene.add_image("maple_tree_bark_normal", "res://textures/maple_tree/bark_normal.png");
+  scene.add_image("maple_tree_leaves", "res://textures/maple_tree/leaves.png");
   
-  scene.add_image("rocks", "demo/assets/textures/rocks/rocks.png");
+  scene.add_image("rocks", "res://textures/rocks/rocks.png");
 
-  scene.add_image("fox_albedo", "demo/assets/textures/fox/albedo.png");
+  scene.add_image("fox_albedo", "res://textures/fox/albedo.png");
 
-  scene.add_image("women", "demo/assets/textures/women/albedo.png");
+  scene.add_image("women", "res://textures/women/albedo.png");
 
-  scene.add_image("bmp_body1_albedo", "demo/assets/textures/bmp/body1_albedo.png");
-  scene.add_image("bmp_body1_normal", "demo/assets/textures/bmp/body1_normal.png");
-  scene.add_image("bmp_body2_albedo", "demo/assets/textures/bmp/body2_albedo.png");
-  scene.add_image("bmp_body2_normal", "demo/assets/textures/bmp/body2_normal.png");
-  scene.add_image("bmp_tracks_albedo", "demo/assets/textures/bmp/tracks_albedo.png");
-  scene.add_image("bmp_tracks_normal", "demo/assets/textures/bmp/tracks_normal.png");
+  scene.add_image("bmp_body1_albedo", "res://textures/bmp/body1_albedo.png");
+  scene.add_image("bmp_body1_normal", "res://textures/bmp/body1_normal.png");
+  scene.add_image("bmp_body2_albedo", "res://textures/bmp/body2_albedo.png");
+  scene.add_image("bmp_body2_normal", "res://textures/bmp/body2_normal.png");
+  scene.add_image("bmp_tracks_albedo", "res://textures/bmp/tracks_albedo.png");
+  scene.add_image("bmp_tracks_normal", "res://textures/bmp/tracks_normal.png");
 
-  scene.add_image("helmet_albedo", "demo/assets/textures/helmet/albedo.jpg");
-  scene.add_image("helmet_normal", "demo/assets/textures/helmet/normal.jpg");
-  scene.add_image("helmet_mrao", "demo/assets/textures/helmet/mrao.jpg");
+  scene.add_image("helmet_albedo", "res://textures/helmet/albedo.jpg");
+  scene.add_image("helmet_normal", "res://textures/helmet/normal.jpg");
+  scene.add_image("helmet_mrao", "res://textures/helmet/mrao.jpg");
 
-  scene.add_image("grass3_albedo", "demo/assets/textures/grass3/albedo.png");
-  scene.add_image("grass3_normal", "demo/assets/textures/grass3/normal.png");
-  scene.add_image("grass3_mrao", "demo/assets/textures/grass3/mrao.png");
+  scene.add_image("grass3_albedo", "res://textures/grass3/albedo.png");
+  scene.add_image("grass3_normal", "res://textures/grass3/normal.png");
+  scene.add_image("grass3_mrao", "res://textures/grass3/mrao.png");
 
-  scene.add_image("checkerboard", "demo/assets/textures/checkerboard.jpg");
+  scene.add_image("checkerboard", "res://textures/checkerboard.jpg");
 
-  scene.add_image("soldier_body_albedo", "demo/assets/textures/soldier/body_albedo.png");
-  scene.add_image("soldier_head_albedo", "demo/assets/textures/soldier/head_albedo.png");
-  scene.add_image("soldier_backpack_albedo", "demo/assets/textures/soldier/backpack_albedo.png");
-  scene.add_image("soldier_helmet_albedo", "demo/assets/textures/soldier/helmet_albedo.png");
+  scene.add_image("soldier_body_albedo", "res://textures/soldier/body_albedo.png");
+  scene.add_image("soldier_head_albedo", "res://textures/soldier/head_albedo.png");
+  scene.add_image("soldier_backpack_albedo", "res://textures/soldier/backpack_albedo.png");
+  scene.add_image("soldier_helmet_albedo", "res://textures/soldier/helmet_albedo.png");
 
-  scene.add_image("rust_albedo", "demo/assets/textures/rust/albedo.png");
-  scene.add_image("rust_normal", "demo/assets/textures/rust/normal.png");
-  scene.add_image("rust_mrao", "demo/assets/textures/rust/mrao.png");
+  scene.add_image("rust_albedo", "res://textures/rust/albedo.png");
+  scene.add_image("rust_normal", "res://textures/rust/normal.png");
+  scene.add_image("rust_mrao", "res://textures/rust/mrao.png");
 
-  scene.add_cube_image("skybox", "demo/assets/skyboxes/stylized2");
+  scene.add_cube_image("skybox", "res://skyboxes/stylized2");
 
   // Meshes
 
-  scene.add_mesh<sbx::models::mesh>("maple_tree_1", "demo/assets/meshes/maple_tree_1/maple_tree_1.gltf");
-  scene.add_mesh<sbx::models::mesh>("maple_tree_2", "demo/assets/meshes/maple_tree_2/maple_tree_2.gltf");
-  scene.add_mesh<sbx::models::mesh>("maple_tree_3", "demo/assets/meshes/maple_tree_3/maple_tree_3.gltf");
-  scene.add_mesh<sbx::models::mesh>("maple_tree_4", "demo/assets/meshes/maple_tree_4/maple_tree_4.gltf");
+  scene.add_mesh<sbx::models::mesh>("maple_tree_1", "res://meshes/maple_tree_1/maple_tree_1.gltf");
+  scene.add_mesh<sbx::models::mesh>("maple_tree_2", "res://meshes/maple_tree_2/maple_tree_2.gltf");
+  scene.add_mesh<sbx::models::mesh>("maple_tree_3", "res://meshes/maple_tree_3/maple_tree_3.gltf");
+  scene.add_mesh<sbx::models::mesh>("maple_tree_4", "res://meshes/maple_tree_4/maple_tree_4.gltf");
 
-  scene.add_mesh<sbx::animations::mesh>("fox", "demo/assets/meshes/fox/fox.gltf");
-  scene.add_mesh<sbx::models::mesh>("fox_static", "demo/assets/meshes/fox/fox.gltf");
+  scene.add_mesh<sbx::animations::mesh>("fox", "res://meshes/fox/fox.gltf");
+  scene.add_mesh<sbx::models::mesh>("fox_static", "res://meshes/fox/fox.gltf");
 
-  scene.add_mesh<sbx::animations::mesh>("women", "demo/assets/meshes/women/women.gltf");
-  scene.add_mesh<sbx::models::mesh>("women_static", "demo/assets/meshes/women/women.gltf");
+  scene.add_mesh<sbx::animations::mesh>("women", "res://meshes/women/women.gltf");
+  scene.add_mesh<sbx::models::mesh>("women_static", "res://meshes/women/women.gltf");
 
-  scene.add_mesh<sbx::animations::mesh>("player", "demo/assets/meshes/player/player.gltf");
+  scene.add_mesh<sbx::animations::mesh>("player", "res://meshes/player/player.gltf");
   
-  scene.add_mesh<sbx::models::mesh>("man_static", "demo/assets/meshes/man/man.gltf");
+  scene.add_mesh<sbx::models::mesh>("man_static", "res://meshes/man/man.gltf");
 
-  scene.add_mesh<sbx::models::mesh>("bmp", "demo/assets/meshes/tank/bmp.gltf");
+  scene.add_mesh<sbx::models::mesh>("bmp", "res://meshes/tank/bmp.gltf");
 
-  scene.add_mesh<sbx::models::mesh>("helmet", "demo/assets/meshes/helmet/helmet.gltf");
+  scene.add_mesh<sbx::models::mesh>("helmet", "res://meshes/helmet/helmet.gltf");
 
-  scene.add_mesh<sbx::models::mesh>("dragon", "demo/assets/meshes/dragon/dragon.gltf");
+  scene.add_mesh<sbx::models::mesh>("dragon", "res://meshes/dragon/dragon.gltf");
 
-  scene.add_mesh<sbx::models::mesh>("cube", "demo/assets/meshes/cube/cube.gltf");
-  scene.add_mesh<sbx::models::mesh>("sphere", "demo/assets/meshes/sphere/sphere.gltf");
+  scene.add_mesh<sbx::models::mesh>("cube", "res://meshes/cube/cube.gltf");
+  scene.add_mesh<sbx::models::mesh>("sphere", "res://meshes/sphere/sphere.gltf");
 
-  scene.add_mesh<sbx::animations::mesh>("soldier", "demo/assets/meshes/soldier/soldier.gltf");
-  scene.add_mesh<sbx::models::mesh>("soldier_static", "demo/assets/meshes/soldier/soldier.gltf");
+  scene.add_mesh<sbx::animations::mesh>("soldier", "res://meshes/soldier/soldier.gltf");
+  scene.add_mesh<sbx::models::mesh>("soldier_static", "res://meshes/soldier/soldier.gltf");
 
   // Animations
 
-  scene.add_animation<sbx::animations::animation>("Walk", "demo/assets/meshes/fox/fox.gltf", "Walk");
-  scene.add_animation<sbx::animations::animation>("Survey", "demo/assets/meshes/fox/fox.gltf", "Survey");
-  scene.add_animation<sbx::animations::animation>("Run", "demo/assets/meshes/fox/fox.gltf", "Run");
+  scene.add_animation<sbx::animations::animation>("Walk", "res://meshes/fox/fox.gltf", "Walk");
+  scene.add_animation<sbx::animations::animation>("Survey", "res://meshes/fox/fox.gltf", "Survey");
+  scene.add_animation<sbx::animations::animation>("Run", "res://meshes/fox/fox.gltf", "Run");
 
-  scene.add_animation<sbx::animations::animation>("Walking", "demo/assets/meshes/women/women.gltf", "Walking");
-  scene.add_animation<sbx::animations::animation>("IdleStanding", "demo/assets/meshes/soldier/soldier.gltf", "IdleStanding");
-  scene.add_animation<sbx::animations::animation>("ArmatureAction", "demo/assets/meshes/player/player.gltf", "ArmatureAction");
+  scene.add_animation<sbx::animations::animation>("Walking", "res://meshes/women/women.gltf", "Walking");
+  scene.add_animation<sbx::animations::animation>("IdleStanding", "res://meshes/soldier/soldier.gltf", "IdleStanding");
+  scene.add_animation<sbx::animations::animation>("ArmatureAction", "res://meshes/player/player.gltf", "ArmatureAction");
 
   // Window
 
@@ -560,15 +567,13 @@ application::application()
   // camera.get_component<sbx::scenes::transform>().set_position(position);
   // camera.get_component<sbx::scenes::transform>().look_at(sbx::math::vector3::zero);
 
-  const auto& cli = sbx::core::engine::cli();
-
   if (auto hide_window = cli.argument<bool>("hide-window"); !hide_window) {
     window.show();
   }
 
   sbx::utility::logger<"demo">::info("string id: {}", sbx::utility::string_id<"foobar">());
 
-  // scenes_module.save_scene("demo/assets/scenes/test.yaml");
+  // scenes_module.save_scene("res://scenes/test.yaml");
 }
 
 // [NOTE] : This might or might not me a great thing :D

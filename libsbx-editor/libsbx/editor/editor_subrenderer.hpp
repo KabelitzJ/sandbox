@@ -37,7 +37,7 @@ namespace sbx::editor {
 
 class editor_subrenderer final : public sbx::graphics::subrenderer {
 
-  inline static constexpr auto ini_file = std::string_view{"demo/assets/data/imgui.ini"};
+  inline static constexpr auto ini_file = std::string_view{"res://data/imgui.ini"};
 
   using base = sbx::graphics::subrenderer;
 
@@ -75,9 +75,9 @@ public:
 
     _editor_theme.apply_theme("Bar");
 
-    _editor_font.load_font("Roboto", "demo/assets/fonts/Roboto-Regular.ttf", 16.0f);
-    _editor_font.load_font("Geist", "demo/assets/fonts/Geist-Regular.ttf", 16.0f);
-    _editor_font.load_font("JetBrainsMono", "demo/assets/fonts/JetBrainsMono-Medium.ttf", 16.0f);
+    _editor_font.load_font("Roboto", "res://fonts/Roboto-Regular.ttf", 16.0f);
+    _editor_font.load_font("Geist", "res://fonts/Geist-Regular.ttf", 16.0f);
+    _editor_font.load_font("JetBrainsMono", "res://fonts/JetBrainsMono-Medium.ttf", 16.0f);
 
     _editor_font.set_active_font("Roboto");
 
@@ -100,7 +100,7 @@ public:
     project_menu_save.on_click = [this, &scenes_module]() { 
       utility::logger<"editor">::debug("Project::Save clicked");
       
-      scenes_module.save_scene("demo/assets/scenes/test.yaml");
+      scenes_module.save_scene("res://scenes/test.yaml");
     };
 
     auto project_menu_save_as = editor::menu_item{};

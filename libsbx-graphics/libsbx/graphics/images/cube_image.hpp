@@ -27,15 +27,13 @@ public:
 
 private:
 
-  auto _load() -> void;
+  auto _load(const std::filesystem::path& path, const std::string& suffix) -> void;
 
   inline static constexpr auto side_names = std::array<std::string_view, 6u>{"right", "left", "top", "bottom", "front", "back"};
 
   bool _anisotropic;
   bool _mipmap;
   std::uint8_t _channels;
-  std::filesystem::path _file_path;
-  std::string _file_suffix;
 
 }; // class cube_image
 

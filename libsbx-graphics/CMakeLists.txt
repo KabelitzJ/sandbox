@@ -133,6 +133,7 @@ target_link_libraries(
     # Internal dependencies
     libsbx::utility
     libsbx::containers
+    libsbx::assets
     libsbx::io
     libsbx::math
     libsbx::core

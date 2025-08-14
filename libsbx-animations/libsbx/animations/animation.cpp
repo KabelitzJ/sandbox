@@ -8,6 +8,8 @@
 #include <libsbx/utility/exception.hpp>
 #include <libsbx/utility/timer.hpp>
 
+#include <libsbx/assets/assets_module.hpp>
+
 namespace sbx::animations {
 
 static constexpr auto import_flags =
@@ -62,14 +64,21 @@ static auto _convert_mat4(const aiMatrix4x4& matrix) -> math::matrix4x4 {
 }
 
 animation::animation(const std::filesystem::path& path, const std::string& name) {
+  auto& assets_module = core::engine::get_module<assets::assets_module>();
+  const auto resolved_path = assets_module.resolve_path(path);
+
+  if (!std::filesystem::exists(resolved_path)) {
+    throw std::runtime_error{"Animation file not found: " + resolved_path.string()};
+  }
+
   auto importer = Assimp::Importer{};
 
   auto timer = utility::timer{};
 
-  const auto* scene = importer.ReadFile(path.string(), import_flags);
+  const auto* scene = importer.ReadFile(resolved_path.string(), import_flags);
 
   if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
-    throw std::runtime_error{fmt::format("Error loading mesh '{}': {}", path.string(), importer.GetErrorString())};
+    throw std::runtime_error{fmt::format("Error loading animation '{}': {}", resolved_path.string(), importer.GetErrorString())};
   }
 
   auto index = scene->mNumAnimations;
@@ -84,7 +93,7 @@ animation::animation(const std::filesystem::path& path, const std::string& name)
   }
 
   if (index == scene->mNumAnimations) {
-    throw utility::runtime_error{"No animatiton '{}' in file {}", name, path.string()};
+    throw utility::runtime_error{"No animatiton '{}' in file {}", name, resolved_path.string()};
   }
 
   const auto* animation = scene->mAnimations[index]; // or all animations
@@ -124,7 +133,7 @@ animation::animation(const std::filesystem::path& path, const std::string& name)
     _track_map.emplace(bone_name, std::move(track));
   }
 
-  utility::logger<"animations">::debug("Loaded animation: {} '{}' in {:.2f}ms", path.string(), _name, units::quantity_cast<units::millisecond>(timer.elapsed()).value());
+  utility::logger<"animations">::debug("Loaded animation: {} '{}' in {:.2f}ms", resolved_path.string(), _name, units::quantity_cast<units::millisecond>(timer.elapsed()).value());
 }
 
 auto animation::track_map() const noexcept -> const std::unordered_map<utility::hashed_string, bone_track>& {

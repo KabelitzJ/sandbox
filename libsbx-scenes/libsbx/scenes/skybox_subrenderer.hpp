@@ -101,9 +101,7 @@ public:
       6, 2, 1
     };
 
-    utility::logger<"scenes">::info("Before");
     _skybox_id = assets_module.add_asset<scenes::mesh>(std::move(vertices), std::move(indices));
-    utility::logger<"scenes">::info("after");
   }
 
   ~skybox_subrenderer() override = default;

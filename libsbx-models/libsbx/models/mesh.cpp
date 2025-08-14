@@ -19,6 +19,8 @@
 
 #include <libsbx/core/engine.hpp>
 
+#include <libsbx/assets/assets_module.hpp>
+
 #include <libsbx/utility/timer.hpp>
 
 #include <libsbx/graphics/graphics_module.hpp>
@@ -150,8 +152,11 @@ mesh::~mesh() {
 }
 
 auto mesh::_load(const std::filesystem::path& path) -> mesh_data {
-  if (!std::filesystem::exists(path)) {
-    throw std::runtime_error{"Mesh file not found: " + path.string()};
+  auto& assets_module = core::engine::get_module<assets::assets_module>();
+  const auto resolved_path = assets_module.resolve_path(path);
+
+  if (!std::filesystem::exists(resolved_path)) {
+    throw std::runtime_error{"Mesh file not found: " + resolved_path.string()};
   }
 
   auto timer = utility::timer{};
@@ -173,10 +178,10 @@ auto mesh::_load(const std::filesystem::path& path) -> mesh_data {
 
   auto importer = Assimp::Importer{};
 
-  const auto* scene = importer.ReadFile(path.string(), import_flags);
+  const auto* scene = importer.ReadFile(resolved_path.string(), import_flags);
 
   if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
-    throw std::runtime_error{fmt::format("Error loading mesh '{}': {}", path.string(), importer.GetErrorString())};
+    throw std::runtime_error{fmt::format("Error loading mesh '{}': {}", resolved_path.string(), importer.GetErrorString())};
   }
 
   _load_node(scene->mRootNode, scene, data, math::matrix4x4::identity);
@@ -191,7 +196,7 @@ auto mesh::_load(const std::filesystem::path& path) -> mesh_data {
 
   const auto kb = units::quantity_cast<units::kilobyte>(b);
 
-  utility::logger<"models">::debug("Loaded mesh: {}, vertices: {}, indices: {}, size: {} kb in {:.2f}ms", path.string(), vertices_count, indices_count, kb.value(), units::quantity_cast<units::millisecond>(timer.elapsed()).value());
+  utility::logger<"models">::debug("Loaded mesh: {}, vertices: {}, indices: {}, size: {} kb in {:.2f}ms", resolved_path.string(), vertices_count, indices_count, kb.value(), units::quantity_cast<units::millisecond>(timer.elapsed()).value());
 
   return data;
 }

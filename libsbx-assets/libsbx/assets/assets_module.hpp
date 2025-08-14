@@ -10,6 +10,7 @@
 #include <libsbx/utility/exception.hpp>
 #include <libsbx/utility/type_id.hpp>
 #include <libsbx/utility/iterator.hpp>
+#include <libsbx/utility/logger.hpp>
 
 #include <libsbx/math/uuid.hpp>
 
@@ -39,10 +40,13 @@ class assets_module : public core::module<assets_module> {
 
   inline static const auto is_registered = register_module(stage::post);
 
+  inline static constexpr auto prefix = std::string_view{"res://"};
+
 public:
 
   assets_module()
-  : _thread_pool{std::thread::hardware_concurrency()} { }
+  : _thread_pool{std::thread::hardware_concurrency()},
+    _asset_root{std::filesystem::current_path()} { }
 
   ~assets_module() override {
     for (const auto& container : _containers) {
@@ -52,6 +56,30 @@ public:
 
   auto update() -> void override {
     
+  }
+
+  auto set_asset_root(const std::filesystem::path& root) -> void {
+    if (!std::filesystem::exists(root)) {
+      throw utility::runtime_error{"New asset root path '{}' does not exist", root.string()};
+    }
+
+    utility::logger<"assets">::debug("Setting asset_root to '{}'", root.string());
+
+    _asset_root = root;
+  }
+
+  auto resolve_path(const std::filesystem::path& path) -> std::filesystem::path {
+    if (path.empty()) {
+      return path;
+    }
+
+    const auto& path_string = path.string();
+
+    if (path_string.starts_with(prefix)) {
+      return _asset_root / path_string.substr(prefix.size());
+    }
+
+    return path;
   }
 
   template<typename Function, typename... Args>
@@ -121,6 +149,7 @@ public:
 private:
 
   thread_pool _thread_pool;
+  std::filesystem::path _asset_root;
 
   struct container_base {
     virtual ~container_base() = default;

@@ -7,6 +7,10 @@
 #include <libsbx/utility/timer.hpp>
 #include <libsbx/utility/logger.hpp>
 
+#include <libsbx/core/engine.hpp>
+
+#include <libsbx/assets/assets_module.hpp>
+
 #include <libsbx/graphics/graphics_module.hpp>
 
 #include <libsbx/graphics/buffers/buffer.hpp>
@@ -25,7 +29,8 @@ image2d::image2d(const std::filesystem::path& path, VkFilter filter, VkSamplerAd
 : image{VkExtent3D{0, 0, 1}, filter, address_mode, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, (VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT), VK_FORMAT_R8G8B8A8_SRGB, 1, 1},
   _anisotropic{anisotropic},
   _mipmap{mipmap} {
-  _load(path);
+  auto& assets_module = core::engine::get_module<assets::assets_module>();
+  _load(assets_module.resolve_path(path));
 }
 
 image2d::image2d(const math::vector2u& extent, VkFormat format , memory::observer_ptr<const std::uint8_t> pixels)

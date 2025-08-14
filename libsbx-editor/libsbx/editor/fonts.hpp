@@ -10,6 +10,8 @@
 
 #include <libsbx/utility/logger.hpp>
 
+#include <libsbx/assets/assets_module.hpp>
+
 #include <libsbx/editor/bindings/imgui.hpp>
 
 namespace sbx::editor {
@@ -21,14 +23,17 @@ public:
   fonts() = default;
 
   auto load_font(const std::string& name, const std::filesystem::path& path, std::float_t size) -> void {
-    ImGuiIO& io = ImGui::GetIO();
+    auto& assets_module = core::engine::get_module<assets::assets_module>();
+    const auto resolved_path = assets_module.resolve_path(path);
 
-    ImFont* font = io.Fonts->AddFontFromFileTTF(path.string().c_str(), size);
+    auto& io = ImGui::GetIO();
+
+    auto* font = io.Fonts->AddFontFromFileTTF(resolved_path.string().c_str(), size);
 
     if (font) {
       _fonts[name] = font;
     } else {
-      utility::logger<"editor">::error("Failed to load font: {}", name);
+      utility::logger<"editor">::error("Failed to load font: {} from {}", name, resolved_path.string());
     }
   }
 

@@ -4,23 +4,26 @@
 
 #include <libsbx/utility/logger.hpp>
 
+#include <libsbx/core/engine.hpp>
+
+#include <libsbx/assets/assets_module.hpp>
+
 namespace sbx::graphics {
 
 cube_image::cube_image(const std::filesystem::path& path, const std::string& suffix, VkFilter filter, VkSamplerAddressMode address_mode, bool anisotropic, bool mipmap)
 : image{VkExtent3D{0, 0, 1}, filter, address_mode, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, (VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT), VK_FORMAT_R8G8B8A8_SRGB, 1, 6},
   _anisotropic{anisotropic},
   _mipmap{mipmap},
-  _channels{4u},
-  _file_path{path},
-  _file_suffix{suffix} {
-  _load();
+  _channels{4u} {
+  auto& assets_module = core::engine::get_module<assets::assets_module>();
+  _load(assets_module.resolve_path(path), suffix);
 }
 
 cube_image::~cube_image() {
 
 }
 
-auto cube_image::_load() -> void {
+auto cube_image::_load(const std::filesystem::path& path, const std::string& suffix) -> void {
   _channels = channels_from_format(_format);
 
   auto* data = static_cast<std::uint8_t*>(nullptr);
@@ -28,14 +31,14 @@ auto cube_image::_load() -> void {
   auto buffer = std::vector<std::uint8_t>{};
   auto offset = std::uint32_t{0};
 
-  if (!_file_path.empty()) {
+  if (!path.empty()) {
     auto timer = utility::timer{};
 
     for (const auto& side : side_names) {
-      const auto path = _file_path / fmt::format("{}{}", side, _file_suffix);
+      const auto sub_path = path / fmt::format("{}{}", side, suffix);
 
-      if (!std::filesystem::exists(path)) {
-        throw std::runtime_error{fmt::format("File does not exist: {}", path.string())};
+      if (!std::filesystem::exists(sub_path)) {
+        throw std::runtime_error{fmt::format("File does not exist: {}", sub_path.string())};
       }
       
       auto width = std::int32_t{0};
@@ -44,7 +47,7 @@ auto cube_image::_load() -> void {
 
       stbi_set_flip_vertically_on_load(true);
 
-      auto* image_data = stbi_load(path.string().c_str(), &width, &height, &channels, STBI_rgb_alpha);
+      auto* image_data = stbi_load(sub_path.string().c_str(), &width, &height, &channels, STBI_rgb_alpha);
 
       if (!image_data) {
         throw std::runtime_error{fmt::format("Failed to load image: {}", path.string())};
@@ -68,7 +71,7 @@ auto cube_image::_load() -> void {
 
     const auto elapsed = units::quantity_cast<units::millisecond>(timer.elapsed());
 
-    utility::logger<"graphics">::debug("Loaded cube image: {} ({}x{}) in {:.2f}ms", _file_path.string(), _extent.width, _extent.height, elapsed.value());
+    utility::logger<"graphics">::debug("Loaded cube image: {} ({}x{}) in {:.2f}ms", path.string(), _extent.width, _extent.height, elapsed.value());
   }
 
   if (buffer.empty()) {
