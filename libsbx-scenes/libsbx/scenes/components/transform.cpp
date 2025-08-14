@@ -16,18 +16,18 @@ auto transform::position() const noexcept -> const math::vector3& {
 }
 
 auto transform::position() noexcept -> math::vector3& {
-  _is_dirty = true;
+  mart_dirty();
   return _position;
 }
 
 auto transform::set_position(const math::vector3& position) noexcept -> void {
   _position = position;
-  _is_dirty = true;
+  mart_dirty();
 }
 
 auto transform::move_by(const math::vector3& offset) noexcept -> void {
   _position += offset;
-  _is_dirty = true;
+  mart_dirty();
 }
 
 auto transform::rotation() const noexcept -> const math::quaternion& {
@@ -37,17 +37,17 @@ auto transform::rotation() const noexcept -> const math::quaternion& {
 auto transform::set_rotation(const math::quaternion& rotation) noexcept -> void {
   _rotation = rotation;
   _rotation_matrix = math::matrix_cast<4, 4>(_rotation);
-  _is_dirty = true;
+  mart_dirty();
 }
 
 auto transform::set_rotation(const math::vector3& axis, const math::angle& angle) noexcept -> void {
   _rotation = math::quaternion{axis, angle};
   _rotation_matrix = math::matrix_cast<4, 4>(_rotation);
-  _is_dirty = true;
+  mart_dirty();
 }
 
 auto transform::scale() noexcept -> math::vector3& {
-  _is_dirty = true;
+  mart_dirty();
   return _scale;
 }
 
@@ -58,7 +58,7 @@ auto transform::scale() const noexcept -> const math::vector3& {
 
 auto transform::set_scale(const math::vector3& scale) noexcept -> void {
   _scale = scale;
-  _is_dirty = true;
+  mart_dirty();
 }
 
 auto transform::forward() const noexcept -> math::vector3 {
@@ -78,7 +78,7 @@ auto transform::look_at(const math::vector3& target) noexcept -> void {
   auto result = math::matrix4x4::look_at(_position, target, math::vector3::up);
   _rotation = math::quaternion{math::matrix4x4::inverted(result)};
   _rotation_matrix = math::matrix_cast<4, 4>(_rotation);
-  _is_dirty = true;
+  mart_dirty();
 }
 
 auto transform::is_dirty() const noexcept -> bool {

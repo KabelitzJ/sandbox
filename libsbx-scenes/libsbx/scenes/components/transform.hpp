@@ -50,6 +50,10 @@ public:
 
   auto is_dirty() const noexcept -> bool;
 
+  auto mart_dirty() -> void {
+    _is_dirty = true;
+  }
+
   auto clear_is_dirty() noexcept -> void;
 
   [[nodiscard]] auto local_transform() const -> math::matrix4x4 {
