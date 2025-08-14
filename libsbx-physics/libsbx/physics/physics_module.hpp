@@ -41,16 +41,16 @@ public:
 
     integrate_rigidbodies();
 
-    // 1. Broad Phase: Use a spatial partition to find potential collision pairs
-    const auto potential_pairs = broad_phase();
+    // // 1. Broad Phase: Use a spatial partition to find potential collision pairs
+    // const auto potential_pairs = broad_phase();
 
-    // 2. Narrow Phase: Use GJK to confirm collisions and get manifolds
-    const auto collistions = narrow_phase(potential_pairs);
+    // // 2. Narrow Phase: Use GJK to confirm collisions and get manifolds
+    // const auto collistions = narrow_phase(potential_pairs);
 
-    // 3. Resolution: Apply impulses to resolve collisions
-    for (const auto& collistion : collistions) {
-      resolve_collision(collistion);
-    }
+    // // 3. Resolution: Apply impulses to resolve collisions
+    // for (const auto& collistion : collistions) {
+    //   resolve_collision(collistion);
+    // }
   }
 
 private:
