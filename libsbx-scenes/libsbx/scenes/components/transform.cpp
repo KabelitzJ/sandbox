@@ -9,25 +9,25 @@ transform::transform(const math::vector3& position, const math::quaternion& rota
   _rotation{rotation}, 
   _scale{scale},
   _rotation_matrix{math::matrix_cast<4, 4>(_rotation)},
-  _is_dirty{true} { }
+  _version{1u} { }
 
 auto transform::position() const noexcept -> const math::vector3& {
   return _position;
 }
 
 auto transform::position() noexcept -> math::vector3& {
-  mart_dirty();
+  bump_version();
   return _position;
 }
 
 auto transform::set_position(const math::vector3& position) noexcept -> void {
   _position = position;
-  mart_dirty();
+  bump_version();
 }
 
 auto transform::move_by(const math::vector3& offset) noexcept -> void {
   _position += offset;
-  mart_dirty();
+  bump_version();
 }
 
 auto transform::rotation() const noexcept -> const math::quaternion& {
@@ -37,17 +37,17 @@ auto transform::rotation() const noexcept -> const math::quaternion& {
 auto transform::set_rotation(const math::quaternion& rotation) noexcept -> void {
   _rotation = rotation;
   _rotation_matrix = math::matrix_cast<4, 4>(_rotation);
-  mart_dirty();
+  bump_version();
 }
 
 auto transform::set_rotation(const math::vector3& axis, const math::angle& angle) noexcept -> void {
   _rotation = math::quaternion{axis, angle};
   _rotation_matrix = math::matrix_cast<4, 4>(_rotation);
-  mart_dirty();
+  bump_version();
 }
 
 auto transform::scale() noexcept -> math::vector3& {
-  mart_dirty();
+  bump_version();
   return _scale;
 }
 
@@ -58,7 +58,7 @@ auto transform::scale() const noexcept -> const math::vector3& {
 
 auto transform::set_scale(const math::vector3& scale) noexcept -> void {
   _scale = scale;
-  mart_dirty();
+  bump_version();
 }
 
 auto transform::forward() const noexcept -> math::vector3 {
@@ -78,15 +78,22 @@ auto transform::look_at(const math::vector3& target) noexcept -> void {
   auto result = math::matrix4x4::look_at(_position, target, math::vector3::up);
   _rotation = math::quaternion{math::matrix4x4::inverted(result)};
   _rotation_matrix = math::matrix_cast<4, 4>(_rotation);
-  mart_dirty();
+  bump_version();
 }
 
-auto transform::is_dirty() const noexcept -> bool {
-  return _is_dirty;
+auto transform::version() const noexcept -> std::uint64_t {
+  return _version;
 }
 
-auto transform::clear_is_dirty() noexcept -> void {
-  _is_dirty = false;
+auto transform::bump_version() -> void {
+  ++_version;
+}
+
+auto transform::local_transform() const -> math::matrix4x4 {
+  const auto translation = math::matrix4x4::translated(math::matrix4x4::identity, _position);
+  const auto scale = math::matrix4x4::scaled(math::matrix4x4::identity, _scale);
+
+  return translation * _rotation_matrix * scale;
 }
 
 } // namespace sbx::scenes

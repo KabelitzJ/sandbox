@@ -143,7 +143,7 @@ private:
     const auto lower_id = static_cast<std::uint32_t>(selection_tag.value() & 0xFFFFFFFF);
 
     const auto transform_data_index = static_cast<std::uint32_t>(_transform_data.size());
-    _transform_data.emplace_back(global_transform.model, global_transform.normal);
+    _transform_data.emplace_back(scene.world_transform(node), scene.world_normal(node));
 
     for (const auto& submesh : static_mesh.submeshes()) {
       const auto& material = assets_module.get_asset<scenes::material>(submesh.material);

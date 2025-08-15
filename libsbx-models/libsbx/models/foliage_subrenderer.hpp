@@ -81,7 +81,7 @@ public:
 
     const auto& camera_global_transform = scene.get_component<sbx::scenes::global_transform>(camera_node);
 
-    const auto view = sbx::math::matrix4x4::inverted(camera_global_transform.model);
+    const auto view = sbx::math::matrix4x4::inverted(scene.world_transform(camera_node));
 
     auto& grass_buffer = graphics_module.get_resource<graphics::storage_buffer>(_grass_buffer);
     auto& draw_command_buffer = graphics_module.get_resource<graphics::storage_buffer>(_draw_command_buffer);

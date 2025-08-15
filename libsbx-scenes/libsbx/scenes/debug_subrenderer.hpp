@@ -74,7 +74,7 @@ public:
 
     const auto& camera_global_transform = scene.get_component<sbx::scenes::global_transform>(camera_node);
 
-    const auto view = sbx::math::matrix4x4::inverted(camera_global_transform.model);
+    const auto view = sbx::math::matrix4x4::inverted(scene.world_transform(camera_node));
     
     _pipeline.bind(command_buffer);
 

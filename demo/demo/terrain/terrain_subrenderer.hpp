@@ -45,7 +45,7 @@ public:
 
     const auto& camera_transform = scene.get_component<sbx::scenes::transform>(camera_node);
 
-    _scene_uniform_handler.push("view", sbx::math::matrix4x4::inverted(camera_transform.local_transform()));
+    _scene_uniform_handler.push("view", sbx::math::matrix4x4::inverted(scene.world_transform(camera_node)));
 
     auto chunk_query = scene.query<demo::chunk>();
 

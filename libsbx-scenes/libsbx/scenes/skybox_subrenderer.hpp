@@ -127,7 +127,7 @@ public:
     const auto& projection = camera.projection();
     _scene_uniform_handler.push("projection", projection);
 
-    const auto view = math::matrix4x4::inverted(camera_transform.local_transform());
+    const auto view = math::matrix4x4::inverted(scene.world_transform(camera_node));
     _scene_uniform_handler.push("view", view);
 
     const auto model = scene.world_transform(camera_node);

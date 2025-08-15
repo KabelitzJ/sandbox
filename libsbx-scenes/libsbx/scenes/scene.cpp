@@ -124,48 +124,111 @@ auto scene::destroy_node(const node_type node) -> void {
   _registry.destroy(node);
 }
 
+auto scene::_ensure_world(const node_type node) -> const scenes::global_transform& {
+  EASY_FUNCTION();
+
+  auto chain = utility::make_array<node_type, 32u>(node_type::null);
+  auto chain_size = std::uint32_t{0};
+
+  for (auto current = node; current != node_type::null;) {
+    chain[chain_size++] = current;
+
+    const auto& relationship = get_component<scenes::relationship>(current);
+
+    current = relationship.parent();
+  }
+
+  auto parent_world = math::matrix4x4::identity;
+  auto parent_world_version = std::uint64_t{0};
+
+  for (auto i = chain_size - 1u; (i >= 0u && i < chain_size); --i) {
+    const auto current = chain[i];
+
+    auto& local = get_component<scenes::transform>(current);
+    auto& world = get_component<scenes::global_transform>(current);
+
+    if (world.local_seen != local.version() || world.parent_seen != parent_world_version) {
+      EASY_BLOCK("Recalculate world space")
+
+      world.model = parent_world * local.local_transform();
+      world.normal = math::matrix4x4::transposed(math::matrix4x4::inverted(world.model));
+      world.local_seen  = local.version();
+      world.parent_seen = parent_world_version;
+
+      ++world.version;
+
+      EASY_END_BLOCK;
+    }
+
+    parent_world = world.model;
+    parent_world_version  = world.version;
+  }
+
+  return get_component<scenes::global_transform>(node);
+}
+
 auto scene::world_transform(const node_type node) -> math::matrix4x4 {
   EASY_FUNCTION();
 
-  // [TODO] KAJ 2025-05-03 : FIX THIS! THE PERFORMANCE IS TERRIBLE!
-
-  utility::assert_that(has_component<scenes::global_transform>(node), "Node has no global_transform component");
-
-  const auto& transform = get_component<scenes::transform>(node);
-  const auto& global_transform = get_component<scenes::global_transform>(node);
-
-  if constexpr (utility::build_configuration_v == utility::build_configuration::debug) {
-    if (transform.is_dirty()) {
-      utility::logger<"scenes">::warn("Node '{}' has dirty transform", get_component<scenes::tag>(node));
-    }
-  }
-
-  // const auto parent = _nodes.at(relationship.parent());
-
-  // auto world = math::matrix4x4::identity;
-
-  // if (get_component<scenes::id>(parent) != get_component<scenes::id>(_root)) {
-  //   world = world_transform(parent);
-  // }
-
-  return global_transform.model;
+  return _ensure_world(node).model;
 }
 
 auto scene::world_normal(const node_type node) -> math::matrix4x4 {
   EASY_FUNCTION();
 
-  utility::assert_that(has_component<scenes::global_transform>(node), "Node has no global_transform component");
+  return _ensure_world(node).normal;
+}
 
-  const auto& global_transform = get_component<scenes::global_transform>(node);
+auto scene::parent_transform(const node_type node) -> math::matrix4x4 {
+  EASY_FUNCTION();
 
-  return global_transform.normal;
+  const auto& relationship = get_component<scenes::relationship>(node);
+
+  return (relationship.parent() != node_type::null) ? world_transform(relationship.parent()) : math::matrix4x4::identity;
 }
 
 auto scene::world_position(const node_type node) -> math::vector3 {
-  EASY_FUNCTION();
-
   return math::vector3{world_transform(node)[3]};
 }
+
+auto scene::world_rotation(const node_type node) -> math::quaternion {
+  const auto world = world_transform(node);
+
+  auto x = math::vector3{world[0]};
+  auto y = math::vector3{world[1]};
+  auto z = math::vector3{world[2]};
+
+  const auto x_length = x.length();
+  const auto y_length = y.length();
+  const auto z_length = z.length();
+
+  if (x_length < math::epsilonf || y_length < math::epsilonf || z_length < math::epsilonf) {
+    return math::quaternion::identity;
+  }
+
+  x /= x_length;
+  y /= y_length;
+  z /= z_length;
+
+  if (math::vector3::dot(math::vector3::cross(x, y), z) < 0.0f) {
+    if (x_length >= y_length && x_length >= z_length) {
+      x = -x;
+    } else if (y_length >= z_length) {
+      y = -y;
+    } else {
+      z = -z;
+    }
+  }
+
+  auto matrix = math::matrix3x3{x, y, z};
+
+  return math::quaternion{matrix};
+}
+
+auto scene::world_scale(const node_type node) -> math::vector3 {
+
+}
+
 
 auto scene::save(const std::filesystem::path& path)-> void {
   _registry.invoke("save", [this](const auto node) {

@@ -130,7 +130,7 @@ public:
     const auto& camera_transform = scene.get_component<scenes::transform>(camera_node);
     const auto& camera_global_transform = scene.get_component<scenes::global_transform>(camera_node);
 
-    const auto view = math::matrix4x4::inverted(camera_global_transform.model);
+    const auto view = math::matrix4x4::inverted(scene.world_transform(camera_node));
 
     _scene_uniform_handler.push("view", view);
 
@@ -226,7 +226,7 @@ private:
     const auto lower_id = static_cast<std::uint32_t>(id.value() & 0xFFFFFFFF);
 
     const auto transform_data_index = static_cast<std::uint32_t>(_transform_data.size());
-    _transform_data.emplace_back(global_transform.model, global_transform.normal);
+    _transform_data.emplace_back(scene.world_transform(node), scene.world_normal(node));
 
     auto& instances = _submesh_instances[mesh_id];
 

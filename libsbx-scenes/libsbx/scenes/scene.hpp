@@ -47,6 +47,7 @@
 #include <libsbx/scenes/components/tag.hpp>
 #include <libsbx/scenes/components/camera.hpp>
 #include <libsbx/scenes/components/transform.hpp>
+#include <libsbx/scenes/components/global_transform.hpp>
 
 namespace sbx::scenes {
 
@@ -90,7 +91,13 @@ public:
 
   auto world_normal(const node_type node) -> math::matrix4x4;
 
+  auto parent_transform(const node_type node) -> math::matrix4x4;
+
   auto world_position(const node_type node) -> math::vector3;
+
+  auto world_rotation(const node_type node) -> math::quaternion;
+
+  auto world_scale(const node_type node) -> math::vector3;
 
   template<typename Type, typename... Other, typename... Exclude>
   auto query(ecs::exclude_t<Exclude...> = ecs::exclude_t{}) -> decltype(auto) {
@@ -280,6 +287,8 @@ private:
   auto _load_assets(const YAML::Node& assets) -> void;
 
   auto _load_nodes(const YAML::Node& nodes) -> void;
+
+  auto _ensure_world(const node_type node) -> const scenes::global_transform&;
 
   std::unordered_map<math::uuid, node_type> _nodes;
 

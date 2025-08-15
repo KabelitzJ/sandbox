@@ -140,6 +140,10 @@ public:
       _update_stage(stage::post);
       EASY_END_BLOCK;
 
+      EASY_BLOCK("stage pre_fixed");
+      _update_stage(stage::pre_fixed);
+      EASY_END_BLOCK;
+
       while (fixed_accumulator >= fixed_delta_time()) {
         EASY_BLOCK("stage fixed");
         application->fixed_update();

@@ -48,20 +48,11 @@ public:
 
   auto look_at(const math::vector3& target) noexcept -> void;
 
-  auto is_dirty() const noexcept -> bool;
+  auto version() const noexcept -> std::uint64_t;
 
-  auto mart_dirty() -> void {
-    _is_dirty = true;
-  }
+  auto bump_version() -> void;
 
-  auto clear_is_dirty() noexcept -> void;
-
-  [[nodiscard]] auto local_transform() const -> math::matrix4x4 {
-    const auto translation = math::matrix4x4::translated(math::matrix4x4::identity, _position);
-    const auto scale = math::matrix4x4::scaled(math::matrix4x4::identity, _scale);
-
-    return translation * _rotation_matrix * scale;
-  }
+  [[nodiscard]] auto local_transform() const -> math::matrix4x4;
 
 private:
 
@@ -71,7 +62,7 @@ private:
 
   math::matrix4x4 _rotation_matrix;
 
-  bool _is_dirty;
+  std::uint64_t _version;
 
 }; // class transform
 

@@ -49,7 +49,7 @@ inline constexpr basic_quaternion<Type>::basic_quaternion(const vector_type_for<
 
 template<floating_point Type>
 template<floating_point Other>
-inline constexpr basic_quaternion<Type>::basic_quaternion(const matrix_type_for<Other>& matrix) noexcept {
+inline constexpr basic_quaternion<Type>::basic_quaternion(const basic_matrix4x4<Other>& matrix) noexcept {
   const auto four_x_squared_minus1 = matrix[0][0] - matrix[1][1] - matrix[2][2];
   const auto four_y_squared_minus1 = matrix[1][1] - matrix[0][0] - matrix[2][2];
   const auto four_z_squared_minus1 = matrix[2][2] - matrix[0][0] - matrix[1][1];
@@ -98,6 +98,54 @@ inline constexpr basic_quaternion<Type>::basic_quaternion(const matrix_type_for<
       *this = basic_quaternion<Type>::identity;
       break;
     }
+  }
+}
+
+template<floating_point Type>
+template<floating_point Other>
+constexpr basic_quaternion<Type>::basic_quaternion(const basic_matrix3x3<Other>& matrix) noexcept {
+  const float trace = matrix[0][0] + matrix[1][1] + matrix[2][2];
+
+  if (trace > 0.0f) {
+    const float s = std::sqrt(trace + 1.0f) * 2.0f;
+
+    _scalar = 0.25f * s;
+
+    const auto x = (matrix[2][1] - matrix[1][2]) / s;
+    const auto y = (matrix[0][2] - matrix[2][0]) / s;
+    const auto z = (matrix[1][0] - matrix[0][1]) / s;
+
+    _complex = vector_type{x, y, z};
+  } else if (matrix[0][0] > matrix[1][1] && matrix[0][0] > matrix[2][2]) {
+    const float s = std::sqrt(1.0f + matrix[0][0] - matrix[1][1] - matrix[2][2]) * 2.0f;
+
+    _scalar = (matrix[2][1] - matrix[1][2]) / s;
+
+    const auto x = 0.25f * s;
+    const auto y = (matrix[0][1] + matrix[1][0]) / s;
+    const auto z = (matrix[0][2] + matrix[2][0]) / s;
+
+    _complex = vector_type{x, y, z};
+  } else if (matrix[1][1] > matrix[2][2]) {
+    const float s = std::sqrt(1.0f + matrix[1][1] - matrix[0][0] - matrix[2][2]) * 2.0f;
+
+    _scalar = (matrix[0][2] - matrix[2][0]) / s;
+
+    const auto x = (matrix[0][1] + matrix[1][0]) / s;
+    const auto y = 0.25f * s;
+    const auto z = (matrix[1][2] + matrix[2][1]) / s;
+
+    _complex = vector_type{x, y, z};
+  } else {
+    const float s = std::sqrt(1.0f + matrix[2][2] - matrix[0][0] - matrix[1][1]) * 2.0f;
+
+    _scalar = (matrix[1][0] - matrix[0][1]) / s;
+
+    const auto x = (matrix[0][2] + matrix[2][0]) / s;
+    const auto y = (matrix[1][2] + matrix[2][1]) / s;
+    const auto z = 0.25f * s;
+
+    _complex = vector_type{x, y, z};
   }
 }
 

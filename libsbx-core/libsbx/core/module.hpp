@@ -52,6 +52,7 @@ private:
     pre,
     normal,
     post,
+    pre_fixed,
     fixed,
     post_fixed,
     rendering
