@@ -33,6 +33,8 @@ struct rotator { };
 
 struct walker { };
 
+struct show_local_coordinates { };
+
 static auto fox1 = sbx::scenes::node{};
 
 application::application()
@@ -181,6 +183,8 @@ application::application()
 
   auto soldier = scene.create_node("Soldier");
 
+  scene.add_component<show_local_coordinates>(soldier);
+
   scene.add_component<sbx::scenes::skinned_mesh>(soldier, scene.get_mesh("soldier"), scene.get_animation("IdleStanding"), soldier_submeshes);
 
   auto& soldier_animator = scene.add_component<sbx::animations::animator>(soldier);
@@ -299,6 +303,8 @@ application::application()
 
   scene.add_material<sbx::scenes::material>("helmet", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 0.5f, 1.0f, scene.get_image("helmet_albedo"), scene.get_image("helmet_normal"));
 
+  scene.add_component<show_local_coordinates>(helmet);
+
   scene.add_component<sbx::scenes::static_mesh>(helmet, scene.get_mesh("helmet"), scene.get_material("helmet"));
 
   auto& helmet_transform = scene.get_component<sbx::scenes::transform>(helmet);
@@ -346,6 +352,8 @@ application::application()
   fox1 = scene.create_node("Fox");
 
   scene.add_material<sbx::scenes::material>("fox", sbx::scenes::material_type::opaque, sbx::math::color::white(), 1.0f, 0.5f, 1.0f, scene.get_image("fox_albedo"));
+
+  scene.add_component<show_local_coordinates>(fox1);
 
   scene.add_component<sbx::scenes::skinned_mesh>(fox1, scene.get_mesh("fox"), scene.get_animation("Walk"), scene.get_material("fox"));
 
@@ -676,6 +684,14 @@ auto application::update() -> void  {
 
   auto& light_center_transform = scene.get_component<sbx::scenes::transform>(_light_center);
   light_center_transform.set_rotation(sbx::math::vector3::up, _rotation);
+
+  auto query_coordinates = scene.query<show_local_coordinates>();
+
+  for (auto&& [node] : query_coordinates.each()) {
+    const auto world = scene.world_transform(node);
+
+    scenes_module.add_coordinate_arrows(world);
+  }
 
   // for (auto& tank : _tanks) {
   //   tank.update();
