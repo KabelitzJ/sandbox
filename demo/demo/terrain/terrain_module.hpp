@@ -44,7 +44,7 @@ public:
     
     const auto chunk_size = sbx::math::vector2u{25u, 25u};
 
-    scene.add_mesh<sbx::models::mesh>("terrain", _generate_plane(chunk_size, sbx::math::vector2u{5u, 5u}));
+    scene.add_mesh<sbx::models::mesh>("terrain", _generate_plane(chunk_size, sbx::math::vector2u{1u, 1u}));
 
     scene.add_image("prototype", "demo/assets/textures/prototype_white.png");
 

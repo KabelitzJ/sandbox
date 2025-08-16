@@ -99,6 +99,10 @@ public:
 
   auto world_scale(const node_type node) -> math::vector3;
 
+  auto is_valid(const node_type node) const -> bool {
+    return _registry.is_valid(node);
+  }
+
   template<typename Type, typename... Other, typename... Exclude>
   auto query(ecs::exclude_t<Exclude...> = ecs::exclude_t{}) -> decltype(auto) {
     return _registry.view<Type, Other...>(ecs::exclude<Exclude...>);

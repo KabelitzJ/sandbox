@@ -305,6 +305,10 @@ private:
 
     auto& scene = scene_module.scene();
 
+    if (!scene.is_valid(node)) {
+      return;
+    }
+
     const auto& relationship = scene.get_component<sbx::scenes::relationship>(node);
 
     // auto flag = ImGuiTreeNodeFlags{ImGuiTreeNodeFlags_OpenOnArrow};
