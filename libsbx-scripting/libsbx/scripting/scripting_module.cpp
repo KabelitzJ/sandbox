@@ -11,7 +11,7 @@
 
 extern "C" {
 
-struct native_entity { 
+struct native_node { 
   std::uint32_t id; 
 }; // struct EntityNative
 
@@ -23,9 +23,40 @@ static auto _internal_logger_info(MonoString* string) -> void {
   mono_free(message);
 }
 
-static auto _internal_entity_get_name(native_entity entity) -> void {
+static auto _internal_entity_get_name(native_node node) -> MonoString* {
   auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
   auto& scene = scenes_module.scene();
+
+  const auto& tag = scene.get_component<sbx::scenes::tag>(static_cast<sbx::scenes::node>(node.id));
+
+  return mono_string_new(mono_domain_get(), tag.c_str());
+}
+
+static auto _key_from_type(MonoReflectionType* type) -> std::string {
+  auto* mt = mono_reflection_type_get_type(type);
+  auto* kc = mono_class_from_mono_type(mt);
+  auto* ns = mono_class_get_namespace(kc);
+  auto* nm = mono_class_get_name(kc);
+  
+  return (ns && *ns) ? (std::string{ns} + "." + nm) : std::string{nm};
+}
+
+static auto _internal_behaviour_has_component(native_node node, MonoReflectionType* type) -> mono_bool {
+  auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
+  auto& scene = scenes_module.scene();
+
+  const auto type_key = _key_from_type(type);
+
+  return true;
+}
+
+static auto _internal_behaviour_get_component(native_node node, MonoReflectionType* type, void* data, int size) -> mono_bool {
+  auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
+  auto& scene = scenes_module.scene();
+
+  const auto type_key = _key_from_type(type);
+
+  return true;
 }
 
 } // extern "C"
@@ -74,6 +105,8 @@ auto scripting_module::load_domain(const std::filesystem::path& path) -> void {
   }
 
   _engine_image = mono_assembly_get_image(assembly);
+
+  utility::logger<"scripting">::debug("Loaded engine domain from {}", (path / "Sbx.dll").string());
 }
 
 auto scripting_module::load_assemblies(const std::filesystem::path& path) -> void {
@@ -92,6 +125,9 @@ auto scripting_module::_register_internal_calls() -> void {
   mono_add_internal_call("Sbx.Logger::InternalInfo", reinterpret_cast<const void*>(_internal_logger_info));
 
   mono_add_internal_call("Sbx.Entity::InternalGetName", reinterpret_cast<const void*>(_internal_entity_get_name));
+
+  mono_add_internal_call("Sbx.Behaviour::InternalHasComponent", reinterpret_cast<const void*>(_internal_behaviour_has_component));
+  mono_add_internal_call("Sbx.Behaviour::InternalGetComponent", reinterpret_cast<const void*>(_internal_behaviour_get_component));
 }
 
 } // namespace sbx::scripting

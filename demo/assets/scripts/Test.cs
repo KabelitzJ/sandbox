@@ -4,10 +4,10 @@ using Sbx;
 
 class Test : Behaviour {
 
-  private float speed = 1.5f;
+  private float _speed = 1.5f;
 
   public override void OnCreate() {
-    Logger.Info($"Test attached to {Entity.Name} with speed {speed}");
+    Logger.Info($"Test attached to {ToString()} with speed {_speed}");
   }
 
 }

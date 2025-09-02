@@ -6,40 +6,34 @@ namespace Sbx {
 
 public abstract class Behaviour {
 
-  protected Entity Entity;
+  protected Node _node;
+
+  public override string ToString() => _node.ToString();
 
   public virtual void OnCreate() { }
   public virtual void OnUpdate(float delta_time) { }
   public virtual void OnDestroy() { }
 
   public bool HasComponent<T>() where T : unmanaged {
-    return InternalHasComponent(Entity, typeof(T));
+    return InternalHasComponent(_node, typeof(T));
   }
 
   public unsafe T GetComponent<T>() where T : unmanaged {
     T value = default;
 
-    if (!InternalGetComponent(Entity, typeof(T), (IntPtr)(&value), sizeof(T))) {
-      throw new InvalidOperationException($"Component {typeof(T).FullName} not present on {Entity.ToString()}");
+    if (!InternalGetComponent(_node, typeof(T), (IntPtr)(&value), sizeof(T))) {
+      throw new InvalidOperationException($"Component {typeof(T).FullName} not present on {_node.ToString()}");
     }
 
     return value;
   }
 
-  public unsafe bool AddComponent<T>(in T value) where T : unmanaged {
-    fixed (T* ptr = &value)
-
-    return InternalAddComponent(Entity, typeof(T), (IntPtr)ptr, sizeof(T));
-  }
+  [MethodImpl(MethodImplOptions.InternalCall)]
+  internal static extern bool InternalHasComponent(Node node, Type componentType);
 
   [MethodImpl(MethodImplOptions.InternalCall)]
-  internal static extern bool InternalHasComponent(Entity entity, Type componentType);
+  internal static extern bool InternalGetComponent(Node node, Type componentType, IntPtr outData, int size);
 
-  [MethodImpl(MethodImplOptions.InternalCall)]
-  internal static extern bool InternalGetComponent(Entity entity, Type componentType, IntPtr outData, int size);
-
-  [MethodImpl(MethodImplOptions.InternalCall)]
-  internal static extern bool InternalAddComponent(Entity entity, Type componentType, IntPtr inData, int size);
 }
 
 } // namespace Sbx
