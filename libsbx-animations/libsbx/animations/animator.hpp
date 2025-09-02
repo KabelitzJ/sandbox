@@ -1,12 +1,13 @@
 #ifndef LIBSBX_ANIMATIONS_ANIMATOR_HPP_
 #define LIBSBX_ANIMATIONS_ANIMATOR_HPP_
 
-#include <functional>
-#include <utility>
-#include <vector>
-#include <unordered_map>
 #include <algorithm>
 #include <cmath>
+#include <functional>
+#include <optional>
+#include <unordered_map>
+#include <utility>
+#include <vector>
 
 #include <libsbx/utility/hashed_string.hpp>
 #include <libsbx/utility/iterator.hpp>
@@ -38,8 +39,7 @@ public:
     utility::hashed_string to;
     std::float_t duration = 0.25f;
     std::function<bool(const animator&)> condition;
-    bool has_exit_time = false;
-    std::float_t exit_time_normalized = 0.0f;
+    std::optional<std::float_t> exit_time = 0.0f;
   }; // struct transition
 
   struct parameters {

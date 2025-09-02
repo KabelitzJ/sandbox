@@ -99,8 +99,8 @@ static auto _normalized_time(const animator::state& state, const std::float_t ti
   return std::fmod(std::max(time, 0.0f), duration) / duration;
 }
 
-auto animator::add_state(const state& new_state) -> void {
-  _state_map[new_state.name] = new_state;
+auto animator::add_state(const state& state) -> void {
+  _state_map[state.name] = state;
 }
 
 auto animator::add_transition(transition&& transition) -> void {
@@ -164,10 +164,10 @@ void animator::update(const std::float_t delta_time) {
         continue;
       }
 
-      if (rule.has_exit_time) {
+      if (rule.exit_time) {
         const std::float_t normalized_time = _normalized_time(_current_state, _current_state_time);
 
-        if (normalized_time + 1e-6f < rule.exit_time_normalized) {
+        if (normalized_time + 1e-6f < *rule.exit_time) {
           continue;
         }
       }
