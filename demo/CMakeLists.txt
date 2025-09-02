@@ -94,6 +94,7 @@ target_link_libraries(
     libsbx::gizmos
     libsbx::graphics
     libsbx::scenes
+    libsbx::scripting
     libsbx::models
     libsbx::animations
     libsbx::shadows

@@ -1,0 +1,3 @@
+# libsbx-scripting
+
+C++ library
