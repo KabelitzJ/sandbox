@@ -1,1 +1,2 @@
-*/*.dll
+Out/*.dll
+Sbx/Out/*.dll
