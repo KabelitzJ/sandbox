@@ -108,7 +108,7 @@ public:
     project_menu_save.on_click = [this, &scenes_module]() { 
       utility::logger<"editor">::debug("Project::Save clicked");
       
-      scenes_module.save_scene("res://scenes/test.yaml");
+      scenes_module.save_scene("res://scenes/scene.yaml");
     };
 
     auto project_menu_save_as = editor::menu_item{};

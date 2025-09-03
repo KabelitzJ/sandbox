@@ -23,7 +23,7 @@
 #include <libsbx/scenes/components/static_mesh.hpp>
 #include <libsbx/scenes/components/skinned_mesh.hpp>
 
-#include <libsbx/scripting/scripting.hpp>
+// #include <libsbx/scripting/scripting.hpp>
 
 #include <libsbx/animations/mesh.hpp>
 #include <libsbx/animations/animation.hpp>
@@ -61,13 +61,13 @@ application::application()
 
   auto& scene = scenes_module.load_scene("res://scenes/scene.yaml");
 
-  auto& scripting_module = sbx::core::engine::get_module<sbx::scripting::scripting_module>();
+  // auto& scripting_module = sbx::core::engine::get_module<sbx::scripting::scripting_module>();
 
-  scripting_module.load_domain();
+  // scripting_module.load_domain();
 
-  scripting_module.load_assembly("Sbx", "res://scripts/Sbx/Out/Sbx.dll");
+  // scripting_module.load_assembly("Sbx", "res://scripts/Sbx/Out/Sbx.dll");
 
-  scripting_module.load_assembly("Test", "res://scripts/Out/Test.dll");
+  // scripting_module.load_assembly("Test", "res://scripts/Out/Test.dll");
 
   // Textures
 

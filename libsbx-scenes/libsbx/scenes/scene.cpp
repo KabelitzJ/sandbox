@@ -75,6 +75,11 @@ scene::scene(const std::filesystem::path& path)
 
   const auto scene = YAML::LoadFile(path.string());
 
+  if (!scene || scene.IsNull() || scene.size() == 0) {
+    utility::logger<"scenes">::warn("Scene '{}' is empty", path.string());
+    return;
+  }
+
   const auto& name = scene["name"].as<std::string>();
 
   const auto& metadata = scene["metadata"];
@@ -270,20 +275,20 @@ auto scene::save(const std::filesystem::path& path)-> void {
 auto scene::_load_assets(const YAML::Node& assets) -> void {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
-  for (const auto& mesh : assets["meshes"]) {
-    const auto& name = mesh["name"].as<std::string>();
-    const auto& path = mesh["path"].as<std::string>();
-    const auto& id = mesh["id"].as<std::string>();
-  }
+  // for (const auto& mesh : assets["meshes"]) {
+  //   const auto& name = mesh["name"].as<std::string>();
+  //   const auto& path = mesh["path"].as<std::string>();
+  //   const auto& id = mesh["id"].as<std::string>();
+  // }
 
-  for (const auto& mesh : assets["materials"]) {
-    const auto& name = mesh["name"].as<std::string>();
-    const auto& path = mesh["path"].as<std::string>();
-    const auto& id = mesh["id"].as<std::string>();
-  }
+  // for (const auto& mesh : assets["materials"]) {
+  //   const auto& name = mesh["name"].as<std::string>();
+  //   const auto& path = mesh["path"].as<std::string>();
+  //   const auto& id = mesh["id"].as<std::string>();
+  // }
 }
 
-auto scene::_load_nodes(const YAML::Node& assets) -> void {
+auto scene::_load_nodes(const YAML::Node& nodes) -> void {
 
 }
 
@@ -332,6 +337,10 @@ auto scene::scene::_save_textures(YAML::Emitter& emitter) -> void {
 }
 
 auto scene::_save_node(YAML::Emitter& emitter, const node_type node) -> void {
+  if (node == _root) {
+    return;
+  }
+
   emitter << YAML::BeginMap;
 
   const auto& tag = get_component<scenes::tag>(node);
@@ -374,7 +383,7 @@ auto scene::_save_components(YAML::Emitter& emitter, const node_type node) -> vo
 
   // We maybe dont need to store children as we can resolve dependencies by the parent alone
   emitter << YAML::Key << "type" << YAML::Value << "hierarchy";
-  emitter << YAML::Key << "parent" << YAML::Value << (relationship.parent() != node_type::null ? get_component<scenes::id>(relationship.parent()).value() : math::uuid::null().value());
+  emitter << YAML::Key << "parent" << YAML::Value << ((node != _root && relationship.parent() != node_type::null) ? get_component<scenes::id>(relationship.parent()).value() : math::uuid::null().value());
 
   emitter << YAML::EndMap;
 

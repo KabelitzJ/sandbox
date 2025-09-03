@@ -1,55 +1,2210 @@
-name: "Test"
-metadata:
-  version: "0.1.0"
+name: Scene
 assets:
   meshes:
-    - name: "birch"
-      path: "res://meshes/birch/birch.gltf"
-      id: &mesh_birch "d64108c8-9352-4498-ac85-ceecb7dbb552"
-  materials:
-    - name: "default"
-      path: "res://materials/default.mat"
-      id: &material_default "b83331ac-e5ab-47b6-8a88-6eac749ecac2"
+    - &bmp
+      name: bmp
+      path: demo/assets/meshes/tank/bmp.gltf
+  textures:
+    - &bmp_body1_albedo
+      name: bmp_body1_albedo
+      path: demo/assets/textures/bmp/body1_albedo.png
+    - &bmp_body1_normal
+      name: bmp_body1_normal
+      path: demo/assets/textures/bmp/body1_normal.png
 nodes:
-  - tag: "Camera"
-    id: "1c7f22a2-fc3a-46ba-b0af-128ee145e24e"
-    transform:
-      position: { x: 0.0, y: 3.0, z: 5.0 }
-      rotation: { x: 0.0, y: 0.0, z: 0.0 }
-      scale: { x: 1.0, y: 1.0, z: 1.0 }
+  - tag: Test
+    id: 8383801471061183872
     components:
-      - type: "camera"
-        fov: 75.0
-        near: 0.1
-        far: 100.0
-  - tag: "Forrest"
-    id: "8cc67efd-dce3-4d76-b98c-08901edd5655"
-    transform:
-      position: { x: 0.0, y: 0.0, z: 0.0 }
-      rotation: { x: 0.0, y: 0.0, z: 0.0 }
-      scale: { x: 1.0, y: 1.0, z: 1.0 }
-    children:
-      - "8b15082e-7c36-40f9-9bf1-d70bbea0874f"
-      - "9ea4fe93-923c-4790-b673-147c36148dd3"
-  - tag: "Tree1"
-    id: "8b15082e-7c36-40f9-9bf1-d70bbea0874f"
-    transform:
-      position: { x: 0.0, y: 0.0, z: 0.0 }
-      rotation: { x: 0.0, y: 0.0, z: 0.0 }
-      scale: { x: 1.0, y: 1.0, z: 1.0 }
+      - type: transform
+        position: {x: 3, y: 6.89613867, z: 3}
+        rotation: {x: 0, y: 0.382683456, z: 0, w: 0.923879504}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 14257639428761167948
+  - tag: Test
+    id: 8747585635191366639
     components:
-      - type: "static_mesh"
-        mesh: *mesh_birch
-        material: *material_default
-  - tag: "Tree2"
-    id: "9ea4fe93-923c-4790-b673-147c36148dd3"
-    transform:
-      position: { x: 0.0, y: 0.0, z: 0.0 }
-      rotation: { x: 0.0, y: 0.0, z: 0.0 }
-      scale: { x: 1.0, y: 1.0, z: 1.0 }
+      - type: transform
+        position: {x: 0, y: 6.55470133, z: 3}
+        rotation: {x: 0, y: 0.382683456, z: 0, w: 0.923879504}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 14257639428761167948
+  - tag: Test
+    id: 15774651231355883255
     components:
-      - type: "static_mesh"
-        mesh: *mesh_birch
-        material: *material_default
-
-    
+      - type: transform
+        position: {x: -3, y: 7.04419184, z: 3}
+        rotation: {x: 0, y: 0.382683456, z: 0, w: 0.923879504}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 14257639428761167948
+  - tag: Test
+    id: 7741234420846044735
+    components:
+      - type: transform
+        position: {x: 3, y: 6.89022636, z: 0}
+        rotation: {x: 0, y: 0.382683456, z: 0, w: 0.923879504}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 14257639428761167948
+  - tag: Test
+    id: 13277705834569404069
+    components:
+      - type: transform
+        position: {x: 0, y: 7.19967699, z: 0}
+        rotation: {x: 0, y: 0.382683456, z: 0, w: 0.923879504}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 14257639428761167948
+  - tag: Test
+    id: 5718278393106444662
+    components:
+      - type: transform
+        position: {x: -3, y: 6.1987443, z: 0}
+        rotation: {x: 0, y: 0.382683456, z: 0, w: 0.923879504}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 14257639428761167948
+  - tag: Test
+    id: 9207754111811169557
+    components:
+      - type: transform
+        position: {x: 3, y: 7.19724226, z: -3}
+        rotation: {x: 0, y: 0.382683456, z: 0, w: 0.923879504}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 14257639428761167948
+  - tag: Test
+    id: 9829068087696027410
+    components:
+      - type: transform
+        position: {x: 0, y: 7.24809074, z: -3}
+        rotation: {x: 0, y: 0.382683456, z: 0, w: 0.923879504}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 14257639428761167948
+  - tag: Test
+    id: 7864538715821759594
+    components:
+      - type: transform
+        position: {x: -3, y: 7.16340351, z: -3}
+        rotation: {x: 0, y: 0.382683456, z: 0, w: 0.923879504}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 14257639428761167948
+  - tag: Rock5
+    id: 1311637251261858398
+    components:
+      - type: transform
+        position: {x: 6, y: 0, z: 0}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 2, y: 2, z: 2}
+      - type: hierarchy
+        parent: 14257639428761167948
+  - tag: Rock4
+    id: 1137228637122146669
+    components:
+      - type: transform
+        position: {x: 3, y: 0, z: 0}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 2, y: 2, z: 2}
+      - type: hierarchy
+        parent: 14257639428761167948
+  - tag: Rock3
+    id: 3375748479354952942
+    components:
+      - type: transform
+        position: {x: 0, y: 0, z: 0}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 2, y: 2, z: 2}
+      - type: hierarchy
+        parent: 14257639428761167948
+  - tag: Rock2
+    id: 14360502801322276131
+    components:
+      - type: transform
+        position: {x: -3, y: 0, z: 0}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 2, y: 2, z: 2}
+      - type: hierarchy
+        parent: 14257639428761167948
+  - tag: Rock1
+    id: 3926280109618277737
+    components:
+      - type: transform
+        position: {x: -6, y: 0, z: 0}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 2, y: 2, z: 2}
+      - type: hierarchy
+        parent: 14257639428761167948
+  - tag: Tree1414
+    id: 3646553940076605784
+    components:
+      - type: transform
+        position: {x: 98.6507416, y: 0, z: 111.325851}
+        rotation: {x: 0, y: 0.890983522, z: 0, w: -0.45403564}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree1314
+    id: 15658233331640777037
+    components:
+      - type: transform
+        position: {x: 83.0159836, y: 0, z: 100.420525}
+        rotation: {x: 0, y: 0.0962117761, z: 0, w: -0.995360911}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree1214
+    id: 17772348304504433014
+    components:
+      - type: transform
+        position: {x: 79.4352112, y: 0, z: 102.509079}
+        rotation: {x: 0, y: 0.955837965, z: 0, w: 0.293894112}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree1114
+    id: 2611120335939936524
+    components:
+      - type: transform
+        position: {x: 64.4590225, y: 0, z: 101.988747}
+        rotation: {x: 0, y: 0.33855626, z: 0, w: -0.940946162}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree1014
+    id: 3221097389839687576
+    components:
+      - type: transform
+        position: {x: 49.2682533, y: 0, z: 101.534554}
+        rotation: {x: 0, y: 0.53145045, z: 0, w: 0.84708941}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree914
+    id: 18418997769617880311
+    components:
+      - type: transform
+        position: {x: 33.3722076, y: 0, z: 100.464088}
+        rotation: {x: 0, y: 0.489587933, z: 0, w: 0.871953905}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree814
+    id: 6006208342799715742
+    components:
+      - type: transform
+        position: {x: 16.7130222, y: 0, z: 112.254646}
+        rotation: {x: 0, y: 0.460907817, z: 0, w: -0.887448013}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree714
+    id: 13907401406636588717
+    components:
+      - type: transform
+        position: {x: 7.07437897, y: 0, z: 101.448921}
+        rotation: {x: 0, y: 0.409982055, z: 0, w: 0.91209358}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree614
+    id: 3606991466220967681
+    components:
+      - type: transform
+        position: {x: -16.9260063, y: 0, z: 103.296349}
+        rotation: {x: 0, y: 0.59200561, z: 0, w: 0.805933833}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree514
+    id: 14161715134230471411
+    components:
+      - type: transform
+        position: {x: -32.9667778, y: 0, z: 101.329605}
+        rotation: {x: 0, y: 0.298743337, z: 0, w: 0.954333484}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree414
+    id: 6073232742100787560
+    components:
+      - type: transform
+        position: {x: -49.649456, y: 0, z: 107.91111}
+        rotation: {x: 0, y: 0.179900259, z: 0, w: 0.983684838}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree314
+    id: 1480515265172794265
+    components:
+      - type: transform
+        position: {x: -59.180954, y: 0, z: 99.4066162}
+        rotation: {x: 0, y: 0.00329647143, z: 0, w: 0.999994576}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree214
+    id: 2585175241496146835
+    components:
+      - type: transform
+        position: {x: -72.994545, y: 0, z: 112.194321}
+        rotation: {x: 0, y: 0.899030745, z: 0, w: -0.437885493}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree114
+    id: 1426160709677677182
+    components:
+      - type: transform
+        position: {x: -94.4267578, y: 0, z: 105.727905}
+        rotation: {x: 0, y: 0.610703468, z: 0, w: 0.791859388}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree014
+    id: 11827803795113621059
+    components:
+      - type: transform
+        position: {x: -103.321388, y: 0, z: 102.90377}
+        rotation: {x: 0, y: 0.895544231, z: 0, w: 0.444972515}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree1413
+    id: 2427918638431246886
+    components:
+      - type: transform
+        position: {x: 106.219627, y: 0, z: 89.7355804}
+        rotation: {x: 0, y: 0.0461442284, z: 0, w: 0.998934805}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree1313
+    id: 16010376823401007325
+    components:
+      - type: transform
+        position: {x: 83.835083, y: 0, z: 94.7847672}
+        rotation: {x: 0, y: 0.180055916, z: 0, w: -0.983656347}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree1213
+    id: 493442156715096791
+    components:
+      - type: transform
+        position: {x: 79.512085, y: 0, z: 91.929245}
+        rotation: {x: 0, y: 0.770936489, z: 0, w: -0.636912048}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree1113
+    id: 12154607084621254139
+    components:
+      - type: transform
+        position: {x: 59.7718086, y: 0, z: 97.4589462}
+        rotation: {x: 0, y: 0.379553616, z: 0, w: 0.925169766}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree1013
+    id: 4909356292176755284
+    components:
+      - type: transform
+        position: {x: 48.399292, y: 0, z: 90.8415451}
+        rotation: {x: 0, y: 0.769789934, z: 0, w: 0.638297319}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree913
+    id: 7924208708290252669
+    components:
+      - type: transform
+        position: {x: 37.0661392, y: 0, z: 89.735733}
+        rotation: {x: 0, y: 0.449149132, z: 0, w: 0.893456817}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree813
+    id: 10826279358319797838
+    components:
+      - type: transform
+        position: {x: 11.1599379, y: 0, z: 91.399147}
+        rotation: {x: 0, y: 0.140631169, z: 0, w: -0.990062058}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree713
+    id: 6778956774449415060
+    components:
+      - type: transform
+        position: {x: 7.33086872, y: 0, z: 84.9606934}
+        rotation: {x: 0, y: 0.73508513, z: 0, w: 0.67797482}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree613
+    id: 17952542135210646054
+    components:
+      - type: transform
+        position: {x: -17.2637081, y: 0, z: 92.1921082}
+        rotation: {x: 0, y: 0.0164912939, z: 0, w: -0.999863982}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree513
+    id: 7421948048972118901
+    components:
+      - type: transform
+        position: {x: -27.9884644, y: 0, z: 84.8757553}
+        rotation: {x: 0, y: 0.416248947, z: 0, w: -0.909250677}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree413
+    id: 2594073308862405353
+    components:
+      - type: transform
+        position: {x: -52.4237022, y: 0, z: 94.4038925}
+        rotation: {x: 0, y: 0.366748333, z: 0, w: 0.930320203}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree313
+    id: 3030531447480426459
+    components:
+      - type: transform
+        position: {x: -58.377449, y: 0, z: 85.8048477}
+        rotation: {x: 0, y: 0.996456981, z: 0, w: -0.0841037035}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree213
+    id: 13981829989334087711
+    components:
+      - type: transform
+        position: {x: -81.8981018, y: 0, z: 92.6090164}
+        rotation: {x: 0, y: 0.546207309, z: 0, w: 0.837650061}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree113
+    id: 16936254693463626827
+    components:
+      - type: transform
+        position: {x: -95.1497269, y: 0, z: 83.6240768}
+        rotation: {x: 0, y: 0.962507725, z: 0, w: 0.271254182}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree013
+    id: 6101520573478389778
+    components:
+      - type: transform
+        position: {x: -111.762047, y: 0, z: 90.2631302}
+        rotation: {x: 0, y: 0.155287296, z: 0, w: -0.987869322}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree1412
+    id: 8020571236838217742
+    components:
+      - type: transform
+        position: {x: 99.0158768, y: 0, z: 76.0031128}
+        rotation: {x: 0, y: 0.0923327506, z: 0, w: 0.995728195}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree1312
+    id: 6771042915931820234
+    components:
+      - type: transform
+        position: {x: 88.6180801, y: 0, z: 74.9143143}
+        rotation: {x: 0, y: 0.544861734, z: 0, w: 0.838525891}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree1212
+    id: 6387481720435902315
+    components:
+      - type: transform
+        position: {x: 68.9052429, y: 0, z: 80.7136536}
+        rotation: {x: 0, y: 0.735499442, z: 0, w: 0.677525342}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree1112
+    id: 10800000337425727881
+    components:
+      - type: transform
+        position: {x: 65.8434067, y: 0, z: 73.0948792}
+        rotation: {x: 0, y: 0.394974291, z: 0, w: -0.918692172}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree1012
+    id: 9187924133042149809
+    components:
+      - type: transform
+        position: {x: 41.283638, y: 0, z: 71.6323547}
+        rotation: {x: 0, y: 0.12791571, z: 0, w: 0.991785049}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree912
+    id: 5941440246549069452
+    components:
+      - type: transform
+        position: {x: 26.0887051, y: 0, z: 70.0367737}
+        rotation: {x: 0, y: 0.047485996, z: 0, w: -0.998871922}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree812
+    id: 12596846750693238573
+    components:
+      - type: transform
+        position: {x: 13.771863, y: 0, z: 68.394516}
+        rotation: {x: 0, y: 0.993404388, z: 0, w: -0.114663489}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree712
+    id: 8015929325046287192
+    components:
+      - type: transform
+        position: {x: -6.00998259, y: 0, z: 82.048912}
+        rotation: {x: 0, y: 0.973362625, z: 0, w: 0.229270905}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree612
+    id: 17302039508366073949
+    components:
+      - type: transform
+        position: {x: -10.2748814, y: 0, z: 77.0623245}
+        rotation: {x: 0, y: 0.948081374, z: 0, w: 0.318027884}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree512
+    id: 9923911985657923634
+    components:
+      - type: transform
+        position: {x: -25.6895924, y: 0, z: 72.6075134}
+        rotation: {x: 0, y: 0.485497117, z: 0, w: -0.874238253}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree412
+    id: 12068578488042588222
+    components:
+      - type: transform
+        position: {x: -48.0542526, y: 0, z: 68.5262451}
+        rotation: {x: 0, y: 0.266265064, z: 0, w: -0.963899851}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree312
+    id: 5049832415029837989
+    components:
+      - type: transform
+        position: {x: -60.1007004, y: 0, z: 71.4592285}
+        rotation: {x: 0, y: 0.549734354, z: 0, w: -0.835339546}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree212
+    id: 15602443873037105331
+    components:
+      - type: transform
+        position: {x: -70.5189209, y: 0, z: 76.0576553}
+        rotation: {x: 0, y: 0.951555252, z: 0, w: -0.307477802}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree112
+    id: 16215559667212708847
+    components:
+      - type: transform
+        position: {x: -91.4299316, y: 0, z: 70.1528015}
+        rotation: {x: 0, y: 0.908520937, z: 0, w: -0.417839259}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree012
+    id: 6020550435362640640
+    components:
+      - type: transform
+        position: {x: -108.400024, y: 0, z: 74.450264}
+        rotation: {x: 0, y: 0.643354356, z: 0, w: -0.765568554}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree1411
+    id: 9263777704609716327
+    components:
+      - type: transform
+        position: {x: 109.785316, y: 0, z: 52.6471825}
+        rotation: {x: 0, y: 0.716858983, z: 0, w: -0.69721818}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree1311
+    id: 13269345286908868930
+    components:
+      - type: transform
+        position: {x: 83.5719147, y: 0, z: 58.372303}
+        rotation: {x: 0, y: 0.145312399, z: 0, w: 0.989385843}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree1211
+    id: 15461457791588762004
+    components:
+      - type: transform
+        position: {x: 76.8250885, y: 0, z: 56.4918861}
+        rotation: {x: 0, y: 0.628722727, z: 0, w: -0.777629554}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree1111
+    id: 4656675685782918274
+    components:
+      - type: transform
+        position: {x: 54.3656006, y: 0, z: 60.4109726}
+        rotation: {x: 0, y: 0.882861197, z: 0, w: 0.469633996}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree1011
+    id: 670407425572898802
+    components:
+      - type: transform
+        position: {x: 46.2575684, y: 0, z: 58.2364082}
+        rotation: {x: 0, y: 0.985827923, z: 0, w: 0.167759746}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree911
+    id: 6129647856503896983
+    components:
+      - type: transform
+        position: {x: 33.6348419, y: 0, z: 54.4168625}
+        rotation: {x: 0, y: 0.968988478, z: 0, w: -0.247105986}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree811
+    id: 2399275927442643251
+    components:
+      - type: transform
+        position: {x: 20.5760002, y: 0, z: 63.8719406}
+        rotation: {x: 0, y: 0.964257836, z: 0, w: 0.264965743}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree711
+    id: 17169077587204251318
+    components:
+      - type: transform
+        position: {x: -4.42330647, y: 0, z: 64.5383759}
+        rotation: {x: 0, y: 0.58984673, z: 0, w: 0.807515204}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree611
+    id: 15593146767599778669
+    components:
+      - type: transform
+        position: {x: -18.6688862, y: 0, z: 54.8414192}
+        rotation: {x: 0, y: 0.999112427, z: 0, w: 0.0421234444}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree511
+    id: 12536993276366429860
+    components:
+      - type: transform
+        position: {x: -30.5718346, y: 0, z: 56.1324692}
+        rotation: {x: 0, y: 0.422104955, z: 0, w: 0.90654695}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree411
+    id: 12784163744384547732
+    components:
+      - type: transform
+        position: {x: -41.052124, y: 0, z: 54.2866287}
+        rotation: {x: 0, y: 0.736056149, z: 0, w: -0.676920474}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree311
+    id: 504700776391727182
+    components:
+      - type: transform
+        position: {x: -67.1598969, y: 0, z: 56.4780998}
+        rotation: {x: 0, y: 0.0739177167, z: 0, w: 0.997264326}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree211
+    id: 9718634866594816966
+    components:
+      - type: transform
+        position: {x: -67.963768, y: 0, z: 54.6094246}
+        rotation: {x: 0, y: 0.755847275, z: 0, w: 0.654747963}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree111
+    id: 7797689555317382534
+    components:
+      - type: transform
+        position: {x: -84.1544342, y: 0, z: 53.8868637}
+        rotation: {x: 0, y: 0.4992733, z: 0, w: 0.866444588}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree011
+    id: 16714176525435792923
+    components:
+      - type: transform
+        position: {x: -103.640335, y: 0, z: 52.7627945}
+        rotation: {x: 0, y: 0.737915516, z: 0, w: 0.674893081}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree1410
+    id: 17195421861498759031
+    components:
+      - type: transform
+        position: {x: 102.263214, y: 0, z: 50.977932}
+        rotation: {x: 0, y: 0.185999364, z: 0, w: -0.982549846}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree1310
+    id: 17410189107084007254
+    components:
+      - type: transform
+        position: {x: 88.9690018, y: 0, z: 41.688633}
+        rotation: {x: 0, y: 0.583684862, z: 0, w: -0.811980307}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree1210
+    id: 13238204990406311642
+    components:
+      - type: transform
+        position: {x: 72.0027695, y: 0, z: 42.6212769}
+        rotation: {x: 0, y: 0.442103028, z: 0, w: -0.896964252}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree1110
+    id: 2746061313984060524
+    components:
+      - type: transform
+        position: {x: 61.8634987, y: 0, z: 42.7963829}
+        rotation: {x: 0, y: 0.398104608, z: 0, w: -0.91734004}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree1010
+    id: 212727020457917385
+    components:
+      - type: transform
+        position: {x: 42.5645828, y: 0, z: 51.1115189}
+        rotation: {x: 0, y: 0.647366524, z: 0, w: 0.762178838}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree910
+    id: 4178901256832719233
+    components:
+      - type: transform
+        position: {x: 35.7538414, y: 0, z: 44.4072075}
+        rotation: {x: 0, y: 0.936022043, z: 0, w: -0.351941347}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree810
+    id: 15001566612003578324
+    components:
+      - type: transform
+        position: {x: 21.5437164, y: 0, z: 48.0150223}
+        rotation: {x: 0, y: 0.928898692, z: 0, w: -0.37033391}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree710
+    id: 15976392781970467963
+    components:
+      - type: transform
+        position: {x: 5.38254833, y: 0, z: 41.4021034}
+        rotation: {x: 0, y: 0.820137382, z: 0, w: 0.572166622}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree610
+    id: 7116345113702960946
+    components:
+      - type: transform
+        position: {x: -11.6808748, y: 0, z: 48.6784286}
+        rotation: {x: 0, y: 0.78109324, z: 0, w: 0.624414384}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree510
+    id: 17807107531636440829
+    components:
+      - type: transform
+        position: {x: -36.0130272, y: 0, z: 39.1524391}
+        rotation: {x: 0, y: 0.940786004, z: 0, w: 0.33900103}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree410
+    id: 4711302067309503005
+    components:
+      - type: transform
+        position: {x: -45.870739, y: 0, z: 45.4821625}
+        rotation: {x: 0, y: 0.979230464, z: 0, w: -0.202750295}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree310
+    id: 1047986503726620338
+    components:
+      - type: transform
+        position: {x: -57.6739426, y: 0, z: 40.7925911}
+        rotation: {x: 0, y: 0.815674424, z: 0, w: -0.578511178}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree210
+    id: 14919528046551410807
+    components:
+      - type: transform
+        position: {x: -67.8175049, y: 0, z: 42.6687622}
+        rotation: {x: 0, y: 0.515017211, z: 0, w: -0.85717988}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree110
+    id: 3179063297982053233
+    components:
+      - type: transform
+        position: {x: -91.1990662, y: 0, z: 51.0663376}
+        rotation: {x: 0, y: 0.55327028, z: 0, w: -0.833001792}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree010
+    id: 5871453041802810498
+    components:
+      - type: transform
+        position: {x: -105.63356, y: 0, z: 52.3184242}
+        rotation: {x: 0, y: 0.984599173, z: 0, w: 0.174827009}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree149
+    id: 13793810471327156981
+    components:
+      - type: transform
+        position: {x: 107.606155, y: 0, z: 31.1689186}
+        rotation: {x: 0, y: 0.768666446, z: 0, w: -0.639649808}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree139
+    id: 9508370756905194909
+    components:
+      - type: transform
+        position: {x: 93.2518616, y: 0, z: 27.1132336}
+        rotation: {x: 0, y: 0.233791709, z: 0, w: -0.972286701}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree129
+    id: 12395936123529461626
+    components:
+      - type: transform
+        position: {x: 71.4072189, y: 0, z: 32.9065361}
+        rotation: {x: 0, y: 0.449918211, z: 0, w: -0.893069744}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree119
+    id: 9898289599096803552
+    components:
+      - type: transform
+        position: {x: 61.3676224, y: 0, z: 32.9683914}
+        rotation: {x: 0, y: 0.992116332, z: 0, w: 0.125320107}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree109
+    id: 1133123381848617087
+    components:
+      - type: transform
+        position: {x: 46.2217293, y: 0, z: 29.967289}
+        rotation: {x: 0, y: 0.999689937, z: 0, w: 0.0248992499}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree99
+    id: 11683478870452695156
+    components:
+      - type: transform
+        position: {x: 32.3193893, y: 0, z: 23.4694405}
+        rotation: {x: 0, y: 0.335277349, z: 0, w: 0.942119479}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree89
+    id: 1193952224394894815
+    components:
+      - type: transform
+        position: {x: 19.4751968, y: 0, z: 22.5812721}
+        rotation: {x: 0, y: 0.512993753, z: 0, w: -0.858392358}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree79
+    id: 9901394547183727279
+    components:
+      - type: transform
+        position: {x: -3.40539646, y: 0, z: 23.7821579}
+        rotation: {x: 0, y: 0.90710485, z: 0, w: 0.420904726}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree69
+    id: 12596517082940276399
+    components:
+      - type: transform
+        position: {x: -14.0763006, y: 0, z: 36.4679565}
+        rotation: {x: 0, y: 0.993609965, z: 0, w: 0.112868041}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree59
+    id: 7739142589757611842
+    components:
+      - type: transform
+        position: {x: -28.9204292, y: 0, z: 27.6047859}
+        rotation: {x: 0, y: 0.781684756, z: 0, w: -0.623673737}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree49
+    id: 11236158023566039815
+    components:
+      - type: transform
+        position: {x: -46.9026909, y: 0, z: 28.1511002}
+        rotation: {x: 0, y: 0.307493776, z: 0, w: -0.951550066}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree39
+    id: 6156719291217110545
+    components:
+      - type: transform
+        position: {x: -64.4349976, y: 0, z: 36.0535507}
+        rotation: {x: 0, y: 0.603135407, z: 0, w: 0.797638834}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree29
+    id: 7347945500512063657
+    components:
+      - type: transform
+        position: {x: -75.4224396, y: 0, z: 23.3649769}
+        rotation: {x: 0, y: 0.425458968, z: 0, w: 0.904977739}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree19
+    id: 13689377262001778207
+    components:
+      - type: transform
+        position: {x: -90.1136169, y: 0, z: 26.7179985}
+        rotation: {x: 0, y: 0.995493114, z: 0, w: -0.0948337466}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree09
+    id: 14982002116389574703
+    components:
+      - type: transform
+        position: {x: -110.393265, y: 0, z: 36.0297623}
+        rotation: {x: 0, y: 0.933042705, z: 0, w: -0.359765708}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree148
+    id: 17461273138185797101
+    components:
+      - type: transform
+        position: {x: 104.865982, y: 0, z: 11.8486958}
+        rotation: {x: 0, y: 0.895719886, z: 0, w: -0.444618762}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree138
+    id: 7738770233674235133
+    components:
+      - type: transform
+        position: {x: 84.830307, y: 0, z: 19.6095581}
+        rotation: {x: 0, y: 0.536375225, z: 0, w: 0.843979657}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree128
+    id: 7812662233114021009
+    components:
+      - type: transform
+        position: {x: 77.1057129, y: 0, z: 13.399025}
+        rotation: {x: 0, y: 0.239590496, z: 0, w: 0.970874012}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree118
+    id: 2739604694109542454
+    components:
+      - type: transform
+        position: {x: 55.5572472, y: 0, z: 9.99328232}
+        rotation: {x: 0, y: 0.838526547, z: 0, w: 0.544860721}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree108
+    id: 8987463110186735516
+    components:
+      - type: transform
+        position: {x: 39.1801605, y: 0, z: 20.7882919}
+        rotation: {x: 0, y: 0.23751682, z: 0, w: -0.971383452}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree98
+    id: 7024021552873543521
+    components:
+      - type: transform
+        position: {x: 27.6067791, y: 0, z: 11.2377539}
+        rotation: {x: 0, y: 0.902827322, z: 0, w: 0.430003226}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree88
+    id: 15776907668242978068
+    components:
+      - type: transform
+        position: {x: 22.0271473, y: 0, z: 8.26760387}
+        rotation: {x: 0, y: 0.266444564, z: 0, w: -0.96385026}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree78
+    id: 12666816737145660868
+    components:
+      - type: transform
+        position: {x: 1.72230244, y: 0, z: 10.9724998}
+        rotation: {x: 0, y: 0.641485929, z: 0, w: -0.767134786}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree68
+    id: 18365031432208919329
+    components:
+      - type: transform
+        position: {x: -20.6541958, y: 0, z: 13.7618465}
+        rotation: {x: 0, y: 0.560829818, z: 0, w: 0.827931106}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree58
+    id: 733894171703163416
+    components:
+      - type: transform
+        position: {x: -28.7825584, y: 0, z: 17.1147766}
+        rotation: {x: 0, y: 0.713697076, z: 0, w: 0.700454533}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree48
+    id: 3307679945764293435
+    components:
+      - type: transform
+        position: {x: -40.1650429, y: 0, z: 11.203969}
+        rotation: {x: 0, y: 0.285794348, z: 0, w: 0.958290994}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree38
+    id: 7452831770337456995
+    components:
+      - type: transform
+        position: {x: -53.8754272, y: 0, z: 21.364315}
+        rotation: {x: 0, y: 0.989307642, z: 0, w: -0.145843655}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree28
+    id: 16757919777334475332
+    components:
+      - type: transform
+        position: {x: -71.8395844, y: 0, z: 12.692297}
+        rotation: {x: 0, y: 0.194297537, z: 0, w: -0.980942667}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree18
+    id: 8382277956538597218
+    components:
+      - type: transform
+        position: {x: -88.2100983, y: 0, z: 16.0795937}
+        rotation: {x: 0, y: 0.855179667, z: 0, w: -0.518331647}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree08
+    id: 3558045897934829508
+    components:
+      - type: transform
+        position: {x: -99.1714096, y: 0, z: 10.1029406}
+        rotation: {x: 0, y: 0.82247299, z: 0, w: -0.568804204}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree147
+    id: 8917181424666553311
+    components:
+      - type: transform
+        position: {x: 101.941368, y: 0, z: 2.24271393}
+        rotation: {x: 0, y: 0.996336639, z: 0, w: -0.0855176523}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree137
+    id: 13709325431518140221
+    components:
+      - type: transform
+        position: {x: 84.6638489, y: 0, z: -7.22731733}
+        rotation: {x: 0, y: 0.218632996, z: 0, w: -0.97580713}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree127
+    id: 15800617442093854340
+    components:
+      - type: transform
+        position: {x: 67.7278671, y: 0, z: -2.08852148}
+        rotation: {x: 0, y: 0.513458788, z: 0, w: 0.858114243}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree117
+    id: 14712452592578353356
+    components:
+      - type: transform
+        position: {x: 62.6802521, y: 0, z: 1.01745033}
+        rotation: {x: 0, y: 0.36769563, z: 0, w: -0.929946184}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree107
+    id: 4368048409417670841
+    components:
+      - type: transform
+        position: {x: 46.0421753, y: 0, z: 4.60479355}
+        rotation: {x: 0, y: 0.918106198, z: 0, w: 0.39633441}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree97
+    id: 1452843161217347273
+    components:
+      - type: transform
+        position: {x: 32.6662827, y: 0, z: -5.4690237}
+        rotation: {x: 0, y: 0.740123034, z: 0, w: -0.672471464}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree87
+    id: 2172628162536062339
+    components:
+      - type: transform
+        position: {x: 13.626976, y: 0, z: 6.51826859}
+        rotation: {x: 0, y: 0.996913493, z: 0, w: 0.0785078108}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree77
+    id: 5491132772962266993
+    components:
+      - type: transform
+        position: {x: -4.36849594, y: 0, z: -7.14010239}
+        rotation: {x: 0, y: 0.930101573, z: 0, w: -0.367302388}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree67
+    id: 4934837236720064583
+    components:
+      - type: transform
+        position: {x: -10.19487, y: 0, z: 5.71722412}
+        rotation: {x: 0, y: 0.0908080116, z: 0, w: 0.995868444}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree57
+    id: 16908352795980469981
+    components:
+      - type: transform
+        position: {x: -32.4660454, y: 0, z: 0.731624603}
+        rotation: {x: 0, y: 0.916248977, z: 0, w: 0.400609374}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree47
+    id: 15811494268841841980
+    components:
+      - type: transform
+        position: {x: -45.3155327, y: 0, z: 5.39757919}
+        rotation: {x: 0, y: 0.503281474, z: 0, w: -0.86412251}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree37
+    id: 1112939504560709877
+    components:
+      - type: transform
+        position: {x: -67.2916718, y: 0, z: 3.47087193}
+        rotation: {x: 0, y: 0.830623865, z: 0, w: -0.556833863}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree27
+    id: 5097715073272994879
+    components:
+      - type: transform
+        position: {x: -81.3460464, y: 0, z: -2.9425602}
+        rotation: {x: 0, y: 0.965035379, z: 0, w: -0.262119591}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree17
+    id: 17004212362014890707
+    components:
+      - type: transform
+        position: {x: -82.5852127, y: 0, z: 5.4073}
+        rotation: {x: 0, y: 0.991212368, z: 0, w: -0.132280052}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree07
+    id: 2700131659263714483
+    components:
+      - type: transform
+        position: {x: -104.317635, y: 0, z: -3.92067027}
+        rotation: {x: 0, y: 0.961659074, z: 0, w: -0.274247646}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree146
+    id: 17087906999823836661
+    components:
+      - type: transform
+        position: {x: 97.611496, y: 0, z: -17.8139}
+        rotation: {x: 0, y: 0.996843755, z: 0, w: -0.0793887153}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree136
+    id: 7421092261761777311
+    components:
+      - type: transform
+        position: {x: 85.5756226, y: 0, z: -19.8715439}
+        rotation: {x: 0, y: 0.868761599, z: 0, w: -0.495230556}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree126
+    id: 2036431221985902481
+    components:
+      - type: transform
+        position: {x: 75.3570633, y: 0, z: -14.6054401}
+        rotation: {x: 0, y: 0.811547101, z: 0, w: -0.584286988}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree116
+    id: 5875907738781579075
+    components:
+      - type: transform
+        position: {x: 58.6636963, y: 0, z: -18.8559418}
+        rotation: {x: 0, y: 0.337504864, z: 0, w: 0.941323817}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree106
+    id: 4336589614052151023
+    components:
+      - type: transform
+        position: {x: 49.74683, y: 0, z: -18.0820618}
+        rotation: {x: 0, y: 0.0776204616, z: 0, w: -0.996982992}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree96
+    id: 8038944537418426716
+    components:
+      - type: transform
+        position: {x: 32.0132217, y: 0, z: -13.1543655}
+        rotation: {x: 0, y: 0.444862872, z: 0, w: 0.89559871}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree86
+    id: 17992077081108429592
+    components:
+      - type: transform
+        position: {x: 19.5112724, y: 0, z: -10.483861}
+        rotation: {x: 0, y: 0.978870988, z: 0, w: 0.204478949}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree76
+    id: 8310220491159760229
+    components:
+      - type: transform
+        position: {x: 1.10144806, y: 0, z: -14.4360676}
+        rotation: {x: 0, y: 0.425071925, z: 0, w: 0.905159593}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree66
+    id: 3360346175177658866
+    components:
+      - type: transform
+        position: {x: -19.8874321, y: 0, z: -11.2283916}
+        rotation: {x: 0, y: 0.330996454, z: 0, w: 0.943632007}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree56
+    id: 11105368457527473379
+    components:
+      - type: transform
+        position: {x: -34.076458, y: 0, z: -17.3063049}
+        rotation: {x: 0, y: 0.156203434, z: 0, w: -0.9877249}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree46
+    id: 16293307877534240242
+    components:
+      - type: transform
+        position: {x: -44.0097008, y: 0, z: -21.0560799}
+        rotation: {x: 0, y: 0.582375228, z: 0, w: -0.812920094}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree36
+    id: 7571491942643002325
+    components:
+      - type: transform
+        position: {x: -62.915966, y: 0, z: -16.9374371}
+        rotation: {x: 0, y: 0.4717246, z: 0, w: 0.881745934}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree26
+    id: 10347786362902861339
+    components:
+      - type: transform
+        position: {x: -82.2224274, y: 0, z: -8.33934593}
+        rotation: {x: 0, y: 0.906686187, z: 0, w: 0.421805829}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree16
+    id: 10281979475790557257
+    components:
+      - type: transform
+        position: {x: -86.9115295, y: 0, z: -21.5828152}
+        rotation: {x: 0, y: 0.81495887, z: 0, w: 0.579518855}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree06
+    id: 7003563654370451790
+    components:
+      - type: transform
+        position: {x: -108.080742, y: 0, z: -10.1064453}
+        rotation: {x: 0, y: 0.867530406, z: 0, w: -0.497384191}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree145
+    id: 14454732739315504235
+    components:
+      - type: transform
+        position: {x: 99.8208008, y: 0, z: -27.8154583}
+        rotation: {x: 0, y: 0.354793757, z: 0, w: -0.93494457}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree135
+    id: 9418902910743819550
+    components:
+      - type: transform
+        position: {x: 87.9928741, y: 0, z: -36.0684738}
+        rotation: {x: 0, y: 0.472260863, z: 0, w: 0.881458819}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree125
+    id: 7272128874059674742
+    components:
+      - type: transform
+        position: {x: 77.5930405, y: 0, z: -26.2726517}
+        rotation: {x: 0, y: 0.119293049, z: 0, w: 0.992859066}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree115
+    id: 387414132141752665
+    components:
+      - type: transform
+        position: {x: 53.8537216, y: 0, z: -31.1720638}
+        rotation: {x: 0, y: 0.100539751, z: 0, w: 0.994933069}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree105
+    id: 8426222081431318363
+    components:
+      - type: transform
+        position: {x: 47.3413391, y: 0, z: -36.0221558}
+        rotation: {x: 0, y: 0.192563519, z: 0, w: -0.981284499}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree95
+    id: 14215872162638654886
+    components:
+      - type: transform
+        position: {x: 29.4542675, y: 0, z: -24.5956707}
+        rotation: {x: 0, y: 0.53598994, z: 0, w: -0.844224334}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree85
+    id: 14650163980283950886
+    components:
+      - type: transform
+        position: {x: 22.1233597, y: 0, z: -25.0469227}
+        rotation: {x: 0, y: 0.260469317, z: 0, w: 0.965482116}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree75
+    id: 15529421355685775973
+    components:
+      - type: transform
+        position: {x: -0.317402363, y: 0, z: -29.2280312}
+        rotation: {x: 0, y: 0.943734229, z: 0, w: -0.330704868}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree65
+    id: 15185727087611431281
+    components:
+      - type: transform
+        position: {x: -15.2545681, y: 0, z: -29.8757629}
+        rotation: {x: 0, y: 0.999922395, z: 0, w: 0.0124596274}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree55
+    id: 1299205318024125770
+    components:
+      - type: transform
+        position: {x: -25.4546432, y: 0, z: -36.3193321}
+        rotation: {x: 0, y: 0.954751194, z: 0, w: -0.297405779}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree45
+    id: 11305662739788811645
+    components:
+      - type: transform
+        position: {x: -51.0576591, y: 0, z: -22.593174}
+        rotation: {x: 0, y: 0.995395541, z: 0, w: 0.0958528817}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree35
+    id: 10788846767325223700
+    components:
+      - type: transform
+        position: {x: -55.2182922, y: 0, z: -34.1083946}
+        rotation: {x: 0, y: 0.811965525, z: 0, w: 0.583705425}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree25
+    id: 18100640786174796360
+    components:
+      - type: transform
+        position: {x: -70.2487717, y: 0, z: -33.2953949}
+        rotation: {x: 0, y: 0.580262542, z: 0, w: 0.814429462}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree15
+    id: 8940776146321127416
+    components:
+      - type: transform
+        position: {x: -94.7805634, y: 0, z: -32.1260147}
+        rotation: {x: 0, y: 0.940328956, z: 0, w: 0.340266764}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree05
+    id: 929263693969531131
+    components:
+      - type: transform
+        position: {x: -107.121964, y: 0, z: -37.4943085}
+        rotation: {x: 0, y: 0.999859929, z: 0, w: -0.0167376772}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree144
+    id: 17137233136131599546
+    components:
+      - type: transform
+        position: {x: 102.59713, y: 0, z: -43.3143005}
+        rotation: {x: 0, y: 0.981772304, z: 0, w: 0.190061018}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree134
+    id: 16935880463095566992
+    components:
+      - type: transform
+        position: {x: 89.3957443, y: 0, z: -42.7128983}
+        rotation: {x: 0, y: 0.888279974, z: 0, w: -0.459302425}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree124
+    id: 7913010138542563545
+    components:
+      - type: transform
+        position: {x: 76.048584, y: 0, z: -44.6253242}
+        rotation: {x: 0, y: 0.775188923, z: 0, w: -0.631729484}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree114
+    id: 10871788333652877369
+    components:
+      - type: transform
+        position: {x: 52.7104263, y: 0, z: -51.1210136}
+        rotation: {x: 0, y: 0.728761315, z: 0, w: -0.684767783}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree104
+    id: 870382266085397912
+    components:
+      - type: transform
+        position: {x: 45.7254143, y: 0, z: -48.0446777}
+        rotation: {x: 0, y: 0.997797787, z: 0, w: -0.0663290694}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree94
+    id: 739586309818866700
+    components:
+      - type: transform
+        position: {x: 23.6557922, y: 0, z: -40.7328491}
+        rotation: {x: 0, y: 0.942543745, z: 0, w: -0.334082752}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree84
+    id: 4592257933029757782
+    components:
+      - type: transform
+        position: {x: 9.16243076, y: 0, z: -49.2179947}
+        rotation: {x: 0, y: 0.971707463, z: 0, w: -0.236187711}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree74
+    id: 11695786871089747931
+    components:
+      - type: transform
+        position: {x: -0.914793968, y: 0, z: -40.6018867}
+        rotation: {x: 0, y: 0.720346093, z: 0, w: 0.693614781}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree64
+    id: 4743437714697546737
+    components:
+      - type: transform
+        position: {x: -20.0507755, y: 0, z: -49.9126205}
+        rotation: {x: 0, y: 0.979168475, z: 0, w: 0.203049392}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree54
+    id: 402325821195814047
+    components:
+      - type: transform
+        position: {x: -24.636158, y: 0, z: -38.3915749}
+        rotation: {x: 0, y: 0.655745447, z: 0, w: -0.754982054}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree44
+    id: 147328498046140797
+    components:
+      - type: transform
+        position: {x: -42.7537155, y: 0, z: -46.7079163}
+        rotation: {x: 0, y: 0.745586216, z: 0, w: 0.666409194}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree34
+    id: 15639632117051505673
+    components:
+      - type: transform
+        position: {x: -54.5989227, y: 0, z: -40.4301872}
+        rotation: {x: 0, y: 0.998514652, z: 0, w: -0.0544843599}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree24
+    id: 10227204074045971153
+    components:
+      - type: transform
+        position: {x: -71.0522537, y: 0, z: -43.7856483}
+        rotation: {x: 0, y: 0.378601253, z: 0, w: -0.925559878}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree14
+    id: 5972197221804373316
+    components:
+      - type: transform
+        position: {x: -94.8279877, y: 0, z: -37.7636795}
+        rotation: {x: 0, y: 0.167402402, z: 0, w: 0.98588866}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree04
+    id: 12141738373893145238
+    components:
+      - type: transform
+        position: {x: -98.3033905, y: 0, z: -49.2595177}
+        rotation: {x: 0, y: 0.720538378, z: 0, w: -0.693415046}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree143
+    id: 2050268836122969415
+    components:
+      - type: transform
+        position: {x: 100.848045, y: 0, z: -64.8248672}
+        rotation: {x: 0, y: 0.733649552, z: 0, w: -0.679527998}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree133
+    id: 3530415475269282657
+    components:
+      - type: transform
+        position: {x: 96.9190521, y: 0, z: -60.6833687}
+        rotation: {x: 0, y: 0.0679753795, z: 0, w: 0.997686982}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree123
+    id: 18082891738191662927
+    components:
+      - type: transform
+        position: {x: 70.7107162, y: 0, z: -61.6136627}
+        rotation: {x: 0, y: 0.797748029, z: 0, w: -0.602990985}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree113
+    id: 8125272613232004521
+    components:
+      - type: transform
+        position: {x: 55.1067581, y: 0, z: -60.6707191}
+        rotation: {x: 0, y: 0.787118852, z: 0, w: 0.616801322}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree103
+    id: 18382372539784491911
+    components:
+      - type: transform
+        position: {x: 42.1960411, y: 0, z: -55.3598709}
+        rotation: {x: 0, y: 0.925890863, z: 0, w: -0.377791166}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree93
+    id: 13608827343634161127
+    components:
+      - type: transform
+        position: {x: 25.7964497, y: 0, z: -54.4183197}
+        rotation: {x: 0, y: 0.461104095, z: 0, w: 0.887346029}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree83
+    id: 18106140208445012434
+    components:
+      - type: transform
+        position: {x: 8.20167923, y: 0, z: -61.0612602}
+        rotation: {x: 0, y: 0.69777441, z: 0, w: 0.716317534}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree73
+    id: 9203137570320042960
+    components:
+      - type: transform
+        position: {x: 2.63561153, y: 0, z: -54.9741516}
+        rotation: {x: 0, y: 0.945599139, z: 0, w: -0.325334102}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree63
+    id: 10924722551044970815
+    components:
+      - type: transform
+        position: {x: -19.3089314, y: 0, z: -54.36343}
+        rotation: {x: 0, y: 0.998423934, z: 0, w: -0.0561218113}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree53
+    id: 3406409234781204136
+    components:
+      - type: transform
+        position: {x: -26.2296143, y: 0, z: -61.1355782}
+        rotation: {x: 0, y: 0.801992774, z: 0, w: -0.597333729}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree43
+    id: 2576265772325125106
+    components:
+      - type: transform
+        position: {x: -42.3934937, y: 0, z: -53.2438354}
+        rotation: {x: 0, y: 0.986707032, z: 0, w: 0.162509069}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree33
+    id: 8483296093490325790
+    components:
+      - type: transform
+        position: {x: -63.2725296, y: 0, z: -64.3855286}
+        rotation: {x: 0, y: 0.973315477, z: 0, w: 0.229471162}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree23
+    id: 3870562264234378555
+    components:
+      - type: transform
+        position: {x: -72.371994, y: 0, z: -61.7857704}
+        rotation: {x: 0, y: 0.16879037, z: 0, w: -0.98565197}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree13
+    id: 1373491147490299511
+    components:
+      - type: transform
+        position: {x: -94.3784256, y: 0, z: -62.1168365}
+        rotation: {x: 0, y: 0.937715828, z: 0, w: 0.347403228}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree03
+    id: 15682641208859685850
+    components:
+      - type: transform
+        position: {x: -100.416161, y: 0, z: -55.2985916}
+        rotation: {x: 0, y: 0.706495881, z: 0, w: 0.707717121}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree142
+    id: 8144080216463561696
+    components:
+      - type: transform
+        position: {x: 102.102127, y: 0, z: -78.3739471}
+        rotation: {x: 0, y: 0.997193694, z: 0, w: 0.0748646855}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree132
+    id: 3801643137056044791
+    components:
+      - type: transform
+        position: {x: 87.611351, y: 0, z: -68.1452408}
+        rotation: {x: 0, y: 0.716798782, z: 0, w: -0.697280049}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree122
+    id: 4677731936973685183
+    components:
+      - type: transform
+        position: {x: 77.5697403, y: 0, z: -81.2862015}
+        rotation: {x: 0, y: 0.985014021, z: 0, w: -0.172474205}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree112
+    id: 1376012008003765497
+    components:
+      - type: transform
+        position: {x: 56.4970589, y: 0, z: -81.3271332}
+        rotation: {x: 0, y: 0.375710309, z: 0, w: 0.92673713}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree102
+    id: 18283949635844550423
+    components:
+      - type: transform
+        position: {x: 43.0377655, y: 0, z: -81.9563828}
+        rotation: {x: 0, y: 0.570001721, z: 0, w: -0.821643531}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree92
+    id: 17345508433143849681
+    components:
+      - type: transform
+        position: {x: 30.9182224, y: 0, z: -69.107872}
+        rotation: {x: 0, y: 0.91893059, z: 0, w: 0.394419342}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree82
+    id: 1218822345486175208
+    components:
+      - type: transform
+        position: {x: 21.0958862, y: 0, z: -68.8236237}
+        rotation: {x: 0, y: 0.137196049, z: 0, w: 0.990543902}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree72
+    id: 10280535140497916425
+    components:
+      - type: transform
+        position: {x: 7.0657196, y: 0, z: -77.7160263}
+        rotation: {x: 0, y: 0.993556678, z: 0, w: -0.113336101}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree62
+    id: 6658114284882932521
+    components:
+      - type: transform
+        position: {x: -11.9628067, y: 0, z: -70.9523468}
+        rotation: {x: 0, y: 0.956174076, z: 0, w: -0.292798758}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree52
+    id: 6855371192482029523
+    components:
+      - type: transform
+        position: {x: -34.3682098, y: 0, z: -72.1859436}
+        rotation: {x: 0, y: 0.805174053, z: 0, w: 0.593038559}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree42
+    id: 15727367536019240276
+    components:
+      - type: transform
+        position: {x: -37.8987808, y: 0, z: -75.2714691}
+        rotation: {x: 0, y: 0.999094665, z: 0, w: -0.0425422937}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree32
+    id: 13252469522956585623
+    components:
+      - type: transform
+        position: {x: -62.5745163, y: 0, z: -70.0733719}
+        rotation: {x: 0, y: 0.159053877, z: 0, w: -0.987269878}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree22
+    id: 13767720697605296757
+    components:
+      - type: transform
+        position: {x: -76.8239136, y: 0, z: -78.1627655}
+        rotation: {x: 0, y: 0.245983645, z: 0, w: 0.969273984}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree12
+    id: 4667503503145678173
+    components:
+      - type: transform
+        position: {x: -96.848877, y: 0, z: -74.0593719}
+        rotation: {x: 0, y: 0.079476051, z: 0, w: -0.996836782}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree02
+    id: 14998506509241545433
+    components:
+      - type: transform
+        position: {x: -97.7261963, y: 0, z: -70.9583969}
+        rotation: {x: 0, y: 0.862520158, z: 0, w: 0.506022692}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree141
+    id: 9333450295076790975
+    components:
+      - type: transform
+        position: {x: 106.871559, y: 0, z: -94.1207657}
+        rotation: {x: 0, y: 0.526602387, z: 0, w: -0.850111723}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree131
+    id: 8915970852738690316
+    components:
+      - type: transform
+        position: {x: 94.0762024, y: 0, z: -94.3194427}
+        rotation: {x: 0, y: 0.457229733, z: 0, w: -0.889348626}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree121
+    id: 11021154176140488643
+    components:
+      - type: transform
+        position: {x: 76.0551987, y: 0, z: -86.0603104}
+        rotation: {x: 0, y: 0.909366012, z: 0, w: 0.415996939}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree111
+    id: 6183282662703185914
+    components:
+      - type: transform
+        position: {x: 58.1645203, y: 0, z: -89.2823486}
+        rotation: {x: 0, y: 0.524133146, z: 0, w: 0.85163635}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree101
+    id: 3526743567439928460
+    components:
+      - type: transform
+        position: {x: 52.3397522, y: 0, z: -86.1334076}
+        rotation: {x: 0, y: 0.408232152, z: 0, w: 0.912878156}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree91
+    id: 12989589318078182387
+    components:
+      - type: transform
+        position: {x: 28.4415436, y: 0, z: -84.6046524}
+        rotation: {x: 0, y: 0.931837857, z: 0, w: 0.362874866}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree81
+    id: 15901505687504962848
+    components:
+      - type: transform
+        position: {x: 15.7824106, y: 0, z: -87.1955261}
+        rotation: {x: 0, y: 0.96035552, z: 0, w: -0.278778225}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree71
+    id: 17113417164317442492
+    components:
+      - type: transform
+        position: {x: 2.35864925, y: 0, z: -90.5164566}
+        rotation: {x: 0, y: 0.994988322, z: 0, w: -0.0999910012}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree61
+    id: 6829125150387113530
+    components:
+      - type: transform
+        position: {x: -17.1829338, y: 0, z: -93.3434601}
+        rotation: {x: 0, y: 0.611037433, z: 0, w: 0.791601717}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree51
+    id: 13843364861628720839
+    components:
+      - type: transform
+        position: {x: -25.1304245, y: 0, z: -87.8611984}
+        rotation: {x: 0, y: 0.778552771, z: 0, w: 0.627579153}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree41
+    id: 7604187395236378883
+    components:
+      - type: transform
+        position: {x: -44.8866425, y: 0, z: -90.2960434}
+        rotation: {x: 0, y: 0.292261362, z: 0, w: 0.956338465}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree31
+    id: 17928834955429522946
+    components:
+      - type: transform
+        position: {x: -53.9257469, y: 0, z: -88.2286453}
+        rotation: {x: 0, y: 0.467171401, z: 0, w: -0.884166777}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree21
+    id: 12309742916167344519
+    components:
+      - type: transform
+        position: {x: -68.0336304, y: 0, z: -91.862114}
+        rotation: {x: 0, y: 0.4409554, z: 0, w: 0.897529006}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree11
+    id: 235069622560674222
+    components:
+      - type: transform
+        position: {x: -95.4964752, y: 0, z: -82.5541763}
+        rotation: {x: 0, y: 0.766663373, z: 0, w: -0.642049313}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree01
+    id: 15549373296921654180
+    components:
+      - type: transform
+        position: {x: -101.119026, y: 0, z: -92.8779221}
+        rotation: {x: 0, y: 0.966383338, z: 0, w: 0.257105619}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree140
+    id: 11160050685807467822
+    components:
+      - type: transform
+        position: {x: 106.173584, y: 0, z: -108.097076}
+        rotation: {x: 0, y: 0.997871339, z: 0, w: -0.0652134269}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree130
+    id: 7170354081259712532
+    components:
+      - type: transform
+        position: {x: 93.573082, y: 0, z: -102.020416}
+        rotation: {x: 0, y: 0.621638536, z: 0, w: -0.783304274}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree120
+    id: 12613901552420754517
+    components:
+      - type: transform
+        position: {x: 81.2105942, y: 0, z: -107.361633}
+        rotation: {x: 0, y: 0.77428484, z: 0, w: 0.632837236}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree110
+    id: 3207078637705701430
+    components:
+      - type: transform
+        position: {x: 63.9449005, y: 0, z: -105.145058}
+        rotation: {x: 0, y: 0.287719578, z: 0, w: 0.957714677}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree100
+    id: 18226319596948727138
+    components:
+      - type: transform
+        position: {x: 39.1747437, y: 0, z: -103.739899}
+        rotation: {x: 0, y: 0.630083561, z: 0, w: -0.776527345}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree90
+    id: 2460390923090747755
+    components:
+      - type: transform
+        position: {x: 29.7358303, y: 0, z: -109.439545}
+        rotation: {x: 0, y: 0.225351006, z: 0, w: 0.974277616}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree80
+    id: 4855996562345893232
+    components:
+      - type: transform
+        position: {x: 9.18494511, y: 0, z: -106.215889}
+        rotation: {x: 0, y: 0.129427075, z: 0, w: -0.99158895}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree70
+    id: 12599391272367948150
+    components:
+      - type: transform
+        position: {x: 1.84480762, y: 0, z: -102.830208}
+        rotation: {x: 0, y: 0.990600288, z: 0, w: -0.136788428}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree60
+    id: 12671406100624742430
+    components:
+      - type: transform
+        position: {x: -8.13876438, y: 0, z: -111.292923}
+        rotation: {x: 0, y: 0.0944740698, z: 0, w: 0.995527327}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree50
+    id: 13926736224035639442
+    components:
+      - type: transform
+        position: {x: -31.228199, y: 0, z: -109.758263}
+        rotation: {x: 0, y: 0.152556568, z: 0, w: 0.988294721}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree40
+    id: 7243072120243357859
+    components:
+      - type: transform
+        position: {x: -43.4761429, y: 0, z: -100.86718}
+        rotation: {x: 0, y: 0.896679819, z: 0, w: 0.442679614}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree30
+    id: 13363394834863505054
+    components:
+      - type: transform
+        position: {x: -53.2548676, y: 0, z: -102.262199}
+        rotation: {x: 0, y: 0.92328763, z: 0, w: -0.384109288}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree20
+    id: 2430742950709556246
+    components:
+      - type: transform
+        position: {x: -77.396019, y: 0, z: -109.947144}
+        rotation: {x: 0, y: 0.643345058, z: 0, w: 0.765576363}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree10
+    id: 4318647880604642910
+    components:
+      - type: transform
+        position: {x: -94.0726929, y: 0, z: -109.93502}
+        rotation: {x: 0, y: 0.598297954, z: 0, w: -0.801273704}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Tree00
+    id: 11670585856477339629
+    components:
+      - type: transform
+        position: {x: -107.89476, y: 0, z: -108.265022}
+        rotation: {x: 0, y: 0.998031735, z: 0, w: 0.0627104342}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 899120410606079701
+  - tag: Forrest
+    id: 899120410606079701
+    components:
+      - type: transform
+        position: {x: 0, y: 0, z: 0}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 14257639428761167948
+  - tag: MapleTree
+    id: 8619918375838052984
+    components:
+      - type: transform
+        position: {x: 0, y: 0, z: 0}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 14257639428761167948
+  - tag: Fox
+    id: 8211640441622076118
+    components:
+      - type: transform
+        position: {x: 0, y: 0, z: 0}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 0.0599999987, y: 0.0599999987, z: 0.0599999987}
+      - type: hierarchy
+        parent: 14257639428761167948
+  - tag: CAMERA
+    id: 8650742866823969728
+    components:
+      - type: transform
+        position: {x: 0, y: 0, z: 0}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 14257639428761167948
+  - tag: ROOT
+    id: 14257639428761167948
+    components:
+      - type: transform
+        position: {x: 0, y: 0, z: 0}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
+      - type: hierarchy
+        parent: 0
