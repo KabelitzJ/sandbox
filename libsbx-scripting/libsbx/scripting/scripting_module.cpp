@@ -73,6 +73,26 @@ static auto _load_assembly(MonoDomain* domain, const std::string& path) -> MonoA
   return assembly;
 }
 
+static auto _split_assembly_and_fullname(const std::string& name) -> std::pair<std::string,std::string> {
+  const auto position = name.find(':');
+
+  if (position == std::string::npos) {
+    return {"", name};
+  }
+
+  return {name.substr(0, position), name.substr(position + 1)};
+}
+
+static auto _split_fullname(const std::string& fullname) -> std::pair<std::string,std::string> {
+  const auto position = fullname.rfind('.');
+
+  if (position == std::string::npos) {
+    return {"", fullname};
+  }
+
+  return {fullname.substr(0, position), fullname.substr(position + 1)};
+}
+
 scripting_module::scripting_module() {
 
 }
@@ -82,10 +102,10 @@ scripting_module::~scripting_module() {
 }
 
 auto scripting_module::update() -> void {
-
+  SBX_SCOPED_TIMER("scripting_module");
 }
 
-auto scripting_module::load_domain(const std::filesystem::path& path) -> void {
+auto scripting_module::load_domain() -> void {
   auto& assets_module = core::engine::get_module<assets::assets_module>();
 
   mono_config_parse(nullptr);
@@ -97,28 +117,26 @@ auto scripting_module::load_domain(const std::filesystem::path& path) -> void {
   }
 
   _register_internal_calls();
-
-  auto* assembly = _load_assembly(_domain, assets_module.resolve_path(path / "Sbx.dll"));
-
-  if (!assembly) {
-    throw utility::runtime_error{"Failed to load engine assembly"};
-  }
-
-  _engine_image = mono_assembly_get_image(assembly);
-
-  utility::logger<"scripting">::debug("Loaded engine domain from {}", (path / "Sbx.dll").string());
+  _register_component_operations();
 }
 
-auto scripting_module::load_assemblies(const std::filesystem::path& path) -> void {
+auto scripting_module::load_assembly(const std::string& name, const std::filesystem::path& path) -> void {
   auto& assets_module = core::engine::get_module<assets::assets_module>();
 
-  auto* assembly = _load_assembly(_domain, assets_module.resolve_path(path / "Test.dll"));
+  const auto resolved_path = assets_module.resolve_path(path);
 
+  auto* assembly = _load_assembly(_domain, resolved_path);
+  
   if (!assembly) {
     throw utility::runtime_error{"Failed to load app assembly"};
   }
+  
+  auto& slot = _assemblies[name];
+  slot.name = name;
+  slot.assembly = _load_assembly(_domain, resolved_path);
+  slot.image = mono_assembly_get_image(assembly);
 
-  _app_image = mono_assembly_get_image(assembly);
+  utility::logger<"scripting">::debug("Loaded engine domain from {}", resolved_path.string());
 }
 
 auto scripting_module::_register_internal_calls() -> void {
@@ -128,6 +146,10 @@ auto scripting_module::_register_internal_calls() -> void {
 
   mono_add_internal_call("Sbx.Behaviour::InternalHasComponent", reinterpret_cast<const void*>(_internal_behaviour_has_component));
   mono_add_internal_call("Sbx.Behaviour::InternalGetComponent", reinterpret_cast<const void*>(_internal_behaviour_get_component));
+}
+
+auto scripting_module::_register_component_operations() -> void {
+
 }
 
 } // namespace sbx::scripting

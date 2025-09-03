@@ -63,9 +63,11 @@ application::application()
 
   auto& scripting_module = sbx::core::engine::get_module<sbx::scripting::scripting_module>();
 
-  scripting_module.load_domain("res://scripts/Sbx/Out");
+  scripting_module.load_domain();
 
-  scripting_module.load_assemblies("res://scripts/Out");
+  scripting_module.load_assembly("Sbx", "res://scripts/Sbx/Out/Sbx.dll");
+
+  scripting_module.load_assembly("Test", "res://scripts/Out/Test.dll");
 
   // Textures
 
