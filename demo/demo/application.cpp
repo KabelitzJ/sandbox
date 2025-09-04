@@ -206,66 +206,6 @@ application::application()
   soldier_transform.set_position(sbx::math::vector3{5.0f, 0.0f, 3.0f});
   soldier_transform.set_scale(sbx::math::vector3{3.0f});
 
-  // auto soldier = scene.create_node("Soldier");
-
-  // auto soldier_submeshes = std::vector<sbx::scenes::static_mesh::submesh>{
-  //   {0u, scene.get_material("soldier_body")},
-  //   {1u, scene.get_material("soldier_head")},
-  //   {2u, scene.get_material("soldier_helmet")},
-  //   {3u, scene.get_material("soldier_backpack")}
-  // };
-
-  // scene.add_component<sbx::scenes::static_mesh>(soldier, scene.get_mesh("soldier_static"), soldier_submeshes);
-
-  // auto& soldier_transform = scene.get_component<sbx::scenes::transform>(soldier);
-  // soldier_transform.set_position(sbx::math::vector3{5.0f, 0.0f, 3.0f});
-  // soldier_transform.set_scale(sbx::math::vector3{3.0f});
-
-  // auto soldier1 = scene.create_node("Soldier");
-
-  // scene.add_component<sbx::scenes::skinned_mesh>(soldier1, scene.get_mesh("soldier"), soldier_animation_id, std::vector<sbx::scenes::skinned_mesh::submesh>{{0u, scene.get_material("soldier_body")}});  
-  // scene.add_component<sbx::scenes::animation_state>(soldier1, 0.0f, 1.0f, true);
-
-  // auto& soldier_transform = scene.get_component<sbx::scenes::transform>(soldier1);
-  // soldier_transform.set_position(sbx::math::vector3{7, 0, 3});
-  // soldier_transform.set_scale(sbx::math::vector3{4, 4, 4});
-
-  // auto soldier2 = scene.create_node("Soldier2");
-
-  // scene.add_component<sbx::scenes::skinned_mesh>(soldier2, scene.get_mesh("soldier"), soldier_animation_id, std::vector<sbx::scenes::skinned_mesh::submesh>{{1u, scene.get_material("soldier_helmet")}});  
-  // scene.add_component<sbx::scenes::animation_state>(soldier2, 0.0f, 1.0f, true);
-
-  // auto& soldier2_transform = scene.get_component<sbx::scenes::transform>(soldier2);
-  // soldier2_transform.set_position(sbx::math::vector3{10, 0, 3});
-  // soldier2_transform.set_scale(sbx::math::vector3{4, 4, 4});
-
-  // auto soldier3 = scene.create_node("Soldier3");
-
-  // scene.add_component<sbx::scenes::skinned_mesh>(soldier3, scene.get_mesh("soldier"), soldier_animation_id, std::vector<sbx::scenes::skinned_mesh::submesh>{{2u, scene.get_material("soldier_backpack")}});  
-  // scene.add_component<sbx::scenes::animation_state>(soldier3, 0.0f, 1.0f, true);
-
-  // auto& soldier3_transform = scene.get_component<sbx::scenes::transform>(soldier3);
-  // soldier3_transform.set_position(sbx::math::vector3{13, 0, 3});
-  // soldier3_transform.set_scale(sbx::math::vector3{4, 4, 4});
-
-  // auto soldier4 = scene.create_node("Soldier4");
-
-  // scene.add_component<sbx::scenes::skinned_mesh>(soldier4, scene.get_mesh("soldier"), soldier_animation_id, std::vector<sbx::scenes::skinned_mesh::submesh>{{3u, scene.get_material("soldier_head")}});  
-  // scene.add_component<sbx::scenes::animation_state>(soldier4, 0.0f, 1.0f, true);
-
-  // auto& soldier4_transform = scene.get_component<sbx::scenes::transform>(soldier4);
-  // soldier4_transform.set_position(sbx::math::vector3{16, 0, 3});
-  // soldier4_transform.set_scale(sbx::math::vector3{4, 4, 4});
-
-  // auto soldier_submeshes = std::vector<sbx::scenes::static_mesh::submesh>{
-  //   {0u, scene.get_material("soldier_body")},
-  //   {1u, scene.get_material("soldier_head")},
-  //   {2u, scene.get_material("soldier_helmet")},
-  //   {3u, scene.get_material("soldier_backpack")}
-  // };
-
-  // scene.add_component<sbx::scenes::static_mesh>(soldier, scene.get_mesh("soldier"), soldier_submeshes);
-
   // Circling point lights
 
   _light_center = scene.create_node("LightCenter", sbx::scenes::transform{sbx::math::vector3{0.0f, 10.0f, 0.0f}});

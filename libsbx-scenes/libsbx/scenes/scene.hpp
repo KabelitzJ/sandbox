@@ -1,16 +1,17 @@
 #ifndef LIBSBX_SCENES_SCENE_HPP_
 #define LIBSBX_SCENES_SCENE_HPP_
 
-#include <unordered_map>
-#include <memory>
-#include <utility>
-#include <ranges>
-#include <vector>
-#include <typeindex>
-#include <filesystem>
-#include <numbers>
 #include <algorithm>
+#include <filesystem>
+#include <functional>
+#include <memory>
+#include <numbers>
 #include <ranges>
+#include <ranges>
+#include <typeindex>
+#include <unordered_map>
+#include <utility>
+#include <vector>
 
 #include <range/v3/all.hpp>
 
@@ -313,6 +314,54 @@ private:
   std::unordered_map<utility::hashed_string, math::uuid> _materials_ids;
 
 }; // class scene
+
+struct component_io {
+  std::string name;
+  std::function<void(YAML::Node&, scene& scene, const node)> save; 
+  std::function<void(const YAML::Node&, scene& scene, const node)> load; 
+}; // struct component_io
+
+class component_io_registry {
+
+public:
+
+  template<typename Type, std::invocable<YAML::Node&, const Type&> Save, std::invocable<YAML::Node&> Load>
+  auto register_component(const std::string& name, Save&& save, Load&& load) -> void {
+    const auto id = ecs::type_id<Type>::value();
+
+    _by_name[name] = id;
+
+    _by_id[id] = component_io{
+      .name = name,
+      .save = [name, s = std::forward<Save>(save)](YAML::Node& yaml, scene& scene, const node node) -> void {
+        const auto& component = scene.get_component<Type>(node);
+
+        std::invoke(s, yaml, component);
+      },
+      .load = [name, l = std::forward<Load>(load)](const YAML::Node& yaml, scene& scene, const node node) -> void {
+        scene.add_component<Type>(node, std::invoke(l, yaml));
+      }
+    };
+  }
+
+  auto get(const std::uint32_t id) -> component_io& {
+    return _by_id.at(id);
+  }
+
+  auto has(const std::uint32_t id) -> bool {
+    return _by_id.contains(id);
+  }
+
+  auto get(const std::string& name) -> component_io& {
+    return _by_id.at(_by_name.at(name));
+  }
+
+private:
+
+  std::unordered_map<std::uint32_t, component_io> _by_id;
+  std::unordered_map<std::string, std::uint32_t> _by_name;
+
+}; // class component_io_registry
 
 } // namespace sbx::scenes
 

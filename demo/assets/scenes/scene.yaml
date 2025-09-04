@@ -12,2199 +12,1779 @@ assets:
       name: bmp_body1_normal
       path: demo/assets/textures/bmp/body1_normal.png
 nodes:
-  - tag: Test
-    id: 8383801471061183872
+  - tag: Sphere44
+    id: 6965550990619310622
+    components:
+      []
+  - tag: Sphere34
+    id: 1644697642673439798
     components:
-      - type: transform
-        position: {x: 3, y: 6.89613867, z: 3}
-        rotation: {x: 0, y: 0.382683456, z: 0, w: 0.923879504}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 14257639428761167948
-  - tag: Test
-    id: 8747585635191366639
+      []
+  - tag: Sphere24
+    id: 3078910756330178985
     components:
-      - type: transform
-        position: {x: 0, y: 6.55470133, z: 3}
-        rotation: {x: 0, y: 0.382683456, z: 0, w: 0.923879504}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 14257639428761167948
-  - tag: Test
-    id: 15774651231355883255
+      []
+  - tag: Sphere14
+    id: 3591943533379785296
     components:
-      - type: transform
-        position: {x: -3, y: 7.04419184, z: 3}
-        rotation: {x: 0, y: 0.382683456, z: 0, w: 0.923879504}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 14257639428761167948
-  - tag: Test
-    id: 7741234420846044735
+      []
+  - tag: Sphere04
+    id: 6709701887083199764
     components:
-      - type: transform
-        position: {x: 3, y: 6.89022636, z: 0}
-        rotation: {x: 0, y: 0.382683456, z: 0, w: 0.923879504}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 14257639428761167948
-  - tag: Test
-    id: 13277705834569404069
+      []
+  - tag: Sphere43
+    id: 7667917616634497176
     components:
-      - type: transform
-        position: {x: 0, y: 7.19967699, z: 0}
-        rotation: {x: 0, y: 0.382683456, z: 0, w: 0.923879504}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 14257639428761167948
-  - tag: Test
-    id: 5718278393106444662
+      []
+  - tag: Sphere33
+    id: 9755228950527402913
     components:
-      - type: transform
-        position: {x: -3, y: 6.1987443, z: 0}
-        rotation: {x: 0, y: 0.382683456, z: 0, w: 0.923879504}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 14257639428761167948
-  - tag: Test
-    id: 9207754111811169557
+      []
+  - tag: Sphere23
+    id: 3671443744917652663
     components:
-      - type: transform
-        position: {x: 3, y: 7.19724226, z: -3}
-        rotation: {x: 0, y: 0.382683456, z: 0, w: 0.923879504}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 14257639428761167948
-  - tag: Test
-    id: 9829068087696027410
+      []
+  - tag: Sphere13
+    id: 12204758104497791526
     components:
-      - type: transform
-        position: {x: 0, y: 7.24809074, z: -3}
-        rotation: {x: 0, y: 0.382683456, z: 0, w: 0.923879504}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 14257639428761167948
-  - tag: Test
-    id: 7864538715821759594
+      []
+  - tag: Sphere03
+    id: 16710164231364168566
     components:
-      - type: transform
-        position: {x: -3, y: 7.16340351, z: -3}
-        rotation: {x: 0, y: 0.382683456, z: 0, w: 0.923879504}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 14257639428761167948
-  - tag: Rock5
-    id: 1311637251261858398
+      []
+  - tag: Sphere42
+    id: 3602824852889590979
     components:
-      - type: transform
-        position: {x: 6, y: 0, z: 0}
-        rotation: {x: 0, y: 0, z: 0, w: 1}
-        scale: {x: 2, y: 2, z: 2}
-      - type: hierarchy
-        parent: 14257639428761167948
-  - tag: Rock4
-    id: 1137228637122146669
+      []
+  - tag: Sphere32
+    id: 16412601412166343143
     components:
-      - type: transform
-        position: {x: 3, y: 0, z: 0}
-        rotation: {x: 0, y: 0, z: 0, w: 1}
-        scale: {x: 2, y: 2, z: 2}
-      - type: hierarchy
-        parent: 14257639428761167948
-  - tag: Rock3
-    id: 3375748479354952942
+      []
+  - tag: Sphere22
+    id: 129639002552601579
     components:
-      - type: transform
-        position: {x: 0, y: 0, z: 0}
-        rotation: {x: 0, y: 0, z: 0, w: 1}
-        scale: {x: 2, y: 2, z: 2}
-      - type: hierarchy
-        parent: 14257639428761167948
-  - tag: Rock2
-    id: 14360502801322276131
+      []
+  - tag: Sphere12
+    id: 3229871002571399156
     components:
-      - type: transform
-        position: {x: -3, y: 0, z: 0}
-        rotation: {x: 0, y: 0, z: 0, w: 1}
-        scale: {x: 2, y: 2, z: 2}
-      - type: hierarchy
-        parent: 14257639428761167948
-  - tag: Rock1
-    id: 3926280109618277737
+      []
+  - tag: Sphere02
+    id: 15054855519476200119
     components:
-      - type: transform
-        position: {x: -6, y: 0, z: 0}
-        rotation: {x: 0, y: 0, z: 0, w: 1}
-        scale: {x: 2, y: 2, z: 2}
-      - type: hierarchy
-        parent: 14257639428761167948
-  - tag: Tree1414
-    id: 3646553940076605784
+      []
+  - tag: Sphere41
+    id: 7943315779970597469
     components:
-      - type: transform
-        position: {x: 98.6507416, y: 0, z: 111.325851}
-        rotation: {x: 0, y: 0.890983522, z: 0, w: -0.45403564}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree1314
-    id: 15658233331640777037
+      []
+  - tag: Sphere31
+    id: 15192425517663678516
     components:
-      - type: transform
-        position: {x: 83.0159836, y: 0, z: 100.420525}
-        rotation: {x: 0, y: 0.0962117761, z: 0, w: -0.995360911}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree1214
-    id: 17772348304504433014
+      []
+  - tag: Sphere21
+    id: 15380483122443380448
     components:
-      - type: transform
-        position: {x: 79.4352112, y: 0, z: 102.509079}
-        rotation: {x: 0, y: 0.955837965, z: 0, w: 0.293894112}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree1114
-    id: 2611120335939936524
+      []
+  - tag: Sphere11
+    id: 2293521589253227202
     components:
-      - type: transform
-        position: {x: 64.4590225, y: 0, z: 101.988747}
-        rotation: {x: 0, y: 0.33855626, z: 0, w: -0.940946162}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree1014
-    id: 3221097389839687576
+      []
+  - tag: Sphere01
+    id: 6458518404275586862
     components:
-      - type: transform
-        position: {x: 49.2682533, y: 0, z: 101.534554}
-        rotation: {x: 0, y: 0.53145045, z: 0, w: 0.84708941}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree914
-    id: 18418997769617880311
+      []
+  - tag: Sphere40
+    id: 13752342788776938164
     components:
-      - type: transform
-        position: {x: 33.3722076, y: 0, z: 100.464088}
-        rotation: {x: 0, y: 0.489587933, z: 0, w: 0.871953905}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree814
-    id: 6006208342799715742
+      []
+  - tag: Sphere30
+    id: 10432461528406399153
     components:
-      - type: transform
-        position: {x: 16.7130222, y: 0, z: 112.254646}
-        rotation: {x: 0, y: 0.460907817, z: 0, w: -0.887448013}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree714
-    id: 13907401406636588717
+      []
+  - tag: Sphere20
+    id: 1389221238494802907
     components:
-      - type: transform
-        position: {x: 7.07437897, y: 0, z: 101.448921}
-        rotation: {x: 0, y: 0.409982055, z: 0, w: 0.91209358}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree614
-    id: 3606991466220967681
+      []
+  - tag: Sphere10
+    id: 4283059147628996341
     components:
-      - type: transform
-        position: {x: -16.9260063, y: 0, z: 103.296349}
-        rotation: {x: 0, y: 0.59200561, z: 0, w: 0.805933833}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree514
-    id: 14161715134230471411
+      []
+  - tag: Sphere00
+    id: 6933841585283216729
     components:
-      - type: transform
-        position: {x: -32.9667778, y: 0, z: 101.329605}
-        rotation: {x: 0, y: 0.298743337, z: 0, w: 0.954333484}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree414
-    id: 6073232742100787560
+      []
+  - tag: Floor
+    id: 10839850674570397526
     components:
-      - type: transform
-        position: {x: -49.649456, y: 0, z: 107.91111}
-        rotation: {x: 0, y: 0.179900259, z: 0, w: 0.983684838}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree314
-    id: 1480515265172794265
-    components:
-      - type: transform
-        position: {x: -59.180954, y: 0, z: 99.4066162}
-        rotation: {x: 0, y: 0.00329647143, z: 0, w: 0.999994576}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree214
-    id: 2585175241496146835
-    components:
-      - type: transform
-        position: {x: -72.994545, y: 0, z: 112.194321}
-        rotation: {x: 0, y: 0.899030745, z: 0, w: -0.437885493}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree114
-    id: 1426160709677677182
-    components:
-      - type: transform
-        position: {x: -94.4267578, y: 0, z: 105.727905}
-        rotation: {x: 0, y: 0.610703468, z: 0, w: 0.791859388}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree014
-    id: 11827803795113621059
-    components:
-      - type: transform
-        position: {x: -103.321388, y: 0, z: 102.90377}
-        rotation: {x: 0, y: 0.895544231, z: 0, w: 0.444972515}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree1413
-    id: 2427918638431246886
-    components:
-      - type: transform
-        position: {x: 106.219627, y: 0, z: 89.7355804}
-        rotation: {x: 0, y: 0.0461442284, z: 0, w: 0.998934805}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree1313
-    id: 16010376823401007325
-    components:
-      - type: transform
-        position: {x: 83.835083, y: 0, z: 94.7847672}
-        rotation: {x: 0, y: 0.180055916, z: 0, w: -0.983656347}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree1213
-    id: 493442156715096791
-    components:
-      - type: transform
-        position: {x: 79.512085, y: 0, z: 91.929245}
-        rotation: {x: 0, y: 0.770936489, z: 0, w: -0.636912048}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree1113
-    id: 12154607084621254139
-    components:
-      - type: transform
-        position: {x: 59.7718086, y: 0, z: 97.4589462}
-        rotation: {x: 0, y: 0.379553616, z: 0, w: 0.925169766}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree1013
-    id: 4909356292176755284
-    components:
-      - type: transform
-        position: {x: 48.399292, y: 0, z: 90.8415451}
-        rotation: {x: 0, y: 0.769789934, z: 0, w: 0.638297319}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree913
-    id: 7924208708290252669
-    components:
-      - type: transform
-        position: {x: 37.0661392, y: 0, z: 89.735733}
-        rotation: {x: 0, y: 0.449149132, z: 0, w: 0.893456817}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree813
-    id: 10826279358319797838
-    components:
-      - type: transform
-        position: {x: 11.1599379, y: 0, z: 91.399147}
-        rotation: {x: 0, y: 0.140631169, z: 0, w: -0.990062058}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree713
-    id: 6778956774449415060
-    components:
-      - type: transform
-        position: {x: 7.33086872, y: 0, z: 84.9606934}
-        rotation: {x: 0, y: 0.73508513, z: 0, w: 0.67797482}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree613
-    id: 17952542135210646054
-    components:
-      - type: transform
-        position: {x: -17.2637081, y: 0, z: 92.1921082}
-        rotation: {x: 0, y: 0.0164912939, z: 0, w: -0.999863982}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree513
-    id: 7421948048972118901
-    components:
-      - type: transform
-        position: {x: -27.9884644, y: 0, z: 84.8757553}
-        rotation: {x: 0, y: 0.416248947, z: 0, w: -0.909250677}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree413
-    id: 2594073308862405353
-    components:
-      - type: transform
-        position: {x: -52.4237022, y: 0, z: 94.4038925}
-        rotation: {x: 0, y: 0.366748333, z: 0, w: 0.930320203}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree313
-    id: 3030531447480426459
-    components:
-      - type: transform
-        position: {x: -58.377449, y: 0, z: 85.8048477}
-        rotation: {x: 0, y: 0.996456981, z: 0, w: -0.0841037035}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree213
-    id: 13981829989334087711
-    components:
-      - type: transform
-        position: {x: -81.8981018, y: 0, z: 92.6090164}
-        rotation: {x: 0, y: 0.546207309, z: 0, w: 0.837650061}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree113
-    id: 16936254693463626827
-    components:
-      - type: transform
-        position: {x: -95.1497269, y: 0, z: 83.6240768}
-        rotation: {x: 0, y: 0.962507725, z: 0, w: 0.271254182}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree013
-    id: 6101520573478389778
-    components:
-      - type: transform
-        position: {x: -111.762047, y: 0, z: 90.2631302}
-        rotation: {x: 0, y: 0.155287296, z: 0, w: -0.987869322}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree1412
-    id: 8020571236838217742
-    components:
-      - type: transform
-        position: {x: 99.0158768, y: 0, z: 76.0031128}
-        rotation: {x: 0, y: 0.0923327506, z: 0, w: 0.995728195}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree1312
-    id: 6771042915931820234
-    components:
-      - type: transform
-        position: {x: 88.6180801, y: 0, z: 74.9143143}
-        rotation: {x: 0, y: 0.544861734, z: 0, w: 0.838525891}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree1212
-    id: 6387481720435902315
-    components:
-      - type: transform
-        position: {x: 68.9052429, y: 0, z: 80.7136536}
-        rotation: {x: 0, y: 0.735499442, z: 0, w: 0.677525342}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree1112
-    id: 10800000337425727881
-    components:
-      - type: transform
-        position: {x: 65.8434067, y: 0, z: 73.0948792}
-        rotation: {x: 0, y: 0.394974291, z: 0, w: -0.918692172}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree1012
-    id: 9187924133042149809
-    components:
-      - type: transform
-        position: {x: 41.283638, y: 0, z: 71.6323547}
-        rotation: {x: 0, y: 0.12791571, z: 0, w: 0.991785049}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree912
-    id: 5941440246549069452
-    components:
-      - type: transform
-        position: {x: 26.0887051, y: 0, z: 70.0367737}
-        rotation: {x: 0, y: 0.047485996, z: 0, w: -0.998871922}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree812
-    id: 12596846750693238573
-    components:
-      - type: transform
-        position: {x: 13.771863, y: 0, z: 68.394516}
-        rotation: {x: 0, y: 0.993404388, z: 0, w: -0.114663489}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree712
-    id: 8015929325046287192
-    components:
-      - type: transform
-        position: {x: -6.00998259, y: 0, z: 82.048912}
-        rotation: {x: 0, y: 0.973362625, z: 0, w: 0.229270905}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree612
-    id: 17302039508366073949
-    components:
-      - type: transform
-        position: {x: -10.2748814, y: 0, z: 77.0623245}
-        rotation: {x: 0, y: 0.948081374, z: 0, w: 0.318027884}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree512
-    id: 9923911985657923634
-    components:
-      - type: transform
-        position: {x: -25.6895924, y: 0, z: 72.6075134}
-        rotation: {x: 0, y: 0.485497117, z: 0, w: -0.874238253}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree412
-    id: 12068578488042588222
-    components:
-      - type: transform
-        position: {x: -48.0542526, y: 0, z: 68.5262451}
-        rotation: {x: 0, y: 0.266265064, z: 0, w: -0.963899851}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree312
-    id: 5049832415029837989
-    components:
-      - type: transform
-        position: {x: -60.1007004, y: 0, z: 71.4592285}
-        rotation: {x: 0, y: 0.549734354, z: 0, w: -0.835339546}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree212
-    id: 15602443873037105331
-    components:
-      - type: transform
-        position: {x: -70.5189209, y: 0, z: 76.0576553}
-        rotation: {x: 0, y: 0.951555252, z: 0, w: -0.307477802}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree112
-    id: 16215559667212708847
-    components:
-      - type: transform
-        position: {x: -91.4299316, y: 0, z: 70.1528015}
-        rotation: {x: 0, y: 0.908520937, z: 0, w: -0.417839259}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree012
-    id: 6020550435362640640
-    components:
-      - type: transform
-        position: {x: -108.400024, y: 0, z: 74.450264}
-        rotation: {x: 0, y: 0.643354356, z: 0, w: -0.765568554}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree1411
-    id: 9263777704609716327
-    components:
-      - type: transform
-        position: {x: 109.785316, y: 0, z: 52.6471825}
-        rotation: {x: 0, y: 0.716858983, z: 0, w: -0.69721818}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree1311
-    id: 13269345286908868930
-    components:
-      - type: transform
-        position: {x: 83.5719147, y: 0, z: 58.372303}
-        rotation: {x: 0, y: 0.145312399, z: 0, w: 0.989385843}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree1211
-    id: 15461457791588762004
-    components:
-      - type: transform
-        position: {x: 76.8250885, y: 0, z: 56.4918861}
-        rotation: {x: 0, y: 0.628722727, z: 0, w: -0.777629554}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree1111
-    id: 4656675685782918274
-    components:
-      - type: transform
-        position: {x: 54.3656006, y: 0, z: 60.4109726}
-        rotation: {x: 0, y: 0.882861197, z: 0, w: 0.469633996}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree1011
-    id: 670407425572898802
-    components:
-      - type: transform
-        position: {x: 46.2575684, y: 0, z: 58.2364082}
-        rotation: {x: 0, y: 0.985827923, z: 0, w: 0.167759746}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree911
-    id: 6129647856503896983
-    components:
-      - type: transform
-        position: {x: 33.6348419, y: 0, z: 54.4168625}
-        rotation: {x: 0, y: 0.968988478, z: 0, w: -0.247105986}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree811
-    id: 2399275927442643251
-    components:
-      - type: transform
-        position: {x: 20.5760002, y: 0, z: 63.8719406}
-        rotation: {x: 0, y: 0.964257836, z: 0, w: 0.264965743}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree711
-    id: 17169077587204251318
-    components:
-      - type: transform
-        position: {x: -4.42330647, y: 0, z: 64.5383759}
-        rotation: {x: 0, y: 0.58984673, z: 0, w: 0.807515204}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree611
-    id: 15593146767599778669
-    components:
-      - type: transform
-        position: {x: -18.6688862, y: 0, z: 54.8414192}
-        rotation: {x: 0, y: 0.999112427, z: 0, w: 0.0421234444}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree511
-    id: 12536993276366429860
-    components:
-      - type: transform
-        position: {x: -30.5718346, y: 0, z: 56.1324692}
-        rotation: {x: 0, y: 0.422104955, z: 0, w: 0.90654695}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree411
-    id: 12784163744384547732
-    components:
-      - type: transform
-        position: {x: -41.052124, y: 0, z: 54.2866287}
-        rotation: {x: 0, y: 0.736056149, z: 0, w: -0.676920474}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree311
-    id: 504700776391727182
-    components:
-      - type: transform
-        position: {x: -67.1598969, y: 0, z: 56.4780998}
-        rotation: {x: 0, y: 0.0739177167, z: 0, w: 0.997264326}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree211
-    id: 9718634866594816966
-    components:
-      - type: transform
-        position: {x: -67.963768, y: 0, z: 54.6094246}
-        rotation: {x: 0, y: 0.755847275, z: 0, w: 0.654747963}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree111
-    id: 7797689555317382534
-    components:
-      - type: transform
-        position: {x: -84.1544342, y: 0, z: 53.8868637}
-        rotation: {x: 0, y: 0.4992733, z: 0, w: 0.866444588}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree011
-    id: 16714176525435792923
-    components:
-      - type: transform
-        position: {x: -103.640335, y: 0, z: 52.7627945}
-        rotation: {x: 0, y: 0.737915516, z: 0, w: 0.674893081}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree1410
-    id: 17195421861498759031
-    components:
-      - type: transform
-        position: {x: 102.263214, y: 0, z: 50.977932}
-        rotation: {x: 0, y: 0.185999364, z: 0, w: -0.982549846}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree1310
-    id: 17410189107084007254
-    components:
-      - type: transform
-        position: {x: 88.9690018, y: 0, z: 41.688633}
-        rotation: {x: 0, y: 0.583684862, z: 0, w: -0.811980307}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree1210
-    id: 13238204990406311642
-    components:
-      - type: transform
-        position: {x: 72.0027695, y: 0, z: 42.6212769}
-        rotation: {x: 0, y: 0.442103028, z: 0, w: -0.896964252}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree1110
-    id: 2746061313984060524
-    components:
-      - type: transform
-        position: {x: 61.8634987, y: 0, z: 42.7963829}
-        rotation: {x: 0, y: 0.398104608, z: 0, w: -0.91734004}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree1010
-    id: 212727020457917385
-    components:
-      - type: transform
-        position: {x: 42.5645828, y: 0, z: 51.1115189}
-        rotation: {x: 0, y: 0.647366524, z: 0, w: 0.762178838}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree910
-    id: 4178901256832719233
-    components:
-      - type: transform
-        position: {x: 35.7538414, y: 0, z: 44.4072075}
-        rotation: {x: 0, y: 0.936022043, z: 0, w: -0.351941347}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree810
-    id: 15001566612003578324
-    components:
-      - type: transform
-        position: {x: 21.5437164, y: 0, z: 48.0150223}
-        rotation: {x: 0, y: 0.928898692, z: 0, w: -0.37033391}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree710
-    id: 15976392781970467963
-    components:
-      - type: transform
-        position: {x: 5.38254833, y: 0, z: 41.4021034}
-        rotation: {x: 0, y: 0.820137382, z: 0, w: 0.572166622}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree610
-    id: 7116345113702960946
-    components:
-      - type: transform
-        position: {x: -11.6808748, y: 0, z: 48.6784286}
-        rotation: {x: 0, y: 0.78109324, z: 0, w: 0.624414384}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree510
-    id: 17807107531636440829
-    components:
-      - type: transform
-        position: {x: -36.0130272, y: 0, z: 39.1524391}
-        rotation: {x: 0, y: 0.940786004, z: 0, w: 0.33900103}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree410
-    id: 4711302067309503005
-    components:
-      - type: transform
-        position: {x: -45.870739, y: 0, z: 45.4821625}
-        rotation: {x: 0, y: 0.979230464, z: 0, w: -0.202750295}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree310
-    id: 1047986503726620338
-    components:
-      - type: transform
-        position: {x: -57.6739426, y: 0, z: 40.7925911}
-        rotation: {x: 0, y: 0.815674424, z: 0, w: -0.578511178}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree210
-    id: 14919528046551410807
-    components:
-      - type: transform
-        position: {x: -67.8175049, y: 0, z: 42.6687622}
-        rotation: {x: 0, y: 0.515017211, z: 0, w: -0.85717988}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree110
-    id: 3179063297982053233
-    components:
-      - type: transform
-        position: {x: -91.1990662, y: 0, z: 51.0663376}
-        rotation: {x: 0, y: 0.55327028, z: 0, w: -0.833001792}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree010
-    id: 5871453041802810498
-    components:
-      - type: transform
-        position: {x: -105.63356, y: 0, z: 52.3184242}
-        rotation: {x: 0, y: 0.984599173, z: 0, w: 0.174827009}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree149
-    id: 13793810471327156981
-    components:
-      - type: transform
-        position: {x: 107.606155, y: 0, z: 31.1689186}
-        rotation: {x: 0, y: 0.768666446, z: 0, w: -0.639649808}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree139
-    id: 9508370756905194909
-    components:
-      - type: transform
-        position: {x: 93.2518616, y: 0, z: 27.1132336}
-        rotation: {x: 0, y: 0.233791709, z: 0, w: -0.972286701}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree129
-    id: 12395936123529461626
-    components:
-      - type: transform
-        position: {x: 71.4072189, y: 0, z: 32.9065361}
-        rotation: {x: 0, y: 0.449918211, z: 0, w: -0.893069744}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree119
-    id: 9898289599096803552
-    components:
-      - type: transform
-        position: {x: 61.3676224, y: 0, z: 32.9683914}
-        rotation: {x: 0, y: 0.992116332, z: 0, w: 0.125320107}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree109
-    id: 1133123381848617087
-    components:
-      - type: transform
-        position: {x: 46.2217293, y: 0, z: 29.967289}
-        rotation: {x: 0, y: 0.999689937, z: 0, w: 0.0248992499}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree99
-    id: 11683478870452695156
-    components:
-      - type: transform
-        position: {x: 32.3193893, y: 0, z: 23.4694405}
-        rotation: {x: 0, y: 0.335277349, z: 0, w: 0.942119479}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree89
-    id: 1193952224394894815
-    components:
-      - type: transform
-        position: {x: 19.4751968, y: 0, z: 22.5812721}
-        rotation: {x: 0, y: 0.512993753, z: 0, w: -0.858392358}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree79
-    id: 9901394547183727279
-    components:
-      - type: transform
-        position: {x: -3.40539646, y: 0, z: 23.7821579}
-        rotation: {x: 0, y: 0.90710485, z: 0, w: 0.420904726}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree69
-    id: 12596517082940276399
-    components:
-      - type: transform
-        position: {x: -14.0763006, y: 0, z: 36.4679565}
-        rotation: {x: 0, y: 0.993609965, z: 0, w: 0.112868041}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree59
-    id: 7739142589757611842
-    components:
-      - type: transform
-        position: {x: -28.9204292, y: 0, z: 27.6047859}
-        rotation: {x: 0, y: 0.781684756, z: 0, w: -0.623673737}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree49
-    id: 11236158023566039815
-    components:
-      - type: transform
-        position: {x: -46.9026909, y: 0, z: 28.1511002}
-        rotation: {x: 0, y: 0.307493776, z: 0, w: -0.951550066}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree39
-    id: 6156719291217110545
-    components:
-      - type: transform
-        position: {x: -64.4349976, y: 0, z: 36.0535507}
-        rotation: {x: 0, y: 0.603135407, z: 0, w: 0.797638834}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree29
-    id: 7347945500512063657
-    components:
-      - type: transform
-        position: {x: -75.4224396, y: 0, z: 23.3649769}
-        rotation: {x: 0, y: 0.425458968, z: 0, w: 0.904977739}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree19
-    id: 13689377262001778207
-    components:
-      - type: transform
-        position: {x: -90.1136169, y: 0, z: 26.7179985}
-        rotation: {x: 0, y: 0.995493114, z: 0, w: -0.0948337466}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree09
-    id: 14982002116389574703
-    components:
-      - type: transform
-        position: {x: -110.393265, y: 0, z: 36.0297623}
-        rotation: {x: 0, y: 0.933042705, z: 0, w: -0.359765708}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree148
-    id: 17461273138185797101
-    components:
-      - type: transform
-        position: {x: 104.865982, y: 0, z: 11.8486958}
-        rotation: {x: 0, y: 0.895719886, z: 0, w: -0.444618762}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree138
-    id: 7738770233674235133
-    components:
-      - type: transform
-        position: {x: 84.830307, y: 0, z: 19.6095581}
-        rotation: {x: 0, y: 0.536375225, z: 0, w: 0.843979657}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree128
-    id: 7812662233114021009
-    components:
-      - type: transform
-        position: {x: 77.1057129, y: 0, z: 13.399025}
-        rotation: {x: 0, y: 0.239590496, z: 0, w: 0.970874012}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree118
-    id: 2739604694109542454
-    components:
-      - type: transform
-        position: {x: 55.5572472, y: 0, z: 9.99328232}
-        rotation: {x: 0, y: 0.838526547, z: 0, w: 0.544860721}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree108
-    id: 8987463110186735516
-    components:
-      - type: transform
-        position: {x: 39.1801605, y: 0, z: 20.7882919}
-        rotation: {x: 0, y: 0.23751682, z: 0, w: -0.971383452}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree98
-    id: 7024021552873543521
-    components:
-      - type: transform
-        position: {x: 27.6067791, y: 0, z: 11.2377539}
-        rotation: {x: 0, y: 0.902827322, z: 0, w: 0.430003226}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree88
-    id: 15776907668242978068
-    components:
-      - type: transform
-        position: {x: 22.0271473, y: 0, z: 8.26760387}
-        rotation: {x: 0, y: 0.266444564, z: 0, w: -0.96385026}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree78
-    id: 12666816737145660868
-    components:
-      - type: transform
-        position: {x: 1.72230244, y: 0, z: 10.9724998}
-        rotation: {x: 0, y: 0.641485929, z: 0, w: -0.767134786}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree68
-    id: 18365031432208919329
-    components:
-      - type: transform
-        position: {x: -20.6541958, y: 0, z: 13.7618465}
-        rotation: {x: 0, y: 0.560829818, z: 0, w: 0.827931106}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree58
-    id: 733894171703163416
-    components:
-      - type: transform
-        position: {x: -28.7825584, y: 0, z: 17.1147766}
-        rotation: {x: 0, y: 0.713697076, z: 0, w: 0.700454533}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree48
-    id: 3307679945764293435
-    components:
-      - type: transform
-        position: {x: -40.1650429, y: 0, z: 11.203969}
-        rotation: {x: 0, y: 0.285794348, z: 0, w: 0.958290994}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree38
-    id: 7452831770337456995
-    components:
-      - type: transform
-        position: {x: -53.8754272, y: 0, z: 21.364315}
-        rotation: {x: 0, y: 0.989307642, z: 0, w: -0.145843655}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree28
-    id: 16757919777334475332
-    components:
-      - type: transform
-        position: {x: -71.8395844, y: 0, z: 12.692297}
-        rotation: {x: 0, y: 0.194297537, z: 0, w: -0.980942667}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree18
-    id: 8382277956538597218
-    components:
-      - type: transform
-        position: {x: -88.2100983, y: 0, z: 16.0795937}
-        rotation: {x: 0, y: 0.855179667, z: 0, w: -0.518331647}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree08
-    id: 3558045897934829508
-    components:
-      - type: transform
-        position: {x: -99.1714096, y: 0, z: 10.1029406}
-        rotation: {x: 0, y: 0.82247299, z: 0, w: -0.568804204}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree147
-    id: 8917181424666553311
-    components:
-      - type: transform
-        position: {x: 101.941368, y: 0, z: 2.24271393}
-        rotation: {x: 0, y: 0.996336639, z: 0, w: -0.0855176523}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree137
-    id: 13709325431518140221
-    components:
-      - type: transform
-        position: {x: 84.6638489, y: 0, z: -7.22731733}
-        rotation: {x: 0, y: 0.218632996, z: 0, w: -0.97580713}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree127
-    id: 15800617442093854340
-    components:
-      - type: transform
-        position: {x: 67.7278671, y: 0, z: -2.08852148}
-        rotation: {x: 0, y: 0.513458788, z: 0, w: 0.858114243}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree117
-    id: 14712452592578353356
-    components:
-      - type: transform
-        position: {x: 62.6802521, y: 0, z: 1.01745033}
-        rotation: {x: 0, y: 0.36769563, z: 0, w: -0.929946184}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree107
-    id: 4368048409417670841
-    components:
-      - type: transform
-        position: {x: 46.0421753, y: 0, z: 4.60479355}
-        rotation: {x: 0, y: 0.918106198, z: 0, w: 0.39633441}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree97
-    id: 1452843161217347273
-    components:
-      - type: transform
-        position: {x: 32.6662827, y: 0, z: -5.4690237}
-        rotation: {x: 0, y: 0.740123034, z: 0, w: -0.672471464}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree87
-    id: 2172628162536062339
-    components:
-      - type: transform
-        position: {x: 13.626976, y: 0, z: 6.51826859}
-        rotation: {x: 0, y: 0.996913493, z: 0, w: 0.0785078108}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree77
-    id: 5491132772962266993
-    components:
-      - type: transform
-        position: {x: -4.36849594, y: 0, z: -7.14010239}
-        rotation: {x: 0, y: 0.930101573, z: 0, w: -0.367302388}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree67
-    id: 4934837236720064583
-    components:
-      - type: transform
-        position: {x: -10.19487, y: 0, z: 5.71722412}
-        rotation: {x: 0, y: 0.0908080116, z: 0, w: 0.995868444}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree57
-    id: 16908352795980469981
-    components:
-      - type: transform
-        position: {x: -32.4660454, y: 0, z: 0.731624603}
-        rotation: {x: 0, y: 0.916248977, z: 0, w: 0.400609374}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree47
-    id: 15811494268841841980
-    components:
-      - type: transform
-        position: {x: -45.3155327, y: 0, z: 5.39757919}
-        rotation: {x: 0, y: 0.503281474, z: 0, w: -0.86412251}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree37
-    id: 1112939504560709877
-    components:
-      - type: transform
-        position: {x: -67.2916718, y: 0, z: 3.47087193}
-        rotation: {x: 0, y: 0.830623865, z: 0, w: -0.556833863}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree27
-    id: 5097715073272994879
-    components:
-      - type: transform
-        position: {x: -81.3460464, y: 0, z: -2.9425602}
-        rotation: {x: 0, y: 0.965035379, z: 0, w: -0.262119591}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree17
-    id: 17004212362014890707
-    components:
-      - type: transform
-        position: {x: -82.5852127, y: 0, z: 5.4073}
-        rotation: {x: 0, y: 0.991212368, z: 0, w: -0.132280052}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree07
-    id: 2700131659263714483
-    components:
-      - type: transform
-        position: {x: -104.317635, y: 0, z: -3.92067027}
-        rotation: {x: 0, y: 0.961659074, z: 0, w: -0.274247646}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree146
-    id: 17087906999823836661
-    components:
-      - type: transform
-        position: {x: 97.611496, y: 0, z: -17.8139}
-        rotation: {x: 0, y: 0.996843755, z: 0, w: -0.0793887153}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree136
-    id: 7421092261761777311
-    components:
-      - type: transform
-        position: {x: 85.5756226, y: 0, z: -19.8715439}
-        rotation: {x: 0, y: 0.868761599, z: 0, w: -0.495230556}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree126
-    id: 2036431221985902481
-    components:
-      - type: transform
-        position: {x: 75.3570633, y: 0, z: -14.6054401}
-        rotation: {x: 0, y: 0.811547101, z: 0, w: -0.584286988}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree116
-    id: 5875907738781579075
-    components:
-      - type: transform
-        position: {x: 58.6636963, y: 0, z: -18.8559418}
-        rotation: {x: 0, y: 0.337504864, z: 0, w: 0.941323817}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree106
-    id: 4336589614052151023
-    components:
-      - type: transform
-        position: {x: 49.74683, y: 0, z: -18.0820618}
-        rotation: {x: 0, y: 0.0776204616, z: 0, w: -0.996982992}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree96
-    id: 8038944537418426716
-    components:
-      - type: transform
-        position: {x: 32.0132217, y: 0, z: -13.1543655}
-        rotation: {x: 0, y: 0.444862872, z: 0, w: 0.89559871}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree86
-    id: 17992077081108429592
-    components:
-      - type: transform
-        position: {x: 19.5112724, y: 0, z: -10.483861}
-        rotation: {x: 0, y: 0.978870988, z: 0, w: 0.204478949}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree76
-    id: 8310220491159760229
-    components:
-      - type: transform
-        position: {x: 1.10144806, y: 0, z: -14.4360676}
-        rotation: {x: 0, y: 0.425071925, z: 0, w: 0.905159593}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree66
-    id: 3360346175177658866
-    components:
-      - type: transform
-        position: {x: -19.8874321, y: 0, z: -11.2283916}
-        rotation: {x: 0, y: 0.330996454, z: 0, w: 0.943632007}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree56
-    id: 11105368457527473379
-    components:
-      - type: transform
-        position: {x: -34.076458, y: 0, z: -17.3063049}
-        rotation: {x: 0, y: 0.156203434, z: 0, w: -0.9877249}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree46
-    id: 16293307877534240242
-    components:
-      - type: transform
-        position: {x: -44.0097008, y: 0, z: -21.0560799}
-        rotation: {x: 0, y: 0.582375228, z: 0, w: -0.812920094}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree36
-    id: 7571491942643002325
-    components:
-      - type: transform
-        position: {x: -62.915966, y: 0, z: -16.9374371}
-        rotation: {x: 0, y: 0.4717246, z: 0, w: 0.881745934}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree26
-    id: 10347786362902861339
-    components:
-      - type: transform
-        position: {x: -82.2224274, y: 0, z: -8.33934593}
-        rotation: {x: 0, y: 0.906686187, z: 0, w: 0.421805829}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree16
-    id: 10281979475790557257
-    components:
-      - type: transform
-        position: {x: -86.9115295, y: 0, z: -21.5828152}
-        rotation: {x: 0, y: 0.81495887, z: 0, w: 0.579518855}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree06
-    id: 7003563654370451790
-    components:
-      - type: transform
-        position: {x: -108.080742, y: 0, z: -10.1064453}
-        rotation: {x: 0, y: 0.867530406, z: 0, w: -0.497384191}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree145
-    id: 14454732739315504235
-    components:
-      - type: transform
-        position: {x: 99.8208008, y: 0, z: -27.8154583}
-        rotation: {x: 0, y: 0.354793757, z: 0, w: -0.93494457}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree135
-    id: 9418902910743819550
-    components:
-      - type: transform
-        position: {x: 87.9928741, y: 0, z: -36.0684738}
-        rotation: {x: 0, y: 0.472260863, z: 0, w: 0.881458819}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree125
-    id: 7272128874059674742
-    components:
-      - type: transform
-        position: {x: 77.5930405, y: 0, z: -26.2726517}
-        rotation: {x: 0, y: 0.119293049, z: 0, w: 0.992859066}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree115
-    id: 387414132141752665
-    components:
-      - type: transform
-        position: {x: 53.8537216, y: 0, z: -31.1720638}
-        rotation: {x: 0, y: 0.100539751, z: 0, w: 0.994933069}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree105
-    id: 8426222081431318363
-    components:
-      - type: transform
-        position: {x: 47.3413391, y: 0, z: -36.0221558}
-        rotation: {x: 0, y: 0.192563519, z: 0, w: -0.981284499}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree95
-    id: 14215872162638654886
-    components:
-      - type: transform
-        position: {x: 29.4542675, y: 0, z: -24.5956707}
-        rotation: {x: 0, y: 0.53598994, z: 0, w: -0.844224334}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree85
-    id: 14650163980283950886
-    components:
-      - type: transform
-        position: {x: 22.1233597, y: 0, z: -25.0469227}
-        rotation: {x: 0, y: 0.260469317, z: 0, w: 0.965482116}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree75
-    id: 15529421355685775973
-    components:
-      - type: transform
-        position: {x: -0.317402363, y: 0, z: -29.2280312}
-        rotation: {x: 0, y: 0.943734229, z: 0, w: -0.330704868}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree65
-    id: 15185727087611431281
-    components:
-      - type: transform
-        position: {x: -15.2545681, y: 0, z: -29.8757629}
-        rotation: {x: 0, y: 0.999922395, z: 0, w: 0.0124596274}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree55
-    id: 1299205318024125770
-    components:
-      - type: transform
-        position: {x: -25.4546432, y: 0, z: -36.3193321}
-        rotation: {x: 0, y: 0.954751194, z: 0, w: -0.297405779}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree45
-    id: 11305662739788811645
-    components:
-      - type: transform
-        position: {x: -51.0576591, y: 0, z: -22.593174}
-        rotation: {x: 0, y: 0.995395541, z: 0, w: 0.0958528817}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree35
-    id: 10788846767325223700
-    components:
-      - type: transform
-        position: {x: -55.2182922, y: 0, z: -34.1083946}
-        rotation: {x: 0, y: 0.811965525, z: 0, w: 0.583705425}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree25
-    id: 18100640786174796360
-    components:
-      - type: transform
-        position: {x: -70.2487717, y: 0, z: -33.2953949}
-        rotation: {x: 0, y: 0.580262542, z: 0, w: 0.814429462}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree15
-    id: 8940776146321127416
-    components:
-      - type: transform
-        position: {x: -94.7805634, y: 0, z: -32.1260147}
-        rotation: {x: 0, y: 0.940328956, z: 0, w: 0.340266764}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree05
-    id: 929263693969531131
-    components:
-      - type: transform
-        position: {x: -107.121964, y: 0, z: -37.4943085}
-        rotation: {x: 0, y: 0.999859929, z: 0, w: -0.0167376772}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree144
-    id: 17137233136131599546
-    components:
-      - type: transform
-        position: {x: 102.59713, y: 0, z: -43.3143005}
-        rotation: {x: 0, y: 0.981772304, z: 0, w: 0.190061018}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree134
-    id: 16935880463095566992
-    components:
-      - type: transform
-        position: {x: 89.3957443, y: 0, z: -42.7128983}
-        rotation: {x: 0, y: 0.888279974, z: 0, w: -0.459302425}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree124
-    id: 7913010138542563545
-    components:
-      - type: transform
-        position: {x: 76.048584, y: 0, z: -44.6253242}
-        rotation: {x: 0, y: 0.775188923, z: 0, w: -0.631729484}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree114
-    id: 10871788333652877369
-    components:
-      - type: transform
-        position: {x: 52.7104263, y: 0, z: -51.1210136}
-        rotation: {x: 0, y: 0.728761315, z: 0, w: -0.684767783}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree104
-    id: 870382266085397912
-    components:
-      - type: transform
-        position: {x: 45.7254143, y: 0, z: -48.0446777}
-        rotation: {x: 0, y: 0.997797787, z: 0, w: -0.0663290694}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree94
-    id: 739586309818866700
-    components:
-      - type: transform
-        position: {x: 23.6557922, y: 0, z: -40.7328491}
-        rotation: {x: 0, y: 0.942543745, z: 0, w: -0.334082752}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree84
-    id: 4592257933029757782
-    components:
-      - type: transform
-        position: {x: 9.16243076, y: 0, z: -49.2179947}
-        rotation: {x: 0, y: 0.971707463, z: 0, w: -0.236187711}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree74
-    id: 11695786871089747931
-    components:
-      - type: transform
-        position: {x: -0.914793968, y: 0, z: -40.6018867}
-        rotation: {x: 0, y: 0.720346093, z: 0, w: 0.693614781}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree64
-    id: 4743437714697546737
-    components:
-      - type: transform
-        position: {x: -20.0507755, y: 0, z: -49.9126205}
-        rotation: {x: 0, y: 0.979168475, z: 0, w: 0.203049392}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree54
-    id: 402325821195814047
-    components:
-      - type: transform
-        position: {x: -24.636158, y: 0, z: -38.3915749}
-        rotation: {x: 0, y: 0.655745447, z: 0, w: -0.754982054}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree44
-    id: 147328498046140797
-    components:
-      - type: transform
-        position: {x: -42.7537155, y: 0, z: -46.7079163}
-        rotation: {x: 0, y: 0.745586216, z: 0, w: 0.666409194}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree34
-    id: 15639632117051505673
-    components:
-      - type: transform
-        position: {x: -54.5989227, y: 0, z: -40.4301872}
-        rotation: {x: 0, y: 0.998514652, z: 0, w: -0.0544843599}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree24
-    id: 10227204074045971153
-    components:
-      - type: transform
-        position: {x: -71.0522537, y: 0, z: -43.7856483}
-        rotation: {x: 0, y: 0.378601253, z: 0, w: -0.925559878}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree14
-    id: 5972197221804373316
-    components:
-      - type: transform
-        position: {x: -94.8279877, y: 0, z: -37.7636795}
-        rotation: {x: 0, y: 0.167402402, z: 0, w: 0.98588866}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree04
-    id: 12141738373893145238
-    components:
-      - type: transform
-        position: {x: -98.3033905, y: 0, z: -49.2595177}
-        rotation: {x: 0, y: 0.720538378, z: 0, w: -0.693415046}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree143
-    id: 2050268836122969415
-    components:
-      - type: transform
-        position: {x: 100.848045, y: 0, z: -64.8248672}
-        rotation: {x: 0, y: 0.733649552, z: 0, w: -0.679527998}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree133
-    id: 3530415475269282657
-    components:
-      - type: transform
-        position: {x: 96.9190521, y: 0, z: -60.6833687}
-        rotation: {x: 0, y: 0.0679753795, z: 0, w: 0.997686982}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree123
-    id: 18082891738191662927
-    components:
-      - type: transform
-        position: {x: 70.7107162, y: 0, z: -61.6136627}
-        rotation: {x: 0, y: 0.797748029, z: 0, w: -0.602990985}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree113
-    id: 8125272613232004521
-    components:
-      - type: transform
-        position: {x: 55.1067581, y: 0, z: -60.6707191}
-        rotation: {x: 0, y: 0.787118852, z: 0, w: 0.616801322}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree103
-    id: 18382372539784491911
-    components:
-      - type: transform
-        position: {x: 42.1960411, y: 0, z: -55.3598709}
-        rotation: {x: 0, y: 0.925890863, z: 0, w: -0.377791166}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree93
-    id: 13608827343634161127
-    components:
-      - type: transform
-        position: {x: 25.7964497, y: 0, z: -54.4183197}
-        rotation: {x: 0, y: 0.461104095, z: 0, w: 0.887346029}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree83
-    id: 18106140208445012434
-    components:
-      - type: transform
-        position: {x: 8.20167923, y: 0, z: -61.0612602}
-        rotation: {x: 0, y: 0.69777441, z: 0, w: 0.716317534}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree73
-    id: 9203137570320042960
-    components:
-      - type: transform
-        position: {x: 2.63561153, y: 0, z: -54.9741516}
-        rotation: {x: 0, y: 0.945599139, z: 0, w: -0.325334102}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree63
-    id: 10924722551044970815
-    components:
-      - type: transform
-        position: {x: -19.3089314, y: 0, z: -54.36343}
-        rotation: {x: 0, y: 0.998423934, z: 0, w: -0.0561218113}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree53
-    id: 3406409234781204136
-    components:
-      - type: transform
-        position: {x: -26.2296143, y: 0, z: -61.1355782}
-        rotation: {x: 0, y: 0.801992774, z: 0, w: -0.597333729}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree43
-    id: 2576265772325125106
-    components:
-      - type: transform
-        position: {x: -42.3934937, y: 0, z: -53.2438354}
-        rotation: {x: 0, y: 0.986707032, z: 0, w: 0.162509069}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree33
-    id: 8483296093490325790
-    components:
-      - type: transform
-        position: {x: -63.2725296, y: 0, z: -64.3855286}
-        rotation: {x: 0, y: 0.973315477, z: 0, w: 0.229471162}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree23
-    id: 3870562264234378555
-    components:
-      - type: transform
-        position: {x: -72.371994, y: 0, z: -61.7857704}
-        rotation: {x: 0, y: 0.16879037, z: 0, w: -0.98565197}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree13
-    id: 1373491147490299511
-    components:
-      - type: transform
-        position: {x: -94.3784256, y: 0, z: -62.1168365}
-        rotation: {x: 0, y: 0.937715828, z: 0, w: 0.347403228}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree03
-    id: 15682641208859685850
-    components:
-      - type: transform
-        position: {x: -100.416161, y: 0, z: -55.2985916}
-        rotation: {x: 0, y: 0.706495881, z: 0, w: 0.707717121}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree142
-    id: 8144080216463561696
-    components:
-      - type: transform
-        position: {x: 102.102127, y: 0, z: -78.3739471}
-        rotation: {x: 0, y: 0.997193694, z: 0, w: 0.0748646855}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree132
-    id: 3801643137056044791
-    components:
-      - type: transform
-        position: {x: 87.611351, y: 0, z: -68.1452408}
-        rotation: {x: 0, y: 0.716798782, z: 0, w: -0.697280049}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree122
-    id: 4677731936973685183
-    components:
-      - type: transform
-        position: {x: 77.5697403, y: 0, z: -81.2862015}
-        rotation: {x: 0, y: 0.985014021, z: 0, w: -0.172474205}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree112
-    id: 1376012008003765497
-    components:
-      - type: transform
-        position: {x: 56.4970589, y: 0, z: -81.3271332}
-        rotation: {x: 0, y: 0.375710309, z: 0, w: 0.92673713}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree102
-    id: 18283949635844550423
-    components:
-      - type: transform
-        position: {x: 43.0377655, y: 0, z: -81.9563828}
-        rotation: {x: 0, y: 0.570001721, z: 0, w: -0.821643531}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree92
-    id: 17345508433143849681
-    components:
-      - type: transform
-        position: {x: 30.9182224, y: 0, z: -69.107872}
-        rotation: {x: 0, y: 0.91893059, z: 0, w: 0.394419342}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree82
-    id: 1218822345486175208
-    components:
-      - type: transform
-        position: {x: 21.0958862, y: 0, z: -68.8236237}
-        rotation: {x: 0, y: 0.137196049, z: 0, w: 0.990543902}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree72
-    id: 10280535140497916425
-    components:
-      - type: transform
-        position: {x: 7.0657196, y: 0, z: -77.7160263}
-        rotation: {x: 0, y: 0.993556678, z: 0, w: -0.113336101}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree62
-    id: 6658114284882932521
-    components:
-      - type: transform
-        position: {x: -11.9628067, y: 0, z: -70.9523468}
-        rotation: {x: 0, y: 0.956174076, z: 0, w: -0.292798758}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree52
-    id: 6855371192482029523
-    components:
-      - type: transform
-        position: {x: -34.3682098, y: 0, z: -72.1859436}
-        rotation: {x: 0, y: 0.805174053, z: 0, w: 0.593038559}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree42
-    id: 15727367536019240276
-    components:
-      - type: transform
-        position: {x: -37.8987808, y: 0, z: -75.2714691}
-        rotation: {x: 0, y: 0.999094665, z: 0, w: -0.0425422937}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree32
-    id: 13252469522956585623
-    components:
-      - type: transform
-        position: {x: -62.5745163, y: 0, z: -70.0733719}
-        rotation: {x: 0, y: 0.159053877, z: 0, w: -0.987269878}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree22
-    id: 13767720697605296757
-    components:
-      - type: transform
-        position: {x: -76.8239136, y: 0, z: -78.1627655}
-        rotation: {x: 0, y: 0.245983645, z: 0, w: 0.969273984}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree12
-    id: 4667503503145678173
-    components:
-      - type: transform
-        position: {x: -96.848877, y: 0, z: -74.0593719}
-        rotation: {x: 0, y: 0.079476051, z: 0, w: -0.996836782}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree02
-    id: 14998506509241545433
-    components:
-      - type: transform
-        position: {x: -97.7261963, y: 0, z: -70.9583969}
-        rotation: {x: 0, y: 0.862520158, z: 0, w: 0.506022692}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree141
-    id: 9333450295076790975
-    components:
-      - type: transform
-        position: {x: 106.871559, y: 0, z: -94.1207657}
-        rotation: {x: 0, y: 0.526602387, z: 0, w: -0.850111723}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree131
-    id: 8915970852738690316
-    components:
-      - type: transform
-        position: {x: 94.0762024, y: 0, z: -94.3194427}
-        rotation: {x: 0, y: 0.457229733, z: 0, w: -0.889348626}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree121
-    id: 11021154176140488643
-    components:
-      - type: transform
-        position: {x: 76.0551987, y: 0, z: -86.0603104}
-        rotation: {x: 0, y: 0.909366012, z: 0, w: 0.415996939}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree111
-    id: 6183282662703185914
-    components:
-      - type: transform
-        position: {x: 58.1645203, y: 0, z: -89.2823486}
-        rotation: {x: 0, y: 0.524133146, z: 0, w: 0.85163635}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree101
-    id: 3526743567439928460
-    components:
-      - type: transform
-        position: {x: 52.3397522, y: 0, z: -86.1334076}
-        rotation: {x: 0, y: 0.408232152, z: 0, w: 0.912878156}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree91
-    id: 12989589318078182387
-    components:
-      - type: transform
-        position: {x: 28.4415436, y: 0, z: -84.6046524}
-        rotation: {x: 0, y: 0.931837857, z: 0, w: 0.362874866}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree81
-    id: 15901505687504962848
-    components:
-      - type: transform
-        position: {x: 15.7824106, y: 0, z: -87.1955261}
-        rotation: {x: 0, y: 0.96035552, z: 0, w: -0.278778225}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree71
-    id: 17113417164317442492
-    components:
-      - type: transform
-        position: {x: 2.35864925, y: 0, z: -90.5164566}
-        rotation: {x: 0, y: 0.994988322, z: 0, w: -0.0999910012}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree61
-    id: 6829125150387113530
-    components:
-      - type: transform
-        position: {x: -17.1829338, y: 0, z: -93.3434601}
-        rotation: {x: 0, y: 0.611037433, z: 0, w: 0.791601717}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree51
-    id: 13843364861628720839
-    components:
-      - type: transform
-        position: {x: -25.1304245, y: 0, z: -87.8611984}
-        rotation: {x: 0, y: 0.778552771, z: 0, w: 0.627579153}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree41
-    id: 7604187395236378883
-    components:
-      - type: transform
-        position: {x: -44.8866425, y: 0, z: -90.2960434}
-        rotation: {x: 0, y: 0.292261362, z: 0, w: 0.956338465}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree31
-    id: 17928834955429522946
-    components:
-      - type: transform
-        position: {x: -53.9257469, y: 0, z: -88.2286453}
-        rotation: {x: 0, y: 0.467171401, z: 0, w: -0.884166777}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree21
-    id: 12309742916167344519
-    components:
-      - type: transform
-        position: {x: -68.0336304, y: 0, z: -91.862114}
-        rotation: {x: 0, y: 0.4409554, z: 0, w: 0.897529006}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree11
-    id: 235069622560674222
-    components:
-      - type: transform
-        position: {x: -95.4964752, y: 0, z: -82.5541763}
-        rotation: {x: 0, y: 0.766663373, z: 0, w: -0.642049313}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree01
-    id: 15549373296921654180
-    components:
-      - type: transform
-        position: {x: -101.119026, y: 0, z: -92.8779221}
-        rotation: {x: 0, y: 0.966383338, z: 0, w: 0.257105619}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree140
-    id: 11160050685807467822
-    components:
-      - type: transform
-        position: {x: 106.173584, y: 0, z: -108.097076}
-        rotation: {x: 0, y: 0.997871339, z: 0, w: -0.0652134269}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree130
-    id: 7170354081259712532
-    components:
-      - type: transform
-        position: {x: 93.573082, y: 0, z: -102.020416}
-        rotation: {x: 0, y: 0.621638536, z: 0, w: -0.783304274}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree120
-    id: 12613901552420754517
-    components:
-      - type: transform
-        position: {x: 81.2105942, y: 0, z: -107.361633}
-        rotation: {x: 0, y: 0.77428484, z: 0, w: 0.632837236}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree110
-    id: 3207078637705701430
-    components:
-      - type: transform
-        position: {x: 63.9449005, y: 0, z: -105.145058}
-        rotation: {x: 0, y: 0.287719578, z: 0, w: 0.957714677}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree100
-    id: 18226319596948727138
-    components:
-      - type: transform
-        position: {x: 39.1747437, y: 0, z: -103.739899}
-        rotation: {x: 0, y: 0.630083561, z: 0, w: -0.776527345}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree90
-    id: 2460390923090747755
-    components:
-      - type: transform
-        position: {x: 29.7358303, y: 0, z: -109.439545}
-        rotation: {x: 0, y: 0.225351006, z: 0, w: 0.974277616}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree80
-    id: 4855996562345893232
-    components:
-      - type: transform
-        position: {x: 9.18494511, y: 0, z: -106.215889}
-        rotation: {x: 0, y: 0.129427075, z: 0, w: -0.99158895}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree70
-    id: 12599391272367948150
-    components:
-      - type: transform
-        position: {x: 1.84480762, y: 0, z: -102.830208}
-        rotation: {x: 0, y: 0.990600288, z: 0, w: -0.136788428}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree60
-    id: 12671406100624742430
-    components:
-      - type: transform
-        position: {x: -8.13876438, y: 0, z: -111.292923}
-        rotation: {x: 0, y: 0.0944740698, z: 0, w: 0.995527327}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree50
-    id: 13926736224035639442
-    components:
-      - type: transform
-        position: {x: -31.228199, y: 0, z: -109.758263}
-        rotation: {x: 0, y: 0.152556568, z: 0, w: 0.988294721}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree40
-    id: 7243072120243357859
-    components:
-      - type: transform
-        position: {x: -43.4761429, y: 0, z: -100.86718}
-        rotation: {x: 0, y: 0.896679819, z: 0, w: 0.442679614}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree30
-    id: 13363394834863505054
-    components:
-      - type: transform
-        position: {x: -53.2548676, y: 0, z: -102.262199}
-        rotation: {x: 0, y: 0.92328763, z: 0, w: -0.384109288}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree20
-    id: 2430742950709556246
-    components:
-      - type: transform
-        position: {x: -77.396019, y: 0, z: -109.947144}
-        rotation: {x: 0, y: 0.643345058, z: 0, w: 0.765576363}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree10
-    id: 4318647880604642910
-    components:
-      - type: transform
-        position: {x: -94.0726929, y: 0, z: -109.93502}
-        rotation: {x: 0, y: 0.598297954, z: 0, w: -0.801273704}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Tree00
-    id: 11670585856477339629
-    components:
-      - type: transform
-        position: {x: -107.89476, y: 0, z: -108.265022}
-        rotation: {x: 0, y: 0.998031735, z: 0, w: 0.0627104342}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 899120410606079701
-  - tag: Forrest
-    id: 899120410606079701
-    components:
-      - type: transform
-        position: {x: 0, y: 0, z: 0}
-        rotation: {x: 0, y: 0, z: 0, w: 1}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 14257639428761167948
-  - tag: MapleTree
-    id: 8619918375838052984
-    components:
-      - type: transform
-        position: {x: 0, y: 0, z: 0}
-        rotation: {x: 0, y: 0, z: 0, w: 1}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 14257639428761167948
+      []
   - tag: Fox
-    id: 8211640441622076118
+    id: 4983518254986351133
     components:
-      - type: transform
-        position: {x: 0, y: 0, z: 0}
-        rotation: {x: 0, y: 0, z: 0, w: 1}
-        scale: {x: 0.0599999987, y: 0.0599999987, z: 0.0599999987}
-      - type: hierarchy
-        parent: 14257639428761167948
+      []
+  - tag: Box3
+    id: 14989429171347078916
+    components:
+      []
+  - tag: Box2
+    id: 3229390160483922967
+    components:
+      []
+  - tag: Box1
+    id: 9929023877283693150
+    components:
+      []
+  - tag: Helmet
+    id: 12537229076030772846
+    components:
+      []
+  - tag: Dragon
+    id: 16513678854949398837
+    components:
+      []
+  - tag: Light7
+    id: 8641642459451842372
+    components:
+      []
+  - tag: Light6
+    id: 13682030675406678028
+    components:
+      []
+  - tag: Light5
+    id: 14088877119330070452
+    components:
+      []
+  - tag: Light4
+    id: 11316219524065685167
+    components:
+      []
+  - tag: Light3
+    id: 14177101562441134968
+    components:
+      []
+  - tag: Light2
+    id: 7943676757434672737
+    components:
+      []
+  - tag: Light1
+    id: 17755985241899902401
+    components:
+      []
+  - tag: Light0
+    id: 15637019420389086586
+    components:
+      []
+  - tag: LightCenter
+    id: 15868737569739022345
+    components:
+      []
+  - tag: Soldier
+    id: 12378921116074468175
+    components:
+      []
+  - tag: Chunk1919
+    id: 17110995777699177397
+    components:
+      []
+  - tag: Chunk1819
+    id: 11722596622685867960
+    components:
+      []
+  - tag: Chunk1719
+    id: 4323653398051611844
+    components:
+      []
+  - tag: Chunk1619
+    id: 14136950631062199608
+    components:
+      []
+  - tag: Chunk1519
+    id: 8960592984695416277
+    components:
+      []
+  - tag: Chunk1419
+    id: 8162357648329368475
+    components:
+      []
+  - tag: Chunk1319
+    id: 9456829117155043693
+    components:
+      []
+  - tag: Chunk1219
+    id: 14660227983324195349
+    components:
+      []
+  - tag: Chunk1119
+    id: 12826887733332542186
+    components:
+      []
+  - tag: Chunk1019
+    id: 17271291848210976730
+    components:
+      []
+  - tag: Chunk919
+    id: 898671620215459430
+    components:
+      []
+  - tag: Chunk819
+    id: 1207003247487746693
+    components:
+      []
+  - tag: Chunk719
+    id: 11820410536914765963
+    components:
+      []
+  - tag: Chunk619
+    id: 10559159795783315373
+    components:
+      []
+  - tag: Chunk519
+    id: 1629592873537414700
+    components:
+      []
+  - tag: Chunk419
+    id: 6968708999152834296
+    components:
+      []
+  - tag: Chunk319
+    id: 10573473677458649599
+    components:
+      []
+  - tag: Chunk219
+    id: 13720331434284111361
+    components:
+      []
+  - tag: Chunk119
+    id: 15446027989295011178
+    components:
+      []
+  - tag: Chunk019
+    id: 780934171732225088
+    components:
+      []
+  - tag: Chunk1918
+    id: 11824523450358440954
+    components:
+      []
+  - tag: Chunk1818
+    id: 17065466560355922747
+    components:
+      []
+  - tag: Chunk1718
+    id: 17715935015391048386
+    components:
+      []
+  - tag: Chunk1618
+    id: 13528640419915069762
+    components:
+      []
+  - tag: Chunk1518
+    id: 9114410635259242527
+    components:
+      []
+  - tag: Chunk1418
+    id: 1881279477426862483
+    components:
+      []
+  - tag: Chunk1318
+    id: 16644589913894640644
+    components:
+      []
+  - tag: Chunk1218
+    id: 2550342812786771075
+    components:
+      []
+  - tag: Chunk1118
+    id: 9471898215318829212
+    components:
+      []
+  - tag: Chunk1018
+    id: 2782337785178590975
+    components:
+      []
+  - tag: Chunk918
+    id: 12959725849639606002
+    components:
+      []
+  - tag: Chunk818
+    id: 15249458637011199282
+    components:
+      []
+  - tag: Chunk718
+    id: 10334577274294366521
+    components:
+      []
+  - tag: Chunk618
+    id: 11913887244455522292
+    components:
+      []
+  - tag: Chunk518
+    id: 15830060418634645615
+    components:
+      []
+  - tag: Chunk418
+    id: 17956939616823543724
+    components:
+      []
+  - tag: Chunk318
+    id: 2509653363272674395
+    components:
+      []
+  - tag: Chunk218
+    id: 10987275054699298326
+    components:
+      []
+  - tag: Chunk118
+    id: 7470024420189851239
+    components:
+      []
+  - tag: Chunk018
+    id: 2311544173475025557
+    components:
+      []
+  - tag: Chunk1917
+    id: 6072605417449139102
+    components:
+      []
+  - tag: Chunk1817
+    id: 6074137358716761935
+    components:
+      []
+  - tag: Chunk1717
+    id: 11345275688047084970
+    components:
+      []
+  - tag: Chunk1617
+    id: 4465192434818361801
+    components:
+      []
+  - tag: Chunk1517
+    id: 10077235656356324084
+    components:
+      []
+  - tag: Chunk1417
+    id: 9596390795151070690
+    components:
+      []
+  - tag: Chunk1317
+    id: 18171300081709608891
+    components:
+      []
+  - tag: Chunk1217
+    id: 10255538203963530543
+    components:
+      []
+  - tag: Chunk1117
+    id: 14095567478812493862
+    components:
+      []
+  - tag: Chunk1017
+    id: 8096433086233622718
+    components:
+      []
+  - tag: Chunk917
+    id: 89847373805233538
+    components:
+      []
+  - tag: Chunk817
+    id: 11824638903686498054
+    components:
+      []
+  - tag: Chunk717
+    id: 4389475389412098890
+    components:
+      []
+  - tag: Chunk617
+    id: 7796843127858921112
+    components:
+      []
+  - tag: Chunk517
+    id: 16199049770549896075
+    components:
+      []
+  - tag: Chunk417
+    id: 12762160685471712961
+    components:
+      []
+  - tag: Chunk317
+    id: 9723235353310571802
+    components:
+      []
+  - tag: Chunk217
+    id: 14421872760866157035
+    components:
+      []
+  - tag: Chunk117
+    id: 7743895897886245792
+    components:
+      []
+  - tag: Chunk017
+    id: 2458716276500445296
+    components:
+      []
+  - tag: Chunk1916
+    id: 14959533722839933415
+    components:
+      []
+  - tag: Chunk1816
+    id: 10125050009115673714
+    components:
+      []
+  - tag: Chunk1716
+    id: 11806882686460208690
+    components:
+      []
+  - tag: Chunk1616
+    id: 5718627496497303240
+    components:
+      []
+  - tag: Chunk1516
+    id: 11771732969820484179
+    components:
+      []
+  - tag: Chunk1416
+    id: 15156281603271792745
+    components:
+      []
+  - tag: Chunk1316
+    id: 1854070441162704005
+    components:
+      []
+  - tag: Chunk1216
+    id: 14996398629304228375
+    components:
+      []
+  - tag: Chunk1116
+    id: 6330260176567333996
+    components:
+      []
+  - tag: Chunk1016
+    id: 12995809562112941508
+    components:
+      []
+  - tag: Chunk916
+    id: 12864167379387844316
+    components:
+      []
+  - tag: Chunk816
+    id: 17674179167508691014
+    components:
+      []
+  - tag: Chunk716
+    id: 8010138767537245927
+    components:
+      []
+  - tag: Chunk616
+    id: 14397602412386173343
+    components:
+      []
+  - tag: Chunk516
+    id: 16450112827486907986
+    components:
+      []
+  - tag: Chunk416
+    id: 13641872050108445617
+    components:
+      []
+  - tag: Chunk316
+    id: 2101270772041508720
+    components:
+      []
+  - tag: Chunk216
+    id: 12710653648420502852
+    components:
+      []
+  - tag: Chunk116
+    id: 16395554331997978936
+    components:
+      []
+  - tag: Chunk016
+    id: 12514314178494968464
+    components:
+      []
+  - tag: Chunk1915
+    id: 8408729618003137967
+    components:
+      []
+  - tag: Chunk1815
+    id: 12892736613545443535
+    components:
+      []
+  - tag: Chunk1715
+    id: 2026924051967467575
+    components:
+      []
+  - tag: Chunk1615
+    id: 4232488409798565154
+    components:
+      []
+  - tag: Chunk1515
+    id: 3271448939142465341
+    components:
+      []
+  - tag: Chunk1415
+    id: 4006174416914671436
+    components:
+      []
+  - tag: Chunk1315
+    id: 7987594301879472922
+    components:
+      []
+  - tag: Chunk1215
+    id: 2331010640631437670
+    components:
+      []
+  - tag: Chunk1115
+    id: 4690275611092264210
+    components:
+      []
+  - tag: Chunk1015
+    id: 7217691626915696846
+    components:
+      []
+  - tag: Chunk915
+    id: 2581393467178010704
+    components:
+      []
+  - tag: Chunk815
+    id: 2837622631391305275
+    components:
+      []
+  - tag: Chunk715
+    id: 7834313255888125043
+    components:
+      []
+  - tag: Chunk615
+    id: 12197634745118230066
+    components:
+      []
+  - tag: Chunk515
+    id: 16479240133933419633
+    components:
+      []
+  - tag: Chunk415
+    id: 7148357724827258864
+    components:
+      []
+  - tag: Chunk315
+    id: 10205070446654142880
+    components:
+      []
+  - tag: Chunk215
+    id: 15541456385007530302
+    components:
+      []
+  - tag: Chunk115
+    id: 12721930209373832379
+    components:
+      []
+  - tag: Chunk015
+    id: 11506821623484521673
+    components:
+      []
+  - tag: Chunk1914
+    id: 10190213031057128517
+    components:
+      []
+  - tag: Chunk1814
+    id: 621551552841067778
+    components:
+      []
+  - tag: Chunk1714
+    id: 11644052145304031949
+    components:
+      []
+  - tag: Chunk1614
+    id: 13139325301476990064
+    components:
+      []
+  - tag: Chunk1514
+    id: 9683305626342744032
+    components:
+      []
+  - tag: Chunk1414
+    id: 1954351281686937344
+    components:
+      []
+  - tag: Chunk1314
+    id: 9939998925951091897
+    components:
+      []
+  - tag: Chunk1214
+    id: 7222052992705608097
+    components:
+      []
+  - tag: Chunk1114
+    id: 11227729536862797579
+    components:
+      []
+  - tag: Chunk1014
+    id: 16645649989465298463
+    components:
+      []
+  - tag: Chunk914
+    id: 13850329024103816726
+    components:
+      []
+  - tag: Chunk814
+    id: 17905767104183566331
+    components:
+      []
+  - tag: Chunk714
+    id: 213295974189262948
+    components:
+      []
+  - tag: Chunk614
+    id: 7894701493007171767
+    components:
+      []
+  - tag: Chunk514
+    id: 3367276933236888611
+    components:
+      []
+  - tag: Chunk414
+    id: 7901826104308933059
+    components:
+      []
+  - tag: Chunk314
+    id: 10620582759643801791
+    components:
+      []
+  - tag: Chunk214
+    id: 5545949719631248802
+    components:
+      []
+  - tag: Chunk114
+    id: 10264752526231259630
+    components:
+      []
+  - tag: Chunk014
+    id: 5438391349842881570
+    components:
+      []
+  - tag: Chunk1913
+    id: 11263148415031959776
+    components:
+      []
+  - tag: Chunk1813
+    id: 451468166066471064
+    components:
+      []
+  - tag: Chunk1713
+    id: 2597344259355815546
+    components:
+      []
+  - tag: Chunk1613
+    id: 4176157989521162710
+    components:
+      []
+  - tag: Chunk1513
+    id: 12248423781363314293
+    components:
+      []
+  - tag: Chunk1413
+    id: 9898295695055670549
+    components:
+      []
+  - tag: Chunk1313
+    id: 5356228287310761586
+    components:
+      []
+  - tag: Chunk1213
+    id: 14392192055269861206
+    components:
+      []
+  - tag: Chunk1113
+    id: 15180646220272921754
+    components:
+      []
+  - tag: Chunk1013
+    id: 1284439588621573400
+    components:
+      []
+  - tag: Chunk913
+    id: 16074465436574029963
+    components:
+      []
+  - tag: Chunk813
+    id: 16413415479785429727
+    components:
+      []
+  - tag: Chunk713
+    id: 14650792600061542758
+    components:
+      []
+  - tag: Chunk613
+    id: 10586299551552151400
+    components:
+      []
+  - tag: Chunk513
+    id: 7958047872006981600
+    components:
+      []
+  - tag: Chunk413
+    id: 226386542913818947
+    components:
+      []
+  - tag: Chunk313
+    id: 15570745338404623408
+    components:
+      []
+  - tag: Chunk213
+    id: 11028856424806209990
+    components:
+      []
+  - tag: Chunk113
+    id: 4507065484946360626
+    components:
+      []
+  - tag: Chunk013
+    id: 4613896307573796052
+    components:
+      []
+  - tag: Chunk1912
+    id: 13352960854130933440
+    components:
+      []
+  - tag: Chunk1812
+    id: 13727015761594521642
+    components:
+      []
+  - tag: Chunk1712
+    id: 3084338852493065556
+    components:
+      []
+  - tag: Chunk1612
+    id: 12848301180763484986
+    components:
+      []
+  - tag: Chunk1512
+    id: 15020383791675974811
+    components:
+      []
+  - tag: Chunk1412
+    id: 12655995110477454682
+    components:
+      []
+  - tag: Chunk1312
+    id: 5485272758899216512
+    components:
+      []
+  - tag: Chunk1212
+    id: 3415093930236369710
+    components:
+      []
+  - tag: Chunk1112
+    id: 15326439336546220833
+    components:
+      []
+  - tag: Chunk1012
+    id: 2475766754556804893
+    components:
+      []
+  - tag: Chunk912
+    id: 9880400427048198013
+    components:
+      []
+  - tag: Chunk812
+    id: 9477258581936192167
+    components:
+      []
+  - tag: Chunk712
+    id: 13969011577628107178
+    components:
+      []
+  - tag: Chunk612
+    id: 5663293869927756162
+    components:
+      []
+  - tag: Chunk512
+    id: 4565366649706674087
+    components:
+      []
+  - tag: Chunk412
+    id: 15859747562142224439
+    components:
+      []
+  - tag: Chunk312
+    id: 6609771527887821797
+    components:
+      []
+  - tag: Chunk212
+    id: 3934722402214277944
+    components:
+      []
+  - tag: Chunk112
+    id: 5479888896869181141
+    components:
+      []
+  - tag: Chunk012
+    id: 4303618232823160894
+    components:
+      []
+  - tag: Chunk1911
+    id: 16941710555439697447
+    components:
+      []
+  - tag: Chunk1811
+    id: 17492361054924050935
+    components:
+      []
+  - tag: Chunk1711
+    id: 9555449275813757738
+    components:
+      []
+  - tag: Chunk1611
+    id: 14988323254827744682
+    components:
+      []
+  - tag: Chunk1511
+    id: 1510336693829088717
+    components:
+      []
+  - tag: Chunk1411
+    id: 6824677088227583192
+    components:
+      []
+  - tag: Chunk1311
+    id: 16317215494589450378
+    components:
+      []
+  - tag: Chunk1211
+    id: 4083186922131989037
+    components:
+      []
+  - tag: Chunk1111
+    id: 11218720299148904283
+    components:
+      []
+  - tag: Chunk1011
+    id: 15524643853308159923
+    components:
+      []
+  - tag: Chunk911
+    id: 14946526843388863595
+    components:
+      []
+  - tag: Chunk811
+    id: 10674474815803223193
+    components:
+      []
+  - tag: Chunk711
+    id: 1696055844952993666
+    components:
+      []
+  - tag: Chunk611
+    id: 11590507309175445780
+    components:
+      []
+  - tag: Chunk511
+    id: 2019368918673137521
+    components:
+      []
+  - tag: Chunk411
+    id: 3300346370828055291
+    components:
+      []
+  - tag: Chunk311
+    id: 13726755151735208500
+    components:
+      []
+  - tag: Chunk211
+    id: 5188488587964967600
+    components:
+      []
+  - tag: Chunk111
+    id: 3664085492950560508
+    components:
+      []
+  - tag: Chunk011
+    id: 10589562176549209194
+    components:
+      []
+  - tag: Chunk1910
+    id: 15758194183118148253
+    components:
+      []
+  - tag: Chunk1810
+    id: 5104108924276908331
+    components:
+      []
+  - tag: Chunk1710
+    id: 8166086477670433942
+    components:
+      []
+  - tag: Chunk1610
+    id: 7332470607000922058
+    components:
+      []
+  - tag: Chunk1510
+    id: 733979057619469851
+    components:
+      []
+  - tag: Chunk1410
+    id: 15694759499364411805
+    components:
+      []
+  - tag: Chunk1310
+    id: 487941250771353641
+    components:
+      []
+  - tag: Chunk1210
+    id: 3813269253809168750
+    components:
+      []
+  - tag: Chunk1110
+    id: 13317254499767980415
+    components:
+      []
+  - tag: Chunk1010
+    id: 2056882318945077286
+    components:
+      []
+  - tag: Chunk910
+    id: 1527134129593264409
+    components:
+      []
+  - tag: Chunk810
+    id: 3573456340034023319
+    components:
+      []
+  - tag: Chunk710
+    id: 3098116715755985622
+    components:
+      []
+  - tag: Chunk610
+    id: 281151822536348193
+    components:
+      []
+  - tag: Chunk510
+    id: 9606705573403076793
+    components:
+      []
+  - tag: Chunk410
+    id: 8787960323275000610
+    components:
+      []
+  - tag: Chunk310
+    id: 8933596333413415338
+    components:
+      []
+  - tag: Chunk210
+    id: 7295883292808214773
+    components:
+      []
+  - tag: Chunk110
+    id: 1135616651589617655
+    components:
+      []
+  - tag: Chunk010
+    id: 10048365844501695467
+    components:
+      []
+  - tag: Chunk199
+    id: 12875159530147016498
+    components:
+      []
+  - tag: Chunk189
+    id: 17574028747842911216
+    components:
+      []
+  - tag: Chunk179
+    id: 10141690144828070598
+    components:
+      []
+  - tag: Chunk169
+    id: 10346442276220302584
+    components:
+      []
+  - tag: Chunk159
+    id: 15214680561256358250
+    components:
+      []
+  - tag: Chunk149
+    id: 15101535424054792995
+    components:
+      []
+  - tag: Chunk139
+    id: 12139273916840384742
+    components:
+      []
+  - tag: Chunk129
+    id: 5387377094365611150
+    components:
+      []
+  - tag: Chunk119
+    id: 3683054022582971468
+    components:
+      []
+  - tag: Chunk109
+    id: 17166609252455750061
+    components:
+      []
+  - tag: Chunk99
+    id: 16254508011852062482
+    components:
+      []
+  - tag: Chunk89
+    id: 13153740925298706977
+    components:
+      []
+  - tag: Chunk79
+    id: 2921376473841841892
+    components:
+      []
+  - tag: Chunk69
+    id: 7160928288345327574
+    components:
+      []
+  - tag: Chunk59
+    id: 1565684411753181318
+    components:
+      []
+  - tag: Chunk49
+    id: 17144940690520017563
+    components:
+      []
+  - tag: Chunk39
+    id: 6858012348802410423
+    components:
+      []
+  - tag: Chunk29
+    id: 9467764318565343609
+    components:
+      []
+  - tag: Chunk19
+    id: 17633571383154796858
+    components:
+      []
+  - tag: Chunk09
+    id: 11957860737261387249
+    components:
+      []
+  - tag: Chunk198
+    id: 8842171798604331581
+    components:
+      []
+  - tag: Chunk188
+    id: 11994514181049644075
+    components:
+      []
+  - tag: Chunk178
+    id: 52035483007043444
+    components:
+      []
+  - tag: Chunk168
+    id: 551107751754529424
+    components:
+      []
+  - tag: Chunk158
+    id: 12995436584503669010
+    components:
+      []
+  - tag: Chunk148
+    id: 8165429409188208990
+    components:
+      []
+  - tag: Chunk138
+    id: 4979799762217005648
+    components:
+      []
+  - tag: Chunk128
+    id: 17397535312165979917
+    components:
+      []
+  - tag: Chunk118
+    id: 7618087565937061981
+    components:
+      []
+  - tag: Chunk108
+    id: 6932310470743765920
+    components:
+      []
+  - tag: Chunk98
+    id: 6377204572566371081
+    components:
+      []
+  - tag: Chunk88
+    id: 3299393994297584951
+    components:
+      []
+  - tag: Chunk78
+    id: 2320908513025898635
+    components:
+      []
+  - tag: Chunk68
+    id: 14824451815395337669
+    components:
+      []
+  - tag: Chunk58
+    id: 15688713166376090049
+    components:
+      []
+  - tag: Chunk48
+    id: 15614253342872419324
+    components:
+      []
+  - tag: Chunk38
+    id: 2009774358985674527
+    components:
+      []
+  - tag: Chunk28
+    id: 7671516182737286592
+    components:
+      []
+  - tag: Chunk18
+    id: 5921211792128213167
+    components:
+      []
+  - tag: Chunk08
+    id: 7022596464134463690
+    components:
+      []
+  - tag: Chunk197
+    id: 8263806790010726922
+    components:
+      []
+  - tag: Chunk187
+    id: 11525629784866027370
+    components:
+      []
+  - tag: Chunk177
+    id: 14631986616967107522
+    components:
+      []
+  - tag: Chunk167
+    id: 2671414888843609594
+    components:
+      []
+  - tag: Chunk157
+    id: 4513162125070540961
+    components:
+      []
+  - tag: Chunk147
+    id: 4539193585165745810
+    components:
+      []
+  - tag: Chunk137
+    id: 4848184799472315286
+    components:
+      []
+  - tag: Chunk127
+    id: 10721995235151333608
+    components:
+      []
+  - tag: Chunk117
+    id: 4992354220036115649
+    components:
+      []
+  - tag: Chunk107
+    id: 15825337819145167921
+    components:
+      []
+  - tag: Chunk97
+    id: 17461785230733090575
+    components:
+      []
+  - tag: Chunk87
+    id: 6242264412203551164
+    components:
+      []
+  - tag: Chunk77
+    id: 14379299003859319982
+    components:
+      []
+  - tag: Chunk67
+    id: 6497263708313600244
+    components:
+      []
+  - tag: Chunk57
+    id: 16520891867599605761
+    components:
+      []
+  - tag: Chunk47
+    id: 17783130674673338452
+    components:
+      []
+  - tag: Chunk37
+    id: 14881526325935837150
+    components:
+      []
+  - tag: Chunk27
+    id: 3231748751470867154
+    components:
+      []
+  - tag: Chunk17
+    id: 9330698705175811490
+    components:
+      []
+  - tag: Chunk07
+    id: 939234507106502165
+    components:
+      []
+  - tag: Chunk196
+    id: 5816345952430347972
+    components:
+      []
+  - tag: Chunk186
+    id: 7412629366859695654
+    components:
+      []
+  - tag: Chunk176
+    id: 3384649953506370554
+    components:
+      []
+  - tag: Chunk166
+    id: 3416873117825363686
+    components:
+      []
+  - tag: Chunk156
+    id: 4047685698204091636
+    components:
+      []
+  - tag: Chunk146
+    id: 2184990790681222789
+    components:
+      []
+  - tag: Chunk136
+    id: 3370532741298096917
+    components:
+      []
+  - tag: Chunk126
+    id: 3039356128127652763
+    components:
+      []
+  - tag: Chunk116
+    id: 15175829487575308910
+    components:
+      []
+  - tag: Chunk106
+    id: 9086473500909956996
+    components:
+      []
+  - tag: Chunk96
+    id: 16258315620334529480
+    components:
+      []
+  - tag: Chunk86
+    id: 5135983427151967926
+    components:
+      []
+  - tag: Chunk76
+    id: 680214438052383186
+    components:
+      []
+  - tag: Chunk66
+    id: 5288082751620305478
+    components:
+      []
+  - tag: Chunk56
+    id: 14769029558077353099
+    components:
+      []
+  - tag: Chunk46
+    id: 10211678234262065564
+    components:
+      []
+  - tag: Chunk36
+    id: 7307922408281287369
+    components:
+      []
+  - tag: Chunk26
+    id: 4431764722626645295
+    components:
+      []
+  - tag: Chunk16
+    id: 15538739301562087786
+    components:
+      []
+  - tag: Chunk06
+    id: 9360262458152128050
+    components:
+      []
+  - tag: Chunk195
+    id: 4004567360737112848
+    components:
+      []
+  - tag: Chunk185
+    id: 3932005750825147688
+    components:
+      []
+  - tag: Chunk175
+    id: 2457609494688023517
+    components:
+      []
+  - tag: Chunk165
+    id: 14155373531922319759
+    components:
+      []
+  - tag: Chunk155
+    id: 18243745435803129483
+    components:
+      []
+  - tag: Chunk145
+    id: 17606665443514397947
+    components:
+      []
+  - tag: Chunk135
+    id: 14978004386873280250
+    components:
+      []
+  - tag: Chunk125
+    id: 12325570731517158686
+    components:
+      []
+  - tag: Chunk115
+    id: 12478093541758512996
+    components:
+      []
+  - tag: Chunk105
+    id: 11845121779292348558
+    components:
+      []
+  - tag: Chunk95
+    id: 17428753602832706046
+    components:
+      []
+  - tag: Chunk85
+    id: 15395521512315410321
+    components:
+      []
+  - tag: Chunk75
+    id: 7264547089709696947
+    components:
+      []
+  - tag: Chunk65
+    id: 15160364486547477589
+    components:
+      []
+  - tag: Chunk55
+    id: 8703197118933592495
+    components:
+      []
+  - tag: Chunk45
+    id: 11705348501626867498
+    components:
+      []
+  - tag: Chunk35
+    id: 14570881648298485890
+    components:
+      []
+  - tag: Chunk25
+    id: 14475920927227901976
+    components:
+      []
+  - tag: Chunk15
+    id: 1116601807395141679
+    components:
+      []
+  - tag: Chunk05
+    id: 9085801439105643460
+    components:
+      []
+  - tag: Chunk194
+    id: 992837321241997469
+    components:
+      []
+  - tag: Chunk184
+    id: 8495704148885399874
+    components:
+      []
+  - tag: Chunk174
+    id: 4098575626236089169
+    components:
+      []
+  - tag: Chunk164
+    id: 1900515718249320016
+    components:
+      []
+  - tag: Chunk154
+    id: 3331135669651394620
+    components:
+      []
+  - tag: Chunk144
+    id: 11416040500741638359
+    components:
+      []
+  - tag: Chunk134
+    id: 6356660372806663123
+    components:
+      []
+  - tag: Chunk124
+    id: 10579496482822462622
+    components:
+      []
+  - tag: Chunk114
+    id: 4551448736927425400
+    components:
+      []
+  - tag: Chunk104
+    id: 9090038074180979899
+    components:
+      []
+  - tag: Chunk94
+    id: 15433181328986200340
+    components:
+      []
+  - tag: Chunk84
+    id: 15773684663972839788
+    components:
+      []
+  - tag: Chunk74
+    id: 10942565081720725365
+    components:
+      []
+  - tag: Chunk64
+    id: 4303901530457852568
+    components:
+      []
+  - tag: Chunk54
+    id: 7201855075731375975
+    components:
+      []
+  - tag: Chunk44
+    id: 16577205786361773668
+    components:
+      []
+  - tag: Chunk34
+    id: 16438921670014517261
+    components:
+      []
+  - tag: Chunk24
+    id: 11342775038235296343
+    components:
+      []
+  - tag: Chunk14
+    id: 3444670774056648176
+    components:
+      []
+  - tag: Chunk04
+    id: 5064597006439833075
+    components:
+      []
+  - tag: Chunk193
+    id: 5380679492527102860
+    components:
+      []
+  - tag: Chunk183
+    id: 6240817513081026900
+    components:
+      []
+  - tag: Chunk173
+    id: 2114404299478740034
+    components:
+      []
+  - tag: Chunk163
+    id: 6599661507579850952
+    components:
+      []
+  - tag: Chunk153
+    id: 14734417485027265715
+    components:
+      []
+  - tag: Chunk143
+    id: 16413590843386889297
+    components:
+      []
+  - tag: Chunk133
+    id: 4190160098609656359
+    components:
+      []
+  - tag: Chunk123
+    id: 7072138993829409389
+    components:
+      []
+  - tag: Chunk113
+    id: 3318568891835274317
+    components:
+      []
+  - tag: Chunk103
+    id: 13974588053318691624
+    components:
+      []
+  - tag: Chunk93
+    id: 6308955038272592670
+    components:
+      []
+  - tag: Chunk83
+    id: 15270259089298345651
+    components:
+      []
+  - tag: Chunk73
+    id: 6724123700478931058
+    components:
+      []
+  - tag: Chunk63
+    id: 9203109649847314715
+    components:
+      []
+  - tag: Chunk53
+    id: 7329176452516653009
+    components:
+      []
+  - tag: Chunk43
+    id: 2116886218880824188
+    components:
+      []
+  - tag: Chunk33
+    id: 14916477605876695504
+    components:
+      []
+  - tag: Chunk23
+    id: 17560029484864045648
+    components:
+      []
+  - tag: Chunk13
+    id: 1081850099962481097
+    components:
+      []
+  - tag: Chunk03
+    id: 6265365524501428497
+    components:
+      []
+  - tag: Chunk192
+    id: 16487486177141059315
+    components:
+      []
+  - tag: Chunk182
+    id: 14652126305031917807
+    components:
+      []
+  - tag: Chunk172
+    id: 4413609423151955655
+    components:
+      []
+  - tag: Chunk162
+    id: 13259631724729315305
+    components:
+      []
+  - tag: Chunk152
+    id: 9575860766890674390
+    components:
+      []
+  - tag: Chunk142
+    id: 11571234154508946814
+    components:
+      []
+  - tag: Chunk132
+    id: 1766470950278800833
+    components:
+      []
+  - tag: Chunk122
+    id: 15904834645115327107
+    components:
+      []
+  - tag: Chunk112
+    id: 11355165124108197922
+    components:
+      []
+  - tag: Chunk102
+    id: 1905029839338339053
+    components:
+      []
+  - tag: Chunk92
+    id: 10508252964919877974
+    components:
+      []
+  - tag: Chunk82
+    id: 5553094649847702047
+    components:
+      []
+  - tag: Chunk72
+    id: 6403585435941527448
+    components:
+      []
+  - tag: Chunk62
+    id: 12771047667324795991
+    components:
+      []
+  - tag: Chunk52
+    id: 14192835990647620310
+    components:
+      []
+  - tag: Chunk42
+    id: 11584879328769710597
+    components:
+      []
+  - tag: Chunk32
+    id: 11672846034445380791
+    components:
+      []
+  - tag: Chunk22
+    id: 10303698055325388874
+    components:
+      []
+  - tag: Chunk12
+    id: 16280824979739294531
+    components:
+      []
+  - tag: Chunk02
+    id: 6321477325542598380
+    components:
+      []
+  - tag: Chunk191
+    id: 7517648010204260562
+    components:
+      []
+  - tag: Chunk181
+    id: 16356119814293687652
+    components:
+      []
+  - tag: Chunk171
+    id: 3287442244242902500
+    components:
+      []
+  - tag: Chunk161
+    id: 4676340838343407026
+    components:
+      []
+  - tag: Chunk151
+    id: 12389447997650948545
+    components:
+      []
+  - tag: Chunk141
+    id: 14910565058410918004
+    components:
+      []
+  - tag: Chunk131
+    id: 13709621918650547754
+    components:
+      []
+  - tag: Chunk121
+    id: 712874485884268976
+    components:
+      []
+  - tag: Chunk111
+    id: 10716984404460470246
+    components:
+      []
+  - tag: Chunk101
+    id: 6088738911385798560
+    components:
+      []
+  - tag: Chunk91
+    id: 3972333556615312689
+    components:
+      []
+  - tag: Chunk81
+    id: 18323720712602835865
+    components:
+      []
+  - tag: Chunk71
+    id: 7357067564536653873
+    components:
+      []
+  - tag: Chunk61
+    id: 4334816470319694490
+    components:
+      []
+  - tag: Chunk51
+    id: 1858149598264208149
+    components:
+      []
+  - tag: Chunk41
+    id: 9557131186062983585
+    components:
+      []
+  - tag: Chunk31
+    id: 12065204117711016589
+    components:
+      []
+  - tag: Chunk21
+    id: 16427221497120585071
+    components:
+      []
+  - tag: Chunk11
+    id: 13933507107557064319
+    components:
+      []
+  - tag: Chunk01
+    id: 18177506260934987281
+    components:
+      []
+  - tag: Chunk190
+    id: 7223637286128830423
+    components:
+      []
+  - tag: Chunk180
+    id: 5853691164812485554
+    components:
+      []
+  - tag: Chunk170
+    id: 766355661238037697
+    components:
+      []
+  - tag: Chunk160
+    id: 15197255003108644148
+    components:
+      []
+  - tag: Chunk150
+    id: 9139202039003351206
+    components:
+      []
+  - tag: Chunk140
+    id: 10773866325644729726
+    components:
+      []
+  - tag: Chunk130
+    id: 97972575193008932
+    components:
+      []
+  - tag: Chunk120
+    id: 8780943186665778437
+    components:
+      []
+  - tag: Chunk110
+    id: 6688772244535305670
+    components:
+      []
+  - tag: Chunk100
+    id: 12204609738181241336
+    components:
+      []
+  - tag: Chunk90
+    id: 13428754812729901420
+    components:
+      []
+  - tag: Chunk80
+    id: 6284302605290310064
+    components:
+      []
+  - tag: Chunk70
+    id: 9107284086872713527
+    components:
+      []
+  - tag: Chunk60
+    id: 17125886751455834234
+    components:
+      []
+  - tag: Chunk50
+    id: 8615689881082378181
+    components:
+      []
+  - tag: Chunk40
+    id: 16313178666094642018
+    components:
+      []
+  - tag: Chunk30
+    id: 5767474941921643047
+    components:
+      []
+  - tag: Chunk20
+    id: 16977992512741867854
+    components:
+      []
+  - tag: Chunk10
+    id: 16403669004521195387
+    components:
+      []
+  - tag: Chunk00
+    id: 13663581835639360908
+    components:
+      []
+  - tag: Terrain
+    id: 7187292063487281584
+    components:
+      []
   - tag: CAMERA
-    id: 8650742866823969728
+    id: 12487054646405485885
     components:
-      - type: transform
-        position: {x: 0, y: 0, z: 0}
-        rotation: {x: 0, y: 0, z: 0, w: 1}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 14257639428761167948
-  - tag: ROOT
-    id: 14257639428761167948
-    components:
-      - type: transform
-        position: {x: 0, y: 0, z: 0}
-        rotation: {x: 0, y: 0, z: 0, w: 1}
-        scale: {x: 1, y: 1, z: 1}
-      - type: hierarchy
-        parent: 0
+      []

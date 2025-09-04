@@ -44,6 +44,19 @@ public:
     }
   }
 
+  template<typename Type, std::invocable<YAML::Node&, const Type&> Save, std::invocable<YAML::Node&> Load>
+  auto register_component_io(const std::string& name, Save&& save, Load&& load) -> void {
+    _component_io_registry.register_component<Type>(name, std::forward<Save>(save), std::forward<Load>(load));
+  }
+
+  auto component_io(const std::uint32_t id) -> component_io& {
+    return _component_io_registry.get(id);
+  }
+
+  auto has_component_io(const std::uint32_t id) -> bool {
+    return _component_io_registry.has(id);
+  }
+
   auto debug_lines() const -> const std::vector<line>& {
     return _debug_lines;
   }
@@ -248,6 +261,8 @@ public:
 private:
 
   std::optional<scenes::scene> _scene;
+
+  component_io_registry _component_io_registry;
 
   std::vector<line> _debug_lines{};
 

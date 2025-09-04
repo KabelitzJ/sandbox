@@ -23,6 +23,8 @@
 
 #include <libsbx/graphics/graphics_module.hpp>
 
+#include <libsbx/assets/assets_module.hpp>
+
 #include <libsbx/scenes/scenes_module.hpp>
 
 #include <libsbx/scenes/components/id.hpp>
@@ -236,13 +238,17 @@ auto scene::world_scale(const node_type node) -> math::vector3 {
 
 
 auto scene::save(const std::filesystem::path& path)-> void {
+  auto& assets_module = core::engine::get_module<assets::assets_module>();
+
+  const auto resolved_path = assets_module.resolve_path(path);
+
   _registry.invoke("save", [this](const auto node) {
     return (node != _root);
   });
 
   auto emitter = YAML::Emitter{};
 
-  utility::logger<"scenes">::debug("Serializing scene '{}' to {}", _name, path.string());
+  utility::logger<"scenes">::debug("Serializing scene '{}' to {}", _name, resolved_path.string());
 
   emitter << YAML::BeginMap;
 
@@ -267,9 +273,12 @@ auto scene::save(const std::filesystem::path& path)-> void {
 
   emitter << YAML::EndMap;
 
-  auto stream = std::ofstream{path};
+  auto stream = std::ofstream{resolved_path};
 
   stream << emitter.c_str();
+
+  stream.flush();
+  stream.close();
 }
 
 auto scene::_load_assets(const YAML::Node& assets) -> void {
@@ -364,28 +373,44 @@ auto scene::_save_node(YAML::Emitter& emitter, const node_type node) -> void {
 }
 
 auto scene::_save_components(YAML::Emitter& emitter, const node_type node) -> void {
-  // Trasform
-  const auto& transform = get_component<scenes::transform>(node);
+  auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
+
+  for (auto&& [type, container] : _registry.storage()) {
+    if (!scenes_module.has_component_io(type)) {
+      continue;
+    }
+
+    auto& component_io = scenes_module.component_io(type);
+
+    emitter << YAML::Key << "type" << YAML::Value << component_io.name;
+
+    auto yaml = YAML::Node{};
+    component_io.save(yaml, *this, node);
+    emitter << yaml;
+  }
+
+  // // Trasform
+  // const auto& transform = get_component<scenes::transform>(node);
   
-  emitter << YAML::BeginMap;
+  // emitter << YAML::BeginMap;
 
-  emitter << YAML::Key << "type" << YAML::Value << "transform";
-  emitter << YAML::Key << "position" << YAML::Value << transform.position();
-  emitter << YAML::Key << "rotation" << YAML::Value << transform.rotation();
-  emitter << YAML::Key << "scale" << YAML::Value << transform.scale();
+  // emitter << YAML::Key << "type" << YAML::Value << "transform";
+  // emitter << YAML::Key << "position" << YAML::Value << transform.position();
+  // emitter << YAML::Key << "rotation" << YAML::Value << transform.rotation();
+  // emitter << YAML::Key << "scale" << YAML::Value << transform.scale();
 
-  emitter << YAML::EndMap;
+  // emitter << YAML::EndMap;
 
-  // Hierarchy
-  const auto& relationship = get_component<scenes::relationship>(node);
+  // // Hierarchy
+  // const auto& relationship = get_component<scenes::relationship>(node);
 
-  emitter << YAML::BeginMap;
+  // emitter << YAML::BeginMap;
 
-  // We maybe dont need to store children as we can resolve dependencies by the parent alone
-  emitter << YAML::Key << "type" << YAML::Value << "hierarchy";
-  emitter << YAML::Key << "parent" << YAML::Value << ((node != _root && relationship.parent() != node_type::null) ? get_component<scenes::id>(relationship.parent()).value() : math::uuid::null().value());
+  // // We maybe dont need to store children as we can resolve dependencies by the parent alone
+  // emitter << YAML::Key << "type" << YAML::Value << "hierarchy";
+  // emitter << YAML::Key << "parent" << YAML::Value << ((node != _root && relationship.parent() != node_type::null) ? get_component<scenes::id>(relationship.parent()).value() : math::uuid::null().value());
 
-  emitter << YAML::EndMap;
+  // emitter << YAML::EndMap;
 
   // Other
 }

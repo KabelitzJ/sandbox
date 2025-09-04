@@ -630,7 +630,15 @@ private:
 
       auto root = scene.root();
 
-      _build_tree(root);
+      auto& relationship = scene.get_component<scenes::relationship>(root);
+
+      for (const auto& child : relationship.children()) {
+        if (child != scenes::node::null) {
+          _build_tree(child);
+        }
+      }
+
+      // _build_tree(root);
 
       const auto custom_backdrop_color = ImVec4{0.2f, 0.2f, 0.2f, 0.5f};
 
