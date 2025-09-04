@@ -59,6 +59,13 @@ target_link_libraries(
     libsbx::core
 )
 
+target_link_options(
+  ${PROJECT_NAME} 
+  PUBLIC 
+    -static-libstdc++ 
+    -static-libgcc
+)
+
 set_target_properties(
   ${PROJECT_NAME}
   PROPERTIES
@@ -100,8 +107,6 @@ target_compile_options(
     -Wduplicated-branches
     -Wlogical-op
     -Wuseless-cast
-    -static-libstdc++ 
-    -static-libgcc
 )
 
 install(

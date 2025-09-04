@@ -8,6 +8,8 @@
 
 #include <range/v3/all.hpp>
 
+#include <libsbx/utility/target.hpp>
+
 #include <libsbx/core/engine.hpp>
 #include <libsbx/core/exit.hpp>
 
@@ -17,6 +19,14 @@ auto main(int argc, const char** argv) -> int {
   profiler::startListen();
 
   auto args = std::vector<std::string_view>{argv, argv + argc};
+
+  if constexpr (sbx::utility::is_build_configuration_debug_v) {
+    sbx::utility::logger<"core">::debug("Cli args:");
+
+    for (const auto& arg : args) {
+      sbx::utility::logger<"core">::debug("  {}", arg);
+    }
+  }
 
   EASY_BLOCK("main");
 

@@ -56,10 +56,18 @@ target_link_libraries(
     spdlog::spdlog
     range-v3::range-v3
     easy_profiler
+    stdc++_libbacktrace
     # Internal dependencies
     libsbx::utility
     libsbx::units
     libsbx::memory
+)
+
+target_link_options(
+  ${PROJECT_NAME} 
+  PUBLIC 
+    -static-libstdc++ 
+    -static-libgcc
 )
 
 set_target_properties(
@@ -104,8 +112,6 @@ target_compile_options(
     -Wduplicated-branches
     -Wlogical-op
     -Wuseless-cast
-    -static-libstdc++ 
-    -static-libgcc
 )
 
 install(

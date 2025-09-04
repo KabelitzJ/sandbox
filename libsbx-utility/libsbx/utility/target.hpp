@@ -18,6 +18,12 @@ inline constexpr auto build_configuration_v = build_configuration::debug;
 inline constexpr auto build_configuration_v = build_configuration::release;
 #endif
 
+struct is_build_configuration_debug {
+  inline static constexpr auto value = (build_configuration_v == build_configuration::debug);
+}; // struct is_build_configuration_debug
+
+inline constexpr auto is_build_configuration_debug_v = is_build_configuration_debug::value;
+
 /** @brief Possible operating systems */
 enum class operating_system : std::uint8_t {
   windows = 0,
