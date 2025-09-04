@@ -4,6 +4,7 @@
 
 #include <span>
 #include <ranges>
+#include <stacktrace>
 
 #include <range/v3/all.hpp>
 
@@ -26,7 +27,7 @@ auto main(int argc, const char** argv) -> int {
 
     engine->run(std::move(application));
   } catch(const std::exception& exception) {
-    sbx::utility::logger<"core">::error("{}", exception.what());
+    sbx::utility::logger<"core">::error("{}\n{}", exception.what(), std::to_string(std::stacktrace::current()));
     return sbx::core::exit::failure; 
   }
 

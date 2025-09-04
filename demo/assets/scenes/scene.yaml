@@ -11,1780 +11,3524 @@ assets:
     - &bmp_body1_normal
       name: bmp_body1_normal
       path: demo/assets/textures/bmp/body1_normal.png
+  cube_textures:
+    - &skybox
+      name: "skybox"
+      path: "res://skyboxes/stylized2"
 nodes:
   - tag: Sphere44
-    id: 6965550990619310622
+    id: 17565702442265490594
     components:
-      []
+      - type: transform
+        position: {x: 12, y: 17, z: -15}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Sphere34
-    id: 1644697642673439798
+    id: 12090638185853283510
     components:
-      []
+      - type: transform
+        position: {x: 9, y: 17, z: -15}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Sphere24
-    id: 3078910756330178985
+    id: 11271382012953745675
     components:
-      []
+      - type: transform
+        position: {x: 6, y: 17, z: -15}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Sphere14
-    id: 3591943533379785296
+    id: 17528546588944294779
     components:
-      []
+      - type: transform
+        position: {x: 3, y: 17, z: -15}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Sphere04
-    id: 6709701887083199764
+    id: 17935323426306997686
     components:
-      []
+      - type: transform
+        position: {x: 0, y: 17, z: -15}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Sphere43
-    id: 7667917616634497176
+    id: 8060331379136179009
     components:
-      []
+      - type: transform
+        position: {x: 12, y: 14, z: -15}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Sphere33
-    id: 9755228950527402913
+    id: 8831033595171597423
     components:
-      []
+      - type: transform
+        position: {x: 9, y: 14, z: -15}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Sphere23
-    id: 3671443744917652663
+    id: 5835277955520612201
     components:
-      []
+      - type: transform
+        position: {x: 6, y: 14, z: -15}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Sphere13
-    id: 12204758104497791526
+    id: 14203944777028255263
     components:
-      []
+      - type: transform
+        position: {x: 3, y: 14, z: -15}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Sphere03
-    id: 16710164231364168566
+    id: 2298704357545666204
     components:
-      []
+      - type: transform
+        position: {x: 0, y: 14, z: -15}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Sphere42
-    id: 3602824852889590979
+    id: 3234726217232462593
     components:
-      []
+      - type: transform
+        position: {x: 12, y: 11, z: -15}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Sphere32
-    id: 16412601412166343143
+    id: 12158122085126684019
     components:
-      []
+      - type: transform
+        position: {x: 9, y: 11, z: -15}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Sphere22
-    id: 129639002552601579
+    id: 12051013102826313251
     components:
-      []
+      - type: transform
+        position: {x: 6, y: 11, z: -15}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Sphere12
-    id: 3229871002571399156
+    id: 18357761653583110647
     components:
-      []
+      - type: transform
+        position: {x: 3, y: 11, z: -15}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Sphere02
-    id: 15054855519476200119
+    id: 17102155659206512623
     components:
-      []
+      - type: transform
+        position: {x: 0, y: 11, z: -15}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Sphere41
-    id: 7943315779970597469
+    id: 2408295324670689002
     components:
-      []
+      - type: transform
+        position: {x: 12, y: 8, z: -15}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Sphere31
-    id: 15192425517663678516
+    id: 2339180689617713156
     components:
-      []
+      - type: transform
+        position: {x: 9, y: 8, z: -15}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Sphere21
-    id: 15380483122443380448
+    id: 5237304323492371558
     components:
-      []
+      - type: transform
+        position: {x: 6, y: 8, z: -15}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Sphere11
-    id: 2293521589253227202
+    id: 17166331250005564260
     components:
-      []
+      - type: transform
+        position: {x: 3, y: 8, z: -15}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Sphere01
-    id: 6458518404275586862
+    id: 13981636655217398372
     components:
-      []
+      - type: transform
+        position: {x: 0, y: 8, z: -15}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Sphere40
-    id: 13752342788776938164
+    id: 8330959642886987116
     components:
-      []
+      - type: transform
+        position: {x: 12, y: 5, z: -15}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Sphere30
-    id: 10432461528406399153
+    id: 14430998054742465953
     components:
-      []
+      - type: transform
+        position: {x: 9, y: 5, z: -15}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Sphere20
-    id: 1389221238494802907
+    id: 2831614512195067323
     components:
-      []
+      - type: transform
+        position: {x: 6, y: 5, z: -15}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Sphere10
-    id: 4283059147628996341
+    id: 5314495474978910714
     components:
-      []
+      - type: transform
+        position: {x: 3, y: 5, z: -15}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Sphere00
-    id: 6933841585283216729
+    id: 17275854256465889265
     components:
-      []
+      - type: transform
+        position: {x: 0, y: 5, z: -15}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Floor
-    id: 10839850674570397526
+    id: 3977619012067935083
     components:
-      []
+      - type: transform
+        position: {x: 0, y: 0, z: 0}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Fox
-    id: 4983518254986351133
+    id: 9388152512180750573
     components:
-      []
+      - type: transform
+        position: {x: 0, y: 0, z: 0}
+        rotation: {x: 0, y: 0.945445776, z: 0, w: -0.325779557}
+        scale: {x: 0.0599999987, y: 0.0599999987, z: 0.0599999987}
   - tag: Box3
-    id: 14989429171347078916
+    id: 1126705940673512306
     components:
-      []
+      - type: transform
+        position: {x: 6, y: 1, z: 8}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Box2
-    id: 3229390160483922967
+    id: 2772963112269252871
     components:
-      []
+      - type: transform
+        position: {x: 6, y: 1, z: 7}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Box1
-    id: 9929023877283693150
+    id: 17817073144795869754
     components:
-      []
+      - type: transform
+        position: {x: 6, y: 1, z: 6}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Helmet
-    id: 12537229076030772846
+    id: 3093364884529871342
     components:
-      []
+      - type: transform
+        position: {x: 0, y: 6, z: 0}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 2, y: 2, z: 2}
   - tag: Dragon
-    id: 16513678854949398837
+    id: 10118306836079681873
     components:
-      []
+      - type: transform
+        position: {x: -8, y: 2, z: 4}
+        rotation: {x: 0, y: 0.382683456, z: 0, w: 0.923879504}
+        scale: {x: 2, y: 2, z: 2}
   - tag: Light7
-    id: 8641642459451842372
+    id: 17914147322247223813
+    parent: 14824807781920043555
     components:
-      []
+      - type: transform
+        position: {x: 14.1421404, y: 0, z: -14.1421309}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 0.200000003, y: 0.200000003, z: 0.200000003}
   - tag: Light6
-    id: 13682030675406678028
+    id: 9880119853835029541
+    parent: 14824807781920043555
     components:
-      []
+      - type: transform
+        position: {x: 2.3849762e-07, y: 0, z: -20}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 0.200000003, y: 0.200000003, z: 0.200000003}
   - tag: Light5
-    id: 14088877119330070452
+    id: 6866072712670734798
+    parent: 14824807781920043555
     components:
-      []
+      - type: transform
+        position: {x: -14.1421328, y: 0, z: -14.1421375}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 0.200000003, y: 0.200000003, z: 0.200000003}
   - tag: Light4
-    id: 11316219524065685167
+    id: 1592806415922083698
+    parent: 14824807781920043555
     components:
-      []
+      - type: transform
+        position: {x: -20, y: 0, z: -1.74845559e-06}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 0.200000003, y: 0.200000003, z: 0.200000003}
   - tag: Light3
-    id: 14177101562441134968
+    id: 4549394811362898436
+    parent: 14824807781920043555
     components:
-      []
+      - type: transform
+        position: {x: -14.1421356, y: 0, z: 14.1421356}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 0.200000003, y: 0.200000003, z: 0.200000003}
   - tag: Light2
-    id: 7943676757434672737
+    id: 4185158464100968777
+    parent: 14824807781920043555
     components:
-      []
+      - type: transform
+        position: {x: -8.74227794e-07, y: 0, z: 20}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 0.200000003, y: 0.200000003, z: 0.200000003}
   - tag: Light1
-    id: 17755985241899902401
+    id: 12529328136736343148
+    parent: 14824807781920043555
     components:
-      []
+      - type: transform
+        position: {x: 14.1421356, y: 0, z: 14.1421356}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 0.200000003, y: 0.200000003, z: 0.200000003}
   - tag: Light0
-    id: 15637019420389086586
+    id: 6242719341739912509
+    parent: 14824807781920043555
     components:
-      []
+      - type: transform
+        position: {x: 20, y: 0, z: 0}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 0.200000003, y: 0.200000003, z: 0.200000003}
   - tag: LightCenter
-    id: 15868737569739022345
+    id: 14824807781920043555
     components:
-      []
+      - type: transform
+        position: {x: 0, y: 10, z: 0}
+        rotation: {x: 0, y: 0.930701613, z: 0, w: -0.36577934}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Soldier
-    id: 12378921116074468175
+    id: 585688914386426168
     components:
-      []
+      - type: transform
+        position: {x: 5, y: 0, z: 3}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 3, y: 3, z: 3}
   - tag: Chunk1919
-    id: 17110995777699177397
+    id: 16740097622250359115
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 225, y: 0, z: 225}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1819
-    id: 11722596622685867960
+    id: 14803153612128599570
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 200, y: 0, z: 225}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1719
-    id: 4323653398051611844
+    id: 17807946974220963207
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 175, y: 0, z: 225}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1619
-    id: 14136950631062199608
+    id: 12997848894140863864
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 150, y: 0, z: 225}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1519
-    id: 8960592984695416277
+    id: 788502842301970501
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 125, y: 0, z: 225}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1419
-    id: 8162357648329368475
+    id: 10156600576182697280
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 100, y: 0, z: 225}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1319
-    id: 9456829117155043693
+    id: 8752437584753381276
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 75, y: 0, z: 225}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1219
-    id: 14660227983324195349
+    id: 17681881883195652946
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 50, y: 0, z: 225}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1119
-    id: 12826887733332542186
+    id: 6584471168111811357
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 25, y: 0, z: 225}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1019
-    id: 17271291848210976730
+    id: 7556386924759720024
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 0, y: 0, z: 225}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk919
-    id: 898671620215459430
+    id: 9991348536192067029
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -25, y: 0, z: 225}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk819
-    id: 1207003247487746693
+    id: 7486068089182440251
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -50, y: 0, z: 225}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk719
-    id: 11820410536914765963
+    id: 7072394836460583882
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -75, y: 0, z: 225}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk619
-    id: 10559159795783315373
+    id: 12382060829026569821
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -100, y: 0, z: 225}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk519
-    id: 1629592873537414700
+    id: 18107748528510240045
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -125, y: 0, z: 225}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk419
-    id: 6968708999152834296
+    id: 9327543850168271316
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -150, y: 0, z: 225}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk319
-    id: 10573473677458649599
+    id: 16529098866749064360
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -175, y: 0, z: 225}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk219
-    id: 13720331434284111361
+    id: 11915917550597627028
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -200, y: 0, z: 225}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk119
-    id: 15446027989295011178
+    id: 2858041920694951425
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -225, y: 0, z: 225}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk019
-    id: 780934171732225088
+    id: 18169526905349211509
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -250, y: 0, z: 225}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1918
-    id: 11824523450358440954
+    id: 12394539693286080224
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 225, y: 0, z: 200}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1818
-    id: 17065466560355922747
+    id: 17754671563799474519
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 200, y: 0, z: 200}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1718
-    id: 17715935015391048386
+    id: 81778843284936977
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 175, y: 0, z: 200}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1618
-    id: 13528640419915069762
+    id: 4175823038268933481
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 150, y: 0, z: 200}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1518
-    id: 9114410635259242527
+    id: 2776478066503360313
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 125, y: 0, z: 200}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1418
-    id: 1881279477426862483
+    id: 8408438910556247672
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 100, y: 0, z: 200}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1318
-    id: 16644589913894640644
+    id: 9983228640034505683
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 75, y: 0, z: 200}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1218
-    id: 2550342812786771075
+    id: 6779061221014778183
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 50, y: 0, z: 200}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1118
-    id: 9471898215318829212
+    id: 10049599817367765430
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 25, y: 0, z: 200}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1018
-    id: 2782337785178590975
+    id: 15205800619460898848
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 0, y: 0, z: 200}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk918
-    id: 12959725849639606002
+    id: 6220226675749340989
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -25, y: 0, z: 200}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk818
-    id: 15249458637011199282
+    id: 11823315194583683472
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -50, y: 0, z: 200}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk718
-    id: 10334577274294366521
+    id: 1003626277518506483
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -75, y: 0, z: 200}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk618
-    id: 11913887244455522292
+    id: 955170722220526386
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -100, y: 0, z: 200}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk518
-    id: 15830060418634645615
+    id: 18322718067426102749
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -125, y: 0, z: 200}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk418
-    id: 17956939616823543724
+    id: 18289932915384500058
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -150, y: 0, z: 200}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk318
-    id: 2509653363272674395
+    id: 5569802299836085413
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -175, y: 0, z: 200}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk218
-    id: 10987275054699298326
+    id: 11883699059566692315
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -200, y: 0, z: 200}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk118
-    id: 7470024420189851239
+    id: 14899067806540693624
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -225, y: 0, z: 200}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk018
-    id: 2311544173475025557
+    id: 16137407103629741143
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -250, y: 0, z: 200}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1917
-    id: 6072605417449139102
+    id: 6313888223139262554
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 225, y: 0, z: 175}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1817
-    id: 6074137358716761935
+    id: 16644346272643969822
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 200, y: 0, z: 175}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1717
-    id: 11345275688047084970
+    id: 6017333663344572826
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 175, y: 0, z: 175}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1617
-    id: 4465192434818361801
+    id: 11636213356441172914
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 150, y: 0, z: 175}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1517
-    id: 10077235656356324084
+    id: 9773063545623707836
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 125, y: 0, z: 175}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1417
-    id: 9596390795151070690
+    id: 137336737479826637
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 100, y: 0, z: 175}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1317
-    id: 18171300081709608891
+    id: 14238145912465466290
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 75, y: 0, z: 175}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1217
-    id: 10255538203963530543
+    id: 12832624872547803255
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 50, y: 0, z: 175}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1117
-    id: 14095567478812493862
+    id: 9414305861795391132
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 25, y: 0, z: 175}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1017
-    id: 8096433086233622718
+    id: 606964193582780848
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 0, y: 0, z: 175}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk917
-    id: 89847373805233538
+    id: 4667623917395349000
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -25, y: 0, z: 175}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk817
-    id: 11824638903686498054
+    id: 5617313695815187189
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -50, y: 0, z: 175}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk717
-    id: 4389475389412098890
+    id: 11861373883932042968
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -75, y: 0, z: 175}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk617
-    id: 7796843127858921112
+    id: 16066416517641730342
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -100, y: 0, z: 175}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk517
-    id: 16199049770549896075
+    id: 11140598638240648123
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -125, y: 0, z: 175}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk417
-    id: 12762160685471712961
+    id: 1994999934704535435
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -150, y: 0, z: 175}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk317
-    id: 9723235353310571802
+    id: 14132531896564939508
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -175, y: 0, z: 175}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk217
-    id: 14421872760866157035
+    id: 3974227431681691350
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -200, y: 0, z: 175}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk117
-    id: 7743895897886245792
+    id: 75477209545324342
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -225, y: 0, z: 175}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk017
-    id: 2458716276500445296
+    id: 6314032091907312941
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -250, y: 0, z: 175}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1916
-    id: 14959533722839933415
+    id: 368167282686793104
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 225, y: 0, z: 150}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1816
-    id: 10125050009115673714
+    id: 16389740467875116503
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 200, y: 0, z: 150}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1716
-    id: 11806882686460208690
+    id: 12340418282293270212
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 175, y: 0, z: 150}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1616
-    id: 5718627496497303240
+    id: 1657202939316062753
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 150, y: 0, z: 150}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1516
-    id: 11771732969820484179
+    id: 53446002447143161
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 125, y: 0, z: 150}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1416
-    id: 15156281603271792745
+    id: 17076393036973762456
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 100, y: 0, z: 150}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1316
-    id: 1854070441162704005
+    id: 3225982059735120353
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 75, y: 0, z: 150}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1216
-    id: 14996398629304228375
+    id: 13942811980951391581
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 50, y: 0, z: 150}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1116
-    id: 6330260176567333996
+    id: 9775029405192038166
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 25, y: 0, z: 150}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1016
-    id: 12995809562112941508
+    id: 13492926519466299439
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 0, y: 0, z: 150}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk916
-    id: 12864167379387844316
+    id: 2911660977691306138
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -25, y: 0, z: 150}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk816
-    id: 17674179167508691014
+    id: 5306863543226033090
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -50, y: 0, z: 150}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk716
-    id: 8010138767537245927
+    id: 2983845372898742167
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -75, y: 0, z: 150}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk616
-    id: 14397602412386173343
+    id: 17082900014817305031
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -100, y: 0, z: 150}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk516
-    id: 16450112827486907986
+    id: 1180567582022704690
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -125, y: 0, z: 150}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk416
-    id: 13641872050108445617
+    id: 706203123051190872
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -150, y: 0, z: 150}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk316
-    id: 2101270772041508720
+    id: 4784505025175995261
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -175, y: 0, z: 150}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk216
-    id: 12710653648420502852
+    id: 14458484101511025506
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -200, y: 0, z: 150}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk116
-    id: 16395554331997978936
+    id: 11117851409537561453
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -225, y: 0, z: 150}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk016
-    id: 12514314178494968464
+    id: 13240532276687720751
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -250, y: 0, z: 150}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1915
-    id: 8408729618003137967
+    id: 8455660751387144426
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 225, y: 0, z: 125}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1815
-    id: 12892736613545443535
+    id: 15168451350263065407
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 200, y: 0, z: 125}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1715
-    id: 2026924051967467575
+    id: 6628092747963438900
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 175, y: 0, z: 125}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1615
-    id: 4232488409798565154
+    id: 1829963001910062857
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 150, y: 0, z: 125}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1515
-    id: 3271448939142465341
+    id: 7710017625826052986
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 125, y: 0, z: 125}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1415
-    id: 4006174416914671436
+    id: 1661228997213272475
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 100, y: 0, z: 125}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1315
-    id: 7987594301879472922
+    id: 3015294315764261157
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 75, y: 0, z: 125}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1215
-    id: 2331010640631437670
+    id: 4887585340266971564
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 50, y: 0, z: 125}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1115
-    id: 4690275611092264210
+    id: 3853360630018925084
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 25, y: 0, z: 125}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1015
-    id: 7217691626915696846
+    id: 17178906013238591093
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 0, y: 0, z: 125}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk915
-    id: 2581393467178010704
+    id: 9871264663737465744
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -25, y: 0, z: 125}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk815
-    id: 2837622631391305275
+    id: 947799884247425061
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -50, y: 0, z: 125}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk715
-    id: 7834313255888125043
+    id: 4093361765498838093
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -75, y: 0, z: 125}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk615
-    id: 12197634745118230066
+    id: 4160903480741955586
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -100, y: 0, z: 125}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk515
-    id: 16479240133933419633
+    id: 9637763436240739809
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -125, y: 0, z: 125}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk415
-    id: 7148357724827258864
+    id: 17474245151651422092
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -150, y: 0, z: 125}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk315
-    id: 10205070446654142880
+    id: 665328367477572031
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -175, y: 0, z: 125}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk215
-    id: 15541456385007530302
+    id: 3275294029579231075
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -200, y: 0, z: 125}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk115
-    id: 12721930209373832379
+    id: 5257546339301428408
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -225, y: 0, z: 125}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk015
-    id: 11506821623484521673
+    id: 16798866141698708953
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -250, y: 0, z: 125}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1914
-    id: 10190213031057128517
+    id: 2954928920693099874
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 225, y: 0, z: 100}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1814
-    id: 621551552841067778
+    id: 9753288748170964476
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 200, y: 0, z: 100}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1714
-    id: 11644052145304031949
+    id: 17955982981599669445
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 175, y: 0, z: 100}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1614
-    id: 13139325301476990064
+    id: 8520180058603366570
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 150, y: 0, z: 100}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1514
-    id: 9683305626342744032
+    id: 699937298471307954
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 125, y: 0, z: 100}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1414
-    id: 1954351281686937344
+    id: 17516794908103267394
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 100, y: 0, z: 100}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1314
-    id: 9939998925951091897
+    id: 11420800328169836742
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 75, y: 0, z: 100}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1214
-    id: 7222052992705608097
+    id: 15816228682212388004
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 50, y: 0, z: 100}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1114
-    id: 11227729536862797579
+    id: 18077462786524237966
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 25, y: 0, z: 100}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1014
-    id: 16645649989465298463
+    id: 13698639950653091606
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 0, y: 0, z: 100}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk914
-    id: 13850329024103816726
+    id: 9520198681736674748
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -25, y: 0, z: 100}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk814
-    id: 17905767104183566331
+    id: 16552866919304791211
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -50, y: 0, z: 100}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk714
-    id: 213295974189262948
+    id: 10682403521750211666
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -75, y: 0, z: 100}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk614
-    id: 7894701493007171767
+    id: 1250841660533698641
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -100, y: 0, z: 100}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk514
-    id: 3367276933236888611
+    id: 7660625502732910592
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -125, y: 0, z: 100}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk414
-    id: 7901826104308933059
+    id: 747070154065226656
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -150, y: 0, z: 100}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk314
-    id: 10620582759643801791
+    id: 9726033315180004659
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -175, y: 0, z: 100}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk214
-    id: 5545949719631248802
+    id: 11998100196295615263
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -200, y: 0, z: 100}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk114
-    id: 10264752526231259630
+    id: 17951324054232840856
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -225, y: 0, z: 100}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk014
-    id: 5438391349842881570
+    id: 11623255505695274498
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -250, y: 0, z: 100}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1913
-    id: 11263148415031959776
+    id: 14646413460164517700
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 225, y: 0, z: 75}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1813
-    id: 451468166066471064
+    id: 4719065930894679870
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 200, y: 0, z: 75}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1713
-    id: 2597344259355815546
+    id: 3458385091382312423
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 175, y: 0, z: 75}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1613
-    id: 4176157989521162710
+    id: 14652372799706181588
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 150, y: 0, z: 75}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1513
-    id: 12248423781363314293
+    id: 163986478174110027
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 125, y: 0, z: 75}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1413
-    id: 9898295695055670549
+    id: 6657213257153441862
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 100, y: 0, z: 75}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1313
-    id: 5356228287310761586
+    id: 7917260503706436018
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 75, y: 0, z: 75}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1213
-    id: 14392192055269861206
+    id: 18022689619311881311
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 50, y: 0, z: 75}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1113
-    id: 15180646220272921754
+    id: 18307725921757910797
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 25, y: 0, z: 75}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1013
-    id: 1284439588621573400
+    id: 15967350028128531974
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 0, y: 0, z: 75}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk913
-    id: 16074465436574029963
+    id: 5079477993185857773
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -25, y: 0, z: 75}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk813
-    id: 16413415479785429727
+    id: 1806998563941564850
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -50, y: 0, z: 75}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk713
-    id: 14650792600061542758
+    id: 11063144611444065565
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -75, y: 0, z: 75}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk613
-    id: 10586299551552151400
+    id: 7182955711637441844
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -100, y: 0, z: 75}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk513
-    id: 7958047872006981600
+    id: 8208256749679314127
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -125, y: 0, z: 75}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk413
-    id: 226386542913818947
+    id: 17926856453303945259
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -150, y: 0, z: 75}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk313
-    id: 15570745338404623408
+    id: 13144526786391218225
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -175, y: 0, z: 75}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk213
-    id: 11028856424806209990
+    id: 13277901452891587921
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -200, y: 0, z: 75}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk113
-    id: 4507065484946360626
+    id: 8699241521341223025
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -225, y: 0, z: 75}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk013
-    id: 4613896307573796052
+    id: 536384626474472228
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -250, y: 0, z: 75}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1912
-    id: 13352960854130933440
+    id: 18077651539419452489
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 225, y: 0, z: 50}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1812
-    id: 13727015761594521642
+    id: 2641993105023337878
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 200, y: 0, z: 50}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1712
-    id: 3084338852493065556
+    id: 7574990573645297623
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 175, y: 0, z: 50}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1612
-    id: 12848301180763484986
+    id: 5560551687817456249
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 150, y: 0, z: 50}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1512
-    id: 15020383791675974811
+    id: 16608252643644024903
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 125, y: 0, z: 50}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1412
-    id: 12655995110477454682
+    id: 2273122130753742007
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 100, y: 0, z: 50}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1312
-    id: 5485272758899216512
+    id: 7730351114890643055
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 75, y: 0, z: 50}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1212
-    id: 3415093930236369710
+    id: 3642186872732939144
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 50, y: 0, z: 50}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1112
-    id: 15326439336546220833
+    id: 8292012970457232403
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 25, y: 0, z: 50}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1012
-    id: 2475766754556804893
+    id: 13863779011786048216
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 0, y: 0, z: 50}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk912
-    id: 9880400427048198013
+    id: 9461677624285364609
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -25, y: 0, z: 50}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk812
-    id: 9477258581936192167
+    id: 10495353866209575532
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -50, y: 0, z: 50}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk712
-    id: 13969011577628107178
+    id: 17275506880251673801
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -75, y: 0, z: 50}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk612
-    id: 5663293869927756162
+    id: 6363281616952672889
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -100, y: 0, z: 50}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk512
-    id: 4565366649706674087
+    id: 2543893396412231925
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -125, y: 0, z: 50}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk412
-    id: 15859747562142224439
+    id: 5905518724986837001
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -150, y: 0, z: 50}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk312
-    id: 6609771527887821797
+    id: 4724406690085969246
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -175, y: 0, z: 50}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk212
-    id: 3934722402214277944
+    id: 1820678644634938219
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -200, y: 0, z: 50}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk112
-    id: 5479888896869181141
+    id: 8236210123895497587
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -225, y: 0, z: 50}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk012
-    id: 4303618232823160894
+    id: 112041231249272319
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -250, y: 0, z: 50}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1911
-    id: 16941710555439697447
+    id: 3409673952287754745
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 225, y: 0, z: 25}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1811
-    id: 17492361054924050935
+    id: 6853018327073981241
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 200, y: 0, z: 25}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1711
-    id: 9555449275813757738
+    id: 4776053005403722040
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 175, y: 0, z: 25}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1611
-    id: 14988323254827744682
+    id: 895488814938109336
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 150, y: 0, z: 25}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1511
-    id: 1510336693829088717
+    id: 8542046142458403476
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 125, y: 0, z: 25}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1411
-    id: 6824677088227583192
+    id: 8975024844162527744
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 100, y: 0, z: 25}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1311
-    id: 16317215494589450378
+    id: 11699253625038635279
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 75, y: 0, z: 25}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1211
-    id: 4083186922131989037
+    id: 5561471621846096002
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 50, y: 0, z: 25}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1111
-    id: 11218720299148904283
+    id: 7560362032975731282
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 25, y: 0, z: 25}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1011
-    id: 15524643853308159923
+    id: 14263174385750407163
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 0, y: 0, z: 25}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk911
-    id: 14946526843388863595
+    id: 8769447404599973705
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -25, y: 0, z: 25}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk811
-    id: 10674474815803223193
+    id: 13809162762164589042
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -50, y: 0, z: 25}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk711
-    id: 1696055844952993666
+    id: 784456300688095262
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -75, y: 0, z: 25}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk611
-    id: 11590507309175445780
+    id: 1407076084937141764
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -100, y: 0, z: 25}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk511
-    id: 2019368918673137521
+    id: 1017001005299841182
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -125, y: 0, z: 25}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk411
-    id: 3300346370828055291
+    id: 17949928101688666713
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -150, y: 0, z: 25}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk311
-    id: 13726755151735208500
+    id: 3419563262059695864
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -175, y: 0, z: 25}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk211
-    id: 5188488587964967600
+    id: 550744977205597091
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -200, y: 0, z: 25}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk111
-    id: 3664085492950560508
+    id: 6438089399430610190
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -225, y: 0, z: 25}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk011
-    id: 10589562176549209194
+    id: 2384843467106965447
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -250, y: 0, z: 25}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1910
-    id: 15758194183118148253
+    id: 18337521281532819267
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 225, y: 0, z: 0}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1810
-    id: 5104108924276908331
+    id: 4117066771714404385
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 200, y: 0, z: 0}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1710
-    id: 8166086477670433942
+    id: 11266166469017712539
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 175, y: 0, z: 0}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1610
-    id: 7332470607000922058
+    id: 2344081664912450833
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 150, y: 0, z: 0}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1510
-    id: 733979057619469851
+    id: 18067374347942924629
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 125, y: 0, z: 0}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1410
-    id: 15694759499364411805
+    id: 2250529822378140957
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 100, y: 0, z: 0}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1310
-    id: 487941250771353641
+    id: 16378070067027770171
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 75, y: 0, z: 0}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1210
-    id: 3813269253809168750
+    id: 10401537001453780039
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 50, y: 0, z: 0}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1110
-    id: 13317254499767980415
+    id: 12188609229549440663
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 25, y: 0, z: 0}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1010
-    id: 2056882318945077286
+    id: 14020060379105471384
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 0, y: 0, z: 0}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk910
-    id: 1527134129593264409
+    id: 10172481424088437179
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -25, y: 0, z: 0}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk810
-    id: 3573456340034023319
+    id: 1219941347941706697
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -50, y: 0, z: 0}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk710
-    id: 3098116715755985622
+    id: 17121750720829500346
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -75, y: 0, z: 0}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk610
-    id: 281151822536348193
+    id: 1155148582913376448
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -100, y: 0, z: 0}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk510
-    id: 9606705573403076793
+    id: 588223059615908375
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -125, y: 0, z: 0}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk410
-    id: 8787960323275000610
+    id: 3499645678920694787
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -150, y: 0, z: 0}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk310
-    id: 8933596333413415338
+    id: 9565777998720430760
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -175, y: 0, z: 0}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk210
-    id: 7295883292808214773
+    id: 12757157569896328329
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -200, y: 0, z: 0}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk110
-    id: 1135616651589617655
+    id: 12729448350325172983
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -225, y: 0, z: 0}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk010
-    id: 10048365844501695467
+    id: 7118285513255713397
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -250, y: 0, z: 0}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk199
-    id: 12875159530147016498
+    id: 14338066251061389635
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 225, y: 0, z: -25}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk189
-    id: 17574028747842911216
+    id: 887390961379883169
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 200, y: 0, z: -25}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk179
-    id: 10141690144828070598
+    id: 7211435561059517722
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 175, y: 0, z: -25}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk169
-    id: 10346442276220302584
+    id: 5415368726652171167
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 150, y: 0, z: -25}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk159
-    id: 15214680561256358250
+    id: 12360105922596911370
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 125, y: 0, z: -25}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk149
-    id: 15101535424054792995
+    id: 767280049392974171
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 100, y: 0, z: -25}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk139
-    id: 12139273916840384742
+    id: 1275057002267001936
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 75, y: 0, z: -25}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk129
-    id: 5387377094365611150
+    id: 12513735909171844635
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 50, y: 0, z: -25}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk119
-    id: 3683054022582971468
+    id: 2150548120920828648
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 25, y: 0, z: -25}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk109
-    id: 17166609252455750061
+    id: 9838162488797245692
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 0, y: 0, z: -25}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk99
-    id: 16254508011852062482
+    id: 9472943087733566690
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -25, y: 0, z: -25}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk89
-    id: 13153740925298706977
+    id: 12071278584079626629
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -50, y: 0, z: -25}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk79
-    id: 2921376473841841892
+    id: 10123146740361786778
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -75, y: 0, z: -25}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk69
-    id: 7160928288345327574
+    id: 311207821105318810
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -100, y: 0, z: -25}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk59
-    id: 1565684411753181318
+    id: 4031867128070383901
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -125, y: 0, z: -25}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk49
-    id: 17144940690520017563
+    id: 6168409378010793354
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -150, y: 0, z: -25}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk39
-    id: 6858012348802410423
+    id: 815025973372051547
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -175, y: 0, z: -25}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk29
-    id: 9467764318565343609
+    id: 7961780264943357220
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -200, y: 0, z: -25}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk19
-    id: 17633571383154796858
+    id: 8563715687576492465
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -225, y: 0, z: -25}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk09
-    id: 11957860737261387249
+    id: 17725423489460008013
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -250, y: 0, z: -25}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk198
-    id: 8842171798604331581
+    id: 17492530379098042815
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 225, y: 0, z: -50}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk188
-    id: 11994514181049644075
+    id: 9997610428905347472
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 200, y: 0, z: -50}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk178
-    id: 52035483007043444
+    id: 9789363857206272862
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 175, y: 0, z: -50}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk168
-    id: 551107751754529424
+    id: 6360955299559973016
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 150, y: 0, z: -50}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk158
-    id: 12995436584503669010
+    id: 3560844168999668613
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 125, y: 0, z: -50}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk148
-    id: 8165429409188208990
+    id: 79307417942626616
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 100, y: 0, z: -50}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk138
-    id: 4979799762217005648
+    id: 12530214876913097155
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 75, y: 0, z: -50}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk128
-    id: 17397535312165979917
+    id: 17607379322847994553
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 50, y: 0, z: -50}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk118
-    id: 7618087565937061981
+    id: 9128723651623315037
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 25, y: 0, z: -50}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk108
-    id: 6932310470743765920
+    id: 6925310831529933631
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 0, y: 0, z: -50}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk98
-    id: 6377204572566371081
+    id: 5719081209054899280
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -25, y: 0, z: -50}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk88
-    id: 3299393994297584951
+    id: 13912657094118171131
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -50, y: 0, z: -50}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk78
-    id: 2320908513025898635
+    id: 7138376908995978779
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -75, y: 0, z: -50}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk68
-    id: 14824451815395337669
+    id: 3091105483413511518
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -100, y: 0, z: -50}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk58
-    id: 15688713166376090049
+    id: 13496943474373032334
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -125, y: 0, z: -50}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk48
-    id: 15614253342872419324
+    id: 16963188756772032711
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -150, y: 0, z: -50}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk38
-    id: 2009774358985674527
+    id: 14944566682841383786
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -175, y: 0, z: -50}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk28
-    id: 7671516182737286592
+    id: 13944009247446621555
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -200, y: 0, z: -50}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk18
-    id: 5921211792128213167
+    id: 9760388549316336723
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -225, y: 0, z: -50}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk08
-    id: 7022596464134463690
+    id: 17825649904920033262
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -250, y: 0, z: -50}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk197
-    id: 8263806790010726922
+    id: 6167283410591547005
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 225, y: 0, z: -75}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk187
-    id: 11525629784866027370
+    id: 9303421754678547179
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 200, y: 0, z: -75}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk177
-    id: 14631986616967107522
+    id: 9775667928297725387
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 175, y: 0, z: -75}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk167
-    id: 2671414888843609594
+    id: 14537482355166456840
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 150, y: 0, z: -75}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk157
-    id: 4513162125070540961
+    id: 3213487883554242957
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 125, y: 0, z: -75}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk147
-    id: 4539193585165745810
+    id: 18043428652602983929
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 100, y: 0, z: -75}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk137
-    id: 4848184799472315286
+    id: 7928372472188639681
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 75, y: 0, z: -75}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk127
-    id: 10721995235151333608
+    id: 3575126707653828838
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 50, y: 0, z: -75}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk117
-    id: 4992354220036115649
+    id: 11259459084490032533
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 25, y: 0, z: -75}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk107
-    id: 15825337819145167921
+    id: 15464472930454258102
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 0, y: 0, z: -75}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk97
-    id: 17461785230733090575
+    id: 13990326060862069702
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -25, y: 0, z: -75}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk87
-    id: 6242264412203551164
+    id: 6452278167647453759
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -50, y: 0, z: -75}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk77
-    id: 14379299003859319982
+    id: 16540089261817670476
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -75, y: 0, z: -75}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk67
-    id: 6497263708313600244
+    id: 4114044609601674068
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -100, y: 0, z: -75}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk57
-    id: 16520891867599605761
+    id: 16395248298025795862
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -125, y: 0, z: -75}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk47
-    id: 17783130674673338452
+    id: 6209673689023518772
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -150, y: 0, z: -75}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk37
-    id: 14881526325935837150
+    id: 3005293343388964170
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -175, y: 0, z: -75}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk27
-    id: 3231748751470867154
+    id: 13078841056969800506
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -200, y: 0, z: -75}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk17
-    id: 9330698705175811490
+    id: 11561020682473430279
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -225, y: 0, z: -75}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk07
-    id: 939234507106502165
+    id: 13203794128077809826
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -250, y: 0, z: -75}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk196
-    id: 5816345952430347972
+    id: 6451832423249575248
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 225, y: 0, z: -100}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk186
-    id: 7412629366859695654
+    id: 2335268522725614164
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 200, y: 0, z: -100}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk176
-    id: 3384649953506370554
+    id: 1007170864800105544
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 175, y: 0, z: -100}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk166
-    id: 3416873117825363686
+    id: 13578607798093902185
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 150, y: 0, z: -100}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk156
-    id: 4047685698204091636
+    id: 15057421973846794170
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 125, y: 0, z: -100}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk146
-    id: 2184990790681222789
+    id: 6492960457880406433
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 100, y: 0, z: -100}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk136
-    id: 3370532741298096917
+    id: 10481438602928482825
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 75, y: 0, z: -100}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk126
-    id: 3039356128127652763
+    id: 12905489949893236616
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 50, y: 0, z: -100}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk116
-    id: 15175829487575308910
+    id: 17837013264943977365
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 25, y: 0, z: -100}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk106
-    id: 9086473500909956996
+    id: 17684853182872028748
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 0, y: 0, z: -100}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk96
-    id: 16258315620334529480
+    id: 2889908988826596414
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -25, y: 0, z: -100}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk86
-    id: 5135983427151967926
+    id: 8950334493341927269
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -50, y: 0, z: -100}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk76
-    id: 680214438052383186
+    id: 6786312178362352299
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -75, y: 0, z: -100}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk66
-    id: 5288082751620305478
+    id: 7945557954823076600
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -100, y: 0, z: -100}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk56
-    id: 14769029558077353099
+    id: 14335293654902586410
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -125, y: 0, z: -100}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk46
-    id: 10211678234262065564
+    id: 15165188077502606933
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -150, y: 0, z: -100}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk36
-    id: 7307922408281287369
+    id: 13753308636550008595
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -175, y: 0, z: -100}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk26
-    id: 4431764722626645295
+    id: 1423791273667844344
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -200, y: 0, z: -100}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk16
-    id: 15538739301562087786
+    id: 8098166705020671722
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -225, y: 0, z: -100}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk06
-    id: 9360262458152128050
+    id: 9517458834356542566
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -250, y: 0, z: -100}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk195
-    id: 4004567360737112848
+    id: 16608610797481105003
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 225, y: 0, z: -125}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk185
-    id: 3932005750825147688
+    id: 5097112720945485729
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 200, y: 0, z: -125}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk175
-    id: 2457609494688023517
+    id: 14135193683728888572
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 175, y: 0, z: -125}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk165
-    id: 14155373531922319759
+    id: 17797737810036840557
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 150, y: 0, z: -125}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk155
-    id: 18243745435803129483
+    id: 2312105658463911263
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 125, y: 0, z: -125}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk145
-    id: 17606665443514397947
+    id: 9299627259330949181
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 100, y: 0, z: -125}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk135
-    id: 14978004386873280250
+    id: 17559927571349362247
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 75, y: 0, z: -125}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk125
-    id: 12325570731517158686
+    id: 14105382423875034814
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 50, y: 0, z: -125}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk115
-    id: 12478093541758512996
+    id: 15320171386732096383
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 25, y: 0, z: -125}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk105
-    id: 11845121779292348558
+    id: 630704497386785485
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 0, y: 0, z: -125}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk95
-    id: 17428753602832706046
+    id: 11578577970076438751
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -25, y: 0, z: -125}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk85
-    id: 15395521512315410321
+    id: 2791084003848953335
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -50, y: 0, z: -125}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk75
-    id: 7264547089709696947
+    id: 2163423511311139
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -75, y: 0, z: -125}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk65
-    id: 15160364486547477589
+    id: 10183801539489887729
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -100, y: 0, z: -125}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk55
-    id: 8703197118933592495
+    id: 2363457528611516478
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -125, y: 0, z: -125}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk45
-    id: 11705348501626867498
+    id: 8886366948505292463
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -150, y: 0, z: -125}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk35
-    id: 14570881648298485890
+    id: 10033240746191814458
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -175, y: 0, z: -125}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk25
-    id: 14475920927227901976
+    id: 1082029190921619073
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -200, y: 0, z: -125}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk15
-    id: 1116601807395141679
+    id: 4176137511739518007
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -225, y: 0, z: -125}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk05
-    id: 9085801439105643460
+    id: 506463759716186981
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -250, y: 0, z: -125}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk194
-    id: 992837321241997469
+    id: 519730322036646462
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 225, y: 0, z: -150}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk184
-    id: 8495704148885399874
+    id: 3430114138884589540
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 200, y: 0, z: -150}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk174
-    id: 4098575626236089169
+    id: 937723712540163617
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 175, y: 0, z: -150}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk164
-    id: 1900515718249320016
+    id: 13728097558129660408
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 150, y: 0, z: -150}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk154
-    id: 3331135669651394620
+    id: 16461492972330284019
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 125, y: 0, z: -150}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk144
-    id: 11416040500741638359
+    id: 13533944816674970867
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 100, y: 0, z: -150}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk134
-    id: 6356660372806663123
+    id: 6001802840401358504
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 75, y: 0, z: -150}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk124
-    id: 10579496482822462622
+    id: 15054917290439491809
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 50, y: 0, z: -150}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk114
-    id: 4551448736927425400
+    id: 10270681305100947466
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 25, y: 0, z: -150}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk104
-    id: 9090038074180979899
+    id: 8660302938331256528
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 0, y: 0, z: -150}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk94
-    id: 15433181328986200340
+    id: 3935695426324907152
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -25, y: 0, z: -150}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk84
-    id: 15773684663972839788
+    id: 12070258042184620554
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -50, y: 0, z: -150}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk74
-    id: 10942565081720725365
+    id: 418503647706642929
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -75, y: 0, z: -150}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk64
-    id: 4303901530457852568
+    id: 391878490857831019
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -100, y: 0, z: -150}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk54
-    id: 7201855075731375975
+    id: 13441259209296165081
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -125, y: 0, z: -150}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk44
-    id: 16577205786361773668
+    id: 12166919725014940711
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -150, y: 0, z: -150}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk34
-    id: 16438921670014517261
+    id: 5783285297880091791
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -175, y: 0, z: -150}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk24
-    id: 11342775038235296343
+    id: 16243206074930561688
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -200, y: 0, z: -150}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk14
-    id: 3444670774056648176
+    id: 5111609209952797475
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -225, y: 0, z: -150}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk04
-    id: 5064597006439833075
+    id: 8358287400374295858
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -250, y: 0, z: -150}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk193
-    id: 5380679492527102860
+    id: 7769432510377271378
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 225, y: 0, z: -175}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk183
-    id: 6240817513081026900
+    id: 12008058456297320718
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 200, y: 0, z: -175}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk173
-    id: 2114404299478740034
+    id: 11502274296795538044
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 175, y: 0, z: -175}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk163
-    id: 6599661507579850952
+    id: 9353942198474656078
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 150, y: 0, z: -175}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk153
-    id: 14734417485027265715
+    id: 10358785364194718624
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 125, y: 0, z: -175}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk143
-    id: 16413590843386889297
+    id: 6917107031224477920
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 100, y: 0, z: -175}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk133
-    id: 4190160098609656359
+    id: 13615027563588763490
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 75, y: 0, z: -175}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk123
-    id: 7072138993829409389
+    id: 8515540952969676222
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 50, y: 0, z: -175}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk113
-    id: 3318568891835274317
+    id: 1680252156323114068
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 25, y: 0, z: -175}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk103
-    id: 13974588053318691624
+    id: 6683470623814349173
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 0, y: 0, z: -175}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk93
-    id: 6308955038272592670
+    id: 5733004885255424164
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -25, y: 0, z: -175}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk83
-    id: 15270259089298345651
+    id: 6340781708565227029
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -50, y: 0, z: -175}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk73
-    id: 6724123700478931058
+    id: 9537920590614758500
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -75, y: 0, z: -175}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk63
-    id: 9203109649847314715
+    id: 8455030561846962980
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -100, y: 0, z: -175}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk53
-    id: 7329176452516653009
+    id: 15300180274084814610
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -125, y: 0, z: -175}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk43
-    id: 2116886218880824188
+    id: 10300202637457865107
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -150, y: 0, z: -175}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk33
-    id: 14916477605876695504
+    id: 3404030711050499679
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -175, y: 0, z: -175}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk23
-    id: 17560029484864045648
+    id: 15606149986581888322
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -200, y: 0, z: -175}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk13
-    id: 1081850099962481097
+    id: 2089999202632015751
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -225, y: 0, z: -175}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk03
-    id: 6265365524501428497
+    id: 16629063311433322647
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -250, y: 0, z: -175}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk192
-    id: 16487486177141059315
+    id: 15051023150679800207
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 225, y: 0, z: -200}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk182
-    id: 14652126305031917807
+    id: 12125364062565917047
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 200, y: 0, z: -200}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk172
-    id: 4413609423151955655
+    id: 9787081444960583375
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 175, y: 0, z: -200}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk162
-    id: 13259631724729315305
+    id: 8527642838064236070
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 150, y: 0, z: -200}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk152
-    id: 9575860766890674390
+    id: 7562313844035794373
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 125, y: 0, z: -200}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk142
-    id: 11571234154508946814
+    id: 13983847683080027885
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 100, y: 0, z: -200}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk132
-    id: 1766470950278800833
+    id: 9747951561853115247
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 75, y: 0, z: -200}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk122
-    id: 15904834645115327107
+    id: 19895686254688129
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 50, y: 0, z: -200}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk112
-    id: 11355165124108197922
+    id: 217735300529255243
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 25, y: 0, z: -200}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk102
-    id: 1905029839338339053
+    id: 7379094574996346005
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 0, y: 0, z: -200}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk92
-    id: 10508252964919877974
+    id: 6637743222270029046
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -25, y: 0, z: -200}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk82
-    id: 5553094649847702047
+    id: 8036730136748521525
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -50, y: 0, z: -200}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk72
-    id: 6403585435941527448
+    id: 16516366359343527958
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -75, y: 0, z: -200}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk62
-    id: 12771047667324795991
+    id: 17474663460277231989
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -100, y: 0, z: -200}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk52
-    id: 14192835990647620310
+    id: 13236802016328555916
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -125, y: 0, z: -200}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk42
-    id: 11584879328769710597
+    id: 14098650676420379641
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -150, y: 0, z: -200}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk32
-    id: 11672846034445380791
+    id: 3217997768831352927
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -175, y: 0, z: -200}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk22
-    id: 10303698055325388874
+    id: 11194150417783722747
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -200, y: 0, z: -200}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk12
-    id: 16280824979739294531
+    id: 9370592901843221631
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -225, y: 0, z: -200}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk02
-    id: 6321477325542598380
+    id: 9667464367793405098
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -250, y: 0, z: -200}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk191
-    id: 7517648010204260562
+    id: 6413448841940264261
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 225, y: 0, z: -225}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk181
-    id: 16356119814293687652
+    id: 17521264175600375354
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 200, y: 0, z: -225}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk171
-    id: 3287442244242902500
+    id: 378510262740297768
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 175, y: 0, z: -225}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk161
-    id: 4676340838343407026
+    id: 15646530705903825944
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 150, y: 0, z: -225}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk151
-    id: 12389447997650948545
+    id: 4760473491935521718
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 125, y: 0, z: -225}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk141
-    id: 14910565058410918004
+    id: 2212302037166462356
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 100, y: 0, z: -225}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk131
-    id: 13709621918650547754
+    id: 13132572796992543797
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 75, y: 0, z: -225}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk121
-    id: 712874485884268976
+    id: 10599428453852187665
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 50, y: 0, z: -225}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk111
-    id: 10716984404460470246
+    id: 43551883720135965
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 25, y: 0, z: -225}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk101
-    id: 6088738911385798560
+    id: 8562201536693987760
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 0, y: 0, z: -225}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk91
-    id: 3972333556615312689
+    id: 11732541100251406311
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -25, y: 0, z: -225}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk81
-    id: 18323720712602835865
+    id: 11511205963259112423
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -50, y: 0, z: -225}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk71
-    id: 7357067564536653873
+    id: 13842566543686532437
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -75, y: 0, z: -225}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk61
-    id: 4334816470319694490
+    id: 17426638115073015889
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -100, y: 0, z: -225}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk51
-    id: 1858149598264208149
+    id: 16938238577935011065
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -125, y: 0, z: -225}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk41
-    id: 9557131186062983585
+    id: 8611334212114483179
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -150, y: 0, z: -225}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk31
-    id: 12065204117711016589
+    id: 13089059147145482927
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -175, y: 0, z: -225}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk21
-    id: 16427221497120585071
+    id: 10140399621572546913
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -200, y: 0, z: -225}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk11
-    id: 13933507107557064319
+    id: 12891609038088315555
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -225, y: 0, z: -225}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk01
-    id: 18177506260934987281
+    id: 10636246893717111512
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -250, y: 0, z: -225}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk190
-    id: 7223637286128830423
+    id: 9208589049178015653
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 225, y: 0, z: -250}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk180
-    id: 5853691164812485554
+    id: 3059726009313468362
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 200, y: 0, z: -250}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk170
-    id: 766355661238037697
+    id: 14545692673441103078
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 175, y: 0, z: -250}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk160
-    id: 15197255003108644148
+    id: 3632824856856667470
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 150, y: 0, z: -250}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk150
-    id: 9139202039003351206
+    id: 16706411657553562103
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 125, y: 0, z: -250}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk140
-    id: 10773866325644729726
+    id: 17646247466759485286
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 100, y: 0, z: -250}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk130
-    id: 97972575193008932
+    id: 5672624343265429114
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 75, y: 0, z: -250}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk120
-    id: 8780943186665778437
+    id: 17616259574253720251
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 50, y: 0, z: -250}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk110
-    id: 6688772244535305670
+    id: 4451495229308876449
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 25, y: 0, z: -250}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk100
-    id: 12204609738181241336
+    id: 13701193971154246841
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 0, y: 0, z: -250}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk90
-    id: 13428754812729901420
+    id: 1661886521929696359
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -25, y: 0, z: -250}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk80
-    id: 6284302605290310064
+    id: 14069291263389482236
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -50, y: 0, z: -250}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk70
-    id: 9107284086872713527
+    id: 16364899292351227305
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -75, y: 0, z: -250}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk60
-    id: 17125886751455834234
+    id: 12268991266801083364
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -100, y: 0, z: -250}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk50
-    id: 8615689881082378181
+    id: 11858543998288769789
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -125, y: 0, z: -250}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk40
-    id: 16313178666094642018
+    id: 1727630468843324512
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -150, y: 0, z: -250}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk30
-    id: 5767474941921643047
+    id: 8501268993480901563
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -175, y: 0, z: -250}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk20
-    id: 16977992512741867854
+    id: 8024371799478209611
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -200, y: 0, z: -250}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk10
-    id: 16403669004521195387
+    id: 8860386449371696653
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -225, y: 0, z: -250}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk00
-    id: 13663581835639360908
+    id: 1967032221405205652
+    parent: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: -250, y: 0, z: -250}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Terrain
-    id: 7187292063487281584
+    id: 696211289351996140
     components:
-      []
+      - type: transform
+        position: {x: 0, y: 0, z: 0}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
   - tag: CAMERA
-    id: 12487054646405485885
+    id: 4745800441497955679
     components:
-      []
+      - type: transform
+        position: {x: -1.13565522e-06, y: 15, z: 25.9807625}
+        rotation: {x: -0.258819044, y: -2.11109796e-08, z: -5.6566698e-09, w: 0.965925813}
+        scale: {x: 1, y: 1, z: 1}

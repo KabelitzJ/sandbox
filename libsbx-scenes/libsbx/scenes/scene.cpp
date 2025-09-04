@@ -362,6 +362,13 @@ auto scene::_save_node(YAML::Emitter& emitter, const node_type node) -> void {
   emitter << YAML::Key << "id";
   emitter << YAML::Value << id.value();
 
+  const auto& relationship = get_component<scenes::relationship>(node);
+
+  if (relationship.parent() != _root) {
+    emitter << YAML::Key << "parent";
+    emitter << YAML::Value << get_component<scenes::id>(relationship.parent()).value();
+  }
+
   emitter << YAML::Key << "components";
   emitter << YAML::Value << YAML::BeginSeq;
 
@@ -375,17 +382,20 @@ auto scene::_save_node(YAML::Emitter& emitter, const node_type node) -> void {
 auto scene::_save_components(YAML::Emitter& emitter, const node_type node) -> void {
   auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
 
+  
   for (auto&& [type, container] : _registry.storage()) {
     if (!scenes_module.has_component_io(type)) {
       continue;
     }
-
+    
     auto& component_io = scenes_module.component_io(type);
-
-    emitter << YAML::Key << "type" << YAML::Value << component_io.name;
-
+    
     auto yaml = YAML::Node{};
+
+    yaml["type"] = component_io.name;
+
     component_io.save(yaml, *this, node);
+
     emitter << yaml;
   }
 

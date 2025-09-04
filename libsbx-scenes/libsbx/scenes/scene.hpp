@@ -325,7 +325,7 @@ class component_io_registry {
 
 public:
 
-  template<typename Type, std::invocable<YAML::Node&, const Type&> Save, std::invocable<YAML::Node&> Load>
+  template<typename Type, std::invocable<YAML::Node&, scene&, const Type&> Save, std::invocable<YAML::Node&> Load>
   auto register_component(const std::string& name, Save&& save, Load&& load) -> void {
     const auto id = ecs::type_id<Type>::value();
 
@@ -336,7 +336,7 @@ public:
       .save = [name, s = std::forward<Save>(save)](YAML::Node& yaml, scene& scene, const node node) -> void {
         const auto& component = scene.get_component<Type>(node);
 
-        std::invoke(s, yaml, component);
+        std::invoke(s, yaml, scene, component);
       },
       .load = [name, l = std::forward<Load>(load)](const YAML::Node& yaml, scene& scene, const node node) -> void {
         scene.add_component<Type>(node, std::invoke(l, yaml));
