@@ -11,23 +11,23 @@ struct push_data {
 [[vk::push_constant]]
 ConstantBuffer<push_data> push;
 
-struct VSIn { 
+struct vs_in { 
   uint vertex_id : SV_VertexID; 
-};
+}; // struct vs_in
 
-struct VSOut {
+struct vs_out {
   float4 color : TEXCOORD0; 
   float4 position : SV_Position;
-};
+}; // struct vs_out
 
 [shader("vertex")]
-VSOut VSMain(VSIn IN) {
-  VSOut OUT;
+vs_out vs_main(vs_in in) {
+  vs_out out;
 
-  vertex vertex = push.vertices[IN.vertex_id];
+  vertex vertex = push.vertices[in.vertex_id];
 
-  OUT.color = vertex.color;
-  OUT.position = mul(push.mvp, vertex.position);
+  out.color = vertex.color;
+  out.position = mul(push.mvp, vertex.position);
 
-  return OUT;
+  return out;
 }

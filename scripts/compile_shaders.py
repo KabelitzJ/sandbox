@@ -10,13 +10,13 @@ STAGES = ["vertex", "fragment", "compute", "geometry", "tesscontrol", "tesseval"
 
 # Slang stage → (profile, entry)
 SLANG_STAGE_INFO = {
-  "vertex":      ("vs_6_0", "VSMain"),
-  "fragment":    ("ps_6_0", "PSMain"),   # writes fragment.spv
-  "pixel":       ("ps_6_0", "PSMain"),   # writes pixel.spv then RENAMES to fragment.spv
-  "compute":     ("cs_6_0", "CSMain"),
-  "geometry":    ("gs_6_0", "GSMain"),
-  "tesscontrol": ("hs_6_0", "HSMain"),
-  "tesseval":    ("ds_6_0", "DSMain"),
+  "vertex":      ("vs_6_0", "vs_main"),
+  "fragment":    ("ps_6_0", "ps_main"),
+  "pixel":       ("ps_6_0", "ps_main"),
+  "compute":     ("cs_6_0", "cs_main"),
+  "geometry":    ("gs_6_0", "gs_main"),
+  "tesscontrol": ("hs_6_0", "hs_main"),
+  "tesseval":    ("ds_6_0", "ds_main"),
 }
 
 

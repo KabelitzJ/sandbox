@@ -1,16 +1,16 @@
-struct PSIn {
+struct ps_in {
   float4 color : TEXCOORD0;
-}; // struct PSIn
+}; // struct ps_in
 
-struct PSOut {
+struct ps_out {
   float4 color : SV_Target0;
-}; // struct PSOut
+}; // struct ps_out
 
 [shader("pixel")]
-PSOut PSMain(PSIn IN) : SV_Target0 {
-  PSOut OUT;
+ps_out ps_main(ps_in in) : SV_Target0 {
+  ps_out out;
 
-  OUT.color = IN.color;
+  out.color = in.color;
 
-  return OUT;
+  return out;
 }
