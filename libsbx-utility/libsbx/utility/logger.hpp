@@ -212,7 +212,7 @@ struct fmt::formatter<Type> : public fmt::formatter<std::underlying_type_t<Type>
   using base_type = fmt::formatter<std::underlying_type_t<Type>>;
 
   template<typename FormatContext>
-  auto format(const Type& value, FormatContext& context) -> decltype(auto) {
+  auto format(const Type& value, FormatContext& context) const -> decltype(auto) {
     return base_type::format(static_cast<std::underlying_type_t<Type>>(value), context);
   }
 

@@ -3,6 +3,9 @@
 #include <fstream>
 #include <ranges>
 
+#include <slang.h>
+#include <slang-com-ptr.h>
+
 #include <libsbx/utility/fast_mod.hpp>
 #include <libsbx/utility/logger.hpp>
 

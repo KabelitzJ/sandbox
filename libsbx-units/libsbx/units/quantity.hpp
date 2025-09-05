@@ -177,7 +177,7 @@ struct fmt::formatter<sbx::units::quantity<Dimension, Representation, Ratio>> {
   }
 
   template<typename FormatContext>
-  auto format(const sbx::units::quantity<Dimension, Representation, Ratio>& quantity, FormatContext& context) -> decltype(context.out()) {
+  auto format(const sbx::units::quantity<Dimension, Representation, Ratio>& quantity, FormatContext& context) const -> decltype(context.out()) {
     return fmt::format_to(context.out(), "{}", quantity.value());
   }
 

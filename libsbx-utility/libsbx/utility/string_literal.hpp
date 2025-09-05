@@ -104,7 +104,7 @@ struct fmt::formatter<sbx::utility::string_literal<Size>> {
   }
 
   template<typename FormatContext>
-  auto format(const sbx::utility::string_literal<Size>& value, FormatContext& context) -> decltype(context.out()) {
+  auto format(const sbx::utility::string_literal<Size>& value, FormatContext& context) const -> decltype(context.out()) {
     return fmt::format_to(context.out(), "{}", std::string{value.data(), value.size()});
   }
 

@@ -85,7 +85,7 @@ public:
     _storage_buffer->update(lines.data(), lines.size() * sizeof(scenes_module::line));
 
     _push_handler.push("mvp", projection * view);
-    _push_handler.push("vertex_data", _storage_buffer->address());
+    _push_handler.push("vertices", _storage_buffer->address());
 
     // _descriptor_handler.push("buffer_vertex_data", _storage_handler);
     // _descriptor_handler.push("push", _push_handler);

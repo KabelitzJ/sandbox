@@ -46,7 +46,7 @@ struct fmt::formatter<sbx::utility::primitive<Type, Unit>> {
   }
 
   template<typename FormatContext>
-  auto format(const sbx::utility::primitive<Type, Unit>& value, FormatContext& context) -> decltype(context.out()) {
+  auto format(const sbx::utility::primitive<Type, Unit>& value, FormatContext& context) const -> decltype(context.out()) {
     return fmt::format_to(context.out(), "{}{}", static_cast<Type>(value), Unit);
   }
 

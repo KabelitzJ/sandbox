@@ -82,8 +82,8 @@ class libsbx_recipe(ConanFile):
     self.folders.generators = os.path.join(self.folders.build, "dependencies")
 
   def requirements(self):
-    self.requires("fmt/10.0.0")
-    self.requires("spdlog/1.11.0")
+    self.requires("fmt/11.2.0")
+    self.requires("spdlog/1.15.3")
     self.requires("glm/1.0.1")
     self.requires("yaml-cpp/0.7.0")
     self.requires("nlohmann_json/3.11.3")
@@ -113,6 +113,7 @@ class libsbx_recipe(ConanFile):
     self.requires("assimp/5.4.3")
     self.requires("bullet3/3.25")
     self.requires("meshoptimizer/0.23")
+    self.requires("slang/0.9")
 
   def generate(self):
     deps = CMakeDeps(self)
