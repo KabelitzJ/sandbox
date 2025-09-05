@@ -184,7 +184,7 @@ public:
 
     _pipeline.bind(command_buffer);
 
-    _scene_descriptor_handler.push("uniform_scene", _scene_uniform_handler);
+    _scene_descriptor_handler.push("scene", _scene_uniform_handler);
     _scene_descriptor_handler.push("images_sampler", draw_list->sampler());
     _scene_descriptor_handler.push("images", draw_list->images());
 

@@ -84,12 +84,11 @@ def compile_glsl_dir(glslc_path: Optional[str], shader_dir: Path, shader_root_di
       f"-I{shader_root_dir}",
     ]
 
-    print(f"  GLSL {stage}: {' '.join(cmd)}")
+    # print(f"  GLSL {stage}: {' '.join(cmd)}")
 
     if run_cmd(cmd):
       built += 1
 
-  print()
   return built
 
 
@@ -105,7 +104,7 @@ def compile_slang_dir(slangc_path: Optional[str], shader_dir: Path, shader_root_
       print(f"  - {f.name}")
     return 0
 
-  print(f"Compiling Slang shaders: {shader_dir}")
+  print(f"Compiling SLANG shaders: {shader_dir}")
 
   binary_dir = shader_dir / "bin"
   binary_dir.mkdir(parents=True, exist_ok=True)
@@ -145,19 +144,15 @@ def compile_slang_dir(slangc_path: Optional[str], shader_dir: Path, shader_root_
       f"-I{shader_root_dir}",
     ]
 
-    print(f"  Slang {stage}: {' '.join(cmd)}")
-
     if not run_cmd(cmd):
       continue
 
     if stage == "pixel":
       dest = binary_dir / "fragment.spv"
       os.replace(out_spv, dest)
-      print(f"    Renamed pixel.spv → {dest.name}")
 
     built += 1
 
-  print()
   return built
 
 

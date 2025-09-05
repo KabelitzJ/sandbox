@@ -162,7 +162,7 @@
 //       auto& mesh = assets_module.get_asset<line_mesh>(primitive.mesh_id);
 
 //       descriptor_handler.push("data", push_handler);
-//       descriptor_handler.push("uniform_scene", _scene_uniform_handler);
+//       descriptor_handler.push("scene", _scene_uniform_handler);
 
 //       if (!descriptor_handler.update(_pipeline)) {
 //         continue;

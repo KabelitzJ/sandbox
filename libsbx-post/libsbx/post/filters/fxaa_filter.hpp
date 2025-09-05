@@ -25,7 +25,7 @@ public:
 
     pipeline.bind(command_buffer);
 
-    descriptor_handler.push("in_image", graphics_module.attachment(_in_image));
+    descriptor_handler.push("image", graphics_module.attachment(_in_image));
 
     if (!descriptor_handler.update(pipeline)) {
       return;

@@ -98,7 +98,7 @@ private:
 
     widget.update(descriptor_handler, uniform_handler, storage_handler);
 
-    descriptor_handler.push("uniform_scene", _scene_uniform_handler);
+    descriptor_handler.push("scene", _scene_uniform_handler);
 
     if (!descriptor_handler.update(_pipeline)) {
       return;

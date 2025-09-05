@@ -114,7 +114,7 @@ public:
 
       auto& mesh = assets_module.get_asset<models::mesh>(key.mesh_id);
 
-      descriptor_handler.push("uniform_scene", _scene_uniform_handler);
+      descriptor_handler.push("scene", _scene_uniform_handler);
       descriptor_handler.push("buffer_mesh_data", storage_handler);
       descriptor_handler.push("depth_image", graphics_module.attachment(_depth_image));
       descriptor_handler.push("texture_image", assets_module.get_asset<graphics::image2d>(key.texture_id));

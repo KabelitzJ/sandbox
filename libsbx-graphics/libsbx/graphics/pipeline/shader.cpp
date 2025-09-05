@@ -19,6 +19,77 @@
 
 namespace sbx::graphics {
 
+static auto _sanitize_block_name(std::string name) -> std::string {
+  auto strip = [&](std::string_view suffix) {
+    if (name.size() >= suffix.size() && name.ends_with(suffix)) {
+      name.erase(name.size() - suffix.size());
+    }
+  };
+
+  strip("_std140");
+  strip("_std430");
+  strip("_pushconstant");
+  strip("_push_constant");
+  strip("_runtime");
+
+  if (name.empty()) {
+    name = "block";
+  }
+
+  return name;
+}
+
+static auto _sanitize_names(spirv_cross::Compiler& compiler) -> void {
+  auto resources = compiler.get_shader_resources();
+
+  for (const auto& uniform_buffer : resources.uniform_buffers) {
+    auto type_name = compiler.get_name(uniform_buffer.base_type_id);
+    auto var_name = compiler.get_name(uniform_buffer.id);
+
+    if (type_name.empty()) {
+      type_name = "cbuffer";
+    }
+
+    if (var_name.empty()) {
+      var_name = type_name;
+    }
+
+    type_name = _sanitize_block_name(type_name);
+    var_name = _sanitize_block_name(var_name);
+
+    compiler.set_name(uniform_buffer.base_type_id, type_name);
+    compiler.set_name(uniform_buffer.id, var_name);
+  }
+
+  for (const auto& push_constant : resources.push_constant_buffers) {
+    auto type_name = compiler.get_name(push_constant.base_type_id);
+    auto var_name = compiler.get_name(push_constant.id);
+
+    if (type_name.empty()) {
+      type_name = "push_constants";
+    }
+
+    if (var_name.empty()) {
+      var_name = type_name;
+    }
+
+    type_name = _sanitize_block_name(type_name);
+    var_name = _sanitize_block_name(var_name);
+
+    compiler.set_name(push_constant.base_type_id, type_name);
+    compiler.set_name(push_constant.id, var_name);
+  }
+
+  for (const auto& storage_buffer : resources.storage_buffers) {
+    auto type_name = compiler.get_name(storage_buffer.base_type_id);
+
+    if (!type_name.empty()) {
+      type_name = _sanitize_block_name(type_name);
+      compiler.set_name(storage_buffer.base_type_id, type_name);
+    }
+  }
+}
+
 shader::shader(const std::filesystem::path& path, VkShaderStageFlagBits stage, const containers::static_vector<define, 10u>& defines)
 : _stage{stage} {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
@@ -29,6 +100,7 @@ shader::shader(const std::filesystem::path& path, VkShaderStageFlagBits stage, c
 
   auto compiler = spirv_cross::Compiler{reinterpret_cast<const std::uint32_t*>(code.data()), code.size() / 4};
 
+  // _sanitize_names(compiler);
   _create_reflection(compiler);
 
   auto create_info = VkShaderModuleCreateInfo{};
@@ -66,7 +138,7 @@ auto shader::_create_reflection(const spirv_cross::Compiler& compiler) -> void {
   for (const auto& uniform_buffer : resources.uniform_buffers) {
     const auto& type = compiler.get_type(uniform_buffer.type_id);
 
-    const auto& uniform_blocks_name = uniform_buffer.name;
+    const auto& uniform_blocks_name = compiler.get_name(uniform_buffer.id);
     const auto uniform_blocks_set = compiler.get_decoration(uniform_buffer.id, spv::DecorationDescriptorSet);
     const auto uniform_blocks_binding = compiler.get_decoration(uniform_buffer.id, spv::DecorationBinding);
     const auto uniform_blocks_size = compiler.get_declared_struct_size(type);

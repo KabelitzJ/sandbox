@@ -94,7 +94,7 @@ public:
 
     _pipeline.bind(command_buffer);
 
-    _scene_descriptor_handler.push("uniform_scene", _scene_uniform_handler);
+    _scene_descriptor_handler.push("scene", _scene_uniform_handler);
     
     if (!_scene_descriptor_handler.update(_pipeline)) {
       return;

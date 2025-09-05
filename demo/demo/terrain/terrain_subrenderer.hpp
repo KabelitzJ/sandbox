@@ -64,7 +64,7 @@ public:
       _push_handler.push("land_color", chunk.land_color);
       _push_handler.push("mountain_color", chunk.mountain_color);
 
-      _descriptor_handler.push("uniform_scene", _scene_uniform_handler);
+      _descriptor_handler.push("scene", _scene_uniform_handler);
       // _descriptor_handler.push("push", _push_handler);
 
       if (!_descriptor_handler.update(_pipeline)) {

@@ -255,7 +255,7 @@ private:
 
     _pipeline.bind(command_buffer);
 
-    _scene_descriptor_handler.push("uniform_scene", _scene_uniform_handler);
+    _scene_descriptor_handler.push("scene", _scene_uniform_handler);
     // _scene_descriptor_handler.push("buffer_point_lights", _point_lights_storage_handler);
     // _scene_descriptor_handler.push("shadow_map_image", graphics_module.attachment("shadow_map"));
     _scene_descriptor_handler.push("images_sampler", _images_sampler);
