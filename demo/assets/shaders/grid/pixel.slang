@@ -1,0 +1,50 @@
+#include <libsbx/common/math.slang>
+
+#include <grid/config.slang>
+
+struct ps_in {
+  float2 uv : TEXCOORD0;
+  float2 camera_position  : TEXCOORD1;
+}; // struct ps_in
+
+struct ps_out {
+  float4 color : SV_Target0;
+}; // struct ps_out
+
+float4 grid_color(float2 uv, float2 camera_position) {
+  float2 dudv = float2(length(float2(ddx(uv.x), ddy(uv.x))), length(float2(ddx(uv.y), ddy(uv.y))));
+
+
+  float lod_level = max(0.0, (log(length(dudv) * grid_min_pixels_between_cells / grid_cell_size) / log(10.0)) + 1.0);
+  float lod_fade = frac(lod_level);
+
+  float lod0 = grid_cell_size * pow(10.0, floor(lod_level));
+  float lod1 = lod0 * 10.0;
+  float lod2 = lod1 * 10.0;
+
+  dudv *= 4.0;
+  uv += dudv * 0.5;
+
+  float lod0a = max2(1.0.xx - abs(satv(fmod(uv, lod0) / dudv) * 2.0 - 1.0.xx));
+  float lod1a = max2(1.0.xx - abs(satv(fmod(uv, lod1) / dudv) * 2.0 - 1.0.xx));
+  float lod2a = max2(1.0.xx - abs(satv(fmod(uv, lod2) / dudv) * 2.0 - 1.0.xx));
+
+  float4 color = (lod2a > 0.0) ? grid_color_thick : (lod1a > 0.0) ? lerp(grid_color_thick, grid_color_thin, lod_fade) : grid_color_thin;
+
+  uv -= camera_position;
+  float opacity_falloff = (1.0 - satf(length(uv) / grid_size));
+
+  color.a *= (lod2a > 0.0) ? lod2a : (lod1a > 0.0) ? lod1a : (lod0a * (1.0 - lod_fade));
+  color.a *= opacity_falloff;
+
+  return color;
+}
+
+[shader("fragment")]
+ps_out ps_main(ps_in in) {
+  ps_out out;
+
+  out.color = grid_color(in.uv, in.camera_position);
+
+  return out;
+}
