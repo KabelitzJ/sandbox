@@ -11,7 +11,7 @@ STAGES = ["vertex", "fragment", "compute", "geometry", "tesscontrol", "tesseval"
 # Slang stage → (profile, entry)
 SLANG_STAGE_INFO = {
   "vertex":      ("vs_6_0", "vs_main"),
-  "fragment":    ("ps_6_0", "ps_main"),
+  "fragment":    ("ps_6_0", "fs_main"),
   "pixel":       ("ps_6_0", "ps_main"),
   "compute":     ("cs_6_0", "cs_main"),
   "geometry":    ("gs_6_0", "gs_main"),

@@ -1,20 +1,20 @@
 [[vk::binding(0, 0)]]
 Sampler2D image;
 
-struct ps_in {
+struct fs_in {
   float2 uv : TEXCOORD0;
-}; // struct ps_in
+}; // struct fs_in
 
-struct ps_out {
+struct fs_out {
   float4 color : SV_Target0;
-}; // struct ps_out
+}; // struct fs_out
 
 static const float EDGE_THRESHOLD_MIN = 0.0312;
 static const float EDGE_THRESHOLD_MAX = 0.125;
 
 [shader("fragment")]
-ps_out ps_main(ps_in in) {
-  ps_out out;
+fs_out fs_main(fs_in in) {
+  fs_out out;
 
   uint w, h;
   image.GetDimensions(w, h);

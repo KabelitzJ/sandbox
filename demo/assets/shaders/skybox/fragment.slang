@@ -1,11 +1,11 @@
-struct ps_in {
+struct fs_in {
   float3 uv : TEXCOORD0;
   float4 color : COLOR0;
-}; // struct ps_in
+}; // struct fs_in
 
-struct ps_out {
+struct fs_out {
   float4 color : SV_Target0;
-}; // struct ps_out
+}; // struct fs_out
 
 [[vk::binding(1, 0)]]
 SamplerCube skybox;
@@ -15,8 +15,8 @@ static const float FOG_DENSITY = 0.002;
 static const float4 FOG_COLOR = float4(0.5, 0.5, 0.5, 1.0);
 
 [shader("fragment")]
-ps_out ps_main(ps_in in) {
-  ps_out out;
+fs_out fs_main(fs_in in) {
+  fs_out out;
 
   float3 direction = normalize(in.uv);
   float4 cube_map_color = skybox.Sample(direction) * in.color;

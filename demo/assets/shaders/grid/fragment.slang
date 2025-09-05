@@ -2,14 +2,14 @@
 
 #include <grid/config.slang>
 
-struct ps_in {
+struct fs_in {
   float2 uv : TEXCOORD0;
   float2 camera_position  : TEXCOORD1;
-}; // struct ps_in
+}; // struct fs_in
 
-struct ps_out {
+struct fs_out {
   float4 color : SV_Target0;
-}; // struct ps_out
+}; // struct fs_out
 
 float4 grid_color(float2 uv, float2 camera_position) {
   float2 dudv = float2(length(float2(ddx(uv.x), ddy(uv.x))), length(float2(ddx(uv.y), ddy(uv.y))));
@@ -41,8 +41,8 @@ float4 grid_color(float2 uv, float2 camera_position) {
 }
 
 [shader("fragment")]
-ps_out ps_main(ps_in in) {
-  ps_out out;
+fs_out fs_main(fs_in in) {
+  fs_out out;
 
   out.color = grid_color(in.uv, in.camera_position);
 
