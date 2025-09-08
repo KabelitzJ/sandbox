@@ -1,6 +1,8 @@
 struct fs_in {
-  float3 uv : TEXCOORD0;
-  float4 color : COLOR0;
+  [[vk::location(0)]]
+  float3 uv : UV;
+  [[vk::location(1)]]
+  float4 color : COLOR;
 }; // struct fs_in
 
 struct fs_out {

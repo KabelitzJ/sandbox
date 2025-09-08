@@ -134,7 +134,7 @@ inline constexpr auto fmt::formatter<sbx::math::basic_vector4<Type>>::parse(Pars
 
 template<sbx::math::scalar Type>
 template<typename FormatContext>
-inline auto fmt::formatter<sbx::math::basic_vector4<Type>>::format(const sbx::math::basic_vector4<Type>& vector, FormatContext& context) noexcept -> decltype(context.out()) {
+inline auto fmt::formatter<sbx::math::basic_vector4<Type>>::format(const sbx::math::basic_vector4<Type>& vector, FormatContext& context) const noexcept -> decltype(context.out()) {
   if constexpr (sbx::math::is_floating_point_v<Type>) {
     return fmt::format_to(context.out(), "{{x: {:.2f}, y: {:.2f}, z: {:.2f}, w: {:.2f}}}", vector.x(), vector.y(), vector.z(), vector.w());
   } else {

@@ -115,7 +115,7 @@ struct fmt::formatter<sbx::math::basic_vector4<Type>> {
   constexpr auto parse(ParseContext& context) noexcept -> decltype(context.begin());
 
   template<typename FormatContext>
-  auto format(const sbx::math::basic_vector4<Type>& vector, FormatContext& context) noexcept -> decltype(context.out());
+  auto format(const sbx::math::basic_vector4<Type>& vector, FormatContext& context) const noexcept -> decltype(context.out());
 
 }; // struct fmt::formatter
 

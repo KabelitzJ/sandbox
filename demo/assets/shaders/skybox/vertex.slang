@@ -28,8 +28,10 @@ struct vs_in {
 }; // struct vs_in
 
 struct vs_out {
-  float3 uv : TEXCOORD0;
-  float4 color : COLOR0;
+  [[vk::location(0)]]
+  float3 uv : UV;
+  [[vk::location(1)]]
+  float4 color : COLOR;
   float4 position : SV_Position;
 }; // struct vs_out
 
