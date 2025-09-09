@@ -251,7 +251,7 @@ application::application()
   // Helmet
   auto helmet = scene.create_node("Helmet");
 
-  scene.add_material<sbx::scenes::material>("helmet", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 0.5f, 1.0f, scene.get_image("helmet_albedo"), scene.get_image("helmet_normal"));
+  scene.add_material<sbx::scenes::material>("helmet", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 0.5f, 1.0f, scene.get_image("helmet_albedo"), scene.get_image("helmet_normal"), scene.get_image("helmet_mrao"));
 
   scene.add_component<show_local_coordinates>(helmet);
 
