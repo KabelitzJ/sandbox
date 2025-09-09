@@ -64,7 +64,7 @@ vec3 get_material() {
 }
 
 void main(void) {
-  out_albedo = get_albedo();
+  out_albedo = vec4(get_material(), 1.0);
   out_position = vec4(in_position, 1.0);
   out_normal = vec4(get_normal(), 0.0);
   out_material = vec4(get_material(), 0.0);

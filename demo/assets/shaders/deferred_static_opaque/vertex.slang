@@ -76,13 +76,12 @@ struct vs_in {
 struct vs_out {
   float3 position : TEXCOORD0;
   float3 normal : TEXCOORD1;
-  float3 tangent : TEXCOORD2;
-  float3 bitangent : TEXCOORD3;
-  float2 uv : TEXCOORD4;
-  float4 color : TEXCOORD5;
-  float3 material : TEXCOORD6;
-  nointerpolation uint3 image_indices : TEXCOORD9;
-  nointerpolation uint2 object_id : TEXCOORD8;
+  float3x3 tbn : TEXCOORD2;
+  float2 uv : TEXCOORD5;
+  float4 color : TEXCOORD6;
+  float3 material : TEXCOORD7;
+  nointerpolation uint3 image_indices : TEXCOORD8;
+  nointerpolation uint2 object_id : TEXCOORD9;
   float4 sv_position : SV_Position;
 }; // struct vs_out
 
@@ -104,10 +103,13 @@ vs_out main(vs_in in) {
 
   float3 world_position = mul(transform_data.model, float4(in_position, 1.0)).xyz;
 
+  float3 N = normalize(mul(transform_data.normal, float4(in_normal, 0.0)).xyz);
+  float3 T = normalize(mul(transform_data.normal, float4(in_tangent.xyz, 0.0)).xyz);
+  float3 B = cross(T, N) * in_tangent.w;
+
   out.position = world_position;
-  out.normal = normalize(mul(transform_data.normal, float4(in_normal, 0.0)).xyz);;
-  out.tangent = normalize(mul(transform_data.normal, float4(in_tangent.xyz, 0.0)).xyz);
-  out.bitangent = cross(out.tangent, out.normal) * in_tangent.w;
+  out.normal = N;
+  out.tbn = float3x3(T, B, N);
   out.uv = in_uv;
   out.color = instance_data.tint;
   out.material = instance_data.material.xyz;

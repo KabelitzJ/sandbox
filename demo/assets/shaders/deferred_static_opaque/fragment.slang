@@ -5,13 +5,12 @@
 struct fs_in {
   float3 position : TEXCOORD0;
   float3 normal : TEXCOORD1;
-  float3 tangent : TEXCOORD2;
-  float3 bitangent : TEXCOORD3;
-  float2 uv : TEXCOORD4;
-  float4 color : TEXCOORD5;
-  float3 material : TEXCOORD6;
-  nointerpolation uint3 image_indices : TEXCOORD9;
-  nointerpolation uint2 object_id : TEXCOORD8;
+  float3x3 tbn : TEXCOORD2;
+  float2 uv : TEXCOORD5;
+  float4 color : TEXCOORD6;
+  float3 material : TEXCOORD7;
+  nointerpolation uint3 image_indices : TEXCOORD8;
+  nointerpolation uint2 object_id : TEXCOORD9;
   float4 sv_position : SV_Position;
 }; // struct fs_in
 
@@ -25,9 +24,9 @@ struct fs_out {
 }; // struct fs_out
 
 [[vk::binding(1, 0)]]
-SamplerState images_sampler : register(s1, space0);
+SamplerState images_sampler;
 [[vk::binding(2, 0)]]
-Texture2D images[MAX_IMAGE_ARRAY_SIZE] : register(t2, space0);
+Texture2D images[MAX_IMAGE_ARRAY_SIZE];
 
 static const float DEFAULT_NEAR = 0.1f;
 static const float DEFAULT_FAR  = 1000.0f;
@@ -39,7 +38,7 @@ float4 get_albedo(fs_in in) {
     return in.color;
   }
 
-  float4 color = images[index].Sample(images_sampler, in.uv);
+  float4 color = images[NonUniformResourceIndex(index)].Sample(images_sampler, in.uv);
 
   return float4(color.rgb * in.color.rgb, 1.0);
 }
@@ -51,10 +50,9 @@ float3 get_normal(fs_in in) {
     return normalize(in.normal);
   }
 
-  float3 normal = images[index].Sample(images_sampler, in.uv).xyz;
-  float3x3 tbn = float3x3(in.tangent, in.bitangent, in.normal);
+  float3 normal = images[NonUniformResourceIndex(index)].Sample(images_sampler, in.uv).xyz;
 
-  return normalize(mul(tbn, normal));
+  return normalize(mul(in.tbn, normal));
 }
 
 float3 get_material(fs_in in) {
@@ -64,7 +62,7 @@ float3 get_material(fs_in in) {
     return in.material;
   }
 
-  return images[index].Sample(images_sampler, in.uv).rgb;
+  return images[NonUniformResourceIndex(index)].Sample(images_sampler, in.uv).rgb;
 }
 
 [shader("fragment")]
