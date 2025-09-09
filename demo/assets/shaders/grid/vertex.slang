@@ -29,7 +29,7 @@ static const float3 vertices[4] = {
 static const int indices[6] = { 0, 1, 2, 2, 3, 0 };
 
 [shader("vertex")]
-vs_out vs_main(vs_in in) {
+vs_out main(vs_in in) {
   vs_out out;
 
   int index = indices[in.vertex_id];

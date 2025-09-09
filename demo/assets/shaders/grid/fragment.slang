@@ -41,7 +41,7 @@ float4 grid_color(float2 uv, float2 camera_position) {
 }
 
 [shader("fragment")]
-fs_out fs_main(fs_in in) {
+fs_out main(fs_in in) {
   fs_out out;
 
   out.color = grid_color(in.uv, in.camera_position);

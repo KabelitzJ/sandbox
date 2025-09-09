@@ -13,7 +13,7 @@ static const float EDGE_THRESHOLD_MIN = 0.0312;
 static const float EDGE_THRESHOLD_MAX = 0.125;
 
 [shader("fragment")]
-fs_out fs_main(fs_in in) {
+fs_out main(fs_in in) {
   fs_out out;
 
   uint w, h;

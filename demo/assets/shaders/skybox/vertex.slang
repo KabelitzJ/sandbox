@@ -28,11 +28,9 @@ struct vs_in {
 }; // struct vs_in
 
 struct vs_out {
-  [[vk::location(0)]]
-  float3 uv : UV;
-  [[vk::location(1)]]
-  float4 color : COLOR;
-  float4 position : SV_Position;
+  float3 uv : TEXCOORD0;
+  float4 color : TEXCOORD1;
+  float4 sv_position : SV_Position;
 }; // struct vs_out
 
 float3 position_from_vertex(vertex v) {
@@ -40,7 +38,7 @@ float3 position_from_vertex(vertex v) {
 }
 
 [shader("vertex")]
-vs_out vs_main(vs_in in) {
+vs_out main(vs_in in) {
   vs_out out;
 
   vertex vertex = push.vertices[in.vertex_id];
@@ -49,7 +47,7 @@ vs_out vs_main(vs_in in) {
   float3 view_rotation = mul((float3x3)scene.view, in_position);
 
   float4 clip = mul(scene.projection, float4(view_rotation, 1.0));
-  out.position = float4(clip.x, clip.y, clip.w, clip.w);
+  out.sv_position = float4(clip.x, clip.y, clip.w, clip.w);
 
   // pass-through
   out.uv = in_position;

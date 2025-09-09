@@ -21,7 +21,7 @@ struct vs_out {
 }; // struct vs_out
 
 [shader("vertex")]
-vs_out vs_main(vs_in in) {
+vs_out main(vs_in in) {
   vs_out out;
 
   vertex vertex = push.vertices[in.vertex_id];

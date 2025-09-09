@@ -11,13 +11,13 @@ struct push_push {
 [[vk::push_constant]]
 ConstantBuffer<push_push> push;
 
-struct ps_in {
+struct fs_in {
   float2 uv : TEXCOORD0;
-}; // struct ps_in
+}; // struct fs_in
 
-struct ps_out {
+struct fs_out {
   float4 color : SV_Target0;
-}; // struct ps_out
+}; // struct fs_out
 
 // blur type constants
 static const uint BLUR_TYPE_GAUSSIAN_5  = 0;
@@ -81,8 +81,8 @@ float4 gaussian_blur_13(float2 uv, float2 resolution, float2 direction) {
 }
 
 [shader("fragment")]
-ps_out ps_main(ps_in in) {
-  ps_out out;
+fs_out main(fs_in in) {
+  fs_out out;
 
   uint w, h;
   image.GetDimensions(w, h);

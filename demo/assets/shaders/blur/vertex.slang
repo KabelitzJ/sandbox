@@ -14,7 +14,7 @@ static const float2 positions[3] = {
 };
 
 [shader("vertex")]
-vs_out vs_main(vs_in in) {
+vs_out main(vs_in in) {
   vs_out out;
 
   float2 position = positions[in.vertex_id];

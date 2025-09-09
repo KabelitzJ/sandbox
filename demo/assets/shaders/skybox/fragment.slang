@@ -1,8 +1,6 @@
 struct fs_in {
-  [[vk::location(0)]]
-  float3 uv : UV;
-  [[vk::location(1)]]
-  float4 color : COLOR;
+  float3 uv : TEXCOORD0;
+  float4 color : TEXCOORD1;
 }; // struct fs_in
 
 struct fs_out {
@@ -17,7 +15,7 @@ static const float FOG_DENSITY = 0.002;
 static const float4 FOG_COLOR = float4(0.5, 0.5, 0.5, 1.0);
 
 [shader("fragment")]
-fs_out fs_main(fs_in in) {
+fs_out main(fs_in in) {
   fs_out out;
 
   float3 direction = normalize(in.uv);
