@@ -19,6 +19,8 @@ struct alignas(alignof(std::float_t)) vertex3d {
   math::vector2 uv;
 }; // struct vertex
 
+static_assert(sizeof(vertex3d) == (3 + 3 + 4 + 2) * sizeof(std::float_t) && alignof(vertex3d) == alignof(std::float_t), "");
+
 constexpr auto operator==(const vertex3d& lhs, const vertex3d& rhs) noexcept -> bool {
   return lhs.position == rhs.position && lhs.normal == rhs.normal && lhs.tangent == rhs.tangent && lhs.uv == rhs.uv;
 }

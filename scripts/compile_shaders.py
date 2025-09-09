@@ -10,13 +10,13 @@ STAGES = ["vertex", "fragment", "compute", "geometry", "tesscontrol", "tesseval"
 
 # Slang stage → (profile, entry)
 SLANG_STAGE_INFO = {
-  "vertex":      ("glsl_460", "vs_main"),
-  "fragment":    ("glsl_460", "fs_main"),
-  "pixel":       ("glsl_460", "ps_main"),
-  "compute":     ("glsl_460", "cs_main"),
-  "geometry":    ("glsl_460", "gs_main"),
-  "tesscontrol": ("glsl_460", "hs_main"),
-  "tesseval":    ("glsl_460", "ds_main"),
+  "vertex":      ("vs_6_0", "main"),
+  "fragment":    ("ps_6_0", "main"),
+  "pixel":       ("ps_6_0", "main"),
+  "compute":     ("cs_6_0", "main"),
+  "geometry":    ("gs_6_0", "main"),
+  "tesscontrol": ("hs_6_0", "main"),
+  "tesseval":    ("ds_6_0", "main"),
 }
 
 
@@ -140,7 +140,9 @@ def compile_slang_dir(slangc_path: Optional[str], shader_dir: Path, shader_root_
       "-target", "spirv",
       "-profile", profile,
       "-entry", entry,
-      "-fvk-use-gl-layout",
+      "-capability", "spirv_1_5",
+      "-capability", "SPV_EXT_physical_storage_buffer",
+      "-matrix-layout-column-major",
       "-o", str(out_spv),
       f"-I{shader_root_dir}",
     ]
