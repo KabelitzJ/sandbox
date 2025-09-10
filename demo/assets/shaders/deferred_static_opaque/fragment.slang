@@ -1,6 +1,5 @@
 #include <libsbx/common/depth.slang>
-
-#define MAX_IMAGE_ARRAY_SIZE 64
+#include <libsbx/common/image.slang>
 
 struct fs_in {
   float3 position : TEXCOORD0;
@@ -27,16 +26,14 @@ struct fs_out {
 
 [[vk::binding(1, 0)]]
 SamplerState images_sampler;
-[[vk::binding(2, 0)]]
-Texture2D images[MAX_IMAGE_ARRAY_SIZE];
 
-static const float DEFAULT_NEAR = 0.1f;
-static const float DEFAULT_FAR  = 1000.0f;
+[[vk::binding(2, 0)]]
+Texture2D images[sbx::common::max_image_array_size];
 
 float4 get_albedo(fs_in in) {
   uint index = in.image_indices.x;
 
-  if (index >= MAX_IMAGE_ARRAY_SIZE) {
+  if (index >= sbx::common::max_image_array_size) {
     return in.color;
   }
 
@@ -48,12 +45,11 @@ float4 get_albedo(fs_in in) {
 float3 get_normal(fs_in in) {
   uint index = in.image_indices.y;
 
-  if (index >= MAX_IMAGE_ARRAY_SIZE) {
+  if (index >= sbx::common::max_image_array_size) {
     return normalize(in.normal);
   }
 
   float3 normal = images[NonUniformResourceIndex(index)].Sample(images_sampler, in.uv).xyz;
-  // float3x3 tbn = float3x3(normalize(in.tbn0), normalize(in.tbn1), normalize(in.tbn2));
 
   return normalize(in.tbn0 * normal.x + in.tbn1 * normal.y + in.tbn2 * normal.z);
 }
@@ -61,7 +57,7 @@ float3 get_normal(fs_in in) {
 float3 get_material(fs_in in) {
   uint index = in.image_indices.z;
 
-  if (index >= MAX_IMAGE_ARRAY_SIZE) {
+  if (index >= sbx::common::max_image_array_size) {
     return in.material;
   }
 

@@ -21,8 +21,8 @@ class debug_subrenderer final : public sbx::graphics::subrenderer {
   class pipeline : public sbx::graphics::graphics_pipeline {
 
     inline static const auto pipeline_definition = sbx::graphics::pipeline_definition{
-      .depth = sbx::graphics::depth::read_only,
-      .uses_transparency = true,
+      .depth = sbx::graphics::depth::disabled,
+      .uses_transparency = false,
       .rasterization_state = sbx::graphics::rasterization_state{
         .polygon_mode = sbx::graphics::polygon_mode::fill,
         .cull_mode = sbx::graphics::cull_mode::none,
@@ -48,14 +48,18 @@ public:
   : sbx::graphics::subrenderer{pass},
     _pipeline{path, pass},
     _push_handler{_pipeline},
-    _storage_buffer{std::make_optional<graphics::storage_buffer>(graphics::storage_buffer::min_size, VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT)},
-    _descriptor_handler{_pipeline, 0u} { }
+    _descriptor_handler{_pipeline, 0u} {
+    auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+    _storage_buffer = graphics_module.add_resource<graphics::storage_buffer>(graphics::storage_buffer::min_size, VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT);
+  }
 
   ~debug_subrenderer() override {
 
   }
 
   auto render(sbx::graphics::command_buffer& command_buffer) -> void override {
+    auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
     auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
 
     const auto& lines = scenes_module.debug_lines();
@@ -78,17 +82,19 @@ public:
     
     _pipeline.bind(command_buffer);
 
-    if (lines.size() * sizeof(scenes_module::line) > _storage_buffer->size()) {
-      _storage_buffer.emplace(lines.size() * sizeof(scenes_module::line), VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT);
+    auto& storage_buffer = graphics_module.get_resource<graphics::storage_buffer>(_storage_buffer);
+
+    const auto required_size = static_cast<std::uint32_t>(lines.size() * sizeof(scenes_module::line));
+
+    if (storage_buffer.size() < required_size) {
+      storage_buffer.resize(static_cast<std::size_t>(static_cast<std::float_t>(required_size) * 1.5f));
     }
 
-    _storage_buffer->update(lines.data(), lines.size() * sizeof(scenes_module::line));
+    storage_buffer.update(lines.data(), required_size);
 
     _push_handler.push("mvp", projection * view);
-    _push_handler.push("vertices", _storage_buffer->address());
+    _push_handler.push("vertices", storage_buffer.address());
 
-    // _descriptor_handler.push("buffer_vertex_data", _storage_handler);
-    // _descriptor_handler.push("push", _push_handler);
 
     if (!_descriptor_handler.update(_pipeline)) {
       return;
@@ -108,7 +114,8 @@ private:
 
   sbx::graphics::push_handler _push_handler;
 
-  std::optional<graphics::storage_buffer> _storage_buffer;
+  // std::optional<graphics::storage_buffer> _storage_buffer;
+  graphics::storage_buffer_handle _storage_buffer;
 
   sbx::graphics::descriptor_handler _descriptor_handler;
 

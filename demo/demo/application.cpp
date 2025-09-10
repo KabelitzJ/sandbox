@@ -208,7 +208,7 @@ application::application()
 
   // Circling point lights
 
-  _light_center = scene.create_node("LightCenter", sbx::scenes::transform{sbx::math::vector3{0.0f, 10.0f, 0.0f}});
+  _light_center = scene.create_node("LightCenter", sbx::scenes::transform{sbx::math::vector3{0.0f, 20.0f, 0.0f}});
 
   
   const auto radius = 20.0f;
