@@ -76,7 +76,9 @@ struct vs_in {
 struct vs_out {
   float3 position : TEXCOORD0;
   float3 normal : TEXCOORD1;
-  float3x3 tbn : TEXCOORD2;
+  float3 tbn0 : TEXCOORD2;
+  float3 tbn1 : TEXCOORD3;
+  float3 tbn2 : TEXCOORD4;
   float2 uv : TEXCOORD5;
   float4 color : TEXCOORD6;
   float3 material : TEXCOORD7;
@@ -109,12 +111,14 @@ vs_out main(vs_in in) {
 
   out.position = world_position;
   out.normal = N;
-  out.tbn = float3x3(T, B, N);
+  out.tbn0 = T;
+  out.tbn1 = B;
+  out.tbn2 = N;
   out.uv = in_uv;
   out.color = instance_data.tint;
-  out.material = instance_data.material.xyz;
-  out.image_indices = uint3(instance_data.payload.x, instance_data.payload.y, instance_data.payload.z);
-  out.object_id = uint2(instance_data.selection.x, instance_data.selection.y);
+  out.material = instance_data.material.rgb;
+  out.image_indices = instance_data.payload.xyz;
+  out.object_id = instance_data.selection.xy;
 
   out.sv_position = mul(scene.projection, mul(scene.view, float4(world_position, 1.0)));
 

@@ -139,9 +139,9 @@ void main() {
   vec3 normal = normalize(texture(normal_image, in_uv).xyz);
   vec3 mrao = texture(material_image, in_uv).rgb;
 
-  out_color = vec4(mrao, 1.0);
+  // out_color = vec4(normal, 1.0);
 
-  return;
+  // return;
 
   float metallic = clamp(mrao.r, 0.0, 1.0);
   float roughness = clamp(mrao.g, 0.05, 1.0);

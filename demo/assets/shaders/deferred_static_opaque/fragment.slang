@@ -5,7 +5,9 @@
 struct fs_in {
   float3 position : TEXCOORD0;
   float3 normal : TEXCOORD1;
-  float3x3 tbn : TEXCOORD2;
+  float3 tbn0 : TEXCOORD2;
+  float3 tbn1 : TEXCOORD3;
+  float3 tbn2 : TEXCOORD4;
   float2 uv : TEXCOORD5;
   float4 color : TEXCOORD6;
   float3 material : TEXCOORD7;
@@ -51,8 +53,9 @@ float3 get_normal(fs_in in) {
   }
 
   float3 normal = images[NonUniformResourceIndex(index)].Sample(images_sampler, in.uv).xyz;
+  // float3x3 tbn = float3x3(normalize(in.tbn0), normalize(in.tbn1), normalize(in.tbn2));
 
-  return normalize(mul(in.tbn, normal));
+  return normalize(in.tbn0 * normal.x + in.tbn1 * normal.y + in.tbn2 * normal.z);
 }
 
 float3 get_material(fs_in in) {
