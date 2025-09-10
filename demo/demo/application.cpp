@@ -158,6 +158,28 @@ application::application()
     sbx::core::engine::quit();
   };
 
+  // BMP
+
+  scene.add_material<sbx::scenes::material>("bmp_body1", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 0.5f, 1.0f, scene.get_image("bmp_body1_albedo"), scene.get_image("bmp_body1_normal"));
+  scene.add_material<sbx::scenes::material>("bmp_body2", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 0.5f, 1.0f, scene.get_image("bmp_body2_albedo"), scene.get_image("bmp_body2_normal"));
+  scene.add_material<sbx::scenes::material>("bmp_tracks", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 0.5f, 1.0f, scene.get_image("bmp_tracks_albedo"), scene.get_image("bmp_tracks_normal"));
+
+  auto& tank_mesh = assets_module.get_asset<sbx::models::mesh>(scene.get_mesh("bmp"));
+
+  auto root = scene.create_node("Tank", sbx::scenes::transform{sbx::math::vector3{20, 0, 10}, sbx::math::quaternion::identity, sbx::math::vector3{0.5}});
+
+  auto turret = scene.create_child_node(root, "Turret", sbx::scenes::transform{});
+  scene.add_component<sbx::scenes::static_mesh>(turret, scene.get_mesh("bmp"), std::vector<sbx::scenes::static_mesh::submesh>{{tank_mesh.submesh_index("turret"), scene.get_material("bmp_body1")}});
+
+  auto gun_primary = scene.create_child_node(turret, "GunPrimary", sbx::scenes::transform{});
+  scene.add_component<sbx::scenes::static_mesh>(gun_primary, scene.get_mesh("bmp"), std::vector<sbx::scenes::static_mesh::submesh>{{tank_mesh.submesh_index("gun_primary"), scene.get_material("bmp_body1")}});
+
+  auto gun_secondary = scene.create_child_node(turret, "GunSecondary", sbx::scenes::transform{});
+  scene.add_component<sbx::scenes::static_mesh>(gun_secondary, scene.get_mesh("bmp"), std::vector<sbx::scenes::static_mesh::submesh>{{tank_mesh.submesh_index("gun_secondary"), scene.get_material("bmp_body1")}});
+
+  auto hull = scene.create_child_node(root, "Hull", sbx::scenes::transform{});
+  scene.add_component<sbx::scenes::static_mesh>(hull, scene.get_mesh("bmp"), std::vector<sbx::scenes::static_mesh::submesh>{{tank_mesh.submesh_index("hull"), scene.get_material("bmp_body2")}});
+
   // Terrain
 
   auto& terrain_module = sbx::core::engine::get_module<demo::terrain_module>();

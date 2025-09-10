@@ -170,7 +170,7 @@ void main() {
   vec3 k_d = vec3(1.0) - k_s;
   k_d *= 1.0 - metallic;
 
-  float shadow = calculate_shadow(world_position, normal);
+  float shadow = 1.0; // calculate_shadow(world_position, normal);
   vec3 irradiance = scene.light_color.rgb * ndl * shadow;
 
   color += (k_d * albedo / PI + specular) * irradiance;

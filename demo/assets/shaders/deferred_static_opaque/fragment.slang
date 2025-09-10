@@ -28,7 +28,7 @@ struct fs_out {
 SamplerState images_sampler;
 
 [[vk::binding(2, 0)]]
-Texture2D images[sbx::common::max_image_array_size];
+Texture2D<float4>  images[sbx::common::max_image_array_size];
 
 float4 get_albedo(fs_in in) {
   uint index = in.image_indices.x;
