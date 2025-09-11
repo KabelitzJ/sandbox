@@ -173,7 +173,7 @@ auto shader::_create_reflection(const spirv_cross::Compiler& compiler) -> void {
   for (const auto& push_constant : resources.push_constant_buffers) {
     const auto& type = compiler.get_type(push_constant.type_id);
 
-    const auto& uniform_blocks_name = push_constant.name;
+    const auto& uniform_blocks_name = compiler.get_name(push_constant.id);
     const auto uniform_blocks_set = compiler.get_decoration(push_constant.id, spv::DecorationDescriptorSet);
     const auto uniform_blocks_binding = compiler.get_decoration(push_constant.id, spv::DecorationBinding);
     const auto uniform_blocks_size = compiler.get_declared_struct_size(type);
@@ -208,7 +208,7 @@ auto shader::_create_reflection(const spirv_cross::Compiler& compiler) -> void {
   for (const auto& storage_buffer : resources.storage_buffers) {
     const auto& type = compiler.get_type(storage_buffer.type_id);
 
-    const auto& storage_buffer_name = storage_buffer.name;
+    const auto& storage_buffer_name = compiler.get_name(storage_buffer.id);
     const auto storage_buffer_set = compiler.get_decoration(storage_buffer.id, spv::DecorationDescriptorSet);
     const auto storage_buffer_binding = compiler.get_decoration(storage_buffer.id, spv::DecorationBinding);
 

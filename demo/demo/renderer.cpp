@@ -159,12 +159,12 @@ renderer::renderer()
   
   // Resolve pass
   auto resolve_opaque_attachment_names = std::vector<std::pair<std::string, std::string>>{
-    {"shadow_image", "shadow"},
     {"albedo_image", "albedo"},
     {"position_image", "position"},
     {"normal_image", "normal"},
     {"material_image", "material"},
-    {"object_id_image", "object_id"}
+    {"shadow_image", "shadow"},
+    // {"object_id_image", "object_id"}
   };
 
   add_subrenderer<sbx::post::resolve_opaque_filter>("res://shaders/resolve_opaque", resolve, std::move(resolve_opaque_attachment_names));

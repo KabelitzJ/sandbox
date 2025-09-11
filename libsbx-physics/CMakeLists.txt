@@ -116,13 +116,17 @@ install(
     HEADERS 
 )
 
+set(_LINK_OPTIONS -fsanitize=address,undefined)
+
 if(MINGW)
-  target_link_options(
-    ${PROJECT_NAME}
-    PUBLIC
-      -Wl,--disable-dynamicbase,--default-image-base-low
-  )
+  list(APPEND _LINK_OPTIONS -Wl,--disable-dynamicbase,--default-image-base-low)
 endif()
+
+target_link_options(
+  ${PROJECT_NAME}
+  PUBLIC
+    ${_LINK_OPTIONS}
+)
 
 if(${SBX_BUILD_TESTS})
   add_subdirectory(tests)

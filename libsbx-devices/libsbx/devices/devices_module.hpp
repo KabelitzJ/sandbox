@@ -41,11 +41,11 @@ public:
     // _window = std::make_unique<devices::window>(window_create_info{"Demo", 1280, 720});
     // std::construct_at(std::launder(reinterpret_cast<devices::window*>(&_window)), window_create_info{"Demo", 1280, 720});
     // _window.construct(window_create_info{"Demo", 1280, 720});
-    _window.construct(window_create_info{"Demo", 1280, 720});
+    _window = std::make_unique<devices::window>(window_create_info{"Demo", 1280, 720});
   }
 
   ~devices_module() override {
-    _window.destroy();
+    _window.reset();
 
     glfwTerminate();
   }
@@ -71,7 +71,7 @@ public:
 
 private:
 
-  memory::constructible<devices::window> _window;
+  std::unique_ptr<devices::window> _window;
 
 }; // class devices_module
 
