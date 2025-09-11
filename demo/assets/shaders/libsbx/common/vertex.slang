@@ -35,6 +35,22 @@ vector<float, N> get_uv<let N : uint, Vertex: uv<N>>(Vertex vertex) {
   return vertex.get_uv();
 }
 
+interface bone_indices<let N : uint> {
+  vector<uint, N> get_bone_indices();
+}; // interface position
+
+vector<uint, N> get_bone_indices<let N : uint, Vertex: bone_indices<N>>(Vertex vertex) {
+  return vertex.get_bone_indices();
+}
+
+interface bone_weights<let N : uint> {
+  vector<float, N> get_bone_weights();
+}; // interface position
+
+vector<float, N> get_bone_weights<let N : uint, Vertex: bone_weights<N>>(Vertex vertex) {
+  return vertex.get_bone_weights();
+}
+
 } // namespace sbx::common
 
 #endif // COMMON_VERTEX_SLANG_

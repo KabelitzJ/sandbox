@@ -160,9 +160,9 @@ application::application()
 
   // BMP
 
-  scene.add_material<sbx::scenes::material>("bmp_body1", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 0.5f, 1.0f, scene.get_image("bmp_body1_albedo"), scene.get_image("bmp_body1_normal"));
-  scene.add_material<sbx::scenes::material>("bmp_body2", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 0.5f, 1.0f, scene.get_image("bmp_body2_albedo"), scene.get_image("bmp_body2_normal"));
-  scene.add_material<sbx::scenes::material>("bmp_tracks", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 0.5f, 1.0f, scene.get_image("bmp_tracks_albedo"), scene.get_image("bmp_tracks_normal"));
+  scene.add_material<sbx::scenes::material>("bmp_body1", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 0.5f, 1.0f, scene.get_image("bmp_body1_albedo"));
+  scene.add_material<sbx::scenes::material>("bmp_body2", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 0.5f, 1.0f, scene.get_image("bmp_body2_albedo"));
+  scene.add_material<sbx::scenes::material>("bmp_tracks", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 0.5f, 1.0f, scene.get_image("bmp_tracks_albedo"));
 
   auto& tank_mesh = assets_module.get_asset<sbx::models::mesh>(scene.get_mesh("bmp"));
 
