@@ -40,29 +40,36 @@ public:
 
   copy_on_write(const copy_on_write& other) noexcept
   : _payload{other._payload} {
-    ++_payload->count;
+    if (_payload) {
+      _payload->count.fetch_add(1, std::memory_order_relaxed);
+    }
   }
 
   copy_on_write(copy_on_write&& other) noexcept
-  : _payload{std::exchange(other._payload, nullptr)} { }
+  : _payload{std::exchange(other._payload, nullptr)} {}
 
   ~copy_on_write() {
-    if (_payload && (_payload->count == 0)) {
-      delete _payload;
-    }
+    _release();
   }
 
   auto operator=(const copy_on_write& other) noexcept -> copy_on_write& {
     if (this != &other) {
-      *this = copy_on_write{other};
+      _release();
+      _payload = other._payload;
+
+      if (_payload) {
+        _payload->count.fetch_add(1, std::memory_order_relaxed);
+      }
     }
 
     return *this;
   }
 
   auto operator=(copy_on_write&& other) noexcept -> copy_on_write& {
-    auto temp = std::move(other);
-    swap(*this, temp);
+    if (this != &other) {
+      _release();
+      _payload = std::exchange(other._payload, nullptr);
+    }
 
     return *this;
   }
@@ -80,6 +87,14 @@ public:
   }
 
 private:
+
+  auto _release() -> void {
+    if (_payload && _payload->count.fetch_sub(1, std::memory_order_acq_rel) == 1) {
+      delete _payload;
+    }
+
+    _payload = nullptr;
+  }
 
   auto _is_unique() const -> bool {
     return _payload->count == 1;

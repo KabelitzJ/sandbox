@@ -136,9 +136,9 @@ install(
 
 set(_LINK_OPTIONS)
 
-if(SBX_USE_ASAN)
-  list(APPEND _LINK_OPTIONS -fsanitize=address,undefined)
-endif()
+# if(NOT MINGW)
+#   list(APPEND _LINK_OPTIONS -fsanitize=address,undefined)
+# endif()
 
 if(MINGW)
   list(APPEND _LINK_OPTIONS -Wl,--disable-dynamicbase,--default-image-base-low)

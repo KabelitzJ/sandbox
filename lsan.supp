@@ -1,3 +1,4 @@
 leak:libLLVM.so
 leak:libvulkan.so
 leak:libxcb.so
+leak:__pthread_once_slow

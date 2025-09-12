@@ -190,10 +190,10 @@ target_compile_options(
     -Wlogical-op
     -Wuseless-cast
     # ENABLE_SANITIZERS
-    -fsanitize=address,undefined 
-    -fno-omit-frame-pointer 
-    -O1 
-    -g
+    # -fsanitize=address,undefined 
+    # -fno-omit-frame-pointer 
+    # -O1 
+    # -g
 )
 
 install(
