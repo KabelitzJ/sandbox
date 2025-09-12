@@ -79,12 +79,15 @@ float3 fresnel_schlick(float cos_theta, float3 f0) {
 //   return ggx1 * ggx2;
 // }
 
-// Use alpha (α = roughness^2) consistently:
+// // Use alpha (α = roughness^2) consistently:
 float distribution_ggx(float3 n, float3 h, float alpha) {
   float a2 = alpha * alpha;
+
   float ndh  = max(dot(n, h), 0.0);
   float ndh2 = ndh * ndh;
+  
   float denom = ndh2 * (a2 - 1.0) + 1.0;
+
   return a2 / (sbx::common::pi * denom * denom);
 }
 
@@ -92,12 +95,14 @@ float distribution_ggx(float3 n, float3 h, float alpha) {
 // (for IBL, you'd use k = (α+1)^2 / 8)
 float geometry_schlick_ggx(float ndx, float alpha) {
   float k = alpha * 0.5;
+
   return ndx / (ndx * (1.0 - k) + k);
 }
 
 float geometry_smith(float3 n, float3 v, float3 l, float alpha) {
   float ndv = max(dot(n, v), 0.0);
   float ndl = max(dot(n, l), 0.0);
+
   return geometry_schlick_ggx(ndv, alpha) * geometry_schlick_ggx(ndl, alpha);
 }
 

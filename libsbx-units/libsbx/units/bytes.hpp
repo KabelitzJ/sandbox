@@ -25,31 +25,31 @@ using byte = quantity<detail::byte_tag, std::uint64_t>;
 
 namespace literals {
 
-constexpr auto operator"" _gib(unsigned long long value) -> gibibyte {
+constexpr auto operator""_gib(unsigned long long value) -> gibibyte {
   return gibibyte{value};
 }
 
-constexpr auto operator"" _gb(unsigned long long value) -> gigabyte {
+constexpr auto operator""_gb(unsigned long long value) -> gigabyte {
   return gigabyte{value};
 }
 
-constexpr auto operator"" _mib(unsigned long long value) -> mebibyte {
+constexpr auto operator""_mib(unsigned long long value) -> mebibyte {
   return mebibyte{value};
 }
 
-constexpr auto operator"" _mb(unsigned long long value) -> megabyte {
+constexpr auto operator""_mb(unsigned long long value) -> megabyte {
   return megabyte{value};
 }
 
-constexpr auto operator"" _kib(unsigned long long value) -> kibibyte {
+constexpr auto operator""_kib(unsigned long long value) -> kibibyte {
   return kibibyte{value};
 }
 
-constexpr auto operator"" _kb(unsigned long long value) -> kilobyte {
+constexpr auto operator""_kb(unsigned long long value) -> kilobyte {
   return kilobyte{value};
 }
 
-constexpr auto operator"" _b(unsigned long long value) -> byte {
+constexpr auto operator""_b(unsigned long long value) -> byte {
   return byte{value};
 }
 

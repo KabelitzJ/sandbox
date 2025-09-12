@@ -56,7 +56,7 @@ target_link_libraries(
     spdlog::spdlog
     range-v3::range-v3
     easy_profiler
-    stdc++_libbacktrace
+    # stdc++_libbacktrace
     # Internal dependencies
     libsbx::utility
     libsbx::units

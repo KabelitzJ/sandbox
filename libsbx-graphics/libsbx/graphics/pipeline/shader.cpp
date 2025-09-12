@@ -96,17 +96,20 @@ shader::shader(const std::filesystem::path& path, VkShaderStageFlagBits stage, c
 
   const auto& logical_device = graphics_module.logical_device();
 
-  auto code = io::read_file(path);
+  auto code = io::load_spirv_words(path);
 
-  auto compiler = spirv_cross::Compiler{reinterpret_cast<const std::uint32_t*>(code.data()), code.size() / 4};
+  try {
+    auto compiler = spirv_cross::Compiler{code};
+    _create_reflection(compiler);
+  } catch (const spirv_cross::CompilerError& e) {
+    throw std::runtime_error(std::string{"SPIRV-Cross failed: "} + e.what());
+  }
 
   // _sanitize_names(compiler);
-  _create_reflection(compiler);
-
   auto create_info = VkShaderModuleCreateInfo{};
   create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-  create_info.codeSize = code.size();
-  create_info.pCode = reinterpret_cast<const std::uint32_t*>(code.data());
+  create_info.codeSize = code.size() * sizeof(std::uint32_t);
+  create_info.pCode = code.data();
 
   validate(vkCreateShaderModule(logical_device, &create_info, nullptr, &_handle));
 }

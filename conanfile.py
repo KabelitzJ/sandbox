@@ -91,7 +91,7 @@ class libsbx_recipe(ConanFile):
     self.requires("glfw/3.3.8")
     # self.requires("sol2/3.3.1")
     self.requires("tinyobjloader/2.0.0-rc10")
-    self.requires("spirv-cross/1.4.313.0")
+    self.requires("spirv-cross/1.4.321.0")
     # self.requires("spirv-headers/1.2.198.0")
     # self.requires("spirv-tools/1.4.309.0")
     self.requires("vulkan-memory-allocator/cci.20231120")

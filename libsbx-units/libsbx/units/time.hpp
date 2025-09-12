@@ -24,83 +24,83 @@ using nanosecond = quantity<detail::time_tag, std::float_t, std::nano>;
 
 namespace literals {
 
-constexpr auto operator"" _y(long double value) -> year {
+constexpr auto operator""_y(long double value) -> year {
   return year{static_cast<year::value_type>(value)};
 }
 
-constexpr auto operator"" _y(unsigned long long value) -> year {
+constexpr auto operator""_y(unsigned long long value) -> year {
   return year{static_cast<year::value_type>(value)};
 }
 
-constexpr auto operator"" _mo(long double value) -> month {
+constexpr auto operator""_mo(long double value) -> month {
   return month{static_cast<month::value_type>(value)};
 }
 
-constexpr auto operator"" _mo(unsigned long long value) -> month {
+constexpr auto operator""_mo(unsigned long long value) -> month {
   return month{static_cast<month::value_type>(value)};
 }
 
-constexpr auto operator"" _w(long double value) -> week {
+constexpr auto operator""_w(long double value) -> week {
   return week{static_cast<week::value_type>(value)};
 }
 
-constexpr auto operator"" _w(unsigned long long value) -> week {
+constexpr auto operator""_w(unsigned long long value) -> week {
   return week{static_cast<week::value_type>(value)};
 }
 
-constexpr auto operator"" _d(long double value) -> day {
+constexpr auto operator""_d(long double value) -> day {
   return day{static_cast<day::value_type>(value)};
 }
 
-constexpr auto operator"" _d(unsigned long long value) -> day {
+constexpr auto operator""_d(unsigned long long value) -> day {
   return day{static_cast<day::value_type>(value)};
 }
 
-constexpr auto operator"" _h(long double value) -> hour {
+constexpr auto operator""_h(long double value) -> hour {
   return hour{static_cast<hour::value_type>(value)};
 }
 
-constexpr auto operator"" _h(unsigned long long value) -> hour {
+constexpr auto operator""_h(unsigned long long value) -> hour {
   return hour{static_cast<hour::value_type>(value)};
 }
 
-constexpr auto operator"" _min(long double value) -> minute {
+constexpr auto operator""_min(long double value) -> minute {
   return minute{static_cast<minute::value_type>(value)};
 }
 
-constexpr auto operator"" _min(unsigned long long value) -> minute {
+constexpr auto operator""_min(unsigned long long value) -> minute {
   return minute{static_cast<minute::value_type>(value)};
 }
 
-constexpr auto operator"" _s(long double value) -> second {
+constexpr auto operator""_s(long double value) -> second {
   return second{static_cast<second::value_type>(value)};
 }
 
-constexpr auto operator"" _s(unsigned long long value) -> second {
+constexpr auto operator""_s(unsigned long long value) -> second {
   return second{static_cast<second::value_type>(value)};
 }
 
-constexpr auto operator"" _ms(long double value) -> millisecond {
+constexpr auto operator""_ms(long double value) -> millisecond {
   return millisecond{static_cast<millisecond::value_type>(value)};
 }
 
-constexpr auto operator"" _ms(unsigned long long value) -> millisecond {
+constexpr auto operator""_ms(unsigned long long value) -> millisecond {
   return millisecond{static_cast<millisecond::value_type>(value)};
 }
 
-constexpr auto operator"" _us(long double value) -> microsecond {
+constexpr auto operator""_us(long double value) -> microsecond {
   return microsecond{static_cast<microsecond::value_type>(value)};
 }
 
-constexpr auto operator"" _us(unsigned long long value) -> microsecond {
+constexpr auto operator""_us(unsigned long long value) -> microsecond {
   return microsecond{static_cast<microsecond::value_type>(value)};
 }
 
-constexpr auto operator"" _ns(long double value) -> nanosecond {
+constexpr auto operator""_ns(long double value) -> nanosecond {
   return nanosecond{static_cast<nanosecond::value_type>(value)};
 }
 
-constexpr auto operator"" _ns(unsigned long long value) -> nanosecond {
+constexpr auto operator""_ns(unsigned long long value) -> nanosecond {
   return nanosecond{static_cast<nanosecond::value_type>(value)};
 }
 

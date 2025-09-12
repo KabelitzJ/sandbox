@@ -31,7 +31,12 @@ auto debug_messenger::create(const instance& target, const VkAllocationCallbacks
 
 auto debug_messenger::create_info() -> VkDebugUtilsMessengerCreateInfoEXT* {
   if constexpr (utility::build_configuration_v == utility::build_configuration::debug) {
-    static auto validation_feature_enables = std::array<VkValidationFeatureEnableEXT, 1u>{VK_VALIDATION_FEATURE_ENABLE_DEBUG_PRINTF_EXT};
+    static auto validation_feature_enables = std::array<VkValidationFeatureEnableEXT, 4u>{
+      VK_VALIDATION_FEATURE_ENABLE_DEBUG_PRINTF_EXT,
+      VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT,
+      VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_EXT,
+      VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT
+    };
 
     static auto validation_features = VkValidationFeaturesEXT{};
     validation_features.sType = VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT;
