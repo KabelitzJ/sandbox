@@ -80,7 +80,6 @@ float geometry_smith(float3 n, float3 v, float3 l, float roughness) {
   return ggx1 * ggx2;
 }
 
-// === Shadow Calculation ===
 static const float2 POISSON_DISK[16] = {
   float2(-0.94201624, -0.39906216),
   float2( 0.94558609, -0.76890725),
@@ -156,7 +155,6 @@ T keep<T>(T value) {
 fs_out main(fs_in in) {
   fs_out out;
 
-  // --- G-buffer sampling ---
   float3 albedo = albedo_image.Sample(in.uv).rgb;
   float3 world_position = position_image.Sample(in.uv).xyz;
   float3 normal = normalize(normal_image.Sample(in.uv).xyz);
@@ -171,7 +169,6 @@ fs_out main(fs_in in) {
 
   float3 color = float3(0.0, 0.0, 0.0);
 
-  // --- Directional Light ---
   float3 light_dir = normalize(-scene.light_direction);
   float3 halfway_dir = normalize(view_dir + light_dir);
   float ndl = max(dot(normal, light_dir), 0.0);
@@ -193,7 +190,6 @@ fs_out main(fs_in in) {
 
   color += (k_d * albedo / sbx::common::pi + specular) * irradiance;
 
-  // --- Point Lights ---
   for (uint i = 0u; i < scene.point_light_count; ++i) {
     point_light light = buffer_point_lights[i];
 

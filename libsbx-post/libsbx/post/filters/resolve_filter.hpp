@@ -33,8 +33,8 @@ class resolve_filter final : public filter {
 
   struct point_light_data {
     alignas(16) math::vector3 position;
-    alignas(16) math::color color;
     alignas(16) std::float_t radius;
+    alignas(16) math::color color;
   }; // struct point_light_data
 
   inline static const auto pipeline_definition = graphics::pipeline_definition{
@@ -91,7 +91,7 @@ public:
 
       const auto position = math::vector3{model[3]};
 
-      point_lights.push_back(point_light_data{position, light.color(), light.radius()});
+      point_lights.push_back(point_light_data{position, light.radius(), light.color()});
       
       ++point_light_count;
 
