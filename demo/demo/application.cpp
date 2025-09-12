@@ -90,7 +90,7 @@ application::application()
 
   scene.add_image("helmet_albedo", "res://textures/helmet/albedo.jpg");
   scene.add_image("helmet_normal", "res://textures/helmet/normal.jpg");
-  scene.add_image("helmet_mrao", "res://textures/helmet/mrao.jpg");
+  scene.add_image("helmet_mrao", "res://textures/helmet/mrao2.jpg");
 
   scene.add_image("grass3_albedo", "res://textures/grass3/albedo.png");
   scene.add_image("grass3_normal", "res://textures/grass3/normal.png");
@@ -283,6 +283,7 @@ application::application()
   // helmet_transform.set_rotation(sbx::math::vector3::right, sbx::math::degree{90});
   helmet_transform.set_scale(sbx::math::vector3{4.0f, 4.0f, 4.0f});
 
+  auto h = sbx::assets::asset_handle<"mesh">{};
 
   // Box1
   // auto box1 = scene.create_node("Box1");

@@ -11,6 +11,8 @@
 #include <libsbx/utility/type_id.hpp>
 #include <libsbx/utility/iterator.hpp>
 #include <libsbx/utility/logger.hpp>
+#include <libsbx/utility/hashed_string.hpp>
+#include <libsbx/utility/string_literal.hpp>
 
 #include <libsbx/math/uuid.hpp>
 
@@ -20,7 +22,6 @@
 #include <libsbx/assets/metadata.hpp>
 
 namespace sbx::assets {
-
 
 namespace detail {
 
@@ -35,6 +36,48 @@ struct assets_type_id_scope { };
  */
 template<typename Type>
 using type_id = utility::scoped_type_id<detail::assets_type_id_scope, Type>;
+
+template<utility::string_literal Type>
+struct asset_handle {
+
+  inline static constexpr auto hash = Type.hash();
+
+  inline static constexpr auto invalid = std::uint32_t{0xFFFFFFFF};
+
+  constexpr asset_handle()
+  : _handle{invalid}, 
+    _generation{0} { }
+
+  constexpr asset_handle(const std::uint32_t handle, const std::uint32_t generation)
+  : _handle{handle}, 
+    _generation{generation} { }
+
+  constexpr auto handle() const noexcept -> std::uint32_t {
+    return _handle;
+  }
+
+  constexpr auto generation() const noexcept -> std::uint32_t {
+    return _generation;
+  }
+
+  constexpr auto operator==(const asset_handle& other) const noexcept -> bool {
+    return _handle == other._handle && _generation == other._generation;
+  }
+
+  constexpr auto is_valid() const noexcept -> bool {
+    return _handle != invalid;
+  }
+
+  constexpr operator bool() const noexcept {
+    return is_valid();
+  }
+
+private:
+
+  std::uint32_t _handle;
+  std::uint32_t _generation;
+
+}; // struct asset_handle
 
 class assets_module : public core::module<assets_module> {
 
@@ -87,6 +130,13 @@ public:
   auto submit(Function&& function, Args&&... args) -> std::future<std::invoke_result_t<Function, Args...>> {
     return _thread_pool.submit(std::forward<Function>(function), std::forward<Args>(args)...);
   }
+
+  template<utility::string_literal Type, typename... Args>
+  auto test(Args&&... args) -> asset_handle<Type> {
+
+  }
+
+  // std::unordered_map<std::size_t, 
 
   template<typename Type, typename... Args>
   auto add_asset(Args&&... args) -> math::uuid {
