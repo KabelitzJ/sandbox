@@ -139,7 +139,7 @@ void main() {
   vec3 normal = normalize(texture(normal_image, in_uv).xyz);
   vec3 mrao = texture(material_image, in_uv).rgb;
 
-  // out_color = vec4(albedo, 1.0);
+  // out_color = vec4(mrao, 1.0);
 
   // return;
 

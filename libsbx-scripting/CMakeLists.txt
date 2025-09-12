@@ -49,13 +49,6 @@ target_link_libraries(
     libsbx::scenes
 )
 
-target_link_options(
-  ${PROJECT_NAME} 
-  PUBLIC 
-    -static-libstdc++ 
-    -static-libgcc
-)
-
 set_target_properties(
   ${PROJECT_NAME}
   PROPERTIES
@@ -114,7 +107,11 @@ install(
     HEADERS 
 )
 
-set(_LINK_OPTIONS -fsanitize=address,undefined)
+set(_LINK_OPTIONS)
+
+# if(NOT MINGW)
+#   list(APPEND _LINK_OPTIONS -fsanitize=address,undefined)
+# endif()
 
 if(MINGW)
   list(APPEND _LINK_OPTIONS -Wl,--disable-dynamicbase,--default-image-base-low)

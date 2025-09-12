@@ -75,13 +75,6 @@ target_link_libraries(
     libsbx::assets
 )
 
-target_link_options(
-  ${PROJECT_NAME} 
-  PUBLIC 
-    -static-libstdc++ 
-    -static-libgcc
-)
-
 set_target_properties(
   ${PROJECT_NAME}
   PROPERTIES

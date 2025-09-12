@@ -12,7 +12,6 @@ struct fs_out {
   float4 color : SV_Target0;
 }; // struct fs_out
 
-// === Uniforms ===
 struct scene_data {
   float3 camera_position;
   float3 light_direction;
@@ -26,21 +25,19 @@ ConstantBuffer<scene_data> scene;
 
 struct point_light {
   float3 position;
+  float4 color;
   float radius;
-  float4 color; // rgb + intensity in .a
-}; // struct point_light
+}; // point_light
 
 [[vk::binding(1, 0)]]
 StructuredBuffer<point_light> buffer_point_lights;
 
-// === G-buffer ===
 [[vk::binding(2, 0)]] Sampler2D albedo_image;
 [[vk::binding(3, 0)]] Sampler2D position_image;
 [[vk::binding(4, 0)]] Sampler2D normal_image;
 [[vk::binding(5, 0)]] Sampler2D material_image;
 [[vk::binding(6, 0)]] Sampler2D shadow_image;
 
-// === Constants ===
 static const float3 DEFAULT_F0 = float3(0.04, 0.04, 0.04);
 
 static const float4x4 BIAS_MATRIX = float4x4(
@@ -50,34 +47,36 @@ static const float4x4 BIAS_MATRIX = float4x4(
   0.5, 0.5, 0.5, 1.0
 );
 
-// === Fresnel Schlick Approximation ===
 float3 fresnel_schlick(float cos_theta, float3 f0) {
   return f0 + (1.0 - f0) * pow(1.0 - cos_theta, 5.0);
 }
 
-// === Normal Distribution Function (GGX) ===
 float distribution_ggx(float3 n, float3 h, float roughness) {
   float a  = roughness * roughness;
   float a2 = a * a;
+
   float ndh  = max(dot(n, h), 0.0);
   float ndh2 = ndh * ndh;
 
   float denom = ndh2 * (a2 - 1.0) + 1.0;
+
   return a2 / (sbx::common::pi * denom * denom);
 }
 
-// === Geometry Function (Smith) ===
 float geometry_schlick_ggx(float ndv, float roughness) {
   float r = (roughness + 1.0);
   float k = (r * r) / 8.0;
+
   return ndv / (ndv * (1.0 - k) + k);
 }
 
 float geometry_smith(float3 n, float3 v, float3 l, float roughness) {
   float ndv = max(dot(n, v), 0.0);
   float ndl = max(dot(n, l), 0.0);
+
   float ggx1 = geometry_schlick_ggx(ndv, roughness);
   float ggx2 = geometry_schlick_ggx(ndl, roughness);
+
   return ggx1 * ggx2;
 }
 
@@ -108,6 +107,7 @@ float random2(float2 seed) {
 float2x2 rotation_matrix(float angle) {
   float s = sin(angle);
   float c = cos(angle);
+
   return float2x2(c, -s, s, c);
 }
 
@@ -121,9 +121,10 @@ float calculate_shadow(float3 world_position, float3 normal) {
 
   float bias = max(0.0005 * (1.0 - dot(normal, normalize(scene.light_direction))), 0.0001);
 
-  uint w, h;
-  shadow_image.GetDimensions(w, h);
-  float2 texel_size = 1.0 / float2(w, h);
+  uint2 dimensions;
+  shadow_image.GetDimensions(dimensions.x, dimensions.y);
+
+  float2 texel_size = 1.0 / dimensions;
 
   float distance_to_camera = length(scene.camera_position - world_position);
   float radius = lerp(1.0, 4.0, clamp(distance_to_camera / 50.0, 0.0, 1.0));
@@ -133,12 +134,13 @@ float calculate_shadow(float3 world_position, float3 normal) {
 
   float shadow = 0.0;
 
-  // Unfiltered depth (same as GLSL texture() default sampler unless shadow compare is used)
   [unroll]
   for (int i = 0; i < 16; ++i) {
     float2 offset = mul(rotation, POISSON_DISK[i]);
     float2 sample_uv = projected_coords.xy + offset * texel_size * radius;
+
     float sample_depth = shadow_image.Sample(sample_uv).r;
+
     shadow += (projected_coords.z - bias > sample_depth) ? 0.0 : 1.0;
   }
 
@@ -155,14 +157,14 @@ fs_out main(fs_in in) {
   fs_out out;
 
   // --- G-buffer sampling ---
-  float3 albedo         = albedo_image.Sample(in.uv).rgb;
+  float3 albedo = albedo_image.Sample(in.uv).rgb;
   float3 world_position = position_image.Sample(in.uv).xyz;
-  float3 normal         = normalize(normal_image.Sample(in.uv).xyz);
-  float3 mrao           = material_image.Sample(in.uv).rgb;
+  float3 normal = normalize(normal_image.Sample(in.uv).xyz);
+  float3 mrao = material_image.Sample(in.uv).rgb;
 
   float metallic  = clamp(mrao.r, 0.0, 1.0);
   float roughness = clamp(mrao.g, 0.05, 1.0);
-  float ao        = clamp(mrao.b, 0.0, 1.0);
+  float ao = clamp(mrao.b, 0.0, 1.0);
 
   float3 view_dir = normalize(scene.camera_position - world_position);
   float3 f0 = lerp(DEFAULT_F0, albedo, metallic);
@@ -170,17 +172,17 @@ fs_out main(fs_in in) {
   float3 color = float3(0.0, 0.0, 0.0);
 
   // --- Directional Light ---
-  float3 light_dir   = normalize(-scene.light_direction);
+  float3 light_dir = normalize(-scene.light_direction);
   float3 halfway_dir = normalize(view_dir + light_dir);
-  float   ndl        = max(dot(normal, light_dir), 0.0);
+  float ndl = max(dot(normal, light_dir), 0.0);
 
-  float  D = distribution_ggx(normal, halfway_dir, roughness);
-  float  G = geometry_smith(normal, view_dir, light_dir, roughness);
+  float D = distribution_ggx(normal, halfway_dir, roughness);
+  float G = geometry_smith(normal, view_dir, light_dir, roughness);
   float3 F = fresnel_schlick(max(dot(halfway_dir, view_dir), 0.0), f0);
 
-  float3 numerator   = D * G * F;
-  float  denominator = 4.0 * max(dot(normal, view_dir), 0.0) * ndl + 0.001;
-  float3 specular    = numerator / denominator;
+  float3 numerator = D * G * F;
+  float denominator = 4.0 * max(dot(normal, view_dir), 0.0) * ndl + 0.001;
+  float3 specular = numerator / denominator;
 
   float3 k_s = F;
   float3 k_d = (1.0 - k_s) * (1.0 - metallic);
@@ -194,35 +196,36 @@ fs_out main(fs_in in) {
   // --- Point Lights ---
   for (uint i = 0u; i < scene.point_light_count; ++i) {
     point_light light = buffer_point_lights[i];
+
     float3 l_dir = light.position - world_position;
     float  distance = max(length(l_dir), 0.001);
+
     l_dir /= distance;
 
     float3 h = normalize(view_dir + l_dir);
-    float   ndl_p = max(dot(normal, l_dir), 0.0);
-    float   attenuation = clamp(1.0 - distance / light.radius, 0.0, 1.0);
+    float ndl_p = max(dot(normal, l_dir), 0.0);
+    float attenuation = clamp(1.0 - distance / light.radius, 0.0, 1.0);
+
     attenuation *= attenuation;
 
     float3 radiance = light.color.rgb * light.color.a * attenuation;
 
-    float  Dp = distribution_ggx(normal, h, roughness);
-    float  Gp = geometry_smith(normal, view_dir, l_dir, roughness);
+    float Dp = distribution_ggx(normal, h, roughness);
+    float Gp = geometry_smith(normal, view_dir, l_dir, roughness);
     float3 Fp = fresnel_schlick(max(dot(h, view_dir), 0.0), f0);
 
     float3 numerator_p = Dp * Gp * Fp;
-    float  denom_p     = 4.0 * max(dot(normal, view_dir), 0.0) * ndl_p + 0.001;
-    float3 spec_p      = numerator_p / denom_p;
+    float denom_p = 4.0 * max(dot(normal, view_dir), 0.0) * ndl_p + 0.001;
+    float3 spec_p = numerator_p / denom_p;
 
     float3 kd_p = (1.0 - Fp) * (1.0 - metallic);
 
     color += (kd_p * albedo / sbx::common::pi + spec_p) * radiance * ndl_p;
   }
 
-  // --- Ambient ---
   float3 ambient = float3(0.03, 0.03, 0.03) * albedo * ao;
   float3 final_color = ambient + color;
 
-  // --- Output ---
   out.color = float4(final_color, 1.0);
 
   return out;
