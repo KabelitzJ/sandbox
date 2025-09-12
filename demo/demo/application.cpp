@@ -229,29 +229,29 @@ application::application()
   // soldier_transform.set_scale(sbx::math::vector3{3.0f});
 
   // Circling point lights
-  // _light_center = scene.create_node("LightCenter", sbx::scenes::transform{sbx::math::vector3{0.0f, 20.0f, 0.0f}});
+  _light_center = scene.create_node("LightCenter", sbx::scenes::transform{sbx::math::vector3{0.0f, 20.0f, 0.0f}});
 
   
-  // const auto radius = 20.0f;
-  // const auto light_count = 8;
+  const auto radius = 20.0f;
+  const auto light_count = 8;
   
-  // for (auto i = 0; i < light_count; ++i) {
-  //   auto angle = sbx::math::radian{2.0f * sbx::math::pi / static_cast<std::float_t>(light_count) * static_cast<std::float_t>(i)};
+  for (auto i = 0; i < light_count; ++i) {
+    auto angle = sbx::math::radian{2.0f * sbx::math::pi / static_cast<std::float_t>(light_count) * static_cast<std::float_t>(i)};
 
-  //   const auto material_name = fmt::format("Light{}", i);
-  //   const auto color = sbx::math::random_color();
+    const auto material_name = fmt::format("Light{}", i);
+    const auto color = sbx::math::random_color();
 
-  //   scene.add_material<sbx::scenes::material>(material_name, sbx::scenes::material_type::transparent, color, 0.0f, 0.5f, 1.0f);
+    scene.add_material<sbx::scenes::material>(material_name, sbx::scenes::material_type::transparent, color, 0.0f, 0.5f, 1.0f);
 
-  //   auto light = scene.create_child_node(_light_center, fmt::format("Light{}", i), sbx::scenes::transform{sbx::math::vector3{radius * sbx::math::cos(angle), 0.0f, radius * sbx::math::sin(angle)}});
+    auto light = scene.create_child_node(_light_center, fmt::format("Light{}", i), sbx::scenes::transform{sbx::math::vector3{radius * sbx::math::cos(angle), 0.0f, radius * sbx::math::sin(angle)}});
 
-  //   scene.add_component<sbx::scenes::point_light>(light, color, 50.0f);
+    scene.add_component<sbx::scenes::point_light>(light, color, 50.0f);
 
-  //   scene.add_component<sbx::scenes::static_mesh>(light, scene.get_mesh("sphere"), scene.get_material(material_name));
+    scene.add_component<sbx::scenes::static_mesh>(light, scene.get_mesh("sphere"), scene.get_material(material_name));
 
-  //   auto& light_transform = scene.get_component<sbx::scenes::transform>(light);
-  //   light_transform.set_scale(sbx::math::vector3{0.2f, 0.2f, 0.2f});
-  // }
+    auto& light_transform = scene.get_component<sbx::scenes::transform>(light);
+    light_transform.set_scale(sbx::math::vector3{0.2f, 0.2f, 0.2f});
+  }
 
   // Dragon
   // auto& dragon_mesh = assets_module.get_asset<sbx::models::mesh>(scene.get_mesh("dragon"));
@@ -435,21 +435,21 @@ application::application()
   // scene.add_component<sbx::physics::rigidbody>(floor);
   // scene.add_component<sbx::physics::collider>(floor, sbx::physics::box{sbx::math::vector3{50.0f, 1.0f, 50.0f}});
 
-  // for (auto y = 0; y < 5; ++y) {
-  //   for (auto x = 0; x < 5; ++x) {
-  //     auto sphere = scene.create_node(fmt::format("Sphere{}{}", x, y));
+  for (auto y = 0; y < 5; ++y) {
+    for (auto x = 0; x < 5; ++x) {
+      auto sphere = scene.create_node(fmt::format("Sphere{}{}", x, y));
 
-  //     const auto material_name = fmt::format("sphere_{}_{}_material", x, y);
+      const auto material_name = fmt::format("sphere_{}_{}_material", x, y);
 
-  //     scene.add_material<sbx::scenes::material>(material_name, sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.2f * x, 0.2 * y, 1.0f, scene.get_image("checkerboard"));
+      scene.add_material<sbx::scenes::material>(material_name, sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.2f * x, 0.2 * y, 1.0f, scene.get_image("checkerboard"));
 
-  //     scene.add_component<sbx::scenes::static_mesh>(sphere, scene.get_mesh("sphere"), scene.get_material(material_name));
+      scene.add_component<sbx::scenes::static_mesh>(sphere, scene.get_mesh("sphere"), scene.get_material(material_name));
 
-  //     auto& sphere_transform = scene.get_component<sbx::scenes::transform>(sphere);
-  //     sphere_transform.set_position(sbx::math::vector3{x * 3, y * 3 + 5, -15.0f});
-  //     sphere_transform.set_scale(sbx::math::vector3{1.0f, 1.0f, 1.0f});
-  //   }
-  // }
+      auto& sphere_transform = scene.get_component<sbx::scenes::transform>(sphere);
+      sphere_transform.set_position(sbx::math::vector3{x * 3, y * 3 + 5, -15.0f});
+      sphere_transform.set_scale(sbx::math::vector3{1.0f, 1.0f, 1.0f});
+    }
+  }
 
   // Tank
 
@@ -654,8 +654,8 @@ auto application::update() -> void  {
   //   transform.move_by(transform.forward() * delta_time * 2.0f);
   // }
 
-  // auto& light_center_transform = scene.get_component<sbx::scenes::transform>(_light_center);
-  // light_center_transform.set_rotation(sbx::math::vector3::up, _rotation);
+  auto& light_center_transform = scene.get_component<sbx::scenes::transform>(_light_center);
+  light_center_transform.set_rotation(sbx::math::vector3::up, _rotation);
 
   // auto query_coordinates = scene.query<show_local_coordinates>();
 

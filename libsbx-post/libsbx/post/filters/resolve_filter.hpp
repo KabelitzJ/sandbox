@@ -32,8 +32,7 @@ class resolve_filter final : public filter {
   inline static constexpr auto max_point_lights = std::size_t{32};
 
   struct point_light_data {
-    alignas(16) math::vector3 position;
-    alignas(16) std::float_t radius;
+    alignas(16) math::vector4 position;
     alignas(16) math::color color;
   }; // struct point_light_data
 
@@ -91,7 +90,7 @@ public:
 
       const auto position = math::vector3{model[3]};
 
-      point_lights.push_back(point_light_data{position, light.radius(), light.color()});
+      point_lights.push_back(point_light_data{math::vector4{position, light.radius()}, light.color()});
       
       ++point_light_count;
 

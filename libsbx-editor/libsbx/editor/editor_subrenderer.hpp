@@ -800,7 +800,9 @@ private:
         ImGui::Text("Color");
 
         ImGui::PushItemWidth(200.0f);
-        ImGui::ColorPicker4("##color_picker", &global_light.color().r(), ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel | ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoSidePreview);
+        ImGui::ColorPicker4("##color_picker", &global_light.color().r(), ImGuiColorEditFlags_NoAlpha | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel | ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoSidePreview);
+
+        ImGui::SliderFloat("Alpha", &global_light.color().a(), 0.0f, 10.0f);
         ImGui::PopItemWidth();
 
         // auto direction = global_light.direction();

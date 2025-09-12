@@ -24,9 +24,8 @@ struct scene_data {
 ConstantBuffer<scene_data> scene;
 
 struct point_light {
-  float3 position;
+  float4 position;
   float4 color;
-  float radius;
 }; // point_light
 
 [[vk::binding(1, 0)]]
@@ -51,33 +50,55 @@ float3 fresnel_schlick(float cos_theta, float3 f0) {
   return f0 + (1.0 - f0) * pow(1.0 - cos_theta, 5.0);
 }
 
-float distribution_ggx(float3 n, float3 h, float roughness) {
-  float a  = roughness * roughness;
-  float a2 = a * a;
+// float distribution_ggx(float3 n, float3 h, float roughness) {
+//   float a  = roughness * roughness;
+//   float a2 = a * a;
 
+//   float ndh  = max(dot(n, h), 0.0);
+//   float ndh2 = ndh * ndh;
+
+//   float denom = ndh2 * (a2 - 1.0) + 1.0;
+
+//   return a2 / (sbx::common::pi * denom * denom);
+// }
+
+// float geometry_schlick_ggx(float ndv, float roughness) {
+//   float r = (roughness + 1.0);
+//   float k = (r * r) / 8.0;
+
+//   return ndv / (ndv * (1.0 - k) + k);
+// }
+
+// float geometry_smith(float3 n, float3 v, float3 l, float roughness) {
+//   float ndv = max(dot(n, v), 0.0);
+//   float ndl = max(dot(n, l), 0.0);
+
+//   float ggx1 = geometry_schlick_ggx(ndv, roughness);
+//   float ggx2 = geometry_schlick_ggx(ndl, roughness);
+
+//   return ggx1 * ggx2;
+// }
+
+// Use alpha (α = roughness^2) consistently:
+float distribution_ggx(float3 n, float3 h, float alpha) {
+  float a2 = alpha * alpha;
   float ndh  = max(dot(n, h), 0.0);
   float ndh2 = ndh * ndh;
-
   float denom = ndh2 * (a2 - 1.0) + 1.0;
-
   return a2 / (sbx::common::pi * denom * denom);
 }
 
-float geometry_schlick_ggx(float ndv, float roughness) {
-  float r = (roughness + 1.0);
-  float k = (r * r) / 8.0;
-
-  return ndv / (ndv * (1.0 - k) + k);
+// Schlick-GGX for DIRECT lighting: k = α / 2   (UE4 recommendation)
+// (for IBL, you'd use k = (α+1)^2 / 8)
+float geometry_schlick_ggx(float ndx, float alpha) {
+  float k = alpha * 0.5;
+  return ndx / (ndx * (1.0 - k) + k);
 }
 
-float geometry_smith(float3 n, float3 v, float3 l, float roughness) {
+float geometry_smith(float3 n, float3 v, float3 l, float alpha) {
   float ndv = max(dot(n, v), 0.0);
   float ndl = max(dot(n, l), 0.0);
-
-  float ggx1 = geometry_schlick_ggx(ndv, roughness);
-  float ggx2 = geometry_schlick_ggx(ndl, roughness);
-
-  return ggx1 * ggx2;
+  return geometry_schlick_ggx(ndv, alpha) * geometry_schlick_ggx(ndl, alpha);
 }
 
 static const float2 POISSON_DISK[16] = {
@@ -159,6 +180,7 @@ fs_out main(fs_in in) {
   float3 world_position = position_image.Sample(in.uv).xyz;
   float3 normal = normalize(normal_image.Sample(in.uv).xyz);
   float3 mrao = material_image.Sample(in.uv).rgb;
+  keep(shadow_image);
 
   float metallic  = clamp(mrao.r, 0.0, 1.0);
   float roughness = clamp(mrao.g, 0.05, 1.0);
@@ -184,23 +206,25 @@ fs_out main(fs_in in) {
   float3 k_s = F;
   float3 k_d = (1.0 - k_s) * (1.0 - metallic);
 
-  keep(shadow_image);
   float shadow = 1.0; // calculate_shadow(world_position, normal);
-  float3 irradiance = scene.light_color.rgb * ndl * shadow;
+  float3 irradiance = (scene.light_color.rgb * scene.light_color.a) * ndl * shadow;
 
   color += (k_d * albedo / sbx::common::pi + specular) * irradiance;
 
   for (uint i = 0u; i < scene.point_light_count; ++i) {
     point_light light = buffer_point_lights[i];
 
-    float3 l_dir = light.position - world_position;
+    float3 position = light.position.xyz;
+    float radius = light.position.w;
+
+    float3 l_dir = position - world_position;
     float  distance = max(length(l_dir), 0.001);
 
     l_dir /= distance;
 
     float3 h = normalize(view_dir + l_dir);
     float ndl_p = max(dot(normal, l_dir), 0.0);
-    float attenuation = clamp(1.0 - distance / light.radius, 0.0, 1.0);
+    float attenuation = clamp(1.0 - distance / radius, 0.0, 1.0);
 
     attenuation *= attenuation;
 
