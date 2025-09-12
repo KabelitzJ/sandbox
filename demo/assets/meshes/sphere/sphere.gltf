@@ -1,6 +1,6 @@
 {
 	"asset":{
-		"generator":"Khronos glTF Blender I/O v3.6.27",
+		"generator":"Khronos glTF Blender I/O v4.4.56",
 		"version":"2.0"
 	},
 	"scene":0,
@@ -15,12 +15,25 @@
 	"nodes":[
 		{
 			"mesh":0,
-			"name":"Icosphere"
+			"name":"Cube"
+		}
+	],
+	"materials":[
+		{
+			"doubleSided":true,
+			"name":"Material.002",
+			"pbrMetallicRoughness":{
+				"baseColorTexture":{
+					"index":0
+				},
+				"metallicFactor":0,
+				"roughnessFactor":0.5
+			}
 		}
 	],
 	"meshes":[
 		{
-			"name":"Icosphere",
+			"name":"Cube.001",
 			"primitives":[
 				{
 					"attributes":{
@@ -29,88 +42,108 @@
 						"TEXCOORD_0":2,
 						"TANGENT":3
 					},
-					"indices":4
+					"indices":4,
+					"material":0
 				}
 			]
+		}
+	],
+	"textures":[
+		{
+			"sampler":0,
+			"source":0
+		}
+	],
+	"images":[
+		{
+			"mimeType":"image/png",
+			"name":"base",
+			"uri":"base.png"
 		}
 	],
 	"accessors":[
 		{
 			"bufferView":0,
 			"componentType":5126,
-			"count":850,
+			"count":1734,
 			"max":[
-				1,
-				1,
-				0.9999999403953552
+				0.8395062685012817,
+				0.8395062685012817,
+				0.8395062685012817
 			],
 			"min":[
-				-0.9999999403953552,
-				-1,
-				-0.9999999403953552
+				-0.8395062685012817,
+				-0.8395062685012817,
+				-0.8395062685012817
 			],
 			"type":"VEC3"
 		},
 		{
 			"bufferView":1,
 			"componentType":5126,
-			"count":850,
+			"count":1734,
 			"type":"VEC3"
 		},
 		{
 			"bufferView":2,
 			"componentType":5126,
-			"count":850,
+			"count":1734,
 			"type":"VEC2"
 		},
 		{
 			"bufferView":3,
 			"componentType":5126,
-			"count":850,
+			"count":1734,
 			"type":"VEC4"
 		},
 		{
 			"bufferView":4,
 			"componentType":5123,
-			"count":3840,
+			"count":9216,
 			"type":"SCALAR"
 		}
 	],
 	"bufferViews":[
 		{
 			"buffer":0,
-			"byteLength":10200,
+			"byteLength":20808,
 			"byteOffset":0,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":10200,
-			"byteOffset":10200,
+			"byteLength":20808,
+			"byteOffset":20808,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":6800,
-			"byteOffset":20400,
+			"byteLength":13872,
+			"byteOffset":41616,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":13600,
-			"byteOffset":27200,
+			"byteLength":27744,
+			"byteOffset":55488,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":7680,
-			"byteOffset":40800,
+			"byteLength":18432,
+			"byteOffset":83232,
 			"target":34963
+		}
+	],
+	"samplers":[
+		{
+			"magFilter":9729,
+			"minFilter":9987
 		}
 	],
 	"buffers":[
 		{
-			"byteLength":48480,
+			"byteLength":101664,
 			"uri":"sphere.bin"
 		}
 	]
