@@ -31,11 +31,11 @@ struct point_light {
 [[vk::binding(1, 0)]]
 StructuredBuffer<point_light> buffer_point_lights;
 
-[[vk::binding(2, 0)]] Sampler2D albedo_image;
-[[vk::binding(3, 0)]] Sampler2D position_image;
-[[vk::binding(4, 0)]] Sampler2D normal_image;
-[[vk::binding(5, 0)]] Sampler2D material_image;
-[[vk::binding(6, 0)]] Sampler2D shadow_image;
+[[vk::binding(2, 0)]] Sampler2D<float4> albedo_image;
+[[vk::binding(3, 0)]] Sampler2D<float4> position_image;
+[[vk::binding(4, 0)]] Sampler2D<float4> normal_image;
+[[vk::binding(5, 0)]] Sampler2D<float4> material_image;
+[[vk::binding(6, 0)]] Sampler2D<float2> shadow_image;
 
 static const float3 DEFAULT_F0 = float3(0.04, 0.04, 0.04);
 
@@ -180,9 +180,8 @@ fs_out main(fs_in in) {
   float3 world_position = position_image.Sample(in.uv).xyz;
   float3 normal = normalize(normal_image.Sample(in.uv).xyz);
   float3 mrao = material_image.Sample(in.uv).rgb;
-  keep(shadow_image);
 
-  float metallic  = clamp(mrao.r, 0.0, 1.0);
+  float metallic = clamp(mrao.r, 0.0, 1.0);
   float roughness = clamp(mrao.g, 0.05, 1.0);
   float ao = clamp(mrao.b, 0.0, 1.0);
 
@@ -206,8 +205,10 @@ fs_out main(fs_in in) {
   float3 k_s = F;
   float3 k_d = (1.0 - k_s) * (1.0 - metallic);
 
-  float shadow = 1.0; // calculate_shadow(world_position, normal);
-  float3 irradiance = (scene.light_color.rgb * scene.light_color.a) * ndl * shadow;
+  // float shadow = 1.0; 
+  float shadow = calculate_shadow(world_position, normal);
+
+  float3 irradiance = scene.light_color.rgb * ndl * shadow;
 
   color += (k_d * albedo / sbx::common::pi + specular) * irradiance;
 
