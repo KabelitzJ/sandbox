@@ -17,9 +17,9 @@ layout(set = 0, binding = 0) uniform uniform_scene {
   uint point_light_count;
 } scene;
 
-layout(set = 0, binding = 1, std430) readonly buffer buffer_point_lights {
+layout(set = 0, binding = 1, std430) readonly buffer t_buffer_point_lights {
   point_light data[];
-} point_lights;
+} buffer_point_lights;
 
 // === G-buffer ===
 layout(set = 0, binding = 2) uniform sampler2D albedo_image;
@@ -177,7 +177,7 @@ void main() {
 
   // --- Point Lights ---
   for (uint i = 0u; i < scene.point_light_count; ++i) {
-    point_light light = point_lights.data[i];
+    point_light light = buffer_point_lights.data[i];
     vec3 l_dir = light.position - world_position;
     float distance = max(length(l_dir), 0.001);
     l_dir /= distance;

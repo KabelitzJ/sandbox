@@ -18,6 +18,7 @@ vs_out main(vs_in in) {
   vs_out out;
 
   float2 position = positions[in.vertex_id];
+
   out.uv = (position + 1.0) * 0.5;
   out.sv_position = float4(position, 0.0, 1.0);
 

@@ -142,10 +142,10 @@ def compile_slang_dir(slangc_path: Optional[str], shader_dir: Path, shader_root_
       "-entry", entry,
       "-capability", "spirv_1_5",
       "-capability", "SPV_EXT_physical_storage_buffer",
-      # "-capability", "vk_mem_model",
       "-matrix-layout-column-major",
-      # "-fvk-use-scalar-layout",
-      # "-fvk-use-gl-layout",
+      "-g",
+      "-O0",
+      # "-minimum-slang-optimization",
       "-o", str(out_spv),
       f"-I{shader_root_dir}",
     ]

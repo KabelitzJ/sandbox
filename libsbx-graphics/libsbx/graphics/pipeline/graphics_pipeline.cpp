@@ -48,6 +48,8 @@ graphics_pipeline::graphics_pipeline(const std::filesystem::path& path, const re
 
   _name = resolved_path.filename().string();
 
+  utility::logger<"graphics">::debug("Creating pipeline '{}'", _name);
+
   const auto binary_path = resolved_path / "bin";
 
   if (!std::filesystem::exists(binary_path) && !std::filesystem::is_directory(binary_path)) {
