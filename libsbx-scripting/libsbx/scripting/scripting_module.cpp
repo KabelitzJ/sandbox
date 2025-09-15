@@ -94,7 +94,7 @@ static auto _split_fullname(const std::string& fullname) -> std::pair<std::strin
 }
 
 scripting_module::scripting_module() {
-
+  load_domain();
 }
 
 scripting_module::~scripting_module() {
@@ -103,6 +103,8 @@ scripting_module::~scripting_module() {
 
 auto scripting_module::update() -> void {
   SBX_SCOPED_TIMER("scripting_module");
+
+
 }
 
 auto scripting_module::load_domain() -> void {
@@ -136,7 +138,11 @@ auto scripting_module::load_assembly(const std::string& name, const std::filesys
   slot.assembly = _load_assembly(_domain, resolved_path);
   slot.image = mono_assembly_get_image(assembly);
 
-  utility::logger<"scripting">::debug("Loaded engine domain from {}", resolved_path.string());
+  utility::logger<"scripting">::debug("Loaded assembly from {}", resolved_path.string());
+}
+
+auto scripting_module::instantiate(const scenes::node node, const std::string& name) -> void {
+
 }
 
 auto scripting_module::_register_internal_calls() -> void {

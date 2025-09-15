@@ -4,5 +4,6 @@
 #include <libsbx/scripting/version.hpp>
 
 #include <libsbx/scripting/scripting_module.hpp>
+#include <libsbx/scripting/scripts.hpp>
 
 #endif // LIBSBX_SCRIPTING_HPP_

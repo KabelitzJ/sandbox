@@ -16,6 +16,7 @@
 
 #include <libsbx/core/module.hpp>
 
+#include <libsbx/scenes/node.hpp>
 #include <libsbx/scenes/scenes_module.hpp>
 
 namespace sbx::scripting {
@@ -36,6 +37,8 @@ public:
 
   auto load_assembly(const std::string& name, const std::filesystem::path& path) -> void;
 
+  auto instantiate(const scenes::node node, const std::string& name) -> void;
+
 private:
 
   struct assembly {
@@ -55,6 +58,13 @@ private:
     MonoMethod* on_destroy{nullptr};
   }; // struct script
 
+  struct script_instance {
+    MonoObject* object{nullptr};
+    MonoMethod* on_create{nullptr};
+    MonoMethod* on_update{nullptr};
+    MonoMethod* on_destroy{nullptr};
+  }; // struct script_instance
+
   struct component_operations {
     std::size_t size;
     bool (*has)(sbx::scenes::scene&, sbx::scenes::node);
@@ -73,6 +83,8 @@ private:
   std::unordered_map<utility::hashed_string, component_operations> _component_operations;
   std::unordered_map<utility::hashed_string, assembly> _assemblies;
   std::unordered_map<utility::hashed_string, script> _scripts;
+
+  std::unordered_map<scenes::node, std::vector<script_instance>> _instances;
 
 }; // class scene_modules
 
