@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include <typeindex>
 #include <memory>
+#include <filesystem>
 
 #include <libsbx/utility/compression.hpp>
 #include <libsbx/utility/exception.hpp>
@@ -79,6 +80,64 @@ private:
 
 }; // struct asset_handle
 
+struct asset_metadata {
+  std::filesystem::path path;
+  std::string name;
+  std::string type{"unknown"};
+  std::string source{"dynamic"};
+}; // struct asset_metadata
+
+struct asset_io {
+  std::string name;
+  std::function<void()> save; 
+  std::function<void()> load; 
+}; // struct asset_io
+
+class asset_io_registry {
+
+  struct scope { };
+
+public:
+
+  template<typename Type>
+  using type_id = utility::scoped_type_id<scope, Type>;
+
+  template<typename Type, std::invocable<const Type&> Save, std::invocable<void> Load>
+  auto register_asset(const std::string& name, Save&& save, Load&& load) -> void {
+    const auto id = assets::type_id<Type>::value();
+
+    _by_name[name] = id;
+
+    _by_id[id] = asset_io{
+      .name = name,
+      .save = [s = std::forward<Save>(save)]() -> void {
+        std::invoke(s);
+      },
+      .load = []() -> void {
+
+      }
+    };
+  }
+
+  auto get(const std::uint32_t id) -> asset_io& {
+    return _by_id.at(id);
+  }
+
+  auto has(const std::uint32_t id) -> bool {
+    return _by_id.contains(id);
+  }
+
+  auto get(const std::string& name) -> asset_io& {
+    return _by_id.at(_by_name.at(name));
+  }
+
+private:
+
+  std::unordered_map<std::uint32_t, asset_io> _by_id;
+  std::unordered_map<std::string, std::uint32_t> _by_name;
+
+}; // class asset_io_registry
+
 class assets_module : public core::module<assets_module> {
 
   inline static const auto is_registered = register_module(stage::post);
@@ -132,11 +191,22 @@ public:
   }
 
   template<utility::string_literal Type, typename... Args>
-  auto test(Args&&... args) -> asset_handle<Type> {
+  auto load_asset(const std::filesystem::path& path, Args&&... args) -> asset_handle<Type> {
 
   }
 
-  // std::unordered_map<std::size_t, 
+  template<typename Type, std::invocable<void> Save, std::invocable<void> Load>
+  auto register_asset(const std::string& name, Save&& save, Load&& load) -> void {
+    _asset_io_registry.register_asset<Type>(name, std::forward<Save>(save), std::forward<Load>(load));
+  }
+
+  auto asset_io(const std::uint32_t id) -> asset_io& {
+    return _asset_io_registry.get(id);
+  }
+
+  auto has_asset_io(const std::uint32_t id) -> bool {
+    return _asset_io_registry.has(id);
+  }
 
   template<typename Type, typename... Args>
   auto add_asset(Args&&... args) -> math::uuid {
@@ -264,6 +334,8 @@ private:
   };
 
   std::vector<std::unique_ptr<container_base>> _containers;
+
+  asset_io_registry _asset_io_registry;
 
 }; // class assets_module
 

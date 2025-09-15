@@ -284,38 +284,48 @@ public:
 private:
 
   template<typename Type>
-  requires (std::is_same_v<Type, std::decay_t<Type>> && !std::is_same_v<Type, entity_type>)
+  requires (std::is_same_v<Type, std::decay_t<Type>>)
   [[nodiscard]] auto _assure([[maybe_unused]] const std::uint32_t id = type_id<Type>::value()) -> storage_for_type<Type>& {
-    using storage_type = storage_for_type<Type>;
-
-    if (auto iterator = _pools.find(id); iterator != _pools.cend()) {
-      return static_cast<storage_type&>(*iterator->second);
-    }
-
-    using storage_allocator_type = typename storage_type::allocator_type;
-    using pool_type = typename pool_container_type::mapped_type;
-
-    auto pool = pool_type{};
-
-    if constexpr (std::is_void_v<Type> && !std::is_constructible_v<storage_allocator_type, allocator_type>) {
-      pool = std::allocate_shared<storage_type>(get_allocator(), storage_allocator_type{});
+    if constexpr(std::is_same_v<Type, entity_type>) {
+      utility::assert_that(id == type_id<Type>::value(), "User entity storage not allowed");
+      return _entities;
     } else {
-      pool = std::allocate_shared<storage_type>(get_allocator(), get_allocator());
+      using storage_type = storage_for_type<Type>;
+
+      if (auto iterator = _pools.find(id); iterator != _pools.cend()) {
+        return static_cast<storage_type&>(*iterator->second);
+      }
+
+      using storage_allocator_type = typename storage_type::allocator_type;
+      using pool_type = typename pool_container_type::mapped_type;
+
+      auto pool = pool_type{};
+
+      if constexpr (std::is_void_v<Type> && !std::is_constructible_v<storage_allocator_type, allocator_type>) {
+        pool = std::allocate_shared<storage_type>(get_allocator(), storage_allocator_type{});
+      } else {
+        pool = std::allocate_shared<storage_type>(get_allocator(), get_allocator());
+      }
+
+      _pools.emplace(id, pool);
+
+      return static_cast<storage_type&>(*pool);
     }
-
-    _pools.emplace(id, pool);
-
-    return static_cast<storage_type&>(*pool);
   }
 
   template<typename Type>
-  requires (std::is_same_v<Type, std::decay_t<Type>> && !std::is_same_v<Type, entity_type>)
+  requires (std::is_same_v<Type, std::decay_t<Type>>)
   [[nodiscard]] auto _assure([[maybe_unused]] const std::uint32_t id = type_id<Type>::value()) const -> const storage_for_type<Type>* {
-    if (const auto iterator = _pools.find(id); iterator != _pools.cend()) {
-      return static_cast<const storage_for_type<Type>*>(iterator->second.get());
-    }
+    if constexpr(std::is_same_v<Type, entity_type>) {
+      utility::assert_that(id == type_id<Type>::value(), "User entity storage not allowed");
+      return &_entities;
+    } else {
+      if (const auto iterator = _pools.find(id); iterator != _pools.cend()) {
+        return static_cast<const storage_for_type<Type>*>(iterator->second.get());
+      }
 
-    return static_cast<const storage_for_type<Type>*>(nullptr);
+      return static_cast<const storage_for_type<Type>*>(nullptr);
+    }
   }
 
   pool_container_type _pools;

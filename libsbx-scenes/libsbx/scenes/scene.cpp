@@ -242,9 +242,9 @@ auto scene::save(const std::filesystem::path& path)-> void {
 
   const auto resolved_path = assets_module.resolve_path(path);
 
-  _registry.invoke("save", [this](const auto node) {
-    return (node != _root);
-  });
+  // _registry.invoke("save", [this](const auto node) {
+  //   return (node != _root);
+  // });
 
   auto emitter = YAML::Emitter{};
 
@@ -265,7 +265,7 @@ auto scene::save(const std::filesystem::path& path)-> void {
   emitter << YAML::Key << "nodes";
   emitter << YAML::Value << YAML::BeginSeq;
 
-  for (const auto node : _registry) {
+  for (const auto node : _registry.view<const node_type>()) {
     _save_node(emitter, node);
   }
 
@@ -302,17 +302,68 @@ auto scene::_load_nodes(const YAML::Node& nodes) -> void {
 }
 
 auto scene::_save_assets(YAML::Emitter& emitter) -> void {
-  emitter << YAML::Key << "meshes";
+  emitter << YAML::Key << "images";
   emitter << YAML::Value << YAML::BeginSeq;
 
-  _save_meshes(emitter);
+  for (const auto& [id, metadata] : _image_metadata) {
+    emitter << YAML::Anchor(metadata.name);
+
+    emitter << YAML::BeginMap;
+
+    emitter << YAML::Key << "name" << YAML::Value << metadata.name;
+    emitter << YAML::Key << "path" << YAML::Value << metadata.path.string();
+
+    emitter << YAML::EndMap;
+  }
 
   emitter << YAML::EndSeq;
 
-  emitter << YAML::Key << "textures";
+  emitter << YAML::Key << "cube_images";
   emitter << YAML::Value << YAML::BeginSeq;
 
-  _save_textures(emitter);
+  for (const auto& [id, metadata] : _cube_image_metadata) {
+    emitter << YAML::Anchor(metadata.name);
+
+    emitter << YAML::BeginMap;
+
+    emitter << YAML::Key << "name" << YAML::Value << metadata.name;
+    emitter << YAML::Key << "path" << YAML::Value << metadata.path.string();
+
+    emitter << YAML::EndMap;
+  }
+
+  emitter << YAML::EndSeq;
+
+  emitter << YAML::Key << "static_meshes";
+  emitter << YAML::Value << YAML::BeginSeq;
+
+  for (const auto& [id, metadata] : _mesh_metadata) {
+    emitter << YAML::Anchor(metadata.name);
+
+    emitter << YAML::BeginMap;
+
+    emitter << YAML::Key << "name" << YAML::Value << metadata.name;
+    emitter << YAML::Key << "path" << YAML::Value << metadata.path.string();
+    emitter << YAML::Key << "source" << YAML::Value << metadata.source;
+
+    emitter << YAML::EndMap;
+  }
+
+  emitter << YAML::EndSeq;
+
+  emitter << YAML::Key << "materials";
+  emitter << YAML::Value << YAML::BeginSeq;
+
+  for (const auto& [id, metadata] : _material_metadata) {
+    emitter << YAML::Anchor(metadata.name);
+
+    emitter << YAML::BeginMap;
+
+    emitter << YAML::Key << "name" << YAML::Value << metadata.name;
+    emitter << YAML::Key << "path" << YAML::Value << metadata.path.string();
+
+    emitter << YAML::EndMap;
+  }
 
   emitter << YAML::EndSeq;
 }
@@ -384,19 +435,24 @@ auto scene::_save_components(YAML::Emitter& emitter, const node_type node) -> vo
 
   
   for (auto&& [type, container] : _registry.storage()) {
-    if (!scenes_module.has_component_io(type)) {
+    if (!container.contains(node) || !scenes_module.has_component_io(type)) {
       continue;
     }
     
     auto& component_io = scenes_module.component_io(type);
     
-    auto yaml = YAML::Node{};
+    // auto yaml = YAML::Node{};
 
-    yaml["type"] = component_io.name;
+    emitter << YAML::BeginMap;
 
-    component_io.save(yaml, *this, node);
+    // yaml["type"] = component_io.name;
 
-    emitter << yaml;
+    emitter << YAML::Key << "type";
+    emitter << YAML::Value << component_io.name;
+
+    component_io.save(emitter, *this, node);
+
+    emitter << YAML::EndMap;
   }
 
   // // Trasform

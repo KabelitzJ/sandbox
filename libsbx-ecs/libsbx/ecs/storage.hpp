@@ -428,6 +428,7 @@ public:
   using base_type = basic_sparse_set<Entity, Allocator>;
   using value_type = void;
   using entity_type = Entity;
+  using element_type = Entity;
   using size_type = std::size_t;
   using difference_type = std::ptrdiff_t;
   using iterable = memory::iterable_adaptor<detail::extended_storage_iterator<typename base_type::iterator>>;

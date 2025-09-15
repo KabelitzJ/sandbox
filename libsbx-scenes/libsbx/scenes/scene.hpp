@@ -49,6 +49,8 @@
 #include <libsbx/scenes/components/camera.hpp>
 #include <libsbx/scenes/components/transform.hpp>
 #include <libsbx/scenes/components/global_transform.hpp>
+#include <libsbx/scenes/components/static_mesh.hpp>
+#include <libsbx/scenes/components/skinned_mesh.hpp>
 
 namespace sbx::scenes {
 
@@ -219,36 +221,69 @@ public:
   auto save(const std::filesystem::path& path)-> void;
 
   template<typename... Args>
-  auto add_image(const utility::hashed_string& name, Args&&... args) -> void {
+  auto add_image(const utility::hashed_string& name, const std::filesystem::path& path, Args&&... args) -> void {
     auto& graphics_module = sbx::core::engine::get_module<sbx::graphics::graphics_module>();
 
-    _image_ids.emplace(name, graphics_module.add_resource<graphics::image2d>(std::forward<Args>(args)...));
+    const auto id = graphics_module.add_resource<graphics::image2d>(path, std::forward<Args>(args)...);
+
+    _image_ids.emplace(name, id);
+    _image_metadata.emplace(id, assets::asset_metadata{path, name.str(), "image", "disk"});
   }
 
   auto get_image(const utility::hashed_string& name) -> graphics::image2d_handle {
     return _image_ids.at(name);
   }
 
+  auto image_metadata(const graphics::image2d_handle& handle) const -> const assets::asset_metadata& {
+    return _image_metadata.at(handle);
+  }
+
   template<typename... Args>
-  auto add_cube_image(const utility::hashed_string& name, Args&&... args) -> void {
+  auto add_cube_image(const utility::hashed_string& name, const std::filesystem::path& path, Args&&... args) -> void {
     auto& graphics_module = sbx::core::engine::get_module<sbx::graphics::graphics_module>();
 
-    _cube_image_ids.emplace(name, graphics_module.add_resource<graphics::cube_image>(std::forward<Args>(args)...));
+    const auto id = graphics_module.add_resource<graphics::cube_image>(path, std::forward<Args>(args)...);
+
+    _cube_image_ids.emplace(name, id);
+    _cube_image_metadata.emplace(id, assets::asset_metadata{path, name.str(), "cube_image", "disk"});
   }
 
   auto get_cube_image(const utility::hashed_string& name) -> graphics::cube_image2d_handle {
     return _cube_image_ids.at(name);
   }
 
+  auto cube_image_metadata(const graphics::cube_image2d_handle& handle) const -> const assets::asset_metadata& {
+    return _cube_image_metadata.at(handle);
+  }
+
   template<typename Mesh, typename... Args>
   auto add_mesh(const utility::hashed_string& name, Args&&... args) -> void {
     auto& assets_module = sbx::core::engine::get_module<sbx::assets::assets_module>();
 
-    _mesh_ids.emplace(name, assets_module.add_asset<Mesh>(std::forward<Args>(args)...));
+    const auto id = assets_module.add_asset<Mesh>(std::forward<Args>(args)...);
+
+    _mesh_ids.emplace(name, id);
+    _mesh_metadata.emplace(id, assets::asset_metadata{"", name.str(), "mesh", "generated"});
+  }
+
+  template<typename Mesh, typename Path, typename... Args>
+  requires (std::is_constructible_v<std::filesystem::path, Path>)
+  auto add_mesh(const utility::hashed_string& name, const Path& path, Args&&... args) -> void {
+    auto& assets_module = sbx::core::engine::get_module<sbx::assets::assets_module>();
+
+
+    const auto id = assets_module.add_asset<Mesh>(path, std::forward<Args>(args)...);
+
+    _mesh_ids.emplace(name, id);
+    _mesh_metadata.emplace(id, assets::asset_metadata{path, name.str(), "mesh", "disk"});
   }
 
   auto get_mesh(const utility::hashed_string& name) -> math::uuid {
     return _mesh_ids.at(name);
+  }
+
+  auto mesh_metadata(const math::uuid& handle) const -> const assets::asset_metadata& {
+    return _mesh_metadata.at(handle);
   }
 
   template<typename Mesh, typename... Args>
@@ -266,15 +301,18 @@ public:
   auto add_material(const utility::hashed_string& name, Args&&... args) -> void {
     auto& assets_module = sbx::core::engine::get_module<sbx::assets::assets_module>();
 
-    _materials_ids.emplace(name, assets_module.add_asset<Material>(std::forward<Args>(args)...));
+    const auto id = assets_module.add_asset<Material>(std::forward<Args>(args)...);
+
+    _materials_ids.emplace(name, id);
+    _material_metadata.emplace(id, assets::asset_metadata{"", name.str(), "material", "dynamic"});
   }
 
   auto get_material(const utility::hashed_string& name) -> math::uuid {
-    if (auto entry = _materials_ids.find(name); entry != _materials_ids.end()) {
-      return entry->second;
-    }
+    return _materials_ids.at(name);
+  }
 
-    throw utility::runtime_error{"Material '{}' is not loaded in scene '{}'", name.str(), _name};
+  auto material_metadata(const math::uuid& handle) const -> const assets::asset_metadata& {
+    return _material_metadata.at(handle);
   }
 
 private:
@@ -313,11 +351,16 @@ private:
   std::unordered_map<utility::hashed_string, math::uuid> _animation_ids;
   std::unordered_map<utility::hashed_string, math::uuid> _materials_ids;
 
+  std::unordered_map<graphics::image2d_handle, assets::asset_metadata> _image_metadata;
+  std::unordered_map<graphics::cube_image2d_handle, assets::asset_metadata> _cube_image_metadata;
+  std::unordered_map<math::uuid, assets::asset_metadata> _mesh_metadata;
+  std::unordered_map<math::uuid, assets::asset_metadata> _material_metadata;
+
 }; // class scene
 
 struct component_io {
   std::string name;
-  std::function<void(YAML::Node&, scene& scene, const node)> save; 
+  std::function<void(YAML::Emitter&, scene& scene, const node)> save; 
   std::function<void(const YAML::Node&, scene& scene, const node)> load; 
 }; // struct component_io
 
@@ -325,7 +368,7 @@ class component_io_registry {
 
 public:
 
-  template<typename Type, std::invocable<YAML::Node&, scene&, const Type&> Save, std::invocable<YAML::Node&> Load>
+  template<typename Type, std::invocable<YAML::Emitter&, scene&, const Type&> Save, std::invocable<YAML::Node&> Load>
   auto register_component(const std::string& name, Save&& save, Load&& load) -> void {
     const auto id = ecs::type_id<Type>::value();
 
@@ -333,7 +376,7 @@ public:
 
     _by_id[id] = component_io{
       .name = name,
-      .save = [name, s = std::forward<Save>(save)](YAML::Node& yaml, scene& scene, const node node) -> void {
+      .save = [name, s = std::forward<Save>(save)](YAML::Emitter& yaml, scene& scene, const node node) -> void {
         const auto& component = scene.get_component<Type>(node);
 
         std::invoke(s, yaml, scene, component);

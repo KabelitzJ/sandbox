@@ -1,3235 +1,5942 @@
 name: Scene
 assets:
-  meshes:
-    - &bmp
-      name: bmp
-      path: demo/assets/meshes/tank/bmp.gltf
-  textures:
+  images:
+    - &rust_normal
+      name: rust_normal
+      path: res://textures/rust/normal.png
+    - &checkerboard
+      name: checkerboard
+      path: res://textures/checkerboard.jpg
+    - &prototype
+      name: prototype
+      path: demo/assets/textures/prototype_white.png
+    - &grass3_mrao
+      name: grass3_mrao
+      path: res://textures/grass3/mrao.png
+    - &rust_mrao
+      name: rust_mrao
+      path: res://textures/rust/mrao.png
+    - &grass3_normal
+      name: grass3_normal
+      path: res://textures/grass3/normal.png
+    - &soldier_body_albedo
+      name: soldier_body_albedo
+      path: res://textures/soldier/body_albedo.png
+    - &grass3_albedo
+      name: grass3_albedo
+      path: res://textures/grass3/albedo.png
+    - &helmet_mrao
+      name: helmet_mrao
+      path: res://textures/helmet/mrao2.jpg
+    - &helmet_normal
+      name: helmet_normal
+      path: res://textures/helmet/normal.jpg
+    - &maple_tree_leaves
+      name: maple_tree_leaves
+      path: res://textures/maple_tree/leaves.png
+    - &rocks
+      name: rocks
+      path: res://textures/rocks/rocks.png
+    - &soldier_head_albedo
+      name: soldier_head_albedo
+      path: res://textures/soldier/head_albedo.png
+    - &fox_albedo
+      name: fox_albedo
+      path: res://textures/fox/albedo.png
+    - &soldier_backpack_albedo
+      name: soldier_backpack_albedo
+      path: res://textures/soldier/backpack_albedo.png
+    - &women
+      name: women
+      path: res://textures/women/albedo.png
+    - &soldier_helmet_albedo
+      name: soldier_helmet_albedo
+      path: res://textures/soldier/helmet_albedo.png
     - &bmp_body1_albedo
       name: bmp_body1_albedo
-      path: demo/assets/textures/bmp/body1_albedo.png
+      path: res://textures/bmp/body1_albedo.png
+    - &rust_albedo
+      name: rust_albedo
+      path: res://textures/rust/albedo.png
     - &bmp_body1_normal
       name: bmp_body1_normal
-      path: demo/assets/textures/bmp/body1_normal.png
+      path: res://textures/bmp/body1_normal.png
+    - &bmp_body2_albedo
+      name: bmp_body2_albedo
+      path: res://textures/bmp/body2_albedo.png
+    - &maple_tree_bark
+      name: maple_tree_bark
+      path: res://textures/maple_tree/bark.png
+    - &bmp_body2_normal
+      name: bmp_body2_normal
+      path: res://textures/bmp/body2_normal.png
+    - &maple_tree_bark_normal
+      name: maple_tree_bark_normal
+      path: res://textures/maple_tree/bark_normal.png
+    - &bmp_tracks_albedo
+      name: bmp_tracks_albedo
+      path: res://textures/bmp/tracks_albedo.png
+    - &helmet_albedo
+      name: helmet_albedo
+      path: res://textures/helmet/albedo.jpg
+    - &bmp_tracks_normal
+      name: bmp_tracks_normal
+      path: res://textures/bmp/tracks_normal.png
+  cube_images:
+    - &skybox
+      name: skybox
+      path: res://skyboxes/stylized2
+  static_meshes:
+    - &soldier
+      name: soldier
+      path: res://meshes/soldier/soldier.gltf
+      source: disk
+    - &sphere
+      name: sphere
+      path: res://meshes/sphere/sphere.gltf
+      source: disk
+    - &soldier_static
+      name: soldier_static
+      path: res://meshes/soldier/soldier.gltf
+      source: disk
+    - &cube
+      name: cube
+      path: res://meshes/cube/cube.gltf
+      source: disk
+    - &fox_static
+      name: fox_static
+      path: res://meshes/fox/fox.gltf
+      source: disk
+    - &terrain
+      name: terrain
+      path: ""
+      source: generated
+    - &player
+      name: player
+      path: res://meshes/player/player.gltf
+      source: disk
+    - &maple_tree_2
+      name: maple_tree_2
+      path: res://meshes/maple_tree_2/maple_tree_2.gltf
+      source: disk
+    - &dragon
+      name: dragon
+      path: res://meshes/dragon/dragon.gltf
+      source: disk
+    - &maple_tree_3
+      name: maple_tree_3
+      path: res://meshes/maple_tree_3/maple_tree_3.gltf
+      source: disk
+    - &maple_tree_4
+      name: maple_tree_4
+      path: res://meshes/maple_tree_4/maple_tree_4.gltf
+      source: disk
+    - &man_static
+      name: man_static
+      path: res://meshes/man/man.gltf
+      source: disk
+    - &fox
+      name: fox
+      path: res://meshes/fox/fox.gltf
+      source: disk
+    - &women
+      name: women
+      path: res://meshes/women/women.gltf
+      source: disk
+    - &women_static
+      name: women_static
+      path: res://meshes/women/women.gltf
+      source: disk
+    - &maple_tree_1
+      name: maple_tree_1
+      path: res://meshes/maple_tree_1/maple_tree_1.gltf
+      source: disk
+    - &bmp
+      name: bmp
+      path: res://meshes/tank/bmp.gltf
+      source: disk
+    - &helmet
+      name: helmet
+      path: res://meshes/helmet/helmet.gltf
+      source: disk
+  materials:
+    - &sphere_3_4_material
+      name: sphere_3_4_material
+      path: ""
+    - &sphere_4_3_material
+      name: sphere_4_3_material
+      path: ""
+    - &sphere_1_0_material
+      name: sphere_1_0_material
+      path: ""
+    - &sphere_3_2_material
+      name: sphere_3_2_material
+      path: ""
+    - &sphere_0_0_material
+      name: sphere_0_0_material
+      path: ""
+    - &sphere_2_4_material
+      name: sphere_2_4_material
+      path: ""
+    - &sphere_0_2_material
+      name: sphere_0_2_material
+      path: ""
+    - &sphere_2_2_material
+      name: sphere_2_2_material
+      path: ""
+    - &Light6
+      name: Light6
+      path: ""
+    - &sphere_1_4_material
+      name: sphere_1_4_material
+      path: ""
+    - &sphere_1_1_material
+      name: sphere_1_1_material
+      path: ""
+    - &sphere_4_4_material
+      name: sphere_4_4_material
+      path: ""
+    - &Light4
+      name: Light4
+      path: ""
+    - &Light5
+      name: Light5
+      path: ""
+    - &sphere_1_2_material
+      name: sphere_1_2_material
+      path: ""
+    - &sphere_0_4_material
+      name: sphere_0_4_material
+      path: ""
+    - &sphere_0_3_material
+      name: sphere_0_3_material
+      path: ""
+    - &fox
+      name: fox
+      path: ""
+    - &Light7
+      name: Light7
+      path: ""
+    - &Light1
+      name: Light1
+      path: ""
+    - &sphere_3_0_material
+      name: sphere_3_0_material
+      path: ""
+    - &sphere_2_1_material
+      name: sphere_2_1_material
+      path: ""
+    - &Light3
+      name: Light3
+      path: ""
+    - &Light2
+      name: Light2
+      path: ""
+    - &sphere_1_3_material
+      name: sphere_1_3_material
+      path: ""
+    - &terrain
+      name: terrain
+      path: ""
+    - &sphere_2_0_material
+      name: sphere_2_0_material
+      path: ""
+    - &sphere_4_0_material
+      name: sphere_4_0_material
+      path: ""
+    - &Light0
+      name: Light0
+      path: ""
+    - &sphere_0_1_material
+      name: sphere_0_1_material
+      path: ""
+    - &sphere_3_1_material
+      name: sphere_3_1_material
+      path: ""
+    - &sphere_3_3_material
+      name: sphere_3_3_material
+      path: ""
+    - &sphere_4_1_material
+      name: sphere_4_1_material
+      path: ""
+    - &helmet
+      name: helmet
+      path: ""
+    - &sphere_4_2_material
+      name: sphere_4_2_material
+      path: ""
+    - &sphere_2_3_material
+      name: sphere_2_3_material
+      path: ""
 nodes:
+  - tag: Sphere44
+    id: 4421873709597281150
+    components:
+      - type: transform
+        position: {x: 12, y: 17, z: -15}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *sphere
+        submeshes:
+          - index: 0
+            material: *sphere_4_4_material
+  - tag: Sphere34
+    id: 13287743060912041726
+    components:
+      - type: transform
+        position: {x: 9, y: 17, z: -15}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *sphere
+        submeshes:
+          - index: 0
+            material: *sphere_3_4_material
+  - tag: Sphere24
+    id: 9342313265965035315
+    components:
+      - type: transform
+        position: {x: 6, y: 17, z: -15}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *sphere
+        submeshes:
+          - index: 0
+            material: *sphere_2_4_material
+  - tag: Sphere14
+    id: 18162258062506893331
+    components:
+      - type: transform
+        position: {x: 3, y: 17, z: -15}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *sphere
+        submeshes:
+          - index: 0
+            material: *sphere_1_4_material
+  - tag: Sphere04
+    id: 6037040008006872229
+    components:
+      - type: transform
+        position: {x: 0, y: 17, z: -15}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *sphere
+        submeshes:
+          - index: 0
+            material: *sphere_0_4_material
+  - tag: Sphere43
+    id: 173776247953984344
+    components:
+      - type: transform
+        position: {x: 12, y: 14, z: -15}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *sphere
+        submeshes:
+          - index: 0
+            material: *sphere_4_3_material
+  - tag: Sphere33
+    id: 4029164826461371747
+    components:
+      - type: transform
+        position: {x: 9, y: 14, z: -15}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *sphere
+        submeshes:
+          - index: 0
+            material: *sphere_3_3_material
+  - tag: Sphere23
+    id: 9713087678702203939
+    components:
+      - type: transform
+        position: {x: 6, y: 14, z: -15}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *sphere
+        submeshes:
+          - index: 0
+            material: *sphere_2_3_material
+  - tag: Sphere13
+    id: 10947277241021770105
+    components:
+      - type: transform
+        position: {x: 3, y: 14, z: -15}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *sphere
+        submeshes:
+          - index: 0
+            material: *sphere_1_3_material
+  - tag: Sphere03
+    id: 13824543333991020859
+    components:
+      - type: transform
+        position: {x: 0, y: 14, z: -15}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *sphere
+        submeshes:
+          - index: 0
+            material: *sphere_0_3_material
+  - tag: Sphere42
+    id: 13400907223192100039
+    components:
+      - type: transform
+        position: {x: 12, y: 11, z: -15}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *sphere
+        submeshes:
+          - index: 0
+            material: *sphere_4_2_material
+  - tag: Sphere32
+    id: 4323939989627445782
+    components:
+      - type: transform
+        position: {x: 9, y: 11, z: -15}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *sphere
+        submeshes:
+          - index: 0
+            material: *sphere_3_2_material
+  - tag: Sphere22
+    id: 16698699685761479533
+    components:
+      - type: transform
+        position: {x: 6, y: 11, z: -15}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *sphere
+        submeshes:
+          - index: 0
+            material: *sphere_2_2_material
+  - tag: Sphere12
+    id: 18130320136630663353
+    components:
+      - type: transform
+        position: {x: 3, y: 11, z: -15}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *sphere
+        submeshes:
+          - index: 0
+            material: *sphere_1_2_material
+  - tag: Sphere02
+    id: 10962250306393775399
+    components:
+      - type: transform
+        position: {x: 0, y: 11, z: -15}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *sphere
+        submeshes:
+          - index: 0
+            material: *sphere_0_2_material
+  - tag: Sphere41
+    id: 15008520192079477232
+    components:
+      - type: transform
+        position: {x: 12, y: 8, z: -15}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *sphere
+        submeshes:
+          - index: 0
+            material: *sphere_4_1_material
+  - tag: Sphere31
+    id: 4367251393135406243
+    components:
+      - type: transform
+        position: {x: 9, y: 8, z: -15}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *sphere
+        submeshes:
+          - index: 0
+            material: *sphere_3_1_material
+  - tag: Sphere21
+    id: 7158178531899311920
+    components:
+      - type: transform
+        position: {x: 6, y: 8, z: -15}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *sphere
+        submeshes:
+          - index: 0
+            material: *sphere_2_1_material
+  - tag: Sphere11
+    id: 18171015656761639243
+    components:
+      - type: transform
+        position: {x: 3, y: 8, z: -15}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *sphere
+        submeshes:
+          - index: 0
+            material: *sphere_1_1_material
+  - tag: Sphere01
+    id: 13794295970521105327
+    components:
+      - type: transform
+        position: {x: 0, y: 8, z: -15}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *sphere
+        submeshes:
+          - index: 0
+            material: *sphere_0_1_material
+  - tag: Sphere40
+    id: 4244028422545182077
+    components:
+      - type: transform
+        position: {x: 12, y: 5, z: -15}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *sphere
+        submeshes:
+          - index: 0
+            material: *sphere_4_0_material
+  - tag: Sphere30
+    id: 2845667266973062569
+    components:
+      - type: transform
+        position: {x: 9, y: 5, z: -15}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *sphere
+        submeshes:
+          - index: 0
+            material: *sphere_3_0_material
+  - tag: Sphere20
+    id: 12318652489391129601
+    components:
+      - type: transform
+        position: {x: 6, y: 5, z: -15}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *sphere
+        submeshes:
+          - index: 0
+            material: *sphere_2_0_material
+  - tag: Sphere10
+    id: 13062898461697362381
+    components:
+      - type: transform
+        position: {x: 3, y: 5, z: -15}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *sphere
+        submeshes:
+          - index: 0
+            material: *sphere_1_0_material
+  - tag: Sphere00
+    id: 10143737853026425962
+    components:
+      - type: transform
+        position: {x: 0, y: 5, z: -15}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *sphere
+        submeshes:
+          - index: 0
+            material: *sphere_0_0_material
+  - tag: Fox
+    id: 6542340127677031980
+    components:
+      - type: transform
+        position: {x: 12, y: 0, z: 0}
+        rotation: {x: 0, y: 0.809473217, z: 0, w: -0.587156773}
+        scale: {x: 0.0599999987, y: 0.0599999987, z: 0.0599999987}
   - tag: Helmet
-    id: 8802473735251505298
+    id: 5274599810316663903
     components:
       - type: transform
         position: {x: 0, y: 6, z: 0}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 4, y: 4, z: 4}
+      - type: static_mesh
+        color: *helmet
+        submeshes:
+          - index: 0
+            material: *helmet
+  - tag: Light7
+    id: 9241307470610176188
+    parent: 14655321643808365062
+    components:
+      - type: transform
+        position: {x: 14.1421404, y: 0, z: -14.1421309}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 0.200000003, y: 0.200000003, z: 0.200000003}
+      - type: static_mesh
+        color: *sphere
+        submeshes:
+          - index: 0
+            material: *Light7
+      - type: point_light
+        color: {r: 0.414494485, g: 0.437105805, b: 0.534111023, a: 1}
+        radius: 50
+  - tag: Light6
+    id: 13028351757259014775
+    parent: 14655321643808365062
+    components:
+      - type: transform
+        position: {x: 2.3849762e-07, y: 0, z: -20}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 0.200000003, y: 0.200000003, z: 0.200000003}
+      - type: static_mesh
+        color: *sphere
+        submeshes:
+          - index: 0
+            material: *Light6
+      - type: point_light
+        color: {r: 0.195973173, g: 0.760009229, b: 0.117367171, a: 1}
+        radius: 50
+  - tag: Light5
+    id: 12303693156190278852
+    parent: 14655321643808365062
+    components:
+      - type: transform
+        position: {x: -14.1421328, y: 0, z: -14.1421375}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 0.200000003, y: 0.200000003, z: 0.200000003}
+      - type: static_mesh
+        color: *sphere
+        submeshes:
+          - index: 0
+            material: *Light5
+      - type: point_light
+        color: {r: 0.375030994, g: 0.406390429, b: 0.503905475, a: 1}
+        radius: 50
+  - tag: Light4
+    id: 14079849355029726391
+    parent: 14655321643808365062
+    components:
+      - type: transform
+        position: {x: -20, y: 0, z: -1.74845559e-06}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 0.200000003, y: 0.200000003, z: 0.200000003}
+      - type: static_mesh
+        color: *sphere
+        submeshes:
+          - index: 0
+            material: *Light4
+      - type: point_light
+        color: {r: 0.77854687, g: 0.241696313, b: 0.989857376, a: 1}
+        radius: 50
+  - tag: Light3
+    id: 8190459481436721179
+    parent: 14655321643808365062
+    components:
+      - type: transform
+        position: {x: -14.1421356, y: 0, z: 14.1421356}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 0.200000003, y: 0.200000003, z: 0.200000003}
+      - type: static_mesh
+        color: *sphere
+        submeshes:
+          - index: 0
+            material: *Light3
+      - type: point_light
+        color: {r: 0.312475324, g: 0.812692523, b: 0.374582082, a: 1}
+        radius: 50
+  - tag: Light2
+    id: 8751882650025462318
+    parent: 14655321643808365062
+    components:
+      - type: transform
+        position: {x: -8.74227794e-07, y: 0, z: 20}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 0.200000003, y: 0.200000003, z: 0.200000003}
+      - type: static_mesh
+        color: *sphere
+        submeshes:
+          - index: 0
+            material: *Light2
+      - type: point_light
+        color: {r: 0.314045638, g: 0.341378927, b: 0.423889816, a: 1}
+        radius: 50
+  - tag: Light1
+    id: 467729512066285477
+    parent: 14655321643808365062
+    components:
+      - type: transform
+        position: {x: 14.1421356, y: 0, z: 14.1421356}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 0.200000003, y: 0.200000003, z: 0.200000003}
+      - type: static_mesh
+        color: *sphere
+        submeshes:
+          - index: 0
+            material: *Light1
+      - type: point_light
+        color: {r: 0.193947673, g: 0.364551783, b: 0.821902275, a: 1}
+        radius: 50
+  - tag: Light0
+    id: 16202036048673858113
+    parent: 14655321643808365062
+    components:
+      - type: transform
+        position: {x: 20, y: 0, z: 0}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 0.200000003, y: 0.200000003, z: 0.200000003}
+      - type: static_mesh
+        color: *sphere
+        submeshes:
+          - index: 0
+            material: *Light0
+      - type: point_light
+        color: {r: 0.948609412, g: 0.492279708, b: 0.79820627, a: 1}
+        radius: 50
+  - tag: LightCenter
+    id: 14655321643808365062
+    components:
+      - type: transform
+        position: {x: 0, y: 20, z: 0}
+        rotation: {x: 0, y: 0.809473217, z: 0, w: -0.587156773}
+        scale: {x: 1, y: 1, z: 1}
   - tag: Chunk1919
-    id: 3455723042269275444
-    parent: 7332342955718843740
+    id: 4474402471474113130
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 225, y: 0, z: 225}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1819
-    id: 7240445009990420342
-    parent: 7332342955718843740
+    id: 13882915839234357864
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 200, y: 0, z: 225}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1719
-    id: 1458568664426128437
-    parent: 7332342955718843740
+    id: 16282879440978316216
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 175, y: 0, z: 225}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1619
-    id: 9489247964777202327
-    parent: 7332342955718843740
+    id: 2443352758298256237
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 150, y: 0, z: 225}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1519
-    id: 3410357618546477021
-    parent: 7332342955718843740
+    id: 17046937763517078088
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 125, y: 0, z: 225}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1419
-    id: 16103057592313729003
-    parent: 7332342955718843740
+    id: 11832904764352426286
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 100, y: 0, z: 225}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1319
-    id: 2598765922741093533
-    parent: 7332342955718843740
+    id: 11160016718484183015
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 75, y: 0, z: 225}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1219
-    id: 15017028137334394654
-    parent: 7332342955718843740
+    id: 9216568956000908562
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 50, y: 0, z: 225}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1119
-    id: 4106601344016988323
-    parent: 7332342955718843740
+    id: 9205775119251318167
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 25, y: 0, z: 225}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1019
-    id: 7274727738474280617
-    parent: 7332342955718843740
+    id: 15303196987926582350
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 0, y: 0, z: 225}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk919
-    id: 3753668557816948327
-    parent: 7332342955718843740
+    id: 3367842959737482571
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -25, y: 0, z: 225}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk819
-    id: 13239513946399009815
-    parent: 7332342955718843740
+    id: 10611298221898656045
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -50, y: 0, z: 225}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk719
-    id: 16227651762766243725
-    parent: 7332342955718843740
+    id: 3710714335838558646
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -75, y: 0, z: 225}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk619
-    id: 7734318062226874776
-    parent: 7332342955718843740
+    id: 12962714012397014457
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -100, y: 0, z: 225}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk519
-    id: 3093578304227653709
-    parent: 7332342955718843740
+    id: 11679445076976953044
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -125, y: 0, z: 225}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk419
-    id: 13053972591631976341
-    parent: 7332342955718843740
+    id: 14322947763840642277
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -150, y: 0, z: 225}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk319
-    id: 18223893176151264951
-    parent: 7332342955718843740
+    id: 8883413500170736958
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -175, y: 0, z: 225}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk219
-    id: 3684242319140619681
-    parent: 7332342955718843740
+    id: 6668915930829702104
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -200, y: 0, z: 225}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk119
-    id: 8475857043426908153
-    parent: 7332342955718843740
+    id: 1421652761096660238
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -225, y: 0, z: 225}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk019
-    id: 16768568179657323663
-    parent: 7332342955718843740
+    id: 5454145084206920558
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -250, y: 0, z: 225}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1918
-    id: 122272537491402837
-    parent: 7332342955718843740
+    id: 10799822864424999583
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 225, y: 0, z: 200}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1818
-    id: 10476529214549796675
-    parent: 7332342955718843740
+    id: 15738079774332398849
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 200, y: 0, z: 200}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1718
-    id: 823216921511681283
-    parent: 7332342955718843740
+    id: 11212228733952018
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 175, y: 0, z: 200}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1618
-    id: 110471866187755192
-    parent: 7332342955718843740
+    id: 12586520800838995524
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 150, y: 0, z: 200}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1518
-    id: 8716948005052618448
-    parent: 7332342955718843740
+    id: 1557217974243696363
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 125, y: 0, z: 200}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1418
-    id: 18402185059427806931
-    parent: 7332342955718843740
+    id: 7859040586153946231
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 100, y: 0, z: 200}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1318
-    id: 12766456953146918135
-    parent: 7332342955718843740
+    id: 7149283491949109330
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 75, y: 0, z: 200}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1218
-    id: 15385883734424260907
-    parent: 7332342955718843740
+    id: 1450358195541197055
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 50, y: 0, z: 200}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1118
-    id: 5283828413060928562
-    parent: 7332342955718843740
+    id: 2846372678253106243
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 25, y: 0, z: 200}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1018
-    id: 10469998978499397149
-    parent: 7332342955718843740
+    id: 4287345397436090171
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 0, y: 0, z: 200}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk918
-    id: 11082600136026367847
-    parent: 7332342955718843740
+    id: 7111237258159000692
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -25, y: 0, z: 200}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk818
-    id: 8004441645609601519
-    parent: 7332342955718843740
+    id: 17714749529590226326
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -50, y: 0, z: 200}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk718
-    id: 14837849637610850863
-    parent: 7332342955718843740
+    id: 6432130576516181443
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -75, y: 0, z: 200}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk618
-    id: 17255579284608857886
-    parent: 7332342955718843740
+    id: 9083472108273424754
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -100, y: 0, z: 200}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk518
-    id: 165506284257061418
-    parent: 7332342955718843740
+    id: 2885630221083692181
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -125, y: 0, z: 200}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk418
-    id: 14120304252449781139
-    parent: 7332342955718843740
+    id: 17777836236822339044
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -150, y: 0, z: 200}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk318
-    id: 15107804349847673916
-    parent: 7332342955718843740
+    id: 18165106197908574972
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -175, y: 0, z: 200}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk218
-    id: 4715918286389356246
-    parent: 7332342955718843740
+    id: 17406657032945901580
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -200, y: 0, z: 200}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk118
-    id: 276714328662965306
-    parent: 7332342955718843740
+    id: 14318364480083489145
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -225, y: 0, z: 200}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk018
-    id: 16019544992517336342
-    parent: 7332342955718843740
+    id: 5524185076106069846
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -250, y: 0, z: 200}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1917
-    id: 15060072537640844328
-    parent: 7332342955718843740
+    id: 9832727433797907380
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 225, y: 0, z: 175}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1817
-    id: 17309157214579387828
-    parent: 7332342955718843740
+    id: 13615136153612775628
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 200, y: 0, z: 175}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1717
-    id: 18106542436717105774
-    parent: 7332342955718843740
+    id: 5332695448138383598
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 175, y: 0, z: 175}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1617
-    id: 5270774939505466427
-    parent: 7332342955718843740
+    id: 7561128594150580005
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 150, y: 0, z: 175}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1517
-    id: 12473482905816814175
-    parent: 7332342955718843740
+    id: 9899725993955922809
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 125, y: 0, z: 175}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1417
-    id: 11133289337299150949
-    parent: 7332342955718843740
+    id: 14999146970400165577
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 100, y: 0, z: 175}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1317
-    id: 13364180224402873898
-    parent: 7332342955718843740
+    id: 11961912107504304865
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 75, y: 0, z: 175}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1217
-    id: 10767788744354695763
-    parent: 7332342955718843740
+    id: 4015076400105690734
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 50, y: 0, z: 175}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1117
-    id: 13307438004513664351
-    parent: 7332342955718843740
+    id: 15818680596249226944
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 25, y: 0, z: 175}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1017
-    id: 6544589932862306611
-    parent: 7332342955718843740
+    id: 8818644871555012120
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 0, y: 0, z: 175}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk917
-    id: 9287922933645324152
-    parent: 7332342955718843740
+    id: 10324236305776224957
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -25, y: 0, z: 175}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk817
-    id: 2447468272533346208
-    parent: 7332342955718843740
+    id: 13545408276732247543
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -50, y: 0, z: 175}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk717
-    id: 3011647388659688841
-    parent: 7332342955718843740
+    id: 14185182030235412640
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -75, y: 0, z: 175}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk617
-    id: 3663146209486133108
-    parent: 7332342955718843740
+    id: 8037451423812435144
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -100, y: 0, z: 175}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk517
-    id: 9452956744294343072
-    parent: 7332342955718843740
+    id: 1116236229655991442
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -125, y: 0, z: 175}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk417
-    id: 5518248866447471692
-    parent: 7332342955718843740
+    id: 11805055226256113329
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -150, y: 0, z: 175}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk317
-    id: 13933210344794024202
-    parent: 7332342955718843740
+    id: 2690742505663136063
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -175, y: 0, z: 175}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk217
-    id: 11432394372765234113
-    parent: 7332342955718843740
+    id: 15112764806756558977
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -200, y: 0, z: 175}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk117
-    id: 4344091369875585608
-    parent: 7332342955718843740
+    id: 15368111046393401112
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -225, y: 0, z: 175}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk017
-    id: 12085545166300605898
-    parent: 7332342955718843740
+    id: 10439673611292149542
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -250, y: 0, z: 175}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1916
-    id: 8107937746160542721
-    parent: 7332342955718843740
+    id: 12362877121139449980
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 225, y: 0, z: 150}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1816
-    id: 16394149293638496933
-    parent: 7332342955718843740
+    id: 16675212013592711734
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 200, y: 0, z: 150}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1716
-    id: 16734911352163119961
-    parent: 7332342955718843740
+    id: 18113677163037822931
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 175, y: 0, z: 150}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1616
-    id: 6244290517136233521
-    parent: 7332342955718843740
+    id: 6441109428764408955
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 150, y: 0, z: 150}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1516
-    id: 14594239883770006627
-    parent: 7332342955718843740
+    id: 13997089751732535133
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 125, y: 0, z: 150}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1416
-    id: 1491737469123933353
-    parent: 7332342955718843740
+    id: 7127647944771184870
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 100, y: 0, z: 150}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1316
-    id: 15737213880916482307
-    parent: 7332342955718843740
+    id: 8363862833174994015
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 75, y: 0, z: 150}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1216
-    id: 15579436353462145822
-    parent: 7332342955718843740
+    id: 16349457520776878698
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 50, y: 0, z: 150}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1116
-    id: 7424895224722082808
-    parent: 7332342955718843740
+    id: 1566833722184074301
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 25, y: 0, z: 150}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1016
-    id: 17256677623218131579
-    parent: 7332342955718843740
+    id: 1987192686843199122
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 0, y: 0, z: 150}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk916
-    id: 323113681554105846
-    parent: 7332342955718843740
+    id: 595225764511457248
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -25, y: 0, z: 150}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk816
-    id: 17219422344895733572
-    parent: 7332342955718843740
+    id: 6111657115268692230
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -50, y: 0, z: 150}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk716
-    id: 12899730865905590086
-    parent: 7332342955718843740
+    id: 16807789014050304981
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -75, y: 0, z: 150}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk616
-    id: 17409696511183696203
-    parent: 7332342955718843740
+    id: 13840047537005120647
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -100, y: 0, z: 150}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk516
-    id: 3410652561841731392
-    parent: 7332342955718843740
+    id: 16005120661424643094
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -125, y: 0, z: 150}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk416
-    id: 12571780807218247304
-    parent: 7332342955718843740
+    id: 12914609953982856856
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -150, y: 0, z: 150}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk316
-    id: 18224209196672172973
-    parent: 7332342955718843740
+    id: 3239031477259241535
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -175, y: 0, z: 150}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk216
-    id: 11465455024573254511
-    parent: 7332342955718843740
+    id: 11237018141731460460
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -200, y: 0, z: 150}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk116
-    id: 9042961290399117706
-    parent: 7332342955718843740
+    id: 15892237751383770508
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -225, y: 0, z: 150}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk016
-    id: 4622752942916931905
-    parent: 7332342955718843740
+    id: 7856170217640293483
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -250, y: 0, z: 150}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1915
-    id: 18412094351026637861
-    parent: 7332342955718843740
+    id: 7017581668943883690
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 225, y: 0, z: 125}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1815
-    id: 2743426279557042014
-    parent: 7332342955718843740
+    id: 4401793168161058468
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 200, y: 0, z: 125}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1715
-    id: 2361042381416513993
-    parent: 7332342955718843740
+    id: 11548681963166157391
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 175, y: 0, z: 125}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1615
-    id: 10959200088468453283
-    parent: 7332342955718843740
+    id: 2939264698591436426
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 150, y: 0, z: 125}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1515
-    id: 1492769045838760189
-    parent: 7332342955718843740
+    id: 811164715296848511
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 125, y: 0, z: 125}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1415
-    id: 10583034481902027407
-    parent: 7332342955718843740
+    id: 2089781967826075741
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 100, y: 0, z: 125}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1315
-    id: 16720806563240714053
-    parent: 7332342955718843740
+    id: 11887420131390559368
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 75, y: 0, z: 125}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1215
-    id: 12598490489729302000
-    parent: 7332342955718843740
+    id: 3019687091040871228
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 50, y: 0, z: 125}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1115
-    id: 17353852329397257720
-    parent: 7332342955718843740
+    id: 885223702827016449
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 25, y: 0, z: 125}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1015
-    id: 18197582312109802168
-    parent: 7332342955718843740
+    id: 5350396812082772739
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 0, y: 0, z: 125}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk915
-    id: 16859962588987665176
-    parent: 7332342955718843740
+    id: 9539337703966435624
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -25, y: 0, z: 125}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk815
-    id: 16675429923016996225
-    parent: 7332342955718843740
+    id: 15979213235741325453
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -50, y: 0, z: 125}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk715
-    id: 3212916789612611435
-    parent: 7332342955718843740
+    id: 15958210623761008727
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -75, y: 0, z: 125}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk615
-    id: 12807900764009709957
-    parent: 7332342955718843740
+    id: 10466062650764580840
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -100, y: 0, z: 125}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk515
-    id: 4710247922812131882
-    parent: 7332342955718843740
+    id: 6276242605825383519
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -125, y: 0, z: 125}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk415
-    id: 6707298927864371341
-    parent: 7332342955718843740
+    id: 16156206838854038413
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -150, y: 0, z: 125}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk315
-    id: 12634704202228567372
-    parent: 7332342955718843740
+    id: 11772269620310731844
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -175, y: 0, z: 125}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk215
-    id: 8225753488254174741
-    parent: 7332342955718843740
+    id: 11156955765602018718
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -200, y: 0, z: 125}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk115
-    id: 16622640457719833623
-    parent: 7332342955718843740
+    id: 16371681349084220546
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -225, y: 0, z: 125}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk015
-    id: 15066793259281261554
-    parent: 7332342955718843740
+    id: 2021784918143312401
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -250, y: 0, z: 125}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1914
-    id: 17191176641572445125
-    parent: 7332342955718843740
+    id: 2046996007403765425
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 225, y: 0, z: 100}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1814
-    id: 6495431127769714219
-    parent: 7332342955718843740
+    id: 15274013245614512649
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 200, y: 0, z: 100}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1714
-    id: 7190615481214861717
-    parent: 7332342955718843740
+    id: 1505855613830633461
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 175, y: 0, z: 100}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1614
-    id: 11236123221875935321
-    parent: 7332342955718843740
+    id: 4634978691078762513
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 150, y: 0, z: 100}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1514
-    id: 3436985101953745263
-    parent: 7332342955718843740
+    id: 18202558704504601074
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 125, y: 0, z: 100}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1414
-    id: 15094738166555315776
-    parent: 7332342955718843740
+    id: 14819597655219051236
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 100, y: 0, z: 100}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1314
-    id: 14997513409383814909
-    parent: 7332342955718843740
+    id: 11861680226437852936
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 75, y: 0, z: 100}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1214
-    id: 13719515359291065305
-    parent: 7332342955718843740
+    id: 5026581134625110212
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 50, y: 0, z: 100}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1114
-    id: 1979118202705164160
-    parent: 7332342955718843740
+    id: 4532640449699500910
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 25, y: 0, z: 100}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1014
-    id: 14209655554656058745
-    parent: 7332342955718843740
+    id: 13576034349901931262
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 0, y: 0, z: 100}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk914
-    id: 11998716515420303539
-    parent: 7332342955718843740
+    id: 15202011449500515542
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -25, y: 0, z: 100}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk814
-    id: 6259290985965985173
-    parent: 7332342955718843740
+    id: 6739219693754022613
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -50, y: 0, z: 100}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk714
-    id: 10490597907795032731
-    parent: 7332342955718843740
+    id: 7466356685714584025
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -75, y: 0, z: 100}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk614
-    id: 1793490564400391784
-    parent: 7332342955718843740
+    id: 6601958441674318950
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -100, y: 0, z: 100}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk514
-    id: 146054888567929908
-    parent: 7332342955718843740
+    id: 2236138650303670395
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -125, y: 0, z: 100}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk414
-    id: 4668917843622135462
-    parent: 7332342955718843740
+    id: 11138069688117704433
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -150, y: 0, z: 100}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk314
-    id: 15585559333046737767
-    parent: 7332342955718843740
+    id: 9193664066668430210
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -175, y: 0, z: 100}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk214
-    id: 16935256743199733078
-    parent: 7332342955718843740
+    id: 2948048823079791872
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -200, y: 0, z: 100}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk114
-    id: 16672148945750330284
-    parent: 7332342955718843740
+    id: 520832726073510192
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -225, y: 0, z: 100}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk014
-    id: 6919813524878262248
-    parent: 7332342955718843740
+    id: 7844259091580913984
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -250, y: 0, z: 100}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1913
-    id: 11202236258488741944
-    parent: 7332342955718843740
+    id: 5002954100096696787
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 225, y: 0, z: 75}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1813
-    id: 17672825628049182537
-    parent: 7332342955718843740
+    id: 15757294400066070710
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 200, y: 0, z: 75}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1713
-    id: 13741333418895715407
-    parent: 7332342955718843740
+    id: 43254521390994864
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 175, y: 0, z: 75}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1613
-    id: 370498246191959779
-    parent: 7332342955718843740
+    id: 3512886080561044161
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 150, y: 0, z: 75}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1513
-    id: 11414448529299633872
-    parent: 7332342955718843740
+    id: 9088699749993187891
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 125, y: 0, z: 75}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1413
-    id: 2651860938108264430
-    parent: 7332342955718843740
+    id: 8726171665581307066
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 100, y: 0, z: 75}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1313
-    id: 1338523677724425860
-    parent: 7332342955718843740
+    id: 1022067697259835075
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 75, y: 0, z: 75}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1213
-    id: 14748835126002632550
-    parent: 7332342955718843740
+    id: 15025006536092639124
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 50, y: 0, z: 75}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1113
-    id: 3210679422266818070
-    parent: 7332342955718843740
+    id: 7672153826788178813
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 25, y: 0, z: 75}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1013
-    id: 4263715240075784294
-    parent: 7332342955718843740
+    id: 1919693254183820595
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 0, y: 0, z: 75}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk913
-    id: 17170953715379474482
-    parent: 7332342955718843740
+    id: 6228073173088366068
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -25, y: 0, z: 75}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk813
-    id: 739540116750830915
-    parent: 7332342955718843740
+    id: 12396216636754910154
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -50, y: 0, z: 75}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk713
-    id: 16978595463595551334
-    parent: 7332342955718843740
+    id: 13665424695748681284
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -75, y: 0, z: 75}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk613
-    id: 9062807456507720301
-    parent: 7332342955718843740
+    id: 2454985642748615001
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -100, y: 0, z: 75}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk513
-    id: 7430513123548631989
-    parent: 7332342955718843740
+    id: 2418530152738207642
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -125, y: 0, z: 75}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk413
-    id: 17120234218355861338
-    parent: 7332342955718843740
+    id: 2870890717697683560
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -150, y: 0, z: 75}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk313
-    id: 1511821635918757915
-    parent: 7332342955718843740
+    id: 4105339817085988180
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -175, y: 0, z: 75}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk213
-    id: 16116901245383000257
-    parent: 7332342955718843740
+    id: 1519062132715499633
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -200, y: 0, z: 75}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk113
-    id: 4982909399420548400
-    parent: 7332342955718843740
+    id: 8061584213573311132
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -225, y: 0, z: 75}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk013
-    id: 3277993705111409116
-    parent: 7332342955718843740
+    id: 5438994939717938773
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -250, y: 0, z: 75}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1912
-    id: 977229095592917339
-    parent: 7332342955718843740
+    id: 16490715808788713910
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 225, y: 0, z: 50}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1812
-    id: 8091152503942135337
-    parent: 7332342955718843740
+    id: 10904921913676574202
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 200, y: 0, z: 50}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1712
-    id: 10611977626062098003
-    parent: 7332342955718843740
+    id: 786899586726074756
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 175, y: 0, z: 50}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1612
-    id: 2240147027813885658
-    parent: 7332342955718843740
+    id: 7399501964592330265
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 150, y: 0, z: 50}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1512
-    id: 3461064036601331197
-    parent: 7332342955718843740
+    id: 10622537305259806586
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 125, y: 0, z: 50}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1412
-    id: 1084285104972165623
-    parent: 7332342955718843740
+    id: 15239618639274970329
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 100, y: 0, z: 50}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1312
-    id: 14985704135406648061
-    parent: 7332342955718843740
+    id: 11418041754686328110
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 75, y: 0, z: 50}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1212
-    id: 13307914254721871584
-    parent: 7332342955718843740
+    id: 9541628748335825888
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 50, y: 0, z: 50}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1112
-    id: 4788279801374268090
-    parent: 7332342955718843740
+    id: 17378396519159051461
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 25, y: 0, z: 50}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1012
-    id: 13424696106870634730
-    parent: 7332342955718843740
+    id: 14540079303121239826
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 0, y: 0, z: 50}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk912
-    id: 2313947057384861769
-    parent: 7332342955718843740
+    id: 17783747035703157004
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -25, y: 0, z: 50}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk812
-    id: 5144266276918801007
-    parent: 7332342955718843740
+    id: 4506545158482372934
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -50, y: 0, z: 50}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk712
-    id: 10163255510415933882
-    parent: 7332342955718843740
+    id: 7181788101247040780
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -75, y: 0, z: 50}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk612
-    id: 6365502655722789431
-    parent: 7332342955718843740
+    id: 15465715897867846146
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -100, y: 0, z: 50}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk512
-    id: 11116149041708348527
-    parent: 7332342955718843740
+    id: 11001737299023268541
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -125, y: 0, z: 50}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk412
-    id: 17474822206246188825
-    parent: 7332342955718843740
+    id: 13092465647072233913
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -150, y: 0, z: 50}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk312
-    id: 8116590924493192812
-    parent: 7332342955718843740
+    id: 14185561434133673511
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -175, y: 0, z: 50}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk212
-    id: 17850361710608180388
-    parent: 7332342955718843740
+    id: 18294431984720811787
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -200, y: 0, z: 50}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk112
-    id: 14043124517454900184
-    parent: 7332342955718843740
+    id: 11597473736316126702
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -225, y: 0, z: 50}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk012
-    id: 15993076464956967553
-    parent: 7332342955718843740
+    id: 14855920257164827510
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -250, y: 0, z: 50}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1911
-    id: 9669742906930517414
-    parent: 7332342955718843740
+    id: 9670281441465686326
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 225, y: 0, z: 25}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1811
-    id: 11255401501884811468
-    parent: 7332342955718843740
+    id: 9022423639294804923
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 200, y: 0, z: 25}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1711
-    id: 6926883690532280564
-    parent: 7332342955718843740
+    id: 7608027631271685942
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 175, y: 0, z: 25}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1611
-    id: 14662300270515341114
-    parent: 7332342955718843740
+    id: 9616794557433409550
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 150, y: 0, z: 25}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1511
-    id: 7275044684452685144
-    parent: 7332342955718843740
+    id: 2603885297180066090
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 125, y: 0, z: 25}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1411
-    id: 7263175018400461501
-    parent: 7332342955718843740
+    id: 9230844432887063069
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 100, y: 0, z: 25}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1311
-    id: 8800165068950380607
-    parent: 7332342955718843740
+    id: 4015354476561849068
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 75, y: 0, z: 25}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1211
-    id: 3712801078693571472
-    parent: 7332342955718843740
+    id: 5167636686235394278
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 50, y: 0, z: 25}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1111
-    id: 1602814730955147097
-    parent: 7332342955718843740
+    id: 2070283616881949438
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 25, y: 0, z: 25}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1011
-    id: 1379936821978571364
-    parent: 7332342955718843740
+    id: 17799267185616926320
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 0, y: 0, z: 25}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk911
-    id: 18193353093706287762
-    parent: 7332342955718843740
+    id: 11073976584453060977
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -25, y: 0, z: 25}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk811
-    id: 13586605755227020202
-    parent: 7332342955718843740
+    id: 16761027436420944504
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -50, y: 0, z: 25}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk711
-    id: 4169845658347342606
-    parent: 7332342955718843740
+    id: 15382835419727435241
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -75, y: 0, z: 25}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk611
-    id: 12120600924129922934
-    parent: 7332342955718843740
+    id: 4016838689137875326
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -100, y: 0, z: 25}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk511
-    id: 15573666467646401590
-    parent: 7332342955718843740
+    id: 8976648240676007909
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -125, y: 0, z: 25}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk411
-    id: 1283903386038569945
-    parent: 7332342955718843740
+    id: 11739627138106578789
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -150, y: 0, z: 25}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk311
-    id: 5813777089839563003
-    parent: 7332342955718843740
+    id: 17457505863552811227
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -175, y: 0, z: 25}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk211
-    id: 15409642669298622687
-    parent: 7332342955718843740
+    id: 16738067459216655873
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -200, y: 0, z: 25}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk111
-    id: 13686842970642783779
-    parent: 7332342955718843740
+    id: 8138146431933984149
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -225, y: 0, z: 25}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk011
-    id: 596654307501810103
-    parent: 7332342955718843740
+    id: 10312149094137898941
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -250, y: 0, z: 25}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1910
-    id: 9688593142287177559
-    parent: 7332342955718843740
+    id: 8338823448614217012
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 225, y: 0, z: 0}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1810
-    id: 16268067975285105113
-    parent: 7332342955718843740
+    id: 13280058369791635305
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 200, y: 0, z: 0}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1710
-    id: 6453473302725432524
-    parent: 7332342955718843740
+    id: 5995287808545002441
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 175, y: 0, z: 0}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1610
-    id: 16671535382276129223
-    parent: 7332342955718843740
+    id: 1927924228292184070
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 150, y: 0, z: 0}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1510
-    id: 11139780358480077220
-    parent: 7332342955718843740
+    id: 13204013023278382361
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 125, y: 0, z: 0}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1410
-    id: 5050582921236896727
-    parent: 7332342955718843740
+    id: 10025516621150950411
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 100, y: 0, z: 0}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1310
-    id: 3011511699451965460
-    parent: 7332342955718843740
+    id: 10685611141315795941
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 75, y: 0, z: 0}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1210
-    id: 12532489049596376670
-    parent: 7332342955718843740
+    id: 7910992951553935491
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 50, y: 0, z: 0}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1110
-    id: 12859664978199817692
-    parent: 7332342955718843740
+    id: 1742495375906696178
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 25, y: 0, z: 0}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk1010
-    id: 15840705711011626062
-    parent: 7332342955718843740
+    id: 5453594431636084576
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 0, y: 0, z: 0}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk910
-    id: 12460941915869741098
-    parent: 7332342955718843740
+    id: 320110243855885828
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -25, y: 0, z: 0}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk810
-    id: 5445386467964579192
-    parent: 7332342955718843740
+    id: 9069937887775026399
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -50, y: 0, z: 0}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk710
-    id: 10972743088826320369
-    parent: 7332342955718843740
+    id: 5372901145906655369
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -75, y: 0, z: 0}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk610
-    id: 15498281957322098823
-    parent: 7332342955718843740
+    id: 14526904887459370887
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -100, y: 0, z: 0}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk510
-    id: 5106785148194211288
-    parent: 7332342955718843740
+    id: 11664793441653496958
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -125, y: 0, z: 0}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk410
-    id: 10814003607185906642
-    parent: 7332342955718843740
+    id: 11582763388322966067
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -150, y: 0, z: 0}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk310
-    id: 17309515781883565259
-    parent: 7332342955718843740
+    id: 16700286742989455871
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -175, y: 0, z: 0}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk210
-    id: 1983005047163905301
-    parent: 7332342955718843740
+    id: 1324072929395199271
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -200, y: 0, z: 0}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk110
-    id: 9183767278096571190
-    parent: 7332342955718843740
+    id: 12782152642253982026
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -225, y: 0, z: 0}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk010
-    id: 11966992679420489198
-    parent: 7332342955718843740
+    id: 16908589441540453912
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -250, y: 0, z: 0}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk199
-    id: 8990656472665997528
-    parent: 7332342955718843740
+    id: 16021982521434822676
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 225, y: 0, z: -25}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk189
-    id: 7088253884286612318
-    parent: 7332342955718843740
+    id: 16635251642379462030
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 200, y: 0, z: -25}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk179
-    id: 18064781200155516318
-    parent: 7332342955718843740
+    id: 2273210161372846220
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 175, y: 0, z: -25}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk169
-    id: 10212218851529731038
-    parent: 7332342955718843740
+    id: 3847371014221137815
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 150, y: 0, z: -25}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk159
-    id: 15682122765782895086
-    parent: 7332342955718843740
+    id: 12089976959606687885
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 125, y: 0, z: -25}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk149
-    id: 9955976370469806321
-    parent: 7332342955718843740
+    id: 9753468835939162655
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 100, y: 0, z: -25}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk139
-    id: 14380584851197265704
-    parent: 7332342955718843740
+    id: 8576589037764456664
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 75, y: 0, z: -25}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk129
-    id: 10322924143985466847
-    parent: 7332342955718843740
+    id: 16058131743577323168
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 50, y: 0, z: -25}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk119
-    id: 8502502947893343722
-    parent: 7332342955718843740
+    id: 4485620819533320011
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 25, y: 0, z: -25}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk109
-    id: 5774330540884601701
-    parent: 7332342955718843740
+    id: 6312054250035902284
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 0, y: 0, z: -25}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk99
-    id: 13155752161819074635
-    parent: 7332342955718843740
+    id: 11319816257321078939
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -25, y: 0, z: -25}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk89
-    id: 3342180995174335972
-    parent: 7332342955718843740
+    id: 4062160534469431089
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -50, y: 0, z: -25}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk79
-    id: 13054161996499787587
-    parent: 7332342955718843740
+    id: 15314694514854867243
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -75, y: 0, z: -25}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk69
-    id: 1869044708499181701
-    parent: 7332342955718843740
+    id: 17062718767749143486
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -100, y: 0, z: -25}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk59
-    id: 2236005908087139791
-    parent: 7332342955718843740
+    id: 4645179713385901603
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -125, y: 0, z: -25}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk49
-    id: 17394424551850525705
-    parent: 7332342955718843740
+    id: 9029979063011794178
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -150, y: 0, z: -25}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk39
-    id: 13597778236782760730
-    parent: 7332342955718843740
+    id: 1451324592849907202
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -175, y: 0, z: -25}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk29
-    id: 501207732984751381
-    parent: 7332342955718843740
+    id: 4486116625735505066
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -200, y: 0, z: -25}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk19
-    id: 16392592928360653780
-    parent: 7332342955718843740
+    id: 10243182143107150079
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -225, y: 0, z: -25}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk09
-    id: 3868510052317778032
-    parent: 7332342955718843740
+    id: 1639208754522964960
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -250, y: 0, z: -25}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk198
-    id: 12940656507756364326
-    parent: 7332342955718843740
+    id: 9674885959652755467
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 225, y: 0, z: -50}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk188
-    id: 12348006968015013543
-    parent: 7332342955718843740
+    id: 3043141755051804495
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 200, y: 0, z: -50}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk178
-    id: 17170929466644797932
-    parent: 7332342955718843740
+    id: 8365378227505464274
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 175, y: 0, z: -50}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk168
-    id: 8317249163815577959
-    parent: 7332342955718843740
+    id: 5276805605629655097
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 150, y: 0, z: -50}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk158
-    id: 17577555455907534423
-    parent: 7332342955718843740
+    id: 5944703781923999818
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 125, y: 0, z: -50}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk148
-    id: 13829956395995793186
-    parent: 7332342955718843740
+    id: 12914001382312779109
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 100, y: 0, z: -50}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk138
-    id: 15513068159196317377
-    parent: 7332342955718843740
+    id: 3549551644324615610
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 75, y: 0, z: -50}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk128
-    id: 17086839564765459500
-    parent: 7332342955718843740
+    id: 1130260086912522176
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 50, y: 0, z: -50}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk118
-    id: 11243700376990798477
-    parent: 7332342955718843740
+    id: 14182776528878765853
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 25, y: 0, z: -50}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk108
-    id: 2081168991034005098
-    parent: 7332342955718843740
+    id: 61719481627147186
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 0, y: 0, z: -50}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk98
-    id: 6821736409311249686
-    parent: 7332342955718843740
+    id: 1901311902436738401
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -25, y: 0, z: -50}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk88
-    id: 1045800051186967004
-    parent: 7332342955718843740
+    id: 1863733581415272557
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -50, y: 0, z: -50}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk78
-    id: 13132330573847721
-    parent: 7332342955718843740
+    id: 1324413519470239067
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -75, y: 0, z: -50}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk68
-    id: 6982253825335458072
-    parent: 7332342955718843740
+    id: 12226160251298465139
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -100, y: 0, z: -50}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk58
-    id: 1408372771861154893
-    parent: 7332342955718843740
+    id: 13755028361310089336
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -125, y: 0, z: -50}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk48
-    id: 262409108754720085
-    parent: 7332342955718843740
+    id: 9040241557837690055
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -150, y: 0, z: -50}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk38
-    id: 17072445978648816140
-    parent: 7332342955718843740
+    id: 7591326549877588543
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -175, y: 0, z: -50}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk28
-    id: 15406038127256626156
-    parent: 7332342955718843740
+    id: 1705990767049405880
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -200, y: 0, z: -50}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk18
-    id: 8386212562072801428
-    parent: 7332342955718843740
+    id: 8056106016382820740
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -225, y: 0, z: -50}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk08
-    id: 553351046070559619
-    parent: 7332342955718843740
+    id: 14985055427593365860
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -250, y: 0, z: -50}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk197
-    id: 7526084480406400705
-    parent: 7332342955718843740
+    id: 14761669479910833957
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 225, y: 0, z: -75}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk187
-    id: 11874659680332266412
-    parent: 7332342955718843740
+    id: 15438028539132357509
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 200, y: 0, z: -75}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk177
-    id: 6142443841863149394
-    parent: 7332342955718843740
+    id: 2227273020413920712
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 175, y: 0, z: -75}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk167
-    id: 13660863780883371978
-    parent: 7332342955718843740
+    id: 4056149098669977980
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 150, y: 0, z: -75}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk157
-    id: 2090510896237700301
-    parent: 7332342955718843740
+    id: 10620439146933033065
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 125, y: 0, z: -75}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk147
-    id: 18363593318068000089
-    parent: 7332342955718843740
+    id: 11561925459729566349
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 100, y: 0, z: -75}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk137
-    id: 9872165265425160516
-    parent: 7332342955718843740
+    id: 9673088153550517779
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 75, y: 0, z: -75}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk127
-    id: 18004154446218297648
-    parent: 7332342955718843740
+    id: 10517864838129659033
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 50, y: 0, z: -75}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk117
-    id: 17793320270606694131
-    parent: 7332342955718843740
+    id: 9812981149483249468
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 25, y: 0, z: -75}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk107
-    id: 12372992202141950294
-    parent: 7332342955718843740
+    id: 6266547149737107806
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 0, y: 0, z: -75}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk97
-    id: 970953702895772662
-    parent: 7332342955718843740
+    id: 1946722159801838345
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -25, y: 0, z: -75}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk87
-    id: 1629261313743417112
-    parent: 7332342955718843740
+    id: 4436705955005942963
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -50, y: 0, z: -75}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk77
-    id: 18010706042056686439
-    parent: 7332342955718843740
+    id: 2297047003566918668
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -75, y: 0, z: -75}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk67
-    id: 7488183214648918036
-    parent: 7332342955718843740
+    id: 317231123255184894
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -100, y: 0, z: -75}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk57
-    id: 1396055691098798452
-    parent: 7332342955718843740
+    id: 8796008101675395559
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -125, y: 0, z: -75}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk47
-    id: 8846001646077487694
-    parent: 7332342955718843740
+    id: 17492216501701780560
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -150, y: 0, z: -75}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk37
-    id: 2368910995106139075
-    parent: 7332342955718843740
+    id: 10101900016733901431
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -175, y: 0, z: -75}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk27
-    id: 4199446702554861101
-    parent: 7332342955718843740
+    id: 7891245678172472761
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -200, y: 0, z: -75}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk17
-    id: 2976367412671787687
-    parent: 7332342955718843740
+    id: 17396947271801830224
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -225, y: 0, z: -75}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk07
-    id: 684627253071025141
-    parent: 7332342955718843740
+    id: 11492562273324974661
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -250, y: 0, z: -75}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk196
-    id: 11895071944049918255
-    parent: 7332342955718843740
+    id: 8734234018147478633
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 225, y: 0, z: -100}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk186
-    id: 5269945624526438161
-    parent: 7332342955718843740
+    id: 7816070120306099298
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 200, y: 0, z: -100}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk176
-    id: 525048008094300381
-    parent: 7332342955718843740
+    id: 18010464594130577370
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 175, y: 0, z: -100}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk166
-    id: 930034844921542527
-    parent: 7332342955718843740
+    id: 12246531445748934393
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 150, y: 0, z: -100}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk156
-    id: 682562743607886101
-    parent: 7332342955718843740
+    id: 15340924633027257385
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 125, y: 0, z: -100}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk146
-    id: 7263642772381625999
-    parent: 7332342955718843740
+    id: 7165366578562839484
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 100, y: 0, z: -100}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk136
-    id: 15250628540659487249
-    parent: 7332342955718843740
+    id: 14631567770598143528
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 75, y: 0, z: -100}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk126
-    id: 14502712991051158501
-    parent: 7332342955718843740
+    id: 12646223549053838503
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 50, y: 0, z: -100}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk116
-    id: 13244168724797306819
-    parent: 7332342955718843740
+    id: 17056878387597643931
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 25, y: 0, z: -100}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk106
-    id: 16341272179172404241
-    parent: 7332342955718843740
+    id: 5578946319372048574
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 0, y: 0, z: -100}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk96
-    id: 16605247060345933746
-    parent: 7332342955718843740
+    id: 5872823581679700453
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -25, y: 0, z: -100}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk86
-    id: 4626624465587087506
-    parent: 7332342955718843740
+    id: 3368899129165063810
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -50, y: 0, z: -100}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk76
-    id: 10463794145568006290
-    parent: 7332342955718843740
+    id: 11508510133334472679
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -75, y: 0, z: -100}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk66
-    id: 9913468389865220096
-    parent: 7332342955718843740
+    id: 343078562758979286
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -100, y: 0, z: -100}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk56
-    id: 3178776295273041910
-    parent: 7332342955718843740
+    id: 6156294077638296257
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -125, y: 0, z: -100}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk46
-    id: 4861002275674033800
-    parent: 7332342955718843740
+    id: 7700913696136608503
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -150, y: 0, z: -100}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk36
-    id: 9908044487334093298
-    parent: 7332342955718843740
+    id: 4632788507533445797
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -175, y: 0, z: -100}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk26
-    id: 1779641333829250470
-    parent: 7332342955718843740
+    id: 12115165750366812986
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -200, y: 0, z: -100}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk16
-    id: 14592613678552173345
-    parent: 7332342955718843740
+    id: 1841136252702563006
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -225, y: 0, z: -100}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk06
-    id: 8732920968747344977
-    parent: 7332342955718843740
+    id: 4132253705060104420
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -250, y: 0, z: -100}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk195
-    id: 17085962283052164402
-    parent: 7332342955718843740
+    id: 2221469895404266024
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 225, y: 0, z: -125}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk185
-    id: 4877397277629427226
-    parent: 7332342955718843740
+    id: 13703790894535035456
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 200, y: 0, z: -125}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk175
-    id: 161412114641932739
-    parent: 7332342955718843740
+    id: 11039983368131353583
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 175, y: 0, z: -125}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk165
-    id: 8683715225727155696
-    parent: 7332342955718843740
+    id: 10045332929345898179
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 150, y: 0, z: -125}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk155
-    id: 1854025018882265764
-    parent: 7332342955718843740
+    id: 9261881052457331063
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 125, y: 0, z: -125}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk145
-    id: 5567202765471285856
-    parent: 7332342955718843740
+    id: 12063117246407422980
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 100, y: 0, z: -125}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk135
-    id: 4808766470460119018
-    parent: 7332342955718843740
+    id: 11770458167879807784
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 75, y: 0, z: -125}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk125
-    id: 15706046719472730399
-    parent: 7332342955718843740
+    id: 12413165374619641465
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 50, y: 0, z: -125}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk115
-    id: 13973045097666856712
-    parent: 7332342955718843740
+    id: 7273927394862868199
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 25, y: 0, z: -125}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk105
-    id: 13744439641804439814
-    parent: 7332342955718843740
+    id: 15364795563353549091
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 0, y: 0, z: -125}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk95
-    id: 442368514136373900
-    parent: 7332342955718843740
+    id: 15972805707629210222
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -25, y: 0, z: -125}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk85
-    id: 10375885950808278340
-    parent: 7332342955718843740
+    id: 11249562357926234872
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -50, y: 0, z: -125}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk75
-    id: 16186576830032552863
-    parent: 7332342955718843740
+    id: 11037472500062464752
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -75, y: 0, z: -125}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk65
-    id: 15466381992687960433
-    parent: 7332342955718843740
+    id: 16593197159010646357
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -100, y: 0, z: -125}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk55
-    id: 17670874099023401088
-    parent: 7332342955718843740
+    id: 18061414981287154388
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -125, y: 0, z: -125}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk45
-    id: 7742985304161127855
-    parent: 7332342955718843740
+    id: 1247465651043195689
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -150, y: 0, z: -125}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk35
-    id: 9473784254007945682
-    parent: 7332342955718843740
+    id: 13820409378503131965
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -175, y: 0, z: -125}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk25
-    id: 1288102349394892906
-    parent: 7332342955718843740
+    id: 12202167692546442636
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -200, y: 0, z: -125}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk15
-    id: 10746554328286774727
-    parent: 7332342955718843740
+    id: 429488377769139086
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -225, y: 0, z: -125}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk05
-    id: 6879513973132031585
-    parent: 7332342955718843740
+    id: 3253569206333851119
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -250, y: 0, z: -125}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk194
-    id: 200732713186296363
-    parent: 7332342955718843740
+    id: 11251577336663492714
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 225, y: 0, z: -150}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk184
-    id: 13475012920413233381
-    parent: 7332342955718843740
+    id: 4714518073752306921
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 200, y: 0, z: -150}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk174
-    id: 499241379671003173
-    parent: 7332342955718843740
+    id: 10536029542248149272
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 175, y: 0, z: -150}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk164
-    id: 4939362094849840428
-    parent: 7332342955718843740
+    id: 3770924404390614167
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 150, y: 0, z: -150}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk154
-    id: 4025391125247634117
-    parent: 7332342955718843740
+    id: 17605136718543580699
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 125, y: 0, z: -150}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk144
-    id: 1516852180692791481
-    parent: 7332342955718843740
+    id: 15435453965753800541
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 100, y: 0, z: -150}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk134
-    id: 10542929375411675884
-    parent: 7332342955718843740
+    id: 17642527328585873011
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 75, y: 0, z: -150}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk124
-    id: 13765646939663487728
-    parent: 7332342955718843740
+    id: 2120842393041489562
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 50, y: 0, z: -150}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk114
-    id: 3616732731859044077
-    parent: 7332342955718843740
+    id: 11302903330623137794
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 25, y: 0, z: -150}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk104
-    id: 10100678893595065833
-    parent: 7332342955718843740
+    id: 7375626541124763366
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 0, y: 0, z: -150}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk94
-    id: 14227054238929405666
-    parent: 7332342955718843740
+    id: 11056347580122372396
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -25, y: 0, z: -150}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk84
-    id: 862787787107979758
-    parent: 7332342955718843740
+    id: 16291929225774240092
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -50, y: 0, z: -150}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk74
-    id: 16862646034820905303
-    parent: 7332342955718843740
+    id: 3776407202939941671
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -75, y: 0, z: -150}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk64
-    id: 15638729961073007227
-    parent: 7332342955718843740
+    id: 4677643232849904014
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -100, y: 0, z: -150}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk54
-    id: 5503937261127334339
-    parent: 7332342955718843740
+    id: 9293451694328867770
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -125, y: 0, z: -150}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk44
-    id: 10571967967684413336
-    parent: 7332342955718843740
+    id: 11254731502014757083
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -150, y: 0, z: -150}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk34
-    id: 5555255256752339223
-    parent: 7332342955718843740
+    id: 3007127718679674133
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -175, y: 0, z: -150}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk24
-    id: 7281396698590159090
-    parent: 7332342955718843740
+    id: 16462340828828352499
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -200, y: 0, z: -150}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk14
-    id: 9845133078190632649
-    parent: 7332342955718843740
+    id: 6393660632592828571
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -225, y: 0, z: -150}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk04
-    id: 4915771653967636976
-    parent: 7332342955718843740
+    id: 270636604024880964
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -250, y: 0, z: -150}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk193
-    id: 15170419202012698229
-    parent: 7332342955718843740
+    id: 2499676957635883034
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 225, y: 0, z: -175}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk183
-    id: 3733114449858445037
-    parent: 7332342955718843740
+    id: 2180848680522706815
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 200, y: 0, z: -175}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk173
-    id: 11201366244012688852
-    parent: 7332342955718843740
+    id: 10223793735278240583
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 175, y: 0, z: -175}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk163
-    id: 9275490563020550337
-    parent: 7332342955718843740
+    id: 13431073209866959070
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 150, y: 0, z: -175}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk153
-    id: 5117201531215370779
-    parent: 7332342955718843740
+    id: 12045726577527749310
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 125, y: 0, z: -175}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk143
-    id: 16153877109586793833
-    parent: 7332342955718843740
+    id: 11485282339243373954
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 100, y: 0, z: -175}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk133
-    id: 8525076326837374990
-    parent: 7332342955718843740
+    id: 12326362880086015822
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 75, y: 0, z: -175}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk123
-    id: 9149671864011346681
-    parent: 7332342955718843740
+    id: 2086423878216506340
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 50, y: 0, z: -175}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk113
-    id: 7336853228540133355
-    parent: 7332342955718843740
+    id: 10565002923498046022
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 25, y: 0, z: -175}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk103
-    id: 14082086448081489967
-    parent: 7332342955718843740
+    id: 2461843622313926998
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 0, y: 0, z: -175}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk93
-    id: 5295835194855611509
-    parent: 7332342955718843740
+    id: 5400547519012247479
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -25, y: 0, z: -175}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk83
-    id: 10098317768007307235
-    parent: 7332342955718843740
+    id: 12573030840763274704
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -50, y: 0, z: -175}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk73
-    id: 412389194366144102
-    parent: 7332342955718843740
+    id: 5414486475986072025
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -75, y: 0, z: -175}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk63
-    id: 8092896004965457783
-    parent: 7332342955718843740
+    id: 9014991130803460926
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -100, y: 0, z: -175}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk53
-    id: 8129667238068825804
-    parent: 7332342955718843740
+    id: 4744890937060462428
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -125, y: 0, z: -175}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk43
-    id: 4941901375142876788
-    parent: 7332342955718843740
+    id: 16282002620453361125
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -150, y: 0, z: -175}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk33
-    id: 14550495016571490562
-    parent: 7332342955718843740
+    id: 1722332448480549343
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -175, y: 0, z: -175}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk23
-    id: 18002304593201940512
-    parent: 7332342955718843740
+    id: 16700229609544947616
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -200, y: 0, z: -175}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk13
-    id: 11487198292392351365
-    parent: 7332342955718843740
+    id: 15540474385860045553
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -225, y: 0, z: -175}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk03
-    id: 2447844774337928296
-    parent: 7332342955718843740
+    id: 18418373802718848774
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -250, y: 0, z: -175}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk192
-    id: 14165512846338859969
-    parent: 7332342955718843740
+    id: 11600105952474223802
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 225, y: 0, z: -200}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk182
-    id: 10118509463955095891
-    parent: 7332342955718843740
+    id: 18199362367318144088
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 200, y: 0, z: -200}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk172
-    id: 5444684920020388887
-    parent: 7332342955718843740
+    id: 12320338844288016056
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 175, y: 0, z: -200}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk162
-    id: 15654188158513363621
-    parent: 7332342955718843740
+    id: 6588703190846179317
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 150, y: 0, z: -200}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk152
-    id: 5234797611389868208
-    parent: 7332342955718843740
+    id: 411099854217768450
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 125, y: 0, z: -200}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk142
-    id: 12676889017017335968
-    parent: 7332342955718843740
+    id: 1479198021595938868
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 100, y: 0, z: -200}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk132
-    id: 12777537027306650166
-    parent: 7332342955718843740
+    id: 18178609743296725139
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 75, y: 0, z: -200}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk122
-    id: 15435134807551637427
-    parent: 7332342955718843740
+    id: 4049229703937351640
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 50, y: 0, z: -200}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk112
-    id: 8087323172477760058
-    parent: 7332342955718843740
+    id: 14841055734100710954
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 25, y: 0, z: -200}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk102
-    id: 10142369368357435292
-    parent: 7332342955718843740
+    id: 14065281437796928472
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 0, y: 0, z: -200}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk92
-    id: 3905647351052133334
-    parent: 7332342955718843740
+    id: 2464240835177017991
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -25, y: 0, z: -200}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk82
-    id: 6592366178995521474
-    parent: 7332342955718843740
+    id: 3265855041198215085
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -50, y: 0, z: -200}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk72
-    id: 1902152027720550382
-    parent: 7332342955718843740
+    id: 5510819924156875099
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -75, y: 0, z: -200}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk62
-    id: 15579594786429301865
-    parent: 7332342955718843740
+    id: 5916525976923185033
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -100, y: 0, z: -200}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk52
-    id: 4066921901190588815
-    parent: 7332342955718843740
+    id: 12001247242894390858
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -125, y: 0, z: -200}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk42
-    id: 10991369761423857446
-    parent: 7332342955718843740
+    id: 8051377000654448226
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -150, y: 0, z: -200}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk32
-    id: 17868993357078438692
-    parent: 7332342955718843740
+    id: 11024815902431874548
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -175, y: 0, z: -200}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk22
-    id: 4302121982532875378
-    parent: 7332342955718843740
+    id: 14739562969915352801
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -200, y: 0, z: -200}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk12
-    id: 17958390810814871976
-    parent: 7332342955718843740
+    id: 15499645837839030367
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -225, y: 0, z: -200}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk02
-    id: 12405283811328970633
-    parent: 7332342955718843740
+    id: 17569294647592987656
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -250, y: 0, z: -200}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk191
-    id: 10716376537474983847
-    parent: 7332342955718843740
+    id: 7630114922829086400
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 225, y: 0, z: -225}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk181
-    id: 1979255977818506730
-    parent: 7332342955718843740
+    id: 9066813943241251646
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 200, y: 0, z: -225}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk171
-    id: 12278038746199085485
-    parent: 7332342955718843740
+    id: 12190485278812794613
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 175, y: 0, z: -225}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk161
-    id: 2092180031920282698
-    parent: 7332342955718843740
+    id: 13010861383303407520
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 150, y: 0, z: -225}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk151
-    id: 16112501575807096532
-    parent: 7332342955718843740
+    id: 7252155756803854241
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 125, y: 0, z: -225}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk141
-    id: 14821312144207285578
-    parent: 7332342955718843740
+    id: 6195688399700037266
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 100, y: 0, z: -225}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk131
-    id: 7350879421884622244
-    parent: 7332342955718843740
+    id: 6190532277173055364
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 75, y: 0, z: -225}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk121
-    id: 15070953817071905247
-    parent: 7332342955718843740
+    id: 602522486028690836
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 50, y: 0, z: -225}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk111
-    id: 1127887096956056846
-    parent: 7332342955718843740
+    id: 5931294657095093373
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 25, y: 0, z: -225}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk101
-    id: 12405927790555189165
-    parent: 7332342955718843740
+    id: 17796532036231297605
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 0, y: 0, z: -225}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk91
-    id: 2097397712098918779
-    parent: 7332342955718843740
+    id: 16697882363429107610
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -25, y: 0, z: -225}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk81
-    id: 2232351597561711789
-    parent: 7332342955718843740
+    id: 12604355132251411457
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -50, y: 0, z: -225}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk71
-    id: 15828116261829534114
-    parent: 7332342955718843740
+    id: 10257227386055735416
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -75, y: 0, z: -225}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk61
-    id: 6670730941414221574
-    parent: 7332342955718843740
+    id: 890482880965867929
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -100, y: 0, z: -225}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk51
-    id: 1707983835505192401
-    parent: 7332342955718843740
+    id: 16621943124009671980
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -125, y: 0, z: -225}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk41
-    id: 5738018660502986074
-    parent: 7332342955718843740
+    id: 7469443304025754998
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -150, y: 0, z: -225}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk31
-    id: 11304047670971069675
-    parent: 7332342955718843740
+    id: 12555830925589210869
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -175, y: 0, z: -225}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk21
-    id: 1385378101935910896
-    parent: 7332342955718843740
+    id: 14571071130831761643
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -200, y: 0, z: -225}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk11
-    id: 2365646098585009520
-    parent: 7332342955718843740
+    id: 14139177988675703360
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -225, y: 0, z: -225}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk01
-    id: 10236964266690492646
-    parent: 7332342955718843740
+    id: 15318769809184434466
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -250, y: 0, z: -225}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk190
-    id: 11215127428611045696
-    parent: 7332342955718843740
+    id: 10607085260897925743
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 225, y: 0, z: -250}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk180
-    id: 17845272270161488431
-    parent: 7332342955718843740
+    id: 8990665632976946882
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 200, y: 0, z: -250}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk170
-    id: 1889099801893240036
-    parent: 7332342955718843740
+    id: 8285181997149195067
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 175, y: 0, z: -250}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk160
-    id: 4894407320567237346
-    parent: 7332342955718843740
+    id: 4270598897013914746
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 150, y: 0, z: -250}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk150
-    id: 14390229494809053190
-    parent: 7332342955718843740
+    id: 12813757961577145493
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 125, y: 0, z: -250}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk140
-    id: 10251039171843836874
-    parent: 7332342955718843740
+    id: 12318757312401309018
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 100, y: 0, z: -250}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk130
-    id: 8666778177541274003
-    parent: 7332342955718843740
+    id: 16378959647005589698
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 75, y: 0, z: -250}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk120
-    id: 11084283941167999283
-    parent: 7332342955718843740
+    id: 11188528272605272639
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 50, y: 0, z: -250}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk110
-    id: 1943144080629070720
-    parent: 7332342955718843740
+    id: 18112501683749501329
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 25, y: 0, z: -250}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk100
-    id: 4692085251168013436
-    parent: 7332342955718843740
+    id: 15124618908418811826
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: 0, y: 0, z: -250}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk90
-    id: 2339840731811515831
-    parent: 7332342955718843740
+    id: 17574828656841372552
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -25, y: 0, z: -250}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk80
-    id: 8239244290588531084
-    parent: 7332342955718843740
+    id: 17277943692128774703
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -50, y: 0, z: -250}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk70
-    id: 757867313271095363
-    parent: 7332342955718843740
+    id: 6994190525449154247
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -75, y: 0, z: -250}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk60
-    id: 7957342141006462173
-    parent: 7332342955718843740
+    id: 17230381253122946113
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -100, y: 0, z: -250}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk50
-    id: 7662883403490319086
-    parent: 7332342955718843740
+    id: 15698615556755237792
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -125, y: 0, z: -250}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk40
-    id: 12190820521179502504
-    parent: 7332342955718843740
+    id: 10260034730464863098
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -150, y: 0, z: -250}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk30
-    id: 6161494002367980261
-    parent: 7332342955718843740
+    id: 10222625165117770795
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -175, y: 0, z: -250}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk20
-    id: 11436954077778558574
-    parent: 7332342955718843740
+    id: 8962401731485918317
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -200, y: 0, z: -250}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk10
-    id: 7902159935963244400
-    parent: 7332342955718843740
+    id: 8348039170362484964
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -225, y: 0, z: -250}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Chunk00
-    id: 7931345035451828473
-    parent: 7332342955718843740
+    id: 8085902949377486049
+    parent: 8500950705162047842
     components:
       - type: transform
         position: {x: -250, y: 0, z: -250}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *terrain
+        submeshes:
+          - index: 0
+            material: *terrain
   - tag: Terrain
-    id: 7332342955718843740
+    id: 8500950705162047842
     components:
       - type: transform
         position: {x: 0, y: 0, z: 0}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
   - tag: CAMERA
-    id: 4013786074666100176
+    id: 9585614476660972474
     components:
       - type: transform
-        position: {x: 3.30309606, y: 12.8909302, z: 9.07254696}
-        rotation: {x: -0.25881511, y: 0.00532925921, z: 0.00142797071, w: 0.96591109}
+        position: {x: -1.13565522e-06, y: 15, z: 25.9807625}
+        rotation: {x: -0.258819044, y: -2.11109796e-08, z: -5.6566698e-09, w: 0.965925813}
         scale: {x: 1, y: 1, z: 1}
+      - type: skybox
+        cube_image: *skybox
+        tint: {r: 1, g: 1, b: 1, a: 1}

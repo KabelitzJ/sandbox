@@ -45,218 +45,33 @@ public:
   }
 
   template<typename Type, std::invocable<YAML::Node&, const Type&> Save, std::invocable<YAML::Node&> Load>
-  auto register_component_io(const std::string& name, Save&& save, Load&& load) -> void {
+  auto register_component(const std::string& name, Save&& save, Load&& load) -> void {
     _component_io_registry.register_component<Type>(name, std::forward<Save>(save), std::forward<Load>(load));
   }
 
-  auto component_io(const std::uint32_t id) -> component_io& {
-    return _component_io_registry.get(id);
-  }
+  auto component_io(const std::uint32_t id) -> component_io&;
 
-  auto has_component_io(const std::uint32_t id) -> bool {
-    return _component_io_registry.has(id);
-  }
+  auto has_component_io(const std::uint32_t id) -> bool;
 
-  auto debug_lines() const -> const std::vector<line>& {
-    return _debug_lines;
-  }
+  auto debug_lines() const -> const std::vector<line>&;
 
-  auto clear_debug_lines() -> void {
-    _debug_lines.clear();
-  }
+  auto clear_debug_lines() -> void;
 
-  auto add_debug_line(const sbx::math::vector3& start, const sbx::math::vector3& end, const sbx::math::color& color) -> void {
-    _debug_lines.push_back(line{
-      .position = sbx::math::vector4{start, 1.0f},
-      .color = color
-    });
+  auto add_debug_line(const sbx::math::vector3& start, const sbx::math::vector3& end, const sbx::math::color& color) -> void;
 
-    _debug_lines.push_back(line{
-      .position = sbx::math::vector4{end, 1.0f},
-      .color = color
-    });
-  }
+  auto add_coordinate_arrows(const math::matrix4x4& transform, std::float_t length = 2.0f, std::float_t tip_size = 0.2f) -> void;
 
-  auto add_coordinate_arrows(const math::matrix4x4& transform, std::float_t length = 2.0f, std::float_t tip_size = 0.2f) -> void {
-    const auto origin = math::vector3{transform[3]};
+  auto add_debug_plane(const sbx::math::vector3& origin, const sbx::math::vector3& v1, const sbx::math::vector3& v2, std::uint32_t n1, std::uint32_t n2, std::float_t s1, std::float_t s2, const sbx::math::color& color, const sbx::math::color& outline) -> void;
 
-    const auto x_axis = math::vector3::normalized(transform[0]);
-    const auto y_axis = math::vector3::normalized(transform[1]);
-    const auto z_axis = math::vector3::normalized(transform[2]);
+  auto add_debug_volume(const math::matrix4x4& matrix, const math::volume& volume, const sbx::math::color& color) -> void;
 
-    add_debug_line(origin, origin + x_axis * length, math::color::red());
-    add_debug_line(origin, origin + y_axis * length, math::color::green());
-    add_debug_line(origin, origin + z_axis * length, math::color::blue());
-  }
+  auto add_debug_box(const math::matrix4x4& matrix, const math::volume& volume, const sbx::math::color& color) -> void;
 
-  auto add_debug_plane(const sbx::math::vector3& origin, const sbx::math::vector3& v1, const sbx::math::vector3& v2, std::uint32_t n1, std::uint32_t n2, std::float_t s1, std::float_t s2, const sbx::math::color& color, const sbx::math::color& outline) -> void {
-    add_debug_line(origin - s1 / 2.0f * v1 - s2 / 2.0f * v2, origin - s1 / 2.0f * v1 + s2 / 2.0f * v2, outline);
-    add_debug_line(origin + s1 / 2.0f * v1 - s2 / 2.0f * v2, origin + s1 / 2.0f * v1 + s2 / 2.0f * v2, outline);
-    add_debug_line(origin - s1 / 2.0f * v1 + s2 / 2.0f * v2, origin + s1 / 2.0f * v1 + s2 / 2.0f * v2, outline);
-    add_debug_line(origin - s1 / 2.0f * v1 - s2 / 2.0f * v2, origin + s1 / 2.0f * v1 - s2 / 2.0f * v2, outline);
+  auto add_debug_circle(const math::vector3& center, const std::float_t radius, const math::vector3& normal, const math::color& color, const std::uint32_t segments = 32) -> void;
 
-    for (auto i = 1u; i < n1; i++) {
-      const auto t = (static_cast<std::float_t>(i) - static_cast<std::float_t>(n1) / 2.0f) * s1/static_cast<std::float_t>(n1);
-      const auto o1 = origin + t * v1;
+  auto add_debug_sphere(const math::vector3& center, const std::float_t radius, const math::color& color, const std::uint32_t segments = 32) -> void;
 
-      add_debug_line(o1 - s2 / 2.0f * v2, o1 + s2 / 2.0f * v2, color);
-    }
-
-    for (auto i = 1u; i < n2; i++) {
-      const auto t = (static_cast<std::float_t>(i) - static_cast<std::float_t>(n2) / 2.0f) * s2/static_cast<std::float_t>(n2);
-      const auto o2 = origin + t * v2;
-
-      add_debug_line(o2 - s1 / 2.0f * v1, o2 + s1 / 2.0f * v1, color);
-    }
-  }
-
-  auto add_debug_volume(const math::matrix4x4& matrix, const math::volume& volume, const sbx::math::color& color) -> void {
-    const auto transformed = math::volume::transformed(volume, matrix);
-
-    const auto corners = transformed.corners();
-
-    add_debug_line(corners[0], corners[1], color);
-    add_debug_line(corners[2], corners[3], color);
-    add_debug_line(corners[4], corners[5], color);
-    add_debug_line(corners[6], corners[7], color);
-    add_debug_line(corners[0], corners[2], color);
-    add_debug_line(corners[1], corners[3], color);
-    add_debug_line(corners[4], corners[6], color);
-    add_debug_line(corners[5], corners[7], color);
-    add_debug_line(corners[0], corners[4], color);
-    add_debug_line(corners[1], corners[5], color);
-    add_debug_line(corners[2], corners[6], color);
-    add_debug_line(corners[3], corners[7], color);
-  }
-
-  auto add_debug_box(const math::matrix4x4& matrix, const math::volume& volume, const sbx::math::color& color) -> void {
-    auto corners = std::vector<math::vector3>{};
-    corners.reserve(8u);
-
-    for (const auto& corner : volume.corners()) {
-      corners.push_back(math::vector3{matrix * math::vector4{corner, 1.0f}});
-    }
-
-    add_debug_line(corners[0], corners[1], color);
-    add_debug_line(corners[2], corners[3], color);
-    add_debug_line(corners[4], corners[5], color);
-    add_debug_line(corners[6], corners[7], color);
-    add_debug_line(corners[0], corners[2], color);
-    add_debug_line(corners[1], corners[3], color);
-    add_debug_line(corners[4], corners[6], color);
-    add_debug_line(corners[5], corners[7], color);
-    add_debug_line(corners[0], corners[4], color);
-    add_debug_line(corners[1], corners[5], color);
-    add_debug_line(corners[2], corners[6], color);
-    add_debug_line(corners[3], corners[7], color);
-  }
-
-  auto add_debug_circle(const math::vector3& center, const std::float_t radius, const math::vector3& normal, const math::color& color, const std::uint32_t segments = 32) -> void {
-    // Orthonormal basis: find two perpendicular vectors to the normal
-    const auto up = std::abs(math::vector3::dot(normal, math::vector3::up)) < 0.99f ? math::vector3::up : math::vector3::right;
-    const auto tangent = math::vector3::normalized(math::vector3::cross(normal, up));
-    const auto bitangent = math::vector3::normalized(math::vector3::cross(normal, tangent));
-    
-    for (int i = 0; i < segments; ++i) {
-      float theta0 = (2.0f * math::two_pi) * (static_cast<float>(i) / segments);
-      float theta1 = (2.0f * math::two_pi) * (static_cast<float>(i + 1) / segments);
-
-      const auto point0 = center + (tangent * std::cos(theta0) + bitangent * std::sin(theta0)) * radius;
-      const auto point1 = center + (tangent * std::cos(theta1) + bitangent * std::sin(theta1)) * radius;
-
-      add_debug_line(point0, point1, color);
-    }
-  }
-
-  auto add_debug_sphere(const math::vector3& center, const std::float_t radius, const math::color& color, const std::uint32_t segments = 32) -> void {
-    // XY Plane
-    add_debug_circle(center, radius, math::vector3::backward, color, segments);
-    // YZ Plane
-    add_debug_circle(center, radius, math::vector3::right, color, segments);
-    // XZ Plane
-    add_debug_circle(center, radius, math::vector3::up, color, segments);
-  }
-
-  auto add_debug_frustum(const math::matrix4x4& view, const math::matrix4x4& projection, const sbx::math::color& color) -> void {
-    const auto corners = std::array<sbx::math::vector3, 8u>{ 
-      math::vector3(-1, -1, -1),
-      math::vector3(+1, -1, -1),
-      math::vector3(+1, +1, -1),
-      math::vector3(-1, +1, -1),
-      math::vector3(-1, -1, +1),
-      math::vector3(+1, -1, +1),
-      math::vector3(+1, +1, +1),
-      math::vector3(-1, +1, +1)
-    };
-
-    auto points = std::array<sbx::math::vector3, 8u>{};
-
-    for (auto i = 0u; i < 8u; ++i) {
-      auto q = math::matrix4x4::inverted(view) * math::matrix4x4::inverted(projection) * math::vector4{corners[i]};
-      points[i] = math::vector3{q.x() / q.w(), q.y() / q.w(), q.z() / q.w()};
-    }
-
-    add_debug_line(points[0], points[4], color);
-    add_debug_line(points[1], points[5], color);
-    add_debug_line(points[2], points[6], color);
-    add_debug_line(points[3], points[7], color);
-
-    add_debug_line(points[0], points[1], color);
-    add_debug_line(points[1], points[2], color);
-    add_debug_line(points[2], points[3], color);
-    add_debug_line(points[3], points[0], color);
-    add_debug_line(points[0], points[2], color);
-    add_debug_line(points[1], points[3], color);
-
-    add_debug_line(points[4], points[5], color);
-    add_debug_line(points[5], points[6], color);
-    add_debug_line(points[6], points[7], color);
-    add_debug_line(points[7], points[4], color);
-    add_debug_line(points[4], points[6], color);
-    add_debug_line(points[5], points[7], color);
-
-    const auto grid_color = color * 0.7f;
-    const int grid_lines = 100;
-
-    auto p1 = points[0];
-    auto p2 = points[1];
-    auto s1 = (points[4]-points[0]) / static_cast<std::float_t>(grid_lines);
-    auto s2 = (points[5]-points[1]) / static_cast<std::float_t>(grid_lines);
-
-    for (int i = 0; i != grid_lines; i++, p1 += s1, p2 += s2) {
-      add_debug_line(p1, p2, grid_color);
-    }
-
-    p1 = points[2];
-    p2 = points[3];
-
-    s1 = (points[6]-points[2]) / static_cast<std::float_t>(grid_lines);
-    s2 = (points[7]-points[3]) / static_cast<std::float_t>(grid_lines);
-
-    for (int i = 0; i != grid_lines; i++, p1 += s1, p2 += s2) {
-      add_debug_line(p1, p2, grid_color);
-    }
-
-    p1 = points[0];
-    p2 = points[3];
-
-    s1 = (points[4]-points[0]) / static_cast<std::float_t>(grid_lines);
-    s2 = (points[7]-points[3]) / static_cast<std::float_t>(grid_lines);
-
-    for (int i = 0; i != grid_lines; i++, p1 += s1, p2 += s2) {
-      add_debug_line(p1, p2, grid_color);
-    }
-
-    p1 = points[1];
-    p2 = points[2];
-
-    s1 = (points[5]-points[1]) / static_cast<std::float_t>(grid_lines);
-    s2 = (points[6]-points[2]) / static_cast<std::float_t>(grid_lines);
-
-    for (int i = 0; i != grid_lines; i++, p1 += s1, p2 += s2) {
-      add_debug_line(p1, p2, grid_color);
-    }
-  }
+  auto add_debug_frustum(const math::matrix4x4& view, const math::matrix4x4& projection, const sbx::math::color& color) -> void;
 
 private:
 

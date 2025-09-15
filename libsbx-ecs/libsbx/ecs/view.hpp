@@ -423,7 +423,6 @@ public:
 
   template<typename Type = typename Get::element_type>
   requires (std::is_same_v<std::remove_const_t<Type>, typename Get::element_type>)
-
   [[nodiscard]] auto* storage() const noexcept {
     return storage<0>();
   }

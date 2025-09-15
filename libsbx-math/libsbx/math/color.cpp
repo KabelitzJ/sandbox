@@ -30,6 +30,12 @@ auto extract_component(std::uint32_t rgba, component component) noexcept -> std:
   return scale(extract(rgba, utility::to_underlying(component)));
 }
 
+color::color() noexcept 
+: _red{1.0f},
+  _green{1.0f},
+  _blue{1.0f},
+  _alpha{1.0f} { }
+
 color::color(std::uint32_t rgba) noexcept
 : _red{extract_component(rgba, component::red)},
   _green{extract_component(rgba, component::green)},
@@ -87,6 +93,8 @@ auto operator*(color lhs, const std::float_t value) -> color {
 auto YAML::convert<sbx::math::color>::encode(const sbx::math::color& color) -> Node {
   auto node = Node{};
 
+  node.SetStyle(YAML::EmitterStyle::Flow);
+
   node["r"] = color.r();
   node["g"] = color.g();
   node["b"] = color.b();
@@ -106,6 +114,10 @@ auto YAML::convert<sbx::math::color>::decode(const Node& node, sbx::math::color&
   color.a() = node["a"].as<std::float_t>();
 
   return true;
+}
+
+auto operator<<(YAML::Emitter& out, const sbx::math::color& color) -> YAML::Emitter& {
+  return out << YAML::convert<sbx::math::color>::encode(color);
 }
 
 auto std::hash<sbx::math::color>::operator()(const sbx::math::color& color) const noexcept -> std::size_t {

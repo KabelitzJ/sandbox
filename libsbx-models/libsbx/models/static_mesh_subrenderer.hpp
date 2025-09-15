@@ -136,7 +136,19 @@ public:
   : graphics::subrenderer{pass},
     _pipeline{path, pass},
     _push_handler{_pipeline},
-    _scene_descriptor_handler{_pipeline, 0u} { }
+    _scene_descriptor_handler{_pipeline, 0u} {
+    // auto& assets_module = core::engine::get_module<assets::assets_module>();
+
+    // assets_module.register_asset<models::mesh>(
+    //   "models::mesh",
+    //   [](const models::mesh& mesh) -> void {
+
+    //   },
+    //   []() -> void {
+
+    //   }
+    // );
+  }
 
   ~static_mesh_subrenderer() override = default;
 

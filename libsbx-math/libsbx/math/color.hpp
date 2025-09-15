@@ -15,6 +15,8 @@ class color {
 
 public:
 
+  color() noexcept;
+
   color(std::uint32_t rgba) noexcept;
 
   color(std::float_t red, std::float_t green, std::float_t blue, std::float_t alpha = 1.0f) noexcept;
@@ -87,6 +89,8 @@ struct YAML::convert<sbx::math::color> {
   static auto encode(const sbx::math::color& color) -> Node;
   static auto decode(const Node& node, sbx::math::color& color) -> bool;
 }; // struct YAML::convert
+
+auto operator<<(YAML::Emitter& out, const sbx::math::color& color) -> YAML::Emitter&;
 
 template<>
 struct std::hash<sbx::math::color> {

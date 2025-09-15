@@ -632,7 +632,7 @@ auto application::update() -> void  {
     fox_speed = 2.5f;
     direction = -1;
   } else if (fox_speed < 0.0f) {
-    fox_speed == 0.0f;
+    fox_speed = 0.0f;
     direction = 1;
   }
 
