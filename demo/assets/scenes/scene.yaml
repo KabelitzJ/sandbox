@@ -87,6 +87,14 @@ assets:
       name: skybox
       path: res://skyboxes/stylized2
   static_meshes:
+    - &terrain
+      name: terrain
+      path: ""
+      source: generated
+    - &soldier_static
+      name: soldier_static
+      path: res://meshes/soldier/soldier.gltf
+      source: disk
     - &soldier
       name: soldier
       path: res://meshes/soldier/soldier.gltf
@@ -95,33 +103,17 @@ assets:
       name: sphere
       path: res://meshes/sphere/sphere.gltf
       source: disk
-    - &soldier_static
-      name: soldier_static
-      path: res://meshes/soldier/soldier.gltf
-      source: disk
     - &cube
       name: cube
       path: res://meshes/cube/cube.gltf
       source: disk
-    - &fox_static
-      name: fox_static
-      path: res://meshes/fox/fox.gltf
+    - &man_static
+      name: man_static
+      path: res://meshes/man/man.gltf
       source: disk
-    - &terrain
-      name: terrain
-      path: ""
-      source: generated
-    - &player
-      name: player
-      path: res://meshes/player/player.gltf
-      source: disk
-    - &maple_tree_2
-      name: maple_tree_2
-      path: res://meshes/maple_tree_2/maple_tree_2.gltf
-      source: disk
-    - &dragon
-      name: dragon
-      path: res://meshes/dragon/dragon.gltf
+    - &women_static
+      name: women_static
+      path: res://meshes/women/women.gltf
       source: disk
     - &maple_tree_3
       name: maple_tree_3
@@ -131,254 +123,154 @@ assets:
       name: maple_tree_4
       path: res://meshes/maple_tree_4/maple_tree_4.gltf
       source: disk
-    - &man_static
-      name: man_static
-      path: res://meshes/man/man.gltf
+    - &maple_tree_2
+      name: maple_tree_2
+      path: res://meshes/maple_tree_2/maple_tree_2.gltf
       source: disk
     - &fox
       name: fox
       path: res://meshes/fox/fox.gltf
       source: disk
-    - &women
-      name: women
-      path: res://meshes/women/women.gltf
+    - &helmet
+      name: helmet
+      path: res://meshes/helmet/helmet.gltf
       source: disk
-    - &women_static
-      name: women_static
-      path: res://meshes/women/women.gltf
+    - &fox_static
+      name: fox_static
+      path: res://meshes/fox/fox.gltf
       source: disk
     - &maple_tree_1
       name: maple_tree_1
       path: res://meshes/maple_tree_1/maple_tree_1.gltf
       source: disk
+    - &women
+      name: women
+      path: res://meshes/women/women.gltf
+      source: disk
     - &bmp
       name: bmp
       path: res://meshes/tank/bmp.gltf
       source: disk
-    - &helmet
-      name: helmet
-      path: res://meshes/helmet/helmet.gltf
+    - &player
+      name: player
+      path: res://meshes/player/player.gltf
+      source: disk
+    - &dragon
+      name: dragon
+      path: res://meshes/dragon/dragon.gltf
       source: disk
   materials:
     - &sphere_3_4_material
       name: sphere_3_4_material
       path: ""
-    - &sphere_4_3_material
-      name: sphere_4_3_material
-      path: ""
-    - &sphere_1_0_material
-      name: sphere_1_0_material
-      path: ""
-    - &sphere_3_2_material
-      name: sphere_3_2_material
-      path: ""
-    - &sphere_0_0_material
-      name: sphere_0_0_material
-      path: ""
     - &sphere_2_4_material
       name: sphere_2_4_material
-      path: ""
-    - &sphere_0_2_material
-      name: sphere_0_2_material
-      path: ""
-    - &sphere_2_2_material
-      name: sphere_2_2_material
-      path: ""
-    - &Light6
-      name: Light6
-      path: ""
-    - &sphere_1_4_material
-      name: sphere_1_4_material
-      path: ""
-    - &sphere_1_1_material
-      name: sphere_1_1_material
-      path: ""
-    - &sphere_4_4_material
-      name: sphere_4_4_material
-      path: ""
-    - &Light4
-      name: Light4
-      path: ""
-    - &Light5
-      name: Light5
-      path: ""
-    - &sphere_1_2_material
-      name: sphere_1_2_material
       path: ""
     - &sphere_0_4_material
       name: sphere_0_4_material
       path: ""
-    - &sphere_0_3_material
-      name: sphere_0_3_material
+    - &helmet
+      name: helmet
       path: ""
-    - &fox
-      name: fox
-      path: ""
-    - &Light7
-      name: Light7
-      path: ""
-    - &Light1
-      name: Light1
-      path: ""
-    - &sphere_3_0_material
-      name: sphere_3_0_material
-      path: ""
-    - &sphere_2_1_material
-      name: sphere_2_1_material
-      path: ""
-    - &Light3
-      name: Light3
-      path: ""
-    - &Light2
-      name: Light2
-      path: ""
-    - &sphere_1_3_material
-      name: sphere_1_3_material
-      path: ""
-    - &terrain
-      name: terrain
-      path: ""
-    - &sphere_2_0_material
-      name: sphere_2_0_material
-      path: ""
-    - &sphere_4_0_material
-      name: sphere_4_0_material
-      path: ""
-    - &Light0
-      name: Light0
-      path: ""
-    - &sphere_0_1_material
-      name: sphere_0_1_material
-      path: ""
-    - &sphere_3_1_material
-      name: sphere_3_1_material
+    - &sphere_1_2_material
+      name: sphere_1_2_material
       path: ""
     - &sphere_3_3_material
       name: sphere_3_3_material
       path: ""
-    - &sphere_4_1_material
-      name: sphere_4_1_material
+    - &terrain
+      name: terrain
       path: ""
-    - &helmet
-      name: helmet
+    - &Light6
+      name: Light6
+      path: ""
+    - &Light4
+      name: Light4
+      path: ""
+    - &Light3
+      name: Light3
       path: ""
     - &sphere_4_2_material
       name: sphere_4_2_material
       path: ""
+    - &Light2
+      name: Light2
+      path: ""
+    - &Light1
+      name: Light1
+      path: ""
+    - &Light0
+      name: Light0
+      path: ""
+    - &sphere_2_0_material
+      name: sphere_2_0_material
+      path: ""
+    - &sphere_3_0_material
+      name: sphere_3_0_material
+      path: ""
+    - &sphere_4_4_material
+      name: sphere_4_4_material
+      path: ""
+    - &sphere_0_1_material
+      name: sphere_0_1_material
+      path: ""
+    - &sphere_1_1_material
+      name: sphere_1_1_material
+      path: ""
+    - &Light5
+      name: Light5
+      path: ""
+    - &sphere_0_2_material
+      name: sphere_0_2_material
+      path: ""
+    - &fox
+      name: fox
+      path: ""
+    - &sphere_4_0_material
+      name: sphere_4_0_material
+      path: ""
+    - &sphere_1_3_material
+      name: sphere_1_3_material
+      path: ""
+    - &Light7
+      name: Light7
+      path: ""
+    - &sphere_1_0_material
+      name: sphere_1_0_material
+      path: ""
+    - &sphere_2_1_material
+      name: sphere_2_1_material
+      path: ""
+    - &sphere_1_4_material
+      name: sphere_1_4_material
+      path: ""
+    - &sphere_0_0_material
+      name: sphere_0_0_material
+      path: ""
     - &sphere_2_3_material
       name: sphere_2_3_material
       path: ""
+    - &sphere_3_1_material
+      name: sphere_3_1_material
+      path: ""
+    - &sphere_4_3_material
+      name: sphere_4_3_material
+      path: ""
+    - &sphere_4_1_material
+      name: sphere_4_1_material
+      path: ""
+    - &sphere_2_2_material
+      name: sphere_2_2_material
+      path: ""
+    - &sphere_0_3_material
+      name: sphere_0_3_material
+      path: ""
+    - &sphere_3_2_material
+      name: sphere_3_2_material
+      path: ""
 nodes:
-  - tag: Sphere44
-    id: 4421873709597281150
-    components:
-      - type: transform
-        position: {x: 12, y: 17, z: -15}
-        rotation: {x: 0, y: 0, z: 0, w: 1}
-        scale: {x: 1, y: 1, z: 1}
-      - type: static_mesh
-        color: *sphere
-        submeshes:
-          - index: 0
-            material: *sphere_4_4_material
-  - tag: Sphere34
-    id: 13287743060912041726
-    components:
-      - type: transform
-        position: {x: 9, y: 17, z: -15}
-        rotation: {x: 0, y: 0, z: 0, w: 1}
-        scale: {x: 1, y: 1, z: 1}
-      - type: static_mesh
-        color: *sphere
-        submeshes:
-          - index: 0
-            material: *sphere_3_4_material
-  - tag: Sphere24
-    id: 9342313265965035315
-    components:
-      - type: transform
-        position: {x: 6, y: 17, z: -15}
-        rotation: {x: 0, y: 0, z: 0, w: 1}
-        scale: {x: 1, y: 1, z: 1}
-      - type: static_mesh
-        color: *sphere
-        submeshes:
-          - index: 0
-            material: *sphere_2_4_material
-  - tag: Sphere14
-    id: 18162258062506893331
-    components:
-      - type: transform
-        position: {x: 3, y: 17, z: -15}
-        rotation: {x: 0, y: 0, z: 0, w: 1}
-        scale: {x: 1, y: 1, z: 1}
-      - type: static_mesh
-        color: *sphere
-        submeshes:
-          - index: 0
-            material: *sphere_1_4_material
-  - tag: Sphere04
-    id: 6037040008006872229
-    components:
-      - type: transform
-        position: {x: 0, y: 17, z: -15}
-        rotation: {x: 0, y: 0, z: 0, w: 1}
-        scale: {x: 1, y: 1, z: 1}
-      - type: static_mesh
-        color: *sphere
-        submeshes:
-          - index: 0
-            material: *sphere_0_4_material
-  - tag: Sphere43
-    id: 173776247953984344
-    components:
-      - type: transform
-        position: {x: 12, y: 14, z: -15}
-        rotation: {x: 0, y: 0, z: 0, w: 1}
-        scale: {x: 1, y: 1, z: 1}
-      - type: static_mesh
-        color: *sphere
-        submeshes:
-          - index: 0
-            material: *sphere_4_3_material
-  - tag: Sphere33
-    id: 4029164826461371747
-    components:
-      - type: transform
-        position: {x: 9, y: 14, z: -15}
-        rotation: {x: 0, y: 0, z: 0, w: 1}
-        scale: {x: 1, y: 1, z: 1}
-      - type: static_mesh
-        color: *sphere
-        submeshes:
-          - index: 0
-            material: *sphere_3_3_material
-  - tag: Sphere23
-    id: 9713087678702203939
-    components:
-      - type: transform
-        position: {x: 6, y: 14, z: -15}
-        rotation: {x: 0, y: 0, z: 0, w: 1}
-        scale: {x: 1, y: 1, z: 1}
-      - type: static_mesh
-        color: *sphere
-        submeshes:
-          - index: 0
-            material: *sphere_2_3_material
-  - tag: Sphere13
-    id: 10947277241021770105
-    components:
-      - type: transform
-        position: {x: 3, y: 14, z: -15}
-        rotation: {x: 0, y: 0, z: 0, w: 1}
-        scale: {x: 1, y: 1, z: 1}
-      - type: static_mesh
-        color: *sphere
-        submeshes:
-          - index: 0
-            material: *sphere_1_3_material
   - tag: Sphere03
-    id: 13824543333991020859
+    id: 10513993699689674737
     components:
       - type: transform
         position: {x: 0, y: 14, z: -15}
@@ -390,7 +282,7 @@ nodes:
           - index: 0
             material: *sphere_0_3_material
   - tag: Sphere42
-    id: 13400907223192100039
+    id: 10013154434962021697
     components:
       - type: transform
         position: {x: 12, y: 11, z: -15}
@@ -402,7 +294,7 @@ nodes:
           - index: 0
             material: *sphere_4_2_material
   - tag: Sphere32
-    id: 4323939989627445782
+    id: 5231659180360479522
     components:
       - type: transform
         position: {x: 9, y: 11, z: -15}
@@ -414,7 +306,7 @@ nodes:
           - index: 0
             material: *sphere_3_2_material
   - tag: Sphere22
-    id: 16698699685761479533
+    id: 10505330397393573138
     components:
       - type: transform
         position: {x: 6, y: 11, z: -15}
@@ -426,7 +318,7 @@ nodes:
           - index: 0
             material: *sphere_2_2_material
   - tag: Sphere12
-    id: 18130320136630663353
+    id: 4953650620627229308
     components:
       - type: transform
         position: {x: 3, y: 11, z: -15}
@@ -438,7 +330,7 @@ nodes:
           - index: 0
             material: *sphere_1_2_material
   - tag: Sphere02
-    id: 10962250306393775399
+    id: 7604807122184056851
     components:
       - type: transform
         position: {x: 0, y: 11, z: -15}
@@ -450,7 +342,7 @@ nodes:
           - index: 0
             material: *sphere_0_2_material
   - tag: Sphere41
-    id: 15008520192079477232
+    id: 15260667375252085243
     components:
       - type: transform
         position: {x: 12, y: 8, z: -15}
@@ -462,7 +354,7 @@ nodes:
           - index: 0
             material: *sphere_4_1_material
   - tag: Sphere31
-    id: 4367251393135406243
+    id: 14310823486414756699
     components:
       - type: transform
         position: {x: 9, y: 8, z: -15}
@@ -474,7 +366,7 @@ nodes:
           - index: 0
             material: *sphere_3_1_material
   - tag: Sphere21
-    id: 7158178531899311920
+    id: 5691155856263021750
     components:
       - type: transform
         position: {x: 6, y: 8, z: -15}
@@ -486,7 +378,7 @@ nodes:
           - index: 0
             material: *sphere_2_1_material
   - tag: Sphere11
-    id: 18171015656761639243
+    id: 5113697893733458999
     components:
       - type: transform
         position: {x: 3, y: 8, z: -15}
@@ -498,7 +390,7 @@ nodes:
           - index: 0
             material: *sphere_1_1_material
   - tag: Sphere01
-    id: 13794295970521105327
+    id: 17184931962166282459
     components:
       - type: transform
         position: {x: 0, y: 8, z: -15}
@@ -510,7 +402,7 @@ nodes:
           - index: 0
             material: *sphere_0_1_material
   - tag: Sphere40
-    id: 4244028422545182077
+    id: 11643286020001426278
     components:
       - type: transform
         position: {x: 12, y: 5, z: -15}
@@ -522,7 +414,7 @@ nodes:
           - index: 0
             material: *sphere_4_0_material
   - tag: Sphere30
-    id: 2845667266973062569
+    id: 16791859870429926544
     components:
       - type: transform
         position: {x: 9, y: 5, z: -15}
@@ -534,7 +426,7 @@ nodes:
           - index: 0
             material: *sphere_3_0_material
   - tag: Sphere20
-    id: 12318652489391129601
+    id: 4132329966792641723
     components:
       - type: transform
         position: {x: 6, y: 5, z: -15}
@@ -546,7 +438,7 @@ nodes:
           - index: 0
             material: *sphere_2_0_material
   - tag: Sphere10
-    id: 13062898461697362381
+    id: 11305308008703539017
     components:
       - type: transform
         position: {x: 3, y: 5, z: -15}
@@ -558,7 +450,7 @@ nodes:
           - index: 0
             material: *sphere_1_0_material
   - tag: Sphere00
-    id: 10143737853026425962
+    id: 11528040555655503174
     components:
       - type: transform
         position: {x: 0, y: 5, z: -15}
@@ -570,14 +462,14 @@ nodes:
           - index: 0
             material: *sphere_0_0_material
   - tag: Fox
-    id: 6542340127677031980
+    id: 885090620418576303
     components:
       - type: transform
         position: {x: 12, y: 0, z: 0}
-        rotation: {x: 0, y: 0.809473217, z: 0, w: -0.587156773}
+        rotation: {x: -0, y: -0.711959958, z: -0, w: -0.702220082}
         scale: {x: 0.0599999987, y: 0.0599999987, z: 0.0599999987}
   - tag: Helmet
-    id: 5274599810316663903
+    id: 9474727604511346730
     components:
       - type: transform
         position: {x: 0, y: 6, z: 0}
@@ -588,144 +480,117 @@ nodes:
         submeshes:
           - index: 0
             material: *helmet
-  - tag: Light7
-    id: 9241307470610176188
-    parent: 14655321643808365062
+  - tag: Sphere23
+    id: 17456929238559972101
     components:
       - type: transform
-        position: {x: 14.1421404, y: 0, z: -14.1421309}
+        position: {x: 6, y: 14, z: -15}
         rotation: {x: 0, y: 0, z: 0, w: 1}
-        scale: {x: 0.200000003, y: 0.200000003, z: 0.200000003}
-      - type: static_mesh
-        color: *sphere
-        submeshes:
-          - index: 0
-            material: *Light7
-      - type: point_light
-        color: {r: 0.414494485, g: 0.437105805, b: 0.534111023, a: 1}
-        radius: 50
-  - tag: Light6
-    id: 13028351757259014775
-    parent: 14655321643808365062
-    components:
-      - type: transform
-        position: {x: 2.3849762e-07, y: 0, z: -20}
-        rotation: {x: 0, y: 0, z: 0, w: 1}
-        scale: {x: 0.200000003, y: 0.200000003, z: 0.200000003}
-      - type: static_mesh
-        color: *sphere
-        submeshes:
-          - index: 0
-            material: *Light6
-      - type: point_light
-        color: {r: 0.195973173, g: 0.760009229, b: 0.117367171, a: 1}
-        radius: 50
-  - tag: Light5
-    id: 12303693156190278852
-    parent: 14655321643808365062
-    components:
-      - type: transform
-        position: {x: -14.1421328, y: 0, z: -14.1421375}
-        rotation: {x: 0, y: 0, z: 0, w: 1}
-        scale: {x: 0.200000003, y: 0.200000003, z: 0.200000003}
-      - type: static_mesh
-        color: *sphere
-        submeshes:
-          - index: 0
-            material: *Light5
-      - type: point_light
-        color: {r: 0.375030994, g: 0.406390429, b: 0.503905475, a: 1}
-        radius: 50
-  - tag: Light4
-    id: 14079849355029726391
-    parent: 14655321643808365062
-    components:
-      - type: transform
-        position: {x: -20, y: 0, z: -1.74845559e-06}
-        rotation: {x: 0, y: 0, z: 0, w: 1}
-        scale: {x: 0.200000003, y: 0.200000003, z: 0.200000003}
-      - type: static_mesh
-        color: *sphere
-        submeshes:
-          - index: 0
-            material: *Light4
-      - type: point_light
-        color: {r: 0.77854687, g: 0.241696313, b: 0.989857376, a: 1}
-        radius: 50
-  - tag: Light3
-    id: 8190459481436721179
-    parent: 14655321643808365062
-    components:
-      - type: transform
-        position: {x: -14.1421356, y: 0, z: 14.1421356}
-        rotation: {x: 0, y: 0, z: 0, w: 1}
-        scale: {x: 0.200000003, y: 0.200000003, z: 0.200000003}
-      - type: static_mesh
-        color: *sphere
-        submeshes:
-          - index: 0
-            material: *Light3
-      - type: point_light
-        color: {r: 0.312475324, g: 0.812692523, b: 0.374582082, a: 1}
-        radius: 50
-  - tag: Light2
-    id: 8751882650025462318
-    parent: 14655321643808365062
-    components:
-      - type: transform
-        position: {x: -8.74227794e-07, y: 0, z: 20}
-        rotation: {x: 0, y: 0, z: 0, w: 1}
-        scale: {x: 0.200000003, y: 0.200000003, z: 0.200000003}
-      - type: static_mesh
-        color: *sphere
-        submeshes:
-          - index: 0
-            material: *Light2
-      - type: point_light
-        color: {r: 0.314045638, g: 0.341378927, b: 0.423889816, a: 1}
-        radius: 50
-  - tag: Light1
-    id: 467729512066285477
-    parent: 14655321643808365062
-    components:
-      - type: transform
-        position: {x: 14.1421356, y: 0, z: 14.1421356}
-        rotation: {x: 0, y: 0, z: 0, w: 1}
-        scale: {x: 0.200000003, y: 0.200000003, z: 0.200000003}
-      - type: static_mesh
-        color: *sphere
-        submeshes:
-          - index: 0
-            material: *Light1
-      - type: point_light
-        color: {r: 0.193947673, g: 0.364551783, b: 0.821902275, a: 1}
-        radius: 50
-  - tag: Light0
-    id: 16202036048673858113
-    parent: 14655321643808365062
-    components:
-      - type: transform
-        position: {x: 20, y: 0, z: 0}
-        rotation: {x: 0, y: 0, z: 0, w: 1}
-        scale: {x: 0.200000003, y: 0.200000003, z: 0.200000003}
-      - type: static_mesh
-        color: *sphere
-        submeshes:
-          - index: 0
-            material: *Light0
-      - type: point_light
-        color: {r: 0.948609412, g: 0.492279708, b: 0.79820627, a: 1}
-        radius: 50
-  - tag: LightCenter
-    id: 14655321643808365062
-    components:
-      - type: transform
-        position: {x: 0, y: 20, z: 0}
-        rotation: {x: 0, y: 0.809473217, z: 0, w: -0.587156773}
         scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *sphere
+        submeshes:
+          - index: 0
+            material: *sphere_2_3_material
+  - tag: Sphere33
+    id: 16319260024704328960
+    components:
+      - type: transform
+        position: {x: 9, y: 14, z: -15}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *sphere
+        submeshes:
+          - index: 0
+            material: *sphere_3_3_material
+  - tag: Sphere43
+    id: 7151827746997556114
+    components:
+      - type: transform
+        position: {x: 12, y: 14, z: -15}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *sphere
+        submeshes:
+          - index: 0
+            material: *sphere_4_3_material
+  - tag: Sphere04
+    id: 8617102005903546950
+    components:
+      - type: transform
+        position: {x: 0, y: 17, z: -15}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *sphere
+        submeshes:
+          - index: 0
+            material: *sphere_0_4_material
+  - tag: Sphere14
+    id: 333676118596613940
+    components:
+      - type: transform
+        position: {x: 3, y: 17, z: -15}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *sphere
+        submeshes:
+          - index: 0
+            material: *sphere_1_4_material
+  - tag: Sphere24
+    id: 6193994364801700151
+    components:
+      - type: transform
+        position: {x: 6, y: 17, z: -15}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *sphere
+        submeshes:
+          - index: 0
+            material: *sphere_2_4_material
+  - tag: Sphere34
+    id: 7333427613879024521
+    components:
+      - type: transform
+        position: {x: 9, y: 17, z: -15}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *sphere
+        submeshes:
+          - index: 0
+            material: *sphere_3_4_material
+  - tag: Sphere44
+    id: 2701111658632458856
+    components:
+      - type: transform
+        position: {x: 12, y: 17, z: -15}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *sphere
+        submeshes:
+          - index: 0
+            material: *sphere_4_4_material
+  - tag: Sphere13
+    id: 7807258927021847069
+    components:
+      - type: transform
+        position: {x: 3, y: 14, z: -15}
+        rotation: {x: 0, y: 0, z: 0, w: 1}
+        scale: {x: 1, y: 1, z: 1}
+      - type: static_mesh
+        color: *sphere
+        submeshes:
+          - index: 0
+            material: *sphere_1_3_material
   - tag: Chunk1919
-    id: 4474402471474113130
-    parent: 8500950705162047842
+    id: 126765859413653651
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 225, y: 0, z: 225}
@@ -737,8 +602,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1819
-    id: 13882915839234357864
-    parent: 8500950705162047842
+    id: 3495970743008161083
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 200, y: 0, z: 225}
@@ -750,8 +615,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1719
-    id: 16282879440978316216
-    parent: 8500950705162047842
+    id: 7213858678677351263
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 175, y: 0, z: 225}
@@ -763,8 +628,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1619
-    id: 2443352758298256237
-    parent: 8500950705162047842
+    id: 11814156876896570618
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 150, y: 0, z: 225}
@@ -776,8 +641,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1519
-    id: 17046937763517078088
-    parent: 8500950705162047842
+    id: 18321792259842558116
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 125, y: 0, z: 225}
@@ -789,8 +654,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1419
-    id: 11832904764352426286
-    parent: 8500950705162047842
+    id: 9261251660316361181
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 100, y: 0, z: 225}
@@ -802,8 +667,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1319
-    id: 11160016718484183015
-    parent: 8500950705162047842
+    id: 16778744864821826513
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 75, y: 0, z: 225}
@@ -815,8 +680,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1219
-    id: 9216568956000908562
-    parent: 8500950705162047842
+    id: 15378765659990812753
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 50, y: 0, z: 225}
@@ -828,8 +693,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1119
-    id: 9205775119251318167
-    parent: 8500950705162047842
+    id: 15867093693280464846
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 25, y: 0, z: 225}
@@ -841,8 +706,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1019
-    id: 15303196987926582350
-    parent: 8500950705162047842
+    id: 2183991724520510867
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 0, y: 0, z: 225}
@@ -854,8 +719,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk919
-    id: 3367842959737482571
-    parent: 8500950705162047842
+    id: 18201739652365398278
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -25, y: 0, z: 225}
@@ -867,8 +732,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk819
-    id: 10611298221898656045
-    parent: 8500950705162047842
+    id: 5380543985707170790
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -50, y: 0, z: 225}
@@ -880,8 +745,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk719
-    id: 3710714335838558646
-    parent: 8500950705162047842
+    id: 16980024967562979775
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -75, y: 0, z: 225}
@@ -893,8 +758,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk619
-    id: 12962714012397014457
-    parent: 8500950705162047842
+    id: 14715165216878762099
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -100, y: 0, z: 225}
@@ -906,8 +771,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk519
-    id: 11679445076976953044
-    parent: 8500950705162047842
+    id: 265182823192856745
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -125, y: 0, z: 225}
@@ -919,8 +784,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk419
-    id: 14322947763840642277
-    parent: 8500950705162047842
+    id: 8072095176190786703
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -150, y: 0, z: 225}
@@ -932,8 +797,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk319
-    id: 8883413500170736958
-    parent: 8500950705162047842
+    id: 15237701770274456962
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -175, y: 0, z: 225}
@@ -945,8 +810,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk219
-    id: 6668915930829702104
-    parent: 8500950705162047842
+    id: 15927194723510497144
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -200, y: 0, z: 225}
@@ -958,8 +823,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk119
-    id: 1421652761096660238
-    parent: 8500950705162047842
+    id: 2451071213455598633
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -225, y: 0, z: 225}
@@ -971,8 +836,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk019
-    id: 5454145084206920558
-    parent: 8500950705162047842
+    id: 3700792177909141307
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -250, y: 0, z: 225}
@@ -984,8 +849,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1918
-    id: 10799822864424999583
-    parent: 8500950705162047842
+    id: 14391096850639891206
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 225, y: 0, z: 200}
@@ -997,8 +862,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1818
-    id: 15738079774332398849
-    parent: 8500950705162047842
+    id: 9986315318326848757
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 200, y: 0, z: 200}
@@ -1010,8 +875,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1718
-    id: 11212228733952018
-    parent: 8500950705162047842
+    id: 3589915717632704518
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 175, y: 0, z: 200}
@@ -1023,8 +888,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1618
-    id: 12586520800838995524
-    parent: 8500950705162047842
+    id: 3744906785961778442
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 150, y: 0, z: 200}
@@ -1036,8 +901,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1518
-    id: 1557217974243696363
-    parent: 8500950705162047842
+    id: 8679325911639741489
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 125, y: 0, z: 200}
@@ -1049,8 +914,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1418
-    id: 7859040586153946231
-    parent: 8500950705162047842
+    id: 2587873322082503790
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 100, y: 0, z: 200}
@@ -1062,8 +927,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1318
-    id: 7149283491949109330
-    parent: 8500950705162047842
+    id: 6011863505913137129
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 75, y: 0, z: 200}
@@ -1075,8 +940,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1218
-    id: 1450358195541197055
-    parent: 8500950705162047842
+    id: 14725954069258501130
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 50, y: 0, z: 200}
@@ -1088,8 +953,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1118
-    id: 2846372678253106243
-    parent: 8500950705162047842
+    id: 2335436105856003460
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 25, y: 0, z: 200}
@@ -1101,8 +966,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1018
-    id: 4287345397436090171
-    parent: 8500950705162047842
+    id: 10466933240691903610
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 0, y: 0, z: 200}
@@ -1114,8 +979,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk918
-    id: 7111237258159000692
-    parent: 8500950705162047842
+    id: 16807304059070576104
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -25, y: 0, z: 200}
@@ -1127,8 +992,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk818
-    id: 17714749529590226326
-    parent: 8500950705162047842
+    id: 495429586821007892
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -50, y: 0, z: 200}
@@ -1140,8 +1005,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk718
-    id: 6432130576516181443
-    parent: 8500950705162047842
+    id: 17594264670208497930
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -75, y: 0, z: 200}
@@ -1153,8 +1018,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk618
-    id: 9083472108273424754
-    parent: 8500950705162047842
+    id: 16317528353490478266
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -100, y: 0, z: 200}
@@ -1166,8 +1031,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk518
-    id: 2885630221083692181
-    parent: 8500950705162047842
+    id: 1120102337970321262
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -125, y: 0, z: 200}
@@ -1179,8 +1044,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk418
-    id: 17777836236822339044
-    parent: 8500950705162047842
+    id: 1947122077785959890
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -150, y: 0, z: 200}
@@ -1192,8 +1057,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk318
-    id: 18165106197908574972
-    parent: 8500950705162047842
+    id: 17709847359938440121
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -175, y: 0, z: 200}
@@ -1205,8 +1070,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk218
-    id: 17406657032945901580
-    parent: 8500950705162047842
+    id: 3402329365170657274
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -200, y: 0, z: 200}
@@ -1218,8 +1083,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk118
-    id: 14318364480083489145
-    parent: 8500950705162047842
+    id: 9307142487783963026
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -225, y: 0, z: 200}
@@ -1231,8 +1096,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk018
-    id: 5524185076106069846
-    parent: 8500950705162047842
+    id: 15465393823704628334
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -250, y: 0, z: 200}
@@ -1244,8 +1109,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1917
-    id: 9832727433797907380
-    parent: 8500950705162047842
+    id: 13183290617500314597
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 225, y: 0, z: 175}
@@ -1257,8 +1122,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1817
-    id: 13615136153612775628
-    parent: 8500950705162047842
+    id: 1234313964990212358
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 200, y: 0, z: 175}
@@ -1270,8 +1135,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1717
-    id: 5332695448138383598
-    parent: 8500950705162047842
+    id: 10560559836617667858
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 175, y: 0, z: 175}
@@ -1283,8 +1148,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1617
-    id: 7561128594150580005
-    parent: 8500950705162047842
+    id: 17218515121870528421
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 150, y: 0, z: 175}
@@ -1296,8 +1161,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1517
-    id: 9899725993955922809
-    parent: 8500950705162047842
+    id: 13086539290818512827
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 125, y: 0, z: 175}
@@ -1309,8 +1174,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1417
-    id: 14999146970400165577
-    parent: 8500950705162047842
+    id: 17548158806092693352
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 100, y: 0, z: 175}
@@ -1322,8 +1187,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1317
-    id: 11961912107504304865
-    parent: 8500950705162047842
+    id: 3546182536569100437
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 75, y: 0, z: 175}
@@ -1335,8 +1200,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1217
-    id: 4015076400105690734
-    parent: 8500950705162047842
+    id: 2294766442102300127
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 50, y: 0, z: 175}
@@ -1348,8 +1213,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1117
-    id: 15818680596249226944
-    parent: 8500950705162047842
+    id: 412515887677277425
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 25, y: 0, z: 175}
@@ -1361,8 +1226,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1017
-    id: 8818644871555012120
-    parent: 8500950705162047842
+    id: 11407468839937886827
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 0, y: 0, z: 175}
@@ -1374,8 +1239,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk917
-    id: 10324236305776224957
-    parent: 8500950705162047842
+    id: 7549887564678248979
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -25, y: 0, z: 175}
@@ -1387,8 +1252,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk817
-    id: 13545408276732247543
-    parent: 8500950705162047842
+    id: 8135621162611136807
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -50, y: 0, z: 175}
@@ -1400,8 +1265,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk717
-    id: 14185182030235412640
-    parent: 8500950705162047842
+    id: 819368586784221190
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -75, y: 0, z: 175}
@@ -1413,8 +1278,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk617
-    id: 8037451423812435144
-    parent: 8500950705162047842
+    id: 11066923401794120047
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -100, y: 0, z: 175}
@@ -1426,8 +1291,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk517
-    id: 1116236229655991442
-    parent: 8500950705162047842
+    id: 212176646416101908
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -125, y: 0, z: 175}
@@ -1439,8 +1304,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk417
-    id: 11805055226256113329
-    parent: 8500950705162047842
+    id: 15548522300058574536
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -150, y: 0, z: 175}
@@ -1452,8 +1317,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk317
-    id: 2690742505663136063
-    parent: 8500950705162047842
+    id: 8249433841631124362
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -175, y: 0, z: 175}
@@ -1465,8 +1330,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk217
-    id: 15112764806756558977
-    parent: 8500950705162047842
+    id: 17008666625885814987
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -200, y: 0, z: 175}
@@ -1478,8 +1343,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk117
-    id: 15368111046393401112
-    parent: 8500950705162047842
+    id: 1301094309423605003
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -225, y: 0, z: 175}
@@ -1491,8 +1356,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk017
-    id: 10439673611292149542
-    parent: 8500950705162047842
+    id: 7346152151282348814
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -250, y: 0, z: 175}
@@ -1504,8 +1369,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1916
-    id: 12362877121139449980
-    parent: 8500950705162047842
+    id: 8513035049837851781
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 225, y: 0, z: 150}
@@ -1517,8 +1382,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1816
-    id: 16675212013592711734
-    parent: 8500950705162047842
+    id: 6260393429353573234
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 200, y: 0, z: 150}
@@ -1530,8 +1395,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1716
-    id: 18113677163037822931
-    parent: 8500950705162047842
+    id: 7036442712858445442
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 175, y: 0, z: 150}
@@ -1543,8 +1408,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1616
-    id: 6441109428764408955
-    parent: 8500950705162047842
+    id: 405908657691652236
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 150, y: 0, z: 150}
@@ -1556,8 +1421,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1516
-    id: 13997089751732535133
-    parent: 8500950705162047842
+    id: 8765376252971650647
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 125, y: 0, z: 150}
@@ -1569,8 +1434,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1416
-    id: 7127647944771184870
-    parent: 8500950705162047842
+    id: 9096972287811422200
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 100, y: 0, z: 150}
@@ -1582,8 +1447,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1316
-    id: 8363862833174994015
-    parent: 8500950705162047842
+    id: 16139509883430536220
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 75, y: 0, z: 150}
@@ -1595,8 +1460,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1216
-    id: 16349457520776878698
-    parent: 8500950705162047842
+    id: 15308197083611049146
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 50, y: 0, z: 150}
@@ -1608,8 +1473,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1116
-    id: 1566833722184074301
-    parent: 8500950705162047842
+    id: 11922460654490677470
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 25, y: 0, z: 150}
@@ -1621,8 +1486,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1016
-    id: 1987192686843199122
-    parent: 8500950705162047842
+    id: 4650499323102135019
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 0, y: 0, z: 150}
@@ -1634,8 +1499,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk916
-    id: 595225764511457248
-    parent: 8500950705162047842
+    id: 7072704633471124317
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -25, y: 0, z: 150}
@@ -1647,8 +1512,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk816
-    id: 6111657115268692230
-    parent: 8500950705162047842
+    id: 12207671014813475786
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -50, y: 0, z: 150}
@@ -1660,8 +1525,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk716
-    id: 16807789014050304981
-    parent: 8500950705162047842
+    id: 960004641449360012
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -75, y: 0, z: 150}
@@ -1673,8 +1538,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk616
-    id: 13840047537005120647
-    parent: 8500950705162047842
+    id: 13630981317859012688
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -100, y: 0, z: 150}
@@ -1686,8 +1551,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk516
-    id: 16005120661424643094
-    parent: 8500950705162047842
+    id: 258933902427890063
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -125, y: 0, z: 150}
@@ -1699,8 +1564,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk416
-    id: 12914609953982856856
-    parent: 8500950705162047842
+    id: 8290899031123221941
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -150, y: 0, z: 150}
@@ -1712,8 +1577,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk316
-    id: 3239031477259241535
-    parent: 8500950705162047842
+    id: 2304777512876234926
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -175, y: 0, z: 150}
@@ -1725,8 +1590,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk216
-    id: 11237018141731460460
-    parent: 8500950705162047842
+    id: 4564244291632386400
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -200, y: 0, z: 150}
@@ -1738,8 +1603,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk116
-    id: 15892237751383770508
-    parent: 8500950705162047842
+    id: 12781051188807984163
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -225, y: 0, z: 150}
@@ -1751,8 +1616,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk016
-    id: 7856170217640293483
-    parent: 8500950705162047842
+    id: 1875422843109224988
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -250, y: 0, z: 150}
@@ -1764,8 +1629,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1915
-    id: 7017581668943883690
-    parent: 8500950705162047842
+    id: 14616000489544349038
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 225, y: 0, z: 125}
@@ -1777,8 +1642,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1815
-    id: 4401793168161058468
-    parent: 8500950705162047842
+    id: 8336887779402163093
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 200, y: 0, z: 125}
@@ -1790,8 +1655,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1715
-    id: 11548681963166157391
-    parent: 8500950705162047842
+    id: 15093856748993041140
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 175, y: 0, z: 125}
@@ -1803,8 +1668,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1615
-    id: 2939264698591436426
-    parent: 8500950705162047842
+    id: 12770618381791951451
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 150, y: 0, z: 125}
@@ -1816,8 +1681,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1515
-    id: 811164715296848511
-    parent: 8500950705162047842
+    id: 14355163554128799245
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 125, y: 0, z: 125}
@@ -1829,8 +1694,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1415
-    id: 2089781967826075741
-    parent: 8500950705162047842
+    id: 7593735317792239654
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 100, y: 0, z: 125}
@@ -1842,8 +1707,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1315
-    id: 11887420131390559368
-    parent: 8500950705162047842
+    id: 16394557261203921404
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 75, y: 0, z: 125}
@@ -1855,8 +1720,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1215
-    id: 3019687091040871228
-    parent: 8500950705162047842
+    id: 6484189597827817937
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 50, y: 0, z: 125}
@@ -1868,8 +1733,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1115
-    id: 885223702827016449
-    parent: 8500950705162047842
+    id: 14767176776405810527
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 25, y: 0, z: 125}
@@ -1881,8 +1746,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1015
-    id: 5350396812082772739
-    parent: 8500950705162047842
+    id: 976016228228316496
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 0, y: 0, z: 125}
@@ -1894,8 +1759,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk915
-    id: 9539337703966435624
-    parent: 8500950705162047842
+    id: 10894824568223458665
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -25, y: 0, z: 125}
@@ -1907,8 +1772,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk815
-    id: 15979213235741325453
-    parent: 8500950705162047842
+    id: 1560067955889133271
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -50, y: 0, z: 125}
@@ -1920,8 +1785,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk715
-    id: 15958210623761008727
-    parent: 8500950705162047842
+    id: 3693322028000087453
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -75, y: 0, z: 125}
@@ -1933,8 +1798,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk615
-    id: 10466062650764580840
-    parent: 8500950705162047842
+    id: 17863170176599529657
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -100, y: 0, z: 125}
@@ -1946,8 +1811,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk515
-    id: 6276242605825383519
-    parent: 8500950705162047842
+    id: 1034110910278909897
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -125, y: 0, z: 125}
@@ -1959,8 +1824,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk415
-    id: 16156206838854038413
-    parent: 8500950705162047842
+    id: 30457391023186923
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -150, y: 0, z: 125}
@@ -1972,8 +1837,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk315
-    id: 11772269620310731844
-    parent: 8500950705162047842
+    id: 7211789513760739043
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -175, y: 0, z: 125}
@@ -1985,8 +1850,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk215
-    id: 11156955765602018718
-    parent: 8500950705162047842
+    id: 12690560686943120727
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -200, y: 0, z: 125}
@@ -1998,8 +1863,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk115
-    id: 16371681349084220546
-    parent: 8500950705162047842
+    id: 1017162486058613574
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -225, y: 0, z: 125}
@@ -2011,8 +1876,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk015
-    id: 2021784918143312401
-    parent: 8500950705162047842
+    id: 4278825033566575242
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -250, y: 0, z: 125}
@@ -2024,8 +1889,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1914
-    id: 2046996007403765425
-    parent: 8500950705162047842
+    id: 7075216308670565278
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 225, y: 0, z: 100}
@@ -2037,8 +1902,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1814
-    id: 15274013245614512649
-    parent: 8500950705162047842
+    id: 9472278407860437345
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 200, y: 0, z: 100}
@@ -2050,8 +1915,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1714
-    id: 1505855613830633461
-    parent: 8500950705162047842
+    id: 41315022953310100
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 175, y: 0, z: 100}
@@ -2063,8 +1928,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1614
-    id: 4634978691078762513
-    parent: 8500950705162047842
+    id: 16865191217881525654
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 150, y: 0, z: 100}
@@ -2076,8 +1941,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1514
-    id: 18202558704504601074
-    parent: 8500950705162047842
+    id: 14199494367345853831
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 125, y: 0, z: 100}
@@ -2089,8 +1954,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1414
-    id: 14819597655219051236
-    parent: 8500950705162047842
+    id: 17130981796196655652
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 100, y: 0, z: 100}
@@ -2102,8 +1967,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1314
-    id: 11861680226437852936
-    parent: 8500950705162047842
+    id: 2795730291264292314
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 75, y: 0, z: 100}
@@ -2115,8 +1980,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1214
-    id: 5026581134625110212
-    parent: 8500950705162047842
+    id: 9455331934381619014
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 50, y: 0, z: 100}
@@ -2128,8 +1993,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1114
-    id: 4532640449699500910
-    parent: 8500950705162047842
+    id: 11220794972927554476
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 25, y: 0, z: 100}
@@ -2141,8 +2006,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1014
-    id: 13576034349901931262
-    parent: 8500950705162047842
+    id: 11957352581714401163
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 0, y: 0, z: 100}
@@ -2154,8 +2019,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk914
-    id: 15202011449500515542
-    parent: 8500950705162047842
+    id: 1061463974622530207
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -25, y: 0, z: 100}
@@ -2167,8 +2032,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk814
-    id: 6739219693754022613
-    parent: 8500950705162047842
+    id: 7869638951984054957
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -50, y: 0, z: 100}
@@ -2180,8 +2045,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk714
-    id: 7466356685714584025
-    parent: 8500950705162047842
+    id: 1467877786199157438
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -75, y: 0, z: 100}
@@ -2193,8 +2058,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk614
-    id: 6601958441674318950
-    parent: 8500950705162047842
+    id: 14577078955217903001
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -100, y: 0, z: 100}
@@ -2206,8 +2071,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk514
-    id: 2236138650303670395
-    parent: 8500950705162047842
+    id: 7462345233812398171
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -125, y: 0, z: 100}
@@ -2219,8 +2084,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk414
-    id: 11138069688117704433
-    parent: 8500950705162047842
+    id: 11585408262122620476
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -150, y: 0, z: 100}
@@ -2232,8 +2097,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk314
-    id: 9193664066668430210
-    parent: 8500950705162047842
+    id: 10865275003899169028
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -175, y: 0, z: 100}
@@ -2245,8 +2110,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk214
-    id: 2948048823079791872
-    parent: 8500950705162047842
+    id: 8591707330169367744
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -200, y: 0, z: 100}
@@ -2258,8 +2123,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk114
-    id: 520832726073510192
-    parent: 8500950705162047842
+    id: 13024742992184714298
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -225, y: 0, z: 100}
@@ -2271,8 +2136,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk014
-    id: 7844259091580913984
-    parent: 8500950705162047842
+    id: 13386585940888019080
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -250, y: 0, z: 100}
@@ -2284,8 +2149,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1913
-    id: 5002954100096696787
-    parent: 8500950705162047842
+    id: 4314921106756791724
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 225, y: 0, z: 75}
@@ -2297,8 +2162,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1813
-    id: 15757294400066070710
-    parent: 8500950705162047842
+    id: 678779440295746827
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 200, y: 0, z: 75}
@@ -2310,8 +2175,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1713
-    id: 43254521390994864
-    parent: 8500950705162047842
+    id: 11593325503535788049
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 175, y: 0, z: 75}
@@ -2323,8 +2188,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1613
-    id: 3512886080561044161
-    parent: 8500950705162047842
+    id: 914535969798962070
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 150, y: 0, z: 75}
@@ -2336,8 +2201,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1513
-    id: 9088699749993187891
-    parent: 8500950705162047842
+    id: 9012729789479450004
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 125, y: 0, z: 75}
@@ -2349,8 +2214,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1413
-    id: 8726171665581307066
-    parent: 8500950705162047842
+    id: 349952702805430414
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 100, y: 0, z: 75}
@@ -2362,8 +2227,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1313
-    id: 1022067697259835075
-    parent: 8500950705162047842
+    id: 6120865159532450861
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 75, y: 0, z: 75}
@@ -2375,8 +2240,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1213
-    id: 15025006536092639124
-    parent: 8500950705162047842
+    id: 7917005336653372386
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 50, y: 0, z: 75}
@@ -2388,8 +2253,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1113
-    id: 7672153826788178813
-    parent: 8500950705162047842
+    id: 1395613245579410352
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 25, y: 0, z: 75}
@@ -2401,8 +2266,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1013
-    id: 1919693254183820595
-    parent: 8500950705162047842
+    id: 836217037540874983
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 0, y: 0, z: 75}
@@ -2414,8 +2279,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk913
-    id: 6228073173088366068
-    parent: 8500950705162047842
+    id: 9715715271902915442
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -25, y: 0, z: 75}
@@ -2427,8 +2292,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk813
-    id: 12396216636754910154
-    parent: 8500950705162047842
+    id: 11653668010392897695
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -50, y: 0, z: 75}
@@ -2440,8 +2305,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk713
-    id: 13665424695748681284
-    parent: 8500950705162047842
+    id: 3365026611839787098
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -75, y: 0, z: 75}
@@ -2453,8 +2318,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk613
-    id: 2454985642748615001
-    parent: 8500950705162047842
+    id: 6199108930581464273
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -100, y: 0, z: 75}
@@ -2466,8 +2331,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk513
-    id: 2418530152738207642
-    parent: 8500950705162047842
+    id: 8557186925481351331
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -125, y: 0, z: 75}
@@ -2479,8 +2344,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk413
-    id: 2870890717697683560
-    parent: 8500950705162047842
+    id: 4791835628207353772
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -150, y: 0, z: 75}
@@ -2492,8 +2357,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk313
-    id: 4105339817085988180
-    parent: 8500950705162047842
+    id: 2455392384989052489
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -175, y: 0, z: 75}
@@ -2505,8 +2370,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk213
-    id: 1519062132715499633
-    parent: 8500950705162047842
+    id: 7101877407815975407
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -200, y: 0, z: 75}
@@ -2518,8 +2383,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk113
-    id: 8061584213573311132
-    parent: 8500950705162047842
+    id: 600688867780110340
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -225, y: 0, z: 75}
@@ -2531,8 +2396,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk013
-    id: 5438994939717938773
-    parent: 8500950705162047842
+    id: 9711825272582555599
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -250, y: 0, z: 75}
@@ -2544,8 +2409,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1912
-    id: 16490715808788713910
-    parent: 8500950705162047842
+    id: 18389934089480202466
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 225, y: 0, z: 50}
@@ -2557,8 +2422,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1812
-    id: 10904921913676574202
-    parent: 8500950705162047842
+    id: 6803482773748656816
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 200, y: 0, z: 50}
@@ -2570,8 +2435,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1712
-    id: 786899586726074756
-    parent: 8500950705162047842
+    id: 8958027075091853392
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 175, y: 0, z: 50}
@@ -2583,8 +2448,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1612
-    id: 7399501964592330265
-    parent: 8500950705162047842
+    id: 17067953294363969914
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 150, y: 0, z: 50}
@@ -2596,8 +2461,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1512
-    id: 10622537305259806586
-    parent: 8500950705162047842
+    id: 502076592178634974
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 125, y: 0, z: 50}
@@ -2609,8 +2474,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1412
-    id: 15239618639274970329
-    parent: 8500950705162047842
+    id: 8783062757959438129
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 100, y: 0, z: 50}
@@ -2622,8 +2487,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1312
-    id: 11418041754686328110
-    parent: 8500950705162047842
+    id: 13067125428847320019
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 75, y: 0, z: 50}
@@ -2635,8 +2500,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1212
-    id: 9541628748335825888
-    parent: 8500950705162047842
+    id: 2713214774461456769
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 50, y: 0, z: 50}
@@ -2648,8 +2513,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1112
-    id: 17378396519159051461
-    parent: 8500950705162047842
+    id: 15162266018703019591
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 25, y: 0, z: 50}
@@ -2661,8 +2526,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1012
-    id: 14540079303121239826
-    parent: 8500950705162047842
+    id: 11064976976726012645
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 0, y: 0, z: 50}
@@ -2674,8 +2539,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk912
-    id: 17783747035703157004
-    parent: 8500950705162047842
+    id: 1577011909097290968
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -25, y: 0, z: 50}
@@ -2687,8 +2552,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk812
-    id: 4506545158482372934
-    parent: 8500950705162047842
+    id: 8326216768185030016
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -50, y: 0, z: 50}
@@ -2700,8 +2565,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk712
-    id: 7181788101247040780
-    parent: 8500950705162047842
+    id: 1205169559553721655
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -75, y: 0, z: 50}
@@ -2713,8 +2578,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk612
-    id: 15465715897867846146
-    parent: 8500950705162047842
+    id: 5615299953686301217
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -100, y: 0, z: 50}
@@ -2726,8 +2591,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk512
-    id: 11001737299023268541
-    parent: 8500950705162047842
+    id: 6688832686221352712
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -125, y: 0, z: 50}
@@ -2739,8 +2604,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk412
-    id: 13092465647072233913
-    parent: 8500950705162047842
+    id: 364722483938451747
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -150, y: 0, z: 50}
@@ -2752,8 +2617,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk312
-    id: 14185561434133673511
-    parent: 8500950705162047842
+    id: 11302365100446066219
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -175, y: 0, z: 50}
@@ -2765,8 +2630,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk212
-    id: 18294431984720811787
-    parent: 8500950705162047842
+    id: 14111565871554697203
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -200, y: 0, z: 50}
@@ -2778,8 +2643,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk112
-    id: 11597473736316126702
-    parent: 8500950705162047842
+    id: 5443872944371983467
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -225, y: 0, z: 50}
@@ -2791,8 +2656,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk012
-    id: 14855920257164827510
-    parent: 8500950705162047842
+    id: 14204651712985674254
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -250, y: 0, z: 50}
@@ -2804,8 +2669,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1911
-    id: 9670281441465686326
-    parent: 8500950705162047842
+    id: 10088016677565662245
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 225, y: 0, z: 25}
@@ -2817,8 +2682,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1811
-    id: 9022423639294804923
-    parent: 8500950705162047842
+    id: 5942449717131134662
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 200, y: 0, z: 25}
@@ -2830,8 +2695,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1711
-    id: 7608027631271685942
-    parent: 8500950705162047842
+    id: 4147425793389911404
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 175, y: 0, z: 25}
@@ -2843,8 +2708,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1611
-    id: 9616794557433409550
-    parent: 8500950705162047842
+    id: 8307208008729230054
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 150, y: 0, z: 25}
@@ -2856,8 +2721,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1511
-    id: 2603885297180066090
-    parent: 8500950705162047842
+    id: 16168736073109764320
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 125, y: 0, z: 25}
@@ -2869,8 +2734,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1411
-    id: 9230844432887063069
-    parent: 8500950705162047842
+    id: 16948198670920115177
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 100, y: 0, z: 25}
@@ -2882,8 +2747,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1311
-    id: 4015354476561849068
-    parent: 8500950705162047842
+    id: 11274904848084761138
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 75, y: 0, z: 25}
@@ -2895,8 +2760,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1211
-    id: 5167636686235394278
-    parent: 8500950705162047842
+    id: 1136682292110253648
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 50, y: 0, z: 25}
@@ -2908,8 +2773,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1111
-    id: 2070283616881949438
-    parent: 8500950705162047842
+    id: 17923318250909686947
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 25, y: 0, z: 25}
@@ -2921,8 +2786,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1011
-    id: 17799267185616926320
-    parent: 8500950705162047842
+    id: 7781752661145555891
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 0, y: 0, z: 25}
@@ -2934,8 +2799,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk911
-    id: 11073976584453060977
-    parent: 8500950705162047842
+    id: 4840694021469544196
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -25, y: 0, z: 25}
@@ -2947,8 +2812,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk811
-    id: 16761027436420944504
-    parent: 8500950705162047842
+    id: 5333798194389890036
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -50, y: 0, z: 25}
@@ -2960,8 +2825,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk711
-    id: 15382835419727435241
-    parent: 8500950705162047842
+    id: 5577767725732020395
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -75, y: 0, z: 25}
@@ -2973,8 +2838,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk611
-    id: 4016838689137875326
-    parent: 8500950705162047842
+    id: 3514077031936922814
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -100, y: 0, z: 25}
@@ -2986,8 +2851,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk511
-    id: 8976648240676007909
-    parent: 8500950705162047842
+    id: 17238155979012716835
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -125, y: 0, z: 25}
@@ -2999,8 +2864,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk411
-    id: 11739627138106578789
-    parent: 8500950705162047842
+    id: 2868692563602607306
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -150, y: 0, z: 25}
@@ -3012,8 +2877,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk311
-    id: 17457505863552811227
-    parent: 8500950705162047842
+    id: 17729815090693746077
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -175, y: 0, z: 25}
@@ -3025,8 +2890,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk211
-    id: 16738067459216655873
-    parent: 8500950705162047842
+    id: 12568331778501948216
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -200, y: 0, z: 25}
@@ -3038,8 +2903,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk111
-    id: 8138146431933984149
-    parent: 8500950705162047842
+    id: 16462505534052563052
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -225, y: 0, z: 25}
@@ -3051,8 +2916,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk011
-    id: 10312149094137898941
-    parent: 8500950705162047842
+    id: 13525432998946017048
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -250, y: 0, z: 25}
@@ -3064,8 +2929,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1910
-    id: 8338823448614217012
-    parent: 8500950705162047842
+    id: 11993847528235310923
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 225, y: 0, z: 0}
@@ -3077,8 +2942,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1810
-    id: 13280058369791635305
-    parent: 8500950705162047842
+    id: 10120833315716806727
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 200, y: 0, z: 0}
@@ -3090,8 +2955,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1710
-    id: 5995287808545002441
-    parent: 8500950705162047842
+    id: 10269392630503461479
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 175, y: 0, z: 0}
@@ -3103,8 +2968,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1610
-    id: 1927924228292184070
-    parent: 8500950705162047842
+    id: 16435776139356123963
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 150, y: 0, z: 0}
@@ -3116,8 +2981,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1510
-    id: 13204013023278382361
-    parent: 8500950705162047842
+    id: 14792311590087743267
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 125, y: 0, z: 0}
@@ -3129,8 +2994,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1410
-    id: 10025516621150950411
-    parent: 8500950705162047842
+    id: 7071183442973210898
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 100, y: 0, z: 0}
@@ -3142,8 +3007,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1310
-    id: 10685611141315795941
-    parent: 8500950705162047842
+    id: 7230859841683154827
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 75, y: 0, z: 0}
@@ -3155,8 +3020,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1210
-    id: 7910992951553935491
-    parent: 8500950705162047842
+    id: 12615696390531304509
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 50, y: 0, z: 0}
@@ -3168,8 +3033,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1110
-    id: 1742495375906696178
-    parent: 8500950705162047842
+    id: 7496068269863669828
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 25, y: 0, z: 0}
@@ -3181,8 +3046,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk1010
-    id: 5453594431636084576
-    parent: 8500950705162047842
+    id: 6729185116881706263
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 0, y: 0, z: 0}
@@ -3194,8 +3059,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk910
-    id: 320110243855885828
-    parent: 8500950705162047842
+    id: 13347097673528702828
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -25, y: 0, z: 0}
@@ -3207,8 +3072,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk810
-    id: 9069937887775026399
-    parent: 8500950705162047842
+    id: 13579189209860581006
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -50, y: 0, z: 0}
@@ -3220,8 +3085,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk710
-    id: 5372901145906655369
-    parent: 8500950705162047842
+    id: 7074921336142690485
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -75, y: 0, z: 0}
@@ -3233,8 +3098,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk610
-    id: 14526904887459370887
-    parent: 8500950705162047842
+    id: 18082236001212342541
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -100, y: 0, z: 0}
@@ -3246,8 +3111,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk510
-    id: 11664793441653496958
-    parent: 8500950705162047842
+    id: 15320596553330860937
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -125, y: 0, z: 0}
@@ -3259,8 +3124,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk410
-    id: 11582763388322966067
-    parent: 8500950705162047842
+    id: 11136066909385546558
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -150, y: 0, z: 0}
@@ -3272,8 +3137,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk310
-    id: 16700286742989455871
-    parent: 8500950705162047842
+    id: 3626272144261857316
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -175, y: 0, z: 0}
@@ -3285,8 +3150,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk210
-    id: 1324072929395199271
-    parent: 8500950705162047842
+    id: 8791410698458167984
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -200, y: 0, z: 0}
@@ -3298,8 +3163,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk110
-    id: 12782152642253982026
-    parent: 8500950705162047842
+    id: 8276688259780060616
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -225, y: 0, z: 0}
@@ -3311,8 +3176,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk010
-    id: 16908589441540453912
-    parent: 8500950705162047842
+    id: 5360345377895298325
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -250, y: 0, z: 0}
@@ -3324,8 +3189,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk199
-    id: 16021982521434822676
-    parent: 8500950705162047842
+    id: 6270369223238675826
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 225, y: 0, z: -25}
@@ -3337,8 +3202,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk189
-    id: 16635251642379462030
-    parent: 8500950705162047842
+    id: 2767917318125564944
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 200, y: 0, z: -25}
@@ -3350,8 +3215,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk179
-    id: 2273210161372846220
-    parent: 8500950705162047842
+    id: 5060848326909288893
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 175, y: 0, z: -25}
@@ -3363,8 +3228,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk169
-    id: 3847371014221137815
-    parent: 8500950705162047842
+    id: 14969320599667996477
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 150, y: 0, z: -25}
@@ -3376,8 +3241,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk159
-    id: 12089976959606687885
-    parent: 8500950705162047842
+    id: 15816923544234965388
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 125, y: 0, z: -25}
@@ -3389,8 +3254,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk149
-    id: 9753468835939162655
-    parent: 8500950705162047842
+    id: 14025165060283965495
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 100, y: 0, z: -25}
@@ -3402,8 +3267,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk139
-    id: 8576589037764456664
-    parent: 8500950705162047842
+    id: 11263640101596284534
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 75, y: 0, z: -25}
@@ -3415,8 +3280,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk129
-    id: 16058131743577323168
-    parent: 8500950705162047842
+    id: 5494737789225110562
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 50, y: 0, z: -25}
@@ -3428,8 +3293,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk119
-    id: 4485620819533320011
-    parent: 8500950705162047842
+    id: 3660731256554773994
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 25, y: 0, z: -25}
@@ -3441,8 +3306,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk109
-    id: 6312054250035902284
-    parent: 8500950705162047842
+    id: 14254707261986075414
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 0, y: 0, z: -25}
@@ -3454,8 +3319,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk99
-    id: 11319816257321078939
-    parent: 8500950705162047842
+    id: 18012251637784855191
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -25, y: 0, z: -25}
@@ -3467,8 +3332,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk89
-    id: 4062160534469431089
-    parent: 8500950705162047842
+    id: 13456607874071586523
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -50, y: 0, z: -25}
@@ -3480,8 +3345,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk79
-    id: 15314694514854867243
-    parent: 8500950705162047842
+    id: 3374970772888289659
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -75, y: 0, z: -25}
@@ -3493,8 +3358,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk69
-    id: 17062718767749143486
-    parent: 8500950705162047842
+    id: 109062910186878351
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -100, y: 0, z: -25}
@@ -3506,8 +3371,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk59
-    id: 4645179713385901603
-    parent: 8500950705162047842
+    id: 10272671802719534140
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -125, y: 0, z: -25}
@@ -3519,8 +3384,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk49
-    id: 9029979063011794178
-    parent: 8500950705162047842
+    id: 6169165263569709195
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -150, y: 0, z: -25}
@@ -3532,8 +3397,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk39
-    id: 1451324592849907202
-    parent: 8500950705162047842
+    id: 7385154199020865175
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -175, y: 0, z: -25}
@@ -3545,8 +3410,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk29
-    id: 4486116625735505066
-    parent: 8500950705162047842
+    id: 10817742038408876046
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -200, y: 0, z: -25}
@@ -3558,8 +3423,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk19
-    id: 10243182143107150079
-    parent: 8500950705162047842
+    id: 4581225069915024892
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -225, y: 0, z: -25}
@@ -3571,8 +3436,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk09
-    id: 1639208754522964960
-    parent: 8500950705162047842
+    id: 5086655998101731278
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -250, y: 0, z: -25}
@@ -3584,8 +3449,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk198
-    id: 9674885959652755467
-    parent: 8500950705162047842
+    id: 6534717578806542805
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 225, y: 0, z: -50}
@@ -3597,8 +3462,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk188
-    id: 3043141755051804495
-    parent: 8500950705162047842
+    id: 249802860140410538
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 200, y: 0, z: -50}
@@ -3610,8 +3475,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk178
-    id: 8365378227505464274
-    parent: 8500950705162047842
+    id: 1777347773865283108
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 175, y: 0, z: -50}
@@ -3623,8 +3488,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk168
-    id: 5276805605629655097
-    parent: 8500950705162047842
+    id: 7046612208105702774
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 150, y: 0, z: -50}
@@ -3636,8 +3501,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk158
-    id: 5944703781923999818
-    parent: 8500950705162047842
+    id: 6849141118434354214
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 125, y: 0, z: -50}
@@ -3649,8 +3514,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk148
-    id: 12914001382312779109
-    parent: 8500950705162047842
+    id: 17452689540585815257
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 100, y: 0, z: -50}
@@ -3662,8 +3527,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk138
-    id: 3549551644324615610
-    parent: 8500950705162047842
+    id: 6349538444871763043
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 75, y: 0, z: -50}
@@ -3675,8 +3540,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk128
-    id: 1130260086912522176
-    parent: 8500950705162047842
+    id: 2616389559940870939
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 50, y: 0, z: -50}
@@ -3688,8 +3553,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk118
-    id: 14182776528878765853
-    parent: 8500950705162047842
+    id: 14106253203998579131
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 25, y: 0, z: -50}
@@ -3701,8 +3566,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk108
-    id: 61719481627147186
-    parent: 8500950705162047842
+    id: 9120517143610000951
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 0, y: 0, z: -50}
@@ -3714,8 +3579,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk98
-    id: 1901311902436738401
-    parent: 8500950705162047842
+    id: 2182582722701583764
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -25, y: 0, z: -50}
@@ -3727,8 +3592,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk88
-    id: 1863733581415272557
-    parent: 8500950705162047842
+    id: 8135780955158132806
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -50, y: 0, z: -50}
@@ -3740,8 +3605,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk78
-    id: 1324413519470239067
-    parent: 8500950705162047842
+    id: 13114697089188473732
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -75, y: 0, z: -50}
@@ -3753,8 +3618,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk68
-    id: 12226160251298465139
-    parent: 8500950705162047842
+    id: 16670333843195449621
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -100, y: 0, z: -50}
@@ -3766,8 +3631,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk58
-    id: 13755028361310089336
-    parent: 8500950705162047842
+    id: 772532329512499187
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -125, y: 0, z: -50}
@@ -3779,8 +3644,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk48
-    id: 9040241557837690055
-    parent: 8500950705162047842
+    id: 303561371001588944
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -150, y: 0, z: -50}
@@ -3792,8 +3657,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk38
-    id: 7591326549877588543
-    parent: 8500950705162047842
+    id: 6127162803944051309
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -175, y: 0, z: -50}
@@ -3805,8 +3670,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk28
-    id: 1705990767049405880
-    parent: 8500950705162047842
+    id: 15582514403605565261
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -200, y: 0, z: -50}
@@ -3818,8 +3683,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk18
-    id: 8056106016382820740
-    parent: 8500950705162047842
+    id: 8390878722417658535
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -225, y: 0, z: -50}
@@ -3831,8 +3696,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk08
-    id: 14985055427593365860
-    parent: 8500950705162047842
+    id: 1981103363361849221
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -250, y: 0, z: -50}
@@ -3844,8 +3709,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk197
-    id: 14761669479910833957
-    parent: 8500950705162047842
+    id: 6471861481052091397
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 225, y: 0, z: -75}
@@ -3857,8 +3722,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk187
-    id: 15438028539132357509
-    parent: 8500950705162047842
+    id: 9013370418636254119
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 200, y: 0, z: -75}
@@ -3870,8 +3735,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk177
-    id: 2227273020413920712
-    parent: 8500950705162047842
+    id: 16177983243560713659
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 175, y: 0, z: -75}
@@ -3883,8 +3748,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk167
-    id: 4056149098669977980
-    parent: 8500950705162047842
+    id: 2056099441418369540
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 150, y: 0, z: -75}
@@ -3896,8 +3761,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk157
-    id: 10620439146933033065
-    parent: 8500950705162047842
+    id: 18414557629517580711
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 125, y: 0, z: -75}
@@ -3909,8 +3774,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk147
-    id: 11561925459729566349
-    parent: 8500950705162047842
+    id: 4099873051807919413
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 100, y: 0, z: -75}
@@ -3922,8 +3787,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk137
-    id: 9673088153550517779
-    parent: 8500950705162047842
+    id: 5503607319945401090
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 75, y: 0, z: -75}
@@ -3935,8 +3800,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk127
-    id: 10517864838129659033
-    parent: 8500950705162047842
+    id: 17365797711053077835
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 50, y: 0, z: -75}
@@ -3948,8 +3813,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk117
-    id: 9812981149483249468
-    parent: 8500950705162047842
+    id: 8359833597224366826
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 25, y: 0, z: -75}
@@ -3961,8 +3826,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk107
-    id: 6266547149737107806
-    parent: 8500950705162047842
+    id: 15168215004961383424
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 0, y: 0, z: -75}
@@ -3974,8 +3839,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk97
-    id: 1946722159801838345
-    parent: 8500950705162047842
+    id: 8223534330864201103
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -25, y: 0, z: -75}
@@ -3987,8 +3852,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk87
-    id: 4436705955005942963
-    parent: 8500950705162047842
+    id: 12412669381007472283
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -50, y: 0, z: -75}
@@ -4000,8 +3865,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk77
-    id: 2297047003566918668
-    parent: 8500950705162047842
+    id: 9873505150829380997
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -75, y: 0, z: -75}
@@ -4013,8 +3878,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk67
-    id: 317231123255184894
-    parent: 8500950705162047842
+    id: 18137387923393135387
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -100, y: 0, z: -75}
@@ -4026,8 +3891,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk57
-    id: 8796008101675395559
-    parent: 8500950705162047842
+    id: 17162604492441440658
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -125, y: 0, z: -75}
@@ -4039,8 +3904,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk47
-    id: 17492216501701780560
-    parent: 8500950705162047842
+    id: 9565404166357077254
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -150, y: 0, z: -75}
@@ -4052,8 +3917,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk37
-    id: 10101900016733901431
-    parent: 8500950705162047842
+    id: 14981054852713089135
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -175, y: 0, z: -75}
@@ -4065,8 +3930,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk27
-    id: 7891245678172472761
-    parent: 8500950705162047842
+    id: 3973583537923755479
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -200, y: 0, z: -75}
@@ -4078,8 +3943,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk17
-    id: 17396947271801830224
-    parent: 8500950705162047842
+    id: 5961946454612953007
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -225, y: 0, z: -75}
@@ -4091,8 +3956,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk07
-    id: 11492562273324974661
-    parent: 8500950705162047842
+    id: 10732502760954595769
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -250, y: 0, z: -75}
@@ -4104,8 +3969,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk196
-    id: 8734234018147478633
-    parent: 8500950705162047842
+    id: 16068683462707338937
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 225, y: 0, z: -100}
@@ -4117,8 +3982,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk186
-    id: 7816070120306099298
-    parent: 8500950705162047842
+    id: 1945369035245529333
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 200, y: 0, z: -100}
@@ -4130,8 +3995,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk176
-    id: 18010464594130577370
-    parent: 8500950705162047842
+    id: 16508860475687546911
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 175, y: 0, z: -100}
@@ -4143,8 +4008,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk166
-    id: 12246531445748934393
-    parent: 8500950705162047842
+    id: 5538086416270898168
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 150, y: 0, z: -100}
@@ -4156,8 +4021,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk156
-    id: 15340924633027257385
-    parent: 8500950705162047842
+    id: 16241775438588062177
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 125, y: 0, z: -100}
@@ -4169,8 +4034,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk146
-    id: 7165366578562839484
-    parent: 8500950705162047842
+    id: 12900902424479976616
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 100, y: 0, z: -100}
@@ -4182,8 +4047,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk136
-    id: 14631567770598143528
-    parent: 8500950705162047842
+    id: 1762616110355604021
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 75, y: 0, z: -100}
@@ -4195,8 +4060,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk126
-    id: 12646223549053838503
-    parent: 8500950705162047842
+    id: 6831458714358124388
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 50, y: 0, z: -100}
@@ -4208,8 +4073,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk116
-    id: 17056878387597643931
-    parent: 8500950705162047842
+    id: 11741419280321773499
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 25, y: 0, z: -100}
@@ -4221,8 +4086,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk106
-    id: 5578946319372048574
-    parent: 8500950705162047842
+    id: 13690962431695430846
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 0, y: 0, z: -100}
@@ -4234,8 +4099,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk96
-    id: 5872823581679700453
-    parent: 8500950705162047842
+    id: 8547153463226043108
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -25, y: 0, z: -100}
@@ -4247,8 +4112,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk86
-    id: 3368899129165063810
-    parent: 8500950705162047842
+    id: 5180389032388072354
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -50, y: 0, z: -100}
@@ -4260,8 +4125,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk76
-    id: 11508510133334472679
-    parent: 8500950705162047842
+    id: 15139344684567952826
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -75, y: 0, z: -100}
@@ -4273,8 +4138,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk66
-    id: 343078562758979286
-    parent: 8500950705162047842
+    id: 13404315521065462209
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -100, y: 0, z: -100}
@@ -4286,8 +4151,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk56
-    id: 6156294077638296257
-    parent: 8500950705162047842
+    id: 13370554614529115333
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -125, y: 0, z: -100}
@@ -4299,8 +4164,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk46
-    id: 7700913696136608503
-    parent: 8500950705162047842
+    id: 14749819932689863008
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -150, y: 0, z: -100}
@@ -4312,8 +4177,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk36
-    id: 4632788507533445797
-    parent: 8500950705162047842
+    id: 13189149211947773114
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -175, y: 0, z: -100}
@@ -4325,8 +4190,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk26
-    id: 12115165750366812986
-    parent: 8500950705162047842
+    id: 14976105120645804107
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -200, y: 0, z: -100}
@@ -4338,8 +4203,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk16
-    id: 1841136252702563006
-    parent: 8500950705162047842
+    id: 13567562905855736839
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -225, y: 0, z: -100}
@@ -4351,8 +4216,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk06
-    id: 4132253705060104420
-    parent: 8500950705162047842
+    id: 9321939194074296106
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -250, y: 0, z: -100}
@@ -4364,8 +4229,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk195
-    id: 2221469895404266024
-    parent: 8500950705162047842
+    id: 2368842087019029607
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 225, y: 0, z: -125}
@@ -4377,8 +4242,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk185
-    id: 13703790894535035456
-    parent: 8500950705162047842
+    id: 8314986036725978177
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 200, y: 0, z: -125}
@@ -4390,8 +4255,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk175
-    id: 11039983368131353583
-    parent: 8500950705162047842
+    id: 10840184747464441738
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 175, y: 0, z: -125}
@@ -4403,8 +4268,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk165
-    id: 10045332929345898179
-    parent: 8500950705162047842
+    id: 2080447425686685628
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 150, y: 0, z: -125}
@@ -4416,8 +4281,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk155
-    id: 9261881052457331063
-    parent: 8500950705162047842
+    id: 11385862871213880855
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 125, y: 0, z: -125}
@@ -4429,8 +4294,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk145
-    id: 12063117246407422980
-    parent: 8500950705162047842
+    id: 17526859854908956540
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 100, y: 0, z: -125}
@@ -4442,8 +4307,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk135
-    id: 11770458167879807784
-    parent: 8500950705162047842
+    id: 2545148511406320046
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 75, y: 0, z: -125}
@@ -4455,8 +4320,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk125
-    id: 12413165374619641465
-    parent: 8500950705162047842
+    id: 4776028874889112346
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 50, y: 0, z: -125}
@@ -4468,8 +4333,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk115
-    id: 7273927394862868199
-    parent: 8500950705162047842
+    id: 9304190357871762889
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 25, y: 0, z: -125}
@@ -4481,8 +4346,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk105
-    id: 15364795563353549091
-    parent: 8500950705162047842
+    id: 11698114484830672268
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 0, y: 0, z: -125}
@@ -4494,8 +4359,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk95
-    id: 15972805707629210222
-    parent: 8500950705162047842
+    id: 16210590208154660884
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -25, y: 0, z: -125}
@@ -4507,8 +4372,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk85
-    id: 11249562357926234872
-    parent: 8500950705162047842
+    id: 17460362683741646695
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -50, y: 0, z: -125}
@@ -4520,8 +4385,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk75
-    id: 11037472500062464752
-    parent: 8500950705162047842
+    id: 1665587184296998240
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -75, y: 0, z: -125}
@@ -4533,8 +4398,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk65
-    id: 16593197159010646357
-    parent: 8500950705162047842
+    id: 15987267384054699716
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -100, y: 0, z: -125}
@@ -4546,8 +4411,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk55
-    id: 18061414981287154388
-    parent: 8500950705162047842
+    id: 5162367222637438520
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -125, y: 0, z: -125}
@@ -4559,8 +4424,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk45
-    id: 1247465651043195689
-    parent: 8500950705162047842
+    id: 11271496930330812863
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -150, y: 0, z: -125}
@@ -4572,8 +4437,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk35
-    id: 13820409378503131965
-    parent: 8500950705162047842
+    id: 14198768203767629281
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -175, y: 0, z: -125}
@@ -4585,8 +4450,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk25
-    id: 12202167692546442636
-    parent: 8500950705162047842
+    id: 16519262352274035988
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -200, y: 0, z: -125}
@@ -4598,8 +4463,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk15
-    id: 429488377769139086
-    parent: 8500950705162047842
+    id: 5339795267776323604
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -225, y: 0, z: -125}
@@ -4611,8 +4476,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk05
-    id: 3253569206333851119
-    parent: 8500950705162047842
+    id: 14311945417233911689
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -250, y: 0, z: -125}
@@ -4624,8 +4489,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk194
-    id: 11251577336663492714
-    parent: 8500950705162047842
+    id: 14135265936521252649
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 225, y: 0, z: -150}
@@ -4637,8 +4502,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk184
-    id: 4714518073752306921
-    parent: 8500950705162047842
+    id: 18404849896876026653
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 200, y: 0, z: -150}
@@ -4650,8 +4515,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk174
-    id: 10536029542248149272
-    parent: 8500950705162047842
+    id: 4527678949243741401
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 175, y: 0, z: -150}
@@ -4663,8 +4528,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk164
-    id: 3770924404390614167
-    parent: 8500950705162047842
+    id: 5315444949577052911
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 150, y: 0, z: -150}
@@ -4676,8 +4541,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk154
-    id: 17605136718543580699
-    parent: 8500950705162047842
+    id: 6466574116502331835
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 125, y: 0, z: -150}
@@ -4689,8 +4554,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk144
-    id: 15435453965753800541
-    parent: 8500950705162047842
+    id: 6404661427149296512
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 100, y: 0, z: -150}
@@ -4702,8 +4567,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk134
-    id: 17642527328585873011
-    parent: 8500950705162047842
+    id: 14678487870433203027
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 75, y: 0, z: -150}
@@ -4715,8 +4580,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk124
-    id: 2120842393041489562
-    parent: 8500950705162047842
+    id: 9899083361407411280
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 50, y: 0, z: -150}
@@ -4728,8 +4593,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk114
-    id: 11302903330623137794
-    parent: 8500950705162047842
+    id: 11949512239007683126
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 25, y: 0, z: -150}
@@ -4741,8 +4606,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk104
-    id: 7375626541124763366
-    parent: 8500950705162047842
+    id: 17518116483708492719
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 0, y: 0, z: -150}
@@ -4754,8 +4619,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk94
-    id: 11056347580122372396
-    parent: 8500950705162047842
+    id: 14702062541478719510
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -25, y: 0, z: -150}
@@ -4767,8 +4632,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk84
-    id: 16291929225774240092
-    parent: 8500950705162047842
+    id: 39739547205662494
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -50, y: 0, z: -150}
@@ -4780,8 +4645,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk74
-    id: 3776407202939941671
-    parent: 8500950705162047842
+    id: 9681905522691360887
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -75, y: 0, z: -150}
@@ -4793,8 +4658,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk64
-    id: 4677643232849904014
-    parent: 8500950705162047842
+    id: 1867987024260553160
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -100, y: 0, z: -150}
@@ -4806,8 +4671,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk54
-    id: 9293451694328867770
-    parent: 8500950705162047842
+    id: 4998562761910737049
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -125, y: 0, z: -150}
@@ -4819,8 +4684,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk44
-    id: 11254731502014757083
-    parent: 8500950705162047842
+    id: 9556624955934742954
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -150, y: 0, z: -150}
@@ -4832,8 +4697,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk34
-    id: 3007127718679674133
-    parent: 8500950705162047842
+    id: 8630846344653422170
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -175, y: 0, z: -150}
@@ -4845,8 +4710,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk24
-    id: 16462340828828352499
-    parent: 8500950705162047842
+    id: 1651208491729980519
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -200, y: 0, z: -150}
@@ -4858,8 +4723,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk14
-    id: 6393660632592828571
-    parent: 8500950705162047842
+    id: 12786704599265719798
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -225, y: 0, z: -150}
@@ -4871,8 +4736,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk04
-    id: 270636604024880964
-    parent: 8500950705162047842
+    id: 3943527599317535331
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -250, y: 0, z: -150}
@@ -4884,8 +4749,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk193
-    id: 2499676957635883034
-    parent: 8500950705162047842
+    id: 16298274004924583390
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 225, y: 0, z: -175}
@@ -4897,8 +4762,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk183
-    id: 2180848680522706815
-    parent: 8500950705162047842
+    id: 430610704363118657
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 200, y: 0, z: -175}
@@ -4910,8 +4775,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk173
-    id: 10223793735278240583
-    parent: 8500950705162047842
+    id: 12313751419665599314
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 175, y: 0, z: -175}
@@ -4923,8 +4788,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk163
-    id: 13431073209866959070
-    parent: 8500950705162047842
+    id: 13126247126778126626
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 150, y: 0, z: -175}
@@ -4936,8 +4801,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk153
-    id: 12045726577527749310
-    parent: 8500950705162047842
+    id: 3257986554281791781
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 125, y: 0, z: -175}
@@ -4949,8 +4814,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk143
-    id: 11485282339243373954
-    parent: 8500950705162047842
+    id: 8599395623011903968
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 100, y: 0, z: -175}
@@ -4962,8 +4827,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk133
-    id: 12326362880086015822
-    parent: 8500950705162047842
+    id: 2400084049538731703
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 75, y: 0, z: -175}
@@ -4975,8 +4840,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk123
-    id: 2086423878216506340
-    parent: 8500950705162047842
+    id: 5213053971645969809
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 50, y: 0, z: -175}
@@ -4988,8 +4853,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk113
-    id: 10565002923498046022
-    parent: 8500950705162047842
+    id: 9489492326636612066
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 25, y: 0, z: -175}
@@ -5001,8 +4866,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk103
-    id: 2461843622313926998
-    parent: 8500950705162047842
+    id: 1966476871084485682
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 0, y: 0, z: -175}
@@ -5014,8 +4879,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk93
-    id: 5400547519012247479
-    parent: 8500950705162047842
+    id: 2850264105031967505
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -25, y: 0, z: -175}
@@ -5027,8 +4892,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk83
-    id: 12573030840763274704
-    parent: 8500950705162047842
+    id: 10096000262257204600
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -50, y: 0, z: -175}
@@ -5040,8 +4905,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk73
-    id: 5414486475986072025
-    parent: 8500950705162047842
+    id: 9719451357485910909
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -75, y: 0, z: -175}
@@ -5053,8 +4918,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk63
-    id: 9014991130803460926
-    parent: 8500950705162047842
+    id: 17907602732672753505
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -100, y: 0, z: -175}
@@ -5066,8 +4931,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk53
-    id: 4744890937060462428
-    parent: 8500950705162047842
+    id: 5449159122189898335
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -125, y: 0, z: -175}
@@ -5079,8 +4944,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk43
-    id: 16282002620453361125
-    parent: 8500950705162047842
+    id: 3423344874971407851
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -150, y: 0, z: -175}
@@ -5092,8 +4957,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk33
-    id: 1722332448480549343
-    parent: 8500950705162047842
+    id: 15348267312533915363
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -175, y: 0, z: -175}
@@ -5105,8 +4970,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk23
-    id: 16700229609544947616
-    parent: 8500950705162047842
+    id: 10955438104593976818
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -200, y: 0, z: -175}
@@ -5118,8 +4983,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk13
-    id: 15540474385860045553
-    parent: 8500950705162047842
+    id: 15630766044174408777
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -225, y: 0, z: -175}
@@ -5131,8 +4996,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk03
-    id: 18418373802718848774
-    parent: 8500950705162047842
+    id: 5187204315060763378
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -250, y: 0, z: -175}
@@ -5144,8 +5009,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk192
-    id: 11600105952474223802
-    parent: 8500950705162047842
+    id: 7641597123893120132
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 225, y: 0, z: -200}
@@ -5157,8 +5022,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk182
-    id: 18199362367318144088
-    parent: 8500950705162047842
+    id: 4814084952030488118
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 200, y: 0, z: -200}
@@ -5170,8 +5035,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk172
-    id: 12320338844288016056
-    parent: 8500950705162047842
+    id: 15948429090627152934
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 175, y: 0, z: -200}
@@ -5183,8 +5048,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk162
-    id: 6588703190846179317
-    parent: 8500950705162047842
+    id: 18236579405144069341
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 150, y: 0, z: -200}
@@ -5196,8 +5061,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk152
-    id: 411099854217768450
-    parent: 8500950705162047842
+    id: 15093582321847662030
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 125, y: 0, z: -200}
@@ -5209,8 +5074,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk142
-    id: 1479198021595938868
-    parent: 8500950705162047842
+    id: 3483386990393899748
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 100, y: 0, z: -200}
@@ -5222,8 +5087,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk132
-    id: 18178609743296725139
-    parent: 8500950705162047842
+    id: 1071998974825309296
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 75, y: 0, z: -200}
@@ -5235,8 +5100,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk122
-    id: 4049229703937351640
-    parent: 8500950705162047842
+    id: 15848330667830287835
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 50, y: 0, z: -200}
@@ -5248,8 +5113,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk112
-    id: 14841055734100710954
-    parent: 8500950705162047842
+    id: 11029655586162407374
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 25, y: 0, z: -200}
@@ -5261,8 +5126,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk102
-    id: 14065281437796928472
-    parent: 8500950705162047842
+    id: 7992074039306434702
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 0, y: 0, z: -200}
@@ -5274,8 +5139,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk92
-    id: 2464240835177017991
-    parent: 8500950705162047842
+    id: 9084798502966593815
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -25, y: 0, z: -200}
@@ -5287,8 +5152,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk82
-    id: 3265855041198215085
-    parent: 8500950705162047842
+    id: 3758460901723088616
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -50, y: 0, z: -200}
@@ -5300,8 +5165,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk72
-    id: 5510819924156875099
-    parent: 8500950705162047842
+    id: 8751174376450868478
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -75, y: 0, z: -200}
@@ -5313,8 +5178,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk62
-    id: 5916525976923185033
-    parent: 8500950705162047842
+    id: 2888817398943120928
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -100, y: 0, z: -200}
@@ -5326,8 +5191,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk52
-    id: 12001247242894390858
-    parent: 8500950705162047842
+    id: 3471603042438366577
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -125, y: 0, z: -200}
@@ -5339,8 +5204,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk42
-    id: 8051377000654448226
-    parent: 8500950705162047842
+    id: 13935012635416493936
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -150, y: 0, z: -200}
@@ -5352,8 +5217,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk32
-    id: 11024815902431874548
-    parent: 8500950705162047842
+    id: 12102925285831578193
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -175, y: 0, z: -200}
@@ -5365,8 +5230,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk22
-    id: 14739562969915352801
-    parent: 8500950705162047842
+    id: 10355839070452705960
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -200, y: 0, z: -200}
@@ -5378,8 +5243,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk12
-    id: 15499645837839030367
-    parent: 8500950705162047842
+    id: 9985689742260460490
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -225, y: 0, z: -200}
@@ -5391,8 +5256,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk02
-    id: 17569294647592987656
-    parent: 8500950705162047842
+    id: 16170392475675170170
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -250, y: 0, z: -200}
@@ -5404,8 +5269,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk191
-    id: 7630114922829086400
-    parent: 8500950705162047842
+    id: 9165501061634083709
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 225, y: 0, z: -225}
@@ -5417,8 +5282,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk181
-    id: 9066813943241251646
-    parent: 8500950705162047842
+    id: 14919577237462055978
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 200, y: 0, z: -225}
@@ -5430,8 +5295,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk171
-    id: 12190485278812794613
-    parent: 8500950705162047842
+    id: 3975222683884439224
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 175, y: 0, z: -225}
@@ -5443,8 +5308,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk161
-    id: 13010861383303407520
-    parent: 8500950705162047842
+    id: 16582119106270409977
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 150, y: 0, z: -225}
@@ -5456,8 +5321,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk151
-    id: 7252155756803854241
-    parent: 8500950705162047842
+    id: 6710270981942173289
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 125, y: 0, z: -225}
@@ -5469,8 +5334,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk141
-    id: 6195688399700037266
-    parent: 8500950705162047842
+    id: 10119586694527147415
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 100, y: 0, z: -225}
@@ -5482,8 +5347,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk131
-    id: 6190532277173055364
-    parent: 8500950705162047842
+    id: 6249358583885364161
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 75, y: 0, z: -225}
@@ -5495,8 +5360,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk121
-    id: 602522486028690836
-    parent: 8500950705162047842
+    id: 2795421089155275043
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 50, y: 0, z: -225}
@@ -5508,8 +5373,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk111
-    id: 5931294657095093373
-    parent: 8500950705162047842
+    id: 2997790070684723848
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 25, y: 0, z: -225}
@@ -5521,8 +5386,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk101
-    id: 17796532036231297605
-    parent: 8500950705162047842
+    id: 8731520991101082865
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 0, y: 0, z: -225}
@@ -5534,8 +5399,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk91
-    id: 16697882363429107610
-    parent: 8500950705162047842
+    id: 8863111054503614273
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -25, y: 0, z: -225}
@@ -5547,8 +5412,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk81
-    id: 12604355132251411457
-    parent: 8500950705162047842
+    id: 9550297795315046331
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -50, y: 0, z: -225}
@@ -5560,8 +5425,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk71
-    id: 10257227386055735416
-    parent: 8500950705162047842
+    id: 14913311917545831771
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -75, y: 0, z: -225}
@@ -5573,8 +5438,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk61
-    id: 890482880965867929
-    parent: 8500950705162047842
+    id: 9231299788825154051
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -100, y: 0, z: -225}
@@ -5586,8 +5451,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk51
-    id: 16621943124009671980
-    parent: 8500950705162047842
+    id: 13999182923805967263
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -125, y: 0, z: -225}
@@ -5599,8 +5464,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk41
-    id: 7469443304025754998
-    parent: 8500950705162047842
+    id: 18221006014533749618
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -150, y: 0, z: -225}
@@ -5612,8 +5477,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk31
-    id: 12555830925589210869
-    parent: 8500950705162047842
+    id: 2599130083017558466
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -175, y: 0, z: -225}
@@ -5625,8 +5490,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk21
-    id: 14571071130831761643
-    parent: 8500950705162047842
+    id: 17083599925331886303
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -200, y: 0, z: -225}
@@ -5638,8 +5503,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk11
-    id: 14139177988675703360
-    parent: 8500950705162047842
+    id: 5569429599477106515
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -225, y: 0, z: -225}
@@ -5651,8 +5516,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk01
-    id: 15318769809184434466
-    parent: 8500950705162047842
+    id: 15258089267727618677
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -250, y: 0, z: -225}
@@ -5664,8 +5529,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk190
-    id: 10607085260897925743
-    parent: 8500950705162047842
+    id: 16649631277081294851
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 225, y: 0, z: -250}
@@ -5677,8 +5542,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk180
-    id: 8990665632976946882
-    parent: 8500950705162047842
+    id: 15752810371933251842
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 200, y: 0, z: -250}
@@ -5690,8 +5555,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk170
-    id: 8285181997149195067
-    parent: 8500950705162047842
+    id: 11586637028619524613
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 175, y: 0, z: -250}
@@ -5703,8 +5568,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk160
-    id: 4270598897013914746
-    parent: 8500950705162047842
+    id: 974530696607788835
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 150, y: 0, z: -250}
@@ -5716,8 +5581,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk150
-    id: 12813757961577145493
-    parent: 8500950705162047842
+    id: 9780989845254014443
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 125, y: 0, z: -250}
@@ -5729,8 +5594,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk140
-    id: 12318757312401309018
-    parent: 8500950705162047842
+    id: 15516367524377302050
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 100, y: 0, z: -250}
@@ -5742,8 +5607,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk130
-    id: 16378959647005589698
-    parent: 8500950705162047842
+    id: 968629242383673782
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 75, y: 0, z: -250}
@@ -5755,8 +5620,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk120
-    id: 11188528272605272639
-    parent: 8500950705162047842
+    id: 5374947828751478325
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 50, y: 0, z: -250}
@@ -5768,8 +5633,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk110
-    id: 18112501683749501329
-    parent: 8500950705162047842
+    id: 12264844482435629146
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 25, y: 0, z: -250}
@@ -5781,8 +5646,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk100
-    id: 15124618908418811826
-    parent: 8500950705162047842
+    id: 4811595351450208740
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: 0, y: 0, z: -250}
@@ -5794,8 +5659,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk90
-    id: 17574828656841372552
-    parent: 8500950705162047842
+    id: 3783615756126684948
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -25, y: 0, z: -250}
@@ -5807,8 +5672,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk80
-    id: 17277943692128774703
-    parent: 8500950705162047842
+    id: 3916056422790514287
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -50, y: 0, z: -250}
@@ -5820,8 +5685,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk70
-    id: 6994190525449154247
-    parent: 8500950705162047842
+    id: 3459836507201333740
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -75, y: 0, z: -250}
@@ -5833,8 +5698,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk60
-    id: 17230381253122946113
-    parent: 8500950705162047842
+    id: 5613327216568496674
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -100, y: 0, z: -250}
@@ -5846,8 +5711,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk50
-    id: 15698615556755237792
-    parent: 8500950705162047842
+    id: 14164209333402594619
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -125, y: 0, z: -250}
@@ -5859,8 +5724,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk40
-    id: 10260034730464863098
-    parent: 8500950705162047842
+    id: 13579319685417387611
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -150, y: 0, z: -250}
@@ -5872,8 +5737,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk30
-    id: 10222625165117770795
-    parent: 8500950705162047842
+    id: 262769378663502674
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -175, y: 0, z: -250}
@@ -5885,8 +5750,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk20
-    id: 8962401731485918317
-    parent: 8500950705162047842
+    id: 16831580405922558649
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -200, y: 0, z: -250}
@@ -5898,8 +5763,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk10
-    id: 8348039170362484964
-    parent: 8500950705162047842
+    id: 9674733633182511514
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -225, y: 0, z: -250}
@@ -5911,8 +5776,8 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Chunk00
-    id: 8085902949377486049
-    parent: 8500950705162047842
+    id: 14449730636372222581
+    parent: 13344510222732850544
     components:
       - type: transform
         position: {x: -250, y: 0, z: -250}
@@ -5924,18 +5789,18 @@ nodes:
           - index: 0
             material: *terrain
   - tag: Terrain
-    id: 8500950705162047842
+    id: 13344510222732850544
     components:
       - type: transform
         position: {x: 0, y: 0, z: 0}
         rotation: {x: 0, y: 0, z: 0, w: 1}
         scale: {x: 1, y: 1, z: 1}
   - tag: CAMERA
-    id: 9585614476660972474
+    id: 4515573187887053187
     components:
       - type: transform
-        position: {x: -1.13565522e-06, y: 15, z: 25.9807625}
-        rotation: {x: -0.258819044, y: -2.11109796e-08, z: -5.6566698e-09, w: 0.965925813}
+        position: {x: 1.89488649, y: 16.2289162, z: 8.71040916}
+        rotation: {x: -0.40190807, y: -0.14864102, z: -0.0662968084, w: 0.901099622}
         scale: {x: 1, y: 1, z: 1}
       - type: skybox
         cube_image: *skybox

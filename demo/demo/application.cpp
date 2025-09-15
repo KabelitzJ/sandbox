@@ -654,8 +654,10 @@ auto application::update() -> void  {
   //   transform.move_by(transform.forward() * delta_time * 2.0f);
   // }
 
-  auto& light_center_transform = scene.get_component<sbx::scenes::transform>(_light_center);
-  light_center_transform.set_rotation(sbx::math::vector3::up, _rotation);
+  if (scene.is_valid(_light_center)) {
+    auto& light_center_transform = scene.get_component<sbx::scenes::transform>(_light_center);
+    light_center_transform.set_rotation(sbx::math::vector3::up, _rotation);
+  }
 
   // auto query_coordinates = scene.query<show_local_coordinates>();
 

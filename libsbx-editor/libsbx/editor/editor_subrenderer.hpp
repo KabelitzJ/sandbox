@@ -91,6 +91,8 @@ public:
 
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
 
+    // Project Menu
+
     auto project_menu_new = editor::menu_item{};
     project_menu_new.title = "New...";
     project_menu_new.separator_after = true;
@@ -124,11 +126,34 @@ public:
     project_menu.title = "Project";
     project_menu.items.push_back(project_menu_new);
     project_menu.items.push_back(project_menu_open);
-    project_menu.items.push_back(project_menu_save);
-    project_menu.items.push_back(project_menu_save_as);
+    // project_menu.items.push_back(project_menu_save);
+    // project_menu.items.push_back(project_menu_save_as);
     project_menu.items.push_back(project_menu_preferences);
-
     _menu.push_back(project_menu);
+    
+    // Scene Menu
+
+    auto scene_menu_save = editor::menu_item{};
+    scene_menu_save.title = "Save";
+    scene_menu_save.short_cut = "Ctrl+S";
+    scene_menu_save.on_click = [this, &scenes_module]() { 
+      utility::logger<"editor">::debug("Scene::Save clicked");
+      
+      scenes_module.save_scene("res://scenes/scene.yaml");
+    };
+
+    auto scene_menu_save_as = editor::menu_item{};
+    scene_menu_save_as.title = "Save As...";
+    scene_menu_save_as.separator_after = true;
+    scene_menu_save_as.on_click = [this]() { utility::logger<"editor">::debug("Scene::SaveAs clicked"); };
+
+    auto scene_menu = editor::menu{};
+    scene_menu.title = "Scene";
+    scene_menu.items.push_back(scene_menu_save);
+    scene_menu.items.push_back(scene_menu_save_as);
+    _menu.push_back(scene_menu);
+
+    // Help Menu
 
     auto help_menu_about = editor::menu_item{};
     help_menu_about.title = "About";
@@ -137,7 +162,6 @@ public:
     auto help_menu = editor::menu{};
     help_menu.title = "Help";
     help_menu.items.push_back(help_menu_about);
-
     _menu.push_back(help_menu);
 
     auto& device_module = sbx::core::engine::get_module<sbx::devices::devices_module>();
