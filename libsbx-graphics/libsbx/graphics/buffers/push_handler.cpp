@@ -2,11 +2,25 @@
 
 #include <libsbx/utility/logger.hpp>
 
+#include <libsbx/graphics/graphics_module.hpp>
+
 namespace sbx::graphics {
 
 push_handler::push_handler(const pipeline& pipeline)
 : _uniform_block{pipeline.push_constant()},
   _pipeline_layout{pipeline.layout()} {
+  if (_uniform_block) {
+    _data = std::make_unique<std::uint8_t[]>(_uniform_block->size());
+  }
+}
+
+push_handler::push_handler(const graphics_pipeline_handle& handle) {
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+  auto& pipeline = graphics_module.get_resource<graphics_pipeline>(handle);
+
+  _uniform_block = pipeline.push_constant();
+  _pipeline_layout = pipeline.layout();
+
   if (_uniform_block) {
     _data = std::make_unique<std::uint8_t[]>(_uniform_block->size());
   }

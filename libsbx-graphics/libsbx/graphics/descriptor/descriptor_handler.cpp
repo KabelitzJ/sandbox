@@ -15,6 +15,19 @@ descriptor_handler::descriptor_handler(const pipeline& pipeline, std::uint32_t s
   _recreate_descriptor_sets();
 }
 
+static auto _get_pipeline(const graphics_pipeline_handle& handle) -> memory::observer_ptr<const pipeline> {
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+  return &graphics_module.get_resource<graphics::graphics_pipeline>(handle);
+}
+
+descriptor_handler::descriptor_handler(const graphics_pipeline_handle& handle, std::uint32_t set)
+: _pipeline{_get_pipeline(handle)},
+  _set{set},
+  _has_changed{true} {
+  _recreate_descriptor_sets();
+}
+
 descriptor_handler::~descriptor_handler() {
   for (auto& descriptor_set : _descriptor_sets) {
     descriptor_set.reset();

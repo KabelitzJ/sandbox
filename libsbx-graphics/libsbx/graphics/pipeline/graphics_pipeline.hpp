@@ -30,6 +30,7 @@
 #include <libsbx/graphics/images/image2d.hpp>
 
 #include <libsbx/graphics/render_graph.hpp>
+#include <libsbx/graphics/resource_storage.hpp>
 
 namespace sbx::graphics {
 
@@ -205,6 +206,8 @@ private:
   VkDescriptorPool _descriptor_pool{};
 
 }; // class graphics_pipeline
+
+using graphics_pipeline_handle = resource_handle<graphics_pipeline>;
 
 } // namespace sbx::graphics
 

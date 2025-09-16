@@ -68,6 +68,10 @@ struct transform_data {
   alignas(16) math::matrix4x4 normal;
 }; // struct transform_data
 
+struct material_data {
+
+}; // struct material_data
+
 struct instance_data {
   alignas(16) math::color tint;
   alignas(16) math::vector4 material; // x: metallic, y: roughness, z: ambient occlusion, w: unused

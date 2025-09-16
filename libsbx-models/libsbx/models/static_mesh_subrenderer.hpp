@@ -106,35 +106,42 @@ class static_mesh_subrenderer final : public graphics::subrenderer {
 
   using traits = detail::static_mesh_subrenderer_traits<Type>;
 
-  class pipeline : public graphics::graphics_pipeline {
+  inline static const auto pipeline_definition = graphics::pipeline_definition{
+    .depth = traits::depth,
+    .uses_transparency = traits::uses_transparency,
+    .rasterization_state = graphics::rasterization_state{
+      .polygon_mode = graphics::polygon_mode::fill,
+      .cull_mode = traits::cull_mode,
+      .front_face = graphics::front_face::counter_clockwise
+    },
+    // .vertex_input = graphics::vertex_input<models::vertex3d>::description()
+  };
 
-    inline static const auto pipeline_definition = graphics::pipeline_definition{
-      .depth = traits::depth,
-      .uses_transparency = traits::uses_transparency,
-      .rasterization_state = graphics::rasterization_state{
-        .polygon_mode = graphics::polygon_mode::fill,
-        .cull_mode = traits::cull_mode,
-        .front_face = graphics::front_face::counter_clockwise
-      },
-      // .vertex_input = graphics::vertex_input<models::vertex3d>::description()
-    };
+  // class pipeline : public graphics::graphics_pipeline {
 
-    using base_type = graphics::graphics_pipeline;
 
-  public:
+  //   using base_type = graphics::graphics_pipeline;
 
-    pipeline(const std::filesystem::path& path, const graphics::render_graph::graphics_pass& pass)
-    : base_type{path, pass, pipeline_definition} { }
+  // public:
 
-    ~pipeline() override = default;
+  //   pipeline(const std::filesystem::path& path, const graphics::render_graph::graphics_pass& pass)
+  //   : base_type{path, pass, pipeline_definition} { }
 
-  }; // class pipeline
+  //   ~pipeline() override = default;
+
+  // }; // class pipeline
+
+  static auto _create_pipeline(const std::filesystem::path& path, const graphics::render_graph::graphics_pass& pass) -> graphics::graphics_pipeline_handle {
+    auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+    return graphics_module.add_resource<graphics::graphics_pipeline>(path, pass, pipeline_definition);
+  }
 
 public:
 
   static_mesh_subrenderer(const std::filesystem::path& path, const graphics::render_graph::graphics_pass& pass)
   : graphics::subrenderer{pass},
-    _pipeline{path, pass},
+    _pipeline{_create_pipeline(path, pass)},
     _push_handler{_pipeline},
     _scene_descriptor_handler{_pipeline, 0u} {
     // auto& assets_module = core::engine::get_module<assets::assets_module>();
@@ -156,6 +163,8 @@ public:
     EASY_FUNCTION();
 
     SBX_SCOPED_TIMER("static_mesh_subrenderer");
+
+    auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
     auto& assets_module = core::engine::get_module<assets::assets_module>();
 
@@ -194,13 +203,15 @@ public:
 
     auto& draw_list = pass().draw_list("static_mesh");
 
-    _pipeline.bind(command_buffer);
+    auto& pipeline = graphics_module.get_resource<graphics::graphics_pipeline>(_pipeline);
+
+    pipeline.bind(command_buffer);
 
     _scene_descriptor_handler.push("scene", _scene_uniform_handler);
     _scene_descriptor_handler.push("images_sampler", draw_list->sampler());
     _scene_descriptor_handler.push("images", draw_list->images());
 
-    if (!_scene_descriptor_handler.update(_pipeline)) {
+    if (!_scene_descriptor_handler.update(pipeline)) {
       return;
     }
 
@@ -224,7 +235,7 @@ public:
 
 private:
 
-  pipeline _pipeline;
+  graphics::graphics_pipeline_handle _pipeline;
 
   graphics::push_handler _push_handler;
   graphics::descriptor_handler _scene_descriptor_handler;

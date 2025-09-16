@@ -8,6 +8,7 @@
 
 #include <libsbx/graphics/pipeline/shader.hpp>
 #include <libsbx/graphics/pipeline/pipeline.hpp>
+#include <libsbx/graphics/pipeline/graphics_pipeline.hpp>
 
 #include <libsbx/graphics/commands/command_buffer.hpp>
 
@@ -18,6 +19,8 @@ class push_handler {
 public:
 
   push_handler(const pipeline& pipeline);
+
+  push_handler(const graphics_pipeline_handle& handle);
 
   // push_handler(const std::optional<shader::uniform_block>& uniform_block = std::nullopt);
 

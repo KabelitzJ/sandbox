@@ -15,6 +15,7 @@
 #include <libsbx/graphics/buffers/push_handler.hpp>
 
 #include <libsbx/graphics/pipeline/pipeline.hpp>
+#include <libsbx/graphics/pipeline/graphics_pipeline.hpp>
 
 #include <libsbx/graphics/descriptor/descriptor.hpp>
 #include <libsbx/graphics/descriptor/descriptor_set.hpp>
@@ -31,6 +32,8 @@ public:
   descriptor_handler(std::uint32_t set);
 
   explicit descriptor_handler(const pipeline& pipeline, std::uint32_t set);
+
+  explicit descriptor_handler(const graphics_pipeline_handle& handle, std::uint32_t set);
 
   ~descriptor_handler();
 
