@@ -17,4 +17,12 @@ float max2(float2 v) {
   return max(v.x, v.y);
 }
 
+float mod(float x, float y) {
+  return x - y * floor(x / y);
+}
+
+float2 mod(float2 x, float y) {
+  return x - y * floor(x / y);
+}
+
 #endif // LIBSBX_COMMON_MATH_GLSL_

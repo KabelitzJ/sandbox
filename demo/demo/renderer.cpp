@@ -150,9 +150,8 @@ renderer::renderer()
 
   // Deferred rendering pass
   add_subrenderer<sbx::models::opaque_static_mesh_subrenderer>("res://shaders/deferred_static_opaque", deferred);
-  add_subrenderer<sbx::models::masked_static_mesh_subrenderer>("res://shaders/deferred_static_masked", deferred);
+  // add_subrenderer<sbx::models::masked_static_mesh_subrenderer>("res://shaders/deferred_static_masked", deferred);
   add_subrenderer<sbx::animations::skinned_mesh_subrenderer>("res://shaders/deferred_skinned_opaque", deferred);
-  // add_subrenderer<sbx::scenes::grid_subrenderer>("res://shaders/grid", deferred);
   
   // Transparency pass
   add_subrenderer<sbx::models::transparent_static_mesh_subrenderer>("res://shaders/deferred_static_transparent", transparency);
@@ -176,7 +175,9 @@ renderer::renderer()
     {"revealage_image", "revealage"}
   };
 
-  add_subrenderer<sbx::post::resolve_transparent_filter>("res://shaders/resolve_transparet", resolve, std::move(resolve_transparent_attachment_names));
+  add_subrenderer<sbx::post::resolve_transparent_filter>("res://shaders/resolve_transparent", resolve, std::move(resolve_transparent_attachment_names));
+
+  add_subrenderer<sbx::scenes::grid_subrenderer>("res://shaders/grid", resolve);
 
   add_subrenderer<sbx::scenes::debug_subrenderer>("res://shaders/debug", resolve);
 

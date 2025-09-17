@@ -244,7 +244,7 @@ application::application()
     auto angle = sbx::math::radian{2.0f * sbx::math::pi / static_cast<std::float_t>(light_count) * static_cast<std::float_t>(i)};
 
     const auto material_name = fmt::format("Light{}", i);
-    const auto color = sbx::math::random_color();
+    const auto color = sbx::math::random_color(0.5f);
 
     scene.add_material<sbx::scenes::material>(material_name, sbx::scenes::material_type::transparent, color, 0.0f, 0.5f, 1.0f);
 
@@ -255,7 +255,7 @@ application::application()
     scene.add_component<sbx::scenes::static_mesh>(light, scene.get_mesh("sphere"), scene.get_material(material_name));
 
     auto& light_transform = scene.get_component<sbx::scenes::transform>(light);
-    light_transform.set_scale(sbx::math::vector3{0.2f, 0.2f, 0.2f});
+    // light_transform.set_scale(sbx::math::vector3{0.2f, 0.2f, 0.2f});
   }
 
   // Dragon

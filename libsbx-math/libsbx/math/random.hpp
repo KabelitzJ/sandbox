@@ -83,7 +83,7 @@ auto random_point_in_sphere(const basic_vector3<Type>& center, const Type radius
   return center + basic_vector3<Type>{x, y, z};
 }
 
-auto random_color() -> color;
+auto random_color(const std::float_t alpha = 1.0f) -> color;
 
 } // namespace sbx::math
 
