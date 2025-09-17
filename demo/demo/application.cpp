@@ -23,7 +23,7 @@
 #include <libsbx/scenes/components/static_mesh.hpp>
 #include <libsbx/scenes/components/skinned_mesh.hpp>
 
-#include <libsbx/scripting/scripting.hpp>
+// #include <libsbx/scripting/scripting.hpp>
 
 #include <libsbx/animations/mesh.hpp>
 #include <libsbx/animations/animation.hpp>
@@ -53,10 +53,10 @@ application::application()
     assets_module.set_asset_root("demo/assets");
   }
 
-  auto& scripting_module = sbx::core::engine::get_module<sbx::scripting::scripting_module>();
+  // auto& scripting_module = sbx::core::engine::get_module<sbx::scripting::scripting_module>();
 
-  scripting_module.load_assembly("Sbx", "res://scripts/Sbx/Out/Sbx.dll");
-  scripting_module.load_assembly("Test", "res://scripts/Out/Test.dll");
+  // scripting_module.load_assembly("Sbx", "res://scripts/Sbx/Out/Sbx.dll");
+  // scripting_module.load_assembly("Test", "res://scripts/Out/Test.dll");
 
   auto& graphics_module = sbx::core::engine::get_module<sbx::graphics::graphics_module>();
 
@@ -187,9 +187,9 @@ application::application()
 
   // Terrain
 
-  auto& terrain_module = sbx::core::engine::get_module<demo::terrain_module>();
+  // auto& terrain_module = sbx::core::engine::get_module<demo::terrain_module>();
 
-  terrain_module.load_terrain_in_scene();
+  // terrain_module.load_terrain_in_scene();
 
   // Soldier
 
@@ -298,8 +298,8 @@ application::application()
   // static_assert(std::is_constructible_v<sbx::scripting::scripts, const sbx::scenes::node>, "");
   // static_assert(std::is_constructible_v<sbx::scripting::scripts, const sbx::scenes::node&>, "");
 
-  auto& scripts = scene.add_component<sbx::scripting::scripts>(helmet);
-  scripts.add("Test");
+  // auto& scripts = scene.add_component<sbx::scripting::scripts>(helmet);
+  // scripts.add("Test");
 
   // Box1
   // auto box1 = scene.create_node("Box1");
