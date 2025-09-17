@@ -44,11 +44,11 @@ public:
     
     const auto chunk_size = sbx::math::vector2u{25u, 25u};
 
-    scene.add_mesh<sbx::models::mesh>("terrain", _generate_plane(chunk_size, sbx::math::vector2u{1u, 1u}));
+    // scene.add_mesh<sbx::models::mesh>("terrain", _generate_plane(chunk_size, sbx::math::vector2u{1u, 1u}));
 
     scene.add_image("prototype", "demo/assets/textures/prototype_white.png");
 
-    const auto grid = sbx::math::vector2{20.0f, 20.0f};
+    const auto grid = sbx::math::vector2{10.0f, 10.0f};
 
     const auto offset = sbx::math::vector2{chunk_size.x() * grid.x() * 0.5f, chunk_size.y() * grid.y() * 0.5f};
 
@@ -60,10 +60,11 @@ public:
       for (auto x = 0u; x < grid.x(); ++x) {
         auto chunk = scene.create_child_node(_node, fmt::format("Chunk{}{}", x, y));
 
-        scene.add_component<sbx::scenes::static_mesh>(chunk, scene.get_mesh("terrain"), scene.get_material("terrain"));
+        scene.add_component<sbx::scenes::static_mesh>(chunk, scene.get_mesh("cube"), scene.get_material("terrain"));
 
         auto& transform = scene.get_component<sbx::scenes::transform>(chunk);
         transform.set_position(sbx::math::vector3{x * chunk_size.x() - offset.x(), 0.0f, y * chunk_size.y() - offset.y()});
+        transform.set_scale(sbx::math::vector3{10, 1, 10});
       }
     }
 
