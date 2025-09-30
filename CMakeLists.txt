@@ -109,6 +109,35 @@ add_subdirectory(libsbx-ui)
 add_subdirectory(libsbx-physics)
 add_subdirectory(libsbx-editor)
 
+add_library(libsbx INTERFACE)
+add_library(libsbx::libsbx ALIAS libsbx)
+
+target_link_libraries(libsbx INTERFACE
+  libsbx::units
+  libsbx::utility
+  libsbx::io
+  libsbx::memory
+  libsbx::signals
+  libsbx::containers
+  libsbx::assets
+  libsbx::bitmaps
+  libsbx::math
+  libsbx::ecs
+  libsbx::core
+  libsbx::devices
+  libsbx::gizmos
+  libsbx::graphics
+  libsbx::scenes
+  # libsbx::scripting
+  libsbx::models
+  libsbx::animations
+  libsbx::shadows
+  libsbx::post
+  libsbx::ui
+  libsbx::physics
+  libsbx::editor
+)
+
 if (${SBX_BUILD_DEMO})
   add_subdirectory(demo)
 endif()

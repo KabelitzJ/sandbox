@@ -79,29 +79,7 @@ target_link_libraries(
   PUBLIC
     easy_profiler
   PRIVATE
-    libsbx::units
-    libsbx::utility
-    libsbx::io
-    libsbx::containers
-    libsbx::assets
-    libsbx::bitmaps
-    libsbx::math
-    libsbx::memory
-    libsbx::signals
-    libsbx::ecs
-    libsbx::core
-    libsbx::devices
-    libsbx::gizmos
-    libsbx::graphics
-    libsbx::scenes
-    # libsbx::scripting
-    libsbx::models
-    libsbx::animations
-    libsbx::shadows
-    libsbx::post
-    libsbx::ui
-    libsbx::physics
-    libsbx::editor
+    libsbx::libsbx
 )
 
 set_target_properties(
