@@ -39,6 +39,8 @@ public:
 
   auto add_bone(const std::string& name, const bone& bone) -> void;
 
+  auto root_transform() const -> const math::matrix4x4&;
+
   auto inverse_root_transform() const -> const math::matrix4x4&;
   
   auto set_inverse_root_transform(const math::matrix4x4& inverse_root_transform) -> void;
@@ -67,6 +69,7 @@ private:
   std::vector<utility::hashed_string> _bone_names;
   
   math::matrix4x4 _inverse_root_transform;
+  math::matrix4x4 _root_transform;
 
 }; // class skeleton
 

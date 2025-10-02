@@ -219,6 +219,7 @@ auto animator::evaluate_pose(const skeleton& skeleton) -> std::vector<math::matr
     return locals_to_final_matrices(skeleton, blended_locals);
   } else {
     auto current_locals = sample_clip_locals(skeleton, _current_state.animation_id, _current_state_time);
+
     return locals_to_final_matrices(skeleton, current_locals);
   }
 }

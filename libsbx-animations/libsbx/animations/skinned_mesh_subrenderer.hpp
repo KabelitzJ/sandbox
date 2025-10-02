@@ -211,7 +211,7 @@ private:
 
     auto& skeleton = mesh.skeleton();
 
-    const auto bone_matrices = animator.evaluate_pose(skeleton);
+    const auto& bone_matrices = skinned_mesh.pose();
 
     // [NOTE] : Get this offset befor appending the new matrices to get the offset into the big array in the shader
     const auto bone_matrices_offset = static_cast<std::uint32_t>(_bone_matrices.size());

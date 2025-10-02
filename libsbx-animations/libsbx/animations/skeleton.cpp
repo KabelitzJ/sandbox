@@ -21,8 +21,13 @@ auto skeleton::inverse_root_transform() const -> const math::matrix4x4& {
   return _inverse_root_transform;
 }
 
+auto skeleton::root_transform() const -> const math::matrix4x4& {
+  return _root_transform;
+}
+
 auto skeleton::set_inverse_root_transform(const math::matrix4x4& inverse_root_transform) -> void {
   _inverse_root_transform = inverse_root_transform;
+  _root_transform = math::matrix4x4::inverted(_inverse_root_transform);
 }
 
 auto skeleton::bones() const -> const std::vector<bone>& {

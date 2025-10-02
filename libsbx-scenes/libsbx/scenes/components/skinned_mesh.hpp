@@ -70,12 +70,23 @@ public:
     return _nodes.at(index);
   }
 
+  auto set_pose(std::vector<math::matrix4x4>&& pose) -> void {
+    _pose = std::move(pose);
+  }
+
+  auto pose() const -> const std::vector<math::matrix4x4>& {
+    return _pose;
+  }
+
 private:
 
   math::uuid _mesh_id;
   math::uuid _animation_id;
   std::vector<submesh> _submeshes;
+
   std::vector<node> _nodes;
+
+  std::vector<math::matrix4x4> _pose;
 
 }; // class skinned_mesh
 

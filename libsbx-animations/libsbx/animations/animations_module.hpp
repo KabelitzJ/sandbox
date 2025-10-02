@@ -32,6 +32,8 @@ public:
   auto update() -> void override {
     SBX_SCOPED_TIMER("animations_module::update");
 
+    auto& assets_module = core::engine::get_module<assets::assets_module>();
+
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
     auto& scene = scenes_module.scene();
 
@@ -41,12 +43,28 @@ public:
 
     for (auto&& [node, animator] : animator_query.each()) {
       animator.update(delta_time);
-    }
 
-    auto mesh_query = scene.query<scenes::skinned_mesh>();
+      auto& skinned_mesh = scene.get_component<scenes::skinned_mesh>(node);
 
-    for (auto&& [node, skinned_mesh] : animator_query.each()) {
-      
+      const auto& mesh = assets_module.get_asset<animations::mesh>(skinned_mesh.mesh_id());
+
+      const auto& skeleton = mesh.skeleton();
+
+      auto pose = animator.evaluate_pose(skeleton);
+
+      const auto& nodes = skinned_mesh.nodes();
+
+      for (auto i = 0u; i < nodes.size(); ++i) {
+        auto& transform = scene.get_component<scenes::transform>(nodes[i]);
+
+        const auto [position, rotation, scale] = math::decompose(pose[i]);
+
+        transform.set_position(position);
+        transform.set_rotation(rotation);
+        transform.set_scale(scale);
+      }
+
+      skinned_mesh.set_pose(std::move(pose));
     }
   }
 
