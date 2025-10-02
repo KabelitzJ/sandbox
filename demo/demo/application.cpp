@@ -112,6 +112,15 @@ application::application()
   scene.add_image("rust_normal", "res://textures/rust/normal.png");
   scene.add_image("rust_mrao", "res://textures/rust/mrao.png");
 
+  scene.add_image("longhouse_albedo", "res://textures/longhouse/albedo.jpg");
+  scene.add_image("longhouse_normal", "res://textures/longhouse/normal.jpg");
+  scene.add_image("longhouse_mrao", "res://textures/longhouse/mrao.jpg");
+
+  scene.add_image("pine_tree_bark_albedo", "res://textures/pine_tree/bark_albedo.png");
+  scene.add_image("pine_tree_bark_normal", "res://textures/pine_tree/bark_normal.png");
+  scene.add_image("pine_tree_leaves_albedo", "res://textures/pine_tree/leaves_albedo.png");
+  scene.add_image("pine_tree_leaves_normal", "res://textures/pine_tree/leaves_normal.png");
+
   scene.add_cube_image("skybox", "res://skyboxes/stylized2");
 
   // Meshes
@@ -139,6 +148,10 @@ application::application()
 
   scene.add_mesh<sbx::models::mesh>("cube", "res://meshes/cube/cube.gltf");
   scene.add_mesh<sbx::models::mesh>("sphere", "res://meshes/sphere/sphere.gltf");
+
+  scene.add_mesh<sbx::models::mesh>("longhouse", "res://meshes/longhouse/longhouse.gltf");
+
+  scene.add_mesh<sbx::models::mesh>("pine_tree", "res://meshes/pine_tree/pine_tree.gltf");
 
   scene.add_mesh<sbx::animations::mesh>("soldier", "res://meshes/soldier/soldier.gltf");
   scene.add_mesh<sbx::models::mesh>("soldier_static", "res://meshes/soldier/soldier.gltf");
@@ -187,9 +200,9 @@ application::application()
 
   // Terrain
 
-  auto& terrain_module = sbx::core::engine::get_module<demo::terrain_module>();
+  // auto& terrain_module = sbx::core::engine::get_module<demo::terrain_module>();
 
-  terrain_module.load_terrain_in_scene();
+  // terrain_module.load_terrain_in_scene();
 
   // Soldier
 
@@ -233,9 +246,38 @@ application::application()
   // soldier_transform.set_position(sbx::math::vector3{5.0f, 0.0f, 3.0f});
   // soldier_transform.set_scale(sbx::math::vector3{3.0f});
 
+  // Longhouse
+
+  auto longhouse = scene.create_node("Longhouse");
+
+  scene.add_material<sbx::scenes::material>("longhouse", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 0.5f, 1.0f, scene.get_image("longhouse_albedo"), scene.get_image("longhouse_normal"), scene.get_image("longhouse_mrao"));
+
+  scene.add_component<sbx::scenes::static_mesh>(longhouse, scene.get_mesh("longhouse"), scene.get_material("longhouse"));
+
+  auto& longhouse_transform = scene.get_component<sbx::scenes::transform>(longhouse);
+  longhouse_transform.set_position(sbx::math::vector3{-15.0f, 0.0f, -10.0f});
+  longhouse_transform.set_scale(sbx::math::vector3{2.5f, 2.5f, 2.5f});
+
+  // Pine Tree
+
+  auto pine_tree = scene.create_node("PineTree");
+
+  scene.add_material<sbx::scenes::material>("pine_tree_bark", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 0.5f, 1.0f, scene.get_image("pine_tree_bark_albedo"), scene.get_image("pine_tree_bark_normal"));
+  scene.add_material<sbx::scenes::material>("pine_tree_leaves", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 0.5f, 1.0f, scene.get_image("pine_tree_leaves_albedo"), scene.get_image("pine_tree_leaves_normal"));
+
+  auto pine_tree_submeshes = std::vector<sbx::scenes::static_mesh::submesh>{
+    {0u, scene.get_material("pine_tree_bark")},
+    {1u, scene.get_material("pine_tree_leaves")}
+  };
+
+  scene.add_component<sbx::scenes::static_mesh>(pine_tree, scene.get_mesh("pine_tree"), pine_tree_submeshes);
+
+  auto& pine_tree_transform = scene.get_component<sbx::scenes::transform>(pine_tree);
+  pine_tree_transform.set_position(sbx::math::vector3{-10.0f, 0.0f, -5.0f});
+  pine_tree_transform.set_scale(sbx::math::vector3{0.5f, 0.5f, 0.5f});
+
   // Circling point lights
   _light_center = scene.create_node("LightCenter", sbx::scenes::transform{sbx::math::vector3{0.0f, 20.0f, 0.0f}});
-
   
   const auto radius = 20.0f;
   const auto light_count = 8;

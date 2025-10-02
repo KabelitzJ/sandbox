@@ -94,7 +94,7 @@ class libsbx_recipe(ConanFile):
     self.requires("spirv-cross/1.4.321.0")
     # self.requires("spirv-headers/1.2.198.0")
     # self.requires("spirv-tools/1.4.309.0")
-    self.requires("slang/0.9")
+    # self.requires("slang/0.9")
     self.requires("vulkan-memory-allocator/cci.20231120")
     self.requires("stb/cci.20230920")
     self.requires("range-v3/0.12.0")
