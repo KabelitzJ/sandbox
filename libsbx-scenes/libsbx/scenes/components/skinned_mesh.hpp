@@ -11,6 +11,8 @@
 
 #include <libsbx/graphics/images/image2d.hpp>
 
+#include <libsbx/scenes/node.hpp>
+
 #include <libsbx/scenes/components/static_mesh.hpp>
 
 namespace sbx::scenes {
@@ -56,11 +58,24 @@ public:
     return _submeshes;
   }
 
+  auto set_nodes(const std::vector<node>& nodes) -> void {
+    _nodes = nodes;
+  }
+
+  auto nodes() const -> const std::vector<node>& {
+    return _nodes;
+  }
+
+  auto find_node(const std::uint32_t index) const -> node {
+    return _nodes.at(index);
+  }
+
 private:
 
   math::uuid _mesh_id;
   math::uuid _animation_id;
   std::vector<submesh> _submeshes;
+  std::vector<node> _nodes;
 
 }; // class skinned_mesh
 

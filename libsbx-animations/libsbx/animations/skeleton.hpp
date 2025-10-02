@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <unordered_map>
 #include <cmath>
+#include <optional>
 
 #include <libsbx/utility/logger.hpp>
 #include <libsbx/utility/hashed_string.hpp>
@@ -49,6 +50,16 @@ public:
   auto bone_count() const -> std::uint32_t;
 
   auto name_for_bone(const std::size_t index) const -> const utility::hashed_string&;
+
+  auto bone_index(const utility::hashed_string& name) const -> std::optional<std::uint32_t> {
+    for (auto i = 0u; i < _bone_names.size(); ++i) {
+      if (_bone_names[i] == name) {
+        return i;
+      }
+    }
+
+    return std::nullopt;
+  }
 
 private:
 

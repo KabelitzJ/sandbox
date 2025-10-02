@@ -187,9 +187,9 @@ application::application()
 
   // Terrain
 
-  // auto& terrain_module = sbx::core::engine::get_module<demo::terrain_module>();
+  auto& terrain_module = sbx::core::engine::get_module<demo::terrain_module>();
 
-  // terrain_module.load_terrain_in_scene();
+  terrain_module.load_terrain_in_scene();
 
   // Soldier
 
@@ -337,19 +337,33 @@ application::application()
 
 
   // Fox
+  auto& animations_module = sbx::core::engine::get_module<sbx::animations::animations_module>();
+
   fox1 = scene.create_node("Fox");
 
   scene.add_material<sbx::scenes::material>("fox", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 0.7f, 0.8f, scene.get_image("fox_albedo"));
 
   scene.add_component<show_local_coordinates>(fox1);
 
-  scene.add_component<sbx::scenes::skinned_mesh>(fox1, scene.get_mesh("fox"), scene.get_animation("Walk"), scene.get_material("fox"));
+  // scene.add_component<sbx::scenes::skinned_mesh>(fox1, scene.get_mesh("fox"), scene.get_animation("Walk"), scene.get_material("fox"));
+  animations_module.add_animation(fox1, scene.get_mesh("fox"), scene.get_animation("Walk"), scene.get_material("fox"));
+
+  auto fox_tail_node = animations_module.find_skeleton_node(fox1, "b_Tail03_014");
+
+  if (fox_tail_node != sbx::scenes::node::null) {
+    auto test = scene.create_child_node(fox_tail_node, "Test");
+
+    scene.add_component<sbx::scenes::static_mesh>(test, scene.get_mesh("sphere"), scene.get_material("helmet"));
+
+    auto& test_transform = scene.get_component<sbx::scenes::transform>(test);
+    test_transform.set_scale(sbx::math::vector3{6.0f, 6.0f, 6.0f});
+  }
 
   auto& fox_animator = scene.add_component<sbx::animations::animator>(fox1);
 
-  fox_animator.add_state({"Walk", scene.get_animation("Walk"), true, 1.0f });
-  fox_animator.add_state({"Survey", scene.get_animation("Survey"), true, 1.0f });
-  fox_animator.add_state({"Run", scene.get_animation("Run"), true, 1.0f });
+  fox_animator.add_state({"Walk", scene.get_animation("Walk"), true, 0.5f });
+  fox_animator.add_state({"Survey", scene.get_animation("Survey"), true, 0.5f });
+  fox_animator.add_state({"Run", scene.get_animation("Run"), true, 0.5f });
 
   fox_animator.set_float("speed", 0.0f);   // will be updated every frame
 
@@ -451,9 +465,14 @@ application::application()
   // scene.add_component<sbx::physics::rigidbody>(floor);
   // scene.add_component<sbx::physics::collider>(floor, sbx::physics::box{sbx::math::vector3{50.0f, 1.0f, 50.0f}});
 
+  auto spheres = scene.create_node(fmt::format("Spheres"));
+
+  auto& spheres_transform = scene.get_component<sbx::scenes::transform>(spheres);
+  spheres_transform.set_position(sbx::math::vector3{0, 0, -15});
+
   for (auto y = 0; y < 5; ++y) {
     for (auto x = 0; x < 5; ++x) {
-      auto sphere = scene.create_node(fmt::format("Sphere{}{}", x, y));
+      auto sphere = scene.create_child_node(spheres, fmt::format("Sphere{}{}", x, y));
 
       const auto material_name = fmt::format("sphere_{}_{}_material", x, y);
 
@@ -462,7 +481,7 @@ application::application()
       scene.add_component<sbx::scenes::static_mesh>(sphere, scene.get_mesh("sphere"), scene.get_material(material_name));
 
       auto& sphere_transform = scene.get_component<sbx::scenes::transform>(sphere);
-      sphere_transform.set_position(sbx::math::vector3{x * 3, y * 3 + 5, -15.0f});
+      sphere_transform.set_position(sbx::math::vector3{x * 3, y * 3 + 5, 0.0f});
       sphere_transform.set_scale(sbx::math::vector3{1.0f, 1.0f, 1.0f});
     }
   }
@@ -573,29 +592,29 @@ application::application()
 }
 
 // [NOTE] : This might or might not me a great thing :D
-static auto select_object_ids_in_rect(const sbx::graphics::image2d& image, VkFormat format, sbx::graphics::storage_buffer& buffer, int x0, int y0, int width, int height) -> std::unordered_set<uint64_t> {
-  const auto buffer_size = width * height * sizeof(std::uint32_t) * 2;
+// static auto select_object_ids_in_rect(const sbx::graphics::image2d& image, VkFormat format, sbx::graphics::storage_buffer& buffer, int x0, int y0, int width, int height) -> std::unordered_set<uint64_t> {
+//   const auto buffer_size = width * height * sizeof(std::uint32_t) * 2;
 
-  if (buffer.size() < buffer_size) {
-    buffer.resize(static_cast<std::size_t>(static_cast<std::float_t>(buffer_size) * 1.5f));
-  }
+//   if (buffer.size() < buffer_size) {
+//     buffer.resize(static_cast<std::size_t>(static_cast<std::float_t>(buffer_size) * 1.5f));
+//   }
 
-  VkOffset3D offset = { x0, y0, 0 };
-  VkExtent3D extent = { static_cast<uint32_t>(width), static_cast<uint32_t>(height), 1 };
-  sbx::graphics::image::copy_image_to_buffer(image, format, buffer, offset, extent, 1, 0);
+//   VkOffset3D offset = { x0, y0, 0 };
+//   VkExtent3D extent = { static_cast<uint32_t>(width), static_cast<uint32_t>(height), 1 };
+//   sbx::graphics::image::copy_image_to_buffer(image, format, buffer, offset, extent, 1, 0);
 
-  std::unordered_set<std::uint64_t> ids;
+//   std::unordered_set<std::uint64_t> ids;
 
-  for (uint32_t i = 0; i < width * height; ++i) {
-    std::uint64_t id = (std::uint64_t(buffer.read<std::uint32_t>(i * 2 + 0)) << 32) | std::uint64_t(buffer.read<std::uint32_t>(i * 2 + 1));
+//   for (uint32_t i = 0; i < width * height; ++i) {
+//     std::uint64_t id = (std::uint64_t(buffer.read<std::uint32_t>(i * 2 + 0)) << 32) | std::uint64_t(buffer.read<std::uint32_t>(i * 2 + 1));
     
-    if (id != 0) {
-      ids.insert(id);
-    }
-  }
+//     if (id != 0) {
+//       ids.insert(id);
+//     }
+//   }
 
-  return ids;
-}
+//   return ids;
+// }
 
 auto application::update() -> void  {
   const auto delta_time = sbx::core::engine::delta_time();
