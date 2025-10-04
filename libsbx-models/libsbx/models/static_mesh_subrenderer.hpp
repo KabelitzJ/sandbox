@@ -171,35 +171,35 @@ public:
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
     auto& scene = scenes_module.scene();
 
-    EASY_BLOCK("gathering scene data");
+    // EASY_BLOCK("gathering scene data");
 
-    auto camera_node = scene.camera();
+    // auto camera_node = scene.camera();
 
-    auto& camera = scene.get_component<scenes::camera>(camera_node);
+    // auto& camera = scene.get_component<scenes::camera>(camera_node);
 
-    const auto& projection = camera.projection();
+    // const auto& projection = camera.projection();
 
-    _scene_uniform_handler.push("projection", projection);
+    // _scene_uniform_handler.push("projection", projection);
 
-    const auto& camera_transform = scene.get_component<scenes::transform>(camera_node);
-    const auto& camera_global_transform = scene.get_component<scenes::global_transform>(camera_node);
+    // const auto& camera_transform = scene.get_component<scenes::transform>(camera_node);
+    // const auto& camera_global_transform = scene.get_component<scenes::global_transform>(camera_node);
 
-    const auto view = math::matrix4x4::inverted(scene.world_transform(camera_node));
+    // const auto view = math::matrix4x4::inverted(scene.world_transform(camera_node));
 
-    _scene_uniform_handler.push("view", view);
+    // _scene_uniform_handler.push("view", view);
 
-    _scene_uniform_handler.push("camera_position", camera_transform.position());
+    // _scene_uniform_handler.push("camera_position", camera_transform.position());
 
-    const auto& scene_light = scene.light();
+    // const auto& scene_light = scene.light();
 
-    _scene_uniform_handler.push("light_space", scene.light_space());
+    // _scene_uniform_handler.push("light_space", scene.light_space());
 
-    _scene_uniform_handler.push("light_direction", sbx::math::vector3::normalized(scene_light.direction()));
-    _scene_uniform_handler.push("light_color", scene_light.color());
+    // _scene_uniform_handler.push("light_direction", sbx::math::vector3::normalized(scene_light.direction()));
+    // _scene_uniform_handler.push("light_color", scene_light.color());
 
-    _scene_uniform_handler.push("time", core::engine::time().value());
+    // _scene_uniform_handler.push("time", core::engine::time().value());
 
-    EASY_END_BLOCK;
+    // EASY_END_BLOCK;
 
     auto& draw_list = pass().draw_list("static_mesh");
 
@@ -207,7 +207,7 @@ public:
 
     pipeline.bind(command_buffer);
 
-    _scene_descriptor_handler.push("scene", _scene_uniform_handler);
+    _scene_descriptor_handler.push("scene", scene.uniform_handler());
     _scene_descriptor_handler.push("images_sampler", draw_list->sampler());
     _scene_descriptor_handler.push("images", draw_list->images());
 
@@ -239,7 +239,7 @@ private:
 
   graphics::push_handler _push_handler;
   graphics::descriptor_handler _scene_descriptor_handler;
-  graphics::uniform_handler _scene_uniform_handler;
+  // graphics::uniform_handler _scene_uniform_handler;
 
 }; // class mesh_subrenderer
 

@@ -325,6 +325,34 @@ public:
     return _material_metadata.at(handle);
   }
 
+  auto uniform_handler() -> graphics::uniform_handler& {
+    return _uniform_handler;
+  }
+
+  auto update_uniform_handler() -> void {
+    auto& camera = get_component<scenes::camera>(_camera);
+
+    const auto& projection = camera.projection();
+
+    _uniform_handler.push("projection", projection);
+
+    const auto& camera_transform = get_component<scenes::transform>(_camera);
+    const auto& camera_global_transform = get_component<scenes::global_transform>(_camera);
+
+    const auto view = math::matrix4x4::inverted(world_transform(_camera));
+
+    _uniform_handler.push("view", view);
+
+    _uniform_handler.push("camera_position", camera_transform.position());
+
+    _uniform_handler.push("light_space", light_space());
+
+    _uniform_handler.push("light_direction", sbx::math::vector3::normalized(_light.direction()));
+    _uniform_handler.push("light_color", _light.color());
+
+    _uniform_handler.push("time", core::engine::time().value());
+  }
+
 private:
 
   auto _save_assets(YAML::Emitter& emitter) -> void;
@@ -354,6 +382,8 @@ private:
   containers::octree<math::uuid> _octtree;
 
   directional_light _light;
+
+  graphics::uniform_handler _uniform_handler;
 
   std::unordered_map<utility::hashed_string, graphics::image2d_handle> _image_ids;
   std::unordered_map<utility::hashed_string, graphics::cube_image2d_handle> _cube_image_ids;

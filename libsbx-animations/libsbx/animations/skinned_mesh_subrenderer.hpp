@@ -96,7 +96,7 @@ public:
   : graphics::subrenderer{pass},
     _pipeline{path, pass},
     _push_handler{_pipeline},
-    _scene_descriptor_handler{_pipeline, 0u} {
+    _descriptor_handler{_pipeline, 0u} {
     auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
     _bone_matrices.resize(skeleton::max_bones, math::matrix4x4::identity);
@@ -119,29 +119,29 @@ public:
 
     auto& scene = scenes_module.scene();
 
-    const auto camera_node = scene.camera();
+    // const auto camera_node = scene.camera();
 
-    auto& camera = scene.get_component<scenes::camera>(camera_node);
+    // auto& camera = scene.get_component<scenes::camera>(camera_node);
 
-    const auto& projection = camera.projection();
+    // const auto& projection = camera.projection();
 
-    _scene_uniform_handler.push("projection", projection);
+    // _scene_uniform_handler.push("projection", projection);
 
-    const auto& camera_transform = scene.get_component<scenes::transform>(camera_node);
-    const auto& camera_global_transform = scene.get_component<scenes::global_transform>(camera_node);
+    // const auto& camera_transform = scene.get_component<scenes::transform>(camera_node);
+    // const auto& camera_global_transform = scene.get_component<scenes::global_transform>(camera_node);
 
-    const auto view = math::matrix4x4::inverted(scene.world_transform(camera_node));
+    // const auto view = math::matrix4x4::inverted(scene.world_transform(camera_node));
 
-    _scene_uniform_handler.push("view", view);
+    // _scene_uniform_handler.push("view", view);
 
-    _scene_uniform_handler.push("camera_position", camera_transform.position());
+    // _scene_uniform_handler.push("camera_position", camera_transform.position());
 
-    const auto& scene_light = scene.light();
+    // const auto& scene_light = scene.light();
 
-    _scene_uniform_handler.push("light_direction", sbx::math::vector3::normalized(scene_light.direction()));
-    _scene_uniform_handler.push("light_color", scene_light.color());
+    // _scene_uniform_handler.push("light_direction", sbx::math::vector3::normalized(scene_light.direction()));
+    // _scene_uniform_handler.push("light_color", scene_light.color());
 
-    _scene_uniform_handler.push("time", std::fmod(core::engine::time().value() * 0.5f, 1.0f));
+    // _scene_uniform_handler.push("time", std::fmod(core::engine::time().value() * 0.5f, 1.0f));
 
     _submesh_instances.clear();
     _transform_data.clear();
@@ -252,20 +252,23 @@ private:
   auto _render_skinned_meshes(graphics::command_buffer& command_buffer) -> void {
     auto& assets_module = core::engine::get_module<assets::assets_module>();
     auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+    auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
+
+    auto& scene = scenes_module.scene();
 
     _pipeline.bind(command_buffer);
 
-    _scene_descriptor_handler.push("scene", _scene_uniform_handler);
-    // _scene_descriptor_handler.push("buffer_point_lights", _point_lights_storage_handler);
-    // _scene_descriptor_handler.push("shadow_map_image", graphics_module.attachment("shadow_map"));
-    _scene_descriptor_handler.push("images_sampler", _images_sampler);
-    _scene_descriptor_handler.push("images", _images);
+    _descriptor_handler.push("scene", scene.uniform_handler());
+    // _descriptor_handler.push("buffer_point_lights", _point_lights_storage_handler);
+    // _descriptor_handler.push("shadow_map_image", graphics_module.attachment("shadow_map"));
+    _descriptor_handler.push("images_sampler", _images_sampler);
+    _descriptor_handler.push("images", _images);
 
-    if (!_scene_descriptor_handler.update(_pipeline)) {
+    if (!_descriptor_handler.update(_pipeline)) {
       return;
     }
 
-    _scene_descriptor_handler.bind_descriptors(command_buffer);
+    _descriptor_handler.bind_descriptors(command_buffer);
 
     auto draw_commands = std::vector<VkDrawIndexedIndirectCommand>{};
     auto instance_data = std::vector<skinned_mesh_subrenderer::instance_data>{};
@@ -377,8 +380,8 @@ private:
   graphics::storage_buffer_handle _instance_data_buffer;
   graphics::storage_buffer_handle _bone_matrices_buffer;
 
-  graphics::descriptor_handler _scene_descriptor_handler;
-  graphics::uniform_handler _scene_uniform_handler;
+  graphics::descriptor_handler _descriptor_handler;
+  // graphics::uniform_handler _scene_uniform_handler;
   graphics::push_handler _push_handler;
 
   graphics::separate_sampler _images_sampler;

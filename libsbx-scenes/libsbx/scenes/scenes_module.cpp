@@ -80,7 +80,9 @@ scenes_module::~scenes_module() {
 }
 
 auto scenes_module::update() -> void {
-
+  if (_scene) {
+    _scene->update_uniform_handler();
+  }
 }
 
 auto scenes_module::load_scene(const std::filesystem::path& path) -> scenes::scene& {
