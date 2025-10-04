@@ -1,6 +1,7 @@
 #include <libsbx/common/vertex.slang>
+#include <libsbx/common/scene_data.slang>
 
-#define SKINNING 1
+#define ENABLE_SKINNING 1
 
 struct transform_data {
   float4x4 model;
@@ -73,18 +74,8 @@ struct push_data {
 [[vk::push_constant]] 
 ConstantBuffer<push_data> push;
 
-struct scene_data {
-  float4x4 view;
-  float4x4 projection;
-  float3 camera_position;
-  float3 light_direction;
-  float4 light_color;
-  float4x4 light_space;
-  float time;
-}; // struct scene_data
-
 [[vk::binding(0, 0)]]
-ConstantBuffer<scene_data> scene;
+ConstantBuffer<sbx::common::scene_data> scene;
 
 struct vs_in {
   uint vertex_id : SV_VertexID;
@@ -108,7 +99,7 @@ struct vs_out {
 }; // struct vs_out
 
 float4x4 calculate_skinning_matrix(uint4 bone_indices, float4 bone_weights, uint bone_matrices_offset) {
-#if (SKINNING == 1)
+#if (ENABLE_SKINNING == 1)
   // mat4 result = bone_weights[0] * bone_matrices_buffer.data[bone_indices[0] + bone_matrices_offset];
   // result += bone_weights[1] * bone_matrices_buffer.data[bone_indices[1] + bone_matrices_offset];
   // result += bone_weights[2] * bone_matrices_buffer.data[bone_indices[2] + bone_matrices_offset];

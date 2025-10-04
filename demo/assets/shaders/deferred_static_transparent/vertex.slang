@@ -1,4 +1,5 @@
 #include <libsbx/common/vertex.slang>
+#include <libsbx/common/scene_data.slang>
 
 struct transform_data {
   float4x4 model;
@@ -53,18 +54,8 @@ struct push_data {
 [[vk::push_constant]] 
 ConstantBuffer<push_data> push;
 
-struct scene_data {
-  float4x4 view;
-  float4x4 projection;
-  float3 camera_position;
-  float3 light_direction;
-  float4 light_color;
-  float4x4 light_space;
-  float time;
-}; // struct scene_data
-
 [[vk::binding(0, 0)]]
-ConstantBuffer<scene_data> scene;
+ConstantBuffer<sbx::common::scene_data> scene;
 
 struct vs_in {
   uint vertex_id : SV_VertexID;
