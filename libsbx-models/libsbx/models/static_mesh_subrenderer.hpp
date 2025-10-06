@@ -101,6 +101,10 @@ struct static_mesh_subrenderer_traits<scenes::material_type::transparent> {
 
 } // namespace detail
 
+struct material {
+
+}; // struct material
+
 template<scenes::material_type Type>
 class static_mesh_subrenderer final : public graphics::subrenderer {
 
