@@ -200,9 +200,9 @@ application::application()
 
   // Terrain
 
-  // auto& terrain_module = sbx::core::engine::get_module<demo::terrain_module>();
+  auto& terrain_module = sbx::core::engine::get_module<demo::terrain_module>();
 
-  // terrain_module.load_terrain_in_scene();
+  terrain_module.load_terrain_in_scene();
 
   // Soldier
 
@@ -263,7 +263,7 @@ application::application()
   auto pine_tree = scene.create_node("PineTree");
 
   scene.add_material<sbx::scenes::material>("pine_tree_bark", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 0.5f, 1.0f, scene.get_image("pine_tree_bark_albedo"), scene.get_image("pine_tree_bark_normal"));
-  scene.add_material<sbx::scenes::material>("pine_tree_leaves", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 0.5f, 1.0f, scene.get_image("pine_tree_leaves_albedo"), scene.get_image("pine_tree_leaves_normal"));
+  scene.add_material<sbx::scenes::material>("pine_tree_leaves", sbx::scenes::material_type::masked, sbx::math::color::white(), 0.0f, 0.5f, 1.0f, scene.get_image("pine_tree_leaves_albedo"), scene.get_image("pine_tree_leaves_normal"));
 
   auto pine_tree_submeshes = std::vector<sbx::scenes::static_mesh::submesh>{
     {0u, scene.get_material("pine_tree_bark")},

@@ -82,7 +82,6 @@ layout(set = 0, binding = 0) uniform uniform_scene {
   vec3 light_direction;
   vec4 light_color;
   mat4 light_space;
-  // uint point_light_count;
   float time;
 } scene;
 

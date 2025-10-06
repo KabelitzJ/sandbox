@@ -33,6 +33,7 @@
 #include <libsbx/graphics/pipeline/shader.hpp>
 #include <libsbx/graphics/pipeline/graphics_pipeline.hpp>
 #include <libsbx/graphics/pipeline/compute_pipeline.hpp>
+#include <libsbx/graphics/pipeline/compiler.hpp>
 
 #include <libsbx/graphics/buffers/buffer.hpp>
 #include <libsbx/graphics/buffers/storage_buffer.hpp>
@@ -164,6 +165,10 @@ public:
 
   auto on_viewport_changed() -> signals::signal<const math::vector2u&>& {
     return _on_viewport_changed;
+  }
+
+  auto compiler() -> graphics::compiler& {
+    return _compiler;
   }
 
 private:
@@ -317,6 +322,8 @@ private:
   resource_storage<graphics::cube_image> _cube_images;
 
   graphics::allocator _allocator;
+
+  graphics::compiler _compiler;
 
   std::vector<command_buffer::acquire_ownership_data> _acquire_ownership_data;
   std::vector<command_buffer::release_ownership_data> _release_ownership_data;

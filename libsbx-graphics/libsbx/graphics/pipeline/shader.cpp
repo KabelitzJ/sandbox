@@ -3,9 +3,6 @@
 #include <fstream>
 #include <ranges>
 
-#include <slang.h>
-#include <slang-com-ptr.h>
-
 #include <libsbx/utility/fast_mod.hpp>
 #include <libsbx/utility/logger.hpp>
 
@@ -18,77 +15,6 @@
 #include <libsbx/graphics/graphics_module.hpp>
 
 namespace sbx::graphics {
-
-static auto _sanitize_block_name(std::string name) -> std::string {
-  auto strip = [&](std::string_view suffix) {
-    if (name.size() >= suffix.size() && name.ends_with(suffix)) {
-      name.erase(name.size() - suffix.size());
-    }
-  };
-
-  strip("_std140");
-  strip("_std430");
-  strip("_pushconstant");
-  strip("_push_constant");
-  strip("_runtime");
-
-  if (name.empty()) {
-    name = "block";
-  }
-
-  return name;
-}
-
-static auto _sanitize_names(spirv_cross::Compiler& compiler) -> void {
-  auto resources = compiler.get_shader_resources();
-
-  for (const auto& uniform_buffer : resources.uniform_buffers) {
-    auto type_name = compiler.get_name(uniform_buffer.base_type_id);
-    auto var_name = compiler.get_name(uniform_buffer.id);
-
-    if (type_name.empty()) {
-      type_name = "cbuffer";
-    }
-
-    if (var_name.empty()) {
-      var_name = type_name;
-    }
-
-    type_name = _sanitize_block_name(type_name);
-    var_name = _sanitize_block_name(var_name);
-
-    compiler.set_name(uniform_buffer.base_type_id, type_name);
-    compiler.set_name(uniform_buffer.id, var_name);
-  }
-
-  for (const auto& push_constant : resources.push_constant_buffers) {
-    auto type_name = compiler.get_name(push_constant.base_type_id);
-    auto var_name = compiler.get_name(push_constant.id);
-
-    if (type_name.empty()) {
-      type_name = "push_constants";
-    }
-
-    if (var_name.empty()) {
-      var_name = type_name;
-    }
-
-    type_name = _sanitize_block_name(type_name);
-    var_name = _sanitize_block_name(var_name);
-
-    compiler.set_name(push_constant.base_type_id, type_name);
-    compiler.set_name(push_constant.id, var_name);
-  }
-
-  for (const auto& storage_buffer : resources.storage_buffers) {
-    auto type_name = compiler.get_name(storage_buffer.base_type_id);
-
-    if (!type_name.empty()) {
-      type_name = _sanitize_block_name(type_name);
-      compiler.set_name(storage_buffer.base_type_id, type_name);
-    }
-  }
-}
 
 shader::shader(const std::filesystem::path& path, VkShaderStageFlagBits stage, const containers::static_vector<define, 10u>& defines)
 : _stage{stage} {
@@ -105,7 +31,6 @@ shader::shader(const std::filesystem::path& path, VkShaderStageFlagBits stage, c
     throw std::runtime_error(std::string{"SPIRV-Cross failed: "} + e.what());
   }
 
-  // _sanitize_names(compiler);
   auto create_info = VkShaderModuleCreateInfo{};
   create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
   create_info.codeSize = code.size() * sizeof(std::uint32_t);
