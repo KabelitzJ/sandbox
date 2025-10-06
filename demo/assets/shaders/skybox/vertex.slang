@@ -1,4 +1,5 @@
 #include <libsbx/common/constants.slang>
+#include <libsbx/common/scene_data.slang>
 
 struct vertex {
   float position_x;
@@ -8,20 +9,14 @@ struct vertex {
 
 struct push_data {
   Ptr<vertex> vertices;
+  float4 tint;
 }; // struct push_data
 
 [[vk::push_constant]]
 ConstantBuffer<push_data> push;
 
-struct scene_data {
-  float4x4 model;
-  float4x4 view;
-  float4x4 projection;
-  float4 tint;
-}; // struct scene_data
-
 [[vk::binding(0, 0)]]
-ConstantBuffer<scene_data> scene;
+ConstantBuffer<sbx::common::scene_data> scene;
 
 struct vs_in {
   uint vertex_id : SV_VertexID;
@@ -51,7 +46,7 @@ vs_out main(vs_in in) {
 
   // pass-through
   out.uv = in_position;
-  out.color = scene.tint;
+  out.color = scene.light_color;
 
   return out;
 }

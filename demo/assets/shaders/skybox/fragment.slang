@@ -23,7 +23,7 @@ fs_out main(fs_in in) {
 
   float fog_factor = clamp(1.0 - exp(-FOG_DISTANCE * FOG_DENSITY), 0.0, 1.0);
 
-  out.color = lerp(cube_map_color, FOG_COLOR, fog_factor);
+  out.color = cube_map_color; // lerp(cube_map_color, FOG_COLOR, fog_factor);
 
   return out;
 }

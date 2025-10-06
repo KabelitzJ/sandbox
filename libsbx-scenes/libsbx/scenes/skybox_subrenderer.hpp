@@ -121,27 +121,28 @@ public:
 
     const auto& skybox = scene.get_component<scenes::skybox>(camera_node);
 
-    const auto& camera = scene.get_component<scenes::camera>(camera_node);
-    const auto& camera_transform = scene.get_component<scenes::transform>(camera_node);
+    // const auto& camera = scene.get_component<scenes::camera>(camera_node);
+    // const auto& camera_transform = scene.get_component<scenes::transform>(camera_node);
 
-    const auto& projection = camera.projection();
-    _scene_uniform_handler.push("projection", projection);
+    // const auto& projection = camera.projection();
+    // _scene_uniform_handler.push("projection", projection);
 
-    const auto view = math::matrix4x4::inverted(scene.world_transform(camera_node));
-    _scene_uniform_handler.push("view", view);
+    // const auto view = math::matrix4x4::inverted(scene.world_transform(camera_node));
+    // _scene_uniform_handler.push("view", view);
 
-    const auto model = scene.world_transform(camera_node);
-    _scene_uniform_handler.push("model", model);
-    _scene_uniform_handler.push("tint", skybox.tint);
+    // const auto model = scene.world_transform(camera_node);
+    // _scene_uniform_handler.push("model", model);
+    // _scene_uniform_handler.push("tint", skybox.tint);
 
     auto& mesh = assets_module.get_asset<scenes::mesh>(_skybox_id);
 
     _pipeline.bind(command_buffer);
 
-    _descriptor_handler.push("scene", _scene_uniform_handler);
+    _descriptor_handler.push("scene", scene.uniform_handler());
     _descriptor_handler.push("skybox", graphics_module.get_resource<graphics::cube_image>(skybox.cube_image));
 
     _push_handler.push("vertices", mesh.address());
+    _push_handler.push("tint", skybox.tint);
 
     if (!_descriptor_handler.update(_pipeline)) {
       return;
@@ -161,7 +162,7 @@ private:
 
   graphics::descriptor_handler _descriptor_handler;
 
-  graphics::uniform_handler _scene_uniform_handler;
+  // graphics::uniform_handler _scene_uniform_handler;
   graphics::push_handler _push_handler;
 
 }; // class skybox_subrenderer
