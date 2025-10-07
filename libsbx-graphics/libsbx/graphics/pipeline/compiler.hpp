@@ -68,7 +68,7 @@ public:
     {
       auto diagnostic = Slang::ComPtr<slang::IBlob>{};
 
-      shader_module = _session->loadModuleFromSourceString(path.filename().c_str(), nullptr, source.c_str(), diagnostic.writeRef());
+      shader_module = _session->loadModuleFromSourceString(path.filename().string().c_str(), nullptr, source.c_str(), diagnostic.writeRef());
 
       _diagnose_if_needed(diagnostic);
 

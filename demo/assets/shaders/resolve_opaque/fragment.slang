@@ -213,7 +213,7 @@ fs_out main(fs_in in) {
   // float shadow = 1.0; 
   float shadow = calculate_shadow(world_position, normal);
 
-  float3 irradiance = scene.light_color.rgb * ndl * shadow;
+  float3 irradiance = scene.light_color.rgb * ndl;
 
   color += (k_d * albedo / sbx::common::pi + specular) * irradiance;
 
