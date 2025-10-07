@@ -66,20 +66,20 @@ struct vertex : sbx::common::position<3>, sbx::common::normal<3>, sbx::common::t
   float uv_x;
   float uv_y;
 
-  vector<float, 3> get_position() {
-    return vector<float, 3>(position_x, position_y, position_z);
+  float3 get_position() {
+    return float3(position_x, position_y, position_z);
   }
 
-  vector<float, 3> get_normal() {
-    return vector<float, 3>(normal_x, normal_y, normal_z);
+  float3 get_normal() {
+    return float3(normal_x, normal_y, normal_z);
   }
 
-  vector<float, 4> get_tangent() {
-    return vector<float, 4>(tangent_x, tangent_y, tangent_z, tangent_w);
+  float4 get_tangent() {
+    return float4(tangent_x, tangent_y, tangent_z, tangent_w);
   }
 
-  vector<float, 2> get_uv() {
-    return vector<float, 2>(uv_x, uv_y);
+  float2 get_uv() {
+    return float2(uv_x, uv_y);
   }
 
 }; // struct vertex
