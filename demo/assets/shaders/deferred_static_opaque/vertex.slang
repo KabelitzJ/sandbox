@@ -1,4 +1,5 @@
 #include <libsbx/common/vertex.slang>
+#include <libsbx/common/convert_to.slang>
 #include <libsbx/common/scene_data.slang>
 
 struct transform_data {
@@ -6,11 +7,49 @@ struct transform_data {
   float4x4 normal;
 }; // struct transform_data
 
+struct material_factors : sbx::common::convert_to<float3> {
+  float metallic;
+  float roughness;
+  float occlusion;
+  float _unused0;
+
+  float3 to() {
+    return float3(metallic, roughness, occlusion);
+  }
+
+}; // struct material_factors
+
+struct index_data : sbx::common::convert_to<uint3> {
+  uint albedo_image;
+  uint normal_image;
+  uint mrao_image;
+  uint transform_data;
+
+  uint3 to() {
+    return uint3(albedo_image, normal_image, mrao_image);
+  }
+
+}; // struct index_data
+
+
+struct selection_data : sbx::common::convert_to<uint2> {
+  uint upper;
+  uint lower;
+  uint _unused0;
+  uint _unused1;
+
+  uint2 to() {
+    return uint2(upper, lower);
+  }
+
+}; // struct selection_data
+
+
 struct instance_data {
   float4 tint;
-  float4 material;  // x: metallic, y: roughness, z: ao, w: unused
-  uint4 payload;    // x: albedo idx, y: normal idx, z: mrao idx, w: transform idx
-  uint4 selection;  // x: upper32 id, y: lower32 id
+  material_factors material_factors;
+  index_data index_data;
+  selection_data selection_data;
 }; // struct instance_data
 
 struct vertex : sbx::common::position<3>, sbx::common::normal<3>, sbx::common::tangent<4>, sbx::common::uv<2> {
@@ -86,7 +125,7 @@ vs_out main(vs_in in) {
   uint global_instance = in.instance_id + in.base_instance;
 
   instance_data instance_data = push.instance_data_buffer[global_instance];
-  transform_data transform_data = push.transform_data_buffer[instance_data.payload.w];
+  transform_data transform_data = push.transform_data_buffer[instance_data.index_data.transform_data];
   vertex vertex = push.vertex_buffer[global_vertex];
 
   float3 in_position = sbx::common::get_position(vertex);
@@ -107,9 +146,9 @@ vs_out main(vs_in in) {
   out.tbn2 = N;
   out.uv = in_uv;
   out.color = instance_data.tint;
-  out.material = instance_data.material.rgb;
-  out.image_indices = instance_data.payload.xyz;
-  out.object_id = instance_data.selection.xy;
+  out.material = sbx::common::to<float3>(instance_data.material_factors);
+  out.image_indices = sbx::common::to<uint3>(instance_data.index_data);
+  out.object_id = sbx::common::to<uint2>(instance_data.selection_data);
 
   out.sv_position = mul(scene.projection, mul(scene.view, float4(world_position, 1.0)));
 

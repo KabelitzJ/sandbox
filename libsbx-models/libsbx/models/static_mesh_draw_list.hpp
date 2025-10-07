@@ -63,20 +63,41 @@
 
 namespace sbx::models {
 
-struct transform_data {
-  alignas(16) math::matrix4x4 model;
-  alignas(16) math::matrix4x4 normal;
+struct alignas(16) transform_data {
+  math::matrix4x4 model;
+  math::matrix4x4 normal;
 }; // struct transform_data
 
 struct material_data {
-
+  
 }; // struct material_data
 
-struct instance_data {
-  alignas(16) math::color tint;
-  alignas(16) math::vector4 material; // x: metallic, y: roughness, z: ambient occlusion, w: unused
-  alignas(16) math::vector4u payload; // x: albedo image index, y: normal image index, y: mrao image index, w: instance data index
-  alignas(16) math::vector4u selection; // x: upper 32 bit of id, y: lower 32 bit of id, z: unused, w: unused
+struct alignas(16) material_factors {
+  std::float_t metallic;
+  std::float_t roughness;
+  std::float_t occlusion;
+  std::float_t _unused0;
+}; // struct material_factors
+
+struct alignas(16) index_data {
+  std::uint32_t albedo_image;
+  std::uint32_t normal_image;
+  std::uint32_t mrao_image;
+  std::uint32_t transform_data;
+}; // struct index_data
+
+struct alignas(16) selection_data {
+  std::uint32_t upper;
+  std::uint32_t lower;
+  std::uint32_t _unused0;
+  std::uint32_t _unused1;
+}; // struct selection_data
+
+struct alignas(16) instance_data {
+  math::color tint;
+  models::material_factors material_factors;
+  models::index_data index_data;
+  models::selection_data selection_data;
 }; // struct instance_data
 
 class static_mesh_draw_list final : public graphics::draw_list {
@@ -156,16 +177,16 @@ private:
       const auto normal_image_index = material.normal ? add_image(material.normal) : graphics::separate_image2d_array::max_size;
       const auto mrao_image_index = material.mrao ? add_image(material.mrao) : graphics::separate_image2d_array::max_size;
 
-      const auto material_data = math::vector4{material.metallic, material.roughness, material.ambient_occlusion, 0.0f};
-      const auto payload = math::vector4u{albedo_image_index, normal_image_index, mrao_image_index, transform_data_index};
-      const auto selection = math::vector4u{upper_id, lower_id, 0u, 0u};
+      const auto material_factors = models::material_factors{material.metallic, material.roughness, material.ambient_occlusion, 0.0f};
+      const auto index_data = models::index_data{albedo_image_index, normal_image_index, mrao_image_index, transform_data_index};
+      const auto selection_data = models::selection_data{upper_id, lower_id, 0u, 0u};
 
       switch (material.type) {
         case scenes::material_type::opaque: {
           auto& opaque_instances = _opaque_submesh_instances[mesh_id];
 
           opaque_instances.resize(std::max(opaque_instances.size(), static_cast<std::size_t>(submesh.index + 1u)));
-          opaque_instances[submesh.index].push_back(instance_data{material.base_color, material_data, payload, selection});
+          opaque_instances[submesh.index].push_back(instance_data{material.base_color, material_factors, index_data, selection_data});
 
           break;
         }
@@ -173,7 +194,7 @@ private:
           auto& masked_instances = _masked_submesh_instances[mesh_id];
 
           masked_instances.resize(std::max(masked_instances.size(), static_cast<std::size_t>(submesh.index + 1u)));
-          masked_instances[submesh.index].push_back(instance_data{material.base_color, material_data, payload, selection});
+          masked_instances[submesh.index].push_back(instance_data{material.base_color, material_factors, index_data, selection_data});
 
           break;
         }
@@ -181,7 +202,7 @@ private:
           auto& transparent_instances = _transparent_submesh_instances[mesh_id];
 
           transparent_instances.resize(std::max(transparent_instances.size(), static_cast<std::size_t>(submesh.index + 1u)));
-          transparent_instances[submesh.index].push_back(instance_data{material.base_color, material_data, payload, selection});
+          transparent_instances[submesh.index].push_back(instance_data{material.base_color, material_factors, index_data, selection_data});
           break;
         }
         default: {
