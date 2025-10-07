@@ -10,7 +10,7 @@ auto uniform_handler::push(const Type& object, std::size_t size, std::size_t off
     return;
   }
 
-  _uniform_buffer->update(std::addressof(object), size, offset);
+  _push({reinterpret_cast<const std::uint8_t*>(std::addressof(object)), size}, offset);
 }
 
 template<typename Type>

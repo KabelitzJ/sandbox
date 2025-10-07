@@ -30,8 +30,11 @@ public:
 
 private:
 
+  auto _push(std::span<const std::uint8_t> buffer, std::size_t offset) -> void;
+
   std::optional<shader::uniform_block> _uniform_block;
-  std::unique_ptr<graphics::uniform_buffer> _uniform_buffer;
+  // std::unique_ptr<graphics::uniform_buffer> _uniform_buffer;
+  uniform_buffer_handle _uniform_buffer;
 
 }; // class uniform_handler
 

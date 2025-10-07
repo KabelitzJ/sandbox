@@ -259,7 +259,9 @@ private:
       return _buffers;
     } else if constexpr (std::is_same_v<Type, storage_buffer>) {
       return _storage_buffers;
-    } else if constexpr (std::is_same_v<Type, image2d>) {
+    } else if constexpr (std::is_same_v<Type, uniform_buffer>) {
+      return _uniform_buffers;
+    } if constexpr (std::is_same_v<Type, image2d>) {
       return _images;
     } else if constexpr (std::is_same_v<Type, depth_image>) {
       return _depth_images;
@@ -282,7 +284,9 @@ private:
       return _buffers;
     } else if constexpr (std::is_same_v<Type, storage_buffer>) {
       return _storage_buffers;
-    } else if constexpr (std::is_same_v<Type, image2d>) {
+    } else if constexpr (std::is_same_v<Type, uniform_buffer>) {
+      return _uniform_buffers;
+    } if constexpr (std::is_same_v<Type, image2d>) {
       return _images;
     } else if constexpr (std::is_same_v<Type, depth_image>) {
       return _depth_images;
@@ -317,6 +321,7 @@ private:
   resource_storage<graphics::compute_pipeline> _compute_pipelines;
   resource_storage<graphics::buffer> _buffers;
   resource_storage<graphics::storage_buffer> _storage_buffers;
+  resource_storage<graphics::uniform_buffer> _uniform_buffers;
   resource_storage<graphics::image2d> _images;
   resource_storage<graphics::depth_image> _depth_images;
   resource_storage<graphics::cube_image> _cube_images;
