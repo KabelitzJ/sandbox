@@ -23,7 +23,7 @@
 #include <libsbx/scenes/components/static_mesh.hpp>
 #include <libsbx/scenes/components/skinned_mesh.hpp>
 
-// #include <libsbx/scripting/scripting.hpp>
+#include <libsbx/scripting/scripting.hpp>
 
 #include <libsbx/animations/mesh.hpp>
 #include <libsbx/animations/animation.hpp>
@@ -53,11 +53,6 @@ application::application()
     assets_module.set_asset_root("demo/assets");
   }
 
-  // auto& scripting_module = sbx::core::engine::get_module<sbx::scripting::scripting_module>();
-
-  // scripting_module.load_assembly("Sbx", "res://scripts/Sbx/Out/Sbx.dll");
-  // scripting_module.load_assembly("Test", "res://scripts/Out/Test.dll");
-
   auto& graphics_module = sbx::core::engine::get_module<sbx::graphics::graphics_module>();
 
   graphics_module.set_renderer<renderer>();
@@ -66,13 +61,7 @@ application::application()
 
   auto& scene = scenes_module.load_scene("res://scenes/scene.yaml");
 
-  // auto& scripting_module = sbx::core::engine::get_module<sbx::scripting::scripting_module>();
-
-  // scripting_module.load_domain();
-
-  // scripting_module.load_assembly("Sbx", "res://scripts/Sbx/Out/Sbx.dll");
-
-  // scripting_module.load_assembly("Test", "res://scripts/Out/Test.dll");
+  auto& scripting_module = sbx::core::engine::get_module<sbx::scripting::scripting_module>();
 
   // Textures
 
@@ -329,6 +318,8 @@ application::application()
   helmet_transform.set_position(sbx::math::vector3{0.0f, 6.0f, 0.0f});
   // helmet_transform.set_rotation(sbx::math::vector3::right, sbx::math::degree{90});
   helmet_transform.set_scale(sbx::math::vector3{4.0f, 4.0f, 4.0f});
+
+  scripting_module.instantiate(helmet, "res://scripts/test.lua");
 
   // static_assert(std::is_trivially_constructible_v<sbx::scripting::scripts, sbx::scenes::node>, "");
   // static_assert(std::is_trivially_constructible_v<sbx::scripting::scripts, sbx::scenes::node&>, "");

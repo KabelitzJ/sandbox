@@ -172,6 +172,14 @@ public:
     return basic_uuid{0u};
   }
 
+  static constexpr auto from_value(const value_type value) -> basic_uuid {
+    return basic_uuid{value};
+  }
+
+  static constexpr auto create() -> basic_uuid {
+    return basic_uuid{random::next<value_type>()};
+  }
+
   constexpr auto operator==(const basic_uuid& other) const noexcept -> bool {
     return _value == other._value;
   }

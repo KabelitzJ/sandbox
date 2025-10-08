@@ -89,9 +89,8 @@ execute_process(
 set(SBX_BRANCH "\"${SBX_BRANCH}\"" CACHE STRING "Git branch" FORCE)
 add_compile_definitions(SBX_BRANCH=${SBX_BRANCH})
 
-# Optionally print them
-message(STATUS "Git branch: ${GIT_BRANCH}")
-message(STATUS "Git commit: ${GIT_COMMIT_HASH}")
+message(STATUS "Git branch: ${SBX_BRANCH}")
+message(STATUS "Git commit: ${SBX_COMMIT_HASH}")
 
 set(_libsbx_targets)
 
