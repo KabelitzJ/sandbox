@@ -88,7 +88,7 @@ auto scripting_module::instantiate(const scenes::node node, const std::filesyste
 
   utility::logger<"scripting">::info("resolved_path: {}", resolved_path.string());
 
-  auto result = _state.safe_script_file(resolved_path);
+  auto result = _state.safe_script_file(resolved_path.string());
 
    if (!result.valid()) {
     utility::logger<"scripting">::error("{}", sol::error{result}.what());
