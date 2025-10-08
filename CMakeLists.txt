@@ -55,6 +55,14 @@ endif()
 option(SBX_USE_ASAN "Use ASAN" ${_USE_ASAN_DEFAULT})
 message(STATUS "SBX_USE_ASAN: ${SBX_USE_ASAN}")
 
+# Default component list (override from CLI with -DLIBSBX_COMPONENTS="...;...")
+set(LIBSBX_COMPONENTS units utility io memory signals containers assets bitmaps math ecs core devices gizmos graphics scenes scripting models animations shadows post ui physics editor CACHE STRING "libsbx components to include (semicolon-separated)")
+
+foreach(_c IN LISTS LIBSBX_COMPONENTS)
+  string(TOUPPER "${_c}" _C_UP)
+  option(LIBSBX_ENABLE_${_C_UP} "Build libsbx component '${_c}'" ON)
+endforeach()
+
 string(TIMESTAMP COMPILE_TIMESTAMP %Y%m%d-%H%M%S)
 set(SBX_COMPILE_TIMESTAMP "\"${COMPILE_TIMESTAMP}\"" CACHE STRING "Compile timestamp" FORCE)
 add_compile_definitions(SBX_COMPILE_TIMESTAMP=${SBX_COMPILE_TIMESTAMP})
@@ -85,58 +93,22 @@ add_compile_definitions(SBX_BRANCH=${SBX_BRANCH})
 message(STATUS "Git branch: ${GIT_BRANCH}")
 message(STATUS "Git commit: ${GIT_COMMIT_HASH}")
 
-add_subdirectory(libsbx-units)
-add_subdirectory(libsbx-utility)
-add_subdirectory(libsbx-io)
-add_subdirectory(libsbx-memory)
-add_subdirectory(libsbx-signals)
-add_subdirectory(libsbx-containers)
-add_subdirectory(libsbx-assets)
-add_subdirectory(libsbx-bitmaps)
-add_subdirectory(libsbx-math)
-add_subdirectory(libsbx-ecs)
-add_subdirectory(libsbx-core)
-add_subdirectory(libsbx-devices)
-add_subdirectory(libsbx-gizmos)
-add_subdirectory(libsbx-graphics)
-add_subdirectory(libsbx-scenes)
-# add_subdirectory(libsbx-scripting)
-add_subdirectory(libsbx-models)
-add_subdirectory(libsbx-animations)
-add_subdirectory(libsbx-shadows)
-add_subdirectory(libsbx-post)
-add_subdirectory(libsbx-ui)
-add_subdirectory(libsbx-physics)
-add_subdirectory(libsbx-editor)
+set(_libsbx_targets)
+
+foreach(_c IN LISTS LIBSBX_COMPONENTS)
+  string(TOUPPER "${_c}" _C_UP)
+  set(_dir "${CMAKE_CURRENT_SOURCE_DIR}/libsbx-${_c}")
+
+  if(LIBSBX_ENABLE_${_C_UP} AND EXISTS "${_dir}/CMakeLists.txt")
+    add_subdirectory("${_dir}")
+    list(APPEND _libsbx_targets "libsbx::${_c}")
+  endif()
+endforeach()
 
 add_library(libsbx INTERFACE)
 add_library(libsbx::libsbx ALIAS libsbx)
 
-target_link_libraries(libsbx INTERFACE
-  libsbx::units
-  libsbx::utility
-  libsbx::io
-  libsbx::memory
-  libsbx::signals
-  libsbx::containers
-  libsbx::assets
-  libsbx::bitmaps
-  libsbx::math
-  libsbx::ecs
-  libsbx::core
-  libsbx::devices
-  libsbx::gizmos
-  libsbx::graphics
-  libsbx::scenes
-  # libsbx::scripting
-  libsbx::models
-  libsbx::animations
-  libsbx::shadows
-  libsbx::post
-  libsbx::ui
-  libsbx::physics
-  libsbx::editor
-)
+target_link_libraries(libsbx INTERFACE ${_libsbx_targets})
 
 if (${SBX_BUILD_DEMO})
   add_subdirectory(demo)

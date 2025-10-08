@@ -7,10 +7,7 @@
 #include <filesystem>
 #include <unordered_map>
 
-#include <mono/jit/jit.h>
-#include <mono/metadata/assembly.h>
-#include <mono/metadata/mono-config.h>
-#include <mono/metadata/debug-helpers.h>
+#include <sol/sol.hpp>
 
 #include <libsbx/utility/hashed_string.hpp>
 
@@ -33,56 +30,13 @@ public:
 
   auto update() -> void override;
 
-  auto load_domain() -> void;
-
-  auto load_assembly(const std::string& name, const std::filesystem::path& path) -> void;
-
   auto instantiate(const scenes::node node, const std::string& name) -> void;
 
 private:
 
-  struct assembly {
-    std::string name;
-    MonoAssembly* assembly{nullptr};
-    MonoImage* image{nullptr};
-  }; // struct assembly
-
-  struct script {
-    std::string assembly;
-    std::string fullname;
-    MonoImage* image{nullptr};
-    MonoClass* klass{nullptr};
-    MonoClassField* behaviour_entity_field{nullptr};
-    MonoMethod* on_create{nullptr};
-    MonoMethod* on_update{nullptr};
-    MonoMethod* on_destroy{nullptr};
-  }; // struct script
-
   struct script_instance {
-    MonoObject* object{nullptr};
-    MonoMethod* on_create{nullptr};
-    MonoMethod* on_update{nullptr};
-    MonoMethod* on_destroy{nullptr};
+
   }; // struct script_instance
-
-  struct component_operations {
-    std::size_t size;
-    bool (*has)(sbx::scenes::scene&, sbx::scenes::node);
-    bool (*get)(sbx::scenes::scene&, sbx::scenes::node, void* out, std::size_t size);
-  }; // component_operations
-
-  auto _register_internal_calls() -> void;
-
-  auto _register_component_operations() -> void;
-
-  MonoDomain* _domain;
-  MonoImage* _engine_image;
-  MonoImage* _app_image;
-  MonoObject* _instance;
-
-  std::unordered_map<utility::hashed_string, component_operations> _component_operations;
-  std::unordered_map<utility::hashed_string, assembly> _assemblies;
-  std::unordered_map<utility::hashed_string, script> _scripts;
 
   std::unordered_map<scenes::node, std::vector<script_instance>> _instances;
 
