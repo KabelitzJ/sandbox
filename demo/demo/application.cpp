@@ -374,6 +374,8 @@ application::application()
 
   fox1 = scene.create_node("Fox");
 
+  scripting_module.instantiate(fox1, "res://scripts/test.lua");
+
   scene.add_material<sbx::scenes::material>("fox", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 0.7f, 0.8f, scene.get_image("fox_albedo"));
 
   scene.add_component<show_local_coordinates>(fox1);
