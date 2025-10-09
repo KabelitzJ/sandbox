@@ -175,36 +175,6 @@ public:
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
     auto& scene = scenes_module.scene();
 
-    // EASY_BLOCK("gathering scene data");
-
-    // auto camera_node = scene.camera();
-
-    // auto& camera = scene.get_component<scenes::camera>(camera_node);
-
-    // const auto& projection = camera.projection();
-
-    // _scene_uniform_handler.push("projection", projection);
-
-    // const auto& camera_transform = scene.get_component<scenes::transform>(camera_node);
-    // const auto& camera_global_transform = scene.get_component<scenes::global_transform>(camera_node);
-
-    // const auto view = math::matrix4x4::inverted(scene.world_transform(camera_node));
-
-    // _scene_uniform_handler.push("view", view);
-
-    // _scene_uniform_handler.push("camera_position", camera_transform.position());
-
-    // const auto& scene_light = scene.light();
-
-    // _scene_uniform_handler.push("light_space", scene.light_space());
-
-    // _scene_uniform_handler.push("light_direction", sbx::math::vector3::normalized(scene_light.direction()));
-    // _scene_uniform_handler.push("light_color", scene_light.color());
-
-    // _scene_uniform_handler.push("time", core::engine::time().value());
-
-    // EASY_END_BLOCK;
-
     auto& draw_list = pass().draw_list("static_mesh");
 
     auto& pipeline = graphics_module.get_resource<graphics::graphics_pipeline>(_pipeline);

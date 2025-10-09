@@ -1,6 +1,8 @@
 #include <libsbx/common/depth.slang>
 #include <libsbx/common/image.slang>
 
+#include <texture_sampler.slang>
+
 struct fs_in {
   float3 position : TEXCOORD0;
   float3 normal : TEXCOORD1;
@@ -28,7 +30,11 @@ struct fs_out {
 SamplerState images_sampler;
 
 [[vk::binding(2, 0)]]
-Texture2D<float4>  images[sbx::common::max_image_array_size];
+Texture2D<float4> images[sbx::common::max_image_array_size];
+
+texture_sampler<float4> get_texture_sampler(uint index) {
+  return texture_sampler<float4>(images[NonUniformResourceIndex(index)], images_sampler);
+}
 
 float4 get_albedo(fs_in in) {
   uint index = in.image_indices.x;
@@ -37,7 +43,7 @@ float4 get_albedo(fs_in in) {
     return in.color;
   }
 
-  float4 color = images[NonUniformResourceIndex(index)].Sample(images_sampler, in.uv);
+  float4 color = get_texture_sampler(index).sample(in.uv);
 
   return float4(color.rgb * in.color.rgb, 1.0);
 }
@@ -49,7 +55,7 @@ float3 get_normal(fs_in in) {
     return normalize(in.normal);
   }
 
-  float3 normal = images[NonUniformResourceIndex(index)].Sample(images_sampler, in.uv).xyz;
+  float3 normal = get_texture_sampler(index).sample(in.uv).xyz;
 
   return normalize(in.tbn0 * normal.x + in.tbn1 * normal.y + in.tbn2 * normal.z);
 }
@@ -61,7 +67,7 @@ float3 get_material(fs_in in) {
     return in.material;
   }
 
-  return images[NonUniformResourceIndex(index)].Sample(images_sampler, in.uv).rgb;
+  return get_texture_sampler(index).sample(in.uv).rgb;
 }
 
 [shader("fragment")]

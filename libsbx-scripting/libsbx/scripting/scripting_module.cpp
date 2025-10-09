@@ -200,7 +200,7 @@ auto scripting_module::_prepare_script(sol::table& script, const scenes::node no
     auto* accessor = static_cast<component_accessor*>(nullptr);
     
     if (which.get_type() != sol::type::string) {
-      utility::logger<"scripting">::warn("Onbject is not string");
+      utility::logger<"scripting">::warn("Object is not string");
 
       return sol::nil; 
     }

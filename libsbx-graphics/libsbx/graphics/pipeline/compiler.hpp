@@ -7,6 +7,9 @@
 
 #include <libsbx/utility/logger.hpp>
 #include <libsbx/utility/exception.hpp>
+#include <libsbx/utility/target.hpp>
+
+#include <libsbx/memory/blob.hpp>
 
 namespace sbx::graphics {
 
@@ -43,9 +46,8 @@ public:
     session_description.compilerOptionEntries = compiler_options.data();
     session_description.compilerOptionEntryCount = compiler_options.size();
 
-    auto preprocessor_macro_descriptions = std::array<slang::PreprocessorMacroDesc, 2>{
-      slang::PreprocessorMacroDesc{ "BIAS_VALUE", "1138" },
-      slang::PreprocessorMacroDesc{ "OTHER_MACRO", "float" }
+    auto preprocessor_macro_descriptions = std::array<slang::PreprocessorMacroDesc, 1u>{
+      slang::PreprocessorMacroDesc{ "SBX_DEBUG", utility::is_build_configuration_debug_v ? "1" : "0" }
     };
 
     session_description.preprocessorMacros = preprocessor_macro_descriptions.data();
@@ -58,7 +60,7 @@ public:
 
   }
 
-  auto compile(const std::filesystem::path& path, const std::filesystem::path& output, const std::vector<define>& defines = {}) -> bool {
+  auto compile(const std::filesystem::path& path, const std::vector<define>& defines = {}) -> Slang::ComPtr<slang::IBlob> {
     auto source = _read_file(path);
 
     source = _inject_defines(source, defines);
@@ -73,7 +75,7 @@ public:
       _diagnose_if_needed(diagnostic);
 
       if (!shader_module) {
-        return false;
+        return nullptr;
       }
     }
 
@@ -95,7 +97,7 @@ public:
       _diagnose_if_needed(diagnostic);
 
       if (!composed) {
-        return false;
+        return nullptr;
       }
     }
 
@@ -109,7 +111,7 @@ public:
       _diagnose_if_needed(diagnostic);
 
       if (!linked) {
-        return false;
+        return nullptr;
       }
     }
 
@@ -123,15 +125,11 @@ public:
       _diagnose_if_needed(diagnostic);
 
       if (!code) {
-        return false;
+        return nullptr;
       }
     }
 
-    if (!_write_spv_to_file(output, code)) {
-      return false;
-    }
-
-    return true;
+    return code;
   }
 
 private:
@@ -163,33 +161,6 @@ private:
     prologue += "\n";
 
     return prologue + source;
-  }
-
-  static auto _write_spv_to_file(const std::filesystem::path& path, slang::IBlob* blob) -> bool {
-    if (!blob || blob->getBufferSize() == 0) {
-      utility::logger<"graphics">::error("Empty or null SPIR-V blob");
-
-      return false;
-    }
-
-    auto out = std::ofstream{path, std::ios::binary};
-
-    if (!out) {
-      utility::logger<"graphics">::error("Failed to open file for writing: {}", path.string());
-
-      return false;
-    }
-
-    out.write(reinterpret_cast<const char*>(blob->getBufferPointer()), static_cast<std::streamsize>(blob->getBufferSize()));
-    out.close();
-
-    if (!out) {
-      utility::logger<"graphics">::error("Failed to write to file: {}", path.string());
-
-      return false;
-    }
-
-    return true;
   }
 
   Slang::ComPtr<slang::IGlobalSession> _global_session;

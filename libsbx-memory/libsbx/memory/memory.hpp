@@ -8,5 +8,6 @@
 #include <libsbx/memory/observer_ptr.hpp>
 #include <libsbx/memory/cache.hpp>
 #include <libsbx/memory/iterable_adaptor.hpp>
+#include <libsbx/memory/blob.hpp>
 
 #endif // LIBSBX_MEMORY_HPP_
