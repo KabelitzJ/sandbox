@@ -17,6 +17,7 @@
 #include <range/v3/view/enumerate.hpp>
 
 #include <libsbx/utility/logger.hpp>
+#include <libsbx/utility/enum.hpp>
 
 #include <libsbx/containers/octree.hpp>
 
@@ -64,6 +65,32 @@
 
 namespace sbx::models {
 
+enum class blend_mode : std::uint8_t { 
+  mix, 
+  add, 
+  multiply, 
+  premultiply
+}; // enum class blend_mode
+
+enum class cull_mode : std::uint8_t { 
+  back, 
+  front, 
+  off 
+}; // enum class cull_mode
+
+enum class depth_draw : std::uint8_t { 
+  opaque_only, 
+  always, 
+  disabled 
+}; // enum class depth_draw
+
+enum class alpha_mode : std::uint8_t { 
+  opaque, 
+  alpha, 
+  alpha_clip, 
+  alpha_hash 
+}; // enum class alpha_mode
+
 enum class material_feature : std::uint8_t {
   emission    = utility::bit_v<0>,
   normal_map  = utility::bit_v<1>, 
@@ -75,15 +102,14 @@ enum class material_feature : std::uint8_t {
 
 struct material_key {
 
-  std::uint64_t blend        : 2;
-  std::uint64_t cull         : 2;
-  std::uint64_t depth        : 2;
-  std::uint64_t alpha        : 2;
-  std::uint64_t double_sided : 1;
-  std::uint64_t alpha_to_cov : 1;
-  std::uint64_t _pad0        : 2;
-  std::uint64_t feature_mask : 16;
-  std::uint64_t _pad1        : 36;
+  std::uint64_t blend           : 2;
+  std::uint64_t cull            : 2;
+  std::uint64_t depth           : 2;
+  std::uint64_t alpha           : 2;
+  std::uint64_t is_double_sided : 1;
+  std::uint64_t _pad0           : 3;
+  std::uint64_t feature_mask    : 16;
+  std::uint64_t _pad1           : 36;
 
   static auto hash(const material_key& key) -> std::uint64_t {
     return utility::djb2_hash{}({reinterpret_cast<const std::uint8_t*>(&key), sizeof(material_key)});
@@ -96,7 +122,63 @@ struct material_key {
 }; // struct material_key
 
 static_assert(sizeof(material_key) == sizeof(std::uint64_t));
-static_assert(alignof(material_key) >= alignof(std::uint64_t));
+static_assert(alignof(material_key) == alignof(std::uint64_t));
+
+struct alignas(16) material_data_test {
+  std::uint32_t albedo_index;
+  std::uint32_t normal_index;
+  std::uint32_t mrao_index;
+  std::uint32_t _pad0;
+
+  math::color base_color;
+  math::color emissive_color;
+
+  std::float_t metallic;
+  std::float_t roughness;
+  std::float_t emissive_strength;
+  std::float_t alpha_cutoff;
+}; // struct material_data_test
+
+static_assert(sizeof(material_data_test) <= 256u);
+static_assert(alignof(material_data_test) == 16u);
+
+struct material {
+
+  math::color base_color{1, 1, 1, 1};
+  std::float_t metallic{0.0f};
+  std::float_t roughness{0.5f};
+  math::color emissive_color{0, 0, 0, 1};
+  std::float_t emissive_strength{0.0f};
+  std::float_t alpha_cutoff{0.5f};
+
+  graphics::image2d_handle albedo{};
+  graphics::image2d_handle normal{};
+  graphics::image2d_handle mrao{};
+
+  blend_mode blend{blend_mode::mix};
+  cull_mode cull {cull_mode::back};
+  depth_draw depth{depth_draw::opaque_only};
+  alpha_mode alpha{alpha_mode::opaque};
+  bool is_double_sided{false};
+
+  utility::bit_field<material_feature> features;
+
+  auto build_key() -> material_key {
+    auto key = material_key{};
+
+    key.blend = static_cast<std::uint64_t>(blend);
+    key.cull  = static_cast<std::uint64_t>(cull);
+    key.depth = static_cast<std::uint64_t>(depth);
+    key.alpha = static_cast<std::uint64_t>(alpha);
+
+    key.is_double_sided = is_double_sided;
+
+    key.feature_mask = features.as<std::uint64_t>();
+
+    return key;
+  }
+
+}; // struct material
 
 class material_subrenderer final : public graphics::subrenderer {
 

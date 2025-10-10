@@ -61,16 +61,16 @@ public:
   }
 
   auto compile(const std::filesystem::path& path, const std::vector<define>& defines = {}) -> Slang::ComPtr<slang::IBlob> {
-    auto source = _read_file(path);
+    const auto source = _read_file(path);
 
-    source = _inject_defines(source, defines);
+    const auto complete_source = _inject_defines(source, defines);
 
     auto shader_module = Slang::ComPtr<slang::IModule>{};
 
     {
       auto diagnostic = Slang::ComPtr<slang::IBlob>{};
 
-      shader_module = _session->loadModuleFromSourceString(path.filename().string().c_str(), nullptr, source.c_str(), diagnostic.writeRef());
+      shader_module = _session->loadModuleFromSourceString(path.filename().string().c_str(), nullptr, complete_source.c_str(), diagnostic.writeRef());
 
       _diagnose_if_needed(diagnostic);
 
@@ -151,6 +151,10 @@ private:
   }
 
   static auto _inject_defines(const std::string& source, const std::vector<define>& defines) -> std::string {
+    if (defines.empty()) {
+      return source;
+    }
+
     auto prologue = std::string{};
     prologue.reserve(64u * defines.size());
 

@@ -121,6 +121,11 @@ public:
     return from_underlying<value_type>(_value);
   }
 
+  template<std::integral Type>
+  constexpr auto as() const -> Type {
+    return static_cast<Type>(_value);
+  }
+
 private:
 
   underlying_type _value;
