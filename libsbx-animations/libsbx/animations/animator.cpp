@@ -225,8 +225,9 @@ auto animator::evaluate_locals(const skeleton& skeleton) -> std::vector<bone_tra
 
 static auto locals_to_globals(const skeleton& skeleton, const std::vector<animator::bone_transform>& local_transforms) -> std::vector<math::matrix4x4> {
   const auto bone_count = skeleton.bone_count();
-  auto global = utility::make_vector<math::matrix4x4>(bone_count, math::matrix4x4::identity);
   const auto& bones = skeleton.bones();
+
+  auto global = utility::make_vector<math::matrix4x4>(bone_count, math::matrix4x4::identity);
 
   for (auto i = 0; i < bone_count; ++i) {
     const auto& t = local_transforms[i];
@@ -245,14 +246,15 @@ static auto locals_to_globals(const skeleton& skeleton, const std::vector<animat
 
 static auto globals_to_skin(const skeleton& skeleton, const std::vector<math::matrix4x4>& globals) -> std::vector<math::matrix4x4> {
   const auto bone_count = skeleton.bone_count();
-  auto final_m = utility::make_vector<math::matrix4x4>(bone_count, math::matrix4x4::identity);
   const auto& bones = skeleton.bones();
 
+  auto skin = utility::make_vector<math::matrix4x4>(bone_count, math::matrix4x4::identity);
+
   for (auto i = 0; i < bone_count; ++i) {
-    final_m[i] = skeleton.inverse_root_transform() * globals[i] * bones[i].inverse_bind_matrix;
+    skin[i] = skeleton.inverse_root_transform() * globals[i] * bones[i].inverse_bind_matrix;
   }
 
-  return final_m;
+  return skin;
 }
 
 auto animator::evaluate_pose(const skeleton& skeleton, const std::vector<bone_transform>& locals) -> std::vector<math::matrix4x4> {
