@@ -264,16 +264,6 @@ graphics_pipeline::graphics_pipeline(const std::filesystem::path& path, const re
   multisample_state.sampleShadingEnable = false;
   multisample_state.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 
-  auto color_blend_attachment_enabled = VkPipelineColorBlendAttachmentState{};
-  color_blend_attachment_enabled.blendEnable = true;
-  color_blend_attachment_enabled.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-  color_blend_attachment_enabled.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
-  color_blend_attachment_enabled.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-  color_blend_attachment_enabled.colorBlendOp = VK_BLEND_OP_ADD;
-  color_blend_attachment_enabled.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-  color_blend_attachment_enabled.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-  color_blend_attachment_enabled.alphaBlendOp = VK_BLEND_OP_ADD;
-
   auto color_blend_attachment_disabled = VkPipelineColorBlendAttachmentState{};
   color_blend_attachment_disabled.blendEnable = false;
   color_blend_attachment_disabled.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
