@@ -50,21 +50,21 @@ public:
 
       const auto& skeleton = mesh.skeleton();
 
-      auto pose = animator.evaluate_pose(skeleton);
+      auto locals = animator.evaluate_locals(skeleton);
 
       const auto& nodes = skinned_mesh.nodes();
 
       for (auto i = 0u; i < nodes.size(); ++i) {
         auto& transform = scene.get_component<scenes::transform>(nodes[i]);
 
-        const auto [position, rotation, scale] = math::decompose(pose[i]);
+        const auto& local = locals[i];
 
-        transform.set_position(position);
-        transform.set_rotation(rotation);
-        transform.set_scale(scale);
+        transform.set_position(local.position);
+        transform.set_rotation(local.rotation);
+        transform.set_scale(local.scale);
       }
 
-      skinned_mesh.set_pose(std::move(pose));
+      skinned_mesh.set_pose(animator.evaluate_pose(skeleton, std::move(locals)));
     }
   }
 

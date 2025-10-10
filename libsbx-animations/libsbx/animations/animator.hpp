@@ -48,7 +48,11 @@ public:
     std::unordered_map<utility::hashed_string, bool> trigger_values;
   }; // struct parameters
 
-public:
+  struct bone_transform {
+    math::vector3 position{math::vector3::zero};
+    math::quaternion rotation{math::quaternion::identity};
+    math::vector3 scale{math::vector3::one};
+  }; // struct bone_transform
 
   auto add_state(const state& new_state) -> void;
 
@@ -66,7 +70,9 @@ public:
 
   auto update(const std::float_t delta_time) -> void;
 
-  auto evaluate_pose(const skeleton& skeleton) -> std::vector<math::matrix4x4>;
+  auto evaluate_locals(const skeleton& skeleton) -> std::vector<bone_transform>;
+
+  auto evaluate_pose(const skeleton& skeleton, std::vector<bone_transform>&& locals = {}) -> std::vector<math::matrix4x4>;
 
   auto current_state_name() const -> const utility::hashed_string&;
 

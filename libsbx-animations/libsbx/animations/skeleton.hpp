@@ -53,20 +53,13 @@ public:
 
   auto name_for_bone(const std::size_t index) const -> const utility::hashed_string&;
 
-  auto bone_index(const utility::hashed_string& name) const -> std::optional<std::uint32_t> {
-    for (auto i = 0u; i < _bone_names.size(); ++i) {
-      if (_bone_names[i] == name) {
-        return i;
-      }
-    }
-
-    return std::nullopt;
-  }
+  auto bone_index(const utility::hashed_string& name) const -> std::optional<std::uint32_t>;
 
 private:
 
   std::vector<bone> _bones;
-  std::vector<utility::hashed_string> _bone_names;
+  std::vector<utility::hashed_string> _bone_names_by_id;
+  std::unordered_map<utility::hashed_string, std::uint32_t> _bone_id_by_name;
   
   math::matrix4x4 _inverse_root_transform;
   math::matrix4x4 _root_transform;

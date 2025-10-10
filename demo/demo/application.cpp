@@ -391,7 +391,7 @@ application::application()
     scene.add_component<sbx::scenes::static_mesh>(test, scene.get_mesh("sphere"), scene.get_material("helmet"));
 
     auto& test_transform = scene.get_component<sbx::scenes::transform>(test);
-    test_transform.set_scale(sbx::math::vector3{6.0f, 6.0f, 6.0f});
+    test_transform.set_scale(sbx::math::vector3{10.0f, 10.0f, 10.0f});
   }
 
   auto& fox_animator = scene.add_component<sbx::animations::animator>(fox1);

@@ -4,16 +4,22 @@ namespace sbx::animations {
 
 auto skeleton::reserve(const std::size_t size) -> void {
   _bones.reserve(size);
-  _bone_names.reserve(size);
+  _bone_names_by_id.reserve(size);
+  _bone_id_by_name.reserve(size);
 }
 
 auto skeleton::shrink_to_fit() -> void {
   _bones.shrink_to_fit();
-  _bone_names.shrink_to_fit();
+  _bone_id_by_name.shrink_to_fit();
 }
 
 auto skeleton::add_bone(const std::string& name, const bone& bone) -> void {
-  _bone_names.push_back(name);
+  const auto id = _bone_names_by_id.size();
+
+  _bone_names_by_id.push_back(name);
+
+  _bone_id_by_name.emplace(name, id);
+
   _bones.push_back(bone);
 }
 
@@ -46,7 +52,7 @@ auto skeleton::evaluate_pose(const animation& animation, std::float_t time) cons
 
   for (std::uint32_t bone_id = 0; bone_id < _bones.size(); ++bone_id) {
     const auto& bone = _bones[bone_id];
-    const auto& bone_name = _bone_names[bone_id];
+    const auto& bone_name = _bone_names_by_id[bone_id];
 
     auto local_transform = bone.local_bind_matrix;
 
@@ -102,7 +108,15 @@ auto skeleton::bone_count() const -> std::uint32_t {
 }
 
 auto skeleton::name_for_bone(const std::size_t index) const -> const utility::hashed_string& {
-  return _bone_names[index];
+  return _bone_names_by_id[index];
+}
+
+auto skeleton::bone_index(const utility::hashed_string& name) const -> std::optional<std::uint32_t> {
+  if (auto entry = _bone_id_by_name.find(name); entry != _bone_id_by_name.cend()) {
+    return entry->second;
+  }
+
+  return std::nullopt;
 }
 
 } // namespace sbx::animations

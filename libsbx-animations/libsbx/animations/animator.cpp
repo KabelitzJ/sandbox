@@ -2,36 +2,30 @@
 
 namespace sbx::animations {
 
-struct bone_transform {
-  math::vector3 position{math::vector3::zero};
-  math::quaternion rotation{math::quaternion::identity};
-  math::vector3 scale{math::vector3::one};
-}; // struct bone_transform
-
-static auto lerp_bone_transform(const bone_transform& a, const bone_transform& b, const std::float_t time) -> bone_transform {
-  return bone_transform{
+static auto lerp_bone_transform(const animator::bone_transform& a, const animator::bone_transform& b, const std::float_t time) -> animator::bone_transform {
+  return animator::bone_transform{
     math::vector3::lerp(a.position, b.position, time),
     math::quaternion::slerp(a.rotation, b.rotation,time),
     math::vector3::lerp(a.scale, b.scale, time)
   };
 }
 
-static auto sample_clip_locals(const skeleton& skeleton, const math::uuid& animation_id, const std::float_t time) -> std::vector<bone_transform> {
+static auto sample_clip_locals(const skeleton& skeleton, const math::uuid& animation_id, const std::float_t time) -> std::vector<animator::bone_transform> {
   auto& assets_module = core::engine::get_module<assets::assets_module>();
 
   auto& animation = assets_module.get_asset<animations::animation>(animation_id);
 
-  auto locals = utility::make_vector<bone_transform>(skeleton.bone_count());
+  auto locals = utility::make_vector<animator::bone_transform>(skeleton.bone_count());
 
   const auto& bones = skeleton.bones();
   const auto& tracks = animation.track_map();
 
-  for (std::uint32_t i = 0; i < skeleton.bone_count(); ++i) {
+  for (auto i = 0; i < skeleton.bone_count(); ++i) {
     const auto bone_name = skeleton.name_for_bone(i);
 
     auto entry = tracks.find(utility::hashed_string{bone_name});
 
-    auto transform = bone_transform{};
+    auto transform = animator::bone_transform{};
 
     if (entry != tracks.end()) {
       const auto& track = entry->second;
@@ -55,31 +49,31 @@ static auto sample_clip_locals(const skeleton& skeleton, const math::uuid& anima
   return locals;
 }
 
-static auto locals_to_final_matrices(const skeleton& skeleton, const std::vector<bone_transform>& local_transforms) -> std::vector<math::matrix4x4> {
-  const auto bone_count = skeleton.bone_count();
+// static auto locals_to_final_matrices(const skeleton& skeleton, const std::vector<animator::bone_transform>& local_transforms) -> std::vector<math::matrix4x4> {
+//   const auto bone_count = skeleton.bone_count();
 
-  auto global_matrices = utility::make_vector<math::matrix4x4>(bone_count, math::matrix4x4::identity);
-  auto final_matrices = utility::make_vector<math::matrix4x4>(bone_count, math::matrix4x4::identity);
+//   auto global_matrices = utility::make_vector<math::matrix4x4>(bone_count, math::matrix4x4::identity);
+//   auto final_matrices = utility::make_vector<math::matrix4x4>(bone_count, math::matrix4x4::identity);
 
-  const auto& bones = skeleton.bones();
+//   const auto& bones = skeleton.bones();
 
-  for (std::uint32_t bone_index = 0; bone_index < bone_count; ++bone_index) {
-    const auto& transform = local_transforms[bone_index];
+//   for (std::uint32_t bone_index = 0; bone_index < bone_count; ++bone_index) {
+//     const auto& transform = local_transforms[bone_index];
 
-    const auto translation_matrix = math::matrix4x4::translated(math::matrix4x4::identity, transform.position);
-    const auto rotation_matrix = math::matrix_cast<4, 4>(transform.rotation);
-    const auto scale_matrix = math::matrix4x4::scaled(math::matrix4x4::identity, transform.scale);
+//     const auto translation_matrix = math::matrix4x4::translated(math::matrix4x4::identity, transform.position);
+//     const auto rotation_matrix = math::matrix_cast<4, 4>(transform.rotation);
+//     const auto scale_matrix = math::matrix4x4::scaled(math::matrix4x4::identity, transform.scale);
 
-    const auto local_matrix = translation_matrix * rotation_matrix * scale_matrix;
+//     const auto local_matrix = translation_matrix * rotation_matrix * scale_matrix;
 
-    const auto global_matrix = (bones[bone_index].parent_id != skeleton::bone::null) ? global_matrices[bones[bone_index].parent_id] * local_matrix : local_matrix;
+//     const auto global_matrix = (bones[bone_index].parent_id != skeleton::bone::null) ? global_matrices[bones[bone_index].parent_id] * local_matrix : local_matrix;
 
-    final_matrices[bone_index] = skeleton.inverse_root_transform() * global_matrix * bones[bone_index].inverse_bind_matrix;
-    global_matrices[bone_index] = std::move(global_matrix);
-  }
+//     final_matrices[bone_index] = skeleton.inverse_root_transform() * global_matrix * bones[bone_index].inverse_bind_matrix;
+//     global_matrices[bone_index] = std::move(global_matrix);
+//   }
 
-  return final_matrices;
-}
+//   return final_matrices;
+// }
 
 static auto _clip_duration(const math::uuid& animation_id) ->  std::float_t {
   auto& assets_module = core::engine::get_module<assets::assets_module>();
@@ -199,29 +193,80 @@ void animator::update(const std::float_t delta_time) {
   }
 }
 
-auto animator::evaluate_pose(const skeleton& skeleton) -> std::vector<math::matrix4x4> {
+auto animator::evaluate_locals(const skeleton& skeleton) -> std::vector<bone_transform> {
+  if (!_has_valid_clip(_current_state)) {
+    auto locals = utility::make_vector<bone_transform>(skeleton.bone_count());
+    const auto& bones = skeleton.bones();
+
+    for (auto i = 0; i < skeleton.bone_count(); ++i) {
+      const auto [p, r, s] = math::decompose(bones[i].local_bind_matrix);
+      locals[i] = bone_transform{p, r, s};
+    }
+
+    return locals;
+  }
+
+  if (_is_in_transition && _has_valid_clip(_next_state) && _cross_fade_duration > 0.0f) {
+    const auto blend = std::clamp(_cross_fade_elapsed / _cross_fade_duration, 0.0f, 1.0f);
+    auto a = sample_clip_locals(skeleton, _current_state.animation_id, _current_state_time);
+    auto b = sample_clip_locals(skeleton, _next_state.animation_id, _next_state_time);
+
+    auto out = utility::make_vector<bone_transform>(a.size());
+
+    for (size_t i = 0; i < out.size(); ++i) {
+      out[i] = lerp_bone_transform(a[i], b[i], blend);
+    }
+
+    return out;
+  }
+
+  return sample_clip_locals(skeleton, _current_state.animation_id, _current_state_time);
+}
+
+static auto locals_to_globals(const skeleton& skeleton, const std::vector<animator::bone_transform>& local_transforms) -> std::vector<math::matrix4x4> {
+  const auto bone_count = skeleton.bone_count();
+  auto global = utility::make_vector<math::matrix4x4>(bone_count, math::matrix4x4::identity);
+  const auto& bones = skeleton.bones();
+
+  for (auto i = 0; i < bone_count; ++i) {
+    const auto& t = local_transforms[i];
+
+    const auto T = math::matrix4x4::translated(math::matrix4x4::identity, t.position);
+    const auto R = math::matrix_cast<4, 4>(t.rotation);
+    const auto S = math::matrix4x4::scaled(math::matrix4x4::identity, t.scale);
+
+    const auto local = T * R * S;
+
+    global[i] = (bones[i].parent_id != skeleton::bone::null) ? global[bones[i].parent_id] * local : local;
+  }
+
+  return global;
+}
+
+static auto globals_to_skin(const skeleton& skeleton, const std::vector<math::matrix4x4>& globals) -> std::vector<math::matrix4x4> {
+  const auto bone_count = skeleton.bone_count();
+  auto final_m = utility::make_vector<math::matrix4x4>(bone_count, math::matrix4x4::identity);
+  const auto& bones = skeleton.bones();
+
+  for (auto i = 0; i < bone_count; ++i) {
+    final_m[i] = skeleton.inverse_root_transform() * globals[i] * bones[i].inverse_bind_matrix;
+  }
+
+  return final_m;
+}
+
+auto animator::evaluate_pose(const skeleton& skeleton, std::vector<bone_transform>&& locals) -> std::vector<math::matrix4x4> {
   if (!_has_valid_clip(_current_state)) {
     return utility::make_vector<math::matrix4x4>(skeleton.bone_count(), math::matrix4x4::identity);
   }
 
-  if (_is_in_transition && _has_valid_clip(_next_state) && _cross_fade_duration > 0.0f) {
-    const auto blend_factor = std::clamp(_cross_fade_elapsed / _cross_fade_duration, 0.0f, 1.0f);
-
-    auto current_locals = sample_clip_locals(skeleton, _current_state.animation_id, _current_state_time);
-    auto next_locals = sample_clip_locals(skeleton, _next_state.animation_id, _next_state_time);
-
-    auto blended_locals = utility::make_vector<bone_transform>(current_locals.size());
-
-    for (size_t i = 0; i < blended_locals.size(); ++i) {
-      blended_locals[i] = lerp_bone_transform(current_locals[i], next_locals[i], blend_factor);
-    }
-
-    return locals_to_final_matrices(skeleton, blended_locals);
-  } else {
-    auto current_locals = sample_clip_locals(skeleton, _current_state.animation_id, _current_state_time);
-
-    return locals_to_final_matrices(skeleton, current_locals);
+  if (locals.empty()) {
+    locals = evaluate_locals(skeleton);
   }
+
+  auto globals = locals_to_globals(skeleton, locals);
+
+  return globals_to_skin(skeleton, globals);
 }
 
 auto animator::current_state_name() const -> const utility::hashed_string& { 
