@@ -72,7 +72,7 @@ public:
 
   auto evaluate_locals(const skeleton& skeleton) -> std::vector<bone_transform>;
 
-  auto evaluate_pose(const skeleton& skeleton, std::vector<bone_transform>&& locals = {}) -> std::vector<math::matrix4x4>;
+  auto evaluate_pose(const skeleton& skeleton, const std::vector<bone_transform>& locals) -> std::vector<math::matrix4x4>;
 
   auto current_state_name() const -> const utility::hashed_string&;
 

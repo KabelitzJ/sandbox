@@ -383,7 +383,7 @@ application::application()
   // scene.add_component<sbx::scenes::skinned_mesh>(fox1, scene.get_mesh("fox"), scene.get_animation("Walk"), scene.get_material("fox"));
   animations_module.add_animation(fox1, scene.get_mesh("fox"), scene.get_animation("Walk"), scene.get_material("fox"));
 
-  auto fox_tail_node = animations_module.find_skeleton_node(fox1, "b_Tail03_014");
+  auto fox_tail_node = animations_module.find_skeleton_node(fox1, "b_LeftFoot02_018");
 
   if (fox_tail_node != sbx::scenes::node::null) {
     auto test = scene.create_child_node(fox_tail_node, "Test");

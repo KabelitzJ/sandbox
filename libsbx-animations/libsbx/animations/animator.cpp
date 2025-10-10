@@ -255,13 +255,11 @@ static auto globals_to_skin(const skeleton& skeleton, const std::vector<math::ma
   return final_m;
 }
 
-auto animator::evaluate_pose(const skeleton& skeleton, std::vector<bone_transform>&& locals) -> std::vector<math::matrix4x4> {
+auto animator::evaluate_pose(const skeleton& skeleton, const std::vector<bone_transform>& locals) -> std::vector<math::matrix4x4> {
+  utility::assert_that(skeleton.bone_count() == locals.size(), "Skeleton missmatch");
+
   if (!_has_valid_clip(_current_state)) {
     return utility::make_vector<math::matrix4x4>(skeleton.bone_count(), math::matrix4x4::identity);
-  }
-
-  if (locals.empty()) {
-    locals = evaluate_locals(skeleton);
   }
 
   auto globals = locals_to_globals(skeleton, locals);

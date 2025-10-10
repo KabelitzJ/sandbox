@@ -10,7 +10,7 @@ auto skeleton::reserve(const std::size_t size) -> void {
 
 auto skeleton::shrink_to_fit() -> void {
   _bones.shrink_to_fit();
-  _bone_id_by_name.shrink_to_fit();
+  _bone_names_by_id.shrink_to_fit();
 }
 
 auto skeleton::add_bone(const std::string& name, const bone& bone) -> void {
