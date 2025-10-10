@@ -17,6 +17,7 @@
 #include <range/v3/view/enumerate.hpp>
 
 #include <libsbx/utility/logger.hpp>
+#include <libsbx/utility/hash.hpp>
 
 #include <libsbx/containers/octree.hpp>
 
@@ -101,10 +102,6 @@ struct static_mesh_subrenderer_traits<scenes::material_type::transparent> {
 
 } // namespace detail
 
-struct material {
-
-}; // struct material
-
 template<scenes::material_type Type>
 class static_mesh_subrenderer final : public graphics::subrenderer {
 
@@ -143,7 +140,7 @@ class static_mesh_subrenderer final : public graphics::subrenderer {
 
 public:
 
-  static_mesh_subrenderer(const std::filesystem::path& path, const graphics::render_graph::graphics_pass& pass)
+  static_mesh_subrenderer(const graphics::render_graph::graphics_pass& pass, const std::filesystem::path& path)
   : graphics::subrenderer{pass},
     _pipeline{_create_pipeline(path, pass)},
     _push_handler{_pipeline},

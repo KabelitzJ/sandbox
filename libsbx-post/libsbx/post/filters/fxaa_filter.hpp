@@ -11,8 +11,8 @@ class fxaa_filter final : public filter {
 
 public:
 
-  fxaa_filter(const std::filesystem::path& path, const graphics::render_graph::graphics_pass& pass, const std::string& in_image)
-  : base_type{path, pass},
+  fxaa_filter(const graphics::render_graph::graphics_pass& pass, const std::filesystem::path& path, const std::string& in_image)
+  : base_type{pass, path},
     _in_image{in_image} { }
 
   ~fxaa_filter() override = default;

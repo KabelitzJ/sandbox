@@ -62,7 +62,7 @@ class skybox_subrenderer : public sbx::graphics::subrenderer {
 
 public:
 
-  skybox_subrenderer(const std::filesystem::path& path, const graphics::render_graph::graphics_pass& pass)
+  skybox_subrenderer(const graphics::render_graph::graphics_pass& pass, const std::filesystem::path& path)
   : graphics::subrenderer{pass},
     _pipeline{path, pass},
     _descriptor_handler{_pipeline, 0u},

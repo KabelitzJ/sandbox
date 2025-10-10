@@ -60,11 +60,11 @@ public:
 protected:
 
   template<typename Type, typename... Args>
-  requires (std::is_constructible_v<Type, const std::filesystem::path&, const render_graph::graphics_pass&, Args...>)
-  auto add_subrenderer(const std::filesystem::path& path, const render_graph::graphics_pass& pass, Args&&... args) -> Type& {
+  requires (std::is_constructible_v<Type, const render_graph::graphics_pass&, Args...>)
+  auto add_subrenderer(const render_graph::graphics_pass& pass, Args&&... args) -> Type& {
     auto& subrenderers = _subrenderers[pass.name()];
 
-    subrenderers.emplace_back(std::make_unique<Type>(path, pass, std::forward<Args>(args)...));
+    subrenderers.emplace_back(std::make_unique<Type>(pass, std::forward<Args>(args)...));
 
     return *static_cast<Type*>(subrenderers.back().get());
   }

@@ -126,16 +126,16 @@ renderer::renderer()
   add_draw_list<sbx::models::static_mesh_draw_list>("static_mesh");
 
   // Shadow pass
-  add_subrenderer<sbx::shadows::shadow_subrenderer>("res://shaders/shadow", shadow);
+  add_subrenderer<sbx::shadows::shadow_subrenderer>(shadow, "res://shaders/shadow");
 
   // Deferred rendering pass
-  add_subrenderer<sbx::models::opaque_static_mesh_subrenderer>("res://shaders/deferred_static_opaque", deferred);
-  // add_subrenderer<sbx::models::masked_static_mesh_subrenderer>("res://shaders/deferred_static_masked", deferred);
-  add_subrenderer<sbx::animations::skinned_mesh_subrenderer>("res://shaders/deferred_skinned_opaque", deferred);
+  add_subrenderer<sbx::models::opaque_static_mesh_subrenderer>(deferred, "res://shaders/deferred_static_opaque");
+  // add_subrenderer<sbx::models::masked_static_mesh_subrenderer>(deferred, "res://shaders/deferred_static_masked");
+  add_subrenderer<sbx::animations::skinned_mesh_subrenderer>(deferred, "res://shaders/deferred_skinned_opaque");
 
   
   // Transparency pass
-  add_subrenderer<sbx::models::transparent_static_mesh_subrenderer>("res://shaders/deferred_static_transparent", transparency);
+  add_subrenderer<sbx::models::transparent_static_mesh_subrenderer>(transparency, "res://shaders/deferred_static_transparent");
   
   // Resolve pass
   auto resolve_opaque_attachment_names = std::vector<std::pair<std::string, std::string>>{
@@ -147,26 +147,26 @@ renderer::renderer()
     // {"object_id_image", "object_id"}
   };
 
-  add_subrenderer<sbx::post::resolve_opaque_filter>("res://shaders/resolve_opaque", resolve, std::move(resolve_opaque_attachment_names));
+  add_subrenderer<sbx::post::resolve_opaque_filter>(resolve, "res://shaders/resolve_opaque", std::move(resolve_opaque_attachment_names));
 
-  add_subrenderer<sbx::scenes::skybox_subrenderer>("res://shaders/skybox", resolve);
+  add_subrenderer<sbx::scenes::skybox_subrenderer>(resolve, "res://shaders/skybox");
 
   auto resolve_transparent_attachment_names = std::vector<std::pair<std::string, std::string>>{
     {"accum_image", "accum"},
     {"revealage_image", "revealage"}
   };
 
-  add_subrenderer<sbx::post::resolve_transparent_filter>("res://shaders/resolve_transparent", resolve, std::move(resolve_transparent_attachment_names));
+  add_subrenderer<sbx::post::resolve_transparent_filter>(resolve, "res://shaders/resolve_transparent", std::move(resolve_transparent_attachment_names));
 
-  add_subrenderer<sbx::scenes::grid_subrenderer>("res://shaders/grid", resolve);
+  add_subrenderer<sbx::scenes::grid_subrenderer>(resolve, "res://shaders/grid");
 
-  add_subrenderer<sbx::scenes::debug_subrenderer>("res://shaders/debug", resolve);
+  add_subrenderer<sbx::scenes::debug_subrenderer>(resolve, "res://shaders/debug");
 
   // Post-processing pass
-  add_subrenderer<sbx::post::fxaa_filter>("res://shaders/fxaa", post, "resolve");
+  add_subrenderer<sbx::post::fxaa_filter>(post, "res://shaders/fxaa", "resolve");
 
   // Editor pass
-  add_subrenderer<sbx::editor::editor_subrenderer>("res://shaders/editor", editor, "post");
+  add_subrenderer<sbx::editor::editor_subrenderer>(editor, "res://shaders/editor", "post");
 }
 
 } // namespace demo

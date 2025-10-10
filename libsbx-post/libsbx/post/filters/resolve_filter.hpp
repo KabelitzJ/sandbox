@@ -48,8 +48,8 @@ class resolve_filter final : public filter {
 
 public:
 
-  resolve_filter(const std::filesystem::path& path, const graphics::render_graph::graphics_pass& pass, std::vector<std::pair<std::string, std::string>>&& attachment_names)
-  : base_type{path, pass, pipeline_definition},
+  resolve_filter(const graphics::render_graph::graphics_pass& pass, const std::filesystem::path& path, std::vector<std::pair<std::string, std::string>>&& attachment_names)
+  : base_type{pass, path, pipeline_definition},
     _attachment_names{std::move(attachment_names)} { }
 
   ~resolve_filter() override = default;

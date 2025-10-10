@@ -53,7 +53,7 @@ class gizmos_subrenderer final : public graphics::subrenderer {
 
 public:
 
-  gizmos_subrenderer(const std::filesystem::path& path, const graphics::render_graph::graphics_pass& pass, const std::string& depth_image)
+  gizmos_subrenderer(const graphics::render_graph::graphics_pass& pass, const std::filesystem::path& path, const std::string& depth_image)
   : graphics::subrenderer{pass},
     _depth_image{depth_image},
     _pipeline{path, pass} { }

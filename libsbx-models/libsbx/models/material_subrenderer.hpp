@@ -64,6 +64,40 @@
 
 namespace sbx::models {
 
+enum class material_feature : std::uint8_t {
+  emission    = utility::bit_v<0>,
+  normal_map  = utility::bit_v<1>, 
+  occlusion   = utility::bit_v<2>, 
+  height      = utility::bit_v<3>, 
+  clearcoat   = utility::bit_v<4>, 
+  anisotropy  = utility::bit_v<5>
+}; // struct material_feature
+
+struct material_key {
+
+  std::uint64_t blend        : 2;
+  std::uint64_t cull         : 2;
+  std::uint64_t depth        : 2;
+  std::uint64_t alpha        : 2;
+  std::uint64_t double_sided : 1;
+  std::uint64_t alpha_to_cov : 1;
+  std::uint64_t _pad0        : 2;
+  std::uint64_t feature_mask : 16;
+  std::uint64_t _pad1        : 36;
+
+  static auto hash(const material_key& key) -> std::uint64_t {
+    return utility::djb2_hash{}({reinterpret_cast<const std::uint8_t*>(&key), sizeof(material_key)});
+  }
+
+  auto operator==(const material_key& other) const -> bool { 
+    return std::memcmp(this, &other, sizeof(material_key)) == 0; 
+  }
+
+}; // struct material_key
+
+static_assert(sizeof(material_key) == sizeof(std::uint64_t));
+static_assert(alignof(material_key) >= alignof(std::uint64_t));
+
 class material_subrenderer final : public graphics::subrenderer {
 
   inline static const auto pipeline_definition = graphics::pipeline_definition{
@@ -84,13 +118,8 @@ class material_subrenderer final : public graphics::subrenderer {
 
 public:
 
-  material_subrenderer(const std::filesystem::path& path, const graphics::render_graph::graphics_pass& pass)
-  : graphics::subrenderer{pass},
-    _pipeline{_create_pipeline(path, pass)},
-    _push_handler{_pipeline},
-    _scene_descriptor_handler{_pipeline, 0u} {
-
-  }
+  material_subrenderer(const graphics::render_graph::graphics_pass& pass)
+  : graphics::subrenderer{pass} { }
 
   ~material_subrenderer() override = default;
 
@@ -124,11 +153,6 @@ private:
   }; // struct pipeline_data
 
   std::unordered_map<std::uint64_t, pipeline_data> _pipeline_cache;
-
-  graphics::graphics_pipeline_handle _pipeline;
-
-  graphics::push_handler _push_handler;
-  graphics::descriptor_handler _scene_descriptor_handler;
 
 }; // class material_subrenderer
 

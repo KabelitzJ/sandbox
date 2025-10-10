@@ -44,7 +44,7 @@ class debug_subrenderer final : public sbx::graphics::subrenderer {
 
 public:
 
-  debug_subrenderer(const std::filesystem::path& path, const sbx::graphics::render_graph::graphics_pass& pass)
+  debug_subrenderer(const sbx::graphics::render_graph::graphics_pass& pass, const std::filesystem::path& path)
   : sbx::graphics::subrenderer{pass},
     _pipeline{path, pass},
     _push_handler{_pipeline},

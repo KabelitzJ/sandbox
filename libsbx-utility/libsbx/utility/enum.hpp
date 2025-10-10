@@ -5,6 +5,7 @@
 #include <array>
 #include <ranges>
 #include <optional>
+#include <string_view>
 
 #include <libsbx/utility/string_literal.hpp>
 

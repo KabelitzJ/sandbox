@@ -155,7 +155,7 @@ struct djb2_hash {
 
   using hash_type = Hash;
 
-  inline constexpr auto operator()(std::span<std::uint8_t> buffer) const noexcept -> hash_type {
+  inline constexpr auto operator()(std::span<const std::uint8_t> buffer) const noexcept -> hash_type {
     // Implementation from https://theartincode.stanis.me/008-djb2/
     auto hash = hash_type{5381};
 

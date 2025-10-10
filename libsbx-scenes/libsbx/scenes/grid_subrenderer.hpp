@@ -39,7 +39,7 @@ class grid_subrenderer final : public sbx::graphics::subrenderer {
 
 public:
 
-  grid_subrenderer(const std::filesystem::path& path, const sbx::graphics::render_graph::graphics_pass& pass)
+  grid_subrenderer(const sbx::graphics::render_graph::graphics_pass& pass, const std::filesystem::path& path)
   : sbx::graphics::subrenderer{pass},
     _pipeline{path, pass},
     _push_handler{_pipeline},
