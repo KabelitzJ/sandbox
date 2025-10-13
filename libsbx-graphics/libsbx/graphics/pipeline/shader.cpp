@@ -16,13 +16,34 @@
 
 namespace sbx::graphics {
 
-shader::shader(const std::filesystem::path& path, VkShaderStageFlagBits stage, const containers::static_vector<define, 10u>& defines)
+shader::shader(const std::filesystem::path& path, VkShaderStageFlagBits stage)
 : _stage{stage} {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
   const auto& logical_device = graphics_module.logical_device();
 
   auto code = io::load_spirv_words(path);
+
+  try {
+    auto compiler = spirv_cross::Compiler{code};
+    _create_reflection(compiler);
+  } catch (const spirv_cross::CompilerError& e) {
+    throw std::runtime_error(std::string{"SPIRV-Cross failed: "} + e.what());
+  }
+
+  auto create_info = VkShaderModuleCreateInfo{};
+  create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+  create_info.codeSize = code.size() * sizeof(std::uint32_t);
+  create_info.pCode = code.data();
+
+  validate(vkCreateShaderModule(logical_device, &create_info, nullptr, &_handle));
+}
+
+shader::shader(const std::vector<std::uint32_t>& code, VkShaderStageFlagBits stage)
+: _stage{stage} {
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+  const auto& logical_device = graphics_module.logical_device();
 
   try {
     auto compiler = spirv_cross::Compiler{code};

@@ -22,6 +22,7 @@
 
 #include <libsbx/graphics/pipeline/shader.hpp>
 #include <libsbx/graphics/pipeline/pipeline.hpp>
+#include <libsbx/graphics/pipeline/compiler.hpp>
 #include <libsbx/graphics/pipeline/vertex_input_description.hpp>
 
 #include <libsbx/graphics/descriptor/descriptor.hpp>
@@ -91,7 +92,6 @@ struct pipeline_definition {
   bool uses_transparency{false};
   graphics::rasterization_state rasterization_state{};
   graphics::primitive_topology primitive_topology{graphics::primitive_topology::triangle_list};
-  containers::static_vector<graphics::shader::define, 10u> defines{};
   vertex_input_description vertex_input{};
 }; // struct pipeline_definition
 
@@ -108,7 +108,13 @@ class graphics_pipeline : public pipeline {
 
 public:
 
+  struct compiled_shaders {
+    std::array<std::vector<std::uint32_t>, SLANG_STAGE_COUNT> shader_codes{};
+  }; // struct compiled_shaders
+
   graphics_pipeline(const std::filesystem::path& path, const render_graph::graphics_pass& pass, const pipeline_definition& default_definition = pipeline_definition{}, const VkSpecializationInfo* specialization_info = nullptr);
+
+  graphics_pipeline(const compiled_shaders& shaders, const render_graph::graphics_pass& pass, const pipeline_definition& default_definition = pipeline_definition{}, const VkSpecializationInfo* specialization_info = nullptr);
 
   ~graphics_pipeline() override;
 
@@ -183,6 +189,8 @@ private:
     std::vector<per_binding_data> binding_data;
     VkDescriptorSetLayout layout;
   }; // struct per_set_data
+
+  auto _initialize(const pipeline_definition& definition, const VkSpecializationInfo* specialization_info) -> void;
 
   auto _update_definition(const std::filesystem::path& path, const pipeline_definition default_definition) -> pipeline_definition;
 

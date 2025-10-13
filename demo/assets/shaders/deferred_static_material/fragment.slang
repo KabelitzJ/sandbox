@@ -63,14 +63,14 @@ float3 get_normal(fs_in in) {
 #endif // SBX_FEATURE_NORMAL_MAP
 }
 
-float3 get_material(fs_in in) {
+float4 get_material(fs_in in) {
   uint index = in.image_indices.z;
 
   if (index >= sbx::common::max_image_array_size) {
     return in.material;
   }
 
-  return images[NonUniformResourceIndex(index)].Sample(images_sampler, in.uv).rgb;
+  return images[NonUniformResourceIndex(index)].Sample(images_sampler, in.uv).rgba;
 }
 
 [shader("fragment")]
@@ -80,7 +80,7 @@ fs_out main(fs_in in) {
   out.albedo = get_albedo(in);
   out.position = float4(in.position, 1.0);
   out.normal = float4(get_normal(in), 0.0);
-  out.material = float4(get_material(in), 0.0);
+  out.material = get_material(in);
   out.object_id = in.object_id;
   out.depth = sbx::common::linearize_depth(in.sv_position.z, sbx::common::default_near, sbx::common::default_far);
 

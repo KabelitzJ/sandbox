@@ -70,7 +70,7 @@ application::application()
     }
   };
 
-  if (auto result = compiler.compile(request); result) {
+  if (auto result = compiler.compile(request); !result.empty()) {
 
   } else {
     sbx::utility::logger<"demo">::info("Failed to compile");

@@ -8,6 +8,8 @@
 
 #include <nlohmann/json.hpp>
 
+#include <libsbx/units/time.hpp>
+
 #include <libsbx/utility/timer.hpp>
 #include <libsbx/utility/logger.hpp>
 #include <libsbx/utility/iterator.hpp>
@@ -31,16 +33,23 @@
 
 namespace sbx::graphics {
 
+static auto _get_stage_from_slang(SlangStage stage) -> VkShaderStageFlagBits {
+  switch (stage) {
+    case SLANG_STAGE_VERTEX: return VK_SHADER_STAGE_VERTEX_BIT;
+    case SLANG_STAGE_HULL: return VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT;
+    case SLANG_STAGE_DOMAIN: return VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
+    case SLANG_STAGE_GEOMETRY: return VK_SHADER_STAGE_GEOMETRY_BIT;
+    case SLANG_STAGE_FRAGMENT: return VK_SHADER_STAGE_FRAGMENT_BIT;
+    case SLANG_STAGE_COMPUTE: return VK_SHADER_STAGE_COMPUTE_BIT;
+    default: return VK_SHADER_STAGE_FLAG_BITS_MAX_ENUM;
+  }
+}
+
 graphics_pipeline::graphics_pipeline(const std::filesystem::path& path, const render_graph::graphics_pass& pass, const pipeline_definition& default_definition, const VkSpecializationInfo* specialization_info)
 : base{},
   _pass{pass},
   _bind_point{VK_PIPELINE_BIND_POINT_GRAPHICS} {
   auto& assets_module = core::engine::get_module<assets::assets_module>();
-  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
-
-  const auto& logical_device = graphics_module.logical_device();
-
-  auto timer = utility::timer{};
 
   const auto resolved_path = assets_module.resolve_path(path);
 
@@ -72,7 +81,7 @@ graphics_pipeline::graphics_pipeline(const std::filesystem::path& path, const re
         continue;
       }
 
-      _shaders.insert({stage, std::make_unique<shader>(file, stage, definition.defines)});
+      _shaders.insert({stage, std::make_unique<shader>(file, stage)});
     }
   }
 
@@ -83,6 +92,52 @@ graphics_pipeline::graphics_pipeline(const std::filesystem::path& path, const re
   if (!_shaders.contains(VK_SHADER_STAGE_FRAGMENT_BIT)) {
     throw std::runtime_error{"Required fragment shader not found"};
   }
+
+  _initialize(definition, specialization_info);
+}
+
+graphics_pipeline::graphics_pipeline(const compiled_shaders& shaders, const render_graph::graphics_pass& pass, const pipeline_definition& default_definition, const VkSpecializationInfo* specialization_info)
+: base{},
+  _pass{pass},
+  _bind_point{VK_PIPELINE_BIND_POINT_GRAPHICS} {
+
+  for (auto stage = 0u; stage < shaders.shader_codes.size(); ++stage) {
+    const auto& shader_code = shaders.shader_codes[stage];
+
+    if (shader_code.empty()) {
+      continue;
+    }
+
+    const auto stage_flag = _get_stage_from_slang(static_cast<SlangStage>(stage));
+
+    if (stage_flag == VK_SHADER_STAGE_COMPUTE_BIT) {
+      // [NOTE] : Allow compute and graphics pipelines in same folder
+      continue;
+    } else if (stage_flag == VK_SHADER_STAGE_FLAG_BITS_MAX_ENUM) {
+      utility::logger<"graphics">::warn("Unsupported shader stage '{}' in graphics pipeline '{}'", stage, _name);
+      continue;
+    }
+
+    _shaders.insert({stage_flag, std::make_unique<shader>(shader_code, stage_flag)});
+  }
+
+  if (!_shaders.contains(VK_SHADER_STAGE_VERTEX_BIT)) {
+    throw std::runtime_error{"Required vertex shader not found"};
+  }
+
+  if (!_shaders.contains(VK_SHADER_STAGE_FRAGMENT_BIT)) {
+    throw std::runtime_error{"Required fragment shader not found"};
+  }
+
+  _initialize(default_definition, specialization_info);
+}
+
+auto graphics_pipeline::_initialize(const pipeline_definition& definition, const VkSpecializationInfo* specialization_info) -> void {
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+  const auto& logical_device = graphics_module.logical_device();
+
+  auto timer = utility::timer{};
 
   auto shader_stages = std::vector<VkPipelineShaderStageCreateInfo>{};
 
@@ -207,16 +262,6 @@ graphics_pipeline::graphics_pipeline(const std::filesystem::path& path, const re
     }
   }
 
-  // std::ranges::sort(descriptor_set_layout_bindings, [](const auto& lhs, const auto& rhs) {
-  //   return lhs.binding < rhs.binding;
-  // });
-
-  // for (auto& set_data : _set_data) {
-  //   std::ranges::sort(set_data.binding_data, [](const auto& lhs, const auto& rhs) {
-  //     return lhs.binding < rhs.binding;
-  //   );
-  // }
-
   for (auto&& [set, descriptors] : ranges::views::enumerate(descriptor_set_layout_bindings)) {
     _set_data[set].binding_data.resize(descriptors.size());
     
@@ -225,11 +270,6 @@ graphics_pipeline::graphics_pipeline(const std::filesystem::path& path, const re
       _set_data[set].binding_data[binding].descriptor_count = descriptor.descriptorCount;
     }
   }
-
-  // for (const auto& set : descriptor_set_layout_bindings) {
-  //   for (const auto& descriptor : set) {
-  //   }
-  // }
 
   auto viewport_state = VkPipelineViewportStateCreateInfo{};
   viewport_state.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -273,8 +313,6 @@ graphics_pipeline::graphics_pipeline(const std::filesystem::path& path, const re
   color_blend_attachment_disabled.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
   color_blend_attachment_disabled.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
   color_blend_attachment_disabled.alphaBlendOp = VK_BLEND_OP_ADD;
-
-  // auto color_blend_attachments = std::vector<VkPipelineColorBlendAttachmentState>{render_stage.attachment_count(_stage.subpass), color_blend_attachment};
 
   const auto& attachments = _pass.outputs();
 
@@ -623,14 +661,6 @@ auto graphics_pipeline::_update_definition(const std::filesystem::path& path, co
 
     if (rasterization_state.contains("line_width")) {
       result.rasterization_state.line_width = rasterization_state["line_width"].get<std::float_t>();
-    }
-  }
-
-  if (definition.contains("defines")) {
-    auto defines = definition["defines"];
-
-    for (const auto& [key, value] : defines.items()) {
-      result.defines.push_back({key, value});
     }
   }
 

@@ -79,8 +79,8 @@ auto graph_builder::emplace(Callables&&... callables) -> decltype(auto) {
   constexpr auto graphics_pass_count = count_r_v<graphics_pass, std::remove_cvref_t<std::invoke_result_t<Callables, context&>>...>;
   constexpr auto compute_pass_count = count_r_v<compute_pass, std::remove_cvref_t<std::invoke_result_t<Callables, context&>>...>;
 
-  utility::logger<"graphics">::warn("graphics_pass_count: {}", graphics_pass_count);
-  utility::logger<"graphics">::warn("compute_pass_count: {}", compute_pass_count);
+  utility::logger<"graphics">::debug("graphics_pass_count: {}", graphics_pass_count);
+  utility::logger<"graphics">::debug("compute_pass_count: {}", compute_pass_count);
 
   _graph.reserve(graphics_pass_count, compute_pass_count);
   _color_images.reserve(graphics_pass_count * 6u); // This is just a guess

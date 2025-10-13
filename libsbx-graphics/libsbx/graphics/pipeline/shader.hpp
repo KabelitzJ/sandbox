@@ -237,7 +237,9 @@ class uniform_block {
 
   using handle_type = VkShaderModule;
 
-  shader(const std::filesystem::path& path, VkShaderStageFlagBits stage, const containers::static_vector<define, 10u>& defines = {});
+  shader(const std::filesystem::path& path, VkShaderStageFlagBits stage);
+
+  shader(const std::vector<std::uint32_t>& code, VkShaderStageFlagBits stage);
 
   ~shader();
 
