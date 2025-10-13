@@ -60,85 +60,79 @@ public:
 
   }
 
-  auto compile(const std::filesystem::path& path, const std::vector<define>& defines = {}) -> Slang::ComPtr<slang::IBlob> {
-    const auto source = _read_file(path);
+  struct compile_request {
+    std::filesystem::path path;
+    SlangStage stage;
+    std::string entry_point{"main"};
+    std::vector<define> defines;
+    std::vector<std::filesystem::path> includes;
+  }; // struct compile_request
 
-    const auto complete_source = _inject_defines(source, defines);
+  auto compile(const compile_request& compile_request) -> Slang::ComPtr<slang::IBlob> {
+    const auto source = _read_file(compile_request.path);
 
-    auto shader_module = Slang::ComPtr<slang::IModule>{};
-
-    {
-      auto diagnostic = Slang::ComPtr<slang::IBlob>{};
-
-      shader_module = _session->loadModuleFromSourceString(path.filename().string().c_str(), nullptr, complete_source.c_str(), diagnostic.writeRef());
-
-      _diagnose_if_needed(diagnostic);
-
-      if (!shader_module) {
-        return nullptr;
-      }
+    if (source.empty()) {
+      return nullptr;
     }
 
-    auto entry_point = Slang::ComPtr<slang::IEntryPoint>{};
+    auto request = Slang::ComPtr<slang::ICompileRequest>{};
 
-    shader_module->findEntryPointByName("main", entry_point.writeRef());
-
-    auto components = std::vector<slang::IComponentType*>{
-      shader_module.get(), entry_point.get()
-    };
-
-    auto composed = Slang::ComPtr<slang::IComponentType>{};
-
-    {
-      auto diagnostic = Slang::ComPtr<slang::IBlob>{};
-
-      _session->createCompositeComponentType(components.data(), static_cast<SlangInt>(components.size()), composed.writeRef(), diagnostic.writeRef());
-
-      _diagnose_if_needed(diagnostic);
-
-      if (!composed) {
-        return nullptr;
-      }
+    if (SLANG_FAILED(_session->createCompileRequest(request.writeRef()))) {
+      utility::logger<"graphics">::error("createCompileRequest failed");
+      return nullptr;
     }
 
-    auto linked = Slang::ComPtr<slang::IComponentType>{};
+    const auto target_index = request->addCodeGenTarget(SLANG_SPIRV);
 
-    {
-      auto diagnostic = Slang::ComPtr<slang::IBlob>{};
+    request->setTargetProfile(target_index, _global_session->findProfile("spirv_1_5"));
+    request->addTargetCapability(target_index, _global_session->findCapability("spirv_1_5"));
+    request->addTargetCapability(target_index, _global_session->findCapability("SPV_EXT_physical_storage_buffer"));
+    request->setTargetFlags(target_index, SLANG_TARGET_FLAG_GENERATE_SPIRV_DIRECTLY);
+    request->setMatrixLayoutMode(SLANG_MATRIX_LAYOUT_COLUMN_MAJOR);
+    request->setDebugInfoLevel(SLANG_DEBUG_INFO_LEVEL_STANDARD);
+    request->setOptimizationLevel(SLANG_OPTIMIZATION_LEVEL_NONE);
 
-      composed->link(linked.writeRef(), diagnostic.writeRef());
+    for (const auto& define : compile_request.defines) {
+      request->addPreprocessorDefine(define.key.c_str(), define.value.c_str());
+    }
 
-      _diagnose_if_needed(diagnostic);
+    request->addPreprocessorDefine("SBX_DEBUG", utility::is_build_configuration_debug_v ? "1" : "0");
 
-      if (!linked) {
-        return nullptr;
+    const auto parent_dir = compile_request.path.parent_path();
+    request->addSearchPath(parent_dir.string().c_str());
+
+    for (const auto& include : compile_request.includes) {
+      request->addSearchPath(include.string().c_str());
+    }
+
+    const auto translation_unit = request->addTranslationUnit(SLANG_SOURCE_LANGUAGE_SLANG, compile_request.path.filename().string().c_str());
+
+    request->addTranslationUnitSourceString(translation_unit, compile_request.path.string().c_str(), source.c_str());
+
+    const auto entry_point = request->addEntryPoint(translation_unit, compile_request.entry_point.c_str(), compile_request.stage);
+
+    if (SLANG_FAILED(request->compile())) {
+      if (const auto* diagnostic = request->getDiagnosticOutput()) {
+        utility::logger<"graphics">::error("{}", diagnostic);
       }
+
+      return nullptr;
     }
 
     auto code = Slang::ComPtr<slang::IBlob>{};
 
-    {
-      auto diagnostic = Slang::ComPtr<slang::IBlob>{};
-  
-      linked->getEntryPointCode(0, 0, code.writeRef(), diagnostic.writeRef());
-  
-      _diagnose_if_needed(diagnostic);
-
-      if (!code) {
-        return nullptr;
+    if (SLANG_FAILED(request->getEntryPointCodeBlob(entry_point, target_index, code.writeRef()))) {
+      if (const char* diagnostic = request->getDiagnosticOutput()) {
+        utility::logger<"graphics">::error("{}", diagnostic);
       }
+
+      return nullptr;
     }
 
     return code;
   }
 
 private:
-
-  static auto _diagnose_if_needed(slang::IBlob* diagnostic) -> void {
-    if (diagnostic && diagnostic->getBufferSize()) {
-      utility::logger<"graphics">::error("{}", diagnostic->getBufferPointer());
-    }
-  }
 
   static auto _read_file(const std::filesystem::path& path) -> std::string {
     auto file = std::ifstream{path, std::ios::binary};

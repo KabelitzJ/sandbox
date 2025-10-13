@@ -82,14 +82,14 @@ struct bit : std::integral_constant<std::size_t, (std::size_t{1} << Shift)> { };
 template<std::size_t Shift>
 inline constexpr auto bit_v = bit<Shift>::value;
 
-template<typename Enum>
+template<typename Enum, typename Underlying = std::underlying_type_t<Enum>>
 requires (std::is_enum_v<Enum>)
 class bit_field {
 
 public:
 
   using value_type = Enum;
-  using underlying_type = std::underlying_type_t<Enum>;
+  using underlying_type = Underlying;
 
   constexpr bit_field() noexcept
   : _value{underlying_type{0}} { }
@@ -121,9 +121,12 @@ public:
     return from_underlying<value_type>(_value);
   }
 
-  template<std::integral Type>
-  constexpr auto as() const -> Type {
-    return static_cast<Type>(_value);
+  constexpr auto value() const -> value_type {
+    return static_cast<value_type>(_value);
+  }
+
+  constexpr auto underlying() const -> underlying_type {
+    return _value;
   }
 
 private:

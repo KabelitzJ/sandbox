@@ -54,6 +54,10 @@ auto separate_image2d_array::push_back(const handle_type& handle) -> std::uint32
     throw std::runtime_error{"separate_image2d_array::push_back: max_size exceeded"};
   }
 
+  if (!handle) {
+    return max_size;
+  }
+
   if (const auto entry = _id_to_indices.find(handle); entry != _id_to_indices.cend()) {
     return entry->second;
   }

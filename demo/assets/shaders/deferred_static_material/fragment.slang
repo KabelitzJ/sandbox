@@ -2,6 +2,10 @@
 #include <libsbx/common/image.slang>
 #include <libsbx/common/texture_sampler.slang>
 
+#ifndef SBX_FEATURE_NORMAL_MAP
+#define SBX_FEATURE_NORMAL_MAP 1
+#endif // SBX_FEATURE_NORMAL_MAP
+
 struct fs_in {
   float3 position : TEXCOORD0;
   float3 normal : TEXCOORD1;
@@ -10,8 +14,8 @@ struct fs_in {
   float3 tbn2 : TEXCOORD4;
   float2 uv : TEXCOORD5;
   float4 color : TEXCOORD6;
-  float3 material : TEXCOORD7;
-  nointerpolation uint3 image_indices : TEXCOORD8;
+  float4 material : TEXCOORD7;
+  nointerpolation uint4 image_indices : TEXCOORD8;
   nointerpolation uint2 object_id : TEXCOORD9;
   float4 sv_position : SV_Position;
 }; // struct fs_in
@@ -44,6 +48,7 @@ float4 get_albedo(fs_in in) {
 }
 
 float3 get_normal(fs_in in) {
+#if SBX_FEATURE_NORMAL_MAP
   uint index = in.image_indices.y;
 
   if (index >= sbx::common::max_image_array_size) {
@@ -53,6 +58,9 @@ float3 get_normal(fs_in in) {
   float3 normal = images[NonUniformResourceIndex(index)].Sample(images_sampler, in.uv).xyz;
 
   return normalize(in.tbn0 * normal.x + in.tbn1 * normal.y + in.tbn2 * normal.z);
+#else
+  return normalize(in.normal);
+#endif // SBX_FEATURE_NORMAL_MAP
 }
 
 float3 get_material(fs_in in) {
