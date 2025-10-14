@@ -327,11 +327,15 @@ application::application()
   // Helmet
   auto helmet = scene.create_node("Helmet");
 
-  scene.add_material<sbx::scenes::material>("helmet", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 0.5f, 1.0f, scene.get_image("helmet_albedo"), scene.get_image("helmet_normal"), scene.get_image("helmet_mrao"));
+  // auto helmet_material = scene.add_material<sbx::models::prototype::material>("helmet", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 0.5f, 1.0f, scene.get_image("helmet_albedo"), scene.get_image("helmet_normal"), scene.get_image("helmet_mrao"));
+  auto& helmet_material = scene.add_material<sbx::models::prototype::material>("helmet");
+  helmet_material.albedo = scene.get_image("helmet_albedo");
+  helmet_material.normal = scene.get_image("helmet_normal");
+  helmet_material.mrao = scene.get_image("helmet_mrao");
 
   scene.add_component<show_local_coordinates>(helmet);
 
-  scene.add_component<sbx::scenes::static_mesh>(helmet, scene.get_mesh("helmet"), scene.get_material("helmet"));
+  scene.add_component<sbx::models::prototype::static_mesh>(helmet, scene.get_mesh("helmet"), scene.get_material("helmet"));
 
   auto& helmet_transform = scene.get_component<sbx::scenes::transform>(helmet);
   helmet_transform.set_position(sbx::math::vector3{0.0f, 6.0f, 0.0f});
@@ -407,7 +411,7 @@ application::application()
   if (fox_tail_node != sbx::scenes::node::null) {
     auto test = scene.create_child_node(fox_tail_node, "Test");
 
-    scene.add_component<sbx::scenes::static_mesh>(test, scene.get_mesh("sphere"), scene.get_material("helmet"));
+    scene.add_component<sbx::scenes::static_mesh>(test, scene.get_mesh("sphere"), scene.get_material("fox"));
 
     auto& test_transform = scene.get_component<sbx::scenes::transform>(test);
     test_transform.set_scale(sbx::math::vector3{10.0f, 10.0f, 10.0f});

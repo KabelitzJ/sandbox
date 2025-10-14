@@ -109,7 +109,8 @@ class graphics_pipeline : public pipeline {
 public:
 
   struct compiled_shaders {
-    std::array<std::vector<std::uint32_t>, SLANG_STAGE_COUNT> shader_codes{};
+    std::string name{};
+    std::unordered_map<SlangStage, std::vector<std::uint32_t>> shader_codes{};
   }; // struct compiled_shaders
 
   graphics_pipeline(const std::filesystem::path& path, const render_graph::graphics_pass& pass, const pipeline_definition& default_definition = pipeline_definition{}, const VkSpecializationInfo* specialization_info = nullptr);

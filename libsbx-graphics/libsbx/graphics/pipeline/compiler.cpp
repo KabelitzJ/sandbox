@@ -1,8 +1,14 @@
 #include <libsbx/graphics/pipeline/compiler.hpp>
 
+#include <libsbx/core/engine.hpp>
+
+#include <libsbx/assets/assets_module.hpp>
+
 #include <fstream>
 
 namespace sbx::graphics {
+
+#define DUMP 0
 
 compiler::compiler() {
   createGlobalSession(_global_session.writeRef());
@@ -20,7 +26,7 @@ compiler::compiler() {
     slang::CompilerOptionEntry{ slang::CompilerOptionName::Capability, { slang::CompilerOptionValueKind::String, 0, 0, "spirv_1_5", nullptr } },
     slang::CompilerOptionEntry{ slang::CompilerOptionName::Capability, { slang::CompilerOptionValueKind::String, 0, 0, "SPV_EXT_physical_storage_buffer", nullptr } },
     slang::CompilerOptionEntry{ slang::CompilerOptionName::MatrixLayoutColumn, { slang::CompilerOptionValueKind::Int, 1, 0, "column_major", nullptr } },
-    slang::CompilerOptionEntry{ slang::CompilerOptionName::DebugInformation, { slang::CompilerOptionValueKind::Int, 1, 0, nullptr, nullptr } },
+    slang::CompilerOptionEntry{ slang::CompilerOptionName::DebugInformation, { slang::CompilerOptionValueKind::Int, SLANG_DEBUG_INFO_LEVEL_NONE, 0, nullptr, nullptr } },
     slang::CompilerOptionEntry{ slang::CompilerOptionName::Optimization, { slang::CompilerOptionValueKind::Int, 0, 0, nullptr, nullptr } },
     slang::CompilerOptionEntry{ slang::CompilerOptionName::EmitSpirvDirectly, { slang::CompilerOptionValueKind::Int, 1, 0, nullptr, nullptr } }
   };
@@ -43,17 +49,21 @@ compiler::~compiler() {
 }
 
 auto compiler::compile(const compile_request& compile_request) -> std::vector<std::uint32_t> {
-  const auto source = _read_file(compile_request.path);
+  auto& assets_module = core::engine::get_module<assets::assets_module>();
+
+  const auto resolved_path = assets_module.resolve_path(compile_request.path);
+
+  const auto source = _read_file(resolved_path);
 
   if (source.empty()) {
-    return {};
+    throw std::runtime_error{"source empty"};
   }
 
   auto request = Slang::ComPtr<slang::ICompileRequest>{};
 
   if (SLANG_FAILED(_session->createCompileRequest(request.writeRef()))) {
     utility::logger<"graphics">::error("createCompileRequest failed");
-    return {};
+    throw std::runtime_error{"createCompileRequest failed"};
   }
 
   const auto target_index = request->addCodeGenTarget(SLANG_SPIRV);
@@ -66,7 +76,7 @@ auto compiler::compile(const compile_request& compile_request) -> std::vector<st
   request->setTargetFlags(target_index, SLANG_TARGET_FLAG_GENERATE_SPIRV_DIRECTLY);
 
   request->setMatrixLayoutMode(SLANG_MATRIX_LAYOUT_COLUMN_MAJOR);
-  request->setDebugInfoLevel(SLANG_DEBUG_INFO_LEVEL_STANDARD);
+  request->setDebugInfoLevel(SLANG_DEBUG_INFO_LEVEL_NONE);
   request->setOptimizationLevel(SLANG_OPTIMIZATION_LEVEL_NONE);
 
   for (const auto& define : compile_request.defines) {
@@ -75,16 +85,16 @@ auto compiler::compile(const compile_request& compile_request) -> std::vector<st
 
   request->addPreprocessorDefine("SBX_DEBUG", utility::is_build_configuration_debug_v ? "1" : "0");
 
-  const auto parent_dir = compile_request.path.parent_path();
+  const auto parent_dir = resolved_path.parent_path();
   request->addSearchPath(parent_dir.string().c_str());
 
   for (const auto& include : compile_request.includes) {
     request->addSearchPath(include.string().c_str());
   }
 
-  const auto translation_unit = request->addTranslationUnit(SLANG_SOURCE_LANGUAGE_SLANG, compile_request.path.filename().string().c_str());
+  const auto translation_unit = request->addTranslationUnit(SLANG_SOURCE_LANGUAGE_SLANG, resolved_path.filename().string().c_str());
 
-  request->addTranslationUnitSourceString(translation_unit, compile_request.path.string().c_str(), source.c_str());
+  request->addTranslationUnitSourceString(translation_unit, resolved_path.string().c_str(), source.c_str());
 
   const auto entry_point = request->addEntryPoint(translation_unit, compile_request.entry_point.c_str(), compile_request.stage);
 
@@ -93,7 +103,7 @@ auto compiler::compile(const compile_request& compile_request) -> std::vector<st
       utility::logger<"graphics">::error("{}", diagnostic);
     }
 
-    return {};
+    throw std::runtime_error{"compile failed"};
   }
 
   auto code = Slang::ComPtr<slang::IBlob>{};
@@ -103,17 +113,47 @@ auto compiler::compile(const compile_request& compile_request) -> std::vector<st
       utility::logger<"graphics">::error("{}", diagnostic);
     }
 
-    return {};
+    throw std::runtime_error{"get code failed"};
   }
 
-  return std::vector<std::uint32_t>{ static_cast<const std::uint32_t*>(code->getBufferPointer()), static_cast<const std::uint32_t*>(code->getBufferPointer()) + code->getBufferSize() };
+  const auto* words = static_cast<const std::uint32_t*>(code->getBufferPointer());
+  const auto byte_count = code->getBufferSize();
+  const auto word_count = byte_count / sizeof(std::uint32_t);
+
+
+  const auto result = std::vector<std::uint32_t>{words, words + word_count};
+
+#ifdef DUMP
+
+  // auto pp = resolved_path.parent_path();
+
+  // utility::logger<"graphics">::debug("Dumping to: {}", pp.string());
+
+  // auto dump_path = pp.append(fmt::format("dump/{}.spv", resolved_path.filename().string()));
+
+  // utility::logger<"graphics">::debug("Dumping to: {}", dump_path.string());
+
+  // auto file = std::ofstream{dump_path, std::ios::binary | std::ios::out};
+
+  // if (!file) {
+  //   throw std::runtime_error("Failed to open dump");
+  // }
+
+  // // Write raw bytes
+  // file.write(reinterpret_cast<const char*>(result.data()), result.size() * sizeof(std::uint32_t));
+  // file.flush();
+  // file.close();
+
+#endif
+
+  return result;
 }
 
 auto compiler::_read_file(const std::filesystem::path& path) -> std::string {
   auto file = std::ifstream{path, std::ios::binary};
 
   if (!file) {
-    return std::string{};
+    throw utility::runtime_error{"File does not exist {}", path.string()};
   }
 
   return std::string{std::istreambuf_iterator<char>{file}, std::istreambuf_iterator<char>{}};

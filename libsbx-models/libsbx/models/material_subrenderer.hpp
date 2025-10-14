@@ -91,9 +91,8 @@ enum class depth_draw : std::uint8_t {
 
 enum class alpha_mode : std::uint8_t { 
   opaque, 
-  alpha, 
-  alpha_clip, 
-  alpha_hash 
+  alpha,
+  alpha_clip
 }; // enum class alpha_mode
 
 enum class material_feature : std::uint8_t {
@@ -129,7 +128,7 @@ static_assert(sizeof(material_data) <= 256u);
 static_assert(alignof(material_data) == 16u);
 
 struct material {
-  math::color base_color{1, 1, 1, 1};
+  math::color base_color{math::color::white()};
   std::float_t metallic{0.0f};
   std::float_t roughness{0.5f};
   std::float_t occlusion{1.0f};
@@ -337,6 +336,9 @@ public:
     _update_buffer(_transform_buffer, _transform_data);
     _update_buffer(_material_buffer,  _material_data);
 
+    auto& transform_data_buffer = graphics_module.get_resource<graphics::storage_buffer>(_transform_buffer);
+    auto& material_data_buffer = graphics_module.get_resource<graphics::storage_buffer>(_material_buffer);
+
     for (auto& [key, pipeline_data] : _pipeline_cache) {
       if (pipeline_data.submesh_instances.empty()) {
         continue;
@@ -347,6 +349,36 @@ public:
       auto& pipeline = graphics_module.get_resource<graphics::graphics_pipeline>(pipeline_data.pipeline);
 
       pipeline.bind(command_buffer);
+
+      pipeline_data.scene_descriptor_handler.push("scene", scene.uniform_handler());
+      pipeline_data.scene_descriptor_handler.push("images_sampler", _sampler);
+      pipeline_data.scene_descriptor_handler.push("images", _images);
+
+      if (!pipeline_data.scene_descriptor_handler.update(pipeline)) {
+        return;
+      }
+
+      pipeline_data.scene_descriptor_handler.bind_descriptors(command_buffer);
+
+      auto& instance_data_buffer = graphics_module.get_resource<graphics::storage_buffer>(pipeline_data.instance_data_buffer);
+
+      pipeline_data.push_handler.push("transform_data_buffer", transform_data_buffer.address());
+      pipeline_data.push_handler.push("material_data_buffer", material_data_buffer.address());
+      pipeline_data.push_handler.push("instance_data_buffer", instance_data_buffer.address());
+
+      for (const auto& [mesh_id, range] : pipeline_data.draw_ranges) {
+        auto& mesh = assets_module.get_asset<models::mesh>(mesh_id);
+        
+        mesh.bind(command_buffer);
+        
+        pipeline_data.push_handler.push("vertex_buffer", mesh.address());
+
+        pipeline_data.push_handler.bind(command_buffer);
+
+        auto& draw_commands_buffer = graphics_module.get_resource<graphics::storage_buffer>(pipeline_data.draw_commands_buffer);
+
+        command_buffer.draw_indexed_indirect(draw_commands_buffer, range.offset, range.count);
+      }
 
       // // set(0): scene
       // pipeline_data.scene_descriptor_handler.push(command_buffer /*, frame if needed */);
@@ -438,12 +470,35 @@ private:
 
     definition.uses_transparency = (static_cast<alpha_mode>(key.alpha) != alpha_mode::opaque);
 
+    auto& compiler = graphics_module.compiler();
+
+    const auto stages = std::array<std::pair<std::string_view, SlangStage>, 2u>{
+      std::pair<std::string_view, SlangStage>{"vertex", SLANG_STAGE_VERTEX},
+      std::pair<std::string_view, SlangStage>{"fragment", SLANG_STAGE_FRAGMENT}
+    };
+
+    auto compiled_shaders = graphics::graphics_pipeline::compiled_shaders{};
+    compiled_shaders.name = _base_pipeline.filename();
+
+    for (const auto& [name, stage] : stages) {
+      const auto request = graphics::compiler::compile_request{
+        .path = std::filesystem::path{_base_pipeline}.append(fmt::format("{}.slang", name)),
+        .stage = stage,
+        .defines = {
+          {"SBX_TEST", "1"}
+        }
+      };
+
+      compiled_shaders.shader_codes[stage] = compiler.compile(request);
+    }
+
+    auto pipeline = graphics_module.add_resource<graphics::graphics_pipeline>(compiled_shaders, pass, definition);
+
     // const auto program_path = std::filesystem::path{"shaders/pbr_material"}; // adjust
-    // auto pipeline = graphics_module.add_resource<graphics::graphics_pipeline>(program_path, pass, definition);
 
-    // auto [entry, inserted] = _pipeline_cache.emplace(key, pipeline_data{pipeline});
+    auto [entry, inserted] = _pipeline_cache.emplace(key, pipeline);
 
-    // return entry->second;
+    return entry->second;
   }
 
   auto _submit_mesh(pipeline_data& pipeline_data, const math::uuid& mesh_id, std::uint32_t submesh_index, std::uint32_t transform_index, std::uint32_t material_index) -> void {

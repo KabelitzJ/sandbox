@@ -1,6 +1,8 @@
 #ifndef LIBSBX_GRAPHICS_PIPELINE_COMPILER_HPP_
 #define LIBSBX_GRAPHICS_PIPELINE_COMPILER_HPP_
 
+#include <vulkan/vulkan.hpp>
+
 #include <slang.h>
 #include <slang-com-ptr.h>
 #include <slang-com-helper.h>

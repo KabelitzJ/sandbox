@@ -101,13 +101,9 @@ graphics_pipeline::graphics_pipeline(const compiled_shaders& shaders, const rend
   _pass{pass},
   _bind_point{VK_PIPELINE_BIND_POINT_GRAPHICS} {
 
-  for (auto stage = 0u; stage < shaders.shader_codes.size(); ++stage) {
-    const auto& shader_code = shaders.shader_codes[stage];
+  _name = shaders.name;
 
-    if (shader_code.empty()) {
-      continue;
-    }
-
+  for (const auto& [stage, code] : shaders.shader_codes) {
     const auto stage_flag = _get_stage_from_slang(static_cast<SlangStage>(stage));
 
     if (stage_flag == VK_SHADER_STAGE_COMPUTE_BIT) {
@@ -118,7 +114,7 @@ graphics_pipeline::graphics_pipeline(const compiled_shaders& shaders, const rend
       continue;
     }
 
-    _shaders.insert({stage_flag, std::make_unique<shader>(shader_code, stage_flag)});
+    _shaders.insert({stage_flag, std::make_unique<shader>(code, stage_flag)});
   }
 
   if (!_shaders.contains(VK_SHADER_STAGE_VERTEX_BIT)) {

@@ -11,6 +11,7 @@
 #include <libsbx/models/frustum_culling_task.hpp>
 #include <libsbx/models/foliage_task.hpp>
 #include <libsbx/models/foliage_subrenderer.hpp>
+#include <libsbx/models/material_subrenderer.hpp>
 
 #include <libsbx/animations/skinned_mesh_subrenderer.hpp>
 
@@ -129,13 +130,15 @@ renderer::renderer()
   add_subrenderer<sbx::shadows::shadow_subrenderer>(shadow, "res://shaders/shadow");
 
   // Deferred rendering pass
-  add_subrenderer<sbx::models::opaque_static_mesh_subrenderer>(deferred, "res://shaders/deferred_static_opaque");
+  // add_subrenderer<sbx::models::opaque_static_mesh_subrenderer>(deferred, "res://shaders/deferred_static_opaque");
   // add_subrenderer<sbx::models::masked_static_mesh_subrenderer>(deferred, "res://shaders/deferred_static_masked");
-  add_subrenderer<sbx::animations::skinned_mesh_subrenderer>(deferred, "res://shaders/deferred_skinned_opaque");
+  // add_subrenderer<sbx::animations::skinned_mesh_subrenderer>(deferred, "res://shaders/deferred_skinned_opaque");
+
+  add_subrenderer<sbx::models::prototype::material_subrenderer>(deferred, "res://shaders/deferred_static_material");
 
   
   // Transparency pass
-  add_subrenderer<sbx::models::transparent_static_mesh_subrenderer>(transparency, "res://shaders/deferred_static_transparent");
+  // add_subrenderer<sbx::models::transparent_static_mesh_subrenderer>(transparency, "res://shaders/deferred_static_transparent");
   
   // Resolve pass
   auto resolve_opaque_attachment_names = std::vector<std::pair<std::string, std::string>>{

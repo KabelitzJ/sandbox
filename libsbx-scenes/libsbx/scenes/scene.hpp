@@ -308,13 +308,15 @@ public:
   }
 
   template<typename Material, typename... Args>
-  auto add_material(const utility::hashed_string& name, Args&&... args) -> void {
+  auto add_material(const utility::hashed_string& name, Args&&... args) -> Material& {
     auto& assets_module = sbx::core::engine::get_module<sbx::assets::assets_module>();
 
     const auto id = assets_module.add_asset<Material>(std::forward<Args>(args)...);
 
     _materials_ids.emplace(name, id);
     _material_metadata.emplace(id, assets::asset_metadata{"", name.str(), "material", "dynamic"});
+
+    return assets_module.get_asset<Material>(id);
   }
 
   auto get_material(const utility::hashed_string& name) -> math::uuid {
