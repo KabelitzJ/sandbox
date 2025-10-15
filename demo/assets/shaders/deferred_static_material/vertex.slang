@@ -2,67 +2,7 @@
 #include <libsbx/common/convert_to.slang>
 #include <libsbx/common/scene_data.slang>
 
-struct transform_data {
-  float4x4 model;
-  float4x4 normal;
-}; // struct transform_data
-
-struct material_data {
-  uint albedo_index;
-  uint normal_index;
-  uint mrao_index;
-  uint emissive_index;
-
-  float4 base_color;
-  float4 emissive_color;
-
-  float metallic;
-  float roughness;
-  float occlusion;
-  float emissive_strength;
-
-  float alpha_cutoff;
-  float normal_scale;
-  uint flags;
-  uint _pad0;
-}; // struct material_header
-
-struct instance_data {
-  uint transform_index;
-  uint material_index;
-  uint object_id_upper;
-  uint object_id_lower;
-}; // struct instance_data
-
-struct vertex {
-  float position_x;
-  float position_y;
-  float position_z;
-  float normal_x;
-
-  float normal_y;
-  float normal_z;
-  float tangent_x;
-  float tangent_y;
-
-  float tangent_z;
-  float tangent_w;   // sign
-  float uv_x;
-  float uv_y;
-}; // struct vertex
-
-struct push_data {
-  vertex* vertex_buffer;
-  transform_data* transform_data_buffer;
-  material_data* material_data_buffer;
-  instance_data* instance_data_buffer;
-}; // struct push_data
-
-[[vk::push_constant]] 
-ConstantBuffer<push_data> push;
-
-[[vk::binding(0, 0)]]
-ConstantBuffer<sbx::common::scene_data> scene;
+#include <common.slang>
 
 struct vs_in {
   uint vertex_id : SV_VertexID;
@@ -72,19 +12,25 @@ struct vs_in {
 }; // struct vs_in
 
 struct vs_out {
-  float3 position : TEXCOORD0;
-  float3 normal : TEXCOORD1;
-  float3 tbn0 : TEXCOORD2;
-  float3 tbn1 : TEXCOORD3;
-  float3 tbn2 : TEXCOORD4;
-  float2 uv : TEXCOORD5;
-  float4 color : TEXCOORD6;
-  float4 material : TEXCOORD7;
-  nointerpolation uint4 image_indices : TEXCOORD8;
-  nointerpolation uint2 object_id : TEXCOORD9;
-  float alpha_cutoff : TEXCOORD10;
+  [[vk::location(0)]] float3 position : POSITION;
+  [[vk::location(1)]] float3 normal : NORMAL;
+  [[vk::location(2)]] float3 tbn0 : TBN0;
+  [[vk::location(3)]] float3 tbn1 : TBN1;
+  [[vk::location(4)]] float3 tbn2 : TBN2;
+  [[vk::location(5)]] float2 uv : UV;
+  [[vk::location(6)]] float4 color : COLOR;
+  [[vk::location(7)]] float4 material : MATERIAL;
+  [[vk::location(8)]] nointerpolation uint4 image_indices : IMAGE_INDICES;
+  [[vk::location(9)]] nointerpolation uint2 object_id : OBJECT_ID;
+  [[vk::location(10)]] float alpha_cutoff : ALPHA_CUTOFF;
   float4 sv_position : SV_Position;
 }; // struct vs_out
+
+[[vk::push_constant]] 
+ConstantBuffer<push_data> push;
+
+[[vk::binding(0, 0)]]
+ConstantBuffer<sbx::common::scene_data> scene;
 
 [shader("vertex")]
 vs_out main(vs_in in) {
