@@ -82,6 +82,7 @@ struct vs_out {
   float4 material : TEXCOORD7;
   nointerpolation uint4 image_indices : TEXCOORD8;
   nointerpolation uint2 object_id : TEXCOORD9;
+  float alpha_cutoff : TEXCOORD10;
   float4 sv_position : SV_Position;
 }; // struct vs_out
 

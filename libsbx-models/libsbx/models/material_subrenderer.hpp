@@ -70,6 +70,12 @@
 
 namespace sbx::models::prototype {
 
+namespace detail {
+
+inline constexpr auto vertex_code = std::string_view{"dasdasd"};
+
+} // namespace detail
+
 enum class blend_mode : std::uint8_t { 
   mix, 
   add, 
@@ -127,28 +133,6 @@ struct alignas(16) material_data {
 static_assert(sizeof(material_data) <= 256u);
 static_assert(alignof(material_data) == 16u);
 
-struct material {
-  math::color base_color{math::color::white()};
-  std::float_t metallic{0.0f};
-  std::float_t roughness{0.5f};
-  std::float_t occlusion{1.0f};
-  math::color emissive_color{0, 0, 0, 1};
-  std::float_t emissive_strength{0.0f};
-  std::float_t alpha_cutoff{0.5f};
-
-  graphics::image2d_handle albedo{};
-  graphics::image2d_handle normal{};
-  graphics::image2d_handle mrao{};
-
-  blend_mode blend{blend_mode::mix};
-  cull_mode cull {cull_mode::back};
-  depth_draw depth{depth_draw::opaque_only};
-  alpha_mode alpha{alpha_mode::opaque};
-  bool is_double_sided{false};
-
-  utility::bit_field<material_feature> features;
-}; // struct material
-
 struct material_key {
   std::uint64_t blend           : 2;
   std::uint64_t cull            : 2;
@@ -159,13 +143,9 @@ struct material_key {
   std::uint64_t feature_mask    : 16;
   std::uint64_t _pad1           : 36;
 
-  material_key(const material& material)
-  : blend{static_cast<std::uint64_t>(material.blend)},
-    cull{static_cast<std::uint64_t>(material.cull)},
-    depth{static_cast<std::uint64_t>(material.depth)},
-    alpha{static_cast<std::uint64_t>(material.alpha)},
-    is_double_sided{material.is_double_sided},
-    feature_mask{material.features.underlying()} { }
+  material_key() {
+    std::memset(this, 0, sizeof(material_key));
+  }
 
 }; // struct material_key
 
@@ -181,6 +161,42 @@ struct material_key_hash {
     return utility::djb2_hash{}({reinterpret_cast<const std::uint8_t*>(&key), sizeof(material_key)});
   }
 }; // struct material_key_hash
+
+struct material {
+  math::color base_color{math::color::white()};
+  std::float_t metallic{0.0f};
+  std::float_t roughness{0.5f};
+  std::float_t occlusion{1.0f};
+  math::color emissive_color{0, 0, 0, 1};
+  std::float_t emissive_strength{0.0f};
+  std::float_t alpha_cutoff{0.8f};
+
+  graphics::image2d_handle albedo{};
+  graphics::image2d_handle normal{};
+  graphics::image2d_handle mrao{};
+
+  blend_mode blend{blend_mode::mix};
+  cull_mode cull{cull_mode::back};
+  depth_draw depth{depth_draw::opaque_only};
+  alpha_mode alpha{alpha_mode::opaque};
+  bool is_double_sided{false};
+
+  utility::bit_field<material_feature> features;
+
+  operator material_key() const {
+    auto key = material_key{};
+
+    key.blend = static_cast<std::uint64_t>(blend);
+    key.cull = static_cast<std::uint64_t>(cull);
+    key.depth = static_cast<std::uint64_t>(depth);
+    key.alpha = static_cast<std::uint64_t>(alpha);
+    key.is_double_sided = is_double_sided;
+    key.feature_mask = features.underlying();
+
+    return key;
+  }
+
+}; // struct material
 
 struct alignas(16) transform_data {
   math::matrix4x4 model;
@@ -244,7 +260,7 @@ class material_subrenderer final : public graphics::subrenderer {
       .polygon_mode = graphics::polygon_mode::fill,
       .cull_mode = graphics::cull_mode::back,
       .front_face = graphics::front_face::counter_clockwise
-    },
+    }
   };
 
   static auto _create_pipeline(const std::filesystem::path& path, const graphics::render_graph::graphics_pass& pass) -> graphics::graphics_pipeline_handle {
@@ -379,31 +395,6 @@ public:
 
         command_buffer.draw_indexed_indirect(draw_commands_buffer, range.offset, range.count);
       }
-
-      // // set(0): scene
-      // pipeline_data.scene_descriptor_handler.push(command_buffer /*, frame if needed */);
-
-      // // set(1): transforms/materials/images/sampler/instances
-      // {
-      //   graphics::descriptor_handler set1{pipeline_data.pipeline, 1u};
-      //   set1.push_storage_buffer(command_buffer, 0u, _transform_buffer);
-      //   set1.push_storage_buffer(command_buffer, 1u, _material_buffer);
-      //   set1.push_separate_image_array(command_buffer, 2u, _images);
-      //   set1.push_separate_sampler(command_buffer,    3u, _sampler);
-      //   set1.push_storage_buffer(command_buffer,      4u, pipeline_data.instance_data_buffer);
-      //   set1.bind(command_buffer);
-      // }
-
-      // // Draw loop: for (const auto& [mesh_id, range] : ranges)
-      // auto& draws_buf = graphics_module.get_resource<graphics::storage_buffer>(pipeline_data.draw_commands_buffer);
-
-      // for (const auto& [mesh_id, range] : pipeline_data.draw_ranges) {
-      //   auto& mesh = assets_module.get_asset<models::mesh>(mesh_id);
-      //   mesh.bind(command_buffer);
-
-      //   const VkDeviceSize offset = sizeof(VkDrawIndexedIndirectCommand) * range.offset;
-      //   command_buffer.draw_indexed_indirect(draws_buf, offset, range.count);
-      // }
     }
   }
 
@@ -468,7 +459,7 @@ private:
       case depth_draw::disabled: definition.depth = graphics::depth::disabled; break;
     }
 
-    definition.uses_transparency = (static_cast<alpha_mode>(key.alpha) != alpha_mode::opaque);
+    definition.uses_transparency = (static_cast<alpha_mode>(key.alpha) == alpha_mode::alpha);
 
     auto& compiler = graphics_module.compiler();
 
@@ -485,7 +476,9 @@ private:
         .path = std::filesystem::path{_base_pipeline}.append(fmt::format("{}.slang", name)),
         .stage = stage,
         .defines = {
-          {"SBX_TEST", "1"}
+          {"SBX_TEST", "1"},
+          {"SBX_FEATURE_ALPHA", fmt::format("{:d}", static_cast<alpha_mode>(key.alpha) == alpha_mode::alpha)},
+          {"SBX_FEATURE_ALPHA_CLIP", fmt::format("{:d}", static_cast<alpha_mode>(key.alpha) == alpha_mode::alpha_clip)}
         }
       };
 
@@ -493,8 +486,6 @@ private:
     }
 
     auto pipeline = graphics_module.add_resource<graphics::graphics_pipeline>(compiled_shaders, pass, definition);
-
-    // const auto program_path = std::filesystem::path{"shaders/pbr_material"}; // adjust
 
     auto [entry, inserted] = _pipeline_cache.emplace(key, pipeline);
 
@@ -542,7 +533,6 @@ private:
         draw_commands.push_back(command);
 
         utility::append(instance_data, std::move(instances));
-        // instance_data.insert(instances.end(), std::make_move_iterator(instances.begin()), std::make_move_iterator(instances.end()));
 
         base_instance += command.instanceCount;
         range.count++;

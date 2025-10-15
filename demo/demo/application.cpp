@@ -184,75 +184,11 @@ application::application()
     sbx::core::engine::quit();
   };
 
-  // BMP
-
-  // scene.add_material<sbx::scenes::material>("bmp_body1", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 0.5f, 1.0f, scene.get_image("bmp_body1_albedo"));
-  // scene.add_material<sbx::scenes::material>("bmp_body2", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 0.5f, 1.0f, scene.get_image("bmp_body2_albedo"));
-  // scene.add_material<sbx::scenes::material>("bmp_tracks", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 0.5f, 1.0f, scene.get_image("bmp_tracks_albedo"));
-
-  // auto& tank_mesh = assets_module.get_asset<sbx::models::mesh>(scene.get_mesh("bmp"));
-
-  // auto root = scene.create_node("Tank", sbx::scenes::transform{sbx::math::vector3{20, 0, 10}, sbx::math::quaternion::identity, sbx::math::vector3{0.5}});
-
-  // auto turret = scene.create_child_node(root, "Turret", sbx::scenes::transform{});
-  // scene.add_component<sbx::scenes::static_mesh>(turret, scene.get_mesh("bmp"), std::vector<sbx::scenes::static_mesh::submesh>{{tank_mesh.submesh_index("turret"), scene.get_material("bmp_body1")}});
-
-  // auto gun_primary = scene.create_child_node(turret, "GunPrimary", sbx::scenes::transform{});
-  // scene.add_component<sbx::scenes::static_mesh>(gun_primary, scene.get_mesh("bmp"), std::vector<sbx::scenes::static_mesh::submesh>{{tank_mesh.submesh_index("gun_primary"), scene.get_material("bmp_body1")}});
-
-  // auto gun_secondary = scene.create_child_node(turret, "GunSecondary", sbx::scenes::transform{});
-  // scene.add_component<sbx::scenes::static_mesh>(gun_secondary, scene.get_mesh("bmp"), std::vector<sbx::scenes::static_mesh::submesh>{{tank_mesh.submesh_index("gun_secondary"), scene.get_material("bmp_body1")}});
-
-  // auto hull = scene.create_child_node(root, "Hull", sbx::scenes::transform{});
-  // scene.add_component<sbx::scenes::static_mesh>(hull, scene.get_mesh("bmp"), std::vector<sbx::scenes::static_mesh::submesh>{{tank_mesh.submesh_index("hull"), scene.get_material("bmp_body2")}});
-
   // Terrain
 
   auto& terrain_module = sbx::core::engine::get_module<demo::terrain_module>();
 
   terrain_module.load_terrain_in_scene();
-
-  // Soldier
-
-  // scene.add_material<sbx::scenes::material>("player", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 0.5f, 1.0f);
-
-  // auto player = scene.create_node("Player");
-
-  // const auto player_submeshes = std::vector<sbx::scenes::skinned_mesh::submesh>{
-  //   {0u, scene.get_material("player")},
-  //   {1u, scene.get_material("player")},
-  //   {2u, scene.get_material("player")}
-  // };
-
-  // scene.add_component<sbx::scenes::skinned_mesh>(player, scene.get_mesh("player"), player_animation_id, player_submeshes);
-  // scene.add_component<sbx::scenes::animation_state>(player, 0.0f, 1.0f, true);
-  
-  // scene.add_material<sbx::scenes::material>("soldier_body", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 0.9f, 1.0f, scene.get_image("soldier_body_albedo"));
-  // scene.add_material<sbx::scenes::material>("soldier_head", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 0.9f, 1.0f, scene.get_image("soldier_head_albedo"));
-  // scene.add_material<sbx::scenes::material>("soldier_backpack", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 0.9f, 1.0f, scene.get_image("soldier_backpack_albedo"));
-  // scene.add_material<sbx::scenes::material>("soldier_helmet", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 0.9f, 1.0f, scene.get_image("soldier_helmet_albedo"));
-  
-  // auto soldier_submeshes = std::vector<sbx::scenes::skinned_mesh::submesh>{
-  //   {0u, scene.get_material("soldier_body")},
-  //   {1u, scene.get_material("soldier_head")},
-  //   {2u, scene.get_material("soldier_helmet")},
-  //   {3u, scene.get_material("soldier_backpack")}
-  // };
-
-  // auto soldier = scene.create_node("Soldier");
-
-  // scene.add_component<show_local_coordinates>(soldier);
-
-  // scene.add_component<sbx::scenes::skinned_mesh>(soldier, scene.get_mesh("soldier"), scene.get_animation("IdleStanding"), soldier_submeshes);
-
-  // auto& soldier_animator = scene.add_component<sbx::animations::animator>(soldier);
-  // soldier_animator.add_state({"IdleStanding", scene.get_animation("IdleStanding"), true, 1.0f});
-
-  // soldier_animator.play("IdleStanding", true);
-
-  // auto& soldier_transform = scene.get_component<sbx::scenes::transform>(soldier);
-  // soldier_transform.set_position(sbx::math::vector3{5.0f, 0.0f, 3.0f});
-  // soldier_transform.set_scale(sbx::math::vector3{3.0f});
 
   // Longhouse
 
@@ -270,15 +206,22 @@ application::application()
 
   auto pine_tree = scene.create_node("PineTree");
 
-  scene.add_material<sbx::scenes::material>("pine_tree_bark", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 0.5f, 1.0f, scene.get_image("pine_tree_bark_albedo"), scene.get_image("pine_tree_bark_normal"));
-  scene.add_material<sbx::scenes::material>("pine_tree_leaves", sbx::scenes::material_type::masked, sbx::math::color::white(), 0.0f, 0.5f, 1.0f, scene.get_image("pine_tree_leaves_albedo"), scene.get_image("pine_tree_leaves_normal"));
+  auto& pine_tree_bark = scene.add_material<sbx::models::prototype::material>("pine_tree_bark");
+  pine_tree_bark.albedo = scene.get_image("pine_tree_bark_albedo");
+  pine_tree_bark.normal = scene.get_image("pine_tree_bark_normal");
+  
+  auto& pine_tree_leaves= scene.add_material<sbx::models::prototype::material>("pine_tree_leaves");
+  pine_tree_leaves.albedo = scene.get_image("pine_tree_leaves_albedo");
+  pine_tree_leaves.normal = scene.get_image("pine_tree_leaves_normal");
+  pine_tree_leaves.alpha = sbx::models::prototype::alpha_mode::alpha_clip;
+  pine_tree_leaves.cull = sbx::models::prototype::cull_mode::off;
 
-  auto pine_tree_submeshes = std::vector<sbx::scenes::static_mesh::submesh>{
+  auto pine_tree_submeshes = std::vector<sbx::models::prototype::static_mesh::submesh>{
     {0u, scene.get_material("pine_tree_bark")},
     {1u, scene.get_material("pine_tree_leaves")}
   };
 
-  scene.add_component<sbx::scenes::static_mesh>(pine_tree, scene.get_mesh("pine_tree"), pine_tree_submeshes);
+  scene.add_component<sbx::models::prototype::static_mesh>(pine_tree, scene.get_mesh("pine_tree"), pine_tree_submeshes);
 
   auto& pine_tree_transform = scene.get_component<sbx::scenes::transform>(pine_tree);
   pine_tree_transform.set_position(sbx::math::vector3{-10.0f, 0.0f, -5.0f});
@@ -308,22 +251,6 @@ application::application()
     // light_transform.set_scale(sbx::math::vector3{0.2f, 0.2f, 0.2f});
   }
 
-  // Dragon
-  // auto& dragon_mesh = assets_module.get_asset<sbx::models::mesh>(scene.get_mesh("dragon"));
-
-  // auto dragon = scene.create_node("Dragon"); //, sbx::scenes::transform{dragon_mesh.submesh_local_transform("dragon") * sbx::math::vector4{0, 0, 0, 1}});
-
-  // scene.add_material<sbx::scenes::material>("cloth", sbx::scenes::material_type::opaque, sbx::math::color::blue(), 0.0f, 1.0f, 1.0f, scene.get_image("checkerboard"));
-  // scene.add_material<sbx::scenes::material>("dragon", sbx::scenes::material_type::transparent, sbx::math::color{0.0f, 0.6588f, 0.4196f, 0.6f}, 0.0f, 0.5f, 1.0f);
-
-  // scene.add_component<sbx::scenes::static_mesh>(dragon, scene.get_mesh("dragon"), std::vector<sbx::scenes::static_mesh::submesh>{{0u, scene.get_material("cloth")}, {1u, scene.get_material("dragon")}});
-
-  // auto& dragon_transform = scene.get_component<sbx::scenes::transform>(dragon);
-  // dragon_transform.set_position(sbx::math::vector3{-8.0f, 2.0f, 4.0f});
-  // dragon_transform.set_rotation(sbx::math::vector3::up, sbx::math::degree{45});
-  // dragon_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
-
-
   // Helmet
   auto helmet = scene.create_node("Helmet");
 
@@ -339,58 +266,9 @@ application::application()
 
   auto& helmet_transform = scene.get_component<sbx::scenes::transform>(helmet);
   helmet_transform.set_position(sbx::math::vector3{0.0f, 6.0f, 0.0f});
-  // helmet_transform.set_rotation(sbx::math::vector3::right, sbx::math::degree{90});
   helmet_transform.set_scale(sbx::math::vector3{4.0f, 4.0f, 4.0f});
 
   scripting_module.instantiate(helmet, "res://scripts/test.lua");
-
-  // static_assert(std::is_trivially_constructible_v<sbx::scripting::scripts, sbx::scenes::node>, "");
-  // static_assert(std::is_trivially_constructible_v<sbx::scripting::scripts, sbx::scenes::node&>, "");
-  // static_assert(std::is_trivially_constructible_v<sbx::scripting::scripts, const sbx::scenes::node>, "");
-  // static_assert(std::is_trivially_constructible_v<sbx::scripting::scripts, const sbx::scenes::node&>, "");
-
-  // static_assert(std::is_constructible_v<sbx::scripting::scripts, sbx::scenes::node>, "");
-  // static_assert(std::is_constructible_v<sbx::scripting::scripts, sbx::scenes::node&>, "");
-  // static_assert(std::is_constructible_v<sbx::scripting::scripts, const sbx::scenes::node>, "");
-  // static_assert(std::is_constructible_v<sbx::scripting::scripts, const sbx::scenes::node&>, "");
-
-  // auto& scripts = scene.add_component<sbx::scripting::scripts>(helmet);
-  // scripts.add("Test");
-
-  // Box1
-  // auto box1 = scene.create_node("Box1");
-
-  // scene.add_material<sbx::scenes::material>("box1", sbx::scenes::material_type::transparent, sbx::math::color{1.0f, 0.0f, 0.0f, 0.5f}, 0.0f, 0.5f, 1.0f);
-
-  // scene.add_component<sbx::scenes::static_mesh>(box1, scene.get_mesh("cube"), scene.get_material("box1"));
-
-  // auto& box1_transform = scene.get_component<sbx::scenes::transform>(box1);
-  // box1_transform.set_position(sbx::math::vector3{6.0f, 1.0f, 6.0f});
-
-
-  // Box2
-  // auto box2 = scene.create_node("Box2");
-
-  // scene.add_material<sbx::scenes::material>("box2", sbx::scenes::material_type::opaque, sbx::math::color{0.0f, 1.0f, 0.0f, 0.5f}, 0.0f, 0.5f, 1.0f);
-
-  // scene.add_component<sbx::scenes::static_mesh>(box2, scene.get_mesh("cube"), scene.get_material("box2"));
-
-  // auto& box2_transform = scene.get_component<sbx::scenes::transform>(box2);
-  // box2_transform.set_position(sbx::math::vector3{6.0f, 1.0f, 7.0f});
-
-
-  // Box3
-  // auto box3 = scene.create_node("Box3");
-
-  // scene.add_material<sbx::scenes::material>("box3", sbx::scenes::material_type::transparent, sbx::math::color{0.0f, 0.0f, 1.0f, 0.5f}, 0.0f, 0.5f, 1.0f);
-
-  // scene.add_component<sbx::scenes::static_mesh>(box3, scene.get_mesh("cube"), scene.get_material("box3"));
-
-  // auto& box3_transform = scene.get_component<sbx::scenes::transform>(box3);
-  // box3_transform.set_position(sbx::math::vector3{6.0f, 1.0f, 8.0f});
-
-  // _selection_buffer = graphics_module.add_resource<sbx::graphics::storage_buffer>(sbx::graphics::storage_buffer::min_size);
-
 
   // Fox
   auto& animations_module = sbx::core::engine::get_module<sbx::animations::animations_module>();
@@ -488,41 +366,6 @@ application::application()
   fox1_transform.set_position(sbx::math::vector3{12.0f, 0.0f, 0.0f});
   fox1_transform.set_scale(sbx::math::vector3{0.06f, 0.06f, 0.06f});
 
-  // _selection_buffer = graphics_module.add_resource<sbx::graphics::storage_buffer>(sbx::graphics::storage_buffer::min_size);
-
-  // Tree
-  // scene.add_material<sbx::scenes::material>("maple_tree_bark", sbx::scenes::material_type::opaque, sbx::math::color{1.0f, 1.0f, 1.0f, 0.1f}, 0.0f, 0.5f, 1.0f, scene.get_image("maple_tree_bark"), scene.get_image("maple_tree_bark_normal"));
-  // scene.add_material<sbx::scenes::material>("maple_tree_leaves", sbx::scenes::material_type::masked, sbx::math::color::white(), 0.0f, 0.5f, 1.0f, scene.get_image("maple_tree_leaves"));
-
-  // auto maple_tree = scene.create_node("MapleTree");
-  // scene.add_component<sbx::scenes::static_mesh>(maple_tree, scene.get_mesh("maple_tree_4"), std::vector<sbx::scenes::static_mesh::submesh>{{0u, scene.get_material("maple_tree_bark")}, {1u, scene.get_material("maple_tree_leaves")}});
-
-  // auto& maple_tree_transform = scene.get_component<sbx::scenes::transform>(maple_tree);
-  // maple_tree_transform.set_position(sbx::math::vector3{5.0f, 0.0f, 0.0f});
-  // maple_tree_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
-
-  // Cube
-
-  // auto cube = scene.create_node("Cube");
-
-  // scene.add_material<sbx::scenes::material>("grass3", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 0.5f, 1.0f, scene.get_image("rust_albedo"), scene.get_image("rust_normal"), scene.get_image("rust_mrao"));
-
-  // scene.add_component<sbx::scenes::static_mesh>(cube, scene.get_mesh("cube"), scene.get_material("grass3"));
-
-  // auto& cube_transform = scene.get_component<sbx::scenes::transform>(cube);
-  // cube_transform.set_position(sbx::math::vector3{0.0f, 5.0f, 5.0f});
-  // cube_transform.set_rotation(sbx::math::vector3::right, sbx::math::degree{45});
-  // cube_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
-
-  // auto& cube_rigidbody = scene.add_component<sbx::physics::rigidbody>(cube, sbx::units::kilogram{1.0f});
-  // cube_rigidbody.set_constant_acceleration(sbx::math::vector3{0.0f, -9.81f, 0.0f});
-
-  // scene.add_component<sbx::physics::collider>(cube, sbx::physics::box{sbx::math::vector3{-1.0f, -1.0f, -1.0f}, sbx::math::vector3{1.0f, 1.0f, 1.0f}});
-
-  // auto floor = scene.create_node("Floor");
-  // scene.add_component<sbx::physics::rigidbody>(floor);
-  // scene.add_component<sbx::physics::collider>(floor, sbx::physics::box{sbx::math::vector3{50.0f, 1.0f, 50.0f}});
-
   auto spheres = scene.create_node(fmt::format("Spheres"));
 
   auto& spheres_transform = scene.get_component<sbx::scenes::transform>(spheres);
@@ -544,135 +387,17 @@ application::application()
     }
   }
 
-  // Tank
-
-  // _tanks.emplace_back(sbx::scenes::transform{sbx::math::vector3::zero, sbx::math::quaternion::identity, sbx::math::vector3{0.5}});
-
-  // const auto grid_size = sbx::math::vector2{15.0f, 15.0f};
-  // const auto cell_size = sbx::math::vector2{15.0f, 15.0f};
-  // const auto offset = grid_size * cell_size * 0.5f;
-
-  // auto forrest = scene.create_node("Forrest");
-
-  // for (auto y : std::views::iota(0u, grid_size.y())) {
-  //   for (auto x : std::views::iota(0u, grid_size.x())) {
-  //     auto tree = scene.create_child_node(forrest, fmt::format("Tree{}{}", x, y));
-
-  //     scene.add_component<sbx::scenes::static_mesh>(tree, scene.get_mesh(fmt::format("maple_tree_{}", sbx::math::random::next<std::uint32_t>(1, 4))), tree_submeshes);
-
-  //     const auto position = (sbx::math::vector2{x, y} * cell_size - offset) + (sbx::math::vector2{sbx::math::random::next<std::float_t>(0.0f, 1.0f), sbx::math::random::next<std::float_t>(0.0f, 1.0f)} * cell_size);
-
-  //     auto& tree_transform = scene.get_component<sbx::scenes::transform>(tree);
-  //     tree_transform.set_position(sbx::math::vector3{position.x(), 0.0f, position.y()});
-  //     // tree_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
-  //     tree_transform.set_rotation(sbx::math::vector3::up, sbx::math::degree{sbx::math::random::next<std::float_t>(0.0f, 360.0f)});
-  //   }
-  // }
-
-  // Rocks
-
-  // auto rock_submeshes = std::vector<sbx::scenes::static_mesh::submesh>{};
-  // rock_submeshes.push_back(sbx::scenes::static_mesh::submesh{0u, sbx::math::color::white(), sbx::scenes::static_mesh::material{}, scene.get_image("rocks")});
-
-  // auto rock_1 = scene.create_node("Rock1");
-  // scene.add_component<sbx::scenes::static_mesh>(rock_1, scene.get_mesh("rock_1"), rock_submeshes);
-  // auto& rock_1_transform = scene.get_component<sbx::scenes::transform>(rock_1);
-  // rock_1_transform.set_position(sbx::math::vector3{-6.0f, 0.0f, 0.0f});
-  // rock_1_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
-
-  // auto rock_2 = scene.create_node("Rock2");
-  // scene.add_component<sbx::scenes::static_mesh>(rock_2, scene.get_mesh("rock_2"), rock_submeshes);
-  // auto& rock_2_transform = scene.get_component<sbx::scenes::transform>(rock_2);
-  // rock_2_transform.set_position(sbx::math::vector3{-3.0f, 0.0f, 0.0f});
-  // rock_2_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
-
-  // auto rock_3 = scene.create_node("Rock3");
-  // scene.add_component<sbx::scenes::static_mesh>(rock_3, scene.get_mesh("rock_3"), rock_submeshes);
-  // auto& rock_3_transform = scene.get_component<sbx::scenes::transform>(rock_3);
-  // rock_3_transform.set_position(sbx::math::vector3{0.0f, 0.0f, 0.0f});
-  // rock_3_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
-
-  // auto rock_4 = scene.create_node("Rock4");
-  // scene.add_component<sbx::scenes::static_mesh>(rock_4, scene.get_mesh("rock_4"), rock_submeshes);
-  // auto& rock_4_transform = scene.get_component<sbx::scenes::transform>(rock_4);
-  // rock_4_transform.set_position(sbx::math::vector3{3.0f, 0.0f, 0.0f});
-  // rock_4_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
-
-  // auto rock_5 = scene.create_node("Rock5");
-  // scene.add_component<sbx::scenes::static_mesh>(rock_5, scene.get_mesh("rock_5"), rock_submeshes);
-  // auto& rock_5_transform = scene.get_component<sbx::scenes::transform>(rock_5);
-  // rock_5_transform.set_position(sbx::math::vector3{6.0f, 0.0f, 0.0f});
-  // rock_5_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
-
-  // // Cubes
-
-  // auto height_map = std::vector<std::float_t>{};
-  // height_map.resize(100 * 100);
-
-  // for (auto y = 0; y < 100; ++y) {
-  //   for (auto x = 0; x < 100; ++x) {
-  //     height_map[x + y * 100] = sbx::math::noise::fractal(x * 0.05f, y * 0.05f, 5);
-  //   }
-  // }
-
-  // scene.add_image("height_map", sbx::math::vector2u{100, 100}, VK_FORMAT_R32_SFLOAT, reinterpret_cast<const std::uint8_t*>(height_map.data()));
-
-  // for (auto y = -3; y <= 3; y = y + 3) {
-  //   for (auto x = -3; x <= 3; x = x + 3) {
-  //     auto test = scene.create_node("Test");
-  //     auto& test_transform = scene.get_component<sbx::scenes::transform>(test);
-  //     test_transform.set_position(sbx::math::vector3{x, sbx::math::random::next<std::float_t>(6.0f, 8.0f), y});
-  //     test_transform.set_scale(sbx::math::vector3{1.0f, 1.0f, 1.0f});
-  //     test_transform.set_rotation(sbx::math::vector3::up, sbx::math::degree{45});
-  //     scene.add_component<rotator>(test);
-  //     // scene.add_component<sbx::scenes::static_mesh>(test, _mesh_ids["sphere"], 0u, sbx::math::color{1.0f, 0.6f, 0.6f, 1.0f}, sbx::scenes::static_mesh::material{0.0f, 1.0f, 0.0f, 0.0f});
-  //     scene.add_component<sbx::scenes::static_mesh>(test, scene.get_mesh("cube"), 0u, sbx::math::color{0.39f, 0.44f, 0.56f, 1.0f}, sbx::scenes::static_mesh::material{0.0f, 1.0f, 0.0f, 0.0f}, scene.get_image("height_map"));
-  //   }
-  // }
-
   // Camera
   auto camera = scene.camera();
 
   scene.add_component<sbx::scenes::skybox>(camera, scene.get_cube_image("skybox"));
-
-  // const auto position = sbx::math::vector3{10.0f, 10.0f, 10.0f};
-
-  // camera.get_component<sbx::scenes::transform>().set_position(position);
-  // camera.get_component<sbx::scenes::transform>().look_at(sbx::math::vector3::zero);
 
   if (auto hide_window = cli.argument<bool>("hide-window"); !hide_window) {
     window.show();
   }
 
   sbx::utility::logger<"demo">::info("string id: {}", sbx::utility::string_id<"foobar">());
-
-  // scenes_module.save_scene("res://scenes/test.yaml");
 }
-
-// [NOTE] : This might or might not me a great thing :D
-// static auto select_object_ids_in_rect(const sbx::graphics::image2d& image, VkFormat format, sbx::graphics::storage_buffer& buffer, int x0, int y0, int width, int height) -> std::unordered_set<uint64_t> {
-//   const auto buffer_size = width * height * sizeof(std::uint32_t) * 2;
-
-//   if (buffer.size() < buffer_size) {
-//     buffer.resize(static_cast<std::size_t>(static_cast<std::float_t>(buffer_size) * 1.5f));
-//   }
-
-//   VkOffset3D offset = { x0, y0, 0 };
-//   VkExtent3D extent = { static_cast<uint32_t>(width), static_cast<uint32_t>(height), 1 };
-//   sbx::graphics::image::copy_image_to_buffer(image, format, buffer, offset, extent, 1, 0);
-
-//   std::unordered_set<std::uint64_t> ids;
-
-//   for (uint32_t i = 0; i < width * height; ++i) {
-//     std::uint64_t id = (std::uint64_t(buffer.read<std::uint32_t>(i * 2 + 0)) << 32) | std::uint64_t(buffer.read<std::uint32_t>(i * 2 + 1));
-    
-//     if (id != 0) {
-//       ids.insert(id);
-//     }
-//   }
-
-//   return ids;
-// }
 
 auto application::update() -> void  {
   const auto delta_time = sbx::core::engine::delta_time();
@@ -690,31 +415,6 @@ auto application::update() -> void  {
   _rotation += sbx::math::degree{45} * delta_time;
 
   _camera_controller.update();
-
-  // if (sbx::devices::input::is_key_pressed(sbx::devices::key::space)) {
-  //   const int grid_size = 5;
-  //   const float spacing = 2.5f; // Adjust spacing based on cube size
-  //   const sbx::math::vector3 base_position{0.0f, 20.0f, 5.0f};
-
-  //   for (int x = 0; x < grid_size; ++x) {
-  //     for (int z = 0; z < grid_size; ++z) {
-  //       auto cube = scene.create_node("Cube");
-
-  //       scene.add_component<sbx::scenes::static_mesh>(cube, scene.get_mesh("cube"), scene.get_material("grass3"));
-
-  //       auto& transform = scene.get_component<sbx::scenes::transform>(cube);
-  //       transform.set_position(base_position + sbx::math::vector3{x * spacing, 0.0f, z * spacing});
-  //       transform.set_rotation(sbx::math::vector3{1.0, 0.0, 1.0}, sbx::math::degree{45});
-  //       transform.set_scale(sbx::math::vector3{1.0f, 1.0f, 1.0f});
-
-  //       auto& rigidbody = scene.add_component<sbx::physics::rigidbody>(cube, sbx::units::kilogram{1.0f});
-  //       rigidbody.set_constant_acceleration({0.0f, -9.81f, 0.0f});
-
-  //       const auto& collider = scene.add_component<sbx::physics::collider>(cube, sbx::physics::box{sbx::math::vector3{0.5f}});
-  //       rigidbody.set_inverse_inertia_tensor_local(sbx::physics::local_inverse_inertia(rigidbody.mass(), collider));
-  //     }
-  //   }
-  // }
 
   static auto fox_speed = 0.0f;
   static auto direction = 1;
@@ -735,47 +435,10 @@ auto application::update() -> void  {
   auto& fox_transform = scene.get_component<sbx::scenes::transform>(fox1);
   fox_transform.set_rotation(sbx::math::vector3::up, _rotation);
 
-  // auto query_rotator = scene.query<sbx::scenes::transform, rotator>();
-
-  // for (auto&& [node, transform] : query_rotator.each()) {
-  //   transform.set_rotation(sbx::math::vector3::up, _rotation);
-  // }
-
-  // auto query_walker = scene.query<sbx::scenes::transform, walker>();
-
-  // for (auto&& [node, transform] : query_walker.each()) {
-  //   transform.move_by(transform.forward() * delta_time * 2.0f);
-  // }
-
   if (scene.is_valid(_light_center)) {
     auto& light_center_transform = scene.get_component<sbx::scenes::transform>(_light_center);
     light_center_transform.set_rotation(sbx::math::vector3::up, _rotation);
   }
-
-  // auto query_coordinates = scene.query<show_local_coordinates>();
-
-  // for (auto&& [node] : query_coordinates.each()) {
-  //   const auto world = scene.world_transform(node);
-
-  //   scenes_module.add_coordinate_arrows(world);
-  // }
-
-  // for (auto& tank : _tanks) {
-  //   tank.update();
-  // }
-
-  // const auto& image = static_cast<const sbx::graphics::image2d&>(graphics_module.attachment("object_id");
-  // auto& buffer = graphics_module.get_resource<sbx::graphics::storage_buffer>(_selection_buffer);
-
-  // static auto start = sbx::math::vector2u{0, 0};
-
-  // auto ids = select_object_ids_in_rect(image, VK_FORMAT_R32G32_UINT, buffer, 100, 100, 300, 300);
-
-  // for (const auto id : ids) {
-  //   sbx::utility::logger<"demo">::info("object id: {}", id);
-  // }
-
-  // sbx::utility::logger<"demo">::info("object id: {}", sbx::devices::input::mouse_position());
 }
 
 auto application::fixed_update() -> void {
