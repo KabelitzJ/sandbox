@@ -29,6 +29,7 @@ private:
   static auto set_blueish_colors() -> void;
   static auto set_foo_colors() -> void;
   static auto set_bar_colors() -> void;
+  static auto set_nvpro() -> void;
 
   static auto apply_color_correction() -> void;
 

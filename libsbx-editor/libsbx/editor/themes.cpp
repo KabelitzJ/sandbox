@@ -21,6 +21,7 @@ themes::themes() {
   _themes["Blueish"] = [this]() { set_blueish_colors(); };
   _themes["Foo"] = [this]() { set_foo_colors(); };
   _themes["Bar"] = [this]() { set_bar_colors(); };
+  _themes["NVPro"] = [this]() { set_nvpro(); };
  }
 
 auto themes::apply_theme(const std::string& theme) -> void {
@@ -797,13 +798,86 @@ auto themes::set_bar_colors() -> void {
   style.Colors[ImGuiCol_BorderShadow]              = {};
 }
 
+auto themes::set_nvpro() -> void {
+  ImGui::StyleColorsDark();
+
+  ImGuiStyle& style                  = ImGui::GetStyle();
+  style.WindowRounding               = 0.0f;
+  style.WindowBorderSize             = 0.0f;
+  style.ColorButtonPosition          = ImGuiDir_Right;
+  style.FrameRounding                = 2.0f;
+  style.FrameBorderSize              = 1.0f;
+  style.GrabRounding                 = 4.0f;
+  style.IndentSpacing                = 12.0f;
+  style.Colors[ImGuiCol_WindowBg]    = ImVec4(0.2f, 0.2f, 0.2f, 1.0f);
+  style.Colors[ImGuiCol_MenuBarBg]   = ImVec4(0.2f, 0.2f, 0.2f, 1.0f);
+  style.Colors[ImGuiCol_ScrollbarBg] = ImVec4(0.2f, 0.2f, 0.2f, 1.0f);
+  style.Colors[ImGuiCol_PopupBg]     = ImVec4(0.135f, 0.135f, 0.135f, 1.0f);
+  style.Colors[ImGuiCol_Border]      = ImVec4(0.4f, 0.4f, 0.4f, 0.5f);
+  style.Colors[ImGuiCol_FrameBg]     = ImVec4(0.05f, 0.05f, 0.05f, 0.5f);
+
+  // Normal
+  ImVec4                normal_color = ImVec4(0.465f, 0.465f, 0.525f, 1.0f);
+  std::vector<ImGuiCol> to_change_nrm;
+  to_change_nrm.push_back(ImGuiCol_Header);
+  to_change_nrm.push_back(ImGuiCol_SliderGrab);
+  to_change_nrm.push_back(ImGuiCol_Button);
+  to_change_nrm.push_back(ImGuiCol_CheckMark);
+  to_change_nrm.push_back(ImGuiCol_ResizeGrip);
+  to_change_nrm.push_back(ImGuiCol_TextSelectedBg);
+  to_change_nrm.push_back(ImGuiCol_Separator);
+  to_change_nrm.push_back(ImGuiCol_FrameBgActive);
+  for(auto c : to_change_nrm)
+  {
+    style.Colors[c] = normal_color;
+  }
+
+  // Active
+  ImVec4                active_color = ImVec4(0.365f, 0.365f, 0.425f, 1.0f);
+  std::vector<ImGuiCol> to_change_act;
+  to_change_act.push_back(ImGuiCol_HeaderActive);
+  to_change_act.push_back(ImGuiCol_SliderGrabActive);
+  to_change_act.push_back(ImGuiCol_ButtonActive);
+  to_change_act.push_back(ImGuiCol_ResizeGripActive);
+  to_change_act.push_back(ImGuiCol_SeparatorActive);
+  for(auto c : to_change_act)
+  {
+    style.Colors[c] = active_color;
+  }
+
+  // Hovered
+  ImVec4                hovered_color = ImVec4(0.565f, 0.565f, 0.625f, 1.0f);
+  std::vector<ImGuiCol> to_change_hover;
+  to_change_hover.push_back(ImGuiCol_HeaderHovered);
+  to_change_hover.push_back(ImGuiCol_ButtonHovered);
+  to_change_hover.push_back(ImGuiCol_FrameBgHovered);
+  to_change_hover.push_back(ImGuiCol_ResizeGripHovered);
+  to_change_hover.push_back(ImGuiCol_SeparatorHovered);
+  for(auto c : to_change_hover)
+  {
+    style.Colors[c] = hovered_color;
+  }
+
+
+  style.Colors[ImGuiCol_TitleBgActive]    = ImVec4(0.465f, 0.465f, 0.465f, 1.0f);
+  style.Colors[ImGuiCol_TitleBg]          = ImVec4(0.125f, 0.125f, 0.125f, 1.0f);
+  style.Colors[ImGuiCol_Tab]              = ImVec4(0.05f, 0.05f, 0.05f, 0.5f);
+  style.Colors[ImGuiCol_TabHovered]       = ImVec4(0.465f, 0.495f, 0.525f, 1.0f);
+  style.Colors[ImGuiCol_TabActive]        = ImVec4(0.282f, 0.290f, 0.302f, 1.0f);
+  style.Colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.465f, 0.465f, 0.465f, 0.350f);
+
+  //Colors_ext[ImGuiColExt_Warning] = ImVec4 (1.0f, 0.43f, 0.35f, 1.0f);
+
+  ImGui::SetColorEditOptions(ImGuiColorEditFlags_Float | ImGuiColorEditFlags_PickerHueWheel);
+}
+
 auto themes::apply_color_correction() -> void {
   ImGuiStyle &style = ImGui::GetStyle();
   // Go through every colour and convert it to linear
   // This is because ImGui uses linear colours but we are using sRGB
   // This is a simple approximation of the conversion
   for (auto i = 0; i < ImGuiCol_COUNT; ++i) {
-    // float linear = (srgb <= 0.04045f) ? srgb / 12.92f : pow((srgb + 0.055f) * / 1.055f, 2.4f);
+    // float linear = (ImVec4 <= 0.04045f) ? ImVec4 / 12.92f : pow((ImVec4 + 0.055f) * / 1.055f, 2.4f);
 
     ImVec4 &col = style.Colors[i];
     col.x = col.x <= 0.04045f ? col.x / 12.92f : std::pow((col.x + 0.055f) / 1.055f, 2.4f);
