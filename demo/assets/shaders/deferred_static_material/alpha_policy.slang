@@ -4,24 +4,44 @@
 #include <features.slang>
 
 interface alpha_policy {
-  bool should_discard(float alpha, float alpha_cutoff);
-  float4 finalize_color(float3 rgb, float alpha);
+  static bool should_discard(float alpha, float alpha_cutoff);
+  static float4 combine_colors(float4 salmpled, float4 base);
 }; // interface alpha_policy
 
 struct opaque_alpha_policy : alpha_policy {
-  bool should_discard(float a, float cutoff) { return false; }
-  float4 finalize_color(float3 rgb, float a) { return float4(rgb, 1.0); }
+
+  static bool should_discard(float a, float cutoff) { 
+    return false; 
+  }
+
+  static float4 combine_colors(float4 salmpled, float4 base) { 
+    return float4(salmpled.rgb * base.rgb, 1.0);
+  }
+
 }; // struct opaque_alpha_policy
 
 struct clip_alpha_policy : alpha_policy {
-  bool should_discard(float a, float cutoff) { return a < cutoff; }
-  float4 finalize_color(float3 rgb, float a) { return float4(rgb, 1.0); }
+
+  static bool should_discard(float a, float cutoff) { 
+    return a < cutoff; 
+  }
+
+  static float4 combine_colors(float4 salmpled, float4 base) { 
+    return salmpled.rgb * base.rgb, salmpled.a; 
+  }
+
 }; // struct clip_alpha_policy
 
-#if SBX_FEATURE_ALPHA_CLIP
-typedef clip_alpha_policy default_alpha_policy;
-#else
-typedef opaque_alpha_policy default_alpha_policy;
-#endif
+struct transparent_alpha_policy : alpha_policy {
+
+  static bool should_discard(float a, float cutoff) { 
+    return false; 
+  }
+
+  static float4 combine_colors(float4 salmpled, float4 base) { 
+    return float4(salmpled * base); 
+  }
+
+}; // struct transparent_alpha_policy
 
 #endif // ALPHA_POLICY_SLANG_

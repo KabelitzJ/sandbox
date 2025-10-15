@@ -42,7 +42,7 @@ private:
 
   static auto _read_file(const std::filesystem::path& path) -> std::string;
 
-  static auto _inject_defines(const std::string& source, const std::vector<define>& defines) -> std::string;
+  auto _initialize_session() -> void;
 
   Slang::ComPtr<slang::IGlobalSession> _global_session;
   Slang::ComPtr<slang::ISession> _session;

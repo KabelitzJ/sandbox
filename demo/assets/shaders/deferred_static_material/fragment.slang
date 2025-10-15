@@ -35,7 +35,7 @@ SamplerState images_sampler;
 [[vk::binding(2, 0)]]
 Texture2D<float4> images[sbx::common::max_image_array_size];
 
-float4 get_albedo(fs_in in) {
+float4 get_albedo<AlphaPolicy: alpha_policy>(fs_in in) {
   uint index = in.image_indices.x;
 
   if (index >= sbx::common::max_image_array_size) {
@@ -44,7 +44,7 @@ float4 get_albedo(fs_in in) {
 
   float4 color = images[NonUniformResourceIndex(index)].Sample(images_sampler, in.uv);
 
-  return color * in.color;
+  return AlphaPolicy::combine_colors(color, in.color);
 }
 
 float3 get_normal(fs_in in) {
@@ -70,12 +70,15 @@ float4 get_material(fs_in in) {
 }
 
 [shader("fragment")]
-fs_out main(fs_in in) {
+fs_out main<AlphaPolicy: alpha_policy>(fs_in in) {
   fs_out out;
 
-  default_alpha_policy alpha_policy; 
+  out.albedo = get_albedo<AlphaPolicy>(in);
 
-  out.albedo = get_albedo(in);
+  if (AlphaPolicy::should_discard(out.albedo.a, in.alpha_cutoff)) {
+    discard;
+  }
+
   out.position = float4(in.position, 1.0);
   out.normal = float4(get_normal(in), 0.0);
   out.material = get_material(in);

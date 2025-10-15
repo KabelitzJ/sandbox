@@ -42,8 +42,9 @@ float4 get_albedo(fs_in in) {
 
   float4 color = images[NonUniformResourceIndex(index)].Sample(images_sampler, in.uv);
 
-  return float4(color.rgb * in.color.rgb, 1.0);
+  return color * in.color;
 }
+
 
 float3 get_normal(fs_in in) {
   uint index = in.image_indices.y;

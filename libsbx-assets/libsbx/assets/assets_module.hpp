@@ -160,6 +160,10 @@ public:
     
   }
 
+  auto asset_root() const -> const std::filesystem::path& {
+    return _asset_root;
+  }
+
   auto set_asset_root(const std::filesystem::path& root) -> void {
     if (!std::filesystem::exists(root)) {
       throw utility::runtime_error{"New asset root path '{}' does not exist", root.string()};
