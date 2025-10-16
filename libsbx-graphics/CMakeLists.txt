@@ -228,4 +228,11 @@ target_link_options(
     ${_LINK_OPTIONS}
 )
 
+if(WIN32)
+  add_custom_command(
+    TARGET ${PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different "$<TARGET_PROPERTY:slang::slang,IMPORTED_LOCATION>" "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
+  )
+endif()
+
 

@@ -241,8 +241,8 @@ auto compiler::_create_session(const compile_request& compile_request) -> Slang:
   session_description.preprocessorMacros = preprocessor_macro_descriptions.data();
   session_description.preprocessorMacroCount = preprocessor_macro_descriptions.size();
 
-  const auto parent_path = assets_module.resolve_path(compile_request.path.parent_path());
-  const auto path = assets_module.resolve_path(compile_request.path);
+  const auto parent_path = assets_module.resolve_path(compile_request.path.parent_path()).string();
+  const auto path = assets_module.resolve_path(compile_request.path).string();
 
   auto search_paths = std::array<const char*, 2u>{
     parent_path.c_str(),
