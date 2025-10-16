@@ -175,9 +175,12 @@ application::application()
 
   auto longhouse = scene.create_node("Longhouse");
 
-  scene.add_material<sbx::scenes::material>("longhouse", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 0.5f, 1.0f, scene.get_image("longhouse_albedo"), scene.get_image("longhouse_normal"), scene.get_image("longhouse_mrao"));
+  auto& longhouse_material = scene.add_material<sbx::models::prototype::material>("longhouse");
+  longhouse_material.albedo = scene.get_image("longhouse_albedo");
+  longhouse_material.normal = scene.get_image("longhouse_normal");
+  longhouse_material.mrao = scene.get_image("longhouse_mrao");
 
-  scene.add_component<sbx::scenes::static_mesh>(longhouse, scene.get_mesh("longhouse"), scene.get_material("longhouse"));
+  scene.add_component<sbx::models::prototype::static_mesh>(longhouse, scene.get_mesh("longhouse"), scene.get_material("longhouse"));
 
   auto& longhouse_transform = scene.get_component<sbx::scenes::transform>(longhouse);
   longhouse_transform.set_position(sbx::math::vector3{-15.0f, 0.0f, -10.0f});
@@ -192,10 +195,11 @@ application::application()
   pine_tree_bark.normal = scene.get_image("pine_tree_bark_normal");
   
   auto& pine_tree_leaves= scene.add_material<sbx::models::prototype::material>("pine_tree_leaves");
+  pine_tree_leaves.roughness = 0.2f;
   pine_tree_leaves.albedo = scene.get_image("pine_tree_leaves_albedo");
   pine_tree_leaves.normal = scene.get_image("pine_tree_leaves_normal");
-  pine_tree_leaves.alpha = sbx::models::prototype::alpha_mode::alpha_clip;
-  pine_tree_leaves.cull = sbx::models::prototype::cull_mode::off;
+  pine_tree_leaves.alpha = sbx::models::prototype::alpha_mode::mask;
+  pine_tree_leaves.is_double_sided = true;
 
   auto pine_tree_submeshes = std::vector<sbx::models::prototype::static_mesh::submesh>{
     {0u, scene.get_material("pine_tree_bark")},

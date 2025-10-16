@@ -29,6 +29,8 @@
 #include <libsbx/graphics/descriptor/descriptor_handler.hpp>
 #include <libsbx/graphics/graphics_module.hpp>
 
+#include <libsbx/models/material_subrenderer.hpp>
+
 #include <libsbx/editor/pipeline.hpp>
 #include <libsbx/editor/themes.hpp>
 #include <libsbx/editor/fonts.hpp>
@@ -374,6 +376,7 @@ private:
   }
 
   auto _build_node_preview() -> void {
+    auto& assets_module = sbx::core::engine::get_module<sbx::assets::assets_module>();
     auto& scene_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
 
     auto& scene = scene_module.scene();
@@ -443,6 +446,34 @@ private:
 
         ImGui::TreePop();
       }
+
+      // if (scene.has_component<sbx::models::prototype::static_mesh>(node) && ImGui::TreeNodeEx("Material", ImGuiTreeNodeFlags_DefaultOpen)) {
+      //   auto& static_mesh = scene.get_component<sbx::models::prototype::static_mesh>(node);
+
+      //   for (const auto& submesh : static_mesh.submeshes()) {
+      //     auto& material = assets_module.get_asset<models::prototype::material>(submesh.material);
+
+      //     ImGui::Text("Features");
+
+      //     auto changed = false;
+
+      //     for (const auto& [type, name] : utility::enum_mapping<models::prototype::material_feature>::values) {
+      //       auto value = material.features.has(type);
+
+      //       if (ImGui::Checkbox(name.data(), &value)) { 
+      //         if (value) {
+      //           material.features.set(type); 
+      //         } else {
+      //           material.features.clear(type);
+      //         }
+
+      //         changed = true; 
+      //       }
+      //     }
+      //   }
+
+      //   ImGui::TreePop();
+      // }
     }
   }
 

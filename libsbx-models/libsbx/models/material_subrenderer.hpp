@@ -70,35 +70,10 @@
 
 namespace sbx::models::prototype {
 
-namespace detail {
-
-inline constexpr auto vertex_code = std::string_view{"dasdasd"};
-
-} // namespace detail
-
-enum class blend_mode : std::uint8_t { 
-  mix, 
-  add, 
-  multiply, 
-  premultiply
-}; // enum class blend_mode
-
-enum class cull_mode : std::uint8_t { 
-  back, 
-  front, 
-  off 
-}; // enum class cull_mode
-
-enum class depth_draw : std::uint8_t { 
-  opaque_only, 
-  always, 
-  disabled 
-}; // enum class depth_draw
-
 enum class alpha_mode : std::uint8_t { 
   opaque, 
-  alpha,
-  alpha_clip
+  mask,
+  blend
 }; // enum class alpha_mode
 
 enum class material_feature : std::uint8_t {
@@ -134,14 +109,11 @@ static_assert(sizeof(material_data) <= 256u);
 static_assert(alignof(material_data) == 16u);
 
 struct material_key {
-  std::uint64_t blend           : 2;
-  std::uint64_t cull            : 2;
-  std::uint64_t depth           : 2;
   std::uint64_t alpha           : 2;
   std::uint64_t is_double_sided : 1;
-  std::uint64_t _pad0           : 3;
+  std::uint64_t _pad0           : 12;
   std::uint64_t feature_mask    : 16;
-  std::uint64_t _pad1           : 36;
+  std::uint64_t _pad1           : 32;
 
   material_key() {
     std::memset(this, 0, sizeof(material_key));
@@ -175,9 +147,6 @@ struct material {
   graphics::image2d_handle normal{};
   graphics::image2d_handle mrao{};
 
-  blend_mode blend{blend_mode::mix};
-  cull_mode cull{cull_mode::back};
-  depth_draw depth{depth_draw::opaque_only};
   alpha_mode alpha{alpha_mode::opaque};
   bool is_double_sided{false};
 
@@ -186,9 +155,6 @@ struct material {
   operator material_key() const {
     auto key = material_key{};
 
-    key.blend = static_cast<std::uint64_t>(blend);
-    key.cull = static_cast<std::uint64_t>(cull);
-    key.depth = static_cast<std::uint64_t>(depth);
     key.alpha = static_cast<std::uint64_t>(alpha);
     key.is_double_sided = is_double_sided;
     key.feature_mask = features.underlying();
@@ -263,12 +229,6 @@ class material_subrenderer final : public graphics::subrenderer {
     }
   };
 
-  static auto _create_pipeline(const std::filesystem::path& path, const graphics::render_graph::graphics_pass& pass) -> graphics::graphics_pipeline_handle {
-    auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
-
-    return graphics_module.add_resource<graphics::graphics_pipeline>(path, pass, pipeline_definition);
-  }
-
 public:
 
   material_subrenderer(const graphics::render_graph::graphics_pass& pass, const std::filesystem::path& base_pipeline)
@@ -317,9 +277,9 @@ public:
 
         auto& pipeline_data = _get_or_create_pipeline(material, pass());
 
-        auto [entry, created] = material_indices.try_emplace(submesh.material, static_cast<std::uint32_t>(_material_data.size()));
+        auto [entry, was_created] = material_indices.try_emplace(submesh.material, static_cast<std::uint32_t>(_material_data.size()));
 
-        if (created) {
+        if (was_created) {
           const auto albedo_index = _images.push_back(material.albedo);
           const auto normal_index = _images.push_back(material.normal);
           const auto mrao_index = _images.push_back(material.mrao);
@@ -446,27 +406,16 @@ private:
     }
 
     auto definition = pipeline_definition;
-
-    switch (static_cast<cull_mode>(key.cull)) {
-      case cull_mode::back: definition.rasterization_state.cull_mode = graphics::cull_mode::back; break;
-      case cull_mode::front: definition.rasterization_state.cull_mode = graphics::cull_mode::front; break;
-      case cull_mode::off: definition.rasterization_state.cull_mode = graphics::cull_mode::none; break;
-    }
-
-    switch (static_cast<depth_draw>(key.depth)) {
-      case depth_draw::opaque_only: definition.depth = graphics::depth::read_write; break;
-      case depth_draw::always: definition.depth = graphics::depth::read_only; break;
-      case depth_draw::disabled: definition.depth = graphics::depth::disabled; break;
-    }
-
-    definition.uses_transparency = (static_cast<alpha_mode>(key.alpha) == alpha_mode::alpha);
+    definition.depth = graphics::depth::read_write;
+    definition.rasterization_state.cull_mode = key.is_double_sided ? graphics::cull_mode::none : graphics::cull_mode::back;
+    definition.uses_transparency = (static_cast<alpha_mode>(key.alpha) == alpha_mode::blend);
 
     auto& compiler = graphics_module.compiler();
 
     const auto alpha_policy = std::unordered_map<alpha_mode, std::string>{
       {alpha_mode::opaque, "opaque_alpha_policy"},
-      {alpha_mode::alpha_clip, "clip_alpha_policy"},
-      {alpha_mode::alpha, "transparent_alpha_policy"}
+      {alpha_mode::mask, "mask_alpha_policy"},
+      {alpha_mode::blend, "blend_alpha_policy"}
     };
 
     const auto request = graphics::compiler::compile_request{
@@ -560,5 +509,21 @@ private:
 }; // class material_subrenderer
 
 } // namespace sbx::models::prototype
+
+template<>
+struct sbx::utility::enum_mapping<sbx::models::prototype::material_feature> {
+
+  using entry_type = sbx::utility::entry<sbx::models::prototype::material_feature>;
+
+  static constexpr auto values = std::array<entry_type, 6u>{
+    entry_type{sbx::models::prototype::material_feature::emission, "emission"},
+    entry_type{sbx::models::prototype::material_feature::normal_map, "normal_map"},
+    entry_type{sbx::models::prototype::material_feature::occlusion, "occlusion"},
+    entry_type{sbx::models::prototype::material_feature::height, "height"},
+    entry_type{sbx::models::prototype::material_feature::clearcoat, "clearcoat"},
+    entry_type{sbx::models::prototype::material_feature::anisotropy, "anisotropy"},
+  };
+
+}; // struct sbx::utility::enum_mapping
 
 #endif // LIBSBX_MODELS_MATERIAL_SUBRENDERER_HPP_

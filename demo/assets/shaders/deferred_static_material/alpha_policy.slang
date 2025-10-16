@@ -20,7 +20,7 @@ struct opaque_alpha_policy : alpha_policy {
 
 }; // struct opaque_alpha_policy
 
-struct clip_alpha_policy : alpha_policy {
+struct mask_alpha_policy : alpha_policy {
 
   static bool should_discard(float alpha, float cutoff) { 
     return alpha < cutoff; 
@@ -31,9 +31,9 @@ struct clip_alpha_policy : alpha_policy {
     // return float4(1, 0, 1, 1);
   }
 
-}; // struct clip_alpha_policy
+}; // struct mask_alpha_policy
 
-struct transparent_alpha_policy : alpha_policy {
+struct blend_alpha_policy : alpha_policy {
 
   static bool should_discard(float alpha, float cutoff) { 
     return false; 
@@ -43,6 +43,6 @@ struct transparent_alpha_policy : alpha_policy {
     return float4(salmpled * base); 
   }
 
-}; // struct transparent_alpha_policy
+}; // struct blend_alpha_policy
 
 #endif // ALPHA_POLICY_SLANG_

@@ -49,7 +49,7 @@ struct opaque_fs_out : fs_out {
 
 }; // struct opaque_fs_out
 
-struct transparent_fs_out : fs_out {
+struct blend_fs_out : fs_out {
 
   float4 accum : SV_Target0;
   float revealage : SV_Target1;
@@ -69,7 +69,7 @@ struct transparent_fs_out : fs_out {
     return true;
   }
 
-}; // struct transparent_fs_out
+}; // struct blend_fs_out
 
 [[vk::binding(1, 0)]]
 SamplerState images_sampler;
