@@ -109,11 +109,10 @@ static_assert(sizeof(material_data) <= 256u);
 static_assert(alignof(material_data) == 16u);
 
 struct material_key {
-  std::uint64_t alpha           : 2;
-  std::uint64_t is_double_sided : 1;
-  std::uint64_t _pad0           : 12;
-  std::uint64_t feature_mask    : 16;
-  std::uint64_t _pad1           : 32;
+  std::uint16_t alpha           : 2;
+  std::uint16_t is_double_sided : 1;
+  std::uint16_t _pad0           : 5;
+  std::uint16_t feature_mask    : 8;
 
   material_key() {
     std::memset(this, 0, sizeof(material_key));
@@ -121,8 +120,8 @@ struct material_key {
 
 }; // struct material_key
 
-static_assert(sizeof(material_key) == sizeof(std::uint64_t));
-static_assert(alignof(material_key) == alignof(std::uint64_t));
+static_assert(sizeof(material_key) == sizeof(std::uint16_t));
+static_assert(alignof(material_key) == alignof(std::uint16_t));
 
 inline auto operator==(const material_key& lhs, const material_key& rhs) -> bool { 
   return std::memcmp(&lhs, &rhs, sizeof(material_key)) == 0; 
