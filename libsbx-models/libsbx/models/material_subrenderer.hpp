@@ -285,7 +285,7 @@ public:
   auto render(graphics::command_buffer& command_buffer) -> void override {
     EASY_FUNCTION();
 
-    SBX_SCOPED_TIMER("static_mesh_subrenderer");
+    SBX_SCOPED_TIMER("material_subrenderer");
 
     auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
@@ -472,7 +472,7 @@ private:
     const auto request = graphics::compiler::compile_request{
       .path = _base_pipeline,
       .specializations = {
-        {SLANG_STAGE_FRAGMENT, {alpha_policy.at(static_cast<alpha_mode>(key.alpha))}}
+        {SLANG_STAGE_FRAGMENT, {alpha_policy.at(static_cast<alpha_mode>(key.alpha)), "opaque_fs_out"}}
       }
     };
 

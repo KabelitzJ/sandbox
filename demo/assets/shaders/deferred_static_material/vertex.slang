@@ -14,15 +14,13 @@ struct vs_in {
 struct vs_out {
   [[vk::location(0)]] float3 position : POSITION;
   [[vk::location(1)]] float3 normal : NORMAL;
-  [[vk::location(2)]] float3 tbn0 : TBN0;
-  [[vk::location(3)]] float3 tbn1 : TBN1;
-  [[vk::location(4)]] float3 tbn2 : TBN2;
-  [[vk::location(5)]] float2 uv : UV;
-  [[vk::location(6)]] float4 color : COLOR;
-  [[vk::location(7)]] float4 material : MATERIAL;
-  [[vk::location(8)]] nointerpolation uint4 image_indices : IMAGE_INDICES;
-  [[vk::location(9)]] nointerpolation uint2 object_id : OBJECT_ID;
-  [[vk::location(10)]] float alpha_cutoff : ALPHA_CUTOFF;
+  [[vk::location(2)]] float4 tangent : TANGENT;
+  [[vk::location(3)]] float2 uv : UV;
+  [[vk::location(4)]] float4 color : COLOR;
+  [[vk::location(5)]] float4 material : MATERIAL;
+  [[vk::location(6)]] nointerpolation uint4 image_indices : IMAGE_INDICES;
+  [[vk::location(7)]] nointerpolation uint2 object_id : OBJECT_ID;
+  [[vk::location(8)]] float alpha_cutoff : ALPHA_CUTOFF;
   float4 sv_position : SV_Position;
 }; // struct vs_out
 
@@ -53,15 +51,9 @@ vs_out main(vs_in in) {
 
   float3 world_position = mul(transform_data.model, float4(in_position, 1.0)).xyz;
 
-  float3 N = normalize(mul(transform_data.normal, float4(in_normal, 0.0)).xyz);
-  float3 T = normalize(mul(transform_data.normal, float4(in_tangent.xyz, 0.0)).xyz);
-  float3 B = cross(T, N) * in_tangent.w;
-
   out.position = world_position;
-  out.normal = N;
-  out.tbn0 = T;
-  out.tbn1 = B;
-  out.tbn2 = N;
+  out.normal = normalize(mul(transform_data.normal, float4(in_normal, 0.0)).xyz);
+  out.tangent = float4(normalize(mul(transform_data.normal, float4(in_tangent.xyz, 0.0)).xyz), in_tangent.w);
   out.uv = in_uv;
   out.color = material_data.base_color;
   out.material = float4(material_data.metallic, material_data.roughness, material_data.occlusion, material_data.emissive_strength);
