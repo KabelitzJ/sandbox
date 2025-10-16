@@ -8,7 +8,28 @@
 
 namespace sbx::graphics {
 
-#define DUMP 0
+struct stage_info { 
+  SlangStage stage; 
+  const char* name; 
+  const char* file; 
+}; // struct stage_info
+
+static constexpr auto stage_infos = std::array<stage_info, 14u>{
+  stage_info{ SLANG_STAGE_VERTEX,         "vertex",        "vertex.slang"        },
+  stage_info{ SLANG_STAGE_FRAGMENT,       "fragment",      "fragment.slang"      },
+  stage_info{ SLANG_STAGE_COMPUTE,        "compute",       "compute.slang"       },
+  stage_info{ SLANG_STAGE_GEOMETRY,       "geometry",      "geometry.slang"      },
+  stage_info{ SLANG_STAGE_HULL,           "hull",          "hull.slang"          },
+  stage_info{ SLANG_STAGE_DOMAIN,         "domain",        "domain.slang"        },
+  stage_info{ SLANG_STAGE_MESH,           "mesh",          "mesh.slang"          },
+  stage_info{ SLANG_STAGE_AMPLIFICATION,  "amplification", "amplification.slang" },
+  stage_info{ SLANG_STAGE_RAY_GENERATION, "raygen",        "raygen.slang"        },
+  stage_info{ SLANG_STAGE_ANY_HIT,        "anyhit",        "anyhit.slang"        },
+  stage_info{ SLANG_STAGE_CLOSEST_HIT,    "closesthit",    "closesthit.slang"    },
+  stage_info{ SLANG_STAGE_MISS,           "miss",          "miss.slang"          },
+  stage_info{ SLANG_STAGE_INTERSECTION,   "intersection",  "intersection.slang"  },
+  stage_info{ SLANG_STAGE_CALLABLE,       "callable",      "callable.slang"      }
+};
 
 compiler::compiler() {
   createGlobalSession(_global_session.writeRef());
@@ -18,98 +39,164 @@ compiler::~compiler() {
 
 }
 
-auto compiler::compile(const compile_request& compile_request) -> std::vector<std::uint32_t> {
-  // [NOTE] KAJ 2025-10-15: We need to lazy initialize because asset root is not known when the compiler is created
-  if (!_session) {
-    _initialize_session();
-  }
-
+auto compiler::compile(const compile_request& compile_request) -> compile_result {
   auto& assets_module = core::engine::get_module<assets::assets_module>();
 
-  const auto resolved_path = assets_module.resolve_path(compile_request.path);
+  auto session = _create_session(compile_request);
 
-  const auto source = _read_file(resolved_path);
+  auto result = compile_result{};
 
-  if (source.empty()) {
-    throw std::runtime_error{"source empty"};
-  }
+  for (const auto& [stage, name, file] : stage_infos) {
+    const auto file_path = assets_module.resolve_path(std::filesystem::path{compile_request.path}.append(file));
 
-  auto request = Slang::ComPtr<slang::ICompileRequest>{};
-
-  if (SLANG_FAILED(_session->createCompileRequest(request.writeRef()))) {
-    utility::logger<"graphics">::error("createCompileRequest failed");
-    throw std::runtime_error{"createCompileRequest failed"};
-  }
-
-  const auto target_index = request->addCodeGenTarget(SLANG_SPIRV);
-
-  request->setTargetProfile(target_index, _global_session->findProfile("spirv_1_5"));
-
-  request->addTargetCapability(target_index, _global_session->findCapability("spirv_1_5"));
-  request->addTargetCapability(target_index, _global_session->findCapability("SPV_EXT_physical_storage_buffer"));
-
-  request->setTargetFlags(target_index, SLANG_TARGET_FLAG_GENERATE_SPIRV_DIRECTLY);
-
-  request->setMatrixLayoutMode(SLANG_MATRIX_LAYOUT_COLUMN_MAJOR);
-  request->setDebugInfoLevel(SLANG_DEBUG_INFO_LEVEL_NONE);
-  request->setOptimizationLevel(SLANG_OPTIMIZATION_LEVEL_NONE);
-
-  for (const auto& define : compile_request.defines) {
-    request->addPreprocessorDefine(define.key.c_str(), define.value.c_str());
-  }
-
-  request->addPreprocessorDefine("SBX_DEBUG", utility::is_build_configuration_debug_v ? "1" : "0");
-
-  const auto parent_dir = resolved_path.parent_path();
-  request->addSearchPath(parent_dir.string().c_str());
-
-  for (const auto& include : compile_request.includes) {
-    request->addSearchPath(include.string().c_str());
-  }
-
-  const auto translation_unit = request->addTranslationUnit(SLANG_SOURCE_LANGUAGE_SLANG, resolved_path.filename().string().c_str());
-
-  request->addTranslationUnitSourceString(translation_unit, resolved_path.string().c_str(), source.c_str());
-
-  const auto entry_point = request->addEntryPoint(translation_unit, compile_request.entry_point.c_str(), compile_request.stage);
-
-  if (SLANG_FAILED(request->compile())) {
-    if (const auto* diagnostic = request->getDiagnosticOutput()) {
-      utility::logger<"graphics">::error("{}", diagnostic);
+    if (!std::filesystem::exists(file_path)) {
+      continue;
     }
 
-    throw std::runtime_error{"compile failed"};
-  }
+    const auto source = _read_file(file_path);
 
-  auto code = Slang::ComPtr<slang::IBlob>{};
+    auto shader_module = Slang::ComPtr<slang::IModule>{};
 
-  if (SLANG_FAILED(request->getEntryPointCodeBlob(entry_point, target_index, code.writeRef()))) {
-    if (const char* diagnostic = request->getDiagnosticOutput()) {
-      utility::logger<"graphics">::error("{}", diagnostic);
+    {
+      auto diagnostics = Slang::ComPtr<ISlangBlob>{};
+
+      shader_module = session->loadModuleFromSourceString(name, file_path.string().c_str(), source.data(), diagnostics.writeRef());
+
+      if (diagnostics && diagnostics->getBufferSize() > 1) {
+        utility::logger<"models">::warn("Slang diagnostics while loading '{}':\n{}", file_path.string(), static_cast<const char*>(diagnostics->getBufferPointer()));
+      }
+
+      if (!shader_module) {
+        throw utility::runtime_error{"Failed to load shader_module '{}'.", file_path.string()};
+      }
     }
 
-    throw std::runtime_error{"get code failed"};
+    auto entry_point = Slang::ComPtr<slang::IEntryPoint>{};
+
+    {
+      shader_module->findEntryPointByName(compile_request.entry_point.c_str(), entry_point.writeRef());
+
+      if (!entry_point) {
+        auto diagnostics = Slang::ComPtr<ISlangBlob>{};
+
+        shader_module->findAndCheckEntryPoint(compile_request.entry_point.c_str(), stage, entry_point.writeRef(), diagnostics.writeRef());
+
+        if (diagnostics && diagnostics->getBufferSize() > 1) {
+          utility::logger<"models">::warn("Slang entry-point check for '{}':\n{}", file_path.string(), static_cast<const char*>(diagnostics->getBufferPointer()));
+        }
+
+        if (!entry_point) {
+          throw utility::runtime_error{"Entry point '{}' not found/valid in '{}'.", compile_request.entry_point, file_path.string()};
+        }
+      }
+    }
+
+    auto entry_for_link = Slang::ComPtr<slang::IComponentType>{entry_point};
+
+    auto entry = compile_request.specializations.find(stage);
+
+    if (entry != compile_request.specializations.end()) {
+      const auto& specializations = entry->second;
+
+      auto args = std::vector<slang::SpecializationArg>{};
+      args.reserve(specializations.size());
+
+      for (const auto& type_name : specializations) {
+        auto* reflected_type = shader_module->getLayout()->findTypeByName(type_name.c_str());
+
+        if (!reflected_type) {
+          throw utility::runtime_error{"Specialization type '{}' not found in shader_module '{}' for stage '{}'.", type_name, file_path.string(), name};
+        }
+
+        args.push_back(slang::SpecializationArg{slang::SpecializationArg::Kind::Type, reflected_type});
+      }
+
+      auto specialized_entry_point = Slang::ComPtr<slang::IComponentType>{};
+
+      {
+        auto diagnostics = Slang::ComPtr<ISlangBlob>{};
+
+        const auto result = entry_point->specialize(args.data(), (SlangInt)args.size(), specialized_entry_point.writeRef(), diagnostics.writeRef());
+
+        if (diagnostics && diagnostics->getBufferSize() > 1) {
+          utility::logger<"models">::warn("Slang specialization for '{}':\n{}", file_path.string(), static_cast<const char*>(diagnostics->getBufferPointer()));
+        }
+
+        if (SLANG_FAILED(result) || !specialized_entry_point) {
+          throw utility::runtime_error{"Failed to specialize entry point in '{}'.", file_path.string()};
+        }
+      }
+
+      entry_for_link = specialized_entry_point;
+    }
+
+    auto program = Slang::ComPtr<slang::IComponentType>{};
+
+    {
+      auto parts = std::array<slang::IComponentType*, 2>{shader_module, entry_for_link};
+
+      auto diagnostics = Slang::ComPtr<ISlangBlob>{};
+
+      const auto result = session->createCompositeComponentType(parts.data(), (SlangInt)parts.size(), program.writeRef(), diagnostics.writeRef());
+
+      if (diagnostics && diagnostics->getBufferSize() > 1) {
+        utility::logger<"models">::warn("Slang link diagnostics for '{}':\n{}", file_path.string(), static_cast<const char*>(diagnostics->getBufferPointer()));
+      }
+
+      if (SLANG_FAILED(result) || !program) {
+        throw utility::runtime_error{"Failed to link program for '{}'.", file_path.string()};
+      }
+    }
+
+    // SPIR-V für Entry Point index 0 holen
+    auto code_blob = Slang::ComPtr<ISlangBlob>{};
+    auto container_blob = Slang::ComPtr<ISlangBlob>{};
+
+    {
+      const auto result = program->getEntryPointCode(0, 0, code_blob.writeRef(), container_blob.writeRef());
+
+      if (SLANG_FAILED(result) || !code_blob) {
+        throw utility::runtime_error{"Failed to get SPIR-V for stage '{}' in '{}'.", name, file_path.string()};
+      }
+    }
+
+    const auto byte_size = code_blob->getBufferSize();
+
+    if (byte_size % 4 != 0) {
+      throw utility::runtime_error{"SPIR-V blob for stage '{}' not 4-byte aligned ({} bytes).", name, byte_size};
+    }
+
+    result.code[stage].resize(byte_size / 4);
+
+    std::memcpy(result.code[stage].data(), code_blob->getBufferPointer(), byte_size);
   }
 
-  const auto* words = static_cast<const std::uint32_t*>(code->getBufferPointer());
-  const auto byte_count = code->getBufferSize();
-  const auto word_count = byte_count / sizeof(std::uint32_t);
-
-  return std::vector<std::uint32_t>{words, words + word_count};
+  return result;
 }
 
 auto compiler::_read_file(const std::filesystem::path& path) -> std::string {
-  auto file = std::ifstream{path, std::ios::binary};
+  auto file = std::ifstream{path, std::ios::binary | std::ios::ate};
 
   if (!file) {
-    throw utility::runtime_error{"File does not exist {}", path.string()};
+    throw utility::runtime_error{"Could not open file {}", path.string()};
   }
 
-  return std::string{std::istreambuf_iterator<char>{file}, std::istreambuf_iterator<char>{}};
+  const auto size = file.tellg();
+  
+  file.seekg(0, std::ios::beg);
+
+  auto buffer = std::vector<char>{};
+  buffer.resize(size);
+
+  file.read(buffer.data(), size);
+
+  return std::string{buffer.data(), size};
 }
 
-auto compiler::_initialize_session() -> void {
+auto compiler::_create_session(const compile_request& compile_request) -> Slang::ComPtr<slang::ISession> {
   auto& assets_module = core::engine::get_module<assets::assets_module>();
+
+  auto session = Slang::ComPtr<slang::ISession>{};
 
   auto session_description = slang::SessionDesc{};
 
@@ -120,33 +207,58 @@ auto compiler::_initialize_session() -> void {
   session_description.targets = &target_description;
   session_description.targetCount = 1u;
 
-  auto compiler_options = std::array<slang::CompilerOptionEntry, 6u>{
-    slang::CompilerOptionEntry{ slang::CompilerOptionName::Capability, { slang::CompilerOptionValueKind::String, 0, 0, "spirv_1_5", nullptr } },
-    slang::CompilerOptionEntry{ slang::CompilerOptionName::Capability, { slang::CompilerOptionValueKind::String, 0, 0, "SPV_EXT_physical_storage_buffer", nullptr } },
-    slang::CompilerOptionEntry{ slang::CompilerOptionName::MatrixLayoutColumn, { slang::CompilerOptionValueKind::Int, 1, 0, "column_major", nullptr } },
-    slang::CompilerOptionEntry{ slang::CompilerOptionName::DebugInformation, { slang::CompilerOptionValueKind::Int, SLANG_DEBUG_INFO_LEVEL_NONE, 0, nullptr, nullptr } },
-    slang::CompilerOptionEntry{ slang::CompilerOptionName::Optimization, { slang::CompilerOptionValueKind::Int, 0, 0, nullptr, nullptr } },
-    slang::CompilerOptionEntry{ slang::CompilerOptionName::EmitSpirvDirectly, { slang::CompilerOptionValueKind::Int, 1, 0, nullptr, nullptr } }
+  auto compiler_options = std::array<slang::CompilerOptionEntry, 14u>{
+    slang::CompilerOptionEntry{slang::CompilerOptionName::Capability,         {slang::CompilerOptionValueKind::String, 0,                               0, "spirv_1_5",                       nullptr}},
+    slang::CompilerOptionEntry{slang::CompilerOptionName::Capability,         {slang::CompilerOptionValueKind::String, 0,                               0, "SPV_EXT_physical_storage_buffer", nullptr}},
+    
+    slang::CompilerOptionEntry{slang::CompilerOptionName::Capability,         {slang::CompilerOptionValueKind::String, 0,                               0, "SPV_KHR_non_semantic_info",       nullptr}},
+    slang::CompilerOptionEntry{slang::CompilerOptionName::Capability,         {slang::CompilerOptionValueKind::String, 0,                               0, "SPV_GOOGLE_user_type",            nullptr}},
+    slang::CompilerOptionEntry{slang::CompilerOptionName::Capability,         {slang::CompilerOptionValueKind::String, 0,                               0, "spvDerivativeControl",            nullptr}},
+    slang::CompilerOptionEntry{slang::CompilerOptionName::Capability,         {slang::CompilerOptionValueKind::String, 0,                               0, "spvImageQuery",                   nullptr}},
+    slang::CompilerOptionEntry{slang::CompilerOptionName::Capability,         {slang::CompilerOptionValueKind::String, 0,                               0, "spvImageGatherExtended",          nullptr}},
+    slang::CompilerOptionEntry{slang::CompilerOptionName::Capability,         {slang::CompilerOptionValueKind::String, 0,                               0, "spvSparseResidency",              nullptr}},
+    slang::CompilerOptionEntry{slang::CompilerOptionName::Capability,         {slang::CompilerOptionValueKind::String, 0,                               0, "spvMinLod",                       nullptr}},
+    slang::CompilerOptionEntry{slang::CompilerOptionName::Capability,         {slang::CompilerOptionValueKind::String, 0,                               0, "spvFragmentFullyCoveredEXT",      nullptr}},
+    
+    slang::CompilerOptionEntry{slang::CompilerOptionName::MatrixLayoutColumn, {slang::CompilerOptionValueKind::Int,    1,                               0, "column_major",                    nullptr}},
+    slang::CompilerOptionEntry{slang::CompilerOptionName::DebugInformation,   {slang::CompilerOptionValueKind::Int,    SLANG_DEBUG_INFO_LEVEL_STANDARD, 0, nullptr,                           nullptr}},
+    slang::CompilerOptionEntry{slang::CompilerOptionName::Optimization,       {slang::CompilerOptionValueKind::Int,    SLANG_OPTIMIZATION_LEVEL_NONE,   0, nullptr,                           nullptr}},
+    slang::CompilerOptionEntry{slang::CompilerOptionName::EmitSpirvDirectly,  {slang::CompilerOptionValueKind::Int,    1,                               0, nullptr,                           nullptr}}
   };
 
   session_description.compilerOptionEntries = compiler_options.data();
   session_description.compilerOptionEntryCount = compiler_options.size();
 
-  auto preprocessor_macro_descriptions = std::array<slang::PreprocessorMacroDesc, 1u>{
-    slang::PreprocessorMacroDesc{ "SBX_DEBUG", utility::is_build_configuration_debug_v ? "1" : "0" }
-  };
+  auto preprocessor_macro_descriptions = std::vector<slang::PreprocessorMacroDesc>{};
+  preprocessor_macro_descriptions.reserve(compile_request.defines.size() + 1u);
+
+  preprocessor_macro_descriptions.push_back(slang::PreprocessorMacroDesc{"SBX_DEBUG", utility::is_build_configuration_debug_v ? "1" : "0"});
+
+  for (const auto& [key, value] : compile_request.defines) {
+    preprocessor_macro_descriptions.push_back(slang::PreprocessorMacroDesc{key.c_str(), value.c_str()});
+  }
 
   session_description.preprocessorMacros = preprocessor_macro_descriptions.data();
   session_description.preprocessorMacroCount = preprocessor_macro_descriptions.size();
 
-  auto search_paths = std::array<const char*, 1u>{
-    std::filesystem::path{assets_module.asset_root()}.append("shaders").c_str()
+  const auto parent_path = assets_module.resolve_path(compile_request.path.parent_path());
+  const auto path = assets_module.resolve_path(compile_request.path);
+
+  auto search_paths = std::array<const char*, 2u>{
+    parent_path.c_str(),
+    path.c_str()
   };
+
+  for (const auto* path : search_paths) {
+    utility::logger<"models">::warn("Search path: {}", path);
+  }
 
   session_description.searchPaths = search_paths.data();
   session_description.searchPathCount = search_paths.size();
 
-  _global_session->createSession(session_description, _session.writeRef());
+  _global_session->createSession(session_description, session.writeRef());
+
+  return session;
 }
 
 } // namespace sbx::graphics

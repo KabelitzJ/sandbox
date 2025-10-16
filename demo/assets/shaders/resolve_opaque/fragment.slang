@@ -172,8 +172,7 @@ float calculate_shadow(float3 world_position, float3 normal) {
   return shadow / 16.0;
 }
 
-[noinline]
-T keep<T>(T value) {
+[noinline] T keep<T>(T value) {
   return value;
 }
 

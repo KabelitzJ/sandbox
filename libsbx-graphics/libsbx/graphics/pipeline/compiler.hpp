@@ -26,26 +26,29 @@ public:
 
   struct compile_request {
     std::filesystem::path path;
-    SlangStage stage;
     std::string entry_point{"main"};
     std::vector<define> defines;
-    std::vector<std::filesystem::path> includes;
+    // std::vector<std::filesystem::path> includes;
+    std::unordered_map<SlangStage, std::vector<std::string>> specializations;
   }; // struct compile_request
+
+  struct compile_result {
+    std::unordered_map<SlangStage, std::vector<std::uint32_t>> code;
+  }; // struct compile_result
 
   compiler();
 
   ~compiler();
 
-  auto compile(const compile_request& compile_request) -> std::vector<std::uint32_t>;
+  auto compile(const compile_request& compile_request) -> compile_result;
 
 private:
 
   static auto _read_file(const std::filesystem::path& path) -> std::string;
 
-  auto _initialize_session() -> void;
+  auto _create_session(const compile_request& compile_request) -> Slang::ComPtr<slang::ISession>;
 
   Slang::ComPtr<slang::IGlobalSession> _global_session;
-  Slang::ComPtr<slang::ISession> _session;
 
 }; // class compiler
 

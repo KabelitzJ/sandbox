@@ -57,25 +57,6 @@ application::application()
 
   graphics_module.set_renderer<renderer>();
 
-  auto& compiler = graphics_module.compiler();
-
-  auto request = sbx::graphics::compiler::compile_request{
-    .path = "demo/assets/shaders/deferred_static_material/vertex.slang",
-    .stage = SLANG_STAGE_VERTEX,
-    .defines = {
-      {"SBX_FEATURE_NORMAL_MAP", "1"}
-    },
-    .includes = {
-      "demo/assets/shaders"
-    }
-  };
-
-  if (auto result = compiler.compile(request); !result.empty()) {
-
-  } else {
-    sbx::utility::logger<"demo">::info("Failed to compile");
-  }
-
   auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
 
   auto& scene = scenes_module.load_scene("res://scenes/scene.yaml");

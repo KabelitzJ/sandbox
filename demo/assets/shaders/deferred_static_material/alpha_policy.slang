@@ -4,13 +4,13 @@
 #include <features.slang>
 
 interface alpha_policy {
-  static bool should_discard(float alpha, float alpha_cutoff);
+  static bool should_discard(float alpha, float cutoff);
   static float4 combine_colors(float4 salmpled, float4 base);
 }; // interface alpha_policy
 
 struct opaque_alpha_policy : alpha_policy {
 
-  static bool should_discard(float a, float cutoff) { 
+  static bool should_discard(float alpha, float cutoff) { 
     return false; 
   }
 
@@ -22,19 +22,20 @@ struct opaque_alpha_policy : alpha_policy {
 
 struct clip_alpha_policy : alpha_policy {
 
-  static bool should_discard(float a, float cutoff) { 
-    return a < cutoff; 
+  static bool should_discard(float alpha, float cutoff) { 
+    return alpha < cutoff; 
   }
 
   static float4 combine_colors(float4 salmpled, float4 base) { 
-    return salmpled.rgb * base.rgb, salmpled.a; 
+    return float4(salmpled.rgb * base.rgb, salmpled.a); 
+    // return float4(1, 0, 1, 1);
   }
 
 }; // struct clip_alpha_policy
 
 struct transparent_alpha_policy : alpha_policy {
 
-  static bool should_discard(float a, float cutoff) { 
+  static bool should_discard(float alpha, float cutoff) { 
     return false; 
   }
 

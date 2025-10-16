@@ -67,6 +67,7 @@ vs_out main(vs_in in) {
   out.material = float4(material_data.metallic, material_data.roughness, material_data.occlusion, material_data.emissive_strength);
   out.image_indices = uint4(material_data.albedo_index, material_data.normal_index, material_data.mrao_index, material_data.emissive_index);
   out.object_id = uint2(instance_data.object_id_upper, instance_data.object_id_lower);
+  out.alpha_cutoff = material_data.alpha_cutoff;
 
   out.sv_position = mul(scene.projection, mul(scene.view, float4(world_position, 1.0)));
 

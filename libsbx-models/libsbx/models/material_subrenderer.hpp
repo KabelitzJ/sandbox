@@ -169,7 +169,7 @@ struct material {
   std::float_t occlusion{1.0f};
   math::color emissive_color{0, 0, 0, 1};
   std::float_t emissive_strength{0.0f};
-  std::float_t alpha_cutoff{0.8f};
+  std::float_t alpha_cutoff{0.9f};
 
   graphics::image2d_handle albedo{};
   graphics::image2d_handle normal{};
@@ -463,27 +463,22 @@ private:
 
     auto& compiler = graphics_module.compiler();
 
-    const auto stages = std::array<std::pair<std::string_view, SlangStage>, 2u>{
-      std::pair<std::string_view, SlangStage>{"vertex", SLANG_STAGE_VERTEX},
-      std::pair<std::string_view, SlangStage>{"fragment", SLANG_STAGE_FRAGMENT}
+    const auto alpha_policy = std::unordered_map<alpha_mode, std::string>{
+      {alpha_mode::opaque, "opaque_alpha_policy"},
+      {alpha_mode::alpha_clip, "clip_alpha_policy"},
+      {alpha_mode::alpha, "transparent_alpha_policy"}
     };
 
-    auto compiled_shaders = graphics::graphics_pipeline::compiled_shaders{};
-    compiled_shaders.name = _base_pipeline.filename();
+    const auto request = graphics::compiler::compile_request{
+      .path = _base_pipeline,
+      .specializations = {
+        {SLANG_STAGE_FRAGMENT, {alpha_policy.at(static_cast<alpha_mode>(key.alpha))}}
+      }
+    };
 
-    for (const auto& [name, stage] : stages) {
-      const auto request = graphics::compiler::compile_request{
-        .path = std::filesystem::path{_base_pipeline}.append(fmt::format("{}.slang", name)),
-        .stage = stage,
-        .defines = {
-          {"SBX_TEST", "1"},
-          {"SBX_FEATURE_ALPHA", fmt::format("{:d}", static_cast<alpha_mode>(key.alpha) == alpha_mode::alpha)},
-          {"SBX_FEATURE_ALPHA_CLIP", fmt::format("{:d}", static_cast<alpha_mode>(key.alpha) == alpha_mode::alpha_clip)}
-        }
-      };
+    const auto result = compiler.compile(request);
 
-      compiled_shaders.shader_codes[stage] = compiler.compile(request);
-    }
+    auto compiled_shaders = graphics::graphics_pipeline::compiled_shaders{_base_pipeline.filename(), result.code};
 
     auto pipeline = graphics_module.add_resource<graphics::graphics_pipeline>(compiled_shaders, pass, definition);
 
