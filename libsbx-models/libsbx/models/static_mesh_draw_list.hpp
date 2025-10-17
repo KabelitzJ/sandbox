@@ -128,6 +128,8 @@ public:
     create_buffer(transform_data_buffer_name, graphics::storage_buffer::min_size, VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT);
   }
 
+  ~static_mesh_draw_list() override = default;
+
   auto update() -> void override {
     _opaque_submesh_instances.clear();
     _masked_submesh_instances.clear();

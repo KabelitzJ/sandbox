@@ -411,22 +411,16 @@ private:
 
     auto& compiler = graphics_module.compiler();
 
-    const auto alpha_policy = std::unordered_map<alpha_mode, std::string>{
-      {alpha_mode::opaque, "opaque_alpha_policy"},
-      {alpha_mode::mask, "mask_alpha_policy"},
-      {alpha_mode::blend, "blend_alpha_policy"}
-    };
-
     const auto request = graphics::compiler::compile_request{
       .path = _base_pipeline,
       .specializations = {
-        {SLANG_STAGE_FRAGMENT, {alpha_policy.at(static_cast<alpha_mode>(key.alpha)), "opaque_fs_out"}}
+        {SLANG_STAGE_FRAGMENT, {_alpha_policy.at(key.alpha), _fs_out.at(key.alpha)}}
       }
     };
 
     const auto result = compiler.compile(request);
 
-    auto compiled_shaders = graphics::graphics_pipeline::compiled_shaders{_base_pipeline.filename().string(), result.code};
+    auto compiled_shaders = graphics::graphics_pipeline::compiled_shaders{_base_pipeline.filename(), result.code};
 
     auto pipeline = graphics_module.add_resource<graphics::graphics_pipeline>(compiled_shaders, pass, definition);
 
@@ -492,6 +486,18 @@ private:
     }
   }
 
+  inline static const auto _alpha_policy = std::array<std::string, 3u>{
+    "opaque_alpha_policy",  // alpha_mode::opaque
+    "mask_alpha_policy",    // alpha_mode::mask 
+    "blend_alpha_policy"    // alpha_mode::blend
+  };
+
+  inline static const auto _fs_out = std::array<std::string, 3u>{
+    "opaque_fs_out",      // alpha_mode::opaque
+    "opaque_fs_out",      // alpha_mode::mask 
+    "transparent_fs_out"  // alpha_mode::blend
+  };
+
   std::filesystem::path _base_pipeline;
 
   graphics::separate_image2d_array _images;
@@ -506,6 +512,34 @@ private:
   std::unordered_map<material_key, pipeline_data, material_key_hash> _pipeline_cache;
 
 }; // class material_subrenderer
+
+class material_draw_list final : public graphics::draw_list {
+
+public:
+
+  inline static const auto transform_data_buffer_name = utility::hashed_string{"transform_data"};
+  inline static const auto material_data_buffer_name = utility::hashed_string{"material_data"};
+
+  material_draw_list() {
+    create_buffer(transform_data_buffer_name, graphics::storage_buffer::min_size, VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT);
+    create_buffer(material_data_buffer_name, graphics::storage_buffer::min_size, VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT);
+  }
+
+  ~material_draw_list() override = default;
+
+  auto update() -> void override {
+    _transform_data.clear();
+    _material_data.clear();
+  }
+
+private:
+
+  static auto
+
+  std::vector<transform_data> _transform_data;
+  std::vector<material_data> _material_data;
+
+}; // class material_draw_list
 
 } // namespace sbx::models::prototype
 
