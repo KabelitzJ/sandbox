@@ -14,67 +14,101 @@
 
 # --- Search paths ----------------------------------------------------------
 
-set(_SLANG_HINTS
+include(FindPackageHandleStandardArgs)
+
+set(_SLANG_INCLUDE_HINTS
   "$ENV{VULKAN_SDK}/Include/slang"
   "$ENV{VULKAN_SDK}/Include"
-  "$ENV{VULKAN_SDK}/include/slang"
+  "$ENV{VULKAN_SDK}/include/slang" 
   "$ENV{VULKAN_SDK}/include"
-  "/usr/include/slang"
+  "/usr/include/slang" 
   "/usr/local/include/slang"
+  "/opt/homebrew/include/slang"
+  "/opt/local/include/slang"
+)
+
+set(_SLANG_LIB_HINTS
+  "$ENV{VULKAN_SDK}/Lib"
+  "$ENV{VULKAN_SDK}/lib"
+  "/usr/lib"
+  "/usr/local/lib"
+  "/opt/homebrew/lib"
+  "/opt/local/lib"
 )
 
 find_path(slang_INCLUDE_DIR
   NAMES slang.h
-  HINTS ${_SLANG_HINTS}
+  HINTS ${_SLANG_INCLUDE_HINTS}
 )
 
 # Library names differ across platforms
 if(WIN32)
   set(_SLANG_LIB_NAMES slang.lib slang)
+elseif(APPLE)
+  set(_SLANG_LIB_NAMES slang libslang.dylib libslang)
 else()
-  set(_SLANG_LIB_NAMES slang libslang.so)
+  set(_SLANG_LIB_NAMES slang libslang.so libslang)
 endif()
 
 find_library(slang_LIBRARY
   NAMES ${_SLANG_LIB_NAMES}
-  HINTS
-    "$ENV{VULKAN_SDK}/Lib"
-    "$ENV{VULKAN_SDK}/lib"
-    "/usr/lib"
-    "/usr/local/lib"
+  HINTS ${_SLANG_LIB_HINTS}
 )
 
-# Optional: runtime DLL for Windows
+# Optional runtime for Windows
 if(WIN32)
   find_file(slang_DLL
     NAMES slang.dll
-    HINTS
-      "$ENV{VULKAN_SDK}/Bin"
-      "$ENV{VULKAN_SDK}/bin"
-)
-endif()
-
-# --- Validation ------------------------------------------------------------
-
-include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(slang
-  REQUIRED_VARS slang_INCLUDE_DIR slang_LIBRARY
-  HANDLE_COMPONENTS
-)
-
-# --- Create imported target ------------------------------------------------
-
-if(slang_FOUND AND NOT TARGET slang::slang)
-  add_library(slang::slang SHARED IMPORTED GLOBAL)
-  set_target_properties(slang::slang PROPERTIES
-    INTERFACE_INCLUDE_DIRECTORIES "${slang_INCLUDE_DIR}"
-    IMPORTED_IMPLIB               "${slang_LIBRARY}"
-    IMPORTED_LOCATION             "${slang_DLL}"
+    HINTS "$ENV{VULKAN_SDK}/Bin" "$ENV{VULKAN_SDK}/bin"
   )
 endif()
 
-mark_as_advanced(
-  slang_INCLUDE_DIR
-  slang_LIBRARY
-  slang_DLL
+find_package_handle_standard_args(
+  slang
+  REQUIRED_VARS slang_INCLUDE_DIR slang_LIBRARY
 )
+
+# --- Diagnostics (optional) ---
+message(STATUS "slang_FOUND: ${slang_FOUND}")
+message(STATUS "slang_INCLUDE_DIR: ${slang_INCLUDE_DIR}")
+message(STATUS "slang_LIBRARY: ${slang_LIBRARY}")
+message(STATUS "slang_DLL: ${slang_DLL}")
+
+# --- Imported target ---
+if(slang_FOUND AND NOT TARGET slang::slang)
+  if(WIN32)
+    if(slang_DLL AND EXISTS "${slang_DLL}")
+      # Shared (DLL + import lib)
+      add_library(slang::slang SHARED IMPORTED GLOBAL)
+      set_target_properties(slang::slang PROPERTIES
+        INTERFACE_INCLUDE_DIRECTORIES "${slang_INCLUDE_DIR}"
+        IMPORTED_IMPLIB "${slang_LIBRARY}"
+        IMPORTED_LOCATION "${slang_DLL}"
+        IMPORTED_IMPLIB_DEBUG "${slang_LIBRARY}"
+        IMPORTED_LOCATION_DEBUG "${slang_DLL}"
+        IMPORTED_IMPLIB_RELEASE "${slang_LIBRARY}"
+        IMPORTED_LOCATION_RELEASE "${slang_DLL}"
+      )
+    else()
+      # Static (.lib only)
+      add_library(slang::slang STATIC IMPORTED GLOBAL)
+      set_target_properties(slang::slang PROPERTIES
+        INTERFACE_INCLUDE_DIRECTORIES "${slang_INCLUDE_DIR}"
+        IMPORTED_LOCATION "${slang_LIBRARY}"
+        IMPORTED_LOCATION_DEBUG "${slang_LIBRARY}"
+        IMPORTED_LOCATION_RELEASE "${slang_LIBRARY}"
+      )
+    endif()
+  else()
+    # Unix-like (Linux/macOS): .so/.dylib path is the location
+    add_library(slang::slang SHARED IMPORTED GLOBAL)
+    set_target_properties(slang::slang PROPERTIES
+      INTERFACE_INCLUDE_DIRECTORIES "${slang_INCLUDE_DIR}"
+      IMPORTED_LOCATION "${slang_LIBRARY}"
+      IMPORTED_LOCATION_DEBUG "${slang_LIBRARY}"
+      IMPORTED_LOCATION_RELEASE "${slang_LIBRARY}"
+    )
+  endif()
+endif()
+
+mark_as_advanced(slang_INCLUDE_DIR slang_LIBRARY slang_DLL)
