@@ -20,7 +20,7 @@ public:
 
   virtual auto render(command_buffer& command_buffer) -> void = 0;
 
-  auto pass() const noexcept -> const render_graph::graphics_pass& {
+  auto pass() noexcept -> render_graph::graphics_pass& {
     return _pass;
   }
 

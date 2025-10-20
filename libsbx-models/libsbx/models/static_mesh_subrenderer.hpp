@@ -172,15 +172,15 @@ public:
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
     auto& scene = scenes_module.scene();
 
-    auto& draw_list = pass().draw_list("static_mesh");
+    auto& draw_list = pass().draw_list<models::static_mesh_draw_list>("static_mesh");
 
     auto& pipeline = graphics_module.get_resource<graphics::graphics_pipeline>(_pipeline);
 
     pipeline.bind(command_buffer);
 
     _scene_descriptor_handler.push("scene", scene.uniform_handler());
-    _scene_descriptor_handler.push("images_sampler", draw_list->sampler());
-    _scene_descriptor_handler.push("images", draw_list->images());
+    _scene_descriptor_handler.push("images_sampler", draw_list.sampler());
+    _scene_descriptor_handler.push("images", draw_list.images());
 
     if (!_scene_descriptor_handler.update(pipeline)) {
       return;
@@ -188,10 +188,10 @@ public:
 
     _scene_descriptor_handler.bind_descriptors(command_buffer);
 
-    _push_handler.push("transform_data_buffer", draw_list->buffer(static_mesh_draw_list::transform_data_buffer_name).address());
-    _push_handler.push("instance_data_buffer", draw_list->buffer(traits::instance_data_buffer_name).address());
+    _push_handler.push("transform_data_buffer", draw_list.buffer(static_mesh_draw_list::transform_data_buffer_name).address());
+    _push_handler.push("instance_data_buffer", draw_list.buffer(traits::instance_data_buffer_name).address());
     
-    for (const auto& [mesh_id, range] : draw_list->draw_ranges(traits::scope)) {
+    for (const auto& [mesh_id, range] : draw_list.draw_ranges(traits::scope)) {
       auto& mesh = assets_module.get_asset<models::mesh>(mesh_id);
       
       mesh.bind(command_buffer);
@@ -200,7 +200,7 @@ public:
 
       _push_handler.bind(command_buffer);
 
-      command_buffer.draw_indexed_indirect(draw_list->buffer(traits::draw_commands_buffer_name), range.offset, range.count);
+      command_buffer.draw_indexed_indirect(draw_list.buffer(traits::draw_commands_buffer_name), range.offset, range.count);
     }
   }
 

@@ -11,9 +11,10 @@
 
 #include <vulkan/vulkan.h>
 
-#include <libsbx/utility/logger.hpp>
-#include <libsbx/utility/hashed_string.hpp>
 #include <libsbx/utility/enum.hpp>
+#include <libsbx/utility/exception.hpp>
+#include <libsbx/utility/hashed_string.hpp>
+#include <libsbx/utility/logger.hpp>
 
 #include <libsbx/math/color.hpp>
 
@@ -29,7 +30,7 @@
 
 namespace sbx::graphics {
 
-enum class format : std::uint32_t {
+enum class format : std::int32_t {
   undefined = VK_FORMAT_UNDEFINED,
   r16_sfloat = VK_FORMAT_R16_SFLOAT,
   r32_sfloat = VK_FORMAT_R32_SFLOAT,
@@ -219,7 +220,15 @@ public:
 
   auto outputs() const -> const std::vector<attachment>&;
 
-  auto draw_list(const utility::hashed_string& name) const -> const std::unique_ptr<graphics::draw_list>&;
+  template<typename Type>
+  requires (std::is_base_of_v<draw_list, Type>)
+  auto draw_list(const utility::hashed_string& name) -> Type& {
+    if (auto entry = _graph._draw_lists.find(name); entry != _graph._draw_lists.end()) {
+      return *static_cast<Type*>(entry->second.get());
+    }
+
+    throw utility::runtime_error{"Draw list with name '{}' not found in graphics pass '{}'", name.str(), _node._name.str()};
+  }
 
 private:
 

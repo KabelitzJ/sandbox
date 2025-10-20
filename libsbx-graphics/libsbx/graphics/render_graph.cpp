@@ -79,13 +79,13 @@ auto graphics_pass::outputs() const -> const std::vector<attachment>& {
   return _node._outputs;
 }
 
-auto graphics_pass::draw_list(const utility::hashed_string& name) const -> const std::unique_ptr<graphics::draw_list>& {
-  if (auto entry = _graph._draw_lists.find(name); entry != _graph._draw_lists.end()) {
-    return entry->second;
-  }
+// auto graphics_pass::draw_list(const utility::hashed_string& name) const -> const std::unique_ptr<graphics::draw_list>& {
+//   if (auto entry = _graph._draw_lists.find(name); entry != _graph._draw_lists.end()) {
+//     return entry->second;
+//   }
 
-  throw utility::runtime_error{"Draw list with name '{}' not found in graphics pass '{}'", name.str(), _node._name.str()};
-}
+//   throw utility::runtime_error{"Draw list with name '{}' not found in graphics pass '{}'", name.str(), _node._name.str()};
+// }
 
 graphics_pass::graphics_pass(graph_base& graph, graphics_node& node)
 : _graph{graph},

@@ -90,7 +90,7 @@ public:
 
     _scene_uniform_handler.push("time", std::fmod(core::engine::time().value() * 0.5f, 1.0f));
 
-    auto& draw_list = pass().draw_list("static_mesh");
+    auto& draw_list = pass().draw_list<models::static_mesh_draw_list>("static_mesh");
 
     _pipeline.bind(command_buffer);
 
@@ -102,10 +102,10 @@ public:
 
     _scene_descriptor_handler.bind_descriptors(command_buffer);
 
-    _push_handler.push("transform_data_buffer", draw_list->buffer(models::static_mesh_draw_list::transform_data_buffer_name).address());
-    _push_handler.push("instance_data_buffer", draw_list->buffer(models::static_mesh_draw_list::opaque_instance_data_buffer_name).address());
+    _push_handler.push("transform_data_buffer", draw_list.buffer(models::static_mesh_draw_list::transform_data_buffer_name).address());
+    _push_handler.push("instance_data_buffer", draw_list.buffer(models::static_mesh_draw_list::opaque_instance_data_buffer_name).address());
 
-    for (const auto& [mesh_id, range] : draw_list->draw_ranges("opaque")) {
+    for (const auto& [mesh_id, range] : draw_list.draw_ranges("opaque")) {
       auto& mesh = assets_module.get_asset<models::mesh>(mesh_id);
       
       mesh.bind(command_buffer);
@@ -114,7 +114,7 @@ public:
 
       _push_handler.bind(command_buffer);
 
-      command_buffer.draw_indexed_indirect(draw_list->buffer(models::static_mesh_draw_list::opaque_draw_commands_buffer_name), range.offset, range.count);
+      command_buffer.draw_indexed_indirect(draw_list.buffer(models::static_mesh_draw_list::opaque_draw_commands_buffer_name), range.offset, range.count);
     }
   }
 
