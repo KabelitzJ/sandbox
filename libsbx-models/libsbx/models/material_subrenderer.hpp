@@ -534,8 +534,6 @@ public:
 
 private:
 
-  static auto
-
   std::vector<transform_data> _transform_data;
   std::vector<material_data> _material_data;
 
