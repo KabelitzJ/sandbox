@@ -396,13 +396,13 @@ auto graphics_pipeline::_initialize(const pipeline_definition& definition, const
     case depth::read_write: {
       depth_stencil_state.depthTestEnable = true;
       depth_stencil_state.depthWriteEnable = true;
-      depth_stencil_state.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
+      depth_stencil_state.depthCompareOp = to_vk_enum<VkCompareOp>(definition.compare_operation);
       break;
     }
     case depth::read_only: {
       depth_stencil_state.depthTestEnable = true;
       depth_stencil_state.depthWriteEnable = false;
-      depth_stencil_state.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
+      depth_stencil_state.depthCompareOp = to_vk_enum<VkCompareOp>(definition.compare_operation);
       break;
     }
     default: {

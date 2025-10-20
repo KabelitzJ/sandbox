@@ -87,8 +87,20 @@ enum class depth : std::uint8_t {
   read_only = 2
 }; // enum class depth_test
 
+enum class compare_operation : std::uint8_t {
+  never = VK_COMPARE_OP_NEVER,
+  less = VK_COMPARE_OP_LESS,
+  equal = VK_COMPARE_OP_EQUAL,
+  less_or_equal = VK_COMPARE_OP_LESS_OR_EQUAL,
+  greater = VK_COMPARE_OP_GREATER,
+  not_equal = VK_COMPARE_OP_NOT_EQUAL,
+  greater_or_equal = VK_COMPARE_OP_GREATER_OR_EQUAL,
+  always = VK_COMPARE_OP_ALWAYS
+}; // enum class compare_operation
+
 struct pipeline_definition {
   graphics::depth depth{depth::read_write};
+  graphics::compare_operation compare_operation{compare_operation::less_or_equal};
   bool uses_transparency{false};
   graphics::rasterization_state rasterization_state{};
   graphics::primitive_topology primitive_topology{graphics::primitive_topology::triangle_list};
