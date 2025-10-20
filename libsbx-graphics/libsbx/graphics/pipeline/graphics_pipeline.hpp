@@ -60,10 +60,10 @@ struct depth_bias {
 }; // struct depth_bias
 
 struct rasterization_state {
-  graphics::polygon_mode polygon_mode{polygon_mode::fill};
+  graphics::polygon_mode polygon_mode{graphics::polygon_mode::fill};
   std::float_t line_width{1.0f};
-  graphics::cull_mode cull_mode{cull_mode::back};
-  graphics::front_face front_face{front_face::counter_clockwise};
+  graphics::cull_mode cull_mode{graphics::cull_mode::back};
+  graphics::front_face front_face{graphics::front_face::counter_clockwise};
   std::optional<graphics::depth_bias> depth_bias{};
 }; // struct rasterization_state
 
@@ -99,8 +99,8 @@ enum class compare_operation : std::uint8_t {
 }; // enum class compare_operation
 
 struct pipeline_definition {
-  graphics::depth depth{depth::read_write};
-  graphics::compare_operation compare_operation{compare_operation::less_or_equal};
+  graphics::depth depth{graphics::depth::read_write};
+  graphics::compare_operation compare_operation{graphics::compare_operation::less_or_equal};
   bool uses_transparency{false};
   graphics::rasterization_state rasterization_state{};
   graphics::primitive_topology primitive_topology{graphics::primitive_topology::triangle_list};
