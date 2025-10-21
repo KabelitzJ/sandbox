@@ -223,7 +223,7 @@ private:
 
   std::filesystem::path _base_pipeline;
 
-  static std::unordered_map<material_key, pipeline_data, material_key_hash> _pipeline_cache;
+  inline static std::unordered_map<material_key, pipeline_data, material_key_hash> _pipeline_cache{};
 
 }; // class material_subrenderer
 
