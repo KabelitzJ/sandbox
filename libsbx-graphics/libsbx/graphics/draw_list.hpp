@@ -25,7 +25,7 @@ class draw_list {
 
 public:
 
-  using storage_buffer_container = std::unordered_map<utility::hashed_string, storage_buffer_handle>;
+  using storage_buffer_container = std::unordered_map<std::size_t, storage_buffer_handle>;
   using draw_command_range_container = std::unordered_map<math::uuid, draw_command_range>;
 
   draw_list() = default;
@@ -44,6 +44,8 @@ public:
 
   auto draw_ranges(const utility::hashed_string& name) const noexcept -> const draw_command_range_container&;
 
+  auto draw_ranges(const std::size_t hash) const noexcept -> const draw_command_range_container&;
+
   auto clear() -> void;
 
 protected:
@@ -61,12 +63,14 @@ protected:
 
   auto push_draw_command_range(const utility::hashed_string& name, const math::uuid& id, const draw_command_range& range) -> void;
 
+  auto push_draw_command_range(const std::size_t hash, const math::uuid& id, const draw_command_range& range) -> void;
+
 private:
 
   storage_buffer_container _buffers;
   separate_image2d_array _images;
   separate_sampler _sampler;
-  std::unordered_map<utility::hashed_string, draw_command_range_container> _draw_ranges;
+  std::unordered_map<std::size_t, draw_command_range_container> _draw_ranges;
 
 }; // class draw_list
 

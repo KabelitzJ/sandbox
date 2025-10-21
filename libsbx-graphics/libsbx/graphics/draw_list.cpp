@@ -37,7 +37,17 @@ auto draw_list::sampler() const noexcept -> const separate_sampler& {
 auto draw_list::draw_ranges(const utility::hashed_string& name) const noexcept -> const draw_command_range_container& {
   static const auto placeholder = draw_command_range_container{};
 
-  if (const auto entry = _draw_ranges.find(name); entry != _draw_ranges.end()) {
+  if (const auto entry = _draw_ranges.find(name.hash()); entry != _draw_ranges.end()) {
+    return entry->second;
+  }
+
+  return placeholder;
+}
+
+auto draw_list::draw_ranges(const std::size_t hash) const noexcept -> const draw_command_range_container& {
+  static const auto placeholder = draw_command_range_container{};
+
+  if (const auto entry = _draw_ranges.find(hash); entry != _draw_ranges.end()) {
     return entry->second;
   }
 
@@ -61,7 +71,7 @@ auto draw_list::create_buffer(const utility::hashed_string& name, VkDeviceSize s
 auto draw_list::get_buffer(const utility::hashed_string& name) -> storage_buffer& {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
-  if (const auto entry = _buffers.find(name); entry != _buffers.end()) {
+  if (const auto entry = _buffers.find(name.hash()); entry != _buffers.end()) {
     return graphics_module.get_resource<storage_buffer>(entry->second);
   }
 
@@ -71,7 +81,7 @@ auto draw_list::get_buffer(const utility::hashed_string& name) -> storage_buffer
 auto draw_list::get_buffer(const utility::hashed_string& name) const -> const storage_buffer& {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
-  if (const auto entry = _buffers.find(name); entry != _buffers.end()) {
+  if (const auto entry = _buffers.find(name.hash()); entry != _buffers.end()) {
     return graphics_module.get_resource<storage_buffer>(entry->second);
   }
 
@@ -83,7 +93,11 @@ auto draw_list::add_image(const image2d_handle& handle) -> std::uint32_t {
 }
 
 auto draw_list::push_draw_command_range(const utility::hashed_string& name, const math::uuid& id, const draw_command_range& range) -> void {
-  _draw_ranges[name].emplace(id, range);
+  _draw_ranges[name.hash()].emplace(id, range);
+}
+
+auto draw_list::push_draw_command_range(const std::size_t hash, const math::uuid& id, const draw_command_range& range) -> void {
+  _draw_ranges[hash].emplace(id, range);
 }
 
 } // namespace sbx::graphics

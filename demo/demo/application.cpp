@@ -255,6 +255,31 @@ application::application()
 
   scripting_module.instantiate(helmet, "res://scripts/test.lua");
 
+  // Dragon
+  // auto& dragon_mesh = assets_module.get_asset<sbx::models::mesh>(scene.get_mesh("dragon"));
+
+  auto dragon = scene.create_node("Dragon");
+
+  // scene.add_material<sbx::scenes::material>("cloth", sbx::scenes::material_type::opaque, sbx::math::color::blue(), 0.0f, 1.0f, 1.0f, scene.get_image("checkerboard"));
+  // scene.add_material<sbx::scenes::material>("dragon", sbx::scenes::material_type::transparent, sbx::math::color{0.0f, 0.6588f, 0.4196f, 0.6f}, 0.0f, 0.5f, 1.0f);
+
+  auto& dragon_material = scene.add_material<sbx::models::prototype::material>("dragon");
+  dragon_material.base_color = sbx::math::color{0.0f, 0.6588f, 0.4196f, 0.6f};
+  dragon_material.alpha = sbx::models::prototype::alpha_mode::blend;
+  // dragon_material.alpha = sbx::models::prototype::alpha_mode::opaque;
+  // dragon_material.is_double_sided = true;
+
+  auto& cloth_material = scene.add_material<sbx::models::prototype::material>("cloth");
+  cloth_material.base_color = sbx::math::color::green();
+  cloth_material.albedo = scene.get_image("checkerboard");
+
+  scene.add_component<sbx::models::prototype::static_mesh>(dragon, scene.get_mesh("dragon"), std::vector<sbx::models::prototype::static_mesh::submesh>{{0u, scene.get_material("cloth")}, {1u, scene.get_material("dragon")}});
+
+  auto& dragon_transform = scene.get_component<sbx::scenes::transform>(dragon);
+  dragon_transform.set_position(sbx::math::vector3{-8.0f, 2.0f, 4.0f});
+  dragon_transform.set_rotation(sbx::math::vector3::up, sbx::math::degree{45});
+  dragon_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
+
   // Fox
   auto& animations_module = sbx::core::engine::get_module<sbx::animations::animations_module>();
 

@@ -97,6 +97,9 @@ public:
   constexpr bit_field(const value_type value) noexcept
   : _value{to_underlying(value)} { }
 
+  explicit constexpr bit_field(const underlying_type value) noexcept
+  : _value{value} { }
+
   constexpr auto set(const value_type value) noexcept -> void {
     _value |= static_cast<underlying_type>(value);
   }
