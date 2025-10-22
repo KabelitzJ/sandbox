@@ -140,11 +140,10 @@
     // Deferred rendering pass
     // add_subrenderer<sbx::animations::skinned_mesh_subrenderer>(deferred, "res://shaders/deferred_skinned_opaque");
 
-    add_subrenderer<sbx::models::prototype::material_subrenderer<false>>(deferred, "res://shaders/deferred_static_material");
-    
+    add_subrenderer<sbx::models::prototype::material_subrenderer>(deferred, "res://shaders/deferred_static_material", sbx::models::prototype::material_draw_list::bucket::opaque);
     
     // Transparency pass
-    add_subrenderer<sbx::models::prototype::material_subrenderer<true>>(transparency, "res://shaders/deferred_static_material");
+    add_subrenderer<sbx::models::prototype::material_subrenderer>(transparency, "res://shaders/deferred_static_material", sbx::models::prototype::material_draw_list::bucket::transparent);
     
     // Resolve pass
     auto resolve_opaque_attachment_names = std::vector<std::pair<std::string, std::string>>{

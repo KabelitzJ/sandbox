@@ -72,7 +72,6 @@
 
 namespace sbx::models::prototype {
 
-template<bool Transparency>
 class material_subrenderer final : public graphics::subrenderer {
 
   inline static const auto pipeline_definition = graphics::pipeline_definition{
@@ -87,11 +86,14 @@ class material_subrenderer final : public graphics::subrenderer {
 
 public:
 
-  material_subrenderer(const graphics::render_graph::graphics_pass& pass, const std::filesystem::path& base_pipeline)
+  material_subrenderer(const graphics::render_graph::graphics_pass& pass, const std::filesystem::path& base_pipeline, const material_draw_list::bucket bucket)
   : graphics::subrenderer{pass},
-    _base_pipeline{base_pipeline} { }
+    _base_pipeline{base_pipeline},
+    _bucket{bucket} { }
 
-  ~material_subrenderer() override = default;
+  ~material_subrenderer() override {
+    _pipeline_cache.clear();
+  }
 
   auto render(graphics::command_buffer& command_buffer) -> void override {
     EASY_FUNCTION();
@@ -107,19 +109,7 @@ public:
 
     auto& draw_list = pass().draw_list<models::prototype::material_draw_list>("material");
 
-    for (auto& [key, data] : draw_list.data()) {
-      if constexpr (Transparency) {
-        if (static_cast<alpha_mode>(key.alpha) != alpha_mode::blend) {
-          continue;
-        }
-      } else {
-        if (static_cast<alpha_mode>(key.alpha) == alpha_mode::blend) {
-          continue;
-        }
-      }
-
-
-
+    for (auto& [key, data] : draw_list.ranges(_bucket)) {
       auto& pipeline_data = _get_or_create_pipeline(key, pass());
 
       auto& pipeline = graphics_module.get_resource<graphics::graphics_pipeline>(pipeline_data.pipeline);
@@ -146,7 +136,7 @@ public:
 
       const auto hash = material_key_hash{}(key);
 
-      for (const auto& [mesh_id, range] : draw_list.draw_ranges(hash)) {
+      for (const auto& [mesh_id, range] : data.ranges) {
         auto& mesh = assets_module.get_asset<models::mesh>(mesh_id);
         
         mesh.bind(command_buffer);
@@ -193,6 +183,7 @@ private:
 
     const auto request = graphics::compiler::compile_request{
       .path = _base_pipeline,
+      .defines = {},
       .specializations = {
         {SLANG_STAGE_FRAGMENT, {_alpha_policy.at(key.alpha), _fs_out.at(key.alpha)}}
       }
@@ -222,6 +213,7 @@ private:
   };
 
   std::filesystem::path _base_pipeline;
+  material_draw_list::bucket _bucket;
 
   inline static std::unordered_map<material_key, pipeline_data, material_key_hash> _pipeline_cache{};
 

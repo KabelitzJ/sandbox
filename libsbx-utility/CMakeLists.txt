@@ -19,6 +19,7 @@ find_package(spdlog REQUIRED)
 find_package(easy_profiler REQUIRED)
 find_package(range-v3 REQUIRED)
 find_package(lz4 REQUIRED)
+find_package(magic_enum REQUIRED)
 
 target_sources(
   ${PROJECT_NAME}
@@ -69,6 +70,7 @@ target_link_libraries(
     range-v3::range-v3
     easy_profiler
     lz4::lz4
+    magic_enum::magic_enum
     # Internal dependencies
     libsbx::units
 )

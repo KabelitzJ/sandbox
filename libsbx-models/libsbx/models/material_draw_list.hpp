@@ -1,6 +1,8 @@
 #ifndef LIBSBX_MODELS_MATERIAL_DRAW_LIST_HPP_
 #define LIBSBX_MODELS_MATERIAL_DRAW_LIST_HPP_
 
+#include <magic_enum/magic_enum.hpp>
+
 #include <libsbx/graphics/graphics_module.hpp>
 #include <libsbx/graphics/draw_list.hpp>
 
@@ -13,6 +15,25 @@ namespace sbx::models::prototype {
 class material_draw_list final : public graphics::draw_list {
 
 public:
+
+  enum class bucket : std::uint8_t {
+    opaque,
+    transparent,
+    shadow
+  }; // enum class bucket
+
+  struct range_reference {
+    math::uuid mesh_id;
+    graphics::draw_command_range range;
+  }; // struct range_reference
+
+  struct bucket_entry {
+    graphics::storage_buffer_handle draw_commands_buffer{};
+    graphics::storage_buffer_handle instance_data_buffer{};
+    std::vector<range_reference> ranges;
+  }; // struct bucket_entry
+
+  using bucket_map = std::unordered_map<material_key, bucket_entry, material_key_hash>;
 
   inline static const auto transform_data_buffer_name = utility::hashed_string{"transform_data"};
   inline static const auto material_data_buffer_name = utility::hashed_string{"material_data"};
@@ -43,10 +64,16 @@ public:
   auto update() -> void override {
     _transform_data.clear();
     _material_data.clear();
-    // _pipeline_data.clear();
+
     for (auto& [key, pipeline_data] : _pipeline_data) {
       pipeline_data.submesh_instances.clear();
     }
+
+    for (auto& buckets : _bucket_ranges) {
+      buckets.clear();
+    }
+
+    _material_buckets.clear();
 
     auto& assets_module = core::engine::get_module<assets::assets_module>();
 
@@ -94,7 +121,17 @@ public:
           material_data.flags = material.features.underlying();
 
           _material_data.push_back(material_data);
+
+          _material_buckets[material].push_back(_classify_bucket(material));
+
+          if (_submits_to_shadow(material)) {
+            _material_buckets[material].push_back(bucket::shadow);
+          }
         }
+
+        // if (_material_bucket.find(submesh.material) == _material_bucket.end()) {
+        //   _material_bucket.emplace(submesh.material, _classify_bucket(material));
+        // }
 
         _submit_mesh(pipeline_data, static_mesh.mesh_id(), submesh.index, transform_index, entry->second);
       }
@@ -112,15 +149,25 @@ public:
     }
   }
 
-  auto data() const -> std::unordered_map<material_key, pipeline_data, material_key_hash> {
-    return _pipeline_data;
+  auto ranges(const bucket bucket) const -> const bucket_map& {
+    return _bucket_ranges[magic_enum::enum_underlying(bucket)];
   }
 
 private:
 
-  auto _get_or_create_pipeline_data(const material_key& key) -> pipeline_data& {
-    auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+  static inline auto _classify_bucket(const models::prototype::material& material) -> bucket {
+    if (material.alpha == models::prototype::alpha_mode::blend) {
+      return bucket::transparent;
+    } 
 
+    return bucket::opaque;
+  }
+
+  static inline auto _submits_to_shadow(const models::prototype::material& material) -> bool {
+    return material.features.has(models::prototype::material_feature::cast_shadow);
+  }
+
+  auto _get_or_create_pipeline_data(const material_key& key) -> pipeline_data& {
     if (auto entry = _pipeline_data.find(key); entry != _pipeline_data.end()) {
       return entry->second;
     }
@@ -160,7 +207,8 @@ private:
     auto instance_data = std::vector<models::prototype::instance_data>{};
     auto base_instance = std::uint32_t{0u};
 
-    // pipeline_data.draw_ranges.clear();
+    // const auto entry = _material_bucket.find(key);
+    const auto& buckets = _material_buckets.at(key);
 
     for (auto&& [mesh_id, submesh_vectors] : pipeline_data.submesh_instances) {
       auto& mesh = assets_module.get_asset<models::mesh>(mesh_id);
@@ -195,6 +243,19 @@ private:
         const auto hash = material_key_hash{}(key);
 
         push_draw_command_range(hash, mesh_id, range);
+
+        for (const auto& bucket : buckets) {
+          auto& entry = _bucket_ranges[magic_enum::enum_underlying(bucket)][key];
+
+          entry.draw_commands_buffer = pipeline_data.draw_commands_buffer;
+          entry.instance_data_buffer = pipeline_data.instance_data_buffer;
+          entry.ranges.push_back(range_reference{ .mesh_id = mesh_id, .range = range });
+
+          // .push_back(range_reference{
+          //   .mesh_id = mesh_id,
+          //   .range   = range
+          // });
+        }
       }
     }
 
@@ -208,6 +269,9 @@ private:
   std::vector<material_data> _material_data;
 
   std::unordered_map<material_key, pipeline_data, material_key_hash> _pipeline_data;
+
+  std::array<bucket_map, magic_enum::enum_count<bucket>()> _bucket_ranges;
+  std::unordered_map<material_key, std::vector<bucket>, material_key_hash> _material_buckets;
 
 }; // class material_draw_list
 
