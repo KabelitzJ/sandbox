@@ -122,6 +122,8 @@ auto graph_builder::build() -> void {
     for (const auto& input : node._inputs) {
       if (auto entry = attachment_producers.find(input); entry != attachment_producers.end()) {
         pass_dependencies[node._name].insert(entry->second);
+      } else {
+        throw utility::runtime_error{"No producer for attachment '{}'", input.str()};
       }
     }
   }

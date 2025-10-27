@@ -33,22 +33,7 @@
 
   renderer::renderer()
   : _clear_color{sbx::math::color::white()} {
-    auto [shadow, depth_pre, deferred, transparency, resolve, post, editor] = create_graph(
-      [&](sbx::graphics::render_graph::context& context) -> sbx::graphics::render_graph::graphics_pass {
-        auto shadow_pass = context.graphics_pass("shadow", sbx::graphics::viewport::fixed(2048u, 2048u));
-
-        shadow_pass.produces("shadow_depth", sbx::graphics::attachment::type::depth);
-        shadow_pass.produces("shadow", sbx::graphics::attachment::type::image, sbx::math::color{1.0f, 1.0f, 0.0f, 1.0}, sbx::graphics::format::r32g32_sfloat, sbx::graphics::address_mode::clamp_to_edge);
-
-        return shadow_pass;
-      },
-      [&](sbx::graphics::render_graph::context& context) -> sbx::graphics::render_graph::graphics_pass {
-        auto depth_pre_pass = context.graphics_pass("depth_pre");
-
-        depth_pre_pass.produces("depth", sbx::graphics::attachment::type::depth);
-
-        return depth_pre_pass;
-      },
+    auto [deferred, transparency, resolve, post, editor] = create_graph(
       [&](sbx::graphics::render_graph::context& context) -> sbx::graphics::render_graph::graphics_pass {
         auto deferred_pass = context.graphics_pass("deferred");
 
@@ -104,7 +89,7 @@
           .color_write_mask = sbx::graphics::color_component::r | sbx::graphics::color_component::g | sbx::graphics::color_component::b | sbx::graphics::color_component::a
         };
 
-        resolve_pass.uses("shadow", "albedo", "position", "normal", "material", "object_id", "accum", "revealage");
+        resolve_pass.uses("albedo", "position", "normal", "material", "object_id", "accum", "revealage");
 
         resolve_pass.produces("depth", sbx::graphics::attachment::type::depth);
         resolve_pass.produces("resolve", sbx::graphics::attachment::type::image, _clear_color, sbx::graphics::format::r32g32b32a32_sfloat, resolve_blend);
@@ -135,7 +120,7 @@
     add_draw_list<sbx::models::prototype::material_draw_list>("material");
 
     // Shadow pass
-    add_subrenderer<sbx::shadows::shadow_subrenderer>(shadow, "res://shaders/shadow");
+    // add_subrenderer<sbx::shadows::shadow_subrenderer>(shadow, "res://shaders/shadow");
 
     // Deferred rendering pass
     // add_subrenderer<sbx::animations::skinned_mesh_subrenderer>(deferred, "res://shaders/deferred_skinned_opaque");
@@ -151,7 +136,7 @@
       {"position_image", "position"},
       {"normal_image", "normal"},
       {"material_image", "material"},
-      {"shadow_image", "shadow"},
+      // {"shadow_image", "shadow"},
       // {"object_id_image", "object_id"}
     };
 

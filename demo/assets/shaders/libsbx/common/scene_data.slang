@@ -10,6 +10,7 @@ struct scene_data {
   float3 light_direction;
   float4 light_color;
   float4x4 light_space;
+  uint point_light_count;
   float time;
 }; // struct scene_data
 
