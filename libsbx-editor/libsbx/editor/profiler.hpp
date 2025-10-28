@@ -11,7 +11,42 @@
 
 namespace sbx::editor {
 
-inline auto delta(const core::sampler_vector<std::uint64_t>& time_samplers, const core::sampler_vector<std::double_t>& percent_samplers, const core::scope_info& info_a, const core::scope_info& info_b, const std::uint32_t column_user_id) -> std::int32_t {
+using child_map = std::vector<std::vector<core::scope_info::node_id>>;
+
+template<typename Type>
+using sampler_vector = std::vector<core::sampler<Type>>;
+
+inline auto populate_nodes(std::span<const core::scope_info> infos, child_map& children_map, std::vector<core::scope_info::node_id>& root_nodes) -> void {
+  children_map.resize(core::scope_info::max_nodes);
+
+  for (auto& entry : children_map) {
+    entry.clear();
+  }
+
+  root_nodes.clear();
+
+  for (const auto& info : infos) {
+    if (info.time == core::scope_info::null_time) {
+      continue;
+    }
+
+    if (info.parent_id == core::scope_info::null_node) {
+      root_nodes.push_back(info.id);
+    } else {
+      children_map[info.parent_id].push_back(info.id);
+    }
+  }
+}
+
+inline auto percentage(const std::int64_t part, const std::int64_t total) -> std::double_t {
+  return total == 0 ? 0.0 : (static_cast<std::double_t>(part) * 100.0) / static_cast<std::double_t>(total);
+}
+
+inline auto node_percentage(std::span<const core::scope_info> infos, const core::scope_info& info) -> std::double_t {
+  return info.parent_id == core::scope_info::null_node ? 0.0 : percentage(info.time.count(), infos[info.parent_id].time.count());
+}
+
+inline auto delta(const sampler_vector<std::uint64_t>& time_samplers, const sampler_vector<std::double_t>& percent_samplers, const core::scope_info& info_a, const core::scope_info& info_b, const std::uint32_t column_user_id) -> std::int32_t {
   if (column_user_id == 0u) {
     return info_a.label.compare(info_b.label);
   }
@@ -39,7 +74,7 @@ inline auto delta(const core::sampler_vector<std::uint64_t>& time_samplers, cons
   return 0;
 }
 
-inline auto render_node(const core::sampler_vector<std::uint64_t>& time_samplers, const core::sampler_vector<std::double_t>& percent_samplers, const core::scope_info::node_id node_id, const std::span<const core::scope_info>& all_nodes, const core::child_map& child_map) -> void {
+inline auto render_node(const sampler_vector<std::uint64_t>& time_samplers, const sampler_vector<std::double_t>& percent_samplers, const core::scope_info::node_id node_id, const std::span<const core::scope_info>& all_nodes, const child_map& child_map) -> void {
   const auto& info = all_nodes[node_id];
   const auto& children = child_map[node_id];
 
@@ -105,7 +140,7 @@ inline void show_profiler() {
   static thread_local auto node_time_samplers = utility::make_vector<core::sampler<std::uint64_t>>(core::scope_info::max_nodes, core::sampler<std::uint64_t>{64u});
   static thread_local auto node_percent_samplers = utility::make_vector<core::sampler<std::double_t>>(core::scope_info::max_nodes, core::sampler<std::double_t>{64u});
 
-  core::populate_nodes(scope_infos, children_map, root_nodes);
+  populate_nodes(scope_infos, children_map, root_nodes);
 
   for (auto i = 0; i < static_cast<core::scope_info::node_id>(scope_infos.size()); ++i) {
     if (scope_infos[i].time.count() < 0) {
@@ -113,7 +148,7 @@ inline void show_profiler() {
     }
 
     node_time_samplers[i].record(static_cast<std::uint64_t>(scope_infos[i].time.count()));
-    node_percent_samplers[i].record(core::node_percentage(scope_infos, scope_infos[i]));
+    node_percent_samplers[i].record(node_percentage(scope_infos, scope_infos[i]));
   }
 
   if (!ImGui::BeginTable("ProfilerTreeView", 4, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_Resizable | ImGuiTableFlags_Sortable)) {

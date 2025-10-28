@@ -215,47 +215,6 @@ inline auto scope_infos() -> std::span<const scope_info> {
   return std::span<const scope_info>{detail::db.nodes.data(), detail::db.next_node_id};
 }
 
-using child_map = std::vector<std::vector<scope_info::node_id>>;
-
-template<typename Type>
-using sampler_vector = std::vector<sampler<Type>>;
-
-inline auto populate_nodes(std::span<const scope_info> infos, child_map& children_map, std::vector<scope_info::node_id>& root_nodes) -> void {
-  children_map.resize(scope_info::max_nodes);
-
-  for (auto& entry : children_map) {
-    entry.clear();
-  }
-
-  root_nodes.clear();
-
-  for (const auto& info : infos) {
-    if (info.time == scope_info::null_time) {
-      continue;
-    }
-
-    if (info.parent_id == scope_info::null_node) {
-      root_nodes.push_back(info.id);
-    } else {
-      children_map[info.parent_id].push_back(info.id);
-    }
-  }
-}
-
-inline auto reset_nodes() -> void {
-  for (auto& node : detail::db.nodes) {
-    node.time = scope_info::null_time;
-  }
-}
-
-inline auto percentage(const std::int64_t part, const std::int64_t total) -> std::double_t {
-  return total == 0 ? 0.0 : (static_cast<std::double_t>(part) * 100.0) / static_cast<std::double_t>(total);
-}
-
-inline auto node_percentage(std::span<const scope_info> infos, const scope_info& info) -> std::double_t {
-  return info.parent_id == scope_info::null_node ? 0.0 : percentage(info.time.count(), infos[info.parent_id].time.count());
-}
-
 } // namespace sbx::core
 
 #endif // LIBSBX_CORE_PROFILER_HPP_
