@@ -167,9 +167,9 @@ application::application()
 
   // Terrain
 
-  // auto& terrain_module = sbx::core::engine::get_module<demo::terrain_module>();
+  auto& terrain_module = sbx::core::engine::get_module<demo::terrain_module>();
 
-  // terrain_module.load_terrain_in_scene();
+  terrain_module.load_terrain_in_scene();
 
   // Longhouse
 

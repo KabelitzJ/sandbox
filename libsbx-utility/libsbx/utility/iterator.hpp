@@ -115,7 +115,7 @@ struct start_end {
     return begin_index;
   }
 
-  constexpr auto end(const std::size_t size) const -> std::size_t {
+  constexpr auto end([[maybe_unused]] const std::size_t size) const -> std::size_t {
     return end_index;
   }
 
@@ -190,6 +190,15 @@ auto make_vector(const std::size_t size, const Type& value = Type{}) -> std::vec
   auto result = std::vector<Type>{};
 
   result.resize(size, value);
+
+  return result;
+}
+
+template<typename Type>
+auto make_reserved_vector(const std::size_t size) -> std::vector<Type> {
+  auto result = std::vector<Type>{};
+
+  result.reserve(size);
 
   return result;
 }

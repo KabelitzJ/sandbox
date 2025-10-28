@@ -66,7 +66,7 @@ scripting_module::~scripting_module() {
 }
 
 auto scripting_module::update() -> void {
-  SBX_SCOPED_TIMER("scripting_module");
+  SBX_PROFILE_SCOPE("scripting_module::update");
 
   const auto delta_time = core::engine::delta_time();
 

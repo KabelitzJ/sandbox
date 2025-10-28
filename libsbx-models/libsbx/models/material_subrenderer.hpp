@@ -98,7 +98,7 @@ public:
   auto render(graphics::command_buffer& command_buffer) -> void override {
     EASY_FUNCTION();
 
-    SBX_SCOPED_TIMER("material_subrenderer");
+    SBX_PROFILE_SCOPE("material_subrenderer::render");
 
     auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 

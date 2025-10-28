@@ -79,7 +79,7 @@ public:
   ~shadow_subrenderer() override = default;
 
   auto render(graphics::command_buffer& command_buffer) -> void override {
-    SBX_SCOPED_TIMER("shadow_subrenderer");
+    SBX_PROFILE_SCOPE("shadow_subrenderer::render");
 
     auto& assets_module = core::engine::get_module<assets::assets_module>();
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();

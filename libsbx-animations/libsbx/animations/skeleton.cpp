@@ -42,7 +42,7 @@ auto skeleton::bones() const -> const std::vector<bone>& {
 
 auto skeleton::evaluate_pose(const animation& animation, std::float_t time) const -> std::vector<math::matrix4x4> {
   EASY_FUNCTION();
-  SBX_SCOPED_TIMER("skeleton::evaluate_pose");
+  SBX_PROFILE_SCOPE("skeleton::evaluate_pose");
 
   auto final_bones = std::vector<math::matrix4x4>{};
   final_bones.resize(_bones.size(), math::matrix4x4::identity);

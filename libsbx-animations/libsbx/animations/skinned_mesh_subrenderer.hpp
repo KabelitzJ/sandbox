@@ -112,7 +112,7 @@ public:
   auto render(graphics::command_buffer& command_buffer) -> void override {
     EASY_FUNCTION();
 
-    SBX_SCOPED_TIMER("skinned_mesh_subrenderer");
+    SBX_PROFILE_SCOPE("skinned_mesh_subrenderer::render");
 
     auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
@@ -160,7 +160,7 @@ public:
     //   utility::logger<"animations">::debug("bone_to_track: {}", _bone_to_track);
     // }
 
-    SBX_SCOPED_TIMER_BLOCK("skinned_mesh_subrenderer::submit") {
+    SBX_PROFILE_BLOCK("skinned_mesh_subrenderer::submit") {
       auto mesh_query = scene.query<const scenes::skinned_mesh, animations::animator>();
 
       for (auto&& [node, skinned_mesh, animator] : mesh_query.each()) {
@@ -168,7 +168,7 @@ public:
       }
     }
 
-    SBX_SCOPED_TIMER_BLOCK("static_mesh_subrenderer::render"){
+    SBX_PROFILE_BLOCK("static_mesh_subrenderer::render"){
       _render_skinned_meshes(command_buffer);
     }
   }
