@@ -163,7 +163,7 @@ public:
   auto render(graphics::command_buffer& command_buffer) -> void override {
     EASY_FUNCTION();
 
-    SBX_SCOPED_TIMER("static_mesh_subrenderer");
+    SBX_PROFILE_SCOPE("static_mesh_subrenderer::render");
 
     auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 

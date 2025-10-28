@@ -15,6 +15,7 @@
 
 #include <libsbx/core/engine.hpp>
 #include <libsbx/core/version.hpp>
+#include <libsbx/core/profiler.hpp>
 
 #include <libsbx/assets/assets_module.hpp>
 
@@ -36,6 +37,7 @@
 #include <libsbx/editor/fonts.hpp>
 #include <libsbx/editor/dialog.hpp>
 #include <libsbx/editor/menu_bar.hpp>
+#include <libsbx/editor/profiler.hpp>
 
 namespace sbx::editor {
 
@@ -218,7 +220,7 @@ public:
   }
 
   auto render(sbx::graphics::command_buffer& command_buffer) -> void override {
-    SBX_SCOPED_TIMER("editor_subrenderer");
+    SBX_PROFILE_SCOPE("editor_subrenderer::render");
    
     auto& graphics_module = sbx::core::engine::get_module<sbx::graphics::graphics_module>();
 
@@ -943,58 +945,60 @@ private:
       }
 
       if (ImGui::CollapsingHeader("Profiler", ImGuiTreeNodeFlags_DefaultOpen)) {
-        if (ImGui::BeginTable("profiler_table", 2,
-              ImGuiTableFlags_BordersInnerV |
-              ImGuiTableFlags_BordersOuter |
-              ImGuiTableFlags_RowBg |
-              ImGuiTableFlags_SizingStretchProp)) {
+        show_profiler();
 
-          ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch, 2.0f);
-          ImGui::TableSetupColumn("Time [ms]", ImGuiTableColumnFlags_WidthFixed, 100.0f);
-          ImGui::TableHeadersRow();
+        // if (ImGui::BeginTable("profiler_table", 2,
+        //       ImGuiTableFlags_BordersInnerV |
+        //       ImGuiTableFlags_BordersOuter |
+        //       ImGuiTableFlags_RowBg |
+        //       ImGuiTableFlags_SizingStretchProp)) {
 
-          core::engine::profiler().for_each([](const auto& group_name, const auto& group) {
-            // Insert a bold group header that spans both columns
-            ImGui::TableNextRow();
-            ImGui::TableSetColumnIndex(0);
-            ImGui::TableSetBgColor(ImGuiTableBgTarget_RowBg0, IM_COL32(50, 60, 80, 255)); // optional group row color
-            ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyleColorVec4(ImGuiCol_Text));
-            ImGui::TextUnformatted(group_name.c_str());
-            ImGui::PopStyleColor();
-            ImGui::TableSetColumnIndex(1);
-            ImGui::TextDisabled(" "); // Empty to keep row height aligned
+        //   ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch, 2.0f);
+        //   ImGui::TableSetupColumn("Time [ms]", ImGuiTableColumnFlags_WidthFixed, 100.0f);
+        //   ImGui::TableHeadersRow();
 
-            // Add total time
-            if (group.overall.value() > 0.0f) {
-              const auto ms = units::quantity_cast<sbx::units::millisecond>(group.overall);
+        //   core::engine::profiler().for_each([](const auto& group_name, const auto& group) {
+        //     // Insert a bold group header that spans both columns
+        //     ImGui::TableNextRow();
+        //     ImGui::TableSetColumnIndex(0);
+        //     ImGui::TableSetBgColor(ImGuiTableBgTarget_RowBg0, IM_COL32(50, 60, 80, 255)); // optional group row color
+        //     ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyleColorVec4(ImGuiCol_Text));
+        //     ImGui::TextUnformatted(group_name.c_str());
+        //     ImGui::PopStyleColor();
+        //     ImGui::TableSetColumnIndex(1);
+        //     ImGui::TextDisabled(" "); // Empty to keep row height aligned
 
-              ImGui::TableNextRow();
-              ImGui::TableSetColumnIndex(0);
-              ImGui::TextUnformatted("total");
+        //     // Add total time
+        //     if (group.overall.value() > 0.0f) {
+        //       const auto ms = units::quantity_cast<sbx::units::millisecond>(group.overall);
 
-              ImGui::TableSetColumnIndex(1);
-              ImGui::PushStyleColor(ImGuiCol_Text, _get_color_for_time(ms));
-              ImGui::Text("%.3f", ms.value());
-              ImGui::PopStyleColor();
-            }
+        //       ImGui::TableNextRow();
+        //       ImGui::TableSetColumnIndex(0);
+        //       ImGui::TextUnformatted("total");
 
-            // Add entries
-            for (const auto& [name, measurement] : group.entries) {
-              const auto ms = units::quantity_cast<sbx::units::millisecond>(measurement);
+        //       ImGui::TableSetColumnIndex(1);
+        //       ImGui::PushStyleColor(ImGuiCol_Text, _get_color_for_time(ms));
+        //       ImGui::Text("%.3f", ms.value());
+        //       ImGui::PopStyleColor();
+        //     }
 
-              ImGui::TableNextRow();
-              ImGui::TableSetColumnIndex(0);
-              ImGui::TextUnformatted(name.c_str());
+        //     // Add entries
+        //     for (const auto& [name, measurement] : group.entries) {
+        //       const auto ms = units::quantity_cast<sbx::units::millisecond>(measurement);
 
-              ImGui::TableSetColumnIndex(1);
-              ImGui::PushStyleColor(ImGuiCol_Text, _get_color_for_time(ms));
-              ImGui::Text("%.3f", ms.value());
-              ImGui::PopStyleColor();
-            }
-          });
+        //       ImGui::TableNextRow();
+        //       ImGui::TableSetColumnIndex(0);
+        //       ImGui::TextUnformatted(name.c_str());
 
-          ImGui::EndTable();
-        }
+        //       ImGui::TableSetColumnIndex(1);
+        //       ImGui::PushStyleColor(ImGuiCol_Text, _get_color_for_time(ms));
+        //       ImGui::Text("%.3f", ms.value());
+        //       ImGui::PopStyleColor();
+        //     }
+        //   });
+
+        //   ImGui::EndTable();
+        // }
       }
 
       // static constexpr auto max_time = sbx::units::second{5};

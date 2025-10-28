@@ -37,7 +37,7 @@ public:
   ~physics_module() override = default;
 
   auto update() -> void override {
-    SBX_SCOPED_TIMER("physics_module");
+    SBX_PROFILE_SCOPE("physics_module::update");
 
     integrate_rigidbodies();
 
@@ -97,7 +97,7 @@ private:
   }
 
   auto integrate_rigidbodies() -> void {
-    SBX_SCOPED_TIMER("physics_module::integrate_rigidbodies");
+    SBX_PROFILE_SCOPE("physics_module::integrate_rigidbodies");
 
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
     auto& scene = scenes_module.scene();

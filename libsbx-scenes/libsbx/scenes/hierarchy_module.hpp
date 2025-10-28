@@ -39,7 +39,7 @@
 //   ~hierarchy_module() override = default;
 
 //   auto update() -> void override {
-//     SBX_SCOPED_TIMER("hierarchy_module");
+//     SBX_PROFILE_SCOPE("hierarchy_module");
 
 //     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
 

@@ -78,9 +78,9 @@ public:
     return _instance->_cli;
   }
 
-  static auto profiler() noexcept -> core::profiler& {
-    return _instance->_profiler;
-  }
+  // static auto profiler() noexcept -> core::profiler& {
+  //   return _instance->_profiler;
+  // }
 
   static auto settings() noexcept -> core::settings& {
     return _instance->_settings;
@@ -213,7 +213,7 @@ private:
   bool _is_running{};
   // std::vector<std::string_view> _args{};
   core::cli _cli;
-  core::profiler _profiler;
+  // core::profiler _profiler;
   core::settings _settings;
 
   std::vector<module_base*> _modules{};
@@ -222,16 +222,5 @@ private:
 }; // class engine
 
 } // namespace sbx::core
-
-#define CONCAT_INTERNAL(x, y) x##y
-#define CONCAT(x, y) CONCAT_INTERNAL(x, y)
-
-#define SBX_SCOPED_TIMER(name) \
-  auto CONCAT(__scoped_timer_, __LINE__) = sbx::utility::scoped_timer{[=](const auto& measurement) { \
-    sbx::core::engine::profiler().submit(name, measurement); \
-  }}
-
-#define SBX_SCOPED_TIMER_BLOCK(name) \
-  if (auto CONCAT(__scoped_timer_, __LINE__) = sbx::utility::scoped_timer{[=](const auto& measurement) { sbx::core::engine::profiler().submit(name, measurement); }}; true)
 
 #endif // LIBSBX_CORE_ENGINE_HPP_

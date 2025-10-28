@@ -145,7 +145,7 @@ graphics_module::~graphics_module() {
 }
 
 auto graphics_module::update() -> void {
-  SBX_SCOPED_TIMER("graphics_module");
+  SBX_PROFILE_SCOPE("graphics_module::update");
 
   auto& devices_module = core::engine::get_module<devices::devices_module>();
 
@@ -191,7 +191,7 @@ auto graphics_module::update() -> void {
     return;
   }
 
-  SBX_SCOPED_TIMER_BLOCK("graphics_module::acquire_next_image") {
+  SBX_PROFILE_BLOCK("graphics_module::acquire_next_image") {
     // Get the next image in the swapchain (back/front buffer)
     EASY_BLOCK("wait for image");
     const auto result = _swapchain->acquire_next_image(frame_data.image_available_semaphore, frame_data.graphics_in_flight_fence);

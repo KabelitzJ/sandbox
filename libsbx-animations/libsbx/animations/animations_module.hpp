@@ -30,7 +30,7 @@ public:
   }
 
   auto update() -> void override {
-    SBX_SCOPED_TIMER("animations_module::update");
+    SBX_PROFILE_SCOPE("animations_module::update");
 
     auto& assets_module = core::engine::get_module<assets::assets_module>();
 
