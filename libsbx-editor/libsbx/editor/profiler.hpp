@@ -114,7 +114,16 @@ inline auto render_node(const sampler_vector<std::uint64_t>& time_samplers, cons
   ImGui::TableSetColumnIndex(3);
 
   ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyle().Colors[ImGuiCol_TextDisabled]);
-  ImGui::Text("%s:%d", info.file.substr(info.file.rfind('/') + 1u).data(), info.line);
+
+  auto position = info.file.rfind('/');
+
+  if (position == std::string_view::npos) {
+    position = info.file.rfind('\\');
+  }
+
+  auto substring = position == std::string_view::npos ? info.file : info.file.substr(position + 1u);
+
+  ImGui::Text("%s:%d", substring.data(), info.line);
   ImGui::PopStyleColor();
 
   if (is_node_open && !children.empty()) {
