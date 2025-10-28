@@ -116,7 +116,7 @@
       }
     );
 
-    add_draw_list<sbx::models::static_mesh_draw_list>("static_mesh");
+    // add_draw_list<sbx::models::static_mesh_draw_list>("static_mesh");
     add_draw_list<sbx::models::prototype::material_draw_list>("material");
 
     // Shadow pass

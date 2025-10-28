@@ -191,7 +191,7 @@ private:
 
     const auto result = compiler.compile(request);
 
-    auto compiled_shaders = graphics::graphics_pipeline::compiled_shaders{_base_pipeline.filename(), result.code};
+    auto compiled_shaders = graphics::graphics_pipeline::compiled_shaders{_base_pipeline.filename().string(), result.code};
 
     auto pipeline = graphics_module.add_resource<graphics::graphics_pipeline>(compiled_shaders, pass, definition);
 
