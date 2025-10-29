@@ -10,7 +10,7 @@
 
 #include <libsbx/models/material.hpp>
 
-namespace sbx::models::prototype {
+namespace sbx::models {
 
 class material_draw_list final : public graphics::draw_list {
 
@@ -83,7 +83,7 @@ public:
 
     auto material_indices = std::unordered_map<math::uuid, std::uint32_t>{};
 
-    auto static_mesh_query = scene.query<const models::prototype::static_mesh>();
+    auto static_mesh_query = scene.query<const scenes::static_mesh>();
 
     for (auto&& [node, static_mesh] : static_mesh_query.each()) {
       const auto transform_index = static_cast<std::uint32_t>(_transform_data.size());
@@ -91,7 +91,7 @@ public:
       _transform_data.emplace_back(scene.world_transform(node), scene.world_normal(node));
 
       for (const auto& submesh : static_mesh.submeshes()) {
-        const auto& material = assets_module.get_asset<models::prototype::material>(submesh.material);
+        const auto& material = assets_module.get_asset<models::material>(submesh.material);
 
         auto& pipeline_data = _get_or_create_pipeline_data(material);
 
@@ -102,7 +102,7 @@ public:
           const auto normal_index = add_image(material.normal);
           const auto mrao_index = add_image(material.mrao);
 
-          auto material_data = prototype::material_data{};
+          auto material_data = models::material_data{};
 
           material_data.albedo_index = albedo_index;
           material_data.normal_index = normal_index;
@@ -155,16 +155,16 @@ public:
 
 private:
 
-  static inline auto _classify_bucket(const models::prototype::material& material) -> bucket {
-    if (material.alpha == models::prototype::alpha_mode::blend) {
+  static inline auto _classify_bucket(const models::material& material) -> bucket {
+    if (material.alpha == models::alpha_mode::blend) {
       return bucket::transparent;
     } 
 
     return bucket::opaque;
   }
 
-  static inline auto _submits_to_shadow(const models::prototype::material& material) -> bool {
-    return material.features.has(models::prototype::material_feature::cast_shadow);
+  static inline auto _submits_to_shadow(const models::material& material) -> bool {
+    return material.features.has(models::material_feature::cast_shadow);
   }
 
   auto _get_or_create_pipeline_data(const material_key& key) -> pipeline_data& {
@@ -182,7 +182,7 @@ private:
 
     per_mesh.resize(std::max(per_mesh.size(), static_cast<std::size_t>(submesh_index + 1u)));
 
-    per_mesh[submesh_index].push_back(models::prototype::instance_data{transform_index, material_index, 0u, 0u});
+    per_mesh[submesh_index].push_back(models::instance_data{transform_index, material_index, 0u, 0u});
   }
 
   template<typename Type>
@@ -204,7 +204,7 @@ private:
     auto& assets_module = core::engine::get_module<assets::assets_module>();
 
     auto draw_commands = std::vector<VkDrawIndexedIndirectCommand>{};  
-    auto instance_data = std::vector<models::prototype::instance_data>{};
+    auto instance_data = std::vector<models::instance_data>{};
     auto base_instance = std::uint32_t{0u};
 
     // const auto entry = _material_bucket.find(key);
@@ -275,6 +275,6 @@ private:
 
 }; // class material_draw_list
 
-} // namespace sbx::models::prototype
+} // namespace sbx::models
 
 #endif // LIBSBX_MODELS_MATERIAL_DRAW_LIST_HPP_

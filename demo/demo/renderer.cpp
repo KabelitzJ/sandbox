@@ -117,7 +117,7 @@
     );
 
     add_draw_list<sbx::models::static_mesh_draw_list>("static_mesh");
-    add_draw_list<sbx::models::prototype::material_draw_list>("material");
+    add_draw_list<sbx::models::material_draw_list>("material");
 
     // Shadow pass
     // add_subrenderer<sbx::shadows::shadow_subrenderer>(shadow, "res://shaders/shadow");
@@ -125,10 +125,10 @@
     // Deferred rendering pass
     // add_subrenderer<sbx::animations::skinned_mesh_subrenderer>(deferred, "res://shaders/deferred_skinned_opaque");
 
-    add_subrenderer<sbx::models::prototype::material_subrenderer>(deferred, "res://shaders/deferred_static_material", sbx::models::prototype::material_draw_list::bucket::opaque);
+    add_subrenderer<sbx::models::material_subrenderer>(deferred, "res://shaders/deferred_static_material", sbx::models::material_draw_list::bucket::opaque);
     
     // Transparency pass
-    add_subrenderer<sbx::models::prototype::material_subrenderer>(transparency, "res://shaders/deferred_static_material", sbx::models::prototype::material_draw_list::bucket::transparent);
+    add_subrenderer<sbx::models::material_subrenderer>(transparency, "res://shaders/deferred_static_material", sbx::models::material_draw_list::bucket::transparent);
     
     // Resolve pass
     auto resolve_opaque_attachment_names = std::vector<std::pair<std::string, std::string>>{

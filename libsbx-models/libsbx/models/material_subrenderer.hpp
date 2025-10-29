@@ -70,7 +70,7 @@
 #include <libsbx/models/material.hpp>
 #include <libsbx/models/material_draw_list.hpp>
 
-namespace sbx::models::prototype {
+namespace sbx::models {
 
 class material_subrenderer final : public graphics::subrenderer {
 
@@ -107,7 +107,7 @@ public:
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
     auto& scene = scenes_module.scene();
 
-    auto& draw_list = pass().draw_list<models::prototype::material_draw_list>("material");
+    auto& draw_list = pass().draw_list<models::material_draw_list>("material");
 
     for (auto& [key, data] : draw_list.ranges(_bucket)) {
       auto& pipeline_data = _get_or_create_pipeline(key, pass());
@@ -234,20 +234,20 @@ private:
 
 }; // class material_subrenderer
 
-} // namespace sbx::models::prototype
+} // namespace sbx::models
 
 template<>
-struct sbx::utility::enum_mapping<sbx::models::prototype::material_feature> {
+struct sbx::utility::enum_mapping<sbx::models::material_feature> {
 
-  using entry_type = sbx::utility::entry<sbx::models::prototype::material_feature>;
+  using entry_type = sbx::utility::entry<sbx::models::material_feature>;
 
   static constexpr auto values = std::array<entry_type, 6u>{
-    entry_type{sbx::models::prototype::material_feature::emission, "emission"},
-    entry_type{sbx::models::prototype::material_feature::normal_map, "normal_map"},
-    entry_type{sbx::models::prototype::material_feature::occlusion, "occlusion"},
-    entry_type{sbx::models::prototype::material_feature::height, "height"},
-    entry_type{sbx::models::prototype::material_feature::clearcoat, "clearcoat"},
-    entry_type{sbx::models::prototype::material_feature::anisotropy, "anisotropy"},
+    entry_type{sbx::models::material_feature::emission, "emission"},
+    entry_type{sbx::models::material_feature::normal_map, "normal_map"},
+    entry_type{sbx::models::material_feature::occlusion, "occlusion"},
+    entry_type{sbx::models::material_feature::height, "height"},
+    entry_type{sbx::models::material_feature::clearcoat, "clearcoat"},
+    entry_type{sbx::models::material_feature::anisotropy, "anisotropy"},
   };
 
 }; // struct sbx::utility::enum_mapping

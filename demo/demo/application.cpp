@@ -205,12 +205,12 @@ application::application()
 
   auto longhouse = scene.create_node("Longhouse");
 
-  auto& longhouse_material = scene.add_material<sbx::models::prototype::material>("longhouse");
+  auto& longhouse_material = scene.add_material<sbx::models::material>("longhouse");
   longhouse_material.albedo = scene.get_image("longhouse_albedo");
   longhouse_material.normal = scene.get_image("longhouse_normal");
   longhouse_material.mrao = scene.get_image("longhouse_mrao");
 
-  scene.add_component<sbx::models::prototype::static_mesh>(longhouse, scene.get_mesh("longhouse"), scene.get_material("longhouse"));
+  scene.add_component<sbx::scenes::static_mesh>(longhouse, scene.get_mesh("longhouse"), scene.get_material("longhouse"));
 
   auto& longhouse_transform = scene.get_component<sbx::scenes::transform>(longhouse);
   longhouse_transform.set_position(sbx::math::vector3{-15.0f, 0.0f, -10.0f});
@@ -220,23 +220,23 @@ application::application()
 
   auto pine_tree = scene.create_node("PineTree");
 
-  auto& pine_tree_bark = scene.add_material<sbx::models::prototype::material>("pine_tree_bark");
+  auto& pine_tree_bark = scene.add_material<sbx::models::material>("pine_tree_bark");
   pine_tree_bark.albedo = scene.get_image("pine_tree_bark_albedo");
   pine_tree_bark.normal = scene.get_image("pine_tree_bark_normal");
   
-  auto& pine_tree_leaves= scene.add_material<sbx::models::prototype::material>("pine_tree_leaves");
+  auto& pine_tree_leaves= scene.add_material<sbx::models::material>("pine_tree_leaves");
   pine_tree_leaves.roughness = 0.2f;
   pine_tree_leaves.albedo = scene.get_image("pine_tree_leaves_albedo");
   pine_tree_leaves.normal = scene.get_image("pine_tree_leaves_normal");
-  pine_tree_leaves.alpha = sbx::models::prototype::alpha_mode::mask;
+  pine_tree_leaves.alpha = sbx::models::alpha_mode::mask;
   pine_tree_leaves.is_double_sided = true;
 
-  auto pine_tree_submeshes = std::vector<sbx::models::prototype::static_mesh::submesh>{
+  auto pine_tree_submeshes = std::vector<sbx::scenes::static_mesh::submesh>{
     {0u, scene.get_material("pine_tree_bark")},
     {1u, scene.get_material("pine_tree_leaves")}
   };
 
-  scene.add_component<sbx::models::prototype::static_mesh>(pine_tree, scene.get_mesh("pine_tree"), pine_tree_submeshes);
+  scene.add_component<sbx::scenes::static_mesh>(pine_tree, scene.get_mesh("pine_tree"), pine_tree_submeshes);
 
   auto& pine_tree_transform = scene.get_component<sbx::scenes::transform>(pine_tree);
   pine_tree_transform.set_position(sbx::math::vector3{-10.0f, 0.0f, -5.0f});
@@ -254,7 +254,9 @@ application::application()
     const auto material_name = fmt::format("Light{}", i);
     const auto color = sbx::math::random_color(0.5f);
 
-    scene.add_material<sbx::scenes::material>(material_name, sbx::scenes::material_type::transparent, color, 0.0f, 0.5f, 1.0f);
+    auto& material = scene.add_material<sbx::models::material>(material_name);
+    material.base_color = color;
+    material.alpha = sbx::models::alpha_mode::blend;
 
     auto light = scene.create_child_node(_light_center, fmt::format("Light{}", i), sbx::scenes::transform{sbx::math::vector3{radius * sbx::math::cos(angle), 0.0f, radius * sbx::math::sin(angle)}});
 
@@ -269,15 +271,15 @@ application::application()
   // Helmet
   auto helmet = scene.create_node("Helmet");
 
-  // auto helmet_material = scene.add_material<sbx::models::prototype::material>("helmet", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 0.5f, 1.0f, scene.get_image("helmet_albedo"), scene.get_image("helmet_normal"), scene.get_image("helmet_mrao"));
-  auto& helmet_material = scene.add_material<sbx::models::prototype::material>("helmet");
+  // auto helmet_material = scene.add_material<sbx::models::material>("helmet", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 0.5f, 1.0f, scene.get_image("helmet_albedo"), scene.get_image("helmet_normal"), scene.get_image("helmet_mrao"));
+  auto& helmet_material = scene.add_material<sbx::models::material>("helmet");
   helmet_material.albedo = scene.get_image("helmet_albedo");
   helmet_material.normal = scene.get_image("helmet_normal");
   helmet_material.mrao = scene.get_image("helmet_mrao");
 
   scene.add_component<show_local_coordinates>(helmet);
 
-  scene.add_component<sbx::models::prototype::static_mesh>(helmet, scene.get_mesh("helmet"), scene.get_material("helmet"));
+  scene.add_component<sbx::scenes::static_mesh>(helmet, scene.get_mesh("helmet"), scene.get_material("helmet"));
 
   auto& helmet_transform = scene.get_component<sbx::scenes::transform>(helmet);
   helmet_transform.set_position(sbx::math::vector3{0.0f, 6.0f, 0.0f});
@@ -293,17 +295,17 @@ application::application()
   // scene.add_material<sbx::scenes::material>("cloth", sbx::scenes::material_type::opaque, sbx::math::color::blue(), 0.0f, 1.0f, 1.0f, scene.get_image("checkerboard"));
   // scene.add_material<sbx::scenes::material>("dragon", sbx::scenes::material_type::transparent, sbx::math::color{0.0f, 0.6588f, 0.4196f, 0.6f}, 0.0f, 0.5f, 1.0f);
 
-  auto& dragon_material = scene.add_material<sbx::models::prototype::material>("dragon");
+  auto& dragon_material = scene.add_material<sbx::models::material>("dragon");
   dragon_material.base_color = sbx::math::color{0.0f, 0.6588f, 0.4196f, 0.6f};
-  dragon_material.alpha = sbx::models::prototype::alpha_mode::blend;
-  // dragon_material.alpha = sbx::models::prototype::alpha_mode::opaque;
+  dragon_material.alpha = sbx::models::alpha_mode::blend;
+  // dragon_material.alpha = sbx::models::alpha_mode::opaque;
   // dragon_material.is_double_sided = true;
 
-  auto& cloth_material = scene.add_material<sbx::models::prototype::material>("cloth");
+  auto& cloth_material = scene.add_material<sbx::models::material>("cloth");
   cloth_material.base_color = sbx::math::color::green();
   cloth_material.albedo = scene.get_image("checkerboard");
 
-  scene.add_component<sbx::models::prototype::static_mesh>(dragon, scene.get_mesh("dragon"), std::vector<sbx::models::prototype::static_mesh::submesh>{{0u, scene.get_material("cloth")}, {1u, scene.get_material("dragon")}});
+  scene.add_component<sbx::scenes::static_mesh>(dragon, scene.get_mesh("dragon"), std::vector<sbx::scenes::static_mesh::submesh>{{0u, scene.get_material("cloth")}, {1u, scene.get_material("dragon")}});
 
   auto& dragon_transform = scene.get_component<sbx::scenes::transform>(dragon);
   dragon_transform.set_position(sbx::math::vector3{-8.0f, 2.0f, 4.0f});
@@ -311,100 +313,100 @@ application::application()
   dragon_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
 
   // Fox
-  auto& animations_module = sbx::core::engine::get_module<sbx::animations::animations_module>();
+  // auto& animations_module = sbx::core::engine::get_module<sbx::animations::animations_module>();
 
-  fox1 = scene.create_node("Fox");
+  // fox1 = scene.create_node("Fox");
 
-  scripting_module.instantiate(fox1, "res://scripts/test.lua");
+  // scripting_module.instantiate(fox1, "res://scripts/test.lua");
 
-  scene.add_material<sbx::scenes::material>("fox", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 0.7f, 0.8f, scene.get_image("fox_albedo"));
+  // scene.add_material<sbx::scenes::material>("fox", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 0.7f, 0.8f, scene.get_image("fox_albedo"));
 
-  scene.add_component<show_local_coordinates>(fox1);
+  // scene.add_component<show_local_coordinates>(fox1);
 
-  // scene.add_component<sbx::scenes::skinned_mesh>(fox1, scene.get_mesh("fox"), scene.get_animation("Walk"), scene.get_material("fox"));
-  animations_module.add_animation(fox1, scene.get_mesh("fox"), scene.get_animation("Walk"), scene.get_material("fox"));
+  // // scene.add_component<sbx::scenes::skinned_mesh>(fox1, scene.get_mesh("fox"), scene.get_animation("Walk"), scene.get_material("fox"));
+  // animations_module.add_animation(fox1, scene.get_mesh("fox"), scene.get_animation("Walk"), scene.get_material("fox"));
 
-  auto fox_tail_node = animations_module.find_skeleton_node(fox1, "b_LeftFoot02_018");
+  // auto fox_tail_node = animations_module.find_skeleton_node(fox1, "b_LeftFoot02_018");
 
-  if (fox_tail_node != sbx::scenes::node::null) {
-    auto test = scene.create_child_node(fox_tail_node, "Test");
+  // if (fox_tail_node != sbx::scenes::node::null) {
+  //   auto test = scene.create_child_node(fox_tail_node, "Test");
 
-    scene.add_component<sbx::scenes::static_mesh>(test, scene.get_mesh("sphere"), scene.get_material("fox"));
+  //   scene.add_component<sbx::scenes::static_mesh>(test, scene.get_mesh("sphere"), scene.get_material("fox"));
 
-    auto& test_transform = scene.get_component<sbx::scenes::transform>(test);
-    test_transform.set_scale(sbx::math::vector3{10.0f, 10.0f, 10.0f});
-  }
+  //   auto& test_transform = scene.get_component<sbx::scenes::transform>(test);
+  //   test_transform.set_scale(sbx::math::vector3{10.0f, 10.0f, 10.0f});
+  // }
 
-  auto& fox_animator = scene.add_component<sbx::animations::animator>(fox1);
+  // auto& fox_animator = scene.add_component<sbx::animations::animator>(fox1);
 
-  fox_animator.add_state({"Walk", scene.get_animation("Walk"), true, 0.5f });
-  fox_animator.add_state({"Survey", scene.get_animation("Survey"), true, 0.5f });
-  fox_animator.add_state({"Run", scene.get_animation("Run"), true, 0.5f });
+  // fox_animator.add_state({"Walk", scene.get_animation("Walk"), true, 0.5f });
+  // fox_animator.add_state({"Survey", scene.get_animation("Survey"), true, 0.5f });
+  // fox_animator.add_state({"Run", scene.get_animation("Run"), true, 0.5f });
 
-  fox_animator.set_float("speed", 0.0f);   // will be updated every frame
+  // fox_animator.set_float("speed", 0.0f);   // will be updated every frame
 
-  fox_animator.add_transition({
-    "Walk", "Survey", 0.20f,
-    [](const sbx::animations::animator& animator){
-      if (auto value = animator.float_parameter("speed"); value) {
-        return *value <= 0.05f;
-      }
+  // fox_animator.add_transition({
+  //   "Walk", "Survey", 0.20f,
+  //   [](const sbx::animations::animator& animator){
+  //     if (auto value = animator.float_parameter("speed"); value) {
+  //       return *value <= 0.05f;
+  //     }
 
-      return false;
-    }
-  });
+  //     return false;
+  //   }
+  // });
 
-  fox_animator.add_transition({
-    "Run", "Survey", 0.25f,
-    [](const sbx::animations::animator& animator){
-      if (auto value = animator.float_parameter("speed"); value) {
-        return *value <= 0.05f;
-      }
+  // fox_animator.add_transition({
+  //   "Run", "Survey", 0.25f,
+  //   [](const sbx::animations::animator& animator){
+  //     if (auto value = animator.float_parameter("speed"); value) {
+  //       return *value <= 0.05f;
+  //     }
 
-      return false;
-    }
-  });
+  //     return false;
+  //   }
+  // });
 
-  // Walk ↔ Run thresholds
-  fox_animator.add_transition({
-    "Walk", "Run", 0.15f,
-    [](const sbx::animations::animator& animator){
-      if (auto value = animator.float_parameter("speed"); value) {
-        return *value >= 2.0f;
-      }
+  // // Walk ↔ Run thresholds
+  // fox_animator.add_transition({
+  //   "Walk", "Run", 0.15f,
+  //   [](const sbx::animations::animator& animator){
+  //     if (auto value = animator.float_parameter("speed"); value) {
+  //       return *value >= 2.0f;
+  //     }
 
-      return false;
-    }
-  });
+  //     return false;
+  //   }
+  // });
 
-  fox_animator.add_transition({
-    "Run", "Walk", 0.15f,
-    [](const sbx::animations::animator& animator){
-      if (auto value = animator.float_parameter("speed"); value) {
-        return *value < 2.0f && *value > 0.05f;
-      }
+  // fox_animator.add_transition({
+  //   "Run", "Walk", 0.15f,
+  //   [](const sbx::animations::animator& animator){
+  //     if (auto value = animator.float_parameter("speed"); value) {
+  //       return *value < 2.0f && *value > 0.05f;
+  //     }
 
-      return false;
-    }
-  });
+  //     return false;
+  //   }
+  // });
 
-  // Survey → Walk when starting to move
-  fox_animator.add_transition({
-    "Survey", "Walk", 0.20f,
-    [](const sbx::animations::animator& animator){
-      if (auto value = animator.float_parameter("speed"); value) {
-        return *value > 0.05f && *value < 2.0f;
-      }
+  // // Survey → Walk when starting to move
+  // fox_animator.add_transition({
+  //   "Survey", "Walk", 0.20f,
+  //   [](const sbx::animations::animator& animator){
+  //     if (auto value = animator.float_parameter("speed"); value) {
+  //       return *value > 0.05f && *value < 2.0f;
+  //     }
 
-      return false;
-    }
-  });
+  //     return false;
+  //   }
+  // });
 
-  fox_animator.play("Survey", true);
+  // fox_animator.play("Survey", true);
 
-  auto& fox1_transform = scene.get_component<sbx::scenes::transform>(fox1);
-  fox1_transform.set_position(sbx::math::vector3{12.0f, 0.0f, 0.0f});
-  fox1_transform.set_scale(sbx::math::vector3{0.06f, 0.06f, 0.06f});
+  // auto& fox1_transform = scene.get_component<sbx::scenes::transform>(fox1);
+  // fox1_transform.set_position(sbx::math::vector3{12.0f, 0.0f, 0.0f});
+  // fox1_transform.set_scale(sbx::math::vector3{0.06f, 0.06f, 0.06f});
 
   auto spheres = scene.create_node(fmt::format("Spheres"));
 
@@ -417,7 +419,13 @@ application::application()
 
       const auto material_name = fmt::format("sphere_{}_{}_material", x, y);
 
-      scene.add_material<sbx::scenes::material>(material_name, sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.2f * x, 0.2 * y, 1.0f, scene.get_image("checkerboard"));
+      auto& material = scene.add_material<sbx::models::material>(material_name);
+      material.base_color = sbx::math::color::white();
+      material.alpha = sbx::models::alpha_mode::opaque;
+      material.metallic = 0.2f * x;
+      material.roughness = 0.2f * y;
+      material.occlusion = 1.0f;
+      material.albedo = scene.get_image("checkerboard");
 
       scene.add_component<sbx::scenes::static_mesh>(sphere, scene.get_mesh("sphere"), scene.get_material(material_name));
 
@@ -456,24 +464,24 @@ auto application::update() -> void  {
 
   _camera_controller.update();
 
-  static auto fox_speed = 0.0f;
-  static auto direction = 1;
+  // static auto fox_speed = 0.0f;
+  // static auto direction = 1;
 
-  fox_speed += direction * 0.2f * delta_time;
+  // fox_speed += direction * 0.2f * delta_time;
 
-  if (fox_speed > 2.5f) {
-    fox_speed = 2.5f;
-    direction = -1;
-  } else if (fox_speed < 0.0f) {
-    fox_speed = 0.0f;
-    direction = 1;
-  }
+  // if (fox_speed > 2.5f) {
+  //   fox_speed = 2.5f;
+  //   direction = -1;
+  // } else if (fox_speed < 0.0f) {
+  //   fox_speed = 0.0f;
+  //   direction = 1;
+  // }
 
-  auto& fox_animator = scene.get_component<sbx::animations::animator>(fox1);
-  fox_animator.set_float("speed", fox_speed);
+  // auto& fox_animator = scene.get_component<sbx::animations::animator>(fox1);
+  // fox_animator.set_float("speed", fox_speed);
 
-  auto& fox_transform = scene.get_component<sbx::scenes::transform>(fox1);
-  fox_transform.set_rotation(sbx::math::vector3::up, _rotation);
+  // auto& fox_transform = scene.get_component<sbx::scenes::transform>(fox1);
+  // fox_transform.set_rotation(sbx::math::vector3::up, _rotation);
 
   if (scene.is_valid(_light_center)) {
     auto& light_center_transform = scene.get_component<sbx::scenes::transform>(_light_center);

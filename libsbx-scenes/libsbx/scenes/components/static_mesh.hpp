@@ -13,23 +13,6 @@
 
 namespace sbx::scenes {
 
-enum class material_type : std::uint8_t {
-  opaque,
-  masked,
-  transparent
-}; // enum class material_type
-
-struct material {
-  material_type type;
-  math::color base_color{math::color::white()};
-  std::float_t metallic{0.0f};
-  std::float_t roughness{0.5f};
-  std::float_t ambient_occlusion{1.0f};
-  graphics::image2d_handle albedo;
-  graphics::image2d_handle normal;
-  graphics::image2d_handle mrao; // metallic, roughness, ambient occlusion
-}; // struct material
-
 class static_mesh final {
 
 public:

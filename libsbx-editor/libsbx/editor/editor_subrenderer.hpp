@@ -449,17 +449,17 @@ private:
         ImGui::TreePop();
       }
 
-      // if (scene.has_component<sbx::models::prototype::static_mesh>(node) && ImGui::TreeNodeEx("Material", ImGuiTreeNodeFlags_DefaultOpen)) {
-      //   auto& static_mesh = scene.get_component<sbx::models::prototype::static_mesh>(node);
+      // if (scene.has_component<sbx::models::static_mesh>(node) && ImGui::TreeNodeEx("Material", ImGuiTreeNodeFlags_DefaultOpen)) {
+      //   auto& static_mesh = scene.get_component<sbx::models::static_mesh>(node);
 
       //   for (const auto& submesh : static_mesh.submeshes()) {
-      //     auto& material = assets_module.get_asset<models::prototype::material>(submesh.material);
+      //     auto& material = assets_module.get_asset<models::material>(submesh.material);
 
       //     ImGui::Text("Features");
 
       //     auto changed = false;
 
-      //     for (const auto& [type, name] : utility::enum_mapping<models::prototype::material_feature>::values) {
+      //     for (const auto& [type, name] : utility::enum_mapping<models::material_feature>::values) {
       //       auto value = material.features.has(type);
 
       //       if (ImGui::Checkbox(name.data(), &value)) { 

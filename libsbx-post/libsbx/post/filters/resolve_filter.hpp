@@ -24,7 +24,7 @@
 
 namespace sbx::post {
 
-template<scenes::material_type Type>
+template<bool Transparent>
 class resolve_filter final : public filter {
 
   using base_type = filter;
@@ -38,7 +38,7 @@ class resolve_filter final : public filter {
 
   inline static const auto pipeline_definition = graphics::pipeline_definition{
     .depth = graphics::depth::disabled,
-    .uses_transparency = (Type == scenes::material_type::transparent),
+    .uses_transparency = Transparent,
     .rasterization_state = graphics::rasterization_state{
       .polygon_mode = graphics::polygon_mode::fill,
       .cull_mode = graphics::cull_mode::none,
@@ -127,9 +127,9 @@ private:
 
 }; // class resolve_filter
 
-using resolve_opaque_filter = resolve_filter<scenes::material_type::opaque>;
+using resolve_opaque_filter = resolve_filter<false>;
 
-using resolve_transparent_filter = resolve_filter<scenes::material_type::transparent>;
+using resolve_transparent_filter = resolve_filter<true>;
 
 } // namespace sbx::post
 

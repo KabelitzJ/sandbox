@@ -65,58 +65,58 @@
 
 namespace sbx::models {
 
-namespace detail {
+// namespace detail {
 
-template<scenes::material_type Type>
-struct static_mesh_subrenderer_traits;
+// template<scenes::material_type Type>
+// struct static_mesh_subrenderer_traits;
 
-template<>
-struct static_mesh_subrenderer_traits<scenes::material_type::opaque> {
-  inline static constexpr auto depth = graphics::depth::read_write;
-  inline static constexpr auto uses_transparency = false;
-  inline static constexpr auto cull_mode = graphics::cull_mode::back;
-  inline static const auto scope = utility::hashed_string{"opaque"};
-  inline static const auto instance_data_buffer_name = static_mesh_draw_list::opaque_instance_data_buffer_name;
-  inline static const auto draw_commands_buffer_name = static_mesh_draw_list::opaque_draw_commands_buffer_name;
-}; // struct static_mesh_subrenderer_traits
+// template<>
+// struct static_mesh_subrenderer_traits<scenes::material_type::opaque> {
+//   inline static constexpr auto depth = graphics::depth::read_write;
+//   inline static constexpr auto uses_transparency = false;
+//   inline static constexpr auto cull_mode = graphics::cull_mode::back;
+//   inline static const auto scope = utility::hashed_string{"opaque"};
+//   inline static const auto instance_data_buffer_name = static_mesh_draw_list::opaque_instance_data_buffer_name;
+//   inline static const auto draw_commands_buffer_name = static_mesh_draw_list::opaque_draw_commands_buffer_name;
+// }; // struct static_mesh_subrenderer_traits
 
-template<>
-struct static_mesh_subrenderer_traits<scenes::material_type::masked> {
-  inline static constexpr auto depth = graphics::depth::read_write;
-  inline static constexpr auto uses_transparency = false;
-  inline static constexpr auto cull_mode = graphics::cull_mode::none;
-  inline static const auto scope = utility::hashed_string{"masked"};
-  inline static const auto instance_data_buffer_name = static_mesh_draw_list::masked_instance_data_buffer_name;
-  inline static const auto draw_commands_buffer_name = static_mesh_draw_list::masked_draw_commands_buffer_name;
-}; // struct static_mesh_subrenderer_traits
+// template<>
+// struct static_mesh_subrenderer_traits<scenes::material_type::masked> {
+//   inline static constexpr auto depth = graphics::depth::read_write;
+//   inline static constexpr auto uses_transparency = false;
+//   inline static constexpr auto cull_mode = graphics::cull_mode::none;
+//   inline static const auto scope = utility::hashed_string{"masked"};
+//   inline static const auto instance_data_buffer_name = static_mesh_draw_list::masked_instance_data_buffer_name;
+//   inline static const auto draw_commands_buffer_name = static_mesh_draw_list::masked_draw_commands_buffer_name;
+// }; // struct static_mesh_subrenderer_traits
 
-template<>
-struct static_mesh_subrenderer_traits<scenes::material_type::transparent> {
-  inline static constexpr auto depth = graphics::depth::read_only;
-  inline static constexpr auto uses_transparency = true;
-  inline static constexpr auto cull_mode = graphics::cull_mode::none;
-  inline static const auto scope = utility::hashed_string{"transparent"};
-  inline static const auto instance_data_buffer_name = static_mesh_draw_list::transparent_instance_data_buffer_name;
-  inline static const auto draw_commands_buffer_name = static_mesh_draw_list::transparent_draw_commands_buffer_name;
-}; // struct static_mesh_subrenderer_traits
+// template<>
+// struct static_mesh_subrenderer_traits<scenes::material_type::transparent> {
+//   inline static constexpr auto depth = graphics::depth::read_only;
+//   inline static constexpr auto uses_transparency = true;
+//   inline static constexpr auto cull_mode = graphics::cull_mode::none;
+//   inline static const auto scope = utility::hashed_string{"transparent"};
+//   inline static const auto instance_data_buffer_name = static_mesh_draw_list::transparent_instance_data_buffer_name;
+//   inline static const auto draw_commands_buffer_name = static_mesh_draw_list::transparent_draw_commands_buffer_name;
+// }; // struct static_mesh_subrenderer_traits
 
-} // namespace detail
+// } // namespace detail
 
-template<scenes::material_type Type>
+// template<scenes::material_type Type>
 class static_mesh_subrenderer final : public graphics::subrenderer {
 
-  using traits = detail::static_mesh_subrenderer_traits<Type>;
+  // using traits = detail::static_mesh_subrenderer_traits<Type>;
 
-  inline static const auto pipeline_definition = graphics::pipeline_definition{
-    .depth = traits::depth,
-    .uses_transparency = traits::uses_transparency,
-    .rasterization_state = graphics::rasterization_state{
-      .polygon_mode = graphics::polygon_mode::fill,
-      .cull_mode = traits::cull_mode,
-      .front_face = graphics::front_face::counter_clockwise
-    },
-    // .vertex_input = graphics::vertex_input<models::vertex3d>::description()
-  };
+  // inline static const auto pipeline_definition = graphics::pipeline_definition{
+  //   .depth = traits::depth,
+  //   .uses_transparency = traits::uses_transparency,
+  //   .rasterization_state = graphics::rasterization_state{
+  //     .polygon_mode = graphics::polygon_mode::fill,
+  //     .cull_mode = traits::cull_mode,
+  //     .front_face = graphics::front_face::counter_clockwise
+  //   },
+  //   // .vertex_input = graphics::vertex_input<models::vertex3d>::description()
+  // };
 
   // class pipeline : public graphics::graphics_pipeline {
 
@@ -132,93 +132,96 @@ class static_mesh_subrenderer final : public graphics::subrenderer {
 
   // }; // class pipeline
 
-  static auto _create_pipeline(const std::filesystem::path& path, const graphics::render_graph::graphics_pass& pass) -> graphics::graphics_pipeline_handle {
-    auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+  // static auto _create_pipeline(const std::filesystem::path& path, const graphics::render_graph::graphics_pass& pass) -> graphics::graphics_pipeline_handle {
+  //   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
-    return graphics_module.add_resource<graphics::graphics_pipeline>(path, pass, pipeline_definition);
-  }
+  //   return graphics_module.add_resource<graphics::graphics_pipeline>(path, pass, pipeline_definition);
+  // }
 
 public:
 
   static_mesh_subrenderer(const graphics::render_graph::graphics_pass& pass, const std::filesystem::path& path)
-  : graphics::subrenderer{pass},
-    _pipeline{_create_pipeline(path, pass)},
-    _push_handler{_pipeline},
-    _scene_descriptor_handler{_pipeline, 0u} {
-    // auto& assets_module = core::engine::get_module<assets::assets_module>();
+  : graphics::subrenderer{pass} { }
 
-    // assets_module.register_asset<models::mesh>(
-    //   "models::mesh",
-    //   [](const models::mesh& mesh) -> void {
+  // static_mesh_subrenderer(const graphics::render_graph::graphics_pass& pass, const std::filesystem::path& path)
+  // : graphics::subrenderer{pass},
+  //   _pipeline{_create_pipeline(path, pass)},
+  //   _push_handler{_pipeline},
+  //   _scene_descriptor_handler{_pipeline, 0u} {
+  //   // auto& assets_module = core::engine::get_module<assets::assets_module>();
 
-    //   },
-    //   []() -> void {
+  //   // assets_module.register_asset<models::mesh>(
+  //   //   "models::mesh",
+  //   //   [](const models::mesh& mesh) -> void {
 
-    //   }
-    // );
-  }
+  //   //   },
+  //   //   []() -> void {
+
+  //   //   }
+  //   // );
+  // }
 
   ~static_mesh_subrenderer() override = default;
 
   auto render(graphics::command_buffer& command_buffer) -> void override {
-    EASY_FUNCTION();
+    // EASY_FUNCTION();
 
-    SBX_PROFILE_SCOPE("static_mesh_subrenderer::render");
+    // SBX_PROFILE_SCOPE("static_mesh_subrenderer::render");
 
-    auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+    // auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
-    auto& assets_module = core::engine::get_module<assets::assets_module>();
+    // auto& assets_module = core::engine::get_module<assets::assets_module>();
 
-    auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
-    auto& scene = scenes_module.scene();
+    // auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
+    // auto& scene = scenes_module.scene();
 
-    auto& draw_list = pass().draw_list<models::static_mesh_draw_list>("static_mesh");
+    // auto& draw_list = pass().draw_list<models::static_mesh_draw_list>("static_mesh");
 
-    auto& pipeline = graphics_module.get_resource<graphics::graphics_pipeline>(_pipeline);
+    // auto& pipeline = graphics_module.get_resource<graphics::graphics_pipeline>(_pipeline);
 
-    pipeline.bind(command_buffer);
+    // pipeline.bind(command_buffer);
 
-    _scene_descriptor_handler.push("scene", scene.uniform_handler());
-    _scene_descriptor_handler.push("images_sampler", draw_list.sampler());
-    _scene_descriptor_handler.push("images", draw_list.images());
+    // _scene_descriptor_handler.push("scene", scene.uniform_handler());
+    // _scene_descriptor_handler.push("images_sampler", draw_list.sampler());
+    // _scene_descriptor_handler.push("images", draw_list.images());
 
-    if (!_scene_descriptor_handler.update(pipeline)) {
-      return;
-    }
+    // if (!_scene_descriptor_handler.update(pipeline)) {
+    //   return;
+    // }
 
-    _scene_descriptor_handler.bind_descriptors(command_buffer);
+    // _scene_descriptor_handler.bind_descriptors(command_buffer);
 
-    _push_handler.push("transform_data_buffer", draw_list.buffer(static_mesh_draw_list::transform_data_buffer_name).address());
-    _push_handler.push("instance_data_buffer", draw_list.buffer(traits::instance_data_buffer_name).address());
+    // _push_handler.push("transform_data_buffer", draw_list.buffer(static_mesh_draw_list::transform_data_buffer_name).address());
+    // _push_handler.push("instance_data_buffer", draw_list.buffer(traits::instance_data_buffer_name).address());
     
-    for (const auto& [mesh_id, range] : draw_list.draw_ranges(traits::scope)) {
-      auto& mesh = assets_module.get_asset<models::mesh>(mesh_id);
+    // for (const auto& [mesh_id, range] : draw_list.draw_ranges(traits::scope)) {
+    //   auto& mesh = assets_module.get_asset<models::mesh>(mesh_id);
       
-      mesh.bind(command_buffer);
+    //   mesh.bind(command_buffer);
       
-      _push_handler.push("vertex_buffer", mesh.address());
+    //   _push_handler.push("vertex_buffer", mesh.address());
 
-      _push_handler.bind(command_buffer);
+    //   _push_handler.bind(command_buffer);
 
-      command_buffer.draw_indexed_indirect(draw_list.buffer(traits::draw_commands_buffer_name), range.offset, range.count);
-    }
+    //   command_buffer.draw_indexed_indirect(draw_list.buffer(traits::draw_commands_buffer_name), range.offset, range.count);
+    // }
   }
 
 private:
 
-  graphics::graphics_pipeline_handle _pipeline;
+  // graphics::graphics_pipeline_handle _pipeline;
 
-  graphics::push_handler _push_handler;
-  graphics::descriptor_handler _scene_descriptor_handler;
+  // graphics::push_handler _push_handler;
+  // graphics::descriptor_handler _scene_descriptor_handler;
   // graphics::uniform_handler _scene_uniform_handler;
 
 }; // class mesh_subrenderer
 
-using opaque_static_mesh_subrenderer = static_mesh_subrenderer<scenes::material_type::opaque>;
+// using opaque_static_mesh_subrenderer = static_mesh_subrenderer<scenes::material_type::opaque>;
 
-using masked_static_mesh_subrenderer = static_mesh_subrenderer<scenes::material_type::masked>;
+// using masked_static_mesh_subrenderer = static_mesh_subrenderer<scenes::material_type::masked>;
 
-using transparent_static_mesh_subrenderer = static_mesh_subrenderer<scenes::material_type::transparent>;
+// using transparent_static_mesh_subrenderer = static_mesh_subrenderer<scenes::material_type::transparent>;
 
 } // namespace sbx::models
 

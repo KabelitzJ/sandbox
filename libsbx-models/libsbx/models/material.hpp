@@ -11,7 +11,7 @@
 
 #include <libsbx/graphics/images/image2d.hpp>
 
-namespace sbx::models::prototype {
+namespace sbx::models {
 
 enum class alpha_mode : std::uint8_t { 
   opaque, 
@@ -120,48 +120,7 @@ struct alignas(16) instance_data {
   std::uint32_t object_id_upper;
   std::uint32_t object_id_lower;
 }; // struct instance_data
-
-struct draw_command_range {
-  std::uint32_t offset;
-  std::uint32_t count;
-}; // struct draw_command_range
-
-class static_mesh {
-
-public:
-
-  struct submesh {
-    std::uint32_t index;
-    math::uuid material;
-  }; // struct submesh
-
-  static_mesh(const math::uuid mesh_id, const math::uuid material)
-  : _mesh_id{mesh_id},
-    _submeshes{{0, material}} { }
-
-  static_mesh(const math::uuid mesh_id, const std::vector<submesh>& submeshes)
-  : _mesh_id{mesh_id},
-    _submeshes{submeshes} { }
-
-  static_mesh(const math::uuid mesh_id, std::initializer_list<submesh> submeshes)
-  : _mesh_id{mesh_id},
-    _submeshes{submeshes} { }
-
-  auto mesh_id() const noexcept -> math::uuid {
-    return _mesh_id;
-  }
-
-  auto submeshes() const noexcept -> const std::vector<submesh>& {
-    return _submeshes;
-  }
-
-private:
-
-  math::uuid _mesh_id;
-  std::vector<submesh> _submeshes;
-
-}; // class static_mesh
   
-} // namespace sbx::models::prototype
+} // namespace sbx::models
 
 #endif // LIBSBX_MODELS_MATERIAL_HPP_
