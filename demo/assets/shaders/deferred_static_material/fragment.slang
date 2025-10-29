@@ -18,57 +18,18 @@ struct fs_in {
   float4 sv_position : SV_Position;
 }; // struct fs_in
 
-interface fs_out {
-  [mutating] bool write<AlphaPolicy: alpha_policy>(fs_in in);
-}; // interface fs_out
-
-struct opaque_fs_out : fs_out {
-
+struct opaque_fs_out {
   float4 albedo : SV_Target0;
   float4 position : SV_Target1;
   float4 normal : SV_Target2;
   float4 material : SV_Target3;
   uint2 object_id : SV_Target4;
   float depth : SV_Target5;
-
-  [mutating] bool write<AlphaPolicy: alpha_policy>(fs_in in) {
-    this.albedo = get_albedo<AlphaPolicy>(in);
-
-    if (AlphaPolicy::should_discard(this.albedo.a, in.alpha_cutoff)) {
-      return false;
-    }
-
-    this.position = float4(in.position, 1.0);
-    this.normal = float4(get_normal(in), 0.0);
-    this.material = get_material(in);
-    this.object_id = in.object_id;
-    this.depth = sbx::common::linearize_depth(in.sv_position.z, sbx::common::default_near, sbx::common::default_far);
-
-    return true;
-  }
-
 }; // struct opaque_fs_out
 
-struct blend_fs_out : fs_out {
-
+struct blend_fs_out {
   float4 accum : SV_Target0;
   float revealage : SV_Target1;
-
-  [mutating] bool write<AlphaPolicy: alpha_policy>(fs_in in) {
-    float4 albedo = get_albedo<AlphaPolicy>(in);
-
-    // Equivalent to: clamp(pow(min(1, a*10)+0.01, 3)*1e8 * pow(1 - z*0.9, 3), 1e-2, 3e3)
-    float a = albedo.a;
-    float w_a = pow(min(1.0, a * 10.0) + 0.01, 3.0);
-    float w_z = pow(1.0 - in.sv_position.z * 0.9, 3.0);
-    float weight = clamp(w_a * 1e8 * w_z, 1e-2, 3e3);
-
-    this.accum = float4(albedo.rgb * albedo.a, albedo.a) * weight;
-    this.revealage = albedo.a;
-
-    return true;
-  }
-
 }; // struct blend_fs_out
 
 [[vk::binding(1, 0)]]
@@ -115,13 +76,55 @@ float4 get_material(fs_in in) {
   return images[NonUniformResourceIndex(index)].Sample(images_sampler, in.uv).rgba;
 }
 
+[earlydepthstencil]
 [shader("fragment")]
-FsOut main<AlphaPolicy: alpha_policy, FsOut: fs_out>(fs_in in) {
-  FsOut out;
+opaque_fs_out opaque_main(fs_in in) {
+  opaque_fs_out out;
 
-  if (!out.write<AlphaPolicy>(in)) {
+  out.albedo = get_albedo<opaque_alpha_policy>(in);
+  out.position = float4(in.position, 1.0);
+  out.normal = float4(get_normal(in), 0.0);
+  out.material = get_material(in);
+  out.object_id = in.object_id;
+  out.depth = sbx::common::linearize_depth(in.sv_position.z, sbx::common::default_near, sbx::common::default_far);
+
+  return out;
+}
+
+[shader("fragment")]
+opaque_fs_out mask_main(fs_in in) {
+  opaque_fs_out out;
+
+  float4 albedo = get_albedo<mask_alpha_policy>(in);
+
+  if (albedo.a < in.alpha_cutoff) {
     discard;
   }
+
+  out.albedo = albedo;
+  out.position = float4(in.position, 1.0);
+  out.normal = float4(get_normal(in), 0.0);
+  out.material = get_material(in);
+  out.object_id = in.object_id;
+  out.depth = sbx::common::linearize_depth(in.sv_position.z, sbx::common::default_near, sbx::common::default_far);
+
+  return out;
+}
+
+[shader("fragment")]
+blend_fs_out blend_main(fs_in in) {
+  blend_fs_out out;
+  
+  float4 albedo = get_albedo<blend_alpha_policy>(in);
+
+  // Equivalent to: clamp(pow(min(1, a*10)+0.01, 3)*1e8 * pow(1 - z*0.9, 3), 1e-2, 3e3)
+  float a = albedo.a;
+  float w_a = pow(min(1.0, a * 10.0) + 0.01, 3.0);
+  float w_z = pow(1.0 - in.sv_position.z * 0.9, 3.0);
+  float weight = clamp(w_a * 1e8 * w_z, 1e-2, 3e3);
+
+  out.accum = float4(albedo.rgb * albedo.a, albedo.a) * weight;
+  out.revealage = albedo.a;
 
   return out;
 }

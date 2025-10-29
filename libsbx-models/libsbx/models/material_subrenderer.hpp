@@ -183,10 +183,19 @@ private:
 
     const auto request = graphics::compiler::compile_request{
       .path = _base_pipeline,
-      .defines = {},
-      .specializations = {
-        {SLANG_STAGE_FRAGMENT, {_alpha_policy.at(key.alpha), _fs_out.at(key.alpha)}}
+      .per_stage = {
+        {SLANG_STAGE_VERTEX, {
+          .entry_point = "main"
+        }},
+        {SLANG_STAGE_FRAGMENT, {
+          .entry_point = _entry_point.at(key.alpha)
+        }},
       }
+      // .entry_point = _entry_point.at(key.alpha),
+      // .specializations = {}
+      // .specializations = {
+      //   {SLANG_STAGE_FRAGMENT, {_alpha_policy.at(key.alpha), _fs_out.at(key.alpha)}}
+      // }
     };
 
     const auto result = compiler.compile(request);
@@ -199,6 +208,12 @@ private:
 
     return entry->second;
   }
+
+  inline static const auto _entry_point = std::array<std::string, 3u>{
+    "opaque_main",  // alpha_mode::opaque
+    "mask_main",    // alpha_mode::mask 
+    "blend_main"    // alpha_mode::blend
+  };
 
   inline static const auto _alpha_policy = std::array<std::string, 3u>{
     "opaque_alpha_policy",  // alpha_mode::opaque

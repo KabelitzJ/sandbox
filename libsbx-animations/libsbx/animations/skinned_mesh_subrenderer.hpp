@@ -119,46 +119,10 @@ public:
 
     auto& scene = scenes_module.scene();
 
-    // const auto camera_node = scene.camera();
-
-    // auto& camera = scene.get_component<scenes::camera>(camera_node);
-
-    // const auto& projection = camera.projection();
-
-    // _scene_uniform_handler.push("projection", projection);
-
-    // const auto& camera_transform = scene.get_component<scenes::transform>(camera_node);
-    // const auto& camera_global_transform = scene.get_component<scenes::global_transform>(camera_node);
-
-    // const auto view = math::matrix4x4::inverted(scene.world_transform(camera_node));
-
-    // _scene_uniform_handler.push("view", view);
-
-    // _scene_uniform_handler.push("camera_position", camera_transform.position());
-
-    // const auto& scene_light = scene.light();
-
-    // _scene_uniform_handler.push("light_direction", sbx::math::vector3::normalized(scene_light.direction()));
-    // _scene_uniform_handler.push("light_color", scene_light.color());
-
-    // _scene_uniform_handler.push("time", std::fmod(core::engine::time().value() * 0.5f, 1.0f));
-
     _submesh_instances.clear();
     _transform_data.clear();
     _bone_matrices.clear();
     _images.clear();
-
-    // std::ranges::fill(_bone_matrices, math::matrix4x4::identity);
-
-    // if (devices::input::is_key_pressed(devices::key::up)) {
-    //   _bone_to_track = (_bone_to_track + 1) % skeleton::max_bones;
-
-    //   utility::logger<"animations">::debug("bone_to_track: {}", _bone_to_track);
-    // } else if (devices::input::is_key_pressed(devices::key::down)) {
-    //   _bone_to_track = (_bone_to_track + skeleton::max_bones - 1) % skeleton::max_bones;
-
-    //   utility::logger<"animations">::debug("bone_to_track: {}", _bone_to_track);
-    // }
 
     SBX_PROFILE_BLOCK("skinned_mesh_subrenderer::submit") {
       auto mesh_query = scene.query<const scenes::skinned_mesh, animations::animator>();
@@ -168,7 +132,7 @@ public:
       }
     }
 
-    SBX_PROFILE_BLOCK("static_mesh_subrenderer::render"){
+    SBX_PROFILE_BLOCK("skinned_mesh_subrenderer::render"){
       _render_skinned_meshes(command_buffer);
     }
   }

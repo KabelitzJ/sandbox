@@ -24,12 +24,15 @@ public:
     std::string value;
   }; // struct define
 
-  struct compile_request {
-    std::filesystem::path path;
+  struct per_stage {
     std::string entry_point{"main"};
-    std::vector<define> defines;
-    // std::vector<std::filesystem::path> includes;
-    std::unordered_map<SlangStage, std::vector<std::string>> specializations;
+    std::vector<std::string> specializations{};
+  }; // struct per_stage
+
+  struct compile_request {
+    std::filesystem::path path{};
+    std::vector<define> defines{};
+    std::unordered_map<SlangStage, compiler::per_stage> per_stage{};
   }; // struct compile_request
 
   struct compile_result {

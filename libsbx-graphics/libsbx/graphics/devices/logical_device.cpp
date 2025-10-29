@@ -342,6 +342,12 @@ auto logical_device::_get_enabled_features(const physical_device& physical_devic
     utility::logger<"graphics">::warn("Selected GPU does not support dynamice rendering 2");
   }
 
+  if (available_vulkan13_features.shaderDemoteToHelperInvocation) {
+    enabled_vulkan13_features.shaderDemoteToHelperInvocation = true;
+  } else {
+    utility::logger<"graphics">::warn("Selected GPU does not support demote to helper invocation");
+  }
+
   return enabled_features;
 }
 

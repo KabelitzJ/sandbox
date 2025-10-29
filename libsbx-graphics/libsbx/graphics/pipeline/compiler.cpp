@@ -53,6 +53,8 @@ auto compiler::compile(const compile_request& compile_request) -> compile_result
       continue;
     }
 
+    auto& per_stage = compile_request.per_stage.at(stage);
+
     const auto source = _read_file(file_path);
 
     auto shader_module = Slang::ComPtr<slang::IModule>{};
@@ -74,61 +76,55 @@ auto compiler::compile(const compile_request& compile_request) -> compile_result
     auto entry_point = Slang::ComPtr<slang::IEntryPoint>{};
 
     {
-      shader_module->findEntryPointByName(compile_request.entry_point.c_str(), entry_point.writeRef());
+      shader_module->findEntryPointByName(per_stage.entry_point.c_str(), entry_point.writeRef());
 
       if (!entry_point) {
         auto diagnostics = Slang::ComPtr<ISlangBlob>{};
 
-        shader_module->findAndCheckEntryPoint(compile_request.entry_point.c_str(), stage, entry_point.writeRef(), diagnostics.writeRef());
+        shader_module->findAndCheckEntryPoint(per_stage.entry_point.c_str(), stage, entry_point.writeRef(), diagnostics.writeRef());
 
         if (diagnostics && diagnostics->getBufferSize() > 1) {
           utility::logger<"models">::warn("Slang entry-point check for '{}':\n{}", file_path.string(), static_cast<const char*>(diagnostics->getBufferPointer()));
         }
 
         if (!entry_point) {
-          throw utility::runtime_error{"Entry point '{}' not found/valid in '{}'.", compile_request.entry_point, file_path.string()};
+          throw utility::runtime_error{"Entry point '{}' not found/valid in '{}'.", per_stage.entry_point, file_path.string()};
         }
       }
     }
 
     auto entry_for_link = Slang::ComPtr<slang::IComponentType>{entry_point};
 
-    auto entry = compile_request.specializations.find(stage);
+    auto args = std::vector<slang::SpecializationArg>{};
+    args.reserve(per_stage.specializations.size());
 
-    if (entry != compile_request.specializations.end()) {
-      const auto& specializations = entry->second;
+    for (const auto& type_name : per_stage.specializations) {
+      auto* reflected_type = shader_module->getLayout()->findTypeByName(type_name.c_str());
 
-      auto args = std::vector<slang::SpecializationArg>{};
-      args.reserve(specializations.size());
-
-      for (const auto& type_name : specializations) {
-        auto* reflected_type = shader_module->getLayout()->findTypeByName(type_name.c_str());
-
-        if (!reflected_type) {
-          throw utility::runtime_error{"Specialization type '{}' not found in shader_module '{}' for stage '{}'.", type_name, file_path.string(), name};
-        }
-
-        args.push_back(slang::SpecializationArg{slang::SpecializationArg::Kind::Type, reflected_type});
+      if (!reflected_type) {
+        throw utility::runtime_error{"Specialization type '{}' not found in shader_module '{}' for stage '{}'.", type_name, file_path.string(), name};
       }
 
-      auto specialized_entry_point = Slang::ComPtr<slang::IComponentType>{};
-
-      {
-        auto diagnostics = Slang::ComPtr<ISlangBlob>{};
-
-        const auto result = entry_point->specialize(args.data(), (SlangInt)args.size(), specialized_entry_point.writeRef(), diagnostics.writeRef());
-
-        if (diagnostics && diagnostics->getBufferSize() > 1) {
-          utility::logger<"models">::warn("Slang specialization for '{}':\n{}", file_path.string(), static_cast<const char*>(diagnostics->getBufferPointer()));
-        }
-
-        if (SLANG_FAILED(result) || !specialized_entry_point) {
-          throw utility::runtime_error{"Failed to specialize entry point in '{}'.", file_path.string()};
-        }
-      }
-
-      entry_for_link = specialized_entry_point;
+      args.push_back(slang::SpecializationArg{slang::SpecializationArg::Kind::Type, reflected_type});
     }
+
+    auto specialized_entry_point = Slang::ComPtr<slang::IComponentType>{};
+
+    {
+      auto diagnostics = Slang::ComPtr<ISlangBlob>{};
+
+      const auto result = entry_point->specialize(args.data(), (SlangInt)args.size(), specialized_entry_point.writeRef(), diagnostics.writeRef());
+
+      if (diagnostics && diagnostics->getBufferSize() > 1) {
+        utility::logger<"models">::warn("Slang specialization for '{}':\n{}", file_path.string(), static_cast<const char*>(diagnostics->getBufferPointer()));
+      }
+
+      if (SLANG_FAILED(result) || !specialized_entry_point) {
+        throw utility::runtime_error{"Failed to specialize entry point in '{}'.", file_path.string()};
+      }
+    }
+
+    entry_for_link = specialized_entry_point;
 
     auto program = Slang::ComPtr<slang::IComponentType>{};
 
@@ -207,23 +203,25 @@ auto compiler::_create_session(const compile_request& compile_request) -> Slang:
   session_description.targets = &target_description;
   session_description.targetCount = 1u;
 
-  auto compiler_options = std::array<slang::CompilerOptionEntry, 14u>{
-    slang::CompilerOptionEntry{slang::CompilerOptionName::Capability,         {slang::CompilerOptionValueKind::String, 0,                               0, "spirv_1_5",                       nullptr}},
-    slang::CompilerOptionEntry{slang::CompilerOptionName::Capability,         {slang::CompilerOptionValueKind::String, 0,                               0, "SPV_EXT_physical_storage_buffer", nullptr}},
+  auto compiler_options = std::array<slang::CompilerOptionEntry, 16u>{
+    slang::CompilerOptionEntry{slang::CompilerOptionName::Capability,         {slang::CompilerOptionValueKind::String, 0,                               0, "spirv_1_5",                           nullptr}},
+    slang::CompilerOptionEntry{slang::CompilerOptionName::Capability,         {slang::CompilerOptionValueKind::String, 0,                               0, "SPV_EXT_physical_storage_buffer",     nullptr}},
+    slang::CompilerOptionEntry{slang::CompilerOptionName::Capability,         {slang::CompilerOptionValueKind::String, 0,                               0, "SPV_EXT_demote_to_helper_invocation", nullptr}},
     
-    slang::CompilerOptionEntry{slang::CompilerOptionName::Capability,         {slang::CompilerOptionValueKind::String, 0,                               0, "SPV_KHR_non_semantic_info",       nullptr}},
-    slang::CompilerOptionEntry{slang::CompilerOptionName::Capability,         {slang::CompilerOptionValueKind::String, 0,                               0, "SPV_GOOGLE_user_type",            nullptr}},
-    slang::CompilerOptionEntry{slang::CompilerOptionName::Capability,         {slang::CompilerOptionValueKind::String, 0,                               0, "spvDerivativeControl",            nullptr}},
-    slang::CompilerOptionEntry{slang::CompilerOptionName::Capability,         {slang::CompilerOptionValueKind::String, 0,                               0, "spvImageQuery",                   nullptr}},
-    slang::CompilerOptionEntry{slang::CompilerOptionName::Capability,         {slang::CompilerOptionValueKind::String, 0,                               0, "spvImageGatherExtended",          nullptr}},
-    slang::CompilerOptionEntry{slang::CompilerOptionName::Capability,         {slang::CompilerOptionValueKind::String, 0,                               0, "spvSparseResidency",              nullptr}},
-    slang::CompilerOptionEntry{slang::CompilerOptionName::Capability,         {slang::CompilerOptionValueKind::String, 0,                               0, "spvMinLod",                       nullptr}},
-    slang::CompilerOptionEntry{slang::CompilerOptionName::Capability,         {slang::CompilerOptionValueKind::String, 0,                               0, "spvFragmentFullyCoveredEXT",      nullptr}},
-    
-    slang::CompilerOptionEntry{slang::CompilerOptionName::MatrixLayoutColumn, {slang::CompilerOptionValueKind::Int,    1,                               0, "column_major",                    nullptr}},
-    slang::CompilerOptionEntry{slang::CompilerOptionName::DebugInformation,   {slang::CompilerOptionValueKind::Int,    SLANG_DEBUG_INFO_LEVEL_STANDARD, 0, nullptr,                           nullptr}},
-    slang::CompilerOptionEntry{slang::CompilerOptionName::Optimization,       {slang::CompilerOptionValueKind::Int,    SLANG_OPTIMIZATION_LEVEL_NONE,   0, nullptr,                           nullptr}},
-    slang::CompilerOptionEntry{slang::CompilerOptionName::EmitSpirvDirectly,  {slang::CompilerOptionValueKind::Int,    1,                               0, nullptr,                           nullptr}}
+    slang::CompilerOptionEntry{slang::CompilerOptionName::Capability,         {slang::CompilerOptionValueKind::String, 0,                               0, "SPV_KHR_non_semantic_info",           nullptr}},
+    slang::CompilerOptionEntry{slang::CompilerOptionName::Capability,         {slang::CompilerOptionValueKind::String, 0,                               0, "SPV_GOOGLE_user_type",                nullptr}},
+    slang::CompilerOptionEntry{slang::CompilerOptionName::Capability,         {slang::CompilerOptionValueKind::String, 0,                               0, "spvDerivativeControl",                nullptr}},
+    slang::CompilerOptionEntry{slang::CompilerOptionName::Capability,         {slang::CompilerOptionValueKind::String, 0,                               0, "spvImageQuery",                       nullptr}},
+    slang::CompilerOptionEntry{slang::CompilerOptionName::Capability,         {slang::CompilerOptionValueKind::String, 0,                               0, "spvImageGatherExtended",              nullptr}},
+    slang::CompilerOptionEntry{slang::CompilerOptionName::Capability,         {slang::CompilerOptionValueKind::String, 0,                               0, "spvSparseResidency",                  nullptr}},
+    slang::CompilerOptionEntry{slang::CompilerOptionName::Capability,         {slang::CompilerOptionValueKind::String, 0,                               0, "spvMinLod",                           nullptr}},
+    slang::CompilerOptionEntry{slang::CompilerOptionName::Capability,         {slang::CompilerOptionValueKind::String, 0,                               0, "spvFragmentFullyCoveredEXT",          nullptr}},
+    slang::CompilerOptionEntry{slang::CompilerOptionName::Capability,         {slang::CompilerOptionValueKind::String, 0,                               0, "spvDemoteToHelperInvocation",         nullptr}},
+
+    slang::CompilerOptionEntry{slang::CompilerOptionName::MatrixLayoutColumn, {slang::CompilerOptionValueKind::Int,    1,                               0, "column_major",                        nullptr}},
+    slang::CompilerOptionEntry{slang::CompilerOptionName::DebugInformation,   {slang::CompilerOptionValueKind::Int,    SLANG_DEBUG_INFO_LEVEL_STANDARD, 0, nullptr,                               nullptr}},
+    slang::CompilerOptionEntry{slang::CompilerOptionName::Optimization,       {slang::CompilerOptionValueKind::Int,    SLANG_OPTIMIZATION_LEVEL_NONE,   0, nullptr,                               nullptr}},
+    slang::CompilerOptionEntry{slang::CompilerOptionName::EmitSpirvDirectly,  {slang::CompilerOptionValueKind::Int,    1,                               0, nullptr,                               nullptr}}
   };
 
   session_description.compilerOptionEntries = compiler_options.data();
@@ -248,10 +246,6 @@ auto compiler::_create_session(const compile_request& compile_request) -> Slang:
     parent_path.c_str(),
     path.c_str()
   };
-
-  for (const auto* path : search_paths) {
-    utility::logger<"models">::warn("Search path: {}", path);
-  }
 
   session_description.searchPaths = search_paths.data();
   session_description.searchPathCount = search_paths.size();

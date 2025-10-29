@@ -57,6 +57,36 @@ application::application()
 
   graphics_module.set_renderer<renderer>();
 
+  // auto& compiler = graphics_module.compiler();
+
+  // const auto request = sbx::graphics::compiler::compile_request{
+  //   .path = "demo/assets/shaders/deferred_static_material",
+  //   .per_stage = {
+  //     {SLANG_STAGE_VERTEX, {
+  //       .entry_point = "main"
+  //     }},
+  //     {SLANG_STAGE_FRAGMENT, {
+  //       .entry_point = "mask_main"
+  //     }},
+  //   }
+  // };
+
+  // const auto result = compiler.compile(request);
+
+  // for (const auto& [stage, words] : result.code) {
+  //   const auto file_name = stage == SLANG_STAGE_FRAGMENT ? "frag.spv" : "vert.spv";
+
+  //   std::ofstream file(file_name, std::ios::binary);
+
+  //   if (!file) {
+  //     std::cerr << "Failed to open " << file_name << " for writing\n";
+  //     continue;
+  //   }
+
+  //   file.write(reinterpret_cast<const char*>(words.data()), words.size() * sizeof(uint32_t));
+  //   file.close();
+  // }
+
   auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
 
   auto& scene = scenes_module.load_scene("res://scenes/scene.yaml");
