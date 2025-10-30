@@ -65,7 +65,7 @@ public:
 
         auto& transform = scene.get_component<sbx::scenes::transform>(chunk);
         transform.set_position(sbx::math::vector3{x * chunk_size.x() - offset.x(), 0.0f, y * chunk_size.y() - offset.y()});
-        transform.set_scale(sbx::math::vector3{10, 1, 10});
+        transform.set_scale(sbx::math::vector3{25, 0.5, 25});
       }
     }
 

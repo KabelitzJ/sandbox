@@ -6,7 +6,7 @@
 #include <libsbx/models/vertex3d.hpp>
 #include <libsbx/models/mesh.hpp>
 
-#include <libsbx/models/static_mesh_subrenderer.hpp>
+#include <libsbx/models/material_draw_list.hpp>
 #include <libsbx/models/material_subrenderer.hpp>
 
 #endif // LIBSBX_MODELS_HPP_

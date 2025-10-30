@@ -118,10 +118,12 @@ blend_fs_out blend_main(fs_in in) {
   float4 albedo = get_albedo<blend_alpha_policy>(in);
 
   // Equivalent to: clamp(pow(min(1, a*10)+0.01, 3)*1e8 * pow(1 - z*0.9, 3), 1e-2, 3e3)
-  float a = albedo.a;
-  float w_a = pow(min(1.0, a * 10.0) + 0.01, 3.0);
-  float w_z = pow(1.0 - in.sv_position.z * 0.9, 3.0);
-  float weight = clamp(w_a * 1e8 * w_z, 1e-2, 3e3);
+  float alpha = albedo.a;
+  
+  float w_alpha = pow(min(1.0, alpha * 10.0) + 0.01, 3.0);
+  float w_depth = pow(1.0 - in.sv_position.z * 0.9, 3.0);
+
+  float weight = clamp(w_alpha * 1e8 * w_depth, 1e-2, 3e3);
 
   out.accum = float4(albedo.rgb * albedo.a, albedo.a) * weight;
   out.revealage = albedo.a;

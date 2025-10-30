@@ -3,10 +3,15 @@
 
 #include <magic_enum/magic_enum.hpp>
 
+#include <libsbx/assets/assets_module.hpp>
+
 #include <libsbx/graphics/graphics_module.hpp>
 #include <libsbx/graphics/draw_list.hpp>
 
 #include <libsbx/graphics/buffers/storage_buffer.hpp>
+
+#include <libsbx/scenes/scenes_module.hpp>
+#include <libsbx/scenes/components/static_mesh.hpp>
 
 #include <libsbx/models/material.hpp>
 
@@ -122,10 +127,10 @@ public:
 
           _material_data.push_back(material_data);
 
-          _material_buckets[material].push_back(_classify_bucket(material));
+          _material_buckets[material].insert(_classify_bucket(material));
 
           if (_submits_to_shadow(material)) {
-            _material_buckets[material].push_back(bucket::shadow);
+            _material_buckets[material].insert(bucket::shadow);
           }
         }
 
@@ -271,7 +276,7 @@ private:
   std::unordered_map<material_key, pipeline_data, material_key_hash> _pipeline_data;
 
   std::array<bucket_map, magic_enum::enum_count<bucket>()> _bucket_ranges;
-  std::unordered_map<material_key, std::vector<bucket>, material_key_hash> _material_buckets;
+  std::unordered_map<material_key, std::unordered_set<bucket>, material_key_hash> _material_buckets;
 
 }; // class material_draw_list
 
