@@ -197,11 +197,11 @@ struct scope_guard {
 #define SBX_UNIQUE_NAME(name) SBX_CONCAT_TOKENS(name, __LINE__)
 
 #if defined(__clang__) || defined(__GNUC__)
-    #define FUNC_NAME __PRETTY_FUNCTION__
+  #define FUNC_NAME __PRETTY_FUNCTION__
 #elif defined(_MSC_VER)
-    #define FUNC_NAME __FUNCSIG__
+  #define FUNC_NAME __FUNCSIG__
 #else
-    #define FUNC_NAME __func__
+  #define FUNC_NAME __func__
 #endif
 
 } // namespace detail

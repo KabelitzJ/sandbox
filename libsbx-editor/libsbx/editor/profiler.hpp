@@ -46,30 +46,37 @@ inline auto node_percentage(std::span<const core::scope_info> infos, const core:
   return info.parent_id == core::scope_info::null_node ? 0.0 : percentage(info.time.count(), infos[info.parent_id].time.count());
 }
 
+struct columns {
+  inline static constexpr auto scope = std::uint32_t{0};
+  inline static constexpr auto time = std::uint32_t{1};
+  inline static constexpr auto percent = std::uint32_t{2};
+  inline static constexpr auto source = std::uint32_t{3};
+}; // struct columns
+
 inline auto delta(const sampler_vector<std::uint64_t>& time_samplers, const sampler_vector<std::double_t>& percent_samplers, const core::scope_info& info_a, const core::scope_info& info_b, const std::uint32_t column_user_id) -> std::int32_t {
-  if (column_user_id == 0u) {
+  if (column_user_id == columns::scope) {
     return info_a.label.compare(info_b.label);
   }
 
-  if (column_user_id == 1u) {
+  if (column_user_id == columns::time) {
     const auto time_a = time_samplers[info_a.id].average_as<std::double_t>();
     const auto time_b = time_samplers[info_b.id].average_as<std::double_t>();
 
     return (time_a > time_b) ? 1 : (time_a < time_b) ? -1 : 0;
   }
 
-  if (column_user_id == 2u) {
+  if (column_user_id == columns::percent) {
     const auto percent_a = percent_samplers[info_a.id].average_as<std::double_t>();
     const auto percent_b = percent_samplers[info_b.id].average_as<std::double_t>();
 
     return (percent_a > percent_b) ? 1 : (percent_a < percent_b) ? -1 : 0;
   }
 
-  if (column_user_id == 3u) {
-    const int delta = info_a.file.compare(info_b.file);
+  // if (column_user_id == columns::source) {
+  //   const int delta = info_a.file.compare(info_b.file);
 
-    return delta == 0 ? info_a.line - info_b.line : delta;
-  }
+  //   return delta == 0 ? info_a.line - info_b.line : delta;
+  // }
 
   return 0;
 }
@@ -80,9 +87,7 @@ inline auto render_node(const sampler_vector<std::uint64_t>& time_samplers, cons
 
   ImGui::TableNextRow();
 
-  //
-  // Column 1: label
-  ImGui::TableSetColumnIndex(0);
+  ImGui::TableSetColumnIndex(columns::scope);
 
   auto node_flags = ImGuiTreeNodeFlags{ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_DefaultOpen};
 
@@ -95,10 +100,10 @@ inline auto render_node(const sampler_vector<std::uint64_t>& time_samplers, cons
 
   const bool is_node_open = ImGui::TreeNodeEx(reinterpret_cast<void*>(node_id), node_flags, "%s", info.label.data());
 
-  ImGui::TableSetColumnIndex(1);
+  ImGui::TableSetColumnIndex(columns::time);
   ImGui::Text("%s%.3f", spaces_ptr, time_samplers[node_id].average_as<std::double_t>() / 1000.0);
 
-  ImGui::TableSetColumnIndex(2);
+  ImGui::TableSetColumnIndex(columns::percent);
 
   if (info.parent_id != core::scope_info::null_node) {
     if (const auto& parent_info = all_nodes[info.parent_id]; parent_info.time.count() > 0) {
@@ -111,20 +116,20 @@ inline auto render_node(const sampler_vector<std::uint64_t>& time_samplers, cons
   }
 
 
-  ImGui::TableSetColumnIndex(3);
+  // ImGui::TableSetColumnIndex(columns::source);
 
-  ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyle().Colors[ImGuiCol_TextDisabled]);
+  // ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyle().Colors[ImGuiCol_TextDisabled]);
 
-  auto position = info.file.rfind('/');
+  // auto position = info.file.rfind('/');
 
-  if (position == std::string_view::npos) {
-    position = info.file.rfind('\\');
-  }
+  // if (position == std::string_view::npos) {
+  //   position = info.file.rfind('\\');
+  // }
 
-  auto substring = position == std::string_view::npos ? info.file : info.file.substr(position + 1u);
+  // auto substring = position == std::string_view::npos ? info.file : info.file.substr(position + 1u);
 
-  ImGui::Text("%s:%d", substring.data(), info.line);
-  ImGui::PopStyleColor();
+  // ImGui::Text("%s:%d", substring.data(), info.line);
+  // ImGui::PopStyleColor();
 
   if (is_node_open && !children.empty()) {
     for (const auto child_id : children) {
@@ -140,6 +145,7 @@ inline void show_profiler() {
 
   if (scope_infos.empty()) {
     ImGui::Text("No profiling data captured for this thread.");
+
     return;
   }
 
@@ -160,15 +166,15 @@ inline void show_profiler() {
     node_percent_samplers[i].record(node_percentage(scope_infos, scope_infos[i]));
   }
 
-  if (!ImGui::BeginTable("ProfilerTreeView", 4, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_Resizable | ImGuiTableFlags_Sortable)) {
+  if (!ImGui::BeginTable("ProfilerTreeView", 3, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_Resizable | ImGuiTableFlags_Sortable)) {
     return;
   }
 
   // Define columns
-  ImGui::TableSetupColumn("Scope", ImGuiTableColumnFlags_WidthStretch | ImGuiTableColumnFlags_DefaultSort, 120.0f, 0);
-  ImGui::TableSetupColumn("Time (ms)", ImGuiTableColumnFlags_WidthStretch, 120.0f, 1);
-  ImGui::TableSetupColumn("% of Parent", ImGuiTableColumnFlags_WidthStretch, 80.0f, 2);
-  ImGui::TableSetupColumn("Location", ImGuiTableColumnFlags_WidthStretch, 120.0f, 3);
+  ImGui::TableSetupColumn("Scope", ImGuiTableColumnFlags_WidthStretch | ImGuiTableColumnFlags_DefaultSort, 120.0f, columns::scope);
+  ImGui::TableSetupColumn("Time (ms)", ImGuiTableColumnFlags_WidthStretch, 120.0f, columns::time);
+  ImGui::TableSetupColumn("% of Parent", ImGuiTableColumnFlags_WidthStretch, 80.0f, columns::percent);
+  // ImGui::TableSetupColumn("Location", ImGuiTableColumnFlags_WidthStretch, 120.0f, 3);
 
   ImGui::TableHeadersRow();
 
@@ -179,6 +185,7 @@ inline void show_profiler() {
 
       for (int i = 0; i < specs->SpecsCount; ++i) {
         const auto* sort_spec = &specs->Specs[i];
+
         const int delta = editor::delta(node_time_samplers, node_percent_samplers, info_a, info_b, sort_spec->ColumnUserID);
 
         if (delta == 0) {
