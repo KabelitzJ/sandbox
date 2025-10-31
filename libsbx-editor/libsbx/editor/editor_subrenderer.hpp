@@ -30,7 +30,7 @@
 #include <libsbx/graphics/descriptor/descriptor_handler.hpp>
 #include <libsbx/graphics/graphics_module.hpp>
 
-#include <libsbx/models/material_subrenderer.hpp>
+#include <libsbx/models/static_mesh_subrenderer.hpp>
 
 #include <libsbx/editor/pipeline.hpp>
 #include <libsbx/editor/themes.hpp>

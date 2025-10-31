@@ -48,16 +48,16 @@ public:
 
   auto clear() -> void;
 
-protected:
-
   auto create_buffer(const utility::hashed_string& name, VkDeviceSize size, VkBufferUsageFlags additional_usage = 0) -> void;
+
+  template<typename Type>
+  auto update_buffer(const std::vector<Type>& buffer, const utility::hashed_string& name) -> void;
+
+protected:
 
   auto get_buffer(const utility::hashed_string& name) -> storage_buffer&;
 
   auto get_buffer(const utility::hashed_string& name) const -> const storage_buffer&;
-
-  template<typename Type>
-  auto update_buffer(const std::vector<Type>& buffer, const utility::hashed_string& name) -> void;
 
   auto add_image(const image2d_handle& handle) -> std::uint32_t;
 

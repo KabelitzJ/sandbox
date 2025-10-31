@@ -17,6 +17,18 @@
 
 namespace sbx::models {
 
+struct alignas(16) transform_data {
+  math::matrix4x4 model;
+  math::matrix4x4 normal;
+}; // struct transform_data
+
+struct alignas(16) instance_data {
+  std::uint32_t transform_index;
+  std::uint32_t material_index;
+  std::uint32_t object_id;
+  std::uint32_t _pad0;
+}; // struct instance_data
+
 template<typename Traits>
 class basic_material_draw_list final : public graphics::draw_list {
 
@@ -25,6 +37,7 @@ class basic_material_draw_list final : public graphics::draw_list {
 public:
 
   using component_type = typename traits_type::component_type;
+  using mesh_type = typename traits_type::mesh_type;
   using instance_payload = typename traits_type::instance_payload;
 
   enum class bucket : std::uint8_t {
@@ -210,7 +223,7 @@ private:
     const auto& buckets = _material_buckets.at(key);
 
     for (auto& [mesh_id, submesh_vectors] : pipeline.submesh_instances) {
-      auto& mesh = assets_module.get_asset<models::mesh>(mesh_id);
+      auto& mesh = assets_module.get_asset<mesh_type>(mesh_id);
 
       auto range = graphics::draw_command_range{};
       range.offset = static_cast<std::uint32_t>(draw_commands.size());
@@ -286,46 +299,6 @@ private:
   inline static auto _material_buckets = std::unordered_map<material_key, std::unordered_set<bucket>, material_key_hash>{};
 
 }; // class material_draw_list
-
-struct static_mesh_traits {
-
-  using component_type = scenes::static_mesh;
-  struct instance_payload { };
-
-  template<typename DarwList>
-  static auto create_shared_buffers([[maybe_unused]] DarwList& draw_list) -> void {
-
-  }
-
-  template<typename DarwList>
-  static auto destroy_shared_buffers([[maybe_unused]] DarwList& draw_list) -> void {
-
-  }
-
-  template<typename DarwList>
-  static auto update_shared_buffers([[maybe_unused]] DarwList& draw_list) -> void {
-
-  }
-
-  template<class Callable>
-  static void for_each_submission(scenes::scene& scene, Callable&& callable) {
-    auto query = scene.query<const component_type>();
-
-    for (auto&& [node, component] : query.each()) {
-      const auto transform_data = models::transform_data{ scene.world_transform(node), scene.world_normal(node) };
-
-      for (const auto& submesh : component.submeshes()) {
-        std::invoke(callable, component, component.mesh_id(), submesh.index, submesh.material, transform_data, instance_payload{});
-      }
-    }
-  }
-
-  static auto make_instance_data(std::uint32_t transform_index, std::uint32_t material_index, const instance_payload& payload) -> instance_data {
-    return instance_data{transform_index, material_index, 0u, 0u};
-  }
-}; // static_mesh_traits
-
-using static_mesh_material_draw_list = basic_material_draw_list<static_mesh_traits>;
 
 } // namespace sbx::models
 

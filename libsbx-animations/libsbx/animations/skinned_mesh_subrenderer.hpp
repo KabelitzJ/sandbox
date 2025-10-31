@@ -11,9 +11,6 @@
 
 #include <fmt/format.h>
 
-#include <tsl/robin_map.h>
-#include <tsl/robin_set.h>
-
 #include <range/v3/view/enumerate.hpp>
 
 #include <libsbx/utility/logger.hpp>
@@ -58,301 +55,207 @@
 #include <libsbx/scenes/components/point_light.hpp>
 #include <libsbx/scenes/components/global_transform.hpp>
 
+#include <libsbx/models/material_draw_list.hpp>
+
 #include <libsbx/animations/vertex3d.hpp>
 #include <libsbx/animations/mesh.hpp>
 #include <libsbx/animations/animator.hpp>
 
 namespace sbx::animations {
 
+struct skinned_mesh_traits {
+
+  using component_type = scenes::skinned_mesh;
+  using mesh_type = animations::mesh;
+
+  struct instance_payload {
+    std::uint32_t bone_offset;
+  }; // struct instance_payload
+
+  inline static const auto bone_matrices_buffer_name = utility::hashed_string{"bone_matrices"};
+
+  template<typename DrawList>
+  static auto create_shared_buffers(DrawList& draw_list) -> void {
+    draw_list.create_buffer(bone_matrices_buffer_name, graphics::storage_buffer::min_size, VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT);
+  }
+
+  template<typename DrawList>
+  static auto destroy_shared_buffers([[maybe_unused]] DrawList& draw_list) -> void {
+
+  }
+
+  template<typename DrawList>
+  static auto update_shared_buffers(DrawList& draw_list) -> void {
+    draw_list.update_buffer(bone_matrices, bone_matrices_buffer_name);
+    bone_matrices.clear();
+  }
+
+  template <typename Callable>
+  static auto for_each_submission(scenes::scene& scene, Callable&& callable) -> void {
+    // pull id to optionally pack selection; animator is present but we only need the pose already stored in component
+    const auto query = scene.query<const scenes::skinned_mesh, animations::animator>();
+
+    for (auto&& [node, skinned_mesh, animator] : query.each()) {
+      const auto transform = models::transform_data{scene.world_transform(node), scene.world_normal(node)};
+
+      const auto bone_offset = static_cast<std::uint32_t>(bone_matrices.size());
+      const auto& pose = skinned_mesh.pose();
+
+      utility::append(bone_matrices, pose);
+
+      for (const auto& submesh : skinned_mesh.submeshes()) {
+        const auto& mesh_id = skinned_mesh.mesh_id();
+        const auto submesh_index = submesh.index;
+        const auto& material_id = submesh.material;
+
+        std::invoke(callable, skinned_mesh, mesh_id, submesh_index, material_id, transform, instance_payload{bone_offset});
+      }
+    }
+  }
+
+  static auto make_instance_data(std::uint32_t transform_index, std::uint32_t material_index, const instance_payload& payload) -> models::instance_data {
+    return models::instance_data{transform_index, material_index, payload.bone_offset, 0u};
+  }
+
+private:
+
+  inline static auto bone_matrices = std::vector<math::matrix4x4>{};
+
+}; // struct skinned_mesh_traits
+
+using skinned_mesh_material_draw_list = models::basic_material_draw_list<skinned_mesh_traits>;
+
 class skinned_mesh_subrenderer final : public graphics::subrenderer {
 
-  class pipeline : public graphics::graphics_pipeline {
-
-    inline static const auto pipeline_definition = graphics::pipeline_definition{
-      .depth = graphics::depth::read_write,
-      .uses_transparency = false,
-      .rasterization_state = graphics::rasterization_state{
-        .polygon_mode = graphics::polygon_mode::fill,
-        .cull_mode = graphics::cull_mode::back,
-        .front_face = graphics::front_face::counter_clockwise
-      },
-      // .vertex_input = graphics::vertex_input<models::vertex3d>::description()
-    };
-
-    using base_type = graphics::graphics_pipeline;
-
-  public:
-
-    pipeline(const std::filesystem::path& path, const graphics::render_graph::graphics_pass& pass)
-    : base_type{path, pass, pipeline_definition} { }
-
-    ~pipeline() override = default;
-
-  }; // class pipeline
+  inline static const auto pipeline_definition = graphics::pipeline_definition{
+    .depth = graphics::depth::read_write,
+    .uses_transparency = false,
+    .rasterization_state = graphics::rasterization_state{
+      .polygon_mode = graphics::polygon_mode::fill,
+      .cull_mode    = graphics::cull_mode::back,
+      .front_face   = graphics::front_face::counter_clockwise
+    }
+  };
 
 public:
 
-  skinned_mesh_subrenderer(const graphics::render_graph::graphics_pass& pass, const std::filesystem::path& path)
-  : graphics::subrenderer{pass},
-    _pipeline{path, pass},
-    _push_handler{_pipeline},
-    _descriptor_handler{_pipeline, 0u} {
-    auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+  skinned_mesh_subrenderer(const graphics::render_graph::graphics_pass& pass, const std::filesystem::path& base_pipeline, const skinned_mesh_material_draw_list::bucket bucket) 
+  : graphics::subrenderer{pass}, 
+    _base_pipeline{base_pipeline}, 
+    _bucket{bucket} { }
 
-    _bone_matrices.resize(skeleton::max_bones, math::matrix4x4::identity);
-
-    _draw_commands_buffer = graphics_module.add_resource<graphics::storage_buffer>(graphics::storage_buffer::min_size, VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT);
-    _transform_data_buffer = graphics_module.add_resource<graphics::storage_buffer>(graphics::storage_buffer::min_size, VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT);
-    _instance_data_buffer = graphics_module.add_resource<graphics::storage_buffer>(graphics::storage_buffer::min_size, VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT);
-    _bone_matrices_buffer = graphics_module.add_resource<graphics::storage_buffer>(graphics::storage_buffer::min_size, VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT);
+  ~skinned_mesh_subrenderer() override {
+    _pipeline_cache.clear();
   }
 
-  ~skinned_mesh_subrenderer() override = default;
-
   auto render(graphics::command_buffer& command_buffer) -> void override {
-    EASY_FUNCTION();
-
-    SBX_PROFILE_SCOPE("skinned_mesh_subrenderer::render");
-
     auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
-    auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
+    auto& assets_module = core::engine::get_module<assets::assets_module>();
+    auto& scene = core::engine::get_module<scenes::scenes_module>().scene();
 
-    auto& scene = scenes_module.scene();
+    // obtain the skinned draw list from the pass (name must match your render graph)
+    auto& draw_list = pass().template draw_list<skinned_mesh_material_draw_list>("skinned_mesh_material");
 
-    _submesh_instances.clear();
-    _transform_data.clear();
-    _bone_matrices.clear();
-    _images.clear();
+    for (auto& [key, data] : draw_list.ranges(_bucket)) {
+      auto& pipeline_data = _get_or_create_pipeline(key, pass());
+      auto& pipeline = graphics_module.get_resource<graphics::graphics_pipeline>(pipeline_data.pipeline);
 
-    SBX_PROFILE_BLOCK("skinned_mesh_subrenderer::submit") {
-      auto mesh_query = scene.query<const scenes::skinned_mesh, animations::animator>();
+      pipeline.bind(command_buffer);
 
-      for (auto&& [node, skinned_mesh, animator] : mesh_query.each()) {
-        _submit_mesh(node, skinned_mesh, animator);
+      pipeline_data.scene_descriptor_handler.push("scene", scene.uniform_handler());
+      pipeline_data.scene_descriptor_handler.push("images_sampler", draw_list.sampler());
+      pipeline_data.scene_descriptor_handler.push("images", draw_list.images());
+
+      if (!pipeline_data.scene_descriptor_handler.update(pipeline)) {
+        return;
       }
-    }
 
-    SBX_PROFILE_BLOCK("skinned_mesh_subrenderer::render"){
-      _render_skinned_meshes(command_buffer);
+      pipeline_data.scene_descriptor_handler.bind_descriptors(command_buffer);
+
+      pipeline_data.push_handler.push("transform_data_buffer", draw_list.buffer(skinned_mesh_material_draw_list::transform_data_buffer_name).address());
+      pipeline_data.push_handler.push("material_data_buffer", draw_list.buffer(skinned_mesh_material_draw_list::material_data_buffer_name).address());
+
+      pipeline_data.push_handler.push("bone_matrices_buffer", draw_list.buffer(skinned_mesh_traits::bone_matrices_buffer_name).address());
+
+      auto& instance_data_buffer = graphics_module.get_resource<graphics::storage_buffer>(data.instance_data_buffer);
+      pipeline_data.push_handler.push("instance_data_buffer", instance_data_buffer.address());
+
+      const auto hash = models::material_key_hash{}(key);
+
+      for (const auto& range_ref : data.ranges) {
+        auto& mesh = assets_module.get_asset<animations::mesh>(range_ref.mesh_id);
+
+        mesh.bind(command_buffer);
+
+        pipeline_data.push_handler.push("vertex_buffer", mesh.address());
+        pipeline_data.push_handler.bind(command_buffer);
+
+        auto& draw_commands_buffer = graphics_module.get_resource<graphics::storage_buffer>(data.draw_commands_buffer);
+
+        command_buffer.draw_indexed_indirect(draw_commands_buffer, range_ref.range.offset, range_ref.range.count);
+      }
     }
   }
 
 private:
 
-  struct transform_data {
-    alignas(16) math::matrix4x4 model;
-    alignas(16) math::matrix4x4 normal;
-  }; // struct transform_data
+  struct pipeline_data {
 
-  static_assert(utility::layout_requirements_v<transform_data, 128u, 16u>, "transform_data does not meet layout requirements");
+    graphics::graphics_pipeline_handle pipeline;
+    graphics::push_handler push_handler;
+    graphics::descriptor_handler scene_descriptor_handler;
 
-  struct instance_data {
-    alignas(16) math::color tint;
-    alignas(16) math::vector4 material;
-    alignas(16) math::vector4u payload; // x: albedo image index, y: normal image index, y: transform data index, w: bone matrices offset
-    alignas(16) math::vector4u selection;
-  }; // struct instance_data
+    pipeline_data(const graphics::graphics_pipeline_handle& handle)
+    : pipeline{handle},
+      push_handler{pipeline}, 
+      scene_descriptor_handler{pipeline, 0u} { }
 
-  static_assert(utility::layout_requirements_v<instance_data, 64u, 16u>, "instance_data does not meet layout requirements");
+  }; // struct pipeline_data
 
-  struct draw_command_range {
-    std::uint32_t offset;
-    std::uint32_t count;
-  }; // struct draw_command_range
-
-  auto _submit_mesh(const scenes::node node, const scenes::skinned_mesh& skinned_mesh, animator& animator) -> void {
-    EASY_FUNCTION();
-    auto& assets_module = core::engine::get_module<assets::assets_module>();
+  auto _get_or_create_pipeline(const models::material_key& key, const graphics::render_graph::graphics_pass& pass) -> pipeline_data& {
     auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
-    auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
-    auto& scene = scenes_module.scene();
-
-    const auto mesh_id = skinned_mesh.mesh_id();
-
-    auto& mesh = assets_module.get_asset<animations::mesh>(mesh_id);
-    auto& animation = assets_module.get_asset<animations::animation>(skinned_mesh.animation_id());
-
-    auto& skeleton = mesh.skeleton();
-
-    const auto& bone_matrices = skinned_mesh.pose();
-
-    // [NOTE] : Get this offset befor appending the new matrices to get the offset into the big array in the shader
-    const auto bone_matrices_offset = static_cast<std::uint32_t>(_bone_matrices.size());
-
-    utility::append(_bone_matrices, std::move(bone_matrices));
-
-    const auto& global_transform = scene.get_component<const scenes::global_transform>(node);
-
-    const auto& id = scene.get_component<const scenes::id>(node);
-
-    const auto upper_id = static_cast<std::uint32_t>(id.value() >> 32u);
-    const auto lower_id = static_cast<std::uint32_t>(id.value() & 0xFFFFFFFF);
-
-    const auto transform_data_index = static_cast<std::uint32_t>(_transform_data.size());
-    _transform_data.emplace_back(scene.world_transform(node), scene.world_normal(node));
-
-    auto& instances = _submesh_instances[mesh_id];
-
-    for (const auto& submesh : skinned_mesh.submeshes()) {
-      // EASY_BLOCK("submit submesh");
-
-      // const auto& material = assets_module.get_asset<scenes::material>(submesh.material);
-
-      // const auto albedo_image_index = material.albedo ? _images.push_back(material.albedo) : graphics::separate_image2d_array::max_size;
-      // const auto normal_image_index = material.normal ? _images.push_back(material.normal) : graphics::separate_image2d_array::max_size;
-
-      // const auto material_data = math::vector4{material.metallic, material.roughness, material.ambient_occlusion, 0.0f};
-      // const auto payload = math::vector4u{albedo_image_index, normal_image_index, transform_data_index, bone_matrices_offset};
-      // const auto selection = math::vector4u{upper_id, lower_id, 0u, 0u};
-
-      // instances.resize(std::max(instances.size(), static_cast<std::size_t>(submesh.index + 1u)));
-      // instances[submesh.index].push_back(instance_data{material.base_color, material_data, payload, selection});
-
-      // EASY_END_BLOCK;
-    }
-  }
-
-  auto _render_skinned_meshes(graphics::command_buffer& command_buffer) -> void {
-    auto& assets_module = core::engine::get_module<assets::assets_module>();
-    auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
-    auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
-
-    auto& scene = scenes_module.scene();
-
-    _pipeline.bind(command_buffer);
-
-    _descriptor_handler.push("scene", scene.uniform_handler());
-    // _descriptor_handler.push("buffer_point_lights", _point_lights_storage_handler);
-    // _descriptor_handler.push("shadow_map_image", graphics_module.attachment("shadow_map"));
-    _descriptor_handler.push("images_sampler", _images_sampler);
-    _descriptor_handler.push("images", _images);
-
-    if (!_descriptor_handler.update(_pipeline)) {
-      return;
+    if (auto it = _pipeline_cache.find(key); it != _pipeline_cache.end()) {
+      return it->second;
     }
 
-    _descriptor_handler.bind_descriptors(command_buffer);
+    auto definition = pipeline_definition;
+    definition.depth = graphics::depth::read_write;
+    definition.rasterization_state.cull_mode = key.is_double_sided ? graphics::cull_mode::none : graphics::cull_mode::back;
+    definition.uses_transparency = (static_cast<models::alpha_mode>(key.alpha) == models::alpha_mode::blend);
 
-    auto draw_commands = std::vector<VkDrawIndexedIndirectCommand>{};
-    auto instance_data = std::vector<skinned_mesh_subrenderer::instance_data>{};
-    auto draw_ranges = std::unordered_map<math::uuid, draw_command_range>{};
+    auto& compiler = graphics_module.compiler();
 
-    auto base_instance = std::uint32_t{0u};
-
-    EASY_BLOCK("build draw commands");
-
-    for (auto&& [mesh_id, submesh] : _submesh_instances) {
-      auto& mesh = assets_module.get_asset<animations::mesh>(mesh_id);
-
-      auto range = draw_command_range{};
-      range.offset = static_cast<uint32_t>(draw_commands.size());
-
-      for (auto&& [submesh_index, instances] : ranges::views::enumerate(submesh)) {
-        if (instances.empty()) {
-          continue;
-        }
-
-        const auto submesh = mesh.submesh(submesh_index);
-
-        const auto instance_count = static_cast<std::uint32_t>(instances.size());
-
-        auto command = VkDrawIndexedIndirectCommand{};
-        command.indexCount = submesh.index_count;
-        command.instanceCount = instance_count;
-        command.firstIndex = submesh.index_offset;
-        command.vertexOffset = submesh.vertex_offset;
-        command.firstInstance = base_instance;
-        // command.firstInstance = 0u;
-
-        draw_commands.push_back(command);
-
-        utility::append(instance_data, std::move(instances));
-        // instance_data.insert(instance_data.end(), instances.begin(), instances.end());
-
-        base_instance += instance_count;
-        range.count++;
+    const auto request = graphics::compiler::compile_request{
+      .path = _base_pipeline,
+      .per_stage = {
+        {SLANG_STAGE_VERTEX, {.entry_point = "skinned_main"}},
+        {SLANG_STAGE_FRAGMENT, {.entry_point = _fs_entry.at(key.alpha)}}
       }
+    };
 
-      if (range.count > 0) {
-        draw_ranges.emplace(mesh_id, range);
-      }
-    }
+    const auto result = compiler.compile(request);
 
-    EASY_END_BLOCK;
+    auto compiled = graphics::graphics_pipeline::compiled_shaders{ _base_pipeline.filename().string(), result.code };
+    auto handle = graphics_module.add_resource<graphics::graphics_pipeline>(compiled, pass, definition);
 
-    if (draw_commands.empty()) {
-      return;
-    }
+    auto [entry, inserted] = _pipeline_cache.emplace(key, handle);
 
-    EASY_BLOCK("upload draw commands");
-
-    // Resize and update the draw commands buffer
-    auto& draw_commands_buffer = graphics_module.get_resource<graphics::storage_buffer>(_draw_commands_buffer);
-    update_buffer(draw_commands_buffer, draw_commands);
-
-    // Resize and update the transform data buffer
-    auto& transform_data_buffer = graphics_module.get_resource<graphics::storage_buffer>(_transform_data_buffer);
-    update_buffer(transform_data_buffer, _transform_data);
-
-    // Resize and update the instance data buffer
-    auto& instance_data_buffer = graphics_module.get_resource<graphics::storage_buffer>(_instance_data_buffer);
-    update_buffer(instance_data_buffer, instance_data);
-
-    auto& bone_matrices_buffer = graphics_module.get_resource<graphics::storage_buffer>(_bone_matrices_buffer);
-    update_buffer(bone_matrices_buffer, _bone_matrices);
-
-    _push_handler.push("transform_data_buffer", transform_data_buffer.address());
-    _push_handler.push("instance_data_buffer", instance_data_buffer.address());
-    _push_handler.push("bone_matrices_buffer", bone_matrices_buffer.address());
-    _push_handler.push("bone_to_track", _bone_to_track);
-
-    for (const auto& [mesh_id, range] : draw_ranges) {
-      auto& mesh = assets_module.get_asset<animations::mesh>(mesh_id);
-      
-      mesh.bind(command_buffer);
-      
-      _push_handler.push("vertex_buffer", mesh.address());
-
-      _push_handler.bind(command_buffer);
-
-      command_buffer.draw_indexed_indirect(draw_commands_buffer, range.offset, range.count);
-    }
-
-    EASY_END_BLOCK;
+    return entry->second;
   }
 
-  template<typename Type>
-  static auto update_buffer(graphics::storage_buffer& storage_buffer, const std::vector<Type>& buffer) -> void {
-    const auto required_size = static_cast<std::uint32_t>(buffer.size() * sizeof(Type));
+  // per-alpha fragment entry points (same scheme as your static renderer)
+  inline static const auto _fs_entry = std::array<std::string, 3u>{
+    "opaque_main",  // alpha_mode::opaque
+    "mask_main",    // alpha_mode::mask
+    "blend_main"    // alpha_mode::blend
+  };
 
-    if (storage_buffer.size() < required_size) {
-      storage_buffer.resize(static_cast<std::size_t>(static_cast<std::float_t>(required_size) * 1.5f));
-    }
+  std::filesystem::path _base_pipeline;
+  skinned_mesh_material_draw_list::bucket _bucket;
 
-    storage_buffer.update(buffer.data(), required_size);
-  }
-
-  std::unordered_map<math::uuid, std::vector<std::vector<instance_data>>> _submesh_instances;
-  std::vector<transform_data> _transform_data;
-  std::vector<math::matrix4x4> _bone_matrices;
-
-  pipeline _pipeline;
-
-  graphics::storage_buffer_handle _draw_commands_buffer;
-  graphics::storage_buffer_handle _transform_data_buffer;
-  graphics::storage_buffer_handle _instance_data_buffer;
-  graphics::storage_buffer_handle _bone_matrices_buffer;
-
-  graphics::descriptor_handler _descriptor_handler;
-  // graphics::uniform_handler _scene_uniform_handler;
-  graphics::push_handler _push_handler;
-
-  graphics::separate_sampler _images_sampler;
-  graphics::separate_image2d_array _images;
-
-  std::uint32_t _bone_to_track;
-
+  inline static std::unordered_map<models::material_key, pipeline_data, models::material_key_hash> _pipeline_cache{};
+  
 }; // class skinned_mesh_subrenderer
 
 } // namespace sbx::animation

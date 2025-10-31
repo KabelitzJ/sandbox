@@ -108,18 +108,6 @@ struct material {
   }
 
 }; // struct material
-
-struct alignas(16) transform_data {
-  math::matrix4x4 model;
-  math::matrix4x4 normal;
-}; // struct transform_data
-
-struct alignas(16) instance_data {
-  std::uint32_t transform_index;
-  std::uint32_t material_index;
-  std::uint32_t object_id;
-  std::uint32_t _pad0;
-}; // struct instance_data
   
 } // namespace sbx::models
 

@@ -68,17 +68,14 @@ public:
     }
   }
 
-  auto add_animation(scenes::node node, const math::uuid mesh_id, const math::uuid animation_id, const math::uuid material) -> scenes::skinned_mesh& {
-    return add_animation(node, mesh_id, animation_id, std::vector<scenes::skinned_mesh::submesh>{{0, material}});
-  }
-
-  auto add_animation(scenes::node node, const math::uuid mesh_id, const math::uuid animation_id, const std::vector<scenes::skinned_mesh::submesh>& submeshes) -> scenes::skinned_mesh& {
+  template<typename... Args>
+  auto add_animation(scenes::node node, const math::uuid mesh_id, const math::uuid animation_id, Args&&... args) -> scenes::skinned_mesh& {
     auto& assets_module = core::engine::get_module<assets::assets_module>();
     auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
 
     auto& scene = scenes_module.scene();
 
-    auto& skinned_mesh = scene.add_component<sbx::scenes::skinned_mesh>(node, mesh_id, animation_id, submeshes);
+    auto& skinned_mesh = scene.add_component<sbx::scenes::skinned_mesh>(node, mesh_id, animation_id, std::forward<Args>(args)...);
 
     const auto& mesh = assets_module.get_asset<animations::mesh>(mesh_id);
     const auto& animation = assets_module.get_asset<animations::animation>(animation_id);

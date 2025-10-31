@@ -1,5 +1,5 @@
-#ifndef LIBSBX_MODELS_MATERIAL_SUBRENDERER_HPP_
-#define LIBSBX_MODELS_MATERIAL_SUBRENDERER_HPP_
+#ifndef LIBSBX_MODELS_STATIC_MESH_SUBRENDERER_HPP_
+#define LIBSBX_MODELS_STATIC_MESH_SUBRENDERER_HPP_
 
 #include <cstddef>
 #include <filesystem>
@@ -10,9 +10,6 @@
 #include <easy/profiler.h>
 
 #include <fmt/format.h>
-
-#include <tsl/robin_map.h>
-#include <tsl/robin_set.h>
 
 #include <range/v3/view/enumerate.hpp>
 
@@ -71,7 +68,48 @@
 
 namespace sbx::models {
 
-class material_subrenderer final : public graphics::subrenderer {
+struct static_mesh_traits {
+
+  using component_type = scenes::static_mesh;
+  using mesh_type = models::mesh;
+  struct instance_payload { };
+
+  template<typename DarwList>
+  static auto create_shared_buffers([[maybe_unused]] DarwList& draw_list) -> void {
+
+  }
+
+  template<typename DarwList>
+  static auto destroy_shared_buffers([[maybe_unused]] DarwList& draw_list) -> void {
+
+  }
+
+  template<typename DarwList>
+  static auto update_shared_buffers([[maybe_unused]] DarwList& draw_list) -> void {
+
+  }
+
+  template<class Callable>
+  static void for_each_submission(scenes::scene& scene, Callable&& callable) {
+    auto query = scene.query<const component_type>();
+
+    for (auto&& [node, component] : query.each()) {
+      const auto transform_data = models::transform_data{ scene.world_transform(node), scene.world_normal(node) };
+
+      for (const auto& submesh : component.submeshes()) {
+        std::invoke(callable, component, component.mesh_id(), submesh.index, submesh.material, transform_data, instance_payload{});
+      }
+    }
+  }
+
+  static auto make_instance_data(std::uint32_t transform_index, std::uint32_t material_index, const instance_payload& payload) -> instance_data {
+    return instance_data{transform_index, material_index, 0u, 0u};
+  }
+}; // static_mesh_traits
+
+using static_mesh_material_draw_list = basic_material_draw_list<static_mesh_traits>;
+
+class static_mesh_subrenderer final : public graphics::subrenderer {
 
   inline static const auto pipeline_definition = graphics::pipeline_definition{
     .depth = graphics::depth::read_write,
@@ -85,19 +123,19 @@ class material_subrenderer final : public graphics::subrenderer {
 
 public:
 
-  material_subrenderer(const graphics::render_graph::graphics_pass& pass, const std::filesystem::path& base_pipeline, const static_mesh_material_draw_list::bucket bucket)
+  static_mesh_subrenderer(const graphics::render_graph::graphics_pass& pass, const std::filesystem::path& base_pipeline, const static_mesh_material_draw_list::bucket bucket)
   : graphics::subrenderer{pass},
     _base_pipeline{base_pipeline},
     _bucket{bucket} { }
 
-  ~material_subrenderer() override {
+  ~static_mesh_subrenderer() override {
     _pipeline_cache.clear();
   }
 
   auto render(graphics::command_buffer& command_buffer) -> void override {
     EASY_FUNCTION();
 
-    SBX_PROFILE_SCOPE("material_subrenderer::render");
+    SBX_PROFILE_SCOPE("static_mesh_subrenderer::render");
 
     auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
@@ -183,12 +221,8 @@ private:
     const auto request = graphics::compiler::compile_request{
       .path = _base_pipeline,
       .per_stage = {
-        {SLANG_STAGE_VERTEX, {
-          .entry_point = "static_main"
-        }},
-        {SLANG_STAGE_FRAGMENT, {
-          .entry_point = _entry_point.at(key.alpha)
-        }},
+        {SLANG_STAGE_VERTEX, { .entry_point = "static_main" }},
+        {SLANG_STAGE_FRAGMENT, { .entry_point = _entry_point.at(key.alpha) }}
       }
     };
 
@@ -226,7 +260,7 @@ private:
 
   inline static auto _pipeline_cache = std::unordered_map<material_key, pipeline_data, material_key_hash>{};
 
-}; // class material_subrenderer
+}; // class static_mesh_subrenderer
 
 } // namespace sbx::models
 
@@ -246,4 +280,4 @@ struct sbx::utility::enum_mapping<sbx::models::material_feature> {
 
 }; // struct sbx::utility::enum_mapping
 
-#endif // LIBSBX_MODELS_MATERIAL_SUBRENDERER_HPP_
+#endif // LIBSBX_MODELS_STATIC_MESH_SUBRENDERER_HPP_

@@ -11,7 +11,7 @@
   #include <libsbx/models/frustum_culling_task.hpp>
   #include <libsbx/models/foliage_task.hpp>
   #include <libsbx/models/foliage_subrenderer.hpp>
-  #include <libsbx/models/material_subrenderer.hpp>
+  #include <libsbx/models/static_mesh_subrenderer.hpp>
 
   #include <libsbx/animations/skinned_mesh_subrenderer.hpp>
 
@@ -118,17 +118,18 @@
 
     // Draw lists
     add_draw_list<sbx::models::static_mesh_material_draw_list>("static_mesh_material");
+    add_draw_list<sbx::animations::skinned_mesh_material_draw_list>("skinned_mesh_material");
 
     // Shadow pass
     // add_subrenderer<sbx::shadows::shadow_subrenderer>(shadow, "res://shaders/shadow");
 
-    // Deferred rendering pass
-    // add_subrenderer<sbx::animations::skinned_mesh_subrenderer>(deferred, "res://shaders/deferred_skinned_opaque");
-
-    add_subrenderer<sbx::models::material_subrenderer>(deferred, "res://shaders/deferred_static_material", sbx::models::static_mesh_material_draw_list::bucket::opaque);
+    // Deferred pass
+    add_subrenderer<sbx::models::static_mesh_subrenderer>(deferred, "res://shaders/deferred_static_material", sbx::models::static_mesh_material_draw_list::bucket::opaque);
+    add_subrenderer<sbx::animations::skinned_mesh_subrenderer>(deferred, "res://shaders/deferred_static_material", sbx::animations::skinned_mesh_material_draw_list::bucket::opaque);
     
     // Transparency pass
-    add_subrenderer<sbx::models::material_subrenderer>(transparency, "res://shaders/deferred_static_material", sbx::models::static_mesh_material_draw_list::bucket::transparent);
+    add_subrenderer<sbx::models::static_mesh_subrenderer>(transparency, "res://shaders/deferred_static_material", sbx::models::static_mesh_material_draw_list::bucket::transparent);
+    add_subrenderer<sbx::animations::skinned_mesh_subrenderer>(transparency, "res://shaders/deferred_static_material", sbx::animations::skinned_mesh_material_draw_list::bucket::transparent);
     
     // Resolve pass
     auto resolve_opaque_attachment_names = std::vector<std::pair<std::string, std::string>>{
