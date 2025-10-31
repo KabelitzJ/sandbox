@@ -64,7 +64,14 @@ public:
     create_buffer(material_data_buffer_name, graphics::storage_buffer::min_size, VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT);
   }
 
-  ~material_draw_list() override = default;
+  ~material_draw_list() override {
+    auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+    for (const auto& [key, data] : _pipeline_data) {  
+      graphics_module.remove_resource<graphics::storage_buffer>(data.draw_commands_buffer);
+      graphics_module.remove_resource<graphics::storage_buffer>(data.instance_data_buffer);
+    }
+  }
 
   auto update() -> void override {
     _transform_data.clear();
@@ -77,8 +84,6 @@ public:
     for (auto& buckets : _bucket_ranges) {
       buckets.clear();
     }
-
-    _material_buckets.clear();
 
     auto& assets_module = core::engine::get_module<assets::assets_module>();
 
@@ -276,7 +281,8 @@ private:
   std::unordered_map<material_key, pipeline_data, material_key_hash> _pipeline_data;
 
   std::array<bucket_map, magic_enum::enum_count<bucket>()> _bucket_ranges;
-  std::unordered_map<material_key, std::unordered_set<bucket>, material_key_hash> _material_buckets;
+
+  inline static auto _material_buckets = std::unordered_map<material_key, std::unordered_set<bucket>, material_key_hash>{};
 
 }; // class material_draw_list
 

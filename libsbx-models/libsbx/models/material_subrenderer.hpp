@@ -182,9 +182,6 @@ private:
 
     const auto request = graphics::compiler::compile_request{
       .path = _base_pipeline,
-      .defines = {
-        {"STATIC_VERTEX", "1"}
-      },
       .per_stage = {
         {SLANG_STAGE_VERTEX, {
           .entry_point = "static_main"
@@ -193,11 +190,6 @@ private:
           .entry_point = _entry_point.at(key.alpha)
         }},
       }
-      // .entry_point = _entry_point.at(key.alpha),
-      // .specializations = {}
-      // .specializations = {
-      //   {SLANG_STAGE_FRAGMENT, {_alpha_policy.at(key.alpha), _fs_out.at(key.alpha)}}
-      // }
     };
 
     const auto result = compiler.compile(request);
@@ -232,7 +224,7 @@ private:
   std::filesystem::path _base_pipeline;
   material_draw_list::bucket _bucket;
 
-  inline static std::unordered_map<material_key, pipeline_data, material_key_hash> _pipeline_cache{};
+  inline static auto _pipeline_cache = std::unordered_map<material_key, pipeline_data, material_key_hash>{};
 
 }; // class material_subrenderer
 

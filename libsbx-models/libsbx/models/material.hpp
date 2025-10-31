@@ -117,8 +117,8 @@ struct alignas(16) transform_data {
 struct alignas(16) instance_data {
   std::uint32_t transform_index;
   std::uint32_t material_index;
-  std::uint32_t object_id_upper;
-  std::uint32_t object_id_lower;
+  std::uint32_t object_id;
+  std::uint32_t _pad0;
 }; // struct instance_data
   
 } // namespace sbx::models

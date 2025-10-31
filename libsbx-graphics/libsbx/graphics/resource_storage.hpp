@@ -20,13 +20,13 @@ public:
 
   using type = Type;
 
-  inline static constexpr auto invalid = std::uint32_t{0xFFFFFFFF};
+  inline static constexpr auto invalid = std::uint32_t{0x00FFFFFF};
 
   constexpr resource_handle()
   : _handle{invalid}, 
     _generation{0} { }
 
-  constexpr resource_handle(const std::uint32_t handle, const std::uint32_t generation)
+  constexpr resource_handle(const std::uint32_t handle, const std::uint8_t generation)
   : _handle{handle}, 
     _generation{generation} { }
 
@@ -34,12 +34,14 @@ public:
     return _handle;
   }
 
-  constexpr auto generation() const noexcept -> std::uint32_t {
+  constexpr auto generation() const noexcept -> std::uint8_t {
     return _generation;
   }
 
   constexpr auto operator==(const resource_handle& other) const noexcept -> bool {
-    return _handle == other._handle && _generation == other._generation;
+    // return _handle == other._handle && _generation == other._generation;
+
+    return std::memcmp(this, &other, sizeof(std::uint32_t)) == 0; 
   }
 
   constexpr auto is_valid() const noexcept -> bool {
@@ -52,8 +54,8 @@ public:
 
 private:
 
-  std::uint32_t _handle;
-  std::uint32_t _generation;
+  std::uint32_t _handle     : 24;
+  std::uint32_t _generation :  8;
 
 }; // class resource_handle
 
@@ -157,7 +159,7 @@ private:
   }
 
   std::vector<memory::storage_for_t<value_type>> _storage;
-  std::vector<std::uint32_t> _generations;
+  std::vector<std::uint8_t> _generations;
   std::vector<std::uint32_t> _free_handles;
 
 }; // class resource_storage

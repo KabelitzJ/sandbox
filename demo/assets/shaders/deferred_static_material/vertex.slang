@@ -48,10 +48,26 @@ float4x4 calculate_skinning_matrix(uint4 bone_indices, float4 bone_weights, floa
   return result;
 }
 
-[shader("vertex")]
-vs_out static_main(vs_in in) {
+vs_out write(transform_data transform_data, material_data material_data, float3 position, float3 normal, float2 uv, float4 tangent, uint object_id) {
   vs_out out;
 
+  out.position = position;
+  out.normal = normalize(mul(transform_data.normal, float4(normal, 0.0)).xyz);
+  out.tangent = float4(normalize(mul(transform_data.normal, float4(tangent.xyz, 0.0)).xyz), tangent.w);
+  out.uv = uv;
+  out.color = material_data.base_color;
+  out.material = float4(material_data.metallic, material_data.roughness, material_data.occlusion, material_data.emissive_strength);
+  out.image_indices = uint4(material_data.albedo_index, material_data.normal_index, material_data.mrao_index, material_data.emissive_index);
+  out.object_id = object_id;
+  out.alpha_cutoff = material_data.alpha_cutoff;
+
+  out.sv_position = mul(scene.projection, mul(scene.view, float4(position, 1.0)));
+
+  return out;
+}
+
+[shader("vertex")]
+vs_out static_main(vs_in in) {
   uint global_vertex = in.vertex_id + in.base_vertex;
   uint global_instance = in.instance_id + in.base_instance;
 
@@ -64,30 +80,16 @@ vs_out static_main(vs_in in) {
 
   float3 in_position = float3(vertex.position_x, vertex.position_y, vertex.position_z);
   float3 in_normal = float3(vertex.normal_x, vertex.normal_y, vertex.normal_z);
-  float4 in_tangent = float4(vertex.tangent_x, vertex.tangent_y, vertex.tangent_z, vertex.tangent_w);
   float2 in_uv = float2(vertex.uv_x, vertex.uv_y);
+  float4 in_tangent = float4(vertex.tangent_x, vertex.tangent_y, vertex.tangent_z, vertex.tangent_w);
 
   float3 world_position = mul(transform_data.model, float4(in_position, 1.0)).xyz;
 
-  out.position = world_position;
-  out.normal = normalize(mul(transform_data.normal, float4(in_normal, 0.0)).xyz);
-  out.tangent = float4(normalize(mul(transform_data.normal, float4(in_tangent.xyz, 0.0)).xyz), in_tangent.w);
-  out.uv = in_uv;
-  out.color = material_data.base_color;
-  out.material = float4(material_data.metallic, material_data.roughness, material_data.occlusion, material_data.emissive_strength);
-  out.image_indices = uint4(material_data.albedo_index, material_data.normal_index, material_data.mrao_index, material_data.emissive_index);
-  out.object_id = instance_data.object_id;
-  out.alpha_cutoff = material_data.alpha_cutoff;
-
-  out.sv_position = mul(scene.projection, mul(scene.view, float4(world_position, 1.0)));
-
-  return out;
+  return write(transform_data, material_data, world_position, in_normal, in_uv, in_tangent, instance_data.object_id);
 }
 
 [shader("vertex")]
 vs_out skinned_main(vs_in in) {
-  vs_out out;
-
   uint global_vertex = in.vertex_id + in.base_vertex;
   uint global_instance = in.instance_id + in.base_instance;
 
@@ -114,18 +116,8 @@ vs_out skinned_main(vs_in in) {
   float3 skinned_tangent = normalize(mul(skinning_matrix, float4(in_tangent.xyz, 0.0)).xyz);
 
   float3 world_position = mul(transform_data.model, float4(skinned_position, 1.0)).xyz;
+  float3 normal = normalize(mul(transform_data.normal, float4(skinned_normal, 0.0)).xyz);
+  float4 tangent = float4(normalize(mul(transform_data.normal, float4(skinned_tangent, 0.0)).xyz), in_tangent.w);
 
-  out.position = world_position;
-  out.normal = normalize(mul(transform_data.normal, float4(skinned_normal, 0.0)).xyz);
-  out.tangent = float4(normalize(mul(transform_data.normal, float4(skinned_tangent, 0.0)).xyz), in_tangent.w);
-  out.uv = in_uv;
-  out.color = material_data.base_color;
-  out.material = float4(material_data.metallic, material_data.roughness, material_data.occlusion, material_data.emissive_strength);
-  out.image_indices = uint4(material_data.albedo_index, material_data.normal_index, material_data.mrao_index, material_data.emissive_index);
-  out.object_id = instance_data.object_id;
-  out.alpha_cutoff = material_data.alpha_cutoff;
-
-  out.sv_position = mul(scene.projection, mul(scene.view, float4(world_position, 1.0)));
-
-  return out;
+  return write(transform_data, material_data, world_position, normal, in_uv, tangent, instance_data.object_id);
 }
