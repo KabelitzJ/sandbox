@@ -85,7 +85,7 @@ class material_subrenderer final : public graphics::subrenderer {
 
 public:
 
-  material_subrenderer(const graphics::render_graph::graphics_pass& pass, const std::filesystem::path& base_pipeline, const material_draw_list::bucket bucket)
+  material_subrenderer(const graphics::render_graph::graphics_pass& pass, const std::filesystem::path& base_pipeline, const static_mesh_material_draw_list::bucket bucket)
   : graphics::subrenderer{pass},
     _base_pipeline{base_pipeline},
     _bucket{bucket} { }
@@ -106,7 +106,7 @@ public:
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
     auto& scene = scenes_module.scene();
 
-    auto& draw_list = pass().draw_list<models::material_draw_list>("material");
+    auto& draw_list = pass().draw_list<models::static_mesh_material_draw_list>("static_mesh_material");
 
     for (auto& [key, data] : draw_list.ranges(_bucket)) {
       auto& pipeline_data = _get_or_create_pipeline(key, pass());
@@ -126,8 +126,8 @@ public:
       pipeline_data.scene_descriptor_handler.bind_descriptors(command_buffer);
 
       
-      pipeline_data.push_handler.push("transform_data_buffer", draw_list.buffer(material_draw_list::transform_data_buffer_name).address());
-      pipeline_data.push_handler.push("material_data_buffer", draw_list.buffer(material_draw_list::material_data_buffer_name).address());
+      pipeline_data.push_handler.push("transform_data_buffer", draw_list.buffer(static_mesh_material_draw_list::transform_data_buffer_name).address());
+      pipeline_data.push_handler.push("material_data_buffer", draw_list.buffer(static_mesh_material_draw_list::material_data_buffer_name).address());
 
       auto& instance_data_buffer = graphics_module.get_resource<graphics::storage_buffer>(data.instance_data_buffer);
 
@@ -222,7 +222,7 @@ private:
   };
 
   std::filesystem::path _base_pipeline;
-  material_draw_list::bucket _bucket;
+  static_mesh_material_draw_list::bucket _bucket;
 
   inline static auto _pipeline_cache = std::unordered_map<material_key, pipeline_data, material_key_hash>{};
 

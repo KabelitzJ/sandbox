@@ -17,9 +17,15 @@
 
 namespace sbx::models {
 
-class material_draw_list final : public graphics::draw_list {
+template<typename Traits>
+class basic_material_draw_list final : public graphics::draw_list {
+
+  using traits_type = Traits;
 
 public:
+
+  using component_type = typename traits_type::component_type;
+  using instance_payload = typename traits_type::instance_payload;
 
   enum class bucket : std::uint8_t {
     opaque,
@@ -43,34 +49,22 @@ public:
   inline static const auto transform_data_buffer_name = utility::hashed_string{"transform_data"};
   inline static const auto material_data_buffer_name = utility::hashed_string{"material_data"};
 
-  struct pipeline_data {
-
-    std::unordered_map<math::uuid, std::vector<std::vector<instance_data>>> submesh_instances;
-
-    graphics::storage_buffer_handle draw_commands_buffer;
-    graphics::storage_buffer_handle instance_data_buffer;
-
-    pipeline_data() {
-      auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
-      
-      draw_commands_buffer = graphics_module.add_resource<graphics::storage_buffer>(graphics::storage_buffer::min_size, VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT);
-      instance_data_buffer = graphics_module.add_resource<graphics::storage_buffer>(graphics::storage_buffer::min_size, VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT);
-    }
-
-  }; // struct pipeline_data
-
-  material_draw_list() {
+  basic_material_draw_list() {
     create_buffer(transform_data_buffer_name, graphics::storage_buffer::min_size, VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT);
     create_buffer(material_data_buffer_name, graphics::storage_buffer::min_size, VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT);
+
+    traits_type::create_shared_buffers(*this);
   }
 
-  ~material_draw_list() override {
+  ~basic_material_draw_list() override {
     auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
     for (const auto& [key, data] : _pipeline_data) {  
       graphics_module.remove_resource<graphics::storage_buffer>(data.draw_commands_buffer);
       graphics_module.remove_resource<graphics::storage_buffer>(data.instance_data_buffer);
     }
+
+    traits_type::destroy_shared_buffers(*this);
   }
 
   auto update() -> void override {
@@ -93,62 +87,32 @@ public:
 
     auto material_indices = std::unordered_map<math::uuid, std::uint32_t>{};
 
-    auto static_mesh_query = scene.query<const scenes::static_mesh>();
-
-    for (auto&& [node, static_mesh] : static_mesh_query.each()) {
+    traits_type::for_each_submission(scene, [&](const component_type& component, const math::uuid& mesh_id, std::uint32_t submesh_index, const math::uuid& material_id, const transform_data& transform, const instance_payload& payload) {
       const auto transform_index = static_cast<std::uint32_t>(_transform_data.size());
+      _transform_data.push_back(transform);
 
-      _transform_data.emplace_back(scene.world_transform(node), scene.world_normal(node));
+      const auto& material = assets_module.get_asset<models::material>(material_id);
 
-      for (const auto& submesh : static_mesh.submeshes()) {
-        const auto& material = assets_module.get_asset<models::material>(submesh.material);
+      auto& pipeline = _get_or_create_pipeline_data(material);
 
-        auto& pipeline_data = _get_or_create_pipeline_data(material);
+      auto [entry, created] = material_indices.try_emplace(material_id, static_cast<std::uint32_t>(_material_data.size()));
 
-        auto [entry, was_created] = material_indices.try_emplace(submesh.material, static_cast<std::uint32_t>(_material_data.size()));
-
-        if (was_created) {
-          const auto albedo_index = add_image(material.albedo);
-          const auto normal_index = add_image(material.normal);
-          const auto mrao_index = add_image(material.mrao);
-
-          auto material_data = models::material_data{};
-
-          material_data.albedo_index = albedo_index;
-          material_data.normal_index = normal_index;
-          material_data.mrao_index = mrao_index;
-          material_data.emissive_index = graphics::separate_image2d_array::max_size;
-
-          material_data.base_color = material.base_color;
-          material_data.emissive_color = material.emissive_color;
-          material_data.metallic = material.metallic;
-          material_data.roughness = material.roughness;
-          material_data.occlusion = material.occlusion;
-          material_data.emissive_strength = material.emissive_strength;
-
-          material_data.alpha_cutoff = material.alpha_cutoff;
-          material_data.normal_scale = 1.0f;
-          material_data.flags = material.features.underlying();
-
-          _material_data.push_back(material_data);
-
-          _material_buckets[material].insert(_classify_bucket(material));
-
-          if (_submits_to_shadow(material)) {
-            _material_buckets[material].insert(bucket::shadow);
-          }
-        }
-
-        // if (_material_bucket.find(submesh.material) == _material_bucket.end()) {
-        //   _material_bucket.emplace(submesh.material, _classify_bucket(material));
-        // }
-
-        _submit_mesh(pipeline_data, static_mesh.mesh_id(), submesh.index, transform_index, entry->second);
+      if (created) {
+        _push_material(material);
       }
-    }
+
+      const auto instance = traits_type::make_instance_data(transform_index, entry->second, payload);
+
+      auto& per_mesh = pipeline.submesh_instances[mesh_id];
+
+      per_mesh.resize(std::max(per_mesh.size(), static_cast<std::size_t>(submesh_index + 1u)));
+      per_mesh[submesh_index].push_back(instance);
+    });
 
     update_buffer(_transform_data, transform_data_buffer_name);
     update_buffer(_material_data, material_data_buffer_name);
+
+    traits_type::update_shared_buffers(*this);
 
     for (auto& [key, pipeline_data] : _pipeline_data) {
       if (pipeline_data.submesh_instances.empty()) {
@@ -165,21 +129,37 @@ public:
 
 private:
 
-  static inline auto _classify_bucket(const models::material& material) -> bucket {
+  struct pipeline_data {
+
+    std::unordered_map<math::uuid, std::vector<std::vector<instance_data>>> submesh_instances;
+
+    graphics::storage_buffer_handle draw_commands_buffer;
+    graphics::storage_buffer_handle instance_data_buffer;
+
+    pipeline_data() {
+      auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+      
+      draw_commands_buffer = graphics_module.add_resource<graphics::storage_buffer>(graphics::storage_buffer::min_size, VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT);
+      instance_data_buffer = graphics_module.add_resource<graphics::storage_buffer>(graphics::storage_buffer::min_size, VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT);
+    }
+
+  }; // struct pipeline_data
+
+  static auto _classify_bucket(const models::material& material) -> bucket {
     if (material.alpha == models::alpha_mode::blend) {
       return bucket::transparent;
-    } 
+    }
 
     return bucket::opaque;
   }
 
-  static inline auto _submits_to_shadow(const models::material& material) -> bool {
+  static auto _submits_to_shadow(const models::material& material) -> bool {
     return material.features.has(models::material_feature::cast_shadow);
   }
 
   auto _get_or_create_pipeline_data(const material_key& key) -> pipeline_data& {
-    if (auto entry = _pipeline_data.find(key); entry != _pipeline_data.end()) {
-      return entry->second;
+    if (auto it = _pipeline_data.find(key); it != _pipeline_data.end()) {
+      return it->second;
     }
 
     auto [entry, inserted] = _pipeline_data.emplace(key, pipeline_data{});
@@ -187,45 +167,54 @@ private:
     return entry->second;
   }
 
-  auto _submit_mesh(pipeline_data& pipeline_data, const math::uuid& mesh_id, std::uint32_t submesh_index, std::uint32_t transform_index, std::uint32_t material_index) -> void {
-    auto& per_mesh = pipeline_data.submesh_instances[mesh_id];
+  auto _push_material(const models::material& material) -> void {
+    const auto albedo_index   = add_image(material.albedo);
+    const auto normal_index   = add_image(material.normal);
+    const auto mrao_index     = add_image(material.mrao);
 
-    per_mesh.resize(std::max(per_mesh.size(), static_cast<std::size_t>(submesh_index + 1u)));
+    auto data = models::material_data{};
+    data.albedo_index = albedo_index;
+    data.normal_index = normal_index;
+    data.mrao_index = mrao_index;
+    data.emissive_index = graphics::separate_image2d_array::max_size;
 
-    per_mesh[submesh_index].push_back(models::instance_data{transform_index, material_index, 0u, 0u});
-  }
+    data.base_color = material.base_color;
+    data.emissive_color = material.emissive_color;
+    data.metallic = material.metallic;
+    data.roughness = material.roughness;
+    data.occlusion = material.occlusion;
+    data.emissive_strength = material.emissive_strength;
 
-  template<typename Type>
-  static auto _update_buffer(graphics::storage_buffer_handle handle, const std::vector<Type>& buffer) -> void {
-    auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+    data.alpha_cutoff = material.alpha_cutoff;
+    data.normal_scale = 1.0f;
+    data.flags = material.features.underlying();
 
-    auto& storage_buffer = graphics_module.get_resource<graphics::storage_buffer>(handle);
+    _material_data.push_back(data);
 
-    const auto required_size = static_cast<std::uint32_t>(buffer.size() * sizeof(Type));
+    auto& buckets = _material_buckets[material];
+    buckets.insert(_classify_bucket(material));
 
-    if (storage_buffer.size() < required_size) {
-      storage_buffer.resize(static_cast<std::size_t>(static_cast<std::float_t>(required_size) * 1.5f));
+    if (_submits_to_shadow(material)) {
+      buckets.insert(bucket::shadow);
     }
-
-    storage_buffer.update(buffer.data(), required_size);
   }
 
-  auto _build_draw_commands(const material_key& key, pipeline_data& pipeline_data) -> void {
+
+  auto _build_draw_commands(const material_key& key, pipeline_data& pipeline) -> void {
     auto& assets_module = core::engine::get_module<assets::assets_module>();
 
-    auto draw_commands = std::vector<VkDrawIndexedIndirectCommand>{};  
+    auto draw_commands = std::vector<VkDrawIndexedIndirectCommand>{};
     auto instance_data = std::vector<models::instance_data>{};
     auto base_instance = std::uint32_t{0u};
 
-    // const auto entry = _material_bucket.find(key);
     const auto& buckets = _material_buckets.at(key);
 
-    for (auto&& [mesh_id, submesh_vectors] : pipeline_data.submesh_instances) {
+    for (auto& [mesh_id, submesh_vectors] : pipeline.submesh_instances) {
       auto& mesh = assets_module.get_asset<models::mesh>(mesh_id);
 
       auto range = graphics::draw_command_range{};
       range.offset = static_cast<std::uint32_t>(draw_commands.size());
-      range.count = 0u;
+      range.count  = 0u;
 
       for (auto&& [submesh_index, instances] : ranges::views::enumerate(submesh_vectors)) {
         if (instances.empty()) {
@@ -254,24 +243,36 @@ private:
 
         push_draw_command_range(hash, mesh_id, range);
 
-        for (const auto& bucket : buckets) {
-          auto& entry = _bucket_ranges[magic_enum::enum_underlying(bucket)][key];
+        for (const auto& bucket_type : buckets) {
+          auto& entry = _bucket_ranges[magic_enum::enum_underlying(bucket_type)][key];
 
-          entry.draw_commands_buffer = pipeline_data.draw_commands_buffer;
-          entry.instance_data_buffer = pipeline_data.instance_data_buffer;
+          entry.draw_commands_buffer = pipeline.draw_commands_buffer;
+          entry.instance_data_buffer = pipeline.instance_data_buffer;
           entry.ranges.push_back(range_reference{ .mesh_id = mesh_id, .range = range });
-
-          // .push_back(range_reference{
-          //   .mesh_id = mesh_id,
-          //   .range   = range
-          // });
         }
       }
     }
 
     if (!draw_commands.empty()) {
-      _update_buffer(pipeline_data.draw_commands_buffer, draw_commands);
-      _update_buffer(pipeline_data.instance_data_buffer, instance_data);
+      _update_buffer(pipeline.draw_commands_buffer, draw_commands);
+      _update_buffer(pipeline.instance_data_buffer, instance_data);
+    }
+  }
+
+
+  template <typename Type>
+  static auto _update_buffer(graphics::storage_buffer_handle handle, const std::vector<Type>& data) -> void {
+    auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+    auto& buffer = graphics_module.get_resource<graphics::storage_buffer>(handle);
+
+    const auto required_size = static_cast<std::uint32_t>(data.size() * sizeof(Type));
+
+    if (buffer.size() < required_size) {
+      buffer.resize(static_cast<std::size_t>(static_cast<std::float_t>(required_size) * 1.5f));
+    }
+
+    if (required_size > 0) {
+      buffer.update(data.data(), required_size);
     }
   }
 
@@ -285,6 +286,46 @@ private:
   inline static auto _material_buckets = std::unordered_map<material_key, std::unordered_set<bucket>, material_key_hash>{};
 
 }; // class material_draw_list
+
+struct static_mesh_traits {
+
+  using component_type = scenes::static_mesh;
+  struct instance_payload { };
+
+  template<typename DarwList>
+  static auto create_shared_buffers([[maybe_unused]] DarwList& draw_list) -> void {
+
+  }
+
+  template<typename DarwList>
+  static auto destroy_shared_buffers([[maybe_unused]] DarwList& draw_list) -> void {
+
+  }
+
+  template<typename DarwList>
+  static auto update_shared_buffers([[maybe_unused]] DarwList& draw_list) -> void {
+
+  }
+
+  template<class Callable>
+  static void for_each_submission(scenes::scene& scene, Callable&& callable) {
+    auto query = scene.query<const component_type>();
+
+    for (auto&& [node, component] : query.each()) {
+      const auto transform_data = models::transform_data{ scene.world_transform(node), scene.world_normal(node) };
+
+      for (const auto& submesh : component.submeshes()) {
+        std::invoke(callable, component, component.mesh_id(), submesh.index, submesh.material, transform_data, instance_payload{});
+      }
+    }
+  }
+
+  static auto make_instance_data(std::uint32_t transform_index, std::uint32_t material_index, const instance_payload& payload) -> instance_data {
+    return instance_data{transform_index, material_index, 0u, 0u};
+  }
+}; // static_mesh_traits
+
+using static_mesh_material_draw_list = basic_material_draw_list<static_mesh_traits>;
 
 } // namespace sbx::models
 
