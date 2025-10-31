@@ -42,7 +42,7 @@
         deferred_pass.produces("position", sbx::graphics::attachment::type::image, _clear_color, sbx::graphics::format::r32g32b32a32_sfloat);
         deferred_pass.produces("normal", sbx::graphics::attachment::type::image, _clear_color, sbx::graphics::format::r32g32b32a32_sfloat);
         deferred_pass.produces("material", sbx::graphics::attachment::type::image, _clear_color, sbx::graphics::format::r8g8b8a8_unorm);
-        deferred_pass.produces("object_id", sbx::graphics::attachment::type::image, _clear_color, sbx::graphics::format::r32g32_uint);
+        deferred_pass.produces("object_id", sbx::graphics::attachment::type::image, sbx::math::color::black(), sbx::graphics::format::r32_uint);
         deferred_pass.produces("normalized_depth", sbx::graphics::attachment::type::image, _clear_color, sbx::graphics::format::r32_sfloat);
 
         return deferred_pass;

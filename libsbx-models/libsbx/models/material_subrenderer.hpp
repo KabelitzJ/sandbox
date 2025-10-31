@@ -182,9 +182,12 @@ private:
 
     const auto request = graphics::compiler::compile_request{
       .path = _base_pipeline,
+      .defines = {
+        {"STATIC_VERTEX", "1"}
+      },
       .per_stage = {
         {SLANG_STAGE_VERTEX, {
-          .entry_point = "main"
+          .entry_point = "static_main"
         }},
         {SLANG_STAGE_FRAGMENT, {
           .entry_point = _entry_point.at(key.alpha)

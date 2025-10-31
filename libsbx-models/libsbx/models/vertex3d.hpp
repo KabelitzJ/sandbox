@@ -15,8 +15,8 @@ namespace sbx::models {
 struct alignas(alignof(std::float_t)) vertex3d {
   math::vector3 position;
   math::vector3 normal;
-  math::vector4 tangent;
   math::vector2 uv;
+  math::vector4 tangent;
 }; // struct vertex
 
 static_assert(sizeof(vertex3d) == (3 + 3 + 4 + 2) * sizeof(std::float_t) && alignof(vertex3d) == alignof(std::float_t), "");

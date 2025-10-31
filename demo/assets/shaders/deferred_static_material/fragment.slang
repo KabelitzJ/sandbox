@@ -13,7 +13,7 @@ struct fs_in {
   [[vk::location(4)]] float4 color : COLOR;
   [[vk::location(5)]] float4 material : MATERIAL;
   [[vk::location(6)]] nointerpolation uint4 image_indices : IMAGE_INDICES;
-  [[vk::location(7)]] nointerpolation uint2 object_id : OBJECT_ID;
+  [[vk::location(7)]] nointerpolation uint object_id : OBJECT_ID;
   [[vk::location(8)]] float alpha_cutoff : ALPHA_CUTOFF;
   float4 sv_position : SV_Position;
 }; // struct fs_in
@@ -23,7 +23,7 @@ struct opaque_fs_out {
   float4 position : SV_Target1;
   float4 normal : SV_Target2;
   float4 material : SV_Target3;
-  uint2 object_id : SV_Target4;
+  uint object_id : SV_Target4;
   float depth : SV_Target5;
 }; // struct opaque_fs_out
 

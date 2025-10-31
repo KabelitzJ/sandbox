@@ -135,7 +135,7 @@ private:
         const auto tangent = sbx::math::vector4(sbx::math::vector3::right, 1.0f);
         const auto uv = sbx::math::vector2{static_cast<std::float_t>(x % 2), static_cast<std::float_t>(y % 2)};
 
-        vertices.emplace_back(position, normal, tangent, uv);
+        vertices.emplace_back(position, normal, uv, tangent);
       }
     }
 
@@ -276,7 +276,7 @@ private:
 
       const auto center_index = static_cast<std::uint32_t>(vertices.size());
     
-      vertices.emplace_back(center_position, normal, tangent, encoded_uv);
+      vertices.emplace_back(center_position, normal, encoded_uv, tangent);
 
       // Build local tangent space for CCW sorting
       const auto up = normal;
@@ -304,7 +304,7 @@ private:
         const auto position = face_centroids[face_idx];
         const auto uv = encoded_uv;
 
-        vertices.emplace_back(position, sbx::math::vector3::normalized(position), tangent, uv);
+        vertices.emplace_back(position, sbx::math::vector3::normalized(position), uv, tangent);
         corner_indices.push_back(static_cast<std::uint32_t>(vertices.size() - 1));
       }
 

@@ -59,7 +59,7 @@ private:
       const vec3 normal = pos;
       const vec2 uv = spherical_uv(pos);
       const vec3 tangent = vec3::normalized(vec3::cross(vec3::up, normal));
-      _vertices.emplace_back(pos, normal, vec4{tangent, 1.0f}, uv);
+      _vertices.emplace_back(pos, normal, uv, vec4{tangent, 1.0f});
     }
 
     _indices = {
