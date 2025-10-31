@@ -37,8 +37,8 @@ struct alignas(16) material_data {
   std::uint32_t mrao_index;
   std::uint32_t emissive_index;
 
-  sbx::math::color base_color;
-  sbx::math::color emissive_color;
+  math::color base_color;
+  math::vector4 emissive_factor;
 
   std::float_t metallic;
   std::float_t roughness;
@@ -80,17 +80,19 @@ struct material_key_hash {
 }; // struct material_key_hash
 
 struct material {
+
   math::color base_color{math::color::white()};
   std::float_t metallic{0.0f};
   std::float_t roughness{0.5f};
   std::float_t occlusion{1.0f};
-  math::color emissive_color{0, 0, 0, 1};
-  std::float_t emissive_strength{0.0f};
+  math::vector4 emissive_factor{0, 0, 0, 1};
+  std::float_t emissive_strength{1.0f};
   std::float_t alpha_cutoff{0.9f};
 
   graphics::image2d_handle albedo{};
   graphics::image2d_handle normal{};
   graphics::image2d_handle mrao{};
+  graphics::image2d_handle emissive{};
 
   alpha_mode alpha{alpha_mode::opaque};
   bool is_double_sided{false};
@@ -107,7 +109,10 @@ struct material {
     return key;
   }
 
+  static auto load(const std::filesystem::path& path) -> material;
+
 }; // struct material
+
   
 } // namespace sbx::models
 

@@ -181,18 +181,19 @@ private:
   }
 
   auto _push_material(const models::material& material) -> void {
-    const auto albedo_index   = add_image(material.albedo);
-    const auto normal_index   = add_image(material.normal);
-    const auto mrao_index     = add_image(material.mrao);
+    const auto albedo_index = add_image(material.albedo);
+    const auto normal_index = add_image(material.normal);
+    const auto mrao_index = add_image(material.mrao);
+    const auto emissive_index = add_image(material.emissive);
 
     auto data = models::material_data{};
     data.albedo_index = albedo_index;
     data.normal_index = normal_index;
     data.mrao_index = mrao_index;
-    data.emissive_index = graphics::separate_image2d_array::max_size;
+    data.emissive_index = emissive_index;
 
     data.base_color = material.base_color;
-    data.emissive_color = material.emissive_color;
+    data.emissive_factor = material.emissive_factor;
     data.metallic = material.metallic;
     data.roughness = material.roughness;
     data.occlusion = material.occlusion;

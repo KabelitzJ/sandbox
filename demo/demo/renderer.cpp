@@ -42,6 +42,7 @@
         deferred_pass.produces("position", sbx::graphics::attachment::type::image, _clear_color, sbx::graphics::format::r32g32b32a32_sfloat);
         deferred_pass.produces("normal", sbx::graphics::attachment::type::image, _clear_color, sbx::graphics::format::r32g32b32a32_sfloat);
         deferred_pass.produces("material", sbx::graphics::attachment::type::image, _clear_color, sbx::graphics::format::r8g8b8a8_unorm);
+        deferred_pass.produces("emissive", sbx::graphics::attachment::type::image, _clear_color, sbx::graphics::format::r8g8b8a8_unorm);
         deferred_pass.produces("object_id", sbx::graphics::attachment::type::image, sbx::math::color::black(), sbx::graphics::format::r32_uint);
         deferred_pass.produces("normalized_depth", sbx::graphics::attachment::type::image, _clear_color, sbx::graphics::format::r32_sfloat);
 
@@ -89,7 +90,7 @@
           .color_write_mask = sbx::graphics::color_component::r | sbx::graphics::color_component::g | sbx::graphics::color_component::b | sbx::graphics::color_component::a
         };
 
-        resolve_pass.uses("albedo", "position", "normal", "material", "object_id", "accum", "revealage");
+        resolve_pass.uses("albedo", "position", "normal", "material", "emissive", "object_id", "accum", "revealage");
 
         resolve_pass.produces("depth", sbx::graphics::attachment::type::depth);
         resolve_pass.produces("resolve", sbx::graphics::attachment::type::image, _clear_color, sbx::graphics::format::r32g32b32a32_sfloat, resolve_blend);
@@ -124,12 +125,12 @@
     // add_subrenderer<sbx::shadows::shadow_subrenderer>(shadow, "res://shaders/shadow");
 
     // Deferred pass
-    add_subrenderer<sbx::models::static_mesh_subrenderer>(deferred, "res://shaders/deferred_static_material", sbx::models::static_mesh_material_draw_list::bucket::opaque);
-    add_subrenderer<sbx::animations::skinned_mesh_subrenderer>(deferred, "res://shaders/deferred_static_material", sbx::animations::skinned_mesh_material_draw_list::bucket::opaque);
+    add_subrenderer<sbx::models::static_mesh_subrenderer>(deferred, "res://shaders/deferred_pbr_material", sbx::models::static_mesh_material_draw_list::bucket::opaque);
+    add_subrenderer<sbx::animations::skinned_mesh_subrenderer>(deferred, "res://shaders/deferred_pbr_material", sbx::animations::skinned_mesh_material_draw_list::bucket::opaque);
     
     // Transparency pass
-    add_subrenderer<sbx::models::static_mesh_subrenderer>(transparency, "res://shaders/deferred_static_material", sbx::models::static_mesh_material_draw_list::bucket::transparent);
-    add_subrenderer<sbx::animations::skinned_mesh_subrenderer>(transparency, "res://shaders/deferred_static_material", sbx::animations::skinned_mesh_material_draw_list::bucket::transparent);
+    add_subrenderer<sbx::models::static_mesh_subrenderer>(transparency, "res://shaders/deferred_pbr_material", sbx::models::static_mesh_material_draw_list::bucket::transparent);
+    add_subrenderer<sbx::animations::skinned_mesh_subrenderer>(transparency, "res://shaders/deferred_pbr_material", sbx::animations::skinned_mesh_material_draw_list::bucket::transparent);
     
     // Resolve pass
     auto resolve_opaque_attachment_names = std::vector<std::pair<std::string, std::string>>{
@@ -137,6 +138,7 @@
       {"position_image", "position"},
       {"normal_image", "normal"},
       {"material_image", "material"},
+      {"emissive_image", "emissive"},
       // {"shadow_image", "shadow"},
       // {"object_id_image", "object_id"}
     };

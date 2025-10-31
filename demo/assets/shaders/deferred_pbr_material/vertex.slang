@@ -16,11 +16,12 @@ struct vs_out {
   [[vk::location(1)]] float3 normal : NORMAL;
   [[vk::location(2)]] float4 tangent : TANGENT;
   [[vk::location(3)]] float2 uv : UV;
-  [[vk::location(4)]] float4 color : COLOR;
-  [[vk::location(5)]] float4 material : MATERIAL;
-  [[vk::location(6)]] nointerpolation uint4 image_indices : IMAGE_INDICES;
-  [[vk::location(7)]] nointerpolation uint object_id : OBJECT_ID;
-  [[vk::location(8)]] float alpha_cutoff : ALPHA_CUTOFF;
+  [[vk::location(4)]] float4 base_color : BASE_COLOR;
+  [[vk::location(5)]] float3 emissive_factor : EMISSIVE_FACTOR;
+  [[vk::location(6)]] float4 material : MATERIAL;
+  [[vk::location(7)]] nointerpolation uint4 image_indices : IMAGE_INDICES;
+  [[vk::location(8)]] nointerpolation uint object_id : OBJECT_ID;
+  [[vk::location(9)]] float alpha_cutoff : ALPHA_CUTOFF;
   float4 sv_position : SV_Position;
 }; // struct vs_out
 
@@ -55,7 +56,8 @@ vs_out write(transform_data transform_data, material_data material_data, float3 
   out.normal = normalize(mul(transform_data.normal, float4(normal, 0.0)).xyz);
   out.tangent = float4(normalize(mul(transform_data.normal, float4(tangent.xyz, 0.0)).xyz), tangent.w);
   out.uv = uv;
-  out.color = material_data.base_color;
+  out.base_color = material_data.base_color;
+  out.emissive_factor = material_data.emissive_factor.rgb;
   out.material = float4(material_data.metallic, material_data.roughness, material_data.occlusion, material_data.emissive_strength);
   out.image_indices = uint4(material_data.albedo_index, material_data.normal_index, material_data.mrao_index, material_data.emissive_index);
   out.object_id = object_id;

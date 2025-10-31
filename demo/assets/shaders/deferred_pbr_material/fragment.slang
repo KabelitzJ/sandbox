@@ -10,11 +10,12 @@ struct fs_in {
   [[vk::location(1)]] float3 normal : NORMAL;
   [[vk::location(2)]] float4 tangent : TANGENT;
   [[vk::location(3)]] float2 uv : UV;
-  [[vk::location(4)]] float4 color : COLOR;
-  [[vk::location(5)]] float4 material : MATERIAL;
-  [[vk::location(6)]] nointerpolation uint4 image_indices : IMAGE_INDICES;
-  [[vk::location(7)]] nointerpolation uint object_id : OBJECT_ID;
-  [[vk::location(8)]] float alpha_cutoff : ALPHA_CUTOFF;
+  [[vk::location(4)]] float4 base_color : BASE_COLOR;
+  [[vk::location(5)]] float3 emissive_factor : EMISSIVE_FACTOR;
+  [[vk::location(6)]] float4 material : MATERIAL;
+  [[vk::location(7)]] nointerpolation uint4 image_indices : IMAGE_INDICES;
+  [[vk::location(8)]] nointerpolation uint object_id : OBJECT_ID;
+  [[vk::location(9)]] float alpha_cutoff : ALPHA_CUTOFF;
   float4 sv_position : SV_Position;
 }; // struct fs_in
 
@@ -23,8 +24,9 @@ struct opaque_fs_out {
   float4 position : SV_Target1;
   float4 normal : SV_Target2;
   float4 material : SV_Target3;
-  uint object_id : SV_Target4;
-  float depth : SV_Target5;
+  float4 emissive : SV_Target4;
+  uint object_id : SV_Target5;
+  float depth : SV_Target6;
 }; // struct opaque_fs_out
 
 struct blend_fs_out {
@@ -42,12 +44,12 @@ float4 get_albedo<AlphaPolicy: alpha_policy>(fs_in in) {
   uint index = in.image_indices.x;
 
   if (index >= sbx::common::max_image_array_size) {
-    return in.color;
+    return in.base_color;
   }
 
   float4 color = images[NonUniformResourceIndex(index)].Sample(images_sampler, in.uv);
 
-  return AlphaPolicy::combine_colors(color, in.color);
+  return AlphaPolicy::combine_colors(color, in.base_color);
 }
 
 float3 get_normal(fs_in in) {
@@ -66,14 +68,26 @@ float3 get_normal(fs_in in) {
   return normalize(T * normal.x + B * normal.y + N * normal.z);
 }
 
-float4 get_material(fs_in in) {
+float3 get_material(fs_in in) {
   uint index = in.image_indices.z;
 
   if (index >= sbx::common::max_image_array_size) {
-    return in.material;
+    return in.material.rgb;
   }
 
-  return images[NonUniformResourceIndex(index)].Sample(images_sampler, in.uv).rgba;
+  return images[NonUniformResourceIndex(index)].Sample(images_sampler, in.uv).rgb;
+}
+
+float3 get_emissive(fs_in in) {
+  uint index = in.image_indices.w;
+
+  float3 emissive = in.emissive_factor * in.material.w;
+
+  if (index >= sbx::common::max_image_array_size) {
+    return emissive;
+  }
+
+  return emissive * images[NonUniformResourceIndex(index)].Sample(images_sampler, in.uv).rgb;
 }
 
 [earlydepthstencil]
@@ -84,7 +98,8 @@ opaque_fs_out opaque_main(fs_in in) {
   out.albedo = get_albedo<opaque_alpha_policy>(in);
   out.position = float4(in.position, 1.0);
   out.normal = float4(get_normal(in), 0.0);
-  out.material = get_material(in);
+  out.material = float4(get_material(in), 0.0);
+  out.emissive = float4(get_emissive(in), 0.0);
   out.object_id = in.object_id;
   out.depth = sbx::common::linearize_depth(in.sv_position.z, sbx::common::default_near, sbx::common::default_far);
 
@@ -104,7 +119,8 @@ opaque_fs_out mask_main(fs_in in) {
   out.albedo = albedo;
   out.position = float4(in.position, 1.0);
   out.normal = float4(get_normal(in), 0.0);
-  out.material = get_material(in);
+  out.material = float4(get_material(in), 0.0);
+  out.emissive = float4(get_emissive(in), 0.0);
   out.object_id = in.object_id;
   out.depth = sbx::common::linearize_depth(in.sv_position.z, sbx::common::default_near, sbx::common::default_far);
 

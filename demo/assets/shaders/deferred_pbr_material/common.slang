@@ -13,7 +13,7 @@ struct material_data {
   uint emissive_index;
 
   float4 base_color;
-  float4 emissive_color;
+  float4 emissive_factor;
 
   float metallic;
   float roughness;
@@ -40,18 +40,7 @@ struct skinned_instance_data {
   uint object_id;
 }; // struct instance_data
 
-interface vertex {
-  float3 position();
-  float3 normal();
-  float2 uv();
-}; // interface vertex
-
-interface skinning {
-  uint4 bone_indices();
-  float4 bone_weights();
-}; // interface skinning
-
-struct static_vertex : vertex {
+struct static_vertex {
   float position_x;
   float position_y;
   float position_z;
@@ -67,22 +56,9 @@ struct static_vertex : vertex {
   float tangent_y;
   float tangent_z;
   float tangent_w; // sign of the tangent
-
-  float3 position() {
-    return float3(position_x, position_y, position_z);
-  }
-
-  float3 normal() {
-    return float3(normal_x, normal_y, normal_z);
-  }
-
-  float2 uv() {
-    return float2(uv_x, uv_x);
-  }
-
 }; // struct static_vertex
 
-struct skinned_vertex : vertex, skinning {
+struct skinned_vertex {
   float position_x;
 	float position_y;
 	float position_z;
@@ -108,27 +84,6 @@ struct skinned_vertex : vertex, skinning {
   float bone_weight_y;
   float bone_weight_z;
   float bone_weight_w;
-
-  float3 position() {
-    return float3(position_x, position_y, position_z);
-  }
-
-  float3 normal() {
-    return float3(normal_x, normal_y, normal_z);
-  }
-
-  float2 uv() {
-    return float2(uv_x, uv_x);
-  }
-
-  uint4 bone_indices() {
-    return uint4(bone_index_x, bone_index_y, bone_index_z, bone_index_w);
-  }
-
-  float4 bone_weights() {
-    return float4(bone_weight_x, bone_weight_y, bone_weight_z, bone_weight_w);
-  }
-
 }; // struct skinned_vertex
 
 struct static_push_data {

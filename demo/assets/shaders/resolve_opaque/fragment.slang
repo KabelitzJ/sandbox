@@ -35,7 +35,8 @@ StructuredBuffer<point_light> buffer_point_lights;
 [[vk::binding(3, 0)]] Sampler2D<float4> position_image;
 [[vk::binding(4, 0)]] Sampler2D<float4> normal_image;
 [[vk::binding(5, 0)]] Sampler2D<float4> material_image;
-[[vk::binding(6, 0)]] Sampler2D<float2> shadow_image;
+[[vk::binding(6, 0)]] Sampler2D<float4> emissive_image;
+// [[vk::binding(7, 0)]] Sampler2D<float2> shadow_image;
 
 static const float3 DEFAULT_F0 = float3(0.04, 0.04, 0.04);
 
@@ -136,41 +137,41 @@ float2x2 rotation_matrix(float angle) {
   return float2x2(c, -s, s, c);
 }
 
-float calculate_shadow(float3 world_position, float3 normal) {
-  float4 shadow_coord = mul(BIAS_MATRIX, mul(scene.light_space, float4(world_position, 1.0)));
-  float3 projected_coords = shadow_coord.xyz / shadow_coord.w;
+// float calculate_shadow(float3 world_position, float3 normal) {
+//   float4 shadow_coord = mul(BIAS_MATRIX, mul(scene.light_space, float4(world_position, 1.0)));
+//   float3 projected_coords = shadow_coord.xyz / shadow_coord.w;
 
-  if (projected_coords.z > 1.0) {
-    return 1.0;
-  }
+//   if (projected_coords.z > 1.0) {
+//     return 1.0;
+//   }
 
-  float bias = max(0.0005 * (1.0 - dot(normal, normalize(scene.light_direction))), 0.0001);
+//   float bias = max(0.0005 * (1.0 - dot(normal, normalize(scene.light_direction))), 0.0001);
 
-  uint2 dimensions;
-  shadow_image.GetDimensions(dimensions.x, dimensions.y);
+//   uint2 dimensions;
+//   shadow_image.GetDimensions(dimensions.x, dimensions.y);
 
-  float2 texel_size = 1.0 / dimensions;
+//   float2 texel_size = 1.0 / dimensions;
 
-  float distance_to_camera = length(scene.camera_position - world_position);
-  float radius = lerp(1.0, 4.0, clamp(distance_to_camera / 50.0, 0.0, 1.0));
+//   float distance_to_camera = length(scene.camera_position - world_position);
+//   float radius = lerp(1.0, 4.0, clamp(distance_to_camera / 50.0, 0.0, 1.0));
 
-  float angle = random2(projected_coords.xy) * sbx::common::two_pi;
-  float2x2 rotation = rotation_matrix(angle);
+//   float angle = random2(projected_coords.xy) * sbx::common::two_pi;
+//   float2x2 rotation = rotation_matrix(angle);
 
-  float shadow = 0.0;
+//   float shadow = 0.0;
 
-  [unroll]
-  for (int i = 0; i < 16; ++i) {
-    float2 offset = mul(rotation, POISSON_DISK[i]);
-    float2 sample_uv = projected_coords.xy + offset * texel_size * radius;
+//   [unroll]
+//   for (int i = 0; i < 16; ++i) {
+//     float2 offset = mul(rotation, POISSON_DISK[i]);
+//     float2 sample_uv = projected_coords.xy + offset * texel_size * radius;
 
-    float sample_depth = shadow_image.Sample(sample_uv).r;
+//     float sample_depth = shadow_image.Sample(sample_uv).r;
 
-    shadow += (projected_coords.z - bias > sample_depth) ? 0.0 : 1.0;
-  }
+//     shadow += (projected_coords.z - bias > sample_depth) ? 0.0 : 1.0;
+//   }
 
-  return shadow / 16.0;
-}
+//   return shadow / 16.0;
+// }
 
 [noinline] T keep<T>(T value) {
   return value;
@@ -184,6 +185,7 @@ fs_out main(fs_in in) {
   float3 world_position = position_image.Sample(in.uv).xyz;
   float3 normal = normalize(normal_image.Sample(in.uv).xyz);
   float3 mrao = material_image.Sample(in.uv).rgb;
+  float3 emissive = emissive_image.Sample(in.uv).rgb;
 
   float metallic = clamp(mrao.r, 0.0, 1.0);
   float roughness = clamp(mrao.g, 0.05, 1.0);
@@ -198,8 +200,10 @@ fs_out main(fs_in in) {
   float3 halfway_dir = normalize(view_dir + light_dir);
   float ndl = max(dot(normal, light_dir), 0.0);
 
-  float D = distribution_ggx(normal, halfway_dir, roughness);
-  float G = geometry_smith(normal, view_dir, light_dir, roughness);
+  float alpha = roughness * roughness;
+
+  float D = distribution_ggx(normal, halfway_dir, alpha);
+  float G = geometry_smith(normal, view_dir, light_dir, alpha);
   float3 F = fresnel_schlick(max(dot(halfway_dir, view_dir), 0.0), f0);
 
   float3 numerator = D * G * F;
@@ -210,7 +214,7 @@ fs_out main(fs_in in) {
   float3 k_d = (1.0 - k_s) * (1.0 - metallic);
 
   // float shadow = 1.0; 
-  float shadow = calculate_shadow(world_position, normal);
+  // float shadow = calculate_shadow(world_position, normal);
 
   float3 irradiance = scene.light_color.rgb * ndl;
 
@@ -249,7 +253,8 @@ fs_out main(fs_in in) {
   }
 
   float3 ambient = float3(0.03, 0.03, 0.03) * albedo * ao;
-  float3 final_color = ambient + color;
+
+  float3 final_color = ambient + color + emissive;
 
   out.color = float4(final_color, 1.0);
 
