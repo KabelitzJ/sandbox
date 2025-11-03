@@ -241,7 +241,11 @@ public:
   }
 
   auto get_image(const utility::hashed_string& name) -> graphics::image2d_handle {
-    return _image_ids.at(name);
+    if (auto entry = _image_ids.find(name); entry != _image_ids.end()) {
+      return entry->second;
+    }
+
+    throw utility::runtime_error{"Could not find image '{}", name.str()};
   }
 
   auto image_metadata(const graphics::image2d_handle& handle) const -> const assets::asset_metadata& {
