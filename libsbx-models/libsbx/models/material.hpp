@@ -109,10 +109,14 @@ struct material {
     return key;
   }
 
-  static auto load(const std::filesystem::path& path) -> material;
-
 }; // struct material
 
+struct load_material_result {
+  models::material material;
+  std::string name;
+}; // struct load_material_result
+
+auto load_material(const std::filesystem::path& path) -> load_material_result;
   
 } // namespace sbx::models
 

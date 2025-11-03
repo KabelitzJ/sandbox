@@ -1,4 +1,18 @@
-metallic: 1.0
-roughness: 1.0
-flexibility: 1.0
-anchor_height: 1.0
+{
+  "images": [
+    {
+      "uri": "res://textures/prototype_white.png"
+    }
+  ],
+  "name": "default",
+  "pbrMetallicRoughness": {
+    "baseColorFactor": [1.0, 1.0, 1.0, 1.0],
+    "baseColorTexture": {
+      "index": 0
+    },
+    "metallicFactor": 0,
+    "roughnessFactor": 0.5
+  },
+  "alphaMode": "OPAQUE",
+  "doubleSided": false 
+}
