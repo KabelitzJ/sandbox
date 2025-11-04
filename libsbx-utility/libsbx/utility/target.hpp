@@ -34,12 +34,16 @@ enum class operating_system : std::uint8_t {
 
 #if defined(WIN32) || defined(_WIN32)
 inline constexpr auto operating_system_v = operating_system::windows;
+#define SBX_WINDOWS
 #elif defined(__APPLE__)
 inline constexpr auto operating_system_v = operating_system::mac;
+#define SBX_MAC
 #elif defined(__linux__) || defined(__linux)
 inline constexpr auto operating_system_v = operating_system::linux;
+#define SBX_UNIX
 #else 
 inline constexpr auto operating_system_v = operating_system::unknown;
+#warning "Unknown operating system"
 #endif
 
 /** @brief Possible compilers */

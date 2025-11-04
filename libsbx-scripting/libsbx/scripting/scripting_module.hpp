@@ -16,6 +16,8 @@
 #include <libsbx/scenes/node.hpp>
 #include <libsbx/scenes/scenes_module.hpp>
 
+#include <libsbx/scripting/runtime.hpp>
+
 namespace sbx::scripting {
 
 class scripting_module final : public core::module<scripting_module> {
@@ -33,6 +35,10 @@ public:
   auto instantiate(const scenes::node node, const std::filesystem::path& path) -> void;
 
 private:
+
+  static auto _exception_callback(std::string_view message) -> void {
+    utility::logger<"scripting">::error("{}", message);
+  }
 
   struct script_instance {
     sol::table self;
@@ -78,6 +84,9 @@ private:
   std::unordered_map<std::string, component_accessor> _component_accessors;
 
   std::unordered_map<scenes::node, std::unordered_map<std::string, script_instance>> _instances;
+
+  scripting::runtime _runtime;
+  scripting::assembly_load_context _context;
 
 }; // class scene_modules
 

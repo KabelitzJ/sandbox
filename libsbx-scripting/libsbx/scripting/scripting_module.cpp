@@ -59,6 +59,15 @@ scripting_module::scripting_module() {
   _register_component_type<scenes::tag>("tag");
 
   _register_user_types();
+
+  auto config = scripting::rumtime_config{
+		.backend_path = "build/x86_64/gcc/debug/_dotnet_out",
+		.exception_callback = _exception_callback
+	};
+
+  _runtime.initialize(config);
+
+  _context = _runtime.create_assembly_load_context("ScriptingContext");
 }
 
 scripting_module::~scripting_module() {
