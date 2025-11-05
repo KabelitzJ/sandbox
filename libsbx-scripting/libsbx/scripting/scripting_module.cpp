@@ -106,6 +106,10 @@ auto scripting_module::test() -> void {
   demo_instance.set_field_value("Node", static_cast<std::uint32_t>(node));
 
   demo_instance.invoke("SayHello");
+
+  demo_instance.invoke("SetTag");
+  
+  demo_instance.invoke("SayHello");
 }
 
 auto scripting_module::update() -> void {
