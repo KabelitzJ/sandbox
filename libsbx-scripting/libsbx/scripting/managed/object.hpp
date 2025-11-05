@@ -151,11 +151,11 @@ public:
     return result;
   }
 
-  void set_field_value_raw(std::string_view name, void* value) const;
+  void set_field_value_raw(std::string_view name, const void* value) const;
 
   void get_field_value_raw(std::string_view name, void* value) const;
 
-  void set_property_value_raw(std::string_view name, void* value) const;
+  void set_property_value_raw(std::string_view name, const void* value) const;
 
   void get_property_value_raw(std::string_view name, void* value) const;
 

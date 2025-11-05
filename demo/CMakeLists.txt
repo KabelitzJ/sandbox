@@ -129,25 +129,17 @@ set(DOTNET_OUT_DIR ${CMAKE_BINARY_DIR}/_dotnet_out)
 
 set(DEMO_DIR ${CMAKE_CURRENT_SOURCE_DIR}/assets/scripts/Demo)
 set(DEMO_PROJECT ${DEMO_DIR}/Demo.csproj)
-set(DEMO_STAMP ${DOTNET_OUT_DIR}/demo_build.timestamp)
-file(GLOB_RECURSE DEMO_SOURCES CONFIGURE_DEPENDS ${DEMO_DIR}/*.cs)
+file(GLOB_RECURSE DEMO_SOURCES CONFIGURE_DEPENDS ${DEMO_DIR}/**/*.cs)
 
-add_custom_command(
-  OUTPUT ${DEMO_STAMP}
+add_custom_target(
+  scripting_demo
+  ALL
   COMMAND ${CMAKE_COMMAND} -E make_directory ${DOTNET_OUT_DIR}
-  COMMAND ${CMAKE_COMMAND} -E env dotnet build ${DEMO_PROJECT} -c $<CONFIG> -o ${DOTNET_OUT_DIR}
-  COMMAND ${CMAKE_COMMAND} -E touch ${DEMO_STAMP}
-  DEPENDS
-    ${DEMO_PROJECT}
-    ${DEMO_SOURCES}
-  BYPRODUCTS
-    ${DOTNET_OUT_DIR}/Sbx.Managed.dll
-  COMMENT "Building .NET demo (Demo) for $<CONFIG>"
-  VERBATIM
+  COMMAND dotnet build ${DEMO_PROJECT} -c $<CONFIG> -o ${DOTNET_OUT_DIR}
+  WORKING_DIRECTORY ${DEMO_DIR}
+  COMMENT "Building managed assembly with dotnet build"
 )
 
-add_custom_target(scripting_demo ALL DEPENDS ${DEMO_STAMP})
+add_dependencies(${PROJECT_NAME} scripting_demo)
 
 add_dependencies(scripting_demo scripting_managed scripting_core)
-
-# add_dependencies(scripting_demo ${PROJECT_NAME})

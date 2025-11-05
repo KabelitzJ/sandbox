@@ -59,9 +59,9 @@ struct backend_functions {
 	using invoke_method_return_fn = void(*)(void*, string, const void**, const managed_type*, std::int32_t, void*);
 	using invoke_static_method_fn = void(*)(type_id, string, const void**, const managed_type*, std::int32_t);
 	using invoke_static_method_return_fn = void(*)(type_id, string, const void**, const managed_type*, std::int32_t, void*);
-	using set_field_value_fn = void(*)(void*, string, void*);
+	using set_field_value_fn = void(*)(void*, string, const void*);
 	using get_field_value_fn = void(*)(void*, string, void*);
-	using set_property_value_fn = void(*)(void*, string, void*);
+	using set_property_value_fn = void(*)(void*, string, const void*);
 	using get_property_value_fn = void(*)(void*, string, void*);
 	using destroy_object_fn = void(*)(void*);
 	using get_object_type_id_fn = void(*)(void*, std::int32_t*);

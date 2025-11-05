@@ -30,6 +30,8 @@ public:
 
   ~scripting_module() override;
 
+  auto test() -> void;
+
   auto update() -> void override;
 
   auto instantiate(const scenes::node node, const std::filesystem::path& path) -> void;
@@ -87,6 +89,7 @@ private:
 
   scripting::managed::runtime _runtime;
   scripting::managed::assembly_load_context _context;
+  scripting::managed::assembly _core_assembly;
 
 }; // class scene_modules
 

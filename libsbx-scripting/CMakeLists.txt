@@ -134,50 +134,35 @@ set(DOTNET_OUT_DIR ${CMAKE_BINARY_DIR}/_dotnet_out)
 
 set(SBX_MANAGED_DIR ${CMAKE_CURRENT_SOURCE_DIR}/dotnet/Sbx.Managed)
 set(SBX_MANAGED_PROJECT ${SBX_MANAGED_DIR}/Sbx.Managed.csproj)
-set(SBX_MANAGED_STAMP ${DOTNET_OUT_DIR}/managed_build.timestamp)
-file(GLOB_RECURSE SBX_MANAGED_SOURCES CONFIGURE_DEPENDS ${SBX_MANAGED_DIR}/*.cs ${SBX_MANAGED_DIR}/Interop/*.cs)
+file(GLOB_RECURSE SBX_MANAGED_SOURCES CONFIGURE_DEPENDS ${SBX_MANAGED_DIR}/**/*.cs)
 
-add_custom_command(
-  OUTPUT ${SBX_MANAGED_STAMP}
+add_custom_target(
+  scripting_managed
+  ALL
   COMMAND ${CMAKE_COMMAND} -E make_directory ${DOTNET_OUT_DIR}
-  COMMAND ${CMAKE_COMMAND} -E env dotnet build ${SBX_MANAGED_PROJECT} -c $<CONFIG> -o ${DOTNET_OUT_DIR}
-  COMMAND ${CMAKE_COMMAND} -E touch ${SBX_MANAGED_STAMP}
-  DEPENDS
-    ${SBX_MANAGED_PROJECT}
-    ${SBX_MANAGED_SOURCES}
-  BYPRODUCTS
-    ${DOTNET_OUT_DIR}/Sbx.Managed.dll
-  COMMENT "Building .NET interop library (Sbx.Managed) for $<CONFIG>"
-  VERBATIM
+  COMMAND dotnet build ${SBX_MANAGED_PROJECT} -c $<CONFIG> -o ${DOTNET_OUT_DIR}
+  WORKING_DIRECTORY ${SBX_MANAGED_DIR}
+  COMMENT "Building managed assembly with dotnet build"
 )
 
-add_custom_target(scripting_managed ALL DEPENDS ${SBX_MANAGED_STAMP})
-
-# add_dependencies(scripting_managed ${PROJECT_NAME})
+add_dependencies(${PROJECT_NAME} scripting_managed)
 
 set(SBX_CORE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/dotnet/Sbx.Core)
 set(SBX_CORE_PROJECT ${SBX_CORE_DIR}/Sbx.Core.csproj)
-set(SBX_CORE_STAMP ${DOTNET_OUT_DIR}/core_build.timestamp)
-file(GLOB_RECURSE SBX_CORE_SOURCES CONFIGURE_DEPENDS ${SBX_CORE_DIR}/*.cs)
+file(GLOB_RECURSE SBX_CORE_SOURCES CONFIGURE_DEPENDS ${SBX_CORE_DIR}/**/*.cs)
 
-add_custom_command(
-  OUTPUT ${SBX_CORE_STAMP}
+add_custom_target(
+  scripting_core
+  ALL
   COMMAND ${CMAKE_COMMAND} -E make_directory ${DOTNET_OUT_DIR}
-  COMMAND ${CMAKE_COMMAND} -E env dotnet build ${SBX_CORE_PROJECT} -c $<CONFIG> -o ${DOTNET_OUT_DIR}
-  COMMAND ${CMAKE_COMMAND} -E touch ${SBX_CORE_STAMP}
-  DEPENDS
-    ${SBX_CORE_PROJECT}
-    ${SBX_CORE_SOURCES}
-    ${SBX_MANAGED_STAMP}
-  BYPRODUCTS
-    ${DOTNET_OUT_DIR}/Sbx.Core.dll
-  COMMENT "Building .NET core library (Sbx.Core) for $<CONFIG>"
-  VERBATIM
+  COMMAND dotnet build ${SBX_CORE_PROJECT} -c $<CONFIG> -o ${DOTNET_OUT_DIR}
+  WORKING_DIRECTORY ${SBX_CORE_DIR}
+  COMMENT "Building managed assembly with dotnet build"
 )
 
-add_custom_target(scripting_core ALL DEPENDS ${SBX_CORE_STAMP})
+add_dependencies(scripting_core scripting_managed)
 
-# add_dependencies(scripting_core ${PROJECT_NAME})
+add_dependencies(${PROJECT_NAME} scripting_core)
 
 install(
   TARGETS

@@ -87,6 +87,8 @@ application::application()
 
   auto& scripting_module = sbx::core::engine::get_module<sbx::scripting::scripting_module>();
 
+  scripting_module.test();
+
   // Textures
 
   scene.add_image("maple_tree_bark", "res://textures/maple_tree/bark.png");

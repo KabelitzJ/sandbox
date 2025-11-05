@@ -358,8 +358,8 @@ auto runtime::load_functions() -> void {
   detail::backend.invoke_method_return = load_managed_function_ptr<detail::backend_functions::invoke_method_return_fn>(SBX_SCRIPTING_STR("Sbx.Managed.Object, Sbx.Managed"), SBX_SCRIPTING_STR("InvokeMethodRet"));
   detail::backend.set_field_value = load_managed_function_ptr<detail::backend_functions::set_field_value_fn>(SBX_SCRIPTING_STR("Sbx.Managed.Object, Sbx.Managed"), SBX_SCRIPTING_STR("SetFieldValue"));
   detail::backend.get_field_value = load_managed_function_ptr<detail::backend_functions::get_field_value_fn>(SBX_SCRIPTING_STR("Sbx.Managed.Object, Sbx.Managed"), SBX_SCRIPTING_STR("GetFieldValue"));
-  detail::backend.set_property_value = load_managed_function_ptr<detail::backend_functions::set_field_value_fn>(SBX_SCRIPTING_STR("Sbx.Managed.Object, Sbx.Managed"), SBX_SCRIPTING_STR("SetPropertyValue"));
-  detail::backend.get_property_value = load_managed_function_ptr<detail::backend_functions::get_field_value_fn>(SBX_SCRIPTING_STR("Sbx.Managed.Object, Sbx.Managed"), SBX_SCRIPTING_STR("GetPropertyValue"));
+  detail::backend.set_property_value = load_managed_function_ptr<detail::backend_functions::set_property_value_fn>(SBX_SCRIPTING_STR("Sbx.Managed.Object, Sbx.Managed"), SBX_SCRIPTING_STR("SetPropertyValue"));
+  detail::backend.get_property_value = load_managed_function_ptr<detail::backend_functions::get_property_value_fn>(SBX_SCRIPTING_STR("Sbx.Managed.Object, Sbx.Managed"), SBX_SCRIPTING_STR("GetPropertyValue"));
   detail::backend.destroy_object = load_managed_function_ptr<detail::backend_functions::destroy_object_fn>(SBX_SCRIPTING_STR("Sbx.Managed.Object, Sbx.Managed"), SBX_SCRIPTING_STR("DestroyObject"));
   detail::backend.get_object_type_id = load_managed_function_ptr<detail::backend_functions::get_object_type_id_fn>(SBX_SCRIPTING_STR("Sbx.Managed.Object, Sbx.Managed"), SBX_SCRIPTING_STR("GetObjectTypeId"));
 

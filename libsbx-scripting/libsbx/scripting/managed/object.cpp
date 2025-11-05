@@ -43,7 +43,7 @@ auto object::get_field_value<bool>(std::string_view name) const -> bool {
   return result;
 }
 
-void object::set_field_value_raw(std::string_view name, void* value) const {
+void object::set_field_value_raw(std::string_view name, const void* value) const {
   auto field_name = string::create(name);
 
   std::invoke(detail::backend.set_field_value, _handle, field_name, value);
@@ -59,7 +59,7 @@ void object::get_field_value_raw(std::string_view name, void* value) const {
   string::destroy(field_name);
 }
 
-void object::set_property_value_raw(std::string_view name, void* value) const {
+void object::set_property_value_raw(std::string_view name, const void* value) const {
   auto property_name = string::create(name);
 
   std::invoke(detail::backend.set_property_value, _handle, property_name, value);

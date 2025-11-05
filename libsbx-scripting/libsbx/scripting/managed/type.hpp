@@ -23,7 +23,13 @@ public:
 
   auto get_full_name() const -> string;
   
+  auto get_base_type() -> type&;
+
   auto get_type_id() const -> type_id;
+
+  auto operator==(const type& other) const -> bool;
+
+  operator bool() const;
 
   template<typename... Args>
   auto create_instance(Args&&... args) const -> object {
@@ -54,6 +60,21 @@ private:
   type* _element_type = nullptr;
 
 }; // class type
+
+class reflection_type {
+
+public:
+
+  operator type&() const;
+
+public:
+
+  type_id _id = -1;
+
+}; // class reflection_type
+
+static_assert(offsetof(reflection_type, _id) == 0);
+static_assert(sizeof(reflection_type) == 4);
 
 } // namespace sbx::scripting::managed  
 
