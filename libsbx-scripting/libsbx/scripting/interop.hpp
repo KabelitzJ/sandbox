@@ -18,7 +18,7 @@ struct interop {
     critical = utility::bit_v<5>
   }; // enum class log_level
 
-  static auto log_log_message(log_level level, const managed::string& message) -> void;
+  static auto log_log_message(log_level level, managed::string message) -> void;
 
 }; // class interop
 

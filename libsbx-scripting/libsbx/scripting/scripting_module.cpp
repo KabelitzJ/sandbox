@@ -71,11 +71,20 @@ scripting_module::scripting_module() {
 
   _context = _runtime.create_assembly_load_context("ScriptingContext");
 
-  auto assembly_path = std::filesystem::path{"build/x86_64/gcc/debug/_dotnet_out/Sbx.Core.dll"};
-	auto& assembly = _context.load_assembly(assembly_path.string());
+  auto core_assembly_path = std::filesystem::path{"build/x86_64/gcc/debug/_dotnet_out/Sbx.Core.dll"};
+	auto& core_assembly = _context.load_assembly(core_assembly_path.string());
 
-  assembly.add_internal_call("Sbx.Core.InternalCalls", "Log_LogMessage", reinterpret_cast<void*>(&interop::log_log_message));
-  assembly.upload_internal_calls();
+  core_assembly.add_internal_call("Sbx.Core.InternalCalls", "Log_LogMessage", reinterpret_cast<void*>(&interop::log_log_message));
+  core_assembly.upload_internal_calls();
+
+  auto demo_assembly_path = std::filesystem::path{"build/x86_64/gcc/debug/_dotnet_out/Demo.dll"};
+	auto& demo_assembly = _context.load_assembly(demo_assembly_path.string());
+
+  auto demo_type = demo_assembly.get_type("Demo.Demo");
+
+  auto demo_instance = demo_type.create_instance();
+
+  demo_instance.invoke("SayHello");
 }
 
 scripting_module::~scripting_module() {

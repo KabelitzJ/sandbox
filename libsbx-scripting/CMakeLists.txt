@@ -134,7 +134,7 @@ set(DOTNET_OUT_DIR ${CMAKE_BINARY_DIR}/_dotnet_out)
 
 set(SBX_MANAGED_DIR ${CMAKE_CURRENT_SOURCE_DIR}/dotnet/Sbx.Managed)
 set(SBX_MANAGED_PROJECT ${SBX_MANAGED_DIR}/Sbx.Managed.csproj)
-set(SBX_MANAGED_STAMP ${SBX_MANAGED_DIR}/build.timestamp)
+set(SBX_MANAGED_STAMP ${DOTNET_OUT_DIR}/managed_build.timestamp)
 file(GLOB_RECURSE SBX_MANAGED_SOURCES CONFIGURE_DEPENDS ${SBX_MANAGED_DIR}/*.cs ${SBX_MANAGED_DIR}/Interop/*.cs)
 
 add_custom_command(
@@ -153,11 +153,11 @@ add_custom_command(
 
 add_custom_target(scripting_managed ALL DEPENDS ${SBX_MANAGED_STAMP})
 
-add_dependencies(scripting_managed ${PROJECT_NAME})
+# add_dependencies(scripting_managed ${PROJECT_NAME})
 
 set(SBX_CORE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/dotnet/Sbx.Core)
 set(SBX_CORE_PROJECT ${SBX_CORE_DIR}/Sbx.Core.csproj)
-set(SBX_CORE_STAMP ${SBX_CORE_DIR}/build.timestamp)
+set(SBX_CORE_STAMP ${DOTNET_OUT_DIR}/core_build.timestamp)
 file(GLOB_RECURSE SBX_CORE_SOURCES CONFIGURE_DEPENDS ${SBX_CORE_DIR}/*.cs)
 
 add_custom_command(
@@ -177,7 +177,7 @@ add_custom_command(
 
 add_custom_target(scripting_core ALL DEPENDS ${SBX_CORE_STAMP})
 
-add_dependencies(scripting_core ${PROJECT_NAME})
+# add_dependencies(scripting_core ${PROJECT_NAME})
 
 install(
   TARGETS

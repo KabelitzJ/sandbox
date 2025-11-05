@@ -129,7 +129,7 @@ set(DOTNET_OUT_DIR ${CMAKE_BINARY_DIR}/_dotnet_out)
 
 set(DEMO_DIR ${CMAKE_CURRENT_SOURCE_DIR}/assets/scripts/Demo)
 set(DEMO_PROJECT ${DEMO_DIR}/Demo.csproj)
-set(DEMO_STAMP ${DEMO_DIR}/build.timestamp)
+set(DEMO_STAMP ${DOTNET_OUT_DIR}/demo_build.timestamp)
 file(GLOB_RECURSE DEMO_SOURCES CONFIGURE_DEPENDS ${DEMO_DIR}/*.cs)
 
 add_custom_command(
@@ -148,4 +148,6 @@ add_custom_command(
 
 add_custom_target(scripting_demo ALL DEPENDS ${DEMO_STAMP})
 
-add_dependencies(scripting_demo ${PROJECT_NAME})
+add_dependencies(scripting_demo scripting_managed scripting_core)
+
+# add_dependencies(scripting_demo ${PROJECT_NAME})
