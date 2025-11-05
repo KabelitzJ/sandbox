@@ -6,7 +6,14 @@
 #include <codecvt>
 #endif
 
+#include <libsbx/utility/target.hpp>
+
 #include <libsbx/scripting/memory.hpp>
+
+#if defined(SBX_WINDOWS)
+#include <windows.h>
+#include <stringapiset.h>
+#endif
 
 namespace sbx::scripting {
 
@@ -86,7 +93,7 @@ auto string::operator==(std::string_view other) const -> bool {
   }
 
 #if defined(SBX_SCRIPTING_WIDE_CHARS)
-  auto str = StringHelper::ConvertUtf8ToWide(other);
+  auto str = string_helper::convert_utf8_to_wide(other);
 
   return wcscmp(_string, str.data()) == 0;
 #else
@@ -105,7 +112,7 @@ auto string::data() const -> const char_type* {
 auto string_helper::convert_utf8_to_wide(std::string_view str) -> string_type {
 #if defined(SBX_SCRIPTING_WIDE_CHARS)
   auto length = MultiByteToWideChar(CP_UTF8, 0, str.data(), static_cast<int>(str.length()), nullptr, 0);
-  auto result = std::wstring{length, wchar_t(0)};
+  auto result = std::wstring(length, wchar_t(0));
 
   MultiByteToWideChar(CP_UTF8, 0, str.data(), static_cast<int>(str.length()), result.data(), length);
 
@@ -118,7 +125,7 @@ auto string_helper::convert_utf8_to_wide(std::string_view str) -> string_type {
 auto string_helper::convert_wide_to_utf8(string_view_type str) -> std::string {
 #if defined(SBX_SCRIPTING_WIDE_CHARS)
   auto required_length = WideCharToMultiByte(CP_UTF8, 0, str.data(), static_cast<int>(str.length()), nullptr, 0, nullptr, nullptr);
-  auto result = std::string{requiredLength, 0};
+  auto result = std::string(required_length, 0);
 
   (void)WideCharToMultiByte(CP_UTF8, 0, str.data(), static_cast<int>(str.length()), result.data(), required_length, nullptr, nullptr);
 

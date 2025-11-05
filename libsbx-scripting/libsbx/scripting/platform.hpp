@@ -3,6 +3,8 @@
 
 #include <string_view>
 
+#include <libsbx/utility/target.hpp>
+
 namespace sbx::scripting {
 
 #ifdef SBX_WINDOWS

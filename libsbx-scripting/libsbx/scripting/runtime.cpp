@@ -11,7 +11,7 @@
 #include <libsbx/scripting/platform.hpp>
 
 #if defined(SBX_WINDOWS)
-	#include <ShlObj_core.h>
+	#include <ShlObj.h>
 #else
 	#include <dlfcn.h>
 #endif
@@ -104,9 +104,9 @@ auto default_message_callback(std::string_view message, message_level level) -> 
   }
 }
 
-auto runtime::initialize(rumtime_config settings) -> rumtime_status {
+auto runtime::initialize(rumtime_config settings) -> runtime_status {
   if (!load_host_fxr()) {
-    return rumtime_status::dot_net_not_found;
+    return runtime_status::dot_net_not_found;
   }
 
   _settings = std::move(settings);
@@ -129,14 +129,14 @@ auto runtime::initialize(rumtime_config settings) -> rumtime_status {
   if (!std::filesystem::exists(_managed_assembly_path)) {
     message_callback("failed to find Sbx.Managed.dll", message_level::error);
 
-    return rumtime_status::managed_not_found;
+    return runtime_status::managed_not_found;
   }
 
   if (!initialize_managed()) {
-    return rumtime_status::managed_init_error;
+    return runtime_status::managed_init_error;
   }
 
-  return rumtime_status::success;
+  return runtime_status::success;
 }
 
 auto runtime::shutdown() -> void {
@@ -165,7 +165,7 @@ auto runtime::unload_assembly_load_context(assembly_load_context& load_context) 
 template<typename Function>
 auto load_function_ptr(void* library_handle, const char* function_name) -> Function {
 #if defined(SBX_WINDOWS)
-  auto result = reinterpret_cast<Function>(GetProcAddress((HMODULE)InLibraryHandle, InFunctionName));
+  auto result = reinterpret_cast<Function>(GetProcAddress((HMODULE)library_handle, function_name));
 
   return result;
 #else
@@ -178,20 +178,16 @@ auto load_function_ptr(void* library_handle, const char* function_name) -> Funct
 auto get_host_fxr_path() -> std::filesystem::path {
 #if defined(SBX_WINDOWS)
   std::filesystem::path base_path = "";
-  
-  // find the program files folder
-  tchar pf[max_path];
-  sh_get_special_folder_path(
-  nullptr,
-  pf,
-  csidl_program_files,
-  false);
+		
 
-  base_path = pf;
+  TCHAR buffer[MAX_PATH];
+
+  SHGetSpecialFolderPath(nullptr, buffer, CSIDL_PROGRAM_FILES, FALSE);
+
+  base_path = buffer;
   base_path /= "dotnet/host/fxr/";
 
-  auto search_paths = std::array
-  {
+  auto search_paths = std::array{
     base_path
   };
 
@@ -237,9 +233,9 @@ auto runtime::load_host_fxr() const -> bool {
 
 #ifdef SBX_WINDOWS
 #ifdef SBX_SCRIPTING_WIDE_CHARS
-  library_handle = LoadLibraryW(hostfxrPath.c_str());
+  library_handle = LoadLibraryW(hostfxr_path.c_str());
 #else
-  library_handle = LoadLibraryA(hostfxrPath.string().c_str());
+  library_handle = LoadLibraryA(hostfxr_path.string().c_str());
 #endif
 #else
   library_handle = dlopen(hostfxr_path.string().data(), RTLD_NOW | RTLD_GLOBAL);

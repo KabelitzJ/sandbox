@@ -24,12 +24,12 @@ struct rumtime_config {
   exception_callback_fn exception_callback;
 }; // struct rumtime_config
 
-enum class rumtime_status {
+enum class runtime_status {
   success,
   managed_not_found,
   managed_init_error,
   dot_net_not_found
-}; // enum class rumtime_status
+}; // enum class runtime_status
 
 class runtime {
 
@@ -37,7 +37,7 @@ class runtime {
 
 public:
 
-  auto initialize(rumtime_config settings) -> rumtime_status;
+  auto initialize(rumtime_config settings) -> runtime_status;
 
   auto shutdown() -> void;
 

@@ -5,6 +5,14 @@
 
 #include <memory>
 
+#include <libsbx/utility/target.hpp>
+
+#if defined(SBX_WINDOWS)
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#include <objbase.h>
+#endif
+
 namespace sbx::scripting {
 
 auto memory::allocate_hglobal(std::size_t size) -> void* {
@@ -53,5 +61,7 @@ auto memory::free_co_task_memory(void* memory) -> void {
   free_hglobal(memory);
 #endif
 }
+
+
 
 } // namespace sbx::scripting
