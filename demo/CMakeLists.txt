@@ -124,3 +124,28 @@ target_compile_options(
     -Wlogical-op
     -Wuseless-cast
 )
+
+set(DOTNET_OUT_DIR ${CMAKE_BINARY_DIR}/_dotnet_out)
+
+set(DEMO_DIR ${CMAKE_CURRENT_SOURCE_DIR}/assets/scripts/Demo)
+set(DEMO_PROJECT ${DEMO_DIR}/Demo.csproj)
+set(DEMO_STAMP ${DEMO_DIR}/build.timestamp)
+file(GLOB_RECURSE DEMO_SOURCES CONFIGURE_DEPENDS ${DEMO_DIR}/*.cs)
+
+add_custom_command(
+  OUTPUT ${DEMO_STAMP}
+  COMMAND ${CMAKE_COMMAND} -E make_directory ${DOTNET_OUT_DIR}
+  COMMAND ${CMAKE_COMMAND} -E env dotnet build ${DEMO_PROJECT} -c $<CONFIG> -o ${DOTNET_OUT_DIR}
+  COMMAND ${CMAKE_COMMAND} -E touch ${DEMO_STAMP}
+  DEPENDS
+    ${DEMO_PROJECT}
+    ${DEMO_SOURCES}
+  BYPRODUCTS
+    ${DOTNET_OUT_DIR}/Sbx.Managed.dll
+  COMMENT "Building .NET demo (Demo) for $<CONFIG>"
+  VERBATIM
+)
+
+add_custom_target(scripting_demo ALL DEPENDS ${DEMO_STAMP})
+
+add_dependencies(scripting_demo ${PROJECT_NAME})
