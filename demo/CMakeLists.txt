@@ -124,3 +124,22 @@ target_compile_options(
     -Wlogical-op
     -Wuseless-cast
 )
+
+set(DOTNET_OUT_DIR ${CMAKE_BINARY_DIR}/_dotnet_out)
+
+set(DEMO_DIR ${CMAKE_CURRENT_SOURCE_DIR}/assets/scripts/Demo)
+set(DEMO_PROJECT ${DEMO_DIR}/Demo.csproj)
+file(GLOB_RECURSE DEMO_SOURCES CONFIGURE_DEPENDS ${DEMO_DIR}/**/*.cs)
+
+add_custom_target(
+  scripting_demo
+  ALL
+  COMMAND ${CMAKE_COMMAND} -E make_directory ${DOTNET_OUT_DIR}
+  COMMAND dotnet build ${DEMO_PROJECT} -c $<CONFIG> -o ${DOTNET_OUT_DIR}
+  WORKING_DIRECTORY ${DEMO_DIR}
+  COMMENT "Building managed assembly with dotnet build"
+)
+
+add_dependencies(${PROJECT_NAME} scripting_demo)
+
+add_dependencies(scripting_demo scripting_managed scripting_core)

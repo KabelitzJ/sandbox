@@ -1,2 +1,0 @@
-Compile sbx:    csc -nologo -langversion:7.3 -target:library -out:Sbx/Out/Sbx.dll Sbx/*.cs /unsafe
-Compile script: csc -nologo -langversion:7.3 -target:library -out:Out/Test.dll -r:Sbx/Out/Sbx.dll Test.cs

@@ -6,17 +6,17 @@
 #include <libsbx/scripting/scripting_module.hpp>
 #include <libsbx/scripting/scripts.hpp>
 
-#include <libsbx/scripting/fwd.hpp>
-#include <libsbx/scripting/platform.hpp>
-#include <libsbx/scripting/core.hpp>
-#include <libsbx/scripting/memory.hpp>
-#include <libsbx/scripting/string.hpp>
-#include <libsbx/scripting/attribute.hpp>
-#include <libsbx/scripting/type.hpp>
-#include <libsbx/scripting/stable_vector.hpp>
-#include <libsbx/scripting/assembly.hpp>
-#include <libsbx/scripting/object.hpp>
-#include <libsbx/scripting/attribute.hpp>
-#include <libsbx/scripting/runtime.hpp>
+#include <libsbx/scripting/managed/fwd.hpp>
+#include <libsbx/scripting/managed/platform.hpp>
+#include <libsbx/scripting/managed/core.hpp>
+#include <libsbx/scripting/managed/memory.hpp>
+#include <libsbx/scripting/managed/string.hpp>
+#include <libsbx/scripting/managed/attribute.hpp>
+#include <libsbx/scripting/managed/type.hpp>
+#include <libsbx/scripting/managed/stable_vector.hpp>
+#include <libsbx/scripting/managed/assembly.hpp>
+#include <libsbx/scripting/managed/object.hpp>
+#include <libsbx/scripting/managed/attribute.hpp>
+#include <libsbx/scripting/managed/runtime.hpp>
 
 #endif // LIBSBX_SCRIPTING_HPP_

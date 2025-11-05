@@ -15,6 +15,8 @@
 
 #include <libsbx/scenes/components/tag.hpp>
 
+#include <libsbx/scripting/interop.hpp>
+
 namespace sbx::scripting {
 
 static auto _push_fmt_arg(fmt::dynamic_format_arg_store<fmt::format_context>& store, const sol::object& object) -> void {
@@ -60,7 +62,7 @@ scripting_module::scripting_module() {
 
   _register_user_types();
 
-  auto config = scripting::rumtime_config{
+  auto config = scripting::managed::rumtime_config{
 		.backend_path = "build/x86_64/gcc/debug/_dotnet_out",
 		.exception_callback = _exception_callback
 	};
@@ -68,10 +70,46 @@ scripting_module::scripting_module() {
   _runtime.initialize(config);
 
   _context = _runtime.create_assembly_load_context("ScriptingContext");
+
+  auto core_assembly_path = std::filesystem::path{"build/x86_64/gcc/debug/_dotnet_out/Sbx.Core.dll"};
+	_core_assembly = _context.load_assembly(core_assembly_path.string());
+
+  _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "Log_LogMessage", reinterpret_cast<void*>(&interop::log_log_message));
+  _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "Behavior_CreateComponent", reinterpret_cast<void*>(&interop::behavior_create_component));
+  _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "Behavior_HasComponent", reinterpret_cast<void*>(&interop::behavior_has_component));
+  // _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "Behavior_RemoveComponent", reinterpret_cast<void*>(&interop::behavior_remove_component));
+  _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "Tag_GetTag", reinterpret_cast<void*>(&interop::tag_get_tag));
+  _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "Tag_SetTag", reinterpret_cast<void*>(&interop::tag_set_tag));
+
+  interop::register_managed_component<scenes::tag>("Tag", _core_assembly);
+
+  _core_assembly.upload_internal_calls();
 }
 
 scripting_module::~scripting_module() {
 
+}
+
+auto scripting_module::test() -> void {
+  auto demo_assembly_path = std::filesystem::path{"build/x86_64/gcc/debug/_dotnet_out/Demo.dll"};
+	auto& demo_assembly = _context.load_assembly(demo_assembly_path.string());
+
+  auto demo_type = demo_assembly.get_type("Demo.Demo");
+
+  auto demo_instance = demo_type.create_instance();
+
+  auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
+  auto& scene = scenes_module.scene();
+
+  const auto node = scene.create_node("SCRIPT_TEST");
+
+  demo_instance.set_field_value("Node", static_cast<std::uint32_t>(node));
+
+  demo_instance.invoke("SayHello");
+
+  demo_instance.invoke("SetTag");
+  
+  demo_instance.invoke("SayHello");
 }
 
 auto scripting_module::update() -> void {
