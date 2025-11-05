@@ -13,32 +13,32 @@
       Critical = 1 << 5
     }
 
-    public static void Trace(string format, params object[] parameters)
+    public static void Trace(string format, params object?[] parameters)
 		{
 			unsafe { InternalCalls.Log_LogMessage(Level.Trace, string.Format(format, parameters)); }
 		}
 
-		public static void Debug(string format, params object[] parameters)
+		public static void Debug(string format, params object?[] parameters)
 		{
 			unsafe { InternalCalls.Log_LogMessage(Level.Debug, string.Format(format, parameters)); }
 		}
 
-		public static void Info(string format, params object[] parameters)
+		public static void Info(string format, params object?[] parameters)
 		{
 			unsafe { InternalCalls.Log_LogMessage(Level.Info, string.Format(format, parameters)); }
 		}
 
-		public static void Warn(string format, params object[] parameters)
+		public static void Warn(string format, params object?[] parameters)
 		{
 			unsafe { InternalCalls.Log_LogMessage(Level.Warn, string.Format(format, parameters)); }
 		}
 
-		public static void Error(string format, params object[] parameters)
+		public static void Error(string format, params object?[] parameters)
 		{
 			unsafe { InternalCalls.Log_LogMessage(Level.Error, string.Format(format, parameters)); }
 		}
 
-		public static void Critical(string format, params object[] parameters)
+		public static void Critical(string format, params object?[] parameters)
 		{
 			unsafe { InternalCalls.Log_LogMessage(Level.Critical, string.Format(format, parameters)); }
 		}

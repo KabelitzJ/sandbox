@@ -9,9 +9,12 @@ namespace Demo
 
     public void SayHello()
     {
+      var tag = GetComponent<Tag>();
+
       Logger.Info("Hello {0}", HasComponent<Tag>());
-      Logger.Info("Hello {0}", base.node);
-      Logger.Info("Hello {0}", GetComponent<Tag>().Value);
+      Logger.Info("Hello {0}", Node);
+
+      Logger.Info("Hello from {0}", tag.Value);    
     }
 
   } // class Demo

@@ -103,7 +103,7 @@ auto scripting_module::test() -> void {
 
   const auto node = scene.create_node("SCRIPT_TEST");
 
-  demo_instance.set_field_value("node", static_cast<std::uint32_t>(node));
+  demo_instance.set_field_value("Node", static_cast<std::uint32_t>(node));
 
   demo_instance.invoke("SayHello");
 }

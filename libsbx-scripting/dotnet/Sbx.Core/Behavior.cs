@@ -7,14 +7,14 @@ namespace Sbx.Core
   public abstract class Behavior
   {
 
-    protected uint node;
+    protected uint Node;
     private Dictionary<Type, Component> componentCache = new Dictionary<Type, Component>();
 
-    protected Behavior() { node = 0; }
+    protected Behavior() { Node = 0; }
 
 		internal Behavior(uint node)
 		{
-			this.node = node;
+			Node = node;
 		}
 
     public T? CreateComponent<T>() where T : Component, new()
@@ -24,9 +24,9 @@ namespace Sbx.Core
         return GetComponent<T>();
       }
 
-      unsafe { InternalCalls.Behavior_CreateComponent(node, typeof(T)); }
+      unsafe { InternalCalls.Behavior_CreateComponent(Node, typeof(T)); }
 
-      var component = new T { Node = node };
+      var component = new T { Node = Node };
 
       componentCache.Add(typeof(T), component);
 
@@ -35,12 +35,12 @@ namespace Sbx.Core
 
 		public bool HasComponent<T>() where T : Component
 		{
-			unsafe { return InternalCalls.Behavior_HasComponent(node, typeof(T)); }
+			unsafe { return InternalCalls.Behavior_HasComponent(Node, typeof(T)); }
 		}
 
 		public bool HasComponent(Type type)
 		{
-			unsafe { return InternalCalls.Behavior_HasComponent(node, type); }
+			unsafe { return InternalCalls.Behavior_HasComponent(Node, type); }
 		}
 
 		public T? GetComponent<T>() where T : Component, new()
@@ -56,7 +56,7 @@ namespace Sbx.Core
 
 			if (!componentCache.ContainsKey(componentType))
       {
-        var component = new T { Node = node };
+        var component = new T { Node = Node };
         
 				componentCache.Add(componentType, component);
 
