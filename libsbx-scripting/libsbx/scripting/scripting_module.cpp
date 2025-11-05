@@ -15,6 +15,8 @@
 
 #include <libsbx/scenes/components/tag.hpp>
 
+#include <libsbx/scripting/interop.hpp>
+
 namespace sbx::scripting {
 
 static auto _push_fmt_arg(fmt::dynamic_format_arg_store<fmt::format_context>& store, const sol::object& object) -> void {
@@ -60,7 +62,7 @@ scripting_module::scripting_module() {
 
   _register_user_types();
 
-  auto config = scripting::rumtime_config{
+  auto config = scripting::managed::rumtime_config{
 		.backend_path = "build/x86_64/gcc/debug/_dotnet_out",
 		.exception_callback = _exception_callback
 	};
@@ -68,6 +70,12 @@ scripting_module::scripting_module() {
   _runtime.initialize(config);
 
   _context = _runtime.create_assembly_load_context("ScriptingContext");
+
+  auto assembly_path = std::filesystem::path{"build/x86_64/gcc/debug/_dotnet_out/Sbx.Core.dll"};
+	auto& assembly = _context.load_assembly(assembly_path.string());
+
+  assembly.add_internal_call("Sbx.Core.InternalCalls", "Log_LogMessage", reinterpret_cast<void*>(&interop::log_log_message));
+  assembly.upload_internal_calls();
 }
 
 scripting_module::~scripting_module() {

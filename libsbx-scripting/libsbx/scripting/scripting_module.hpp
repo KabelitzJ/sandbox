@@ -16,7 +16,7 @@
 #include <libsbx/scenes/node.hpp>
 #include <libsbx/scenes/scenes_module.hpp>
 
-#include <libsbx/scripting/runtime.hpp>
+#include <libsbx/scripting/managed/runtime.hpp>
 
 namespace sbx::scripting {
 
@@ -85,8 +85,8 @@ private:
 
   std::unordered_map<scenes::node, std::unordered_map<std::string, script_instance>> _instances;
 
-  scripting::runtime _runtime;
-  scripting::assembly_load_context _context;
+  scripting::managed::runtime _runtime;
+  scripting::managed::assembly_load_context _context;
 
 }; // class scene_modules
 
