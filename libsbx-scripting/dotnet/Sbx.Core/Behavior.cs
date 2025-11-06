@@ -17,21 +17,30 @@ namespace Sbx.Core
 			Node = node;
 		}
 
-    public T? CreateComponent<T>() where T : Component, new()
-    {
-      if (HasComponent<T>())
-      {
-        return GetComponent<T>();
-      }
+		protected virtual void OnCreate() { }
 
-      unsafe { InternalCalls.Behavior_CreateComponent(Node, typeof(T)); }
+		protected virtual void OnUpdate() { }
 
-      var component = new T { Node = Node };
+		protected virtual void OnFixedUpdate() { }
 
-      componentCache.Add(typeof(T), component);
+		protected virtual void OnDestroy() { }
 
-      return component;
-    }
+
+		public T? CreateComponent<T>() where T : Component, new()
+		{
+			if (HasComponent<T>())
+			{
+				return GetComponent<T>();
+			}
+
+			unsafe { InternalCalls.Behavior_CreateComponent(Node, typeof(T)); }
+
+			var component = new T { Node = Node };
+
+			componentCache.Add(typeof(T), component);
+
+			return component;
+		}
 
 		public bool HasComponent<T>() where T : Component
 		{

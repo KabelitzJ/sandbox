@@ -12,10 +12,15 @@ namespace Sbx.Core
   public class Tag : Component
 	{
 		public string? Value
-		{
+    {
       get { unsafe { return InternalCalls.Tag_GetTag(Node); } }
-			set { unsafe { InternalCalls.Tag_SetTag(Node, value); } }
-		}
+      set { unsafe { InternalCalls.Tag_SetTag(Node, value); } }
+    }
+
+    public override string ToString()
+    {
+      return Value ?? "[Unknown]";
+    }
 	}
 
 } // namespace Sbx.Core

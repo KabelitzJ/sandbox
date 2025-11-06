@@ -6,6 +6,8 @@
 #include <libsbx/utility/enum.hpp>
 #include <libsbx/utility/type_name.hpp>
 
+#include <libsbx/devices/input.hpp>
+
 #include <libsbx/scenes/node.hpp>
 #include <libsbx/scenes/scenes_module.hpp>
 
@@ -33,6 +35,30 @@ struct interop {
 
   static auto tag_get_tag(std::uint32_t node) -> managed::string;
   static auto tag_set_tag(std::uint32_t node, managed::string tag) -> void;
+
+  static auto input_is_key_pressed(devices::key key) -> managed::bool32 { 
+    return devices::input::is_key_pressed(key); 
+  }
+
+  static auto input_is_key_down(devices::key key) -> managed::bool32 { 
+    return devices::input::is_key_down(key); 
+  }
+
+  static auto input_is_key_released(devices::key key) -> managed::bool32 { 
+    return devices::input::is_key_released(key); 
+  }
+
+  static auto input_is_mouse_button_pressed(devices::mouse_button mouse_button) -> managed::bool32 { 
+    return devices::input::is_mouse_button_pressed(mouse_button); 
+  }
+
+  static auto input_is_mouse_button_down(devices::mouse_button mouse_button) -> managed::bool32 { 
+    return devices::input::is_mouse_button_down(mouse_button); 
+  }
+
+  static auto input_is_mouse_button_released(devices::mouse_button mouse_button) -> managed::bool32 { 
+    return devices::input::is_mouse_button_released(mouse_button); 
+  }
 
   template<typename Type>
   static auto register_managed_component(std::string_view name, managed::assembly& core_assembly) -> void {

@@ -16,12 +16,20 @@ namespace Demo
 
       Logger.Info("Hello from {0}", tag.Value);
     }
-    
+
     public void SetTag(string value)
     {
       var tag = GetComponent<Tag>();
 
       tag.Value = value;
+    }
+    
+    protected override void OnUpdate()
+    {
+      if (Input.IsKeyPressed(KeyCode.Space))
+      {
+        Logger.Info("Space pressed from {0}", GetComponent<Tag>());
+      }
     }
 
   } // class Demo
