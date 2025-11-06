@@ -38,7 +38,7 @@ public:
 
   static constexpr auto npos = std::numeric_limits<size_type>::max();
 
-  constexpr basic_string_literal(const character_type (&data)[Size]) noexcept {
+  consteval basic_string_literal(const character_type (&data)[Size]) noexcept {
     detail::copy(data, data + Size - 1, _data.data());
   }
 
@@ -62,8 +62,12 @@ public:
     return size() == 0;
   }
 
-  constexpr auto operator[](size_type index) const noexcept -> character_type {
+  constexpr auto operator[](const size_type index) const noexcept -> character_type {
     return _data[index];
+  }
+
+  constexpr auto at(const size_type index) const noexcept -> character_type {
+    return _data.at(index);
   }
 
   constexpr auto hash() const noexcept -> std::size_t {

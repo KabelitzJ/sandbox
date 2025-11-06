@@ -14,7 +14,7 @@ namespace Demo
       Logger.Info("Hello {0}", HasComponent<Tag>());
       Logger.Info("Hello {0}", Node);
 
-      Logger.Info("Hello from {0}", tag.Value);
+      Logger.Info("Hello from {0}", tag);
     }
 
     public void SetTag(string value)

@@ -30,6 +30,12 @@ struct assets_type_id_scope { };
 
 } // namespace detail
 
+template<utility::string_literal String>
+requires (String.size() == 4u)
+constexpr auto fourcc() -> std::uint32_t {
+  return String[0] | (String[1] << 8) | (String[2] << 16) | (String[3] << 24);
+}
+
 /**
  * @brief A scoped type ID generator for the libsbx-assets scope.
  *
@@ -148,7 +154,9 @@ public:
 
   assets_module()
   : _thread_pool{std::thread::hardware_concurrency()},
-    _asset_root{std::filesystem::current_path()} { }
+    _asset_root{std::filesystem::current_path()} {
+    utility::logger<"assets">::info("4cc of 'IMAG': {:#010x}", fourcc<"IMAG">());
+  }
 
   ~assets_module() override {
     for (const auto& container : _containers) {
