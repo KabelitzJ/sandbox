@@ -118,7 +118,7 @@ auto scripting_module::test() -> void {
 
   demo_instance.invoke("SayHello");
 
-  demo_instance.invoke("SetTag", std::string{"TEST_TAG"});
+  demo_instance.invoke("SetTag", managed::string::create("TEST_TAG"));
   
   demo_instance.invoke("SayHello");
 

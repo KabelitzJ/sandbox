@@ -1,6 +1,14 @@
 #ifndef LIBSBX_SCRIPTING_MANAGED_OBJECT_HPP_
 #define LIBSBX_SCRIPTING_MANAGED_OBJECT_HPP_
 
+#include <cmath>
+
+#include <array>
+#include <string>
+#include <string_view>
+#include <tuple>
+#include <type_traits>
+
 #include <libsbx/scripting/managed/fwd.hpp>
 #include <libsbx/scripting/managed/core.hpp>
 #include <libsbx/scripting/managed/string.hpp>
@@ -42,13 +50,13 @@ constexpr auto get_managed_type() -> managed_type {
     return managed_type::int32;
   } else if constexpr (std::same_as<Type, std::int64_t> || (std::same_as<Type, long> && sizeof(Type) == 8u)) {
     return managed_type::int64;
-  } else if constexpr (std::same_as<Type, float>) {
+  } else if constexpr (std::same_as<Type, std::float_t>) {
     return managed_type::float32;
-  } else if constexpr (std::same_as<Type, double>) {
+  } else if constexpr (std::same_as<Type, std::double_t>) {
     return managed_type::float64;
   } else if constexpr (std::same_as<Type, bool>) {
     return managed_type::boolean;
-  } else if constexpr (std::same_as<Type, std::string>) {
+  } else if constexpr (std::is_same_v<Type, std::string> || std::is_same_v<Type, managed::string>) {
     return managed_type::string;
   } else {
     return managed_type::unknown;
@@ -58,7 +66,7 @@ constexpr auto get_managed_type() -> managed_type {
 namespace detail {
 
 template<std::size_t Size, typename Tuple, std::size_t Index>
-inline auto add_to_array(std::array<const void*, Size>& arguments, std::array<managed_type, Size>& types, Tuple& tuple) -> void {
+inline auto add_to_array(std::array<const void*, Size>& arguments, std::array<managed_type, Size>& types, const Tuple& tuple) -> void {
   using T = std::tuple_element_t<Index, Tuple>;
 
   types[Index] = get_managed_type<std::remove_reference_t<T>>();
@@ -73,7 +81,7 @@ inline auto add_to_array(std::array<const void*, Size>& arguments, std::array<ma
 } // namespace detail
 
 template<std::size_t Size, typename Tuple, std::size_t... Indices>
-inline auto add_to_array(std::array<const void*, Size>& arguments, std::array<managed_type, Size>& types, Tuple& tuple, std::index_sequence<Indices...>) -> void {
+inline auto add_to_array(std::array<const void*, Size>& arguments, std::array<managed_type, Size>& types, const Tuple& tuple, std::index_sequence<Indices...>) -> void {
   (detail::add_to_array<Size, Tuple, Indices>(arguments, types, tuple), ...);
 }
 
