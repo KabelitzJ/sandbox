@@ -17,11 +17,11 @@ namespace Demo
       Logger.Info("Hello from {0}", tag.Value);
     }
     
-    public void SetTag()
+    public void SetTag(string value)
     {
       var tag = GetComponent<Tag>();
 
-      tag.Value = "FOO";
+      tag.Value = value;
     }
 
   } // class Demo
