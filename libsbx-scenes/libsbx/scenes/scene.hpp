@@ -127,18 +127,8 @@ public:
   }
 
   template<typename Component, typename... Args>
-  requires (sizeof...(Args) > 0u)
   auto add_component(const node_type node, Args&&... args) -> decltype(auto) {
     return _registry.emplace<Component>(node, std::forward<Args>(args)...);
-  }
-
-  template<typename Component>
-  auto add_component(const node_type node) -> decltype(auto) {
-    if constexpr (std::is_constructible_v<Component, const node_type>) {
-      return _registry.emplace<Component>(node, node);
-    } else {
-      return _registry.emplace<Component>(node);
-    }
   }
 
   template<typename Component>

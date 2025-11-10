@@ -282,7 +282,7 @@ application::application()
   helmet_transform.set_position(sbx::math::vector3{0.0f, 6.0f, 0.0f});
   helmet_transform.set_scale(sbx::math::vector3{4.0f, 4.0f, 4.0f});
 
-  scripting_module.instantiate(helmet, "res://scripts/test.lua");
+  // scripting_module.instantiate(helmet, "res://scripts/test.lua");
 
   // Dragon
   // auto& dragon_mesh = assets_module.get_asset<sbx::models::mesh>(scene.get_mesh("dragon"));
@@ -314,7 +314,7 @@ application::application()
 
   fox1 = scene.create_node("Fox");
 
-  scripting_module.instantiate(fox1, "res://scripts/test.lua");
+  // scripting_module.instantiate(fox1, "res://scripts/test.lua");
 
   auto& fox_material = scene.add_material<sbx::models::material>("fox");
   fox_material.albedo = scene.get_image("fox_albedo");

@@ -26,14 +26,14 @@ namespace Sbx.Core
 		protected virtual void OnDestroy() { }
 
 
-		public T? CreateComponent<T>() where T : Component, new()
+		public T? AddComponent<T>() where T : Component, new()
 		{
 			if (HasComponent<T>())
 			{
 				return GetComponent<T>();
 			}
 
-			unsafe { InternalCalls.Behavior_CreateComponent(Node, typeof(T)); }
+			unsafe { InternalCalls.Behavior_AddComponent(Node, typeof(T)); }
 
 			var component = new T { Node = Node };
 

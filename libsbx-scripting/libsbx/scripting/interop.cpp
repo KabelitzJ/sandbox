@@ -33,11 +33,39 @@ auto interop::log_log_message(log_level level, managed::string message) -> void 
   }
 }
 
-auto interop::behavior_create_component(std::uint32_t node, managed::reflection_type component_type) -> void {
+auto interop::behavior_add_component(std::uint32_t node, managed::reflection_type component_type) -> void {
+  auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
+  auto& scene = scenes_module.scene();
 
+  if (!scene.is_valid(static_cast<scenes::node>(node))) {
+    utility::logger<"scripting">::error("Attempting to call add_component on invalid node");
+
+    return;
+  };
+
+  auto& type = static_cast<managed::type&>(component_type);
+
+  if (!type) {
+    return;
+  }
+
+  if (auto entry = _add_component_functions.find(type.get_type_id()); entry != _add_component_functions.end()) {
+    auto function = entry->second;
+
+    std::invoke(function, static_cast<scenes::node>(node));
+  }
 }
 
 auto interop::behavior_has_component(std::uint32_t node, managed::reflection_type component_type) -> bool {
+  auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
+  auto& scene = scenes_module.scene();
+
+  if (!scene.is_valid(static_cast<scenes::node>(node))) {
+    utility::logger<"scripting">::error("Attempting to call has_component on invalid node");
+
+    return false;
+  };
+
   auto& type = static_cast<managed::type&>(component_type);
 
   if (!type) {
@@ -45,9 +73,9 @@ auto interop::behavior_has_component(std::uint32_t node, managed::reflection_typ
   }
 
   if (auto entry = _has_component_functions.find(type.get_type_id()); entry != _has_component_functions.end()) {
-    auto func = entry->second;
+    auto function = entry->second;
 
-    return func(static_cast<scenes::node>(node));
+    return std::invoke(function, static_cast<scenes::node>(node));
   }
 
   return false;
@@ -73,5 +101,66 @@ auto interop::tag_set_tag(std::uint32_t node, managed::string tag) -> void {
   scene.get_component<scenes::tag>(static_cast<scenes::node>(node)) = std::string{tag};
 }
 
+auto interop::transform_get_position(std::uint32_t node, math::vector3* position) -> void {
+  auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
+  auto& scene = scenes_module.scene();
+
+  if (!scene.is_valid(static_cast<scenes::node>(node))) {
+    utility::logger<"scripting">::error("Attempting to set position of invalid node");
+
+    return;
+  }
+
+  auto& transform = scene.get_component<scenes::transform>(static_cast<scenes::node>(node));
+
+  *position = transform.position();
+}
+
+auto interop::transform_set_position(std::uint32_t node, math::vector3* position) -> void {
+  auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
+  auto& scene = scenes_module.scene();
+
+  if (!scene.is_valid(static_cast<scenes::node>(node))) {
+    utility::logger<"scripting">::error("Attempting to set position of invalid node");
+
+    return;
+  }
+
+  if (!position) {
+    auto& tag = scene.get_component<scenes::tag>(static_cast<scenes::node>(node));
+
+    utility::logger<"scripting">::error("Attempting to set null position of node '{}'", tag);
+
+    return;
+  }
+
+  auto& transform = scene.get_component<scenes::transform>(static_cast<scenes::node>(node));
+
+  transform.set_position(*position);
+}
+
+auto interop::input_is_key_pressed(devices::key key) -> managed::bool32 { 
+  return devices::input::is_key_pressed(key); 
+}
+
+auto interop::input_is_key_down(devices::key key) -> managed::bool32 { 
+  return devices::input::is_key_down(key); 
+}
+
+auto interop::input_is_key_released(devices::key key) -> managed::bool32 { 
+  return devices::input::is_key_released(key); 
+}
+
+auto interop::input_is_mouse_button_pressed(devices::mouse_button mouse_button) -> managed::bool32 { 
+  return devices::input::is_mouse_button_pressed(mouse_button); 
+}
+
+auto interop::input_is_mouse_button_down(devices::mouse_button mouse_button) -> managed::bool32 { 
+  return devices::input::is_mouse_button_down(mouse_button); 
+}
+
+auto interop::input_is_mouse_button_released(devices::mouse_button mouse_button) -> managed::bool32 { 
+  return devices::input::is_mouse_button_released(mouse_button); 
+}
 
 } // namespace sbx::scripting

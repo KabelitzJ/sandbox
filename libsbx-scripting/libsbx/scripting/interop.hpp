@@ -29,36 +29,31 @@ struct interop {
 
   static auto log_log_message(log_level level, managed::string message) -> void;
 
-  static auto behavior_create_component(std::uint32_t node, managed::reflection_type component_type) -> void;
+  static auto behavior_add_component(std::uint32_t node, managed::reflection_type component_type) -> void;
+
   static auto behavior_has_component(std::uint32_t node, managed::reflection_type component_type) -> bool;
+
   // static auto behavior_remove_component(std::uint32_t node, managed::reflection_type component_type) -> bool;
 
   static auto tag_get_tag(std::uint32_t node) -> managed::string;
+
   static auto tag_set_tag(std::uint32_t node, managed::string tag) -> void;
 
-  static auto input_is_key_pressed(devices::key key) -> managed::bool32 { 
-    return devices::input::is_key_pressed(key); 
-  }
+  static auto transform_get_position(std::uint32_t node, math::vector3* position) -> void;
 
-  static auto input_is_key_down(devices::key key) -> managed::bool32 { 
-    return devices::input::is_key_down(key); 
-  }
+  static auto transform_set_position(std::uint32_t node, math::vector3* position) -> void;
 
-  static auto input_is_key_released(devices::key key) -> managed::bool32 { 
-    return devices::input::is_key_released(key); 
-  }
+  static auto input_is_key_pressed(devices::key key) -> managed::bool32;
 
-  static auto input_is_mouse_button_pressed(devices::mouse_button mouse_button) -> managed::bool32 { 
-    return devices::input::is_mouse_button_pressed(mouse_button); 
-  }
+  static auto input_is_key_down(devices::key key) -> managed::bool32;
 
-  static auto input_is_mouse_button_down(devices::mouse_button mouse_button) -> managed::bool32 { 
-    return devices::input::is_mouse_button_down(mouse_button); 
-  }
+  static auto input_is_key_released(devices::key key) -> managed::bool32;
 
-  static auto input_is_mouse_button_released(devices::mouse_button mouse_button) -> managed::bool32 { 
-    return devices::input::is_mouse_button_released(mouse_button); 
-  }
+  static auto input_is_mouse_button_pressed(devices::mouse_button mouse_button) -> managed::bool32;
+
+  static auto input_is_mouse_button_down(devices::mouse_button mouse_button) -> managed::bool32;
+
+  static auto input_is_mouse_button_released(devices::mouse_button mouse_button) -> managed::bool32;
 
   template<typename Type>
   static auto register_managed_component(std::string_view name, managed::assembly& core_assembly) -> void {
@@ -69,11 +64,11 @@ struct interop {
     auto& type = core_assembly.get_type(component_name);
   
     if (type) {
-      _create_component_functions[type.get_type_id()] = [&scenes_module](scenes::node node) -> void { 
+      _add_component_functions[type.get_type_id()] = [&scenes_module](scenes::node node) -> void { 
         auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
         auto& scene = scenes_module.scene();
   
-        scene.add_component<Type>(node, "Node");
+        scene.add_component<Type>(node);
       };
       _has_component_functions[type.get_type_id()] = [&scenes_module](scenes::node node) -> bool {
         auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
@@ -94,7 +89,7 @@ struct interop {
 
 private:
 
-  inline static auto _create_component_functions = std::unordered_map<managed::type_id, std::function<void(scenes::node)>>{};
+  inline static auto _add_component_functions = std::unordered_map<managed::type_id, std::function<void(scenes::node)>>{};
   inline static auto _has_component_functions = std::unordered_map<managed::type_id, std::function<bool(scenes::node)>>{};
   // inline static auto _remove_component_functions = std::unordered_map<managed::type_id, std::function<void(scenes::node)>>{};
 

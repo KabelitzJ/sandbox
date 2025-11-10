@@ -76,12 +76,15 @@ scripting_module::scripting_module() {
 
   _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "Log_LogMessage", reinterpret_cast<void*>(&interop::log_log_message));
 
-  _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "Behavior_CreateComponent", reinterpret_cast<void*>(&interop::behavior_create_component));
+  _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "Behavior_AddComponent", reinterpret_cast<void*>(&interop::behavior_add_component));
   _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "Behavior_HasComponent", reinterpret_cast<void*>(&interop::behavior_has_component));
   // _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "Behavior_RemoveComponent", reinterpret_cast<void*>(&interop::behavior_remove_component));
 
   _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "Tag_GetTag", reinterpret_cast<void*>(&interop::tag_get_tag));
   _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "Tag_SetTag", reinterpret_cast<void*>(&interop::tag_set_tag));
+
+  _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "Transform_GetPosition", reinterpret_cast<void*>(&interop::transform_get_position));
+  _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "Transform_SetPosition", reinterpret_cast<void*>(&interop::transform_set_position));
 
   _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "Input_IsKeyPressed", reinterpret_cast<void*>(&interop::input_is_key_pressed));
   _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "Input_IsKeyDown", reinterpret_cast<void*>(&interop::input_is_key_down));
@@ -91,6 +94,7 @@ scripting_module::scripting_module() {
   _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "Input_IsMouseButtonReleased", reinterpret_cast<void*>(&interop::input_is_mouse_button_released));
 
   interop::register_managed_component<scenes::tag>("Tag", _core_assembly);
+  interop::register_managed_component<scenes::transform>("Transform", _core_assembly);
 
   _core_assembly.upload_internal_calls();
 }
@@ -112,9 +116,12 @@ auto scripting_module::test() -> void {
   auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
   auto& scene = scenes_module.scene();
 
-  const auto node = scene.create_node("SCRIPT_TEST");
+  const auto demo_node = scene.create_node("SCRIPT_TEST");
 
-  demo_instance.set_field_value("Node", static_cast<std::uint32_t>(node));
+  demo_instance.set_field_value("Node", static_cast<std::uint32_t>(demo_node));
+
+  auto& transform = scene.get_component<scenes::transform>(demo_node);
+  transform.set_position(math::vector3{1, 2, 3});
 
   demo_instance.invoke("SayHello");
 
