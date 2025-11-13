@@ -1,5 +1,4 @@
 #include <libsbx/common/constants.slang>
-#include <libsbx/common/scene_data.slang>
 
 struct fs_in {
   float2 uv : TEXCOORD0;
@@ -10,11 +9,8 @@ struct fs_out {
   float4 color : SV_Target0;
 }; // struct fs_out
 
-[[vk::binding(0, 0)]]
-ConstantBuffer<sbx::common::scene_data> scene;
-
-[[vk::binding(1, 0)]] Sampler2D<float4> accum_image;
-[[vk::binding(2, 0)]] Sampler2D<float4> revealage_image;
+[[vk::binding(0, 0)]] Sampler2D<float4> accum_image;
+[[vk::binding(1, 0)]] Sampler2D<float4> revealage_image;
 
 bool is_approximately_equal(float a, float b) {
   return abs(a - b) <= (abs(a) < abs(b) ? abs(b) : abs(a)) * sbx::common::epsilon;
