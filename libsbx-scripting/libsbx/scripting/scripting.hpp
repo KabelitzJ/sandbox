@@ -4,7 +4,6 @@
 #include <libsbx/scripting/version.hpp>
 
 #include <libsbx/scripting/scripting_module.hpp>
-#include <libsbx/scripting/scripts.hpp>
 
 #include <libsbx/scripting/managed/fwd.hpp>
 #include <libsbx/scripting/managed/platform.hpp>

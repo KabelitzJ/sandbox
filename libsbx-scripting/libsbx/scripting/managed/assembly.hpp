@@ -3,6 +3,8 @@
 
 #include <vector>
 
+#include <libsbx/utility/hashed_string.hpp>
+
 #include <libsbx/scripting/managed/fwd.hpp>
 #include <libsbx/scripting/managed/core.hpp>
 #include <libsbx/scripting/managed/platform.hpp>
@@ -66,12 +68,15 @@ public:
 
   auto load_assembly_from_memory(const std::byte* data, std::int64_t data_length) -> assembly&;
 
+  auto get_or_load_assembly(std::string_view file_path) -> assembly&;
+
   auto get_loaded_assemblies() const -> const stable_vector<assembly>&;
 
 private:
 
   std::int32_t _context_id;
   stable_vector<assembly> _loaded_assemblies;
+  std::unordered_map<utility::hashed_string, std::uint32_t> _assembly_indices;
 
   runtime* _runtime = nullptr;
 

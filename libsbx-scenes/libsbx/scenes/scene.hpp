@@ -143,7 +143,7 @@ public:
 
   template<typename Component, typename... Args>
   auto get_or_add_component(const node_type node, Args&&... args) -> Component& {
-    return _registry.get_or_emplace(node, std::forward<Args>(args)...);
+    return _registry.get_or_emplace<Component>(node, std::forward<Args>(args)...);
   }
 
   auto light() -> directional_light& {

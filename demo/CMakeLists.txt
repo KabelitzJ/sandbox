@@ -125,7 +125,7 @@ target_compile_options(
     -Wuseless-cast
 )
 
-set(DOTNET_OUT_DIR ${CMAKE_BINARY_DIR}/_dotnet_out)
+set(DOTNET_OUT_DIR ${CMAKE_BINARY_DIR}/_dotnet)
 
 set(DEMO_DIR ${CMAKE_CURRENT_SOURCE_DIR}/assets/scripts/Demo)
 set(DEMO_PROJECT ${DEMO_DIR}/Demo.csproj)

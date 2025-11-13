@@ -51,43 +51,11 @@ application::application()
 
   graphics_module.set_renderer<renderer>();
 
-  // auto& compiler = graphics_module.compiler();
-
-  // const auto request = sbx::graphics::compiler::compile_request{
-  //   .path = "demo/assets/shaders/deferred_static_material",
-  //   .per_stage = {
-  //     {SLANG_STAGE_VERTEX, {
-  //       .entry_point = "main"
-  //     }},
-  //     {SLANG_STAGE_FRAGMENT, {
-  //       .entry_point = "mask_main"
-  //     }},
-  //   }
-  // };
-
-  // const auto result = compiler.compile(request);
-
-  // for (const auto& [stage, words] : result.code) {
-  //   const auto file_name = stage == SLANG_STAGE_FRAGMENT ? "frag.spv" : "vert.spv";
-
-  //   std::ofstream file(file_name, std::ios::binary);
-
-  //   if (!file) {
-  //     std::cerr << "Failed to open " << file_name << " for writing\n";
-  //     continue;
-  //   }
-
-  //   file.write(reinterpret_cast<const char*>(words.data()), words.size() * sizeof(uint32_t));
-  //   file.close();
-  // }
-
   auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
 
   auto& scene = scenes_module.load_scene("res://scenes/scene.yaml");
 
   auto& scripting_module = sbx::core::engine::get_module<sbx::scripting::scripting_module>();
-
-  scripting_module.test();
 
   // Textures
 
@@ -198,47 +166,6 @@ application::application()
 
   terrain_module.load_terrain_in_scene();
 
-  // // Longhouse
-
-  // auto longhouse = scene.create_node("Longhouse");
-
-  // auto& longhouse_material = scene.add_material<sbx::models::material>("longhouse");
-  // longhouse_material.albedo = scene.get_image("longhouse_albedo");
-  // longhouse_material.normal = scene.get_image("longhouse_normal");
-  // longhouse_material.mrao = scene.get_image("longhouse_mrao");
-
-  // scene.add_component<sbx::scenes::static_mesh>(longhouse, scene.get_mesh("longhouse"), scene.get_material("longhouse"));
-
-  // auto& longhouse_transform = scene.get_component<sbx::scenes::transform>(longhouse);
-  // longhouse_transform.set_position(sbx::math::vector3{-15.0f, 0.0f, -10.0f});
-  // longhouse_transform.set_scale(sbx::math::vector3{2.5f, 2.5f, 2.5f});
-
-  // // Pine Tree
-
-  // auto pine_tree = scene.create_node("PineTree");
-
-  // auto& pine_tree_bark = scene.add_material<sbx::models::material>("pine_tree_bark");
-  // pine_tree_bark.albedo = scene.get_image("pine_tree_bark_albedo");
-  // pine_tree_bark.normal = scene.get_image("pine_tree_bark_normal");
-  
-  // auto& pine_tree_leaves= scene.add_material<sbx::models::material>("pine_tree_leaves");
-  // pine_tree_leaves.roughness = 0.2f;
-  // pine_tree_leaves.albedo = scene.get_image("pine_tree_leaves_albedo");
-  // pine_tree_leaves.normal = scene.get_image("pine_tree_leaves_normal");
-  // pine_tree_leaves.alpha = sbx::models::alpha_mode::mask;
-  // pine_tree_leaves.is_double_sided = true;
-
-  // auto pine_tree_submeshes = std::vector<sbx::scenes::static_mesh::submesh>{
-  //   {0u, scene.get_material("pine_tree_bark")},
-  //   {1u, scene.get_material("pine_tree_leaves")}
-  // };
-
-  // scene.add_component<sbx::scenes::static_mesh>(pine_tree, scene.get_mesh("pine_tree"), pine_tree_submeshes);
-
-  // auto& pine_tree_transform = scene.get_component<sbx::scenes::transform>(pine_tree);
-  // pine_tree_transform.set_position(sbx::math::vector3{-10.0f, 0.0f, -5.0f});
-  // pine_tree_transform.set_scale(sbx::math::vector3{0.5f, 0.5f, 0.5f});
-
   // Circling point lights
   _light_center = scene.create_node("LightCenter", sbx::scenes::transform{sbx::math::vector3{0.0f, 20.0f, 0.0f}});
   
@@ -262,13 +189,11 @@ application::application()
     scene.add_component<sbx::scenes::static_mesh>(light, scene.get_mesh("sphere"), scene.get_material(material_name));
 
     auto& light_transform = scene.get_component<sbx::scenes::transform>(light);
-    // light_transform.set_scale(sbx::math::vector3{0.2f, 0.2f, 0.2f});
   }
 
   // Helmet
   auto helmet = scene.create_node("Helmet");
 
-  // auto helmet_material = scene.add_material<sbx::models::material>("helmet", sbx::scenes::material_type::opaque, sbx::math::color::white(), 0.0f, 0.5f, 1.0f, scene.get_image("helmet_albedo"), scene.get_image("helmet_normal"), scene.get_image("helmet_mrao"));
   auto& helmet_material = scene.add_material<sbx::models::material>("helmet");
   helmet_material.albedo = scene.get_image("helmet_albedo");
   helmet_material.normal = scene.get_image("helmet_normal");
@@ -282,21 +207,17 @@ application::application()
   helmet_transform.set_position(sbx::math::vector3{0.0f, 6.0f, 0.0f});
   helmet_transform.set_scale(sbx::math::vector3{4.0f, 4.0f, 4.0f});
 
-  // scripting_module.instantiate(helmet, "res://scripts/test.lua");
+  auto demo_script = scripting_module.instantiate(helmet, "build/x86_64/gcc/debug/_dotnet/Demo.dll", "Demo.Helmet");
+
+  demo_script.invoke("SayHello");
 
   // Dragon
-  // auto& dragon_mesh = assets_module.get_asset<sbx::models::mesh>(scene.get_mesh("dragon"));
 
   auto dragon = scene.create_node("Dragon");
-
-  // scene.add_material<sbx::scenes::material>("cloth", sbx::scenes::material_type::opaque, sbx::math::color::blue(), 0.0f, 1.0f, 1.0f, scene.get_image("checkerboard"));
-  // scene.add_material<sbx::scenes::material>("dragon", sbx::scenes::material_type::transparent, sbx::math::color{0.0f, 0.6588f, 0.4196f, 0.6f}, 0.0f, 0.5f, 1.0f);
 
   auto& dragon_material = scene.add_material<sbx::models::material>("dragon");
   dragon_material.base_color = sbx::math::color{0.0f, 0.6588f, 0.4196f, 0.6f};
   dragon_material.alpha = sbx::models::alpha_mode::blend;
-  // dragon_material.alpha = sbx::models::alpha_mode::opaque;
-  // dragon_material.is_double_sided = true;
 
   auto& cloth_material = scene.add_material<sbx::models::material>("cloth");
   cloth_material.base_color = sbx::math::color::green();

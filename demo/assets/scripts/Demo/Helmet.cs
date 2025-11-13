@@ -4,7 +4,7 @@ using Sbx.Core;
 namespace Demo
 {
 
-  public class Demo : Behavior
+  public class Helmet : Behavior
   {
 
     public void SayHello()
@@ -28,7 +28,7 @@ namespace Demo
       tag.Value = value;
     }
     
-    protected override void OnUpdate()
+    protected override void OnUpdate(float deltaTime)
     {
       if (Input.IsKeyPressed(KeyCode.Space))
       {

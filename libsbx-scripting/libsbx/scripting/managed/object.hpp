@@ -152,32 +152,32 @@ public:
   }
 
   template<typename Result>
-  Result get_property_value(std::string_view name) const
+  auto get_property_value(std::string_view name) const -> Result
   {
     Result result;
     get_property_value_raw(name, &result);
     return result;
   }
 
-  void set_field_value_raw(std::string_view name, const void* value) const;
+  auto set_field_value_raw(std::string_view name, const void* value) const -> void;
 
-  void get_field_value_raw(std::string_view name, void* value) const;
+  auto get_field_value_raw(std::string_view name, void* value) const -> void;
 
-  void set_property_value_raw(std::string_view name, const void* value) const;
+  auto set_property_value_raw(std::string_view name, const void* value) const -> void;
 
-  void get_property_value_raw(std::string_view name, void* value) const;
+  auto get_property_value_raw(std::string_view name, void* value) const -> void;
 
-  const type& get_type();
+  auto get_type() -> const type&;
   
-  void destroy();
+  auto destroy() -> void;
 
   auto is_valid() const -> bool;
 
 private:
 
-  void _invoke_method_internal(std::string_view name, const void** parameters, const managed_type* parameter_types, std::size_t length) const;
+  auto _invoke_method_internal(std::string_view name, const void** parameters, const managed_type* parameter_types, std::size_t length) const -> void;
 
-  void _invoke_method_return_internal(std::string_view name, const void** parameters, const managed_type* parameter_types, std::size_t length, void* result_storage) const;
+  auto _invoke_method_return_internal(std::string_view name, const void** parameters, const managed_type* parameter_types, std::size_t length, void* result_storage) const -> void;
 
   void* _handle;
   const type* _type;

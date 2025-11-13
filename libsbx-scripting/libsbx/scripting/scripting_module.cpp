@@ -19,51 +19,9 @@
 
 namespace sbx::scripting {
 
-static auto _push_fmt_arg(fmt::dynamic_format_arg_store<fmt::format_context>& store, const sol::object& object) -> void {
-  switch (object.get_type()) {
-    case sol::type::string: {
-      store.push_back(object.as<std::string_view>()); 
-      break;
-    }
-    case sol::type::number: {
-      store.push_back(object.as<std::double_t>()); 
-      break;
-    }
-    case sol::type::boolean: {
-      store.push_back(object.as<bool>()); 
-      break;
-    }
-    case sol::type::nil: {
-      store.push_back("(nil)"); 
-      break;
-    }
-    default: {
-      auto state = sol::state_view{object.lua_state()};
-      auto tostring = state["tostring"];
-      auto result = tostring(object);
-
-      if (result.valid()) {
-        store.push_back(sol::stack::get<std::string>(result.lua_state(), -1));
-      } else {
-        store.push_back("<userdata>");
-      }
-
-      break;
-    }
-  }
-}
-
 scripting_module::scripting_module() {
-  _state.open_libraries(sol::lib::base, sol::lib::package, sol::lib::math, sol::lib::table);
-
-  _register_module();
-
-  _register_component_type<scenes::tag>("tag");
-
-  _register_user_types();
-
   auto config = scripting::managed::rumtime_config{
-		.backend_path = "build/x86_64/gcc/debug/_dotnet_out",
+		.backend_path = "build/x86_64/gcc/debug/_dotnet",
 		.exception_callback = _exception_callback
 	};
 
@@ -71,7 +29,8 @@ scripting_module::scripting_module() {
 
   _context = _runtime.create_assembly_load_context("ScriptingContext");
 
-  auto core_assembly_path = std::filesystem::path{"build/x86_64/gcc/debug/_dotnet_out/Sbx.Core.dll"};
+  auto core_assembly_path = std::filesystem::path{"build/x86_64/gcc/debug/_dotnet/Sbx.Core.dll"};
+
 	_core_assembly = _context.load_assembly(core_assembly_path.string());
 
   _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "Log_LogMessage", reinterpret_cast<void*>(&interop::log_log_message));
@@ -103,195 +62,71 @@ scripting_module::~scripting_module() {
 
 }
 
-static auto demo_instance = managed::object{};
+// auto scripting_module::test() -> void {
+//   auto demo_assembly_path = std::filesystem::path{"build/x86_64/gcc/debug/_dotnet/Demo.dll"};
+// 	auto& demo_assembly = _context.load_assembly(demo_assembly_path.string());
 
-auto scripting_module::test() -> void {
-  auto demo_assembly_path = std::filesystem::path{"build/x86_64/gcc/debug/_dotnet_out/Demo.dll"};
-	auto& demo_assembly = _context.load_assembly(demo_assembly_path.string());
+//   auto demo_type = demo_assembly.get_type("Demo.Demo");
 
-  auto demo_type = demo_assembly.get_type("Demo.Demo");
+//   demo_instance = demo_type.create_instance();
 
-  demo_instance = demo_type.create_instance();
+//   auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
+//   auto& scene = scenes_module.scene();
 
-  auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
-  auto& scene = scenes_module.scene();
+//   const auto demo_node = scene.create_node("SCRIPT_TEST");
 
-  const auto demo_node = scene.create_node("SCRIPT_TEST");
+//   demo_instance.set_field_value("Node", static_cast<std::uint32_t>(demo_node));
 
-  demo_instance.set_field_value("Node", static_cast<std::uint32_t>(demo_node));
+//   auto& transform = scene.get_component<scenes::transform>(demo_node);
+//   transform.set_position(math::vector3{1, 2, 3});
 
-  auto& transform = scene.get_component<scenes::transform>(demo_node);
-  transform.set_position(math::vector3{1, 2, 3});
+//   demo_instance.invoke("SayHello");
 
-  demo_instance.invoke("SayHello");
-
-  demo_instance.invoke("SetTag", managed::string::create("TEST_TAG"));
+//   demo_instance.invoke("SetTag", managed::string::create("TEST_TAG"));
   
-  demo_instance.invoke("SayHello");
+//   demo_instance.invoke("SayHello");
 
-  demo_instance.invoke("OnCreate");
-}
+//   demo_instance.invoke("OnCreate");
+// }
 
 auto scripting_module::update() -> void {
   SBX_PROFILE_SCOPE("scripting_module::update");
 
+  auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
+  auto& scene = scenes_module.scene();
+
   const auto delta_time = core::engine::delta_time();
 
-  demo_instance.invoke("OnUpdate");
+  auto scripts_query = scene.query<scripting::scripts>();
 
-  for (const auto& [node, instances] : _instances) {
-    for (const auto& [name, instance] : instances) {
-      auto result = instance.on_update(instance.self, delta_time.value());
-
-      if (!result.valid()) {
-        utility::logger<"scripting">::error("on_create error: {}", sol::error{result}.what());
-      }
+  for (auto&& [node, scripts] : scripts_query.each()) {
+    for (auto& instance : scripts.instances) {
+      instance.invoke("OnUpdate", delta_time.value());
     }
   }
 }
 
-auto scripting_module::instantiate(const scenes::node node, const std::filesystem::path& path) -> void {
+auto scripting_module::instantiate(const scenes::node node, const std::filesystem::path& assembly_path, std::string_view class_name) -> managed::object {
   auto& assets_module = core::engine::get_module<assets::assets_module>();
 
-  const auto resolved_path = assets_module.resolve_path(path);
+  auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
+  auto& scene = scenes_module.scene();
 
-  utility::logger<"scripting">::info("resolved_path: {}", resolved_path.string());
+  auto& assembly = _context.get_or_load_assembly(assembly_path.string());
 
-  auto result = _state.safe_script_file(resolved_path.string());
+  auto type = assembly.get_type(class_name);
 
-   if (!result.valid()) {
-    utility::logger<"scripting">::error("{}", sol::error{result}.what());
-    return;
-  }
+  auto instance = type.create_instance();
 
-  auto object = sol::object{result};
+  instance.set_field_value("Node", static_cast<std::uint32_t>(node));
 
-  if (!object.is<sol::table>()) {
-    utility::logger<"scripting">::error("Script '{}' did not return a table!", resolved_path.string());
-    return;
-  }
+  instance.invoke("OnCreate");
 
-  // auto metatable = _state.create_table_with(sol::meta_function::index, _state["behavior_base"]);
+  auto& scripts = scene.get_or_add_component<scripting::scripts>(node);
 
-  auto instance = script_instance{};
+  scripts.instances.push_back(instance);
 
-  instance.self = object.as<sol::table>();
-
-  _prepare_script(instance.self, node);
-
-  if (auto handle = instance.self.get<sol::optional<sol::function>>("on_create")) {
-    instance.on_create = *handle;
-  }
-
-  if (auto handle = instance.self.get<sol::optional<sol::function>>("on_update")) {
-    instance.on_update = *handle;
-  }
-
-  if (auto handle = instance.self.get<sol::optional<sol::function>>("on_destroy")) {
-    instance.on_destroy = *handle;
-  }
-
-  auto on_create_result = instance.on_create(instance.self);
-
-  if (!on_create_result.valid()) {
-    utility::logger<"scripting">::error("on_create error: {}", sol::error{on_create_result}.what());
-  }
-
-  _instances[node].emplace(path.stem().filename().string(), std::move(instance));
-}
-
-auto scripting_module::_register_user_types() -> void{
-  _module.new_usertype<scenes::tag>("tag",
-    sol::no_constructor,
-    sol::meta_function::type_info, [](){
-      return "tag";
-    },
-    sol::meta_function::to_string, [](scenes::tag& tag){
-      return tag.str();
-    }
-  );
-}
-
-auto scripting_module::_register_module() -> void {
-  _module = _state.create_table();
-
-  _module.set_function("version", [](){ return "0.1.0"; });
-
-  _module.set_function("debug", [](std::string_view fmt, sol::variadic_args variadic_args) {
-    auto store = fmt::dynamic_format_arg_store<fmt::format_context>{};
-
-    for (auto args : variadic_args) {
-      _push_fmt_arg(store, args);
-    }
-
-    utility::logger<"scripting">::debug("{}", fmt::vformat(fmt, store));
-  });
-
-  _module.set_function("info", [](std::string_view fmt, sol::variadic_args variadic_args) {
-    auto store = fmt::dynamic_format_arg_store<fmt::format_context>{};
-
-    for (auto args : variadic_args) {
-      _push_fmt_arg(store, args);
-    }
-
-    utility::logger<"scripting">::info("{}", fmt::vformat(fmt, store));
-  });
-
-  _module.set_function("warn", [](std::string_view fmt, sol::variadic_args variadic_args) {
-    auto store = fmt::dynamic_format_arg_store<fmt::format_context>{};
-
-    for (auto args : variadic_args) {
-      _push_fmt_arg(store, args);
-    }
-
-    utility::logger<"scripting">::warn("{}", fmt::vformat(fmt, store));
-  });
-
-  _module.set_function("error", [](std::string_view fmt, sol::variadic_args variadic_args) {
-    auto store = fmt::dynamic_format_arg_store<fmt::format_context>{};
-
-    for (auto args : variadic_args) {
-      _push_fmt_arg(store, args);
-    }
-
-    utility::logger<"scripting">::error("{}", fmt::vformat(fmt, store));
-  });
-
-  auto preload = _state["package"]["preload"];
-
-  preload["sbx"] = [this](sol::this_state) {
-    return _module;
-  };
-}
-
-auto scripting_module::_prepare_script(sol::table& script, const scenes::node node) -> void {
-  script.set_function("get_component", [this, node](sol::table self, sol::object which) -> sol::object {
-    auto* accessor = static_cast<component_accessor*>(nullptr);
-    
-    if (which.get_type() != sol::type::string) {
-      utility::logger<"scripting">::warn("Object is not string");
-
-      return sol::nil; 
-    }
-
-    auto tag = which.as<std::string>();
-
-    if (auto it = _component_accessors.find(tag); it != _component_accessors.end()) {
-      accessor = &it->second;
-    }
-
-    if (!accessor) {
-      return sol::nil;
-    }
-
-    auto* raw = accessor->get_raw(node);
-
-    if (!raw) {
-      return sol::nil;
-    }
-
-    return accessor->to_lua(raw, _state);
-  });
+  return instance;
 }
 
 } // namespace sbx::scripting

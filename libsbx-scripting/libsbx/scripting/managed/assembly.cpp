@@ -56,6 +56,8 @@ auto assembly_load_context::load_assembly(std::string_view file_path) -> assembl
 
   auto [idx, result] = _loaded_assemblies.emplace_back();
 
+  _assembly_indices.emplace(utility::hashed_string{file_path.data(), file_path.size()}, idx);
+
   result._runtime = _runtime;
   result._assembly_id = std::invoke(detail::backend.load_assembly, _context_id, filepath);
   result._load_status = std::invoke(detail::backend.get_last_load_status);
@@ -123,6 +125,13 @@ auto assembly_load_context::load_assembly_from_memory(const std::byte* data, std
   return result;
 }
 
+auto assembly_load_context::get_or_load_assembly(std::string_view file_path) -> assembly& {
+  if (auto entry = _assembly_indices.find(utility::hashed_string{file_path.data(), file_path.size()}); entry != _assembly_indices.end()) {
+    return _loaded_assemblies[entry->second];
+  }
+
+  return load_assembly(file_path);
+}
 
 auto assembly_load_context::get_loaded_assemblies() const -> const stable_vector<assembly>& { 
   return _loaded_assemblies; 

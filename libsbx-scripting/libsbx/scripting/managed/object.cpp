@@ -75,7 +75,7 @@ void object::get_property_value_raw(std::string_view name, void* value) const {
   string::destroy(property_name);
 }
 
-const type& object::get_type() {
+auto object::get_type() -> const type& {
   if (!_type) {
     auto new_type = type{};
 

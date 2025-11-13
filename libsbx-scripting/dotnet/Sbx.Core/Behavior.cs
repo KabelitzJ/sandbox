@@ -19,7 +19,7 @@ namespace Sbx.Core
 
 		protected virtual void OnCreate() { }
 
-		protected virtual void OnUpdate() { }
+		protected virtual void OnUpdate(float deltaTime) { }
 
 		protected virtual void OnFixedUpdate() { }
 
