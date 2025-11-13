@@ -54,6 +54,9 @@ public:
 
     _node = scene.create_node("Terrain");
 
+    auto& transform = scene.get_component<sbx::scenes::transform>(_node);
+    transform.set_position(sbx::math::vector3{0, 0.5f, 0});
+
     auto& terrain_material = scene.add_material<sbx::models::material>("terrain");
     terrain_material.albedo = scene.get_image("prototype");
 
