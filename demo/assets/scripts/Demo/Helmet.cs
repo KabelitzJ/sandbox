@@ -7,6 +7,9 @@ namespace Demo
   public class Helmet : Behavior
   {
 
+    private LayerMask selectionMask;
+    private LayerMask targetMask;
+
     public void SayHello()
     {
       var tag = GetComponent<Tag>();

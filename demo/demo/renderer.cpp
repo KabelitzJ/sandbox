@@ -20,6 +20,7 @@
   #include <libsbx/post/filters/resolve_filter.hpp>
   #include <libsbx/post/filters/blur_filter.hpp>
   #include <libsbx/post/filters/fxaa_filter.hpp>
+  #include <libsbx/post/filters/selection_filter.hpp>
 
   #include <libsbx/shadows/shadow_subrenderer.hpp>
   #include <libsbx/ui/ui_subrenderer.hpp>
@@ -33,7 +34,7 @@
 
   renderer::renderer()
   : _clear_color{sbx::math::color::white()} {
-    auto [deferred, transparency, resolve, post, editor] = create_graph(
+    auto [deferred, transparency, resolve, post, selection, editor] = create_graph(
       [&](sbx::graphics::render_graph::context& context) -> sbx::graphics::render_graph::graphics_pass {
         auto deferred_pass = context.graphics_pass("deferred");
 
@@ -107,9 +108,18 @@
         return post_pass;
       },
       [&](sbx::graphics::render_graph::context& context) -> sbx::graphics::render_graph::graphics_pass {
+        auto selection_pass = context.graphics_pass("selection");
+
+        selection_pass.uses("post");
+
+        selection_pass.produces("selection", sbx::graphics::attachment::type::image, _clear_color, sbx::graphics::format::r8g8b8a8_unorm);
+
+        return selection_pass;
+      },
+      [&](sbx::graphics::render_graph::context& context) -> sbx::graphics::render_graph::graphics_pass {
         auto editor_pass = context.graphics_pass("editor");
 
-        editor_pass.uses("post");
+        editor_pass.uses("selection");
 
         editor_pass.produces("swapchain", sbx::graphics::attachment::type::swapchain, _clear_color, sbx::graphics::format::b8g8r8a8_srgb);
 
@@ -159,10 +169,12 @@
     add_subrenderer<sbx::scenes::debug_subrenderer>(resolve, "res://shaders/debug");
 
     // Post-processing pass
-    add_subrenderer<sbx::post::fxaa_filter>(post, "res://shaders/fxaa", "resolve");
+    // add_subrenderer<sbx::post::selection_filter>(selection, "res://shaders/selection", "resolve", "object_id", "normalized_depth");
+
+    // add_subrenderer<sbx::post::fxaa_filter>(post, "res://shaders/fxaa", "selection");
 
     // Editor pass
-    add_subrenderer<sbx::editor::editor_subrenderer>(editor, "res://shaders/editor", "post");
+    add_subrenderer<sbx::editor::editor_subrenderer>(editor, "res://shaders/editor", "resolve");
   }
 
   } // namespace demo

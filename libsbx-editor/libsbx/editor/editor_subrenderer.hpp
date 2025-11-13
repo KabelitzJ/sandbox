@@ -937,9 +937,9 @@ private:
         ImGui::Text("  %.3f [ms]", ms.value());
         ImGui::PopStyleColor();
         // ImGui::SameLine();
-        ImGui::PushStyleColor(ImGuiCol_PlotHistogram, _get_color_for_time(ms));
-        ImGui::ProgressBar(ms.value() / 16.66, ImVec2(200, 15));
-        ImGui::PopStyleColor();
+        // ImGui::PushStyleColor(ImGuiCol_PlotHistogram, _get_color_for_time(ms));
+        // ImGui::ProgressBar(ms.value() / 16.66, ImVec2(200, 15));
+        // ImGui::PopStyleColor();
 
         ImGui::Text("FPS          %d", _fps);
       }

@@ -81,6 +81,34 @@ inline auto delta(const sampler_vector<std::uint64_t>& time_samplers, const samp
   return 0;
 }
 
+inline auto lerp_color(const ImVec4& a, const ImVec4& b, std::float_t t) {
+  return ImVec4{
+    a.x + (b.x - a.x) * t,
+    a.y + (b.y - a.y) * t,
+    a.z + (b.z - a.z) * t,
+    a.w + (b.w - a.w) * t
+  };
+}
+
+inline auto get_color_for_time(const units::millisecond ms) -> ImVec4 {
+  static constexpr auto green  = ImVec4{0.40f, 0.85f, 0.40f, 1.0f};
+  static constexpr auto yellow = ImVec4{0.95f, 0.85f, 0.20f, 1.0f};
+  static constexpr auto orange = ImVec4{0.95f, 0.55f, 0.15f, 1.0f};
+  static constexpr auto red    = ImVec4{0.90f, 0.25f, 0.25f, 1.0f};
+
+  if (ms <= 10.0f) {
+    return green;
+  } else if (ms <= 16.66f) {
+    const auto t = (ms - 10.0f) / (16.66f - 10.0f);
+    return lerp_color(green, yellow, t);
+  } else if (ms <= 33.33f) {
+    const auto t = (ms - 16.66f) / (33.33f - 16.66f);
+    return lerp_color(yellow, red, t);
+  } else {
+    return red;
+  }
+}
+
 inline auto render_node(const sampler_vector<std::uint64_t>& time_samplers, const sampler_vector<std::double_t>& percent_samplers, const core::scope_info::node_id node_id, const std::span<const core::scope_info>& all_nodes, const child_map& child_map) -> void {
   const auto& info = all_nodes[node_id];
   const auto& children = child_map[node_id];
@@ -101,7 +129,10 @@ inline auto render_node(const sampler_vector<std::uint64_t>& time_samplers, cons
   const bool is_node_open = ImGui::TreeNodeEx(reinterpret_cast<void*>(node_id), node_flags, "%s", info.label.data());
 
   ImGui::TableSetColumnIndex(columns::time);
-  ImGui::Text("%s%.3f", spaces_ptr, time_samplers[node_id].average_as<std::double_t>() / 1000.0);
+  const auto time = (time_samplers[node_id].average_as<std::double_t>() / 1000.0);
+  ImGui::PushStyleColor(ImGuiCol_Text, get_color_for_time(units::millisecond{time}));
+  ImGui::Text("%s%.3f", spaces_ptr, time);
+  ImGui::PopStyleColor();
 
   ImGui::TableSetColumnIndex(columns::percent);
 

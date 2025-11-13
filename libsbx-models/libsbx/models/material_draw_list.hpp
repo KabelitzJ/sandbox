@@ -100,7 +100,7 @@ public:
 
     auto material_indices = std::unordered_map<math::uuid, std::uint32_t>{};
 
-    traits_type::for_each_submission(scene, [&](const component_type& component, const math::uuid& mesh_id, std::uint32_t submesh_index, const math::uuid& material_id, const transform_data& transform, const instance_payload& payload) {
+    traits_type::for_each_submission(scene, [&](const component_type& component, const math::uuid& mesh_id, std::uint32_t submesh_index, const math::uuid& material_id, const transform_data& transform, const scenes::selection_tag& selection_tag, const instance_payload& payload) {
       const auto transform_index = static_cast<std::uint32_t>(_transform_data.size());
       _transform_data.push_back(transform);
 
@@ -114,7 +114,7 @@ public:
         _push_material(material);
       }
 
-      const auto instance = traits_type::make_instance_data(transform_index, entry->second, payload);
+      const auto instance = traits_type::make_instance_data(transform_index, entry->second, selection_tag, payload);
 
       auto& per_mesh = pipeline.submesh_instances[mesh_id];
 

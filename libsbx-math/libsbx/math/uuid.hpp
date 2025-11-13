@@ -158,9 +158,6 @@ namespace sbx::math {
 template<std::unsigned_integral Type>
 class basic_uuid {
 
-  friend struct fmt::formatter<sbx::math::basic_uuid<Type>>;
-  friend struct std::hash<sbx::math::basic_uuid<Type>>;
-
 public:
 
   using value_type = Type;
@@ -215,7 +212,7 @@ struct fmt::formatter<sbx::math::basic_uuid<Type>> {
 
   template<typename FormatContext>
   auto format(const sbx::math::basic_uuid<Type>& uuid, FormatContext& context) const -> decltype(context.out()) {
-    return fmt::format_to(context.out(), "{}", uuid._value);
+    return fmt::format_to(context.out(), "{}", uuid.value());
   }
 }; // struct fmt::formatter<sbx::math::uuid>
 
@@ -223,7 +220,7 @@ struct fmt::formatter<sbx::math::basic_uuid<Type>> {
 template<std::unsigned_integral Type>
 struct std::hash<sbx::math::basic_uuid<Type>> {
   auto operator()(const sbx::math::basic_uuid<Type>& uuid) const noexcept -> std::size_t {
-    return uuid._value;
+    return uuid.value();
   }
 }; // struct std::hash<sbx::math::uuid>
 

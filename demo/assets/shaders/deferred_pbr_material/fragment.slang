@@ -1,5 +1,6 @@
 #include <libsbx/common/depth.slang>
 #include <libsbx/common/image.slang>
+#include <libsbx/common/scene_data.slang>
 #include <libsbx/common/texture_sampler.slang>
 
 #include <common.slang>
@@ -33,6 +34,9 @@ struct blend_fs_out {
   float4 accum : SV_Target0;
   float revealage : SV_Target1;
 }; // struct blend_fs_out
+
+[[vk::binding(0, 0)]]
+ConstantBuffer<sbx::common::scene_data> scene;
 
 [[vk::binding(1, 0)]]
 SamplerState images_sampler;
@@ -101,7 +105,7 @@ opaque_fs_out opaque_main(fs_in in) {
   out.material = float4(get_material(in), 0.0);
   out.emissive = float4(get_emissive(in), 0.0);
   out.object_id = in.object_id;
-  out.depth = sbx::common::linearize_depth(in.sv_position.z, sbx::common::default_near, sbx::common::default_far);
+  out.depth = sbx::common::linearize_depth(in.sv_position.z, scene.camera_near, scene.camera_far);
 
   return out;
 }
@@ -122,7 +126,7 @@ opaque_fs_out mask_main(fs_in in) {
   out.material = float4(get_material(in), 0.0);
   out.emissive = float4(get_emissive(in), 0.0);
   out.object_id = in.object_id;
-  out.depth = sbx::common::linearize_depth(in.sv_position.z, sbx::common::default_near, sbx::common::default_far);
+  out.depth = sbx::common::linearize_depth(in.sv_position.z, scene.camera_near, scene.camera_far);
 
   return out;
 }

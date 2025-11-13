@@ -91,20 +91,31 @@ struct static_mesh_traits {
 
   template<class Callable>
   static void for_each_submission(scenes::scene& scene, Callable&& callable) {
-    auto query = scene.query<const component_type>();
+    auto query = scene.query<const component_type, const scenes::selection_tag>();
 
-    for (auto&& [node, component] : query.each()) {
+    for (auto&& [node, component, selection_tag] : query.each()) {
       const auto transform_data = models::transform_data{ scene.world_transform(node), scene.world_normal(node) };
 
       for (const auto& submesh : component.submeshes()) {
-        std::invoke(callable, component, component.mesh_id(), submesh.index, submesh.material, transform_data, instance_payload{});
+        std::invoke(callable, component, component.mesh_id(), submesh.index, submesh.material, transform_data, selection_tag, instance_payload{});
       }
     }
   }
 
-  static auto make_instance_data(std::uint32_t transform_index, std::uint32_t material_index, const instance_payload& payload) -> instance_data {
-    return instance_data{transform_index, material_index, 0u, 0u};
+  static auto make_instance_data(std::uint32_t transform_index, std::uint32_t material_index, const scenes::selection_tag& selection_tag, const instance_payload& payload) -> instance_data {
+    auto [entry, created] = _selection_tags.try_emplace(selection_tag, 0u);
+
+    if (created && selection_tag != scenes::selection_tag::null) {
+      entry->second = math::random::next<std::uint32_t>(1u); 
+    }
+
+    return instance_data{transform_index, material_index, entry->second, 0u};
   }
+
+private:
+
+  inline static auto _selection_tags = std::unordered_map<scenes::selection_tag, std::uint32_t>{};
+
 }; // static_mesh_traits
 
 using static_mesh_material_draw_list = basic_material_draw_list<static_mesh_traits>;

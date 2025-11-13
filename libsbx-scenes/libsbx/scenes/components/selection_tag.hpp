@@ -21,4 +21,11 @@ public:
 
 } // namespace sbx::scenes
 
+template<>
+struct std::hash<sbx::scenes::selection_tag> {
+  auto operator()(const sbx::scenes::selection_tag& selection_tag) const noexcept -> std::size_t {
+    return selection_tag.value();
+  }
+}; // struct std::hash<sbx::math::uuid>
+
 #endif // LIBSBX_SCENES_COMPONENTS_SELECTION_TAG_HPP_

@@ -7,10 +7,13 @@ struct scene_data {
   float4x4 view;
   float4x4 projection;
   float3 camera_position;
+  float camera_near;
+  float camera_far;
+  float camera_fov_radians;
+  uint2 viewport;
   float3 light_direction;
   float4 light_color;
   float4x4 light_space;
-  uint point_light_count;
   float time;
 }; // struct scene_data
 

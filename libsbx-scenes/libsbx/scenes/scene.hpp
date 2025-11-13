@@ -326,6 +326,8 @@ public:
   }
 
   auto update_uniform_handler() -> void {
+    auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
     auto& camera = get_component<scenes::camera>(_camera);
 
     const auto& projection = camera.projection();
@@ -339,7 +341,17 @@ public:
 
     _uniform_handler.push("view", view);
 
+    _uniform_handler.push("viewport", graphics_module.dynamic_viewport());
+
+    utility::logger<"scenes">::debug("viewport: {}", graphics_module.dynamic_viewport());
+    utility::logger<"scenes">::debug("camera_near: {}", camera.near_plane());
+    utility::logger<"scenes">::debug("camera_far: {}", camera.far_plane());
+    utility::logger<"scenes">::debug("camera_fov_radians: {}", camera.field_of_view().to_radians().value());
+
     _uniform_handler.push("camera_position", camera_transform.position());
+    _uniform_handler.push("camera_near", camera.near_plane());
+    _uniform_handler.push("camera_far", camera.far_plane());
+    _uniform_handler.push("camera_fov_radians", camera.field_of_view().to_radians().value());
 
     _uniform_handler.push("light_space", light_space());
 

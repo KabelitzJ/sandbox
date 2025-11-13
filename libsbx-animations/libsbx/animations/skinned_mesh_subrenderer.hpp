@@ -86,40 +86,47 @@ struct skinned_mesh_traits {
 
   template<typename DrawList>
   static auto update_shared_buffers(DrawList& draw_list) -> void {
-    draw_list.update_buffer(bone_matrices, bone_matrices_buffer_name);
-    bone_matrices.clear();
+    draw_list.update_buffer(_bone_matrices, bone_matrices_buffer_name);
+    _bone_matrices.clear();
   }
 
   template <typename Callable>
   static auto for_each_submission(scenes::scene& scene, Callable&& callable) -> void {
     // pull id to optionally pack selection; animator is present but we only need the pose already stored in component
-    const auto query = scene.query<const scenes::skinned_mesh, animations::animator>();
+    const auto query = scene.query<const scenes::skinned_mesh, const scenes::selection_tag, animations::animator>();
 
-    for (auto&& [node, skinned_mesh, animator] : query.each()) {
+    for (auto&& [node, skinned_mesh, selection_tag, animator] : query.each()) {
       const auto transform = models::transform_data{scene.world_transform(node), scene.world_normal(node)};
 
-      const auto bone_offset = static_cast<std::uint32_t>(bone_matrices.size());
+      const auto bone_offset = static_cast<std::uint32_t>(_bone_matrices.size());
       const auto& pose = skinned_mesh.pose();
 
-      utility::append(bone_matrices, pose);
+      utility::append(_bone_matrices, pose);
 
       for (const auto& submesh : skinned_mesh.submeshes()) {
         const auto& mesh_id = skinned_mesh.mesh_id();
         const auto submesh_index = submesh.index;
         const auto& material_id = submesh.material;
 
-        std::invoke(callable, skinned_mesh, mesh_id, submesh_index, material_id, transform, instance_payload{bone_offset});
+        std::invoke(callable, skinned_mesh, mesh_id, submesh_index, material_id, transform, selection_tag, instance_payload{bone_offset});
       }
     }
   }
 
-  static auto make_instance_data(std::uint32_t transform_index, std::uint32_t material_index, const instance_payload& payload) -> models::instance_data {
-    return models::instance_data{transform_index, material_index, payload.bone_offset, 0u};
+  static auto make_instance_data(std::uint32_t transform_index, std::uint32_t material_index, const scenes::selection_tag& selection_tag, const instance_payload& payload) -> models::instance_data {
+    auto [entry, created] = _selection_tags.try_emplace(selection_tag, 0u);
+
+    if (created && selection_tag != scenes::selection_tag::null) {
+      entry->second = math::random::next<std::uint32_t>(1u); 
+    }
+
+    return models::instance_data{transform_index, material_index, payload.bone_offset, entry->second};
   }
 
 private:
 
-  inline static auto bone_matrices = std::vector<math::matrix4x4>{};
+  inline static auto _bone_matrices = std::vector<math::matrix4x4>{};
+  inline static auto _selection_tags = std::unordered_map<scenes::selection_tag, std::uint32_t>{};
 
 }; // struct skinned_mesh_traits
 

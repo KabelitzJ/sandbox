@@ -8,6 +8,7 @@
 
 #include <libsbx/graphics/graphics_module.hpp>
 #include <libsbx/graphics/buffers/uniform_buffer.hpp>
+#include <libsbx/graphics/buffers/push_handler.hpp>
 
 #include <libsbx/scenes/scenes_module.hpp>
 #include <libsbx/scenes/scene.hpp>
@@ -27,7 +28,7 @@ namespace sbx::post {
 template<bool Transparent>
 class resolve_filter final : public filter {
 
-  using base_type = filter;
+  using base = filter;
 
   inline static constexpr auto max_point_lights = std::size_t{32};
 
@@ -49,7 +50,8 @@ class resolve_filter final : public filter {
 public:
 
   resolve_filter(const graphics::render_graph::graphics_pass& pass, const std::filesystem::path& path, std::vector<std::pair<std::string, std::string>>&& attachment_names)
-  : base_type{pass, path, pipeline_definition},
+  : base{pass, path, pipeline_definition},
+    _push_handler{base::pipeline()},
     _attachment_names{std::move(attachment_names)} { }
 
   ~resolve_filter() override = default;
@@ -59,23 +61,10 @@ public:
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
     auto& scene = scenes_module.scene();
 
-    auto camera_node = scene.camera();
-
-    auto& pipeline = base_type::pipeline();
-    auto& descriptor_handler = base_type::descriptor_handler();
+    auto& pipeline = base::pipeline();
+    auto& descriptor_handler = base::descriptor_handler();
 
     pipeline.bind(command_buffer);
-
-    const auto& camera_transform = scene.get_component<scenes::transform>(camera_node);
-
-    _scene_uniform_handler.push("camera_position", camera_transform.position());
-
-    auto& scene_light = scene.light();
-
-    _scene_uniform_handler.push("light_space", scene.light_space());
-
-    _scene_uniform_handler.push("light_direction", sbx::math::vector3::normalized(scene_light.direction()));
-    _scene_uniform_handler.push("light_color", scene_light.color());
 
     auto point_light_nodes = scene.query<scenes::point_light>();
 
@@ -99,11 +88,17 @@ public:
       }
     }
 
-    _point_lights_storage_handler.push(std::span<const point_light_data>{point_lights.data(), point_light_count});
-    _scene_uniform_handler.push("point_light_count", point_light_count);
+    
+    if (!Transparent) {
+      _point_lights_storage_handler.push(std::span<const point_light_data>{point_lights.data(), point_light_count});
+      _push_handler.push("point_light_count", point_light_count);
+    }
 
-    descriptor_handler.push("scene", _scene_uniform_handler);
-    descriptor_handler.push("buffer_point_lights", _point_lights_storage_handler);
+    descriptor_handler.push("scene", scene.uniform_handler());
+
+    if (!Transparent) {
+      descriptor_handler.push("buffer_point_lights", _point_lights_storage_handler);
+    }
 
     for (const auto& [name, attachment] : _attachment_names) {
       descriptor_handler.push(name, graphics_module.attachment(attachment));
@@ -115,6 +110,10 @@ public:
 
     descriptor_handler.bind_descriptors(command_buffer);
 
+    if (!Transparent) {
+      _push_handler.bind(command_buffer);
+    }
+
     command_buffer.draw(3, 1, 0, 0);
   }
 
@@ -122,8 +121,8 @@ private:
 
   std::vector<std::pair<std::string, std::string>> _attachment_names;
 
-  graphics::uniform_handler _scene_uniform_handler;
   graphics::storage_handler _point_lights_storage_handler;
+  graphics::push_handler _push_handler;
 
 }; // class resolve_filter
 

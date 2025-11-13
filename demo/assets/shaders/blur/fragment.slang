@@ -3,13 +3,13 @@
 [[vk::binding(0, 0)]] 
 Sampler2D image;
 
-struct push_push {
+struct push_data {
   float2 direction;
   uint type;
-}; // struct push_push
+}; // struct push_data
 
 [[vk::push_constant]]
-ConstantBuffer<push_push> push;
+ConstantBuffer<push_data> push;
 
 struct fs_in {
   float2 uv : TEXCOORD0;

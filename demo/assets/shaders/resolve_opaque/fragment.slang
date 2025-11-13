@@ -1,5 +1,6 @@
 // #include <libsbx/common/lighting.slang>
 // #include <libsbx/common/shadow.slang>
+#include <libsbx/common/scene_data.slang>
 #include <libsbx/common/depth.slang>
 #include <libsbx/common/constants.slang>
 
@@ -12,16 +13,15 @@ struct fs_out {
   float4 color : SV_Target0;
 }; // struct fs_out
 
-struct scene_data {
-  float3 camera_position;
-  float3 light_direction;
-  float4 light_color;
-  float4x4 light_space;
+struct push_data {
   uint point_light_count;
-}; // struct scene_data
+}; // struct push_data
+
+[[vk::push_constant]]
+ConstantBuffer<push_data> push;
 
 [[vk::binding(0, 0)]]
-ConstantBuffer<scene_data> scene;
+ConstantBuffer<sbx::common::scene_data> scene;
 
 struct point_light {
   float4 position;
@@ -36,6 +36,7 @@ StructuredBuffer<point_light> buffer_point_lights;
 [[vk::binding(4, 0)]] Sampler2D<float4> normal_image;
 [[vk::binding(5, 0)]] Sampler2D<float4> material_image;
 [[vk::binding(6, 0)]] Sampler2D<float4> emissive_image;
+// [[vk::binding(7, 0)]] Sampler2D<uint> object_id_image;
 // [[vk::binding(7, 0)]] Sampler2D<float2> shadow_image;
 
 static const float3 DEFAULT_F0 = float3(0.04, 0.04, 0.04);
@@ -220,7 +221,7 @@ fs_out main(fs_in in) {
 
   color += (k_d * albedo / sbx::common::pi + specular) * irradiance;
 
-  for (uint i = 0u; i < scene.point_light_count; ++i) {
+  for (uint i = 0u; i < push.point_light_count; ++i) {
     point_light light = buffer_point_lights[i];
 
     float3 position = light.position.xyz;
@@ -239,8 +240,8 @@ fs_out main(fs_in in) {
 
     float3 radiance = light.color.rgb * light.color.a * attenuation;
 
-    float Dp = distribution_ggx(normal, h, roughness);
-    float Gp = geometry_smith(normal, view_dir, l_dir, roughness);
+    float Dp = distribution_ggx(normal, h, alpha);
+    float Gp = geometry_smith(normal, view_dir, l_dir, alpha);
     float3 Fp = fresnel_schlick(max(dot(h, view_dir), 0.0), f0);
 
     float3 numerator_p = Dp * Gp * Fp;
