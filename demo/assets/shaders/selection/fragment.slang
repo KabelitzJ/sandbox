@@ -35,10 +35,11 @@ fs_out main(fs_in in) {
 
   if (center_id == 0u) {
     out.color = base;
+
     return out;
   }
 
-  // --- World-space thickness -> pixel thickness ---
+  // World space thickness to pixel thickness
   float z_eye = scene.camera_near + norm_depth * (scene.camera_far - scene.camera_near);
 
   float pixels_per_unit = (scene.viewport.y * 0.5) / tan(scene.camera_fov_radians * 0.5);
@@ -50,15 +51,16 @@ fs_out main(fs_in in) {
   object_id_image.GetDimensions(width, height);
   float2 texel = 1.0 / float2(width, height);
 
-  // --- Spiral sampling (O(N) instead of O(N²)) ---
-  const int NUM_SAMPLES = 32;   // tweak: 24–48 is ideal
+  // Spiral sampling
+  // tweak: 24–48 is ideal
+  const int NUM_SAMPLES = 32;
   float min_dist = 1e9;
 
   [unroll]
   for (int i = 0; i < NUM_SAMPLES; ++i) {
     float t = float(i) / float(NUM_SAMPLES);
 
-    float r = t * thickness_px;         // radius in pixels
+    float r = t * thickness_px;
     float a = i * GOLDEN_ANGLE;
     float2 dir = float2(cos(a), sin(a));
 
@@ -74,14 +76,16 @@ fs_out main(fs_in in) {
 
   if (min_dist > thickness_px) {
     out.color = base;
+
     return out;
   }
 
-  // --- Fade inward just like your old shader ---
+  // Fade inward
   float border = 1.0;
   float d = max(min_dist - border, 0.0);
 
-  float t = d / max(thickness_px, 0.001); // 0 at border, 1 inside
+  // 0 at border, 1 inside
+  float t = d / max(thickness_px, 0.001);
   t = saturate(t);
 
   float strength = 1.0 - t;
