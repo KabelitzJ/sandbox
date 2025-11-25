@@ -223,7 +223,7 @@ application::application()
   cloth_material.base_color = sbx::math::color::green();
   cloth_material.albedo = scene.get_image("checkerboard");
 
-  scene.add_component<sbx::scenes::static_mesh>(dragon, scene.get_mesh("dragon"), std::vector<sbx::scenes::static_mesh::submesh>{{0u, scene.get_material("cloth")}, {1u, scene.get_material("dragon")}});
+  scene.add_component<sbx::scenes::static_mesh>(dragon, scene.get_mesh("dragon"), std::vector<sbx::scenes::static_mesh::submesh>{{0u, scene.get_material("cloth")}});
 
   auto& dragon_transform = scene.get_component<sbx::scenes::transform>(dragon);
   dragon_transform.set_position(sbx::math::vector3{-8.0f, 2.0f, 4.0f});

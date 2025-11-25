@@ -68,6 +68,13 @@ vs_out write(transform_data transform_data, material_data material_data, float3 
   return out;
 }
 
+const float4x4 identity = float4x4(
+  1, 0, 0, 0,
+  0, 1, 0, 0,
+  0, 0, 1, 0,
+  0, 0, 0, 1
+);
+
 [shader("vertex")]
 vs_out static_main(vs_in in) {
   uint global_vertex = in.vertex_id + in.base_vertex;
