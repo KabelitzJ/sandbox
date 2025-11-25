@@ -49,10 +49,10 @@ float4x4 calculate_skinning_matrix(uint4 bone_indices, float4 bone_weights, floa
   return result;
 }
 
-vs_out write(transform_data transform_data, material_data material_data, float3 position, float3 normal, float2 uv, float4 tangent, uint object_id) {
+vs_out write(transform_data transform_data, material_data material_data, float3 world_position, float3 normal, float2 uv, float4 tangent, uint object_id) {
   vs_out out;
 
-  out.position = position;
+  out.position = world_position;
   out.normal = normalize(mul(transform_data.normal, float4(normal, 0.0)).xyz);
   out.tangent = float4(normalize(mul(transform_data.normal, float4(tangent.xyz, 0.0)).xyz), tangent.w);
   out.uv = uv;
@@ -63,7 +63,7 @@ vs_out write(transform_data transform_data, material_data material_data, float3 
   out.object_id = object_id;
   out.alpha_cutoff = material_data.alpha_cutoff;
 
-  out.sv_position = mul(scene.projection, mul(scene.view, float4(position, 1.0)));
+  out.sv_position = mul(scene.projection, mul(scene.view, float4(world_position, 1.0)));
 
   return out;
 }

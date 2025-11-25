@@ -9,8 +9,8 @@ ConstantBuffer<sbx::common::scene_data> scene;
 
 struct push_data {
   float4 color;     // rgb = outline color, a = max intensity
-  float  thickness; // world-space thickness in scene units (e.g. 0.05)
-}; // struct push_data
+  float  thickness; // world-space thickness in scene units
+};
 
 [[vk::push_constant]]
 ConstantBuffer<push_data> push;
@@ -23,82 +23,72 @@ struct fs_out {
   float4 color : SV_Target0;
 };
 
+static const float GOLDEN_ANGLE = 2.39996323; // radians
+
 [shader("fragment")]
 fs_out main(fs_in in) {
   fs_out out;
 
-  float4 base_color      = image.Sample(in.uv);
-  uint   center_id       = object_id_image.Sample(in.uv);
-  float  normalized_depth = normalized_depth_image.Sample(in.uv);
+  float4 base       = image.Sample(in.uv);
+  uint   center_id  = object_id_image.Sample(in.uv);
+  float  norm_depth = normalized_depth_image.Sample(in.uv);
 
-  // No object here -> no outline
   if (center_id == 0u) {
-    out.color = base_color;
+    out.color = base;
     return out;
   }
 
-  // Reconstruct view-space distance from normalized [0..1] depth
-  float z_eye = scene.camera_near + normalized_depth * (scene.camera_far - scene.camera_near);
+  // --- World-space thickness -> pixel thickness ---
+  float z_eye = scene.camera_near + norm_depth * (scene.camera_far - scene.camera_near);
 
-  // pixels per unit at this depth (assuming scene.viewport.y is HEIGHT in pixels)
   float pixels_per_unit = (scene.viewport.y * 0.5) / tan(scene.camera_fov_radians * 0.5);
   pixels_per_unit /= max(z_eye, 0.0001);
 
-  // Convert world-space thickness -> pixels
-  float thickness_px = push.thickness * pixels_per_unit;
-
-  // Clamp to avoid massive kernels very close to camera
-  thickness_px = clamp(thickness_px, 1.0, 40.0);
+  float thickness_px = clamp(push.thickness * pixels_per_unit, 1.0, 40.0);
 
   uint width, height;
   object_id_image.GetDimensions(width, height);
   float2 texel = 1.0 / float2(width, height);
 
-  int radius = (int)ceil(thickness_px);
-
-  const float INF = 1e9;
-  float min_dist = INF;
+  // --- Spiral sampling (O(N) instead of O(N²)) ---
+  const int NUM_SAMPLES = 32;   // tweak: 24–48 is ideal
+  float min_dist = 1e9;
 
   [unroll]
-  for (int x = -radius; x <= radius; ++x) {
-    [unroll]
-    for (int y = -radius; y <= radius; ++y) {
-      if (x == 0 && y == 0)
-        continue;
+  for (int i = 0; i < NUM_SAMPLES; ++i) {
+    float t = float(i) / float(NUM_SAMPLES);
 
-      float2 offset_uv = in.uv + float2(x, y) * texel;
-      offset_uv = clamp(offset_uv, float2(0.0, 0.0), float2(1.0, 1.0));
+    float r = t * thickness_px;         // radius in pixels
+    float a = i * GOLDEN_ANGLE;
+    float2 dir = float2(cos(a), sin(a));
 
-      uint neighbor_id = object_id_image.Sample(offset_uv);
-      if (neighbor_id != center_id) {
-        float dist = length(float2(x, y)); // in pixels
-        min_dist = min(min_dist, dist);
-      }
+    float2 uv2 = in.uv + dir * (r * texel);
+    uv2 = clamp(uv2, 0.0, 1.0);
+
+    uint id2 = object_id_image.Sample(uv2);
+
+    if (id2 != center_id) {
+      min_dist = min(min_dist, r);
     }
   }
 
-  if (min_dist == INF) {
-    out.color = base_color;
+  if (min_dist > thickness_px) {
+    out.color = base;
     return out;
   }
 
-  // Fade inward: full at the border (≈1 px), then fade until thickness_px
-  float border_dist = 1.0;
-  float d = max(min_dist - border_dist, 0.0);
+  // --- Fade inward just like your old shader ---
+  float border = 1.0;
+  float d = max(min_dist - border, 0.0);
 
-  float t = d / max(thickness_px, 0.0001); // 0 at border, 1 at inner limit
+  float t = d / max(thickness_px, 0.001); // 0 at border, 1 inside
   t = saturate(t);
 
   float strength = 1.0 - t;
-  float alpha    = strength * push.color.a;
+  float alpha = strength * push.color.a;
 
-  float3 final_rgb = lerp(base_color.rgb, push.color.rgb, alpha);
-
-  out.color = float4(final_rgb, base_color.a);
-
-  // out.color = float4(float(center_id << 24), float(center_id << 16), float(center_id << 8), 1.0);
-
-  // out.color = base_color;
+  float3 final_rgb = lerp(base.rgb, push.color.rgb, alpha);
+  out.color = float4(final_rgb, base.a);
 
   return out;
 }

@@ -217,7 +217,7 @@ application::application()
 
   auto& dragon_material = scene.add_material<sbx::models::material>("dragon");
   dragon_material.base_color = sbx::math::color{0.0f, 0.6588f, 0.4196f, 0.6f};
-  dragon_material.alpha = sbx::models::alpha_mode::blend;
+  dragon_material.alpha = sbx::models::alpha_mode::opaque;
 
   auto& cloth_material = scene.add_material<sbx::models::material>("cloth");
   cloth_material.base_color = sbx::math::color::green();
