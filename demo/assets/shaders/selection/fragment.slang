@@ -3,7 +3,7 @@
 [[vk::binding(0, 0)]]
 ConstantBuffer<sbx::common::scene_data> scene;
 
-[[vk::binding(1, 0)]] Sampler2D<float4> image;
+[[vk::binding(1, 0)]] Sampler2D<float4> resolve_image;
 [[vk::binding(2, 0)]] Sampler2D<uint>   object_id_image;
 [[vk::binding(3, 0)]] Sampler2D<float>  normalized_depth_image;
 
@@ -29,9 +29,9 @@ static const float GOLDEN_ANGLE = 2.39996323; // radians
 fs_out main(fs_in in) {
   fs_out out;
 
-  float4 base       = image.Sample(in.uv);
-  uint   center_id  = object_id_image.Sample(in.uv);
-  float  norm_depth = normalized_depth_image.Sample(in.uv);
+  float4 base = resolve_image.Sample(in.uv);
+  uint center_id = object_id_image.Sample(in.uv);
+  float norm_depth = normalized_depth_image.Sample(in.uv);
 
   if (center_id == 0u) {
     out.color = base;

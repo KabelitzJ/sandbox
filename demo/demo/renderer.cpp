@@ -136,11 +136,11 @@
 
     // Deferred pass
     add_subrenderer<sbx::models::static_mesh_subrenderer>(deferred, "res://shaders/deferred_pbr_material", sbx::models::static_mesh_material_draw_list::bucket::opaque);
-    add_subrenderer<sbx::animations::skinned_mesh_subrenderer>(deferred, "res://shaders/deferred_pbr_material", sbx::animations::skinned_mesh_material_draw_list::bucket::opaque);
+    // add_subrenderer<sbx::animations::skinned_mesh_subrenderer>(deferred, "res://shaders/deferred_pbr_material", sbx::animations::skinned_mesh_material_draw_list::bucket::opaque);
     
     // Transparency pass
-    add_subrenderer<sbx::models::static_mesh_subrenderer>(transparency, "res://shaders/deferred_pbr_material", sbx::models::static_mesh_material_draw_list::bucket::transparent);
-    add_subrenderer<sbx::animations::skinned_mesh_subrenderer>(transparency, "res://shaders/deferred_pbr_material", sbx::animations::skinned_mesh_material_draw_list::bucket::transparent);
+    // add_subrenderer<sbx::models::static_mesh_subrenderer>(transparency, "res://shaders/deferred_pbr_material", sbx::models::static_mesh_material_draw_list::bucket::transparent);
+    // add_subrenderer<sbx::animations::skinned_mesh_subrenderer>(transparency, "res://shaders/deferred_pbr_material", sbx::animations::skinned_mesh_material_draw_list::bucket::transparent);
     
     // Resolve pass
     auto resolve_opaque_attachment_names = std::vector<std::pair<std::string, std::string>>{
@@ -169,7 +169,13 @@
     add_subrenderer<sbx::scenes::debug_subrenderer>(resolve, "res://shaders/debug");
 
     // Post-processing pass
-    add_subrenderer<sbx::post::selection_filter>(selection, "res://shaders/selection", "resolve", "object_id", "normalized_depth");
+    auto selection_attachment_names = std::vector<std::pair<std::string, std::string>>{
+      {"resolve_image", "resolve"},
+      {"object_id_image", "object_id"},
+      {"normalized_depth_image", "normalized_depth"},
+    };
+
+    add_subrenderer<sbx::post::selection_filter>(selection, "res://shaders/selection", std::move(selection_attachment_names));
 
     // add_subrenderer<sbx::post::fxaa_filter>(post, "res://shaders/fxaa", "selection");
 

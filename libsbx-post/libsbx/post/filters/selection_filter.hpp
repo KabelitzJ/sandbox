@@ -15,12 +15,10 @@ class selection_filter final : public filter {
 
 public:
 
-  selection_filter(const graphics::render_graph::graphics_pass& pass, const std::filesystem::path& path, const std::string& image, const std::string& object_id_image, const std::string& normalized_depth_image)
+  selection_filter(const graphics::render_graph::graphics_pass& pass, const std::filesystem::path& path, std::vector<std::pair<std::string, std::string>>&& attachment_names)
   : base{pass, path},
     _push_handler{base::pipeline()},
-    _image{image},
-    _object_id_image{object_id_image},
-    _normalized_depth_image{normalized_depth_image} { }
+    _attachment_names{std::move(attachment_names)} { }
 
   ~selection_filter() override = default;
 
@@ -41,9 +39,13 @@ public:
     _push_handler.push("thickness", 1.0f);
 
     descriptor_handler.push("scene", scene.uniform_handler());
-    descriptor_handler.push("image", graphics_module.attachment(_image));
-    descriptor_handler.push("object_id_image", graphics_module.attachment(_object_id_image));
-    descriptor_handler.push("normalized_depth_image", graphics_module.attachment(_normalized_depth_image));
+    // descriptor_handler.push("resolve_image", graphics_module.attachment(_image));
+    // descriptor_handler.push("object_id_image", graphics_module.attachment(_object_id_image));
+    // descriptor_handler.push("normalized_depth_image", graphics_module.attachment(_normalized_depth_image));
+
+    for (const auto& [name, attachment] : _attachment_names) {
+      descriptor_handler.push(name, graphics_module.attachment(attachment));
+    }
 
     if (!descriptor_handler.update(pipeline)) {
       return;
@@ -56,6 +58,8 @@ public:
   }
 
 private:
+
+  std::vector<std::pair<std::string, std::string>> _attachment_names;
 
   graphics::push_handler _push_handler;
 
