@@ -36,7 +36,7 @@ public:
     pipeline.bind(command_buffer);
 
     _push_handler.push("color", sbx::math::color{1.0, 0.86, 0.49, 1.0});
-    _push_handler.push("thickness", 1.0f);
+    _push_handler.push("thickness", 0.5f);
 
     descriptor_handler.push("scene", scene.uniform_handler());
     // descriptor_handler.push("resolve_image", graphics_module.attachment(_image));

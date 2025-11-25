@@ -105,6 +105,8 @@ application::application()
   scene.add_image("pine_tree_leaves_albedo", "res://textures/pine_tree/leaves_albedo.png");
   scene.add_image("pine_tree_leaves_normal", "res://textures/pine_tree/leaves_normal.png");
 
+  scene.add_image("duck_albedo", "res://textures/duck/albedo.png");
+
   scene.add_cube_image("skybox", "res://skyboxes/stylized2");
 
   // Meshes
@@ -128,7 +130,7 @@ application::application()
 
   scene.add_mesh<sbx::models::mesh>("helmet", "res://meshes/helmet/helmet.gltf");
 
-  scene.add_mesh<sbx::models::mesh>("dragon", "res://meshes/dragon/dragon.gltf");
+  scene.add_mesh<sbx::models::mesh>("duck", "res://meshes/duck/duck.gltf");
 
   scene.add_mesh<sbx::models::mesh>("cube", "res://meshes/cube/cube.gltf");
   scene.add_mesh<sbx::models::mesh>("sphere", "res://meshes/sphere/sphere.gltf");
@@ -211,25 +213,22 @@ application::application()
 
   demo_script.invoke("SayHello");
 
-  // Dragon
+  // Duck
 
-  auto dragon = scene.create_node("Dragon");
+  auto duck = scene.create_node("Duck");
 
-  auto& dragon_material = scene.add_material<sbx::models::material>("dragon");
-  dragon_material.base_color = sbx::math::color{0.0f, 0.6588f, 0.4196f, 0.6f};
-  dragon_material.alpha = sbx::models::alpha_mode::opaque;
+  auto& duck_material = scene.add_material<sbx::models::material>("duck");
+  duck_material.metallic = 0.3f;
+  duck_material.roughness = 0.75f;
+  duck_material.albedo = scene.get_image("duck_albedo");
 
-  auto& cloth_material = scene.add_material<sbx::models::material>("cloth");
-  cloth_material.base_color = sbx::math::color::green();
-  cloth_material.albedo = scene.get_image("checkerboard");
+  scene.add_component<sbx::scenes::static_mesh>(duck, scene.get_mesh("duck"), std::vector<sbx::scenes::static_mesh::submesh>{{0u, scene.get_material("duck")}});
 
-  scene.add_component<sbx::scenes::static_mesh>(dragon, scene.get_mesh("dragon"), std::vector<sbx::scenes::static_mesh::submesh>{{0u, scene.get_material("cloth")}});
-
-  auto& dragon_transform = scene.get_component<sbx::scenes::transform>(dragon);
-  dragon_transform.set_position(sbx::math::vector3{-8.0f, 2.0f, 4.0f});
-  dragon_transform.set_rotation(sbx::math::vector3::up, sbx::math::degree{45});
-  dragon_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
-
+  auto& duck_transform = scene.get_component<sbx::scenes::transform>(duck);
+  duck_transform.set_position(sbx::math::vector3{-8.0f, 2.0f, 4.0f});
+  duck_transform.set_rotation(sbx::math::vector3::up, sbx::math::degree{-45});
+  duck_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
+  
   // Fox
   auto& animations_module = sbx::core::engine::get_module<sbx::animations::animations_module>();
 
