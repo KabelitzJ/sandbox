@@ -169,12 +169,12 @@
     add_subrenderer<sbx::scenes::debug_subrenderer>(resolve, "res://shaders/debug");
 
     // Post-processing pass
-    // add_subrenderer<sbx::post::selection_filter>(selection, "res://shaders/selection", "resolve", "object_id", "normalized_depth");
+    add_subrenderer<sbx::post::selection_filter>(selection, "res://shaders/selection", "resolve", "object_id", "normalized_depth");
 
     // add_subrenderer<sbx::post::fxaa_filter>(post, "res://shaders/fxaa", "selection");
 
     // Editor pass
-    add_subrenderer<sbx::editor::editor_subrenderer>(editor, "res://shaders/editor", "resolve");
+    add_subrenderer<sbx::editor::editor_subrenderer>(editor, "res://shaders/editor", "selection");
   }
 
   } // namespace demo

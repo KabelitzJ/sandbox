@@ -343,10 +343,10 @@ public:
 
     _uniform_handler.push("viewport", graphics_module.dynamic_viewport());
 
-    utility::logger<"scenes">::debug("viewport: {}", graphics_module.dynamic_viewport());
-    utility::logger<"scenes">::debug("camera_near: {}", camera.near_plane());
-    utility::logger<"scenes">::debug("camera_far: {}", camera.far_plane());
-    utility::logger<"scenes">::debug("camera_fov_radians: {}", camera.field_of_view().to_radians().value());
+    // utility::logger<"scenes">::debug("viewport: {}", graphics_module.dynamic_viewport());
+    // utility::logger<"scenes">::debug("camera_near: {}", camera.near_plane());
+    // utility::logger<"scenes">::debug("camera_far: {}", camera.far_plane());
+    // utility::logger<"scenes">::debug("camera_fov_radians: {}", camera.field_of_view().to_radians().value());
 
     _uniform_handler.push("camera_position", camera_transform.position());
     _uniform_handler.push("camera_near", camera.near_plane());

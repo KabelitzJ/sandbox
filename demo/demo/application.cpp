@@ -233,7 +233,7 @@ application::application()
   // Fox
   auto& animations_module = sbx::core::engine::get_module<sbx::animations::animations_module>();
 
-  fox1 = scene.create_node("Fox");
+  fox1 = scene.create_node("Fox", sbx::scenes::transform{}, sbx::scenes::selection_tag{});
 
   // scripting_module.instantiate(fox1, "res://scripts/test.lua");
 
@@ -333,7 +333,7 @@ application::application()
 
   for (auto y = 0; y < 5; ++y) {
     for (auto x = 0; x < 5; ++x) {
-      auto sphere = scene.create_child_node(spheres, fmt::format("Sphere{}{}", x, y));
+      auto sphere = scene.create_child_node(spheres, fmt::format("Sphere{}{}", x, y), sbx::scenes::transform{}, sbx::scenes::selection_tag{});
 
       const auto material_name = fmt::format("sphere_{}_{}_material", x, y);
 

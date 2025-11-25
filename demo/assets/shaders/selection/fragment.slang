@@ -94,11 +94,11 @@ fs_out main(fs_in in) {
 
   float3 final_rgb = lerp(base_color.rgb, push.color.rgb, alpha);
 
-  // out.color = float4(final_rgb, base_color.a);
+  out.color = float4(final_rgb, base_color.a);
 
-  out.color = float4(float(center_id << 24), float(center_id << 16), float(center_id << 8), 1.0);
+  // out.color = float4(float(center_id << 24), float(center_id << 16), float(center_id << 8), 1.0);
 
-  out.color = base_color;
+  // out.color = base_color;
 
   return out;
 }

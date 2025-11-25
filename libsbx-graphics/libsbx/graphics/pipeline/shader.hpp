@@ -106,7 +106,7 @@ public:
     }
 
     auto operator==(const uniform& other) const noexcept -> bool {
-      return _set == other._set && _binding == other._binding && _offset == other._offset && _size == other._size && _type == other._type && _is_readonly == other._is_readonly && _is_writeonly == other._is_writeonly && _stage_flags == other._stage_flags;
+      return _set == other._set && _binding == other._binding && _offset == other._offset && _size == other._size && _type == other._type && _is_readonly == other._is_readonly && _is_writeonly == other._is_writeonly;
     }
 
   private:
@@ -177,7 +177,7 @@ class uniform_block {
     }
 
     auto operator==(const uniform_block& other) const noexcept -> bool {
-      return _set == other._set && _binding == other._binding && _size == other._size && _stage_flags == other._stage_flags && _type == other._type && _uniforms == other._uniforms;
+      return _set == other._set && _binding == other._binding && _size == other._size && _type == other._type && _uniforms == other._uniforms;
     }
 
   private:
