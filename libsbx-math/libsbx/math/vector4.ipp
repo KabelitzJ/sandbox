@@ -16,9 +16,14 @@ inline constexpr basic_vector4<Type>::basic_vector4(XOther x, YOther y, ZOther z
 : base_type{x, y, z, w} { }
 
 template<scalar Type>
-template<scalar Other, scalar Scalar>
-inline constexpr basic_vector4<Type>::basic_vector4(const basic_vector3<Other>& vector, Scalar w) noexcept
+template<scalar Other, scalar ScalarW>
+inline constexpr basic_vector4<Type>::basic_vector4(const basic_vector3<Other>& vector, ScalarW w) noexcept
 : base_type{vector.x(), vector.y(), vector.z(), w} { }
+
+template<scalar Type>
+template<scalar Other, scalar ScalarZ, scalar ScalarW>
+inline constexpr basic_vector4<Type>::basic_vector4(const basic_vector2<Other>& vector, ScalarZ z, ScalarW w) noexcept
+: base_type{vector.x(), vector.y(), z, w} { }
 
 template<scalar Type>
 inline constexpr auto basic_vector4<Type>::dot(const basic_vector4& lhs, const basic_vector4& rhs) noexcept -> length_type {
