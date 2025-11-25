@@ -14,6 +14,7 @@
 #include <yaml-cpp/yaml.h>
 
 #include <libsbx/math/concepts.hpp>
+#include <libsbx/math/vector2.hpp>
 #include <libsbx/math/vector3.hpp>
 
 namespace sbx::math {
@@ -46,8 +47,11 @@ public:
   template<scalar XOther, scalar YOther, scalar ZOther, scalar WOther>
   constexpr basic_vector4(XOther x, YOther y, ZOther z, WOther w) noexcept;
 
-  template<scalar Other, scalar Scalar = Other>
-  constexpr basic_vector4(const basic_vector3<Other>& vector, Scalar w = Scalar{0}) noexcept;
+  template<scalar Other, scalar ScalarW = Other>
+  constexpr basic_vector4(const basic_vector3<Other>& vector, ScalarW w = ScalarW{0}) noexcept;
+
+  template<scalar Other, scalar ScalarZ = Other, scalar ScalarW = Other>
+  constexpr basic_vector4(const basic_vector2<Other>& vector, ScalarZ z = ScalarZ{0}, ScalarW w = ScalarW{0}) noexcept;
 
   [[nodiscard]] static constexpr auto dot(const basic_vector4& lhs, const basic_vector4& rhs) noexcept -> length_type;
 
