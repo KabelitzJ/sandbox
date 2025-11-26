@@ -19,6 +19,15 @@ cube_image::cube_image(const std::filesystem::path& path, const std::string& suf
   _load(assets_module.resolve_path(path), suffix);
 }
 
+cube_image::cube_image(const math::vector2u& extent, VkFormat format, VkImageLayout layout, VkImageUsageFlags usage, VkFilter filter, VkSamplerAddressMode address_mode, VkSampleCountFlagBits samples, bool anisotropic, bool mipmap)
+: image{VkExtent3D{extent.x(), extent.y(), 1}, filter, address_mode, samples, layout, usage | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, format, 1, 6},
+  _anisotropic{anisotropic},
+  _mipmap{mipmap},
+  _channels{4u} {
+  auto& assets_module = core::engine::get_module<assets::assets_module>();
+  _load();
+}
+
 cube_image::~cube_image() {
 
 }
@@ -74,11 +83,11 @@ auto cube_image::_load(const std::filesystem::path& path, const std::string& suf
     utility::logger<"graphics">::debug("Loaded cube image: {} ({}x{}) in {:.2f}ms", path.string(), _extent.width, _extent.height, elapsed.value());
   }
 
-  if (buffer.empty()) {
-    throw std::runtime_error{"Failed to load cube image"};
+  if (!buffer.empty()) {
+    // throw std::runtime_error{"Failed to load cube image"};
+    data = buffer.data();
   }
 
-  data = buffer.data();
 
   if (_extent.width == 0 || _extent.height == 0) {
     return;

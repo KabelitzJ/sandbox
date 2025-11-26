@@ -34,6 +34,8 @@
 
   renderer::renderer()
   : _clear_color{sbx::math::color::white()} {
+    auto& graphics_module = sbx::core::engine::get_module<sbx::graphics::graphics_module>();
+
     auto [deferred, transparency, resolve, post, selection, editor] = create_graph(
       [&](sbx::graphics::render_graph::context& context) -> sbx::graphics::render_graph::graphics_pass {
         auto deferred_pass = context.graphics_pass("deferred");
@@ -130,6 +132,23 @@
     // Draw lists
     add_draw_list<sbx::models::static_mesh_material_draw_list>("static_mesh_material");
     add_draw_list<sbx::animations::skinned_mesh_material_draw_list>("skinned_mesh_material");
+
+    _irradiance = graphics_module.add_resource<sbx::graphics::cube_image>(sbx::math::vector2u{64}, VK_FORMAT_R32G32B32A32_SFLOAT, VK_IMAGE_LAYOUT_GENERAL);
+
+    {
+      auto& irradiance = graphics_module.get_resource<sbx::graphics::cube_image>(_irradiance);
+
+      auto command_buffer = sbx::graphics::command_buffer{true, VK_QUEUE_COMPUTE_BIT};
+
+      auto pipeline = sbx::graphics::compute_pipeline{"res://shaders/irradiance"};
+
+      const auto group_count_x = static_cast<std::uint32_t>(std::ceil(static_cast<float>(irradiance.size().x()) / static_cast<float>(16)));
+	    const auto group_count_y = static_cast<std::uint32_t>(std::ceil(static_cast<float>(irradiance.size().y()) / static_cast<float>(16)));
+
+      pipeline.dispatch(command_buffer, sbx::math::vector3u{group_count_x, group_count_y, 1u});
+
+      command_buffer.submit_idle();
+    }
 
     // Shadow pass
     // add_subrenderer<sbx::shadows::shadow_subrenderer>(shadow, "res://shaders/shadow");

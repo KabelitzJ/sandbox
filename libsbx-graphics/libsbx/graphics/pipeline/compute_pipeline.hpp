@@ -20,7 +20,7 @@ class compute_pipeline : public pipeline {
 
 public:
 
-  compute_pipeline(const std::filesystem::path& path, const render_graph::compute_pass& pass);
+  compute_pipeline(const std::filesystem::path& path);
 
   ~compute_pipeline() override;
 
@@ -107,8 +107,6 @@ private:
   }; // struct per_set_data
 
   auto _get_stage_from_name(const std::string& name) const noexcept -> VkShaderStageFlagBits;
-
-  render_graph::compute_pass _pass;
 
   std::unique_ptr<shader> _shader;
 

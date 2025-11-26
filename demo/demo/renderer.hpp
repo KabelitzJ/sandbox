@@ -26,6 +26,8 @@ private:
 
   sbx::math::color _clear_color;
 
+  sbx::graphics::cube_image2d_handle _irradiance;
+
 }; // class renderer
 
 } // namespace demo

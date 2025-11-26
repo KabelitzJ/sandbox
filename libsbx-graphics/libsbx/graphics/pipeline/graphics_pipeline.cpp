@@ -248,7 +248,7 @@ auto graphics_pipeline::_initialize(const pipeline_definition& definition, const
           break;
         }
         default: {
-          utility::logger<"graphics">::warn("Unsupported uniform type (sbx::graphics::shader::data_type): {}", uniform.type());
+          utility::logger<"graphics">::warn("Unsupported uniform type (sbx::graphics::shader::data_type): {} for set: {} binding: {}", uniform.type(), uniform.set(), uniform.binding());
           continue;
         }
       }

@@ -17,9 +17,8 @@
 
 namespace sbx::graphics {
 
-compute_pipeline::compute_pipeline(const std::filesystem::path& path, const render_graph::compute_pass& pass)
+compute_pipeline::compute_pipeline(const std::filesystem::path& path)
 : base{},
-  _pass{pass},
   _bind_point{VK_PIPELINE_BIND_POINT_COMPUTE} {
   auto& assets_module = core::engine::get_module<assets::assets_module>();
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
@@ -138,12 +137,28 @@ compute_pipeline::compute_pipeline(const std::filesystem::path& path, const rend
       auto& descriptor_set_layout_binding = descriptor_set_layout_bindings[uniform.set()];
 
       switch (uniform.type()) {
+        case shader::data_type::sampler2d: {
+          descriptor_set_layout_binding[uniform.binding()] = image2d::create_descriptor_set_layout_binding(uniform.binding(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, uniform.stage_flags());
+          break;
+        }
+        case shader::data_type::sampler2d_array: {
+          descriptor_set_layout_binding[uniform.binding()] = image2d::create_descriptor_set_layout_binding(uniform.binding(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, uniform.stage_flags());
+          break;
+        }
+        case shader::data_type::sampler_cube: {
+          descriptor_set_layout_binding[uniform.binding()] = cube_image::create_descriptor_set_layout_binding(uniform.binding(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, uniform.stage_flags());
+          break;
+        }
+        case shader::data_type::separate_sampler: {
+          descriptor_set_layout_binding[uniform.binding()] = separate_sampler::create_descriptor_set_layout_binding(uniform.binding(), VK_DESCRIPTOR_TYPE_SAMPLER, uniform.stage_flags());
+          break;
+        }
         case shader::data_type::storage_image: {
           descriptor_set_layout_binding[uniform.binding()] = image::create_descriptor_set_layout_binding(uniform.binding(), VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, uniform.stage_flags());
           break;
         }
         default: {
-          utility::logger<"graphics">::warn("Unsupported uniform type (sbx::graphics::shader::data_type): {}", uniform.type());
+          utility::logger<"graphics">::warn("Unsupported uniform type (sbx::graphics::shader::data_type): {} for set: {} binding: {}", uniform.type(), uniform.set(), uniform.binding());
           continue;
         }
       }
