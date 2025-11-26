@@ -218,8 +218,8 @@ application::application()
   auto duck = scene.create_node("Duck");
 
   auto& duck_material = scene.add_material<sbx::models::material>("duck");
-  duck_material.metallic = 0.3f;
-  duck_material.roughness = 0.75f;
+  duck_material.metallic = 0.7f;
+  duck_material.roughness = 0.3f;
   duck_material.albedo = scene.get_image("duck_albedo");
 
   scene.add_component<sbx::scenes::static_mesh>(duck, scene.get_mesh("duck"), std::vector<sbx::scenes::static_mesh::submesh>{{0u, scene.get_material("duck")}});
@@ -227,7 +227,7 @@ application::application()
   auto& duck_transform = scene.get_component<sbx::scenes::transform>(duck);
   duck_transform.set_position(sbx::math::vector3{-8.0f, 2.0f, 4.0f});
   duck_transform.set_rotation(sbx::math::vector3::up, sbx::math::degree{-45});
-  duck_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
+  duck_transform.set_scale(sbx::math::vector3{4.0f, 4.0f, 4.0f});
   
   // Fox
   auto& animations_module = sbx::core::engine::get_module<sbx::animations::animations_module>();
