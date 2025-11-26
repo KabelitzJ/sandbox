@@ -19,6 +19,8 @@
 #include <libsbx/scenes/components/camera.hpp>
 #include <libsbx/scenes/components/static_mesh.hpp>
 
+#include <libsbx/physics/physics.hpp>
+
 #include <demo/terrain/planet.hpp>
 
 namespace demo {
@@ -69,6 +71,9 @@ public:
         auto& transform = scene.get_component<sbx::scenes::transform>(chunk);
         transform.set_position(sbx::math::vector3{x * chunk_size.x() - offset.x(), 0.0f, y * chunk_size.y() - offset.y()});
         transform.set_scale(sbx::math::vector3{25, 0.5, 25});
+
+        scene.add_component<sbx::physics::rigidbody>(chunk, sbx::units::kilogram{0});
+        scene.add_component<sbx::physics::collider>(chunk, sbx::physics::box{sbx::math::vector3{12.5, 0.25, 12.5}});
       }
     }
 

@@ -358,9 +358,19 @@ private:
 
     if (ImGui::TreeNodeEx(scene.get_component<sbx::scenes::tag>(node).c_str(), flag)) {
       if (ImGui::IsItemClicked(ImGuiMouseButton_Right) || ImGui::IsItemClicked(ImGuiMouseButton_Left)) {
+        if (_selected_node_id != scene.get_component<sbx::scenes::id>(scene.camera()) && _selected_node_id != sbx::math::uuid::null()) {
+          if (auto selected_node = scene.find_node(_selected_node_id); selected_node != scenes::node::null) {
+            scene.get_component<scenes::selection_tag>(selected_node) = scenes::selection_tag::null;
+          }
+        }
+
         _selected_node_id = scene.get_component<sbx::scenes::id>(node);
 
         utility::logger<"editor">::debug("Selected node id {}", _selected_node_id);
+
+        if (_selected_node_id != scene.get_component<sbx::scenes::id>(scene.camera())) {
+          scene.get_component<scenes::selection_tag>(node) = scenes::selection_tag{};
+        }
       }
 
       _context_menu(node);

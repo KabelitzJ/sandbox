@@ -194,7 +194,7 @@ application::application()
   }
 
   // Helmet
-  auto helmet = scene.create_node("Helmet", sbx::scenes::transform{}, sbx::scenes::selection_tag{});
+  auto helmet = scene.create_node("Helmet");
 
   auto& helmet_material = scene.add_material<sbx::models::material>("helmet");
   helmet_material.albedo = scene.get_image("helmet_albedo");
@@ -212,6 +212,29 @@ application::application()
   auto demo_script = scripting_module.instantiate(helmet, "build/x86_64/gcc/debug/_dotnet/Demo.dll", "Demo.Helmet");
 
   demo_script.invoke("SayHello");
+
+  // Cube
+
+  auto cube = scene.create_node("Cube");
+
+  auto& cube_material = scene.add_material<sbx::models::material>("cube");
+  cube_material.albedo = scene.get_image("helmet_albedo");
+  cube_material.normal = scene.get_image("helmet_normal");
+  cube_material.mrao = scene.get_image("helmet_mrao");
+  cube_material.emissive = scene.get_image("helmet_emissive");
+  cube_material.emissive_factor = sbx::math::vector4{1, 1, 1, 0};
+
+  scene.add_component<sbx::scenes::static_mesh>(cube, scene.get_mesh("cube"), scene.get_material("cube"));
+
+  auto& cube_transform = scene.get_component<sbx::scenes::transform>(cube);
+  cube_transform.set_position(sbx::math::vector3{0.0f, 6.0f, 0.0f});
+  cube_transform.set_scale(sbx::math::vector3{2.0f, 2.0f, 2.0f});
+
+  auto& cube_collider = scene.add_component<sbx::physics::collider>(cube, sbx::physics::box{sbx::math::vector3{1, 1, 1}});
+
+  auto& cube_rigidbody = scene.add_component<sbx::physics::rigidbody>(cube, sbx::units::kilogram{2});
+  cube_rigidbody.set_inverse_inertia_tensor_local(local_inverse_inertia(cube_rigidbody.mass(), cube_collider));
+  cube_rigidbody.add_constant_acceleration(sbx::math::vector3{0, -9.81f, 0});
 
   // Duck
 
@@ -232,7 +255,7 @@ application::application()
   // Fox
   auto& animations_module = sbx::core::engine::get_module<sbx::animations::animations_module>();
 
-  fox1 = scene.create_node("Fox", sbx::scenes::transform{}, sbx::scenes::selection_tag{});
+  fox1 = scene.create_node("Fox");
 
   // scripting_module.instantiate(fox1, "res://scripts/test.lua");
 
@@ -332,7 +355,7 @@ application::application()
 
   for (auto y = 0; y < 5; ++y) {
     for (auto x = 0; x < 5; ++x) {
-      auto sphere = scene.create_child_node(spheres, fmt::format("Sphere{}{}", x, y), sbx::scenes::transform{}, sbx::scenes::selection_tag{});
+      auto sphere = scene.create_child_node(spheres, fmt::format("Sphere{}{}", x, y));
 
       const auto material_name = fmt::format("sphere_{}_{}_material", x, y);
 
