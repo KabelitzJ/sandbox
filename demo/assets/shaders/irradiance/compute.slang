@@ -47,14 +47,14 @@ void main(cs_in in) {
 
     for (float phi = 0.0; phi < TWO_PI; phi += DELTA_PHI) {
       for (float theta = 0.0; theta < HALF_PI; theta += DELTA_THETA) {
-        float3 temp_vec = cos(phi) * right + sin(phi) * up;
-        float3 sample_vec = cos(theta) * N + sin(theta) * temp_vec;
+        float3 direction = cos(phi) * right + sin(phi) * up;
+        float3 uav = cos(theta) * N + sin(theta) * direction;
 
         float weight = cos(theta) * sin(theta);
 
-        float3 sample_output = skybox.Sample(sample_vec).rgb;
+        float3 sampled = skybox.Sample(uav).rgb;
 
-        color += sample_output * weight;
+        color += sampled * weight;
         sample_count++;
       }
     }
