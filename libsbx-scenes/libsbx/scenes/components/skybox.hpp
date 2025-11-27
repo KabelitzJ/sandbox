@@ -11,6 +11,9 @@ namespace sbx::scenes {
 
 struct skybox {
   graphics::cube_image2d_handle cube_image;
+  graphics::image2d_handle brdf_image;
+  graphics::cube_image2d_handle irradiance_image;
+  graphics::cube_image2d_handle prefiltered_image;
   math::color tint{math::color::white()};
 }; // struct skybox
 

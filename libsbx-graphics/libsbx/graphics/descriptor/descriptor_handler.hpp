@@ -45,15 +45,26 @@ public:
     }
   }
 
+  template<typename Descriptor>
+  requires (std::is_base_of_v<descriptor, Descriptor>)
+  auto push(const std::string& name, const Descriptor& descriptor, write_descriptor_set&& write_descriptor_set) -> void {
+    if (!_pipeline) {
+      return;
+    }
+
+    auto binding = _pipeline->find_descriptor_binding(name, _set);
+
+    if (!binding) {
+      throw std::runtime_error(fmt::format("Failed to find descriptor binding for descriptor '{}'", name));
+    }
+
+    _descriptors.insert_or_assign(name, descriptor_entry{std::addressof(descriptor), std::move(write_descriptor_set), *binding});
+    _has_changed = true;
+  }
+
   auto push(const std::string& name, uniform_handler& uniform_handler) -> void;
 
   auto push(const std::string& name, storage_handler& storage_handler) -> void;
-
-  // auto push(const std::string& name, push_handler& push_handler) -> void {
-  //   if (_pipeline) {
-  //     push_handler.update(_pipeline->descriptor_block(name, _set));
-  //   }
-  // }
 
   auto bind_descriptors(command_buffer& command_buffer) -> void;
 

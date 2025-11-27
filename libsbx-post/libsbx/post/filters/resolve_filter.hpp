@@ -20,6 +20,7 @@
 #include <libsbx/scenes/components/camera.hpp>
 #include <libsbx/scenes/components/point_light.hpp>
 #include <libsbx/scenes/components/static_mesh.hpp>
+#include <libsbx/scenes/components/skybox.hpp>
 
 #include <libsbx/post/filter.hpp>
 
@@ -88,7 +89,7 @@ public:
       }
     }
 
-    if (!Transparent) {
+    if constexpr (!Transparent) {
       _point_lights_storage_handler.push(std::span<const point_light_data>{point_lights.data(), point_light_count});
       _push_handler.push("point_light_count", point_light_count);
 
@@ -100,13 +101,23 @@ public:
       descriptor_handler.push(name, graphics_module.attachment(attachment));
     }
 
+    if constexpr (!Transparent) {
+      auto camera_node = scene.camera();
+
+      const auto& skybox = scene.get_component<scenes::skybox>(camera_node);
+
+      descriptor_handler.push("brdf_image", graphics_module.get_resource<graphics::image2d>(skybox.brdf_image));
+      descriptor_handler.push("irradiance_image", graphics_module.get_resource<graphics::cube_image>(skybox.irradiance_image));
+      descriptor_handler.push("prefiltered_image", graphics_module.get_resource<graphics::cube_image>(skybox.prefiltered_image));
+    }
+
     if (!descriptor_handler.update(pipeline)) {
       return;
     }
 
     descriptor_handler.bind_descriptors(command_buffer);
 
-    if (!Transparent) {
+    if constexpr (!Transparent) {
       _push_handler.bind(command_buffer);
     }
 

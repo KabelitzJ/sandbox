@@ -203,6 +203,10 @@ public:
 
 private:
 
+  auto _generate_brdf(const std::uint32_t size) -> void;
+  auto _generate_irradiance(const std::uint32_t size) -> void;
+  auto _generate_prefiltered(const std::uint32_t size) -> void;
+
   // auto _generate_icosphere(const std::float_t radius, const std::uint32_t subdivisions) -> std::unique_ptr<sbx::models::mesh>;
 
   sbx::math::angle _rotation;
@@ -217,6 +221,10 @@ private:
   // std::vector<tank> _tanks;
 
   sbx::scenes::node _light_center;
+
+  sbx::graphics::image2d_handle _brdf;
+  sbx::graphics::cube_image2d_handle _irradiance;
+  sbx::graphics::cube_image2d_handle _prefiltered;
 
 }; // class application
 

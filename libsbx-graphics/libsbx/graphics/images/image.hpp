@@ -51,7 +51,7 @@ public:
 
   static auto copy_buffer_to_image(const VkBuffer& buffer, const VkImage& image, const VkExtent3D& extent, std::uint32_t layer_count, std::uint32_t base_array_layer) -> void;
 
-  static auto copy_image_to_buffer(const VkImage& image, VkFormat format, const VkBuffer& buffer, const VkOffset3D& offset, const VkExtent3D& extent, std::uint32_t layer_count, std::uint32_t base_array_layer) -> void;
+  static auto copy_image_to_buffer(const VkImage& image, VkFormat format, const VkBuffer& buffer, const VkOffset3D& offset, const VkExtent3D& extent, std::uint32_t mip_level, std::uint32_t layer_count, std::uint32_t base_array_layer) -> void;
 
 	static auto copy_image(const VkImage& src_image, VkImage& dst_image, VmaAllocation& dst_allocation, VkFormat src_format, const VkExtent3D& extent, VkImageLayout src_image_layout, std::uint32_t mip_level, std::uint32_t array_layer) -> bool;
 

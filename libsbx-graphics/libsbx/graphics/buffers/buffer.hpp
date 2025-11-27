@@ -46,11 +46,15 @@ public:
     return "Buffer";
   }
 
-protected:
-
   auto map() -> void;
-
+  
   auto unmap() -> void;
+
+  auto mapped_memory() -> memory::observer_ptr<void> {
+    return _mapped_memory;
+  }
+
+protected:
 
   memory::observer_ptr<void> _mapped_memory;
 

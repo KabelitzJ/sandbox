@@ -520,7 +520,7 @@ auto image::copy_buffer_to_image(const VkBuffer& buffer, const VkImage& image, c
 	command_buffer.submit_idle();
 }
 
-auto image::copy_image_to_buffer(const VkImage& image, VkFormat format, const VkBuffer& buffer, const VkOffset3D& offset, const VkExtent3D& extent, std::uint32_t layer_count, std::uint32_t base_array_layer) -> void {
+auto image::copy_image_to_buffer(const VkImage& image, VkFormat format, const VkBuffer& buffer, const VkOffset3D& offset, const VkExtent3D& extent, std::uint32_t mip_level, std::uint32_t layer_count, std::uint32_t base_array_layer) -> void {
   auto command_buffer = graphics::command_buffer{};
 
   transition_image_layout(command_buffer, image, format, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_ASPECT_COLOR_BIT, 1, 0, layer_count, base_array_layer);
@@ -530,7 +530,7 @@ auto image::copy_image_to_buffer(const VkImage& image, VkFormat format, const Vk
   region.bufferRowLength = 0;
   region.bufferImageHeight = 0;
   region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-  region.imageSubresource.mipLevel = 0;
+  region.imageSubresource.mipLevel = mip_level;
   region.imageSubresource.baseArrayLayer = base_array_layer;
   region.imageSubresource.layerCount = layer_count;
   region.imageOffset = offset;

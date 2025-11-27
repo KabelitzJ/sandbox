@@ -35,7 +35,7 @@ scenes_module::scenes_module()
       emitter << YAML::Key << "tint" << YAML::Value << skybox.tint;
     },
     [](const YAML::Node& node) -> scenes::skybox {
-      return scenes::skybox{graphics::cube_image2d_handle{}, node["tint"].as<math::color>()};
+      return scenes::skybox{graphics::cube_image2d_handle{}, graphics::image2d_handle{}, graphics::cube_image2d_handle{}, graphics::cube_image2d_handle{}, node["tint"].as<math::color>()};
     }
   );
 

@@ -31,15 +31,36 @@ struct point_light {
 [[vk::binding(1, 0)]]
 StructuredBuffer<point_light> buffer_point_lights;
 
-[[vk::binding(2, 0)]] Sampler2D<float4> albedo_image;
-[[vk::binding(3, 0)]] Sampler2D<float4> position_image;
-[[vk::binding(4, 0)]] Sampler2D<float4> normal_image;
-[[vk::binding(5, 0)]] Sampler2D<float4> material_image;
-[[vk::binding(6, 0)]] Sampler2D<float4> emissive_image;
+[[vk::binding(2, 0)]] 
+Sampler2D<float4> albedo_image;
+
+[[vk::binding(3, 0)]] 
+Sampler2D<float4> position_image;
+
+[[vk::binding(4, 0)]]
+Sampler2D<float4> normal_image;
+
+[[vk::binding(5, 0)]]
+Sampler2D<float4> material_image;
+
+[[vk::binding(6, 0)]]
+Sampler2D<float4> emissive_image;
+
+[[vk::binding(7, 0)]]
+Sampler2D<float2> brdf_image;
+
+[[vk::binding(8, 0)]]
+SamplerCube<float4> irradiance_image;
+
+[[vk::binding(9, 0)]]
+SamplerCube<float4> prefiltered_image;
+
 // [[vk::binding(7, 0)]] Sampler2D<uint> object_id_image;
 // [[vk::binding(7, 0)]] Sampler2D<float2> shadow_image;
 
 static const float3 DEFAULT_F0 = float3(0.04, 0.04, 0.04);
+
+static const float PREFILTERED_ENV_MAX_MIP = 9.0;
 
 static const float4x4 BIAS_MATRIX = float4x4(
   0.5, 0.0, 0.0, 0.0,
@@ -50,6 +71,10 @@ static const float4x4 BIAS_MATRIX = float4x4(
 
 float3 fresnel_schlick(float cos_theta, float3 f0) {
   return f0 + (1.0 - f0) * pow(1.0 - cos_theta, 5.0);
+}
+
+float3 fresnel_schlick_roughness(float cos_theta, float3 F0, float roughness) {
+  return F0 + (max(float3(1.0 - roughness, 1.0 - roughness, 1.0 - roughness), F0) - F0) * pow(1.0 - cos_theta, 5.0);
 }
 
 // float distribution_ggx(float3 n, float3 h, float roughness) {
@@ -197,6 +222,8 @@ fs_out main(fs_in in) {
 
   float3 color = float3(0.0, 0.0, 0.0);
 
+  // Global directional light
+
   float3 light_dir = normalize(-scene.light_direction);
   float3 halfway_dir = normalize(view_dir + light_dir);
   float ndl = max(dot(normal, light_dir), 0.0);
@@ -220,6 +247,8 @@ fs_out main(fs_in in) {
   float3 irradiance = scene.light_color.rgb * ndl;
 
   color += (k_d * albedo / sbx::common::pi + specular) * irradiance;
+
+  // Point lights
 
   for (uint i = 0u; i < push.point_light_count; ++i) {
     point_light light = buffer_point_lights[i];
@@ -253,7 +282,34 @@ fs_out main(fs_in in) {
     color += (kd_p * albedo / sbx::common::pi + spec_p) * radiance * ndl_p;
   }
 
-  float3 ambient = float3(0.03, 0.03, 0.03) * albedo * ao;
+  // Image based lighting
+
+  float3 n   = normalize(normal);
+  float3 v   = normalize(view_dir);
+  float  ndv = max(dot(n, v), 0.0);
+
+  float3 r = normalize(reflect(-v, n));
+
+  float rough = clamp(roughness, 0.04, 1.0);
+
+  float3 diffuse_irradiance = irradiance_image.Sample(n).rgb;
+  float3 diffuse_ibl = diffuse_irradiance * albedo;
+
+  float lod = rough * PREFILTERED_ENV_MAX_MIP;
+  lod = clamp(lod, 0.0, PREFILTERED_ENV_MAX_MIP);
+
+  float3 prefiltered_color = prefiltered_image.SampleLevel(r, lod).rgb;
+
+  float3 F_ibl = fresnel_schlick_roughness(ndv, f0, rough);
+
+  float3 kS_ibl = F_ibl;
+  float3 kD_ibl = (1.0 - kS_ibl) * (1.0 - metallic);
+
+  float2 brdf = brdf_image.Sample(float2(ndv, rough)).rg;
+
+  float3 specular_ibl = prefiltered_color * (F_ibl * brdf.x + brdf.y);
+
+  float3 ambient = (kD_ibl * diffuse_ibl + specular_ibl) * ao;
 
   float3 final_color = ambient + color + emissive;
 

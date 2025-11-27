@@ -8,7 +8,7 @@ struct fs_out {
 }; // struct fs_out
 
 [[vk::binding(1, 0)]]
-SamplerCube skybox;
+SamplerCube<float4> skybox;
 
 static const float FOG_DISTANCE = 400.0;
 static const float FOG_DENSITY = 0.002;
