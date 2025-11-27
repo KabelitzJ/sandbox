@@ -1,4 +1,4 @@
-#include <libsbx/common/constants.slang>
+#include <libsbx/math/constants.slang>
 #include <libsbx/common/scene_data.slang>
 
 struct vertex {

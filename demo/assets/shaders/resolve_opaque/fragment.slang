@@ -2,7 +2,7 @@
 // #include <libsbx/common/shadow.slang>
 #include <libsbx/common/scene_data.slang>
 #include <libsbx/common/depth.slang>
-#include <libsbx/common/constants.slang>
+#include <libsbx/math/constants.slang>
 
 struct fs_in {
   float2 uv : TEXCOORD0;
@@ -86,7 +86,7 @@ float3 fresnel_schlick_roughness(float cos_theta, float3 F0, float roughness) {
 
 //   float denom = ndh2 * (a2 - 1.0) + 1.0;
 
-//   return a2 / (sbx::common::pi * denom * denom);
+//   return a2 / (sbx::math::pi * denom * denom);
 // }
 
 // float geometry_schlick_ggx(float ndv, float roughness) {
@@ -115,7 +115,7 @@ float distribution_ggx(float3 n, float3 h, float alpha) {
   
   float denom = ndh2 * (a2 - 1.0) + 1.0;
 
-  return a2 / (sbx::common::pi * denom * denom);
+  return a2 / (sbx::math::pi * denom * denom);
 }
 
 // Schlick-GGX for DIRECT lighting: k = α / 2   (UE4 recommendation)
@@ -181,7 +181,7 @@ float2x2 rotation_matrix(float angle) {
 //   float distance_to_camera = length(scene.camera_position - world_position);
 //   float radius = lerp(1.0, 4.0, clamp(distance_to_camera / 50.0, 0.0, 1.0));
 
-//   float angle = random2(projected_coords.xy) * sbx::common::two_pi;
+//   float angle = random2(projected_coords.xy) * sbx::math::two_pi;
 //   float2x2 rotation = rotation_matrix(angle);
 
 //   float shadow = 0.0;
@@ -246,7 +246,7 @@ fs_out main(fs_in in) {
 
   float3 irradiance = scene.light_color.rgb * ndl;
 
-  color += (k_d * albedo / sbx::common::pi + specular) * irradiance;
+  color += (k_d * albedo / sbx::math::pi + specular) * irradiance;
 
   // Point lights
 
@@ -279,7 +279,7 @@ fs_out main(fs_in in) {
 
     float3 kd_p = (1.0 - Fp) * (1.0 - metallic);
 
-    color += (kd_p * albedo / sbx::common::pi + spec_p) * radiance * ndl_p;
+    color += (kd_p * albedo / sbx::math::pi + spec_p) * radiance * ndl_p;
   }
 
   // Image based lighting

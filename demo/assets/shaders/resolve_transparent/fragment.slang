@@ -1,4 +1,4 @@
-#include <libsbx/common/constants.slang>
+#include <libsbx/math/constants.slang>
 
 struct fs_in {
   float2 uv : TEXCOORD0;
@@ -13,7 +13,7 @@ struct fs_out {
 [[vk::binding(1, 0)]] Sampler2D<float4> revealage_image;
 
 bool is_approximately_equal(float a, float b) {
-  return abs(a - b) <= (abs(a) < abs(b) ? abs(b) : abs(a)) * sbx::common::epsilon;
+  return abs(a - b) <= (abs(a) < abs(b) ? abs(b) : abs(a)) * sbx::math::epsilon;
 }
 
 float max3(float3 vector) {
@@ -44,7 +44,7 @@ fs_out main(fs_in in) {
   }
 
   // prevent floating point precision bug
-  float3 average = accumulation.rgb / max(accumulation.a, sbx::common::epsilon);
+  float3 average = accumulation.rgb / max(accumulation.a, sbx::math::epsilon);
 
   // blend pixels
   out.color = float4(average, 1.0f - revealage);

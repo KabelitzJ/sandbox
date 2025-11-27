@@ -1,4 +1,4 @@
-#include <libsbx/common/constants.slang>
+#include <libsbx/math/constants.slang>
 
 [[vk::binding(0, 0)]] 
 Sampler2D image;

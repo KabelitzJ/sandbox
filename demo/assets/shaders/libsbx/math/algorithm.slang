@@ -1,5 +1,7 @@
-#ifndef LIBSBX_COMMON_MATH_GLSL_
-#define LIBSBX_COMMON_MATH_GLSL_
+#ifndef LIBSBX_MATH_ALGORITHM_SLANG_
+#define LIBSBX_MATH_ALGORITHM_SLANG_
+
+namespace sbx::math {
 
 float log10(float x) {
   return log(x) / log(10.0);
@@ -25,4 +27,6 @@ float2 mod(float2 x, float y) {
   return x - y * floor(x / y);
 }
 
-#endif // LIBSBX_COMMON_MATH_GLSL_
+} // namespace sbx::math
+
+#endif // LIBSBX_MATH_ALGORITHM_SLANG_

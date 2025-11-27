@@ -1,3 +1,5 @@
+#include <libsbx/math/constants.slang>
+
 struct cs_in {
   uint3 id : SV_DispatchThreadID;
 }; // struct cs_in
@@ -8,9 +10,8 @@ SamplerCube<float4> skybox;
 [[vk::binding(1, 0)]]
 RWTexture2DArray<float4> output;
 
-static const float PI = 3.1415926535897932384626433832795;
-static const float DELTA_PHI = (2.0 * PI) / 180.0;
-static const float DELTA_THETA = (0.5 * PI) / 64.0;
+static const float delta_phi = (2.0 * sbx::math::pi) / 180.0;
+static const float delta_theta = (0.5 * sbx::math::pi) / 64.0;
 
 float3 cube_direction(float2 uv, uint side) {
   float2 tex = uv * 2.0 - 1.0;
@@ -39,14 +40,11 @@ void main(cs_in in) {
     float3 right = normalize(cross(up, N));
     up = cross(N, right);
 
-    const float TWO_PI = PI * 2.0;
-    const float HALF_PI = PI * 0.5;
-
     float3 color = float3(0.0, 0.0, 0.0);
     uint sample_count = 0;
 
-    for (float phi = 0.0; phi < TWO_PI; phi += DELTA_PHI) {
-      for (float theta = 0.0; theta < HALF_PI; theta += DELTA_THETA) {
+    for (float phi = 0.0; phi < sbx::math::two_pi; phi += delta_phi) {
+      for (float theta = 0.0; theta < sbx::math::half_pi; theta += delta_theta) {
         float3 direction = cos(phi) * right + sin(phi) * up;
         float3 uav = cos(theta) * N + sin(theta) * direction;
 
@@ -59,7 +57,7 @@ void main(cs_in in) {
       }
     }
 
-    float3 final_output = PI * color / float(sample_count);
+    float3 final_output = sbx::math::pi * color / float(sample_count);
 
     output.Store(int3(in.id.xy, face), float4(final_output, 1.0));
   }
