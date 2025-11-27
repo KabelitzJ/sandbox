@@ -54,7 +54,7 @@ auto separate_image2d_array::push_back(const handle_type& handle) -> std::uint32
     throw std::runtime_error{"separate_image2d_array::push_back: max_size exceeded"};
   }
 
-  if (!handle) {
+  if (!handle.is_valid()) {
     return max_size;
   }
 

@@ -110,6 +110,11 @@ application::application()
   scene.add_image("pine_tree_leaves_albedo", "res://textures/pine_tree/leaves_albedo.png");
   scene.add_image("pine_tree_leaves_normal", "res://textures/pine_tree/leaves_normal.png");
 
+  scene.add_image("laval_rocks_albedo", "res://textures/laval_rocks/albedo.png");
+  scene.add_image("laval_rocks_normal", "res://textures/laval_rocks/normal.png");
+  scene.add_image("laval_rocks_mrao", "res://textures/laval_rocks/mrao.png");
+  scene.add_image("laval_rocks_height", "res://textures/laval_rocks/height.png");
+
   scene.add_image("duck_albedo", "res://textures/duck/albedo.png");
 
   scene.add_cube_image("skybox", "res://skyboxes/clouds2");
@@ -208,6 +213,7 @@ application::application()
   auto& helmet_material = scene.add_material<sbx::models::material>("helmet");
   helmet_material.albedo = scene.get_image("helmet_albedo");
   helmet_material.normal = scene.get_image("helmet_normal");
+  helmet_material.normal_scale = 1.0f;
   helmet_material.mrao = scene.get_image("helmet_mrao");
   helmet_material.emissive = scene.get_image("helmet_emissive");
   helmet_material.emissive_factor = sbx::math::vector4{1, 1, 1, 0};
@@ -266,11 +272,13 @@ application::application()
   auto orb = scene.create_node("Orb");
 
   auto& orb_material = scene.add_material<sbx::models::material>("orb");
-  orb_material.base_color = sbx::math::color::white();
-  orb_material.alpha = sbx::models::alpha_mode::opaque;
-  orb_material.metallic = 1.0f;
-  orb_material.roughness = 0.0f;
-  orb_material.occlusion = 1.0f;
+  orb_material.albedo = scene.get_image("laval_rocks_albedo");
+  orb_material.normal = scene.get_image("laval_rocks_normal");
+  orb_material.normal_scale = 1.0f;
+  orb_material.mrao = scene.get_image("laval_rocks_mrao");
+  orb_material.height = scene.get_image("laval_rocks_height");
+  orb_material.height_offset = 0.0f;
+  orb_material.height_scale = 1.0f;
 
   scene.add_component<sbx::scenes::static_mesh>(orb, scene.get_mesh("sphere"), scene.get_material("orb"));
 

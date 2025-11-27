@@ -181,16 +181,15 @@ private:
   }
 
   auto _push_material(const models::material& material) -> void {
-    const auto albedo_index = add_image(material.albedo);
-    const auto normal_index = add_image(material.normal);
-    const auto mrao_index = add_image(material.mrao);
-    const auto emissive_index = add_image(material.emissive);
-
     auto data = models::material_data{};
-    data.albedo_index = albedo_index;
-    data.normal_index = normal_index;
-    data.mrao_index = mrao_index;
-    data.emissive_index = emissive_index;
+    data.albedo_index = add_image(material.albedo);
+    data.normal_index = add_image(material.normal);
+    data.mrao_index = add_image(material.mrao);
+    data.emissive_index = add_image(material.emissive);
+
+    data.height_index = add_image(material.height);
+    data.height_scale = material.height_scale;
+    data.height_offset = material.height_offset;
 
     data.base_color = material.base_color;
     data.emissive_factor = material.emissive_factor;
@@ -200,7 +199,7 @@ private:
     data.emissive_strength = material.emissive_strength;
 
     data.alpha_cutoff = material.alpha_cutoff;
-    data.normal_scale = 1.0f;
+    data.normal_scale = material.normal_scale;
     data.flags = material.features.underlying();
 
     _material_data.push_back(data);

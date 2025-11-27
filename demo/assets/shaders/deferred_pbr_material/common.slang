@@ -12,6 +12,11 @@ struct material_data {
   uint mrao_index;
   uint emissive_index;
 
+  uint height_index;
+  float height_scale;
+  float height_offset;
+  uint _pad0;
+
   float4 base_color;
   float4 emissive_factor;
 
@@ -23,7 +28,7 @@ struct material_data {
   float alpha_cutoff;
   float normal_scale;
   uint flags;
-  uint _pad0;
+  uint _pad1;
 }; // struct material_data
 
 struct static_instance_data {

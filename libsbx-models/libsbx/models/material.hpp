@@ -37,6 +37,11 @@ struct alignas(16) material_data {
   std::uint32_t mrao_index;
   std::uint32_t emissive_index;
 
+  std::uint32_t height_index;
+  std::float_t height_scale;
+  std::float_t height_offset;
+  std::uint32_t _pad0;
+
   math::color base_color;
   math::vector4 emissive_factor;
 
@@ -48,7 +53,7 @@ struct alignas(16) material_data {
   std::float_t alpha_cutoff;
   std::float_t normal_scale;
   std::uint32_t flags;
-  std::uint32_t _pad0;
+  std::uint32_t _pad1;
 }; // struct material_data
 
 static_assert(sizeof(material_data) <= 256u);
@@ -82,17 +87,26 @@ struct material_key_hash {
 struct material {
 
   math::color base_color{math::color::white()};
+
   std::float_t metallic{0.0f};
   std::float_t roughness{0.5f};
   std::float_t occlusion{1.0f};
+
   math::vector4 emissive_factor{0, 0, 0, 1};
   std::float_t emissive_strength{1.0f};
+
   std::float_t alpha_cutoff{0.9f};
 
   graphics::image2d_handle albedo{};
   graphics::image2d_handle normal{};
   graphics::image2d_handle mrao{};
   graphics::image2d_handle emissive{};
+  graphics::image2d_handle height{};
+
+  std::float_t normal_scale{1.0f};
+
+  std::float_t height_offset{0.0f};
+  std::float_t height_scale{1.0f};
 
   alpha_mode alpha{alpha_mode::opaque};
   bool is_double_sided{false};

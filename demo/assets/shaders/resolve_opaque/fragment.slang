@@ -315,5 +315,7 @@ fs_out main(fs_in in) {
 
   out.color = float4(final_color, 1.0);
 
+  // out.color = float4(albedo, 1.0);
+
   return out;
 }

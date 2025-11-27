@@ -16,12 +16,7 @@ struct vs_out {
   [[vk::location(1)]] float3 normal : NORMAL;
   [[vk::location(2)]] float4 tangent : TANGENT;
   [[vk::location(3)]] float2 uv : UV;
-  [[vk::location(4)]] float4 base_color : BASE_COLOR;
-  [[vk::location(5)]] float3 emissive_factor : EMISSIVE_FACTOR;
-  [[vk::location(6)]] float4 material : MATERIAL;
-  [[vk::location(7)]] nointerpolation uint4 image_indices : IMAGE_INDICES;
-  [[vk::location(8)]] nointerpolation uint object_id : OBJECT_ID;
-  [[vk::location(9)]] float alpha_cutoff : ALPHA_CUTOFF;
+  [[vk::location(4)]] nointerpolation uint instance_index : INSTANCE_INDEX;
   float4 sv_position : SV_Position;
 }; // struct vs_out
 
@@ -49,34 +44,10 @@ float4x4 calculate_skinning_matrix(uint4 bone_indices, float4 bone_weights, floa
   return result;
 }
 
-vs_out write(transform_data transform_data, material_data material_data, float3 world_position, float3 normal, float2 uv, float4 tangent, uint object_id) {
-  vs_out out;
-
-  out.position = world_position;
-  out.normal = normalize(mul(transform_data.normal, float4(normal, 0.0)).xyz);
-  out.tangent = float4(normalize(mul(transform_data.normal, float4(tangent.xyz, 0.0)).xyz), tangent.w);
-  out.uv = uv;
-  out.base_color = material_data.base_color;
-  out.emissive_factor = material_data.emissive_factor.rgb;
-  out.material = float4(material_data.metallic, material_data.roughness, material_data.occlusion, material_data.emissive_strength);
-  out.image_indices = uint4(material_data.albedo_index, material_data.normal_index, material_data.mrao_index, material_data.emissive_index);
-  out.object_id = object_id;
-  out.alpha_cutoff = material_data.alpha_cutoff;
-
-  out.sv_position = mul(scene.projection, mul(scene.view, float4(world_position, 1.0)));
-
-  return out;
-}
-
-const float4x4 identity = float4x4(
-  1, 0, 0, 0,
-  0, 1, 0, 0,
-  0, 0, 1, 0,
-  0, 0, 0, 1
-);
-
 [shader("vertex")]
 vs_out static_main(vs_in in) {
+  vs_out out;
+
   uint global_vertex = in.vertex_id + in.base_vertex;
   uint global_instance = in.instance_id + in.base_instance;
 
@@ -94,11 +65,20 @@ vs_out static_main(vs_in in) {
 
   float3 world_position = mul(transform_data.model, float4(in_position, 1.0)).xyz;
 
-  return write(transform_data, material_data, world_position, in_normal, in_uv, in_tangent, instance_data.object_id);
+  out.position = world_position;
+  out.normal = normalize(mul(transform_data.normal, float4(in_normal, 0.0)).xyz);
+  out.tangent = float4(normalize(mul(transform_data.normal, float4(in_tangent.xyz, 0.0)).xyz), in_tangent.w);
+  out.uv = in_uv;
+  out.instance_index = global_instance;
+  out.sv_position = mul(scene.projection, mul(scene.view, float4(world_position, 1.0)));
+
+  return out;
 }
 
 [shader("vertex")]
 vs_out skinned_main(vs_in in) {
+  vs_out out;
+
   uint global_vertex = in.vertex_id + in.base_vertex;
   uint global_instance = in.instance_id + in.base_instance;
 
@@ -128,5 +108,12 @@ vs_out skinned_main(vs_in in) {
   float3 normal = normalize(mul(transform_data.normal, float4(skinned_normal, 0.0)).xyz);
   float4 tangent = float4(normalize(mul(transform_data.normal, float4(skinned_tangent, 0.0)).xyz), in_tangent.w);
 
-  return write(transform_data, material_data, world_position, normal, in_uv, tangent, instance_data.object_id);
+  out.position = world_position;
+  out.normal = normal;
+  out.tangent = tangent;
+  out.uv = in_uv;
+  out.instance_index = global_instance;
+  out.sv_position = mul(scene.projection, mul(scene.view, float4(world_position, 1.0)));
+
+  return out;
 }

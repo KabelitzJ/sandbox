@@ -249,21 +249,9 @@ private:
   }
 
   inline static const auto _entry_point = std::array<std::string, 3u>{
-    "opaque_main",  // alpha_mode::opaque
-    "mask_main",    // alpha_mode::mask 
-    "blend_main"    // alpha_mode::blend
-  };
-
-  inline static const auto _alpha_policy = std::array<std::string, 3u>{
-    "opaque_alpha_policy",  // alpha_mode::opaque
-    "mask_alpha_policy",    // alpha_mode::mask 
-    "blend_alpha_policy"    // alpha_mode::blend
-  };
-
-  inline static const auto _fs_out = std::array<std::string, 3u>{
-    "opaque_fs_out",      // alpha_mode::opaque
-    "opaque_fs_out",      // alpha_mode::mask 
-    "blend_fs_out"        // alpha_mode::blend
+    "static_opaque_main",  // alpha_mode::opaque
+    "static_mask_main",    // alpha_mode::mask 
+    "static_blend_main"    // alpha_mode::blend
   };
 
   std::filesystem::path _base_pipeline;

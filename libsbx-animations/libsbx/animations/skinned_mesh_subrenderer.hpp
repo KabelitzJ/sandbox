@@ -253,9 +253,9 @@ private:
 
   // per-alpha fragment entry points (same scheme as your static renderer)
   inline static const auto _fs_entry = std::array<std::string, 3u>{
-    "opaque_main",  // alpha_mode::opaque
-    "mask_main",    // alpha_mode::mask
-    "blend_main"    // alpha_mode::blend
+    "skinned_opaque_main",  // alpha_mode::opaque
+    "skinned_mask_main",    // alpha_mode::mask
+    "skinned_blend_main"    // alpha_mode::blend
   };
 
   std::filesystem::path _base_pipeline;
