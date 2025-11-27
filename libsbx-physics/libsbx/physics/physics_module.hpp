@@ -39,7 +39,7 @@ public:
   auto update() -> void override {
     SBX_PROFILE_SCOPE("physics_module::update");
 
-    integrate_rigidbodies();
+    // integrate_rigidbodies();
 
     // // 1. Broad Phase: Use a spatial partition to find potential collision pairs
     // const auto potential_pairs = broad_phase();
