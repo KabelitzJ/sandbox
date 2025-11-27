@@ -171,15 +171,15 @@
     add_subrenderer<sbx::scenes::debug_subrenderer>(resolve, "res://shaders/debug");
 
     // Post-processing pass
+    add_subrenderer<sbx::post::fxaa_filter>(post, "res://shaders/fxaa", "resolve");
+
     auto selection_attachment_names = std::vector<std::pair<std::string, std::string>>{
-      {"resolve_image", "resolve"},
+      {"resolve_image", "post"},
       {"object_id_image", "object_id"},
       {"normalized_depth_image", "normalized_depth"},
     };
 
     add_subrenderer<sbx::post::selection_filter>(selection, "res://shaders/selection", std::move(selection_attachment_names));
-
-    // add_subrenderer<sbx::post::fxaa_filter>(post, "res://shaders/fxaa", "selection");
 
     // Editor pass
     add_subrenderer<sbx::editor::editor_subrenderer>(editor, "res://shaders/editor", "selection");

@@ -112,7 +112,7 @@ application::application()
 
   scene.add_image("duck_albedo", "res://textures/duck/albedo.png");
 
-  scene.add_cube_image("skybox", "res://skyboxes/stylized2");
+  scene.add_cube_image("skybox", "res://skyboxes/clouds2");
 
   _generate_brdf(512);
   _generate_irradiance(64);
