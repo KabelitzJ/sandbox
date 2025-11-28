@@ -221,6 +221,7 @@ application::application()
   helmet_material.mrao = scene.get_image("helmet_mrao");
   helmet_material.emissive = scene.get_image("helmet_emissive");
   helmet_material.emissive_factor = sbx::math::vector4{1, 1, 1, 0};
+  helmet_material.emissive_strength = 5.0f;
 
   scene.add_component<sbx::scenes::static_mesh>(helmet, scene.get_mesh("helmet"), scene.get_material("helmet"));
 
@@ -277,6 +278,8 @@ application::application()
 
   auto& orb_material = scene.add_material<sbx::models::material>("orb");
   orb_material.albedo = scene.get_image("laval_rocks_albedo");
+  orb_material.emissive_factor = sbx::math::vector4{1, 0, 0, 0};
+  orb_material.emissive_strength = 5.0f;
   orb_material.normal = scene.get_image("laval_rocks_normal");
   orb_material.normal_scale = 1.0f;
   orb_material.mrao = scene.get_image("laval_rocks_mrao");

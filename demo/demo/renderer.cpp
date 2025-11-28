@@ -21,6 +21,8 @@
   #include <libsbx/post/filters/blur_filter.hpp>
   #include <libsbx/post/filters/fxaa_filter.hpp>
   #include <libsbx/post/filters/selection_filter.hpp>
+  #include <libsbx/post/filters/tonemap_filter.hpp>
+  #include <libsbx/post/filters/bloom_filter.hpp>
 
   #include <libsbx/shadows/shadow_subrenderer.hpp>
   #include <libsbx/ui/ui_subrenderer.hpp>
@@ -36,7 +38,7 @@
   : _clear_color{sbx::math::color::white()} {
     auto& graphics_module = sbx::core::engine::get_module<sbx::graphics::graphics_module>();
 
-    auto [deferred, transparency, resolve, post, selection, editor] = create_graph(
+    auto [deferred, transparency, resolve, bloom, tonemap, fxaa, selection, editor] = create_graph(
       [&](sbx::graphics::render_graph::context& context) -> sbx::graphics::render_graph::graphics_pass {
         auto deferred_pass = context.graphics_pass("deferred");
 
@@ -45,7 +47,7 @@
         deferred_pass.produces("position", sbx::graphics::attachment::type::image, _clear_color, sbx::graphics::format::r32g32b32a32_sfloat);
         deferred_pass.produces("normal", sbx::graphics::attachment::type::image, _clear_color, sbx::graphics::format::r32g32b32a32_sfloat);
         deferred_pass.produces("material", sbx::graphics::attachment::type::image, _clear_color, sbx::graphics::format::r8g8b8a8_unorm);
-        deferred_pass.produces("emissive", sbx::graphics::attachment::type::image, _clear_color, sbx::graphics::format::r8g8b8a8_unorm);
+        deferred_pass.produces("emissive", sbx::graphics::attachment::type::image, _clear_color, sbx::graphics::format::r32g32b32a32_sfloat);
         deferred_pass.produces("object_id", sbx::graphics::attachment::type::image, sbx::math::color::black(), sbx::graphics::format::r32_uint);
         deferred_pass.produces("normalized_depth", sbx::graphics::attachment::type::image, _clear_color, sbx::graphics::format::r32_sfloat);
 
@@ -101,18 +103,37 @@
         return resolve_pass;
       },
       [&](sbx::graphics::render_graph::context& context) -> sbx::graphics::render_graph::graphics_pass {
-        auto post_pass = context.graphics_pass("post");
+        auto bloom_pass = context.graphics_pass("bloom");
 
-        post_pass.uses("resolve");
+        bloom_pass.uses("resolve");
 
-        post_pass.produces("post", sbx::graphics::attachment::type::image, _clear_color, sbx::graphics::format::r8g8b8a8_unorm);
+        bloom_pass.produces("bloom", sbx::graphics::attachment::type::image, sbx::math::color::black(), sbx::graphics::format::r32g32b32a32_sfloat);
 
-        return post_pass;
+        return bloom_pass;
+      },
+      [&](sbx::graphics::render_graph::context& context) -> sbx::graphics::render_graph::graphics_pass {
+        auto tonemap_pass = context.graphics_pass("tonemap");
+
+        tonemap_pass.uses("resolve");
+        tonemap_pass.uses("bloom");
+
+        tonemap_pass.produces("tonemap", sbx::graphics::attachment::type::image, _clear_color, sbx::graphics::format::r8g8b8a8_unorm);
+
+        return tonemap_pass;
+      },
+      [&](sbx::graphics::render_graph::context& context) -> sbx::graphics::render_graph::graphics_pass {
+        auto fxaa_pass = context.graphics_pass("fxaa");
+
+        fxaa_pass.uses("tonemap");
+
+        fxaa_pass.produces("fxaa", sbx::graphics::attachment::type::image, _clear_color, sbx::graphics::format::r8g8b8a8_unorm);
+
+        return fxaa_pass;
       },
       [&](sbx::graphics::render_graph::context& context) -> sbx::graphics::render_graph::graphics_pass {
         auto selection_pass = context.graphics_pass("selection");
 
-        selection_pass.uses("post");
+        selection_pass.uses("fxaa");
 
         selection_pass.produces("selection", sbx::graphics::attachment::type::image, _clear_color, sbx::graphics::format::r8g8b8a8_unorm);
 
@@ -150,9 +171,7 @@
       {"position_image", "position"},
       {"normal_image", "normal"},
       {"material_image", "material"},
-      {"emissive_image", "emissive"},
-      // {"shadow_image", "shadow"},
-      // {"object_id_image", "object_id"}
+      {"emissive_image", "emissive"}
     };
 
     add_subrenderer<sbx::post::resolve_opaque_filter>(resolve, "res://shaders/resolve_opaque", std::move(resolve_opaque_attachment_names));
@@ -171,10 +190,19 @@
     add_subrenderer<sbx::scenes::debug_subrenderer>(resolve, "res://shaders/debug");
 
     // Post-processing pass
-    add_subrenderer<sbx::post::fxaa_filter>(post, "res://shaders/fxaa", "resolve");
+    add_subrenderer<sbx::post::bloom_filter>(bloom, "res://shaders/bloom", "resolve", 1.0f, 1.0f);
+
+    auto tonemap_attachment_names = std::vector<std::pair<std::string, std::string>>{
+      {"resolve_image", "resolve"},
+      {"bloom_image", "bloom"}
+    };
+
+    add_subrenderer<sbx::post::tonemap_filter>(tonemap, "res://shaders/tonemap", std::move(tonemap_attachment_names));
+  
+    add_subrenderer<sbx::post::fxaa_filter>(fxaa, "res://shaders/fxaa", "tonemap");
 
     auto selection_attachment_names = std::vector<std::pair<std::string, std::string>>{
-      {"resolve_image", "post"},
+      {"resolve_image", "fxaa"},
       {"object_id_image", "object_id"},
       {"normalized_depth_image", "normalized_depth"},
     };
@@ -182,7 +210,7 @@
     add_subrenderer<sbx::post::selection_filter>(selection, "res://shaders/selection", std::move(selection_attachment_names));
 
     // Editor pass
-    add_subrenderer<sbx::editor::editor_subrenderer>(editor, "res://shaders/editor", "selection");
+    add_subrenderer<sbx::editor::editor_subrenderer>(editor, "res://shaders/editor", "bloom");
   }
 
   } // namespace demo

@@ -59,9 +59,9 @@ public:
 
 private:
 
-  std::vector<std::pair<std::string, std::string>> _attachment_names;
-
   graphics::push_handler _push_handler;
+
+  std::vector<std::pair<std::string, std::string>> _attachment_names;
 
   std::string _image;
   std::string _object_id_image;

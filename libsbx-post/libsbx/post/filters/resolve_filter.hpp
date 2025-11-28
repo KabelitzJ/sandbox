@@ -53,6 +53,7 @@ public:
   resolve_filter(const graphics::render_graph::graphics_pass& pass, const std::filesystem::path& path, std::vector<std::pair<std::string, std::string>>&& attachment_names)
   : base{pass, path, pipeline_definition},
     _push_handler{base::pipeline()},
+    _point_lights_storage_handler{},
     _attachment_names{std::move(attachment_names)} { }
 
   ~resolve_filter() override = default;
@@ -126,10 +127,10 @@ public:
 
 private:
 
-  std::vector<std::pair<std::string, std::string>> _attachment_names;
 
-  graphics::storage_handler _point_lights_storage_handler;
   graphics::push_handler _push_handler;
+  graphics::storage_handler _point_lights_storage_handler;
+  std::vector<std::pair<std::string, std::string>> _attachment_names;
 
 }; // class resolve_filter
 

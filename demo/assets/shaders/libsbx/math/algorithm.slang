@@ -19,6 +19,10 @@ float max2(float2 v) {
   return max(v.x, v.y);
 }
 
+float max3(float3 v) {
+  return max(max(v.r, v.g), v.b);
+}
+
 float mod(float x, float y) {
   return x - y * floor(x / y);
 }
