@@ -7,6 +7,7 @@ struct fs_in {
 
 struct fs_out {
   float4 color : SV_Target0;
+  float4 brightness : SV_Target1;
 }; // struct fs_out
 
 [[vk::binding(0, 0)]] Sampler2D<float4> accum_image;
@@ -48,6 +49,7 @@ fs_out main(fs_in in) {
 
   // blend pixels
   out.color = float4(average, 1.0f - revealage);
+  out.brightness = float4(0.0, 0.0, 0.0, 1.0);
 
   return out;
 }

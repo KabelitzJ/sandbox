@@ -5,7 +5,6 @@ Sampler2D image;
 
 struct push_data {
   float2 direction;
-  uint type;
 }; // struct push_data
 
 [[vk::push_constant]]
@@ -24,9 +23,8 @@ static const uint BLUR_TYPE_GAUSSIAN_5  = 0;
 static const uint BLUR_TYPE_GAUSSIAN_9  = 1;
 static const uint BLUR_TYPE_GAUSSIAN_13 = 2;
 
-// optional: Vulkan specialization constant (remove if your slangc doesn't support it)
-// [[vk::constant_id(0)]]
-// static const uint blur_type = BLUR_TYPE_GAUSSIAN_5;
+[[vk::constant_id(0)]]
+const uint blur_type = BLUR_TYPE_GAUSSIAN_5;
 
 float4 gaussian_blur_5(float2 uv, float2 resolution, float2 direction) {
   float4 color = float4(0.0, 0.0, 0.0, 0.0);
@@ -91,11 +89,11 @@ fs_out main(fs_in in) {
 
   float4 color = float4(1, 0, 1, 1);
 
-  if (push.type == BLUR_TYPE_GAUSSIAN_5) {
+  if (blur_type == BLUR_TYPE_GAUSSIAN_5) {
     color = gaussian_blur_5(in.uv, resolution, push.direction);
-  } else if (push.type == BLUR_TYPE_GAUSSIAN_9) {
+  } else if (blur_type == BLUR_TYPE_GAUSSIAN_9) {
     color = gaussian_blur_9(in.uv, resolution, push.direction);
-  } else if (push.type == BLUR_TYPE_GAUSSIAN_13) {
+  } else if (blur_type == BLUR_TYPE_GAUSSIAN_13) {
     color = gaussian_blur_13(in.uv, resolution, push.direction);
   }
 

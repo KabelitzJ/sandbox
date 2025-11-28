@@ -33,9 +33,9 @@ public:
     
     pipeline.bind(command_buffer);
 
-    _push_handler.push("threshold", 1.0f);
-    _push_handler.push("intensity", 1.0f);
-    _push_handler.push("radius", 10.0f);
+    // _push_handler.push("threshold", 1.0f);
+    // _push_handler.push("intensity", 1.0f);
+    // _push_handler.push("radius", 10.0f);
 
     descriptor_handler.push("image", graphics_module.attachment(_attachment_name));
 
@@ -44,7 +44,7 @@ public:
     }
 
     descriptor_handler.bind_descriptors(command_buffer);
-    _push_handler.bind(command_buffer);
+    // _push_handler.bind(command_buffer);
 
     command_buffer.draw(3, 1, 0, 0);
   }

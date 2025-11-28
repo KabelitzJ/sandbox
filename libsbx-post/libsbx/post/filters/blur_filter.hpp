@@ -58,7 +58,7 @@ public:
     pipeline.bind(command_buffer);
 
     _push_handler.push("direction", _direction);
-    _push_handler.push("type", utility::to_underlying(type));
+    // _push_handler.push("type", utility::to_underlying(type));
 
     descriptor_handler.push("image", graphics_module.attachment(_attachment_name));
 

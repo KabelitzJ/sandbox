@@ -1011,6 +1011,42 @@ private:
         // }
       }
 
+      if (ImGui::CollapsingHeader("Target", ImGuiTreeNodeFlags_DefaultOpen)) {
+        static auto current_target = std::uint32_t{12};
+        const auto targets = std::vector<std::string_view>{
+          "albedo",
+          "normal",
+          "position",
+          "material",
+          "emissive",
+          "object_id",
+          "normalized_depth",
+          "resolve",
+          "brightness",
+          "bloom",
+          "tonemap",
+          "fxaa",
+          "selection"
+        };
+
+        if (ImGui::BeginCombo("Render Target", targets[current_target].data())) {
+          for (auto i = 0u; i < targets.size(); ++i) {
+            const auto is_selected = (current_target == i);
+
+            if (ImGui::Selectable(targets[i].data(), is_selected)) {
+              current_target = i;
+              _attachment_name = targets[i];
+            }
+
+            if (is_selected) {
+              ImGui::SetItemDefaultFocus();
+            }
+          }
+
+          ImGui::EndCombo();
+        }
+      }
+
       // static constexpr auto max_time = sbx::units::second{5};
 
       // _elapsed += delta_time;

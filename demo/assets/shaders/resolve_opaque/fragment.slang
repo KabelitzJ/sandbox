@@ -11,6 +11,7 @@ struct fs_in {
 
 struct fs_out {
   float4 color : SV_Target0;
+  float4 brightness : SV_Target1;
 }; // struct fs_out
 
 struct push_data {
@@ -312,6 +313,14 @@ fs_out main(fs_in in) {
   float3 final_color = ambient + color + emissive;
 
   out.color = float4(final_color, 1.0);
+
+  float brightness = dot(out.color.rgb, float3(0.2126, 0.7152, 0.0722));
+
+  if (brightness > 1.0) {
+    out.brightness = float4(out.color.rgb, 1.0);
+  } else {
+    out.brightness = float4(0.0, 0.0, 0.0, 1.0);
+  }
 
   return out;
 }
