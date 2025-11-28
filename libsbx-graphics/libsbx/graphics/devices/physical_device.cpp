@@ -5,6 +5,7 @@
 #include <array>
 #include <map>
 
+#include <libsbx/utility/iterator.hpp>
 #include <libsbx/utility/logger.hpp>
 
 #include <libsbx/graphics/devices/extensions.hpp>
@@ -25,7 +26,7 @@ physical_device::physical_device(const instance& instance)
   auto physical_device_count = std::uint32_t{0};
   vkEnumeratePhysicalDevices(instance, &physical_device_count, nullptr);
 
-  auto physical_devices = std::vector<VkPhysicalDevice>{physical_device_count};
+  auto physical_devices = utility::make_vector<VkPhysicalDevice>(physical_device_count);
   vkEnumeratePhysicalDevices(instance, &physical_device_count, physical_devices.data());
 
   _handle = _choose_device(physical_devices);
@@ -125,7 +126,7 @@ auto physical_device::_score_device(const VkPhysicalDevice& device) -> std::uint
   auto extension_property_count = std::uint32_t{0};
 	vkEnumerateDeviceExtensionProperties(device, nullptr, &extension_property_count, nullptr);
 
-	auto extension_properties = std::vector<VkExtensionProperties>{extension_property_count};
+	auto extension_properties = utility::make_vector<VkExtensionProperties>(extension_property_count);
 	vkEnumerateDeviceExtensionProperties(device, nullptr, &extension_property_count, extension_properties.data());
 
   for (const auto* current_extension : extensions::device()) {

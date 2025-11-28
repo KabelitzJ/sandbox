@@ -3,6 +3,7 @@
 // #include <vulkan/vk_enum_string_helper.h>
 
 #include <libsbx/utility/logger.hpp>
+#include <libsbx/utility/iterator.hpp>
 
 #include <libsbx/core/engine.hpp>
 
@@ -24,7 +25,7 @@ surface::surface(const instance& instance, const physical_device& physical_devic
   auto surface_format_count = std::uint32_t{0};
 	vkGetPhysicalDeviceSurfaceFormatsKHR(physical_device, _handle, &surface_format_count, nullptr);
   
-	auto surface_formats = std::vector<VkSurfaceFormatKHR>{surface_format_count};
+	auto surface_formats = utility::make_vector<VkSurfaceFormatKHR>(surface_format_count);
 	vkGetPhysicalDeviceSurfaceFormatsKHR(physical_device, _handle, &surface_format_count, surface_formats.data());
 
   if (surface_formats.empty()) {

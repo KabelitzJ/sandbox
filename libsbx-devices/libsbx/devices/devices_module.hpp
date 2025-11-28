@@ -64,7 +64,7 @@ public:
 
   auto required_instance_extensions() const -> std::vector<const char*> {
     auto extension_count = std::uint32_t{0};
-    auto extensions = glfwGetRequiredInstanceExtensions(&extension_count);
+    auto** extensions = glfwGetRequiredInstanceExtensions(&extension_count);
 
     return std::vector<const char*>{extensions, extensions + extension_count};
   }

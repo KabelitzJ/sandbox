@@ -3,6 +3,7 @@
 #include <limits>
 #include <ranges>
 
+#include <libsbx/utility/iterator.hpp>
 #include <libsbx/utility/logger.hpp>
 
 #include <libsbx/core/engine.hpp>
@@ -218,7 +219,7 @@ auto swapchain::_choose_present_mode() const -> VkPresentModeKHR {
   auto physical_present_mode_count = std::uint32_t{0};
   vkGetPhysicalDeviceSurfacePresentModesKHR(physical_device, surface, &physical_present_mode_count, nullptr);
 
-  auto physical_present_modes = std::vector<VkPresentModeKHR>{physical_present_mode_count};
+  auto physical_present_modes = utility::make_vector<VkPresentModeKHR>(physical_present_mode_count);
   vkGetPhysicalDeviceSurfacePresentModesKHR(physical_device, surface, &physical_present_mode_count, physical_present_modes.data());
 
   for (const auto& present_mode : physical_present_modes) {

@@ -2,6 +2,7 @@
 
 #include <libsbx/utility/target.hpp>
 #include <libsbx/utility/logger.hpp>
+#include <libsbx/utility/iterator.hpp>
 
 #include <libsbx/graphics/graphics_module.hpp>
 #include <libsbx/graphics/devices/validation_layers.hpp>
@@ -93,7 +94,7 @@ auto logical_device::_get_queue_family_indices(const physical_device& physical_d
   auto device_queue_family_property_count = std::uint32_t{0};
 	vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &device_queue_family_property_count, nullptr);
 
-	auto device_queue_family_properties = std::vector<VkQueueFamilyProperties>{device_queue_family_property_count};
+	auto device_queue_family_properties = utility::make_vector<VkQueueFamilyProperties>(device_queue_family_property_count);
 	vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &device_queue_family_property_count, device_queue_family_properties.data());
 
   for (auto i = std::uint32_t{0}; i < device_queue_family_property_count; ++i) {

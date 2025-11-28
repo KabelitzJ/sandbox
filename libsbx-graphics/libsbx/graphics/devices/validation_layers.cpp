@@ -1,5 +1,6 @@
 #include <libsbx/graphics/devices/validation_layers.hpp>
 
+#include <libsbx/utility/iterator.hpp>
 #include <libsbx/utility/exception.hpp>
 
 namespace sbx::graphics {
@@ -15,7 +16,7 @@ auto validation_layers::instance() -> std::vector<const char*> {
     auto available_layer_count = std::uint32_t{0};
     vkEnumerateInstanceLayerProperties(&available_layer_count, nullptr);
 
-    auto available_layers = std::vector<VkLayerProperties>{available_layer_count};
+    auto available_layers = utility::make_vector<VkLayerProperties>(available_layer_count);
     vkEnumerateInstanceLayerProperties(&available_layer_count, available_layers.data());
 
     for (const auto* required_layer : required_layers) {
