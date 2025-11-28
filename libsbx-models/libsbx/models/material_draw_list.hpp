@@ -190,16 +190,19 @@ private:
     data.height_index = add_image(material.height);
     data.height_scale = material.height_scale;
     data.height_offset = material.height_offset;
+    data.parallax_min_layers = material.parallax_min_layers;
+    data.parallax_max_layers = material.parallax_max_layers;
+    data.normal_scale = material.normal_scale;
+    data.emissive_factor = material.emissive_factor;
 
     data.base_color = material.base_color;
-    data.emissive_factor = material.emissive_factor;
+    data.emissive_strength = material.emissive_strength;
+
     data.metallic = material.metallic;
     data.roughness = material.roughness;
     data.occlusion = material.occlusion;
-    data.emissive_strength = material.emissive_strength;
 
     data.alpha_cutoff = material.alpha_cutoff;
-    data.normal_scale = material.normal_scale;
     data.flags = material.features.underlying();
 
     _material_data.push_back(data);

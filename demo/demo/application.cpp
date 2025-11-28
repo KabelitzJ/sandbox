@@ -115,6 +115,10 @@ application::application()
   scene.add_image("laval_rocks_mrao", "res://textures/laval_rocks/mrao.png");
   scene.add_image("laval_rocks_height", "res://textures/laval_rocks/height.png");
 
+  scene.add_image("bricks2_albedo", "res://textures/bricks2/albedo.jpg");
+  scene.add_image("bricks2_normal", "res://textures/bricks2/normal.jpg");
+  scene.add_image("bricks2_height", "res://textures/bricks2/height.jpg");
+
   scene.add_image("duck_albedo", "res://textures/duck/albedo.png");
 
   scene.add_cube_image("skybox", "res://skyboxes/clouds2");
@@ -278,13 +282,13 @@ application::application()
   orb_material.mrao = scene.get_image("laval_rocks_mrao");
   orb_material.height = scene.get_image("laval_rocks_height");
   orb_material.height_offset = 0.0f;
-  orb_material.height_scale = 1.0f;
+  orb_material.height_scale = 0.05f;
 
   scene.add_component<sbx::scenes::static_mesh>(orb, scene.get_mesh("sphere"), scene.get_material("orb"));
 
-  auto& sphere_transform = scene.get_component<sbx::scenes::transform>(orb);
-  sphere_transform.set_position(sbx::math::vector3{-8.0f, 15.0f, 4.0f});
-  sphere_transform.set_scale(sbx::math::vector3{5.0f, 5.0f, 5.0f});
+  auto& orb_transform = scene.get_component<sbx::scenes::transform>(orb);
+  orb_transform.set_position(sbx::math::vector3{-8.0f, 15.0f, 4.0f});
+  orb_transform.set_scale(sbx::math::vector3{5.0f, 5.0f, 5.0f});
   
   // Fox
 

@@ -45,45 +45,85 @@ SamplerState images_sampler;
 [[vk::binding(2, 0)]]
 Texture2D<float4> images[sbx::common::max_image_array_size];
 
-float4 get_albedo<AlphaPolicy: alpha_policy>(fs_in in, material_data material_data) {
+float2 parallax_mapping(float3x3 inv_TBN, float2 uv, float3 position, material_data material_data) {
+  uint index = material_data.height_index;
+
+  if (index >= sbx::common::max_image_array_size) {
+    return uv;
+  }
+  
+  float3 camera_position_ts = mul(inv_TBN, scene.camera_position);
+  float3 position_ts = mul(inv_TBN, position);
+
+  float3 view_direction_ts = normalize(camera_position_ts - position_ts);
+
+  float layer_count = lerp(material_data.parallax_min_layers, material_data.parallax_max_layers, max(dot(float3(0.0, 0.0, 1.0), view_direction_ts), 0.0)); 
+
+  float layer_depth = 1.0 / layer_count;
+  float current_layer_depth = 0.0;
+
+  float2 P = view_direction_ts.xy * material_data.height_scale;
+  float2 uv_delta = P / layer_count;
+
+  float2 current_uv = uv;
+  float current_depth_map_value = images[NonUniformResourceIndex(index)].Sample(images_sampler, current_uv).r;
+    
+  // march along the ray in UV space
+  while (current_layer_depth < current_depth_map_value) {
+    current_uv -= uv_delta;
+    current_layer_depth += layer_depth;
+    current_depth_map_value = images[NonUniformResourceIndex(index)].Sample(images_sampler, current_uv).r;  
+  }
+
+  float2 previous_uv = current_uv + uv_delta;
+
+  float after_depth  = current_depth_map_value - current_layer_depth;
+  float before_depth = images[NonUniformResourceIndex(index)].Sample(images_sampler, previous_uv).r - (current_layer_depth - layer_depth);
+  
+  float weight = after_depth / (after_depth - before_depth);
+  float2 final_uv = previous_uv * weight + current_uv * (1.0 - weight);
+
+  return final_uv;  
+}
+
+float4 get_albedo<AlphaPolicy: alpha_policy>(float2 uv, material_data material_data) {
   uint index = material_data.albedo_index;
 
   if (index >= sbx::common::max_image_array_size) {
     return material_data.base_color;
   }
 
-  float4 color = images[NonUniformResourceIndex(index)].Sample(images_sampler, in.uv);
+  float4 color = images[NonUniformResourceIndex(index)].Sample(images_sampler, uv);
 
   return AlphaPolicy::combine_colors(color, material_data.base_color);
 }
 
-float3 get_normal(fs_in in, material_data material_data) {
+float3 get_normal(float3x3 TBN, float2 uv, float3 normal, material_data material_data) {
   uint index = material_data.normal_index;
 
   if (index >= sbx::common::max_image_array_size) {
-    return normalize(in.normal);
+    return normalize(normal);
   }
 
-  float3 normal = images[NonUniformResourceIndex(index)].Sample(images_sampler, in.uv).xyz;
+  float3 normal = images[NonUniformResourceIndex(index)].Sample(images_sampler, uv).xyz;
+  normal = normal * 2.0 - 1.0;
+  normal.xy *= material_data.normal_scale;
+  normal = normalize(normal);
 
-  float3 N = in.normal;
-  float3 T = in.tangent.xyz;
-  float3 B = cross(T, N) * in.tangent.w;
-
-  return normalize(T * normal.x + B * normal.y + N * normal.z);
+  return normalize(mul(TBN, normal));
 }
 
-float3 get_material(fs_in in, material_data material_data) {
+float3 get_material(float2 uv, material_data material_data) {
   uint index = material_data.mrao_index;
 
   if (index >= sbx::common::max_image_array_size) {
     return float3(material_data.metallic, material_data.roughness, material_data.occlusion);
   }
 
-  return images[NonUniformResourceIndex(index)].Sample(images_sampler, in.uv).rgb;
+  return images[NonUniformResourceIndex(index)].Sample(images_sampler, uv).rgb;
 }
 
-float3 get_emissive(fs_in in, material_data material_data) {
+float3 get_emissive(float2 uv, material_data material_data) {
   uint index = material_data.emissive_index;
 
   float3 emissive = material_data.emissive_factor.rgb * material_data.emissive_strength;
@@ -92,17 +132,28 @@ float3 get_emissive(fs_in in, material_data material_data) {
     return emissive;
   }
 
-  return emissive * images[NonUniformResourceIndex(index)].Sample(images_sampler, in.uv).rgb;
+  return emissive * images[NonUniformResourceIndex(index)].Sample(images_sampler, uv).rgb;
 }
 
 opaque_fs_out opaque_main(fs_in in, material_data material_data, uint object_id) {
   opaque_fs_out out;
 
-  out.albedo = get_albedo<opaque_alpha_policy>(in, material_data);
+  float3 N = normalize(in.normal);
+  float3 T = normalize(in.tangent.xyz);
+  T = normalize(T - dot(T, N) * N);
+  float3 B = normalize(cross(N, T)) * in.tangent.w;
+
+  // Constructor still seems to be row major.
+  float3x3 inv_TBN = float3x3(T, B, N);
+  float3x3 TBN = transpose(inv_TBN);
+
+  float2 parallax_uv = parallax_mapping(inv_TBN, in.uv, in.position, material_data);
+
+  out.albedo = get_albedo<opaque_alpha_policy>(parallax_uv, material_data);
   out.position = float4(in.position, 1.0);
-  out.normal = float4(get_normal(in, material_data), 0.0);
-  out.material = float4(get_material(in, material_data), 0.0);
-  out.emissive = float4(get_emissive(in, material_data), 0.0);
+  out.normal = float4(get_normal(TBN, parallax_uv, in.normal, material_data), 0.0);
+  out.material = float4(get_material(parallax_uv, material_data), 0.0);
+  out.emissive = float4(get_emissive(parallax_uv, material_data), 0.0);
   out.object_id = object_id;
   out.depth = sbx::common::linearize_depth(in.sv_position.z, scene.camera_near, scene.camera_far);
 
@@ -134,7 +185,18 @@ opaque_fs_out skinned_opaque_main(fs_in in) {
 opaque_fs_out mask_main(fs_in in, material_data material_data, uint object_id) {
   opaque_fs_out out;
 
-  float4 albedo = get_albedo<mask_alpha_policy>(in, material_data);
+  float3 N = normalize(in.normal);
+  float3 T = normalize(in.tangent.xyz);
+  T = normalize(T - dot(T, N) * N);
+  float3 B = normalize(cross(N, T)) * in.tangent.w;
+
+  // Constructor still seems to be row major.
+  float3x3 inv_TBN = float3x3(T, B, N);
+  float3x3 TBN = transpose(inv_TBN);
+
+  float2 parallax_uv = parallax_mapping(inv_TBN, in.uv, in.position, material_data);
+
+  float4 albedo = get_albedo<mask_alpha_policy>(parallax_uv, material_data);
 
   if (albedo.a < material_data.alpha_cutoff) {
     discard;
@@ -142,9 +204,9 @@ opaque_fs_out mask_main(fs_in in, material_data material_data, uint object_id) {
 
   out.albedo = albedo;
   out.position = float4(in.position, 1.0);
-  out.normal = float4(get_normal(in, material_data), 0.0);
-  out.material = float4(get_material(in, material_data), 0.0);
-  out.emissive = float4(get_emissive(in, material_data), 0.0);
+  out.normal = float4(get_normal(TBN, parallax_uv, in.normal, material_data), 0.0);
+  out.material = float4(get_material(parallax_uv, material_data), 0.0);
+  out.emissive = float4(get_emissive(parallax_uv, material_data), 0.0);
   out.object_id = object_id;
   out.depth = sbx::common::linearize_depth(in.sv_position.z, scene.camera_near, scene.camera_far);
 
@@ -174,7 +236,7 @@ opaque_fs_out skinned_mask_main(fs_in in) {
 blend_fs_out blend_main(fs_in in, material_data material_data, uint object_id) {
   blend_fs_out out;
   
-  float4 albedo = get_albedo<blend_alpha_policy>(in, material_data);
+  float4 albedo = get_albedo<blend_alpha_policy>(in.uv, material_data);
 
   // Equivalent to: clamp(pow(min(1, a*10)+0.01, 3)*1e8 * pow(1 - z*0.9, 3), 1e-2, 3e3)
   float alpha = albedo.a;

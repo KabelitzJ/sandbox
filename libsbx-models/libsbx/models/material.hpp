@@ -40,20 +40,21 @@ struct alignas(16) material_data {
   std::uint32_t height_index;
   std::float_t height_scale;
   std::float_t height_offset;
-  std::uint32_t _pad0;
+  std::float_t parallax_min_layers;
+
+  std::float_t parallax_max_layers;
+  std::float_t emissive_strength;
+  std::float_t normal_scale;
+  std::float_t alpha_cutoff;
 
   math::color base_color;
+
   math::vector4 emissive_factor;
 
   std::float_t metallic;
   std::float_t roughness;
   std::float_t occlusion;
-  std::float_t emissive_strength;
-
-  std::float_t alpha_cutoff;
-  std::float_t normal_scale;
   std::uint32_t flags;
-  std::uint32_t _pad1;
 }; // struct material_data
 
 static_assert(sizeof(material_data) <= 256u);
@@ -106,7 +107,9 @@ struct material {
   std::float_t normal_scale{1.0f};
 
   std::float_t height_offset{0.0f};
-  std::float_t height_scale{1.0f};
+  std::float_t height_scale{0.05f};
+  std::float_t parallax_min_layers{8.0f};
+  std::float_t parallax_max_layers{32.0f};
 
   alpha_mode alpha{alpha_mode::opaque};
   bool is_double_sided{false};

@@ -253,17 +253,17 @@ fs_out main(fs_in in) {
   for (uint i = 0u; i < push.point_light_count; ++i) {
     point_light light = buffer_point_lights[i];
 
-    float3 position = light.position.xyz;
-    float radius = light.position.w;
+    float3 light_position = light.position.xyz;
+    float light_radius = light.position.w;
 
-    float3 l_dir = position - world_position;
+    float3 l_dir = light_position - world_position;
     float  distance = max(length(l_dir), 0.001);
 
     l_dir /= distance;
 
     float3 h = normalize(view_dir + l_dir);
     float ndl_p = max(dot(normal, l_dir), 0.0);
-    float attenuation = clamp(1.0 - distance / radius, 0.0, 1.0);
+    float attenuation = clamp(1.0 - distance / light_radius, 0.0, 1.0);
 
     attenuation *= attenuation;
 
@@ -284,15 +284,13 @@ fs_out main(fs_in in) {
 
   // Image based lighting
 
-  float3 n   = normalize(normal);
-  float3 v   = normalize(view_dir);
-  float  ndv = max(dot(n, v), 0.0);
+  float ndv = max(dot(normal, view_dir), 0.0);
 
-  float3 r = normalize(reflect(-v, n));
+  float3 r = normalize(reflect(-view_dir, normal));
 
   float rough = clamp(roughness, 0.04, 1.0);
 
-  float3 diffuse_irradiance = irradiance_image.Sample(n).rgb;
+  float3 diffuse_irradiance = irradiance_image.Sample(normal).rgb;
   float3 diffuse_ibl = diffuse_irradiance * albedo;
 
   float lod = rough * PREFILTERED_ENV_MAX_MIP;
@@ -314,8 +312,6 @@ fs_out main(fs_in in) {
   float3 final_color = ambient + color + emissive;
 
   out.color = float4(final_color, 1.0);
-
-  // out.color = float4(albedo, 1.0);
 
   return out;
 }

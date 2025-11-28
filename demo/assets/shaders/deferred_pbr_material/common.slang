@@ -15,20 +15,21 @@ struct material_data {
   uint height_index;
   float height_scale;
   float height_offset;
-  uint _pad0;
+  float parallax_min_layers;
+
+  float parallax_max_layers;
+  float emissive_strength;
+  float normal_scale;
+  float alpha_cutoff;
 
   float4 base_color;
+
   float4 emissive_factor;
 
   float metallic;
   float roughness;
   float occlusion;
-  float emissive_strength;
-
-  float alpha_cutoff;
-  float normal_scale;
   uint flags;
-  uint _pad1;
 }; // struct material_data
 
 struct static_instance_data {
