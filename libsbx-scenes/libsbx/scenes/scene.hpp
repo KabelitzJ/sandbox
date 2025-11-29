@@ -348,7 +348,7 @@ public:
     // utility::logger<"scenes">::debug("camera_far: {}", camera.far_plane());
     // utility::logger<"scenes">::debug("camera_fov_radians: {}", camera.field_of_view().to_radians().value());
 
-    _uniform_handler.push("camera_position", camera_transform.position());
+    _uniform_handler.push("camera_position", world_position(_camera));
     _uniform_handler.push("camera_near", camera.near_plane());
     _uniform_handler.push("camera_far", camera.far_plane());
     _uniform_handler.push("camera_fov_radians", camera.field_of_view().to_radians().value());

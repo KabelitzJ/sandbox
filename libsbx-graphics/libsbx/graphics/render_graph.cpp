@@ -392,6 +392,8 @@ auto graph_builder::_create_attachments(const viewport::type flags, const graphi
           }
         });
 
+        utility::logger<"graphics">::debug("Created color attachment '{}' with extent {}x{}", attachment.name().str(), extent.x(), extent.y());
+
         break;
       }
       case attachment::type::depth: {
@@ -422,6 +424,8 @@ auto graph_builder::_create_attachments(const viewport::type flags, const graphi
           }
         });
 
+        utility::logger<"graphics">::debug("Created depth attachment '{}' with extent {}x{}", attachment.name().str(), extent.x(), extent.y());
+
         break;
       }
       case attachment::type::storage: {
@@ -450,6 +454,8 @@ auto graph_builder::_create_attachments(const viewport::type flags, const graphi
             }
           }
         });
+
+        utility::logger<"graphics">::debug("Created swapchain attachment '{}' with extent {}x{}", attachment.name().str(), extent.x(), extent.y());
 
         break;
       }

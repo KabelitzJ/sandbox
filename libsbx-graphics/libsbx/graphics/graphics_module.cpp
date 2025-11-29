@@ -380,7 +380,7 @@ auto graphics_module::_recreate_viewport() -> void {
   _logical_device->wait_idle();
 
   _renderer->resize(viewport::type::dynamic);
-    _on_viewport_changed.emit(_viewport);
+  _on_viewport_changed.emit(_viewport);
 }
 
 auto graphics_module::_recreate_swapchain() -> void {

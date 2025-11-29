@@ -115,6 +115,11 @@ application::application()
   scene.add_image("laval_rocks_mrao", "res://textures/laval_rocks/mrao.png");
   scene.add_image("laval_rocks_height", "res://textures/laval_rocks/height.png");
 
+  scene.add_image("asphalt_albedo", "res://textures/asphalt/albedo.png");
+  scene.add_image("asphalt_normal", "res://textures/asphalt/normal.png");
+  scene.add_image("asphalt_mrao", "res://textures/asphalt/mrao.png");
+  scene.add_image("asphalt_height", "res://textures/asphalt/height.png");
+
   scene.add_image("bricks2_albedo", "res://textures/bricks2/albedo.jpg");
   scene.add_image("bricks2_normal", "res://textures/bricks2/normal.jpg");
   scene.add_image("bricks2_height", "res://textures/bricks2/height.jpg");
@@ -221,7 +226,7 @@ application::application()
   helmet_material.mrao = scene.get_image("helmet_mrao");
   helmet_material.emissive = scene.get_image("helmet_emissive");
   helmet_material.emissive_factor = sbx::math::vector4{1, 1, 1, 0};
-  helmet_material.emissive_strength = 5.0f;
+  helmet_material.emissive_strength = 10.0f;
 
   scene.add_component<sbx::scenes::static_mesh>(helmet, scene.get_mesh("helmet"), scene.get_material("helmet"));
 
@@ -277,17 +282,15 @@ application::application()
   auto orb = scene.create_node("Orb");
 
   auto& orb_material = scene.add_material<sbx::models::material>("orb");
-  orb_material.albedo = scene.get_image("laval_rocks_albedo");
-  orb_material.emissive_factor = sbx::math::vector4{1, 0, 0, 0};
-  orb_material.emissive_strength = 5.0f;
-  orb_material.normal = scene.get_image("laval_rocks_normal");
+  orb_material.albedo = scene.get_image("asphalt_albedo");
+  orb_material.normal = scene.get_image("asphalt_normal");
   orb_material.normal_scale = 1.0f;
-  orb_material.mrao = scene.get_image("laval_rocks_mrao");
-  orb_material.height = scene.get_image("laval_rocks_height");
-  orb_material.height_offset = 0.0f;
-  orb_material.height_scale = 0.05f;
+  orb_material.mrao = scene.get_image("asphalt_mrao");
+  // orb_material.height = scene.get_image("asphalt_height");
+  // orb_material.height_offset = 0.0f;
+  // orb_material.height_scale = 0.2f;
 
-  scene.add_component<sbx::scenes::static_mesh>(orb, scene.get_mesh("sphere"), scene.get_material("orb"));
+  scene.add_component<sbx::scenes::static_mesh>(orb, scene.get_mesh("cube"), scene.get_material("orb"));
 
   auto& orb_transform = scene.get_component<sbx::scenes::transform>(orb);
   orb_transform.set_position(sbx::math::vector3{-8.0f, 15.0f, 4.0f});

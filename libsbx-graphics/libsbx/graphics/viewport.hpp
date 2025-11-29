@@ -28,8 +28,8 @@ public:
     return viewport{type::fixed, math::vector2f{1.0f, 1.0f}, math::vector2i{0, 0}, math::vector2u{width, height}};
   }
 
-  static auto window() -> viewport {
-    return viewport{type::window, math::vector2f{1.0f, 1.0f}, math::vector2i{0, 0}, std::nullopt};
+  static auto window(const math::vector2f& scale = math::vector2f{1.0f, 1.0f}) -> viewport {
+    return viewport{type::window, scale, math::vector2i{0, 0}, std::nullopt};
   }
 
   static auto dynamic() -> viewport {

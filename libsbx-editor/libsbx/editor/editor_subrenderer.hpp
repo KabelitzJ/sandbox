@@ -1023,7 +1023,7 @@ private:
           "normalized_depth",
           "resolve",
           "brightness",
-          "bloom",
+          "bloom_full",
           "tonemap",
           "fxaa",
           "selection"

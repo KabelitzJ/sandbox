@@ -5,6 +5,9 @@
 
 #include <libsbx/math/vector2.hpp>
 
+#include <libsbx/graphics/graphics_module.hpp>
+#include <libsbx/graphics/buffers/push_handler.hpp>
+
 #include <libsbx/post/filter.hpp>
 
 namespace sbx::post {
@@ -15,11 +18,12 @@ class tonemap_filter final : public filter {
 
 public:
 
-  tonemap_filter(const graphics::render_graph::graphics_pass& pass, const std::filesystem::path& path, std::vector<std::pair<std::string, std::string>>&& attachment_names, std::float_t exposure = 1.0f)
+  tonemap_filter(const graphics::render_graph::graphics_pass& pass, const std::filesystem::path& path, std::vector<std::pair<std::string, std::string>>&& attachment_names, std::float_t exposure = 1.0f, std::float_t bloom_mix = 0.4f)
   : base{pass, path, base::default_pipeline_definition},
     _push_handler{base::pipeline()},
     _attachment_names{std::move(attachment_names)},
-    _exposure{exposure} { }
+    _exposure{exposure},
+    _bloom_mix{bloom_mix} { }
 
   ~tonemap_filter() override = default;
 
@@ -32,7 +36,7 @@ public:
     pipeline.bind(command_buffer);
 
     _push_handler.push("exposure", _exposure);
-    _push_handler.push("bloom_mix", 0.04f);
+    _push_handler.push("bloom_mix", _bloom_mix);
 
     for (const auto& [name, attachment] : _attachment_names) {
       descriptor_handler.push(name, graphics_module.attachment(attachment));
@@ -53,6 +57,7 @@ private:
   graphics::push_handler _push_handler;
   std::vector<std::pair<std::string, std::string>> _attachment_names;
   std::float_t _exposure;
+  std::float_t _bloom_mix;
 
 }; // class tonemap_filter
 
