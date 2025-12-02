@@ -694,8 +694,7 @@ auto application::_generate_irradiance(const std::uint32_t size) -> void {
 #endif
 }
 
-// auto application::_generate_prefiltered(uint32_t size) -> void
-// {
+// auto application::_generate_prefiltered(uint32_t size) -> void {
 //   auto& graphics_module = sbx::core::engine::get_module<sbx::graphics::graphics_module>();
 //   auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
 //   auto& scene = scenes_module.scene();
@@ -746,21 +745,22 @@ auto application::_generate_irradiance(const std::uint32_t size) -> void {
 
 //     vkCmdPipelineBarrier2(command_buffer, &dependency);
 
-//     auto image_infos = std::vector<VkDescriptorImageInfo>{};
+//     auto descriptor_image_info = std::vector<VkDescriptorImageInfo>{};
 
-//     image_infos.push_back(VkDescriptorImageInfo{
-//       .sampler = prefiltered.sampler(),
+//     descriptor_image_info.push_back(VkDescriptorImageInfo{
+//       .sampler = VK_NULL_HANDLE, // prefiltered.sampler(),
 //       .imageView = mip_views[mip],
 //       .imageLayout = VK_IMAGE_LAYOUT_GENERAL
 //     });
 
-//     auto write = VkWriteDescriptorSet{};
-//     write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-//     write.dstBinding = *pipeline.find_descriptor_binding("output", 0u);
-//     write.descriptorCount = 1;
-//     write.descriptorType = *pipeline.find_descriptor_type_at_binding(0u, write.dstBinding);
+//     auto descriptor_write = VkWriteDescriptorSet{};
+//     descriptor_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+//     descriptor_write.dstBinding = *pipeline.find_descriptor_binding("output", 0u);
+//     descriptor_write.dstArrayElement = 0;
+//     descriptor_write.descriptorCount = 1;
+//     descriptor_write.descriptorType = *pipeline.find_descriptor_type_at_binding(0u, descriptor_write.dstBinding);
 
-//     auto write_set = sbx::graphics::write_descriptor_set{write, image_infos};
+//     auto write_set = sbx::graphics::write_descriptor_set{descriptor_write, descriptor_image_info};
 
 //     descriptor_handler.push("skybox", skybox);
 //     descriptor_handler.push("output", prefiltered, std::move(write_set));
@@ -770,9 +770,9 @@ auto application::_generate_irradiance(const std::uint32_t size) -> void {
 
 //     const auto roughness = static_cast<std::float_t>(mip) / static_cast<std::float_t>(prefiltered.mip_levels() - 1);
 
-//     // push_handler.push("roughness", roughness);
+//     push_handler.push("roughness", roughness);
 //     // push_handler.push("num_samples", 32u);
-//     // push_handler.bind(command_buffer);
+//     push_handler.bind(command_buffer);
 
 //     const auto group_count_x = static_cast<std::uint32_t>(std::ceil(static_cast<std::float_t>(prefiltered.size().x() >> mip) / static_cast<std::float_t>(16)));
 //     const auto group_count_y = static_cast<std::uint32_t>(std::ceil(static_cast<std::float_t>(prefiltered.size().y() >> mip) / static_cast<std::float_t>(16)));
@@ -824,7 +824,7 @@ auto application::_generate_prefiltered(uint32_t size) -> void
 
   // 1. Create prefiltered cube image (use rgba32f to match RWTexture2DArray<float4>)
   _prefiltered = graphics_module.add_resource<sbx::graphics::cube_image>(
-    sbx::math::vector2u{ size },
+    sbx::math::vector2u{size},
     VK_FORMAT_R32G32B32A32_SFLOAT,
     VK_IMAGE_LAYOUT_GENERAL,
     VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT |
@@ -840,12 +840,12 @@ auto application::_generate_prefiltered(uint32_t size) -> void
   auto timer = sbx::utility::timer{};
 
   auto& prefiltered = graphics_module.get_resource<sbx::graphics::cube_image>(_prefiltered);
-  auto& skybox      = graphics_module.get_resource<sbx::graphics::cube_image>(scene.get_cube_image("skybox"));
+  auto& skybox = graphics_module.get_resource<sbx::graphics::cube_image>(scene.get_cube_image("skybox"));
 
   const uint32_t mip_levels = prefiltered.mip_levels();
 
   // 2. Command buffer for compute
-  sbx::graphics::command_buffer command_buffer{ true, VK_QUEUE_COMPUTE_BIT };
+  auto command_buffer = sbx::graphics::command_buffer{true, VK_QUEUE_COMPUTE_BIT};
 
   sbx::graphics::compute_pipeline pipeline{ "res://shaders/prefiltered" };
   pipeline.bind(command_buffer);

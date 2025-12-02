@@ -45,11 +45,9 @@ renderer::renderer()
     resolve,
     downsample_1, 
     downsample_2, 
-    downsample_3,
     bloom_x, 
     bloom_y,
-    upsample_2, 
-    upsample_1,
+    upsample, 
     tonemap, 
     fxaa, 
     selection, 
@@ -138,18 +136,9 @@ renderer::renderer()
       return pass;
     },
     [&](sbx::graphics::render_graph::context& context) -> sbx::graphics::render_graph::graphics_pass {
-      auto pass = context.graphics_pass("downsample_3", sbx::graphics::viewport::window(sbx::math::vector2f{0.125f, 0.125f}));
-
-      pass.uses("downsample_2");
-
-      pass.produces("downsample_3", sbx::graphics::attachment::type::image, sbx::math::color::black(), sbx::graphics::format::r32g32b32a32_sfloat);
-
-      return pass;
-    },
-    [&](sbx::graphics::render_graph::context& context) -> sbx::graphics::render_graph::graphics_pass {
       auto pass = context.graphics_pass("bloom_x", sbx::graphics::viewport::window(sbx::math::vector2f{0.125f, 0.125f}));
 
-      pass.uses("downsample_3");
+      pass.uses("downsample_2");
 
       pass.produces("bloom_x", sbx::graphics::attachment::type::image, sbx::math::color::black(), sbx::graphics::format::r32g32b32a32_sfloat);
 
@@ -165,22 +154,12 @@ renderer::renderer()
       return pass;
     },
     [&](sbx::graphics::render_graph::context& context) -> sbx::graphics::render_graph::graphics_pass {
-      auto pass = context.graphics_pass("upsample_2", sbx::graphics::viewport::window(sbx::math::vector2f{0.25f, 0.25f}));
+      auto pass = context.graphics_pass("upsample", sbx::graphics::viewport::window(sbx::math::vector2f{0.25f, 0.25f}));
 
       pass.uses("bloom_full");
-      pass.uses("downsample_2");
-
-      pass.produces("upsample_2", sbx::graphics::attachment::type::image, sbx::math::color::black(), sbx::graphics::format::r32g32b32a32_sfloat);
-
-      return pass;
-    },
-    [&](sbx::graphics::render_graph::context& context) -> sbx::graphics::render_graph::graphics_pass {
-      auto pass = context.graphics_pass("upsample_1", sbx::graphics::viewport::window(sbx::math::vector2f{0.5f, 0.5f}));
-
-      pass.uses("upsample_2");
       pass.uses("downsample_1");
 
-      pass.produces("upsample_1", sbx::graphics::attachment::type::image, sbx::math::color::black(), sbx::graphics::format::r32g32b32a32_sfloat);
+      pass.produces("upsample", sbx::graphics::attachment::type::image, sbx::math::color::black(), sbx::graphics::format::r32g32b32a32_sfloat);
 
       return pass;
     },
@@ -188,7 +167,7 @@ renderer::renderer()
       auto tonemap_pass = context.graphics_pass("tonemap");
 
       tonemap_pass.uses("resolve");
-      tonemap_pass.uses("upsample_1");
+      tonemap_pass.uses("upsample");
 
       tonemap_pass.produces("tonemap", sbx::graphics::attachment::type::image, _clear_color, sbx::graphics::format::r8g8b8a8_unorm);
 
@@ -256,17 +235,15 @@ renderer::renderer()
   // post-processing passes
   add_subrenderer<sbx::post::downsample_filter>(downsample_1, "res://shaders/downsample", "brightness");
   add_subrenderer<sbx::post::downsample_filter>(downsample_2, "res://shaders/downsample", "downsample_1");
-  add_subrenderer<sbx::post::downsample_filter>(downsample_3, "res://shaders/downsample", "downsample_2");
 
-  add_subrenderer<sbx::post::blur_filter_gaussian_13>(bloom_x, "res://shaders/blur", "downsample_3", sbx::math::vector2{1.0f, 0.0f});
+  add_subrenderer<sbx::post::blur_filter_gaussian_13>(bloom_x, "res://shaders/blur", "downsample_2", sbx::math::vector2{1.0f, 0.0f});
   add_subrenderer<sbx::post::blur_filter_gaussian_13>(bloom_y, "res://shaders/blur", "bloom_x", sbx::math::vector2{0.0f, 1.0f});
 
-  add_subrenderer<sbx::post::upsample_filter>(upsample_2, "res://shaders/upsample", "bloom_full", "downsample_2", 1.0f);
-  add_subrenderer<sbx::post::upsample_filter>(upsample_1, "res://shaders/upsample", "upsample_2", "downsample_1", 1.0f);
+  add_subrenderer<sbx::post::upsample_filter>(upsample, "res://shaders/upsample", "bloom_full", "downsample_1", 1.0f);
 
   auto tonemap_attachment_names = std::vector<std::pair<std::string, std::string>>{
     {"resolve_image", "resolve"},
-    {"bloom_image", "upsample_1"}
+    {"bloom_image", "upsample"}
   };
 
   add_subrenderer<sbx::post::tonemap_filter>(tonemap, "res://shaders/tonemap", std::move(tonemap_attachment_names), 0.8f, 0.5f);
