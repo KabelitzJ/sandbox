@@ -8,7 +8,7 @@ struct vertex {
 }; // struct vertex
 
 struct push_data {
-  Ptr<vertex> vertices;
+  vertex* vertices;
   float4 tint;
 }; // struct push_data
 

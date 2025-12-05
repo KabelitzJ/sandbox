@@ -19,7 +19,7 @@ find_package(spirv-cross REQUIRED)
 find_package(stb REQUIRED)
 find_package(range-v3 REQUIRED)
 find_package(fmt REQUIRED)
-find_package(vulkan-memory-allocator REQUIRED)
+find_package(VulkanMemoryAllocator REQUIRED)
 find_package(nlohmann_json REQUIRED)
 find_package(slang REQUIRED)
 
@@ -130,7 +130,7 @@ target_link_libraries(
     stb::stb
     range-v3::range-v3
     fmt::fmt
-    vulkan-memory-allocator::vulkan-memory-allocator
+    GPUOpen::VulkanMemoryAllocator
     nlohmann_json::nlohmann_json
     slang::slang
     # Internal dependencies

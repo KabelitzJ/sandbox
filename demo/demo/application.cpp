@@ -32,7 +32,7 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <stb_image_write.h>
 
-#define DUMP_IMAGES 0
+#define DUMP_IMAGES 1
 
 namespace demo {
 
@@ -539,7 +539,7 @@ static inline auto _dump_image2d(const sbx::graphics::image2d& image, const std:
     png[i * 3 + 2] = 0;
   }
 
-  stbi_write_png(path.c_str(), image.size().x(), image.size().y(), 3, png.data(), image.size().x() * 3);
+  stbi_write_png(path.string().c_str(), image.size().x(), image.size().y(), 3, png.data(), image.size().x() * 3);
 
   buffer.unmap();
 }
