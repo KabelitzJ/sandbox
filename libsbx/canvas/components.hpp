@@ -92,6 +92,82 @@ struct ui_button {
   bool was_clicked{false};
 }; // struct ui_button
 
+struct layout_element {
+  std::float_t min_width{-1.0f};
+  std::float_t min_height{-1.0f};
+  std::float_t preferred_width{-1.0f};
+  std::float_t preferred_height{-1.0f};
+  std::float_t flexible_width{-1.0f};
+  std::float_t flexible_height{-1.0f};
+  bool ignore_layout{false};
+}; // struct layout_element
+
+enum class [[=reflection::named]] content_fit_mode : std::uint8_t {
+  unconstrained,
+  min_size,
+  preferred_size,
+}; // enum class content_fit_mode
+
+struct content_size_fitter {
+  content_fit_mode horizontal_fit{content_fit_mode::unconstrained};
+  content_fit_mode vertical_fit{content_fit_mode::unconstrained};
+}; // struct content_size_fitter
+
+enum class [[=reflection::named]] layout_alignment : std::uint8_t {
+  upper_left, upper_center, upper_right,
+  middle_left, middle_center, middle_right,
+  lower_left, lower_center, lower_right,
+}; // enum class layout_alignment
+
+struct horizontal_layout_group {
+  std::float_t spacing{0.0f};
+  math::vector4 padding{0.0f, 0.0f, 0.0f, 0.0f}; // left, top, right, bottom
+  layout_alignment child_alignment{layout_alignment::upper_left};
+  bool control_child_width{true};
+  bool control_child_height{true};
+  bool child_force_expand_width{false};
+  bool child_force_expand_height{false};
+}; // struct horizontal_layout_group
+
+struct vertical_layout_group {
+  std::float_t spacing{0.0f};
+  math::vector4 padding{0.0f, 0.0f, 0.0f, 0.0f}; // left, top, right, bottom
+  layout_alignment child_alignment{layout_alignment::upper_left};
+  bool control_child_width{true};
+  bool control_child_height{true};
+  bool child_force_expand_width{false};
+  bool child_force_expand_height{false};
+}; // struct vertical_layout_group
+
+enum class [[=reflection::named]] grid_start_corner : std::uint8_t {
+  upper_left,
+  upper_right,
+  lower_left,
+  lower_right,
+}; // enum class grid_start_corner
+
+enum class [[=reflection::named]] grid_start_axis : std::uint8_t {
+  horizontal,
+  vertical,
+}; // enum class grid_start_axis
+
+enum class [[=reflection::named]] grid_constraint : std::uint8_t {
+  flexible,
+  fixed_column_count,
+  fixed_row_count,
+}; // enum class grid_constraint
+
+struct grid_layout_group {
+  math::vector2 cell_size{100.0f, 100.0f};
+  math::vector2 spacing{0.0f, 0.0f};
+  math::vector4 padding{0.0f, 0.0f, 0.0f, 0.0f}; // left, top, right, bottom
+  layout_alignment child_alignment{layout_alignment::upper_left};
+  grid_start_corner start_corner{grid_start_corner::upper_left};
+  grid_start_axis start_axis{grid_start_axis::horizontal};
+  grid_constraint constraint{grid_constraint::flexible};
+  std::int32_t constraint_count{1};
+}; // struct grid_layout_group
+
 } // namespace sbx::canvas
 
 #endif // LIBSBX_CANVAS_COMPONENTS_HPP_

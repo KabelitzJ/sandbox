@@ -1818,6 +1818,74 @@ auto interop::ui_button_get_was_clicked(std::uint64_t uuid) -> bool {
   return node.is_valid() && node.has_component<canvas::ui_button>() && node.get_component<canvas::ui_button>().was_clicked;
 }
 
+auto interop::canvas_group_get_alpha(std::uint64_t uuid, std::float_t* out_value) -> void {
+  auto node = resolve_node(uuid);
+
+  if (!out_value || !node.is_valid() || !node.has_component<canvas::canvas_group>()) {
+    return;
+  }
+
+  *out_value = node.get_component<canvas::canvas_group>().alpha;
+}
+
+auto interop::canvas_group_set_alpha(std::uint64_t uuid, std::float_t value) -> void {
+  auto node = resolve_node(uuid);
+
+  if (!node.is_valid() || !node.has_component<canvas::canvas_group>()) {
+    return;
+  }
+
+  node.get_component<canvas::canvas_group>().alpha = value;
+}
+
+auto interop::canvas_group_get_interactable(std::uint64_t uuid) -> bool {
+  auto node = resolve_node(uuid);
+
+  return node.is_valid() && node.has_component<canvas::canvas_group>() && node.get_component<canvas::canvas_group>().interactable;
+}
+
+auto interop::canvas_group_set_interactable(std::uint64_t uuid, bool value) -> void {
+  auto node = resolve_node(uuid);
+
+  if (!node.is_valid() || !node.has_component<canvas::canvas_group>()) {
+    return;
+  }
+
+  node.get_component<canvas::canvas_group>().interactable = value;
+}
+
+auto interop::canvas_group_get_blocks_raycasts(std::uint64_t uuid) -> bool {
+  auto node = resolve_node(uuid);
+
+  return node.is_valid() && node.has_component<canvas::canvas_group>() && node.get_component<canvas::canvas_group>().blocks_raycasts;
+}
+
+auto interop::canvas_group_set_blocks_raycasts(std::uint64_t uuid, bool value) -> void {
+  auto node = resolve_node(uuid);
+
+  if (!node.is_valid() || !node.has_component<canvas::canvas_group>()) {
+    return;
+  }
+
+  node.get_component<canvas::canvas_group>().blocks_raycasts = value;
+}
+
+auto interop::canvas_group_get_ignore_parent_groups(std::uint64_t uuid) -> bool {
+  auto node = resolve_node(uuid);
+
+  return node.is_valid() && node.has_component<canvas::canvas_group>() && node.get_component<canvas::canvas_group>().ignore_parent_groups;
+}
+
+auto interop::canvas_group_set_ignore_parent_groups(std::uint64_t uuid, bool value) -> void {
+  auto node = resolve_node(uuid);
+
+  if (!node.is_valid() || !node.has_component<canvas::canvas_group>()) {
+    return;
+  }
+
+  node.get_component<canvas::canvas_group>().ignore_parent_groups = value;
+}
+
 auto interop::canvas_wants_pointer_capture() -> bool {
   auto& canvas_module = core::engine::get_module<canvas::canvas_module>();
 

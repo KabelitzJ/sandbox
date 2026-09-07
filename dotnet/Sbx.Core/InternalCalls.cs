@@ -146,6 +146,15 @@ namespace Sbx.Core
     internal static delegate* unmanaged<ulong, bool> UIButton_GetIsPressed;
     internal static delegate* unmanaged<ulong, bool> UIButton_GetWasClicked;
 
+    internal static delegate* unmanaged<ulong, float*, void> CanvasGroup_GetAlpha;
+    internal static delegate* unmanaged<ulong, float, void> CanvasGroup_SetAlpha;
+    internal static delegate* unmanaged<ulong, bool> CanvasGroup_GetInteractable;
+    internal static delegate* unmanaged<ulong, bool, void> CanvasGroup_SetInteractable;
+    internal static delegate* unmanaged<ulong, bool> CanvasGroup_GetBlocksRaycasts;
+    internal static delegate* unmanaged<ulong, bool, void> CanvasGroup_SetBlocksRaycasts;
+    internal static delegate* unmanaged<ulong, bool> CanvasGroup_GetIgnoreParentGroups;
+    internal static delegate* unmanaged<ulong, bool, void> CanvasGroup_SetIgnoreParentGroups;
+
   } // class InternalCalls
 
 } // namespace Sbx.Core

@@ -77,6 +77,12 @@ public:
     return _target_extent;
   }
 
+  auto set_viewport_offset(math::vector2 offset) -> void;
+
+  [[nodiscard]] auto viewport_offset() const noexcept -> math::vector2 {
+    return _viewport_offset;
+  }
+
   /**
    * @brief Overrides the camera_data _build_packet() would otherwise derive from the scene's
    * active camera — e.g. the editor's own fly-camera while its play_state is "edit". Pass
@@ -220,6 +226,7 @@ private:
 
   math::vector2u _target_extent{};
   math::vector2u _viewport_extent{0u, 0u};
+  math::vector2 _viewport_offset{0.0f, 0.0f};
 
   render_graph _graph{};
 

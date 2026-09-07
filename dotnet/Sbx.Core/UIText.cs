@@ -3,11 +3,6 @@ using Sbx.Math;
 namespace Sbx.Core
 {
 
-  /**
-   * A text label (needs a RectTransform on the same node to be placed). v1 gap: authored but not
-   * yet rendered -- the native canvas_pass has no glyph/font-atlas pipeline yet. Safe to set now so
-   * game code doesn't need to change once that lands.
-   */
   public class UIText : Component
   {
 

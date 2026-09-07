@@ -15,17 +15,19 @@
 
 #include <libsbx/assets/assets_module.hpp>
 
+#include <libsbx/render/scene_renderer_module.hpp>
+
 namespace sbx::canvas {
 
 auto canvas_module::update() -> void {
   auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
   auto& scene = scenes_module.active_scene();
-  auto& platform_module = core::engine::get_module<platform::platform_module>();
-  auto& window = platform_module.window();
   auto& assets_module = core::engine::get_module<assets::assets_module>();
+  auto& scene_renderer_module = core::engine::get_module<render::scene_renderer_module>();
 
-  const auto screen_size = math::vector2{static_cast<std::float_t>(window.width()), static_cast<std::float_t>(window.height())};
-  const auto mouse_position = platform::input::mouse_position();
+  const auto target_extent = scene_renderer_module.target_extent();
+  const auto screen_size = math::vector2{static_cast<std::float_t>(target_extent.x()), static_cast<std::float_t>(target_extent.y())};
+  const auto mouse_position = platform::input::mouse_position() - scene_renderer_module.viewport_offset();
   const auto white_texture_index = assets_module.white_texture()->index();
 
   _draw_list.clear();
@@ -74,12 +76,12 @@ auto canvas_module::update() -> void {
     const auto virtual_mouse_position = mouse_position / scale_factor;
 
     for (const auto child_entity : node.get_component<scenes::relationship>().children) {
-      _visit(scene, scene.node_of(child_entity), root_rect, root_state, screen_size, virtual_mouse_position, white_texture_index, scale_factor);
+      _visit(scene, scene.node_of(child_entity), root_rect, root_state, screen_size, virtual_mouse_position, white_texture_index, scale_factor, nullptr);
     }
   }
 }
 
-auto canvas_module::_visit(scenes::scene& scene, scenes::node node, const resolved_rect& parent_rect, const canvas_inherited_state& inherited, const math::vector2& screen_size, const math::vector2& mouse_position, std::uint32_t white_texture_index, std::float_t scale_factor) -> void {
+auto canvas_module::_visit(scenes::scene& scene, scenes::node node, const resolved_rect& parent_rect, const canvas_inherited_state& inherited, const math::vector2& screen_size, const math::vector2& mouse_position, std::uint32_t white_texture_index, std::float_t scale_factor, const resolved_rect* rect_override) -> void {
   if (!node.has_component<rect_transform>()) {
     return;
   }
@@ -96,7 +98,34 @@ auto canvas_module::_visit(scenes::scene& scene, scenes::node node, const resolv
     }
   }
 
-  const auto rect = resolve_rect(node.get_component<rect_transform>(), parent_rect);
+  auto rect = resolved_rect{};
+
+  if (rect_override != nullptr) {
+    rect = *rect_override;
+  } else {
+    auto rt = node.get_component<rect_transform>();
+
+    if (node.has_component<content_size_fitter>()) {
+      const auto& fitter = node.get_component<content_size_fitter>();
+
+      if (fitter.horizontal_fit != content_fit_mode::unconstrained || fitter.vertical_fit != content_fit_mode::unconstrained) {
+        if (fitter.horizontal_fit == content_fit_mode::preferred_size) {
+          rt.size_delta.x() = compute_preferred_size(scene, node, false).x();
+        } else if (fitter.horizontal_fit == content_fit_mode::min_size) {
+          rt.size_delta.x() = compute_preferred_size(scene, node, true).x();
+        }
+
+        if (fitter.vertical_fit == content_fit_mode::preferred_size) {
+          rt.size_delta.y() = compute_preferred_size(scene, node, false).y();
+        } else if (fitter.vertical_fit == content_fit_mode::min_size) {
+          rt.size_delta.y() = compute_preferred_size(scene, node, true).y();
+        }
+      }
+    }
+
+    rect = resolve_rect(rt, parent_rect);
+  }
+
   const auto screen_rect = resolved_rect{rect.position * scale_factor, rect.size * scale_factor};
 
   const auto is_over =
@@ -164,8 +193,33 @@ auto canvas_module::_visit(scenes::scene& scene, scenes::node node, const resolv
   }
 
   if (node.has_component<scenes::relationship>()) {
+    auto group_layout = std::vector<std::pair<scenes::node, resolved_rect>>{};
+    auto has_group = false;
+
+    if (node.has_component<horizontal_layout_group>()) {
+      group_layout = layout_horizontal_children(scene, node, rect);
+      has_group = true;
+    } else if (node.has_component<vertical_layout_group>()) {
+      group_layout = layout_vertical_children(scene, node, rect);
+      has_group = true;
+    } else if (node.has_component<grid_layout_group>()) {
+      group_layout = layout_grid_children(scene, node, rect);
+      has_group = true;
+    }
+
     for (const auto child_entity : node.get_component<scenes::relationship>().children) {
-      _visit(scene, scene.node_of(child_entity), rect, state, screen_size, mouse_position, white_texture_index, scale_factor);
+      auto child = scene.node_of(child_entity);
+
+      if (has_group) {
+        const auto entry = std::find_if(group_layout.begin(), group_layout.end(), [&](const auto& pair) { return pair.first == child; });
+
+        if (entry != group_layout.end()) {
+          _visit(scene, child, rect, state, screen_size, mouse_position, white_texture_index, scale_factor, &entry->second);
+          continue;
+        }
+      }
+
+      _visit(scene, child, rect, state, screen_size, mouse_position, white_texture_index, scale_factor, nullptr);
     }
   }
 }

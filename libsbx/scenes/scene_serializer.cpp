@@ -481,6 +481,82 @@ auto write_node(YAML::Node& node_yaml, ecs::registry& registry, ecs::entity enti
     components.push_back(component);
   }
 
+  if (registry.all_of<canvas::layout_element>(entity)) {
+    const auto& element = registry.get<canvas::layout_element>(entity);
+
+    auto component = YAML::Node{};
+    component["type"] = "layout_element";
+    component["min_width"] = element.min_width;
+    component["min_height"] = element.min_height;
+    component["preferred_width"] = element.preferred_width;
+    component["preferred_height"] = element.preferred_height;
+    component["flexible_width"] = element.flexible_width;
+    component["flexible_height"] = element.flexible_height;
+    component["ignore_layout"] = element.ignore_layout;
+
+    components.push_back(component);
+  }
+
+  if (registry.all_of<canvas::content_size_fitter>(entity)) {
+    const auto& fitter = registry.get<canvas::content_size_fitter>(entity);
+
+    auto component = YAML::Node{};
+    component["type"] = "content_size_fitter";
+    component["horizontal_fit"] = std::string{reflection::to_string(fitter.horizontal_fit)};
+    component["vertical_fit"] = std::string{reflection::to_string(fitter.vertical_fit)};
+
+    components.push_back(component);
+  }
+
+  if (registry.all_of<canvas::horizontal_layout_group>(entity)) {
+    const auto& group = registry.get<canvas::horizontal_layout_group>(entity);
+
+    auto component = YAML::Node{};
+    component["type"] = "horizontal_layout_group";
+    component["spacing"] = group.spacing;
+    component["padding"] = group.padding;
+    component["child_alignment"] = std::string{reflection::to_string(group.child_alignment)};
+    component["control_child_width"] = group.control_child_width;
+    component["control_child_height"] = group.control_child_height;
+    component["child_force_expand_width"] = group.child_force_expand_width;
+    component["child_force_expand_height"] = group.child_force_expand_height;
+
+    components.push_back(component);
+  }
+
+  if (registry.all_of<canvas::vertical_layout_group>(entity)) {
+    const auto& group = registry.get<canvas::vertical_layout_group>(entity);
+
+    auto component = YAML::Node{};
+    component["type"] = "vertical_layout_group";
+    component["spacing"] = group.spacing;
+    component["padding"] = group.padding;
+    component["child_alignment"] = std::string{reflection::to_string(group.child_alignment)};
+    component["control_child_width"] = group.control_child_width;
+    component["control_child_height"] = group.control_child_height;
+    component["child_force_expand_width"] = group.child_force_expand_width;
+    component["child_force_expand_height"] = group.child_force_expand_height;
+
+    components.push_back(component);
+  }
+
+  if (registry.all_of<canvas::grid_layout_group>(entity)) {
+    const auto& group = registry.get<canvas::grid_layout_group>(entity);
+
+    auto component = YAML::Node{};
+    component["type"] = "grid_layout_group";
+    component["cell_size"] = group.cell_size;
+    component["spacing"] = group.spacing;
+    component["padding"] = group.padding;
+    component["child_alignment"] = std::string{reflection::to_string(group.child_alignment)};
+    component["start_corner"] = std::string{reflection::to_string(group.start_corner)};
+    component["start_axis"] = std::string{reflection::to_string(group.start_axis)};
+    component["constraint"] = std::string{reflection::to_string(group.constraint)};
+    component["constraint_count"] = group.constraint_count;
+
+    components.push_back(component);
+  }
+
   if (registry.all_of<script_component>(entity)) {
     const auto& scripts = registry.get<script_component>(entity);
 
@@ -819,6 +895,78 @@ auto read_node_components(node& target_node, const YAML::Node& node_yaml, assets
       button.normal_color = component["normal_color"].as<math::color>();
       button.hovered_color = component["hovered_color"].as<math::color>();
       button.pressed_color = component["pressed_color"].as<math::color>();
+    } else if (type == "layout_element") {
+      auto& element = target_node.add_component<canvas::layout_element>();
+
+      element.min_width = component["min_width"].as<std::float_t>();
+      element.min_height = component["min_height"].as<std::float_t>();
+      element.preferred_width = component["preferred_width"].as<std::float_t>();
+      element.preferred_height = component["preferred_height"].as<std::float_t>();
+      element.flexible_width = component["flexible_width"].as<std::float_t>();
+      element.flexible_height = component["flexible_height"].as<std::float_t>();
+
+      if (component["ignore_layout"]) {
+        element.ignore_layout = component["ignore_layout"].as<bool>();
+      }
+    } else if (type == "content_size_fitter") {
+      auto& fitter = target_node.add_component<canvas::content_size_fitter>();
+
+      if (component["horizontal_fit"]) {
+        fitter.horizontal_fit = reflection::from_string_or<canvas::content_fit_mode>(component["horizontal_fit"].as<std::string>(), canvas::content_fit_mode::unconstrained);
+      }
+
+      if (component["vertical_fit"]) {
+        fitter.vertical_fit = reflection::from_string_or<canvas::content_fit_mode>(component["vertical_fit"].as<std::string>(), canvas::content_fit_mode::unconstrained);
+      }
+    } else if (type == "horizontal_layout_group") {
+      auto& group = target_node.add_component<canvas::horizontal_layout_group>();
+
+      group.spacing = component["spacing"].as<std::float_t>();
+      group.padding = component["padding"].as<math::vector4>();
+      group.control_child_width = component["control_child_width"].as<bool>();
+      group.control_child_height = component["control_child_height"].as<bool>();
+      group.child_force_expand_width = component["child_force_expand_width"].as<bool>();
+      group.child_force_expand_height = component["child_force_expand_height"].as<bool>();
+
+      if (component["child_alignment"]) {
+        group.child_alignment = reflection::from_string_or<canvas::layout_alignment>(component["child_alignment"].as<std::string>(), canvas::layout_alignment::upper_left);
+      }
+    } else if (type == "vertical_layout_group") {
+      auto& group = target_node.add_component<canvas::vertical_layout_group>();
+
+      group.spacing = component["spacing"].as<std::float_t>();
+      group.padding = component["padding"].as<math::vector4>();
+      group.control_child_width = component["control_child_width"].as<bool>();
+      group.control_child_height = component["control_child_height"].as<bool>();
+      group.child_force_expand_width = component["child_force_expand_width"].as<bool>();
+      group.child_force_expand_height = component["child_force_expand_height"].as<bool>();
+
+      if (component["child_alignment"]) {
+        group.child_alignment = reflection::from_string_or<canvas::layout_alignment>(component["child_alignment"].as<std::string>(), canvas::layout_alignment::upper_left);
+      }
+    } else if (type == "grid_layout_group") {
+      auto& group = target_node.add_component<canvas::grid_layout_group>();
+
+      group.cell_size = component["cell_size"].as<math::vector2>();
+      group.spacing = component["spacing"].as<math::vector2>();
+      group.padding = component["padding"].as<math::vector4>();
+      group.constraint_count = component["constraint_count"].as<std::int32_t>();
+
+      if (component["child_alignment"]) {
+        group.child_alignment = reflection::from_string_or<canvas::layout_alignment>(component["child_alignment"].as<std::string>(), canvas::layout_alignment::upper_left);
+      }
+
+      if (component["start_corner"]) {
+        group.start_corner = reflection::from_string_or<canvas::grid_start_corner>(component["start_corner"].as<std::string>(), canvas::grid_start_corner::upper_left);
+      }
+
+      if (component["start_axis"]) {
+        group.start_axis = reflection::from_string_or<canvas::grid_start_axis>(component["start_axis"].as<std::string>(), canvas::grid_start_axis::horizontal);
+      }
+
+      if (component["constraint"]) {
+        group.constraint = reflection::from_string_or<canvas::grid_constraint>(component["constraint"].as<std::string>(), canvas::grid_constraint::flexible);
+      }
     } else if (type == "script") {
       auto& scripts = target_node.get_or_add_component<script_component>();
 

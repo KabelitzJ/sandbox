@@ -1662,6 +1662,232 @@ auto draw_ui_button_section(editor_state& state, sbx::scenes::node& node) -> voi
   bracket_edit(state, node, button, pending, "Edit UI Button");
 }
 
+auto draw_layout_element_section(editor_state& state, sbx::scenes::node& node) -> void {
+  auto is_open = true;
+
+  const auto is_expanded = ImGui::CollapsingHeader(ICON_MDI_RULER " Layout Element", &is_open, ImGuiTreeNodeFlags_DefaultOpen);
+
+  if (!is_open) {
+    state.push_command(std::make_unique<remove_component_command<sbx::canvas::layout_element>>(node.id(), node.get_component<sbx::canvas::layout_element>(), "Remove Layout Element"));
+    return;
+  }
+
+  if (!is_expanded) {
+    return;
+  }
+
+  auto& element = node.get_component<sbx::canvas::layout_element>();
+  static auto pending = std::optional<sbx::canvas::layout_element>{};
+
+  ImGui::TextDisabled("-1 = unspecified (fall back to Rect Transform / group default)");
+
+  ImGui::DragFloat("Min Width", &element.min_width, 0.5f, -1.0f, 10000.0f);
+  bracket_edit(state, node, element, pending, "Edit Layout Element");
+  ImGui::DragFloat("Min Height", &element.min_height, 0.5f, -1.0f, 10000.0f);
+  bracket_edit(state, node, element, pending, "Edit Layout Element");
+  ImGui::DragFloat("Preferred Width", &element.preferred_width, 0.5f, -1.0f, 10000.0f);
+  bracket_edit(state, node, element, pending, "Edit Layout Element");
+  ImGui::DragFloat("Preferred Height", &element.preferred_height, 0.5f, -1.0f, 10000.0f);
+  bracket_edit(state, node, element, pending, "Edit Layout Element");
+  ImGui::DragFloat("Flexible Width", &element.flexible_width, 0.05f, -1.0f, 100.0f);
+  bracket_edit(state, node, element, pending, "Edit Layout Element");
+  ImGui::DragFloat("Flexible Height", &element.flexible_height, 0.05f, -1.0f, 100.0f);
+  bracket_edit(state, node, element, pending, "Edit Layout Element");
+
+  ImGui::Checkbox("Ignore Layout", &element.ignore_layout);
+  bracket_edit(state, node, element, pending, "Edit Layout Element");
+}
+
+auto draw_content_size_fitter_section(editor_state& state, sbx::scenes::node& node) -> void {
+  auto is_open = true;
+
+  const auto is_expanded = ImGui::CollapsingHeader(ICON_MDI_ARROW_COLLAPSE_ALL " Content Size Fitter", &is_open, ImGuiTreeNodeFlags_DefaultOpen);
+
+  if (!is_open) {
+    state.push_command(std::make_unique<remove_component_command<sbx::canvas::content_size_fitter>>(node.id(), node.get_component<sbx::canvas::content_size_fitter>(), "Remove Content Size Fitter"));
+    return;
+  }
+
+  if (!is_expanded) {
+    return;
+  }
+
+  auto& fitter = node.get_component<sbx::canvas::content_size_fitter>();
+  static auto pending = std::optional<sbx::canvas::content_size_fitter>{};
+
+  static constexpr auto fit_labels = std::array<const char*, 3u>{"Unconstrained", "Min Size", "Preferred Size"};
+
+  auto horizontal_index = static_cast<int>(fitter.horizontal_fit);
+  if (ImGui::Combo("Horizontal Fit", &horizontal_index, fit_labels.data(), static_cast<int>(fit_labels.size()))) {
+    fitter.horizontal_fit = static_cast<sbx::canvas::content_fit_mode>(horizontal_index);
+  }
+  bracket_edit(state, node, fitter, pending, "Edit Content Size Fitter");
+
+  auto vertical_index = static_cast<int>(fitter.vertical_fit);
+  if (ImGui::Combo("Vertical Fit", &vertical_index, fit_labels.data(), static_cast<int>(fit_labels.size()))) {
+    fitter.vertical_fit = static_cast<sbx::canvas::content_fit_mode>(vertical_index);
+  }
+  bracket_edit(state, node, fitter, pending, "Edit Content Size Fitter");
+}
+
+static constexpr auto layout_alignment_labels = std::array<const char*, 9u>{
+  "Upper Left", "Upper Center", "Upper Right",
+  "Middle Left", "Middle Center", "Middle Right",
+  "Lower Left", "Lower Center", "Lower Right",
+};
+
+auto draw_horizontal_layout_group_section(editor_state& state, sbx::scenes::node& node) -> void {
+  auto is_open = true;
+
+  const auto is_expanded = ImGui::CollapsingHeader(ICON_MDI_VIEW_COLUMN " Horizontal Layout Group", &is_open, ImGuiTreeNodeFlags_DefaultOpen);
+
+  if (!is_open) {
+    state.push_command(std::make_unique<remove_component_command<sbx::canvas::horizontal_layout_group>>(node.id(), node.get_component<sbx::canvas::horizontal_layout_group>(), "Remove Horizontal Layout Group"));
+    return;
+  }
+
+  if (!is_expanded) {
+    return;
+  }
+
+  auto& group = node.get_component<sbx::canvas::horizontal_layout_group>();
+  static auto pending = std::optional<sbx::canvas::horizontal_layout_group>{};
+
+  ImGui::DragFloat("Spacing", &group.spacing, 0.5f, 0.0f, 1000.0f);
+  bracket_edit(state, node, group, pending, "Edit Horizontal Layout Group");
+
+  auto padding = std::array<std::float_t, 4u>{group.padding.x(), group.padding.y(), group.padding.z(), group.padding.w()};
+  if (ImGui::DragFloat4("Padding (L,T,R,B)", padding.data(), 0.5f, 0.0f, 1000.0f)) {
+    group.padding = sbx::math::vector4{padding[0], padding[1], padding[2], padding[3]};
+  }
+  bracket_edit(state, node, group, pending, "Edit Horizontal Layout Group");
+
+  auto alignment_index = static_cast<int>(group.child_alignment);
+  if (ImGui::Combo("Child Alignment", &alignment_index, layout_alignment_labels.data(), static_cast<int>(layout_alignment_labels.size()))) {
+    group.child_alignment = static_cast<sbx::canvas::layout_alignment>(alignment_index);
+  }
+  bracket_edit(state, node, group, pending, "Edit Horizontal Layout Group");
+
+  ImGui::Checkbox("Control Child Width", &group.control_child_width);
+  bracket_edit(state, node, group, pending, "Edit Horizontal Layout Group");
+  ImGui::Checkbox("Control Child Height", &group.control_child_height);
+  bracket_edit(state, node, group, pending, "Edit Horizontal Layout Group");
+  ImGui::Checkbox("Child Force Expand Width", &group.child_force_expand_width);
+  bracket_edit(state, node, group, pending, "Edit Horizontal Layout Group");
+  ImGui::Checkbox("Child Force Expand Height", &group.child_force_expand_height);
+  bracket_edit(state, node, group, pending, "Edit Horizontal Layout Group");
+}
+
+auto draw_vertical_layout_group_section(editor_state& state, sbx::scenes::node& node) -> void {
+  auto is_open = true;
+
+  const auto is_expanded = ImGui::CollapsingHeader(ICON_MDI_VIEW_STREAM " Vertical Layout Group", &is_open, ImGuiTreeNodeFlags_DefaultOpen);
+
+  if (!is_open) {
+    state.push_command(std::make_unique<remove_component_command<sbx::canvas::vertical_layout_group>>(node.id(), node.get_component<sbx::canvas::vertical_layout_group>(), "Remove Vertical Layout Group"));
+    return;
+  }
+
+  if (!is_expanded) {
+    return;
+  }
+
+  auto& group = node.get_component<sbx::canvas::vertical_layout_group>();
+  static auto pending = std::optional<sbx::canvas::vertical_layout_group>{};
+
+  ImGui::DragFloat("Spacing", &group.spacing, 0.5f, 0.0f, 1000.0f);
+  bracket_edit(state, node, group, pending, "Edit Vertical Layout Group");
+
+  auto padding = std::array<std::float_t, 4u>{group.padding.x(), group.padding.y(), group.padding.z(), group.padding.w()};
+  if (ImGui::DragFloat4("Padding (L,T,R,B)", padding.data(), 0.5f, 0.0f, 1000.0f)) {
+    group.padding = sbx::math::vector4{padding[0], padding[1], padding[2], padding[3]};
+  }
+  bracket_edit(state, node, group, pending, "Edit Vertical Layout Group");
+
+  auto alignment_index = static_cast<int>(group.child_alignment);
+  if (ImGui::Combo("Child Alignment", &alignment_index, layout_alignment_labels.data(), static_cast<int>(layout_alignment_labels.size()))) {
+    group.child_alignment = static_cast<sbx::canvas::layout_alignment>(alignment_index);
+  }
+  bracket_edit(state, node, group, pending, "Edit Vertical Layout Group");
+
+  ImGui::Checkbox("Control Child Width", &group.control_child_width);
+  bracket_edit(state, node, group, pending, "Edit Vertical Layout Group");
+  ImGui::Checkbox("Control Child Height", &group.control_child_height);
+  bracket_edit(state, node, group, pending, "Edit Vertical Layout Group");
+  ImGui::Checkbox("Child Force Expand Width", &group.child_force_expand_width);
+  bracket_edit(state, node, group, pending, "Edit Vertical Layout Group");
+  ImGui::Checkbox("Child Force Expand Height", &group.child_force_expand_height);
+  bracket_edit(state, node, group, pending, "Edit Vertical Layout Group");
+}
+
+auto draw_grid_layout_group_section(editor_state& state, sbx::scenes::node& node) -> void {
+  auto is_open = true;
+
+  const auto is_expanded = ImGui::CollapsingHeader(ICON_MDI_VIEW_GRID " Grid Layout Group", &is_open, ImGuiTreeNodeFlags_DefaultOpen);
+
+  if (!is_open) {
+    state.push_command(std::make_unique<remove_component_command<sbx::canvas::grid_layout_group>>(node.id(), node.get_component<sbx::canvas::grid_layout_group>(), "Remove Grid Layout Group"));
+    return;
+  }
+
+  if (!is_expanded) {
+    return;
+  }
+
+  auto& group = node.get_component<sbx::canvas::grid_layout_group>();
+  static auto pending = std::optional<sbx::canvas::grid_layout_group>{};
+
+  auto cell_size = std::array<std::float_t, 2u>{group.cell_size.x(), group.cell_size.y()};
+  if (ImGui::DragFloat2("Cell Size", cell_size.data(), 0.5f, 1.0f, 10000.0f)) {
+    group.cell_size = sbx::math::vector2{cell_size[0], cell_size[1]};
+  }
+  bracket_edit(state, node, group, pending, "Edit Grid Layout Group");
+
+  auto spacing = std::array<std::float_t, 2u>{group.spacing.x(), group.spacing.y()};
+  if (ImGui::DragFloat2("Spacing", spacing.data(), 0.5f, 0.0f, 1000.0f)) {
+    group.spacing = sbx::math::vector2{spacing[0], spacing[1]};
+  }
+  bracket_edit(state, node, group, pending, "Edit Grid Layout Group");
+
+  auto padding = std::array<std::float_t, 4u>{group.padding.x(), group.padding.y(), group.padding.z(), group.padding.w()};
+  if (ImGui::DragFloat4("Padding (L,T,R,B)", padding.data(), 0.5f, 0.0f, 1000.0f)) {
+    group.padding = sbx::math::vector4{padding[0], padding[1], padding[2], padding[3]};
+  }
+  bracket_edit(state, node, group, pending, "Edit Grid Layout Group");
+
+  auto alignment_index = static_cast<int>(group.child_alignment);
+  if (ImGui::Combo("Child Alignment", &alignment_index, layout_alignment_labels.data(), static_cast<int>(layout_alignment_labels.size()))) {
+    group.child_alignment = static_cast<sbx::canvas::layout_alignment>(alignment_index);
+  }
+  bracket_edit(state, node, group, pending, "Edit Grid Layout Group");
+
+  static constexpr auto corner_labels = std::array<const char*, 4u>{"Upper Left", "Upper Right", "Lower Left", "Lower Right"};
+  auto corner_index = static_cast<int>(group.start_corner);
+  if (ImGui::Combo("Start Corner", &corner_index, corner_labels.data(), static_cast<int>(corner_labels.size()))) {
+    group.start_corner = static_cast<sbx::canvas::grid_start_corner>(corner_index);
+  }
+  bracket_edit(state, node, group, pending, "Edit Grid Layout Group");
+
+  static constexpr auto axis_labels = std::array<const char*, 2u>{"Horizontal", "Vertical"};
+  auto axis_index = static_cast<int>(group.start_axis);
+  if (ImGui::Combo("Start Axis", &axis_index, axis_labels.data(), static_cast<int>(axis_labels.size()))) {
+    group.start_axis = static_cast<sbx::canvas::grid_start_axis>(axis_index);
+  }
+  bracket_edit(state, node, group, pending, "Edit Grid Layout Group");
+
+  static constexpr auto constraint_labels = std::array<const char*, 3u>{"Flexible", "Fixed Column Count", "Fixed Row Count"};
+  auto constraint_index = static_cast<int>(group.constraint);
+  if (ImGui::Combo("Constraint", &constraint_index, constraint_labels.data(), static_cast<int>(constraint_labels.size()))) {
+    group.constraint = static_cast<sbx::canvas::grid_constraint>(constraint_index);
+  }
+  bracket_edit(state, node, group, pending, "Edit Grid Layout Group");
+
+  if (group.constraint != sbx::canvas::grid_constraint::flexible) {
+    ImGui::DragInt("Constraint Count", &group.constraint_count, 1.0f, 1, 1000);
+    bracket_edit(state, node, group, pending, "Edit Grid Layout Group");
+  }
+}
+
 // Every script class name matching `filter` (case-insensitive substring, see contains_ignore_case) --
 // used only to decide whether the Script submenu below has anything to show for the active filter,
 // so it can hide itself along with every other entry instead of opening onto an empty list.
@@ -1816,6 +2042,26 @@ auto draw_add_component_menu(editor_state& state, sbx::scenes::node& node, sbx::
 
     if (!node.has_component<sbx::canvas::ui_button>() && passes("UI Button") && ImGui::MenuItem(ICON_MDI_GESTURE_TAP_BUTTON " UI Button")) {
       state.push_command(std::make_unique<add_component_command<sbx::canvas::ui_button>>(node.id(), "Add UI Button"));
+    }
+
+    if (!node.has_component<sbx::canvas::layout_element>() && passes("Layout Element") && ImGui::MenuItem(ICON_MDI_RULER " Layout Element")) {
+      state.push_command(std::make_unique<add_component_command<sbx::canvas::layout_element>>(node.id(), "Add Layout Element"));
+    }
+
+    if (!node.has_component<sbx::canvas::content_size_fitter>() && passes("Content Size Fitter") && ImGui::MenuItem(ICON_MDI_ARROW_COLLAPSE_ALL " Content Size Fitter")) {
+      state.push_command(std::make_unique<add_component_command<sbx::canvas::content_size_fitter>>(node.id(), "Add Content Size Fitter"));
+    }
+
+    if (!node.has_component<sbx::canvas::horizontal_layout_group>() && !node.has_component<sbx::canvas::vertical_layout_group>() && !node.has_component<sbx::canvas::grid_layout_group>() && passes("Horizontal Layout Group") && ImGui::MenuItem(ICON_MDI_VIEW_COLUMN " Horizontal Layout Group")) {
+      state.push_command(std::make_unique<add_component_command<sbx::canvas::horizontal_layout_group>>(node.id(), "Add Horizontal Layout Group"));
+    }
+
+    if (!node.has_component<sbx::canvas::horizontal_layout_group>() && !node.has_component<sbx::canvas::vertical_layout_group>() && !node.has_component<sbx::canvas::grid_layout_group>() && passes("Vertical Layout Group") && ImGui::MenuItem(ICON_MDI_VIEW_STREAM " Vertical Layout Group")) {
+      state.push_command(std::make_unique<add_component_command<sbx::canvas::vertical_layout_group>>(node.id(), "Add Vertical Layout Group"));
+    }
+
+    if (!node.has_component<sbx::canvas::horizontal_layout_group>() && !node.has_component<sbx::canvas::vertical_layout_group>() && !node.has_component<sbx::canvas::grid_layout_group>() && passes("Grid Layout Group") && ImGui::MenuItem(ICON_MDI_VIEW_GRID " Grid Layout Group")) {
+      state.push_command(std::make_unique<add_component_command<sbx::canvas::grid_layout_group>>(node.id(), "Add Grid Layout Group"));
     }
 
     // Open-ended category, not a fixed name -- passes when "Script" matches or any script inside
@@ -2275,6 +2521,31 @@ auto inspector_panel::_draw_node_properties(editor_state& state, sbx::scenes::no
   if (node.has_component<sbx::canvas::ui_button>()) {
     section_gap();
     draw_ui_button_section(state, node);
+  }
+
+  if (node.has_component<sbx::canvas::layout_element>()) {
+    section_gap();
+    draw_layout_element_section(state, node);
+  }
+
+  if (node.has_component<sbx::canvas::content_size_fitter>()) {
+    section_gap();
+    draw_content_size_fitter_section(state, node);
+  }
+
+  if (node.has_component<sbx::canvas::horizontal_layout_group>()) {
+    section_gap();
+    draw_horizontal_layout_group_section(state, node);
+  }
+
+  if (node.has_component<sbx::canvas::vertical_layout_group>()) {
+    section_gap();
+    draw_vertical_layout_group_section(state, node);
+  }
+
+  if (node.has_component<sbx::canvas::grid_layout_group>()) {
+    section_gap();
+    draw_grid_layout_group_section(state, node);
   }
 
   if (node.has_component<sbx::scenes::script_component>()) {

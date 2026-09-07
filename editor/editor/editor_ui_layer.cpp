@@ -122,6 +122,8 @@ auto editor_ui_layer::build() -> void {
     const auto image_clicked = ImGui::IsItemClicked(ImGuiMouseButton_Left);
     const auto image_origin = ImGui::GetItemRectMin();
 
+    scene_renderer_module.set_viewport_offset(sbx::math::vector2{image_origin.x, image_origin.y});
+
     const auto gizmo_active = draw_viewport_gizmo(_state, image_origin, available);
     const auto toolbar_active = draw_gizmo_toolbar(_state, image_origin);
     const auto view_gizmo_active = draw_view_gizmo(image_origin, available);

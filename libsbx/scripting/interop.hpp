@@ -272,6 +272,15 @@ struct interop {
   static auto ui_button_get_is_pressed(std::uint64_t uuid) -> bool;
   static auto ui_button_get_was_clicked(std::uint64_t uuid) -> bool;
 
+  static auto canvas_group_get_alpha(std::uint64_t uuid, std::float_t* out_value) -> void;
+  static auto canvas_group_set_alpha(std::uint64_t uuid, std::float_t value) -> void;
+  static auto canvas_group_get_interactable(std::uint64_t uuid) -> bool;
+  static auto canvas_group_set_interactable(std::uint64_t uuid, bool value) -> void;
+  static auto canvas_group_get_blocks_raycasts(std::uint64_t uuid) -> bool;
+  static auto canvas_group_set_blocks_raycasts(std::uint64_t uuid, bool value) -> void;
+  static auto canvas_group_get_ignore_parent_groups(std::uint64_t uuid) -> bool;
+  static auto canvas_group_set_ignore_parent_groups(std::uint64_t uuid, bool value) -> void;
+
   /** @brief Whether the cursor is currently over any interactable UI element -- see canvas::canvas_module's own doc comment. Any world-picking code (a road tool) should check this before casting its own ray. */
   static auto canvas_wants_pointer_capture() -> bool;
 

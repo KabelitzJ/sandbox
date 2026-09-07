@@ -23,6 +23,7 @@
 #include <libsbx/canvas/components.hpp>
 #include <libsbx/canvas/rect_resolve.hpp>
 #include <libsbx/canvas/text_layout.hpp>
+#include <libsbx/canvas/layout_resolve.hpp>
 #include <libsbx/canvas/canvas_draw_list.hpp>
 
 namespace sbx::canvas {
@@ -55,7 +56,7 @@ public:
 
 private:
 
-  auto _visit(scenes::scene& scene, scenes::node node, const resolved_rect& parent_rect, const canvas_inherited_state& inherited, const math::vector2& screen_size, const math::vector2& mouse_position, std::uint32_t white_texture_index, std::float_t scale_factor) -> void;
+  auto _visit(scenes::scene& scene, scenes::node node, const resolved_rect& parent_rect, const canvas_inherited_state& inherited, const math::vector2& screen_size, const math::vector2& mouse_position, std::uint32_t white_texture_index, std::float_t scale_factor, const resolved_rect* rect_override) -> void;
 
   canvas_draw_list _draw_list{};
   bool _wants_pointer_capture{false};

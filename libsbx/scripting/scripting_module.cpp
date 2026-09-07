@@ -179,6 +179,15 @@ scripting_module::scripting_module() {
   _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "UIButton_GetIsPressed", reinterpret_cast<void*>(&interop::ui_button_get_is_pressed));
   _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "UIButton_GetWasClicked", reinterpret_cast<void*>(&interop::ui_button_get_was_clicked));
 
+  _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "CanvasGroup_GetAlpha", reinterpret_cast<void*>(&interop::canvas_group_get_alpha));
+  _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "CanvasGroup_SetAlpha", reinterpret_cast<void*>(&interop::canvas_group_set_alpha));
+  _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "CanvasGroup_GetInteractable", reinterpret_cast<void*>(&interop::canvas_group_get_interactable));
+  _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "CanvasGroup_SetInteractable", reinterpret_cast<void*>(&interop::canvas_group_set_interactable));
+  _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "CanvasGroup_GetBlocksRaycasts", reinterpret_cast<void*>(&interop::canvas_group_get_blocks_raycasts));
+  _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "CanvasGroup_SetBlocksRaycasts", reinterpret_cast<void*>(&interop::canvas_group_set_blocks_raycasts));
+  _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "CanvasGroup_GetIgnoreParentGroups", reinterpret_cast<void*>(&interop::canvas_group_get_ignore_parent_groups));
+  _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "CanvasGroup_SetIgnoreParentGroups", reinterpret_cast<void*>(&interop::canvas_group_set_ignore_parent_groups));
+
   interop::register_managed_component<scenes::tag>("Tag", _core_assembly);
   interop::register_managed_component<scenes::local_transform>("Transform", _core_assembly);
   interop::register_managed_component<scenes::animator>("Animator", _core_assembly);
@@ -196,6 +205,7 @@ scripting_module::scripting_module() {
   interop::register_managed_component<canvas::ui_image>("UIImage", _core_assembly);
   interop::register_managed_component<canvas::ui_text>("UIText", _core_assembly);
   interop::register_managed_component<canvas::ui_button>("UIButton", _core_assembly);
+  interop::register_managed_component<canvas::canvas_group>("CanvasGroup", _core_assembly);
   // interop::register_managed_component<physics::character_controller>("CharacterController", _core_assembly);
 
   _core_assembly.upload_internal_calls();

@@ -352,6 +352,10 @@ auto scene_renderer_module::set_viewport_extent(math::vector2u extent) -> void {
   _viewport_extent = extent;
 }
 
+auto scene_renderer_module::set_viewport_offset(math::vector2 offset) -> void {
+  _viewport_offset = offset;
+}
+
 auto scene_renderer_module::set_grid_enabled(bool enabled) -> void {
   _grid_enabled = enabled;
 }

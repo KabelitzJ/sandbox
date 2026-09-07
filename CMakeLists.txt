@@ -176,6 +176,7 @@ target_sources(
 
     "${CMAKE_SOURCE_DIR}/libsbx/canvas/canvas_draw_list.cpp"
     "${CMAKE_SOURCE_DIR}/libsbx/canvas/canvas_module.cpp"
+    "${CMAKE_SOURCE_DIR}/libsbx/canvas/layout_resolve.cpp"
     "${CMAKE_SOURCE_DIR}/libsbx/canvas/text_layout.cpp"
 
     "${CMAKE_SOURCE_DIR}/libsbx/core/core.cpp"
@@ -343,6 +344,7 @@ target_sources(
       "${CMAKE_SOURCE_DIR}/libsbx/canvas/canvas_draw_list.hpp"
       "${CMAKE_SOURCE_DIR}/libsbx/canvas/canvas_module.hpp"
       "${CMAKE_SOURCE_DIR}/libsbx/canvas/components.hpp"
+      "${CMAKE_SOURCE_DIR}/libsbx/canvas/layout_resolve.hpp"
       "${CMAKE_SOURCE_DIR}/libsbx/canvas/rect_resolve.hpp"
       "${CMAKE_SOURCE_DIR}/libsbx/canvas/text_layout.hpp"
 
