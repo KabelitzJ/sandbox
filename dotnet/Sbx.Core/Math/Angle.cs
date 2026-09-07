@@ -1,4 +1,4 @@
-namespace Sbx.Math
+namespace Sbx.Core.Math
 {
   public static class Angle
   {
@@ -17,4 +17,4 @@ namespace Sbx.Math
 
   } // class Angle
 
-} // namespace Sbx.Math
+} // namespace Sbx.Core.Math

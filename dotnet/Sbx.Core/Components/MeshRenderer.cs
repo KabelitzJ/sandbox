@@ -1,7 +1,8 @@
 using System;
-using Sbx.Math;
+using Sbx.Core;
+using Sbx.Core.Math;
 
-namespace Sbx.Core
+namespace Sbx.Core.Components
 {
 
   /**
@@ -54,4 +55,4 @@ namespace Sbx.Core
 
   } // class MeshRenderer
 
-} // namespace Sbx.Core
+} // namespace Sbx.Core.Components

@@ -1,4 +1,6 @@
-namespace Sbx.Core
+using Sbx.Core;
+
+namespace Sbx.Core.UI
 {
 
   public class UIScrollbar : Component
@@ -24,4 +26,4 @@ namespace Sbx.Core
 
   } // class UIScrollbar
 
-} // namespace Sbx.Core
+} // namespace Sbx.Core.UI

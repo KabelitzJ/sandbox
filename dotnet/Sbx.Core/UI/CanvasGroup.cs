@@ -1,4 +1,6 @@
-namespace Sbx.Core
+using Sbx.Core;
+
+namespace Sbx.Core.UI
 {
 
   public class CanvasGroup : Component
@@ -30,4 +32,4 @@ namespace Sbx.Core
 
   } // class CanvasGroup
 
-} // namespace Sbx.Core
+} // namespace Sbx.Core.UI

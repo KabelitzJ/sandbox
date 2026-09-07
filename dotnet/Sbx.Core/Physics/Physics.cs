@@ -1,6 +1,7 @@
-using Sbx.Math;
+using Sbx.Core;
+using Sbx.Core.Math;
 
-namespace Sbx.Core
+namespace Sbx.Core.Physics
 {
 
   /** Scene-wide physics queries -- not a Component, unlike Rigidbody/MeshRenderer/etc. */
@@ -31,4 +32,4 @@ namespace Sbx.Core
 
   } // class Physics
 
-} // namespace Sbx.Core
+} // namespace Sbx.Core.Physics

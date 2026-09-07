@@ -3,6 +3,7 @@
 #include <libsbx/scripting/scripting_module.hpp>
 
 #include <algorithm>
+#include <array>
 
 #include <fmt/core.h>
 #include <fmt/args.h>
@@ -221,30 +222,30 @@ scripting_module::scripting_module() {
   _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "UIMask_GetShowMaskGraphic", reinterpret_cast<void*>(&interop::ui_mask_get_show_mask_graphic));
   _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "UIMask_SetShowMaskGraphic", reinterpret_cast<void*>(&interop::ui_mask_set_show_mask_graphic));
 
-  interop::register_managed_component<scenes::tag>("Tag", _core_assembly);
-  interop::register_managed_component<scenes::local_transform>("Transform", _core_assembly);
-  interop::register_managed_component<scenes::animator>("Animator", _core_assembly);
-  interop::register_managed_component<scenes::particle_effect>("ParticleEffect", _core_assembly);
+  interop::register_managed_component<scenes::tag>("Sbx.Core.Components.Tag", _core_assembly);
+  interop::register_managed_component<scenes::local_transform>("Sbx.Core.Components.Transform", _core_assembly);
+  interop::register_managed_component<scenes::animator>("Sbx.Core.Components.Animator", _core_assembly);
+  interop::register_managed_component<scenes::particle_effect>("Sbx.Core.Components.ParticleEffect", _core_assembly);
   // "CameraSettings", not "Camera" -- Sbx.Core.Camera is the Camera.Main singleton wrapper
   // (always resolves scene.active_camera() natively, no uuid involved at all); this is the
   // separate per-node scenes::camera field access (fov/near/far/exposure) for GetComponent<CameraSettings>()
   // on whichever node a script actually sits on, which needs a real uuid -- keeping them as two
   // distinct C# types avoids Main's properties silently ignoring which node they were fetched from.
-  interop::register_managed_component<scenes::camera>("CameraSettings", _core_assembly);
-  interop::register_managed_component<physics::rigidbody>("Rigidbody", _core_assembly);
-  interop::register_managed_component<scenes::mesh_renderer>("MeshRenderer", _core_assembly);
-  interop::register_managed_component<canvas::canvas>("Canvas", _core_assembly);
-  interop::register_managed_component<canvas::rect_transform>("RectTransform", _core_assembly);
-  interop::register_managed_component<canvas::ui_image>("UIImage", _core_assembly);
-  interop::register_managed_component<canvas::ui_text>("UIText", _core_assembly);
-  interop::register_managed_component<canvas::ui_button>("UIButton", _core_assembly);
-  interop::register_managed_component<canvas::canvas_group>("CanvasGroup", _core_assembly);
-  interop::register_managed_component<canvas::ui_toggle>("UIToggle", _core_assembly);
-  interop::register_managed_component<canvas::ui_slider>("UISlider", _core_assembly);
-  interop::register_managed_component<canvas::ui_scrollbar>("UIScrollbar", _core_assembly);
-  interop::register_managed_component<canvas::ui_scroll_rect>("UIScrollRect", _core_assembly);
-  interop::register_managed_component<canvas::ui_mask>("UIMask", _core_assembly);
-  // interop::register_managed_component<physics::character_controller>("CharacterController", _core_assembly);
+  interop::register_managed_component<scenes::camera>("Sbx.Core.Components.CameraSettings", _core_assembly);
+  interop::register_managed_component<physics::rigidbody>("Sbx.Core.Physics.Rigidbody", _core_assembly);
+  interop::register_managed_component<scenes::mesh_renderer>("Sbx.Core.Components.MeshRenderer", _core_assembly);
+  interop::register_managed_component<canvas::canvas>("Sbx.Core.UI.Canvas", _core_assembly);
+  interop::register_managed_component<canvas::rect_transform>("Sbx.Core.UI.RectTransform", _core_assembly);
+  interop::register_managed_component<canvas::ui_image>("Sbx.Core.UI.UIImage", _core_assembly);
+  interop::register_managed_component<canvas::ui_text>("Sbx.Core.UI.UIText", _core_assembly);
+  interop::register_managed_component<canvas::ui_button>("Sbx.Core.UI.UIButton", _core_assembly);
+  interop::register_managed_component<canvas::canvas_group>("Sbx.Core.UI.CanvasGroup", _core_assembly);
+  interop::register_managed_component<canvas::ui_toggle>("Sbx.Core.UI.UIToggle", _core_assembly);
+  interop::register_managed_component<canvas::ui_slider>("Sbx.Core.UI.UISlider", _core_assembly);
+  interop::register_managed_component<canvas::ui_scrollbar>("Sbx.Core.UI.UIScrollbar", _core_assembly);
+  interop::register_managed_component<canvas::ui_scroll_rect>("Sbx.Core.UI.UIScrollRect", _core_assembly);
+  interop::register_managed_component<canvas::ui_mask>("Sbx.Core.UI.UIMask", _core_assembly);
+  // interop::register_managed_component<physics::character_controller>("Sbx.Core.Physics.CharacterController", _core_assembly);
 
   _core_assembly.upload_internal_calls();
 
@@ -413,9 +414,16 @@ auto scripting_module::_invoke_collision_handler(scenes::node& self, const scene
 
   const auto other_uuid = other.is_valid() ? other.get_component<scenes::id>().value() : std::uint64_t{0u};
 
-  const auto* method = event.is_trigger
-    ? (began ? "__DispatchTriggerEnter" : "__DispatchTriggerExit")
-    : (began ? "__DispatchCollisionEnter" : "__DispatchCollisionExit");
+  // Indexed by (is_trigger << 1) | began -- avoids branching on two independent bools to pick one
+  // of four fixed strings.
+  static constexpr auto dispatch_method_names = std::array<const char*, 4u>{
+    "DispatchCollisionExit",
+    "DispatchCollisionEnter",
+    "DispatchTriggerExit",
+    "DispatchTriggerEnter",
+  };
+
+  const auto method = dispatch_method_names[(static_cast<std::uint32_t>(event.is_trigger) << 1) | static_cast<std::uint32_t>(began)];
 
   auto& scripts = self.get_component<scripting::scripts>();
 

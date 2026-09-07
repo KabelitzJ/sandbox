@@ -1,4 +1,6 @@
-namespace Sbx.Core
+using Sbx.Core;
+
+namespace Sbx.Core.Components
 {
 
   public class ParticleEffect : Component
@@ -38,4 +40,4 @@ namespace Sbx.Core
 
   } // class ParticleEffect
 
-} // namespace Sbx.Core
+} // namespace Sbx.Core.Components

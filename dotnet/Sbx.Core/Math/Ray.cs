@@ -1,6 +1,6 @@
 using System.Runtime.InteropServices;
 
-namespace Sbx.Math
+namespace Sbx.Core.Math
 {
 
   [StructLayout(LayoutKind.Sequential, Pack = 4)]

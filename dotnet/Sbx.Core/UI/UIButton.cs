@@ -1,6 +1,7 @@
-using Sbx.Math;
+using Sbx.Core;
+using Sbx.Core.Math;
 
-namespace Sbx.Core
+namespace Sbx.Core.UI
 {
 
   public class UIButton : Component
@@ -47,4 +48,4 @@ namespace Sbx.Core
 
   } // class UIButton
 
-} // namespace Sbx.Core
+} // namespace Sbx.Core.UI

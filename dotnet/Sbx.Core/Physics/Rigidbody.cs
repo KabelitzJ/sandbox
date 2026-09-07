@@ -1,6 +1,7 @@
-using Sbx.Math;
+using Sbx.Core;
+using Sbx.Core.Math;
 
-namespace Sbx.Core
+namespace Sbx.Core.Physics
 {
 
   public class Rigidbody : Component
@@ -77,4 +78,4 @@ namespace Sbx.Core
 
   } // class Rigidbody
 
-} // namespace Sbx.Core
+} // namespace Sbx.Core.Physics

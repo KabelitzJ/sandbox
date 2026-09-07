@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace Sbx.Math
+namespace Sbx.Core.Math
 {
 
   [StructLayout(LayoutKind.Sequential, Pack = 4)]
@@ -221,4 +221,4 @@ namespace Sbx.Math
 
   } // struct Vector3
 
-} // namespace Sbx.Math
+} // namespace Sbx.Core.Math

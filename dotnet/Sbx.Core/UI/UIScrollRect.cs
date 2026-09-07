@@ -1,6 +1,7 @@
-using Sbx.Math;
+using Sbx.Core;
+using Sbx.Core.Math;
 
-namespace Sbx.Core
+namespace Sbx.Core.UI
 {
 
   public class UIScrollRect : Component
@@ -26,4 +27,4 @@ namespace Sbx.Core
 
   } // class UIScrollRect
 
-} // namespace Sbx.Core
+} // namespace Sbx.Core.UI

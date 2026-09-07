@@ -1,6 +1,7 @@
-using Sbx.Math;
+using Sbx.Core;
+using Sbx.Core.Math;
 
-namespace Sbx.Core
+namespace Sbx.Core.Physics
 {
 
   /** Result of a successful Physics.Raycast call. */
@@ -22,4 +23,4 @@ namespace Sbx.Core
 
   } // struct RaycastHit
 
-} // namespace Sbx.Core
+} // namespace Sbx.Core.Physics

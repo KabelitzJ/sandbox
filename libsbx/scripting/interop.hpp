@@ -318,12 +318,10 @@ struct interop {
   static auto ui_mask_set_show_mask_graphic(std::uint64_t uuid, bool value) -> void;
 
   template<typename Type>
-  static auto register_managed_component(std::string_view name, managed::assembly& core_assembly) -> void {
+  static auto register_managed_component(std::string_view full_name, managed::assembly& core_assembly) -> void {
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
-  
-    const auto component_name = std::format("Sbx.Core.{}", name);
-  
-    auto& type = core_assembly.get_type(component_name);
+
+    auto& type = core_assembly.get_type(full_name);
   
     if (type) {
       _add_component_functions[type.get_type_id()] = [&scenes_module](scenes::node& node) -> void { 
@@ -341,7 +339,7 @@ struct interop {
       //   scene.remove_component<Type>(node);
       // };
     } else {
-      utility::logger<"scripting">::warn("No C# component class found for {}!", component_name);
+      utility::logger<"scripting">::warn("No C# component class found for {}!", full_name);
     }
   }
 

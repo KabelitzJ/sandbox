@@ -1,4 +1,6 @@
-namespace Sbx.Core
+using Sbx.Core;
+
+namespace Sbx.Core.UI
 {
 
   public class UIToggle : Component
@@ -18,4 +20,4 @@ namespace Sbx.Core
 
   } // class UIToggle
 
-} // namespace Sbx.Core
+} // namespace Sbx.Core.UI

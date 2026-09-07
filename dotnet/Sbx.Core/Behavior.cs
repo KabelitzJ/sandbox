@@ -1,6 +1,7 @@
 using System;
 using Sbx.Managed.Interop;
-using Sbx.Math;
+using Sbx.Core.Math;
+using Sbx.Core.Physics;
 
 namespace Sbx.Core
 {
@@ -43,26 +44,28 @@ namespace Sbx.Core
 		protected Node Node => new Node(UUID);
 
 		// Below: invoked directly by native code (scripting_module::_invoke_collision_handler) by
-		// name via reflection -- see managed::object::invoke. Public rather than private specifically
-		// so that invocation doesn't depend on a NonPublic reflection binding flag being set on the
-		// native side; not meant to be called directly by script code (call the OnX overrides above
-		// instead, which these forward into after building the friendlier Collision payload).
-		public void __DispatchCollisionEnter(ulong otherUuid, float normalX, float normalY, float normalZ, float pointX, float pointY, float pointZ)
+		// name via reflection -- see managed::object::invoke. Private is fine: the managed-side
+		// reflection bridge (Sbx.Managed/Object.cs's InvokeMethod/InvokeMethodRet) already looks up
+		// methods with BindingFlags.Public | BindingFlags.NonPublic, so native invocation doesn't
+		// need these exposed as public API for script code to accidentally call directly (call the
+		// OnX overrides above instead, which these forward into after building the friendlier
+		// Collision payload).
+		private void DispatchCollisionEnter(ulong otherUuid, float normalX, float normalY, float normalZ, float pointX, float pointY, float pointZ)
 		{
 			OnCollisionEnter(new Collision(new Node(otherUuid), new Vector3(normalX, normalY, normalZ), new Vector3(pointX, pointY, pointZ)));
 		}
 
-		public void __DispatchCollisionExit(ulong otherUuid, float normalX, float normalY, float normalZ, float pointX, float pointY, float pointZ)
+		private void DispatchCollisionExit(ulong otherUuid, float normalX, float normalY, float normalZ, float pointX, float pointY, float pointZ)
 		{
 			OnCollisionExit(new Collision(new Node(otherUuid), new Vector3(normalX, normalY, normalZ), new Vector3(pointX, pointY, pointZ)));
 		}
 
-		public void __DispatchTriggerEnter(ulong otherUuid, float normalX, float normalY, float normalZ, float pointX, float pointY, float pointZ)
+		private void DispatchTriggerEnter(ulong otherUuid, float normalX, float normalY, float normalZ, float pointX, float pointY, float pointZ)
 		{
 			OnTriggerEnter(new Collision(new Node(otherUuid), new Vector3(normalX, normalY, normalZ), new Vector3(pointX, pointY, pointZ)));
 		}
 
-		public void __DispatchTriggerExit(ulong otherUuid, float normalX, float normalY, float normalZ, float pointX, float pointY, float pointZ)
+		private void DispatchTriggerExit(ulong otherUuid, float normalX, float normalY, float normalZ, float pointX, float pointY, float pointZ)
 		{
 			OnTriggerExit(new Collision(new Node(otherUuid), new Vector3(normalX, normalY, normalZ), new Vector3(pointX, pointY, pointZ)));
 		}

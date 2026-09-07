@@ -1,6 +1,6 @@
 using System.Runtime.InteropServices;
 
-namespace Sbx.Math
+namespace Sbx.Core.Math
 {
   // Mirrors sbx::math::color's field layout exactly (four sequential floats) -- see
   // libsbx/math/color.hpp.

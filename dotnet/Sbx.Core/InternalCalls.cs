@@ -1,5 +1,5 @@
 using Sbx.Managed.Interop;
-using Sbx.Math;
+using Sbx.Core.Math;
 
 namespace Sbx.Core
 {

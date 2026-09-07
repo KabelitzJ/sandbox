@@ -1,4 +1,6 @@
-namespace Sbx.Core
+using Sbx.Core;
+
+namespace Sbx.Core.Components
 {
 
   /**
@@ -68,4 +70,4 @@ namespace Sbx.Core
 
   } // class CameraSettings
 
-} // namespace Sbx.Core
+} // namespace Sbx.Core.Components

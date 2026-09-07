@@ -1,4 +1,6 @@
-namespace Sbx.Core
+using Sbx.Core;
+
+namespace Sbx.Core.UI
 {
 
   /**
@@ -28,4 +30,4 @@ namespace Sbx.Core
 
   } // class Canvas
 
-} // namespace Sbx.Core
+} // namespace Sbx.Core.UI

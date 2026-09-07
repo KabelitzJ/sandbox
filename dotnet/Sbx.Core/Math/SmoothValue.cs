@@ -1,6 +1,6 @@
 using System;
 
-namespace Sbx.Math
+namespace Sbx.Core.Math
 {
   public enum SmoothingMode : byte
   {
@@ -121,4 +121,4 @@ namespace Sbx.Math
 
   } // class ProportionalSmoothValue
 
-} // namespace Sbx.Math
+} // namespace Sbx.Core.Math

@@ -1,6 +1,7 @@
-using Sbx.Math;
+using Sbx.Core;
+using Sbx.Core.Math;
 
-namespace Sbx.Core
+namespace Sbx.Core.Physics
 {
 
   /**
@@ -24,4 +25,4 @@ namespace Sbx.Core
 
   } // struct Collision
 
-} // namespace Sbx.Core
+} // namespace Sbx.Core.Physics

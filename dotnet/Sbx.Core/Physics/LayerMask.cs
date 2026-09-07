@@ -1,6 +1,6 @@
 using System;
 
-namespace Sbx.Core
+namespace Sbx.Core.Physics
 {
 
   public class LayerMask
@@ -29,4 +29,4 @@ namespace Sbx.Core
     }
 
   } // class LayerMask
-} // namespace Sbx.Core
+} // namespace Sbx.Core.Physics

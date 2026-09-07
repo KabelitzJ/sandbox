@@ -1,6 +1,7 @@
-using Sbx.Math;
+using Sbx.Core;
+using Sbx.Core.Math;
 
-namespace Sbx.Core
+namespace Sbx.Core.UI
 {
 
   /**
@@ -45,4 +46,4 @@ namespace Sbx.Core
 
   } // class RectTransform
 
-} // namespace Sbx.Core
+} // namespace Sbx.Core.UI

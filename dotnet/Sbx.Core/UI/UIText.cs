@@ -1,6 +1,7 @@
-using Sbx.Math;
+using Sbx.Core;
+using Sbx.Core.Math;
 
-namespace Sbx.Core
+namespace Sbx.Core.UI
 {
 
   public class UIText : Component
@@ -26,4 +27,4 @@ namespace Sbx.Core
 
   } // class UIText
 
-} // namespace Sbx.Core
+} // namespace Sbx.Core.UI

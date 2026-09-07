@@ -1,4 +1,6 @@
-namespace Sbx.Core
+using Sbx.Core;
+
+namespace Sbx.Core.Components
 {
 
   public class Animator : Component
@@ -54,4 +56,4 @@ namespace Sbx.Core
 
   } // class Animator
 
-} // namespace Sbx.Core
+} // namespace Sbx.Core.Components

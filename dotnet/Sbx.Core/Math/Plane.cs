@@ -1,7 +1,7 @@
 using System.Runtime.InteropServices;
 using Sbx.Core;
 
-namespace Sbx.Math
+namespace Sbx.Core.Math
 {
 
   [StructLayout(LayoutKind.Sequential, Pack = 4)]
@@ -57,4 +57,4 @@ namespace Sbx.Math
 
   } // class Plane
 
-} // namespace Sbx.Math
+} // namespace Sbx.Core.Math

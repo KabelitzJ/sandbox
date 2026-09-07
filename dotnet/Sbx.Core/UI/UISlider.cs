@@ -1,4 +1,6 @@
-namespace Sbx.Core
+using Sbx.Core;
+
+namespace Sbx.Core.UI
 {
 
   public class UISlider : Component
@@ -36,4 +38,4 @@ namespace Sbx.Core
 
   } // class UISlider
 
-} // namespace Sbx.Core
+} // namespace Sbx.Core.UI

@@ -1,4 +1,6 @@
-namespace Sbx.Core
+using Sbx.Core;
+
+namespace Sbx.Core.UI
 {
 
   public class UIMask : Component
@@ -12,4 +14,4 @@ namespace Sbx.Core
 
   } // class UIMask
 
-} // namespace Sbx.Core
+} // namespace Sbx.Core.UI

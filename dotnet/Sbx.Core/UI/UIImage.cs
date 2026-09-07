@@ -1,6 +1,7 @@
-using Sbx.Math;
+using Sbx.Core;
+using Sbx.Core.Math;
 
-namespace Sbx.Core
+namespace Sbx.Core.UI
 {
 
   /** A solid-color filled rectangle (needs a RectTransform on the same node to be placed). Texture support (tinted image, not just a flat color) is future work -- v1 only ever draws Tint. */
@@ -15,4 +16,4 @@ namespace Sbx.Core
 
   } // class UIImage
 
-} // namespace Sbx.Core
+} // namespace Sbx.Core.UI
