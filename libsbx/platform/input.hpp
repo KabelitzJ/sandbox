@@ -4,7 +4,7 @@
 #define LIBSBX_PLATFORM_INPUT_HPP_
 
 #include <cinttypes>
-#include <unordered_map>
+#include <array>
 
 #include <libsbx/math/vector2.hpp>
 
@@ -16,8 +16,10 @@
 namespace sbx::platform {
 
 struct key_state {
-  input_action action;
-  input_action last_action;
+  // input_action::release == 0, so a default/zero-initialized key_state already reads as "not
+  // pressed" -- exactly what a never-touched array slot needs to mean.
+  input_action action{input_action::release};
+  input_action last_action{input_action::release};
 }; // struct key_state
 
 class input {
@@ -52,8 +54,21 @@ private:
   static auto _update_mouse_position(const math::vector2& position) -> void;
   static auto _update_scroll_delta(const math::vector2& delta) -> void;
 
-  static std::unordered_map<key, key_state> _key_states;
-  static std::unordered_map<mouse_button, key_state> _mouse_button_states;
+  // key's range is [unknown(-1), menu(348)] -- offset by one so unknown lands on slot 0 instead of
+  // needing a separate bounds/sentinel check on every lookup.
+  inline static constexpr auto key_count = std::size_t{350u};
+  inline static constexpr auto mouse_button_count = std::size_t{8u};
+
+  [[nodiscard]] static auto _key_index(key value) noexcept -> std::size_t {
+    return static_cast<std::size_t>(static_cast<std::int32_t>(value) + 1);
+  }
+
+  [[nodiscard]] static auto _mouse_button_index(mouse_button value) noexcept -> std::size_t {
+    return static_cast<std::size_t>(value);
+  }
+
+  static std::array<key_state, key_count> _key_states;
+  static std::array<key_state, mouse_button_count> _mouse_button_states;
 
   static math::vector2 _mouse_position;
   static math::vector2 _scroll_delta;

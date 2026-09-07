@@ -28,6 +28,7 @@
 #include <libsbx/scenes/node.hpp>
 
 #include <libsbx/physics/contact.hpp>
+#include <libsbx/physics/rigidbody.hpp>
 
 namespace sbx::physics {
 
@@ -47,6 +48,11 @@ struct velocity_constraint_point {
 struct velocity_constraint {
   scenes::node node_a;
   scenes::node node_b;
+  // Resolved once, in prepare_velocity_constraints, via effective_rigidbody_ptr() -- solved by
+  // dereferencing these directly instead of re-resolving node_a/node_b through the ECS on every one
+  // of solve_velocity_constraints' iterations.
+  memory::observer_ptr<rigidbody> body_a{nullptr};
+  memory::observer_ptr<rigidbody> body_b{nullptr};
   math::vector3 normal{math::vector3::up};
   math::vector3 tangent_1{math::vector3::right};
   math::vector3 tangent_2{math::vector3::forward};

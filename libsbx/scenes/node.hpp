@@ -1,6 +1,8 @@
 #ifndef LIBSBX_SCENES_NODE_HPP_
 #define LIBSBX_SCENES_NODE_HPP_
 
+#include <libsbx/memory/observer_ptr.hpp>
+
 #include <libsbx/ecs/entity.hpp>
 #include <libsbx/ecs/registry.hpp>
 
@@ -28,6 +30,10 @@ public:
 
   [[nodiscard]] explicit operator bool() const noexcept {
     return is_valid();
+  }
+
+  [[nodiscard]] auto entity() const noexcept -> ecs::entity {
+    return _entity;
   }
 
   [[nodiscard]] auto id() const -> const scenes::id& {
@@ -66,6 +72,16 @@ public:
   template<typename Component>
   [[nodiscard]] auto has_component() const -> bool {
     return _registry->all_of<Component>(_entity);
+  }
+
+  template<typename Component>
+  [[nodiscard]] auto try_get_component() -> memory::observer_ptr<Component> {
+    return _registry->try_get<Component>(_entity);
+  }
+
+  template<typename Component>
+  [[nodiscard]] auto try_get_component() const -> memory::observer_ptr<const Component> {
+    return _registry->try_get<Component>(_entity);
   }
 
   template<typename Component>

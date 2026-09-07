@@ -60,6 +60,13 @@ struct backend_functions {
 	using create_object_fn = void*(*)(type_id, bool32, const void**, const managed_type*, std::int32_t);
 	using invoke_method_fn = void(*)(void*, string, const void**, const managed_type*, std::int32_t);
 	using invoke_method_return_fn = void(*)(void*, string, const void**, const managed_type*, std::int32_t, void*);
+	// get_method_handle resolves (and caches, C# side -- see TypeInterface._cachedMethods) name +
+	// signature to a stable int handle once; invoke_method_handle(_return) then dispatches straight
+	// off that handle -- no per-call string marshal, no per-call overload re-resolution. See
+	// object::_invoke_method_internal's doc comment for the full picture.
+	using get_method_handle_fn = std::int32_t(*)(void*, string, const managed_type*, std::int32_t);
+	using invoke_method_handle_fn = void(*)(void*, std::int32_t, const void**, std::int32_t);
+	using invoke_method_handle_return_fn = void(*)(void*, std::int32_t, const void**, std::int32_t, void*);
 	using invoke_static_method_fn = void(*)(type_id, string, const void**, const managed_type*, std::int32_t);
 	using invoke_static_method_return_fn = void(*)(type_id, string, const void**, const managed_type*, std::int32_t, void*);
 	using set_field_value_fn = void(*)(void*, string, const void*);
@@ -120,6 +127,9 @@ struct backend_functions {
   create_assembly_load_context_fn create_assembly_load_context{nullptr};
   invoke_method_fn invoke_method{nullptr};
   invoke_method_return_fn invoke_method_return{nullptr};
+  get_method_handle_fn get_method_handle{nullptr};
+  invoke_method_handle_fn invoke_method_handle{nullptr};
+  invoke_method_handle_return_fn invoke_method_handle_return{nullptr};
   invoke_static_method_fn invoke_static_method{nullptr};
   invoke_static_method_return_fn invoke_static_method_return{nullptr};
   set_field_value_fn set_field_value{nullptr};

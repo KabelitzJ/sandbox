@@ -5,6 +5,7 @@
 
 #include <array>
 #include <cstdint>
+#include <span>
 #include <string_view>
 #include <vector>
 
@@ -12,6 +13,7 @@
 
 #include <libsbx/utility/noncopyable.hpp>
 #include <libsbx/memory/observer_ptr.hpp>
+#include <libsbx/memory/bytes.hpp>
 
 #include <libsbx/graphics/graphics_module.hpp>
 #include <libsbx/graphics/commands/command_buffer.hpp>
@@ -163,10 +165,7 @@ auto write_push_constants(render_context& context, const Type& data) -> void {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
   auto& bindless_table = graphics_module.bindless_table();
 
-  auto range = std::array<std::byte, graphics::bindless_table::push_constant_size>{};
-  std::memcpy(range.data(), std::addressof(data), sizeof(data));
-
-  context.command_buffer->push_constants(bindless_table.pipeline_layout(), graphics::bindless_table::push_constant_stages, 0u, range);
+  context.command_buffer->push_constants(bindless_table.pipeline_layout(), graphics::bindless_table::push_constant_stages, 0u, memory::as_bytes(data));
 }
 
 } // namespace sbx::render

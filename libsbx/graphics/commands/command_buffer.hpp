@@ -4,6 +4,7 @@
 #define LIBSBX_GRAPHICS_COMMANDS_COMMAND_BUFFER_HPP_
 
 #include <memory>
+#include <span>
 
 #include <vulkan/vulkan.h>
 
@@ -176,7 +177,7 @@ public:
 
   auto fill_buffer(const VkBuffer& buffer, VkDeviceSize offset, VkDeviceSize size, std::uint32_t data) -> void;
 
-  auto push_constants(const VkPipelineLayout& layout, VkShaderStageFlags stage_flags, std::uint32_t offset, const std::array<std::byte, graphics::bindless_table::push_constant_size>& values) -> void;
+  auto push_constants(const VkPipelineLayout& layout, VkShaderStageFlags stage_flags, std::uint32_t offset, std::span<const std::byte> values) -> void;
 
   auto begin_rendering(const VkRenderingInfo& rendering_info) -> void;
 

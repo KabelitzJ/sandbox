@@ -64,12 +64,12 @@ auto prune_stale_leaves(containers::dynamic_tree<scenes::node>& tree, containers
 // node's own collider, not a compound rigidbody's full subtree (see contact_manifold::is_trigger's
 // doc comment for why that's an accepted v1 simplification).
 [[nodiscard]] auto node_has_trigger_collider(const scenes::node& node) -> bool {
-  if (node.has_component<shape_collider>()) {
-    return node.get_component<shape_collider>().is_trigger;
+  if (auto shape = node.try_get_component<shape_collider>()) {
+    return shape->is_trigger;
   }
 
-  if (node.has_component<mesh_collider>()) {
-    return node.get_component<mesh_collider>().is_trigger;
+  if (auto mesh = node.try_get_component<mesh_collider>()) {
+    return mesh->is_trigger;
   }
 
   return false;
@@ -114,7 +114,7 @@ auto physics_module::_sync_broadphase(scenes::scene& scene) -> void {
   for (auto&& [entity, body] : scene.query<rigidbody>(ecs::exclude<mesh_collider>).each()) {
     auto node = scene.node_of(entity);
 
-    const auto shapes = resolve_body_shapes(scene, node, _hull_cache, assets_module);
+    const auto shapes = resolve_body_shapes(scene, node, _hull_cache, assets_module, _pose_cache);
 
     if (shapes.empty()) {
       continue;
@@ -144,7 +144,7 @@ auto physics_module::_sync_broadphase(scenes::scene& scene) -> void {
 
     auto node = scene.node_of(entity);
 
-    const auto pose = compose_pose(compose_world_pose(scene, node), collider.offset, collider.rotation);
+    const auto pose = compose_pose(compose_world_pose(scene, node, _pose_cache), collider.offset, collider.rotation);
 
     const auto local_bounds = collider.is_convex
       ? _hull_cache.get_or_build(assets_module, collider.mesh->id()).local_bounds
@@ -164,7 +164,7 @@ auto physics_module::_sync_broadphase(scenes::scene& scene) -> void {
       continue;
     }
 
-    if (auto resolved = resolve_convex(scene, node, _hull_cache, assets_module)) {
+    if (auto resolved = resolve_convex(scene, node, _hull_cache, assets_module, _pose_cache)) {
       route(node, body_type::static_body, world_shape_aabb(*resolved));
     }
   }
@@ -180,7 +180,7 @@ auto physics_module::_sync_broadphase(scenes::scene& scene) -> void {
       continue;
     }
 
-    const auto pose = compose_pose(compose_world_pose(scene, node), collider.offset, collider.rotation);
+    const auto pose = compose_pose(compose_world_pose(scene, node, _pose_cache), collider.offset, collider.rotation);
 
     const auto local_bounds = collider.is_convex
       ? _hull_cache.get_or_build(assets_module, collider.mesh->id()).local_bounds
@@ -369,7 +369,7 @@ auto physics_module::_narrowphase(scenes::scene& scene) -> void {
       continue;
     }
 
-    auto manifold = generate_pair_contact(scene, node_a, node_b, _mesh_cache, _hull_cache, assets_module);
+    auto manifold = generate_pair_contact(scene, node_a, node_b, _mesh_cache, _hull_cache, assets_module, _pose_cache);
 
     if (!manifold) {
       continue;
@@ -409,6 +409,10 @@ auto physics_module::fixed_update() -> void {
 
   auto& scene = scenes_module.active_scene();
   const auto dt = core::engine::fixed_delta_time().value();
+
+  // Every node's world pose is composed at most once this step, no matter how many times
+  // _sync_broadphase/_narrowphase ask for it -- see pose_cache's doc comment in narrowphase.hpp.
+  _pose_cache.clear();
 
   _sync_broadphase(scene);
   _generate_candidate_pairs();
@@ -450,8 +454,12 @@ auto physics_module::query_sphere_contacts(scenes::scene& scene, const math::vec
   const auto extent = math::vector3{radius, radius, radius};
   const auto query_aabb = math::volume{center - extent, center + extent};
 
+  // Local to this call, not _pose_cache -- a query can run off the fixed_update() cadence (e.g. once
+  // per particle per tick), so it must never read a pose left over from a different moment in time.
+  auto cache = pose_cache{};
+
   const auto visit = [&](const scenes::node& candidate) {
-    const auto resolved = resolve_convex(scene, candidate, _hull_cache, assets_module);
+    const auto resolved = resolve_convex(scene, candidate, _hull_cache, assets_module, cache);
 
     if (!resolved) {
       return;
@@ -500,8 +508,12 @@ auto physics_module::raycast(scenes::scene& scene, const math::ray& ray, std::fl
     }
   }
 
+  // Local to this call, not _pose_cache -- a raycast can run off the fixed_update() cadence, so it
+  // must never read a pose left over from a different moment in time.
+  auto cache = pose_cache{};
+
   const auto visit = [&](const scenes::node& candidate, [[maybe_unused]] std::float_t entry_t) {
-    const auto resolved = resolve_convex(scene, candidate, _hull_cache, assets_module);
+    const auto resolved = resolve_convex(scene, candidate, _hull_cache, assets_module, cache);
 
     if (!resolved) {
       return; // no collider, or a non-convex mesh_collider -- see this method's own doc comment
@@ -537,6 +549,10 @@ auto physics_module::_submit_debug_draw(scenes::scene& scene) -> void {
   if (_debug_draw_flags.colliders) {
     auto& assets_module = core::engine::get_module<assets::assets_module>();
 
+    // Local to this call, not _pose_cache -- debug draw runs on the render frame cadence, not
+    // fixed_update()'s, so it must never read a pose left over from a different moment in time.
+    auto cache = pose_cache{};
+
     // Rigidbody-driven: every shape owned anywhere in a rigidbody's subtree (compound colliders),
     // same split _sync_broadphase uses -- a rigidbody with a mesh_collider on its own node is drawn
     // by the mesh_collider loop below instead.
@@ -544,7 +560,7 @@ auto physics_module::_submit_debug_draw(scenes::scene& scene) -> void {
       auto node = scene.node_of(entity);
       const auto color = debug_color_for(body.type, body.is_sleeping);
 
-      for (const auto& shape : resolve_body_shapes(scene, node, _hull_cache, assets_module)) {
+      for (const auto& shape : resolve_body_shapes(scene, node, _hull_cache, assets_module, cache)) {
         draw_convex_shape(debug_draw, shape.shape, world_pose_matrix(shape.pose.position, shape.pose.rotation), shape.pose.scale, color);
       }
     }
@@ -555,7 +571,7 @@ auto physics_module::_submit_debug_draw(scenes::scene& scene) -> void {
         return;
       }
 
-      const auto pose = compose_pose(compose_world_pose(scene, node), collider.offset, collider.rotation);
+      const auto pose = compose_pose(compose_world_pose(scene, node, cache), collider.offset, collider.rotation);
       const auto matrix = world_pose_matrix(pose.position, pose.rotation);
 
       if (collider.is_convex) {
@@ -597,7 +613,7 @@ auto physics_module::_submit_debug_draw(scenes::scene& scene) -> void {
         continue;
       }
 
-      if (auto resolved = resolve_convex(scene, node, _hull_cache, assets_module)) {
+      if (auto resolved = resolve_convex(scene, node, _hull_cache, assets_module, cache)) {
         draw_convex_shape(debug_draw, resolved->shape, world_pose_matrix(resolved->pose.position, resolved->pose.rotation), resolved->pose.scale, implicit_static_color);
       }
     }

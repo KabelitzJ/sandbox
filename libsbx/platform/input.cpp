@@ -4,61 +4,37 @@
 
 namespace sbx::platform {
 
-std::unordered_map<key, key_state> input::_key_states;
-std::unordered_map<mouse_button, key_state> input::_mouse_button_states;
+std::array<key_state, input::key_count> input::_key_states{};
+std::array<key_state, input::mouse_button_count> input::_mouse_button_states{};
 math::vector2 input::_mouse_position;
 math::vector2 input::_scroll_delta;
 
 auto input::is_key_pressed(key key) -> bool {
-  if (auto entry = _key_states.find(key); entry != _key_states.end()) {
-    return entry->second.action == input_action::press;
-  }
-
-  return false;
+  return _key_states[_key_index(key)].action == input_action::press;
 }
 
 auto input::is_key_down(key key) -> bool {
-  if (auto entry = _key_states.find(key); entry != _key_states.end()) {
-    const auto& state = entry->second;
+  const auto& state = _key_states[_key_index(key)];
 
-    return state.action == input_action::press || state.action == input_action::repeat;
-  }
-
-  return false;
+  return state.action == input_action::press || state.action == input_action::repeat;
 }
 
 auto input::is_key_released(key key) -> bool {
-  if (auto entry = _key_states.find(key); entry != _key_states.end()) {
-    return entry->second.action == input_action::release;
-  }
-
-  return false;
+  return _key_states[_key_index(key)].action == input_action::release;
 }
 
 auto input::is_mouse_button_pressed(mouse_button button) -> bool {
-  if (auto entry = _mouse_button_states.find(button); entry != _mouse_button_states.end()) {
-    return entry->second.action == input_action::press;
-  }
-
-  return false;
+  return _mouse_button_states[_mouse_button_index(button)].action == input_action::press;
 }
 
 auto input::is_mouse_button_down(mouse_button button) -> bool {
-  if (auto entry = _mouse_button_states.find(button); entry != _mouse_button_states.end()) {
-    const auto& state = entry->second;
+  const auto& state = _mouse_button_states[_mouse_button_index(button)];
 
-    return state.action == input_action::press || state.action == input_action::repeat;
-  }
-
-  return false;
+  return state.action == input_action::press || state.action == input_action::repeat;
 }
 
 auto input::is_mouse_button_released(mouse_button button) -> bool {
-  if (auto entry = _mouse_button_states.find(button); entry != _mouse_button_states.end()) {
-    return entry->second.action == input_action::release;
-  }
-
-  return false;
+  return _mouse_button_states[_mouse_button_index(button)].action == input_action::release;
 }
 
 auto input::mouse_position() -> math::vector2 {
@@ -70,17 +46,17 @@ auto input::scroll_delta() -> math::vector2 {
 }
 
 auto input::_transition_pressed_keys() -> void {
-  for (auto& [key, key_state] : _key_states) {
-    if (key_state.action == input_action::press) {
-      key_state.action = input_action::repeat;
+  for (auto& state : _key_states) {
+    if (state.action == input_action::press) {
+      state.action = input_action::repeat;
     }
   }
 }
 
 auto input::_transition_pressed_mouse_buttons() -> void {
-  for (auto& [button, key_state] : _mouse_button_states) {
-    if (key_state.action == input_action::press) {
-      key_state.action = input_action::repeat;
+  for (auto& state : _mouse_button_states) {
+    if (state.action == input_action::press) {
+      state.action = input_action::repeat;
     }
   }
 }
@@ -90,26 +66,14 @@ auto input::_transition_scroll_delta() -> void {
 }
 
 auto input::_update_key_state(key key, input_action action) -> void {
-  auto entry = _key_states.find(key);
-
-  if (entry == _key_states.end()) {
-    entry = _key_states.insert({key, key_state{input_action::release, input_action::release}}).first;
-  }
-
-  auto& state = entry->second;
+  auto& state = _key_states[_key_index(key)];
 
   state.last_action = state.action;
   state.action = action;
 }
 
 auto input::_update_mouse_button_state(mouse_button button, input_action action) -> void {
-  auto entry = _mouse_button_states.find(button);
-
-  if (entry == _mouse_button_states.end()) {
-    entry = _mouse_button_states.insert({button, key_state{input_action::release, input_action::release}}).first;
-  }
-
-  auto& state = entry->second;
+  auto& state = _mouse_button_states[_mouse_button_index(button)];
 
   state.last_action = state.action;
   state.action = action;

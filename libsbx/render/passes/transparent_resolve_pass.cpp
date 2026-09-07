@@ -3,12 +3,15 @@
 #include <libsbx/render/passes/transparent_resolve_pass.hpp>
 
 #include <array>
+#include <span>
 #include <cstddef>
 #include <cstring>
 #include <string>
 #include <vector>
 
 #include <vulkan/vulkan.h>
+
+#include <libsbx/memory/bytes.hpp>
 
 #include <libsbx/graphics/frame_context.hpp>
 #include <libsbx/graphics/devices/swapchain.hpp>
@@ -92,10 +95,8 @@ auto transparent_resolve_pass::execute(render_context& context, std::uint32_t /*
   context.command_buffer->bind_pipeline(*_pipeline);
 
   auto values = transparent_resolve_push{context.accumulator_index, context.revealage_index, context.sampler_index};
-  auto range = std::array<std::byte, graphics::bindless_table::push_constant_size>{};
-  std::memcpy(range.data(), &values, sizeof(values));
 
-  context.command_buffer->push_constants(bindless_table.pipeline_layout(), graphics::bindless_table::push_constant_stages, 0u, range);
+  context.command_buffer->push_constants(bindless_table.pipeline_layout(), graphics::bindless_table::push_constant_stages, 0u, memory::as_bytes(values));
 
   context.command_buffer->draw(3u, 1u, 0u, 0u);
 }

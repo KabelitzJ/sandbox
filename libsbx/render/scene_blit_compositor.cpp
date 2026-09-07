@@ -3,11 +3,14 @@
 #include <libsbx/render/scene_blit_compositor.hpp>
 
 #include <array>
+#include <span>
 #include <cstddef>
 #include <cstring>
 #include <vector>
 
 #include <vulkan/vulkan.h>
+
+#include <libsbx/memory/bytes.hpp>
 
 #include <libsbx/core/engine.hpp>
 
@@ -94,10 +97,8 @@ auto scene_blit_compositor::execute(compositor_context& context) -> void {
   context.command_buffer->bind_pipeline(*_pipeline);
 
   auto values = scene_blit_push{_owner.final_image_index(), _owner.sampler_index()};
-  auto range = std::array<std::byte, graphics::bindless_table::push_constant_size>{};
-  std::memcpy(range.data(), &values, sizeof(values));
 
-  context.command_buffer->push_constants(bindless_table.pipeline_layout(), graphics::bindless_table::push_constant_stages, 0u, range);
+  context.command_buffer->push_constants(bindless_table.pipeline_layout(), graphics::bindless_table::push_constant_stages, 0u, memory::as_bytes(values));
 
   context.command_buffer->draw(3u, 1u, 0u, 0u);
 

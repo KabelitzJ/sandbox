@@ -6,13 +6,10 @@
 
 #include <libsbx/graphics/graphics_module.hpp>
 
-#include <libsbx/assets/assets_module.hpp>
-
 namespace sbx::render {
 
 auto submit_draw_commands(render_context& context, const std::vector<draw_command>& commands, const std::array<memory::observer_ptr<graphics::graphics_pipeline>, 2u>& pipelines, std::uint32_t cascade_index) -> void {
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
-  auto& assets_module = core::engine::get_module<assets::assets_module>();
 
   auto& registry = graphics_module.resource_registry();
   auto& bindless_table = graphics_module.bindless_table();
@@ -22,11 +19,10 @@ auto submit_draw_commands(render_context& context, const std::vector<draw_comman
   const auto* current_mesh = static_cast<const assets::mesh*>(nullptr);
 
   for (const auto& command : commands) {
-    if (!command.mesh.is_valid() || !assets_module.is_resident(command.mesh)) {
-      continue;
-    }
-
-    if (!command.material.is_valid() || !assets_module.is_resident(command.material)) {
+    // Residency was already resolved once, when this command was built into the packet -- see
+    // draw_command::resident's doc comment -- instead of being re-checked by every pass that
+    // resubmits the same command list (depth pre-pass, opaque, shadow x cascade).
+    if (!command.mesh.is_valid() || !command.material.is_valid() || !command.resident) {
       continue;
     }
 
@@ -60,10 +56,7 @@ auto submit_draw_commands(render_context& context, const std::vector<draw_comman
     values.clamp_sampler_index = context.clamp_sampler_index;
     values.cascade_index = cascade_index;
 
-    auto range = std::array<std::byte, graphics::bindless_table::push_constant_size>{};
-    std::memcpy(range.data(), &values, sizeof(push_constants));
-
-    context.command_buffer->push_constants(bindless_table.pipeline_layout(), graphics::bindless_table::push_constant_stages, 0u, range);
+    context.command_buffer->push_constants(bindless_table.pipeline_layout(), graphics::bindless_table::push_constant_stages, 0u, memory::as_bytes(values));
 
     context.command_buffer->draw_indexed(submesh.index_count, command.instance_count, submesh.index_offset, 0, 0u);
   }

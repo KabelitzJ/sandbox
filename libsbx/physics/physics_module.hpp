@@ -36,6 +36,7 @@
 #include <libsbx/physics/physics_debug.hpp>
 #include <libsbx/physics/mesh_collision_cache.hpp>
 #include <libsbx/physics/convex_hull_cache.hpp>
+#include <libsbx/physics/narrowphase.hpp>
 
 namespace sbx::physics {
 
@@ -244,6 +245,11 @@ private:
 
   mesh_collision_cache _mesh_cache{};
   convex_hull_cache _hull_cache{};
+
+  // compose_world_pose() memoization for the current fixed_update() step -- cleared at the top of
+  // each step, shared by _sync_broadphase and _narrowphase so a node touched by both (or by
+  // several candidate pairs in the same step) only ever has its world pose actually composed once.
+  pose_cache _pose_cache{};
 
   signals::signal<const collision_event&> _on_contact_began{};
   signals::signal<const collision_event&> _on_contact_ended{};

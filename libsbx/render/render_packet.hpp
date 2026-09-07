@@ -3,6 +3,7 @@
 #ifndef LIBSBX_RENDER_RENDER_PACKET_HPP_
 #define LIBSBX_RENDER_RENDER_PACKET_HPP_
 
+#include <cstddef>
 #include <cstdint>
 #include <vector>
 
@@ -16,6 +17,8 @@
 #include <libsbx/assets/texture.hpp>
 #include <libsbx/assets/environment_map.hpp>
 #include <libsbx/assets/particle_effect.hpp>
+
+#include <libsbx/utility/hash.hpp>
 
 #include <libsbx/render/particles/particle_data.hpp>
 
@@ -31,6 +34,10 @@ struct mesh_key {
   math::uuid mesh{math::uuid::nil()};
   std::uint32_t submesh{0u};
   math::uuid material{math::uuid::nil()};
+
+  auto operator==(const mesh_key& other) const -> bool {
+    return mesh == other.mesh && submesh == other.submesh && material == other.material;
+  }
 
   auto operator<(const mesh_key& other) const -> bool {
     if (mesh < other.mesh) { 
@@ -54,6 +61,20 @@ struct mesh_key {
 
 }; // struct mesh_key
 
+/**
+ * @brief Hashes a mesh_key for unordered accumulation during packet build -- see _build_packet's
+ * doc comment on why the buckets are accumulated into an unordered_map and then sorted once
+ * (by mesh_key::operator<, restoring the same mesh -> submesh -> material adjacency) rather than
+ * inserted directly into a std::map.
+ */
+struct mesh_key_hash {
+  auto operator()(const mesh_key& key) const noexcept -> std::size_t {
+    auto seed = std::hash<math::uuid>{}(key.mesh);
+    utility::hash_combine(seed, key.submesh, std::hash<math::uuid>{}(key.material));
+    return seed;
+  }
+}; // struct mesh_key_hash
+
 struct draw_command {
   assets::mesh_handle mesh{};
   std::uint32_t submesh_index{0u};
@@ -67,6 +88,11 @@ struct draw_command {
   // scene_renderer_module::_build_packet (see skin_dispatch::output_vertex_address, which this is
   // always a copy of) -- submit_draw_commands needs no other change to draw from it.
   graphics::buffer::address_type vertex_address_override{0u};
+
+  // assets_module.is_resident(mesh) && is_resident(material), resolved once when this command is
+  // built rather than per pass -- the same command list is submitted by several passes in the same
+  // frame (depth pre-pass, opaque, shadow x cascade), and residency can't change mid-frame.
+  bool resident{false};
 }; // struct draw_command
 
 /**

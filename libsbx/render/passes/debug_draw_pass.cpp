@@ -11,6 +11,8 @@
 
 #include <vulkan/vulkan.h>
 
+#include <libsbx/memory/bytes.hpp>
+
 #include <libsbx/graphics/frame_context.hpp>
 #include <libsbx/graphics/devices/swapchain.hpp>
 #include <libsbx/graphics/commands/command_buffer.hpp>
@@ -127,10 +129,8 @@ auto debug_draw_pass::execute(render_context& context, std::uint32_t /*group*/) 
 
   auto values = debug_draw_push{context.frame_address, buffer.address()};
 
-  auto range = std::array<std::byte, graphics::bindless_table::push_constant_size>{};
-  std::memcpy(range.data(), &values, sizeof(values));
 
-  context.command_buffer->push_constants(bindless_table.pipeline_layout(), graphics::bindless_table::push_constant_stages, 0u, range);
+  context.command_buffer->push_constants(bindless_table.pipeline_layout(), graphics::bindless_table::push_constant_stages, 0u, memory::as_bytes(values));
 
   context.command_buffer->draw(static_cast<std::uint32_t>(vertices.size()), 1u, 0u, 0u);
 

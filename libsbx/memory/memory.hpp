@@ -6,6 +6,7 @@
 #include <libsbx/memory/aligned_byte_buffer.hpp>
 #include <libsbx/memory/aligned_storage.hpp>
 #include <libsbx/memory/buffer_cursor.hpp>
+#include <libsbx/memory/bytes.hpp>
 #include <libsbx/memory/cache.hpp>
 #include <libsbx/memory/concepts.hpp>
 #include <libsbx/memory/counting_resource.hpp>

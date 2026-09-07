@@ -5,8 +5,11 @@
 #include <algorithm>
 #include <array>
 #include <cstring>
+#include <span>
 
 #include <vulkan/vulkan.h>
+
+#include <libsbx/memory/bytes.hpp>
 
 #include <libsbx/utility/logger.hpp>
 
@@ -86,9 +89,7 @@ auto ibl_baker::_ensure_brdf_lut(graphics::command_buffer& command_buffer) -> vo
 
   auto push = push_data{output_index};
 
-  auto range = std::array<std::byte, graphics::bindless_table::push_constant_size>{};
-  std::memcpy(range.data(), &push, sizeof(push));
-  command_buffer.push_constants(bindless_table.pipeline_layout(), graphics::bindless_table::push_constant_stages, 0u, range);
+  command_buffer.push_constants(bindless_table.pipeline_layout(), graphics::bindless_table::push_constant_stages, 0u, memory::as_bytes(push));
 
   const auto groups = (brdf_lut_size + threads_per_group - 1u) / threads_per_group;
   command_buffer.dispatch(groups, groups, 1u);
@@ -238,11 +239,8 @@ auto ibl_baker::bake_environment(environment_map& record, const std::vector<std:
 
     auto push = push_data{radiance_index, sampler_index, output_index};
 
-    auto range = std::array<std::byte, graphics::bindless_table::push_constant_size>{};
-    std::memcpy(range.data(), &push, sizeof(push));
-
     command_buffer.bind_pipeline(*equirect_to_cube_pipeline);
-    command_buffer.push_constants(bindless_table.pipeline_layout(), graphics::bindless_table::push_constant_stages, 0u, range);
+    command_buffer.push_constants(bindless_table.pipeline_layout(), graphics::bindless_table::push_constant_stages, 0u, memory::as_bytes(push));
 
     const auto groups = (radiance_cube_size + threads_per_group - 1u) / threads_per_group;
     command_buffer.dispatch(groups, groups, 6u);
@@ -311,11 +309,8 @@ auto ibl_baker::bake_environment(environment_map& record, const std::vector<std:
 
     auto push = push_data{radiance_cube_sampled_index, sampler_index, output_index};
 
-    auto range = std::array<std::byte, graphics::bindless_table::push_constant_size>{};
-    std::memcpy(range.data(), &push, sizeof(push));
-
     command_buffer.bind_pipeline(*pipeline);
-    command_buffer.push_constants(bindless_table.pipeline_layout(), graphics::bindless_table::push_constant_stages, 0u, range);
+    command_buffer.push_constants(bindless_table.pipeline_layout(), graphics::bindless_table::push_constant_stages, 0u, memory::as_bytes(push));
 
     const auto groups = (irradiance_cube_size + threads_per_group - 1u) / threads_per_group;
     command_buffer.dispatch(groups, groups, 6u);
@@ -378,10 +373,7 @@ auto ibl_baker::bake_environment(environment_map& record, const std::vector<std:
 
       auto push = push_data{radiance_cube_sampled_index, sampler_index, output_index, roughness};
 
-      auto range = std::array<std::byte, graphics::bindless_table::push_constant_size>{};
-      std::memcpy(range.data(), &push, sizeof(push));
-
-      command_buffer.push_constants(bindless_table.pipeline_layout(), graphics::bindless_table::push_constant_stages, 0u, range);
+      command_buffer.push_constants(bindless_table.pipeline_layout(), graphics::bindless_table::push_constant_stages, 0u, memory::as_bytes(push));
 
       const auto groups = (mip_size + threads_per_group - 1u) / threads_per_group;
       command_buffer.dispatch(groups, groups, 6u);

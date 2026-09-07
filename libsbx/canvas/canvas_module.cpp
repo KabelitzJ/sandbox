@@ -253,19 +253,19 @@ auto canvas_module::_emit_glyph_quad(const math::vector2& position, const math::
 }
 
 auto canvas_module::_visit(scenes::scene& scene, scenes::node node, const resolved_rect& parent_rect, const canvas_inherited_state& inherited, const math::vector2& screen_size, const math::vector2& mouse_position, std::uint32_t white_texture_index, std::float_t scale_factor, const resolved_rect* rect_override, const math::matrix4x4* world_mvp, bool mask_clip_supported) -> void {
-  if (!node.has_component<rect_transform>()) {
+  auto rect_transform_component = node.try_get_component<rect_transform>();
+
+  if (!rect_transform_component) {
     return;
   }
 
   auto state = inherited;
 
-  if (node.has_component<canvas_group>()) {
-    const auto& group = node.get_component<canvas_group>();
-
-    if (group.ignore_parent_groups) {
-      state = canvas_inherited_state{group.alpha, group.interactable, group.blocks_raycasts};
+  if (auto group = node.try_get_component<canvas_group>()) {
+    if (group->ignore_parent_groups) {
+      state = canvas_inherited_state{group->alpha, group->interactable, group->blocks_raycasts};
     } else {
-      state = canvas_inherited_state{inherited.alpha * group.alpha, inherited.interactable && group.interactable, inherited.blocks_raycasts && group.blocks_raycasts};
+      state = canvas_inherited_state{inherited.alpha * group->alpha, inherited.interactable && group->interactable, inherited.blocks_raycasts && group->blocks_raycasts};
     }
   }
 
@@ -274,21 +274,19 @@ auto canvas_module::_visit(scenes::scene& scene, scenes::node node, const resolv
   if (rect_override != nullptr) {
     rect = *rect_override;
   } else {
-    auto rt = node.get_component<rect_transform>();
+    auto rt = *rect_transform_component;
 
-    if (node.has_component<content_size_fitter>()) {
-      const auto& fitter = node.get_component<content_size_fitter>();
-
-      if (fitter.horizontal_fit != content_fit_mode::unconstrained || fitter.vertical_fit != content_fit_mode::unconstrained) {
-        if (fitter.horizontal_fit == content_fit_mode::preferred_size) {
+    if (auto fitter = node.try_get_component<content_size_fitter>()) {
+      if (fitter->horizontal_fit != content_fit_mode::unconstrained || fitter->vertical_fit != content_fit_mode::unconstrained) {
+        if (fitter->horizontal_fit == content_fit_mode::preferred_size) {
           rt.size_delta.x() = compute_preferred_size(scene, node, false).x();
-        } else if (fitter.horizontal_fit == content_fit_mode::min_size) {
+        } else if (fitter->horizontal_fit == content_fit_mode::min_size) {
           rt.size_delta.x() = compute_preferred_size(scene, node, true).x();
         }
 
-        if (fitter.vertical_fit == content_fit_mode::preferred_size) {
+        if (fitter->vertical_fit == content_fit_mode::preferred_size) {
           rt.size_delta.y() = compute_preferred_size(scene, node, false).y();
-        } else if (fitter.vertical_fit == content_fit_mode::min_size) {
+        } else if (fitter->vertical_fit == content_fit_mode::min_size) {
           rt.size_delta.y() = compute_preferred_size(scene, node, true).y();
         }
       }
@@ -299,7 +297,9 @@ auto canvas_module::_visit(scenes::scene& scene, scenes::node node, const resolv
 
   const auto screen_rect = resolved_rect{rect.position * scale_factor, rect.size * scale_factor};
 
-  if (node.has_component<ui_mask>() && mask_clip_supported) {
+  auto mask = node.try_get_component<ui_mask>();
+
+  if (mask && mask_clip_supported) {
     state.clip_rect = math::vector4{
       std::max(state.clip_rect.x(), screen_rect.position.x()),
       std::max(state.clip_rect.y(), screen_rect.position.y()),
@@ -314,10 +314,10 @@ auto canvas_module::_visit(scenes::scene& scene, scenes::node node, const resolv
 
   const auto full_uv_rect = math::vector4{0.0f, 0.0f, 1.0f, 1.0f};
 
-  const auto draws_own_graphic = !node.has_component<ui_mask>() || node.get_component<ui_mask>().show_mask_graphic;
+  const auto draws_own_graphic = !mask || mask->show_mask_graphic;
 
-  if (node.has_component<ui_button>()) {
-    auto& button = node.get_component<ui_button>();
+  if (auto button_component = node.try_get_component<ui_button>()) {
+    auto& button = *button_component;
 
     if (button.interactable && state.interactable && state.blocks_raycasts) {
       if (is_over) {
@@ -346,8 +346,8 @@ auto canvas_module::_visit(scenes::scene& scene, scenes::node node, const resolv
 
       _emit_quad(screen_rect.position, screen_rect.size, full_uv_rect, white_texture_index, fill_color, screen_size, state.clip_rect, world_mvp);
     }
-  } else if (node.has_component<ui_image>()) {
-    const auto& image = node.get_component<ui_image>();
+  } else if (auto image_component = node.try_get_component<ui_image>()) {
+    const auto& image = *image_component;
 
     if (image.raycast_target && state.blocks_raycasts && is_over) {
       _wants_pointer_capture = true;
@@ -363,8 +363,8 @@ auto canvas_module::_visit(scenes::scene& scene, scenes::node node, const resolv
         _emit_quad(screen_rect.position, screen_rect.size, full_uv_rect, white_texture_index, tint, screen_size, state.clip_rect, world_mvp);
       }
     }
-  } else if (node.has_component<ui_text>()) {
-    const auto& text = node.get_component<ui_text>();
+  } else if (auto text_component = node.try_get_component<ui_text>()) {
+    const auto& text = *text_component;
 
     if (text.raycast_target && state.blocks_raycasts && is_over) {
       _wants_pointer_capture = true;
@@ -378,8 +378,8 @@ auto canvas_module::_visit(scenes::scene& scene, scenes::node node, const resolv
         _emit_glyph_quad(glyph.rect.position * scale_factor, glyph.rect.size * scale_factor, glyph.uv_rect, glyph.texture_index, color, screen_size, state.clip_rect, world_mvp);
       }
     }
-  } else if (node.has_component<ui_toggle>()) {
-    auto& toggle = node.get_component<ui_toggle>();
+  } else if (auto toggle_component = node.try_get_component<ui_toggle>()) {
+    auto& toggle = *toggle_component;
 
     if (toggle.interactable && state.interactable && state.blocks_raycasts) {
       if (is_over) {
@@ -415,8 +415,8 @@ auto canvas_module::_visit(scenes::scene& scene, scenes::node node, const resolv
 
       _emit_quad(screen_rect.position, screen_rect.size, full_uv_rect, white_texture_index, fill_color, screen_size, state.clip_rect, world_mvp);
     }
-  } else if (node.has_component<ui_slider>()) {
-    auto& slider = node.get_component<ui_slider>();
+  } else if (auto slider_component = node.try_get_component<ui_slider>()) {
+    auto& slider = *slider_component;
 
     if (slider.interactable && state.interactable && state.blocks_raycasts) {
       if (is_over) {
@@ -478,8 +478,8 @@ auto canvas_module::_visit(scenes::scene& scene, scenes::node node, const resolv
 
       _emit_quad(fill_position, fill_size, full_uv_rect, white_texture_index, fill_tint, screen_size, state.clip_rect, world_mvp);
     }
-  } else if (node.has_component<ui_scrollbar>()) {
-    auto& scrollbar = node.get_component<ui_scrollbar>();
+  } else if (auto scrollbar_component = node.try_get_component<ui_scrollbar>()) {
+    auto& scrollbar = *scrollbar_component;
 
     if (scrollbar.interactable && state.interactable && state.blocks_raycasts) {
       if (is_over) {
@@ -537,7 +537,7 @@ auto canvas_module::_visit(scenes::scene& scene, scenes::node node, const resolv
     }
   }
 
-  if (node.has_component<scenes::relationship>()) {
+  if (auto relationship_component = node.try_get_component<scenes::relationship>()) {
     auto group_layout = std::vector<std::pair<scenes::node, resolved_rect>>{};
     auto has_group = false;
 
@@ -552,17 +552,19 @@ auto canvas_module::_visit(scenes::scene& scene, scenes::node node, const resolv
       has_group = true;
     }
 
-    if (node.has_component<ui_scroll_rect>()) {
-      auto& scroll = node.get_component<ui_scroll_rect>();
+    if (auto scroll_component = node.try_get_component<ui_scroll_rect>()) {
+      auto& scroll = *scroll_component;
 
-      for (const auto child_entity : node.get_component<scenes::relationship>().children) {
+      for (const auto child_entity : relationship_component->children) {
         auto child = scene.node_of(child_entity);
 
-        if (!child.has_component<rect_transform>() || child.id().value() != scroll.content.value()) {
+        auto child_rect_transform = child.try_get_component<rect_transform>();
+
+        if (!child_rect_transform || child.id().value() != scroll.content.value()) {
           continue;
         }
 
-        const auto natural = resolve_rect(child.get_component<rect_transform>(), rect);
+        const auto natural = resolve_rect(*child_rect_transform, rect);
 
         const auto max_scroll_x = std::max(0.0f, natural.size.x() - rect.size.x());
         const auto max_scroll_y = std::max(0.0f, natural.size.y() - rect.size.y());
@@ -612,7 +614,7 @@ auto canvas_module::_visit(scenes::scene& scene, scenes::node node, const resolv
       }
     }
 
-    for (const auto child_entity : node.get_component<scenes::relationship>().children) {
+    for (const auto child_entity : relationship_component->children) {
       auto child = scene.node_of(child_entity);
 
       if (has_group) {

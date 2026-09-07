@@ -408,7 +408,13 @@ auto scripting_module::_apply_field_overrides(managed::object& instance, const s
 }
 
 auto scripting_module::_invoke_collision_handler(scenes::node& self, const scenes::node& other, const physics::collision_event& event, bool began) -> void {
-  if (!self.is_valid() || !self.has_component<scripting::scripts>()) {
+  if (!self.is_valid()) {
+    return;
+  }
+
+  auto scripts = self.try_get_component<scripting::scripts>();
+
+  if (!scripts) {
     return;
   }
 
@@ -425,9 +431,7 @@ auto scripting_module::_invoke_collision_handler(scenes::node& self, const scene
 
   const auto method = dispatch_method_names[(static_cast<std::uint32_t>(event.is_trigger) << 1) | static_cast<std::uint32_t>(began)];
 
-  auto& scripts = self.get_component<scripting::scripts>();
-
-  for (auto& instance : scripts.instances) {
+  for (auto& instance : scripts->instances) {
     instance.invoke(method, other_uuid, event.normal.x(), event.normal.y(), event.normal.z(), event.point.x(), event.point.y(), event.point.z());
   }
 }
@@ -443,25 +447,33 @@ auto scripting_module::_dispatch_collision_event(const physics::collision_event&
 }
 
 auto scripting_module::_dispatch_button_click(const scenes::node& node) -> void {
-  if (!node.is_valid() || !node.has_component<scripting::scripts>()) {
+  if (!node.is_valid()) {
     return;
   }
 
-  const auto& scripts = node.get_component<scripting::scripts>();
+  auto scripts = node.try_get_component<scripting::scripts>();
 
-  for (const auto& instance : scripts.instances) {
+  if (!scripts) {
+    return;
+  }
+
+  for (const auto& instance : scripts->instances) {
     instance.invoke("OnClick");
   }
 }
 
 auto scripting_module::_dispatch_value_changed(const scenes::node& node) -> void {
-  if (!node.is_valid() || !node.has_component<scripting::scripts>()) {
+  if (!node.is_valid()) {
     return;
   }
 
-  const auto& scripts = node.get_component<scripting::scripts>();
+  auto scripts = node.try_get_component<scripting::scripts>();
 
-  for (const auto& instance : scripts.instances) {
+  if (!scripts) {
+    return;
+  }
+
+  for (const auto& instance : scripts->instances) {
     instance.invoke("OnValueChanged");
   }
 }

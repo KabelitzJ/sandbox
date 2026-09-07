@@ -69,28 +69,28 @@ auto prepare_velocity_constraints(std::span<contact_manifold> manifolds) -> std:
   constraints.reserve(manifolds.size());
 
   for (auto& manifold : manifolds) {
-    // Fresh per manifold, not shared/static: harmless even so (every write to a fallback is a
-    // mathematical no-op, see rigidbody.hpp's effective_rigidbody doc comment), but this avoids any
-    // aliasing question between two different implicit-static manifolds entirely.
-    auto fallback_a = rigidbody{body_type::static_body};
-    auto fallback_b = rigidbody{body_type::static_body};
+    // Resolved once per manifold and cached on the constraint (constraint.body_a/body_b) so
+    // solve_velocity_constraints' iteration loop never has to re-resolve them -- see
+    // effective_rigidbody_ptr's doc comment in rigidbody.hpp for why sharing one fallback instance
+    // across manifolds is safe.
+    auto body_a = effective_rigidbody_ptr(manifold.node_a);
+    auto body_b = effective_rigidbody_ptr(manifold.node_b);
 
-    auto& body_a = effective_rigidbody(manifold.node_a, fallback_a);
-    auto& body_b = effective_rigidbody(manifold.node_b, fallback_b);
-
-    const auto inv_mass_a = effective_inverse_mass(body_a);
-    const auto inv_mass_b = effective_inverse_mass(body_b);
+    const auto inv_mass_a = effective_inverse_mass(*body_a);
+    const auto inv_mass_b = effective_inverse_mass(*body_b);
 
     if (inv_mass_a <= 0.0f && inv_mass_b <= 0.0f) {
       continue; // both immovable -- nothing for the solver to do
     }
 
-    const auto inv_inertia_a = effective_inverse_inertia(body_a);
-    const auto inv_inertia_b = effective_inverse_inertia(body_b);
+    const auto inv_inertia_a = effective_inverse_inertia(*body_a);
+    const auto inv_inertia_b = effective_inverse_inertia(*body_b);
 
     auto constraint = velocity_constraint{};
     constraint.node_a = manifold.node_a;
     constraint.node_b = manifold.node_b;
+    constraint.body_a = body_a;
+    constraint.body_b = body_b;
     constraint.normal = manifold.normal;
     constraint.friction = manifold.combined_friction;
     constraint.restitution = manifold.combined_restitution;
@@ -98,10 +98,10 @@ auto prepare_velocity_constraints(std::span<contact_manifold> manifolds) -> std:
     constraint.tangent_2 = math::vector3::cross(manifold.normal, constraint.tangent_1);
 
     const auto apply_impulse = [&](const math::vector3& impulse, const math::vector3& anchor_a, const math::vector3& anchor_b) {
-      body_a.linear_velocity = body_a.linear_velocity - impulse * inv_mass_a;
-      body_a.angular_velocity = body_a.angular_velocity - inv_inertia_a * math::vector3::cross(anchor_a, impulse);
-      body_b.linear_velocity = body_b.linear_velocity + impulse * inv_mass_b;
-      body_b.angular_velocity = body_b.angular_velocity + inv_inertia_b * math::vector3::cross(anchor_b, impulse);
+      body_a->linear_velocity = body_a->linear_velocity - impulse * inv_mass_a;
+      body_a->angular_velocity = body_a->angular_velocity - inv_inertia_a * math::vector3::cross(anchor_a, impulse);
+      body_b->linear_velocity = body_b->linear_velocity + impulse * inv_mass_b;
+      body_b->angular_velocity = body_b->angular_velocity + inv_inertia_b * math::vector3::cross(anchor_b, impulse);
     };
 
     for (auto& point : manifold.points) {
@@ -125,7 +125,7 @@ auto prepare_velocity_constraints(std::span<contact_manifold> manifolds) -> std:
       constraint_point.tangent_mass_1 = compute_mass(constraint.tangent_1);
       constraint_point.tangent_mass_2 = compute_mass(constraint.tangent_2);
 
-      const auto relative_velocity = point_velocity(body_b, point.anchor_b) - point_velocity(body_a, point.anchor_a);
+      const auto relative_velocity = point_velocity(*body_b, point.anchor_b) - point_velocity(*body_a, point.anchor_a);
       const auto closing_speed = math::vector3::dot(relative_velocity, manifold.normal);
 
       constraint_point.velocity_bias = (closing_speed < -restitution_velocity_threshold) ? (-constraint.restitution * closing_speed) : 0.0f;
@@ -158,11 +158,11 @@ auto prepare_velocity_constraints(std::span<contact_manifold> manifolds) -> std:
 auto solve_velocity_constraints(std::vector<velocity_constraint>& constraints, std::uint32_t iterations) -> void {
   for (auto iteration = std::uint32_t{0}; iteration < iterations; ++iteration) {
     for (auto& constraint : constraints) {
-      auto fallback_a = rigidbody{body_type::static_body};
-      auto fallback_b = rigidbody{body_type::static_body};
-
-      auto& body_a = effective_rigidbody(constraint.node_a, fallback_a);
-      auto& body_b = effective_rigidbody(constraint.node_b, fallback_b);
+      // body_a/body_b were resolved once, in prepare_velocity_constraints -- dereferencing them
+      // here costs nothing beyond a pointer read, versus the has_component+get_component pair this
+      // used to re-run through the ECS on every one of `iterations` passes.
+      auto& body_a = *constraint.body_a;
+      auto& body_b = *constraint.body_b;
 
       const auto inv_mass_a = effective_inverse_mass(body_a);
       const auto inv_mass_b = effective_inverse_mass(body_b);

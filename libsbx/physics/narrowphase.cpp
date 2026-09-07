@@ -81,22 +81,31 @@ struct narrow_result {
   containers::static_vector<narrow_point, max_manifold_points> points{};
 }; // struct narrow_result
 
-auto compose_world_pose(scenes::scene& scene, const scenes::node& node) -> transform {
+auto compose_world_pose(scenes::scene& scene, const scenes::node& node, pose_cache& cache) -> transform {
+  if (const auto entry = cache.find(node.entity()); entry != cache.end()) {
+    return entry->second;
+  }
+
   // Collect node's own chain of ancestors first (cheapest to walk upward, parent pointers only),
   // then compose top-down -- root's local_transform folds in first, node's own last -- since a
   // parent's position/rotation/scale all need to already be known before its child's local offset
-  // can be projected through them.
+  // can be projected through them. Stops early at the first ancestor whose pose is already cached
+  // (not just at the scene root), seeding `pose` from that cached entry instead of identity.
   auto chain = std::vector<scenes::node>{};
   auto current = node;
   const auto root = scene.root();
+  auto pose = transform{};
 
   while (!(current == root)) {
+    if (const auto entry = cache.find(current.entity()); entry != cache.end()) {
+      pose = entry->second;
+      break;
+    }
+
     chain.push_back(current);
     const auto& relationship = current.get_component<scenes::relationship>();
     current = scene.node_of(relationship.parent);
   }
-
-  auto pose = transform{};
 
   for (auto it = chain.rbegin(); it != chain.rend(); ++it) {
     const auto& local = it->get_component<scenes::local_transform>();
@@ -104,6 +113,8 @@ auto compose_world_pose(scenes::scene& scene, const scenes::node& node) -> trans
     pose.position = pose.position + pose.rotation * (local.position * pose.scale);
     pose.rotation = math::quaternion::normalized(pose.rotation * local.rotation);
     pose.scale = pose.scale * local.scale; // componentwise -- see physics::transform::scale
+
+    cache[it->entity()] = pose;
   }
 
   return pose;
@@ -117,10 +128,10 @@ auto compose_pose(const transform& world_pose, const math::vector3& offset, cons
   };
 }
 
-auto resolve_convex(scenes::scene& scene, const scenes::node& node, convex_hull_cache& hull_cache, assets::assets_module& assets_module) -> std::optional<body_shape> {
+auto resolve_convex(scenes::scene& scene, const scenes::node& node, convex_hull_cache& hull_cache, assets::assets_module& assets_module, pose_cache& cache) -> std::optional<body_shape> {
   if (node.has_component<shape_collider>()) {
     const auto& collider = node.get_component<shape_collider>();
-    const auto world_pose = compose_world_pose(scene, node);
+    const auto world_pose = compose_world_pose(scene, node, cache);
     const auto pose = compose_pose(world_pose, collider.offset, collider.rotation);
 
     // Scale is baked as far as it can be straight into the shape's own dimensions here (see
@@ -144,7 +155,7 @@ auto resolve_convex(scenes::scene& scene, const scenes::node& node, convex_hull_
       return std::nullopt;
     }
 
-    const auto world_pose = compose_world_pose(scene, node);
+    const auto world_pose = compose_world_pose(scene, node, cache);
 
     return body_shape{convex_shape{convex_hull{hull_data.points, hull_data.faces}}, compose_pose(world_pose, collider.offset, collider.rotation), collider.friction, collider.restitution};
   }
@@ -152,7 +163,7 @@ auto resolve_convex(scenes::scene& scene, const scenes::node& node, convex_hull_
   return std::nullopt;
 }
 
-auto resolve_body_shapes(scenes::scene& scene, const scenes::node& rigidbody_node, convex_hull_cache& hull_cache, assets::assets_module& assets_module) -> std::vector<body_shape> {
+auto resolve_body_shapes(scenes::scene& scene, const scenes::node& rigidbody_node, convex_hull_cache& hull_cache, assets::assets_module& assets_module, pose_cache& cache) -> std::vector<body_shape> {
   auto shapes = std::vector<body_shape>{};
 
   const auto& relationship = rigidbody_node.get_component<scenes::relationship>();
@@ -160,7 +171,7 @@ auto resolve_body_shapes(scenes::scene& scene, const scenes::node& rigidbody_nod
   // Fast path: no children at all -- this can only ever be an ordinary single-shape body (or a bare
   // rigidbody with no collider), so skip the recursive walk entirely.
   if (relationship.children.empty()) {
-    if (auto resolved = resolve_convex(scene, rigidbody_node, hull_cache, assets_module)) {
+    if (auto resolved = resolve_convex(scene, rigidbody_node, hull_cache, assets_module, cache)) {
       shapes.push_back(std::move(*resolved));
     }
 
@@ -168,7 +179,7 @@ auto resolve_body_shapes(scenes::scene& scene, const scenes::node& rigidbody_nod
   }
 
   const auto collect = [&](this const auto& self, const scenes::node& node) -> void {
-    if (auto resolved = resolve_convex(scene, node, hull_cache, assets_module)) {
+    if (auto resolved = resolve_convex(scene, node, hull_cache, assets_module, cache)) {
       shapes.push_back(std::move(*resolved));
     }
 
@@ -799,7 +810,7 @@ struct narrow_touch {
 // the solver expects, deriving each point's torque anchors from node_a/node_b's own world position
 // (compose_world_pose -- not just local_transform::position, since either side may itself be nested
 // under an organizational parent, e.g. an implicit-static collider under a scaled group node).
-[[nodiscard]] auto build_manifold(scenes::scene& scene, const scenes::node& node_a, const scenes::node& node_b, std::float_t friction, std::float_t restitution, const narrow_result& raw) -> std::optional<contact_manifold> {
+[[nodiscard]] auto build_manifold(scenes::scene& scene, const scenes::node& node_a, const scenes::node& node_b, std::float_t friction, std::float_t restitution, const narrow_result& raw, pose_cache& cache) -> std::optional<contact_manifold> {
   auto manifold = contact_manifold{};
   manifold.node_a = node_a;
   manifold.node_b = node_b;
@@ -807,8 +818,8 @@ struct narrow_touch {
   manifold.combined_friction = friction;
   manifold.combined_restitution = restitution;
 
-  const auto world_position_a = compose_world_pose(scene, node_a).position;
-  const auto world_position_b = compose_world_pose(scene, node_b).position;
+  const auto world_position_a = compose_world_pose(scene, node_a, cache).position;
+  const auto world_position_b = compose_world_pose(scene, node_b, cache).position;
 
   for (const auto& point : raw.points) {
     if (manifold.points.is_full()) {
@@ -839,9 +850,9 @@ struct narrow_touch {
 // Both sides resolve to a list of one or more ordinary convex_shapes (resolve_body_shapes -- a
 // single-entry list for an ordinary non-compound body, several for a compound one), cross-tested
 // shape x shape via dispatch() and folded into one manifold for the pair via combine_narrow_results.
-[[nodiscard]] auto generate_convex_pair_contact(scenes::scene& scene, const scenes::node& node_a, const scenes::node& node_b, convex_hull_cache& hull_cache, assets::assets_module& assets_module) -> std::optional<contact_manifold> {
-  const auto shapes_a = resolve_body_shapes(scene, node_a, hull_cache, assets_module);
-  const auto shapes_b = resolve_body_shapes(scene, node_b, hull_cache, assets_module);
+[[nodiscard]] auto generate_convex_pair_contact(scenes::scene& scene, const scenes::node& node_a, const scenes::node& node_b, convex_hull_cache& hull_cache, assets::assets_module& assets_module, pose_cache& cache) -> std::optional<contact_manifold> {
+  const auto shapes_a = resolve_body_shapes(scene, node_a, hull_cache, assets_module, cache);
+  const auto shapes_b = resolve_body_shapes(scene, node_b, hull_cache, assets_module, cache);
 
   if (shapes_a.empty() || shapes_b.empty()) {
     return std::nullopt;
@@ -866,15 +877,15 @@ struct narrow_touch {
 
   const auto& [raw, friction, restitution] = *combined;
 
-  return build_manifold(scene, node_a, node_b, friction, restitution, raw);
+  return build_manifold(scene, node_a, node_b, friction, restitution, raw, cache);
 }
 
 // shape_node resolves as one or more ordinary convex_shapes (resolve_body_shapes -- so this also
 // covers a compound body and a convex mesh_collider landing on a non-convex one); mesh_node is a
 // non-convex mesh_collider, each of shape_node's shapes tested per-candidate-triangle against its
 // mesh_collision_cache BVH. Builds one combined manifold for the pair via combine_narrow_results.
-[[nodiscard]] auto generate_mesh_contact(scenes::scene& scene, const scenes::node& shape_node, const scenes::node& mesh_node, mesh_collision_cache& mesh_cache, convex_hull_cache& hull_cache, assets::assets_module& assets_module) -> std::optional<contact_manifold> {
-  const auto shapes = resolve_body_shapes(scene, shape_node, hull_cache, assets_module);
+[[nodiscard]] auto generate_mesh_contact(scenes::scene& scene, const scenes::node& shape_node, const scenes::node& mesh_node, mesh_collision_cache& mesh_cache, convex_hull_cache& hull_cache, assets::assets_module& assets_module, pose_cache& cache) -> std::optional<contact_manifold> {
+  const auto shapes = resolve_body_shapes(scene, shape_node, hull_cache, assets_module, cache);
 
   if (shapes.empty()) {
     return std::nullopt;
@@ -886,7 +897,7 @@ struct narrow_touch {
     return std::nullopt;
   }
 
-  const auto mesh_pose = compose_pose(compose_world_pose(scene, mesh_node), mesh_collider_component.offset, mesh_collider_component.rotation);
+  const auto mesh_pose = compose_pose(compose_world_pose(scene, mesh_node, cache), mesh_collider_component.offset, mesh_collider_component.rotation);
 
   const auto& mesh_data = mesh_cache.get_or_build(assets_module, mesh_collider_component.mesh->id());
 
@@ -940,7 +951,7 @@ struct narrow_touch {
 
   const auto& [raw, friction, restitution] = *combined;
 
-  return build_manifold(scene, shape_node, mesh_node, friction, restitution, raw);
+  return build_manifold(scene, shape_node, mesh_node, friction, restitution, raw, cache);
 }
 
 [[nodiscard]] auto flip_manifold(contact_manifold manifold, const scenes::node& node_a, const scenes::node& node_b) -> contact_manifold {
@@ -955,7 +966,7 @@ struct narrow_touch {
   return manifold;
 }
 
-auto generate_pair_contact(scenes::scene& scene, const sbx::scenes::node& node_a, const sbx::scenes::node& node_b, mesh_collision_cache& mesh_cache, convex_hull_cache& hull_cache, assets::assets_module& assets_module) -> std::optional<contact_manifold> {
+auto generate_pair_contact(scenes::scene& scene, const sbx::scenes::node& node_a, const sbx::scenes::node& node_b, mesh_collision_cache& mesh_cache, convex_hull_cache& hull_cache, assets::assets_module& assets_module, pose_cache& cache) -> std::optional<contact_manifold> {
   const auto a_is_raw_mesh = node_a.has_component<mesh_collider>() && !node_a.get_component<mesh_collider>().is_convex;
   const auto b_is_raw_mesh = node_b.has_component<mesh_collider>() && !node_b.get_component<mesh_collider>().is_convex;
 
@@ -964,15 +975,15 @@ auto generate_pair_contact(scenes::scene& scene, const sbx::scenes::node& node_a
   }
 
   if (a_is_raw_mesh) {
-    const auto result = generate_mesh_contact(scene, node_b, node_a, mesh_cache, hull_cache, assets_module);
+    const auto result = generate_mesh_contact(scene, node_b, node_a, mesh_cache, hull_cache, assets_module, cache);
     return result ? std::optional{flip_manifold(*result, node_a, node_b)} : std::nullopt;
   }
 
   if (b_is_raw_mesh) {
-    return generate_mesh_contact(scene, node_a, node_b, mesh_cache, hull_cache, assets_module);
+    return generate_mesh_contact(scene, node_a, node_b, mesh_cache, hull_cache, assets_module, cache);
   }
 
-  return generate_convex_pair_contact(scene, node_a, node_b, hull_cache, assets_module);
+  return generate_convex_pair_contact(scene, node_a, node_b, hull_cache, assets_module, cache);
 }
 
 } // namespace sbx::physics

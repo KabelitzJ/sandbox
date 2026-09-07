@@ -17,7 +17,6 @@
 #include <cmath>
 #include <bit>
 
-#include <libsbx/utility/fast_mod.hpp>
 #include <libsbx/utility/assert.hpp>
 
 #include <libsbx/memory/iterable_adaptor.hpp>
@@ -525,7 +524,9 @@ private:
 
   template<typename Other>
   [[nodiscard]] auto _key_to_bucket(const Other& key) const noexcept -> size_type {
-    return utility::fast_mod(static_cast<size_type>(_sparse.second()(key)), bucket_count());
+    // bucket_count() is always std::bit_ceil(...) (see rehash()), i.e. always a power of two, so the
+    // modulus can always be a mask instead of a division.
+    return static_cast<size_type>(_sparse.second()(key)) & (bucket_count() - 1u);
   }
 
   template<typename Other>

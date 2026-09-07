@@ -3,6 +3,10 @@
 #ifndef LIBSBX_SCRIPTING_MANAGED_TYPE_HPP_
 #define LIBSBX_SCRIPTING_MANAGED_TYPE_HPP_
 
+#include <cstdint>
+#include <string>
+#include <string_view>
+#include <unordered_map>
 #include <vector>
 
 #include <libsbx/scripting/managed/core.hpp>
@@ -11,6 +15,21 @@
 #include <libsbx/scripting/managed/fwd.hpp>
 
 namespace sbx::scripting::managed {
+
+namespace detail {
+
+// Lets _method_handles (below) be looked up by std::string_view without constructing a temporary
+// std::string on every lookup -- the whole point of caching a method handle is to keep the hot
+// (cache-hit) path allocation-free.
+struct transparent_string_hash {
+  using is_transparent = void;
+
+  auto operator()(std::string_view value) const noexcept -> std::size_t {
+    return std::hash<std::string_view>{}(value);
+  }
+}; // struct transparent_string_hash
+
+} // namespace detail
 
 class type {
 
@@ -67,6 +86,14 @@ private:
   type_id _id = -1;
   type* _base_type = nullptr;
   type* _element_type = nullptr;
+
+  // object::invoke()'s method-handle cache -- see its doc comment. Keyed by method name only, not
+  // full signature: fine for this engine's own dispatch surface (each dispatched name -- OnUpdate,
+  // OnClick, DispatchCollisionEnter, ... -- is always called with one fixed signature), but a user
+  // script overloading a method under the same name it also invokes via object::invoke() with
+  // different signatures would collide on this cache. Not a concern for anything the engine itself
+  // dispatches; flagged here in case a future caller needs the fuller (name, signature) key instead.
+  mutable std::unordered_map<std::string, std::int32_t, detail::transparent_string_hash, std::equal_to<>> _method_handles{};
 
 }; // class type
 

@@ -170,8 +170,8 @@ public:
 
   auto get_property_value_raw(std::string_view name, void* value) const -> void;
 
-  auto get_type() -> const type&;
-  
+  auto get_type() const -> const type&;
+
   auto destroy() -> void;
 
   auto is_valid() const -> bool;
@@ -183,7 +183,10 @@ private:
   auto _invoke_method_return_internal(std::string_view name, const void** parameters, const managed_type* parameter_types, std::size_t length, void* result_storage) const -> void;
 
   void* _handle{nullptr};
-  const type* _type{nullptr};
+  // mutable: get_type() lazily resolves and caches this on first use, including from the const
+  // _invoke_method_internal/_invoke_method_return_internal call sites (they need get_type() for its
+  // per-type method-handle cache, see the doc comment there).
+  mutable const type* _type{nullptr};
 
 private:
   

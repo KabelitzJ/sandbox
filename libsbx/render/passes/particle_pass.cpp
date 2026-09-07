@@ -9,6 +9,8 @@
 
 #include <vulkan/vulkan.h>
 
+#include <libsbx/memory/bytes.hpp>
+
 #include <libsbx/math/matrix4x4.hpp>
 #include <libsbx/math/vector4.hpp>
 
@@ -385,10 +387,8 @@ auto particle_pass::_draw_billboards(render_context& context, std::uint32_t grou
       math::vector4{camera_up, 0.0f}
     };
 
-    auto range = std::array<std::byte, graphics::bindless_table::push_constant_size>{};
-    std::memcpy(range.data(), &values, sizeof(values));
 
-    context.command_buffer->push_constants(bindless_table.pipeline_layout(), graphics::bindless_table::push_constant_stages, 0u, range);
+    context.command_buffer->push_constants(bindless_table.pipeline_layout(), graphics::bindless_table::push_constant_stages, 0u, memory::as_bytes(values));
 
     context.command_buffer->draw(6u, command.instance_count, 0u, 0u);
   }
@@ -440,10 +440,8 @@ auto particle_pass::_draw_meshes(render_context& context, std::uint32_t group) -
       context.sampler_index
     };
 
-    auto range = std::array<std::byte, graphics::bindless_table::push_constant_size>{};
-    std::memcpy(range.data(), &values, sizeof(values));
 
-    context.command_buffer->push_constants(bindless_table.pipeline_layout(), graphics::bindless_table::push_constant_stages, 0u, range);
+    context.command_buffer->push_constants(bindless_table.pipeline_layout(), graphics::bindless_table::push_constant_stages, 0u, memory::as_bytes(values));
 
     context.command_buffer->draw_indexed(submesh.index_count, command.instance_count, submesh.index_offset, 0, 0u);
   }
@@ -467,10 +465,8 @@ auto particle_pass::_draw_trails(render_context& context, std::uint32_t group) -
 
     auto values = particle_trail_push{context.frame_address, buffer.address(), command.vertex_offset};
 
-    auto range = std::array<std::byte, graphics::bindless_table::push_constant_size>{};
-    std::memcpy(range.data(), &values, sizeof(values));
 
-    context.command_buffer->push_constants(bindless_table.pipeline_layout(), graphics::bindless_table::push_constant_stages, 0u, range);
+    context.command_buffer->push_constants(bindless_table.pipeline_layout(), graphics::bindless_table::push_constant_stages, 0u, memory::as_bytes(values));
 
     context.command_buffer->draw(command.vertex_count, 1u, 0u, 0u);
   }

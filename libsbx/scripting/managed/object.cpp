@@ -77,7 +77,7 @@ void object::get_property_value_raw(std::string_view name, void* value) const {
   string::destroy(property_name);
 }
 
-auto object::get_type() -> const type& {
+auto object::get_type() const -> const type& {
   if (!_type) {
     auto new_type = type{};
 
@@ -104,20 +104,55 @@ auto object::is_valid() const -> bool {
   return _handle != nullptr && _type != nullptr; 
 }
 
+// Method-handle cache, per-type (see type::_method_handles' doc comment): the first invoke() of a
+// given name on a given type marshals the name and resolves it through the slow path
+// (get_method_handle -- a NativeString marshal plus C#-side reflection/overload resolution, cached
+// there too); every later invoke() of that name, on any instance of the same type, skips straight to
+// invoke_method_handle(_return) with the cached int -- no string marshal, no MethodKey/ManagedType[]
+// allocation on the C# side (see Object.cs's TryGetMethodInfo), just an array-indexed dispatch on
+// both sides of the native/managed boundary.
 void object::_invoke_method_internal(std::string_view name, const void** parameters, const managed_type* parameter_types, std::size_t length) const {
-  auto method_name = string::create(name);
+  const auto& owner_type = get_type();
 
-  std::invoke(detail::backend.invoke_method, _handle, method_name, parameters, parameter_types, static_cast<std::int32_t>(length));
+  auto handle = std::int32_t{-1};
 
-  string::destroy(method_name);
+  if (const auto entry = owner_type._method_handles.find(name); entry != owner_type._method_handles.end()) {
+    handle = entry->second;
+  } else {
+    auto method_name = string::create(name);
+    handle = std::invoke(detail::backend.get_method_handle, _handle, method_name, parameter_types, static_cast<std::int32_t>(length));
+    string::destroy(method_name);
+
+    owner_type._method_handles.emplace(std::string{name}, handle);
+  }
+
+  if (handle < 0) {
+    return; // no such method -- get_method_handle already logged this, C# side
+  }
+
+  std::invoke(detail::backend.invoke_method_handle, _handle, handle, parameters, static_cast<std::int32_t>(length));
 }
 
 void object::_invoke_method_return_internal(std::string_view name, const void** parameters, const managed_type* parameter_types, std::size_t length, void* result_storage) const {
-  auto method_name = string::create(name);
+  const auto& owner_type = get_type();
 
-  std::invoke(detail::backend.invoke_method_return, _handle, method_name, parameters, parameter_types, static_cast<std::int32_t>(length), result_storage);
+  auto handle = std::int32_t{-1};
 
-  string::destroy(method_name);
+  if (const auto entry = owner_type._method_handles.find(name); entry != owner_type._method_handles.end()) {
+    handle = entry->second;
+  } else {
+    auto method_name = string::create(name);
+    handle = std::invoke(detail::backend.get_method_handle, _handle, method_name, parameter_types, static_cast<std::int32_t>(length));
+    string::destroy(method_name);
+
+    owner_type._method_handles.emplace(std::string{name}, handle);
+  }
+
+  if (handle < 0) {
+    return;
+  }
+
+  std::invoke(detail::backend.invoke_method_handle_return, _handle, handle, parameters, static_cast<std::int32_t>(length), result_storage);
 }
 
 

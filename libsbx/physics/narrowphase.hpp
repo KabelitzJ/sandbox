@@ -18,6 +18,7 @@
 #define LIBSBX_PHYSICS_NARROWPHASE_HPP_
 
 #include <optional>
+#include <unordered_map>
 #include <vector>
 
 #include <libsbx/scenes/node.hpp>
@@ -31,6 +32,15 @@
 #include <libsbx/physics/convex_hull_cache.hpp>
 
 namespace sbx::physics {
+
+/**
+ * @brief Per-physics-step memoization of compose_world_pose() results, keyed by entity. Cleared
+ * once at the top of each physics step (physics_module owns the instance) -- within a step, a
+ * node's world pose is composed at most once no matter how many times broadphase sync/narrowphase
+ * ask for it, and composing an uncached node also seeds every ancestor it climbed through along the
+ * way, so sibling nodes under the same parent chain hit cache too.
+ */
+using pose_cache = std::unordered_map<ecs::entity, transform>;
 
 /**
  * @brief One convex primitive resolved for narrowphase: its shape, full world pose (every
@@ -53,7 +63,7 @@ struct body_shape {
  * local_transform, verbatim, for an ordinary unparented node -- the common case pays only the cost
  * of one parent-pointer comparison.
  */
-[[nodiscard]] auto compose_world_pose(scenes::scene& scene, const scenes::node& node) -> transform;
+[[nodiscard]] auto compose_world_pose(scenes::scene& scene, const scenes::node& node, pose_cache& cache) -> transform;
 
 /**
  * @brief Folds a collider's own offset/rotation (authored relative to @p world_pose, e.g.
@@ -70,7 +80,7 @@ struct body_shape {
  * single convex_shape -- see generate_mesh_contact), or an unresolvable one (no mesh assigned, or an
  * empty cached hull).
  */
-[[nodiscard]] auto resolve_convex(scenes::scene& scene, const scenes::node& node, convex_hull_cache& hull_cache, assets::assets_module& assets_module) -> std::optional<body_shape>;
+[[nodiscard]] auto resolve_convex(scenes::scene& scene, const scenes::node& node, convex_hull_cache& hull_cache, assets::assets_module& assets_module, pose_cache& cache) -> std::optional<body_shape>;
 
 /**
  * @brief Resolves every convex primitive owned by @p rigidbody_node: itself (resolve_convex) plus
@@ -79,7 +89,7 @@ struct body_shape {
  * returns 0 or 1 entries with no recursion overhead, so an ordinary single-shape body costs exactly
  * what it always did.
  */
-[[nodiscard]] auto resolve_body_shapes(scenes::scene& scene, const scenes::node& rigidbody_node, convex_hull_cache& hull_cache, assets::assets_module& assets_module) -> std::vector<body_shape>;
+[[nodiscard]] auto resolve_body_shapes(scenes::scene& scene, const scenes::node& rigidbody_node, convex_hull_cache& hull_cache, assets::assets_module& assets_module, pose_cache& cache) -> std::vector<body_shape>;
 
 /**
  * @brief Walks upward from @p node (inclusive) through relationship::parent until it finds an
@@ -98,7 +108,7 @@ struct body_shape {
  * a supported pairing, matching Unity) or if nothing on either side actually overlaps. The returned
  * manifold's node_a/node_b always match the order @p node_a/@p node_b were passed in.
  */
-[[nodiscard]] auto generate_pair_contact(scenes::scene& scene, const sbx::scenes::node& node_a, const sbx::scenes::node& node_b, mesh_collision_cache& mesh_cache, convex_hull_cache& hull_cache, assets::assets_module& assets_module) -> std::optional<contact_manifold>;
+[[nodiscard]] auto generate_pair_contact(scenes::scene& scene, const sbx::scenes::node& node_a, const sbx::scenes::node& node_b, mesh_collision_cache& mesh_cache, convex_hull_cache& hull_cache, assets::assets_module& assets_module, pose_cache& cache) -> std::optional<contact_manifold>;
 
 } // namespace sbx::physics
 

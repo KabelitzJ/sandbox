@@ -3,12 +3,15 @@
 #include <libsbx/render/passes/grid_pass.hpp>
 
 #include <array>
+#include <span>
 #include <cstddef>
 #include <cstring>
 #include <string>
 #include <vector>
 
 #include <vulkan/vulkan.h>
+
+#include <libsbx/memory/bytes.hpp>
 
 #include <libsbx/graphics/frame_context.hpp>
 #include <libsbx/graphics/devices/swapchain.hpp>
@@ -90,10 +93,8 @@ auto grid_pass::execute(render_context& context, std::uint32_t /*group*/) -> voi
 
   auto values = grid_push{context.frame_address};
 
-  auto range = std::array<std::byte, graphics::bindless_table::push_constant_size>{};
-  std::memcpy(range.data(), &values, sizeof(values));
 
-  context.command_buffer->push_constants(bindless_table.pipeline_layout(), graphics::bindless_table::push_constant_stages, 0u, range);
+  context.command_buffer->push_constants(bindless_table.pipeline_layout(), graphics::bindless_table::push_constant_stages, 0u, memory::as_bytes(values));
 
   context.command_buffer->draw(6u, 1u, 0u, 0u);
 }

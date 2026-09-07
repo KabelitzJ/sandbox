@@ -11,6 +11,8 @@
 
 #include <libsbx/reflection/annotations.hpp>
 
+#include <libsbx/memory/observer_ptr.hpp>
+
 #include <libsbx/scenes/node.hpp>
 
 namespace sbx::physics {
@@ -64,9 +66,27 @@ struct rigidbody {
  * @p node is taken by value (a node handle is just a registry pointer + entity id, cheap to copy) so
  * get_component() below resolves to its non-const overload -- matching the same
  * copy-for-mutable-access idiom solver.cpp's apply_positional_correction already uses.
+ *
+ * Resolves through try_get_component() -- a single pool lookup -- rather than the
+ * has_component()+get_component() pair this used to do (two lookups for the same entity).
  */
 [[nodiscard]] inline auto effective_rigidbody(scenes::node& node, rigidbody& fallback) -> rigidbody& {
-  return node.has_component<rigidbody>() ? node.get_component<rigidbody>() : fallback;
+  auto component = node.try_get_component<rigidbody>();
+  return component ? *component : fallback;
+}
+
+/**
+ * @brief Pointer form of effective_rigidbody(), for callers that resolve once and hold onto the
+ * result across several uses (e.g. across the solver's velocity-iteration loop) instead of
+ * re-resolving per use. Backed by a single shared thread_local fallback rather than a
+ * caller-supplied one: safe because, per the doc comment above, every write to a fallback body is a
+ * mathematical no-op and nothing ever reads one back, so sharing one fallback instance across
+ * unrelated constraints within the same thread is harmless.
+ */
+[[nodiscard]] inline auto effective_rigidbody_ptr(scenes::node& node) -> memory::observer_ptr<rigidbody> {
+  static thread_local auto shared_fallback = rigidbody{body_type::static_body};
+  auto component = node.try_get_component<rigidbody>();
+  return component ? component : memory::observer_ptr<rigidbody>{&shared_fallback};
 }
 
 } // namespace sbx::physics

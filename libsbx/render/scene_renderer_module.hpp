@@ -214,6 +214,22 @@ private:
   bool _has_rendered{false};
   std::optional<camera_data> _camera_override{};
 
+  // Scratch buffers for _evaluate_skeleton_pose, reused across every skinned instance/frame instead
+  // of freshly heap-allocated per call -- safe because _build_packet's skinned-mesh loop is strictly
+  // serial (no threading/job-system involved), so no two calls to _evaluate_skeleton_pose are ever
+  // in flight at once.
+  std::vector<math::vector3> _skeleton_scratch_translations{};
+  std::vector<math::quaternion> _skeleton_scratch_rotations{};
+  std::vector<math::vector3> _skeleton_scratch_scales{};
+  std::vector<math::vector3> _skeleton_scratch_target_translations{};
+  std::vector<math::quaternion> _skeleton_scratch_target_rotations{};
+  std::vector<math::vector3> _skeleton_scratch_target_scales{};
+  std::vector<math::matrix4x4> _skeleton_scratch_locals{};
+
+  // Unique opaque mesh/submesh/material bucket count from the last _build_packet call, used to
+  // reserve() the accumulation map up front instead of growing it one rehash at a time.
+  std::size_t _last_opaque_bucket_count{128u};
+
   std::uint32_t _sampler_index{0u};
   std::uint32_t _clamp_sampler_index{0u};
   bool _grid_enabled{false};

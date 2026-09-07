@@ -213,7 +213,7 @@ public:
   [[nodiscard]] auto try_get([[maybe_unused]] const entity_type entity) const -> decltype(auto) {
     if constexpr (sizeof...(Type) == 1u) {
       const auto* pool = _assure<std::remove_const_t<Type>...>();
-      return (pool && pool->contains(entity)) ? std::addressof(pool->get(entity)) : nullptr;
+      return memory::observer_ptr<const std::remove_const_t<Type>...>{(pool && pool->contains(entity)) ? std::addressof(pool->get(entity)) : nullptr};
     } else {
       return std::make_tuple(try_get<Type>(entity)...);
     }
@@ -222,7 +222,7 @@ public:
   template<typename... Type>
   [[nodiscard]] auto try_get([[maybe_unused]] const entity_type entity) -> decltype(auto) {
     if constexpr (sizeof...(Type) == 1u) {
-      return (const_cast<Type*>(std::as_const(*this).template try_get<Type>(entity)), ...);
+      return (memory::observer_ptr<Type>{const_cast<Type*>(std::as_const(*this).template try_get<Type>(entity).get())}, ...);
     } else {
       return std::make_tuple(try_get<Type>(entity)...);
     }

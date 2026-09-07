@@ -204,6 +204,87 @@ namespace Sbx.Managed
       return methodInfo;
     }
 
+    // Resolves (InObjectHandle's type, InMethodName, signature) to a stable int handle -- once per
+    // unique signature, reusing TypeInterface's own reflection-handle cache (UniqueIdList<MethodInfo>
+    // keyed by the MethodInfo's own identity hash, so a method already handed out a handle via
+    // GetTypeMethods gets that same handle here too). InvokeMethodHandle/InvokeMethodHandleRet then
+    // skip TryGetMethodInfo (and the NativeString/MethodKey allocation it costs) entirely on every
+    // call after the first -- see object::_invoke_method_internal's doc comment on the native side.
+    [UnmanagedCallersOnly]
+    internal static unsafe int GetMethodHandle(IntPtr InObjectHandle, NativeString InMethodName, ManagedType* InParameterTypes, int InParameterCount)
+    {
+      try
+      {
+        var target = GCHandle.FromIntPtr(InObjectHandle).Target;
+
+        if (target == null)
+        {
+          LogMessage($"Cannot resolve method handle for {InMethodName} on a null target.", MessageLevel.Error);
+          return -1;
+        }
+
+        var methodInfo = TryGetMethodInfo(target.GetType(), InMethodName, InParameterTypes, InParameterCount, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+
+        return methodInfo == null ? -1 : TypeInterface._cachedMethods.Add(methodInfo);
+      }
+      catch (Exception ex)
+      {
+        HandleException(ex);
+        return -1;
+      }
+    }
+
+    [UnmanagedCallersOnly]
+    internal static unsafe void InvokeMethodHandle(IntPtr InObjectHandle, int InMethodHandle, IntPtr InParameters, int InParameterCount)
+    {
+      try
+      {
+        var target = GCHandle.FromIntPtr(InObjectHandle).Target;
+
+        if (target == null || !TypeInterface._cachedMethods.TryGetValue(InMethodHandle, out var methodInfo) || methodInfo == null)
+        {
+          LogMessage($"Cannot invoke method handle {InMethodHandle} on object with handle {InObjectHandle}. Target or method was null.", MessageLevel.Error);
+          return;
+        }
+
+        var parameters = Marshalling.MarshalParameterArray(InParameters, InParameterCount, methodInfo);
+
+        methodInfo.Invoke(target, parameters);
+      }
+      catch (Exception ex)
+      {
+        HandleException(ex);
+      }
+    }
+
+    [UnmanagedCallersOnly]
+    internal static unsafe void InvokeMethodHandleRet(IntPtr InObjectHandle, int InMethodHandle, IntPtr InParameters, int InParameterCount, IntPtr InResultStorage)
+    {
+      try
+      {
+        var target = GCHandle.FromIntPtr(InObjectHandle).Target;
+
+        if (target == null || !TypeInterface._cachedMethods.TryGetValue(InMethodHandle, out var methodInfo) || methodInfo == null)
+        {
+          LogMessage($"Cannot invoke method handle {InMethodHandle} on object with handle {InObjectHandle}. Target or method was null.", MessageLevel.Error);
+          return;
+        }
+
+        var methodParameters = Marshalling.MarshalParameterArray(InParameters, InParameterCount, methodInfo);
+
+        object? value = methodInfo.Invoke(target, methodParameters);
+
+        if (value == null)
+          return;
+
+        Marshalling.MarshalReturnValue(target, value, methodInfo, InResultStorage);
+      }
+      catch (Exception ex)
+      {
+        HandleException(ex);
+      }
+    }
+
     [UnmanagedCallersOnly]
     internal static unsafe void InvokeStaticMethod(int InType, NativeString InMethodName, IntPtr InParameters, ManagedType* InParameterTypes, int InParameterCount)
     {

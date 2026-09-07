@@ -760,8 +760,8 @@ auto interop::node_destroy(std::uint64_t uuid) -> void {
   // Mirrors scripting_module::detach_script's "OnDestroy before the instance goes away" ordering --
   // destroying the node out from under a live script instance with no notification would otherwise
   // silently drop it, same concern run_on_destroy's doc comment raises for a full scene teardown.
-  if (node.has_component<scripting::scripts>()) {
-    for (auto& instance : node.get_component<scripting::scripts>().instances) {
+  if (auto scripts = node.try_get_component<scripting::scripts>()) {
+    for (auto& instance : scripts->instances) {
       instance.invoke("OnDestroy");
     }
   }
@@ -1526,364 +1526,403 @@ auto resolve_node(std::uint64_t uuid) -> scenes::node {
 
 auto interop::canvas_get_sort_order(std::uint64_t uuid, std::int32_t* out_value) -> void {
   auto node = resolve_node(uuid);
+  auto component = node.try_get_component<canvas::canvas>();
 
-  if (!out_value || !node.is_valid() || !node.has_component<canvas::canvas>()) {
+  if (!out_value || !node.is_valid() || !component) {
     return;
   }
 
-  *out_value = node.get_component<canvas::canvas>().sort_order;
+  *out_value = component->sort_order;
 }
 
 auto interop::canvas_set_sort_order(std::uint64_t uuid, std::int32_t value) -> void {
   auto node = resolve_node(uuid);
+  auto component = node.try_get_component<canvas::canvas>();
 
-  if (!node.is_valid() || !node.has_component<canvas::canvas>()) {
+  if (!node.is_valid() || !component) {
     return;
   }
 
-  node.get_component<canvas::canvas>().sort_order = value;
+  component->sort_order = value;
 }
 
 auto interop::rect_transform_get_anchor_min(std::uint64_t uuid, math::vector2* out_value) -> void {
   auto node = resolve_node(uuid);
+  auto component = node.try_get_component<canvas::rect_transform>();
 
-  if (!out_value || !node.is_valid() || !node.has_component<canvas::rect_transform>()) {
+  if (!out_value || !node.is_valid() || !component) {
     return;
   }
 
-  *out_value = node.get_component<canvas::rect_transform>().anchor_min;
+  *out_value = component->anchor_min;
 }
 
 auto interop::rect_transform_set_anchor_min(std::uint64_t uuid, math::vector2* value) -> void {
   auto node = resolve_node(uuid);
+  auto component = node.try_get_component<canvas::rect_transform>();
 
-  if (!value || !node.is_valid() || !node.has_component<canvas::rect_transform>()) {
+  if (!value || !node.is_valid() || !component) {
     return;
   }
 
-  node.get_component<canvas::rect_transform>().anchor_min = *value;
+  component->anchor_min = *value;
 }
 
 auto interop::rect_transform_get_anchor_max(std::uint64_t uuid, math::vector2* out_value) -> void {
   auto node = resolve_node(uuid);
+  auto component = node.try_get_component<canvas::rect_transform>();
 
-  if (!out_value || !node.is_valid() || !node.has_component<canvas::rect_transform>()) {
+  if (!out_value || !node.is_valid() || !component) {
     return;
   }
 
-  *out_value = node.get_component<canvas::rect_transform>().anchor_max;
+  *out_value = component->anchor_max;
 }
 
 auto interop::rect_transform_set_anchor_max(std::uint64_t uuid, math::vector2* value) -> void {
   auto node = resolve_node(uuid);
+  auto component = node.try_get_component<canvas::rect_transform>();
 
-  if (!value || !node.is_valid() || !node.has_component<canvas::rect_transform>()) {
+  if (!value || !node.is_valid() || !component) {
     return;
   }
 
-  node.get_component<canvas::rect_transform>().anchor_max = *value;
+  component->anchor_max = *value;
 }
 
 auto interop::rect_transform_get_anchored_position(std::uint64_t uuid, math::vector2* out_value) -> void {
   auto node = resolve_node(uuid);
+  auto component = node.try_get_component<canvas::rect_transform>();
 
-  if (!out_value || !node.is_valid() || !node.has_component<canvas::rect_transform>()) {
+  if (!out_value || !node.is_valid() || !component) {
     return;
   }
 
-  *out_value = node.get_component<canvas::rect_transform>().anchored_position;
+  *out_value = component->anchored_position;
 }
 
 auto interop::rect_transform_set_anchored_position(std::uint64_t uuid, math::vector2* value) -> void {
   auto node = resolve_node(uuid);
+  auto component = node.try_get_component<canvas::rect_transform>();
 
-  if (!value || !node.is_valid() || !node.has_component<canvas::rect_transform>()) {
+  if (!value || !node.is_valid() || !component) {
     return;
   }
 
-  node.get_component<canvas::rect_transform>().anchored_position = *value;
+  component->anchored_position = *value;
 }
 
 auto interop::rect_transform_get_size_delta(std::uint64_t uuid, math::vector2* out_value) -> void {
   auto node = resolve_node(uuid);
+  auto component = node.try_get_component<canvas::rect_transform>();
 
-  if (!out_value || !node.is_valid() || !node.has_component<canvas::rect_transform>()) {
+  if (!out_value || !node.is_valid() || !component) {
     return;
   }
 
-  *out_value = node.get_component<canvas::rect_transform>().size_delta;
+  *out_value = component->size_delta;
 }
 
 auto interop::rect_transform_set_size_delta(std::uint64_t uuid, math::vector2* value) -> void {
   auto node = resolve_node(uuid);
+  auto component = node.try_get_component<canvas::rect_transform>();
 
-  if (!value || !node.is_valid() || !node.has_component<canvas::rect_transform>()) {
+  if (!value || !node.is_valid() || !component) {
     return;
   }
 
-  node.get_component<canvas::rect_transform>().size_delta = *value;
+  component->size_delta = *value;
 }
 
 auto interop::rect_transform_get_pivot(std::uint64_t uuid, math::vector2* out_value) -> void {
   auto node = resolve_node(uuid);
+  auto component = node.try_get_component<canvas::rect_transform>();
 
-  if (!out_value || !node.is_valid() || !node.has_component<canvas::rect_transform>()) {
+  if (!out_value || !node.is_valid() || !component) {
     return;
   }
 
-  *out_value = node.get_component<canvas::rect_transform>().pivot;
+  *out_value = component->pivot;
 }
 
 auto interop::rect_transform_set_pivot(std::uint64_t uuid, math::vector2* value) -> void {
   auto node = resolve_node(uuid);
+  auto component = node.try_get_component<canvas::rect_transform>();
 
-  if (!value || !node.is_valid() || !node.has_component<canvas::rect_transform>()) {
+  if (!value || !node.is_valid() || !component) {
     return;
   }
 
-  node.get_component<canvas::rect_transform>().pivot = *value;
+  component->pivot = *value;
 }
 
 auto interop::ui_image_get_tint(std::uint64_t uuid, math::color* out_value) -> void {
   auto node = resolve_node(uuid);
+  auto component = node.try_get_component<canvas::ui_image>();
 
-  if (!out_value || !node.is_valid() || !node.has_component<canvas::ui_image>()) {
+  if (!out_value || !node.is_valid() || !component) {
     return;
   }
 
-  *out_value = node.get_component<canvas::ui_image>().tint;
+  *out_value = component->tint;
 }
 
 auto interop::ui_image_set_tint(std::uint64_t uuid, math::color* value) -> void {
   auto node = resolve_node(uuid);
+  auto component = node.try_get_component<canvas::ui_image>();
 
-  if (!value || !node.is_valid() || !node.has_component<canvas::ui_image>()) {
+  if (!value || !node.is_valid() || !component) {
     return;
   }
 
-  node.get_component<canvas::ui_image>().tint = *value;
+  component->tint = *value;
 }
 
 auto interop::ui_text_get_text(std::uint64_t uuid) -> managed::string {
   auto node = resolve_node(uuid);
+  auto component = node.try_get_component<canvas::ui_text>();
 
-  if (!node.is_valid() || !node.has_component<canvas::ui_text>()) {
+  if (!node.is_valid() || !component) {
     return managed::string::create("");
   }
 
-  return managed::string::create(node.get_component<canvas::ui_text>().text);
+  return managed::string::create(component->text);
 }
 
 auto interop::ui_text_set_text(std::uint64_t uuid, managed::string value) -> void {
   auto node = resolve_node(uuid);
+  auto component = node.try_get_component<canvas::ui_text>();
 
-  if (!node.is_valid() || !node.has_component<canvas::ui_text>()) {
+  if (!node.is_valid() || !component) {
     return;
   }
 
-  node.get_component<canvas::ui_text>().text = std::string{value};
+  component->text = std::string{value};
 }
 
 auto interop::ui_text_get_font_size(std::uint64_t uuid, std::float_t* out_value) -> void {
   auto node = resolve_node(uuid);
+  auto component = node.try_get_component<canvas::ui_text>();
 
-  if (!out_value || !node.is_valid() || !node.has_component<canvas::ui_text>()) {
+  if (!out_value || !node.is_valid() || !component) {
     return;
   }
 
-  *out_value = node.get_component<canvas::ui_text>().font_size;
+  *out_value = component->font_size;
 }
 
 auto interop::ui_text_set_font_size(std::uint64_t uuid, std::float_t value) -> void {
   auto node = resolve_node(uuid);
+  auto component = node.try_get_component<canvas::ui_text>();
 
-  if (!node.is_valid() || !node.has_component<canvas::ui_text>()) {
+  if (!node.is_valid() || !component) {
     return;
   }
 
-  node.get_component<canvas::ui_text>().font_size = value;
+  component->font_size = value;
 }
 
 auto interop::ui_text_get_color(std::uint64_t uuid, math::color* out_value) -> void {
   auto node = resolve_node(uuid);
+  auto component = node.try_get_component<canvas::ui_text>();
 
-  if (!out_value || !node.is_valid() || !node.has_component<canvas::ui_text>()) {
+  if (!out_value || !node.is_valid() || !component) {
     return;
   }
 
-  *out_value = node.get_component<canvas::ui_text>().color;
+  *out_value = component->color;
 }
 
 auto interop::ui_text_set_color(std::uint64_t uuid, math::color* value) -> void {
   auto node = resolve_node(uuid);
+  auto component = node.try_get_component<canvas::ui_text>();
 
-  if (!value || !node.is_valid() || !node.has_component<canvas::ui_text>()) {
+  if (!value || !node.is_valid() || !component) {
     return;
   }
 
-  node.get_component<canvas::ui_text>().color = *value;
+  component->color = *value;
 }
 
 auto interop::ui_button_get_interactable(std::uint64_t uuid) -> bool {
   auto node = resolve_node(uuid);
+  auto component = node.try_get_component<canvas::ui_button>();
 
-  return node.is_valid() && node.has_component<canvas::ui_button>() && node.get_component<canvas::ui_button>().interactable;
+  return node.is_valid() && component && component->interactable;
 }
 
 auto interop::ui_button_set_interactable(std::uint64_t uuid, bool value) -> void {
   auto node = resolve_node(uuid);
+  auto component = node.try_get_component<canvas::ui_button>();
 
-  if (!node.is_valid() || !node.has_component<canvas::ui_button>()) {
+  if (!node.is_valid() || !component) {
     return;
   }
 
-  node.get_component<canvas::ui_button>().interactable = value;
+  component->interactable = value;
 }
 
 auto interop::ui_button_get_normal_color(std::uint64_t uuid, math::color* out_value) -> void {
   auto node = resolve_node(uuid);
+  auto component = node.try_get_component<canvas::ui_button>();
 
-  if (!out_value || !node.is_valid() || !node.has_component<canvas::ui_button>()) {
+  if (!out_value || !node.is_valid() || !component) {
     return;
   }
 
-  *out_value = node.get_component<canvas::ui_button>().normal_color;
+  *out_value = component->normal_color;
 }
 
 auto interop::ui_button_set_normal_color(std::uint64_t uuid, math::color* value) -> void {
   auto node = resolve_node(uuid);
+  auto component = node.try_get_component<canvas::ui_button>();
 
-  if (!value || !node.is_valid() || !node.has_component<canvas::ui_button>()) {
+  if (!value || !node.is_valid() || !component) {
     return;
   }
 
-  node.get_component<canvas::ui_button>().normal_color = *value;
+  component->normal_color = *value;
 }
 
 auto interop::ui_button_get_hovered_color(std::uint64_t uuid, math::color* out_value) -> void {
   auto node = resolve_node(uuid);
+  auto component = node.try_get_component<canvas::ui_button>();
 
-  if (!out_value || !node.is_valid() || !node.has_component<canvas::ui_button>()) {
+  if (!out_value || !node.is_valid() || !component) {
     return;
   }
 
-  *out_value = node.get_component<canvas::ui_button>().hovered_color;
+  *out_value = component->hovered_color;
 }
 
 auto interop::ui_button_set_hovered_color(std::uint64_t uuid, math::color* value) -> void {
   auto node = resolve_node(uuid);
+  auto component = node.try_get_component<canvas::ui_button>();
 
-  if (!value || !node.is_valid() || !node.has_component<canvas::ui_button>()) {
+  if (!value || !node.is_valid() || !component) {
     return;
   }
 
-  node.get_component<canvas::ui_button>().hovered_color = *value;
+  component->hovered_color = *value;
 }
 
 auto interop::ui_button_get_pressed_color(std::uint64_t uuid, math::color* out_value) -> void {
   auto node = resolve_node(uuid);
+  auto component = node.try_get_component<canvas::ui_button>();
 
-  if (!out_value || !node.is_valid() || !node.has_component<canvas::ui_button>()) {
+  if (!out_value || !node.is_valid() || !component) {
     return;
   }
 
-  *out_value = node.get_component<canvas::ui_button>().pressed_color;
+  *out_value = component->pressed_color;
 }
 
 auto interop::ui_button_set_pressed_color(std::uint64_t uuid, math::color* value) -> void {
   auto node = resolve_node(uuid);
+  auto component = node.try_get_component<canvas::ui_button>();
 
-  if (!value || !node.is_valid() || !node.has_component<canvas::ui_button>()) {
+  if (!value || !node.is_valid() || !component) {
     return;
   }
 
-  node.get_component<canvas::ui_button>().pressed_color = *value;
+  component->pressed_color = *value;
 }
 
 auto interop::ui_button_get_is_hovered(std::uint64_t uuid) -> bool {
   auto node = resolve_node(uuid);
+  auto component = node.try_get_component<canvas::ui_button>();
 
-  return node.is_valid() && node.has_component<canvas::ui_button>() && node.get_component<canvas::ui_button>().is_hovered;
+  return node.is_valid() && component && component->is_hovered;
 }
 
 auto interop::ui_button_get_is_pressed(std::uint64_t uuid) -> bool {
   auto node = resolve_node(uuid);
+  auto component = node.try_get_component<canvas::ui_button>();
 
-  return node.is_valid() && node.has_component<canvas::ui_button>() && node.get_component<canvas::ui_button>().is_pressed;
+  return node.is_valid() && component && component->is_pressed;
 }
 
 auto interop::ui_button_get_was_clicked(std::uint64_t uuid) -> bool {
   auto node = resolve_node(uuid);
+  auto component = node.try_get_component<canvas::ui_button>();
 
-  return node.is_valid() && node.has_component<canvas::ui_button>() && node.get_component<canvas::ui_button>().was_clicked;
+  return node.is_valid() && component && component->was_clicked;
 }
 
 auto interop::canvas_group_get_alpha(std::uint64_t uuid, std::float_t* out_value) -> void {
   auto node = resolve_node(uuid);
+  auto component = node.try_get_component<canvas::canvas_group>();
 
-  if (!out_value || !node.is_valid() || !node.has_component<canvas::canvas_group>()) {
+  if (!out_value || !node.is_valid() || !component) {
     return;
   }
 
-  *out_value = node.get_component<canvas::canvas_group>().alpha;
+  *out_value = component->alpha;
 }
 
 auto interop::canvas_group_set_alpha(std::uint64_t uuid, std::float_t value) -> void {
   auto node = resolve_node(uuid);
+  auto component = node.try_get_component<canvas::canvas_group>();
 
-  if (!node.is_valid() || !node.has_component<canvas::canvas_group>()) {
+  if (!node.is_valid() || !component) {
     return;
   }
 
-  node.get_component<canvas::canvas_group>().alpha = value;
+  component->alpha = value;
 }
 
 auto interop::canvas_group_get_interactable(std::uint64_t uuid) -> bool {
   auto node = resolve_node(uuid);
+  auto component = node.try_get_component<canvas::canvas_group>();
 
-  return node.is_valid() && node.has_component<canvas::canvas_group>() && node.get_component<canvas::canvas_group>().interactable;
+  return node.is_valid() && component && component->interactable;
 }
 
 auto interop::canvas_group_set_interactable(std::uint64_t uuid, bool value) -> void {
   auto node = resolve_node(uuid);
+  auto component = node.try_get_component<canvas::canvas_group>();
 
-  if (!node.is_valid() || !node.has_component<canvas::canvas_group>()) {
+  if (!node.is_valid() || !component) {
     return;
   }
 
-  node.get_component<canvas::canvas_group>().interactable = value;
+  component->interactable = value;
 }
 
 auto interop::canvas_group_get_blocks_raycasts(std::uint64_t uuid) -> bool {
   auto node = resolve_node(uuid);
+  auto component = node.try_get_component<canvas::canvas_group>();
 
-  return node.is_valid() && node.has_component<canvas::canvas_group>() && node.get_component<canvas::canvas_group>().blocks_raycasts;
+  return node.is_valid() && component && component->blocks_raycasts;
 }
 
 auto interop::canvas_group_set_blocks_raycasts(std::uint64_t uuid, bool value) -> void {
   auto node = resolve_node(uuid);
+  auto component = node.try_get_component<canvas::canvas_group>();
 
-  if (!node.is_valid() || !node.has_component<canvas::canvas_group>()) {
+  if (!node.is_valid() || !component) {
     return;
   }
 
-  node.get_component<canvas::canvas_group>().blocks_raycasts = value;
+  component->blocks_raycasts = value;
 }
 
 auto interop::canvas_group_get_ignore_parent_groups(std::uint64_t uuid) -> bool {
   auto node = resolve_node(uuid);
+  auto component = node.try_get_component<canvas::canvas_group>();
 
-  return node.is_valid() && node.has_component<canvas::canvas_group>() && node.get_component<canvas::canvas_group>().ignore_parent_groups;
+  return node.is_valid() && component && component->ignore_parent_groups;
 }
 
 auto interop::canvas_group_set_ignore_parent_groups(std::uint64_t uuid, bool value) -> void {
   auto node = resolve_node(uuid);
+  auto component = node.try_get_component<canvas::canvas_group>();
 
-  if (!node.is_valid() || !node.has_component<canvas::canvas_group>()) {
+  if (!node.is_valid() || !component) {
     return;
   }
 
-  node.get_component<canvas::canvas_group>().ignore_parent_groups = value;
+  component->ignore_parent_groups = value;
 }
 
 auto interop::canvas_wants_pointer_capture() -> bool {
@@ -1894,250 +1933,278 @@ auto interop::canvas_wants_pointer_capture() -> bool {
 
 auto interop::ui_toggle_get_is_on(std::uint64_t uuid) -> bool {
   auto node = resolve_node(uuid);
+  auto component = node.try_get_component<canvas::ui_toggle>();
 
-  return node.is_valid() && node.has_component<canvas::ui_toggle>() && node.get_component<canvas::ui_toggle>().is_on;
+  return node.is_valid() && component && component->is_on;
 }
 
 auto interop::ui_toggle_set_is_on(std::uint64_t uuid, bool value) -> void {
   auto node = resolve_node(uuid);
+  auto component = node.try_get_component<canvas::ui_toggle>();
 
-  if (!node.is_valid() || !node.has_component<canvas::ui_toggle>()) {
+  if (!node.is_valid() || !component) {
     return;
   }
 
-  node.get_component<canvas::ui_toggle>().is_on = value;
+  component->is_on = value;
 }
 
 auto interop::ui_toggle_get_interactable(std::uint64_t uuid) -> bool {
   auto node = resolve_node(uuid);
+  auto component = node.try_get_component<canvas::ui_toggle>();
 
-  return node.is_valid() && node.has_component<canvas::ui_toggle>() && node.get_component<canvas::ui_toggle>().interactable;
+  return node.is_valid() && component && component->interactable;
 }
 
 auto interop::ui_toggle_set_interactable(std::uint64_t uuid, bool value) -> void {
   auto node = resolve_node(uuid);
+  auto component = node.try_get_component<canvas::ui_toggle>();
 
-  if (!node.is_valid() || !node.has_component<canvas::ui_toggle>()) {
+  if (!node.is_valid() || !component) {
     return;
   }
 
-  node.get_component<canvas::ui_toggle>().interactable = value;
+  component->interactable = value;
 }
 
 auto interop::ui_slider_get_value(std::uint64_t uuid, std::float_t* out_value) -> void {
   auto node = resolve_node(uuid);
+  auto component = node.try_get_component<canvas::ui_slider>();
 
-  if (!out_value || !node.is_valid() || !node.has_component<canvas::ui_slider>()) {
+  if (!out_value || !node.is_valid() || !component) {
     return;
   }
 
-  *out_value = node.get_component<canvas::ui_slider>().value;
+  *out_value = component->value;
 }
 
 auto interop::ui_slider_set_value(std::uint64_t uuid, std::float_t value) -> void {
   auto node = resolve_node(uuid);
+  auto component = node.try_get_component<canvas::ui_slider>();
 
-  if (!node.is_valid() || !node.has_component<canvas::ui_slider>()) {
+  if (!node.is_valid() || !component) {
     return;
   }
 
-  node.get_component<canvas::ui_slider>().value = value;
+  component->value = value;
 }
 
 auto interop::ui_slider_get_min_value(std::uint64_t uuid, std::float_t* out_value) -> void {
   auto node = resolve_node(uuid);
+  auto component = node.try_get_component<canvas::ui_slider>();
 
-  if (!out_value || !node.is_valid() || !node.has_component<canvas::ui_slider>()) {
+  if (!out_value || !node.is_valid() || !component) {
     return;
   }
 
-  *out_value = node.get_component<canvas::ui_slider>().min_value;
+  *out_value = component->min_value;
 }
 
 auto interop::ui_slider_set_min_value(std::uint64_t uuid, std::float_t value) -> void {
   auto node = resolve_node(uuid);
+  auto component = node.try_get_component<canvas::ui_slider>();
 
-  if (!node.is_valid() || !node.has_component<canvas::ui_slider>()) {
+  if (!node.is_valid() || !component) {
     return;
   }
 
-  node.get_component<canvas::ui_slider>().min_value = value;
+  component->min_value = value;
 }
 
 auto interop::ui_slider_get_max_value(std::uint64_t uuid, std::float_t* out_value) -> void {
   auto node = resolve_node(uuid);
+  auto component = node.try_get_component<canvas::ui_slider>();
 
-  if (!out_value || !node.is_valid() || !node.has_component<canvas::ui_slider>()) {
+  if (!out_value || !node.is_valid() || !component) {
     return;
   }
 
-  *out_value = node.get_component<canvas::ui_slider>().max_value;
+  *out_value = component->max_value;
 }
 
 auto interop::ui_slider_set_max_value(std::uint64_t uuid, std::float_t value) -> void {
   auto node = resolve_node(uuid);
+  auto component = node.try_get_component<canvas::ui_slider>();
 
-  if (!node.is_valid() || !node.has_component<canvas::ui_slider>()) {
+  if (!node.is_valid() || !component) {
     return;
   }
 
-  node.get_component<canvas::ui_slider>().max_value = value;
+  component->max_value = value;
 }
 
 auto interop::ui_slider_get_whole_numbers(std::uint64_t uuid) -> bool {
   auto node = resolve_node(uuid);
+  auto component = node.try_get_component<canvas::ui_slider>();
 
-  return node.is_valid() && node.has_component<canvas::ui_slider>() && node.get_component<canvas::ui_slider>().whole_numbers;
+  return node.is_valid() && component && component->whole_numbers;
 }
 
 auto interop::ui_slider_set_whole_numbers(std::uint64_t uuid, bool value) -> void {
   auto node = resolve_node(uuid);
+  auto component = node.try_get_component<canvas::ui_slider>();
 
-  if (!node.is_valid() || !node.has_component<canvas::ui_slider>()) {
+  if (!node.is_valid() || !component) {
     return;
   }
 
-  node.get_component<canvas::ui_slider>().whole_numbers = value;
+  component->whole_numbers = value;
 }
 
 auto interop::ui_slider_get_interactable(std::uint64_t uuid) -> bool {
   auto node = resolve_node(uuid);
+  auto component = node.try_get_component<canvas::ui_slider>();
 
-  return node.is_valid() && node.has_component<canvas::ui_slider>() && node.get_component<canvas::ui_slider>().interactable;
+  return node.is_valid() && component && component->interactable;
 }
 
 auto interop::ui_slider_set_interactable(std::uint64_t uuid, bool value) -> void {
   auto node = resolve_node(uuid);
+  auto component = node.try_get_component<canvas::ui_slider>();
 
-  if (!node.is_valid() || !node.has_component<canvas::ui_slider>()) {
+  if (!node.is_valid() || !component) {
     return;
   }
 
-  node.get_component<canvas::ui_slider>().interactable = value;
+  component->interactable = value;
 }
 
 auto interop::ui_scrollbar_get_value(std::uint64_t uuid, std::float_t* out_value) -> void {
   auto node = resolve_node(uuid);
+  auto component = node.try_get_component<canvas::ui_scrollbar>();
 
-  if (!out_value || !node.is_valid() || !node.has_component<canvas::ui_scrollbar>()) {
+  if (!out_value || !node.is_valid() || !component) {
     return;
   }
 
-  *out_value = node.get_component<canvas::ui_scrollbar>().value;
+  *out_value = component->value;
 }
 
 auto interop::ui_scrollbar_set_value(std::uint64_t uuid, std::float_t value) -> void {
   auto node = resolve_node(uuid);
+  auto component = node.try_get_component<canvas::ui_scrollbar>();
 
-  if (!node.is_valid() || !node.has_component<canvas::ui_scrollbar>()) {
+  if (!node.is_valid() || !component) {
     return;
   }
 
-  node.get_component<canvas::ui_scrollbar>().value = value;
+  component->value = value;
 }
 
 auto interop::ui_scrollbar_get_size(std::uint64_t uuid, std::float_t* out_value) -> void {
   auto node = resolve_node(uuid);
+  auto component = node.try_get_component<canvas::ui_scrollbar>();
 
-  if (!out_value || !node.is_valid() || !node.has_component<canvas::ui_scrollbar>()) {
+  if (!out_value || !node.is_valid() || !component) {
     return;
   }
 
-  *out_value = node.get_component<canvas::ui_scrollbar>().size;
+  *out_value = component->size;
 }
 
 auto interop::ui_scrollbar_set_size(std::uint64_t uuid, std::float_t value) -> void {
   auto node = resolve_node(uuid);
+  auto component = node.try_get_component<canvas::ui_scrollbar>();
 
-  if (!node.is_valid() || !node.has_component<canvas::ui_scrollbar>()) {
+  if (!node.is_valid() || !component) {
     return;
   }
 
-  node.get_component<canvas::ui_scrollbar>().size = value;
+  component->size = value;
 }
 
 auto interop::ui_scrollbar_get_interactable(std::uint64_t uuid) -> bool {
   auto node = resolve_node(uuid);
+  auto component = node.try_get_component<canvas::ui_scrollbar>();
 
-  return node.is_valid() && node.has_component<canvas::ui_scrollbar>() && node.get_component<canvas::ui_scrollbar>().interactable;
+  return node.is_valid() && component && component->interactable;
 }
 
 auto interop::ui_scrollbar_set_interactable(std::uint64_t uuid, bool value) -> void {
   auto node = resolve_node(uuid);
+  auto component = node.try_get_component<canvas::ui_scrollbar>();
 
-  if (!node.is_valid() || !node.has_component<canvas::ui_scrollbar>()) {
+  if (!node.is_valid() || !component) {
     return;
   }
 
-  node.get_component<canvas::ui_scrollbar>().interactable = value;
+  component->interactable = value;
 }
 
 auto interop::ui_scroll_rect_get_normalized_position(std::uint64_t uuid, math::vector2* out_value) -> void {
   auto node = resolve_node(uuid);
+  auto component = node.try_get_component<canvas::ui_scroll_rect>();
 
-  if (!out_value || !node.is_valid() || !node.has_component<canvas::ui_scroll_rect>()) {
+  if (!out_value || !node.is_valid() || !component) {
     return;
   }
 
-  *out_value = node.get_component<canvas::ui_scroll_rect>().normalized_position;
+  *out_value = component->normalized_position;
 }
 
 auto interop::ui_scroll_rect_set_normalized_position(std::uint64_t uuid, math::vector2* value) -> void {
   auto node = resolve_node(uuid);
+  auto component = node.try_get_component<canvas::ui_scroll_rect>();
 
-  if (!value || !node.is_valid() || !node.has_component<canvas::ui_scroll_rect>()) {
+  if (!value || !node.is_valid() || !component) {
     return;
   }
 
-  node.get_component<canvas::ui_scroll_rect>().normalized_position = *value;
+  component->normalized_position = *value;
 }
 
 auto interop::ui_scroll_rect_get_horizontal(std::uint64_t uuid) -> bool {
   auto node = resolve_node(uuid);
+  auto component = node.try_get_component<canvas::ui_scroll_rect>();
 
-  return node.is_valid() && node.has_component<canvas::ui_scroll_rect>() && node.get_component<canvas::ui_scroll_rect>().horizontal;
+  return node.is_valid() && component && component->horizontal;
 }
 
 auto interop::ui_scroll_rect_set_horizontal(std::uint64_t uuid, bool value) -> void {
   auto node = resolve_node(uuid);
+  auto component = node.try_get_component<canvas::ui_scroll_rect>();
 
-  if (!node.is_valid() || !node.has_component<canvas::ui_scroll_rect>()) {
+  if (!node.is_valid() || !component) {
     return;
   }
 
-  node.get_component<canvas::ui_scroll_rect>().horizontal = value;
+  component->horizontal = value;
 }
 
 auto interop::ui_scroll_rect_get_vertical(std::uint64_t uuid) -> bool {
   auto node = resolve_node(uuid);
+  auto component = node.try_get_component<canvas::ui_scroll_rect>();
 
-  return node.is_valid() && node.has_component<canvas::ui_scroll_rect>() && node.get_component<canvas::ui_scroll_rect>().vertical;
+  return node.is_valid() && component && component->vertical;
 }
 
 auto interop::ui_scroll_rect_set_vertical(std::uint64_t uuid, bool value) -> void {
   auto node = resolve_node(uuid);
+  auto component = node.try_get_component<canvas::ui_scroll_rect>();
 
-  if (!node.is_valid() || !node.has_component<canvas::ui_scroll_rect>()) {
+  if (!node.is_valid() || !component) {
     return;
   }
 
-  node.get_component<canvas::ui_scroll_rect>().vertical = value;
+  component->vertical = value;
 }
 
 auto interop::ui_mask_get_show_mask_graphic(std::uint64_t uuid) -> bool {
   auto node = resolve_node(uuid);
+  auto component = node.try_get_component<canvas::ui_mask>();
 
-  return node.is_valid() && node.has_component<canvas::ui_mask>() && node.get_component<canvas::ui_mask>().show_mask_graphic;
+  return node.is_valid() && component && component->show_mask_graphic;
 }
 
 auto interop::ui_mask_set_show_mask_graphic(std::uint64_t uuid, bool value) -> void {
   auto node = resolve_node(uuid);
+  auto component = node.try_get_component<canvas::ui_mask>();
 
-  if (!node.is_valid() || !node.has_component<canvas::ui_mask>()) {
+  if (!node.is_valid() || !component) {
     return;
   }
 
-  node.get_component<canvas::ui_mask>().show_mask_graphic = value;
+  component->show_mask_graphic = value;
 }
 
 } // namespace sbx::scripting

@@ -463,7 +463,7 @@ auto command_buffer::fill_buffer(const VkBuffer& buffer, VkDeviceSize offset, Vk
   vkCmdFillBuffer(_handle, buffer, offset, size, data);
 }
 
-auto command_buffer::push_constants(const VkPipelineLayout& layout, VkShaderStageFlags stage_flags, std::uint32_t offset, const std::array<std::byte, graphics::bindless_table::push_constant_size>& values) -> void {
+auto command_buffer::push_constants(const VkPipelineLayout& layout, VkShaderStageFlags stage_flags, std::uint32_t offset, std::span<const std::byte> values) -> void {
   vkCmdPushConstants(_handle, layout, stage_flags, offset, static_cast<std::uint32_t>(values.size()), values.data());
 }
 

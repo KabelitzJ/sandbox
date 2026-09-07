@@ -7,14 +7,16 @@
 #include <cmath>
 #include <cstddef>
 #include <cstring>
-#include <map>
 #include <string>
 #include <type_traits>
+#include <unordered_map>
 #include <utility>
 #include <variant>
 #include <vector>
 
 #include <libsbx/memory/alignment.hpp>
+
+#include <libsbx/utility/hash.hpp>
 
 #include <libsbx/math/vector3.hpp>
 #include <libsbx/math/matrix4x4.hpp>
@@ -554,9 +556,14 @@ auto scene_renderer_module::_evaluate_skeleton_pose(const assets::skeleton& skel
 
   // Seed every joint at bind pose first -- a clip's channels are sparse, so joints it doesn't
   // animate (and the whole skeleton, when there's no playing state at all) fall back to this.
-  auto translations = std::vector<math::vector3>(joint_count);
-  auto rotations = std::vector<math::quaternion>(joint_count);
-  auto scales = std::vector<math::vector3>(joint_count);
+  // Reused scratch storage (see the members' doc comment) instead of a fresh heap allocation per call.
+  auto& translations = _skeleton_scratch_translations;
+  auto& rotations = _skeleton_scratch_rotations;
+  auto& scales = _skeleton_scratch_scales;
+
+  translations.resize(joint_count);
+  rotations.resize(joint_count);
+  scales.resize(joint_count);
 
   for (auto index = std::size_t{0u}; index < joint_count; ++index) {
     const auto& joint = joints[index];
@@ -576,9 +583,13 @@ auto scene_renderer_module::_evaluate_skeleton_pose(const assets::skeleton& skel
   if (graph != nullptr && animator->transition_target_state_id.has_value() && animator->transition_target_clip.is_valid()) {
     const auto alpha = (animator->transition_duration > 0.0f) ? std::clamp(animator->transition_time / animator->transition_duration, 0.0f, 1.0f) : 1.0f;
 
-    auto target_translations = std::vector<math::vector3>(joint_count);
-    auto target_rotations = std::vector<math::quaternion>(joint_count);
-    auto target_scales = std::vector<math::vector3>(joint_count);
+    auto& target_translations = _skeleton_scratch_target_translations;
+    auto& target_rotations = _skeleton_scratch_target_rotations;
+    auto& target_scales = _skeleton_scratch_target_scales;
+
+    target_translations.resize(joint_count);
+    target_rotations.resize(joint_count);
+    target_scales.resize(joint_count);
 
     for (auto index = std::size_t{0u}; index < joint_count; ++index) {
       const auto& joint = joints[index];
@@ -596,7 +607,8 @@ auto scene_renderer_module::_evaluate_skeleton_pose(const assets::skeleton& skel
     }
   }
 
-  auto locals = std::vector<math::matrix4x4>(joint_count);
+  auto& locals = _skeleton_scratch_locals;
+  locals.resize(joint_count);
 
   for (auto index = std::size_t{0u}; index < joint_count; ++index) {
     locals[index] = compose_trs(translations[index], rotations[index], scales[index]);
@@ -659,6 +671,7 @@ auto scene_renderer_module::_build_packet() -> render_packet {
 
   auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
   auto& scene = scenes_module.active_scene();
+  auto& assets_module = core::engine::get_module<assets::assets_module>();
 
   packet.camera = _resolve_camera_data();
 
@@ -689,7 +702,13 @@ auto scene_renderer_module::_build_packet() -> render_packet {
     }
   }
 
-  auto opaque = std::map<mesh_key, draw_bucket>{};
+  // Accumulated unordered (a std::map here would pay a heap allocation plus a red-black-tree
+  // rebalance per unique key, every frame) then sorted once below -- restoring the mesh -> submesh
+  // -> material adjacency mesh_key::operator< defines, which submit_draw_commands' index-buffer
+  // rebind check relies on.
+  auto opaque = std::unordered_map<mesh_key, draw_bucket, mesh_key_hash>{};
+  opaque.reserve(_last_opaque_bucket_count);
+
   auto transparent = std::vector<transparent_entry>{};
 
   // Skinned instances (mesh_renderer + skeleton_pose) are handled in a separate pass below --
@@ -735,7 +754,12 @@ auto scene_renderer_module::_build_packet() -> render_packet {
   packet.opaque_commands.reserve(opaque.size());
   packet.shadow_caster_commands.reserve(opaque.size());
 
-  for (auto& [key, bucket] : opaque) {
+  _last_opaque_bucket_count = opaque.size();
+
+  auto ordered_opaque = std::vector<std::pair<mesh_key, draw_bucket>>{std::make_move_iterator(opaque.begin()), std::make_move_iterator(opaque.end())};
+  std::ranges::sort(ordered_opaque, [](const mesh_key& lhs, const mesh_key& rhs) { return lhs < rhs; }, &std::pair<mesh_key, draw_bucket>::first);
+
+  for (auto& [key, bucket] : ordered_opaque) {
     auto command = draw_command{};
     command.mesh = bucket.mesh;
     command.submesh_index = bucket.submesh_index;
@@ -743,6 +767,7 @@ auto scene_renderer_module::_build_packet() -> render_packet {
     command.instance_count = static_cast<std::uint32_t>(bucket.transforms.size());
     command.transform_offset = static_cast<std::uint32_t>(packet.transforms.size());
     command.pipeline_id = bucket.pipeline_id;
+    command.resident = assets_module.is_resident(bucket.mesh) && assets_module.is_resident(bucket.material);
 
     packet.transforms.insert(packet.transforms.end(), bucket.transforms.begin(), bucket.transforms.end());
 
@@ -763,6 +788,7 @@ auto scene_renderer_module::_build_packet() -> render_packet {
     command.instance_count = 1u;
     command.transform_offset = static_cast<std::uint32_t>(packet.transforms.size());
     command.pipeline_id = entry.pipeline_id;
+    command.resident = assets_module.is_resident(entry.mesh) && assets_module.is_resident(entry.material);
 
     packet.transforms.push_back(entry.transform);
     packet.transparent_commands.push_back(std::move(command));
@@ -780,14 +806,10 @@ auto scene_renderer_module::_build_packet() -> render_packet {
       continue;
     }
 
-    auto* animator_component = static_cast<scenes::animator*>(nullptr);
     auto node = scene.node_of(entity);
+    auto animator_component = node.try_get_component<scenes::animator>();
 
-    if (node.has_component<scenes::animator>()) {
-      animator_component = &node.get_component<scenes::animator>();
-    }
-
-    _evaluate_skeleton_pose(*pose.skeleton, renderer, animator_component, pose, animation_delta_time);
+    _evaluate_skeleton_pose(*pose.skeleton, renderer, animator_component.get(), pose, animation_delta_time);
 
     const auto instance_vertex_count = renderer.mesh->vertex_count();
 
@@ -831,6 +853,7 @@ auto scene_renderer_module::_build_packet() -> render_packet {
       command.transform_offset = static_cast<std::uint32_t>(packet.transforms.size());
       command.pipeline_id = material->is_double_sided() ? 1u : 0u;
       command.vertex_address_override = output_vertex_address;
+      command.resident = assets_module.is_resident(renderer.mesh) && assets_module.is_resident(material);
 
       packet.transforms.push_back(transform_data{world.matrix, math::matrix4x4::transposed(math::matrix4x4::inverted(world.matrix))});
 
@@ -899,15 +922,24 @@ auto scene_renderer_module::_build_packet() -> render_packet {
     out.outer_cos = std::cos(light.outer_angle);
   }
 
-  auto& assets_module = core::engine::get_module<assets::assets_module>();
-
   const auto delta_time = scenes_module.simulation_delta_time().value();
   const auto time = scenes_module.simulation_time().value();
 
   packet.delta_time = delta_time;
   packet.time = time;
 
-  auto billboard_buckets = std::map<std::pair<std::uint32_t, assets::emitter_blend_mode>, std::vector<particle_billboard_instance>>{};
+  // No index buffer/adjacency concern for billboards (drawn from a plain instance buffer, not an
+  // indexed mesh) -- unlike mesh_buckets below, iteration order genuinely doesn't matter here, so
+  // this stays an unordered_map with no sort-back-to-order step needed.
+  struct billboard_key_hash {
+    auto operator()(const std::pair<std::uint32_t, assets::emitter_blend_mode>& key) const noexcept -> std::size_t {
+      auto seed = std::hash<std::uint32_t>{}(key.first);
+      utility::hash_combine(seed, key.second);
+      return seed;
+    }
+  };
+
+  auto billboard_buckets = std::unordered_map<std::pair<std::uint32_t, assets::emitter_blend_mode>, std::vector<particle_billboard_instance>, billboard_key_hash>{};
 
   // mesh_key doesn't carry a blend mode (ordinary meshes are either fully opaque or fully
   // transparent, never author-chosen additive/alpha_blend) -- particles need one, so pair it here
@@ -915,6 +947,10 @@ auto scene_renderer_module::_build_packet() -> render_packet {
   struct particle_mesh_key {
     mesh_key key;
     assets::emitter_blend_mode blend_mode;
+
+    auto operator==(const particle_mesh_key& other) const -> bool {
+      return key == other.key && blend_mode == other.blend_mode;
+    }
 
     auto operator<(const particle_mesh_key& other) const -> bool {
       if (key < other.key) {
@@ -929,6 +965,14 @@ auto scene_renderer_module::_build_packet() -> render_packet {
     }
   };
 
+  struct particle_mesh_key_hash {
+    auto operator()(const particle_mesh_key& value) const noexcept -> std::size_t {
+      auto seed = mesh_key_hash{}(value.key);
+      utility::hash_combine(seed, value.blend_mode);
+      return seed;
+    }
+  };
+
   struct particle_mesh_bucket {
     assets::mesh_handle mesh;
     std::uint32_t submesh_index{0u};
@@ -937,8 +981,12 @@ auto scene_renderer_module::_build_packet() -> render_packet {
     std::vector<particle_mesh_instance> instances;
   };
 
-  auto mesh_buckets = std::map<particle_mesh_key, particle_mesh_bucket>{};
-  auto trail_buckets = std::map<assets::emitter_blend_mode, std::vector<trail_vertex>>{};
+  // Unlike billboard/trail buckets above/below, mesh_buckets is sorted back into mesh_key order
+  // once it's fully accumulated (same reasoning as the opaque bucket) -- particle_pass's mesh draw
+  // loop rebinds the index buffer on every mesh change, so keeping same-mesh submeshes adjacent
+  // still matters for draw-call efficiency even though correctness doesn't depend on it.
+  auto mesh_buckets = std::unordered_map<particle_mesh_key, particle_mesh_bucket, particle_mesh_key_hash>{};
+  auto trail_buckets = std::unordered_map<assets::emitter_blend_mode, std::vector<trail_vertex>>{};
 
   for (auto&& [entity, world, instance] : scene.query<scenes::world_transform, scenes::particle_effect>().each()) {
     if (!instance.effect.is_valid()) {
@@ -1088,7 +1136,10 @@ auto scene_renderer_module::_build_packet() -> render_packet {
     packet.particle_billboard_instances.insert(packet.particle_billboard_instances.end(), instances.begin(), instances.end());
   }
 
-  for (auto& [key, bucket] : mesh_buckets) {
+  auto ordered_mesh_buckets = std::vector<std::pair<particle_mesh_key, particle_mesh_bucket>>{std::make_move_iterator(mesh_buckets.begin()), std::make_move_iterator(mesh_buckets.end())};
+  std::ranges::sort(ordered_mesh_buckets, [](const particle_mesh_key& lhs, const particle_mesh_key& rhs) { return lhs < rhs; }, &std::pair<particle_mesh_key, particle_mesh_bucket>::first);
+
+  for (auto& [key, bucket] : ordered_mesh_buckets) {
     if (bucket.instances.empty()) {
       continue;
     }
