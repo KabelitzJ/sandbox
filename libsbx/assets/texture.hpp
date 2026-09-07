@@ -9,6 +9,7 @@
 #include <libsbx/math/uuid.hpp>
 
 #include <libsbx/assets/asset_handle.hpp>
+#include <libsbx/assets/loadable.hpp>
 
 namespace sbx::assets {
 
@@ -16,7 +17,7 @@ namespace sbx::assets {
  * @brief A loaded texture, identified by its bindless index. Valid to hold from load_texture().
  * Can be sampled only once resident.
  */
-class texture final {
+class texture final : public loadable {
 
   friend class asset_residency;
 

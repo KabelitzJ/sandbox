@@ -630,15 +630,10 @@ auto scene_renderer_module::_evaluate_skeleton_pose(const assets::skeleton& skel
     locals[index] = compose_trs(translations[index], rotations[index], scales[index]);
   }
 
-  // Joints are cook-time topologically sorted (parent_index < own index), so a single forward
-  // pass suffices -- no recursion needed, unlike scene::_update_node's entity-tree walk this
-  // otherwise mirrors.
   for (auto index = std::size_t{0u}; index < joint_count; ++index) {
     const auto parent_index = joints[index].parent_index;
 
-    pose.joint_world_matrices[index] = (parent_index < 0)
-      ? locals[index]
-      : pose.joint_world_matrices[static_cast<std::size_t>(parent_index)] * locals[index];
+    pose.joint_world_matrices[index] = (parent_index < 0) ? locals[index] : pose.joint_world_matrices[static_cast<std::size_t>(parent_index)] * locals[index];
 
     pose.skinning_matrices[index] = pose.joint_world_matrices[index] * joints[index].inverse_bind_matrix;
   }
@@ -691,9 +686,6 @@ auto scene_renderer_module::_build_packet() -> render_packet {
 
   packet.camera = _resolve_camera_data();
 
-  // Environment/skybox stays scene-authored regardless of which camera_data is actually being
-  // rendered with — an editor flying around with the override active should still see the level's
-  // own sky/ambient, not go dark just because there's no active-camera skybox to derive from.
   if (scene.has_active_camera()) {
     auto camera_node = scene.active_camera();
 
@@ -705,9 +697,6 @@ auto scene_renderer_module::_build_packet() -> render_packet {
       packet.ambient_intensity = sky.ambient_intensity;
     }
 
-    // Bloom, same reasoning as environment/skybox above: it's a scene-authored look, not something
-    // that should silently reset to editor_camera's own (likely stale/default) copy just because
-    // the editor's fly-camera is standing in for view/projection while play_state is "edit".
     if (_camera_override) {
       const auto& camera = camera_node.get_component<scenes::camera>();
 
@@ -718,20 +707,18 @@ auto scene_renderer_module::_build_packet() -> render_packet {
     }
   }
 
-  // Accumulated unordered (a std::map here would pay a heap allocation plus a red-black-tree
-  // rebalance per unique key, every frame) then sorted once below -- restoring the mesh -> submesh
-  // -> material adjacency mesh_key::operator< defines, which submit_draw_commands' index-buffer
-  // rebind check relies on.
   auto opaque = std::unordered_map<mesh_key, draw_bucket, mesh_key_hash>{};
   opaque.reserve(_last_opaque_bucket_count);
 
   auto transparent = std::vector<transparent_entry>{};
 
-  // Skinned instances (mesh_renderer + skeleton_pose) are handled in a separate pass below --
-  // each needs its own compute-skinned scratch vertex range, so they can't share this bucket's
-  // cross-instance coalescing.
   for (const auto [entity, world, renderer] : scene.query<scenes::world_transform, scenes::mesh_renderer>(ecs::exclude<scenes::skeleton_pose>).each()) {
     if (!renderer.mesh.is_valid()) {
+      continue;
+    }
+
+    if (renderer.mesh.is_loaded() && renderer.mesh->skeleton().is_valid()) {
+      scene.node_of(entity).get_or_add_component<scenes::skeleton_pose>().skeleton = renderer.mesh->skeleton();
       continue;
     }
 

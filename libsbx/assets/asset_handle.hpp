@@ -3,8 +3,12 @@
 #ifndef LIBSBX_ASSETS_ASSET_HANDLE_HPP_
 #define LIBSBX_ASSETS_ASSET_HANDLE_HPP_
 
+#include <concepts>
+#include <cstdint>
 #include <memory>
 #include <type_traits>
+
+#include <libsbx/assets/loadable.hpp>
 
 namespace sbx::assets {
 
@@ -12,6 +16,15 @@ namespace sbx::assets {
  * @brief A ref-counted handle to a loaded asset.
  *
  * Holding one keeps the asset alive.
+ *
+ * is_loaded()/generation() are constrained per-method (`requires std::derived_from<value_type,
+ * loadable>`), not on the class template itself, even though every current asset type is loadable:
+ * a class-level constraint needs Type complete wherever asset_handle<Type> is first named, and
+ * particle_effect.hpp's sub_emitter_binding names asset_handle<particle_effect> while
+ * particle_effect is still an incomplete forward declaration (a particle_effect's own sub-emitters
+ * can reference another particle_effect) -- a class-level `derived_from` check fails right there
+ * with "invalid use of incomplete type". A per-method constraint is only evaluated when is_loaded()/
+ * generation() are actually called, by which point every real caller has a complete type.
  */
 template<typename Type>
 class asset_handle {
@@ -32,9 +45,19 @@ public:
   [[nodiscard]] auto is_valid() const noexcept -> bool {
     return _record != nullptr;
   }
-  
+
   [[nodiscard]] operator bool() const noexcept {
     return is_valid();
+  }
+
+  /** @brief Whether the asset's content (not just this handle) has arrived -- see loadable's doc comment. False for an invalid handle. */
+  [[nodiscard]] auto is_loaded() const noexcept -> bool requires std::derived_from<value_type, loadable> {
+    return is_valid() && _record->is_loaded();
+  }
+
+  /** @brief See loadable's doc comment. 0 for an invalid handle. */
+  [[nodiscard]] auto generation() const noexcept -> std::uint64_t requires std::derived_from<value_type, loadable> {
+    return is_valid() ? _record->generation() : 0u;
   }
 
   [[nodiscard]] auto operator->() const noexcept -> const_pointer {

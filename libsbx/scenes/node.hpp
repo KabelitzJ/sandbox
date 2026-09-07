@@ -32,10 +32,6 @@ public:
     return is_valid();
   }
 
-  [[nodiscard]] auto entity() const noexcept -> ecs::entity {
-    return _entity;
-  }
-
   [[nodiscard]] auto id() const -> const scenes::id& {
     return get_component<scenes::id>();
   }

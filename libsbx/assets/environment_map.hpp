@@ -9,15 +9,18 @@
 #include <libsbx/math/uuid.hpp>
 
 #include <libsbx/assets/asset_handle.hpp>
+#include <libsbx/assets/loadable.hpp>
 
 namespace sbx::assets {
 
 /**
  * @brief HDR image-based-lighting source: an equirect radiance map plus irradiance/prefiltered
  * cubemaps baked via compute at load time (see ibl_baker::bake_environment). Already fully
- * resident by the time load_environment_map returns — no async bake step to wait on.
+ * resident by the time load_environment_map returns — no async bake step to wait on, so its
+ * loadable::generation() is bumped once, immediately, right before the handle is returned (see
+ * asset_residency::load_environment_map).
  */
-class environment_map final {
+class environment_map final : public loadable {
 
   friend class asset_residency;
   friend class ibl_baker;

@@ -83,7 +83,7 @@ auto main(int argc, const char** argv) -> int {
     const auto loaded = sbx::core::project::load(project_file);
 
     auto config = sbx::core::engine_config{
-      .threading = sbx::core::threading_policy::single_threaded,
+      .threading = sbx::core::threading_policy::multi_threaded,
       .project = sbx::core::project_config{
         .root = project_file.parent_path(),
         .name = loaded.name()

@@ -14,6 +14,7 @@
 #include <libsbx/math/vector2.hpp>
 
 #include <libsbx/assets/asset_handle.hpp>
+#include <libsbx/assets/loadable.hpp>
 
 namespace sbx::assets {
 
@@ -89,7 +90,7 @@ struct animation_transition {
  * Mirrors particle_effect's asset shape: a create_info residency builds the live object from,
  * plain-data members, id()/is_valid().
  */
-class animation_graph final {
+class animation_graph final : public loadable {
 
   friend class asset_residency;
 

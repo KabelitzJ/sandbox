@@ -169,6 +169,8 @@ target_sources(
   libsbx
   PRIVATE
     "${CMAKE_SOURCE_DIR}/libsbx/assets/asset_cooker.cpp"
+    "${CMAKE_SOURCE_DIR}/libsbx/assets/asset_loader.cpp"
+    "${CMAKE_SOURCE_DIR}/libsbx/assets/asset_manifest.cpp"
     "${CMAKE_SOURCE_DIR}/libsbx/assets/asset_residency.cpp"
     "${CMAKE_SOURCE_DIR}/libsbx/assets/assets_module.cpp"
     "${CMAKE_SOURCE_DIR}/libsbx/assets/ibl_baker.cpp"
@@ -330,6 +332,8 @@ target_sources(
     FILES
       "${CMAKE_SOURCE_DIR}/libsbx/assets/asset_cooker.hpp"
       "${CMAKE_SOURCE_DIR}/libsbx/assets/asset_handle.hpp"
+      "${CMAKE_SOURCE_DIR}/libsbx/assets/asset_loader.hpp"
+      "${CMAKE_SOURCE_DIR}/libsbx/assets/asset_manifest.hpp"
       "${CMAKE_SOURCE_DIR}/libsbx/assets/asset_residency.hpp"
       "${CMAKE_SOURCE_DIR}/libsbx/assets/assets_module.hpp"
       "${CMAKE_SOURCE_DIR}/libsbx/assets/environment_map.hpp"
@@ -337,6 +341,7 @@ target_sources(
       "${CMAKE_SOURCE_DIR}/libsbx/assets/ibl_baker.hpp"
       "${CMAKE_SOURCE_DIR}/libsbx/assets/animation_clip.hpp"
       "${CMAKE_SOURCE_DIR}/libsbx/assets/animation_graph.hpp"
+      "${CMAKE_SOURCE_DIR}/libsbx/assets/loadable.hpp"
       "${CMAKE_SOURCE_DIR}/libsbx/assets/material.hpp"
       "${CMAKE_SOURCE_DIR}/libsbx/assets/mesh.hpp"
       "${CMAKE_SOURCE_DIR}/libsbx/assets/particle_effect.hpp"

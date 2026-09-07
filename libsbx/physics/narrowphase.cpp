@@ -82,7 +82,7 @@ struct narrow_result {
 }; // struct narrow_result
 
 auto compose_world_pose(scenes::scene& scene, const scenes::node& node, pose_cache& cache) -> transform {
-  if (const auto entry = cache.find(node.entity()); entry != cache.end()) {
+  if (const auto entry = cache.find(node.id()); entry != cache.end()) {
     return entry->second;
   }
 
@@ -97,7 +97,7 @@ auto compose_world_pose(scenes::scene& scene, const scenes::node& node, pose_cac
   auto pose = transform{};
 
   while (!(current == root)) {
-    if (const auto entry = cache.find(current.entity()); entry != cache.end()) {
+    if (const auto entry = cache.find(current.id()); entry != cache.end()) {
       pose = entry->second;
       break;
     }
@@ -114,7 +114,7 @@ auto compose_world_pose(scenes::scene& scene, const scenes::node& node, pose_cac
     pose.rotation = math::quaternion::normalized(pose.rotation * local.rotation);
     pose.scale = pose.scale * local.scale; // componentwise -- see physics::transform::scale
 
-    cache[it->entity()] = pose;
+    cache[it->id()] = pose;
   }
 
   return pose;

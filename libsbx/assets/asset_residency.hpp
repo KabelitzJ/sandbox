@@ -5,6 +5,7 @@
 
 #include <array>
 #include <cstdint>
+#include <deque>
 #include <filesystem>
 #include <memory>
 #include <mutex>
@@ -31,6 +32,8 @@
 #include <libsbx/assets/particle_effect.hpp>
 #include <libsbx/assets/animation_graph.hpp>
 #include <libsbx/assets/asset_cooker.hpp>
+#include <libsbx/assets/asset_manifest.hpp>
+#include <libsbx/assets/asset_loader.hpp>
 #include <libsbx/assets/ibl_baker.hpp>
 
 namespace sbx::assets {
@@ -38,14 +41,27 @@ namespace sbx::assets {
 /**
  * @brief Turns cooked asset data into GPU-resident textures/meshes/materials/environment-maps:
  * upload queues, bindless registration, the material UBO, and the default fallback textures.
- * Depends on @ref asset_cooker for cooked data and @ref ibl_baker for environment baking — both
- * held by reference, owned by whoever constructs this (see @ref assets_module).
+ * Depends on @ref asset_manifest for path/uuid/staleness bookkeeping and @ref ibl_baker for
+ * environment baking -- both held by reference, owned by whoever constructs this (see @ref
+ * assets_module).
+ *
+ * Every `load_*(uuid)` (bar @ref load_environment_map, see its own doc comment) creates a
+ * placeholder record synchronously here on the calling thread -- reserving a bindless index where
+ * one exists, no decoded/parsed content yet -- caches it immediately, and hands the actual disk
+ * I/O/decode off to @ref asset_loader's background thread. The handle it returns is always valid
+ * immediately; it simply doesn't finish (is_resident()/is_valid()-after-finalize, depending on the
+ * type) until process_uploads' next call has drained the corresponding result and applied it. This
+ * class alone interprets that raw data -- resolving nested asset references (paths -> uuids ->
+ * handles), reserving GPU-adjacent identity, queuing the actual GPU upload -- the background thread
+ * never does.
  */
 class asset_residency final : public utility::noncopyable {
 
 public:
 
-  asset_residency(asset_cooker& cooker, ibl_baker& baker);
+  asset_residency(asset_manifest& manifest, ibl_baker& baker);
+
+  ~asset_residency();
 
   /** @brief Loads a texture from a UUID or project-relative path; returns the existing handle if already loaded. */
   auto load_texture(const math::uuid& id, graphics::format format = graphics::format::r8g8b8a8_srgb) -> texture_handle;
@@ -70,10 +86,10 @@ public:
    */
   auto create_mesh(std::vector<vertex> vertices, std::vector<std::uint32_t> indices, std::vector<mesh::submesh> submeshes, const math::volume& bounds) -> mesh_handle;
 
-  /** @brief Loads a skeleton cooked as a side effect of a mesh import; returns the existing handle if already loaded. Pure CPU data -- resolves immediately, no upload queue involved. */
+  /** @brief Loads a skeleton cooked as a side effect of a mesh import; returns the existing handle if already loaded. Pure CPU data -- no GPU upload wait, but still resolved off the background thread like everything else. */
   auto load_skeleton(const math::uuid& id) -> skeleton_handle;
 
-  /** @brief Loads an animation clip cooked as a side effect of a mesh import; returns the existing handle if already loaded. Pure CPU data -- resolves immediately, no upload queue involved. */
+  /** @brief Loads an animation clip cooked as a side effect of a mesh import; returns the existing handle if already loaded. Pure CPU data -- no GPU upload wait, but still resolved off the background thread like everything else. */
   auto load_animation_clip(const math::uuid& id) -> animation_clip_handle;
 
   auto load_material(const math::uuid& id) -> material_handle;
@@ -96,6 +112,13 @@ public:
    */
   auto save_material(material_handle& material, const std::filesystem::path& path) -> math::uuid;
 
+  /**
+   * @brief Loads and bakes an environment map -- the one asset kind that stays entirely
+   * synchronous/main-thread, never touching the background loader. ibl_baker::bake_environment
+   * does a real, blocking GPU compute dispatch (radiance upload + irradiance/prefiltered cubemap
+   * bake); submitting that from a non-render thread is a fundamentally different, riskier problem
+   * than disk I/O offload and is out of scope here.
+   */
   auto load_environment_map(const math::uuid& id) -> environment_map_handle;
 
   auto load_environment_map(const std::filesystem::path& path) -> environment_map_handle;
@@ -142,7 +165,8 @@ public:
   auto save_animation_graph(animation_graph_handle& graph, const std::filesystem::path& path) -> math::uuid;
 
   /**
-   * @brief Turns queued texture loads into GPU images and bindless writes.
+   * @brief Drains the background loader's per-type result queues (budgeted) and turns queued
+   * texture loads into GPU images and bindless writes (also budgeted).
    *
    * Runs on the render thread; copies are recorded by the caller's subsequent @ref upload_context::flush.
    */
@@ -190,6 +214,11 @@ private:
 
   inline static constexpr auto material_capacity = std::uint32_t{1024u};
 
+  // Combined, shared across every result/pending-upload category drained per process_uploads()
+  // call -- see the doc comments on _drain_loader_results and the pending-upload loop below.
+  // Spreads a burst of loads/uploads across several frames instead of spiking one.
+  inline static constexpr auto max_uploads_per_frame = std::size_t{32u};
+
   struct pending_texture_upload {
     std::uint32_t index;
     std::vector<std::byte> pixels;
@@ -214,34 +243,60 @@ private:
   auto _register_material(std::shared_ptr<material> record) -> material_handle;
 
   /**
-   * @brief Turns one gltf-embedded material description into a real, standalone `.material` asset
-   * next to the mesh (models/<name>/materials/<material name>.material), reusing one already there
-   * instead of overwriting it. Passed to @ref asset_cooker::resolve_mesh as its material_resolver
-   * when `mesh_import_options::extract_materials` is set.
+   * @brief Turns one already-cooked embedded glTF material (see cooked_submesh::material's doc
+   * comment in asset_cooker.hpp) into a real, standalone `.material` asset next to the mesh
+   * (models/<name>/materials/<material name>.material), reusing one already there instead of
+   * overwriting it -- what mesh_import_options::extract_materials means. Runs on the main thread,
+   * during _finalize_mesh, once per submesh that needs it.
    */
-  auto _extract_gltf_material(const material_description& description, const std::filesystem::path& relative_source) -> math::uuid;
+  auto _extract_gltf_material(const math::uuid& cooked_material_id, const std::filesystem::path& mesh_source) -> material_handle;
 
-  asset_cooker& _cooker;
+  [[nodiscard]] auto _texture_cache_key(const math::uuid& id, graphics::format format) const -> std::string;
+
+  /**
+   * @brief Pops up to max_uploads_per_frame entries combined across every asset_loader result
+   * queue (roughly cost/frequency order: textures, meshes, fonts, materials, particle_effects,
+   * animation_graphs, skeletons, animation_clips) and runs each one's _finalize_* -- the one place
+   * nested asset references (paths -> uuids -> handles) get resolved and GPU uploads get queued.
+   * Called first thing inside process_uploads.
+   */
+  auto _drain_loader_results() -> void;
+
+  auto _finalize_texture(asset_loader::texture_result& result) -> void;
+  auto _finalize_mesh(asset_loader::mesh_result& result) -> void;
+  auto _finalize_font(asset_loader::font_result& result) -> void;
+  auto _finalize_material(asset_loader::material_result& result) -> void;
+  auto _finalize_particle_effect(asset_loader::particle_effect_result& result) -> void;
+  auto _finalize_animation_graph(asset_loader::animation_graph_result& result) -> void;
+  auto _finalize_skeleton(asset_loader::skeleton_result& result) -> void;
+  auto _finalize_animation_clip(asset_loader::animation_clip_result& result) -> void;
+
+  asset_manifest& _manifest;
   ibl_baker& _ibl;
+
+  // Own, private, synchronous-use instance -- asset_cooker is stateless (see its own doc comment),
+  // so this needs no coordination with asset_loader's separate instance. Used only by
+  // load_environment_map's fully-synchronous main-thread resolve_environment call.
+  asset_cooker _cooker{};
 
   mutable std::mutex _mutex{};
 
   std::unordered_map<std::string, std::shared_ptr<texture>> _textures{};
-  std::vector<pending_texture_upload> _pending_textures{};
+  std::deque<pending_texture_upload> _pending_textures{};
   std::unordered_map<std::uint32_t, graphics::image_handle> _images{};
   std::unordered_map<std::uint32_t, std::uint64_t> _resident_frame{};
 
   std::unordered_map<math::uuid, std::shared_ptr<font>> _fonts{};
 
   std::unordered_map<math::uuid, std::shared_ptr<mesh>> _meshes{};
-  std::vector<pending_mesh_upload> _pending_meshes{};
+  std::deque<pending_mesh_upload> _pending_meshes{};
 
   // Pure CPU data -- no GPU buffer/index, unlike _meshes above.
   std::unordered_map<math::uuid, std::shared_ptr<skeleton>> _skeletons{};
   std::unordered_map<math::uuid, std::shared_ptr<animation_clip>> _animation_clips{};
 
   std::vector<std::shared_ptr<material>> _materials{};
-  std::vector<pending_material_upload> _pending_materials{};
+  std::deque<pending_material_upload> _pending_materials{};
   graphics::buffer_handle _material_buffer{};
   graphics::buffer::address_type _material_address{0u};
   std::uint32_t _material_count{0u};
@@ -257,6 +312,10 @@ private:
   texture_handle _normal{};
   texture_handle _black{};
   texture_handle _magenta{};
+
+  // Declared LAST -- destroyed (aborted + joined) before any cache/pending-upload queue above that
+  // its background thread might still be about to feed.
+  asset_loader _loader{};
 
 }; // class asset_residency
 

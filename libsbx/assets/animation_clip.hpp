@@ -12,6 +12,7 @@
 #include <libsbx/math/vector3.hpp>
 
 #include <libsbx/assets/asset_handle.hpp>
+#include <libsbx/assets/loadable.hpp>
 
 namespace sbx::assets {
 
@@ -53,7 +54,7 @@ struct animation_joint_channel {
  *
  * Pure CPU data; unlike @ref mesh/@ref texture there's no GPU residency of its own.
  */
-class animation_clip final {
+class animation_clip final : public loadable {
 
   friend class asset_residency;
 
@@ -85,6 +86,16 @@ public:
   }
 
 private:
+
+  // Fills in a placeholder animation_clip() (default-constructed, empty channels) once its cooked
+  // content has come back from the background asset loader -- called once, on the main thread,
+  // from asset_residency's animation_clip finalize step.
+  auto _finalize_content(std::string name, std::float_t duration, std::vector<animation_joint_channel> channels) -> void {
+    _name = std::move(name);
+    _duration = duration;
+    _channels = std::move(channels);
+    _bump_generation();
+  }
 
   std::string _name{};
   std::float_t _duration{0.0f};

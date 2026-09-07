@@ -4,7 +4,6 @@
 
 #include <algorithm>
 #include <array>
-#include <cctype>
 #include <cmath>
 #include <fstream>
 #include <iterator>
@@ -31,7 +30,6 @@
 #include <libsbx/utility/iterator.hpp>
 #include <libsbx/utility/fourcc.hpp>
 #include <libsbx/utility/logger.hpp>
-#include <libsbx/utility/hash.hpp>
 
 #include <libsbx/math/matrix_cast.hpp>
 
@@ -40,25 +38,12 @@
 namespace sbx::assets {
 
 inline constexpr auto texture_magic = utility::fourcc_v<"SBTX">;  // 'SBTX'
-inline constexpr auto texture_version = std::uint32_t{1u};
-
 inline constexpr auto mesh_magic = utility::fourcc_v<"SBSH">;   // 'SBSH'
-inline constexpr auto mesh_version = std::uint32_t{8u}; // v8: generates flat normals for primitives missing NORMAL (previously left zeroed)
-
 inline constexpr auto material_magic = utility::fourcc_v<"SBMT">; // 'SBMT'
-inline constexpr auto material_version = std::uint32_t{3u};
-
 inline constexpr auto environment_magic = utility::fourcc_v<"SBEN">; // 'SBEN'
-inline constexpr auto environment_version = std::uint32_t{1u};
-
 inline constexpr auto skeleton_magic = utility::fourcc_v<"SBSK">; // 'SBSK'
-inline constexpr auto skeleton_version = std::uint32_t{1u};
-
 inline constexpr auto animation_magic = utility::fourcc_v<"SBAN">; // 'SBAN'
-inline constexpr auto animation_version = std::uint32_t{1u};
-
 inline constexpr auto font_magic = utility::fourcc_v<"SBFN">; // 'SBFN'
-inline constexpr auto font_version = std::uint32_t{1u};
 
 // The pixel height a font's atlas is rasterized at; every glyph metric is stored normalized by
 // this (i.e. per one unit of ui_text::font_size), so one atlas serves any font_size at runtime.
@@ -68,10 +53,6 @@ inline constexpr auto font_sdf_onedge_value = 128u;
 inline constexpr auto font_sdf_pixel_dist_scale = 32.0f; // onedge_value / padding
 inline constexpr auto font_first_codepoint = std::uint32_t{32u};
 inline constexpr auto font_codepoint_count = std::uint32_t{224u}; // 32..255: printable ASCII + Latin-1
-
-// A mesh cook also emits its materials and, for a skinned mesh, its skeleton/animation clips --
-// so a mesh blob's freshness depends on all four cookers.
-inline constexpr auto mesh_cooker_version = mesh_version * 1000000u + material_version * 10000u + skeleton_version * 100u + animation_version;
 
 struct texture_header {
   std::uint32_t magic;
@@ -119,7 +100,7 @@ struct mesh_file_header {
   std::uint32_t index_data_size;   // bytes of meshopt-encoded index buffer following the vertex data
   std::uint32_t flags;             // bit 0 = has_skin_data
   std::uint32_t skin_vertex_data_size; // bytes of *raw* (unencoded) skin_vertex array following the index data; 0 when unskinned
-  std::uint32_t animation_clip_count;  // clips cooked as a side effect, resolvable via _derive_animation_clip_uuid(id, 0..count)
+  std::uint32_t animation_clip_count;  // clips cooked as a side effect, resolvable via derive_animation_clip_uuid(id, 0..count)
 }; // struct mesh_file_header
 
 inline constexpr auto mesh_flag_has_skin_data = std::uint32_t{1u << 0u};
@@ -139,6 +120,10 @@ struct submesh_lod_record {
   std::float_t error;
 }; // struct submesh_lod_record
 
+// Texture slots are variable-length path strings (assets-directory-relative, empty = none), not
+// fixed uuid64s -- see material_description's doc comment for why. name and the five slot strings
+// follow this header back to back, each preceded by nothing (lengths are all up front here) in
+// the fixed order: name, albedo, normal, metallic_roughness, occlusion, emissive.
 struct material_file_header {
   std::uint32_t magic;
   std::uint32_t version;
@@ -153,12 +138,12 @@ struct material_file_header {
   std::float_t occlusion_strength;
   std::float_t emissive_strength;
   std::float_t ior;
-  std::uint64_t albedo_uuid;
-  std::uint64_t normal_uuid;
-  std::uint64_t metallic_roughness_uuid;
-  std::uint64_t occlusion_uuid;
-  std::uint64_t emissive_uuid;
   std::uint32_t name_length;
+  std::uint32_t albedo_path_length;
+  std::uint32_t normal_path_length;
+  std::uint32_t metallic_roughness_path_length;
+  std::uint32_t occlusion_path_length;
+  std::uint32_t emissive_path_length;
 }; // struct material_file_header
 
 struct skeleton_file_header {
@@ -207,277 +192,46 @@ struct quaternion_key_record {
   std::float_t value[4]; // x, y, z, w
 }; // struct quaternion_key_record
 
-asset_cooker::~asset_cooker() {
-  _save_manifest();
+// "type"+"value" tag pair -- animation_parameter_value's alternative *is* its type, so this is
+// purely a persistence detail (the runtime API never switches on a type enum, see
+// animation_graph.hpp's doc comment). Mirrored by save_animation_parameter_value in
+// asset_residency.cpp (save_animation_graph is a synchronous, editor-only write path -- not part
+// of this refactor).
+static auto load_animation_parameter_value(const YAML::Node& node) -> animation_parameter_value {
+  const auto type = node["type"] ? node["type"].as<std::string>() : std::string{"float"};
+
+  if (type == "bool") {
+    return animation_parameter_value{node["value"] ? node["value"].as<bool>() : false};
+  }
+
+  if (type == "int") {
+    return animation_parameter_value{node["value"] ? node["value"].as<std::int32_t>() : std::int32_t{0}};
+  }
+
+  if (type == "trigger") {
+    return animation_parameter_value{animation_trigger{}};
+  }
+
+  return animation_parameter_value{node["value"] ? node["value"].as<std::float_t>() : 0.0f};
 }
 
-auto asset_cooker::import(const std::filesystem::path& path) -> math::uuid {
-  ensure_manifest_loaded();
-
-  const auto key = path.generic_string();
-
-  {
-    auto lock = std::lock_guard{_mutex};
-
-    if (const auto entry = _uuids.find(key); entry != _uuids.end()) {
-      return entry->second;
-    }
-  }
-
-  const auto uuid = _read_or_create_meta(path);
-
-  {
-    auto lock = std::lock_guard{_mutex};
-
-    _uuids.emplace(key, uuid);
-    _paths.emplace(uuid, path);
-
-    auto& entry = _manifest[uuid];
-    if (entry.path.empty()) {
-      entry.path = path;
-      _manifest_dirty = true;
-    }
-  }
-
-  return uuid;
+static auto load_animation_condition_comparator(const std::string& value) -> animation_condition_comparator {
+  if (value == "not_equals") return animation_condition_comparator::not_equals;
+  if (value == "greater") return animation_condition_comparator::greater;
+  if (value == "greater_or_equal") return animation_condition_comparator::greater_or_equal;
+  if (value == "less") return animation_condition_comparator::less;
+  if (value == "less_or_equal") return animation_condition_comparator::less_or_equal;
+  return animation_condition_comparator::equals;
 }
 
-auto asset_cooker::import_directory(const std::filesystem::path& root) -> void {
-  ensure_manifest_loaded();
-
-  if (!std::filesystem::exists(root)) {
-    utility::logger<"assets">::warn("Asset root '{}' does not exist", root.generic_string());
-
-    return;
-  }
-
-  for (const auto& entry : std::filesystem::recursive_directory_iterator{root}) {
-    if (!entry.is_regular_file()) {
-      continue;
-    }
-
-    const auto& path = entry.path();
-
-    auto extension = path.extension().string();
-
-    std::ranges::transform(extension, extension.begin(), [](unsigned char character) { return static_cast<char>(std::tolower(character)); });
-
-    if (extension == ".png" || extension == ".jpg" || extension == ".jpeg" || extension == ".gltf" || extension == ".glb" || extension == ".material" || extension == ".hdr" || extension == ".particle_effect" || extension == ".animation_graph") {
-      import(entry.path());
-    }
-  }
-}
-
-auto asset_cooker::path_of(const math::uuid& id) const -> std::filesystem::path {
-  auto lock = std::lock_guard{_mutex};
-
-  if (const auto entry = _paths.find(id); entry != _paths.end()) {
-    return entry->second;
-  }
-
-  return {};
-}
-
-auto asset_cooker::ensure_manifest_loaded() -> void {
-  {
-    auto lock = std::lock_guard{_mutex};
-
-    if (_manifest_loaded) {
-      return;
-    }
-
-    _manifest_loaded = true;
-  }
-
-  _load_manifest();
-}
-
-auto asset_cooker::absolute(const std::filesystem::path& relative) -> std::filesystem::path {
+auto asset_cooker::cooked_path(const math::uuid& id, std::string_view extension) -> std::filesystem::path {
   const auto& project = core::engine::project();
 
-  return project.assets_directory() / relative;
-}
-
-// Inverse of absolute(): converts a resolved path back to one relative to assets_directory(),
-// for storing assets-relative paths (e.g. in a .material file's texture slots).
-auto asset_cooker::relative(const std::filesystem::path& absolute) -> std::filesystem::path {
-  const auto& project = core::engine::project();
-
-  return std::filesystem::relative(absolute, project.assets_directory());
-}
-
-auto asset_cooker::resolve_texture(const math::uuid& id) -> std::optional<pixel_data> {
-  ensure_manifest_loaded();
-
-  auto path = std::filesystem::path{};
-  {
-    auto lock = std::lock_guard{_mutex};
-
-    const auto entry = _paths.find(id);
-
-    if (entry == _paths.end()) {
-      utility::logger<"assets">::warn("Unknown texture uuid {}", id);
-      return std::nullopt;
-    }
-
-    path = entry->second;
-  }
-
-  const auto cooked = _cooked_path(id, ".sbxtex");
-
-  if (_is_cooked_stale(id, path, cooked, texture_version)) {
-    if (!_cook_texture(path, cooked)) {
-      utility::logger<"assets">::warn("Could not cook texture '{}'", path.generic_string());
-      return std::nullopt;
-    }
-    _record_cook(id, texture_version, path);
-  }
-
-  auto data = pixel_data{};
-
-  // If the blob is unreadable/out-of-date (e.g. cooker version bumped), recook once.
-  if (!_load_cooked_texture(cooked, data.pixels, data.width, data.height)) {
-    if (!_cook_texture(path, cooked) || !_load_cooked_texture(cooked, data.pixels, data.width, data.height)) {
-      utility::logger<"assets">::warn("Could not load cooked texture '{}'", cooked.generic_string());
-      return std::nullopt;
-    }
-    _record_cook(id, texture_version, path);
-  }
-
-  return data;
-}
-
-auto asset_cooker::resolve_environment(const math::uuid& id) -> std::optional<pixel_data> {
-  ensure_manifest_loaded();
-
-  auto path = std::filesystem::path{};
-  {
-    auto lock = std::lock_guard{_mutex};
-    const auto entry = _paths.find(id);
-    if (entry == _paths.end()) {
-      utility::logger<"assets">::warn("Unknown environment map uuid {}", id);
-      return std::nullopt;
-    }
-    path = entry->second;
-  }
-
-  const auto cooked = _cooked_path(id, ".sbxenv");
-
-  if (_is_cooked_stale(id, path, cooked, environment_version)) {
-    if (!_cook_environment_map(path, cooked)) {
-      utility::logger<"assets">::warn("Could not cook environment map '{}'", path.generic_string());
-      return std::nullopt;
-    }
-    _record_cook(id, environment_version, path);
-  }
-
-  auto data = pixel_data{};
-
-  if (!_load_cooked_environment_map(cooked, data.pixels, data.width, data.height)) {
-    if (!_cook_environment_map(path, cooked) || !_load_cooked_environment_map(cooked, data.pixels, data.width, data.height)) {
-      utility::logger<"assets">::warn("Could not load cooked environment map '{}'", cooked.generic_string());
-      return std::nullopt;
-    }
-    _record_cook(id, environment_version, path);
-  }
-
-  return data;
-}
-
-auto asset_cooker::resolve_font(const math::uuid& id) -> std::optional<cooked_font_data> {
-  ensure_manifest_loaded();
-
-  auto path = std::filesystem::path{};
-  {
-    auto lock = std::lock_guard{_mutex};
-    const auto entry = _paths.find(id);
-    if (entry == _paths.end()) {
-      utility::logger<"assets">::warn("Unknown font uuid {}", id);
-      return std::nullopt;
-    }
-    path = entry->second;
-  }
-
-  const auto cooked = _cooked_path(id, ".sbxfnt");
-
-  if (_is_cooked_stale(id, path, cooked, font_version)) {
-    if (!_cook_font(path, cooked)) {
-      utility::logger<"assets">::warn("Could not cook font '{}'", path.generic_string());
-      return std::nullopt;
-    }
-    _record_cook(id, font_version, path);
-  }
-
-  auto data = cooked_font_data{};
-
-  if (!_load_cooked_font(cooked, data)) {
-    if (!_cook_font(path, cooked) || !_load_cooked_font(cooked, data)) {
-      utility::logger<"assets">::warn("Could not load cooked font '{}'", cooked.generic_string());
-      return std::nullopt;
-    }
-    _record_cook(id, font_version, path);
-  }
-
-  return data;
-}
-
-auto asset_cooker::resolve_mesh(const math::uuid& id, const mesh_import_options& options, const material_resolver& resolve_material) -> std::optional<cooked_mesh_data> {
-  ensure_manifest_loaded();
-
-  auto source = std::filesystem::path{};
-  {
-    auto lock = std::lock_guard{_mutex};
-
-    const auto entry = _paths.find(id);
-
-    if (entry == _paths.end()) {
-      utility::logger<"assets">::warn("Unknown mesh uuid {}", id);
-      return std::nullopt;
-    }
-
-    source = entry->second;
-  }
-
-  const auto cooked = _cooked_path(id, ".sbxmsh");
-
-  if (_is_cooked_stale(id, source, cooked, mesh_cooker_version)) {
-    if (!_cook_mesh(source, id, cooked, options, resolve_material)) {
-      return std::nullopt;
-    }
-    _record_cook(id, mesh_cooker_version, source);
-  }
-
-  auto data = cooked_mesh_data{};
-  auto animation_clip_count = std::uint32_t{0u};
-
-  if (!_load_cooked_mesh(cooked, data.vertices, data.indices, data.submeshes, data.bounds, data.skin_vertices, animation_clip_count)) {
-    if (!_cook_mesh(source, id, cooked, options, resolve_material) || !_load_cooked_mesh(cooked, data.vertices, data.indices, data.submeshes, data.bounds, data.skin_vertices, animation_clip_count)) {
-      utility::logger<"assets">::warn("Could not load cooked mesh '{}'", cooked.generic_string());
-      return std::nullopt;
-    }
-    _record_cook(id, mesh_cooker_version, source);
-  }
-
-  if (data.vertices.empty() || data.indices.empty()) {
-    utility::logger<"assets">::warn("Mesh '{}' has no drawable geometry", source.generic_string());
-    return std::nullopt;
-  }
-
-  if (!data.skin_vertices.empty()) {
-    data.skeleton = _derive_skeleton_uuid(id);
-
-    data.animation_clips.reserve(animation_clip_count);
-
-    for (auto index = std::uint32_t{0u}; index < animation_clip_count; ++index) {
-      data.animation_clips.push_back(_derive_animation_clip_uuid(id, index));
-    }
-  }
-
-  return data;
+  return project.library_directory() / fmt::format("{}{}", id.value(), extension);
 }
 
 auto asset_cooker::resolve_cooked_material(const math::uuid& id) -> std::optional<material_description> {
-  const auto cooked = _cooked_path(id, ".sbxmat");
+  const auto cooked = cooked_path(id, ".sbxmat");
 
   if (!std::filesystem::exists(cooked)) {
     return std::nullopt;
@@ -493,23 +247,38 @@ auto asset_cooker::resolve_cooked_material(const math::uuid& id) -> std::optiona
   auto header = material_file_header{};
   in.read(reinterpret_cast<char*>(&header), sizeof(header));
 
-  if (!in || header.magic != material_magic || header.version != material_version) {
+  if (!in || header.magic != material_magic || header.version != material_cook_version) {
     utility::logger<"assets">::warn("Invalid cooked material '{}'", cooked.generic_string());
     return std::nullopt;
   }
 
-  auto name = std::string(header.name_length, '\0');
+  const auto read_string = [&in](std::uint32_t length) -> std::optional<std::string> {
+    auto value = std::string(length, '\0');
 
-  if (header.name_length > 0u) {
-    in.read(name.data(), static_cast<std::streamsize>(header.name_length));
+    if (length > 0u) {
+      in.read(value.data(), static_cast<std::streamsize>(length));
 
-    if (!in) {
-      return std::nullopt;
+      if (!in) {
+        return std::nullopt;
+      }
     }
+
+    return value;
+  };
+
+  const auto name = read_string(header.name_length);
+  const auto albedo = read_string(header.albedo_path_length);
+  const auto normal = read_string(header.normal_path_length);
+  const auto metallic_roughness = read_string(header.metallic_roughness_path_length);
+  const auto occlusion = read_string(header.occlusion_path_length);
+  const auto emissive = read_string(header.emissive_path_length);
+
+  if (!name || !albedo || !normal || !metallic_roughness || !occlusion || !emissive) {
+    return std::nullopt;
   }
 
   auto description = material_description{};
-  description.name = name.empty() ? std::string{"material"} : name;
+  description.name = name->empty() ? std::string{"material"} : *name;
   description.base_color_factor = math::color{header.base_color_factor[0], header.base_color_factor[1], header.base_color_factor[2], header.base_color_factor[3]};
   description.emissive_factor = math::vector3{header.emissive_factor[0], header.emissive_factor[1], header.emissive_factor[2]};
   description.metallic_factor = header.metallic_factor;
@@ -521,13 +290,155 @@ auto asset_cooker::resolve_cooked_material(const math::uuid& id) -> std::optiona
   description.occlusion_strength = header.occlusion_strength;
   description.emissive_strength = header.emissive_strength;
   description.ior = header.ior;
-  description.albedo = math::uuid::from_value(header.albedo_uuid);
-  description.normal = math::uuid::from_value(header.normal_uuid);
-  description.metallic_roughness = math::uuid::from_value(header.metallic_roughness_uuid);
-  description.occlusion = math::uuid::from_value(header.occlusion_uuid);
-  description.emissive = math::uuid::from_value(header.emissive_uuid);
+  description.albedo = *albedo;
+  description.normal = *normal;
+  description.metallic_roughness = *metallic_roughness;
+  description.occlusion = *occlusion;
+  description.emissive = *emissive;
 
   return description;
+}
+
+auto asset_cooker::derive_material_uuid(const math::uuid& mesh, std::size_t index) -> math::uuid {
+  // splitmix64 over (mesh uuid, index) — deterministic so re-cooking is stable.
+  auto x = mesh.value() ^ (0x9e3779b97f4a7c15ull * (static_cast<std::uint64_t>(index) + 1ull));
+  x ^= x >> 30; x *= 0xbf58476d1ce4e5b9ull;
+  x ^= x >> 27; x *= 0x94d049bb133111ebull;
+  x ^= x >> 31;
+
+  return math::uuid::from_value(x == 0ull ? 1ull : x); // never nil
+}
+
+auto asset_cooker::derive_skeleton_uuid(const math::uuid& mesh) -> math::uuid {
+  // Same splitmix64 shape as derive_material_uuid, salted differently so a mesh's skeleton uuid
+  // never collides with one of its material uuids.
+  auto x = mesh.value() ^ 0xff51afd7ed558ccdull;
+  x ^= x >> 30; x *= 0xbf58476d1ce4e5b9ull;
+  x ^= x >> 27; x *= 0x94d049bb133111ebull;
+  x ^= x >> 31;
+
+  return math::uuid::from_value(x == 0ull ? 1ull : x); // never nil
+}
+
+auto asset_cooker::derive_animation_clip_uuid(const math::uuid& mesh, std::size_t index) -> math::uuid {
+  auto x = mesh.value() ^ (0xc2b2ae3d27d4eb4full * (static_cast<std::uint64_t>(index) + 1ull));
+  x ^= x >> 30; x *= 0xbf58476d1ce4e5b9ull;
+  x ^= x >> 27; x *= 0x94d049bb133111ebull;
+  x ^= x >> 31;
+
+  return math::uuid::from_value(x == 0ull ? 1ull : x); // never nil
+}
+
+auto asset_cooker::resolve_texture(const std::filesystem::path& source, const std::filesystem::path& cooked, bool needs_cook, bool& did_cook) -> std::optional<pixel_data> {
+  did_cook = false;
+
+  if (needs_cook) {
+    if (!_cook_texture(source, cooked)) {
+      utility::logger<"assets">::warn("Could not cook texture '{}'", source.generic_string());
+      return std::nullopt;
+    }
+    did_cook = true;
+  }
+
+  auto data = pixel_data{};
+
+  // If the blob is unreadable/out-of-date (e.g. cooker version bumped), recook once.
+  if (!_load_cooked_texture(cooked, data.pixels, data.width, data.height)) {
+    if (!_cook_texture(source, cooked) || !_load_cooked_texture(cooked, data.pixels, data.width, data.height)) {
+      utility::logger<"assets">::warn("Could not load cooked texture '{}'", cooked.generic_string());
+      return std::nullopt;
+    }
+    did_cook = true;
+  }
+
+  return data;
+}
+
+auto asset_cooker::resolve_environment(const std::filesystem::path& source, const std::filesystem::path& cooked, bool needs_cook, bool& did_cook) -> std::optional<pixel_data> {
+  did_cook = false;
+
+  if (needs_cook) {
+    if (!_cook_environment_map(source, cooked)) {
+      utility::logger<"assets">::warn("Could not cook environment map '{}'", source.generic_string());
+      return std::nullopt;
+    }
+    did_cook = true;
+  }
+
+  auto data = pixel_data{};
+
+  if (!_load_cooked_environment_map(cooked, data.pixels, data.width, data.height)) {
+    if (!_cook_environment_map(source, cooked) || !_load_cooked_environment_map(cooked, data.pixels, data.width, data.height)) {
+      utility::logger<"assets">::warn("Could not load cooked environment map '{}'", cooked.generic_string());
+      return std::nullopt;
+    }
+    did_cook = true;
+  }
+
+  return data;
+}
+
+auto asset_cooker::resolve_font(const std::filesystem::path& source, const std::filesystem::path& cooked, bool needs_cook, bool& did_cook) -> std::optional<cooked_font_data> {
+  did_cook = false;
+
+  if (needs_cook) {
+    if (!_cook_font(source, cooked)) {
+      utility::logger<"assets">::warn("Could not cook font '{}'", source.generic_string());
+      return std::nullopt;
+    }
+    did_cook = true;
+  }
+
+  auto data = cooked_font_data{};
+
+  if (!_load_cooked_font(cooked, data)) {
+    if (!_cook_font(source, cooked) || !_load_cooked_font(cooked, data)) {
+      utility::logger<"assets">::warn("Could not load cooked font '{}'", cooked.generic_string());
+      return std::nullopt;
+    }
+    did_cook = true;
+  }
+
+  return data;
+}
+
+auto asset_cooker::resolve_mesh(const std::filesystem::path& source, const math::uuid& id, const std::filesystem::path& cooked, bool needs_cook, bool& did_cook) -> std::optional<cooked_mesh_data> {
+  did_cook = false;
+
+  if (needs_cook) {
+    if (!_cook_mesh(source, id, cooked)) {
+      return std::nullopt;
+    }
+    did_cook = true;
+  }
+
+  auto data = cooked_mesh_data{};
+  auto animation_clip_count = std::uint32_t{0u};
+
+  if (!_load_cooked_mesh(cooked, data.vertices, data.indices, data.submeshes, data.bounds, data.skin_vertices, animation_clip_count)) {
+    if (!_cook_mesh(source, id, cooked) || !_load_cooked_mesh(cooked, data.vertices, data.indices, data.submeshes, data.bounds, data.skin_vertices, animation_clip_count)) {
+      utility::logger<"assets">::warn("Could not load cooked mesh '{}'", cooked.generic_string());
+      return std::nullopt;
+    }
+    did_cook = true;
+  }
+
+  if (data.vertices.empty() || data.indices.empty()) {
+    utility::logger<"assets">::warn("Mesh '{}' has no drawable geometry", source.generic_string());
+    return std::nullopt;
+  }
+
+  if (!data.skin_vertices.empty()) {
+    data.skeleton = derive_skeleton_uuid(id);
+
+    data.animation_clips.reserve(animation_clip_count);
+
+    for (auto index = std::uint32_t{0u}; index < animation_clip_count; ++index) {
+      data.animation_clips.push_back(derive_animation_clip_uuid(id, index));
+    }
+  }
+
+  return data;
 }
 
 auto asset_cooker::resolve_skeleton(const math::uuid& id) -> std::optional<std::vector<skeleton::joint>> {
@@ -550,171 +461,351 @@ auto asset_cooker::resolve_animation_clip(const math::uuid& id) -> std::optional
   return data;
 }
 
-auto asset_cooker::_read_or_create_meta(const std::filesystem::path& path) -> math::uuid {
-  auto meta_path = path;
-  meta_path += ".meta";
-
-  if (std::filesystem::exists(meta_path)) {
-    try {
-      const auto node = YAML::LoadFile(meta_path.string());
-      return node["uuid"].as<math::uuid>();
-    } catch (const std::exception& exception) {
-      utility::logger<"assets">::warn("Invalid meta '{}' ({}); regenerating", meta_path.generic_string(), exception.what());
-    }
-  }
-
-  const auto uuid = math::uuid::create();
-
-  auto node = YAML::Node{};
-  node["uuid"] = uuid;
-
-  auto out = std::ofstream{meta_path};
-  out << node;
-
-  utility::logger<"assets">::debug("Imported '{}' as {}", path.generic_string(), uuid);
-
-  return uuid;
-}
-
-auto asset_cooker::_cooked_path(const math::uuid& id, std::string_view extension) const -> std::filesystem::path {
-  const auto& project = core::engine::project();
-
-  return project.library_directory() / fmt::format("{}{}", id.value(), extension);
-}
-
-auto asset_cooker::_is_cooked_stale(const math::uuid& id, const std::filesystem::path& source, const std::filesystem::path& cooked, std::uint32_t cooker_version) -> bool {
-  if (!std::filesystem::exists(cooked)) {
-    return true;
-  }
-
-  auto lock = std::lock_guard{_mutex};
-
-  const auto entry = _manifest.find(id);
-
-  if (entry == _manifest.end() || entry->second.cooker_version != cooker_version) {
-    return true;
-  }
-
-  auto error = std::error_code{};
-  const auto mtime = std::filesystem::last_write_time(source, error);
-
-  if (error) {
-    return true;
-  }
-
-  const auto mtime_count = mtime.time_since_epoch().count();
-
-  if (entry->second.source_mtime == mtime_count) {
-    return false; // fast path: unchanged since last cook
-  }
-
-  // mtime moved — confirm with a content hash before recooking.
-  if (entry->second.source_hash == utility::hash_file(source)) {
-    entry->second.source_mtime = mtime_count; // touched, not changed
-    _manifest_dirty = true;
-    return false;
-  }
-
-  return true;
-}
-
-auto asset_cooker::_record_cook(const math::uuid& id, std::uint32_t cooker_version, const std::filesystem::path& source) -> void {
-  auto error = std::error_code{};
-  const auto mtime = std::filesystem::last_write_time(source, error);
-  const auto mtime_count = error ? std::int64_t{0} : mtime.time_since_epoch().count();
-  const auto hash = utility::hash_file(source);
-
-  {
-    auto lock = std::lock_guard{_mutex};
-
-    auto& entry = _manifest[id];
-    entry.cooker_version = cooker_version;
-    entry.source_hash = hash;
-    entry.source_mtime = mtime_count;
-    _manifest_dirty = true;
-  }
-
-  _save_manifest();
-}
-
-auto asset_cooker::_manifest_path() const -> std::filesystem::path {
-  return core::engine::project().library_directory() / "manifest.yaml";
-}
-
-auto asset_cooker::_load_manifest() -> void {
-  const auto path = _manifest_path();
-
-  if (!std::filesystem::exists(path)) {
-    return;
-  }
-
+auto asset_cooker::parse_material_file(const std::filesystem::path& source) -> std::optional<material_description> {
   auto root = YAML::Node{};
 
   try {
-    root = YAML::LoadFile(path.string());
+    root = YAML::LoadFile(source.string());
   } catch (const std::exception& exception) {
-    utility::logger<"assets">::warn("Could not read asset manifest '{}' ({})", path.generic_string(), exception.what());
-    return;
+    utility::logger<"assets">::warn("Could not parse material '{}' ({})", source.generic_string(), exception.what());
+    return std::nullopt;
   }
 
-  const auto assets = root["assets"];
+  auto description = material_description{};
 
-  if (!assets) {
-    return;
+  if (root["name"]) description.name = root["name"].as<std::string>();
+  if (root["base_color_factor"]) description.base_color_factor = root["base_color_factor"].as<math::color>();
+  if (root["emissive_factor"]) description.emissive_factor = root["emissive_factor"].as<math::vector3>();
+  if (root["metallic_factor"]) description.metallic_factor = root["metallic_factor"].as<std::float_t>();
+  if (root["roughness_factor"]) description.roughness_factor = root["roughness_factor"].as<std::float_t>();
+  if (root["alpha_mode"]) {
+    const auto mode = root["alpha_mode"].as<std::string>();
+    description.alpha = (mode == "blend") ? alpha_mode::blend : (mode == "mask") ? alpha_mode::mask : alpha_mode::opaque;
   }
+  if (root["alpha_cutoff"]) description.alpha_cutoff = root["alpha_cutoff"].as<std::float_t>();
+  if (root["is_double_sided"]) description.is_double_sided = root["is_double_sided"].as<bool>();
+  if (root["casts_shadow"]) description.casts_shadow = root["casts_shadow"].as<bool>();
+  if (root["receives_shadow"]) description.receives_shadow = root["receives_shadow"].as<bool>();
+  if (root["normal_scale"]) description.normal_scale = root["normal_scale"].as<std::float_t>();
+  if (root["occlusion_strength"]) description.occlusion_strength = root["occlusion_strength"].as<std::float_t>();
+  if (root["emissive_strength"]) description.emissive_strength = root["emissive_strength"].as<std::float_t>();
+  if (root["ior"]) description.ior = root["ior"].as<std::float_t>();
 
-  auto lock = std::lock_guard{_mutex};
+  const auto path_slot = [&](const char* key) -> std::string {
+    if (const auto node = root[key]) {
+      return node.as<std::string>();
+    }
+    return {};
+  };
 
-  for (const auto node : assets) {
-    const auto uuid = node["uuid"].as<math::uuid>();
+  description.albedo = path_slot("albedo");
+  description.normal = path_slot("normal");
+  description.metallic_roughness = path_slot("metallic_roughness");
+  description.occlusion = path_slot("occlusion");
+  description.emissive = path_slot("emissive");
 
-    auto entry = manifest_entry{};
-    entry.path = node["path"].as<std::string>();
-    entry.cooker_version = node["cooker_version"].as<std::uint32_t>();
-    entry.source_hash = node["source_hash"].as<std::uint64_t>();
-    entry.source_mtime = node["source_mtime"].as<std::int64_t>();
-
-    _uuids.emplace(entry.path.generic_string(), uuid);
-    _paths.emplace(uuid, entry.path);
-    _manifest.emplace(uuid, std::move(entry));
-  }
-
-  utility::logger<"assets">::debug("Loaded asset manifest: {} entries", _manifest.size());
+  return description;
 }
 
-auto asset_cooker::_save_manifest() -> void {
-  auto lock = std::lock_guard{_mutex};
+auto asset_cooker::parse_particle_effect_file(const std::filesystem::path& source) -> std::optional<particle_effect_description> {
+  auto root = YAML::Node{};
 
-  if (!_manifest_dirty) {
-    return;
+  try {
+    root = YAML::LoadFile(source.string());
+  } catch (const std::exception& exception) {
+    utility::logger<"assets">::warn("Could not parse particle_effect '{}' ({})", source.generic_string(), exception.what());
+    return std::nullopt;
   }
 
-  auto emitter = YAML::Emitter{};
+  auto description = particle_effect_description{};
 
-  emitter << YAML::BeginMap;
-  emitter << YAML::Key << "version" << YAML::Value << 1u;
-  emitter << YAML::Key << "assets" << YAML::Value << YAML::BeginSeq;
+  if (root["name"]) description.name = root["name"].as<std::string>();
 
-  for (const auto& [uuid, entry] : _manifest) {
-    emitter << YAML::BeginMap;
-    emitter << YAML::Key << "uuid" << YAML::Value << uuid.value();
-    emitter << YAML::Key << "path" << YAML::Value << entry.path.generic_string();
-    emitter << YAML::Key << "cooker_version" << YAML::Value << entry.cooker_version;
-    emitter << YAML::Key << "source_hash" << YAML::Value << entry.source_hash;
-    emitter << YAML::Key << "source_mtime" << YAML::Value << entry.source_mtime;
-    emitter << YAML::EndMap;
+  const auto load_curve = [](const YAML::Node& node) -> curve {
+    auto result = curve{};
+
+    if (!node) {
+      return result;
+    }
+
+    for (const auto key_node : node) {
+      if (result.keys.is_full()) {
+        break;
+      }
+
+      auto key = curve_key{};
+
+      if (key_node["time"]) key.time = key_node["time"].as<std::float_t>();
+      if (key_node["value"]) key.value = key_node["value"].as<std::float_t>();
+
+      result.keys.push_back(key);
+    }
+
+    return result;
+  };
+
+  const auto load_gradient = [](const YAML::Node& node) -> gradient {
+    auto result = gradient{};
+
+    if (!node) {
+      return result;
+    }
+
+    if (const auto color_keys_node = node["color_keys"]) {
+      for (const auto key_node : color_keys_node) {
+        if (result.color_keys.is_full()) {
+          break;
+        }
+
+        auto key = gradient_color_key{};
+
+        if (key_node["time"]) key.time = key_node["time"].as<std::float_t>();
+        if (key_node["color"]) key.color = key_node["color"].as<math::color>();
+
+        result.color_keys.push_back(key);
+      }
+    }
+
+    if (const auto alpha_keys_node = node["alpha_keys"]) {
+      for (const auto key_node : alpha_keys_node) {
+        if (result.alpha_keys.is_full()) {
+          break;
+        }
+
+        auto key = gradient_alpha_key{};
+
+        if (key_node["time"]) key.time = key_node["time"].as<std::float_t>();
+        if (key_node["alpha"]) key.alpha = key_node["alpha"].as<std::float_t>();
+
+        result.alpha_keys.push_back(key);
+      }
+    }
+
+    return result;
+  };
+
+  if (const auto emitters = root["emitters"]) {
+    description.emitters.reserve(emitters.size());
+
+    for (const auto emitter_node : emitters) {
+      auto emitter = particle_emitter_description{};
+
+      if (emitter_node["name"]) emitter.name = emitter_node["name"].as<std::string>();
+
+      if (emitter_node["blend_mode"]) {
+        const auto mode = emitter_node["blend_mode"].as<std::string>();
+        emitter.blend_mode = (mode == "alpha_blend") ? emitter_blend_mode::alpha_blend : emitter_blend_mode::additive;
+      }
+
+      if (emitter_node["simulation_mode"]) {
+        const auto mode = emitter_node["simulation_mode"].as<std::string>();
+        emitter.simulation_mode = (mode == "gpu") ? particle_simulation_mode::gpu : particle_simulation_mode::cpu;
+      }
+
+      if (emitter_node["emission_rate"]) emitter.emission_rate = emitter_node["emission_rate"].as<std::float_t>();
+      if (emitter_node["burst_count"]) emitter.burst_count = emitter_node["burst_count"].as<std::uint32_t>();
+
+      if (emitter_node["shape"]) {
+        const auto shape = emitter_node["shape"].as<std::string>();
+        emitter.shape = (shape == "sphere") ? emitter_shape::sphere : (shape == "box") ? emitter_shape::box : (shape == "cone") ? emitter_shape::cone : emitter_shape::point;
+      }
+
+      if (emitter_node["shape_extents"]) emitter.shape_extents = emitter_node["shape_extents"].as<math::vector3>();
+
+      if (const auto cone_node = emitter_node["cone"]) {
+        if (cone_node["angle_degrees"]) emitter.cone.angle = math::degree{cone_node["angle_degrees"].as<std::float_t>()};
+        if (cone_node["radius"]) emitter.cone.radius = cone_node["radius"].as<std::float_t>();
+        if (cone_node["emit_from_volume"]) emitter.cone.emit_from_volume = cone_node["emit_from_volume"].as<std::float_t>();
+      }
+
+      if (emitter_node["velocity_min"]) emitter.velocity_min = emitter_node["velocity_min"].as<math::vector3>();
+      if (emitter_node["velocity_max"]) emitter.velocity_max = emitter_node["velocity_max"].as<math::vector3>();
+      if (emitter_node["lifetime_min"]) emitter.lifetime_min = emitter_node["lifetime_min"].as<std::float_t>();
+      if (emitter_node["lifetime_max"]) emitter.lifetime_max = emitter_node["lifetime_max"].as<std::float_t>();
+      if (emitter_node["start_color"]) emitter.start_color = emitter_node["start_color"].as<math::color>();
+      if (emitter_node["end_color"]) emitter.end_color = emitter_node["end_color"].as<math::color>();
+      if (emitter_node["color_over_lifetime"]) emitter.color_over_lifetime = load_gradient(emitter_node["color_over_lifetime"]);
+      if (emitter_node["size_min"]) emitter.size_min = emitter_node["size_min"].as<std::float_t>();
+      if (emitter_node["size_max"]) emitter.size_max = emitter_node["size_max"].as<std::float_t>();
+      if (emitter_node["size_over_lifetime"]) emitter.size_over_lifetime = load_curve(emitter_node["size_over_lifetime"]);
+      if (emitter_node["rotation_min"]) emitter.rotation_min = emitter_node["rotation_min"].as<std::float_t>();
+      if (emitter_node["rotation_max"]) emitter.rotation_max = emitter_node["rotation_max"].as<std::float_t>();
+      if (emitter_node["rotation_over_lifetime"]) emitter.rotation_over_lifetime = load_curve(emitter_node["rotation_over_lifetime"]);
+
+      if (const auto velocity_curve_node = emitter_node["velocity_over_lifetime"]) {
+        emitter.velocity_over_lifetime.x = load_curve(velocity_curve_node["x"]);
+        emitter.velocity_over_lifetime.y = load_curve(velocity_curve_node["y"]);
+        emitter.velocity_over_lifetime.z = load_curve(velocity_curve_node["z"]);
+      }
+
+      if (emitter_node["force_over_lifetime_min"]) emitter.force_over_lifetime_min = emitter_node["force_over_lifetime_min"].as<math::vector3>();
+      if (emitter_node["force_over_lifetime_max"]) emitter.force_over_lifetime_max = emitter_node["force_over_lifetime_max"].as<math::vector3>();
+
+      if (emitter_node["gravity"]) emitter.gravity = emitter_node["gravity"].as<std::float_t>();
+      if (emitter_node["drag"]) emitter.drag = emitter_node["drag"].as<std::float_t>();
+
+      if (emitter_node["texture"]) {
+        emitter.texture = emitter_node["texture"].as<std::string>();
+      }
+
+      if (emitter_node["render_mode"]) {
+        emitter.render_mode = (emitter_node["render_mode"].as<std::string>() == "mesh") ? particle_render_mode::mesh : particle_render_mode::billboard;
+      }
+
+      if (emitter_node["render_mesh"]) {
+        emitter.render_mesh = emitter_node["render_mesh"].as<std::string>();
+      }
+
+      if (emitter_node["render_material"]) {
+        emitter.render_material = emitter_node["render_material"].as<std::string>();
+      }
+
+      if (const auto collision_node = emitter_node["collision"]) {
+        auto& collision = emitter.collision;
+
+        if (collision_node["mode"]) {
+          const auto mode = collision_node["mode"].as<std::string>();
+          collision.mode = (mode == "planes") ? particle_collision_mode::planes : (mode == "world") ? particle_collision_mode::world : particle_collision_mode::none;
+        }
+
+        if (collision_node["bounce"]) collision.bounce = collision_node["bounce"].as<std::float_t>();
+        if (collision_node["lifetime_loss"]) collision.lifetime_loss = collision_node["lifetime_loss"].as<std::float_t>();
+        if (collision_node["dampen"]) collision.dampen = collision_node["dampen"].as<std::float_t>();
+        if (collision_node["radius_scale"]) collision.radius_scale = collision_node["radius_scale"].as<std::float_t>();
+        if (collision_node["max_collisions_per_particle"]) collision.max_collisions_per_particle = collision_node["max_collisions_per_particle"].as<std::uint32_t>();
+
+        if (const auto planes_node = collision_node["planes"]) {
+          for (const auto plane_node : planes_node) {
+            if (collision.planes.size() >= collision_max_planes) {
+              break;
+            }
+
+            auto plane = collision_plane{};
+
+            if (plane_node["normal"]) plane.normal = plane_node["normal"].as<math::vector3>();
+            if (plane_node["distance"]) plane.distance = plane_node["distance"].as<std::float_t>();
+
+            collision.planes.push_back(plane);
+          }
+        }
+      }
+
+      if (const auto sub_emitters_node = emitter_node["sub_emitters"]) {
+        for (const auto binding_node : sub_emitters_node) {
+          auto binding = particle_emitter_description::sub_emitter_description{};
+
+          if (binding_node["event"]) {
+            const auto event = binding_node["event"].as<std::string>();
+            binding.event = (event == "death") ? sub_emitter_event::death : (event == "collision") ? sub_emitter_event::collision : sub_emitter_event::birth;
+          }
+
+          if (binding_node["effect"]) {
+            binding.effect = binding_node["effect"].as<std::string>();
+          }
+
+          if (binding_node["probability"]) binding.probability = binding_node["probability"].as<std::float_t>();
+          if (binding_node["inherit_velocity"]) binding.inherit_velocity = binding_node["inherit_velocity"].as<bool>();
+
+          emitter.sub_emitters.push_back(binding);
+        }
+      }
+
+      if (const auto trail_node = emitter_node["trail"]) {
+        auto& trail = emitter.trail;
+
+        if (trail_node["enabled"]) trail.enabled = trail_node["enabled"].as<bool>();
+        if (trail_node["min_vertex_distance"]) trail.min_vertex_distance = trail_node["min_vertex_distance"].as<std::float_t>();
+        if (trail_node["lifetime"]) trail.lifetime = trail_node["lifetime"].as<std::float_t>();
+        if (trail_node["width"]) trail.width = trail_node["width"].as<std::float_t>();
+        if (trail_node["color_over_trail"]) trail.color_over_trail = load_gradient(trail_node["color_over_trail"]);
+        if (trail_node["die_with_particle"]) trail.die_with_particle = trail_node["die_with_particle"].as<bool>();
+      }
+
+      description.emitters.push_back(std::move(emitter));
+    }
   }
 
-  emitter << YAML::EndSeq;
-  emitter << YAML::EndMap;
+  return description;
+}
 
-  auto error = std::error_code{};
-  std::filesystem::create_directories(_manifest_path().parent_path(), error);
+auto asset_cooker::parse_animation_graph_file(const std::filesystem::path& source) -> std::optional<animation_graph::create_info> {
+  auto root = YAML::Node{};
 
-  auto out = std::ofstream{_manifest_path()};
-  out << emitter.c_str();
+  try {
+    root = YAML::LoadFile(source.string());
+  } catch (const std::exception& exception) {
+    utility::logger<"assets">::warn("Could not parse animation_graph '{}' ({})", source.generic_string(), exception.what());
+    return std::nullopt;
+  }
 
-  _manifest_dirty = false;
+  auto info = animation_graph::create_info{};
+
+  if (root["name"]) info.name = root["name"].as<std::string>();
+  if (root["entry_state_id"]) info.entry_state_id = root["entry_state_id"].as<std::uint32_t>();
+
+  if (const auto parameters = root["parameters"]) {
+    info.parameters.reserve(parameters.size());
+
+    for (const auto parameter_node : parameters) {
+      auto parameter = animation_parameter{};
+
+      if (parameter_node["name"]) parameter.name = parameter_node["name"].as<std::string>();
+      parameter.default_value = load_animation_parameter_value(parameter_node);
+
+      info.parameters.push_back(parameter);
+    }
+  }
+
+  if (const auto states = root["states"]) {
+    info.states.reserve(states.size());
+
+    for (const auto state_node : states) {
+      auto state = animation_state{};
+
+      if (state_node["id"]) state.id = state_node["id"].as<std::uint32_t>();
+      if (state_node["name"]) state.name = state_node["name"].as<std::string>();
+      if (state_node["clip_name"]) state.clip_name = state_node["clip_name"].as<std::string>();
+      if (state_node["speed"]) state.speed = state_node["speed"].as<std::float_t>();
+      if (state_node["loop"]) state.loop = state_node["loop"].as<bool>();
+
+      if (const auto position_node = state_node["editor_position"]) {
+        if (position_node["x"]) state.editor_position.x() = position_node["x"].as<std::float_t>();
+        if (position_node["y"]) state.editor_position.y() = position_node["y"].as<std::float_t>();
+      }
+
+      info.states.push_back(state);
+    }
+  }
+
+  if (const auto transitions = root["transitions"]) {
+    info.transitions.reserve(transitions.size());
+
+    for (const auto transition_node : transitions) {
+      auto transition = animation_transition{};
+
+      if (transition_node["from_state"]) transition.from_state = transition_node["from_state"].as<std::uint32_t>();
+      if (transition_node["to_state"]) transition.to_state = transition_node["to_state"].as<std::uint32_t>();
+      if (transition_node["duration"]) transition.duration = transition_node["duration"].as<std::float_t>();
+      if (transition_node["has_exit_time"]) transition.has_exit_time = transition_node["has_exit_time"].as<bool>();
+      if (transition_node["exit_time"]) transition.exit_time = transition_node["exit_time"].as<std::float_t>();
+
+      if (const auto conditions_node = transition_node["conditions"]) {
+        for (const auto condition_node : conditions_node) {
+          auto condition = animation_condition{};
+
+          if (condition_node["parameter_name"]) condition.parameter_name = condition_node["parameter_name"].as<std::string>();
+          if (condition_node["comparator"]) condition.comparator = load_animation_condition_comparator(condition_node["comparator"].as<std::string>());
+          condition.expected = load_animation_parameter_value(condition_node);
+
+          transition.conditions.push_back(condition);
+        }
+      }
+
+      info.transitions.push_back(transition);
+    }
+  }
+
+  return info;
 }
 
 auto asset_cooker::_cook_texture(const std::filesystem::path& source, const std::filesystem::path& cooked) -> bool {
@@ -733,7 +824,7 @@ auto asset_cooker::_cook_texture(const std::filesystem::path& source, const std:
 
   const auto header = texture_header{
     texture_magic,
-    texture_version,
+    texture_cook_version,
     static_cast<std::uint32_t>(width),
     static_cast<std::uint32_t>(height),
     4u,
@@ -771,7 +862,7 @@ auto asset_cooker::_load_cooked_texture(const std::filesystem::path& cooked, std
   auto header = texture_header{};
   in.read(reinterpret_cast<char*>(&header), sizeof(header));
 
-  if (!in || header.magic != texture_magic || header.version != texture_version) {
+  if (!in || header.magic != texture_magic || header.version != texture_cook_version) {
     return false; // missing / corrupt / stale format -> caller recooks
   }
 
@@ -922,7 +1013,7 @@ auto asset_cooker::_cook_font(const std::filesystem::path& source, const std::fi
 
   const auto header = font_header{
     font_magic,
-    font_version,
+    font_cook_version,
     atlas_width,
     atlas_height,
     font_codepoint_count,
@@ -952,7 +1043,7 @@ auto asset_cooker::_load_cooked_font(const std::filesystem::path& cooked, cooked
   auto header = font_header{};
   in.read(reinterpret_cast<char*>(&header), sizeof(header));
 
-  if (!in || header.magic != font_magic || header.version != font_version) {
+  if (!in || header.magic != font_magic || header.version != font_cook_version) {
     return false; // missing / corrupt / stale format -> caller recooks
   }
 
@@ -1168,7 +1259,7 @@ auto asset_cooker::_optimize_and_generate_lods(std::vector<vertex>& vertices, st
   return lods;
 }
 
-auto asset_cooker::_cook_mesh(const std::filesystem::path& source, const math::uuid& id, const std::filesystem::path& cooked, const mesh_import_options& options, const material_resolver& resolve_material) -> bool {
+auto asset_cooker::_cook_mesh(const std::filesystem::path& source, const math::uuid& id, const std::filesystem::path& cooked) -> bool {
   auto data = fastgltf::GltfDataBuffer::FromPath(source);
 
   if (data.error() != fastgltf::Error::None) {
@@ -1187,21 +1278,29 @@ auto asset_cooker::_cook_mesh(const std::filesystem::path& source, const math::u
 
   auto& gltf = loaded.get();
 
-  const auto texture_uuid = [&](std::size_t texture_index) -> math::uuid {
+  // Referenced glTF images become a material_description texture-slot *path* (assets-directory-
+  // relative), not a uuid -- resolving a path to a stable uuid is asset_manifest::import's job, and
+  // asset_manifest is main-thread-only (see its own doc comment for why). asset_residency's mesh
+  // finalize step turns this path into a handle via load_texture(path, ...) exactly the same way it
+  // already does for a hand-authored `.material` file's texture slots.
+  const auto& project = core::engine::project();
+
+  const auto texture_path = [&](std::size_t texture_index) -> std::string {
     const auto& gltf_texture = gltf.textures[texture_index];
 
     if (!gltf_texture.imageIndex.has_value()) {
-      return math::uuid::nil();
+      return {};
     }
 
     const auto& image = gltf.images[gltf_texture.imageIndex.value()];
 
     if (const auto* uri = std::get_if<fastgltf::sources::URI>(&image.data)) {
-      return import(source.parent_path() / std::filesystem::path{std::string{uri->uri.path()}});
+      const auto absolute = source.parent_path() / std::filesystem::path{std::string{uri->uri.path()}};
+      return std::filesystem::relative(absolute, project.assets_directory()).generic_string();
     }
 
     utility::logger<"assets">::warn("Cook: mesh '{}' has a non-file image, using default", source.generic_string());
-    return math::uuid::nil();
+    return {};
   };
 
   auto material_uuids = std::vector<math::uuid>{};
@@ -1224,22 +1323,21 @@ auto asset_cooker::_cook_mesh(const std::filesystem::path& source, const math::u
     description.emissive_strength = gltf_material.emissiveStrength;
     description.ior = gltf_material.ior;
 
-    if (pbr.baseColorTexture.has_value())         description.albedo             = texture_uuid(pbr.baseColorTexture->textureIndex);
-    if (pbr.metallicRoughnessTexture.has_value()) description.metallic_roughness = texture_uuid(pbr.metallicRoughnessTexture->textureIndex);
-    if (gltf_material.normalTexture.has_value())  description.normal             = texture_uuid(gltf_material.normalTexture->textureIndex);
-    if (gltf_material.occlusionTexture.has_value()) description.occlusion        = texture_uuid(gltf_material.occlusionTexture->textureIndex);
-    if (gltf_material.emissiveTexture.has_value()) description.emissive          = texture_uuid(gltf_material.emissiveTexture->textureIndex);
+    if (pbr.baseColorTexture.has_value())         description.albedo             = texture_path(pbr.baseColorTexture->textureIndex);
+    if (pbr.metallicRoughnessTexture.has_value()) description.metallic_roughness = texture_path(pbr.metallicRoughnessTexture->textureIndex);
+    if (gltf_material.normalTexture.has_value())  description.normal             = texture_path(gltf_material.normalTexture->textureIndex);
+    if (gltf_material.occlusionTexture.has_value()) description.occlusion        = texture_path(gltf_material.occlusionTexture->textureIndex);
+    if (gltf_material.emissiveTexture.has_value()) description.emissive          = texture_path(gltf_material.emissiveTexture->textureIndex);
 
-    auto material_uuid = math::uuid::nil();
+    // Every embedded material is cooked as a self-contained, resolvable side-effect blob here --
+    // same idea as a skinned mesh's skeleton/animation clips below. Whether this ends up being what
+    // the submesh actually uses, or gets superseded by a hand-editable extracted `.material` file,
+    // is decided later by asset_residency's main-thread mesh finalize step (mesh_import_options::
+    // extract_materials) -- see cooked_submesh::material's doc comment.
+    const auto material_uuid = derive_material_uuid(id, material_uuids.size());
 
-    if (options.extract_materials) {
-      material_uuid = resolve_material(description, source);
-    } else {
-      material_uuid = _derive_material_uuid(id, material_uuids.size());
-
-      if (!_cook_material(material_uuid, description)) {
-        return false;
-      }
+    if (!_cook_material(material_uuid, description)) {
+      return false;
     }
 
     material_uuids.push_back(material_uuid);
@@ -1555,7 +1653,7 @@ auto asset_cooker::_cook_mesh(const std::filesystem::path& source, const math::u
   auto animation_clip_count = std::uint32_t{0u};
 
   if (has_skin_data) {
-    if (!_cook_skeleton(_derive_skeleton_uuid(id), joints)) {
+    if (!_cook_skeleton(derive_skeleton_uuid(id), joints)) {
       return false;
     }
 
@@ -1659,7 +1757,7 @@ auto asset_cooker::_cook_mesh(const std::filesystem::path& source, const math::u
       clip_data.duration = duration;
       clip_data.channels = std::move(channels);
 
-      if (!_cook_animation_clip(_derive_animation_clip_uuid(id, animation_clip_count), clip_data)) {
+      if (!_cook_animation_clip(derive_animation_clip_uuid(id, animation_clip_count), clip_data)) {
         return false;
       }
 
@@ -1689,7 +1787,7 @@ auto asset_cooker::_cook_mesh(const std::filesystem::path& source, const math::u
 
   auto header = mesh_file_header{};
   header.magic = mesh_magic;
-  header.version = mesh_version;
+  header.version = mesh_cook_version;
   header.vertex_count = static_cast<std::uint32_t>(vertices.size());
   header.index_count = static_cast<std::uint32_t>(indices.size());
   header.submesh_count = static_cast<std::uint32_t>(submeshes.size());
@@ -1754,7 +1852,7 @@ auto asset_cooker::_load_cooked_mesh(const std::filesystem::path& cooked, std::v
   auto header = mesh_file_header{};
   in.read(reinterpret_cast<char*>(&header), sizeof(header));
 
-  if (!in || header.magic != mesh_magic || header.version != mesh_version) {
+  if (!in || header.magic != mesh_magic || header.version != mesh_cook_version) {
     return false; // missing / corrupt / stale format -> caller recooks
   }
 
@@ -1835,7 +1933,7 @@ auto asset_cooker::_load_cooked_mesh(const std::filesystem::path& cooked, std::v
 }
 
 auto asset_cooker::_cook_material(const math::uuid& id, const material_description& description) -> bool {
-  const auto cooked = _cooked_path(id, ".sbxmat");
+  const auto cooked = cooked_path(id, ".sbxmat");
 
   auto error = std::error_code{};
   std::filesystem::create_directories(cooked.parent_path(), error);
@@ -1849,7 +1947,7 @@ auto asset_cooker::_cook_material(const math::uuid& id, const material_descripti
 
   auto header = material_file_header{};
   header.magic = material_magic;
-  header.version = material_version;
+  header.version = material_cook_version;
   header.base_color_factor[0] = description.base_color_factor.r();
   header.base_color_factor[1] = description.base_color_factor.g();
   header.base_color_factor[2] = description.base_color_factor.b();
@@ -1866,15 +1964,20 @@ auto asset_cooker::_cook_material(const math::uuid& id, const material_descripti
   header.occlusion_strength = description.occlusion_strength;
   header.emissive_strength = description.emissive_strength;
   header.ior = description.ior;
-  header.albedo_uuid = description.albedo.value();
-  header.normal_uuid = description.normal.value();
-  header.metallic_roughness_uuid = description.metallic_roughness.value();
-  header.occlusion_uuid = description.occlusion.value();
-  header.emissive_uuid = description.emissive.value();
   header.name_length = static_cast<std::uint32_t>(description.name.size());
+  header.albedo_path_length = static_cast<std::uint32_t>(description.albedo.size());
+  header.normal_path_length = static_cast<std::uint32_t>(description.normal.size());
+  header.metallic_roughness_path_length = static_cast<std::uint32_t>(description.metallic_roughness.size());
+  header.occlusion_path_length = static_cast<std::uint32_t>(description.occlusion.size());
+  header.emissive_path_length = static_cast<std::uint32_t>(description.emissive.size());
 
   out.write(reinterpret_cast<const char*>(&header), sizeof(header));
   out.write(description.name.data(), static_cast<std::streamsize>(description.name.size()));
+  out.write(description.albedo.data(), static_cast<std::streamsize>(description.albedo.size()));
+  out.write(description.normal.data(), static_cast<std::streamsize>(description.normal.size()));
+  out.write(description.metallic_roughness.data(), static_cast<std::streamsize>(description.metallic_roughness.size()));
+  out.write(description.occlusion.data(), static_cast<std::streamsize>(description.occlusion.size()));
+  out.write(description.emissive.data(), static_cast<std::streamsize>(description.emissive.size()));
 
   return true;
 }
@@ -1884,8 +1987,7 @@ auto asset_cooker::_cook_environment_map(const std::filesystem::path& source, co
   auto height = std::int32_t{0};
   auto channels = std::int32_t{0};
 
-  // source (from _paths[uuid]) is already fully resolved — same as _cook_texture's source.string()
-  // above; wrapping it in absolute() here would double-prefix assets_directory().
+  // source is already fully resolved -- same as _cook_texture's source.string() above.
   auto* data = stbi_loadf(source.string().c_str(), &width, &height, &channels, 4);
 
   if (data == nullptr) {
@@ -1895,7 +1997,7 @@ auto asset_cooker::_cook_environment_map(const std::filesystem::path& source, co
 
   const auto data_size = static_cast<std::uint32_t>(width) * static_cast<std::uint32_t>(height) * 4u * static_cast<std::uint32_t>(sizeof(std::float_t));
 
-  const auto header = texture_header{environment_magic, environment_version, static_cast<std::uint32_t>(width), static_cast<std::uint32_t>(height), 4u, data_size};
+  const auto header = texture_header{environment_magic, environment_cook_version, static_cast<std::uint32_t>(width), static_cast<std::uint32_t>(height), 4u, data_size};
 
   auto error = std::error_code{};
   std::filesystem::create_directories(cooked.parent_path(), error);
@@ -1927,7 +2029,7 @@ auto asset_cooker::_load_cooked_environment_map(const std::filesystem::path& coo
   auto header = texture_header{};
   in.read(reinterpret_cast<char*>(&header), sizeof(header));
 
-  if (!in || header.magic != environment_magic || header.version != environment_version) {
+  if (!in || header.magic != environment_magic || header.version != environment_cook_version) {
     return false;
   }
 
@@ -1944,38 +2046,8 @@ auto asset_cooker::_load_cooked_environment_map(const std::filesystem::path& coo
   return true;
 }
 
-auto asset_cooker::_derive_material_uuid(const math::uuid& mesh, std::size_t index) -> math::uuid {
-  // splitmix64 over (mesh uuid, index) — deterministic so re-cooking is stable.
-  auto x = mesh.value() ^ (0x9e3779b97f4a7c15ull * (static_cast<std::uint64_t>(index) + 1ull));
-  x ^= x >> 30; x *= 0xbf58476d1ce4e5b9ull;
-  x ^= x >> 27; x *= 0x94d049bb133111ebull;
-  x ^= x >> 31;
-
-  return math::uuid::from_value(x == 0ull ? 1ull : x); // never nil
-}
-
-auto asset_cooker::_derive_skeleton_uuid(const math::uuid& mesh) -> math::uuid {
-  // Same splitmix64 shape as _derive_material_uuid, salted differently so a mesh's skeleton uuid
-  // never collides with one of its material uuids.
-  auto x = mesh.value() ^ 0xff51afd7ed558ccdull;
-  x ^= x >> 30; x *= 0xbf58476d1ce4e5b9ull;
-  x ^= x >> 27; x *= 0x94d049bb133111ebull;
-  x ^= x >> 31;
-
-  return math::uuid::from_value(x == 0ull ? 1ull : x); // never nil
-}
-
-auto asset_cooker::_derive_animation_clip_uuid(const math::uuid& mesh, std::size_t index) -> math::uuid {
-  auto x = mesh.value() ^ (0xc2b2ae3d27d4eb4full * (static_cast<std::uint64_t>(index) + 1ull));
-  x ^= x >> 30; x *= 0xbf58476d1ce4e5b9ull;
-  x ^= x >> 27; x *= 0x94d049bb133111ebull;
-  x ^= x >> 31;
-
-  return math::uuid::from_value(x == 0ull ? 1ull : x); // never nil
-}
-
 auto asset_cooker::_cook_skeleton(const math::uuid& id, const std::vector<skeleton::joint>& joints) -> bool {
-  const auto cooked = _cooked_path(id, ".sbxskl");
+  const auto cooked = cooked_path(id, ".sbxskl");
 
   auto error = std::error_code{};
   std::filesystem::create_directories(cooked.parent_path(), error);
@@ -1989,7 +2061,7 @@ auto asset_cooker::_cook_skeleton(const math::uuid& id, const std::vector<skelet
 
   auto header = skeleton_file_header{};
   header.magic = skeleton_magic;
-  header.version = skeleton_version;
+  header.version = skeleton_cook_version;
   header.joint_count = static_cast<std::uint32_t>(joints.size());
 
   out.write(reinterpret_cast<const char*>(&header), sizeof(header));
@@ -2024,7 +2096,7 @@ auto asset_cooker::_cook_skeleton(const math::uuid& id, const std::vector<skelet
 }
 
 auto asset_cooker::_load_cooked_skeleton(const math::uuid& id, std::vector<skeleton::joint>& joints) -> bool {
-  const auto cooked = _cooked_path(id, ".sbxskl");
+  const auto cooked = cooked_path(id, ".sbxskl");
 
   auto in = std::ifstream{cooked, std::ios::binary};
 
@@ -2035,7 +2107,7 @@ auto asset_cooker::_load_cooked_skeleton(const math::uuid& id, std::vector<skele
   auto header = skeleton_file_header{};
   in.read(reinterpret_cast<char*>(&header), sizeof(header));
 
-  if (!in || header.magic != skeleton_magic || header.version != skeleton_version) {
+  if (!in || header.magic != skeleton_magic || header.version != skeleton_cook_version) {
     utility::logger<"assets">::warn("Invalid cooked skeleton '{}'", cooked.generic_string());
     return false;
   }
@@ -2082,7 +2154,7 @@ auto asset_cooker::_load_cooked_skeleton(const math::uuid& id, std::vector<skele
 }
 
 auto asset_cooker::_cook_animation_clip(const math::uuid& id, const animation_clip_data& data) -> bool {
-  const auto cooked = _cooked_path(id, ".sbxanm");
+  const auto cooked = cooked_path(id, ".sbxanm");
 
   auto error = std::error_code{};
   std::filesystem::create_directories(cooked.parent_path(), error);
@@ -2096,7 +2168,7 @@ auto asset_cooker::_cook_animation_clip(const math::uuid& id, const animation_cl
 
   auto header = animation_clip_file_header{};
   header.magic = animation_magic;
-  header.version = animation_version;
+  header.version = animation_cook_version;
   header.duration = data.duration;
   header.channel_count = static_cast<std::uint32_t>(data.channels.size());
   header.name_length = static_cast<std::uint32_t>(data.name.size());
@@ -2136,7 +2208,7 @@ auto asset_cooker::_cook_animation_clip(const math::uuid& id, const animation_cl
 }
 
 auto asset_cooker::_load_cooked_animation_clip(const math::uuid& id, animation_clip_data& data) -> bool {
-  const auto cooked = _cooked_path(id, ".sbxanm");
+  const auto cooked = cooked_path(id, ".sbxanm");
 
   auto in = std::ifstream{cooked, std::ios::binary};
 
@@ -2147,7 +2219,7 @@ auto asset_cooker::_load_cooked_animation_clip(const math::uuid& id, animation_c
   auto header = animation_clip_file_header{};
   in.read(reinterpret_cast<char*>(&header), sizeof(header));
 
-  if (!in || header.magic != animation_magic || header.version != animation_version) {
+  if (!in || header.magic != animation_magic || header.version != animation_cook_version) {
     utility::logger<"assets">::warn("Invalid cooked animation clip '{}'", cooked.generic_string());
     return false;
   }

@@ -16,6 +16,7 @@
 #include <libsbx/graphics/resources/buffer.hpp>
 
 #include <libsbx/assets/asset_handle.hpp>
+#include <libsbx/assets/loadable.hpp>
 #include <libsbx/assets/material.hpp>
 #include <libsbx/assets/skeleton.hpp>
 #include <libsbx/assets/animation_clip.hpp>
@@ -52,7 +53,7 @@ struct alignas(std::float_t) skin_vertex {
  * (one per glTF primitive). The GPU buffers are filled on the render thread; the mesh is drawable
  * once resident. The vertex buffer is read in the shader via its device address (BDA).
  */
-class mesh final {
+class mesh final : public loadable {
 
   friend class asset_residency;
 
@@ -154,6 +155,15 @@ private:
   auto _set_skeletal_data(skeleton_handle skeleton, std::vector<animation_clip_handle> animation_clips) -> void {
     _skeleton = std::move(skeleton);
     _animation_clips = std::move(animation_clips);
+  }
+
+  // Fills in a placeholder mesh() (default-constructed, empty submeshes) once its cooked content
+  // has come back from the background asset loader -- called once, on the main thread, from
+  // asset_residency's mesh finalize step. Mirrors the constructor's own field set.
+  auto _finalize_content(std::vector<submesh> submeshes, const math::volume& bounds, std::uint32_t vertex_count) -> void {
+    _submeshes = std::move(submeshes);
+    _bounds = bounds;
+    _vertex_count = vertex_count;
   }
 
   std::vector<submesh> _submeshes{};

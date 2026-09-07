@@ -13,6 +13,7 @@
 #include <libsbx/math/vector3.hpp>
 
 #include <libsbx/assets/asset_handle.hpp>
+#include <libsbx/assets/loadable.hpp>
 
 namespace sbx::assets {
 
@@ -24,7 +25,7 @@ namespace sbx::assets {
  * index -- so evaluating world matrices at runtime is a single forward pass, no recursion needed.
  * Pure CPU data; unlike @ref mesh/@ref texture there's no GPU residency of its own.
  */
-class skeleton final {
+class skeleton final : public loadable {
 
   friend class asset_residency;
 
@@ -57,6 +58,14 @@ public:
   }
 
 private:
+
+  // Fills in a placeholder skeleton() (default-constructed, empty joints) once its cooked content
+  // has come back from the background asset loader -- called once, on the main thread, from
+  // asset_residency's skeleton finalize step.
+  auto _finalize_content(std::vector<joint> joints) -> void {
+    _joints = std::move(joints);
+    _bump_generation();
+  }
 
   std::vector<joint> _joints{};
   math::uuid _id{math::uuid::nil()};

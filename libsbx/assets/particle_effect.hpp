@@ -15,6 +15,7 @@
 #include <libsbx/containers/static_vector.hpp>
 
 #include <libsbx/assets/asset_handle.hpp>
+#include <libsbx/assets/loadable.hpp>
 #include <libsbx/assets/material.hpp>
 #include <libsbx/assets/mesh.hpp>
 #include <libsbx/assets/texture.hpp>
@@ -244,7 +245,7 @@ struct particle_emitter {
   }
 }; // struct particle_emitter
 
-class particle_effect final {
+class particle_effect final : public loadable {
 
   friend class asset_residency;
 

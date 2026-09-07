@@ -59,8 +59,48 @@ static auto sanitize_file_name(std::string name) -> std::string {
   return name;
 }
 
-asset_residency::asset_residency(asset_cooker& cooker, ibl_baker& baker)
-: _cooker{cooker},
+// "type"+"value" tag pair -- animation_parameter_value's alternative *is* its type, so this is
+// purely a persistence detail (the runtime API never switches on a type enum, see
+// animation_graph.hpp's doc comment). Mirrored by load_animation_parameter_value in
+// asset_cooker.cpp -- parsing moved there with the rest of the background-loadable YAML files;
+// saving stays here since it's a synchronous, editor-only write path.
+static auto save_animation_parameter_value(const animation_parameter_value& value) -> YAML::Node {
+  auto node = YAML::Node{};
+
+  std::visit([&node](const auto& alternative) {
+    using alternative_type = std::decay_t<decltype(alternative)>;
+
+    if constexpr (std::is_same_v<alternative_type, std::float_t>) {
+      node["type"] = "float";
+      node["value"] = alternative;
+    } else if constexpr (std::is_same_v<alternative_type, bool>) {
+      node["type"] = "bool";
+      node["value"] = alternative;
+    } else if constexpr (std::is_same_v<alternative_type, std::int32_t>) {
+      node["type"] = "int";
+      node["value"] = alternative;
+    } else {
+      static_assert(std::is_same_v<alternative_type, animation_trigger>);
+      node["type"] = "trigger"; // no value -- a trigger only ever carries a live "fired" flag, which isn't authored
+    }
+  }, value);
+
+  return node;
+}
+
+static auto save_animation_condition_comparator(animation_condition_comparator comparator) -> std::string {
+  switch (comparator) {
+    case animation_condition_comparator::not_equals: return "not_equals";
+    case animation_condition_comparator::greater: return "greater";
+    case animation_condition_comparator::greater_or_equal: return "greater_or_equal";
+    case animation_condition_comparator::less: return "less";
+    case animation_condition_comparator::less_or_equal: return "less_or_equal";
+    default: return "equals";
+  }
+}
+
+asset_residency::asset_residency(asset_manifest& manifest, ibl_baker& baker)
+: _manifest{manifest},
   _ibl{baker} {
   _white = _create_default_texture({255u, 255u, 255u, 255u});
   _normal = _create_default_texture({128u, 128u, 255u, 255u}); // (0,0,1) tangent-space normal
@@ -68,10 +108,21 @@ asset_residency::asset_residency(asset_cooker& cooker, ibl_baker& baker)
   _magenta = _create_default_texture({255u, 0u, 255u, 255u});   // load-error marker
 }
 
-auto asset_residency::load_texture(const math::uuid& id, graphics::format format) -> texture_handle {
+asset_residency::~asset_residency() {
+  // Stop the background thread *before* any of the caches/pending-upload queues above it are torn
+  // down -- see the member declaration's own doc comment. The member's own destructor would call
+  // abort() anyway; this makes the shutdown-ordering intent explicit at this level too.
+  _loader.abort();
+}
+
+auto asset_residency::_texture_cache_key(const math::uuid& id, graphics::format format) const -> std::string {
   const auto is_srgb = (format == graphics::format::r8g8b8a8_srgb);
 
-  const auto key = fmt::format("{}:{}", id.value(), (is_srgb ? "#srgb" : "#linear"));
+  return fmt::format("{}:{}", id.value(), (is_srgb ? "#srgb" : "#linear"));
+}
+
+auto asset_residency::load_texture(const math::uuid& id, graphics::format format) -> texture_handle {
+  const auto key = _texture_cache_key(id, format);
 
   {
     auto lock = std::lock_guard{_mutex};
@@ -81,11 +132,15 @@ auto asset_residency::load_texture(const math::uuid& id, graphics::format format
     }
   }
 
-  auto data = _cooker.resolve_texture(id);
+  const auto source = _manifest.path_of(id);
 
-  if (!data) {
+  if (source.empty()) {
+    utility::logger<"assets">::warn("Unknown texture uuid {}", id);
     return texture_handle{};
   }
+
+  const auto cooked = _manifest.cooked_path(id, ".sbxtex");
+  const auto needs_cook = _manifest.is_cooked_stale(id, source, cooked, texture_cook_version);
 
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
@@ -98,10 +153,10 @@ auto asset_residency::load_texture(const math::uuid& id, graphics::format format
 
   {
     auto lock = std::lock_guard{_mutex};
-
     _textures.emplace(key, record);
-    _pending_textures.push_back(pending_texture_upload{index, std::move(data->pixels), data->width, data->height, format});
   }
+
+  _loader.submit(asset_loader::texture_request{id, format, source, cooked, needs_cook});
 
   return texture_handle{record};
 }
@@ -111,7 +166,7 @@ auto asset_residency::load_texture(const std::filesystem::path& path, graphics::
 
   const auto assets_directory = project.assets_directory();
 
-  return load_texture(_cooker.import(assets_directory / path), format);
+  return load_texture(_manifest.import(assets_directory / path), format);
 }
 
 auto asset_residency::load_font(const math::uuid& id) -> font_handle {
@@ -123,12 +178,15 @@ auto asset_residency::load_font(const math::uuid& id) -> font_handle {
     }
   }
 
-  auto data = _cooker.resolve_font(id);
+  const auto source = _manifest.path_of(id);
 
-  if (!data) {
-    utility::logger<"assets">::warn("Could not load font {}", id);
+  if (source.empty()) {
+    utility::logger<"assets">::warn("Unknown font uuid {}", id);
     return font_handle{};
   }
+
+  const auto cooked = _manifest.cooked_path(id, ".sbxfnt");
+  const auto needs_cook = _manifest.is_cooked_stale(id, source, cooked, font_cook_version);
 
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
 
@@ -136,23 +194,16 @@ auto asset_residency::load_font(const math::uuid& id) -> font_handle {
 
   const auto index = bindless_table.reserve_sampled_image();
 
-  auto atlas = std::make_shared<texture>(texture{index});
-
   auto record = std::make_shared<font>();
-  record->_atlas = texture_handle{atlas};
-  record->_glyphs = std::move(data->glyphs);
-  record->_first_codepoint = data->first_codepoint;
-  record->_line_height = data->line_height;
-  record->_ascent = data->ascent;
-  record->_descent = data->descent;
+  record->_atlas = texture_handle{std::make_shared<texture>(texture{index})};
   record->_id = id;
 
   {
     auto lock = std::lock_guard{_mutex};
-
     _fonts.emplace(id, record);
-    _pending_textures.push_back(pending_texture_upload{index, std::move(data->atlas.pixels), data->atlas.width, data->atlas.height, graphics::format::r8_unorm});
   }
+
+  _loader.submit(asset_loader::font_request{id, source, cooked, needs_cook});
 
   return font_handle{record};
 }
@@ -162,7 +213,7 @@ auto asset_residency::load_font(const std::filesystem::path& path) -> font_handl
 
   const auto assets_directory = project.assets_directory();
 
-  return load_font(_cooker.import(assets_directory / path));
+  return load_font(_manifest.import(assets_directory / path));
 }
 
 auto asset_residency::load_mesh(const math::uuid& id, const mesh_import_options& options) -> mesh_handle {
@@ -174,74 +225,46 @@ auto asset_residency::load_mesh(const math::uuid& id, const mesh_import_options&
     }
   }
 
-  auto data = _cooker.resolve_mesh(id, options, [this](const material_description& description, const std::filesystem::path& relative_source) {
-    return _extract_gltf_material(description, relative_source);
-  });
+  const auto source = _manifest.path_of(id);
 
-  if (!data) {
+  if (source.empty()) {
+    utility::logger<"assets">::warn("Unknown mesh uuid {}", id);
     return mesh_handle{};
   }
 
-  auto fallback_material = material_handle{};
+  const auto cooked = _manifest.cooked_path(id, ".sbxmsh");
+  const auto needs_cook = _manifest.is_cooked_stale(id, source, cooked, mesh_cooker_version);
 
-  auto submeshes = std::vector<mesh::submesh>{};
-  submeshes.reserve(data->submeshes.size());
-
-  for (const auto& cooked_submesh : data->submeshes) {
-    auto material = material_handle{};
-
-    if (cooked_submesh.material != math::uuid::nil()) {
-      material = load_material(cooked_submesh.material);
-    }
-
-    if (!material.is_valid()) {
-      if (!fallback_material.is_valid()) {
-        fallback_material = create_material(material::create_info{ .albedo = _magenta });
-      }
-      material = fallback_material;
-    }
-
-    auto lods = std::vector<mesh::lod_level>{};
-    lods.reserve(cooked_submesh.lods.size());
-
-    for (const auto& lod : cooked_submesh.lods) {
-      lods.push_back(mesh::lod_level{lod.index_offset, lod.index_count, lod.error});
-    }
-
-    submeshes.push_back(mesh::submesh{cooked_submesh.index_offset, cooked_submesh.index_count, cooked_submesh.bounds, material, std::move(lods)});
-  }
-
-  const auto vertex_count = data->vertices.size();
-  const auto index_count = data->indices.size();
-  const auto submesh_count = submeshes.size();
-
-  auto record = std::make_shared<mesh>(std::move(submeshes), data->bounds, static_cast<std::uint32_t>(vertex_count));
+  auto record = std::make_shared<mesh>();
   record->_id = id;
-
-  if (!data->skin_vertices.empty()) {
-    auto skeleton_handle_value = load_skeleton(data->skeleton);
-
-    auto animation_clip_handles = std::vector<animation_clip_handle>{};
-    animation_clip_handles.reserve(data->animation_clips.size());
-
-    for (const auto& clip_id : data->animation_clips) {
-      animation_clip_handles.push_back(load_animation_clip(clip_id));
-    }
-
-    record->_set_skeletal_data(skeleton_handle_value, std::move(animation_clip_handles));
-  }
 
   {
     auto lock = std::lock_guard{_mutex};
-
     _meshes.emplace(id, record);
-    _pending_meshes.push_back(pending_mesh_upload{record, std::move(data->vertices), std::move(data->indices), std::move(data->skin_vertices)});
   }
 
-  if (record->skeleton().is_valid()) {
-    utility::logger<"assets">::info("Loaded mesh '{}': {} vertices, {} indices, {} submeshes, {} joints, {} animation clips", _cooker.path_of(id).generic_string(), vertex_count, index_count, submesh_count, record->skeleton()->joints().size(), record->animation_clips().size());
-  } else {
-    utility::logger<"assets">::info("Loaded mesh '{}': {} vertices, {} indices, {} submeshes", _cooker.path_of(id).generic_string(), vertex_count, index_count, submesh_count);
+  _loader.submit(asset_loader::mesh_request{id, options, source, cooked, needs_cook});
+
+  return mesh_handle{record};
+}
+
+auto asset_residency::load_mesh(const std::filesystem::path& path, const mesh_import_options& options) -> mesh_handle {
+  const auto& project = core::engine::project();
+
+  const auto assets_directory = project.assets_directory();
+
+  return load_mesh(_manifest.import(assets_directory / path), options);
+}
+
+auto asset_residency::create_mesh(std::vector<vertex> vertices, std::vector<std::uint32_t> indices, std::vector<mesh::submesh> submeshes, const math::volume& bounds) -> mesh_handle {
+  const auto vertex_count = static_cast<std::uint32_t>(vertices.size());
+
+  auto record = std::make_shared<mesh>(std::move(submeshes), bounds, vertex_count);
+  record->_id = math::uuid::create();
+
+  {
+    auto lock = std::lock_guard{_mutex};
+    _pending_meshes.push_back(pending_mesh_upload{record, std::move(vertices), std::move(indices), {}});
   }
 
   return mesh_handle{record};
@@ -260,20 +283,15 @@ auto asset_residency::load_skeleton(const math::uuid& id) -> skeleton_handle {
     }
   }
 
-  auto joints = _cooker.resolve_skeleton(id);
-
-  if (!joints) {
-    utility::logger<"assets">::warn("Could not load skeleton {}", id);
-    return skeleton_handle{};
-  }
-
-  auto record = std::make_shared<skeleton>(std::move(*joints));
+  auto record = std::make_shared<skeleton>();
   record->_id = id;
 
   {
     auto lock = std::lock_guard{_mutex};
     _skeletons.emplace(id, record);
   }
+
+  _loader.submit(asset_loader::skeleton_request{id});
 
   return skeleton_handle{record};
 }
@@ -291,14 +309,7 @@ auto asset_residency::load_animation_clip(const math::uuid& id) -> animation_cli
     }
   }
 
-  auto data = _cooker.resolve_animation_clip(id);
-
-  if (!data) {
-    utility::logger<"assets">::warn("Could not load animation clip {}", id);
-    return animation_clip_handle{};
-  }
-
-  auto record = std::make_shared<animation_clip>(std::move(data->name), data->duration, std::move(data->channels));
+  auto record = std::make_shared<animation_clip>();
   record->_id = id;
 
   {
@@ -306,33 +317,13 @@ auto asset_residency::load_animation_clip(const math::uuid& id) -> animation_cli
     _animation_clips.emplace(id, record);
   }
 
+  _loader.submit(asset_loader::animation_clip_request{id});
+
   return animation_clip_handle{record};
 }
 
-auto asset_residency::load_mesh(const std::filesystem::path& path, const mesh_import_options& options) -> mesh_handle {
-  const auto& project = core::engine::project();
-
-  const auto assets_directory = project.assets_directory();
-
-  return load_mesh(_cooker.import(assets_directory / path), options);
-}
-
-auto asset_residency::create_mesh(std::vector<vertex> vertices, std::vector<std::uint32_t> indices, std::vector<mesh::submesh> submeshes, const math::volume& bounds) -> mesh_handle {
-  const auto vertex_count = static_cast<std::uint32_t>(vertices.size());
-
-  auto record = std::make_shared<mesh>(std::move(submeshes), bounds, vertex_count);
-  record->_id = math::uuid::create();
-
-  {
-    auto lock = std::lock_guard{_mutex};
-    _pending_meshes.push_back(pending_mesh_upload{record, std::move(vertices), std::move(indices), {}});
-  }
-
-  return mesh_handle{record};
-}
-
 auto asset_residency::load_material(const math::uuid& id) -> material_handle {
-  _cooker.ensure_manifest_loaded();
+  _manifest.ensure_loaded();
 
   {
     auto lock = std::lock_guard{_mutex};
@@ -341,109 +332,25 @@ auto asset_residency::load_material(const math::uuid& id) -> material_handle {
     }
   }
 
-  const auto source_path = _cooker.path_of(id);
+  // A hand-authored `.material` file has a real, `.material`-suffixed path; a material cooked as a
+  // side effect of a mesh import (a derived uuid, never separately import()-ed) has none -- the
+  // background resolve (asset_loader::_resolve(material_request)) picks the same branch this would
+  // have picked synchronously, given the same source path.
+  const auto source_path = _manifest.path_of(id);
 
-  if (!source_path.empty() && source_path.extension() == ".material") {
-    const auto& path = source_path;
+  auto record = std::make_shared<material>(material::create_info{});
+  record->_id = id;
 
-    auto root = YAML::Node{};
-    try {
-      root = YAML::LoadFile(path.string());
-    } catch (const std::exception& exception) {
-      utility::logger<"assets">::warn("Could not parse material '{}' ({})", path.generic_string(), exception.what());
-      return material_handle{};
-    }
+  auto handle = _register_material(record); // reserves the UBO index, queues an initial (empty) upload
 
-    auto info = material::create_info{};
-
-    if (root["name"]) info.name = root["name"].as<std::string>();
-    if (root["base_color_factor"]) info.base_color_factor = root["base_color_factor"].as<math::color>();
-    if (root["emissive_factor"]) info.emissive_factor = root["emissive_factor"].as<math::vector3>();
-    if (root["metallic_factor"]) info.metallic_factor = root["metallic_factor"].as<std::float_t>();
-    if (root["roughness_factor"]) info.roughness_factor = root["roughness_factor"].as<std::float_t>();
-    if (root["alpha_mode"]) {
-      const auto mode = root["alpha_mode"].as<std::string>();
-      info.alpha = (mode == "blend") ? alpha_mode::blend : (mode == "mask") ? alpha_mode::mask : alpha_mode::opaque;
-    }
-    if (root["alpha_cutoff"]) info.alpha_cutoff = root["alpha_cutoff"].as<std::float_t>();
-    if (root["is_double_sided"]) info.is_double_sided = root["is_double_sided"].as<bool>();
-    if (root["casts_shadow"]) info.casts_shadow = root["casts_shadow"].as<bool>();
-    if (root["receives_shadow"]) info.receives_shadow = root["receives_shadow"].as<bool>();
-    if (root["normal_scale"]) info.normal_scale = root["normal_scale"].as<std::float_t>();
-    if (root["occlusion_strength"]) info.occlusion_strength = root["occlusion_strength"].as<std::float_t>();
-    if (root["emissive_strength"]) info.emissive_strength = root["emissive_strength"].as<std::float_t>();
-    if (root["ior"]) info.ior = root["ior"].as<std::float_t>();
-
-    const auto load_slot = [&](const char* key, graphics::format format) -> texture_handle {
-      if (const auto node = root[key]) {
-        return load_texture(std::filesystem::path{node.as<std::string>()}, format);
-      }
-      return texture_handle{};
-    };
-
-    info.albedo = load_slot("albedo", graphics::format::r8g8b8a8_srgb);
-    info.normal = load_slot("normal", graphics::format::r8g8b8a8_unorm);
-    info.metallic_roughness = load_slot("metallic_roughness", graphics::format::r8g8b8a8_unorm);
-    info.occlusion = load_slot("occlusion", graphics::format::r8g8b8a8_unorm);
-    info.emissive = load_slot("emissive", graphics::format::r8g8b8a8_srgb);
-
-    auto record = std::make_shared<material>(info);
-    record->_id = id;
-
-    auto handle = _register_material(record);
-
-    {
-      auto lock = std::lock_guard{_mutex};
-      _material_files.emplace(id, record);
-    }
-
-    utility::logger<"assets">::info("Loaded material '{}'", path.generic_string());
-
-    return handle;
+  {
+    auto lock = std::lock_guard{_mutex};
+    _material_files.emplace(id, record);
   }
 
-  // Otherwise a cooked material extracted from a mesh import.
-  if (const auto description = _cooker.resolve_cooked_material(id)) {
-    auto info = material::create_info{};
-    info.name = description->name;
-    info.base_color_factor = description->base_color_factor;
-    info.emissive_factor = description->emissive_factor;
-    info.metallic_factor = description->metallic_factor;
-    info.roughness_factor = description->roughness_factor;
-    info.alpha = description->alpha;
-    info.alpha_cutoff = description->alpha_cutoff;
-    info.is_double_sided = description->is_double_sided;
-    info.normal_scale = description->normal_scale;
-    info.occlusion_strength = description->occlusion_strength;
-    info.emissive_strength = description->emissive_strength;
-    info.ior = description->ior;
+  _loader.submit(asset_loader::material_request{id, (source_path.extension() == ".material") ? source_path : std::filesystem::path{}});
 
-    const auto load_slot = [&](const math::uuid& uuid, graphics::format format) -> texture_handle {
-      return (uuid == math::uuid::nil()) ? texture_handle{} : load_texture(uuid, format);
-    };
-
-    info.albedo = load_slot(description->albedo, graphics::format::r8g8b8a8_srgb);
-    info.normal = load_slot(description->normal, graphics::format::r8g8b8a8_unorm);
-    info.metallic_roughness = load_slot(description->metallic_roughness, graphics::format::r8g8b8a8_unorm);
-    info.occlusion = load_slot(description->occlusion, graphics::format::r8g8b8a8_unorm);
-    info.emissive = load_slot(description->emissive, graphics::format::r8g8b8a8_srgb);
-
-    auto record = std::make_shared<material>(info);
-    record->_id = id;
-
-    auto handle = _register_material(record);
-
-    {
-      auto lock = std::lock_guard{_mutex};
-      _material_files.emplace(id, record);
-    }
-
-    return handle;
-  }
-
-  utility::logger<"assets">::warn("Unknown material uuid {}", id);
-
-  return material_handle{};
+  return handle;
 }
 
 auto asset_residency::load_material(const std::filesystem::path& path) -> material_handle {
@@ -451,7 +358,7 @@ auto asset_residency::load_material(const std::filesystem::path& path) -> materi
 
   const auto assets_directory = project.assets_directory();
 
-  return load_material(_cooker.import(assets_directory / path));
+  return load_material(_manifest.import(assets_directory / path));
 }
 
 auto asset_residency::create_material(const material::create_info& create_info) -> material_handle {
@@ -483,6 +390,10 @@ auto asset_residency::update_material(material_handle& material, const material:
   material->_emissive = create_info.emissive;
   material->_name = create_info.name;
 
+  // Covers both the async-finalize path (_finalize_material calling this) and a live editor edit
+  // -- both are real content changes anything checking is_loaded()/generation() should see.
+  material->_bump_generation();
+
   // Re-queue the upload: _register_material only queues one at creation time, so without this an
   // in-place edit updates the CPU object but the renderer keeps reading the stale uploaded data.
   auto lock = std::lock_guard{_mutex};
@@ -509,7 +420,7 @@ auto asset_residency::save_material(material_handle& material, const std::filesy
       return std::nullopt;
     }
 
-    const auto absolute = _cooker.path_of(texture->id());
+    const auto absolute = _manifest.path_of(texture->id());
 
     if (absolute.empty()) {
       return std::nullopt; // default/procedural texture (nil uuid) — omit the slot
@@ -517,7 +428,7 @@ auto asset_residency::save_material(material_handle& material, const std::filesy
 
     // absolute is stored fully resolved; the slot needs to hold the assets-relative form (that's
     // what load_material's own reader passes straight into load_texture(path, ...)).
-    return _cooker.relative(absolute).generic_string();
+    return _manifest.relative(absolute).generic_string();
   };
 
   auto node = YAML::Node{};
@@ -564,7 +475,7 @@ auto asset_residency::save_material(material_handle& material, const std::filesy
   auto out = std::ofstream{resolved_path};
   out << node;
 
-  const auto id = _cooker.import(resolved_path); // register + create the .meta so it's a first-class asset
+  const auto id = _manifest.import(resolved_path); // register + create the .meta so it's a first-class asset
 
   // import() is idempotent (returns the existing uuid from .meta on a re-save), so this always
   // stamps the right id — including a create_material()'d material's first save (nil id otherwise).
@@ -576,7 +487,7 @@ auto asset_residency::save_material(material_handle& material, const std::filesy
 }
 
 auto asset_residency::load_particle_effect(const math::uuid& id) -> particle_effect_handle {
-  _cooker.ensure_manifest_loaded();
+  _manifest.ensure_loaded();
 
   {
     auto lock = std::lock_guard{_mutex};
@@ -585,232 +496,14 @@ auto asset_residency::load_particle_effect(const math::uuid& id) -> particle_eff
     }
   }
 
-  const auto source_path = _cooker.path_of(id);
+  const auto source_path = _manifest.path_of(id);
 
   if (source_path.empty() || source_path.extension() != ".particle_effect") {
     utility::logger<"assets">::warn("Unknown particle_effect uuid {}", id);
     return particle_effect_handle{};
   }
 
-  const auto& path = source_path;
-
-  auto root = YAML::Node{};
-  try {
-    root = YAML::LoadFile(path.string());
-  } catch (const std::exception& exception) {
-    utility::logger<"assets">::warn("Could not parse particle_effect '{}' ({})", path.generic_string(), exception.what());
-    return particle_effect_handle{};
-  }
-
-  auto info = particle_effect::create_info{};
-
-  if (root["name"]) info.name = root["name"].as<std::string>();
-
-  const auto load_curve = [](const YAML::Node& node) -> curve {
-    auto result = curve{};
-
-    if (!node) {
-      return result;
-    }
-
-    for (const auto key_node : node) {
-      if (result.keys.is_full()) {
-        break;
-      }
-
-      auto key = curve_key{};
-
-      if (key_node["time"]) key.time = key_node["time"].as<std::float_t>();
-      if (key_node["value"]) key.value = key_node["value"].as<std::float_t>();
-
-      result.keys.push_back(key);
-    }
-
-    return result;
-  };
-
-  const auto load_gradient = [](const YAML::Node& node) -> gradient {
-    auto result = gradient{};
-
-    if (!node) {
-      return result;
-    }
-
-    if (const auto color_keys_node = node["color_keys"]) {
-      for (const auto key_node : color_keys_node) {
-        if (result.color_keys.is_full()) {
-          break;
-        }
-
-        auto key = gradient_color_key{};
-
-        if (key_node["time"]) key.time = key_node["time"].as<std::float_t>();
-        if (key_node["color"]) key.color = key_node["color"].as<math::color>();
-
-        result.color_keys.push_back(key);
-      }
-    }
-
-    if (const auto alpha_keys_node = node["alpha_keys"]) {
-      for (const auto key_node : alpha_keys_node) {
-        if (result.alpha_keys.is_full()) {
-          break;
-        }
-
-        auto key = gradient_alpha_key{};
-
-        if (key_node["time"]) key.time = key_node["time"].as<std::float_t>();
-        if (key_node["alpha"]) key.alpha = key_node["alpha"].as<std::float_t>();
-
-        result.alpha_keys.push_back(key);
-      }
-    }
-
-    return result;
-  };
-
-  if (const auto emitters = root["emitters"]) {
-    info.emitters.reserve(emitters.size());
-
-    for (const auto emitter_node : emitters) {
-      auto emitter = particle_emitter{};
-
-      if (emitter_node["name"]) emitter.name = emitter_node["name"].as<std::string>();
-
-      if (emitter_node["blend_mode"]) {
-        const auto mode = emitter_node["blend_mode"].as<std::string>();
-        emitter.blend_mode = (mode == "alpha_blend") ? emitter_blend_mode::alpha_blend : emitter_blend_mode::additive;
-      }
-
-      if (emitter_node["simulation_mode"]) {
-        const auto mode = emitter_node["simulation_mode"].as<std::string>();
-        emitter.simulation_mode = (mode == "gpu") ? particle_simulation_mode::gpu : particle_simulation_mode::cpu;
-      }
-
-      if (emitter_node["emission_rate"]) emitter.emission_rate = emitter_node["emission_rate"].as<std::float_t>();
-      if (emitter_node["burst_count"]) emitter.burst_count = emitter_node["burst_count"].as<std::uint32_t>();
-
-      if (emitter_node["shape"]) {
-        const auto shape = emitter_node["shape"].as<std::string>();
-        emitter.shape = (shape == "sphere") ? emitter_shape::sphere : (shape == "box") ? emitter_shape::box : (shape == "cone") ? emitter_shape::cone : emitter_shape::point;
-      }
-
-      if (emitter_node["shape_extents"]) emitter.shape_extents = emitter_node["shape_extents"].as<math::vector3>();
-
-      if (const auto cone_node = emitter_node["cone"]) {
-        if (cone_node["angle_degrees"]) emitter.cone.angle = math::degree{cone_node["angle_degrees"].as<std::float_t>()};
-        if (cone_node["radius"]) emitter.cone.radius = cone_node["radius"].as<std::float_t>();
-        if (cone_node["emit_from_volume"]) emitter.cone.emit_from_volume = cone_node["emit_from_volume"].as<std::float_t>();
-      }
-
-      if (emitter_node["velocity_min"]) emitter.velocity_min = emitter_node["velocity_min"].as<math::vector3>();
-      if (emitter_node["velocity_max"]) emitter.velocity_max = emitter_node["velocity_max"].as<math::vector3>();
-      if (emitter_node["lifetime_min"]) emitter.lifetime_min = emitter_node["lifetime_min"].as<std::float_t>();
-      if (emitter_node["lifetime_max"]) emitter.lifetime_max = emitter_node["lifetime_max"].as<std::float_t>();
-      if (emitter_node["start_color"]) emitter.start_color = emitter_node["start_color"].as<math::color>();
-      if (emitter_node["end_color"]) emitter.end_color = emitter_node["end_color"].as<math::color>();
-      if (emitter_node["color_over_lifetime"]) emitter.color_over_lifetime = load_gradient(emitter_node["color_over_lifetime"]);
-      if (emitter_node["size_min"]) emitter.size_min = emitter_node["size_min"].as<std::float_t>();
-      if (emitter_node["size_max"]) emitter.size_max = emitter_node["size_max"].as<std::float_t>();
-      if (emitter_node["size_over_lifetime"]) emitter.size_over_lifetime = load_curve(emitter_node["size_over_lifetime"]);
-      if (emitter_node["rotation_min"]) emitter.rotation_min = emitter_node["rotation_min"].as<std::float_t>();
-      if (emitter_node["rotation_max"]) emitter.rotation_max = emitter_node["rotation_max"].as<std::float_t>();
-      if (emitter_node["rotation_over_lifetime"]) emitter.rotation_over_lifetime = load_curve(emitter_node["rotation_over_lifetime"]);
-
-      if (const auto velocity_curve_node = emitter_node["velocity_over_lifetime"]) {
-        emitter.velocity_over_lifetime.x = load_curve(velocity_curve_node["x"]);
-        emitter.velocity_over_lifetime.y = load_curve(velocity_curve_node["y"]);
-        emitter.velocity_over_lifetime.z = load_curve(velocity_curve_node["z"]);
-      }
-
-      if (emitter_node["force_over_lifetime_min"]) emitter.force_over_lifetime_min = emitter_node["force_over_lifetime_min"].as<math::vector3>();
-      if (emitter_node["force_over_lifetime_max"]) emitter.force_over_lifetime_max = emitter_node["force_over_lifetime_max"].as<math::vector3>();
-
-      if (emitter_node["gravity"]) emitter.gravity = emitter_node["gravity"].as<std::float_t>();
-      if (emitter_node["drag"]) emitter.drag = emitter_node["drag"].as<std::float_t>();
-
-      if (emitter_node["texture"]) {
-        emitter.texture = load_texture(std::filesystem::path{emitter_node["texture"].as<std::string>()}, graphics::format::r8g8b8a8_srgb);
-      }
-
-      if (emitter_node["render_mode"]) {
-        emitter.render_mode = (emitter_node["render_mode"].as<std::string>() == "mesh") ? particle_render_mode::mesh : particle_render_mode::billboard;
-      }
-
-      if (emitter_node["render_mesh"]) {
-        emitter.render_mesh = load_mesh(std::filesystem::path{emitter_node["render_mesh"].as<std::string>()});
-      }
-
-      if (emitter_node["render_material"]) {
-        emitter.render_material = load_material(std::filesystem::path{emitter_node["render_material"].as<std::string>()});
-      }
-
-      if (const auto collision_node = emitter_node["collision"]) {
-        auto& collision = emitter.collision;
-
-        if (collision_node["mode"]) {
-          const auto mode = collision_node["mode"].as<std::string>();
-          collision.mode = (mode == "planes") ? particle_collision_mode::planes : (mode == "world") ? particle_collision_mode::world : particle_collision_mode::none;
-        }
-
-        if (collision_node["bounce"]) collision.bounce = collision_node["bounce"].as<std::float_t>();
-        if (collision_node["lifetime_loss"]) collision.lifetime_loss = collision_node["lifetime_loss"].as<std::float_t>();
-        if (collision_node["dampen"]) collision.dampen = collision_node["dampen"].as<std::float_t>();
-        if (collision_node["radius_scale"]) collision.radius_scale = collision_node["radius_scale"].as<std::float_t>();
-        if (collision_node["max_collisions_per_particle"]) collision.max_collisions_per_particle = collision_node["max_collisions_per_particle"].as<std::uint32_t>();
-
-        if (const auto planes_node = collision_node["planes"]) {
-          for (const auto plane_node : planes_node) {
-            if (collision.planes.size() >= collision_max_planes) {
-              break;
-            }
-
-            auto plane = collision_plane{};
-
-            if (plane_node["normal"]) plane.normal = plane_node["normal"].as<math::vector3>();
-            if (plane_node["distance"]) plane.distance = plane_node["distance"].as<std::float_t>();
-
-            collision.planes.push_back(plane);
-          }
-        }
-      }
-
-      if (const auto sub_emitters_node = emitter_node["sub_emitters"]) {
-        for (const auto binding_node : sub_emitters_node) {
-          auto binding = sub_emitter_binding{};
-
-          if (binding_node["event"]) {
-            const auto event = binding_node["event"].as<std::string>();
-            binding.event = (event == "death") ? sub_emitter_event::death : (event == "collision") ? sub_emitter_event::collision : sub_emitter_event::birth;
-          }
-
-          if (binding_node["effect"]) {
-            binding.effect = load_particle_effect(std::filesystem::path{binding_node["effect"].as<std::string>()});
-          }
-
-          if (binding_node["probability"]) binding.probability = binding_node["probability"].as<std::float_t>();
-          if (binding_node["inherit_velocity"]) binding.inherit_velocity = binding_node["inherit_velocity"].as<bool>();
-
-          emitter.sub_emitters.push_back(binding);
-        }
-      }
-
-      if (const auto trail_node = emitter_node["trail"]) {
-        auto& trail = emitter.trail;
-
-        if (trail_node["enabled"]) trail.enabled = trail_node["enabled"].as<bool>();
-        if (trail_node["min_vertex_distance"]) trail.min_vertex_distance = trail_node["min_vertex_distance"].as<std::float_t>();
-        if (trail_node["lifetime"]) trail.lifetime = trail_node["lifetime"].as<std::float_t>();
-        if (trail_node["width"]) trail.width = trail_node["width"].as<std::float_t>();
-        if (trail_node["color_over_trail"]) trail.color_over_trail = load_gradient(trail_node["color_over_trail"]);
-        if (trail_node["die_with_particle"]) trail.die_with_particle = trail_node["die_with_particle"].as<bool>();
-      }
-
-      info.emitters.push_back(emitter);
-    }
-  }
-
-  auto record = std::make_shared<particle_effect>(info);
+  auto record = std::make_shared<particle_effect>();
   record->_id = id;
 
   {
@@ -818,7 +511,7 @@ auto asset_residency::load_particle_effect(const math::uuid& id) -> particle_eff
     _particle_effect_files.emplace(id, record);
   }
 
-  utility::logger<"assets">::info("Loaded particle_effect '{}'", path.generic_string());
+  _loader.submit(asset_loader::particle_effect_request{id, source_path});
 
   return particle_effect_handle{record};
 }
@@ -828,7 +521,7 @@ auto asset_residency::load_particle_effect(const std::filesystem::path& path) ->
 
   const auto assets_directory = project.assets_directory();
 
-  return load_particle_effect(_cooker.import(assets_directory / path));
+  return load_particle_effect(_manifest.import(assets_directory / path));
 }
 
 auto asset_residency::create_particle_effect(const particle_effect::create_info& create_info) -> particle_effect_handle {
@@ -842,6 +535,7 @@ auto asset_residency::update_particle_effect(particle_effect_handle& effect, con
 
   effect->_emitters = create_info.emitters;
   effect->_name = create_info.name;
+  effect->_bump_generation();
 }
 
 auto asset_residency::save_particle_effect(particle_effect_handle& effect, const std::filesystem::path& path) -> math::uuid {
@@ -869,13 +563,13 @@ auto asset_residency::save_particle_effect(particle_effect_handle& effect, const
       return std::nullopt;
     }
 
-    const auto absolute = _cooker.path_of(texture->id());
+    const auto absolute = _manifest.path_of(texture->id());
 
     if (absolute.empty()) {
       return std::nullopt;
     }
 
-    return _cooker.relative(absolute).generic_string();
+    return _manifest.relative(absolute).generic_string();
   };
 
   // Same idea as texture_path_of, generalized -- mesh_handle/material_handle share the same
@@ -885,13 +579,13 @@ auto asset_residency::save_particle_effect(particle_effect_handle& effect, const
       return std::nullopt;
     }
 
-    const auto absolute = _cooker.path_of(handle->id());
+    const auto absolute = _manifest.path_of(handle->id());
 
     if (absolute.empty()) {
       return std::nullopt;
     }
 
-    return _cooker.relative(absolute).generic_string();
+    return _manifest.relative(absolute).generic_string();
   };
 
   const auto save_curve = [](const curve& value) -> YAML::Node {
@@ -1050,7 +744,7 @@ auto asset_residency::save_particle_effect(particle_effect_handle& effect, const
   auto out = std::ofstream{resolved_path};
   out << node;
 
-  const auto id = _cooker.import(resolved_path);
+  const auto id = _manifest.import(resolved_path);
 
   effect->_id = id;
 
@@ -1059,73 +753,8 @@ auto asset_residency::save_particle_effect(particle_effect_handle& effect, const
   return id;
 }
 
-// "type"+"value" tag pair -- animation_parameter_value's alternative *is* its type, so this is
-// purely a persistence detail (the runtime API never switches on a type enum, see
-// animation_graph.hpp's doc comment).
-auto save_animation_parameter_value(const animation_parameter_value& value) -> YAML::Node {
-  auto node = YAML::Node{};
-
-  std::visit([&node](const auto& alternative) {
-    using alternative_type = std::decay_t<decltype(alternative)>;
-
-    if constexpr (std::is_same_v<alternative_type, std::float_t>) {
-      node["type"] = "float";
-      node["value"] = alternative;
-    } else if constexpr (std::is_same_v<alternative_type, bool>) {
-      node["type"] = "bool";
-      node["value"] = alternative;
-    } else if constexpr (std::is_same_v<alternative_type, std::int32_t>) {
-      node["type"] = "int";
-      node["value"] = alternative;
-    } else {
-      static_assert(std::is_same_v<alternative_type, animation_trigger>);
-      node["type"] = "trigger"; // no value -- a trigger only ever carries a live "fired" flag, which isn't authored
-    }
-  }, value);
-
-  return node;
-}
-
-auto load_animation_parameter_value(const YAML::Node& node) -> animation_parameter_value {
-  const auto type = node["type"] ? node["type"].as<std::string>() : std::string{"float"};
-
-  if (type == "bool") {
-    return animation_parameter_value{node["value"] ? node["value"].as<bool>() : false};
-  }
-
-  if (type == "int") {
-    return animation_parameter_value{node["value"] ? node["value"].as<std::int32_t>() : std::int32_t{0}};
-  }
-
-  if (type == "trigger") {
-    return animation_parameter_value{animation_trigger{}};
-  }
-
-  return animation_parameter_value{node["value"] ? node["value"].as<std::float_t>() : 0.0f};
-}
-
-auto save_animation_condition_comparator(animation_condition_comparator comparator) -> std::string {
-  switch (comparator) {
-    case animation_condition_comparator::not_equals: return "not_equals";
-    case animation_condition_comparator::greater: return "greater";
-    case animation_condition_comparator::greater_or_equal: return "greater_or_equal";
-    case animation_condition_comparator::less: return "less";
-    case animation_condition_comparator::less_or_equal: return "less_or_equal";
-    default: return "equals";
-  }
-}
-
-auto load_animation_condition_comparator(const std::string& value) -> animation_condition_comparator {
-  if (value == "not_equals") return animation_condition_comparator::not_equals;
-  if (value == "greater") return animation_condition_comparator::greater;
-  if (value == "greater_or_equal") return animation_condition_comparator::greater_or_equal;
-  if (value == "less") return animation_condition_comparator::less;
-  if (value == "less_or_equal") return animation_condition_comparator::less_or_equal;
-  return animation_condition_comparator::equals;
-}
-
 auto asset_residency::load_animation_graph(const math::uuid& id) -> animation_graph_handle {
-  _cooker.ensure_manifest_loaded();
+  _manifest.ensure_loaded();
 
   {
     auto lock = std::lock_guard{_mutex};
@@ -1134,91 +763,14 @@ auto asset_residency::load_animation_graph(const math::uuid& id) -> animation_gr
     }
   }
 
-  const auto source_path = _cooker.path_of(id);
+  const auto source_path = _manifest.path_of(id);
 
   if (source_path.empty() || source_path.extension() != ".animation_graph") {
     utility::logger<"assets">::warn("Unknown animation_graph uuid {}", id);
     return animation_graph_handle{};
   }
 
-  const auto& path = source_path;
-
-  auto root = YAML::Node{};
-  try {
-    root = YAML::LoadFile(path.string());
-  } catch (const std::exception& exception) {
-    utility::logger<"assets">::warn("Could not parse animation_graph '{}' ({})", path.generic_string(), exception.what());
-    return animation_graph_handle{};
-  }
-
-  auto info = animation_graph::create_info{};
-
-  if (root["name"]) info.name = root["name"].as<std::string>();
-  if (root["entry_state_id"]) info.entry_state_id = root["entry_state_id"].as<std::uint32_t>();
-
-  if (const auto parameters = root["parameters"]) {
-    info.parameters.reserve(parameters.size());
-
-    for (const auto parameter_node : parameters) {
-      auto parameter = animation_parameter{};
-
-      if (parameter_node["name"]) parameter.name = parameter_node["name"].as<std::string>();
-      parameter.default_value = load_animation_parameter_value(parameter_node);
-
-      info.parameters.push_back(parameter);
-    }
-  }
-
-  if (const auto states = root["states"]) {
-    info.states.reserve(states.size());
-
-    for (const auto state_node : states) {
-      auto state = animation_state{};
-
-      if (state_node["id"]) state.id = state_node["id"].as<std::uint32_t>();
-      if (state_node["name"]) state.name = state_node["name"].as<std::string>();
-      if (state_node["clip_name"]) state.clip_name = state_node["clip_name"].as<std::string>();
-      if (state_node["speed"]) state.speed = state_node["speed"].as<std::float_t>();
-      if (state_node["loop"]) state.loop = state_node["loop"].as<bool>();
-
-      if (const auto position_node = state_node["editor_position"]) {
-        if (position_node["x"]) state.editor_position.x() = position_node["x"].as<std::float_t>();
-        if (position_node["y"]) state.editor_position.y() = position_node["y"].as<std::float_t>();
-      }
-
-      info.states.push_back(state);
-    }
-  }
-
-  if (const auto transitions = root["transitions"]) {
-    info.transitions.reserve(transitions.size());
-
-    for (const auto transition_node : transitions) {
-      auto transition = animation_transition{};
-
-      if (transition_node["from_state"]) transition.from_state = transition_node["from_state"].as<std::uint32_t>();
-      if (transition_node["to_state"]) transition.to_state = transition_node["to_state"].as<std::uint32_t>();
-      if (transition_node["duration"]) transition.duration = transition_node["duration"].as<std::float_t>();
-      if (transition_node["has_exit_time"]) transition.has_exit_time = transition_node["has_exit_time"].as<bool>();
-      if (transition_node["exit_time"]) transition.exit_time = transition_node["exit_time"].as<std::float_t>();
-
-      if (const auto conditions_node = transition_node["conditions"]) {
-        for (const auto condition_node : conditions_node) {
-          auto condition = animation_condition{};
-
-          if (condition_node["parameter_name"]) condition.parameter_name = condition_node["parameter_name"].as<std::string>();
-          if (condition_node["comparator"]) condition.comparator = load_animation_condition_comparator(condition_node["comparator"].as<std::string>());
-          condition.expected = load_animation_parameter_value(condition_node);
-
-          transition.conditions.push_back(condition);
-        }
-      }
-
-      info.transitions.push_back(transition);
-    }
-  }
-
-  auto record = std::make_shared<animation_graph>(info);
+  auto record = std::make_shared<animation_graph>();
   record->_id = id;
 
   {
@@ -1226,7 +778,7 @@ auto asset_residency::load_animation_graph(const math::uuid& id) -> animation_gr
     _animation_graph_files.emplace(id, record);
   }
 
-  utility::logger<"assets">::info("Loaded animation_graph '{}'", path.generic_string());
+  _loader.submit(asset_loader::animation_graph_request{id, source_path});
 
   return animation_graph_handle{record};
 }
@@ -1236,7 +788,7 @@ auto asset_residency::load_animation_graph(const std::filesystem::path& path) ->
 
   const auto assets_directory = project.assets_directory();
 
-  return load_animation_graph(_cooker.import(assets_directory / path));
+  return load_animation_graph(_manifest.import(assets_directory / path));
 }
 
 auto asset_residency::create_animation_graph(const animation_graph::create_info& create_info) -> animation_graph_handle {
@@ -1253,6 +805,7 @@ auto asset_residency::update_animation_graph(animation_graph_handle& graph, cons
   graph->_states = create_info.states;
   graph->_transitions = create_info.transitions;
   graph->_entry_state_id = create_info.entry_state_id;
+  graph->_bump_generation();
 }
 
 auto asset_residency::save_animation_graph(animation_graph_handle& graph, const std::filesystem::path& path) -> math::uuid {
@@ -1340,7 +893,7 @@ auto asset_residency::save_animation_graph(animation_graph_handle& graph, const 
   auto out = std::ofstream{resolved_path};
   out << node;
 
-  const auto id = _cooker.import(resolved_path);
+  const auto id = _manifest.import(resolved_path);
 
   graph->_id = id;
 
@@ -1361,7 +914,22 @@ auto asset_residency::load_environment_map(const math::uuid& id) -> environment_
     }
   }
 
-  auto data = _cooker.resolve_environment(id);
+  const auto source = _manifest.path_of(id);
+
+  if (source.empty()) {
+    utility::logger<"assets">::warn("Unknown environment map uuid {}", id);
+    return environment_map_handle{};
+  }
+
+  const auto cooked = _manifest.cooked_path(id, ".sbxenv");
+  const auto needs_cook = _manifest.is_cooked_stale(id, source, cooked, environment_cook_version);
+
+  auto did_cook = false;
+  auto data = _cooker.resolve_environment(source, cooked, needs_cook, did_cook);
+
+  if (did_cook) {
+    _manifest.record_cook(id, environment_cook_version, source);
+  }
 
   if (!data) {
     return environment_map_handle{};
@@ -1372,7 +940,12 @@ auto asset_residency::load_environment_map(const math::uuid& id) -> environment_
 
   // Bakes irradiance + prefiltered via compute and blocks until the GPU finishes, so the
   // environment is fully usable the moment this call returns (load-time bake, not lazy first-frame).
+  // Deliberately synchronous/main-thread only -- see this method's doc comment in the header.
   _ibl.bake_environment(*record, data->pixels, data->width, data->height);
+
+  // Never a placeholder -- always fully baked by this point -- so this just makes it consistently
+  // report is_loaded() == true immediately, same as everything else.
+  record->_bump_generation();
 
   {
     auto lock = std::lock_guard{_mutex};
@@ -1387,11 +960,456 @@ auto asset_residency::load_environment_map(const std::filesystem::path& path) ->
 
   const auto assets_directory = project.assets_directory();
 
-  return load_environment_map(_cooker.import(assets_directory / path));
+  return load_environment_map(_manifest.import(assets_directory / path));
+}
+
+auto asset_residency::_drain_loader_results() -> void {
+  auto remaining = max_uploads_per_frame;
+
+  auto textures = _loader.take_resolved_textures(remaining);
+  remaining -= textures.size();
+
+  for (auto& result : textures) {
+    _finalize_texture(result);
+  }
+
+  if (remaining == 0u) {
+    return;
+  }
+
+  auto meshes = _loader.take_resolved_meshes(remaining);
+  remaining -= meshes.size();
+
+  for (auto& result : meshes) {
+    _finalize_mesh(result);
+  }
+
+  if (remaining == 0u) {
+    return;
+  }
+
+  auto fonts = _loader.take_resolved_fonts(remaining);
+  remaining -= fonts.size();
+
+  for (auto& result : fonts) {
+    _finalize_font(result);
+  }
+
+  if (remaining == 0u) {
+    return;
+  }
+
+  auto materials = _loader.take_resolved_materials(remaining);
+  remaining -= materials.size();
+
+  for (auto& result : materials) {
+    _finalize_material(result);
+  }
+
+  if (remaining == 0u) {
+    return;
+  }
+
+  auto particle_effects = _loader.take_resolved_particle_effects(remaining);
+  remaining -= particle_effects.size();
+
+  for (auto& result : particle_effects) {
+    _finalize_particle_effect(result);
+  }
+
+  if (remaining == 0u) {
+    return;
+  }
+
+  auto animation_graphs = _loader.take_resolved_animation_graphs(remaining);
+  remaining -= animation_graphs.size();
+
+  for (auto& result : animation_graphs) {
+    _finalize_animation_graph(result);
+  }
+
+  if (remaining == 0u) {
+    return;
+  }
+
+  auto skeletons = _loader.take_resolved_skeletons(remaining);
+  remaining -= skeletons.size();
+
+  for (auto& result : skeletons) {
+    _finalize_skeleton(result);
+  }
+
+  if (remaining == 0u) {
+    return;
+  }
+
+  auto animation_clips = _loader.take_resolved_animation_clips(remaining);
+
+  for (auto& result : animation_clips) {
+    _finalize_animation_clip(result);
+  }
+}
+
+auto asset_residency::_finalize_texture(asset_loader::texture_result& result) -> void {
+  const auto& request = result.request;
+
+  if (result.did_cook) {
+    _manifest.record_cook(request.id, texture_cook_version, request.source);
+  }
+
+  if (!result.data) {
+    utility::logger<"assets">::warn("Could not load cooked texture '{}'", request.cooked.generic_string());
+    return;
+  }
+
+  const auto key = _texture_cache_key(request.id, request.format);
+
+  auto lock = std::lock_guard{_mutex};
+
+  const auto entry = _textures.find(key);
+
+  if (entry == _textures.end()) {
+    return; // defensive -- load_texture always inserts the placeholder before submitting
+  }
+
+  _pending_textures.push_back(pending_texture_upload{entry->second->index(), std::move(result.data->pixels), result.data->width, result.data->height, request.format});
+
+  // Distinct from is_resident(): this means "decoded and queued," not "the GPU upload actually
+  // landed" -- same relationship a font's is_loaded() (via its glyph table) has to its atlas
+  // texture's separate is_resident().
+  entry->second->_bump_generation();
+}
+
+auto asset_residency::_finalize_mesh(asset_loader::mesh_result& result) -> void {
+  const auto& request = result.request;
+
+  if (result.did_cook) {
+    _manifest.record_cook(request.id, mesh_cooker_version, request.source);
+  }
+
+  if (!result.data) {
+    utility::logger<"assets">::warn("Could not load cooked mesh '{}'", request.cooked.generic_string());
+    return;
+  }
+
+  auto& data = *result.data;
+
+  auto fallback_material = material_handle{};
+
+  auto submeshes = std::vector<mesh::submesh>{};
+  submeshes.reserve(data.submeshes.size());
+
+  for (const auto& cooked_submesh : data.submeshes) {
+    auto submesh_material = material_handle{};
+
+    if (cooked_submesh.material != math::uuid::nil()) {
+      submesh_material = request.options.extract_materials
+        ? _extract_gltf_material(cooked_submesh.material, request.source)
+        : load_material(cooked_submesh.material);
+    }
+
+    if (!submesh_material.is_valid()) {
+      if (!fallback_material.is_valid()) {
+        fallback_material = create_material(material::create_info{ .albedo = _magenta });
+      }
+      submesh_material = fallback_material;
+    }
+
+    auto lods = std::vector<mesh::lod_level>{};
+    lods.reserve(cooked_submesh.lods.size());
+
+    for (const auto& lod : cooked_submesh.lods) {
+      lods.push_back(mesh::lod_level{lod.index_offset, lod.index_count, lod.error});
+    }
+
+    submeshes.push_back(mesh::submesh{cooked_submesh.index_offset, cooked_submesh.index_count, cooked_submesh.bounds, submesh_material, std::move(lods)});
+  }
+
+  const auto vertex_count = data.vertices.size();
+  const auto index_count = data.indices.size();
+  const auto submesh_count = submeshes.size();
+  const auto has_skin_data = !data.skin_vertices.empty();
+
+  auto record = std::shared_ptr<mesh>{};
+
+  {
+    auto lock = std::lock_guard{_mutex};
+    const auto entry = _meshes.find(request.id);
+    if (entry == _meshes.end()) {
+      return; // defensive -- load_mesh always inserts the placeholder before submitting
+    }
+    record = entry->second;
+  }
+
+  record->_finalize_content(std::move(submeshes), data.bounds, static_cast<std::uint32_t>(vertex_count));
+
+  if (has_skin_data) {
+    auto skeleton_handle_value = load_skeleton(data.skeleton);
+
+    auto animation_clip_handles = std::vector<animation_clip_handle>{};
+    animation_clip_handles.reserve(data.animation_clips.size());
+
+    for (const auto& clip_id : data.animation_clips) {
+      animation_clip_handles.push_back(load_animation_clip(clip_id));
+    }
+
+    record->_set_skeletal_data(std::move(skeleton_handle_value), std::move(animation_clip_handles));
+  }
+
+  // Bumped here, once, after *both* _finalize_content and (for a skinned mesh) _set_skeletal_data
+  // have run -- so is_loaded() only ever reports true once skeleton/animation clips are set too,
+  // not partway through. mesh doesn't bump this itself inside _finalize_content, unlike the other
+  // placeholder-content types, for exactly this reason.
+  record->_bump_generation();
+
+  {
+    auto lock = std::lock_guard{_mutex};
+    _pending_meshes.push_back(pending_mesh_upload{record, std::move(data.vertices), std::move(data.indices), std::move(data.skin_vertices)});
+  }
+
+  utility::logger<"assets">::info("Loaded mesh '{}': {} vertices, {} indices, {} submeshes{}", request.source.generic_string(), vertex_count, index_count, submesh_count, has_skin_data ? " (skinned)" : "");
+}
+
+auto asset_residency::_finalize_font(asset_loader::font_result& result) -> void {
+  const auto& request = result.request;
+
+  if (result.did_cook) {
+    _manifest.record_cook(request.id, font_cook_version, request.source);
+  }
+
+  if (!result.data) {
+    utility::logger<"assets">::warn("Could not load cooked font '{}'", request.cooked.generic_string());
+    return;
+  }
+
+  auto& data = *result.data;
+
+  auto lock = std::lock_guard{_mutex};
+
+  const auto entry = _fonts.find(request.id);
+
+  if (entry == _fonts.end()) {
+    return; // defensive -- load_font always inserts the placeholder before submitting
+  }
+
+  auto& record = *entry->second;
+
+  record._finalize_content(std::move(data.glyphs), data.first_codepoint, data.line_height, data.ascent, data.descent);
+
+  _pending_textures.push_back(pending_texture_upload{record.atlas()->index(), std::move(data.atlas.pixels), data.atlas.width, data.atlas.height, graphics::format::r8_unorm});
+}
+
+auto asset_residency::_finalize_material(asset_loader::material_result& result) -> void {
+  const auto& request = result.request;
+
+  if (!result.data) {
+    utility::logger<"assets">::warn("Unknown material uuid {}", request.id);
+    return;
+  }
+
+  const auto& description = *result.data;
+
+  auto info = material::create_info{};
+  info.name = description.name;
+  info.base_color_factor = description.base_color_factor;
+  info.emissive_factor = description.emissive_factor;
+  info.metallic_factor = description.metallic_factor;
+  info.roughness_factor = description.roughness_factor;
+  info.alpha = description.alpha;
+  info.alpha_cutoff = description.alpha_cutoff;
+  info.is_double_sided = description.is_double_sided;
+  info.casts_shadow = description.casts_shadow;
+  info.receives_shadow = description.receives_shadow;
+
+  const auto load_slot = [this](const std::string& path, graphics::format format) -> texture_handle {
+    return path.empty() ? texture_handle{} : load_texture(std::filesystem::path{path}, format);
+  };
+
+  info.albedo = load_slot(description.albedo, graphics::format::r8g8b8a8_srgb);
+  info.normal = load_slot(description.normal, graphics::format::r8g8b8a8_unorm);
+  info.metallic_roughness = load_slot(description.metallic_roughness, graphics::format::r8g8b8a8_unorm);
+  info.occlusion = load_slot(description.occlusion, graphics::format::r8g8b8a8_unorm);
+  info.emissive = load_slot(description.emissive, graphics::format::r8g8b8a8_srgb);
+
+  auto handle = material_handle{};
+
+  {
+    auto lock = std::lock_guard{_mutex};
+    const auto entry = _material_files.find(request.id);
+    if (entry == _material_files.end()) {
+      return; // defensive -- load_material always inserts the placeholder before submitting
+    }
+    handle = material_handle{entry->second};
+  }
+
+  update_material(handle, info);
+
+  utility::logger<"assets">::info("Loaded material '{}'", request.source.empty() ? fmt::format("{}", request.id) : request.source.generic_string());
+}
+
+auto asset_residency::_finalize_particle_effect(asset_loader::particle_effect_result& result) -> void {
+  const auto& request = result.request;
+
+  if (!result.data) {
+    utility::logger<"assets">::warn("Could not parse particle_effect '{}'", request.source.generic_string());
+    return;
+  }
+
+  const auto& description = *result.data;
+
+  auto info = particle_effect::create_info{};
+  info.name = description.name;
+  info.emitters.reserve(description.emitters.size());
+
+  for (const auto& emitter_description : description.emitters) {
+    auto emitter = particle_emitter{};
+
+    emitter.name = emitter_description.name;
+    emitter.simulation_mode = emitter_description.simulation_mode;
+    emitter.blend_mode = emitter_description.blend_mode;
+    emitter.emission_rate = emitter_description.emission_rate;
+    emitter.burst_count = emitter_description.burst_count;
+    emitter.shape = emitter_description.shape;
+    emitter.shape_extents = emitter_description.shape_extents;
+    emitter.cone = emitter_description.cone;
+    emitter.velocity_min = emitter_description.velocity_min;
+    emitter.velocity_max = emitter_description.velocity_max;
+    emitter.lifetime_min = emitter_description.lifetime_min;
+    emitter.lifetime_max = emitter_description.lifetime_max;
+    emitter.start_color = emitter_description.start_color;
+    emitter.end_color = emitter_description.end_color;
+    emitter.color_over_lifetime = emitter_description.color_over_lifetime;
+    emitter.size_min = emitter_description.size_min;
+    emitter.size_max = emitter_description.size_max;
+    emitter.size_over_lifetime = emitter_description.size_over_lifetime;
+    emitter.rotation_min = emitter_description.rotation_min;
+    emitter.rotation_max = emitter_description.rotation_max;
+    emitter.rotation_over_lifetime = emitter_description.rotation_over_lifetime;
+    emitter.velocity_over_lifetime = emitter_description.velocity_over_lifetime;
+    emitter.force_over_lifetime_min = emitter_description.force_over_lifetime_min;
+    emitter.force_over_lifetime_max = emitter_description.force_over_lifetime_max;
+    emitter.gravity = emitter_description.gravity;
+    emitter.drag = emitter_description.drag;
+
+    if (!emitter_description.texture.empty()) {
+      emitter.texture = load_texture(std::filesystem::path{emitter_description.texture}, graphics::format::r8g8b8a8_srgb);
+    }
+
+    emitter.render_mode = emitter_description.render_mode;
+
+    if (!emitter_description.render_mesh.empty()) {
+      emitter.render_mesh = load_mesh(std::filesystem::path{emitter_description.render_mesh});
+    }
+
+    if (!emitter_description.render_material.empty()) {
+      emitter.render_material = load_material(std::filesystem::path{emitter_description.render_material});
+    }
+
+    emitter.collision = emitter_description.collision;
+
+    for (const auto& binding_description : emitter_description.sub_emitters) {
+      auto binding = sub_emitter_binding{};
+      binding.event = binding_description.event;
+
+      if (!binding_description.effect.empty()) {
+        binding.effect = load_particle_effect(std::filesystem::path{binding_description.effect});
+      }
+
+      binding.probability = binding_description.probability;
+      binding.inherit_velocity = binding_description.inherit_velocity;
+
+      emitter.sub_emitters.push_back(binding);
+    }
+
+    emitter.trail = emitter_description.trail;
+
+    info.emitters.push_back(std::move(emitter));
+  }
+
+  auto handle = particle_effect_handle{};
+
+  {
+    auto lock = std::lock_guard{_mutex};
+    const auto entry = _particle_effect_files.find(request.id);
+    if (entry == _particle_effect_files.end()) {
+      return; // defensive -- load_particle_effect always inserts the placeholder before submitting
+    }
+    handle = particle_effect_handle{entry->second};
+  }
+
+  update_particle_effect(handle, info);
+
+  utility::logger<"assets">::info("Loaded particle_effect '{}'", request.source.generic_string());
+}
+
+auto asset_residency::_finalize_animation_graph(asset_loader::animation_graph_result& result) -> void {
+  const auto& request = result.request;
+
+  if (!result.data) {
+    utility::logger<"assets">::warn("Could not parse animation_graph '{}'", request.source.generic_string());
+    return;
+  }
+
+  auto handle = animation_graph_handle{};
+
+  {
+    auto lock = std::lock_guard{_mutex};
+    const auto entry = _animation_graph_files.find(request.id);
+    if (entry == _animation_graph_files.end()) {
+      return; // defensive -- load_animation_graph always inserts the placeholder before submitting
+    }
+    handle = animation_graph_handle{entry->second};
+  }
+
+  update_animation_graph(handle, *result.data);
+
+  utility::logger<"assets">::info("Loaded animation_graph '{}'", request.source.generic_string());
+}
+
+auto asset_residency::_finalize_skeleton(asset_loader::skeleton_result& result) -> void {
+  const auto& request = result.request;
+
+  if (!result.data) {
+    utility::logger<"assets">::warn("Could not load skeleton {}", request.id);
+    return;
+  }
+
+  auto lock = std::lock_guard{_mutex};
+
+  const auto entry = _skeletons.find(request.id);
+
+  if (entry == _skeletons.end()) {
+    return; // defensive -- load_skeleton always inserts the placeholder before submitting
+  }
+
+  entry->second->_finalize_content(std::move(*result.data));
+}
+
+auto asset_residency::_finalize_animation_clip(asset_loader::animation_clip_result& result) -> void {
+  const auto& request = result.request;
+
+  if (!result.data) {
+    utility::logger<"assets">::warn("Could not load animation clip {}", request.id);
+    return;
+  }
+
+  auto& data = *result.data;
+
+  auto lock = std::lock_guard{_mutex};
+
+  const auto entry = _animation_clips.find(request.id);
+
+  if (entry == _animation_clips.end()) {
+    return; // defensive -- load_animation_clip always inserts the placeholder before submitting
+  }
+
+  entry->second->_finalize_content(std::move(data.name), data.duration, std::move(data.channels));
 }
 
 auto asset_residency::process_uploads(std::uint64_t frame_index) -> void {
   SBX_PROFILE_SCOPE("asset_residency::process_uploads");
+
+  _drain_loader_results();
 
   auto pending_textures = std::vector<pending_texture_upload>{};
   auto pending_meshes = std::vector<pending_mesh_upload>{};
@@ -1399,9 +1417,26 @@ auto asset_residency::process_uploads(std::uint64_t frame_index) -> void {
 
   {
     auto lock = std::lock_guard{_mutex};
-    pending_textures.swap(_pending_textures);
-    pending_meshes.swap(_pending_meshes);
-    pending_materials.swap(_pending_materials);
+
+    auto budget = max_uploads_per_frame;
+
+    while (budget > 0u && !_pending_textures.empty()) {
+      pending_textures.push_back(std::move(_pending_textures.front()));
+      _pending_textures.pop_front();
+      --budget;
+    }
+
+    while (budget > 0u && !_pending_meshes.empty()) {
+      pending_meshes.push_back(std::move(_pending_meshes.front()));
+      _pending_meshes.pop_front();
+      --budget;
+    }
+
+    while (budget > 0u && !_pending_materials.empty()) {
+      pending_materials.push_back(std::move(_pending_materials.front()));
+      _pending_materials.pop_front();
+      --budget;
+    }
   }
 
   if (pending_textures.empty() && pending_meshes.empty() && pending_materials.empty()) {
@@ -1628,44 +1663,55 @@ auto asset_residency::_register_material(std::shared_ptr<material> record) -> ma
   return material_handle{record};
 }
 
-auto asset_residency::_extract_gltf_material(const material_description& description, const std::filesystem::path& relative_source) -> math::uuid {
-  // relative_source is fully resolved; save_material/load_material(path) expect an assets-relative
+auto asset_residency::_extract_gltf_material(const math::uuid& cooked_material_id, const std::filesystem::path& mesh_source) -> material_handle {
+  const auto description = asset_cooker::resolve_cooked_material(cooked_material_id);
+
+  if (!description) {
+    return material_handle{};
+  }
+
+  // mesh_source is fully resolved; save_material/load_material(path) expect an assets-relative
   // input, so re-relativize it here (same as the editor's extract_material_to_asset).
-  const auto source_relative = _cooker.relative(relative_source);
+  const auto source_relative = _manifest.relative(mesh_source);
 
   const auto directory = source_relative.parent_path() / "materials"; // mirrors textures already landing in models/<name>/textures/
-  const auto relative_path = directory / (sanitize_file_name(description.name.empty() ? "material" : description.name) + ".material");
+  const auto relative_path = directory / (sanitize_file_name(description->name.empty() ? "material" : description->name) + ".material");
 
-  // Already extracted (possibly hand-edited since a previous cook) — reuse it as-is, never overwrite.
-  if (std::filesystem::exists(_cooker.absolute(relative_path))) {
+  // Already extracted (possibly hand-edited since a previous cook, or since the last time this
+  // mesh was loaded) — reuse it as-is, never overwrite.
+  if (std::filesystem::exists(_manifest.absolute(relative_path))) {
     if (auto existing = load_material(relative_path); existing.is_valid()) {
-      return existing->id();
+      return existing;
     }
   }
 
   auto info = material::create_info{};
-  info.name = description.name.empty() ? "material" : description.name;
-  info.base_color_factor = description.base_color_factor;
-  info.emissive_factor = description.emissive_factor;
-  info.metallic_factor = description.metallic_factor;
-  info.roughness_factor = description.roughness_factor;
-  info.alpha = description.alpha;
-  info.alpha_cutoff = description.alpha_cutoff;
-  info.is_double_sided = description.is_double_sided;
+  info.name = description->name.empty() ? "material" : description->name;
+  info.base_color_factor = description->base_color_factor;
+  info.emissive_factor = description->emissive_factor;
+  info.metallic_factor = description->metallic_factor;
+  info.roughness_factor = description->roughness_factor;
+  info.alpha = description->alpha;
+  info.alpha_cutoff = description->alpha_cutoff;
+  info.is_double_sided = description->is_double_sided;
+  info.casts_shadow = description->casts_shadow;
+  info.receives_shadow = description->receives_shadow;
 
-  const auto load_slot = [&](const math::uuid& uuid, graphics::format format) -> texture_handle {
-    return (uuid == math::uuid::nil()) ? texture_handle{} : load_texture(uuid, format);
+  const auto load_slot = [this](const std::string& path, graphics::format format) -> texture_handle {
+    return path.empty() ? texture_handle{} : load_texture(std::filesystem::path{path}, format);
   };
 
-  info.albedo = load_slot(description.albedo, graphics::format::r8g8b8a8_srgb);
-  info.normal = load_slot(description.normal, graphics::format::r8g8b8a8_unorm);
-  info.metallic_roughness = load_slot(description.metallic_roughness, graphics::format::r8g8b8a8_unorm);
-  info.occlusion = load_slot(description.occlusion, graphics::format::r8g8b8a8_unorm);
-  info.emissive = load_slot(description.emissive, graphics::format::r8g8b8a8_srgb);
+  info.albedo = load_slot(description->albedo, graphics::format::r8g8b8a8_srgb);
+  info.normal = load_slot(description->normal, graphics::format::r8g8b8a8_unorm);
+  info.metallic_roughness = load_slot(description->metallic_roughness, graphics::format::r8g8b8a8_unorm);
+  info.occlusion = load_slot(description->occlusion, graphics::format::r8g8b8a8_unorm);
+  info.emissive = load_slot(description->emissive, graphics::format::r8g8b8a8_srgb);
 
   auto handle = create_material(info);
 
-  return save_material(handle, relative_path);
+  save_material(handle, relative_path);
+
+  return handle;
 }
 
 } // namespace sbx::assets

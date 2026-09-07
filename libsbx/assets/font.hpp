@@ -12,11 +12,12 @@
 #include <libsbx/memory/observer_ptr.hpp>
 
 #include <libsbx/assets/asset_handle.hpp>
+#include <libsbx/assets/loadable.hpp>
 #include <libsbx/assets/texture.hpp>
 
 namespace sbx::assets {
 
-class font final {
+class font final : public loadable {
 
   friend class asset_residency;
 
@@ -72,6 +73,20 @@ public:
   }
 
 private:
+
+  // Fills in a placeholder font() (default-constructed atlas/glyphs) once its cooked content has
+  // come back from the background asset loader -- called once, on the main thread, from
+  // asset_residency's font finalize step. Bumps loadable's generation() -- see its own doc comment
+  // for why anything memoizing on a font by identity/pointer alone (canvas's text_shape_cache_key)
+  // needs this to notice the moment real glyph data replaces the empty placeholder.
+  auto _finalize_content(std::vector<glyph> glyphs, std::uint32_t first_codepoint, std::float_t line_height, std::float_t ascent, std::float_t descent) -> void {
+    _glyphs = std::move(glyphs);
+    _first_codepoint = first_codepoint;
+    _line_height = line_height;
+    _ascent = ascent;
+    _descent = descent;
+    _bump_generation();
+  }
 
   texture_handle _atlas{};
   std::vector<glyph> _glyphs{};

@@ -5,14 +5,14 @@
 namespace sbx::assets {
 
 assets_module::assets_module()
-: _residency{_cooker, _ibl} { }
+: _residency{_manifest, _ibl} { }
 
 auto assets_module::import(const std::filesystem::path& path) -> math::uuid {
-  return _cooker.import(path);
+  return _manifest.import(path);
 }
 
 auto assets_module::import_directory(const std::filesystem::path& root) -> void {
-  _cooker.import_directory(root);
+  _manifest.import_directory(root);
 }
 
 auto assets_module::load_texture(const math::uuid& id, graphics::format format) -> texture_handle {
@@ -44,7 +44,23 @@ auto assets_module::create_mesh(std::vector<vertex> vertices, std::vector<std::u
 }
 
 auto assets_module::resolve_mesh_collision_data(const math::uuid& id) -> std::optional<cooked_mesh_data> {
-  return _cooker.resolve_mesh(id, mesh_import_options{.extract_materials = false}, material_resolver{});
+  const auto source = _manifest.path_of(id);
+
+  if (source.empty()) {
+    return std::nullopt;
+  }
+
+  const auto cooked = _manifest.cooked_path(id, ".sbxmsh");
+  const auto needs_cook = _manifest.is_cooked_stale(id, source, cooked, mesh_cooker_version);
+
+  auto did_cook = false;
+  auto data = _cooker.resolve_mesh(source, id, cooked, needs_cook, did_cook);
+
+  if (did_cook) {
+    _manifest.record_cook(id, mesh_cooker_version, source);
+  }
+
+  return data;
 }
 
 auto assets_module::load_material(const math::uuid& id) -> material_handle {
@@ -140,7 +156,7 @@ auto assets_module::is_resident(const font_handle& font) const -> bool {
 }
 
 auto assets_module::path_of(const math::uuid& id) const -> std::filesystem::path {
-  return _cooker.path_of(id);
+  return _manifest.path_of(id);
 }
 
 } // namespace sbx::assets

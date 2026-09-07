@@ -27,6 +27,7 @@
 #include <libsbx/assets/particle_effect.hpp>
 #include <libsbx/assets/animation_graph.hpp>
 #include <libsbx/assets/asset_cooker.hpp>
+#include <libsbx/assets/asset_manifest.hpp>
 #include <libsbx/assets/asset_residency.hpp>
 #include <libsbx/assets/ibl_baker.hpp>
 
@@ -101,8 +102,8 @@ public:
    * @brief Resolves a mesh's raw cooked vertex/index data (see @ref cooked_mesh_data), independent
    * of GPU residency — the mesh need not be, and does not become, loaded via @ref load_mesh.
    *
-   * Never extracts materials, so it's safe to pass an empty material_resolver. Used by
-   * physics::mesh_collision_cache to build a collider's triangle BVH.
+   * Fully synchronous, main-thread only -- bypasses asset_residency/asset_loader entirely, same as
+   * it always has. Used by physics::mesh_collision_cache to build a collider's triangle BVH.
    */
   auto resolve_mesh_collision_data(const math::uuid& id) -> std::optional<cooked_mesh_data>;
 
@@ -206,9 +207,15 @@ public:
 
 private:
 
+  // Own, private, synchronous-use asset_cooker instance for resolve_mesh_collision_data's direct
+  // bypass -- asset_cooker is stateless (see its own doc comment), so this needs no coordination
+  // with asset_residency's asset_loader, which owns a completely separate instance for the
+  // background thread.
+  asset_cooker _cooker{};
+
   // Declaration order is construction order: residency depends on the other two so it's declared
   // last, and destroyed first — the one still holding live GPU-facing state.
-  asset_cooker _cooker{};
+  asset_manifest _manifest{};
   ibl_baker _ibl{};
   asset_residency _residency;
 

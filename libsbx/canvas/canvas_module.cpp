@@ -35,6 +35,25 @@ auto canvas_module::update() -> void {
   auto& assets_module = core::engine::get_module<assets::assets_module>();
   auto& scene_renderer_module = core::engine::get_module<render::scene_renderer_module>();
 
+  // See _text_shape_cache's doc comment: a scene swap (e.g. exiting play mode) means every cached
+  // uuid names a node in a registry that may no longer even exist, so drop them all rather than
+  // look any of them up. Within the same scene, a ui_text node can still be individually destroyed
+  // without a swap -- prune those too, each frame, via scene::find (canvas never resolves a uuid to
+  // an entity itself). A uuid is a plain value either way, so this never risks touching live ECS
+  // state for an id that no longer resolves to anything.
+  if (&scene != _last_scene) {
+    _text_shape_cache.clear();
+    _last_scene = &scene;
+  } else {
+    for (auto it = _text_shape_cache.begin(); it != _text_shape_cache.end();) {
+      if (!scene.find(it->first).is_valid()) {
+        it = _text_shape_cache.erase(it);
+      } else {
+        ++it;
+      }
+    }
+  }
+
   const auto target_extent = scene_renderer_module.target_extent();
   const auto screen_size = math::vector2{static_cast<std::float_t>(target_extent.x()), static_cast<std::float_t>(target_extent.y())};
   const auto mouse_position = platform::input::mouse_position() - scene_renderer_module.viewport_offset();
@@ -378,8 +397,8 @@ auto canvas_module::_visit(scenes::scene& scene, scenes::node node, const resolv
       auto color = text.color;
       color.a() *= state.alpha;
 
-      const auto key = text_shape_cache_key{text.text, text.font.get(), text.font_size, text.horizontal_align, text.vertical_align, text.line_spacing, rect};
-      auto& cache_entry = _text_shape_cache[node];
+      const auto key = text_shape_cache_key{text.text, text.font.get(), text.font ? text.font->generation() : 0u, text.font_size, text.horizontal_align, text.vertical_align, text.line_spacing, rect};
+      auto& cache_entry = _text_shape_cache[node.id()];
 
       if (!(cache_entry.key == key)) {
         cache_entry.glyphs = shape_text(text, rect);

@@ -11,6 +11,7 @@
 #include <libsbx/math/vector3.hpp>
 
 #include <libsbx/assets/asset_handle.hpp>
+#include <libsbx/assets/loadable.hpp>
 #include <libsbx/assets/texture.hpp>
 
 namespace sbx::assets {
@@ -21,7 +22,7 @@ enum class alpha_mode : std::uint8_t {
   blend   // order-dependent transparency, transparent pass
 }; // enum class alpha_mode
 
-class material final {
+class material final : public loadable {
 
   friend class asset_residency;
 

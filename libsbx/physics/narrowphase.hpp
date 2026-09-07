@@ -21,6 +21,8 @@
 #include <unordered_map>
 #include <vector>
 
+#include <libsbx/math/uuid.hpp>
+
 #include <libsbx/scenes/node.hpp>
 #include <libsbx/scenes/scene.hpp>
 
@@ -34,13 +36,16 @@
 namespace sbx::physics {
 
 /**
- * @brief Per-physics-step memoization of compose_world_pose() results, keyed by entity. Cleared
+ * @brief Per-physics-step memoization of compose_world_pose() results, keyed by the node's stable
+ * scenes::id (a math::uuid) rather than ecs::entity -- physics works through scenes::node, and
+ * node deliberately has no entity() accessor to hand out (see its own doc comment), so this is
+ * scenes::id-value-per-lookup rather than a free re-read of an already-known raw index. Cleared
  * once at the top of each physics step (physics_module owns the instance) -- within a step, a
  * node's world pose is composed at most once no matter how many times broadphase sync/narrowphase
  * ask for it, and composing an uncached node also seeds every ancestor it climbed through along the
  * way, so sibling nodes under the same parent chain hit cache too.
  */
-using pose_cache = std::unordered_map<ecs::entity, transform>;
+using pose_cache = std::unordered_map<math::uuid, transform>;
 
 /**
  * @brief One convex primitive resolved for narrowphase: its shape, full world pose (every
