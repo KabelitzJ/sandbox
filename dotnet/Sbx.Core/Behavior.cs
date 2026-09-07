@@ -32,6 +32,8 @@ namespace Sbx.Core
 
 		public virtual void OnTriggerExit(Collision collision) { }
 
+		public virtual void OnClick() { }
+
 		/**
 		 * This node -- for reaching Node's Find/Create/Destroy/SetParent/GetComponent<T> surface on
 		 * yourself, symmetrically with how you'd call it on any other node.

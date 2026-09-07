@@ -14,31 +14,25 @@
 
 #include <libsbx/assets/assets_module.hpp>
 
+#include <libsbx/signals/signal.hpp>
+
 #include <libsbx/scenes/scene.hpp>
 #include <libsbx/scenes/node.hpp>
 #include <libsbx/scenes/scenes_module.hpp>
 
 #include <libsbx/canvas/components.hpp>
 #include <libsbx/canvas/rect_resolve.hpp>
+#include <libsbx/canvas/text_layout.hpp>
 #include <libsbx/canvas/canvas_draw_list.hpp>
 
 namespace sbx::canvas {
 
-/**
- * @brief Owns and hit-tests every canvas/UI-element hierarchy in the active scene, and bakes this
- * frame's resolved geometry into a canvas_draw_list for canvas_pass to draw. Picked up
- * automatically as the core::stage::update hook (see core::module's reflection-based dispatch).
- *
- * v1 scope: only render_mode::screen_space_overlay is functional (the canvas fills the whole
- * window); screen_space_camera/world_space are reserved enum values, not yet implemented -- both
- * would need a depth-tested per-camera sub-pass canvas_pass doesn't have. Only Panel/Image/Button
- * actually render; ui_text is authored but not drawn (no font-atlas pipeline yet -- see
- * components.hpp). No layout groups or auto-sizing -- every rect_transform is hand-placed.
- *
- * Hit-testing is pull-based, not push-based: any code doing world picking (a road tool, editor
- * viewport picking) should call wants_pointer_capture() before casting its own ray, so a click on
- * the UI never falls through to the world underneath it.
- */
+struct canvas_inherited_state {
+  std::float_t alpha{1.0f};
+  bool interactable{true};
+  bool blocks_raycasts{true};
+}; // struct canvas_inherited_state
+
 class canvas_module final : public utility::noncopyable {
 
 public:
@@ -55,14 +49,17 @@ public:
     return _draw_list;
   }
 
+  [[nodiscard]] auto on_button_clicked() noexcept -> signals::signal<const scenes::node&>& {
+    return _on_button_clicked;
+  }
+
 private:
 
-  // node is taken by value (a cheap registry-ptr + entity handle) rather than const-ref, since
-  // ui_button's hover/press/click state must be written through get_component's mutable overload.
-  auto _visit(scenes::scene& scene, scenes::node node, const resolved_rect& parent_rect, const math::vector2& screen_size, const math::vector2& mouse_position) -> void;
+  auto _visit(scenes::scene& scene, scenes::node node, const resolved_rect& parent_rect, const canvas_inherited_state& inherited, const math::vector2& screen_size, const math::vector2& mouse_position, std::uint32_t white_texture_index, std::float_t scale_factor) -> void;
 
   canvas_draw_list _draw_list{};
   bool _wants_pointer_capture{false};
+  signals::signal<const scenes::node&> _on_button_clicked{};
 
 }; // class canvas_module
 

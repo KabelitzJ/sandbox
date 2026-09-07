@@ -3,6 +3,7 @@
 #ifndef LIBSBX_CANVAS_CANVAS_DRAW_LIST_HPP_
 #define LIBSBX_CANVAS_CANVAS_DRAW_LIST_HPP_
 
+#include <cstdint>
 #include <vector>
 
 #include <libsbx/math/vector2.hpp>
@@ -11,41 +12,41 @@
 
 namespace sbx::canvas {
 
-/**
- * @brief One vertex of the vertex-pulled buffer canvas_pass draws (matches
- * shaders/passes/canvas.slang's `canvas_vertex`). Position is already resolved to NDC (z = 0,
- * w = 1) by canvas_draw_list::add_rect -- unlike render::debug_vertex, there's no further
- * view/projection transform in the shader, since a screen-space-overlay element's position doesn't
- * depend on any camera.
- */
 struct canvas_vertex {
   math::vector4 position;
   math::color color;
+  math::vector2 uv;
+  std::uint32_t texture_index;
+  std::uint32_t padding;
 }; // struct canvas_vertex
 
-/**
- * @brief CPU-side accumulator for this frame's resolved UI geometry -- built fresh by
- * canvas_module::update() every frame, drawn and cleared by canvas_pass. Same lifecycle as
- * render::debug_draw, just triangles instead of lines.
- */
+static_assert(sizeof(canvas_vertex) == 48u, "canvas_vertex must stay byte-mirrored with shaders/passes/canvas.slang's canvas_vertex struct");
+
 class canvas_draw_list final {
 
 public:
 
-  /** @brief Two triangles covering [top_left, top_left + size], both in pixel space (y-down), converted to NDC here given the current screen_size. */
-  auto add_rect(const math::vector2& top_left, const math::vector2& size, const math::color& color, const math::vector2& screen_size) -> void;
+  auto add_quad(const math::vector2& top_left, const math::vector2& size, const math::vector4& uv_rect, std::uint32_t texture_index, const math::color& color, const math::vector2& screen_size) -> void;
+
+  auto add_glyph_quad(const math::vector2& top_left, const math::vector2& size, const math::vector4& uv_rect, std::uint32_t texture_index, const math::color& color, const math::vector2& screen_size) -> void;
 
   [[nodiscard]] auto vertices() const noexcept -> const std::vector<canvas_vertex>& {
     return _vertices;
   }
 
+  [[nodiscard]] auto glyph_vertices() const noexcept -> const std::vector<canvas_vertex>& {
+    return _glyph_vertices;
+  }
+
   auto clear() noexcept -> void {
     _vertices.clear();
+    _glyph_vertices.clear();
   }
 
 private:
 
   std::vector<canvas_vertex> _vertices{};
+  std::vector<canvas_vertex> _glyph_vertices{};
 
 }; // class canvas_draw_list
 

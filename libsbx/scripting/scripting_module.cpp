@@ -205,6 +205,10 @@ scripting_module::scripting_module() {
   physics_module.on_contact_began().connect([this](const physics::collision_event& event) { _dispatch_collision_event(event, true); });
   physics_module.on_contact_ended().connect([this](const physics::collision_event& event) { _dispatch_collision_event(event, false); });
 
+  auto& canvas_module = core::engine::get_module<canvas::canvas_module>();
+
+  canvas_module.on_button_clicked().connect([this](const scenes::node& node) { _dispatch_button_click(node); });
+
   _load_game_assembly();
 }
 
@@ -379,6 +383,18 @@ auto scripting_module::_dispatch_collision_event(const physics::collision_event&
 
   _invoke_collision_handler(node_a, node_b, event, began);
   _invoke_collision_handler(node_b, node_a, event, began);
+}
+
+auto scripting_module::_dispatch_button_click(const scenes::node& node) -> void {
+  if (!node.is_valid() || !node.has_component<scripting::scripts>()) {
+    return;
+  }
+
+  const auto& scripts = node.get_component<scripting::scripts>();
+
+  for (const auto& instance : scripts.instances) {
+    instance.invoke("OnClick");
+  }
 }
 
 auto scripting_module::run_on_destroy(scenes::scene& target) -> void {

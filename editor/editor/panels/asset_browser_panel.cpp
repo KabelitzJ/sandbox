@@ -43,6 +43,7 @@ auto extension_table() -> const std::unordered_map<std::string, asset_kind>& {
     {".hdr", asset_kind::environment_map},
     {".particle_effect", asset_kind::particle_effect},
     {".animation_graph", asset_kind::animation_graph},
+    {".ttf", asset_kind::font},
     {".yaml", asset_kind::scene},
     {".cs", asset_kind::script},
   };
@@ -53,7 +54,8 @@ auto extension_table() -> const std::unordered_map<std::string, asset_kind>& {
 [[nodiscard]] auto is_importable_kind(asset_kind kind) -> bool {
   return kind == asset_kind::texture || kind == asset_kind::mesh ||
          kind == asset_kind::material || kind == asset_kind::environment_map ||
-         kind == asset_kind::particle_effect || kind == asset_kind::animation_graph;
+         kind == asset_kind::particle_effect || kind == asset_kind::animation_graph ||
+         kind == asset_kind::font;
 }
 
 // Case-insensitive alphabetical order, shared by the folder tree and the contents pane so both
@@ -100,6 +102,7 @@ auto icon_for(const asset_browser_entry& entry) -> const char* {
     case asset_kind::environment_map: return ICON_MDI_EARTH;
     case asset_kind::particle_effect: return ICON_MDI_FIREWORK;
     case asset_kind::animation_graph: return ICON_MDI_STATE_MACHINE;
+    case asset_kind::font: return ICON_MDI_FORMAT_FONT;
     case asset_kind::scene: return ICON_MDI_FILE_TREE;
     case asset_kind::script: return ICON_MDI_FILE_CODE_OUTLINE;
     case asset_kind::unknown: return ICON_MDI_FILE_OUTLINE;
@@ -122,6 +125,7 @@ auto drag_payload_type_for(asset_kind kind) -> const char* {
     case asset_kind::material: return sbx::render::widgets::drag_drop_payload_material;
     case asset_kind::particle_effect: return sbx::render::widgets::drag_drop_payload_particle_effect;
     case asset_kind::animation_graph: return sbx::render::widgets::drag_drop_payload_animation_graph;
+    case asset_kind::font: return sbx::render::widgets::drag_drop_payload_font;
     default: return nullptr;
   }
 }

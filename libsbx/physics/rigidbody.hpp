@@ -9,11 +9,13 @@
 #include <libsbx/math/quaternion.hpp>
 #include <libsbx/math/vector3.hpp>
 
+#include <libsbx/reflection/annotations.hpp>
+
 #include <libsbx/scenes/node.hpp>
 
 namespace sbx::physics {
 
-enum class body_type : std::uint8_t {
+enum class [[=reflection::named]] body_type : std::uint8_t {
   dynamic_body,
   kinematic,
   static_body

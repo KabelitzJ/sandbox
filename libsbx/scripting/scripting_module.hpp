@@ -22,6 +22,8 @@
 #include <libsbx/physics/physics_module.hpp>
 #include <libsbx/physics/contact.hpp>
 
+#include <libsbx/canvas/canvas_module.hpp>
+
 #include <libsbx/filesystem/filesystem_module.hpp>
 
 #include <libsbx/scripting/managed/runtime.hpp>
@@ -47,7 +49,7 @@ class scripting_module final : public utility::noncopyable {
   
 public:
 
-  using dependencies = core::dependency_list<filesystem::filesystem_module, scenes::scenes_module, physics::physics_module>;
+  using dependencies = core::dependency_list<filesystem::filesystem_module, scenes::scenes_module, physics::physics_module, canvas::canvas_module>;
 
   scripting_module();
 
@@ -144,6 +146,9 @@ private:
 
   /** @brief One direction of _dispatch_collision_event -- invokes on self's own script instances (if any), passing other's uuid. */
   auto _invoke_collision_handler(scenes::node& self, const scenes::node& other, const physics::collision_event& event, bool began) -> void;
+
+  /** @brief canvas::canvas_module::on_button_clicked handler -- invokes OnClick on the clicked node's own script instances (if any). */
+  auto _dispatch_button_click(const scenes::node& node) -> void;
 
   std::filesystem::path _assembly_path;
 

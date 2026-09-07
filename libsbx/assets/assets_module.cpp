@@ -23,6 +23,14 @@ auto assets_module::load_texture(const std::filesystem::path& path, graphics::fo
   return _residency.load_texture(path, format);
 }
 
+auto assets_module::load_font(const math::uuid& id) -> font_handle {
+  return _residency.load_font(id);
+}
+
+auto assets_module::load_font(const std::filesystem::path& path) -> font_handle {
+  return _residency.load_font(path);
+}
+
 auto assets_module::load_mesh(const math::uuid& id, const mesh_import_options& options) -> mesh_handle {
   return _residency.load_mesh(id, options);
 }
@@ -125,6 +133,10 @@ auto assets_module::is_resident(const material_handle& material) const -> bool {
 
 auto assets_module::is_resident(const environment_map_handle& environment) const -> bool {
   return _residency.is_resident(environment);
+}
+
+auto assets_module::is_resident(const font_handle& font) const -> bool {
+  return _residency.is_resident(font);
 }
 
 auto assets_module::path_of(const math::uuid& id) const -> std::filesystem::path {

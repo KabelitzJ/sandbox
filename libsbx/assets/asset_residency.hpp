@@ -22,6 +22,7 @@
 
 #include <libsbx/assets/asset_handle.hpp>
 #include <libsbx/assets/texture.hpp>
+#include <libsbx/assets/font.hpp>
 #include <libsbx/assets/mesh.hpp>
 #include <libsbx/assets/skeleton.hpp>
 #include <libsbx/assets/animation_clip.hpp>
@@ -50,6 +51,11 @@ public:
   auto load_texture(const math::uuid& id, graphics::format format = graphics::format::r8g8b8a8_srgb) -> texture_handle;
 
   auto load_texture(const std::filesystem::path& path, graphics::format format = graphics::format::r8g8b8a8_srgb) -> texture_handle;
+
+  /** @brief Loads a TTF -> SDF glyph atlas font from a UUID or project-relative path; returns the existing handle if already loaded. */
+  auto load_font(const math::uuid& id) -> font_handle;
+
+  auto load_font(const std::filesystem::path& path) -> font_handle;
 
   /** @brief Loads a mesh from a UUID or project-relative path; returns the existing handle if already loaded. */
   auto load_mesh(const math::uuid& id, const mesh_import_options& options = {}) -> mesh_handle;
@@ -150,6 +156,8 @@ public:
 
   [[nodiscard]] auto is_resident(const environment_map_handle& environment) const -> bool;
 
+  [[nodiscard]] auto is_resident(const font_handle& font) const -> bool;
+
   /**
    * @brief The image view backing a resident texture's bindless slot, or VK_NULL_HANDLE if the
    * texture isn't valid or its upload hasn't been processed yet (see is_resident). Used by the
@@ -222,6 +230,8 @@ private:
   std::vector<pending_texture_upload> _pending_textures{};
   std::unordered_map<std::uint32_t, graphics::image_handle> _images{};
   std::unordered_map<std::uint32_t, std::uint64_t> _resident_frame{};
+
+  std::unordered_map<math::uuid, std::shared_ptr<font>> _fonts{};
 
   std::unordered_map<math::uuid, std::shared_ptr<mesh>> _meshes{};
   std::vector<pending_mesh_upload> _pending_meshes{};

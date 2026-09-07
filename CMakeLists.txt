@@ -176,6 +176,7 @@ target_sources(
 
     "${CMAKE_SOURCE_DIR}/libsbx/canvas/canvas_draw_list.cpp"
     "${CMAKE_SOURCE_DIR}/libsbx/canvas/canvas_module.cpp"
+    "${CMAKE_SOURCE_DIR}/libsbx/canvas/text_layout.cpp"
 
     "${CMAKE_SOURCE_DIR}/libsbx/core/core.cpp"
     "${CMAKE_SOURCE_DIR}/libsbx/core/engine.cpp"
@@ -329,6 +330,7 @@ target_sources(
       "${CMAKE_SOURCE_DIR}/libsbx/assets/asset_residency.hpp"
       "${CMAKE_SOURCE_DIR}/libsbx/assets/assets_module.hpp"
       "${CMAKE_SOURCE_DIR}/libsbx/assets/environment_map.hpp"
+      "${CMAKE_SOURCE_DIR}/libsbx/assets/font.hpp"
       "${CMAKE_SOURCE_DIR}/libsbx/assets/ibl_baker.hpp"
       "${CMAKE_SOURCE_DIR}/libsbx/assets/animation_clip.hpp"
       "${CMAKE_SOURCE_DIR}/libsbx/assets/animation_graph.hpp"
@@ -342,6 +344,7 @@ target_sources(
       "${CMAKE_SOURCE_DIR}/libsbx/canvas/canvas_module.hpp"
       "${CMAKE_SOURCE_DIR}/libsbx/canvas/components.hpp"
       "${CMAKE_SOURCE_DIR}/libsbx/canvas/rect_resolve.hpp"
+      "${CMAKE_SOURCE_DIR}/libsbx/canvas/text_layout.hpp"
 
       "${CMAKE_SOURCE_DIR}/libsbx/containers/compressed_pair.hpp"
       "${CMAKE_SOURCE_DIR}/libsbx/containers/containers.hpp"

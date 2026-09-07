@@ -7,36 +7,47 @@
 #include <string>
 
 #include <libsbx/math/vector2.hpp>
+#include <libsbx/math/vector4.hpp>
 #include <libsbx/math/color.hpp>
 #include <libsbx/math/uuid.hpp>
 
+#include <libsbx/assets/texture.hpp>
+#include <libsbx/assets/font.hpp>
+
+#include <libsbx/reflection/annotations.hpp>
+
 namespace sbx::canvas {
 
-enum class render_mode : std::uint8_t {
+enum class [[=reflection::named]] render_mode : std::uint8_t {
   screen_space_overlay,
   screen_space_camera,
   world_space,
 }; // enum class render_mode
 
-/**
- * @brief Marks a node as the root of a UI hierarchy -- every rect_transform child (recursively)
- * resolves against this canvas' own rect. v1 only implements screen_space_overlay (the canvas
- * fills the whole window); screen_space_camera and world_space are reserved enum values for a
- * depth-tested per-camera sub-pass canvas_pass doesn't have yet -- see canvas_module's own doc
- * comment.
- */
+enum class [[=reflection::named]] text_align : std::uint8_t {
+  start,
+  center,
+  end,
+}; // enum class text_align
+
 struct canvas {
   render_mode mode{render_mode::screen_space_overlay};
   math::uuid camera{};      // only meaningful for screen_space_camera/world_space; unused in v1
   std::int32_t sort_order{0};
 }; // struct canvas
 
-/**
- * @brief A UI element's placement within its parent canvas/element. Unity RectTransform-compatible
- * anchor math -- see rect_resolve.hpp's resolve_rect for the exact formula, which handles both a
- * point anchor (anchor_min == anchor_max, size_delta is the element's literal size) and a stretched
- * one (anchor_min != anchor_max, size_delta becomes a margin on the stretched size) uniformly.
- */
+enum class [[=reflection::named]] canvas_scale_mode : std::uint8_t {
+  constant_pixel_size,
+  scale_with_screen_size,
+  constant_physical_size,
+}; // enum class canvas_scale_mode
+
+struct canvas_scaler {
+  canvas_scale_mode mode{canvas_scale_mode::constant_pixel_size};
+  math::vector2 reference_resolution{1920.0f, 1080.0f};
+  std::float_t match_width_or_height{0.0f};
+}; // struct canvas_scaler
+
 struct rect_transform {
   math::vector2 anchor_min{0.5f, 0.5f};
   math::vector2 anchor_max{0.5f, 0.5f};
@@ -45,30 +56,31 @@ struct rect_transform {
   math::vector2 pivot{0.5f, 0.5f};
 }; // struct rect_transform
 
-/** @brief A solid-color filled rectangle. Texture support (tinted image, not just a flat color) is future work -- v1 only ever draws `tint`. */
+struct canvas_group {
+  std::float_t alpha{1.0f};
+  bool interactable{true};
+  bool blocks_raycasts{true};
+  bool ignore_parent_groups{false};
+}; // struct canvas_group
+
 struct ui_image {
+  assets::texture_handle sprite{};
   math::color tint{1.0f, 1.0f, 1.0f, 1.0f};
+  math::vector4 uv_rect{0.0f, 0.0f, 1.0f, 1.0f};
+  bool raycast_target{true};
 }; // struct ui_image
 
-/**
- * @brief A text label. v1 gap: authored but not yet rendered -- canvas_pass has no glyph/font-atlas
- * pipeline yet (see canvas_module's own doc comment). Kept as a real component now so game code can
- * already author labels; wiring up actual glyph rendering is separate follow-up work.
- */
 struct ui_text {
   std::string text{};
+  assets::font_handle font{};
   std::float_t font_size{16.0f};
   math::color color{1.0f, 1.0f, 1.0f, 1.0f};
+  text_align horizontal_align{text_align::start};
+  text_align vertical_align{text_align::start};
+  std::float_t line_spacing{1.0f};
+  bool raycast_target{true};
 }; // struct ui_text
 
-/**
- * @brief A clickable rect. canvas_module::update() hit-tests this against the cursor every frame
- * and updates is_hovered/is_pressed/was_clicked -- polled state (matching this engine's existing
- * platform::input convention) rather than a signal, so it needs no special serialization and no
- * native/managed callback plumbing to expose to C#. was_clicked is true for exactly the frame a
- * click completes (press and release both while hovered); canvas_module clears it at the start of
- * every update() before recomputing, so no reader needs to reset it.
- */
 struct ui_button {
   bool interactable{true};
   math::color normal_color{0.25f, 0.25f, 0.25f, 1.0f};

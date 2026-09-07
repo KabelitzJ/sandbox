@@ -15,11 +15,15 @@
 #include <libsbx/utility/logger.hpp>
 #include <libsbx/utility/hashed_string.hpp>
 
+#include <libsbx/reflection/enum.hpp>
+
 #include <libsbx/core/engine.hpp>
 
 #include <libsbx/utility/overload.hpp>
 
 #include <libsbx/assets/assets_module.hpp>
+
+#include <libsbx/canvas/components.hpp>
 
 #include <libsbx/physics/rigidbody.hpp>
 #include <libsbx/physics/collider.hpp>
@@ -38,11 +42,15 @@ struct asset_key_table {
   std::unordered_map<math::uuid, std::string> environment_keys{};
   std::unordered_map<math::uuid, std::string> particle_effect_keys{};
   std::unordered_map<math::uuid, std::string> animation_graph_keys{};
+  std::unordered_map<math::uuid, std::string> texture_keys{};
+  std::unordered_map<math::uuid, std::string> font_keys{};
   YAML::Node meshes_table{YAML::NodeType::Sequence};
   YAML::Node materials_table{YAML::NodeType::Sequence};
   YAML::Node environments_table{YAML::NodeType::Sequence};
   YAML::Node particle_effects_table{YAML::NodeType::Sequence};
   YAML::Node animation_graphs_table{YAML::NodeType::Sequence};
+  YAML::Node textures_table{YAML::NodeType::Sequence};
+  YAML::Node fonts_table{YAML::NodeType::Sequence};
 }; // struct asset_key_table
 
 auto make_asset_key(asset_key_table& keys, const std::string& base) -> std::string {
@@ -338,11 +346,139 @@ auto write_node(YAML::Node& node_yaml, ecs::registry& registry, ecs::entity enti
         component["effect"] = keys.particle_effect_keys.at(effect_id);
         component["loop"] = instance.loop;
         component["duration"] = instance.duration;
-        component["playback"] = (instance.playback == particle_playback_state::paused) ? "paused" : (instance.playback == particle_playback_state::stopped) ? "stopped" : "playing";
+        component["playback"] = std::string{reflection::to_string(instance.playback)};
 
         components.push_back(component);
       }
     }
+  }
+
+  if (registry.all_of<canvas::canvas>(entity)) {
+    const auto& canvas_component = registry.get<canvas::canvas>(entity);
+
+    auto component = YAML::Node{};
+    component["type"] = "canvas";
+    component["mode"] = std::string{reflection::to_string(canvas_component.mode)};
+    component["camera"] = canvas_component.camera.value();
+    component["sort_order"] = canvas_component.sort_order;
+
+    components.push_back(component);
+  }
+
+  if (registry.all_of<canvas::canvas_scaler>(entity)) {
+    const auto& scaler = registry.get<canvas::canvas_scaler>(entity);
+
+    auto component = YAML::Node{};
+    component["type"] = "canvas_scaler";
+    component["mode"] = std::string{reflection::to_string(scaler.mode)};
+    component["reference_resolution"] = scaler.reference_resolution;
+    component["match_width_or_height"] = scaler.match_width_or_height;
+
+    components.push_back(component);
+  }
+
+  if (registry.all_of<canvas::rect_transform>(entity)) {
+    const auto& rect = registry.get<canvas::rect_transform>(entity);
+
+    auto component = YAML::Node{};
+    component["type"] = "rect_transform";
+    component["anchor_min"] = rect.anchor_min;
+    component["anchor_max"] = rect.anchor_max;
+    component["anchored_position"] = rect.anchored_position;
+    component["size_delta"] = rect.size_delta;
+    component["pivot"] = rect.pivot;
+
+    components.push_back(component);
+  }
+
+  if (registry.all_of<canvas::canvas_group>(entity)) {
+    const auto& group = registry.get<canvas::canvas_group>(entity);
+
+    auto component = YAML::Node{};
+    component["type"] = "canvas_group";
+    component["alpha"] = group.alpha;
+    component["interactable"] = group.interactable;
+    component["blocks_raycasts"] = group.blocks_raycasts;
+    component["ignore_parent_groups"] = group.ignore_parent_groups;
+
+    components.push_back(component);
+  }
+
+  if (registry.all_of<canvas::ui_image>(entity)) {
+    const auto& image = registry.get<canvas::ui_image>(entity);
+
+    auto component = YAML::Node{};
+    component["type"] = "ui_image";
+    component["tint"] = image.tint;
+    component["uv_rect"] = image.uv_rect;
+    component["raycast_target"] = image.raycast_target;
+
+    if (image.sprite.is_valid() && image.sprite->id() != math::uuid::nil()) {
+      const auto id = image.sprite->id();
+
+      if (!keys.texture_keys.contains(id)) {
+        const auto name = assets_module.path_of(id).stem().string();
+        const auto key = make_asset_key(keys, name);
+        keys.texture_keys.emplace(id, key);
+
+        auto entry = YAML::Node{};
+        entry["key"] = key;
+        entry["name"] = name;
+        entry["uuid"] = id.value();
+        keys.textures_table.push_back(entry);
+      }
+
+      component["sprite"] = keys.texture_keys.at(id);
+    }
+
+    components.push_back(component);
+  }
+
+  if (registry.all_of<canvas::ui_text>(entity)) {
+    const auto& text = registry.get<canvas::ui_text>(entity);
+
+    auto component = YAML::Node{};
+    component["type"] = "ui_text";
+    component["text"] = text.text;
+    component["font_size"] = text.font_size;
+    component["color"] = text.color;
+    component["horizontal_align"] = std::string{reflection::to_string(text.horizontal_align)};
+    component["vertical_align"] = std::string{reflection::to_string(text.vertical_align)};
+    component["line_spacing"] = text.line_spacing;
+    component["raycast_target"] = text.raycast_target;
+
+    if (text.font.is_valid() && text.font->id() != math::uuid::nil()) {
+      const auto id = text.font->id();
+
+      if (!keys.font_keys.contains(id)) {
+        const auto name = assets_module.path_of(id).stem().string();
+        const auto key = make_asset_key(keys, name);
+        keys.font_keys.emplace(id, key);
+
+        auto entry = YAML::Node{};
+        entry["key"] = key;
+        entry["name"] = name;
+        entry["uuid"] = id.value();
+        keys.fonts_table.push_back(entry);
+      }
+
+      component["font"] = keys.font_keys.at(id);
+    }
+
+    components.push_back(component);
+  }
+
+  if (registry.all_of<canvas::ui_button>(entity)) {
+    const auto& button = registry.get<canvas::ui_button>(entity);
+
+    auto component = YAML::Node{};
+    component["type"] = "ui_button";
+    component["interactable"] = button.interactable;
+    component["normal_color"] = button.normal_color;
+    component["hovered_color"] = button.hovered_color;
+    component["pressed_color"] = button.pressed_color;
+
+    components.push_back(component);
   }
 
   if (registry.all_of<script_component>(entity)) {
@@ -379,7 +515,7 @@ auto write_node(YAML::Node& node_yaml, ecs::registry& registry, ecs::entity enti
 
     auto component = YAML::Node{};
     component["type"] = "rigidbody";
-    component["body_type"] = (body.type == physics::body_type::dynamic_body) ? "dynamic" : (body.type == physics::body_type::kinematic) ? "kinematic" : "static";
+    component["body_type"] = std::string{reflection::to_string(body.type)};
     component["inverse_mass"] = body.inverse_mass;
     component["linear_velocity"] = body.linear_velocity;
     component["angular_velocity"] = body.angular_velocity;
@@ -471,6 +607,8 @@ auto register_asset_keys(const YAML::Node& assets_node) -> std::unordered_map<st
   register_category("environment_maps");
   register_category("particle_effects");
   register_category("animation_graphs");
+  register_category("textures");
+  register_category("fonts");
 
   return key_to_uuid;
 }
@@ -584,9 +722,103 @@ auto read_node_components(node& target_node, const YAML::Node& node_yaml, assets
       }
 
       if (const auto playback = component["playback"]) {
-        const auto value = playback.as<std::string>();
-        instance.playback = (value == "paused") ? particle_playback_state::paused : (value == "stopped") ? particle_playback_state::stopped : particle_playback_state::playing;
+        instance.playback = reflection::from_string_or<particle_playback_state>(playback.as<std::string>(), particle_playback_state::playing);
       }
+    } else if (type == "canvas") {
+      auto& canvas_component = target_node.add_component<canvas::canvas>();
+
+      if (component["mode"]) {
+        canvas_component.mode = reflection::from_string_or<canvas::render_mode>(component["mode"].as<std::string>(), canvas::render_mode::screen_space_overlay);
+      }
+
+      if (component["camera"]) {
+        canvas_component.camera = component["camera"].as<math::uuid>();
+      }
+
+      if (component["sort_order"]) {
+        canvas_component.sort_order = component["sort_order"].as<std::int32_t>();
+      }
+    } else if (type == "canvas_scaler") {
+      auto& scaler = target_node.add_component<canvas::canvas_scaler>();
+
+      if (component["mode"]) {
+        scaler.mode = reflection::from_string_or<canvas::canvas_scale_mode>(component["mode"].as<std::string>(), canvas::canvas_scale_mode::constant_pixel_size);
+      }
+
+      if (component["reference_resolution"]) {
+        scaler.reference_resolution = component["reference_resolution"].as<math::vector2>();
+      }
+
+      if (component["match_width_or_height"]) {
+        scaler.match_width_or_height = component["match_width_or_height"].as<std::float_t>();
+      }
+    } else if (type == "rect_transform") {
+      auto& rect = target_node.add_component<canvas::rect_transform>();
+
+      rect.anchor_min = component["anchor_min"].as<math::vector2>();
+      rect.anchor_max = component["anchor_max"].as<math::vector2>();
+      rect.anchored_position = component["anchored_position"].as<math::vector2>();
+      rect.size_delta = component["size_delta"].as<math::vector2>();
+      rect.pivot = component["pivot"].as<math::vector2>();
+    } else if (type == "canvas_group") {
+      auto& group = target_node.add_component<canvas::canvas_group>();
+
+      group.alpha = component["alpha"].as<std::float_t>();
+      group.interactable = component["interactable"].as<bool>();
+      group.blocks_raycasts = component["blocks_raycasts"].as<bool>();
+
+      if (component["ignore_parent_groups"]) {
+        group.ignore_parent_groups = component["ignore_parent_groups"].as<bool>();
+      }
+    } else if (type == "ui_image") {
+      auto& image = target_node.add_component<canvas::ui_image>();
+
+      image.tint = component["tint"].as<math::color>();
+
+      if (component["uv_rect"]) {
+        image.uv_rect = component["uv_rect"].as<math::vector4>();
+      }
+
+      if (component["raycast_target"]) {
+        image.raycast_target = component["raycast_target"].as<bool>();
+      }
+
+      if (component["sprite"]) {
+        image.sprite = assets_module.load_texture(key_to_uuid.at(component["sprite"].as<std::string>()));
+      }
+    } else if (type == "ui_text") {
+      auto& text = target_node.add_component<canvas::ui_text>();
+
+      text.text = component["text"].as<std::string>();
+      text.font_size = component["font_size"].as<std::float_t>();
+      text.color = component["color"].as<math::color>();
+
+      if (const auto horizontal_align = component["horizontal_align"]) {
+        text.horizontal_align = reflection::from_string_or<canvas::text_align>(horizontal_align.as<std::string>(), canvas::text_align::start);
+      }
+
+      if (const auto vertical_align = component["vertical_align"]) {
+        text.vertical_align = reflection::from_string_or<canvas::text_align>(vertical_align.as<std::string>(), canvas::text_align::start);
+      }
+
+      if (component["line_spacing"]) {
+        text.line_spacing = component["line_spacing"].as<std::float_t>();
+      }
+
+      if (component["font"]) {
+        text.font = assets_module.load_font(key_to_uuid.at(component["font"].as<std::string>()));
+      }
+
+      if (component["raycast_target"]) {
+        text.raycast_target = component["raycast_target"].as<bool>();
+      }
+    } else if (type == "ui_button") {
+      auto& button = target_node.add_component<canvas::ui_button>();
+
+      button.interactable = component["interactable"].as<bool>();
+      button.normal_color = component["normal_color"].as<math::color>();
+      button.hovered_color = component["hovered_color"].as<math::color>();
+      button.pressed_color = component["pressed_color"].as<math::color>();
     } else if (type == "script") {
       auto& scripts = target_node.get_or_add_component<script_component>();
 
@@ -622,8 +854,7 @@ auto read_node_components(node& target_node, const YAML::Node& node_yaml, assets
     } else if (type == "rigidbody") {
       auto& body = target_node.add_component<physics::rigidbody>();
 
-      const auto body_type_string = component["body_type"].as<std::string>();
-      body.type = (body_type_string == "kinematic") ? physics::body_type::kinematic : (body_type_string == "static") ? physics::body_type::static_body : physics::body_type::dynamic_body;
+      body.type = reflection::from_string_or<physics::body_type>(component["body_type"].as<std::string>(), physics::body_type::dynamic_body);
 
       body.inverse_mass = component["inverse_mass"].as<std::float_t>();
       body.linear_velocity = component["linear_velocity"].as<math::vector3>();
@@ -746,6 +977,8 @@ auto scene_serializer::_build(scene& target) -> YAML::Node {
   assets_node["environment_maps"] = keys.environments_table;
   assets_node["particle_effects"] = keys.particle_effects_table;
   assets_node["animation_graphs"] = keys.animation_graphs_table;
+  assets_node["textures"] = keys.textures_table;
+  assets_node["fonts"] = keys.fonts_table;
 
   auto root = YAML::Node{};
   root["metadata"] = metadata;
@@ -876,6 +1109,8 @@ auto scene_serializer::serialize_subtree(scene& target, node subtree_root) -> YA
   assets_node["environment_maps"] = keys.environments_table;
   assets_node["particle_effects"] = keys.particle_effects_table;
   assets_node["animation_graphs"] = keys.animation_graphs_table;
+  assets_node["textures"] = keys.textures_table;
+  assets_node["fonts"] = keys.fonts_table;
 
   auto root = YAML::Node{};
   root["assets_module"] = assets_node;

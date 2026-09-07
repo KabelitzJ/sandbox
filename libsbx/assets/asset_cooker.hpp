@@ -22,6 +22,7 @@
 
 #include <libsbx/assets/mesh.hpp>
 #include <libsbx/assets/material.hpp>
+#include <libsbx/assets/font.hpp>
 
 namespace sbx::assets {
 
@@ -36,6 +37,16 @@ struct pixel_data {
   std::uint32_t width{0u};
   std::uint32_t height{0u};
 }; // struct pixel_data
+
+/** @brief A cooked SDF font atlas + glyph table, ready for asset_residency::load_font. */
+struct cooked_font_data {
+  pixel_data atlas;
+  std::vector<font::glyph> glyphs;
+  std::uint32_t first_codepoint{0u};
+  std::float_t line_height{0.0f};
+  std::float_t ascent{0.0f};
+  std::float_t descent{0.0f};
+}; // struct cooked_font_data
 
 /** @brief One coarser level in a submesh's LOD chain — an index range into the same shared vertex buffer as its LOD0. */
 struct mesh_lod {
@@ -136,6 +147,9 @@ public:
   /** @brief Staleness-gated cook + read. `id` must already be known (see @ref import). */
   [[nodiscard]] auto resolve_environment(const math::uuid& id) -> std::optional<pixel_data>;
 
+  /** @brief Staleness-gated cook + read for a TTF -> SDF glyph atlas. `id` must already be known (see @ref import). */
+  [[nodiscard]] auto resolve_font(const math::uuid& id) -> std::optional<cooked_font_data>;
+
   /**
    * @brief Staleness-gated cook + read for a mesh.
    *
@@ -184,6 +198,10 @@ private:
   auto _cook_environment_map(const std::filesystem::path& source, const std::filesystem::path& cooked) -> bool;
 
   auto _load_cooked_environment_map(const std::filesystem::path& cooked, std::vector<std::byte>& pixels, std::uint32_t& width, std::uint32_t& height) -> bool;
+
+  auto _cook_font(const std::filesystem::path& source, const std::filesystem::path& cooked) -> bool;
+
+  auto _load_cooked_font(const std::filesystem::path& cooked, cooked_font_data& data) -> bool;
 
   [[nodiscard]] static auto _derive_material_uuid(const math::uuid& mesh, std::size_t index) -> math::uuid;
 

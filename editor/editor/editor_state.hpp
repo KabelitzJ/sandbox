@@ -32,6 +32,7 @@ enum class asset_kind {
   environment_map,
   particle_effect,
   animation_graph,
+  font,
   scene, // .yaml, reference-only: not routed through assets_module::import
   script, // .cs, reference-only: compiled by scripting::script_compiler, not assets_module::import
 }; // enum class asset_kind

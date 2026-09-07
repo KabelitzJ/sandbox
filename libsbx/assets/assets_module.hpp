@@ -20,6 +20,7 @@
 
 #include <libsbx/assets/asset_handle.hpp>
 #include <libsbx/assets/texture.hpp>
+#include <libsbx/assets/font.hpp>
 #include <libsbx/assets/mesh.hpp>
 #include <libsbx/assets/material.hpp>
 #include <libsbx/assets/environment_map.hpp>
@@ -75,6 +76,11 @@ public:
   auto load_texture(const math::uuid& id, graphics::format format = graphics::format::r8g8b8a8_srgb) -> texture_handle;
 
   auto load_texture(const std::filesystem::path& path, graphics::format format = graphics::format::r8g8b8a8_srgb) -> texture_handle;
+
+  /** @brief Loads a TTF -> SDF glyph atlas font from a UUID or project-relative path; returns the existing handle if already loaded. */
+  auto load_font(const math::uuid& id) -> font_handle;
+
+  auto load_font(const std::filesystem::path& path) -> font_handle;
 
   /**
    * @brief Loads a mesh from a UUID or project-relative path; returns the existing handle if already loaded.
@@ -158,6 +164,8 @@ public:
   [[nodiscard]] auto is_resident(const material_handle& material) const -> bool;
 
   [[nodiscard]] auto is_resident(const environment_map_handle& environment) const -> bool;
+
+  [[nodiscard]] auto is_resident(const font_handle& font) const -> bool;
 
   /** @ref asset_residency::image_view_of */
   [[nodiscard]] auto image_view_of(const texture_handle& texture) const -> VkImageView {

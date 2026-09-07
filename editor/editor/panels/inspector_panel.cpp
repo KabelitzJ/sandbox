@@ -37,6 +37,8 @@
 #include <libsbx/physics/collider.hpp>
 #include <libsbx/physics/rigidbody.hpp>
 
+#include <libsbx/canvas/components.hpp>
+
 #include <libsbx/scripting/scripting_module.hpp>
 #include <libsbx/scripting/managed/type.hpp>
 #include <libsbx/scripting/managed/field_info.hpp>
@@ -216,6 +218,34 @@ auto draw_texture_picker(editor_state& state, const char* popup_id, sbx::assets:
   return result.changed;
 }
 
+// Same idea as draw_texture_picker, for a font asset slot (ui_text::font).
+auto draw_font_picker(editor_state& state, const char* popup_id, sbx::assets::font_handle& slot) -> bool {
+  auto& assets_module = sbx::core::engine::get_module<sbx::assets::assets_module>();
+
+  const auto current = slot.is_valid() ? to_picker_item(assets_module, slot->id()) : sbx::render::widgets::asset_picker_item{};
+
+  const auto options = sbx::render::widgets::asset_picker_options{
+    .kind = sbx::render::widgets::asset_picker_kind::font,
+    .extensions = {".ttf"},
+    .allow_none = true,
+    .show_reveal_button = true,
+  };
+
+  const auto result = sbx::render::widgets::draw_asset_picker(popup_id, current, {}, options);
+
+  if (result.cleared) {
+    slot = sbx::assets::font_handle{};
+  } else if (result.changed) {
+    slot = assets_module.load_font(result.picked.path);
+  }
+
+  if (result.reveal_requested && slot.is_valid()) {
+    state.request_reveal_in_browser(relative_asset_path(assets_module, slot->id()));
+  }
+
+  return result.changed;
+}
+
 // Same idea as draw_material_picker, for mesh_renderer.mesh. Doesn't touch renderer.materials
 // itself — draw_mesh_renderer_section detects the change and clears it so sync_materials_with_mesh
 // reseeds cleanly from the new mesh's submeshes.
@@ -349,6 +379,67 @@ auto draw_vector3_control(const char* label, std::array<std::float_t, 3u>& value
   ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{2.0f, 0.0f});
 
   for (auto axis = std::size_t{0u}; axis < 3u; ++axis) {
+    if (axis != 0u) {
+      ImGui::SameLine();
+    }
+
+    ImGui::PushStyleColor(ImGuiCol_Button, axis_colors[axis]);
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, axis_colors[axis]);
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, axis_colors[axis]);
+
+    if (ImGui::Button(axis_labels[axis], button_size)) {
+      values[axis] = reset_value;
+      result.changed = true;
+      result.started = true;
+      result.committed = true;
+    }
+
+    ImGui::PopStyleColor(3);
+    ImGui::SameLine();
+
+    ImGui::SetNextItemWidth(item_width);
+    result.changed |= ImGui::DragFloat(axis_ids[axis], &values[axis], speed);
+    result.started |= ImGui::IsItemActivated();
+    result.committed |= ImGui::IsItemDeactivatedAfterEdit();
+  }
+
+  ImGui::PopStyleVar();
+  ImGui::PopID();
+
+  return result;
+}
+
+struct vector2_edit_result {
+  bool changed{false};
+  bool started{false};
+  bool committed{false};
+}; // struct vector2_edit_result
+
+// Same shape as draw_vector3_control, trimmed to a color-coded X/Y row -- used by rect_transform's
+// four vector2 fields.
+auto draw_vector2_control(const char* label, std::array<std::float_t, 2u>& values, std::float_t reset_value, std::float_t speed) -> vector2_edit_result {
+  static constexpr auto axis_labels = std::array<const char*, 2u>{"X", "Y"};
+  static constexpr auto axis_ids = std::array<const char*, 2u>{"##X", "##Y"};
+  static constexpr auto axis_colors = std::array<ImVec4, 2u>{
+    ImVec4{0.75f, 0.20f, 0.25f, 1.0f}, // X - red
+    ImVec4{0.30f, 0.65f, 0.30f, 1.0f}, // Y - green
+  };
+
+  auto result = vector2_edit_result{};
+
+  ImGui::PushID(label);
+
+  ImGui::AlignTextToFramePadding();
+  ImGui::TextUnformatted(label);
+  ImGui::SameLine(90.0f);
+
+  const auto line_height = ImGui::GetFrameHeight();
+  const auto button_size = ImVec2{line_height, line_height};
+  const auto item_width = (ImGui::GetContentRegionAvail().x - 2.0f * button_size.x) / 2.0f - 1.0f * ImGui::GetStyle().ItemSpacing.x;
+
+  ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{2.0f, 0.0f});
+
+  for (auto axis = std::size_t{0u}; axis < 2u; ++axis) {
     if (axis != 0u) {
       ImGui::SameLine();
     }
@@ -1226,6 +1317,351 @@ auto draw_mesh_collider_section(editor_state& state, sbx::scenes::node& node, sb
   draw_collider_offset_rotation_friction(state, node, collider, pending, "Edit Mesh Collider");
 }
 
+auto draw_canvas_section(editor_state& state, sbx::scenes::node& node) -> void {
+  auto is_open = true;
+
+  const auto is_expanded = ImGui::CollapsingHeader(ICON_MDI_MONITOR " Canvas", &is_open, ImGuiTreeNodeFlags_DefaultOpen);
+
+  if (!is_open) {
+    state.push_command(std::make_unique<remove_component_command<sbx::canvas::canvas>>(node.id(), node.get_component<sbx::canvas::canvas>(), "Remove Canvas"));
+    return;
+  }
+
+  if (!is_expanded) {
+    return;
+  }
+
+  auto& canvas_component = node.get_component<sbx::canvas::canvas>();
+  static auto pending = std::optional<sbx::canvas::canvas>{};
+
+  static constexpr auto mode_labels = std::array<const char*, 3u>{"Screen Space - Overlay", "Screen Space - Camera", "World Space"};
+  auto mode_index = static_cast<int>(canvas_component.mode);
+
+  if (ImGui::Combo("Render Mode", &mode_index, mode_labels.data(), static_cast<int>(mode_labels.size()))) {
+    canvas_component.mode = static_cast<sbx::canvas::render_mode>(mode_index);
+  }
+  bracket_edit(state, node, canvas_component, pending, "Edit Canvas");
+
+  if (canvas_component.mode != sbx::canvas::render_mode::screen_space_overlay) {
+    auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
+    auto& scene = scenes_module.active_scene();
+
+    auto current_label = std::string{"(None)"};
+
+    if (canvas_component.camera != sbx::math::uuid::nil()) {
+      if (auto camera_node = scene.find(canvas_component.camera); camera_node.is_valid()) {
+        current_label = camera_node.name().str();
+      }
+    }
+
+    if (ImGui::BeginCombo("Camera", current_label.c_str())) {
+      if (ImGui::Selectable("(None)", canvas_component.camera == sbx::math::uuid::nil())) {
+        const auto before = canvas_component;
+        canvas_component.camera = sbx::math::uuid::nil();
+        state.push_command(std::make_unique<modify_component_command<sbx::canvas::canvas>>(node.id(), before, canvas_component, "Edit Canvas"));
+      }
+
+      for (auto&& [entity, camera_component] : scene.query<sbx::scenes::camera>().each()) {
+        auto camera_node = scene.node_of(entity);
+        const auto label = camera_node.name().str();
+        const auto is_selected = camera_node.id() == canvas_component.camera;
+
+        if (ImGui::Selectable(label.c_str(), is_selected)) {
+          const auto before = canvas_component;
+          canvas_component.camera = camera_node.id();
+          state.push_command(std::make_unique<modify_component_command<sbx::canvas::canvas>>(node.id(), before, canvas_component, "Edit Canvas"));
+        }
+      }
+
+      ImGui::EndCombo();
+    }
+  }
+
+  ImGui::DragInt("Sort Order", &canvas_component.sort_order);
+  bracket_edit(state, node, canvas_component, pending, "Edit Canvas");
+}
+
+auto draw_canvas_group_section(editor_state& state, sbx::scenes::node& node) -> void {
+  auto is_open = true;
+
+  const auto is_expanded = ImGui::CollapsingHeader(ICON_MDI_OPACITY " Canvas Group", &is_open, ImGuiTreeNodeFlags_DefaultOpen);
+
+  if (!is_open) {
+    state.push_command(std::make_unique<remove_component_command<sbx::canvas::canvas_group>>(node.id(), node.get_component<sbx::canvas::canvas_group>(), "Remove Canvas Group"));
+    return;
+  }
+
+  if (!is_expanded) {
+    return;
+  }
+
+  auto& group = node.get_component<sbx::canvas::canvas_group>();
+  static auto pending = std::optional<sbx::canvas::canvas_group>{};
+
+  ImGui::DragFloat("Alpha", &group.alpha, 0.005f, 0.0f, 1.0f);
+  bracket_edit(state, node, group, pending, "Edit Canvas Group");
+
+  ImGui::Checkbox("Interactable", &group.interactable);
+  bracket_edit(state, node, group, pending, "Edit Canvas Group");
+
+  ImGui::Checkbox("Blocks Raycasts", &group.blocks_raycasts);
+  bracket_edit(state, node, group, pending, "Edit Canvas Group");
+
+  ImGui::Checkbox("Ignore Parent Groups", &group.ignore_parent_groups);
+  bracket_edit(state, node, group, pending, "Edit Canvas Group");
+}
+
+auto draw_canvas_scaler_section(editor_state& state, sbx::scenes::node& node) -> void {
+  auto is_open = true;
+
+  const auto is_expanded = ImGui::CollapsingHeader(ICON_MDI_FIT_TO_SCREEN " Canvas Scaler", &is_open, ImGuiTreeNodeFlags_DefaultOpen);
+
+  if (!is_open) {
+    state.push_command(std::make_unique<remove_component_command<sbx::canvas::canvas_scaler>>(node.id(), node.get_component<sbx::canvas::canvas_scaler>(), "Remove Canvas Scaler"));
+    return;
+  }
+
+  if (!is_expanded) {
+    return;
+  }
+
+  auto& scaler = node.get_component<sbx::canvas::canvas_scaler>();
+  static auto pending = std::optional<sbx::canvas::canvas_scaler>{};
+
+  static constexpr auto mode_labels = std::array<const char*, 3u>{"Constant Pixel Size", "Scale With Screen Size", "Constant Physical Size"};
+  auto mode_index = static_cast<int>(scaler.mode);
+
+  if (ImGui::Combo("Scale Mode", &mode_index, mode_labels.data(), static_cast<int>(mode_labels.size()))) {
+    scaler.mode = static_cast<sbx::canvas::canvas_scale_mode>(mode_index);
+  }
+  bracket_edit(state, node, scaler, pending, "Edit Canvas Scaler");
+
+  if (scaler.mode == sbx::canvas::canvas_scale_mode::constant_physical_size) {
+    ImGui::TextColored(ImVec4{1.0f, 0.7f, 0.2f, 1.0f}, ICON_MDI_ALERT_OUTLINE " Not implemented -- behaves like Constant Pixel Size.");
+  }
+
+  if (scaler.mode == sbx::canvas::canvas_scale_mode::scale_with_screen_size) {
+    auto reference_resolution = std::array<std::float_t, 2u>{scaler.reference_resolution.x(), scaler.reference_resolution.y()};
+
+    if (ImGui::DragFloat2("Reference Resolution", reference_resolution.data(), 1.0f, 1.0f, 16384.0f)) {
+      scaler.reference_resolution = sbx::math::vector2{reference_resolution[0], reference_resolution[1]};
+    }
+    bracket_edit(state, node, scaler, pending, "Edit Canvas Scaler");
+
+    ImGui::SliderFloat("Match Width Or Height", &scaler.match_width_or_height, 0.0f, 1.0f);
+    bracket_edit(state, node, scaler, pending, "Edit Canvas Scaler");
+  }
+}
+
+auto draw_rect_transform_section(editor_state& state, sbx::scenes::node& node) -> void {
+  auto is_open = true;
+
+  const auto is_expanded = ImGui::CollapsingHeader(ICON_MDI_ASPECT_RATIO " Rect Transform", &is_open, ImGuiTreeNodeFlags_DefaultOpen);
+
+  if (!is_open) {
+    state.push_command(std::make_unique<remove_component_command<sbx::canvas::rect_transform>>(node.id(), node.get_component<sbx::canvas::rect_transform>(), "Remove Rect Transform"));
+    return;
+  }
+
+  if (!is_expanded) {
+    return;
+  }
+
+  auto& rect = node.get_component<sbx::canvas::rect_transform>();
+  static auto pending_before = std::optional<sbx::canvas::rect_transform>{};
+
+  const auto capture_before = [&](const vector2_edit_result& result) {
+    if (result.started && !pending_before) {
+      pending_before = rect;
+    }
+  };
+
+  const auto commit_after = [&](const vector2_edit_result& result) {
+    if (result.committed && pending_before) {
+      state.push_command(std::make_unique<modify_component_command<sbx::canvas::rect_transform>>(node.id(), *pending_before, rect, "Edit Rect Transform"));
+      pending_before.reset();
+    }
+  };
+
+  auto anchor_min = std::array<std::float_t, 2u>{rect.anchor_min.x(), rect.anchor_min.y()};
+  const auto anchor_min_result = draw_vector2_control("Anchor Min", anchor_min, 0.0f, 0.005f);
+  capture_before(anchor_min_result);
+  if (anchor_min_result.changed) {
+    rect.anchor_min = sbx::math::vector2{anchor_min[0], anchor_min[1]};
+  }
+  commit_after(anchor_min_result);
+
+  auto anchor_max = std::array<std::float_t, 2u>{rect.anchor_max.x(), rect.anchor_max.y()};
+  const auto anchor_max_result = draw_vector2_control("Anchor Max", anchor_max, 1.0f, 0.005f);
+  capture_before(anchor_max_result);
+  if (anchor_max_result.changed) {
+    rect.anchor_max = sbx::math::vector2{anchor_max[0], anchor_max[1]};
+  }
+  commit_after(anchor_max_result);
+
+  auto anchored_position = std::array<std::float_t, 2u>{rect.anchored_position.x(), rect.anchored_position.y()};
+  const auto anchored_position_result = draw_vector2_control("Anchored Position", anchored_position, 0.0f, 0.5f);
+  capture_before(anchored_position_result);
+  if (anchored_position_result.changed) {
+    rect.anchored_position = sbx::math::vector2{anchored_position[0], anchored_position[1]};
+  }
+  commit_after(anchored_position_result);
+
+  auto size_delta = std::array<std::float_t, 2u>{rect.size_delta.x(), rect.size_delta.y()};
+  const auto size_delta_result = draw_vector2_control("Size Delta", size_delta, 100.0f, 0.5f);
+  capture_before(size_delta_result);
+  if (size_delta_result.changed) {
+    rect.size_delta = sbx::math::vector2{size_delta[0], size_delta[1]};
+  }
+  commit_after(size_delta_result);
+
+  auto pivot = std::array<std::float_t, 2u>{rect.pivot.x(), rect.pivot.y()};
+  const auto pivot_result = draw_vector2_control("Pivot", pivot, 0.5f, 0.005f);
+  capture_before(pivot_result);
+  if (pivot_result.changed) {
+    rect.pivot = sbx::math::vector2{pivot[0], pivot[1]};
+  }
+  commit_after(pivot_result);
+}
+
+auto draw_ui_image_section(editor_state& state, sbx::scenes::node& node) -> void {
+  auto& assets_module = sbx::core::engine::get_module<sbx::assets::assets_module>();
+
+  auto is_open = true;
+
+  const auto is_expanded = ImGui::CollapsingHeader(ICON_MDI_IMAGE " UI Image", &is_open, ImGuiTreeNodeFlags_DefaultOpen);
+
+  if (!is_open) {
+    state.push_command(std::make_unique<remove_component_command<sbx::canvas::ui_image>>(node.id(), node.get_component<sbx::canvas::ui_image>(), "Remove UI Image"));
+    return;
+  }
+
+  if (!is_expanded) {
+    return;
+  }
+
+  auto& image = node.get_component<sbx::canvas::ui_image>();
+  static auto pending = std::optional<sbx::canvas::ui_image>{};
+
+  ImGui::Text("Sprite:");
+  ImGui::SameLine();
+
+  {
+    const auto before = image;
+
+    if (draw_texture_picker(state, "##ui_image_sprite_picker_popup", image.sprite, assets_module, sbx::graphics::format::r8g8b8a8_srgb)) {
+      state.push_command(std::make_unique<modify_component_command<sbx::canvas::ui_image>>(node.id(), before, image, "Edit UI Image"));
+    }
+  }
+
+  draw_color_field("Tint", image.tint);
+  bracket_edit(state, node, image, pending, "Edit UI Image");
+
+  auto uv_rect = std::array<std::float_t, 4u>{image.uv_rect.x(), image.uv_rect.y(), image.uv_rect.z(), image.uv_rect.w()};
+
+  if (ImGui::DragFloat4("UV Rect", uv_rect.data(), 0.01f)) {
+    image.uv_rect = sbx::math::vector4{uv_rect[0], uv_rect[1], uv_rect[2], uv_rect[3]};
+  }
+  bracket_edit(state, node, image, pending, "Edit UI Image");
+
+  ImGui::Checkbox("Raycast Target", &image.raycast_target);
+  bracket_edit(state, node, image, pending, "Edit UI Image");
+}
+
+auto draw_ui_text_section(editor_state& state, sbx::scenes::node& node) -> void {
+  auto is_open = true;
+
+  const auto is_expanded = ImGui::CollapsingHeader(ICON_MDI_FORMAT_TEXT " UI Text", &is_open, ImGuiTreeNodeFlags_DefaultOpen);
+
+  if (!is_open) {
+    state.push_command(std::make_unique<remove_component_command<sbx::canvas::ui_text>>(node.id(), node.get_component<sbx::canvas::ui_text>(), "Remove UI Text"));
+    return;
+  }
+
+  if (!is_expanded) {
+    return;
+  }
+
+  auto& text = node.get_component<sbx::canvas::ui_text>();
+  static auto pending = std::optional<sbx::canvas::ui_text>{};
+
+  auto buffer = std::array<char, 512u>{};
+  std::strncpy(buffer.data(), text.text.c_str(), buffer.size() - 1u);
+  buffer[buffer.size() - 1u] = '\0';
+
+  if (ImGui::InputTextMultiline("Text", buffer.data(), buffer.size(), ImVec2{0.0f, ImGui::GetTextLineHeight() * 3.0f})) {
+    text.text = std::string{buffer.data()};
+  }
+  bracket_edit(state, node, text, pending, "Edit UI Text");
+
+  ImGui::Text("Font:");
+  ImGui::SameLine();
+
+  {
+    const auto before = text;
+
+    if (draw_font_picker(state, "##ui_text_font_picker_popup", text.font)) {
+      state.push_command(std::make_unique<modify_component_command<sbx::canvas::ui_text>>(node.id(), before, text, "Edit UI Text"));
+    }
+  }
+
+  ImGui::DragFloat("Font Size", &text.font_size, 0.25f, 1.0f, 500.0f);
+  bracket_edit(state, node, text, pending, "Edit UI Text");
+
+  draw_color_field("Color", text.color);
+  bracket_edit(state, node, text, pending, "Edit UI Text");
+
+  static constexpr auto align_labels = std::array<const char*, 3u>{"Start", "Center", "End"};
+
+  auto horizontal_index = static_cast<int>(text.horizontal_align);
+  if (ImGui::Combo("Horizontal Align", &horizontal_index, align_labels.data(), static_cast<int>(align_labels.size()))) {
+    text.horizontal_align = static_cast<sbx::canvas::text_align>(horizontal_index);
+  }
+  bracket_edit(state, node, text, pending, "Edit UI Text");
+
+  auto vertical_index = static_cast<int>(text.vertical_align);
+  if (ImGui::Combo("Vertical Align", &vertical_index, align_labels.data(), static_cast<int>(align_labels.size()))) {
+    text.vertical_align = static_cast<sbx::canvas::text_align>(vertical_index);
+  }
+  bracket_edit(state, node, text, pending, "Edit UI Text");
+
+  ImGui::DragFloat("Line Spacing", &text.line_spacing, 0.01f, 0.1f, 5.0f);
+  bracket_edit(state, node, text, pending, "Edit UI Text");
+
+  ImGui::Checkbox("Raycast Target", &text.raycast_target);
+  bracket_edit(state, node, text, pending, "Edit UI Text");
+}
+
+auto draw_ui_button_section(editor_state& state, sbx::scenes::node& node) -> void {
+  auto is_open = true;
+
+  const auto is_expanded = ImGui::CollapsingHeader(ICON_MDI_GESTURE_TAP_BUTTON " UI Button", &is_open, ImGuiTreeNodeFlags_DefaultOpen);
+
+  if (!is_open) {
+    state.push_command(std::make_unique<remove_component_command<sbx::canvas::ui_button>>(node.id(), node.get_component<sbx::canvas::ui_button>(), "Remove UI Button"));
+    return;
+  }
+
+  if (!is_expanded) {
+    return;
+  }
+
+  auto& button = node.get_component<sbx::canvas::ui_button>();
+  static auto pending = std::optional<sbx::canvas::ui_button>{};
+
+  ImGui::Checkbox("Interactable", &button.interactable);
+  bracket_edit(state, node, button, pending, "Edit UI Button");
+
+  draw_color_field("Normal Color", button.normal_color);
+  bracket_edit(state, node, button, pending, "Edit UI Button");
+
+  draw_color_field("Hovered Color", button.hovered_color);
+  bracket_edit(state, node, button, pending, "Edit UI Button");
+
+  draw_color_field("Pressed Color", button.pressed_color);
+  bracket_edit(state, node, button, pending, "Edit UI Button");
+}
+
 // Every script class name matching `filter` (case-insensitive substring, see contains_ignore_case) --
 // used only to decide whether the Script submenu below has anything to show for the active filter,
 // so it can hide itself along with every other entry instead of opening onto an empty list.
@@ -1352,6 +1788,34 @@ auto draw_add_component_menu(editor_state& state, sbx::scenes::node& node, sbx::
 
     if (!node.has_component<sbx::physics::mesh_collider>() && !node.has_component<sbx::physics::shape_collider>() && passes("Mesh Collider") && ImGui::MenuItem(ICON_MDI_TERRAIN " Mesh Collider")) {
       state.push_command(std::make_unique<add_component_command<sbx::physics::mesh_collider>>(node.id(), "Add Mesh Collider"));
+    }
+
+    if (!node.has_component<sbx::canvas::canvas>() && passes("Canvas") && ImGui::MenuItem(ICON_MDI_MONITOR " Canvas")) {
+      state.push_command(std::make_unique<add_component_command<sbx::canvas::canvas>>(node.id(), "Add Canvas"));
+    }
+
+    if (!node.has_component<sbx::canvas::canvas_group>() && passes("Canvas Group") && ImGui::MenuItem(ICON_MDI_OPACITY " Canvas Group")) {
+      state.push_command(std::make_unique<add_component_command<sbx::canvas::canvas_group>>(node.id(), "Add Canvas Group"));
+    }
+
+    if (!node.has_component<sbx::canvas::canvas_scaler>() && passes("Canvas Scaler") && ImGui::MenuItem(ICON_MDI_FIT_TO_SCREEN " Canvas Scaler")) {
+      state.push_command(std::make_unique<add_component_command<sbx::canvas::canvas_scaler>>(node.id(), "Add Canvas Scaler"));
+    }
+
+    if (!node.has_component<sbx::canvas::rect_transform>() && passes("Rect Transform") && ImGui::MenuItem(ICON_MDI_ASPECT_RATIO " Rect Transform")) {
+      state.push_command(std::make_unique<add_component_command<sbx::canvas::rect_transform>>(node.id(), "Add Rect Transform"));
+    }
+
+    if (!node.has_component<sbx::canvas::ui_image>() && passes("UI Image") && ImGui::MenuItem(ICON_MDI_IMAGE " UI Image")) {
+      state.push_command(std::make_unique<add_component_command<sbx::canvas::ui_image>>(node.id(), "Add UI Image"));
+    }
+
+    if (!node.has_component<sbx::canvas::ui_text>() && passes("UI Text") && ImGui::MenuItem(ICON_MDI_FORMAT_TEXT " UI Text")) {
+      state.push_command(std::make_unique<add_component_command<sbx::canvas::ui_text>>(node.id(), "Add UI Text"));
+    }
+
+    if (!node.has_component<sbx::canvas::ui_button>() && passes("UI Button") && ImGui::MenuItem(ICON_MDI_GESTURE_TAP_BUTTON " UI Button")) {
+      state.push_command(std::make_unique<add_component_command<sbx::canvas::ui_button>>(node.id(), "Add UI Button"));
     }
 
     // Open-ended category, not a fixed name -- passes when "Script" matches or any script inside
@@ -1776,6 +2240,41 @@ auto inspector_panel::_draw_node_properties(editor_state& state, sbx::scenes::no
   if (node.has_component<sbx::physics::mesh_collider>()) {
     section_gap();
     draw_mesh_collider_section(state, node, assets_module);
+  }
+
+  if (node.has_component<sbx::canvas::canvas>()) {
+    section_gap();
+    draw_canvas_section(state, node);
+  }
+
+  if (node.has_component<sbx::canvas::canvas_group>()) {
+    section_gap();
+    draw_canvas_group_section(state, node);
+  }
+
+  if (node.has_component<sbx::canvas::canvas_scaler>()) {
+    section_gap();
+    draw_canvas_scaler_section(state, node);
+  }
+
+  if (node.has_component<sbx::canvas::rect_transform>()) {
+    section_gap();
+    draw_rect_transform_section(state, node);
+  }
+
+  if (node.has_component<sbx::canvas::ui_image>()) {
+    section_gap();
+    draw_ui_image_section(state, node);
+  }
+
+  if (node.has_component<sbx::canvas::ui_text>()) {
+    section_gap();
+    draw_ui_text_section(state, node);
+  }
+
+  if (node.has_component<sbx::canvas::ui_button>()) {
+    section_gap();
+    draw_ui_button_section(state, node);
   }
 
   if (node.has_component<sbx::scenes::script_component>()) {
@@ -2271,6 +2770,7 @@ auto inspector_panel::_draw_asset_properties(editor_state& state, const asset_se
       case asset_kind::environment_map: _asset_cache.environment_map = assets_module.load_environment_map(asset.id); break;
       case asset_kind::particle_effect: _asset_cache.particle_effect = assets_module.load_particle_effect(asset.id); break;
       case asset_kind::animation_graph: _asset_cache.animation_graph = assets_module.load_animation_graph(asset.id); break;
+      case asset_kind::font: _asset_cache.font = assets_module.load_font(asset.id); break;
       case asset_kind::scene:
       case asset_kind::script:
       case asset_kind::unknown:
@@ -2393,6 +2893,15 @@ auto inspector_panel::_draw_asset_properties(editor_state& state, const asset_se
         }
       }
 
+      break;
+    }
+    case asset_kind::font: {
+      ImGui::Text("Type: Font");
+      const auto& handle = _asset_cache.font;
+      if (handle.is_valid()) {
+        ImGui::Text("Bindless Index: %u", handle->atlas()->index());
+        ImGui::Text("Resident: %s", assets_module.is_resident(handle) ? "yes" : "no");
+      }
       break;
     }
     case asset_kind::scene: {

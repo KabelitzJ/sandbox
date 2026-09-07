@@ -6,6 +6,7 @@
 #include <array>
 #include <cstddef>
 #include <string_view>
+#include <vector>
 
 #include <libsbx/memory/observer_ptr.hpp>
 
@@ -16,18 +17,14 @@
 #include <libsbx/render/render_pass.hpp>
 #include <libsbx/render/render_graph.hpp>
 
+namespace sbx::canvas {
+
+struct canvas_vertex;
+
+} // namespace sbx::canvas
+
 namespace sbx::render {
 
-/**
- * @brief Draws whatever canvas::canvas_module has resolved into its canvas_draw_list this frame,
- * as one triangle_list draw straight into final_image, then clears it.
- *
- * Runs after tonemap_pass, which is final_image's first touch this frame -- so this group's
- * attachment loads tonemap's result instead of clearing it (see the render graph's own
- * first-touch-clears-otherwise-loads convention, e.g. tonemap_pass::declare's doc comment). No
- * depth attachment: v1 only supports screen-space-overlay UI, which never needs to depth-test
- * against the scene (see canvas::canvas_module's own doc comment for what world_space would add).
- */
 class canvas_pass final : public graphics_pass {
 
 public:
@@ -46,13 +43,16 @@ public:
 
 private:
 
-  memory::observer_ptr<graphics::graphics_pipeline> _pipeline{nullptr};
+  auto _draw(render_context& context, graphics::graphics_pipeline& pipeline, std::array<graphics::buffer_handle, graphics::swapchain::max_frames_in_flight>& buffers, std::array<std::size_t, graphics::swapchain::max_frames_in_flight>& capacities, const std::vector<canvas::canvas_vertex>& vertices) -> void;
 
-  // One buffer per frame-in-flight slot, grown geometrically (never shrunk) as the UI's vertex
-  // count grows -- same pattern as debug_draw_pass, since a canvas_draw_list's vertex count varies
-  // frame to frame just like debug_draw's does.
+  memory::observer_ptr<graphics::graphics_pipeline> _pipeline{nullptr};
+  memory::observer_ptr<graphics::graphics_pipeline> _text_pipeline{nullptr};
+
   std::array<graphics::buffer_handle, graphics::swapchain::max_frames_in_flight> _buffers{};
   std::array<std::size_t, graphics::swapchain::max_frames_in_flight> _capacities{};
+
+  std::array<graphics::buffer_handle, graphics::swapchain::max_frames_in_flight> _glyph_buffers{};
+  std::array<std::size_t, graphics::swapchain::max_frames_in_flight> _glyph_capacities{};
 
 }; // class canvas_pass
 

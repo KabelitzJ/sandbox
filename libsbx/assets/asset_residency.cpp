@@ -113,6 +113,57 @@ auto asset_residency::load_texture(const std::filesystem::path& path, graphics::
   return load_texture(_cooker.import(assets_directory / path), format);
 }
 
+auto asset_residency::load_font(const math::uuid& id) -> font_handle {
+  {
+    auto lock = std::lock_guard{_mutex};
+
+    if (const auto entry = _fonts.find(id); entry != _fonts.end()) {
+      return font_handle{entry->second};
+    }
+  }
+
+  auto data = _cooker.resolve_font(id);
+
+  if (!data) {
+    utility::logger<"assets">::warn("Could not load font {}", id);
+    return font_handle{};
+  }
+
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+  auto& bindless_table = graphics_module.bindless_table();
+
+  const auto index = bindless_table.reserve_sampled_image();
+
+  auto atlas = std::make_shared<texture>(texture{index});
+
+  auto record = std::make_shared<font>();
+  record->_atlas = texture_handle{atlas};
+  record->_glyphs = std::move(data->glyphs);
+  record->_first_codepoint = data->first_codepoint;
+  record->_line_height = data->line_height;
+  record->_ascent = data->ascent;
+  record->_descent = data->descent;
+  record->_id = id;
+
+  {
+    auto lock = std::lock_guard{_mutex};
+
+    _fonts.emplace(id, record);
+    _pending_textures.push_back(pending_texture_upload{index, std::move(data->atlas.pixels), data->atlas.width, data->atlas.height, graphics::format::r8_unorm});
+  }
+
+  return font_handle{record};
+}
+
+auto asset_residency::load_font(const std::filesystem::path& path) -> font_handle {
+  const auto& project = core::engine::project();
+
+  const auto assets_directory = project.assets_directory();
+
+  return load_font(_cooker.import(assets_directory / path));
+}
+
 auto asset_residency::load_mesh(const math::uuid& id, const mesh_import_options& options) -> mesh_handle {
   {
     auto lock = std::lock_guard{_mutex};
@@ -1515,6 +1566,10 @@ auto asset_residency::is_resident(const environment_map_handle& environment) con
   // bake_environment blocks until the GPU finishes, so a valid handle is always fully resident —
   // no timeline wait needed here, unlike textures/meshes/materials' deferred per-frame upload.
   return environment.is_valid();
+}
+
+auto asset_residency::is_resident(const font_handle& font) const -> bool {
+  return font.is_valid() && is_resident(font->atlas());
 }
 
 auto asset_residency::image_view_of(const texture_handle& texture) const -> VkImageView {

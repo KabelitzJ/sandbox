@@ -24,6 +24,8 @@
 
 #include <libsbx/utility/hashed_string.hpp>
 
+#include <libsbx/reflection/annotations.hpp>
+
 #include <libsbx/assets/material.hpp>
 #include <libsbx/assets/mesh.hpp>
 #include <libsbx/assets/texture.hpp>
@@ -315,7 +317,7 @@ struct particle_emitter {
   std::vector<math::uuid> sub_emitter_pool{};
 }; // struct particle_emitter
 
-enum class particle_playback_state : std::uint8_t {
+enum class [[=reflection::named]] particle_playback_state : std::uint8_t {
   playing,
   paused,
   stopped
