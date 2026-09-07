@@ -96,6 +96,18 @@ public:
   }
 
   /**
+   * @brief The camera_data this frame is actually (or would actually) be rendered with -- the
+   * override if one is set, otherwise derived fresh from the scene's active camera, exactly the
+   * same resolution _build_packet() itself uses. canvas_module calls this for world_space canvases
+   * specifically so they track whatever camera the viewport is really looking through (the editor's
+   * own fly-camera while play_state is "edit", the scene's own camera otherwise) instead of always
+   * assuming scene.active_camera() is the one actually rendering -- see canvas_module::update()'s
+   * doc comment on why screen_space_camera canvases deliberately don't use this (they're pinned to
+   * an explicit camera reference instead, the same way Unity's Canvas.worldCamera field is).
+   */
+  [[nodiscard]] auto effective_camera() -> camera_data;
+
+  /**
    * @brief The final viewport image — the fully tonemapped, presentable color result (see
    * render_context::final_image). Valid from the first frame onward; the editor samples this to
    * display the scene inside its Viewport panel instead of presenting it directly.
@@ -171,6 +183,9 @@ private:
   auto _prepare_frame(render_context& context) -> void;
 
   [[nodiscard]] auto _build_packet() -> render_packet;
+
+  /** @brief Shared by _build_packet() and the public effective_camera() -- the override if set, else derived from scene.active_camera(). Bloom/exposure come along with it; environment/skybox stay separately scene-authored (see _build_packet's own comment on that). */
+  [[nodiscard]] auto _resolve_camera_data() -> camera_data;
 
   // GPU-path only (assets::particle_simulation_mode::gpu) -- claims/keeps-alive this
   // emitter's particle_pool slot and appends a particle_emitter_snapshot to packet.particle_emitters

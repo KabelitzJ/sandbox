@@ -155,6 +155,39 @@ namespace Sbx.Core
     internal static delegate* unmanaged<ulong, bool> CanvasGroup_GetIgnoreParentGroups;
     internal static delegate* unmanaged<ulong, bool, void> CanvasGroup_SetIgnoreParentGroups;
 
+    internal static delegate* unmanaged<ulong, bool> UIToggle_GetIsOn;
+    internal static delegate* unmanaged<ulong, bool, void> UIToggle_SetIsOn;
+    internal static delegate* unmanaged<ulong, bool> UIToggle_GetInteractable;
+    internal static delegate* unmanaged<ulong, bool, void> UIToggle_SetInteractable;
+
+    internal static delegate* unmanaged<ulong, float*, void> UISlider_GetValue;
+    internal static delegate* unmanaged<ulong, float, void> UISlider_SetValue;
+    internal static delegate* unmanaged<ulong, float*, void> UISlider_GetMinValue;
+    internal static delegate* unmanaged<ulong, float, void> UISlider_SetMinValue;
+    internal static delegate* unmanaged<ulong, float*, void> UISlider_GetMaxValue;
+    internal static delegate* unmanaged<ulong, float, void> UISlider_SetMaxValue;
+    internal static delegate* unmanaged<ulong, bool> UISlider_GetWholeNumbers;
+    internal static delegate* unmanaged<ulong, bool, void> UISlider_SetWholeNumbers;
+    internal static delegate* unmanaged<ulong, bool> UISlider_GetInteractable;
+    internal static delegate* unmanaged<ulong, bool, void> UISlider_SetInteractable;
+
+    internal static delegate* unmanaged<ulong, float*, void> UIScrollbar_GetValue;
+    internal static delegate* unmanaged<ulong, float, void> UIScrollbar_SetValue;
+    internal static delegate* unmanaged<ulong, float*, void> UIScrollbar_GetSize;
+    internal static delegate* unmanaged<ulong, float, void> UIScrollbar_SetSize;
+    internal static delegate* unmanaged<ulong, bool> UIScrollbar_GetInteractable;
+    internal static delegate* unmanaged<ulong, bool, void> UIScrollbar_SetInteractable;
+
+    internal static delegate* unmanaged<ulong, Vector2*, void> UIScrollRect_GetNormalizedPosition;
+    internal static delegate* unmanaged<ulong, Vector2*, void> UIScrollRect_SetNormalizedPosition;
+    internal static delegate* unmanaged<ulong, bool> UIScrollRect_GetHorizontal;
+    internal static delegate* unmanaged<ulong, bool, void> UIScrollRect_SetHorizontal;
+    internal static delegate* unmanaged<ulong, bool> UIScrollRect_GetVertical;
+    internal static delegate* unmanaged<ulong, bool, void> UIScrollRect_SetVertical;
+
+    internal static delegate* unmanaged<ulong, bool> UIMask_GetShowMaskGraphic;
+    internal static delegate* unmanaged<ulong, bool, void> UIMask_SetShowMaskGraphic;
+
   } // class InternalCalls
 
 } // namespace Sbx.Core

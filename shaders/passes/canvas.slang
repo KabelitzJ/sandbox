@@ -9,6 +9,7 @@ struct canvas_vertex {
   float2 uv;
   uint texture_index;
   uint padding;
+  float4 clip_rect;
 }; // struct canvas_vertex
 
 struct push_data {
@@ -26,6 +27,7 @@ struct vertex_output {
   [[vk::location(0)]] float4 color : TEXCOORD0;
   [[vk::location(1)]] float2 uv : TEXCOORD1;
   [[vk::location(2)]] nointerpolation uint texture_index : TEXTURE_INDEX;
+  [[vk::location(3)]] nointerpolation float4 clip_rect : TEXCOORD2;
   float4 sv_position : SV_Position;
 }; // struct vertex_output
 
@@ -33,6 +35,8 @@ struct fragment_input {
   [[vk::location(0)]] float4 color : TEXCOORD0;
   [[vk::location(1)]] float2 uv : TEXCOORD1;
   [[vk::location(2)]] nointerpolation uint texture_index : TEXTURE_INDEX;
+  [[vk::location(3)]] nointerpolation float4 clip_rect : TEXCOORD2;
+  float4 sv_position : SV_Position;
 }; // struct fragment_input
 
 struct fragment_output {
@@ -48,13 +52,23 @@ vertex_output vertex_main(vertex_input input) {
   output.color = vertex.color;
   output.uv = vertex.uv;
   output.texture_index = vertex.texture_index;
+  output.clip_rect = vertex.clip_rect;
   output.sv_position = vertex.position;
 
   return output;
 }
 
+bool clipped(fragment_input input) {
+  return input.sv_position.x < input.clip_rect.x || input.sv_position.x > input.clip_rect.z ||
+         input.sv_position.y < input.clip_rect.y || input.sv_position.y > input.clip_rect.w;
+}
+
 [shader("fragment")]
 fragment_output fragment_main(fragment_input input) {
+  if (clipped(input)) {
+    discard;
+  }
+
   fragment_output output;
 
   output.color = input.color * textures[input.texture_index].Sample(samplers[push.sampler_index], input.uv);
@@ -64,6 +78,10 @@ fragment_output fragment_main(fragment_input input) {
 
 [shader("fragment")]
 fragment_output fragment_main_text(fragment_input input) {
+  if (clipped(input)) {
+    discard;
+  }
+
   float distance = textures[input.texture_index].Sample(samplers[push.sampler_index], input.uv).r;
   float width = fwidth(distance);
   float alpha = smoothstep(0.5 - width, 0.5 + width, distance);

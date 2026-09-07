@@ -1342,7 +1342,7 @@ auto draw_canvas_section(editor_state& state, sbx::scenes::node& node) -> void {
   }
   bracket_edit(state, node, canvas_component, pending, "Edit Canvas");
 
-  if (canvas_component.mode != sbx::canvas::render_mode::screen_space_overlay) {
+  if (canvas_component.mode == sbx::canvas::render_mode::screen_space_camera) {
     auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
     auto& scene = scenes_module.active_scene();
 
@@ -1375,6 +1375,17 @@ auto draw_canvas_section(editor_state& state, sbx::scenes::node& node) -> void {
 
       ImGui::EndCombo();
     }
+
+    ImGui::DragFloat("Plane Distance", &canvas_component.plane_distance, 0.1f, 0.01f, 10000.0f);
+    bracket_edit(state, node, canvas_component, pending, "Edit Canvas");
+  } else if (canvas_component.mode == sbx::canvas::render_mode::world_space) {
+    ImGui::TextDisabled("Projected through whichever camera is actually rendering");
+
+    ImGui::DragFloat("World Scale", &canvas_component.world_scale, 0.0001f, 0.00001f, 10.0f, "%.5f");
+    bracket_edit(state, node, canvas_component, pending, "Edit Canvas");
+
+    ImGui::Checkbox("Billboard", &canvas_component.billboard);
+    bracket_edit(state, node, canvas_component, pending, "Edit Canvas");
   }
 
   ImGui::DragInt("Sort Order", &canvas_component.sort_order);
@@ -1888,6 +1899,231 @@ auto draw_grid_layout_group_section(editor_state& state, sbx::scenes::node& node
   }
 }
 
+auto draw_ui_mask_section(editor_state& state, sbx::scenes::node& node) -> void {
+  auto is_open = true;
+
+  const auto is_expanded = ImGui::CollapsingHeader(ICON_MDI_CROP " UI Mask", &is_open, ImGuiTreeNodeFlags_DefaultOpen);
+
+  if (!is_open) {
+    state.push_command(std::make_unique<remove_component_command<sbx::canvas::ui_mask>>(node.id(), node.get_component<sbx::canvas::ui_mask>(), "Remove UI Mask"));
+    return;
+  }
+
+  if (!is_expanded) {
+    return;
+  }
+
+  auto& mask = node.get_component<sbx::canvas::ui_mask>();
+  static auto pending = std::optional<sbx::canvas::ui_mask>{};
+
+  ImGui::Checkbox("Show Mask Graphic", &mask.show_mask_graphic);
+  bracket_edit(state, node, mask, pending, "Edit UI Mask");
+}
+
+auto draw_ui_toggle_section(editor_state& state, sbx::scenes::node& node) -> void {
+  auto is_open = true;
+
+  const auto is_expanded = ImGui::CollapsingHeader(ICON_MDI_TOGGLE_SWITCH " UI Toggle", &is_open, ImGuiTreeNodeFlags_DefaultOpen);
+
+  if (!is_open) {
+    state.push_command(std::make_unique<remove_component_command<sbx::canvas::ui_toggle>>(node.id(), node.get_component<sbx::canvas::ui_toggle>(), "Remove UI Toggle"));
+    return;
+  }
+
+  if (!is_expanded) {
+    return;
+  }
+
+  auto& toggle = node.get_component<sbx::canvas::ui_toggle>();
+  static auto pending = std::optional<sbx::canvas::ui_toggle>{};
+
+  ImGui::Checkbox("Is On", &toggle.is_on);
+  bracket_edit(state, node, toggle, pending, "Edit UI Toggle");
+
+  ImGui::Checkbox("Interactable", &toggle.interactable);
+  bracket_edit(state, node, toggle, pending, "Edit UI Toggle");
+
+  draw_color_field("On Color", toggle.on_color);
+  bracket_edit(state, node, toggle, pending, "Edit UI Toggle");
+
+  draw_color_field("Off Color", toggle.off_color);
+  bracket_edit(state, node, toggle, pending, "Edit UI Toggle");
+
+  ImGui::Text("Group: %llu", static_cast<unsigned long long>(toggle.group.value()));
+  ImGui::SameLine();
+
+  if (ImGui::SmallButton("New##ToggleGroup")) {
+    const auto before = toggle;
+    toggle.group = sbx::math::uuid::create();
+    state.push_command(std::make_unique<modify_component_command<sbx::canvas::ui_toggle>>(node.id(), before, toggle, "Edit UI Toggle"));
+  }
+
+  ImGui::SameLine();
+
+  if (ImGui::SmallButton("Clear##ToggleGroup")) {
+    const auto before = toggle;
+    toggle.group = sbx::math::uuid::nil();
+    state.push_command(std::make_unique<modify_component_command<sbx::canvas::ui_toggle>>(node.id(), before, toggle, "Edit UI Toggle"));
+  }
+}
+
+static constexpr auto slider_direction_labels = std::array<const char*, 2u>{"Horizontal", "Vertical"};
+
+auto draw_ui_slider_section(editor_state& state, sbx::scenes::node& node) -> void {
+  auto is_open = true;
+
+  const auto is_expanded = ImGui::CollapsingHeader(ICON_MDI_TUNE " UI Slider", &is_open, ImGuiTreeNodeFlags_DefaultOpen);
+
+  if (!is_open) {
+    state.push_command(std::make_unique<remove_component_command<sbx::canvas::ui_slider>>(node.id(), node.get_component<sbx::canvas::ui_slider>(), "Remove UI Slider"));
+    return;
+  }
+
+  if (!is_expanded) {
+    return;
+  }
+
+  auto& slider = node.get_component<sbx::canvas::ui_slider>();
+  static auto pending = std::optional<sbx::canvas::ui_slider>{};
+
+  ImGui::DragFloat("Value", &slider.value, 0.01f, slider.min_value, slider.max_value);
+  bracket_edit(state, node, slider, pending, "Edit UI Slider");
+
+  ImGui::DragFloat("Min Value", &slider.min_value, 0.1f);
+  bracket_edit(state, node, slider, pending, "Edit UI Slider");
+
+  ImGui::DragFloat("Max Value", &slider.max_value, 0.1f);
+  bracket_edit(state, node, slider, pending, "Edit UI Slider");
+
+  ImGui::Checkbox("Whole Numbers", &slider.whole_numbers);
+  bracket_edit(state, node, slider, pending, "Edit UI Slider");
+
+  ImGui::Checkbox("Interactable", &slider.interactable);
+  bracket_edit(state, node, slider, pending, "Edit UI Slider");
+
+  auto direction_index = static_cast<int>(slider.direction);
+  if (ImGui::Combo("Direction", &direction_index, slider_direction_labels.data(), static_cast<int>(slider_direction_labels.size()))) {
+    slider.direction = static_cast<sbx::canvas::slider_direction>(direction_index);
+  }
+  bracket_edit(state, node, slider, pending, "Edit UI Slider");
+
+  draw_color_field("Track Color", slider.track_color);
+  bracket_edit(state, node, slider, pending, "Edit UI Slider");
+
+  draw_color_field("Fill Color", slider.fill_color);
+  bracket_edit(state, node, slider, pending, "Edit UI Slider");
+}
+
+auto draw_ui_scrollbar_section(editor_state& state, sbx::scenes::node& node) -> void {
+  auto is_open = true;
+
+  const auto is_expanded = ImGui::CollapsingHeader(ICON_MDI_DRAG_HORIZONTAL " UI Scrollbar", &is_open, ImGuiTreeNodeFlags_DefaultOpen);
+
+  if (!is_open) {
+    state.push_command(std::make_unique<remove_component_command<sbx::canvas::ui_scrollbar>>(node.id(), node.get_component<sbx::canvas::ui_scrollbar>(), "Remove UI Scrollbar"));
+    return;
+  }
+
+  if (!is_expanded) {
+    return;
+  }
+
+  auto& scrollbar = node.get_component<sbx::canvas::ui_scrollbar>();
+  static auto pending = std::optional<sbx::canvas::ui_scrollbar>{};
+
+  ImGui::DragFloat("Value", &scrollbar.value, 0.01f, 0.0f, 1.0f);
+  bracket_edit(state, node, scrollbar, pending, "Edit UI Scrollbar");
+
+  ImGui::DragFloat("Size", &scrollbar.size, 0.01f, 0.0f, 1.0f);
+  bracket_edit(state, node, scrollbar, pending, "Edit UI Scrollbar");
+
+  ImGui::Checkbox("Interactable", &scrollbar.interactable);
+  bracket_edit(state, node, scrollbar, pending, "Edit UI Scrollbar");
+
+  auto direction_index = static_cast<int>(scrollbar.direction);
+  if (ImGui::Combo("Direction", &direction_index, slider_direction_labels.data(), static_cast<int>(slider_direction_labels.size()))) {
+    scrollbar.direction = static_cast<sbx::canvas::slider_direction>(direction_index);
+  }
+  bracket_edit(state, node, scrollbar, pending, "Edit UI Scrollbar");
+
+  draw_color_field("Track Color", scrollbar.track_color);
+  bracket_edit(state, node, scrollbar, pending, "Edit UI Scrollbar");
+
+  draw_color_field("Handle Color", scrollbar.handle_color);
+  bracket_edit(state, node, scrollbar, pending, "Edit UI Scrollbar");
+}
+
+auto draw_ui_scroll_rect_section(editor_state& state, sbx::scenes::node& node) -> void {
+  auto is_open = true;
+
+  const auto is_expanded = ImGui::CollapsingHeader(ICON_MDI_ARROW_ALL " UI Scroll Rect", &is_open, ImGuiTreeNodeFlags_DefaultOpen);
+
+  if (!is_open) {
+    state.push_command(std::make_unique<remove_component_command<sbx::canvas::ui_scroll_rect>>(node.id(), node.get_component<sbx::canvas::ui_scroll_rect>(), "Remove UI Scroll Rect"));
+    return;
+  }
+
+  if (!is_expanded) {
+    return;
+  }
+
+  auto& scroll = node.get_component<sbx::canvas::ui_scroll_rect>();
+  static auto pending = std::optional<sbx::canvas::ui_scroll_rect>{};
+
+  auto current_label = std::string{"(None)"};
+
+  if (scroll.content != sbx::math::uuid::nil()) {
+    auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
+    auto& scene = scenes_module.active_scene();
+
+    if (auto content_node = scene.find(scroll.content); content_node.is_valid()) {
+      current_label = content_node.name().str();
+    }
+  }
+
+  if (ImGui::BeginCombo("Content", current_label.c_str())) {
+    if (ImGui::Selectable("(None)", scroll.content == sbx::math::uuid::nil())) {
+      const auto before = scroll;
+      scroll.content = sbx::math::uuid::nil();
+      state.push_command(std::make_unique<modify_component_command<sbx::canvas::ui_scroll_rect>>(node.id(), before, scroll, "Edit UI Scroll Rect"));
+    }
+
+    if (node.has_component<sbx::scenes::relationship>()) {
+      for (const auto child_entity : node.get_component<sbx::scenes::relationship>().children) {
+        auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
+        auto child_node = scenes_module.active_scene().node_of(child_entity);
+
+        if (!child_node.has_component<sbx::canvas::rect_transform>()) {
+          continue;
+        }
+
+        const auto label = child_node.name().str();
+        const auto is_selected = child_node.id() == scroll.content;
+
+        if (ImGui::Selectable(label.c_str(), is_selected)) {
+          const auto before = scroll;
+          scroll.content = child_node.id();
+          state.push_command(std::make_unique<modify_component_command<sbx::canvas::ui_scroll_rect>>(node.id(), before, scroll, "Edit UI Scroll Rect"));
+        }
+      }
+    }
+
+    ImGui::EndCombo();
+  }
+
+  ImGui::Checkbox("Horizontal", &scroll.horizontal);
+  bracket_edit(state, node, scroll, pending, "Edit UI Scroll Rect");
+
+  ImGui::Checkbox("Vertical", &scroll.vertical);
+  bracket_edit(state, node, scroll, pending, "Edit UI Scroll Rect");
+
+  auto normalized_position = std::array<std::float_t, 2u>{scroll.normalized_position.x(), scroll.normalized_position.y()};
+  if (ImGui::DragFloat2("Normalized Position", normalized_position.data(), 0.01f, 0.0f, 1.0f)) {
+    scroll.normalized_position = sbx::math::vector2{normalized_position[0], normalized_position[1]};
+  }
+  bracket_edit(state, node, scroll, pending, "Edit UI Scroll Rect");
+}
+
 // Every script class name matching `filter` (case-insensitive substring, see contains_ignore_case) --
 // used only to decide whether the Script submenu below has anything to show for the active filter,
 // so it can hide itself along with every other entry instead of opening onto an empty list.
@@ -2044,6 +2280,22 @@ auto draw_add_component_menu(editor_state& state, sbx::scenes::node& node, sbx::
       state.push_command(std::make_unique<add_component_command<sbx::canvas::ui_button>>(node.id(), "Add UI Button"));
     }
 
+    if (!node.has_component<sbx::canvas::ui_toggle>() && passes("UI Toggle") && ImGui::MenuItem(ICON_MDI_TOGGLE_SWITCH " UI Toggle")) {
+      state.push_command(std::make_unique<add_component_command<sbx::canvas::ui_toggle>>(node.id(), "Add UI Toggle"));
+    }
+
+    if (!node.has_component<sbx::canvas::ui_slider>() && passes("UI Slider") && ImGui::MenuItem(ICON_MDI_TUNE " UI Slider")) {
+      state.push_command(std::make_unique<add_component_command<sbx::canvas::ui_slider>>(node.id(), "Add UI Slider"));
+    }
+
+    if (!node.has_component<sbx::canvas::ui_scrollbar>() && passes("UI Scrollbar") && ImGui::MenuItem(ICON_MDI_DRAG_HORIZONTAL " UI Scrollbar")) {
+      state.push_command(std::make_unique<add_component_command<sbx::canvas::ui_scrollbar>>(node.id(), "Add UI Scrollbar"));
+    }
+
+    if (!node.has_component<sbx::canvas::ui_scroll_rect>() && passes("UI Scroll Rect") && ImGui::MenuItem(ICON_MDI_ARROW_ALL " UI Scroll Rect")) {
+      state.push_command(std::make_unique<add_component_command<sbx::canvas::ui_scroll_rect>>(node.id(), "Add UI Scroll Rect"));
+    }
+
     if (!node.has_component<sbx::canvas::layout_element>() && passes("Layout Element") && ImGui::MenuItem(ICON_MDI_RULER " Layout Element")) {
       state.push_command(std::make_unique<add_component_command<sbx::canvas::layout_element>>(node.id(), "Add Layout Element"));
     }
@@ -2062,6 +2314,10 @@ auto draw_add_component_menu(editor_state& state, sbx::scenes::node& node, sbx::
 
     if (!node.has_component<sbx::canvas::horizontal_layout_group>() && !node.has_component<sbx::canvas::vertical_layout_group>() && !node.has_component<sbx::canvas::grid_layout_group>() && passes("Grid Layout Group") && ImGui::MenuItem(ICON_MDI_VIEW_GRID " Grid Layout Group")) {
       state.push_command(std::make_unique<add_component_command<sbx::canvas::grid_layout_group>>(node.id(), "Add Grid Layout Group"));
+    }
+
+    if (!node.has_component<sbx::canvas::ui_mask>() && passes("UI Mask") && ImGui::MenuItem(ICON_MDI_CROP " UI Mask")) {
+      state.push_command(std::make_unique<add_component_command<sbx::canvas::ui_mask>>(node.id(), "Add UI Mask"));
     }
 
     // Open-ended category, not a fixed name -- passes when "Script" matches or any script inside
@@ -2523,6 +2779,26 @@ auto inspector_panel::_draw_node_properties(editor_state& state, sbx::scenes::no
     draw_ui_button_section(state, node);
   }
 
+  if (node.has_component<sbx::canvas::ui_toggle>()) {
+    section_gap();
+    draw_ui_toggle_section(state, node);
+  }
+
+  if (node.has_component<sbx::canvas::ui_slider>()) {
+    section_gap();
+    draw_ui_slider_section(state, node);
+  }
+
+  if (node.has_component<sbx::canvas::ui_scrollbar>()) {
+    section_gap();
+    draw_ui_scrollbar_section(state, node);
+  }
+
+  if (node.has_component<sbx::canvas::ui_scroll_rect>()) {
+    section_gap();
+    draw_ui_scroll_rect_section(state, node);
+  }
+
   if (node.has_component<sbx::canvas::layout_element>()) {
     section_gap();
     draw_layout_element_section(state, node);
@@ -2546,6 +2822,11 @@ auto inspector_panel::_draw_node_properties(editor_state& state, sbx::scenes::no
   if (node.has_component<sbx::canvas::grid_layout_group>()) {
     section_gap();
     draw_grid_layout_group_section(state, node);
+  }
+
+  if (node.has_component<sbx::canvas::ui_mask>()) {
+    section_gap();
+    draw_ui_mask_section(state, node);
   }
 
   if (node.has_component<sbx::scenes::script_component>()) {

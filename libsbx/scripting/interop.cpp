@@ -1892,4 +1892,252 @@ auto interop::canvas_wants_pointer_capture() -> bool {
   return canvas_module.wants_pointer_capture();
 }
 
+auto interop::ui_toggle_get_is_on(std::uint64_t uuid) -> bool {
+  auto node = resolve_node(uuid);
+
+  return node.is_valid() && node.has_component<canvas::ui_toggle>() && node.get_component<canvas::ui_toggle>().is_on;
+}
+
+auto interop::ui_toggle_set_is_on(std::uint64_t uuid, bool value) -> void {
+  auto node = resolve_node(uuid);
+
+  if (!node.is_valid() || !node.has_component<canvas::ui_toggle>()) {
+    return;
+  }
+
+  node.get_component<canvas::ui_toggle>().is_on = value;
+}
+
+auto interop::ui_toggle_get_interactable(std::uint64_t uuid) -> bool {
+  auto node = resolve_node(uuid);
+
+  return node.is_valid() && node.has_component<canvas::ui_toggle>() && node.get_component<canvas::ui_toggle>().interactable;
+}
+
+auto interop::ui_toggle_set_interactable(std::uint64_t uuid, bool value) -> void {
+  auto node = resolve_node(uuid);
+
+  if (!node.is_valid() || !node.has_component<canvas::ui_toggle>()) {
+    return;
+  }
+
+  node.get_component<canvas::ui_toggle>().interactable = value;
+}
+
+auto interop::ui_slider_get_value(std::uint64_t uuid, std::float_t* out_value) -> void {
+  auto node = resolve_node(uuid);
+
+  if (!out_value || !node.is_valid() || !node.has_component<canvas::ui_slider>()) {
+    return;
+  }
+
+  *out_value = node.get_component<canvas::ui_slider>().value;
+}
+
+auto interop::ui_slider_set_value(std::uint64_t uuid, std::float_t value) -> void {
+  auto node = resolve_node(uuid);
+
+  if (!node.is_valid() || !node.has_component<canvas::ui_slider>()) {
+    return;
+  }
+
+  node.get_component<canvas::ui_slider>().value = value;
+}
+
+auto interop::ui_slider_get_min_value(std::uint64_t uuid, std::float_t* out_value) -> void {
+  auto node = resolve_node(uuid);
+
+  if (!out_value || !node.is_valid() || !node.has_component<canvas::ui_slider>()) {
+    return;
+  }
+
+  *out_value = node.get_component<canvas::ui_slider>().min_value;
+}
+
+auto interop::ui_slider_set_min_value(std::uint64_t uuid, std::float_t value) -> void {
+  auto node = resolve_node(uuid);
+
+  if (!node.is_valid() || !node.has_component<canvas::ui_slider>()) {
+    return;
+  }
+
+  node.get_component<canvas::ui_slider>().min_value = value;
+}
+
+auto interop::ui_slider_get_max_value(std::uint64_t uuid, std::float_t* out_value) -> void {
+  auto node = resolve_node(uuid);
+
+  if (!out_value || !node.is_valid() || !node.has_component<canvas::ui_slider>()) {
+    return;
+  }
+
+  *out_value = node.get_component<canvas::ui_slider>().max_value;
+}
+
+auto interop::ui_slider_set_max_value(std::uint64_t uuid, std::float_t value) -> void {
+  auto node = resolve_node(uuid);
+
+  if (!node.is_valid() || !node.has_component<canvas::ui_slider>()) {
+    return;
+  }
+
+  node.get_component<canvas::ui_slider>().max_value = value;
+}
+
+auto interop::ui_slider_get_whole_numbers(std::uint64_t uuid) -> bool {
+  auto node = resolve_node(uuid);
+
+  return node.is_valid() && node.has_component<canvas::ui_slider>() && node.get_component<canvas::ui_slider>().whole_numbers;
+}
+
+auto interop::ui_slider_set_whole_numbers(std::uint64_t uuid, bool value) -> void {
+  auto node = resolve_node(uuid);
+
+  if (!node.is_valid() || !node.has_component<canvas::ui_slider>()) {
+    return;
+  }
+
+  node.get_component<canvas::ui_slider>().whole_numbers = value;
+}
+
+auto interop::ui_slider_get_interactable(std::uint64_t uuid) -> bool {
+  auto node = resolve_node(uuid);
+
+  return node.is_valid() && node.has_component<canvas::ui_slider>() && node.get_component<canvas::ui_slider>().interactable;
+}
+
+auto interop::ui_slider_set_interactable(std::uint64_t uuid, bool value) -> void {
+  auto node = resolve_node(uuid);
+
+  if (!node.is_valid() || !node.has_component<canvas::ui_slider>()) {
+    return;
+  }
+
+  node.get_component<canvas::ui_slider>().interactable = value;
+}
+
+auto interop::ui_scrollbar_get_value(std::uint64_t uuid, std::float_t* out_value) -> void {
+  auto node = resolve_node(uuid);
+
+  if (!out_value || !node.is_valid() || !node.has_component<canvas::ui_scrollbar>()) {
+    return;
+  }
+
+  *out_value = node.get_component<canvas::ui_scrollbar>().value;
+}
+
+auto interop::ui_scrollbar_set_value(std::uint64_t uuid, std::float_t value) -> void {
+  auto node = resolve_node(uuid);
+
+  if (!node.is_valid() || !node.has_component<canvas::ui_scrollbar>()) {
+    return;
+  }
+
+  node.get_component<canvas::ui_scrollbar>().value = value;
+}
+
+auto interop::ui_scrollbar_get_size(std::uint64_t uuid, std::float_t* out_value) -> void {
+  auto node = resolve_node(uuid);
+
+  if (!out_value || !node.is_valid() || !node.has_component<canvas::ui_scrollbar>()) {
+    return;
+  }
+
+  *out_value = node.get_component<canvas::ui_scrollbar>().size;
+}
+
+auto interop::ui_scrollbar_set_size(std::uint64_t uuid, std::float_t value) -> void {
+  auto node = resolve_node(uuid);
+
+  if (!node.is_valid() || !node.has_component<canvas::ui_scrollbar>()) {
+    return;
+  }
+
+  node.get_component<canvas::ui_scrollbar>().size = value;
+}
+
+auto interop::ui_scrollbar_get_interactable(std::uint64_t uuid) -> bool {
+  auto node = resolve_node(uuid);
+
+  return node.is_valid() && node.has_component<canvas::ui_scrollbar>() && node.get_component<canvas::ui_scrollbar>().interactable;
+}
+
+auto interop::ui_scrollbar_set_interactable(std::uint64_t uuid, bool value) -> void {
+  auto node = resolve_node(uuid);
+
+  if (!node.is_valid() || !node.has_component<canvas::ui_scrollbar>()) {
+    return;
+  }
+
+  node.get_component<canvas::ui_scrollbar>().interactable = value;
+}
+
+auto interop::ui_scroll_rect_get_normalized_position(std::uint64_t uuid, math::vector2* out_value) -> void {
+  auto node = resolve_node(uuid);
+
+  if (!out_value || !node.is_valid() || !node.has_component<canvas::ui_scroll_rect>()) {
+    return;
+  }
+
+  *out_value = node.get_component<canvas::ui_scroll_rect>().normalized_position;
+}
+
+auto interop::ui_scroll_rect_set_normalized_position(std::uint64_t uuid, math::vector2* value) -> void {
+  auto node = resolve_node(uuid);
+
+  if (!value || !node.is_valid() || !node.has_component<canvas::ui_scroll_rect>()) {
+    return;
+  }
+
+  node.get_component<canvas::ui_scroll_rect>().normalized_position = *value;
+}
+
+auto interop::ui_scroll_rect_get_horizontal(std::uint64_t uuid) -> bool {
+  auto node = resolve_node(uuid);
+
+  return node.is_valid() && node.has_component<canvas::ui_scroll_rect>() && node.get_component<canvas::ui_scroll_rect>().horizontal;
+}
+
+auto interop::ui_scroll_rect_set_horizontal(std::uint64_t uuid, bool value) -> void {
+  auto node = resolve_node(uuid);
+
+  if (!node.is_valid() || !node.has_component<canvas::ui_scroll_rect>()) {
+    return;
+  }
+
+  node.get_component<canvas::ui_scroll_rect>().horizontal = value;
+}
+
+auto interop::ui_scroll_rect_get_vertical(std::uint64_t uuid) -> bool {
+  auto node = resolve_node(uuid);
+
+  return node.is_valid() && node.has_component<canvas::ui_scroll_rect>() && node.get_component<canvas::ui_scroll_rect>().vertical;
+}
+
+auto interop::ui_scroll_rect_set_vertical(std::uint64_t uuid, bool value) -> void {
+  auto node = resolve_node(uuid);
+
+  if (!node.is_valid() || !node.has_component<canvas::ui_scroll_rect>()) {
+    return;
+  }
+
+  node.get_component<canvas::ui_scroll_rect>().vertical = value;
+}
+
+auto interop::ui_mask_get_show_mask_graphic(std::uint64_t uuid) -> bool {
+  auto node = resolve_node(uuid);
+
+  return node.is_valid() && node.has_component<canvas::ui_mask>() && node.get_component<canvas::ui_mask>().show_mask_graphic;
+}
+
+auto interop::ui_mask_set_show_mask_graphic(std::uint64_t uuid, bool value) -> void {
+  auto node = resolve_node(uuid);
+
+  if (!node.is_valid() || !node.has_component<canvas::ui_mask>()) {
+    return;
+  }
+
+  node.get_component<canvas::ui_mask>().show_mask_graphic = value;
+}
+
 } // namespace sbx::scripting

@@ -150,6 +150,9 @@ private:
   /** @brief canvas::canvas_module::on_button_clicked handler -- invokes OnClick on the clicked node's own script instances (if any). */
   auto _dispatch_button_click(const scenes::node& node) -> void;
 
+  /** @brief canvas::canvas_module::on_value_changed handler -- invokes OnValueChanged on the changed node's own script instances (if any). */
+  auto _dispatch_value_changed(const scenes::node& node) -> void;
+
   std::filesystem::path _assembly_path;
 
   scripting::managed::runtime _runtime;

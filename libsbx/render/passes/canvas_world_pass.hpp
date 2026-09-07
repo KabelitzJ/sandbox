@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Jonas Kabelitz
-#ifndef LIBSBX_RENDER_PASSES_CANVAS_PASS_HPP_
-#define LIBSBX_RENDER_PASSES_CANVAS_PASS_HPP_
+#ifndef LIBSBX_RENDER_PASSES_CANVAS_WORLD_PASS_HPP_
+#define LIBSBX_RENDER_PASSES_CANVAS_WORLD_PASS_HPP_
 
 #include <array>
 #include <cstddef>
@@ -21,14 +21,14 @@
 
 namespace sbx::render {
 
-class canvas_pass final : public graphics_pass {
+class canvas_world_pass final : public graphics_pass {
 
 public:
 
-  canvas_pass();
+  canvas_world_pass();
 
   [[nodiscard]] auto name() const -> std::string_view override {
-    return "Canvas";
+    return "Canvas World";
   }
 
   auto declare(graphics_pass_builder& builder, const graph_resources& resources) -> void override;
@@ -50,8 +50,8 @@ private:
   std::array<graphics::buffer_handle, graphics::swapchain::max_frames_in_flight> _glyph_buffers{};
   std::array<std::size_t, graphics::swapchain::max_frames_in_flight> _glyph_capacities{};
 
-}; // class canvas_pass
+}; // class canvas_world_pass
 
 } // namespace sbx::render
 
-#endif // LIBSBX_RENDER_PASSES_CANVAS_PASS_HPP_
+#endif // LIBSBX_RENDER_PASSES_CANVAS_WORLD_PASS_HPP_

@@ -9,6 +9,7 @@
 #include <libsbx/core/engine.hpp>
 
 #include <libsbx/math/vector2.hpp>
+#include <libsbx/math/matrix4x4.hpp>
 
 #include <libsbx/platform/platform_module.hpp>
 
@@ -32,6 +33,7 @@ struct canvas_inherited_state {
   std::float_t alpha{1.0f};
   bool interactable{true};
   bool blocks_raycasts{true};
+  math::vector4 clip_rect{-1e9f, -1e9f, 1e9f, 1e9f};
 }; // struct canvas_inherited_state
 
 class canvas_module final : public utility::noncopyable {
@@ -54,13 +56,22 @@ public:
     return _on_button_clicked;
   }
 
+  [[nodiscard]] auto on_value_changed() noexcept -> signals::signal<const scenes::node&>& {
+    return _on_value_changed;
+  }
+
 private:
 
-  auto _visit(scenes::scene& scene, scenes::node node, const resolved_rect& parent_rect, const canvas_inherited_state& inherited, const math::vector2& screen_size, const math::vector2& mouse_position, std::uint32_t white_texture_index, std::float_t scale_factor, const resolved_rect* rect_override) -> void;
+  auto _visit(scenes::scene& scene, scenes::node node, const resolved_rect& parent_rect, const canvas_inherited_state& inherited, const math::vector2& screen_size, const math::vector2& mouse_position, std::uint32_t white_texture_index, std::float_t scale_factor, const resolved_rect* rect_override, const math::matrix4x4* world_mvp, bool mask_clip_supported) -> void;
+
+  auto _emit_quad(const math::vector2& position, const math::vector2& size, const math::vector4& uv_rect, std::uint32_t texture_index, const math::color& color, const math::vector2& screen_size, const math::vector4& clip_rect, const math::matrix4x4* world_mvp) -> void;
+
+  auto _emit_glyph_quad(const math::vector2& position, const math::vector2& size, const math::vector4& uv_rect, std::uint32_t texture_index, const math::color& color, const math::vector2& screen_size, const math::vector4& clip_rect, const math::matrix4x4* world_mvp) -> void;
 
   canvas_draw_list _draw_list{};
   bool _wants_pointer_capture{false};
   signals::signal<const scenes::node&> _on_button_clicked{};
+  signals::signal<const scenes::node&> _on_value_changed{};
 
 }; // class canvas_module
 

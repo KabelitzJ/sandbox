@@ -188,6 +188,39 @@ scripting_module::scripting_module() {
   _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "CanvasGroup_GetIgnoreParentGroups", reinterpret_cast<void*>(&interop::canvas_group_get_ignore_parent_groups));
   _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "CanvasGroup_SetIgnoreParentGroups", reinterpret_cast<void*>(&interop::canvas_group_set_ignore_parent_groups));
 
+  _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "UIToggle_GetIsOn", reinterpret_cast<void*>(&interop::ui_toggle_get_is_on));
+  _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "UIToggle_SetIsOn", reinterpret_cast<void*>(&interop::ui_toggle_set_is_on));
+  _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "UIToggle_GetInteractable", reinterpret_cast<void*>(&interop::ui_toggle_get_interactable));
+  _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "UIToggle_SetInteractable", reinterpret_cast<void*>(&interop::ui_toggle_set_interactable));
+
+  _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "UISlider_GetValue", reinterpret_cast<void*>(&interop::ui_slider_get_value));
+  _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "UISlider_SetValue", reinterpret_cast<void*>(&interop::ui_slider_set_value));
+  _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "UISlider_GetMinValue", reinterpret_cast<void*>(&interop::ui_slider_get_min_value));
+  _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "UISlider_SetMinValue", reinterpret_cast<void*>(&interop::ui_slider_set_min_value));
+  _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "UISlider_GetMaxValue", reinterpret_cast<void*>(&interop::ui_slider_get_max_value));
+  _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "UISlider_SetMaxValue", reinterpret_cast<void*>(&interop::ui_slider_set_max_value));
+  _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "UISlider_GetWholeNumbers", reinterpret_cast<void*>(&interop::ui_slider_get_whole_numbers));
+  _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "UISlider_SetWholeNumbers", reinterpret_cast<void*>(&interop::ui_slider_set_whole_numbers));
+  _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "UISlider_GetInteractable", reinterpret_cast<void*>(&interop::ui_slider_get_interactable));
+  _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "UISlider_SetInteractable", reinterpret_cast<void*>(&interop::ui_slider_set_interactable));
+
+  _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "UIScrollbar_GetValue", reinterpret_cast<void*>(&interop::ui_scrollbar_get_value));
+  _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "UIScrollbar_SetValue", reinterpret_cast<void*>(&interop::ui_scrollbar_set_value));
+  _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "UIScrollbar_GetSize", reinterpret_cast<void*>(&interop::ui_scrollbar_get_size));
+  _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "UIScrollbar_SetSize", reinterpret_cast<void*>(&interop::ui_scrollbar_set_size));
+  _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "UIScrollbar_GetInteractable", reinterpret_cast<void*>(&interop::ui_scrollbar_get_interactable));
+  _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "UIScrollbar_SetInteractable", reinterpret_cast<void*>(&interop::ui_scrollbar_set_interactable));
+
+  _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "UIScrollRect_GetNormalizedPosition", reinterpret_cast<void*>(&interop::ui_scroll_rect_get_normalized_position));
+  _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "UIScrollRect_SetNormalizedPosition", reinterpret_cast<void*>(&interop::ui_scroll_rect_set_normalized_position));
+  _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "UIScrollRect_GetHorizontal", reinterpret_cast<void*>(&interop::ui_scroll_rect_get_horizontal));
+  _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "UIScrollRect_SetHorizontal", reinterpret_cast<void*>(&interop::ui_scroll_rect_set_horizontal));
+  _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "UIScrollRect_GetVertical", reinterpret_cast<void*>(&interop::ui_scroll_rect_get_vertical));
+  _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "UIScrollRect_SetVertical", reinterpret_cast<void*>(&interop::ui_scroll_rect_set_vertical));
+
+  _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "UIMask_GetShowMaskGraphic", reinterpret_cast<void*>(&interop::ui_mask_get_show_mask_graphic));
+  _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "UIMask_SetShowMaskGraphic", reinterpret_cast<void*>(&interop::ui_mask_set_show_mask_graphic));
+
   interop::register_managed_component<scenes::tag>("Tag", _core_assembly);
   interop::register_managed_component<scenes::local_transform>("Transform", _core_assembly);
   interop::register_managed_component<scenes::animator>("Animator", _core_assembly);
@@ -206,6 +239,11 @@ scripting_module::scripting_module() {
   interop::register_managed_component<canvas::ui_text>("UIText", _core_assembly);
   interop::register_managed_component<canvas::ui_button>("UIButton", _core_assembly);
   interop::register_managed_component<canvas::canvas_group>("CanvasGroup", _core_assembly);
+  interop::register_managed_component<canvas::ui_toggle>("UIToggle", _core_assembly);
+  interop::register_managed_component<canvas::ui_slider>("UISlider", _core_assembly);
+  interop::register_managed_component<canvas::ui_scrollbar>("UIScrollbar", _core_assembly);
+  interop::register_managed_component<canvas::ui_scroll_rect>("UIScrollRect", _core_assembly);
+  interop::register_managed_component<canvas::ui_mask>("UIMask", _core_assembly);
   // interop::register_managed_component<physics::character_controller>("CharacterController", _core_assembly);
 
   _core_assembly.upload_internal_calls();
@@ -218,6 +256,7 @@ scripting_module::scripting_module() {
   auto& canvas_module = core::engine::get_module<canvas::canvas_module>();
 
   canvas_module.on_button_clicked().connect([this](const scenes::node& node) { _dispatch_button_click(node); });
+  canvas_module.on_value_changed().connect([this](const scenes::node& node) { _dispatch_value_changed(node); });
 
   _load_game_assembly();
 }
@@ -404,6 +443,18 @@ auto scripting_module::_dispatch_button_click(const scenes::node& node) -> void 
 
   for (const auto& instance : scripts.instances) {
     instance.invoke("OnClick");
+  }
+}
+
+auto scripting_module::_dispatch_value_changed(const scenes::node& node) -> void {
+  if (!node.is_valid() || !node.has_component<scripting::scripts>()) {
+    return;
+  }
+
+  const auto& scripts = node.get_component<scripting::scripts>();
+
+  for (const auto& instance : scripts.instances) {
+    instance.invoke("OnValueChanged");
   }
 }
 

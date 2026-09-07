@@ -361,6 +361,9 @@ auto write_node(YAML::Node& node_yaml, ecs::registry& registry, ecs::entity enti
     component["mode"] = std::string{reflection::to_string(canvas_component.mode)};
     component["camera"] = canvas_component.camera.value();
     component["sort_order"] = canvas_component.sort_order;
+    component["plane_distance"] = canvas_component.plane_distance;
+    component["world_scale"] = canvas_component.world_scale;
+    component["billboard"] = canvas_component.billboard;
 
     components.push_back(component);
   }
@@ -481,6 +484,65 @@ auto write_node(YAML::Node& node_yaml, ecs::registry& registry, ecs::entity enti
     components.push_back(component);
   }
 
+  if (registry.all_of<canvas::ui_toggle>(entity)) {
+    const auto& toggle = registry.get<canvas::ui_toggle>(entity);
+
+    auto component = YAML::Node{};
+    component["type"] = "ui_toggle";
+    component["is_on"] = toggle.is_on;
+    component["interactable"] = toggle.interactable;
+    component["on_color"] = toggle.on_color;
+    component["off_color"] = toggle.off_color;
+    component["group"] = toggle.group.value();
+
+    components.push_back(component);
+  }
+
+  if (registry.all_of<canvas::ui_slider>(entity)) {
+    const auto& slider = registry.get<canvas::ui_slider>(entity);
+
+    auto component = YAML::Node{};
+    component["type"] = "ui_slider";
+    component["value"] = slider.value;
+    component["min_value"] = slider.min_value;
+    component["max_value"] = slider.max_value;
+    component["whole_numbers"] = slider.whole_numbers;
+    component["interactable"] = slider.interactable;
+    component["direction"] = std::string{reflection::to_string(slider.direction)};
+    component["track_color"] = slider.track_color;
+    component["fill_color"] = slider.fill_color;
+
+    components.push_back(component);
+  }
+
+  if (registry.all_of<canvas::ui_scrollbar>(entity)) {
+    const auto& scrollbar = registry.get<canvas::ui_scrollbar>(entity);
+
+    auto component = YAML::Node{};
+    component["type"] = "ui_scrollbar";
+    component["value"] = scrollbar.value;
+    component["size"] = scrollbar.size;
+    component["interactable"] = scrollbar.interactable;
+    component["direction"] = std::string{reflection::to_string(scrollbar.direction)};
+    component["track_color"] = scrollbar.track_color;
+    component["handle_color"] = scrollbar.handle_color;
+
+    components.push_back(component);
+  }
+
+  if (registry.all_of<canvas::ui_scroll_rect>(entity)) {
+    const auto& scroll = registry.get<canvas::ui_scroll_rect>(entity);
+
+    auto component = YAML::Node{};
+    component["type"] = "ui_scroll_rect";
+    component["content"] = scroll.content.value();
+    component["horizontal"] = scroll.horizontal;
+    component["vertical"] = scroll.vertical;
+    component["normalized_position"] = scroll.normalized_position;
+
+    components.push_back(component);
+  }
+
   if (registry.all_of<canvas::layout_element>(entity)) {
     const auto& element = registry.get<canvas::layout_element>(entity);
 
@@ -553,6 +615,16 @@ auto write_node(YAML::Node& node_yaml, ecs::registry& registry, ecs::entity enti
     component["start_axis"] = std::string{reflection::to_string(group.start_axis)};
     component["constraint"] = std::string{reflection::to_string(group.constraint)};
     component["constraint_count"] = group.constraint_count;
+
+    components.push_back(component);
+  }
+
+  if (registry.all_of<canvas::ui_mask>(entity)) {
+    const auto& mask = registry.get<canvas::ui_mask>(entity);
+
+    auto component = YAML::Node{};
+    component["type"] = "ui_mask";
+    component["show_mask_graphic"] = mask.show_mask_graphic;
 
     components.push_back(component);
   }
@@ -814,6 +886,18 @@ auto read_node_components(node& target_node, const YAML::Node& node_yaml, assets
       if (component["sort_order"]) {
         canvas_component.sort_order = component["sort_order"].as<std::int32_t>();
       }
+
+      if (component["plane_distance"]) {
+        canvas_component.plane_distance = component["plane_distance"].as<std::float_t>();
+      }
+
+      if (component["world_scale"]) {
+        canvas_component.world_scale = component["world_scale"].as<std::float_t>();
+      }
+
+      if (component["billboard"]) {
+        canvas_component.billboard = component["billboard"].as<bool>();
+      }
     } else if (type == "canvas_scaler") {
       auto& scaler = target_node.add_component<canvas::canvas_scaler>();
 
@@ -895,6 +979,53 @@ auto read_node_components(node& target_node, const YAML::Node& node_yaml, assets
       button.normal_color = component["normal_color"].as<math::color>();
       button.hovered_color = component["hovered_color"].as<math::color>();
       button.pressed_color = component["pressed_color"].as<math::color>();
+    } else if (type == "ui_toggle") {
+      auto& toggle = target_node.add_component<canvas::ui_toggle>();
+
+      toggle.is_on = component["is_on"].as<bool>();
+      toggle.interactable = component["interactable"].as<bool>();
+      toggle.on_color = component["on_color"].as<math::color>();
+      toggle.off_color = component["off_color"].as<math::color>();
+
+      if (component["group"]) {
+        toggle.group = component["group"].as<math::uuid>();
+      }
+    } else if (type == "ui_slider") {
+      auto& slider = target_node.add_component<canvas::ui_slider>();
+
+      slider.value = component["value"].as<std::float_t>();
+      slider.min_value = component["min_value"].as<std::float_t>();
+      slider.max_value = component["max_value"].as<std::float_t>();
+      slider.whole_numbers = component["whole_numbers"].as<bool>();
+      slider.interactable = component["interactable"].as<bool>();
+      slider.track_color = component["track_color"].as<math::color>();
+      slider.fill_color = component["fill_color"].as<math::color>();
+
+      if (component["direction"]) {
+        slider.direction = reflection::from_string_or<canvas::slider_direction>(component["direction"].as<std::string>(), canvas::slider_direction::horizontal);
+      }
+    } else if (type == "ui_scrollbar") {
+      auto& scrollbar = target_node.add_component<canvas::ui_scrollbar>();
+
+      scrollbar.value = component["value"].as<std::float_t>();
+      scrollbar.size = component["size"].as<std::float_t>();
+      scrollbar.interactable = component["interactable"].as<bool>();
+      scrollbar.track_color = component["track_color"].as<math::color>();
+      scrollbar.handle_color = component["handle_color"].as<math::color>();
+
+      if (component["direction"]) {
+        scrollbar.direction = reflection::from_string_or<canvas::slider_direction>(component["direction"].as<std::string>(), canvas::slider_direction::horizontal);
+      }
+    } else if (type == "ui_scroll_rect") {
+      auto& scroll = target_node.add_component<canvas::ui_scroll_rect>();
+
+      scroll.horizontal = component["horizontal"].as<bool>();
+      scroll.vertical = component["vertical"].as<bool>();
+      scroll.normalized_position = component["normalized_position"].as<math::vector2>();
+
+      if (component["content"]) {
+        scroll.content = component["content"].as<math::uuid>();
+      }
     } else if (type == "layout_element") {
       auto& element = target_node.add_component<canvas::layout_element>();
 
@@ -966,6 +1097,12 @@ auto read_node_components(node& target_node, const YAML::Node& node_yaml, assets
 
       if (component["constraint"]) {
         group.constraint = reflection::from_string_or<canvas::grid_constraint>(component["constraint"].as<std::string>(), canvas::grid_constraint::flexible);
+      }
+    } else if (type == "ui_mask") {
+      auto& mask = target_node.add_component<canvas::ui_mask>();
+
+      if (component["show_mask_graphic"]) {
+        mask.show_mask_graphic = component["show_mask_graphic"].as<bool>();
       }
     } else if (type == "script") {
       auto& scripts = target_node.get_or_add_component<script_component>();

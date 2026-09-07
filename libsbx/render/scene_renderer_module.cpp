@@ -48,6 +48,7 @@
 #include <libsbx/render/passes/debug_draw_pass.hpp>
 #include <libsbx/render/passes/tonemap_pass.hpp>
 #include <libsbx/render/passes/canvas_pass.hpp>
+#include <libsbx/render/passes/canvas_world_pass.hpp>
 #include <libsbx/render/passes/transparent_accumulate_pass.hpp>
 #include <libsbx/render/passes/particle_pass.hpp>
 #include <libsbx/render/passes/transparent_resolve_pass.hpp>
@@ -328,6 +329,7 @@ scene_renderer_module::scene_renderer_module() {
   _graph.add_pass<particle_simulate_pass>(*_particle_pool_additive, *_particle_pool_alpha_blend);
   _graph.add_pass<particle_pass>();
   _graph.add_pass<transparent_resolve_pass>();
+  _graph.add_pass<canvas_world_pass>();
   _graph.add_pass<bloom_pass>();
   _graph.add_pass<tonemap_pass>();
   _graph.add_pass<canvas_pass>();
@@ -614,6 +616,42 @@ auto scene_renderer_module::_evaluate_skeleton_pose(const assets::skeleton& skel
   }
 }
 
+auto scene_renderer_module::_resolve_camera_data() -> camera_data {
+  auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
+  auto& scene = scenes_module.active_scene();
+
+  if (_camera_override) {
+    return *_camera_override;
+  }
+
+  auto data = camera_data{};
+
+  if (scene.has_active_camera()) {
+    auto camera_node = scene.active_camera();
+
+    const auto& camera = camera_node.get_component<scenes::camera>();
+    const auto& world = camera_node.world_matrix();
+
+    data.view = math::matrix4x4::inverted(world);
+    data.position = math::vector3{world[3]};
+    data.fov_degrees = camera.fov_degrees;
+    data.near_plane = camera.near_plane;
+    data.far_plane = camera.far_plane;
+    data.exposure = camera.exposure;
+    data.bloom_enabled = camera.bloom_enabled;
+    data.bloom_intensity = camera.bloom_intensity;
+    data.bloom_threshold = camera.bloom_threshold;
+    data.bloom_knee = camera.bloom_knee;
+    data.is_active = true;
+  }
+
+  return data;
+}
+
+auto scene_renderer_module::effective_camera() -> camera_data {
+  return _resolve_camera_data();
+}
+
 auto scene_renderer_module::_build_packet() -> render_packet {
   SBX_PROFILE_SCOPE("scene_renderer_module::build_packet");
 
@@ -622,26 +660,7 @@ auto scene_renderer_module::_build_packet() -> render_packet {
   auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
   auto& scene = scenes_module.active_scene();
 
-  if (_camera_override) {
-    packet.camera = *_camera_override;
-  } else if (scene.has_active_camera()) {
-    auto camera_node = scene.active_camera();
-
-    const auto& camera = camera_node.get_component<scenes::camera>();
-    const auto& world = camera_node.world_matrix();
-
-    packet.camera.view = math::matrix4x4::inverted(world);
-    packet.camera.position = math::vector3{world[3]};
-    packet.camera.fov_degrees = camera.fov_degrees;
-    packet.camera.near_plane = camera.near_plane;
-    packet.camera.far_plane = camera.far_plane;
-    packet.camera.exposure = camera.exposure;
-    packet.camera.bloom_enabled = camera.bloom_enabled;
-    packet.camera.bloom_intensity = camera.bloom_intensity;
-    packet.camera.bloom_threshold = camera.bloom_threshold;
-    packet.camera.bloom_knee = camera.bloom_knee;
-    packet.camera.is_active = true;
-  }
+  packet.camera = _resolve_camera_data();
 
   // Environment/skybox stays scene-authored regardless of which camera_data is actually being
   // rendered with — an editor flying around with the override active should still see the level's

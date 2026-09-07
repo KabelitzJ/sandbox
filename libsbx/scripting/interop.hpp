@@ -284,6 +284,39 @@ struct interop {
   /** @brief Whether the cursor is currently over any interactable UI element -- see canvas::canvas_module's own doc comment. Any world-picking code (a road tool) should check this before casting its own ray. */
   static auto canvas_wants_pointer_capture() -> bool;
 
+  static auto ui_toggle_get_is_on(std::uint64_t uuid) -> bool;
+  static auto ui_toggle_set_is_on(std::uint64_t uuid, bool value) -> void;
+  static auto ui_toggle_get_interactable(std::uint64_t uuid) -> bool;
+  static auto ui_toggle_set_interactable(std::uint64_t uuid, bool value) -> void;
+
+  static auto ui_slider_get_value(std::uint64_t uuid, std::float_t* out_value) -> void;
+  static auto ui_slider_set_value(std::uint64_t uuid, std::float_t value) -> void;
+  static auto ui_slider_get_min_value(std::uint64_t uuid, std::float_t* out_value) -> void;
+  static auto ui_slider_set_min_value(std::uint64_t uuid, std::float_t value) -> void;
+  static auto ui_slider_get_max_value(std::uint64_t uuid, std::float_t* out_value) -> void;
+  static auto ui_slider_set_max_value(std::uint64_t uuid, std::float_t value) -> void;
+  static auto ui_slider_get_whole_numbers(std::uint64_t uuid) -> bool;
+  static auto ui_slider_set_whole_numbers(std::uint64_t uuid, bool value) -> void;
+  static auto ui_slider_get_interactable(std::uint64_t uuid) -> bool;
+  static auto ui_slider_set_interactable(std::uint64_t uuid, bool value) -> void;
+
+  static auto ui_scrollbar_get_value(std::uint64_t uuid, std::float_t* out_value) -> void;
+  static auto ui_scrollbar_set_value(std::uint64_t uuid, std::float_t value) -> void;
+  static auto ui_scrollbar_get_size(std::uint64_t uuid, std::float_t* out_value) -> void;
+  static auto ui_scrollbar_set_size(std::uint64_t uuid, std::float_t value) -> void;
+  static auto ui_scrollbar_get_interactable(std::uint64_t uuid) -> bool;
+  static auto ui_scrollbar_set_interactable(std::uint64_t uuid, bool value) -> void;
+
+  static auto ui_scroll_rect_get_normalized_position(std::uint64_t uuid, math::vector2* out_value) -> void;
+  static auto ui_scroll_rect_set_normalized_position(std::uint64_t uuid, math::vector2* value) -> void;
+  static auto ui_scroll_rect_get_horizontal(std::uint64_t uuid) -> bool;
+  static auto ui_scroll_rect_set_horizontal(std::uint64_t uuid, bool value) -> void;
+  static auto ui_scroll_rect_get_vertical(std::uint64_t uuid) -> bool;
+  static auto ui_scroll_rect_set_vertical(std::uint64_t uuid, bool value) -> void;
+
+  static auto ui_mask_get_show_mask_graphic(std::uint64_t uuid) -> bool;
+  static auto ui_mask_set_show_mask_graphic(std::uint64_t uuid, bool value) -> void;
+
   template<typename Type>
   static auto register_managed_component(std::string_view name, managed::assembly& core_assembly) -> void {
     auto& scenes_module = core::engine::get_module<scenes::scenes_module>();

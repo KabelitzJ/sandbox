@@ -32,8 +32,11 @@ enum class [[=reflection::named]] text_align : std::uint8_t {
 
 struct canvas {
   render_mode mode{render_mode::screen_space_overlay};
-  math::uuid camera{};      // only meaningful for screen_space_camera/world_space; unused in v1
+  math::uuid camera{};      // screen_space_camera: which camera to project onto; world_space: unused (always whichever camera is actually rendering)
   std::int32_t sort_order{0};
+  std::float_t plane_distance{10.0f}; // screen_space_camera: distance in front of camera the canvas plane sits at
+  std::float_t world_scale{0.001f};   // world_space: local units per canvas pixel
+  bool billboard{false};              // world_space: always face the camera, ignoring the node's own rotation
 }; // struct canvas
 
 enum class [[=reflection::named]] canvas_scale_mode : std::uint8_t {
@@ -91,6 +94,56 @@ struct ui_button {
   bool is_pressed{false};
   bool was_clicked{false};
 }; // struct ui_button
+
+struct ui_toggle {
+  bool is_on{false};
+  bool interactable{true};
+  math::color on_color{0.20f, 0.55f, 0.85f, 1.0f};
+  math::color off_color{0.25f, 0.25f, 0.25f, 1.0f};
+  math::uuid group{};
+
+  bool is_pressed{false};
+}; // struct ui_toggle
+
+enum class [[=reflection::named]] slider_direction : std::uint8_t {
+  horizontal,
+  vertical,
+}; // enum class slider_direction
+
+struct ui_slider {
+  std::float_t value{0.0f};
+  std::float_t min_value{0.0f};
+  std::float_t max_value{1.0f};
+  bool whole_numbers{false};
+  bool interactable{true};
+  slider_direction direction{slider_direction::horizontal};
+  math::color track_color{0.15f, 0.15f, 0.15f, 1.0f};
+  math::color fill_color{0.20f, 0.55f, 0.85f, 1.0f};
+
+  bool is_dragging{false};
+}; // struct ui_slider
+
+struct ui_scrollbar {
+  std::float_t value{0.0f};
+  std::float_t size{0.2f};
+  bool interactable{true};
+  slider_direction direction{slider_direction::horizontal};
+  math::color track_color{0.15f, 0.15f, 0.15f, 1.0f};
+  math::color handle_color{0.35f, 0.35f, 0.35f, 1.0f};
+
+  bool is_dragging{false};
+}; // struct ui_scrollbar
+
+struct ui_scroll_rect {
+  math::uuid content{};
+  bool horizontal{true};
+  bool vertical{true};
+  math::vector2 normalized_position{0.0f, 0.0f};
+
+  bool is_dragging{false};
+  math::vector2 drag_start_mouse{0.0f, 0.0f};
+  math::vector2 drag_start_normalized{0.0f, 0.0f};
+}; // struct ui_scroll_rect
 
 struct layout_element {
   std::float_t min_width{-1.0f};
@@ -167,6 +220,10 @@ struct grid_layout_group {
   grid_constraint constraint{grid_constraint::flexible};
   std::int32_t constraint_count{1};
 }; // struct grid_layout_group
+
+struct ui_mask {
+  bool show_mask_graphic{false};
+}; // struct ui_mask
 
 } // namespace sbx::canvas
 
