@@ -89,6 +89,21 @@ struct render_context {
   std::uint32_t sampler_index{0u};
   std::uint32_t clamp_sampler_index{0u};
 
+  // frustum_cull_pass's output for this frame's opaque_commands: one VkDrawIndexedIndirectCommand
+  // per command (culled_indirect_args_buffer, indexed by that command's position in
+  // packet->opaque_commands) and the compacted, visibility-culled transforms
+  // (culled_transform_address) submit_draw_commands_indirect points the vertex shader's instance
+  // fetch at instead of transform_address. Only ever valid for depth_pre_pass/opaque_pass; every
+  // other pass keeps reading transform_address as before.
+  graphics::buffer_handle culled_indirect_args_buffer{};
+  graphics::buffer::address_type culled_indirect_args_address{0u};
+  // culled_indirect_args_buffer is one shared ring buffer across every frame-in-flight slot; this
+  // is this frame's slot's element (VkDrawIndexedIndirectCommand-count, not byte) offset into it,
+  // so submit_draw_commands_indirect's draw_indexed_indirect calls land in the right slot --
+  // command_buffer::draw_indexed_indirect's own offset parameter is in the same element units.
+  std::uint32_t culled_indirect_args_slot_offset{0u};
+  graphics::buffer::address_type culled_transform_address{0u};
+
   // This frame's slot in the joint-palette buffer (CPU-written every frame from
   // packet->joint_matrices, so it's frame-in-flight multiplexed like transform_address); read by
   // skin_pass, combined with each skin_dispatch::joint_offset.
@@ -153,6 +168,16 @@ public:
 }; // class render_pass
 
 auto submit_draw_commands(render_context& context, const std::vector<draw_command>& commands, const std::array<memory::observer_ptr<graphics::graphics_pipeline>, 2u>& pipelines, std::uint32_t cascade_index = 0xFFFFFFFFu) -> void;
+
+/**
+ * @brief Same as submit_draw_commands, but for a command list frustum_cull_pass has already culled
+ * (currently only context.packet->opaque_commands, from depth_pre_pass/opaque_pass): reads each
+ * command's already-known index_count/index_offset from context.culled_indirect_args_buffer via
+ * draw_indexed_indirect instead of drawing directly, and points the vertex shader's instance fetch
+ * at context.culled_transform_address (the GPU-compacted, visible-only transforms) instead of
+ * context.transform_address.
+ */
+auto submit_draw_commands_indirect(render_context& context, const std::vector<draw_command>& commands, const std::array<memory::observer_ptr<graphics::graphics_pipeline>, 2u>& pipelines) -> void;
 
 auto bind_globals(render_context& context) -> void;
 

@@ -28,6 +28,14 @@ struct draw_indirect_command {
   uint first_instance;
 }; // struct draw_indirect_command
 
+struct draw_indexed_indirect_command {
+  uint index_count;
+  uint instance_count;
+  uint first_index;
+  int vertex_offset;
+  uint first_instance;
+}; // struct draw_indexed_indirect_command
+
 float radical_inverse(uint bits) {
   bits = (bits << 16u) | (bits >> 16u);
   bits = ((bits & 0x55555555u) << 1u) | ((bits & 0xAAAAAAAAu) >> 1u);

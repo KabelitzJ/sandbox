@@ -10,6 +10,7 @@
 #include <libsbx/math/matrix4x4.hpp>
 #include <libsbx/math/vector2.hpp>
 #include <libsbx/math/vector3.hpp>
+#include <libsbx/math/volume.hpp>
 #include <libsbx/math/uuid.hpp>
 
 #include <libsbx/assets/material.hpp>
@@ -88,6 +89,12 @@ struct draw_command {
   // scene_renderer_module::_build_packet (see skin_dispatch::output_vertex_address, which this is
   // always a copy of) -- submit_draw_commands needs no other change to draw from it.
   graphics::buffer::address_type vertex_address_override{0u};
+
+  // Local-space bounds frustum_cull_pass tests each instance against (transformed by that
+  // instance's own world matrix first) -- copied from the mesh's own submesh.bounds at
+  // _build_packet time, inflated for skinned instances only (see its own doc comment there) since a
+  // rigid mesh's bounds are already exact and padding them would only weaken culling for no benefit.
+  math::volume local_bounds{};
 
   // assets_module.is_resident(mesh) && is_resident(material), resolved once when this command is
   // built rather than per pass -- the same command list is submitted by several passes in the same

@@ -19,9 +19,6 @@ auto submit_draw_commands(render_context& context, const std::vector<draw_comman
   const auto* current_mesh = static_cast<const assets::mesh*>(nullptr);
 
   for (const auto& command : commands) {
-    // Residency was already resolved once, when this command was built into the packet -- see
-    // draw_command::resident's doc comment -- instead of being re-checked by every pass that
-    // resubmits the same command list (depth pre-pass, opaque, shadow x cascade).
     if (!command.mesh.is_valid() || !command.material.is_valid() || !command.resident) {
       continue;
     }
@@ -59,6 +56,58 @@ auto submit_draw_commands(render_context& context, const std::vector<draw_comman
     context.command_buffer->push_constants(bindless_table.pipeline_layout(), graphics::bindless_table::push_constant_stages, 0u, memory::as_bytes(values));
 
     context.command_buffer->draw_indexed(submesh.index_count, command.instance_count, submesh.index_offset, 0, 0u);
+  }
+}
+
+auto submit_draw_commands_indirect(render_context& context, const std::vector<draw_command>& commands, const std::array<memory::observer_ptr<graphics::graphics_pipeline>, 2u>& pipelines) -> void {
+  auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
+
+  auto& registry = graphics_module.resource_registry();
+  auto& bindless_table = graphics_module.bindless_table();
+  auto& indirect_args_buffer = registry.get<graphics::buffer>(context.culled_indirect_args_buffer);
+
+  auto bound = false;
+  auto current_pipeline = std::uint32_t{0u};
+  const auto* current_mesh = static_cast<const assets::mesh*>(nullptr);
+
+  for (auto index = std::size_t{0u}; index < commands.size(); ++index) {
+    const auto& command = commands[index];
+
+    if (!command.mesh.is_valid() || !command.material.is_valid() || !command.resident) {
+      continue;
+    }
+
+    if (command.transform_offset + command.instance_count > context.instance_count) {
+      continue;
+    }
+
+    if (!bound || current_pipeline != command.pipeline_id) {
+      context.command_buffer->bind_pipeline(*pipelines[command.pipeline_id]);
+      current_pipeline = command.pipeline_id;
+      bound = true;
+    }
+
+    const auto& mesh = *command.mesh;
+
+    if (current_mesh != &mesh) {
+      auto& index_buffer = registry.get<graphics::buffer>(mesh.index_buffer());
+      context.command_buffer->bind_index_buffer(index_buffer, 0u, VK_INDEX_TYPE_UINT32);
+      current_mesh = &mesh;
+    }
+
+    auto values = push_constants{};
+    values.frame_address = context.frame_address;
+    values.vertex_address = command.vertex_address_override ? command.vertex_address_override : mesh.vertex_address();
+    values.transform_address = context.culled_transform_address;
+    values.transform_offset = command.transform_offset;
+    values.material_index = command.material->index();
+    values.sampler_index = context.sampler_index;
+    values.clamp_sampler_index = context.clamp_sampler_index;
+
+    context.command_buffer->push_constants(bindless_table.pipeline_layout(), graphics::bindless_table::push_constant_stages, 0u, memory::as_bytes(values));
+
+    const auto offset = context.culled_indirect_args_slot_offset + static_cast<std::uint32_t>(index);
+    context.command_buffer->draw_indexed_indirect(indirect_args_buffer, offset, 1u);
   }
 }
 

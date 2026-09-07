@@ -49,6 +49,8 @@ struct graph_resources {
   graphics::buffer_handle cluster_range_buffer{};
   graphics::buffer_handle cluster_light_index_buffer{};
   graphics::buffer_handle cluster_counter_buffer{};
+  graphics::buffer_handle culled_indirect_args_buffer{};
+  graphics::buffer_handle culled_transform_buffer{};
 }; // struct graph_resources
 
 struct color_attachment_slot {

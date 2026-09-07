@@ -97,6 +97,7 @@ struct frame_data {
   float4x4 light_view_projections[shadow_cascade_count];
   uint shadow_map_indices[shadow_cascade_count];
   uint shadow_enabled;
+  float4 frustum_planes[6];
 }; // struct frame_data
 
 #endif // FRAME_DATA_SLANG_

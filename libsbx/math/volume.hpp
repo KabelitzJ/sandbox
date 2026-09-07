@@ -133,6 +133,18 @@ public:
     return _max - _min;
   }
 
+  /**
+   * @brief Grows this volume by @p factor of its own extent (symmetric on every axis, half the
+   * growth on each side) -- e.g. a rest-pose mesh bounds padded before a skinned instance's animated
+   * pose can move vertices outside it. Padding done here (local space, before any world transform)
+   * scales along with whatever transform is later applied to the volume, unlike a fixed world-space
+   * margin -- a 2x-scaled instance gets 2x the padding for free.
+   */
+  auto inflated(value_type factor) const noexcept -> basic_volume {
+    const auto padding = extend() * (factor * value_type{0.5});
+    return basic_volume{_min - padding, _max + padding};
+  }
+
   auto diagonal_length() const noexcept -> value_type {
     return extend().length();
   }

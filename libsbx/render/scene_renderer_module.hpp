@@ -167,6 +167,12 @@ private:
   inline static constexpr auto transform_capacity = std::uint32_t{16384u};
   inline static constexpr auto cluster_light_index_capacity = std::uint32_t{65536u};
 
+  // frustum_cull_pass: a fixed upper bound on opaque draw commands per frame (mirroring
+  // transform_capacity's "just skip the overflow" v1 policy above) and the compacted,
+  // visibility-culled transform buffer it writes into -- same capacity as _transform_buffer, since
+  // worst case every instance survives culling and needs its full original slot.
+  inline static constexpr auto max_opaque_draw_commands = std::uint32_t{8192u};
+
   // Skinning: joint_palette_capacity is a total across every skinned instance drawn this frame
   // (packet.joint_matrices), not per-instance; skin_scratch_vertex_capacity likewise sums every
   // skinned instance's vertex_count. Both are fixed upper bounds for v1 -- a frame exceeding either
@@ -272,6 +278,15 @@ private:
 
   graphics::buffer_handle _transform_buffer{};
   std::array<graphics::buffer::address_type, graphics::swapchain::max_frames_in_flight> _transform_addresses{};
+
+  // frustum_cull_pass's output for this frame's opaque_commands -- see render_context's own doc
+  // comment on culled_indirect_args_buffer/culled_transform_address for how depth_pre_pass/
+  // opaque_pass consume these instead of _transform_buffer.
+  graphics::buffer_handle _culled_indirect_args_buffer{};
+  std::array<graphics::buffer::address_type, graphics::swapchain::max_frames_in_flight> _culled_indirect_args_addresses{};
+
+  graphics::buffer_handle _culled_transform_buffer{};
+  std::array<graphics::buffer::address_type, graphics::swapchain::max_frames_in_flight> _culled_transform_addresses{};
 
   // CPU-written every frame from packet.joint_matrices (skeleton_pose evaluation happens in
   // _build_packet, on the main thread) -- frame-in-flight multiplexed exactly like _transform_buffer,

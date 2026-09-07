@@ -71,7 +71,7 @@ auto depth_pre_pass::execute(render_context& context, std::uint32_t /*group*/) -
   }
 
   bind_globals(context);
-  submit_draw_commands(context, context.packet->opaque_commands, _pipelines);
+  submit_draw_commands_indirect(context, context.packet->opaque_commands, _pipelines);
 }
 
 } // namespace sbx::render

@@ -19,10 +19,12 @@
 #include <libsbx/utility/hash.hpp>
 
 #include <libsbx/math/vector3.hpp>
+#include <libsbx/math/vector4.hpp>
 #include <libsbx/math/matrix4x4.hpp>
 #include <libsbx/math/matrix_cast.hpp>
 #include <libsbx/math/algorithm.hpp>
 #include <libsbx/math/angle.hpp>
+#include <libsbx/math/frustum.hpp>
 
 #include <libsbx/core/engine.hpp>
 
@@ -42,6 +44,7 @@
 #include <libsbx/scenes/components.hpp>
 
 #include <libsbx/render/passes/bloom_pass.hpp>
+#include <libsbx/render/passes/frustum_cull_pass.hpp>
 #include <libsbx/render/passes/depth_pre_pass.hpp>
 #include <libsbx/render/passes/light_culling_pass.hpp>
 #include <libsbx/render/passes/opaque_pass.hpp>
@@ -87,7 +90,19 @@ struct frame_data {
   std::array<math::matrix4x4, shadow_cascade_count> light_view_projections;
   std::array<std::uint32_t, shadow_cascade_count> shadow_map_indices;
   std::uint32_t shadow_enabled;
+  // World-space camera frustum planes (left, right, bottom, top, near, far), extracted once here
+  // from view/projection above -- see math::extract_frustum_planes -- and read by
+  // frustum_cull_pass.slang for its per-instance AABB test.
+  std::array<math::vector4, 6u> frustum_planes;
 }; // struct frame_data
+
+// frustum_cull_pass tests a skinned draw_command's rest-pose local_bounds, not its actual animated
+// pose -- padding by this fraction of the rest-pose bounds' own extent (in local space, so it scales
+// with the instance's own world-transform scale -- see math::volume::inflated's doc comment) trades
+// a little culling effectiveness for characters against not popping a wide swing/stretched limb out
+// of view early at the frustum edge. A rigid (non-skinned) mesh's bounds are already exact and are
+// left unpadded.
+inline constexpr auto skinned_bounds_padding_factor = 0.2f;
 
 struct cluster_aabb {
   math::vector4 min_view;
@@ -320,6 +335,7 @@ scene_renderer_module::scene_renderer_module() {
   });
 
   _graph.add_pass<skin_pass>();
+  _graph.add_pass<frustum_cull_pass>();
   _graph.add_pass<depth_pre_pass>();
   _graph.add_pass<light_culling_pass>();
   _graph.add_pass<shadow_pass>();
@@ -768,6 +784,7 @@ auto scene_renderer_module::_build_packet() -> render_packet {
     command.transform_offset = static_cast<std::uint32_t>(packet.transforms.size());
     command.pipeline_id = bucket.pipeline_id;
     command.resident = assets_module.is_resident(bucket.mesh) && assets_module.is_resident(bucket.material);
+    command.local_bounds = bucket.mesh->submeshes()[bucket.submesh_index].bounds;
 
     packet.transforms.insert(packet.transforms.end(), bucket.transforms.begin(), bucket.transforms.end());
 
@@ -854,6 +871,7 @@ auto scene_renderer_module::_build_packet() -> render_packet {
       command.pipeline_id = material->is_double_sided() ? 1u : 0u;
       command.vertex_address_override = output_vertex_address;
       command.resident = assets_module.is_resident(renderer.mesh) && assets_module.is_resident(material);
+      command.local_bounds = submeshes[index].bounds.inflated(skinned_bounds_padding_factor);
 
       packet.transforms.push_back(transform_data{world.matrix, math::matrix4x4::transposed(math::matrix4x4::inverted(world.matrix))});
 
@@ -1340,6 +1358,41 @@ auto scene_renderer_module::_ensure_resources() -> void {
     _transform_addresses[slot] = transform_base + slot * transform_capacity * sizeof(transform_data);
   }
 
+  // CPU writes indexCount/firstIndex/vertexOffset/firstInstance and resets instanceCount to 0 fresh
+  // every frame (_prepare_frame, alongside the transform/frame buffer writes below); that host write
+  // completes before the frame's command buffer is even submitted, so frustum_cull_pass's compute
+  // shader only ever atomically increments instanceCount on top of already-settled data -- no race
+  // with the CPU write, no separate device_local + copy step needed.
+  _culled_indirect_args_buffer = registry.emplace<graphics::buffer>(graphics::buffer::create_info{
+    .size = sizeof(VkDrawIndexedIndirectCommand) * max_opaque_draw_commands * graphics::swapchain::max_frames_in_flight,
+    .usage = graphics::buffer_usage::device_address | graphics::buffer_usage::storage | graphics::buffer_usage::indirect,
+    .memory = graphics::memory_usage::host_write,
+    .name = "Culled Draw Args"
+  });
+
+  const auto culled_indirect_args_base = registry.get<graphics::buffer>(_culled_indirect_args_buffer).address();
+
+  for (auto slot = std::size_t{0u}; slot < graphics::swapchain::max_frames_in_flight; ++slot) {
+    _culled_indirect_args_addresses[slot] = culled_indirect_args_base + slot * max_opaque_draw_commands * sizeof(VkDrawIndexedIndirectCommand);
+  }
+
+  // Same capacity/layout as _transform_buffer -- frustum_cull_pass compacts surviving instances into
+  // this buffer at the exact same transform_offset each draw_command already has in the ordinary
+  // transforms array (worst case every instance survives, needing that many contiguous slots either
+  // way), so no separate offset bookkeeping is needed between the two buffers.
+  _culled_transform_buffer = registry.emplace<graphics::buffer>(graphics::buffer::create_info{
+    .size = sizeof(transform_data) * transform_capacity * graphics::swapchain::max_frames_in_flight,
+    .usage = graphics::buffer_usage::device_address | graphics::buffer_usage::storage,
+    .memory = graphics::memory_usage::device_local,
+    .name = "Culled Instance Transforms"
+  });
+
+  const auto culled_transform_base = registry.get<graphics::buffer>(_culled_transform_buffer).address();
+
+  for (auto slot = std::size_t{0u}; slot < graphics::swapchain::max_frames_in_flight; ++slot) {
+    _culled_transform_addresses[slot] = culled_transform_base + slot * transform_capacity * sizeof(transform_data);
+  }
+
   _joint_palette_buffer = registry.emplace<graphics::buffer>(graphics::buffer::create_info{
     .size = sizeof(math::matrix4x4) * joint_palette_capacity * graphics::swapchain::max_frames_in_flight,
     .usage = graphics::buffer_usage::device_address | graphics::buffer_usage::storage,
@@ -1577,7 +1630,9 @@ auto scene_renderer_module::_build_graph_resources() const -> graph_resources {
     .cluster_aabb_buffer = _cluster_aabb_buffer,
     .cluster_range_buffer = _cluster_range_buffer,
     .cluster_light_index_buffer = _cluster_light_index_buffer,
-    .cluster_counter_buffer = _cluster_counter_buffer
+    .cluster_counter_buffer = _cluster_counter_buffer,
+    .culled_indirect_args_buffer = _culled_indirect_args_buffer,
+    .culled_transform_buffer = _culled_transform_buffer
   };
 }
 
@@ -1604,6 +1659,40 @@ auto scene_renderer_module::_prepare_frame(render_context& context) -> void {
     auto& transform_buffer = registry.get<graphics::buffer>(_transform_buffer);
 
     transform_buffer.write(context.packet->transforms.data(), instance_count * sizeof(transform_data), context.slot * transform_capacity * sizeof(transform_data));
+  }
+
+  // frustum_cull_pass's input for this frame's opaque_commands: indexCount/firstIndex (this
+  // command's submesh, unchanging whichever instances survive culling) known and written here;
+  // instanceCount starts at 0 and is only ever atomically incremented by the compute pass, never
+  // written by the CPU again after this -- see _culled_indirect_args_buffer's own doc comment on why
+  // that ordering is race-free.
+  const auto opaque_command_count = std::min(static_cast<std::uint32_t>(context.packet->opaque_commands.size()), max_opaque_draw_commands);
+
+  if (opaque_command_count > 0u) {
+    auto indirect_commands = std::vector<VkDrawIndexedIndirectCommand>{};
+    indirect_commands.reserve(opaque_command_count);
+
+    for (auto index = std::uint32_t{0u}; index < opaque_command_count; ++index) {
+      const auto& command = context.packet->opaque_commands[index];
+
+      auto indirect_command = VkDrawIndexedIndirectCommand{};
+
+      if (command.mesh.is_valid() && command.submesh_index < command.mesh->submeshes().size()) {
+        const auto& submesh = command.mesh->submeshes()[command.submesh_index];
+        indirect_command.indexCount = submesh.index_count;
+        indirect_command.firstIndex = submesh.index_offset;
+      }
+
+      indirect_command.instanceCount = 0u;
+      indirect_command.vertexOffset = 0;
+      indirect_command.firstInstance = 0u;
+
+      indirect_commands.push_back(indirect_command);
+    }
+
+    auto& culled_indirect_args_buffer = registry.get<graphics::buffer>(_culled_indirect_args_buffer);
+
+    culled_indirect_args_buffer.write(indirect_commands.data(), opaque_command_count * sizeof(VkDrawIndexedIndirectCommand), context.slot * max_opaque_draw_commands * sizeof(VkDrawIndexedIndirectCommand));
   }
 
   const auto joint_count = std::min(static_cast<std::uint32_t>(context.packet->joint_matrices.size()), joint_palette_capacity);
@@ -1675,6 +1764,7 @@ auto scene_renderer_module::_prepare_frame(render_context& context) -> void {
   data.light_view_projections = light_view_projections;
   data.shadow_map_indices = _shadow_map_indices;
   data.shadow_enabled = shadow_enabled;
+  data.frustum_planes = math::extract_frustum_planes(projection * context.packet->camera.view);
 
   auto& frame_buffer = registry.get<graphics::buffer>(_frame_buffer);
   frame_buffer.write(&data, sizeof(frame_data), context.slot * memory::stride_v<frame_data>);
@@ -1692,6 +1782,14 @@ auto scene_renderer_module::_prepare_frame(render_context& context) -> void {
   context.cluster_range_address = data.cluster_range_address;
   context.cluster_light_index_address = data.cluster_light_index_address;
   context.cluster_counter_address = _cluster_counter_addresses[context.slot];
+
+  context.culled_indirect_args_buffer = _culled_indirect_args_buffer;
+  context.culled_indirect_args_address = _culled_indirect_args_addresses[context.slot];
+  // Element (command-count) units, not bytes -- command_buffer::draw_indexed_indirect takes its
+  // offset the same way draw_indexed_indirect_count does (see its own offset/count_buffer_offset),
+  // multiplying by sizeof(VkDrawIndexedIndirectCommand) internally.
+  context.culled_indirect_args_slot_offset = context.slot * max_opaque_draw_commands;
+  context.culled_transform_address = _culled_transform_addresses[context.slot];
 
   // GPU-path particles: alive_list is ping-pong, keyed by frame_index % 2 (matching
   // particle_simulate_pass's write_index this frame). draw_args is always valid once the pool is

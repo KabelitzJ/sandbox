@@ -62,7 +62,7 @@ class LibsbxConan(ConanFile):
         self.requires("nlohmann_json/3.11.3", transitive_headers=True)
         self.requires("spdlog/1.17.0", transitive_headers=True)
         self.requires("stb/cci.20240531")
-        self.requires("tracy/0.13.1", transitive_headers=True)
+        self.requires("tracy/0.14.1", transitive_headers=True)
         self.requires("vulkan-memory-allocator/3.3.0", transitive_headers=True)
         self.requires("yaml-cpp/0.7.0", transitive_headers=True)
         self.requires("zstd/1.5.7")
