@@ -22,15 +22,28 @@ struct axis_size {
   std::float_t flexible{0.0f};
 }; // struct axis_size
 
-[[nodiscard]] auto child_axis_size(scenes::node child, bool horizontal) -> axis_size;
+class layout_resolver {
 
-[[nodiscard]] auto compute_preferred_size(scenes::scene& scene, scenes::node node, bool use_min) -> math::vector2;
+public:
 
-[[nodiscard]] auto layout_horizontal_children(scenes::scene& scene, scenes::node node, const resolved_rect& rect) -> std::vector<std::pair<scenes::node, resolved_rect>>;
+  [[nodiscard]] static auto child_axis_size(scenes::node child, bool horizontal) -> axis_size;
 
-[[nodiscard]] auto layout_vertical_children(scenes::scene& scene, scenes::node node, const resolved_rect& rect) -> std::vector<std::pair<scenes::node, resolved_rect>>;
+  [[nodiscard]] static auto compute_preferred_size(scenes::scene& scene, scenes::node node, bool use_min) -> math::vector2;
 
-[[nodiscard]] auto layout_grid_children(scenes::scene& scene, scenes::node node, const resolved_rect& rect) -> std::vector<std::pair<scenes::node, resolved_rect>>;
+  [[nodiscard]] auto horizontal_children(scenes::scene& scene, scenes::node node, const resolved_rect& rect) -> std::vector<std::pair<scenes::node, resolved_rect>>;
+
+  [[nodiscard]] auto vertical_children(scenes::scene& scene, scenes::node node, const resolved_rect& rect) -> std::vector<std::pair<scenes::node, resolved_rect>>;
+
+  [[nodiscard]] auto grid_children(scenes::scene& scene, scenes::node node, const resolved_rect& rect) -> std::vector<std::pair<scenes::node, resolved_rect>>;
+
+private:
+
+  std::vector<scenes::node> _children{};
+  std::vector<std::float_t> _widths{};
+  std::vector<std::float_t> _heights{};
+  std::vector<std::float_t> _flexibles{};
+
+}; // class layout_resolver
 
 } // namespace sbx::canvas
 

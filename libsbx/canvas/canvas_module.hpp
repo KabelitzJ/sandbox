@@ -3,6 +3,8 @@
 #ifndef LIBSBX_CANVAS_CANVAS_MODULE_HPP_
 #define LIBSBX_CANVAS_CANVAS_MODULE_HPP_
 
+#include <string>
+
 #include <libsbx/utility/noncopyable.hpp>
 
 #include <libsbx/core/module.hpp>
@@ -14,8 +16,11 @@
 #include <libsbx/platform/platform_module.hpp>
 
 #include <libsbx/assets/assets_module.hpp>
+#include <libsbx/assets/font.hpp>
 
 #include <libsbx/signals/signal.hpp>
+
+#include <libsbx/containers/dense_map.hpp>
 
 #include <libsbx/scenes/scene.hpp>
 #include <libsbx/scenes/node.hpp>
@@ -35,6 +40,30 @@ struct canvas_inherited_state {
   bool blocks_raycasts{true};
   math::vector4 clip_rect{-1e9f, -1e9f, 1e9f, 1e9f};
 }; // struct canvas_inherited_state
+
+/**
+ * @brief Every input shape_text's output depends on -- see text_layout.cpp's shape_text -- except
+ * ui_text::color (applied separately, when the shaped glyphs are turned into draw quads, not part
+ * of the shaping itself). font is stored as a raw pointer (not the assets::font_handle itself,
+ * which has no operator== of its own) -- comparing the pointee is exactly "is this the same loaded
+ * font asset", which is what a handle change would mean here anyway.
+ */
+struct text_shape_cache_key {
+  std::string text{};
+  const assets::font* font{nullptr};
+  std::float_t font_size{0.0f};
+  text_align horizontal_align{};
+  text_align vertical_align{};
+  std::float_t line_spacing{0.0f};
+  resolved_rect rect{};
+
+  auto operator==(const text_shape_cache_key&) const -> bool = default;
+}; // struct text_shape_cache_key
+
+struct text_shape_cache_entry {
+  text_shape_cache_key key{};
+  std::vector<text_glyph> glyphs{};
+}; // struct text_shape_cache_entry
 
 class canvas_module final : public utility::noncopyable {
 
@@ -72,6 +101,16 @@ private:
   bool _wants_pointer_capture{false};
   signals::signal<const scenes::node&> _on_button_clicked{};
   signals::signal<const scenes::node&> _on_value_changed{};
+
+  // shape_text's output, memoized per ui_text node -- see text_shape_cache_key's doc comment.
+  // Recomputed only when this frame's key differs from the one that produced the cached glyphs, so
+  // a node whose text/font/size/alignment/rect haven't changed since last frame (the common case for
+  // HUD/menu text) skips glyph shaping entirely.
+  containers::dense_map<scenes::node, text_shape_cache_entry> _text_shape_cache{};
+
+  // Owns layout_horizontal_children/layout_vertical_children/layout_grid_children's scratch
+  // storage -- see layout_resolver's own doc comment.
+  layout_resolver _layout_resolver{};
 
 }; // class canvas_module
 

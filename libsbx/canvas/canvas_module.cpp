@@ -283,15 +283,15 @@ auto canvas_module::_visit(scenes::scene& scene, scenes::node node, const resolv
     if (auto fitter = node.try_get_component<content_size_fitter>()) {
       if (fitter->horizontal_fit != content_fit_mode::unconstrained || fitter->vertical_fit != content_fit_mode::unconstrained) {
         if (fitter->horizontal_fit == content_fit_mode::preferred_size) {
-          rt.size_delta.x() = compute_preferred_size(scene, node, false).x();
+          rt.size_delta.x() = layout_resolver::compute_preferred_size(scene, node, false).x();
         } else if (fitter->horizontal_fit == content_fit_mode::min_size) {
-          rt.size_delta.x() = compute_preferred_size(scene, node, true).x();
+          rt.size_delta.x() = layout_resolver::compute_preferred_size(scene, node, true).x();
         }
 
         if (fitter->vertical_fit == content_fit_mode::preferred_size) {
-          rt.size_delta.y() = compute_preferred_size(scene, node, false).y();
+          rt.size_delta.y() = layout_resolver::compute_preferred_size(scene, node, false).y();
         } else if (fitter->vertical_fit == content_fit_mode::min_size) {
-          rt.size_delta.y() = compute_preferred_size(scene, node, true).y();
+          rt.size_delta.y() = layout_resolver::compute_preferred_size(scene, node, true).y();
         }
       }
     }
@@ -378,7 +378,15 @@ auto canvas_module::_visit(scenes::scene& scene, scenes::node node, const resolv
       auto color = text.color;
       color.a() *= state.alpha;
 
-      for (const auto& glyph : shape_text(text, rect)) {
+      const auto key = text_shape_cache_key{text.text, text.font.get(), text.font_size, text.horizontal_align, text.vertical_align, text.line_spacing, rect};
+      auto& cache_entry = _text_shape_cache[node];
+
+      if (!(cache_entry.key == key)) {
+        cache_entry.glyphs = shape_text(text, rect);
+        cache_entry.key = key;
+      }
+
+      for (const auto& glyph : cache_entry.glyphs) {
         _emit_glyph_quad(glyph.rect.position * scale_factor, glyph.rect.size * scale_factor, glyph.uv_rect, glyph.texture_index, color, screen_size, state.clip_rect, world_mvp);
       }
     }
@@ -546,13 +554,13 @@ auto canvas_module::_visit(scenes::scene& scene, scenes::node node, const resolv
     auto has_group = false;
 
     if (node.has_component<horizontal_layout_group>()) {
-      group_layout = layout_horizontal_children(scene, node, rect);
+      group_layout = _layout_resolver.horizontal_children(scene, node, rect);
       has_group = true;
     } else if (node.has_component<vertical_layout_group>()) {
-      group_layout = layout_vertical_children(scene, node, rect);
+      group_layout = _layout_resolver.vertical_children(scene, node, rect);
       has_group = true;
     } else if (node.has_component<grid_layout_group>()) {
-      group_layout = layout_grid_children(scene, node, rect);
+      group_layout = _layout_resolver.grid_children(scene, node, rect);
       has_group = true;
     }
 

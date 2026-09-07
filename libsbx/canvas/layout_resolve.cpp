@@ -9,7 +9,7 @@
 
 namespace sbx::canvas {
 
-auto child_axis_size(scenes::node child, bool horizontal) -> axis_size {
+auto layout_resolver::child_axis_size(scenes::node child, bool horizontal) -> axis_size {
   const auto& rect = child.get_component<rect_transform>();
   const auto natural = horizontal ? rect.size_delta.x() : rect.size_delta.y();
 
@@ -69,7 +69,7 @@ auto alignment_offset(std::float_t used, std::float_t available, std::int32_t co
   return 0.0f;
 }
 
-auto compute_preferred_size(scenes::scene& scene, scenes::node node, bool use_min) -> math::vector2 {
+auto layout_resolver::compute_preferred_size(scenes::scene& scene, scenes::node node, bool use_min) -> math::vector2 {
   if (!node.has_component<scenes::relationship>()) {
     return math::vector2{0.0f, 0.0f};
   }
@@ -137,7 +137,7 @@ auto compute_preferred_size(scenes::scene& scene, scenes::node node, bool use_mi
   return math::vector2{max_width, max_height};
 }
 
-auto layout_horizontal_children(scenes::scene& scene, scenes::node node, const resolved_rect& rect) -> std::vector<std::pair<scenes::node, resolved_rect>> {
+auto layout_resolver::horizontal_children(scenes::scene& scene, scenes::node node, const resolved_rect& rect) -> std::vector<std::pair<scenes::node, resolved_rect>> {
   auto result = std::vector<std::pair<scenes::node, resolved_rect>>{};
 
   if (!node.has_component<horizontal_layout_group>() || !node.has_component<scenes::relationship>()) {
@@ -146,75 +146,75 @@ auto layout_horizontal_children(scenes::scene& scene, scenes::node node, const r
 
   const auto& group = node.get_component<horizontal_layout_group>();
 
-  auto children = std::vector<scenes::node>{};
+  _children.clear();
 
   for (const auto child_entity : node.get_component<scenes::relationship>().children) {
     auto child = scene.node_of(child_entity);
 
     if (is_layout_child(child)) {
-      children.push_back(child);
+      _children.push_back(child);
     }
   }
 
-  if (children.empty()) {
+  if (_children.empty()) {
     return result;
   }
 
-  const auto available_width = std::max(0.0f, rect.size.x() - group.padding.x() - group.padding.z() - group.spacing * static_cast<std::float_t>(children.size() - 1));
+  const auto available_width = std::max(0.0f, rect.size.x() - group.padding.x() - group.padding.z() - group.spacing * static_cast<std::float_t>(_children.size() - 1));
   const auto available_height = std::max(0.0f, rect.size.y() - group.padding.y() - group.padding.w());
 
-  auto widths = std::vector<std::float_t>(children.size());
-  auto heights = std::vector<std::float_t>(children.size());
-  auto flexibles = std::vector<std::float_t>(children.size());
+  _widths.assign(_children.size(), 0.0f);
+  _heights.assign(_children.size(), 0.0f);
+  _flexibles.assign(_children.size(), 0.0f);
 
   auto sum_preferred = 0.0f;
   auto total_flexible = 0.0f;
 
-  for (auto index = std::size_t{0u}; index < children.size(); ++index) {
-    const auto width = child_axis_size(children[index], true);
-    const auto height = child_axis_size(children[index], false);
+  for (auto index = std::size_t{0u}; index < _children.size(); ++index) {
+    const auto width = child_axis_size(_children[index], true);
+    const auto height = child_axis_size(_children[index], false);
 
-    widths[index] = width.preferred;
-    heights[index] = height.preferred;
-    flexibles[index] = width.flexible >= 0.0f && width.flexible > 0.0f ? width.flexible : (group.child_force_expand_width ? 1.0f : 0.0f);
+    _widths[index] = width.preferred;
+    _heights[index] = height.preferred;
+    _flexibles[index] = width.flexible >= 0.0f && width.flexible > 0.0f ? width.flexible : (group.child_force_expand_width ? 1.0f : 0.0f);
 
     sum_preferred += width.preferred;
-    total_flexible += flexibles[index];
+    total_flexible += _flexibles[index];
   }
 
   const auto extra = std::max(0.0f, available_width - sum_preferred);
 
   auto total_used_width = 0.0f;
 
-  for (auto index = std::size_t{0u}; index < children.size(); ++index) {
+  for (auto index = std::size_t{0u}; index < _children.size(); ++index) {
     if (group.control_child_width) {
-      const auto share = total_flexible > 0.0f ? extra * (flexibles[index] / total_flexible) : 0.0f;
-      widths[index] += share;
+      const auto share = total_flexible > 0.0f ? extra * (_flexibles[index] / total_flexible) : 0.0f;
+      _widths[index] += share;
     }
 
-    total_used_width += widths[index];
+    total_used_width += _widths[index];
   }
 
-  total_used_width += group.spacing * static_cast<std::float_t>(children.size() - 1);
+  total_used_width += group.spacing * static_cast<std::float_t>(_children.size() - 1);
 
   const auto horizontal_component = alignment_component(group.child_alignment, true);
   const auto vertical_component = alignment_component(group.child_alignment, false);
 
   auto cursor = rect.position.x() + group.padding.x() + alignment_offset(total_used_width, rect.size.x() - group.padding.x() - group.padding.z(), horizontal_component);
 
-  for (auto index = std::size_t{0u}; index < children.size(); ++index) {
-    const auto height = group.control_child_height ? (group.child_force_expand_height ? available_height : std::clamp(heights[index], 0.0f, available_height)) : heights[index];
+  for (auto index = std::size_t{0u}; index < _children.size(); ++index) {
+    const auto height = group.control_child_height ? (group.child_force_expand_height ? available_height : std::clamp(_heights[index], 0.0f, available_height)) : _heights[index];
     const auto y = rect.position.y() + group.padding.y() + alignment_offset(height, available_height, vertical_component);
 
-    result.emplace_back(children[index], resolved_rect{math::vector2{cursor, y}, math::vector2{widths[index], height}});
+    result.emplace_back(_children[index], resolved_rect{math::vector2{cursor, y}, math::vector2{_widths[index], height}});
 
-    cursor += widths[index] + group.spacing;
+    cursor += _widths[index] + group.spacing;
   }
 
   return result;
 }
 
-auto layout_vertical_children(scenes::scene& scene, scenes::node node, const resolved_rect& rect) -> std::vector<std::pair<scenes::node, resolved_rect>> {
+auto layout_resolver::vertical_children(scenes::scene& scene, scenes::node node, const resolved_rect& rect) -> std::vector<std::pair<scenes::node, resolved_rect>> {
   auto result = std::vector<std::pair<scenes::node, resolved_rect>>{};
 
   if (!node.has_component<vertical_layout_group>() || !node.has_component<scenes::relationship>()) {
@@ -223,75 +223,75 @@ auto layout_vertical_children(scenes::scene& scene, scenes::node node, const res
 
   const auto& group = node.get_component<vertical_layout_group>();
 
-  auto children = std::vector<scenes::node>{};
+  _children.clear();
 
   for (const auto child_entity : node.get_component<scenes::relationship>().children) {
     auto child = scene.node_of(child_entity);
 
     if (is_layout_child(child)) {
-      children.push_back(child);
+      _children.push_back(child);
     }
   }
 
-  if (children.empty()) {
+  if (_children.empty()) {
     return result;
   }
 
-  const auto available_height = std::max(0.0f, rect.size.y() - group.padding.y() - group.padding.w() - group.spacing * static_cast<std::float_t>(children.size() - 1));
+  const auto available_height = std::max(0.0f, rect.size.y() - group.padding.y() - group.padding.w() - group.spacing * static_cast<std::float_t>(_children.size() - 1));
   const auto available_width = std::max(0.0f, rect.size.x() - group.padding.x() - group.padding.z());
 
-  auto widths = std::vector<std::float_t>(children.size());
-  auto heights = std::vector<std::float_t>(children.size());
-  auto flexibles = std::vector<std::float_t>(children.size());
+  _widths.assign(_children.size(), 0.0f);
+  _heights.assign(_children.size(), 0.0f);
+  _flexibles.assign(_children.size(), 0.0f);
 
   auto sum_preferred = 0.0f;
   auto total_flexible = 0.0f;
 
-  for (auto index = std::size_t{0u}; index < children.size(); ++index) {
-    const auto width = child_axis_size(children[index], true);
-    const auto height = child_axis_size(children[index], false);
+  for (auto index = std::size_t{0u}; index < _children.size(); ++index) {
+    const auto width = child_axis_size(_children[index], true);
+    const auto height = child_axis_size(_children[index], false);
 
-    widths[index] = width.preferred;
-    heights[index] = height.preferred;
-    flexibles[index] = height.flexible >= 0.0f && height.flexible > 0.0f ? height.flexible : (group.child_force_expand_height ? 1.0f : 0.0f);
+    _widths[index] = width.preferred;
+    _heights[index] = height.preferred;
+    _flexibles[index] = height.flexible >= 0.0f && height.flexible > 0.0f ? height.flexible : (group.child_force_expand_height ? 1.0f : 0.0f);
 
     sum_preferred += height.preferred;
-    total_flexible += flexibles[index];
+    total_flexible += _flexibles[index];
   }
 
   const auto extra = std::max(0.0f, available_height - sum_preferred);
 
   auto total_used_height = 0.0f;
 
-  for (auto index = std::size_t{0u}; index < children.size(); ++index) {
+  for (auto index = std::size_t{0u}; index < _children.size(); ++index) {
     if (group.control_child_height) {
-      const auto share = total_flexible > 0.0f ? extra * (flexibles[index] / total_flexible) : 0.0f;
-      heights[index] += share;
+      const auto share = total_flexible > 0.0f ? extra * (_flexibles[index] / total_flexible) : 0.0f;
+      _heights[index] += share;
     }
 
-    total_used_height += heights[index];
+    total_used_height += _heights[index];
   }
 
-  total_used_height += group.spacing * static_cast<std::float_t>(children.size() - 1);
+  total_used_height += group.spacing * static_cast<std::float_t>(_children.size() - 1);
 
   const auto horizontal_component = alignment_component(group.child_alignment, true);
   const auto vertical_component = alignment_component(group.child_alignment, false);
 
   auto cursor = rect.position.y() + group.padding.y() + alignment_offset(total_used_height, rect.size.y() - group.padding.y() - group.padding.w(), vertical_component);
 
-  for (auto index = std::size_t{0u}; index < children.size(); ++index) {
-    const auto width = group.control_child_width ? (group.child_force_expand_width ? available_width : std::clamp(widths[index], 0.0f, available_width)) : widths[index];
+  for (auto index = std::size_t{0u}; index < _children.size(); ++index) {
+    const auto width = group.control_child_width ? (group.child_force_expand_width ? available_width : std::clamp(_widths[index], 0.0f, available_width)) : _widths[index];
     const auto x = rect.position.x() + group.padding.x() + alignment_offset(width, available_width, horizontal_component);
 
-    result.emplace_back(children[index], resolved_rect{math::vector2{x, cursor}, math::vector2{width, heights[index]}});
+    result.emplace_back(_children[index], resolved_rect{math::vector2{x, cursor}, math::vector2{width, _heights[index]}});
 
-    cursor += heights[index] + group.spacing;
+    cursor += _heights[index] + group.spacing;
   }
 
   return result;
 }
 
-auto layout_grid_children(scenes::scene& scene, scenes::node node, const resolved_rect& rect) -> std::vector<std::pair<scenes::node, resolved_rect>> {
+auto layout_resolver::grid_children(scenes::scene& scene, scenes::node node, const resolved_rect& rect) -> std::vector<std::pair<scenes::node, resolved_rect>> {
   auto result = std::vector<std::pair<scenes::node, resolved_rect>>{};
 
   if (!node.has_component<grid_layout_group>() || !node.has_component<scenes::relationship>()) {
@@ -300,21 +300,21 @@ auto layout_grid_children(scenes::scene& scene, scenes::node node, const resolve
 
   const auto& group = node.get_component<grid_layout_group>();
 
-  auto children = std::vector<scenes::node>{};
+  _children.clear();
 
   for (const auto child_entity : node.get_component<scenes::relationship>().children) {
     auto child = scene.node_of(child_entity);
 
     if (is_layout_child(child)) {
-      children.push_back(child);
+      _children.push_back(child);
     }
   }
 
-  if (children.empty()) {
+  if (_children.empty()) {
     return result;
   }
 
-  const auto count = static_cast<std::int32_t>(children.size());
+  const auto count = static_cast<std::int32_t>(_children.size());
   const auto available_width = std::max(0.0f, rect.size.x() - group.padding.x() - group.padding.z());
   const auto available_height = std::max(0.0f, rect.size.y() - group.padding.y() - group.padding.w());
 
@@ -364,7 +364,7 @@ auto layout_grid_children(scenes::scene& scene, scenes::node node, const resolve
     const auto x = origin_x + static_cast<std::float_t>(col) * (group.cell_size.x() + group.spacing.x());
     const auto y = origin_y + static_cast<std::float_t>(row) * (group.cell_size.y() + group.spacing.y());
 
-    result.emplace_back(children[static_cast<std::size_t>(index)], resolved_rect{math::vector2{x, y}, group.cell_size});
+    result.emplace_back(_children[static_cast<std::size_t>(index)], resolved_rect{math::vector2{x, y}, group.cell_size});
   }
 
   return result;

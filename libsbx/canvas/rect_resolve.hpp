@@ -12,6 +12,8 @@ namespace sbx::canvas {
 struct resolved_rect {
   math::vector2 position{};
   math::vector2 size{};
+
+  auto operator==(const resolved_rect&) const -> bool = default;
 }; // struct resolved_rect
 
 [[nodiscard]] inline auto resolve_rect(const rect_transform& rect, const resolved_rect& parent) -> resolved_rect {
