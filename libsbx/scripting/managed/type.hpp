@@ -22,11 +22,13 @@ namespace detail {
 // std::string on every lookup -- the whole point of caching a method handle is to keep the hot
 // (cache-hit) path allocation-free.
 struct transparent_string_hash {
+
   using is_transparent = void;
 
   auto operator()(std::string_view value) const noexcept -> std::size_t {
     return std::hash<std::string_view>{}(value);
   }
+
 }; // struct transparent_string_hash
 
 } // namespace detail

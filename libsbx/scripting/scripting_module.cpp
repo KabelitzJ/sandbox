@@ -309,7 +309,7 @@ auto scripting_module::instantiate(scenes::node& node, std::string_view class_na
     return managed::object{};
   }
 
-  auto type = _game_assembly.get_type(class_name);
+  auto& type = _game_assembly.get_type(class_name);
 
   auto instance = type.create_instance();
 
