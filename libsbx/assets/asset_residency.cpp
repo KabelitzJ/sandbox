@@ -12,6 +12,7 @@
 #include <libsbx/utility/assert.hpp>
 #include <libsbx/utility/logger.hpp>
 #include <libsbx/utility/timer.hpp>
+#include <libsbx/utility/profiler.hpp>
 
 #include <libsbx/memory/alignment.hpp>
 
@@ -1390,6 +1391,8 @@ auto asset_residency::load_environment_map(const std::filesystem::path& path) ->
 }
 
 auto asset_residency::process_uploads(std::uint64_t frame_index) -> void {
+  SBX_PROFILE_SCOPE("asset_residency::process_uploads");
+
   auto pending_textures = std::vector<pending_texture_upload>{};
   auto pending_meshes = std::vector<pending_mesh_upload>{};
   auto pending_materials = std::vector<pending_material_upload>{};

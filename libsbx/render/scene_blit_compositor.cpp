@@ -10,6 +10,9 @@
 
 #include <vulkan/vulkan.h>
 
+#include <libsbx/utility/profiler.hpp>
+#include <libsbx/graphics/profiler.hpp>
+
 #include <libsbx/memory/bytes.hpp>
 
 #include <libsbx/core/engine.hpp>
@@ -56,6 +59,9 @@ scene_blit_compositor::scene_blit_compositor(scene_renderer_module& owner)
 }
 
 auto scene_blit_compositor::execute(compositor_context& context) -> void {
+  SBX_PROFILE_SCOPE("scene_blit_compositor::execute");
+  SBX_PROFILE_GPU_SCOPE((*context.command_buffer), "scene_blit_compositor::execute");
+
   if (!_owner.has_rendered()) {
     // Nothing rendered this frame (final_image may be stale or never written) — clear and
     // present the swapchain as-is rather than leaving it undefined.

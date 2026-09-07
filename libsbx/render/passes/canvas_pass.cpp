@@ -2,6 +2,9 @@
 // Copyright (c) 2026 Jonas Kabelitz
 #include <libsbx/render/passes/canvas_pass.hpp>
 
+#include <libsbx/utility/profiler.hpp>
+#include <libsbx/graphics/profiler.hpp>
+
 #include <array>
 #include <cstring>
 #include <span>
@@ -136,6 +139,9 @@ auto canvas_pass::_draw(render_context& context, graphics::graphics_pipeline& pi
 }
 
 auto canvas_pass::execute(render_context& context, std::uint32_t /*group*/) -> void {
+  SBX_PROFILE_SCOPE("canvas_pass::execute");
+  SBX_PROFILE_GPU_SCOPE((*context.command_buffer), "canvas_pass::execute");
+
   auto& canvas_module = core::engine::get_module<canvas::canvas_module>();
   auto& draw_list = canvas_module.draw_list();
 

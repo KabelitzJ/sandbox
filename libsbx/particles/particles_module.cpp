@@ -4,6 +4,8 @@
 
 #include <algorithm>
 
+#include <libsbx/utility/profiler.hpp>
+
 #include <libsbx/math/algorithm.hpp>
 
 #include <libsbx/particles/spawn.hpp>
@@ -25,6 +27,8 @@ inline constexpr auto sub_emitter_pool_capacity = std::size_t{32};
 }
 
 auto particles_module::fixed_update() -> void {
+  SBX_PROFILE_SCOPE("particles_module::fixed_update");
+
   auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
 
   // Mirrors physics_module::fixed_update()'s gate: particles freeze in edit mode, same as bodies do,

@@ -2,6 +2,9 @@
 // Copyright (c) 2026 Jonas Kabelitz
 #include <libsbx/render/passes/debug_draw_pass.hpp>
 
+#include <libsbx/utility/profiler.hpp>
+#include <libsbx/graphics/profiler.hpp>
+
 #include <array>
 #include <cstddef>
 #include <cstring>
@@ -91,6 +94,9 @@ auto debug_draw_pass::should_execute(const render_context& context, std::uint32_
 }
 
 auto debug_draw_pass::execute(render_context& context, std::uint32_t /*group*/) -> void {
+  SBX_PROFILE_SCOPE("debug_draw_pass::execute");
+  SBX_PROFILE_GPU_SCOPE((*context.command_buffer), "debug_draw_pass::execute");
+
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
   auto& bindless_table = graphics_module.bindless_table();
   auto& registry = graphics_module.resource_registry();

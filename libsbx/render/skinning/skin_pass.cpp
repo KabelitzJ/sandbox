@@ -2,6 +2,9 @@
 // Copyright (c) 2026 Jonas Kabelitz
 #include <libsbx/render/skinning/skin_pass.hpp>
 
+#include <libsbx/utility/profiler.hpp>
+#include <libsbx/graphics/profiler.hpp>
+
 #include <vector>
 
 #include <vulkan/vulkan.h>
@@ -66,6 +69,9 @@ struct skin_push_data {
 }; // struct skin_push_data
 
 auto skin_pass::execute(render_context& context) -> void {
+  SBX_PROFILE_SCOPE("skin_pass::execute");
+  SBX_PROFILE_GPU_SCOPE((*context.command_buffer), "skin_pass::execute");
+
   if (context.packet->skin_dispatches.empty()) {
     return;
   }

@@ -2,6 +2,9 @@
 // Copyright (c) 2026 Jonas Kabelitz
 #include <libsbx/render/passes/opaque_pass.hpp>
 
+#include <libsbx/utility/profiler.hpp>
+#include <libsbx/graphics/profiler.hpp>
+
 #include <array>
 #include <cstddef>
 #include <cstring>
@@ -71,6 +74,9 @@ auto opaque_pass::declare(graphics_pass_builder& builder, const graph_resources&
 }
 
 auto opaque_pass::execute(render_context& context, std::uint32_t /*group*/) -> void {
+  SBX_PROFILE_SCOPE("opaque_pass::execute");
+  SBX_PROFILE_GPU_SCOPE((*context.command_buffer), "opaque_pass::execute");
+
   if (!context.packet->camera.is_active) {
     return;
   }

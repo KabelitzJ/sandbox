@@ -2,6 +2,9 @@
 // Copyright (c) 2026 Jonas Kabelitz
 #include <libsbx/render/particles/particle_simulate_pass.hpp>
 
+#include <libsbx/utility/profiler.hpp>
+#include <libsbx/graphics/profiler.hpp>
+
 #include <array>
 #include <cstring>
 #include <vector>
@@ -76,6 +79,9 @@ auto particle_simulate_pass::declare(compute_pass_builder&, const graph_resource
 }
 
 auto particle_simulate_pass::execute(render_context& context) -> void {
+  SBX_PROFILE_SCOPE("particle_simulate_pass::execute");
+  SBX_PROFILE_GPU_SCOPE((*context.command_buffer), "particle_simulate_pass::execute");
+
   auto& graphics_module = core::engine::get_module<graphics::graphics_module>();
   auto& frame_context = graphics_module.frame_context();
 

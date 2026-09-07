@@ -7,6 +7,8 @@
 #include <utility>
 #include <vector>
 
+#include <libsbx/utility/profiler.hpp>
+
 #include <libsbx/platform/input.hpp>
 #include <libsbx/platform/mouse_button.hpp>
 #include <libsbx/platform/window.hpp>
@@ -26,6 +28,8 @@
 namespace sbx::canvas {
 
 auto canvas_module::update() -> void {
+  SBX_PROFILE_SCOPE("canvas_module::update");
+
   auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
   auto& scene = scenes_module.active_scene();
   auto& assets_module = core::engine::get_module<assets::assets_module>();
