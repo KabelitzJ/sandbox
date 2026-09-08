@@ -57,3 +57,5 @@ target_compile_options(
     -Wlogical-op
     -Wuseless-cast
 )
+
+install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})

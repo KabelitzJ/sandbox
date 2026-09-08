@@ -21,11 +21,6 @@ set(CMAKE_C_EXTENSIONS OFF)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# Every executable target ships its own runtime shared-library dependencies (currently just the
-# Slang shader compiler -- see the install() rule near the bottom of this file) as siblings in its
-# own output directory, so it needs to find them there instead of via LD_LIBRARY_PATH/PATH. Applies
-# equally to the build tree and an installed prefix; Windows has no equivalent concept (DLLs are
-# found next to the .exe by default).
 if(APPLE)
   set(CMAKE_INSTALL_RPATH "@loader_path")
 elseif(UNIX)
@@ -926,11 +921,10 @@ install(
   PATTERN "*.pdb" EXCLUDE
 )
 
-
-# install(
-#   FILES $<TARGET_FILE:slang::slang>
-#   DESTINATION ${CMAKE_INSTALL_LIBDIR}
-# )
+install(
+  FILES $<TARGET_FILE:slang::slang>
+  DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
 
 # Demo
 

@@ -94,3 +94,5 @@ target_compile_options(
 )
 
 add_dependencies(${PROJECT_NAME} sbx_scripting_managed sbx_scripting_core)
+
+install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
