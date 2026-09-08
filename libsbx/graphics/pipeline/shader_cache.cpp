@@ -8,22 +8,29 @@
 
 #include <libsbx/core/engine.hpp>
 
+#include <libsbx/filesystem/filesystem_module.hpp>
+
 #include <libsbx/graphics/graphics_module.hpp>
 
 namespace sbx::graphics {
 
-shader_cache::shader_cache() { 
+shader_cache::shader_cache() {
 
 }
 
 auto shader_cache::get(const request& request) -> memory::observer_ptr<const shader> {
+  // Keyed on the request path as written (e.g. "engine://shaders/passes/shadow.slang"), so the
+  // cache key stays stable regardless of where the "engine://" mount happens to point.
   auto lookup = key{request.path.generic_string(), request.entry_points};
 
   if (auto entry = _shaders.find(lookup); entry != _shaders.end()) {
     return memory::make_observer<const shader>(entry->second.get());
   }
 
-  auto compiled = std::make_unique<shader>(request.path, request.entry_points, _next_id++);
+  auto& filesystem_module = core::engine::get_module<filesystem::filesystem_module>();
+  const auto resolved_path = filesystem_module.native_path_of(request.path);
+
+  auto compiled = std::make_unique<shader>(resolved_path, request.entry_points, _next_id++);
 
   auto [entry, _] = _shaders.emplace(std::move(lookup), std::move(compiled));
 

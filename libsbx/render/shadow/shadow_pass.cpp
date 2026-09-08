@@ -30,7 +30,7 @@ shadow_pass::shadow_pass() {
     {VK_SHADER_STAGE_FRAGMENT_BIT, "fragment_main"}
   };
 
-  const auto& shader = shader_cache.get({"shaders/passes/shadow.slang", entry_points});
+  const auto& shader = shader_cache.get({"engine://shaders/passes/shadow.slang", entry_points});
 
   const auto make = [&](graphics::cull_mode cull, const std::string& name) {
     return pipeline_cache.get(graphics::graphics_pipeline::create_info{

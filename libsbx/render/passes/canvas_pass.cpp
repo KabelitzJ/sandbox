@@ -47,8 +47,8 @@ canvas_pass::canvas_pass() {
     {VK_SHADER_STAGE_FRAGMENT_BIT, "fragment_main_text"}
   };
 
-  const auto& shader = shader_cache.get({"shaders/passes/canvas.slang", entry_points});
-  const auto& text_shader = shader_cache.get({"shaders/passes/canvas.slang", text_entry_points});
+  const auto& shader = shader_cache.get({"engine://shaders/passes/canvas.slang", entry_points});
+  const auto& text_shader = shader_cache.get({"engine://shaders/passes/canvas.slang", text_entry_points});
 
   const auto blend = graphics::blend_attachment{
     .enable = true,

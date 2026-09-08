@@ -8,6 +8,7 @@
 #include <libsbx/utility/logger.hpp>
 #include <libsbx/utility/target.hpp>
 #include <libsbx/utility/profiler.hpp>
+#include <libsbx/utility/exception.hpp>
 
 #if defined(SBX_PLATFORM_WIN32)
   #define WIN32_LEAN_AND_MEAN
@@ -57,20 +58,16 @@ auto executable_directory() -> std::filesystem::path {
 
 auto _has_marker(const std::filesystem::path& candidate) -> bool {
   auto ec = std::error_code{};
-  return std::filesystem::exists(candidate / "shaders" / "manifest.txt", ec);
+  return std::filesystem::exists(candidate / "manifest.txt", ec);
 }
 
-auto _data_directory() -> std::filesystem::path {
+auto engine_data_directory() -> std::filesystem::path {
   static const auto root = []() -> std::filesystem::path {
     if (auto* env = std::getenv("SBX_DATA_DIR")) return env;
 
-    const auto exe_dir = executable_directory();
-
-    if (auto candidate = exe_dir / ".." / "data"; _has_marker(candidate)) {
-      return std::filesystem::canonical(candidate);
-    }
-
-    if (auto candidate = exe_dir / ".." / "share" / "libsbx"; _has_marker(candidate)) {
+    // The build tree mirrors the installed layout, so there's exactly one candidate to check:
+    // share/libsbx next to the executable's bin/ directory, dev or installed alike.
+    if (auto candidate = executable_directory() / ".." / "share" / "libsbx"; _has_marker(candidate)) {
       return std::filesystem::canonical(candidate);
     }
 
@@ -82,23 +79,18 @@ auto _data_directory() -> std::filesystem::path {
 
 filesystem_module::filesystem_module()
 : _filesystem{std::make_unique<virtual_filesystem>()} {
-  // auto data_directory = std::filesystem::path{};
+  // Every engine-internal file (shaders, dotnet assemblies, ...) is loaded through the
+  // 'engine://' mount now, so a missing data directory is a hard startup failure, not a
+  // degrade-with-a-warning -- there's nothing useful the engine can do without it.
+  const auto data_directory = engine_data_directory();
 
-  // try {
-  //   data_directory = _data_directory();
-  // } catch (const std::exception& exception) {
-  //   utility::logger<"filesystem">::warn("Engine data directory not found: {}; the 'engine://' mount will not be registered", exception.what());
-  //   return;
-  // }
+  const auto mount = _filesystem->create_filesystem<native_filesystem>(alias{"engine://"}, data_directory.string());
 
-  // const auto mount = _filesystem->create_filesystem<native_filesystem>(alias{"engine://"}, data_directory.string());
+  if (!mount) {
+    throw utility::runtime_error{"Failed to register 'engine://' mount at '{}'", data_directory.string()};
+  }
 
-  // if (!mount) {
-  //   utility::logger<"filesystem">::warn("Failed to register 'engine://' mount at '{}'", data_directory.string());
-  //   return;
-  // }
-
-  // utility::logger<"filesystem">::debug("Registered 'engine://' mount at '{}'", data_directory.string());
+  utility::logger<"filesystem">::debug("Registered 'engine://' mount at '{}'", data_directory.string());
 }
 
 filesystem_module::~filesystem_module() {

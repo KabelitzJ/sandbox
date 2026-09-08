@@ -43,21 +43,21 @@ bloom_pass::bloom_pass() {
     {VK_SHADER_STAGE_COMPUTE_BIT, "compute_main"}
   };
 
-  const auto prefilter_shader = shader_cache.get({"shaders/passes/bloom_prefilter.slang", entry_points});
+  const auto prefilter_shader = shader_cache.get({"engine://shaders/passes/bloom_prefilter.slang", entry_points});
 
   _prefilter_pipeline = compute_pipeline_cache.get(graphics::compute_pipeline::create_info{
     .shader = prefilter_shader,
     .name = "Bloom Prefilter"
   });
 
-  const auto downsample_shader = shader_cache.get({"shaders/passes/bloom_downsample.slang", entry_points});
+  const auto downsample_shader = shader_cache.get({"engine://shaders/passes/bloom_downsample.slang", entry_points});
 
   _downsample_pipeline = compute_pipeline_cache.get(graphics::compute_pipeline::create_info{
     .shader = downsample_shader,
     .name = "Bloom Downsample"
   });
 
-  const auto upsample_shader = shader_cache.get({"shaders/passes/bloom_upsample.slang", entry_points});
+  const auto upsample_shader = shader_cache.get({"engine://shaders/passes/bloom_upsample.slang", entry_points});
 
   _upsample_pipeline = compute_pipeline_cache.get(graphics::compute_pipeline::create_info{
     .shader = upsample_shader,

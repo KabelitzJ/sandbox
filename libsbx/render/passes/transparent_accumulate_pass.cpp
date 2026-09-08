@@ -34,7 +34,7 @@ transparent_accumulate_pass::transparent_accumulate_pass() {
     {VK_SHADER_STAGE_FRAGMENT_BIT, "fragment_main", "alpha_blend_shading_policy"}
   };
 
-  const auto& shader = shader_cache.get({"shaders/pbr/geometry.slang", entry_points});
+  const auto& shader = shader_cache.get({"engine://shaders/pbr/geometry.slang", entry_points});
 
   const auto make = [&](graphics::cull_mode cull, const std::string& name) {
     auto info = graphics::graphics_pipeline::create_info{

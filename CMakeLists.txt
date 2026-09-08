@@ -21,6 +21,17 @@ set(CMAKE_C_EXTENSIONS OFF)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+# Every executable target ships its own runtime shared-library dependencies (currently just the
+# Slang shader compiler -- see the install() rule near the bottom of this file) as siblings in its
+# own output directory, so it needs to find them there instead of via LD_LIBRARY_PATH/PATH. Applies
+# equally to the build tree and an installed prefix; Windows has no equivalent concept (DLLs are
+# found next to the .exe by default).
+if(APPLE)
+  set(CMAKE_INSTALL_RPATH "@loader_path")
+elseif(UNIX)
+  set(CMAKE_INSTALL_RPATH "$ORIGIN")
+endif()
+
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_BINARY_DIR}" "${CMAKE_BINARY_DIR}/dependencies" "${CMAKE_SOURCE_DIR}/cmake" "${CMAKE_SOURCE_DIR}/cmake/modules")
 list(APPEND CMAKE_PREFIX_PATH "${CMAKE_BINARY_DIR}" "${CMAKE_BINARY_DIR}/dependencies")
 
@@ -116,10 +127,29 @@ add_compile_definitions(
 message(STATUS "Git branch: ${SBX_BRANCH}")
 message(STATUS "Git commit: ${SBX_COMMIT_HASH}")
 
-set(SBX_SHADER_SRC_DIR ${CMAKE_SOURCE_DIR}/shaders)
-set(SBX_SHADER_OUT_DIR ${CMAKE_BINARY_DIR}/shaders)
+set(SBX_DATA_OUT_DIR ${CMAKE_BINARY_DIR}/share/${PROJECT_NAME})
 
-set(SBX_DOTNET_OUT_DIR ${CMAKE_BINARY_DIR}/dotnet)
+set(SBX_SHADER_SRC_DIR ${CMAKE_SOURCE_DIR}/shaders)
+set(SBX_SHADER_OUT_DIR ${SBX_DATA_OUT_DIR}/shaders)
+
+set(SBX_DOTNET_OUT_DIR ${SBX_DATA_OUT_DIR}/dotnet)
+
+set(SBX_DATA_MANIFEST ${SBX_DATA_OUT_DIR}/manifest.txt)
+file(WRITE ${SBX_DATA_MANIFEST} "libsbx ${PROJECT_VERSION} (${SBX_COMMIT_HASH})\n")
+
+file(GLOB_RECURSE SBX_SHADER_FILES CONFIGURE_DEPENDS "${SBX_SHADER_SRC_DIR}/*.slang")
+
+add_custom_command(
+  OUTPUT ${SBX_SHADER_OUT_DIR}/.stamp
+  COMMAND ${CMAKE_COMMAND} -E rm -rf ${SBX_SHADER_OUT_DIR}
+  COMMAND ${CMAKE_COMMAND} -E copy_directory ${SBX_SHADER_SRC_DIR} ${SBX_SHADER_OUT_DIR}
+  COMMAND ${CMAKE_COMMAND} -E touch ${SBX_SHADER_OUT_DIR}/.stamp
+  DEPENDS ${SBX_SHADER_FILES}
+  COMMENT "Staging engine shaders -> ${SBX_SHADER_OUT_DIR}"
+  VERBATIM
+)
+
+add_custom_target(sbx_stage_shaders ALL DEPENDS ${SBX_SHADER_OUT_DIR}/.stamp)
 
 # External dependencies
 
@@ -772,6 +802,8 @@ endif()
 
 target_link_options(libsbx PUBLIC ${_sbx_link_options})
 
+add_dependencies(libsbx sbx_stage_shaders)
+
 # Scripting: dotnet build targets
 
 set(SBX_MANAGED_DIR ${CMAKE_SOURCE_DIR}/dotnet/Sbx.Managed)
@@ -871,11 +903,21 @@ install(
   FILES_MATCHING PATTERN "Find*.cmake"
 )
 
-# install(CODE "
-#   if(NOT EXISTS \"${SBX_SHADER_OUT_DIR}/manifest.txt\")
-#     message(FATAL_ERROR \"Engine data not staged. Run 'cmake --build' before 'cmake --install'.\")
-#   endif()
-# ")
+install(CODE "
+  if(NOT EXISTS \"${SBX_DATA_OUT_DIR}/manifest.txt\")
+    message(FATAL_ERROR \"Engine data not staged. Run 'cmake --build' before 'cmake --install'.\")
+  endif()
+")
+
+install(
+  FILES ${SBX_DATA_MANIFEST}
+  DESTINATION ${CMAKE_INSTALL_DATADIR}/libsbx
+)
+
+install(
+  DIRECTORY ${SBX_SHADER_SRC_DIR}/
+  DESTINATION ${CMAKE_INSTALL_DATADIR}/libsbx/shaders
+)
 
 install(
   DIRECTORY ${SBX_DOTNET_OUT_DIR}

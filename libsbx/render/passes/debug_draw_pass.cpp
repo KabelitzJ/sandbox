@@ -49,7 +49,7 @@ debug_draw_pass::debug_draw_pass() {
     {VK_SHADER_STAGE_FRAGMENT_BIT, "fragment_main"}
   };
 
-  const auto& shader = shader_cache.get({"shaders/passes/debug_draw.slang", entry_points});
+  const auto& shader = shader_cache.get({"engine://shaders/passes/debug_draw.slang", entry_points});
 
   auto info = graphics::graphics_pipeline::create_info{
     .shader = shader,

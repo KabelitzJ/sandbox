@@ -33,7 +33,7 @@ frustum_cull_pass::frustum_cull_pass() {
     {VK_SHADER_STAGE_COMPUTE_BIT, "compute_main"}
   };
 
-  const auto shader = shader_cache.get({"shaders/passes/frustum_cull.slang", entry_points});
+  const auto shader = shader_cache.get({"engine://shaders/passes/frustum_cull.slang", entry_points});
 
   _pipeline = compute_pipeline_cache.get(graphics::compute_pipeline::create_info{
     .shader = shader,

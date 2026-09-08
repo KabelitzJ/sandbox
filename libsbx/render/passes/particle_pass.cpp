@@ -126,12 +126,12 @@ particle_pass::particle_pass() {
     {VK_SHADER_STAGE_FRAGMENT_BIT, "fragment_main_additive"}
   };
 
-  const auto& billboard_alpha_blend_shader = shader_cache.get({"shaders/particles/particle_billboard.slang", alpha_blend_entry_points});
-  const auto& billboard_additive_shader = shader_cache.get({"shaders/particles/particle_billboard.slang", additive_entry_points});
-  const auto& mesh_alpha_blend_shader = shader_cache.get({"shaders/particles/particle_mesh.slang", alpha_blend_entry_points});
-  const auto& mesh_additive_shader = shader_cache.get({"shaders/particles/particle_mesh.slang", additive_entry_points});
-  const auto& trail_alpha_blend_shader = shader_cache.get({"shaders/particles/trail.slang", alpha_blend_entry_points});
-  const auto& trail_additive_shader = shader_cache.get({"shaders/particles/trail.slang", additive_entry_points});
+  const auto& billboard_alpha_blend_shader = shader_cache.get({"engine://shaders/particles/particle_billboard.slang", alpha_blend_entry_points});
+  const auto& billboard_additive_shader = shader_cache.get({"engine://shaders/particles/particle_billboard.slang", additive_entry_points});
+  const auto& mesh_alpha_blend_shader = shader_cache.get({"engine://shaders/particles/particle_mesh.slang", alpha_blend_entry_points});
+  const auto& mesh_additive_shader = shader_cache.get({"engine://shaders/particles/particle_mesh.slang", additive_entry_points});
+  const auto& trail_alpha_blend_shader = shader_cache.get({"engine://shaders/particles/trail.slang", alpha_blend_entry_points});
+  const auto& trail_additive_shader = shader_cache.get({"engine://shaders/particles/trail.slang", additive_entry_points});
 
   const auto gpu_alpha_blend_entry_points = std::vector<graphics::shader_compiler::entry_point_request>{
     {VK_SHADER_STAGE_VERTEX_BIT, "vertex_main"},
@@ -143,8 +143,8 @@ particle_pass::particle_pass() {
     {VK_SHADER_STAGE_FRAGMENT_BIT, "fragment_main_additive"}
   };
 
-  const auto& gpu_alpha_blend_shader = shader_cache.get({"shaders/particles/draw.slang", gpu_alpha_blend_entry_points});
-  const auto& gpu_additive_shader = shader_cache.get({"shaders/particles/draw.slang", gpu_additive_entry_points});
+  const auto& gpu_alpha_blend_shader = shader_cache.get({"engine://shaders/particles/draw.slang", gpu_alpha_blend_entry_points});
+  const auto& gpu_additive_shader = shader_cache.get({"engine://shaders/particles/draw.slang", gpu_additive_entry_points});
 
   // Group 0 pipeline: two color attachments (accumulator + revealage), the weighted-OIT pair,
   // identical to transparent_accumulate_pass's blend state.

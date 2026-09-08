@@ -18,7 +18,9 @@ namespace sbx::graphics {
 /**
  * @brief The nearest ancestor of @p path named "shaders", or its parent directory if none is found.
  *
- * Every shader path in this engine is passed in as "shaders/<category>/<file>.slang" relative to the working directory, so this is always the shader tree's root.
+ * Every shader request is written as "engine://shaders/<category>/<file>.slang" and resolved
+ * against the engine data directory by shader_cache::get() before reaching here, so @p path
+ * always has a "shaders" ancestor -- this is always the shader tree's root.
  */
 auto _shaders_root(const std::filesystem::path& path) -> std::filesystem::path {
   for (auto directory = path.parent_path(); !directory.empty(); directory = directory.parent_path()) {

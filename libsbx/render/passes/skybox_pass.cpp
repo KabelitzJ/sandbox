@@ -45,7 +45,7 @@ skybox_pass::skybox_pass() {
     {VK_SHADER_STAGE_FRAGMENT_BIT, "fragment_main"}
   };
 
-  const auto& shader = shader_cache.get({"shaders/passes/skybox.slang", entry_points});
+  const auto& shader = shader_cache.get({"engine://shaders/passes/skybox.slang", entry_points});
 
   _pipeline = pipeline_cache.get(graphics::graphics_pipeline::create_info{
     .shader = shader,

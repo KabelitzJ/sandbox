@@ -493,10 +493,8 @@ auto scripting_module::recompile_scripts() -> void {
 }
 
 auto scripting_module::_dotnet_directory() const -> std::filesystem::path {
-  // Sibling of the running executable's directory — both bin/ and dotnet/ land directly under
-  // the build root (see SBX_DOTNET_OUT_DIR/RUNTIME_OUTPUT_DIRECTORY in the root CMakeLists.txt),
-  // regardless of cwd or Debug/Release config.
-  return sbx::filesystem::executable_directory() / ".." / "dotnet";
+  auto& filesystem_module = core::engine::get_module<filesystem::filesystem_module>();
+  return filesystem_module.native_path_of(std::filesystem::path{"engine://dotnet"});
 }
 
 auto scripting_module::_load_game_assembly() -> void {
@@ -505,8 +503,6 @@ auto scripting_module::_load_game_assembly() -> void {
   _script_compiler.compile_if_stale(_runtime, core_assembly_path);
 
   if (!_script_compiler.last_compile_succeeded()) {
-    // Never discard a working game assembly (if any) out from under live script instances just
-    // because a *new* recompile attempt failed — keep whatever was previously loaded.
     return;
   }
 
@@ -514,18 +510,15 @@ auto scripting_module::_load_game_assembly() -> void {
     _runtime.unload_assembly_load_context(_game_context);
     _has_game_assembly = false;
 
-    // unload_assembly_load_context() clears the process-wide managed::detail::type_cache (see its
-    // doc comment) — including _core_assembly's cached types, even though _context/_core_assembly
-    // (Sbx.Core.dll) was never unloaded. Without this, every _core_assembly.get_type(name)/
-    // get_types() call after the first recompile would come back empty/not-found (e.g. the
-    // Properties panel's "Add Script" picker resolving "Sbx.Core.Behavior" to look up subclasses).
     _core_assembly.reload_types();
   }
 
   _game_context = _runtime.create_assembly_load_context("GameScripts");
 
   if (std::filesystem::exists(_script_compiler.output_path())) {
-    _game_assembly = _game_context.load_assembly(_script_compiler.output_path().string());
+    const auto& output_path = _script_compiler.output_path();
+
+    _game_assembly = _game_context.load_assembly(output_path.string());
     _has_game_assembly = true;
   }
 }

@@ -43,7 +43,7 @@ transparent_resolve_pass::transparent_resolve_pass() {
     {VK_SHADER_STAGE_FRAGMENT_BIT, "fragment_main"}
   };
 
-  const auto& shader = shader_cache.get({"shaders/pbr/transparent_resolve.slang", entry_points});
+  const auto& shader = shader_cache.get({"engine://shaders/pbr/transparent_resolve.slang", entry_points});
 
   // Draws straight into the single-sample HDR color target — no `.samples` override here (default
   // count_1), unlike transparent_accumulate_pass which targets the MSAA pair.

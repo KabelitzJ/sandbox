@@ -45,26 +45,26 @@ particle_simulate_pass::particle_simulate_pass(particle_pool& additive_pool, par
     {VK_SHADER_STAGE_COMPUTE_BIT, "compute_main"}
   };
 
-  const auto build_dispatch_args_shader = shader_cache.get({"shaders/particles/build_dispatch_args.slang", entry_points});
+  const auto build_dispatch_args_shader = shader_cache.get({"engine://shaders/particles/build_dispatch_args.slang", entry_points});
   _build_dispatch_args_pipeline = compute_pipeline_cache.get(graphics::compute_pipeline::create_info{
     .shader = build_dispatch_args_shader,
     .name = "Particle Build Dispatch Args"
   });
 
-  const auto simulate_shader = shader_cache.get({"shaders/particles/simulate.slang", entry_points});
+  const auto simulate_shader = shader_cache.get({"engine://shaders/particles/simulate.slang", entry_points});
   _simulate_pipeline = compute_pipeline_cache.get(graphics::compute_pipeline::create_info{
     .shader = simulate_shader,
     .name = "Particle Simulate"
   });
 
-  const auto emit_shader = shader_cache.get({"shaders/particles/emit.slang", entry_points});
+  const auto emit_shader = shader_cache.get({"engine://shaders/particles/emit.slang", entry_points});
 
   _emit_pipeline = compute_pipeline_cache.get(graphics::compute_pipeline::create_info{
     .shader = emit_shader,
     .name = "Particle Emit"
   });
 
-  const auto prepare_indirect_draw_shader = shader_cache.get({"shaders/particles/prepare_indirect_draw.slang", entry_points});
+  const auto prepare_indirect_draw_shader = shader_cache.get({"engine://shaders/particles/prepare_indirect_draw.slang", entry_points});
 
   _prepare_indirect_draw_pipeline = compute_pipeline_cache.get(graphics::compute_pipeline::create_info{
     .shader = prepare_indirect_draw_shader,

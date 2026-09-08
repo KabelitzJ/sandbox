@@ -28,6 +28,18 @@ namespace sbx::filesystem {
  */
 [[nodiscard]] auto executable_directory() -> std::filesystem::path;
 
+/**
+ * @brief The root of the engine's shipped runtime data (`shaders/`, `dotnet/`, ...) — the same
+ * directory the `engine://` alias is mounted at. Resolved independently of the `filesystem_module`
+ * instance (and of whether its `engine://` mount succeeded), so it can be called from anywhere,
+ * including before the module exists.
+ *
+ * Search order: the `SBX_DATA_DIR` environment variable, else `<executable_directory()>/../share/libsbx`
+ * — the same relative layout in both the build tree and an installed prefix, validated by the
+ * presence of a `manifest.txt`. Throws if neither is found.
+ */
+[[nodiscard]] auto engine_data_directory() -> std::filesystem::path;
+
 class filesystem_module final : public utility::noncopyable {
     
 public:

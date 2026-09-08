@@ -45,7 +45,7 @@ skin_pass::skin_pass() {
     {VK_SHADER_STAGE_COMPUTE_BIT, "compute_main"}
   };
 
-  const auto shader = shader_cache.get({"shaders/skinning/skin_vertices.slang", entry_points});
+  const auto shader = shader_cache.get({"engine://shaders/skinning/skin_vertices.slang", entry_points});
 
   _pipeline = compute_pipeline_cache.get(graphics::compute_pipeline::create_info{
     .shader = shader,

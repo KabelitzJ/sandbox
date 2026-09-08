@@ -36,14 +36,14 @@ light_culling_pass::light_culling_pass() {
     {VK_SHADER_STAGE_COMPUTE_BIT, "compute_main"}
   };
 
-  const auto build_clusters_shader = shader_cache.get({"shaders/clusters/build_clusters.slang", entry_points});
+  const auto build_clusters_shader = shader_cache.get({"engine://shaders/clusters/build_clusters.slang", entry_points});
 
   _build_clusters_pipeline = compute_pipeline_cache.get(graphics::compute_pipeline::create_info{
     .shader = build_clusters_shader,
     .name = "Build Clusters"
   });
 
-  const auto cull_lights_shader = shader_cache.get({"shaders/clusters/cull_lights.slang", entry_points});
+  const auto cull_lights_shader = shader_cache.get({"engine://shaders/clusters/cull_lights.slang", entry_points});
 
   _cull_lights_pipeline = compute_pipeline_cache.get(graphics::compute_pipeline::create_info{
     .shader = cull_lights_shader,
