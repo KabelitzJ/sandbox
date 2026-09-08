@@ -40,11 +40,11 @@ struct interop {
 
   static auto log_log_message(log_level level, managed::string message) -> void;
 
+  static auto scripting_attach_script(std::uint64_t uuid, managed::string class_name) -> void;
+
   static auto behavior_add_component(std::uint64_t uuid, managed::reflection_type component_type) -> void;
-
   static auto behavior_has_component(std::uint64_t uuid, managed::reflection_type component_type) -> bool;
-
-  // static auto behavior_remove_component(std::uint64_t uuid, managed::reflection_type component_type) -> bool;
+  static auto behavior_remove_component(std::uint64_t uuid, managed::reflection_type component_type) -> bool;
 
   static auto tag_get_tag(std::uint64_t uuid) -> managed::string;
 
@@ -319,25 +319,18 @@ struct interop {
 
   template<typename Type>
   static auto register_managed_component(std::string_view full_name, managed::assembly& core_assembly) -> void {
-    auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
-
     auto& type = core_assembly.get_type(full_name);
   
     if (type) {
-      _add_component_functions[type.get_type_id()] = [&scenes_module](scenes::node& node) -> void { 
+      _add_component_functions[type.get_type_id()] = [](scenes::node& node) -> void { 
         node.add_component<Type>();
       };
-      _has_component_functions[type.get_type_id()] = [&scenes_module](const scenes::node& node) -> bool {
+      _has_component_functions[type.get_type_id()] = [](const scenes::node& node) -> bool {
         return node.has_component<Type>();
       };
-      // _remove_component_functions[type.get_type_id()] = [&scenes_module](scenes::node& node) { 
-      //   auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
-      //   auto& scene = scenes_module.active_scene();
-      //   auto& environment = scene.environment();
-      //   auto& graph = scene.graph();
-  
-      //   scene.remove_component<Type>(node);
-      // };
+      _remove_component_functions[type.get_type_id()] = [](scenes::node& node) -> bool { 
+        return node.remove_component<Type>();
+      };
     } else {
       utility::logger<"scripting">::warn("No C# component class found for {}!", full_name);
     }
@@ -347,7 +340,7 @@ private:
 
   inline static auto _add_component_functions = std::unordered_map<managed::type_id, std::function<void(scenes::node&)>>{};
   inline static auto _has_component_functions = std::unordered_map<managed::type_id, std::function<bool(const scenes::node&)>>{};
-  // inline static auto _remove_component_functions = std::unordered_map<managed::type_id, std::function<void(scenes::node)>>{};
+  inline static auto _remove_component_functions = std::unordered_map<managed::type_id, std::function<bool(scenes::node&)>>{};
 
 }; // class interop
 

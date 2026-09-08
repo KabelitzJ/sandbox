@@ -4,11 +4,6 @@ using Sbx.Core.Math;
 namespace Sbx.Core.Physics
 {
 
-  /**
-   * Payload for Behavior.OnCollisionEnter/OnCollisionExit/OnTriggerEnter/OnTriggerExit. Normal/Point
-   * are only meaningful on an Enter callback -- an Exit means the pair stopped touching, so there's
-   * no contact geometry left to report (both are default(Vector3) there).
-   */
   public readonly struct Collision
   {
 

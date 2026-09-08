@@ -5,134 +5,186 @@ using Sbx.Core.Physics;
 
 namespace Sbx.Core
 {
-  public abstract class Behavior
+  public abstract class Behavior : Component
   {
-    protected ulong UUID;
-    private Dictionary<Type, Component> componentCache = new Dictionary<Type, Component>();
 
-    protected Behavior() { UUID = 0; }
+    private static Dictionary<ulong, List<Behavior>> _behaviorRegistry = new Dictionary<ulong, List<Behavior>>();
 
-		internal Behavior(ulong uuid)
-		{
-			UUID = uuid;
-		}
+    protected Behavior()
+    {
+      UUID = 0;
+    }
 
-		public virtual void OnCreate() { }
+    internal Behavior(ulong uuid)
+    {
+      UUID = uuid;
+    }
 
-		public virtual void OnUpdate() { }
-
-		public virtual void OnFixedUpdate() { }
-
-		public virtual void OnDestroy() { }
-
-		public virtual void OnCollisionEnter(Collision collision) { }
-
-		public virtual void OnCollisionExit(Collision collision) { }
-
-		public virtual void OnTriggerEnter(Collision collision) { }
-
-		public virtual void OnTriggerExit(Collision collision) { }
-
-		public virtual void OnClick() { }
-
-		public virtual void OnValueChanged() { }
-
-		/**
-		 * This node -- for reaching Node's Find/Create/Destroy/SetParent/GetComponent<T> surface on
-		 * yourself, symmetrically with how you'd call it on any other node.
-		 */
-		protected Node Node => new Node(UUID);
-
-		// Below: invoked directly by native code (scripting_module::_invoke_collision_handler) by
-		// name via reflection -- see managed::object::invoke. Private is fine: the managed-side
-		// reflection bridge (Sbx.Managed/Object.cs's InvokeMethod/InvokeMethodRet) already looks up
-		// methods with BindingFlags.Public | BindingFlags.NonPublic, so native invocation doesn't
-		// need these exposed as public API for script code to accidentally call directly (call the
-		// OnX overrides above instead, which these forward into after building the friendlier
-		// Collision payload).
-		private void DispatchCollisionEnter(ulong otherUuid, float normalX, float normalY, float normalZ, float pointX, float pointY, float pointZ)
-		{
-			OnCollisionEnter(new Collision(new Node(otherUuid), new Vector3(normalX, normalY, normalZ), new Vector3(pointX, pointY, pointZ)));
-		}
-
-		private void DispatchCollisionExit(ulong otherUuid, float normalX, float normalY, float normalZ, float pointX, float pointY, float pointZ)
-		{
-			OnCollisionExit(new Collision(new Node(otherUuid), new Vector3(normalX, normalY, normalZ), new Vector3(pointX, pointY, pointZ)));
-		}
-
-		private void DispatchTriggerEnter(ulong otherUuid, float normalX, float normalY, float normalZ, float pointX, float pointY, float pointZ)
-		{
-			OnTriggerEnter(new Collision(new Node(otherUuid), new Vector3(normalX, normalY, normalZ), new Vector3(pointX, pointY, pointZ)));
-		}
-
-		private void DispatchTriggerExit(ulong otherUuid, float normalX, float normalY, float normalZ, float pointX, float pointY, float pointZ)
-		{
-			OnTriggerExit(new Collision(new Node(otherUuid), new Vector3(normalX, normalY, normalZ), new Vector3(pointX, pointY, pointZ)));
-		}
-
-		public T? AddComponent<T>() where T : Component, new()
-		{
-			if (HasComponent<T>())
-			{
-				return GetComponent<T>();
-			}
-
-			unsafe { InternalCalls.Behavior_AddComponent(UUID, typeof(T)); }
-
-			var component = new T { UUID = UUID };
-
-			componentCache.Add(typeof(T), component);
-
-			return component;
-		}
-
-		public bool HasComponent<T>() where T : Component
-		{
-			unsafe { return InternalCalls.Behavior_HasComponent(UUID, typeof(T)); }
-		}
-
-		public bool HasComponent(Type type)
-		{
-			unsafe { return InternalCalls.Behavior_HasComponent(UUID, type); }
-		}
-
-		public T? GetComponent<T>() where T : Component, new()
-		{
-			Type componentType = typeof(T);
-
-			if (!HasComponent<T>())
-			{
-        componentCache.Remove(componentType);
-
-				return null;
-			}
-
-			if (!componentCache.ContainsKey(componentType))
+    internal static void Register(Behavior behavior)
+    {
+      if (behavior.UUID == 0)
       {
-        var component = new T { UUID = UUID };
-        
-				componentCache.Add(componentType, component);
+        return;
+      }
 
-				return component;
-			}
+      if (!_behaviorRegistry.TryGetValue(behavior.UUID, out var list))
+      {
+        list = new List<Behavior>();
+        _behaviorRegistry.Add(behavior.UUID, list);
+      }
 
-      return componentCache[componentType] as T;
-		}
+      list.Add(behavior);
+    }
 
-		// public bool RemoveComponent<T>() where T : Component
-		// {
-		// 	Type componentType = typeof(T);
-    //   bool removed = false;
+    internal static void Unregister(Behavior behavior)
+    {
+      if (!_behaviorRegistry.TryGetValue(behavior.UUID, out var list))
+      {
+        return;
+      }
 
-		// 	unsafe { removed = InternalCalls.Behavior_RemoveComponent(node, componentType); }
+      list.Remove(behavior);
 
-		// 	if (removed && componentCache.ContainsKey(componentType))
-    //   {
-		// 		componentCache.Remove(componentType);
-    //   }
+      if (list.Count == 0)
+      {
+        _behaviorRegistry.Remove(behavior.UUID);
+      }
+    }
 
-		// 	return removed;
-		// }
+    internal static T? GetBehavior<T>(ulong uuid) where T : Component
+    {
+      if (!_behaviorRegistry.TryGetValue(uuid, out var list))
+      {
+        return null;
+      }
+
+      foreach (var behavior in list)
+      {
+        if (behavior is T match)
+        {
+          return match;
+        }
+      }
+
+      return null;
+    }
+
+    internal void DispatchOnCreate()
+    {
+      Register(this);
+      OnCreate();
+    }
+
+    internal void DispatchOnDestroy()
+    {
+      Unregister(this);
+      OnDestroy();
+    }
+
+    protected Node? Node
+    {
+      get
+      {
+        return Node.Get(UUID);
+      }
+    }
+
+    public T? AddComponent<T>() where T : Component, new()
+    {
+      return Node?.AddComponent<T>();
+    }
+
+    public bool HasComponent<T>() where T : Component
+    {
+      return Node != null && Node.HasComponent<T>();
+    }
+
+    public bool HasComponent(Type type)
+    {
+      return Node != null && Node.HasComponent(type);
+    }
+
+    public T? GetComponent<T>() where T : Component, new()
+    {
+      var componentType = typeof(T);
+
+      if (typeof(Behavior).IsAssignableFrom(componentType))
+      {
+        return GetBehavior<T>(UUID);
+      }
+
+      return Node?.GetComponent<T>();
+    }
+
+    public virtual void OnCreate()
+    {
+      
+    }
+
+    public virtual void OnUpdate()
+    {
+      
+    }
+
+    public virtual void OnFixedUpdate()
+    {
+      
+    }
+
+    public virtual void OnDestroy()
+    {
+      
+    }
+
+    public virtual void OnCollisionEnter(Collision collision)
+    {
+      
+    }
+
+    public virtual void OnCollisionExit(Collision collision)
+    {
+      
+    }
+
+    public virtual void OnTriggerEnter(Collision collision)
+    {
+      
+    }
+
+    public virtual void OnTriggerExit(Collision collision)
+    {
+    }
+
+    public virtual void OnClick()
+    {
+      
+    }
+
+    public virtual void OnValueChanged()
+    {
+
+    }
+
+    private void DispatchCollisionEnter(ulong otherUuid, float normalX, float normalY, float normalZ, float pointX, float pointY, float pointZ)
+    {
+      OnCollisionEnter(new Collision(Node.Get(otherUuid)!, new Vector3(normalX, normalY, normalZ), new Vector3(pointX, pointY, pointZ)));
+    }
+
+    private void DispatchCollisionExit(ulong otherUuid, float normalX, float normalY, float normalZ, float pointX, float pointY, float pointZ)
+    {
+      OnCollisionExit(new Collision(Node.Get(otherUuid)!, new Vector3(normalX, normalY, normalZ), new Vector3(pointX, pointY, pointZ)));
+    }
+
+    private void DispatchTriggerEnter(ulong otherUuid, float normalX, float normalY, float normalZ, float pointX, float pointY, float pointZ)
+    {
+      OnTriggerEnter(new Collision(Node.Get(otherUuid)!, new Vector3(normalX, normalY, normalZ), new Vector3(pointX, pointY, pointZ)));
+    }
+
+    private void DispatchTriggerExit(ulong otherUuid, float normalX, float normalY, float normalZ, float pointX, float pointY, float pointZ)
+    {
+      OnTriggerExit(new Collision(Node.Get(otherUuid)!, new Vector3(normalX, normalY, normalZ), new Vector3(pointX, pointY, pointZ)));
+    }
+
   } // class Behavior
 
 } // namespace Sbx.Core

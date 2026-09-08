@@ -63,17 +63,19 @@ public:
 
   template<typename... Args>
   auto create_instance(Args&&... args) const -> object {
-    constexpr auto argument_count = sizeof...(args);
+    constexpr auto parameter_count = sizeof...(args);
 
     auto result = object{};
 
-    if constexpr (argument_count > 0) {
-      const auto arguments = std::array<void*, argument_count>{};
-      auto argument_types = std::array<managed_type, argument_count>{};
+    if constexpr (parameter_count > 0) {
+      auto storage = std::tuple<std::decay_t<Args>...>{std::forward<Args>(args)...};
 
-      add_to_array<Args...>(arguments, argument_types, std::forward<Args>(args)..., std::make_index_sequence<argument_count>{});
+      auto parameter_values = std::array<const void*, parameter_count>{};
+      auto parameter_types = std::array<managed_type, parameter_count>{};
 
-      result = _create_instance_internal(arguments.data(), argument_types.data(), argument_count);
+      add_to_array(parameter_values, parameter_types, storage, std::make_index_sequence<parameter_count>{});
+
+      result = _create_instance_internal(parameter_values.data(), parameter_types.data(), parameter_count);
     } else {
       result = _create_instance_internal(nullptr, nullptr, 0);
     }

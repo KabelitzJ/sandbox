@@ -1,82 +1,173 @@
 namespace Sbx.Core
 {
 
-  /**
-   * A handle to a scene node other than (or the same as) the one a script is attached to --
-   * Behavior itself only ever acts on its own node (see its AddComponent/GetComponent/HasComponent),
-   * this is what lets a script reach any other node: find one by name, spawn a new one, reparent or
-   * destroy one.
-   *
-   * Component access below reuses the exact same native calls Behavior.AddComponent<T>/HasComponent<T>
-   * do -- they already take an explicit uuid, so nothing new was needed engine-side.
-   */
   public sealed class Node
   {
+    private static Dictionary<ulong, Node> _nodeCache = new Dictionary<ulong, Node>();
 
-    public ulong UUID { get; }
+    private Dictionary<Type, Component> _componentCache = new Dictionary<Type, Component>();
 
-    public Node(ulong uuid)
+    private ulong _uuid { get; }
+
+    internal Node(ulong uuid)
     {
-      UUID = uuid;
+      _uuid = uuid;
     }
 
-    public string? Name
+    internal static Node? Get(ulong uuid)
     {
-      get { unsafe { return InternalCalls.Tag_GetTag(UUID); } }
-      set { unsafe { InternalCalls.Tag_SetTag(UUID, value); } }
-    }
-
-    public T? GetComponent<T>() where T : Component, new()
-    {
-      if (!HasComponent<T>())
+      if (uuid == 0)
       {
         return null;
       }
 
-      return new T { UUID = UUID };
+      if (!_nodeCache.TryGetValue(uuid, out var node))
+      {
+        node = new Node(uuid);
+        
+        _nodeCache.Add(uuid, node);
+      }
+
+      return node;
+    }
+
+    public string? Name
+    {
+      get
+      {
+        unsafe { return InternalCalls.Tag_GetTag(_uuid); }
+      }
+      set
+      {
+        unsafe { InternalCalls.Tag_SetTag(_uuid, value); }
+      }
+    }
+
+    public T? GetComponent<T>() where T : Component, new()
+    {
+      var componentType = typeof(T);
+
+      if (typeof(Behavior).IsAssignableFrom(componentType))
+      {
+        return Behavior.GetBehavior<T>(_uuid);
+      }
+
+      if (!HasComponent<T>())
+      {
+        _componentCache.Remove(componentType);
+        return null;
+      }
+
+      if (!_componentCache.TryGetValue(componentType, out var component))
+      {
+        component = new T { UUID = _uuid };
+        _componentCache.Add(componentType, component);
+      }
+
+      return component as T;
     }
 
     public bool HasComponent<T>() where T : Component
     {
-      unsafe { return InternalCalls.Behavior_HasComponent(UUID, typeof(T)); }
+      unsafe
+      {
+        return InternalCalls.Behavior_HasComponent(_uuid, typeof(T));
+      }
     }
 
-    public T AddComponent<T>() where T : Component, new()
+    public bool HasComponent(Type type)
     {
-      if (!HasComponent<T>())
+      unsafe
       {
-        unsafe { InternalCalls.Behavior_AddComponent(UUID, typeof(T)); }
+        return InternalCalls.Behavior_HasComponent(_uuid, type);
+      }
+    }
+
+    public T? AddComponent<T>() where T : Component, new()
+    {
+      var componentType = typeof(T);
+
+      if (typeof(Behavior).IsAssignableFrom(componentType))
+      {
+        unsafe
+        {
+          InternalCalls.Scripting_AttachScript(_uuid, componentType.FullName);
+        }
+
+        return Behavior.GetBehavior<T>(_uuid);
       }
 
-      return new T { UUID = UUID };
+      if (HasComponent<T>())
+      {
+        return GetComponent<T>();
+      }
+
+      unsafe
+      {
+        InternalCalls.Behavior_AddComponent(_uuid, componentType);
+      }
+
+      var component = new T { UUID = _uuid };
+      _componentCache.Add(componentType, component);
+
+      return component;
     }
 
-    /** Destroys this node (and its subtree). Invokes OnDestroy on any of its own scripts first. */
+    public bool RemoveComponent<T>() where T : Component
+		{
+			var componentType = typeof(T);
+      var removed = false;
+
+			unsafe { removed = InternalCalls.Behavior_RemoveComponent(_uuid, componentType); }
+
+			if (removed && _componentCache.ContainsKey(componentType))
+      {
+				_componentCache.Remove(componentType);
+      }
+
+			return removed;
+		}
+
     public void Destroy()
     {
-      unsafe { InternalCalls.Node_Destroy(UUID); }
+      unsafe
+      {
+        InternalCalls.Node_Destroy(_uuid);
+      }
+
+      _nodeCache.Remove(_uuid);
     }
 
-    /** Pass null to move this node to the scene root. */
     public void SetParent(Node? parent)
     {
-      unsafe { InternalCalls.Node_SetParent(UUID, parent?.UUID ?? 0); }
+      unsafe
+      {
+        InternalCalls.Node_SetParent(_uuid, parent?._uuid ?? 0);
+      }
     }
 
-    /** Null if no node with that name exists. */
     public static Node? Find(string name)
     {
       ulong uuid;
-      unsafe { uuid = InternalCalls.Node_FindByName(name); }
-      return uuid == 0 ? null : new Node(uuid);
+
+      unsafe
+      {
+        uuid = InternalCalls.Node_FindByName(name);
+      }
+
+      return Get(uuid);
     }
 
-    /** A fresh, otherwise empty node (just a transform and this name) at the scene root. */
-    public static Node Create(string name)
+    public static Node? Create(string name)
     {
       ulong uuid;
-      unsafe { uuid = InternalCalls.Node_Create(name); }
-      return new Node(uuid);
+
+      unsafe
+      {
+        uuid = InternalCalls.Node_Create(name);
+      }
+
+      return Get(uuid);
     }
 
   } // class Node

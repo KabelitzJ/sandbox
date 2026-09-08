@@ -46,7 +46,7 @@ scripting_module::scripting_module() {
 
   _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "Behavior_AddComponent", reinterpret_cast<void*>(&interop::behavior_add_component));
   _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "Behavior_HasComponent", reinterpret_cast<void*>(&interop::behavior_has_component));
-  // _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "Behavior_RemoveComponent", reinterpret_cast<void*>(&interop::behavior_remove_component));
+  _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "Behavior_RemoveComponent", reinterpret_cast<void*>(&interop::behavior_remove_component));
 
   _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "Tag_GetTag", reinterpret_cast<void*>(&interop::tag_get_tag));
   _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "Tag_SetTag", reinterpret_cast<void*>(&interop::tag_set_tag));
@@ -311,12 +311,8 @@ auto scripting_module::instantiate(scenes::node& node, std::string_view class_na
 
   auto& type = _game_assembly.get_type(class_name);
 
-  auto instance = type.create_instance();
+  auto instance = type.create_instance(node.get_component<scenes::id>().value());
 
-  instance.set_field_value("UUID", node.get_component<scenes::id>().value());
-
-  // Apply any persisted field overrides before OnCreate, so scripted logic in OnCreate sees
-  // author-set values immediately (mirrors Unity applying serialized fields before Awake/Start).
   if (node.has_component<scenes::script_component>()) {
     const auto& persisted = node.get_component<scenes::script_component>();
 
@@ -328,7 +324,7 @@ auto scripting_module::instantiate(scenes::node& node, std::string_view class_na
     }
   }
 
-  instance.invoke("OnCreate");
+  instance.invoke("DispatchOnCreate");
 
   auto& scripts = node.get_or_add_component<scripting::scripts>();
 
@@ -387,7 +383,7 @@ auto scripting_module::detach_script(scenes::node& node, std::string_view class_
 
     std::erase_if(runtime_scripts.instances, [&](auto& instance) {
       if (instance.get_type().get_full_name() == class_name) {
-        instance.invoke("OnDestroy");
+        instance.invoke("DispatchOnDestroy");
         return true;
       }
 

@@ -81,8 +81,8 @@ public:
   }
 
   template<typename Component>
-  auto remove_component() -> void {
-    _registry->remove<Component>(_entity);
+  auto remove_component() -> bool {
+    return _registry->remove<Component>(_entity) == 1u;
   }
 
   [[nodiscard]] auto transform() -> local_transform& {

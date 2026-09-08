@@ -4,7 +4,7 @@ namespace Sbx.Core
   public abstract class Component
   {
 
-    public ulong UUID { get; internal set; }
+    protected internal ulong UUID { get; internal set; }
 
   }
 

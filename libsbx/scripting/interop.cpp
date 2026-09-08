@@ -61,6 +61,22 @@ auto interop::log_log_message(log_level level, managed::string message) -> void 
   }
 }
 
+auto interop::scripting_attach_script(std::uint64_t uuid, managed::string class_name) -> void {
+  auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
+  auto& scene = scenes_module.active_scene();
+
+  auto node = scene.find(math::uuid::from_value(uuid));
+
+  if (!node.is_valid()) {
+    utility::logger<"scripting">::error("Attempting to attach script to invalid node");
+    return;
+  }
+
+  auto& scripting_module = core::engine::get_module<scripting::scripting_module>();
+
+  scripting_module.attach_script(node, std::string{class_name});
+}
+
 auto interop::behavior_add_component(std::uint64_t uuid, managed::reflection_type component_type) -> void {
   auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
 
@@ -115,33 +131,33 @@ auto interop::behavior_has_component(std::uint64_t uuid, managed::reflection_typ
   return false;
 }
 
-// auto interop::behavior_remove_component(std::uint64_t uuid, managed::reflection_type component_type) -> bool {
-//   auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
+auto interop::behavior_remove_component(std::uint64_t uuid, managed::reflection_type component_type) -> bool {
+  auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
 
-//   auto& scene = scenes_module.active_scene();
+  auto& scene = scenes_module.active_scene();
 
-//   auto node = scene.find(math::uuid::from_value(uuid));
+  auto node = scene.find(math::uuid::from_value(uuid));
 
-//   if (!node.is_valid()) {
-//     utility::logger<"scripting">::error("Attempting to call remove_component on invalid node");
+  if (!node.is_valid()) {
+    utility::logger<"scripting">::error("Attempting to call remove_component on invalid node");
 
-//     return false;
-//   }
+    return false;
+  }
 
-//   auto& type = static_cast<managed::type&>(component_type);
+  auto& type = static_cast<managed::type&>(component_type);
 
-//   if (!type) {
-//     return false;
-//   }
+  if (!type) {
+    return false;
+  }
 
-//   if (auto entry = _remove_component_functions.find(type.get_type_id()); entry != _remove_component_functions.end()) {
-//     auto function = entry->second;
+  if (auto entry = _remove_component_functions.find(type.get_type_id()); entry != _remove_component_functions.end()) {
+    auto function = entry->second;
 
-//     return std::invoke(function, node);
-//   }
+    return std::invoke(function, node);
+  }
 
-//   return false;
-// }
+  return false;
+}
 
 auto interop::tag_get_tag(std::uint64_t uuid) -> managed::string {
   auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
