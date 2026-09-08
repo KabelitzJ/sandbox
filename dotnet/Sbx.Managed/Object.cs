@@ -54,12 +54,16 @@ namespace Sbx.Managed
       bool IEquatable<MethodKey>.Equals(MethodKey other)
       {
         if (TypeName != other.TypeName || Name != other.Name)
+        {
           return false;
+        }
 
         for (int i = 0; i < Types.Length; i++)
         {
           if (Types[i] != other.Types[i])
+          {
             return false;
+          }
         }
 
         return ParameterCount == other.ParameterCount;
@@ -74,8 +78,12 @@ namespace Sbx.Managed
 
           hash = hash * 23 + TypeName.GetHashCode();
           hash = hash * 23 + Name.GetHashCode();
+
           foreach (var type in Types)
+          {
             hash = hash * 23 + type.GetHashCode();
+          }
+
           hash = hash * 23 + ParameterCount.GetHashCode();
 
           return hash;

@@ -8,8 +8,6 @@ namespace Sbx.Core
   public abstract class Behavior : Component
   {
 
-    private static Dictionary<ulong, List<Behavior>> _behaviorRegistry = new Dictionary<ulong, List<Behavior>>();
-
     protected Behavior()
     {
       UUID = 0;
@@ -20,65 +18,16 @@ namespace Sbx.Core
       UUID = uuid;
     }
 
-    internal static void Register(Behavior behavior)
+    internal static T? GetBehavior<T>(ulong uuid) where T : Component, new()
     {
-      if (behavior.UUID == 0)
+      var typeName = typeof(T).FullName;
+
+      unsafe
       {
-        return;
+        var instance = InternalCalls.Scripting_GetInstance(uuid, typeName);
+
+        return instance.Get() as T;
       }
-
-      if (!_behaviorRegistry.TryGetValue(behavior.UUID, out var list))
-      {
-        list = new List<Behavior>();
-        _behaviorRegistry.Add(behavior.UUID, list);
-      }
-
-      list.Add(behavior);
-    }
-
-    internal static void Unregister(Behavior behavior)
-    {
-      if (!_behaviorRegistry.TryGetValue(behavior.UUID, out var list))
-      {
-        return;
-      }
-
-      list.Remove(behavior);
-
-      if (list.Count == 0)
-      {
-        _behaviorRegistry.Remove(behavior.UUID);
-      }
-    }
-
-    internal static T? GetBehavior<T>(ulong uuid) where T : Component
-    {
-      if (!_behaviorRegistry.TryGetValue(uuid, out var list))
-      {
-        return null;
-      }
-
-      foreach (var behavior in list)
-      {
-        if (behavior is T match)
-        {
-          return match;
-        }
-      }
-
-      return null;
-    }
-
-    internal void DispatchOnCreate()
-    {
-      Register(this);
-      OnCreate();
-    }
-
-    internal void DispatchOnDestroy()
-    {
-      Unregister(this);
-      OnDestroy();
     }
 
     protected Node? Node

@@ -77,6 +77,42 @@ auto interop::scripting_attach_script(std::uint64_t uuid, managed::string class_
   scripting_module.attach_script(node, std::string{class_name});
 }
 
+auto interop::scripting_get_instance(std::uint64_t uuid, managed::string class_name) -> managed::object {
+  auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
+  auto& scene = scenes_module.active_scene();
+
+  auto node = scene.find(math::uuid::from_value(uuid));
+
+  utility::logger<"scripting">::info("scripting_get_instance: {} {}", uuid, std::string{class_name});
+
+  if (!node.is_valid()) {
+    utility::logger<"scripting">::error("Attempting to get script instance of invalid node");
+    return managed::object{};
+  }
+
+  auto scripts = node.try_get_component<scripting::scripts>();
+
+  if (!scripts) {
+    return managed::object{};
+  }
+
+  const auto& instances = scripts->instances;
+
+  const auto target_name = std::string{class_name};
+
+  for (auto& instance : instances) {
+    utility::logger<"scripting">::info("scripting_get_instance: {}", std::string{instance.get_type().get_full_name()});
+  }
+
+  auto entry = std::ranges::find_if(instances, [&target_name](const auto& instance) {
+    return instance.get_type().get_full_name() == target_name;
+  });
+
+  utility::logger<"scripting">::info("scripting_get_instance: {}", entry != instances.end());
+
+  return (entry != instances.end()) ? *entry : managed::object{};
+}
+
 auto interop::behavior_add_component(std::uint64_t uuid, managed::reflection_type component_type) -> void {
   auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
 
@@ -1128,6 +1164,7 @@ auto interop::camera_screen_point_to_ray(math::ray* ray, math::vector2* position
 
   auto& scene_renderer_module = core::engine::get_module<render::scene_renderer_module>();
   const auto extent = scene_renderer_module.target_extent();
+  const auto offset = scene_renderer_module.viewport_offset();
 
   const auto aspect = (extent.y() > 0u) ? (static_cast<std::float_t>(extent.x()) / static_cast<std::float_t>(extent.y())) : 1.0f;
 
@@ -1135,8 +1172,8 @@ auto interop::camera_screen_point_to_ray(math::ray* ray, math::vector2* position
   const auto projection = math::matrix4x4::perspective(math::degree{camera.fov_degrees}, aspect, camera.near_plane, camera.far_plane);
   const auto inverse_view_projection = math::matrix4x4::inverted(projection * view);
 
-  const auto ndc_x = (extent.x() > 0u) ? ((position->x() / static_cast<std::float_t>(extent.x())) * 2.0f - 1.0f) : 0.0f;
-  const auto ndc_y = (extent.y() > 0u) ? ((position->y() / static_cast<std::float_t>(extent.y())) * 2.0f - 1.0f) : 0.0f;
+  const auto ndc_x = (extent.x() > 0u) ? (((position->x() - offset.x()) / static_cast<std::float_t>(extent.x())) * 2.0f - 1.0f) : 0.0f;
+  const auto ndc_y = (extent.y() > 0u) ? (((position->y() - offset.y()) / static_cast<std::float_t>(extent.y())) * 2.0f - 1.0f) : 0.0f;
 
   const auto unproject = [&inverse_view_projection, ndc_x, ndc_y](std::float_t ndc_z) -> math::vector3 {
     const auto point = inverse_view_projection * math::vector4{ndc_x, ndc_y, ndc_z, 1.0f};
@@ -1428,10 +1465,21 @@ auto interop::physics_raycast(math::ray* ray, std::float_t max_distance, std::ui
     return false;
   }
 
-  if (out_node_uuid) { *out_node_uuid = hit->node.id().value(); }
-  if (out_point) { *out_point = hit->point; }
-  if (out_normal) { *out_normal = hit->normal; }
-  if (out_distance) { *out_distance = hit->distance; }
+  if (out_node_uuid) { 
+    *out_node_uuid = hit->node.id().value(); 
+  }
+
+  if (out_point) { 
+    *out_point = hit->point; 
+  }
+
+  if (out_normal) { 
+    *out_normal = hit->normal; 
+  }
+
+  if (out_distance) { 
+    *out_distance = hit->distance; 
+  }
 
   return true;
 }

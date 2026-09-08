@@ -41,6 +41,7 @@ struct interop {
   static auto log_log_message(log_level level, managed::string message) -> void;
 
   static auto scripting_attach_script(std::uint64_t uuid, managed::string class_name) -> void;
+  static auto scripting_get_instance(std::uint64_t uuid, managed::string class_name) -> managed::object;
 
   static auto behavior_add_component(std::uint64_t uuid, managed::reflection_type component_type) -> void;
   static auto behavior_has_component(std::uint64_t uuid, managed::reflection_type component_type) -> bool;

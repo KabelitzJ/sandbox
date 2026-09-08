@@ -44,6 +44,9 @@ scripting_module::scripting_module() {
 
   _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "Log_LogMessage", reinterpret_cast<void*>(&interop::log_log_message));
 
+  _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "Scripting_AttachScript", reinterpret_cast<void*>(&interop::scripting_attach_script));
+  _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "Scripting_GetInstance", reinterpret_cast<void*>(&interop::scripting_get_instance));
+
   _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "Behavior_AddComponent", reinterpret_cast<void*>(&interop::behavior_add_component));
   _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "Behavior_HasComponent", reinterpret_cast<void*>(&interop::behavior_has_component));
   _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "Behavior_RemoveComponent", reinterpret_cast<void*>(&interop::behavior_remove_component));
@@ -304,18 +307,15 @@ auto scripting_module::load_assembly(const std::filesystem::path& assembly_path,
 
 auto scripting_module::instantiate(scenes::node& node, std::string_view class_name) -> managed::object {
   if (!_has_game_assembly) {
-    utility::logger<"scripting">::error("Cannot instantiate '{}' — no compiled game assembly is loaded (see last_compile_succeeded())", class_name);
-
+    utility::logger<"scripting">::error("Cannot instantiate '{}' — no compiled game assembly is loaded", class_name);
     return managed::object{};
   }
 
   auto& type = _game_assembly.get_type(class_name);
-
   auto instance = type.create_instance(node.get_component<scenes::id>().value());
 
   if (node.has_component<scenes::script_component>()) {
     const auto& persisted = node.get_component<scenes::script_component>();
-
     for (const auto& entry : persisted.scripts) {
       if (entry.class_name == class_name) {
         _apply_field_overrides(instance, entry);
@@ -324,23 +324,26 @@ auto scripting_module::instantiate(scenes::node& node, std::string_view class_na
     }
   }
 
-  instance.invoke("DispatchOnCreate");
-
   auto& scripts = node.get_or_add_component<scripting::scripts>();
-
   scripts.instances.push_back(instance);
 
   return instance;
 }
 
 auto scripting_module::instantiate_scene_scripts(scenes::scene& target) -> void {
-  auto query = target.query<scenes::script_component>();
-
-  for (auto&& [entity, list] : query.each()) {
+  // Phase 1: Create and register all script instances across all nodes first
+  for (auto&& [entity, list] : target.query<scenes::script_component>().each()) {
     auto node = target.node_of(entity);
 
     for (const auto& entry : list.scripts) {
       instantiate(node, entry.class_name);
+    }
+  }
+
+  // Phase 2: Invoke OnCreate for all initialized instances safely
+  for (auto&& [entity, scripts] : target.query<scripting::scripts>().each()) {
+    for (auto& instance : scripts.instances) {
+      instance.invoke("OnCreate");
     }
   }
 }
@@ -361,7 +364,8 @@ auto scripting_module::attach_script(scenes::node& node, std::string_view class_
   auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
 
   if (scenes_module.is_simulating()) {
-    instantiate(node, class_name);
+    auto instance = instantiate(node, class_name);
+    instance.invoke("OnCreate");
   }
 }
 
@@ -383,7 +387,7 @@ auto scripting_module::detach_script(scenes::node& node, std::string_view class_
 
     std::erase_if(runtime_scripts.instances, [&](auto& instance) {
       if (instance.get_type().get_full_name() == class_name) {
-        instance.invoke("DispatchOnDestroy");
+        instance.invoke("OnDestroy");
         return true;
       }
 

@@ -9,6 +9,7 @@ namespace Sbx.Core
     internal static delegate* unmanaged<Logger.Level, NativeString, void> Log_LogMessage;
 
     internal static delegate* unmanaged<ulong, NativeString, void> Scripting_AttachScript;
+    internal static delegate* unmanaged<ulong, NativeString, NativeInstance<object>> Scripting_GetInstance;
 
     internal static delegate* unmanaged<ulong, ReflectionType, void> Behavior_AddComponent;
 		internal static delegate* unmanaged<ulong, ReflectionType, bool> Behavior_HasComponent;

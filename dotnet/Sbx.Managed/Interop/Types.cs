@@ -172,23 +172,27 @@ namespace Sbx.Managed.Interop
   public struct NativeInstance<T>
   {
     private readonly IntPtr _handle;
-    private readonly IntPtr _unused;
+    private readonly IntPtr _type;
 
     private NativeInstance(IntPtr handle)
     {
       _handle = handle;
-      _unused = IntPtr.Zero;
+      _type = IntPtr.Zero;
     }
 
     public T? Get()
     {
       if (_handle == IntPtr.Zero)
+      {
         return default;
+      }
 
-      GCHandle handle = GCHandle.FromIntPtr(_handle);
+      var handle = GCHandle.FromIntPtr(_handle);
 
       if (!(handle.Target is T))
+      {
         return default;
+      }
 
       return (T)handle.Target;
     }
