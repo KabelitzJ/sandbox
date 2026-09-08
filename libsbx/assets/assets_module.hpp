@@ -211,6 +211,7 @@ private:
   // bypass -- asset_cooker is stateless (see its own doc comment), so this needs no coordination
   // with asset_residency's asset_loader, which owns a completely separate instance for the
   // background thread.
+  // [TODO] KAJ 2026-09-08 : asset_cooker all methods static so we dont need two instances
   asset_cooker _cooker{};
 
   // Declaration order is construction order: residency depends on the other two so it's declared

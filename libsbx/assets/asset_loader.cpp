@@ -155,7 +155,7 @@ auto asset_loader::_worker_loop() -> void {
       _request_condition.wait(lock, [this] { return _aborted.load(std::memory_order_relaxed) || !_requests.empty(); });
 
       if (_aborted.load(std::memory_order_relaxed)) {
-        return; // drops anything still queued -- nobody will drain it
+        return;
       }
 
       next = std::move(_requests.front());
