@@ -5,6 +5,8 @@
 
 #include <cstdint>
 
+#include <libsbx/signals/signal.hpp>
+
 namespace sbx::assets {
 
 /**
@@ -30,15 +32,22 @@ public:
     return _generation > 0u;
   }
 
+  template<typename Callable>
+  auto on_loaded(Callable&& callable) -> void {
+    _on_loaded.connect(std::forward<Callable>(callable));
+  }
+
 protected:
 
   auto _bump_generation() noexcept -> void {
     ++_generation;
+    _on_loaded.emit(_generation);
   }
 
 private:
 
   std::uint64_t _generation{0u};
+  signals::signal<std::uint64_t> _on_loaded{};
 
 }; // class loadable
 

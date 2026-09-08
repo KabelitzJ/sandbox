@@ -51,13 +51,18 @@ public:
   }
 
   /** @brief Whether the asset's content (not just this handle) has arrived -- see loadable's doc comment. False for an invalid handle. */
-  [[nodiscard]] auto is_loaded() const noexcept -> bool requires std::derived_from<value_type, loadable> {
+  [[nodiscard]] auto is_loaded() const noexcept -> bool requires (std::derived_from<value_type, loadable>) {
     return is_valid() && _record->is_loaded();
   }
 
   /** @brief See loadable's doc comment. 0 for an invalid handle. */
-  [[nodiscard]] auto generation() const noexcept -> std::uint64_t requires std::derived_from<value_type, loadable> {
+  [[nodiscard]] auto generation() const noexcept -> std::uint64_t requires (std::derived_from<value_type, loadable>) {
     return is_valid() ? _record->generation() : 0u;
+  }
+
+  template<typename Callable>
+  auto on_loaded(Callable&& callable) -> void requires (std::derived_from<value_type, loadable>) {
+    _record->on_loaded(std::forward<Callable>(callable));
   }
 
   [[nodiscard]] auto operator->() const noexcept -> const_pointer {

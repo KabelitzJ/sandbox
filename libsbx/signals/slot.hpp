@@ -33,7 +33,7 @@ public:
 
   ~slot_base() override = default;
 
-  virtual auto call_slot(Args&&...) -> void = 0;
+  virtual auto call_slot(Args...) -> void = 0;
 
   template<typename... Others>
   void operator()(Others&&... args) {
@@ -97,7 +97,7 @@ public:
 
 protected:
 
-  auto call_slot(Args&&... args) -> void override {
+  auto call_slot(Args... args) -> void override {
     std::invoke(_function, std::forward<Args>(args)...);
   }
 
@@ -123,7 +123,7 @@ public:
 
 protected:
 
-  auto call_slot(Args&&... args) -> void override {
+  auto call_slot(Args... args) -> void override {
     // ((*_object).*pmf)(args...);
     std::invoke(_member_function_ptr, _object, std::forward<Args>(args)...);
   }
@@ -159,7 +159,7 @@ public:
 
 protected:
 
-  auto call_slot(Args&&... args) -> void override {
+  auto call_slot(Args... args) -> void override {
     auto object = _object.lock();
 
     if (!object) {
@@ -204,7 +204,7 @@ public:
 
 protected:
 
-  auto call_slot(Args&&... args) -> void override {
+  auto call_slot(Args... args) -> void override {
     auto object = _object.lock();
 
     if (!object) {
