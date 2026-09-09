@@ -144,7 +144,7 @@ auto asset_loader::abort() -> void {
 }
 
 auto asset_loader::_worker_loop() -> void {
-  SBX_PROFILE_THREAD_NAME("Asset loader");
+  SBX_PROFILE_THREAD_NAME("Asset thread");
 
   while (true) {
     auto next = request{};
@@ -167,6 +167,8 @@ auto asset_loader::_worker_loop() -> void {
 }
 
 auto asset_loader::_resolve(const texture_request& request) -> void {
+  SBX_PROFILE_SCOPE("asset_loader::_resolve texture");
+
   auto did_cook = false;
   auto data = _cooker.resolve_texture(request.source, request.cooked, request.needs_cook, did_cook);
 
@@ -179,6 +181,8 @@ auto asset_loader::_resolve(const texture_request& request) -> void {
 }
 
 auto asset_loader::_resolve(const mesh_request& request) -> void {
+  SBX_PROFILE_SCOPE("asset_loader::_resolve mesh");
+
   auto did_cook = false;
   auto data = _cooker.resolve_mesh(request.source, request.id, request.cooked, request.needs_cook, did_cook);
 
@@ -191,6 +195,8 @@ auto asset_loader::_resolve(const mesh_request& request) -> void {
 }
 
 auto asset_loader::_resolve(const font_request& request) -> void {
+  SBX_PROFILE_SCOPE("asset_loader::_resolve font");
+
   auto did_cook = false;
   auto data = _cooker.resolve_font(request.source, request.cooked, request.needs_cook, did_cook);
 
@@ -203,12 +209,9 @@ auto asset_loader::_resolve(const font_request& request) -> void {
 }
 
 auto asset_loader::_resolve(const material_request& request) -> void {
-  // Mirrors the branch asset_residency::load_material picks between today: a hand-authored
-  // `.material` YAML file (a real, non-empty source path), or a material cooked as a side effect
-  // of a mesh import (resolved by id alone, no source path involved).
-  auto data = (!request.source.empty() && request.source.extension() == ".material")
-    ? _cooker.parse_material_file(request.source)
-    : asset_cooker::resolve_cooked_material(request.id);
+  SBX_PROFILE_SCOPE("asset_loader::_resolve material");
+
+  auto data = (!request.source.empty() && request.source.extension() == ".material") ? _cooker.parse_material_file(request.source) : asset_cooker::resolve_cooked_material(request.id);
 
   if (_aborted.load(std::memory_order_relaxed)) {
     return;
@@ -219,6 +222,8 @@ auto asset_loader::_resolve(const material_request& request) -> void {
 }
 
 auto asset_loader::_resolve(const particle_effect_request& request) -> void {
+  SBX_PROFILE_SCOPE("asset_loader::_resolve particle_effect");
+
   auto data = _cooker.parse_particle_effect_file(request.source);
 
   if (_aborted.load(std::memory_order_relaxed)) {
@@ -230,6 +235,8 @@ auto asset_loader::_resolve(const particle_effect_request& request) -> void {
 }
 
 auto asset_loader::_resolve(const animation_graph_request& request) -> void {
+  SBX_PROFILE_SCOPE("asset_loader::_resolve animation_graph");
+
   auto data = _cooker.parse_animation_graph_file(request.source);
 
   if (_aborted.load(std::memory_order_relaxed)) {
@@ -241,6 +248,8 @@ auto asset_loader::_resolve(const animation_graph_request& request) -> void {
 }
 
 auto asset_loader::_resolve(const skeleton_request& request) -> void {
+  SBX_PROFILE_SCOPE("asset_loader::_resolve skeleton");
+
   auto data = _cooker.resolve_skeleton(request.id);
 
   if (_aborted.load(std::memory_order_relaxed)) {
@@ -252,6 +261,8 @@ auto asset_loader::_resolve(const skeleton_request& request) -> void {
 }
 
 auto asset_loader::_resolve(const animation_clip_request& request) -> void {
+  SBX_PROFILE_SCOPE("asset_loader::_resolve animation_clip");
+
   auto data = _cooker.resolve_animation_clip(request.id);
 
   if (_aborted.load(std::memory_order_relaxed)) {
@@ -263,6 +274,8 @@ auto asset_loader::_resolve(const animation_clip_request& request) -> void {
 }
 
 auto asset_loader::take_resolved_textures(std::size_t max_count) -> std::vector<texture_result> {
+  SBX_PROFILE_SCOPE("asset_loader::take_resolved_textures");
+
   auto result = std::vector<texture_result>{};
 
   auto lock = std::lock_guard{_result_mutex};
@@ -277,6 +290,8 @@ auto asset_loader::take_resolved_textures(std::size_t max_count) -> std::vector<
 }
 
 auto asset_loader::take_resolved_meshes(std::size_t max_count) -> std::vector<mesh_result> {
+  SBX_PROFILE_SCOPE("asset_loader::take_resolved_meshes");
+
   auto result = std::vector<mesh_result>{};
 
   auto lock = std::lock_guard{_result_mutex};
@@ -291,6 +306,8 @@ auto asset_loader::take_resolved_meshes(std::size_t max_count) -> std::vector<me
 }
 
 auto asset_loader::take_resolved_fonts(std::size_t max_count) -> std::vector<font_result> {
+  SBX_PROFILE_SCOPE("asset_loader::take_resolved_fonts");
+
   auto result = std::vector<font_result>{};
 
   auto lock = std::lock_guard{_result_mutex};
@@ -305,6 +322,8 @@ auto asset_loader::take_resolved_fonts(std::size_t max_count) -> std::vector<fon
 }
 
 auto asset_loader::take_resolved_materials(std::size_t max_count) -> std::vector<material_result> {
+  SBX_PROFILE_SCOPE("asset_loader::take_resolved_materials");
+
   auto result = std::vector<material_result>{};
 
   auto lock = std::lock_guard{_result_mutex};
@@ -319,6 +338,8 @@ auto asset_loader::take_resolved_materials(std::size_t max_count) -> std::vector
 }
 
 auto asset_loader::take_resolved_particle_effects(std::size_t max_count) -> std::vector<particle_effect_result> {
+  SBX_PROFILE_SCOPE("asset_loader::take_resolved_particle_effects");
+
   auto result = std::vector<particle_effect_result>{};
 
   auto lock = std::lock_guard{_result_mutex};
@@ -333,6 +354,8 @@ auto asset_loader::take_resolved_particle_effects(std::size_t max_count) -> std:
 }
 
 auto asset_loader::take_resolved_animation_graphs(std::size_t max_count) -> std::vector<animation_graph_result> {
+  SBX_PROFILE_SCOPE("asset_loader::take_resolved_animation_graphs");
+
   auto result = std::vector<animation_graph_result>{};
 
   auto lock = std::lock_guard{_result_mutex};
@@ -347,6 +370,8 @@ auto asset_loader::take_resolved_animation_graphs(std::size_t max_count) -> std:
 }
 
 auto asset_loader::take_resolved_skeletons(std::size_t max_count) -> std::vector<skeleton_result> {
+  SBX_PROFILE_SCOPE("asset_loader::take_resolved_skeletons");
+
   auto result = std::vector<skeleton_result>{};
 
   auto lock = std::lock_guard{_result_mutex};
@@ -361,6 +386,8 @@ auto asset_loader::take_resolved_skeletons(std::size_t max_count) -> std::vector
 }
 
 auto asset_loader::take_resolved_animation_clips(std::size_t max_count) -> std::vector<animation_clip_result> {
+  SBX_PROFILE_SCOPE("asset_loader::take_resolved_animation_clips");
+
   auto result = std::vector<animation_clip_result>{};
 
   auto lock = std::lock_guard{_result_mutex};
