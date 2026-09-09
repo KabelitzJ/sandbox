@@ -20,6 +20,7 @@
 
 #include <editor/editor_state.hpp>
 #include <editor/panels/editor_panel.hpp>
+#include <editor/panels/navigation_panel.hpp>
 
 namespace editor {
 
@@ -102,6 +103,10 @@ private:
 
   editor_state _state{};
   std::vector<std::unique_ptr<editor_panel>> _panels{};
+
+  // Non-owning -- _panels owns it. Kept separately so the View menu can toggle its is_open flag
+  // without a dynamic_cast over every registered panel.
+  navigation_panel* _navigation_panel{nullptr};
 
   // Scene save/load path (relative to the assets directory) — empty until the first save, or
   // until application.cpp calls set_scene_path() after its own initial load.

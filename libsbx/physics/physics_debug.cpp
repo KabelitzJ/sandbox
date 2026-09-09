@@ -77,4 +77,37 @@ auto draw_convex_shape(render::debug_draw& debug_draw, const convex_shape& shape
   ), shape);
 }
 
+auto draw_navmesh(render::debug_draw& debug_draw, const navmesh& mesh, const math::color& color) -> void {
+  for (const auto& poly : mesh.polys) {
+    const auto count = poly.verts.size();
+
+    for (auto i = std::size_t{0}; i < count; ++i) {
+      const auto& a = mesh.verts[poly.verts[i]];
+      const auto& b = mesh.verts[poly.verts[(i + 1u) % count]];
+
+      debug_draw.add_line(a, b, color);
+    }
+  }
+}
+
+auto draw_nav_path(render::debug_draw& debug_draw, std::span<const straight_path_point> path, const math::color& color) -> void {
+  constexpr auto corner_size = 0.1f;
+
+  for (auto i = std::size_t{0}; i < path.size(); ++i) {
+    debug_draw.add_cross(path[i].position, corner_size, color);
+
+    if (i + 1 < path.size()) {
+      debug_draw.add_line(path[i].position, path[i + 1].position, color);
+    }
+  }
+}
+
+auto draw_nav_agent(render::debug_draw& debug_draw, const nav_agent& agent, const math::vector3& position, const math::color& color) -> void {
+  debug_draw.add_wire_sphere(position, agent.radius, color);
+
+  if (agent.velocity.length_squared() > 0.0001f) {
+    debug_draw.add_line(position, position + agent.velocity, color);
+  }
+}
+
 } // namespace sbx::physics

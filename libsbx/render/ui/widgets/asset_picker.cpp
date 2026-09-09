@@ -16,6 +16,7 @@
 #include <libsbx/core/project.hpp>
 
 #include <libsbx/assets/assets_module.hpp>
+#include <libsbx/assets/primitive_meshes.hpp>
 
 #include <libsbx/render/ui/fonts/material_design_icons.hpp>
 #include <libsbx/render/ui/widgets/asset_tile.hpp>
@@ -33,6 +34,18 @@ namespace sbx::render::widgets {
   }
 
   return ICON_MDI_FILE_OUTLINE;
+}
+
+[[nodiscard]] auto icon_for(assets::primitive_mesh_kind kind) -> const char* {
+  switch (kind) {
+    case assets::primitive_mesh_kind::cube: return ICON_MDI_CUBE_OUTLINE;
+    case assets::primitive_mesh_kind::sphere: return ICON_MDI_SPHERE;
+    case assets::primitive_mesh_kind::plane: return ICON_MDI_SQUARE_OUTLINE;
+    case assets::primitive_mesh_kind::capsule: return ICON_MDI_PILL;
+    case assets::primitive_mesh_kind::cylinder: return ICON_MDI_CYLINDER;
+  }
+
+  return ICON_MDI_CUBE_OUTLINE;
 }
 
 // Case-insensitive substring test for the filter box below.
@@ -185,6 +198,27 @@ auto draw_asset_picker(const char* popup_id, const asset_picker_item& current, c
       result.changed = true;
       result.reset_to_default = true;
       result.picked = default_item;
+    }
+
+    if (options.kind == asset_picker_kind::mesh && options.show_builtin_primitives) {
+      ImGui::TextDisabled("Built-in");
+
+      for (const auto primitive_kind : assets::primitive_mesh_kinds) {
+        const auto name = assets::primitive_mesh_name(primitive_kind);
+
+        if (filter_buffer[0] != '\0' && !contains_ignore_case(name, filter_buffer.data())) {
+          continue;
+        }
+
+        const auto label = std::string{icon_for(primitive_kind)} + " " + std::string{name};
+
+        if (ImGui::MenuItem(label.c_str())) {
+          result.changed = true;
+          result.picked = asset_picker_item{assets::primitive_mesh_uuid(primitive_kind), std::filesystem::path{name}};
+        }
+      }
+
+      ImGui::Separator();
     }
 
     auto visible = std::vector<std::filesystem::path>{};

@@ -22,6 +22,7 @@
 #include <libsbx/utility/overload.hpp>
 
 #include <libsbx/assets/assets_module.hpp>
+#include <libsbx/assets/primitive_meshes.hpp>
 
 #include <libsbx/canvas/components.hpp>
 
@@ -29,6 +30,7 @@
 #include <libsbx/physics/collider.hpp>
 #include <libsbx/physics/shapes.hpp>
 #include <libsbx/physics/convex_hull_cache.hpp>
+#include <libsbx/physics/nav/nav_agent.hpp>
 
 namespace sbx::scenes {
 
@@ -66,6 +68,16 @@ auto make_asset_key(asset_key_table& keys, const std::string& base) -> std::stri
   return key;
 }
 
+// A primitive mesh has no entry in the asset manifest -- path_of(id) comes back empty, so it needs
+// its own name (used for both the yaml key and the table entry's cosmetic "name" field).
+auto mesh_asset_name(assets::assets_module& assets_module, const math::uuid& id) -> std::string {
+  if (const auto kind = assets::primitive_mesh_kind_of(id); kind.has_value()) {
+    return std::string{assets::primitive_mesh_name(*kind)};
+  }
+
+  return assets_module.path_of(id).stem().string();
+}
+
 // Pre-pass: every mesh/material referenced by a mesh_renderer among entities gets a table entry
 // and a key, before any node is written (so a node can always look its references up by key).
 auto collect_mesh_material_keys(ecs::registry& registry, const std::vector<ecs::entity>& entities, assets::assets_module& assets_module, asset_key_table& keys) -> void {
@@ -78,7 +90,7 @@ auto collect_mesh_material_keys(ecs::registry& registry, const std::vector<ecs::
 
     if (renderer.mesh.is_valid() && !keys.mesh_keys.contains(renderer.mesh->id())) {
       const auto id = renderer.mesh->id();
-      const auto name = assets_module.path_of(id).stem().string();
+      const auto name = mesh_asset_name(assets_module, id);
       const auto key = make_asset_key(keys, name);
 
       keys.mesh_keys.emplace(id, key);
@@ -674,6 +686,24 @@ auto write_node(YAML::Node& node_yaml, ecs::registry& registry, ecs::entity enti
     components.push_back(component);
   }
 
+  if (registry.all_of<physics::nav_agent>(entity)) {
+    const auto& agent = registry.get<physics::nav_agent>(entity);
+
+    auto component = YAML::Node{};
+    component["type"] = "nav_agent";
+    component["radius"] = agent.radius;
+    component["height"] = agent.height;
+    component["max_acceleration"] = agent.max_acceleration;
+    component["max_speed"] = agent.max_speed;
+    component["collision_query_range"] = agent.collision_query_range;
+    component["path_optimization_range"] = agent.path_optimization_range;
+    component["separation_weight"] = agent.separation_weight;
+    component["obstacle_avoidance_enabled"] = agent.obstacle_avoidance_enabled;
+    component["separation_enabled"] = agent.separation_enabled;
+
+    components.push_back(component);
+  }
+
   if (registry.all_of<physics::shape_collider>(entity)) {
     const auto& collider = registry.get<physics::shape_collider>(entity);
 
@@ -1147,6 +1177,18 @@ auto read_node_components(node& target_node, const YAML::Node& node_yaml, assets
       body.linear_damping = component["linear_damping"].as<std::float_t>();
       body.angular_damping = component["angular_damping"].as<std::float_t>();
       body.gravity_scale = component["gravity_scale"].as<std::float_t>();
+    } else if (type == "nav_agent") {
+      auto& agent = target_node.add_component<physics::nav_agent>();
+
+      agent.radius = component["radius"].as<std::float_t>();
+      agent.height = component["height"].as<std::float_t>();
+      agent.max_acceleration = component["max_acceleration"].as<std::float_t>();
+      agent.max_speed = component["max_speed"].as<std::float_t>();
+      agent.collision_query_range = component["collision_query_range"].as<std::float_t>();
+      agent.path_optimization_range = component["path_optimization_range"].as<std::float_t>();
+      agent.separation_weight = component["separation_weight"].as<std::float_t>();
+      agent.obstacle_avoidance_enabled = component["obstacle_avoidance_enabled"].as<bool>();
+      agent.separation_enabled = component["separation_enabled"].as<bool>();
     } else if (type == "shape_collider") {
       auto& collider = target_node.add_component<physics::shape_collider>();
 

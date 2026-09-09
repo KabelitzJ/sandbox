@@ -29,6 +29,7 @@
 
 #include <libsbx/assets/assets_module.hpp>
 #include <libsbx/assets/particle_effect.hpp>
+#include <libsbx/assets/primitive_meshes.hpp>
 
 #include <libsbx/scenes/components.hpp>
 #include <libsbx/scenes/scene.hpp>
@@ -36,6 +37,7 @@
 
 #include <libsbx/physics/collider.hpp>
 #include <libsbx/physics/rigidbody.hpp>
+#include <libsbx/physics/nav/nav_agent.hpp>
 
 #include <libsbx/canvas/components.hpp>
 
@@ -92,9 +94,16 @@ auto relative_asset_path(const sbx::assets::assets_module& assets_module, const 
 }
 
 // Bridges a handle's uuid to the generic asset_picker widget's item type (uuid + project-relative path).
+// A built-in primitive mesh has no manifest entry -- relative_asset_path would come back empty and
+// the picker button would show "(None)" for an assigned primitive -- so its display "path" is just
+// its name instead.
 auto to_picker_item(const sbx::assets::assets_module& assets_module, const sbx::math::uuid& id) -> sbx::render::widgets::asset_picker_item {
   if (id == sbx::math::uuid::nil()) {
     return {};
+  }
+
+  if (const auto kind = sbx::assets::primitive_mesh_kind_of(id); kind.has_value()) {
+    return sbx::render::widgets::asset_picker_item{id, std::filesystem::path{sbx::assets::primitive_mesh_name(*kind)}};
   }
 
   return sbx::render::widgets::asset_picker_item{id, relative_asset_path(assets_module, id)};
@@ -257,19 +266,24 @@ auto draw_mesh_picker(editor_state& state, const char* popup_id, sbx::assets::me
     .extensions = {".gltf", ".glb"},
     .show_edit_button = true,
     .show_reveal_button = true,
+    .show_builtin_primitives = true,
   };
 
   const auto result = sbx::render::widgets::draw_asset_picker(popup_id, current, {}, options);
 
   if (result.changed) {
-    slot = assets_module.load_mesh(result.picked.path);
+    if (const auto kind = sbx::assets::primitive_mesh_kind_of(result.picked.id); kind.has_value()) {
+      slot = assets_module.load_mesh(result.picked.id);
+    } else {
+      slot = assets_module.load_mesh(result.picked.path);
+    }
   }
 
-  if (result.edit_requested && slot.is_valid()) {
+  if (result.edit_requested && slot.is_valid() && !sbx::assets::primitive_mesh_kind_of(slot->id()).has_value()) {
     state.select_asset(slot->id(), relative_asset_path(assets_module, slot->id()), asset_kind::mesh);
   }
 
-  if (result.reveal_requested && slot.is_valid()) {
+  if (result.reveal_requested && slot.is_valid() && !sbx::assets::primitive_mesh_kind_of(slot->id()).has_value()) {
     state.request_reveal_in_browser(relative_asset_path(assets_module, slot->id()));
   }
 
@@ -1155,6 +1169,65 @@ auto draw_rigidbody_section(editor_state& state, sbx::scenes::node& node) -> voi
   }
 
   bracket_edit(state, node, body, pending, "Edit Rigidbody");
+}
+
+auto draw_nav_agent_section(editor_state& state, sbx::scenes::node& node) -> void {
+  auto is_open = true;
+
+  const auto is_expanded = ImGui::CollapsingHeader(ICON_MDI_WALK " Nav Agent", &is_open, ImGuiTreeNodeFlags_DefaultOpen);
+
+  if (!is_open) {
+    state.push_command(std::make_unique<remove_component_command<sbx::physics::nav_agent>>(node.id(), node.get_component<sbx::physics::nav_agent>(), "Remove Nav Agent"));
+    return;
+  }
+
+  if (!is_expanded) {
+    return;
+  }
+
+  auto& agent = node.get_component<sbx::physics::nav_agent>();
+  static auto pending = std::optional<sbx::physics::nav_agent>{};
+
+  ImGui::DragFloat("Radius", &agent.radius, 0.01f, 0.01f, 5.0f);
+  bracket_edit(state, node, agent, pending, "Edit Nav Agent");
+  ImGui::DragFloat("Height", &agent.height, 0.01f, 0.01f, 5.0f);
+  bracket_edit(state, node, agent, pending, "Edit Nav Agent");
+  ImGui::DragFloat("Max Speed", &agent.max_speed, 0.05f, 0.0f, 50.0f);
+  bracket_edit(state, node, agent, pending, "Edit Nav Agent");
+  ImGui::DragFloat("Max Acceleration", &agent.max_acceleration, 0.05f, 0.0f, 100.0f);
+  bracket_edit(state, node, agent, pending, "Edit Nav Agent");
+  ImGui::DragFloat("Collision Query Range", &agent.collision_query_range, 0.05f, 0.0f, 50.0f);
+  bracket_edit(state, node, agent, pending, "Edit Nav Agent");
+  ImGui::DragFloat("Path Optimization Range", &agent.path_optimization_range, 0.05f, 0.0f, 50.0f);
+  bracket_edit(state, node, agent, pending, "Edit Nav Agent");
+  ImGui::DragFloat("Separation Weight", &agent.separation_weight, 0.05f, 0.0f, 20.0f);
+  bracket_edit(state, node, agent, pending, "Edit Nav Agent");
+
+  {
+    const auto before = agent;
+
+    if (ImGui::Checkbox("Obstacle Avoidance", &agent.obstacle_avoidance_enabled)) {
+      state.push_command(std::make_unique<modify_component_command<sbx::physics::nav_agent>>(node.id(), before, agent, "Edit Nav Agent"));
+    }
+  }
+
+  ImGui::SameLine();
+
+  {
+    const auto before = agent;
+
+    if (ImGui::Checkbox("Separation", &agent.separation_enabled)) {
+      state.push_command(std::make_unique<modify_component_command<sbx::physics::nav_agent>>(node.id(), before, agent, "Edit Nav Agent"));
+    }
+  }
+
+  ImGui::Separator();
+
+  static constexpr auto state_names = std::array<const char*, 3u>{"Idle", "Moving", "Target Unreachable"};
+
+  ImGui::TextDisabled("State: %s", state_names[static_cast<std::size_t>(agent.state)]);
+  ImGui::TextDisabled("Velocity: %.2f, %.2f, %.2f", agent.velocity.x(), agent.velocity.y(), agent.velocity.z());
+  ImGui::TextDisabled("Target: %.2f, %.2f, %.2f", agent.target.x(), agent.target.y(), agent.target.z());
 }
 
 // offset/rotation are shared by shape_collider and mesh_collider — same fields, same widgets.
@@ -2204,120 +2277,151 @@ auto draw_add_component_menu(editor_state& state, sbx::scenes::node& node, sbx::
 
     ImGui::Separator();
 
-    if (!node.has_component<sbx::scenes::camera>() && passes("Camera") && ImGui::MenuItem(ICON_MDI_CAMERA_OUTLINE " Camera")) {
-      state.push_command(std::make_unique<add_component_command<sbx::scenes::camera>>(node.id(), "Add Camera"));
+    // Grouped into Common/3D/2D so the popup stays scannable as the component list grows -- a
+    // category header only appears at all when something inside it would pass the current filter,
+    // same "hide empty groups" reasoning the Script section below already uses.
+    const auto common_visible = passes("Camera");
+
+    const auto three_d_visible = passes("Mesh Renderer") || passes("Animator") || passes("Directional Light") ||
+      passes("Point Light") || passes("Spot Light") || passes("Skybox") || passes("Particle Effect") ||
+      passes("Rigidbody") || passes("Nav Agent") || passes("Shape Collider") || passes("Mesh Collider");
+
+    const auto two_d_visible = passes("Canvas") || passes("Canvas Group") || passes("Canvas Scaler") ||
+      passes("Rect Transform") || passes("UI Image") || passes("UI Text") || passes("UI Button") ||
+      passes("UI Toggle") || passes("UI Slider") || passes("UI Scrollbar") || passes("UI Scroll Rect") ||
+      passes("Layout Element") || passes("Content Size Fitter") || passes("Horizontal Layout Group") ||
+      passes("Vertical Layout Group") || passes("Grid Layout Group") || passes("UI Mask");
+
+    if (common_visible && ImGui::BeginMenu(ICON_MDI_PUZZLE_OUTLINE " Common")) {
+      if (!node.has_component<sbx::scenes::camera>() && passes("Camera") && ImGui::MenuItem(ICON_MDI_CAMERA_OUTLINE " Camera")) {
+        state.push_command(std::make_unique<add_component_command<sbx::scenes::camera>>(node.id(), "Add Camera"));
+      }
+
+      ImGui::EndMenu();
     }
 
-    if (!node.has_component<sbx::scenes::mesh_renderer>() && passes("Mesh Renderer") && ImGui::MenuItem(ICON_MDI_CUBE_OUTLINE " Mesh Renderer")) {
-      state.push_command(std::make_unique<add_component_command<sbx::scenes::mesh_renderer>>(node.id(), "Add Mesh Renderer"));
+    if (three_d_visible && ImGui::BeginMenu(ICON_MDI_AXIS_ARROW " 3D")) {
+      if (!node.has_component<sbx::scenes::mesh_renderer>() && passes("Mesh Renderer") && ImGui::MenuItem(ICON_MDI_CUBE_OUTLINE " Mesh Renderer")) {
+        state.push_command(std::make_unique<add_component_command<sbx::scenes::mesh_renderer>>(node.id(), "Add Mesh Renderer"));
+      }
+
+      // skeleton_pose isn't listed here -- it's fully auto-managed by draw_mesh_renderer_section
+      // (see scenes::skeleton_pose's doc comment).
+      if (!node.has_component<sbx::scenes::animator>() && passes("Animator") && ImGui::MenuItem(ICON_MDI_ANIMATION_PLAY " Animator")) {
+        state.push_command(std::make_unique<add_component_command<sbx::scenes::animator>>(node.id(), "Add Animator"));
+      }
+
+      if (!node.has_component<sbx::scenes::directional_light>() && passes("Directional Light") && ImGui::MenuItem(ICON_MDI_WHITE_BALANCE_SUNNY " Directional Light")) {
+        state.push_command(std::make_unique<add_component_command<sbx::scenes::directional_light>>(node.id(), "Add Directional Light"));
+      }
+
+      if (!node.has_component<sbx::scenes::point_light>() && passes("Point Light") && ImGui::MenuItem(ICON_MDI_LIGHTBULB_OUTLINE " Point Light")) {
+        state.push_command(std::make_unique<add_component_command<sbx::scenes::point_light>>(node.id(), "Add Point Light"));
+      }
+
+      if (!node.has_component<sbx::scenes::spot_light>() && passes("Spot Light") && ImGui::MenuItem(ICON_MDI_FLASHLIGHT " Spot Light")) {
+        state.push_command(std::make_unique<add_component_command<sbx::scenes::spot_light>>(node.id(), "Add Spot Light"));
+      }
+
+      if (!node.has_component<sbx::scenes::skybox>() && passes("Skybox") && ImGui::MenuItem(ICON_MDI_EARTH " Skybox")) {
+        state.push_command(std::make_unique<add_component_command<sbx::scenes::skybox>>(node.id(), "Add Skybox"));
+      }
+
+      if (!node.has_component<sbx::scenes::particle_effect>() && passes("Particle Effect") && ImGui::MenuItem(ICON_MDI_FIREWORK " Particle Effect")) {
+        state.push_command(std::make_unique<add_component_command<sbx::scenes::particle_effect>>(node.id(), "Add Particle Effect"));
+      }
+
+      if (!node.has_component<sbx::physics::rigidbody>() && passes("Rigidbody") && ImGui::MenuItem(ICON_MDI_SOCCER " Rigidbody")) {
+        state.push_command(std::make_unique<add_component_command<sbx::physics::rigidbody>>(node.id(), "Add Rigidbody"));
+      }
+
+      if (!node.has_component<sbx::physics::nav_agent>() && passes("Nav Agent") && ImGui::MenuItem(ICON_MDI_WALK " Nav Agent")) {
+        state.push_command(std::make_unique<add_component_command<sbx::physics::nav_agent>>(node.id(), "Add Nav Agent"));
+      }
+
+      // A node only ever gets one collider kind -- narrowphase only ever resolves one per node anyway
+      // (see narrowphase.cpp's resolve_convex), so having both is never useful, just confusing.
+      if (!node.has_component<sbx::physics::shape_collider>() && !node.has_component<sbx::physics::mesh_collider>() && passes("Shape Collider") && ImGui::MenuItem(ICON_MDI_SHAPE_OUTLINE " Shape Collider")) {
+        state.push_command(std::make_unique<add_component_command<sbx::physics::shape_collider>>(node.id(), "Add Shape Collider"));
+      }
+
+      if (!node.has_component<sbx::physics::mesh_collider>() && !node.has_component<sbx::physics::shape_collider>() && passes("Mesh Collider") && ImGui::MenuItem(ICON_MDI_TERRAIN " Mesh Collider")) {
+        state.push_command(std::make_unique<add_component_command<sbx::physics::mesh_collider>>(node.id(), "Add Mesh Collider"));
+      }
+
+      ImGui::EndMenu();
     }
 
-    // skeleton_pose isn't listed here -- it's fully auto-managed by draw_mesh_renderer_section
-    // (see scenes::skeleton_pose's doc comment).
-    if (!node.has_component<sbx::scenes::animator>() && passes("Animator") && ImGui::MenuItem(ICON_MDI_ANIMATION_PLAY " Animator")) {
-      state.push_command(std::make_unique<add_component_command<sbx::scenes::animator>>(node.id(), "Add Animator"));
-    }
+    if (two_d_visible && ImGui::BeginMenu(ICON_MDI_VECTOR_SQUARE " 2D")) {
+      if (!node.has_component<sbx::canvas::canvas>() && passes("Canvas") && ImGui::MenuItem(ICON_MDI_MONITOR " Canvas")) {
+        state.push_command(std::make_unique<add_component_command<sbx::canvas::canvas>>(node.id(), "Add Canvas"));
+      }
 
-    if (!node.has_component<sbx::scenes::directional_light>() && passes("Directional Light") && ImGui::MenuItem(ICON_MDI_WHITE_BALANCE_SUNNY " Directional Light")) {
-      state.push_command(std::make_unique<add_component_command<sbx::scenes::directional_light>>(node.id(), "Add Directional Light"));
-    }
+      if (!node.has_component<sbx::canvas::canvas_group>() && passes("Canvas Group") && ImGui::MenuItem(ICON_MDI_OPACITY " Canvas Group")) {
+        state.push_command(std::make_unique<add_component_command<sbx::canvas::canvas_group>>(node.id(), "Add Canvas Group"));
+      }
 
-    if (!node.has_component<sbx::scenes::point_light>() && passes("Point Light") && ImGui::MenuItem(ICON_MDI_LIGHTBULB_OUTLINE " Point Light")) {
-      state.push_command(std::make_unique<add_component_command<sbx::scenes::point_light>>(node.id(), "Add Point Light"));
-    }
+      if (!node.has_component<sbx::canvas::canvas_scaler>() && passes("Canvas Scaler") && ImGui::MenuItem(ICON_MDI_FIT_TO_SCREEN " Canvas Scaler")) {
+        state.push_command(std::make_unique<add_component_command<sbx::canvas::canvas_scaler>>(node.id(), "Add Canvas Scaler"));
+      }
 
-    if (!node.has_component<sbx::scenes::spot_light>() && passes("Spot Light") && ImGui::MenuItem(ICON_MDI_FLASHLIGHT " Spot Light")) {
-      state.push_command(std::make_unique<add_component_command<sbx::scenes::spot_light>>(node.id(), "Add Spot Light"));
-    }
+      if (!node.has_component<sbx::canvas::rect_transform>() && passes("Rect Transform") && ImGui::MenuItem(ICON_MDI_ASPECT_RATIO " Rect Transform")) {
+        state.push_command(std::make_unique<add_component_command<sbx::canvas::rect_transform>>(node.id(), "Add Rect Transform"));
+      }
 
-    if (!node.has_component<sbx::scenes::skybox>() && passes("Skybox") && ImGui::MenuItem(ICON_MDI_EARTH " Skybox")) {
-      state.push_command(std::make_unique<add_component_command<sbx::scenes::skybox>>(node.id(), "Add Skybox"));
-    }
+      if (!node.has_component<sbx::canvas::ui_image>() && passes("UI Image") && ImGui::MenuItem(ICON_MDI_IMAGE " UI Image")) {
+        state.push_command(std::make_unique<add_component_command<sbx::canvas::ui_image>>(node.id(), "Add UI Image"));
+      }
 
-    if (!node.has_component<sbx::scenes::particle_effect>() && passes("Particle Effect") && ImGui::MenuItem(ICON_MDI_FIREWORK " Particle Effect")) {
-      state.push_command(std::make_unique<add_component_command<sbx::scenes::particle_effect>>(node.id(), "Add Particle Effect"));
-    }
+      if (!node.has_component<sbx::canvas::ui_text>() && passes("UI Text") && ImGui::MenuItem(ICON_MDI_FORMAT_TEXT " UI Text")) {
+        state.push_command(std::make_unique<add_component_command<sbx::canvas::ui_text>>(node.id(), "Add UI Text"));
+      }
 
-    if (!node.has_component<sbx::physics::rigidbody>() && passes("Rigidbody") && ImGui::MenuItem(ICON_MDI_SOCCER " Rigidbody")) {
-      state.push_command(std::make_unique<add_component_command<sbx::physics::rigidbody>>(node.id(), "Add Rigidbody"));
-    }
+      if (!node.has_component<sbx::canvas::ui_button>() && passes("UI Button") && ImGui::MenuItem(ICON_MDI_GESTURE_TAP_BUTTON " UI Button")) {
+        state.push_command(std::make_unique<add_component_command<sbx::canvas::ui_button>>(node.id(), "Add UI Button"));
+      }
 
-    // A node only ever gets one collider kind -- narrowphase only ever resolves one per node anyway
-    // (see narrowphase.cpp's resolve_convex), so having both is never useful, just confusing.
-    if (!node.has_component<sbx::physics::shape_collider>() && !node.has_component<sbx::physics::mesh_collider>() && passes("Shape Collider") && ImGui::MenuItem(ICON_MDI_SHAPE_OUTLINE " Shape Collider")) {
-      state.push_command(std::make_unique<add_component_command<sbx::physics::shape_collider>>(node.id(), "Add Shape Collider"));
-    }
+      if (!node.has_component<sbx::canvas::ui_toggle>() && passes("UI Toggle") && ImGui::MenuItem(ICON_MDI_TOGGLE_SWITCH " UI Toggle")) {
+        state.push_command(std::make_unique<add_component_command<sbx::canvas::ui_toggle>>(node.id(), "Add UI Toggle"));
+      }
 
-    if (!node.has_component<sbx::physics::mesh_collider>() && !node.has_component<sbx::physics::shape_collider>() && passes("Mesh Collider") && ImGui::MenuItem(ICON_MDI_TERRAIN " Mesh Collider")) {
-      state.push_command(std::make_unique<add_component_command<sbx::physics::mesh_collider>>(node.id(), "Add Mesh Collider"));
-    }
+      if (!node.has_component<sbx::canvas::ui_slider>() && passes("UI Slider") && ImGui::MenuItem(ICON_MDI_TUNE " UI Slider")) {
+        state.push_command(std::make_unique<add_component_command<sbx::canvas::ui_slider>>(node.id(), "Add UI Slider"));
+      }
 
-    if (!node.has_component<sbx::canvas::canvas>() && passes("Canvas") && ImGui::MenuItem(ICON_MDI_MONITOR " Canvas")) {
-      state.push_command(std::make_unique<add_component_command<sbx::canvas::canvas>>(node.id(), "Add Canvas"));
-    }
+      if (!node.has_component<sbx::canvas::ui_scrollbar>() && passes("UI Scrollbar") && ImGui::MenuItem(ICON_MDI_DRAG_HORIZONTAL " UI Scrollbar")) {
+        state.push_command(std::make_unique<add_component_command<sbx::canvas::ui_scrollbar>>(node.id(), "Add UI Scrollbar"));
+      }
 
-    if (!node.has_component<sbx::canvas::canvas_group>() && passes("Canvas Group") && ImGui::MenuItem(ICON_MDI_OPACITY " Canvas Group")) {
-      state.push_command(std::make_unique<add_component_command<sbx::canvas::canvas_group>>(node.id(), "Add Canvas Group"));
-    }
+      if (!node.has_component<sbx::canvas::ui_scroll_rect>() && passes("UI Scroll Rect") && ImGui::MenuItem(ICON_MDI_ARROW_ALL " UI Scroll Rect")) {
+        state.push_command(std::make_unique<add_component_command<sbx::canvas::ui_scroll_rect>>(node.id(), "Add UI Scroll Rect"));
+      }
 
-    if (!node.has_component<sbx::canvas::canvas_scaler>() && passes("Canvas Scaler") && ImGui::MenuItem(ICON_MDI_FIT_TO_SCREEN " Canvas Scaler")) {
-      state.push_command(std::make_unique<add_component_command<sbx::canvas::canvas_scaler>>(node.id(), "Add Canvas Scaler"));
-    }
+      if (!node.has_component<sbx::canvas::layout_element>() && passes("Layout Element") && ImGui::MenuItem(ICON_MDI_RULER " Layout Element")) {
+        state.push_command(std::make_unique<add_component_command<sbx::canvas::layout_element>>(node.id(), "Add Layout Element"));
+      }
 
-    if (!node.has_component<sbx::canvas::rect_transform>() && passes("Rect Transform") && ImGui::MenuItem(ICON_MDI_ASPECT_RATIO " Rect Transform")) {
-      state.push_command(std::make_unique<add_component_command<sbx::canvas::rect_transform>>(node.id(), "Add Rect Transform"));
-    }
+      if (!node.has_component<sbx::canvas::content_size_fitter>() && passes("Content Size Fitter") && ImGui::MenuItem(ICON_MDI_ARROW_COLLAPSE_ALL " Content Size Fitter")) {
+        state.push_command(std::make_unique<add_component_command<sbx::canvas::content_size_fitter>>(node.id(), "Add Content Size Fitter"));
+      }
 
-    if (!node.has_component<sbx::canvas::ui_image>() && passes("UI Image") && ImGui::MenuItem(ICON_MDI_IMAGE " UI Image")) {
-      state.push_command(std::make_unique<add_component_command<sbx::canvas::ui_image>>(node.id(), "Add UI Image"));
-    }
+      if (!node.has_component<sbx::canvas::horizontal_layout_group>() && !node.has_component<sbx::canvas::vertical_layout_group>() && !node.has_component<sbx::canvas::grid_layout_group>() && passes("Horizontal Layout Group") && ImGui::MenuItem(ICON_MDI_VIEW_COLUMN " Horizontal Layout Group")) {
+        state.push_command(std::make_unique<add_component_command<sbx::canvas::horizontal_layout_group>>(node.id(), "Add Horizontal Layout Group"));
+      }
 
-    if (!node.has_component<sbx::canvas::ui_text>() && passes("UI Text") && ImGui::MenuItem(ICON_MDI_FORMAT_TEXT " UI Text")) {
-      state.push_command(std::make_unique<add_component_command<sbx::canvas::ui_text>>(node.id(), "Add UI Text"));
-    }
+      if (!node.has_component<sbx::canvas::horizontal_layout_group>() && !node.has_component<sbx::canvas::vertical_layout_group>() && !node.has_component<sbx::canvas::grid_layout_group>() && passes("Vertical Layout Group") && ImGui::MenuItem(ICON_MDI_VIEW_STREAM " Vertical Layout Group")) {
+        state.push_command(std::make_unique<add_component_command<sbx::canvas::vertical_layout_group>>(node.id(), "Add Vertical Layout Group"));
+      }
 
-    if (!node.has_component<sbx::canvas::ui_button>() && passes("UI Button") && ImGui::MenuItem(ICON_MDI_GESTURE_TAP_BUTTON " UI Button")) {
-      state.push_command(std::make_unique<add_component_command<sbx::canvas::ui_button>>(node.id(), "Add UI Button"));
-    }
+      if (!node.has_component<sbx::canvas::horizontal_layout_group>() && !node.has_component<sbx::canvas::vertical_layout_group>() && !node.has_component<sbx::canvas::grid_layout_group>() && passes("Grid Layout Group") && ImGui::MenuItem(ICON_MDI_VIEW_GRID " Grid Layout Group")) {
+        state.push_command(std::make_unique<add_component_command<sbx::canvas::grid_layout_group>>(node.id(), "Add Grid Layout Group"));
+      }
 
-    if (!node.has_component<sbx::canvas::ui_toggle>() && passes("UI Toggle") && ImGui::MenuItem(ICON_MDI_TOGGLE_SWITCH " UI Toggle")) {
-      state.push_command(std::make_unique<add_component_command<sbx::canvas::ui_toggle>>(node.id(), "Add UI Toggle"));
-    }
+      if (!node.has_component<sbx::canvas::ui_mask>() && passes("UI Mask") && ImGui::MenuItem(ICON_MDI_CROP " UI Mask")) {
+        state.push_command(std::make_unique<add_component_command<sbx::canvas::ui_mask>>(node.id(), "Add UI Mask"));
+      }
 
-    if (!node.has_component<sbx::canvas::ui_slider>() && passes("UI Slider") && ImGui::MenuItem(ICON_MDI_TUNE " UI Slider")) {
-      state.push_command(std::make_unique<add_component_command<sbx::canvas::ui_slider>>(node.id(), "Add UI Slider"));
-    }
-
-    if (!node.has_component<sbx::canvas::ui_scrollbar>() && passes("UI Scrollbar") && ImGui::MenuItem(ICON_MDI_DRAG_HORIZONTAL " UI Scrollbar")) {
-      state.push_command(std::make_unique<add_component_command<sbx::canvas::ui_scrollbar>>(node.id(), "Add UI Scrollbar"));
-    }
-
-    if (!node.has_component<sbx::canvas::ui_scroll_rect>() && passes("UI Scroll Rect") && ImGui::MenuItem(ICON_MDI_ARROW_ALL " UI Scroll Rect")) {
-      state.push_command(std::make_unique<add_component_command<sbx::canvas::ui_scroll_rect>>(node.id(), "Add UI Scroll Rect"));
-    }
-
-    if (!node.has_component<sbx::canvas::layout_element>() && passes("Layout Element") && ImGui::MenuItem(ICON_MDI_RULER " Layout Element")) {
-      state.push_command(std::make_unique<add_component_command<sbx::canvas::layout_element>>(node.id(), "Add Layout Element"));
-    }
-
-    if (!node.has_component<sbx::canvas::content_size_fitter>() && passes("Content Size Fitter") && ImGui::MenuItem(ICON_MDI_ARROW_COLLAPSE_ALL " Content Size Fitter")) {
-      state.push_command(std::make_unique<add_component_command<sbx::canvas::content_size_fitter>>(node.id(), "Add Content Size Fitter"));
-    }
-
-    if (!node.has_component<sbx::canvas::horizontal_layout_group>() && !node.has_component<sbx::canvas::vertical_layout_group>() && !node.has_component<sbx::canvas::grid_layout_group>() && passes("Horizontal Layout Group") && ImGui::MenuItem(ICON_MDI_VIEW_COLUMN " Horizontal Layout Group")) {
-      state.push_command(std::make_unique<add_component_command<sbx::canvas::horizontal_layout_group>>(node.id(), "Add Horizontal Layout Group"));
-    }
-
-    if (!node.has_component<sbx::canvas::horizontal_layout_group>() && !node.has_component<sbx::canvas::vertical_layout_group>() && !node.has_component<sbx::canvas::grid_layout_group>() && passes("Vertical Layout Group") && ImGui::MenuItem(ICON_MDI_VIEW_STREAM " Vertical Layout Group")) {
-      state.push_command(std::make_unique<add_component_command<sbx::canvas::vertical_layout_group>>(node.id(), "Add Vertical Layout Group"));
-    }
-
-    if (!node.has_component<sbx::canvas::horizontal_layout_group>() && !node.has_component<sbx::canvas::vertical_layout_group>() && !node.has_component<sbx::canvas::grid_layout_group>() && passes("Grid Layout Group") && ImGui::MenuItem(ICON_MDI_VIEW_GRID " Grid Layout Group")) {
-      state.push_command(std::make_unique<add_component_command<sbx::canvas::grid_layout_group>>(node.id(), "Add Grid Layout Group"));
-    }
-
-    if (!node.has_component<sbx::canvas::ui_mask>() && passes("UI Mask") && ImGui::MenuItem(ICON_MDI_CROP " UI Mask")) {
-      state.push_command(std::make_unique<add_component_command<sbx::canvas::ui_mask>>(node.id(), "Add UI Mask"));
+      ImGui::EndMenu();
     }
 
     // Open-ended category, not a fixed name -- passes when "Script" matches or any script inside
@@ -2732,6 +2836,11 @@ auto inspector_panel::_draw_node_properties(editor_state& state, sbx::scenes::no
   if (node.has_component<sbx::physics::rigidbody>()) {
     section_gap();
     draw_rigidbody_section(state, node);
+  }
+
+  if (node.has_component<sbx::physics::nav_agent>()) {
+    section_gap();
+    draw_nav_agent_section(state, node);
   }
 
   if (node.has_component<sbx::physics::shape_collider>()) {

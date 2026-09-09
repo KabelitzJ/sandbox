@@ -224,10 +224,6 @@ auto convex_hull_cache::_build(assets::assets_module& assets_module, const math:
   auto hull = compute_convex_hull(positions);
 
   if (hull.vertices.size() > convex_hull_max_points) {
-    // Rare: the mesh's exact hull already exceeds the budget (a very round or highly detailed
-    // convex shape). Coarsen by farthest-point-sampling the *true* hull's own vertices -- every one
-    // of these is already a genuine extremal point of the mesh, unlike sampling the raw mesh cloud
-    // directly -- down to the cap, then re-hull that small, already-representative set.
     hull = compute_convex_hull(farthest_point_sample(hull.vertices, convex_hull_max_points));
   }
 

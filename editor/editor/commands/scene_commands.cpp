@@ -4,8 +4,12 @@
 
 #include <utility>
 
+#include <libsbx/core/engine.hpp>
+
 #include <libsbx/scenes/components.hpp>
 #include <libsbx/scenes/scene_serializer.hpp>
+
+#include <libsbx/assets/assets_module.hpp>
 
 #include <editor/commands/scene_access.hpp>
 
@@ -30,6 +34,37 @@ auto create_node_command::execute() -> void {
 }
 
 auto create_node_command::undo() -> void {
+  auto& scene = active_scene();
+  scene.destroy_node(scene.find(_id));
+}
+
+create_primitive_node_command::create_primitive_node_command(sbx::assets::primitive_mesh_kind kind, std::optional<sbx::math::uuid> parent_id)
+: _kind{kind}, _parent_id{parent_id} { }
+
+auto create_primitive_node_command::execute() -> void {
+  if (_id == sbx::math::uuid::nil()) {
+    _id = sbx::math::uuid::create();
+  }
+
+  auto& scene = active_scene();
+  auto node = scene.create_node(std::string{sbx::assets::primitive_mesh_name(_kind)}, {}, _id);
+
+  if (_parent_id) {
+    if (auto parent = scene.find(*_parent_id); parent.is_valid()) {
+      node.set_parent(parent);
+    }
+  }
+
+  auto& assets_module = sbx::core::engine::get_module<sbx::assets::assets_module>();
+
+  auto renderer = sbx::scenes::mesh_renderer{};
+  renderer.mesh = assets_module.load_mesh(sbx::assets::primitive_mesh_uuid(_kind));
+  sbx::scenes::sync_materials_with_mesh(renderer);
+
+  node.add_component<sbx::scenes::mesh_renderer>(std::move(renderer));
+}
+
+auto create_primitive_node_command::undo() -> void {
   auto& scene = active_scene();
   scene.destroy_node(scene.find(_id));
 }

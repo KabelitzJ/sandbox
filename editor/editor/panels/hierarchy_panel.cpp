@@ -3,6 +3,8 @@
 #include <editor/panels/hierarchy_panel.hpp>
 
 #include <memory>
+#include <optional>
+#include <string>
 
 #include <imgui.h>
 
@@ -14,6 +16,8 @@
 #include <libsbx/scenes/node.hpp>
 #include <libsbx/scenes/scene.hpp>
 #include <libsbx/scenes/scenes_module.hpp>
+
+#include <libsbx/assets/primitive_meshes.hpp>
 
 #include <editor/commands/scene_commands.hpp>
 
@@ -32,6 +36,25 @@ auto icon_for(const sbx::scenes::node& node) -> const char* {
   return ICON_MDI_AXIS_ARROW; // plain transform/group node — no renderable/functional component
 }
 
+
+// Shared by both the empty-space and per-node context menus — creates a node with a mesh_renderer
+// already pointed at kind, optionally parented under parent_id, and selects it.
+auto draw_3d_object_submenu(editor_state& state, sbx::scenes::scene& scene, std::optional<sbx::math::uuid> parent_id) -> void {
+  if (!ImGui::BeginMenu(ICON_MDI_AXIS_ARROW " 3D Object")) {
+    return;
+  }
+
+  for (const auto kind : sbx::assets::primitive_mesh_kinds) {
+    if (ImGui::MenuItem(std::string{sbx::assets::primitive_mesh_name(kind)}.c_str())) {
+      auto command = std::make_unique<create_primitive_node_command>(kind, parent_id);
+      auto* created = command.get();
+      state.push_command(std::move(command));
+      state.select_node(scene.find(created->id()));
+    }
+  }
+
+  ImGui::EndMenu();
+}
 
 auto hierarchy_panel::_draw_node_row(editor_state& state, sbx::scenes::scene& scene, sbx::ecs::entity entity) -> void {
   auto node = scene.node_of(entity);
@@ -66,6 +89,8 @@ auto hierarchy_panel::_draw_node_row(editor_state& state, sbx::scenes::scene& sc
       // Deferred — see _pending_add_child_parent_id's declaration for why this can't happen here.
       _pending_add_child_parent_id = node.id();
     }
+
+    draw_3d_object_submenu(state, scene, node.id());
 
     if (ImGui::MenuItem(ICON_MDI_DELETE " Delete Node")) {
       _pending_delete_id = node.id();
@@ -114,6 +139,8 @@ auto hierarchy_panel::draw(editor_state& state) -> void {
       state.push_command(std::move(command));
       state.select_node(scene.find(created->id()));
     }
+
+    draw_3d_object_submenu(state, scene, std::nullopt);
 
     ImGui::EndPopup();
   }

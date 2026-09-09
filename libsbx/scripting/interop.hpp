@@ -213,6 +213,35 @@ struct interop {
    */
   static auto physics_raycast(math::ray* ray, std::float_t max_distance, std::uint64_t* out_node_uuid, math::vector3* out_point, math::vector3* out_normal, std::float_t* out_distance) -> bool;
 
+  /** @brief Bakes the navmesh from the active scene's static geometry right now (physics::physics_module::bake_navmesh). Returns whether the bake produced any usable polygons. */
+  static auto nav_bake(std::float_t agent_radius, std::float_t agent_height, std::float_t agent_max_slope, std::float_t agent_max_climb, std::float_t cell_size, std::float_t cell_height, std::float_t region_min_size, std::float_t edge_max_length, std::float_t edge_max_error, std::int32_t verts_per_poly) -> bool;
+
+  /** @brief Whether physics_module currently holds a baked navmesh. */
+  static auto nav_has_navmesh() -> bool;
+
+  /** @brief The closest point on the navmesh to @p point (nearest polygon, then clamped to it). Returns false, leaving out_result untouched, if there's no navmesh yet. */
+  static auto nav_sample_position(math::vector3* point, math::vector3* out_result) -> bool;
+
+  /** @brief Requests the node's nav_agent walk to @p target (physics::physics_module::request_agent_move). Returns false if there's no navmesh, the node has no nav_agent, or no path was found. */
+  static auto nav_agent_set_destination(std::uint64_t uuid, math::vector3* target) -> bool;
+
+  /** @brief nav_agent_state (0 = Idle, 1 = Moving, 2 = TargetUnreachable) as a plain byte for the C# enum. */
+  static auto nav_agent_get_state(std::uint64_t uuid) -> std::uint8_t;
+
+  static auto nav_agent_get_velocity(std::uint64_t uuid, math::vector3* out_velocity) -> void;
+
+  /** @brief Straight-line distance from the agent's current corridor position to its current target. */
+  static auto nav_agent_get_remaining_distance(std::uint64_t uuid, std::float_t* out_distance) -> void;
+
+  static auto nav_agent_get_radius(std::uint64_t uuid, std::float_t* out_radius) -> void;
+  static auto nav_agent_set_radius(std::uint64_t uuid, std::float_t radius) -> void;
+
+  static auto nav_agent_get_speed(std::uint64_t uuid, std::float_t* out_speed) -> void;
+  static auto nav_agent_set_speed(std::uint64_t uuid, std::float_t speed) -> void;
+
+  static auto nav_agent_get_acceleration(std::uint64_t uuid, std::float_t* out_acceleration) -> void;
+  static auto nav_agent_set_acceleration(std::uint64_t uuid, std::float_t acceleration) -> void;
+
   /** @brief (Re)generates the active scene's terrain -- see terrain::terrain_module::generate. Replaces any terrain a previous call generated. */
   static auto terrain_generate(std::uint32_t width, std::uint32_t depth, std::float_t cell_size, std::float_t frequency, std::float_t amplitude, std::uint32_t octaves) -> void;
 

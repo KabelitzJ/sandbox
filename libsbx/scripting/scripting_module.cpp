@@ -140,6 +140,21 @@ scripting_module::scripting_module() {
 
   _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "Physics_Raycast", reinterpret_cast<void*>(&interop::physics_raycast));
 
+  _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "Nav_Bake", reinterpret_cast<void*>(&interop::nav_bake));
+  _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "Nav_HasNavMesh", reinterpret_cast<void*>(&interop::nav_has_navmesh));
+  _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "Nav_SamplePosition", reinterpret_cast<void*>(&interop::nav_sample_position));
+
+  _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "NavAgent_SetDestination", reinterpret_cast<void*>(&interop::nav_agent_set_destination));
+  _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "NavAgent_GetState", reinterpret_cast<void*>(&interop::nav_agent_get_state));
+  _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "NavAgent_GetVelocity", reinterpret_cast<void*>(&interop::nav_agent_get_velocity));
+  _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "NavAgent_GetRemainingDistance", reinterpret_cast<void*>(&interop::nav_agent_get_remaining_distance));
+  _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "NavAgent_GetRadius", reinterpret_cast<void*>(&interop::nav_agent_get_radius));
+  _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "NavAgent_SetRadius", reinterpret_cast<void*>(&interop::nav_agent_set_radius));
+  _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "NavAgent_GetSpeed", reinterpret_cast<void*>(&interop::nav_agent_get_speed));
+  _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "NavAgent_SetSpeed", reinterpret_cast<void*>(&interop::nav_agent_set_speed));
+  _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "NavAgent_GetAcceleration", reinterpret_cast<void*>(&interop::nav_agent_get_acceleration));
+  _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "NavAgent_SetAcceleration", reinterpret_cast<void*>(&interop::nav_agent_set_acceleration));
+
   _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "Terrain_Generate", reinterpret_cast<void*>(&interop::terrain_generate));
   _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "Terrain_SampleHeight", reinterpret_cast<void*>(&interop::terrain_sample_height));
   _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "Terrain_SampleNormal", reinterpret_cast<void*>(&interop::terrain_sample_normal));
@@ -236,6 +251,7 @@ scripting_module::scripting_module() {
   // distinct C# types avoids Main's properties silently ignoring which node they were fetched from.
   interop::register_managed_component<scenes::camera>("Sbx.Core.Components.CameraSettings", _core_assembly);
   interop::register_managed_component<physics::rigidbody>("Sbx.Core.Physics.Rigidbody", _core_assembly);
+  interop::register_managed_component<physics::nav_agent>("Sbx.Core.Physics.NavAgent", _core_assembly);
   interop::register_managed_component<scenes::mesh_renderer>("Sbx.Core.Components.MeshRenderer", _core_assembly);
   interop::register_managed_component<canvas::canvas>("Sbx.Core.UI.Canvas", _core_assembly);
   interop::register_managed_component<canvas::rect_transform>("Sbx.Core.UI.RectTransform", _core_assembly);

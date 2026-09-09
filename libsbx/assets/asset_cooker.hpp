@@ -206,6 +206,14 @@ public:
   /** @brief Where a given asset's cooked cache blob lives, regardless of whether it exists yet. */
   [[nodiscard]] static auto cooked_path(const math::uuid& id, std::string_view extension) -> std::filesystem::path;
 
+  /**
+   * @brief Writes a cooked mesh cache blob directly from in-memory geometry, bypassing glTF import
+   * entirely -- for engine-generated meshes (built-in primitives) with no source file to cook from.
+   * Same on-disk format _cook_mesh produces (unskinned, no animation clips), loadable via the
+   * ordinary resolve_mesh call once written, passing needs_cook as false.
+   */
+  [[nodiscard]] static auto write_cooked_mesh(const std::filesystem::path& cooked, const std::vector<vertex>& vertices, const std::vector<std::uint32_t>& indices, const std::vector<cooked_submesh>& submeshes, const math::volume& bounds) -> bool;
+
   /** @brief Reads a material cooked as a side effect of a mesh import (not a hand-authored `.material` file). Stateless -- safe to call from any thread, no asset_cooker instance needed. */
   [[nodiscard]] static auto resolve_cooked_material(const math::uuid& id) -> std::optional<material_description>;
 

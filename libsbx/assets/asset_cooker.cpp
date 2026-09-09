@@ -1932,6 +1932,73 @@ auto asset_cooker::_load_cooked_mesh(const std::filesystem::path& cooked, std::v
   return true;
 }
 
+auto asset_cooker::write_cooked_mesh(const std::filesystem::path& cooked, const std::vector<vertex>& vertices, const std::vector<std::uint32_t>& indices, const std::vector<cooked_submesh>& submeshes, const math::volume& bounds) -> bool {
+  auto error = std::error_code{};
+  std::filesystem::create_directories(cooked.parent_path(), error);
+
+  auto out = std::ofstream{cooked, std::ios::binary};
+
+  if (!out) {
+    utility::logger<"assets">::warn("Cook: could not write '{}'", cooked.generic_string());
+    return false;
+  }
+
+  auto encoded_vertices = std::vector<unsigned char>(meshopt_encodeVertexBufferBound(vertices.size(), sizeof(vertex)));
+  const auto vertex_data_size = meshopt_encodeVertexBuffer(encoded_vertices.data(), encoded_vertices.size(), vertices.data(), vertices.size(), sizeof(vertex));
+  encoded_vertices.resize(vertex_data_size);
+
+  auto encoded_indices = std::vector<unsigned char>(meshopt_encodeIndexBufferBound(indices.size(), vertices.size()));
+  const auto index_data_size = meshopt_encodeIndexBuffer(encoded_indices.data(), encoded_indices.size(), indices.data(), indices.size());
+  encoded_indices.resize(index_data_size);
+
+  auto header = mesh_file_header{};
+  header.magic = mesh_magic;
+  header.version = mesh_cook_version;
+  header.vertex_count = static_cast<std::uint32_t>(vertices.size());
+  header.index_count = static_cast<std::uint32_t>(indices.size());
+  header.submesh_count = static_cast<std::uint32_t>(submeshes.size());
+  header.bounds_min[0] = bounds.min().x();
+  header.bounds_min[1] = bounds.min().y();
+  header.bounds_min[2] = bounds.min().z();
+  header.bounds_max[0] = bounds.max().x();
+  header.bounds_max[1] = bounds.max().y();
+  header.bounds_max[2] = bounds.max().z();
+  header.vertex_data_size = static_cast<std::uint32_t>(vertex_data_size);
+  header.index_data_size = static_cast<std::uint32_t>(index_data_size);
+  header.flags = 0u;
+  header.skin_vertex_data_size = 0u;
+  header.animation_clip_count = 0u;
+
+  out.write(reinterpret_cast<const char*>(&header), sizeof(header));
+  out.write(reinterpret_cast<const char*>(encoded_vertices.data()), static_cast<std::streamsize>(vertex_data_size));
+  out.write(reinterpret_cast<const char*>(encoded_indices.data()), static_cast<std::streamsize>(index_data_size));
+
+  for (const auto& submesh : submeshes) {
+    auto record = submesh_file_record{};
+    record.index_offset = submesh.index_offset;
+    record.index_count = submesh.index_count;
+    record.bounds_min[0] = submesh.bounds.min().x();
+    record.bounds_min[1] = submesh.bounds.min().y();
+    record.bounds_min[2] = submesh.bounds.min().z();
+    record.bounds_max[0] = submesh.bounds.max().x();
+    record.bounds_max[1] = submesh.bounds.max().y();
+    record.bounds_max[2] = submesh.bounds.max().z();
+    record.material_uuid = submesh.material.value();
+    record.lod_count = static_cast<std::uint32_t>(submesh.lods.size());
+
+    out.write(reinterpret_cast<const char*>(&record), sizeof(record));
+
+    for (const auto& lod : submesh.lods) {
+      auto lod_record = submesh_lod_record{lod.index_offset, lod.index_count, lod.error};
+      out.write(reinterpret_cast<const char*>(&lod_record), sizeof(lod_record));
+    }
+  }
+
+  utility::logger<"assets">::debug("Wrote generated mesh '{}'", cooked.generic_string());
+
+  return true;
+}
+
 auto asset_cooker::_cook_material(const math::uuid& id, const material_description& description) -> bool {
   const auto cooked = cooked_path(id, ".sbxmat");
 

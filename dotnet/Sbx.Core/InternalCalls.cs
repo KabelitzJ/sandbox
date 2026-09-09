@@ -106,6 +106,21 @@ namespace Sbx.Core
 
     internal static delegate* unmanaged<Ray*, float, ulong*, Vector3*, Vector3*, float*, bool> Physics_Raycast;
 
+    internal static delegate* unmanaged<float, float, float, float, float, float, float, float, float, int, bool> Nav_Bake;
+    internal static delegate* unmanaged<bool> Nav_HasNavMesh;
+    internal static delegate* unmanaged<Vector3*, Vector3*, bool> Nav_SamplePosition;
+
+    internal static delegate* unmanaged<ulong, Vector3*, bool> NavAgent_SetDestination;
+    internal static delegate* unmanaged<ulong, byte> NavAgent_GetState;
+    internal static delegate* unmanaged<ulong, Vector3*, void> NavAgent_GetVelocity;
+    internal static delegate* unmanaged<ulong, float*, void> NavAgent_GetRemainingDistance;
+    internal static delegate* unmanaged<ulong, float*, void> NavAgent_GetRadius;
+    internal static delegate* unmanaged<ulong, float, void> NavAgent_SetRadius;
+    internal static delegate* unmanaged<ulong, float*, void> NavAgent_GetSpeed;
+    internal static delegate* unmanaged<ulong, float, void> NavAgent_SetSpeed;
+    internal static delegate* unmanaged<ulong, float*, void> NavAgent_GetAcceleration;
+    internal static delegate* unmanaged<ulong, float, void> NavAgent_SetAcceleration;
+
     internal static delegate* unmanaged<uint, uint, float, float, float, uint, void> Terrain_Generate;
     internal static delegate* unmanaged<Vector2*, float*, void> Terrain_SampleHeight;
     internal static delegate* unmanaged<Vector2*, Vector3*, void> Terrain_SampleNormal;

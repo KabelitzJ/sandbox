@@ -24,6 +24,8 @@
 
 #include <libsbx/graphics/resources/buffer.hpp>
 
+#include <libsbx/assets/primitive_meshes.hpp>
+
 namespace sbx::assets {
 
 inline constexpr auto material_flag_masked = std::uint32_t{1u << 0u};
@@ -223,6 +225,24 @@ auto asset_residency::load_mesh(const math::uuid& id, const mesh_import_options&
     if (const auto entry = _meshes.find(id); entry != _meshes.end()) {
       return mesh_handle{entry->second};
     }
+  }
+
+  if (const auto kind = primitive_mesh_kind_of(id); kind.has_value()) {
+    ensure_primitive_mesh_cooked(*kind);
+
+    const auto cooked = asset_cooker::cooked_path(id, ".sbxmsh");
+
+    auto record = std::make_shared<mesh>();
+    record->_id = id;
+
+    {
+      auto lock = std::lock_guard{_mutex};
+      _meshes.emplace(id, record);
+    }
+
+    _loader.submit(asset_loader::mesh_request{id, options, std::filesystem::path{}, cooked, false});
+
+    return mesh_handle{record};
   }
 
   const auto source = _manifest.path_of(id);

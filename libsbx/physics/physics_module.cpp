@@ -316,7 +316,7 @@ auto physics_module::_update_manifold_cache() -> void {
   _manifold_cache = std::move(next_cache);
 }
 
-auto physics_module::_reset() -> void {
+auto physics_module::_reset(scenes::scene& scene) -> void {
   _dynamic_tree.clear();
   _static_tree.clear();
   _dynamic_leaves.clear();
@@ -325,6 +325,40 @@ auto physics_module::_reset() -> void {
   _candidate_pairs.clear();
   _manifolds.clear();
   _manifold_cache.clear();
+
+  if (_pending_nav_settings) {
+    bake_navmesh(scene, *_pending_nav_settings);
+  } else {
+    _navmesh.reset();
+  }
+}
+
+auto physics_module::bake_navmesh(scenes::scene& scene, const physics::nav_settings& settings) -> bool {
+  _pending_nav_settings = settings;
+
+  auto result = build_navmesh(settings, scene);
+
+  if (result.success) {
+    _navmesh = std::move(result.mesh);
+  } else {
+    _navmesh.reset();
+  }
+
+  return result.success;
+}
+
+auto physics_module::request_agent_move(scenes::node agent_node, const math::vector3& target) -> bool {
+  if (!_navmesh) {
+    return false;
+  }
+
+  auto agent = agent_node.try_get_component<nav_agent>();
+
+  if (!agent) {
+    return false;
+  }
+
+  return _crowd.request_move_target(*agent, *_navmesh, target);
 }
 
 auto physics_module::_narrowphase(scenes::scene& scene) -> void {
@@ -401,13 +435,14 @@ auto physics_module::fixed_update() -> void {
     return;
   }
 
+  auto& scene = scenes_module.active_scene();
+
   if (!_was_simulating) {
-    _reset();
+    _reset(scene);
   }
 
   _was_simulating = true;
 
-  auto& scene = scenes_module.active_scene();
   const auto dt = core::engine::fixed_delta_time().value();
 
   // Every node's world pose is composed at most once this step, no matter how many times
@@ -441,6 +476,10 @@ auto physics_module::fixed_update() -> void {
 
   _dispatch_contact_events();
   _update_manifold_cache();
+
+  if (_navmesh) {
+    _crowd.update(scene, *_navmesh, dt);
+  }
 }
 
 auto physics_module::query_sphere_contacts(scenes::scene& scene, const math::vector3& center, std::float_t radius, std::vector<sphere_query_hit>& out_hits) -> void {
@@ -533,7 +572,7 @@ auto physics_module::raycast(scenes::scene& scene, const math::ray& ray, std::fl
 auto physics_module::late_update() -> void {
   SBX_PROFILE_SCOPE("physics_module::late_update");
 
-  if (!_debug_draw_flags.colliders && !_debug_draw_flags.broadphase && !_debug_draw_flags.contacts) {
+  if (!_debug_draw_flags.colliders && !_debug_draw_flags.broadphase && !_debug_draw_flags.contacts && !_debug_draw_flags.navmesh && !_debug_draw_flags.nav_agents) {
     return;
   }
 
@@ -670,6 +709,22 @@ auto physics_module::_submit_debug_draw(scenes::scene& scene) -> void {
         debug_draw.add_cross(point.point, cross_size, contact_color);
         debug_draw.add_line(point.point, point.point + manifold.normal * normal_length, contact_color);
       }
+    }
+  }
+
+  if (_debug_draw_flags.navmesh && _navmesh) {
+    const auto navmesh_color = math::color{0.1f, 0.6f, 1.0f, 1.0f};
+
+    draw_navmesh(debug_draw, *_navmesh, navmesh_color);
+  }
+
+  if (_debug_draw_flags.nav_agents) {
+    const auto agent_color = math::color{1.0f, 0.8f, 0.1f, 1.0f};
+
+    for (auto&& [entity, agent, node_transform] : scene.query<nav_agent, scenes::local_transform>().each()) {
+      static_cast<void>(entity);
+
+      draw_nav_agent(debug_draw, agent, node_transform.position, agent_color);
     }
   }
 }

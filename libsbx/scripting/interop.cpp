@@ -18,6 +18,9 @@
 
 #include <libsbx/physics/rigidbody.hpp>
 #include <libsbx/physics/physics_module.hpp>
+#include <libsbx/physics/nav/nav_agent.hpp>
+#include <libsbx/physics/nav/nav_settings.hpp>
+#include <libsbx/physics/nav/navmesh.hpp>
 
 #include <libsbx/terrain/terrain_module.hpp>
 
@@ -1477,11 +1480,224 @@ auto interop::physics_raycast(math::ray* ray, std::float_t max_distance, std::ui
     *out_normal = hit->normal; 
   }
 
-  if (out_distance) { 
-    *out_distance = hit->distance; 
+  if (out_distance) {
+    *out_distance = hit->distance;
   }
 
   return true;
+}
+
+auto interop::nav_bake(std::float_t agent_radius, std::float_t agent_height, std::float_t agent_max_slope, std::float_t agent_max_climb, std::float_t cell_size, std::float_t cell_height, std::float_t region_min_size, std::float_t edge_max_length, std::float_t edge_max_error, std::int32_t verts_per_poly) -> bool {
+  auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
+  auto& scene = scenes_module.active_scene();
+  auto& physics_module = core::engine::get_module<physics::physics_module>();
+
+  auto settings = physics::nav_settings{};
+  settings.agent_radius = agent_radius;
+  settings.agent_height = agent_height;
+  settings.agent_max_slope = agent_max_slope;
+  settings.agent_max_climb = agent_max_climb;
+  settings.cell_size = cell_size;
+  settings.cell_height = cell_height;
+  settings.region_min_size = region_min_size;
+  settings.edge_max_length = edge_max_length;
+  settings.edge_max_error = edge_max_error;
+  settings.verts_per_poly = verts_per_poly;
+
+  return physics_module.bake_navmesh(scene, settings);
+}
+
+auto interop::nav_has_navmesh() -> bool {
+  auto& physics_module = core::engine::get_module<physics::physics_module>();
+
+  return physics_module.has_navmesh();
+}
+
+auto interop::nav_sample_position(math::vector3* point, math::vector3* out_result) -> bool {
+  if (!point) {
+    utility::logger<"scripting">::error("Attempting to call nav_sample_position with a null point");
+
+    return false;
+  }
+
+  auto& physics_module = core::engine::get_module<physics::physics_module>();
+
+  if (!physics_module.has_navmesh()) {
+    return false;
+  }
+
+  const auto& mesh = physics_module.navmesh();
+  const auto ref = physics::find_nearest_poly(mesh, *point);
+
+  if (ref == physics::null_poly_ref) {
+    return false;
+  }
+
+  if (out_result) {
+    *out_result = physics::closest_point_on_poly(mesh, ref, *point);
+  }
+
+  return true;
+}
+
+auto interop::nav_agent_set_destination(std::uint64_t uuid, math::vector3* target) -> bool {
+  if (!target) {
+    utility::logger<"scripting">::error("Attempting to call nav_agent_set_destination with a null target");
+
+    return false;
+  }
+
+  auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
+  auto& scene = scenes_module.active_scene();
+
+  auto node = scene.find(math::uuid::from_value(uuid));
+
+  if (!node.is_valid()) {
+    utility::logger<"scripting">::error("Attempting to set nav_agent destination of invalid node");
+
+    return false;
+  }
+
+  auto& physics_module = core::engine::get_module<physics::physics_module>();
+
+  return physics_module.request_agent_move(node, *target);
+}
+
+auto interop::nav_agent_get_state(std::uint64_t uuid) -> std::uint8_t {
+  auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
+  auto& scene = scenes_module.active_scene();
+
+  auto node = scene.find(math::uuid::from_value(uuid));
+
+  if (!node.is_valid()) {
+    utility::logger<"scripting">::error("Attempting to get nav_agent state of invalid node");
+
+    return 0u;
+  }
+
+  return static_cast<std::uint8_t>(node.get_component<physics::nav_agent>().state);
+}
+
+auto interop::nav_agent_get_velocity(std::uint64_t uuid, math::vector3* out_velocity) -> void {
+  auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
+  auto& scene = scenes_module.active_scene();
+
+  auto node = scene.find(math::uuid::from_value(uuid));
+
+  if (!node.is_valid() || !out_velocity) {
+    utility::logger<"scripting">::error("Attempting to get nav_agent velocity of invalid node");
+
+    return;
+  }
+
+  *out_velocity = node.get_component<physics::nav_agent>().velocity;
+}
+
+auto interop::nav_agent_get_remaining_distance(std::uint64_t uuid, std::float_t* out_distance) -> void {
+  auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
+  auto& scene = scenes_module.active_scene();
+
+  auto node = scene.find(math::uuid::from_value(uuid));
+
+  if (!node.is_valid() || !out_distance) {
+    utility::logger<"scripting">::error("Attempting to get nav_agent remaining distance of invalid node");
+
+    return;
+  }
+
+  const auto& agent = node.get_component<physics::nav_agent>();
+
+  *out_distance = math::vector3::distance(agent.corridor.position, agent.corridor.target);
+}
+
+auto interop::nav_agent_get_radius(std::uint64_t uuid, std::float_t* out_radius) -> void {
+  auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
+  auto& scene = scenes_module.active_scene();
+
+  auto node = scene.find(math::uuid::from_value(uuid));
+
+  if (!node.is_valid() || !out_radius) {
+    utility::logger<"scripting">::error("Attempting to get nav_agent radius of invalid node");
+
+    return;
+  }
+
+  *out_radius = node.get_component<physics::nav_agent>().radius;
+}
+
+auto interop::nav_agent_set_radius(std::uint64_t uuid, std::float_t radius) -> void {
+  auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
+  auto& scene = scenes_module.active_scene();
+
+  auto node = scene.find(math::uuid::from_value(uuid));
+
+  if (!node.is_valid()) {
+    utility::logger<"scripting">::error("Attempting to set nav_agent radius of invalid node");
+
+    return;
+  }
+
+  node.get_component<physics::nav_agent>().radius = radius;
+}
+
+auto interop::nav_agent_get_speed(std::uint64_t uuid, std::float_t* out_speed) -> void {
+  auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
+  auto& scene = scenes_module.active_scene();
+
+  auto node = scene.find(math::uuid::from_value(uuid));
+
+  if (!node.is_valid() || !out_speed) {
+    utility::logger<"scripting">::error("Attempting to get nav_agent speed of invalid node");
+
+    return;
+  }
+
+  *out_speed = node.get_component<physics::nav_agent>().max_speed;
+}
+
+auto interop::nav_agent_set_speed(std::uint64_t uuid, std::float_t speed) -> void {
+  auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
+  auto& scene = scenes_module.active_scene();
+
+  auto node = scene.find(math::uuid::from_value(uuid));
+
+  if (!node.is_valid()) {
+    utility::logger<"scripting">::error("Attempting to set nav_agent speed of invalid node");
+
+    return;
+  }
+
+  node.get_component<physics::nav_agent>().max_speed = speed;
+}
+
+auto interop::nav_agent_get_acceleration(std::uint64_t uuid, std::float_t* out_acceleration) -> void {
+  auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
+  auto& scene = scenes_module.active_scene();
+
+  auto node = scene.find(math::uuid::from_value(uuid));
+
+  if (!node.is_valid() || !out_acceleration) {
+    utility::logger<"scripting">::error("Attempting to get nav_agent acceleration of invalid node");
+
+    return;
+  }
+
+  *out_acceleration = node.get_component<physics::nav_agent>().max_acceleration;
+}
+
+auto interop::nav_agent_set_acceleration(std::uint64_t uuid, std::float_t acceleration) -> void {
+  auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
+  auto& scene = scenes_module.active_scene();
+
+  auto node = scene.find(math::uuid::from_value(uuid));
+
+  if (!node.is_valid()) {
+    utility::logger<"scripting">::error("Attempting to set nav_agent acceleration of invalid node");
+
+    return;
+  }
+
+  node.get_component<physics::nav_agent>().max_acceleration = acceleration;
 }
 
 auto interop::terrain_generate(std::uint32_t width, std::uint32_t depth, std::float_t cell_size, std::float_t frequency, std::float_t amplitude, std::uint32_t octaves) -> void {

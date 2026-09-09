@@ -37,6 +37,10 @@
 #include <libsbx/physics/mesh_collision_cache.hpp>
 #include <libsbx/physics/convex_hull_cache.hpp>
 #include <libsbx/physics/narrowphase.hpp>
+#include <libsbx/physics/nav/crowd.hpp>
+#include <libsbx/physics/nav/nav_agent.hpp>
+#include <libsbx/physics/nav/navmesh.hpp>
+#include <libsbx/physics/nav/navmesh_builder.hpp>
 
 namespace sbx::physics {
 
@@ -179,6 +183,43 @@ public:
     return _on_contact_ended;
   }
 
+  [[nodiscard]] auto nav_settings() const noexcept -> const std::optional<physics::nav_settings>& {
+    return _pending_nav_settings;
+  }
+
+  /**
+   * @brief Bakes the navmesh from the active static geometry right now (Edit mode included --
+   * unlike the automatic Play-start bake below, this doesn't wait for is_simulating()), and
+   * remembers @p settings so the next Play-start edge rebakes with the same settings. Returns
+   * whether the bake produced any usable polygons; has_navmesh()/navmesh() reflect the result
+   * either way (a failed bake clears any previous navmesh).
+   */
+  auto bake_navmesh(scenes::scene& scene, const physics::nav_settings& settings) -> bool;
+
+  [[nodiscard]] auto has_navmesh() const noexcept -> bool {
+    return _navmesh.has_value();
+  }
+
+  [[nodiscard]] auto navmesh() const -> const physics::navmesh& {
+    return *_navmesh;
+  }
+
+  /**
+   * @brief Requests @p agent_node's nav_agent walk to @p target -- finds a path over the baked
+   * navmesh right now and hands it to the crowd; the actual per-step movement (direct
+   * scenes::local_transform writes) happens in fixed_update(). No-op (returns false) if there's no
+   * navmesh yet or @p agent_node has no nav_agent component.
+   */
+  auto request_agent_move(scenes::node agent_node, const math::vector3& target) -> bool;
+
+  [[nodiscard]] auto mesh_cache() -> mesh_collision_cache& {
+    return _mesh_cache;
+  }
+
+  [[nodiscard]] auto hull_cache() -> convex_hull_cache& {
+    return _hull_cache;
+  }
+
 private:
 
   auto _sync_broadphase(scenes::scene& scene) -> void;
@@ -206,7 +247,7 @@ private:
   // entity -- any scenes::node this module is still holding onto from before that becomes a stale
   // handle. Called once on the false -> true edge of is_simulating() so a fresh play session always
   // starts from an empty broadphase instead of dereferencing those stale nodes.
-  auto _reset() -> void;
+  auto _reset(scenes::scene& scene) -> void;
 
   // Reads current collider transforms plus whatever _dynamic_tree/_static_tree/_manifolds the last
   // fixed_update() step left cached; see physics_debug.hpp for the actual wireframe generation.
@@ -245,6 +286,10 @@ private:
 
   mesh_collision_cache _mesh_cache{};
   convex_hull_cache _hull_cache{};
+
+  std::optional<physics::nav_settings> _pending_nav_settings{};
+  std::optional<physics::navmesh> _navmesh{};
+  physics::crowd _crowd{};
 
   // compose_world_pose() memoization for the current fixed_update() step -- cleared at the top of
   // each step, shared by _sync_broadphase and _narrowphase so a node touched by both (or by

@@ -13,6 +13,8 @@
 
 #include <libsbx/scenes/node.hpp>
 
+#include <libsbx/assets/primitive_meshes.hpp>
+
 #include <editor/commands/command.hpp>
 
 namespace editor {
@@ -44,6 +46,34 @@ private:
   sbx::math::uuid _id{sbx::math::uuid::nil()};
 
 }; // class create_node_command
+
+/** @brief Creates one new node with a mesh_renderer already pointed at a built-in primitive mesh — the Hierarchy panel's "Create > 3D Object" menu. */
+class create_primitive_node_command final : public command {
+
+public:
+
+  explicit create_primitive_node_command(sbx::assets::primitive_mesh_kind kind, std::optional<sbx::math::uuid> parent_id = std::nullopt);
+
+  auto execute() -> void override;
+
+  auto undo() -> void override;
+
+  [[nodiscard]] auto label() const -> std::string override {
+    return "Create " + std::string{sbx::assets::primitive_mesh_name(_kind)};
+  }
+
+  /** @brief The created node's id — valid to read right after command_stack::push() returns. */
+  [[nodiscard]] auto id() const noexcept -> sbx::math::uuid {
+    return _id;
+  }
+
+private:
+
+  sbx::assets::primitive_mesh_kind _kind;
+  std::optional<sbx::math::uuid> _parent_id;
+  sbx::math::uuid _id{sbx::math::uuid::nil()};
+
+}; // class create_primitive_node_command
 
 /**
  * @brief Deletes target and its whole subtree. Snapshots everything undo needs to restore it —

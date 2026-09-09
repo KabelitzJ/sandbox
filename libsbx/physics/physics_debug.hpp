@@ -21,8 +21,13 @@
 
 #include <libsbx/render/debug/debug_draw.hpp>
 
+#include <span>
+
 #include <libsbx/physics/shapes.hpp>
 #include <libsbx/physics/rigidbody.hpp>
+#include <libsbx/physics/nav/nav_agent.hpp>
+#include <libsbx/physics/nav/navmesh.hpp>
+#include <libsbx/physics/nav/navmesh_query.hpp>
 
 namespace sbx::physics {
 
@@ -35,6 +40,8 @@ struct debug_draw_flags {
   bool colliders{false};
   bool broadphase{false};
   bool contacts{false};
+  bool navmesh{false};
+  bool nav_agents{false};
 }; // struct debug_draw_flags
 
 /**
@@ -61,6 +68,12 @@ struct debug_draw_flags {
  * degenerate source mesh -- see quickhull.hpp's compute_convex_hull).
  */
 auto draw_convex_shape(render::debug_draw& debug_draw, const convex_shape& shape, const math::matrix4x4& matrix, const math::vector3& scale, const math::color& color) -> void;
+
+auto draw_navmesh(render::debug_draw& debug_draw, const navmesh& mesh, const math::color& color) -> void;
+
+auto draw_nav_path(render::debug_draw& debug_draw, std::span<const straight_path_point> path, const math::color& color) -> void;
+
+auto draw_nav_agent(render::debug_draw& debug_draw, const nav_agent& agent, const math::vector3& position, const math::color& color) -> void;
 
 } // namespace sbx::physics
 

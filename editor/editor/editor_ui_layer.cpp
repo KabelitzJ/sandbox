@@ -22,6 +22,7 @@
 #include <editor/panels/logger_panel.hpp>
 #include <editor/panels/inspector_panel.hpp>
 #include <editor/panels/animation_graph_panel.hpp>
+#include <editor/panels/navigation_panel.hpp>
 
 #include <editor/viewport_gizmo.hpp>
 #include <editor/viewport_picking.hpp>
@@ -164,6 +165,10 @@ auto editor_ui_layer::_create_panels() -> void {
   _panels.push_back(std::make_unique<asset_browser_panel>());
   _panels.push_back(std::make_unique<logger_panel>());
   _panels.push_back(std::make_unique<animation_graph_panel>()); // on-demand, not part of the default dock layout -- see its own doc comment
+
+  auto navigation = std::make_unique<navigation_panel>();
+  _navigation_panel = navigation.get();
+  _panels.push_back(std::move(navigation)); // on-demand, same reasoning as animation_graph_panel above
 }
 
 auto editor_ui_layer::_draw_dockspace() -> void {
@@ -320,6 +325,8 @@ auto editor_ui_layer::_draw_dockspace() -> void {
       changed |= ImGui::MenuItem("Physics Colliders", nullptr, &flags.colliders);
       changed |= ImGui::MenuItem("Physics Broadphase", nullptr, &flags.broadphase);
       changed |= ImGui::MenuItem("Physics Contacts", nullptr, &flags.contacts);
+      changed |= ImGui::MenuItem("Navmesh", nullptr, &flags.navmesh);
+      changed |= ImGui::MenuItem("Nav Agents", nullptr, &flags.nav_agents);
 
       ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
 
@@ -333,6 +340,12 @@ auto editor_ui_layer::_draw_dockspace() -> void {
       if (changed) {
         physics_module.set_debug_draw_flags(flags);
       }
+
+      ImGui::EndMenu();
+    }
+
+    if (ImGui::BeginMenu("Window")) {
+      ImGui::MenuItem(navigation_panel::window_name, nullptr, &_navigation_panel->is_open);
 
       ImGui::EndMenu();
     }
