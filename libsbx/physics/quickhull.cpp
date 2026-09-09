@@ -12,24 +12,15 @@
 
 namespace sbx::physics {
 
-// A face mid-construction: besides the triangle itself, tracks which of the not-yet-consumed input
-// points lie outside it (candidates for expanding the hull further in this direction) -- the same
-// "outside set" bookkeeping the Quickhull algorithm is named for.
 struct working_face {
   std::array<std::uint32_t, 3> indices;
-  math::vector3 normal; // unit, outward
-  std::float_t plane_offset{0.0f}; // plane equation: dot(normal, x) == plane_offset
+  math::vector3 normal;
+  std::float_t plane_offset{0.0f};
   std::vector<math::vector3> outside_points;
 }; // struct working_face
 
 inline constexpr auto visibility_epsilon = 1e-5f;
 
-// Builds one face from three existing vertex indices, orienting its normal away from `reference`
-// (a point already established to be strictly inside the hull-in-progress). Every face this
-// algorithm ever creates -- the initial tetrahedron's 4 faces and every later horizon-expansion face
-// -- uses the *same* reference point: the initial tetrahedron's own centroid. That stays valid
-// throughout because the hull only ever grows outward from there, exactly the same reasoning
-// epa.cpp uses with the origin (which EPA's polytope is guaranteed to always contain).
 [[nodiscard]] auto make_face(const std::vector<math::vector3>& vertices, const math::vector3& reference, std::uint32_t a, std::uint32_t b, std::uint32_t c) -> working_face {
   auto normal = math::vector3::cross(vertices[b] - vertices[a], vertices[c] - vertices[a]);
   const auto length = normal.length();
@@ -49,8 +40,6 @@ inline constexpr auto visibility_epsilon = 1e-5f;
   return working_face{{a, b, c}, normal, offset, {}};
 }
 
-// Redistributes `pool` among `faces` (only ever called with newly-created faces): each point goes
-// to the first face it's outside of, or is dropped (now inside the larger hull) if it's outside none.
 auto distribute(std::vector<math::vector3> pool, std::span<working_face> faces) -> void {
   for (auto& point : pool) {
     for (auto& face : faces) {
@@ -63,9 +52,6 @@ auto distribute(std::vector<math::vector3> pool, std::span<working_face> faces) 
 }
 
 [[nodiscard]] auto farthest_pair(std::span<const math::vector3> points) -> std::pair<std::uint32_t, std::uint32_t> {
-  // The 6 axis extremes are a cheap, standard way to find a good (not necessarily optimal, but
-  // reliably non-degenerate whenever the point set itself isn't) starting pair for the initial
-  // simplex, without an O(n^2) all-pairs scan over the whole input.
   auto extremes = std::array<std::uint32_t, 6>{};
 
   for (auto axis = std::size_t{0}; axis < 3u; ++axis) {
@@ -113,10 +99,9 @@ auto compute_convex_hull(std::span<const math::vector3> points) -> hull_result {
   const auto [p0, p1] = farthest_pair(points);
 
   if (math::vector3::distance_squared(points[p0], points[p1]) <= math::epsilonf) {
-    return hull_result{{points[0]}, {}}; // every point coincides
+    return hull_result{{points[0]}, {}};
   }
 
-  // p2: furthest from the line p0-p1.
   auto p2 = std::uint32_t{0};
 
   {
@@ -135,11 +120,10 @@ auto compute_convex_hull(std::span<const math::vector3> points) -> hull_result {
     }
 
     if (best_distance_squared <= math::epsilonf) {
-      return hull_result{{points[p0], points[p1]}, {}}; // every point is collinear
+      return hull_result{{points[p0], points[p1]}, {}};
     }
   }
 
-  // p3: furthest (by absolute distance, either side) from the plane p0/p1/p2.
   auto p3 = std::uint32_t{0};
 
   {
@@ -159,7 +143,7 @@ auto compute_convex_hull(std::span<const math::vector3> points) -> hull_result {
     }
 
     if (best_distance <= math::epsilonf) {
-      return hull_result{std::vector<math::vector3>{points.begin(), points.end()}, {}}; // every point is coplanar
+      return hull_result{std::vector<math::vector3>{points.begin(), points.end()}, {}};
     }
   }
 
@@ -190,7 +174,6 @@ auto compute_convex_hull(std::span<const math::vector3> points) -> hull_result {
 
       progress = true;
 
-      // The furthest outside point for this face becomes the next hull vertex ("apex").
       auto apex_local_index = std::size_t{0};
       auto apex_distance = -std::numeric_limits<std::float_t>::max();
 
@@ -204,12 +187,13 @@ auto compute_convex_hull(std::span<const math::vector3> points) -> hull_result {
       }
 
       const auto apex = faces[face_index].outside_points[apex_local_index];
+      
+      faces[face_index].outside_points[apex_local_index] = faces[face_index].outside_points.back();
+      faces[face_index].outside_points.pop_back();
+
       const auto apex_index = static_cast<std::uint32_t>(vertices.size());
       vertices.push_back(apex);
 
-      // Remove every face visible from apex, collecting their outside points into one pool and
-      // their boundary into the horizon (an edge shared by two removed faces cancels out -- the
-      // same toggle technique epa.cpp uses to find its horizon).
       auto pool = std::vector<math::vector3>{};
       auto horizon = std::vector<std::pair<std::uint32_t, std::uint32_t>>{};
 
@@ -252,7 +236,7 @@ auto compute_convex_hull(std::span<const math::vector3> points) -> hull_result {
         faces.push_back(std::move(new_face));
       }
 
-      break; // faces was resized -- restart the scan rather than continue indexing into it
+      break;
     }
   }
 
