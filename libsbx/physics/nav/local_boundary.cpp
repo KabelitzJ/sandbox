@@ -40,7 +40,11 @@ auto local_boundary_update(local_boundary& boundary, const navmesh& mesh, poly_r
 
         boundary.segments.push_back(boundary_segment{mesh.verts[poly.verts[i]], mesh.verts[poly.verts[(i + 1u) % count]]});
       } else if (!visited.contains(neighbor)) {
-        if (math::vector3::distance(poly_center(mesh, neighbor), center) <= range) {
+        const auto neighbor_center = poly_center(mesh, neighbor);
+        const auto dx = neighbor_center.x() - center.x();
+        const auto dz = neighbor_center.z() - center.z();
+
+        if ((dx * dx + dz * dz) <= range * range) {
           visited.insert(neighbor);
           queue.push_back(neighbor);
         }

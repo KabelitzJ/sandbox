@@ -3,12 +3,20 @@
 #include <libsbx/physics/nav/navmesh_query.hpp>
 
 #include <algorithm>
+#include <cmath>
 #include <limits>
 #include <queue>
 #include <unordered_map>
 #include <unordered_set>
 
 namespace sbx::physics {
+
+[[nodiscard]] auto distance_xz(const math::vector3& a, const math::vector3& b) -> std::float_t {
+  const auto dx = a.x() - b.x();
+  const auto dz = a.z() - b.z();
+
+  return std::sqrt(dx * dx + dz * dz);
+}
 
 [[nodiscard]] auto find_path(const navmesh& mesh, poly_ref start, poly_ref end, const math::vector3& start_pos, const math::vector3& end_pos) -> path_result {
   if (start == null_poly_ref || end == null_poly_ref) {
@@ -35,7 +43,7 @@ namespace sbx::physics {
   auto closed = std::unordered_set<poly_ref>{};
 
   const auto heuristic = [&](poly_ref ref) {
-    return math::vector3::distance(poly_center(mesh, ref), end_pos);
+    return distance_xz(poly_center(mesh, ref), end_pos);
   };
 
   g_score[start] = 0.0f;
@@ -73,7 +81,7 @@ namespace sbx::physics {
         continue;
       }
 
-      const auto edge_cost = math::vector3::distance(current_pos, poly_center(mesh, neighbor));
+      const auto edge_cost = distance_xz(current_pos, poly_center(mesh, neighbor));
       const auto tentative_g = g_score[current] + edge_cost;
 
       const auto existing = g_score.find(neighbor);

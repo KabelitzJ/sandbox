@@ -80,7 +80,7 @@ auto crowd::update(scenes::scene& scene, const navmesh& mesh, std::float_t dt) -
     }
 
     const auto& next_corner = corners.front();
-    const auto to_corner = next_corner.position - transform.position;
+    const auto to_corner = math::vector3{next_corner.position.x() - transform.position.x(), 0.0f, next_corner.position.z() - transform.position.z()};
     const auto distance_to_corner = to_corner.length();
 
     if (corners.size() == 1 && distance_to_corner < 0.2f) {
@@ -137,6 +137,11 @@ auto crowd::update(scenes::scene& scene, const navmesh& mesh, std::float_t dt) -
       : target_velocity;
 
     transform.position = transform.position + agent.velocity * dt;
+
+    if (!agent.corridor.path.empty()) {
+      const auto sampled_y = sample_height_on_poly(mesh, agent.corridor.path.front(), transform.position);
+      transform.position = math::vector3{transform.position.x(), sampled_y, transform.position.z()};
+    }
 
     if (agent.velocity.length_squared() > 0.0001f) {
       transform.rotation = math::quaternion::look_at(math::vector3::normalized(agent.velocity));

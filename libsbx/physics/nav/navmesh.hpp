@@ -3,6 +3,7 @@
 #ifndef LIBSBX_PHYSICS_NAV_NAVMESH_HPP_
 #define LIBSBX_PHYSICS_NAV_NAVMESH_HPP_
 
+#include <cmath>
 #include <cstdint>
 #include <vector>
 
@@ -43,6 +44,8 @@ struct navmesh {
 [[nodiscard]] auto poly_center(const navmesh& mesh, poly_ref ref) -> math::vector3;
 
 [[nodiscard]] auto closest_point_on_poly(const navmesh& mesh, poly_ref ref, const math::vector3& point) -> math::vector3;
+
+[[nodiscard]] auto sample_height_on_poly(const navmesh& mesh, poly_ref ref, const math::vector3& point) -> std::float_t;
 
 [[nodiscard]] auto poly_edge_midpoint(const navmesh& mesh, poly_ref ref, std::uint32_t edge_index) -> math::vector3;
 

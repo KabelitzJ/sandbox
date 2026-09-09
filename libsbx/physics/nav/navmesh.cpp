@@ -3,6 +3,7 @@
 #include <libsbx/physics/nav/navmesh.hpp>
 
 #include <algorithm>
+#include <cmath>
 #include <limits>
 
 namespace sbx::physics {
@@ -115,6 +116,55 @@ namespace sbx::physics {
   return best_point;
 }
 
+[[nodiscard]] auto barycentric_xz(const math::vector3& point, const math::vector3& a, const math::vector3& b, const math::vector3& c, std::float_t& u, std::float_t& v, std::float_t& w) -> bool {
+  const auto ab_x = b.x() - a.x();
+  const auto ab_z = b.z() - a.z();
+  const auto ac_x = c.x() - a.x();
+  const auto ac_z = c.z() - a.z();
+  const auto ap_x = point.x() - a.x();
+  const auto ap_z = point.z() - a.z();
+
+  const auto denom = ab_x * ac_z - ac_x * ab_z;
+
+  if (std::abs(denom) < 1e-9f) {
+    return false;
+  }
+
+  const auto inv_denom = 1.0f / denom;
+
+  v = (ap_x * ac_z - ac_x * ap_z) * inv_denom;
+  w = (ab_x * ap_z - ap_x * ab_z) * inv_denom;
+  u = 1.0f - v - w;
+
+  return true;
+}
+
+[[nodiscard]] auto sample_height_on_poly(const navmesh& mesh, poly_ref ref, const math::vector3& point) -> std::float_t {
+  const auto& poly = mesh.polys[poly_ref_to_index(ref)];
+  const auto count = poly.verts.size();
+
+  if (count < 3) {
+    return closest_point_on_poly(mesh, ref, point).y();
+  }
+
+  const auto& v0 = mesh.verts[poly.verts[0]];
+
+  for (auto i = std::size_t{1}; i + 1 < count; ++i) {
+    const auto& v1 = mesh.verts[poly.verts[i]];
+    const auto& v2 = mesh.verts[poly.verts[i + 1u]];
+
+    auto u = 0.0f;
+    auto v = 0.0f;
+    auto w = 0.0f;
+
+    if (barycentric_xz(point, v0, v1, v2, u, v, w) && u >= -0.001f && v >= -0.001f && w >= -0.001f) {
+      return u * v0.y() + v * v1.y() + w * v2.y();
+    }
+  }
+
+  return closest_point_on_poly(mesh, ref, point).y();
+}
+
 [[nodiscard]] auto poly_edge_midpoint(const navmesh& mesh, poly_ref ref, std::uint32_t edge_index) -> math::vector3 {
   const auto& poly = mesh.polys[poly_ref_to_index(ref)];
   const auto count = poly.verts.size();
@@ -132,7 +182,9 @@ namespace sbx::physics {
   for (auto i = std::size_t{0}; i < mesh.polys.size(); ++i) {
     const auto ref = poly_index_to_ref(i);
     const auto closest = closest_point_on_poly(mesh, ref, point);
-    const auto distance = math::vector3::distance_squared(closest, point);
+    const auto dx = closest.x() - point.x();
+    const auto dz = closest.z() - point.z();
+    const auto distance = dx * dx + dz * dz;
 
     if (distance < best_distance) {
       best_distance = distance;
