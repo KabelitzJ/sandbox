@@ -1999,6 +1999,58 @@ auto asset_cooker::write_cooked_mesh(const std::filesystem::path& cooked, const 
   return true;
 }
 
+auto asset_cooker::write_cooked_material(const math::uuid& id, const material_description& description) -> bool {
+  const auto cooked = cooked_path(id, ".sbxmat");
+
+  auto error = std::error_code{};
+  std::filesystem::create_directories(cooked.parent_path(), error);
+
+  auto out = std::ofstream{cooked, std::ios::binary};
+
+  if (!out) {
+    utility::logger<"assets">::warn("Cook: could not write material '{}'", cooked.generic_string());
+    return false;
+  }
+
+  auto header = material_file_header{};
+  header.magic = material_magic;
+  header.version = material_cook_version;
+  header.base_color_factor[0] = description.base_color_factor.r();
+  header.base_color_factor[1] = description.base_color_factor.g();
+  header.base_color_factor[2] = description.base_color_factor.b();
+  header.base_color_factor[3] = description.base_color_factor.a();
+  header.emissive_factor[0] = description.emissive_factor.x();
+  header.emissive_factor[1] = description.emissive_factor.y();
+  header.emissive_factor[2] = description.emissive_factor.z();
+  header.metallic_factor = description.metallic_factor;
+  header.roughness_factor = description.roughness_factor;
+  header.alpha_mode = static_cast<std::uint32_t>(description.alpha);
+  header.alpha_cutoff = description.alpha_cutoff;
+  header.is_double_sided = description.is_double_sided ? 1u : 0u;
+  header.normal_scale = description.normal_scale;
+  header.occlusion_strength = description.occlusion_strength;
+  header.emissive_strength = description.emissive_strength;
+  header.ior = description.ior;
+  header.name_length = static_cast<std::uint32_t>(description.name.size());
+  header.albedo_path_length = static_cast<std::uint32_t>(description.albedo.size());
+  header.normal_path_length = static_cast<std::uint32_t>(description.normal.size());
+  header.metallic_roughness_path_length = static_cast<std::uint32_t>(description.metallic_roughness.size());
+  header.occlusion_path_length = static_cast<std::uint32_t>(description.occlusion.size());
+  header.emissive_path_length = static_cast<std::uint32_t>(description.emissive.size());
+
+  out.write(reinterpret_cast<const char*>(&header), sizeof(header));
+  out.write(description.name.data(), static_cast<std::streamsize>(description.name.size()));
+  out.write(description.albedo.data(), static_cast<std::streamsize>(description.albedo.size()));
+  out.write(description.normal.data(), static_cast<std::streamsize>(description.normal.size()));
+  out.write(description.metallic_roughness.data(), static_cast<std::streamsize>(description.metallic_roughness.size()));
+  out.write(description.occlusion.data(), static_cast<std::streamsize>(description.occlusion.size()));
+  out.write(description.emissive.data(), static_cast<std::streamsize>(description.emissive.size()));
+
+  utility::logger<"assets">::debug("Wrote generated material '{}'", cooked.generic_string());
+
+  return true;
+}
+
 auto asset_cooker::_cook_material(const math::uuid& id, const material_description& description) -> bool {
   const auto cooked = cooked_path(id, ".sbxmat");
 

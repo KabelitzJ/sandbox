@@ -214,6 +214,16 @@ public:
    */
   [[nodiscard]] static auto write_cooked_mesh(const std::filesystem::path& cooked, const std::vector<vertex>& vertices, const std::vector<std::uint32_t>& indices, const std::vector<cooked_submesh>& submeshes, const math::volume& bounds) -> bool;
 
+  /**
+   * @brief Writes a cooked material cache blob directly from an in-memory description, keyed
+   * purely by @p id -- same on-disk format _cook_material produces (a side-effect glTF material's
+   * format), so it's loadable via the ordinary uuid-based resolve_cooked_material/load_material
+   * call once written, no manifest entry needed (cooked_path(id, ...) is deterministic from id
+   * alone). For engine-generated materials (the built-in primitives' default material) with no
+   * source file to cook from.
+   */
+  [[nodiscard]] static auto write_cooked_material(const math::uuid& id, const material_description& description) -> bool;
+
   /** @brief Reads a material cooked as a side effect of a mesh import (not a hand-authored `.material` file). Stateless -- safe to call from any thread, no asset_cooker instance needed. */
   [[nodiscard]] static auto resolve_cooked_material(const math::uuid& id) -> std::optional<material_description>;
 

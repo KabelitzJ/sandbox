@@ -11,6 +11,8 @@
 
 #include <libsbx/utility/logger.hpp>
 
+#include <libsbx/math/color.hpp>
+
 #include <libsbx/assets/asset_cooker.hpp>
 #include <libsbx/assets/mesh.hpp>
 
@@ -195,12 +197,15 @@ static auto add_cylinder_band(std::vector<vertex>& vertices, std::vector<std::ui
     const auto i2 = base + static_cast<std::uint32_t>(stride + seg + 1);
     const auto i3 = base + static_cast<std::uint32_t>(stride + seg);
 
+    // Unlike generate_uv_sphere's rings (where ring+1 sits at a *lower* y), row 1 here sits at a
+    // *higher* y than row 0 -- the vertical edge's sign flips, so the same (i0,i1,i2)/(i0,i2,i3)
+    // order that's outward-facing there is inward-facing here. Reversed to compensate.
     indices.push_back(i0);
+    indices.push_back(i2);
     indices.push_back(i1);
-    indices.push_back(i2);
     indices.push_back(i0);
-    indices.push_back(i2);
     indices.push_back(i3);
+    indices.push_back(i2);
   }
 }
 
@@ -226,14 +231,17 @@ static auto add_disc_cap(std::vector<vertex>& vertices, std::vector<std::uint32_
     const auto a = rim_base + static_cast<std::uint32_t>(seg);
     const auto b = rim_base + static_cast<std::uint32_t>(seg + 1);
 
+    // theta increases from seg to seg+1 the same way generate_uv_sphere's does, so the correct
+    // (center, a, b) vs (center, b, a) order per facing is the sphere's convention flipped, not
+    // matched -- a flat disc has no ring-to-ring y change to flip the sign back the other way.
     if (facing_up) {
       indices.push_back(center_index);
-      indices.push_back(a);
       indices.push_back(b);
+      indices.push_back(a);
     } else {
       indices.push_back(center_index);
-      indices.push_back(b);
       indices.push_back(a);
+      indices.push_back(b);
     }
   }
 }
@@ -340,6 +348,8 @@ static auto add_disc_cap(std::vector<vertex>& vertices, std::vector<std::uint32_
 }
 
 auto ensure_primitive_mesh_cooked(primitive_mesh_kind kind) -> void {
+  ensure_default_material_cooked();
+
   const auto cooked = asset_cooker::cooked_path(primitive_mesh_uuid(kind), ".sbxmsh");
 
   if (std::filesystem::exists(cooked)) {
@@ -365,11 +375,34 @@ auto ensure_primitive_mesh_cooked(primitive_mesh_kind kind) -> void {
   }
 
   const auto submeshes = std::vector<cooked_submesh>{
-    cooked_submesh{0u, static_cast<std::uint32_t>(indices.size()), bounds, math::uuid::nil(), {}}
+    cooked_submesh{0u, static_cast<std::uint32_t>(indices.size()), bounds, default_material_uuid(), {}}
   };
 
   if (!asset_cooker::write_cooked_mesh(cooked, vertices, indices, submeshes, bounds)) {
     utility::logger<"assets">::warn("Failed to write built-in mesh '{}'", primitive_mesh_name(kind));
+  }
+}
+
+auto default_material_uuid() -> math::uuid {
+  return math::uuid::from_value(0x5342583200000001ull);
+}
+
+auto ensure_default_material_cooked() -> void {
+  const auto id = default_material_uuid();
+  const auto cooked = asset_cooker::cooked_path(id, ".sbxmat");
+
+  if (std::filesystem::exists(cooked)) {
+    return;
+  }
+
+  auto description = material_description{};
+  description.name = "Default";
+  description.base_color_factor = math::color{0.8f, 0.8f, 0.8f, 1.0f};
+  description.metallic_factor = 0.0f;
+  description.roughness_factor = 0.5f;
+
+  if (!asset_cooker::write_cooked_material(id, description)) {
+    utility::logger<"assets">::warn("Failed to write built-in default material");
   }
 }
 

@@ -45,8 +45,19 @@ inline constexpr auto primitive_mesh_kinds = std::array<primitive_mesh_kind, 5u>
 /** @brief The primitive kind named @p name (case-sensitive, matches primitive_mesh_name), or nullopt. */
 [[nodiscard]] auto primitive_mesh_kind_named(std::string_view name) -> std::optional<primitive_mesh_kind>;
 
-/** @brief Generates and writes this primitive's cooked mesh cache blob if it isn't already on disk. Cheap and safe to call every time a primitive is requested -- a no-op once it's been baked once. */
+/** @brief Generates and writes this primitive's cooked mesh cache blob if it isn't already on disk. Cheap and safe to call every time a primitive is requested -- a no-op once it's been baked once. Also ensures @ref default_material_uuid is cooked -- every primitive's single submesh references it. */
 auto ensure_primitive_mesh_cooked(primitive_mesh_kind kind) -> void;
+
+/**
+ * @brief The plain grey, untextured material every built-in primitive's submesh is cooked with --
+ * a real, resolvable uuid (unlike a transient create_material()'d handle, this one survives scene
+ * serialization; see asset_cooker::write_cooked_material) so a Cube dropped in the Hierarchy
+ * renders with something reasonable instead of the mesh-import fallback's error magenta.
+ */
+[[nodiscard]] auto default_material_uuid() -> math::uuid;
+
+/** @brief Generates and writes the default material's cooked cache blob if it isn't already on disk. Cheap and safe to call every time it's needed -- a no-op once it's been baked once. */
+auto ensure_default_material_cooked() -> void;
 
 } // namespace sbx::assets
 
