@@ -2,6 +2,9 @@
 // Copyright (c) 2026 Jonas Kabelitz
 #include <libsbx/scripting/managed/object.hpp>
 
+#include <libsbx/utility/logger.hpp>
+#include <libsbx/utility/target.hpp>
+
 #include <libsbx/scripting/managed/detail/type_cache.hpp>
 #include <libsbx/scripting/managed/detail/backend.hpp>
 
@@ -46,6 +49,10 @@ auto object::get_field_value<bool>(std::string_view name) const -> bool {
 }
 
 void object::set_field_value_raw(std::string_view name, const void* value) const {
+  if (!_validate_handle("set field", name)) {
+    return;
+  }
+
   auto field_name = string::create(name);
 
   std::invoke(detail::backend.set_field_value, _handle, field_name, value);
@@ -54,6 +61,10 @@ void object::set_field_value_raw(std::string_view name, const void* value) const
 }
 
 void object::get_field_value_raw(std::string_view name, void* value) const {
+  if (!_validate_handle("get field", name)) {
+    return;
+  }
+
   auto field_name = string::create(name);
 
   std::invoke(detail::backend.get_field_value, _handle, field_name, value);
@@ -62,6 +73,10 @@ void object::get_field_value_raw(std::string_view name, void* value) const {
 }
 
 void object::set_property_value_raw(std::string_view name, const void* value) const {
+  if (!_validate_handle("set property", name)) {
+    return;
+  }
+
   auto property_name = string::create(name);
 
   std::invoke(detail::backend.set_property_value, _handle, property_name, value);
@@ -70,6 +85,10 @@ void object::set_property_value_raw(std::string_view name, const void* value) co
 }
 
 void object::get_property_value_raw(std::string_view name, void* value) const {
+  if (!_validate_handle("get property", name)) {
+    return;
+  }
+
   auto property_name = string::create(name);
 
   std::invoke(detail::backend.get_property_value, _handle, property_name, value);
@@ -104,14 +123,11 @@ auto object::is_valid() const -> bool {
   return _handle != nullptr && _type != nullptr; 
 }
 
-// Method-handle cache, per-type (see type::_method_handles' doc comment): the first invoke() of a
-// given name on a given type marshals the name and resolves it through the slow path
-// (get_method_handle -- a NativeString marshal plus C#-side reflection/overload resolution, cached
-// there too); every later invoke() of that name, on any instance of the same type, skips straight to
-// invoke_method_handle(_return) with the cached int -- no string marshal, no MethodKey/ManagedType[]
-// allocation on the C# side (see Object.cs's TryGetMethodInfo), just an array-indexed dispatch on
-// both sides of the native/managed boundary.
 void object::_invoke_method_internal(std::string_view name, const void** parameters, const managed_type* parameter_types, std::size_t length) const {
+  if (!_validate_handle("invoke method", name)) {
+    return;
+  }
+
   const auto& owner_type = get_type();
 
   auto handle = std::int32_t{-1};
@@ -127,13 +143,17 @@ void object::_invoke_method_internal(std::string_view name, const void** paramet
   }
 
   if (handle < 0) {
-    return; // no such method -- get_method_handle already logged this, C# side
+    return;
   }
 
   std::invoke(detail::backend.invoke_method_handle, _handle, handle, parameters, static_cast<std::int32_t>(length));
 }
 
 void object::_invoke_method_return_internal(std::string_view name, const void** parameters, const managed_type* parameter_types, std::size_t length, void* result_storage) const {
+  if (!_validate_handle("invoke method", name)) {
+    return;
+  }
+
   const auto& owner_type = get_type();
 
   auto handle = std::int32_t{-1};
@@ -155,5 +175,16 @@ void object::_invoke_method_return_internal(std::string_view name, const void** 
   std::invoke(detail::backend.invoke_method_handle_return, _handle, handle, parameters, static_cast<std::int32_t>(length), result_storage);
 }
 
+auto object::_validate_handle(std::string_view message, std::string_view name) const noexcept -> bool {
+  if constexpr (utility::is_build_type_debug_v) {
+    if (!_handle) {
+      utility::logger<"scripting">::error("Cannot {} '{}' on an object with no handle (construction likely failed — see the earlier C# log/exception)", message, name);
+
+      return false;
+    }
+  }
+
+  return true;
+}
 
 }; // namespace sbx::scripting::managed

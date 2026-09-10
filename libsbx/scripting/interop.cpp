@@ -812,9 +812,6 @@ auto interop::node_destroy(std::uint64_t uuid) -> void {
     return;
   }
 
-  // Mirrors scripting_module::detach_script's "OnDestroy before the instance goes away" ordering --
-  // destroying the node out from under a live script instance with no notification would otherwise
-  // silently drop it, same concern run_on_destroy's doc comment raises for a full scene teardown.
   if (auto scripts = node.try_get_component<scripting::scripts>()) {
     for (auto& instance : scripts->instances) {
       instance.invoke("OnDestroy");

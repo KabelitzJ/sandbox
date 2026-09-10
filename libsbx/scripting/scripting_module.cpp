@@ -244,11 +244,6 @@ scripting_module::scripting_module() {
   interop::register_managed_component<scenes::local_transform>("Sbx.Core.Components.Transform", _core_assembly);
   interop::register_managed_component<scenes::animator>("Sbx.Core.Components.Animator", _core_assembly);
   interop::register_managed_component<scenes::particle_effect>("Sbx.Core.Components.ParticleEffect", _core_assembly);
-  // "CameraSettings", not "Camera" -- Sbx.Core.Camera is the Camera.Main singleton wrapper
-  // (always resolves scene.active_camera() natively, no uuid involved at all); this is the
-  // separate per-node scenes::camera field access (fov/near/far/exposure) for GetComponent<CameraSettings>()
-  // on whichever node a script actually sits on, which needs a real uuid -- keeping them as two
-  // distinct C# types avoids Main's properties silently ignoring which node they were fetched from.
   interop::register_managed_component<scenes::camera>("Sbx.Core.Components.CameraSettings", _core_assembly);
   interop::register_managed_component<physics::rigidbody>("Sbx.Core.Physics.Rigidbody", _core_assembly);
   interop::register_managed_component<physics::nav_agent>("Sbx.Core.Physics.NavAgent", _core_assembly);
@@ -290,8 +285,6 @@ auto scripting_module::update() -> void {
 
   auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
 
-  // Scripts only tick while the scene is actually simulating — see scenes_module::is_simulating's
-  // doc comment. Without this, OnUpdate would run continuously in the editor while just editing.
   if (!scenes_module.is_simulating()) {
     return;
   }
@@ -329,6 +322,11 @@ auto scripting_module::instantiate(scenes::node& node, std::string_view class_na
 
   auto& type = _game_assembly.get_type(class_name);
   auto instance = type.create_instance(node.get_component<scenes::id>().value());
+
+  if (!instance.is_valid()) {
+    utility::logger<"scripting">::error("Failed to instantiate script '{}' — construction failed on the C# side (see the exception logged above)", class_name);
+    return managed::object{};
+  }
 
   if (node.has_component<scenes::script_component>()) {
     const auto& persisted = node.get_component<scenes::script_component>();
@@ -436,8 +434,7 @@ auto scripting_module::_invoke_collision_handler(scenes::node& self, const scene
 
   const auto other_uuid = other.is_valid() ? other.get_component<scenes::id>().value() : std::uint64_t{0u};
 
-  // Indexed by (is_trigger << 1) | began -- avoids branching on two independent bools to pick one
-  // of four fixed strings.
+  // Indexed by (is_trigger << 1) | began -- avoids branching on two independent bools to pick one of four fixed strings.
   static constexpr auto dispatch_method_names = std::array<const char*, 4u>{
     "DispatchCollisionExit",
     "DispatchCollisionEnter",
@@ -453,8 +450,6 @@ auto scripting_module::_invoke_collision_handler(scenes::node& self, const scene
 }
 
 auto scripting_module::_dispatch_collision_event(const physics::collision_event& event, bool began) -> void {
-  // Copies, not references into event -- get_component() needs its non-const overload (see
-  // solver.cpp's apply_positional_correction for the same reasoning).
   auto node_a = event.node_a;
   auto node_b = event.node_b;
 

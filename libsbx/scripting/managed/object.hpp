@@ -182,6 +182,8 @@ private:
 
   auto _invoke_method_return_internal(std::string_view name, const void** parameters, const managed_type* parameter_types, std::size_t length, void* result_storage) const -> void;
 
+  auto _validate_handle(std::string_view message, std::string_view name) const noexcept -> bool;
+
   void* _handle{nullptr};
   mutable const type* _type{nullptr};
   
