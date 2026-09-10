@@ -14,18 +14,25 @@
 namespace sbx::physics {
 
 struct path_result {
-  std::vector<poly_ref> polys{};
+  std::vector<poly_reference> polys{};
   bool success{false};
 }; // struct path_result
 
-[[nodiscard]] auto find_path(const navmesh& mesh, poly_ref start, poly_ref end, const math::vector3& start_pos, const math::vector3& end_pos) -> path_result;
+[[nodiscard]] auto find_path(const navmesh& mesh, poly_reference start, poly_reference end, const math::vector3& start_pos, const math::vector3& end_pos) -> path_result;
 
 struct straight_path_point {
   math::vector3 position{};
-  poly_ref ref{null_poly_ref};
+  poly_reference reference{null_poly_reference};
 }; // struct straight_path_point
 
-[[nodiscard]] auto find_straight_path(const navmesh& mesh, const math::vector3& start_pos, const math::vector3& end_pos, std::span<const poly_ref> poly_path, std::size_t max_points) -> std::vector<straight_path_point>;
+[[nodiscard]] auto find_straight_path(const navmesh& mesh, const math::vector3& start_pos, const math::vector3& end_pos, std::span<const poly_reference> poly_path, std::size_t max_points) -> std::vector<straight_path_point>;
+
+struct surface_move_result {
+  math::vector3 position{};
+  std::vector<poly_reference> visited{};
+}; // struct surface_move_result
+
+[[nodiscard]] auto move_along_surface(const navmesh& mesh, poly_reference start_ref, const math::vector3& start_pos, const math::vector3& end_pos) -> surface_move_result;
 
 } // namespace sbx::physics
 

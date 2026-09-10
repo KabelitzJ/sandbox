@@ -39,7 +39,7 @@ namespace sbx::physics {
       value.verts.push_back(poly[j]);
 
       const auto neighbor = poly[nvp + j];
-      value.neighbors.push_back(neighbor == mesh_null_index ? null_poly_ref : poly_index_to_ref(static_cast<std::size_t>(neighbor)));
+      value.neighbors.push_back(neighbor == mesh_null_index ? null_poly_reference : poly_index_to_ref(static_cast<std::size_t>(neighbor)));
     }
 
     value.area = pmesh.areas[static_cast<std::size_t>(i)];
@@ -51,8 +51,8 @@ namespace sbx::physics {
   return mesh;
 }
 
-[[nodiscard]] auto poly_center(const navmesh& mesh, poly_ref ref) -> math::vector3 {
-  const auto& poly = mesh.polys[poly_ref_to_index(ref)];
+[[nodiscard]] auto poly_center(const navmesh& mesh, poly_reference reference) -> math::vector3 {
+  const auto& poly = mesh.polys[poly_ref_to_index(reference)];
 
   auto center = math::vector3::zero;
 
@@ -63,8 +63,8 @@ namespace sbx::physics {
   return center / static_cast<std::float_t>(poly.verts.size());
 }
 
-[[nodiscard]] auto closest_point_on_poly(const navmesh& mesh, poly_ref ref, const math::vector3& point) -> math::vector3 {
-  const auto& poly = mesh.polys[poly_ref_to_index(ref)];
+[[nodiscard]] auto closest_point_on_poly(const navmesh& mesh, poly_reference reference, const math::vector3& point) -> math::vector3 {
+  const auto& poly = mesh.polys[poly_ref_to_index(reference)];
   const auto count = poly.verts.size();
 
   auto all_non_negative = true;
@@ -110,7 +110,7 @@ namespace sbx::physics {
   }
 
   if (all_non_negative || all_non_positive) {
-    return math::vector3{point.x(), poly_center(mesh, ref).y(), point.z()};
+    return math::vector3{point.x(), poly_center(mesh, reference).y(), point.z()};
   }
 
   return best_point;
@@ -139,12 +139,12 @@ namespace sbx::physics {
   return true;
 }
 
-[[nodiscard]] auto sample_height_on_poly(const navmesh& mesh, poly_ref ref, const math::vector3& point) -> std::float_t {
-  const auto& poly = mesh.polys[poly_ref_to_index(ref)];
+[[nodiscard]] auto sample_height_on_poly(const navmesh& mesh, poly_reference reference, const math::vector3& point) -> std::float_t {
+  const auto& poly = mesh.polys[poly_ref_to_index(reference)];
   const auto count = poly.verts.size();
 
   if (count < 3) {
-    return closest_point_on_poly(mesh, ref, point).y();
+    return closest_point_on_poly(mesh, reference, point).y();
   }
 
   const auto& v0 = mesh.verts[poly.verts[0]];
@@ -162,11 +162,11 @@ namespace sbx::physics {
     }
   }
 
-  return closest_point_on_poly(mesh, ref, point).y();
+  return closest_point_on_poly(mesh, reference, point).y();
 }
 
-[[nodiscard]] auto poly_edge_midpoint(const navmesh& mesh, poly_ref ref, std::uint32_t edge_index) -> math::vector3 {
-  const auto& poly = mesh.polys[poly_ref_to_index(ref)];
+[[nodiscard]] auto poly_edge_midpoint(const navmesh& mesh, poly_reference reference, std::uint32_t edge_index) -> math::vector3 {
+  const auto& poly = mesh.polys[poly_ref_to_index(reference)];
   const auto count = poly.verts.size();
 
   const auto& a = mesh.verts[poly.verts[edge_index]];
@@ -175,27 +175,27 @@ namespace sbx::physics {
   return (a + b) * 0.5f;
 }
 
-[[nodiscard]] auto find_nearest_poly(const navmesh& mesh, const math::vector3& point) -> poly_ref {
-  auto best_ref = null_poly_ref;
+[[nodiscard]] auto find_nearest_poly(const navmesh& mesh, const math::vector3& point) -> poly_reference {
+  auto best_ref = null_poly_reference;
   auto best_distance = std::numeric_limits<std::float_t>::max();
 
   for (auto i = std::size_t{0}; i < mesh.polys.size(); ++i) {
-    const auto ref = poly_index_to_ref(i);
-    const auto closest = closest_point_on_poly(mesh, ref, point);
+    const auto reference = poly_index_to_ref(i);
+    const auto closest = closest_point_on_poly(mesh, reference, point);
     const auto dx = closest.x() - point.x();
     const auto dz = closest.z() - point.z();
     const auto distance = dx * dx + dz * dz;
 
     if (distance < best_distance) {
       best_distance = distance;
-      best_ref = ref;
+      best_ref = reference;
     }
   }
 
   return best_ref;
 }
 
-[[nodiscard]] auto poly_portal_points(const navmesh& mesh, poly_ref from, poly_ref to, math::vector3& left, math::vector3& right) -> bool {
+[[nodiscard]] auto poly_portal_points(const navmesh& mesh, poly_reference from, poly_reference to, math::vector3& left, math::vector3& right) -> bool {
   const auto& poly = mesh.polys[poly_ref_to_index(from)];
   const auto count = poly.verts.size();
 

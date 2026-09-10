@@ -21,7 +21,7 @@ struct local_boundary {
   std::vector<boundary_segment> segments{};
 }; // struct local_boundary
 
-auto local_boundary_update(local_boundary& boundary, const navmesh& mesh, poly_ref center_poly, const math::vector3& center, std::float_t range) -> void;
+auto local_boundary_update(local_boundary& boundary, const navmesh& mesh, poly_reference center_poly, const math::vector3& center, std::float_t range) -> void;
 
 } // namespace sbx::physics
 

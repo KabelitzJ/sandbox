@@ -6,7 +6,7 @@
  *
  * @brief The Gilbert-Johnson-Keerthi algorithm: tests whether two convex shapes overlap by
  * searching the Minkowski difference (A - B) for the origin. Hands its terminal tetrahedron off to
- * @ref epa_penetration for the actual penetration depth/normal once overlap is confirmed.
+ * @reference epa_penetration for the actual penetration depth/normal once overlap is confirmed.
  *
  * @ingroup libsbx-physics
  */
@@ -73,8 +73,8 @@ struct gjk_result {
 }; // struct gjk_result
 
 /**
- * @brief Tests whether @p a and @p b overlap. On overlap, @ref gjk_result::simplex holds the
- * terminal tetrahedron enclosing the origin, ready to seed @ref epa_penetration.
+ * @brief Tests whether @p a and @p b overlap. On overlap, @reference gjk_result::simplex holds the
+ * terminal tetrahedron enclosing the origin, ready to seed @reference epa_penetration.
  */
 [[nodiscard]] auto gjk_intersect(const convex_shape& a, const transform& pose_a, const convex_shape& b, const transform& pose_b) -> gjk_result;
 

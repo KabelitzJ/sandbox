@@ -33,7 +33,7 @@ struct epa_result {
 
 /**
  * @brief Recovers penetration depth/normal/witness points for two overlapping shapes, seeded from
- * @p gjk_simplex (the terminal tetrahedron @ref gjk_intersect produced for the same pair/pose).
+ * @p gjk_simplex (the terminal tetrahedron @reference gjk_intersect produced for the same pair/pose).
  */
 [[nodiscard]] auto epa_penetration(
   const convex_shape& a, const transform& pose_a,

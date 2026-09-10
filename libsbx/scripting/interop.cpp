@@ -1526,7 +1526,7 @@ auto interop::nav_sample_position(math::vector3* point, math::vector3* out_resul
   const auto& mesh = physics_module.navmesh();
   const auto ref = physics::find_nearest_poly(mesh, *point);
 
-  if (ref == physics::null_poly_ref) {
+  if (ref == physics::null_poly_reference) {
     return false;
   }
 

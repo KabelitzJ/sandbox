@@ -74,7 +74,7 @@ auto integrate_forces(scenes::scene& scene, const math::vector3& gravity, std::f
  * accumulators are seeded from its (already warm-started, see physics_module::_warm_start_manifolds)
  * contact_point and immediately applied once -- the actual "warm start" -- before the caller runs
  * the iterative solve. @p manifolds is mutated: each velocity_constraint_point keeps a pointer back
- * into it so @ref store_impulses can write the final impulses back after solving.
+ * into it so @reference store_impulses can write the final impulses back after solving.
  *
  * Takes a span (rather than the whole vector) so physics_module::fixed_update can solve only the
  * non-trigger prefix of its manifolds in place -- the pointers store_impulses/next step's warm
@@ -104,7 +104,7 @@ auto integrate_velocities(scenes::scene& scene, std::float_t dt) -> void;
  * @brief Non-linear Gauss-Seidel positional correction: nudges each manifold's bodies apart along
  * its normal by `percent` of the remaining penetration beyond `slop`, split by inverse-mass ratio.
  * Translation only -- no angular correction in v1. Same span rationale as
- * @ref prepare_velocity_constraints -- excludes trigger manifolds from ever being pushed apart.
+ * @reference prepare_velocity_constraints -- excludes trigger manifolds from ever being pushed apart.
  */
 auto apply_positional_correction(std::span<contact_manifold> manifolds, std::float_t percent, std::float_t slop) -> void;
 

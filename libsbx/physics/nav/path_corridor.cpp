@@ -7,54 +7,85 @@
 
 namespace sbx::physics {
 
-auto corridor_reset(path_corridor& corridor, poly_ref ref, const math::vector3& pos) -> void {
-  corridor.position = pos;
-  corridor.target = pos;
-  corridor.path.assign(1, ref);
+auto corridor_reset(path_corridor& corridor, poly_reference reference, const math::vector3& position) -> void {
+  corridor.position = position;
+  corridor.target = position;
+  corridor.path.assign(1, reference);
 }
 
-auto corridor_set_corridor(path_corridor& corridor, const math::vector3& target, std::span<const poly_ref> path) -> void {
+auto corridor_set_corridor(path_corridor& corridor, const math::vector3& target, std::span<const poly_reference> path) -> void {
   corridor.target = target;
   corridor.path.assign(path.begin(), path.end());
 }
 
-[[nodiscard]] auto poly_contains_xz(const navmesh& mesh, poly_ref ref, const math::vector3& point) -> bool {
-  const auto closest = closest_point_on_poly(mesh, ref, point);
-  const auto dx = closest.x() - point.x();
-  const auto dz = closest.z() - point.z();
+[[nodiscard]] auto merge_corridor_start_moved(std::vector<poly_reference>& path, const std::vector<poly_reference>& visited) -> bool {
+  auto furthest_path = std::optional<std::size_t>{};
+  auto furthest_visited = std::optional<std::size_t>{};
 
-  return (dx * dx + dz * dz) < 0.0001f;
+  for (auto pi = path.size(); pi > 0 && !furthest_path; --pi) {
+    const auto i = pi - 1;
+
+    for (auto vi = visited.size(); vi > 0; --vi) {
+      const auto j = vi - 1;
+
+      if (path[i] == visited[j]) {
+        furthest_path = i;
+        furthest_visited = j;
+
+        break;
+      }
+    }
+  }
+
+  if (!furthest_path || !furthest_visited) {
+    return false;
+  }
+
+  auto merged = std::vector<poly_reference>{};
+  merged.reserve((visited.size() - *furthest_visited) + (path.size() - (*furthest_path + 1)));
+
+  for (auto vi = visited.size(); vi > *furthest_visited; --vi) {
+    merged.push_back(visited[vi - 1]);
+  }
+
+  for (auto i = *furthest_path + 1; i < path.size(); ++i) {
+    merged.push_back(path[i]);
+  }
+
+  path = std::move(merged);
+
+  return true;
 }
 
-[[nodiscard]] auto corridor_move_position(path_corridor& corridor, const navmesh& mesh, const math::vector3& new_pos) -> math::vector3 {
+[[nodiscard]] auto corridor_move_position(path_corridor& corridor, const navmesh& mesh, const math::vector3& new_position) -> math::vector3 {
   if (corridor.path.empty()) {
-    corridor.position = new_pos;
+    corridor.position = new_position;
 
     return corridor.position;
   }
 
-  constexpr auto look_ahead = std::size_t{4};
-  const auto scan_count = std::min(look_ahead, corridor.path.size());
+  const auto walk = move_along_surface(mesh, corridor.path.front(), corridor.position, new_position);
 
-  auto found_index = std::optional<std::size_t>{};
+  if (merge_corridor_start_moved(corridor.path, walk.visited)) {
+    const auto height = sample_height_on_poly(mesh, corridor.path.front(), walk.position);
+    corridor.position = math::vector3{walk.position.x(), height, walk.position.z()};
 
-  for (auto i = std::size_t{0}; i < scan_count; ++i) {
-    if (poly_contains_xz(mesh, corridor.path[i], new_pos)) {
-      found_index = i;
-    }
+    return corridor.position;
   }
 
-  if (found_index) {
-    if (*found_index > 0) {
-      corridor.path.erase(corridor.path.begin(), corridor.path.begin() + static_cast<std::ptrdiff_t>(*found_index));
-    }
+  const auto nearest = find_nearest_poly(mesh, new_position);
 
-    corridor.position = closest_point_on_poly(mesh, corridor.path.front(), new_pos);
-  } else {
-    const auto nearest = find_nearest_poly(mesh, new_pos);
+  if (nearest == null_poly_reference) {
+    corridor.position = new_position;
 
-    corridor.position = (nearest != null_poly_ref) ? closest_point_on_poly(mesh, nearest, new_pos) : new_pos;
+    return corridor.position;
   }
+
+  const auto end_ref = find_nearest_poly(mesh, corridor.target);
+  const auto result = (end_ref != null_poly_reference) ? find_path(mesh, nearest, end_ref, new_position, corridor.target) : path_result{};
+
+  corridor.path = result.success ? result.polys : std::vector<poly_reference>{nearest};
+  corridor.position = closest_point_on_poly(mesh, corridor.path.front(), new_position);
 
   return corridor.position;
 }
@@ -64,7 +95,7 @@ auto corridor_set_corridor(path_corridor& corridor, const math::vector3& target,
     return {};
   }
 
-  auto corners = find_straight_path(mesh, corridor.position, corridor.target, std::span<const poly_ref>{corridor.path}, max_corners);
+  auto corners = find_straight_path(mesh, corridor.position, corridor.target, std::span<const poly_reference>{corridor.path}, max_corners);
 
   while (!corners.empty() && math::vector3::distance_squared(corners.front().position, corridor.position) < 0.0001f) {
     corners.erase(corners.begin());

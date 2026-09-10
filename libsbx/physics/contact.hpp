@@ -45,7 +45,7 @@ struct contact_point {
 
 /**
  * @brief A narrowphase result for one colliding body pair: a shared world-space normal (pointing
- * from A into B) and up to @ref max_manifold_points contact points.
+ * from A into B) and up to @reference max_manifold_points contact points.
  */
 struct contact_manifold {
   scenes::node node_a;
@@ -82,7 +82,7 @@ struct collision_event {
 /**
  * @brief Identifies a colliding pair for the warm-start manifold cache, independent of which side
  * narrowphase happened to call "A" and which "B" this step. Only ever construct through
- * @ref make_manifold_key -- its equality/hash are order-sensitive, and that's the function that
+ * @reference make_manifold_key -- its equality/hash are order-sensitive, and that's the function that
  * puts the two nodes into a canonical order.
  */
 struct manifold_key {

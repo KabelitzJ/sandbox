@@ -16,12 +16,12 @@ namespace sbx::physics {
 struct path_corridor {
   math::vector3 position{};
   math::vector3 target{};
-  std::vector<poly_ref> path{};
+  std::vector<poly_reference> path{};
 }; // struct path_corridor
 
-auto corridor_reset(path_corridor& corridor, poly_ref ref, const math::vector3& pos) -> void;
+auto corridor_reset(path_corridor& corridor, poly_reference reference, const math::vector3& pos) -> void;
 
-auto corridor_set_corridor(path_corridor& corridor, const math::vector3& target, std::span<const poly_ref> path) -> void;
+auto corridor_set_corridor(path_corridor& corridor, const math::vector3& target, std::span<const poly_reference> path) -> void;
 
 [[nodiscard]] auto corridor_move_position(path_corridor& corridor, const navmesh& mesh, const math::vector3& new_pos) -> math::vector3;
 

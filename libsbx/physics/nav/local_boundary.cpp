@@ -7,18 +7,18 @@
 
 namespace sbx::physics {
 
-auto local_boundary_update(local_boundary& boundary, const navmesh& mesh, poly_ref center_poly, const math::vector3& center, std::float_t range) -> void {
+auto local_boundary_update(local_boundary& boundary, const navmesh& mesh, poly_reference center_poly, const math::vector3& center, std::float_t range) -> void {
   boundary.center = center;
   boundary.segments.clear();
 
-  if (center_poly == null_poly_ref) {
+  if (center_poly == null_poly_reference) {
     return;
   }
 
   constexpr auto max_segments = std::size_t{8};
 
-  auto visited = std::unordered_set<poly_ref>{};
-  auto queue = std::deque<poly_ref>{};
+  auto visited = std::unordered_set<poly_reference>{};
+  auto queue = std::deque<poly_reference>{};
 
   visited.insert(center_poly);
   queue.push_back(center_poly);
@@ -33,7 +33,7 @@ auto local_boundary_update(local_boundary& boundary, const navmesh& mesh, poly_r
     for (auto i = std::size_t{0}; i < count; ++i) {
       const auto neighbor = poly.neighbors[i];
 
-      if (neighbor == null_poly_ref) {
+      if (neighbor == null_poly_reference) {
         if (boundary.segments.size() >= max_segments) {
           break;
         }

@@ -63,7 +63,7 @@ struct triangle {
 }; // struct triangle
 
 /**
- * @brief Maximum vertex count for @ref convex_hull. A budget, not a precise limit tied to any one
+ * @brief Maximum vertex count for @reference convex_hull. A budget, not a precise limit tied to any one
  * mesh's geometry: convex_hull_cache (libsbx/physics/convex_hull_cache.hpp) computes the *exact*
  * convex hull of the source mesh via quickhull.hpp, and only falls back to coarsening it (resampling
  * the true hull's own vertices down to this count, then re-hulling that) on the rare mesh whose

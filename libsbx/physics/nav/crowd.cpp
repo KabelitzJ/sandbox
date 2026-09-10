@@ -22,7 +22,7 @@ auto crowd::request_move_target(nav_agent& agent, const navmesh& mesh, const mat
   const auto start_ref = find_nearest_poly(mesh, agent.corridor.position);
   const auto end_ref = find_nearest_poly(mesh, target);
 
-  if (start_ref == null_poly_ref || end_ref == null_poly_ref) {
+  if (start_ref == null_poly_reference || end_ref == null_poly_reference) {
     agent.state = nav_agent_state::target_unreachable;
 
     return false;
