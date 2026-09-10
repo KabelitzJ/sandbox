@@ -171,6 +171,9 @@ auto editor_ui_layer::_create_panels() -> void {
 }
 
 auto editor_ui_layer::_draw_dockspace() -> void {
+  auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
+  auto& editor_module = sbx::core::engine::get_module<editor::editor_module>();
+
   auto window_flags = ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_MenuBar;
 
   auto* viewport = ImGui::GetMainViewport();
@@ -267,21 +270,15 @@ auto editor_ui_layer::_draw_dockspace() -> void {
 
     if (ImGui::BeginMenu("Scene")) {
       if (ImGui::MenuItem(ICON_MDI_PLUS " Add Node")) {
-        auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
-
         auto command = std::make_unique<create_node_command>();
         auto* created = command.get();
+
         _state.push_command(std::move(command));
         _state.select_node(scenes_module.active_scene().find(created->id()));
       }
 
       ImGui::Separator();
 
-      auto& editor_module = sbx::core::engine::get_module<editor::editor_module>();
-
-      // Saving while playing would write play-mutated (and script-stripped, see
-      // scripting::scripts) state over the user's file — block it, same as the disabled particle
-      // transport buttons in inspector_panel.cpp.
       ImGui::BeginDisabled(editor_module.play_state() != editor::play_state::edit);
 
       if (ImGui::MenuItem(ICON_MDI_CONTENT_SAVE " Save")) {
@@ -301,12 +298,15 @@ auto editor_ui_layer::_draw_dockspace() -> void {
         _show_save_as_dialog = true;
       }
 
-      ImGui::Separator();
+      ImGui::EndDisabled();
 
-      // Same Edit-mode-only guard as Save above: reloading the game assembly while something is
-      // instantiate()'d from it (i.e. while playing/paused) isn't safe — see
-      // scripting_module::recompile_scripts's doc comment.
-      if (ImGui::MenuItem(ICON_MDI_REFRESH " Recompile Scripts")) {
+      ImGui::EndMenu();
+    }
+
+    if (ImGui::BeginMenu("Scripting")) {
+      ImGui::BeginDisabled(editor_module.play_state() != editor::play_state::edit);
+
+      if (ImGui::MenuItem(ICON_MDI_REFRESH " Recompile All")) {
         sbx::core::engine::get_module<sbx::scripting::scripting_module>().recompile_scripts();
       }
 
