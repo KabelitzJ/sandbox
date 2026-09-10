@@ -350,4 +350,93 @@ namespace sbx::physics {
   return result;
 }
 
+[[nodiscard]] auto intersect_segment_poly_xz(const math::vector3& p0, const math::vector3& p1, const navmesh& mesh, poly_reference ref, std::float_t& tmin, std::float_t& tmax, std::int32_t& seg_min, std::int32_t& seg_max) -> bool {
+  const auto& poly = mesh.polys[poly_ref_to_index(ref)];
+  const auto count = poly.verts.size();
+
+  tmin = 0.0f;
+  tmax = 1.0f;
+  seg_min = -1;
+  seg_max = -1;
+
+  const auto dir_x = p1.x() - p0.x();
+  const auto dir_z = p1.z() - p0.z();
+
+  for (auto i = std::size_t{0}, j = count - 1; i < count; j = i++) {
+    const auto& vi = mesh.verts[poly.verts[i]];
+    const auto& vj = mesh.verts[poly.verts[j]];
+
+    const auto edge_x = vi.x() - vj.x();
+    const auto edge_z = vi.z() - vj.z();
+    const auto diff_x = p0.x() - vj.x();
+    const auto diff_z = p0.z() - vj.z();
+
+    const auto n = edge_x * diff_z - edge_z * diff_x;
+    const auto d = dir_x * edge_z - dir_z * edge_x;
+
+    if (std::abs(d) < 1e-6f) {
+      if (n < 0.0f) {
+        return false;
+      }
+
+      continue;
+    }
+
+    const auto t = n / d;
+
+    if (d < 0.0f) {
+      if (t > tmin) {
+        tmin = t;
+        seg_min = static_cast<std::int32_t>(j);
+
+        if (tmin > tmax) {
+          return false;
+        }
+      }
+    } else {
+      if (t < tmax) {
+        tmax = t;
+        seg_max = static_cast<std::int32_t>(j);
+
+        if (tmax < tmin) {
+          return false;
+        }
+      }
+    }
+  }
+
+  return true;
+}
+
+[[nodiscard]] auto raycast(const navmesh& mesh, poly_reference start_ref, const math::vector3& start_pos, const math::vector3& end_pos) -> raycast_result {
+  auto result = raycast_result{};
+
+  auto current = start_ref;
+
+  while (current != null_poly_reference) {
+    auto tmin = 0.0f;
+    auto tmax = 1.0f;
+    auto seg_min = std::int32_t{-1};
+    auto seg_max = std::int32_t{-1};
+
+    if (!intersect_segment_poly_xz(start_pos, end_pos, mesh, current, tmin, tmax, seg_min, seg_max)) {
+      return result;
+    }
+
+    result.t = std::max(result.t, tmax);
+    result.path.push_back(current);
+
+    if (seg_max == -1) {
+      result.t = std::numeric_limits<std::float_t>::max();
+
+      return result;
+    }
+
+    const auto& poly = mesh.polys[poly_ref_to_index(current)];
+    current = poly.neighbors[static_cast<std::size_t>(seg_max)];
+  }
+
+  return result;
+}
+
 } // namespace sbx::physics

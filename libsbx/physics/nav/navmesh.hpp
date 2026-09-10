@@ -37,9 +37,10 @@ struct navmesh {
   std::vector<math::vector3> verts{};
   std::vector<nav_poly> polys{};
   math::volume bounds{};
+  std::float_t walkable_climb{0.0f};
 }; // struct navmesh
 
-[[nodiscard]] auto build_runtime_navmesh(const poly_mesh& pmesh) -> navmesh;
+[[nodiscard]] auto build_runtime_navmesh(const poly_mesh& pmesh, std::float_t walkable_climb) -> navmesh;
 
 [[nodiscard]] auto poly_center(const navmesh& mesh, poly_reference reference) -> math::vector3;
 

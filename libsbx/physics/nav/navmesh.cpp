@@ -8,9 +8,10 @@
 
 namespace sbx::physics {
 
-[[nodiscard]] auto build_runtime_navmesh(const poly_mesh& pmesh) -> navmesh {
+[[nodiscard]] auto build_runtime_navmesh(const poly_mesh& pmesh, std::float_t walkable_climb) -> navmesh {
   auto mesh = navmesh{};
   mesh.bounds = pmesh.bounds;
+  mesh.walkable_climb = walkable_climb;
 
   mesh.verts.reserve(static_cast<std::size_t>(pmesh.num_verts));
 
@@ -182,9 +183,20 @@ namespace sbx::physics {
   for (auto i = std::size_t{0}; i < mesh.polys.size(); ++i) {
     const auto reference = poly_index_to_ref(i);
     const auto closest = closest_point_on_poly(mesh, reference, point);
-    const auto dx = closest.x() - point.x();
-    const auto dz = closest.z() - point.z();
-    const auto distance = dx * dx + dz * dz;
+
+    const auto over_poly = closest.x() == point.x() && closest.z() == point.z();
+
+    auto distance = std::float_t{0.0f};
+
+    if (over_poly) {
+      const auto vertical = std::abs(point.y() - closest.y()) - mesh.walkable_climb;
+      distance = vertical > 0.0f ? vertical * vertical : 0.0f;
+    } else {
+      const auto dx = point.x() - closest.x();
+      const auto dy = point.y() - closest.y();
+      const auto dz = point.z() - closest.z();
+      distance = dx * dx + dy * dy + dz * dz;
+    }
 
     if (distance < best_distance) {
       best_distance = distance;

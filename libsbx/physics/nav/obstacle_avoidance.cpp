@@ -132,4 +132,33 @@ namespace sbx::physics {
   return best_velocity;
 }
 
+[[nodiscard]] auto compute_separation_velocity(const math::vector3& position, std::span<const avoidance_circle_obstacle> neighbors, std::float_t separation_distance, std::float_t weight) -> math::vector3 {
+  if (separation_distance < 0.0001f) {
+    return math::vector3::zero;
+  }
+
+  const auto inv_separation_distance = 1.0f / separation_distance;
+
+  auto displacement = math::vector3::zero;
+  auto count = 0.0f;
+
+  for (const auto& neighbor : neighbors) {
+    const auto diff = math::vector3{position.x() - neighbor.position.x(), 0.0f, position.z() - neighbor.position.z()};
+    const auto distance_squared = diff.length_squared();
+
+    if (distance_squared < 0.00001f || distance_squared > separation_distance * separation_distance) {
+      continue;
+    }
+
+    const auto distance = std::sqrt(distance_squared);
+    const auto normalized_distance = distance * inv_separation_distance;
+    const auto push_weight = weight * (1.0f - normalized_distance * normalized_distance);
+
+    displacement = displacement + diff * (push_weight / distance);
+    count += 1.0f;
+  }
+
+  return (count > 0.0001f) ? displacement * (1.0f / count) : math::vector3::zero;
+}
+
 } // namespace sbx::physics

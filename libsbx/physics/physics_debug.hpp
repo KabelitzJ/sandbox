@@ -69,7 +69,13 @@ struct debug_draw_flags {
  */
 auto draw_convex_shape(render::debug_draw& debug_draw, const convex_shape& shape, const math::matrix4x4& matrix, const math::vector3& scale, const math::color& color) -> void;
 
-auto draw_navmesh(render::debug_draw& debug_draw, const navmesh& mesh, const math::color& color) -> void;
+/**
+ * @brief Draws every polygon edge in @p color, except an edge with no neighbor (poly.neighbors[i]
+ * == null_poly_reference) — a real boundary/wall, or a break in connectivity the bake pipeline
+ * failed to link — which draws in @p boundary_color instead, so a seam that looks like solid,
+ * continuous mesh (e.g. a flat-to-ramp transition) but isn't actually pathable stands out visually.
+ */
+auto draw_navmesh(render::debug_draw& debug_draw, const navmesh& mesh, const math::color& color, const math::color& boundary_color) -> void;
 
 auto draw_nav_path(render::debug_draw& debug_draw, std::span<const straight_path_point> path, const math::color& color) -> void;
 

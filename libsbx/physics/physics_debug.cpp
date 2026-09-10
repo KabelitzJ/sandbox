@@ -77,7 +77,7 @@ auto draw_convex_shape(render::debug_draw& debug_draw, const convex_shape& shape
   ), shape);
 }
 
-auto draw_navmesh(render::debug_draw& debug_draw, const navmesh& mesh, const math::color& color) -> void {
+auto draw_navmesh(render::debug_draw& debug_draw, const navmesh& mesh, const math::color& color, const math::color& boundary_color) -> void {
   for (const auto& poly : mesh.polys) {
     const auto count = poly.verts.size();
 
@@ -85,7 +85,9 @@ auto draw_navmesh(render::debug_draw& debug_draw, const navmesh& mesh, const mat
       const auto& a = mesh.verts[poly.verts[i]];
       const auto& b = mesh.verts[poly.verts[(i + 1u) % count]];
 
-      debug_draw.add_line(a, b, color);
+      const auto is_boundary = poly.neighbors[i] == null_poly_reference;
+
+      debug_draw.add_line(a, b, is_boundary ? boundary_color : color);
     }
   }
 }

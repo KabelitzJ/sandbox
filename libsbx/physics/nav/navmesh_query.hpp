@@ -34,6 +34,13 @@ struct surface_move_result {
 
 [[nodiscard]] auto move_along_surface(const navmesh& mesh, poly_reference start_ref, const math::vector3& start_pos, const math::vector3& end_pos) -> surface_move_result;
 
+struct raycast_result {
+  std::float_t t{0.0f};
+  std::vector<poly_reference> path{};
+}; // struct raycast_result
+
+[[nodiscard]] auto raycast(const navmesh& mesh, poly_reference start_ref, const math::vector3& start_pos, const math::vector3& end_pos) -> raycast_result;
+
 } // namespace sbx::physics
 
 #endif // LIBSBX_PHYSICS_NAV_NAVMESH_QUERY_HPP_

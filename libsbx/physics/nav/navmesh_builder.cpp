@@ -2,6 +2,9 @@
 // Copyright (c) 2026 Jonas Kabelitz
 #include <libsbx/physics/nav/navmesh_builder.hpp>
 
+#include <array>
+#include <cmath>
+#include <numbers>
 #include <variant>
 #include <vector>
 
@@ -95,10 +98,134 @@ auto triangulate_convex_hull(const convex_hull& shape, const transform& pose, st
   }
 }
 
+auto triangulate_cylinder_band(std::float_t radius, std::float_t bottom_y, std::float_t top_y, std::int32_t segments, const transform& pose, std::pmr::vector<math::vector3>& vertices, std::pmr::vector<std::uint32_t>& indices) -> void {
+  const auto base = static_cast<std::uint32_t>(vertices.size());
+
+  for (auto row = 0; row < 2; ++row) {
+    const auto y = (row == 0) ? bottom_y : top_y;
+
+    for (auto seg = 0; seg < segments; ++seg) {
+      const auto theta = 2.0f * std::numbers::pi_v<std::float_t> * static_cast<std::float_t>(seg) / static_cast<std::float_t>(segments);
+
+      vertices.push_back(transform_point(pose, math::vector3{radius * std::cos(theta), y, radius * std::sin(theta)}));
+    }
+  }
+
+  const auto bottom_base = base;
+  const auto top_base = base + static_cast<std::uint32_t>(segments);
+
+  for (auto seg = std::int32_t{0}; seg < segments; ++seg) {
+    const auto next = (seg + 1) % segments;
+
+    const auto i0 = bottom_base + static_cast<std::uint32_t>(seg);
+    const auto i1 = bottom_base + static_cast<std::uint32_t>(next);
+    const auto i2 = top_base + static_cast<std::uint32_t>(next);
+    const auto i3 = top_base + static_cast<std::uint32_t>(seg);
+
+    indices.push_back(i0);
+    indices.push_back(i2);
+    indices.push_back(i1);
+    indices.push_back(i0);
+    indices.push_back(i3);
+    indices.push_back(i2);
+  }
+}
+
+auto triangulate_disc_cap(std::float_t radius, std::float_t y, bool facing_up, std::int32_t segments, const transform& pose, std::pmr::vector<math::vector3>& vertices, std::pmr::vector<std::uint32_t>& indices) -> void {
+  const auto center_index = static_cast<std::uint32_t>(vertices.size());
+
+  vertices.push_back(transform_point(pose, math::vector3{0.0f, y, 0.0f}));
+
+  const auto rim_base = static_cast<std::uint32_t>(vertices.size());
+
+  for (auto seg = std::int32_t{0}; seg < segments; ++seg) {
+    const auto theta = 2.0f * std::numbers::pi_v<std::float_t> * static_cast<std::float_t>(seg) / static_cast<std::float_t>(segments);
+
+    vertices.push_back(transform_point(pose, math::vector3{radius * std::cos(theta), y, radius * std::sin(theta)}));
+  }
+
+  for (auto seg = std::int32_t{0}; seg < segments; ++seg) {
+    const auto a = rim_base + static_cast<std::uint32_t>(seg);
+    const auto b = rim_base + static_cast<std::uint32_t>((seg + 1) % segments);
+
+    if (facing_up) {
+      indices.push_back(center_index);
+      indices.push_back(b);
+      indices.push_back(a);
+    } else {
+      indices.push_back(center_index);
+      indices.push_back(a);
+      indices.push_back(b);
+    }
+  }
+}
+
+auto triangulate_hemisphere_rings(std::float_t radius, std::float_t y_offset, bool top, std::int32_t segments, std::int32_t rings, const transform& pose, std::pmr::vector<math::vector3>& vertices, std::pmr::vector<std::uint32_t>& indices) -> void {
+  const auto base = static_cast<std::uint32_t>(vertices.size());
+
+  for (auto ring = std::int32_t{0}; ring <= rings; ++ring) {
+    const auto phi = (std::numbers::pi_v<std::float_t> * 0.5f) * static_cast<std::float_t>(ring) / static_cast<std::float_t>(rings);
+    const auto y = top ? radius * std::cos(phi) : -radius * std::sin(phi);
+    const auto ring_radius = top ? radius * std::sin(phi) : radius * std::cos(phi);
+
+    for (auto seg = std::int32_t{0}; seg < segments; ++seg) {
+      const auto theta = 2.0f * std::numbers::pi_v<std::float_t> * static_cast<std::float_t>(seg) / static_cast<std::float_t>(segments);
+
+      vertices.push_back(transform_point(pose, math::vector3{ring_radius * std::cos(theta), y + y_offset, ring_radius * std::sin(theta)}));
+    }
+  }
+
+  for (auto ring = std::int32_t{0}; ring < rings; ++ring) {
+    for (auto seg = std::int32_t{0}; seg < segments; ++seg) {
+      const auto next = (seg + 1) % segments;
+
+      const auto i0 = base + static_cast<std::uint32_t>(ring * segments + seg);
+      const auto i1 = base + static_cast<std::uint32_t>(ring * segments + next);
+      const auto i2 = base + static_cast<std::uint32_t>((ring + 1) * segments + next);
+      const auto i3 = base + static_cast<std::uint32_t>((ring + 1) * segments + seg);
+
+      indices.push_back(i0);
+      indices.push_back(i1);
+      indices.push_back(i2);
+      indices.push_back(i0);
+      indices.push_back(i2);
+      indices.push_back(i3);
+    }
+  }
+}
+
+auto triangulate_cylinder(const cylinder& shape, const transform& pose, std::pmr::vector<math::vector3>& vertices, std::pmr::vector<std::uint32_t>& indices) -> void {
+  constexpr auto segments = std::int32_t{16};
+
+  triangulate_cylinder_band(shape.radius, -shape.half_height, shape.half_height, segments, pose, vertices, indices);
+  triangulate_disc_cap(shape.radius, shape.half_height, true, segments, pose, vertices, indices);
+  triangulate_disc_cap(shape.radius, -shape.half_height, false, segments, pose, vertices, indices);
+}
+
+auto triangulate_capsule(const capsule& shape, const transform& pose, std::pmr::vector<math::vector3>& vertices, std::pmr::vector<std::uint32_t>& indices) -> void {
+  constexpr auto segments = std::int32_t{16};
+  constexpr auto rings = std::int32_t{6};
+
+  triangulate_hemisphere_rings(shape.radius, shape.half_height, true, segments, rings, pose, vertices, indices);
+  triangulate_cylinder_band(shape.radius, -shape.half_height, shape.half_height, segments, pose, vertices, indices);
+  triangulate_hemisphere_rings(shape.radius, -shape.half_height, false, segments, rings, pose, vertices, indices);
+}
+
+auto triangulate_sphere(const sphere& shape, const transform& pose, std::pmr::vector<math::vector3>& vertices, std::pmr::vector<std::uint32_t>& indices) -> void {
+  constexpr auto segments = std::int32_t{16};
+  constexpr auto rings = std::int32_t{6};
+
+  triangulate_hemisphere_rings(shape.radius, 0.0f, true, segments, rings, pose, vertices, indices);
+  triangulate_hemisphere_rings(shape.radius, 0.0f, false, segments, rings, pose, vertices, indices);
+}
+
 auto gather_convex_shape(const convex_shape& shape, const transform& pose, std::pmr::vector<math::vector3>& vertices, std::pmr::vector<std::uint32_t>& indices) -> void {
   std::visit(utility::overload(
     [&](const box& value) { triangulate_box(value, pose, vertices, indices); },
     [&](const convex_hull& value) { triangulate_convex_hull(value, pose, vertices, indices); },
+    [&](const cylinder& value) { triangulate_cylinder(value, pose, vertices, indices); },
+    [&](const capsule& value) { triangulate_capsule(value, pose, vertices, indices); },
+    [&](const sphere& value) { triangulate_sphere(value, pose, vertices, indices); },
     [&](const auto&) { }
   ), shape);
 }
@@ -219,7 +346,7 @@ auto gather_walkable_triangles(scenes::scene& scene, mesh_collision_cache& mesh_
     return navmesh_build_result{};
   }
 
-  return navmesh_build_result{build_runtime_navmesh(pmesh), true};
+  return navmesh_build_result{build_runtime_navmesh(pmesh, static_cast<std::float_t>(cfg.walkable_climb) * cfg.cell_height), true};
 }
 
 [[nodiscard]] auto build_navmesh(const nav_settings& settings, scenes::scene& scene) -> navmesh_build_result {

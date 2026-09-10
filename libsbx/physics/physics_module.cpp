@@ -714,8 +714,9 @@ auto physics_module::_submit_debug_draw(scenes::scene& scene) -> void {
 
   if (_debug_draw_flags.navmesh && _navmesh) {
     const auto navmesh_color = math::color{0.1f, 0.6f, 1.0f, 1.0f};
+    const auto navmesh_boundary_color = math::color{1.0f, 0.15f, 0.1f, 1.0f};
 
-    draw_navmesh(debug_draw, *_navmesh, navmesh_color);
+    draw_navmesh(debug_draw, *_navmesh, navmesh_color, navmesh_boundary_color);
   }
 
   if (_debug_draw_flags.nav_agents) {

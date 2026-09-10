@@ -3,6 +3,7 @@
 #include <libsbx/physics/nav/path_corridor.hpp>
 
 #include <algorithm>
+#include <cmath>
 #include <optional>
 
 namespace sbx::physics {
@@ -102,6 +103,69 @@ auto corridor_set_corridor(path_corridor& corridor, const math::vector3& target,
   }
 
   return corners;
+}
+
+auto merge_corridor_start_shortcut(std::vector<poly_reference>& path, const std::vector<poly_reference>& visited) -> void {
+  auto furthest_path = std::optional<std::size_t>{};
+  auto furthest_visited = std::optional<std::size_t>{};
+
+  for (auto pi = path.size(); pi > 0 && !furthest_path; --pi) {
+    const auto i = pi - 1;
+
+    for (auto vi = visited.size(); vi > 0; --vi) {
+      const auto j = vi - 1;
+
+      if (path[i] == visited[j]) {
+        furthest_path = i;
+        furthest_visited = j;
+
+        break;
+      }
+    }
+  }
+
+  if (!furthest_path || !furthest_visited || *furthest_visited == 0) {
+    return;
+  }
+
+  auto merged = std::vector<poly_reference>{};
+  merged.reserve(*furthest_visited + (path.size() - *furthest_path));
+
+  for (auto i = std::size_t{0}; i < *furthest_visited; ++i) {
+    merged.push_back(visited[i]);
+  }
+
+  for (auto i = *furthest_path; i < path.size(); ++i) {
+    merged.push_back(path[i]);
+  }
+
+  path = std::move(merged);
+}
+
+auto optimize_path_visibility(path_corridor& corridor, const navmesh& mesh, const math::vector3& next, std::float_t path_optimization_range) -> void {
+  if (corridor.path.empty()) {
+    return;
+  }
+
+  const auto dx = next.x() - corridor.position.x();
+  const auto dz = next.z() - corridor.position.z();
+
+  auto distance = std::sqrt(dx * dx + dz * dz);
+
+  if (distance < 0.01f) {
+    return;
+  }
+
+  distance = std::min(distance + 0.01f, path_optimization_range);
+
+  const auto scale = path_optimization_range / distance;
+  const auto goal = math::vector3{corridor.position.x() + dx * scale, next.y(), corridor.position.z() + dz * scale};
+
+  const auto result = raycast(mesh, corridor.path.front(), corridor.position, goal);
+
+  if (result.path.size() > 1 && result.t > 0.99f) {
+    merge_corridor_start_shortcut(corridor.path, result.path);
+  }
 }
 
 } // namespace sbx::physics

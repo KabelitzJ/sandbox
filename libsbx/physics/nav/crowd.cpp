@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstddef>
 #include <vector>
 
 #include <libsbx/math/quaternion.hpp>
@@ -79,6 +80,9 @@ auto crowd::update(scenes::scene& scene, const navmesh& mesh, std::float_t dt) -
       continue;
     }
 
+    const auto optimize_target_index = std::min(std::size_t{1}, corners.size() - 1);
+    optimize_path_visibility(agent.corridor, mesh, corners[optimize_target_index].position, agent.path_optimization_range);
+
     const auto& next_corner = corners.front();
     const auto to_corner = math::vector3{next_corner.position.x() - transform.position.x(), 0.0f, next_corner.position.z() - transform.position.z()};
     const auto distance_to_corner = to_corner.length();
@@ -125,7 +129,22 @@ auto crowd::update(scenes::scene& scene, const navmesh& mesh, std::float_t dt) -
         neighbor_obstacles.push_back(avoidance_circle_obstacle{neighbor_transform->position, neighbor_agent->velocity, neighbor_agent->radius});
       }
 
-      target_velocity = sample_avoidance_velocity(transform.position, desired_velocity, agent.radius, agent.max_speed, neighbor_obstacles, agent.boundary.segments);
+      auto steering_velocity = desired_velocity;
+
+      if (agent.separation_enabled) {
+        steering_velocity = steering_velocity + compute_separation_velocity(transform.position, neighbor_obstacles, agent.collision_query_range, agent.separation_weight);
+
+        const auto steering_speed_sqr = steering_velocity.length_squared();
+        const auto max_speed_sqr = agent.max_speed * agent.max_speed;
+
+        if (steering_speed_sqr > max_speed_sqr && steering_speed_sqr > 0.0001f) {
+          steering_velocity = steering_velocity * (agent.max_speed / std::sqrt(steering_speed_sqr));
+        }
+      }
+
+      target_velocity = agent.obstacle_avoidance_enabled
+        ? sample_avoidance_velocity(transform.position, steering_velocity, agent.radius, agent.max_speed, neighbor_obstacles, agent.boundary.segments)
+        : steering_velocity;
     }
 
     const auto velocity_delta = target_velocity - agent.velocity;
