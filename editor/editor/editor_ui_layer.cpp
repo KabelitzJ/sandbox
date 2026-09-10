@@ -67,21 +67,14 @@ editor_ui_layer::editor_ui_layer()
 : _sampler{viewport_sampler_create_info()} {
   _upload_fonts();
 
-  // Shared with launcher (see ui_system::apply_default_style) so both windows look consistent
-  // rather than each rolling its own theme.
   sbx::core::engine::get_module<sbx::render::ui_module>().apply_default_style();
 
   _create_panels();
 }
 
 auto editor_ui_layer::build() -> void {
-  // Not owned by ui_system (ImGuizmo is editor-only), so it's this layer's job to prime it — must
-  // run before any ImGuizmo:: call below.
   ImGuizmo::BeginFrame();
 
-  // Checked once per frame here (not scoped to any one panel's hover state) so it fires regardless
-  // of which window has focus. WantTextInput (not the broader WantCaptureKeyboard) so Ctrl+Z still
-  // edits a focused text field (the node-name field, a script string field) instead of the stack.
   if (!ImGui::GetIO().WantTextInput && ImGui::GetIO().KeyCtrl) {
     if (ImGui::IsKeyPressed(ImGuiKey_Z, false)) {
       _state.undo();
@@ -118,22 +111,28 @@ auto editor_ui_layer::build() -> void {
 
     ImGui::Image(texture_id, available);
 
-    // Captured before the gizmo call below, since ImGuizmo's own widgets can disturb ImGui's
-    // "last item" tracking that IsItemClicked/GetItemRectMin rely on.
     const auto image_clicked = ImGui::IsItemClicked(ImGuiMouseButton_Left);
     const auto image_origin = ImGui::GetItemRectMin();
 
     scene_renderer_module.set_viewport_offset(sbx::math::vector2{image_origin.x, image_origin.y});
 
-    const auto gizmo_active = draw_viewport_gizmo(_state, image_origin, available);
-    const auto toolbar_active = draw_gizmo_toolbar(_state, image_origin);
-    const auto view_gizmo_active = draw_view_gizmo(image_origin, available);
-    const auto icons_active = draw_node_icons(_state, image_origin, available, gizmo_active);
-    draw_camera_frustum_gizmo(_state, available);
+    auto& editor_module = sbx::core::engine::get_module<editor::editor_module>();
+    const auto is_editing = editor_module.play_state() == editor::play_state::edit;
 
-    // Left-click picks the node under the cursor, unless it landed on the gizmo, its toolbar, the
-    // view-orientation cube, or a light/camera icon.
-    if (image_clicked && !gizmo_active && !toolbar_active && !view_gizmo_active && !icons_active) {
+    auto gizmo_active = false;
+    auto toolbar_active = false;
+    auto view_gizmo_active = false;
+    auto icons_active = false;
+
+    if (is_editing) {
+      gizmo_active = draw_viewport_gizmo(_state, image_origin, available);
+      toolbar_active = draw_gizmo_toolbar(_state, image_origin);
+      view_gizmo_active = draw_view_gizmo(image_origin, available);
+      icons_active = draw_node_icons(_state, image_origin, available, gizmo_active);
+      draw_camera_frustum_gizmo(_state, available);
+    }
+
+    if (is_editing && image_clicked && !gizmo_active && !toolbar_active && !view_gizmo_active && !icons_active) {
       const auto mouse_position = ImGui::GetMousePos();
 
       pick_node_at_viewport_position(_state, sbx::math::vector2{mouse_position.x - image_origin.x, mouse_position.y - image_origin.y}, sbx::math::vector2u{width, height});

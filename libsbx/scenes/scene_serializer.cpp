@@ -693,6 +693,7 @@ auto write_node(YAML::Node& node_yaml, ecs::registry& registry, ecs::entity enti
     component["type"] = "nav_agent";
     component["radius"] = agent.radius;
     component["height"] = agent.height;
+    component["base_offset"] = agent.base_offset;
     component["max_acceleration"] = agent.max_acceleration;
     component["max_speed"] = agent.max_speed;
     component["collision_query_range"] = agent.collision_query_range;
@@ -1182,6 +1183,7 @@ auto read_node_components(node& target_node, const YAML::Node& node_yaml, assets
 
       agent.radius = component["radius"].as<std::float_t>();
       agent.height = component["height"].as<std::float_t>();
+      agent.base_offset = component["base_offset"].as<std::float_t>(agent.height * 0.5f);
       agent.max_acceleration = component["max_acceleration"].as<std::float_t>();
       agent.max_speed = component["max_speed"].as<std::float_t>();
       agent.collision_query_range = component["collision_query_range"].as<std::float_t>();

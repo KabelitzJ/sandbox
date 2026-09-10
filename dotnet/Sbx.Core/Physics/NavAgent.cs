@@ -60,6 +60,21 @@ namespace Sbx.Core.Physics
       }
     }
 
+    /** How far above the sampled navmesh surface this node's own pivot should sit -- half the height for a capsule centered on its own origin, 0 for a foot-pivoted model. */
+    public float BaseOffset
+    {
+      get
+      {
+        float baseOffset;
+        unsafe { InternalCalls.NavAgent_GetBaseOffset(UUID, &baseOffset); }
+        return baseOffset;
+      }
+      set
+      {
+        unsafe { InternalCalls.NavAgent_SetBaseOffset(UUID, value); }
+      }
+    }
+
     public float Speed
     {
       get

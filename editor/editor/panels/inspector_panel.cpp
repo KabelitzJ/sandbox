@@ -1192,6 +1192,11 @@ auto draw_nav_agent_section(editor_state& state, sbx::scenes::node& node) -> voi
   bracket_edit(state, node, agent, pending, "Edit Nav Agent");
   ImGui::DragFloat("Height", &agent.height, 0.01f, 0.01f, 5.0f);
   bracket_edit(state, node, agent, pending, "Edit Nav Agent");
+  ImGui::DragFloat("Base Offset", &agent.base_offset, 0.01f, -5.0f, 5.0f);
+  if (ImGui::IsItemHovered()) {
+    ImGui::SetTooltip("How far above the navmesh surface this node's pivot sits — half the height for a capsule centered on its own origin, 0 for a foot-pivoted model.");
+  }
+  bracket_edit(state, node, agent, pending, "Edit Nav Agent");
   ImGui::DragFloat("Max Speed", &agent.max_speed, 0.05f, 0.0f, 50.0f);
   bracket_edit(state, node, agent, pending, "Edit Nav Agent");
   ImGui::DragFloat("Max Acceleration", &agent.max_acceleration, 0.05f, 0.0f, 100.0f);

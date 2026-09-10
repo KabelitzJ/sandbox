@@ -236,6 +236,10 @@ struct interop {
   static auto nav_agent_get_radius(std::uint64_t uuid, std::float_t* out_radius) -> void;
   static auto nav_agent_set_radius(std::uint64_t uuid, std::float_t radius) -> void;
 
+  /** @brief How far above the sampled navmesh surface height the node's own pivot should sit (e.g. half the height for a capsule centered on its own origin, 0 for a foot-pivoted model). */
+  static auto nav_agent_get_base_offset(std::uint64_t uuid, std::float_t* out_base_offset) -> void;
+  static auto nav_agent_set_base_offset(std::uint64_t uuid, std::float_t base_offset) -> void;
+
   static auto nav_agent_get_speed(std::uint64_t uuid, std::float_t* out_speed) -> void;
   static auto nav_agent_set_speed(std::uint64_t uuid, std::float_t speed) -> void;
 

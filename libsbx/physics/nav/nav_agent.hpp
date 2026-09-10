@@ -21,6 +21,7 @@ enum class nav_agent_state : std::uint8_t {
 struct nav_agent {
   std::float_t radius{0.3f};
   std::float_t height{1.8f};
+  std::float_t base_offset{height * 0.5f};
   std::float_t max_acceleration{8.0f};
   std::float_t max_speed{3.5f};
   std::float_t collision_query_range{6.0f};

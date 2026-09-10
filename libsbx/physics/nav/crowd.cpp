@@ -140,7 +140,7 @@ auto crowd::update(scenes::scene& scene, const navmesh& mesh, std::float_t dt) -
 
     if (!agent.corridor.path.empty()) {
       const auto sampled_y = sample_height_on_poly(mesh, agent.corridor.path.front(), transform.position);
-      transform.position = math::vector3{transform.position.x(), sampled_y, transform.position.z()};
+      transform.position = math::vector3{transform.position.x(), sampled_y + agent.base_offset, transform.position.z()};
     }
 
     if (agent.velocity.length_squared() > 0.0001f) {

@@ -116,6 +116,9 @@ namespace Sbx.Core
     internal static delegate* unmanaged<ulong, float*, void> NavAgent_GetRemainingDistance;
     internal static delegate* unmanaged<ulong, float*, void> NavAgent_GetRadius;
     internal static delegate* unmanaged<ulong, float, void> NavAgent_SetRadius;
+
+    internal static delegate* unmanaged<ulong, float*, void> NavAgent_GetBaseOffset;
+    internal static delegate* unmanaged<ulong, float, void> NavAgent_SetBaseOffset;
     internal static delegate* unmanaged<ulong, float*, void> NavAgent_GetSpeed;
     internal static delegate* unmanaged<ulong, float, void> NavAgent_SetSpeed;
     internal static delegate* unmanaged<ulong, float*, void> NavAgent_GetAcceleration;

@@ -1637,6 +1637,36 @@ auto interop::nav_agent_set_radius(std::uint64_t uuid, std::float_t radius) -> v
   node.get_component<physics::nav_agent>().radius = radius;
 }
 
+auto interop::nav_agent_get_base_offset(std::uint64_t uuid, std::float_t* out_base_offset) -> void {
+  auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
+  auto& scene = scenes_module.active_scene();
+
+  auto node = scene.find(math::uuid::from_value(uuid));
+
+  if (!node.is_valid() || !out_base_offset) {
+    utility::logger<"scripting">::error("Attempting to get nav_agent base offset of invalid node");
+
+    return;
+  }
+
+  *out_base_offset = node.get_component<physics::nav_agent>().base_offset;
+}
+
+auto interop::nav_agent_set_base_offset(std::uint64_t uuid, std::float_t base_offset) -> void {
+  auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
+  auto& scene = scenes_module.active_scene();
+
+  auto node = scene.find(math::uuid::from_value(uuid));
+
+  if (!node.is_valid()) {
+    utility::logger<"scripting">::error("Attempting to set nav_agent base offset of invalid node");
+
+    return;
+  }
+
+  node.get_component<physics::nav_agent>().base_offset = base_offset;
+}
+
 auto interop::nav_agent_get_speed(std::uint64_t uuid, std::float_t* out_speed) -> void {
   auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
   auto& scene = scenes_module.active_scene();
