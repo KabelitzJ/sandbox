@@ -25,9 +25,6 @@
 
 namespace editor {
 
-
-// Matches Properties' component section-header icons. Checked in a fixed priority order — a node
-// with more than one of these just shows the first match.
 auto icon_for(const sbx::scenes::node& node) -> const char* {
   if (node.has_component<sbx::scenes::camera>()) return ICON_MDI_CAMERA_OUTLINE;
   if (node.has_component<sbx::scenes::directional_light>()) return ICON_MDI_WHITE_BALANCE_SUNNY;
@@ -35,12 +32,9 @@ auto icon_for(const sbx::scenes::node& node) -> const char* {
   if (node.has_component<sbx::scenes::spot_light>()) return ICON_MDI_FLASHLIGHT;
   if (node.has_component<sbx::scenes::skybox>()) return ICON_MDI_EARTH;
   if (node.has_component<sbx::scenes::mesh_renderer>()) return ICON_MDI_CUBE_OUTLINE;
-  return ICON_MDI_AXIS_ARROW; // plain transform/group node — no renderable/functional component
+  return ICON_MDI_AXIS_ARROW;
 }
 
-
-// Shared by both the empty-space and per-node context menus — creates a node with a mesh_renderer
-// already pointed at kind, optionally parented under parent_id, and selects it.
 auto draw_3d_object_submenu(editor_state& state, sbx::scenes::scene& scene, std::optional<sbx::math::uuid> parent_id) -> void {
   if (!ImGui::BeginMenu(ICON_MDI_AXIS_ARROW " 3D Object")) {
     return;
@@ -88,7 +82,6 @@ auto hierarchy_panel::_draw_node_row(editor_state& state, sbx::scenes::scene& sc
 
   if (ImGui::BeginPopupContextItem("##node_context")) {
     if (ImGui::MenuItem(ICON_MDI_PLUS " Add Child")) {
-      // Deferred — see _pending_add_child_parent_id's declaration for why this can't happen here.
       _pending_add_child_parent_id = node.id();
     }
 
@@ -132,8 +125,6 @@ auto hierarchy_panel::draw(editor_state& state) -> void {
     state.clear_selection();
   }
 
-  // Right-click on empty space (below/between rows, never over a row — that's each row's own
-  // ##node_context popup) adds a new top-level node.
   if (ImGui::BeginPopupContextWindow("##hierarchy_context", ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverItems)) {
     if (ImGui::MenuItem(ICON_MDI_PLUS " Add Node")) {
       auto command = std::make_unique<create_node_command>();
