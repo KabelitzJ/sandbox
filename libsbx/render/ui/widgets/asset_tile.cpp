@@ -79,15 +79,24 @@ auto draw_asset_tile(const char* id, const asset_tile_desc& desc) -> asset_tile_
     draw_list->AddText(font, font_size, icon_pos, desc.icon_tint, desc.icon_glyph);
   }
 
-  if (desc.drag_payload_type != nullptr && !desc.is_directory && ImGui::BeginDragDropSource()) {
-    auto payload = asset_drag_payload{desc.drag_id, {}};
+  const auto offers_kind_drag = desc.drag_payload_type != nullptr && !desc.is_directory;
+  const auto offers_secondary_drag = desc.secondary_drag_payload_type != nullptr && desc.secondary_drag_payload_data != nullptr;
 
-    const auto path_string = desc.drag_path.string();
-    const auto copy_length = std::min(path_string.size(), sizeof(payload.path) - 1u);
-    std::memcpy(payload.path, path_string.data(), copy_length);
-    payload.path[copy_length] = '\0';
+  if ((offers_kind_drag || offers_secondary_drag) && ImGui::BeginDragDropSource()) {
+    if (offers_kind_drag) {
+      auto payload = asset_drag_payload{desc.drag_id, {}};
 
-    ImGui::SetDragDropPayload(desc.drag_payload_type, &payload, sizeof(payload));
+      const auto path_string = desc.drag_path.string();
+      const auto copy_length = std::min(path_string.size(), sizeof(payload.path) - 1u);
+      std::memcpy(payload.path, path_string.data(), copy_length);
+      payload.path[copy_length] = '\0';
+
+      ImGui::SetDragDropPayload(desc.drag_payload_type, &payload, sizeof(payload));
+    }
+
+    if (offers_secondary_drag) {
+      ImGui::SetDragDropPayload(desc.secondary_drag_payload_type, desc.secondary_drag_payload_data, desc.secondary_drag_payload_size);
+    }
 
     ImGui::TextUnformatted(!desc.display_name.empty() ? desc.display_name.c_str() : desc.drag_path.filename().string().c_str());
 

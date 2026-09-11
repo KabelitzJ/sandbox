@@ -67,6 +67,23 @@ public:
   auto import_directory(const std::filesystem::path& root = {}) -> void;
 
   /**
+   * @brief Moves or renames a file or directory (asset-manifested or not — a plain script,
+   * scene, or folder works too) on disk, keeping its identity: a manifested file's uuid survives
+   * (its `.meta` moves with it) and every `.material` file that referenced a moved texture by
+   * path is rewritten to the new path.
+   * @param old_path @param new_path Both must be resolvable from the current working directory,
+   * same requirement as @ref import.
+   * @return false if the underlying filesystem rename failed (e.g. `new_path` already exists).
+   */
+  auto move_asset(const std::filesystem::path& old_path, const std::filesystem::path& new_path) -> bool;
+
+  /**
+   * @brief Deletes a file or directory (asset-manifested or not) from disk, along with its
+   * `.meta` sidecar(s), and drops it from the asset manifest. Recurses for a directory.
+   */
+  auto delete_asset(const std::filesystem::path& path) -> void;
+
+  /**
    * @brief Loads a texture from a UUID or project-relative path; returns the existing handle if already loaded.
    *
    * @param id UUID of the texture to load.
@@ -207,15 +224,18 @@ public:
 
 private:
 
-  // Own, private, synchronous-use asset_cooker instance for resolve_mesh_collision_data's direct
-  // bypass -- asset_cooker is stateless (see its own doc comment), so this needs no coordination
-  // with asset_residency's asset_loader, which owns a completely separate instance for the
-  // background thread.
+  /**
+   * @brief Rewrites every `.material` file under the assets directory whose texture slots point
+   * at `old_relative` (assets-relative, as persisted by @ref save_material) to point at
+   * `new_relative` instead — the counterpart to @ref move_asset moving the texture file itself.
+   * Only called for extensions @ref move_asset recognizes as a texture; materials are the only
+   * asset kind referencing another asset by path rather than uuid.
+   */
+  auto _fixup_material_texture_references(const std::filesystem::path& old_relative, const std::filesystem::path& new_relative) -> void;
+
   // [TODO] KAJ 2026-09-08 : asset_cooker all methods static so we dont need two instances
   asset_cooker _cooker{};
 
-  // Declaration order is construction order: residency depends on the other two so it's declared
-  // last, and destroyed first — the one still holding live GPU-facing state.
   asset_manifest _manifest{};
   ibl_baker _ibl{};
   asset_residency _residency;

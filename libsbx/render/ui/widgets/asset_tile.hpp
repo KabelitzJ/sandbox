@@ -66,6 +66,10 @@ struct asset_tile_desc {
   sbx::math::uuid drag_id{sbx::math::uuid::nil()};
   std::filesystem::path drag_path{};
 
+  const char* secondary_drag_payload_type{};
+  const void* secondary_drag_payload_data{};
+  std::size_t secondary_drag_payload_size{0u};
+
   bool is_selected{false};
   ImVec2 size{64.0f, 64.0f};
 }; // struct asset_tile_desc

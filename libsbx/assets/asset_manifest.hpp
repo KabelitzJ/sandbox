@@ -7,6 +7,8 @@
 #include <filesystem>
 #include <string_view>
 #include <unordered_map>
+#include <utility>
+#include <vector>
 
 #include <libsbx/utility/noncopyable.hpp>
 
@@ -72,6 +74,31 @@ public:
 
   /** @brief Records that `id` was just (re)cooked at `cooker_version`, against `source`'s current content — persisted immediately. */
   auto record_cook(const math::uuid& id, std::uint32_t cooker_version, const std::filesystem::path& source) -> void;
+
+  /**
+   * @brief Moves/renames a manifested file or directory on disk and keeps the manifest in sync.
+   * @param old_path @param new_path Both must be resolvable from the current working directory,
+   * same requirement as @ref import.
+   *
+   * A file's `.meta` sidecar (if any) moves with it, which is what preserves its uuid — the
+   * `_uuids`/`_paths`/manifest-entry indices are then remapped to the new path, not regenerated.
+   * A directory move remaps every manifested asset found under it the same way. @p moved_assets
+   * receives an (old, new) pair — both project-relative to the assets directory — for every
+   * manifested file whose path changed (one for a file move, one per manifested descendant for a
+   * directory move); @ref assets_module filters this for texture extensions to fix up any
+   * `.material` file that referenced one of them by path.
+   *
+   * @return false (nothing moved, nothing touched) if the filesystem rename itself failed, e.g.
+   * because `new_path` already exists.
+   */
+  auto move(const std::filesystem::path& old_path, const std::filesystem::path& new_path, std::vector<std::pair<std::filesystem::path, std::filesystem::path>>& moved_assets) -> bool;
+
+  /**
+   * @brief Deletes a manifested file or directory from disk (source + `.meta`), removing its
+   * manifest entries. Recurses for a directory. Cooked cache blobs under the library directory
+   * are left as harmless orphans, same as an asset deleted outside the editor already leaves them.
+   */
+  auto remove(const std::filesystem::path& path) -> void;
 
 private:
 

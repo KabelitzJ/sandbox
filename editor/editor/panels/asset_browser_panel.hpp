@@ -7,6 +7,7 @@
 #include <cmath>
 #include <filesystem>
 #include <optional>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -29,11 +30,14 @@ struct asset_browser_entry {
 }; // struct asset_browser_entry
 
 /**
- * @brief Draws the "Asset Browser" panel: a two-pane view of the active project's assets
- * directory (folder tree left, current folder's contents right).
+ * @brief Draws the "Asset Browser" panel: a two-pane, file-explorer-style view of the active
+ * project's assets directory (folder tree left, current folder's contents right).
  *
- * Clicking an importable file registers it with assets_module and selects it in editor_state;
- * clicking a folder navigates into it.
+ * Creating assets, importing external files, and making folders all go through a right-click
+ * (or the toolbar's "Create" dropdown) rather than dedicated buttons. Entries can be renamed in
+ * place (F2 or the context menu), deleted (with confirmation), duplicated, and dragged into a
+ * folder to move them; a plain click on an importable file registers it with assets_module and
+ * selects it in editor_state, and a folder click navigates into it.
  */
 class asset_browser_panel final : public editor_panel {
 
@@ -59,40 +63,67 @@ private:
   /** @brief Drains _import_dialog's result (if any) into _pending_asset_imports, then works through that queue until it's empty or a name clash needs a decision. */
   auto _process_pending_asset_imports(editor_state& state) -> void;
 
-  /** @brief Copies @p source to @p destination (already resolved, clash already handled by the caller) and imports/cooks it — the "Import Asset..." counterpart to the per-entry Import path in draw(). */
+  /** @brief Copies @p source to @p destination (already resolved, clash already handled by the caller) and imports/cooks it — the "Import from Disk..." counterpart to the per-entry Import path in draw(). */
   auto _import_asset_file(editor_state& state, const std::filesystem::path& source, const std::filesystem::path& destination) -> void;
 
-  std::filesystem::path _current_directory{}; // project-relative; empty = assets root
+  /** @brief Draws the shared "Create" menu items (New Material/Particle Effect/Animation Graph/Script/Folder, Import from Disk..., Reimport All in This Folder) against @p target_directory (project-relative) — shared by the toolbar dropdown, the empty-space context menu, and every per-entry "Create" submenu, so there's exactly one place that knows how to create each asset kind. */
+  auto _draw_create_menu(editor_state& state, const std::filesystem::path& target_directory) -> void;
+
+  /** @brief Finds a filename not already present in @p absolute_directory: "stem.ext", then "stem 1.ext", "stem 2.ext", ... . @p extension may be empty (folders). */
+  [[nodiscard]] auto _unique_name(const std::filesystem::path& absolute_directory, std::string_view stem, std::string_view extension) const -> std::string;
+
+  auto _create_material(editor_state& state, const std::filesystem::path& target_directory) -> void;
+  auto _create_particle_effect(editor_state& state, const std::filesystem::path& target_directory) -> void;
+  auto _create_animation_graph(editor_state& state, const std::filesystem::path& target_directory) -> void;
+  auto _create_script(editor_state& state, const std::filesystem::path& target_directory) -> void;
+  auto _create_folder(const std::filesystem::path& target_directory) -> void;
+
+  auto _begin_rename(const std::filesystem::path& relative_path, bool is_directory) -> void;
+
+  /** @brief Draws the in-place rename InputText (replacing a tile's label or a tree row's text) and commits/cancels it -- shared by the grid and the tree, mirroring hierarchy_panel's node rename. */
+  auto _draw_rename_field(editor_state& state, std::float_t width) -> void;
+
+  auto _commit_rename(editor_state& state) -> void;
+
+  /** @brief Copies a file or (recursively) a directory under a unique name in the same folder; the copy's `.meta` sidecar(s) are stripped so it mints a fresh uuid on next import rather than sharing identity with the original. */
+  auto _duplicate(editor_state& state, const std::filesystem::path& relative_path, bool is_directory) -> void;
+
+  /** @brief Opens the delete-confirmation modal for @p relative_path; the actual assets_module.delete_asset() call happens once the user confirms, in draw(). */
+  auto _request_delete(const std::filesystem::path& relative_path, bool is_directory) -> void;
+
+  /** @brief Validates and performs a drag-and-drop (or drop-target) move of @p source_relative into @p destination_directory_relative -- refuses a no-op move, a name clash at the destination, and dropping a folder onto itself or one of its own descendants. */
+  auto _try_move(editor_state& state, const std::filesystem::path& source_relative, const std::filesystem::path& destination_directory_relative) -> void;
+
+  std::filesystem::path _current_directory{};
   std::vector<asset_browser_entry> _cached_entries{};
   bool _needs_refresh{true};
 
-  // Tile grid state: size is user-adjustable (toolbar slider), search filters _cached_entries by
-  // filename substring before layout.
   std::float_t _tile_size{72.0f};
   std::array<char, 128u> _search_filter{};
 
-  // Directory (and its ancestors) the tree should force open for exactly the one frame it's next
-  // drawn, set by _navigate_to() -- keeps the tree in sync with whatever folder navigation (a
-  // breadcrumb, a tree click, a grid folder tile) just switched _current_directory to.
   std::optional<std::filesystem::path> _pending_reveal{};
 
-  // "Import Mesh" modal state, shown the first time an un-imported .gltf/.glb is clicked.
-  // _show_import_mesh_dialog is consumed outside the per-entry PushID scope it's set from, since
-  // OpenPopup/BeginPopupModal must see the same ID stack.
   bool _show_import_mesh_dialog{false};
   std::filesystem::path _pending_import_path{};
   bool _import_extract_materials{true};
 
-  // "Import Asset..." pulls a file in from anywhere on disk, unlike the per-entry Import above
-  // which only sees files already inside assets/. _pending_asset_imports queues picked absolute
-  // paths, processed one at a time so a name clash can pause without losing the rest of a multi-select.
   sbx::render::widgets::file_dialog _import_dialog{};
+  std::filesystem::path _import_destination_directory{};
   std::vector<std::filesystem::path> _pending_asset_imports{};
 
-  bool _import_conflict_unresolved{false}; // true from the clash being found until Overwrite/Skip/Cancel.
-  bool _show_import_conflict_dialog{false}; // one-shot OpenPopup trigger, same pattern as _show_import_mesh_dialog.
-  std::filesystem::path _import_conflict_source{};      // absolute
-  std::filesystem::path _import_conflict_destination{}; // absolute
+  bool _import_conflict_unresolved{false};
+  bool _show_import_conflict_dialog{false};
+  std::filesystem::path _import_conflict_source{};
+  std::filesystem::path _import_conflict_destination{};
+
+  std::filesystem::path _renaming_path{};
+  bool _renaming_is_directory{false};
+  std::array<char, 256u> _rename_buffer{};
+  bool _rename_focus_pending{false};
+
+  bool _show_delete_confirm_dialog{false};
+  std::filesystem::path _pending_delete_path{};
+  bool _pending_delete_is_directory{false};
 
 }; // class asset_browser_panel
 

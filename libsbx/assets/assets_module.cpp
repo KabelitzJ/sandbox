@@ -2,7 +2,26 @@
 // Copyright (c) 2026 Jonas Kabelitz
 #include <libsbx/assets/assets_module.hpp>
 
+#include <array>
+#include <fstream>
+#include <string>
+#include <utility>
+#include <vector>
+
+#include <yaml-cpp/yaml.h>
+
+#include <libsbx/core/engine.hpp>
+#include <libsbx/core/project.hpp>
+
 namespace sbx::assets {
+
+// Matches editor::extension_table's texture set (editor/panels/asset_browser_panel.cpp) --
+// materials are the only asset kind referencing another asset by path rather than uuid, and
+// only ever a texture, so this is the one extension set move_asset needs to recognize.
+auto is_texture_extension(const std::filesystem::path& extension) -> bool {
+  const auto ext = extension.string();
+  return ext == ".png" || ext == ".jpg" || ext == ".jpeg";
+}
 
 assets_module::assets_module()
 : _residency{_manifest, _ibl} { }
@@ -13,6 +32,70 @@ auto assets_module::import(const std::filesystem::path& path) -> math::uuid {
 
 auto assets_module::import_directory(const std::filesystem::path& root) -> void {
   _manifest.import_directory(root);
+}
+
+auto assets_module::move_asset(const std::filesystem::path& old_path, const std::filesystem::path& new_path) -> bool {
+  auto moved = std::vector<std::pair<std::filesystem::path, std::filesystem::path>>{};
+
+  if (!_manifest.move(old_path, new_path, moved)) {
+    return false;
+  }
+
+  for (const auto& [old_relative, new_relative] : moved) {
+    if (is_texture_extension(old_relative.extension())) {
+      _fixup_material_texture_references(old_relative, new_relative);
+    }
+  }
+
+  return true;
+}
+
+auto assets_module::delete_asset(const std::filesystem::path& path) -> void {
+  _manifest.remove(path);
+}
+
+auto assets_module::_fixup_material_texture_references(const std::filesystem::path& old_relative, const std::filesystem::path& new_relative) -> void {
+  const auto& project = core::engine::project();
+  const auto assets_directory = project.assets_directory();
+
+  if (!std::filesystem::exists(assets_directory)) {
+    return;
+  }
+
+  const auto old_slot = old_relative.generic_string();
+  const auto new_slot = new_relative.generic_string();
+
+  static constexpr auto texture_slot_keys = std::array{"albedo", "normal", "metallic_roughness", "occlusion", "emissive"};
+
+  for (const auto& entry : std::filesystem::recursive_directory_iterator{assets_directory}) {
+    if (!entry.is_regular_file() || entry.path().extension() != ".material") {
+      continue;
+    }
+
+    auto node = YAML::Node{};
+
+    try {
+      node = YAML::LoadFile(entry.path().string());
+    } catch (const std::exception&) {
+      continue; // unreadable -- leave it alone rather than clobber it
+    }
+
+    auto changed = false;
+
+    for (const auto* key : texture_slot_keys) {
+      const auto slot = node[key];
+
+      if (slot && slot.IsScalar() && slot.as<std::string>() == old_slot) {
+        node[key] = new_slot;
+        changed = true;
+      }
+    }
+
+    if (changed) {
+      auto out = std::ofstream{entry.path()};
+      out << node;
+    }
+  }
 }
 
 auto assets_module::load_texture(const math::uuid& id, graphics::format format) -> texture_handle {

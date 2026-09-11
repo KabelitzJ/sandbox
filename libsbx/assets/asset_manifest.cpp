@@ -231,6 +231,121 @@ auto asset_manifest::_save_manifest() -> void {
   _manifest_dirty = false;
 }
 
+auto asset_manifest::move(const std::filesystem::path& old_path, const std::filesystem::path& new_path, std::vector<std::pair<std::filesystem::path, std::filesystem::path>>& moved_assets) -> bool {
+  ensure_loaded();
+
+  auto ec = std::error_code{};
+  std::filesystem::rename(old_path, new_path, ec);
+
+  if (ec) {
+    return false;
+  }
+
+  // Remaps one manifested file's index entry from `from` to `to` -- its .meta (identity) has
+  // already physically moved to sit next to `to` by this point, either by the single-file
+  // rename below or, for a directory, as part of the whole-subtree rename above.
+  const auto remap_one = [this, &moved_assets](const std::filesystem::path& from, const std::filesystem::path& to) {
+    const auto entry = _uuids.find(from.generic_string());
+
+    if (entry == _uuids.end()) {
+      return; // never imported -- nothing indexed to remap
+    }
+
+    const auto uuid = entry->second;
+    _uuids.erase(entry);
+    _uuids.emplace(to.generic_string(), uuid);
+    _paths[uuid] = to;
+
+    if (auto manifest_entry = _manifest.find(uuid); manifest_entry != _manifest.end()) {
+      manifest_entry->second.path = to;
+    }
+
+    moved_assets.emplace_back(relative(from), relative(to));
+    _manifest_dirty = true;
+  };
+
+  auto is_directory_ec = std::error_code{};
+  const auto is_directory = std::filesystem::is_directory(new_path, is_directory_ec);
+
+  if (!is_directory) {
+    auto old_meta = old_path;
+    old_meta += ".meta";
+
+    if (std::filesystem::exists(old_meta)) {
+      auto new_meta = new_path;
+      new_meta += ".meta";
+
+      auto meta_ec = std::error_code{};
+      std::filesystem::rename(old_meta, new_meta, meta_ec);
+    }
+
+    remap_one(old_path, new_path);
+  } else {
+    // Every manifested file's index key starting with old_path/ moved along with the directory
+    // rename above -- collect them first (mutating _uuids mid-iteration below would invalidate
+    // this loop), then remap each in a second pass.
+    const auto old_prefix = old_path.generic_string() + "/";
+
+    auto affected = std::vector<std::pair<std::filesystem::path, std::filesystem::path>>{};
+
+    for (const auto& [key, uuid] : _uuids) {
+      if (key.starts_with(old_prefix)) {
+        auto new_child = new_path / std::filesystem::path{key.substr(old_prefix.size())};
+        affected.emplace_back(std::filesystem::path{key}, std::move(new_child));
+      }
+    }
+
+    for (const auto& [from, to] : affected) {
+      remap_one(from, to);
+    }
+  }
+
+  _save_manifest();
+
+  return true;
+}
+
+auto asset_manifest::remove(const std::filesystem::path& path) -> void {
+  ensure_loaded();
+
+  auto ec = std::error_code{};
+  const auto is_directory = std::filesystem::is_directory(path, ec);
+
+  if (is_directory) {
+    const auto prefix = path.generic_string() + "/";
+
+    for (const auto& [key, uuid] : _uuids) {
+      if (key.starts_with(prefix)) {
+        _paths.erase(uuid);
+        _manifest.erase(uuid);
+        _manifest_dirty = true;
+      }
+    }
+
+    std::erase_if(_uuids, [&prefix](const auto& item) { return item.first.starts_with(prefix); });
+
+    std::filesystem::remove_all(path, ec);
+  } else {
+    const auto entry = _uuids.find(path.generic_string());
+
+    if (entry != _uuids.end()) {
+      const auto uuid = entry->second;
+      _uuids.erase(entry);
+      _paths.erase(uuid);
+      _manifest.erase(uuid);
+      _manifest_dirty = true;
+    }
+
+    auto meta_path = path;
+    meta_path += ".meta";
+    std::filesystem::remove(meta_path, ec);
+
+    std::filesystem::remove(path, ec);
+  }
+
+  _save_manifest();
+}
+
 auto asset_manifest::_read_or_create_meta(const std::filesystem::path& path) -> math::uuid {
   auto meta_path = path;
   meta_path += ".meta";

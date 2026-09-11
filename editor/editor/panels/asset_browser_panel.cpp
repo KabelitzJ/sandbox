@@ -4,8 +4,10 @@
 
 #include <algorithm>
 #include <cctype>
+#include <cfloat>
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <filesystem>
 #include <fstream>
 #include <string>
@@ -30,8 +32,8 @@
 namespace editor {
 
 // Single source of truth for both classify_extension (below) and importable_extensions, so the
-// "Import Asset..." file dialog's filter (see asset_browser_panel::draw) can never drift from
-// what a dropped-in file would actually be classified as.
+// "Import from Disk..." file dialog's filter (see _draw_create_menu) can never drift from what a
+// dropped-in file would actually be classified as.
 auto extension_table() -> const std::unordered_map<std::string, asset_kind>& {
   static const auto table = std::unordered_map<std::string, asset_kind>{
     {".png", asset_kind::texture},
@@ -77,7 +79,7 @@ auto classify_extension(const std::filesystem::path& extension) -> asset_kind {
   return entry != table.end() ? entry->second : asset_kind::unknown;
 }
 
-/** @brief Every extension "Import Asset..."'s file dialog should offer — everything classify_extension routes through assets_module::import (i.e. every importable kind; .yaml/scene is excluded, same as the per-entry Import path). */
+/** @brief Every extension "Import from Disk..."'s file dialog should offer — everything classify_extension routes through assets_module::import (i.e. every importable kind; .yaml/scene is excluded, same as the per-entry Import path). */
 auto importable_extensions() -> std::vector<std::string> {
   auto extensions = std::vector<std::string>{};
 
@@ -117,7 +119,8 @@ auto is_entry_selected(const editor_state& state, const std::filesystem::path& p
 }
 
 // Which drag_drop_payload_* (asset_tile.hpp) a tile of this kind carries -- nullptr for kinds no
-// Inspector picker ever accepts (environment_map, scene, script), which just aren't draggable.
+// Inspector picker ever accepts (environment_map, scene, script), which just aren't draggable
+// into a picker slot (they can still carry the move payload below).
 auto drag_payload_type_for(asset_kind kind) -> const char* {
   switch (kind) {
     case asset_kind::texture: return sbx::render::widgets::drag_drop_payload_texture;
@@ -128,6 +131,31 @@ auto drag_payload_type_for(asset_kind kind) -> const char* {
     case asset_kind::font: return sbx::render::widgets::drag_drop_payload_font;
     default: return nullptr;
   }
+}
+
+// Browser-local "move this into a folder" drag payload -- distinct from the kind-specific
+// drag_drop_payload_* above (which Inspector pickers accept), this one only ever moves between
+// tiles/tree nodes of this same panel, and (unlike the kind-specific payload) both files and
+// folders offer it.
+inline constexpr auto asset_move_drag_payload_type = "SBX_ASSET_BROWSER_MOVE";
+
+struct asset_move_drag_payload {
+  char path[256]{}; // project-relative, null-terminated
+}; // struct asset_move_drag_payload
+
+auto make_move_drag_payload(const std::filesystem::path& relative_path) -> asset_move_drag_payload {
+  auto payload = asset_move_drag_payload{};
+
+  const auto path_string = relative_path.string();
+  const auto copy_length = std::min(path_string.size(), sizeof(payload.path) - 1u);
+  std::memcpy(payload.path, path_string.data(), copy_length);
+  payload.path[copy_length] = '\0';
+
+  return payload;
+}
+
+auto path_from_move_payload(const ImGuiPayload& payload) -> std::filesystem::path {
+  return std::filesystem::path{static_cast<const asset_move_drag_payload*>(payload.Data)->path};
 }
 
 // Truncates (with an ellipsis) rather than wrapping, so a long filename never grows a grid row
@@ -183,7 +211,8 @@ auto is_hidden_from_browser(const std::filesystem::path& name, bool is_directory
 }
 
 // True if `candidate` is `target` itself or one of its ancestors (path-component prefix) -- used
-// to decide which nodes along a "reveal" target's chain need to be forced open.
+// to decide which nodes along a "reveal" target's chain need to be forced open, and to refuse a
+// drop that would move a folder onto itself or into its own descendant.
 [[nodiscard]] auto is_ancestor_or_self(const std::filesystem::path& candidate, const std::filesystem::path& target) -> bool {
   auto candidate_it = candidate.begin();
   auto target_it = target.begin();
@@ -251,6 +280,319 @@ auto asset_browser_panel::_refresh_entries() -> void {
   _needs_refresh = false;
 }
 
+auto asset_browser_panel::_unique_name(const std::filesystem::path& absolute_directory, std::string_view stem, std::string_view extension) const -> std::string {
+  auto name = extension.empty() ? std::string{stem} : fmt::format("{}{}", stem, extension);
+
+  if (!std::filesystem::exists(absolute_directory / name)) {
+    return name;
+  }
+
+  for (auto suffix = 1;; ++suffix) {
+    name = extension.empty() ? fmt::format("{} {}", stem, suffix) : fmt::format("{} {}{}", stem, suffix, extension);
+
+    if (!std::filesystem::exists(absolute_directory / name)) {
+      return name;
+    }
+  }
+}
+
+auto asset_browser_panel::_create_material(editor_state& state, const std::filesystem::path& target_directory) -> void {
+  auto& project = sbx::core::engine::project();
+  auto& assets_module = sbx::core::engine::get_module<sbx::assets::assets_module>();
+
+  const auto absolute_directory = project.assets_directory() / target_directory;
+  std::filesystem::create_directories(absolute_directory);
+
+  const auto relative_path = target_directory / _unique_name(absolute_directory, "New Material", ".material");
+
+  auto handle = assets_module.create_material(sbx::assets::material::create_info{.name = "New Material"});
+  const auto id = assets_module.save_material(handle, relative_path);
+
+  _navigate_to(target_directory);
+  state.select_asset(id, relative_path, asset_kind::material);
+}
+
+auto asset_browser_panel::_create_particle_effect(editor_state& state, const std::filesystem::path& target_directory) -> void {
+  auto& project = sbx::core::engine::project();
+  auto& assets_module = sbx::core::engine::get_module<sbx::assets::assets_module>();
+
+  const auto absolute_directory = project.assets_directory() / target_directory;
+  std::filesystem::create_directories(absolute_directory);
+
+  const auto relative_path = target_directory / _unique_name(absolute_directory, "New Particle Effect", ".particle_effect");
+
+  auto handle = assets_module.create_particle_effect(sbx::assets::particle_effect::create_info{.name = "New Particle Effect"});
+  const auto id = assets_module.save_particle_effect(handle, relative_path);
+
+  _navigate_to(target_directory);
+  state.select_asset(id, relative_path, asset_kind::particle_effect);
+}
+
+auto asset_browser_panel::_create_animation_graph(editor_state& state, const std::filesystem::path& target_directory) -> void {
+  auto& project = sbx::core::engine::project();
+  auto& assets_module = sbx::core::engine::get_module<sbx::assets::assets_module>();
+
+  const auto absolute_directory = project.assets_directory() / target_directory;
+  std::filesystem::create_directories(absolute_directory);
+
+  const auto relative_path = target_directory / _unique_name(absolute_directory, "New Animation Graph", ".animation_graph");
+
+  // A single entry state so the graph is already is_valid() -- states/transitions beyond this
+  // are hand-authored in the saved .animation_graph file until the visual graph editor lands
+  // (see the animator's Inspector section, which only edits parameters, not graph structure).
+  auto create_info = sbx::assets::animation_graph::create_info{.name = "New Animation Graph"};
+  create_info.states.push_back(sbx::assets::animation_state{.id = 0u, .name = "Idle"});
+  create_info.entry_state_id = 0u;
+
+  auto handle = assets_module.create_animation_graph(create_info);
+  const auto id = assets_module.save_animation_graph(handle, relative_path);
+
+  _navigate_to(target_directory);
+  state.select_asset(id, relative_path, asset_kind::animation_graph);
+}
+
+auto asset_browser_panel::_create_script(editor_state& state, const std::filesystem::path& target_directory) -> void {
+  auto& project = sbx::core::engine::project();
+
+  const auto absolute_directory = project.assets_directory() / target_directory;
+  std::filesystem::create_directories(absolute_directory);
+
+  const auto file_name = _unique_name(absolute_directory, "NewScript", ".cs");
+  const auto relative_path = target_directory / file_name;
+  const auto class_name = std::filesystem::path{file_name}.stem().string();
+
+  auto out = std::ofstream{absolute_directory / file_name};
+  out << fmt::format(
+    "using Sbx.Core;\n\n"
+    "public class {} : Behavior\n"
+    "{{\n"
+    "    public override void OnCreate()\n"
+    "    {{\n"
+    "    }}\n\n"
+    "    public override void OnUpdate()\n"
+    "    {{\n"
+    "    }}\n\n"
+    "    public override void OnDestroy()\n"
+    "    {{\n"
+    "    }}\n"
+    "}}\n",
+    class_name
+  );
+
+  _navigate_to(target_directory);
+  state.select_asset(sbx::math::uuid::nil(), relative_path, asset_kind::script);
+}
+
+auto asset_browser_panel::_create_folder(const std::filesystem::path& target_directory) -> void {
+  auto& project = sbx::core::engine::project();
+
+  const auto absolute_directory = project.assets_directory() / target_directory;
+  std::filesystem::create_directories(absolute_directory);
+
+  const auto relative_path = target_directory / _unique_name(absolute_directory, "New Folder", "");
+  std::filesystem::create_directory(project.assets_directory() / relative_path);
+
+  _navigate_to(target_directory);
+  _begin_rename(relative_path, true); // Explorer/Unity both drop straight into rename on create
+}
+
+auto asset_browser_panel::_draw_create_menu(editor_state& state, const std::filesystem::path& target_directory) -> void {
+  if (ImGui::MenuItem(ICON_MDI_PALETTE_SWATCH " Material")) {
+    _create_material(state, target_directory);
+  }
+
+  if (ImGui::MenuItem(ICON_MDI_FIREWORK " Particle Effect")) {
+    _create_particle_effect(state, target_directory);
+  }
+
+  if (ImGui::MenuItem(ICON_MDI_STATE_MACHINE " Animation Graph")) {
+    _create_animation_graph(state, target_directory);
+  }
+
+  if (ImGui::MenuItem(ICON_MDI_FILE_CODE_OUTLINE " C# Script")) {
+    _create_script(state, target_directory);
+  }
+
+  ImGui::Separator();
+
+  if (ImGui::MenuItem(ICON_MDI_FOLDER_PLUS " New Folder")) {
+    _create_folder(target_directory);
+  }
+
+  ImGui::Separator();
+
+  if (ImGui::MenuItem(ICON_MDI_FILE_IMPORT " Import from Disk...")) {
+    auto& project = sbx::core::engine::project();
+    _import_destination_directory = target_directory;
+    _import_dialog.open("Import Asset", sbx::render::widgets::file_dialog_mode::open_files, project.assets_directory() / target_directory, importable_extensions());
+  }
+
+  if (ImGui::MenuItem(ICON_MDI_REFRESH " Reimport All in This Folder")) {
+    auto& project = sbx::core::engine::project();
+    auto& assets_module = sbx::core::engine::get_module<sbx::assets::assets_module>();
+
+    // import_directory (like import()) needs a path resolvable from cwd, not one merely
+    // relative to assets_directory() — see assets_module.hpp's doc comment.
+    assets_module.import_directory(project.assets_directory() / target_directory);
+    _needs_refresh = true;
+  }
+}
+
+auto asset_browser_panel::_begin_rename(const std::filesystem::path& relative_path, bool is_directory) -> void {
+  _renaming_path = relative_path;
+  _renaming_is_directory = is_directory;
+
+  const auto name = is_directory ? relative_path.filename().string() : relative_path.stem().string();
+  std::strncpy(_rename_buffer.data(), name.c_str(), _rename_buffer.size() - 1u);
+  _rename_buffer[_rename_buffer.size() - 1u] = '\0';
+
+  _rename_focus_pending = true;
+}
+
+auto asset_browser_panel::_draw_rename_field(editor_state& state, std::float_t width) -> void {
+  ImGui::SetNextItemWidth(width);
+
+  if (_rename_focus_pending) {
+    ImGui::SetKeyboardFocusHere();
+    _rename_focus_pending = false;
+  }
+
+  const auto submitted = ImGui::InputText("##rename", _rename_buffer.data(), _rename_buffer.size(), ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue);
+  const auto deactivated = ImGui::IsItemDeactivated();
+  const auto cancelled = deactivated && ImGui::IsKeyPressed(ImGuiKey_Escape, false);
+
+  if (submitted || (deactivated && !cancelled)) {
+    _commit_rename(state);
+  }
+
+  if (submitted || deactivated) {
+    _renaming_path.clear();
+  }
+}
+
+auto asset_browser_panel::_commit_rename(editor_state& state) -> void {
+  auto& project = sbx::core::engine::project();
+  auto& assets_module = sbx::core::engine::get_module<sbx::assets::assets_module>();
+
+  const auto typed = std::string{_rename_buffer.data()};
+
+  if (typed.empty()) {
+    return;
+  }
+
+  // A file keeps its own extension -- a .material can't become something else by rename -- only
+  // the stem the user actually edited (see _begin_rename) is replaced. A folder's name is edited
+  // in full, there being no extension concept for it.
+  const auto new_name = _renaming_is_directory ? typed : typed + _renaming_path.extension().string();
+  const auto new_relative = _renaming_path.parent_path() / new_name;
+
+  if (new_relative == _renaming_path) {
+    return; // unchanged
+  }
+
+  const auto old_absolute = project.assets_directory() / _renaming_path;
+  const auto new_absolute = project.assets_directory() / new_relative;
+
+  if (std::filesystem::exists(new_absolute)) {
+    return; // name clash in this folder -- silently discard, same as an ordinary click-away cancel
+  }
+
+  if (!assets_module.move_asset(old_absolute, new_absolute)) {
+    return;
+  }
+
+  _needs_refresh = true;
+
+  if (const auto* selected = std::get_if<asset_selection>(&state.current_selection); selected != nullptr && selected->path == _renaming_path) {
+    state.select_asset(selected->id, new_relative, selected->kind);
+  }
+}
+
+auto asset_browser_panel::_duplicate(editor_state& state, const std::filesystem::path& relative_path, bool is_directory) -> void {
+  auto& project = sbx::core::engine::project();
+  auto& assets_module = sbx::core::engine::get_module<sbx::assets::assets_module>();
+
+  const auto absolute_directory = project.assets_directory() / relative_path.parent_path();
+  const auto stem = is_directory ? relative_path.filename().string() : relative_path.stem().string();
+  const auto extension = is_directory ? std::string{} : relative_path.extension().string();
+
+  const auto new_name = _unique_name(absolute_directory, stem + " Copy", extension);
+  const auto source_absolute = project.assets_directory() / relative_path;
+  const auto destination_absolute = absolute_directory / new_name;
+
+  auto ec = std::error_code{};
+
+  if (is_directory) {
+    // .meta files inside are intentionally copied too and then stripped below, so the duplicate's
+    // assets mint fresh uuids on next import instead of sharing identity with the originals.
+    std::filesystem::copy(source_absolute, destination_absolute, std::filesystem::copy_options::recursive, ec);
+
+    if (!ec) {
+      for (const auto& sub_entry : std::filesystem::recursive_directory_iterator{destination_absolute}) {
+        if (sub_entry.path().extension() == ".meta") {
+          std::filesystem::remove(sub_entry.path());
+        }
+      }
+    }
+  } else {
+    std::filesystem::copy_file(source_absolute, destination_absolute, ec);
+  }
+
+  if (ec) {
+    return;
+  }
+
+  _needs_refresh = true;
+
+  const auto new_relative = relative_path.parent_path() / new_name;
+
+  if (!is_directory) {
+    if (const auto kind = classify_extension(destination_absolute.extension()); is_importable_kind(kind)) {
+      const auto id = assets_module.import(destination_absolute);
+      state.select_asset(id, new_relative, kind);
+    }
+  }
+}
+
+auto asset_browser_panel::_request_delete(const std::filesystem::path& relative_path, bool is_directory) -> void {
+  _pending_delete_path = relative_path;
+  _pending_delete_is_directory = is_directory;
+  _show_delete_confirm_dialog = true;
+}
+
+auto asset_browser_panel::_try_move(editor_state& state, const std::filesystem::path& source_relative, const std::filesystem::path& destination_directory_relative) -> void {
+  if (source_relative.empty() || source_relative.parent_path() == destination_directory_relative) {
+    return; // already there
+  }
+
+  // Refuses moving a folder onto itself or into one of its own descendants (is_ancestor_or_self
+  // with candidate=source catches both: destination == source, and destination under source/).
+  if (is_ancestor_or_self(source_relative, destination_directory_relative)) {
+    return;
+  }
+
+  auto& project = sbx::core::engine::project();
+  auto& assets_module = sbx::core::engine::get_module<sbx::assets::assets_module>();
+
+  const auto source_absolute = project.assets_directory() / source_relative;
+  const auto new_relative = destination_directory_relative / source_relative.filename();
+  const auto destination_absolute = project.assets_directory() / new_relative;
+
+  if (std::filesystem::exists(destination_absolute)) {
+    return; // name clash in the target folder -- silently refuse, same spirit as rename
+  }
+
+  if (!assets_module.move_asset(source_absolute, destination_absolute)) {
+    return;
+  }
+
+  _needs_refresh = true;
+
+  if (const auto* selected = std::get_if<asset_selection>(&state.current_selection); selected != nullptr && selected->path == source_relative) {
+    state.select_asset(selected->id, new_relative, selected->kind);
+  }
+}
+
 // Recursively lists subdirectories only, live per expanded node — cheap (names only, no imports).
 auto asset_browser_panel::_draw_directory_tree(editor_state& state, const std::filesystem::path& absolute_assets_root, const std::filesystem::path& relative_directory) -> void {
   const auto absolute_directory = absolute_assets_root / relative_directory;
@@ -273,14 +615,13 @@ auto asset_browser_panel::_draw_directory_tree(editor_state& state, const std::f
     const auto relative_child = relative_directory / subdirectory.filename();
     const auto child_name = subdirectory.filename().string();
     const auto is_leaf = !has_visible_subdirectories(subdirectory);
+    const auto is_renaming_this = relative_child == _renaming_path;
 
     auto flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
     if (_current_directory == relative_child) {
       flags |= ImGuiTreeNodeFlags_Selected;
     }
     if (is_leaf) {
-      // Nothing to expand into -- no arrow, no toggle, and no separate TreePop (it's pushed and
-      // popped in one go by TreeNodeEx itself when this flag is set).
       flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
     }
 
@@ -290,14 +631,62 @@ auto asset_browser_panel::_draw_directory_tree(editor_state& state, const std::f
       ImGui::SetNextItemOpen(true);
     }
 
-    const auto is_open = ImGui::TreeNodeEx("##dir", flags, "%s %s", ICON_MDI_FOLDER, child_name.c_str());
+    const auto is_open = is_renaming_this
+      ? ImGui::TreeNodeEx("##dir", flags, "%s", ICON_MDI_FOLDER)
+      : ImGui::TreeNodeEx("##dir", flags, "%s %s", ICON_MDI_FOLDER, child_name.c_str());
 
     if (_pending_reveal && relative_child == *_pending_reveal) {
       ImGui::SetScrollHereY(0.5f);
     }
 
-    if (ImGui::IsItemClicked(ImGuiMouseButton_Left)) {
-      _navigate_to(relative_child);
+    if (!is_renaming_this) {
+      if (ImGui::IsItemClicked(ImGuiMouseButton_Left)) {
+        _navigate_to(relative_child);
+      }
+
+      const auto move_payload = make_move_drag_payload(relative_child);
+
+      if (ImGui::BeginDragDropSource()) {
+        ImGui::SetDragDropPayload(asset_move_drag_payload_type, &move_payload, sizeof(move_payload));
+        ImGui::TextUnformatted(child_name.c_str());
+        ImGui::EndDragDropSource();
+      }
+    }
+
+    if (ImGui::BeginDragDropTarget()) {
+      if (const auto* payload = ImGui::AcceptDragDropPayload(asset_move_drag_payload_type)) {
+        _try_move(state, path_from_move_payload(*payload), relative_child);
+      }
+
+      ImGui::EndDragDropTarget();
+    }
+
+    if (is_renaming_this) {
+      ImGui::SameLine();
+      _draw_rename_field(state, -FLT_MIN);
+    }
+
+    if (ImGui::BeginPopupContextItem("##dir_context")) {
+      if (ImGui::BeginMenu(ICON_MDI_FOLDER_PLUS " Create")) {
+        _draw_create_menu(state, relative_child);
+        ImGui::EndMenu();
+      }
+
+      ImGui::Separator();
+
+      if (ImGui::MenuItem(ICON_MDI_PENCIL " Rename")) {
+        _begin_rename(relative_child, true);
+      }
+
+      if (ImGui::MenuItem(ICON_MDI_CONTENT_DUPLICATE " Duplicate")) {
+        _duplicate(state, relative_child, true);
+      }
+
+      if (ImGui::MenuItem(ICON_MDI_DELETE " Delete")) {
+        _request_delete(relative_child, true);
+      }
+
+      ImGui::EndPopup();
     }
 
     if (is_open && !is_leaf) {
@@ -330,119 +719,13 @@ auto asset_browser_panel::draw(editor_state& state) -> void {
 
   _process_pending_asset_imports(state);
 
-  if (ImGui::Button(ICON_MDI_FILE_IMPORT " Import Asset...")) {
-    _import_dialog.open("Import Asset", sbx::render::widgets::file_dialog_mode::open_files, project.assets_directory() / _current_directory, importable_extensions());
+  if (ImGui::Button(ICON_MDI_FOLDER_PLUS " Create")) {
+    ImGui::OpenPopup("##asset_browser_create_menu");
   }
 
-  ImGui::SameLine();
-
-  if (ImGui::Button("Import All in This Folder")) {
-    // import_directory (like import()) needs a path resolvable from cwd, not one merely
-    // relative to assets_directory() — see assets_module.hpp's doc comment.
-    assets_module.import_directory(project.assets_directory() / _current_directory);
-    _needs_refresh = true;
-  }
-
-  ImGui::SameLine();
-
-  if (ImGui::Button(ICON_MDI_PLUS " New Material")) {
-    auto file_name = std::string{"New Material.material"};
-    auto suffix = 1;
-
-    while (std::filesystem::exists(project.assets_directory() / _current_directory / file_name)) {
-      file_name = fmt::format("New Material {}.material", suffix++);
-    }
-
-    const auto relative_path = _current_directory / file_name;
-
-    auto handle = assets_module.create_material(sbx::assets::material::create_info{.name = "New Material"});
-    const auto id = assets_module.save_material(handle, relative_path);
-
-    _needs_refresh = true;
-    state.select_asset(id, relative_path, asset_kind::material);
-  }
-
-  ImGui::SameLine();
-
-  if (ImGui::Button(ICON_MDI_FIREWORK " New Particle Effect")) {
-    auto file_name = std::string{"New Particle Effect.particle_effect"};
-    auto suffix = 1;
-
-    while (std::filesystem::exists(project.assets_directory() / _current_directory / file_name)) {
-      file_name = fmt::format("New Particle Effect {}.particle_effect", suffix++);
-    }
-
-    const auto relative_path = _current_directory / file_name;
-
-    auto handle = assets_module.create_particle_effect(sbx::assets::particle_effect::create_info{.name = "New Particle Effect"});
-    const auto id = assets_module.save_particle_effect(handle, relative_path);
-
-    _needs_refresh = true;
-    state.select_asset(id, relative_path, asset_kind::particle_effect);
-  }
-
-  ImGui::SameLine();
-
-  if (ImGui::Button(ICON_MDI_STATE_MACHINE " New Animation Graph")) {
-    auto file_name = std::string{"New Animation Graph.animation_graph"};
-    auto suffix = 1;
-
-    while (std::filesystem::exists(project.assets_directory() / _current_directory / file_name)) {
-      file_name = fmt::format("New Animation Graph {}.animation_graph", suffix++);
-    }
-
-    const auto relative_path = _current_directory / file_name;
-
-    // A single entry state so the graph is already is_valid() -- states/transitions beyond this
-    // are hand-authored in the saved .animation_graph file until the visual graph editor lands
-    // (see the animator's Inspector section, which only edits parameters, not graph structure).
-    auto create_info = sbx::assets::animation_graph::create_info{.name = "New Animation Graph"};
-    create_info.states.push_back(sbx::assets::animation_state{.id = 0u, .name = "Idle"});
-    create_info.entry_state_id = 0u;
-
-    auto handle = assets_module.create_animation_graph(create_info);
-    const auto id = assets_module.save_animation_graph(handle, relative_path);
-
-    _needs_refresh = true;
-    state.select_asset(id, relative_path, asset_kind::animation_graph);
-  }
-
-  ImGui::SameLine();
-
-  if (ImGui::Button(ICON_MDI_FILE_CODE_OUTLINE " New Script")) {
-    auto file_name = std::string{"NewScript.cs"};
-    auto suffix = 1;
-
-    while (std::filesystem::exists(project.assets_directory() / _current_directory / file_name)) {
-      file_name = fmt::format("NewScript{}.cs", suffix++);
-    }
-
-    const auto relative_path = _current_directory / file_name;
-    const auto absolute_path = project.assets_directory() / relative_path;
-    const auto class_name = std::filesystem::path{file_name}.stem().string();
-
-    std::filesystem::create_directories(absolute_path.parent_path());
-
-    auto out = std::ofstream{absolute_path};
-    out << fmt::format(
-      "using Sbx.Core;\n\n"
-      "public class {} : Behavior\n"
-      "{{\n"
-      "    public override void OnCreate()\n"
-      "    {{\n"
-      "    }}\n\n"
-      "    public override void OnUpdate()\n"
-      "    {{\n"
-      "    }}\n\n"
-      "    public override void OnDestroy()\n"
-      "    {{\n"
-      "    }}\n"
-      "}}\n",
-      class_name
-    );
-
-    _needs_refresh = true;
-    state.select_asset(sbx::math::uuid::nil(), relative_path, asset_kind::script);
+  if (ImGui::BeginPopup("##asset_browser_create_menu")) {
+    _draw_create_menu(state, _current_directory);
+    ImGui::EndPopup();
   }
 
   ImGui::Separator();
@@ -450,9 +733,18 @@ auto asset_browser_panel::draw(editor_state& state) -> void {
   // Breadcrumb bar: "assets" root button, then one clickable button per path segment. Iterates a
   // snapshot of the path rather than _current_directory itself, since a segment's own click below
   // reassigns _current_directory mid-loop (via _navigate_to), which would otherwise invalidate
-  // this loop's iterators.
+  // this loop's iterators. Each button also doubles as a move drop target, so dragging a tile onto
+  // an ancestor breadcrumb moves it there.
   if (ImGui::Button(ICON_MDI_FOLDER_OPEN " assets")) {
     _navigate_to(std::filesystem::path{});
+  }
+
+  if (ImGui::BeginDragDropTarget()) {
+    if (const auto* payload = ImGui::AcceptDragDropPayload(asset_move_drag_payload_type)) {
+      _try_move(state, path_from_move_payload(*payload), std::filesystem::path{});
+    }
+
+    ImGui::EndDragDropTarget();
   }
 
   const auto breadcrumb_directory = _current_directory;
@@ -469,6 +761,14 @@ auto asset_browser_panel::draw(editor_state& state) -> void {
 
     if (ImGui::Button(segment.string().c_str())) {
       _navigate_to(breadcrumb_path);
+    }
+
+    if (ImGui::BeginDragDropTarget()) {
+      if (const auto* payload = ImGui::AcceptDragDropPayload(asset_move_drag_payload_type)) {
+        _try_move(state, path_from_move_payload(*payload), breadcrumb_path);
+      }
+
+      ImGui::EndDragDropTarget();
     }
 
     ImGui::PopID();
@@ -525,6 +825,23 @@ auto asset_browser_panel::draw(editor_state& state) -> void {
       _navigate_to(std::filesystem::path{});
     }
 
+    if (ImGui::BeginDragDropTarget()) {
+      if (const auto* payload = ImGui::AcceptDragDropPayload(asset_move_drag_payload_type)) {
+        _try_move(state, path_from_move_payload(*payload), std::filesystem::path{});
+      }
+
+      ImGui::EndDragDropTarget();
+    }
+
+    if (ImGui::BeginPopupContextItem("##assets_root_context")) {
+      if (ImGui::BeginMenu(ICON_MDI_FOLDER_PLUS " Create")) {
+        _draw_create_menu(state, std::filesystem::path{});
+        ImGui::EndMenu();
+      }
+
+      ImGui::EndPopup();
+    }
+
     if (is_root_open && !root_is_leaf) {
       _draw_directory_tree(state, project.assets_directory(), std::filesystem::path{});
       ImGui::TreePop();
@@ -579,6 +896,7 @@ auto asset_browser_panel::draw(editor_state& state) -> void {
           }
 
           auto& entry = _cached_entries[visible[visible_index]];
+          const auto is_renaming_this = entry.path == _renaming_path;
 
           ImGui::PushID(entry.path.string().c_str());
           ImGui::BeginGroup();
@@ -593,6 +911,11 @@ auto asset_browser_panel::draw(editor_state& state) -> void {
           tile_desc.drag_id = entry.id;
           tile_desc.drag_path = entry.path;
 
+          const auto move_payload = make_move_drag_payload(entry.path);
+          tile_desc.secondary_drag_payload_type = asset_move_drag_payload_type;
+          tile_desc.secondary_drag_payload_data = &move_payload;
+          tile_desc.secondary_drag_payload_size = sizeof(move_payload);
+
           if (entry.kind == asset_kind::texture) {
             tile_desc.is_texture_thumbnail = true;
             tile_desc.texture = assets_module.load_texture(entry.path);
@@ -600,18 +923,11 @@ auto asset_browser_panel::draw(editor_state& state) -> void {
 
           const auto tile_result = sbx::render::widgets::draw_asset_tile("##tile", tile_desc);
 
-          const auto label = truncate_to_width(entry.path.filename().string(), _tile_size);
-          const auto label_width = ImGui::CalcTextSize(label.c_str()).x;
-          ImGui::SetCursorPosX(ImGui::GetCursorPosX() + std::max(0.0f, (_tile_size - label_width) * 0.5f));
-          ImGui::TextUnformatted(label.c_str());
-
-          ImGui::EndGroup();
-
           if (tile_result.hovered) {
             ImGui::SetTooltip("%s", entry.path.string().c_str());
           }
 
-          if (tile_result.clicked) {
+          if (!is_renaming_this && tile_result.clicked) {
             if (entry.is_directory) {
               _navigate_to(entry.path);
             } else if (entry.is_importable) {
@@ -642,24 +958,78 @@ auto asset_browser_panel::draw(editor_state& state) -> void {
             }
           }
 
+          if (entry.is_directory) {
+            if (ImGui::BeginDragDropTarget()) {
+              if (const auto* payload = ImGui::AcceptDragDropPayload(asset_move_drag_payload_type)) {
+                _try_move(state, path_from_move_payload(*payload), entry.path);
+              }
+
+              ImGui::EndDragDropTarget();
+            }
+          }
+
+          if (is_renaming_this) {
+            _draw_rename_field(state, _tile_size);
+          } else {
+            const auto label = truncate_to_width(entry.path.filename().string(), _tile_size);
+            const auto label_width = ImGui::CalcTextSize(label.c_str()).x;
+            ImGui::SetCursorPosX(ImGui::GetCursorPosX() + std::max(0.0f, (_tile_size - label_width) * 0.5f));
+            ImGui::TextUnformatted(label.c_str());
+          }
+
+          ImGui::EndGroup();
+
+          if (ImGui::BeginPopupContextItem("##tile_context")) {
+            const auto target_directory = entry.is_directory ? entry.path : entry.path.parent_path();
+
+            if (ImGui::BeginMenu(ICON_MDI_FOLDER_PLUS " Create")) {
+              _draw_create_menu(state, target_directory);
+              ImGui::EndMenu();
+            }
+
+            ImGui::Separator();
+
+            if (ImGui::MenuItem(ICON_MDI_PENCIL " Rename")) {
+              _begin_rename(entry.path, entry.is_directory);
+            }
+
+            if (ImGui::MenuItem(ICON_MDI_CONTENT_DUPLICATE " Duplicate")) {
+              _duplicate(state, entry.path, entry.is_directory);
+            }
+
+            if (ImGui::MenuItem(ICON_MDI_DELETE " Delete")) {
+              _request_delete(entry.path, entry.is_directory);
+            }
+
+            ImGui::EndPopup();
+          }
+
           ImGui::PopID();
         }
       }
     }
 
-    // Right-click the empty area of the contents pane (not an entry — see NoOpenOverItems) for
-    // the same "Import Asset..." action as the toolbar button above.
+    // Right-click the empty area of the contents pane (not an entry — see NoOpenOverItems).
     if (ImGui::BeginPopupContextWindow("##asset_browser_context", ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverItems)) {
-      if (ImGui::MenuItem(ICON_MDI_FILE_IMPORT " Import Asset...")) {
-        _import_dialog.open("Import Asset", sbx::render::widgets::file_dialog_mode::open_files, project.assets_directory() / _current_directory, importable_extensions());
-      }
-
+      _draw_create_menu(state, _current_directory);
       ImGui::EndPopup();
     }
 
     ImGui::EndChild();
 
     ImGui::EndTable();
+  }
+
+  if (ImGui::IsWindowHovered(ImGuiHoveredFlags_ChildWindows) && ImGui::IsKeyPressed(ImGuiKey_F2, false)) {
+    if (const auto* selected = std::get_if<asset_selection>(&state.current_selection); selected != nullptr) {
+      _begin_rename(selected->path, false);
+    }
+  }
+
+  if (ImGui::IsWindowHovered(ImGuiHoveredFlags_ChildWindows) && ImGui::IsKeyPressed(ImGuiKey_Delete, false)) {
+    if (const auto* selected = std::get_if<asset_selection>(&state.current_selection); selected != nullptr) {
+      _request_delete(selected->path, false);
+    }
   }
 
   if (_show_import_mesh_dialog) {
@@ -723,6 +1093,40 @@ auto asset_browser_panel::draw(editor_state& state) -> void {
     ImGui::EndPopup();
   }
 
+  if (_show_delete_confirm_dialog) {
+    ImGui::OpenPopup("Delete Asset");
+    _show_delete_confirm_dialog = false;
+  }
+
+  if (ImGui::BeginPopupModal("Delete Asset", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+    if (_pending_delete_is_directory) {
+      ImGui::Text("Delete folder '%s' and everything inside it?", _pending_delete_path.filename().string().c_str());
+    } else {
+      ImGui::Text("Delete '%s'?", _pending_delete_path.filename().string().c_str());
+    }
+
+    ImGui::TextDisabled("This cannot be undone.");
+
+    if (ImGui::Button(ICON_MDI_DELETE " Delete")) {
+      assets_module.delete_asset(project.assets_directory() / _pending_delete_path);
+
+      if (const auto* selected = std::get_if<asset_selection>(&state.current_selection); selected != nullptr && is_ancestor_or_self(_pending_delete_path, selected->path)) {
+        state.clear_selection();
+      }
+
+      _needs_refresh = true;
+      ImGui::CloseCurrentPopup();
+    }
+
+    ImGui::SameLine();
+
+    if (ImGui::Button("Cancel")) {
+      ImGui::CloseCurrentPopup();
+    }
+
+    ImGui::EndPopup();
+  }
+
   ImGui::End();
 }
 
@@ -733,7 +1137,7 @@ auto asset_browser_panel::_process_pending_asset_imports(editor_state& state) ->
     const auto source = _pending_asset_imports.front();
     _pending_asset_imports.erase(_pending_asset_imports.begin());
 
-    const auto destination = project.assets_directory() / _current_directory / source.filename();
+    const auto destination = project.assets_directory() / _import_destination_directory / source.filename();
 
     if (std::filesystem::exists(destination)) {
       _import_conflict_source = source;
