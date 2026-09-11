@@ -113,7 +113,7 @@ auto hierarchy_panel::_draw_node_row(editor_state& state, sbx::scenes::scene& sc
 
   if (is_renaming) {
     ImGui::SameLine();
-    ImGui::SetNextItemWidth(-FLT_MIN);
+    ImGui::SetNextItemWidth(std::numeric_limits<std::float_t>::lowest());
 
     if (_rename_focus_pending) {
       ImGui::SetKeyboardFocusHere();

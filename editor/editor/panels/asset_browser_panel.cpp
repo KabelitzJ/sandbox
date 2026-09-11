@@ -663,7 +663,7 @@ auto asset_browser_panel::_draw_directory_tree(editor_state& state, const std::f
 
     if (is_renaming_this) {
       ImGui::SameLine();
-      _draw_rename_field(state, -FLT_MIN);
+      _draw_rename_field(state, std::numeric_limits<std::float_t>::lowest());
     }
 
     if (ImGui::BeginPopupContextItem("##dir_context")) {
