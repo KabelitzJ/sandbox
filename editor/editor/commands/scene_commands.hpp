@@ -105,6 +105,39 @@ private:
 
 }; // class delete_node_command
 
+/**
+ * @brief Moves target to a new parent (nullopt = top-level) at new_index among that parent's
+ * children, restoring its original parent/index on undo. Backs the Hierarchy panel's drag/drop
+ * reparent and reorder.
+ *
+ * new_index is relative to the destination list *before* target is removed from wherever it
+ * currently sits — execute() corrects for the shift itself when target is moving within the same
+ * parent, so callers just pass the raw drop-target position.
+ */
+class reparent_node_command final : public command {
+
+public:
+
+  explicit reparent_node_command(const sbx::scenes::node& target, std::optional<sbx::math::uuid> new_parent_id, std::size_t new_index);
+
+  auto execute() -> void override;
+
+  auto undo() -> void override;
+
+  [[nodiscard]] auto label() const -> std::string override {
+    return "Move Node";
+  }
+
+private:
+
+  sbx::math::uuid _id;
+  std::optional<sbx::math::uuid> _old_parent_id{}; // nullopt = was top-level
+  std::size_t _old_index{0u};
+  std::optional<sbx::math::uuid> _new_parent_id;
+  std::size_t _new_index;
+
+}; // class reparent_node_command
+
 /** @brief Sets the scene's active (play) camera to target, restoring whatever it was before on undo. */
 class set_active_camera_command final : public command {
 

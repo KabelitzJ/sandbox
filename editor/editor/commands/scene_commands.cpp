@@ -140,6 +140,68 @@ auto delete_node_command::undo() -> void {
   }
 }
 
+reparent_node_command::reparent_node_command(const sbx::scenes::node& target, std::optional<sbx::math::uuid> new_parent_id, std::size_t new_index)
+: _id{target.id()}, _new_parent_id{new_parent_id}, _new_index{new_index} {
+  auto& scene = active_scene();
+
+  const auto& own_relationship = target.get_component<sbx::scenes::relationship>();
+  auto parent_node = scene.node_of(own_relationship.parent);
+  const auto parent_is_real = parent_node.has_component<sbx::scenes::id>();
+
+  if (parent_is_real) {
+    _old_parent_id = parent_node.id();
+  }
+
+  auto parent_or_root = parent_is_real ? parent_node : scene.root();
+  const auto& siblings = parent_or_root.get_component<sbx::scenes::relationship>().children;
+
+  for (auto i = std::size_t{0u}; i < siblings.size(); ++i) {
+    if (scene.node_of(siblings[i]).id() == _id) {
+      _old_index = i;
+      break;
+    }
+  }
+}
+
+auto reparent_node_command::execute() -> void {
+  auto& scene = active_scene();
+  auto target = scene.find(_id);
+
+  if (!target.is_valid()) {
+    return;
+  }
+
+  auto index = _new_index;
+
+  // Dropping further down within the same list: the raw target position was counted against the
+  // list still containing target at _old_index, so once target is lifted out everything after it
+  // shifts back by one.
+  if (_old_parent_id == _new_parent_id && _old_index < index) {
+    index -= 1u;
+  }
+
+  auto parent_or_root = _new_parent_id ? scene.find(*_new_parent_id) : scene.root();
+
+  if (!_new_parent_id || parent_or_root.is_valid()) {
+    scene.insert_child(parent_or_root, target, index);
+  }
+}
+
+auto reparent_node_command::undo() -> void {
+  auto& scene = active_scene();
+  auto target = scene.find(_id);
+
+  if (!target.is_valid()) {
+    return;
+  }
+
+  auto parent_or_root = _old_parent_id ? scene.find(*_old_parent_id) : scene.root();
+
+  if (!_old_parent_id || parent_or_root.is_valid()) {
+    scene.insert_child(parent_or_root, target, _old_index);
+  }
+}
+
 set_active_camera_command::set_active_camera_command(const sbx::scenes::node& target)
 : _id{target.id()} {
   auto& scene = active_scene();
