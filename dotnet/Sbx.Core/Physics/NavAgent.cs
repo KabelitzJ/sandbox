@@ -60,6 +60,21 @@ namespace Sbx.Core.Physics
       }
     }
 
+    /** Used to vertically cull crowd neighbors -- two agents whose height gap exceeds half the sum of their heights are never treated as colliding, even if close in X/Z (e.g. one on a ramp above the other). */
+    public float Height
+    {
+      get
+      {
+        float height;
+        unsafe { InternalCalls.NavAgent_GetHeight(UUID, &height); }
+        return height;
+      }
+      set
+      {
+        unsafe { InternalCalls.NavAgent_SetHeight(UUID, value); }
+      }
+    }
+
     /** How far above the sampled navmesh surface this node's own pivot should sit -- half the height for a capsule centered on its own origin, 0 for a foot-pivoted model. */
     public float BaseOffset
     {

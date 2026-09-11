@@ -236,6 +236,10 @@ struct interop {
   static auto nav_agent_get_radius(std::uint64_t uuid, std::float_t* out_radius) -> void;
   static auto nav_agent_set_radius(std::uint64_t uuid, std::float_t radius) -> void;
 
+  /** @brief Used to vertically cull crowd neighbors -- two agents whose height gap exceeds half the sum of their heights are never treated as colliding, even if close in X/Z (e.g. one on a ramp above the other). */
+  static auto nav_agent_get_height(std::uint64_t uuid, std::float_t* out_height) -> void;
+  static auto nav_agent_set_height(std::uint64_t uuid, std::float_t height) -> void;
+
   /** @brief How far above the sampled navmesh surface height the node's own pivot should sit (e.g. half the height for a capsule centered on its own origin, 0 for a foot-pivoted model). */
   static auto nav_agent_get_base_offset(std::uint64_t uuid, std::float_t* out_base_offset) -> void;
   static auto nav_agent_set_base_offset(std::uint64_t uuid, std::float_t base_offset) -> void;

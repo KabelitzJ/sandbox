@@ -1637,6 +1637,36 @@ auto interop::nav_agent_set_radius(std::uint64_t uuid, std::float_t radius) -> v
   node.get_component<physics::nav_agent>().radius = radius;
 }
 
+auto interop::nav_agent_get_height(std::uint64_t uuid, std::float_t* out_height) -> void {
+  auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
+  auto& scene = scenes_module.active_scene();
+
+  auto node = scene.find(math::uuid::from_value(uuid));
+
+  if (!node.is_valid() || !out_height) {
+    utility::logger<"scripting">::error("Attempting to get nav_agent height of invalid node");
+
+    return;
+  }
+
+  *out_height = node.get_component<physics::nav_agent>().height;
+}
+
+auto interop::nav_agent_set_height(std::uint64_t uuid, std::float_t height) -> void {
+  auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
+  auto& scene = scenes_module.active_scene();
+
+  auto node = scene.find(math::uuid::from_value(uuid));
+
+  if (!node.is_valid()) {
+    utility::logger<"scripting">::error("Attempting to set nav_agent height of invalid node");
+
+    return;
+  }
+
+  node.get_component<physics::nav_agent>().height = height;
+}
+
 auto interop::nav_agent_get_base_offset(std::uint64_t uuid, std::float_t* out_base_offset) -> void {
   auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
   auto& scene = scenes_module.active_scene();

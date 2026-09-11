@@ -151,6 +151,9 @@ scripting_module::scripting_module() {
   _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "NavAgent_GetRadius", reinterpret_cast<void*>(&interop::nav_agent_get_radius));
   _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "NavAgent_SetRadius", reinterpret_cast<void*>(&interop::nav_agent_set_radius));
 
+  _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "NavAgent_GetHeight", reinterpret_cast<void*>(&interop::nav_agent_get_height));
+  _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "NavAgent_SetHeight", reinterpret_cast<void*>(&interop::nav_agent_set_height));
+
   _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "NavAgent_GetBaseOffset", reinterpret_cast<void*>(&interop::nav_agent_get_base_offset));
   _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "NavAgent_SetBaseOffset", reinterpret_cast<void*>(&interop::nav_agent_set_base_offset));
   _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "NavAgent_GetSpeed", reinterpret_cast<void*>(&interop::nav_agent_get_speed));

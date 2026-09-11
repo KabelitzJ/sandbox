@@ -126,6 +126,12 @@ auto crowd::update(scenes::scene& scene, const navmesh& mesh, std::float_t dt) -
           continue;
         }
 
+        const auto vertical_gap = std::abs(transform.position.y() - neighbor_transform->position.y());
+
+        if (vertical_gap >= (agent.height + neighbor_agent->height) * 0.5f) {
+          continue;
+        }
+
         neighbor_obstacles.push_back(avoidance_circle_obstacle{neighbor_transform->position, neighbor_agent->velocity, neighbor_agent->radius});
       }
 
