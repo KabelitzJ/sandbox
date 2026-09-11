@@ -18,43 +18,33 @@
 
 namespace sbx::assets {
 
-[[nodiscard]] auto primitive_mesh_uuid(primitive_mesh_kind kind) -> math::uuid {
-  switch (kind) {
-    case primitive_mesh_kind::cube: return math::uuid::from_value(0x5342583100000001ull);
-    case primitive_mesh_kind::sphere: return math::uuid::from_value(0x5342583100000002ull);
-    case primitive_mesh_kind::plane: return math::uuid::from_value(0x5342583100000003ull);
-    case primitive_mesh_kind::capsule: return math::uuid::from_value(0x5342583100000004ull);
-    case primitive_mesh_kind::cylinder: return math::uuid::from_value(0x5342583100000005ull);
-  }
+static constexpr auto primitive_mesh_kind_uuids = std::array<math::uuid::value_type, reflection::enum_count<primitive_mesh_kind>()>{
+  0x5342583100000001ull,
+  0x5342583100000002ull,
+  0x5342583100000003ull,
+  0x5342583100000004ull,
+  0x5342583100000005ull
+};
 
-  return math::uuid::nil();
+static constexpr auto primitive_mesh_kind_names = std::array<std::string_view, reflection::enum_count<primitive_mesh_kind>()>{
+  "Cube",
+  "Sphere",
+  "Plane",
+  "Capsule",
+  "Cylinder"
+};
+
+[[nodiscard]] auto primitive_mesh_uuid(const primitive_mesh_kind kind) -> math::uuid {
+  return math::uuid::from_value(primitive_mesh_kind_uuids[reflection::to_underlying(kind)]);
 }
 
-[[nodiscard]] auto primitive_mesh_name(primitive_mesh_kind kind) -> std::string_view {
-  switch (kind) {
-    case primitive_mesh_kind::cube: return "Cube";
-    case primitive_mesh_kind::sphere: return "Sphere";
-    case primitive_mesh_kind::plane: return "Plane";
-    case primitive_mesh_kind::capsule: return "Capsule";
-    case primitive_mesh_kind::cylinder: return "Cylinder";
-  }
-
-  return "";
+[[nodiscard]] auto primitive_mesh_name(const primitive_mesh_kind kind) -> std::string_view {
+  return primitive_mesh_kind_names[reflection::to_underlying(kind)];
 }
 
 [[nodiscard]] auto primitive_mesh_kind_of(const math::uuid& id) -> std::optional<primitive_mesh_kind> {
-  for (const auto kind : primitive_mesh_kinds) {
+  for (const auto kind : reflection::enum_values<primitive_mesh_kind>()) {
     if (primitive_mesh_uuid(kind) == id) {
-      return kind;
-    }
-  }
-
-  return std::nullopt;
-}
-
-[[nodiscard]] auto primitive_mesh_kind_named(std::string_view name) -> std::optional<primitive_mesh_kind> {
-  for (const auto kind : primitive_mesh_kinds) {
-    if (primitive_mesh_name(kind) == name) {
       return kind;
     }
   }

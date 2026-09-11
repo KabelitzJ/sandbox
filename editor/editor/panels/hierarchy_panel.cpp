@@ -8,6 +8,8 @@
 
 #include <imgui.h>
 
+#include <libsbx/reflection/enum.hpp>
+
 #include <libsbx/render/ui/fonts/material_design_icons.hpp>
 
 #include <libsbx/core/engine.hpp>
@@ -44,8 +46,8 @@ auto draw_3d_object_submenu(editor_state& state, sbx::scenes::scene& scene, std:
     return;
   }
 
-  for (const auto kind : sbx::assets::primitive_mesh_kinds) {
-    if (ImGui::MenuItem(std::string{sbx::assets::primitive_mesh_name(kind)}.c_str())) {
+  for (const auto kind : sbx::reflection::enum_values<sbx::assets::primitive_mesh_kind>()) {
+    if (ImGui::MenuItem(std::string{sbx::reflection::to_string(kind)}.c_str())) {
       auto command = std::make_unique<create_primitive_node_command>(kind, parent_id);
       auto* created = command.get();
       state.push_command(std::move(command));

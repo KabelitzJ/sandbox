@@ -203,7 +203,7 @@ auto draw_asset_picker(const char* popup_id, const asset_picker_item& current, c
     if (options.kind == asset_picker_kind::mesh && options.show_builtin_primitives) {
       ImGui::TextDisabled("Built-in");
 
-      for (const auto primitive_kind : assets::primitive_mesh_kinds) {
+      for (const auto primitive_kind : reflection::enum_values<assets::primitive_mesh_kind>()) {
         const auto name = assets::primitive_mesh_name(primitive_kind);
 
         if (filter_buffer[0] != '\0' && !contains_ignore_case(name, filter_buffer.data())) {

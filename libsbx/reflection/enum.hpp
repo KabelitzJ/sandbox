@@ -3,11 +3,12 @@
 #ifndef LIBSBX_REFLECTION_ENUM_HPP_
 #define LIBSBX_REFLECTION_ENUM_HPP_
 
+#include <array>
+#include <functional>
 #include <meta>
 #include <optional>
 #include <span>
 #include <string_view>
-#include <functional>
 #include <type_traits>
 
 #include <fmt/format.h>
@@ -24,6 +25,20 @@ requires (std::is_enum_v<Enum>)
 consteval auto enum_count() -> std::size_t {
   return std::meta::enumerators_of(^^Enum).size();
 }
+
+template<typename Enum>
+requires (std::is_enum_v<Enum>)
+consteval auto enum_values() -> std::array<Enum, enum_count<Enum>()> {
+  auto result = std::array<Enum, enum_count<Enum>()>{};
+  auto index = std::size_t{0};
+
+  template for (constexpr auto e : std::define_static_array(std::meta::enumerators_of(^^Enum))) {
+    result[index++] = [:e:];
+  }
+
+  return result;
+}
+
 
 template<named_enum Enum, typename Callable>
 requires (std::is_invocable_v<Callable, std::string_view, Enum>)
