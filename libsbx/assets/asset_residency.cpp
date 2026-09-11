@@ -888,7 +888,7 @@ auto asset_residency::save_animation_graph(animation_graph_handle& graph, const 
     transition_node["to_state"] = transition.to_state;
     transition_node["duration"] = transition.duration;
     transition_node["has_exit_time"] = transition.has_exit_time;
-    transition_node["exit_time"] = transition.exit_time;
+    transition_node["exit_time"] = transition.exit_time.value();
 
     auto conditions_node = YAML::Node{YAML::NodeType::Sequence};
 

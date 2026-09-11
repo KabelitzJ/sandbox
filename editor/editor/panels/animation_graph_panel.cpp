@@ -699,7 +699,10 @@ auto animation_graph_panel::_draw_selection_inspector() -> void {
 
     ImGui::BeginDisabled(!transition.has_exit_time);
 
-    if (ImGui::DragFloat("Exit Time", &transition.exit_time, 0.01f, 0.0f, 1.0f)) {
+    auto exit_time = transition.exit_time.value();
+
+    if (ImGui::DragFloat("Exit Time", &exit_time, 0.01f, 0.0f, 1.0f)) {
+      transition.exit_time = exit_time;
       _apply_live();
     }
 

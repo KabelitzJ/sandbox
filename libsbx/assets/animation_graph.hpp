@@ -12,28 +12,17 @@
 
 #include <libsbx/math/uuid.hpp>
 #include <libsbx/math/vector2.hpp>
+#include <libsbx/math/bounded.hpp>
 
 #include <libsbx/assets/asset_handle.hpp>
 #include <libsbx/assets/loadable.hpp>
 
 namespace sbx::assets {
 
-/**
- * @brief A fired-but-not-yet-consumed pulse (Unity's "Trigger" parameter kind) -- a dedicated
- * type rather than a bool, so a trigger and a persistent bool aren't the same std::variant
- * alternative. Consumed (reset to false) once per frame by the animator evaluator, whether or
- * not it caused a transition.
- */
 struct animation_trigger {
   bool set{false};
 }; // struct animation_trigger
 
-/**
- * @brief An animation_parameter's (or animation_condition's) value -- the parameter's type *is*
- * whichever alternative is active, so callers std::get_if/std::visit it instead of switching on
- * a separate type enum. Shared as-is between an animation_parameter's default and an animator
- * instance's live value (scenes::animator::parameters).
- */
 using animation_parameter_value = std::variant<std::float_t, bool, std::int32_t, animation_trigger>;
 
 struct animation_parameter {
@@ -41,19 +30,13 @@ struct animation_parameter {
   animation_parameter_value default_value{0.0f};
 }; // struct animation_parameter
 
-/**
- * @brief One state's clip binding. clip_name is resolved at evaluation time by name against
- * whichever mesh_renderer's mesh the graph is driving (scenes::animator is on the same node) --
- * clips aren't independent assets, just a mesh's cooked side effects (see assets::animation_clip's
- * doc comment), so a graph is only meaningful when applied to a mesh whose clip names match.
- */
 struct animation_state {
-  std::uint32_t id{0u}; // stable, not a vector index -- survives reordering/removal
+  std::uint32_t id{0u};
   std::string name{};
   std::string clip_name{};
   std::float_t speed{1.0f};
   bool loop{true};
-  math::vector2 editor_position{0.0f, 0.0f}; // unused until the visual graph editor lands; carried now so that editor doesn't need an asset-format migration
+  math::vector2 editor_position{0.0f, 0.0f};
 }; // struct animation_state
 
 enum class animation_condition_comparator : std::uint8_t {
@@ -67,29 +50,19 @@ enum class animation_condition_comparator : std::uint8_t {
 
 struct animation_condition {
   std::string parameter_name{};
-  animation_condition_comparator comparator{animation_condition_comparator::equals}; // ignored when the named parameter is an animation_trigger
-  animation_parameter_value expected{0.0f}; // trigger alternative unused here
+  animation_condition_comparator comparator{animation_condition_comparator::equals};
+  animation_parameter_value expected{0.0f};
 }; // struct animation_condition
 
-/** @brief One edge of the state machine. Every listed condition must pass (ANDed) for the transition to be taken. */
 struct animation_transition {
-  std::optional<std::uint32_t> from_state{}; // nullopt = "Any State"
+  std::optional<std::uint32_t> from_state{};
   std::uint32_t to_state{0u};
-  std::float_t duration{0.25f}; // crossfade seconds
+  std::float_t duration{0.25f};
   bool has_exit_time{false};
-  std::float_t exit_time{1.0f}; // normalized [0, 1] against the source state's clip duration
-  std::vector<animation_condition> conditions{}; // ANDed
+  math::bounded<std::float_t, 0.0f, 1.0f> exit_time{1.0f};
+  std::vector<animation_condition> conditions{};
 }; // struct animation_transition
 
-/**
- * @brief A state machine over a set of named animation states: which clip each state plays, and
- * the parameter-gated transitions (with crossfade duration) between them. Evaluated per-instance
- * by scenes::animator + render::scene_renderer_module -- this class only holds the authored
- * graph, not any entity's live state/parameter values.
- *
- * Mirrors particle_effect's asset shape: a create_info residency builds the live object from,
- * plain-data members, id()/is_valid().
- */
 class animation_graph final : public loadable {
 
   friend class asset_residency;
@@ -141,7 +114,6 @@ public:
     return _entry_state_id;
   }
 
-  /** @brief One past the highest state id in use -- the editor's convenience for minting a fresh id when adding a state. */
   [[nodiscard]] auto next_state_id() const noexcept -> std::uint32_t {
     auto next = std::uint32_t{0u};
 
