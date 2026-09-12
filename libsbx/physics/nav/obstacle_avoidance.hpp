@@ -17,7 +17,7 @@ struct avoidance_circle_obstacle {
   std::float_t radius{0.0f};
 }; // struct avoidance_circle_obstacle
 
-[[nodiscard]] auto sample_avoidance_velocity(const math::vector3& position, const math::vector3& desired_velocity, std::float_t radius, std::float_t max_speed, std::span<const avoidance_circle_obstacle> neighbors, std::span<const boundary_segment> walls) -> math::vector3;
+[[nodiscard]] auto sample_avoidance_velocity(const math::vector3& position, const math::vector3& own_velocity, const math::vector3& desired_velocity, std::float_t radius, std::float_t max_speed, std::span<const avoidance_circle_obstacle> neighbors, std::span<const boundary_segment> walls) -> math::vector3;
 
 [[nodiscard]] auto compute_separation_velocity(const math::vector3& position, std::span<const avoidance_circle_obstacle> neighbors, std::float_t separation_distance, std::float_t weight) -> math::vector3;
 

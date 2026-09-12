@@ -42,14 +42,16 @@ namespace sbx::physics {
 
   auto g_score = std::unordered_map<poly_reference, std::float_t>{};
   auto came_from = std::unordered_map<poly_reference, poly_reference>{};
+  auto node_position = std::unordered_map<poly_reference, math::vector3>{};
   auto closed = std::unordered_set<poly_reference>{};
 
-  const auto heuristic = [&](poly_reference reference) {
-    return distance_xz(poly_center(mesh, reference), end_pos);
+  const auto heuristic = [&](const math::vector3& position) {
+    return distance_xz(position, end_pos);
   };
 
   g_score[start] = 0.0f;
-  open.push(open_entry{heuristic(start), start});
+  node_position[start] = start_pos;
+  open.push(open_entry{heuristic(start_pos), start});
 
   while (!open.empty()) {
     const auto current = open.top().reference;
@@ -76,14 +78,17 @@ namespace sbx::physics {
     closed.insert(current);
 
     const auto& poly = mesh.polys[poly_ref_to_index(current)];
-    const auto current_pos = (current == start) ? start_pos : poly_center(mesh, current);
+    const auto current_pos = node_position[current];
 
-    for (const auto neighbor : poly.neighbors) {
+    for (auto edge_index = std::size_t{0}; edge_index < poly.neighbors.size(); ++edge_index) {
+      const auto neighbor = poly.neighbors[edge_index];
+
       if (neighbor == null_poly_reference || closed.contains(neighbor)) {
         continue;
       }
 
-      const auto edge_cost = distance_xz(current_pos, poly_center(mesh, neighbor));
+      const auto portal_point = poly_edge_midpoint(mesh, current, static_cast<std::uint32_t>(edge_index));
+      const auto edge_cost = distance_xz(current_pos, portal_point);
       const auto tentative_g = g_score[current] + edge_cost;
 
       const auto existing = g_score.find(neighbor);
@@ -91,7 +96,8 @@ namespace sbx::physics {
       if (existing == g_score.end() || tentative_g < existing->second) {
         g_score[neighbor] = tentative_g;
         came_from[neighbor] = current;
-        open.push(open_entry{tentative_g + heuristic(neighbor), neighbor});
+        node_position[neighbor] = portal_point;
+        open.push(open_entry{tentative_g + heuristic(portal_point), neighbor});
       }
     }
   }

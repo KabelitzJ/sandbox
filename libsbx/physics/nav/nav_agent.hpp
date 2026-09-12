@@ -33,6 +33,7 @@ struct nav_agent {
   nav_agent_state state{nav_agent_state::idle};
   math::vector3 target{};
   math::vector3 velocity{};
+  std::float_t target_replan_timer{0.0f};
 
   path_corridor corridor{};
   local_boundary boundary{};

@@ -3,6 +3,7 @@
 #ifndef LIBSBX_PHYSICS_NAV_NAVMESH_HPP_
 #define LIBSBX_PHYSICS_NAV_NAVMESH_HPP_
 
+#include <array>
 #include <cmath>
 #include <cstdint>
 #include <vector>
@@ -11,6 +12,7 @@
 #include <libsbx/math/volume.hpp>
 
 #include <libsbx/physics/nav/poly_mesh.hpp>
+#include <libsbx/physics/nav/poly_mesh_detail.hpp>
 
 namespace sbx::physics {
 
@@ -31,16 +33,22 @@ struct nav_poly {
   std::vector<poly_reference> neighbors{};
   std::uint8_t area{walkable_area};
   std::uint16_t flags{0};
+  std::uint32_t detail_vert_base{0};
+  std::uint32_t detail_vert_count{0};
+  std::uint32_t detail_tri_base{0};
+  std::uint32_t detail_tri_count{0};
 }; // struct nav_poly
 
 struct navmesh {
   std::vector<math::vector3> verts{};
   std::vector<nav_poly> polys{};
+  std::vector<math::vector3> detail_verts{};
+  std::vector<std::array<std::uint32_t, 3>> detail_tris{};
   math::volume bounds{};
   std::float_t walkable_climb{0.0f};
 }; // struct navmesh
 
-[[nodiscard]] auto build_runtime_navmesh(const poly_mesh& pmesh, std::float_t walkable_climb) -> navmesh;
+[[nodiscard]] auto build_runtime_navmesh(const poly_mesh& pmesh, const poly_mesh_detail& dmesh, std::float_t walkable_climb) -> navmesh;
 
 [[nodiscard]] auto poly_center(const navmesh& mesh, poly_reference reference) -> math::vector3;
 

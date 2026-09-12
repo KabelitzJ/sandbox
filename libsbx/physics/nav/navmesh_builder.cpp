@@ -28,6 +28,7 @@
 #include <libsbx/physics/nav/compact_heightfield.hpp>
 #include <libsbx/physics/nav/contour.hpp>
 #include <libsbx/physics/nav/poly_mesh.hpp>
+#include <libsbx/physics/nav/poly_mesh_detail.hpp>
 
 namespace sbx::physics {
 
@@ -346,7 +347,11 @@ auto gather_walkable_triangles(scenes::scene& scene, mesh_collision_cache& mesh_
     return navmesh_build_result{};
   }
 
-  return navmesh_build_result{build_runtime_navmesh(pmesh, static_cast<std::float_t>(cfg.walkable_climb) * cfg.cell_height), true};
+  arena.reset_temp();
+
+  const auto dmesh = build_poly_mesh_detail(pmesh, chf, cfg.detail_sample_distance, cfg.detail_sample_max_error, arena);
+
+  return navmesh_build_result{build_runtime_navmesh(pmesh, dmesh, static_cast<std::float_t>(cfg.walkable_climb) * cfg.cell_height), true};
 }
 
 [[nodiscard]] auto build_navmesh(const nav_settings& settings, scenes::scene& scene) -> navmesh_build_result {
