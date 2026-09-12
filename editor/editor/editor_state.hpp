@@ -24,6 +24,14 @@
 namespace editor {
 
 /**
+ * @brief Drag payload type for a Hierarchy row (a scene node). Shared here rather than kept local
+ * to hierarchy_panel.cpp — reordering/reparenting inside the Hierarchy panel is the drag *source*,
+ * but a "drop a node here to assign it" *target* is now also useful elsewhere (a Node-typed script
+ * field slot in the Inspector).
+ */
+inline constexpr auto node_drag_drop_payload_type = "HIERARCHY_NODE";
+
+/**
  * @brief What kind of asset a file in the project's assets directory is, inferred from extension.
  */
 enum class asset_kind {

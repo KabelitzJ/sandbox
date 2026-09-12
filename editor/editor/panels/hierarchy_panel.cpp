@@ -39,9 +39,10 @@
 
 namespace editor {
 
-inline constexpr auto node_drag_drop_payload_type = "HIERARCHY_NODE";
+// node_drag_drop_payload_type lives in editor_state.hpp now -- shared with the Inspector's
+// Node-typed script field slot.
 
-enum class drop_zone { 
+enum class drop_zone {
   before, 
   into, 
   after
@@ -159,21 +160,21 @@ auto hierarchy_panel::_draw_node_row(editor_state& state, sbx::scenes::scene& sc
         _pending_range_select = pending_range_select{state.node_selection_anchor(), node.id()};
       } else if (ImGui::GetIO().KeyCtrl) {
         state.toggle_node_selection(node);
-      } else if (state.is_node_selected(node) && state.selected_node_count() > 1u) {
+      } else {
+        // Deferred until release (see row_deactivated below), never selected immediately here --
+        // IsItemClicked fires on press, before BeginDragDropSource below ever gets a chance to see
+        // the drag. Selecting eagerly on press would flip whatever's driven by the current
+        // selection (the Inspector, most prominently) over to this node the instant a drag starts
+        // from this row, yanking it out from under a drop target the user is dragging *onto*
+        // elsewhere (e.g. a Node-typed script field slot in the Inspector).
         _deferred_click_id = node.id();
         _deferred_click_became_drag = false;
-      } else {
-        state.select_node(node);
       }
     }
 
     if (ImGui::BeginDragDropSource()) {
       if (node.id() == _deferred_click_id) {
         _deferred_click_became_drag = true;
-      }
-
-      if (!state.is_node_selected(node)) {
-        state.select_node(node);
       }
 
       const auto raw_id = node.id().value();

@@ -663,6 +663,8 @@ auto write_node(YAML::Node& node_yaml, ecs::registry& registry, ecs::entity enti
           case script_field_type::int32:   field_node["kind"] = "int";   field_node["value"] = field.int_value; break;
           case script_field_type::boolean: field_node["kind"] = "bool";  field_node["value"] = field.bool_value; break;
           case script_field_type::string:  field_node["kind"] = "string"; field_node["value"] = field.string_value; break;
+          case script_field_type::vector3: field_node["kind"] = "vector3"; field_node["value"] = field.vector3_value; break;
+          case script_field_type::node:    field_node["kind"] = "node"; field_node["value"] = field.node_value.value(); break;
         }
 
         fields.push_back(field_node);
@@ -1220,6 +1222,12 @@ auto read_node_components(node& target_node, const YAML::Node& node_yaml, assets
           } else if (kind == "string") {
             field.type = script_field_type::string;
             field.string_value = field_yaml["value"].as<std::string>();
+          } else if (kind == "vector3") {
+            field.type = script_field_type::vector3;
+            field.vector3_value = field_yaml["value"].as<math::vector3>();
+          } else if (kind == "node") {
+            field.type = script_field_type::node;
+            field.node_value = field_yaml["value"].as<math::uuid>();
           }
 
           entry.field_overrides.push_back(std::move(field));

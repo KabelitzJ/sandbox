@@ -431,6 +431,17 @@ namespace Sbx.Managed
           Bool32 value = (Bool32)Marshalling.MarshalPointer(InValue, typeof(Bool32));
           fieldInfo.SetValue(target, (bool)value);
         }
+        else if (typeof(INativeHandle).IsAssignableFrom(fieldInfo.FieldType))
+        {
+          // Not a blittable value the generic branch below can pin/copy -- carried across as a raw
+          // handle instead, resolved back into a real instance via the field type's own
+          // INativeHandle.FromHandle. Found by name via reflection on the concrete runtime type,
+          // not through the interface's static-abstract dispatch (that needs a compile-time
+          // generic type parameter, which this generic marshaling code doesn't have).
+          ulong handle = Marshalling.MarshalPointer<ulong>(InValue);
+          object? value = handle != 0UL ? fieldInfo.FieldType.GetMethod("FromHandle", BindingFlags.Public | BindingFlags.Static)?.Invoke(null, new object[] { handle }) : null;
+          fieldInfo.SetValue(target, value);
+        }
         else
         {
           object? value = Marshalling.MarshalPointer(InValue, fieldInfo.FieldType);

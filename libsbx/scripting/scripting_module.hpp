@@ -5,6 +5,7 @@
 
 #include <memory>
 #include <optional>
+#include <string_view>
 #include <utility>
 #include <filesystem>
 #include <unordered_map>
@@ -17,6 +18,7 @@
 #include <libsbx/core/module.hpp>
 
 // #include <libsbx/scenes/node.hpp>
+#include <libsbx/scenes/components.hpp>
 #include <libsbx/scenes/scenes_module.hpp>
 
 #include <libsbx/physics/physics_module.hpp>
@@ -44,6 +46,29 @@ struct internal_call {
 struct script_runtime_error : public std::runtime_error {
   using std::runtime_error::runtime_error;
 }; // struct script_runtime_error
+
+/**
+ * @brief Maps a managed field's full type name (System.Type.FullName) to the script_field_type it
+ * should be tracked/edited as, or nullopt if unsupported. The single source of truth both
+ * scripting_module::seed_missing_field_defaults and the editor Inspector's per-field widget
+ * dispatch use, so the two can never drift apart on which C# types are supported.
+ *
+ * A Sbx.Core.Node field is tracked/stored as the referenced node's own scenes::id uuid, same as
+ * every other field type here -- Node is a reference type Sbx.Managed can't reference at compile
+ * time (Sbx.Managed sits below Sbx.Core in the dependency graph), so both directions cross as a
+ * raw uuid via Sbx.Managed's INativeHandle interface instead of a real `typeof(Node)` (see
+ * Sbx.Managed's Object.SetFieldValue / Marshalling.MarshalReturnValue, and Node's own
+ * INativeHandle implementation).
+ */
+[[nodiscard]] inline auto script_field_type_of(std::string_view managed_type_full_name) -> std::optional<scenes::script_field_type> {
+  if (managed_type_full_name == "System.Single") { return scenes::script_field_type::float32; }
+  if (managed_type_full_name == "System.Int32") { return scenes::script_field_type::int32; }
+  if (managed_type_full_name == "System.Boolean") { return scenes::script_field_type::boolean; }
+  if (managed_type_full_name == "System.String") { return scenes::script_field_type::string; }
+  if (managed_type_full_name == "Sbx.Core.Math.Vector3") { return scenes::script_field_type::vector3; }
+  if (managed_type_full_name == "Sbx.Core.Node") { return scenes::script_field_type::node; }
+  return std::nullopt;
+}
 
 class scripting_module final : public utility::noncopyable {
   
@@ -100,6 +125,20 @@ public:
    * point the editor's "Add Script" action should go through.
    */
   auto attach_script(scenes::node& node, std::string_view class_name) -> void;
+
+  /**
+   * @brief Backfills a real default (read from a throwaway instance's post-constructor field
+   * values, then discarded) into @p entry.field_overrides for every public, tracked-type field of
+   * @p entry's script that doesn't already have an entry — without this, the Inspector's
+   * live_instance-vs-override_slot display falls back to a hardcoded 0/false/""/(none) instead of
+   * whatever the C# field initializer actually set. Cheap to call repeatedly — does nothing once
+   * every field already has one, so the Inspector calls this on every draw of a script section,
+   * not just attach_script (which also calls it once, right after attaching): that's what actually
+   * covers a script attached before this existed, or recompiled with a field added since, not just
+   * a fresh attach. No live managed::type for @p entry.class_name (e.g. no compiled game assembly
+   * yet) is a silent no-op.
+   */
+  auto seed_missing_field_defaults(scenes::node& node, scenes::script_entry& entry) -> void;
 
   /**
    * @brief Removes @p class_name from @p node's persisted scenes::script_component. If the scene

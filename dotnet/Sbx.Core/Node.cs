@@ -1,13 +1,19 @@
 namespace Sbx.Core
 {
 
-  public sealed class Node
+  public sealed class Node : Sbx.Managed.INativeHandle
   {
     private static Dictionary<ulong, Node> _nodeCache = new Dictionary<ulong, Node>();
 
     private Dictionary<Type, Component> _componentCache = new Dictionary<Type, Component>();
 
     private ulong _uuid { get; }
+
+    /// <summary>This node's underlying scenes::id uuid — public since Component.UUID already is (see AddComponent).</summary>
+    public ulong UUID => _uuid;
+
+    /// <summary>Explicit -- INativeHandle is only how Sbx.Managed's generic field marshaling reads a Node field, not part of Node's own public API (that's UUID above).</summary>
+    ulong Sbx.Managed.INativeHandle.Handle => _uuid;
 
     internal Node(ulong uuid)
     {
@@ -24,12 +30,22 @@ namespace Sbx.Core
       if (!_nodeCache.TryGetValue(uuid, out var node))
       {
         node = new Node(uuid);
-        
+
         _nodeCache.Add(uuid, node);
       }
 
       return node;
     }
+
+    /// <summary>
+    /// INativeHandle's static factory, implemented implicitly (a plain public static method, not
+    /// an explicit interface implementation) -- Sbx.Managed's SetFieldValue finds this by
+    /// Type.GetMethod("FromHandle", ...) on the field's runtime type, not through the interface's
+    /// static-abstract dispatch (that path needs a compile-time generic type parameter, which
+    /// Sbx.Managed's marshaling code doesn't have here). Delegates to Get so the _nodeCache
+    /// identity/reuse behavior is unchanged from every other way of obtaining a Node.
+    /// </summary>
+    public static object? FromHandle(ulong handle) => Get(handle);
 
     public string? Name
     {

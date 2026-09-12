@@ -22,6 +22,7 @@
 #include <libsbx/canvas/components.hpp>
 
 #include <libsbx/scripting/interop.hpp>
+#include <libsbx/scripting/managed/field_info.hpp>
 
 namespace sbx::scripting {
 
@@ -419,7 +420,82 @@ auto scripting_module::attach_script(scenes::node& node, std::string_view class_
   if (scenes_module.is_simulating()) {
     auto instance = instantiate(node, class_name);
     instance.invoke("OnCreate");
+  } else {
+    seed_missing_field_defaults(node, scripts.scripts.back());
   }
+}
+
+auto scripting_module::seed_missing_field_defaults(scenes::node& node, scenes::script_entry& entry) -> void {
+  if (!_has_game_assembly) {
+    return;
+  }
+
+  auto& type = _game_assembly.get_type(entry.class_name);
+
+  if (!type) {
+    return;
+  }
+
+  const auto already_seeded = [&](std::string_view field_name) {
+    return std::ranges::any_of(entry.field_overrides, [&](const auto& existing) { return existing.name == field_name; });
+  };
+
+  // Cheap up-front check so a script with nothing missing (the overwhelmingly common case once
+  // this has run once) never pays for constructing a scratch instance at all -- this runs on
+  // every Inspector draw of a script section (see draw_script_field_inspector), not just attach.
+  const auto has_missing = std::ranges::any_of(type.get_fields(), [&](auto& field) {
+    return field.get_accessibility() == managed::type_accessibility::public_access
+        && script_field_type_of(std::string{field.get_type().get_full_name()})
+        && !already_seeded(std::string{field.get_name()});
+  });
+
+  if (!has_missing) {
+    return;
+  }
+
+  // Construct one just long enough to read its real field defaults, straight into
+  // field_overrides, then throw it away -- never registered into `scripts`, no OnCreate. Assumes a
+  // script's real setup happens in OnCreate, not its constructor (same convention Unity's
+  // MonoBehaviour uses); a constructor with actual side effects would run them here too.
+  auto scratch = type.create_instance(node.get_component<scenes::id>().value());
+
+  if (!scratch.is_valid()) {
+    utility::logger<"scripting">::warn("Could not construct '{}' to read its script field defaults", entry.class_name);
+    return;
+  }
+
+  for (auto& field : type.get_fields()) {
+    if (field.get_accessibility() != managed::type_accessibility::public_access) {
+      continue;
+    }
+
+    const auto field_type = script_field_type_of(std::string{field.get_type().get_full_name()});
+
+    if (!field_type) {
+      continue;
+    }
+
+    const auto field_name = std::string{field.get_name()};
+
+    if (already_seeded(field_name)) {
+      continue;
+    }
+
+    auto default_value = scenes::script_field_override{.name = field_name, .type = *field_type};
+
+    switch (*field_type) {
+      case scenes::script_field_type::float32: default_value.float_value = scratch.get_field_value<std::float_t>(field_name); break;
+      case scenes::script_field_type::int32:   default_value.int_value = scratch.get_field_value<std::int32_t>(field_name); break;
+      case scenes::script_field_type::boolean: default_value.bool_value = scratch.get_field_value<bool>(field_name); break;
+      case scenes::script_field_type::string:  default_value.string_value = scratch.get_field_value<std::string>(field_name); break;
+      case scenes::script_field_type::vector3: default_value.vector3_value = scratch.get_field_value<math::vector3>(field_name); break;
+      case scenes::script_field_type::node:    default_value.node_value = math::uuid::from_value(scratch.get_field_value<std::uint64_t>(field_name)); break;
+    }
+
+    entry.field_overrides.push_back(std::move(default_value));
+  }
+
+  scratch.destroy();
 }
 
 auto scripting_module::detach_script(scenes::node& node, std::string_view class_name) -> void {
@@ -456,6 +532,11 @@ auto scripting_module::_apply_field_overrides(managed::object& instance, const s
       case scenes::script_field_type::int32:   instance.set_field_value(field.name, field.int_value); break;
       case scenes::script_field_type::boolean: instance.set_field_value(field.name, field.bool_value); break;
       case scenes::script_field_type::string:  instance.set_field_value(field.name, field.string_value); break;
+      case scenes::script_field_type::vector3: instance.set_field_value(field.name, field.vector3_value); break;
+      // A Sbx.Core.Node-typed field isn't a blittable value the generic marshaling path can copy
+      // (it's a managed reference) -- both directions cross as a raw uuid instead, via Node's own
+      // INativeHandle implementation (see Sbx.Managed's SetFieldValue).
+      case scenes::script_field_type::node:    instance.set_field_value(field.name, field.node_value.value()); break;
     }
   }
 }

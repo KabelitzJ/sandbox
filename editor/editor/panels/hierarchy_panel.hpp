@@ -103,12 +103,13 @@ private:
   bool _rename_focus_pending{false};
 
   /**
-   * @brief Press-time candidate for "collapse the multi-selection down to just this row", applied
-   * on release only if the press never turned into a drag (see _draw_node_row). Pressing an
-   * already-multi-selected row can't collapse the selection immediately on press — that would
-   * destroy the multi-selection before BeginDragDropSource ever got a chance to drag the whole
-   * thing, exactly the asset_tile.cpp IsItemClicked-vs-drag pitfall, just without an InvisibleButton
-   * return value to lean on here.
+   * @brief Press-time candidate for this row's plain-click selection (a fresh single select, a
+   * multi-selection collapsing down to just this row, whatever it resolves to), applied on release
+   * only if the press never turned into a drag (see _draw_node_row). Never selected immediately on
+   * press — that would flip the selection (and whatever's driven by it, e.g. the Inspector) over to
+   * this row before BeginDragDropSource ever got a chance to see the drag, the exact
+   * asset_tile.cpp IsItemClicked-vs-drag pitfall, just without an InvisibleButton return value to
+   * lean on here.
    */
   sbx::math::uuid _deferred_click_id{sbx::math::uuid::nil()};
   bool _deferred_click_became_drag{false};

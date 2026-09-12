@@ -26,6 +26,7 @@
 
 #include <libsbx/math/quaternion.hpp>
 #include <libsbx/math/uuid.hpp>
+#include <libsbx/math/vector3.hpp>
 
 #include <libsbx/assets/assets_module.hpp>
 #include <libsbx/assets/particle_effect.hpp>
@@ -2496,6 +2497,15 @@ auto draw_script_field_inspector(editor_state& state, sbx::scenes::scene& target
     }
   }
 
+  // Backfills a real default for any field that doesn't have a field_overrides entry yet (a script
+  // attached before this existed, or recompiled with a new field since — attach_script's own call
+  // to this only covers a fresh attach) — see seed_missing_field_defaults' doc comment. A no-op
+  // once nothing's missing, and only reachable at all while no live instance exists (a live one
+  // already shows its own true values directly via get_field_value below).
+  if (!live_instance) {
+    scripting_module.seed_missing_field_defaults(node, entry);
+  }
+
   // Shared across every field below — snapshots the whole script_component so undo/redo restores
   // it via modify_component_command<script_component>. Untouched while live_instance is set, since
   // those edits target the live object directly and are never tracked (see the comment above).
@@ -2658,6 +2668,78 @@ auto draw_script_field_inspector(editor_state& state, sbx::scenes::scene& target
           auto& slot = ensure_override_slot();
           slot.type = sbx::scenes::script_field_type::string;
           slot.string_value = value;
+        }
+      }
+
+      commit_after();
+    } else if (field_type_name == "Sbx.Core.Math.Vector3") {
+      const auto current = live_instance ? live_instance->get_field_value<sbx::math::vector3>(field_name)
+                                          : override_slot ? override_slot->vector3_value : sbx::math::vector3{0.0f, 0.0f, 0.0f};
+
+      auto values = std::array<std::float_t, 3u>{current.x(), current.y(), current.z()};
+
+      const auto changed = draw_vector3_control(display_name.c_str(), values, 0.0f, 0.05f).changed;
+
+      capture_before();
+
+      if (changed) {
+        const auto value = sbx::math::vector3{values[0], values[1], values[2]};
+
+        if (live_instance) {
+          live_instance->set_field_value(field_name, value);
+        } else {
+          auto& slot = ensure_override_slot();
+          slot.type = sbx::scenes::script_field_type::vector3;
+          slot.vector3_value = value;
+        }
+      }
+
+      commit_after();
+    } else if (field_type_name == "Sbx.Core.Node") {
+      // A Sbx.Core.Node-typed field is a managed reference, not a value the generic get/set_field_value
+      // marshaling can copy -- both directions go through a raw uuid instead, via Node's own
+      // INativeHandle implementation (see scripting_module.cpp's _apply_field_overrides and
+      // Sbx.Managed's Object.SetFieldValue/Marshalling.MarshalReturnValue).
+      const auto current_uuid = live_instance ? live_instance->get_field_value<std::uint64_t>(field_name)
+                                                : override_slot ? override_slot->node_value.value() : std::uint64_t{0u};
+
+      auto current_node = (current_uuid != 0u) ? target.find(sbx::math::uuid::from_value(current_uuid)) : sbx::scenes::node{};
+      const auto slot_label = current_node.is_valid() ? std::string{current_node.name().c_str()} : std::string{"(none)"};
+
+      ImGui::AlignTextToFramePadding();
+      ImGui::TextUnformatted(display_name.c_str());
+      ImGui::SameLine(140.0f);
+
+      const auto slot_width = ImGui::GetContentRegionAvail().x - ImGui::GetFrameHeight() - ImGui::GetStyle().ItemSpacing.x;
+      ImGui::Button(slot_label.c_str(), ImVec2{slot_width, 0.0f});
+
+      auto new_uuid = std::optional<std::uint64_t>{};
+
+      // Reuses the Hierarchy panel's own node drag payload -- drag a row out of the Hierarchy and
+      // drop it here to assign it, same source as reordering nodes there.
+      if (ImGui::BeginDragDropTarget()) {
+        if (const auto* payload = ImGui::AcceptDragDropPayload(node_drag_drop_payload_type)) {
+          new_uuid = *static_cast<const std::uint64_t*>(payload->Data);
+        }
+
+        ImGui::EndDragDropTarget();
+      }
+
+      ImGui::SameLine();
+
+      if (ImGui::Button(ICON_MDI_CLOSE)) {
+        new_uuid = 0u;
+      }
+
+      capture_before();
+
+      if (new_uuid) {
+        if (live_instance) {
+          live_instance->set_field_value(field_name, *new_uuid);
+        } else {
+          auto& slot = ensure_override_slot();
+          slot.type = sbx::scenes::script_field_type::node;
+          slot.node_value = sbx::math::uuid::from_value(*new_uuid);
         }
       }
 

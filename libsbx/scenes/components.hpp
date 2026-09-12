@@ -340,7 +340,9 @@ enum class script_field_type : std::uint8_t {
   float32,
   int32,
   boolean,
-  string
+  string,
+  vector3,
+  node // a Sbx.Core.Node-typed field, stored as the referenced node's own scenes::id uuid (nil = unassigned)
 }; // enum class script_field_type
 
 struct script_field_override {
@@ -350,6 +352,8 @@ struct script_field_override {
   std::int32_t int_value{0};
   bool bool_value{false};
   std::string string_value{};
+  math::vector3 vector3_value{0.0f, 0.0f, 0.0f};
+  math::uuid node_value{math::uuid::nil()};
 }; // struct script_field_override
 
 /**

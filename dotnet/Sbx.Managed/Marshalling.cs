@@ -44,7 +44,14 @@ namespace Sbx.Managed
         type = methodInfo.ReturnType;
       }
 
-      if (type.IsSZArray)
+      if (typeof(INativeHandle).IsAssignableFrom(type))
+      {
+        // A reference-typed field this generic pinned-copy path can't handle directly -- write its
+        // handle across instead. INativeHandle is the entire contract; no concrete type is named.
+        ulong handle = InValue is INativeHandle nativeHandle ? nativeHandle.Handle : 0UL;
+        Marshal.StructureToPtr(handle, OutValue, false);
+      }
+      else if (type.IsSZArray)
       {
         var fieldArray = ArrayStorage.GetFieldArray(InTarget, InValue, InMemberInfo);
 
