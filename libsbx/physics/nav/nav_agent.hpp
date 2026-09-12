@@ -34,6 +34,7 @@ struct nav_agent {
   math::vector3 target{};
   math::vector3 velocity{};
   std::float_t target_replan_timer{0.0f};
+  std::float_t arrival_settle_timer{0.0f};
 
   path_corridor corridor{};
   local_boundary boundary{};

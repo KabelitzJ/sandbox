@@ -44,6 +44,7 @@ auto crowd::request_move_target(nav_agent& agent, const navmesh& mesh, const mat
 
   agent.target = target;
   agent.state = nav_agent_state::moving;
+  agent.arrival_settle_timer = 0.0f;
 
   return true;
 }
@@ -115,15 +116,24 @@ auto crowd::update(scenes::scene& scene, const navmesh& mesh, std::float_t dt) -
     const auto slow_down_radius = agent.radius * 2.0f;
 
     auto distance_to_goal = slow_down_radius;
+    auto raw_distance_to_final = slow_down_radius;
 
     if (at_end_of_path) {
       const auto to_final = math::vector3{final_corner.position.x() - transform.position.x(), 0.0f, final_corner.position.z() - transform.position.z()};
-      distance_to_goal = std::min(to_final.length(), slow_down_radius);
+      raw_distance_to_final = to_final.length();
+      distance_to_goal = std::min(raw_distance_to_final, slow_down_radius);
     }
 
-    if (at_end_of_path && distance_to_goal <= agent.radius) {
+    const auto has_arrived = at_end_of_path && raw_distance_to_final <= agent.radius;
+    const auto settle_speed = agent.max_speed * 0.1f;
+    const auto is_settling = at_end_of_path && raw_distance_to_final <= slow_down_radius && agent.velocity.length_squared() <= settle_speed * settle_speed;
+
+    agent.arrival_settle_timer = is_settling ? (agent.arrival_settle_timer + dt) : 0.0f;
+
+    if (has_arrived || agent.arrival_settle_timer >= 0.5f) {
       agent.state = nav_agent_state::idle;
       agent.velocity = math::vector3::zero;
+      agent.arrival_settle_timer = 0.0f;
 
       continue;
     }

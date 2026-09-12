@@ -105,7 +105,9 @@ auto draw_nav_path(render::debug_draw& debug_draw, std::span<const straight_path
 }
 
 auto draw_nav_agent(render::debug_draw& debug_draw, const nav_agent& agent, const math::vector3& position, const math::color& color) -> void {
-  debug_draw.add_wire_sphere(position, agent.radius, color);
+  const auto matrix = math::matrix4x4::translated(math::matrix4x4::identity, position);
+
+  debug_draw.add_wire_cylinder(matrix, agent.radius, agent.height * 0.5f, color);
 
   if (agent.velocity.length_squared() > 0.0001f) {
     debug_draw.add_line(position, position + agent.velocity, color);
