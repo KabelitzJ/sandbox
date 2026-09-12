@@ -176,7 +176,7 @@ auto ui_system::apply_default_style() -> void {
   colors[ImGuiCol_TableRowBg]           = ImVec4(0.0f, 0.0f, 0.0f, 0.0f);
   colors[ImGuiCol_TableRowBgAlt]        = ImVec4(1.0f, 1.0f, 1.0f, 0.06f);
   colors[ImGuiCol_TextSelectedBg]       = surface2;
-  colors[ImGuiCol_DragDropTarget]       = yellow;
+  colors[ImGuiCol_DragDropTarget]       = text;
   colors[ImGuiCol_NavHighlight]         = lavender;
   colors[ImGuiCol_NavWindowingHighlight]= ImVec4(1.0f, 1.0f, 1.0f, 0.7f);
   colors[ImGuiCol_NavWindowingDimBg]    = ImVec4(0.8f, 0.8f, 0.8f, 0.2f);

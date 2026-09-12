@@ -35,17 +35,23 @@ public:
 
 private:
 
-  auto _draw_node_row(editor_state& state, sbx::scenes::scene& scene, sbx::ecs::entity entity) -> void;
+  /**
+   * @brief Draws one row. parent_id/sibling_index are this node's own position among its siblings
+   * (nullopt parent_id = top-level) — not read for anything but the row's own drag-drop target,
+   * which uses them to reorder without any extra widget: hovering the top/bottom third of the row
+   * during a drag inserts before/after it (same parent_id, sibling_index / sibling_index + 1); the
+   * middle third reparents the drag as this row's child instead. A stock TreeNodeEx row's own rect
+   * is the whole hit area, so this adds no extra height anywhere in the tree.
+   */
+  auto _draw_node_row(editor_state& state, sbx::scenes::scene& scene, sbx::ecs::entity entity, std::optional<sbx::math::uuid> parent_id, std::size_t sibling_index) -> void;
 
-  /** @brief Draws children as alternating drop-zone/row pairs (n+1 zones for n children), so a drop can land at any index including first/last. */
   auto _draw_child_rows(editor_state& state, sbx::scenes::scene& scene, sbx::math::uuid parent_id, const std::vector<sbx::ecs::entity>& children) -> void;
 
-  /** @brief Thin drop target between two siblings — accepting a payload there inserts at index among parent_id's children (nullopt = top-level). */
-  auto _draw_drop_zone(sbx::scenes::scene& scene, std::optional<sbx::math::uuid> parent_id, std::size_t index) -> void;
-
   /**
-   * @brief Validates the drop (no self-parenting, no dropping onto your own descendant) and, if
-   * sound, records it into _pending_reparent for draw() to apply once the tree is done drawing.
+   * @brief Resolves the dragged set (the payload's node, or the whole current selection if the
+   * payload's node is part of it), validates the drop (no self-parenting, no dropping onto a
+   * descendant of any dragged node) and, if sound, records it into _pending_reparent for draw() to
+   * apply once the tree is done drawing.
    *
    * Never mutates the scene graph itself: a drop target is evaluated mid-traversal, and applying
    * scene::insert_child() right there would resize/erase a relationship::children vector that an
@@ -53,27 +59,56 @@ private:
    * exactly the kind of container mutation ImGui's tree/ID stack can't survive (surfaces as
    * "Missing TreePop()" / "PopID() called too many times").
    */
-  auto _try_reparent(sbx::scenes::scene& scene, sbx::math::uuid dragged_id, std::optional<sbx::math::uuid> new_parent_id, std::size_t new_index) -> void;
+  auto _try_reparent(editor_state& state, sbx::scenes::scene& scene, sbx::math::uuid payload_id, std::optional<sbx::math::uuid> new_parent_id, std::size_t new_index) -> void;
+
+  /** @brief id's current parent, or nullopt if id is invalid, top-level, or unresolvable (same "resolve via relationship::parent" pattern reparent_node_command's constructor uses). */
+  [[nodiscard]] auto _current_parent_id(sbx::scenes::scene& scene, sbx::math::uuid id) const -> std::optional<sbx::math::uuid>;
+
+  /** @brief Keeps only the ids in @p ids whose parent isn't itself also in @p ids — moving/deleting an ancestor already carries its selected descendants along, so they'd otherwise be handled twice. */
+  [[nodiscard]] auto _filter_to_selection_roots(sbx::scenes::scene& scene, const std::vector<sbx::math::uuid>& ids) const -> std::vector<sbx::math::uuid>;
 
   auto _begin_rename(const sbx::scenes::node& node) -> void;
 
   auto _commit_rename(editor_state& state, sbx::scenes::node& node) -> void;
 
   sbx::math::uuid _pending_delete_id{sbx::math::uuid::nil()};
+  std::vector<sbx::math::uuid> _pending_delete_ids{}; // multi-select delete; _pending_delete_id above still handles the single-node case unchanged
   sbx::math::uuid _pending_add_child_parent_id{sbx::math::uuid::nil()};
 
   /** @brief One drag/drop reparent request, applied after the tree has fully drawn this frame (see _try_reparent). */
   struct pending_reparent {
-    sbx::math::uuid dragged_id;
+    std::vector<sbx::math::uuid> dragged_ids;
     std::optional<sbx::math::uuid> new_parent_id;
     std::size_t new_index;
   };
 
   std::optional<pending_reparent> _pending_reparent{};
 
+  /** @brief One Shift+click range-select request, applied after the tree has fully drawn this frame (needs _visible_row_order complete). */
+  struct pending_range_select {
+    sbx::math::uuid anchor_id;
+    sbx::math::uuid clicked_id;
+  };
+
+  std::optional<pending_range_select> _pending_range_select{};
+
+  /** @brief Every row actually drawn this frame, in visual top-to-bottom order. Rebuilt (cleared, then repopulated) each draw() call; used to resolve Shift range-selects and to order a multi-drag batch. */
+  std::vector<sbx::math::uuid> _visible_row_order{};
+
   sbx::math::uuid _renaming_id{sbx::math::uuid::nil()};
   std::array<char, 256u> _rename_buffer{};
   bool _rename_focus_pending{false};
+
+  /**
+   * @brief Press-time candidate for "collapse the multi-selection down to just this row", applied
+   * on release only if the press never turned into a drag (see _draw_node_row). Pressing an
+   * already-multi-selected row can't collapse the selection immediately on press — that would
+   * destroy the multi-selection before BeginDragDropSource ever got a chance to drag the whole
+   * thing, exactly the asset_tile.cpp IsItemClicked-vs-drag pitfall, just without an InvisibleButton
+   * return value to lean on here.
+   */
+  sbx::math::uuid _deferred_click_id{sbx::math::uuid::nil()};
+  bool _deferred_click_became_drag{false};
 
 }; // class hierarchy_panel
 

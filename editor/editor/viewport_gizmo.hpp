@@ -10,7 +10,10 @@
 namespace editor {
 
 /**
- * @brief Draws an ImGuizmo transform gizmo over the selected node, if any, writing drags back into its local_transform.
+ * @brief Draws an ImGuizmo transform gizmo over the current selection, if any, writing drags back
+ * into local_transform. With exactly one node selected the gizmo sits on that node; with 2+, it
+ * manipulates a virtual pivot (average position, identity rotation in World mode or the primary
+ * node's rotation in Local mode) and applies the resulting rigid delta to every selected node.
  *
  * Must be called while the Viewport window is current (between its Begin/End). W/E/R switch
  * the operation (translate/rotate/scale) while the viewport is hovered.
@@ -52,7 +55,7 @@ auto draw_gizmo_toolbar(editor_state& state, const ImVec2& viewport_origin) -> b
 auto draw_view_gizmo(const ImVec2& viewport_origin, const ImVec2& viewport_size) -> bool;
 
 /**
- * @brief Draws a clickable icon at the projected screen position of every light and camera node; clicking one selects that node.
+ * @brief Draws a clickable icon at the projected screen position of every light and camera node; clicking one selects it (Ctrl toggles, Shift adds), same modifier behavior as viewport ray-pick.
  *
  * Always drawn on top, not depth-tested against the scene.
  *

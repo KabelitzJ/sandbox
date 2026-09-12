@@ -3,10 +3,12 @@
 #ifndef EDITOR_EDITOR_STATE_HPP_
 #define EDITOR_EDITOR_STATE_HPP_
 
+#include <cstddef>
 #include <filesystem>
 #include <optional>
 #include <utility>
 #include <variant>
+#include <vector>
 
 #include <memory>
 #include <string>
@@ -40,9 +42,18 @@ enum class asset_kind {
 /** @brief Nothing is selected. */
 struct empty_selection { };
 
-/** @brief A scene node is selected, identified by its uuid. */
+/**
+ * @brief One or more scene nodes are selected, identified by uuid.
+ *
+ * ids is in selection order — ids.back() is the "primary" node (most recently added), used
+ * wherever exactly one node is still needed (Inspector single-selection view, F2 rename target,
+ * the gizmo's Local-mode orientation). range_anchor is the pivot the Hierarchy panel's next
+ * Shift+click range-select measures from; it isn't necessarily a member of ids any more (e.g.
+ * after Ctrl+click removes it), it's just the last row that was explicitly clicked/toggled.
+ */
 struct node_selection {
-  sbx::math::uuid id{sbx::math::uuid::nil()};
+  std::vector<sbx::math::uuid> ids{};
+  sbx::math::uuid range_anchor{sbx::math::uuid::nil()};
 }; // struct node_selection
 
 /** @brief An asset file is selected, from the Asset Browser. */
@@ -79,15 +90,36 @@ struct editor_state {
   gizmo_mode current_gizmo_mode{gizmo_mode::world};
 
   /**
-   * @brief Re-resolves the currently selected node (if any) against @p scene, via its uuid.
-   * Returns an invalid node if nothing is selected, the selection isn't a node, or no node with
-   * that uuid exists any more (e.g. it was deleted).
+   * @brief Re-resolves the primary selected node (node_selection::ids.back(), i.e. the most
+   * recently added), if any, against @p scene, via its uuid. Returns an invalid node if nothing is
+   * selected, the selection isn't a node, or no node with that uuid exists any more (e.g. it was
+   * deleted). Identical to a single-node selection's only node when exactly one is selected.
    */
   [[nodiscard]] auto selected_node(sbx::scenes::scene& scene) const -> sbx::scenes::node;
 
+  /** @brief Whether @p node is anywhere in the current node selection (membership test, not "is the primary"). */
   [[nodiscard]] auto is_node_selected(const sbx::scenes::node& node) const noexcept -> bool;
 
+  /** @brief Replaces the selection with just @p node, and makes it the new range-select anchor. */
   auto select_node(const sbx::scenes::node& node) -> void;
+
+  /** @brief Ctrl+click: adds @p node to the selection if absent, removes it if present. Always updates the range-select anchor. */
+  auto toggle_node_selection(const sbx::scenes::node& node) -> void;
+
+  /** @brief Shift+click in the viewport (no list order to range over there): adds @p node to the selection if absent, never removes. Always updates the range-select anchor. */
+  auto add_node_to_selection(const sbx::scenes::node& node) -> void;
+
+  /** @brief Replaces the selection with exactly @p ids, in that order, without touching the range-select anchor. Empty @p ids clears the selection. Used by the Hierarchy panel's Shift range-select. */
+  auto set_node_selection(std::vector<sbx::math::uuid> ids) -> void;
+
+  /** @brief The current node selection's ids, in selection order; empty if nothing/an asset is selected. */
+  [[nodiscard]] auto selected_node_ids() const -> const std::vector<sbx::math::uuid>&;
+
+  /** @brief The Hierarchy panel's next Shift+click range-select pivot; nil if no node selection is active. */
+  [[nodiscard]] auto node_selection_anchor() const -> sbx::math::uuid;
+
+  /** @brief Number of currently selected nodes (0 if nothing/an asset is selected). */
+  [[nodiscard]] auto selected_node_count() const -> std::size_t;
 
   auto select_asset(sbx::math::uuid id, std::filesystem::path path, asset_kind kind) -> void;
 

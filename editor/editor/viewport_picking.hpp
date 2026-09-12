@@ -13,7 +13,9 @@ namespace editor {
  * @brief Picks the scene node under a viewport-relative pixel position and selects it in @p state.
  *
  * Casts a ray from the active camera through the clicked pixel and tests it against every mesh
- * renderer's world-space bounds, keeping the nearest hit. A miss clears the selection.
+ * renderer's world-space bounds, keeping the nearest hit. Plain click replaces the selection with
+ * the hit (or clears it on a miss); Ctrl toggles the hit node in/out of the selection; Shift adds
+ * it (never removes) — Ctrl/Shift held on a miss leaves the selection untouched.
  */
 auto pick_node_at_viewport_position(editor_state& state, const sbx::math::vector2& position, const sbx::math::vector2u& viewport_size) -> void;
 

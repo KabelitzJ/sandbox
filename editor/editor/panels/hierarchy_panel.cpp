@@ -2,9 +2,10 @@
 // Copyright (c) 2026 Jonas Kabelitz
 #include <editor/panels/hierarchy_panel.hpp>
 
-#include <cfloat>
+#include <algorithm>
 #include <cstdint>
 #include <cstring>
+#include <limits>
 #include <memory>
 #include <optional>
 #include <string>
@@ -28,12 +29,18 @@
 #include <libsbx/assets/primitive_meshes.hpp>
 
 #include <editor/commands/component_commands.hpp>
+#include <editor/commands/composite_command.hpp>
 #include <editor/commands/scene_commands.hpp>
 
 namespace editor {
 
-// Payload carries the dragged node's uuid as a raw uint64_t (sbx::math::uuid::value_type).
 inline constexpr auto node_drag_drop_payload_type = "HIERARCHY_NODE";
+
+enum class drop_zone { 
+  before, 
+  into, 
+  after
+}; // enum class drop_zone
 
 auto icon_for(const sbx::scenes::node& node) -> const char* {
   if (node.has_component<sbx::scenes::camera>()) return ICON_MDI_CAMERA_OUTLINE;
@@ -54,6 +61,7 @@ auto draw_3d_object_submenu(editor_state& state, sbx::scenes::scene& scene, std:
     if (ImGui::MenuItem(std::string{sbx::reflection::to_string(kind)}.c_str())) {
       auto command = std::make_unique<create_primitive_node_command>(kind, parent_id);
       auto* created = command.get();
+
       state.push_command(std::move(command));
       state.select_node(scene.find(created->id()));
     }
@@ -62,12 +70,14 @@ auto draw_3d_object_submenu(editor_state& state, sbx::scenes::scene& scene, std:
   ImGui::EndMenu();
 }
 
-auto hierarchy_panel::_draw_node_row(editor_state& state, sbx::scenes::scene& scene, sbx::ecs::entity entity) -> void {
+auto hierarchy_panel::_draw_node_row(editor_state& state, sbx::scenes::scene& scene, sbx::ecs::entity entity, std::optional<sbx::math::uuid> parent_id, std::size_t sibling_index) -> void {
   auto node = scene.node_of(entity);
 
   if (!node.is_valid()) {
     return;
   }
+
+  _visible_row_order.push_back(node.id());
 
   const auto& relationship = node.get_component<sbx::scenes::relationship>();
   const auto& tag = node.name();
@@ -85,26 +95,75 @@ auto hierarchy_panel::_draw_node_row(editor_state& state, sbx::scenes::scene& sc
 
   ImGui::PushID(static_cast<std::int32_t>(entity));
 
-  const auto is_open = is_renaming
-    ? ImGui::TreeNodeEx("##node_row", flags, "%s", icon_for(node))
-    : ImGui::TreeNodeEx("##node_row", flags, "%s %s", icon_for(node), tag.c_str());
+  const auto is_open = is_renaming ? ImGui::TreeNodeEx("##node_row", flags, "%s", icon_for(node)) : ImGui::TreeNodeEx("##node_row", flags, "%s %s", icon_for(node), tag.c_str());
+
+  const auto row_min = ImGui::GetItemRectMin();
+  const auto row_max = ImGui::GetItemRectMax();
+
+  const auto row_deactivated = ImGui::IsItemDeactivated();
 
   if (!is_renaming) {
     if (ImGui::IsItemClicked(ImGuiMouseButton_Left)) {
-      state.select_node(node);
+      if (ImGui::GetIO().KeyShift) {
+        _pending_range_select = pending_range_select{state.node_selection_anchor(), node.id()};
+      } else if (ImGui::GetIO().KeyCtrl) {
+        state.toggle_node_selection(node);
+      } else if (state.is_node_selected(node) && state.selected_node_count() > 1u) {
+        _deferred_click_id = node.id();
+        _deferred_click_became_drag = false;
+      } else {
+        state.select_node(node);
+      }
     }
 
     if (ImGui::BeginDragDropSource()) {
+      if (node.id() == _deferred_click_id) {
+        _deferred_click_became_drag = true;
+      }
+
+      if (!state.is_node_selected(node)) {
+        state.select_node(node);
+      }
+
       const auto raw_id = node.id().value();
       ImGui::SetDragDropPayload(node_drag_drop_payload_type, &raw_id, sizeof(raw_id));
       ImGui::Text("%s %s", icon_for(node), tag.c_str());
       ImGui::EndDragDropSource();
     }
 
+    if (node.id() == _deferred_click_id && row_deactivated) {
+      if (!_deferred_click_became_drag) {
+        state.select_node(node);
+      }
+
+      _deferred_click_id = sbx::math::uuid::nil();
+    }
+
     if (ImGui::BeginDragDropTarget()) {
-      if (const auto* payload = ImGui::AcceptDragDropPayload(node_drag_drop_payload_type)) {
-        const auto dragged_value = *static_cast<const std::uint64_t*>(payload->Data);
-        _try_reparent(scene, sbx::math::uuid::from_value(dragged_value), node.id(), relationship.children.size());
+      const auto row_height = row_max.y - row_min.y;
+      const auto relative_y = row_height > 0.0f ? (ImGui::GetMousePos().y - row_min.y) / row_height : 0.5f;
+
+      const auto zone = relative_y < 0.4f ? drop_zone::before : relative_y > 0.6f ? drop_zone::after : drop_zone::into;
+
+      if (const auto* payload = ImGui::AcceptDragDropPayload(node_drag_drop_payload_type, ImGuiDragDropFlags_AcceptNoDrawDefaultRect)) {
+        const auto dragged_id = sbx::math::uuid::from_value(*static_cast<const std::uint64_t*>(payload->Data));
+
+        switch (zone) {
+          case drop_zone::before: _try_reparent(state, scene, dragged_id, parent_id, sibling_index); break;
+          case drop_zone::after: _try_reparent(state, scene, dragged_id, parent_id, sibling_index + 1u); break;
+          case drop_zone::into: _try_reparent(state, scene, dragged_id, node.id(), relationship.children.size()); break;
+        }
+      }
+
+      if (const auto* preview = ImGui::GetDragDropPayload(); preview != nullptr && preview->IsDataType(node_drag_drop_payload_type)) {
+        auto* draw_list = ImGui::GetWindowDrawList();
+        const auto color = ImGui::GetColorU32(ImGuiCol_DragDropTarget);
+
+        switch (zone) {
+          case drop_zone::before: draw_list->AddLine(ImVec2(row_min.x, row_min.y), ImVec2(row_max.x, row_min.y), color, 2.0f); break;
+          case drop_zone::after: draw_list->AddLine(ImVec2(row_min.x, row_max.y), ImVec2(row_max.x, row_max.y), color, 2.0f); break;
+          case drop_zone::into: draw_list->AddRect(row_min, row_max, color, 0.0f, 0, 2.0f); break;
+        }
       }
 
       ImGui::EndDragDropTarget();
@@ -140,7 +199,7 @@ auto hierarchy_panel::_draw_node_row(editor_state& state, sbx::scenes::scene& sc
 
     draw_3d_object_submenu(state, scene, node.id());
 
-    if (ImGui::MenuItem(ICON_MDI_PENCIL " Rename")) {
+    if (state.selected_node_count() <= 1u && ImGui::MenuItem(ICON_MDI_PENCIL " Rename")) {
       _begin_rename(node);
     }
 
@@ -162,55 +221,26 @@ auto hierarchy_panel::_draw_node_row(editor_state& state, sbx::scenes::scene& sc
 
 auto hierarchy_panel::_draw_child_rows(editor_state& state, sbx::scenes::scene& scene, sbx::math::uuid parent_id, const std::vector<sbx::ecs::entity>& children) -> void {
   for (auto i = std::size_t{0u}; i < children.size(); ++i) {
-    _draw_drop_zone(scene, parent_id, i);
-    _draw_node_row(state, scene, children[i]);
-  }
-
-  _draw_drop_zone(scene, parent_id, children.size());
-}
-
-auto hierarchy_panel::_draw_drop_zone(sbx::scenes::scene& scene, std::optional<sbx::math::uuid> parent_id, std::size_t index) -> void {
-  const auto label = fmt::format("##drop_{}_{}", parent_id ? parent_id->value() : std::uint64_t{0u}, index);
-
-  const auto cursor = ImGui::GetCursorScreenPos();
-  const auto width = ImGui::GetContentRegionAvail().x;
-  constexpr auto height = 6.0f;
-
-  ImGui::InvisibleButton(label.c_str(), ImVec2(width, height));
-
-  if (ImGui::BeginDragDropTarget()) {
-    if (const auto* payload = ImGui::AcceptDragDropPayload(node_drag_drop_payload_type)) {
-      const auto dragged_value = *static_cast<const std::uint64_t*>(payload->Data);
-      _try_reparent(scene, sbx::math::uuid::from_value(dragged_value), parent_id, index);
-    }
-
-    if (const auto* preview = ImGui::GetDragDropPayload(); preview != nullptr && preview->IsDataType(node_drag_drop_payload_type)) {
-      const auto y = cursor.y + height * 0.5f;
-      ImGui::GetWindowDrawList()->AddLine(ImVec2(cursor.x, y), ImVec2(cursor.x + width, y), IM_COL32(255, 170, 40, 255), 2.0f);
-    }
-
-    ImGui::EndDragDropTarget();
+    _draw_node_row(state, scene, children[i], parent_id, i);
   }
 }
 
-auto hierarchy_panel::_try_reparent(sbx::scenes::scene& scene, sbx::math::uuid dragged_id, std::optional<sbx::math::uuid> new_parent_id, std::size_t new_index) -> void {
-  if (new_parent_id == dragged_id) {
-    return; // can't parent a node to itself
-  }
+auto hierarchy_panel::_try_reparent(editor_state& state, sbx::scenes::scene& scene, sbx::math::uuid payload_id, std::optional<sbx::math::uuid> new_parent_id, std::size_t new_index) -> void {
+  const auto& selected = state.selected_node_ids();
 
-  auto dragged = scene.find(dragged_id);
+  const auto has_selected = (selected.size() > 1u && std::find(selected.begin(), selected.end(), payload_id) != selected.end());
 
-  if (!dragged.is_valid()) {
-    return;
-  }
+  auto dragged_ids = has_selected ? selected : std::vector<sbx::math::uuid>{payload_id};
 
-  // Walk up from the prospective new parent to the root — if we pass through the dragged node
-  // itself, this drop would parent it under one of its own descendants.
   if (new_parent_id) {
+    if (std::find(dragged_ids.begin(), dragged_ids.end(), *new_parent_id) != dragged_ids.end()) {
+      return;
+    }
+
     auto ancestor = scene.find(*new_parent_id);
 
     while (ancestor.is_valid()) {
-      if (ancestor.id() == dragged_id) {
+      if (std::find(dragged_ids.begin(), dragged_ids.end(), ancestor.id()) != dragged_ids.end()) {
         return;
       }
 
@@ -224,7 +254,37 @@ auto hierarchy_panel::_try_reparent(sbx::scenes::scene& scene, sbx::math::uuid d
     }
   }
 
-  _pending_reparent = pending_reparent{dragged_id, new_parent_id, new_index};
+  _pending_reparent = pending_reparent{std::move(dragged_ids), new_parent_id, new_index};
+}
+
+auto hierarchy_panel::_current_parent_id(sbx::scenes::scene& scene, sbx::math::uuid id) const -> std::optional<sbx::math::uuid> {
+  auto node = scene.find(id);
+
+  if (!node.is_valid()) {
+    return std::nullopt;
+  }
+
+  auto parent = scene.node_of(node.get_component<sbx::scenes::relationship>().parent);
+
+  if (!parent.has_component<sbx::scenes::id>()) {
+    return std::nullopt;
+  }
+
+  return parent.id();
+}
+
+auto hierarchy_panel::_filter_to_selection_roots(sbx::scenes::scene& scene, const std::vector<sbx::math::uuid>& ids) const -> std::vector<sbx::math::uuid> {
+  auto roots = std::vector<sbx::math::uuid>{};
+
+  for (const auto id : ids) {
+    const auto parent_id = _current_parent_id(scene, id);
+
+    if (!parent_id || std::find(ids.begin(), ids.end(), *parent_id) == ids.end()) {
+      roots.push_back(id);
+    }
+  }
+
+  return roots;
 }
 
 auto hierarchy_panel::_begin_rename(const sbx::scenes::node& node) -> void {
@@ -245,8 +305,6 @@ auto hierarchy_panel::_commit_rename(editor_state& state, sbx::scenes::node& nod
     return;
   }
 
-  // scene::find(name) can go stale after this (scene::_entities_by_name is populated at creation
-  // only) — fine, selection/hierarchy key on entity/id, never name.
   node.name() = after;
 
   state.push_command(std::make_unique<modify_component_command<sbx::scenes::tag>>(node.id(), before, after, "Rename Node"));
@@ -255,23 +313,57 @@ auto hierarchy_panel::_commit_rename(editor_state& state, sbx::scenes::node& nod
 auto hierarchy_panel::draw(editor_state& state) -> void {
   ImGui::Begin(window_name);
 
+  _visible_row_order.clear();
+
   auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
   auto& scene = scenes_module.active_scene();
 
   const auto& top_level = scene.root().get_component<sbx::scenes::relationship>().children;
 
   for (auto i = std::size_t{0u}; i < top_level.size(); ++i) {
-    _draw_drop_zone(scene, std::nullopt, i);
-    _draw_node_row(state, scene, top_level[i]);
+    _draw_node_row(state, scene, top_level[i], std::nullopt, i);
   }
-
-  _draw_drop_zone(scene, std::nullopt, top_level.size());
 
   if (top_level.empty()) {
     ImGui::TextDisabled("No nodes in the active scene.");
   }
 
-  if (ImGui::IsWindowHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGui::IsAnyItemHovered()) {
+  {
+    const auto available = ImGui::GetContentRegionAvail();
+
+    if (available.y > 0.0f) {
+      ImGui::InvisibleButton("##root_drop_target", available);
+
+      if (ImGui::IsItemClicked(ImGuiMouseButton_Left) && !ImGui::GetIO().KeyCtrl && !ImGui::GetIO().KeyShift) {
+        state.clear_selection();
+      }
+
+      if (ImGui::BeginDragDropTarget()) {
+        if (const auto* payload = ImGui::AcceptDragDropPayload(node_drag_drop_payload_type, ImGuiDragDropFlags_AcceptNoDrawDefaultRect)) {
+          const auto dragged_id = sbx::math::uuid::from_value(*static_cast<const std::uint64_t*>(payload->Data));
+          _try_reparent(state, scene, dragged_id, std::nullopt, top_level.size());
+        }
+
+        ImGui::EndDragDropTarget();
+      }
+
+      if (ImGui::BeginPopupContextItem("##hierarchy_context_empty")) {
+        if (ImGui::MenuItem(ICON_MDI_PLUS " Add Node")) {
+          auto command = std::make_unique<create_node_command>();
+          auto* created = command.get();
+
+          state.push_command(std::move(command));
+          state.select_node(scene.find(created->id()));
+        }
+
+        draw_3d_object_submenu(state, scene, std::nullopt);
+
+        ImGui::EndPopup();
+      }
+    }
+  }
+
+  if (ImGui::IsWindowHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGui::IsAnyItemHovered() && !ImGui::GetIO().KeyCtrl && !ImGui::GetIO().KeyShift) {
     state.clear_selection();
   }
 
@@ -279,6 +371,7 @@ auto hierarchy_panel::draw(editor_state& state) -> void {
     if (ImGui::MenuItem(ICON_MDI_PLUS " Add Node")) {
       auto command = std::make_unique<create_node_command>();
       auto* created = command.get();
+
       state.push_command(std::move(command));
       state.select_node(scene.find(created->id()));
     }
@@ -289,23 +382,79 @@ auto hierarchy_panel::draw(editor_state& state) -> void {
   }
 
   if (ImGui::IsWindowHovered() && ImGui::IsKeyPressed(ImGuiKey_Delete, false)) {
-    if (auto selected = state.selected_node(scene); selected.is_valid()) {
-      _pending_delete_id = selected.id();
+    auto roots = _filter_to_selection_roots(scene, state.selected_node_ids());
+
+    if (roots.size() == 1u) {
+      _pending_delete_id = roots.front();
+    } else if (roots.size() > 1u) {
+      _pending_delete_ids = std::move(roots);
     }
   }
 
-  if (ImGui::IsWindowHovered() && ImGui::IsKeyPressed(ImGuiKey_F2, false)) {
+  if (ImGui::IsWindowHovered() && ImGui::IsKeyPressed(ImGuiKey_F2, false) && state.selected_node_count() == 1u) {
     if (auto selected = state.selected_node(scene); selected.is_valid()) {
       _begin_rename(selected);
     }
   }
 
   if (_pending_reparent) {
-    if (auto target = scene.find(_pending_reparent->dragged_id); target.is_valid()) {
-      state.push_command(std::make_unique<reparent_node_command>(target, _pending_reparent->new_parent_id, _pending_reparent->new_index));
+    auto ordered = _filter_to_selection_roots(scene, _pending_reparent->dragged_ids);
+
+    std::stable_sort(ordered.begin(), ordered.end(), [this](sbx::math::uuid a, sbx::math::uuid b) {
+      const auto index_of = [this](sbx::math::uuid id) {
+        const auto entry = std::find(_visible_row_order.begin(), _visible_row_order.end(), id);
+        return entry == _visible_row_order.end() ? _visible_row_order.size() : static_cast<std::size_t>(entry - _visible_row_order.begin());
+      };
+
+      return index_of(a) < index_of(b);
+    });
+
+    if (ordered.size() == 1u) {
+      if (auto target = scene.find(ordered.front()); target.is_valid()) {
+        state.push_command(std::make_unique<reparent_node_command>(target, _pending_reparent->new_parent_id, _pending_reparent->new_index));
+      }
+    } else if (ordered.size() > 1u) {
+      auto sub_commands = std::vector<std::unique_ptr<command>>{};
+      auto foreign_count = std::size_t{0u};
+
+      for (const auto id : ordered) {
+        auto target = scene.find(id);
+
+        if (!target.is_valid()) {
+          continue;
+        }
+
+        const auto was_already_sibling = _current_parent_id(scene, id) == _pending_reparent->new_parent_id;
+
+        sub_commands.push_back(std::make_unique<reparent_node_command>(target, _pending_reparent->new_parent_id, _pending_reparent->new_index + foreign_count));
+
+        if (!was_already_sibling) {
+          foreign_count += 1u;
+        }
+      }
+
+      if (!sub_commands.empty()) {
+        state.push_command(std::make_unique<composite_command>(std::move(sub_commands), fmt::format("Move {} Nodes", sub_commands.size())));
+      }
     }
 
     _pending_reparent.reset();
+  }
+
+  if (_pending_range_select) {
+    const auto begin_entry = std::find(_visible_row_order.begin(), _visible_row_order.end(), _pending_range_select->anchor_id);
+    const auto end_entry = std::find(_visible_row_order.begin(), _visible_row_order.end(), _pending_range_select->clicked_id);
+
+    if (begin_entry == _visible_row_order.end() || end_entry == _visible_row_order.end()) {
+      if (auto clicked = scene.find(_pending_range_select->clicked_id); clicked.is_valid()) {
+        state.select_node(clicked);
+      }
+    } else {
+      const auto [low, high] = std::minmax(begin_entry, end_entry);
+      state.set_node_selection(std::vector<sbx::math::uuid>(low, high + 1));
+    }
+
+    _pending_range_select.reset();
   }
 
   if (_pending_delete_id != sbx::math::uuid::nil()) {
@@ -316,10 +465,27 @@ auto hierarchy_panel::draw(editor_state& state) -> void {
     _pending_delete_id = sbx::math::uuid::nil();
   }
 
+  if (!_pending_delete_ids.empty()) {
+    auto sub_commands = std::vector<std::unique_ptr<command>>{};
+
+    for (const auto id : _pending_delete_ids) {
+      if (auto target = scene.find(id); target.is_valid()) {
+        sub_commands.push_back(std::make_unique<delete_node_command>(target));
+      }
+    }
+
+    if (!sub_commands.empty()) {
+      state.push_command(std::make_unique<composite_command>(std::move(sub_commands), fmt::format("Delete {} Nodes", sub_commands.size())));
+    }
+
+    _pending_delete_ids.clear();
+  }
+
   if (_pending_add_child_parent_id != sbx::math::uuid::nil()) {
     if (auto parent = scene.find(_pending_add_child_parent_id); parent.is_valid()) {
       auto command = std::make_unique<create_node_command>(parent.id());
       auto* created = command.get();
+
       state.push_command(std::move(command));
       state.select_node(scene.find(created->id()));
     }

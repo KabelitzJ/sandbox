@@ -4,6 +4,8 @@
 
 #include <limits>
 
+#include <imgui.h>
+
 #include <libsbx/core/engine.hpp>
 
 #include <libsbx/math/matrix4x4.hpp>
@@ -55,7 +57,10 @@ auto pick_node_at_viewport_position(editor_state& state, const sbx::math::vector
   const auto pose = editor_module.viewport_camera(scene);
 
   if (!pose) {
-    state.clear_selection();
+    if (!ImGui::GetIO().KeyCtrl && !ImGui::GetIO().KeyShift) {
+      state.clear_selection();
+    }
+
     return;
   }
 
@@ -82,8 +87,14 @@ auto pick_node_at_viewport_position(editor_state& state, const sbx::math::vector
   }
 
   if (closest_node.is_valid()) {
-    state.select_node(closest_node);
-  } else {
+    if (ImGui::GetIO().KeyCtrl) {
+      state.toggle_node_selection(closest_node);
+    } else if (ImGui::GetIO().KeyShift) {
+      state.add_node_to_selection(closest_node);
+    } else {
+      state.select_node(closest_node);
+    }
+  } else if (!ImGui::GetIO().KeyCtrl && !ImGui::GetIO().KeyShift) {
     state.clear_selection();
   }
 }

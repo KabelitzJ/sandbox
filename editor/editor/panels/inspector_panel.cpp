@@ -3600,14 +3600,18 @@ auto inspector_panel::draw(editor_state& state) -> void {
   auto& assets_module = sbx::core::engine::get_module<sbx::assets::assets_module>();
 
   if (std::holds_alternative<node_selection>(state.current_selection)) {
-    auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
-
-    if (auto node = state.selected_node(scenes_module.active_scene()); node.is_valid()) {
-      _draw_node_properties(state, node, assets_module);
+    if (state.selected_node_count() > 1u) {
+      ImGui::TextDisabled("%zu objects selected", state.selected_node_count());
     } else {
-      // The selected node no longer exists (e.g. deleted); fall back to the empty state.
-      state.clear_selection();
-      ImGui::TextDisabled("Nothing selected.");
+      auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
+
+      if (auto node = state.selected_node(scenes_module.active_scene()); node.is_valid()) {
+        _draw_node_properties(state, node, assets_module);
+      } else {
+        // The selected node no longer exists (e.g. deleted); fall back to the empty state.
+        state.clear_selection();
+        ImGui::TextDisabled("Nothing selected.");
+      }
     }
   } else if (const auto* asset = std::get_if<asset_selection>(&state.current_selection); asset != nullptr) {
     _draw_asset_properties(state, *asset, assets_module);

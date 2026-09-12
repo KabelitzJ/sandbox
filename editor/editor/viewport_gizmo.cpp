@@ -9,7 +9,11 @@
 #include <cstring>
 #include <memory>
 #include <optional>
+#include <unordered_map>
 #include <utility>
+#include <vector>
+
+#include <fmt/format.h>
 
 #include <ImGuizmo.h>
 
@@ -36,6 +40,7 @@
 #include <editor/viewport_camera.hpp>
 
 #include <editor/commands/component_commands.hpp>
+#include <editor/commands/composite_command.hpp>
 
 namespace editor {
 
@@ -71,6 +76,129 @@ auto handle_operation_shortcuts(editor_state& state) -> void {
   }
 }
 
+// Shared by both the single-node and group-pivot gizmo paths: converts a just-manipulated world
+// matrix back to node's parent-relative local transform and writes it (the "live preview" applied
+// every frame while dragging, before any undo command exists for the gesture).
+auto apply_manipulated_world_matrix(sbx::scenes::scene& scene, sbx::scenes::node& node, const sbx::math::matrix4x4& new_world_matrix) -> void {
+  const auto& relationship = node.get_component<sbx::scenes::relationship>();
+
+  auto local_matrix = new_world_matrix;
+
+  if (relationship.parent != sbx::ecs::null_entity) {
+    if (auto parent_node = scene.node_of(relationship.parent); parent_node.is_valid() && parent_node.has_component<sbx::scenes::world_transform>()) {
+      local_matrix = sbx::math::matrix4x4::inverted(parent_node.world_matrix()) * new_world_matrix;
+    }
+  }
+
+  auto translation = std::array<std::float_t, 3u>{};
+  auto rotation = std::array<std::float_t, 3u>{}; // degrees
+  auto scale = std::array<std::float_t, 3u>{};
+
+  ImGuizmo::DecomposeMatrixToComponents(local_matrix.data(), translation.data(), rotation.data(), scale.data());
+
+  auto& transform = node.transform();
+  transform.position = sbx::math::vector3{translation[0], translation[1], translation[2]};
+  transform.rotation = sbx::math::quaternion{sbx::math::vector3{rotation[0], rotation[1], rotation[2]}};
+  transform.scale = sbx::math::vector3{scale[0], scale[1], scale[2]};
+}
+
+// 2+ selected nodes: manipulates a virtual pivot (average position; identity rotation in World
+// mode, the primary node's rotation in Local mode — including Scale, which to_imguizmo_mode always
+// forces to LOCAL regardless of the toolbar's gizmo_mode; keying off the resolved `mode` rather
+// than state.current_gizmo_mode directly is what keeps that Scale quirk intact for groups too) and
+// applies the resulting rigid delta transform to every selected node, one undo entry per drag.
+auto draw_group_pivot_gizmo(editor_state& state, sbx::scenes::scene& scene, const viewport_camera_matrices& matrices, const sbx::math::matrix4x4& gizmo_projection, ImGuizmo::OPERATION operation, ImGuizmo::MODE mode, const std::float_t* snap) -> bool {
+  const auto& selected_ids = state.selected_node_ids();
+
+  auto pivot_position = sbx::math::vector3{0.0f, 0.0f, 0.0f};
+  auto valid_count = std::size_t{0u};
+
+  for (const auto id : selected_ids) {
+    if (auto node = scene.find(id); node.is_valid()) {
+      pivot_position = pivot_position + sbx::math::vector3{node.world_matrix()[3]};
+      valid_count += 1u;
+    }
+  }
+
+  if (valid_count == 0u) {
+    return false;
+  }
+
+  pivot_position = pivot_position / static_cast<std::float_t>(valid_count);
+
+  auto pivot_rotation_degrees = std::array<std::float_t, 3u>{0.0f, 0.0f, 0.0f};
+
+  if (mode == ImGuizmo::LOCAL) {
+    if (auto primary = state.selected_node(scene); primary.is_valid()) {
+      auto unused_translation = std::array<std::float_t, 3u>{};
+      auto unused_scale = std::array<std::float_t, 3u>{};
+
+      ImGuizmo::DecomposeMatrixToComponents(primary.world_matrix().data(), unused_translation.data(), pivot_rotation_degrees.data(), unused_scale.data());
+    }
+  }
+
+  const auto pivot_translation = std::array<std::float_t, 3u>{pivot_position.x(), pivot_position.y(), pivot_position.z()};
+  static constexpr auto pivot_scale = std::array<std::float_t, 3u>{1.0f, 1.0f, 1.0f};
+
+  auto pivot_matrix = sbx::math::matrix4x4::identity;
+  ImGuizmo::RecomposeMatrixFromComponents(pivot_translation.data(), pivot_rotation_degrees.data(), pivot_scale.data(), pivot_matrix.data());
+
+  // Cross-frame group-drag state, separate from the single-node path's statics above — a 2+
+  // selection drag snapshots every selected node's own pre-drag world/local transform, keyed by
+  // uuid, rather than one shared before-value.
+  static auto group_drag_active = false;
+  static auto group_drag_pivot_before = sbx::math::matrix4x4::identity;
+  static auto group_drag_world_before = std::unordered_map<sbx::math::uuid, sbx::math::matrix4x4>{};
+  static auto group_drag_local_before = std::unordered_map<sbx::math::uuid, sbx::scenes::local_transform>{};
+
+  if (ImGuizmo::IsUsing() && !group_drag_active) {
+    group_drag_active = true;
+    group_drag_pivot_before = pivot_matrix;
+    group_drag_world_before.clear();
+    group_drag_local_before.clear();
+
+    for (const auto id : selected_ids) {
+      if (auto node = scene.find(id); node.is_valid()) {
+        group_drag_world_before[id] = node.world_matrix();
+        group_drag_local_before[id] = node.transform();
+      }
+    }
+  }
+
+  const auto changed = ImGuizmo::Manipulate(matrices.view.data(), gizmo_projection.data(), operation, mode, pivot_matrix.data(), nullptr, snap);
+
+  if (changed) {
+    const auto delta = pivot_matrix * sbx::math::matrix4x4::inverted(group_drag_pivot_before);
+
+    for (const auto& [id, world_before] : group_drag_world_before) {
+      if (auto node = scene.find(id); node.is_valid()) {
+        apply_manipulated_world_matrix(scene, node, delta * world_before);
+      }
+    }
+  }
+
+  if (!ImGuizmo::IsUsing() && group_drag_active) {
+    group_drag_active = false;
+
+    auto sub_commands = std::vector<std::unique_ptr<command>>{};
+
+    for (const auto& [id, local_before] : group_drag_local_before) {
+      if (auto node = scene.find(id); node.is_valid()) {
+        sub_commands.push_back(std::make_unique<modify_component_command<sbx::scenes::local_transform>>(id, local_before, node.transform(), "Edit Transform"));
+      }
+    }
+
+    if (!sub_commands.empty()) {
+      state.push_command(std::make_unique<composite_command>(std::move(sub_commands), fmt::format("Edit Transform ({} objects)", sub_commands.size())));
+    }
+
+    group_drag_world_before.clear();
+    group_drag_local_before.clear();
+  }
+
+  return ImGuizmo::IsOver() || ImGuizmo::IsUsing();
+}
+
 auto draw_viewport_gizmo(editor_state& state, const ImVec2& viewport_origin, const ImVec2& viewport_size) -> bool {
   handle_operation_shortcuts(state);
 
@@ -78,14 +206,12 @@ auto draw_viewport_gizmo(editor_state& state, const ImVec2& viewport_origin, con
     return false;
   }
 
-  auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
-  auto& scene = scenes_module.active_scene();
-
-  auto node = state.selected_node(scene);
-
-  if (!node.is_valid()) {
+  if (state.selected_node_count() == 0u) {
     return false;
   }
+
+  auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
+  auto& scene = scenes_module.active_scene();
 
   auto& editor_module = sbx::core::engine::get_module<editor::editor_module>();
 
@@ -107,8 +233,6 @@ auto draw_viewport_gizmo(editor_state& state, const ImVec2& viewport_origin, con
   const auto operation = to_imguizmo_operation(state.current_gizmo_operation);
   const auto mode = to_imguizmo_mode(state.current_gizmo_operation, state.current_gizmo_mode);
 
-  auto world_matrix = node.world_matrix();
-
   // Hold Ctrl to snap (Blender/Unity convention) instead of moving freely. ImGuizmo reads snap
   // as 3 per-axis values for translate/scale, or just snap[0] (degrees) for rotate.
   static constexpr auto translate_snap = std::array<std::float_t, 3u>{1.0f, 1.0f, 1.0f};
@@ -125,6 +249,18 @@ auto draw_viewport_gizmo(editor_state& state, const ImVec2& viewport_origin, con
     }
   }
 
+  if (state.selected_node_count() >= 2u) {
+    return draw_group_pivot_gizmo(state, scene, matrices, gizmo_projection, operation, mode, snap);
+  }
+
+  auto node = state.selected_node(scene);
+
+  if (!node.is_valid()) {
+    return false;
+  }
+
+  auto world_matrix = node.world_matrix();
+
   // Captured before Manipulate() runs this frame, so it's the true pre-drag value even on the
   // exact frame IsUsing() first flips true (see the false->true check below).
   const auto pre_manipulate = node.transform();
@@ -132,7 +268,9 @@ auto draw_viewport_gizmo(editor_state& state, const ImVec2& viewport_origin, con
   const auto changed = ImGuizmo::Manipulate(matrices.view.data(), gizmo_projection.data(), operation, mode, world_matrix.data(), nullptr, snap);
 
   // Cross-frame gizmo-drag state — one shared instance is enough since only one node can have an
-  // active gizmo drag at a time. Brackets the per-frame write below into one undo entry per drag.
+  // active single-node gizmo drag at a time (a 2+ selection instead uses
+  // draw_group_pivot_gizmo's own statics). Brackets the per-frame write below into one undo entry
+  // per drag.
   static auto drag_active = false;
   static auto drag_node_id = sbx::math::uuid::nil();
   static auto drag_before = sbx::scenes::local_transform{};
@@ -144,26 +282,7 @@ auto draw_viewport_gizmo(editor_state& state, const ImVec2& viewport_origin, con
   }
 
   if (changed) {
-    const auto& relationship = node.get_component<sbx::scenes::relationship>();
-
-    auto local_matrix = world_matrix;
-
-    if (relationship.parent != sbx::ecs::null_entity) {
-      if (auto parent_node = scene.node_of(relationship.parent); parent_node.is_valid() && parent_node.has_component<sbx::scenes::world_transform>()) {
-        local_matrix = sbx::math::matrix4x4::inverted(parent_node.world_matrix()) * world_matrix;
-      }
-    }
-
-    auto translation = std::array<std::float_t, 3u>{};
-    auto rotation = std::array<std::float_t, 3u>{}; // degrees
-    auto scale = std::array<std::float_t, 3u>{};
-
-    ImGuizmo::DecomposeMatrixToComponents(local_matrix.data(), translation.data(), rotation.data(), scale.data());
-
-    auto& transform = node.transform();
-    transform.position = sbx::math::vector3{translation[0], translation[1], translation[2]};
-    transform.rotation = sbx::math::quaternion{sbx::math::vector3{rotation[0], rotation[1], rotation[2]}};
-    transform.scale = sbx::math::vector3{scale[0], scale[1], scale[2]};
+    apply_manipulated_world_matrix(scene, node, world_matrix);
   }
 
   if (!ImGuizmo::IsUsing() && drag_active) {
@@ -181,7 +300,7 @@ auto draw_gizmo_toolbar(editor_state& state, const ImVec2& viewport_origin) -> b
   auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
   auto& scene = scenes_module.active_scene();
 
-  if (!state.selected_node(scene).is_valid()) {
+  if (state.selected_node_count() == 0u) {
     return false;
   }
 
@@ -491,7 +610,13 @@ auto draw_node_icons(editor_state& state, const ImVec2& viewport_origin, const I
       hovered = ImGui::IsItemHovered();
 
       if (ImGui::IsItemClicked(ImGuiMouseButton_Left)) {
-        state.select_node(node);
+        if (ImGui::GetIO().KeyCtrl) {
+          state.toggle_node_selection(node);
+        } else if (ImGui::GetIO().KeyShift) {
+          state.add_node_to_selection(node);
+        } else {
+          state.select_node(node);
+        }
       }
 
       any_active |= hovered || ImGui::IsItemActive();
