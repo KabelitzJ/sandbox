@@ -69,7 +69,10 @@ private:
 
   auto _begin_rename(const sbx::scenes::node& node) -> void;
 
-  auto _commit_rename(editor_state& state, sbx::scenes::node& node) -> void;
+  auto _commit_rename(editor_state& state, sbx::scenes::scene& scene, sbx::scenes::node& node) -> void;
+
+  /** @brief "Apply to Prefab"/"Revert to Prefab" submenus, one entry per component node's own overrides (see scene_serializer::prefab_overrides_of), plus Apply All/Revert All. No-op (draws nothing) if node isn't part of a prefab instance or has no overrides. */
+  auto _draw_prefab_override_menu(sbx::scenes::scene& scene, const sbx::scenes::node& node) -> void;
 
   sbx::math::uuid _pending_delete_id{sbx::math::uuid::nil()};
   std::vector<sbx::math::uuid> _pending_delete_ids{}; // multi-select delete; _pending_delete_id above still handles the single-node case unchanged

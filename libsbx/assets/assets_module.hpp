@@ -5,6 +5,9 @@
 
 #include <cstdint>
 #include <filesystem>
+#include <memory>
+#include <string>
+#include <unordered_map>
 
 #include <libsbx/utility/noncopyable.hpp>
 
@@ -26,6 +29,7 @@
 #include <libsbx/assets/environment_map.hpp>
 #include <libsbx/assets/particle_effect.hpp>
 #include <libsbx/assets/animation_graph.hpp>
+#include <libsbx/assets/prefab.hpp>
 #include <libsbx/assets/asset_cooker.hpp>
 #include <libsbx/assets/asset_manifest.hpp>
 #include <libsbx/assets/asset_residency.hpp>
@@ -169,6 +173,32 @@ public:
   auto save_animation_graph(animation_graph_handle& graph, const std::filesystem::path& path) -> math::uuid;
 
   /**
+   * @brief Wraps an already-serialized subtree snapshot (see scenes::scene_serializer::
+   * serialize_subtree) as a new, unsaved prefab asset. Scene-agnostic on purpose — see prefab.hpp's
+   * doc comment; scenes::scene_serializer::create_prefab_from_node is the scene-aware entry point
+   * editor code actually calls.
+   */
+  auto create_prefab(YAML::Node snapshot, std::string name) -> prefab_handle;
+
+  auto load_prefab(const math::uuid& id) -> prefab_handle;
+
+  auto load_prefab(const std::filesystem::path& path) -> prefab_handle;
+
+  /**
+   * @brief Overwrites an existing prefab's snapshot in place; every prefab_handle already pointing
+   * at it observes the change immediately (loadable::generation() bumps). Does not persist to disk
+   * or touch identity (id) — pair with @ref save_prefab for that.
+   */
+  auto update_prefab(prefab_handle& prefab, YAML::Node snapshot) -> void;
+
+  /**
+   * @brief Writes a prefab to a `.prefab` file and (re-)registers it as a first-class asset.
+   * @param path Destination path relative to the active project's assets directory.
+   * @return The prefab's canonical uuid (also written back onto the prefab record itself).
+   */
+  auto save_prefab(prefab_handle& prefab, const std::filesystem::path& path) -> math::uuid;
+
+  /**
    * @brief Turns queued texture loads into GPU images and bindless writes.
    *
    * Runs on the render thread; copies are recorded by the caller's subsequent @ref upload_context::flush.
@@ -239,6 +269,11 @@ private:
   asset_manifest _manifest{};
   ibl_baker _ibl{};
   asset_residency _residency;
+
+  // Uuid -> record cache for prefabs loaded by id, same role as asset_residency's *_files maps play
+  // for material/particle_effect/animation_graph -- prefab has no GPU state of its own (see
+  // prefab.hpp), so it skips asset_residency/asset_loader entirely and lives directly here.
+  std::unordered_map<math::uuid, prefab_handle> _prefabs{};
 
 }; // class assets_module
 

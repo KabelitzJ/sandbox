@@ -10,6 +10,7 @@
 #include <cstring>
 #include <filesystem>
 #include <fstream>
+#include <memory>
 #include <string>
 #include <string_view>
 #include <unordered_map>
@@ -29,6 +30,10 @@
 #include <libsbx/assets/particle_effect.hpp>
 #include <libsbx/assets/animation_graph.hpp>
 
+#include <libsbx/scenes/scenes_module.hpp>
+
+#include <editor/commands/scene_commands.hpp>
+
 namespace editor {
 
 // Single source of truth for both classify_extension (below) and importable_extensions, so the
@@ -46,6 +51,7 @@ auto extension_table() -> const std::unordered_map<std::string, asset_kind>& {
     {".particle_effect", asset_kind::particle_effect},
     {".animation_graph", asset_kind::animation_graph},
     {".ttf", asset_kind::font},
+    {".prefab", asset_kind::prefab},
     {".yaml", asset_kind::scene},
     {".cs", asset_kind::script},
   };
@@ -105,6 +111,7 @@ auto icon_for(const asset_browser_entry& entry) -> const char* {
     case asset_kind::particle_effect: return ICON_MDI_FIREWORK;
     case asset_kind::animation_graph: return ICON_MDI_STATE_MACHINE;
     case asset_kind::font: return ICON_MDI_FORMAT_FONT;
+    case asset_kind::prefab: return ICON_MDI_CUBE_SCAN;
     case asset_kind::scene: return ICON_MDI_FILE_TREE;
     case asset_kind::script: return ICON_MDI_FILE_CODE_OUTLINE;
     case asset_kind::unknown: return ICON_MDI_FILE_OUTLINE;
@@ -129,6 +136,7 @@ auto drag_payload_type_for(asset_kind kind) -> const char* {
     case asset_kind::particle_effect: return sbx::render::widgets::drag_drop_payload_particle_effect;
     case asset_kind::animation_graph: return sbx::render::widgets::drag_drop_payload_animation_graph;
     case asset_kind::font: return sbx::render::widgets::drag_drop_payload_font;
+    case asset_kind::prefab: return sbx::render::widgets::drag_drop_payload_prefab;
     default: return nullptr;
   }
 }
@@ -901,6 +909,18 @@ auto asset_browser_panel::draw(editor_state& state) -> void {
           ImGui::PushID(entry.path.string().c_str());
           ImGui::BeginGroup();
 
+          // Every other kind resolves entry.id lazily, on click (see asset_browser_entry's doc
+          // comment) — deliberately, since an importable kind may need a dialog first (mesh's
+          // "extract materials?" choice). prefab has no such dialog, so resolve it here instead:
+          // a drag started on a tile that's never been clicked ends on release, over a *different*
+          // widget (the drop target) — draw_asset_tile's own click detection (InvisibleButton's
+          // release-based "pressed") never fires on this tile during that gesture, so a
+          // click-resolved id would still be nil for the entire drag, and the payload it carries
+          // would be too.
+          if (entry.kind == asset_kind::prefab && entry.id == sbx::math::uuid::nil()) {
+            entry.id = assets_module.import(project.assets_directory() / entry.path);
+          }
+
           auto tile_desc = sbx::render::widgets::asset_tile_desc{};
           tile_desc.icon_glyph = icon_for(entry);
           tile_desc.is_directory = entry.is_directory;
@@ -945,6 +965,13 @@ auto asset_browser_panel::draw(editor_state& state) -> void {
                 entry.id = assets_module.import(project.assets_directory() / entry.path);
                 state.select_asset(entry.id, entry.path, entry.kind);
               }
+            } else if (entry.kind == asset_kind::prefab) {
+              // Not importable (no cook step), but still a real manifest-registered, uuid-bearing
+              // asset -- unlike scene/script below, it needs a resolved id both for the Inspector
+              // and for a drag started from this tile (asset_tile_desc::drag_id, set from entry.id
+              // right below where this tile is built) to carry a working uuid instead of nil.
+              entry.id = assets_module.import(project.assets_directory() / entry.path);
+              state.select_asset(entry.id, entry.path, entry.kind);
             } else if (entry.kind == asset_kind::scene) {
               state.select_asset(sbx::math::uuid::nil(), entry.path, asset_kind::scene);
             } else if (entry.kind == asset_kind::script) {
@@ -981,6 +1008,22 @@ auto asset_browser_panel::draw(editor_state& state) -> void {
 
           if (ImGui::BeginPopupContextItem("##tile_context")) {
             const auto target_directory = entry.is_directory ? entry.path : entry.path.parent_path();
+
+            // A plain click-driven alternative to dragging the tile into the Hierarchy — same
+            // instantiate_prefab_command the drag path pushes, just triggered from a menu item
+            // instead of a drag gesture, so it doesn't depend on drag-and-drop working at all.
+            if (entry.kind == asset_kind::prefab && ImGui::MenuItem(ICON_MDI_CUBE_SCAN " Instantiate in Scene")) {
+              if (auto prefab = assets_module.load_prefab(entry.id); prefab.is_valid()) {
+                auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
+                auto& scene = scenes_module.active_scene();
+
+                auto command = std::make_unique<instantiate_prefab_command>(prefab);
+                auto* created = command.get();
+
+                state.push_command(scene, std::move(command));
+                state.select_node(scene.find(created->id()));
+              }
+            }
 
             if (ImGui::BeginMenu(ICON_MDI_FOLDER_PLUS " Create")) {
               _draw_create_menu(state, target_directory);

@@ -12,8 +12,10 @@
 #include <libsbx/math/uuid.hpp>
 
 #include <libsbx/scenes/node.hpp>
+#include <libsbx/scenes/scene.hpp>
 
 #include <libsbx/assets/primitive_meshes.hpp>
+#include <libsbx/assets/prefab.hpp>
 
 #include <editor/commands/command.hpp>
 
@@ -26,9 +28,9 @@ public:
 
   explicit create_node_command(std::optional<sbx::math::uuid> parent_id = std::nullopt, std::string name = "Node");
 
-  auto execute() -> void override;
+  auto execute(sbx::scenes::scene& target) -> void override;
 
-  auto undo() -> void override;
+  auto undo(sbx::scenes::scene& target) -> void override;
 
   [[nodiscard]] auto label() const -> std::string override {
     return "Create Node";
@@ -54,9 +56,9 @@ public:
 
   explicit create_primitive_node_command(sbx::assets::primitive_mesh_kind kind, std::optional<sbx::math::uuid> parent_id = std::nullopt);
 
-  auto execute() -> void override;
+  auto execute(sbx::scenes::scene& target) -> void override;
 
-  auto undo() -> void override;
+  auto undo(sbx::scenes::scene& target) -> void override;
 
   [[nodiscard]] auto label() const -> std::string override {
     return "Create " + std::string{sbx::assets::primitive_mesh_name(_kind)};
@@ -75,6 +77,34 @@ private:
 
 }; // class create_primitive_node_command
 
+/** @brief Instantiates prefab as a new subtree, optionally parented under parent_id — the Hierarchy panel's prefab drag-drop. */
+class instantiate_prefab_command final : public command {
+
+public:
+
+  explicit instantiate_prefab_command(sbx::assets::prefab_handle prefab, std::optional<sbx::math::uuid> parent_id = std::nullopt);
+
+  auto execute(sbx::scenes::scene& target) -> void override;
+
+  auto undo(sbx::scenes::scene& target) -> void override;
+
+  [[nodiscard]] auto label() const -> std::string override {
+    return "Instantiate " + (_prefab.is_valid() ? _prefab->name() : std::string{"Prefab"});
+  }
+
+  /** @brief The created instance's root id — valid to read right after command_stack::push() returns. */
+  [[nodiscard]] auto id() const noexcept -> sbx::math::uuid {
+    return _id;
+  }
+
+private:
+
+  sbx::assets::prefab_handle _prefab;
+  std::optional<sbx::math::uuid> _parent_id;
+  sbx::math::uuid _id{sbx::math::uuid::nil()};
+
+}; // class instantiate_prefab_command
+
 /**
  * @brief Deletes target and its whole subtree. Snapshots everything undo needs to restore it —
  * components, structure, ids, sibling position, and any active-camera/primary-light binding — at
@@ -84,11 +114,11 @@ class delete_node_command final : public command {
 
 public:
 
-  explicit delete_node_command(const sbx::scenes::node& target);
+  explicit delete_node_command(sbx::scenes::scene& scene, const sbx::scenes::node& target);
 
-  auto execute() -> void override;
+  auto execute(sbx::scenes::scene& target) -> void override;
 
-  auto undo() -> void override;
+  auto undo(sbx::scenes::scene& target) -> void override;
 
   [[nodiscard]] auto label() const -> std::string override {
     return "Delete Node";
@@ -118,11 +148,11 @@ class reparent_node_command final : public command {
 
 public:
 
-  explicit reparent_node_command(const sbx::scenes::node& target, std::optional<sbx::math::uuid> new_parent_id, std::size_t new_index);
+  explicit reparent_node_command(sbx::scenes::scene& scene, const sbx::scenes::node& target, std::optional<sbx::math::uuid> new_parent_id, std::size_t new_index);
 
-  auto execute() -> void override;
+  auto execute(sbx::scenes::scene& target) -> void override;
 
-  auto undo() -> void override;
+  auto undo(sbx::scenes::scene& target) -> void override;
 
   [[nodiscard]] auto label() const -> std::string override {
     return "Move Node";
@@ -143,11 +173,11 @@ class set_active_camera_command final : public command {
 
 public:
 
-  explicit set_active_camera_command(const sbx::scenes::node& target);
+  explicit set_active_camera_command(sbx::scenes::scene& scene, const sbx::scenes::node& target);
 
-  auto execute() -> void override;
+  auto execute(sbx::scenes::scene& target) -> void override;
 
-  auto undo() -> void override;
+  auto undo(sbx::scenes::scene& target) -> void override;
 
   [[nodiscard]] auto label() const -> std::string override {
     return "Set Active Camera";

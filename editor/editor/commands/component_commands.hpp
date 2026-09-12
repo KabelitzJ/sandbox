@@ -10,9 +10,10 @@
 #include <libsbx/math/uuid.hpp>
 
 #include <libsbx/scenes/node.hpp>
+#include <libsbx/scenes/scene.hpp>
 
 #include <editor/commands/command.hpp>
-#include <editor/commands/scene_access.hpp>
+#include <editor/commands/prefab_override.hpp>
 
 namespace editor {
 
@@ -30,14 +31,15 @@ public:
   add_component_command(sbx::math::uuid node_id, std::string label)
   : _node_id{node_id}, _label{std::move(label)} { }
 
-  auto execute() -> void override {
-    if (auto node = active_scene().find(_node_id); node.is_valid()) {
+  auto execute(sbx::scenes::scene& target) -> void override {
+    if (auto node = target.find(_node_id); node.is_valid()) {
       std::ignore = node.get_or_add_component<Component>();
+      mark_prefab_override<Component>(target, node, sbx::scenes::prefab_override_kind::component_value);
     }
   }
 
-  auto undo() -> void override {
-    if (auto node = active_scene().find(_node_id); node.is_valid()) {
+  auto undo(sbx::scenes::scene& target) -> void override {
+    if (auto node = target.find(_node_id); node.is_valid()) {
       node.remove_component<Component>();
     }
   }
@@ -67,14 +69,15 @@ public:
   remove_component_command(sbx::math::uuid node_id, Component before, std::string label)
   : _node_id{node_id}, _before{std::move(before)}, _label{std::move(label)} { }
 
-  auto execute() -> void override {
-    if (auto node = active_scene().find(_node_id); node.is_valid()) {
+  auto execute(sbx::scenes::scene& target) -> void override {
+    if (auto node = target.find(_node_id); node.is_valid()) {
       node.remove_component<Component>();
+      mark_prefab_override<Component>(target, node, sbx::scenes::prefab_override_kind::component_removed);
     }
   }
 
-  auto undo() -> void override {
-    if (auto node = active_scene().find(_node_id); node.is_valid()) {
+  auto undo(sbx::scenes::scene& target) -> void override {
+    if (auto node = target.find(_node_id); node.is_valid()) {
       node.add_component<Component>(_before);
     }
   }
@@ -106,12 +109,12 @@ public:
   modify_component_command(sbx::math::uuid node_id, Component before, Component after, std::string label)
   : _node_id{node_id}, _before{std::move(before)}, _after{std::move(after)}, _label{std::move(label)} { }
 
-  auto execute() -> void override {
-    _apply(_after);
+  auto execute(sbx::scenes::scene& target) -> void override {
+    _apply(target, _after);
   }
 
-  auto undo() -> void override {
-    _apply(_before);
+  auto undo(sbx::scenes::scene& target) -> void override {
+    _apply(target, _before);
   }
 
   [[nodiscard]] auto label() const -> std::string override {
@@ -120,9 +123,10 @@ public:
 
 private:
 
-  auto _apply(const Component& value) -> void {
-    if (auto node = active_scene().find(_node_id); node.is_valid()) {
+  auto _apply(sbx::scenes::scene& target, const Component& value) -> void {
+    if (auto node = target.find(_node_id); node.is_valid()) {
       node.get_or_add_component<Component>() = value;
+      mark_prefab_override<Component>(target, node, sbx::scenes::prefab_override_kind::component_value);
     }
   }
 

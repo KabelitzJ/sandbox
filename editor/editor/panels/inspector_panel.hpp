@@ -19,6 +19,7 @@
 #include <libsbx/assets/font.hpp>
 
 #include <libsbx/scenes/node.hpp>
+#include <libsbx/scenes/scene.hpp>
 
 #include <libsbx/render/ui/fonts/material_design_icons.hpp>
 
@@ -56,12 +57,41 @@ private:
     sbx::assets::font_handle font{};
   }; // struct asset_property_cache
 
-  auto _draw_node_properties(editor_state& state, sbx::scenes::node& node, sbx::assets::assets_module& assets_module) -> void;
-  auto _draw_name_field(editor_state& state, sbx::scenes::node& node) -> void;
-  auto _draw_transform_section(editor_state& state, sbx::scenes::node& node) -> void;
+  /**
+   * @brief draw_identity gates the name field + transform section — false for a prefab's own edit
+   * view (_draw_prefab_edit below), since placement and Hierarchy label are per-instance concepts,
+   * never prefab-shared content. Every other call site leaves it at the default.
+   */
+  auto _draw_node_properties(editor_state& state, sbx::scenes::scene& target, sbx::scenes::node& node, sbx::assets::assets_module& assets_module, bool draw_identity = true) -> void;
+  auto _draw_name_field(editor_state& state, sbx::scenes::scene& target, sbx::scenes::node& node) -> void;
+  auto _draw_transform_section(editor_state& state, sbx::scenes::scene& target, sbx::scenes::node& node) -> void;
   auto _draw_asset_properties(editor_state& state, const asset_selection& asset, sbx::assets::assets_module& assets_module) -> void;
   auto _draw_material_properties(editor_state& state, const asset_selection& asset, sbx::assets::assets_module& assets_module) -> void;
   auto _draw_particle_effect_properties(editor_state& state, const asset_selection& asset, sbx::assets::assets_module& assets_module) -> void;
+
+  /**
+   * @brief Lets a prefab asset be edited directly, with no instance anywhere in the real scene:
+   * deserializes the prefab's snapshot into a private scratch scene the Inspector owns, then draws
+   * it through the exact same _draw_node_properties every real node uses (identity fields off —
+   * see its doc comment) — reusing every per-component-type section and the add/remove-component
+   * menu unmodified, since they already take their target scene as an explicit parameter (see
+   * command.hpp's doc comment) rather than resolving one internally. No global state.
+   *
+   * Selection-driven, same pattern as _asset_cache: re-populated whenever the selected prefab's id
+   * changes, not an explicitly opened/closed mode — selecting a `.prefab` tile goes straight here.
+   */
+  struct prefab_edit_session {
+    sbx::scenes::scene scene{"Prefab Edit"};
+    sbx::assets::prefab_handle prefab{};
+    sbx::math::uuid root_id{sbx::math::uuid::nil()};
+  }; // struct prefab_edit_session
+
+  auto _draw_prefab_edit(editor_state& state, const asset_selection& asset, sbx::assets::assets_module& assets_module) -> void;
+
+  /** @brief When node is a prefab instance, a small header above its usual component list: source prefab's name plus an "Update Prefab" button pushing this node's entire current subtree back to it. */
+  auto _draw_prefab_instance_header(sbx::scenes::scene& target, sbx::scenes::node& node) -> void;
+
+  std::optional<prefab_edit_session> _prefab_edit_session{};
 
   // Editable name field: staged into a buffer, only re-synced from the node when the selection
   // changes (so mid-edit keystrokes aren't clobbered by re-reading the committed name).

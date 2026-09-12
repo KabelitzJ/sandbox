@@ -90,6 +90,7 @@ scripting_module::scripting_module() {
 
   _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "Node_FindByName", reinterpret_cast<void*>(&interop::node_find_by_name));
   _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "Node_Create", reinterpret_cast<void*>(&interop::node_create));
+  _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "Node_InstantiatePrefab", reinterpret_cast<void*>(&interop::node_instantiate_prefab));
   _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "Node_Destroy", reinterpret_cast<void*>(&interop::node_destroy));
   _core_assembly.add_internal_call("Sbx.Core.InternalCalls", "Node_SetParent", reinterpret_cast<void*>(&interop::node_set_parent));
 
@@ -365,6 +366,38 @@ auto scripting_module::instantiate_scene_scripts(scenes::scene& target) -> void 
     for (auto& instance : scripts.instances) {
       instance.invoke("OnCreate");
     }
+  }
+}
+
+auto scripting_module::instantiate_subtree_scripts(scenes::scene& target, scenes::node subtree_root) -> void {
+  auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
+
+  if (!scenes_module.is_simulating()) {
+    return;
+  }
+
+  // Phase 1: create and register every script instance across the whole subtree first (same
+  // ordering rationale as instantiate_scene_scripts — a sibling's OnCreate might look this node's
+  // component up via GetComponent before every instance in the subtree exists otherwise).
+  auto created = std::vector<managed::object>{};
+
+  const auto collect = [&](this const auto& self, scenes::node current) -> void {
+    if (const auto* list = current.try_get_component<scenes::script_component>().get()) {
+      for (const auto& entry : list->scripts) {
+        created.push_back(instantiate(current, entry.class_name));
+      }
+    }
+
+    for (const auto child : current.get_component<scenes::relationship>().children) {
+      self(target.node_of(child));
+    }
+  };
+
+  collect(subtree_root);
+
+  // Phase 2: invoke OnCreate for all initialized instances safely.
+  for (auto& instance : created) {
+    instance.invoke("OnCreate");
   }
 }
 

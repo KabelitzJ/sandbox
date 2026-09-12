@@ -7,6 +7,8 @@
 #include <string>
 #include <vector>
 
+#include <libsbx/scenes/scene.hpp>
+
 #include <editor/commands/command.hpp>
 
 namespace editor {
@@ -28,9 +30,9 @@ public:
 
   composite_command(std::vector<std::unique_ptr<command>> commands, std::string label);
 
-  auto execute() -> void override;
+  auto execute(sbx::scenes::scene& target) -> void override;
 
-  auto undo() -> void override;
+  auto undo(sbx::scenes::scene& target) -> void override;
 
   [[nodiscard]] auto label() const -> std::string override {
     return _label;

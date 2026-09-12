@@ -39,6 +39,7 @@ target_sources(
     "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/commands/command_stack.hpp"
     "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/commands/composite_command.hpp"
     "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/commands/component_commands.hpp"
+    "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/commands/prefab_override.hpp"
     "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/commands/scene_commands.hpp"
     "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/commands/script_commands.hpp"
     "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/panels/editor_panel.hpp"

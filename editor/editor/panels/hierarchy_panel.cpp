@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <cstring>
+#include <filesystem>
 #include <limits>
 #include <memory>
 #include <optional>
@@ -18,15 +19,19 @@
 #include <libsbx/reflection/enum.hpp>
 
 #include <libsbx/render/ui/fonts/material_design_icons.hpp>
+#include <libsbx/render/ui/widgets/asset_tile.hpp>
 
 #include <libsbx/core/engine.hpp>
+#include <libsbx/core/project.hpp>
 
 #include <libsbx/scenes/components.hpp>
 #include <libsbx/scenes/node.hpp>
 #include <libsbx/scenes/scene.hpp>
 #include <libsbx/scenes/scenes_module.hpp>
+#include <libsbx/scenes/scene_serializer.hpp>
 
 #include <libsbx/assets/primitive_meshes.hpp>
+#include <libsbx/assets/assets_module.hpp>
 
 #include <editor/commands/component_commands.hpp>
 #include <editor/commands/composite_command.hpp>
@@ -52,6 +57,52 @@ auto icon_for(const sbx::scenes::node& node) -> const char* {
   return ICON_MDI_AXIS_ARROW;
 }
 
+// A dedicated Prefabs/ folder next to the rest of the assets directory, auto-named from the
+// source node's own tag with a numeric suffix on collision -- "Create Prefab..." has no target
+// directory of its own to work from (unlike the Asset Browser's own Create menu), so this picks
+// one instead of prompting for a save location every time.
+auto unique_prefab_relative_path(const std::string& tag) -> std::filesystem::path {
+  auto& project = sbx::core::engine::project();
+  const auto directory = project.assets_directory() / "prefabs";
+
+  std::filesystem::create_directories(directory);
+
+  const auto stem = tag.empty() ? std::string{"Prefab"} : tag;
+  auto candidate = stem;
+
+  for (auto suffix = 1; std::filesystem::exists(directory / (candidate + ".prefab")); ++suffix) {
+    candidate = fmt::format("{} {}", stem, suffix);
+  }
+
+  return std::filesystem::path{"prefabs"} / (candidate + ".prefab");
+}
+
+// Shared by every prefab drop target below -- must be called from inside an already-open
+// ImGui::BeginDragDropTarget()/EndDragDropTarget() block, same convention as the plain
+// AcceptDragDropPayload(node_drag_drop_payload_type, ...) calls right next to each call site.
+auto try_instantiate_prefab_drop(editor_state& state, sbx::scenes::scene& scene, std::optional<sbx::math::uuid> parent_id) -> void {
+  const auto* payload = ImGui::AcceptDragDropPayload(sbx::render::widgets::drag_drop_payload_prefab, ImGuiDragDropFlags_AcceptNoDrawDefaultRect);
+
+  if (!payload) {
+    return;
+  }
+
+  const auto& drag = *static_cast<const sbx::render::widgets::asset_drag_payload*>(payload->Data);
+  auto& assets_module = sbx::core::engine::get_module<sbx::assets::assets_module>();
+
+  auto prefab = assets_module.load_prefab(drag.id);
+
+  if (!prefab.is_valid()) {
+    return;
+  }
+
+  auto command = std::make_unique<instantiate_prefab_command>(prefab, parent_id);
+  auto* created = command.get();
+
+  state.push_command(scene, std::move(command));
+  state.select_node(scene.find(created->id()));
+}
+
 auto draw_3d_object_submenu(editor_state& state, sbx::scenes::scene& scene, std::optional<sbx::math::uuid> parent_id) -> void {
   if (!ImGui::BeginMenu(ICON_MDI_AXIS_ARROW " 3D Object")) {
     return;
@@ -62,7 +113,7 @@ auto draw_3d_object_submenu(editor_state& state, sbx::scenes::scene& scene, std:
       auto command = std::make_unique<create_primitive_node_command>(kind, parent_id);
       auto* created = command.get();
 
-      state.push_command(std::move(command));
+      state.push_command(scene, std::move(command));
       state.select_node(scene.find(created->id()));
     }
   }
@@ -155,6 +206,11 @@ auto hierarchy_panel::_draw_node_row(editor_state& state, sbx::scenes::scene& sc
         }
       }
 
+      // "before"/"after" land as a sibling of node (same parent); "into" as node's own child --
+      // unlike reparenting an existing node, a fresh instantiation doesn't need exact sibling-index
+      // placement.
+      try_instantiate_prefab_drop(state, scene, (zone == drop_zone::into) ? std::optional<sbx::math::uuid>{node.id()} : parent_id);
+
       if (const auto* preview = ImGui::GetDragDropPayload(); preview != nullptr && preview->IsDataType(node_drag_drop_payload_type)) {
         auto* draw_list = ImGui::GetWindowDrawList();
         const auto color = ImGui::GetColorU32(ImGuiCol_DragDropTarget);
@@ -184,7 +240,7 @@ auto hierarchy_panel::_draw_node_row(editor_state& state, sbx::scenes::scene& sc
     const auto cancelled = deactivated && ImGui::IsKeyPressed(ImGuiKey_Escape, false);
 
     if (submitted || (deactivated && !cancelled)) {
-      _commit_rename(state, node);
+      _commit_rename(state, scene, node);
     }
 
     if (submitted || deactivated) {
@@ -202,6 +258,22 @@ auto hierarchy_panel::_draw_node_row(editor_state& state, sbx::scenes::scene& sc
     if (state.selected_node_count() <= 1u && ImGui::MenuItem(ICON_MDI_PENCIL " Rename")) {
       _begin_rename(node);
     }
+
+    if (state.selected_node_count() <= 1u && ImGui::MenuItem(ICON_MDI_CUBE_SCAN " Create Prefab...")) {
+      auto& assets_module = sbx::core::engine::get_module<sbx::assets::assets_module>();
+
+      const auto relative_path = unique_prefab_relative_path(std::string{tag.c_str()});
+
+      auto prefab = sbx::scenes::scene_serializer::create_prefab_from_node(scene, node, std::string{tag.c_str()});
+      assets_module.save_prefab(prefab, relative_path);
+      sbx::scenes::scene_serializer::attach_prefab_instance(scene, node, prefab);
+
+      // The new .prefab file exists on disk now, but the Asset Browser caches its own folder
+      // listing and only rescans on this signal -- without it, nothing renders to drag/select.
+      state.request_reveal_in_browser(relative_path);
+    }
+
+    _draw_prefab_override_menu(scene, node);
 
     if (ImGui::MenuItem(ICON_MDI_DELETE " Delete Node")) {
       _pending_delete_id = node.id();
@@ -297,7 +369,7 @@ auto hierarchy_panel::_begin_rename(const sbx::scenes::node& node) -> void {
   _rename_focus_pending = true;
 }
 
-auto hierarchy_panel::_commit_rename(editor_state& state, sbx::scenes::node& node) -> void {
+auto hierarchy_panel::_commit_rename(editor_state& state, sbx::scenes::scene& scene, sbx::scenes::node& node) -> void {
   const auto before = node.name();
   const auto after = sbx::scenes::tag{std::string{_rename_buffer.data()}};
 
@@ -307,7 +379,47 @@ auto hierarchy_panel::_commit_rename(editor_state& state, sbx::scenes::node& nod
 
   node.name() = after;
 
-  state.push_command(std::make_unique<modify_component_command<sbx::scenes::tag>>(node.id(), before, after, "Rename Node"));
+  state.push_command(scene, std::make_unique<modify_component_command<sbx::scenes::tag>>(node.id(), before, after, "Rename Node"));
+}
+
+auto hierarchy_panel::_draw_prefab_override_menu(sbx::scenes::scene& scene, const sbx::scenes::node& node) -> void {
+  const auto overrides = sbx::scenes::scene_serializer::prefab_overrides_of(scene, node);
+
+  if (overrides.empty()) {
+    return;
+  }
+
+  if (ImGui::BeginMenu(ICON_MDI_SOURCE_MERGE " Apply to Prefab")) {
+    for (const auto& override_entry : overrides) {
+      if (ImGui::MenuItem(override_entry.component_key.c_str())) {
+        sbx::scenes::scene_serializer::apply_prefab_override(scene, node, override_entry.component_key);
+      }
+    }
+
+    if (overrides.size() > 1u && ImGui::MenuItem("Apply All")) {
+      for (const auto& override_entry : overrides) {
+        sbx::scenes::scene_serializer::apply_prefab_override(scene, node, override_entry.component_key);
+      }
+    }
+
+    ImGui::EndMenu();
+  }
+
+  if (ImGui::BeginMenu(ICON_MDI_BACKUP_RESTORE " Revert to Prefab")) {
+    for (const auto& override_entry : overrides) {
+      if (ImGui::MenuItem(override_entry.component_key.c_str())) {
+        sbx::scenes::scene_serializer::revert_prefab_override(scene, node, override_entry.component_key);
+      }
+    }
+
+    if (overrides.size() > 1u && ImGui::MenuItem("Revert All")) {
+      for (const auto& override_entry : overrides) {
+        sbx::scenes::scene_serializer::revert_prefab_override(scene, node, override_entry.component_key);
+      }
+    }
+
+    ImGui::EndMenu();
+  }
 }
 
 auto hierarchy_panel::draw(editor_state& state) -> void {
@@ -344,6 +456,8 @@ auto hierarchy_panel::draw(editor_state& state) -> void {
           _try_reparent(state, scene, dragged_id, std::nullopt, top_level.size());
         }
 
+        try_instantiate_prefab_drop(state, scene, std::nullopt);
+
         ImGui::EndDragDropTarget();
       }
 
@@ -352,7 +466,7 @@ auto hierarchy_panel::draw(editor_state& state) -> void {
           auto command = std::make_unique<create_node_command>();
           auto* created = command.get();
 
-          state.push_command(std::move(command));
+          state.push_command(scene, std::move(command));
           state.select_node(scene.find(created->id()));
         }
 
@@ -372,7 +486,7 @@ auto hierarchy_panel::draw(editor_state& state) -> void {
       auto command = std::make_unique<create_node_command>();
       auto* created = command.get();
 
-      state.push_command(std::move(command));
+      state.push_command(scene, std::move(command));
       state.select_node(scene.find(created->id()));
     }
 
@@ -411,7 +525,7 @@ auto hierarchy_panel::draw(editor_state& state) -> void {
 
     if (ordered.size() == 1u) {
       if (auto target = scene.find(ordered.front()); target.is_valid()) {
-        state.push_command(std::make_unique<reparent_node_command>(target, _pending_reparent->new_parent_id, _pending_reparent->new_index));
+        state.push_command(scene, std::make_unique<reparent_node_command>(scene, target, _pending_reparent->new_parent_id, _pending_reparent->new_index));
       }
     } else if (ordered.size() > 1u) {
       auto sub_commands = std::vector<std::unique_ptr<command>>{};
@@ -426,7 +540,7 @@ auto hierarchy_panel::draw(editor_state& state) -> void {
 
         const auto was_already_sibling = _current_parent_id(scene, id) == _pending_reparent->new_parent_id;
 
-        sub_commands.push_back(std::make_unique<reparent_node_command>(target, _pending_reparent->new_parent_id, _pending_reparent->new_index + foreign_count));
+        sub_commands.push_back(std::make_unique<reparent_node_command>(scene, target, _pending_reparent->new_parent_id, _pending_reparent->new_index + foreign_count));
 
         if (!was_already_sibling) {
           foreign_count += 1u;
@@ -434,7 +548,7 @@ auto hierarchy_panel::draw(editor_state& state) -> void {
       }
 
       if (!sub_commands.empty()) {
-        state.push_command(std::make_unique<composite_command>(std::move(sub_commands), fmt::format("Move {} Nodes", sub_commands.size())));
+        state.push_command(scene, std::make_unique<composite_command>(std::move(sub_commands), fmt::format("Move {} Nodes", sub_commands.size())));
       }
     }
 
@@ -459,7 +573,7 @@ auto hierarchy_panel::draw(editor_state& state) -> void {
 
   if (_pending_delete_id != sbx::math::uuid::nil()) {
     if (auto target = scene.find(_pending_delete_id); target.is_valid()) {
-      state.push_command(std::make_unique<delete_node_command>(target));
+      state.push_command(scene, std::make_unique<delete_node_command>(scene, target));
     }
 
     _pending_delete_id = sbx::math::uuid::nil();
@@ -470,12 +584,12 @@ auto hierarchy_panel::draw(editor_state& state) -> void {
 
     for (const auto id : _pending_delete_ids) {
       if (auto target = scene.find(id); target.is_valid()) {
-        sub_commands.push_back(std::make_unique<delete_node_command>(target));
+        sub_commands.push_back(std::make_unique<delete_node_command>(scene, target));
       }
     }
 
     if (!sub_commands.empty()) {
-      state.push_command(std::make_unique<composite_command>(std::move(sub_commands), fmt::format("Delete {} Nodes", sub_commands.size())));
+      state.push_command(scene, std::make_unique<composite_command>(std::move(sub_commands), fmt::format("Delete {} Nodes", sub_commands.size())));
     }
 
     _pending_delete_ids.clear();
@@ -486,7 +600,7 @@ auto hierarchy_panel::draw(editor_state& state) -> void {
       auto command = std::make_unique<create_node_command>(parent.id());
       auto* created = command.get();
 
-      state.push_command(std::move(command));
+      state.push_command(scene, std::move(command));
       state.select_node(scene.find(created->id()));
     }
 

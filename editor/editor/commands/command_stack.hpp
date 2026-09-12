@@ -7,6 +7,8 @@
 #include <string>
 #include <vector>
 
+#include <libsbx/scenes/scene.hpp>
+
 #include <editor/commands/command.hpp>
 
 namespace editor {
@@ -15,19 +17,21 @@ namespace editor {
  * @brief Standard undo/redo stack of editor commands. Pushing a new command always clears the
  * redo stack (the usual convention: once you do something new, the branch of history you undid
  * away from is gone).
+ *
+ * target is passed in fresh on every call rather than stored — see command.hpp's doc comment.
  */
 class command_stack final {
 
 public:
 
-  /** @brief No-op if cmd is null; otherwise runs cmd->execute(), clears the redo stack, and pushes cmd onto the undo stack (dropping the oldest entry past max_history). */
-  auto push(std::unique_ptr<command> cmd) -> void;
+  /** @brief No-op if cmd is null; otherwise runs cmd->execute(target), clears the redo stack, and pushes cmd onto the undo stack (dropping the oldest entry past max_history). */
+  auto push(sbx::scenes::scene& target, std::unique_ptr<command> cmd) -> void;
 
   /** @brief No-op if there's nothing to undo. */
-  auto undo() -> void;
+  auto undo(sbx::scenes::scene& target) -> void;
 
   /** @brief No-op if there's nothing to redo. */
-  auto redo() -> void;
+  auto redo(sbx::scenes::scene& target) -> void;
 
   [[nodiscard]] auto can_undo() const noexcept -> bool {
     return !_undo_stack.empty();

@@ -34,6 +34,7 @@
 #include <libsbx/assets/skeleton.hpp>
 #include <libsbx/assets/animation_clip.hpp>
 #include <libsbx/assets/animation_graph.hpp>
+#include <libsbx/assets/prefab.hpp>
 
 #include <libsbx/particles/particle.hpp>
 
@@ -366,6 +367,45 @@ struct script_entry {
 struct script_component {
   std::vector<script_entry> scripts{};
 }; // struct script_component
+
+/**
+ * @brief Marks a node as one slot of an instantiated prefab subtree, correlating it back to its
+ * counterpart node in the prefab's own snapshot (scene_serializer::instantiate_prefab mints a fresh
+ * scenes::id for every instantiated node, since two instances can't share ids -- member_id is the
+ * stable identity that survives that, letting sync_prefab_instances/apply_prefab_override/
+ * revert_prefab_override find "the same" node across the prefab and any number of instances).
+ *
+ * Present on every node of an instantiated subtree, including the root. A node under an instance
+ * with no prefab_member was added locally by the user and has no prefab counterpart -- resync never
+ * touches it.
+ */
+struct prefab_member {
+  math::uuid member_id{math::uuid::nil()};
+}; // struct prefab_member
+
+enum class prefab_override_kind : std::uint8_t {
+  component_value,   // this instance's component_key value differs from the prefab's and stays put
+  component_removed, // this instance dropped a component the prefab still has
+  node_removed       // this instance deleted a node the prefab still has (component_key unused)
+}; // enum class prefab_override_kind
+
+struct prefab_override {
+  math::uuid member_id{math::uuid::nil()};
+  std::string component_key{}; // empty for node_removed
+  prefab_override_kind kind{prefab_override_kind::component_value};
+}; // struct prefab_override
+
+/**
+ * @brief Root-only marker of a prefab instance: which prefab it was stamped from, the prefab
+ * generation it currently matches, and every component-level (or node-level) divergence this
+ * instance has chosen to keep instead of following the prefab -- see scene_serializer::
+ * sync_prefab_instances, apply_prefab_override, revert_prefab_override.
+ */
+struct prefab_instance {
+  assets::prefab_handle source{};
+  std::uint64_t applied_generation{0u};
+  std::vector<prefab_override> overrides{};
+}; // struct prefab_instance
 
 } // namespace sbx::scenes
 

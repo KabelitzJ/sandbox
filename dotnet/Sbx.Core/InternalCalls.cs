@@ -54,6 +54,7 @@ namespace Sbx.Core
 
     internal static delegate* unmanaged<NativeString, ulong> Node_FindByName;
     internal static delegate* unmanaged<NativeString, ulong> Node_Create;
+    internal static delegate* unmanaged<NativeString, ulong, ulong> Node_InstantiatePrefab;
     internal static delegate* unmanaged<ulong, void> Node_Destroy;
     internal static delegate* unmanaged<ulong, ulong, void> Node_SetParent;
 

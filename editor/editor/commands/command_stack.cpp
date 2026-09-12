@@ -4,12 +4,12 @@
 
 namespace editor {
 
-auto command_stack::push(std::unique_ptr<command> cmd) -> void {
+auto command_stack::push(sbx::scenes::scene& target, std::unique_ptr<command> cmd) -> void {
   if (!cmd) {
     return;
   }
 
-  cmd->execute();
+  cmd->execute(target);
 
   _redo_stack.clear();
   _undo_stack.push_back(std::move(cmd));
@@ -19,7 +19,7 @@ auto command_stack::push(std::unique_ptr<command> cmd) -> void {
   }
 }
 
-auto command_stack::undo() -> void {
+auto command_stack::undo(sbx::scenes::scene& target) -> void {
   if (_undo_stack.empty()) {
     return;
   }
@@ -27,12 +27,12 @@ auto command_stack::undo() -> void {
   auto cmd = std::move(_undo_stack.back());
   _undo_stack.pop_back();
 
-  cmd->undo();
+  cmd->undo(target);
 
   _redo_stack.push_back(std::move(cmd));
 }
 
-auto command_stack::redo() -> void {
+auto command_stack::redo(sbx::scenes::scene& target) -> void {
   if (_redo_stack.empty()) {
     return;
   }
@@ -40,7 +40,7 @@ auto command_stack::redo() -> void {
   auto cmd = std::move(_redo_stack.back());
   _redo_stack.pop_back();
 
-  cmd->execute();
+  cmd->execute(target);
 
   _undo_stack.push_back(std::move(cmd));
 }

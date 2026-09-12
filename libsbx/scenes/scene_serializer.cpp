@@ -2,6 +2,7 @@
 // Copyright (c) 2026 Jonas Kabelitz
 #include <libsbx/scenes/scene_serializer.hpp>
 
+#include <algorithm>
 #include <fstream>
 #include <sstream>
 #include <unordered_map>
@@ -46,6 +47,7 @@ struct asset_key_table {
   std::unordered_map<math::uuid, std::string> animation_graph_keys{};
   std::unordered_map<math::uuid, std::string> texture_keys{};
   std::unordered_map<math::uuid, std::string> font_keys{};
+  std::unordered_map<math::uuid, std::string> prefab_keys{};
   YAML::Node meshes_table{YAML::NodeType::Sequence};
   YAML::Node materials_table{YAML::NodeType::Sequence};
   YAML::Node environments_table{YAML::NodeType::Sequence};
@@ -53,6 +55,7 @@ struct asset_key_table {
   YAML::Node animation_graphs_table{YAML::NodeType::Sequence};
   YAML::Node textures_table{YAML::NodeType::Sequence};
   YAML::Node fonts_table{YAML::NodeType::Sequence};
+  YAML::Node prefabs_table{YAML::NodeType::Sequence};
 }; // struct asset_key_table
 
 auto make_asset_key(asset_key_table& keys, const std::string& base) -> std::string {
@@ -766,6 +769,62 @@ auto write_node(YAML::Node& node_yaml, ecs::registry& registry, ecs::entity enti
     }
   }
 
+  if (registry.all_of<prefab_member>(entity)) {
+    const auto& member = registry.get<prefab_member>(entity);
+
+    auto component = YAML::Node{};
+    component["type"] = "prefab_member";
+    component["member_id"] = member.member_id.value();
+
+    components.push_back(component);
+  }
+
+  if (registry.all_of<prefab_instance>(entity)) {
+    const auto& instance = registry.get<prefab_instance>(entity);
+
+    if (instance.source.is_valid()) {
+      const auto prefab_id = instance.source->id();
+
+      if (prefab_id == math::uuid::nil()) {
+        utility::logger<"scenes">::warn("Skipping a transient prefab_instance override (no file asset — save it first)");
+      } else {
+        if (!keys.prefab_keys.contains(prefab_id)) {
+          const auto name = assets_module.path_of(prefab_id).stem().string();
+          const auto key = make_asset_key(keys, name);
+          keys.prefab_keys.emplace(prefab_id, key);
+
+          auto entry = YAML::Node{};
+          entry["key"] = key;
+          entry["name"] = name;
+          entry["uuid"] = prefab_id.value();
+          keys.prefabs_table.push_back(entry);
+        }
+
+        auto component = YAML::Node{};
+        component["type"] = "prefab_instance";
+        component["prefab"] = keys.prefab_keys.at(prefab_id);
+        component["applied_generation"] = instance.applied_generation;
+
+        if (!instance.overrides.empty()) {
+          auto overrides = YAML::Node{YAML::NodeType::Sequence};
+
+          for (const auto& override_entry : instance.overrides) {
+            auto override_yaml = YAML::Node{};
+            override_yaml["member_id"] = override_entry.member_id.value();
+            override_yaml["component_key"] = override_entry.component_key;
+            override_yaml["kind"] = (override_entry.kind == prefab_override_kind::component_removed) ? "component_removed" : (override_entry.kind == prefab_override_kind::node_removed) ? "node_removed" : "component_value";
+
+            overrides.push_back(override_yaml);
+          }
+
+          component["overrides"] = overrides;
+        }
+
+        components.push_back(component);
+      }
+    }
+  }
+
   node_yaml["components"] = components;
 }
 
@@ -788,6 +847,7 @@ auto register_asset_keys(const YAML::Node& assets_node) -> std::unordered_map<st
   register_category("animation_graphs");
   register_category("textures");
   register_category("fonts");
+  register_category("prefabs");
 
   return key_to_uuid;
 }
@@ -803,7 +863,7 @@ auto read_node_components(node& target_node, const YAML::Node& node_yaml, assets
       transform.rotation = component["rotation"].as<math::quaternion>();
       transform.scale = component["scale"].as<math::vector3>();
     } else if (type == "static_mesh") {
-      auto& renderer = target_node.add_component<mesh_renderer>();
+      auto& renderer = target_node.get_or_add_component<mesh_renderer>();
       renderer.mesh = assets_module.load_mesh(key_to_uuid.at(component["mesh"].as<std::string>()));
 
       sync_materials_with_mesh(renderer);
@@ -826,7 +886,7 @@ auto read_node_components(node& target_node, const YAML::Node& node_yaml, assets
         }
       }
     } else if (type == "animator") {
-      auto& anim = target_node.add_component<animator>();
+      auto& anim = target_node.get_or_add_component<animator>();
 
       if (component["graph"]) {
         anim.set_graph(assets_module.load_animation_graph(key_to_uuid.at(component["graph"].as<std::string>())));
@@ -834,7 +894,7 @@ auto read_node_components(node& target_node, const YAML::Node& node_yaml, assets
 
       anim.playing = component["playing"] ? component["playing"].as<bool>() : true;
     } else if (type == "camera") {
-      auto& c = target_node.add_component<camera>();
+      auto& c = target_node.get_or_add_component<camera>();
       c.fov_degrees = component["fov_degrees"].as<std::float_t>();
       c.near_plane = component["near_plane"].as<std::float_t>();
       c.far_plane = component["far_plane"].as<std::float_t>();
@@ -859,23 +919,23 @@ auto read_node_components(node& target_node, const YAML::Node& node_yaml, assets
         c.bloom_knee = component["bloom_knee"].as<std::float_t>();
       }
     } else if (type == "directional_light") {
-      auto& light = target_node.add_component<directional_light>();
+      auto& light = target_node.get_or_add_component<directional_light>();
       light.color = component["color"].as<math::color>();
       light.intensity = component["intensity"].as<std::float_t>();
     } else if (type == "point_light") {
-      auto& light = target_node.add_component<point_light>();
+      auto& light = target_node.get_or_add_component<point_light>();
       light.color = component["color"].as<math::color>();
       light.intensity = component["intensity"].as<std::float_t>();
       light.range = component["range"].as<std::float_t>();
     } else if (type == "spot_light") {
-      auto& light = target_node.add_component<spot_light>();
+      auto& light = target_node.get_or_add_component<spot_light>();
       light.color = component["color"].as<math::color>();
       light.intensity = component["intensity"].as<std::float_t>();
       light.range = component["range"].as<std::float_t>();
       light.inner_angle = component["inner_angle"].as<std::float_t>();
       light.outer_angle = component["outer_angle"].as<std::float_t>();
     } else if (type == "skybox") {
-      auto& sky = target_node.add_component<skybox>();
+      auto& sky = target_node.get_or_add_component<skybox>();
 
       sky.environment = assets_module.load_environment_map(key_to_uuid.at(component["environment"].as<std::string>()));
 
@@ -888,7 +948,7 @@ auto read_node_components(node& target_node, const YAML::Node& node_yaml, assets
       // same instead of silently losing ambient brightness to the 1.0f struct default.
       sky.ambient_intensity = component["ambient_intensity"] ? component["ambient_intensity"].as<std::float_t>() : sky.intensity;
     } else if (type == "particle_effect") {
-      auto& instance = target_node.add_component<particle_effect>();
+      auto& instance = target_node.get_or_add_component<particle_effect>();
 
       instance.effect = assets_module.load_particle_effect(key_to_uuid.at(component["effect"].as<std::string>()));
 
@@ -904,7 +964,7 @@ auto read_node_components(node& target_node, const YAML::Node& node_yaml, assets
         instance.playback = reflection::from_string_or<particle_playback_state>(playback.as<std::string>(), particle_playback_state::playing);
       }
     } else if (type == "canvas") {
-      auto& canvas_component = target_node.add_component<canvas::canvas>();
+      auto& canvas_component = target_node.get_or_add_component<canvas::canvas>();
 
       if (component["mode"]) {
         canvas_component.mode = reflection::from_string_or<canvas::render_mode>(component["mode"].as<std::string>(), canvas::render_mode::screen_space_overlay);
@@ -930,7 +990,7 @@ auto read_node_components(node& target_node, const YAML::Node& node_yaml, assets
         canvas_component.billboard = component["billboard"].as<bool>();
       }
     } else if (type == "canvas_scaler") {
-      auto& scaler = target_node.add_component<canvas::canvas_scaler>();
+      auto& scaler = target_node.get_or_add_component<canvas::canvas_scaler>();
 
       if (component["mode"]) {
         scaler.mode = reflection::from_string_or<canvas::canvas_scale_mode>(component["mode"].as<std::string>(), canvas::canvas_scale_mode::constant_pixel_size);
@@ -944,7 +1004,7 @@ auto read_node_components(node& target_node, const YAML::Node& node_yaml, assets
         scaler.match_width_or_height = component["match_width_or_height"].as<std::float_t>();
       }
     } else if (type == "rect_transform") {
-      auto& rect = target_node.add_component<canvas::rect_transform>();
+      auto& rect = target_node.get_or_add_component<canvas::rect_transform>();
 
       rect.anchor_min = component["anchor_min"].as<math::vector2>();
       rect.anchor_max = component["anchor_max"].as<math::vector2>();
@@ -952,7 +1012,7 @@ auto read_node_components(node& target_node, const YAML::Node& node_yaml, assets
       rect.size_delta = component["size_delta"].as<math::vector2>();
       rect.pivot = component["pivot"].as<math::vector2>();
     } else if (type == "canvas_group") {
-      auto& group = target_node.add_component<canvas::canvas_group>();
+      auto& group = target_node.get_or_add_component<canvas::canvas_group>();
 
       group.alpha = component["alpha"].as<std::float_t>();
       group.interactable = component["interactable"].as<bool>();
@@ -962,7 +1022,7 @@ auto read_node_components(node& target_node, const YAML::Node& node_yaml, assets
         group.ignore_parent_groups = component["ignore_parent_groups"].as<bool>();
       }
     } else if (type == "ui_image") {
-      auto& image = target_node.add_component<canvas::ui_image>();
+      auto& image = target_node.get_or_add_component<canvas::ui_image>();
 
       image.tint = component["tint"].as<math::color>();
 
@@ -978,7 +1038,7 @@ auto read_node_components(node& target_node, const YAML::Node& node_yaml, assets
         image.sprite = assets_module.load_texture(key_to_uuid.at(component["sprite"].as<std::string>()));
       }
     } else if (type == "ui_text") {
-      auto& text = target_node.add_component<canvas::ui_text>();
+      auto& text = target_node.get_or_add_component<canvas::ui_text>();
 
       text.text = component["text"].as<std::string>();
       text.font_size = component["font_size"].as<std::float_t>();
@@ -1004,14 +1064,14 @@ auto read_node_components(node& target_node, const YAML::Node& node_yaml, assets
         text.raycast_target = component["raycast_target"].as<bool>();
       }
     } else if (type == "ui_button") {
-      auto& button = target_node.add_component<canvas::ui_button>();
+      auto& button = target_node.get_or_add_component<canvas::ui_button>();
 
       button.interactable = component["interactable"].as<bool>();
       button.normal_color = component["normal_color"].as<math::color>();
       button.hovered_color = component["hovered_color"].as<math::color>();
       button.pressed_color = component["pressed_color"].as<math::color>();
     } else if (type == "ui_toggle") {
-      auto& toggle = target_node.add_component<canvas::ui_toggle>();
+      auto& toggle = target_node.get_or_add_component<canvas::ui_toggle>();
 
       toggle.is_on = component["is_on"].as<bool>();
       toggle.interactable = component["interactable"].as<bool>();
@@ -1022,7 +1082,7 @@ auto read_node_components(node& target_node, const YAML::Node& node_yaml, assets
         toggle.group = component["group"].as<math::uuid>();
       }
     } else if (type == "ui_slider") {
-      auto& slider = target_node.add_component<canvas::ui_slider>();
+      auto& slider = target_node.get_or_add_component<canvas::ui_slider>();
 
       slider.value = component["value"].as<std::float_t>();
       slider.min_value = component["min_value"].as<std::float_t>();
@@ -1036,7 +1096,7 @@ auto read_node_components(node& target_node, const YAML::Node& node_yaml, assets
         slider.direction = reflection::from_string_or<canvas::slider_direction>(component["direction"].as<std::string>(), canvas::slider_direction::horizontal);
       }
     } else if (type == "ui_scrollbar") {
-      auto& scrollbar = target_node.add_component<canvas::ui_scrollbar>();
+      auto& scrollbar = target_node.get_or_add_component<canvas::ui_scrollbar>();
 
       scrollbar.value = component["value"].as<std::float_t>();
       scrollbar.size = component["size"].as<std::float_t>();
@@ -1048,7 +1108,7 @@ auto read_node_components(node& target_node, const YAML::Node& node_yaml, assets
         scrollbar.direction = reflection::from_string_or<canvas::slider_direction>(component["direction"].as<std::string>(), canvas::slider_direction::horizontal);
       }
     } else if (type == "ui_scroll_rect") {
-      auto& scroll = target_node.add_component<canvas::ui_scroll_rect>();
+      auto& scroll = target_node.get_or_add_component<canvas::ui_scroll_rect>();
 
       scroll.horizontal = component["horizontal"].as<bool>();
       scroll.vertical = component["vertical"].as<bool>();
@@ -1058,7 +1118,7 @@ auto read_node_components(node& target_node, const YAML::Node& node_yaml, assets
         scroll.content = component["content"].as<math::uuid>();
       }
     } else if (type == "layout_element") {
-      auto& element = target_node.add_component<canvas::layout_element>();
+      auto& element = target_node.get_or_add_component<canvas::layout_element>();
 
       element.min_width = component["min_width"].as<std::float_t>();
       element.min_height = component["min_height"].as<std::float_t>();
@@ -1071,7 +1131,7 @@ auto read_node_components(node& target_node, const YAML::Node& node_yaml, assets
         element.ignore_layout = component["ignore_layout"].as<bool>();
       }
     } else if (type == "content_size_fitter") {
-      auto& fitter = target_node.add_component<canvas::content_size_fitter>();
+      auto& fitter = target_node.get_or_add_component<canvas::content_size_fitter>();
 
       if (component["horizontal_fit"]) {
         fitter.horizontal_fit = reflection::from_string_or<canvas::content_fit_mode>(component["horizontal_fit"].as<std::string>(), canvas::content_fit_mode::unconstrained);
@@ -1081,7 +1141,7 @@ auto read_node_components(node& target_node, const YAML::Node& node_yaml, assets
         fitter.vertical_fit = reflection::from_string_or<canvas::content_fit_mode>(component["vertical_fit"].as<std::string>(), canvas::content_fit_mode::unconstrained);
       }
     } else if (type == "horizontal_layout_group") {
-      auto& group = target_node.add_component<canvas::horizontal_layout_group>();
+      auto& group = target_node.get_or_add_component<canvas::horizontal_layout_group>();
 
       group.spacing = component["spacing"].as<std::float_t>();
       group.padding = component["padding"].as<math::vector4>();
@@ -1094,7 +1154,7 @@ auto read_node_components(node& target_node, const YAML::Node& node_yaml, assets
         group.child_alignment = reflection::from_string_or<canvas::layout_alignment>(component["child_alignment"].as<std::string>(), canvas::layout_alignment::upper_left);
       }
     } else if (type == "vertical_layout_group") {
-      auto& group = target_node.add_component<canvas::vertical_layout_group>();
+      auto& group = target_node.get_or_add_component<canvas::vertical_layout_group>();
 
       group.spacing = component["spacing"].as<std::float_t>();
       group.padding = component["padding"].as<math::vector4>();
@@ -1107,7 +1167,7 @@ auto read_node_components(node& target_node, const YAML::Node& node_yaml, assets
         group.child_alignment = reflection::from_string_or<canvas::layout_alignment>(component["child_alignment"].as<std::string>(), canvas::layout_alignment::upper_left);
       }
     } else if (type == "grid_layout_group") {
-      auto& group = target_node.add_component<canvas::grid_layout_group>();
+      auto& group = target_node.get_or_add_component<canvas::grid_layout_group>();
 
       group.cell_size = component["cell_size"].as<math::vector2>();
       group.spacing = component["spacing"].as<math::vector2>();
@@ -1130,7 +1190,7 @@ auto read_node_components(node& target_node, const YAML::Node& node_yaml, assets
         group.constraint = reflection::from_string_or<canvas::grid_constraint>(component["constraint"].as<std::string>(), canvas::grid_constraint::flexible);
       }
     } else if (type == "ui_mask") {
-      auto& mask = target_node.add_component<canvas::ui_mask>();
+      auto& mask = target_node.get_or_add_component<canvas::ui_mask>();
 
       if (component["show_mask_graphic"]) {
         mask.show_mask_graphic = component["show_mask_graphic"].as<bool>();
@@ -1168,7 +1228,7 @@ auto read_node_components(node& target_node, const YAML::Node& node_yaml, assets
 
       scripts.scripts.push_back(std::move(entry));
     } else if (type == "rigidbody") {
-      auto& body = target_node.add_component<physics::rigidbody>();
+      auto& body = target_node.get_or_add_component<physics::rigidbody>();
 
       body.type = reflection::from_string_or<physics::body_type>(component["body_type"].as<std::string>(), physics::body_type::dynamic_body);
 
@@ -1179,7 +1239,7 @@ auto read_node_components(node& target_node, const YAML::Node& node_yaml, assets
       body.angular_damping = component["angular_damping"].as<std::float_t>();
       body.gravity_scale = component["gravity_scale"].as<std::float_t>();
     } else if (type == "nav_agent") {
-      auto& agent = target_node.add_component<physics::nav_agent>();
+      auto& agent = target_node.get_or_add_component<physics::nav_agent>();
 
       agent.radius = component["radius"].as<std::float_t>();
       agent.height = component["height"].as<std::float_t>();
@@ -1192,7 +1252,7 @@ auto read_node_components(node& target_node, const YAML::Node& node_yaml, assets
       agent.obstacle_avoidance_enabled = component["obstacle_avoidance_enabled"].as<bool>();
       agent.separation_enabled = component["separation_enabled"].as<bool>();
     } else if (type == "shape_collider") {
-      auto& collider = target_node.add_component<physics::shape_collider>();
+      auto& collider = target_node.get_or_add_component<physics::shape_collider>();
 
       const auto shape_kind = component["shape"].as<std::string>();
 
@@ -1214,7 +1274,7 @@ auto read_node_components(node& target_node, const YAML::Node& node_yaml, assets
       collider.restitution = component["restitution"].as<std::float_t>();
       collider.is_trigger = component["is_trigger"].as<bool>(false); // absent in scenes saved before triggers existed
     } else if (type == "mesh_collider") {
-      auto& collider = target_node.add_component<physics::mesh_collider>();
+      auto& collider = target_node.get_or_add_component<physics::mesh_collider>();
 
       collider.mesh = assets_module.load_mesh(key_to_uuid.at(component["mesh"].as<std::string>()));
       collider.offset = component["offset"].as<math::vector3>();
@@ -1223,6 +1283,28 @@ auto read_node_components(node& target_node, const YAML::Node& node_yaml, assets
       collider.restitution = component["restitution"].as<std::float_t>();
       collider.is_convex = component["convex"].as<bool>(false); // absent in scenes saved before convex mesh colliders existed
       collider.is_trigger = component["is_trigger"].as<bool>(false); // absent in scenes saved before triggers existed
+    } else if (type == "prefab_member") {
+      auto& member = target_node.get_or_add_component<prefab_member>();
+      member.member_id = component["member_id"].as<math::uuid>();
+    } else if (type == "prefab_instance") {
+      auto& instance = target_node.get_or_add_component<prefab_instance>();
+
+      instance.source = assets_module.load_prefab(key_to_uuid.at(component["prefab"].as<std::string>()));
+      instance.applied_generation = component["applied_generation"] ? component["applied_generation"].as<std::uint64_t>() : 0u;
+      instance.overrides.clear();
+
+      if (const auto overrides = component["overrides"]) {
+        for (const auto override_yaml : overrides) {
+          auto override_entry = prefab_override{};
+          override_entry.member_id = override_yaml["member_id"].as<math::uuid>();
+          override_entry.component_key = override_yaml["component_key"].as<std::string>();
+
+          const auto kind = override_yaml["kind"].as<std::string>();
+          override_entry.kind = (kind == "component_removed") ? prefab_override_kind::component_removed : (kind == "node_removed") ? prefab_override_kind::node_removed : prefab_override_kind::component_value;
+
+          instance.overrides.push_back(std::move(override_entry));
+        }
+      }
     } else {
       utility::logger<"scenes">::warn("Unknown component type '{}'", type);
     }
@@ -1308,6 +1390,7 @@ auto scene_serializer::_build(scene& target) -> YAML::Node {
   assets_node["animation_graphs"] = keys.animation_graphs_table;
   assets_node["textures"] = keys.textures_table;
   assets_node["fonts"] = keys.fonts_table;
+  assets_node["prefabs"] = keys.prefabs_table;
 
   auto root = YAML::Node{};
   root["metadata"] = metadata;
@@ -1403,6 +1486,10 @@ auto scene_serializer::load(scene& target, const std::filesystem::path& path) ->
   }
 
   utility::logger<"scenes">::info("Loaded scene '{}' ({} nodes)", path.generic_string(), nodes_node.size());
+
+  // Any prefab_instance in this scene may have gone stale (its prefab edited) since the scene was
+  // last saved -- resync once up front instead of leaving it stale until the next per-frame call.
+  sync_prefab_instances(target);
 }
 
 auto scene_serializer::serialize_subtree(scene& target, node subtree_root) -> YAML::Node {
@@ -1440,6 +1527,7 @@ auto scene_serializer::serialize_subtree(scene& target, node subtree_root) -> YA
   assets_node["animation_graphs"] = keys.animation_graphs_table;
   assets_node["textures"] = keys.textures_table;
   assets_node["fonts"] = keys.fonts_table;
+  assets_node["prefabs"] = keys.prefabs_table;
 
   auto root = YAML::Node{};
   root["assets_module"] = assets_node;
@@ -1477,6 +1565,472 @@ auto scene_serializer::deserialize_subtree(scene& target, const YAML::Node& snap
   }
 
   return target.find(root_id);
+}
+
+// Reverse of register_asset_keys: seeds a fresh asset_key_table from an existing prefab's
+// "assets_module" tables (uuid -> key, plus the sequence nodes themselves, cloned so appends never
+// mutate the prefab's own stored snapshot before update_prefab commits) so re-serializing one
+// component of an already-saved prefab reuses existing keys instead of minting duplicates, only
+// minting a fresh key for an asset the prefab didn't reference yet.
+auto load_asset_key_table(const YAML::Node& assets_node) -> asset_key_table {
+  auto keys = asset_key_table{};
+
+  const auto load_category = [&](const char* category, std::unordered_map<math::uuid, std::string>& uuid_to_key, YAML::Node& table) {
+    if (const auto sequence = assets_node[category]) {
+      table = YAML::Clone(sequence);
+
+      for (const auto entry : sequence) {
+        const auto key = entry["key"].as<std::string>();
+
+        uuid_to_key.emplace(entry["uuid"].as<math::uuid>(), key);
+        keys.used_keys.insert(key);
+      }
+    }
+  };
+
+  load_category("static_meshes", keys.mesh_keys, keys.meshes_table);
+  load_category("materials", keys.material_keys, keys.materials_table);
+  load_category("environment_maps", keys.environment_keys, keys.environments_table);
+  load_category("particle_effects", keys.particle_effect_keys, keys.particle_effects_table);
+  load_category("animation_graphs", keys.animation_graph_keys, keys.animation_graphs_table);
+  load_category("textures", keys.texture_keys, keys.textures_table);
+  load_category("fonts", keys.font_keys, keys.fonts_table);
+  load_category("prefabs", keys.prefab_keys, keys.prefabs_table);
+
+  return keys;
+}
+
+auto find_node_entry(const YAML::Node& nodes_sequence, const math::uuid& member_id) -> YAML::Node {
+  for (const auto entry : nodes_sequence) {
+    if (entry["id"].as<math::uuid>() == member_id) {
+      return entry;
+    }
+  }
+
+  return YAML::Node{};
+}
+
+// Replaces every "components" entry of type component_key in target_components with whatever
+// entries of that same type source_components holds (0, 1, or -- "script" only -- several). Both
+// are "components" sequences in the write_node/serialize_subtree shape.
+auto replace_component_entries(YAML::Node target_components, const YAML::Node& source_components, std::string_view component_key) -> void {
+  for (auto index = target_components.size(); index-- > 0u;) {
+    if (target_components[index]["type"].as<std::string>() == component_key) {
+      target_components.remove(index);
+    }
+  }
+
+  if (!source_components) {
+    return;
+  }
+
+  for (const auto entry : source_components) {
+    if (entry["type"].as<std::string>() == component_key) {
+      target_components.push_back(entry);
+    }
+  }
+}
+
+// Applies just node_entry's component_key component(s) onto target_node, leaving every other
+// component untouched -- the per-key merge primitive behind sync_prefab_instances and
+// revert_prefab_override. "script" is the one type that can repeat (several Behaviors on one node),
+// so it's the one case that needs its whole script_component cleared first; every other type is a
+// single get_or_add-and-overwrite in read_node_components, already idempotent against a
+// pre-existing value of the same type.
+auto apply_component_key(node target_node, const YAML::Node& node_entry, const std::unordered_map<std::string, math::uuid>& key_to_uuid, assets::assets_module& assets_module, std::string_view component_key) -> void {
+  if (component_key == "script") {
+    target_node.remove_component<script_component>();
+  }
+
+  auto matches = YAML::Node{YAML::NodeType::Sequence};
+
+  if (const auto components = node_entry["components"]) {
+    for (const auto entry : components) {
+      if (entry["type"].as<std::string>() == component_key) {
+        matches.push_back(entry);
+      }
+    }
+  }
+
+  auto scratch = YAML::Node{};
+  scratch["components"] = matches;
+
+  read_node_components(target_node, scratch, assets_module, key_to_uuid);
+}
+
+// Walks up from a prefab_member node to the instance root carrying prefab_instance -- every node
+// under a prefab instance has prefab_member, but only the root also has prefab_instance. Returns an
+// invalid node if member_node isn't part of any prefab instance.
+auto find_prefab_instance_root(scene& target, node member_node) -> node {
+  if (!member_node.has_component<prefab_member>()) {
+    return node{};
+  }
+
+  auto current = member_node;
+
+  while (current.is_valid() && !current.has_component<prefab_instance>()) {
+    auto parent = target.node_of(current.get_component<relationship>().parent);
+    current = parent;
+  }
+
+  return (current.is_valid() && current.has_component<prefab_instance>()) ? current : node{};
+}
+
+// Shared tail of apply_prefab_override and update_prefab_from_node: commit snapshot as prefab's
+// new content and persist it, if it's already a saved (not merely in-memory) asset.
+auto save_prefab_snapshot(assets::assets_module& assets_module, assets::prefab_handle& prefab, YAML::Node snapshot) -> void {
+  assets_module.update_prefab(prefab, std::move(snapshot));
+
+  if (const auto path = assets_module.path_of(prefab->id()); !path.empty()) {
+    assets_module.save_prefab(prefab, path);
+  }
+}
+
+auto scene_serializer::create_prefab_from_node(scene& source, node subtree_root, std::string name) -> assets::prefab_handle {
+  auto& assets_module = core::engine::get_module<assets::assets_module>();
+
+  auto snapshot = serialize_subtree(source, subtree_root);
+
+  return assets_module.create_prefab(std::move(snapshot), std::move(name));
+}
+
+auto scene_serializer::attach_prefab_instance(scene& target, node subtree_root, assets::prefab_handle prefab) -> void {
+  const auto tag_member = [&](this const auto& self, node current) -> void {
+    current.add_component<prefab_member>(current.id());
+
+    for (const auto child : current.get_component<relationship>().children) {
+      auto child_node = target.node_of(child);
+      self(child_node);
+    }
+  };
+
+  tag_member(subtree_root);
+
+  subtree_root.add_component<prefab_instance>(prefab, prefab.generation());
+}
+
+auto scene_serializer::instantiate_prefab(scene& target, const assets::prefab_handle& prefab, std::optional<math::uuid> root_id) -> node {
+  if (!prefab.is_valid()) {
+    return node{};
+  }
+
+  auto& assets_module = core::engine::get_module<assets::assets_module>();
+
+  const auto& snapshot = prefab->snapshot();
+  const auto key_to_uuid = register_asset_keys(snapshot["assets_module"]);
+  const auto nodes_node = snapshot["nodes"];
+
+  // Fresh scenes::id per node -- two instances (or an instance and its own prefab) can't share
+  // ids -- except the root, which keeps root_id when given (see this method's doc comment).
+  auto id_remap = std::unordered_map<math::uuid, math::uuid>{};
+  auto is_first = true;
+
+  for (const auto node_yaml : nodes_node) {
+    const auto old_id = node_yaml["id"].as<math::uuid>();
+    const auto new_id = (is_first && root_id) ? *root_id : math::uuid::create();
+
+    id_remap.emplace(old_id, new_id);
+    is_first = false;
+  }
+
+  // Pass 1: create every node under its remapped id, tagged with its prefab-local id.
+  for (const auto node_yaml : nodes_node) {
+    const auto old_id = node_yaml["id"].as<math::uuid>();
+
+    auto fresh = target._create_node(node_yaml["tag"].as<std::string>(), local_transform{}, id_remap.at(old_id));
+    fresh.add_component<prefab_member>(old_id);
+  }
+
+  // Pass 2: parent + components, same two-pass shape as deserialize_subtree.
+  for (const auto node_yaml : nodes_node) {
+    const auto old_id = node_yaml["id"].as<math::uuid>();
+    auto instance_node = target.find(id_remap.at(old_id));
+
+    if (const auto parent = node_yaml["parent"]) {
+      auto parent_node = target.find(id_remap.at(parent.as<math::uuid>()));
+
+      instance_node.set_parent(parent_node);
+    }
+
+    read_node_components(instance_node, node_yaml, assets_module, key_to_uuid);
+  }
+
+  const auto root_old_id = nodes_node[0]["id"].as<math::uuid>();
+  auto root = target.find(id_remap.at(root_old_id));
+
+  root.add_component<prefab_instance>(prefab, prefab.generation());
+
+  return root;
+}
+
+auto scene_serializer::sync_prefab_instances(scene& target) -> void {
+  auto& assets_module = core::engine::get_module<assets::assets_module>();
+
+  auto stale_roots = std::vector<ecs::entity>{};
+
+  for (auto&& [entity, instance] : target.query<prefab_instance>().each()) {
+    if (instance.source.is_valid() && instance.source.generation() != instance.applied_generation) {
+      stale_roots.push_back(entity);
+    }
+  }
+
+  for (const auto root_entity : stale_roots) {
+    auto root = target.node_of(root_entity);
+
+    if (!root.is_valid()) {
+      continue;
+    }
+
+    auto& instance = root.get_component<prefab_instance>();
+    const auto& snapshot = instance.source->snapshot();
+    const auto key_to_uuid = register_asset_keys(snapshot["assets_module"]);
+    const auto nodes_node = snapshot["nodes"];
+
+    // Index the instance's current subtree by its nodes' prefab-local (member) id.
+    auto by_member = std::unordered_map<math::uuid, ecs::entity>{};
+
+    const auto collect = [&](this const auto& self, ecs::entity current) -> void {
+      auto current_node = target.node_of(current);
+
+      if (const auto member = current_node.try_get_component<prefab_member>()) {
+        by_member.emplace(member->member_id, current);
+      }
+
+      for (const auto child : current_node.get_component<relationship>().children) {
+        self(child);
+      }
+    };
+
+    collect(root_entity);
+
+    const auto is_overridden = [&](const math::uuid& member_id, std::string_view key) {
+      return std::ranges::any_of(instance.overrides, [&](const prefab_override& override_entry) {
+        return override_entry.member_id == member_id && override_entry.component_key == key;
+      });
+    };
+
+    const auto is_node_removed = [&](const math::uuid& member_id) {
+      return std::ranges::any_of(instance.overrides, [&](const prefab_override& override_entry) {
+        return override_entry.member_id == member_id && override_entry.kind == prefab_override_kind::node_removed;
+      });
+    };
+
+    for (const auto node_yaml : nodes_node) {
+      const auto member_id = node_yaml["id"].as<math::uuid>();
+      const auto existing = by_member.find(member_id);
+
+      if (existing == by_member.end()) {
+        if (is_node_removed(member_id)) {
+          // This instance deliberately deleted this member (see delete_node_command's
+          // node_removed hook, which marks every prefab_member in a deleted subtree, not just
+          // its root) -- stays gone across resyncs instead of being resurrected.
+          continue;
+        }
+
+        // The prefab gained a node since this instance's last sync -- instantiate just this one
+        // under its already-resolved instance parent (parents always precede children in this
+        // sequence, see serialize_subtree's DFS, so a multi-level addition resolves in one pass).
+        const auto parent_member = node_yaml["parent"] ? node_yaml["parent"].as<math::uuid>() : math::uuid::nil();
+        const auto parent_entity = by_member.contains(parent_member) ? by_member.at(parent_member) : root_entity;
+
+        auto fresh = target._create_node(node_yaml["tag"].as<std::string>(), local_transform{}, math::uuid::create());
+        fresh.add_component<prefab_member>(member_id);
+        read_node_components(fresh, node_yaml, assets_module, key_to_uuid);
+
+        auto parent_node = target.node_of(parent_entity);
+        fresh.set_parent(parent_node);
+
+        by_member.emplace(member_id, fresh._entity);
+
+        continue;
+      }
+
+      auto live_node = target.node_of(existing->second);
+
+      if (const auto components = node_yaml["components"]) {
+        auto seen_keys = std::unordered_set<std::string>{};
+
+        for (const auto component : components) {
+          const auto key = component["type"].as<std::string>();
+
+          if (!seen_keys.insert(key).second || is_overridden(member_id, key)) {
+            continue; // "script" can list several entries of the same type in one node -- apply_component_key already replays every match in a single call
+          }
+
+          // The instance root's own placement is never prefab content, regardless of whether an
+          // override was ever recorded for it -- see scene_serializer.hpp's prefab_override doc
+          // comment. Every other node's transform is ordinary trackable/syncable content.
+          if (key == "transform" && existing->second == root_entity) {
+            continue;
+          }
+
+          apply_component_key(live_node, node_yaml, key_to_uuid, assets_module, key);
+        }
+      }
+    }
+
+    instance.applied_generation = instance.source.generation();
+  }
+}
+
+auto scene_serializer::apply_prefab_override(scene& target, node source_node, std::string_view component_key) -> void {
+  auto root = find_prefab_instance_root(target, source_node);
+
+  if (!root.is_valid()) {
+    return;
+  }
+
+  // Defensive: mark_prefab_override already refuses to ever record a "transform" override for
+  // the root, so prefab_overrides_of (and thus the Hierarchy/Inspector menus) never offer this in
+  // the first place -- this just guards any other future caller.
+  if (component_key == "transform" && source_node == root) {
+    return;
+  }
+
+  auto& instance = root.get_component<prefab_instance>();
+
+  if (!instance.source.is_valid()) {
+    return;
+  }
+
+  auto& assets_module = core::engine::get_module<assets::assets_module>();
+
+  auto snapshot = YAML::Clone(instance.source->snapshot());
+  auto keys = load_asset_key_table(snapshot["assets_module"]);
+
+  // Seeds keys.mesh_keys/material_keys for source_node's own mesh/material references, mirroring
+  // serialize_subtree's prepass -- write_node's "static_mesh"/"mesh_collider" branches assume
+  // their mesh is already keyed and would throw otherwise (collect_mesh_material_keys is the only
+  // place that registers a mesh key; every other asset kind registers its own key inline).
+  collect_mesh_material_keys(target._registry, {source_node._entity}, assets_module, keys);
+
+  const auto member_id = source_node.get_component<prefab_member>().member_id;
+  auto node_entry = find_node_entry(snapshot["nodes"], member_id);
+
+  if (!node_entry) {
+    return; // shouldn't happen -- member_id came from this same instance's own prefab_member
+  }
+
+  auto scratch = YAML::Node{};
+  write_node(scratch, target._registry, source_node._entity, assets_module, keys, false);
+
+  replace_component_entries(node_entry["components"], scratch["components"], component_key);
+
+  snapshot["assets_module"]["static_meshes"] = keys.meshes_table;
+  snapshot["assets_module"]["materials"] = keys.materials_table;
+  snapshot["assets_module"]["environment_maps"] = keys.environments_table;
+  snapshot["assets_module"]["particle_effects"] = keys.particle_effects_table;
+  snapshot["assets_module"]["animation_graphs"] = keys.animation_graphs_table;
+  snapshot["assets_module"]["textures"] = keys.textures_table;
+  snapshot["assets_module"]["fonts"] = keys.fonts_table;
+  snapshot["assets_module"]["prefabs"] = keys.prefabs_table;
+
+  save_prefab_snapshot(assets_module, instance.source, snapshot);
+
+  std::erase_if(instance.overrides, [&](const prefab_override& override_entry) {
+    return override_entry.member_id == member_id && override_entry.component_key == component_key;
+  });
+}
+
+auto scene_serializer::revert_prefab_override(scene& target, node target_node, std::string_view component_key) -> void {
+  auto root = find_prefab_instance_root(target, target_node);
+
+  if (!root.is_valid()) {
+    return;
+  }
+
+  // See the matching guard in apply_prefab_override.
+  if (component_key == "transform" && target_node == root) {
+    return;
+  }
+
+  auto& instance = root.get_component<prefab_instance>();
+
+  if (!instance.source.is_valid()) {
+    return;
+  }
+
+  auto& assets_module = core::engine::get_module<assets::assets_module>();
+
+  const auto& snapshot = instance.source->snapshot();
+  const auto key_to_uuid = register_asset_keys(snapshot["assets_module"]);
+
+  const auto member_id = target_node.get_component<prefab_member>().member_id;
+  const auto node_entry = find_node_entry(snapshot["nodes"], member_id);
+
+  if (node_entry) {
+    apply_component_key(target_node, node_entry, key_to_uuid, assets_module, component_key);
+  }
+
+  std::erase_if(instance.overrides, [&](const prefab_override& override_entry) {
+    return override_entry.member_id == member_id && override_entry.component_key == component_key;
+  });
+}
+
+auto scene_serializer::mark_prefab_override(scene& target, node member_node, std::string_view component_key, prefab_override_kind kind) -> void {
+  auto root = find_prefab_instance_root(target, member_node);
+
+  if (!root.is_valid()) {
+    return;
+  }
+
+  // The instance root's own placement is never prefab content -- see prefab_override's doc
+  // comment and sync_prefab_instances' matching skip. A descendant's transform is unaffected.
+  if (component_key == "transform" && member_node == root) {
+    return;
+  }
+
+  auto& instance = root.get_component<prefab_instance>();
+  const auto member_id = member_node.get_component<prefab_member>().member_id;
+
+  for (auto& existing : instance.overrides) {
+    if (existing.member_id == member_id && existing.component_key == component_key) {
+      existing.kind = kind;
+      return;
+    }
+  }
+
+  instance.overrides.push_back(prefab_override{member_id, std::string{component_key}, kind});
+}
+
+auto scene_serializer::prefab_overrides_of(scene& target, node member_node) -> std::vector<prefab_override> {
+  auto root = find_prefab_instance_root(target, member_node);
+
+  if (!root.is_valid()) {
+    return {};
+  }
+
+  const auto member_id = member_node.get_component<prefab_member>().member_id;
+  const auto& instance = root.get_component<prefab_instance>();
+
+  auto result = std::vector<prefab_override>{};
+
+  for (const auto& override_entry : instance.overrides) {
+    if (override_entry.member_id == member_id && override_entry.kind != prefab_override_kind::node_removed) {
+      result.push_back(override_entry);
+    }
+  }
+
+  return result;
+}
+
+auto scene_serializer::update_prefab_from_node(scene& source, node instance_root) -> void {
+  if (!instance_root.has_component<prefab_instance>()) {
+    return;
+  }
+
+  auto& instance = instance_root.get_component<prefab_instance>();
+
+  if (!instance.source.is_valid()) {
+    return;
+  }
+
+  auto& assets_module = core::engine::get_module<assets::assets_module>();
+
+  save_prefab_snapshot(assets_module, instance.source, serialize_subtree(source, instance_root));
+
+  instance.overrides.clear();
+  instance.applied_generation = instance.source.generation();
 }
 
 } // namespace sbx::scenes

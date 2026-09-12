@@ -170,6 +170,23 @@ namespace Sbx.Core
       return Get(uuid);
     }
 
+    /// <summary>
+    /// Instantiates the prefab at <paramref name="path"/> (project-relative, same convention as
+    /// e.g. ParticleEffect.Load) as a new node subtree, optionally parented under
+    /// <paramref name="parent"/>. Returns null if the path doesn't resolve to a valid prefab.
+    /// </summary>
+    public static Node? Instantiate(string path, Node? parent = null)
+    {
+      ulong uuid;
+
+      unsafe
+      {
+        uuid = InternalCalls.Node_InstantiatePrefab(path, parent?._uuid ?? 0);
+      }
+
+      return Get(uuid);
+    }
+
   } // class Node
 
 } // namespace Sbx.Core

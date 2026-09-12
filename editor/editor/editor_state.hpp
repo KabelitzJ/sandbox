@@ -35,6 +35,7 @@ enum class asset_kind {
   particle_effect,
   animation_graph,
   font,
+  prefab,
   scene, // .yaml, reference-only: not routed through assets_module::import
   script, // .cs, reference-only: compiled by scripting::script_compiler, not assets_module::import
 }; // enum class asset_kind
@@ -154,16 +155,16 @@ struct editor_state {
   // pass-throughs below over reaching into this directly.
   command_stack commands{};
 
-  auto push_command(std::unique_ptr<command> cmd) -> void {
-    commands.push(std::move(cmd));
+  auto push_command(sbx::scenes::scene& target, std::unique_ptr<command> cmd) -> void {
+    commands.push(target, std::move(cmd));
   }
 
-  auto undo() -> void {
-    commands.undo();
+  auto undo(sbx::scenes::scene& target) -> void {
+    commands.undo(target);
   }
 
-  auto redo() -> void {
-    commands.redo();
+  auto redo(sbx::scenes::scene& target) -> void {
+    commands.redo(target);
   }
 
   [[nodiscard]] auto can_undo() const noexcept -> bool {

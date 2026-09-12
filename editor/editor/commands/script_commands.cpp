@@ -8,30 +8,28 @@
 
 #include <libsbx/scripting/scripting_module.hpp>
 
-#include <editor/commands/scene_access.hpp>
-
 namespace editor {
 
-auto attach_script_command::execute() -> void {
-  if (auto node = active_scene().find(_node_id); node.is_valid()) {
+auto attach_script_command::execute(sbx::scenes::scene& target) -> void {
+  if (auto node = target.find(_node_id); node.is_valid()) {
     sbx::core::engine::get_module<sbx::scripting::scripting_module>().attach_script(node, _class_name);
   }
 }
 
-auto attach_script_command::undo() -> void {
-  if (auto node = active_scene().find(_node_id); node.is_valid()) {
+auto attach_script_command::undo(sbx::scenes::scene& target) -> void {
+  if (auto node = target.find(_node_id); node.is_valid()) {
     sbx::core::engine::get_module<sbx::scripting::scripting_module>().detach_script(node, _class_name);
   }
 }
 
-auto detach_script_command::execute() -> void {
-  if (auto node = active_scene().find(_node_id); node.is_valid()) {
+auto detach_script_command::execute(sbx::scenes::scene& target) -> void {
+  if (auto node = target.find(_node_id); node.is_valid()) {
     sbx::core::engine::get_module<sbx::scripting::scripting_module>().detach_script(node, _before.class_name);
   }
 }
 
-auto detach_script_command::undo() -> void {
-  auto node = active_scene().find(_node_id);
+auto detach_script_command::undo(sbx::scenes::scene& target) -> void {
+  auto node = target.find(_node_id);
 
   if (!node.is_valid()) {
     return;

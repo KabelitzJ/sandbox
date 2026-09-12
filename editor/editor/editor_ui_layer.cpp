@@ -76,10 +76,12 @@ auto editor_ui_layer::build() -> void {
   ImGuizmo::BeginFrame();
 
   if (!ImGui::GetIO().WantTextInput && ImGui::GetIO().KeyCtrl) {
+    auto& scenes_module = sbx::core::engine::get_module<sbx::scenes::scenes_module>();
+
     if (ImGui::IsKeyPressed(ImGuiKey_Z, false)) {
-      _state.undo();
+      _state.undo(scenes_module.active_scene());
     } else if (ImGui::IsKeyPressed(ImGuiKey_Y, false)) {
-      _state.redo();
+      _state.redo(scenes_module.active_scene());
     }
   }
 
@@ -252,7 +254,7 @@ auto editor_ui_layer::_draw_dockspace() -> void {
       ImGui::BeginDisabled(!_state.can_undo());
 
       if (ImGui::MenuItem(fmt::format(ICON_MDI_UNDO " Undo {}", _state.undo_label()).c_str(), "Ctrl+Z")) {
-        _state.undo();
+        _state.undo(scenes_module.active_scene());
       }
 
       ImGui::EndDisabled();
@@ -260,7 +262,7 @@ auto editor_ui_layer::_draw_dockspace() -> void {
       ImGui::BeginDisabled(!_state.can_redo());
 
       if (ImGui::MenuItem(fmt::format(ICON_MDI_REDO " Redo {}", _state.redo_label()).c_str(), "Ctrl+Y")) {
-        _state.redo();
+        _state.redo(scenes_module.active_scene());
       }
 
       ImGui::EndDisabled();
@@ -273,7 +275,7 @@ auto editor_ui_layer::_draw_dockspace() -> void {
         auto command = std::make_unique<create_node_command>();
         auto* created = command.get();
 
-        _state.push_command(std::move(command));
+        _state.push_command(scenes_module.active_scene(), std::move(command));
         _state.select_node(scenes_module.active_scene().find(created->id()));
       }
 

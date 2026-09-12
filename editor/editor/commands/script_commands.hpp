@@ -9,6 +9,7 @@
 #include <libsbx/math/uuid.hpp>
 
 #include <libsbx/scenes/components.hpp>
+#include <libsbx/scenes/scene.hpp>
 
 #include <editor/commands/command.hpp>
 
@@ -22,9 +23,9 @@ public:
   attach_script_command(sbx::math::uuid node_id, std::string class_name)
   : _node_id{node_id}, _class_name{std::move(class_name)} { }
 
-  auto execute() -> void override;
+  auto execute(sbx::scenes::scene& target) -> void override;
 
-  auto undo() -> void override;
+  auto undo(sbx::scenes::scene& target) -> void override;
 
   [[nodiscard]] auto label() const -> std::string override {
     return "Attach Script";
@@ -48,9 +49,9 @@ public:
   detach_script_command(sbx::math::uuid node_id, sbx::scenes::script_entry before)
   : _node_id{node_id}, _before{std::move(before)} { }
 
-  auto execute() -> void override;
+  auto execute(sbx::scenes::scene& target) -> void override;
 
-  auto undo() -> void override;
+  auto undo(sbx::scenes::scene& target) -> void override;
 
   [[nodiscard]] auto label() const -> std::string override {
     return "Detach Script";

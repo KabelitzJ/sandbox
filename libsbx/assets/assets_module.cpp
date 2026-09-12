@@ -10,6 +10,8 @@
 
 #include <yaml-cpp/yaml.h>
 
+#include <libsbx/utility/logger.hpp>
+
 #include <libsbx/core/engine.hpp>
 #include <libsbx/core/project.hpp>
 
@@ -240,6 +242,102 @@ auto assets_module::is_resident(const font_handle& font) const -> bool {
 
 auto assets_module::path_of(const math::uuid& id) const -> std::filesystem::path {
   return _manifest.path_of(id);
+}
+
+auto assets_module::create_prefab(YAML::Node snapshot, std::string name) -> prefab_handle {
+  auto record = std::make_shared<prefab>();
+
+  record->_snapshot = std::move(snapshot);
+  record->_name = std::move(name);
+  record->_bump_generation();
+
+  return prefab_handle{record};
+}
+
+auto assets_module::load_prefab(const math::uuid& id) -> prefab_handle {
+  _manifest.ensure_loaded();
+
+  if (const auto entry = _prefabs.find(id); entry != _prefabs.end()) {
+    return entry->second;
+  }
+
+  const auto source_path = _manifest.path_of(id);
+
+  if (source_path.empty() || source_path.extension() != ".prefab") {
+    utility::logger<"assets">::warn("Unknown prefab uuid {}", id);
+    return prefab_handle{};
+  }
+
+  auto root = YAML::Node{};
+
+  try {
+    root = YAML::LoadFile(_manifest.absolute(source_path).string());
+  } catch (const YAML::Exception& exception) {
+    utility::logger<"assets">::warn("Failed to parse prefab '{}': {}", source_path.generic_string(), exception.what());
+    return prefab_handle{};
+  }
+
+  auto record = std::make_shared<prefab>();
+
+  record->_id = id;
+  record->_name = root["name"] ? root["name"].as<std::string>() : source_path.stem().string();
+  record->_snapshot = root["snapshot"];
+  record->_bump_generation();
+
+  auto handle = prefab_handle{record};
+  _prefabs.emplace(id, handle);
+
+  return handle;
+}
+
+auto assets_module::load_prefab(const std::filesystem::path& path) -> prefab_handle {
+  const auto& project = core::engine::project();
+
+  const auto assets_directory = project.assets_directory();
+
+  return load_prefab(_manifest.import(assets_directory / path));
+}
+
+auto assets_module::update_prefab(prefab_handle& prefab, YAML::Node snapshot) -> void {
+  if (!prefab.is_valid()) {
+    return;
+  }
+
+  prefab->_snapshot = std::move(snapshot);
+  prefab->_bump_generation();
+}
+
+auto assets_module::save_prefab(prefab_handle& prefab, const std::filesystem::path& path) -> math::uuid {
+  const auto& project = core::engine::project();
+
+  const auto assets_directory = project.assets_directory();
+
+  const auto resolved_path = assets_directory / path;
+
+  if (!prefab.is_valid()) {
+    utility::logger<"assets">::warn("Cannot save an invalid prefab to '{}'", resolved_path.generic_string());
+    return math::uuid::nil();
+  }
+
+  auto node = YAML::Node{};
+
+  node["name"] = prefab->name();
+  node["snapshot"] = prefab->snapshot();
+
+  if (!resolved_path.parent_path().empty()) {
+    std::filesystem::create_directories(resolved_path.parent_path());
+  }
+
+  auto out = std::ofstream{resolved_path};
+  out << node;
+
+  const auto id = _manifest.import(resolved_path); // register + create the .meta so it's a first-class asset
+
+  prefab->_id = id;
+
+  utility::logger<"assets">::info("Saved prefab '{}'", resolved_path.generic_string());
+
+  return id;
 }
 
 } // namespace sbx::assets

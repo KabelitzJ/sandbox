@@ -4,6 +4,8 @@
 
 #include <libsbx/utility/profiler.hpp>
 
+#include <libsbx/scenes/scene_serializer.hpp>
+
 namespace sbx::scenes {
 
 scenes_module::scenes_module() {
@@ -20,6 +22,11 @@ auto scenes_module::late_update() -> void {
   _simulation_time += simulation_delta_time();
 
   _scene.update();
+
+  // Resyncs any prefab_instance whose source has been edited since this scene last saw it — see
+  // scene_serializer::sync_prefab_instances. Runs every frame, editor and runtime alike, same as
+  // the transform update above.
+  scene_serializer::sync_prefab_instances(_scene);
 }
 
 } // namespace sbx::scenes

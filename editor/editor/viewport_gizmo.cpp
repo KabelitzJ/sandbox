@@ -189,7 +189,7 @@ auto draw_group_pivot_gizmo(editor_state& state, sbx::scenes::scene& scene, cons
     }
 
     if (!sub_commands.empty()) {
-      state.push_command(std::make_unique<composite_command>(std::move(sub_commands), fmt::format("Edit Transform ({} objects)", sub_commands.size())));
+      state.push_command(scene, std::make_unique<composite_command>(std::move(sub_commands), fmt::format("Edit Transform ({} objects)", sub_commands.size())));
     }
 
     group_drag_world_before.clear();
@@ -289,7 +289,7 @@ auto draw_viewport_gizmo(editor_state& state, const ImVec2& viewport_origin, con
     drag_active = false;
 
     if (auto dragged_node = scene.find(drag_node_id); dragged_node.is_valid()) {
-      state.push_command(std::make_unique<modify_component_command<sbx::scenes::local_transform>>(drag_node_id, drag_before, dragged_node.transform(), "Edit Transform"));
+      state.push_command(scene, std::make_unique<modify_component_command<sbx::scenes::local_transform>>(drag_node_id, drag_before, dragged_node.transform(), "Edit Transform"));
     }
   }
 

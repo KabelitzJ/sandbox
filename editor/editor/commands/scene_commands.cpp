@@ -11,46 +11,41 @@
 
 #include <libsbx/assets/assets_module.hpp>
 
-#include <editor/commands/scene_access.hpp>
-
 namespace editor {
 
 create_node_command::create_node_command(std::optional<sbx::math::uuid> parent_id, std::string name)
 : _parent_id{parent_id}, _name{std::move(name)} { }
 
-auto create_node_command::execute() -> void {
+auto create_node_command::execute(sbx::scenes::scene& target) -> void {
   if (_id == sbx::math::uuid::nil()) {
     _id = sbx::math::uuid::create();
   }
 
-  auto& scene = active_scene();
-  auto node = scene.create_node(_name, {}, _id);
+  auto node = target.create_node(_name, {}, _id);
 
   if (_parent_id) {
-    if (auto parent = scene.find(*_parent_id); parent.is_valid()) {
+    if (auto parent = target.find(*_parent_id); parent.is_valid()) {
       node.set_parent(parent);
     }
   }
 }
 
-auto create_node_command::undo() -> void {
-  auto& scene = active_scene();
-  scene.destroy_node(scene.find(_id));
+auto create_node_command::undo(sbx::scenes::scene& target) -> void {
+  target.destroy_node(target.find(_id));
 }
 
 create_primitive_node_command::create_primitive_node_command(sbx::assets::primitive_mesh_kind kind, std::optional<sbx::math::uuid> parent_id)
 : _kind{kind}, _parent_id{parent_id} { }
 
-auto create_primitive_node_command::execute() -> void {
+auto create_primitive_node_command::execute(sbx::scenes::scene& target) -> void {
   if (_id == sbx::math::uuid::nil()) {
     _id = sbx::math::uuid::create();
   }
 
-  auto& scene = active_scene();
-  auto node = scene.create_node(std::string{sbx::assets::primitive_mesh_name(_kind)}, {}, _id);
+  auto node = target.create_node(std::string{sbx::assets::primitive_mesh_name(_kind)}, {}, _id);
 
   if (_parent_id) {
-    if (auto parent = scene.find(*_parent_id); parent.is_valid()) {
+    if (auto parent = target.find(*_parent_id); parent.is_valid()) {
       node.set_parent(parent);
     }
   }
@@ -64,15 +59,35 @@ auto create_primitive_node_command::execute() -> void {
   node.add_component<sbx::scenes::mesh_renderer>(std::move(renderer));
 }
 
-auto create_primitive_node_command::undo() -> void {
-  auto& scene = active_scene();
-  scene.destroy_node(scene.find(_id));
+auto create_primitive_node_command::undo(sbx::scenes::scene& target) -> void {
+  target.destroy_node(target.find(_id));
 }
 
-delete_node_command::delete_node_command(const sbx::scenes::node& target)
-: _id{target.id()} {
-  auto& scene = active_scene();
+instantiate_prefab_command::instantiate_prefab_command(sbx::assets::prefab_handle prefab, std::optional<sbx::math::uuid> parent_id)
+: _prefab{std::move(prefab)}, _parent_id{parent_id} { }
 
+auto instantiate_prefab_command::execute(sbx::scenes::scene& target) -> void {
+  auto instance = sbx::scenes::scene_serializer::instantiate_prefab(target, _prefab, (_id == sbx::math::uuid::nil()) ? std::nullopt : std::optional{_id});
+
+  if (!instance.is_valid()) {
+    return;
+  }
+
+  _id = instance.id();
+
+  if (_parent_id) {
+    if (auto parent = target.find(*_parent_id); parent.is_valid()) {
+      instance.set_parent(parent);
+    }
+  }
+}
+
+auto instantiate_prefab_command::undo(sbx::scenes::scene& target) -> void {
+  target.destroy_node(target.find(_id));
+}
+
+delete_node_command::delete_node_command(sbx::scenes::scene& scene, const sbx::scenes::node& target)
+: _id{target.id()} {
   const auto& own_relationship = target.get_component<sbx::scenes::relationship>();
   auto parent_node = scene.node_of(own_relationship.parent);
   const auto parent_is_real = parent_node.has_component<sbx::scenes::id>();
@@ -95,6 +110,9 @@ delete_node_command::delete_node_command(const sbx::scenes::node& target)
 
   // A descendant, not just target itself, can hold either binding — scene::destroy_node clears
   // both wherever they occur in the subtree, so undo needs to know which node(s) to restore them to.
+  // Same walk also marks every prefab_member in the subtree as node_removed on its owning
+  // instance — not just target itself — so sync_prefab_instances never resurrects a descendant
+  // whose parent (target, or one of target's own descendants) got deleted along with it.
   const auto check = [&](this const auto& self, const sbx::scenes::node& current) -> void {
     if (auto camera = scene.active_camera(); camera.is_valid() && camera.id() == current.id()) {
       _was_active_camera = current.id();
@@ -102,6 +120,10 @@ delete_node_command::delete_node_command(const sbx::scenes::node& target)
 
     if (auto light = scene.primary_light(); light.is_valid() && light.id() == current.id()) {
       _was_primary_light = current.id();
+    }
+
+    if (current.has_component<sbx::scenes::prefab_member>()) {
+      sbx::scenes::scene_serializer::mark_prefab_override(scene, current, "", sbx::scenes::prefab_override_kind::node_removed);
     }
 
     for (const auto child : current.get_component<sbx::scenes::relationship>().children) {
@@ -112,38 +134,33 @@ delete_node_command::delete_node_command(const sbx::scenes::node& target)
   check(target);
 }
 
-auto delete_node_command::execute() -> void {
-  auto& scene = active_scene();
-  scene.destroy_node(scene.find(_id));
+auto delete_node_command::execute(sbx::scenes::scene& target) -> void {
+  target.destroy_node(target.find(_id));
 }
 
-auto delete_node_command::undo() -> void {
-  auto& scene = active_scene();
-
-  auto recreated = sbx::scenes::scene_serializer::deserialize_subtree(scene, _snapshot);
-  auto parent_or_root = _parent_id ? scene.find(*_parent_id) : scene.root();
+auto delete_node_command::undo(sbx::scenes::scene& target) -> void {
+  auto recreated = sbx::scenes::scene_serializer::deserialize_subtree(target, _snapshot);
+  auto parent_or_root = _parent_id ? target.find(*_parent_id) : target.root();
 
   if (!_parent_id || parent_or_root.is_valid()) {
-    scene.insert_child(parent_or_root, recreated, _index);
+    target.insert_child(parent_or_root, recreated, _index);
   }
 
   if (_was_active_camera) {
-    if (auto node = scene.find(*_was_active_camera); node.is_valid()) {
-      scene.set_active_camera(node);
+    if (auto node = target.find(*_was_active_camera); node.is_valid()) {
+      target.set_active_camera(node);
     }
   }
 
   if (_was_primary_light) {
-    if (auto node = scene.find(*_was_primary_light); node.is_valid()) {
-      scene.set_primary_light(node);
+    if (auto node = target.find(*_was_primary_light); node.is_valid()) {
+      target.set_primary_light(node);
     }
   }
 }
 
-reparent_node_command::reparent_node_command(const sbx::scenes::node& target, std::optional<sbx::math::uuid> new_parent_id, std::size_t new_index)
+reparent_node_command::reparent_node_command(sbx::scenes::scene& scene, const sbx::scenes::node& target, std::optional<sbx::math::uuid> new_parent_id, std::size_t new_index)
 : _id{target.id()}, _new_parent_id{new_parent_id}, _new_index{new_index} {
-  auto& scene = active_scene();
-
   const auto& own_relationship = target.get_component<sbx::scenes::relationship>();
   auto parent_node = scene.node_of(own_relationship.parent);
   const auto parent_is_real = parent_node.has_component<sbx::scenes::id>();
@@ -163,11 +180,10 @@ reparent_node_command::reparent_node_command(const sbx::scenes::node& target, st
   }
 }
 
-auto reparent_node_command::execute() -> void {
-  auto& scene = active_scene();
-  auto target = scene.find(_id);
+auto reparent_node_command::execute(sbx::scenes::scene& target) -> void {
+  auto node = target.find(_id);
 
-  if (!target.is_valid()) {
+  if (!node.is_valid()) {
     return;
   }
 
@@ -180,54 +196,47 @@ auto reparent_node_command::execute() -> void {
     index -= 1u;
   }
 
-  auto parent_or_root = _new_parent_id ? scene.find(*_new_parent_id) : scene.root();
+  auto parent_or_root = _new_parent_id ? target.find(*_new_parent_id) : target.root();
 
   if (!_new_parent_id || parent_or_root.is_valid()) {
-    scene.insert_child(parent_or_root, target, index);
+    target.insert_child(parent_or_root, node, index);
   }
 }
 
-auto reparent_node_command::undo() -> void {
-  auto& scene = active_scene();
-  auto target = scene.find(_id);
+auto reparent_node_command::undo(sbx::scenes::scene& target) -> void {
+  auto node = target.find(_id);
 
-  if (!target.is_valid()) {
+  if (!node.is_valid()) {
     return;
   }
 
-  auto parent_or_root = _old_parent_id ? scene.find(*_old_parent_id) : scene.root();
+  auto parent_or_root = _old_parent_id ? target.find(*_old_parent_id) : target.root();
 
   if (!_old_parent_id || parent_or_root.is_valid()) {
-    scene.insert_child(parent_or_root, target, _old_index);
+    target.insert_child(parent_or_root, node, _old_index);
   }
 }
 
-set_active_camera_command::set_active_camera_command(const sbx::scenes::node& target)
+set_active_camera_command::set_active_camera_command(sbx::scenes::scene& scene, const sbx::scenes::node& target)
 : _id{target.id()} {
-  auto& scene = active_scene();
-
   if (auto current = scene.active_camera(); current.is_valid()) {
     _previous_id = current.id();
   }
 }
 
-auto set_active_camera_command::execute() -> void {
-  auto& scene = active_scene();
-
-  if (auto node = scene.find(_id); node.is_valid()) {
-    scene.set_active_camera(node);
+auto set_active_camera_command::execute(sbx::scenes::scene& target) -> void {
+  if (auto node = target.find(_id); node.is_valid()) {
+    target.set_active_camera(node);
   }
 }
 
-auto set_active_camera_command::undo() -> void {
-  auto& scene = active_scene();
-
+auto set_active_camera_command::undo(sbx::scenes::scene& target) -> void {
   if (_previous_id) {
-    if (auto node = scene.find(*_previous_id); node.is_valid()) {
-      scene.set_active_camera(node);
+    if (auto node = target.find(*_previous_id); node.is_valid()) {
+      target.set_active_camera(node);
     }
   } else {
-    scene.set_active_camera(sbx::scenes::node{});
+    target.set_active_camera(sbx::scenes::node{});
   }
 }
 

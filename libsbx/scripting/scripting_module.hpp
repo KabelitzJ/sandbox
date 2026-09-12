@@ -82,6 +82,17 @@ public:
   auto instantiate_scene_scripts(scenes::scene& target) -> void;
 
   /**
+   * @brief Same 2-phase create-then-OnCreate bootstrap as instantiate_scene_scripts, scoped to just
+   * @p subtree_root and its descendants — for a subtree that appears after Play has already
+   * started (a prefab instantiated from a running script, via Node.Instantiate). No-op if the
+   * scene isn't currently simulating (self-guarded, same defensive convention as attach_script,
+   * since unlike instantiate_scene_scripts this has a reachable non-simulating caller in principle).
+   * Never call instantiate_scene_scripts itself again mid-Play — it would create duplicate
+   * instances for every already-running node in the whole scene, not just the new subtree.
+   */
+  auto instantiate_subtree_scripts(scenes::scene& target, scenes::node subtree_root) -> void;
+
+  /**
    * @brief Attaches @p class_name to @p node's persisted scenes::script_component (creating it if
    * needed; no-ops if that exact class is already attached — at most one instance of a given class
    * per node). If the scene is already simulating, also instantiate()s this one entry immediately

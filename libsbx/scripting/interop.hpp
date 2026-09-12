@@ -117,6 +117,18 @@ struct interop {
 
   static auto node_create(managed::string name) -> std::uint64_t;
 
+  /**
+   * @brief Instantiates the prefab at @p path (project-relative, same convention as every other
+   * asset path taken from script/YAML) as a new node subtree, parented under @p parent_uuid
+   * (0 = top-level, same "no real node has uuid 0" convention as node_set_parent's parent_uuid).
+   * Any scripts baked into the prefab's nodes are brought to life immediately (instantiate +
+   * OnCreate) if the scene is currently simulating — see scripting_module::instantiate_subtree_scripts.
+   * Returns 0 if @p path doesn't resolve to a valid prefab. An invalid @p parent_uuid doesn't fail
+   * the call — the instance is still created and returned, just left at the top level, same
+   * recovery as node_set_parent's own invalid-parent handling.
+   */
+  static auto node_instantiate_prefab(managed::string path, std::uint64_t parent_uuid) -> std::uint64_t;
+
   static auto node_destroy(std::uint64_t uuid) -> void;
 
   static auto node_set_parent(std::uint64_t uuid, std::uint64_t parent_uuid) -> void;

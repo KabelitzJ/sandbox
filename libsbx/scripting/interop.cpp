@@ -28,6 +28,7 @@
 #include <libsbx/canvas/components.hpp>
 
 #include <libsbx/scenes/components.hpp>
+#include <libsbx/scenes/scene_serializer.hpp>
 
 #include <libsbx/render/scene_renderer_module.hpp>
 
@@ -797,6 +798,39 @@ auto interop::node_create(managed::string name) -> std::uint64_t {
   auto node = scene.create_node(utility::hashed_string{std::string{name}});
 
   return node.id().value();
+}
+
+auto interop::node_instantiate_prefab(managed::string path, std::uint64_t parent_uuid) -> std::uint64_t {
+  auto& scenes_module = core::engine::get_module<scenes::scenes_module>();
+  auto& scene = scenes_module.active_scene();
+
+  auto& assets_module = core::engine::get_module<assets::assets_module>();
+  auto prefab = assets_module.load_prefab(std::filesystem::path{std::string{path}});
+
+  if (!prefab.is_valid()) {
+    utility::logger<"scripting">::error("Node.Instantiate('{}') resolved to an invalid prefab", std::string{path});
+    return 0u;
+  }
+
+  auto instance = scenes::scene_serializer::instantiate_prefab(scene, prefab);
+
+  if (!instance.is_valid()) {
+    utility::logger<"scripting">::error("Node.Instantiate('{}') failed to instantiate", std::string{path});
+    return 0u;
+  }
+
+  if (parent_uuid != 0u) {
+    if (auto parent = scene.find(math::uuid::from_value(parent_uuid)); parent.is_valid()) {
+      instance.set_parent(parent);
+    } else {
+      utility::logger<"scripting">::error("Node.Instantiate('{}') given invalid parent", std::string{path});
+    }
+  }
+
+  auto& scripting_module = core::engine::get_module<scripting::scripting_module>();
+  scripting_module.instantiate_subtree_scripts(scene, instance);
+
+  return instance.id().value();
 }
 
 auto interop::node_destroy(std::uint64_t uuid) -> void {

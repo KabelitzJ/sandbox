@@ -24,7 +24,7 @@ basic_sparse_set<Entity, Allocator>::basic_sparse_set(basic_sparse_set&& other, 
   _sparse{std::move(other._sparse), allocator},
   _policy{other._policy},
   _head{std::exchange(other._head, _policy_to_head())} { 
-  utility::assert_that(allocator_type::is_always_equal::value || get_allocator() == other.get_allocator(), "Copying a sparse set is not allowed");
+  utility::assert_that(allocator_traits::is_always_equal::value || get_allocator() == other.get_allocator(), "Copying a sparse set is not allowed");
 }
 
 template<typename Entity, memory::allocator_for<Entity> Allocator>
@@ -34,7 +34,7 @@ basic_sparse_set<Entity, Allocator>::~basic_sparse_set() {
 
 template<typename Entity, memory::allocator_for<Entity> Allocator>
 auto basic_sparse_set<Entity, Allocator>::operator=(basic_sparse_set&& other) noexcept -> basic_sparse_set& {
-  utility::assert_that(allocator_type::is_always_equal::value || get_allocator() == other.get_allocator(), "Copying a sparse set is not allowed");
+  utility::assert_that(allocator_traits::is_always_equal::value || get_allocator() == other.get_allocator(), "Copying a sparse set is not allowed");
 
   swap(other);
 
