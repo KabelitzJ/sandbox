@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <array>
+#include <utility>
 #include <vector>
 
 #include <libsbx/utility/assert.hpp>
@@ -108,7 +109,7 @@ graphics_pipeline::graphics_pipeline(const create_info& create_info) {
     attachment.srcAlphaBlendFactor = to_vk_enum<VkBlendFactor>(blend.source_alpha);
     attachment.dstAlphaBlendFactor = to_vk_enum<VkBlendFactor>(blend.destination_alpha);
     attachment.alphaBlendOp = to_vk_enum<VkBlendOp>(blend.alpha_operation);
-    attachment.colorWriteMask = reflection::to_underlying(blend.color_write_mask);
+    attachment.colorWriteMask = std::to_underlying(blend.color_write_mask);
 
     color_blend_attachments.push_back(attachment);
   }

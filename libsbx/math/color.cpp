@@ -2,6 +2,8 @@
 // Copyright (c) 2026 Jonas Kabelitz
 #include <libsbx/math/color.hpp>
 
+#include <utility>
+
 #include <libsbx/reflection/enum.hpp>
 
 namespace sbx::math {
@@ -22,7 +24,7 @@ enum class component_shift : std::uint8_t {
 }; // enum class component_shift
 
 static constexpr auto extract_component(std::uint32_t rgba, component_shift shift) noexcept -> std::float_t {
-  return scale(extract(rgba, reflection::to_underlying(shift)));
+  return scale(extract(rgba, std::to_underlying(shift)));
 }
 
 color::color() noexcept

@@ -10,6 +10,7 @@
 #include <span>
 #include <string_view>
 #include <type_traits>
+#include <utility>
 
 #include <fmt/format.h>
 
@@ -83,12 +84,6 @@ constexpr auto from_string_or(std::string_view name, const Enum default_value) -
 
 template<typename Enum>
 requires (std::is_enum_v<Enum>)
-constexpr auto to_underlying(const Enum value) -> std::underlying_type_t<Enum> {
-  return static_cast<std::underlying_type_t<Enum>>(value);
-}
-
-template<typename Enum>
-requires (std::is_enum_v<Enum>)
 constexpr auto from_underlying(const std::underlying_type_t<Enum> value) -> Enum {
   return static_cast<Enum>(value);
 }
@@ -102,7 +97,7 @@ inline constexpr auto is_bit_field_v = !std::meta::annotations_of_with_type(^^En
 template<typename Type>
 requires (sbx::reflection::is_bit_field_v<Type>)
 constexpr auto operator|(Type lhs, Type rhs) -> Type {
-  return sbx::reflection::from_underlying<Type>(sbx::reflection::to_underlying(lhs) | sbx::reflection::to_underlying(rhs));
+  return sbx::reflection::from_underlying<Type>(std::to_underlying(lhs) | std::to_underlying(rhs));
 }
 
 template<typename Type>
@@ -116,7 +111,7 @@ constexpr auto operator|=(Type& lhs, Type rhs) -> Type& {
 template<typename Type>
 requires (sbx::reflection::is_bit_field_v<Type>)
 constexpr auto operator&(Type lhs, Type rhs) -> Type {
-  return sbx::reflection::from_underlying<Type>(sbx::reflection::to_underlying(lhs) & sbx::reflection::to_underlying(rhs));
+  return sbx::reflection::from_underlying<Type>(std::to_underlying(lhs) & std::to_underlying(rhs));
 }
 
 template<typename Type>
@@ -130,13 +125,13 @@ constexpr auto operator&=(Type& lhs, Type rhs) -> Type& {
 template<typename Type>
 requires (sbx::reflection::is_bit_field_v<Type>)
 constexpr auto operator^(Type lhs, Type rhs) -> Type {
-  return sbx::reflection::from_underlying<Type>(sbx::reflection::to_underlying(lhs) ^ sbx::reflection::to_underlying(rhs));
+  return sbx::reflection::from_underlying<Type>(std::to_underlying(lhs) ^ std::to_underlying(rhs));
 }
 
 template<typename Type>
 requires (sbx::reflection::is_bit_field_v<Type>)
 constexpr auto operator~(Type lhs) -> Type {
-  return sbx::reflection::from_underlying<Type>(~sbx::reflection::to_underlying(lhs));
+  return sbx::reflection::from_underlying<Type>(~std::to_underlying(lhs));
 }
 
 template<sbx::reflection::named_enum Enum>

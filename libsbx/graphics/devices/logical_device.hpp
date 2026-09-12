@@ -5,6 +5,7 @@
 
 #include <cstdint>
 #include <string>
+#include <utility>
 
 #include <vulkan/vulkan.h>
 
@@ -93,11 +94,11 @@ public:
 
   template<queue::type Type>
   auto queue() const -> const graphics::queue& {
-    return _queues.at(reflection::to_underlying(Type));
+    return _queues.at(std::to_underlying(Type));
   }
 
   auto queue(const queue::type type) const -> const graphics::queue& {
-    return _queues.at(reflection::to_underlying(type));
+    return _queues.at(std::to_underlying(type));
   }
   
 private:
@@ -108,7 +109,7 @@ private:
 
     vkGetDeviceQueue(_handle, queue_family_index, index, &handle);
 
-    _queues.at(reflection::to_underlying(Type)) = graphics::queue{handle, queue_family_index};
+    _queues.at(std::to_underlying(Type)) = graphics::queue{handle, queue_family_index};
   }
 
   auto _set_debug_name(VkObjectType object_type, std::uint64_t object_handle, const std::string& name) const -> void;

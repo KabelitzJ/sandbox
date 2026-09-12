@@ -3,6 +3,7 @@
 #include <libsbx/graphics/resources/buffer.hpp>
 
 #include <cstring>
+#include <utility>
 
 #include <libsbx/utility/assert.hpp>
 
@@ -57,7 +58,7 @@ buffer::buffer(const create_info& create_info)
 
   _mapped = allocation_info.pMappedData;
 
-  if (reflection::to_underlying(create_info.usage & buffer_usage::device_address) != 0) {
+  if (std::to_underlying(create_info.usage & buffer_usage::device_address) != 0) {
     auto address_info = VkBufferDeviceAddressInfo{};
     address_info.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
     address_info.buffer = _handle;

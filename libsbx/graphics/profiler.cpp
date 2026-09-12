@@ -5,6 +5,7 @@
 #if defined(SBX_ENABLE_PROFILING)
 
 #include <array>
+#include <utility>
 
 #include <libsbx/reflection/enum.hpp>
 
@@ -20,7 +21,7 @@ namespace sbx::graphics::detail {
 static auto contexts = std::array<TracyVkCtx, reflection::enum_count<queue::type>()>{};
 
 auto register_gpu_context(const queue::type type, std::string_view name, const instance& instance, const physical_device& physical_device, const logical_device& logical_device) -> void {
-  const auto index = reflection::to_underlying(type);
+  const auto index = std::to_underlying(type);
 
   const auto& queue = logical_device.queue(type);
 
@@ -68,7 +69,7 @@ auto destroy_gpu_contexts() -> void {
 }
 
 auto gpu_context(const queue::type type) noexcept -> TracyVkCtx {
-  return contexts[reflection::to_underlying(type)];
+  return contexts[std::to_underlying(type)];
 }
 
 } // namespace sbx::graphics::detail

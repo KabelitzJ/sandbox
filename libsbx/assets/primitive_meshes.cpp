@@ -35,11 +35,11 @@ static constexpr auto primitive_mesh_kind_names = std::array<std::string_view, r
 };
 
 [[nodiscard]] auto primitive_mesh_uuid(const primitive_mesh_kind kind) -> math::uuid {
-  return math::uuid::from_value(primitive_mesh_kind_uuids[reflection::to_underlying(kind)]);
+  return math::uuid::from_value(primitive_mesh_kind_uuids[std::to_underlying(kind)]);
 }
 
 [[nodiscard]] auto primitive_mesh_name(const primitive_mesh_kind kind) -> std::string_view {
-  return primitive_mesh_kind_names[reflection::to_underlying(kind)];
+  return primitive_mesh_kind_names[std::to_underlying(kind)];
 }
 
 [[nodiscard]] auto primitive_mesh_kind_of(const math::uuid& id) -> std::optional<primitive_mesh_kind> {
